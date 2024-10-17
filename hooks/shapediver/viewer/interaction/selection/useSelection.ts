@@ -1,4 +1,4 @@
-import { ISelectionParameterProps, ITreeNode, OutputApiData } from "@shapediver/viewer";
+import { IOutputApi, ISelectionParameterProps, ITreeNode, OutputApiData } from "@shapediver/viewer";
 import { InteractionData, MultiSelectManager, SelectManager } from "@shapediver/viewer.features.interaction";
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { vec3 } from "gl-matrix";
@@ -15,7 +15,7 @@ import { useNodeInteractionData } from "../useNodeInteractionData";
  * Hook providing stateful object selection for a viewport and session. 
  * This wraps lover level hooks for the select manager, hover manager, and node interaction data.
  * 
- * @param sessionId ID of the session for which objects shall be selected.
+ * @param sessionIds IDs of the sessions for which objects shall be selected.
  * @param viewportId ID of the viewport for which selection shall be enabled. 
  * @param selectionProps Parameter properties to be used. This includes name filters, and properties for the behavior of the selection.
  * @param activate Set this to true to activate selection. If false, preparations are made but no selection is possible.
@@ -23,7 +23,7 @@ import { useNodeInteractionData } from "../useNodeInteractionData";
  * 					Note that this initial state is not checked against the filter pattern. 
  */
 export function useSelection(
-	sessionId: string, 
+	sessionIds: string[], 
 	viewportId: string, 
 	selectionProps: ISelectionParameterProps,
 	activate: boolean,
@@ -53,7 +53,7 @@ export function useSelection(
 	useHoverManager(viewportId, componentId, activate ? hoverSettings : undefined);
 	
 	// convert the user-defined name filters to filter patterns, and subscribe to selection events
-	const { patterns } = useCreateNameFilterPattern(sessionId, selectionProps.nameFilter);
+	const { patterns } = useCreateNameFilterPattern(sessionIds, selectionProps.nameFilter);
 	const { selectedNodeNames, setSelectedNodeNames, resetSelectedNodeNames } = useSelectManagerEvents(patterns, componentId, initialSelectedNodeNames);
 
 	// state for available node names
@@ -67,23 +67,37 @@ export function useSelection(
 		() => { return { select: true, hover: selectionProps.hover }; },
 		[selectionProps]
 	);
-	const outputs = useShapeDiverStoreViewer(state => { return state.sessions[sessionId].outputs; });
-	for (const outputId in outputs) {
-		// add interaction data
-		if (!patterns[outputId]) patterns[outputId] = [];
-		const { outputNode, availableNodeNames: availableNodeNamesForOutput } = useNodeInteractionData(sessionId, componentId, outputId, patterns[outputId], interactionSettings);
-		// in case selection becomes active or the output node changes, restore the selection status
-		useEffect(() => {
-			if (outputNode && selectManager)
-				restoreSelection(outputNode, selectManager, selectedNodeNames);
-		}, [outputNode, selectManager]);
+	const outputsPerSession = useShapeDiverStoreViewer(state => {
+		const outputs: {
+			[key: string]: {
+				[key: string]: IOutputApi;
+			}
+		} = {};
+		for(const sessionId of sessionIds)
+			if(state.sessions[sessionId])
+				outputs[sessionId] = state.sessions[sessionId].outputs;
 
-		// update the available node names
-		useEffect(() => {
-			setAvailableNodeNames(prev => {
-				return { ...prev, [outputs[outputId].name]: availableNodeNamesForOutput };
-			});
-		}, [availableNodeNamesForOutput]);
+		return outputs; 
+	});
+	for (const sessionId in outputsPerSession) {
+		const outputs = outputsPerSession[sessionId];
+		for (const outputId in outputs) {
+			// add interaction data
+			if (!patterns[outputId]) patterns[outputId] = [];
+			const { outputNode, availableNodeNames: availableNodeNamesForOutput } = useNodeInteractionData(sessionId, componentId, outputId, patterns[outputId], interactionSettings);
+			// in case selection becomes active or the output node changes, restore the selection status
+			useEffect(() => {
+				if (outputNode && selectManager)
+					restoreSelection(outputNode, selectManager, selectedNodeNames);
+			}, [outputNode, selectManager]);
+
+			// update the available node names
+			useEffect(() => {
+				setAvailableNodeNames(prev => {
+					return { ...prev, [outputs[outputId].name]: availableNodeNamesForOutput };
+				});
+			}, [availableNodeNamesForOutput]);
+		}
 	}
 
 	/**
@@ -96,10 +110,13 @@ export function useSelection(
 	 */
 	const setSelectedNodeNamesAndRestoreSelection = useCallback((names: string[]) => {
 		setSelectedNodeNames(names);
-		for (const outputId in outputs) {
-			const outputNode = outputs[outputId].node;
-			if (outputNode && selectManager)
-				restoreSelection(outputNode, selectManager, names);
+		for (const sessionId in outputsPerSession) {
+			const outputs = outputsPerSession[sessionId];
+			for (const outputId in outputs) {
+				const outputNode = outputs[outputId].node;
+				if (outputNode && selectManager)
+					restoreSelection(outputNode, selectManager, names);
+			}
 		}
 	}, [selectManager]);
 

@@ -25,6 +25,9 @@ export function useParameterComponentCommons<T>(
 		return !ids.every(id => !state.parameterChanges[id]?.executing);
 	});
 	const [value, setValue] = useState(initializer(state));
+	const sessionDependencies = useShapeDiverStoreParameters(state => {
+		return state.sessionDependency[sessionId].concat(sessionId);
+	});
 
 	const debounceTimeout = acceptRejectMode ? 0 : debounceTimeoutForImmediateExecution;
 	const debounceRef = useRef<NodeJS.Timeout>();
@@ -78,6 +81,7 @@ export function useParameterComponentCommons<T>(
 		handleChange,
 		setOnCancelCallback,
 		onCancel,
-		disabled
+		disabled,
+		sessionDependencies,
 	};
 }
