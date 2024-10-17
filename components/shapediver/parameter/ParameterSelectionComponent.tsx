@@ -47,9 +47,11 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
 	
 	// is the selection active or not? 
-	// TODO: avoid multiple parallel selections
 	const [selectionActive, setSelectionActive] = useState<boolean>(false);
+	// state for the dirty flag
+	const [dirty, setDirty] = useState<boolean>(false);
 
+	// get the viewport ID
 	const { viewportId } = useViewportId();
 	
 	const { selectedNodeNames, setSelectedNodeNames } = useSelection(
@@ -63,6 +65,17 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 	// check if the current selection is within the constraints
 	const acceptable = selectedNodeNames.length >= minimumSelection && selectedNodeNames.length <= maximumSelection;
 	const acceptImmediately = minimumSelection === maximumSelection && acceptable;
+
+	useEffect(() => {
+		const parsed = parseNames(state.uiValue);
+
+		// compare uiValue to selectedNodeNames
+		if (parsed.length !== selectedNodeNames.length || !parsed.every((n, i) => n === selectedNodeNames[i])) {
+			setDirty(true);
+		} else {
+			setDirty(false);
+		}
+	}, [state.uiValue, selectedNodeNames]);
 
 	/**
 	 * Callback function to change the value of the parameter.
@@ -135,7 +148,7 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 				<Group justify="space-between" w="100%" wrap="nowrap">
 					<Button
 						fullWidth={true}
-						disabled={!acceptable}
+						disabled={!acceptable || !dirty}
 						variant="filled"
 						onClick={() => changeValue(selectedNodeNames)}
 					>

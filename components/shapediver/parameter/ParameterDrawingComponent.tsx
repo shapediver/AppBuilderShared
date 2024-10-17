@@ -95,6 +95,7 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 	 */
 	const confirmDrawing = useCallback((pointsData?: PointsData) => {
 		deactivateDrawing();
+		setParsedUiValue(pointsData ?? []);
 		handleChange(JSON.stringify({ points: pointsData }), 0);
 	}, []);
 
@@ -122,7 +123,7 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 		const parsed = parsePointsData(state.uiValue);
 		// compare the parsed value with the current points data
 		if (parsed.length !== pointsData?.length ||
-			!parsed.every((p, i) => p === pointsData[i])
+			!parsed.every((p, i) => JSON.stringify(p) === JSON.stringify(pointsData[i]))
 		) {
 			deactivateDrawing();
 			setPointsData(parsed);
@@ -137,7 +138,21 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 	} : undefined, [onCancel]);
 
 	// state for the constraints
-	const [isWithinConstraints, setIsWithinConstraints] = useState<boolean>(false);
+	const [isWithinConstraints, setIsWithinConstraints] = useState<boolean>(false);	
+	// state for the dirty flag
+	const [dirty, setDirty] = useState<boolean>(false);
+
+	// check if the current points data is different from the uiValue
+	useEffect(() => {
+		const parsed = parsePointsData(state.uiValue);
+
+		// compare uiValue to pointsData
+		if (parsed.length !== pointsData?.length || !parsed.every((p, i) => JSON.stringify(p) === JSON.stringify(pointsData[i]))) {
+			setDirty(true);
+		} else {
+			setDirty(false);
+		}
+	}, [state.uiValue, pointsData]);
 
 	// check if the current selection is within the constraints
 	useEffect(() => {
@@ -186,7 +201,7 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 
 			<Group justify="space-between" w="100%" wrap="nowrap">
 				<Button
-					disabled={!isWithinConstraints}
+					disabled={!isWithinConstraints || !dirty}
 					fullWidth={true}
 					variant="filled"
 					onClick={() => confirmDrawing(pointsData)}
