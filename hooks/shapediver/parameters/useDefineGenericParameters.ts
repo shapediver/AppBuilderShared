@@ -12,14 +12,14 @@ import { useShallow } from "zustand/react/shallow";
  * 
  * @see {@link useShapeDiverStoreParameters} to access the abstracted parameters and exports.
  *
- * @param sessionId The namespace to use for the parameters.
+ * @param namespace The namespace to use for the parameters.
  * @param acceptRejectMode Set to true to require confirmation of the user to accept or reject changed parameter values
  * @param definitions Definitions of the parameters.
  * @param executor Executor of parameter changes.
  * @returns
  */
 export function useDefineGenericParameters(
-	sessionId: string, 
+	namespace: string, 
 	acceptRejectMode: boolean | IAcceptRejectModeSelector, 
 	definitions: IGenericParameterDefinition | IGenericParameterDefinition[], 
 	executor: IGenericParameterExecutor,
@@ -32,15 +32,15 @@ export function useDefineGenericParameters(
 	
 	// keep the generic parameters in sync
 	useEffect(() => {
-		syncGeneric(sessionId, acceptRejectMode, definitions, executor, dependsOnSessions);
-	}, [sessionId, acceptRejectMode, definitions, executor, dependsOnSessions]);
+		syncGeneric(namespace, acceptRejectMode, definitions, executor, dependsOnSessions);
+	}, [namespace, acceptRejectMode, definitions, executor, dependsOnSessions]);
 
 	// in case the session id changes, remove the parameters for the previous session
 	useEffect(() => {
 		return () => {
-			removeSession(sessionId);
+			removeSession(namespace);
 		};
-	}, [sessionId]);
+	}, [namespace]);
 
 	return {
 		

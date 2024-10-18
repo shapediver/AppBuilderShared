@@ -7,18 +7,18 @@ import { useShallow } from "zustand/react/shallow";
 
 interface Props {
 	/**
-	 * Default session id to use for parameter and export references that do
-	 * not specify a session id.
+	 * Default session namespace to use for parameter and export references that do
+	 * not specify a session namespace.
 	 */
-	sessionId: string
+	namespace: string
 	/** Id or name or displayname of the export to get the image from. */
 	exportId: string
 }
 
 export default function AppBuilderImageExportWidgetComponent(props: Props) {
 
-	const { sessionId, exportId, ...rest } = props;
-	const { definition, actions } = useExport({sessionId, exportId});
+	const { namespace, exportId, ...rest } = props;
+	const { definition, actions } = useExport({namespace, exportId});
 
 	const promiseChain = useRef(Promise.resolve());
 	const objectUrl = useRef<string | undefined>(undefined);
@@ -48,13 +48,13 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 			({ registerDefaultExport: state.registerDefaultExport, deregisterDefaultExport: state.deregisterDefaultExport }))
 	);
 	useEffect(() => {
-		registerDefaultExport(sessionId, definition.id);
+		registerDefaultExport(namespace, definition.id);
 
-		return () => deregisterDefaultExport(sessionId, definition.id);
-	}, [sessionId, definition]);
+		return () => deregisterDefaultExport(namespace, definition.id);
+	}, [namespace, definition]);
 
 	// Get responses to exports which were requested by default.
-	const responses = useShapeDiverStoreParameters(state => state.defaultExportResponses[sessionId]);
+	const responses = useShapeDiverStoreParameters(state => state.defaultExportResponses[namespace]);
 
 	useEffect(() => {
 		if (responses && responses[definition.id]) {

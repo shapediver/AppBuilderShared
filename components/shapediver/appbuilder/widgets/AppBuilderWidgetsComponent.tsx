@@ -21,15 +21,15 @@ import AppBuilderActionsWidgetComponent from "./AppBuilderActionsWidgetComponent
 
 interface Props {
 	/** 
-	 * Default session id to use for parameter and export references that do 
-	 * not specify a session id.
+	 * Default session namespace to use for parameter and export references that do 
+	 * not specify a session namespace.
 	 */
-	sessionId: string,
+	namespace: string,
 	/** The widgets to display. */
 	widgets: IAppBuilderWidget[] | undefined,
 }
 
-export default function AppBuilderWidgetsComponent({ sessionId, widgets }: Props) {
+export default function AppBuilderWidgetsComponent({ namespace, widgets }: Props) {
 
 	if (!widgets) {
 		return <></>;
@@ -40,9 +40,9 @@ export default function AppBuilderWidgetsComponent({ sessionId, widgets }: Props
 			if (isTextWidget(w))
 				return <AppBuilderTextWidgetComponent key={i} {...w.props} />;
 			else if (isImageWidget(w))
-				return <AppBuilderImageWidgetComponent key={i} sessionId={sessionId} {...w.props} />;
+				return <AppBuilderImageWidgetComponent key={i} namespace={namespace} {...w.props} />;
 			else if (isAccordionWidget(w))
-				return <AppBuilderAccordionWidgetComponent key={i} sessionId={sessionId} {...w.props} />;
+				return <AppBuilderAccordionWidgetComponent key={i} namespace={namespace} {...w.props} />;
 			else if (isRoundChartWidget(w))
 				return <AppBuilderRoundChartWidgetComponent key={i} {...w.props} />;
 			else if (isLineChartWidget(w))
@@ -52,7 +52,7 @@ export default function AppBuilderWidgetsComponent({ sessionId, widgets }: Props
 			else if (isBarChartWidget(w))
 				return <AppBuilderBarChartWidgetComponent key={i} {...w.props} />;
 			else if (isActionsWidget(w))
-				return <AppBuilderActionsWidgetComponent key={i} sessionId={sessionId} {...w.props} />;
+				return <AppBuilderActionsWidgetComponent key={i} namespace={namespace} {...w.props} />;
 			else
 				return null;
 		})}

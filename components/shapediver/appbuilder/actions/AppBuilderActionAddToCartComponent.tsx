@@ -7,7 +7,7 @@ import { useCreateModelState } from "../../../../hooks/shapediver/useCreateModel
 import { IconTypeEnum } from "shared/types/shapediver/icons";
 
 type Props = IAppBuilderActionPropsAddToCart & {
-	sessionId: string;
+	namespace: string;
 };
 
 /**
@@ -21,7 +21,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		label = "Add to cart", 
 		icon = IconTypeEnum.ShoppingCartPlus, 
 		tooltip, 
-		sessionId,
+		namespace,
 		productId,
 		quantity,
 		price,
@@ -31,7 +31,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		includeGltf
 	} = props;
 	
-	const { createModelState } = useCreateModelState({ sessionId });
+	const { createModelState } = useCreateModelState({ namespace });
 
 	const notifications = useContext(NotificationContext);
 

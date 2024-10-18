@@ -5,7 +5,7 @@ import { useCreateModelState } from "../../../../hooks/shapediver/useCreateModel
 import { IconTypeEnum } from "../../../../types/shapediver/icons";
 
 type Props = IAppBuilderActionPropsAddToCart & {
-	sessionId: string;
+	namespace: string;
 };
 
 /**
@@ -19,13 +19,13 @@ export default function AppBuilderActionCreateModelStateComponent(props: Props) 
 		label = "Save configuration", 
 		icon = IconTypeEnum.DeviceFloppy, 
 		tooltip, 
-		sessionId,
+		namespace,
 		includeImage, 
 		//image, // TODO use image defined by export of href
 		includeGltf
 	} = props;
 	
-	const { createModelState } = useCreateModelState({ sessionId });
+	const { createModelState } = useCreateModelState({ namespace });
 
 	const onClick = useCallback(async () => {
 		const modelStateId = await createModelState(

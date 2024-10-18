@@ -29,7 +29,7 @@ export function useSortedParametersAndExports(parameters?: PropsParameter[], exp
 	// collect definitions of parameters and exports for sorting and grouping
 	let sortedParamsAndExports : ParamOrExportDefinition[] = [];
 	sortedParamsAndExports = sortedParamsAndExports.concat((parameters ?? []).flatMap(p => {
-		const stores = Object.values(parameterStores[p.sessionId] ?? {});
+		const stores = Object.values(parameterStores[p.namespace] ?? {});
 		for (const store of stores) {
 			const { definition, acceptRejectMode } = store.getState();
 			if (definition.id === p.parameterId || definition.name === p.parameterId || definition.displayname === p.parameterId)
@@ -51,7 +51,7 @@ export function useSortedParametersAndExports(parameters?: PropsParameter[], exp
 	})); // <-- TODO SS-8052 move into useMemo
 
 	sortedParamsAndExports = sortedParamsAndExports.concat((exports ?? []).flatMap(e => {
-		const stores = Object.values(exportStores[e.sessionId] ?? {});
+		const stores = Object.values(exportStores[e.namespace] ?? {});
 		for (const store of stores) {
 			const definition = store.getState().definition;
 			if (definition.id === e.exportId || definition.name === e.exportId  || definition.displayname === e.exportId )

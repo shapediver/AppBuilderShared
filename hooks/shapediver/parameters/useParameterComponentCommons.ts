@@ -17,12 +17,15 @@ export function useParameterComponentCommons<T>(
 	debounceTimeoutForImmediateExecution: number = 1000,
 	initializer: (state: IShapeDiverParameterState<T|string>) => T|string = (state) => state.uiValue,
 ) {
-	const { sessionId, disableIfDirty, acceptRejectMode } = props;
+	const { namespace, disableIfDirty, acceptRejectMode } = props;
 	const { definition, actions, state } = useParameter<T|string>(props);
 	const executing = useShapeDiverStoreParameters(state => {
-		const ids = state.sessionDependency[sessionId].concat(sessionId);
+		const ids = state.sessionDependency[namespace];
 
 		return !ids.every(id => !state.parameterChanges[id]?.executing);
+	});
+	const sessionDependencies = useShapeDiverStoreParameters(state => {
+		return state.sessionDependency[namespace];
 	});
 	const [value, setValue] = useState(initializer(state));
 
@@ -78,6 +81,7 @@ export function useParameterComponentCommons<T>(
 		handleChange,
 		setOnCancelCallback,
 		onCancel,
-		disabled
+		disabled,
+		sessionDependencies
 	};
 }

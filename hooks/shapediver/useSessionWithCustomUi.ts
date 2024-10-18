@@ -63,8 +63,8 @@ interface ICustomUiState {
  * @returns 
  */
 export function useSessionWithCustomUi(props: IUseSessionDto | undefined) {
-	const sessionId = props?.id || "";
-	const sessionIdCustomUi = sessionId + CUSTOM_SESSION_ID_POSTFIX;
+	const namespace = props?.id || "";
+	const namespaceCustomUi = namespace + CUSTOM_SESSION_ID_POSTFIX;
 
 	// use a session with a ShapeDiver model and register its parameters and exports
 	const { sessionApi } = useSession(props ? {
@@ -85,7 +85,7 @@ export function useSessionWithCustomUi(props: IUseSessionDto | undefined) {
 	const [customUiState, setCustomUiState] = useState<ICustomUiState>({hidden: [], parameters: []});
 
 	// custom UI parameter
-	const customUiParam = useParameterStateless<string>(sessionId, CUSTOM_DATA_INPUT_NAME);
+	const customUiParam = useParameterStateless<string>(namespace, CUSTOM_DATA_INPUT_NAME);
 
 	// execution callback
 	const executor = useCallback<IGenericParameterExecutor>(async (values) => new Promise((resolve, reject) => {
@@ -102,13 +102,13 @@ export function useSessionWithCustomUi(props: IUseSessionDto | undefined) {
 	}),	[]);
 
 	// define custom parameters and an execution callback for them
-	useDefineGenericParameters(sessionIdCustomUi, props?.acceptRejectMode ?? false, 
+	useDefineGenericParameters(namespaceCustomUi, props?.acceptRejectMode ?? false, 
 		customUiState.parameters,
 		executor
 	);
 
 	// get output "CUSTOM_DATA_OUTPUT_NAME", react to its changes, and set the custom UI state
-	const { outputApi, outputContent } = useOutputContent(sessionId, CUSTOM_DATA_OUTPUT_NAME);
+	const { outputApi, outputContent } = useOutputContent(namespace, CUSTOM_DATA_OUTPUT_NAME);
 	useEffect(() => {
 		if (outputApi) {
 			if ( outputContent && outputContent.length > 0 && outputContent[0].data ) {
@@ -129,7 +129,7 @@ export function useSessionWithCustomUi(props: IUseSessionDto | undefined) {
 	}, [outputApi, outputContent]);
 
 	// get props for parameters that should not be hidden
-	const sessionParameterProps = useSessionPropsParameter(sessionId, param => {
+	const sessionParameterProps = useSessionPropsParameter(namespace, param => {
 
 		if ( customUiState.hidden.find(v => param.name === v
 			|| param.displayname === v
@@ -148,7 +148,7 @@ export function useSessionWithCustomUi(props: IUseSessionDto | undefined) {
 	});
 
 	// get props for exports that should not be hidden
-	const exportProps = useSessionPropsExport(sessionId, exp => {
+	const exportProps = useSessionPropsExport(namespace, exp => {
 
 		if ( customUiState.hidden.find(v => exp.name === v
 			|| exp.displayname === v
@@ -163,7 +163,7 @@ export function useSessionWithCustomUi(props: IUseSessionDto | undefined) {
 	});
 
 	// get props for custom parameters
-	const customParameterProps = useSessionPropsParameter(sessionIdCustomUi);
+	const customParameterProps = useSessionPropsParameter(namespaceCustomUi);
 
 	return {
 		parameterProps: customParameterProps.concat(sessionParameterProps),

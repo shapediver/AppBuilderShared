@@ -8,15 +8,15 @@ import { IShapeDiverExport } from "../../../types/shapediver/export";
  * 
  * @see {@link PropsExport}
  * 
- * @param sessionId 
+ * @param namespace 
  * @param exportId Id, name, or displayname of the export
  * @returns 
  */
 export function useExport(props: PropsExport) {
 	
-	const { sessionId, exportId } = props;
+	const { namespace, exportId } = props;
 	const parametersStore = useShapeDiverStoreParameters();
-	const parameter = parametersStore.getExport(sessionId, exportId)!(state => state as IShapeDiverExport);
+	const parameter = parametersStore.getExport(namespace, exportId)!(state => state as IShapeDiverExport);
 	
 	const memoizedParameter = useMemo(() => {
 		return {

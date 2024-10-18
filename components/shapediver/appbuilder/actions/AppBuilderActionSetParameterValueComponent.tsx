@@ -4,7 +4,7 @@ import AppBuilderActionComponent from "./AppBuilderActionComponent";
 import { useParameterStateless } from "../../../../hooks/shapediver/parameters/useParameterStateless";
 
 type Props = IAppBuilderActionPropsSetParameterValue & {
-	sessionId: string;
+	namespace: string;
 };
 
 
@@ -20,13 +20,13 @@ export default function AppBuilderActionSetParameterValueComponent(props: Props)
 		label = "Set parameter", 
 		icon, 
 		tooltip,
-		parameter: { name, sessionId },
+		parameter: { name, sessionId: namespace },
 		value,
-		sessionId: sessionIdFromProps,
+		namespace: namespaceFromProps,
 	} = props;
 
 	// TODO: Implement the action
-	const parameter = useParameterStateless<string>(sessionId ?? sessionIdFromProps, name);
+	const parameter = useParameterStateless<string>(namespace ?? namespaceFromProps, name);
 
 	const onClick = useCallback(() => {
 		if (!parameter?.actions.isUiValueDifferent(value))

@@ -3,7 +3,7 @@ import { useCreateModelState } from "./useCreateModelState";
 import { useKeyBinding } from "./useKeyBinding";
 
 interface Props {
-	sessionId: string
+	namespace: string
 }
 
 /**
@@ -14,8 +14,8 @@ interface Props {
  */
 export function useKeyBindings(props: Props) {
 	
-	const { sessionId } = props;
-	const { createModelState } = useCreateModelState({ sessionId });
+	const { namespace } = props;
+	const { createModelState } = useCreateModelState({ namespace });
 	
 	const callback = useCallback(async () => {
 		const modelStateId = await createModelState(

@@ -31,8 +31,8 @@ interface Props {
 export function useAppBuilderCustomParameters(props: Props) {
 	
 	const { sessionApi, appBuilderData, acceptRejectMode } = props;
-	const sessionId = sessionApi?.id ?? "";
-	const sessionIdAppBuilder = sessionId + CUSTOM_SESSION_ID_POSTFIX;
+	const namespace = sessionApi?.id ?? "";
+	const namespaceAppBuilder = namespace + CUSTOM_SESSION_ID_POSTFIX;
 
 	// default values and current values of the custom parameters
 	const defaultCustomParameterValues = useRef<{ [key: string]: any }>({});
@@ -59,8 +59,8 @@ export function useAppBuilderCustomParameters(props: Props) {
 	}, []);
 	
 	// "AppBuilder" parameter (used for sending values of custom parameters to the model)
-	const appBuilderParam = useParameterStateless<string>(sessionId, CUSTOM_DATA_INPUT_NAME, PARAMETER_TYPE.STRING);
-	const appBuilderFileParam = useParameterStateless<Blob>(sessionId, CUSTOM_DATA_INPUT_NAME, PARAMETER_TYPE.FILE);
+	const appBuilderParam = useParameterStateless<string>(namespace, CUSTOM_DATA_INPUT_NAME, PARAMETER_TYPE.STRING);
+	const appBuilderFileParam = useParameterStateless<Blob>(namespace, CUSTOM_DATA_INPUT_NAME, PARAMETER_TYPE.FILE);
 
 	// prepare for adding pre-execution hook, which will set the value of the parameter named "AppBuilder"
 	// to a JSON string of the current custom parameter values
@@ -104,7 +104,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 	// register the pre-execution hook
 	useEffect(() => {
 		if (appBuilderParam || appBuilderFileParam) {
-			setPreExecutionHook(sessionId, async (values) => {
+			setPreExecutionHook(namespace, async (values) => {
 				const json = JSON.stringify(getCustomParameterValues());
 				if (appBuilderParam && json.length <= appBuilderParam.definition.max!) {
 					values[appBuilderParam.definition.id] = json;
@@ -120,7 +120,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 			});
 		}
 		
-		return () => removePreExecutionHook(sessionId);
+		return () => removePreExecutionHook(namespace);
 	}, [appBuilderParam, appBuilderFileParam]);
 
 	// create stateful definition of custom parameters
@@ -131,11 +131,11 @@ export function useAppBuilderCustomParameters(props: Props) {
 	}), [appBuilderData?.parameters]);
 
 	// define custom parameters and an execution callback for them
-	useDefineGenericParameters(sessionIdAppBuilder, 
+	useDefineGenericParameters(namespaceAppBuilder, 
 		acceptRejectMode ?? false, 
 		parameterDefinitions,
 		executor,
-		sessionId
+		namespace
 	);
 	
 	return {

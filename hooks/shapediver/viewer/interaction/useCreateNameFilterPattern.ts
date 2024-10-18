@@ -7,11 +7,11 @@ import { useState, useEffect } from "react";
 /**
  * Hook that converts user-defined name filters to filter patterns used by interaction hooks. 
  * 
- * @param sessionId The ID of the session to create the filter pattern for. 
+ * @param sessionIds The IDs of the sessions to create the filter pattern for. 
  * 					If not provided, the filter pattern will be created for all sessions.
  * @param nameFilter The user-defined name filters to convert.
  */
-export function useCreateNameFilterPattern(sessionId?: string, nameFilter?: string[]): {
+export function useCreateNameFilterPattern(sessionIds?: string[], nameFilter?: string[]): {
     patterns: OutputNodeNameFilterPatterns
 } {
 	// get the session API
@@ -23,9 +23,11 @@ export function useCreateNameFilterPattern(sessionId?: string, nameFilter?: stri
 	useEffect(() => {
 		if (nameFilter !== undefined) {
 			const outputIdsToNamesMapping: { [key: string]: string } = {};
-			if(sessionId) {
-				const sessionApi = sessions[sessionId];
-				Object.entries(sessionApi.outputs).forEach(([outputId, output]) => outputIdsToNamesMapping[outputId] = output.name);
+			if(sessionIds) {
+				sessionIds.forEach(sessionId => {
+					const sessionApi = sessions[sessionId];
+					Object.entries(sessionApi.outputs).forEach(([outputId, output]) => outputIdsToNamesMapping[outputId] = output.name);
+				});
 			} else {
 				Object.values(sessions).forEach(sessionApi => {
 					Object.entries(sessionApi.outputs).forEach(([outputId, output]) => outputIdsToNamesMapping[outputId] = output.name);

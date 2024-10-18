@@ -11,10 +11,10 @@ import { IParameterChanges } from "../../../types/store/shapediverStoreParameter
  */
 export function useParameterChanges(parameters: PropsParameter[]) {
 	
-	const sessionIds = parameters.map(p => p.sessionId);
+	const namespaces = parameters.map(p => p.namespace);
 
 	const parameterChanges = useShapeDiverStoreParameters(state => Object.keys(state.parameterChanges)
-		.filter(id => sessionIds.includes(id))
+		.filter(id => namespaces.includes(id))
 		.reduce((acc, id) => {
 			acc.push(state.parameterChanges[id]);
 	

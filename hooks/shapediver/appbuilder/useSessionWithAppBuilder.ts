@@ -26,7 +26,7 @@ const CUSTOM_DATA_OUTPUT_NAME = "AppBuilder";
  */
 export function useSessionWithAppBuilder(props: IUseSessionDto | undefined, appBuilderOverride?: IAppBuilder) {
 	
-	const sessionId = props?.id ?? "";
+	const namespace = props?.id ?? "";
 
 	// start session and register parameters and exports
 	const { sessionApi, error: sessionError } = useSession(props ? {
@@ -35,7 +35,7 @@ export function useSessionWithAppBuilder(props: IUseSessionDto | undefined, appB
 	const sessionInitialized = !!sessionApi;
 
 	// get data output, parse it
-	const { outputApi, outputContent } = useOutputContent( sessionId, CUSTOM_DATA_OUTPUT_NAME );
+	const { outputApi, outputContent } = useOutputContent( namespace, CUSTOM_DATA_OUTPUT_NAME );
 
 	const validate = (data: any) : IAppBuilder | undefined | Error => {
 		const result = validateAppBuilder(data);
@@ -87,7 +87,7 @@ export function useSessionWithAppBuilder(props: IUseSessionDto | undefined, appB
 	
 	return {
 		sessionApi,
-		sessionId,
+		namespace,
 		error,
 		appBuilderData,
 		hasAppBuilderOutput

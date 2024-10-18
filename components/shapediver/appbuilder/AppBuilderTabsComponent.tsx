@@ -5,15 +5,15 @@ import TabsComponent, { ITabsComponentProps } from "../../ui/TabsComponent";
 
 interface Props {
 	/** 
-	 * Default session id to use for parameter and export references that do 
-	 * not specify a session id.
+	 * Default session namespace to use for parameter and export references that do 
+	 * not specify a session namespace.
 	 */
-	sessionId: string,
+	namespace: string,
 	/** The tabs to display. */
 	tabs: IAppBuilderTab[] | undefined,
 }
 
-export default function AppBuilderTabsComponent({ sessionId, tabs }: Props) {
+export default function AppBuilderTabsComponent({ namespace, tabs }: Props) {
 
 	if (!tabs || tabs.length === 0) {
 		return <></>;
@@ -28,12 +28,12 @@ export default function AppBuilderTabsComponent({ sessionId, tabs }: Props) {
 					icon: tab.icon,
 					tooltip: tab.tooltip,
 					children: [
-						<AppBuilderWidgetsComponent key={0} sessionId={sessionId} widgets={tab.widgets} />
+						<AppBuilderWidgetsComponent key={0} namespace={namespace} widgets={tab.widgets} />
 					]
 				};
 			})
 		};
-	}, [sessionId, tabs]);
+	}, [namespace, tabs]);
 
 	return <TabsComponent {...tabProps} />;
 

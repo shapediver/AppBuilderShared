@@ -22,14 +22,14 @@ export function AppBuilderActionWidgetThemeProps(props: AppBuilderActionsWidgetT
 }
 
 type Props = IAppBuilderWidgetPropsActions & {
-	sessionId: string;
+	namespace: string;
 };
 
 export default function AppBuilderActionsWidgetComponent(props: Props & AppBuilderActionsWidgetThemePropsType) {
 	
 	const { 
 		actions, 
-		sessionId, 
+		namespace, 
 		//...rest 
 	} = props;
 
@@ -43,13 +43,13 @@ export default function AppBuilderActionsWidgetComponent(props: Props & AppBuild
 
 	const actionComponents = actions.map((action, i) => {
 		if (isCreateModelStateAction(action))
-			return <AppBuilderActionCreateModelStateComponent key={i} sessionId={sessionId} {...action.props} />;
+			return <AppBuilderActionCreateModelStateComponent key={i} namespace={namespace} {...action.props} />;
 		else if (isAddToCartAction(action))
-			return <AppBuilderActionAddToCartComponent key={i} sessionId={sessionId} {...action.props} />;
+			return <AppBuilderActionAddToCartComponent key={i} namespace={namespace} {...action.props} />;
 		else if (isCloseConfiguratorAction(action))
 			return <AppBuilderActionCloseConfiguratorComponent key={i} {...action.props} />;
 		else if (isSetParameterValueAction(action))
-			return <AppBuilderActionSetParameterValueComponent key={i} sessionId={sessionId} {...action.props} />;
+			return <AppBuilderActionSetParameterValueComponent key={i} namespace={namespace} {...action.props} />;
 		else if (isSetBrowserLocationAction(action))
 			return <AppBuilderActionSetBrowserLocationComponent key={i} {...action.props} />;
 		else

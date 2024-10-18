@@ -29,12 +29,12 @@ import { addValidator } from "../utils/parameterValidation";
  * Create an IShapeDiverParameterExecutor for a single parameter, 
  * for use with createParameterStore.
  * 
- * @param sessionId The session id of the parameter.
+ * @param namespace The session namespace of the parameter.
  * @param param The parameter definition.
  * @param getChanges Function for getting the change object of the parameter's session.
  * @returns 
  */
-function createParameterExecutor<T>(sessionId: string, param: IGenericParameterDefinition, getChanges: () => IParameterChanges): IShapeDiverParameterExecutor<T> {
+function createParameterExecutor<T>(namespace: string, param: IGenericParameterDefinition, getChanges: () => IParameterChanges): IShapeDiverParameterExecutor<T> {
 	const paramId = param.definition.id;
 	
 	return {
@@ -103,7 +103,7 @@ function createGenericParameterExecutorForSession(session: ISessionApi,
 	 * that should be executed. 
 	 * Typically this does not include all parameters defined by the session. 
 	 */
-	return async (values, sessionId, skipHistory) => {
+	return async (values, namespace, skipHistory) => {
 
 		// store previous values (we restore them in case of error)
 		const previousValues = Object.keys(values).reduce((acc, paramId) => {
@@ -374,17 +374,17 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 	history: [],
 	historyIndex: -1,
 
-	removeChanges: (sessionId: string) => {
+	removeChanges: (namespace: string) => {
 		const { parameterChanges } = get();
 
 		// check if there is something to remove
-		if (!parameterChanges[sessionId])
+		if (!parameterChanges[namespace])
 			return;
 
 		// create a new object, omitting the session to be removed
 		const changes: IParameterChangesPerSession = {};
 		Object.keys(parameterChanges).forEach(id => {
-			if (id !== sessionId)
+			if (id !== namespace)
 				changes[id] = parameterChanges[id];
 		});
 		
@@ -394,14 +394,14 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 	},
 
 	getChanges: (
-		sessionId: string, 
+		namespace: string, 
 		executor: IGenericParameterExecutor, 
 		priority: number, 
 		preExecutionHook?: IPreExecutionHook
 	) : IParameterChanges => {
 		const { parameterChanges, removeChanges } = get();
-		if ( parameterChanges[sessionId] )
-			return parameterChanges[sessionId];
+		if ( parameterChanges[namespace] )
+			return parameterChanges[namespace];
 
 		const changes: IParameterChanges = {
 			values: {},
@@ -416,14 +416,14 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 			changes.accept = async (skipHistory) => {
 				try {
 					// get executor promise, but don't wait for it yet
-					const amendedValues = preExecutionHook ? await preExecutionHook(changes.values, sessionId) : changes.values;
-					const promise = executor(amendedValues, sessionId, skipHistory);
+					const amendedValues = preExecutionHook ? await preExecutionHook(changes.values, namespace) : changes.values;
+					const promise = executor(amendedValues, namespace, skipHistory);
 					// set "executing" mode
 					set((_state) => ({
 						parameterChanges: {
 							..._state.parameterChanges,
-							...{ [sessionId]: {
-								..._state.parameterChanges[sessionId],
+							...{ [namespace]: {
+								..._state.parameterChanges[namespace],
 								executing: true
 							} }
 						}
@@ -438,18 +438,18 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 				}
 				finally 
 				{
-					removeChanges(sessionId);
+					removeChanges(namespace);
 				}
 			};
 			changes.reject = () => {
-				removeChanges(sessionId);
+				removeChanges(namespace);
 				reject();
 			};
 
 			set((_state) => ({
 				parameterChanges: {
 					..._state.parameterChanges,
-					...{ [sessionId]: changes }
+					...{ [namespace]: changes }
 				}
 			}), false, "getChanges");
 		});
@@ -525,13 +525,13 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 			},
 			sessionDependency: {
 				..._state.sessionDependency,
-				...{ [sessionId]: [] }
+				...{ [sessionId]: [sessionId] }
 			},
 		}), false, "addSession");
 	},
 
 	addGeneric: (
-		sessionId: string, 
+		namespace: string, 
 		_acceptRejectMode: boolean | IAcceptRejectModeSelector, 
 		definitions: IGenericParameterDefinition | IGenericParameterDefinition[], 
 		executor: IGenericParameterExecutor,
@@ -540,7 +540,7 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 		const { parameterStores: parameters, getChanges } = get();
 
 		// check if there is something to add
-		if (parameters[sessionId])
+		if (parameters[namespace])
 			return;
 
 		const acceptRejectModeSelector = typeof(_acceptRejectMode) === "boolean" ? () => _acceptRejectMode : _acceptRejectMode;
@@ -548,14 +548,14 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 		set((_state) => ({
 			parameterStores: {
 				..._state.parameterStores,
-				...parameters[sessionId]
+				...parameters[namespace]
 					? {} // Keep existing parameter stores
-					: {	[sessionId]: (Array.isArray(definitions) ? definitions : [definitions]).reduce((acc, def) => {
+					: {	[namespace]: (Array.isArray(definitions) ? definitions : [definitions]).reduce((acc, def) => {
 						def = addValidator(def);
 						const paramId = def.definition.id;
 						const acceptRejectMode = acceptRejectModeSelector(def.definition);
-						acc[paramId] = createParameterStore(createParameterExecutor(sessionId, def, 
-							() => getChanges(sessionId, executor, -1)
+						acc[paramId] = createParameterStore(createParameterExecutor(namespace, def, 
+							() => getChanges(namespace, executor, -1)
 						), acceptRejectMode);
 
 						return acc;
@@ -563,13 +563,13 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 			},
 			sessionDependency: {
 				..._state.sessionDependency,
-				...{ [sessionId]: Array.isArray(dependsOnSessions) ? dependsOnSessions : dependsOnSessions ? [dependsOnSessions] : [] }
+				...{ [namespace]: Array.isArray(dependsOnSessions) ? dependsOnSessions : dependsOnSessions ? [dependsOnSessions] : [] }
 			},
 		}), false, "addGeneric");
 	},
 
 	syncGeneric: (
-		sessionId: string, 
+		namespace: string, 
 		_acceptRejectMode: boolean | IAcceptRejectModeSelector, 
 		definitions: IGenericParameterDefinition | IGenericParameterDefinition[], 
 		executor: IGenericParameterExecutor,
@@ -580,7 +580,7 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 
 		const acceptRejectModeSelector = typeof(_acceptRejectMode) === "boolean" ? () => _acceptRejectMode : _acceptRejectMode;
 
-		const existingParameterStores = parameterStorePerSession[sessionId] ?? {};
+		const existingParameterStores = parameterStorePerSession[namespace] ?? {};
 		let hasChanges = false;
 		const parameterStores: IParameterStores = {};
 		
@@ -602,8 +602,8 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 			} 
 			else {
 				const acceptRejectMode = acceptRejectModeSelector(def.definition);
-				parameterStores[paramId] = createParameterStore(createParameterExecutor(sessionId, def, 
-					() => getChanges(sessionId, executor, -1)
+				parameterStores[paramId] = createParameterStore(createParameterExecutor(namespace, def, 
+					() => getChanges(namespace, executor, -1)
 				), acceptRejectMode);
 				hasChanges = true;
 			}
@@ -615,16 +615,16 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 		set((_state) => ({
 			parameterStores: {
 				..._state.parameterStores,
-				...{ [sessionId]: parameterStores }
+				...{ [namespace]: parameterStores }
 			},
 			sessionDependency: {
 				..._state.sessionDependency,
-				...{ [sessionId]: Array.isArray(dependsOnSessions) ? dependsOnSessions : dependsOnSessions ? [dependsOnSessions] : [] }
+				...{ [namespace]: Array.isArray(dependsOnSessions) ? dependsOnSessions : dependsOnSessions ? [dependsOnSessions] : [] }
 			},
 		}), false, "syncGeneric");
 	},
 
-	removeSession: (sessionId: string) => {
+	removeSession: (namespace: string) => {
 		const {
 			parameterStores: parametersPerSession, 
 			exportStores: exportsPerSession,
@@ -632,27 +632,27 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 		} = get();
 
 		// check if there is something to remove
-		if (!parametersPerSession[sessionId] && !exportsPerSession[sessionId])
+		if (!parametersPerSession[namespace] && !exportsPerSession[namespace])
 			return;
 
 		// create a new object, omitting the session to be removed
 		const parameters: IParameterStoresPerSession = {};
 		Object.keys(parametersPerSession).forEach(id => {
-			if (id !== sessionId)
+			if (id !== namespace)
 				parameters[id] = parametersPerSession[id];
 		});
 
 		// create a new object, omitting the session to be removed
 		const exports: IExportStoresPerSession = {};
 		Object.keys(exportsPerSession).forEach(id => {
-			if (id !== sessionId)
+			if (id !== namespace)
 				exports[id] = exportsPerSession[id];
 		});
 
 		// create a new object, omitting the session to be removed
 		const dependency: ISessionDependency = {};
 		Object.keys(sessionDependency).forEach(id => {
-			if (id !== sessionId)
+			if (id !== namespace)
 				dependency[id] = sessionDependency[id];
 		});
 
@@ -663,55 +663,55 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 		}), false, "removeSession");
 	},
 	
-	getParameters: (sessionId: string) => {
-		return get().parameterStores[sessionId] || {};
+	getParameters: (namespace: string) => {
+		return get().parameterStores[namespace] || {};
 	},
 
-	getParameter: (sessionId: string, paramId: string, type?: string) => {
-		return Object.values(get().getParameters(sessionId)).find(p => {
+	getParameter: (namespace: string, paramId: string, type?: string) => {
+		return Object.values(get().getParameters(namespace)).find(p => {
 			const def = p.getState().definition;
 
 			return (!type || type === def.type ) && (def.id === paramId || def.name === paramId || def.displayname === paramId);
 		}) as IParameterStore;
 	},
 
-	getExports: (sessionId: string) => {
-		return get().exportStores[sessionId] || {};
+	getExports: (namespace: string) => {
+		return get().exportStores[namespace] || {};
 	},
 
-	getExport: (sessionId: string, exportId: string) => {
-		return Object.values(get().getExports(sessionId)).find(p => {
+	getExport: (namespace: string, exportId: string) => {
+		return Object.values(get().getExports(namespace)).find(p => {
 			const def = p.getState().definition;
 
 			return def.id === exportId || def.name === exportId || def.displayname === exportId;
 		}) as IExportStore;
 	},
 
-	registerDefaultExport: (sessionId: string, exportId: string | string[]) => {
+	registerDefaultExport: (namespace: string, exportId: string | string[]) => {
 		const exportIds = Array.isArray(exportId) ? exportId : [exportId];
 		if (exportIds.length === 0)
 			return;
 		const { defaultExports } = get();
-		const existing = defaultExports[sessionId];
+		const existing = defaultExports[namespace];
 		const filtered = existing ? exportIds.filter(id => existing.indexOf(id) < 0) : exportIds;
 		const newExports = existing ? existing.concat(filtered) : exportIds;
 
 		set((_state) => ({
 			defaultExports: {
 				..._state.defaultExports,
-				...{ [sessionId]: newExports }
+				...{ [namespace]: newExports }
 			}
 		}), false, "registerDefaultExport");
 	},
 
-	deregisterDefaultExport: (sessionId: string, exportId: string | string[]) => {
+	deregisterDefaultExport: (namespace: string, exportId: string | string[]) => {
 		const { defaultExports, defaultExportResponses } = get();
 		
 		const exportIds = Array.isArray(exportId) ? exportId : [exportId];
 		if (exportIds.length === 0)
 			return;
 		
-		const existingDefaultExports = defaultExports[sessionId];
+		const existingDefaultExports = defaultExports[namespace];
 		if (!existingDefaultExports) 
 			return;
 		
@@ -719,7 +719,7 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 		if (newDefaultExports.length === existingDefaultExports.length)
 			return;
 		
-		const existingDefaultExportResponses = defaultExportResponses[sessionId] ?? {};
+		const existingDefaultExportResponses = defaultExportResponses[namespace] ?? {};
 		const newDefaultExportResponses: IExportResponse = {};
 		Object.keys(existingDefaultExportResponses).forEach(id => {
 			if (exportIds.indexOf(id) < 0)
@@ -729,40 +729,40 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 		set((_state) => ({
 			defaultExports: {
 				..._state.defaultExports,
-				...{ [sessionId]: newDefaultExports }
+				...{ [namespace]: newDefaultExports }
 			},
 			defaultExportResponses: {
 				..._state.defaultExportResponses,
-				...{ [sessionId]: newDefaultExportResponses }
+				...{ [namespace]: newDefaultExportResponses }
 			}
 		}), false, "deregisterDefaultExport");
 	},
 
-	setPreExecutionHook: (sessionId: string, hook: IPreExecutionHook) => {
-		if (!sessionId) return;
+	setPreExecutionHook: (namespace: string, hook: IPreExecutionHook) => {
+		if (!namespace) return;
 
 		const { preExecutionHooks } = get();
-		if (sessionId in preExecutionHooks)
-			console.warn(`Pre-execution hook for session ${sessionId} already exists, overwriting it.`);
+		if (namespace in preExecutionHooks)
+			console.warn(`Pre-execution hook for session namespace ${namespace} already exists, overwriting it.`);
 		
 		set((_state) => ({
 			preExecutionHooks: {
 				..._state.preExecutionHooks,
-				...{ [sessionId]: hook }
+				...{ [namespace]: hook }
 			}
 		}), false, "setPreExecutionHook");
 	},
 
-	removePreExecutionHook: (sessionId: string) => {
-		if (!sessionId) return;
+	removePreExecutionHook: (namespace: string) => {
+		if (!namespace) return;
 
 		const { preExecutionHooks } = get();
-		if (!preExecutionHooks[sessionId])
+		if (!preExecutionHooks[namespace])
 			return;
 
 		const hooks: { [key: string]: IPreExecutionHook } = {};
 		Object.keys(preExecutionHooks).forEach(id => {
-			if (id !== sessionId)
+			if (id !== namespace)
 				hooks[id] = preExecutionHooks[id];
 		});
 
@@ -771,9 +771,9 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 		}), false, "removePreExecutionHook");
 	},
 
-	async batchParameterValueUpdate(sessionId: string, values: { [key: string]: string }, skipHistory?: boolean) {
+	async batchParameterValueUpdate(namespace: string, values: { [key: string]: string }, skipHistory?: boolean) {
 		const { parameterStores } = get();
-		const stores = parameterStores[sessionId];
+		const stores = parameterStores[namespace];
 		if (!stores)
 			return;
 
@@ -783,12 +783,12 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 		paramIds.forEach(paramId => {
 			const store = stores[paramId];
 			if (!store) 
-				throw new Error(`Parameter ${paramId} does not exist for session ${sessionId}`);
+				throw new Error(`Parameter ${paramId} does not exist for session namespace ${namespace}`);
 		
 			const { actions } = store.getState();
 			const value = values[paramId];
 			if (!actions.isValid(value)) 
-				throw new Error(`Value ${value} is not valid for parameter ${paramId} of session ${sessionId}`);
+				throw new Error(`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`);
 		});
 
 		// update values and return execution promises
@@ -809,9 +809,9 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 	getDefaultState(): ISessionsHistoryState {
 		const { parameterStores } = get();
 		const state: ISessionsHistoryState = {};
-		Object.keys(parameterStores).forEach(sessionId => {
-			const stores = parameterStores[sessionId];
-			state[sessionId] = Object.keys(stores).reduce((acc, paramId) => {
+		Object.keys(parameterStores).forEach(namespace => {
+			const stores = parameterStores[namespace];
+			state[namespace] = Object.keys(stores).reduce((acc, paramId) => {
 				const store = stores[paramId];
 				const { definition: { defval } } = store.getState();
 				acc[paramId] = defval;
@@ -845,8 +845,8 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 
 	async restoreHistoryState(state: ISessionsHistoryState, skipHistory?: boolean) {
 		const { batchParameterValueUpdate } = get();
-		const sessionIds = Object.keys(state);
-		const promises = sessionIds.map(sessionId => batchParameterValueUpdate(sessionId, state[sessionId], skipHistory));
+		const namespaces = Object.keys(state);
+		const promises = namespaces.map(namespace => batchParameterValueUpdate(namespace, state[namespace], skipHistory));
 		await Promise.all(promises);
 	},
 
@@ -887,15 +887,15 @@ export const useShapeDiverStoreParameters = create<IShapeDiverStoreParameters>()
 		catch {
 			// find history entry whose parameter values match the given entry
 			const index = history.findIndex(e => {
-				const sessionIds = Object.keys(e.state);
-				if (sessionIds.length !== Object.keys(entry.state).length)
+				const namespaces = Object.keys(e.state);
+				if (namespaces.length !== Object.keys(entry.state).length)
 					return false;
 				
-				return sessionIds.every(sessionId => {
-					if (!(sessionId in entry.state))
+				return namespaces.every(namespace => {
+					if (!(namespace in entry.state))
 						return false;
-					const values = e.state[sessionId];
-					const entryValues = entry.state[sessionId];
+					const values = e.state[namespace];
+					const entryValues = entry.state[namespace];
 					const valueKeys = Object.keys(values);
 					const entryKeys = Object.keys(entryValues);
 					if (valueKeys.length !== entryKeys.length)

@@ -5,22 +5,22 @@ import { PropsParameter } from "../../../types/components/shapediver/propsParame
 /**
  * Hook providing a shortcut to create parameter props for the {@link ParametersAndExportsAccordionComponent} 
  * component, for all parameters of one or several sessions, using an optional filter.
- * @param sessionId 
+ * @param namespace 
  * @param filter optional filter for parameter definitions
  * @returns 
  */
-export function useSessionPropsParameter(sessionId: string | string[], filter?: (param: ShapeDiverResponseParameter) => boolean) : PropsParameter[] {
+export function useSessionPropsParameter(namespace: string | string[], filter?: (param: ShapeDiverResponseParameter) => boolean) : PropsParameter[] {
 	
 	const _filter = filter || (() => true); 
 
-	const propsParameters = useShapeDiverStoreParameters(state => (Array.isArray(sessionId) ? sessionId : [sessionId])
-		.flatMap(sessionId => Object
-			.values(state.getParameters(sessionId))
+	const propsParameters = useShapeDiverStoreParameters(state => (Array.isArray(namespace) ? namespace : [namespace])
+		.flatMap(namespace => Object
+			.values(state.getParameters(namespace))
 			.filter(store => _filter(store.getState().definition))
 			.map(store => { 
 				const pstate = store.getState();
 				
-				return { sessionId, parameterId: pstate.definition.id, acceptRejectMode: pstate.acceptRejectMode}; 
+				return { namespace, parameterId: pstate.definition.id, acceptRejectMode: pstate.acceptRejectMode}; 
 			})
 		)
 	); // <-- TODO SS-8052 review how to avoid unnecessary re-renders

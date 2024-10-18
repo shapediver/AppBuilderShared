@@ -10,15 +10,15 @@ import { IShapeDiverParameter } from "../../../types/shapediver/parameter";
  * 
  * @see {@link IShapeDiverParameter<T>}
  * 
- * @param sessionId 
+ * @param namespace 
  * @param parameterId Id, name, or displayname of the parameter
  * @returns 
  */
 export function useParameter<T>(props: PropsParameter) {
 	
-	const { sessionId, parameterId } = props;
+	const { namespace, parameterId } = props;
 	const getParameter = useShapeDiverStoreParameters(state => state.getParameter);
-	const parameter = getParameter(sessionId, parameterId)!(state => state as IShapeDiverParameter<T>);
+	const parameter = getParameter(namespace, parameterId)!(state => state as IShapeDiverParameter<T>);
 
 	const memoizedParameter = useMemo(() => {
 		return {

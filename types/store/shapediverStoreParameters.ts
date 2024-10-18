@@ -11,7 +11,7 @@ export type IParameterStore = UseBoundStore<StoreApi<IShapeDiverParameter<any>>>
 export type IParameterStores = { [parameterId: string]: IParameterStore }
 
 /** A map from session id to parameter stores per parameter id. */
-export type IParameterStoresPerSession = { [sessionId: string]: IParameterStores };
+export type IParameterStoresPerSession = { [namespace: string]: IParameterStores };
 
 /** A store for an individual export. */
 export type IExportStore = UseBoundStore<StoreApi<IShapeDiverExport>>;
@@ -20,22 +20,22 @@ export type IExportStore = UseBoundStore<StoreApi<IShapeDiverExport>>;
 export type IExportStores = { [exportId: string]: IExportStore }
 
 /** A map from session id to export stores per export id. */
-export type IExportStoresPerSession = { [sessionId: string]: IExportStores };
+export type IExportStoresPerSession = { [namespace: string]: IExportStores };
 
 /** A map from session id to default export ids (ids of exports that will be requested with every computation). */
-export type IDefaultExportsPerSession = { [sessionId: string]: string[] };
+export type IDefaultExportsPerSession = { [namespace: string]: string[] };
 
 /** A map from export id to export response. Used for responses of default exports. */
 export type IExportResponse = { [exportId: string]: ShapeDiverResponseExport };
 
 /** A map from session id to export responses per export id. */
-export type IExportResponsesPerSession = { [sessionId: string]: IExportResponse };
+export type IExportResponsesPerSession = { [namespace: string]: IExportResponse };
 
 /** The parameter values for a single session at the time of the history entry. */
 export type ISingleSessionHistoryState = { [parameterId: string]: any };
 
 /** The parameter values for multiple sessions at the time of the history entry. */
-export type ISessionsHistoryState = { [sessionId: string]: ISingleSessionHistoryState };
+export type ISessionsHistoryState = { [namespace: string]: ISingleSessionHistoryState };
 
 /** A state in the history for arbitrary sessions. */
 export interface IHistoryEntry {
@@ -75,7 +75,7 @@ export interface IParameterChanges {
 	priority: number;
 }
 
-export interface IParameterChangesPerSession { [sessionId: string]: IParameterChanges}
+export interface IParameterChangesPerSession { [namespace: string]: IParameterChanges}
 
 /**
  * Definition of a generic parameter, which is not necessarily implemented by a parameter of a ShapeDiver model. 
@@ -123,8 +123,8 @@ export type IGenericParameterExecutor = (
 	 * include all parameters defined by the session. 
 	 */
 	values: { [key: string]: any },
-	/** The session id. */
-	sessionId: string,
+	/** The session namespace. */
+	namespace: string,
 	/** If true, skip the creation of a history entry after successful execution. */
 	skipHistory?: boolean,
 ) => Promise<unknown|void>;
@@ -133,12 +133,12 @@ export type IGenericParameterExecutor = (
  * Hook to be executed before executor. 
  * This can be used to override or retrieve parameter values immediately before execution.
  */
-export type IPreExecutionHook = (values: { [key: string]: any }, sessionId: string) => Promise<{ [key: string]: any }>;
+export type IPreExecutionHook = (values: { [key: string]: any }, namespace: string) => Promise<{ [key: string]: any }>;
 
 /**
  * Executor function override per session.
  */
-export interface IPreExecutionHookPerSession { [sessionId: string]: IPreExecutionHook}
+export interface IPreExecutionHookPerSession { [namespace: string]: IPreExecutionHook}
 
 /**
  * Selector for deciding whether a parameter should use accept/reject mode or immediate execution.
@@ -148,7 +148,7 @@ export type IAcceptRejectModeSelector = (param: IShapeDiverParameterDefinition) 
 /**
  * A map from session id to a list of ids of sessions it depends on.
  */
-export type ISessionDependency = { [sessionId: string]: string[] };
+export type ISessionDependency = { [namespace: string]: string[] };
 
 /**
  * Interface for the store of parameters and exports. 
@@ -221,7 +221,7 @@ export interface IShapeDiverStoreParameters {
 	 * Add generic parameters. 
 	 * CAUTION: Repeated calls will be ignored. Use removeSession to remove a session first before 
 	 * calling addSession again for the same session.
-	 * @param sessionId The namespace to use.
+	 * @param namespace The namespace to use.
 	 * @param acceptRejectMode If true, changes are not executed immediately. May be specified as a boolean or a function of the parameter definition.
 	 * @param definitions Definitions of the parameters.
 	 * @param executor Executor of parameter changes.
@@ -229,7 +229,7 @@ export interface IShapeDiverStoreParameters {
 	 * @returns 
 	 */
 	readonly addGeneric: (
-		sessionId: string, 
+		namespace: string, 
 		acceptRejectMode: boolean | IAcceptRejectModeSelector, 
 		definitions: IGenericParameterDefinition | IGenericParameterDefinition[], 
 		executor: IGenericParameterExecutor,
@@ -238,7 +238,7 @@ export interface IShapeDiverStoreParameters {
 
 	/**
 	 * Synchronize (add/remove) generic parameters for a given session id. 
-	 * @param sessionId The namespace to use.
+	 * @param namespace The namespace to use.
 	 * @param acceptRejectMode If true, changes are not executed immediately. May be specified as a boolean or a function of the parameter definition.
 	 * @param definitions Definitions of the parameters.
 	 * @param executor Executor of parameter changes.
@@ -246,7 +246,7 @@ export interface IShapeDiverStoreParameters {
 	 * @returns 
 	 */
 	readonly syncGeneric: (
-		sessionId: string, 
+		namespace: string, 
 		acceptRejectMode: boolean | IAcceptRejectModeSelector, 
 		definitions: IGenericParameterDefinition | IGenericParameterDefinition[], 
 		executor: IGenericParameterExecutor,
@@ -255,53 +255,53 @@ export interface IShapeDiverStoreParameters {
 
 	/**
 	 * Remove parameter and exports stores for all parameters and exports of the session.
-	 * @param sessionId
+	 * @param namespace
 	 * @param parameters
 	 * @returns
 	 */
-	readonly removeSession: (sessionId: string) => void,
+	readonly removeSession: (namespace: string) => void,
 
 	/**
 	 * Get all parameter stores for a given session id.
-	 * @param sessionId
+	 * @param namespace
 	 * @returns
 	 */
-	readonly getParameters: (sessionId: string) => IParameterStores;
+	readonly getParameters: (namespace: string) => IParameterStores;
 
 	/**
 	 * Get a single parameter store by parameter id or name.
-	 * @param sessionId
+	 * @param namespace
 	 * @param paramId
 	 * @param type Optional. If provided, the parameter store is only returned if the parameter has the given type.
 	 * @returns
 	 */
-	readonly getParameter: (sessionId: string, paramId: string, type?: string) => IParameterStore | undefined;
+	readonly getParameter: (namespace: string, paramId: string, type?: string) => IParameterStore | undefined;
 
 	/**
 	 * Get all export stores for a given session id.
-	 * @param sessionId
+	 * @param namespace
 	 * @returns
 	 */
-	readonly getExports: (sessionId: string) => IExportStores;
+	readonly getExports: (namespace: string) => IExportStores;
 
 	/**
 	 * Get a single export store by export id or name.
-	 * @param sessionId
+	 * @param namespace
 	 * @param exportId
 	 * @returns
 	 */
-	readonly getExport: (sessionId: string, exportId: string) => IExportStore | undefined;
+	readonly getExport: (namespace: string, exportId: string) => IExportStore | undefined;
 
 	/**
 	 * Get or add pending parameter changes for a given session id.
-	 * @param sessionId 
+	 * @param namespace 
 	 * @param executor 
 	 * @param priority 
 	 * @param preExecutionHook 
 	 * @returns 
 	 */
 	readonly getChanges: (
-		sessionId: string, 
+		namespace: string, 
 		executor: IGenericParameterExecutor, 
 		priority: number,
 		preExecutionHook?: IPreExecutionHook
@@ -309,52 +309,52 @@ export interface IShapeDiverStoreParameters {
 
 	/**
 	 * Remove pending parameter changes for a given session id.
-	 * @param sessionId 
+	 * @param namespace 
 	 * @returns 
 	 */
-	readonly removeChanges: (sessionId: string) => void,
+	readonly removeChanges: (namespace: string) => void,
 
 	/**
 	 * Register a default export for a given session id. The given export
 	 * will always be included when running computations.
-	 * @param sessionId 
+	 * @param namespace 
 	 * @param exportId 
 	 * @returns 
 	 */
-	readonly registerDefaultExport: (sessionId: string, exportId: string | string[]) => void,
+	readonly registerDefaultExport: (namespace: string, exportId: string | string[]) => void,
 
 	/**
 	 * Deregister a default export for a given session id.
-	 * @param sessionId 
+	 * @param namespace 
 	 * @param exportId 
 	 * @returns 
 	 */
-	readonly deregisterDefaultExport: (sessionId: string, exportId: string | string[]) => void,
+	readonly deregisterDefaultExport: (namespace: string, exportId: string | string[]) => void,
 
 	/**
 	 * Register a pre-execution hook for a session id.
-	 * @param sessionId 
+	 * @param namespace 
 	 * @param hook 
 	 * @returns 
 	 */
-	readonly setPreExecutionHook: (sessionId: string, hook: IPreExecutionHook) => void,
+	readonly setPreExecutionHook: (namespace: string, hook: IPreExecutionHook) => void,
 
 	/**
 	 * Remove a pre-execution hook for a session id.
-	 * @param sessionId 
+	 * @param namespace 
 	 * @returns 
 	 */
-	readonly removePreExecutionHook: (sessionId: string) => void,
+	readonly removePreExecutionHook: (namespace: string) => void,
 
 	/**
 	 * Set the values of multiple parameters of a session at once, 
 	 * execute and await the changes immediately.
-	 * @param sessionId 
+	 * @param namespace 
 	 * @param values 
 	 * @param skipHistory If true, skip the creation of a history entry after successful execution.
 	 * @returns 
 	 */
-	readonly batchParameterValueUpdate: (sessionId: string, values: { [parameterId: string]: any }, skipHistory?: boolean) => Promise<void>,
+	readonly batchParameterValueUpdate: (namespace: string, values: { [parameterId: string]: any }, skipHistory?: boolean) => Promise<void>,
 
 	/**
 	 * Get history state object representing the default parameter values.

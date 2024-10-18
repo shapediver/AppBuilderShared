@@ -152,12 +152,12 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	// for now we only make use of the first session in the settings
 	const sessionDto = settings ? settings.sessions[0] : undefined;
-	const { sessionId, sessionApi, error: appBuilderError, hasAppBuilderOutput, appBuilderData } = useSessionWithAppBuilder(sessionDto, settings?.appBuilderOverride);
+	const { namespace, sessionApi, error: appBuilderError, hasAppBuilderOutput, appBuilderData } = useSessionWithAppBuilder(sessionDto, settings?.appBuilderOverride);
 	const error = settingsError ?? appBuilderError;
 	
 	// get props for fallback parameters
-	const parameterProps = useSessionPropsParameter(sessionId);
-	const exportProps = useSessionPropsExport(sessionId);
+	const parameterProps = useSessionPropsParameter(namespace);
+	const exportProps = useSessionPropsExport(namespace);
 
 	// create UI elements for containers
 	const containers: IAppBuilderTemplatePageProps = {
@@ -173,7 +173,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	if (appBuilderData?.containers) {
 		appBuilderData.containers.forEach((container) => {
 			containers[container.name] = {
-				node: <AppBuilderContainerComponent sessionId={sessionId} {...container}/>,
+				node: <AppBuilderContainerComponent namespace={namespace} {...container}/>,
 				hints: createContainerHints(container)
 			};		
 		});
@@ -194,7 +194,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	useParameterHistory({loaded: show});
 
 	// key bindings
-	useKeyBindings({sessionId});
+	useKeyBindings({namespace});
 	
 	const showMarkdown = !(settings && hasSession) // no settings or no session
 		&& !loading // not loading

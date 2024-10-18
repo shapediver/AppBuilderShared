@@ -5,17 +5,17 @@ import AppBuilderTabsComponent from "./AppBuilderTabsComponent";
 
 interface Props extends IAppBuilderContainer {
 	/** 
-	 * Default session id to use for parameter and export references that do 
-	 * not specify a session id.
+	 * Default session namespace to use for parameter and export references that do 
+	 * not specify a session namespace.
 	 */
-	sessionId: string,
+	namespace: string,
 }
 
-export default function AppBuilderContainerComponent({ sessionId, widgets, tabs }: Props) {
+export default function AppBuilderContainerComponent({ namespace, widgets, tabs }: Props) {
 
 	return <>
-		<AppBuilderTabsComponent sessionId={sessionId} tabs={tabs} />
-		<AppBuilderWidgetsComponent sessionId={sessionId} widgets={widgets} />
+		<AppBuilderTabsComponent namespace={namespace} tabs={tabs} />
+		<AppBuilderWidgetsComponent namespace={namespace} widgets={widgets} />
 	</>;
 
 }

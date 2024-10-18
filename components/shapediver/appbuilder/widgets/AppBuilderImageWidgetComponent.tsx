@@ -5,10 +5,10 @@ import AppBuilderImageExportWidgetComponent from "./AppBuilderImageExportWidgetC
 
 interface Props extends IAppBuilderWidgetPropsImage {
 	/**
-	 * Default session id to use for parameter and export references that do
-	 * not specify a session id.
+	 * Default session namespace to use for parameter and export references that do
+	 * not specify a session namespace.
 	 */
-	sessionId: string
+	namespace: string
 }
 
 export default function AppBuilderImageWidgetComponent(props: Props) {
@@ -20,7 +20,7 @@ export default function AppBuilderImageWidgetComponent(props: Props) {
 		href,
 		// AppBuilderImageExportWidgetComponent
 		export: exportRef,
-		sessionId,
+		namespace,
 	} = props;
 
 	const propsCommon = {
@@ -36,7 +36,7 @@ export default function AppBuilderImageWidgetComponent(props: Props) {
 		/>;
 	} else if (exportRef) {
 		return <AppBuilderImageExportWidgetComponent
-			sessionId={sessionId}
+			namespace={namespace}
 			exportId={exportRef.name}
 			{ ...propsCommon }
 		/>;

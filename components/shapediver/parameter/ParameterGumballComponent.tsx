@@ -43,7 +43,8 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		onCancel,
 		disabled,
 		value,
-		state
+		state,
+		sessionDependencies
 	} = useParameterComponentCommons<string>(props);
 
 	const gumballProps = definition.settings?.props as IGumballParameterProps;
@@ -55,7 +56,7 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 
 	// get the transformed nodes and the selected nods
 	const { transformedNodeNames, setSelectedNodeNames, restoreTransformedNodeNames, clearTransformedNodeNames } = useGumball(
-		props.sessionId, 
+		sessionDependencies, 
 		viewportId, 
 		gumballProps,
 		gumballActive,

@@ -48,11 +48,11 @@ export default function ModelSelect({ exampleModels }: Props) {
 	</Notification>;
 
 	// create parameter and export panels per model
-	const sessionIds = selectedModels.map(m => m.slug);
+	const namespaces = selectedModels.map(m => m.slug);
 
 	// get parameter and export props for all sessions
-	const parameterProps = useSessionPropsParameter(sessionIds);
-	const exportProps = useSessionPropsExport(sessionIds);
+	const parameterProps = useSessionPropsParameter(namespaces);
+	const exportProps = useSessionPropsExport(namespaces);
 
 	const tabProps: ITabsComponentProps = useMemo(() => {
 		return {
@@ -62,8 +62,8 @@ export default function ModelSelect({ exampleModels }: Props) {
 					name: model.slug,
 					children: [
 						<ParametersAndExportsAccordionComponent key={0}
-							parameters={parameterProps.filter(p => p.sessionId === model.slug)}
-							exports={exportProps.filter(p => p.sessionId === model.slug)}
+							parameters={parameterProps.filter(p => p.namespace === model.slug)}
+							exports={exportProps.filter(p => p.namespace === model.slug)}
 							topSection={<AcceptRejectButtons parameters={parameterProps}/>}
 						/>
 					]
