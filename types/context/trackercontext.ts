@@ -17,6 +17,33 @@ export interface ITrackerEventOptions {
 
 export type TrackerMetricType = "Web vitals";
 
+export interface IDelayedTrackerPropsAwaiter {
+    /**
+     * Names of the properties that should be set after the tracker is initialized.
+     * Tracking of any event before these properties are set will be delayed.
+     */
+    requiredDelayedProps: string[]
+
+    /**
+     * Properties that are set after the tracker is initialized. Once
+     * all required properties are set, requiredPropsAvailable will be resolved, 
+     * which causes events that have been queued to be tracked.
+     */
+    delayedProps: {[key: string]: any}
+
+    /**
+     * Sets delayed properties. This may be called multiple times. 
+     * Tracking of any event before all required properties are set will be delayed.
+     * @param props Properties to set.
+     */
+    setDelayedProps(props: {[key: string]: any}): void
+
+    /**
+     * Resolved once all required properties are set.
+     */
+    requiredPropsAvailable: Promise<boolean>
+}
+
 export interface ITrackerContext {
 
     /**
@@ -56,5 +83,10 @@ export interface ITrackerContext {
         value: number,
         options?: ITrackerEventOptions,
     ): void
+
+    /**
+     * Helper for delayed properties.
+     */
+    delayedPropsAwaiter: IDelayedTrackerPropsAwaiter
 
 }
