@@ -179,6 +179,7 @@ export type AppBuilderWidgetType = "accordion"
 	| "barChart" 
 	| "interaction"
 	| "actions"
+	| "agent"
 ;
 
 /** 
@@ -233,6 +234,12 @@ export interface IAppBuilderWidgetPropsActions {
 	actions?: IAppBuilderAction[]
 }
 
+/** Properties of an AI agent widget. */
+export interface IAppBuilderWidgetPropsAgent {
+	/** Additional context. */
+	context?: string
+}
+
 /** 
  * A widget.
  * 
@@ -255,6 +262,7 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsBarChart
 		| IAppBuilderWidgetPropsInteraction
 		| IAppBuilderWidgetPropsActions
+		| IAppBuilderWidgetPropsAgent
 }
 
 /** 
@@ -348,6 +356,11 @@ export function isBarChartWidget(widget: IAppBuilderWidget): widget is { type: "
 /** assert widget type "actions" */
 export function isActionsWidget(widget: IAppBuilderWidget): widget is { type: "actions", props: IAppBuilderWidgetPropsActions } {
 	return widget.type === "actions";
+}
+
+/** assert widget type "agent" */
+export function isAgentWidget(widget: IAppBuilderWidget): widget is { type: "agent", props: IAppBuilderWidgetPropsAgent } {
+	return widget.type === "agent";
 }
 
 /** assert action type "createModelState" */

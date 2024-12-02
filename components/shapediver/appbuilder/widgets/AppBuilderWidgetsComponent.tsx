@@ -9,6 +9,7 @@ import {
 	isRoundChartWidget, 
 	isTextWidget,
 	isActionsWidget,
+	isAgentWidget,
 } from "../../../../types/shapediver/appbuilder";
 import AppBuilderTextWidgetComponent from "./AppBuilderTextWidgetComponent";
 import AppBuilderImageWidgetComponent from "./AppBuilderImageWidgetComponent";
@@ -18,6 +19,7 @@ import AppBuilderLineChartWidgetComponent from "./AppBuilderLineChartWidgetCompo
 import AppBuilderAreaChartWidgetComponent from "./AppBuilderAreaChartWidgetComponent";
 import AppBuilderBarChartWidgetComponent from "./AppBuilderBarChartWidgetComponent";
 import AppBuilderActionsWidgetComponent from "./AppBuilderActionsWidgetComponent";
+import AppBuilderAgentWidgetComponent from "./AppBuilderAgentWidgetComponent";
 
 interface Props {
 	/** 
@@ -53,6 +55,8 @@ export default function AppBuilderWidgetsComponent({ namespace, widgets }: Props
 				return <AppBuilderBarChartWidgetComponent key={i} {...w.props} />;
 			else if (isActionsWidget(w))
 				return <AppBuilderActionsWidgetComponent key={i} namespace={namespace} {...w.props} />;
+			else if (isAgentWidget(w))
+				return <AppBuilderAgentWidgetComponent key={i} namespace={namespace} {...w.props} />;
 			else
 				return null;
 		})}

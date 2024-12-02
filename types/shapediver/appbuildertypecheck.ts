@@ -203,6 +203,11 @@ const IAppBuilderWidgetPropsActionsSchema = z.object({
 	actions: z.array(IAppBuilderActionSchema),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsAgent
+const IAppBuilderWidgetPropsAgentSchema = z.object({
+	context: z.string().optional(),
+});
+
 // Zod type definition for IAppBuilderWidget
 const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({type: z.literal("accordion"), props: IAppBuilderWidgetPropsAccordionSchema}),
@@ -214,6 +219,7 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({type: z.literal("barChart"), props: IAppBuilderWidgetPropsBarChartSchema}),
 	z.object({type: z.literal("interaction"), props: IAppBuilderWidgetPropsInteractionSchema}),
 	z.object({type: z.literal("actions"), props: IAppBuilderWidgetPropsActionsSchema}),
+	z.object({type: z.literal("agent"), props: IAppBuilderWidgetPropsAgentSchema}),
 ]);
 
 // Zod type definition for IAppBuilderTab
