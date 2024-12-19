@@ -30,6 +30,8 @@ import {
 	IconDotsVertical,
 	IconDownload,
 	IconDownloadOff,
+	IconEye,
+	IconEyeOff,
 	IconFileDownload,
 	IconFileExport,
 	IconFileImport,
@@ -164,6 +166,10 @@ const Icon = forwardRef<_TablerIconType, Props>( function Icon({type, size, stro
 		return <IconDownload {...iconProps} />;
 	case IconTypeEnum.DownloadOff:
 		return <IconDownloadOff {...iconProps} />;
+	case IconTypeEnum.Eye:
+		return <IconEye {...iconProps} />;
+	case IconTypeEnum.EyeOff:
+		return <IconEyeOff {...iconProps} />;
 	case IconTypeEnum.FileDownload:
 		return <IconFileDownload {...iconProps} />;
 	case IconTypeEnum.FileExport:

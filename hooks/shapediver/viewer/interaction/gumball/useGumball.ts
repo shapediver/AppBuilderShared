@@ -67,7 +67,8 @@ export function useGumball(
 	viewportId: string, 
 	gumballProps: IGumballParameterProps,
 	activate: boolean,
-	initialTransformedNodeNames?: { name: string, transformation: number[] }[]
+	initialTransformedNodeNames?: { name: string, transformation: number[] }[],
+	strictNaming = true
 ): IGumballState {
 	// get the session API
 	const sessionApis = useShapeDiverStoreSession(state => { return sessionIds.map(id => state.sessions[id]); });
@@ -89,7 +90,7 @@ export function useGumball(
 	// use the selection hook to get the selected node names
 	const { selectedNodeNames, setSelectedNodeNames, availableNodeNames, setSelectedNodeNamesAndRestoreSelection, handlers } = useSelection(sessionIds, viewportId, selectionSettings, activate);
 	// use the gumball events hook to get the transformed node names
-	const { transformedNodeNames, setTransformedNodeNames } = useGumballEvents(selectedNodeNames, initialTransformedNodeNames);
+	const { transformedNodeNames, setTransformedNodeNames } = useGumballEvents(selectedNodeNames, initialTransformedNodeNames, strictNaming);
 
 	// use an effect to set the selected node names to the first available node name if only one is available
 	useEffect(() => {

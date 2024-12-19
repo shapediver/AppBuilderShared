@@ -1,4 +1,4 @@
-import { IOutputApi, ISelectionParameterProps, ITreeNode, OutputApiData } from "@shapediver/viewer.session";
+import { IOutputApi, ISelectionParameterProps, ITreeNode, OutputApiData, SessionApiData } from "@shapediver/viewer.session";
 import { checkNodeNameMatch, InteractionData, MultiSelectManager, SelectManager } from "@shapediver/viewer.features.interaction";
 import React, { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { vec3 } from "gl-matrix";
@@ -27,7 +27,8 @@ export function useSelection(
 	viewportId: string, 
 	selectionProps: ISelectionParameterProps,
 	activate: boolean,
-	initialSelectedNodeNames?: string[]
+	initialSelectedNodeNames?: string[],
+	strictNaming: boolean = true
 ): ISelectionState & {
 	/**
 	 * The available node names in a dictionary for each output.
@@ -64,7 +65,7 @@ export function useSelection(
 	
 	// convert the user-defined name filters to filter patterns, and subscribe to selection events
 	const { patterns } = useCreateNameFilterPattern(sessionIds, selectionProps.nameFilter);
-	const { selectedNodeNames, setSelectedNodeNames, resetSelectedNodeNames } = useSelectManagerEvents(patterns, componentId, initialSelectedNodeNames);
+	const { selectedNodeNames, setSelectedNodeNames, resetSelectedNodeNames } = useSelectManagerEvents(patterns, componentId, initialSelectedNodeNames, strictNaming);
 
 	// state for available node names
 	const [availableNodeNames, setAvailableNodeNames] = useState<{ [key: string]: { [key: string]: string[]}}>({});
@@ -109,6 +110,7 @@ export function useSelection(
 						patterns={pattern}
 						interactionSettings={interactionSettings}
 						selectManager={selectManager}
+						strictNaming={strictNaming}
 						setData={(data) => {
 							setInteractionDataStateMap(prev => ({
 								...prev,
@@ -146,7 +148,7 @@ export function useSelection(
 		Object.values(interactionDataStateMap).forEach(outputData => {
 			Object.values(outputData).forEach(data => {
 				if(data.outputNode) {
-					restoreSelection(outputsPerSession, componentId, selectManager, selectedNodeNames);
+					restoreSelection(outputsPerSession, componentId, selectManager, selectedNodeNames, strictNaming);
 				}
 			});
 		});
@@ -174,7 +176,7 @@ export function useSelection(
 	 */
 	const setSelectedNodeNamesAndRestoreSelection = useCallback((names: string[]) => {
 		setSelectedNodeNames(names);
-		restoreSelection(outputsPerSession, componentId, selectManagerRef.current, names);
+		restoreSelection(outputsPerSession, componentId, selectManagerRef.current, names, strictNaming);
 	}, [componentId]);
 
 	return {
@@ -194,13 +196,13 @@ export function useSelection(
  * @param selectManager 
  * @param selectedNodeNames 
  */
-const restoreSelection = (outputsPerSession: { [key: string]: { [key: string]: IOutputApi }}, componentId: string, selectManager?: SelectManager | MultiSelectManager, selectedNodeNames: string[] = []) => {
+const restoreSelection = (outputsPerSession: { [key: string]: { [key: string]: IOutputApi }}, componentId: string, selectManager?: SelectManager | MultiSelectManager, selectedNodeNames: string[] = [], strictNaming: boolean = true) => {
 	for (const sessionId in outputsPerSession) {
 		const outputs = outputsPerSession[sessionId];
 		for (const outputId in outputs) {
 			const outputNode = outputs[outputId].node;
 			if (outputNode && selectManager)
-				restoreNodeSelection(outputNode, componentId, selectManager, selectedNodeNames);
+				restoreNodeSelection(outputNode, componentId, selectManager, selectedNodeNames, strictNaming);
 		}
 	}
 };
@@ -213,10 +215,17 @@ const restoreSelection = (outputsPerSession: { [key: string]: { [key: string]: I
  * @param selectedNodeNames 
  * @returns 
  */
-const restoreNodeSelection = (node: ITreeNode, componentId: string, mgr: SelectManager | MultiSelectManager, selectedNodeNames: string[]) => {
+const restoreNodeSelection = (node: ITreeNode, componentId: string, mgr: SelectManager | MultiSelectManager, selectedNodeNames: string[], strictNaming: boolean) => {
 	// the node must have an OutputApiData object
-	const apiData = node.data.find(d => d instanceof OutputApiData) as OutputApiData;
-	if (!apiData) return;
+	let outputApi = node.data.find((data) => data instanceof OutputApiData)?.api;
+	if (!outputApi) {
+		// try to find it in the session api
+		const sessionApi = node.parent?.data.find((data) => data instanceof SessionApiData)?.api;
+		if(!sessionApi) return;
+
+		outputApi = sessionApi.outputs[node.name];
+		if(!outputApi) return;
+	}
 
 	// deselect all nodes restricted to the component id
 	node.traverse(n => {
@@ -230,7 +239,7 @@ const restoreNodeSelection = (node: ITreeNode, componentId: string, mgr: SelectM
 	// select child nodes based on selectedNodeNames
 	selectedNodeNames.forEach((name) => {
 		const parts = name.split(".");
-		if (apiData.api.name !== parts[0]) return;
+		if (outputApi.name !== parts[0]) return;
 
 		if (parts.length === 1) {
 			// special case if only the output name is given
@@ -240,7 +249,7 @@ const restoreNodeSelection = (node: ITreeNode, componentId: string, mgr: SelectM
 		} else {
 			// if the node name matches the pattern, select the node
 			node.traverse(n => {
-				if (checkNodeNameMatch(n, parts.slice(1).join("."))) {
+				if (checkNodeNameMatch(n, parts.slice(1).join("."), strictNaming)) {
 					const interactionData = n.data.filter(d => d instanceof InteractionData) as InteractionData[];
 					if (interactionData.some(d => d instanceof InteractionData && d.restrictedManagers.includes(componentId)))
 						mgr.select({ distance: 1, point: vec3.create(), node: n });

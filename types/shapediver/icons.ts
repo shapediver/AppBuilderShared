@@ -33,6 +33,8 @@ export enum IconTypeEnum {
 	DotsVertical = "dots-vertical",
 	Download = "download",
 	DownloadOff = "download-off",
+	Eye = "eye",
+	EyeOff = "eye-off",
 	FileDownload = "file-download",
 	FileExport = "file-export",
 	FileImport = "file-import",

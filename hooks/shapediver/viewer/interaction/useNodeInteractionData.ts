@@ -1,5 +1,5 @@
 import { addInteractionData, gatherNodesForPattern, InteractionData, MultiSelectManager, NodeNameFilterPattern, SelectManager } from "@shapediver/viewer.features.interaction";
-import { IOutputApi, ITreeNode, OutputApiData } from "@shapediver/viewer.session";
+import { IOutputApi, ITreeNode, OutputApiData, SessionApiData } from "@shapediver/viewer.session";
 import { useCallback, useEffect, useState } from "react";
 import { useOutputNode } from "../useOutputNode";
 import { vec3 } from "gl-matrix";
@@ -13,6 +13,7 @@ type INodeInteractionDataHandlerState = {
 	patterns: NodeNameFilterPattern[];
 	interactionSettings: { select?: boolean, hover?: boolean, drag?: boolean, dragOrigin?: vec3, dragAnchors?: { id: string, position: vec3, rotation?: { angle: number, axis: vec3 } }[] };
 	selectManager?: SelectManager | MultiSelectManager;
+	strictNaming?: boolean;
 	setData?: React.Dispatch<React.SetStateAction<INodeInteractionDataState>>;
 };
 export type INodeInteractionDataState = {
@@ -60,7 +61,8 @@ export function useNodeInteractionData(
 	outputIdOrName: string,
 	patterns: NodeNameFilterPattern[],
 	interactionSettings: { select?: boolean, hover?: boolean, drag?: boolean, dragOrigin?: vec3, dragAnchors?: { id: string, position: vec3, rotation?: { angle: number, axis: vec3 } }[] },
-	selectManager?: SelectManager | MultiSelectManager
+	selectManager?: SelectManager | MultiSelectManager,
+	strictNaming = true
 ): INodeInteractionDataState {
 	const [availableNodeNames, setAvailableNodeNames] = useState<string[]>([]);
 
@@ -86,17 +88,27 @@ export function useNodeInteractionData(
 		}
 
 		if (newNode) {
-			const outputApiData = newNode.data.find((data) => data instanceof OutputApiData) as OutputApiData;
+			let outputApi = newNode.data.find((data) => data instanceof OutputApiData)?.api;
+			if (!outputApi) {
+				// try to find it in the session api
+				const sessionApi = newNode.parent?.data.find((data) => data instanceof SessionApiData)?.api;
+				if(!sessionApi) return;
+
+				outputApi = sessionApi.outputs[newNode.name];
+				if(!outputApi) return;
+			}
 
 			const availableNodes: { [nodeId: string]: { node: ITreeNode, name: string } } = {};
 			for (const pattern of patterns) {
 				if (pattern.length === 0) {
 					availableNodes[newNode.id] = {
 						node: newNode,
-						name: outputApiData.api.name
+						name: outputApi.name
 					};
 				} else {
-					gatherNodesForPattern(newNode, pattern, outputApiData.api.name, availableNodes);
+					for(const child of newNode.children) {
+						gatherNodesForPattern(child, pattern, outputApi.name, availableNodes, 0, strictNaming);
+					}
 				}
 			}
 			Object.values(availableNodes).forEach(availableNode => {
@@ -135,8 +147,8 @@ export function useNodeInteractionData(
  * @param props The props
  * @returns 
  */
-export const NodeInteractionDataHandler: React.FC<INodeInteractionDataHandlerState> = ({ sessionId, componentId, outputIdOrName, patterns, interactionSettings, selectManager, setData }: INodeInteractionDataHandlerState) => {
-	const { outputApi, outputNode, availableNodeNames } = useNodeInteractionData(sessionId, componentId, outputIdOrName, patterns, interactionSettings, selectManager);
+export const NodeInteractionDataHandler: React.FC<INodeInteractionDataHandlerState> = ({ sessionId, componentId, outputIdOrName, patterns, interactionSettings, selectManager, strictNaming, setData }: INodeInteractionDataHandlerState) => {
+	const { outputApi, outputNode, availableNodeNames } = useNodeInteractionData(sessionId, componentId, outputIdOrName, patterns, interactionSettings, selectManager, strictNaming);
 	useEffect(() => {
 		if (setData)
 			setData({

@@ -16,7 +16,8 @@ export function useDragManagerEvents(
 	convertedDragObjects: ConvertedDragObject[],
 	restrictions: Partial<{ [key: string]: RestrictionProperties }> = {},
 	componentId: string,
-	initialDraggedNodes?: DraggingParameterValue["objects"]
+	initialDraggedNodes?: DraggingParameterValue["objects"],
+	strictNaming = true
 ): {
 	/**
 	 * The dragged node names.
@@ -54,7 +55,7 @@ export function useDragManagerEvents(
 					const patterns = convertedDragObjects[i].patterns[sessionId];
 
 					// check if there are any patterns that match the dragged nodes
-					const draggedNodeNames = matchNodesWithPatterns(patterns, dragged);
+					const draggedNodeNames = matchNodesWithPatterns(patterns, dragged, strictNaming);
 					// if there are, add the restrictions to the drag manager
 					if (draggedNodeNames.length > 0) {
 						let addedRestrictions = false;
@@ -110,7 +111,7 @@ export function useDragManagerEvents(
 			for (let i = 0; i < convertedDragObjects.length; i++) {
 				for (const sessionId in convertedDragObjects[i].patterns) {
 					const patterns = convertedDragObjects[i].patterns[sessionId];
-					const draggedNodeNames = matchNodesWithPatterns(patterns, dragged);
+					const draggedNodeNames = matchNodesWithPatterns(patterns, dragged, strictNaming);
 					if (draggedNodeNames.length > 0) {
 						draggedNodeNames.forEach(draggedNodeName => {
 							const index = newDraggedNodes.findIndex(n => n.name === draggedNodeName);

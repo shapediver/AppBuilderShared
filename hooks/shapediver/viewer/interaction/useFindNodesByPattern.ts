@@ -1,5 +1,5 @@
 import { gatherNodesForPattern, NodeNameFilterPattern } from "@shapediver/viewer.features.interaction";
-import { ITreeNode, OutputApiData } from "@shapediver/viewer.session";
+import { ITreeNode, OutputApiData, SessionApiData } from "@shapediver/viewer.session";
 import { useCallback, useEffect, useState } from "react";
 import { useOutputNode } from "../useOutputNode";
 
@@ -9,6 +9,7 @@ type IFindNodesByPatternHandlerState = {
 	sessionId: string;
 	outputIdOrName: string;
 	patterns: NodeNameFilterPattern[];
+	strictNaming?: boolean;
 	setData?: React.Dispatch<React.SetStateAction<IFindNodesByPatternState>>;
 };
 export type IFindNodesByPatternState = {
@@ -34,7 +35,8 @@ export type IFindNodesByPatternState = {
 export function useFindNodesByPattern(
 	sessionId: string,
 	outputIdOrName: string,
-	patterns: NodeNameFilterPattern[]
+	patterns: NodeNameFilterPattern[],
+	strictNaming = true
 ): {
     /**
      * The available nodes for the given output and patterns.
@@ -53,17 +55,27 @@ export function useFindNodesByPattern(
 			// clear the available node names if the node is removed
 			setNodes([]);
 		} else if (newNode) {
-			const outputApiData = newNode.data.find((data) => data instanceof OutputApiData) as OutputApiData;
+			let outputApi = newNode.data.find((data) => data instanceof OutputApiData)?.api;
+			if (!outputApi) {
+				// try to find it in the session api
+				const sessionApi = newNode.parent?.data.find((data) => data instanceof SessionApiData)?.api;
+				if(!sessionApi) return;
+
+				outputApi = sessionApi.outputs[newNode.name];
+				if(!outputApi) return;
+			}
 
 			const availableNodes: { [nodeId: string]: { node: ITreeNode, name: string } } = {};
 			for (const pattern of patterns) {
 				if (pattern.length === 0) {
 					availableNodes[newNode.id] = {
 						node: newNode,
-						name: outputApiData.api.name
+						name: outputApi.name
 					};
 				} else {
-					gatherNodesForPattern(newNode, pattern, outputApiData.api.name, availableNodes);
+					for(const child of newNode.children) {
+						gatherNodesForPattern(child, pattern, outputApi.name, availableNodes, 0, strictNaming);
+					}
 				}
 			}
 	
@@ -84,8 +96,8 @@ export function useFindNodesByPattern(
 
 // #region Variables (1)
 
-export const FindNodesByPatternHandler: React.FC<IFindNodesByPatternHandlerState> = ({ sessionId, outputIdOrName, patterns, setData }: IFindNodesByPatternHandlerState) => {
-	const { nodes } = useFindNodesByPattern(sessionId, outputIdOrName, patterns);
+export const FindNodesByPatternHandler: React.FC<IFindNodesByPatternHandlerState> = ({ sessionId, outputIdOrName, patterns, strictNaming, setData }: IFindNodesByPatternHandlerState) => {
+	const { nodes } = useFindNodesByPattern(sessionId, outputIdOrName, patterns, strictNaming);
 	useEffect(() => {
 		if (setData)
 			setData({

@@ -26,7 +26,8 @@ export function useDragging(
 	viewportId: string,
 	draggingProps: IDraggingParameterProps,
 	activate: boolean,
-	initialDraggedNodes?: DraggingParameterValue["objects"]
+	initialDraggedNodes?: DraggingParameterValue["objects"],
+	strictNaming = true
 ): {
 	/**
 	 * The dragged nodes.
@@ -68,7 +69,7 @@ export function useDragging(
 	useHoverManager(viewportId, componentId, activate ? hoverSettings : undefined);
 
 	// call the drag manager events hook
-	const { draggedNodes, setDraggedNodes, resetDraggedNodes } = useDragManagerEvents(objects, restrictions, componentId, initialDraggedNodes);
+	const { draggedNodes, setDraggedNodes, resetDraggedNodes } = useDragManagerEvents(objects, restrictions, componentId, initialDraggedNodes, strictNaming);
 
 	// create a state for the node interaction data handlers
 	const [nodeInteractionDataHandlers, setNodeInteractionDataHandles] = useState<JSX.Element[]>([]);
@@ -93,6 +94,7 @@ export function useDragging(
 							outputIdOrName={outputId}
 							patterns={pattern}
 							interactionSettings={interactionSettings}
+							strictNaming={strictNaming}
 						/>
 					);
 				}

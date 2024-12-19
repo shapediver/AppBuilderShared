@@ -192,11 +192,8 @@ const IAppBuilderWidgetPropsBarChartSchema = z.object({
 	style: z.enum([ "default", "stacked", "percent", "waterfall"]).optional(),
 }).extend(IAppBuilderWidgetPropsChartCommonSchema.shape);
 
-// Zod type definition for IAppBuilderWidgetPropsInteraction
-const IAppBuilderWidgetPropsInteractionSchema = z.object({
-	parameterName: z.string().optional(),
-	interactionSettings: IInteractionParameterJsonSchema,
-});
+// Zod type definition for IAppBuilderWidgetPropsAttributeVisualization
+const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.object({});
 
 // Zod type definition for IAppBuilderWidgetPropsActions
 const IAppBuilderWidgetPropsActionsSchema = z.object({
@@ -212,8 +209,8 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({type: z.literal("lineChart"), props: IAppBuilderWidgetPropsLineChartSchema}),
 	z.object({type: z.literal("areaChart"), props: IAppBuilderWidgetPropsAreaChartSchema}),
 	z.object({type: z.literal("barChart"), props: IAppBuilderWidgetPropsBarChartSchema}),
-	z.object({type: z.literal("interaction"), props: IAppBuilderWidgetPropsInteractionSchema}),
 	z.object({type: z.literal("actions"), props: IAppBuilderWidgetPropsActionsSchema}),
+	z.object({type: z.literal("attributeVisualization"), props: IAppBuilderWidgetPropsAttributeVisualizationSchema}),
 ]);
 
 // Zod type definition for IAppBuilderTab

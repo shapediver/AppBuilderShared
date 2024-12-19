@@ -19,7 +19,8 @@ import { useEffect, useRef, useState } from "react";
  */
 export function useGumballEvents(
 	selectedNodeNames: string[],
-	initialTransformedNodeNames?: { name: string, transformation: number[] }[]
+	initialTransformedNodeNames?: { name: string, transformation: number[] }[],
+	strictNaming = true
 ): {
     /**
      * The transformed nodes.
@@ -62,11 +63,11 @@ export function useGumballEvents(
 					const parts = name.split(".");
 
 					// get the node data to compare the output name
-					const nodeData = getNodeData(node);
+					const nodeData = getNodeData(node, strictNaming);
 					if(!nodeData || nodeData.outputName !== parts[0]) return;
 
 					// check if the node path matches the selected node name
-					if (parts.length === 1 || checkNodeNameMatch(node, parts.slice(1).join("."))) {
+					if (parts.length === 1 || checkNodeNameMatch(node, parts.slice(1).join("."), strictNaming)) {
 						// determine if the node is already in the transformed nodes array
 						// if not add it, otherwise update the transformation
 						const index = newTransformedNodeNames.findIndex(tn => tn.name === name);

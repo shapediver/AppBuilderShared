@@ -37,7 +37,8 @@ export interface ISelectionState {
 export function useSelectManagerEvents(
 	patterns: { [key: string]: OutputNodeNameFilterPatterns }, 
 	componentId: string,
-	initialSelectedNodeNames?: string[]
+	initialSelectedNodeNames?: string[],
+	strictNaming = true
 ): ISelectionState {
 
 	// state for the selected nodes
@@ -65,7 +66,7 @@ export function useSelectManagerEvents(
 			const nodeNames = [];
 			for(const sessionId in patterns) {
 				const pattern = patterns[sessionId];
-				nodeNames.push(...matchNodesWithPatterns(pattern, selected));
+				nodeNames.push(...matchNodesWithPatterns(pattern, selected, strictNaming));
 			}
 			setSelectedNodeNames(nodeNames);
 		});
@@ -105,7 +106,7 @@ export function useSelectManagerEvents(
 			const nodeNames = [];
 			for(const sessionId in patterns) {
 				const pattern = patterns[sessionId];
-				nodeNames.push(...matchNodesWithPatterns(pattern, selected));
+				nodeNames.push(...matchNodesWithPatterns(pattern, selected, strictNaming));
 			}
 			setSelectedNodeNames(nodeNames);
 		});
@@ -127,7 +128,7 @@ export function useSelectManagerEvents(
 			const nodeNames = [];
 			for(const sessionId in patterns) {
 				const pattern = patterns[sessionId];
-				nodeNames.push(...matchNodesWithPatterns(pattern, selected));
+				nodeNames.push(...matchNodesWithPatterns(pattern, selected, strictNaming));
 			}
 			setSelectedNodeNames(nodeNames);
 		});

@@ -8,7 +8,6 @@ import {
 	IAppBuilderWidgetPropsLineChart, 
 	IAppBuilderWidgetPropsRoundChart 
 } from "./appbuildercharts";
-import { IInteractionParameterSettings } from "@shapediver/viewer.session";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
@@ -176,9 +175,9 @@ export type AppBuilderWidgetType = "accordion"
 	| "roundChart" 
 	| "lineChart" 
 	| "areaChart" 
-	| "barChart" 
-	| "interaction"
+	| "barChart"
 	| "actions"
+	| "attributeVisualization"
 ;
 
 /** 
@@ -219,19 +218,15 @@ export interface IAppBuilderWidgetPropsImage extends IAppBuilderWidgetPropsAncho
 	alt?: string,
 }
 
-/** Properties of an interaction widget. */
-export interface IAppBuilderWidgetPropsInteraction {
-	/** The settings of the interactions. */
-	interactionSettings?: IInteractionParameterSettings,
-	/** The parameter that should be used. */
-	parameter?: IAppBuilderParameterRef
-}
-
 /** Properties of a widget presenting actions. */
 export interface IAppBuilderWidgetPropsActions {
 	/** The actions. */
 	actions?: IAppBuilderAction[]
 }
+
+/** Properties of a widget then attribute visualization. */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface IAppBuilderWidgetPropsAttributeVisualization {}
 
 /** 
  * A widget.
@@ -253,8 +248,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsLineChart
 		| IAppBuilderWidgetPropsAreaChart
 		| IAppBuilderWidgetPropsBarChart
-		| IAppBuilderWidgetPropsInteraction
 		| IAppBuilderWidgetPropsActions
+		| IAppBuilderWidgetPropsAttributeVisualization
 }
 
 /** 
@@ -348,6 +343,11 @@ export function isBarChartWidget(widget: IAppBuilderWidget): widget is { type: "
 /** assert widget type "actions" */
 export function isActionsWidget(widget: IAppBuilderWidget): widget is { type: "actions", props: IAppBuilderWidgetPropsActions } {
 	return widget.type === "actions";
+}
+
+/** assert widget type "attributeVisualization" */
+export function isAttributeVisualizationWidget(widget: IAppBuilderWidget): widget is { type: "attributeVisualization", props: IAppBuilderWidgetPropsAttributeVisualization } {
+	return widget.type === "attributeVisualization";
 }
 
 /** assert action type "createModelState" */

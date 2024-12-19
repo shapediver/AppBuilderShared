@@ -12,7 +12,8 @@ import { useState, useEffect } from "react";
  */
 export function useHoverManagerEvents(
 	pattern: OutputNodeNameFilterPatterns,
-	componentId: string
+	componentId: string,
+	strictNaming = true
 ): {
 	/**
 	 * The hovered node names.
@@ -37,7 +38,7 @@ export function useHoverManagerEvents(
 			if (hoverEvent.manager.id !== componentId) return;
 
 			const hovered = [hoverEvent.node];
-			const nodeNames = matchNodesWithPatterns(pattern, hovered);
+			const nodeNames = matchNodesWithPatterns(pattern, hovered, strictNaming);
 			setHoveredNodeNames(nodeNames);
 		});
 
