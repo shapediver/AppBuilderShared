@@ -25,7 +25,7 @@ export function AppBuilderAgentWidgetThemeProps(props: AppBuilderAgentWidgetThem
 type Props = IAppBuilderWidgetPropsAgent & {
 	namespace: string;
 };
-
+// Basic git commit test 
 export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilderAgentWidgetThemePropsType) {
 
 	const { namespace, context, ...rest } = props;
