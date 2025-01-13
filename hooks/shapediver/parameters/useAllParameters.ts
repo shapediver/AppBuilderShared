@@ -23,7 +23,7 @@ export function useAllParameters(namespace: string) {
 	const paramStoresStateless = Object.values(paramStores).reduce((acc, store) => {
 		const pstate = store.getState();
 		acc[pstate.definition.id] = pstate;
-
+		
 		return acc;
 	}, {} as { [key: string]: IShapeDiverParameter<any> });
 
