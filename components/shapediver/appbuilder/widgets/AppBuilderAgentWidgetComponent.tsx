@@ -13,8 +13,10 @@ import { ChatCompletionMessageParam } from "openai/resources";
 import { IShapeDiverParameter } from "../../../../types/shapediver/parameter";
 import { ShapeDiverResponseParameterType } from "@shapediver/sdk.geometry-api-sdk-v2";
 import { IShapeDiverStoreParameters } from "../../../../types/store/shapediverStoreParameters";
-import { useShapeDiverStoreParameters } from "shared/store/useShapeDiverStoreParameters";
+import { useShapeDiverStoreParameters } from "../../../../store/useShapeDiverStoreParameters";
 import { useShallow } from "zustand/react/shallow";
+import { useViewportId } from "../../../../hooks/shapediver/viewer/useViewportId";
+import { useShapeDiverStoreViewportAccessFunctions } from "../../../../store/useShapeDiverStoreViewportAccessFunctions";
 
 
 /** Style properties that can be controlled via the theme. */
@@ -204,7 +206,11 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 	// We want to do parameter batch updates
 	const { batchParameterValueUpdate } = useShapeDiverStoreParameters(useShallow(state => ({ batchParameterValueUpdate: state.batchParameterValueUpdate })));
 	
-	// TODO Alex explain how to get screenshot of the model
+	// TODO Alex to Mayur: getting screenshots from viewport
+	const { viewportId } = useViewportId();
+	const { getScreenshot } = useShapeDiverStoreViewportAccessFunctions(useShallow(state => ({
+		getScreenshot: state.viewportAccessFunctions[viewportId]?.getScreenshot,
+	})));
 
 	/**
 	 * Handler for image provided by the user.
