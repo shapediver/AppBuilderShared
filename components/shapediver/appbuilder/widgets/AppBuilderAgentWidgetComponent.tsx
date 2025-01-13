@@ -1,11 +1,11 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { MantineStyleProp, MantineThemeComponent, Paper, PaperProps, useProps } from "@mantine/core";
 import { IAppBuilderWidgetPropsAgent } from "../../../../types/shapediver/appbuilder";
 import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";
 import { AppBuilderContainerContext } from "../../../../context/AppBuilderContext";
 import { useAllParameters } from "../../../../hooks/shapediver/parameters/useAllParameters";
-import { Button, TextInput, ActionIcon, FileButton } from "@mantine/core";
-import { IconPaperclip } from '@tabler/icons-react';
+import { Button, TextInput, ActionIcon, FileButton, ScrollArea } from "@mantine/core";
+import { IconPaperclip, IconUser, IconRobot } from "@tabler/icons-react";
 
 import OpenAI from "openai";
 import { zodResponseFormat } from "openai/helpers/zod";
@@ -33,56 +33,27 @@ type Props = IAppBuilderWidgetPropsAgent & {
 	namespace: string;
 };
 
+type ChatMessage = {
+	role: "user" | "assistant";
+	content: string;
+};
+
 export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilderAgentWidgetThemePropsType) {
 
 	const { namespace, context, ...rest } = props;
 	const themeProps = useProps("AppBuilderAgentWidgetComponent", defaultStyleProps, rest);
-	const [chatInput, setChatInput] = useState('');
+	const [chatInput, setChatInput] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
-	const [reasoning, setReasoning] = useState('Agent response explaining the changes made...');
+	const [reasoning, setReasoning] = useState("Agent response explaining the changes made...");
 	const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+	const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+	const [parameterDefinitions, setParameterDefinitions] = useState("");
 	
-	// get access to all parameters
+	// Move parameters hooks to component level
 	const { parameters } = useAllParameters(namespace);
-    //console.log("AppBuilderAgentWidgetComponent: Available parameters", parameters);
-
-	// get access to all dynamic parameters
 	const { parameters: dynamicParameters } = useAllParameters(`${namespace}_appbuilder`);
-	//console.log("AppBuilderAgentWidgetComponent: Available dynamic parameters", dynamicParameters);
-    
-	// To Do
-	// feedback alert for outside range paramater
-	// litellm option to switch between different llm providers
-	// filter out parameters such as file, image out of llm context
-	// pass in viewer image context. 
-	
-	// Create a combined string of all parameter definitions
-	const parameterDefinitions = Object.values(parameters).map(param => {
-		const def = param.definition;
-		//console.log("def", def);
-		return `
-		parameterId: ${def.id}
-		parameterName: ${def.name}
-		parameterType: ${def.type}
-		default_value: ${def.defval || 'none'}
-		min: ${def.min || 'none'}
-		max: ${def.max || 'none'}
-		tooltip: ${def.tooltip || 'none'}
-		choices : ${def.choices || 'none'}
-		displayName : ${def.displayname || 'none'}
-		
-		`
-	}).join('\n');
 
-
-
-	// llm init 
-	const openai = new OpenAI({
-		apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-		dangerouslyAllowBrowser: true // Required for client-side usage
-	});
-
-	// Update the schema definition
+	// Move parameter schema to component level
 	const parameterSchema = z.object({
 		parameters: z.array(z.object({
 			parameterId: z.string().describe("The id of the parameter to be updated"),
@@ -92,6 +63,14 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 		})).describe("Array of parameters to update"),
 		summary_and_reasoning: z.string().describe("A summary of the parameter update and the reasoning behind the parameter update")
 	});
+
+	// llm init 
+	const openai = new OpenAI({
+		apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+		dangerouslyAllowBrowser: true // Required for client-side usage
+	});
+
+
 
 
 	// Update the llm function
@@ -106,23 +85,50 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 		reader.readAsDataURL(file);
 	};
 
-	const llm = async (userQuery: string, parametersContext: string) => {
+	const llm = async (userQuery: string) => {
+		// Add user message to chat history
+		setChatHistory(prev => [...prev, { role: "user", content: userQuery }]);
+
+		// TO DO : Filter out parameters that user doesnt want to expose in configurator+llm
+		const parametersContext = Object.values(parameters).map(param => {
+			const def = param.definition;
+			const currentValue = param.state.uiValue;
+			
+			return `
+			parameterId: ${def.id}
+			parameterName: ${def.name}
+			parameterType: ${def.type}
+			current_value: ${currentValue || "none"}
+			min: ${def.min || "none"}
+			max: ${def.max || "none"}
+			tooltip: ${def.tooltip || "none"}
+			choices : ${def.choices || "none"}
+			displayName : ${def.displayname || "none"}
+			`;
+		}).join("\n");
+
 		const userPrompt = `User Query: ${userQuery}
 			Parameters Context: ${parametersContext}. 
-			${uploadedImage ? 'An image has been provided for context.' : ''}
+			${uploadedImage ? "An image has been provided for context." : ""}
 			Based on the user query and the parameters context, suggest new values for the parameters that suit the user query.
 			`;
 
-		//console.log("userPrompt", userPrompt);
+		const maxHistoryMessages = 10; // Adjust as needed
+		const recentHistory = chatHistory.slice(-maxHistoryMessages);
 
 		const messages = [
 			{ 
 				role: "system", 
 				content: "You are a helpful assistant that can modify parameters based on the user's input and the context provided for a configurator app. Don't hallucinate parameterId, Ensure the suggested new values are within the min, max and available choices provided in context. If parameterType is stringlist, return the index of new choices from available choices rather than value of the choice." 
-			}
+			},
+			// Add previous chat history
+			...recentHistory.map(msg => ({
+				role: msg.role,
+				content: msg.content
+			}))
 		];
 
-		// Add image to messages if present
+		// Add current message with image if present
 		if (uploadedImage) {
 			messages.push({
 				role: "user",
@@ -145,20 +151,21 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 
 		const responseFormat = zodResponseFormat(parameterSchema, "parameters_update");
 
+		//console.log("messages History", messages);
+
 		const completion = await openai.beta.chat.completions.parse({
-			model: "gpt-4o-mini",  // Changed to vision model to handle images
-			messages: messages,
+			model: "gpt-4o-mini",  // Using the correct model name
+			messages: messages as any, // Type assertion to handle mixed content types
 			response_format: responseFormat,
-			
+			max_tokens: 1000,
 		});
 
 		
 		console.log("LLM response", completion.choices[0].message.parsed);
 		
-		// Update parameters based on the response
 		const updates = completion.choices[0].message.parsed.parameters;
 		
-		// Apply the parameter updates
+
 		updates.forEach(update => {
 			const parameter = parameters[update.parameterId];
 			if (parameter) {
@@ -171,23 +178,22 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 
 		setReasoning(completion.choices[0].message.parsed.summary_and_reasoning);
 
-		return `Updated parameters: ${updates.map(u => `${u.parameterId}: ${u.newValue}`).join(', ')}`;
+		const responseMessage = completion.choices[0].message.parsed.summary_and_reasoning;
+		setChatHistory(prev => [...prev, { role: "assistant", content: responseMessage }]);
+
+		return `Updated parameters: ${updates.map(u => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
 	};
 
-
-	// Update handleClick to use the API key from environment variables
 	const handleClick = async () => {
 		try {
 			setIsLoading(true);
-
-			const response = await llm(chatInput, parameterDefinitions);
-			
+			const response = await llm(chatInput);
 		} catch (error) {
-			console.error('Error calling AI:', error);
+			console.error("Error calling AI:", error);
 		} finally {
 			setIsLoading(false);
+			setChatInput("");
 		}
-
 	};
 
 	// render ai widget content
@@ -216,8 +222,23 @@ ${Object.values(dynamicParameters).map(p => `* ${p.definition.name} (${p.definit
 	}
 	styleProps.fontWeight = "100";
 
+	const messageStyles = {
+		messageContainer: "flex w-full mb-4",
+		messageWrapper: "flex items-center gap-2 max-w-[80%]",
+		userWrapper: "ml-auto",
+		assistantWrapper: "mr-auto",
+		messageContent: "flex items-center gap-2",
+		userContent: "flex-row-reverse",
+		message: "p-4 rounded-lg",
+		user: "bg-blue-500 text-white",
+		assistant: "bg-gray-100 text-gray-900",
+		icon: "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
+		userIcon: "bg-blue-600 text-white",
+		assistantIcon: "bg-gray-200 text-gray-700"
+	};
+
 	return <Paper {...themeProps} style={styleProps}>
-		<div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+		<div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
 			<FileButton 
 				onChange={handleImageUpload} 
 				accept="image/png,image/jpeg"
@@ -238,7 +259,7 @@ ${Object.values(dynamicParameters).map(p => `* ${p.definition.name} (${p.definit
 				value={chatInput}
 				onChange={(e) => setChatInput(e.target.value)}
 				onKeyDown={(e) => {
-					if (e.key === 'Enter') {
+					if (e.key === "Enter") {
 						handleClick();
 					}
 				}}
@@ -261,12 +282,35 @@ ${Object.values(dynamicParameters).map(p => `* ${p.definition.name} (${p.definit
 			</div>
 		)}
 
-		<MarkdownWidgetComponent>
-			{reasoning}
-		</MarkdownWidgetComponent>
-		
-		{/* <MarkdownWidgetComponent>
-			{ markdown }
-		</MarkdownWidgetComponent> */}
+		<ScrollArea h={400} className="mb-4 p-4 border rounded-lg">
+			{chatHistory.map((message, index) => (
+				<div key={index} className={messageStyles.messageContainer}>
+					<div className={`${messageStyles.messageWrapper} ${
+						message.role === "user" ? messageStyles.userWrapper : messageStyles.assistantWrapper
+					}`}>
+						<div className={`${messageStyles.messageContent} ${
+							message.role === "user" ? messageStyles.userContent : ""
+						}`}>
+							<div className={`${messageStyles.icon} ${
+								message.role === "user" ? messageStyles.userIcon : messageStyles.assistantIcon
+							}`}>
+								{message.role === "user" ? (
+									<IconUser size={18} />
+								) : (
+									<IconRobot size={18} />
+								)}
+							</div>
+							<div className={`${messageStyles.message} ${
+								message.role === "user" ? messageStyles.user : messageStyles.assistant
+							}`}>
+								<MarkdownWidgetComponent>
+									{message.content}
+								</MarkdownWidgetComponent>
+							</div>
+						</div>
+					</div>
+				</div>
+			))}
+		</ScrollArea>
 	</Paper>;
 }
