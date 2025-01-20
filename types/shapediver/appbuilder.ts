@@ -217,6 +217,7 @@ export interface IAppBuilderWidgetPropsAnchor {
 export interface IAppBuilderWidgetPropsImage extends IAppBuilderWidgetPropsAnchor, IAppBuilderImageRef {
 	/** Optional reference to alternate text which provides the image. */
 	alt?: string,
+	isSvg?: boolean
 }
 
 /** Properties of a widget presenting actions. */

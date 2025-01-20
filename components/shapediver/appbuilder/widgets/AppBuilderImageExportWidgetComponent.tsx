@@ -23,6 +23,7 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 	const promiseChain = useRef(Promise.resolve());
 	const objectUrl = useRef<string | undefined>(undefined);
 	const [ imageSrc, setImageSrc ] = useState<string | undefined>(undefined);
+	const [ imageFormat, setImageFormat ] = useState<string | undefined>(undefined);
 
 	/**
 	 * Create an object URL for the given href and set it as the image source.
@@ -60,11 +61,14 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 		if (responses && responses[definition.id]) {
 			const response = responses[definition.id];
 			if (response.content && response.content[0] && response.content[0].href) {
+				const format = response.content[0].format;
 				const href = response.content[0].href;
 				setImageSrcCb(href);
+				setImageFormat(format);
 			}
 			else {
 				setImageSrc(undefined);
+				setImageFormat(undefined);
 			}
 		}
 		else {
@@ -81,10 +85,14 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 					response.content[0].href
 				) {
 					const href = response.content[0].href;
+					const format = response.content[0].format;
+
 					setImageSrcCb(href);
+					setImageFormat(format);
 				}
 				else {
 					setImageSrc(undefined);
+					setImageFormat(undefined);
 				}
 			});
 		}
@@ -92,7 +100,7 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 	}, [responses, definition]);
 
 	if (imageSrc)
-		return <AppBuilderImage src={imageSrc} { ...rest } />;
+		return <AppBuilderImage src={imageSrc} isSvg={imageFormat === "svg"} { ...rest } />;
 	else
 		return <></>;
 }

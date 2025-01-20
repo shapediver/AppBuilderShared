@@ -3,10 +3,15 @@ import { Image, ImageProps, MantineThemeComponent, Anchor, useProps } from "@man
 import { IAppBuilderWidgetPropsAnchor } from "../../../types/shapediver/appbuilder";
 import { AppBuilderContainerContext } from "../../../context/AppBuilderContext";
 import classes from "./AppBuilderImage.module.css";
+import Svg from "../../ui/Svg";
 
 type Props = IAppBuilderWidgetPropsAnchor;
 
-type ImageStyleProps = Pick<ImageProps, "radius" | "mah" | "maw"> & { fit?: "contain" | "scale-down", withBorder?: boolean};
+type ImageStyleProps = Pick<ImageProps, "radius" | "mah" | "maw"> & {
+	fit?: "contain" | "scale-down",
+	withBorder?: boolean,
+	isSvg?: boolean
+};
 
 type ImageNonStyleProps = Pick<ImageProps, "src"> & { alt?: string};
 
@@ -36,33 +41,43 @@ export function AppBuilderImageThemeProps(props: AppBuilderImageThemePropsType):
 }
 
 export default function AppBuilderImage(props: ImageNonStyleProps & ImageStyleProps & Props ) {
-	
-	const { anchor, target, ...rest } = props;
+	const { anchor, target, isSvg,  ...rest } = props;
 	const { radius, fit, withBorder, mah, maw } = useProps("AppBuilderImage", defaultStyleProps, rest);
 
 	const context = useContext(AppBuilderContainerContext);
 	const orientation = context.orientation;
 	const contain = fit === "contain";
+	const contentProps = {
+		...rest,
+		fit: fit,
+		radius: radius,
+		h: contain && orientation === "horizontal" ? "100%" : undefined,
+		w: contain && orientation === "vertical" ? "100%" : undefined,
+		className: withBorder ? classes.imgBorder : undefined,
+	};
 
-	const element = <Image
-		{...rest}
-		fit={fit}
-		radius={radius}
-		h={contain && orientation === "horizontal" ? "100%" : undefined}
-		w={contain && orientation === "vertical" ? "100%" : undefined}
-		mah={!contain && orientation === "horizontal" ? mah ?? "100%" : undefined}
-		maw={!contain && orientation === "vertical" ? maw ?? "100%" : undefined}
-		className={withBorder ? classes.imgBorder : undefined}
-	/>;
+	const element = isSvg ? (
+		<Svg
+			{...contentProps}
+			srcUrl={rest.src}
+			mah={mah}
+			maw={maw}
+		/>
+	) : (
+		<Image
+			{...contentProps}
+			mah={!contain && orientation === "horizontal" ? mah ?? "100%" : undefined}
+			maw={!contain && orientation === "vertical" ? maw ?? "100%" : undefined}
+		/>
+	);
 
-	const elementWithAnchor = anchor ? <Anchor 
-		href={anchor} 
-		target={target}
-		display="contents"
-	>
-		{element}
-	</Anchor> : element;
-
-	return elementWithAnchor;
-
+	return anchor ? (
+		<Anchor // Notice: SVG may contains own urls, potential conflict can happen
+			href={anchor}
+			target={target}
+			display="contents"
+		>
+			{element}
+		</Anchor>
+	) : element;
 }

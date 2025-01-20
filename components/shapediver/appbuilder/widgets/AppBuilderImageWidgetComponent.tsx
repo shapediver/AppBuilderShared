@@ -2,18 +2,22 @@ import React from "react";
 import { IAppBuilderWidgetPropsImage } from "../../../../types/shapediver/appbuilder";
 import AppBuilderImage from "../AppBuilderImage";
 import AppBuilderImageExportWidgetComponent from "./AppBuilderImageExportWidgetComponent";
+import { ImageProps } from "@mantine/core";
 
 interface Props extends IAppBuilderWidgetPropsImage {
 	/**
 	 * Default session namespace to use for parameter and export references that do
 	 * not specify a session namespace.
 	 */
-	namespace: string
+	namespace: string,
+	isSvg?: boolean
 }
 
-export default function AppBuilderImageWidgetComponent(props: Props) {
+export default function AppBuilderImageWidgetComponent(props: Props & Pick<ImageProps, "maw" | "mah">) {
 	const {
 		alt,
+		maw,
+		mah,
 		target,
 		anchor,
 		// AppBuilderImage
@@ -21,17 +25,21 @@ export default function AppBuilderImageWidgetComponent(props: Props) {
 		// AppBuilderImageExportWidgetComponent
 		export: exportRef,
 		namespace,
+		isSvg,
 	} = props;
 
 	const propsCommon = {
 		anchor,
 		alt,
-		target
+		target,
 	};
 
 	if (href) {
 		return <AppBuilderImage
 			src={href}
+			isSvg={isSvg}
+			maw={maw}
+			mah={mah}
 			{ ...propsCommon }
 		/>;
 	} else if (exportRef) {

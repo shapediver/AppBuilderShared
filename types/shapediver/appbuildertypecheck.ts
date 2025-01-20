@@ -141,6 +141,15 @@ const IAppBuilderWidgetPropsImageSchema = z.object({
 	anchor: z.string().optional(),
 	alt: z.string().optional(),
 	target: z.string().default("_blank"),
+	isSvg: z.boolean().optional(),
+	maw: z.union([
+		z.number().optional(),
+		z.string().optional(),
+	]),
+	mah: z.union([
+		z.number().optional(),
+		z.string().optional(),
+	]),
 }).extend(IAppBuilderWidgetPropsCommonSchema.shape).extend(IAppBuilderImageRefSchema.shape);
 
 // Zod type definition for IAppBuilderWidgetPropsRoundChart
