@@ -4,7 +4,10 @@ import OverlayWrapper, { OverlayStyleProps, OverlayPosition } from "../ui/Overla
 import { ViewportOverlayWrapperProps } from "shared/types/shapediver/viewportOverlayWrapper";
 
 const defaultStyleProps: OverlayStyleProps = {
-	position: OverlayPosition.TOP_RIGHT,
+	position: {
+		base: OverlayPosition.TOP_MIDDLE,
+		md: OverlayPosition.TOP_RIGHT,
+	},
 };
 
 export default function ViewportOverlayWrapper(props: ViewportOverlayWrapperProps & Partial<OverlayStyleProps>) {
