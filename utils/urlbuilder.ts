@@ -66,7 +66,7 @@ export function buildAppBuilderUrl(data: IAppBuilderUrlBuilderData): string {
 
 	const { baseUrl, ticket, modelViewUrl, slug, settingsUrl, modelStateId, context } = data;
 
-	const url = new URL(baseUrl);
+	const url = new URL(baseUrl.startsWith("https://appbuilder.shapediver.com") && !baseUrl.endsWith("/") ? baseUrl + "/" : baseUrl);
 	const searchParams = new URLSearchParams();
 	if (slug) {
 		searchParams.append(QUERYPARAM_SLUG, slug);
