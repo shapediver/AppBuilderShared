@@ -1,10 +1,7 @@
+import { createNotificationsWithDefaults, NotificationContext } from "@AppBuilderShared/context/NotificationContext";
+import { NotificationStyleProps } from "@AppBuilderShared/types/context/notificationcontext";
 import { MantineThemeComponent, useProps } from "@mantine/core";
 import React, { useMemo } from "react";
-import { 
-	createNotificationsWithDefaults, 
-	NotificationContext, 
-} from "../../context/NotificationContext";
-import { NotificationStyleProps } from "../../types/context/notificationcontext";
 
 interface Props {
 	children?: React.ReactNode;

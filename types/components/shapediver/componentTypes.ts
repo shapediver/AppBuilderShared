@@ -1,15 +1,15 @@
-import ExportButtonComponent from "shared/components/shapediver/exports/ExportButtonComponent";
-import ExportLabelComponent from "../../../components/shapediver/exports/ExportLabelComponent";
-import ParameterBooleanComponent from "shared/components/shapediver/parameter/ParameterBooleanComponent";
-import ParameterColorComponent from "shared/components/shapediver/parameter/ParameterColorComponent";
-import ParameterFileInputComponent from "shared/components/shapediver/parameter/ParameterFileInputComponent";
-import ParameterLabelComponent from "shared/components/shapediver/parameter/ParameterLabelComponent";
-import ParameterSelectComponent from "shared/components/shapediver/parameter/ParameterSelectComponent";
-import ParameterSliderComponent from "shared/components/shapediver/parameter/ParameterSliderComponent";
-import ParameterStringComponent from "shared/components/shapediver/parameter/ParameterStringComponent";
+import ExportButtonComponent from "@AppBuilderShared/components/shapediver/exports/ExportButtonComponent";
+import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
+import ParameterBooleanComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterBooleanComponent";
+import ParameterColorComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterColorComponent";
+import ParameterFileInputComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterFileInputComponent";
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterSelectComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterSelectComponent";
+import ParameterSliderComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
+import ParameterStringComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterStringComponent";
+import { IComponentContext, ParameterComponentMapValueType } from "@AppBuilderShared/types/context/componentcontext";
+import { IShapeDiverParamOrExportDefinition } from "@AppBuilderShared/types/shapediver/common";
 import { EXPORT_TYPE, PARAMETER_TYPE } from "@shapediver/viewer.session";
-import { IComponentContext, ParameterComponentMapValueType } from "shared/types/context/componentcontext";
-import { IShapeDiverParamOrExportDefinition } from "../../shapediver/common";
 
 const defaultParameterComponentContext: IComponentContext["parameters"] = {
 	[PARAMETER_TYPE.INT]: {component: ParameterSliderComponent, extraBottomPadding: true},

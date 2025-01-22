@@ -1,8 +1,8 @@
 import { useCallback } from "react";
-import { useShapeDiverStoreSession } from "../../store/useShapeDiverStoreSession";
 import { useShallow } from "zustand/react/shallow";
-import { useViewportId } from "./viewer/useViewportId";
-import { useShapeDiverStoreViewportAccessFunctions } from "shared/store/useShapeDiverStoreViewportAccessFunctions";
+import { useViewportId } from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import { useShapeDiverStoreSession } from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import { useShapeDiverStoreViewportAccessFunctions } from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 
 interface Props {
 	namespace: string

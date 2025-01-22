@@ -1,23 +1,23 @@
-import Icon from "../../ui/Icon";
-import ParameterLabelComponent from "./ParameterLabelComponent";
 import React, { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ActionIcon, Box, Button, Flex, Group, Loader, Stack, Text } from "@mantine/core";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
 import { IDrawingParameterSettings as IDrawingParameterProps, SystemInfo } from "@shapediver/viewer.session";
 import { PointsData } from "@shapediver/viewer.features.drawing-tools";
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import { useDrawingTools } from "../../../hooks/shapediver/viewer/drawing/useDrawingTools";
-import { useParameterComponentCommons } from "../../../hooks/shapediver/parameters/useParameterComponentCommons";
-import { useViewportId } from "../../../hooks/shapediver/viewer/useViewportId";
-import DrawingOptionsComponent from "../ui/DrawingOptionsComponent";
-import { NotificationContext } from "../../../context/NotificationContext";
-import { useDrawingOptionsStore } from "../../../store/useDrawingOptionsStore";
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import { useParameterComponentCommons } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import { useViewportId } from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import { useDrawingOptionsStore } from "@AppBuilderShared/store/useDrawingOptionsStore";
+import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
+import { useDrawingTools } from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingTools";
 import classes from "./ParameterInteractionComponent.module.css";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import DrawingOptionsComponent from "@AppBuilderShared/components/shapediver/ui/DrawingOptionsComponent";
 
 /**
  * Parse the value of a drawing parameter and extract the points data.
- * @param value 
- * @returns 
+ * @param value
+ * @returns
  */
 const parsePointsData = (value?: string): PointsData => {
 	if (!value) return [];
@@ -64,7 +64,7 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 
 	/**
 	 * Callback function to activate the drawing.
-	 * 
+	 *
 	 * If another drawing parameter is already active, a notification is shown.
 	 * Otherwise, the drawing is activated and the active parameter ID is set.
 	 */
@@ -148,7 +148,7 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 	} : undefined, [onCancel]);
 
 	// state for the constraints
-	const [isWithinConstraints, setIsWithinConstraints] = useState<boolean>(false);	
+	const [isWithinConstraints, setIsWithinConstraints] = useState<boolean>(false);
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
 
@@ -170,7 +170,7 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 			const minPoints = drawingProps.geometry?.minPoints;
 			const maxPoints = drawingProps.geometry?.maxPoints;
 
-			const within = 
+			const within =
 				(minPoints === undefined || pointsData.length >= minPoints) &&
 				(maxPoints === undefined || pointsData.length <= maxPoints);
 
@@ -182,12 +182,12 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 
 	/**
 	 * The content of the parameter when it is active.
-	 * 
+	 *
 	 * It contains a button to confirm the drawing and a button to cancel the drawing.
-	 * 
+	 *
 	 * The confirm button sets the current parameter value to the points data.
 	 * The cancel button resets the points data to the last value.
-	 * 
+	 *
 	 */
 	const contentActive =
 		<Stack gap={0}>
@@ -239,7 +239,7 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 	/**
 	 * For mobile devices, just show a warning that the drawing is not supported.
 	 */
-	const contentMobile = 
+	const contentMobile =
 		<Button justify="space-between" fullWidth={true} disabled={disabled} className={classes.interactionButton}>
 			<Text size="sm">
 				Not supported on mobile devices
@@ -248,7 +248,7 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 
 	/**
 	 * The content of the parameter when it is inactive.
-	 * 
+	 *
 	 * It contains a button to start the drawing.
 	 * Within the button, the number of points within the drawing is displayed.
 	 */

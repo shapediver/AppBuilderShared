@@ -2,8 +2,8 @@ import { Image, ActionIcon, useMantineColorScheme, useComputedColorScheme } from
 import { useLinkClickHandler } from "react-router-dom";
 import React from "react";
 import classes from "./HeaderBar.module.css";
-import Icon from "./Icon";
-import { IconTypeEnum } from "../../types/shapediver/icons";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import Icon from "@AppBuilderShared/components/ui/Icon";
 
 /**
  * Functional component that creates an image and a icon for the header bar.

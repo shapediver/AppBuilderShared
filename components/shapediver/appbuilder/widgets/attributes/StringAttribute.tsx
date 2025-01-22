@@ -3,7 +3,7 @@ import { ATTRIBUTE_VISUALIZATION, IStringAttribute } from "@shapediver/viewer.fe
 import { SDTF_TYPEHINT } from "@shapediver/viewer.session";
 import { IconChevronUp, IconChevronDown } from "@tabler/icons-react";
 import React, { useEffect, useState } from "react";
-import BaseAttribute from "./BaseAttribute";
+import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
 
 interface Props {
 	name: string;
@@ -42,7 +42,7 @@ export default function StringAttribute(props: Props) {
 		}
 	}, [attribute]);
 
-	const legend = 					
+	const legend =
 	<Stack p="xs">
 		<Group justify="space-between" onClick={() => setOptionsOpened((t) => !t)}>
 			<Text size={"sm"} fw={400} fs="italic" ta="left">

@@ -1,8 +1,8 @@
 import { IDrawingParameterSettings, ITreeNode } from "@shapediver/viewer.session";
 import { CameraPlaneRestrictionProperties, GeometryRestrictionProperties, LineRestrictionProperties, PlaneRestrictionProperties, PointRestrictionProperties, Settings } from "@shapediver/viewer.features.drawing-tools";
 import React, { useEffect, useState } from "react";
-import { CreateNameFilterPatternHandler, ICreateNameFilterPatternState } from "../interaction/useCreateNameFilterPattern";
-import { FindNodesByPatternHandler, IFindNodesByPatternState } from "../interaction/useFindNodesByPattern";
+import { ICreateNameFilterPatternState, CreateNameFilterPatternHandler } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useCreateNameFilterPattern";
+import { IFindNodesByPatternState, FindNodesByPatternHandler } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useFindNodesByPattern";
 
 // #region Functions (1)
 

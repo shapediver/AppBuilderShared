@@ -1,21 +1,21 @@
+import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import { IShapeDiverParameter } from "@AppBuilderShared/types/shapediver/parameter";
 import { useMemo } from "react";
-import { useShapeDiverStoreParameters } from "../../../store/useShapeDiverStoreParameters";
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import { IShapeDiverParameter } from "../../../types/shapediver/parameter";
 
 /**
- * Hook providing a shortcut to abstracted parameters managed by {@link useShapeDiverStoreParameters}. 
+ * Hook providing a shortcut to abstracted parameters managed by {@link useShapeDiverStoreParameters}.
  * CAUTION: Use this hook only if you are sure that the parameter is already defined in the store.
- * In case the parameter might not be defined yet in the store, use {@link useParameterStateless} instead. 
- * 
+ * In case the parameter might not be defined yet in the store, use {@link useParameterStateless} instead.
+ *
  * @see {@link IShapeDiverParameter<T>}
- * 
- * @param namespace 
+ *
+ * @param namespace
  * @param parameterId Id, name, or displayname of the parameter
- * @returns 
+ * @returns
  */
 export function useParameter<T>(props: PropsParameter) {
-	
+
 	const { namespace, parameterId } = props;
 	const getParameter = useShapeDiverStoreParameters(state => state.getParameter);
 	const parameter = getParameter(namespace, parameterId)!(state => state as IShapeDiverParameter<T>);

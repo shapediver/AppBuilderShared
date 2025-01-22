@@ -1,15 +1,15 @@
 import React, { } from "react";
 import { Paper, Title } from "@mantine/core";
-import { convertChartData, IAppBuilderWidgetPropsAreaChart } from "../../../../types/shapediver/appbuildercharts";
+import { convertChartData, IAppBuilderWidgetPropsAreaChart } from "@AppBuilderShared/types/shapediver/appbuildercharts";
 import { AreaChart } from "@mantine/charts";
 
 export default function AppBuilderAreaChartWidgetComponent(props: IAppBuilderWidgetPropsAreaChart) {
-	
+
 	const {name, style, type, plotSettings, data} = props;
 
 	return (
 		<Paper>
-			<Title 
+			<Title
 				order={2} // TODO make this a style prop
 				style={{marginBottom:"20px",}} // TODO make this a style prop
 			>
@@ -30,7 +30,7 @@ export default function AppBuilderAreaChartWidgetComponent(props: IAppBuilderWid
 				series={data.series}
 				curveType={style}
 				type={type}
-				
+
 			/>
 		</Paper>
 	);

@@ -1,7 +1,7 @@
-import { IAppBuilderSettingsSession } from "../../types/shapediver/appbuilder";
+import { IAppBuilderSettingsSession } from "@AppBuilderShared/types/shapediver/appbuilder";
+import { IShapeDiverExampleModels } from "@AppBuilderShared/types/shapediver/examplemodel";
 import { MantineThemeComponent, useProps } from "@mantine/core";
 import { useMemo } from "react";
-import { IShapeDiverExampleModels } from "../../types/shapediver/examplemodel";
 
 interface Props extends IAppBuilderSettingsSession {
 	/** Name of example model */

@@ -1,7 +1,7 @@
 import { gatherNodesForPattern, NodeNameFilterPattern } from "@shapediver/viewer.features.interaction";
 import { ITreeNode, OutputApiData, SessionApiData } from "@shapediver/viewer.session";
 import { useCallback, useEffect, useState } from "react";
-import { useOutputNode } from "../useOutputNode";
+import { useOutputNode } from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
 
 // #region Type aliases (2)
 
@@ -25,12 +25,12 @@ export type IFindNodesByPatternState = {
 
 /**
  * Hook for finding nodes in the scene tree that match the given patterns.
- * 
+ *
  * Makes use of {@link useOutputNode}.
- * 
+ *
  * @param patterns The patterns for matching the node names of the given output
- * 
- * @returns 
+ *
+ * @returns
  */
 export function useFindNodesByPattern(
 	sessionId: string,
@@ -46,8 +46,8 @@ export function useFindNodesByPattern(
 	const [nodes, setNodes] = useState<ITreeNode[]>([]);
 
 	/**
-     * Output update callback for gathering the nodes. 
-     * 
+     * Output update callback for gathering the nodes.
+     *
      * @param node
      */
 	const callback = useCallback((newNode?: ITreeNode, oldNode?: ITreeNode) => {
@@ -79,7 +79,7 @@ export function useFindNodesByPattern(
 					}
 				}
 			}
-	
+
 			setNodes(Object.values(availableNodes).map(n => n.node));
 		}
 

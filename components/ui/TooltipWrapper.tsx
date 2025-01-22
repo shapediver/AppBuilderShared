@@ -1,5 +1,5 @@
 import { MantineThemeComponent, MantineThemeOverride, MantineThemeProvider, Tooltip, TooltipProps, useMantineTheme, useProps } from "@mantine/core";
-import React, {  } from "react";
+import React from "react";
 
 interface TooltipWrapperProps {
 	floating?: boolean;

@@ -1,25 +1,25 @@
 import { ActionIcon, Box, Button, Flex, Group, Loader, Stack, Text } from "@mantine/core";
 import React, { useCallback, useEffect, useState } from "react";
-import ParameterLabelComponent from "./ParameterLabelComponent";
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import { useParameterComponentCommons } from "../../../hooks/shapediver/parameters/useParameterComponentCommons";
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import { ISelectionParameterProps, SelectionParameterValue } from "@shapediver/viewer.session";
-import { useSelection } from "../../../hooks/shapediver/viewer/interaction/selection/useSelection";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
-import Icon from "../../ui/Icon";
-import { useViewportId } from "../../../hooks/shapediver/viewer/useViewportId";
 import classes from "./ParameterInteractionComponent.module.css";
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import { useParameterComponentCommons } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import { useViewportId } from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import { useSelection } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
 
 /**
  * Parse the value of a selection parameter and extract the selected node names.
- * @param value 
- * @returns 
+ * @param value
+ * @returns
  */
 const parseNames = (value?: string): string[] => {
 	if (!value) return [];
 	try {
 		const parsed = JSON.parse(value);
-		
+
 		return parsed.names;
 	}
 	catch {
@@ -47,18 +47,18 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 	const selectionProps = definition.settings?.props as ISelectionParameterProps;
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
-	
-	// is the selection active or not? 
+
+	// is the selection active or not?
 	const [selectionActive, setSelectionActive] = useState<boolean>(false);
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
 
 	// get the viewport ID
 	const { viewportId } = useViewportId();
-	
+
 	const { selectedNodeNames, setSelectedNodeNames, setSelectedNodeNamesAndRestoreSelection, handlers } = useSelection(
-		sessionDependencies, 
-		viewportId, 
+		sessionDependencies,
+		viewportId,
 		selectionProps,
 		selectionActive,
 		parseNames(value)
@@ -89,7 +89,7 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 		const parameterValue: SelectionParameterValue = { names };
 		handleChange(JSON.stringify(parameterValue), 0);
 	}, []);
-	
+
 	// check whether the selection should be accepted immediately
 	useEffect(() => {
 		if (acceptImmediately)
@@ -114,7 +114,7 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 			setSelectionActive(false);
 			setSelectedNodeNames(names);
 		}
-	}, [state.uiValue]); 
+	}, [state.uiValue]);
 
 	/**
 	 * Callback function to clear the selection.
@@ -125,13 +125,13 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 
 	/**
 	 * The content of the parameter when it is active.
-	 * 
+	 *
 	 * It contains a button to confirm the selection and a button to cancel the selection
 	 * as well as the number of selected nodes and the selection constraints.
-	 * 
+	 *
 	 * The confirm button is only enabled if the selection is within the constraints.
 	 * The cancel button resets the selection to the last value.
-	 * 
+	 *
 	 */
 	const contentActive =
 		<Stack>
@@ -188,7 +188,7 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 
 	/**
 	 * The content of the parameter when it is inactive.
-	 * 
+	 *
 	 * It contains a button to start the selection.
 	 * Within the button, the number of selected nodes is displayed.
 	 */

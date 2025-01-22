@@ -1,9 +1,9 @@
 import React, { useCallback, useContext } from "react";
-import { IAppBuilderActionPropsCloseConfigurator } from "../../../../types/shapediver/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
-import { ECommerceApiSingleton } from "../../../../modules/ecommerce/singleton";
-import { NotificationContext } from "../../../../context/NotificationContext";
-import { IconTypeEnum } from "../../../../types/shapediver/icons";
+import { IAppBuilderActionPropsCloseConfigurator } from "@AppBuilderShared/types/shapediver/appbuilder";
+import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
+import { ECommerceApiSingleton } from "@AppBuilderShared/modules/ecommerce/singleton";
+import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
 
 type Props = IAppBuilderActionPropsCloseConfigurator & {
 };
@@ -14,16 +14,16 @@ type Props = IAppBuilderActionPropsCloseConfigurator & {
  * @returns
  */
 export default function AppBuilderActionCloseConfiguratorComponent(props: Props) {
-	
-	const { 
-		label = "Close configurator", 
-		icon = IconTypeEnum.X, 
-		tooltip, 
+
+	const {
+		label = "Close configurator",
+		icon = IconTypeEnum.X,
+		tooltip,
 	} = props;
 	const notifications = useContext(NotificationContext);
 
 	const onClick = useCallback(async () => {
-		// in case we are not running inside an iframe, the instance of 
+		// in case we are not running inside an iframe, the instance of
 		// IEcommerceApi will be a dummy for testing
 		const api = await ECommerceApiSingleton;
 		const result = await api.closeConfigurator();
@@ -31,7 +31,7 @@ export default function AppBuilderActionCloseConfiguratorComponent(props: Props)
 			notifications.error({message: "Could not close configurator."});
 	}, []);
 
-	return <AppBuilderActionComponent 
+	return <AppBuilderActionComponent
 		label={label}
 		icon={icon}
 		tooltip={tooltip}

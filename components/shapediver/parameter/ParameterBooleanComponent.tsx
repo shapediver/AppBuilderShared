@@ -1,8 +1,8 @@
+import { useParameterComponentCommons } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import { Switch } from "@mantine/core";
 import React from "react";
-import ParameterLabelComponent from "./ParameterLabelComponent";
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import { useParameterComponentCommons } from "../../../hooks/shapediver/parameters/useParameterComponentCommons";
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 
 /**
  * Functional component that creates a button for a boolean parameter.

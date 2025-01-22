@@ -1,15 +1,15 @@
+import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import { IAcceptRejectModeSelector, IGenericParameterDefinition, IGenericParameterExecutor } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import { useEffect } from "react";
-import { useShapeDiverStoreParameters } from "../../../store/useShapeDiverStoreParameters";
-import { IAcceptRejectModeSelector, IGenericParameterDefinition, IGenericParameterExecutor } from "../../../types/store/shapediverStoreParameters";
 import { useShallow } from "zustand/react/shallow";
 
 
 /**
- * Hook for defining generic parameters to be displayed in the UI. 
- * Generic parameters are not based on parameters exposed by a ShapeDiver model. 
- * They allow you to add custom controls to your web app. 
+ * Hook for defining generic parameters to be displayed in the UI.
+ * Generic parameters are not based on parameters exposed by a ShapeDiver model.
+ * They allow you to add custom controls to your web app.
  * CAUTION: Changes to the executor or acceptRejectMode are not reactive.
- * 
+ *
  * @see {@link useShapeDiverStoreParameters} to access the abstracted parameters and exports.
  *
  * @param namespace The namespace to use for the parameters.
@@ -19,17 +19,17 @@ import { useShallow } from "zustand/react/shallow";
  * @returns
  */
 export function useDefineGenericParameters(
-	namespace: string, 
-	acceptRejectMode: boolean | IAcceptRejectModeSelector, 
-	definitions: IGenericParameterDefinition | IGenericParameterDefinition[], 
+	namespace: string,
+	acceptRejectMode: boolean | IAcceptRejectModeSelector,
+	definitions: IGenericParameterDefinition | IGenericParameterDefinition[],
 	executor: IGenericParameterExecutor,
 	dependsOnSessions?: string[] | string | undefined
 ) {
-	
+
 	const { syncGeneric, removeSession } = useShapeDiverStoreParameters(
 		useShallow(state => ({ syncGeneric: state.syncGeneric, removeSession: state.removeSession }))
 	);
-	
+
 	// keep the generic parameters in sync
 	useEffect(() => {
 		syncGeneric(namespace, acceptRejectMode, definitions, executor, dependsOnSessions);
@@ -43,6 +43,6 @@ export function useDefineGenericParameters(
 	}, [namespace]);
 
 	return {
-		
+
 	};
 }

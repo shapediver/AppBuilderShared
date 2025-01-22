@@ -2,11 +2,11 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Gumball, updateGumballTransformation } from "@shapediver/viewer.features.gumball";
 import { getNodesByName } from "@shapediver/viewer.features.interaction";
 import { IGumballParameterProps, ISelectionParameterProps } from "@shapediver/viewer.session";
-import { useShapeDiverStoreSession } from "shared/store/useShapeDiverStoreSession";
-import { useShapeDiverStoreViewport } from "shared/store/useShapeDiverStoreViewport";
-import { useSelection } from "../selection/useSelection";
-import { useGumballEvents } from "./useGumballEvents";
 import { mat4 } from "gl-matrix";
+import { useSelection } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
+import { useGumballEvents } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumballEvents";
+import { useShapeDiverStoreSession } from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import { useShapeDiverStoreViewport } from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 
 // #region Functions (1)
 
@@ -21,9 +21,9 @@ export interface IGumballState {
 	}[],
 	/**
 	 * Set the transformed node names.
-	 * 
-	 * @param nodes 
-	 * @returns 
+	 *
+	 * @param nodes
+	 * @returns
 	 */
 	setTransformedNodeNames: (nodes: { name: string, transformation: number[], localTransformations?: number[] }[]) => void,
 	/**
@@ -32,17 +32,17 @@ export interface IGumballState {
 	selectedNodeNames: string[],
 	/**
 	 * Set the selected node names.
-	 * 
-	 * @param selectedNodes 
-	 * @returns 
+	 *
+	 * @param selectedNodes
+	 * @returns
 	 */
 	setSelectedNodeNames: (selectedNodes: string[]) => void,
 	/**
 	 * Restore the transformed node names.
-	 * 
-	 * @param newTransformedNodeNames 
-	 * @param oldTransformedNodeNames 
-	 * @returns 
+	 *
+	 * @param newTransformedNodeNames
+	 * @param oldTransformedNodeNames
+	 * @returns
 	 */
 	restoreTransformedNodeNames: (newTransformedNodeNames: { name: string, transformation: number[], localTransformations?: number[] }[], oldTransformedNodeNames: { name: string }[]) => void,
 	/**
@@ -54,7 +54,7 @@ export interface IGumballState {
 /**
  * Hook providing stateful gumball interaction for a viewport and session.
  * This wraps lower level hooks for the selection and gumball events.
- * 
+ *
  * @param sessionIds IDs of the sessions for which the gumball shall be created.
  * @param viewportId ID of the viewport for which the gumball shall be created.
  * @param gumballProps Parameter properties to be used. This includes name filters, and properties for the behavior of the gumball.
@@ -63,8 +63,8 @@ export interface IGumballState {
  * 					Note that this initial state is not checked against the filter pattern.
  */
 export function useGumball(
-	sessionIds: string[], 
-	viewportId: string, 
+	sessionIds: string[],
+	viewportId: string,
 	gumballProps: IGumballParameterProps,
 	activate: boolean,
 	initialTransformedNodeNames?: { name: string, transformation: number[] }[],
@@ -74,7 +74,7 @@ export function useGumball(
 	const sessionApis = useShapeDiverStoreSession(state => { return sessionIds.map(id => state.sessions[id]); });
 	// get the viewport API
 	const viewportApi = useShapeDiverStoreViewport(state => { return state.viewports[viewportId]; });
-	
+
 	// create the selection settings from the interaction settings
 	const selectionSettings = useMemo(() => {
 		if (!gumballProps) return {};
@@ -120,13 +120,13 @@ export function useGumball(
 			}
 		};
 	}, [viewportApi, sessionApis, selectedNodeNames]);
-	
+
 	/**
 	 * Restore the transformed node names.
-	 * 
+	 *
 	 * This function is used to restore the transformed nodes to their new transformation state.
 	 * This means that the transformation of the nodes is updated to the new transformation state.
-	 * 
+	 *
 	 * @param newTransformedNodeNames The new transformed node names.
 	 * @param oldTransformedNodeNames The old transformed node names.
 	 * @returns
@@ -140,7 +140,7 @@ export function useGumball(
 
 			// if there is a local transformation present that we can reset to, use it
 			let transformationMatrix: mat4 | undefined;
-			if(newTransformation && newTransformation.localTransformations) 
+			if(newTransformation && newTransformation.localTransformations)
 				transformationMatrix = mat4.fromValues(...(newTransformation.localTransformations as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]));
 
 			// update the gumball transformation
@@ -164,9 +164,9 @@ export function useGumball(
 
 /**
  * Get a single available node name, if there is only one available.
- * 
- * @param availableNodeNames 
- * @returns 
+ *
+ * @param availableNodeNames
+ * @returns
  */
 const getSingleAvailableNodeName = (availableNodeNames: { [key: string]: { [key: string]: string[] } }): string | undefined => {
 	let availableNodeName: string | undefined = undefined;

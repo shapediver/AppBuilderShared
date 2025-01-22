@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { IUseSessionDto, useSession } from "./useSession";
-import { useSessionPropsParameter } from "./parameters/useSessionPropsParameter";
-import { IGenericParameterDefinition, IGenericParameterExecutor } from "../../types/store/shapediverStoreParameters";
-import { useSessionPropsExport } from "./parameters/useSessionPropsExport";
-import { useDefineGenericParameters } from "./parameters/useDefineGenericParameters";
-import { useParameterStateless } from "./parameters/useParameterStateless";
-import { useOutputContent } from "./viewer/useOutputContent";
+import { IUseSessionDto, useSession } from "@AppBuilderShared/hooks/shapediver/useSession";
+import { useSessionPropsParameter } from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
+import { useSessionPropsExport } from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
+import { useDefineGenericParameters } from "@AppBuilderShared/hooks/shapediver/parameters/useDefineGenericParameters";
+import { useParameterStateless } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterStateless";
+import { useOutputContent } from "@AppBuilderShared/hooks/shapediver/viewer/useOutputContent";
 import { ShapeDiverResponseParameter } from "@shapediver/viewer.session";
+import { IGenericParameterDefinition, IGenericParameterExecutor } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 
 /** Prefix used to register custom parameters */
 const CUSTOM_SESSION_ID_POSTFIX = "_customui";

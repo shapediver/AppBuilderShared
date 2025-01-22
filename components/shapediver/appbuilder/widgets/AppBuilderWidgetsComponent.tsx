@@ -1,30 +1,31 @@
 import React, { useContext } from "react";
-import { 
-	IAppBuilderWidget, 
-	isAccordionWidget, 
-	isAreaChartWidget, 
-	isBarChartWidget, 
-	isImageWidget, 
-	isLineChartWidget, 
-	isRoundChartWidget, 
+import {
+	IAppBuilderWidget,
+	isAccordionWidget,
+	isAreaChartWidget,
+	isBarChartWidget,
+	isImageWidget,
+	isLineChartWidget,
+	isRoundChartWidget,
 	isTextWidget,
 	isActionsWidget,
 	isAgentWidget,
-} from "../../../../types/shapediver/appbuilder";
-import AppBuilderTextWidgetComponent from "./AppBuilderTextWidgetComponent";
-import AppBuilderImageWidgetComponent from "./AppBuilderImageWidgetComponent";
-import AppBuilderAccordionWidgetComponent from "./AppBuilderAccordionWidgetComponent";
-import AppBuilderRoundChartWidgetComponent from "./AppBuilderRoundChartWidgetComponent";
-import AppBuilderLineChartWidgetComponent from "./AppBuilderLineChartWidgetComponent";
-import AppBuilderAreaChartWidgetComponent from "./AppBuilderAreaChartWidgetComponent";
-import AppBuilderBarChartWidgetComponent from "./AppBuilderBarChartWidgetComponent";
-import AppBuilderActionsWidgetComponent from "./AppBuilderActionsWidgetComponent";
-import { ComponentContext } from "shared/context/ComponentContext";
-import AppBuilderAgentWidgetComponent from "./AppBuilderAgentWidgetComponent";
+} from "@AppBuilderShared/types/shapediver/appbuilder";
+import AppBuilderTextWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
+import AppBuilderImageWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderImageWidgetComponent";
+import AppBuilderAccordionWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
+import AppBuilderRoundChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
+import AppBuilderLineChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
+import AppBuilderAreaChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAreaChartWidgetComponent";
+import AppBuilderBarChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderBarChartWidgetComponent";
+import AppBuilderActionsWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderActionsWidgetComponent";
+import { ComponentContext } from "@AppBuilderShared/context/ComponentContext";
+import AppBuilderAgentWidgetComponent
+	from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAgentWidgetComponent";
 
 interface Props {
-	/** 
-	 * Default session namespace to use for parameter and export references that do 
+	/**
+	 * Default session namespace to use for parameter and export references that do
 	 * not specify a session namespace.
 	 */
 	namespace: string,

@@ -1,7 +1,7 @@
 import { addListener, EVENTTYPE_INTERACTION, IEvent, removeListener } from "@shapediver/viewer.session";
 import { InteractionEventResponseMapping, matchNodesWithPatterns, MultiSelectManager, OutputNodeNameFilterPatterns } from "@shapediver/viewer.features.interaction";
 import { useState, useCallback, useEffect, useContext } from "react";
-import { NotificationContext } from "../../../../../context/NotificationContext";
+import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
 
 // #region Functions (1)
 
@@ -13,29 +13,29 @@ export interface ISelectionState {
     selectedNodeNames: string[],
 	/**
 	 * Set the selected node names.
-	 * 
-	 * @param names 
-	 * @returns 
+	 *
+	 * @param names
+	 * @returns
 	 */
 	setSelectedNodeNames: (names: string[]) => void,
 	/**
 	 * Callback function to reset (clear) the selected node names.
-	 * 
-	 * @returns 
+	 *
+	 * @returns
 	 */
     resetSelectedNodeNames: () => void
 }
 /**
  * This hook registers to selection events and provides a state of selected node names
  * according to the provided filter pattern.
- * 
+ *
  * @param patterns The pattern to match the hovered nodes.
  * @param componentId The ID of the component.
  * @param initialSelectedNodeNames The initial selected node names (used to initialize the selection state).
  * 					Note that this initial state is not checked against the filter pattern.
  */
 export function useSelectManagerEvents(
-	patterns: { [key: string]: OutputNodeNameFilterPatterns }, 
+	patterns: { [key: string]: OutputNodeNameFilterPatterns },
 	componentId: string,
 	initialSelectedNodeNames?: string[],
 	strictNaming = true

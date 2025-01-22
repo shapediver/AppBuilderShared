@@ -1,6 +1,6 @@
 import { useCallback } from "react";
-import { useCreateModelState } from "./useCreateModelState";
-import { useKeyBinding } from "./useKeyBinding";
+import { useCreateModelState } from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import { useKeyBinding } from "@AppBuilderShared/hooks/shapediver/useKeyBinding";
 
 interface Props {
 	namespace: string

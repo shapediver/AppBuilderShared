@@ -1,8 +1,8 @@
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import { useExport } from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
+import { PropsExport } from "@AppBuilderShared/types/components/shapediver/propsExport";
 import { MantineThemeComponent, Text, useProps } from "@mantine/core";
-import { useExport } from "../../../hooks/shapediver/parameters/useExport";
 import React from "react";
-import { PropsExport } from "../../../types/components/shapediver/propsExport";
-import TooltipWrapper from "../../ui/TooltipWrapper";
 
 interface StyleProps {
 	fontWeight: string
@@ -27,7 +27,7 @@ export function ExportLabelComponentThemeProps(props: ParameterLabelComponentPro
  */
 export default function ExportLabelComponent(props: PropsExport & Partial<StyleProps>) {
 	const { definition } = useExport(props);
-	const { 
+	const {
 		fontWeight,
 	} = useProps("ExportLabelComponent", defaultStyleProps, props);
 	const { displayname, name, tooltip } = definition;

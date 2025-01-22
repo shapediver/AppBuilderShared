@@ -2,7 +2,7 @@ import { ColorInput } from "@mantine/core";
 import { IDefaultAttribute } from "@shapediver/viewer.features.attribute-visualization";
 import { SDTF_TYPEHINT } from "@shapediver/viewer.session";
 import React, { useEffect, useState } from "react";
-import BaseAttribute from "./BaseAttribute";
+import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
 
 interface Props {
     name: string;
@@ -28,10 +28,10 @@ export default function DefaultAttribute(props: Props) {
 	}, [attribute]);
 
 	return (
-		<BaseAttribute 
-			name={name} 
+		<BaseAttribute
+			name={name}
 			type={attributeDefinition.typeHint}
-			removeAttribute={removeAttribute} 
+			removeAttribute={removeAttribute}
 			changeOrder={changeOrder}>
 			<ColorInput
 				placeholder="Pick color"

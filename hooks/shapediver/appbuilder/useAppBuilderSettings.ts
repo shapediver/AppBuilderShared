@@ -1,22 +1,11 @@
+import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
+import { useThemeOverrideStore } from "@AppBuilderShared/store/useThemeOverrideStore";
+import { IAppBuilderSettings, IAppBuilderSettingsJson, IAppBuilderSettingsSession } from "@AppBuilderShared/types/shapediver/appbuilder";
+import { validateAppBuilderSettingsJson } from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
+import { QUERYPARAM_CONTEXT, QUERYPARAM_DISABLEFALLBACKUI, QUERYPARAM_MODELSTATEID, QUERYPARAM_MODELVIEWURL, QUERYPARAM_PARAMVALUE_PREFIX, QUERYPARAM_PLATFORMURL, QUERYPARAM_SETTINGSURL, QUERYPARAM_SLUG, QUERYPARAM_TEMPLATE, QUERYPARAM_TICKET } from "@AppBuilderShared/types/shapediver/queryparams";
+import { getDefaultPlatformUrl } from "@AppBuilderShared/utils/platform/environment";
 import { useEffect, useMemo } from "react";
-import useAsync from "../../misc/useAsync";
-import { IAppBuilderSettings, IAppBuilderSettingsJson, IAppBuilderSettingsSession } from "../../../types/shapediver/appbuilder";
-import useResolveAppBuilderSettings from "./useResolveAppBuilderSettings";
-import { validateAppBuilderSettingsJson } from "../../../types/shapediver/appbuildertypecheck";
-import { useThemeOverrideStore } from "../../../store/useThemeOverrideStore";
-import { getDefaultPlatformUrl } from "../../../utils/platform/environment";
-import { 
-	QUERYPARAM_CONTEXT,
-	QUERYPARAM_DISABLEFALLBACKUI,
-	QUERYPARAM_MODELSTATEID,
-	QUERYPARAM_MODELVIEWURL,
-	QUERYPARAM_PARAMVALUE_PREFIX,
-	QUERYPARAM_PLATFORMURL,
-	QUERYPARAM_SETTINGSURL,
-	QUERYPARAM_SLUG,
-	QUERYPARAM_TEMPLATE,
-	QUERYPARAM_TICKET 
-} from "../../../types/shapediver/queryparams";
+import useResolveAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder//useResolveAppBuilderSettings";
 
 /**
  * Test a string value for being "true" or "1".

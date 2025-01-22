@@ -1,10 +1,11 @@
 import React, { useMemo } from "react";
-import TabsComponent, { ITabsComponentProps } from "../../ui/TabsComponent";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
-import ParametersAndExportsAccordionComponent from "../ui/ParametersAndExportsAccordionComponent";
-import AcceptRejectButtons from "../ui/AcceptRejectButtons";
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import { PropsExport } from "../../../types/components/shapediver/propsExport";
+import TabsComponent, { ITabsComponentProps } from "@AppBuilderShared/components/ui/TabsComponent";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import ParametersAndExportsAccordionComponent
+	from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
+import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import { PropsExport } from "@AppBuilderShared/types/components/shapediver/propsExport";
 
 interface Props {
 	parameters: PropsParameter[],
@@ -43,7 +44,7 @@ export default function AppBuilderFallbackContainerComponent({ parameters, expor
 				]
 			});
 		}
-		
+
 		return tabProps;
 	}, [parameters, exports]);
 

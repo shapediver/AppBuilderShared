@@ -1,4 +1,4 @@
-import React, { } from "react";
+import React from "react";
 import { Group, MantineSpacing, MantineThemeComponent, StyleProp, useProps } from "@mantine/core";
 
 interface Props {

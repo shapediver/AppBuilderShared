@@ -1,7 +1,7 @@
+import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import { PropsExport } from "@AppBuilderShared/types/components/shapediver/propsExport";
+import { IShapeDiverExport } from "@AppBuilderShared/types/shapediver/export";
 import { useMemo } from "react";
-import { useShapeDiverStoreParameters } from "../../../store/useShapeDiverStoreParameters";
-import { PropsExport } from "../../../types/components/shapediver/propsExport";
-import { IShapeDiverExport } from "../../../types/shapediver/export";
 
 /**
  * Hook providing a shortcut to abstracted exports managed by {@link useShapeDiverStoreParameters}. 

@@ -1,7 +1,7 @@
 import { ActionIcon, Grid, Group, Paper, Stack, Text } from "@mantine/core";
 import React from "react";
-import Icon from "shared/components/ui/Icon";
-import { IconTypeEnum } from "shared/types/shapediver/icons";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
 
 
 interface BaseAttributeProps {
@@ -45,7 +45,7 @@ export default function BaseAttribute(props: BaseAttributeProps) {
 							onClick={() => removeAttribute(name, type)}
 						/>
 					</Group>
-					
+
 					<Group grow wrap="nowrap">
 						{children}
 					</Group>

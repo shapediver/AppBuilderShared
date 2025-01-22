@@ -1,6 +1,6 @@
+import { useShapeDiverStoreViewport } from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import { InteractionEngine } from "@shapediver/viewer.features.interaction";
 import { useEffect } from "react";
-import { useShapeDiverStoreViewport } from "../../../../store/useShapeDiverStoreViewport";
 
 // #region Functions (1)
 
@@ -9,8 +9,8 @@ const interactionEngines: { [key: string]: InteractionEngine } = {};
 
 /**
  * Hook allowing to create an interaction engine for a viewport.
- * 
- * @param viewportId 
+ *
+ * @param viewportId
  */
 export function useInteractionEngine(viewportId: string): {
 	/**

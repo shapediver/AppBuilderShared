@@ -1,5 +1,5 @@
+import { useShapeDiverStoreSession } from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import { convertUserDefinedNameFilters, OutputNodeNameFilterPatterns } from "@shapediver/viewer.features.interaction";
-import { useShapeDiverStoreSession } from "../../../../store/useShapeDiverStoreSession";
 import { useState, useEffect } from "react";
 
 // #region Type aliases (2)
@@ -21,9 +21,9 @@ export type ICreateNameFilterPatternState = {
 // #region Functions (1)
 
 /**
- * Hook that converts user-defined name filters to filter patterns used by interaction hooks. 
- * 
- * @param sessionIds The IDs of the sessions to create the filter pattern for. 
+ * Hook that converts user-defined name filters to filter patterns used by interaction hooks.
+ *
+ * @param sessionIds The IDs of the sessions to create the filter pattern for.
  * 					If not provided, the filter pattern will be created for all sessions.
  * @param nameFilter The user-defined name filters to convert.
  */

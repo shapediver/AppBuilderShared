@@ -1,5 +1,5 @@
+import { IUseSessionDto } from "@AppBuilderShared/hooks/shapediver/useSession";
 import { create } from "zustand";
-import { IUseSessionDto } from "../hooks/shapediver/useSession";
 
 export interface ISelectedModel extends IUseSessionDto  {
 	name: string,

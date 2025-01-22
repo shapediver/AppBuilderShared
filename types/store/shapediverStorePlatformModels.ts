@@ -7,7 +7,7 @@ import {
 	IPlatformPagedItemQueryProps,
 	IShapeDiverStorePlatformGeneric,
 	IShapeDiverStorePlatformGenericExtended
-} from "./shapediverStorePlatformGeneric";
+} from "@AppBuilderShared/types/store/shapediverStorePlatformGeneric";
 
 /**
  * Actions that can be taken on a model.

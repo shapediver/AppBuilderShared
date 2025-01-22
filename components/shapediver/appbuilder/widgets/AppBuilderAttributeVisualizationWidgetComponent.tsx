@@ -1,14 +1,14 @@
-import ColorAttribute from "./attributes/ColorAttribute";
-import DefaultAttribute from "./attributes/DefaultAttribute";
-import Icon from "shared/components/ui/Icon";
-import NumberAttribute from "./attributes/NumberAttribute";
+import ColorAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/ColorAttribute";
+import DefaultAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/DefaultAttribute";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import NumberAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/NumberAttribute";
 import React, {
 	useCallback,
 	useEffect,
 	useRef,
 	useState
 } from "react";
-import StringAttribute from "./attributes/StringAttribute";
+import StringAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/StringAttribute";
 import {
 	ActionIcon,
 	Grid,
@@ -35,13 +35,13 @@ import {
 } from "@shapediver/viewer.session";
 import { AttributeVisualizationEngine, IAttribute, ILayer } from "@shapediver/viewer.features.attribute-visualization";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
-import { IconTypeEnum } from "shared/types/shapediver/icons";
-import { IShapeDiverStoreSessions } from "shared/types/store/shapediverStoreSession";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import { IShapeDiverStoreSessions } from "@AppBuilderShared/types/store/shapediverStoreSession";
 import { IViewportApi } from "@shapediver/viewer.viewport";
-import { useShapeDiverStoreSession } from "shared/store/useShapeDiverStoreSession";
-import { useShapeDiverStoreViewport } from "shared/store/useShapeDiverStoreViewport";
-import { useViewportId } from "shared/hooks/shapediver/viewer/useViewportId";
-import SelectedAttribute from "./attributes/SelectedAttribute";
+import { useShapeDiverStoreSession } from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import { useShapeDiverStoreViewport } from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import { useViewportId } from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import SelectedAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/SelectedAttribute";
 
 export default function AppBuilderAttributeVisualizationWidgetComponent() {
 	const { viewportId } = useViewportId();
@@ -136,7 +136,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent() {
 		setSelectedValues((prev) => {
 			const newSelectedValues = [...prev];
 			const index = newSelectedValues.findIndex((value) => value.name === name && value.type === type);
-			if (index !== -1) 
+			if (index !== -1)
 				newSelectedValues.splice(index, 1);
 
 			return newSelectedValues;
@@ -145,7 +145,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent() {
 		setRenderedAttributes((prev) => {
 			const newRenderedAttributes = [...prev];
 			const index = newRenderedAttributes.findIndex((attr) => attr.key === name && attr.type === type);
-			if (index !== -1) 
+			if (index !== -1)
 				newRenderedAttributes.splice(index, 1);
 
 			return newRenderedAttributes;
@@ -408,9 +408,9 @@ export default function AppBuilderAttributeVisualizationWidgetComponent() {
 
 /**
  * Function to create a new attribute visualization engine
- * 
- * @param viewport 
- * @returns 
+ *
+ * @param viewport
+ * @returns
  */
 const createAttributeVisualizationEngine = (viewport: IViewportApi) => {
 	const attributeVisualizationEngine = new AttributeVisualizationEngine(viewport);
@@ -432,10 +432,10 @@ const createAttributeVisualizationEngine = (viewport: IViewportApi) => {
 
 /**
  * Function to toggle the attribute visualization
- * 
- * @param toggle 
- * @param viewport 
- * @param sessionApis 
+ *
+ * @param toggle
+ * @param viewport
+ * @param sessionApis
  */
 const toggleAttributeVisualization = async (toggle: boolean, viewport: IViewportApi, sessionApis: IShapeDiverStoreSessions) => {
 	if (toggle) {
@@ -456,8 +456,8 @@ const toggleAttributeVisualization = async (toggle: boolean, viewport: IViewport
 
 /**
  * Function to load the sdtf data of the session apis
- * 
- * @param sessionApis 
+ *
+ * @param sessionApis
  */
 const loadSdtf = async (sessionApis: IShapeDiverStoreSessions) => {
 	const promises = [];

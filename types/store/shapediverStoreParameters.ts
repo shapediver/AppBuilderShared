@@ -1,9 +1,9 @@
 import { ShapeDiverResponseExport } from "@shapediver/api.geometry-api-dto-v2";
 import { ISessionApi } from "@shapediver/viewer.session";
-import { IShapeDiverExport } from "../shapediver/export";
-import { IShapeDiverParameter, IShapeDiverParameterDefinition } from "../shapediver/parameter";
 import { StoreApi, UseBoundStore } from "zustand";
-import { IEventTracking } from "../eventTracking";
+import { IEventTracking } from "@AppBuilderShared/types/eventTracking";
+import { IShapeDiverExport } from "@AppBuilderShared/types/shapediver/export";
+import { IShapeDiverParameter, IShapeDiverParameterDefinition } from "@AppBuilderShared/types/shapediver/parameter";
 
 /** A store for an individual parameter. */
 export type IParameterStore = UseBoundStore<StoreApi<IShapeDiverParameter<any>>>;

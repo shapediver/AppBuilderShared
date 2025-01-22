@@ -1,6 +1,9 @@
 import { MantineThemeComponent, useProps } from "@mantine/core";
 import React from "react";
-import OverlayWrapper, { OverlayStyleProps, OverlayPosition } from "../ui/OverlayWrapper";
+import OverlayWrapper, {
+	OverlayPosition,
+	OverlayStyleProps
+} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 
 interface Props {
 	children?: React.ReactNode;

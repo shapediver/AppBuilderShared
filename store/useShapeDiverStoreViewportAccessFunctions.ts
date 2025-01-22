@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { IShapeDiverStoreViewportAccessFunctionsStore } from "shared/types/store/shapediverStoreViewportAccessFunctions";
 import { devtools } from "zustand/middleware";
-import { devtoolsSettings } from "./storeSettings";
+import { devtoolsSettings } from "@AppBuilderShared/store/storeSettings";
+import { IShapeDiverStoreViewportAccessFunctionsStore } from "@AppBuilderShared/types/store/shapediverStoreViewportAccessFunctions";
 
 
 /**
@@ -9,9 +9,9 @@ import { devtoolsSettings } from "./storeSettings";
  * @see {@link IShapeDiverStoreViewportAccessFunctions}
  */
 export const useShapeDiverStoreViewportAccessFunctions = create<IShapeDiverStoreViewportAccessFunctionsStore>()(devtools((set, get) => ({
-    
+
 	viewportAccessFunctions: {},
-    
+
 	addViewportAccessFunctions: (viewportId, accessFunctions) => {
 		set(state => ({
 			viewportAccessFunctions: {
@@ -20,7 +20,7 @@ export const useShapeDiverStoreViewportAccessFunctions = create<IShapeDiverStore
 			}
 		}), false, `addViewportAccessFunctions ${viewportId}`);
 	},
-    
+
 	removeViewportAccessFunctions: (viewportId) => {
 		const { viewportAccessFunctions } = get();
 
@@ -29,7 +29,7 @@ export const useShapeDiverStoreViewportAccessFunctions = create<IShapeDiverStore
 		set(state => {
 			const newState = { ...state.viewportAccessFunctions };
 			delete newState[viewportId];
-			
+
 			return { viewportAccessFunctions: newState };
 		}, false, `removeViewportAccessFunctions ${viewportId}`);
 	}

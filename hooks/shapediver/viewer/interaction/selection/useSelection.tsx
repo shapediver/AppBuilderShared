@@ -2,29 +2,29 @@ import { IOutputApi, ISelectionParameterProps, ITreeNode, OutputApiData, Session
 import { checkNodeNameMatch, InteractionData, MultiSelectManager, SelectManager } from "@shapediver/viewer.features.interaction";
 import React, { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { vec3 } from "gl-matrix";
-import { ISelectionState, useSelectManagerEvents } from "./useSelectManagerEvents";
-import { useSelectManager } from "./useSelectManager";
-import { useHoverManager } from "./useHoverManager";
-import { useCreateNameFilterPattern } from "../useCreateNameFilterPattern";
-import { useShapeDiverStoreSession } from "../../../../../store/useShapeDiverStoreSession";
-import { INodeInteractionDataState, NodeInteractionDataHandler } from "../useNodeInteractionData";
+import { ISelectionState, useSelectManagerEvents } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelectManagerEvents";
+import { useSelectManager } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelectManager";
+import { useHoverManager } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useHoverManager";
+import { useCreateNameFilterPattern } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useCreateNameFilterPattern";
+import { INodeInteractionDataState, NodeInteractionDataHandler } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useNodeInteractionData";
+import { useShapeDiverStoreSession } from "@AppBuilderShared/store/useShapeDiverStoreSession";
 
 // #region Functions (1)
 
 /**
- * Hook providing stateful object selection for a viewport and session. 
+ * Hook providing stateful object selection for a viewport and session.
  * This wraps lover level hooks for the select manager, hover manager, and node interaction data.
- * 
+ *
  * @param sessionIds IDs of the sessions for which objects shall be selected.
- * @param viewportId ID of the viewport for which selection shall be enabled. 
+ * @param viewportId ID of the viewport for which selection shall be enabled.
  * @param selectionProps Parameter properties to be used. This includes name filters, and properties for the behavior of the selection.
  * @param activate Set this to true to activate selection. If false, preparations are made but no selection is possible.
  * @param initialSelectedNodeNames The initial selected node names (used to initialize the selection state).
- * 					Note that this initial state is not checked against the filter pattern. 
+ * 					Note that this initial state is not checked against the filter pattern.
  */
 export function useSelection(
-	sessionIds: string[], 
-	viewportId: string, 
+	sessionIds: string[],
+	viewportId: string,
 	selectionProps: ISelectionParameterProps,
 	activate: boolean,
 	initialSelectedNodeNames?: string[],
@@ -36,9 +36,9 @@ export function useSelection(
 	availableNodeNames: { [key: string]: { [key: string]: string[] }},
 	/**
 	 * Set the selected node names and restore the selection status.
-	 * 
+	 *
 	 * @param names The names of the nodes to be selected.
-	 * @returns 
+	 * @returns
 	 */
 	setSelectedNodeNamesAndRestoreSelection: (names: string[]) => void,
 	/**
@@ -62,7 +62,7 @@ export function useSelection(
 	// call the hover manager hook
 	const hoverSettings = useMemo(() => { return { hoverColor: selectionProps.hoverColor }; }, [selectionProps]);
 	useHoverManager(viewportId, componentId, activate ? hoverSettings : undefined);
-	
+
 	// convert the user-defined name filters to filter patterns, and subscribe to selection events
 	const { patterns } = useCreateNameFilterPattern(sessionIds, selectionProps.nameFilter);
 	const { selectedNodeNames, setSelectedNodeNames, resetSelectedNodeNames } = useSelectManagerEvents(patterns, componentId, initialSelectedNodeNames, strictNaming);
@@ -72,7 +72,7 @@ export function useSelection(
 
 	// add interaction data for each output, even if it is not in the pattern
 	// this is necessary to keep the number of hooks constant
-	// TODO to work around this, we would need a hook similar to useOutputUpdateCallback, 
+	// TODO to work around this, we would need a hook similar to useOutputUpdateCallback,
 	// but for all outputs (or the session), e.g. useSessionOutputsUpdateCallback
 	const interactionSettings = useMemo(
 		() => { return { select: true, hover: selectionProps.hover }; },
@@ -138,7 +138,7 @@ export function useSelection(
 			if(state.sessions[sessionId])
 				outputs[sessionId] = state.sessions[sessionId].outputs;
 
-		return outputs; 
+		return outputs;
 	});
 
 
@@ -169,9 +169,9 @@ export function useSelection(
 	/**
 	 * Set the selected node names and restore the selection status.
 	 * This function is used to set the selected node names and select the corresponding nodes.
-	 * 
+	 *
 	 * Currently it is used in the special case where only one node is selectable in the useGumball hook.
-	 * 
+	 *
 	 * @param names The names of the nodes to be selected.
 	 */
 	const setSelectedNodeNamesAndRestoreSelection = useCallback((names: string[]) => {
@@ -181,7 +181,7 @@ export function useSelection(
 
 	return {
 		selectedNodeNames,
-		setSelectedNodeNames, 
+		setSelectedNodeNames,
 		resetSelectedNodeNames,
 		availableNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
@@ -191,10 +191,10 @@ export function useSelection(
 
 /**
  * Restore the selection status for the given outputs.
- * 
- * @param outputsPerSession 
- * @param selectManager 
- * @param selectedNodeNames 
+ *
+ * @param outputsPerSession
+ * @param selectManager
+ * @param selectedNodeNames
  */
 const restoreSelection = (outputsPerSession: { [key: string]: { [key: string]: IOutputApi }}, componentId: string, selectManager?: SelectManager | MultiSelectManager, selectedNodeNames: string[] = [], strictNaming: boolean = true) => {
 	for (const sessionId in outputsPerSession) {
@@ -209,11 +209,11 @@ const restoreSelection = (outputsPerSession: { [key: string]: { [key: string]: I
 
 /**
  * Restore selection status for the given node.
- * 
- * @param node 
- * @param mgr 
- * @param selectedNodeNames 
- * @returns 
+ *
+ * @param node
+ * @param mgr
+ * @param selectedNodeNames
+ * @returns
  */
 const restoreNodeSelection = (node: ITreeNode, componentId: string, mgr: SelectManager | MultiSelectManager, selectedNodeNames: string[], strictNaming: boolean) => {
 	// the node must have an OutputApiData object

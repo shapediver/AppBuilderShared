@@ -1,13 +1,13 @@
 import React from "react";
 import { Alert, Loader, SimpleGrid } from "@mantine/core";
-import ModelCard, { IModelCardProps } from "./ModelCard";
+import ModelCard, { IModelCardProps } from "@AppBuilderShared/components/shapediver/platform/ModelCard";
 import useInfiniteScroll from "react-infinite-scroll-hook";
-import { useShapeDiverStorePlatformModels } from "../../../store/useShapeDiverStorePlatformModels";
-import { TModelQueryProps } from "../../../types/store/shapediverStorePlatformModels";
 import { useShallow } from "zustand/react/shallow";
+import { useShapeDiverStorePlatformModels } from "@AppBuilderShared/store/useShapeDiverStorePlatformModels";
+import { TModelQueryProps } from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 
 export interface IModelLibraryProps extends TModelQueryProps {
-	/** 
+	/**
 	 * Base URL for model view pages
 	 */
 	modelViewBaseUrl: string,
@@ -24,7 +24,7 @@ export default function ModelLibrary(props: IModelLibraryProps) {
 		useShallow(state => ({useQuery: state.useQuery, items: state.items}))
 	);
 	const { loading, error, items, hasMore: hasNextPage, loadMore } = useQuery(rest);
-	
+
 	/**
 	 * see https://www.npmjs.com/package/react-infinite-scroll-hook
 	 */
@@ -42,15 +42,15 @@ export default function ModelLibrary(props: IModelLibraryProps) {
 	});
 
 	const modelItems = items.map(id => modelStore[id]).filter(item => item !== undefined);
-	
+
 	return (
 		error ? <Alert title="Error">{error.message}</Alert> :
 			items.length === 0 && !hasNextPage ? <Alert>No models found.</Alert> :
 				<SimpleGrid cols={3}>
 					{modelItems.map((item, index) => (
-						<ModelCard 
-							key={index} 
-							item={item} 
+						<ModelCard
+							key={index}
+							item={item}
 							href={`${modelViewBaseUrl.endsWith("/") ? modelViewBaseUrl : `${modelViewBaseUrl}/`}?slug=${item.data.slug}`}
 							target="_blank"
 							{...modelCardProps}

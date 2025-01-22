@@ -1,9 +1,9 @@
 import React, { useCallback, useContext } from "react";
-import { IAppBuilderActionPropsAddToCart } from "../../../../types/shapediver/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
-import { useCreateModelState } from "../../../../hooks/shapediver/useCreateModelState";
-import { IconTypeEnum } from "../../../../types/shapediver/icons";
-import { NotificationContext } from "../../../../context/NotificationContext";
+import { IAppBuilderActionPropsAddToCart } from "@AppBuilderShared/types/shapediver/appbuilder";
+import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
+import { useCreateModelState } from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
 
 type Props = IAppBuilderActionPropsAddToCart & {
 	namespace: string;
@@ -15,18 +15,18 @@ type Props = IAppBuilderActionPropsAddToCart & {
  * @returns
  */
 export default function AppBuilderActionCreateModelStateComponent(props: Props) {
-	
-	const { 
-		label = "Save configuration", 
-		icon = IconTypeEnum.DeviceFloppy, 
-		tooltip, 
+
+	const {
+		label = "Save configuration",
+		icon = IconTypeEnum.DeviceFloppy,
+		tooltip,
 		namespace,
-		includeImage, 
+		includeImage,
 		//image, // TODO use image defined by export of href
 		includeGltf
 	} = props;
 	const notifications = useContext(NotificationContext);
-	
+
 	const { createModelState } = useCreateModelState({ namespace });
 
 	const onClick = useCallback(async () => {
@@ -45,10 +45,10 @@ export default function AppBuilderActionCreateModelStateComponent(props: Props) 
 			history.replaceState(history.state, "", url.toString());
 			notifications.success({message: `Model state with ID ${modelStateId} has been saved.`});
 		}
-		
+
 	}, [createModelState, includeImage, includeGltf]);
 
-	return <AppBuilderActionComponent 
+	return <AppBuilderActionComponent
 		label={label}
 		icon={icon}
 		tooltip={tooltip}

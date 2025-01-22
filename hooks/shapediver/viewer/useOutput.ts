@@ -1,14 +1,14 @@
+import { useShapeDiverStoreSession } from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import { IOutputApi } from "@shapediver/viewer.session";
-import { useShapeDiverStoreSession } from "../../../store/useShapeDiverStoreSession";
 
 /**
- * Hook providing access to outputs by id or name. 
- * 
+ * Hook providing access to outputs by id or name.
+ *
  * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IOutputApi.html
- * 
- * @param sessionId 
- * @param outputIdOrName 
- * @returns 
+ *
+ * @param sessionId
+ * @param outputIdOrName
+ * @returns
  */
 export function useOutput(sessionId: string, outputIdOrName: string) : {
 	/**
@@ -17,7 +17,7 @@ export function useOutput(sessionId: string, outputIdOrName: string) : {
 	 */
 	outputApi: IOutputApi | undefined,
 } {
-	
+
 	const outputApi = useShapeDiverStoreSession(state => {
 		const sessionApi = state.sessions[sessionId];
 		if (!sessionApi || !sessionApi.outputs)
@@ -25,7 +25,7 @@ export function useOutput(sessionId: string, outputIdOrName: string) : {
 		if (outputIdOrName in sessionApi.outputs)
 			return sessionApi.outputs[outputIdOrName];
 		const outputs = sessionApi.getOutputByName(outputIdOrName);
-		
+
 		return outputs.length > 0 ? outputs[0] : undefined;
 	});
 

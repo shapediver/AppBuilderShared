@@ -1,5 +1,5 @@
 import { ShapeDiverResponseExport, ShapeDiverResponseExportDefinition } from "@shapediver/api.geometry-api-dto-v2";
-import { IShapeDiverParamOrExport } from "./common";
+import { IShapeDiverParamOrExport } from "@AppBuilderShared/types/shapediver/common";
 
 /**
  * The static definition of an export.

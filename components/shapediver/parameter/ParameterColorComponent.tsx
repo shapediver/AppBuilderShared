@@ -1,11 +1,11 @@
 import { ActionIcon, ColorInput, MantineThemeComponent, useProps } from "@mantine/core";
 import React, { useCallback, useEffect, useState } from "react";
-import ParameterLabelComponent from "./ParameterLabelComponent";
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import { useParameterComponentCommons } from "../../../hooks/shapediver/parameters/useParameterComponentCommons";
-import Icon from "../../ui/Icon";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
-import { ColorFormatType, convertFromSdColor, convertToSdColor } from "../../../utils/misc/colors";
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import { ColorFormatType, convertFromSdColor, convertToSdColor } from "@AppBuilderShared/utils/misc/colors";
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import { useParameterComponentCommons } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import Icon from "@AppBuilderShared/components/ui/Icon";
 
 interface StyleProps {
 	colorFormat: ColorFormatType
@@ -30,7 +30,7 @@ export function ParameterColorComponentThemeProps(props: ParameterColorComponent
  */
 export default function ParameterColorComponent(props: PropsParameter) {
 
-	const { 
+	const {
 		colorFormat,
 	} = useProps("ParameterColorComponent", defaultStyleProps, defaultStyleProps);
 

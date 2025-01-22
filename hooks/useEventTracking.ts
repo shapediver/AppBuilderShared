@@ -1,9 +1,9 @@
+import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
+import { TrackerContext } from "@AppBuilderShared/context/TrackerContext";
+import { IEventTracking, IEventTrackingProps } from "@AppBuilderShared/types/eventTracking";
+import { roundToBracket } from "@AppBuilderShared/utils/numerics";
 import { isViewerCustomizationError, ShapeDiverResponseModelComputationStatus } from "@shapediver/viewer.session";
 import { useContext, useMemo } from "react";
-import { IEventTracking, IEventTrackingProps } from "../types/eventTracking";
-import { NotificationContext } from "../context/NotificationContext";
-import { TrackerContext } from "../context/TrackerContext";
-import { roundToBracket } from "shared/utils/numerics";
 
 
 

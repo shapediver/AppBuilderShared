@@ -1,11 +1,11 @@
-import { IAppBuilder } from "../../../types/shapediver/appbuilder";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useParameterStateless } from "../parameters/useParameterStateless";
-import { useDefineGenericParameters } from "../parameters/useDefineGenericParameters";
 import { ISessionApi, PARAMETER_TYPE } from "@shapediver/viewer.session";
-import { IAcceptRejectModeSelector, IGenericParameterExecutor } from "../../../types/store/shapediverStoreParameters";
-import { useShapeDiverStoreParameters } from "../../../store/useShapeDiverStoreParameters";
 import { useShallow } from "zustand/react/shallow";
+import { IAppBuilder } from "@AppBuilderShared/types/shapediver/appbuilder";
+import { IAcceptRejectModeSelector, IGenericParameterExecutor } from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import { useParameterStateless } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterStateless";
+import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import { useDefineGenericParameters } from "@AppBuilderShared/hooks/shapediver/parameters/useDefineGenericParameters";
 
 /** Prefix used to register custom parameters */
 const CUSTOM_SESSION_ID_POSTFIX = "_appbuilder";

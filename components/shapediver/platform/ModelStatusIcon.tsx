@@ -1,10 +1,10 @@
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import { TModelItem } from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import { SdPlatformModelVisibility, SdPlatformResponseModelPublic } from "@shapediver/sdk.platform-api-sdk-v1";
 import React, { useMemo } from "react";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
-import Icon from "../../ui/Icon";
-import ToggleIcon from "../../../components/ui/ToggleIcon";
-import { TModelItem } from "../../../types/store/shapediverStorePlatformModels";
-import TooltipWrapper from "../../ui/TooltipWrapper";
 
 interface Props {
 	/** Model to be displayed */
