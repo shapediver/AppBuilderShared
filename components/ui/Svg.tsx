@@ -33,7 +33,7 @@ export default function Svg(props: SvgProps) {
 			if (maw !== undefined) element.style["maxWidth"] = String(maw);
 			if (mah !== undefined) element.style["maxHeight"] = String(mah);
 			if (className !== undefined) element.classList.add(className);
-
+			// Check if radius value is compatible with MantineRadiusValues use css variable else set raw value
 			const radiusValue = (radius && Object.prototype.hasOwnProperty.call(radiusSizes, radius)) ? `var(--mantine-radius-${radius}, 0)` : radius;
 			if (radiusValue !== undefined) element.style["borderRadius"] = String(radiusValue);
 
@@ -41,7 +41,7 @@ export default function Svg(props: SvgProps) {
 		});
 	}, [srcUrl]);
 
-	if (svgElement) return <div ref={ ref => ref?.appendChild(svgElement) }/>;
+	if (svgElement) return <section style={{ height: "inherit"}} ref={ ref => ref?.appendChild(svgElement) }/>;
 
 	return <div/>;
 }
