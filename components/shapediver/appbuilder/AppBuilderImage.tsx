@@ -53,6 +53,8 @@ export default function AppBuilderImage(props: ImageNonStyleProps & ImageStylePr
 		radius: radius,
 		h: contain && orientation === "horizontal" ? "100%" : undefined,
 		w: contain && orientation === "vertical" ? "100%" : undefined,
+		mah: !contain && orientation === "horizontal" ? mah ?? "100%" : undefined,
+		maw: !contain && orientation === "vertical" ? maw ?? "100%" : undefined,
 		className: withBorder ? classes.imgBorder : undefined,
 	};
 
@@ -60,14 +62,10 @@ export default function AppBuilderImage(props: ImageNonStyleProps & ImageStylePr
 		<Svg
 			{...contentProps}
 			srcUrl={rest.src}
-			mah={mah}
-			maw={maw}
 		/>
 	) : (
 		<Image
 			{...contentProps}
-			mah={!contain && orientation === "horizontal" ? mah ?? "100%" : undefined}
-			maw={!contain && orientation === "vertical" ? maw ?? "100%" : undefined}
 		/>
 	);
 
