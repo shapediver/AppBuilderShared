@@ -50,6 +50,11 @@ export interface IAppBuilderUrlBuilderData {
      *   * "order" (opened from an order)
      */
     context?: string
+
+    /**
+     * Additional query parameters to be passed to the configurator.
+     */
+    queryParams?: Record<string, string>;
 }
 
 /**
@@ -85,6 +90,12 @@ export function buildAppBuilderUrl(data: IAppBuilderUrlBuilderData): string {
 	if (context) {
 		searchParams.append(QUERYPARAM_CONTEXT, context);
 	}
+
+    if (data.queryParams) {
+        for (const key in data.queryParams) {
+            searchParams.append(key, data.queryParams[key]);
+        }
+    }
 
 	url.search = searchParams.toString();
 	
