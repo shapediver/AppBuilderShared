@@ -233,6 +233,7 @@ export interface IAppBuilderWidgetPropsAttributeVisualization {}
 export interface IAppBuilderWidgetPropsAgent {
 	/** Additional context. */
 	context?: string
+	parameterNames?: string[]
 }
 
 /** 
