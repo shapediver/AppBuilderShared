@@ -1,4 +1,4 @@
-import React, { useContext, useState, useCallback } from "react";
+import React, { useContext, useState, useCallback, useEffect } from "react";
 import { MantineStyleProp, MantineThemeComponent, Paper, PaperProps, useProps } from "@mantine/core";
 import { IAppBuilderWidgetPropsAgent } from "../../../../types/shapediver/appbuilder";
 import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";
@@ -198,6 +198,13 @@ async function setParameterValues(
 	return messages;
 }
 
+// Add type for LLM message
+type LLMMessage = {
+  role: "user" | "assistant" | "system";
+  content: string;
+  fullResponse?: AgentResponseType; // Store complete LLM response for assistant messages
+};
+
 /**
  * The AI agent widget component.
  * @param props 
@@ -223,9 +230,12 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 	const [reasoning, setReasoning] = useState("Agent response explaining the changes made...");
 	/** Optional image provided by the user. */
 	const [userImage, setUserImage] = useState<string | null>(null);
-	/** Chat history (user and reasoning by assistant). */
+	/** Chat history for display (user messages and assistant reasoning) */
 	const [chatHistory, setChatHistory] = useState<ChatCompletionMessageParam[]>([]);
 	
+	/** Complete message history including full LLM responses */
+	const [llmHistory, setLLMHistory] = useState<LLMMessage[]>([]);
+
 	// Get stateful access to all parameters
 	const { parameters } = useAllParameters(namespace);
 	const { parameters: dynamicParameters } = useAllParameters(`${namespace}_appbuilder`);
@@ -238,13 +248,24 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 	const { getScreenshot } = useShapeDiverStoreViewportAccessFunctions(useShallow(state => ({
 		getScreenshot: state.viewportAccessFunctions[viewportId]?.getScreenshot,
 	})));
-// 	console.log("-----------------------------------")
-// 	console.log("viewportId", viewportId);
-//    console.log("getScreenshot", getScreenshot);
-//    // get screenshot value
-//    const screenshot = await getScreenshot();
-//    console.log("screenshot", screenshot);
-//    console.log("-----------------------------------")
+
+	//  log screenshot when component mounts
+	useEffect(() => {
+		const logScreenshot = async () => {
+			if (getScreenshot) {
+				try {
+					
+					const screenshot = await getScreenshot();
+					//console.log("Screenshot data:", screenshot);
+					// It outputs blank image so need to fix it
+				} catch (error) {
+					console.error("Error getting screenshot:", error);
+				}
+			}
+		};
+
+		logScreenshot();
+	}, [viewportId, getScreenshot]);
 
 	/**
 	 * Handler for image provided by the user.
@@ -274,31 +295,29 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 		
 		try {
 			// Get the assistant message and the preceding user message
-			const assistantMessage = chatHistory[messageIndex];
-			const userMessage = chatHistory[messageIndex - 1]; // Previous message should be user's
+			//const assistantMessage = chatHistory[messageIndex];
+			//const userMessage = chatHistory[messageIndex - 1]; // Previous message should be user's
+			const assistantMessage = llmHistory[messageIndex];
+			const userMessage = llmHistory[messageIndex - 1];
+
+
 
 			// Create detailed feedback context
 			const feedbackContext = {
 				userMessage: userMessage?.content || "No user message found",
-				assistantResponse: assistantMessage?.content || "No assistant response found",
-				messageIndex,
+				assistantResponse: JSON.stringify(assistantMessage?.content) || "No assistant response found",
+				//messageIndex,
 				timestamp: new Date().toISOString()
 			};
+
+			console.log("feedbackContext", feedbackContext);
 
 			await langfuseWeb.score({
 				traceId: currentTraceId,
 				name: "user_feedback",
 				value,
 				comment: JSON.stringify(feedbackContext),
-				// Add additional metadata
-				metadata: {
-					chatContext: feedbackContext,
-					parameters: Object.values(parameters).map(p => ({
-						id: p.definition.id,
-						name: p.definition.name,
-						value: p.state.uiValue
-					}))
-				}
+				
 			});
 		} catch (error) {
 			console.error("Error sending feedback:", error);
@@ -306,108 +325,189 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 	};
 
 	const llm = async (userQuery: string, errorMessages?: string[]) => {
-		// Generate a new trace ID for this conversation
-		setCurrentTraceId(crypto.randomUUID());
-
-		// Add user message to chat history
-		setChatHistory(prev => [...prev, { role: "user", content: userQuery }]);
-
-		// Create context for the parameters the user wants to expose to the LLM
-		const parametersContext = createParametersContext(
-			Object.values(parameters)
-			// skip dynamic parameters for now
-			//	.concat(Object.values(dynamicParameters))
-			, parameterNames);
-
-		const userPrompt = `User Query: ${userQuery}
-			Parameters Context: ${parametersContext}. 
-			${userImage ? "An image has been provided for context." : ""}
-			Based on the user query and the parameters context, suggest new values for the parameters that suit the user query.
-			`;
-
-		const maxHistoryMessages = 10; // Adjust as needed
-		const recentHistory = chatHistory.slice(-maxHistoryMessages);
-
-		// Enhance system prompt with confgurator app context information which has information about what the configurator app is about
-		const systemPrompt = `You are a helpful assistant that can modify parameters based on the user's input and the context provided for a configurator app. Don't hallucinate parameterId, Ensure the suggested new values are within the min, max and available choices provided in context. If parameterType is stringlist, return the index of new choices from available choices rather than value of the choice. ${context ? `The configurator app context is: ${context}` : ""}`;
-
-		const messages: ChatCompletionMessageParam[] = [
-			{ 
-				role: "system", 
-				content: systemPrompt
-			},
-			// Add previous chat history
-			...recentHistory
-		];
-
-		// If there were errors, add them as context
-		if (errorMessages?.length) {
-			messages.push({
-				role: "user",
-				content: `The previous parameter updates failed with these errors: ${errorMessages.join(", ")}. Please provide new parameter values that address these issues.`
-			});
-		}
-
-		// Add current message with image if present
-		if (userImage) {
-			messages.push({
-				role: "user",
-				content: [
-					{
-						type: "image_url",
-						image_url: {
-							url: userImage
-						}
-					},
-					{
-						type: "text",
-						text: userPrompt
-					}
-				]
-			});
-		} else {
-			messages.push({ role: "user", content: userPrompt });
-		}
-
-		const responseFormat = zodResponseFormat(AGENT_RESPONSE_SCHEMA, "parameters_update");
-
-		//console.log("messages History", messages);
-
-		const completion = await OPENAI.beta.chat.completions.parse({
-			model: "gpt-4o-mini",  // Using the correct model name
-			messages: messages as any, // Type assertion to handle mixed content types
-			response_format: responseFormat,
-			max_tokens: 1000,
+		// Create a new trace for this conversation
+		const trace = langfuse.trace({
+			name: "shapediver-parameter-update",
+			id: crypto.randomUUID(), // Generate unique trace ID
+			metadata: {
+				userQuery,
+				errorMessages,
+				configuratorParameters: Object.values(parameters).map(p => ({
+					id: p.definition.id,
+					name: p.definition.name,
+					value: p.state.uiValue
+				}))
+			}
 		});
 
-		const parsedMessage = completion.choices[0].message.parsed;
-		if (!parsedMessage) {
-			console.log("No LLM response ?!", parsedMessage);
+		// Store trace ID for feedback
+		setCurrentTraceId(trace.id);
+
+		// Create a span for the LLM interaction
+		const llmSpan = trace.span({ 
+			name: "llm-interaction",
+			metadata: {
+				model: "gpt-4o-mini",
+				hasImage: !!userImage
+			}
+		});
+
+		try {
+			// Update both histories with user message
+			setChatHistory(prev => [...prev, { role: "user", content: userQuery }]);
+			setLLMHistory(prev => [...prev, { role: "user", content: userQuery }]);
+
+			// Create context for the parameters the user wants to expose to the LLM
+			const parametersContext = createParametersContext(
+				Object.values(parameters)
+				// skip dynamic parameters for now
+				//	.concat(Object.values(dynamicParameters))
+				, parameterNames);
+
+			const userPrompt = `User Query: ${userQuery}
+				Parameters Context: ${parametersContext}. 
+				${userImage ? "An image has been provided for context." : ""}
+				Based on the user query and the parameters context, suggest new values for the parameters that suit the user query.
+				`;
+
+			const maxHistoryMessages = 10; // Adjust as needed
+			const recentHistory = chatHistory.slice(-maxHistoryMessages);
+
+			// Enhance system prompt with confgurator app context information which has information about what the configurator app is about
+			const systemPrompt = `You are a helpful assistant that can modify parameters based on the user's input and the context provided for a configurator app. Don't hallucinate parameterId, Ensure the suggested new values are within the min, max and available choices provided in context. If parameterType is stringlist, return the index of new choices from available choices rather than value of the choice. ${context ? `The configurator app context is: ${context}` : ""}`;
+
+			const messages: ChatCompletionMessageParam[] = [
+				{ 
+					role: "system", 
+					content: systemPrompt
+				},
+				// Use llmHistory instead of chatHistory for context
+				...llmHistory.slice(-maxHistoryMessages).map(msg => ({
+					role: msg.role,
+					content: msg.content
+				}))
+			];
+
+			// If there were errors, add them as context
+			if (errorMessages?.length) {
+				messages.push({
+					role: "user",
+					content: `The previous parameter updates failed with these errors: ${errorMessages.join(", ")}. Please provide new parameter values that address these issues.`
+				});
+			}
+
+			// Add current message with image if present
+			if (userImage) {
+				messages.push({
+					role: "user",
+					content: [
+						{
+							type: "image_url",
+							image_url: {
+								url: userImage
+							}
+						},
+						{
+							type: "text",
+							text: userPrompt
+						}
+					]
+				});
+			} else {
+				messages.push({ role: "user", content: userPrompt });
+			}
+
+			const responseFormat = zodResponseFormat(AGENT_RESPONSE_SCHEMA, "parameters_update");
+
+			//console.log("messages History", messages);
+
+			const completion = await OPENAI.beta.chat.completions.parse({
+				model: "gpt-4o-mini",
+				messages: messages as any,
+				response_format: responseFormat,
+				max_tokens: 1000,
+			}, {
+				// Link OpenAI call to Langfuse span
+				parent: llmSpan,
+				generationName: "parameter-suggestions"
+			});
+
+			const parsedMessage = completion.choices[0].message.parsed;
+			if (!parsedMessage) {
+				console.log("No LLM response ?!", parsedMessage);
+				return;
+			}
+
+			// Update trace metadata with complete LLM response
+			trace.update({
+				metadata: {
+					llmResponse: {
+						summary: parsedMessage.summary_and_reasoning,
+						parameterUpdates: parsedMessage.parameters,
+						//fullMessage: parsedMessage
+						
+					}
+				}
+			});
+
+			console.log("LLM response", parsedMessage);
 			
-			return;
+			setReasoning(parsedMessage.summary_and_reasoning);
+
+			const responseMessage = parsedMessage.summary_and_reasoning;
+			
+			// Update display chat history with just the summary
+			setChatHistory(prev => [...prev, { 
+				role: "assistant", 
+				content: responseMessage 
+			}]);
+
+			// Update LLM history with full response
+			setLLMHistory(prev => [...prev, { 
+				role: "assistant", 
+				content: parsedMessage
+			}]);
+
+			llmSpan.end(); // End the LLM span
+			
+			// Create a span for parameter updates
+			const updateSpan = trace.span({ 
+				name: "parameter-updates",
+				metadata: { 
+					updates: parsedMessage.parameters 
+				}
+			});
+
+			// Set parameter values (only do this once)
+			const msgs = await setParameterValues(namespace, 
+				Object.values(parameters), 
+				parsedMessage, 
+				batchParameterValueUpdate
+			);
+
+			updateSpan.end(); // End the update span
+
+			if (msgs.length > 0) {
+				trace.addError({
+					message: "Parameter update errors",
+					metadata: { errors: msgs }
+				});
+			}
+
+			// End the trace
+			await trace.end();
+			
+			return `Updated parameters: ${parsedMessage.parameters.map(u => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
+		} catch (error) {
+			// Log error to trace using addError instead of error
+			trace.addError({
+				message: "LLM interaction failed",
+				metadata: { error: error.message }
+			});
+			llmSpan.end();
+			await trace.end();
+			throw error;
 		}
-		console.log("LLM response", parsedMessage);
-		
-		// Set parameter values
-		const msgs = await setParameterValues(namespace, 
-			Object.values(parameters), 
-			parsedMessage, 
-			batchParameterValueUpdate
-		);
-		if (msgs.length > 0) {
-			// TODO Alex to Mayur: How do we handle errors in the LLM response?
-			// Maybe we can feed back the errors to the LLM and iterate. 
-			console.error("Some parameter updates failed: ", msgs);
-		}
-
-		//console.log ("reasoning", parsedMessage.summary_and_reasoning);
-
-		setReasoning(parsedMessage.summary_and_reasoning);
-
-		const responseMessage = parsedMessage.summary_and_reasoning;
-		setChatHistory(prev => [...prev, { role: "assistant", content: responseMessage }]);
-
-		return `Updated parameters: ${parsedMessage.parameters.map(u => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
 	};
 
 	const handleParameterUpdate = async (parsedMessage: z.infer<typeof AGENT_RESPONSE_SCHEMA>) => {
