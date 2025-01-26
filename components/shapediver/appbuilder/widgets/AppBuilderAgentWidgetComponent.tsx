@@ -212,13 +212,13 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 	const { getScreenshot } = useShapeDiverStoreViewportAccessFunctions(useShallow(state => ({
 		getScreenshot: state.viewportAccessFunctions[viewportId]?.getScreenshot,
 	})));
-	console.log("-----------------------------------")
-	console.log("viewportId", viewportId);
-   console.log("getScreenshot", getScreenshot);
-   // get screenshot value
-   const screenshot = await getScreenshot();
-   console.log("screenshot", screenshot);
-   console.log("-----------------------------------")
+// 	console.log("-----------------------------------")
+// 	console.log("viewportId", viewportId);
+//    console.log("getScreenshot", getScreenshot);
+//    // get screenshot value
+//    const screenshot = await getScreenshot();
+//    console.log("screenshot", screenshot);
+//    console.log("-----------------------------------")
 
 	/**
 	 * Handler for image provided by the user.
@@ -260,14 +260,19 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 		const maxHistoryMessages = 10; // Adjust as needed
 		const recentHistory = chatHistory.slice(-maxHistoryMessages);
 
+		// Enhance system prompt with confgurator app context information which has information about what the configurator app is about
+		const systemPrompt = `You are a helpful assistant that can modify parameters based on the user's input and the context provided for a configurator app. Don't hallucinate parameterId, Ensure the suggested new values are within the min, max and available choices provided in context. If parameterType is stringlist, return the index of new choices from available choices rather than value of the choice. ${context ? `The configurator app context is: ${context}` : ""}`;
+
 		const messages: ChatCompletionMessageParam[] = [
 			{ 
 				role: "system", 
-				content: "You are a helpful assistant that can modify parameters based on the user's input and the context provided for a configurator app. Don't hallucinate parameterId, Ensure the suggested new values are within the min, max and available choices provided in context. If parameterType is stringlist, return the index of new choices from available choices rather than value of the choice." 
+				content: systemPrompt
 			},
 			// Add previous chat history
 			...recentHistory
 		];
+
+		//console.log("systemPrompt", systemPrompt);
 
 		// Add current message with image if present
 		if (userImage) {
