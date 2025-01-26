@@ -2,7 +2,7 @@ import { addListener, DraggingParameterValue, EVENTTYPE_INTERACTION, IEvent, rem
 import { DragManager, InteractionEventResponseMapping, matchNodesWithPatterns, RestrictionProperties } from "@shapediver/viewer.features.interaction";
 import { useState, useEffect, useRef } from "react";
 import { RESTRICTION_TYPE } from "@shapediver/viewer.features.drawing-tools";
-import { ConvertedDragObject } from "../useConvertDraggingData";
+import { ConvertedDragObject } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useConvertDraggingData";
 
 // #region Functions (1)
 

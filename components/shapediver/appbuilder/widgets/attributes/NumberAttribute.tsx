@@ -2,7 +2,7 @@ import { Box, Group, Select, Stack, Text, TextInput } from "@mantine/core";
 import { ATTRIBUTE_VISUALIZATION, INumberAttribute } from "@shapediver/viewer.features.attribute-visualization";
 import { SDTF_TYPEHINT } from "@shapediver/viewer.session";
 import React, { useEffect, useState } from "react";
-import BaseAttribute from "./BaseAttribute";
+import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
 import { IconChevronUp, IconChevronDown } from "@tabler/icons-react";
 
 interface Props {
@@ -75,10 +75,10 @@ export default function NumberAttribute(props: Props) {
 	</Stack>;
 
 	return (
-		<BaseAttribute 
-			name={name} 
+		<BaseAttribute
+			name={name}
 			type={attributeDefinition.typeHint}
-			removeAttribute={removeAttribute} 
+			removeAttribute={removeAttribute}
 			changeOrder={changeOrder}
 			options={legend}
 		>
@@ -105,5 +105,5 @@ export default function NumberAttribute(props: Props) {
 			/>
 		</BaseAttribute>
 	);
-	
+
 }

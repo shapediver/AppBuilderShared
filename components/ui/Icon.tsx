@@ -78,8 +78,8 @@ import {
 	IconZoomIn,
 	IconZoomScan,
 } from "@tabler/icons-react";
-import { IconTypeEnum } from "../../types/shapediver/icons";
 import { MantineThemeComponent, useProps } from "@mantine/core";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
 
 interface Props extends IconProps {
 	type: IconTypeEnum,

@@ -1,11 +1,11 @@
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import { useParameter } from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
 import { Group, MantineThemeComponent, Text, useProps } from "@mantine/core";
-import { useParameter } from "../../../hooks/shapediver/parameters/useParameter";
-import React from "react";
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import Icon from "../../ui/Icon";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
-import TooltipWrapper from "../../ui/TooltipWrapper";
 
+import React from "react";
 interface Props extends PropsParameter {
 	cancel?: () => void
 }
@@ -33,7 +33,7 @@ export function ParameterLabelComponentThemeProps(props: ParameterLabelComponent
  */
 export default function ParameterLabelComponent(props: Props & Partial<StyleProps>) {
 	const { cancel, ...rest } = props;
-	const { 
+	const {
 		fontWeight,
 	} = useProps("ParameterLabelComponent", defaultStyleProps, rest);
 	const { definition } = useParameter<any>(props);

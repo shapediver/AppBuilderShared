@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
-import { IAppBuilderTab } from "../../../types/shapediver/appbuilder";
-import AppBuilderWidgetsComponent from "./widgets/AppBuilderWidgetsComponent";
-import TabsComponent, { ITabsComponentProps } from "../../ui/TabsComponent";
+import { IAppBuilderTab } from "@AppBuilderShared/types/shapediver/appbuilder";
+import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
+import TabsComponent, { ITabsComponentProps } from "@AppBuilderShared/components/ui/TabsComponent";
 
 interface Props {
-	/** 
-	 * Default session namespace to use for parameter and export references that do 
+	/**
+	 * Default session namespace to use for parameter and export references that do
 	 * not specify a session namespace.
 	 */
 	namespace: string,
@@ -19,7 +19,7 @@ export default function AppBuilderTabsComponent({ namespace, tabs }: Props) {
 		return <></>;
 	}
 
-	const tabProps: ITabsComponentProps = useMemo(() => { 
+	const tabProps: ITabsComponentProps = useMemo(() => {
 		return {
 			defaultValue: tabs[0].name,
 			tabs: tabs.map(tab => {

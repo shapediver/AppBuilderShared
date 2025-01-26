@@ -1,10 +1,10 @@
 import React, { ReactElement, useState } from "react";
 import { Button, MantineThemeComponent, useProps } from "@mantine/core";
-import AppBuilderAppShellTemplatePage from "./AppBuilderAppShellTemplatePage";
-import AppBuilderGridTemplatePage from "./AppBuilderGridTemplatePage";
 import classes from "./AppBuilderTemplateSelector.module.css";
-import { AppBuilderTemplateContext } from "../../context/AppBuilderContext";
-import { IAppBuilderTemplatePageProps } from "../../types/pages/appbuildertemplates";
+import { IAppBuilderTemplatePageProps } from "@AppBuilderShared/types/pages/appbuildertemplates";
+import { AppBuilderTemplateContext } from "@AppBuilderShared/context/AppBuilderContext";
+import AppBuilderAppShellTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
+import AppBuilderGridTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderGridTemplatePage";
 
 export type AppBuilderTemplateType = "grid" | "appshell"
 

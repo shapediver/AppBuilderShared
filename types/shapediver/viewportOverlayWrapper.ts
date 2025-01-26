@@ -1,5 +1,5 @@
+import { OverlayStyleProps } from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import { MantineThemeComponent } from "@mantine/core";
-import { OverlayStyleProps } from "shared/components/shapediver/ui/OverlayWrapper";
 
 export interface ViewportOverlayWrapperProps {
 	children?: React.ReactNode;

@@ -1,22 +1,21 @@
+import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
+import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
+import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
+import { ComponentContext } from "@AppBuilderShared/context/ComponentContext";
+import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
+import { useSessionWithAppBuilder } from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
+import { useParameterHistory } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
+import { useSessionPropsExport } from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
+import { useSessionPropsParameter } from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
+import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
+import { useKeyBindings } from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
+import { IAppBuilderTemplatePageContainerHints, IAppBuilderTemplatePageProps } from "@AppBuilderShared/types/pages/appbuildertemplates";
+import { IAppBuilderSettingsSession, IAppBuilderContainer } from "@AppBuilderShared/types/shapediver/appbuilder";
+import { shouldUsePlatform } from "@AppBuilderShared/utils/platform/environment";
 import React, { useContext } from "react";
-import useAppBuilderSettings from "../../hooks/shapediver/appbuilder/useAppBuilderSettings";
-import { useSessionWithAppBuilder } from "../../hooks/shapediver/appbuilder/useSessionWithAppBuilder";
-import { useSessionPropsParameter } from "../../hooks/shapediver/parameters/useSessionPropsParameter";
-import { useSessionPropsExport } from "../../hooks/shapediver/parameters/useSessionPropsExport";
-import AppBuilderContainerComponent from "../../components/shapediver/appbuilder/AppBuilderContainerComponent";
-import AppBuilderFallbackContainerComponent
-	from "../../components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
-import AlertPage from "../misc/AlertPage";
-import { IAppBuilderContainer, IAppBuilderSettingsSession } from "../../types/shapediver/appbuilder";
-import useDefaultSessionDto from "../../hooks/shapediver/useDefaultSessionDto";
-import LoaderPage from "../misc/LoaderPage";
-import MarkdownWidgetComponent from "../../components/shapediver/ui/MarkdownWidgetComponent";
-import AppBuilderTemplateSelector from "../templates/AppBuilderTemplateSelector";
-import { shouldUsePlatform } from "../../utils/platform/environment";
-import { IAppBuilderTemplatePageContainerHints, IAppBuilderTemplatePageProps } from "../../types/pages/appbuildertemplates";
-import { useParameterHistory } from "../../hooks/shapediver/parameters/useParameterHistory";
-import { useKeyBindings } from "../../hooks/shapediver/useKeyBindings";
-import { ComponentContext } from "shared/context/ComponentContext";
+import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
+import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
+import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 

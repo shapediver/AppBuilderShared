@@ -1,5 +1,5 @@
+import { IGenericParameterDefinition } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import { ShapeDiverResponseParameter, ShapeDiverResponseParameterType, ShapeDiverResponseParameterVisualization } from "@shapediver/sdk.geometry-api-sdk-v2";
-import { IGenericParameterDefinition } from "../types/store/shapediverStoreParameters";
 
 export function addValidator(def: IGenericParameterDefinition): IGenericParameterDefinition {
 

@@ -1,5 +1,5 @@
+import { IDelayedTrackerPropsAwaiter, ITrackerContext, ITrackerEventData, ITrackerEventOptions, TrackerMetricType } from "@AppBuilderShared/types/context/trackercontext";
 import { createContext } from "react";
-import { IDelayedTrackerPropsAwaiter, ITrackerContext, ITrackerEventData, ITrackerEventOptions, TrackerMetricType } from "../types/context/trackercontext";
 
 
 export class DelayedTrackerPropsAwaiter implements IDelayedTrackerPropsAwaiter {

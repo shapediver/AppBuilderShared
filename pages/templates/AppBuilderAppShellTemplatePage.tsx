@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { AppShell, AppShellResponsiveSize, Burger, Group, MantineBreakpoint, MantineThemeComponent, useMantineTheme, useProps } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import classes from "./AppBuilderAppShellTemplatePage.module.css";
-import { useIsLandscape } from "../../hooks/ui/useIsLandscape";
 import { AppShellSize } from "@mantine/core/lib/components/AppShell/AppShell.types";
-import AppBuilderContainerWrapper from "./AppBuilderContainerWrapper";
-import { createGridLayout } from "../../utils/misc/layout";
-import { IAppBuilderTemplatePageProps } from "../../types/pages/appbuildertemplates";
-import { ResponsiveValueType, useResponsiveValueSelector } from "../../hooks/ui/useResponsiveValueSelector";
+import { useIsLandscape } from "@AppBuilderShared/hooks/ui/useIsLandscape";
+import { ResponsiveValueType, useResponsiveValueSelector } from "@AppBuilderShared/hooks/ui/useResponsiveValueSelector";
+import { IAppBuilderTemplatePageProps } from "@AppBuilderShared/types/pages/appbuildertemplates";
+import { createGridLayout } from "@AppBuilderShared/utils/misc/layout";
+import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
 
 interface StyleProps {
 	/** Height of the header (responsive) */

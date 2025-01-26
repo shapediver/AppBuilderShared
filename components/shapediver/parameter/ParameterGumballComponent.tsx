@@ -1,19 +1,19 @@
 import { Button, Group, Loader, Stack, Text } from "@mantine/core";
 import React, { useCallback, useEffect, useState } from "react";
-import ParameterLabelComponent from "./ParameterLabelComponent";
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import { useParameterComponentCommons } from "../../../hooks/shapediver/parameters/useParameterComponentCommons";
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import { GumballParameterValue, IGumballParameterProps } from "@shapediver/viewer.session";
-import { useGumball } from "../../../hooks/shapediver/viewer/interaction/gumball/useGumball";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
-import Icon from "../../ui/Icon";
-import { useViewportId } from "../../../hooks/shapediver/viewer/useViewportId";
 import classes from "./ParameterInteractionComponent.module.css";
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import { useParameterComponentCommons } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import { useViewportId } from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import { useGumball } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import Icon from "@AppBuilderShared/components/ui/Icon";
 
 /**
  * Parse the value of a gumball parameter and extract the transformed node names.
- * @param value 
- * @returns 
+ * @param value
+ * @returns
  */
 const parseTransformation = (value?: string): { name: string, transformation: number[] }[] => {
 	if (!value) return [];
@@ -61,8 +61,8 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 
 	// get the transformed nodes and the selected nods
 	const { transformedNodeNames, setSelectedNodeNames, restoreTransformedNodeNames, handlers } = useGumball(
-		sessionDependencies, 
-		viewportId, 
+		sessionDependencies,
+		viewportId,
 		gumballProps,
 		gumballActive,
 		parseTransformation(value)
@@ -82,8 +82,8 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 	 */
 	const changeValue = useCallback((transformedNodeNames: { name: string, transformation: number[], localTransformations?: number[] }[]) => {
 		setGumballActive(false);
-		const parameterValue: GumballParameterValue = { 
-			names: transformedNodeNames.map(node => node.name), 
+		const parameterValue: GumballParameterValue = {
+			names: transformedNodeNames.map(node => node.name),
 			transformations: transformedNodeNames.map(node => node.transformation)
 		};
 
@@ -120,12 +120,12 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 
 	/**
 	 * The content of the parameter when it is active.
-	 * 
+	 *
 	 * It contains a button to confirm the gumball interaction and a button to cancel the interaction.
-	 * 
+	 *
 	 * The confirm button sets the current parameter value to the transformed nodes.
 	 * The cancel button resets the transformed nodes to the last value.
-	 * 
+	 *
 	 */
 	const contentActive =
 		<Stack>
@@ -164,7 +164,7 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 
 	/**
 	 * The content of the parameter when it is inactive.
-	 * 
+	 *
 	 * It contains a button to start the gumball.
 	 * Within the button, the number of transformed nodes is displayed.
 	 */

@@ -23,31 +23,31 @@ import {
 	mergeThemeOverrides, 
 	rem
 } from "@mantine/core";
-import { ParameterSliderComponentThemeProps } from "../../components/shapediver/parameter/ParameterSliderComponent";
-import { ParametersAndExportsAccordionComponentThemeProps } from "../../components/shapediver/ui/ParametersAndExportsAccordionComponent";
-import { IconThemeProps } from "../../components/ui/Icon";
-import { DefaultSessionThemeProps } from "../shapediver/useDefaultSessionDto";
-import { AppBuilderGridTemplatePageThemeProps } from "../../pages/templates/AppBuilderGridTemplatePage";
-import { AppBuilderImageThemeProps } from "../../components/shapediver/appbuilder/AppBuilderImage";
-import { useThemeOverrideStore } from "../../store/useThemeOverrideStore";
-import { AppBuilderTemplateSelectorThemeProps } from "../../pages/templates/AppBuilderTemplateSelector";
-import { AppBuilderAppShellTemplatePageThemeProps } from "../../pages/templates/AppBuilderAppShellTemplatePage";
 import { AppShellSize } from "@mantine/core/lib/components/AppShell/AppShell.types";
-import { AppBuilderVerticalContainerThemeProps } from "../../pages/templates/AppBuilderVerticalContainer";
-import { AppBuilderHorizontalContainerThemeProps } from "../../pages/templates/AppBuilderHorizontalContainer";
-import { AppBuilderContainerWrapperThemeProps } from "../../pages/templates/AppBuilderContainerWrapper";
-import { AppBuilderTextWidgetThemeProps } from "../../components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
-import { MarkdownWidgetComponentProps } from "../../components/shapediver/ui/MarkdownWidgetComponent";
-import { LoaderPageThemeProps } from "../../pages/misc/LoaderPage";
-import { ParameterLabelComponentThemeProps } from "../../components/shapediver/parameter/ParameterLabelComponent";
-import { ExportLabelComponentThemeProps } from "../../components/shapediver/exports/ExportLabelComponent";
-import { ParameterColorComponentThemeProps } from "../../components/shapediver/parameter/ParameterColorComponent";
-import { AppBuilderContainerThemeProps } from "../../pages/templates/AppBuilderContainer";
-import { NotificationWrapperThemeProps } from "../../components/ui/NotificationWrapper";
-import { TooltipWrapperThemeProps } from "../../components/ui/TooltipWrapper";
-import { ViewportBrandingThemeProps, ViewportComponentThemeProps } from "shared/types/shapediver/viewport";
-import { ViewportOverlayWrapperThemeProps } from "shared/types/shapediver/viewportOverlayWrapper";
-import { ViewportIconsThemeProps } from "shared/types/shapediver/viewportIcons";
+import { DefaultSessionThemeProps } from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
+import { ExportLabelComponentThemeProps } from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
+import { IconThemeProps } from "@AppBuilderShared/components/ui/Icon";
+import { LoaderPageThemeProps } from "@AppBuilderShared/pages/misc/LoaderPage";
+import { MarkdownWidgetComponentProps } from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
+import { NotificationWrapperThemeProps } from "@AppBuilderShared/components/ui/NotificationWrapper";
+import { ParametersAndExportsAccordionComponentThemeProps } from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
+import { ParameterColorComponentThemeProps } from "@AppBuilderShared/components/shapediver/parameter/ParameterColorComponent";
+import { ParameterLabelComponentThemeProps } from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import { ParameterSliderComponentThemeProps } from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
+import { TooltipWrapperThemeProps } from "@AppBuilderShared/components/ui/TooltipWrapper";
+import { useThemeOverrideStore } from "@AppBuilderShared/store/useThemeOverrideStore";
+import { ViewportBrandingThemeProps, ViewportComponentThemeProps } from "@AppBuilderShared/types/shapediver/viewport";
+import { ViewportIconsThemeProps } from "@AppBuilderShared/types/shapediver/viewportIcons";
+import { ViewportOverlayWrapperThemeProps } from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
+import { AppBuilderImageThemeProps } from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
+import { AppBuilderTextWidgetThemeProps } from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
+import { AppBuilderAppShellTemplatePageThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
+import { AppBuilderContainerThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderContainer";
+import { AppBuilderContainerWrapperThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
+import { AppBuilderGridTemplatePageThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderGridTemplatePage";
+import { AppBuilderHorizontalContainerThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderHorizontalContainer";
+import { AppBuilderTemplateSelectorThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
+import { AppBuilderVerticalContainerThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 
 /**
  * Helper function for defining CSS variables for the AppBuilderAppShellTemplate

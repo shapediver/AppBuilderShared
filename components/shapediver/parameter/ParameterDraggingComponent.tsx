@@ -1,20 +1,20 @@
 import { Button, Group, Loader, Stack, Text } from "@mantine/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import ParameterLabelComponent from "./ParameterLabelComponent";
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import { useParameterComponentCommons } from "../../../hooks/shapediver/parameters/useParameterComponentCommons";
 import { IDraggingParameterProps, DraggingParameterValue } from "@shapediver/viewer.session";
 import { calculateCombinedDraggedNodes } from "@shapediver/viewer.features.interaction";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
-import Icon from "../../ui/Icon";
-import { useViewportId } from "../../../hooks/shapediver/viewer/useViewportId";
-import { useDragging } from "shared/hooks/shapediver/viewer/interaction/dragging/useDragging";
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import { useParameterComponentCommons } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import { useViewportId } from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import { useDragging } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
 import classes from "./ParameterInteractionComponent.module.css";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
 
 /**
  * Parse the value of a dragging parameter and extract the dragged objects
- * @param value 
- * @returns 
+ * @param value
+ * @returns
  */
 const parseDraggedNodes = (value?: string): DraggingParameterValue["objects"] => {
 	if (!value) return [];
@@ -47,7 +47,7 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	} = useParameterComponentCommons<string>(props);
 	const draggingProps = definition.settings?.props as IDraggingParameterProps;
 
-	// is the dragging active or not? 
+	// is the dragging active or not?
 	const [draggingActive, setDraggingActive] = useState<boolean>(false);
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
@@ -118,10 +118,10 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 
 	/**
 	 * The content of the parameter when it is active.
-	 * 
+	 *
 	 * It contains a button to confirm the dragging and a button to cancel the dragging
 	 * as well as the number of dragged nodes.
-	 * 
+	 *
 	 * The cancel button resets the dragging to the last value.
 	 */
 	const contentActive =
@@ -160,7 +160,7 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 
 	/**
 	 * The content of the parameter when it is inactive.
-	 * 
+	 *
 	 * It contains a button to start the dragging.
 	 * Within the button, the number of dragged nodes is displayed.
 	 */

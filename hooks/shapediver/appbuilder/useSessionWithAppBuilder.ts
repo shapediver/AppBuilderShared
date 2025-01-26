@@ -1,9 +1,9 @@
-import { validateAppBuilder } from "../../../types/shapediver/appbuildertypecheck";
-import { IUseSessionDto, useSession } from "../useSession";
-import { useOutputContent } from "../viewer/useOutputContent";
-import { IAppBuilder } from "../../../types/shapediver/appbuilder";
+import { IAppBuilder } from "@AppBuilderShared/types/shapediver/appbuilder";
+import { validateAppBuilder } from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import { useEffect, useMemo } from "react";
-import { useAppBuilderCustomParameters } from "./useAppBuilderCustomParameters";
+import { IUseSessionDto, useSession } from "@AppBuilderShared/hooks/shapediver/useSession";
+import { useOutputContent } from "@AppBuilderShared/hooks/shapediver/viewer/useOutputContent";
+import { useAppBuilderCustomParameters } from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderCustomParameters";
 
 /** 
  * Name of data output used to define the AppBuilder UI 

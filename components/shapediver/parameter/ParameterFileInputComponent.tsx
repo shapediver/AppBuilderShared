@@ -1,13 +1,13 @@
 import { FileInput } from "@mantine/core";
 import React, { useEffect } from "react";
 import { extendMimeTypes, mapMimeTypeToFileEndings } from "@shapediver/viewer.utils.mime-type";
-import ParameterLabelComponent from "./ParameterLabelComponent";
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import { useParameterComponentCommons } from "../../../hooks/shapediver/parameters/useParameterComponentCommons";
-import { isFileParameter } from "../../../types/shapediver/viewer";
-import { guessMissingMimeType } from "../../../utils/file";
-import Icon from "../../ui/Icon";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import { useParameterComponentCommons } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import { isFileParameter } from "@AppBuilderShared/types/shapediver/viewer";
+import { guessMissingMimeType } from "@AppBuilderShared/utils/file";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
 
 /**
  * Functional component that creates a file input for a file parameter.
@@ -40,7 +40,7 @@ export default function ParameterFileInputComponent(props: PropsParameter) {
 			setDefaultFile(null);
 		}
 	}, [value]);
-	
+
 	return <>
 		<ParameterLabelComponent { ...props } cancel={onCancel} />
 		{ definition && <FileInput

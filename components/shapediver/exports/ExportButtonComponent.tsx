@@ -1,12 +1,12 @@
 import { Button, Loader } from "@mantine/core";
 import { EXPORT_TYPE } from "@shapediver/viewer.session";
 import React, { useState } from "react";
-import ExportLabelComponent from "./ExportLabelComponent";
-import { fetchFileWithToken } from "../../../utils/file";
-import { PropsExport } from "../../../types/components/shapediver/propsExport";
-import { useExport } from "../../../hooks/shapediver/parameters/useExport";
-import Icon from "../../ui/Icon";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
+import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
+import { fetchFileWithToken } from "@AppBuilderShared/utils/file";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import { PropsExport } from "@AppBuilderShared/types/components/shapediver/propsExport";
+import { useExport } from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 
 /**
  * Functional component that creates a button that triggers an export.

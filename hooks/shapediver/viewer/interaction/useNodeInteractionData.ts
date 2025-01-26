@@ -1,7 +1,7 @@
 import { addInteractionData, gatherNodesForPattern, InteractionData, MultiSelectManager, NodeNameFilterPattern, SelectManager } from "@shapediver/viewer.features.interaction";
 import { IOutputApi, ITreeNode, OutputApiData, SessionApiData } from "@shapediver/viewer.session";
 import { useCallback, useEffect, useState } from "react";
-import { useOutputNode } from "../useOutputNode";
+import { useOutputNode } from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
 import { vec3 } from "gl-matrix";
 
 // #region Type aliases (2)

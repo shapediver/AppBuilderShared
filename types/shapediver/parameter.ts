@@ -1,5 +1,5 @@
 import { ShapeDiverResponseParameter } from "@shapediver/viewer.session";
-import { IShapeDiverParamOrExport } from "./common";
+import { IShapeDiverParamOrExport } from "@AppBuilderShared/types/shapediver/common";
 
 /**
  * The static definition of a parameter.

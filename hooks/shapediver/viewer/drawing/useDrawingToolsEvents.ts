@@ -1,13 +1,13 @@
 import { addListener, EVENTTYPE_DRAWING_TOOLS, IEvent, removeListener } from "@shapediver/viewer.session";
 import { DrawingToolsEventResponseMapping, PointsData } from "@shapediver/viewer.features.drawing-tools";
-import { NotificationContext } from "shared/context/NotificationContext";
 import { useContext, useEffect, useState } from "react";
+import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
 
 // #region Functions (1)
 
 /**
  * Hook allowing to create the drawing tools events.
- * 
+ *
  * @param viewportId The ID of the viewport.
  */
 export function useDrawingToolsEvents(
@@ -20,14 +20,14 @@ export function useDrawingToolsEvents(
 	pointsData?: PointsData,
 	/**
 	 * The function to set the points data.
-	 * 
+	 *
 	 * @param pointsData The points data.
 	 */
 	setPointsData: (pointsData: PointsData) => void,
 } {
 	// state for the points data
 	const [pointsData, setPointsData] = useState<PointsData | undefined>(initialPointsData);
-	
+
 	// get the notification context
 	const notifications = useContext(NotificationContext);
 

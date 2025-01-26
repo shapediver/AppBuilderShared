@@ -1,9 +1,9 @@
 import { Button, ButtonProps, PolymorphicComponentProps, CloseButton } from "@mantine/core";
 import React from "react";
-import Icon from "../../../ui/Icon";
-import { IAppBuilderActionPropsCommon } from "../../../../types/shapediver/appbuilder";
-import { IconTypeEnum } from "../../../../types/shapediver/icons";
-import TooltipWrapper from "../../../ui/TooltipWrapper";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import { IAppBuilderActionPropsCommon } from "@AppBuilderShared/types/shapediver/appbuilder";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 
 type ButtonComponentProps<C = "button"> = PolymorphicComponentProps<C, ButtonProps>;
 
@@ -20,9 +20,9 @@ export default function AppBuilderActionComponent(props: Props) {
 	const useCloseButton = iconOnly && icon === IconTypeEnum.X;
 	const _onclick = onClick === null ? undefined : onClick;
 
-	const button = useCloseButton ? <CloseButton onClick={_onclick} /> : <Button 
-		leftSection={!iconOnly && icon ? <Icon type={icon} /> : undefined} 
-		{...rest} 
+	const button = useCloseButton ? <CloseButton onClick={_onclick} /> : <Button
+		leftSection={!iconOnly && icon ? <Icon type={icon} /> : undefined}
+		{...rest}
 		onClick={_onclick}
 	>
 		{iconOnly ? <Icon type={icon} /> : label}
@@ -31,6 +31,6 @@ export default function AppBuilderActionComponent(props: Props) {
 	if (tooltip) {
 		return <TooltipWrapper label={tooltip}>{button}</TooltipWrapper>;
 	}
-	
+
 	return button;
 }

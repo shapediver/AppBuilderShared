@@ -1,10 +1,10 @@
 import { IOutputApi, ITreeNode } from "@shapediver/viewer.session";
 import { useEffect } from "react";
-import { useOutput } from "./useOutput";
+import { useOutput } from "@AppBuilderShared/hooks/shapediver/viewer/useOutput";
 
 /**
- * A callback that is executed whenever an output's node is to be replaced due to an update of the output's content. 
- * Provides the new scene tree node and the old one, so that data can be carried over. 
+ * A callback that is executed whenever an output's node is to be replaced due to an update of the output's content.
+ * Provides the new scene tree node and the old one, so that data can be carried over.
  * If the callback is a promise it will be awaited in the execution chain.
  * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IOutputApi.html#updateCallback
  */
@@ -15,27 +15,27 @@ export type OutputUpdateCallbackType = (newNode?: ITreeNode, oldNode?: ITreeNode
  */
 type OutputUpdateCallbacks = { [key: string]: { [key: string]: OutputUpdateCallbackType } };
 
-/** 
+/**
  * Callbacks to use for IOutputApi.updateCallback
  */
 const updateCallbacks : OutputUpdateCallbacks = {};
-	
+
 /**
- * Hook providing access to outputs by id or name, and allowing to register a callback for updates. 
- * Note that the callback will NOT be called when registering or deregistering it. 
- * 
+ * Hook providing access to outputs by id or name, and allowing to register a callback for updates.
+ * Note that the callback will NOT be called when registering or deregistering it.
+ *
  * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IOutputApi.html
- * 
+ *
  * Makes use of {@link useOutput}.
- * 
- * @param sessionId 
- * @param outputIdOrName 
- * @returns 
+ *
+ * @param sessionId
+ * @param outputIdOrName
+ * @returns
  */
 export function useOutputUpdateCallback(
-	sessionId: string, 
-	outputIdOrName: string, 
-	callbackId: string, 
+	sessionId: string,
+	outputIdOrName: string,
+	callbackId: string,
 	updateCallback: OutputUpdateCallbackType
 ) : {
 	/**
@@ -53,7 +53,7 @@ export function useOutputUpdateCallback(
 			updateCallbacks[key] = {};
 		}
 		updateCallbacks[key][callbackId] = updateCallback;
-				
+
 		return () => {
 			delete updateCallbacks[key][callbackId];
 		};
@@ -74,7 +74,7 @@ export function useOutputUpdateCallback(
 			}
 		};
 	}, [outputApi]);
-	
+
 	return {
 		outputApi,
 	};

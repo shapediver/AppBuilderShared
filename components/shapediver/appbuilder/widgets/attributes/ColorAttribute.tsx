@@ -1,6 +1,6 @@
 import { IColorAttribute } from "@shapediver/viewer.features.attribute-visualization";
 import React from "react";
-import BaseAttribute from "./BaseAttribute";
+import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
 
 interface Props {
 	name: string;
@@ -16,11 +16,11 @@ export default function ColorAttribute(props: Props) {
 	const { name, attribute: attributeDefinition, removeAttribute, changeOrder } = props;
 
 	return (
-		<BaseAttribute 
-			name={name} 
+		<BaseAttribute
+			name={name}
 			type={attributeDefinition.typeHint}
-			removeAttribute={removeAttribute} 
-			changeOrder={changeOrder} 
+			removeAttribute={removeAttribute}
+			changeOrder={changeOrder}
 		/>
 	);
 }

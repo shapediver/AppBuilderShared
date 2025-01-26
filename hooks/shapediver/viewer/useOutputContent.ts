@@ -1,6 +1,6 @@
 import { IOutputApi, ShapeDiverResponseOutputContent, EVENTTYPE_OUTPUT, addListener, removeListener, IOutputEvent } from "@shapediver/viewer.session";
 import { useEffect, useState } from "react";
-import { useOutput } from "./useOutput";
+import { useOutput } from "@AppBuilderShared/hooks/shapediver/viewer/useOutput";
 
 /**
  * Hook providing access to outputs by id or name, 

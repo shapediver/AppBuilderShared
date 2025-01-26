@@ -1,12 +1,12 @@
 import { ISelectionParameterProps, MaterialStandardData } from "@shapediver/viewer.session";
 import { SelectManager, MultiSelectManager, InteractionEngine } from "@shapediver/viewer.features.interaction";
 import { useEffect, useState } from "react";
-import { useInteractionEngine } from "../useInteractionEngine";
+import { useInteractionEngine } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useInteractionEngine";
 
 // #region Functions (1)
 
 // create an object to store the hover managers for each component that is assigned to a viewport
-const selectManagers: { 
+const selectManagers: {
 	[key: string]: {
 		[key: string]: {
 			selectManager: SelectManager | MultiSelectManager,
@@ -41,7 +41,7 @@ const cleanUpSelectManager = (viewportId: string, componentId: string, interacti
  * Hook providing select managers for viewports.
  * Use the useNodeInteractionData hook to add interaction data to nodes of the
  * scene tree and make them selectable.
- * 
+ *
  * @param viewportId The ID of the viewport.
  * @param componentId The ID of the component.
  * @param settings The settings for the select manager. If the settings are not provided, the select manager will not be created.

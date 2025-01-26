@@ -1,21 +1,21 @@
-import { 
-	GeometryData, 
-	IGeometryData, 
+import {
+	GeometryData,
+	IGeometryData,
 	IMaterialAbstractData,
 	IMaterialAbstractDataProperties,
-	IOutputApi, 
+	IOutputApi,
 	ITreeNode
 } from "@shapediver/viewer.session";
 import { MaterialEngine } from "@shapediver/viewer.viewport";
 import { useCallback, useEffect, useRef } from "react";
-import { useOutputNode } from "./useOutputNode";
+import { useOutputNode } from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
 
 /**
  * We traverse the node and all its children, and collect all geometry data.
  * Within the geometry data, the material property can then be updated.
- * 
- * @param node 
- * @returns 
+ *
+ * @param node
+ * @returns
  */
 const getGeometryData = (
 	node: ITreeNode
@@ -26,7 +26,7 @@ const getGeometryData = (
 			geometryData.push(data);
 		}
 	});
-	
+
 	return geometryData;
 };
 
@@ -39,12 +39,12 @@ const originalMaterials: { [key: string]: { [key: string]: IMaterialAbstractData
 
 /**
  * Hook allowing to update the material of an output.
- * 
+ *
  * Makes use of {@link useOutputNode}.
- * 
- * @param sessionId 
- * @param outputIdOrName 
- * @param materialProperties 
+ *
+ * @param sessionId
+ * @param outputIdOrName
+ * @param materialProperties
  */
 export function useOutputMaterial(sessionId: string, outputIdOrName: string, materialProperties: IMaterialAbstractDataProperties) : {
 	/**
@@ -59,15 +59,15 @@ export function useOutputMaterial(sessionId: string, outputIdOrName: string, mat
 	outputNode: ITreeNode | undefined
 } {
 	const materialRef = useRef<IMaterialAbstractData | null>(null);
-	
+
 	// callback which will be executed on update of the output node
 	const callback = useCallback( (newNode?: ITreeNode, oldNode?: ITreeNode) => {
-	
+
 		// restore original materials if there is an old node (a node to be replaced)
 		// TODO test this again once https://shapediver.atlassian.net/browse/SS-7366 is fixed
 		if (oldNode && originalMaterials[oldNode.id]) {
 			const geometryData = getGeometryData(oldNode);
-		
+
 			geometryData.forEach(data => {
 				const originalMaterial = originalMaterials[oldNode.id][data.id];
 				if (originalMaterial) {
@@ -77,7 +77,7 @@ export function useOutputMaterial(sessionId: string, outputIdOrName: string, mat
 			});
 
 			delete originalMaterials[oldNode.id];
-		
+
 			oldNode.updateVersion();
 		}
 
@@ -100,15 +100,15 @@ export function useOutputMaterial(sessionId: string, outputIdOrName: string, mat
 
 			newNode.updateVersion();
 		}
-		
+
 	}, []);
 
 	// define the node update callback
 	const { outputApi, outputNode } = useOutputNode(sessionId, outputIdOrName, callback);
-	
+
 	// use an effect to apply changes to the material, and to apply the callback once the node is available
 	useEffect(() => {
-	
+
 		if (materialProperties) {
 			materialRef.current = MaterialEngine.instance.createMaterialData(materialProperties);
 		}
@@ -116,7 +116,7 @@ export function useOutputMaterial(sessionId: string, outputIdOrName: string, mat
 			materialRef.current = null;
 		}
 		callback(outputNode);
-		
+
 	}, [materialProperties]);
 
 	return {

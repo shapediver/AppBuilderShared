@@ -1,9 +1,9 @@
 import { Anchor, Card, Group, Image, Pill, px, Text } from "@mantine/core";
 import classes from "./ModelCard.module.css";
 import React, { useMemo } from "react";
-import ModelCardOverlay from "./ModelCardOverlay";
-import ModelStatusIcon from "./ModelStatusIcon";
-import { TModelItem } from "../../../types/store/shapediverStorePlatformModels";
+import { TModelItem } from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
+import ModelCardOverlay from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlay";
+import ModelStatusIcon from "@AppBuilderShared/components/shapediver/platform/ModelStatusIcon";
 
 export interface IModelCardProps {
 	/** If true, show information about the owner of the model. Defaults to true. */
@@ -28,10 +28,10 @@ interface Props extends IModelCardProps {
 }
 
 export default function ModelCard(props: Props) {
-	
-	const { 
-		item, 
-		href, 
+
+	const {
+		item,
+		href,
 		target,
 		showUser = true,
 		showConfirmationStatus,
@@ -69,17 +69,17 @@ export default function ModelCard(props: Props) {
 			<Anchor href={href} target={target} underline="never">
 				<Text size="md" fw={500} lineClamp={1} className={classes.title}>{model.title}</Text>
 			</Anchor>
-			<ModelStatusIcon item={item} 
-				showConfirmationStatus={showConfirmationStatus} 
+			<ModelStatusIcon item={item}
+				showConfirmationStatus={showConfirmationStatus}
 				enableConfirmationStatusUpdate={enableConfirmationStatusUpdate}
 				className={classes.icon} />
 		</Group>
-		{ showUser ?	
+		{ showUser ?
 			<Group justify="space-between" wrap="nowrap">
 				<Text lineClamp={1} size="sm">
 					by {username}
 				</Text>
-			</Group> : undefined 
+			</Group> : undefined
 		}
 		{ showTags && model.tags?.length ?
 			<Group justify="flex-start" wrap="nowrap" pt="sm" className={classes.tagsContainer} >

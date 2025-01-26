@@ -1,31 +1,14 @@
 import { create } from "zustand";
-import { IShapeDiverParameter, IShapeDiverParameterDefinition, IShapeDiverParameterExecutor, IShapeDiverParameterState } from "../types/shapediver/parameter";
 import { IExportApi, IParameterApi, ISessionApi } from "@shapediver/viewer.session";
 import { devtools } from "zustand/middleware";
-import { devtoolsSettings } from "../store/storeSettings";
-import {
-	IAcceptRejectModeSelector,
-	IExportResponse,
-	IExportStore,
-	IExportStores, IExportStoresPerSession,
-	IGenericParameterDefinition,
-	IGenericParameterExecutor,
-	IHistoryEntry,
-	IParameterChanges,
-	IParameterChangesPerSession,
-	IParameterStore,
-	IParameterStores,
-	IParameterStoresPerSession,
-	IPreExecutionHook,
-	ISessionDependency,
-	ISessionsHistoryState,
-	IShapeDiverStoreParameters
-} from "../types/store/shapediverStoreParameters";
-import { IShapeDiverExport, IShapeDiverExportDefinition } from "../types/shapediver/export";
 import { ShapeDiverRequestCustomization, ShapeDiverRequestExport } from "@shapediver/api.geometry-api-dto-v2";
-import { addValidator } from "../utils/parameterValidation";
-import { EventActionEnum, IEventTracking } from "../types/eventTracking";
-import { isFileParameter } from "../types/shapediver/viewer";
+import { IAcceptRejectModeSelector, IExportResponse, IExportStore, IExportStores, IExportStoresPerSession, IGenericParameterDefinition, IGenericParameterExecutor, IHistoryEntry, IParameterChanges, IParameterChangesPerSession, IParameterStore, IParameterStores, IParameterStoresPerSession, IPreExecutionHook, ISessionDependency, ISessionsHistoryState, IShapeDiverStoreParameters } from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import { IShapeDiverParameter, IShapeDiverParameterDefinition, IShapeDiverParameterExecutor, IShapeDiverParameterState } from "@AppBuilderShared/types/shapediver/parameter";
+import { EventActionEnum, IEventTracking } from "@AppBuilderShared/types/eventTracking";
+import { IShapeDiverExportDefinition, IShapeDiverExport } from "@AppBuilderShared/types/shapediver/export";
+import { addValidator } from "@AppBuilderShared/utils/parameterValidation";
+import { devtoolsSettings } from "@AppBuilderShared/store/storeSettings";
+import { isFileParameter } from "@AppBuilderShared/types/shapediver/viewer";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter, 

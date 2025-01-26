@@ -1,7 +1,7 @@
+import { useDrawingOptionsStore } from "@AppBuilderShared/store/useDrawingOptionsStore";
+import { useShapeDiverStoreViewport } from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import { createDrawingTools, GeometryRestrictionApi, IDrawingToolsApi, PlaneRestrictionApi, PointsData, Settings } from "@shapediver/viewer.features.drawing-tools";
 import { useEffect, useState } from "react";
-import { useShapeDiverStoreViewport } from "shared/store/useShapeDiverStoreViewport";
-import { useDrawingOptionsStore } from "shared/store/useDrawingOptionsStore";
 
 // #region Variables (1)
 
@@ -16,12 +16,12 @@ const drawingToolsApis: {
 
 /**
  * Hook allowing to create the drawing tools API.
- * 
+ *
  * @param viewportId The ID of the viewport.
  * @param drawingToolsSettings The settings for the drawing tools.
  * @param onUpdate The callback function for the update event.
  * @param onCancel The callback function for the cancel event.
- * @returns 
+ * @returns
  */
 export function useDrawingToolsApi(
 	viewportId: string,

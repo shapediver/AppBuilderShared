@@ -1,5 +1,5 @@
-import { IShapeDiverExportDefinition } from "../../shapediver/export";
-import { PropsParameterOrExport } from "./propsCommon";
+import { IShapeDiverExportDefinition } from "@AppBuilderShared/types/shapediver/export";
+import { PropsParameterOrExport } from "@AppBuilderShared/types/components/shapediver/propsCommon";
 
 /** Props of an export reference. */
 export interface PropsExport extends PropsParameterOrExport {

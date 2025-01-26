@@ -1,6 +1,6 @@
+import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import { PropsExport } from "@AppBuilderShared/types/components/shapediver/propsExport";
 import { ShapeDiverResponseExportDefinition } from "@shapediver/api.geometry-api-dto-v2";
-import { useShapeDiverStoreParameters } from "../../../store/useShapeDiverStoreParameters";
-import { PropsExport } from "../../../types/components/shapediver/propsExport";
 
 /**
  * Hook providing a shortcut to create export props for the {@link ParametersAndExportsAccordionComponent}

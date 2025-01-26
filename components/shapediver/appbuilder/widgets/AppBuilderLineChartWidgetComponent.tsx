@@ -1,15 +1,15 @@
 import React, { } from "react";
 import { Paper, Title } from "@mantine/core";
-import { convertChartData, IAppBuilderWidgetPropsLineChart } from "../../../../types/shapediver/appbuildercharts";
+import { convertChartData, IAppBuilderWidgetPropsLineChart } from "@AppBuilderShared/types/shapediver/appbuildercharts";
 import { LineChart } from "@mantine/charts";
 
 export default function AppBuilderLineChartWidgetComponent(props: IAppBuilderWidgetPropsLineChart) {
-	
+
 	const {name, style, plotSettings, data} = props;
 
 	return (
 		<Paper>
-			<Title 
+			<Title
 				order={2} // TODO make this a style prop
 				style={{marginBottom:"20px",}} // TODO make this a style prop
 			>

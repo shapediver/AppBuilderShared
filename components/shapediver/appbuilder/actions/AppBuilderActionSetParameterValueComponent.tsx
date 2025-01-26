@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
-import { IAppBuilderActionPropsSetParameterValue } from "../../../../types/shapediver/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
-import { useParameterStateless } from "../../../../hooks/shapediver/parameters/useParameterStateless";
+import { IAppBuilderActionPropsSetParameterValue } from "@AppBuilderShared/types/shapediver/appbuilder";
+import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
+import { useParameterStateless } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterStateless";
 
 type Props = IAppBuilderActionPropsSetParameterValue & {
 	namespace: string;
@@ -15,10 +15,10 @@ type Props = IAppBuilderActionPropsSetParameterValue & {
  * @returns
  */
 export default function AppBuilderActionSetParameterValueComponent(props: Props) {
-	
-	const { 
-		label = "Set parameter", 
-		icon, 
+
+	const {
+		label = "Set parameter",
+		icon,
 		tooltip,
 		parameter: { name, sessionId: namespace },
 		value,
@@ -35,7 +35,7 @@ export default function AppBuilderActionSetParameterValueComponent(props: Props)
 			parameter.actions.execute(true);
 	}, [parameter?.state, parameter?.actions, value]);
 
-	return <AppBuilderActionComponent 
+	return <AppBuilderActionComponent
 		label={label}
 		icon={icon}
 		tooltip={tooltip}

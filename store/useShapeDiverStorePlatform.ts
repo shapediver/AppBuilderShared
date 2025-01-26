@@ -1,8 +1,4 @@
 import {
-	IShapeDiverStorePlatformExtended,
-	PlatformCacheKeyEnum,
-} from "../types/store/shapediverStorePlatform";
-import {
 	create as createSdk,
 	isPBInvalidGrantOAuthResponseError,
 	isPBInvalidRequestOAuthResponseError,
@@ -11,9 +7,10 @@ import {
 	SdPlatformUserGetEmbeddableFields,
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import { devtools } from "zustand/middleware";
-import { devtoolsSettings } from "../store/storeSettings";
-import { getDefaultPlatformUrl, getPlatformClientId, shouldUsePlatform } from "../utils/platform/environment";
 import { create } from "zustand";
+import { IShapeDiverStorePlatformExtended, PlatformCacheKeyEnum } from "@AppBuilderShared/types/store/shapediverStorePlatform";
+import { shouldUsePlatform, getDefaultPlatformUrl, getPlatformClientId } from "@AppBuilderShared/utils/platform/environment";
+import { devtoolsSettings } from "@AppBuilderShared/store/storeSettings";
 
 /**
  * Store data related to the ShapeDiver Platform.

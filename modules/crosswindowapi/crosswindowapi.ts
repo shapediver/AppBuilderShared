@@ -1,11 +1,11 @@
 import postRobot from "post-robot";
-import { 
-	ICrossWindowApi, 
-	ICrossWindowApiOptions, 
-	ICrossWindowCancelable, 
-	ICrossWindowFactory, 
-	ICrossWindowPeerInfo 
-} from "./types/crosswindowapi";
+import {
+	ICrossWindowApi,
+	ICrossWindowApiOptions,
+	ICrossWindowCancelable,
+	ICrossWindowFactory,
+	ICrossWindowPeerInfo
+} from "@AppBuilderShared/modules/crosswindowapi/types/crosswindowapi";
 
 
 type CrossDomainWindowType = Window | null;
@@ -18,7 +18,7 @@ type HandlerType = (event: {
 const MESSAGE_TYPE_READY = "API_READY";
 
 /**
- * The interval in which the peer is notified that we are ready. 
+ * The interval in which the peer is notified that we are ready.
  * The shorter the interval, the faster the communication is established (but more messages are sent).
  */
 const SETUP_INTERVAL = 100;
@@ -45,7 +45,7 @@ class CrossWindowApi implements ICrossWindowApi {
 		this.name = name;
 		this.peerName = peerName;
 
-		// notify the peer that we are ready, do this until 
+		// notify the peer that we are ready, do this until
 		// we get a response
 		const intervalId = setInterval(async () => {
 			try {
@@ -53,7 +53,7 @@ class CrossWindowApi implements ICrossWindowApi {
 				this.log("Peer answered ready event", result);
 				clearInterval(intervalId);
 			}
-			catch //(error) 
+			catch //(error)
 			{
 				//this.log("Peer not ready", error);
 			}
@@ -61,7 +61,7 @@ class CrossWindowApi implements ICrossWindowApi {
 
 		// wait until the peer is ready
 		this.peerIsReady = new Promise<ICrossWindowPeerInfo>((resolve, reject) => {
-			
+
 			const timeoutId = this.timeout ? setTimeout(() => {
 				const msg = `Peer did not respond within ${this.timeout}ms, giving up`;
 				this.log(msg);
@@ -71,10 +71,10 @@ class CrossWindowApi implements ICrossWindowApi {
 			}, this.timeout) : undefined;
 
 			const token = postRobot.on(
-				`${this.peerName}${MESSAGE_TYPE_READY}`, 
+				`${this.peerName}${MESSAGE_TYPE_READY}`,
 				{ window },
 				async (event) => {
-					if (event.data.name !== this.peerName) {	
+					if (event.data.name !== this.peerName) {
 						const msg = `Peer ready event: name mismatch: ${event.data.name} !== ${this.peerName}`;
 						this.log(msg);
 						throw new Error(msg);
@@ -83,7 +83,7 @@ class CrossWindowApi implements ICrossWindowApi {
 					clearTimeout(timeoutId);
 					token.cancel();
 					resolve({window: event.source, origin: event.origin, name: event.data.name as unknown as string});
-					
+
 					return { name: this.name };
 				}
 			);
@@ -107,7 +107,7 @@ class CrossWindowApi implements ICrossWindowApi {
 
 		// wait until we receive a handshake message from the peer
 		return new Promise<ICrossWindowPeerInfo>((resolve, reject) => {
-					
+
 			const timeoutId = timeout ? setTimeout(() => {
 				const msg = `Peer did not respond to handshake "${type}" within ${timeout}ms, giving up`;
 				this.log(msg);
@@ -117,7 +117,7 @@ class CrossWindowApi implements ICrossWindowApi {
 			}, timeout) : undefined;
 
 			const token = this.on(
-				type, 
+				type,
 				async () => {
 					this.log(`Handshake "${type}" successfully received`);
 					clearTimeout(timeoutId);
@@ -140,16 +140,16 @@ class CrossWindowApi implements ICrossWindowApi {
 
 		return requestEvent.data as Trequest;
 	}
-	
+
 	on<Trequest, Tresponse>(type: string, _handler: (data: Trequest) => Promise<Tresponse>): ICrossWindowCancelable {
 		const handler: HandlerType = (event) => _handler(event.data as Trequest);
-		
+
 		return postRobot.on(`${this.peerName}:${type}`, { handler , window: this.window});
 	}
 
 	async send<Trequest extends object | undefined, Tresponse>(type: string, data: Trequest, timeout?: number): Promise<Tresponse> {
 		await this.peerIsReady;
-		
+
 		return postRobot.send(this.window,
 			`${this.name}:${type}`,
 			data,
@@ -160,11 +160,11 @@ class CrossWindowApi implements ICrossWindowApi {
 			return response.data as Tresponse;
 		});
 	}
-  
+
 }
 
 class _CrossWindowApiFactory implements ICrossWindowFactory {
-	
+
 	async getParentApi(name: string, peerName: string, options?: ICrossWindowApiOptions): Promise<ICrossWindowApi> {
 		return this.getWindowApi(window.parent, name, peerName, options);
 	}
@@ -172,10 +172,10 @@ class _CrossWindowApiFactory implements ICrossWindowFactory {
 	async getWindowApi(window: Window, name: string, peerName: string, options?: ICrossWindowApiOptions): Promise<ICrossWindowApi> {
 		const api = new CrossWindowApi(window, name, peerName, options);
 		await api.peerIsReady;
-		
+
 		return api;
 	}
-  
+
 }
 
 export const CrossWindowApiFactory = new _CrossWindowApiFactory();

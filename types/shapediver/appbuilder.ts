@@ -1,22 +1,17 @@
-import { IShapeDiverExportDefinition } from "./export";
-import { IShapeDiverParameterDefinition } from "./parameter";
-import { IconType } from "./icons";
-import { SessionCreateDto } from "../store/shapediverStoreSession";
-import { 
-	IAppBuilderWidgetPropsAreaChart, 
-	IAppBuilderWidgetPropsBarChart, 
-	IAppBuilderWidgetPropsLineChart, 
-	IAppBuilderWidgetPropsRoundChart 
-} from "./appbuildercharts";
+import { SessionCreateDto } from "@AppBuilderShared/types/store/shapediverStoreSession";
+import { IAppBuilderWidgetPropsRoundChart, IAppBuilderWidgetPropsLineChart, IAppBuilderWidgetPropsAreaChart, IAppBuilderWidgetPropsBarChart } from "@AppBuilderShared/types/shapediver/appbuildercharts";
+import { IShapeDiverExportDefinition } from "@AppBuilderShared/types/shapediver/export";
+import { IconType } from "@AppBuilderShared/types/shapediver/icons";
+import { IShapeDiverParameterDefinition } from "@AppBuilderShared/types/shapediver/parameter";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
 	/**
 	 * The value to set for the generic parameter. Use this to update
-	 * the parameter's current value (i.e. its state) without changing the 
-	 * parameter definition. 
-	 * In case no value is defined when creating a new generic parameter, 
-	 * the new parameter's value is set to the default value defined in the 
+	 * the parameter's current value (i.e. its state) without changing the
+	 * parameter definition.
+	 * In case no value is defined when creating a new generic parameter,
+	 * the new parameter's value is set to the default value defined in the
 	 * parameter definition.
 	 */
 	value?: string
@@ -74,35 +69,35 @@ export interface IAppBuilderActionPropsCommon {
 /** Properties of a "createModelState" action. */
 export interface IAppBuilderActionPropsCreateModelState extends IAppBuilderActionPropsCommon {
 	/**
-	 * Optional flag to control whether an image of the scene shall be 
+	 * Optional flag to control whether an image of the scene shall be
 	 * included with the model state.
 	 */
 	includeImage?: boolean
-	/** 
+	/**
 	 * Optional image to be included when creating the model state for the line item.
 	 * In case no image is provided here, a screenshot of the model will be used
 	 * if @see {@link includeImage} is set to true.
 	 */
 	image?: IAppBuilderImageRef
 	/**
-	 * Optional flag to control whether a glTF export of the scene shall be 
+	 * Optional flag to control whether a glTF export of the scene shall be
 	 * included with the model state.
 	 */
 	includeGltf?: boolean
 }
 
-/** 
- * Properties of an "addToCart" action. 
- * This action triggers a corresponding message to the e-commerce system via the iframe API. 
- * A response is awaited and the result is displayed to the user. 
+/**
+ * Properties of an "addToCart" action.
+ * This action triggers a corresponding message to the e-commerce system via the iframe API.
+ * A response is awaited and the result is displayed to the user.
  */
 export interface IAppBuilderActionPropsAddToCart extends IAppBuilderActionPropsCreateModelState {
-	/** 
-	 * Identifier of the product to add to the cart. 
-	 * Optional, defaults to the product defined by the context. 
-	 * Note that this productId is not necessarily the same as the id of the product 
-	 * in the e-commerce system. Translations of product identifiers can be done by 
-	 * the plug-in embedding App Builder in the respective e-commerce system. 
+	/**
+	 * Identifier of the product to add to the cart.
+	 * Optional, defaults to the product defined by the context.
+	 * Note that this productId is not necessarily the same as the id of the product
+	 * in the e-commerce system. Translations of product identifiers can be done by
+	 * the plug-in embedding App Builder in the respective e-commerce system.
 	 */
 	productId?: string
 	/** Quantity of the line item to add to the cart (number of units). Optional, defaults to 1. */
@@ -121,32 +116,32 @@ export interface IAppBuilderActionPropsSetParameterValue extends IAppBuilderActi
 	value: string
 }
 
-/** 
+/**
  * Properties of a "setBrowserLocation" action.
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Location
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/open
  */
 export interface IAppBuilderActionPropsSetBrowserLocation extends IAppBuilderActionPropsCommon {
-	/** 
-	 * href to set. 
-	 * If this is defined, pathname, search and hash are ignored. 
+	/**
+	 * href to set.
+	 * If this is defined, pathname, search and hash are ignored.
 	 */
 	href?: string
-	/** 
+	/**
 	 * pathname to set (using the current origin).
-	 * If this is defined, search and hash are ignored. 
+	 * If this is defined, search and hash are ignored.
 	 */
 	pathname?: string
-	/** 
+	/**
 	 * search to set (using the current origin and pathname).
-	 * If this is defined, hash is ignored. 
+	 * If this is defined, hash is ignored.
 	 */
 	search?: string
-	/** 
+	/**
 	 * hash to set (using the current origin, pathname and search).
 	 */
 	hash?: string
-	/** 
+	/**
 	 * Optional target. If specified, window.open is used to open the location.
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/open
 	 */
@@ -162,28 +157,28 @@ export interface IAppBuilderAction {
 	type: AppBuilderActionType
 	/** Properties of the action. */
 	props: IAppBuilderActionPropsCreateModelState
-		| IAppBuilderActionPropsAddToCart 
-		| IAppBuilderActionPropsSetParameterValue 
+		| IAppBuilderActionPropsAddToCart
+		| IAppBuilderActionPropsSetParameterValue
 		| IAppBuilderActionPropsSetBrowserLocation
 		| IAppBuilderActionPropsCloseConfigurator
 }
 
 /** Types of widgets */
-export type AppBuilderWidgetType = "accordion" 
-	| "text" 
-	| "image" 
-	| "roundChart" 
-	| "lineChart" 
-	| "areaChart" 
+export type AppBuilderWidgetType = "accordion"
+	| "text"
+	| "image"
+	| "roundChart"
+	| "lineChart"
+	| "areaChart"
 	| "barChart"
 	| "actions"
 	| "attributeVisualization"
 	| "agent"
 ;
 
-/** 
+/**
  * Properties of a parameter and export accordion widget.
- * UI elements of the referenced parameters and exports are grouped 
+ * UI elements of the referenced parameters and exports are grouped
  * and ordered according to their properties (which might be overridden).
  */
 export interface IAppBuilderWidgetPropsAccordion {
@@ -191,7 +186,7 @@ export interface IAppBuilderWidgetPropsAccordion {
 	parameters?: IAppBuilderParameterRef[]
 	/** References to exports which shall be displayed by the accordion. */
 	exports?: IAppBuilderExportRef[]
-	/** 
+	/**
 	 * Optional name of group that should be used for all parameters/exports without a group.
 	 * In case this is not specified, parameters/exports without a group will be displayed without an accordion.
 	 */
@@ -236,21 +231,21 @@ export interface IAppBuilderWidgetPropsAgent {
 	context?: string
 }
 
-/** 
+/**
  * A widget.
- * 
- * When implementing a new widget type, extend this interface and 
- * 
+ *
+ * When implementing a new widget type, extend this interface and
+ *
  *   * add the identifier for the new type to AppBuilderWidgetType, and
- *   * define a new interface for the properties of the widget type and 
+ *   * define a new interface for the properties of the widget type and
  *     add it to the union type of "props".
  */
 export interface IAppBuilderWidget {
 	/** Type of the widget. */
 	type: AppBuilderWidgetType
 	/** Properties of the widget. */
-	props: IAppBuilderWidgetPropsAccordion 
-		| IAppBuilderWidgetPropsText 
+	props: IAppBuilderWidgetPropsAccordion
+		| IAppBuilderWidgetPropsText
 		| IAppBuilderWidgetPropsImage
 		| IAppBuilderWidgetPropsRoundChart
 		| IAppBuilderWidgetPropsLineChart
@@ -261,7 +256,7 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsAgent
 }
 
-/** 
+/**
  * A tab displayed in a container.
  */
 export interface IAppBuilderTab {
@@ -291,7 +286,7 @@ export interface IAppBuilderContainer {
 }
 
 /**
- * Web app definition. 
+ * Web app definition.
  * This is the root of the custom UI definition.
  */
 export interface IAppBuilder {
@@ -299,15 +294,15 @@ export interface IAppBuilder {
 	/** Version of the schema. */
 	version: "1.0"
 
-	/** 
-	 * Optional list of custom parameters that can be referenced 
+	/**
+	 * Optional list of custom parameters that can be referenced
 	 * in addition to parameters of the model.
 	 */
 	parameters?: IAppBuilderParameterDefinition[]
 
 	/** Optional id of the session to use for defining custom parameters. */
 	sessionId?: string
-	
+
 	/**
 	 * Containers to be displayed.
 	 */
@@ -430,7 +425,7 @@ export interface IAppBuilderSettingsJsonSession extends Omit<IAppBuilderSettings
  */
 export interface IAppBuilderSettingsSettings {
 	/**
-	 * If true, hide the fallback AppBuilder containers which 
+	 * If true, hide the fallback AppBuilder containers which
 	 * are shown in case no AppBuilder data output is found.
 	 */
 	disableFallbackUi?: boolean,
@@ -445,15 +440,15 @@ export interface IAppBuilderSettingsJson {
     sessions?: IAppBuilderSettingsJsonSession[]
 	/** Settings */
 	settings?: IAppBuilderSettingsSettings
-	/** 
+	/**
 	 * Theme overrides
 	 * @see https://mantine.dev/theming/theme-object/
 	 */
 	themeOverrides?: Record<string, any>,
 	/**
-	 * Optional AppBuilder definition, to be used instead of the 
+	 * Optional AppBuilder definition, to be used instead of the
 	 * AppBuilder output of the ShapeDiver model. This is useful
-	 * for development. 
+	 * for development.
 	 */
 	appBuilderOverride?: IAppBuilder
 }

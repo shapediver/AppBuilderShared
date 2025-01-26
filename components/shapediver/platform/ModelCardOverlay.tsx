@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
-import ModelCardOverlayWrapper from "./ModelCardOverlayWrapper";
 import { Avatar } from "@mantine/core";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
-import ToggleIcon from "../../ui/ToggleIcon";
-import { TModelItem } from "../../../types/store/shapediverStorePlatformModels";
-import TooltipWrapper from "../../ui/TooltipWrapper";
+import { TModelItem } from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
+import ModelCardOverlayWrapper from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlayWrapper";
+import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 
 export interface IModelCardOverlayProps {
 	/** If true, show the model's bookmark status. Defaults to false. */
@@ -19,10 +19,10 @@ interface Props extends IModelCardOverlayProps {
 }
 
 export default function ModelCardOverlay(props: Props) {
-	
+
 	const {
 		item: { data: model, actions },
-		showBookmark = false, 
+		showBookmark = false,
 		showUser = true,
 	}	= props;
 
@@ -55,24 +55,24 @@ export default function ModelCardOverlay(props: Props) {
 	}, [model.user]);
 
 	return <>
-		{ displayBookmark ? 
+		{ displayBookmark ?
 			<ModelCardOverlayWrapper position="top-left">
-				<ToggleIcon 
-					value={model.bookmark?.bookmarked ?? false} 
-					iconActive={IconTypeEnum.Bookmark} 
-					iconInactive={IconTypeEnum.BookmarkOff} 
-					onActivate={actions.bookmark} 
+				<ToggleIcon
+					value={model.bookmark?.bookmarked ?? false}
+					iconActive={IconTypeEnum.Bookmark}
+					iconInactive={IconTypeEnum.BookmarkOff}
+					onActivate={actions.bookmark}
 					onDeactivate={actions.unbookmark}
 					tooltipActive="Remove bookmark"
 					tooltipInactive="Add bookmark"
 					hideInactive={true}
 				/>
 			</ModelCardOverlayWrapper> : undefined }
-		{ displayUser ? 
+		{ displayUser ?
 			<ModelCardOverlayWrapper position="top-right">
 				<TooltipWrapper label={username} >
-					{ model.user.avatar_url ? 
-						<Avatar src={model.user.avatar_url} alt={username}/> : 
+					{ model.user.avatar_url ?
+						<Avatar src={model.user.avatar_url} alt={username}/> :
 						<Avatar>{userInitials}</Avatar> }
 				</TooltipWrapper>
 			</ModelCardOverlayWrapper> : undefined }

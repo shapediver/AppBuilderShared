@@ -1,10 +1,10 @@
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import { useParameterChanges } from "../../../hooks/shapediver/parameters/useParameterChanges";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import { useParameterChanges } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterChanges";
+import { useSortedParametersAndExports } from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
 import { Button, Group, Text } from "@mantine/core";
 import React from "react";
-import Icon from "../../ui/Icon";
-import { IconTypeEnum } from "../../../types/shapediver/icons";
-import { useSortedParametersAndExports } from "../../../hooks/shapediver/parameters/useSortedParametersAndExports";
 
 
 interface Props {

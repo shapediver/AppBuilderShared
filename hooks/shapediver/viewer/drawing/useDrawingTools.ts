@@ -1,22 +1,22 @@
 import { IDrawingParameterSettings } from "@shapediver/viewer.session";
 import { IDrawingToolsApi, PointsData, Settings } from "@shapediver/viewer.features.drawing-tools";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useDrawingToolsApi } from "./useDrawingToolsApi";
-import { useDrawingToolsEvents } from "./useDrawingToolsEvents";
-import { useRestrictions } from "./useRestrictions";
+import { useDrawingToolsApi } from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingToolsApi";
+import { useDrawingToolsEvents } from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingToolsEvents";
+import { useRestrictions } from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useRestrictions";
 
 // #region Functions (1)
 
 /**
  * Hook allowing to use the drawing tools.
- * 
+ *
  * @param viewportId The ID of the viewport.
  * @param drawingParameterProps The properties of the drawing parameter.
  * @param onUpdateComponent The callback function for the update event.
  * @param onCancelComponent The callback function for the cancel event.
  * @param activate The activation state of the drawing tools.
  * @param initialPointsData The initial points data.
- * @returns 
+ * @returns
  */
 export function useDrawingTools(
 	viewportId: string,
@@ -36,7 +36,7 @@ export function useDrawingTools(
 	pointsData?: PointsData,
 	/**
 	 * The function to set the points data.
-	 * 
+	 *
 	 * @param pointsData The points data.
 	 */
 	setPointsData: (pointsData: PointsData) => void,

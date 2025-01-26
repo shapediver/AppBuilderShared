@@ -1,15 +1,15 @@
+import { useSessionPropsExport } from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
+import { useSessionPropsParameter } from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
+import { useSessions } from "@AppBuilderShared/hooks/shapediver/useSessions";
+import { ISelectedModel, useModelSelectStore } from "@AppBuilderShared/store/useModelSelectStore";
+import { IShapeDiverExampleModels } from "@AppBuilderShared/types/shapediver/examplemodel";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
 import { MultiSelect, Notification } from "@mantine/core";
-import { ISelectedModel, useModelSelectStore } from "../../store/useModelSelectStore";
 import React, { useMemo } from "react";
-import { useSessionPropsParameter } from "../../hooks/shapediver/parameters/useSessionPropsParameter";
-import ParametersAndExportsAccordionComponent from "../../components/shapediver/ui/ParametersAndExportsAccordionComponent";
-import { useSessionPropsExport } from "../../hooks/shapediver/parameters/useSessionPropsExport";
-import { useSessions } from "../../hooks/shapediver/useSessions";
-import AcceptRejectButtons from "../shapediver/ui/AcceptRejectButtons";
-import TabsComponent, { ITabsComponentProps } from "./TabsComponent";
-import { IShapeDiverExampleModels } from "../../types/shapediver/examplemodel";
-import Icon from "./Icon";
-import { IconTypeEnum } from "../../types/shapediver/icons";
+import TabsComponent, { ITabsComponentProps } from "@AppBuilderShared/components/ui/TabsComponent";
+import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
+import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
+import Icon from "@AppBuilderShared/components/ui/Icon";
 
 interface Props {
 	exampleModels: IShapeDiverExampleModels

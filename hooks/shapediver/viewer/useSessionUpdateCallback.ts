@@ -1,6 +1,6 @@
+import { useShapeDiverStoreSession } from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import { ISessionApi, ITreeNode } from "@shapediver/viewer.session";
 import { useEffect } from "react";
-import { useShapeDiverStoreSession } from "shared/store/useShapeDiverStoreSession";
 
 // #region Type aliases (4)
 
@@ -14,8 +14,8 @@ export type ISessionUpdateCallbackHandlerState = {
 	setData?: React.Dispatch<React.SetStateAction<ISessionUpdateCallbackHandlerResult>>;
 };
 /**
- * A callback that is executed whenever a session's node is to be replaced due to an update of the session's content. 
- * Provides the new scene tree node and the old one, so that data can be carried over. 
+ * A callback that is executed whenever a session's node is to be replaced due to an update of the session's content.
+ * Provides the new scene tree node and the old one, so that data can be carried over.
  * If the callback is a promise it will be awaited in the execution chain.
  * @see https://viewer.shapediver.com/v3/latest/api/interfaces/ISessionApi.html#updateCallback
  */
@@ -30,19 +30,19 @@ type SessionUpdateCallbacks = { [key: string]: { [key: string]: SessionUpdateCal
 // #region Functions (1)
 
 /**
- * Hook providing access to session by id, and allowing to register a callback for updates. 
- * Note that the callback will NOT be called when registering or deregistering it. 
- * 
+ * Hook providing access to session by id, and allowing to register a callback for updates.
+ * Note that the callback will NOT be called when registering or deregistering it.
+ *
  * @see https://viewer.shapediver.com/v3/latest/api/interfaces/ISessionApi.html
- * 
+ *
  * Makes use of {@link useSession}.
- * 
- * @param sessionId 
- * @returns 
+ *
+ * @param sessionId
+ * @returns
  */
 export function useSessionUpdateCallback(
-	sessionId: string, 
-	callbackId: string, 
+	sessionId: string,
+	callbackId: string,
 	updateCallback: SessionUpdateCallbackType
 ) : {
 	/**
@@ -62,7 +62,7 @@ export function useSessionUpdateCallback(
 
 		// call it once to set the initial state
 		updateCallback(sessionApi?.node);
-				
+
 		return () => {
 			delete updateCallbacks[sessionId][callbackId];
 		};
@@ -82,7 +82,7 @@ export function useSessionUpdateCallback(
 			}
 		};
 	}, [sessionApi]);
-	
+
 	return {
 		sessionApi,
 	};
@@ -103,7 +103,7 @@ export const SessionUpdateCallbackHandler: React.FC<ISessionUpdateCallbackHandle
 
 	return null;
 };
-/** 
+/**
  * Callbacks to use for ISessionApi.updateCallback
  */
 const updateCallbacks : SessionUpdateCallbacks = {};

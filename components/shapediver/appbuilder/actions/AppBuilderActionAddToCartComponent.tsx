@@ -1,10 +1,10 @@
 import React, { useCallback, useContext } from "react";
-import { IAppBuilderActionPropsAddToCart } from "../../../../types/shapediver/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
-import { ECommerceApiSingleton } from "../../../../modules/ecommerce/singleton";
-import { NotificationContext } from "../../../../context/NotificationContext";
-import { useCreateModelState } from "../../../../hooks/shapediver/useCreateModelState";
-import { IconTypeEnum } from "../../../../types/shapediver/icons";
+import { IAppBuilderActionPropsAddToCart } from "@AppBuilderShared/types/shapediver/appbuilder";
+import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
+import { ECommerceApiSingleton } from "@AppBuilderShared/modules/ecommerce/singleton";
+import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
+import { useCreateModelState } from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
 
 type Props = IAppBuilderActionPropsAddToCart & {
 	namespace: string;
@@ -16,11 +16,11 @@ type Props = IAppBuilderActionPropsAddToCart & {
  * @returns
  */
 export default function AppBuilderActionAddToCartComponent(props: Props) {
-	
-	const { 
-		label = "Add to cart", 
-		icon = IconTypeEnum.ShoppingCartPlus, 
-		tooltip, 
+
+	const {
+		label = "Add to cart",
+		icon = IconTypeEnum.ShoppingCartPlus,
+		tooltip,
 		namespace,
 		productId,
 		quantity,
@@ -30,13 +30,13 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		//image, // TODO use image defined by export of href
 		includeGltf
 	} = props;
-	
+
 	const { createModelState } = useCreateModelState({ namespace });
 
 	const notifications = useContext(NotificationContext);
 
 	const onClick = useCallback(async () => {
-		// in case we are not running inside an iframe, the instance of 
+		// in case we are not running inside an iframe, the instance of
 		// IEcommerceApi will be a dummy for testing
 		const api = await ECommerceApiSingleton;
 		const modelStateId = await createModelState(
@@ -71,7 +71,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		includeGltf
 	]);
 
-	return <AppBuilderActionComponent 
+	return <AppBuilderActionComponent
 		label={label}
 		icon={icon}
 		tooltip={tooltip}

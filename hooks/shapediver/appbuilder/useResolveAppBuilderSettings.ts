@@ -1,8 +1,8 @@
-import useAsync from "../../misc/useAsync";
-import { IAppBuilderSettings, IAppBuilderSettingsResolved, IAppBuilderSettingsSession } from "../../../types/shapediver/appbuilder";
+import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
+import { useShapeDiverStorePlatform } from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import { IAppBuilderSettings, IAppBuilderSettingsResolved, IAppBuilderSettingsSession } from "@AppBuilderShared/types/shapediver/appbuilder";
+import { getDefaultPlatformUrl, getPlatformClientId, shouldUsePlatform } from "@AppBuilderShared/utils/platform/environment";
 import { SdPlatformModelGetEmbeddableFields, create } from "@shapediver/sdk.platform-api-sdk-v1";
-import { getDefaultPlatformUrl, getPlatformClientId, shouldUsePlatform } from "../../../utils/platform/environment";
-import { useShapeDiverStorePlatform } from "../../../store/useShapeDiverStorePlatform";
 import { useShallow } from "zustand/react/shallow";
 
 /**

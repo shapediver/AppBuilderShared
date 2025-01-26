@@ -2,14 +2,14 @@ import { Space, Group, Button, Checkbox, Collapse, NumberInput, Slider, Stack, S
 import { PlaneRestrictionApi, GeometryRestrictionApi, IDrawingToolsApi } from "@shapediver/viewer.features.drawing-tools";
 import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
 import React, { useState, useEffect } from "react";
-import Icon from "shared/components/ui/Icon";
-import { useShapeDiverStoreViewport } from "shared/store/useShapeDiverStoreViewport";
-import { IconTypeEnum } from "shared/types/shapediver/icons";
-import { useDrawingOptionsStore } from "shared/store/useDrawingOptionsStore";
-import MarkdownWidgetComponent from "./MarkdownWidgetComponent";
 import classes from "./DrawingOptionsComponent.module.css";
-import { defaultStyleProps } from "../parameter/ParameterSliderComponent";
-import TooltipWrapper from "../../ui/TooltipWrapper";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import { defaultStyleProps } from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
+import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
+import { useDrawingOptionsStore } from "@AppBuilderShared/store/useDrawingOptionsStore";
+import { useShapeDiverStoreViewport } from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import Icon from "@AppBuilderShared/components/ui/Icon";
 
 /**
  * Component for the drawing options.

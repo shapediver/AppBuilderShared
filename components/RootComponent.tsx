@@ -1,8 +1,8 @@
+import { ComponentContext, DummyComponent } from "@AppBuilderShared/context/ComponentContext";
+import { DummyTracker, TrackerContext } from "@AppBuilderShared/context/TrackerContext";
+import { IComponentContext } from "@AppBuilderShared/types/context/componentcontext";
+import { ITrackerContext } from "@AppBuilderShared/types/context/trackercontext";
 import React from "react";
-import { ITrackerContext } from "../types/context/trackercontext";
-import { DummyTracker, TrackerContext } from "../context/TrackerContext";
-import { ComponentContext, DummyComponent } from "shared/context/ComponentContext";
-import { IComponentContext } from "shared/types/context/componentcontext";
 
 interface Props {
 

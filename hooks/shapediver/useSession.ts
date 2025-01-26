@@ -1,11 +1,11 @@
+import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import { useShapeDiverStoreSession } from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import { IAcceptRejectModeSelector } from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import { SessionCreateDto } from "@AppBuilderShared/types/store/shapediverStoreSession";
 import { ISessionApi } from "@shapediver/viewer.session";
 import { useEffect, useRef, useState } from "react";
-import { useShapeDiverStoreSession } from "../../store/useShapeDiverStoreSession";
-import { SessionCreateDto } from "../../types/store/shapediverStoreSession";
-import { useShapeDiverStoreParameters } from "../../store/useShapeDiverStoreParameters";
-import { IAcceptRejectModeSelector } from "../../types/store/shapediverStoreParameters";
 import { useShallow } from "zustand/react/shallow";
-import { useEventTracking } from "../useEventTracking";
+import { useEventTracking } from "@AppBuilderShared/hooks/useEventTracking";
 
 /**
  * DTO for use with {@link useSession} and {@link useSessions}. 

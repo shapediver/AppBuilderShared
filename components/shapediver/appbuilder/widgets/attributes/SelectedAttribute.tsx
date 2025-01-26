@@ -3,11 +3,11 @@ import { getNodesByName } from "@shapediver/viewer.features.interaction";
 import { ISDTFAttributeData, ITreeNode, SessionApiData, SDTFItemData } from "@shapediver/viewer.session";
 import { IconChevronUp, IconChevronDown } from "@tabler/icons-react";
 import React, { useState, useCallback, useEffect, useMemo } from "react";
-import Icon from "shared/components/ui/Icon";
-import { useSelection } from "shared/hooks/shapediver/viewer/interaction/selection/useSelection";
-import { SessionUpdateCallbackHandler } from "shared/hooks/shapediver/viewer/useSessionUpdateCallback";
-import { useShapeDiverStoreSession } from "shared/store/useShapeDiverStoreSession";
-import { IconTypeEnum } from "shared/types/shapediver/icons";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import { useSelection } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
+import { SessionUpdateCallbackHandler } from "@AppBuilderShared/hooks/shapediver/viewer/useSessionUpdateCallback";
+import { useShapeDiverStoreSession } from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
 
 interface SelectedAttributeProps {
 	viewportId: string;
@@ -19,9 +19,9 @@ interface SelectedAttributeProps {
 
 /**
  * Component to be able to select an attribute from the viewer and show its values.
- * 
- * @param props 
- * @returns 
+ *
+ * @param props
+ * @returns
  */
 export default function SelectedAttribute(props: SelectedAttributeProps) {
 	const { viewportId, active, selectedValues, setSelectedValues, removeAttribute } = props;
@@ -39,7 +39,7 @@ export default function SelectedAttribute(props: SelectedAttributeProps) {
 	 */
 	const sessionCallback = useCallback((newNode?: ITreeNode) => {
 		if (!newNode) return;
-		
+
 		const sessionApi = (newNode.data.find((data) => data instanceof SessionApiData) as SessionApiData).api;
 		if (!sessionApi) return;
 
@@ -59,7 +59,7 @@ export default function SelectedAttribute(props: SelectedAttributeProps) {
 					nameFilter.push(path.join("."));
 				}
 			}
-			
+
 		});
 
 		setNameFilter((prev) => {

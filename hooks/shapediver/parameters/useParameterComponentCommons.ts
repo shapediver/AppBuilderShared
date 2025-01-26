@@ -1,11 +1,11 @@
+import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import { IShapeDiverParameterState } from "@AppBuilderShared/types/shapediver/parameter";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PropsParameter } from "../../../types/components/shapediver/propsParameter";
-import { useParameter } from "./useParameter";
-import { IShapeDiverParameterState } from "../../../types/shapediver/parameter";
-import { useShapeDiverStoreParameters } from "../../../store/useShapeDiverStoreParameters";
+import { useParameter } from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
+import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 
 /**
- * Hook providing functionality common to all parameter components like 
+ * Hook providing functionality common to all parameter components like
  * {@link ParameterSliderComponent}, {@link ParameterStringComponent}, etc.
  * @param props
  * @param debounceTimeoutForImmediateExecution
@@ -13,7 +13,7 @@ import { useShapeDiverStoreParameters } from "../../../store/useShapeDiverStoreP
  * @returns
  */
 export function useParameterComponentCommons<T>(
-	props: PropsParameter, 
+	props: PropsParameter,
 	debounceTimeoutForImmediateExecution: number = 1000,
 	initializer: (state: IShapeDiverParameterState<T|string>) => T|string = (state) => state.uiValue,
 ) {
@@ -54,15 +54,15 @@ export function useParameterComponentCommons<T>(
 	 *   - the component is running in acceptRejectMode and the parameter state is dirty, AND
 	 *   - changes are not currently executing
 	 */
-	const onCancel = useMemo( () => acceptRejectMode && state.dirty && !executing ? 
+	const onCancel = useMemo( () => acceptRejectMode && state.dirty && !executing ?
 		() => {
 			onCancelCallback?.();
 			handleChange(state.execValue, 0);
 		} : undefined,
 	[acceptRejectMode, state.dirty, executing, state.execValue, onCancelCallback] );
 
-	/** 
-	 * disable the component in case 
+	/**
+	 * disable the component in case
 	 *   - the parameter state is dirty AND we should disable the component if so, OR
 	 *   - changes are currently executing
 	 */

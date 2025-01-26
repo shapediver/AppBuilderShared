@@ -1,4 +1,5 @@
-import { ICrossWindowApi, ICrossWindowApiOptions, ICrossWindowFactory, ICrossWindowPeerInfo } from "../crosswindowapi/types/crosswindowapi";
+import { CrossWindowApiFactory } from "@AppBuilderShared/modules/crosswindowapi/crosswindowapi";
+import { ICrossWindowApi, ICrossWindowApiOptions, ICrossWindowFactory, ICrossWindowPeerInfo } from "@AppBuilderShared/modules/crosswindowapi/types/crosswindowapi";
 import { 
 	IAddItemToCartData, 
 	IAddItemToCartReply, 
@@ -8,8 +9,7 @@ import {
 	IECommerceApiFactory, 
 	IGetParentPageInfoReply, 
 	IGetUserProfileReply 
-} from "./types/ecommerceapi";
-import { CrossWindowApiFactory } from "../crosswindowapi/crosswindowapi";
+} from "@AppBuilderShared/modules/ecommerce/types/ecommerceapi";
 
 // Message types for the API calls.
 // CAUTION: When implementing new API calls and messages type, make sure to add
