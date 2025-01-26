@@ -4,7 +4,10 @@ import React from "react";
 import OverlayWrapper, { OverlayPosition, OverlayStyleProps } from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 
 const defaultStyleProps: OverlayStyleProps = {
-	position: OverlayPosition.TOP_RIGHT,
+	position: {
+		base: OverlayPosition.TOP_MIDDLE,
+		md: OverlayPosition.TOP_RIGHT,
+	},
 };
 
 export default function ViewportOverlayWrapper(props: ViewportOverlayWrapperProps & Partial<OverlayStyleProps>) {

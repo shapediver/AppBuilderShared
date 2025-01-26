@@ -9,7 +9,8 @@ interface Props extends IAppBuilderWidgetPropsImage {
 	 * Default session namespace to use for parameter and export references that do
 	 * not specify a session namespace.
 	 */
-	namespace: string
+	namespace: string,
+	isSvg?: boolean
 }
 
 export default function AppBuilderImageWidgetComponent(props: Props) {
@@ -22,17 +23,19 @@ export default function AppBuilderImageWidgetComponent(props: Props) {
 		// AppBuilderImageExportWidgetComponent
 		export: exportRef,
 		namespace,
+		isSvg,
 	} = props;
 
 	const propsCommon = {
 		anchor,
 		alt,
-		target
+		target,
 	};
 
 	if (href) {
 		return <AppBuilderImage
 			src={href}
+			isSvg={isSvg}
 			{ ...propsCommon }
 		/>;
 	} else if (exportRef) {

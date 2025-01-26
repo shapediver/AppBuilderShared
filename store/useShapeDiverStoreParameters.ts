@@ -8,6 +8,7 @@ import { EventActionEnum, IEventTracking } from "@AppBuilderShared/types/eventTr
 import { IShapeDiverExportDefinition, IShapeDiverExport } from "@AppBuilderShared/types/shapediver/export";
 import { addValidator } from "@AppBuilderShared/utils/parameterValidation";
 import { devtoolsSettings } from "@AppBuilderShared/store/storeSettings";
+import { isFileParameter } from "@AppBuilderShared/types/shapediver/viewer";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter, 
@@ -313,13 +314,16 @@ function createExportStore(session: ISessionApi, exportId: string, token?: strin
 		/** Actions that can be taken on the export. */
 		actions: {
 			request: async (parameters?: { [key: string]: string }) => {
-				const parametersComplete = parameterApis.reduce((acc, p) => {
-					if ( !(p.id in acc) )
-						acc[p.id] = p.stringify();
-
-					return acc;
-				}, parameters ?? {});
-			
+				const parametersComplete = parameters ?? {};
+				for (const p of parameterApis) {
+					if ( !(p.id in parametersComplete) ) {
+						if (isFileParameter(p)) 
+							parametersComplete[p.id] = await p.upload();
+						else
+							parametersComplete[p.id] = p.stringify();
+					}
+				}
+				
 				return sessionExport.request(parametersComplete);
 			},
 			fetch: async (url: string) => {

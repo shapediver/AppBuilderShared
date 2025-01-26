@@ -43,6 +43,11 @@ export interface IAppBuilderUrlBuilderData {
      *   * "order" (opened from an order)
      */
     context?: string
+
+    /**
+     * Additional query parameters to be passed to the configurator.
+     */
+    queryParams?: Record<string, string>;
 }
 
 /**
@@ -54,7 +59,7 @@ export function buildAppBuilderUrl(data: IAppBuilderUrlBuilderData): string {
 
 	const { baseUrl, ticket, modelViewUrl, slug, settingsUrl, modelStateId, context } = data;
 
-	const url = new URL(baseUrl);
+	const url = new URL(baseUrl.startsWith("https://appbuilder.shapediver.com") && !baseUrl.endsWith("/") ? baseUrl + "/" : baseUrl);
 	const searchParams = new URLSearchParams();
 	if (slug) {
 		searchParams.append(QUERYPARAM_SLUG, slug);
@@ -78,6 +83,12 @@ export function buildAppBuilderUrl(data: IAppBuilderUrlBuilderData): string {
 	if (context) {
 		searchParams.append(QUERYPARAM_CONTEXT, context);
 	}
+
+    if (data.queryParams) {
+        for (const key in data.queryParams) {
+            searchParams.append(key, data.queryParams[key]);
+        }
+    }
 
 	url.search = searchParams.toString();
 	
