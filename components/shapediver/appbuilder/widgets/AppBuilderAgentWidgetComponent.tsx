@@ -7,6 +7,9 @@ import { useAllParameters } from "../../../../hooks/shapediver/parameters/useAll
 import { Button, TextInput, ActionIcon, FileButton, ScrollArea } from "@mantine/core";
 import { IconPaperclip, IconUser, IconRobot } from "@tabler/icons-react";
 import OpenAI from "openai";
+ // import as OpenAI 
+ 
+
 import { zodResponseFormat } from "openai/helpers/zod";
 import { z } from "zod";
 import { ChatCompletionMessageParam } from "openai/resources";
@@ -18,6 +21,26 @@ import { useShallow } from "zustand/react/shallow";
 import { useViewportId } from "../../../../hooks/shapediver/viewer/useViewportId";
 import { useShapeDiverStoreViewportAccessFunctions } from "../../../../store/useShapeDiverStoreViewportAccessFunctions";
 
+import { Langfuse, LangfuseWeb, observeOpenAI } from "langfuse";
+
+const langfuse = new Langfuse({
+  secretKey: import.meta.env.VITE_LANGFUSE_SECRET_KEY,
+  publicKey: import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
+  baseUrl: import.meta.env.VITE_LANGFUSE_BASE_URL || "https://cloud.langfuse.com"
+});
+
+const trace = langfuse.trace({
+	name: "shapediver-appbuilder-agent-beta",
+	userId: "user__935d7d1d-8625-4ef4-8651-544613e7bd22",
+	metadata: { user: "mayurmmistry7@gmail.com" },
+	tags: ["beta"],
+  });
+
+// Initialize LangfuseWeb for client-side feedback
+const langfuseWeb = new LangfuseWeb({
+  publicKey: import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
+  baseUrl: import.meta.env.VITE_LANGFUSE_BASE_URL || "https://cloud.langfuse.com"
+});
 
 /** Style properties that can be controlled via the theme. */
 type StylePros = PaperProps & {
@@ -62,10 +85,13 @@ type AgentResponseType = z.infer<typeof AGENT_RESPONSE_SCHEMA>;
 
 
 /** Initialize the OpenAI API client. */ 
-const OPENAI = new OpenAI({
+
+
+const OPENAI = observeOpenAI(new OpenAI({
+
 	apiKey: import.meta.env.VITE_OPENAI_API_KEY,
 	dangerouslyAllowBrowser: true // Required for client-side usage
-});
+}));
 
 /** Toggle for debugging and testing. */
 const DEBUG = true;
@@ -240,7 +266,49 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 		reader.readAsDataURL(file);
 	}, []);
 
-	const llm = async (userQuery: string) => {
+	// Add state for tracking conversation traces
+	const [currentTraceId, setCurrentTraceId] = useState<string | null>(null);
+
+	const handleFeedback = async (value: number, messageIndex: number) => {
+		if (!currentTraceId) return;
+		
+		try {
+			// Get the assistant message and the preceding user message
+			const assistantMessage = chatHistory[messageIndex];
+			const userMessage = chatHistory[messageIndex - 1]; // Previous message should be user's
+
+			// Create detailed feedback context
+			const feedbackContext = {
+				userMessage: userMessage?.content || "No user message found",
+				assistantResponse: assistantMessage?.content || "No assistant response found",
+				messageIndex,
+				timestamp: new Date().toISOString()
+			};
+
+			await langfuseWeb.score({
+				traceId: currentTraceId,
+				name: "user_feedback",
+				value,
+				comment: JSON.stringify(feedbackContext),
+				// Add additional metadata
+				metadata: {
+					chatContext: feedbackContext,
+					parameters: Object.values(parameters).map(p => ({
+						id: p.definition.id,
+						name: p.definition.name,
+						value: p.state.uiValue
+					}))
+				}
+			});
+		} catch (error) {
+			console.error("Error sending feedback:", error);
+		}
+	};
+
+	const llm = async (userQuery: string, errorMessages?: string[]) => {
+		// Generate a new trace ID for this conversation
+		setCurrentTraceId(crypto.randomUUID());
+
 		// Add user message to chat history
 		setChatHistory(prev => [...prev, { role: "user", content: userQuery }]);
 
@@ -272,7 +340,13 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 			...recentHistory
 		];
 
-		//console.log("systemPrompt", systemPrompt);
+		// If there were errors, add them as context
+		if (errorMessages?.length) {
+			messages.push({
+				role: "user",
+				content: `The previous parameter updates failed with these errors: ${errorMessages.join(", ")}. Please provide new parameter values that address these issues.`
+			});
+		}
 
 		// Add current message with image if present
 		if (userImage) {
@@ -336,10 +410,36 @@ export default function AppBuilderAgentWidgetComponent(props: Props & AppBuilder
 		return `Updated parameters: ${parsedMessage.parameters.map(u => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
 	};
 
+	const handleParameterUpdate = async (parsedMessage: z.infer<typeof AGENT_RESPONSE_SCHEMA>) => {
+		const msgs = await setParameterValues(
+			namespace, 
+			Object.values(parameters), 
+			parsedMessage, 
+			batchParameterValueUpdate
+		);
+
+		if (msgs.length > 0) {
+			console.error("Some parameter updates failed: ", msgs);
+			
+			// Make another LLM call with the error messages
+			try {
+				setIsLoading(true);
+				const retryResponse = await llm(chatInput, msgs);
+				return retryResponse;
+			} catch (error) {
+				console.error("Error in retry LLM call: ", error);
+				throw error;
+			}
+		}
+
+		return `Updated parameters: ${parsedMessage.parameters.map(u => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
+	};
+
 	const handleClick = async () => {
 		try {
 			setIsLoading(true);
-			await llm(chatInput);
+			const response = await llm(chatInput);
+			// The response will now include any retry attempts if there were errors
 		} catch (error) {
 			console.error("Error calling AI: ", error);
 		} finally {
@@ -385,6 +485,13 @@ ${Object.values(dynamicParameters).map(p => `* ${p.definition.name} (${p.definit
 		icon: "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
 		userIcon: "bg-blue-600 text-white",
 		assistantIcon: "bg-gray-200 text-gray-700"
+	};
+
+	// Add feedback UI styles
+	const feedbackStyles = {
+		container: "flex gap-2 mt-2 justify-end",
+		button: "p-2 rounded-full hover:bg-gray-200 transition-colors",
+		activeButton: "bg-blue-100"
 	};
 
 	return <Paper {...themeProps} style={styleProps}>
@@ -459,6 +566,26 @@ ${Object.values(dynamicParameters).map(p => `* ${p.definition.name} (${p.definit
 							</div>
 						</div>
 					</div>
+					
+					{/* Add feedback buttons for assistant messages */}
+					{message.role === "assistant" && (
+						<div className={feedbackStyles.container}>
+							<button 
+								className={feedbackStyles.button}
+								onClick={() => handleFeedback(1, index)}
+								aria-label="Thumbs up"
+							>
+								👍
+							</button>
+							<button 
+								className={feedbackStyles.button}
+								onClick={() => handleFeedback(0, index)}
+								aria-label="Thumbs down"
+							>
+								👎
+							</button>
+						</div>
+					)}
 				</div>
 			))}
 		</ScrollArea>
