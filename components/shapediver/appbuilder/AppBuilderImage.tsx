@@ -70,7 +70,12 @@ export default function AppBuilderImage(props: ImageNonStyleProps & ImageStylePr
 	);
 
 	return anchor ? (
-		<Anchor // Notice: SVG may contains own urls, potential conflict can happen
+		/**
+		 * Note: In case isSvg === true, the SVG might define its own anchor elements.
+		 * Tests have shown that anchors defined in the SVG take precedence over the
+		 * anchor defined here.
+		 */
+		<Anchor
 			href={anchor}
 			target={target}
 			display="contents"

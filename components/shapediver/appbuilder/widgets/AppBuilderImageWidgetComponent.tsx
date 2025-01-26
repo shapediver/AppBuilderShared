@@ -35,7 +35,7 @@ export default function AppBuilderImageWidgetComponent(props: Props) {
 	if (href) {
 		return <AppBuilderImage
 			src={href}
-			isSvg={isSvg}
+			isSvg={isSvg ?? (href?.endsWith(".svg") || href?.startsWith("data:image/svg+xml"))}
 			{ ...propsCommon }
 		/>;
 	} else if (exportRef) {

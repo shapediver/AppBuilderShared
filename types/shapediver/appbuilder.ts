@@ -212,6 +212,11 @@ export interface IAppBuilderWidgetPropsAnchor {
 export interface IAppBuilderWidgetPropsImage extends IAppBuilderWidgetPropsAnchor, IAppBuilderImageRef {
 	/** Optional reference to alternate text which provides the image. */
 	alt?: string,
+	/** 
+	 * Optional boolean to indicate that the widget shall render the image as an SVG. 
+	 * In case this is not specified, the widget will detect whether the image is an 
+	 * SVG based on its href.
+	 */
 	isSvg?: boolean
 }
 
