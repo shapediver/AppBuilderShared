@@ -412,9 +412,7 @@ export function isAgentWidget(
 }
 
 /** assert action type "createModelState" */
-export function isCreateModelStateAction(
-	action: IAppBuilderAction,
-): action is {
+export function isCreateModelStateAction(action: IAppBuilderAction): action is {
 	type: "createModelState";
 	props: IAppBuilderActionPropsCreateModelState;
 } {
