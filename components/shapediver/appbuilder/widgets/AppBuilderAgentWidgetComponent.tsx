@@ -375,16 +375,20 @@ export default function AppBuilderAgentWidgetComponent(
 			parameterNames,
 		);
 
-		const userPrompt = `User Query: ${userQuery}
-			Parameters Context: ${parametersContext}. 
-			${userImage ? "An image has been provided for context." : ""}
-			Based on the user query and the parameters context, suggest new values for the parameters that suit the user query.
+		const userPrompt = `${userQuery}
+			${userImage ? "I have provided an image for context." : ""}
 			`;
 
 		const maxHistoryMessages = 10; // Adjust as needed
 
 		// Enhance system prompt with confgurator app context information which has information about what the configurator app is about
-		const systemPrompt = `You are a helpful assistant that can modify parameters based on the user's input and the context provided for a configurator app. Don't hallucinate parameterId. Ensure the suggested new values are within the min, max and available choices provided in context. If parameterType is stringlist, return the index of new choices from available choices rather than value of the choice. ${context ? `The configurator app context is: ${context}` : ""}`;
+		const systemPrompt = `You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about it 
+			based on the user's input and the context provided. You may answer questions by the user without changing parameters. 
+			Parameters Context: ${parametersContext}. 
+			Don't hallucinate parameterId. Ensure the suggested new values are within the min, max and available choices provided in context. 
+			If parameterType is stringlist, return the index of new choices from available choices rather than value of the choice. 
+			${context ? `Additional context provided by the developer of the 3D configurator: ${context}` : ""}
+			`;
 
 		const messages: ChatCompletionMessageParam[] = [
 			{
