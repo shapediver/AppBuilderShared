@@ -6,10 +6,14 @@ import React, {
 	useMemo,
 } from "react";
 import {
+	Group,
 	MantineStyleProp,
 	MantineThemeComponent,
 	Paper,
 	PaperProps,
+	Stack,
+	Text,
+	Textarea,
 	useProps,
 } from "@mantine/core";
 import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
@@ -36,6 +40,8 @@ import {zodResponseFormat} from "openai/helpers/zod";
 import {ChatCompletionMessageParam} from "openai/resources";
 import {z} from "zod";
 import {Langfuse, LangfuseWeb, observeOpenAI} from "langfuse";
+import packagejson from "~/../package.json";
+import AppBuilderImage from "../AppBuilderImage";
 
 const langfuse = new Langfuse({
 	secretKey: import.meta.env.VITE_LANGFUSE_SECRET_KEY,
@@ -102,7 +108,7 @@ const AGENT_RESPONSE_SCHEMA = z.object({
 	summaryAndReasoning: z
 		.string()
 		.describe(
-			"A summary of the parameter update and the reasoning behind the parameter update",
+			"A summary of the parameter updates and the reasoning behind the parameter updates, and answers to the user's questions.",
 		),
 });
 type AgentResponseType = z.infer<typeof AGENT_RESPONSE_SCHEMA>;
@@ -130,14 +136,14 @@ function createParameterContext(param: IShapeDiverParameter<any>) {
 	// We mix snake_case and camelCase in the parameter context.
 	// Could that be a problem?
 	return `
-	parameterId: ${def.id}
-	parameterName: ${def.displayname || def.name}
-	parameterType: ${def.type}
-	currentValue: ${currentValue === null || currentValue === undefined ? "none" : currentValue}
-	min: ${def.min === null || def.min === undefined ? "none" : def.min}
-	max: ${def.max === null || def.max === undefined ? "none" : def.max}
-	tooltip: ${def.tooltip || "none"}
-	choices : ${def.choices || "none"}
+parameterId: ${def.id}
+parameterName: ${def.displayname || def.name}
+parameterType: ${def.type}
+currentValue: ${currentValue === null || currentValue === undefined ? "none" : currentValue}
+min: ${def.min === null || def.min === undefined ? "none" : def.min}
+max: ${def.max === null || def.max === undefined ? "none" : def.max}
+tooltip: ${def.tooltip || "none"}
+choices : ${def.choices || "none"}
 	`;
 }
 
@@ -162,17 +168,22 @@ function createParametersContext(
 	parameters: IShapeDiverParameter<any>[],
 	parameterNames: string[] | undefined,
 ) {
-	return parameters
-		.filter(
-			(p) =>
-				!parameterNames ||
-				parameterNames.includes(p.definition.name) ||
-				(p.definition.displayname &&
-					parameterNames.includes(p.definition.displayname)),
-		)
-		.filter((p) => SUPPORTED_PARAMETER_TYPES.includes(p.definition.type))
-		.map((p) => createParameterContext(p))
-		.join("\n");
+	return (
+		"\n" +
+		parameters
+			.filter(
+				(p) =>
+					!parameterNames ||
+					parameterNames.includes(p.definition.name) ||
+					(p.definition.displayname &&
+						parameterNames.includes(p.definition.displayname)),
+			)
+			.filter((p) =>
+				SUPPORTED_PARAMETER_TYPES.includes(p.definition.type),
+			)
+			.map((p) => createParameterContext(p))
+			.join("")
+	);
 }
 
 type ChatHistoryType =
@@ -273,6 +284,10 @@ export default function AppBuilderAgentWidgetComponent(
 	const [llmHistory, setLLMHistory] = useState<ChatCompletionMessageParam[]>(
 		[],
 	);
+	/** Grasshopper prompt */
+	const [authorContext, setAuthorContext] = useState<string | undefined>();
+	/** System prompt */
+	const [systemPrompt, setSystemPrompt] = useState("");
 
 	/** Session if for langfuse */
 	const sessionId = useMemo(() => crypto.randomUUID(), []);
@@ -299,7 +314,7 @@ export default function AppBuilderAgentWidgetComponent(
 		})),
 	);
 
-	//  log screenshot when component mounts
+	// TODO: screenshot button
 	useEffect(() => {
 		const logScreenshot = async () => {
 			if (getScreenshot) {
@@ -336,13 +351,70 @@ export default function AppBuilderAgentWidgetComponent(
 		reader.readAsDataURL(file);
 	}, []);
 
-	const handleFeedback = async (value: number, traceId: string) => {
-		await langfuseWeb.score({
-			traceId,
-			name: "user-feedback",
-			value,
-		});
-	};
+	/**
+	 * Handler for user feedback.
+	 */
+	const handleFeedback = useCallback(
+		async (value: number, traceId: string) => {
+			await langfuseWeb.score({
+				traceId,
+				name: "user-feedback",
+				value,
+			});
+		},
+		[],
+	);
+
+	/**
+	 * Context provided by the author of the Grasshopper model
+	 */
+	useEffect(() => {
+		setAuthorContext(context);
+	}, [context]);
+
+	/**
+	 * Context for the parameters the user wants to expose to the LLM.
+	 */
+	const parametersContext = useMemo(
+		() =>
+			createParametersContext(
+				Object.values(parameters),
+				// skip dynamic parameters for now
+				//	.concat(Object.values(dynamicParameters))
+				parameterNames,
+			),
+		[parameters, dynamicParameters, parameterNames],
+	);
+
+	/**
+	 * Define the system prompt based on the parameters context.
+	 * https://platform.openai.com/docs/guides/text-generation
+	 *
+	 * TODO add instructions specific to parameter type based on which types are present in the parameters
+	 */
+	useEffect(() => {
+		// Enhance system prompt with confgurator app context information which has information about what the configurator app is about
+		const systemPrompt = `You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about it \
+based on the user's input and the context provided. You may answer questions by the user without changing parameters. \
+Parameters context: ${parametersContext}
+Don't hallucinate parameterId. Ensure the suggested new values are within the min, max and available choices provided in context. \
+If parameterType is stringlist, return the index of new choices from available choices rather than value of the choice. \
+`;
+		setSystemPrompt(systemPrompt);
+	}, [parametersContext, authorContext]);
+
+	/** System prompt with author context. */
+	const systemPromptComplete = useMemo(() => {
+		return authorContext ? `${systemPrompt}${authorContext}` : systemPrompt;
+	}, [systemPrompt, authorContext]);
+
+	/** Tags to attach to langfuse traces. */
+	const tags = useMemo(() => {
+		// get "slug" query string parameter
+		const urlParams = new URLSearchParams(window.location.search);
+		const slug = urlParams.get("slug");
+		return slug ? [slug, packagejson.version] : [packagejson.version];
+	}, []);
 
 	const llm = async (userQuery: string, errorMessages?: string[]) => {
 		// Create a new trace for this user query
@@ -361,39 +433,19 @@ export default function AppBuilderAgentWidgetComponent(
 					execValue: p.state.execValue,
 				})),
 			},
+			tags,
 		});
 
 		// Add user query to chat history
 		setChatHistory((prev) => [...prev, {role: "user", content: userQuery}]);
 		setLLMHistory((prev) => [...prev, {role: "user", content: userQuery}]);
 
-		// Create context for the parameters the user wants to expose to the LLM
-		const parametersContext = createParametersContext(
-			Object.values(parameters),
-			// skip dynamic parameters for now
-			//	.concat(Object.values(dynamicParameters))
-			parameterNames,
-		);
-
-		const userPrompt = `${userQuery}
-			${userImage ? "I have provided an image for context." : ""}
-			`;
-
+		// Message for chat completion API
 		const maxHistoryMessages = 10; // Adjust as needed
-
-		// Enhance system prompt with confgurator app context information which has information about what the configurator app is about
-		const systemPrompt = `You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about it 
-			based on the user's input and the context provided. You may answer questions by the user without changing parameters. 
-			Parameters Context: ${parametersContext}. 
-			Don't hallucinate parameterId. Ensure the suggested new values are within the min, max and available choices provided in context. 
-			If parameterType is stringlist, return the index of new choices from available choices rather than value of the choice. 
-			${context ? `Additional context provided by the developer of the 3D configurator: ${context}` : ""}
-			`;
-
 		const messages: ChatCompletionMessageParam[] = [
 			{
-				role: "system",
-				content: systemPrompt,
+				role: "developer",
+				content: systemPromptComplete,
 			},
 			// Add previous chat history
 			...llmHistory.slice(-maxHistoryMessages),
@@ -403,11 +455,13 @@ export default function AppBuilderAgentWidgetComponent(
 		if (errorMessages?.length) {
 			messages.push({
 				role: "user",
-				content: `The previous parameter updates failed with these errors: ${errorMessages.join(", ")}. Please provide new parameter values that address these issues.`,
+				content: `The previous parameter updates failed with these errors: ${errorMessages.join(", ")}. Provide new parameter values that address these issues.`,
 			});
 		}
 
 		// Add current message with image if present
+		const userPrompt = userImage ? `${userQuery} \
+I have provided an image for context.` : userQuery;
 		if (userImage) {
 			messages.push({
 				role: "user",
@@ -497,6 +551,7 @@ export default function AppBuilderAgentWidgetComponent(
 		});
 
 		// Set parameter values (only do this once)
+		// TODO handle errors
 		const msgs = await setParameterValues(
 			namespace,
 			Object.values(parameters),
@@ -556,24 +611,6 @@ export default function AppBuilderAgentWidgetComponent(
 		}
 	};
 
-	// render ai widget content
-	const markdown = `# AI Agent Widget
-## Context
-Context provided from Grasshopper: 
-
-_${context}_
-	
-## Parameters
-${Object.values(parameters)
-	.map((p) => `* ${p.definition.name} (${p.definition.type})`)
-	.join("\n")}
-
-## Dynamic Parameters
-${Object.values(dynamicParameters)
-	.map((p) => `* ${p.definition.name} (${p.definition.type})`)
-	.join("\n")}
-`;
-
 	// check for container alignment
 	const containerContext = useContext(AppBuilderContainerContext);
 	const styleProps: MantineStyleProp = {};
@@ -584,143 +621,112 @@ ${Object.values(dynamicParameters)
 	}
 	styleProps.fontWeight = "100";
 
-	const messageStyles = {
-		messageContainer: "flex w-full mb-4",
-		messageWrapper: "flex items-center gap-2 max-w-[80%]",
-		userWrapper: "ml-auto",
-		assistantWrapper: "mr-auto",
-		messageContent: "flex items-center gap-2",
-		userContent: "flex-row-reverse",
-		message: "p-4 rounded-lg",
-		user: "bg-blue-500 text-white",
-		assistant: "bg-gray-100 text-gray-900",
-		icon: "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
-		userIcon: "bg-blue-600 text-white",
-		assistantIcon: "bg-gray-200 text-gray-700",
-	};
-
-	// Add feedback UI styles
-	const feedbackStyles = {
-		container: "flex gap-2 mt-2 justify-end",
-		button: "p-2 rounded-full hover:bg-gray-200 transition-colors",
-		activeButton: "bg-blue-100",
-	};
-
 	return (
 		<Paper {...themeProps} style={styleProps}>
-			<div style={{display: "flex", gap: "8px", marginBottom: "16px"}}>
-				<FileButton
-					onChange={handleUserImage}
-					accept="image/png,image/jpeg"
-				>
-					{(props) => (
-						<ActionIcon
-							variant="subtle"
-							{...props}
-							className="hover:bg-gray-100"
-						>
-							<IconPaperclip size={18} />
-						</ActionIcon>
-					)}
-				</FileButton>
-				<TextInput
-					placeholder="Ask a question"
-					style={{flex: 1}}
-					value={chatInput}
-					onChange={(e) => setChatInput(e.target.value)}
-					onKeyDown={(e) => {
-						if (e.key === "Enter") {
-							handleUserQuery();
-						}
-					}}
-				/>
-				<Button onClick={handleUserQuery} loading={isLoading}>
-					SD AI Agent
-				</Button>
-			</div>
-
-			{userImage && (
-				<div className="mb-4">
-					<img
-						src={userImage}
-						alt="Uploaded preview"
-						className="max-h-32 rounded-md"
-					/>
-				</div>
-			)}
-
-			<ScrollArea h={400} className="mb-4 p-4 border rounded-lg">
-				{chatHistory.map((message, index) => (
-					<div key={index} className={messageStyles.messageContainer}>
-						<div
-							className={`${messageStyles.messageWrapper} ${
-								message.role === "user"
-									? messageStyles.userWrapper
-									: messageStyles.assistantWrapper
-							}`}
-						>
-							<div
-								className={`${messageStyles.messageContent} ${
-									message.role === "user"
-										? messageStyles.userContent
-										: ""
-								}`}
+			<Stack>
+				{DEBUG ? (
+					<>
+						<Text size="sm">Context from Grasshopper:</Text>
+						<Textarea
+							value={authorContext}
+							onChange={(event) =>
+								setAuthorContext(event.currentTarget.value)
+							}
+							autosize
+							maxRows={10}
+						/>
+						<Text size="sm">System prompt:</Text>
+						<Textarea
+							value={systemPrompt}
+							onChange={(event) =>
+								setSystemPrompt(event.currentTarget.value)
+							}
+							autosize
+							maxRows={15}
+						/>
+					</>
+				) : null}
+				<Group>
+					<FileButton
+						onChange={handleUserImage}
+						accept="image/png,image/jpeg,image/gif,image/webp"
+					>
+						{(props) => (
+							<ActionIcon
+								variant="subtle"
+								{...props}
+								className="hover:bg-gray-100"
 							>
-								<div
-									className={`${messageStyles.icon} ${
-										message.role === "user"
-											? messageStyles.userIcon
-											: messageStyles.assistantIcon
-									}`}
-								>
-									{message.role === "user" ? (
-										<IconUser size={18} />
-									) : (
-										<IconRobot size={18} />
-									)}
-								</div>
-								<div
-									className={`${messageStyles.message} ${
-										message.role === "user"
-											? messageStyles.user
-											: messageStyles.assistant
-									}`}
-								>
-									<MarkdownWidgetComponent>
-										{typeof message.content === "string"
-											? message.content
-											: JSON.stringify(message.content)}
-									</MarkdownWidgetComponent>
-								</div>
-							</div>
-						</div>
-
-						{/* Add feedback buttons for assistant messages */}
-						{message.role === "assistant" && (
-							<div className={feedbackStyles.container}>
-								<button
-									className={feedbackStyles.button}
-									onClick={() =>
-										handleFeedback(1, message.traceId)
-									}
-									aria-label="Thumbs up"
-								>
-									👍
-								</button>
-								<button
-									className={feedbackStyles.button}
-									onClick={() =>
-										handleFeedback(0, message.traceId)
-									}
-									aria-label="Thumbs down"
-								>
-									👎
-								</button>
-							</div>
+								<IconPaperclip />
+							</ActionIcon>
 						)}
-					</div>
-				))}
-			</ScrollArea>
+					</FileButton>
+					<TextInput
+						placeholder="Ask a question"
+						style={{flex: 1}}
+						value={chatInput}
+						onChange={(e) => setChatInput(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") {
+								handleUserQuery();
+							}
+						}}
+					/>
+					<Button onClick={handleUserQuery} loading={isLoading}>
+						Go
+					</Button>
+				</Group>
+
+				{userImage && <AppBuilderImage src={userImage} />}
+
+				<ScrollArea h={400}>
+					{chatHistory.map((message, index) => (
+						<Stack key={index} pb="md">
+							<Group gap="xs">
+								{message.role === "user" ? (
+									<IconUser />
+								) : (
+									<IconRobot />
+								)}
+
+								<Paper withBorder={false}>
+									{typeof message.content === "string"
+										? message.content
+										: JSON.stringify(message.content)}
+								</Paper>
+
+								{/* Add feedback buttons for assistant messages */}
+								{message.role === "assistant" && (
+									<Group>
+										<Button
+											onClick={() =>
+												handleFeedback(
+													1,
+													message.traceId,
+												)
+											}
+											aria-label="Thumbs up"
+										>
+											👍
+										</Button>
+										<Button
+											onClick={() =>
+												handleFeedback(
+													0,
+													message.traceId,
+												)
+											}
+											aria-label="Thumbs down"
+										>
+											👎
+										</Button>
+									</Group>
+								)}
+							</Group>
+						</Stack>
+					))}
+				</ScrollArea>
+			</Stack>
 		</Paper>
 	);
 }
