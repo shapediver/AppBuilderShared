@@ -1,30 +1,34 @@
-import { Button, Group, Loader, Stack, Text } from "@mantine/core";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { IDraggingParameterProps, DraggingParameterValue } from "@shapediver/viewer.session";
-import { calculateCombinedDraggedNodes } from "@shapediver/viewer.features.interaction";
+import {Button, Group, Loader, Stack, Text} from "@mantine/core";
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import {
+	IDraggingParameterProps,
+	DraggingParameterValue,
+} from "@shapediver/viewer.session";
+import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import { useParameterComponentCommons } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import { useViewportId } from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import { useDragging } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
 import classes from "./ParameterInteractionComponent.module.css";
 import Icon from "@AppBuilderShared/components/ui/Icon";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 
 /**
  * Parse the value of a dragging parameter and extract the dragged objects
  * @param value
  * @returns
  */
-const parseDraggedNodes = (value?: string): DraggingParameterValue["objects"] => {
+const parseDraggedNodes = (
+	value?: string,
+): DraggingParameterValue["objects"] => {
 	if (!value) return [];
 	try {
 		const parsed = JSON.parse(value);
 
 		return parsed.objects;
-	}
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	catch (e) {
+	} catch (e) {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		return [];
 	}
 };
@@ -43,7 +47,7 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 		disabled,
 		value,
 		state,
-		sessionDependencies
+		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 	const draggingProps = definition.settings?.props as IDraggingParameterProps;
 
@@ -52,26 +56,35 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
 	// parsed execValue
-	const [parsedExecValue, setParsedExecValue] = useState<DraggingParameterValue["objects"]>([]);
+	const [parsedExecValue, setParsedExecValue] = useState<
+		DraggingParameterValue["objects"]
+	>([]);
 	// reference to the combined dragged nodes
-	const [combinedDraggedNodes, setCombinedDraggedNodes] = useState<DraggingParameterValue["objects"]>([]);
+	const [combinedDraggedNodes, setCombinedDraggedNodes] = useState<
+		DraggingParameterValue["objects"]
+	>([]);
 
 	// get the viewport ID
-	const { viewportId } = useViewportId();
+	const {viewportId} = useViewportId();
 
-	const { draggedNodes, setDraggedNodes, restoreDraggedNodes, handlers } = useDragging(
-		sessionDependencies,
-		viewportId,
-		draggingProps,
-		draggingActive,
-		parseDraggedNodes(value)
-	);
+	const {draggedNodes, setDraggedNodes, restoreDraggedNodes, handlers} =
+		useDragging(
+			sessionDependencies,
+			viewportId,
+			draggingProps,
+			draggingActive,
+			parseDraggedNodes(value),
+		);
 
 	// reference to the last confirmed value
-	const lastConfirmedValueRef = useRef<DraggingParameterValue["objects"]>(parseDraggedNodes(value));
+	const lastConfirmedValueRef = useRef<DraggingParameterValue["objects"]>(
+		parseDraggedNodes(value),
+	);
 
 	useEffect(() => {
-		setCombinedDraggedNodes(calculateCombinedDraggedNodes(parsedExecValue, draggedNodes));
+		setCombinedDraggedNodes(
+			calculateCombinedDraggedNodes(parsedExecValue, draggedNodes),
+		);
 	}, [parsedExecValue, draggedNodes]);
 
 	useEffect(() => {
@@ -84,7 +97,12 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 		const parsed = parseDraggedNodes(state.uiValue);
 
 		// compare uiValue to draggedNodes
-		if (parsed.length !== draggedNodes.length || !parsed.every((n, i) => JSON.stringify(n) === JSON.stringify(draggedNodes[i]))) {
+		if (
+			parsed.length !== draggedNodes.length ||
+			!parsed.every(
+				(n, i) => JSON.stringify(n) === JSON.stringify(draggedNodes[i]),
+			)
+		) {
 			setDirty(true);
 		} else {
 			setDirty(false);
@@ -98,8 +116,11 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	 */
 	const changeValue = useCallback(() => {
 		setDraggingActive(false);
-		const objects = calculateCombinedDraggedNodes(parsedExecValue, draggedNodes);
-		const parameterValue: DraggingParameterValue = { objects: objects };
+		const objects = calculateCombinedDraggedNodes(
+			parsedExecValue,
+			draggedNodes,
+		);
+		const parameterValue: DraggingParameterValue = {objects: objects};
 		lastConfirmedValueRef.current = [...draggedNodes];
 		handleChange(JSON.stringify(parameterValue), 0);
 	}, [parsedExecValue, draggedNodes]);
@@ -109,12 +130,15 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	 * This function is called when the dragging is aborted by the user.
 	 * It also ends the dragging process.
 	 */
-	const resetValue = useCallback((resetValue?: DraggingParameterValue["objects"]) => {
-		restoreDraggedNodes(resetValue, draggedNodes);
-		setDraggingActive(false);
-		setDraggedNodes(resetValue ?? []);
-		lastConfirmedValueRef.current = [...resetValue ?? []];
-	}, [draggedNodes]);
+	const resetValue = useCallback(
+		(resetValue?: DraggingParameterValue["objects"]) => {
+			restoreDraggedNodes(resetValue, draggedNodes);
+			setDraggingActive(false);
+			setDraggedNodes(resetValue ?? []);
+			lastConfirmedValueRef.current = [...(resetValue ?? [])];
+		},
+		[draggedNodes],
+	);
 
 	/**
 	 * The content of the parameter when it is active.
@@ -124,18 +148,35 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	 *
 	 * The cancel button resets the dragging to the last value.
 	 */
-	const contentActive =
+	const contentActive = (
 		<Stack>
-			<Button justify="space-between" fullWidth disabled={disabled} className={classes.interactionButton}
+			<Button
+				justify="space-between"
+				fullWidth
+				disabled={disabled}
+				className={classes.interactionButton}
 				rightSection={<Loader size="sm" type="dots" />}
 				onClick={() => resetValue(lastConfirmedValueRef.current)}
 			>
 				<Stack>
-					<Text size="sm" fw={500} ta="left" className={classes.interactionText}>
-						{draggingProps.prompt?.activeTitle ?? `Currently dragged objects: ${combinedDraggedNodes.length}`}
+					<Text
+						size="sm"
+						fw={500}
+						ta="left"
+						className={classes.interactionText}
+					>
+						{draggingProps.prompt?.activeTitle ??
+							`Currently dragged objects: ${combinedDraggedNodes.length}`}
 					</Text>
-					<Text size="sm" fw={400} fs="italic" ta="left" className={classes.interactionText}>
-						{draggingProps.prompt?.activeText ?? "Drag objects in the scene to change their position."}
+					<Text
+						size="sm"
+						fw={400}
+						fs="italic"
+						ta="left"
+						className={classes.interactionText}
+					>
+						{draggingProps.prompt?.activeText ??
+							"Drag objects in the scene to change their position."}
 					</Text>
 				</Stack>
 			</Button>
@@ -151,12 +192,13 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 				<Button
 					fullWidth={true}
 					variant={"light"}
-					onClick={() => resetValue(lastConfirmedValueRef.current)}>
+					onClick={() => resetValue(lastConfirmedValueRef.current)}
+				>
 					<Text>Cancel</Text>
 				</Button>
 			</Group>
-		</Stack>;
-
+		</Stack>
+	);
 
 	/**
 	 * The content of the parameter when it is inactive.
@@ -164,15 +206,22 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	 * It contains a button to start the dragging.
 	 * Within the button, the number of dragged nodes is displayed.
 	 */
-	const contentInactive =
-		<Button justify="space-between" fullWidth={true} disabled={disabled} className={classes.interactionButton}
+	const contentInactive = (
+		<Button
+			justify="space-between"
+			fullWidth={true}
+			disabled={disabled}
+			className={classes.interactionButton}
 			rightSection={<Icon type={IconTypeEnum.IconHandFinger} />}
 			variant={combinedDraggedNodes.length === 0 ? "light" : "filled"}
-			onClick={() => setDraggingActive(true)}>
+			onClick={() => setDraggingActive(true)}
+		>
 			<Text size="sm" className={classes.interactionText}>
-				{draggingProps.prompt?.inactiveTitle ?? `Start dragging (${combinedDraggedNodes.length})`}
+				{draggingProps.prompt?.inactiveTitle ??
+					`Start dragging (${combinedDraggedNodes.length})`}
 			</Text>
-		</Button>;
+		</Button>
+	);
 
 	// extend the onCancel callback to reset the dragged nodes.
 	const _onCancelCallback = useCallback(() => {
@@ -183,12 +232,11 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 		setOnCancelCallback(() => _onCancelCallback);
 	}, [_onCancelCallback]);
 
-	return (<>
-		<>{handlers}</>
-		<ParameterLabelComponent {...props} cancel={onCancel} />
-		{
-			definition &&
-				draggingActive ? contentActive : contentInactive
-		}
-	</>);
+	return (
+		<>
+			<>{handlers}</>
+			<ParameterLabelComponent {...props} cancel={onCancel} />
+			{definition && draggingActive ? contentActive : contentInactive}
+		</>
+	);
 }

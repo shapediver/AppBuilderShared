@@ -1,8 +1,13 @@
-import { SessionCreateDto } from "@AppBuilderShared/types/store/shapediverStoreSession";
-import { IAppBuilderWidgetPropsRoundChart, IAppBuilderWidgetPropsLineChart, IAppBuilderWidgetPropsAreaChart, IAppBuilderWidgetPropsBarChart } from "@AppBuilderShared/types/shapediver/appbuildercharts";
-import { IShapeDiverExportDefinition } from "@AppBuilderShared/types/shapediver/export";
-import { IconType } from "@AppBuilderShared/types/shapediver/icons";
-import { IShapeDiverParameterDefinition } from "@AppBuilderShared/types/shapediver/parameter";
+import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
+import {
+	IAppBuilderWidgetPropsRoundChart,
+	IAppBuilderWidgetPropsLineChart,
+	IAppBuilderWidgetPropsAreaChart,
+	IAppBuilderWidgetPropsBarChart,
+} from "@AppBuilderShared/types/shapediver/appbuildercharts";
+import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
+import {IconType} from "@AppBuilderShared/types/shapediver/icons";
+import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
@@ -14,7 +19,7 @@ export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
 	 * the new parameter's value is set to the default value defined in the
 	 * parameter definition.
 	 */
-	value?: string
+	value?: string;
 };
 
 /** Type used for export definitions */
@@ -23,67 +28,79 @@ export type IAppBuilderExportDefinition = IShapeDiverExportDefinition;
 /** Reference to a parameter (custom or defined by the session) */
 export interface IAppBuilderParameterRef {
 	/** Id or name or displayname of the referenced parameter (in that order). */
-	name: string
+	name: string;
 	/** Optional id of the session the referenced parameter belongs to. */
-	sessionId?: string
+	sessionId?: string;
 	/** Properties of the parameter to be overridden. */
-	overrides?: Pick<Partial<IAppBuilderParameterDefinition>, "displayname" | "group" | "order" | "tooltip" | "hidden">
+	overrides?: Pick<
+		Partial<IAppBuilderParameterDefinition>,
+		"displayname" | "group" | "order" | "tooltip" | "hidden"
+	>;
 	/** Disable the UI element of the parameter if its state is dirty. */
-	disableIfDirty?: boolean
+	disableIfDirty?: boolean;
 	/** Ask the user to accept or reject changes of this parameter before executing them. */
-	acceptRejectMode?: boolean
+	acceptRejectMode?: boolean;
 }
 
 /** Reference to an export (defined by the session) */
 export interface IAppBuilderExportRef {
 	/** Id or name or displayname of the referenced export (in that order). */
-	name: string
+	name: string;
 	/** Optional id of the session the referenced parameter belongs to. */
-	sessionId?: string
+	sessionId?: string;
 	/** Properties of the export to be overridden. */
-	overrides?: Pick<Partial<IAppBuilderExportDefinition>, "displayname" | "group" | "order" | "tooltip" | "hidden">
+	overrides?: Pick<
+		Partial<IAppBuilderExportDefinition>,
+		"displayname" | "group" | "order" | "tooltip" | "hidden"
+	>;
 }
 
 /** Reference to an image */
 export interface IAppBuilderImageRef {
 	/** Optional reference to export which provides the image. */
-	export?: Pick<IAppBuilderExportRef, "name" | "sessionId">
+	export?: Pick<IAppBuilderExportRef, "name" | "sessionId">;
 	/** URL to image. Can be a data URL including a base 64 encoded image. Takes precedence over export reference. */
-	href?: string
+	href?: string;
 }
 
 /** Types of actions */
-export type AppBuilderActionType = "createModelState" | "addToCart" | "setParameterValue" | "setBrowserLocation" | "closeConfigurator";
+export type AppBuilderActionType =
+	| "createModelState"
+	| "addToCart"
+	| "setParameterValue"
+	| "setBrowserLocation"
+	| "closeConfigurator";
 
 /** Common properties of App Builder actions. */
 export interface IAppBuilderActionPropsCommon {
 	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. */
-	label?: string
+	label?: string;
 	/** Optional icon (of the button etc). */
-	icon?: IconType
+	icon?: IconType;
 	/** Optional tooltip. */
-	tooltip?: string
+	tooltip?: string;
 	// TODO: allow to define what should happen in case of success or error.
 }
 
 /** Properties of a "createModelState" action. */
-export interface IAppBuilderActionPropsCreateModelState extends IAppBuilderActionPropsCommon {
+export interface IAppBuilderActionPropsCreateModelState
+	extends IAppBuilderActionPropsCommon {
 	/**
 	 * Optional flag to control whether an image of the scene shall be
 	 * included with the model state.
 	 */
-	includeImage?: boolean
+	includeImage?: boolean;
 	/**
 	 * Optional image to be included when creating the model state for the line item.
 	 * In case no image is provided here, a screenshot of the model will be used
 	 * if @see {@link includeImage} is set to true.
 	 */
-	image?: IAppBuilderImageRef
+	image?: IAppBuilderImageRef;
 	/**
 	 * Optional flag to control whether a glTF export of the scene shall be
 	 * included with the model state.
 	 */
-	includeGltf?: boolean
+	includeGltf?: boolean;
 }
 
 /**
@@ -91,7 +108,8 @@ export interface IAppBuilderActionPropsCreateModelState extends IAppBuilderActio
  * This action triggers a corresponding message to the e-commerce system via the iframe API.
  * A response is awaited and the result is displayed to the user.
  */
-export interface IAppBuilderActionPropsAddToCart extends IAppBuilderActionPropsCreateModelState {
+export interface IAppBuilderActionPropsAddToCart
+	extends IAppBuilderActionPropsCreateModelState {
 	/**
 	 * Identifier of the product to add to the cart.
 	 * Optional, defaults to the product defined by the context.
@@ -99,21 +117,22 @@ export interface IAppBuilderActionPropsAddToCart extends IAppBuilderActionPropsC
 	 * in the e-commerce system. Translations of product identifiers can be done by
 	 * the plug-in embedding App Builder in the respective e-commerce system.
 	 */
-	productId?: string
+	productId?: string;
 	/** Quantity of the line item to add to the cart (number of units). Optional, defaults to 1. */
-	quantity?: number
+	quantity?: number;
 	/** Price of the product per unit. */
-	price?: number
+	price?: number;
 	/** Description to be used for the line item. */
-	description?: string
+	description?: string;
 }
 
 /** Properties of a "setParameterValue" action. */
-export interface IAppBuilderActionPropsSetParameterValue extends IAppBuilderActionPropsCommon {
+export interface IAppBuilderActionPropsSetParameterValue
+	extends IAppBuilderActionPropsCommon {
 	/** The parameter that should be set. */
-	parameter: Pick<IAppBuilderParameterRef, "name" | "sessionId">
+	parameter: Pick<IAppBuilderParameterRef, "name" | "sessionId">;
 	/** Value to set. */
-	value: string
+	value: string;
 }
 
 /**
@@ -121,50 +140,54 @@ export interface IAppBuilderActionPropsSetParameterValue extends IAppBuilderActi
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Location
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/open
  */
-export interface IAppBuilderActionPropsSetBrowserLocation extends IAppBuilderActionPropsCommon {
+export interface IAppBuilderActionPropsSetBrowserLocation
+	extends IAppBuilderActionPropsCommon {
 	/**
 	 * href to set.
 	 * If this is defined, pathname, search and hash are ignored.
 	 */
-	href?: string
+	href?: string;
 	/**
 	 * pathname to set (using the current origin).
 	 * If this is defined, search and hash are ignored.
 	 */
-	pathname?: string
+	pathname?: string;
 	/**
 	 * search to set (using the current origin and pathname).
 	 * If this is defined, hash is ignored.
 	 */
-	search?: string
+	search?: string;
 	/**
 	 * hash to set (using the current origin, pathname and search).
 	 */
-	hash?: string
+	hash?: string;
 	/**
 	 * Optional target. If specified, window.open is used to open the location.
 	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/open
 	 */
-	target?: "_self" | "_blank" | "_parent" | "_top"
+	target?: "_self" | "_blank" | "_parent" | "_top";
 }
 
 /** Properties of a "closeConfigurator" action. */
-export type IAppBuilderActionPropsCloseConfigurator = IAppBuilderActionPropsCommon
+export type IAppBuilderActionPropsCloseConfigurator =
+	IAppBuilderActionPropsCommon;
 
 /** An App Builder action. */
 export interface IAppBuilderAction {
 	/** Type of the action. */
-	type: AppBuilderActionType
+	type: AppBuilderActionType;
 	/** Properties of the action. */
-	props: IAppBuilderActionPropsCreateModelState
+	props:
+		| IAppBuilderActionPropsCreateModelState
 		| IAppBuilderActionPropsAddToCart
 		| IAppBuilderActionPropsSetParameterValue
 		| IAppBuilderActionPropsSetBrowserLocation
-		| IAppBuilderActionPropsCloseConfigurator
+		| IAppBuilderActionPropsCloseConfigurator;
 }
 
 /** Types of widgets */
-export type AppBuilderWidgetType = "accordion"
+export type AppBuilderWidgetType =
+	| "accordion"
 	| "text"
 	| "image"
 	| "roundChart"
@@ -173,8 +196,7 @@ export type AppBuilderWidgetType = "accordion"
 	| "barChart"
 	| "actions"
 	| "attributeVisualization"
-	| "agent"
-;
+	| "agent";
 
 /**
  * Properties of a parameter and export accordion widget.
@@ -183,47 +205,49 @@ export type AppBuilderWidgetType = "accordion"
  */
 export interface IAppBuilderWidgetPropsAccordion {
 	/** References to parameters which shall be displayed by the accordion. */
-	parameters?: IAppBuilderParameterRef[]
+	parameters?: IAppBuilderParameterRef[];
 	/** References to exports which shall be displayed by the accordion. */
-	exports?: IAppBuilderExportRef[]
+	exports?: IAppBuilderExportRef[];
 	/**
 	 * Optional name of group that should be used for all parameters/exports without a group.
 	 * In case this is not specified, parameters/exports without a group will be displayed without an accordion.
 	 */
-	defaultGroupName?: string
+	defaultGroupName?: string;
 }
 
 /** Properties of a text widget. */
 export interface IAppBuilderWidgetPropsText {
 	/** Plain text. Takes precedence. */
-	text?: string
+	text?: string;
 	/** Optional markdown. */
-	markdown?: string
+	markdown?: string;
 }
 
 export interface IAppBuilderWidgetPropsAnchor {
 	/** Follow link. */
-	anchor?: string,
+	anchor?: string;
 	/** Optional reference to specifies where to open the linked document which provides the image, "_blank" by default */
-	target?: string,
+	target?: string;
 }
 
 /** Properties of an image widget. */
-export interface IAppBuilderWidgetPropsImage extends IAppBuilderWidgetPropsAnchor, IAppBuilderImageRef {
+export interface IAppBuilderWidgetPropsImage
+	extends IAppBuilderWidgetPropsAnchor,
+		IAppBuilderImageRef {
 	/** Optional reference to alternate text which provides the image. */
-	alt?: string,
-	/** 
-	 * Optional boolean to indicate that the widget shall render the image as an SVG. 
-	 * In case this is not specified, the widget will detect whether the image is an 
+	alt?: string;
+	/**
+	 * Optional boolean to indicate that the widget shall render the image as an SVG.
+	 * In case this is not specified, the widget will detect whether the image is an
 	 * SVG based on its href.
 	 */
-	isSvg?: boolean
+	isSvg?: boolean;
 }
 
 /** Properties of a widget presenting actions. */
 export interface IAppBuilderWidgetPropsActions {
 	/** The actions. */
-	actions?: IAppBuilderAction[]
+	actions?: IAppBuilderAction[];
 }
 
 /** Properties of a widget then attribute visualization. */
@@ -233,7 +257,7 @@ export interface IAppBuilderWidgetPropsAttributeVisualization {}
 /** Properties of an AI agent widget. */
 export interface IAppBuilderWidgetPropsAgent {
 	/** Additional context. */
-	context?: string
+	context?: string;
 }
 
 /**
@@ -247,9 +271,10 @@ export interface IAppBuilderWidgetPropsAgent {
  */
 export interface IAppBuilderWidget {
 	/** Type of the widget. */
-	type: AppBuilderWidgetType
+	type: AppBuilderWidgetType;
 	/** Properties of the widget. */
-	props: IAppBuilderWidgetPropsAccordion
+	props:
+		| IAppBuilderWidgetPropsAccordion
 		| IAppBuilderWidgetPropsText
 		| IAppBuilderWidgetPropsImage
 		| IAppBuilderWidgetPropsRoundChart
@@ -258,7 +283,7 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsBarChart
 		| IAppBuilderWidgetPropsActions
 		| IAppBuilderWidgetPropsAttributeVisualization
-		| IAppBuilderWidgetPropsAgent
+		| IAppBuilderWidgetPropsAgent;
 }
 
 /**
@@ -266,13 +291,13 @@ export interface IAppBuilderWidget {
  */
 export interface IAppBuilderTab {
 	/** Name of the tab. */
-	name: string
+	name: string;
 	/** Optional icon of the tab. */
-	icon?: IconType
+	icon?: IconType;
 	/** Optional tooltip. */
-	tooltip?: string
+	tooltip?: string;
 	/** Widgets displayed in the tab. */
-	widgets: IAppBuilderWidget[]
+	widgets: IAppBuilderWidget[];
 }
 
 /** Types of hints for containers */
@@ -283,11 +308,11 @@ export type AppBuilderContainerNameType = "left" | "right" | "top" | "bottom";
  */
 export interface IAppBuilderContainer {
 	/** Name of the container. */
-	name: AppBuilderContainerNameType
+	name: AppBuilderContainerNameType;
 	/** Tabs displayed in the container. */
-	tabs?: IAppBuilderTab[]
+	tabs?: IAppBuilderTab[];
 	/** Further widgets displayed in the container. */
-	widgets?: IAppBuilderWidget[]
+	widgets?: IAppBuilderWidget[];
 }
 
 /**
@@ -295,97 +320,141 @@ export interface IAppBuilderContainer {
  * This is the root of the custom UI definition.
  */
 export interface IAppBuilder {
-
 	/** Version of the schema. */
-	version: "1.0"
+	version: "1.0";
 
 	/**
 	 * Optional list of custom parameters that can be referenced
 	 * in addition to parameters of the model.
 	 */
-	parameters?: IAppBuilderParameterDefinition[]
+	parameters?: IAppBuilderParameterDefinition[];
 
 	/** Optional id of the session to use for defining custom parameters. */
-	sessionId?: string
+	sessionId?: string;
 
 	/**
 	 * Containers to be displayed.
 	 */
-	containers: IAppBuilderContainer[]
+	containers: IAppBuilderContainer[];
 }
 
 /** assert widget type "accordion" */
-export function isAccordionWidget(widget: IAppBuilderWidget): widget is { type: "accordion", props: IAppBuilderWidgetPropsAccordion } {
+export function isAccordionWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "accordion"; props: IAppBuilderWidgetPropsAccordion} {
 	return widget.type === "accordion";
 }
 
 /** assert widget type "text" */
-export function isTextWidget(widget: IAppBuilderWidget): widget is { type: "text", props: IAppBuilderWidgetPropsText } {
+export function isTextWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "text"; props: IAppBuilderWidgetPropsText} {
 	return widget.type === "text";
 }
 
 /** assert widget type "image" */
-export function isImageWidget(widget: IAppBuilderWidget): widget is { type: "image", props: IAppBuilderWidgetPropsImage } {
+export function isImageWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "image"; props: IAppBuilderWidgetPropsImage} {
 	return widget.type === "image";
 }
 
 /** assert widget type "roundChart" */
-export function isRoundChartWidget(widget: IAppBuilderWidget): widget is { type: "roundChart", props: IAppBuilderWidgetPropsRoundChart } {
+export function isRoundChartWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "roundChart"; props: IAppBuilderWidgetPropsRoundChart} {
 	return widget.type === "roundChart";
 }
 
 /** assert widget type "lineChart" */
-export function isLineChartWidget(widget: IAppBuilderWidget): widget is { type: "lineChart", props: IAppBuilderWidgetPropsLineChart } {
+export function isLineChartWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "lineChart"; props: IAppBuilderWidgetPropsLineChart} {
 	return widget.type === "lineChart";
 }
 
 /** assert widget type "areaChart" */
-export function isAreaChartWidget(widget: IAppBuilderWidget): widget is { type: "areaChart", props: IAppBuilderWidgetPropsAreaChart } {
+export function isAreaChartWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "areaChart"; props: IAppBuilderWidgetPropsAreaChart} {
 	return widget.type === "areaChart";
 }
 
 /** assert widget type "barChart" */
-export function isBarChartWidget(widget: IAppBuilderWidget): widget is { type: "barChart", props: IAppBuilderWidgetPropsBarChart } {
+export function isBarChartWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "barChart"; props: IAppBuilderWidgetPropsBarChart} {
 	return widget.type === "barChart";
 }
 
 /** assert widget type "actions" */
-export function isActionsWidget(widget: IAppBuilderWidget): widget is { type: "actions", props: IAppBuilderWidgetPropsActions } {
+export function isActionsWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "actions"; props: IAppBuilderWidgetPropsActions} {
 	return widget.type === "actions";
 }
 
 /** assert widget type "attributeVisualization" */
-export function isAttributeVisualizationWidget(widget: IAppBuilderWidget): widget is { type: "attributeVisualization", props: IAppBuilderWidgetPropsAttributeVisualization } {
+export function isAttributeVisualizationWidget(
+	widget: IAppBuilderWidget,
+): widget is {
+	type: "attributeVisualization";
+	props: IAppBuilderWidgetPropsAttributeVisualization;
+} {
 	return widget.type === "attributeVisualization";
 }
 
 /** assert widget type "agent" */
-export function isAgentWidget(widget: IAppBuilderWidget): widget is { type: "agent", props: IAppBuilderWidgetPropsAgent } {
+export function isAgentWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "agent"; props: IAppBuilderWidgetPropsAgent} {
 	return widget.type === "agent";
 }
 
 /** assert action type "createModelState" */
-export function isCreateModelStateAction(action: IAppBuilderAction): action is { type: "createModelState", props: IAppBuilderActionPropsCreateModelState } {
+export function isCreateModelStateAction(
+	action: IAppBuilderAction,
+): action is {
+	type: "createModelState";
+	props: IAppBuilderActionPropsCreateModelState;
+} {
 	return action.type === "createModelState";
 }
 
 /** assert action type "addToCart" */
-export function isAddToCartAction(action: IAppBuilderAction): action is { type: "addToCart", props: IAppBuilderActionPropsAddToCart } {
+export function isAddToCartAction(
+	action: IAppBuilderAction,
+): action is {type: "addToCart"; props: IAppBuilderActionPropsAddToCart} {
 	return action.type === "addToCart";
 }
 
 /** assert action type "setParameterValue" */
-export function isSetParameterValueAction(action: IAppBuilderAction): action is { type: "setParameterValue", props: IAppBuilderActionPropsSetParameterValue } {
+export function isSetParameterValueAction(
+	action: IAppBuilderAction,
+): action is {
+	type: "setParameterValue";
+	props: IAppBuilderActionPropsSetParameterValue;
+} {
 	return action.type === "setParameterValue";
 }
 
 /** assert action type "setBrowserLocation" */
-export function isSetBrowserLocationAction(action: IAppBuilderAction): action is { type: "setBrowserLocation", props: IAppBuilderActionPropsSetBrowserLocation } {
+export function isSetBrowserLocationAction(
+	action: IAppBuilderAction,
+): action is {
+	type: "setBrowserLocation";
+	props: IAppBuilderActionPropsSetBrowserLocation;
+} {
 	return action.type === "setBrowserLocation";
 }
 
 /** assert action type "closeConfigurator" */
-export function isCloseConfiguratorAction(action: IAppBuilderAction): action is { type: "closeConfigurator", props: IAppBuilderActionPropsCloseConfigurator } {
+export function isCloseConfiguratorAction(
+	action: IAppBuilderAction,
+): action is {
+	type: "closeConfigurator";
+	props: IAppBuilderActionPropsCloseConfigurator;
+} {
 	return action.type === "closeConfigurator";
 }
 
@@ -396,33 +465,34 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	/**
 	 * Either slug and platformUrl, or ticket and modelViewUrl must be set.
 	 */
-	slug?: string,
+	slug?: string;
 	/**
 	 * Either slug and platformUrl, or ticket and modelViewUrl must be set.
 	 */
-	platformUrl?: string,
+	platformUrl?: string;
 	/**
 	 * Set to true to require confirmation of the user to accept or reject changed parameter values.
 	 */
-	acceptRejectMode?: boolean
+	acceptRejectMode?: boolean;
 	/**
 	 * Optional model state id.
 	 */
-	modelStateId?: string
+	modelStateId?: string;
 	/**
 	 * Optional callback for refreshing the JWT token.
 	 */
-	refreshJwtToken?: () => Promise<string>
+	refreshJwtToken?: () => Promise<string>;
 }
 
 /**
  * Settings for a session used by the AppBuilder.
  */
-export interface IAppBuilderSettingsJsonSession extends Omit<IAppBuilderSettingsSession, "modelViewUrl"> {
+export interface IAppBuilderSettingsJsonSession
+	extends Omit<IAppBuilderSettingsSession, "modelViewUrl"> {
 	/**
 	 * Override modelViewUrl to be optional.
 	 */
-	modelViewUrl?: string,
+	modelViewUrl?: string;
 }
 
 /**
@@ -433,29 +503,29 @@ export interface IAppBuilderSettingsSettings {
 	 * If true, hide the fallback AppBuilder containers which
 	 * are shown in case no AppBuilder data output is found.
 	 */
-	disableFallbackUi?: boolean,
+	disableFallbackUi?: boolean;
 }
 
 /**
  * Settings for initializing an AppBuilder application from a JSON file. This defines the sessions to create.
  */
 export interface IAppBuilderSettingsJson {
-	version: "1.0",
+	version: "1.0";
 	/** Session to load. */
-    sessions?: IAppBuilderSettingsJsonSession[]
+	sessions?: IAppBuilderSettingsJsonSession[];
 	/** Settings */
-	settings?: IAppBuilderSettingsSettings
+	settings?: IAppBuilderSettingsSettings;
 	/**
 	 * Theme overrides
 	 * @see https://mantine.dev/theming/theme-object/
 	 */
-	themeOverrides?: Record<string, any>,
+	themeOverrides?: Record<string, any>;
 	/**
 	 * Optional AppBuilder definition, to be used instead of the
 	 * AppBuilder output of the ShapeDiver model. This is useful
 	 * for development.
 	 */
-	appBuilderOverride?: IAppBuilder
+	appBuilderOverride?: IAppBuilder;
 }
 
 /**
@@ -463,7 +533,7 @@ export interface IAppBuilderSettingsJson {
  */
 export interface IAppBuilderSettings extends IAppBuilderSettingsJson {
 	/** Session to load. */
-    sessions: IAppBuilderSettingsJsonSession[]
+	sessions: IAppBuilderSettingsJsonSession[];
 }
 
 /**
@@ -471,5 +541,5 @@ export interface IAppBuilderSettings extends IAppBuilderSettingsJson {
  */
 export interface IAppBuilderSettingsResolved extends IAppBuilderSettings {
 	/** Session to load. */
-    sessions: IAppBuilderSettingsSession[]
+	sessions: IAppBuilderSettingsSession[];
 }

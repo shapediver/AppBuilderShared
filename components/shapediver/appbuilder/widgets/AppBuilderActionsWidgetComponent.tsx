@@ -1,13 +1,25 @@
-import React, { useContext } from "react";
-import { Group, MantineThemeComponent, Paper, PaperProps, Stack } from "@mantine/core";
-import { IAppBuilderWidgetPropsActions, isAddToCartAction, isCloseConfiguratorAction, isCreateModelStateAction, isSetBrowserLocationAction, isSetParameterValueAction } from "@AppBuilderShared/types/shapediver/appbuilder";
+import React, {useContext} from "react";
+import {
+	Group,
+	MantineThemeComponent,
+	Paper,
+	PaperProps,
+	Stack,
+} from "@mantine/core";
+import {
+	IAppBuilderWidgetPropsActions,
+	isAddToCartAction,
+	isCloseConfiguratorAction,
+	isCreateModelStateAction,
+	isSetBrowserLocationAction,
+	isSetParameterValueAction,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
 import AppBuilderActionAddToCartComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionAddToCartComponent";
 import AppBuilderActionSetParameterValueComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValueComponent";
 import AppBuilderActionSetBrowserLocationComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetBrowserLocationComponent";
 import AppBuilderActionCloseConfiguratorComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCloseConfiguratorComponent";
-import AppBuilderActionCreateModelStateComponent
-	from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCreateModelStateComponent";
-import { AppBuilderContainerContext } from "@AppBuilderShared/context/AppBuilderContext";
+import AppBuilderActionCreateModelStateComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCreateModelStateComponent";
+import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 
 type StylePros = PaperProps;
 
@@ -16,9 +28,11 @@ type StylePros = PaperProps;
 
 type AppBuilderActionsWidgetThemePropsType = Partial<StylePros>;
 
-export function AppBuilderActionWidgetThemeProps(props: AppBuilderActionsWidgetThemePropsType): MantineThemeComponent {
+export function AppBuilderActionWidgetThemeProps(
+	props: AppBuilderActionsWidgetThemePropsType,
+): MantineThemeComponent {
 	return {
-		defaultProps: props
+		defaultProps: props,
 	};
 }
 
@@ -26,8 +40,9 @@ type Props = IAppBuilderWidgetPropsActions & {
 	namespace: string;
 };
 
-export default function AppBuilderActionsWidgetComponent(props: Props & AppBuilderActionsWidgetThemePropsType) {
-
+export default function AppBuilderActionsWidgetComponent(
+	props: Props & AppBuilderActionsWidgetThemePropsType,
+) {
 	const {
 		actions,
 		namespace,
@@ -44,30 +59,55 @@ export default function AppBuilderActionsWidgetComponent(props: Props & AppBuild
 
 	const actionComponents = actions.map((action, i) => {
 		if (isCreateModelStateAction(action))
-			return <AppBuilderActionCreateModelStateComponent key={i} namespace={namespace} {...action.props} />;
+			return (
+				<AppBuilderActionCreateModelStateComponent
+					key={i}
+					namespace={namespace}
+					{...action.props}
+				/>
+			);
 		else if (isAddToCartAction(action))
-			return <AppBuilderActionAddToCartComponent key={i} namespace={namespace} {...action.props} />;
+			return (
+				<AppBuilderActionAddToCartComponent
+					key={i}
+					namespace={namespace}
+					{...action.props}
+				/>
+			);
 		else if (isCloseConfiguratorAction(action))
-			return <AppBuilderActionCloseConfiguratorComponent key={i} {...action.props} />;
+			return (
+				<AppBuilderActionCloseConfiguratorComponent
+					key={i}
+					{...action.props}
+				/>
+			);
 		else if (isSetParameterValueAction(action))
-			return <AppBuilderActionSetParameterValueComponent key={i} namespace={namespace} {...action.props} />;
+			return (
+				<AppBuilderActionSetParameterValueComponent
+					key={i}
+					namespace={namespace}
+					{...action.props}
+				/>
+			);
 		else if (isSetBrowserLocationAction(action))
-			return <AppBuilderActionSetBrowserLocationComponent key={i} {...action.props} />;
-		else
-			return null;
+			return (
+				<AppBuilderActionSetBrowserLocationComponent
+					key={i}
+					{...action.props}
+				/>
+			);
+		else return null;
 	});
 
-	if (actions.length === 1)
-		return actionComponents[0];
+	if (actions.length === 1) return actionComponents[0];
 
-	return <Paper>
-		{context.orientation === "vertical" ?
-			<Stack>
-				{ actionComponents }
-			</Stack> :
-			<Group>
-				{ actionComponents }
-			</Group>
-		}
-	</Paper>;
+	return (
+		<Paper>
+			{context.orientation === "vertical" ? (
+				<Stack>{actionComponents}</Stack>
+			) : (
+				<Group>{actionComponents}</Group>
+			)}
+		</Paper>
+	);
 }

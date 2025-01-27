@@ -1,6 +1,5 @@
-
-/** 
- * Types of icons 
+/**
+ * Types of icons
  * @see https://tabler.io/icons
  */
 export enum IconTypeEnum {
@@ -78,7 +77,7 @@ export enum IconTypeEnum {
 	WorldOff = "world-off",
 	X = "x",
 	ZoomIn = "zoom-in",
-	ZoomScan = "zoom-scan"
+	ZoomScan = "zoom-scan",
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -86,4 +85,4 @@ const IconTypeEnumType = {
 	...IconTypeEnum,
 };
 
-export type IconType = typeof IconTypeEnumType[keyof typeof IconTypeEnumType];
+export type IconType = (typeof IconTypeEnumType)[keyof typeof IconTypeEnumType];

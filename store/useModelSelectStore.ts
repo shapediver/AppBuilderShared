@@ -1,14 +1,14 @@
-import { IUseSessionDto } from "@AppBuilderShared/hooks/shapediver/useSession";
-import { create } from "zustand";
+import {IUseSessionDto} from "@AppBuilderShared/hooks/shapediver/useSession";
+import {create} from "zustand";
 
-export interface ISelectedModel extends IUseSessionDto  {
-	name: string,
-    slug: string,
+export interface ISelectedModel extends IUseSessionDto {
+	name: string;
+	slug: string;
 }
 
 interface IModelSelectState {
-    selectedModels: ISelectedModel[];
-    setSelectedModels: (selectedModels: ISelectedModel[]) => void;
+	selectedModels: ISelectedModel[];
+	setSelectedModels: (selectedModels: ISelectedModel[]) => void;
 }
 
 /**
@@ -19,6 +19,6 @@ export const useModelSelectStore = create<IModelSelectState>((set) => ({
 	setSelectedModels: (selectedModels) =>
 		set((state) => ({
 			...state,
-			selectedModels
-		}))
+			selectedModels,
+		})),
 }));

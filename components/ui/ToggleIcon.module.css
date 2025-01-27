@@ -1,19 +1,19 @@
 .highlight {
-    transition: transform 0.3s;
+	transition: transform 0.3s;
 }
 
 .highlight:hover {
-    transform: scale(1.1);
+	transform: scale(1.1);
 }
 
 .hideActive:hover {
-    opacity: 0.1;
+	opacity: 0.1;
 }
 
 .hideInactive:not(:hover) {
-    opacity: 0.1;
+	opacity: 0.1;
 }
 
 .hidden {
-    opacity: 0.1;
+	opacity: 0.1;
 }

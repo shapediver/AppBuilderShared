@@ -1,11 +1,11 @@
-import { useShapeDiverStoreViewport } from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import { InteractionEngine } from "@shapediver/viewer.features.interaction";
-import { useEffect } from "react";
+import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {InteractionEngine} from "@shapediver/viewer.features.interaction";
+import {useEffect} from "react";
 
 // #region Functions (1)
 
 // create an object to store the interaction engines for the viewports
-const interactionEngines: { [key: string]: InteractionEngine } = {};
+const interactionEngines: {[key: string]: InteractionEngine} = {};
 
 /**
  * Hook allowing to create an interaction engine for a viewport.
@@ -16,10 +16,12 @@ export function useInteractionEngine(viewportId: string): {
 	/**
 	 * The interaction engine that was created for the viewport.
 	 */
-	interactionEngine?: InteractionEngine
+	interactionEngine?: InteractionEngine;
 } {
 	// get the viewport API
-	const viewportApi = useShapeDiverStoreViewport(state => { return state.viewports[viewportId]; });
+	const viewportApi = useShapeDiverStoreViewport((state) => {
+		return state.viewports[viewportId];
+	});
 
 	// use an effect to create the interaction engine
 	useEffect(() => {
@@ -41,7 +43,7 @@ export function useInteractionEngine(viewportId: string): {
 	}, [viewportApi]);
 
 	return {
-		interactionEngine: interactionEngines[viewportId]
+		interactionEngine: interactionEngines[viewportId],
 	};
 }
 

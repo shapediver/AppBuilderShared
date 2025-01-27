@@ -1,83 +1,108 @@
-import { 
-	Accordion, 
-	Anchor, 
-	AppShellResponsiveSize, 
-	Button, 
-	CSSVariablesResolver, 
-	CloseButton, 
-	ColorInput, 
-	DEFAULT_THEME, 
+import {
+	Accordion,
+	Anchor,
+	AppShellResponsiveSize,
+	Button,
+	CSSVariablesResolver,
+	CloseButton,
+	ColorInput,
+	DEFAULT_THEME,
 	Group,
 	List,
-	MantineSize, 
-	MantineSpacing, 
-	MantineThemeOverride, 
-	Paper, 
-	Stack, 
-	StyleProp, 
+	MantineSize,
+	MantineSpacing,
+	MantineThemeOverride,
+	Paper,
+	Stack,
+	StyleProp,
 	Switch,
-	Tabs, 
+	Tabs,
 	Text,
-	Tooltip, 
+	Tooltip,
 	createTheme,
-	mergeThemeOverrides, 
-	rem
+	mergeThemeOverrides,
+	rem,
 } from "@mantine/core";
-import { AppShellSize } from "@mantine/core/lib/components/AppShell/AppShell.types";
-import { DefaultSessionThemeProps } from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
-import { ExportLabelComponentThemeProps } from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
-import { IconThemeProps } from "@AppBuilderShared/components/ui/Icon";
-import { LoaderPageThemeProps } from "@AppBuilderShared/pages/misc/LoaderPage";
-import { MarkdownWidgetComponentProps } from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
-import { NotificationWrapperThemeProps } from "@AppBuilderShared/components/ui/NotificationWrapper";
-import { ParametersAndExportsAccordionComponentThemeProps } from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
-import { ParameterColorComponentThemeProps } from "@AppBuilderShared/components/shapediver/parameter/ParameterColorComponent";
-import { ParameterLabelComponentThemeProps } from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import { ParameterSliderComponentThemeProps } from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
-import { TooltipWrapperThemeProps } from "@AppBuilderShared/components/ui/TooltipWrapper";
-import { useThemeOverrideStore } from "@AppBuilderShared/store/useThemeOverrideStore";
-import { ViewportBrandingThemeProps, ViewportComponentThemeProps } from "@AppBuilderShared/types/shapediver/viewport";
-import { ViewportIconsThemeProps } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import { ViewportOverlayWrapperThemeProps } from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
-import { AppBuilderImageThemeProps } from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
-import { AppBuilderTextWidgetThemeProps } from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
-import { AppBuilderAppShellTemplatePageThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
-import { AppBuilderContainerThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderContainer";
-import { AppBuilderContainerWrapperThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
-import { AppBuilderGridTemplatePageThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderGridTemplatePage";
-import { AppBuilderHorizontalContainerThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderHorizontalContainer";
-import { AppBuilderTemplateSelectorThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
-import { AppBuilderVerticalContainerThemeProps } from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
+import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
+import {DefaultSessionThemeProps} from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
+import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
+import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
+import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
+import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
+import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
+import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
+import {ParameterColorComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterColorComponent";
+import {ParameterLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import {ParameterSliderComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
+import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
+import {
+	ViewportBrandingThemeProps,
+	ViewportComponentThemeProps,
+} from "@AppBuilderShared/types/shapediver/viewport";
+import {ViewportIconsThemeProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
+import {ViewportOverlayWrapperThemeProps} from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
+import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
+import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
+import {AppBuilderAppShellTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
+import {AppBuilderContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderContainer";
+import {AppBuilderContainerWrapperThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
+import {AppBuilderGridTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderGridTemplatePage";
+import {AppBuilderHorizontalContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderHorizontalContainer";
+import {AppBuilderTemplateSelectorThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
+import {AppBuilderVerticalContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 
 /**
  * Helper function for defining CSS variables for the AppBuilderAppShellTemplate
- * @param size 
- * @param breakpoint 
- * @param defval 
- * @returns 
+ * @param size
+ * @param breakpoint
+ * @param defval
+ * @returns
  */
-const getAppShellSize = (size: AppShellResponsiveSize | AppShellSize, breakpoint: MantineSize | "base", defval: string): string => {
-	if (!size)
-		return defval;
+const getAppShellSize = (
+	size: AppShellResponsiveSize | AppShellSize,
+	breakpoint: MantineSize | "base",
+	defval: string,
+): string => {
+	if (!size) return defval;
 
 	if (typeof size === "object") {
 		switch (breakpoint) {
-		case "base":
-			return ""+(size.base ?? defval);
-		case "xs":	
-			return ""+(size.xs ?? size.base ?? defval);
-		case "sm":
-			return ""+(size.sm ?? size.xs ?? size.base ?? defval);
-		case "md":
-			return ""+(size.md ?? size.sm ?? size.xs ?? size.base ?? defval);
-		case "lg":
-			return ""+(size.lg ?? size.md ?? size.sm ?? size.xs ?? size.base ?? defval);
-		case "xl":
-			return ""+(size.xl ?? size.lg ?? size.md ?? size.sm ?? size.xs ?? size.base ?? defval);
+			case "base":
+				return "" + (size.base ?? defval);
+			case "xs":
+				return "" + (size.xs ?? size.base ?? defval);
+			case "sm":
+				return "" + (size.sm ?? size.xs ?? size.base ?? defval);
+			case "md":
+				return (
+					"" + (size.md ?? size.sm ?? size.xs ?? size.base ?? defval)
+				);
+			case "lg":
+				return (
+					"" +
+					(size.lg ??
+						size.md ??
+						size.sm ??
+						size.xs ??
+						size.base ??
+						defval)
+				);
+			case "xl":
+				return (
+					"" +
+					(size.xl ??
+						size.lg ??
+						size.md ??
+						size.sm ??
+						size.xs ??
+						size.base ??
+						defval)
+				);
 		}
 	}
 
-	return ""+size;
+	return "" + size;
 };
 
 interface Props {
@@ -88,17 +113,16 @@ interface Props {
 }
 
 /**
- * Hook for getting our custom theme. 
+ * Hook for getting our custom theme.
  * Theme overrides can be set in a global store using the hook useThemeOverrideStore.
- * @returns 
+ * @returns
  */
 export const useCustomTheme = (props: Props = {}) => {
+	const {globalThemeOverrides = {}} = props;
 
-	const { globalThemeOverrides = {} } = props;
-
-	/** 
-	 * Padding value used in various places. 
-	 * Note that there is no need to use this global value, this is 
+	/**
+	 * Padding value used in various places.
+	 * Note that there is no need to use this global value, this is
 	 * just used for convenience. In case you need different paddings,
 	 * feel free to set individual values.
 	 */
@@ -106,21 +130,21 @@ export const useCustomTheme = (props: Props = {}) => {
 
 	/**
 	 * Mantine theme object: @see https://mantine.dev/theming/theme-object/
-	 * The theme can be used to set global default properties, and 
-	 * properties of individual components. 
-	 * 
-	 * Default properties for Mantine components and custom components: 
+	 * The theme can be used to set global default properties, and
+	 * properties of individual components.
+	 *
+	 * Default properties for Mantine components and custom components:
 	 * @see https://mantine.dev/theming/default-props/
-	 * 
-	 * Mantine components: See the Mantine documentation for available properties. 
-	 * 
+	 *
+	 * Mantine components: See the Mantine documentation for available properties.
+	 *
 	 * Custom components: See their implementation for available properties.
 	 */
 	const defaultTheme = createTheme({
 		defaultRadius: "md",
 		other: {
 			//forceColorScheme: "light",
-			defaultFontWeight: "400"
+			defaultFontWeight: "400",
 		},
 		components: {
 			/**
@@ -128,27 +152,27 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 
 			/**
-             * Accordion
+			 * Accordion
 			 * @see https://mantine.dev/core/accordion/?t=props
-             */
+			 */
 			Accordion: Accordion.extend({
 				defaultProps: {
 					variant: "contained",
 				},
 				styles: {
-					content: { padding: "0" }
-				}
+					content: {padding: "0"},
+				},
 			}),
 			/**
-             * Accordion
+			 * Accordion
 			 * @see https://mantine.dev/core/accordion/?t=props
-             */
+			 */
 			AccordionPanel: Accordion.Panel.extend({
 				defaultProps: {
 					pl: padding,
 					pr: padding,
 					pb: padding,
-				}
+				},
 			}),
 			/**
 			 * Anchor
@@ -158,7 +182,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				defaultProps: {
 					// underline: "hover",
 					// c: "inherit",
-				}
+				},
 			}),
 			/**
 			 * Button
@@ -168,25 +192,25 @@ export const useCustomTheme = (props: Props = {}) => {
 				defaultProps: {
 					variant: "default",
 					fw: "500",
-				}
+				},
 			}),
-			/** 
+			/**
 			 * CloseButton
 			 * @see https://mantine.dev/core/close-button/?t=props
 			 */
 			CloseButton: CloseButton.extend({
 				defaultProps: {
-					size: "3rem"
-				}
+					size: "3rem",
+				},
 			}),
-			/** 
+			/**
 			 * ColorInput
 			 * @see https://mantine.dev/core/color-input/?t=props
 			 */
 			ColorInput: ColorInput.extend({
 				styles: {
-					input: { cursor: "pointer" }
-				}
+					input: {cursor: "pointer"},
+				},
 			}),
 			/**
 			 * Group
@@ -195,7 +219,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			Group: Group.extend({
 				defaultProps: {
 					gap: padding,
-				}
+				},
 			}),
 			/**
 			 * Paper
@@ -207,7 +231,7 @@ export const useCustomTheme = (props: Props = {}) => {
 					py: padding,
 					//shadow: "xs",
 					withBorder: true,
-				}
+				},
 			}),
 			/**
 			 * Stack
@@ -216,7 +240,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			Stack: Stack.extend({
 				defaultProps: {
 					gap: "xs",
-				}
+				},
 			}),
 			/**
 			 * Switch
@@ -227,15 +251,14 @@ export const useCustomTheme = (props: Props = {}) => {
 					size: "md",
 				},
 				styles: {
-					track: { cursor: "pointer" }
-				}
+					track: {cursor: "pointer"},
+				},
 			}),
 			/**
 			 * Tabs
 			 * @see https://mantine.dev/core/tabs/?t=props
 			 */
-			Tabs: Tabs.extend({
-			}),
+			Tabs: Tabs.extend({}),
 			/**
 			 * Tabs
 			 * @see https://mantine.dev/core/tabs/?t=props
@@ -243,7 +266,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			TabsPanel: Tabs.Panel.extend({
 				defaultProps: {
 					pt: padding,
-				}
+				},
 			}),
 			/**
 			 * Text
@@ -253,7 +276,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				defaultProps: {
 					//fw: "400"
 					//size: "md"
-				}
+				},
 			}),
 			/**
 			 * Tooltip
@@ -262,16 +285,16 @@ export const useCustomTheme = (props: Props = {}) => {
 			Tooltip: Tooltip.extend({
 				defaultProps: {
 					position: "bottom",
-				}
+				},
 			}),
 
-			/** 
-             * Below here - custom components implemented by ShapeDiver 
-             */
+			/**
+			 * Below here - custom components implemented by ShapeDiver
+			 */
 
 			/**
 			 * AppBuilderContainerWrapper
-			 * 
+			 *
 			 * Used for defining theme overrides per template and per AppBuilder container.
 			 */
 			AppBuilderContainerWrapper: AppBuilderContainerWrapperThemeProps({
@@ -279,31 +302,32 @@ export const useCustomTheme = (props: Props = {}) => {
 					/** Theme overrides for the "appshell" template. */
 					appshell: {
 						/** Theme overrides for the "top" container. */
-						top:  {
+						top: {
 							components: {
 								Anchor: Anchor.extend({
 									defaultProps: {
 										c: "inherit",
-									}
+									},
 								}),
 								Paper: Paper.extend({
 									defaultProps: {
 										withBorder: false,
-									}
+									},
 								}),
 								AppBuilderHorizontalContainer: {
 									defaultProps: {
-										justify: "left"
-									}
+										justify: "left",
+									},
 								},
 								AppBuilderImage: AppBuilderImageThemeProps({
 									fit: "scale-down",
 									withBorder: false,
 								}),
-								AppBuilderTextWidgetComponent: AppBuilderTextWidgetThemeProps({
-									styles: { root: { overflow: "clip" }}
-								}),
-							}
+								AppBuilderTextWidgetComponent:
+									AppBuilderTextWidgetThemeProps({
+										styles: {root: {overflow: "clip"}},
+									}),
+							},
 						},
 						/** Theme overrides for the "bottom" container. */
 						bottom: {
@@ -311,42 +335,44 @@ export const useCustomTheme = (props: Props = {}) => {
 								Anchor: Anchor.extend({
 									defaultProps: {
 										c: "inherit",
-									}
+									},
 								}),
-								AppBuilderTextWidgetComponent: AppBuilderTextWidgetThemeProps({
-									styles: { root: { overflow: "auto" }}
-								}),
-							}
-						}
+								AppBuilderTextWidgetComponent:
+									AppBuilderTextWidgetThemeProps({
+										styles: {root: {overflow: "auto"}},
+									}),
+							},
+						},
 					},
 					/** Theme overrides for the "grid" template. */
 					grid: {
 						/** Theme overrides for the "top" container. */
-						top:  {
+						top: {
 							components: {
 								Anchor: Anchor.extend({
 									defaultProps: {
 										c: "inherit",
-									}
+									},
 								}),
 								Paper: Paper.extend({
 									defaultProps: {
 										withBorder: false,
-									}
+									},
 								}),
 								AppBuilderHorizontalContainer: {
 									defaultProps: {
-										justify: "left"
-									}
+										justify: "left",
+									},
 								},
 								AppBuilderImage: AppBuilderImageThemeProps({
 									fit: "scale-down",
 									withBorder: false,
 								}),
-								AppBuilderTextWidgetComponent: AppBuilderTextWidgetThemeProps({
-									styles: { root: { overflow: "clip" }}
-								}),
-							}
+								AppBuilderTextWidgetComponent:
+									AppBuilderTextWidgetThemeProps({
+										styles: {root: {overflow: "clip"}},
+									}),
+							},
 						},
 						/** Theme overrides for the "bottom" container. */
 						bottom: {
@@ -354,22 +380,23 @@ export const useCustomTheme = (props: Props = {}) => {
 								Anchor: Anchor.extend({
 									defaultProps: {
 										c: "inherit",
-									}
+									},
 								}),
-								AppBuilderTextWidgetComponent: AppBuilderTextWidgetThemeProps({
-									styles: { root: { overflow: "auto" }}
-								}),
-							}
-						}
-					}
-				}
+								AppBuilderTextWidgetComponent:
+									AppBuilderTextWidgetThemeProps({
+										styles: {root: {overflow: "auto"}},
+									}),
+							},
+						},
+					},
+				},
 			}),
 			AppBuilderContainer: AppBuilderContainerThemeProps({
 				// orientation: "unspecified"
 			}),
 			/**
 			 * AppBuilderImage
-			 * 
+			 *
 			 * Used to display AppBuilder image widgets.
 			 */
 			AppBuilderImage: AppBuilderImageThemeProps({
@@ -381,36 +408,37 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * AppBuilderAppShellTemplatePage
-			 * 
+			 *
 			 * AppShell template for AppBuilder.
-			 * 
+			 *
 			 * based to some extent on the Mantine AppShell component
 			 */
-			AppBuilderAppShellTemplatePage: AppBuilderAppShellTemplatePageThemeProps({
-				// headerHeight: "4em",
-				// headerHeight: { base: "4em", md: "6em"},
-				// navbarBreakpoint: "md",
-				// navbarWidth: { md: 200, lg: 250 },
-				// columns: 3, // responsive example: { base: 2, lg: 3 },
-				// rows: 3, // responsive example: { base: 2, lg: 3 },
-				// rightColumns: 1, 
-				// bottomRows: 1,
-				// bottomFullWidth: false,
-				// navbarBorder: true,
-				// headerBorder: true,
-				// rightBorder: true,
-				// keepBottomInGrid: false,
-			}),
+			AppBuilderAppShellTemplatePage:
+				AppBuilderAppShellTemplatePageThemeProps({
+					// headerHeight: "4em",
+					// headerHeight: { base: "4em", md: "6em"},
+					// navbarBreakpoint: "md",
+					// navbarWidth: { md: 200, lg: 250 },
+					// columns: 3, // responsive example: { base: 2, lg: 3 },
+					// rows: 3, // responsive example: { base: 2, lg: 3 },
+					// rightColumns: 1,
+					// bottomRows: 1,
+					// bottomFullWidth: false,
+					// navbarBorder: true,
+					// headerBorder: true,
+					// rightBorder: true,
+					// keepBottomInGrid: false,
+				}),
 			/**
 			 * AppBuilderGridTemplatePage
-			 * 
+			 *
 			 * Grid layout template for AppBuilder.
 			 */
 			AppBuilderGridTemplatePage: AppBuilderGridTemplatePageThemeProps({
-				// bgTop: "transparent", 
-				// bgLeft: "transparent", 
-				// bgRight: "transparent", 
-				// bgBottom: "transparent", 
+				// bgTop: "transparent",
+				// bgLeft: "transparent",
+				// bgRight: "transparent",
+				// bgBottom: "transparent",
 				// columns: 5,
 				// rows: 4,
 				// leftColumns: 1,
@@ -422,29 +450,30 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * AppBuilderHorizontalContainer
-			 * 
+			 *
 			 * Used for horizontal AppBuilder containers.
 			 */
-			AppBuilderHorizontalContainer: AppBuilderHorizontalContainerThemeProps({
-				// w: "100%",
-				// h: "100%",
-				// justify: "center",
-				// wrap: "nowrap",
-				// p: "xs",
-			}),
+			AppBuilderHorizontalContainer:
+				AppBuilderHorizontalContainerThemeProps({
+					// w: "100%",
+					// h: "100%",
+					// justify: "center",
+					// wrap: "nowrap",
+					// p: "xs",
+				}),
 			/**
 			 * AppBuilderTemplateSelector
-			 * 
+			 *
 			 * Used for selecting the AppBuilder template.
 			 */
 			AppBuilderTemplateSelector: AppBuilderTemplateSelectorThemeProps({
 				// template: "appshell" // default
-				// template: "grid" 
+				// template: "grid"
 				// showContainerButtons: true,
 			}),
 			/***
 			 * AppBuilderTextWidgetComponent
-			 * 
+			 *
 			 * Used for text widgets in AppBuilder.
 			 */
 			AppBuilderTextWidgetComponent: AppBuilderTextWidgetThemeProps({
@@ -454,7 +483,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * AppBuilderVerticalContainer
-			 * 
+			 *
 			 * Used for vertical AppBuilder containers.
 			 */
 			AppBuilderVerticalContainer: AppBuilderVerticalContainerThemeProps({
@@ -462,7 +491,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * DefaultSession
-			 * 
+			 *
 			 * Default session to use in case none is defined.
 			 */
 			DefaultSession: DefaultSessionThemeProps({
@@ -478,7 +507,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * ExportLabelComponent
-			 * 
+			 *
 			 * Defaults for export labels.
 			 */
 			ExportLabelComponent: ExportLabelComponentThemeProps({
@@ -486,7 +515,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * Icon
-			 * 
+			 *
 			 * Icon component used by AppBuilder.
 			 */
 			Icon: IconThemeProps({
@@ -495,10 +524,10 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * LoaderPage
-			 * 
+			 *
 			 * Loader page displayed by AppBuilder while loading.
-			 * 
-			 * Note: Customizing the loader page using a settings json file is not supported, 
+			 *
+			 * Note: Customizing the loader page using a settings json file is not supported,
 			 * because the loader page is displayed before the settings json file is loaded.
 			 */
 			LoaderPage: LoaderPageThemeProps({
@@ -507,7 +536,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * MarkdownWidgetComponent
-			 * 
+			 *
 			 * Used by AppBuilder for displaying markdown.
 			 */
 			MarkdownWidgetComponent: MarkdownWidgetComponentProps({
@@ -518,7 +547,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * NotificationWrapper
-			 * 
+			 *
 			 * Global settings for notifications.
 			 */
 			NotificationWrapper: NotificationWrapperThemeProps({
@@ -529,17 +558,18 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * ParametersAndExportsAccordionComponent
-			 * 
+			 *
 			 * Defaults for parameter and export widgets.
 			 */
-			ParametersAndExportsAccordionComponent: ParametersAndExportsAccordionComponentThemeProps({
-				//avoidSingleComponentGroups: true,
-				//mergeAccordions: false,
-				//pbSlider: "md",
-			}),
+			ParametersAndExportsAccordionComponent:
+				ParametersAndExportsAccordionComponentThemeProps({
+					//avoidSingleComponentGroups: true,
+					//mergeAccordions: false,
+					//pbSlider: "md",
+				}),
 			/**
 			 * ParameterColorComponent
-			 * 
+			 *
 			 * Defaults for parameter color components.
 			 */
 			ParameterColorComponent: ParameterColorComponentThemeProps({
@@ -547,7 +577,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * ParameterLabelComponent
-			 * 
+			 *
 			 * Defaults for parameter labels.
 			 */
 			ParameterLabelComponent: ParameterLabelComponentThemeProps({
@@ -555,7 +585,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * ParameterSliderComponent
-			 * 
+			 *
 			 * Defaults for sliders.
 			 */
 			ParameterSliderComponent: ParameterSliderComponentThemeProps({
@@ -564,7 +594,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * TooltipWrapper
-			 * 
+			 *
 			 * Global settings for tooltips.
 			 */
 			TooltipWrapper: TooltipWrapperThemeProps({
@@ -575,13 +605,13 @@ export const useCustomTheme = (props: Props = {}) => {
 				themeOverride: {
 					headings: {
 						sizes: {
-							h1: { fontSize: rem(18) },
-							h2: { fontSize: rem(16) },
-							h3: { fontSize: rem(14) },
-							h4: { fontSize: rem(12) },
-							h5: { fontSize: rem(10) },
-							h6: { fontSize: rem(8) },
-						}
+							h1: {fontSize: rem(18)},
+							h2: {fontSize: rem(16)},
+							h3: {fontSize: rem(14)},
+							h4: {fontSize: rem(12)},
+							h5: {fontSize: rem(10)},
+							h6: {fontSize: rem(8)},
+						},
 					},
 					components: {
 						MarkdownWidgetComponent: MarkdownWidgetComponentProps({
@@ -589,36 +619,36 @@ export const useCustomTheme = (props: Props = {}) => {
 						}),
 						List: List.extend({
 							defaultProps: {
-								size: "sm"
-							}
+								size: "sm",
+							},
 						}),
 						Text: Text.extend({
 							defaultProps: {
-								size: "sm"
-							}
+								size: "sm",
+							},
 						}),
-					}
-				}
+					},
+				},
 			}),
 			/**
 			 * ViewportBranding
-			 *  
+			 *
 			 * Define viewport branding for dark and light color scheme.
 			 */
 			ViewportBranding: ViewportBrandingThemeProps({
 				light: {
 					backgroundColor: DEFAULT_THEME.colors.gray[0],
-					logo: "https://viewer.shapediver.com/v3/graphics/logo_animated_breath_inverted.svg"
+					logo: "https://viewer.shapediver.com/v3/graphics/logo_animated_breath_inverted.svg",
 				},
 				dark: {
 					backgroundColor: DEFAULT_THEME.colors.dark[8],
-					logo: undefined
-				}
+					logo: undefined,
+				},
 			}),
 			/**
 			 * ViewportComponent
-			 * 
-			 * Default settings for the viewport component. 
+			 *
+			 * Default settings for the viewport component.
 			 */
 			ViewportComponent: ViewportComponentThemeProps({
 				// sessionSettingsMode: SESSION_SETTINGS_MODE.FIRST,
@@ -626,7 +656,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * ViewportIcons
-			 * 
+			 *
 			 * Which viewport icons to display.
 			 */
 			ViewportIcons: ViewportIconsThemeProps({
@@ -645,7 +675,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			/**
 			 * ViewportOverlayWrapper
-			 * 
+			 *
 			 * Where to position viewport icons and other overlays.
 			 */
 			ViewportOverlayWrapper: ViewportOverlayWrapperThemeProps({
@@ -654,22 +684,56 @@ export const useCustomTheme = (props: Props = {}) => {
 		},
 	});
 
-	const themeOverride = useThemeOverrideStore(state => state.themeOverride);
-	const theme = mergeThemeOverrides(defaultTheme, globalThemeOverrides, themeOverride);
+	const themeOverride = useThemeOverrideStore((state) => state.themeOverride);
+	const theme = mergeThemeOverrides(
+		defaultTheme,
+		globalThemeOverrides,
+		themeOverride,
+	);
 	console.debug("Theme", theme);
-	
-	/** 
+
+	/**
 	 * @see https://mantine.dev/styles/css-variables/#css-variables-resolver
 	 */
 	const resolver: CSSVariablesResolver = (theme) => ({
 		variables: {
 			/** CSS variables used by the AppBuilderAppShellTemplate */
-			"--appbuilder-appshelltemplate-headerheight-base": getAppShellSize(theme.components.AppBuilderAppShellTemplatePage.defaultProps.headerHeight, "base", "4em"),
-			"--appbuilder-appshelltemplate-headerheight-xs": getAppShellSize(theme.components.AppBuilderAppShellTemplatePage.defaultProps.headerHeight, "xs", "4em"),
-			"--appbuilder-appshelltemplate-headerheight-sm": getAppShellSize(theme.components.AppBuilderAppShellTemplatePage.defaultProps.headerHeight, "sm", "4em"),
-			"--appbuilder-appshelltemplate-headerheight-md": getAppShellSize(theme.components.AppBuilderAppShellTemplatePage.defaultProps.headerHeight, "md", "4em"),
-			"--appbuilder-appshelltemplate-headerheight-lg": getAppShellSize(theme.components.AppBuilderAppShellTemplatePage.defaultProps.headerHeight, "lg", "4em"),
-			"--appbuilder-appshelltemplate-headerheight-xl": getAppShellSize(theme.components.AppBuilderAppShellTemplatePage.defaultProps.headerHeight, "xl", "4em"),
+			"--appbuilder-appshelltemplate-headerheight-base": getAppShellSize(
+				theme.components.AppBuilderAppShellTemplatePage.defaultProps
+					.headerHeight,
+				"base",
+				"4em",
+			),
+			"--appbuilder-appshelltemplate-headerheight-xs": getAppShellSize(
+				theme.components.AppBuilderAppShellTemplatePage.defaultProps
+					.headerHeight,
+				"xs",
+				"4em",
+			),
+			"--appbuilder-appshelltemplate-headerheight-sm": getAppShellSize(
+				theme.components.AppBuilderAppShellTemplatePage.defaultProps
+					.headerHeight,
+				"sm",
+				"4em",
+			),
+			"--appbuilder-appshelltemplate-headerheight-md": getAppShellSize(
+				theme.components.AppBuilderAppShellTemplatePage.defaultProps
+					.headerHeight,
+				"md",
+				"4em",
+			),
+			"--appbuilder-appshelltemplate-headerheight-lg": getAppShellSize(
+				theme.components.AppBuilderAppShellTemplatePage.defaultProps
+					.headerHeight,
+				"lg",
+				"4em",
+			),
+			"--appbuilder-appshelltemplate-headerheight-xl": getAppShellSize(
+				theme.components.AppBuilderAppShellTemplatePage.defaultProps
+					.headerHeight,
+				"xl",
+				"4em",
+			),
 			"--appbuilder-default-font-weight": theme.other.defaultFontWeight,
 		},
 		light: {
@@ -682,6 +746,6 @@ export const useCustomTheme = (props: Props = {}) => {
 
 	return {
 		theme,
-		resolver
+		resolver,
 	};
 };

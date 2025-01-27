@@ -1,4 +1,10 @@
-import { AreaChartCurveType, AreaChartType, BarChartType, DonutChartCell, LineChartCurveType } from "@mantine/charts";
+import {
+	AreaChartCurveType,
+	AreaChartType,
+	BarChartType,
+	DonutChartCell,
+	LineChartCurveType,
+} from "@mantine/charts";
 
 /** Properties of round chart widget */
 export interface IAppBuilderWidgetPropsRoundChart {
@@ -11,11 +17,11 @@ export interface IAppBuilderWidgetPropsRoundChart {
 	/** Whether or not to display badges for the legend, true by default */
 	legend?: boolean;
 	/** Data set used for the chart */
-	data: DonutChartCell[]
+	data: DonutChartCell[];
 }
 
-/** 
- * Plot settings common to Line, Area and Bar charts 
+/**
+ * Plot settings common to Line, Area and Bar charts
  */
 export interface IAppBuilderWidgetPropsChartPlotSettings {
 	/** Determines whether x-axis should be displayed, true by default */
@@ -47,49 +53,52 @@ export interface IAppBuilderWidgetPropsChartDataSet {
 	}[];
 }
 
-/** 
+/**
  * Common properties of line, area, and bar chart widgets
  */
 export interface IAppBuilderWidgetPropsChartCommon {
 	/** Name used as a title of the chart */
 	name?: string;
 	/** Plot settings */
-	plotSettings: IAppBuilderWidgetPropsChartPlotSettings
+	plotSettings: IAppBuilderWidgetPropsChartPlotSettings;
 	/** Data set used for the chart */
-	data: IAppBuilderWidgetPropsChartDataSet
+	data: IAppBuilderWidgetPropsChartDataSet;
 }
 
 /** Properties of line chart widget */
-export interface IAppBuilderWidgetPropsLineChart extends IAppBuilderWidgetPropsChartCommon {
+export interface IAppBuilderWidgetPropsLineChart
+	extends IAppBuilderWidgetPropsChartCommon {
 	/** Type of the curve, 'monotone' by default. */
 	style?: LineChartCurveType;
 }
 
 /** Properties of area chart widget */
-export interface IAppBuilderWidgetPropsAreaChart extends IAppBuilderWidgetPropsChartCommon {
+export interface IAppBuilderWidgetPropsAreaChart
+	extends IAppBuilderWidgetPropsChartCommon {
 	/** Style of the plotted curve, 'monotone' by default */
 	style?: AreaChartCurveType;
 	/** Controls how chart areas are positioned relative to each other, 'default' by default */
-	type?: AreaChartType
+	type?: AreaChartType;
 }
 
 /** Properties of bar chart widget */
-export interface IAppBuilderWidgetPropsBarChart extends IAppBuilderWidgetPropsChartCommon {
+export interface IAppBuilderWidgetPropsBarChart
+	extends IAppBuilderWidgetPropsChartCommon {
 	/** Controls how bars are positioned relative to each other, 'default' by default */
-	type?: BarChartType
+	type?: BarChartType;
 }
 
 /**
  * Our data set type needs to be converted to the chart series type of Mantine.
  * Matine's representation includes a lot of redundancy.
- * @param dataSet 
- * @returns 
+ * @param dataSet
+ * @returns
  */
 export function convertChartData(dataSet: IAppBuilderWidgetPropsChartDataSet) {
-	const { keys, series } = dataSet;
+	const {keys, series} = dataSet;
 	const convertedDataSet = keys.map((key, index) => {
-		const dataPoint: { [key: string]: string | number } = { key };
-		series.forEach(serie => {
+		const dataPoint: {[key: string]: string | number} = {key};
+		series.forEach((serie) => {
 			dataPoint[serie.name] = serie.values[index];
 		});
 

@@ -1,39 +1,39 @@
-import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import { IHistoryEntry } from "@AppBuilderShared/types/store/shapediverStoreParameters";
-import { useEffect } from "react";
-import { useShallow } from "zustand/react/shallow";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {IHistoryEntry} from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import {useEffect} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 interface Props {
 	loaded: boolean;
 }
 
 /**
- * Hook providing parameter history. 
+ * Hook providing parameter history.
  */
 export function useParameterHistory(props: Props) {
-	
-	const { loaded } = props;
+	const {loaded} = props;
 
-	const { 
+	const {
 		getDefaultState,
 		pushHistoryState,
 		resetHistory,
 		restoreHistoryStateFromEntry,
-	} = useShapeDiverStoreParameters(useShallow(state => ({
-		getDefaultState: state.getDefaultState,
-		pushHistoryState: state.pushHistoryState,
-		resetHistory: state.resetHistory,
-		restoreHistoryStateFromEntry: state.restoreHistoryStateFromEntry,
-	})));
-	
+	} = useShapeDiverStoreParameters(
+		useShallow((state) => ({
+			getDefaultState: state.getDefaultState,
+			pushHistoryState: state.pushHistoryState,
+			resetHistory: state.resetHistory,
+			restoreHistoryStateFromEntry: state.restoreHistoryStateFromEntry,
+		})),
+	);
+
 	useEffect(() => {
 		const handlePopState = async (event: any) => {
-			if (!event.state) 
-				return;
+			if (!event.state) return;
 			const entry = event.state as IHistoryEntry;
 			await restoreHistoryStateFromEntry(entry);
 		};
-	
+
 		window.addEventListener("popstate", handlePopState);
 
 		return () => {
@@ -42,8 +42,7 @@ export function useParameterHistory(props: Props) {
 	}, [restoreHistoryStateFromEntry]);
 
 	useEffect(() => {
-		if (!loaded)
-			return;
+		if (!loaded) return;
 
 		const defaultState = getDefaultState();
 		const entry = pushHistoryState(defaultState);
@@ -53,7 +52,6 @@ export function useParameterHistory(props: Props) {
 			resetHistory();
 		};
 	}, [loaded, getDefaultState, pushHistoryState, resetHistory]);
-
 
 	return;
 }

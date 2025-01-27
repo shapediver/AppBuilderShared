@@ -1,19 +1,19 @@
 .interactionButton {
-    height: fit-content;
-    text-wrap: wrap;
-    padding-top: calc(0.4375rem* var(--mantine-scale));
-    padding-bottom: calc(0.4375rem* var(--mantine-scale));
-    padding-left: calc(0.475rem* var(--mantine-scale));
+	height: fit-content;
+	text-wrap: wrap;
+	padding-top: calc(0.4375rem * var(--mantine-scale));
+	padding-bottom: calc(0.4375rem * var(--mantine-scale));
+	padding-left: calc(0.475rem * var(--mantine-scale));
 }
 
 .interactionMain {
-    padding: calc(0.625rem* var(--mantine-scale));
-    background-color: var(--mantine-color-default);
-    border-radius: var(--paper-radius);
-    color: var(--mantine-color-default-color);
-    font-weight: 500;
+	padding: calc(0.625rem * var(--mantine-scale));
+	background-color: var(--mantine-color-default);
+	border-radius: var(--paper-radius);
+	color: var(--mantine-color-default-color);
+	font-weight: 500;
 }
 
 .interactionText {
-    text-wrap: wrap;
+	text-wrap: wrap;
 }

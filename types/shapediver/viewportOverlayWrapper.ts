@@ -1,5 +1,5 @@
-import { OverlayStyleProps } from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
-import { MantineThemeComponent } from "@mantine/core";
+import {OverlayStyleProps} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
+import {MantineThemeComponent} from "@mantine/core";
 
 export interface ViewportOverlayWrapperProps {
 	children?: React.ReactNode;
@@ -7,8 +7,10 @@ export interface ViewportOverlayWrapperProps {
 
 type ViewportOverlayWrapperThemePropsType = Partial<OverlayStyleProps>;
 
-export function ViewportOverlayWrapperThemeProps(props: ViewportOverlayWrapperThemePropsType): MantineThemeComponent {
+export function ViewportOverlayWrapperThemeProps(
+	props: ViewportOverlayWrapperThemePropsType,
+): MantineThemeComponent {
 	return {
-		defaultProps: props
+		defaultProps: props,
 	};
 }

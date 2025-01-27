@@ -1,9 +1,9 @@
-import { useRef } from "react";
+import {useRef} from "react";
 
 export const useClickEventHandler = (
 	clickCb = () => {},
 	dblClickCb = () => {},
-	delay = 300
+	delay = 300,
 ) => {
 	let timer: ReturnType<typeof setTimeout>;
 	const clicks = useRef(0);
@@ -22,6 +22,6 @@ export const useClickEventHandler = (
 				clicks.current = 0;
 				dblClickCb();
 			}
-		}
+		},
 	};
 };

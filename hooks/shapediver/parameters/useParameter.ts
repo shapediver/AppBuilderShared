@@ -1,7 +1,7 @@
-import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import { IShapeDiverParameter } from "@AppBuilderShared/types/shapediver/parameter";
-import { useMemo } from "react";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
+import {useMemo} from "react";
 
 /**
  * Hook providing a shortcut to abstracted parameters managed by {@link useShapeDiverStoreParameters}.
@@ -15,15 +15,18 @@ import { useMemo } from "react";
  * @returns
  */
 export function useParameter<T>(props: PropsParameter) {
-
-	const { namespace, parameterId } = props;
-	const getParameter = useShapeDiverStoreParameters(state => state.getParameter);
-	const parameter = getParameter(namespace, parameterId)!(state => state as IShapeDiverParameter<T>);
+	const {namespace, parameterId} = props;
+	const getParameter = useShapeDiverStoreParameters(
+		(state) => state.getParameter,
+	);
+	const parameter = getParameter(namespace, parameterId)!(
+		(state) => state as IShapeDiverParameter<T>,
+	);
 
 	const memoizedParameter = useMemo(() => {
 		return {
 			...parameter,
-			definition: { ...parameter.definition, ...props.overrides }
+			definition: {...parameter.definition, ...props.overrides},
 		};
 	}, [parameter, props.overrides]);
 

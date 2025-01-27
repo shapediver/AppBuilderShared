@@ -1,6 +1,5 @@
-import { Alert, AlertProps, Stack } from "@mantine/core";
+import {Alert, AlertProps, Stack} from "@mantine/core";
 import React from "react";
-
 
 interface Props {
 	/** error message */
@@ -13,8 +12,7 @@ interface Props {
  * @returns
  */
 export default function AlertPage(props: Props & AlertProps) {
-
-	const { children, ...rest } = props;
+	const {children, ...rest} = props;
 
 	return (
 		<Stack mih="100vh" justify="center" align="center">

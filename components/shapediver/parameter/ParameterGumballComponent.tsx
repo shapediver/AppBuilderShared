@@ -1,13 +1,16 @@
-import { Button, Group, Loader, Stack, Text } from "@mantine/core";
-import React, { useCallback, useEffect, useState } from "react";
+import {Button, Group, Loader, Stack, Text} from "@mantine/core";
+import React, {useCallback, useEffect, useState} from "react";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import { GumballParameterValue, IGumballParameterProps } from "@shapediver/viewer.session";
+import {
+	GumballParameterValue,
+	IGumballParameterProps,
+} from "@shapediver/viewer.session";
 import classes from "./ParameterInteractionComponent.module.css";
-import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import { useParameterComponentCommons } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import { useViewportId } from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import { useGumball } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 
 /**
@@ -15,18 +18,22 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
  * @param value
  * @returns
  */
-const parseTransformation = (value?: string): { name: string, transformation: number[] }[] => {
+const parseTransformation = (
+	value?: string,
+): {name: string; transformation: number[]}[] => {
 	if (!value) return [];
 	try {
 		const parsed: {
-			names: string[],
-			transformations: number[][]
+			names: string[];
+			transformations: number[][];
 		} = JSON.parse(value);
 
-		return parsed.names.map((name, i) => ({ name, transformation: parsed.transformations[i] }));
-	}
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	catch (e) {
+		return parsed.names.map((name, i) => ({
+			name,
+			transformation: parsed.transformations[i],
+		}));
+	} catch (e) {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		return [];
 	}
 };
@@ -45,7 +52,7 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		disabled,
 		value,
 		state,
-		sessionDependencies
+		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 
 	const gumballProps = definition.settings?.props as IGumballParameterProps;
@@ -53,19 +60,36 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 	// state for the gumball application
 	const [gumballActive, setGumballActive] = useState<boolean>(false);
 	// store the last confirmed value in a state to reset the transformation
-	const [lastConfirmedValue, setLastConfirmedValue] = useState<{ name: string, transformation: number[], localTransformations?: number[] }[]>([]);
+	const [lastConfirmedValue, setLastConfirmedValue] = useState<
+		{
+			name: string;
+			transformation: number[];
+			localTransformations?: number[];
+		}[]
+	>([]);
 	// store the parsed exec value in a state to react to changes
-	const [parsedExecValue, setParsedExecValue] = useState<{ name: string, transformation: number[], localTransformations?: number[] }[]>([]);
+	const [parsedExecValue, setParsedExecValue] = useState<
+		{
+			name: string;
+			transformation: number[];
+			localTransformations?: number[];
+		}[]
+	>([]);
 
-	const { viewportId } = useViewportId();
+	const {viewportId} = useViewportId();
 
 	// get the transformed nodes and the selected nods
-	const { transformedNodeNames, setSelectedNodeNames, restoreTransformedNodeNames, handlers } = useGumball(
+	const {
+		transformedNodeNames,
+		setSelectedNodeNames,
+		restoreTransformedNodeNames,
+		handlers,
+	} = useGumball(
 		sessionDependencies,
 		viewportId,
 		gumballProps,
 		gumballActive,
-		parseTransformation(value)
+		parseTransformation(value),
 	);
 
 	// react to changes of the execValue and reset the last confirmed value
@@ -80,19 +104,32 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 	 * This function is called when the gumball interaction is confirmed.
 	 * It also ends the gumball interaction process and resets the selected nodes.
 	 */
-	const changeValue = useCallback((transformedNodeNames: { name: string, transformation: number[], localTransformations?: number[] }[]) => {
-		setGumballActive(false);
-		const parameterValue: GumballParameterValue = {
-			names: transformedNodeNames.map(node => node.name),
-			transformations: transformedNodeNames.map(node => node.transformation)
-		};
+	const changeValue = useCallback(
+		(
+			transformedNodeNames: {
+				name: string;
+				transformation: number[];
+				localTransformations?: number[];
+			}[],
+		) => {
+			setGumballActive(false);
+			const parameterValue: GumballParameterValue = {
+				names: transformedNodeNames.map((node) => node.name),
+				transformations: transformedNodeNames.map(
+					(node) => node.transformation,
+				),
+			};
 
-		// create a deep copy of the transformed node names
-		const transformedNodeNamesCopy = JSON.parse(JSON.stringify(transformedNodeNames));
-		setLastConfirmedValue(transformedNodeNamesCopy);
-		handleChange(JSON.stringify(parameterValue), 0);
-		setSelectedNodeNames([]);
-	}, []);
+			// create a deep copy of the transformed node names
+			const transformedNodeNamesCopy = JSON.parse(
+				JSON.stringify(transformedNodeNames),
+			);
+			setLastConfirmedValue(transformedNodeNamesCopy);
+			handleChange(JSON.stringify(parameterValue), 0);
+			setSelectedNodeNames([]);
+		},
+		[],
+	);
 
 	/**
 	 * Callback function to reset the transformed nodes.
@@ -127,18 +164,35 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 	 * The cancel button resets the transformed nodes to the last value.
 	 *
 	 */
-	const contentActive =
+	const contentActive = (
 		<Stack>
-			<Button justify="space-between" fullWidth disabled={disabled} className={classes.interactionButton}
+			<Button
+				justify="space-between"
+				fullWidth
+				disabled={disabled}
+				className={classes.interactionButton}
 				rightSection={<Loader size="sm" type="dots" />}
 				onClick={resetTransformation}
 			>
 				<Stack>
-					<Text size="sm" fw={500} ta="left" className={classes.interactionText}>
-						{gumballProps.prompt?.activeTitle ?? `Currently transformed: ${transformedNodeNames.length}`}
+					<Text
+						size="sm"
+						fw={500}
+						ta="left"
+						className={classes.interactionText}
+					>
+						{gumballProps.prompt?.activeTitle ??
+							`Currently transformed: ${transformedNodeNames.length}`}
 					</Text>
-					<Text size="sm" fw={400} fs="italic" ta="left" className={classes.interactionText}>
-						{gumballProps.prompt?.activeText ?? "Select objects to transform"}
+					<Text
+						size="sm"
+						fw={400}
+						fs="italic"
+						ta="left"
+						className={classes.interactionText}
+					>
+						{gumballProps.prompt?.activeText ??
+							"Select objects to transform"}
 					</Text>
 				</Stack>
 			</Button>
@@ -155,12 +209,13 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 				<Button
 					fullWidth={true}
 					variant={"light"}
-					onClick={resetTransformation}>
+					onClick={resetTransformation}
+				>
 					<Text>Cancel</Text>
 				</Button>
 			</Group>
-		</Stack>;
-
+		</Stack>
+	);
 
 	/**
 	 * The content of the parameter when it is inactive.
@@ -168,22 +223,27 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 	 * It contains a button to start the gumball.
 	 * Within the button, the number of transformed nodes is displayed.
 	 */
-	const contentInactive =
-		<Button justify="space-between" fullWidth={true} disabled={disabled} className={classes.interactionButton}
+	const contentInactive = (
+		<Button
+			justify="space-between"
+			fullWidth={true}
+			disabled={disabled}
+			className={classes.interactionButton}
 			rightSection={<Icon type={IconTypeEnum.IconHandFinger} />}
 			variant={transformedNodeNames.length === 0 ? "light" : "filled"}
-			onClick={() => setGumballActive(true)}>
+			onClick={() => setGumballActive(true)}
+		>
 			<Text size="sm" className={classes.interactionText}>
 				{gumballProps.prompt?.inactiveTitle ?? "Start gumball"}
 			</Text>
-		</Button>;
+		</Button>
+	);
 
-	return <>
-		<>{handlers}</>
-		<ParameterLabelComponent {...props} cancel={onCancel} />
-		{
-			definition &&
-				gumballActive ? contentActive : contentInactive
-		}
-	</>;
+	return (
+		<>
+			<>{handlers}</>
+			<ParameterLabelComponent {...props} cancel={onCancel} />
+			{definition && gumballActive ? contentActive : contentInactive}
+		</>
+	);
 }

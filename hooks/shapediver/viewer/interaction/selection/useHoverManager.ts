@@ -1,7 +1,13 @@
-import { IInteractionParameterProps, MaterialStandardData } from "@shapediver/viewer.session";
-import { HoverManager, InteractionEngine } from "@shapediver/viewer.features.interaction";
-import { useEffect, useState } from "react";
-import { useInteractionEngine } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useInteractionEngine";
+import {
+	IInteractionParameterProps,
+	MaterialStandardData,
+} from "@shapediver/viewer.session";
+import {
+	HoverManager,
+	InteractionEngine,
+} from "@shapediver/viewer.features.interaction";
+import {useEffect, useState} from "react";
+import {useInteractionEngine} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useInteractionEngine";
 
 // #region Functions (1)
 
@@ -9,10 +15,10 @@ import { useInteractionEngine } from "@AppBuilderShared/hooks/shapediver/viewer/
 const hoverManagers: {
 	[key: string]: {
 		[key: string]: {
-			hoverManager: HoverManager,
-			token: string
-		}
-	}
+			hoverManager: HoverManager;
+			token: string;
+		};
+	};
 } = {};
 
 /**
@@ -22,31 +28,41 @@ const hoverManagers: {
  * @param componentId - The ID of the component.
  * @param interactionEngine - The interaction engine instance.
  */
-const cleanUpHoverManager = (viewportId: string, componentId: string, interactionEngine?: InteractionEngine) => {
+const cleanUpHoverManager = (
+	viewportId: string,
+	componentId: string,
+	interactionEngine?: InteractionEngine,
+) => {
 	if (hoverManagers[viewportId][componentId]) {
 		if (interactionEngine && interactionEngine.closed === false)
-			interactionEngine.removeInteractionManager(hoverManagers[viewportId][componentId].token);
+			interactionEngine.removeInteractionManager(
+				hoverManagers[viewportId][componentId].token,
+			);
 		delete hoverManagers[viewportId][componentId];
 	}
 };
 
 /**
- * Hook providing hover managers for viewports. 
+ * Hook providing hover managers for viewports.
  * Use the useNodeInteractionData hook to add interaction data to nodes of the
  * scene tree and make them hoverable.
- * 
+ *
  * @param viewportId The ID of the viewport.
  * @param componentId The ID of the component.
  * @param settings The settings for the hover manager. If the settings are not provided, the hover manager will not be created.
  */
-export function useHoverManager(viewportId: string, componentId: string, settings?: Pick<IInteractionParameterProps, "hoverColor">): {
+export function useHoverManager(
+	viewportId: string,
+	componentId: string,
+	settings?: Pick<IInteractionParameterProps, "hoverColor">,
+): {
 	/**
 	 * The hover manager that was created for the viewport.
 	 */
-	hoverManager?: HoverManager
+	hoverManager?: HoverManager;
 } {
 	// call the interaction engine hook
-	const { interactionEngine } = useInteractionEngine(viewportId);
+	const {interactionEngine} = useInteractionEngine(viewportId);
 
 	// create an empty object for the hover managers of the viewport
 	if (!hoverManagers[viewportId]) {
@@ -54,19 +70,30 @@ export function useHoverManager(viewportId: string, componentId: string, setting
 	}
 
 	// define a state for the select manager
-	const [hoverManager, setHoverManager] = useState<HoverManager | undefined>(undefined);
+	const [hoverManager, setHoverManager] = useState<HoverManager | undefined>(
+		undefined,
+	);
 
 	// use an effect to create the hover manager
 	useEffect(() => {
-		if (settings && interactionEngine && interactionEngine.closed === false && !hoverManagers[viewportId][componentId]) {
+		if (
+			settings &&
+			interactionEngine &&
+			interactionEngine.closed === false &&
+			!hoverManagers[viewportId][componentId]
+		) {
 			// create the hover manager with the given settings
 			const hoverManager = new HoverManager(
 				componentId,
-				new MaterialStandardData({ color: settings.hoverColor || "#00ff78" })
+				new MaterialStandardData({
+					color: settings.hoverColor || "#00ff78",
+				}),
 			);
 			const token = interactionEngine.addInteractionManager(hoverManager);
-			hoverManagers[viewportId][componentId] = { hoverManager, token };
-			setHoverManager(hoverManagers[viewportId][componentId].hoverManager);
+			hoverManagers[viewportId][componentId] = {hoverManager, token};
+			setHoverManager(
+				hoverManagers[viewportId][componentId].hoverManager,
+			);
 		}
 
 		return () => {
@@ -79,7 +106,7 @@ export function useHoverManager(viewportId: string, componentId: string, setting
 	}, [interactionEngine, settings]);
 
 	return {
-		hoverManager
+		hoverManager,
 	};
 }
 

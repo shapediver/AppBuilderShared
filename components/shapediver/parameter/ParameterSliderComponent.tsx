@@ -1,10 +1,16 @@
-import { Group, MantineThemeComponent, NumberInput, Slider, useProps } from "@mantine/core";
+import {
+	Group,
+	MantineThemeComponent,
+	NumberInput,
+	Slider,
+	useProps,
+} from "@mantine/core";
 import React from "react";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import { PARAMETER_TYPE } from "@shapediver/viewer.session";
-import { IShapeDiverParameterDefinition } from "@AppBuilderShared/types/shapediver/parameter";
-import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import { useParameterComponentCommons } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {PARAMETER_TYPE} from "@shapediver/viewer.session";
+import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 
 /**
@@ -15,7 +21,11 @@ import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
  * @returns
  */
 const round = (parameter: IShapeDiverParameterDefinition, n: number) => {
-	if (parameter.type === PARAMETER_TYPE.INT || parameter.type === PARAMETER_TYPE.EVEN || parameter.type === PARAMETER_TYPE.ODD)
+	if (
+		parameter.type === PARAMETER_TYPE.INT ||
+		parameter.type === PARAMETER_TYPE.EVEN ||
+		parameter.type === PARAMETER_TYPE.ODD
+	)
 		n = +n.toFixed(0);
 	n = +n.toFixed(parameter.decimalplaces);
 
@@ -34,9 +44,11 @@ export const defaultStyleProps: Partial<StyleProps> = {
 
 type ParameterSliderComponentThemePropsType = Partial<StyleProps>;
 
-export function ParameterSliderComponentThemeProps(props: ParameterSliderComponentThemePropsType): MantineThemeComponent {
+export function ParameterSliderComponentThemeProps(
+	props: ParameterSliderComponentThemePropsType,
+): MantineThemeComponent {
 	return {
-		defaultProps: props
+		defaultProps: props,
 	};
 }
 
@@ -46,25 +58,27 @@ export function ParameterSliderComponentThemeProps(props: ParameterSliderCompone
  *
  * @returns
  */
-export default function ParameterSliderComponent(props: PropsParameter & Partial<StyleProps>) {
-
-	const {
-		definition,
-		value,
-		setValue,
-		handleChange,
-		onCancel,
-		disabled
-	} = useParameterComponentCommons<number>(props);
+export default function ParameterSliderComponent(
+	props: PropsParameter & Partial<StyleProps>,
+) {
+	const {definition, value, setValue, handleChange, onCancel, disabled} =
+		useParameterComponentCommons<number>(props);
 
 	// style properties
-	const { sliderWidth, numberWidth } = useProps("ParameterSliderComponent", defaultStyleProps, props);
+	const {sliderWidth, numberWidth} = useProps(
+		"ParameterSliderComponent",
+		defaultStyleProps,
+		props,
+	);
 
 	// calculate the step size which depends on the parameter type
 	let step = 1;
 	if (definition.type === PARAMETER_TYPE.INT) {
 		step = 1;
-	} else if (definition.type === PARAMETER_TYPE.EVEN || definition.type === PARAMETER_TYPE.ODD) {
+	} else if (
+		definition.type === PARAMETER_TYPE.EVEN ||
+		definition.type === PARAMETER_TYPE.ODD
+	) {
 		step = 2;
 	} else {
 		step = 1 / Math.pow(10, definition.decimalplaces!);
@@ -74,35 +88,52 @@ export default function ParameterSliderComponent(props: PropsParameter & Partial
 
 	// tooltip, marks
 	const tooltip = `Min: ${definition.min}, Max: ${definition.max}`;
-	const marks = [{value: +definition.min!, label: definition.min}, {value: +definition.max!, label: definition.max}];
+	const marks = [
+		{value: +definition.min!, label: definition.min},
+		{value: +definition.max!, label: definition.max},
+	];
 
-	return <>
-		<ParameterLabelComponent { ...props } cancel={onCancel}/>
-		{definition && <Group justify="space-between" w="100%" wrap="nowrap">
-			{ definition && <Slider
-				w={sliderWidth}
-				label={round(definition, +value)}
-				value={+value}
-				min={+definition.min!}
-				max={+definition.max!}
-				step={step}
-				onChange={v => setValue(round(definition, v))}
-				onChangeEnd={v => handleChange(round(definition, v), 0)}
-				marks={marks}
-				disabled={disabled}
-			/> }
-			{ definition && <TooltipWrapper label={tooltip} ><NumberInput
-				w={numberWidth}
-				value={+value}
-				min={+definition.min!}
-				max={+definition.max!}
-				step={step}
-				decimalScale={definition.decimalplaces}
-				fixedDecimalScale={true}
-				clampBehavior="blur"
-				onChange={v => handleChange(round(definition, +v))}
-				disabled={disabled}
-			/></TooltipWrapper> }
-		</Group>}
-	</>;
+	return (
+		<>
+			<ParameterLabelComponent {...props} cancel={onCancel} />
+			{definition && (
+				<Group justify="space-between" w="100%" wrap="nowrap">
+					{definition && (
+						<Slider
+							w={sliderWidth}
+							label={round(definition, +value)}
+							value={+value}
+							min={+definition.min!}
+							max={+definition.max!}
+							step={step}
+							onChange={(v) => setValue(round(definition, v))}
+							onChangeEnd={(v) =>
+								handleChange(round(definition, v), 0)
+							}
+							marks={marks}
+							disabled={disabled}
+						/>
+					)}
+					{definition && (
+						<TooltipWrapper label={tooltip}>
+							<NumberInput
+								w={numberWidth}
+								value={+value}
+								min={+definition.min!}
+								max={+definition.max!}
+								step={step}
+								decimalScale={definition.decimalplaces}
+								fixedDecimalScale={true}
+								clampBehavior="blur"
+								onChange={(v) =>
+									handleChange(round(definition, +v))
+								}
+								disabled={disabled}
+							/>
+						</TooltipWrapper>
+					)}
+				</Group>
+			)}
+		</>
+	);
 }

@@ -1,8 +1,11 @@
-import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import { IAcceptRejectModeSelector, IGenericParameterDefinition, IGenericParameterExecutor } from "@AppBuilderShared/types/store/shapediverStoreParameters";
-import { useEffect } from "react";
-import { useShallow } from "zustand/react/shallow";
-
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {
+	IAcceptRejectModeSelector,
+	IGenericParameterDefinition,
+	IGenericParameterExecutor,
+} from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import {useEffect} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 /**
  * Hook for defining generic parameters to be displayed in the UI.
@@ -23,16 +26,24 @@ export function useDefineGenericParameters(
 	acceptRejectMode: boolean | IAcceptRejectModeSelector,
 	definitions: IGenericParameterDefinition | IGenericParameterDefinition[],
 	executor: IGenericParameterExecutor,
-	dependsOnSessions?: string[] | string | undefined
+	dependsOnSessions?: string[] | string | undefined,
 ) {
-
-	const { syncGeneric, removeSession } = useShapeDiverStoreParameters(
-		useShallow(state => ({ syncGeneric: state.syncGeneric, removeSession: state.removeSession }))
+	const {syncGeneric, removeSession} = useShapeDiverStoreParameters(
+		useShallow((state) => ({
+			syncGeneric: state.syncGeneric,
+			removeSession: state.removeSession,
+		})),
 	);
 
 	// keep the generic parameters in sync
 	useEffect(() => {
-		syncGeneric(namespace, acceptRejectMode, definitions, executor, dependsOnSessions);
+		syncGeneric(
+			namespace,
+			acceptRejectMode,
+			definitions,
+			executor,
+			dependsOnSessions,
+		);
 	}, [namespace, acceptRejectMode, definitions, executor, dependsOnSessions]);
 
 	// in case the session id changes, remove the parameters for the previous session
@@ -42,7 +53,5 @@ export function useDefineGenericParameters(
 		};
 	}, [namespace]);
 
-	return {
-
-	};
+	return {};
 }

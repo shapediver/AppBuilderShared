@@ -1,4 +1,5 @@
 /** Border definition matching the one defined by mantine. */
 .imgBorder {
-	border: calc(0.0625rem * var(--mantine-scale)) solid var(--mantine-color-default-border)
+	border: calc(0.0625rem * var(--mantine-scale)) solid
+		var(--mantine-color-default-border);
 }

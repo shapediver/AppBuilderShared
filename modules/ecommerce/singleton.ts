@@ -1,4 +1,7 @@
-import { DummyECommerceApi, ECommerceApiFactory } from "@AppBuilderShared/modules/ecommerce/ecommerceapi";
+import {
+	DummyECommerceApi,
+	ECommerceApiFactory,
+} from "@AppBuilderShared/modules/ecommerce/ecommerceapi";
 
 /** Number of key events for toggling configurator visibility. */
 const TOGGLE_CONFIGURATOR_VISIBILITY_NUM_EVENTS = 3;
@@ -15,7 +18,11 @@ export const ECommerceApiSingleton = (async () => {
 		return new DummyECommerceApi();
 	}
 
-	const eCommerceApi = await ECommerceApiFactory.getApplicationApi("app", "plugin", {timeout: CROSSWINDOW_API_TIMEOUT, debug: false});
+	const eCommerceApi = await ECommerceApiFactory.getApplicationApi(
+		"app",
+		"plugin",
+		{timeout: CROSSWINDOW_API_TIMEOUT, debug: false},
+	);
 	console.log("Successfully resolved ECommerceApi", eCommerceApi);
 
 	// event handler for toggling configurator visibility
@@ -34,7 +41,10 @@ export const ECommerceApiSingleton = (async () => {
 				}, TOGGLE_CONFIGURATOR_VISIBILITY_MSEC);
 			}
 
-			if (toggleKeyPressCount === TOGGLE_CONFIGURATOR_VISIBILITY_NUM_EVENTS) {
+			if (
+				toggleKeyPressCount ===
+				TOGGLE_CONFIGURATOR_VISIBILITY_NUM_EVENTS
+			) {
 				// If the key is pressed X times within Y milliseconds
 				clearTimeout(timer); // Clear the timer to prevent reset
 				eCommerceApi.closeConfigurator(); // Call the event handler
@@ -45,4 +55,3 @@ export const ECommerceApiSingleton = (async () => {
 
 	return eCommerceApi;
 })();
-

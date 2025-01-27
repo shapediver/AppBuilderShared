@@ -1,7 +1,14 @@
-import { gatherNodesForPattern, NodeNameFilterPattern } from "@shapediver/viewer.features.interaction";
-import { ITreeNode, OutputApiData, SessionApiData } from "@shapediver/viewer.session";
-import { useCallback, useEffect, useState } from "react";
-import { useOutputNode } from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
+import {
+	gatherNodesForPattern,
+	NodeNameFilterPattern,
+} from "@shapediver/viewer.features.interaction";
+import {
+	ITreeNode,
+	OutputApiData,
+	SessionApiData,
+} from "@shapediver/viewer.session";
+import {useCallback, useEffect, useState} from "react";
+import {useOutputNode} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
 
 // #region Type aliases (2)
 
@@ -16,7 +23,7 @@ export type IFindNodesByPatternState = {
 	/**
 	 * The available nodes for the given output and patterns.
 	 */
-	nodes: ITreeNode[]
+	nodes: ITreeNode[];
 };
 
 // #endregion Type aliases (2)
@@ -36,60 +43,75 @@ export function useFindNodesByPattern(
 	sessionId: string,
 	outputIdOrName: string,
 	patterns: NodeNameFilterPattern[],
-	strictNaming = true
+	strictNaming = true,
 ): {
-    /**
-     * The available nodes for the given output and patterns.
-     */
-    nodes: ITreeNode[]
+	/**
+	 * The available nodes for the given output and patterns.
+	 */
+	nodes: ITreeNode[];
 } {
 	const [nodes, setNodes] = useState<ITreeNode[]>([]);
 
 	/**
-     * Output update callback for gathering the nodes.
-     *
-     * @param node
-     */
-	const callback = useCallback((newNode?: ITreeNode, oldNode?: ITreeNode) => {
-		if (oldNode && !newNode) {
-			// clear the available node names if the node is removed
-			setNodes([]);
-		} else if (newNode) {
-			let outputApi = newNode.data.find((data) => data instanceof OutputApiData)?.api;
-			// it's possible that the OutputApiData is not available yet, so we need to find it in the session api
-			if (!outputApi) {
-				// try to find it in the session api
-				const sessionApi = newNode.parent?.data.find((data) => data instanceof SessionApiData)?.api;
-				if(!sessionApi) return;
+	 * Output update callback for gathering the nodes.
+	 *
+	 * @param node
+	 */
+	const callback = useCallback(
+		(newNode?: ITreeNode, oldNode?: ITreeNode) => {
+			if (oldNode && !newNode) {
+				// clear the available node names if the node is removed
+				setNodes([]);
+			} else if (newNode) {
+				let outputApi = newNode.data.find(
+					(data) => data instanceof OutputApiData,
+				)?.api;
+				// it's possible that the OutputApiData is not available yet, so we need to find it in the session api
+				if (!outputApi) {
+					// try to find it in the session api
+					const sessionApi = newNode.parent?.data.find(
+						(data) => data instanceof SessionApiData,
+					)?.api;
+					if (!sessionApi) return;
 
-				outputApi = sessionApi.outputs[newNode.name];
-				if(!outputApi) return;
-			}
+					outputApi = sessionApi.outputs[newNode.name];
+					if (!outputApi) return;
+				}
 
-			const availableNodes: { [nodeId: string]: { node: ITreeNode, name: string } } = {};
-			for (const pattern of patterns) {
-				if (pattern.length === 0) {
-					availableNodes[newNode.id] = {
-						node: newNode,
-						name: outputApi.name
-					};
-				} else {
-					for(const child of newNode.children) {
-						gatherNodesForPattern(child, pattern, outputApi.name, availableNodes, 0, strictNaming);
+				const availableNodes: {
+					[nodeId: string]: {node: ITreeNode; name: string};
+				} = {};
+				for (const pattern of patterns) {
+					if (pattern.length === 0) {
+						availableNodes[newNode.id] = {
+							node: newNode,
+							name: outputApi.name,
+						};
+					} else {
+						for (const child of newNode.children) {
+							gatherNodesForPattern(
+								child,
+								pattern,
+								outputApi.name,
+								availableNodes,
+								0,
+								strictNaming,
+							);
+						}
 					}
 				}
+
+				setNodes(Object.values(availableNodes).map((n) => n.node));
 			}
-
-			setNodes(Object.values(availableNodes).map(n => n.node));
-		}
-
-	}, [patterns]);
+		},
+		[patterns],
+	);
 
 	// define the node update callback
 	useOutputNode(sessionId, outputIdOrName, callback);
 
 	return {
-		nodes
+		nodes,
 	};
 }
 
@@ -97,12 +119,25 @@ export function useFindNodesByPattern(
 
 // #region Variables (1)
 
-export const FindNodesByPatternHandler: React.FC<IFindNodesByPatternHandlerState> = ({ sessionId, outputIdOrName, patterns, strictNaming, setData }: IFindNodesByPatternHandlerState) => {
-	const { nodes } = useFindNodesByPattern(sessionId, outputIdOrName, patterns, strictNaming);
+export const FindNodesByPatternHandler: React.FC<
+	IFindNodesByPatternHandlerState
+> = ({
+	sessionId,
+	outputIdOrName,
+	patterns,
+	strictNaming,
+	setData,
+}: IFindNodesByPatternHandlerState) => {
+	const {nodes} = useFindNodesByPattern(
+		sessionId,
+		outputIdOrName,
+		patterns,
+		strictNaming,
+	);
 	useEffect(() => {
 		if (setData)
 			setData({
-				nodes
+				nodes,
 			});
 	}, [nodes]);
 

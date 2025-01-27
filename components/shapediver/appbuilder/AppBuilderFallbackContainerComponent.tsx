@@ -1,23 +1,26 @@
-import React, { useMemo } from "react";
-import TabsComponent, { ITabsComponentProps } from "@AppBuilderShared/components/ui/TabsComponent";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
-import ParametersAndExportsAccordionComponent
-	from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
+import React, {useMemo} from "react";
+import TabsComponent, {
+	ITabsComponentProps,
+} from "@AppBuilderShared/components/ui/TabsComponent";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
-import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import { PropsExport } from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 
 interface Props {
-	parameters: PropsParameter[],
-	exports: PropsExport[],
+	parameters: PropsParameter[];
+	exports: PropsExport[];
 }
 
-export default function AppBuilderFallbackContainerComponent({ parameters, exports }: Props) {
-
+export default function AppBuilderFallbackContainerComponent({
+	parameters,
+	exports,
+}: Props) {
 	const tabProps: ITabsComponentProps = useMemo(() => {
 		const tabProps: ITabsComponentProps = {
 			defaultValue: "",
-			tabs: []
+			tabs: [],
 		};
 		if (parameters.length > 0) {
 			tabProps.defaultValue = "Parameters";
@@ -25,11 +28,14 @@ export default function AppBuilderFallbackContainerComponent({ parameters, expor
 				name: "Parameters",
 				icon: IconTypeEnum.AdjustmentsHorizontal,
 				children: [
-					<ParametersAndExportsAccordionComponent key={0}
+					<ParametersAndExportsAccordionComponent
+						key={0}
 						parameters={parameters}
-						topSection={<AcceptRejectButtons parameters={parameters}/>}
-					/>
-				]
+						topSection={
+							<AcceptRejectButtons parameters={parameters} />
+						}
+					/>,
+				],
 			});
 		}
 		if (exports.length > 0) {
@@ -38,10 +44,11 @@ export default function AppBuilderFallbackContainerComponent({ parameters, expor
 				name: "Exports",
 				icon: IconTypeEnum.Download,
 				children: [
-					<ParametersAndExportsAccordionComponent key={0}
+					<ParametersAndExportsAccordionComponent
+						key={0}
 						exports={exports}
-					/>
-				]
+					/>,
+				],
 			});
 		}
 
@@ -49,5 +56,4 @@ export default function AppBuilderFallbackContainerComponent({ parameters, expor
 	}, [parameters, exports]);
 
 	return <TabsComponent {...tabProps} />;
-
 }

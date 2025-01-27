@@ -1,9 +1,9 @@
-import { MantineThemeOverride } from "@mantine/core";
-import { create } from "zustand";
+import {MantineThemeOverride} from "@mantine/core";
+import {create} from "zustand";
 
 interface IThemeOverrideStore {
-    themeOverride: MantineThemeOverride;
-    setThemeOverride: (theme: MantineThemeOverride | undefined) => void;
+	themeOverride: MantineThemeOverride;
+	setThemeOverride: (theme: MantineThemeOverride | undefined) => void;
 }
 
 /**
@@ -17,5 +17,5 @@ export const useThemeOverrideStore = create<IThemeOverrideStore>((set) => ({
 			...state,
 			themeOverride: theme,
 		}));
-	}
+	},
 }));

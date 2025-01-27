@@ -1,53 +1,60 @@
-import { EXPORT_TYPE } from "@shapediver/viewer.session";
-import { useExport } from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import {EXPORT_TYPE} from "@shapediver/viewer.session";
+import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import AppBuilderImage from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
-import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import { useShallow } from "zustand/react/shallow";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShallow} from "zustand/react/shallow";
 
 interface Props {
 	/**
 	 * Default session namespace to use for parameter and export references that do
 	 * not specify a session namespace.
 	 */
-	namespace: string
+	namespace: string;
 	/** Id or name or displayname of the export to get the image from. */
-	exportId: string
+	exportId: string;
 }
 
 export default function AppBuilderImageExportWidgetComponent(props: Props) {
-
-	const { namespace, exportId, ...rest } = props;
-	const { definition, actions } = useExport({namespace, exportId});
+	const {namespace, exportId, ...rest} = props;
+	const {definition, actions} = useExport({namespace, exportId});
 
 	const promiseChain = useRef(Promise.resolve());
 	const objectUrl = useRef<string | undefined>(undefined);
-	const [ imageSrc, setImageSrc ] = useState<string | undefined>(undefined);
-	const [ contentType, setContentType ] = useState<string | undefined>(undefined);
+	const [imageSrc, setImageSrc] = useState<string | undefined>(undefined);
+	const [contentType, setContentType] = useState<string | undefined>(
+		undefined,
+	);
 
 	/**
 	 * Create an object URL for the given href and set it as the image source.
 	 */
-	const setImageSrcCb = useCallback((href: string) => {
-		promiseChain.current = promiseChain.current.then(async () => {
-			if (objectUrl.current) {
-				URL.revokeObjectURL(objectUrl.current);
-				objectUrl.current = undefined;
-			}
-			if (href) {
-				const res = await actions.fetch(href);
-				const blob = await res.blob();
-				objectUrl.current = URL.createObjectURL(blob);
-			}
-			setImageSrc(objectUrl.current);
-		});
-	}, [setImageSrc]);
+	const setImageSrcCb = useCallback(
+		(href: string) => {
+			promiseChain.current = promiseChain.current.then(async () => {
+				if (objectUrl.current) {
+					URL.revokeObjectURL(objectUrl.current);
+					objectUrl.current = undefined;
+				}
+				if (href) {
+					const res = await actions.fetch(href);
+					const blob = await res.blob();
+					objectUrl.current = URL.createObjectURL(blob);
+				}
+				setImageSrc(objectUrl.current);
+			});
+		},
+		[setImageSrc],
+	);
 
 	// Register the export to be requested on every parameter change.
-	const { registerDefaultExport, deregisterDefaultExport } = useShapeDiverStoreParameters(
-		useShallow(state =>
-			({ registerDefaultExport: state.registerDefaultExport, deregisterDefaultExport: state.deregisterDefaultExport }))
-	);
+	const {registerDefaultExport, deregisterDefaultExport} =
+		useShapeDiverStoreParameters(
+			useShallow((state) => ({
+				registerDefaultExport: state.registerDefaultExport,
+				deregisterDefaultExport: state.deregisterDefaultExport,
+			})),
+		);
 	useEffect(() => {
 		registerDefaultExport(namespace, definition.id);
 
@@ -55,32 +62,35 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 	}, [namespace, definition]);
 
 	// Get responses to exports which were requested by default.
-	const responses = useShapeDiverStoreParameters(state => state.defaultExportResponses[namespace]);
+	const responses = useShapeDiverStoreParameters(
+		(state) => state.defaultExportResponses[namespace],
+	);
 
 	useEffect(() => {
 		if (responses && responses[definition.id]) {
 			const response = responses[definition.id];
-			if (response.content && response.content[0] && response.content[0].href) {
+			if (
+				response.content &&
+				response.content[0] &&
+				response.content[0].href
+			) {
 				const contentType = response.content[0].contentType;
 				const href = response.content[0].href;
 				setImageSrcCb(href);
 				setContentType(contentType);
-			}
-			else {
+			} else {
 				setImageSrc(undefined);
 				setContentType(undefined);
 			}
-		}
-		else {
+		} else {
 			promiseChain.current = promiseChain.current.then(async () => {
-
-				if (definition.type !== EXPORT_TYPE.DOWNLOAD)
-					return;
+				if (definition.type !== EXPORT_TYPE.DOWNLOAD) return;
 
 				// request the export
 				const response = await actions.request();
 
-				if ( response.content &&
+				if (
+					response.content &&
 					response.content[0] &&
 					response.content[0].href
 				) {
@@ -89,18 +99,21 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 
 					setImageSrcCb(href);
 					setContentType(contentType);
-				}
-				else {
+				} else {
 					setImageSrc(undefined);
 					setContentType(undefined);
 				}
 			});
 		}
-
 	}, [responses, definition]);
 
 	if (imageSrc)
-		return <AppBuilderImage src={imageSrc} isSvg={contentType === "image/svg+xml"} { ...rest } />;
-	else
-		return <></>;
+		return (
+			<AppBuilderImage
+				src={imageSrc}
+				isSvg={contentType === "image/svg+xml"}
+				{...rest}
+			/>
+		);
+	else return <></>;
 }

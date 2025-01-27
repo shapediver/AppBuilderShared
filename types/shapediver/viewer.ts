@@ -1,10 +1,15 @@
-import { IFileParameterApi, ShapeDiverResponseParameter } from "@shapediver/viewer.session";
+import {
+	IFileParameterApi,
+	ShapeDiverResponseParameter,
+} from "@shapediver/viewer.session";
 
 /**
  * Check for type IFileParameterApi
- * @param param 
- * @returns 
+ * @param param
+ * @returns
  */
-export function isFileParameter(param: ShapeDiverResponseParameter): param is IFileParameterApi {
-	return ("upload" in param);
+export function isFileParameter(
+	param: ShapeDiverResponseParameter,
+): param is IFileParameterApi {
+	return "upload" in param;
 }

@@ -1,12 +1,16 @@
-import React, { useCallback } from "react";
-import { IAppBuilderActionPropsSetBrowserLocation } from "@AppBuilderShared/types/shapediver/appbuilder";
+import React, {useCallback} from "react";
+import {IAppBuilderActionPropsSetBrowserLocation} from "@AppBuilderShared/types/shapediver/appbuilder";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 
 type Props = IAppBuilderActionPropsSetBrowserLocation;
 
-function getLocation(href?: string, pathname?: string, search?: string, hash?: string) : string {
-	if (href)
-		return href;
+function getLocation(
+	href?: string,
+	pathname?: string,
+	search?: string,
+	hash?: string,
+): string {
+	if (href) return href;
 
 	const currentLocation = window.location;
 
@@ -27,9 +31,19 @@ function getLocation(href?: string, pathname?: string, search?: string, hash?: s
  *
  * @returns
  */
-export default function AppBuilderActionSetBrowserLocationComponent(props: Props) {
-
-	const { label = "Set location", icon, tooltip, href, pathname, search, hash, target } = props;
+export default function AppBuilderActionSetBrowserLocationComponent(
+	props: Props,
+) {
+	const {
+		label = "Set location",
+		icon,
+		tooltip,
+		href,
+		pathname,
+		search,
+		hash,
+		target,
+	} = props;
 
 	const onClick = useCallback(() => {
 		const newLocation = getLocation(href, pathname, search, hash);
@@ -40,10 +54,12 @@ export default function AppBuilderActionSetBrowserLocationComponent(props: Props
 		}
 	}, [href, pathname, search, hash, target]);
 
-	return <AppBuilderActionComponent
-		label={label}
-		icon={icon}
-		tooltip={tooltip}
-		onClick={onClick}
-	/>;
+	return (
+		<AppBuilderActionComponent
+			label={label}
+			icon={icon}
+			tooltip={tooltip}
+			onClick={onClick}
+		/>
+	);
 }

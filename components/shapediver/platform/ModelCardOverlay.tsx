@@ -1,32 +1,31 @@
-import React, { useMemo } from "react";
-import { Avatar } from "@mantine/core";
-import { TModelItem } from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
+import React, {useMemo} from "react";
+import {Avatar} from "@mantine/core";
+import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import ModelCardOverlayWrapper from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlayWrapper";
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 
 export interface IModelCardOverlayProps {
 	/** If true, show the model's bookmark status. Defaults to false. */
-	showBookmark?: boolean,
+	showBookmark?: boolean;
 	/** If true, show information about the owner of the model. Defaults to true. */
-	showUser?: boolean,
+	showUser?: boolean;
 }
 
 interface Props extends IModelCardOverlayProps {
 	/** Model to be displayed */
-	item: TModelItem
+	item: TModelItem;
 }
 
 export default function ModelCardOverlay(props: Props) {
-
 	const {
-		item: { data: model, actions },
+		item: {data: model, actions},
 		showBookmark = false,
 		showUser = true,
-	}	= props;
+	} = props;
 
-	const displayBookmark = showBookmark;// && model.bookmark?.bookmarked;
+	const displayBookmark = showBookmark; // && model.bookmark?.bookmarked;
 	const displayUser = showUser && model.user;
 
 	const username = useMemo(() => {
@@ -48,33 +47,41 @@ export default function ModelCardOverlay(props: Props) {
 			return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
 		}
 
-		if (user.username)
-			return user.username.charAt(0);
+		if (user.username) return user.username.charAt(0);
 
 		return "?";
 	}, [model.user]);
 
-	return <>
-		{ displayBookmark ?
-			<ModelCardOverlayWrapper position="top-left">
-				<ToggleIcon
-					value={model.bookmark?.bookmarked ?? false}
-					iconActive={IconTypeEnum.Bookmark}
-					iconInactive={IconTypeEnum.BookmarkOff}
-					onActivate={actions.bookmark}
-					onDeactivate={actions.unbookmark}
-					tooltipActive="Remove bookmark"
-					tooltipInactive="Add bookmark"
-					hideInactive={true}
-				/>
-			</ModelCardOverlayWrapper> : undefined }
-		{ displayUser ?
-			<ModelCardOverlayWrapper position="top-right">
-				<TooltipWrapper label={username} >
-					{ model.user.avatar_url ?
-						<Avatar src={model.user.avatar_url} alt={username}/> :
-						<Avatar>{userInitials}</Avatar> }
-				</TooltipWrapper>
-			</ModelCardOverlayWrapper> : undefined }
-	</>;
+	return (
+		<>
+			{displayBookmark ? (
+				<ModelCardOverlayWrapper position="top-left">
+					<ToggleIcon
+						value={model.bookmark?.bookmarked ?? false}
+						iconActive={IconTypeEnum.Bookmark}
+						iconInactive={IconTypeEnum.BookmarkOff}
+						onActivate={actions.bookmark}
+						onDeactivate={actions.unbookmark}
+						tooltipActive="Remove bookmark"
+						tooltipInactive="Add bookmark"
+						hideInactive={true}
+					/>
+				</ModelCardOverlayWrapper>
+			) : undefined}
+			{displayUser ? (
+				<ModelCardOverlayWrapper position="top-right">
+					<TooltipWrapper label={username}>
+						{model.user.avatar_url ? (
+							<Avatar
+								src={model.user.avatar_url}
+								alt={username}
+							/>
+						) : (
+							<Avatar>{userInitials}</Avatar>
+						)}
+					</TooltipWrapper>
+				</ModelCardOverlayWrapper>
+			) : undefined}
+		</>
+	);
 }

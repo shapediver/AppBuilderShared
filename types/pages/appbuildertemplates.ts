@@ -1,8 +1,7 @@
-
 /** Hints for rendering a container. */
 export interface IAppBuilderTemplatePageContainerHints {
-	/** 
-	 * If true, use a vertical container layout even if 
+	/**
+	 * If true, use a vertical container layout even if
 	 * the container is horizontally oriented.
 	 */
 	preferVertical?: boolean;

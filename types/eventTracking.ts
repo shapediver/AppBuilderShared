@@ -1,14 +1,13 @@
-
 /**
  * Properties of tracked events.
  */
 export interface IEventTrackingProps {
-    /** Namespace (of parameters and exports) */
-	namespace: string
+	/** Namespace (of parameters and exports) */
+	namespace: string;
 	/** Time spent */
-	duration: number
+	duration: number;
 	/** Type of action */
-	action: EventActionEnum
+	action: EventActionEnum;
 }
 
 /**

@@ -1,27 +1,40 @@
-import React, { useContext } from "react";
-import { MantineStyleProp, MantineThemeComponent, Paper, PaperProps, Text, useProps } from "@mantine/core";
-import { IAppBuilderWidgetPropsText } from "@AppBuilderShared/types/shapediver/appbuilder";
+import React, {useContext} from "react";
+import {
+	MantineStyleProp,
+	MantineThemeComponent,
+	Paper,
+	PaperProps,
+	Text,
+	useProps,
+} from "@mantine/core";
+import {IAppBuilderWidgetPropsText} from "@AppBuilderShared/types/shapediver/appbuilder";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
-import { AppBuilderContainerContext } from "@AppBuilderShared/context/AppBuilderContext";
+import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 
 type StylePros = PaperProps;
 
-const defaultStyleProps : Partial<StylePros> = {
-};
+const defaultStyleProps: Partial<StylePros> = {};
 
 type AppBuilderTextWidgetThemePropsType = Partial<StylePros>;
 
-export function AppBuilderTextWidgetThemeProps(props: AppBuilderTextWidgetThemePropsType): MantineThemeComponent {
+export function AppBuilderTextWidgetThemeProps(
+	props: AppBuilderTextWidgetThemePropsType,
+): MantineThemeComponent {
 	return {
-		defaultProps: props
+		defaultProps: props,
 	};
 }
 
-export default function AppBuilderTextWidgetComponent(props: IAppBuilderWidgetPropsText & AppBuilderTextWidgetThemePropsType) {
+export default function AppBuilderTextWidgetComponent(
+	props: IAppBuilderWidgetPropsText & AppBuilderTextWidgetThemePropsType,
+) {
+	const {text, markdown, ...rest} = props;
 
-	const { text, markdown, ...rest } = props;
-
-	const themeProps = useProps("AppBuilderTextWidgetComponent", defaultStyleProps, rest);
+	const themeProps = useProps(
+		"AppBuilderTextWidgetComponent",
+		defaultStyleProps,
+		rest,
+	);
 
 	const context = useContext(AppBuilderContainerContext);
 
@@ -34,16 +47,17 @@ export default function AppBuilderTextWidgetComponent(props: IAppBuilderWidgetPr
 	styleProps.fontWeight = "100";
 
 	if (text) {
-		return <Paper {...themeProps} style={styleProps}><Text>
-			{ text }
-		</Text></Paper>;
-	}
-	else if (markdown) {
-		return <Paper {...themeProps} style={styleProps}>
-			<MarkdownWidgetComponent>
-				{ markdown }
-			</MarkdownWidgetComponent>
-		</Paper>;
+		return (
+			<Paper {...themeProps} style={styleProps}>
+				<Text>{text}</Text>
+			</Paper>
+		);
+	} else if (markdown) {
+		return (
+			<Paper {...themeProps} style={styleProps}>
+				<MarkdownWidgetComponent>{markdown}</MarkdownWidgetComponent>
+			</Paper>
+		);
 	}
 
 	return <></>;

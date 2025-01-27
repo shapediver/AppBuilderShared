@@ -1,20 +1,20 @@
-import React, { useCallback, useContext } from "react";
-import { IAppBuilderActionPropsCloseConfigurator } from "@AppBuilderShared/types/shapediver/appbuilder";
+import React, {useCallback, useContext} from "react";
+import {IAppBuilderActionPropsCloseConfigurator} from "@AppBuilderShared/types/shapediver/appbuilder";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import { ECommerceApiSingleton } from "@AppBuilderShared/modules/ecommerce/singleton";
-import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 
-type Props = IAppBuilderActionPropsCloseConfigurator & {
-};
+type Props = IAppBuilderActionPropsCloseConfigurator & {};
 
 /**
  * Functional component for an "addToCart" action.
  *
  * @returns
  */
-export default function AppBuilderActionCloseConfiguratorComponent(props: Props) {
-
+export default function AppBuilderActionCloseConfiguratorComponent(
+	props: Props,
+) {
 	const {
 		label = "Close configurator",
 		icon = IconTypeEnum.X,
@@ -31,10 +31,12 @@ export default function AppBuilderActionCloseConfiguratorComponent(props: Props)
 			notifications.error({message: "Could not close configurator."});
 	}, []);
 
-	return <AppBuilderActionComponent
-		label={label}
-		icon={icon}
-		tooltip={tooltip}
-		onClick={onClick}
-	/>;
+	return (
+		<AppBuilderActionComponent
+			label={label}
+			icon={icon}
+			tooltip={tooltip}
+			onClick={onClick}
+		/>
+	);
 }

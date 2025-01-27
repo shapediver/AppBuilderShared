@@ -1,9 +1,13 @@
-import { IDrawingParameterSettings } from "@shapediver/viewer.session";
-import { IDrawingToolsApi, PointsData, Settings } from "@shapediver/viewer.features.drawing-tools";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useDrawingToolsApi } from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingToolsApi";
-import { useDrawingToolsEvents } from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingToolsEvents";
-import { useRestrictions } from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useRestrictions";
+import {IDrawingParameterSettings} from "@shapediver/viewer.session";
+import {
+	IDrawingToolsApi,
+	PointsData,
+	Settings,
+} from "@shapediver/viewer.features.drawing-tools";
+import {useCallback, useEffect, useMemo, useRef} from "react";
+import {useDrawingToolsApi} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingToolsApi";
+import {useDrawingToolsEvents} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingToolsEvents";
+import {useRestrictions} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useRestrictions";
 
 // #region Functions (1)
 
@@ -24,47 +28,48 @@ export function useDrawingTools(
 	onUpdateComponent: (pointsData: PointsData) => void,
 	onCancelComponent: () => void,
 	activate: boolean,
-	initialPointsData?: PointsData
+	initialPointsData?: PointsData,
 ): {
 	/**
 	 * The drawing tools API.
 	 */
-	drawingToolsApi?: IDrawingToolsApi,
+	drawingToolsApi?: IDrawingToolsApi;
 	/**
 	 * The points data.
 	 */
-	pointsData?: PointsData,
+	pointsData?: PointsData;
 	/**
 	 * The function to set the points data.
 	 *
 	 * @param pointsData The points data.
 	 */
-	setPointsData: (pointsData: PointsData) => void,
+	setPointsData: (pointsData: PointsData) => void;
 	/**
 	 * The handlers to be added to the document.
 	 */
-	handlers: JSX.Element[]
+	handlers: JSX.Element[];
 } {
 	// use the drawing tools events
-	const { pointsData, setPointsData } = useDrawingToolsEvents(viewportId, initialPointsData);
+	const {pointsData, setPointsData} = useDrawingToolsEvents(
+		viewportId,
+		initialPointsData,
+	);
 
 	// use the restrictions
-	const { restrictions, handlers } = useRestrictions(drawingParameterProps.restrictions);
+	const {restrictions, handlers} = useRestrictions(
+		drawingParameterProps.restrictions,
+	);
 
 	// set the drawing tools settings
-	const drawingToolsSettings: Partial<Settings> = useMemo(
-		() => {
-
-			return {
-				geometry: {
-					points: initialPointsData || [],
-					...drawingParameterProps?.geometry
-				},
-				restrictions
-			};
-		},
-		[drawingParameterProps, initialPointsData, restrictions]
-	);
+	const drawingToolsSettings: Partial<Settings> = useMemo(() => {
+		return {
+			geometry: {
+				points: initialPointsData || [],
+				...drawingParameterProps?.geometry,
+			},
+			restrictions,
+		};
+	}, [drawingParameterProps, initialPointsData, restrictions]);
 
 	// reference for the drawing tools API
 	const drawingToolsApiRef = useRef<IDrawingToolsApi | undefined>(undefined);
@@ -80,7 +85,7 @@ export function useDrawingTools(
 		viewportId,
 		activate ? drawingToolsSettings : undefined,
 		onUpdateComponent,
-		onCancel
+		onCancel,
 	);
 
 	useEffect(() => {
@@ -91,7 +96,7 @@ export function useDrawingTools(
 		drawingToolsApi: drawingToolsApi,
 		pointsData: pointsData,
 		setPointsData: setPointsData,
-		handlers
+		handlers,
 	};
 }
 

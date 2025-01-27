@@ -1,31 +1,37 @@
 .title {
-    word-break: break-all;
+	word-break: break-all;
 }
 
 .icon {
-    flex: 0 0 auto;
+	flex: 0 0 auto;
 }
 
 .tagsContainer {
-    overflow-x: auto;
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+	overflow-x: auto;
+	-ms-overflow-style: none; /* IE and Edge */
+	scrollbar-width: none; /* Firefox */
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
 .tagsContainer::-webkit-scrollbar {
-    display: none;
+	display: none;
 }
 
 /* Below here: experiment for scrolling tags left and right while being hovered */
 .tags {
-    display: flex;
-    white-space: nowrap;
-    animation: scrollLeftRight 10s linear infinite; 
+	display: flex;
+	white-space: nowrap;
+	animation: scrollLeftRight 10s linear infinite;
 }
 
 @keyframes scrollLeftRight {
-    0% { transform: translateX(0); }
-    50% { transform: translateX(calc(-100%)); } /* 100% - container width */
-    100% { transform: translateX(0); }
+	0% {
+		transform: translateX(0);
+	}
+	50% {
+		transform: translateX(calc(-100%));
+	} /* 100% - container width */
+	100% {
+		transform: translateX(0);
+	}
 }

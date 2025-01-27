@@ -1,5 +1,5 @@
-import { useShapeDiverStoreParameters } from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import { IShapeDiverParameter } from "@AppBuilderShared/types/shapediver/parameter";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
 
 /**
  * Hook providing a shortcut to abstracted parameters managed by {@link useShapeDiverStoreParameters}.
@@ -10,10 +10,19 @@ import { IShapeDiverParameter } from "@AppBuilderShared/types/shapediver/paramet
  * @param parameterId Id, name, or displayname of the parameter
  * @returns
  */
-export function useParameterStateless<T>(namespace: string, parameterId: string, type?: string) {
-
+export function useParameterStateless<T>(
+	namespace: string,
+	parameterId: string,
+	type?: string,
+) {
 	const parametersStore = useShapeDiverStoreParameters();
-	const paramStore = parametersStore.getParameter(namespace, parameterId, type);
+	const paramStore = parametersStore.getParameter(
+		namespace,
+		parameterId,
+		type,
+	);
 
-	return paramStore ? paramStore.getState() as IShapeDiverParameter<T> : undefined;
+	return paramStore
+		? (paramStore.getState() as IShapeDiverParameter<T>)
+		: undefined;
 }

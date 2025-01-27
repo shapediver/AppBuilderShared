@@ -1,6 +1,6 @@
-import { IViewportApi } from "@shapediver/viewer.viewport";
-import { IEventTracking } from "@AppBuilderShared/types/eventTracking";
-import { ViewportCreateDto } from "@AppBuilderShared/types/shapediver/viewport";
+import {IViewportApi} from "@shapediver/viewer.viewport";
+import {IEventTracking} from "@AppBuilderShared/types/eventTracking";
+import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
 
 export interface IShapeDiverStoreViewports {
 	[viewportId: string]: IViewportApi;
@@ -15,11 +15,10 @@ export type IShapeDiverStoreViewportCallbacks = Pick<IEventTracking, "onError">;
  * Interface for the store of viewer-related data.
  */
 export interface IShapeDiverStoreViewport {
-
 	/**
 	 * Viewports currently known by the store.
 	 */
-	viewports: IShapeDiverStoreViewports
+	viewports: IShapeDiverStoreViewports;
 
 	/**
 	 * Create a viewport and add it to the store.
@@ -28,7 +27,7 @@ export interface IShapeDiverStoreViewport {
 	 */
 	createViewport: (
 		dto: ViewportCreateDto,
-		callbacks?: IShapeDiverStoreViewportCallbacks
+		callbacks?: IShapeDiverStoreViewportCallbacks,
 	) => Promise<IViewportApi | undefined>;
 
 	/**
@@ -36,6 +35,6 @@ export interface IShapeDiverStoreViewport {
 	 */
 	closeViewport: (
 		viewportId: string,
-		callbacks?: IShapeDiverStoreViewportCallbacks
+		callbacks?: IShapeDiverStoreViewportCallbacks,
 	) => Promise<void>;
 }

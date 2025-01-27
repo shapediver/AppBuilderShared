@@ -1,32 +1,31 @@
-import React, { } from "react";
+import React from "react";
 
 interface GridLayoutProps {
-    hasTop?: boolean;
-    hasLeft?: boolean;
-    hasRight?: boolean;
-    hasBottom?: boolean;
-    rows?: number;
-    columns?: number;
-    topRows?: number;
-    leftColumns?: number;
-    rightColumns?: number;
-    bottomRows?: number;
+	hasTop?: boolean;
+	hasLeft?: boolean;
+	hasRight?: boolean;
+	hasBottom?: boolean;
+	rows?: number;
+	columns?: number;
+	topRows?: number;
+	leftColumns?: number;
+	rightColumns?: number;
+	bottomRows?: number;
 	topFullWidth?: boolean;
 	bottomFullWidth?: boolean;
 }
 
 export function createGridLayout(props: GridLayoutProps): React.CSSProperties {
-
-	const { 
-		hasTop = false, 
-		hasLeft = false, 
-		hasRight = false, 
-		hasBottom = false, 
-		rows = 4, 
-		columns = 4, 
-		topRows = 1, 
-		leftColumns = 1, 
-		rightColumns = 1, 
+	const {
+		hasTop = false,
+		hasLeft = false,
+		hasRight = false,
+		hasBottom = false,
+		rows = 4,
+		columns = 4,
+		topRows = 1,
+		leftColumns = 1,
+		rightColumns = 1,
 		bottomRows = 1,
 		topFullWidth = false,
 		bottomFullWidth = false,
@@ -39,7 +38,7 @@ export function createGridLayout(props: GridLayoutProps): React.CSSProperties {
 	const b = "bottom";
 
 	const area: string[][] = [];
-    
+
 	for (let i = 0; i < rows; i++) {
 		const row: string[] = [];
 		for (let j = 0; j < columns; j++) {
@@ -58,15 +57,13 @@ export function createGridLayout(props: GridLayoutProps): React.CSSProperties {
 
 	if (hasBottom && !bottomFullWidth) {
 		for (let j = 0; j < columns; j++) {
-			for (let i = rows - bottomRows; i < rows; i++)
-				area[i][j] = b;
+			for (let i = rows - bottomRows; i < rows; i++) area[i][j] = b;
 		}
 	}
 
 	if (hasLeft) {
 		for (let i = 0; i < rows; i++) {
-			for (let j = 0; j < leftColumns; j++)
-				area[i][j] = l;
+			for (let j = 0; j < leftColumns; j++) area[i][j] = l;
 		}
 	}
 
@@ -87,8 +84,7 @@ export function createGridLayout(props: GridLayoutProps): React.CSSProperties {
 
 	if (hasBottom && bottomFullWidth) {
 		for (let j = 0; j < columns; j++) {
-			for (let i = rows - bottomRows; i < rows; i++)
-				area[i][j] = b;
+			for (let i = rows - bottomRows; i < rows; i++) area[i][j] = b;
 		}
 	}
 

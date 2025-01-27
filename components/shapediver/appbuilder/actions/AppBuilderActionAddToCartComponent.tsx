@@ -1,10 +1,10 @@
-import React, { useCallback, useContext } from "react";
-import { IAppBuilderActionPropsAddToCart } from "@AppBuilderShared/types/shapediver/appbuilder";
+import React, {useCallback, useContext} from "react";
+import {IAppBuilderActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import { ECommerceApiSingleton } from "@AppBuilderShared/modules/ecommerce/singleton";
-import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
-import { useCreateModelState } from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 
 type Props = IAppBuilderActionPropsAddToCart & {
 	namespace: string;
@@ -16,7 +16,6 @@ type Props = IAppBuilderActionPropsAddToCart & {
  * @returns
  */
 export default function AppBuilderActionAddToCartComponent(props: Props) {
-
 	const {
 		label = "Add to cart",
 		icon = IconTypeEnum.ShoppingCartPlus,
@@ -28,10 +27,10 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		description,
 		includeImage,
 		//image, // TODO use image defined by export of href
-		includeGltf
+		includeGltf,
 	} = props;
 
-	const { createModelState } = useCreateModelState({ namespace });
+	const {createModelState} = useCreateModelState({namespace});
 
 	const notifications = useContext(NotificationContext);
 
@@ -44,7 +43,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 			false, // <-- use parameter values of the session
 			includeImage,
 			undefined, // <-- custom data
-			includeGltf
+			includeGltf,
 		);
 		try {
 			const result = await api.addItemToCart({
@@ -55,9 +54,13 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 				description,
 			});
 			// TODO display modal instead of notification, offer possibility to hide configurator
-			notifications.success({message: `An item for configuration ID ${modelStateId} has been added to the cart (cart item id ${result.id}).`});
+			notifications.success({
+				message: `An item for configuration ID ${modelStateId} has been added to the cart (cart item id ${result.id}).`,
+			});
 		} catch (e) {
-			notifications.error({message: `An error happened while adding configuration ID ${modelStateId} to the cart.`});
+			notifications.error({
+				message: `An error happened while adding configuration ID ${modelStateId} to the cart.`,
+			});
 			// TODO report error to sentry
 			throw e;
 		}
@@ -68,13 +71,15 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		description,
 		createModelState,
 		includeImage,
-		includeGltf
+		includeGltf,
 	]);
 
-	return <AppBuilderActionComponent
-		label={label}
-		icon={icon}
-		tooltip={tooltip}
-		onClick={onClick}
-	/>;
+	return (
+		<AppBuilderActionComponent
+			label={label}
+			icon={icon}
+			tooltip={tooltip}
+			onClick={onClick}
+		/>
+	);
 }

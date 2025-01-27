@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import classes from "./AppBuilderGridTemplatePage.module.css";
-import { MantineThemeComponent, useProps } from "@mantine/core";
-import { IAppBuilderTemplatePageProps } from "@AppBuilderShared/types/pages/appbuildertemplates";
-import { createGridLayout } from "@AppBuilderShared/utils/misc/layout";
+import {MantineThemeComponent, useProps} from "@mantine/core";
+import {IAppBuilderTemplatePageProps} from "@AppBuilderShared/types/pages/appbuildertemplates";
+import {createGridLayout} from "@AppBuilderShared/utils/misc/layout";
 import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
 
 interface StyleProps {
@@ -49,19 +49,22 @@ const defaultStyleProps: StyleProps = {
 
 type AppBuilderGridTemplatePageThemePropsType = Partial<StyleProps>;
 
-export function AppBuilderGridTemplatePageThemeProps(props: AppBuilderGridTemplatePageThemePropsType): MantineThemeComponent {
+export function AppBuilderGridTemplatePageThemeProps(
+	props: AppBuilderGridTemplatePageThemePropsType,
+): MantineThemeComponent {
 	return {
-		defaultProps: props
+		defaultProps: props,
 	};
 }
 
 /**
  * Grid layout template page for AppBuilder
- * @param props 
- * @returns 
+ * @param props
+ * @returns
  */
-export default function AppBuilderGridTemplatePage(props: IAppBuilderTemplatePageProps & Partial<StyleProps>) {
-
+export default function AppBuilderGridTemplatePage(
+	props: IAppBuilderTemplatePageProps & Partial<StyleProps>,
+) {
 	const {
 		top = undefined,
 		left = undefined,
@@ -71,10 +74,10 @@ export default function AppBuilderGridTemplatePage(props: IAppBuilderTemplatePag
 	} = props;
 
 	// style properties
-	const { 
-		bgTop, 
-		bgLeft, 
-		bgRight, 
+	const {
+		bgTop,
+		bgLeft,
+		bgRight,
 		bgBottom,
 		columns,
 		rows,
@@ -83,7 +86,7 @@ export default function AppBuilderGridTemplatePage(props: IAppBuilderTemplatePag
 		topRows,
 		bottomRows,
 		topFullWidth,
-		bottomFullWidth
+		bottomFullWidth,
 	} = useProps("AppBuilderGridTemplatePage", defaultStyleProps, props);
 
 	const rootRef = useRef<HTMLDivElement>(null);
@@ -91,53 +94,108 @@ export default function AppBuilderGridTemplatePage(props: IAppBuilderTemplatePag
 		// We need to define the background color here, because the corresponding element
 		// is used for fullscreen mode and would otherwise be transparent (show as black).
 		backgroundColor: "var(--mantine-color-body)",
-		...(createGridLayout({
-			hasTop: !!top, 
+		...createGridLayout({
+			hasTop: !!top,
 			hasLeft: !!left,
 			hasRight: !!right,
 			hasBottom: !!bottom,
-			rows, columns, topRows, leftColumns, rightColumns, bottomRows,
-			topFullWidth, bottomFullWidth,
-		})),
+			rows,
+			columns,
+			topRows,
+			leftColumns,
+			rightColumns,
+			bottomRows,
+			topFullWidth,
+			bottomFullWidth,
+		}),
 	});
 
 	useEffect(() => {
 		setRootStyle({
 			...rootStyle,
-			...(createGridLayout({
-				hasTop: !!top, 
+			...createGridLayout({
+				hasTop: !!top,
 				hasLeft: !!left,
 				hasRight: !!right,
 				hasBottom: !!bottom,
-				rows, columns, topRows, leftColumns, rightColumns, bottomRows,
-				topFullWidth, bottomFullWidth,
-			}))
+				rows,
+				columns,
+				topRows,
+				leftColumns,
+				rightColumns,
+				bottomRows,
+				topFullWidth,
+				bottomFullWidth,
+			}),
 		});
-	}, [left, right, bottom, top, 
-		columns, rows, leftColumns, rightColumns, topRows, bottomRows,
-		topFullWidth, bottomFullWidth,
+	}, [
+		left,
+		right,
+		bottom,
+		top,
+		columns,
+		rows,
+		leftColumns,
+		rightColumns,
+		topRows,
+		bottomRows,
+		topFullWidth,
+		bottomFullWidth,
 	]);
 
 	return (
 		<>
-			<section ref={rootRef} className={classes.appBuilderTemplatePage} style={rootStyle}>
+			<section
+				ref={rootRef}
+				className={classes.appBuilderTemplatePage}
+				style={rootStyle}
+			>
+				{top ? (
+					<section
+						className={classes.appBuilderTemplatePageTop}
+						style={{background: bgTop}}
+					>
+						<AppBuilderContainerWrapper name="top">
+							{top.node}
+						</AppBuilderContainerWrapper>
+					</section>
+				) : undefined}
 
-				{ top ? <section className={classes.appBuilderTemplatePageTop} style={{background: bgTop}}>
-					<AppBuilderContainerWrapper name="top">{top.node}</AppBuilderContainerWrapper></section> : undefined }
+				{left ? (
+					<section
+						className={classes.appBuilderTemplatePageLeft}
+						style={{background: bgLeft}}
+					>
+						<AppBuilderContainerWrapper name="left">
+							{left.node}
+						</AppBuilderContainerWrapper>
+					</section>
+				) : undefined}
 
-				{ left ? <section className={classes.appBuilderTemplatePageLeft} style={{background: bgLeft}}>
-					<AppBuilderContainerWrapper name="left">{left.node}</AppBuilderContainerWrapper></section> : undefined }
+				{right ? (
+					<section
+						className={classes.appBuilderTemplatePageRight}
+						style={{background: bgRight}}
+					>
+						<AppBuilderContainerWrapper name="right">
+							{right.node}
+						</AppBuilderContainerWrapper>
+					</section>
+				) : undefined}
 
-				{ right ? <section className={classes.appBuilderTemplatePageRight} style={{background: bgRight}}>
-					<AppBuilderContainerWrapper name="right">{right.node}</AppBuilderContainerWrapper></section> : undefined }
+				{bottom ? (
+					<section
+						className={classes.appBuilderTemplatePageBottom}
+						style={{background: bgBottom}}
+					>
+						<AppBuilderContainerWrapper name="bottom">
+							{bottom.node}
+						</AppBuilderContainerWrapper>
+					</section>
+				) : undefined}
 
-				{ bottom ? <section className={classes.appBuilderTemplatePageBottom} style={{background: bgBottom}}>
-					<AppBuilderContainerWrapper name="bottom">{bottom.node}</AppBuilderContainerWrapper></section> : undefined }
-				
-				<section
-					className={classes.appBuilderTemplatePageMain}
-				>
-					{ children || <></> }
+				<section className={classes.appBuilderTemplatePageMain}>
+					{children || <></>}
 				</section>
 			</section>
 		</>

@@ -1,22 +1,21 @@
-import { useEffect } from "react";
+import {useEffect} from "react";
 
 interface Props {
-	key: string
-	timeout: number
-	hits: number
-	callback: () => void
+	key: string;
+	timeout: number;
+	hits: number;
+	callback: () => void;
 }
 
 /**
  * Hook providing a key binding.
- * 
- * @param props 
- * @returns 
+ *
+ * @param props
+ * @returns
  */
 export function useKeyBinding(props: Props) {
-	
-	const { key, timeout, hits, callback } = props;
-	
+	const {key, timeout, hits, callback} = props;
+
 	useEffect(() => {
 		// event handler for toggling configurator visibility
 		let count = 0;
@@ -48,6 +47,5 @@ export function useKeyBinding(props: Props) {
 		return () => document.removeEventListener("keydown", cb);
 	}, [key, timeout, hits, callback]);
 
-	return {
-	};
+	return {};
 }

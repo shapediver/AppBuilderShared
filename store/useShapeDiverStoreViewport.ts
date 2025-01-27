@@ -1,14 +1,16 @@
-import { ViewportCreateDto } from "@AppBuilderShared/types/shapediver/viewport";
-import { IShapeDiverStoreViewport } from "@AppBuilderShared/types/store/shapediverStoreViewport";
-import { createViewport, IViewportApi } from "@shapediver/viewer.viewport";
-import { create } from "zustand";
-import { devtools } from "zustand/middleware";
-import { devtoolsSettings } from "@AppBuilderShared/store/storeSettings";
+import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
+import {IShapeDiverStoreViewport} from "@AppBuilderShared/types/store/shapediverStoreViewport";
+import {createViewport, IViewportApi} from "@shapediver/viewer.viewport";
+import {create} from "zustand";
+import {devtools} from "zustand/middleware";
+import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 
 /**
  * Helper for comparing viewports.
  */
-const createViewportIdentifier =  function(parameters: Pick<ViewportCreateDto, "id">) {
+const createViewportIdentifier = function (
+	parameters: Pick<ViewportCreateDto, "id">,
+) {
 	return JSON.stringify({
 		id: parameters.id,
 	});
@@ -18,70 +20,78 @@ const createViewportIdentifier =  function(parameters: Pick<ViewportCreateDto, "
  * Store data related to the ShapeDiver 3D Viewer Viewport.
  * @see {@link IShapeDiverStoreViewport}
  */
-export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(devtools((set, get) => ({
+export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
+	devtools(
+		(set, get) => ({
+			viewports: {},
 
-	viewports: {},
+			createViewport: async (dto: ViewportCreateDto, callbacks) => {
+				// in case a viewport with the same identifier exists, skip creating a new one
+				const identifier = createViewportIdentifier(dto);
+				const {viewports} = get();
 
-	createViewport: async (
-		dto: ViewportCreateDto,
-		callbacks,
-	) => {
-		// in case a viewport with the same identifier exists, skip creating a new one
-		const identifier = createViewportIdentifier(dto);
-		const { viewports } = get();
+				if (
+					Object.values(viewports).findIndex(
+						(v) => identifier === createViewportIdentifier(v),
+					) >= 0
+				)
+					return;
 
-		if ( Object.values(viewports).findIndex(v => identifier === createViewportIdentifier(v)) >= 0 )
-			return;
+				let viewport: IViewportApi | undefined = undefined;
 
-		let viewport: IViewportApi|undefined = undefined;
+				try {
+					viewport = await createViewport(dto);
+				} catch (e: any) {
+					callbacks?.onError(e);
+				}
 
-		try {
-			viewport = await createViewport(dto);
-		} catch (e: any) {
-			callbacks?.onError(e);
-		}
+				set(
+					(state) => {
+						return {
+							viewports: {
+								...state.viewports,
+								...(viewport ? {[viewport.id]: viewport} : {}),
+							},
+						};
+					},
+					false,
+					"createViewport",
+				);
 
-		set((state) => {
-			return {
-				viewports: {
-					...state.viewports,
-					...viewport ? {[viewport.id]: viewport} : {},
-				},
-			};
-		}, false, "createViewport");
+				return viewport;
+			},
 
-		return viewport;
-	},
+			closeViewport: async (viewportId, callbacks) => {
+				const {viewports} = get();
+				const viewport = viewports[viewportId];
+				if (!viewport) return;
 
-	closeViewport: async (
-		viewportId,
-		callbacks,
-	) => {
+				try {
+					await viewport.close();
+				} catch (e) {
+					callbacks?.onError(e);
 
-		const { viewports } = get();
-		const viewport = viewports[viewportId];
-		if (!viewport) return;
+					return;
+				}
 
-		try {
-			await viewport.close();
-		} catch (e) {
-			callbacks?.onError(e);
+				return set(
+					(state) => {
+						// create a new object, omitting the session which was closed
+						const newViewports: {[id: string]: IViewportApi} = {};
+						Object.keys(state.viewports).forEach((id) => {
+							if (id !== viewportId)
+								newViewports[id] = state.viewports[id];
+						});
 
-			return;
-		}
-
-		return set((state) => {
-			// create a new object, omitting the session which was closed
-			const newViewports : {[id: string]: IViewportApi} = {};
-			Object.keys(state.viewports).forEach(id => {
-				if (id !== viewportId)
-					newViewports[id] = state.viewports[id];
-			});
-
-			return {
-				viewports: newViewports,
-			};
-		}, false, "closeViewport");
-	}
-}
-), { ...devtoolsSettings, name: "ShapeDiver | Viewer" }));
+						return {
+							viewports: newViewports,
+						};
+					},
+					false,
+					"closeViewport",
+				);
+			},
+		}),
+		{...devtoolsSettings, name: "ShapeDiver | Viewer"},
+	),
+);

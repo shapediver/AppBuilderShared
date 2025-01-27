@@ -1,5 +1,5 @@
-import { ViewportContext } from "@AppBuilderShared/context/ViewportContext";
-import { useContext } from "react";
+import {ViewportContext} from "@AppBuilderShared/context/ViewportContext";
+import {useContext} from "react";
 
 /**
  * Hook for getting the id of the main viewport used by the application.
@@ -8,10 +8,9 @@ import { useContext } from "react";
  * @returns
  */
 export function useViewportId() {
-
-	const { viewportId } = useContext(ViewportContext);
+	const {viewportId} = useContext(ViewportContext);
 
 	return {
-		viewportId
+		viewportId,
 	};
 }

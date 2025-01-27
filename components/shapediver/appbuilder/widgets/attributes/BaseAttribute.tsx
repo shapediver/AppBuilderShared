@@ -1,8 +1,7 @@
-import { ActionIcon, Grid, Group, Paper, Stack, Text } from "@mantine/core";
+import {ActionIcon, Grid, Group, Paper, Stack, Text} from "@mantine/core";
 import React from "react";
 import Icon from "@AppBuilderShared/components/ui/Icon";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
-
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 
 interface BaseAttributeProps {
 	name: string;
@@ -10,11 +9,11 @@ interface BaseAttributeProps {
 	removeAttribute: (name: string, type: string) => void;
 	changeOrder: (name: string, type: string, direction: "up" | "down") => void;
 	children?: React.ReactNode;
-    options?: React.ReactNode;
+	options?: React.ReactNode;
 }
 
 export default function BaseAttribute(props: BaseAttributeProps) {
-	const { name, type, children, options, removeAttribute, changeOrder } = props;
+	const {name, type, children, options, removeAttribute, changeOrder} = props;
 
 	return (
 		<Paper>
@@ -26,14 +25,14 @@ export default function BaseAttribute(props: BaseAttributeProps) {
 							size="xs"
 							onClick={() => changeOrder(name, type, "up")}
 						>
-							<Icon type={IconTypeEnum.ArrowUp}/>
+							<Icon type={IconTypeEnum.ArrowUp} />
 						</ActionIcon>
 						<ActionIcon
 							variant="default"
 							size="xs"
 							onClick={() => changeOrder(name, type, "down")}
 						>
-							<Icon type={IconTypeEnum.ArrowDown}/>
+							<Icon type={IconTypeEnum.ArrowDown} />
 						</ActionIcon>
 					</Stack>
 				</Grid.Col>
@@ -53,6 +52,5 @@ export default function BaseAttribute(props: BaseAttributeProps) {
 				</Grid.Col>
 			</Grid>
 		</Paper>
-
 	);
 }

@@ -1,8 +1,13 @@
-import { Image, ActionIcon, useMantineColorScheme, useComputedColorScheme } from "@mantine/core";
-import { useLinkClickHandler } from "react-router-dom";
+import {
+	Image,
+	ActionIcon,
+	useMantineColorScheme,
+	useComputedColorScheme,
+} from "@mantine/core";
+import {useLinkClickHandler} from "react-router-dom";
 import React from "react";
 import classes from "./HeaderBar.module.css";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 
 /**
@@ -14,7 +19,7 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
  */
 export default function HeaderBar() {
 	// -> colorScheme is 'auto' | 'light' | 'dark'
-	const { colorScheme, setColorScheme } = useMantineColorScheme();
+	const {colorScheme, setColorScheme} = useMantineColorScheme();
 
 	// -> computedColorScheme is 'light' | 'dark', argument is the default value
 	const computedColorScheme = useComputedColorScheme("light");
@@ -61,7 +66,11 @@ export default function HeaderBar() {
 				onClick={() => toggleColorScheme()}
 				title="Toggle color scheme"
 			>
-				{colorScheme === "dark" ? <Icon type={IconTypeEnum.Sun} /> : <Icon type={IconTypeEnum.MoonStars} />}
+				{colorScheme === "dark" ? (
+					<Icon type={IconTypeEnum.Sun} />
+				) : (
+					<Icon type={IconTypeEnum.MoonStars} />
+				)}
 			</ActionIcon>
 		</>
 	);

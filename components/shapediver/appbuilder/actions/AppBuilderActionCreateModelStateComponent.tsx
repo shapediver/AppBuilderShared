@@ -1,9 +1,9 @@
-import React, { useCallback, useContext } from "react";
-import { IAppBuilderActionPropsAddToCart } from "@AppBuilderShared/types/shapediver/appbuilder";
+import React, {useCallback, useContext} from "react";
+import {IAppBuilderActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import { useCreateModelState } from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
-import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
+import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 
 type Props = IAppBuilderActionPropsAddToCart & {
 	namespace: string;
@@ -14,8 +14,9 @@ type Props = IAppBuilderActionPropsAddToCart & {
  *
  * @returns
  */
-export default function AppBuilderActionCreateModelStateComponent(props: Props) {
-
+export default function AppBuilderActionCreateModelStateComponent(
+	props: Props,
+) {
 	const {
 		label = "Save configuration",
 		icon = IconTypeEnum.DeviceFloppy,
@@ -23,11 +24,11 @@ export default function AppBuilderActionCreateModelStateComponent(props: Props) 
 		namespace,
 		includeImage,
 		//image, // TODO use image defined by export of href
-		includeGltf
+		includeGltf,
 	} = props;
 	const notifications = useContext(NotificationContext);
 
-	const { createModelState } = useCreateModelState({ namespace });
+	const {createModelState} = useCreateModelState({namespace});
 
 	const onClick = useCallback(async () => {
 		const modelStateId = await createModelState(
@@ -35,7 +36,7 @@ export default function AppBuilderActionCreateModelStateComponent(props: Props) 
 			false, // <-- use parameter values of the session
 			includeImage,
 			undefined, // <-- custom data
-			includeGltf
+			includeGltf,
 		);
 
 		// Save the modelStateId as a search parameter
@@ -43,15 +44,18 @@ export default function AppBuilderActionCreateModelStateComponent(props: Props) 
 			const url = new URL(window.location.href);
 			url.searchParams.set("modelStateId", modelStateId);
 			history.replaceState(history.state, "", url.toString());
-			notifications.success({message: `Model state with ID ${modelStateId} has been saved.`});
+			notifications.success({
+				message: `Model state with ID ${modelStateId} has been saved.`,
+			});
 		}
-
 	}, [createModelState, includeImage, includeGltf]);
 
-	return <AppBuilderActionComponent
-		label={label}
-		icon={icon}
-		tooltip={tooltip}
-		onClick={onClick}
-	/>;
+	return (
+		<AppBuilderActionComponent
+			label={label}
+			icon={icon}
+			tooltip={tooltip}
+			onClick={onClick}
+		/>
+	);
 }

@@ -1,8 +1,8 @@
 .tabsRoot {
-    max-height: 100vh;
+	max-height: 100vh;
 }
 
 .tabsPanels {
-    max-height: calc(100vh - 36px);
-    overflow-y: auto;
+	max-height: calc(100vh - 36px);
+	overflow-y: auto;
 }

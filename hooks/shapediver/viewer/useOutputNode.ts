@@ -1,7 +1,10 @@
-import { IOutputApi, ITreeNode } from "@shapediver/viewer.session";
-import { useCallback, useEffect, useId, useState } from "react";
-import { OutputUpdateCallbackType, useOutputUpdateCallback } from "@AppBuilderShared/hooks/shapediver/viewer/useOutputUpdateCallback";
-import { useOutput } from "@AppBuilderShared/hooks/shapediver/viewer/useOutput";
+import {IOutputApi, ITreeNode} from "@shapediver/viewer.session";
+import {useCallback, useEffect, useId, useState} from "react";
+import {
+	OutputUpdateCallbackType,
+	useOutputUpdateCallback,
+} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputUpdateCallback";
+import {useOutput} from "@AppBuilderShared/hooks/shapediver/viewer/useOutput";
 
 /**
  * Hook providing access to outputs by id or name,
@@ -24,28 +27,35 @@ import { useOutput } from "@AppBuilderShared/hooks/shapediver/viewer/useOutput";
  *                 The very last call will not include a new node.
  * @returns
  */
-export function useOutputNode(sessionId: string, outputIdOrName: string, callback?: OutputUpdateCallbackType) : {
+export function useOutputNode(
+	sessionId: string,
+	outputIdOrName: string,
+	callback?: OutputUpdateCallbackType,
+): {
 	/**
 	 * API of the output
 	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IOutputApi.html
 	 */
-	outputApi: IOutputApi | undefined,
+	outputApi: IOutputApi | undefined;
 	/**
 	 * Scene tree node of the output
 	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IOutputApi.html#node
 	 */
-	outputNode: ITreeNode | undefined
+	outputNode: ITreeNode | undefined;
 } {
-	const { outputApi } = useOutput(sessionId, outputIdOrName);
+	const {outputApi} = useOutput(sessionId, outputIdOrName);
 
 	const [node, setNode] = useState<ITreeNode | undefined>(outputApi?.node);
 
 	// combine the optional user-defined callback with setting the current node
-	const cb = useCallback( (node?: ITreeNode, oldnode?: ITreeNode) => {
-		setNode(node);
+	const cb = useCallback(
+		(node?: ITreeNode, oldnode?: ITreeNode) => {
+			setNode(node);
 
-		return callback && callback(node, oldnode);
-	}, [callback] );
+			return callback && callback(node, oldnode);
+		},
+		[callback],
+	);
 
 	const callbackId = useId();
 	useOutputUpdateCallback(sessionId, outputIdOrName, callbackId, cb);
@@ -61,6 +71,6 @@ export function useOutputNode(sessionId: string, outputIdOrName: string, callbac
 
 	return {
 		outputApi,
-		outputNode: node
+		outputNode: node,
 	};
 }

@@ -1,12 +1,12 @@
-import { Button, Loader } from "@mantine/core";
-import { EXPORT_TYPE } from "@shapediver/viewer.session";
-import React, { useState } from "react";
+import {Button, Loader} from "@mantine/core";
+import {EXPORT_TYPE} from "@shapediver/viewer.session";
+import React, {useState} from "react";
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
-import { fetchFileWithToken } from "@AppBuilderShared/utils/file";
+import {fetchFileWithToken} from "@AppBuilderShared/utils/file";
 import Icon from "@AppBuilderShared/components/ui/Icon";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
-import { PropsExport } from "@AppBuilderShared/types/components/shapediver/propsExport";
-import { useExport } from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 
 /**
  * Functional component that creates a button that triggers an export.
@@ -15,7 +15,7 @@ import { useExport } from "@AppBuilderShared/hooks/shapediver/parameters/useExpo
  * @returns
  */
 export default function ExportButtonComponent(props: PropsExport) {
-	const { definition, actions } = useExport(props);
+	const {definition, actions} = useExport(props);
 
 	const exportRequest = async () => {
 		// request the export
@@ -30,7 +30,10 @@ export default function ExportButtonComponent(props: PropsExport) {
 			) {
 				const url = response.content[0].href;
 				const res = await actions.fetch(url);
-				await fetchFileWithToken(res, `${response.filename}.${response.content[0].format}`);
+				await fetchFileWithToken(
+					res,
+					`${response.filename}.${response.content[0].format}`,
+				);
 			}
 		}
 	};
@@ -50,17 +53,27 @@ export default function ExportButtonComponent(props: PropsExport) {
 
 	return (
 		<>
-			<ExportLabelComponent { ...props } />
-			{ definition && <>
-				<Button
-					fullWidth={true}
-					leftSection={definition.type === EXPORT_TYPE.DOWNLOAD ? <Icon type={IconTypeEnum.Download} /> : <Icon type={IconTypeEnum.MailFoward} />}
-					onClick={onClick}
-				>
-					{definition.type === EXPORT_TYPE.DOWNLOAD ? "Download File" : "Send Email"}
-				</Button>
-				{requestingExport && <Loader />}
-			</> }
+			<ExportLabelComponent {...props} />
+			{definition && (
+				<>
+					<Button
+						fullWidth={true}
+						leftSection={
+							definition.type === EXPORT_TYPE.DOWNLOAD ? (
+								<Icon type={IconTypeEnum.Download} />
+							) : (
+								<Icon type={IconTypeEnum.MailFoward} />
+							)
+						}
+						onClick={onClick}
+					>
+						{definition.type === EXPORT_TYPE.DOWNLOAD
+							? "Download File"
+							: "Send Email"}
+					</Button>
+					{requestingExport && <Loader />}
+				</>
+			)}
 		</>
 	);
 }

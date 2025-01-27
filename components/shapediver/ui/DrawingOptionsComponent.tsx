@@ -1,51 +1,69 @@
-import { Space, Group, Button, Checkbox, Collapse, NumberInput, Slider, Stack, Switch, Text, MantineSize } from "@mantine/core";
-import { PlaneRestrictionApi, GeometryRestrictionApi, IDrawingToolsApi } from "@shapediver/viewer.features.drawing-tools";
-import { IconChevronDown, IconChevronUp } from "@tabler/icons-react";
-import React, { useState, useEffect } from "react";
+import {
+	Space,
+	Group,
+	Button,
+	Checkbox,
+	Collapse,
+	NumberInput,
+	Slider,
+	Stack,
+	Switch,
+	Text,
+	MantineSize,
+} from "@mantine/core";
+import {
+	PlaneRestrictionApi,
+	GeometryRestrictionApi,
+	IDrawingToolsApi,
+} from "@shapediver/viewer.features.drawing-tools";
+import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
+import React, {useState, useEffect} from "react";
 import classes from "./DrawingOptionsComponent.module.css";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import { defaultStyleProps } from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
+import {defaultStyleProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
-import { useDrawingOptionsStore } from "@AppBuilderShared/store/useDrawingOptionsStore";
-import { useShapeDiverStoreViewport } from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
+import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 
 /**
  * Component for the drawing options.
- * 
+ *
  * @param props The properties.
  * @param props.viewportId The viewport ID.
  * @param props.drawingToolsApi The drawing tools API.
- * @returns 
+ * @returns
  */
 export default function DrawingOptionsComponent(props: {
-	viewportId: string,
-	drawingToolsApi: IDrawingToolsApi | undefined
+	viewportId: string;
+	drawingToolsApi: IDrawingToolsApi | undefined;
 }) {
-	const { 
-		showPointLabels, 
-		setShowPointLabels, 
-		showDistanceLabels, 
-		setShowDistanceLabels, 
-		gridSize, 
-		setGridSize, 
-		angleStep, 
-		setAngleStep, 
-		snapToVertices, 
-		setSnapToVertices, 
-		snapToEdges, 
-		setSnapToEdges, 
-		snapToFaces, 
-		setSnapToFaces 
+	const {
+		showPointLabels,
+		setShowPointLabels,
+		showDistanceLabels,
+		setShowDistanceLabels,
+		gridSize,
+		setGridSize,
+		angleStep,
+		setAngleStep,
+		snapToVertices,
+		setSnapToVertices,
+		snapToEdges,
+		setSnapToEdges,
+		snapToFaces,
+		setSnapToFaces,
 	} = useDrawingOptionsStore();
 
-	const { drawingToolsApi, viewportId } = props;
+	const {drawingToolsApi, viewportId} = props;
 
 	// state for the options
 	const [optionsOpened, setOptionsOpened] = useState(false);
 	// get the viewport API
-	const viewportApi = useShapeDiverStoreViewport(state => { return state.viewports[viewportId]; });
+	const viewportApi = useShapeDiverStoreViewport((state) => {
+		return state.viewports[viewportId];
+	});
 
 	// state for the plane restriction availability
 	const [hasPlaneRestriction, setHasPlaneRestriction] = useState(false);
@@ -54,7 +72,7 @@ export default function DrawingOptionsComponent(props: {
 
 	/**
 	 * Various effects for the drawing tools API.
-	 * 
+	 *
 	 * The effects are used to set the options for the drawing tools.
 	 * The options are set depending on the state of the component.
 	 */
@@ -75,26 +93,34 @@ export default function DrawingOptionsComponent(props: {
 
 	useEffect(() => {
 		if (drawingToolsApi) {
-			const planeRestrictionApis = Object.values(drawingToolsApi.restrictions).filter(r => r instanceof PlaneRestrictionApi);
-			planeRestrictionApis.forEach(r => {
-				(r as PlaneRestrictionApi).gridRestrictionApi.gridUnit = gridSize;
+			const planeRestrictionApis = Object.values(
+				drawingToolsApi.restrictions,
+			).filter((r) => r instanceof PlaneRestrictionApi);
+			planeRestrictionApis.forEach((r) => {
+				(r as PlaneRestrictionApi).gridRestrictionApi.gridUnit =
+					gridSize;
 			});
 		}
 	}, [gridSize, drawingToolsApi]);
 
 	useEffect(() => {
 		if (drawingToolsApi) {
-			const planeRestrictionApis = Object.values(drawingToolsApi.restrictions).filter(r => r instanceof PlaneRestrictionApi);
-			planeRestrictionApis.forEach(r => {
-				(r as PlaneRestrictionApi).angularRestrictionApi.angleStep = Math.PI / angleStep;
+			const planeRestrictionApis = Object.values(
+				drawingToolsApi.restrictions,
+			).filter((r) => r instanceof PlaneRestrictionApi);
+			planeRestrictionApis.forEach((r) => {
+				(r as PlaneRestrictionApi).angularRestrictionApi.angleStep =
+					Math.PI / angleStep;
 			});
 		}
 	}, [angleStep, drawingToolsApi]);
 
 	useEffect(() => {
 		if (drawingToolsApi) {
-			const geometryRestrictionApis = Object.values(drawingToolsApi.restrictions).filter(r => r instanceof GeometryRestrictionApi);
-			geometryRestrictionApis.forEach(r => {
+			const geometryRestrictionApis = Object.values(
+				drawingToolsApi.restrictions,
+			).filter((r) => r instanceof GeometryRestrictionApi);
+			geometryRestrictionApis.forEach((r) => {
 				(r as GeometryRestrictionApi).snapToVertices = snapToVertices;
 				(r as GeometryRestrictionApi).snapToEdges = snapToEdges;
 				(r as GeometryRestrictionApi).snapToFaces = snapToFaces;
@@ -104,9 +130,13 @@ export default function DrawingOptionsComponent(props: {
 
 	useEffect(() => {
 		if (drawingToolsApi) {
-			const planeRestrictionApis = Object.values(drawingToolsApi.restrictions).filter(r => r instanceof PlaneRestrictionApi);
+			const planeRestrictionApis = Object.values(
+				drawingToolsApi.restrictions,
+			).filter((r) => r instanceof PlaneRestrictionApi);
 			setHasPlaneRestriction(planeRestrictionApis.length > 0);
-			const geometryRestrictionApis = Object.values(drawingToolsApi.restrictions).filter(r => r instanceof GeometryRestrictionApi);
+			const geometryRestrictionApis = Object.values(
+				drawingToolsApi.restrictions,
+			).filter((r) => r instanceof GeometryRestrictionApi);
 			setHasGeometryRestriction(geometryRestrictionApis.length > 0);
 		}
 	}, [drawingToolsApi]);
@@ -115,8 +145,7 @@ export default function DrawingOptionsComponent(props: {
 	 * The description of the drawing tools.
 	 * This description is shown when hovering over the info button.
 	 */
-	const markdown = 
-`# Adding Points
+	const markdown = `# Adding Points
   * Starts automatically if no points exist
   * Press **Insert** to add a point at cursor position
   * Hover over a line segment to add a new point at the center
@@ -140,45 +169,70 @@ export default function DrawingOptionsComponent(props: {
   * Click **Cancel** or press **Escape** to discard changes
 `;
 
-
 	// define the size of the components
 	const size: MantineSize = "xs";
 
 	/**
 	 * The options for the drawing tools.
-	 * 
+	 *
 	 * The options are shown when the options are opened.
 	 * The options are used to set the drawing tools settings.
 	 * The settings are set depending on the state of the component.
 	 */
-	const options =
-		<Collapse in={optionsOpened} transitionDuration={250} transitionTimingFunction="linear" w={"100%"} className={classes.paddingRight} >
+	const options = (
+		<Collapse
+			in={optionsOpened}
+			transitionDuration={250}
+			transitionTimingFunction="linear"
+			w={"100%"}
+			className={classes.paddingRight}
+		>
 			<Stack>
-				<TooltipWrapper multiline w={350} label={<MarkdownWidgetComponent>{markdown}</MarkdownWidgetComponent>} >
-					<Button justify="space-between" fullWidth h="100%" className={classes.padding} >
+				<TooltipWrapper
+					multiline
+					w={350}
+					label={
+						<MarkdownWidgetComponent>
+							{markdown}
+						</MarkdownWidgetComponent>
+					}
+				>
+					<Button
+						justify="space-between"
+						fullWidth
+						h="100%"
+						className={classes.padding}
+					>
 						<Icon type={IconTypeEnum.IconInfoCircleFilled} />
 						<Space />
-						<Text className={classes.paddingLeft} size={size}> Hover for Details </Text>
+						<Text className={classes.paddingLeft} size={size}>
+							{" "}
+							Hover for Details{" "}
+						</Text>
 					</Button>
 				</TooltipWrapper>
-				{drawingToolsApi && <Switch
-					size={size}
-					checked={showPointLabels}
-					onChange={() => setShowPointLabels(!showPointLabels)}
-					label="Show Point Labels"
-				/>}
-				{
-					drawingToolsApi && <Switch
+				{drawingToolsApi && (
+					<Switch
+						size={size}
+						checked={showPointLabels}
+						onChange={() => setShowPointLabels(!showPointLabels)}
+						label="Show Point Labels"
+					/>
+				)}
+				{drawingToolsApi && (
+					<Switch
 						size={size}
 						checked={showDistanceLabels}
-						onChange={() => setShowDistanceLabels(!showDistanceLabels)}
+						onChange={() =>
+							setShowDistanceLabels(!showDistanceLabels)
+						}
 						label="Show Distance Labels"
-					/>}
-				{
-					drawingToolsApi && hasPlaneRestriction &&
+					/>
+				)}
+				{drawingToolsApi && hasPlaneRestriction && (
 					<>
 						<Text size={size}> Grid Size </Text>
-						<Group className={classes.sliderGroup} >
+						<Group className={classes.sliderGroup}>
 							<Slider
 								size={size}
 								w={defaultStyleProps.sliderWidth}
@@ -195,16 +249,15 @@ export default function DrawingOptionsComponent(props: {
 								max={100}
 								step={0.01}
 								value={gridSize}
-								onChange={v => setGridSize(+ v)}
+								onChange={(v) => setGridSize(+v)}
 							/>
 						</Group>
 					</>
-				}
-				{
-					drawingToolsApi && hasPlaneRestriction &&
+				)}
+				{drawingToolsApi && hasPlaneRestriction && (
 					<>
-						<Text size={size} > Angle Step </Text>
-						<Group className={classes.sliderGroup} >
+						<Text size={size}> Angle Step </Text>
+						<Group className={classes.sliderGroup}>
 							<Slider
 								w={defaultStyleProps.sliderWidth}
 								size={size}
@@ -221,20 +274,21 @@ export default function DrawingOptionsComponent(props: {
 								max={32}
 								step={1}
 								value={angleStep}
-								onChange={v => setAngleStep(+ v)}
+								onChange={(v) => setAngleStep(+v)}
 							/>
 						</Group>
 					</>
-				}
-				{
-					drawingToolsApi && hasGeometryRestriction &&
+				)}
+				{drawingToolsApi && hasGeometryRestriction && (
 					<>
 						<Text size={size}> Snap to </Text>
-						<Group >
+						<Group>
 							<Checkbox
 								size={size}
 								checked={snapToVertices}
-								onChange={() => setSnapToVertices(!snapToVertices)}
+								onChange={() =>
+									setSnapToVertices(!snapToVertices)
+								}
 								label="Vertices"
 							/>
 							<Checkbox
@@ -251,17 +305,23 @@ export default function DrawingOptionsComponent(props: {
 							/>
 						</Group>
 					</>
-				}
+				)}
 			</Stack>
-		</Collapse>;
+		</Collapse>
+	);
 
-	return <Stack p="sm">
-		<Group justify="space-between" onClick={() => setOptionsOpened((t) => !t)}>
-			<Text size={size} fw={400} fs="italic" ta="left">
-				{optionsOpened ? "Hide Options" : "Show Options"}
-			</Text>
-			{optionsOpened ? <IconChevronUp /> : <IconChevronDown />}
-		</Group>
-		{options}
-	</Stack>;
+	return (
+		<Stack p="sm">
+			<Group
+				justify="space-between"
+				onClick={() => setOptionsOpened((t) => !t)}
+			>
+				<Text size={size} fw={400} fs="italic" ta="left">
+					{optionsOpened ? "Hide Options" : "Show Options"}
+				</Text>
+				{optionsOpened ? <IconChevronUp /> : <IconChevronDown />}
+			</Group>
+			{options}
+		</Stack>
+	);
 }

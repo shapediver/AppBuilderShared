@@ -1,12 +1,18 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Gumball, updateGumballTransformation } from "@shapediver/viewer.features.gumball";
-import { getNodesByName } from "@shapediver/viewer.features.interaction";
-import { IGumballParameterProps, ISelectionParameterProps } from "@shapediver/viewer.session";
-import { mat4 } from "gl-matrix";
-import { useSelection } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
-import { useGumballEvents } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumballEvents";
-import { useShapeDiverStoreSession } from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import { useShapeDiverStoreViewport } from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {useCallback, useEffect, useMemo, useRef} from "react";
+import {
+	Gumball,
+	updateGumballTransformation,
+} from "@shapediver/viewer.features.gumball";
+import {getNodesByName} from "@shapediver/viewer.features.interaction";
+import {
+	IGumballParameterProps,
+	ISelectionParameterProps,
+} from "@shapediver/viewer.session";
+import {mat4} from "gl-matrix";
+import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
+import {useGumballEvents} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumballEvents";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 
 // #region Functions (1)
 
@@ -15,28 +21,34 @@ export interface IGumballState {
 	 * The transformed node names.
 	 */
 	transformedNodeNames: {
-		name: string,
-		transformation: number[],
-		localTransformations?: number[]
-	}[],
+		name: string;
+		transformation: number[];
+		localTransformations?: number[];
+	}[];
 	/**
 	 * Set the transformed node names.
 	 *
 	 * @param nodes
 	 * @returns
 	 */
-	setTransformedNodeNames: (nodes: { name: string, transformation: number[], localTransformations?: number[] }[]) => void,
+	setTransformedNodeNames: (
+		nodes: {
+			name: string;
+			transformation: number[];
+			localTransformations?: number[];
+		}[],
+	) => void;
 	/**
 	 * The selected node names.
 	 */
-	selectedNodeNames: string[],
+	selectedNodeNames: string[];
 	/**
 	 * Set the selected node names.
 	 *
 	 * @param selectedNodes
 	 * @returns
 	 */
-	setSelectedNodeNames: (selectedNodes: string[]) => void,
+	setSelectedNodeNames: (selectedNodes: string[]) => void;
 	/**
 	 * Restore the transformed node names.
 	 *
@@ -44,11 +56,18 @@ export interface IGumballState {
 	 * @param oldTransformedNodeNames
 	 * @returns
 	 */
-	restoreTransformedNodeNames: (newTransformedNodeNames: { name: string, transformation: number[], localTransformations?: number[] }[], oldTransformedNodeNames: { name: string }[]) => void,
+	restoreTransformedNodeNames: (
+		newTransformedNodeNames: {
+			name: string;
+			transformation: number[];
+			localTransformations?: number[];
+		}[],
+		oldTransformedNodeNames: {name: string}[],
+	) => void;
 	/**
 	 * The handlers to be added to the document.
 	 */
-	handlers: JSX.Element[]
+	handlers: JSX.Element[];
 }
 
 /**
@@ -67,13 +86,17 @@ export function useGumball(
 	viewportId: string,
 	gumballProps: IGumballParameterProps,
 	activate: boolean,
-	initialTransformedNodeNames?: { name: string, transformation: number[] }[],
-	strictNaming = true
+	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
+	strictNaming = true,
 ): IGumballState {
 	// get the session API
-	const sessionApis = useShapeDiverStoreSession(state => { return sessionIds.map(id => state.sessions[id]); });
+	const sessionApis = useShapeDiverStoreSession((state) => {
+		return sessionIds.map((id) => state.sessions[id]);
+	});
 	// get the viewport API
-	const viewportApi = useShapeDiverStoreViewport(state => { return state.viewports[viewportId]; });
+	const viewportApi = useShapeDiverStoreViewport((state) => {
+		return state.viewports[viewportId];
+	});
 
 	// create the selection settings from the interaction settings
 	const selectionSettings = useMemo(() => {
@@ -83,19 +106,30 @@ export function useGumball(
 			nameFilter: gumballProps.nameFilter,
 			hover: gumballProps.hover,
 			minimumSelection: 0,
-			maximumSelection: Infinity
+			maximumSelection: Infinity,
 		} as ISelectionParameterProps;
 	}, [gumballProps]);
 
 	// use the selection hook to get the selected node names
-	const { selectedNodeNames, setSelectedNodeNames, availableNodeNames, setSelectedNodeNamesAndRestoreSelection, handlers } = useSelection(sessionIds, viewportId, selectionSettings, activate);
+	const {
+		selectedNodeNames,
+		setSelectedNodeNames,
+		availableNodeNames,
+		setSelectedNodeNamesAndRestoreSelection,
+		handlers,
+	} = useSelection(sessionIds, viewportId, selectionSettings, activate);
 	// use the gumball events hook to get the transformed node names
-	const { transformedNodeNames, setTransformedNodeNames } = useGumballEvents(selectedNodeNames, initialTransformedNodeNames, strictNaming);
+	const {transformedNodeNames, setTransformedNodeNames} = useGumballEvents(
+		selectedNodeNames,
+		initialTransformedNodeNames,
+		strictNaming,
+	);
 
 	// use an effect to set the selected node names to the first available node name if only one is available
 	useEffect(() => {
-		const singleAvailableNodeName = getSingleAvailableNodeName(availableNodeNames);
-		if(activate && singleAvailableNodeName) {
+		const singleAvailableNodeName =
+			getSingleAvailableNodeName(availableNodeNames);
+		if (activate && singleAvailableNodeName) {
 			setSelectedNodeNamesAndRestoreSelection([singleAvailableNodeName]);
 		}
 	}, [availableNodeNames, setSelectedNodeNamesAndRestoreSelection]);
@@ -108,7 +142,11 @@ export function useGumball(
 		if (viewportApi) {
 			// whenever the selected node names change, create a new gumball
 			const nodes = getNodesByName(sessionApis, selectedNodeNames);
-			const gumball = new Gumball(viewportApi, Object.values(nodes).map(n => n.node), gumballProps);
+			const gumball = new Gumball(
+				viewportApi,
+				Object.values(nodes).map((n) => n.node),
+				gumballProps,
+			);
 			gumballRef.current = gumball;
 		}
 
@@ -131,26 +169,59 @@ export function useGumball(
 	 * @param oldTransformedNodeNames The old transformed node names.
 	 * @returns
 	 */
-	const restoreTransformedNodeNames = useCallback((newTransformedNodeNames: { name: string, transformation: number[], localTransformations?: number[] }[], oldTransformedNodeNames: { name: string }[]) => {
-		const nodes = getNodesByName(sessionApis, oldTransformedNodeNames.map(tn => tn.name));
+	const restoreTransformedNodeNames = useCallback(
+		(
+			newTransformedNodeNames: {
+				name: string;
+				transformation: number[];
+				localTransformations?: number[];
+			}[],
+			oldTransformedNodeNames: {name: string}[],
+		) => {
+			const nodes = getNodesByName(
+				sessionApis,
+				oldTransformedNodeNames.map((tn) => tn.name),
+			);
 
-		nodes.forEach(tn => {
-			// get the new transformation matrix (if it exists)
-			const newTransformation = newTransformedNodeNames.find(nt => nt.name === tn.name);
+			nodes.forEach((tn) => {
+				// get the new transformation matrix (if it exists)
+				const newTransformation = newTransformedNodeNames.find(
+					(nt) => nt.name === tn.name,
+				);
 
-			// if there is a local transformation present that we can reset to, use it
-			let transformationMatrix: mat4 | undefined;
-			if(newTransformation && newTransformation.localTransformations)
-				transformationMatrix = mat4.fromValues(...(newTransformation.localTransformations as [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]));
+				// if there is a local transformation present that we can reset to, use it
+				let transformationMatrix: mat4 | undefined;
+				if (newTransformation && newTransformation.localTransformations)
+					transformationMatrix = mat4.fromValues(
+						...(newTransformation.localTransformations as [
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+						]),
+					);
 
-			// update the gumball transformation
-			// in case the transformation matrix is undefined, the transformation will be reset
-			updateGumballTransformation(tn.node, transformationMatrix);
-		});
+				// update the gumball transformation
+				// in case the transformation matrix is undefined, the transformation will be reset
+				updateGumballTransformation(tn.node, transformationMatrix);
+			});
 
-		setTransformedNodeNames(newTransformedNodeNames);
-
-	}, [sessionApis]);
+			setTransformedNodeNames(newTransformedNodeNames);
+		},
+		[sessionApis],
+	);
 
 	return {
 		transformedNodeNames,
@@ -158,7 +229,7 @@ export function useGumball(
 		selectedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
-		handlers
+		handlers,
 	};
 }
 
@@ -168,7 +239,9 @@ export function useGumball(
  * @param availableNodeNames
  * @returns
  */
-const getSingleAvailableNodeName = (availableNodeNames: { [key: string]: { [key: string]: string[] } }): string | undefined => {
+const getSingleAvailableNodeName = (availableNodeNames: {
+	[key: string]: {[key: string]: string[]};
+}): string | undefined => {
 	let availableNodeName: string | undefined = undefined;
 	let count = 0;
 

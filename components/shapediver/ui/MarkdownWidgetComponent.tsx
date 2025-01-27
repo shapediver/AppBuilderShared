@@ -1,36 +1,52 @@
 import React from "react";
 import Markdown from "react-markdown";
-import { Anchor, Blockquote, Code, Text, Title, Divider, Image, MantineStyleProps, List, Table, MantineThemeComponent, useProps, useMantineTheme } from "@mantine/core";
-import { Options } from "react-markdown/lib";
+import {
+	Anchor,
+	Blockquote,
+	Code,
+	Text,
+	Title,
+	Divider,
+	Image,
+	MantineStyleProps,
+	List,
+	Table,
+	MantineThemeComponent,
+	useProps,
+	useMantineTheme,
+} from "@mantine/core";
+import {Options} from "react-markdown/lib";
 import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
 import {visit} from "unist-util-visit";
 import classes from "./MarkdownWidgetComponent.module.css";
 
 interface Props {
-	children: string,
+	children: string;
 }
 
 interface StyleProps {
-	anchorTarget: React.HTMLAttributeAnchorTarget
-	boldFontWeight: string
-	strongFontWeight: string
-	setHeadingFontSize: boolean
+	anchorTarget: React.HTMLAttributeAnchorTarget;
+	boldFontWeight: string;
+	strongFontWeight: string;
+	setHeadingFontSize: boolean;
 }
 
-const defaultStyleProps : Partial<StyleProps> = {
+const defaultStyleProps: Partial<StyleProps> = {
 	anchorTarget: "_blank",
 };
 
 type MarkdownWidgetComponentPropsType = Partial<StyleProps>;
 
-export function MarkdownWidgetComponentProps(props: MarkdownWidgetComponentPropsType): MantineThemeComponent {
+export function MarkdownWidgetComponentProps(
+	props: MarkdownWidgetComponentPropsType,
+): MantineThemeComponent {
 	return {
-		defaultProps: props
+		defaultProps: props,
 	};
 }
 
-const spanDirective = function() {
+const spanDirective = function () {
 	/**
 	 * @param {import("mdast").Root} tree
 	 *   Tree.
@@ -40,7 +56,7 @@ const spanDirective = function() {
 	 *   Nothing.
 	 */
 	return (tree: any, file: any) => {
-		visit(tree, function(node) {
+		visit(tree, function (node) {
 			if (
 				node.type === "containerDirective" ||
 				node.type === "leafDirective" ||
@@ -50,10 +66,13 @@ const spanDirective = function() {
 
 				const data = node.data || (node.data = {});
 				const attributes = node.attributes || {};
-				const { color } = attributes;
+				const {color} = attributes;
 
 				if (!color) {
-					file.fail("Unexpected missing `color` on `span` directive", node);
+					file.fail(
+						"Unexpected missing `color` on `span` directive",
+						node,
+					);
 				}
 
 				data.hName = "span";
@@ -73,29 +92,22 @@ const spanDirective = function() {
  *
  * @returns
  */
-export default function MarkdownWidgetComponent(props: Props & Partial<StyleProps>) {
-
-	const { children, ...rest } = props;
-	const { 
-		anchorTarget,
-		boldFontWeight,
-		strongFontWeight,
-		setHeadingFontSize,
-	} = useProps("MarkdownWidgetComponent", defaultStyleProps, rest);
+export default function MarkdownWidgetComponent(
+	props: Props & Partial<StyleProps>,
+) {
+	const {children, ...rest} = props;
+	const {anchorTarget, boldFontWeight, strongFontWeight, setHeadingFontSize} =
+		useProps("MarkdownWidgetComponent", defaultStyleProps, rest);
 
 	const styleProps: MantineStyleProps = {
-		mb: "xs"
+		mb: "xs",
 	};
 
 	const theme = useMantineTheme();
 	const headingSizes = theme.headings.sizes;
 
 	const config: Options = {
-		remarkPlugins: [
-			remarkDirective,
-			remarkGfm,
-			spanDirective,
-		],
+		remarkPlugins: [remarkDirective, remarkGfm, spanDirective],
 		components: {
 			b(props) {
 				const {...rest} = props;
@@ -126,33 +138,99 @@ export default function MarkdownWidgetComponent(props: Props & Partial<StyleProp
 			},
 			h1(props) {
 				const {...rest} = props;
-			
-				return <Title order={1} size={setHeadingFontSize ? headingSizes.h1.fontSize : undefined} {...rest} {...styleProps} />;
+
+				return (
+					<Title
+						order={1}
+						size={
+							setHeadingFontSize
+								? headingSizes.h1.fontSize
+								: undefined
+						}
+						{...rest}
+						{...styleProps}
+					/>
+				);
 			},
 			h2(props) {
 				const {...rest} = props;
 
-				return <Title order={2} size={setHeadingFontSize ? headingSizes.h2.fontSize : undefined} {...rest} {...styleProps} />;
+				return (
+					<Title
+						order={2}
+						size={
+							setHeadingFontSize
+								? headingSizes.h2.fontSize
+								: undefined
+						}
+						{...rest}
+						{...styleProps}
+					/>
+				);
 			},
 			h3(props) {
 				const {...rest} = props;
 
-				return <Title order={3} size={setHeadingFontSize ? headingSizes.h3.fontSize : undefined} {...rest} {...styleProps} />;
+				return (
+					<Title
+						order={3}
+						size={
+							setHeadingFontSize
+								? headingSizes.h3.fontSize
+								: undefined
+						}
+						{...rest}
+						{...styleProps}
+					/>
+				);
 			},
 			h4(props) {
 				const {...rest} = props;
 
-				return <Title order={4} size={setHeadingFontSize ? headingSizes.h4.fontSize : undefined} {...rest} {...styleProps} />;
+				return (
+					<Title
+						order={4}
+						size={
+							setHeadingFontSize
+								? headingSizes.h4.fontSize
+								: undefined
+						}
+						{...rest}
+						{...styleProps}
+					/>
+				);
 			},
 			h5(props) {
 				const {...rest} = props;
 
-				return <Title order={5} size={setHeadingFontSize ? headingSizes.h5.fontSize : undefined} {...rest} {...styleProps} />;
+				return (
+					<Title
+						order={5}
+						size={
+							setHeadingFontSize
+								? headingSizes.h5.fontSize
+								: undefined
+						}
+						{...rest}
+						{...styleProps}
+					/>
+				);
 			},
 			h6(props) {
 				const {...rest} = props;
 
-				return <Title order={6} size={setHeadingFontSize ? headingSizes.h6.fontSize : undefined} {...rest} {...styleProps} />;
+				return (
+					<Title
+						order={6}
+						size={
+							setHeadingFontSize
+								? headingSizes.h6.fontSize
+								: undefined
+						}
+						{...rest}
+						{...styleProps}
+					/>
+				);
 			},
 			hr(props) {
 				const {...rest} = props;
@@ -168,11 +246,13 @@ export default function MarkdownWidgetComponent(props: Props & Partial<StyleProp
 			strong(props) {
 				const {...rest} = props;
 
-				return <strong style={{fontWeight: strongFontWeight}} {...rest} />;
+				return (
+					<strong style={{fontWeight: strongFontWeight}} {...rest} />
+				);
 			},
 			a(props) {
 				const {...rest} = props;
-			
+
 				// @ts-expect-error ignore
 				return <Anchor target={anchorTarget} {...rest} />;
 			},
@@ -184,7 +264,7 @@ export default function MarkdownWidgetComponent(props: Props & Partial<StyleProp
 			ol(props) {
 				const {...rest} = props;
 
-				return <List {...rest} {...styleProps } type="ordered" />;
+				return <List {...rest} {...styleProps} type="ordered" />;
 			},
 			li(props) {
 				const {...rest} = props;
@@ -224,5 +304,5 @@ export default function MarkdownWidgetComponent(props: Props & Partial<StyleProp
 		},
 	};
 
-	return <Markdown {...config } >{ children }</Markdown>;
+	return <Markdown {...config}>{children}</Markdown>;
 }

@@ -1,5 +1,8 @@
-import React, { useMemo } from "react";
-import { ResponsiveValueType, useResponsiveValueSelector } from "shared/hooks/ui/useResponsiveValueSelector";
+import React, {useMemo} from "react";
+import {
+	ResponsiveValueType,
+	useResponsiveValueSelector,
+} from "shared/hooks/ui/useResponsiveValueSelector";
 
 export const OverlayPosition = {
 	TOP_LEFT: "top-left",
@@ -10,7 +13,8 @@ export const OverlayPosition = {
 	BOTTOM_MIDDLE: "bottom-middle",
 } as const;
 
-export type OverlayPositionType = typeof OverlayPosition[keyof typeof OverlayPosition];
+export type OverlayPositionType =
+	(typeof OverlayPosition)[keyof typeof OverlayPosition];
 
 function getPositionStyles(offset: string | number = 0) {
 	return {
@@ -52,10 +56,11 @@ export interface OverlayStyleProps {
 	offset?: string;
 }
 
-export default function OverlayWrapper(props: Props & Partial<OverlayStyleProps>) {
-
-	const { 
-		children = <></>, 
+export default function OverlayWrapper(
+	props: Props & Partial<OverlayStyleProps>,
+) {
+	const {
+		children = <></>,
 		position: _position = OverlayPosition.TOP_LEFT,
 		offset,
 	} = props;
@@ -63,8 +68,10 @@ export default function OverlayWrapper(props: Props & Partial<OverlayStyleProps>
 	const positionStyles = useMemo(() => getPositionStyles(offset), [offset]);
 
 	const position = useResponsiveValueSelector(_position);
-	
-	return <section style={{...positionStyles[position], position: "absolute"}}>
-		{ children }
-	</section>;
+
+	return (
+		<section style={{...positionStyles[position], position: "absolute"}}>
+			{children}
+		</section>
+	);
 }

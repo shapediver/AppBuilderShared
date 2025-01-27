@@ -1,6 +1,6 @@
-import { useShapeDiverStoreSession } from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import { ISessionApi, ITreeNode } from "@shapediver/viewer.session";
-import { useEffect } from "react";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {ISessionApi, ITreeNode} from "@shapediver/viewer.session";
+import {useEffect} from "react";
 
 // #region Type aliases (4)
 
@@ -11,7 +11,9 @@ export type ISessionUpdateCallbackHandlerState = {
 	sessionId: string;
 	callbackId: string;
 	updateCallback: SessionUpdateCallbackType;
-	setData?: React.Dispatch<React.SetStateAction<ISessionUpdateCallbackHandlerResult>>;
+	setData?: React.Dispatch<
+		React.SetStateAction<ISessionUpdateCallbackHandlerResult>
+	>;
 };
 /**
  * A callback that is executed whenever a session's node is to be replaced due to an update of the session's content.
@@ -19,11 +21,16 @@ export type ISessionUpdateCallbackHandlerState = {
  * If the callback is a promise it will be awaited in the execution chain.
  * @see https://viewer.shapediver.com/v3/latest/api/interfaces/ISessionApi.html#updateCallback
  */
-export type SessionUpdateCallbackType = (newNode?: ITreeNode, oldNode?: ITreeNode) => Promise<void> | void;
+export type SessionUpdateCallbackType = (
+	newNode?: ITreeNode,
+	oldNode?: ITreeNode,
+) => Promise<void> | void;
 /**
  * Session update callbacks by session id and callback id.
  */
-type SessionUpdateCallbacks = { [key: string]: { [key: string]: SessionUpdateCallbackType }};
+type SessionUpdateCallbacks = {
+	[key: string]: {[key: string]: SessionUpdateCallbackType};
+};
 
 // #endregion Type aliases (4)
 
@@ -43,15 +50,17 @@ type SessionUpdateCallbacks = { [key: string]: { [key: string]: SessionUpdateCal
 export function useSessionUpdateCallback(
 	sessionId: string,
 	callbackId: string,
-	updateCallback: SessionUpdateCallbackType
-) : {
+	updateCallback: SessionUpdateCallbackType,
+): {
 	/**
 	 * API of the session
 	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/ISessionApi.html
 	 */
-	sessionApi: ISessionApi | undefined,
+	sessionApi: ISessionApi | undefined;
 } {
-	const sessionApi = useShapeDiverStoreSession(store => store.sessions[sessionId]);
+	const sessionApi = useShapeDiverStoreSession(
+		(store) => store.sessions[sessionId],
+	);
 
 	// manage callbacks
 	useEffect(() => {
@@ -71,8 +80,15 @@ export function useSessionUpdateCallback(
 	// register the single callback which will call all registered callbacks
 	useEffect(() => {
 		if (sessionApi) {
-			sessionApi.updateCallback = async (newNode?: ITreeNode, oldNode?: ITreeNode) => {
-				await Promise.all(Object.values(updateCallbacks[sessionId]).map(cb => cb(newNode, oldNode)));
+			sessionApi.updateCallback = async (
+				newNode?: ITreeNode,
+				oldNode?: ITreeNode,
+			) => {
+				await Promise.all(
+					Object.values(updateCallbacks[sessionId]).map((cb) =>
+						cb(newNode, oldNode),
+					),
+				);
 			};
 		}
 
@@ -92,12 +108,23 @@ export function useSessionUpdateCallback(
 
 // #region Variables (2)
 
-export const SessionUpdateCallbackHandler: React.FC<ISessionUpdateCallbackHandlerState> = ({ sessionId, callbackId, updateCallback, setData }: ISessionUpdateCallbackHandlerState) => {
-	const { sessionApi } = useSessionUpdateCallback(sessionId, callbackId, updateCallback);
+export const SessionUpdateCallbackHandler: React.FC<
+	ISessionUpdateCallbackHandlerState
+> = ({
+	sessionId,
+	callbackId,
+	updateCallback,
+	setData,
+}: ISessionUpdateCallbackHandlerState) => {
+	const {sessionApi} = useSessionUpdateCallback(
+		sessionId,
+		callbackId,
+		updateCallback,
+	);
 
 	useEffect(() => {
 		if (setData) {
-			setData({ sessionApi });
+			setData({sessionApi});
 		}
 	}, [sessionApi]);
 
@@ -106,6 +133,6 @@ export const SessionUpdateCallbackHandler: React.FC<ISessionUpdateCallbackHandle
 /**
  * Callbacks to use for ISessionApi.updateCallback
  */
-const updateCallbacks : SessionUpdateCallbacks = {};
+const updateCallbacks: SessionUpdateCallbacks = {};
 
 // #endregion Variables (2)

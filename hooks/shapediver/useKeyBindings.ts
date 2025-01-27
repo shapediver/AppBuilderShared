@@ -1,22 +1,21 @@
-import { useCallback } from "react";
-import { useCreateModelState } from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
-import { useKeyBinding } from "@AppBuilderShared/hooks/shapediver/useKeyBinding";
+import {useCallback} from "react";
+import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import {useKeyBinding} from "@AppBuilderShared/hooks/shapediver/useKeyBinding";
 
 interface Props {
-	namespace: string
+	namespace: string;
 }
 
 /**
  * Hook providing standard key bindings.
- * 
- * @param props 
- * @returns 
+ *
+ * @param props
+ * @returns
  */
 export function useKeyBindings(props: Props) {
-	
-	const { namespace } = props;
-	const { createModelState } = useCreateModelState({ namespace });
-	
+	const {namespace} = props;
+	const {createModelState} = useCreateModelState({namespace});
+
 	const callback = useCallback(async () => {
 		const modelStateId = await createModelState(
 			undefined, // <-- use parameter values of the session
@@ -32,16 +31,14 @@ export function useKeyBindings(props: Props) {
 			url.searchParams.set("modelStateId", modelStateId);
 			history.replaceState(history.state, "", url.toString());
 		}
-		
 	}, [createModelState]);
 
 	useKeyBinding({
 		key: "s",
 		timeout: 750,
 		hits: 3,
-		callback
+		callback,
 	});
 
-	return {
-	};
+	return {};
 }

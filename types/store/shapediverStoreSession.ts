@@ -1,11 +1,14 @@
-import { ISessionApi, SessionCreationDefinition } from "@shapediver/viewer.session";
-import { IEventTracking } from "@AppBuilderShared/types/eventTracking";
+import {
+	ISessionApi,
+	SessionCreationDefinition,
+} from "@shapediver/viewer.session";
+import {IEventTracking} from "@AppBuilderShared/types/eventTracking";
 
 /**
  * Redeclaration of SessionCreationDefinition to always have an id.
  */
 export interface SessionCreateDto extends SessionCreationDefinition {
-	id: string,
+	id: string;
 }
 
 export interface IShapeDiverStoreSessions {
@@ -24,7 +27,7 @@ export interface IShapeDiverStoreSession {
 	/**
 	 * Sessions currently known by the store.
 	 */
-	sessions: IShapeDiverStoreSessions
+	sessions: IShapeDiverStoreSessions;
 
 	/**
 	 * Create a session and add it to the store.
@@ -34,7 +37,7 @@ export interface IShapeDiverStoreSession {
 	 */
 	createSession: (
 		dto: SessionCreateDto,
-		callbacks?: IShapeDiverStoreSessionCallbacks
+		callbacks?: IShapeDiverStoreSessionCallbacks,
 	) => Promise<ISessionApi | undefined>;
 
 	/**
@@ -42,7 +45,7 @@ export interface IShapeDiverStoreSession {
 	 */
 	closeSession: (
 		sessionId: string,
-		callbacks?: IShapeDiverStoreSessionCallbacks
+		callbacks?: IShapeDiverStoreSessionCallbacks,
 	) => Promise<void>;
 
 	/**
@@ -52,7 +55,7 @@ export interface IShapeDiverStoreSession {
 	 * @returns
 	 */
 	syncSessions: (
-		sessionDtos: SessionCreateDto[], 
-		callbacks?: IShapeDiverStoreSessionCallbacks
-	) => Promise<(ISessionApi | undefined)[]>,
+		sessionDtos: SessionCreateDto[],
+		callbacks?: IShapeDiverStoreSessionCallbacks,
+	) => Promise<(ISessionApi | undefined)[]>;
 }

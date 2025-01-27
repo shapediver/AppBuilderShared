@@ -1,14 +1,26 @@
-import { ActionIcon, Box, Button, Flex, Group, Loader, Stack, Text } from "@mantine/core";
-import React, { useCallback, useEffect, useState } from "react";
+import {
+	ActionIcon,
+	Box,
+	Button,
+	Flex,
+	Group,
+	Loader,
+	Stack,
+	Text,
+} from "@mantine/core";
+import React, {useCallback, useEffect, useState} from "react";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import { ISelectionParameterProps, SelectionParameterValue } from "@shapediver/viewer.session";
+import {
+	ISelectionParameterProps,
+	SelectionParameterValue,
+} from "@shapediver/viewer.session";
 import classes from "./ParameterInteractionComponent.module.css";
-import { PropsParameter } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import { useParameterComponentCommons } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import { useViewportId } from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import { IconTypeEnum } from "@AppBuilderShared/types/shapediver/icons";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import Icon from "@AppBuilderShared/components/ui/Icon";
-import { useSelection } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
+import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
 
 /**
  * Parse the value of a selection parameter and extract the selected node names.
@@ -21,8 +33,7 @@ const parseNames = (value?: string): string[] => {
 		const parsed = JSON.parse(value);
 
 		return parsed.names;
-	}
-	catch {
+	} catch {
 		return [];
 	}
 };
@@ -41,10 +52,11 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 		disabled,
 		value,
 		state,
-		sessionDependencies
+		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 
-	const selectionProps = definition.settings?.props as ISelectionParameterProps;
+	const selectionProps = definition.settings
+		?.props as ISelectionParameterProps;
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
 
@@ -54,25 +66,36 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 	const [dirty, setDirty] = useState<boolean>(false);
 
 	// get the viewport ID
-	const { viewportId } = useViewportId();
+	const {viewportId} = useViewportId();
 
-	const { selectedNodeNames, setSelectedNodeNames, setSelectedNodeNamesAndRestoreSelection, handlers } = useSelection(
+	const {
+		selectedNodeNames,
+		setSelectedNodeNames,
+		setSelectedNodeNamesAndRestoreSelection,
+		handlers,
+	} = useSelection(
 		sessionDependencies,
 		viewportId,
 		selectionProps,
 		selectionActive,
-		parseNames(value)
+		parseNames(value),
 	);
 
 	// check if the current selection is within the constraints
-	const acceptable = selectedNodeNames.length >= minimumSelection && selectedNodeNames.length <= maximumSelection;
-	const acceptImmediately = minimumSelection === maximumSelection && acceptable;
+	const acceptable =
+		selectedNodeNames.length >= minimumSelection &&
+		selectedNodeNames.length <= maximumSelection;
+	const acceptImmediately =
+		minimumSelection === maximumSelection && acceptable;
 
 	useEffect(() => {
 		const parsed = parseNames(state.uiValue);
 
 		// compare uiValue to selectedNodeNames
-		if (parsed.length !== selectedNodeNames.length || !parsed.every((n, i) => n === selectedNodeNames[i])) {
+		if (
+			parsed.length !== selectedNodeNames.length ||
+			!parsed.every((n, i) => n === selectedNodeNames[i])
+		) {
 			setDirty(true);
 		} else {
 			setDirty(false);
@@ -86,14 +109,13 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 	 */
 	const changeValue = useCallback((names: string[]) => {
 		setSelectionActive(false);
-		const parameterValue: SelectionParameterValue = { names };
+		const parameterValue: SelectionParameterValue = {names};
 		handleChange(JSON.stringify(parameterValue), 0);
 	}, []);
 
 	// check whether the selection should be accepted immediately
 	useEffect(() => {
-		if (acceptImmediately)
-			changeValue(selectedNodeNames);
+		if (acceptImmediately) changeValue(selectedNodeNames);
 	}, [acceptImmediately, selectedNodeNames]);
 
 	/**
@@ -110,7 +132,10 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 	useEffect(() => {
 		const names = parseNames(state.uiValue);
 		// compare names to selectedNodeNames
-		if (names.length !== selectedNodeNames.length || !names.every((n, i) => n === selectedNodeNames[i])) {
+		if (
+			names.length !== selectedNodeNames.length ||
+			!names.every((n, i) => n === selectedNodeNames[i])
+		) {
 			setSelectionActive(false);
 			setSelectedNodeNames(names);
 		}
@@ -133,39 +158,56 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 	 * The cancel button resets the selection to the last value.
 	 *
 	 */
-	const contentActive =
+	const contentActive = (
 		<Stack>
 			<Group justify="space-between" className={classes.interactionMain}>
 				<Flex align="center" justify="flex-start" w={"100%"}>
-					<Box style={{ flex: 1 }}>
-						<Text size="sm" fw={500} ta="left" className={classes.interactionText}>
-							{selectionProps.prompt?.activeTitle ?? `Currently selected: ${selectedNodeNames.length}`}
+					<Box style={{flex: 1}}>
+						<Text
+							size="sm"
+							fw={500}
+							ta="left"
+							className={classes.interactionText}
+						>
+							{selectionProps.prompt?.activeTitle ??
+								`Currently selected: ${selectedNodeNames.length}`}
 						</Text>
 					</Box>
-					<Box style={{ width: "auto" }}>
-						<ActionIcon onClick={clearSelection} variant={selectedNodeNames.length === 0 ? "light" : "filled"}>
+					<Box style={{width: "auto"}}>
+						<ActionIcon
+							onClick={clearSelection}
+							variant={
+								selectedNodeNames.length === 0
+									? "light"
+									: "filled"
+							}
+						>
 							<Icon type={IconTypeEnum.CircleOff} />
 						</ActionIcon>
 					</Box>
 				</Flex>
 				<Flex align="center" justify="flex-start" w={"100%"}>
-					<Box style={{ flex: 1 }}>
-						<Text size="sm" fw={400} fs="italic" ta="left" className={classes.interactionText}>
-							{
-								selectionProps.prompt?.activeText ??
-									minimumSelection === maximumSelection ?
-									`Select ${minimumSelection} object${minimumSelection > 1 ? "s" : ""}` :
-									`Select between ${minimumSelection} and ${maximumSelection} objects`
-							}
+					<Box style={{flex: 1}}>
+						<Text
+							size="sm"
+							fw={400}
+							fs="italic"
+							ta="left"
+							className={classes.interactionText}
+						>
+							{(selectionProps.prompt?.activeText ??
+							minimumSelection === maximumSelection)
+								? `Select ${minimumSelection} object${minimumSelection > 1 ? "s" : ""}`
+								: `Select between ${minimumSelection} and ${maximumSelection} objects`}
 						</Text>
 					</Box>
-					<Box style={{ width: "auto" }}>
+					<Box style={{width: "auto"}}>
 						<Loader size={28} type="dots" />
 					</Box>
 				</Flex>
 			</Group>
 
-			{minimumSelection !== maximumSelection &&
+			{minimumSelection !== maximumSelection && (
 				<Group justify="space-between" w="100%" wrap="nowrap">
 					<Button
 						fullWidth={true}
@@ -178,13 +220,14 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 					<Button
 						fullWidth={true}
 						variant={"light"}
-						onClick={() => resetSelection(value)}>
+						onClick={() => resetSelection(value)}
+					>
 						<Text>Cancel</Text>
 					</Button>
 				</Group>
-			}
-		</Stack>;
-
+			)}
+		</Stack>
+	);
 
 	/**
 	 * The content of the parameter when it is inactive.
@@ -192,15 +235,22 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 	 * It contains a button to start the selection.
 	 * Within the button, the number of selected nodes is displayed.
 	 */
-	const contentInactive =
-		<Button justify="space-between" fullWidth={true} disabled={disabled} className={classes.interactionButton}
+	const contentInactive = (
+		<Button
+			justify="space-between"
+			fullWidth={true}
+			disabled={disabled}
+			className={classes.interactionButton}
 			rightSection={<Icon type={IconTypeEnum.IconHandFinger} />}
 			variant={selectedNodeNames.length === 0 ? "light" : "filled"}
-			onClick={() => setSelectionActive(true)}>
+			onClick={() => setSelectionActive(true)}
+		>
 			<Text size="sm" className={classes.interactionText}>
-				{selectionProps.prompt?.inactiveTitle ?? `Start selection (${selectedNodeNames.length})`}
+				{selectionProps.prompt?.inactiveTitle ??
+					`Start selection (${selectedNodeNames.length})`}
 			</Text>
-		</Button>;
+		</Button>
+	);
 
 	// extend the onCancel callback to reset the selected node names.
 	const _onCancelCallback = useCallback(() => {
@@ -211,12 +261,11 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 		setOnCancelCallback(() => _onCancelCallback);
 	}, [_onCancelCallback]);
 
-	return <>
-		<>{handlers}</>
-		<ParameterLabelComponent {...props} cancel={onCancel} />
-		{
-			definition &&
-			selectionActive ? contentActive : contentInactive
-		}
-	</>;
+	return (
+		<>
+			<>{handlers}</>
+			<ParameterLabelComponent {...props} cancel={onCancel} />
+			{definition && selectionActive ? contentActive : contentInactive}
+		</>
+	);
 }

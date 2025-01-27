@@ -1,14 +1,14 @@
-import { useEffect, useRef } from "react";
+import {useEffect, useRef} from "react";
 
 interface CrossBrowserDocument extends Document {
-  webkitFullscreenElement?: Element;
-  webkitExitFullscreen?: () => void;
+	webkitFullscreenElement?: Element;
+	webkitExitFullscreen?: () => void;
 
-  mozRequestFullScreen?: Element;
-  mozExitFullScreen?: () => void;
+	mozRequestFullScreen?: Element;
+	mozExitFullScreen?: () => void;
 
-  msRequestFullscreen?: Element;
-  msExitFullScreen?: () => void;
+	msRequestFullscreen?: Element;
+	msExitFullScreen?: () => void;
 }
 
 const eventsFullScreen = [
@@ -29,12 +29,16 @@ export const useFullscreen = (fullscreenId: string) => {
 
 	useEffect(() => {
 		cbDocument.current = document;
-		const element = cbDocument.current.getElementsByClassName(fullscreenId).item(0);
+		const element = cbDocument.current
+			.getElementsByClassName(fullscreenId)
+			.item(0);
 
 		if (!element) {
-			console.debug(`Fullscreen element with ID ${fullscreenId} not found.`);
+			console.debug(
+				`Fullscreen element with ID ${fullscreenId} not found.`,
+			);
 			isFullScreenAvailable.current = false;
-			
+
 			return;
 		}
 
@@ -44,7 +48,9 @@ export const useFullscreen = (fullscreenId: string) => {
 
 		return () => {
 			cbDocument.current = document;
-			const element = cbDocument.current.getElementsByClassName(fullscreenId).item(0);
+			const element = cbDocument.current
+				.getElementsByClassName(fullscreenId)
+				.item(0);
 
 			if (element) {
 				eventsFullScreen.forEach((event) => {
@@ -57,19 +63,35 @@ export const useFullscreen = (fullscreenId: string) => {
 	const makeElementFullscreen = () => {
 		if (cbDocument.current.fullscreenElement) {
 			cbDocument.current.exitFullscreen();
-		} else if (cbDocument.current.webkitFullscreenElement && cbDocument.current.webkitExitFullscreen) { // Safari
+		} else if (
+			cbDocument.current.webkitFullscreenElement &&
+			cbDocument.current.webkitExitFullscreen
+		) {
+			// Safari
 			cbDocument.current.webkitExitFullscreen();
-		} else if (cbDocument.current.mozRequestFullScreen && cbDocument.current.mozExitFullScreen) { // Firefox
+		} else if (
+			cbDocument.current.mozRequestFullScreen &&
+			cbDocument.current.mozExitFullScreen
+		) {
+			// Firefox
 			cbDocument.current.mozExitFullScreen();
-		} else if (cbDocument.current.msRequestFullscreen && cbDocument.current.msExitFullScreen) { // IE
+		} else if (
+			cbDocument.current.msRequestFullscreen &&
+			cbDocument.current.msExitFullScreen
+		) {
+			// IE
 			cbDocument.current.msExitFullScreen();
 		} else {
-			const element = document.getElementsByClassName(fullscreenId).item(0);
+			const element = document
+				.getElementsByClassName(fullscreenId)
+				.item(0);
 
 			if (!element) {
-				console.debug(`Fullscreen element with ID ${fullscreenId} not found.`);
+				console.debug(
+					`Fullscreen element with ID ${fullscreenId} not found.`,
+				);
 				isFullScreenAvailable.current = false;
-				
+
 				return;
 			}
 

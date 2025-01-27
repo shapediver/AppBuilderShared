@@ -1,18 +1,21 @@
-import React, { ReactElement, useState } from "react";
-import { Button, MantineThemeComponent, useProps } from "@mantine/core";
+import React, {ReactElement, useState} from "react";
+import {Button, MantineThemeComponent, useProps} from "@mantine/core";
 import classes from "./AppBuilderTemplateSelector.module.css";
-import { IAppBuilderTemplatePageProps } from "@AppBuilderShared/types/pages/appbuildertemplates";
-import { AppBuilderTemplateContext } from "@AppBuilderShared/context/AppBuilderContext";
+import {IAppBuilderTemplatePageProps} from "@AppBuilderShared/types/pages/appbuildertemplates";
+import {AppBuilderTemplateContext} from "@AppBuilderShared/context/AppBuilderContext";
 import AppBuilderAppShellTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
 import AppBuilderGridTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderGridTemplatePage";
 
-export type AppBuilderTemplateType = "grid" | "appshell"
+export type AppBuilderTemplateType = "grid" | "appshell";
 
-type TemplateMapType = Record<AppBuilderTemplateType, (props: IAppBuilderTemplatePageProps) => ReactElement>;
+type TemplateMapType = Record<
+	AppBuilderTemplateType,
+	(props: IAppBuilderTemplatePageProps) => ReactElement
+>;
 
 const templateMap: TemplateMapType = {
-	"appshell": AppBuilderAppShellTemplatePage,
-	"grid": AppBuilderGridTemplatePage,
+	appshell: AppBuilderAppShellTemplatePage,
+	grid: AppBuilderGridTemplatePage,
 };
 
 interface StyleProps {
@@ -29,31 +32,44 @@ const defaultStyleProps: StyleProps = {
 
 type AppBuilderTemplateSelectorThemePropsType = Partial<StyleProps>;
 
-export function AppBuilderTemplateSelectorThemeProps(props: AppBuilderTemplateSelectorThemePropsType): MantineThemeComponent {
+export function AppBuilderTemplateSelectorThemeProps(
+	props: AppBuilderTemplateSelectorThemePropsType,
+): MantineThemeComponent {
 	return {
-		defaultProps: props
+		defaultProps: props,
 	};
 }
 
-const showContainer = (toggleState: boolean | undefined): boolean => toggleState === undefined || toggleState === true;
+const showContainer = (toggleState: boolean | undefined): boolean =>
+	toggleState === undefined || toggleState === true;
 
-const buttonVariant = (toggleState: boolean | undefined) => toggleState === undefined ? "outline" : toggleState ? "filled" : "light";
+const buttonVariant = (toggleState: boolean | undefined) =>
+	toggleState === undefined ? "outline" : toggleState ? "filled" : "light";
 
-export default function AppBuilderTemplateSelector(props: IAppBuilderTemplatePageProps & Partial<StyleProps>) {
-
+export default function AppBuilderTemplateSelector(
+	props: IAppBuilderTemplatePageProps & Partial<StyleProps>,
+) {
 	// style properties
-	const { 
-		template,
-		showContainerButtons,
-		...nodes
-	} = useProps("AppBuilderTemplateSelector", defaultStyleProps, props);
+	const {template, showContainerButtons, ...nodes} = useProps(
+		"AppBuilderTemplateSelector",
+		defaultStyleProps,
+		props,
+	);
 
-	const { top, left, right, bottom, ...otherNodes } = nodes;
+	const {top, left, right, bottom, ...otherNodes} = nodes;
 
-	const [isTopDisplayed, setIsTopDisplayed] = useState<boolean|undefined>(undefined);
-	const [isLeftDisplayed, setIsLeftDisplayed] = useState<boolean|undefined>(undefined);
-	const [isRightDisplayed, setIsRightDisplayed] = useState<boolean|undefined>(undefined);
-	const [isBottomDisplayed, setIsBottomDisplayed] = useState<boolean|undefined>(undefined);
+	const [isTopDisplayed, setIsTopDisplayed] = useState<boolean | undefined>(
+		undefined,
+	);
+	const [isLeftDisplayed, setIsLeftDisplayed] = useState<boolean | undefined>(
+		undefined,
+	);
+	const [isRightDisplayed, setIsRightDisplayed] = useState<
+		boolean | undefined
+	>(undefined);
+	const [isBottomDisplayed, setIsBottomDisplayed] = useState<
+		boolean | undefined
+	>(undefined);
 
 	const mainNodes = {
 		top: showContainer(isTopDisplayed) ? top : undefined,
@@ -64,16 +80,44 @@ export default function AppBuilderTemplateSelector(props: IAppBuilderTemplatePag
 
 	const Template = templateMap[template];
 
-	return (<>
-		{showContainerButtons ? <Button.Group className={classes.buttonsTop}>
-			<Button variant={buttonVariant(isTopDisplayed)} onClick={() => setIsTopDisplayed(!isTopDisplayed)}>Top</Button>
-			<Button variant={buttonVariant(isLeftDisplayed)}  onClick={() => setIsLeftDisplayed(!isLeftDisplayed)} color="indigo">Left</Button>
-			<Button variant={buttonVariant(isRightDisplayed)}  onClick={() => setIsRightDisplayed(!isRightDisplayed)} color="violet">Right</Button>
-			<Button variant={buttonVariant(isBottomDisplayed)}  onClick={() => setIsBottomDisplayed(!isBottomDisplayed)} color="cyan">Bottom</Button>
-		</Button.Group> : <></>}
-		<AppBuilderTemplateContext.Provider value={{ name: template }}>
-			<Template {...mainNodes} {...otherNodes} />
-		</AppBuilderTemplateContext.Provider>
-	</>
+	return (
+		<>
+			{showContainerButtons ? (
+				<Button.Group className={classes.buttonsTop}>
+					<Button
+						variant={buttonVariant(isTopDisplayed)}
+						onClick={() => setIsTopDisplayed(!isTopDisplayed)}
+					>
+						Top
+					</Button>
+					<Button
+						variant={buttonVariant(isLeftDisplayed)}
+						onClick={() => setIsLeftDisplayed(!isLeftDisplayed)}
+						color="indigo"
+					>
+						Left
+					</Button>
+					<Button
+						variant={buttonVariant(isRightDisplayed)}
+						onClick={() => setIsRightDisplayed(!isRightDisplayed)}
+						color="violet"
+					>
+						Right
+					</Button>
+					<Button
+						variant={buttonVariant(isBottomDisplayed)}
+						onClick={() => setIsBottomDisplayed(!isBottomDisplayed)}
+						color="cyan"
+					>
+						Bottom
+					</Button>
+				</Button.Group>
+			) : (
+				<></>
+			)}
+			<AppBuilderTemplateContext.Provider value={{name: template}}>
+				<Template {...mainNodes} {...otherNodes} />
+			</AppBuilderTemplateContext.Provider>
+		</>
 	);
 }

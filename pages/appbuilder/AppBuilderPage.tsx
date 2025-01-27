@@ -1,18 +1,24 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
-import { ComponentContext } from "@AppBuilderShared/context/ComponentContext";
+import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
-import { useSessionWithAppBuilder } from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
-import { useParameterHistory } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
-import { useSessionPropsExport } from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
-import { useSessionPropsParameter } from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
+import {useSessionWithAppBuilder} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
+import {useParameterHistory} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
+import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
+import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
-import { useKeyBindings } from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
-import { IAppBuilderTemplatePageContainerHints, IAppBuilderTemplatePageProps } from "@AppBuilderShared/types/pages/appbuildertemplates";
-import { IAppBuilderSettingsSession, IAppBuilderContainer } from "@AppBuilderShared/types/shapediver/appbuilder";
-import { shouldUsePlatform } from "@AppBuilderShared/utils/platform/environment";
-import React, { useContext } from "react";
+import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
+import {
+	IAppBuilderTemplatePageContainerHints,
+	IAppBuilderTemplatePageProps,
+} from "@AppBuilderShared/types/pages/appbuildertemplates";
+import {
+	IAppBuilderSettingsSession,
+	IAppBuilderContainer,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
+import React, {useContext} from "react";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
@@ -122,14 +128,20 @@ interface Props extends IAppBuilderSettingsSession {
 
 /**
  * Create rendering hints for the container.
- * @param container 
- * @returns 
+ * @param container
+ * @returns
  */
-const createContainerHints = (container: IAppBuilderContainer) : IAppBuilderTemplatePageContainerHints | undefined => {
+const createContainerHints = (
+	container: IAppBuilderContainer,
+): IAppBuilderTemplatePageContainerHints | undefined => {
 	// if the bottom container contains tabs, prefer vertical layout
-	if (container.name === "bottom" && container.tabs && container.tabs.length > 0) {
+	if (
+		container.name === "bottom" &&
+		container.tabs &&
+		container.tabs.length > 0
+	) {
 		return {
-			preferVertical: true
+			preferVertical: true,
 		};
 	}
 };
@@ -140,26 +152,37 @@ const createContainerHints = (container: IAppBuilderContainer) : IAppBuilderTemp
  * @returns
  */
 export default function AppBuilderPage(props: Partial<Props>) {
-	
 	// get default session dto, if any
-	const { defaultSessionDto } = useDefaultSessionDto(props);
-	
+	const {defaultSessionDto} = useDefaultSessionDto(props);
+
 	// get the component context to get the correct viewport
 	const componentContext = useContext(ComponentContext);
-	const { 
-		viewportComponent: { component: ViewportComponent } = {},
-		viewportOverlayWrapper: { component: ViewportOverlayWrapper } = {},
-		viewportIcons: { component: ViewportIcons } = {}
+	const {
+		viewportComponent: {component: ViewportComponent} = {},
+		viewportOverlayWrapper: {component: ViewportOverlayWrapper} = {},
+		viewportIcons: {component: ViewportIcons} = {},
 	} = componentContext;
 
 	// get settings for app builder from query string
-	const { settings, error: settingsError, loading, hasSettings, hasSession } = useAppBuilderSettings(defaultSessionDto);
+	const {
+		settings,
+		error: settingsError,
+		loading,
+		hasSettings,
+		hasSession,
+	} = useAppBuilderSettings(defaultSessionDto);
 
 	// for now we only make use of the first session in the settings
 	const sessionDto = settings ? settings.sessions[0] : undefined;
-	const { namespace, sessionApi, error: appBuilderError, hasAppBuilderOutput, appBuilderData } = useSessionWithAppBuilder(sessionDto, settings?.appBuilderOverride);
+	const {
+		namespace,
+		sessionApi,
+		error: appBuilderError,
+		hasAppBuilderOutput,
+		appBuilderData,
+	} = useSessionWithAppBuilder(sessionDto, settings?.appBuilderOverride);
 	const error = settingsError ?? appBuilderError;
-	
+
 	// get props for fallback parameters
 	const parameterProps = useSessionPropsParameter(namespace);
 	const exportProps = useSessionPropsExport(namespace);
@@ -173,23 +196,33 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	};
 
 	// should fallback containers be shown?
-	const showFallbackContainers = settings?.settings?.disableFallbackUi !== true;
+	const showFallbackContainers =
+		settings?.settings?.disableFallbackUi !== true;
 
 	if (appBuilderData?.containers) {
 		appBuilderData.containers.forEach((container) => {
 			containers[container.name] = {
-				node: <AppBuilderContainerComponent namespace={namespace} {...container}/>,
-				hints: createContainerHints(container)
-			};		
+				node: (
+					<AppBuilderContainerComponent
+						namespace={namespace}
+						{...container}
+					/>
+				),
+				hints: createContainerHints(container),
+			};
 		});
-	}
-	else if ( !hasAppBuilderOutput 
-		&& (parameterProps.length > 0 || exportProps.length > 0) 
-		&& showFallbackContainers
-	)
-	{
+	} else if (
+		!hasAppBuilderOutput &&
+		(parameterProps.length > 0 || exportProps.length > 0) &&
+		showFallbackContainers
+	) {
 		containers.right = {
-			node: <AppBuilderFallbackContainerComponent parameters={parameterProps} exports={exportProps}/>
+			node: (
+				<AppBuilderFallbackContainerComponent
+					parameters={parameterProps}
+					exports={exportProps}
+				/>
+			),
 		};
 	}
 
@@ -200,37 +233,48 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	// key bindings
 	useKeyBindings({namespace});
-	
-	const showMarkdown = !(settings && hasSession) // no settings or no session
-		&& !loading // not loading
-		&& !error // no error
-		&& !(hasSettings && hasSession); // there are no query string parameters or no session
 
-	const NoSettingsMarkdown = window.location.hostname === "localhost" ?
-		WelcomeLocalhostMarkdown : 
-		shouldUsePlatform() ? WelcomePlatformMarkdown : WelcomeIframeMarkdown;
+	const showMarkdown =
+		!(settings && hasSession) && // no settings or no session
+		!loading && // not loading
+		!error && // no error
+		!(hasSettings && hasSession); // there are no query string parameters or no session
 
-	return (
-		showMarkdown ? <AlertPage>
+	const NoSettingsMarkdown =
+		window.location.hostname === "localhost"
+			? WelcomeLocalhostMarkdown
+			: shouldUsePlatform()
+				? WelcomePlatformMarkdown
+				: WelcomeIframeMarkdown;
+
+	return showMarkdown ? (
+		<AlertPage>
 			<MarkdownWidgetComponent anchorTarget="_self">
 				{NoSettingsMarkdown}
 			</MarkdownWidgetComponent>
-		</AlertPage> :
-			error ? <AlertPage title="Error">{error.message}</AlertPage> :
-				loading || !show ? <LoaderPage /> : // TODO smooth transition between loading and showing
-					show ? <AppBuilderTemplateSelector
-						top={containers.top}
-						left={containers.left}
-						right={containers.right}
-						bottom={containers.bottom}
-					>
-						{ViewportComponent && <ViewportComponent>
-							{ViewportOverlayWrapper && <ViewportOverlayWrapper>
-								{ViewportIcons && <ViewportIcons />}
-							</ViewportOverlayWrapper>}
-						</ViewportComponent>}
-
-					</AppBuilderTemplateSelector>
-						: <></>
+		</AlertPage>
+	) : error ? (
+		<AlertPage title="Error">{error.message}</AlertPage>
+	) : loading || !show ? (
+		<LoaderPage /> // TODO smooth transition between loading and showing
+	) : show ? (
+		<AppBuilderTemplateSelector
+			top={containers.top}
+			left={containers.left}
+			right={containers.right}
+			bottom={containers.bottom}
+		>
+			{ViewportComponent && (
+				<ViewportComponent>
+					{ViewportOverlayWrapper && (
+						<ViewportOverlayWrapper>
+							{ViewportIcons && <ViewportIcons />}
+						</ViewportOverlayWrapper>
+					)}
+				</ViewportComponent>
+			)}
+		</AppBuilderTemplateSelector>
+	) : (
+		<></>
 	);
 }
