@@ -17,7 +17,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
-import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {useAllParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useAllParameters";
 import {
@@ -144,7 +143,40 @@ min: ${def.min === null || def.min === undefined ? "none" : def.min}
 max: ${def.max === null || def.max === undefined ? "none" : def.max}
 tooltip: ${def.tooltip || "none"}
 choices : ${def.choices || "none"}
-	`;
+`;
+}
+
+/**
+ * Create a context string for the given types of parameters.
+ */
+function createParameterTypeContext(types: ShapeDiverResponseParameterType[]) {
+	// ensure types are unique
+	types = Array.from(new Set(types));
+	
+	return types.map((type) => {
+		if (type === ShapeDiverResponseParameterType.COLOR) {
+			return `If parameterType is ${ShapeDiverResponseParameterType.COLOR}, return the color value precisely in the following hexadecimal format: 0xRRGGBBAA where RR encodes the red channel, GG encodes the green channel, BB encodes the blue channel, AA encodes opacity.`;
+		}
+		else if (type === ShapeDiverResponseParameterType.STRINGLIST) {
+			return `If parameterType is ${ShapeDiverResponseParameterType.STRINGLIST}, return the index of the new choice from the available choices rather than the value of the choice.`;
+		}
+		else if (type === ShapeDiverResponseParameterType.FLOAT) {
+			return `If parameterType is ${ShapeDiverResponseParameterType.FLOAT}, ensure the suggested new floating point number is within the range defined by min and max and respects the number of decimalplaces.`;
+		}
+		else if (type === ShapeDiverResponseParameterType.INT) {
+			return `If parameterType is ${ShapeDiverResponseParameterType.INT}, ensure the suggested new integer is within the range defined by min and max.`;
+		}
+		else if (type === ShapeDiverResponseParameterType.ODD) {
+			return `If parameterType is ${ShapeDiverResponseParameterType.ODD}, ensure the suggested new odd integer is within the range defined by min and max.`;
+		}
+		else if (type === ShapeDiverResponseParameterType.EVEN) {
+			return `If parameterType is ${ShapeDiverResponseParameterType.EVEN}, ensure the suggested new even integer is within the range defined by min and max.`;
+		}
+		else if (type === ShapeDiverResponseParameterType.STRING) {
+			return `If parameterType is ${ShapeDiverResponseParameterType.STRING}, ensure the length of the suggested new string does not exceed max.`;
+		}
+
+	}).filter(s => !!s).join("\n")
 }
 
 /** Supported types of parameters (for now). */
@@ -168,21 +200,27 @@ function createParametersContext(
 	parameters: IShapeDiverParameter<any>[],
 	parameterNames: string[] | undefined,
 ) {
+	parameters = parameters
+	.filter(
+		(p) =>
+			!parameterNames ||
+			parameterNames.includes(p.definition.name) ||
+			(p.definition.displayname &&
+				parameterNames.includes(p.definition.displayname)),
+	)
+	.filter((p) =>
+		SUPPORTED_PARAMETER_TYPES.includes(p.definition.type),
+	);
+
 	return (
 		"\n" +
 		parameters
-			.filter(
-				(p) =>
-					!parameterNames ||
-					parameterNames.includes(p.definition.name) ||
-					(p.definition.displayname &&
-						parameterNames.includes(p.definition.displayname)),
-			)
-			.filter((p) =>
-				SUPPORTED_PARAMETER_TYPES.includes(p.definition.type),
-			)
 			.map((p) => createParameterContext(p))
-			.join("")
+			.join("") +
+		"\nDon't hallucinate parameterId.\n" +
+		createParameterTypeContext(
+			parameters.map((p) => p.definition.type),
+		)
 	);
 }
 
@@ -394,11 +432,9 @@ export default function AppBuilderAgentWidgetComponent(
 	 */
 	useEffect(() => {
 		// Enhance system prompt with confgurator app context information which has information about what the configurator app is about
-		const systemPrompt = `You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about it \
+		const systemPrompt = `You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about the 3D configurator \
 based on the user's input and the context provided. You may answer questions by the user without changing parameters. \
 Parameters context: ${parametersContext}
-Don't hallucinate parameterId. Ensure the suggested new values are within the min, max and available choices provided in context. \
-If parameterType is stringlist, return the index of new choices from available choices rather than value of the choice. \
 `;
 		setSystemPrompt(systemPrompt);
 	}, [parametersContext, authorContext]);
