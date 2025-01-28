@@ -16,8 +16,15 @@ import {
 	Textarea,
 	useProps,
 } from "@mantine/core";
-import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
+import {
+	IAppBuilder,
+	IAppBuilderParameterRef,
+	IAppBuilderWidgetPropsAgent,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {
+	AppBuilderContainerContext,
+	AppBuilderDataContext,
+} from "@AppBuilderShared/context/AppBuilderContext";
 import {useAllParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useAllParameters";
 import {
 	Button,
@@ -41,6 +48,7 @@ import {z} from "zod";
 import {Langfuse, LangfuseWeb, observeOpenAI} from "langfuse";
 import packagejson from "~/../package.json";
 import AppBuilderImage from "../AppBuilderImage";
+import {getParameterRefs} from "@AppBuilderShared/utils/appbuilder";
 
 const langfuse = new Langfuse({
 	secretKey: import.meta.env.VITE_LANGFUSE_SECRET_KEY,
@@ -125,15 +133,17 @@ const DEBUG = true;
 /**
  * Create a context string for a parameter that can be passed to the LLM.
  * @param param
+ * @param ref Parameter reference used in the App Builder data defining the UI.
  * @returns
  */
-function createParameterContext(param: IShapeDiverParameter<any>) {
+function createParameterContext(
+	param: IShapeDiverParameter<any>,
+	ref: IAppBuilderParameterRef | undefined,
+) {
 	const def = param.definition;
 	const currentValue = param.state.uiValue;
 
-	// TODO Alex to Mayur:
-	// We mix snake_case and camelCase in the parameter context.
-	// Could that be a problem?
+	// TODO adapt this to the parameter type
 	return `
 parameterId: ${def.id}
 parameterName: ${def.displayname || def.name}
@@ -141,7 +151,7 @@ parameterType: ${def.type}
 currentValue: ${currentValue === null || currentValue === undefined ? "none" : currentValue}
 min: ${def.min === null || def.min === undefined ? "none" : def.min}
 max: ${def.max === null || def.max === undefined ? "none" : def.max}
-tooltip: ${def.tooltip || "none"}
+tooltip: ${ref?.overrides?.tooltip || def.tooltip || "none"}
 choices : ${def.choices || "none"}
 `;
 }
@@ -152,31 +162,27 @@ choices : ${def.choices || "none"}
 function createParameterTypeContext(types: ShapeDiverResponseParameterType[]) {
 	// ensure types are unique
 	types = Array.from(new Set(types));
-	
-	return types.map((type) => {
-		if (type === ShapeDiverResponseParameterType.COLOR) {
-			return `If parameterType is ${ShapeDiverResponseParameterType.COLOR}, return the color value precisely in the following hexadecimal format: 0xRRGGBBAA where RR encodes the red channel, GG encodes the green channel, BB encodes the blue channel, AA encodes opacity.`;
-		}
-		else if (type === ShapeDiverResponseParameterType.STRINGLIST) {
-			return `If parameterType is ${ShapeDiverResponseParameterType.STRINGLIST}, return the index of the new choice from the available choices rather than the value of the choice.`;
-		}
-		else if (type === ShapeDiverResponseParameterType.FLOAT) {
-			return `If parameterType is ${ShapeDiverResponseParameterType.FLOAT}, ensure the suggested new floating point number is within the range defined by min and max and respects the number of decimalplaces.`;
-		}
-		else if (type === ShapeDiverResponseParameterType.INT) {
-			return `If parameterType is ${ShapeDiverResponseParameterType.INT}, ensure the suggested new integer is within the range defined by min and max.`;
-		}
-		else if (type === ShapeDiverResponseParameterType.ODD) {
-			return `If parameterType is ${ShapeDiverResponseParameterType.ODD}, ensure the suggested new odd integer is within the range defined by min and max.`;
-		}
-		else if (type === ShapeDiverResponseParameterType.EVEN) {
-			return `If parameterType is ${ShapeDiverResponseParameterType.EVEN}, ensure the suggested new even integer is within the range defined by min and max.`;
-		}
-		else if (type === ShapeDiverResponseParameterType.STRING) {
-			return `If parameterType is ${ShapeDiverResponseParameterType.STRING}, ensure the length of the suggested new string does not exceed max.`;
-		}
 
-	}).filter(s => !!s).join("\n")
+	return types
+		.map((type) => {
+			if (type === ShapeDiverResponseParameterType.COLOR) {
+				return `If parameterType is ${ShapeDiverResponseParameterType.COLOR}, return the color value precisely in the following hexadecimal format: 0xRRGGBBAA where RR encodes the red channel, GG encodes the green channel, BB encodes the blue channel, AA encodes opacity.`;
+			} else if (type === ShapeDiverResponseParameterType.STRINGLIST) {
+				return `If parameterType is ${ShapeDiverResponseParameterType.STRINGLIST}, return the index of the new choice from the available choices rather than the value of the choice.`;
+			} else if (type === ShapeDiverResponseParameterType.FLOAT) {
+				return `If parameterType is ${ShapeDiverResponseParameterType.FLOAT}, ensure the suggested new floating point number is within the range defined by min and max and respects the number of decimalplaces.`;
+			} else if (type === ShapeDiverResponseParameterType.INT) {
+				return `If parameterType is ${ShapeDiverResponseParameterType.INT}, ensure the suggested new integer is within the range defined by min and max.`;
+			} else if (type === ShapeDiverResponseParameterType.ODD) {
+				return `If parameterType is ${ShapeDiverResponseParameterType.ODD}, ensure the suggested new odd integer is within the range defined by min and max.`;
+			} else if (type === ShapeDiverResponseParameterType.EVEN) {
+				return `If parameterType is ${ShapeDiverResponseParameterType.EVEN}, ensure the suggested new even integer is within the range defined by min and max.`;
+			} else if (type === ShapeDiverResponseParameterType.STRING) {
+				return `If parameterType is ${ShapeDiverResponseParameterType.STRING}, ensure the length of the suggested new string does not exceed max.`;
+			}
+		})
+		.filter((s) => !!s)
+		.join("\n");
 }
 
 /** Supported types of parameters (for now). */
@@ -195,32 +201,38 @@ const SUPPORTED_PARAMETER_TYPES = [
  * Create a context string for a list of parameters that can be passed to the LLM.
  * @param parameters Parameters to create context for.
  * @param parameterNames If provided, only parameters with these names are included.
+ * @param parameterRefs Parameter references used in the App Builder data defining the UI.
  */
 function createParametersContext(
 	parameters: IShapeDiverParameter<any>[],
 	parameterNames: string[] | undefined,
+	parameterRefs: IAppBuilderParameterRef[],
 ) {
 	parameters = parameters
-	.filter(
-		(p) =>
-			!parameterNames ||
-			parameterNames.includes(p.definition.name) ||
-			(p.definition.displayname &&
-				parameterNames.includes(p.definition.displayname)),
-	)
-	.filter((p) =>
-		SUPPORTED_PARAMETER_TYPES.includes(p.definition.type),
-	);
+		.filter(
+			(p) =>
+				!parameterNames ||
+				parameterNames.includes(p.definition.name) ||
+				(p.definition.displayname &&
+					parameterNames.includes(p.definition.displayname)),
+		)
+		.filter((p) => SUPPORTED_PARAMETER_TYPES.includes(p.definition.type));
 
 	return (
 		"\n" +
 		parameters
-			.map((p) => createParameterContext(p))
+			.map((p) => {
+				const ref = parameterRefs.find(
+					(pr) =>
+						pr.name === p.definition.id ||
+						pr.name === p.definition.name ||
+						pr.name === p.definition.displayname,
+				);
+				return createParameterContext(p, ref);
+			})
 			.join("") +
 		"\nDon't hallucinate parameterId.\n" +
-		createParameterTypeContext(
-			parameters.map((p) => p.definition.type),
-		)
+		createParameterTypeContext(parameters.map((p) => p.definition.type))
 	);
 }
 
@@ -336,6 +348,13 @@ export default function AppBuilderAgentWidgetComponent(
 		`${namespace}_appbuilder`,
 	);
 
+	// get App Builder data, we need it to extract parameter tooltips
+	const {data: appBuilderData} = useContext(AppBuilderDataContext);
+	const parameterRefs = useMemo(
+		() => (appBuilderData ? getParameterRefs(appBuilderData) : []),
+		[appBuilderData],
+	);
+
 	// We want to do parameter batch updates
 	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
@@ -420,8 +439,9 @@ export default function AppBuilderAgentWidgetComponent(
 				// skip dynamic parameters for now
 				//	.concat(Object.values(dynamicParameters))
 				parameterNames,
+				parameterRefs,
 			),
-		[parameters, dynamicParameters, parameterNames],
+		[parameters, dynamicParameters, parameterNames, parameterRefs],
 	);
 
 	/**
@@ -496,8 +516,10 @@ Parameters context: ${parametersContext}
 		}
 
 		// Add current message with image if present
-		const userPrompt = userImage ? `${userQuery} \
-I have provided an image for context.` : userQuery;
+		const userPrompt = userImage
+			? `${userQuery} \
+I have provided an image for context.`
+			: userQuery;
 		if (userImage) {
 			messages.push({
 				role: "user",
