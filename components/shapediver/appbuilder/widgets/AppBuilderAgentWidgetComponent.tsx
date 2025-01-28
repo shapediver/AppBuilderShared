@@ -49,6 +49,7 @@ import {Langfuse, LangfuseWeb, observeOpenAI} from "langfuse";
 import packagejson from "~/../package.json";
 import AppBuilderImage from "../AppBuilderImage";
 import {getParameterRefs} from "@AppBuilderShared/utils/appbuilder";
+import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";
 
 const langfuse = new Langfuse({
 	secretKey: import.meta.env.VITE_LANGFUSE_SECRET_KEY,
@@ -143,17 +144,37 @@ function createParameterContext(
 	const def = param.definition;
 	const currentValue = param.state.uiValue;
 
-	// TODO adapt this to the parameter type
-	return `
+	let context = `
 parameterId: ${def.id}
 parameterName: ${def.displayname || def.name}
 parameterType: ${def.type}
 currentValue: ${currentValue === null || currentValue === undefined ? "none" : currentValue}
-min: ${def.min === null || def.min === undefined ? "none" : def.min}
-max: ${def.max === null || def.max === undefined ? "none" : def.max}
-tooltip: ${ref?.overrides?.tooltip || def.tooltip || "none"}
-choices : ${def.choices || "none"}
 `;
+
+	const tooltip = ref?.overrides?.tooltip || def.tooltip;
+	if (tooltip) {
+		context += `tooltip: ${tooltip}\n`;
+	}
+
+	if (def.type === ShapeDiverResponseParameterType.STRINGLIST) {
+		context += `choices: ${def.choices || "none"}\n`;
+	} else if (
+		def.type === ShapeDiverResponseParameterType.EVEN ||
+		def.type === ShapeDiverResponseParameterType.ODD ||
+		def.type === ShapeDiverResponseParameterType.INT ||
+		def.type === ShapeDiverResponseParameterType.FLOAT ||
+		def.type === ShapeDiverResponseParameterType.STRING
+	) {
+		if (def.type !== ShapeDiverResponseParameterType.STRING) {
+			context += `min: ${def.min === null || def.min === undefined ? "none" : def.min}\n`;
+		}
+		context += `max: ${def.max === null || def.max === undefined ? "none" : def.max}\n`;
+		if (def.type === ShapeDiverResponseParameterType.FLOAT) {
+			context += `decimalplaces: ${def.decimalplaces === null || def.decimalplaces === undefined ? "none" : def.decimalplaces}\n`;
+		}
+	}
+
+	return context;
 }
 
 /**
@@ -748,9 +769,13 @@ I have provided an image for context.`
 								)}
 
 								<Paper withBorder={false}>
-									{typeof message.content === "string"
-										? message.content
-										: JSON.stringify(message.content)}
+									{typeof message.content === "string" ? (
+										<MarkdownWidgetComponent>
+											{message.content}
+										</MarkdownWidgetComponent>
+									) : (
+										JSON.stringify(message.content)
+									)}
 								</Paper>
 
 								{/* Add feedback buttons for assistant messages */}
