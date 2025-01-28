@@ -48,6 +48,7 @@ import {
 	IconMoonStars,
 	IconNetwork,
 	IconNetworkOff,
+	IconPaperclip,
 	IconPencil,
 	IconPhoto,
 	IconPhotoOff,
@@ -63,6 +64,8 @@ import {
 	IconShareOff,
 	IconShoppingCartPlus,
 	IconSun,
+	IconThumbDown,
+	IconThumbUp,
 	IconUpload,
 	IconUser,
 	IconUserCheck,
@@ -206,6 +209,8 @@ const Icon = forwardRef<_TablerIconType, Props>(function Icon(
 			return <IconNetwork {...iconProps} />;
 		case IconTypeEnum.NetworkOff:
 			return <IconNetworkOff {...iconProps} />;
+		case IconTypeEnum.PaperClip:
+			return <IconPaperclip {...iconProps} />;
 		case IconTypeEnum.Pencil:
 			return <IconPencil {...iconProps} />;
 		case IconTypeEnum.Photo:
@@ -234,6 +239,10 @@ const Icon = forwardRef<_TablerIconType, Props>(function Icon(
 			return <IconShoppingCartPlus {...iconProps} />;
 		case IconTypeEnum.Sun:
 			return <IconSun {...iconProps} />;
+		case IconTypeEnum.ThumbDown:
+			return <IconThumbDown {...iconProps} />;
+		case IconTypeEnum.ThumbUp:
+			return <IconThumbUp {...iconProps} />;
 		case IconTypeEnum.Upload:
 			return <IconUpload {...iconProps} />;
 		case IconTypeEnum.User:

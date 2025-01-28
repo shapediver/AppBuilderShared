@@ -6,6 +6,7 @@ import React, {
 	useMemo,
 } from "react";
 import {
+	Box,
 	Group,
 	MantineStyleProp,
 	MantineThemeComponent,
@@ -17,7 +18,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import {
-	IAppBuilder,
 	IAppBuilderParameterRef,
 	IAppBuilderWidgetPropsAgent,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
@@ -33,7 +33,7 @@ import {
 	FileButton,
 	ScrollArea,
 } from "@mantine/core";
-import {IconPaperclip, IconUser, IconRobot} from "@tabler/icons-react";
+import {IconUser, IconRobot} from "@tabler/icons-react";
 import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
 import {ShapeDiverResponseParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {IShapeDiverStoreParameters} from "@AppBuilderShared/types/store/shapediverStoreParameters";
@@ -50,12 +50,16 @@ import packagejson from "~/../package.json";
 import AppBuilderImage from "../AppBuilderImage";
 import {getParameterRefs} from "@AppBuilderShared/utils/appbuilder";
 import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 
 const langfuse = new Langfuse({
 	secretKey: import.meta.env.VITE_LANGFUSE_SECRET_KEY,
 	publicKey: import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
 	baseUrl:
 		import.meta.env.VITE_LANGFUSE_BASE_URL || "https://cloud.langfuse.com",
+	release: packagejson.version,
 });
 
 // Initialize LangfuseWeb for client-side feedback
@@ -63,6 +67,7 @@ const langfuseWeb = new LangfuseWeb({
 	publicKey: import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
 	baseUrl:
 		import.meta.env.VITE_LANGFUSE_BASE_URL || "https://cloud.langfuse.com",
+	release: packagejson.version,
 });
 
 /** Style properties that can be controlled via the theme. */
@@ -93,7 +98,7 @@ type Props = IAppBuilderWidgetPropsAgent & {
  * https://zod.dev/?id=discriminated-unions
  */
 const AGENT_RESPONSE_SCHEMA = z.object({
-	parameters: z
+	parameterUpdates: z
 		.array(
 			z.object({
 				parameterId: z
@@ -129,7 +134,9 @@ const OPENAI = new OpenAI({
 });
 
 /** Toggle for debugging and testing. */
-const DEBUG = true;
+const urlParams = new URLSearchParams(window.location.search);
+const DEBUG =
+	urlParams.get("debug") === "1" || urlParams.get("debug") === "true";
 
 /**
  * Create a context string for a parameter that can be passed to the LLM.
@@ -259,6 +266,7 @@ function createParametersContext(
 
 type ChatHistoryType =
 	| {
+			image?: string;
 			content: string;
 			role: "user";
 	  }
@@ -277,14 +285,14 @@ type ChatHistoryType =
 async function setParameterValues(
 	namespace: string,
 	parameters: IShapeDiverParameter<any>[],
-	agentResponse: AgentResponseType,
+	parameterUpdates: AgentResponseType["parameterUpdates"],
 	batchUpdate: IShapeDiverStoreParameters["batchParameterValueUpdate"],
 ): Promise<string[]> {
 	const indices: number[] = [];
 	const messages: string[] = [];
 	const values: {[key: string]: any} = {};
 
-	agentResponse.parameters.forEach((update) => {
+	parameterUpdates.forEach((update) => {
 		const index = parameters.findIndex(
 			(p) => p.definition.id === update.parameterId,
 		);
@@ -349,6 +357,8 @@ export default function AppBuilderAgentWidgetComponent(
 	const [isLoading, setIsLoading] = useState(false);
 	/** Optional image provided by the user. */
 	const [userImage, setUserImage] = useState<string | null>(null);
+	/** Optional screenshot image. */
+	const [screenshot, setScreenshot] = useState<string | null>(null);
 	/** Chat history for display (user messages and assistant reasoning) */
 	const [chatHistory, setChatHistory] = useState<ChatHistoryType[]>([]);
 	/** Complete LLM history for chat completion API */
@@ -430,6 +440,19 @@ export default function AppBuilderAgentWidgetComponent(
 	}, []);
 
 	/**
+	 * Handler for screenshot.
+	 * @param file
+	 * @returns
+	 */
+	const handleGetScreenshot = useCallback(async () => {
+		if (!getScreenshot) {
+			return;
+		}
+		const screenshot = await getScreenshot();
+		setScreenshot(screenshot);
+	}, [getScreenshot]);
+
+	/**
 	 * Handler for user feedback.
 	 */
 	const handleFeedback = useCallback(
@@ -490,7 +513,7 @@ Parameters context: ${parametersContext}
 		// get "slug" query string parameter
 		const urlParams = new URLSearchParams(window.location.search);
 		const slug = urlParams.get("slug");
-		return slug ? [slug, packagejson.version] : [packagejson.version];
+		return slug ? [slug] : [];
 	}, []);
 
 	const llm = async (userQuery: string, errorMessages?: string[]) => {
@@ -500,21 +523,34 @@ Parameters context: ${parametersContext}
 			id: crypto.randomUUID(), // Generate unique trace ID
 			sessionId,
 			metadata: {
-				userQuery,
-				errorMessages,
 				parameters: Object.values(parameters).map((p) => ({
 					id: p.definition.id,
 					type: p.definition.type,
-					name: p.definition.displayname ?? p.definition.name,
+					name: p.definition.displayname || p.definition.name,
 					uiValue: p.state.uiValue,
 					execValue: p.state.execValue,
 				})),
+				hasImage: !!userImage,
+				hasScreenshot: !!screenshot,
 			},
 			tags,
+			input: {
+				userQuery,
+				userImage,
+				screenshot,
+				errorMessages,
+			},
 		});
 
 		// Add user query to chat history
-		setChatHistory((prev) => [...prev, {role: "user", content: userQuery}]);
+		setChatHistory((prev) => [
+			...prev,
+			{
+				role: "user",
+				content: userQuery,
+				image: userImage ?? screenshot ?? undefined,
+			},
+		]);
 		setLLMHistory((prev) => [...prev, {role: "user", content: userQuery}]);
 
 		// Message for chat completion API
@@ -540,15 +576,18 @@ Parameters context: ${parametersContext}
 		const userPrompt = userImage
 			? `${userQuery} \
 I have provided an image for context.`
-			: userQuery;
-		if (userImage) {
+			: screenshot
+				? `${userQuery} \
+I have provided a screenshot of the 3D view for context.`
+				: userQuery;
+		if (userImage ?? screenshot) {
 			messages.push({
 				role: "user",
 				content: [
 					{
 						type: "image_url",
 						image_url: {
-							url: userImage,
+							url: userImage ?? (screenshot as string),
 						},
 					},
 					{
@@ -557,6 +596,8 @@ I have provided an image for context.`
 					},
 				],
 			});
+			if (userImage) setUserImage(null);
+			if (screenshot) setScreenshot(null);
 		} else {
 			messages.push({role: "user", content: userPrompt});
 		}
@@ -570,10 +611,6 @@ I have provided an image for context.`
 		const model = "gpt-4o-mini";
 		const llmSpan = trace.span({
 			name: "llm-interaction",
-			metadata: {
-				model,
-				hasImage: !!userImage,
-			},
 		});
 		const completion = await observeOpenAI(OPENAI, {
 			parent: llmSpan,
@@ -584,18 +621,10 @@ I have provided an image for context.`
 			response_format: responseFormat,
 			max_tokens: 1000,
 		});
-		// End the LLM span
 		llmSpan.end();
 
 		// Deal with the response message
 		const message = completion.choices[0].message;
-
-		// Update trace metadata with complete LLM response
-		trace.update({
-			metadata: {
-				llmResponse: message,
-			},
-		});
 
 		setLLMHistory((prev) => [
 			...prev,
@@ -611,6 +640,13 @@ I have provided an image for context.`
 			return;
 		}
 
+		// Update trace metadata with complete LLM response
+		trace.update({
+			output: {
+				summaryAndReasoning: parsedMessage.summaryAndReasoning,
+			},
+		});
+
 		// Update display chat history with just the summary
 		setChatHistory((prev) => [
 			...prev,
@@ -624,8 +660,8 @@ I have provided an image for context.`
 		// Create a span for parameter updates
 		const updateSpan = trace.span({
 			name: "parameter-updates",
-			metadata: {
-				updates: parsedMessage.parameters,
+			input: {
+				parameterUpdates: parsedMessage.parameterUpdates,
 			},
 		});
 
@@ -634,20 +670,18 @@ I have provided an image for context.`
 		const msgs = await setParameterValues(
 			namespace,
 			Object.values(parameters),
-			parsedMessage,
+			parsedMessage.parameterUpdates,
 			batchParameterValueUpdate,
 		);
-
-		updateSpan.end(); // End the update span
-
 		if (msgs.length > 0) {
-			trace.event({
+			updateSpan.event({
 				name: "Parameter update errors",
 				metadata: {errors: msgs},
 			});
 		}
+		updateSpan.end();
 
-		return `Updated parameters: ${parsedMessage.parameters.map((u) => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
+		return `Updated parameters: ${parsedMessage.parameterUpdates.map((u) => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
 	};
 
 	const handleParameterUpdate = async (
@@ -656,7 +690,7 @@ I have provided an image for context.`
 		const msgs = await setParameterValues(
 			namespace,
 			Object.values(parameters),
-			parsedMessage,
+			parsedMessage.parameterUpdates,
 			batchParameterValueUpdate,
 		);
 
@@ -674,7 +708,7 @@ I have provided an image for context.`
 			}
 		}
 
-		return `Updated parameters: ${parsedMessage.parameters.map((u) => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
+		return `Updated parameters: ${parsedMessage.parameterUpdates.map((u) => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
 	};
 
 	const handleUserQuery = async () => {
@@ -726,20 +760,48 @@ I have provided an image for context.`
 					</>
 				) : null}
 				<Group>
-					<FileButton
-						onChange={handleUserImage}
-						accept="image/png,image/jpeg,image/gif,image/webp"
-					>
-						{(props) => (
+					{userImage ? (
+						<TooltipWrapper label={"Remove image"}>
+							<ActionIcon onClick={() => setUserImage(null)}>
+								<Icon type={IconTypeEnum.PaperClip} />
+							</ActionIcon>
+						</TooltipWrapper>
+					) : (
+						<FileButton
+							disabled={!!screenshot}
+							onChange={handleUserImage}
+							accept="image/png,image/jpeg,image/gif,image/webp"
+						>
+							{(props) => (
+								<TooltipWrapper label={"Attach an image"}>
+									<ActionIcon
+										variant="subtle"
+										disabled={!!screenshot}
+										{...props}
+									>
+										<Icon type={IconTypeEnum.PaperClip} />
+									</ActionIcon>
+								</TooltipWrapper>
+							)}
+						</FileButton>
+					)}
+					{screenshot ? (
+						<TooltipWrapper label={"Remove screenshot"}>
+							<ActionIcon onClick={() => setScreenshot(null)}>
+								<Icon type={IconTypeEnum.DeviceDesktop} />
+							</ActionIcon>
+						</TooltipWrapper>
+					) : (
+						<TooltipWrapper label={"Attach a screenshot"}>
 							<ActionIcon
 								variant="subtle"
-								{...props}
-								className="hover:bg-gray-100"
+								onClick={handleGetScreenshot}
+								disabled={!!userImage}
 							>
-								<IconPaperclip />
+								<Icon type={IconTypeEnum.DeviceDesktop} />
 							</ActionIcon>
-						)}
-					</FileButton>
+						</TooltipWrapper>
+					)}
 					<TextInput
 						placeholder="Ask a question"
 						style={{flex: 1}}
@@ -750,6 +812,7 @@ I have provided an image for context.`
 								handleUserQuery();
 							}
 						}}
+						disabled={isLoading}
 					/>
 					<Button onClick={handleUserQuery} loading={isLoading}>
 						Go
@@ -757,55 +820,67 @@ I have provided an image for context.`
 				</Group>
 
 				{userImage && <AppBuilderImage src={userImage} />}
+				{screenshot && <AppBuilderImage src={screenshot} />}
 
-				<ScrollArea h={400}>
+				<ScrollArea h={300}>
 					{chatHistory.map((message, index) => (
 						<Stack key={index} pb="md">
-							<Group gap="xs">
-								{message.role === "user" ? (
-									<IconUser />
-								) : (
-									<IconRobot />
-								)}
-
-								<Paper withBorder={false}>
-									{typeof message.content === "string" ? (
-										<MarkdownWidgetComponent>
-											{message.content}
-										</MarkdownWidgetComponent>
+							<Group align="start" w="100%" wrap="nowrap">
+								<Box pt="xs">
+									{message.role === "user" ? (
+										<IconUser />
 									) : (
-										JSON.stringify(message.content)
+										<IconRobot />
 									)}
-								</Paper>
+								</Box>
 
-								{/* Add feedback buttons for assistant messages */}
-								{message.role === "assistant" && (
-									<Group>
-										<Button
-											onClick={() =>
-												handleFeedback(
-													1,
-													message.traceId,
-												)
-											}
-											aria-label="Thumbs up"
-										>
-											👍
-										</Button>
-										<Button
-											onClick={() =>
-												handleFeedback(
-													0,
-													message.traceId,
-												)
-											}
-											aria-label="Thumbs down"
-										>
-											👎
-										</Button>
-									</Group>
-								)}
+								<Group
+									justify="space-between"
+									w="100%"
+									wrap="nowrap"
+									align="start"
+								>
+									<Paper withBorder={false}>
+										{typeof message.content === "string" ? (
+											<MarkdownWidgetComponent>
+												{message.content}
+											</MarkdownWidgetComponent>
+										) : (
+											JSON.stringify(message.content)
+										)}
+									</Paper>
+
+									{message.role === "user" &&
+										message.image && (
+											<AppBuilderImage
+												maw={250}
+												fit="scale-down"
+												src={message.image}
+											/>
+										)}
+								</Group>
 							</Group>
+							{/* Add feedback buttons for assistant messages */}
+							{message.role === "assistant" && (
+								<Group justify="end">
+									<ActionIcon
+										variant="subtle"
+										onClick={() =>
+											handleFeedback(1, message.traceId)
+										}
+									>
+										<Icon type={IconTypeEnum.ThumbUp} />
+									</ActionIcon>
+									<ActionIcon
+										variant="subtle"
+										onClick={() =>
+											handleFeedback(0, message.traceId)
+										}
+									>
+										<Icon type={IconTypeEnum.ThumbDown} />
+									</ActionIcon>
+								</Group>
+							)}
 						</Stack>
 					))}
 				</ScrollArea>
