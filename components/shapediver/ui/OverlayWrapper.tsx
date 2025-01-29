@@ -2,7 +2,7 @@ import React, {useMemo} from "react";
 import {
 	ResponsiveValueType,
 	useResponsiveValueSelector,
-} from "shared/hooks/ui/useResponsiveValueSelector";
+} from "@AppBuilderShared/hooks/ui/useResponsiveValueSelector";
 
 export const OverlayPosition = {
 	TOP_LEFT: "top-left",
