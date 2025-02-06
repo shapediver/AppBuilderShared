@@ -3,6 +3,7 @@ import {
 	IExportApi,
 	IParameterApi,
 	ISessionApi,
+	isFileParameterApi,
 } from "@shapediver/viewer.session";
 import {devtools} from "zustand/middleware";
 import {
@@ -44,7 +45,6 @@ import {
 } from "@AppBuilderShared/types/shapediver/export";
 import {addValidator} from "@AppBuilderShared/utils/parameterValidation";
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
-import {isFileParameter} from "@AppBuilderShared/types/shapediver/viewer";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter,
@@ -442,7 +442,7 @@ function createExportStore(
 				const parametersComplete = parameters ?? {};
 				for (const p of parameterApis) {
 					if (!(p.id in parametersComplete)) {
-						if (isFileParameter(p))
+						if (isFileParameterApi(p))
 							parametersComplete[p.id] = await p.upload();
 						else parametersComplete[p.id] = p.stringify();
 					}

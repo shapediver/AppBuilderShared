@@ -8,9 +8,9 @@ import {
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {isFileParameter} from "@AppBuilderShared/types/shapediver/viewer";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {isFileParameterApi} from "@shapediver/viewer.session";
 
 /**
  * Functional component that creates a file input for a file parameter.
@@ -32,7 +32,7 @@ export default function ParameterFileInputComponent(props: PropsParameter) {
 		if (
 			typeof value === "string" &&
 			value.length > 0 &&
-			isFileParameter(definition)
+			isFileParameterApi(definition)
 		) {
 			definition
 				.getFilename(value)
