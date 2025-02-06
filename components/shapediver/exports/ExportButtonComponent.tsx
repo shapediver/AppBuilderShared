@@ -2,7 +2,7 @@ import {Button, Loader} from "@mantine/core";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import React, {useState} from "react";
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
-import {fetchFileWithToken} from "@AppBuilderShared/utils/file";
+import {fetchFileWithToken} from "@shapediver/viewer.utils.mime-type";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
