@@ -2,13 +2,13 @@ import {FileInput} from "@mantine/core";
 import React, {useEffect} from "react";
 import {
 	extendMimeTypes,
+	guessMissingMimeType,
 	mapMimeTypeToFileEndings,
 } from "@shapediver/viewer.utils.mime-type";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {isFileParameter} from "@AppBuilderShared/types/shapediver/viewer";
-import {guessMissingMimeType} from "@AppBuilderShared/utils/file";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 
