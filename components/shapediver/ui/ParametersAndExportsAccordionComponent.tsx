@@ -56,12 +56,18 @@ interface Props {
 	 * Bottom padding of Paper component wrapping slider components.
 	 */
 	pbSlider?: string;
+	/**
+	 * Set this to true to identify groups by id instead of name. If so, 
+	 * multiple groups with the same name will be displayed as separate groups. 
+	 */
+	identifyGroupsById?: boolean;
 }
 
 const defaultProps: Partial<Props> = {
 	avoidSingleComponentGroups: true,
 	mergeAccordions: false,
 	pbSlider: "md",
+	identifyGroupsById: false,
 };
 
 type ParametersAndExportsAccordionComponentThemePropsType = Partial<Props>;
@@ -86,7 +92,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 	const componentContext = useContext(ComponentContext);
 
 	// style properties
-	const {pbSlider, avoidSingleComponentGroups, mergeAccordions} = useProps(
+	const {pbSlider, avoidSingleComponentGroups, mergeAccordions, identifyGroupsById} = useProps(
 		"ParametersAndExportsAccordionComponent",
 		defaultProps,
 		props,
@@ -109,7 +115,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 	}
 
 	// loop through the parameters and store the created elements in the elementGroups
-	sortedParamsAndExports.forEach((param) => {
+	sortedParamsAndExports.forEach((param, index) => {
 		// if a parameter is hidden, skip it
 		if (param.definition.hidden) return;
 
@@ -119,13 +125,14 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 			(defaultGroupName
 				? {id: "default", name: defaultGroupName}
 				: undefined);
+		const groupIdentifier = identifyGroupsById ? group?.id : group?.name;
 		if (!group) {
 			elementGroups.push({elements: []});
-		} else if (!(group.id in groupIds)) {
+		} else if (!(groupIdentifier! in groupIds)) {
 			elementGroups.push({group, elements: []});
-			groupIds[group.id] = elementGroups.length - 1;
+			groupIds[groupIdentifier!] = elementGroups.length - 1;
 		}
-		const groupId = group ? groupIds[group.id] : elementGroups.length - 1;
+		const groupId = group ? groupIds[groupIdentifier!] : elementGroups.length - 1;
 
 		if (param.parameter) {
 			// Get the element for the parameter and add it to the group
@@ -134,7 +141,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 
 			elementGroups[groupId].elements.push(
 				<Paper
-					key={param.definition.id}
+					key={index}
 					pb={extraBottomPadding ? pbSlider : undefined}
 				>
 					<ParameterComponent
@@ -154,7 +161,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 			);
 
 			elementGroups[groupId].elements.push(
-				<Paper key={param.definition.id}>
+				<Paper key={index}>
 					<ExportComponent {...param.export} />
 				</Paper>,
 			);

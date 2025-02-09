@@ -566,6 +566,7 @@ export const useCustomTheme = (props: Props = {}) => {
 					//avoidSingleComponentGroups: true,
 					//mergeAccordions: false,
 					//pbSlider: "md",
+					//identifyGroupsById: false,
 				}),
 			/**
 			 * ParameterColorComponent
