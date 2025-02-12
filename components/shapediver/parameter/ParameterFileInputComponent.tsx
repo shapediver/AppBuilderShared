@@ -1,5 +1,5 @@
 import {FileInput} from "@mantine/core";
-import React, {useEffect} from "react";
+import React, {useEffect, useMemo} from "react";
 import {
 	extendMimeTypes,
 	guessMissingMimeType,
@@ -22,10 +22,14 @@ export default function ParameterFileInputComponent(props: PropsParameter) {
 		useParameterComponentCommons<File>(props, 0);
 
 	// create the file endings from all the formats that are specified in the parameter
-	const fileEndings = [
-		...mapMimeTypeToFileEndings(extendMimeTypes(definition.format!)),
-	];
-
+	const fileEndings = useMemo(() => {
+		const mimeTypes = extendMimeTypes(definition.format!);
+		return [
+			...mapMimeTypeToFileEndings(mimeTypes),
+			...mimeTypes
+		];
+	}, [definition.format]);
+	
 	// create a pseudo file in case the value is a file id and a filename for it exists
 	const [defaultFile, setDefaultFile] = React.useState<File | null>(null);
 	useEffect(() => {
