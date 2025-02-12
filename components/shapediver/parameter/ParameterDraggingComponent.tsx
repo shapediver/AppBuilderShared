@@ -27,8 +27,8 @@ const parseDraggedNodes = (
 		const parsed = JSON.parse(value);
 
 		return parsed.objects;
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	} catch (e) {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		return [];
 	}
 };
@@ -59,10 +59,9 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	const [parsedExecValue, setParsedExecValue] = useState<
 		DraggingParameterValue["objects"]
 	>([]);
-	// reference to the combined dragged nodes
-	const [combinedDraggedNodes, setCombinedDraggedNodes] = useState<
+	const [parsedUiValue, setParsedUiValue] = useState<
 		DraggingParameterValue["objects"]
-	>([]);
+	>(parseDraggedNodes(state.uiValue));
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
@@ -73,7 +72,7 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 			viewportId,
 			draggingProps,
 			draggingActive,
-			parseDraggedNodes(value),
+			parsedUiValue,
 		);
 
 	// reference to the last confirmed value
@@ -82,10 +81,9 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	);
 
 	useEffect(() => {
-		setCombinedDraggedNodes(
-			calculateCombinedDraggedNodes(parsedExecValue, draggedNodes),
-		);
-	}, [parsedExecValue, draggedNodes]);
+		const parsed = parseDraggedNodes(state.uiValue);
+		setParsedUiValue(parsed);
+	}, [state.uiValue]);
 
 	useEffect(() => {
 		const parsed = parseDraggedNodes(state.execValue);
@@ -166,7 +164,7 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 						className={classes.interactionText}
 					>
 						{draggingProps.prompt?.activeTitle ??
-							`Currently dragged objects: ${combinedDraggedNodes.length}`}
+							`Currently dragged objects: ${lastConfirmedValueRef.current.length}`}
 					</Text>
 					<Text
 						size="sm"
@@ -213,12 +211,12 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 			disabled={disabled}
 			className={classes.interactionButton}
 			rightSection={<Icon type={IconTypeEnum.IconHandFinger} />}
-			variant={combinedDraggedNodes.length === 0 ? "light" : "filled"}
+			variant={parsedUiValue.length === 0 ? "light" : "filled"}
 			onClick={() => setDraggingActive(true)}
 		>
 			<Text size="sm" className={classes.interactionText}>
 				{draggingProps.prompt?.inactiveTitle ??
-					`Start dragging (${combinedDraggedNodes.length})`}
+					`Start dragging (${parsedUiValue.length})`}
 			</Text>
 		</Button>
 	);
