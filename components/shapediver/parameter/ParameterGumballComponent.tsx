@@ -32,8 +32,8 @@ const parseTransformation = (
 			name,
 			transformation: parsed.transformations[i],
 		}));
-	} catch (e) {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	} catch (e) {
 		return [];
 	}
 };
@@ -98,6 +98,11 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		setParsedExecValue(parsedExecValue);
 		setLastConfirmedValue(parsedExecValue);
 	}, [state.execValue]);
+	
+	// reset the transformed nodes when the definition changes
+	useEffect(() => {
+		setSelectedNodeNames([]);
+	}, [definition]);
 
 	/**
 	 * Callback function to change the value of the parameter.

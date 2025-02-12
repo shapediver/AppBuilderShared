@@ -101,6 +101,12 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 			setDirty(false);
 		}
 	}, [state.uiValue, selectedNodeNames]);
+	
+
+	// reset the selected node names when the definition changes
+	useEffect(() => {
+		setSelectedNodeNames([]);
+	}, [definition]);
 
 	/**
 	 * Callback function to change the value of the parameter.
