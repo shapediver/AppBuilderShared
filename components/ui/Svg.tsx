@@ -63,6 +63,8 @@ export default function Svg(props: SvgProps) {
 			});
 	}, [srcUrl]);
 
+	useEffect(() => () => setSvgElement(null), []);
+
 	if (svgElement)
 		return (
 			<section
