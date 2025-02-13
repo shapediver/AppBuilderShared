@@ -3,9 +3,13 @@ import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverS
 import {
 	createDrawingTools,
 	GeometryRestrictionApi,
+	GeometryRestrictionProperties,
 	IDrawingToolsApi,
 	PlaneRestrictionApi,
+	PlaneRestrictionProperties,
 	PointsData,
+	RESTRICTION_TYPE,
+	RestrictionProperties,
 	Settings,
 } from "@shapediver/viewer.features.drawing-tools";
 import {useEffect, useState} from "react";
@@ -39,12 +43,19 @@ export function useDrawingToolsApi(
 	// get the drawing tools options from the store
 	const {
 		showPointLabels,
+		setShowPointLabels,
 		showDistanceLabels,
+		setShowDistanceLabels,
 		gridSize,
+		setGridSize,
 		angleStep,
+		setAngleStep,
 		snapToVertices,
+		setSnapToVertices,
 		snapToEdges,
+		setSnapToEdges,
 		snapToFaces,
+		setSnapToFaces
 	} = useDrawingOptionsStore();
 
 	// get the viewport API
@@ -68,28 +79,93 @@ export function useDrawingToolsApi(
 				drawingToolsSettings,
 			);
 
-			// set the drawing tools options from the store
-			drawingToolsApi.showPointLabels = showPointLabels;
-			drawingToolsApi.showDistanceLabels = showDistanceLabels;
-			Object.values(drawingToolsApi.restrictions)
-				.filter((r) => r instanceof PlaneRestrictionApi)
-				.forEach((p) => (p.gridRestrictionApi.gridUnit = gridSize));
-			Object.values(drawingToolsApi.restrictions)
-				.filter((r) => r instanceof PlaneRestrictionApi)
-				.forEach(
-					(p) =>
-						(p.angularRestrictionApi.angleStep =
-							Math.PI / angleStep),
-				);
-			Object.values(drawingToolsApi.restrictions)
-				.filter((r) => r instanceof GeometryRestrictionApi)
-				.forEach((p) => (p.snapToVertices = snapToVertices));
-			Object.values(drawingToolsApi.restrictions)
-				.filter((r) => r instanceof GeometryRestrictionApi)
-				.forEach((p) => (p.snapToEdges = snapToEdges));
-			Object.values(drawingToolsApi.restrictions)
-				.filter((r) => r instanceof GeometryRestrictionApi)
-				.forEach((p) => (p.snapToFaces = snapToFaces));
+			/**
+			 * The following code is used to update the drawing tools options or update the drawing tools themselves.
+			 * If there are settings provided, the drawing tools options are updated.
+			 * If there are no settings provided, the drawing tools options are set from the store.
+			 */
+
+			if(drawingToolsSettings.visualization?.pointLabels !== undefined) {
+				// update the store with the drawing tools options (the drawing tools are already updated correctly)
+				setShowPointLabels(drawingToolsSettings.visualization?.pointLabels);
+			} else {
+				// set the drawing tools options from the store
+				drawingToolsApi.showPointLabels = showPointLabels;
+			}
+
+			if(drawingToolsSettings.visualization?.distanceLabels !== undefined) {
+				// update the store with the drawing tools options (the drawing tools are already updated correctly)
+				setShowDistanceLabels(drawingToolsSettings.visualization?.distanceLabels);
+			} else {
+				// set the drawing tools options from the store
+				drawingToolsApi.showDistanceLabels = showDistanceLabels;
+			}
+
+			const restrictions: {
+				[key: string]: RestrictionProperties;
+			} = drawingToolsSettings.restrictions !== undefined ? drawingToolsSettings.restrictions as {
+				[key: string]: RestrictionProperties;
+			} : {};
+
+			// find the first plane restriction
+			const planeRestriction = Object.values(restrictions).find((r: RestrictionProperties) => r.type === RESTRICTION_TYPE.PLANE) as PlaneRestrictionProperties;
+
+			if(planeRestriction?.gridSnapRestriction?.gridUnit !== undefined) {
+				// update the store with the drawing tools options (the drawing tools are already updated correctly)
+				setGridSize(planeRestriction?.gridSnapRestriction?.gridUnit);
+			} else {
+				// set the drawing tools options from the store
+				Object.values(drawingToolsApi.restrictions)
+					.filter((r) => r instanceof PlaneRestrictionApi)
+					.forEach((p) => (p.gridRestrictionApi.gridUnit = gridSize));
+			}
+
+			if(planeRestriction?.angularSnapRestriction?.angleStep !== undefined) {
+				// update the store with the drawing tools options (the drawing tools are already updated correctly)
+				setAngleStep(Math.PI / planeRestriction?.angularSnapRestriction?.angleStep);
+			} else {
+				// set the drawing tools options from the store
+				Object.values(drawingToolsApi.restrictions)
+					.filter((r) => r instanceof PlaneRestrictionApi)
+					.forEach(
+						(p) =>
+							(p.angularRestrictionApi.angleStep =
+								Math.PI / angleStep),
+					);
+			}
+
+			// find the first geometry restriction
+			const geometryRestriction = Object.values(restrictions).find((r: RestrictionProperties) => r.type === RESTRICTION_TYPE.GEOMETRY) as GeometryRestrictionProperties;
+
+			if(geometryRestriction?.snapToVertices !== undefined) {
+				// update the store with the drawing tools options (the drawing tools are already updated correctly)
+				setSnapToVertices(geometryRestriction?.snapToVertices);
+			} else {
+				// set the drawing tools options from the store
+				Object.values(drawingToolsApi.restrictions)
+					.filter((r) => r instanceof GeometryRestrictionApi)
+					.forEach((p) => (p.snapToVertices = snapToVertices));
+			}
+
+			if(geometryRestriction?.snapToEdges !== undefined) {
+				// update the store with the drawing tools options (the drawing tools are already updated correctly)
+				setSnapToEdges(geometryRestriction?.snapToEdges);
+			} else {
+				// set the drawing tools options from the store
+				Object.values(drawingToolsApi.restrictions)
+					.filter((r) => r instanceof GeometryRestrictionApi)
+					.forEach((p) => (p.snapToEdges = snapToEdges));
+			}
+
+			if(geometryRestriction?.snapToFaces !== undefined) {
+				// update the store with the drawing tools options (the drawing tools are already updated correctly)
+				setSnapToFaces(geometryRestriction?.snapToFaces);
+			} else {
+				// set the drawing tools options from the store
+				Object.values(drawingToolsApi.restrictions)
+					.filter((r) => r instanceof GeometryRestrictionApi)
+					.forEach((p) => (p.snapToFaces = snapToFaces));
+			}
 
 			drawingToolsApis[viewportId] = drawingToolsApi;
 			setDrawingToolsApi(drawingToolsApi);
