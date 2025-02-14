@@ -141,7 +141,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 
 			elementGroups[groupId].elements.push(
 				<Paper
-					key={index}
+					key={param.definition.id}
 					pb={extraBottomPadding ? pbSlider : undefined}
 				>
 					<ParameterComponent
@@ -161,7 +161,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 			);
 
 			elementGroups[groupId].elements.push(
-				<Paper key={index}>
+				<Paper key={param.definition.id}>
 					<ExportComponent {...param.export} />
 				</Paper>,
 			);
