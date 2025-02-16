@@ -48,8 +48,8 @@ export function useCreateModelState(props: Props) {
 					? await getScreenshot()
 					: undefined;
 
-			return sessionApi
-				? sessionApi.createModelState(
+			const modelStateId = sessionApi
+				? await sessionApi.createModelState(
 						parameterValues,
 						omitSessionParameterValues,
 						screenshot,
@@ -59,6 +59,8 @@ export function useCreateModelState(props: Props) {
 							: undefined,
 					)
 				: undefined;
+
+			return {modelStateId, screenshot};
 		},
 		[sessionApi, getScreenshot, convertToGlTF],
 	);

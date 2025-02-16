@@ -31,7 +31,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 	const {createModelState} = useCreateModelState({namespace});
 
 	const onClick = useCallback(async () => {
-		const modelStateId = await createModelState(
+		const {modelStateId} = await createModelState(
 			undefined, // <-- use parameter values of the session
 			false, // <-- use parameter values of the session
 			includeImage,

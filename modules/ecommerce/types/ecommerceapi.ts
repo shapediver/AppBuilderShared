@@ -36,6 +36,11 @@ export interface IAddItemToCartData {
 	 * The id of the ShapeDiver model state that should be linked to the cart item.
 	 */
 	modelStateId?: string;
+
+	/**
+	 * Image URL of the product to be added to the cart.
+	 */
+	imageUrl?: string;
 }
 
 export interface IAddItemToCartReply {
