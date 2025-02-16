@@ -1,4 +1,4 @@
-import React, {useCallback, useContext} from "react";
+import React, {useCallback, useContext, useState} from "react";
 import {IAppBuilderActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
@@ -34,11 +34,14 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 
 	const notifications = useContext(NotificationContext);
 
+	const [loading, setLoading] = useState(false);
+
 	const onClick = useCallback(async () => {
+		setLoading(true);
 		// in case we are not running inside an iframe, the instance of
 		// IEcommerceApi will be a dummy for testing
 		const api = await ECommerceApiSingleton;
-		const modelStateId = await createModelState(
+		const {modelStateId, screenshot} = await createModelState(
 			undefined, // <-- use parameter values of the session
 			false, // <-- use parameter values of the session
 			includeImage,
@@ -52,6 +55,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 				quantity,
 				price,
 				description,
+				imageUrl: screenshot,
 			});
 			// TODO display modal instead of notification, offer possibility to hide configurator
 			notifications.success({
@@ -63,6 +67,8 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 			});
 			// TODO report error to sentry
 			throw e;
+		} finally {
+			setLoading(false);
 		}
 	}, [
 		productId,
@@ -80,6 +86,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 			icon={icon}
 			tooltip={tooltip}
 			onClick={onClick}
+			loading={loading}
 		/>
 	);
 }

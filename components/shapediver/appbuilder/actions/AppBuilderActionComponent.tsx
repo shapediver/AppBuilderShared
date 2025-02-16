@@ -15,7 +15,10 @@ type ButtonComponentProps<C = "button"> = PolymorphicComponentProps<
 	ButtonProps
 >;
 
-type Props = IAppBuilderActionPropsCommon & ButtonComponentProps;
+type Props = IAppBuilderActionPropsCommon &
+	ButtonComponentProps & {
+		loading?: boolean;
+	};
 
 /**
  * Functional component common to all action components.
@@ -23,7 +26,7 @@ type Props = IAppBuilderActionPropsCommon & ButtonComponentProps;
  * @returns
  */
 export default function AppBuilderActionComponent(props: Props) {
-	const {label, icon, tooltip, onClick, ...rest} = props;
+	const {label, icon, tooltip, onClick, loading, ...rest} = props;
 	const iconOnly = !label && icon;
 	const useCloseButton = iconOnly && icon === IconTypeEnum.X;
 	const _onclick = onClick === null ? undefined : onClick;
@@ -35,6 +38,7 @@ export default function AppBuilderActionComponent(props: Props) {
 			leftSection={!iconOnly && icon ? <Icon type={icon} /> : undefined}
 			{...rest}
 			onClick={_onclick}
+			loading={loading}
 		>
 			{iconOnly ? <Icon type={icon} /> : label}
 		</Button>

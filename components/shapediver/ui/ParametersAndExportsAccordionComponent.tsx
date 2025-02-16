@@ -57,8 +57,8 @@ interface Props {
 	 */
 	pbSlider?: string;
 	/**
-	 * Set this to true to identify groups by id instead of name. If so, 
-	 * multiple groups with the same name will be displayed as separate groups. 
+	 * Set this to true to identify groups by id instead of name. If so,
+	 * multiple groups with the same name will be displayed as separate groups.
 	 */
 	identifyGroupsById?: boolean;
 }
@@ -92,11 +92,12 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 	const componentContext = useContext(ComponentContext);
 
 	// style properties
-	const {pbSlider, avoidSingleComponentGroups, mergeAccordions, identifyGroupsById} = useProps(
-		"ParametersAndExportsAccordionComponent",
-		defaultProps,
-		props,
-	);
+	const {
+		pbSlider,
+		avoidSingleComponentGroups,
+		mergeAccordions,
+		identifyGroupsById,
+	} = useProps("ParametersAndExportsAccordionComponent", defaultProps, props);
 
 	// create a data structure to store the elements within groups
 	const elementGroups: {
@@ -132,7 +133,9 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 			elementGroups.push({group, elements: []});
 			groupIds[groupIdentifier!] = elementGroups.length - 1;
 		}
-		const groupId = group ? groupIds[groupIdentifier!] : elementGroups.length - 1;
+		const groupId = group
+			? groupIds[groupIdentifier!]
+			: elementGroups.length - 1;
 
 		if (param.parameter) {
 			// Get the element for the parameter and add it to the group
