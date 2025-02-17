@@ -63,13 +63,11 @@ export default function Svg(props: SvgProps) {
 			});
 	}, [srcUrl]);
 
-	useEffect(() => () => setSvgElement(null), []);
-
 	if (svgElement)
 		return (
 			<section
 				style={{height: "inherit"}}
-				ref={(ref) => ref?.appendChild(svgElement)}
+				ref={(ref) => ref?.replaceChildren(svgElement)}
 			/>
 		);
 
