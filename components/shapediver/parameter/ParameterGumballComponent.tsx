@@ -101,7 +101,9 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 	
 	// reset the transformed nodes when the definition changes
 	useEffect(() => {
-		setSelectedNodeNames([]);
+		const parsedExecValue = parseTransformation(state.execValue);
+		setParsedExecValue(parsedExecValue);
+		setLastConfirmedValue(parsedExecValue);
 	}, [definition]);
 
 	/**

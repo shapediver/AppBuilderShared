@@ -105,7 +105,8 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 
 	// reset the selected node names when the definition changes
 	useEffect(() => {
-		setSelectedNodeNames([]);
+		const parsed = parseNames(value);
+		setSelectedNodeNames(parsed);
 	}, [definition]);
 
 	/**
