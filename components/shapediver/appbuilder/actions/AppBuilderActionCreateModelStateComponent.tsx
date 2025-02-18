@@ -1,4 +1,4 @@
-import React, {useCallback, useContext} from "react";
+import React, {useCallback, useContext, useState} from "react";
 import {IAppBuilderActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
@@ -30,7 +30,11 @@ export default function AppBuilderActionCreateModelStateComponent(
 
 	const {createModelState} = useCreateModelState({namespace});
 
+	const [loading, setLoading] = useState(false);
+
 	const onClick = useCallback(async () => {
+		setLoading(true);
+		
 		const {modelStateId} = await createModelState(
 			undefined, // <-- use parameter values of the session
 			false, // <-- use parameter values of the session
@@ -48,6 +52,8 @@ export default function AppBuilderActionCreateModelStateComponent(
 				message: `Model state with ID ${modelStateId} has been saved.`,
 			});
 		}
+
+		setLoading(false);
 	}, [createModelState, includeImage, includeGltf]);
 
 	return (
@@ -56,6 +62,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 			icon={icon}
 			tooltip={tooltip}
 			onClick={onClick}
+			loading={loading}
 		/>
 	);
 }
