@@ -42,7 +42,9 @@ export function useViewport(props: ViewportCreateDto) {
 
 			if (viewportApi)
 				addViewportAccessFunctions(_props.id, {
-					convertToGlTF: viewportApi.convertToGlTF.bind(viewportApi),
+					convertToGlTF: async () => {
+						return viewportApi.convertToGlTF(undefined, true);
+					},
 					getScreenshot: async () => {
 						const screenshot = viewportApi.getScreenshot();
 						// sometimes the screenshot is not ready immediately (even though it should be)
