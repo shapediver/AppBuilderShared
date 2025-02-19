@@ -160,7 +160,6 @@ export default function ViewportIcons(
 								type={IconTypeEnum.AugmentedReality}
 								color={isArLoading ? colorDisabled : color}
 								className={classes.viewportIcon}
-								stroke={2}
 							/>
 						</ActionIcon>
 					</div>
@@ -210,7 +209,7 @@ export default function ViewportIcons(
 						aria-label="Zoom extents"
 						style={iconStyle}
 					>
-						<Icon type={IconTypeEnum.ZoomIn} color={color} className={classes.viewportIcon} stroke={2} />
+						<Icon type={IconTypeEnum.ZoomIn} color={color} className={classes.viewportIcon} />
 					</ActionIcon>
 				</TooltipWrapper>
 			)}
@@ -242,7 +241,6 @@ export default function ViewportIcons(
 									: color
 							}
 							className={classes.viewportIcon}
-							stroke={2}
 						/>
 					</ActionIcon>
 				</TooltipWrapper>
@@ -271,7 +269,7 @@ export default function ViewportIcons(
 							label="Cameras"
 						>
 							<Menu.Target>
-								<Icon type={IconTypeEnum.Video} className={classes.viewportIcon} color={color} stroke={2} />
+								<Icon type={IconTypeEnum.Video} className={classes.viewportIcon} color={color} />
 							</Menu.Target>
 						</TooltipWrapper>
 					</ActionIcon>
