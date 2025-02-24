@@ -106,7 +106,8 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 	// reset the selected node names when the definition changes
 	useEffect(() => {
 		const parsed = parseNames(value);
-		setSelectedNodeNames(parsed);
+		if(JSON.stringify(parsed) !== JSON.stringify(selectedNodeNames))
+			setSelectedNodeNames(parsed);
 	}, [definition]);
 
 	/**

@@ -83,8 +83,10 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	// reset the dragged nodes when the definition changes
 	useEffect(() => {
 		const parsed = parseDraggedNodes(state.execValue);
-		setParsedExecValue(parsed);
-		setDraggedNodes([]);
+		if(JSON.stringify(parsed) !== JSON.stringify(parsedExecValue)) {
+			setParsedExecValue(parsed);
+			setDraggedNodes([]);
+		}
 	}, [definition]);
 
 	useEffect(() => {
