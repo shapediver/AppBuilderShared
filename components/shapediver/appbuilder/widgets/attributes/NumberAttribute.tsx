@@ -39,6 +39,8 @@ export default function NumberAttribute(props: Props) {
 	});
 	const [optionsOpened, setOptionsOpened] = useState(false);
 	const [backgroundColor, setBackgroundColor] = useState<string>("");
+	const [minValue, setMinValue] = useState<string>(attributeDefinition.min! + "");
+	const [maxValue, setMaxValue] = useState<string>(attributeDefinition.max! + "");
 
 	useEffect(() => {
 		updateAttribute(attribute);
@@ -105,26 +107,36 @@ export default function NumberAttribute(props: Props) {
 			removeAttribute={removeAttribute}
 			changeOrder={changeOrder}
 			options={legend}
-		>
+		>w
 			<TextInput
 				label="Minimum"
-				value={attribute.min?.toString()}
-				onChange={(event) =>
+				value={minValue}
+				onChange={(event) => {
+					setMinValue(event.currentTarget.value);
+					// Check if the value is a number
+					if (isNaN(+event.currentTarget.value))
+						return;
+					
 					setAttribute({
 						...attribute,
-						min: parseFloat(event.currentTarget.value) || 0,
-					})
-				}
+						min: +event.currentTarget.value,
+					});
+				}}
 			/>
 			<TextInput
 				label="Maximum"
-				value={attribute.max?.toString()}
-				onChange={(event) =>
+				value={maxValue}
+				onChange={(event) => {
+					setMaxValue(event.currentTarget.value);
+					// Check if the value is a number
+					if (isNaN(+event.currentTarget.value))
+						return;
+
 					setAttribute({
 						...attribute,
-						max: parseFloat(event.currentTarget.value) || 0,
-					})
-				}
+						max: +event.currentTarget.value,
+					});
+				}}
 			/>
 			<Select
 				label="Visualization"
