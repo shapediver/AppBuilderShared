@@ -203,10 +203,10 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 							ta="left"
 							className={classes.interactionText}
 						>
-							{(selectionProps.prompt?.activeText ??
-							minimumSelection === maximumSelection)
+							{selectionProps.prompt?.activeText ??
+							(minimumSelection === maximumSelection
 								? `Select ${minimumSelection} object${minimumSelection > 1 ? "s" : ""}`
-								: `Select between ${minimumSelection} and ${maximumSelection} objects`}
+								: `Select between ${minimumSelection} and ${maximumSelection} objects`)}
 						</Text>
 					</Box>
 					<Box style={{width: "auto"}}>
