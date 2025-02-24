@@ -61,27 +61,29 @@ export default function SelectedAttribute(props: SelectedAttributeProps) {
 			).api;
 			if (!sessionApi) return;
 
-			const nameFilter: string[] = [];
+			const nameFilterPerSession: string[] = [];
 			newNode.traverse((node) => {
 				for (const data of node.data) {
 					if (data instanceof SDTFItemData) {
 						// get the name of the node and add it to the name filter
 						const path = node.getPath().split(".");
 						// remove the first two elements of the path, because they are the root and session name
-						path.shift();
+						// we might get here before the session is even added to the root, so we check for that
+						if(path[0] === "root")
+							path.shift();
 						path.shift();
 						// replace the first element of the path with the output name
 						const outputApi = sessionApi.outputs[path[0]];
 						if (!outputApi) continue;
 						path[0] = outputApi.name;
-						nameFilter.push(path.join("."));
+						nameFilterPerSession.push(path.join("."));
 					}
 				}
 			});
 
 			setNameFilter((prev) => {
 				const newFilter = {...prev};
-				newFilter[sessionApi.id] = nameFilter;
+				newFilter[sessionApi.id] = nameFilterPerSession;
 
 				return newFilter;
 			});
