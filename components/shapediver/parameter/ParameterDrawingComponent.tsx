@@ -146,8 +146,10 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 
 	useEffect(() => {
 		const parsed = parsePointsData(state.execValue);
-		setPointsData(parsed);
-		setParsedUiValue(parsed);
+		if(JSON.stringify(parsed) !== JSON.stringify(parsedUiValue)) {
+			setPointsData(parsed);
+			setParsedUiValue(parsed);
+		}
 	}, [definition]);
 
 	// react to changes of the uiValue and update the drawing state if necessary
