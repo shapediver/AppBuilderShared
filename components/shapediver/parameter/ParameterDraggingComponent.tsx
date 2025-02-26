@@ -83,9 +83,10 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	// reset the dragged nodes when the definition changes
 	useEffect(() => {
 		const parsed = parseDraggedNodes(state.execValue);
-		if(JSON.stringify(parsed) !== JSON.stringify(parsedExecValue)) {
+		if(JSON.stringify(parsed) !== JSON.stringify(lastConfirmedValueRef.current)) {
 			setParsedExecValue(parsed);
 			setDraggedNodes([]);
+			lastConfirmedValueRef.current = [];
 		}
 	}, [definition]);
 
@@ -98,6 +99,7 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 		const parsed = parseDraggedNodes(state.execValue);
 		setParsedExecValue(parsed);
 		setDraggedNodes([]);
+		lastConfirmedValueRef.current = [];
 	}, [state.execValue]);
 
 	useEffect(() => {
