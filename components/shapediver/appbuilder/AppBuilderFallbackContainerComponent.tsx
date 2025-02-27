@@ -7,18 +7,15 @@ import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components
 import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import AppBuilderAgentWidgetComponent from "./widgets/AppBuilderAgentWidgetComponent";
 
 interface Props {
 	parameters: PropsParameter[];
 	exports: PropsExport[];
-	namespace: string;
 }
 
 export default function AppBuilderFallbackContainerComponent({
 	parameters,
 	exports,
-	namespace,
 }: Props) {
 	const tabProps: ITabsComponentProps = useMemo(() => {
 		const tabProps: ITabsComponentProps = {
@@ -37,11 +34,6 @@ export default function AppBuilderFallbackContainerComponent({
 						topSection={
 							<AcceptRejectButtons parameters={parameters} />
 						}
-					/>,
-					// SS-8371 add AppBuilderAgentWidgetComponent for testing
-					<AppBuilderAgentWidgetComponent
-						key={1}
-						namespace={namespace}
 					/>,
 				],
 			});
