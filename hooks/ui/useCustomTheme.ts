@@ -484,6 +484,8 @@ export const useCustomTheme = (props: Props = {}) => {
 			}),
 			AppBuilderAgentWidgetComponent: AppBuilderAgentWidgetThemeProps({
 				// systemPrompt: "Hi there",
+				// parameterNamesToInclude: ["PARAM_NAME_1", "PARAM_NAME_2"],
+				// parameterNamesToExclude: ["PARAM_NAME_1", "PARAM_NAME_2"],
 				// authorContext: "",
 				// debug: true,
 				// maxHistory: 10,

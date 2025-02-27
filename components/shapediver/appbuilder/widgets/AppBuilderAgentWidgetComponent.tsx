@@ -58,6 +58,10 @@ import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 type ComponentProps = PaperProps & {
 	/** The system prompt to use. */
 	systemPrompt: string;
+	/** If provided, only parameters with these names are included. */
+	parameterNamesToInclude: string[];
+	/** If provided, parameters with these names are excluded. */
+	parameterNamesToExclude: string[];
 	/** Allows to override the context given by the author of the Grasshopper model via App Builder. */
 	authorContext: string;
 	/** Set to true to show and allow to edit system prompt and author context. */
@@ -76,7 +80,8 @@ type ComponentProps = PaperProps & {
 	langfuseBaseUrl: string;
 };
 
-const DEFAULT_SYSTEM_PROMPT = "You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about the 3D configurator \
+const DEFAULT_SYSTEM_PROMPT =
+	"You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about the 3D configurator \
 based on the user's input and the context provided. You may answer questions by the user without changing parameters.";
 
 /** Default values for component properties. */
@@ -226,20 +231,28 @@ const SUPPORTED_PARAMETER_TYPES = [
  * Create a context string for a list of parameters that can be passed to the LLM.
  * @param parameters Parameters to create context for.
  * @param parameterNames If provided, only parameters with these names are included.
+ * @param parameterNamesToExclude If provided, parameters with these names are excluded.
  * @param parameterRefs Parameter references used in the App Builder data defining the UI.
  */
 function createParametersContext(
 	parameters: IShapeDiverParameter<any>[],
 	parameterNames: string[] | undefined,
+	parameterNamesToExclude: string[] | undefined,
 	parameterRefs: IAppBuilderParameterRef[],
 ) {
 	parameters = parameters
 		.filter(
 			(p) =>
-				!parameterNames ||
-				parameterNames.includes(p.definition.name) ||
-				(p.definition.displayname &&
-					parameterNames.includes(p.definition.displayname)),
+				(!parameterNames ||
+					parameterNames.includes(p.definition.name) ||
+					(p.definition.displayname &&
+						parameterNames.includes(p.definition.displayname))) &&
+				(!parameterNamesToExclude ||
+					!parameterNamesToExclude.includes(p.definition.name) ||
+					(p.definition.displayname &&
+						!parameterNamesToExclude.includes(
+							p.definition.displayname,
+						))),
 		)
 		.filter((p) => SUPPORTED_PARAMETER_TYPES.includes(p.definition.type));
 
@@ -350,6 +363,8 @@ export default function AppBuilderAgentWidgetComponent(
 	const {
 		debug = urlParams.get("debug") === "1" ||
 			urlParams.get("debug") === "true",
+		parameterNamesToInclude,
+		parameterNamesToExclude,
 		systemPrompt: _systemPrompt,
 		authorContext: _authorContext,
 		maxHistory = urlParams.get("maxHistory") !== null
@@ -367,34 +382,32 @@ export default function AppBuilderAgentWidgetComponent(
 		...paperProps
 	} = themeProps;
 
-	console.debug(maxHistory, model, openaiApiKey, langfusePublicKey, langfuseSecretKey, langfuseBaseUrl);
-
 	/** Initialize the OpenAI API client. */
 	const OPENAI =
 		model && openaiApiKey
 			? new OpenAI({
-				apiKey: openaiApiKey,
-				dangerouslyAllowBrowser: true, // Required for client-side usage
-			})
+					apiKey: openaiApiKey,
+					dangerouslyAllowBrowser: true, // Required for client-side usage
+				})
 			: undefined;
 
 	const LANGFUSE =
 		langfusePublicKey && langfuseSecretKey
 			? new Langfuse({
-				secretKey: langfuseSecretKey,
-				publicKey: langfusePublicKey,
-				baseUrl: langfuseBaseUrl || "https://cloud.langfuse.com",
-				release: packagejson.version,
-			})
+					secretKey: langfuseSecretKey,
+					publicKey: langfusePublicKey,
+					baseUrl: langfuseBaseUrl || "https://cloud.langfuse.com",
+					release: packagejson.version,
+				})
 			: undefined;
 
 	// Initialize LangfuseWeb for client-side feedback
 	const LANGFUSEWEB = langfusePublicKey
 		? new LangfuseWeb({
-			publicKey: langfusePublicKey,
-			baseUrl: langfuseBaseUrl || "https://cloud.langfuse.com",
-			release: packagejson.version,
-		})
+				publicKey: langfusePublicKey,
+				baseUrl: langfuseBaseUrl || "https://cloud.langfuse.com",
+				release: packagejson.version,
+			})
 		: undefined;
 
 	/** Current chat input by the user. */
@@ -412,9 +425,13 @@ export default function AppBuilderAgentWidgetComponent(
 		[],
 	);
 	/** Grasshopper prompt */
-	const [authorContext, setAuthorContext] = useState<string | undefined>(_authorContext ?? context);
+	const [authorContext, setAuthorContext] = useState<string | undefined>(
+		_authorContext ?? context,
+	);
 	/** System prompt */
-	const [systemPrompt, setSystemPrompt] = useState<string>(_systemPrompt ?? DEFAULT_SYSTEM_PROMPT);
+	const [systemPrompt, setSystemPrompt] = useState<string>(
+		_systemPrompt ?? DEFAULT_SYSTEM_PROMPT,
+	);
 
 	/** Session if for langfuse */
 	const langfuseSessionId = useMemo(() => crypto.randomUUID(), []);
@@ -504,10 +521,18 @@ export default function AppBuilderAgentWidgetComponent(
 				Object.values(parameters),
 				// skip dynamic parameters for now
 				//	.concat(Object.values(dynamicParameters))
-				parameterNames,
+				parameterNamesToInclude ?? parameterNames,
+				parameterNamesToExclude,
 				parameterRefs,
 			),
-		[parameters, dynamicParameters, parameterNames, parameterRefs],
+		[
+			parameters,
+			dynamicParameters,
+			parameterNames,
+			parameterNamesToInclude,
+			parameterNamesToExclude,
+			parameterRefs,
+		],
 	);
 
 	/**
@@ -730,32 +755,13 @@ I have provided a screenshot of the 3D view for context.`
 	}
 	styleProps.fontWeight = "100";
 
+	// Duplicate and reverse the chat history for display
+	const chatHistoryReverse = chatHistory.slice().reverse();
+
 	return (
 		<Paper {...paperProps} style={styleProps}>
 			{OPENAI ? (
 				<Stack>
-					{debug ? (
-						<>
-							<Text size="sm">Context from Grasshopper:</Text>
-							<Textarea
-								value={authorContext}
-								onChange={(event) =>
-									setAuthorContext(event.currentTarget.value)
-								}
-								autosize
-								maxRows={10}
-							/>
-							<Text size="sm">System prompt:</Text>
-							<Textarea
-								value={systemPrompt}
-								onChange={(event) =>
-									setSystemPrompt(event.currentTarget.value)
-								}
-								autosize
-								maxRows={15}
-							/>
-						</>
-					) : null}
 					<Group>
 						{userImage ? (
 							<TooltipWrapper label={"Remove image"}>
@@ -821,9 +827,9 @@ I have provided a screenshot of the 3D view for context.`
 					{userImage && <AppBuilderImage src={userImage} />}
 					{screenshot && <AppBuilderImage src={screenshot} />}
 
-					<ScrollArea h={300}>
-						{chatHistory.map((message, index) => (
-							<Stack key={index} pb="md">
+					<ScrollArea>
+						{chatHistoryReverse.map((message, index) => (
+							<Stack key={index} pb="sm">
 								<Group align="start" w="100%" wrap="nowrap">
 									<Box pt="xs">
 										{message.role === "user" ? (
@@ -842,22 +848,22 @@ I have provided a screenshot of the 3D view for context.`
 										<Paper withBorder={false}>
 											{typeof message.content ===
 											"string" ? (
-													<MarkdownWidgetComponent>
-														{message.content}
-													</MarkdownWidgetComponent>
-												) : (
-													JSON.stringify(message.content)
-												)}
+												<MarkdownWidgetComponent>
+													{message.content}
+												</MarkdownWidgetComponent>
+											) : (
+												JSON.stringify(message.content)
+											)}
 										</Paper>
 
 										{message.role === "user" &&
 											message.image && (
-											<AppBuilderImage
-												maw={250}
-												fit="scale-down"
-												src={message.image}
-											/>
-										)}
+												<AppBuilderImage
+													maw={250}
+													fit="scale-down"
+													src={message.image}
+												/>
+											)}
 									</Group>
 								</Group>
 								{/* Add feedback buttons for assistant messages */}
@@ -892,9 +898,33 @@ I have provided a screenshot of the 3D view for context.`
 							</Stack>
 						))}
 					</ScrollArea>
+					{debug ? (
+						<>
+							<Text size="sm">Context from Grasshopper:</Text>
+							<Textarea
+								value={authorContext}
+								onChange={(event) =>
+									setAuthorContext(event.currentTarget.value)
+								}
+								autosize
+								maxRows={10}
+							/>
+							<Text size="sm">System prompt:</Text>
+							<Textarea
+								value={systemPrompt}
+								onChange={(event) =>
+									setSystemPrompt(event.currentTarget.value)
+								}
+								autosize
+								maxRows={15}
+							/>
+						</>
+					) : null}
 				</Stack>
 			) : (
-				<Text size="sm" c="red">OpenAI API key is missing.</Text>
+				<Text size="sm" c="red">
+					OpenAI API key is missing.
+				</Text>
 			)}
 		</Paper>
 	);
