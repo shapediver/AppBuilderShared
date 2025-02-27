@@ -658,10 +658,14 @@ I have provided a screenshot of the 3D view for context.`
 			const llmSpan = trace?.span({
 				name: "llm-interaction",
 			});
-			const completion = await observeOpenAI(OPENAI, {
-				parent: llmSpan,
-				generationName: "OpenAI-Generation",
-			}).beta.chat.completions.parse({
+			const completion = await (
+				llmSpan
+					? observeOpenAI(OPENAI, {
+							parent: llmSpan,
+							generationName: "OpenAI-Generation",
+						})
+					: OPENAI
+			).beta.chat.completions.parse({
 				model: model,
 				messages: messages as any,
 				response_format: responseFormat,
