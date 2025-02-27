@@ -51,6 +51,7 @@ import {AppBuilderGridTemplatePageThemeProps} from "@AppBuilderShared/pages/temp
 import {AppBuilderHorizontalContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderHorizontalContainer";
 import {AppBuilderTemplateSelectorThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
 import {AppBuilderVerticalContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
+import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAgentWidgetComponent";
 
 /**
  * Helper function for defining CSS variables for the AppBuilderAppShellTemplate
@@ -480,6 +481,17 @@ export const useCustomTheme = (props: Props = {}) => {
 				// withBorder: false,
 				// shadow: "xs",
 				// styles: { root: { overflow: "auto" }}
+			}),
+			AppBuilderAgentWidgetComponent: AppBuilderAgentWidgetThemeProps({
+				// systemPrompt: "Hi there",
+				// authorContext: "",
+				// debug: true,
+				// maxHistory: 10,
+				// model: "gpt-4o-mini",
+				// openaiApiKey: "YOUR_OPENAPI_API_KEY",
+				// langfuseSecretKey: "YOUR_LANGFUSE_SECRET_API_KEY",
+				// langfusePublicKey: "YOUR_LANGFUSE_PUBLIC_API_KEY",
+				// langfuseBaseUrl: "YOUR_LANGFUSEBASE_URL",
 			}),
 			/**
 			 * AppBuilderVerticalContainer

@@ -54,29 +54,40 @@ import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 
-const langfuse = new Langfuse({
-	secretKey: import.meta.env.VITE_LANGFUSE_SECRET_KEY,
-	publicKey: import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
-	baseUrl:
-		import.meta.env.VITE_LANGFUSE_BASE_URL || "https://cloud.langfuse.com",
-	release: packagejson.version,
-});
-
-// Initialize LangfuseWeb for client-side feedback
-const langfuseWeb = new LangfuseWeb({
-	publicKey: import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
-	baseUrl:
-		import.meta.env.VITE_LANGFUSE_BASE_URL || "https://cloud.langfuse.com",
-	release: packagejson.version,
-});
-
 /** Style properties that can be controlled via the theme. */
-type StylePros = PaperProps & {};
+type ComponentProps = PaperProps & {
+	/** The system prompt to use. */
+	systemPrompt: string;
+	/** Allows to override the context given by the author of the Grasshopper model via App Builder. */
+	authorContext: string;
+	/** Set to true to show and allow to edit system prompt and author context. */
+	debug: boolean;
+	/** Maximum number of messages to keep in the context for the chat completion. */
+	maxHistory: number;
+	/** The LLM to use. */
+	model: string;
+	/** Open AI API key. */
+	openaiApiKey: string;
+	/** Langfuse secret key. */
+	langfuseSecretKey: string;
+	/** Langfuse public key. */
+	langfusePublicKey: string;
+	/** Langfuse base URL. */
+	langfuseBaseUrl: string;
+};
 
-/** Default values for style properties. */
-const defaultStyleProps: Partial<StylePros> = {};
+const DEFAULT_SYSTEM_PROMPT = "You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about the 3D configurator \
+based on the user's input and the context provided. You may answer questions by the user without changing parameters.";
 
-type AppBuilderAgentWidgetThemePropsType = Partial<StylePros>;
+/** Default values for component properties. */
+const defaultStyleProps: Partial<ComponentProps> = {
+	systemPrompt: DEFAULT_SYSTEM_PROMPT,
+	maxHistory: 10,
+	model: "gpt-4o-mini",
+	langfuseBaseUrl: "https://cloud.langfuse.com",
+};
+
+type AppBuilderAgentWidgetThemePropsType = Partial<ComponentProps>;
 
 export function AppBuilderAgentWidgetThemeProps(
 	props: AppBuilderAgentWidgetThemePropsType,
@@ -92,7 +103,7 @@ type Props = IAppBuilderWidgetPropsAgent & {
 
 /**
  * Schema for responses from the LLM
- * TODO Alex to Mayur: How complex can we type the response?
+ * TODO: Clarify how complex can we type the response.
  * As an example, is it possible to use discriminated unions to
  * more strictly type the values depending on parameter type?
  * https://zod.dev/?id=discriminated-unions
@@ -110,8 +121,6 @@ const AGENT_RESPONSE_SCHEMA = z.object({
 				newValue: z
 					.string()
 					.describe("The new value for the parameter"),
-				// Alex to Mayur: What's the reason we are asking for the old value?
-				// MM Response : Its for debugging for hallucination and better accuracy (pause and reflect)
 				oldValue: z
 					.string()
 					.describe("The old value for the parameter"),
@@ -125,18 +134,6 @@ const AGENT_RESPONSE_SCHEMA = z.object({
 		),
 });
 type AgentResponseType = z.infer<typeof AGENT_RESPONSE_SCHEMA>;
-
-/** Initialize the OpenAI API client. */
-
-const OPENAI = new OpenAI({
-	apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-	dangerouslyAllowBrowser: true, // Required for client-side usage
-});
-
-/** Toggle for debugging and testing. */
-const urlParams = new URLSearchParams(window.location.search);
-const DEBUG =
-	urlParams.get("debug") === "1" || urlParams.get("debug") === "true";
 
 /**
  * Create a context string for a parameter that can be passed to the LLM.
@@ -256,6 +253,7 @@ function createParametersContext(
 						pr.name === p.definition.name ||
 						pr.name === p.definition.displayname,
 				);
+
 				return createParameterContext(p, ref);
 			})
 			.join("") +
@@ -337,19 +335,67 @@ async function setParameterValues(
 export default function AppBuilderAgentWidgetComponent(
 	props: Props & AppBuilderAgentWidgetThemePropsType,
 ) {
-	/**
-	 * TODO Alex to Mayur:
-	 * The "context" is an optional string that can be output by the GH developer to provide
-	 * further context to the LLM. Please make use of this.
-	 * For purposes of testing and debugging, I suggest to add a text input field that
-	 * allows us to edit the context string (if DEBUG is true).
-	 */
 	const {namespace, context, parameterNames, ...rest} = props;
 	const themeProps = useProps(
 		"AppBuilderAgentWidgetComponent",
 		defaultStyleProps,
 		rest,
 	);
+
+	const urlParams = useMemo(
+		() => new URLSearchParams(window.location.search),
+		[],
+	);
+
+	const {
+		debug = urlParams.get("debug") === "1" ||
+			urlParams.get("debug") === "true",
+		systemPrompt: _systemPrompt,
+		authorContext: _authorContext,
+		maxHistory = urlParams.get("maxHistory") !== null
+			? parseInt(urlParams.get("maxHistory")!)
+			: 10,
+		model = urlParams.get("model") ?? "gpt-4o-mini",
+		openaiApiKey = urlParams.get("openaiApiKey") ??
+			import.meta.env.VITE_OPENAI_API_KEY,
+		langfusePublicKey = urlParams.get("langfusePublicKey") ??
+			import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
+		langfuseSecretKey = urlParams.get("langfuseSecretKey") ??
+			import.meta.env.VITE_LANGFUSE_SECRET_KEY,
+		langfuseBaseUrl = urlParams.get("langfuseBaseUrl") ??
+			import.meta.env.VITE_LANGFUSE_BASE_URL,
+		...paperProps
+	} = themeProps;
+
+	console.debug(maxHistory, model, openaiApiKey, langfusePublicKey, langfuseSecretKey, langfuseBaseUrl);
+
+	/** Initialize the OpenAI API client. */
+	const OPENAI =
+		model && openaiApiKey
+			? new OpenAI({
+				apiKey: openaiApiKey,
+				dangerouslyAllowBrowser: true, // Required for client-side usage
+			})
+			: undefined;
+
+	const LANGFUSE =
+		langfusePublicKey && langfuseSecretKey
+			? new Langfuse({
+				secretKey: langfuseSecretKey,
+				publicKey: langfusePublicKey,
+				baseUrl: langfuseBaseUrl || "https://cloud.langfuse.com",
+				release: packagejson.version,
+			})
+			: undefined;
+
+	// Initialize LangfuseWeb for client-side feedback
+	const LANGFUSEWEB = langfusePublicKey
+		? new LangfuseWeb({
+			publicKey: langfusePublicKey,
+			baseUrl: langfuseBaseUrl || "https://cloud.langfuse.com",
+			release: packagejson.version,
+		})
+		: undefined;
 
 	/** Current chat input by the user. */
 	const [chatInput, setChatInput] = useState("");
@@ -366,12 +412,12 @@ export default function AppBuilderAgentWidgetComponent(
 		[],
 	);
 	/** Grasshopper prompt */
-	const [authorContext, setAuthorContext] = useState<string | undefined>();
+	const [authorContext, setAuthorContext] = useState<string | undefined>(_authorContext ?? context);
 	/** System prompt */
-	const [systemPrompt, setSystemPrompt] = useState("");
+	const [systemPrompt, setSystemPrompt] = useState<string>(_systemPrompt ?? DEFAULT_SYSTEM_PROMPT);
 
 	/** Session if for langfuse */
-	const sessionId = useMemo(() => crypto.randomUUID(), []);
+	const langfuseSessionId = useMemo(() => crypto.randomUUID(), []);
 
 	// Get stateful access to all parameters
 	const {parameters} = useAllParameters(namespace);
@@ -393,7 +439,7 @@ export default function AppBuilderAgentWidgetComponent(
 		})),
 	);
 
-	// TODO Alex to Mayur: getting screenshots from viewport
+	// Hook for getting screenshots from viewport
 	const {viewportId} = useViewportId();
 	const {getScreenshot} = useShapeDiverStoreViewportAccessFunctions(
 		useShallow((state) => ({
@@ -401,23 +447,6 @@ export default function AppBuilderAgentWidgetComponent(
 				state.viewportAccessFunctions[viewportId]?.getScreenshot,
 		})),
 	);
-
-	// TODO: screenshot button
-	useEffect(() => {
-		const logScreenshot = async () => {
-			if (getScreenshot) {
-				try {
-					const screenshot = await getScreenshot();
-					//console.log("Screenshot data:", screenshot);
-					// It outputs blank image so need to fix it
-				} catch (error) {
-					console.error("Error getting screenshot:", error);
-				}
-			}
-		};
-
-		logScreenshot();
-	}, [viewportId, getScreenshot]);
 
 	/**
 	 * Handler for image provided by the user.
@@ -457,7 +486,7 @@ export default function AppBuilderAgentWidgetComponent(
 	 */
 	const handleFeedback = useCallback(
 		async (value: number, traceId: string) => {
-			await langfuseWeb.score({
+			await LANGFUSEWEB?.score({
 				traceId,
 				name: "user-feedback",
 				value,
@@ -465,13 +494,6 @@ export default function AppBuilderAgentWidgetComponent(
 		},
 		[],
 	);
-
-	/**
-	 * Context provided by the author of the Grasshopper model
-	 */
-	useEffect(() => {
-		setAuthorContext(context);
-	}, [context]);
 
 	/**
 	 * Context for the parameters the user wants to expose to the LLM.
@@ -491,17 +513,13 @@ export default function AppBuilderAgentWidgetComponent(
 	/**
 	 * Define the system prompt based on the parameters context.
 	 * https://platform.openai.com/docs/guides/text-generation
-	 *
-	 * TODO add instructions specific to parameter type based on which types are present in the parameters
 	 */
 	useEffect(() => {
-		// Enhance system prompt with confgurator app context information which has information about what the configurator app is about
-		const systemPrompt = `You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about the 3D configurator \
-based on the user's input and the context provided. You may answer questions by the user without changing parameters. \
+		const systemPrompt = `${_systemPrompt}
 Parameters context: ${parametersContext}
 `;
 		setSystemPrompt(systemPrompt);
-	}, [parametersContext, authorContext]);
+	}, [parametersContext, _systemPrompt]);
 
 	/** System prompt with author context. */
 	const systemPromptComplete = useMemo(() => {
@@ -509,213 +527,191 @@ Parameters context: ${parametersContext}
 	}, [systemPrompt, authorContext]);
 
 	/** Tags to attach to langfuse traces. */
-	const tags = useMemo(() => {
-		// get "slug" query string parameter
-		const urlParams = new URLSearchParams(window.location.search);
+	const langfuseTags = useMemo(() => {
 		const slug = urlParams.get("slug");
+
 		return slug ? [slug] : [];
-	}, []);
+	}, [urlParams]);
 
-	const llm = async (userQuery: string, errorMessages?: string[]) => {
-		// Create a new trace for this user query
-		const trace = langfuse.trace({
-			name: "user-query",
-			id: crypto.randomUUID(), // Generate unique trace ID
-			sessionId,
-			metadata: {
-				parameters: Object.values(parameters).map((p) => ({
-					id: p.definition.id,
-					type: p.definition.type,
-					name: p.definition.displayname || p.definition.name,
-					uiValue: p.state.uiValue,
-					execValue: p.state.execValue,
-				})),
-				hasImage: !!userImage,
-				hasScreenshot: !!screenshot,
-			},
-			tags,
-			input: {
-				userQuery,
-				userImage,
-				screenshot,
-				errorMessages,
-			},
-		});
+	const llmInteraction = useCallback(
+		async (userQuery: string, errorMessages?: string[]) => {
+			if (!OPENAI) throw new Error("OpenAI API key is missing.");
 
-		// Add user query to chat history
-		setChatHistory((prev) => [
-			...prev,
-			{
-				role: "user",
-				content: userQuery,
-				image: userImage ?? screenshot ?? undefined,
-			},
-		]);
-		setLLMHistory((prev) => [...prev, {role: "user", content: userQuery}]);
-
-		// Message for chat completion API
-		const maxHistoryMessages = 10; // Adjust as needed
-		const messages: ChatCompletionMessageParam[] = [
-			{
-				role: "developer",
-				content: systemPromptComplete,
-			},
-			// Add previous chat history
-			...llmHistory.slice(-maxHistoryMessages),
-		];
-
-		// If there were errors, add them as context
-		if (errorMessages?.length) {
-			messages.push({
-				role: "user",
-				content: `The previous parameter updates failed with these errors: ${errorMessages.join(", ")}. Provide new parameter values that address these issues.`,
+			// Create a new trace for this user query
+			const trace = LANGFUSE?.trace({
+				name: "user-query",
+				id: crypto.randomUUID(), // Generate unique trace ID
+				sessionId: langfuseSessionId,
+				metadata: {
+					parameters: Object.values(parameters).map((p) => ({
+						id: p.definition.id,
+						type: p.definition.type,
+						name: p.definition.displayname || p.definition.name,
+						uiValue: p.state.uiValue,
+						execValue: p.state.execValue,
+					})),
+					hasImage: !!userImage,
+					hasScreenshot: !!screenshot,
+				},
+				tags: langfuseTags,
+				input: {
+					userQuery,
+					userImage,
+					screenshot,
+					errorMessages,
+				},
 			});
-		}
 
-		// Add current message with image if present
-		const userPrompt = userImage
-			? `${userQuery} \
-I have provided an image for context.`
-			: screenshot
-				? `${userQuery} \
-I have provided a screenshot of the 3D view for context.`
-				: userQuery;
-		if (userImage ?? screenshot) {
-			messages.push({
-				role: "user",
-				content: [
-					{
-						type: "image_url",
-						image_url: {
-							url: userImage ?? (screenshot as string),
-						},
-					},
-					{
-						type: "text",
-						text: userPrompt,
-					},
-				],
-			});
-			if (userImage) setUserImage(null);
-			if (screenshot) setScreenshot(null);
-		} else {
-			messages.push({role: "user", content: userPrompt});
-		}
+			// Add user query to chat history
+			setChatHistory((prev) => [
+				...prev,
+				{
+					role: "user",
+					content: userQuery,
+					image: userImage ?? screenshot ?? undefined,
+				},
+			]);
+			setLLMHistory((prev) => [
+				...prev,
+				{role: "user", content: userQuery},
+			]);
 
-		const responseFormat = zodResponseFormat(
-			AGENT_RESPONSE_SCHEMA,
-			"parameters_update",
-		);
+			// Message for chat completion API
+			const messages: ChatCompletionMessageParam[] = [
+				{
+					role: "developer",
+					content: systemPromptComplete,
+				},
+				// Add previous chat history
+				...llmHistory.slice(-maxHistory),
+			];
 
-		// Create a span for the LLM interaction
-		const model = "gpt-4o-mini";
-		const llmSpan = trace.span({
-			name: "llm-interaction",
-		});
-		const completion = await observeOpenAI(OPENAI, {
-			parent: llmSpan,
-			generationName: "OpenAI-Generation",
-		}).beta.chat.completions.parse({
-			model,
-			messages: messages as any,
-			response_format: responseFormat,
-			max_tokens: 1000,
-		});
-		llmSpan.end();
-
-		// Deal with the response message
-		const message = completion.choices[0].message;
-
-		setLLMHistory((prev) => [
-			...prev,
-			{
-				role: "assistant",
-				content: message.content,
-			},
-		]);
-
-		const parsedMessage = message.parsed;
-		if (!parsedMessage) {
-			console.log("No LLM response ?!", parsedMessage);
-			return;
-		}
-
-		// Update trace metadata with complete LLM response
-		trace.update({
-			output: {
-				summaryAndReasoning: parsedMessage.summaryAndReasoning,
-			},
-		});
-
-		// Update display chat history with just the summary
-		setChatHistory((prev) => [
-			...prev,
-			{
-				role: "assistant",
-				content: parsedMessage.summaryAndReasoning,
-				traceId: trace.id,
-			},
-		]);
-
-		// Create a span for parameter updates
-		const updateSpan = trace.span({
-			name: "parameter-updates",
-			input: {
-				parameterUpdates: parsedMessage.parameterUpdates,
-			},
-		});
-
-		// Set parameter values (only do this once)
-		// TODO handle errors
-		const msgs = await setParameterValues(
-			namespace,
-			Object.values(parameters),
-			parsedMessage.parameterUpdates,
-			batchParameterValueUpdate,
-		);
-		if (msgs.length > 0) {
-			updateSpan.event({
-				name: "Parameter update errors",
-				metadata: {errors: msgs},
-			});
-		}
-		updateSpan.end();
-
-		return `Updated parameters: ${parsedMessage.parameterUpdates.map((u) => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
-	};
-
-	const handleParameterUpdate = async (
-		parsedMessage: z.infer<typeof AGENT_RESPONSE_SCHEMA>,
-	) => {
-		const msgs = await setParameterValues(
-			namespace,
-			Object.values(parameters),
-			parsedMessage.parameterUpdates,
-			batchParameterValueUpdate,
-		);
-
-		if (msgs.length > 0) {
-			console.error("Some parameter updates failed: ", msgs);
-
-			// Make another LLM call with the error messages
-			try {
-				setIsLoading(true);
-				const retryResponse = await llm(chatInput, msgs);
-				return retryResponse;
-			} catch (error) {
-				console.error("Error in retry LLM call: ", error);
-				throw error;
+			// If there were errors, add them as context
+			if (errorMessages?.length) {
+				messages.push({
+					role: "user",
+					content: `The previous parameter updates failed with these errors: ${errorMessages.join(", ")}. Provide new parameter values that address these issues.`,
+				});
 			}
-		}
 
-		return `Updated parameters: ${parsedMessage.parameterUpdates.map((u) => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
-	};
+			// Add current message with image if present
+			const userPrompt = userImage
+				? `${userQuery} \
+I have provided an image for context.`
+				: screenshot
+					? `${userQuery} \
+I have provided a screenshot of the 3D view for context.`
+					: userQuery;
+			if (userImage ?? screenshot) {
+				messages.push({
+					role: "user",
+					content: [
+						{
+							type: "image_url",
+							image_url: {
+								url: userImage ?? (screenshot as string),
+							},
+						},
+						{
+							type: "text",
+							text: userPrompt,
+						},
+					],
+				});
+				if (userImage) setUserImage(null);
+				if (screenshot) setScreenshot(null);
+			} else {
+				messages.push({role: "user", content: userPrompt});
+			}
+
+			const responseFormat = zodResponseFormat(
+				AGENT_RESPONSE_SCHEMA,
+				"parameters_update",
+			);
+
+			// Create a span for the LLM interaction
+			const llmSpan = trace?.span({
+				name: "llm-interaction",
+			});
+			const completion = await observeOpenAI(OPENAI, {
+				parent: llmSpan,
+				generationName: "OpenAI-Generation",
+			}).beta.chat.completions.parse({
+				model: model,
+				messages: messages as any,
+				response_format: responseFormat,
+				max_tokens: 1000,
+			});
+			llmSpan?.end();
+
+			// Deal with the response message
+			const message = completion.choices[0].message;
+
+			setLLMHistory((prev) => [
+				...prev,
+				{
+					role: "assistant",
+					content: message.content,
+				},
+			]);
+
+			const parsedMessage = message.parsed;
+			if (!parsedMessage) {
+				console.log("No LLM response ?!", parsedMessage);
+
+				return;
+			}
+
+			// Update trace metadata with complete LLM response
+			trace?.update({
+				output: {
+					summaryAndReasoning: parsedMessage.summaryAndReasoning,
+				},
+			});
+
+			// Update display chat history with just the summary
+			setChatHistory((prev) => [
+				...prev,
+				{
+					role: "assistant",
+					content: parsedMessage.summaryAndReasoning,
+					traceId: trace?.id ?? "",
+				},
+			]);
+
+			// Create a span for parameter updates
+			const updateSpan = trace?.span({
+				name: "parameter-updates",
+				input: {
+					parameterUpdates: parsedMessage.parameterUpdates,
+				},
+			});
+
+			// Set parameter values
+			const msgs = await setParameterValues(
+				namespace,
+				Object.values(parameters),
+				parsedMessage.parameterUpdates,
+				batchParameterValueUpdate,
+			);
+			if (msgs.length > 0) {
+				updateSpan?.event({
+					name: "Parameter update errors",
+					metadata: {errors: msgs},
+				});
+				// TODO handle errors, recurse llmInteraction with error messages
+			}
+			updateSpan?.end();
+
+			return `Updated parameters: ${parsedMessage.parameterUpdates.map((u) => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
+		},
+		[model, parameters, userImage, screenshot, systemPromptComplete],
+	);
 
 	const handleUserQuery = async () => {
 		try {
 			setIsLoading(true);
-			const response = await llm(chatInput);
-			// The response will now include any retry attempts if there were errors
+			await llmInteraction(chatInput);
 		} catch (error) {
 			console.error("Error calling AI: ", error);
 		} finally {
@@ -735,156 +731,171 @@ I have provided a screenshot of the 3D view for context.`
 	styleProps.fontWeight = "100";
 
 	return (
-		<Paper {...themeProps} style={styleProps}>
-			<Stack>
-				{DEBUG ? (
-					<>
-						<Text size="sm">Context from Grasshopper:</Text>
-						<Textarea
-							value={authorContext}
-							onChange={(event) =>
-								setAuthorContext(event.currentTarget.value)
-							}
-							autosize
-							maxRows={10}
-						/>
-						<Text size="sm">System prompt:</Text>
-						<Textarea
-							value={systemPrompt}
-							onChange={(event) =>
-								setSystemPrompt(event.currentTarget.value)
-							}
-							autosize
-							maxRows={15}
-						/>
-					</>
-				) : null}
-				<Group>
-					{userImage ? (
-						<TooltipWrapper label={"Remove image"}>
-							<ActionIcon onClick={() => setUserImage(null)}>
-								<Icon type={IconTypeEnum.PaperClip} />
-							</ActionIcon>
-						</TooltipWrapper>
-					) : (
-						<FileButton
-							disabled={!!screenshot}
-							onChange={handleUserImage}
-							accept="image/png,image/jpeg,image/gif,image/webp"
-						>
-							{(props) => (
-								<TooltipWrapper label={"Attach an image"}>
-									<ActionIcon
-										variant="subtle"
-										disabled={!!screenshot}
-										{...props}
-									>
-										<Icon type={IconTypeEnum.PaperClip} />
-									</ActionIcon>
-								</TooltipWrapper>
-							)}
-						</FileButton>
-					)}
-					{screenshot ? (
-						<TooltipWrapper label={"Remove screenshot"}>
-							<ActionIcon onClick={() => setScreenshot(null)}>
-								<Icon type={IconTypeEnum.DeviceDesktop} />
-							</ActionIcon>
-						</TooltipWrapper>
-					) : (
-						<TooltipWrapper label={"Attach a screenshot"}>
-							<ActionIcon
-								variant="subtle"
-								onClick={handleGetScreenshot}
-								disabled={!!userImage}
+		<Paper {...paperProps} style={styleProps}>
+			{OPENAI ? (
+				<Stack>
+					{debug ? (
+						<>
+							<Text size="sm">Context from Grasshopper:</Text>
+							<Textarea
+								value={authorContext}
+								onChange={(event) =>
+									setAuthorContext(event.currentTarget.value)
+								}
+								autosize
+								maxRows={10}
+							/>
+							<Text size="sm">System prompt:</Text>
+							<Textarea
+								value={systemPrompt}
+								onChange={(event) =>
+									setSystemPrompt(event.currentTarget.value)
+								}
+								autosize
+								maxRows={15}
+							/>
+						</>
+					) : null}
+					<Group>
+						{userImage ? (
+							<TooltipWrapper label={"Remove image"}>
+								<ActionIcon onClick={() => setUserImage(null)}>
+									<Icon type={IconTypeEnum.PaperClip} />
+								</ActionIcon>
+							</TooltipWrapper>
+						) : (
+							<FileButton
+								disabled={!!screenshot}
+								onChange={handleUserImage}
+								accept="image/png,image/jpeg,image/gif,image/webp"
 							>
-								<Icon type={IconTypeEnum.DeviceDesktop} />
-							</ActionIcon>
-						</TooltipWrapper>
-					)}
-					<TextInput
-						placeholder="Ask a question"
-						style={{flex: 1}}
-						value={chatInput}
-						onChange={(e) => setChatInput(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === "Enter") {
-								handleUserQuery();
-							}
-						}}
-						disabled={isLoading}
-					/>
-					<Button onClick={handleUserQuery} loading={isLoading}>
-						Go
-					</Button>
-				</Group>
-
-				{userImage && <AppBuilderImage src={userImage} />}
-				{screenshot && <AppBuilderImage src={screenshot} />}
-
-				<ScrollArea h={300}>
-					{chatHistory.map((message, index) => (
-						<Stack key={index} pb="md">
-							<Group align="start" w="100%" wrap="nowrap">
-								<Box pt="xs">
-									{message.role === "user" ? (
-										<IconUser />
-									) : (
-										<IconRobot />
-									)}
-								</Box>
-
-								<Group
-									justify="space-between"
-									w="100%"
-									wrap="nowrap"
-									align="start"
+								{(props) => (
+									<TooltipWrapper label={"Attach an image"}>
+										<ActionIcon
+											variant="subtle"
+											disabled={!!screenshot}
+											{...props}
+										>
+											<Icon
+												type={IconTypeEnum.PaperClip}
+											/>
+										</ActionIcon>
+									</TooltipWrapper>
+								)}
+							</FileButton>
+						)}
+						{screenshot ? (
+							<TooltipWrapper label={"Remove screenshot"}>
+								<ActionIcon onClick={() => setScreenshot(null)}>
+									<Icon type={IconTypeEnum.DeviceDesktop} />
+								</ActionIcon>
+							</TooltipWrapper>
+						) : (
+							<TooltipWrapper label={"Attach a screenshot"}>
+								<ActionIcon
+									variant="subtle"
+									onClick={handleGetScreenshot}
+									disabled={!!userImage}
 								>
-									<Paper withBorder={false}>
-										{typeof message.content === "string" ? (
-											<MarkdownWidgetComponent>
-												{message.content}
-											</MarkdownWidgetComponent>
-										) : (
-											JSON.stringify(message.content)
-										)}
-									</Paper>
+									<Icon type={IconTypeEnum.DeviceDesktop} />
+								</ActionIcon>
+							</TooltipWrapper>
+						)}
+						<TextInput
+							placeholder="Ask a question"
+							style={{flex: 1}}
+							value={chatInput}
+							onChange={(e) => setChatInput(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter") {
+									handleUserQuery();
+								}
+							}}
+							disabled={isLoading}
+						/>
+						<Button onClick={handleUserQuery} loading={isLoading}>
+							Go
+						</Button>
+					</Group>
 
-									{message.role === "user" &&
-										message.image && (
+					{userImage && <AppBuilderImage src={userImage} />}
+					{screenshot && <AppBuilderImage src={screenshot} />}
+
+					<ScrollArea h={300}>
+						{chatHistory.map((message, index) => (
+							<Stack key={index} pb="md">
+								<Group align="start" w="100%" wrap="nowrap">
+									<Box pt="xs">
+										{message.role === "user" ? (
+											<IconUser />
+										) : (
+											<IconRobot />
+										)}
+									</Box>
+
+									<Group
+										justify="space-between"
+										w="100%"
+										wrap="nowrap"
+										align="start"
+									>
+										<Paper withBorder={false}>
+											{typeof message.content ===
+											"string" ? (
+													<MarkdownWidgetComponent>
+														{message.content}
+													</MarkdownWidgetComponent>
+												) : (
+													JSON.stringify(message.content)
+												)}
+										</Paper>
+
+										{message.role === "user" &&
+											message.image && (
 											<AppBuilderImage
 												maw={250}
 												fit="scale-down"
 												src={message.image}
 											/>
 										)}
+									</Group>
 								</Group>
-							</Group>
-							{/* Add feedback buttons for assistant messages */}
-							{message.role === "assistant" && (
-								<Group justify="end">
-									<ActionIcon
-										variant="subtle"
-										onClick={() =>
-											handleFeedback(1, message.traceId)
-										}
-									>
-										<Icon type={IconTypeEnum.ThumbUp} />
-									</ActionIcon>
-									<ActionIcon
-										variant="subtle"
-										onClick={() =>
-											handleFeedback(0, message.traceId)
-										}
-									>
-										<Icon type={IconTypeEnum.ThumbDown} />
-									</ActionIcon>
-								</Group>
-							)}
-						</Stack>
-					))}
-				</ScrollArea>
-			</Stack>
+								{/* Add feedback buttons for assistant messages */}
+								{message.role === "assistant" && (
+									<Group justify="end">
+										<ActionIcon
+											variant="subtle"
+											onClick={() =>
+												handleFeedback(
+													1,
+													message.traceId,
+												)
+											}
+										>
+											<Icon type={IconTypeEnum.ThumbUp} />
+										</ActionIcon>
+										<ActionIcon
+											variant="subtle"
+											onClick={() =>
+												handleFeedback(
+													0,
+													message.traceId,
+												)
+											}
+										>
+											<Icon
+												type={IconTypeEnum.ThumbDown}
+											/>
+										</ActionIcon>
+									</Group>
+								)}
+							</Stack>
+						))}
+					</ScrollArea>
+				</Stack>
+			) : (
+				<Text size="sm" c="red">OpenAI API key is missing.</Text>
+			)}
 		</Paper>
 	);
 }
