@@ -123,11 +123,7 @@ Using this method, you can also provide theme settings, as well as further setti
 Check out the interface \`IAppBuilderSettingsJson\` in the code for all available settings.
 `;
 
-const URL_PARAMS = new URLSearchParams(window.location.search);
-
-function shouldAddAiAgentWidget(): boolean {
-	return URL_PARAMS.has("forceAiAgent");
-}
+const shouldAddAiAgentWidget = () => true;
 
 /** Check whether the given IAppBuilder contains an AI agent widget. */
 function hasAiAgentWidget(data: IAppBuilder | undefined): boolean {
