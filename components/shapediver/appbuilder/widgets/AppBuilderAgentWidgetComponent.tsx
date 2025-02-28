@@ -53,6 +53,7 @@ import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
 
 /** Style properties that can be controlled via the theme. */
 type ComponentProps = PaperProps & {
@@ -465,6 +466,9 @@ export default function AppBuilderAgentWidgetComponent(
 		})),
 	);
 
+	// Notifications
+	const notifications = useContext(NotificationContext);
+
 	/**
 	 * Handler for image provided by the user.
 	 * @param file
@@ -686,7 +690,7 @@ I have provided a screenshot of the 3D view for context.`
 
 			const parsedMessage = message.parsed;
 			if (!parsedMessage) {
-				console.log("No LLM response ?!", parsedMessage);
+				console.warn("No LLM response ?!", parsedMessage);
 
 				return;
 			}
@@ -738,14 +742,17 @@ I have provided a screenshot of the 3D view for context.`
 	);
 
 	const handleUserQuery = async () => {
+		const _chatInput = chatInput.trim();
 		try {
 			setIsLoading(true);
-			await llmInteraction(chatInput);
+			setChatInput("");
+			await llmInteraction(_chatInput);
 		} catch (error) {
-			console.error("Error calling AI: ", error);
+			console.error("Error calling LLM: ", error);
+			notifications.error({title: "Error calling LLM", message: error instanceof Error ? error.message : "Unknown error"});
+			setChatInput(_chatInput);
 		} finally {
 			setIsLoading(false);
-			setChatInput("");
 		}
 	};
 
@@ -764,7 +771,7 @@ I have provided a screenshot of the 3D view for context.`
 
 	return (
 		<Paper {...paperProps} style={styleProps}>
-			{OPENAI ? (
+			{OPENAI && openaiApiKey !== "YOUR_OPENAI_API_KEY" ? (
 				<Stack>
 					<Group>
 						{userImage ? (
@@ -817,11 +824,10 @@ I have provided a screenshot of the 3D view for context.`
 							value={chatInput}
 							onChange={(e) => setChatInput(e.target.value)}
 							onKeyDown={(e) => {
-								if (e.key === "Enter") {
+								if (!isLoading && e.key === "Enter") {
 									handleUserQuery();
 								}
 							}}
-							disabled={isLoading}
 						/>
 						<Button onClick={handleUserQuery} loading={isLoading}>
 							Go
@@ -871,7 +877,7 @@ I have provided a screenshot of the 3D view for context.`
 									</Group>
 								</Group>
 								{/* Add feedback buttons for assistant messages */}
-								{message.role === "assistant" && (
+								{message.role === "assistant" && LANGFUSEWEB && (
 									<Group justify="end">
 										<ActionIcon
 											variant="subtle"
@@ -927,7 +933,7 @@ I have provided a screenshot of the 3D view for context.`
 				</Stack>
 			) : (
 				<Text size="sm" c="red">
-					OpenAI API key is missing.
+					An OpenAI API key is missing. Please provide one in the URL or using a theme file.
 				</Text>
 			)}
 		</Paper>
