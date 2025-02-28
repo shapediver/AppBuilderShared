@@ -426,6 +426,9 @@ export default function AppBuilderAgentWidgetComponent(
 	const [authorContext, setAuthorContext] = useState<string | undefined>(
 		_authorContext ?? context,
 	);
+	useEffect(() => {
+		setAuthorContext(_authorContext ?? context);
+	}, [context, _authorContext]);
 	/** System prompt */
 	const [systemPrompt, setSystemPrompt] = useState<string>(
 		_systemPrompt ?? DEFAULT_SYSTEM_PROMPT,
@@ -735,7 +738,7 @@ I have provided a screenshot of the 3D view for context.`
 
 			return `Updated parameters: ${parsedMessage.parameterUpdates.map((u) => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
 		},
-		[model, parameters, userImage, screenshot, systemPromptComplete],
+		[model, parameters, userImage, screenshot, systemPromptComplete, langfuseTags],
 	);
 
 	const handleUserQuery = async () => {
