@@ -88,9 +88,6 @@ based on the user's input and the context provided. You may answer questions by 
 /** Default values for component properties. */
 const defaultStyleProps: Partial<ComponentProps> = {
 	systemPrompt: DEFAULT_SYSTEM_PROMPT,
-	maxHistory: 10,
-	model: "gpt-4o-mini",
-	langfuseBaseUrl: "https://cloud.langfuse.com",
 };
 
 type AppBuilderAgentWidgetThemePropsType = Partial<ComponentProps>;
