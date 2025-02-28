@@ -16,6 +16,7 @@ import {
 import {
 	IAppBuilderSettingsSession,
 	IAppBuilderContainer,
+	IAppBuilder,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import { shouldUsePlatform } from "@AppBuilderShared/utils/platform/environment";
 import React, { useContext } from "react";
@@ -122,6 +123,22 @@ Using this method, you can also provide theme settings, as well as further setti
 Check out the interface \`IAppBuilderSettingsJson\` in the code for all available settings.
 `;
 
+const URL_PARAMS = new URLSearchParams(window.location.search);
+
+function shouldAddAiAgentWidget(): boolean {
+	return URL_PARAMS.has("forceAiAgent");
+}
+
+/** Check whether the given IAppBuilder contains an AI agent widget. */
+function hasAiAgentWidget(data: IAppBuilder | undefined): boolean {
+	if (!data) return false;
+	return data.containers.some(
+		(c) =>
+			c.widgets?.some((w) => w.type === "agent") ||
+			c.tabs?.some((t) => t.widgets?.some((w) => w.type === "agent")),
+	);
+}
+
 interface Props extends IAppBuilderSettingsSession {
 	/** Name of example model */
 	example?: string;
@@ -214,6 +231,33 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		settings?.settings?.disableFallbackUi !== true;
 
 	if (appBuilderData?.containers) {
+		// SS-8371 add AppBuilderAgentWidgetComponent for testing
+		if (!hasAiAgentWidget(appBuilderData) && shouldAddAiAgentWidget()) {
+			const hasRightContainer = appBuilderData.containers.some(
+				(c) => c.name === "right",
+			);
+			if (!hasRightContainer) {
+				appBuilderData.containers.push({
+					name: "right",
+					widgets: [
+						{
+							type: "agent",
+							props: {},
+						},
+					],
+				});
+			} else {
+				appBuilderData.containers.forEach((c) => {
+					if (c.name === "right") {
+						if (!c.widgets) c.widgets = [];
+						c.widgets.push({
+							type: "agent",
+							props: {},
+						});
+					}
+				});
+			}
+		}
 		appBuilderData.containers.forEach((container) => {
 			containers[container.name] = {
 				node: (
@@ -235,6 +279,8 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				<AppBuilderFallbackContainerComponent
 					parameters={parameterProps}
 					exports={exportProps}
+					namespace={namespace}
+					showAiAgentWidget={shouldAddAiAgentWidget()}
 				/>
 			),
 		};
