@@ -260,6 +260,8 @@ export interface IAppBuilderWidgetPropsAgent {
 	context?: string;
 	/** Names of parameters to include in agent workflow. */
 	parameterNames?: string[];
+	/** Names of parameters to exclude in agent workflow. */
+	parameterNamesExclude?: string[];
 }
 
 /**

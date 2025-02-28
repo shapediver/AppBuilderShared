@@ -291,6 +291,7 @@ const IAppBuilderWidgetPropsActionsSchema = z.object({
 const IAppBuilderWidgetPropsAgentSchema = z.object({
 	context: z.string().optional(),
 	parameterNames: z.array(z.string()).optional(),
+	parameterNamesExclude: z.array(z.string()).optional(),
 });
 
 // Zod type definition for IAppBuilderWidget

@@ -346,7 +346,7 @@ async function setParameterValues(
 export default function AppBuilderAgentWidgetComponent(
 	props: Props & AppBuilderAgentWidgetThemePropsType,
 ) {
-	const {namespace, context, parameterNames, ...rest} = props;
+	const {namespace, context, parameterNames, parameterNamesExclude, ...rest} = props;
 	const themeProps = useProps(
 		"AppBuilderAgentWidgetComponent",
 		defaultStyleProps,
@@ -523,7 +523,7 @@ export default function AppBuilderAgentWidgetComponent(
 				// skip dynamic parameters for now
 				//	.concat(Object.values(dynamicParameters))
 				parameterNamesToInclude ?? parameterNames,
-				parameterNamesToExclude,
+				parameterNamesToExclude ?? parameterNamesExclude,
 				parameterRefs,
 			),
 		[
