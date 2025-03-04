@@ -1,4 +1,4 @@
-import React, {useContext} from "react";
+import React, {useContext, Suspense} from "react";
 import {
 	IAppBuilderWidget,
 	isAccordionWidget,
@@ -20,7 +20,9 @@ import AppBuilderAreaChartWidgetComponent from "@AppBuilderShared/components/sha
 import AppBuilderBarChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderBarChartWidgetComponent";
 import AppBuilderActionsWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderActionsWidgetComponent";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
-import AppBuilderAgentWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAgentWidgetComponent";
+import { Loader, Paper } from "@mantine/core";
+const LazyAppBuilderAgentWidgetComponent = React.lazy(() => import('./AppBuilderAgentWidgetComponent'));
+
 
 interface Props {
 	/**
@@ -120,11 +122,12 @@ export default function AppBuilderWidgetsComponent({
 					);
 				else if (isAgentWidget(w))
 					return (
-						<AppBuilderAgentWidgetComponent
-							key={i}
-							namespace={namespace}
-							{...w.props}
-						/>
+						<Suspense key={i} name="LazyAppBuilderAgentWidgetComponent" fallback={<Paper><Loader/></Paper>}>
+							<LazyAppBuilderAgentWidgetComponent
+								namespace={namespace}
+								{...w.props}
+							/>
+						</Suspense>
 					);
 				else return null;
 			})}
