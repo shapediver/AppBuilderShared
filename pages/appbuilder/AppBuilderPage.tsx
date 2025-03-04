@@ -1,14 +1,14 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
+import { ComponentContext } from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
-import {useSessionWithAppBuilder} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
-import {useParameterHistory} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
-import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
-import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
+import { SessionWithAppBuilderHandler, useSessionWithAppBuilder } from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
+import { useParameterHistory } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
+import { useSessionPropsExport } from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
+import { useSessionPropsParameter } from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
-import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
+import { useKeyBindings } from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
 import {
 	IAppBuilderTemplatePageContainerHints,
 	IAppBuilderTemplatePageProps,
@@ -17,8 +17,8 @@ import {
 	IAppBuilderSettingsSession,
 	IAppBuilderContainer,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
-import React, {useContext} from "react";
+import { shouldUsePlatform } from "@AppBuilderShared/utils/platform/environment";
+import React, { useContext } from "react";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
@@ -153,14 +153,14 @@ const createContainerHints = (
  */
 export default function AppBuilderPage(props: Partial<Props>) {
 	// get default session dto, if any
-	const {defaultSessionDto} = useDefaultSessionDto(props);
+	const { defaultSessionDto } = useDefaultSessionDto(props);
 
 	// get the component context to get the correct viewport
 	const componentContext = useContext(ComponentContext);
 	const {
-		viewportComponent: {component: ViewportComponent} = {},
-		viewportOverlayWrapper: {component: ViewportOverlayWrapper} = {},
-		viewportIcons: {component: ViewportIcons} = {},
+		viewportComponent: { component: ViewportComponent } = {},
+		viewportOverlayWrapper: { component: ViewportOverlayWrapper } = {},
+		viewportIcons: { component: ViewportIcons } = {},
 	} = componentContext;
 
 	// get settings for app builder from query string
@@ -186,6 +186,19 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	// get props for fallback parameters
 	const parameterProps = useSessionPropsParameter(namespace);
 	const exportProps = useSessionPropsExport(namespace);
+
+	const sessionHandlers: JSX.Element[] = [];
+	if (settings?.sessions && settings.sessions.length > 1) {
+		settings?.sessions.map((session) => {
+			sessionHandlers.push(
+				<SessionWithAppBuilderHandler
+					key={session.id}
+					props={session}
+					appBuilderOverride={settings?.appBuilderOverride}
+				/>
+			);
+		});
+	}
 
 	// create UI elements for containers
 	const containers: IAppBuilderTemplatePageProps = {
@@ -229,10 +242,10 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	const show = !!sessionApi;
 
 	// use parameter history
-	useParameterHistory({loaded: show});
+	useParameterHistory({ loaded: show });
 
 	// key bindings
-	useKeyBindings({namespace});
+	useKeyBindings({ namespace });
 
 	const showMarkdown =
 		!(settings && hasSession) && // no settings or no session
@@ -264,8 +277,9 @@ export default function AppBuilderPage(props: Partial<Props>) {
 			right={containers.right}
 			bottom={containers.bottom}
 		>
+			{sessionHandlers}
 			{ViewportComponent && (
-				<ViewportComponent>
+				<ViewportComponent visibilitySessionIds={settings?.sessions.map((s) => s.id)} >
 					{ViewportOverlayWrapper && (
 						<ViewportOverlayWrapper>
 							{ViewportIcons && <ViewportIcons />}
