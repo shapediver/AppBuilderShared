@@ -47,8 +47,8 @@ export default function AppBuilderFallbackContainerComponent({
 				tabProps.tabs[0].children.push(
 					<AppBuilderAgentWidgetComponent
 						key={1}
-						namespace={namespace}	
-					/>
+						namespace={namespace}
+					/>,
 				);
 			}
 		}

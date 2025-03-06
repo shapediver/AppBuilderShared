@@ -20,9 +20,10 @@ import AppBuilderAreaChartWidgetComponent from "@AppBuilderShared/components/sha
 import AppBuilderBarChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderBarChartWidgetComponent";
 import AppBuilderActionsWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderActionsWidgetComponent";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
-import { Loader, Paper } from "@mantine/core";
-const LazyAppBuilderAgentWidgetComponent = React.lazy(() => import('./AppBuilderAgentWidgetComponent'));
-
+import {Loader, Paper} from "@mantine/core";
+const LazyAppBuilderAgentWidgetComponent = React.lazy(
+	() => import("./AppBuilderAgentWidgetComponent"),
+);
 
 interface Props {
 	/**
@@ -122,7 +123,15 @@ export default function AppBuilderWidgetsComponent({
 					);
 				else if (isAgentWidget(w))
 					return (
-						<Suspense key={i} name="LazyAppBuilderAgentWidgetComponent" fallback={<Paper><Loader/></Paper>}>
+						<Suspense
+							key={i}
+							name="LazyAppBuilderAgentWidgetComponent"
+							fallback={
+								<Paper>
+									<Loader />
+								</Paper>
+							}
+						>
 							<LazyAppBuilderAgentWidgetComponent
 								namespace={namespace}
 								{...w.props}
