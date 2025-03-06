@@ -1,5 +1,6 @@
 import {
 	IAppBuilderContainerContext,
+	IAppBuilderDataContext,
 	IAppBuilderTemplateContext,
 } from "@AppBuilderShared/types/context/appbuildercontext";
 import {createContext} from "react";
@@ -16,3 +17,8 @@ export const AppBuilderTemplateContext =
 	createContext<IAppBuilderTemplateContext>({
 		name: "unspecified",
 	});
+
+/** Information about the App Builder data. */
+export const AppBuilderDataContext = createContext<IAppBuilderDataContext>({
+	data: undefined,
+});

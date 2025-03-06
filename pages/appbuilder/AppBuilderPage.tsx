@@ -23,6 +23,7 @@ import React, { useContext } from "react";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
+import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 
@@ -310,23 +311,24 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	) : loading || !show ? (
 		<LoaderPage /> // TODO smooth transition between loading and showing
 	) : show ? (
-		<AppBuilderTemplateSelector
-			top={containers.top}
-			left={containers.left}
-			right={containers.right}
-			bottom={containers.bottom}
-		>
-			{sessionHandlers}
-			{ViewportComponent && (
-				<ViewportComponent visibilitySessionIds={settings?.sessions.map((s) => s.id)} >
-					{ViewportOverlayWrapper && (
-						<ViewportOverlayWrapper>
-							{ViewportIcons && <ViewportIcons />}
-						</ViewportOverlayWrapper>
-					)}
-				</ViewportComponent>
-			)}
-		</AppBuilderTemplateSelector>
+		<AppBuilderDataContext.Provider value={{data: appBuilderData}}>
+			<AppBuilderTemplateSelector
+				top={containers.top}
+				left={containers.left}
+				right={containers.right}
+				bottom={containers.bottom}
+			>
+				{ViewportComponent && (
+					<ViewportComponent visibilitySessionIds={settings?.sessions.map((s) => s.id)} >
+						{ViewportOverlayWrapper && (
+							<ViewportOverlayWrapper>
+								{ViewportIcons && <ViewportIcons />}
+							</ViewportOverlayWrapper>
+						)}
+					</ViewportComponent>
+				)}
+			</AppBuilderTemplateSelector>
+		</AppBuilderDataContext.Provider>
 	) : (
 		<></>
 	);

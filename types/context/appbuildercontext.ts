@@ -1,3 +1,5 @@
+import {IAppBuilder} from "../shapediver/appbuilder";
+
 /** Types of containers */
 export type AppBuilderContainerOrientationType =
 	| "unspecified"
@@ -18,4 +20,9 @@ export type AppBuilderTemplateType = "appshell" | "grid" | "unspecified";
 /** Contextual information for App Builder template. */
 export interface IAppBuilderTemplateContext {
 	name: AppBuilderTemplateType;
+}
+
+/** Contextual information containing for App Builder data. */
+export interface IAppBuilderDataContext {
+	data: IAppBuilder | undefined;
 }
