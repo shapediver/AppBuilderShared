@@ -7,20 +7,15 @@ import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components
 import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import AppBuilderAgentWidgetComponent from "./widgets/AppBuilderAgentWidgetComponent";
 
 interface Props {
 	parameters: PropsParameter[];
 	exports: PropsExport[];
-	namespace: string;
-	showAiAgentWidget: boolean;
 }
 
 export default function AppBuilderFallbackContainerComponent({
 	parameters,
 	exports,
-	namespace,
-	showAiAgentWidget,
 }: Props) {
 	const tabProps: ITabsComponentProps = useMemo(() => {
 		const tabProps: ITabsComponentProps = {
@@ -42,15 +37,6 @@ export default function AppBuilderFallbackContainerComponent({
 					/>,
 				],
 			});
-			// SS-8371 add AppBuilderAgentWidgetComponent for testing
-			if (showAiAgentWidget) {
-				tabProps.tabs[0].children.push(
-					<AppBuilderAgentWidgetComponent
-						key={1}
-						namespace={namespace}
-					/>,
-				);
-			}
 		}
 		if (exports.length > 0) {
 			tabProps.defaultValue = tabProps.defaultValue || "Exports";
