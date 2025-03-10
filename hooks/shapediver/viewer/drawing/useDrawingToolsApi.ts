@@ -55,7 +55,7 @@ export function useDrawingToolsApi(
 		snapToEdges,
 		setSnapToEdges,
 		snapToFaces,
-		setSnapToFaces
+		setSnapToFaces,
 	} = useDrawingOptionsStore();
 
 	// get the viewport API
@@ -85,17 +85,23 @@ export function useDrawingToolsApi(
 			 * If there are no settings provided, the drawing tools options are set from the store.
 			 */
 
-			if(drawingToolsSettings.visualization?.pointLabels !== undefined) {
+			if (drawingToolsSettings.visualization?.pointLabels !== undefined) {
 				// update the store with the drawing tools options (the drawing tools are already updated correctly)
-				setShowPointLabels(drawingToolsSettings.visualization?.pointLabels);
+				setShowPointLabels(
+					drawingToolsSettings.visualization?.pointLabels,
+				);
 			} else {
 				// set the drawing tools options from the store
 				drawingToolsApi.showPointLabels = showPointLabels;
 			}
 
-			if(drawingToolsSettings.visualization?.distanceLabels !== undefined) {
+			if (
+				drawingToolsSettings.visualization?.distanceLabels !== undefined
+			) {
 				// update the store with the drawing tools options (the drawing tools are already updated correctly)
-				setShowDistanceLabels(drawingToolsSettings.visualization?.distanceLabels);
+				setShowDistanceLabels(
+					drawingToolsSettings.visualization?.distanceLabels,
+				);
 			} else {
 				// set the drawing tools options from the store
 				drawingToolsApi.showDistanceLabels = showDistanceLabels;
@@ -103,14 +109,19 @@ export function useDrawingToolsApi(
 
 			const restrictions: {
 				[key: string]: RestrictionProperties;
-			} = drawingToolsSettings.restrictions !== undefined ? drawingToolsSettings.restrictions as {
-				[key: string]: RestrictionProperties;
-			} : {};
+			} =
+				drawingToolsSettings.restrictions !== undefined
+					? (drawingToolsSettings.restrictions as {
+							[key: string]: RestrictionProperties;
+						})
+					: {};
 
 			// find the first plane restriction
-			const planeRestriction = Object.values(restrictions).find((r: RestrictionProperties) => r.type === RESTRICTION_TYPE.PLANE) as PlaneRestrictionProperties;
+			const planeRestriction = Object.values(restrictions).find(
+				(r: RestrictionProperties) => r.type === RESTRICTION_TYPE.PLANE,
+			) as PlaneRestrictionProperties;
 
-			if(planeRestriction?.gridSnapRestriction?.gridUnit !== undefined) {
+			if (planeRestriction?.gridSnapRestriction?.gridUnit !== undefined) {
 				// update the store with the drawing tools options (the drawing tools are already updated correctly)
 				setGridSize(planeRestriction?.gridSnapRestriction?.gridUnit);
 			} else {
@@ -120,9 +131,15 @@ export function useDrawingToolsApi(
 					.forEach((p) => (p.gridRestrictionApi.gridUnit = gridSize));
 			}
 
-			if(planeRestriction?.angularSnapRestriction?.angleStep !== undefined) {
+			if (
+				planeRestriction?.angularSnapRestriction?.angleStep !==
+				undefined
+			) {
 				// update the store with the drawing tools options (the drawing tools are already updated correctly)
-				setAngleStep(Math.PI / planeRestriction?.angularSnapRestriction?.angleStep);
+				setAngleStep(
+					Math.PI /
+						planeRestriction?.angularSnapRestriction?.angleStep,
+				);
 			} else {
 				// set the drawing tools options from the store
 				Object.values(drawingToolsApi.restrictions)
@@ -135,9 +152,12 @@ export function useDrawingToolsApi(
 			}
 
 			// find the first geometry restriction
-			const geometryRestriction = Object.values(restrictions).find((r: RestrictionProperties) => r.type === RESTRICTION_TYPE.GEOMETRY) as GeometryRestrictionProperties;
+			const geometryRestriction = Object.values(restrictions).find(
+				(r: RestrictionProperties) =>
+					r.type === RESTRICTION_TYPE.GEOMETRY,
+			) as GeometryRestrictionProperties;
 
-			if(geometryRestriction?.snapToVertices !== undefined) {
+			if (geometryRestriction?.snapToVertices !== undefined) {
 				// update the store with the drawing tools options (the drawing tools are already updated correctly)
 				setSnapToVertices(geometryRestriction?.snapToVertices);
 			} else {
@@ -147,7 +167,7 @@ export function useDrawingToolsApi(
 					.forEach((p) => (p.snapToVertices = snapToVertices));
 			}
 
-			if(geometryRestriction?.snapToEdges !== undefined) {
+			if (geometryRestriction?.snapToEdges !== undefined) {
 				// update the store with the drawing tools options (the drawing tools are already updated correctly)
 				setSnapToEdges(geometryRestriction?.snapToEdges);
 			} else {
@@ -157,7 +177,7 @@ export function useDrawingToolsApi(
 					.forEach((p) => (p.snapToEdges = snapToEdges));
 			}
 
-			if(geometryRestriction?.snapToFaces !== undefined) {
+			if (geometryRestriction?.snapToFaces !== undefined) {
 				// update the store with the drawing tools options (the drawing tools are already updated correctly)
 				setSnapToFaces(geometryRestriction?.snapToFaces);
 			} else {

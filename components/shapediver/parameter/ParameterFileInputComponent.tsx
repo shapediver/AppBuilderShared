@@ -24,12 +24,9 @@ export default function ParameterFileInputComponent(props: PropsParameter) {
 	// create the file endings from all the formats that are specified in the parameter
 	const fileEndings = useMemo(() => {
 		const mimeTypes = extendMimeTypes(definition.format!);
-		return [
-			...mapMimeTypeToFileEndings(mimeTypes),
-			...mimeTypes
-		];
+		return [...mapMimeTypeToFileEndings(mimeTypes), ...mimeTypes];
 	}, [definition.format]);
-	
+
 	// create a pseudo file in case the value is a file id and a filename for it exists
 	const [defaultFile, setDefaultFile] = React.useState<File | null>(null);
 	useEffect(() => {

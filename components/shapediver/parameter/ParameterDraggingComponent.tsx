@@ -27,7 +27,7 @@ const parseDraggedNodes = (
 		const parsed = JSON.parse(value);
 
 		return parsed.objects;
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	} catch (e) {
 		return [];
 	}
@@ -83,7 +83,10 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	// reset the dragged nodes when the definition changes
 	useEffect(() => {
 		const parsed = parseDraggedNodes(state.execValue);
-		if(JSON.stringify(parsed) !== JSON.stringify(lastConfirmedValueRef.current)) {
+		if (
+			JSON.stringify(parsed) !==
+			JSON.stringify(lastConfirmedValueRef.current)
+		) {
 			setParsedExecValue(parsed);
 			setDraggedNodes([]);
 			lastConfirmedValueRef.current = [];

@@ -34,7 +34,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 
 	const onClick = useCallback(async () => {
 		setLoading(true);
-		
+
 		const {modelStateId} = await createModelState(
 			undefined, // <-- use parameter values of the session
 			false, // <-- use parameter values of the session

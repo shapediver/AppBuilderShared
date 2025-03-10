@@ -103,11 +103,11 @@ export default function useAppBuilderSettings(
 		() =>
 			slug
 				? ({
-					id: "default",
-					slug,
-					platformUrl: platformUrl ?? getDefaultPlatformUrl(),
-					modelStateId,
-				} as IAppBuilderSettingsSession)
+						id: "default",
+						slug,
+						platformUrl: platformUrl ?? getDefaultPlatformUrl(),
+						modelStateId,
+					} as IAppBuilderSettingsSession)
 				: ticket && modelViewUrl
 					? {id: "default", ticket, modelViewUrl, modelStateId}
 					: undefined,
@@ -118,14 +118,14 @@ export default function useAppBuilderSettings(
 	const themeOverrides = useMemo(() => {
 		return template
 			? {
-				components: {
-					AppBuilderTemplateSelector: {
-						defaultProps: {
-							template: template,
+					components: {
+						AppBuilderTemplateSelector: {
+							defaultProps: {
+								template: template,
+							},
 						},
 					},
-				},
-			}
+				}
 			: undefined;
 	}, [template]);
 
@@ -137,7 +137,7 @@ export default function useAppBuilderSettings(
 				return {
 					version: "1.0",
 					sessions: [session],
-					settings: { disableFallbackUi },
+					settings: {disableFallbackUi},
 					themeOverrides: themeOverrides,
 				};
 			} else {
@@ -145,21 +145,20 @@ export default function useAppBuilderSettings(
 			}
 		} else {
 			const session = defaultSession || queryParamSession;
-			const { sessions, ...rest } = value;
+			const {sessions, ...rest} = value;
 
 			// if the value has sessions, combine them with the default session
-			let combinedSessions: IAppBuilderSettingsJsonSession[] | undefined = [];
+			let combinedSessions: IAppBuilderSettingsJsonSession[] | undefined =
+				[];
 			if (session) combinedSessions.push(session);
-			if (sessions) 
-				combinedSessions = combinedSessions.concat(sessions);
+			if (sessions) combinedSessions = combinedSessions.concat(sessions);
 
 			return {
 				sessions: combinedSessions,
 				...rest,
 			};
 		}
-	}, [value, defaultSession, queryParamSession, themeOverrides],
-	);
+	}, [value, defaultSession, queryParamSession, themeOverrides]);
 
 	// register theme overrides
 	const setThemeOverride = useThemeOverrideStore(

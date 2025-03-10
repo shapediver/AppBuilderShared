@@ -69,8 +69,7 @@ export default function SelectedAttribute(props: SelectedAttributeProps) {
 						const path = node.getPath().split(".");
 						// remove the first two elements of the path, because they are the root and session name
 						// we might get here before the session is even added to the root, so we check for that
-						if(path[0] === "root")
-							path.shift();
+						if (path[0] === "root") path.shift();
 						path.shift();
 						// replace the first element of the path with the output name
 						const outputApi = sessionApi.outputs[path[0]];

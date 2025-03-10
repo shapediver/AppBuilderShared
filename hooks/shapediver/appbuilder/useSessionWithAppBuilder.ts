@@ -1,11 +1,14 @@
-import { useAppBuilderCustomParameters } from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderCustomParameters";
-import { IUseSessionDto, useSession } from "@AppBuilderShared/hooks/shapediver/useSession";
-import { useOutputContent } from "@AppBuilderShared/hooks/shapediver/viewer/useOutputContent";
-import { IAppBuilder } from "@AppBuilderShared/types/shapediver/appbuilder";
-import { validateAppBuilder } from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
-import { ISessionApi } from "@shapediver/viewer.session";
+import {useAppBuilderCustomParameters} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderCustomParameters";
+import {
+	IUseSessionDto,
+	useSession,
+} from "@AppBuilderShared/hooks/shapediver/useSession";
+import {useOutputContent} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputContent";
+import {IAppBuilder} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
+import {ISessionApi} from "@shapediver/viewer.session";
 
-import React, { useEffect, useMemo } from "react";
+import React, {useEffect, useMemo} from "react";
 
 export type ISessionWithAppBuilderHandlerResult = {
 	appBuilderData?: IAppBuilder;
@@ -18,7 +21,9 @@ export type ISessionWithAppBuilderHandlerResult = {
 export type ISessionWithAppBuilderHandlerState = {
 	appBuilderOverride?: IAppBuilder;
 	props: IUseSessionDto | undefined;
-	setData?: React.Dispatch<React.SetStateAction<ISessionWithAppBuilderHandlerResult>>;
+	setData?: React.Dispatch<
+		React.SetStateAction<ISessionWithAppBuilderHandlerResult>
+	>;
 };
 
 /**
@@ -42,17 +47,17 @@ export function useSessionWithAppBuilder(
 	const namespace = props?.id ?? "";
 
 	// start session and register parameters and exports
-	const { sessionApi, error: sessionError } = useSession(
+	const {sessionApi, error: sessionError} = useSession(
 		props
 			? {
-				...props,
-			}
+					...props,
+				}
 			: undefined,
 	);
 	const sessionInitialized = !!sessionApi;
 
 	// get data output, parse it
-	const { outputApi, outputContent } = useOutputContent(
+	const {outputApi, outputContent} = useOutputContent(
 		namespace,
 		CUSTOM_DATA_OUTPUT_NAME,
 	);
@@ -139,13 +144,15 @@ export function useSessionWithAppBuilder(
  */
 const CUSTOM_DATA_OUTPUT_NAME = "AppBuilder";
 
-export const SessionWithAppBuilderHandler: React.FC<ISessionWithAppBuilderHandlerState> = ({
-	props, appBuilderOverride, setData,
+export const SessionWithAppBuilderHandler: React.FC<
+	ISessionWithAppBuilderHandlerState
+> = ({
+	props,
+	appBuilderOverride,
+	setData,
 }: ISessionWithAppBuilderHandlerState) => {
-	const { sessionApi, namespace, error, appBuilderData, hasAppBuilderOutput } = useSessionWithAppBuilder(
-		props,
-		appBuilderOverride,
-	);
+	const {sessionApi, namespace, error, appBuilderData, hasAppBuilderOutput} =
+		useSessionWithAppBuilder(props, appBuilderOverride);
 
 	useEffect(() => {
 		if (setData)
@@ -156,7 +163,14 @@ export const SessionWithAppBuilderHandler: React.FC<ISessionWithAppBuilderHandle
 				appBuilderData,
 				hasAppBuilderOutput,
 			});
-	}, [sessionApi, namespace, error, appBuilderData, hasAppBuilderOutput, setData]);
+	}, [
+		sessionApi,
+		namespace,
+		error,
+		appBuilderData,
+		hasAppBuilderOutput,
+		setData,
+	]);
 
 	return null;
 };

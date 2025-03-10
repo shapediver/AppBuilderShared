@@ -98,11 +98,11 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		setParsedExecValue(parsedExecValue);
 		setLastConfirmedValue(parsedExecValue);
 	}, [state.execValue]);
-	
+
 	// reset the transformed nodes when the definition changes
 	useEffect(() => {
 		const parsed = parseTransformation(state.execValue);
-		if(JSON.stringify(parsed) !== JSON.stringify(parsedExecValue)) {
+		if (JSON.stringify(parsed) !== JSON.stringify(parsedExecValue)) {
 			setParsedExecValue(parsed);
 			setLastConfirmedValue(parsed);
 		}

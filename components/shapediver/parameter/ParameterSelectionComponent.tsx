@@ -101,12 +101,11 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 			setDirty(false);
 		}
 	}, [state.uiValue, selectedNodeNames]);
-	
 
 	// reset the selected node names when the definition changes
 	useEffect(() => {
 		const parsed = parseNames(value);
-		if(JSON.stringify(parsed) !== JSON.stringify(selectedNodeNames))
+		if (JSON.stringify(parsed) !== JSON.stringify(selectedNodeNames))
 			setSelectedNodeNames(parsed);
 	}, [definition]);
 
@@ -204,9 +203,9 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 							className={classes.interactionText}
 						>
 							{selectionProps.prompt?.activeText ??
-							(minimumSelection === maximumSelection
-								? `Select ${minimumSelection} object${minimumSelection > 1 ? "s" : ""}`
-								: `Select between ${minimumSelection} and ${maximumSelection} objects`)}
+								(minimumSelection === maximumSelection
+									? `Select ${minimumSelection} object${minimumSelection > 1 ? "s" : ""}`
+									: `Select between ${minimumSelection} and ${maximumSelection} objects`)}
 						</Text>
 					</Box>
 					<Box style={{width: "auto"}}>
