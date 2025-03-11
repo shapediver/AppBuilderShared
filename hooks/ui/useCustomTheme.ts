@@ -4,6 +4,7 @@ import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shape
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import {ParameterColorComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterColorComponent";
 import {ParameterLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import {ParameterSelectComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSelectComponent";
 import {ParameterSliderComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
@@ -597,6 +598,14 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			ParameterLabelComponent: ParameterLabelComponentThemeProps({
 				//fontWeight: "500",
+			}),
+			/**
+			 * ParameterSelectComponent
+			 *
+			 * Defaults and settings for selection (dropdown) components.
+			 */
+			ParameterSelectComponent: ParameterSelectComponentThemeProps({
+				// componentSettings: { "Predefined positions": { type: "chipgroup" } },
 			}),
 			/**
 			 * ParameterSliderComponent
