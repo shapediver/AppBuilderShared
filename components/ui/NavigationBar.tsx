@@ -1,5 +1,5 @@
-import React from "react";
 import {NavLink} from "@mantine/core";
+import React from "react";
 import {Link, Outlet} from "react-router-dom";
 
 /**

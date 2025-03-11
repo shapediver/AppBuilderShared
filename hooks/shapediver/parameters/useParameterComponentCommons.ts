@@ -1,8 +1,8 @@
+import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IShapeDiverParameterState} from "@AppBuilderShared/types/shapediver/parameter";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 
 /**
  * Hook providing functionality common to all parameter components like

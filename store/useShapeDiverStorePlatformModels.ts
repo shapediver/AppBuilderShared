@@ -1,23 +1,23 @@
-import {devtools} from "zustand/middleware";
-import {create} from "zustand";
-import {useShallow} from "zustand/react/shallow";
-import {produce} from "immer";
+import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
+import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {IPlatformPagedItemQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformGeneric";
+import {
+	IShapeDiverStorePlatformModelExtended,
+	ModelCacheKeyEnum,
+	TModelData,
+	TModelEmbed,
+	TModelQueryPropsExt,
+} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {
 	SdPlatformModelQueryEmbeddableFields,
 	SdPlatformModelQueryParameters,
 	SdPlatformSortingOrder,
 } from "@shapediver/sdk.platform-api-sdk-v1";
+import {produce} from "immer";
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {IPlatformPagedItemQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformGeneric";
-import {
-	IShapeDiverStorePlatformModelExtended,
-	TModelData,
-	ModelCacheKeyEnum,
-	TModelEmbed,
-	TModelQueryPropsExt,
-} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
-import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {create} from "zustand";
+import {devtools} from "zustand/middleware";
+import {useShallow} from "zustand/react/shallow";
 
 /**
  * Store for ShapeDiver Platform models.

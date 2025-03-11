@@ -1,9 +1,9 @@
-import {MultiSelect, Select} from "@mantine/core";
-import React, {useMemo} from "react";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {MultiSelect, Select} from "@mantine/core";
+import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
+import React, {useMemo} from "react";
 
 /**
  * Functional component that creates a dropdown select component for a string list parameter.

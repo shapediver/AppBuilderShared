@@ -1,3 +1,21 @@
+import {useHoverManager} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useHoverManager";
+import {useSelectManager} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelectManager";
+import {
+	ISelectionState,
+	useSelectManagerEvents,
+} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelectManagerEvents";
+import {useCreateNameFilterPattern} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useCreateNameFilterPattern";
+import {
+	INodeInteractionDataState,
+	NodeInteractionDataHandler,
+} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useNodeInteractionData";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {
+	checkNodeNameMatch,
+	InteractionData,
+	MultiSelectManager,
+	SelectManager,
+} from "@shapediver/viewer.features.interaction";
 import {
 	IOutputApi,
 	ISelectionParameterProps,
@@ -5,26 +23,8 @@ import {
 	OutputApiData,
 	SessionApiData,
 } from "@shapediver/viewer.session";
-import {
-	checkNodeNameMatch,
-	InteractionData,
-	MultiSelectManager,
-	SelectManager,
-} from "@shapediver/viewer.features.interaction";
-import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
 import {vec3} from "gl-matrix";
-import {
-	ISelectionState,
-	useSelectManagerEvents,
-} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelectManagerEvents";
-import {useSelectManager} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelectManager";
-import {useHoverManager} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useHoverManager";
-import {useCreateNameFilterPattern} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useCreateNameFilterPattern";
-import {
-	INodeInteractionDataState,
-	NodeInteractionDataHandler,
-} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useNodeInteractionData";
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
 
 // #region Functions (1)
 

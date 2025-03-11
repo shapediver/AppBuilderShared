@@ -1,3 +1,8 @@
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {
 	Group,
 	MantineThemeComponent,
@@ -5,13 +10,8 @@ import {
 	Slider,
 	useProps,
 } from "@mantine/core";
-import React from "react";
-import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import React from "react";
 
 /**
  * Round the number depending on the parameter type.

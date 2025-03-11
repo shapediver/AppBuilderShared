@@ -1,14 +1,14 @@
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {IAppBuilderActionPropsCommon} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Button,
 	ButtonProps,
-	PolymorphicComponentProps,
 	CloseButton,
+	PolymorphicComponentProps,
 } from "@mantine/core";
 import React from "react";
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import {IAppBuilderActionPropsCommon} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 
 type ButtonComponentProps<C = "button"> = PolymorphicComponentProps<
 	C,

@@ -1,3 +1,11 @@
+import {ConvertedDragObject} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useConvertDraggingData";
+import {RESTRICTION_TYPE} from "@shapediver/viewer.features.drawing-tools";
+import {
+	DragManager,
+	InteractionEventResponseMapping,
+	matchNodesWithPatterns,
+	RestrictionProperties,
+} from "@shapediver/viewer.features.interaction";
 import {
 	addListener,
 	DraggingParameterValue,
@@ -5,15 +13,7 @@ import {
 	IEvent,
 	removeListener,
 } from "@shapediver/viewer.session";
-import {
-	DragManager,
-	InteractionEventResponseMapping,
-	matchNodesWithPatterns,
-	RestrictionProperties,
-} from "@shapediver/viewer.features.interaction";
-import {useState, useEffect, useRef} from "react";
-import {RESTRICTION_TYPE} from "@shapediver/viewer.features.drawing-tools";
-import {ConvertedDragObject} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useConvertDraggingData";
+import {useEffect, useRef, useState} from "react";
 
 // #region Functions (1)
 

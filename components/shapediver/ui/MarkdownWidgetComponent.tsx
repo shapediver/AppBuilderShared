@@ -1,20 +1,20 @@
-import React from "react";
-import Markdown from "react-markdown";
 import {
 	Anchor,
 	Blockquote,
 	Code,
-	Text,
-	Title,
 	Divider,
 	Image,
-	MantineStyleProps,
 	List,
-	Table,
+	MantineStyleProps,
 	MantineThemeComponent,
-	useProps,
+	Table,
+	Text,
+	Title,
 	useMantineTheme,
+	useProps,
 } from "@mantine/core";
+import React from "react";
+import Markdown from "react-markdown";
 import {Options} from "react-markdown/lib";
 import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";

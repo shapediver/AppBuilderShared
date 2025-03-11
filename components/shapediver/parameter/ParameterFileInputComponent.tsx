@@ -1,16 +1,16 @@
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {FileInput} from "@mantine/core";
-import React, {useEffect, useMemo} from "react";
+import {isFileParameterApi} from "@shapediver/viewer.session";
 import {
 	extendMimeTypes,
 	guessMissingMimeType,
 	mapMimeTypeToFileEndings,
 } from "@shapediver/viewer.utils.mime-type";
-import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {isFileParameterApi} from "@shapediver/viewer.session";
+import React, {useEffect, useMemo} from "react";
 
 /**
  * Functional component that creates a file input for a file parameter.

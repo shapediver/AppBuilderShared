@@ -1,7 +1,7 @@
-import React from "react";
-import {IAppBuilderContainer} from "@AppBuilderShared/types/shapediver/appbuilder";
-import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
 import AppBuilderTabsComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderTabsComponent";
+import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
+import {IAppBuilderContainer} from "@AppBuilderShared/types/shapediver/appbuilder";
+import React from "react";
 
 interface Props extends IAppBuilderContainer {
 	/**

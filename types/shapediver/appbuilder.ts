@@ -1,13 +1,13 @@
-import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {
-	IAppBuilderWidgetPropsRoundChart,
-	IAppBuilderWidgetPropsLineChart,
 	IAppBuilderWidgetPropsAreaChart,
 	IAppBuilderWidgetPropsBarChart,
+	IAppBuilderWidgetPropsLineChart,
+	IAppBuilderWidgetPropsRoundChart,
 } from "@AppBuilderShared/types/shapediver/appbuildercharts";
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
 import {IconType} from "@AppBuilderShared/types/shapediver/icons";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
+import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {

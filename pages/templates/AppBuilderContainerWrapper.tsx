@@ -1,19 +1,19 @@
-import React, {useContext} from "react";
+import {
+	AppBuilderContainerContext,
+	AppBuilderTemplateContext,
+} from "@AppBuilderShared/context/AppBuilderContext";
+import AppBuilderContainer from "@AppBuilderShared/pages/templates/AppBuilderContainer";
+import {
+	AppBuilderContainerOrientationType,
+	IAppBuilderContainerContext,
+} from "@AppBuilderShared/types/context/appbuildercontext";
 import {
 	MantineThemeComponent,
 	MantineThemeOverride,
 	MantineThemeProvider,
 	useProps,
 } from "@mantine/core";
-import {
-	AppBuilderTemplateContext,
-	AppBuilderContainerContext,
-} from "@AppBuilderShared/context/AppBuilderContext";
-import {
-	AppBuilderContainerOrientationType,
-	IAppBuilderContainerContext,
-} from "@AppBuilderShared/types/context/appbuildercontext";
-import AppBuilderContainer from "@AppBuilderShared/pages/templates/AppBuilderContainer";
+import React, {useContext} from "react";
 
 interface Props {
 	name: string;

@@ -1,10 +1,13 @@
-import React, {
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import DrawingOptionsComponent from "@AppBuilderShared/components/shapediver/ui/DrawingOptionsComponent";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {useDrawingTools} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingTools";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
 	Box,
@@ -15,22 +18,19 @@ import {
 	Stack,
 	Text,
 } from "@mantine/core";
+import {PointsData} from "@shapediver/viewer.features.drawing-tools";
 import {
 	IDrawingParameterSettings as IDrawingParameterProps,
 	SystemInfo,
 } from "@shapediver/viewer.session";
-import {PointsData} from "@shapediver/viewer.features.drawing-tools";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
-import {useDrawingTools} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingTools";
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import classes from "./ParameterInteractionComponent.module.css";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import DrawingOptionsComponent from "@AppBuilderShared/components/shapediver/ui/DrawingOptionsComponent";
 
 /**
  * Parse the value of a drawing parameter and extract the points data.

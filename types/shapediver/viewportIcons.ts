@@ -1,6 +1,6 @@
 import {
-	MantineStyleProp,
 	ActionIconVariant,
+	MantineStyleProp,
 	MantineThemeComponent,
 } from "@mantine/core";
 

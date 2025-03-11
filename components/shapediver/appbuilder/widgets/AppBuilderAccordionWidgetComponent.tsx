@@ -1,9 +1,9 @@
-import React, {useMemo} from "react";
+import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
+import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IAppBuilderWidgetPropsAccordion} from "@AppBuilderShared/types/shapediver/appbuilder";
-import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
-import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
+import React, {useMemo} from "react";
 
 interface Props extends IAppBuilderWidgetPropsAccordion {
 	/**

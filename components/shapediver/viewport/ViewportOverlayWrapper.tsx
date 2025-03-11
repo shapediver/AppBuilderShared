@@ -1,10 +1,10 @@
-import {ViewportOverlayWrapperProps} from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
-import {useProps} from "@mantine/core";
-import React from "react";
 import OverlayWrapper, {
 	OverlayPosition,
 	OverlayStyleProps,
 } from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
+import {ViewportOverlayWrapperProps} from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
+import {useProps} from "@mantine/core";
+import React from "react";
 
 const defaultStyleProps: OverlayStyleProps = {
 	position: {

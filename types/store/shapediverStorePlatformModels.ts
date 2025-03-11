@@ -1,13 +1,13 @@
 import {
-	SdPlatformModelQueryEmbeddableFields,
-	SdPlatformResponseModelPublic,
-} from "@shapediver/sdk.platform-api-sdk-v1";
-import {
 	IPlatformItem,
 	IPlatformPagedItemQueryProps,
 	IShapeDiverStorePlatformGeneric,
 	IShapeDiverStorePlatformGenericExtended,
 } from "@AppBuilderShared/types/store/shapediverStorePlatformGeneric";
+import {
+	SdPlatformModelQueryEmbeddableFields,
+	SdPlatformResponseModelPublic,
+} from "@shapediver/sdk.platform-api-sdk-v1";
 
 /**
  * Actions that can be taken on a model.

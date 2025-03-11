@@ -1,10 +1,10 @@
-import React, {useMemo} from "react";
-import {Avatar} from "@mantine/core";
-import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import ModelCardOverlayWrapper from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlayWrapper";
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
+import {Avatar} from "@mantine/core";
+import React, {useMemo} from "react";
 
 export interface IModelCardOverlayProps {
 	/** If true, show the model's bookmark status. Defaults to false. */

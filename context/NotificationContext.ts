@@ -1,10 +1,10 @@
-import {createContext} from "react";
-import {notifications} from "@mantine/notifications";
 import {
 	AppBuilderNotificationData,
 	INotificationContext,
 	NotificationStyleProps,
 } from "@AppBuilderShared/types/context/notificationcontext";
+import {notifications} from "@mantine/notifications";
+import {createContext} from "react";
 
 export function createNotificationsWithDefaults(
 	props: NotificationStyleProps = {},

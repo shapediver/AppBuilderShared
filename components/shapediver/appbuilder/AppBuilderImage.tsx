@@ -1,15 +1,15 @@
-import React, {useContext} from "react";
+import Svg from "@AppBuilderShared/components/ui/Svg";
+import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
+import {IAppBuilderWidgetPropsAnchor} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
+	Anchor,
 	Image,
 	ImageProps,
 	MantineThemeComponent,
-	Anchor,
 	useProps,
 } from "@mantine/core";
-import {IAppBuilderWidgetPropsAnchor} from "@AppBuilderShared/types/shapediver/appbuilder";
+import React, {useContext} from "react";
 import classes from "./AppBuilderImage.module.css";
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
-import Svg from "@AppBuilderShared/components/ui/Svg";
 
 type Props = IAppBuilderWidgetPropsAnchor;
 

@@ -1,11 +1,9 @@
-import React, {useContext} from "react";
-import {
-	Group,
-	MantineThemeComponent,
-	Paper,
-	PaperProps,
-	Stack,
-} from "@mantine/core";
+import AppBuilderActionAddToCartComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionAddToCartComponent";
+import AppBuilderActionCloseConfiguratorComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCloseConfiguratorComponent";
+import AppBuilderActionCreateModelStateComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCreateModelStateComponent";
+import AppBuilderActionSetBrowserLocationComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetBrowserLocationComponent";
+import AppBuilderActionSetParameterValueComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValueComponent";
+import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {
 	IAppBuilderWidgetPropsActions,
 	isAddToCartAction,
@@ -14,12 +12,14 @@ import {
 	isSetBrowserLocationAction,
 	isSetParameterValueAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import AppBuilderActionAddToCartComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionAddToCartComponent";
-import AppBuilderActionSetParameterValueComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValueComponent";
-import AppBuilderActionSetBrowserLocationComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetBrowserLocationComponent";
-import AppBuilderActionCloseConfiguratorComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCloseConfiguratorComponent";
-import AppBuilderActionCreateModelStateComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCreateModelStateComponent";
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
+import {
+	Group,
+	MantineThemeComponent,
+	Paper,
+	PaperProps,
+	Stack,
+} from "@mantine/core";
+import React, {useContext} from "react";
 
 type StylePros = PaperProps;
 

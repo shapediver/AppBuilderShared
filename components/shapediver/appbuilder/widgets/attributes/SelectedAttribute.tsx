@@ -1,18 +1,18 @@
-import {Stack, Title, Table, ActionIcon, Group} from "@mantine/core";
-import {getNodesByName} from "@shapediver/viewer.features.interaction";
-import {
-	ISDTFAttributeData,
-	ITreeNode,
-	SessionApiData,
-	SDTFItemData,
-} from "@shapediver/viewer.session";
-import {IconChevronUp, IconChevronDown} from "@tabler/icons-react";
-import React, {useState, useCallback, useEffect, useMemo} from "react";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
 import {SessionUpdateCallbackHandler} from "@AppBuilderShared/hooks/shapediver/viewer/useSessionUpdateCallback";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {ActionIcon, Group, Stack, Table, Title} from "@mantine/core";
+import {getNodesByName} from "@shapediver/viewer.features.interaction";
+import {
+	ISDTFAttributeData,
+	ITreeNode,
+	SDTFItemData,
+	SessionApiData,
+} from "@shapediver/viewer.session";
+import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 
 interface SelectedAttributeProps {
 	viewportId: string;

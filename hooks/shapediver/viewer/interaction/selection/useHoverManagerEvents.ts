@@ -1,15 +1,15 @@
 import {
+	InteractionEventResponseMapping,
+	matchNodesWithPatterns,
+	OutputNodeNameFilterPatterns,
+} from "@shapediver/viewer.features.interaction";
+import {
 	addListener,
 	EVENTTYPE_INTERACTION,
 	IEvent,
 	removeListener,
 } from "@shapediver/viewer.session";
-import {
-	InteractionEventResponseMapping,
-	matchNodesWithPatterns,
-	OutputNodeNameFilterPatterns,
-} from "@shapediver/viewer.features.interaction";
-import {useState, useEffect} from "react";
+import {useEffect, useState} from "react";
 
 // #region Functions (1)
 

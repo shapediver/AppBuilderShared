@@ -1,12 +1,12 @@
+import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
 import {Box, Group, Select, Stack, Text, TextInput} from "@mantine/core";
 import {
 	ATTRIBUTE_VISUALIZATION,
 	INumberAttribute,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {SDTF_TYPEHINT} from "@shapediver/viewer.session";
+import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
-import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
-import {IconChevronUp, IconChevronDown} from "@tabler/icons-react";
 
 interface Props {
 	name: string;

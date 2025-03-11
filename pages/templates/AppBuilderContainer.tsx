@@ -1,13 +1,13 @@
-import React, {useContext} from "react";
-import {MantineThemeComponent} from "@mantine/core";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {usePropsAppBuilder} from "@AppBuilderShared/hooks/ui/usePropsAppBuilder";
+import AppBuilderHorizontalContainer from "@AppBuilderShared/pages/templates/AppBuilderHorizontalContainer";
+import AppBuilderVerticalContainer from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 import {
 	AppBuilderContainerOrientationType,
 	IAppBuilderContainerContext,
 } from "@AppBuilderShared/types/context/appbuildercontext";
-import AppBuilderHorizontalContainer from "@AppBuilderShared/pages/templates/AppBuilderHorizontalContainer";
-import AppBuilderVerticalContainer from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
+import {MantineThemeComponent} from "@mantine/core";
+import React, {useContext} from "react";
 
 interface Props {
 	children?: React.ReactNode;

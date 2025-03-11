@@ -1,4 +1,6 @@
-import React, {useContext} from "react";
+import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
+import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
+import {IAppBuilderWidgetPropsText} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	MantineStyleProp,
 	MantineThemeComponent,
@@ -7,9 +9,7 @@ import {
 	Text,
 	useProps,
 } from "@mantine/core";
-import {IAppBuilderWidgetPropsText} from "@AppBuilderShared/types/shapediver/appbuilder";
-import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
+import React, {useContext} from "react";
 
 type StylePros = PaperProps;
 

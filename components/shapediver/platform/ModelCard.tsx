@@ -1,9 +1,9 @@
-import {Anchor, Card, Group, Image, Pill, px, Text} from "@mantine/core";
-import classes from "./ModelCard.module.css";
-import React, {useMemo} from "react";
-import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import ModelCardOverlay from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlay";
 import ModelStatusIcon from "@AppBuilderShared/components/shapediver/platform/ModelStatusIcon";
+import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
+import {Anchor, Card, Group, Image, Pill, px, Text} from "@mantine/core";
+import React, {useMemo} from "react";
+import classes from "./ModelCard.module.css";
 
 export interface IModelCardProps {
 	/** If true, show information about the owner of the model. Defaults to true. */

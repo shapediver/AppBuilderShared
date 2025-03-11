@@ -1,4 +1,11 @@
-import React, {ReactElement, useContext} from "react";
+import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
+import {useSortedParametersAndExports} from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
+import {
+	getExportComponent,
+	getParameterComponent,
+} from "@AppBuilderShared/types/components/shapediver/componentTypes";
+import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {
 	Accordion,
 	Group,
@@ -8,14 +15,7 @@ import {
 	Stack,
 	useProps,
 } from "@mantine/core";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import {useSortedParametersAndExports} from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
-import {
-	getExportComponent,
-	getParameterComponent,
-} from "@AppBuilderShared/types/components/shapediver/componentTypes";
+import React, {ReactElement, useContext} from "react";
 
 /**
  * Functional component that creates an accordion of parameter and export components.

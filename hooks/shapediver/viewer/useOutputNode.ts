@@ -1,10 +1,10 @@
-import {IOutputApi, ITreeNode} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useId, useState} from "react";
+import {useOutput} from "@AppBuilderShared/hooks/shapediver/viewer/useOutput";
 import {
 	OutputUpdateCallbackType,
 	useOutputUpdateCallback,
 } from "@AppBuilderShared/hooks/shapediver/viewer/useOutputUpdateCallback";
-import {useOutput} from "@AppBuilderShared/hooks/shapediver/viewer/useOutput";
+import {IOutputApi, ITreeNode} from "@shapediver/viewer.session";
+import {useCallback, useEffect, useId, useState} from "react";
 
 /**
  * Hook providing access to outputs by id or name,

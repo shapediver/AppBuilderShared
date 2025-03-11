@@ -1,26 +1,26 @@
-import React, {useContext, Suspense} from "react";
+import AppBuilderAccordionWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
+import AppBuilderActionsWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderActionsWidgetComponent";
+import AppBuilderAreaChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAreaChartWidgetComponent";
+import AppBuilderBarChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderBarChartWidgetComponent";
+import AppBuilderImageWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderImageWidgetComponent";
+import AppBuilderLineChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
+import AppBuilderRoundChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
+import AppBuilderTextWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
+import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {
 	IAppBuilderWidget,
 	isAccordionWidget,
+	isActionsWidget,
+	isAgentWidget,
 	isAreaChartWidget,
 	isBarChartWidget,
 	isImageWidget,
 	isLineChartWidget,
 	isRoundChartWidget,
 	isTextWidget,
-	isActionsWidget,
-	isAgentWidget,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import AppBuilderTextWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
-import AppBuilderImageWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderImageWidgetComponent";
-import AppBuilderAccordionWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
-import AppBuilderRoundChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
-import AppBuilderLineChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
-import AppBuilderAreaChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAreaChartWidgetComponent";
-import AppBuilderBarChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderBarChartWidgetComponent";
-import AppBuilderActionsWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderActionsWidgetComponent";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {Loader, Paper} from "@mantine/core";
+import React, {Suspense, useContext} from "react";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(
 	() => import("./AppBuilderAgentWidgetComponent"),
 );

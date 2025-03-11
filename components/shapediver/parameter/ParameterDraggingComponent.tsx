@@ -1,18 +1,18 @@
-import {Button, Group, Loader, Stack, Text} from "@mantine/core";
-import React, {useCallback, useEffect, useRef, useState} from "react";
-import {
-	IDraggingParameterProps,
-	DraggingParameterValue,
-} from "@shapediver/viewer.session";
-import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
-import classes from "./ParameterInteractionComponent.module.css";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {Button, Group, Loader, Stack, Text} from "@mantine/core";
+import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
+import {
+	DraggingParameterValue,
+	IDraggingParameterProps,
+} from "@shapediver/viewer.session";
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import classes from "./ParameterInteractionComponent.module.css";
 
 /**
  * Parse the value of a dragging parameter and extract the dragged objects

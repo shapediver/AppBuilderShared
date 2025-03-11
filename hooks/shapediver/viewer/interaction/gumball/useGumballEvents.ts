@@ -1,13 +1,13 @@
+import {GumballEventResponseMapping} from "@shapediver/viewer.features.gumball";
+import {
+	checkNodeNameMatch,
+	getNodeData,
+} from "@shapediver/viewer.features.interaction";
 import {
 	addListener,
 	EVENTTYPE_GUMBALL,
 	removeListener,
 } from "@shapediver/viewer.session";
-import {GumballEventResponseMapping} from "@shapediver/viewer.features.gumball";
-import {
-	getNodeData,
-	checkNodeNameMatch,
-} from "@shapediver/viewer.features.interaction";
 import {useEffect, useRef, useState} from "react";
 
 // #region Functions (1)

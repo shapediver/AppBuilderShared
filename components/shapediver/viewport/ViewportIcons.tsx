@@ -1,28 +1,28 @@
-import React, {useState} from "react";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {useClickEventHandler} from "@AppBuilderShared/hooks/misc/useClickEventHandler";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useFullscreen} from "@AppBuilderShared/hooks/ui/useFullscreen";
+import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {
+	ViewportIconsOptionalProps,
+	ViewportIconsProps,
+} from "@AppBuilderShared/types/shapediver/viewportIcons";
+import {isIPhone} from "@AppBuilderShared/utils/misc/navigator";
+import {firstLetterUppercase} from "@AppBuilderShared/utils/misc/strings";
 import {
 	ActionIcon,
+	Box,
 	Loader,
 	Menu,
 	Modal,
 	Text,
 	useProps,
-	Box,
 } from "@mantine/core";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
+import React, {useState} from "react";
 import classes from "./ViewportIcons.module.css";
-import {
-	ViewportIconsOptionalProps,
-	ViewportIconsProps,
-} from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useClickEventHandler} from "@AppBuilderShared/hooks/misc/useClickEventHandler";
-import {isIPhone} from "@AppBuilderShared/utils/misc/navigator";
-import {useFullscreen} from "@AppBuilderShared/hooks/ui/useFullscreen";
-import {firstLetterUppercase} from "@AppBuilderShared/utils/misc/strings";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 
 const defaultProps: ViewportIconsOptionalProps = {
 	color: "black",

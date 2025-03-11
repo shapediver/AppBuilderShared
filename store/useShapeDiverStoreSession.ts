@@ -1,3 +1,9 @@
+import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
+import {
+	IShapeDiverStoreSession,
+	SessionCreateDto,
+} from "@AppBuilderShared/types/store/shapediverStoreSession";
+import {ShapeDiverResponseErrorType} from "@shapediver/api.geometry-api-dto-v2";
 import {
 	createSession,
 	ISessionApi,
@@ -5,12 +11,6 @@ import {
 } from "@shapediver/viewer.session";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
-import {ShapeDiverResponseErrorType} from "@shapediver/api.geometry-api-dto-v2";
-import {
-	SessionCreateDto,
-	IShapeDiverStoreSession,
-} from "@AppBuilderShared/types/store/shapediverStoreSession";
-import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 
 /**
  * Helper for comparing sessions.

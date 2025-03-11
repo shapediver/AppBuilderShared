@@ -1,6 +1,6 @@
+import {useOutput} from "@AppBuilderShared/hooks/shapediver/viewer/useOutput";
 import {IOutputApi, ITreeNode} from "@shapediver/viewer.session";
 import {useEffect} from "react";
-import {useOutput} from "@AppBuilderShared/hooks/shapediver/viewer/useOutput";
 
 /**
  * A callback that is executed whenever an output's node is to be replaced due to an update of the output's content.

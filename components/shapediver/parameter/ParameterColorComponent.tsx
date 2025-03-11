@@ -1,3 +1,13 @@
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {
+	ColorFormatType,
+	convertFromSdColor,
+	convertToSdColor,
+} from "@AppBuilderShared/utils/misc/colors";
 import {
 	ActionIcon,
 	ColorInput,
@@ -5,16 +15,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useEffect, useState} from "react";
-import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import {
-	ColorFormatType,
-	convertFromSdColor,
-	convertToSdColor,
-} from "@AppBuilderShared/utils/misc/colors";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 
 interface StyleProps {
 	colorFormat: ColorFormatType;

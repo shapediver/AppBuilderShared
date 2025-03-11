@@ -1,4 +1,3 @@
-import React from "react";
 import {
 	MantineSpacing,
 	MantineThemeComponent,
@@ -6,6 +5,7 @@ import {
 	StyleProp,
 	useProps,
 } from "@mantine/core";
+import React from "react";
 
 interface Props {
 	children?: React.ReactNode;

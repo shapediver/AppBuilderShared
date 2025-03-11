@@ -1,9 +1,14 @@
 import ColorAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/ColorAttribute";
 import DefaultAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/DefaultAttribute";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import NumberAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/NumberAttribute";
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import SelectedAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/SelectedAttribute";
 import StringAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/StringAttribute";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {IShapeDiverStoreSessions} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {
 	ActionIcon,
 	Grid,
@@ -18,6 +23,11 @@ import {
 	Title,
 } from "@mantine/core";
 import {
+	AttributeVisualizationEngine,
+	IAttribute,
+	ILayer,
+} from "@shapediver/viewer.features.attribute-visualization";
+import {
 	addListener,
 	EVENTTYPE_SESSION,
 	IEvent,
@@ -28,19 +38,9 @@ import {
 	sceneTree,
 	SdtfPrimitiveTypeGuard,
 } from "@shapediver/viewer.session";
-import {
-	AttributeVisualizationEngine,
-	IAttribute,
-	ILayer,
-} from "@shapediver/viewer.features.attribute-visualization";
-import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {IShapeDiverStoreSessions} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {IViewportApi} from "@shapediver/viewer.viewport";
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import SelectedAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/SelectedAttribute";
+import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 
 export default function AppBuilderAttributeVisualizationWidgetComponent() {
 	const {viewportId} = useViewportId();

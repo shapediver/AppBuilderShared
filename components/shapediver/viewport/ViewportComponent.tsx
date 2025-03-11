@@ -1,16 +1,16 @@
-import React from "react";
-import classes from "./ViewportComponent.module.css";
-import {useComputedColorScheme, useProps} from "@mantine/core";
+import {useViewport} from "@AppBuilderShared/hooks/shapediver/viewer/useViewport";
+import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import {
 	ViewportBrandingProps,
 	ViewportComponentProps,
 } from "@AppBuilderShared/types/shapediver/viewport";
-import {useViewport} from "@AppBuilderShared/hooks/shapediver/viewer/useViewport";
-import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
+import {useComputedColorScheme, useProps} from "@mantine/core";
 import {
 	SESSION_SETTINGS_MODE,
 	VISIBILITY_MODE,
 } from "@shapediver/viewer.session";
+import React from "react";
+import classes from "./ViewportComponent.module.css";
 
 /**
  * Functional component that creates a canvas in which a viewport with the specified properties is loaded.

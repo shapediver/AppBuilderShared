@@ -1,4 +1,5 @@
-import React, {forwardRef} from "react";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {MantineThemeComponent, useProps} from "@mantine/core";
 import {
 	Icon as _TablerIconType,
 	IconAdjustments,
@@ -81,8 +82,7 @@ import {
 	IconZoomIn,
 	IconZoomScan,
 } from "@tabler/icons-react";
-import {MantineThemeComponent, useProps} from "@mantine/core";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import React, {forwardRef} from "react";
 
 interface Props extends IconProps {
 	type: IconTypeEnum;

@@ -1,6 +1,6 @@
-import {IViewportApi} from "@shapediver/viewer.viewport";
 import {IEventTracking} from "@AppBuilderShared/types/eventTracking";
 import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
+import {IViewportApi} from "@shapediver/viewer.viewport";
 
 export interface IShapeDiverStoreViewports {
 	[viewportId: string]: IViewportApi;

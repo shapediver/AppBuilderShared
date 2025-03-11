@@ -1,17 +1,17 @@
-import {
-	IDraggingParameterProps,
-	DraggingParameterValue,
-} from "@shapediver/viewer.session";
-import {getNodesByName} from "@shapediver/viewer.features.interaction";
-import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
-import {mat4} from "gl-matrix";
+import {useRestrictions} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useRestrictions";
+import {useDragManager} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragManager";
+import {useDragManagerEvents} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragManagerEvents";
 import {useHoverManager} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useHoverManager";
 import {useConvertDraggingData} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useConvertDraggingData";
 import {NodeInteractionDataHandler} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useNodeInteractionData";
-import {useDragManager} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragManager";
-import {useDragManagerEvents} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragManagerEvents";
-import {useRestrictions} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useRestrictions";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {getNodesByName} from "@shapediver/viewer.features.interaction";
+import {
+	DraggingParameterValue,
+	IDraggingParameterProps,
+} from "@shapediver/viewer.session";
+import {mat4} from "gl-matrix";
+import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
 
 /**
  * Hook providing stateful object dragging for a viewport and session.

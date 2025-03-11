@@ -1,14 +1,14 @@
-import {
-	Image,
-	ActionIcon,
-	useMantineColorScheme,
-	useComputedColorScheme,
-} from "@mantine/core";
-import {useLinkClickHandler} from "react-router-dom";
-import React from "react";
-import classes from "./HeaderBar.module.css";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {
+	ActionIcon,
+	Image,
+	useComputedColorScheme,
+	useMantineColorScheme,
+} from "@mantine/core";
+import React from "react";
+import {useLinkClickHandler} from "react-router-dom";
+import classes from "./HeaderBar.module.css";
 
 /**
  * Functional component that creates an image and a icon for the header bar.

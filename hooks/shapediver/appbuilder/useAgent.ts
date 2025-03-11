@@ -1,19 +1,19 @@
+import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {IAppBuilderParameterRef} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
+import {IShapeDiverStoreParameters} from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import {getParameterRefs} from "@AppBuilderShared/utils/appbuilder";
+import {ShapeDiverResponseParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import Langfuse, {LangfuseWeb, observeOpenAI} from "langfuse";
 import OpenAI from "openai";
 import {zodResponseFormat} from "openai/helpers/zod";
 import {ChatCompletionMessageParam} from "openai/resources";
 import {useCallback, useContext, useMemo, useState} from "react";
 import {z} from "zod";
+import {useShallow} from "zustand/react/shallow";
 import packagejson from "~/../package.json";
 import {useAllParameters} from "../parameters/useAllParameters";
-import {IAppBuilderParameterRef} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {ShapeDiverResponseParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShallow} from "zustand/react/shallow";
-import {IShapeDiverStoreParameters} from "@AppBuilderShared/types/store/shapediverStoreParameters";
-import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
-import {getParameterRefs} from "@AppBuilderShared/utils/appbuilder";
 
 const DEFAULT_SYSTEM_PROMPT =
 	"You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about the 3D configurator \

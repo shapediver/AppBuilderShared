@@ -1,7 +1,7 @@
-import React from "react";
-import {Badge, Paper, Title} from "@mantine/core";
 import {IAppBuilderWidgetPropsRoundChart} from "@AppBuilderShared/types/shapediver/appbuildercharts";
 import {DonutChart, PieChart} from "@mantine/charts";
+import {Badge, Paper, Title} from "@mantine/core";
+import React from "react";
 
 /**
  * Try to keep the string representation of the value to a

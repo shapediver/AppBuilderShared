@@ -1,9 +1,9 @@
-import React, {useMemo} from "react";
-import {IAppBuilderTab} from "@AppBuilderShared/types/shapediver/appbuilder";
 import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
+import {IAppBuilderTab} from "@AppBuilderShared/types/shapediver/appbuilder";
+import React, {useMemo} from "react";
 
 interface Props {
 	/**

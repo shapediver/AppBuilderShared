@@ -1,6 +1,6 @@
-import React, {useCallback} from "react";
-import {IAppBuilderActionPropsSetBrowserLocation} from "@AppBuilderShared/types/shapediver/appbuilder";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
+import {IAppBuilderActionPropsSetBrowserLocation} from "@AppBuilderShared/types/shapediver/appbuilder";
+import React, {useCallback} from "react";
 
 type Props = IAppBuilderActionPropsSetBrowserLocation;
 

@@ -3,7 +3,7 @@ import {
 	convertUserDefinedNameFilters,
 	OutputNodeNameFilterPatterns,
 } from "@shapediver/viewer.features.interaction";
-import {useState, useEffect} from "react";
+import {useEffect, useState} from "react";
 
 // #region Type aliases (2)
 

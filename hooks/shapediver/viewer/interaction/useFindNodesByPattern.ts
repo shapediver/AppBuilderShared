@@ -1,3 +1,4 @@
+import {useOutputNode} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
 import {
 	gatherNodesForPattern,
 	NodeNameFilterPattern,
@@ -8,7 +9,6 @@ import {
 	SessionApiData,
 } from "@shapediver/viewer.session";
 import {useCallback, useEffect, useState} from "react";
-import {useOutputNode} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
 
 // #region Type aliases (2)
 

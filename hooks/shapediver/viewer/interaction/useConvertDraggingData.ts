@@ -1,11 +1,11 @@
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {
 	convertUserDefinedNameFilters,
 	OutputNodeNameFilterPatterns,
 } from "@shapediver/viewer.features.interaction";
-import {useState, useEffect} from "react";
 import {IDraggingParameterProps} from "@shapediver/viewer.session";
 import {vec3} from "gl-matrix";
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {useEffect, useState} from "react";
 
 // #region Type aliases (1)
 

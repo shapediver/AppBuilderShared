@@ -1,7 +1,7 @@
-import classes from "./ModelCard.module.css";
 import {Button, Card, Group, Image, Text} from "@mantine/core";
-import {Link} from "react-router-dom";
 import React from "react";
+import {Link} from "react-router-dom";
+import classes from "./ModelCard.module.css";
 
 interface Props {
 	title: string;

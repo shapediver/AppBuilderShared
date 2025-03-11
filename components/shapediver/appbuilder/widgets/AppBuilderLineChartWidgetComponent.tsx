@@ -1,10 +1,10 @@
-import React from "react";
-import {Paper, Title} from "@mantine/core";
 import {
 	convertChartData,
 	IAppBuilderWidgetPropsLineChart,
 } from "@AppBuilderShared/types/shapediver/appbuildercharts";
 import {LineChart} from "@mantine/charts";
+import {Paper, Title} from "@mantine/core";
+import React from "react";
 
 export default function AppBuilderLineChartWidgetComponent(
 	props: IAppBuilderWidgetPropsLineChart,

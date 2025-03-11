@@ -1,7 +1,7 @@
-import {ActionIcon, Grid, Group, Paper, Stack, Text} from "@mantine/core";
-import React from "react";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {ActionIcon, Grid, Group, Paper, Stack, Text} from "@mantine/core";
+import React from "react";
 
 interface BaseAttributeProps {
 	name: string;

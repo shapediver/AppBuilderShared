@@ -1,9 +1,9 @@
-import React, {useCallback, useContext, useState} from "react";
-import {IAppBuilderActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import {IAppBuilderActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import React, {useCallback, useContext, useState} from "react";
 
 type Props = IAppBuilderActionPropsAddToCart & {
 	namespace: string;

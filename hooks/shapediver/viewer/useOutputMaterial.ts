@@ -1,3 +1,4 @@
+import {useOutputNode} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
 import {
 	GeometryData,
 	IGeometryData,
@@ -8,7 +9,6 @@ import {
 } from "@shapediver/viewer.session";
 import {MaterialEngine} from "@shapediver/viewer.viewport";
 import {useCallback, useEffect, useRef} from "react";
-import {useOutputNode} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
 
 /**
  * We traverse the node and all its children, and collect all geometry data.

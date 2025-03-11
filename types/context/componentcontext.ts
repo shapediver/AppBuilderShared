@@ -1,14 +1,14 @@
 import {OverlayStyleProps} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
-import {ReactElement} from "react";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IAppBuilderWidget} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {ViewportComponentProps} from "@AppBuilderShared/types/shapediver/viewport";
 import {
-	ViewportIconsProps,
 	ViewportIconsOptionalProps,
+	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {ViewportOverlayWrapperProps} from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
+import {ReactElement} from "react";
 
 // #region Interfaces (7)
 

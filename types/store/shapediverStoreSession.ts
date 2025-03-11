@@ -1,8 +1,8 @@
+import {IEventTracking} from "@AppBuilderShared/types/eventTracking";
 import {
 	ISessionApi,
 	SessionCreationDefinition,
 } from "@shapediver/viewer.session";
-import {IEventTracking} from "@AppBuilderShared/types/eventTracking";
 
 /**
  * Redeclaration of SessionCreationDefinition to always have an id.

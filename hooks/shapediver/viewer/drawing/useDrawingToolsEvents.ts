@@ -1,15 +1,15 @@
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {
+	DrawingToolsEventResponseMapping,
+	PointsData,
+} from "@shapediver/viewer.features.drawing-tools";
 import {
 	addListener,
 	EVENTTYPE_DRAWING_TOOLS,
 	IEvent,
 	removeListener,
 } from "@shapediver/viewer.session";
-import {
-	DrawingToolsEventResponseMapping,
-	PointsData,
-} from "@shapediver/viewer.features.drawing-tools";
 import {useContext, useEffect, useState} from "react";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 
 // #region Functions (1)
 

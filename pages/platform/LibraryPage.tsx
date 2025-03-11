@@ -1,12 +1,12 @@
-import React, {useMemo} from "react";
-import {BoxProps} from "@mantine/core";
-import classes from "./LibraryPage.module.css";
 import ModelLibrary, {
 	IModelLibraryProps,
 } from "@AppBuilderShared/components/shapediver/platform/ModelLibrary";
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
+import {BoxProps} from "@mantine/core";
+import React, {useMemo} from "react";
+import classes from "./LibraryPage.module.css";
 
 export interface IModelLibraryTabProps extends IModelLibraryProps {
 	name: string;

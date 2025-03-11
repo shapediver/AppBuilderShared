@@ -1,8 +1,8 @@
+import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
 import {ColorInput} from "@mantine/core";
 import {IDefaultAttribute} from "@shapediver/viewer.features.attribute-visualization";
 import {SDTF_TYPEHINT} from "@shapediver/viewer.session";
 import React, {useEffect, useState} from "react";
-import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
 
 interface Props {
 	name: string;

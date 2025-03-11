@@ -1,12 +1,12 @@
-import React, {useMemo} from "react";
+import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
+import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
-import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import React, {useMemo} from "react";
 
 interface Props {
 	parameters: PropsParameter[];

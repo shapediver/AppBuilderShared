@@ -1,4 +1,11 @@
-import React, {useEffect, useState} from "react";
+import {useIsLandscape} from "@AppBuilderShared/hooks/ui/useIsLandscape";
+import {
+	ResponsiveValueType,
+	useResponsiveValueSelector,
+} from "@AppBuilderShared/hooks/ui/useResponsiveValueSelector";
+import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
+import {IAppBuilderTemplatePageProps} from "@AppBuilderShared/types/pages/appbuildertemplates";
+import {createGridLayout} from "@AppBuilderShared/utils/misc/layout";
 import {
 	AppShell,
 	AppShellResponsiveSize,
@@ -9,17 +16,10 @@ import {
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
-import {useDisclosure, useMediaQuery} from "@mantine/hooks";
-import classes from "./AppBuilderAppShellTemplatePage.module.css";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
-import {useIsLandscape} from "@AppBuilderShared/hooks/ui/useIsLandscape";
-import {
-	ResponsiveValueType,
-	useResponsiveValueSelector,
-} from "@AppBuilderShared/hooks/ui/useResponsiveValueSelector";
-import {IAppBuilderTemplatePageProps} from "@AppBuilderShared/types/pages/appbuildertemplates";
-import {createGridLayout} from "@AppBuilderShared/utils/misc/layout";
-import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
+import {useDisclosure, useMediaQuery} from "@mantine/hooks";
+import React, {useEffect, useState} from "react";
+import classes from "./AppBuilderAppShellTemplatePage.module.css";
 
 interface StyleProps {
 	/** Height of the header (responsive) */

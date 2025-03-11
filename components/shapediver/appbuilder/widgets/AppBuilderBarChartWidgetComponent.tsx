@@ -1,10 +1,10 @@
-import React from "react";
-import {Paper, Title} from "@mantine/core";
 import {
 	convertChartData,
 	IAppBuilderWidgetPropsBarChart,
 } from "@AppBuilderShared/types/shapediver/appbuildercharts";
 import {BarChart} from "@mantine/charts";
+import {Paper, Title} from "@mantine/core";
+import React from "react";
 
 export default function AppBuilderBarChartWidgetComponent(
 	props: IAppBuilderWidgetPropsBarChart,

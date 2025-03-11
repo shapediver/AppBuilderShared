@@ -1,9 +1,9 @@
-import React, {useEffect, useRef, useState} from "react";
-import classes from "./AppBuilderGridTemplatePage.module.css";
-import {MantineThemeComponent, useProps} from "@mantine/core";
+import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
 import {IAppBuilderTemplatePageProps} from "@AppBuilderShared/types/pages/appbuildertemplates";
 import {createGridLayout} from "@AppBuilderShared/utils/misc/layout";
-import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
+import {MantineThemeComponent, useProps} from "@mantine/core";
+import React, {useEffect, useRef, useState} from "react";
+import classes from "./AppBuilderGridTemplatePage.module.css";
 
 interface StyleProps {
 	/** top background color */

@@ -1,3 +1,10 @@
+import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
 	Box,
@@ -8,19 +15,12 @@ import {
 	Stack,
 	Text,
 } from "@mantine/core";
-import React, {useCallback, useEffect, useState} from "react";
-import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import {
 	ISelectionParameterProps,
 	SelectionParameterValue,
 } from "@shapediver/viewer.session";
+import React, {useCallback, useEffect, useState} from "react";
 import classes from "./ParameterInteractionComponent.module.css";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
 
 /**
  * Parse the value of a selection parameter and extract the selected node names.

@@ -1,4 +1,7 @@
-import {useCallback, useEffect, useMemo, useRef} from "react";
+import {useGumballEvents} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumballEvents";
+import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {
 	Gumball,
 	updateGumballTransformation,
@@ -9,10 +12,7 @@ import {
 	ISelectionParameterProps,
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
-import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
-import {useGumballEvents} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumballEvents";
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {useCallback, useEffect, useMemo, useRef} from "react";
 
 // #region Functions (1)
 

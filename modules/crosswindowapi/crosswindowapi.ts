@@ -1,4 +1,3 @@
-import postRobot from "post-robot";
 import {
 	ICrossWindowApi,
 	ICrossWindowApiOptions,
@@ -6,6 +5,7 @@ import {
 	ICrossWindowFactory,
 	ICrossWindowPeerInfo,
 } from "@AppBuilderShared/modules/crosswindowapi/types/crosswindowapi";
+import postRobot from "post-robot";
 
 type CrossDomainWindowType = Window | null;
 type HandlerType = (event: {

@@ -1,9 +1,9 @@
-import React, {useCallback, useContext} from "react";
-import {IAppBuilderActionPropsCloseConfigurator} from "@AppBuilderShared/types/shapediver/appbuilder";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
+import {IAppBuilderActionPropsCloseConfigurator} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import React, {useCallback, useContext} from "react";
 
 type Props = IAppBuilderActionPropsCloseConfigurator & {};
 

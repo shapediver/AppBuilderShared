@@ -1,31 +1,31 @@
-import {
-	Space,
-	Group,
-	Button,
-	Checkbox,
-	Collapse,
-	NumberInput,
-	Slider,
-	Stack,
-	Switch,
-	Text,
-	MantineSize,
-} from "@mantine/core";
-import {
-	PlaneRestrictionApi,
-	GeometryRestrictionApi,
-	IDrawingToolsApi,
-} from "@shapediver/viewer.features.drawing-tools";
-import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
-import React, {useState, useEffect} from "react";
-import classes from "./DrawingOptionsComponent.module.css";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {defaultStyleProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import {
+	Button,
+	Checkbox,
+	Collapse,
+	Group,
+	MantineSize,
+	NumberInput,
+	Slider,
+	Space,
+	Stack,
+	Switch,
+	Text,
+} from "@mantine/core";
+import {
+	GeometryRestrictionApi,
+	IDrawingToolsApi,
+	PlaneRestrictionApi,
+} from "@shapediver/viewer.features.drawing-tools";
+import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
+import React, {useEffect, useState} from "react";
+import classes from "./DrawingOptionsComponent.module.css";
 
 /**
  * Component for the drawing options.

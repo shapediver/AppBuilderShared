@@ -1,4 +1,5 @@
 import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
+import useResolveAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder//useResolveAppBuilderSettings";
 import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
 import {
 	IAppBuilderSettings,
@@ -21,7 +22,6 @@ import {
 } from "@AppBuilderShared/types/shapediver/queryparams";
 import {getDefaultPlatformUrl} from "@AppBuilderShared/utils/platform/environment";
 import {useEffect, useMemo} from "react";
-import useResolveAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder//useResolveAppBuilderSettings";
 
 /**
  * Test a string value for being "true" or "1".

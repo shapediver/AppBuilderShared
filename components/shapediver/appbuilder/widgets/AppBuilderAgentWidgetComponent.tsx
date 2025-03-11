@@ -1,42 +1,40 @@
-import React, {
-	useContext,
-	useState,
-	useCallback,
-	useEffect,
-	useMemo,
-} from "react";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useAgent} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAgent";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
+import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
+	ActionIcon,
 	Box,
+	Button,
+	FileButton,
 	Group,
 	MantineStyleProp,
 	MantineThemeComponent,
 	Paper,
 	PaperProps,
+	ScrollArea,
 	Stack,
 	Text,
 	Textarea,
+	TextInput,
 	useProps,
 } from "@mantine/core";
-import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
-import {
-	Button,
-	TextInput,
-	ActionIcon,
-	FileButton,
-	ScrollArea,
-} from "@mantine/core";
-import {IconUser, IconRobot} from "@tabler/icons-react";
+import {IconRobot, IconUser} from "@tabler/icons-react";
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
-import AppBuilderImage from "../AppBuilderImage";
 import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
-import {useAgent} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAgent";
+import AppBuilderImage from "../AppBuilderImage";
 
 /** Style properties that can be controlled via the theme. */
 type ComponentProps = PaperProps & {

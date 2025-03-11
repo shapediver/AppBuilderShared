@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from "react";
 import {StyleProp} from "@mantine/core";
-import {MantineSize} from "@mantine/core/lib/core/MantineProvider/theme.types";
 import {MantineRadius} from "@mantine/core/lib/core";
+import {MantineSize} from "@mantine/core/lib/core/MantineProvider/theme.types";
+import React, {useEffect, useState} from "react";
 
 interface SvgProps {
 	srcUrl: string;

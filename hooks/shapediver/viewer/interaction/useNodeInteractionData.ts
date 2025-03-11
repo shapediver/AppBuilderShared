@@ -1,3 +1,4 @@
+import {useOutputNode} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
 import {
 	addInteractionData,
 	gatherNodesForPattern,
@@ -12,9 +13,8 @@ import {
 	OutputApiData,
 	SessionApiData,
 } from "@shapediver/viewer.session";
-import {useCallback, useEffect, useState} from "react";
-import {useOutputNode} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
 import {vec3} from "gl-matrix";
+import {useCallback, useEffect, useState} from "react";
 
 // #region Type aliases (2)
 

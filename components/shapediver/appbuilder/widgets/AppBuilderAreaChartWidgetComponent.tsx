@@ -1,10 +1,10 @@
-import React from "react";
-import {Paper, Title} from "@mantine/core";
 import {
 	convertChartData,
 	IAppBuilderWidgetPropsAreaChart,
 } from "@AppBuilderShared/types/shapediver/appbuildercharts";
 import {AreaChart} from "@mantine/charts";
+import {Paper, Title} from "@mantine/core";
+import React from "react";
 
 export default function AppBuilderAreaChartWidgetComponent(
 	props: IAppBuilderWidgetPropsAreaChart,

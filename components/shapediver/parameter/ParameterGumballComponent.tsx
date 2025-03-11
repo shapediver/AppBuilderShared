@@ -1,17 +1,17 @@
-import {Button, Group, Loader, Stack, Text} from "@mantine/core";
-import React, {useCallback, useEffect, useState} from "react";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {Button, Group, Loader, Stack, Text} from "@mantine/core";
 import {
 	GumballParameterValue,
 	IGumballParameterProps,
 } from "@shapediver/viewer.session";
+import React, {useCallback, useEffect, useState} from "react";
 import classes from "./ParameterInteractionComponent.module.css";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 
 /**
  * Parse the value of a gumball parameter and extract the transformed node names.

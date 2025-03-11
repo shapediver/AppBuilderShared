@@ -1,5 +1,5 @@
-import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {PropsParameterOrExport} from "@AppBuilderShared/types/components/shapediver/propsCommon";
+import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 
 /**
  * Props of a parameter reference.

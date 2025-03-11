@@ -1,6 +1,7 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
+import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
 import {
@@ -12,20 +13,19 @@ import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/paramete
 import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
+import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
+import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
+import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
 import {
 	IAppBuilderTemplatePageContainerHints,
 	IAppBuilderTemplatePageProps,
 } from "@AppBuilderShared/types/pages/appbuildertemplates";
 import {
-	IAppBuilderSettingsSession,
 	IAppBuilderContainer,
+	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
 import React, {useContext} from "react";
-import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
-import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
-import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
-import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 
