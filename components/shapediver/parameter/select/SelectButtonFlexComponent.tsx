@@ -12,22 +12,26 @@ import {SelectComponentProps} from "./SelectComponent";
 export default function SelectButtonFlexComponent(props: SelectComponentProps) {
 	const {value, onChange, items, disabled, itemData} = props;
 
-	// TODO implement button flex select component
 	return (
 		<Flex gap="xs" wrap="wrap">
 			{items.map((item) => {
 				const data = itemData?.[item];
+				const displayName = data?.displayname || item;
+				const tooltip = data?.tooltip;
+
 				const button = (
 					<Button
 						key={item}
 						variant={value === item ? "filled" : "default"}
 						color={data?.color}
+						onClick={() => onChange(item)}
+						disabled={disabled}
 					>
-						{data?.displayname || item}
+						{displayName}
 					</Button>
 				);
-				return data?.tooltip ? (
-					<TooltipWrapper key={item} label={data.tooltip}>
+				return tooltip ? (
+					<TooltipWrapper key={item} label={tooltip}>
 						{button}
 					</TooltipWrapper>
 				) : (

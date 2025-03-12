@@ -1,5 +1,7 @@
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {Button, Flex} from "@mantine/core";
 import React from "react";
+import classes from "./SelectColorComponent.module.css";
 import {SelectComponentProps} from "./SelectComponent";
 
 /**
@@ -9,21 +11,34 @@ import {SelectComponentProps} from "./SelectComponent";
  * @see https://mantine.dev/core/flex/
  */
 export default function SelectColorComponent(props: SelectComponentProps) {
-	const {value, onChange, items, itemData, disabled} = props;
+	const {onChange, items, itemData, disabled} = props;
 
-	// TODO implement color select component
-	// TODO implement tooltips using <TooltipWrapper/> (optional tooltips in itemData)
 	return (
 		<Flex gap="xs" wrap="wrap">
-			{items.map((item) => (
-				<Button
-					key={item}
-					color={itemData && itemData[item] && itemData[item].color}
-					variant="filled"
-					// TODO show selection status using outline on root element
-					// see https://mantine.dev/core/button/#styles-api
-				/>
-			))}
+			{items.map((item) => {
+				const data = itemData?.[item];
+				const tooltip = data?.tooltip;
+
+				const button = (
+					<Button
+						key={item}
+						color={data?.color}
+						variant="filled"
+						onClick={() => onChange(item)}
+						disabled={disabled}
+						className={classes.btnColor}
+						border-width="1px"
+					/>
+				);
+
+				return tooltip ? (
+					<TooltipWrapper key={item} label={tooltip}>
+						{button}
+					</TooltipWrapper>
+				) : (
+					button
+				);
+			})}
 		</Flex>
 	);
 }
