@@ -66,7 +66,7 @@ export default function StringAttribute(props: Props) {
 				justify="space-between"
 				onClick={() => setOptionsOpened((t) => !t)}
 			>
-				<Text size={"sm"} fw={400} fs="italic" ta="left">
+				<Text size={"sm"} fs="italic" ta="left">
 					{optionsOpened ? "Hide Legend" : "Show Legend"}
 				</Text>
 				{optionsOpened ? <IconChevronUp /> : <IconChevronDown />}

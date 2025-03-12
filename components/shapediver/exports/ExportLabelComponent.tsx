@@ -1,5 +1,6 @@
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
+import {useDefaultFontWeight} from "@AppBuilderShared/hooks/ui/useDefaultFontWeight";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {MantineThemeComponent, Text, useProps} from "@mantine/core";
 import React from "react";
@@ -8,9 +9,7 @@ interface StyleProps {
 	fontWeight: string;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
-	fontWeight: "500",
-};
+const defaultStyleProps: Partial<StyleProps> = {};
 
 type ParameterLabelComponentPropsType = Partial<StyleProps>;
 
@@ -31,11 +30,12 @@ export default function ExportLabelComponent(
 	props: PropsExport & Partial<StyleProps>,
 ) {
 	const {definition} = useExport(props);
-	const {fontWeight} = useProps(
+	const {fontWeight: _fontWeight} = useProps(
 		"ExportLabelComponent",
 		defaultStyleProps,
 		props,
 	);
+	const fontWeight = useDefaultFontWeight(_fontWeight, "medium");
 	const {displayname, name, tooltip} = definition;
 	const label = displayname || name;
 

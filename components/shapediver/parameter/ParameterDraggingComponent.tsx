@@ -3,6 +3,7 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useDefaultFontWeight} from "@AppBuilderShared/hooks/ui/useDefaultFontWeight";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Button, Group, Loader, Stack, Text} from "@mantine/core";
@@ -50,6 +51,8 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 	const draggingProps = definition.settings?.props as IDraggingParameterProps;
+
+	const fontWeightMedium = useDefaultFontWeight(undefined, "medium");
 
 	// is the dragging active or not?
 	const [draggingActive, setDraggingActive] = useState<boolean>(false);
@@ -173,7 +176,7 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 				<Stack>
 					<Text
 						size="sm"
-						fw={500}
+						fw={fontWeightMedium}
 						ta="left"
 						className={classes.interactionText}
 					>
@@ -182,7 +185,6 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 					</Text>
 					<Text
 						size="sm"
-						fw={400}
 						fs="italic"
 						ta="left"
 						className={classes.interactionText}

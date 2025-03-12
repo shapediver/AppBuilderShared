@@ -316,7 +316,7 @@ export default function DrawingOptionsComponent(props: {
 				justify="space-between"
 				onClick={() => setOptionsOpened((t) => !t)}
 			>
-				<Text size={size} fw={400} fs="italic" ta="left">
+				<Text size={size} fs="italic" ta="left">
 					{optionsOpened ? "Hide Options" : "Show Options"}
 				</Text>
 				{optionsOpened ? <IconChevronUp /> : <IconChevronDown />}

@@ -5,6 +5,7 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDrawingTools} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingTools";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useDefaultFontWeight} from "@AppBuilderShared/hooks/ui/useDefaultFontWeight";
 import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
@@ -57,6 +58,8 @@ const parsePointsData = (value?: string): PointsData => {
 export default function ParameterDrawingComponent(props: PropsParameter) {
 	const {definition, handleChange, onCancel, disabled, state} =
 		useParameterComponentCommons<string>(props);
+
+	const fontWeightMedium = useDefaultFontWeight(undefined, "medium");
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
@@ -235,7 +238,7 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 					<Box style={{flex: 1}}>
 						<Text
 							size="sm"
-							fw={500}
+							fw={fontWeightMedium}
 							ta="left"
 							onClick={cancelDrawing}
 							className={classes.interactionText}
@@ -259,7 +262,6 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 					<Box style={{flex: 1}}>
 						<Text
 							size="sm"
-							fw={400}
 							fs="italic"
 							ta="left"
 							onClick={cancelDrawing}

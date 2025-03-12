@@ -3,6 +3,7 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useDefaultFontWeight} from "@AppBuilderShared/hooks/ui/useDefaultFontWeight";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
@@ -54,6 +55,8 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 		state,
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
+
+	const fontWeightMedium = useDefaultFontWeight(undefined, "medium");
 
 	const selectionProps = definition.settings
 		?.props as ISelectionParameterProps;
@@ -172,7 +175,7 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 					<Box style={{flex: 1}}>
 						<Text
 							size="sm"
-							fw={500}
+							fw={fontWeightMedium}
 							ta="left"
 							className={classes.interactionText}
 						>
@@ -197,7 +200,6 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 					<Box style={{flex: 1}}>
 						<Text
 							size="sm"
-							fw={400}
 							fs="italic"
 							ta="left"
 							className={classes.interactionText}

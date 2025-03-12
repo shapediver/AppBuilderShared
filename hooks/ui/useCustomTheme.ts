@@ -145,7 +145,11 @@ export const useCustomTheme = (props: Props = {}) => {
 		defaultRadius: "md",
 		other: {
 			//forceColorScheme: "light",
+			defaultFontWeightThin: "100",
+			defaultFontWeightLight: "300",
 			defaultFontWeight: "400",
+			defaultFontWeightMedium: "500",
+			defaultFontWeightBold: "700",
 		},
 		components: {
 			/**
@@ -192,7 +196,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			Button: Button.extend({
 				defaultProps: {
 					variant: "default",
-					fw: "500",
+					// fw: "700",
 				},
 			}),
 			/**

@@ -3,6 +3,7 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useDefaultFontWeight} from "@AppBuilderShared/hooks/ui/useDefaultFontWeight";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Button, Group, Loader, Stack, Text} from "@mantine/core";
@@ -54,6 +55,8 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		state,
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
+
+	const fontWeightMedium = useDefaultFontWeight(undefined, "medium");
 
 	const gumballProps = definition.settings?.props as IGumballParameterProps;
 
@@ -186,7 +189,7 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 				<Stack>
 					<Text
 						size="sm"
-						fw={500}
+						fw={fontWeightMedium}
 						ta="left"
 						className={classes.interactionText}
 					>
@@ -195,7 +198,6 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 					</Text>
 					<Text
 						size="sm"
-						fw={400}
 						fs="italic"
 						ta="left"
 						className={classes.interactionText}
