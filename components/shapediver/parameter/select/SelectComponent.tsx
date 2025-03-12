@@ -18,6 +18,8 @@ export interface SelectComponentItemDataType {
 	imageUrl?: string;
 	/** Optional color, used for color selection components. */
 	color?: MantineColor;
+	/** Optional width. */
+	width?: number;
 }
 
 export interface SelectComponentProps {
