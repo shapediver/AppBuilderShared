@@ -1,9 +1,9 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useDefaultFontWeight} from "@AppBuilderShared/hooks/ui/useDefaultFontWeight";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Button, Group, Loader, Stack, Text} from "@mantine/core";
@@ -55,8 +55,6 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		state,
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
-
-	const fontWeightMedium = useDefaultFontWeight(undefined, "medium");
 
 	const gumballProps = definition.settings?.props as IGumballParameterProps;
 
@@ -187,15 +185,15 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 				onClick={resetTransformation}
 			>
 				<Stack>
-					<Text
+					<TextWeighted
 						size="sm"
-						fw={fontWeightMedium}
+						fontWeight="medium"
 						ta="left"
 						className={classes.interactionText}
 					>
 						{gumballProps.prompt?.activeTitle ??
 							`Currently transformed: ${transformedNodeNames.length}`}
-					</Text>
+					</TextWeighted>
 					<Text
 						size="sm"
 						fs="italic"

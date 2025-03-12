@@ -753,7 +753,15 @@ export const useCustomTheme = (props: Props = {}) => {
 				"xl",
 				"4em",
 			),
+			"--appbuilder-default-font-weight-thin":
+				theme.other.defaultFontWeightThin,
+			"--appbuilder-default-font-weight-light":
+				theme.other.defaultFontWeightLight,
 			"--appbuilder-default-font-weight": theme.other.defaultFontWeight,
+			"--appbuilder-default-font-weight-medium":
+				theme.other.defaultFontWeightMedium,
+			"--appbuilder-default-font-weight-bold":
+				theme.other.defaultFontWeightBold,
 		},
 		light: {
 			// variables for light theme

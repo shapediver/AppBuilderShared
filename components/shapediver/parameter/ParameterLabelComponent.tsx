@@ -1,10 +1,10 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
-import {useDefaultFontWeight} from "@AppBuilderShared/hooks/ui/useDefaultFontWeight";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {Group, MantineThemeComponent, Text, useProps} from "@mantine/core";
+import {Group, MantineThemeComponent, useProps} from "@mantine/core";
 
 import React from "react";
 interface Props extends PropsParameter {
@@ -36,20 +36,19 @@ export default function ParameterLabelComponent(
 	props: Props & Partial<StyleProps>,
 ) {
 	const {cancel, ...rest} = props;
-	const {fontWeight: _fontWeight} = useProps(
+	const {fontWeight} = useProps(
 		"ParameterLabelComponent",
 		defaultStyleProps,
 		rest,
 	);
-	const fontWeight = useDefaultFontWeight(_fontWeight, "medium");
 	const {definition} = useParameter<any>(props);
 	const {displayname, name, tooltip} = definition;
 	const label = displayname || name;
 
 	const labelcomp = (
-		<Text pb={4} size="sm" fw={fontWeight}>
+		<TextWeighted pb={4} size="sm" fontWeight="medium" fw={fontWeight}>
 			{label}
-		</Text>
+		</TextWeighted>
 	);
 
 	return (

@@ -1,9 +1,9 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useDefaultFontWeight} from "@AppBuilderShared/hooks/ui/useDefaultFontWeight";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Button, Group, Loader, Stack, Text} from "@mantine/core";
@@ -51,8 +51,6 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 	const draggingProps = definition.settings?.props as IDraggingParameterProps;
-
-	const fontWeightMedium = useDefaultFontWeight(undefined, "medium");
 
 	// is the dragging active or not?
 	const [draggingActive, setDraggingActive] = useState<boolean>(false);
@@ -174,15 +172,15 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 				onClick={() => resetValue(lastConfirmedValueRef.current)}
 			>
 				<Stack>
-					<Text
+					<TextWeighted
 						size="sm"
-						fw={fontWeightMedium}
+						fontWeight="medium"
 						ta="left"
 						className={classes.interactionText}
 					>
 						{draggingProps.prompt?.activeTitle ??
 							`Currently dragged objects: ${lastConfirmedValueRef.current.length}`}
-					</Text>
+					</TextWeighted>
 					<Text
 						size="sm"
 						fs="italic"

@@ -1,9 +1,9 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useDefaultFontWeight} from "@AppBuilderShared/hooks/ui/useDefaultFontWeight";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
@@ -55,8 +55,6 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 		state,
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
-
-	const fontWeightMedium = useDefaultFontWeight(undefined, "medium");
 
 	const selectionProps = definition.settings
 		?.props as ISelectionParameterProps;
@@ -173,15 +171,15 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 			<Group justify="space-between" className={classes.interactionMain}>
 				<Flex align="center" justify="flex-start" w={"100%"}>
 					<Box style={{flex: 1}}>
-						<Text
+						<TextWeighted
 							size="sm"
-							fw={fontWeightMedium}
+							fontWeight="medium"
 							ta="left"
 							className={classes.interactionText}
 						>
 							{selectionProps.prompt?.activeTitle ??
 								`Currently selected: ${selectedNodeNames.length}`}
-						</Text>
+						</TextWeighted>
 					</Box>
 					<Box style={{width: "auto"}}>
 						<ActionIcon

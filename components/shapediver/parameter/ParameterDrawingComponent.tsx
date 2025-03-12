@@ -1,11 +1,11 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import DrawingOptionsComponent from "@AppBuilderShared/components/shapediver/ui/DrawingOptionsComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDrawingTools} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingTools";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useDefaultFontWeight} from "@AppBuilderShared/hooks/ui/useDefaultFontWeight";
 import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
@@ -58,8 +58,6 @@ const parsePointsData = (value?: string): PointsData => {
 export default function ParameterDrawingComponent(props: PropsParameter) {
 	const {definition, handleChange, onCancel, disabled, state} =
 		useParameterComponentCommons<string>(props);
-
-	const fontWeightMedium = useDefaultFontWeight(undefined, "medium");
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
@@ -236,16 +234,16 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 			<Group justify="space-between" className={classes.interactionMain}>
 				<Flex align="center" justify="flex-start" w={"100%"}>
 					<Box style={{flex: 1}}>
-						<Text
+						<TextWeighted
 							size="sm"
-							fw={fontWeightMedium}
+							fontWeight="medium"
 							ta="left"
 							onClick={cancelDrawing}
 							className={classes.interactionText}
 						>
 							{drawingProps.general?.prompt?.activeTitle ??
 								`Created a drawing with ${pointsData?.length} points`}
-						</Text>
+						</TextWeighted>
 					</Box>
 					<Box style={{width: "auto"}}>
 						<ActionIcon

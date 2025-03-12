@@ -1,6 +1,6 @@
 import ModelCardOverlay from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlay";
 import ModelStatusIcon from "@AppBuilderShared/components/shapediver/platform/ModelStatusIcon";
-import {useDefaultFontWeight} from "@AppBuilderShared/hooks/ui/useDefaultFontWeight";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {Anchor, Card, Group, Image, Pill, px, Text} from "@mantine/core";
 import React, {useMemo} from "react";
@@ -53,8 +53,6 @@ export default function ModelCard(props: Props) {
 		return user.username;
 	}, [model.user]);
 
-	const fontWeightMedium = useDefaultFontWeight(undefined, "medium");
-
 	return (
 		<Card w="18em">
 			<Card.Section>
@@ -74,14 +72,14 @@ export default function ModelCard(props: Props) {
 			</Card.Section>
 			<Group justify="space-between" pt="sm" wrap="nowrap">
 				<Anchor href={href} target={target} underline="never">
-					<Text
+					<TextWeighted
 						size="md"
-						fw={fontWeightMedium}
+						fontWeight="medium"
 						lineClamp={1}
 						className={classes.title}
 					>
 						{model.title}
-					</Text>
+					</TextWeighted>
 				</Anchor>
 				<ModelStatusIcon
 					item={item}
