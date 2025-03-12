@@ -5,6 +5,7 @@ import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
 import SelectChipGroupComponent from "./SelectChipGroupComponent";
 import SelectColorComponent from "./SelectColorComponent";
 import SelectDropDownComponent from "./SelectDropDownComponent";
+import SelectFullWidthCards from "./SelectFullWidthCards";
 import SelectImageDropDownComponent from "./SelectImageDropDownComponent";
 
 export interface SelectComponentItemDataType {
@@ -42,7 +43,8 @@ export type SelectComponentType =
 	| "chipgroup"
 	| "dropdown"
 	| "color"
-	| "imagedropdown";
+	| "imagedropdown"
+	| "fullwidthcards";
 
 interface SelectComponentPropsExt extends SelectComponentProps {
 	/** Type of select component to use. */
@@ -66,6 +68,8 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 		return <SelectColorComponent {...rest} />;
 	} else if (type === "imagedropdown") {
 		return <SelectImageDropDownComponent {...rest} />;
+	} else if (type === "fullwidthcards") {
+		return <SelectFullWidthCards {...rest} />;
 	} else {
 		return <SelectDropDownComponent {...rest} />;
 	}
