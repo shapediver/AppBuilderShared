@@ -150,7 +150,7 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		restoreTransformedNodeNames(lastConfirmedValue, transformedNodeNames);
 		setGumballActive(false);
 		setSelectedNodeNames([]);
-	}, [lastConfirmedValue, transformedNodeNames, restoreTransformedNodeNames]);
+	}, [lastConfirmedValue, transformedNodeNames]);
 
 	// extend the onCancel callback to reset the transformed nodes.
 	const _onCancelCallback = useCallback(() => {

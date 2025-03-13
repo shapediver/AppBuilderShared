@@ -134,7 +134,7 @@ export function useGumball(
 
 	// use an effect to create the gumball whenever the selected node names change
 	useEffect(() => {
-		if (viewportApi) {
+		if (viewportApi && sessionApis && selectedNodeNames.length > 0) {
 			// whenever the selected node names change, create a new gumball
 			const nodes = getNodesByName(sessionApis, selectedNodeNames);
 			const gumball = new Gumball(

@@ -86,11 +86,17 @@ export function useSelection(
 		activate ? hoverSettings : undefined,
 	);
 
+	// create the input for the name filter pattern
+	const createNameFilterInput = useMemo(() => {
+		return {
+			sessionIds,
+			nameFilter: selectionProps.nameFilter,
+		};
+	}, [sessionIds, selectionProps]);
+
 	// convert the user-defined name filters to filter patterns, and subscribe to selection events
-	const {patterns} = useCreateNameFilterPattern({
-		sessionIds,
-		nameFilter: selectionProps.nameFilter,
-	});
+	const {patterns} = useCreateNameFilterPattern(createNameFilterInput);
+
 	const {selectedNodeNames, setSelectedNodeNames, resetSelectedNodeNames} =
 		useSelectManagerEvents(
 			patterns,
@@ -98,14 +104,6 @@ export function useSelection(
 			initialSelectedNodeNames,
 			strictNaming,
 		);
-
-	// add interaction data for each output, even if it is not in the pattern
-	// this is necessary to keep the number of hooks constant
-	// TODO to work around this, we would need a hook similar to useOutputUpdateCallback,
-	// but for all outputs (or the session), e.g. useSessionOutputsUpdateCallback
-	const interactionSettings = useMemo(() => {
-		return {select: true, hover: selectionProps.hover};
-	}, [selectionProps]);
 
 	const nodesInteractionInput = useMemo(() => {
 		const nodesInteractionInput: {
@@ -119,7 +117,10 @@ export function useSelection(
 					componentId,
 					outputIdOrName: outputId,
 					patterns: pattern,
-					interactionSettings,
+					interactionSettings: {
+						select: true,
+						hover: selectionProps.hover,
+					},
 					selectManager,
 					strictNaming,
 				};
@@ -127,7 +128,7 @@ export function useSelection(
 		});
 
 		return nodesInteractionInput;
-	}, [patterns, selectManager]);
+	}, [patterns, selectionProps, selectManager]);
 
 	const {availableNodeNames} = useNodesInteractionData(nodesInteractionInput);
 
