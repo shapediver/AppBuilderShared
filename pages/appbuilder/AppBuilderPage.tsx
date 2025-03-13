@@ -1,9 +1,13 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
+import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
-import {useSessionWithAppBuilder} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
+import {
+	SessionWithAppBuilderHandler,
+	useSessionWithAppBuilder,
+} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
 import {useParameterHistory} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
 import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
 import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
@@ -187,6 +191,19 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	const parameterProps = useSessionPropsParameter(namespace);
 	const exportProps = useSessionPropsExport(namespace);
 
+	const sessionHandlers: JSX.Element[] = [];
+	if (settings?.sessions && settings.sessions.length > 1) {
+		settings?.sessions.map((session) => {
+			sessionHandlers.push(
+				<SessionWithAppBuilderHandler
+					key={session.id}
+					props={session}
+					appBuilderOverride={settings?.appBuilderOverride}
+				/>,
+			);
+		});
+	}
+
 	// create UI elements for containers
 	const containers: IAppBuilderTemplatePageProps = {
 		top: undefined,
@@ -258,22 +275,28 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	) : loading || !show ? (
 		<LoaderPage /> // TODO smooth transition between loading and showing
 	) : show ? (
-		<AppBuilderTemplateSelector
-			top={containers.top}
-			left={containers.left}
-			right={containers.right}
-			bottom={containers.bottom}
-		>
-			{ViewportComponent && (
-				<ViewportComponent>
-					{ViewportOverlayWrapper && (
-						<ViewportOverlayWrapper>
-							{ViewportIcons && <ViewportIcons />}
-						</ViewportOverlayWrapper>
-					)}
-				</ViewportComponent>
-			)}
-		</AppBuilderTemplateSelector>
+		<AppBuilderDataContext.Provider value={{data: appBuilderData}}>
+			<AppBuilderTemplateSelector
+				top={containers.top}
+				left={containers.left}
+				right={containers.right}
+				bottom={containers.bottom}
+			>
+				{ViewportComponent && (
+					<ViewportComponent
+						visibilitySessionIds={settings?.sessions.map(
+							(s) => s.id,
+						)}
+					>
+						{ViewportOverlayWrapper && (
+							<ViewportOverlayWrapper>
+								{ViewportIcons && <ViewportIcons />}
+							</ViewportOverlayWrapper>
+						)}
+					</ViewportComponent>
+				)}
+			</AppBuilderTemplateSelector>
+		</AppBuilderDataContext.Provider>
 	) : (
 		<></>
 	);
