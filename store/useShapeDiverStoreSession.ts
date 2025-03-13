@@ -472,10 +472,28 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 		outputId: string;
 	}[] = [];
 
+	/**
+	 * Here we check if the session themselves changed.
+	 * If a session is new or changed, we need to update the session update callback.
+	 * The outputs need to be updated as well.
+	 */
 	if (state.sessions !== prevState.sessions) {
-		// get the sessions that were not in the previous state
 		Object.keys(state.sessions).forEach((sessionId) => {
+			// case 1: the session is new
 			if (!prevState.sessions[sessionId]) {
+				sessionsThatNeedUpdate.push(sessionId);
+				// as a session is new, all outputs need to be updated
+				for (const outputId in state.sessions[sessionId].outputs) {
+					outputsThatNeedUpdate.push({sessionId, outputId});
+				}
+			}
+
+			// case 2: the session is removed
+			// in this case we don't need to update the session update callback of the
+			// session as the session doesn't exist anymore
+
+			// case 3: the session is changed
+			if (state.sessions[sessionId] !== prevState.sessions[sessionId]) {
 				sessionsThatNeedUpdate.push(sessionId);
 				// as a session is new, all outputs need to be updated
 				for (const outputId in state.sessions[sessionId].outputs) {
@@ -485,9 +503,30 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 		});
 	}
 
+	/**
+	 * Here we check if the session update callbacks changed.
+	 * If a session update callback is new, removed or changed, we need to update the session update callback.
+	 */
 	if (state.sessionUpdateCallbacks !== prevState.sessionUpdateCallbacks) {
-		// get the session update callbacks where the new value is not the same as the previous value
-		Object.keys(state.sessionUpdateCallbacks).forEach((sessionId) => {
+		// get all session ids that are in the current or previous state
+		const combinedIds = Object.keys(state.sessions).concat(
+			Object.keys(prevState.sessions),
+		);
+
+		Object.keys(combinedIds).forEach((sessionId) => {
+			// case 1: the update callback is new
+			// it's not in the previous state
+			if (!prevState.sessionUpdateCallbacks[sessionId]) {
+				sessionsThatNeedUpdate.push(sessionId);
+			}
+
+			// case 2: the update callback is removed
+			// it's not in the current state
+			if (!state.sessionUpdateCallbacks[sessionId]) {
+				sessionsThatNeedUpdate.push(sessionId);
+			}
+
+			// case 3: the update callback is changed
 			if (
 				state.sessionUpdateCallbacks[sessionId] !==
 				prevState.sessionUpdateCallbacks[sessionId]
@@ -497,23 +536,86 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 		});
 	}
 
+	/**
+	 * Here we check if the output update callbacks changed.
+	 * If an output update callback is new, removed or changed, we need to update the output update callback.
+	 */
 	if (state.outputUpdateCallbacks !== prevState.outputUpdateCallbacks) {
-		// get the output update callbacks where the new value is not the same as the previous value
-		Object.keys(state.outputUpdateCallbacks).forEach((sessionId) => {
-			Object.keys(state.outputUpdateCallbacks[sessionId]).forEach(
-				(outputId) => {
-					if (
-						!prevState.outputUpdateCallbacks[sessionId] ||
-						!prevState.outputUpdateCallbacks[sessionId][outputId] ||
-						state.outputUpdateCallbacks[sessionId][outputId] !==
-							prevState.outputUpdateCallbacks[sessionId][outputId]
-					) {
-						outputsThatNeedUpdate.push({sessionId, outputId});
-					}
-				},
+		// get all output ids that are in the current or previous state
+		const combinedIds: {
+			[key: string]: string[];
+		} = {};
+
+		// get all output ids of the current state
+		for (const sessionId in state.outputUpdateCallbacks) {
+			combinedIds[sessionId] = Object.keys(
+				state.outputUpdateCallbacks[sessionId],
 			);
+		}
+
+		// add all output ids of the previous state
+		for (const sessionId in prevState.outputUpdateCallbacks) {
+			if (!combinedIds[sessionId]) {
+				combinedIds[sessionId] = Object.keys(
+					prevState.outputUpdateCallbacks[sessionId],
+				);
+			} else {
+				combinedIds[sessionId] = combinedIds[sessionId].concat(
+					Object.keys(prevState.outputUpdateCallbacks[sessionId]),
+				);
+			}
+		}
+
+		// get the output update callbacks where the new value is not the same as the previous value
+		Object.keys(combinedIds).forEach((sessionId) => {
+			Object.keys(combinedIds[sessionId]).forEach((outputId) => {
+				// case 1: the output update callback is new
+				// it's not in the previous state
+				if (
+					!prevState.outputUpdateCallbacks[sessionId] ||
+					!prevState.outputUpdateCallbacks[sessionId][outputId]
+				) {
+					outputsThatNeedUpdate.push({sessionId, outputId});
+				}
+
+				// case 2: the output update callback is removed
+				// it's not in the current state
+				if (
+					!state.outputUpdateCallbacks[sessionId] &&
+					!state.outputUpdateCallbacks[sessionId][outputId]
+				) {
+					outputsThatNeedUpdate.push({sessionId, outputId});
+				}
+
+				// case 3: the output update callback is changed
+				// it exists in both states but the value is different
+				if (
+					state.outputUpdateCallbacks[sessionId] &&
+					prevState.outputUpdateCallbacks[sessionId] &&
+					state.outputUpdateCallbacks[sessionId][outputId] &&
+					prevState.outputUpdateCallbacks[sessionId][outputId] &&
+					state.outputUpdateCallbacks[sessionId][outputId] !==
+						prevState.outputUpdateCallbacks[sessionId][outputId]
+				) {
+					outputsThatNeedUpdate.push({sessionId, outputId});
+				}
+			});
 		});
 	}
+
+	// remove duplicates from sessions that need update
+	sessionsThatNeedUpdate.filter(
+		(value, index, self) => self.indexOf(value) === index,
+	);
+	// remove duplicates from outputs that need update
+	outputsThatNeedUpdate.filter(
+		(value, index, self) =>
+			self.findIndex(
+				(item) =>
+					item.sessionId === value.sessionId &&
+					item.outputId === value.outputId,
+			) === index,
+	);
 
 	// update the sessions
 	sessionsThatNeedUpdate.forEach((sessionId) => {
