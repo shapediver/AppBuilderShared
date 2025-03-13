@@ -477,8 +477,8 @@ const assignOutputUpdateCallback = (
  * In the second step we update the sessions and outputs.
  */
 useShapeDiverStoreSession.subscribe((state, prevState) => {
-	const sessionsThatNeedUpdate: string[] = [];
-	const outputsThatNeedUpdate: {
+	let sessionsThatNeedUpdate: string[] = [];
+	let outputsThatNeedUpdate: {
 		sessionId: string;
 		outputId: string;
 	}[] = [];
@@ -615,11 +615,11 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 	}
 
 	// remove duplicates from sessions that need update
-	sessionsThatNeedUpdate.filter(
+	sessionsThatNeedUpdate = sessionsThatNeedUpdate.filter(
 		(value, index, self) => self.indexOf(value) === index,
 	);
 	// remove duplicates from outputs that need update
-	outputsThatNeedUpdate.filter(
+	outputsThatNeedUpdate = outputsThatNeedUpdate.filter(
 		(value, index, self) =>
 			self.findIndex(
 				(item) =>
