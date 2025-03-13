@@ -92,6 +92,9 @@ export interface IShapeDiverStoreSession {
 	 * The callback is executed whenever the session is updated.
 	 * It will also be executed when it is added or removed as well.
 	 *
+	 * In the special cases that a session update callback is added before the session is created,
+	 * the callback will be executed when the session is created.
+	 *
 	 * @param sessionId The id of the session to add the callback to.
 	 * @param updateCallback The callback to add.
 	 * @returns A function to remove the callback.
@@ -123,6 +126,9 @@ export interface IShapeDiverStoreSession {
 	 *
 	 * The callback is executed whenever the output is updated.
 	 * It will also be executed when it is added or removed as well.
+	 *
+	 * In the special cases that an output update callback is added before the output is created,
+	 * the callback will be executed when the output is created.
 	 *
 	 * @param sessionId The id of the session to add the callback to.
 	 * @param outputId The id of the output to add the callback to.
