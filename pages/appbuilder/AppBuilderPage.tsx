@@ -282,6 +282,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				right={containers.right}
 				bottom={containers.bottom}
 			>
+				{sessionHandlers}
 				{ViewportComponent && (
 					<ViewportComponent
 						visibilitySessionIds={settings?.sessions.map(

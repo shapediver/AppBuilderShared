@@ -32,7 +32,7 @@ export default function ViewportComponent(props: ViewportComponentProps) {
 		_props.sessionSettingsMode = SESSION_SETTINGS_MODE.MANUAL;
 		_props.sessionSettingsId = "default";
 	}
-	if (!_props.visibility) {
+	if (!_props.visibility && _props.visibilitySessionIds) {
 		_props.visibility = VISIBILITY_MODE.SESSIONS;
 	}
 

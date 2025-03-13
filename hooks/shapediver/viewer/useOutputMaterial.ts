@@ -1,10 +1,9 @@
-import {useOutputNode} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {
 	GeometryData,
 	IGeometryData,
 	IMaterialAbstractData,
 	IMaterialAbstractDataProperties,
-	IOutputApi,
 	ITreeNode,
 } from "@shapediver/viewer.session";
 import {MaterialEngine} from "@shapediver/viewer.viewport";
@@ -40,29 +39,17 @@ const originalMaterials: {
 /**
  * Hook allowing to update the material of an output.
  *
- * Makes use of {@link useOutputNode}.
- *
  * @param sessionId
- * @param outputIdOrName
+ * @param outputId
  * @param materialProperties
  */
 export function useOutputMaterial(
 	sessionId: string,
-	outputIdOrName: string,
+	outputId: string,
 	materialProperties: IMaterialAbstractDataProperties,
-): {
-	/**
-	 * API of the output
-	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IOutputApi.html
-	 */
-	outputApi: IOutputApi | undefined;
-	/**
-	 * Scene tree node of the output
-	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IOutputApi.html#node
-	 */
-	outputNode: ITreeNode | undefined;
-} {
+) {
 	const materialRef = useRef<IMaterialAbstractData | null>(null);
+	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
 
 	// callback which will be executed on update of the output node
 	const callback = useCallback((newNode?: ITreeNode, oldNode?: ITreeNode) => {
@@ -105,12 +92,15 @@ export function useOutputMaterial(
 		}
 	}, []);
 
-	// define the node update callback
-	const {outputApi, outputNode} = useOutputNode(
-		sessionId,
-		outputIdOrName,
-		callback,
-	);
+	useEffect(() => {
+		const removeOutputUpdateCallback = addOutputUpdateCallback(
+			sessionId,
+			outputId,
+			callback,
+		);
+
+		return removeOutputUpdateCallback;
+	}, [sessionId, outputId, callback]);
 
 	// use an effect to apply changes to the material, and to apply the callback once the node is available
 	useEffect(() => {
@@ -120,11 +110,5 @@ export function useOutputMaterial(
 		} else {
 			materialRef.current = null;
 		}
-		callback(outputNode);
 	}, [materialProperties]);
-
-	return {
-		outputApi,
-		outputNode,
-	};
 }

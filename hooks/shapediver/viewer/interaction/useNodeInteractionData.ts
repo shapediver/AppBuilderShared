@@ -1,4 +1,5 @@
 import {useOutputNode} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {
 	addInteractionData,
 	gatherNodesForPattern,
@@ -97,6 +98,7 @@ export function useNodeInteractionData(
 	strictNaming = true,
 ): INodeInteractionDataState {
 	const [availableNodeNames, setAvailableNodeNames] = useState<string[]>([]);
+	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
 
 	/**
 	 * Output update callback for adding interaction data.
@@ -183,11 +185,17 @@ export function useNodeInteractionData(
 	);
 
 	// define the node update callback
-	const {outputApi, outputNode} = useOutputNode(
-		sessionId,
-		outputIdOrName,
-		callback,
-	);
+	const {outputApi, outputNode} = useOutputNode(sessionId, outputIdOrName);
+
+	useEffect(() => {
+		const removeOutputUpdateCallback = addOutputUpdateCallback(
+			sessionId,
+			outputIdOrName,
+			callback,
+		);
+
+		return removeOutputUpdateCallback;
+	}, [sessionId, outputIdOrName, callback]);
 
 	return {
 		outputApi,

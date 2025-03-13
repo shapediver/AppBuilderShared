@@ -1,4 +1,4 @@
-import {useOutputNode} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputNode";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {
 	gatherNodesForPattern,
 	NodeNameFilterPattern,
@@ -51,6 +51,7 @@ export function useFindNodesByPattern(
 	nodes: ITreeNode[];
 } {
 	const [nodes, setNodes] = useState<ITreeNode[]>([]);
+	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
 
 	/**
 	 * Output update callback for gathering the nodes.
@@ -107,8 +108,15 @@ export function useFindNodesByPattern(
 		[patterns],
 	);
 
-	// define the node update callback
-	useOutputNode(sessionId, outputIdOrName, callback);
+	useEffect(() => {
+		const removeOutputUpdateCallback = addOutputUpdateCallback(
+			sessionId,
+			outputIdOrName,
+			callback,
+		);
+
+		return removeOutputUpdateCallback;
+	}, [sessionId, outputIdOrName, callback]);
 
 	return {
 		nodes,

@@ -97,6 +97,8 @@ export function useSession(props: IUseSessionDto | undefined) {
 		return () => {
 			promiseChain.current = promiseChain.current.then(async () => {
 				await closeSession(props.id);
+				setSessionApi(undefined);
+				setError(undefined);
 
 				if (registerParametersAndExports) {
 					removeSessionParameters(props.id);
