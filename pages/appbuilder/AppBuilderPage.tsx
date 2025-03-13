@@ -192,13 +192,16 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	// extract the additional sessions without instances
 	const sessionsWithoutInstances = useMemo(() => {
 		const sessions = settings?.sessions ?? [];
-
 		return sessions.filter((s) => !s.instance);
 	}, [settings]);
 
-	// handle additional sessions without instances
 	// we exclude the first session as it is handled by the useSessionWithAppBuilder hook
-	useSessions(sessionsWithoutInstances.slice(1));
+	const secondarySessions = useMemo(() => {
+		return sessionsWithoutInstances.slice(1);
+	}, [sessionsWithoutInstances]);
+
+	// handle additional sessions without instances
+	useSessions(secondarySessions);
 
 	// create UI elements for containers
 	const containers: IAppBuilderTemplatePageProps = {
