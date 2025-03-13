@@ -658,4 +658,25 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 			state.outputUpdateCallbacks[sessionId][outputId],
 		);
 	});
+
+	// in the end, we check for new sessions and call the update callback once
+	// this is done to ensure that the initial state is set correctly
+	const newSessions = Object.values(state.sessions).filter(
+		(session) => !prevState.sessions[session.id],
+	);
+
+	newSessions.forEach((session) => {
+		if (!session.updateCallback) return;
+
+		// call the callback once
+		session.updateCallback(session.node, undefined);
+
+		// for all outputs, call the output update callback once
+		for (const outputId in session.outputs) {
+			const output = session.outputs[outputId];
+			if (!output.updateCallback) continue;
+
+			output.updateCallback(output.node, undefined);
+		}
+	});
 });
