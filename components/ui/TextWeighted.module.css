@@ -1,0 +1,19 @@
+.thin {
+	font-weight: var(--appbuilder-default-font-weight-thin) !important;
+}
+
+.light {
+	font-weight: var(--appbuilder-default-font-weight-light) !important;
+}
+
+.normal {
+	font-weight: var(--appbuilder-default-font-weight) !important;
+}
+
+.medium {
+	font-weight: var(--appbuilder-default-font-weight-medium) !important;
+}
+
+.bold {
+	font-weight: var(--appbuilder-default-font-weight-bold) !important;
+}

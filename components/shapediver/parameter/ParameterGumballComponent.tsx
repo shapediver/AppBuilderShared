@@ -1,5 +1,6 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
@@ -184,18 +185,17 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 				onClick={resetTransformation}
 			>
 				<Stack>
-					<Text
+					<TextWeighted
 						size="sm"
-						fw={500}
+						fontWeight="medium"
 						ta="left"
 						className={classes.interactionText}
 					>
 						{gumballProps.prompt?.activeTitle ??
 							`Currently transformed: ${transformedNodeNames.length}`}
-					</Text>
+					</TextWeighted>
 					<Text
 						size="sm"
-						fw={400}
 						fs="italic"
 						ta="left"
 						className={classes.interactionText}

@@ -185,7 +185,7 @@ export default function ViewportIcons(
 							<section className={classes.containerAr}>
 								{isArLoading ? (
 									<section className={classes.loaderAr}>
-										<Loader color="blue" />
+										<Loader />
 									</section>
 								) : (
 									<img

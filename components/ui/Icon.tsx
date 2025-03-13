@@ -1,5 +1,10 @@
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {MantineThemeComponent, useProps} from "@mantine/core";
+import {
+	MantineThemeComponent,
+	parseThemeColor,
+	useMantineTheme,
+	useProps,
+} from "@mantine/core";
 import {
 	Icon as _TablerIconType,
 	IconAdjustments,
@@ -108,11 +113,16 @@ export function useIconProps(props: Partial<IconProps>): IconProps {
 }
 
 const Icon = forwardRef<_TablerIconType, Props>(function Icon(
-	{type, size, stroke, ...rest}: Props,
+	{type, size, stroke, color, ...rest}: Props,
 	ref,
 ) {
-	const iconPropsStyle = useIconProps({size, stroke});
-	const iconProps = {...iconPropsStyle, ref, ...rest};
+	const theme = useMantineTheme();
+
+	const iconPropsStyle = useIconProps({size, stroke, color});
+	const parsedColor = iconPropsStyle.color
+		? parseThemeColor({color: iconPropsStyle.color, theme}).value
+		: iconPropsStyle.color;
+	const iconProps = {...iconPropsStyle, ref, color: parsedColor, ...rest};
 
 	switch (type) {
 		case IconTypeEnum.Adjustments:

@@ -145,7 +145,11 @@ export const useCustomTheme = (props: Props = {}) => {
 		defaultRadius: "md",
 		other: {
 			//forceColorScheme: "light",
+			defaultFontWeightThin: "100",
+			defaultFontWeightLight: "300",
 			defaultFontWeight: "400",
+			defaultFontWeightMedium: "500",
+			defaultFontWeightBold: "700",
 		},
 		components: {
 			/**
@@ -192,7 +196,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			Button: Button.extend({
 				defaultProps: {
 					variant: "default",
-					fw: "500",
+					// fw: "700",
 				},
 			}),
 			/**
@@ -749,7 +753,15 @@ export const useCustomTheme = (props: Props = {}) => {
 				"xl",
 				"4em",
 			),
+			"--appbuilder-default-font-weight-thin":
+				theme.other.defaultFontWeightThin,
+			"--appbuilder-default-font-weight-light":
+				theme.other.defaultFontWeightLight,
 			"--appbuilder-default-font-weight": theme.other.defaultFontWeight,
+			"--appbuilder-default-font-weight-medium":
+				theme.other.defaultFontWeightMedium,
+			"--appbuilder-default-font-weight-bold":
+				theme.other.defaultFontWeightBold,
 		},
 		light: {
 			// variables for light theme

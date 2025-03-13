@@ -1,6 +1,7 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import DrawingOptionsComponent from "@AppBuilderShared/components/shapediver/ui/DrawingOptionsComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDrawingTools} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingTools";
@@ -233,16 +234,16 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 			<Group justify="space-between" className={classes.interactionMain}>
 				<Flex align="center" justify="flex-start" w={"100%"}>
 					<Box style={{flex: 1}}>
-						<Text
+						<TextWeighted
 							size="sm"
-							fw={500}
+							fontWeight="medium"
 							ta="left"
 							onClick={cancelDrawing}
 							className={classes.interactionText}
 						>
 							{drawingProps.general?.prompt?.activeTitle ??
 								`Created a drawing with ${pointsData?.length} points`}
-						</Text>
+						</TextWeighted>
 					</Box>
 					<Box style={{width: "auto"}}>
 						<ActionIcon
@@ -259,7 +260,6 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 					<Box style={{flex: 1}}>
 						<Text
 							size="sm"
-							fw={400}
 							fs="italic"
 							ta="left"
 							onClick={cancelDrawing}

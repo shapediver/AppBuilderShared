@@ -89,8 +89,8 @@ export default function ParameterSliderComponent(
 	// tooltip, marks
 	const tooltip = `Min: ${definition.min}, Max: ${definition.max}`;
 	const marks = [
-		{value: +definition.min!, label: definition.min},
-		{value: +definition.max!, label: definition.max},
+		{value: +definition.min!, label: definition.min + ""},
+		{value: +definition.max!, label: definition.max + ""},
 	];
 
 	return (

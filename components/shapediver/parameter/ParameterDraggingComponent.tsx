@@ -1,5 +1,6 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
@@ -171,18 +172,17 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 				onClick={() => resetValue(lastConfirmedValueRef.current)}
 			>
 				<Stack>
-					<Text
+					<TextWeighted
 						size="sm"
-						fw={500}
+						fontWeight="medium"
 						ta="left"
 						className={classes.interactionText}
 					>
 						{draggingProps.prompt?.activeTitle ??
 							`Currently dragged objects: ${lastConfirmedValueRef.current.length}`}
-					</Text>
+					</TextWeighted>
 					<Text
 						size="sm"
-						fw={400}
 						fs="italic"
 						ta="left"
 						className={classes.interactionText}

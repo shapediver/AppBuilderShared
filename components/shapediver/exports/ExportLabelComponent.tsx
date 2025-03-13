@@ -1,16 +1,15 @@
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import {MantineThemeComponent, Text, useProps} from "@mantine/core";
+import {MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
 
 interface StyleProps {
 	fontWeight: string;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
-	fontWeight: "500",
-};
+const defaultStyleProps: Partial<StyleProps> = {};
 
 type ParameterLabelComponentPropsType = Partial<StyleProps>;
 
@@ -40,20 +39,16 @@ export default function ExportLabelComponent(
 	const label = displayname || name;
 
 	const labelcomp = (
-		<Text pb={4} size="sm" fw={fontWeight}>
+		<TextWeighted pb={4} size="sm" fontWeight="medium" fw={fontWeight}>
 			{label}
-		</Text>
+		</TextWeighted>
 	);
 
-	return (
-		<Text pb={4} size="sm" fw={fontWeight}>
-			{tooltip ? (
-				<TooltipWrapper label={tooltip} position="top">
-					{labelcomp}
-				</TooltipWrapper>
-			) : (
-				labelcomp
-			)}
-		</Text>
+	return tooltip ? (
+		<TooltipWrapper label={tooltip} position="top">
+			{labelcomp}
+		</TooltipWrapper>
+	) : (
+		labelcomp
 	);
 }
