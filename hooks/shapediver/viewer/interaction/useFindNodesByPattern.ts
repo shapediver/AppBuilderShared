@@ -14,9 +14,9 @@ import {useCallback, useEffect, useState} from "react";
 
 export type IUseFindNodesByPatternProps = {
 	/**
-	 * The ID or name of the output.
+	 * The ID of the output.
 	 */
-	outputIdOrName: string;
+	outputId: string;
 
 	/**
 	 * The patterns to find the nodes.
@@ -117,7 +117,7 @@ export function useFindNodesByPattern(props: IUseFindNodesByPatternProps): {
 		);
 		const removeOutputUpdateCallback = addOutputUpdateCallback(
 			props.sessionId,
-			props.outputIdOrName,
+			props.outputId,
 			callback,
 		);
 		return removeOutputUpdateCallback;
@@ -166,7 +166,7 @@ export function useFindNodesByPatterns(props: {
 			removeOutputUpdateCallbacks.push(
 				addOutputUpdateCallback(
 					prop.sessionId,
-					prop.outputIdOrName,
+					prop.outputId,
 					callback,
 				),
 			);

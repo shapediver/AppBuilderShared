@@ -76,7 +76,7 @@ export function useRestrictions(
 							`${restrictionId}_${sessionId}_${outputId}`
 						] = {
 							sessionId,
-							outputIdOrName: outputId,
+							outputId: outputId,
 							patterns: pattern,
 						};
 					});

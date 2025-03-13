@@ -10,7 +10,7 @@ import {
 import {useEffect, useState} from "react";
 
 /**
- * Hook providing access to outputs by id or name,
+ * Hook providing access to outputs by id,
  * and providing the resulting content of the output.
  *
  * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IOutputApi.html
@@ -18,12 +18,12 @@ import {useEffect, useState} from "react";
  * Makes use of {@link useOutput}.
  *
  * @param sessionId
- * @param outputIdOrName
+ * @param outputId
  * @returns
  */
 export function useOutputContent(
 	sessionId: string,
-	outputIdOrName: string,
+	outputId: string,
 ): {
 	/**
 	 * API of the output
@@ -36,7 +36,7 @@ export function useOutputContent(
 	 */
 	outputContent: ShapeDiverResponseOutputContent[] | undefined;
 } {
-	const {outputApi} = useOutput(sessionId, outputIdOrName);
+	const {outputApi} = useOutput(sessionId, outputId);
 
 	const [content, setContent] = useState<
 		ShapeDiverResponseOutputContent[] | undefined

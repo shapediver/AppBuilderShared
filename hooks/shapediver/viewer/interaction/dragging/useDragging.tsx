@@ -117,7 +117,7 @@ export function useDragging(
 							] = {
 								sessionId,
 								componentId,
-								outputIdOrName: outputId,
+								outputId,
 								patterns: pattern,
 								interactionSettings: {
 									select: false,

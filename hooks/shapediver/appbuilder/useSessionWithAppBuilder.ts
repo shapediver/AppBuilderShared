@@ -39,10 +39,16 @@ export function useSessionWithAppBuilder(
 	);
 	const sessionInitialized = !!sessionApi;
 
+	const appBuilderOutputId = useMemo(() => {
+		if (!sessionApi) return "";
+		const outputs = sessionApi.getOutputByName(CUSTOM_DATA_OUTPUT_NAME);
+		return outputs.length > 0 ? outputs[0].id : "";
+	}, [sessionApi]);
+
 	// get data output, parse it
 	const {outputApi, outputContent} = useOutputContent(
 		namespace,
-		CUSTOM_DATA_OUTPUT_NAME,
+		appBuilderOutputId,
 	);
 
 	const validate = (data: any): IAppBuilder | undefined | Error => {

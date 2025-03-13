@@ -115,7 +115,7 @@ export function useSelection(
 				nodesInteractionInput[`${sessionId}_${outputId}`] = {
 					sessionId,
 					componentId,
-					outputIdOrName: outputId,
+					outputId,
 					patterns: pattern,
 					interactionSettings: {
 						select: true,

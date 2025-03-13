@@ -25,9 +25,9 @@ export type IUseNodeInteractionDataProps = {
 	 */
 	componentId: string;
 	/**
-	 * The ID or name of the output.
+	 * The ID of the output.
 	 */
-	outputIdOrName: string;
+	outputId: string;
 	/**
 	 * The patterns for matching the node names of the given output
 	 */
@@ -165,11 +165,9 @@ const createCallback = (
  *
  * @see https://viewer.shapediver.com/v3/latest/api/features/interaction/interfaces/IInteractionData.html
  *
- * Makes use of {@link useOutputNode}.
- *
  * @param sessionId The ID of the session.
  * @param componentId The ID of the component.
- * @param outputIdOrName The ID or name of the output.
+ * @param outputId The ID of the output.
  * @param patterns The patterns for matching the node names of the given output
  * @param interactionSettings The settings for the interaction data.
  * @param selectManager The select manager to be used for selection.
@@ -183,7 +181,7 @@ export function useNodeInteractionData(props: IUseNodeInteractionDataProps): {
 	const {
 		sessionId,
 		componentId,
-		outputIdOrName,
+		outputId,
 		patterns,
 		interactionSettings,
 		selectManager,
@@ -206,14 +204,14 @@ export function useNodeInteractionData(props: IUseNodeInteractionDataProps): {
 
 		const removeOutputUpdateCallback = addOutputUpdateCallback(
 			sessionId,
-			outputIdOrName,
+			outputId,
 			callback,
 		);
 
 		return removeOutputUpdateCallback;
 	}, [
 		sessionId,
-		outputIdOrName,
+		outputId,
 		patterns,
 		interactionSettings,
 		componentId,
@@ -263,7 +261,7 @@ export function useNodesInteractionData(props: {
 			removeOutputUpdateCallbacks.push(
 				addOutputUpdateCallback(
 					prop.sessionId,
-					prop.outputIdOrName,
+					prop.outputId,
 					callback,
 				),
 			);

@@ -1,7 +1,3 @@
-import {useDefineGenericParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useDefineGenericParameters";
-import {useParameterStateless} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterStateless";
-import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
-import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
 import {
 	IUseSessionDto,
 	useSession,
@@ -12,7 +8,11 @@ import {
 	IGenericParameterExecutor,
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {ShapeDiverResponseParameter} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useDefineGenericParameters} from "./parameters/useDefineGenericParameters";
+import {useParameterStateless} from "./parameters/useParameterStateless";
+import {useSessionPropsExport} from "./parameters/useSessionPropsExport";
+import {useSessionPropsParameter} from "./parameters/useSessionPropsParameter";
 
 /** Prefix used to register custom parameters */
 const CUSTOM_SESSION_ID_POSTFIX = "_customui";
@@ -148,10 +148,16 @@ export function useSessionWithCustomUi(props: IUseSessionDto | undefined) {
 		executor,
 	);
 
+	const customDataOutputId = useMemo(() => {
+		if (!sessionApi) return "";
+		const outputs = sessionApi.getOutputByName(CUSTOM_DATA_OUTPUT_NAME);
+		return outputs.length > 0 ? outputs[0].id : "";
+	}, [sessionApi]);
+
 	// get output "CUSTOM_DATA_OUTPUT_NAME", react to its changes, and set the custom UI state
 	const {outputApi, outputContent} = useOutputContent(
 		namespace,
-		CUSTOM_DATA_OUTPUT_NAME,
+		customDataOutputId,
 	);
 	useEffect(() => {
 		if (outputApi) {
