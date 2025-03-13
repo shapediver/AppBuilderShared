@@ -115,7 +115,7 @@ export default function SelectedAttribute(props: SelectedAttributeProps) {
 		};
 	}, [nameFilter]);
 
-	const {selectedNodeNames, handlers} = useSelection(
+	const {selectedNodeNames} = useSelection(
 		Object.keys(sessions),
 		viewportId,
 		selectionProps,
@@ -149,7 +149,6 @@ export default function SelectedAttribute(props: SelectedAttributeProps) {
 
 	return (
 		<>
-			{handlers}
 			{selectedItemData && (
 				<Stack>
 					<Group

@@ -84,7 +84,6 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		transformedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
-		handlers,
 	} = useGumball(
 		sessionDependencies,
 		viewportId,
@@ -250,7 +249,6 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 
 	return (
 		<>
-			<>{handlers}</>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && gumballActive ? contentActive : contentInactive}
 		</>

@@ -484,6 +484,10 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 * Optional callback for refreshing the JWT token.
 	 */
 	refreshJwtToken?: () => Promise<string>;
+	/**
+	 * Optional boolean to treat this sessions as an instance (default: false).
+	 */
+	instance?: boolean;
 }
 
 /**

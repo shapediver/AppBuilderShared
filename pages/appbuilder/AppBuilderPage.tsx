@@ -4,15 +4,13 @@ import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/
 import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
-import {
-	SessionWithAppBuilderHandler,
-	useSessionWithAppBuilder,
-} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
+import {useSessionWithAppBuilder} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
 import {useParameterHistory} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
 import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
 import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
+import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
@@ -25,7 +23,7 @@ import {
 	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
-import React, {useContext} from "react";
+import React, {useContext, useMemo} from "react";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 
@@ -191,18 +189,16 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	const parameterProps = useSessionPropsParameter(namespace);
 	const exportProps = useSessionPropsExport(namespace);
 
-	const sessionHandlers: JSX.Element[] = [];
-	if (settings?.sessions && settings.sessions.length > 1) {
-		settings?.sessions.map((session) => {
-			sessionHandlers.push(
-				<SessionWithAppBuilderHandler
-					key={session.id}
-					props={session}
-					appBuilderOverride={settings?.appBuilderOverride}
-				/>,
-			);
-		});
-	}
+	// extract the additional sessions without instances
+	const sessionsWithoutInstances = useMemo(() => {
+		const sessions = settings?.sessions ?? [];
+
+		return sessions.filter((s) => !s.instance);
+	}, [settings]);
+
+	// handle additional sessions without instances
+	// we exclude the first session as it is handled by the useSessionWithAppBuilder hook
+	useSessions(sessionsWithoutInstances.slice(1));
 
 	// create UI elements for containers
 	const containers: IAppBuilderTemplatePageProps = {
@@ -282,10 +278,9 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				right={containers.right}
 				bottom={containers.bottom}
 			>
-				{sessionHandlers}
 				{ViewportComponent && (
 					<ViewportComponent
-						visibilitySessionIds={settings?.sessions.map(
+						visibilitySessionIds={sessionsWithoutInstances.map(
 							(s) => s.id,
 						)}
 					>

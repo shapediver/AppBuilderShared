@@ -6,25 +6,8 @@ import {
 import {useOutputContent} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputContent";
 import {IAppBuilder} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
-import {ISessionApi} from "@shapediver/viewer.session";
 
-import React, {useEffect, useMemo} from "react";
-
-export type ISessionWithAppBuilderHandlerResult = {
-	appBuilderData?: IAppBuilder;
-	error?: Error;
-	hasAppBuilderOutput: boolean;
-	namespace: string;
-	sessionApi: ISessionApi | undefined;
-};
-
-export type ISessionWithAppBuilderHandlerState = {
-	appBuilderOverride?: IAppBuilder;
-	props: IUseSessionDto | undefined;
-	setData?: React.Dispatch<
-		React.SetStateAction<ISessionWithAppBuilderHandlerResult>
-	>;
-};
+import {useEffect, useMemo} from "react";
 
 /**
  * Hook for creating a session with a ShapeDiver model using the ShapeDiver 3D Viewer.
@@ -143,34 +126,3 @@ export function useSessionWithAppBuilder(
  * Name of data output used to define the AppBuilder UI
  */
 const CUSTOM_DATA_OUTPUT_NAME = "AppBuilder";
-
-export const SessionWithAppBuilderHandler: React.FC<
-	ISessionWithAppBuilderHandlerState
-> = ({
-	props,
-	appBuilderOverride,
-	setData,
-}: ISessionWithAppBuilderHandlerState) => {
-	const {sessionApi, namespace, error, appBuilderData, hasAppBuilderOutput} =
-		useSessionWithAppBuilder(props, appBuilderOverride);
-
-	useEffect(() => {
-		if (setData)
-			setData({
-				sessionApi,
-				namespace,
-				error,
-				appBuilderData,
-				hasAppBuilderOutput,
-			});
-	}, [
-		sessionApi,
-		namespace,
-		error,
-		appBuilderData,
-		hasAppBuilderOutput,
-		setData,
-	]);
-
-	return null;
-};

@@ -67,14 +67,13 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	// get the viewport ID
 	const {viewportId} = useViewportId();
 
-	const {draggedNodes, setDraggedNodes, restoreDraggedNodes, handlers} =
-		useDragging(
-			sessionDependencies,
-			viewportId,
-			draggingProps,
-			draggingActive,
-			parsedUiValue,
-		);
+	const {draggedNodes, setDraggedNodes, restoreDraggedNodes} = useDragging(
+		sessionDependencies,
+		viewportId,
+		draggingProps,
+		draggingActive,
+		parsedUiValue,
+	);
 
 	// reference to the last confirmed value
 	const lastConfirmedValueRef = useRef<DraggingParameterValue["objects"]>(
@@ -246,7 +245,6 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 
 	return (
 		<>
-			<>{handlers}</>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && draggingActive ? contentActive : contentInactive}
 		</>

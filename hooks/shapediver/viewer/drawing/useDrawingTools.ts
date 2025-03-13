@@ -44,10 +44,6 @@ export function useDrawingTools(
 	 * @param pointsData The points data.
 	 */
 	setPointsData: (pointsData: PointsData) => void;
-	/**
-	 * The handlers to be added to the document.
-	 */
-	handlers: JSX.Element[];
 } {
 	// use the drawing tools events
 	const {pointsData, setPointsData} = useDrawingToolsEvents(
@@ -56,9 +52,7 @@ export function useDrawingTools(
 	);
 
 	// use the restrictions
-	const {restrictions, handlers} = useRestrictions(
-		drawingParameterProps.restrictions,
-	);
+	const {restrictions} = useRestrictions(drawingParameterProps.restrictions);
 
 	// set the drawing tools settings
 	const drawingToolsSettings: Partial<Settings> = useMemo(() => {
@@ -96,7 +90,6 @@ export function useDrawingTools(
 		drawingToolsApi: drawingToolsApi,
 		pointsData: pointsData,
 		setPointsData: setPointsData,
-		handlers,
 	};
 }
 
