@@ -4,7 +4,6 @@ import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideSto
 import {
 	IAppBuilderSettings,
 	IAppBuilderSettingsJson,
-	IAppBuilderSettingsJsonSession,
 	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {validateAppBuilderSettingsJson} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
@@ -130,35 +129,26 @@ export default function useAppBuilderSettings(
 	}, [template]);
 
 	// use settings loaded from json, or settings defined by query parameters, or default settings
-	const settings = useMemo<IAppBuilderSettings | undefined>(() => {
-		if (!value) {
-			const session = defaultSession || queryParamSession;
-			if (session) {
-				return {
-					version: "1.0",
-					sessions: [session],
-					settings: {disableFallbackUi},
-					themeOverrides: themeOverrides,
-				};
-			} else {
-				return undefined;
-			}
-		} else {
-			const session = defaultSession || queryParamSession;
-			const {sessions, ...rest} = value;
-
-			// if the value has sessions, combine them with the default session
-			let combinedSessions: IAppBuilderSettingsJsonSession[] | undefined =
-				[];
-			if (session) combinedSessions.push(session);
-			if (sessions) combinedSessions = combinedSessions.concat(sessions);
-
-			return {
-				sessions: combinedSessions,
-				...rest,
-			};
-		}
-	}, [value, defaultSession, queryParamSession, themeOverrides]);
+	const settings = useMemo<IAppBuilderSettings | undefined>(
+		() =>
+			!value && (defaultSession || queryParamSession)
+				? {
+						version: "1.0",
+						sessions: [(queryParamSession ?? defaultSession)!],
+						settings: {disableFallbackUi},
+						themeOverrides: themeOverrides,
+					}
+				: value
+					? {
+							sessions:
+								defaultSession || queryParamSession
+									? [(queryParamSession ?? defaultSession)!]
+									: [],
+							...value,
+						}
+					: undefined,
+		[value, defaultSession, queryParamSession, themeOverrides],
+	);
 
 	// register theme overrides
 	const setThemeOverride = useThemeOverrideStore(
