@@ -106,6 +106,17 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				if (!session) return;
 
 				try {
+					// if there was a session update callback registered, call it once with the old node
+					if (session.updateCallback)
+						await session.updateCallback(undefined, session.node);
+
+					// for all outputs, call the output update callback once with the old node
+					for (const outputId in session.outputs) {
+						const output = session.outputs[outputId];
+						if (output.updateCallback)
+							await output.updateCallback(undefined, output.node);
+					}
+
 					await session.close();
 				} catch (e) {
 					callbacks?.onError(e);
