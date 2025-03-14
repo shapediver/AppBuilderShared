@@ -32,15 +32,16 @@ export default function SelectFullWidthCards(props: SelectComponentProps) {
 	);
 
 	// Handle card selection
-	const handleCardClick = useCallback((cardValue: string, disabled: boolean | undefined) => {
-		if (!disabled) {
-			onChange(cardValue);
-		}
-	}, [onChange]);
+	const handleCardClick = useCallback(
+		(cardValue: string, disabled: boolean | undefined) => {
+			if (!disabled) {
+				onChange(cardValue);
+			}
+		},
+		[onChange],
+	);
 
-	const getCardStyle = useCallback((card: (typeof cardData)[0], isSelected: boolean) => {
-		if (!isSelected) return {};
-
+	const getCardStyle = useCallback((card: (typeof cardData)[0]) => {
 		return {
 			"--card-outline-color":
 				card.color || "var(--mantine-primary-color-filled)",
@@ -54,7 +55,7 @@ export default function SelectFullWidthCards(props: SelectComponentProps) {
 					key={card.value}
 					className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === card.value ? classes.cardSelected : ""}`}
 					onClick={() => handleCardClick(card.value, disabled)}
-					style={getCardStyle(card, value === card.value)}
+					style={getCardStyle(card)}
 				>
 					<Group wrap="nowrap">
 						{card.imageUrl && (
