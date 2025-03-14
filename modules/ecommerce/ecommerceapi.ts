@@ -14,7 +14,8 @@ import {
 	IECommerceApiFactory,
 	IGetParentPageInfoReply,
 	IGetUserProfileReply,
-	IUpdateSharinkLinkData,
+	IUpdateSharingLinkData,
+	IUpdateSharingLinkReply,
 } from "@AppBuilderShared/modules/ecommerce/types/ecommerceapi";
 
 // Message types for the API calls.
@@ -97,7 +98,9 @@ export class ECommerceApi implements IECommerceApi {
 		);
 	}
 
-	async updateSharingLink(data: IUpdateSharinkLinkData): Promise<void> {
+	async updateSharingLink(
+		data: IUpdateSharingLinkData,
+	): Promise<IUpdateSharingLinkReply> {
 		await this.peerIsReady;
 
 		return this.crossWindowApi.send(
@@ -159,7 +162,7 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 				);
 				this.crossWindowApi.on(
 					MESSAGE_TYPE_UPDATE_SHARING_LINK,
-					(data: IUpdateSharinkLinkData) =>
+					(data: IUpdateSharingLinkData) =>
 						this.actions.updateSharingLink(data),
 				);
 
@@ -195,8 +198,10 @@ export class DummyECommerceApiActions implements IECommerceApiActions {
 		return Promise.resolve(reply);
 	}
 
-	updateSharingLink(data: IUpdateSharinkLinkData): Promise<void> {
-		return Promise.resolve();
+	updateSharingLink(
+		data: IUpdateSharingLinkData,
+	): Promise<IUpdateSharingLinkReply> {
+		return Promise.resolve({href: window.location.href});
 	}
 }
 
@@ -210,7 +215,9 @@ export class DummyECommerceApi implements IECommerceApi {
 		this.actions = new DummyECommerceApiActions();
 	}
 
-	updateSharingLink(data: IUpdateSharinkLinkData): Promise<void> {
+	updateSharingLink(
+		data: IUpdateSharingLinkData,
+	): Promise<IUpdateSharingLinkReply> {
 		return this.actions.updateSharingLink(data);
 	}
 

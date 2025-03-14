@@ -73,7 +73,7 @@ export interface IGetParentPageInfoReply {
  * Information about a model state that has been created.
  * Can be used by the parent page to update its URL, etc.
  */
-export interface IUpdateSharinkLinkData {
+export interface IUpdateSharingLinkData {
 	/**
 	 * The id of the ShapeDiver model state that was created.
 	 */
@@ -83,6 +83,16 @@ export interface IUpdateSharinkLinkData {
 	 * Image URL of the screenshot associated with the model state.
 	 */
 	imageUrl?: string;
+}
+
+/**
+ * Reply from the parent page after updating the sharing link.
+ */
+export interface IUpdateSharingLinkReply {
+	/**
+	 * The updated URL of the parent page.
+	 */
+	href: string;
 }
 
 /**
@@ -115,7 +125,9 @@ export interface IECommerceApiActions {
 	 * A model state has been created, update the sharing link.
 	 * @param data
 	 */
-	updateSharingLink(data: IUpdateSharinkLinkData): Promise<void>;
+	updateSharingLink(
+		data: IUpdateSharingLinkData,
+	): Promise<IUpdateSharingLinkReply>;
 }
 
 /**
