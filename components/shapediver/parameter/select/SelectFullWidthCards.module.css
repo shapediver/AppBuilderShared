@@ -4,11 +4,8 @@
 	outline: 2px solid transparent;
 }
 
-.card:hover:not(.cardDisabled):not(.cardSelected) {
-	outline-width: 2px;
-	outline-style: solid;
-	outline-color: color-mix(in srgb, var(--card-outline-color) 40%, transparent);
-	border-color: color-mix(in srgb, var(--card-outline-color) 40%, transparent);
+.card:hover:not(.cardDisabled) {
+	background-color: var(--mantine-color-default-hover);
 }
 
 .card.cardDisabled {
