@@ -103,8 +103,15 @@ export const useShapeDiverStorePlatform =
 										// redirect to www.shapediver.com, because 3rd party auth requires it
 										window.location.href = `https://www.shapediver.com${window.location.pathname}${window.location.search}`;
 									} else {
+										// check for a "provider" query parameter
+										const urlParams = new URLSearchParams(
+											window.location.search,
+										);
+										const provider =
+											urlParams.get("provider");
+										urlParams.delete("provider");
 										// redirect to platform login
-										window.location.href = `${platformUrl}/app/login?redirect=${window.location.origin}${window.location.pathname}${window.location.search}`;
+										window.location.href = `${platformUrl}/app/login?${provider ? `provider=${provider}&` : ""}redirect=${window.location.origin}${window.location.pathname}?${urlParams.toString()}`;
 									}
 								}
 
