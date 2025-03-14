@@ -2,6 +2,7 @@ import {Card, Group, Image, Stack, Text} from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
 import {SelectComponentProps} from "./SelectComponent";
 import classes from "./SelectFullWidthCards.module.css";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 
 /**
  * Functional component that displays selectable full-width cards with images and descriptions.
@@ -69,10 +70,9 @@ export default function SelectFullWidthCards(props: SelectComponentProps) {
 							/>
 						)}
 						<div style={{flex: 1}}>
-							{/** Once merged to development, replace this with <TextWeighted /> using "medium" weight */}
-							<Text size="sm" fw={500}>
+							<TextWeighted size="sm" fontWeight="medium">
 								{card.label}
-							</Text>
+							</TextWeighted>
 							{card.description && (
 								<Text size="xs" c="dimmed">
 									{card.description}
