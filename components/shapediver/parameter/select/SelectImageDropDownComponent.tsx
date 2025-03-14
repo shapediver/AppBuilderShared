@@ -51,7 +51,7 @@ export default function SelectImageDropDownComponent(
 						h="auto"
 						fit="contain"
 						alt={customOption.label}
-						fallbackSrc="/not-found.svg"
+						fallbackSrc="not-found.svg"
 					/>
 				)}
 				<div>

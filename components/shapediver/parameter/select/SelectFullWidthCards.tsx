@@ -65,7 +65,7 @@ export default function SelectFullWidthCards(props: SelectComponentProps) {
 								h="auto"
 								fit="contain"
 								alt={card.label}
-								fallbackSrc="/not-found.svg"
+								fallbackSrc="not-found.svg"
 							/>
 						)}
 						<div style={{flex: 1}}>
