@@ -54,9 +54,16 @@ export default function ParameterSelectComponent(
 	// get component settings for the current parameter based on displayname or name
 	const settings = useMemo(() => {
 		return (
-			componentSettings?.[definition.displayname || definition.name] || {}
+			componentSettings?.[
+				definition.displayname || definition.name || definition.id
+			] || {}
 		);
-	}, [componentSettings, definition.name, definition.displayname]);
+	}, [
+		componentSettings,
+		definition.name,
+		definition.displayname,
+		definition.id,
+	]);
 
 	// We need to prevent duplicate values in definition choices
 	// and append a numeric postfix to duplicate items to make them unique
