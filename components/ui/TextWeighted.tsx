@@ -1,18 +1,20 @@
 import {PolymorphicComponentProps, Text, TextProps} from "@mantine/core";
-import React, {useMemo} from "react";
+import React, {forwardRef, useMemo} from "react";
 import classes from "./TextWeighted.module.css";
 
 type FontWeight = "thin" | "light" | "normal" | "medium" | "bold";
 
 type TextComponentProps<C = "p"> = PolymorphicComponentProps<C, TextProps>;
 
-export default function TextWeighted(
-	props: TextComponentProps & {
-		/**
-		 * Default font weight to use. Default weight values can be configured using the theme. See theme.other.defaultFontWeight*.
-		 */
-		fontWeight: FontWeight;
-	},
+type Props = TextComponentProps & {
+	/**
+	 * Default font weight to use. Default weight values can be configured using the theme. See theme.other.defaultFontWeight*.
+	 */
+	fontWeight: FontWeight;
+};
+
+const TextWeighted = forwardRef<Text, Props>(function TextWeighted(
+	props: Props,
 ) {
 	const {fontWeight, className, fw, ...rest} = props;
 
@@ -40,4 +42,6 @@ export default function TextWeighted(
 			fw={fw}
 		/>
 	);
-}
+});
+
+export default TextWeighted;
