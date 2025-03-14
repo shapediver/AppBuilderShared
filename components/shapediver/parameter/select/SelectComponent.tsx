@@ -19,6 +19,9 @@ export interface SelectComponentItemDataType {
 	imageUrl?: string;
 	/** Optional color, used for color selection components. */
 	color?: MantineColor;
+}
+
+export interface SelectComponentSettings {
 	/** Optional width. */
 	width?: number;
 }
@@ -34,6 +37,8 @@ export interface SelectComponentProps {
 	itemData?: Record<string, SelectComponentItemDataType>;
 	/** Whether the component shall be disabled. */
 	disabled?: boolean;
+	/** Component-specific settings (e.g. width for SelectImageDropDownComponent). */
+	settings?: SelectComponentSettings;
 }
 
 /** Types of selection components. */

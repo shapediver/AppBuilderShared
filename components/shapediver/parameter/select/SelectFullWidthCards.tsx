@@ -8,17 +8,19 @@ import classes from "./SelectFullWidthCards.module.css";
  * Each card is displayed on a separate line, and the selected card is highlighted with a thicker border.
  */
 export default function SelectFullWidthCards(props: SelectComponentProps) {
-	const {value, onChange, items, disabled, itemData} = props;
+	const {value, onChange, items, disabled, itemData, settings} = props;
+	const width = settings?.width || "100px";
 
 	// Transform items array into the format expected by the component
 	const cardData = items.map((item) => {
 		const data = itemData?.[item];
+
 		return {
 			value: item,
 			label: data?.displayname || item,
 			description: data?.description,
 			imageUrl: data?.imageUrl,
-			width: data?.width || "100px",
+			width: width,
 			color: data?.color,
 		};
 	});

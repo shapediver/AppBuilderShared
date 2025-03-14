@@ -21,17 +21,19 @@ interface CustomSelectItem {
 export default function SelectImageDropDownComponent(
 	props: SelectComponentProps,
 ) {
-	const {value, onChange, items, disabled, itemData} = props;
+	const {value, onChange, items, disabled, itemData, settings} = props;
+	const width = settings?.width || "100px";
 
 	// Transform items array into the format expected by Select component
 	const selectData = items.map((item) => {
 		const data = itemData?.[item];
+
 		return {
 			value: item,
 			label: data?.displayname || item,
 			description: data?.description,
 			imageUrl: data?.imageUrl,
-			width: data?.width || "100px",
+			width: width,
 		};
 	});
 
