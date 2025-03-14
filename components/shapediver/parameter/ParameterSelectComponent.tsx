@@ -6,6 +6,7 @@ import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
 import React, {useMemo} from "react";
 import SelectComponent, {
 	SelectComponentItemDataType,
+	SelectComponentSettings,
 	SelectComponentType,
 } from "./select/SelectComponent";
 
@@ -14,6 +15,8 @@ interface ISelectComponentOverrides {
 	type?: SelectComponentType;
 	/** Record containing optional further item data per item name. */
 	itemData?: Record<string, SelectComponentItemDataType>;
+	/** Optional further settings, like image width etc. */
+	settings?: SelectComponentSettings;
 }
 
 interface StyleProps {
@@ -120,6 +123,7 @@ export default function ParameterSelectComponent(
 				disabled={disabled}
 				type={settings.type}
 				itemData={settings.itemData}
+				settings={settings.settings}
 			/>
 		);
 

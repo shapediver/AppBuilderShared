@@ -23,7 +23,7 @@ export interface SelectComponentItemDataType {
 
 export interface SelectComponentSettings {
 	/** Optional width. */
-	width?: number;
+	width?: string | number;
 }
 
 export interface SelectComponentProps {

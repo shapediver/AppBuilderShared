@@ -68,7 +68,7 @@ export default function SelectFullWidthCards(props: SelectComponentProps) {
 								{card.label}
 							</Text>
 							{card.description && (
-								<Text size="xs" color="dimmed">
+								<Text size="xs" c="dimmed">
 									{card.description}
 								</Text>
 							)}

@@ -10,7 +10,7 @@ interface CustomSelectItem {
 	label: string;
 	description?: string;
 	imageUrl?: string;
-	width?: number;
+	width?: string | number;
 }
 
 /**
@@ -57,7 +57,7 @@ export default function SelectImageDropDownComponent(
 				<div>
 					<Text size="sm">{customOption.label}</Text>
 					{customOption.description && (
-						<Text size="xs" color="dimmed">
+						<Text size="xs" c="dimmed">
 							{customOption.description}
 						</Text>
 					)}
