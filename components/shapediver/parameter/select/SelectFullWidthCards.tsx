@@ -1,5 +1,5 @@
 import {Card, Group, Image, Stack, Text} from "@mantine/core";
-import React from "react";
+import React, {useCallback, useMemo} from "react";
 import {SelectComponentProps} from "./SelectComponent";
 import classes from "./SelectFullWidthCards.module.css";
 
@@ -14,34 +14,38 @@ export default function SelectFullWidthCards(props: SelectComponentProps) {
 	const width = settings?.width || "100px";
 
 	// Transform items array into the format expected by the component
-	const cardData = items.map((item) => {
-		const data = itemData?.[item];
+	const cardData = useMemo(
+		() =>
+			items.map((item) => {
+				const data = itemData?.[item];
 
-		return {
-			value: item,
-			label: data?.displayname || item,
-			description: data?.description,
-			imageUrl: data?.imageUrl,
-			width: width,
-			color: data?.color,
-		};
-	});
+				return {
+					value: item,
+					label: data?.displayname || item,
+					description: data?.description,
+					imageUrl: data?.imageUrl,
+					width: width,
+					color: data?.color,
+				};
+			}),
+		[items, itemData, width],
+	);
 
 	// Handle card selection
-	const handleCardClick = (cardValue: string) => {
+	const handleCardClick = useCallback((cardValue: string, disabled: boolean | undefined) => {
 		if (!disabled) {
 			onChange(cardValue);
 		}
-	};
+	}, [onChange]);
 
-	const getCardStyle = (card: (typeof cardData)[0], isSelected: boolean) => {
+	const getCardStyle = useCallback((card: (typeof cardData)[0], isSelected: boolean) => {
 		if (!isSelected) return {};
 
 		return {
 			"--card-outline-color":
 				card.color || "var(--mantine-primary-color-filled)",
 		};
-	};
+	}, []);
 
 	return (
 		<Stack>
@@ -49,7 +53,7 @@ export default function SelectFullWidthCards(props: SelectComponentProps) {
 				<Card
 					key={card.value}
 					className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === card.value ? classes.cardSelected : ""}`}
-					onClick={() => handleCardClick(card.value)}
+					onClick={() => handleCardClick(card.value, disabled)}
 					style={getCardStyle(card, value === card.value)}
 				>
 					<Group wrap="nowrap">
@@ -64,6 +68,7 @@ export default function SelectFullWidthCards(props: SelectComponentProps) {
 							/>
 						)}
 						<div style={{flex: 1}}>
+							{/** Once merged to development, replace this with <TextWeighted /> using "medium" weight */}
 							<Text size="sm" fw={500}>
 								{card.label}
 							</Text>
