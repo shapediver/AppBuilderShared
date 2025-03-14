@@ -44,8 +44,8 @@ const parsePointsData = (value?: string): PointsData => {
 		const valueCopy = JSON.parse(JSON.stringify(value));
 
 		return JSON.parse(valueCopy).points;
-	} catch (e) {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	} catch (e) {
 		return [];
 	}
 };
@@ -135,15 +135,14 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 	}, []);
 
 	// use the drawing tools
-	const {pointsData, setPointsData, drawingToolsApi, handlers} =
-		useDrawingTools(
-			viewportId,
-			drawingProps,
-			confirmDrawing,
-			cancelDrawing,
-			drawingActive,
-			parsedUiValue,
-		);
+	const {pointsData, setPointsData, drawingToolsApi} = useDrawingTools(
+		viewportId,
+		drawingProps,
+		confirmDrawing,
+		cancelDrawing,
+		drawingActive,
+		parsedUiValue,
+	);
 
 	useEffect(() => {
 		const parsed = parsePointsData(state.execValue);
@@ -338,7 +337,6 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 
 	return (
 		<>
-			<>{handlers}</>
 			<ParameterLabelComponent {...props} cancel={_onCancel} />
 			{SystemInfo.instance.isMobile
 				? contentMobile

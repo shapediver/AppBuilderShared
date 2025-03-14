@@ -5,10 +5,6 @@ import {
 	useSelectManagerEvents,
 } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelectManagerEvents";
 import {useCreateNameFilterPattern} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useCreateNameFilterPattern";
-import {
-	INodeInteractionDataState,
-	NodeInteractionDataHandler,
-} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useNodeInteractionData";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {
 	checkNodeNameMatch,
@@ -24,7 +20,12 @@ import {
 	SessionApiData,
 } from "@shapediver/viewer.session";
 import {vec3} from "gl-matrix";
-import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useId, useMemo} from "react";
+import {
+	IUseNodeInteractionDataProps,
+	IUseNodeInteractionDataResult,
+	useNodesInteractionData,
+} from "../useNodeInteractionData";
 
 // #region Functions (1)
 
@@ -58,10 +59,6 @@ export function useSelection(
 	 * @returns
 	 */
 	setSelectedNodeNamesAndRestoreSelection: (names: string[]) => void;
-	/**
-	 * The handlers for the node interaction data.
-	 */
-	handlers: JSX.Element[];
 } {
 	// create a unique component ID
 	const componentId = useId();
@@ -89,11 +86,17 @@ export function useSelection(
 		activate ? hoverSettings : undefined,
 	);
 
+	// create the input for the name filter pattern
+	const createNameFilterInput = useMemo(() => {
+		return {
+			sessionIds,
+			nameFilter: selectionProps.nameFilter,
+		};
+	}, [sessionIds, selectionProps]);
+
 	// convert the user-defined name filters to filter patterns, and subscribe to selection events
-	const {patterns} = useCreateNameFilterPattern(
-		sessionIds,
-		selectionProps.nameFilter,
-	);
+	const {patterns} = useCreateNameFilterPattern(createNameFilterInput);
+
 	const {selectedNodeNames, setSelectedNodeNames, resetSelectedNodeNames} =
 		useSelectManagerEvents(
 			patterns,
@@ -102,71 +105,32 @@ export function useSelection(
 			strictNaming,
 		);
 
-	// state for available node names
-	const [availableNodeNames, setAvailableNodeNames] = useState<{
-		[key: string]: {[key: string]: string[]};
-	}>({});
-
-	// add interaction data for each output, even if it is not in the pattern
-	// this is necessary to keep the number of hooks constant
-	// TODO to work around this, we would need a hook similar to useOutputUpdateCallback,
-	// but for all outputs (or the session), e.g. useSessionOutputsUpdateCallback
-	const interactionSettings = useMemo(() => {
-		return {select: true, hover: selectionProps.hover};
-	}, [selectionProps]);
-
-	const [nodeInteractionDataHandlers, setNodeInteractionDataHandlers] =
-		useState<JSX.Element[]>([]);
-	const [interactionDataStateMap, setInteractionDataStateMap] = useState<{
-		[key: string]: {[key: string]: INodeInteractionDataState};
-	}>({});
-
-	useEffect(() => {
-		const nodeInteractionDataHandlers: JSX.Element[] = [];
+	const nodesInteractionInput = useMemo(() => {
+		const nodesInteractionInput: {
+			[key: string]: IUseNodeInteractionDataProps;
+		} = {};
 
 		Object.entries(patterns).forEach(([sessionId, pattern]) => {
 			Object.entries(pattern).forEach(([outputId, pattern]) => {
-				if (!interactionDataStateMap[sessionId]?.[outputId]) {
-					setInteractionDataStateMap((prev) => ({
-						...prev,
-						[sessionId]: {
-							...prev[sessionId],
-							[outputId]: {
-								outputApi: undefined,
-								outputNode: undefined,
-								availableNodeNames: [],
-							},
-						},
-					}));
-				}
-
-				nodeInteractionDataHandlers.push(
-					<NodeInteractionDataHandler
-						key={`nodeInteractionDataHandler_${componentId}_${outputId}_${JSON.stringify(pattern)}`}
-						sessionId={sessionId}
-						componentId={componentId}
-						outputIdOrName={outputId}
-						patterns={pattern}
-						interactionSettings={interactionSettings}
-						selectManager={selectManager}
-						strictNaming={strictNaming}
-						setData={(data) => {
-							setInteractionDataStateMap((prev) => ({
-								...prev,
-								[sessionId]: {
-									...prev[sessionId],
-									[outputId]:
-										data as INodeInteractionDataState,
-								},
-							}));
-						}}
-					/>,
-				);
+				nodesInteractionInput[`${sessionId}_${outputId}`] = {
+					sessionId,
+					componentId,
+					outputId,
+					patterns: pattern,
+					interactionSettings: {
+						select: true,
+						hover: selectionProps.hover,
+					},
+					selectManager,
+					strictNaming,
+				};
 			});
 		});
 
-		setNodeInteractionDataHandlers(nodeInteractionDataHandlers);
-	}, [patterns, selectManager]);
+		return nodesInteractionInput;
+	}, [patterns, selectionProps, selectManager]);
+
+	const {availableNodeNames} = useNodesInteractionData(nodesInteractionInput);
 
 	const outputsPerSession = useShapeDiverStoreSession((state) => {
 		const outputs: {
@@ -184,37 +148,33 @@ export function useSelection(
 	// in case selection becomes active or the output node changes, restore the selection status
 	useEffect(() => {
 		if (!selectManager) return;
-		Object.values(interactionDataStateMap).forEach((outputData) => {
-			Object.values(outputData).forEach((data) => {
-				if (data.outputNode) {
-					restoreSelection(
-						outputsPerSession,
-						componentId,
-						selectManager,
-						selectedNodeNames,
-						strictNaming,
-					);
-				}
-			});
-		});
-	}, [interactionDataStateMap, selectManager, componentId]);
 
-	// update the available node names
-	useEffect(() => {
-		const availableNodeNames: {[key: string]: {[key: string]: string[]}} =
-			{};
-		Object.entries(interactionDataStateMap).forEach(
-			([sessionId, outputData]) => {
-				Object.entries(outputData).forEach(([outputId, data]) => {
-					if (!availableNodeNames[sessionId])
-						availableNodeNames[sessionId] = {};
-					availableNodeNames[sessionId][outputId] =
-						data.availableNodeNames;
-				});
-			},
+		restoreSelection(
+			outputsPerSession,
+			componentId,
+			selectManager,
+			selectedNodeNames,
+			strictNaming,
 		);
-		setAvailableNodeNames(availableNodeNames);
-	}, [interactionDataStateMap]);
+	}, [outputsPerSession, componentId, selectManager]);
+
+	// we need to return the available node names in a dictionary for each output
+	// therefore we need to transform the availableNodeNames object into a dictionary
+	// with session and output IDs as keys
+	const availableNodeNamesReturn = useMemo(() => {
+		const availableNodeNamesPerOutput: {
+			[key: string]: {[key: string]: IUseNodeInteractionDataResult};
+		} = {};
+
+		Object.entries(availableNodeNames).forEach(([key, value]) => {
+			const [sessionId, outputId] = key.split("_");
+			if (!availableNodeNamesPerOutput[sessionId])
+				availableNodeNamesPerOutput[sessionId] = {};
+			availableNodeNamesPerOutput[sessionId][outputId] = value;
+		});
+
+		return availableNodeNamesPerOutput;
+	}, [availableNodeNames]);
 
 	/**
 	 * Set the selected node names and restore the selection status.
@@ -242,9 +202,8 @@ export function useSelection(
 		selectedNodeNames,
 		setSelectedNodeNames,
 		resetSelectedNodeNames,
-		availableNodeNames,
+		availableNodeNames: availableNodeNamesReturn,
 		setSelectedNodeNamesAndRestoreSelection,
-		handlers: nodeInteractionDataHandlers,
 	};
 }
 

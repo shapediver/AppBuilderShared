@@ -84,7 +84,6 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		transformedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
-		handlers,
 	} = useGumball(
 		sessionDependencies,
 		viewportId,
@@ -151,7 +150,7 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		restoreTransformedNodeNames(lastConfirmedValue, transformedNodeNames);
 		setGumballActive(false);
 		setSelectedNodeNames([]);
-	}, [lastConfirmedValue, transformedNodeNames, restoreTransformedNodeNames]);
+	}, [lastConfirmedValue, transformedNodeNames]);
 
 	// extend the onCancel callback to reset the transformed nodes.
 	const _onCancelCallback = useCallback(() => {
@@ -250,7 +249,6 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 
 	return (
 		<>
-			<>{handlers}</>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && gumballActive ? contentActive : contentInactive}
 		</>

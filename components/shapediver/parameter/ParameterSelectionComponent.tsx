@@ -73,7 +73,6 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 		selectedNodeNames,
 		setSelectedNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
-		handlers,
 	} = useSelection(
 		sessionDependencies,
 		viewportId,
@@ -270,7 +269,6 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 
 	return (
 		<>
-			<>{handlers}</>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && selectionActive ? contentActive : contentInactive}
 		</>

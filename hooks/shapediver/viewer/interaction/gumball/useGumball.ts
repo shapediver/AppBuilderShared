@@ -64,10 +64,6 @@ export interface IGumballState {
 		}[],
 		oldTransformedNodeNames: {name: string}[],
 	) => void;
-	/**
-	 * The handlers to be added to the document.
-	 */
-	handlers: JSX.Element[];
 }
 
 /**
@@ -116,7 +112,6 @@ export function useGumball(
 		setSelectedNodeNames,
 		availableNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
-		handlers,
 	} = useSelection(sessionIds, viewportId, selectionSettings, activate);
 	// use the gumball events hook to get the transformed node names
 	const {transformedNodeNames, setTransformedNodeNames} = useGumballEvents(
@@ -139,7 +134,7 @@ export function useGumball(
 
 	// use an effect to create the gumball whenever the selected node names change
 	useEffect(() => {
-		if (viewportApi) {
+		if (viewportApi && sessionApis && selectedNodeNames.length > 0) {
 			// whenever the selected node names change, create a new gumball
 			const nodes = getNodesByName(sessionApis, selectedNodeNames);
 			const gumball = new Gumball(
@@ -229,7 +224,6 @@ export function useGumball(
 		selectedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
-		handlers,
 	};
 }
 

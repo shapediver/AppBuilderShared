@@ -1,13 +1,10 @@
 import {useOutput} from "@AppBuilderShared/hooks/shapediver/viewer/useOutput";
-import {
-	OutputUpdateCallbackType,
-	useOutputUpdateCallback,
-} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputUpdateCallback";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IOutputApi, ITreeNode} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useId, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 
 /**
- * Hook providing access to outputs by id or name,
+ * Hook providing access to outputs by id,
  * allowing to register a callback for updates of the output,
  * and providing the scene tree node of the output.
  * Note that the callback will also be called when registering or deregistering it.
@@ -17,10 +14,10 @@ import {useCallback, useEffect, useId, useState} from "react";
  *
  * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IOutputApi.html
  *
- * Makes use of {@link useOutputUpdateCallback} and {@link useOutput}.
+ * Makes use of {@link useOutput}.
  *
  * @param sessionId
- * @param outputIdOrName
+ * @param outputId
  * @param callback Optional callback which will be called on update of the output node.
  *                 The callback will be called with the new and old node.
  * 			   	   The very first call will not include an old node.
@@ -29,8 +26,7 @@ import {useCallback, useEffect, useId, useState} from "react";
  */
 export function useOutputNode(
 	sessionId: string,
-	outputIdOrName: string,
-	callback?: OutputUpdateCallbackType,
+	outputId: string,
 ): {
 	/**
 	 * API of the output
@@ -43,30 +39,25 @@ export function useOutputNode(
 	 */
 	outputNode: ITreeNode | undefined;
 } {
-	const {outputApi} = useOutput(sessionId, outputIdOrName);
+	const {outputApi} = useOutput(sessionId, outputId);
 
 	const [node, setNode] = useState<ITreeNode | undefined>(outputApi?.node);
+	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
 
 	// combine the optional user-defined callback with setting the current node
-	const cb = useCallback(
-		(node?: ITreeNode, oldnode?: ITreeNode) => {
-			setNode(node);
-
-			return callback && callback(node, oldnode);
-		},
-		[callback],
-	);
-
-	const callbackId = useId();
-	useOutputUpdateCallback(sessionId, outputIdOrName, callbackId, cb);
+	const cb = useCallback((node?: ITreeNode) => {
+		setNode(node);
+	}, []);
 
 	// use an effect to set the initial node
 	useEffect(() => {
-		cb(outputApi?.node);
+		const removeOutputUpdateCallback = addOutputUpdateCallback(
+			sessionId,
+			outputId,
+			cb,
+		);
 
-		return () => {
-			cb(undefined, outputApi?.node);
-		};
+		return removeOutputUpdateCallback;
 	}, [outputApi, cb]);
 
 	return {

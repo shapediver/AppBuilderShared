@@ -6,12 +6,8 @@ import {
 import {useOutputContent} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputContent";
 import {IAppBuilder} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
-import {useEffect, useMemo} from "react";
 
-/**
- * Name of data output used to define the AppBuilder UI
- */
-const CUSTOM_DATA_OUTPUT_NAME = "AppBuilder";
+import {useEffect, useMemo} from "react";
 
 /**
  * Hook for creating a session with a ShapeDiver model using the ShapeDiver 3D Viewer.
@@ -43,10 +39,16 @@ export function useSessionWithAppBuilder(
 	);
 	const sessionInitialized = !!sessionApi;
 
+	const appBuilderOutputId = useMemo(() => {
+		if (!sessionApi) return "";
+		const outputs = sessionApi.getOutputByName(CUSTOM_DATA_OUTPUT_NAME);
+		return outputs.length > 0 ? outputs[0].id : "";
+	}, [sessionApi]);
+
 	// get data output, parse it
 	const {outputApi, outputContent} = useOutputContent(
 		namespace,
-		CUSTOM_DATA_OUTPUT_NAME,
+		appBuilderOutputId,
 	);
 
 	const validate = (data: any): IAppBuilder | undefined | Error => {
@@ -125,3 +127,8 @@ export function useSessionWithAppBuilder(
 		hasAppBuilderOutput,
 	};
 }
+
+/**
+ * Name of data output used to define the AppBuilder UI
+ */
+const CUSTOM_DATA_OUTPUT_NAME = "AppBuilder";

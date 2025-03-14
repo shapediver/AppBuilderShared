@@ -5,6 +5,10 @@ import {
 	ViewportComponentProps,
 } from "@AppBuilderShared/types/shapediver/viewport";
 import {useComputedColorScheme, useProps} from "@mantine/core";
+import {
+	SESSION_SETTINGS_MODE,
+	VISIBILITY_MODE,
+} from "@shapediver/viewer.session";
 import React from "react";
 import classes from "./ViewportComponent.module.css";
 
@@ -24,6 +28,13 @@ export default function ViewportComponent(props: ViewportComponentProps) {
 	) as ViewportBrandingProps;
 	const scheme = useComputedColorScheme();
 	if (!_props.branding) _props.branding = brandingProps[scheme];
+	if (!_props.sessionSettingsMode) {
+		_props.sessionSettingsMode = SESSION_SETTINGS_MODE.MANUAL;
+		_props.sessionSettingsId = "default";
+	}
+	if (!_props.visibility && _props.visibilitySessionIds) {
+		_props.visibility = VISIBILITY_MODE.SESSIONS;
+	}
 
 	const {canvasRef, error} = useViewport(_props);
 

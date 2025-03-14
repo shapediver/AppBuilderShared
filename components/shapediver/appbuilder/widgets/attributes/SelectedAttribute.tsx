@@ -1,6 +1,5 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
-import {SessionUpdateCallbackHandler} from "@AppBuilderShared/hooks/shapediver/viewer/useSessionUpdateCallback";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ActionIcon, Group, Stack, Table, Title} from "@mantine/core";
@@ -45,6 +44,7 @@ export default function SelectedAttribute(props: SelectedAttributeProps) {
 		[key: string]: ISDTFAttributeData;
 	}>();
 	const [opened, setOpened] = useState(true);
+	const {addSessionUpdateCallback} = useShapeDiverStoreSession();
 
 	/**
 	 * Whenever the session is updated, the name filter is updated as well.
@@ -90,25 +90,19 @@ export default function SelectedAttribute(props: SelectedAttributeProps) {
 		[sessions],
 	);
 
-	const [sessionUpdateCallbackHandlers, setSessionUpdateCallbackHandlers] =
-		useState<JSX.Element[]>([]);
-
 	useEffect(() => {
-		const sessionUpdateCallbackHandlers: JSX.Element[] = [];
+		const removeSessionUpdateCallbacks = Object.keys(sessions).map(
+			(sessionId) => addSessionUpdateCallback(sessionId, sessionCallback),
+		);
 
-		Object.keys(sessions).forEach((sessionId) => {
-			sessionUpdateCallbackHandlers.push(
-				<SessionUpdateCallbackHandler
-					key={sessionId}
-					sessionId={sessionId}
-					callbackId={sessionId}
-					updateCallback={sessionCallback}
-				/>,
+		return () => {
+			removeSessionUpdateCallbacks.forEach(
+				(removeSessionUpdateCallback) => {
+					removeSessionUpdateCallback();
+				},
 			);
-		});
-
-		setSessionUpdateCallbackHandlers(sessionUpdateCallbackHandlers);
-	}, [sessions]);
+		};
+	}, [sessions, sessionCallback]);
 
 	const selectionProps = useMemo(() => {
 		return {
@@ -121,7 +115,7 @@ export default function SelectedAttribute(props: SelectedAttributeProps) {
 		};
 	}, [nameFilter]);
 
-	const {selectedNodeNames, handlers} = useSelection(
+	const {selectedNodeNames} = useSelection(
 		Object.keys(sessions),
 		viewportId,
 		selectionProps,
@@ -155,8 +149,6 @@ export default function SelectedAttribute(props: SelectedAttributeProps) {
 
 	return (
 		<>
-			{sessionUpdateCallbackHandlers}
-			{handlers}
 			{selectedItemData && (
 				<Stack>
 					<Group

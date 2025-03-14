@@ -3,7 +3,10 @@ import {useDragManager} from "@AppBuilderShared/hooks/shapediver/viewer/interact
 import {useDragManagerEvents} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragManagerEvents";
 import {useHoverManager} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useHoverManager";
 import {useConvertDraggingData} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useConvertDraggingData";
-import {NodeInteractionDataHandler} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useNodeInteractionData";
+import {
+	IUseNodeInteractionDataProps,
+	useNodesInteractionData,
+} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useNodeInteractionData";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {getNodesByName} from "@shapediver/viewer.features.interaction";
 import {
@@ -11,7 +14,7 @@ import {
 	IDraggingParameterProps,
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
-import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
+import {useCallback, useId, useMemo} from "react";
 
 /**
  * Hook providing stateful object dragging for a viewport and session.
@@ -51,10 +54,6 @@ export function useDragging(
 		lastDraggedNodes: DraggingParameterValue["objects"] | undefined,
 		currentDraggedNodes: DraggingParameterValue["objects"],
 	) => void;
-	/**
-	 * The handlers to be added to the document.
-	 */
-	handlers: JSX.Element[];
 } {
 	// get the session API
 	const sessionApis = useShapeDiverStoreSession((state) => {
@@ -64,9 +63,7 @@ export function useDragging(
 	const componentId = useId();
 
 	// use the restrictions
-	const {restrictions, handlers} = useRestrictions(
-		draggingProps.restrictions,
-	);
+	const {restrictions} = useRestrictions(draggingProps.restrictions);
 
 	// call the drag manager hook
 	useDragManager(
@@ -98,47 +95,49 @@ export function useDragging(
 			strictNaming,
 		);
 
-	// create a state for the node interaction data handlers
-	const [nodeInteractionDataHandlers, setNodeInteractionDataHandles] =
-		useState<JSX.Element[]>([]);
-
 	/**
-	 * useEffect to create the node interaction data handlers.
-	 * for each object, create a node interaction data handler with varying interaction settings.
+	 * Memo to create the nodes interaction input.
+	 * This is used to update the interaction data for the dragged nodes.
 	 */
-	useEffect(() => {
-		const nodeInteractionDataHandlers: JSX.Element[] = [];
-		objects.forEach((object) =>
+	const nodesInteractionInput = useMemo(() => {
+		const nodesInteractionInput: {
+			[key: string]: IUseNodeInteractionDataProps;
+		} = {};
+
+		objects.forEach((object, index) =>
 			Object.entries(object.patterns).forEach(
 				([sessionId, sessionData]) =>
 					Object.entries(sessionData).forEach(
 						([outputId, pattern]) => {
-							// for each object, create a node interaction data handler
-							const interactionSettings = {
-								select: false,
-								hover: draggingProps.hover,
-								drag: true,
-								dragOrigin: object.dragOrigin,
-								dragAnchors: object.dragAnchors,
+							// create the interaction data
+							// here the key doesn't matter much as we don't need the data later
+							// but it must be unique to avoid conflicts
+							nodesInteractionInput[
+								`object${index}_${sessionId}_${outputId}`
+							] = {
+								sessionId,
+								componentId,
+								outputId,
+								patterns: pattern,
+								interactionSettings: {
+									select: false,
+									hover: draggingProps.hover,
+									drag: true,
+									dragOrigin: object.dragOrigin,
+									dragAnchors: object.dragAnchors,
+								},
+								strictNaming,
 							};
-							nodeInteractionDataHandlers.push(
-								<NodeInteractionDataHandler
-									key={`${sessionId}-${outputId}-${componentId}-${JSON.stringify(object)}`}
-									sessionId={sessionId}
-									componentId={componentId}
-									outputIdOrName={outputId}
-									patterns={pattern}
-									interactionSettings={interactionSettings}
-									strictNaming={strictNaming}
-								/>,
-							);
 						},
 					),
 			),
 		);
 
-		setNodeInteractionDataHandles(nodeInteractionDataHandlers);
+		return nodesInteractionInput;
 	}, [objects, componentId, draggingProps]);
+
+	// call the node interaction data hook
+	useNodesInteractionData(nodesInteractionInput);
 
 	/**
 	 * Restore the dragged nodes.
@@ -229,7 +228,6 @@ export function useDragging(
 		draggedNodes,
 		setDraggedNodes,
 		resetDraggedNodes,
-		handlers: nodeInteractionDataHandlers.concat(handlers),
 		restoreDraggedNodes,
 	};
 }

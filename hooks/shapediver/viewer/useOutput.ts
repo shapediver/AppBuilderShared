@@ -12,7 +12,7 @@ import {IOutputApi} from "@shapediver/viewer.session";
  */
 export function useOutput(
 	sessionId: string,
-	outputIdOrName: string,
+	outputId: string,
 ): {
 	/**
 	 * API of the output
@@ -23,11 +23,7 @@ export function useOutput(
 	const outputApi = useShapeDiverStoreSession((state) => {
 		const sessionApi = state.sessions[sessionId];
 		if (!sessionApi || !sessionApi.outputs) return;
-		if (outputIdOrName in sessionApi.outputs)
-			return sessionApi.outputs[outputIdOrName];
-		const outputs = sessionApi.getOutputByName(outputIdOrName);
-
-		return outputs.length > 0 ? outputs[0] : undefined;
+		return sessionApi.getOutputById(outputId) ?? undefined;
 	});
 
 	return {

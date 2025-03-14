@@ -3,98 +3,132 @@ import {
 	convertUserDefinedNameFilters,
 	OutputNodeNameFilterPatterns,
 } from "@shapediver/viewer.features.interaction";
+import {ISessionApi} from "@shapediver/viewer.session";
 import {useEffect, useState} from "react";
 
-// #region Type aliases (2)
+/**
+ * Get the filter patterns for the given sessions and name filters.
+ *
+ * @param sessions
+ * @param sessionIds
+ * @param nameFilter
+ * @returns
+ */
+const getPatterns = (
+	sessions: {[key: string]: ISessionApi},
+	sessionIds: string[],
+	nameFilter?: string[],
+) => {
+	if (!nameFilter) return {};
 
-type ICreateNameFilterPatternHandlerState = {
-	sessionIds?: string[];
-	nameFilter?: string[];
-	setData?: React.Dispatch<
-		React.SetStateAction<ICreateNameFilterPatternState>
-	>;
+	const patterns: {[key: string]: OutputNodeNameFilterPatterns} = {};
+	const currentSessionIds = sessionIds || Object.keys(sessions);
+
+	currentSessionIds.forEach((sessionId) => {
+		const sessionApi = sessions[sessionId];
+		const outputIdsToNamesMapping: {[key: string]: string} = {};
+		Object.entries(sessionApi.outputs).forEach(
+			([outputId, output]) =>
+				(outputIdsToNamesMapping[outputId] = output.name),
+		);
+		const pattern = convertUserDefinedNameFilters(
+			nameFilter,
+			outputIdsToNamesMapping,
+		);
+		if (Object.values(pattern).length > 0) patterns[sessionId] = pattern;
+	});
+
+	return patterns;
 };
-export type ICreateNameFilterPatternState = {
+
+export type IUseCreateNameFilterPatternProps = {
 	/**
-	 * The patterns for the given name filters.
+	 * The IDs of the sessions to create the filter pattern for.
+	 * If not set, all sessions are used.
 	 */
-	patterns: {[key: string]: OutputNodeNameFilterPatterns};
+	sessionIds?: string[];
+	/**
+	 * The user-defined name filters to convert.
+	 */
+	nameFilter?: string[];
 };
 
-// #endregion Type aliases (2)
+export type IUseCreateNameFilterPatternResult = {
+	[key: string]: OutputNodeNameFilterPatterns;
+};
 
 // #region Functions (1)
 
 /**
  * Hook that converts user-defined name filters to filter patterns used by interaction hooks.
+ * If you need this operation for multiple properties, use {@link useCreateNameFilterPatterns} instead.
  *
- * @param sessionIds The IDs of the sessions to create the filter pattern for.
- * 					If not provided, the filter pattern will be created for all sessions.
- * @param nameFilter The user-defined name filters to convert.
+ * @param props The properties.
  */
 export function useCreateNameFilterPattern(
-	sessionIds?: string[],
-	nameFilter?: string[],
+	props: IUseCreateNameFilterPatternProps,
 ): {
-	patterns: {[key: string]: OutputNodeNameFilterPatterns};
+	patterns: IUseCreateNameFilterPatternResult;
 } {
 	// get the session API
-	const sessions = useShapeDiverStoreSession((state) => {
-		return state.sessions;
-	});
+	const sessions = useShapeDiverStoreSession((state) => state.sessions);
 
-	// create a state for the pattern
+	// create a state for the pattern(s)
+	const [patterns, setPatterns] = useState<IUseCreateNameFilterPatternResult>(
+		{},
+	);
+
+	useEffect(() => {
+		const {sessionIds, nameFilter} = props;
+		const pattern = getPatterns(
+			sessions,
+			sessionIds || Object.keys(sessions),
+			nameFilter,
+		);
+		setPatterns(pattern);
+	}, [props, sessions]);
+
+	return {patterns};
+}
+
+/**
+ * Hook that converts user-defined name filters to filter patterns used by interaction hooks.
+ * If you need this operation for a single property, use {@link useCreateNameFilterPattern} instead.
+ *
+ * @param props The properties.
+ */
+export function useCreateNameFilterPatterns(props: {
+	[key: string]: IUseCreateNameFilterPatternProps;
+}): {
+	patterns: {
+		[key: string]: IUseCreateNameFilterPatternResult;
+	};
+} {
+	// get the session API
+	const sessions = useShapeDiverStoreSession((state) => state.sessions);
+
+	// create a state for the pattern(s)
 	const [patterns, setPatterns] = useState<{
-		[key: string]: OutputNodeNameFilterPatterns;
+		[key: string]: IUseCreateNameFilterPatternResult;
 	}>({});
 
 	useEffect(() => {
-		if (nameFilter !== undefined) {
-			const patterns: {[key: string]: OutputNodeNameFilterPatterns} = {};
-			const currentSessionIds = sessionIds || Object.keys(sessions);
+		const patternDictionary: {
+			[key: string]: IUseCreateNameFilterPatternResult;
+		} = {};
+		Object.entries(props).forEach(([key, value]) => {
+			const {sessionIds, nameFilter} = value;
+			const pattern = getPatterns(
+				sessions,
+				sessionIds || Object.keys(sessions),
+				nameFilter,
+			);
+			patternDictionary[key] = pattern;
+		});
+		setPatterns(patternDictionary);
+	}, [props, sessions]);
 
-			currentSessionIds.forEach((sessionId) => {
-				const sessionApi = sessions[sessionId];
-				const outputIdsToNamesMapping: {[key: string]: string} = {};
-				Object.entries(sessionApi.outputs).forEach(
-					([outputId, output]) =>
-						(outputIdsToNamesMapping[outputId] = output.name),
-				);
-				const pattern = convertUserDefinedNameFilters(
-					nameFilter,
-					outputIdsToNamesMapping,
-				);
-				if (Object.values(pattern).length > 0)
-					patterns[sessionId] = pattern;
-			});
-			setPatterns(patterns);
-		}
-	}, [nameFilter, sessions]);
-
-	return {
-		patterns,
-	};
+	return {patterns};
 }
 
 // #endregion Functions (1)
-
-// #region Variables (1)
-
-export const CreateNameFilterPatternHandler: React.FC<
-	ICreateNameFilterPatternHandlerState
-> = ({
-	sessionIds,
-	nameFilter,
-	setData,
-}: ICreateNameFilterPatternHandlerState) => {
-	const {patterns} = useCreateNameFilterPattern(sessionIds, nameFilter);
-	useEffect(() => {
-		if (setData) {
-			setData({patterns});
-		}
-	}, [patterns, setData]);
-
-	return null;
-};
-
-// #endregion Variables (1)
