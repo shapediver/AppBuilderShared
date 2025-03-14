@@ -1,0 +1,6 @@
+.btnColor {
+	outline: 2px solid transparent;
+}
+.btnColor.btnColorSelected {
+	outline-color: var(--mantine-primary-color-filled);
+}
