@@ -70,6 +70,22 @@ export interface IGetParentPageInfoReply {
 }
 
 /**
+ * Information about a model state that has been created.
+ * Can be used by the parent page to update its URL, etc.
+ */
+export interface IUpdateSharinkLinkData {
+	/**
+	 * The id of the ShapeDiver model state that was created.
+	 */
+	modelStateId: string;
+
+	/**
+	 * Image URL of the screenshot associated with the model state.
+	 */
+	imageUrl?: string;
+}
+
+/**
  * Generic e-commerce API actions.
  */
 export interface IECommerceApiActions {
@@ -94,6 +110,12 @@ export interface IECommerceApiActions {
 	 * Get information about the parent page (the page embedding an App Builder iframe).
 	 */
 	getParentPageInfo(): Promise<IGetParentPageInfoReply>;
+
+	/**
+	 * A model state has been created, update the sharing link.
+	 * @param data
+	 */
+	updateSharingLink(data: IUpdateSharinkLinkData): Promise<void>;
 }
 
 /**

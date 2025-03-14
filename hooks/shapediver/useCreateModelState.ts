@@ -1,6 +1,7 @@
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
+import {type ISessionApi} from "@shapediver/viewer.session";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 

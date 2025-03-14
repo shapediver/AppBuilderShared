@@ -14,6 +14,7 @@ import {
 	IECommerceApiFactory,
 	IGetParentPageInfoReply,
 	IGetUserProfileReply,
+	IUpdateSharinkLinkData,
 } from "@AppBuilderShared/modules/ecommerce/types/ecommerceapi";
 
 // Message types for the API calls.
@@ -24,6 +25,7 @@ const MESSAGE_TYPE_ADD_ITEM_TO_CART = "ADD_ITEM_TO_CART";
 const MESSAGE_TYPE_GET_USER_PROFILE = "GET_USER_PROFILE";
 const MESSAGE_TYPE_CLOSE_CONFIGURATOR = "CLOSE_CONFIGURATOR";
 const MESSAGE_TYPE_GET_PARENT_PAGE_INFO = "GET_PARENT_PAGE_INFO";
+const MESSAGE_TYPE_UPDATE_SHARING_LINK = "UPDATE_SHARING_LINK";
 const MESSAGE_TYPE_HANDSHAKE = "HANDSHAKE";
 
 export class ECommerceApi implements IECommerceApi {
@@ -52,6 +54,7 @@ export class ECommerceApi implements IECommerceApi {
 			this.timeout,
 		);
 	}
+
 	async closeConfigurator(): Promise<boolean> {
 		await this.peerIsReady;
 
@@ -90,6 +93,16 @@ export class ECommerceApi implements IECommerceApi {
 		return this.crossWindowApi.send(
 			MESSAGE_TYPE_GET_PARENT_PAGE_INFO,
 			undefined,
+			this.timeout,
+		);
+	}
+
+	async updateSharingLink(data: IUpdateSharinkLinkData): Promise<void> {
+		await this.peerIsReady;
+
+		return this.crossWindowApi.send(
+			MESSAGE_TYPE_UPDATE_SHARING_LINK,
+			data,
 			this.timeout,
 		);
 	}
@@ -144,6 +157,11 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 				this.crossWindowApi.on(MESSAGE_TYPE_GET_PARENT_PAGE_INFO, () =>
 					this.actions.getParentPageInfo(),
 				);
+				this.crossWindowApi.on(
+					MESSAGE_TYPE_UPDATE_SHARING_LINK,
+					(data: IUpdateSharinkLinkData) =>
+						this.actions.updateSharingLink(data),
+				);
 
 				return peerInfo;
 			});
@@ -176,6 +194,10 @@ export class DummyECommerceApiActions implements IECommerceApiActions {
 
 		return Promise.resolve(reply);
 	}
+
+	updateSharingLink(data: IUpdateSharinkLinkData): Promise<void> {
+		return Promise.resolve();
+	}
 }
 
 export class DummyECommerceApi implements IECommerceApi {
@@ -186,6 +208,10 @@ export class DummyECommerceApi implements IECommerceApi {
 	constructor() {
 		this.peerIsReady = Promise.resolve({origin: "dummy", name: "dummy"});
 		this.actions = new DummyECommerceApiActions();
+	}
+
+	updateSharingLink(data: IUpdateSharinkLinkData): Promise<void> {
+		return this.actions.updateSharingLink(data);
 	}
 
 	getParentPageInfo(): Promise<IGetParentPageInfoReply> {

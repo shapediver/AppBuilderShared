@@ -1,6 +1,7 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {IAppBuilderActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import React, {useCallback, useContext, useState} from "react";
@@ -35,7 +36,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 	const onClick = useCallback(async () => {
 		setLoading(true);
 
-		const {modelStateId} = await createModelState(
+		const {modelStateId, screenshot} = await createModelState(
 			undefined, // <-- use parameter values of the session
 			false, // <-- use parameter values of the session
 			includeImage,
@@ -51,6 +52,10 @@ export default function AppBuilderActionCreateModelStateComponent(
 			notifications.success({
 				message: `Model state with ID ${modelStateId} has been saved.`,
 			});
+			// in case we are not running inside an iframe, the instance of
+			// IEcommerceApi will be a dummy for testing
+			const api = await ECommerceApiSingleton;
+			await api.updateSharingLink({modelStateId, imageUrl: screenshot});
 		}
 
 		setLoading(false);

@@ -39,7 +39,7 @@ export function useKeyBinding(props: Props) {
 					callback(); // Call the event handler
 					count = 0; // Reset the counter after the event is handled
 				}
-			}
+			} else count = 0; // Reset the counter if the wrong key is pressed
 		};
 
 		document.addEventListener("keydown", cb);
