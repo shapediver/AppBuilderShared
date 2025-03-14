@@ -1,3 +1,6 @@
 .btnColor {
-	border: calc(0.0625rem* var(--mantine-scale)) solid var(--mantine-color-default-border) !important;
+	outline: 2px solid transparent;
+}
+.btnColor.btnColorSelected {
+	outline-color: var(--mantine-primary-color-filled);
 }

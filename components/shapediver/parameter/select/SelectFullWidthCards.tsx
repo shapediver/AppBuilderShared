@@ -6,6 +6,8 @@ import classes from "./SelectFullWidthCards.module.css";
 /**
  * Functional component that displays selectable full-width cards with images and descriptions.
  * Each card is displayed on a separate line, and the selected card is highlighted with a thicker border.
+ * @see https://mantine.dev/core/stack/
+ * @see https://mantine.dev/core/card/
  */
 export default function SelectFullWidthCards(props: SelectComponentProps) {
 	const {value, onChange, items, disabled, itemData, settings} = props;
@@ -32,24 +34,23 @@ export default function SelectFullWidthCards(props: SelectComponentProps) {
 		}
 	};
 
+	const getCardStyle = (card: (typeof cardData)[0], isSelected: boolean) => {
+		if (!isSelected) return {};
+
+		return {
+			"--card-outline-color":
+				card.color || "var(--mantine-primary-color-filled)",
+		};
+	};
+
 	return (
 		<Stack>
 			{cardData.map((card) => (
 				<Card
 					key={card.value}
-					shadow="none"
-					radius="md"
-					className={`${classes.card} ${disabled ? classes.cardDisabled : ""}`}
-					withBorder
+					className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === card.value ? classes.cardSelected : ""}`}
 					onClick={() => handleCardClick(card.value)}
-					style={
-						value === card.value
-							? {
-									borderColor: card.color || "var(--mantine-primary-color-filled)",
-									borderWidth: "3px"
-								}
-							: undefined
-					}
+					style={getCardStyle(card, value === card.value)}
 				>
 					<Group wrap="nowrap">
 						{card.imageUrl && (

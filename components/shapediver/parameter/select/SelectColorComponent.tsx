@@ -11,7 +11,7 @@ import {SelectComponentProps} from "./SelectComponent";
  * @see https://mantine.dev/core/flex/
  */
 export default function SelectColorComponent(props: SelectComponentProps) {
-	const {onChange, items, itemData, disabled} = props;
+	const {onChange, items, itemData, disabled, value} = props;
 
 	return (
 		<Flex gap="xs" wrap="wrap">
@@ -26,8 +26,7 @@ export default function SelectColorComponent(props: SelectComponentProps) {
 						variant="filled"
 						onClick={() => onChange(item)}
 						disabled={disabled}
-						className={classes.btnColor}
-						border-width="1px"
+						className={`${classes.btnColor} ${item === value ? classes.btnColorSelected : ""}`}
 					/>
 				);
 
