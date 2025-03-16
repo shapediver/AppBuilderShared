@@ -17,7 +17,7 @@ import {useAllParameters} from "../parameters/useAllParameters";
 
 const DEFAULT_SYSTEM_PROMPT =
 	"You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about the 3D configurator \
-based on the user's input and the context provided. You may answer questions by the user without changing parameters.";
+based on the user's input and the context provided. You may answer questions by the user without changing parameters. ";
 
 /**
  * Create a context string for a parameter that can be passed to the LLM.
@@ -31,18 +31,29 @@ function createParameterContext(
 ) {
 	const def = param.definition;
 	const currentValue = param.state.uiValue;
+	const name = def.displayname || def.name;
 
 	let context = `
-parameterId: ${def.id}
-parameterName: ${def.displayname || def.name}
-parameterType: ${def.type}
-currentValue: ${currentValue === null || currentValue === undefined ? "none" : currentValue}
+===
+id: ${def.id}
+name: ${name}
 `;
+
+	if (ref?.overrides?.displayname && ref?.overrides?.displayname !== name) {
+		context += `displayname: ${ref.overrides.displayname}\n`;
+	}
+
+	const groupName = ref?.overrides?.group?.name || def.group?.name;
+	if (groupName) {
+		context += `group: ${groupName}\n`;
+	}
 
 	const tooltip = ref?.overrides?.tooltip || def.tooltip;
 	if (tooltip) {
 		context += `tooltip: ${tooltip}\n`;
 	}
+
+	context += `type: ${def.type}\n`;
 
 	if (def.type === ShapeDiverResponseParameterType.STRINGLIST) {
 		context += `choices: ${def.choices || "none"}\n`;
@@ -62,6 +73,8 @@ currentValue: ${currentValue === null || currentValue === undefined ? "none" : c
 		}
 	}
 
+	context += `currentValue: ${currentValue === null || currentValue === undefined ? "none" : currentValue}`;
+
 	return context;
 }
 
@@ -75,19 +88,19 @@ function createParameterTypeContext(types: ShapeDiverResponseParameterType[]) {
 	return types
 		.map((type) => {
 			if (type === ShapeDiverResponseParameterType.COLOR) {
-				return `If parameterType is ${ShapeDiverResponseParameterType.COLOR}, return the color value precisely in the following hexadecimal format: 0xRRGGBBAA where RR encodes the red channel, GG encodes the green channel, BB encodes the blue channel, AA encodes opacity.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.COLOR}\`, return the color value precisely in the following hexadecimal format: 0xRRGGBBAA where RR encodes the red channel, GG encodes the green channel, BB encodes the blue channel, AA encodes opacity.`;
 			} else if (type === ShapeDiverResponseParameterType.STRINGLIST) {
-				return `If parameterType is ${ShapeDiverResponseParameterType.STRINGLIST}, return the index of the new choice from the available choices rather than the value of the choice.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.STRINGLIST}\`, return the index of the new choice from the available choices rather than the value of the choice. Don't tell the user about the index.`;
 			} else if (type === ShapeDiverResponseParameterType.FLOAT) {
-				return `If parameterType is ${ShapeDiverResponseParameterType.FLOAT}, ensure the suggested new floating point number is within the range defined by min and max and respects the number of decimalplaces.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.FLOAT}\`, ensure the suggested new floating point number is within the range defined by min and max and respects the number of decimalplaces.`;
 			} else if (type === ShapeDiverResponseParameterType.INT) {
-				return `If parameterType is ${ShapeDiverResponseParameterType.INT}, ensure the suggested new integer is within the range defined by min and max.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.INT}\`, ensure the suggested new integer is within the range defined by min and max.`;
 			} else if (type === ShapeDiverResponseParameterType.ODD) {
-				return `If parameterType is ${ShapeDiverResponseParameterType.ODD}, ensure the suggested new odd integer is within the range defined by min and max.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.ODD}\`, ensure the suggested new odd integer is within the range defined by min and max.`;
 			} else if (type === ShapeDiverResponseParameterType.EVEN) {
-				return `If parameterType is ${ShapeDiverResponseParameterType.EVEN}, ensure the suggested new even integer is within the range defined by min and max.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.EVEN}\`, ensure the suggested new even integer is within the range defined by min and max.`;
 			} else if (type === ShapeDiverResponseParameterType.STRING) {
-				return `If parameterType is ${ShapeDiverResponseParameterType.STRING}, ensure the length of the suggested new string does not exceed max.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.STRING}\`, ensure the length of the suggested new string does not exceed max.`;
 			}
 		})
 		.filter((s) => !!s)
@@ -138,7 +151,7 @@ function createParametersContext(
 		.filter((p) => SUPPORTED_PARAMETER_TYPES.includes(p.definition.type));
 
 	return (
-		"\n" +
+		"\nA list of parameter definitions separated by `===` follows." +
 		parameters
 			.map((p) => {
 				const ref = parameterRefs.find(
@@ -151,7 +164,7 @@ function createParametersContext(
 				return createParameterContext(p, ref);
 			})
 			.join("") +
-		"\nDon't hallucinate parameterId.\n" +
+		"\n===\nDon't hallucinate the parameter `id`.\n" +
 		createParameterTypeContext(parameters.map((p) => p.definition.type))
 	);
 }
@@ -183,10 +196,10 @@ const AGENT_RESPONSE_SCHEMA = z.object({
 	parameterUpdates: z
 		.array(
 			z.object({
-				parameterId: z
+				id: z
 					.string()
 					.describe("The id of the parameter to be updated"),
-				parameterName: z
+				name: z
 					.string()
 					.describe("The name of the parameter to be updated"),
 				newValue: z
@@ -224,18 +237,16 @@ async function setParameterValues(
 
 	parameterUpdates.forEach((update) => {
 		const index = parameters.findIndex(
-			(p) => p.definition.id === update.parameterId,
+			(p) => p.definition.id === update.id,
 		);
 		if (index < 0) {
-			messages.push(
-				`Parameter with parameterId ${update.parameterId} does not exist.`,
-			);
+			messages.push(`Parameter with id ${update.id} does not exist.`);
 
 			return;
 		}
 		if (indices.includes(index)) {
 			messages.push(
-				`Refusing to update parameter with parameterId ${update.parameterId} twice.`,
+				`Refusing to update parameter with id ${update.id} twice.`,
 			);
 
 			return;
@@ -245,13 +256,13 @@ async function setParameterValues(
 		const parameter = parameters[index];
 		if (!parameter.actions.isValid(update.newValue, false)) {
 			messages.push(
-				`New value ${update.newValue} is not valid for parameter with parameterId ${update.parameterId}.`,
+				`New value ${update.newValue} is not valid for parameter with id ${update.id}.`,
 			);
 
 			return;
 		}
 
-		values[update.parameterId] = update.newValue;
+		values[update.id] = update.newValue;
 	});
 
 	await batchUpdate(namespace, values);
@@ -410,12 +421,9 @@ export function useAgent(props: Props) {
 
 	/** System prompt with parameter and author context. */
 	const systemPromptComplete = useMemo(() => {
-		const _systemPrompt = `${systemPrompt}
-Parameters context: ${parametersContext}
-`;
 		return authorContext
-			? `${_systemPrompt}${authorContext}`
-			: _systemPrompt;
+			? `${systemPrompt}${authorContext}${parametersContext}`
+			: `${systemPrompt}${parametersContext}`;
 	}, [systemPrompt, authorContext, parametersContext]);
 
 	/** Session id for langfuse */
@@ -598,7 +606,7 @@ I have provided a screenshot of the 3D view for context.`
 			}
 			updateSpan?.end();
 
-			return `Updated parameters: ${parsedMessage.parameterUpdates.map((u) => `${u.parameterId}: ${u.newValue}`).join(", ")}`;
+			return `Updated parameters: ${parsedMessage.parameterUpdates.map((u) => `${u.id}: ${u.newValue}`).join(", ")} `;
 		},
 		[
 			batchParameterValueUpdate,
