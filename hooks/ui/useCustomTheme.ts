@@ -37,7 +37,6 @@ import {
 	ColorInput,
 	DEFAULT_THEME,
 	Group,
-	List,
 	MantineSize,
 	MantineSpacing,
 	MantineThemeOverride,
@@ -648,21 +647,21 @@ export const useCustomTheme = (props: Props = {}) => {
 							h6: {fontSize: "0.5rem"},
 						},
 					},
-					components: {
-						MarkdownWidgetComponent: MarkdownWidgetComponentProps({
-							setHeadingFontSize: true,
-						}),
-						List: List.extend({
-							defaultProps: {
-								size: "sm",
-							},
-						}),
-						Text: Text.extend({
-							defaultProps: {
-								size: "sm",
-							},
-						}),
-					},
+					// components: {
+					// 	MarkdownWidgetComponent: MarkdownWidgetComponentProps({
+					// 		setHeadingFontSize: true,
+					// 	}),
+					// 	List: List.extend({
+					// 		defaultProps: {
+					// 			size: "sm",
+					// 		},
+					// 	}),
+					// 	Text: Text.extend({
+					// 		defaultProps: {
+					// 			size: "sm",
+					// 		},
+					// 	}),
+					// },
 				},
 			}),
 			/**

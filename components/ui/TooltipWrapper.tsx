@@ -38,17 +38,23 @@ export default function TooltipWrapper(
 	props: TooltipWrapperProps & TooltipProps,
 ) {
 	const {children = <></>, ...rest} = props;
-	const {color, floating, themeOverride, ..._props} = useProps(
+	const {color, floating, themeOverride, label, ..._props} = useProps(
 		"TooltipWrapper",
 		defaultStyleProps,
 		rest,
 	);
 	const theme = useMantineTheme();
 
-	const c = floating ? (
+	const _label = themeOverride ? (
+		<ThemeProvider theme={themeOverride}>{label}</ThemeProvider>
+	) : (
+		label
+	);
+
+	return floating ? (
 		<Tooltip.Floating
 			color={color ?? theme.primaryColor}
-			label={_props.label}
+			label={_label}
 			position={_props.position}
 			withinPortal={_props.withinPortal}
 			portalProps={_props.portalProps}
@@ -59,14 +65,8 @@ export default function TooltipWrapper(
 			{children}
 		</Tooltip.Floating>
 	) : (
-		<Tooltip color={color ?? theme.primaryColor} {..._props}>
+		<Tooltip color={color ?? theme.primaryColor} label={_label} {..._props}>
 			{children}
 		</Tooltip>
-	);
-
-	return themeOverride ? (
-		<ThemeProvider theme={themeOverride}>{c}</ThemeProvider>
-	) : (
-		c
 	);
 }
