@@ -642,7 +642,7 @@ export const useShapeDiverStoreParameters =
 					};
 					const historyPusher = (state: ISessionsHistoryState) => {
 						const entry = pushHistoryState(state);
-						history.pushState(entry, "", "");
+						history.pushState(entry, "");
 					};
 					const executor = createGenericParameterExecutorForSession(
 						session,
