@@ -1,3 +1,4 @@
+import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {TrackerContext} from "@AppBuilderShared/context/TrackerContext";
 import {
@@ -18,6 +19,7 @@ import {useContext, useMemo} from "react";
 export const useEventTracking = () => {
 	const notifications = useContext(NotificationContext);
 	const tracker = useContext(TrackerContext);
+	const errorReporting = useContext(ErrorReportingContext);
 
 	const eventTracking = useMemo<IEventTracking>(() => {
 		return {
@@ -72,6 +74,7 @@ export const useEventTracking = () => {
 					const title = duration
 						? `${_title} after ${duration} ms`
 						: _title;
+					errorReporting.captureException(e);
 					console.error(title, e);
 					notifications.error({title, message: e.message});
 					tracker.trackEvent(`${action}_error`, {

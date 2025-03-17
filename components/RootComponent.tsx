@@ -3,10 +3,15 @@ import {
 	DummyComponent,
 } from "@AppBuilderShared/context/ComponentContext";
 import {
+	DummyErrorReporting,
+	ErrorReportingContext,
+} from "@AppBuilderShared/context/ErrorReportingContext";
+import {
 	DummyTracker,
 	TrackerContext,
 } from "@AppBuilderShared/context/TrackerContext";
 import {IComponentContext} from "@AppBuilderShared/types/context/componentcontext";
+import {IErrorReportingContext} from "@AppBuilderShared/types/context/errorreportingcontext";
 import {ITrackerContext} from "@AppBuilderShared/types/context/trackercontext";
 import React from "react";
 
@@ -25,16 +30,43 @@ interface Props {
 	tracker?: ITrackerContext;
 
 	/**
+	 * The optional error reported to use.
+	 */
+	errorReporting?: IErrorReportingContext;
+
+	/**
 	 * The optional component context to use.
 	 */
 	componentContext?: IComponentContext;
 }
 
 export default function RootComponent(props: Props) {
-	const {children, useStrictMode = false, tracker, componentContext} = props;
+	const {
+		children,
+		useStrictMode = false,
+		tracker,
+		errorReporting,
+		componentContext,
+	} = props;
 
 	return useStrictMode ? (
 		<React.StrictMode>
+			<ErrorReportingContext.Provider
+				value={errorReporting ?? DummyErrorReporting}
+			>
+				<TrackerContext.Provider value={tracker ?? DummyTracker}>
+					<ComponentContext.Provider
+						value={componentContext ?? DummyComponent}
+					>
+						{children}
+					</ComponentContext.Provider>
+				</TrackerContext.Provider>
+			</ErrorReportingContext.Provider>
+		</React.StrictMode>
+	) : (
+		<ErrorReportingContext.Provider
+			value={errorReporting ?? DummyErrorReporting}
+		>
 			<TrackerContext.Provider value={tracker ?? DummyTracker}>
 				<ComponentContext.Provider
 					value={componentContext ?? DummyComponent}
@@ -42,14 +74,6 @@ export default function RootComponent(props: Props) {
 					{children}
 				</ComponentContext.Provider>
 			</TrackerContext.Provider>
-		</React.StrictMode>
-	) : (
-		<TrackerContext.Provider value={tracker ?? DummyTracker}>
-			<ComponentContext.Provider
-				value={componentContext ?? DummyComponent}
-			>
-				{children}
-			</ComponentContext.Provider>
-		</TrackerContext.Provider>
+		</ErrorReportingContext.Provider>
 	);
 }
