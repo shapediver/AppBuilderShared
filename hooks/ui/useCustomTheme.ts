@@ -50,7 +50,6 @@ import {
 	Tooltip,
 	createTheme,
 	mergeThemeOverrides,
-	rem,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
 
@@ -563,6 +562,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// boldFontWeight: "500",
 				// strongFontWeight: "700",
 				// setHeadingFontSize: false,
+				// themeOverride: {},
 			}),
 			/**
 			 * NotificationWrapper
@@ -631,14 +631,21 @@ export const useCustomTheme = (props: Props = {}) => {
 				//w: 250,
 				//floating: false,
 				themeOverride: {
+					fontSizes: {
+						xs: "0.75rem",
+						sm: "0.75rem",
+						md: "0.875rem",
+						lg: "1rem",
+						xl: "1.125rem",
+					},
 					headings: {
 						sizes: {
-							h1: {fontSize: rem(18)},
-							h2: {fontSize: rem(16)},
-							h3: {fontSize: rem(14)},
-							h4: {fontSize: rem(12)},
-							h5: {fontSize: rem(10)},
-							h6: {fontSize: rem(8)},
+							h1: {fontSize: "1.125rem"},
+							h2: {fontSize: "1rem"},
+							h3: {fontSize: "0.875rem"},
+							h4: {fontSize: "0.75rem"},
+							h5: {fontSize: "0.625rem"},
+							h6: {fontSize: "0.5rem"},
 						},
 					},
 					components: {

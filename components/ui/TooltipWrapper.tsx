@@ -1,13 +1,13 @@
 import {
 	MantineThemeComponent,
 	MantineThemeOverride,
-	MantineThemeProvider,
 	Tooltip,
 	TooltipProps,
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
 import React from "react";
+import ThemeProvider from "../shapediver/ui/ThemeProvider";
 
 interface TooltipWrapperProps {
 	floating?: boolean;
@@ -65,7 +65,7 @@ export default function TooltipWrapper(
 	);
 
 	return themeOverride ? (
-		<MantineThemeProvider theme={themeOverride}>{c}</MantineThemeProvider>
+		<ThemeProvider theme={themeOverride}>{c}</ThemeProvider>
 	) : (
 		c
 	);

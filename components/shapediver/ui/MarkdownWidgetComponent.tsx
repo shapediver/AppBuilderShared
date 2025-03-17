@@ -7,6 +7,7 @@ import {
 	List,
 	MantineStyleProps,
 	MantineThemeComponent,
+	MantineThemeOverride,
 	Table,
 	Text,
 	Title,
@@ -20,6 +21,7 @@ import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
 import {visit} from "unist-util-visit";
 import classes from "./MarkdownWidgetComponent.module.css";
+import ThemeProvider from "./ThemeProvider";
 
 interface Props {
 	children: string;
@@ -30,6 +32,7 @@ interface StyleProps {
 	boldFontWeight: string;
 	strongFontWeight: string;
 	setHeadingFontSize: boolean;
+	themeOverride?: MantineThemeOverride;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
@@ -96,8 +99,13 @@ export default function MarkdownWidgetComponent(
 	props: Props & Partial<StyleProps>,
 ) {
 	const {children, ...rest} = props;
-	const {anchorTarget, boldFontWeight, strongFontWeight, setHeadingFontSize} =
-		useProps("MarkdownWidgetComponent", defaultStyleProps, rest);
+	const {
+		anchorTarget,
+		boldFontWeight,
+		strongFontWeight,
+		setHeadingFontSize,
+		themeOverride,
+	} = useProps("MarkdownWidgetComponent", defaultStyleProps, rest);
 
 	const styleProps: MantineStyleProps = {
 		mb: "xs",
@@ -304,5 +312,11 @@ export default function MarkdownWidgetComponent(
 		},
 	};
 
-	return <Markdown {...config}>{children}</Markdown>;
+	const markdown = <Markdown {...config}>{children}</Markdown>;
+
+	return themeOverride ? (
+		<ThemeProvider theme={themeOverride}>{markdown}</ThemeProvider>
+	) : (
+		markdown
+	);
 }

@@ -1,3 +1,4 @@
+import ThemeProvider from "@AppBuilderShared/components/shapediver/ui/ThemeProvider";
 import {
 	AppBuilderContainerContext,
 	AppBuilderTemplateContext,
@@ -10,7 +11,6 @@ import {
 import {
 	MantineThemeComponent,
 	MantineThemeOverride,
-	MantineThemeProvider,
 	useProps,
 } from "@mantine/core";
 import React, {useContext} from "react";
@@ -86,7 +86,7 @@ export default function AppBuilderContainerWrapper(
 	if (containerThemeOverrides[template]?.[name]) {
 		const theme = containerThemeOverrides[template]?.[name];
 
-		return <MantineThemeProvider theme={theme}>{c}</MantineThemeProvider>;
+		return <ThemeProvider theme={theme}>{c}</ThemeProvider>;
 	} else {
 		return c;
 	}

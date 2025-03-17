@@ -11,6 +11,7 @@ import {
 	ActionIcon,
 	Box,
 	Button,
+	createTheme,
 	FileButton,
 	Group,
 	MantineStyleProp,
@@ -22,6 +23,7 @@ import {
 	Text,
 	Textarea,
 	TextInput,
+	useMantineTheme,
 	useProps,
 } from "@mantine/core";
 import {IconRobot, IconUser} from "@tabler/icons-react";
@@ -244,6 +246,18 @@ export default function AppBuilderAgentWidgetComponent(
 	// Duplicate and reverse the chat history for display
 	const chatHistoryReverse = chatHistory.slice().reverse();
 
+	// use the theme, create one using lower font sizes for markdown output
+	const theme = useMantineTheme();
+	const markdownTheme = createTheme({
+		fontSizes: {
+			xs: theme.fontSizes.xs,
+			sm: theme.fontSizes.xs,
+			md: theme.fontSizes.sm,
+			lg: theme.fontSizes.md,
+			xl: theme.fontSizes.lg,
+		},
+	});
+
 	return (
 		<Paper {...paperProps} style={styleProps}>
 			{isReady && openaiApiKey !== "YOUR_OPENAI_API_KEY" ? (
@@ -333,7 +347,11 @@ export default function AppBuilderAgentWidgetComponent(
 										<Paper withBorder={false}>
 											{typeof message.content ===
 											"string" ? (
-												<MarkdownWidgetComponent>
+												<MarkdownWidgetComponent
+													themeOverride={
+														markdownTheme
+													}
+												>
 													{message.content}
 												</MarkdownWidgetComponent>
 											) : (
