@@ -10,7 +10,6 @@ import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/paramete
 import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
-import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
@@ -23,7 +22,7 @@ import {
 	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
-import React, {useContext, useMemo} from "react";
+import React, {useContext} from "react";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 
@@ -189,20 +188,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	const parameterProps = useSessionPropsParameter(namespace);
 	const exportProps = useSessionPropsExport(namespace);
 
-	// extract the additional sessions without instances
-	const sessionsWithoutInstances = useMemo(() => {
-		const sessions = settings?.sessions ?? [];
-		return sessions.filter((s) => !s.instance);
-	}, [settings]);
-
-	// we exclude the first session as it is handled by the useSessionWithAppBuilder hook
-	const secondarySessions = useMemo(() => {
-		return sessionsWithoutInstances.slice(1);
-	}, [sessionsWithoutInstances]);
-
-	// handle additional sessions without instances
-	useSessions(secondarySessions);
-
 	// create UI elements for containers
 	const containers: IAppBuilderTemplatePageProps = {
 		top: undefined,
@@ -282,11 +267,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				bottom={containers.bottom}
 			>
 				{ViewportComponent && (
-					<ViewportComponent
-						visibilitySessionIds={sessionsWithoutInstances.map(
-							(s) => s.id,
-						)}
-					>
+					<ViewportComponent>
 						{ViewportOverlayWrapper && (
 							<ViewportOverlayWrapper>
 								{ViewportIcons && <ViewportIcons />}
