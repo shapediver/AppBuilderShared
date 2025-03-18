@@ -70,6 +70,7 @@ export default function useResolveAppBuilderSettings(
 							session.slug!,
 							[
 								SdPlatformModelGetEmbeddableFields.BackendSystem,
+								SdPlatformModelGetEmbeddableFields.Tags,
 								SdPlatformModelGetEmbeddableFields.Ticket,
 								SdPlatformModelGetEmbeddableFields.TokenExportFallback,
 								SdPlatformModelGetEmbeddableFields.User,
