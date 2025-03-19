@@ -13,35 +13,40 @@ type Props = TextComponentProps & {
 	fontWeight: FontWeight;
 };
 
-const TextWeighted = forwardRef<Text, Props>(function TextWeighted(
-	props: Props,
-) {
-	const {fontWeight, className, fw, ...rest} = props;
+const TextWeighted = forwardRef<HTMLParagraphElement, Props>(
+	function TextWeighted(props: Props, ref) {
+		const {fontWeight, className, fw, ...rest} = props;
 
-	const fwClass = useMemo(() => {
-		switch (fontWeight) {
-			case "thin":
-				return classes.thin;
-			case "light":
-				return classes.light;
-			case "normal":
-				return classes.normal;
-			case "medium":
-				return classes.medium;
-			case "bold":
-				return classes.bold;
-		}
-	}, [fontWeight]);
-
-	return (
-		<Text
-			{...rest}
-			className={
-				fw ? className : className ? `${fwClass} ${className}` : fwClass
+		const fwClass = useMemo(() => {
+			switch (fontWeight) {
+				case "thin":
+					return classes.thin;
+				case "light":
+					return classes.light;
+				case "normal":
+					return classes.normal;
+				case "medium":
+					return classes.medium;
+				case "bold":
+					return classes.bold;
 			}
-			fw={fw}
-		/>
-	);
-});
+		}, [fontWeight]);
+
+		return (
+			<Text
+				{...rest}
+				className={
+					fw
+						? className
+						: className
+							? `${fwClass} ${className}`
+							: fwClass
+				}
+				fw={fw}
+				ref={ref}
+			/>
+		);
+	},
+);
 
 export default TextWeighted;
