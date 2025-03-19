@@ -420,7 +420,6 @@ export default function AppBuilderAgentWidgetComponent(
 							<Text size="sm">System prompt:</Text>
 							<Textarea
 								value={systemPromptComplete}
-								disabled
 								autosize
 								maxRows={15}
 							/>

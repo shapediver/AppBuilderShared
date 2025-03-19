@@ -1,4 +1,5 @@
 import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {IAppBuilderParameterRef} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
@@ -40,7 +41,7 @@ name: ${name}
 `;
 
 	if (ref?.overrides?.displayname && ref?.overrides?.displayname !== name) {
-		context += `displayname: ${ref.overrides.displayname}\n`;
+		context += `display name: ${ref.overrides.displayname}\n`;
 	}
 
 	const groupName = ref?.overrides?.group?.name || def.group?.name;
@@ -56,7 +57,7 @@ name: ${name}
 	context += `type: ${def.type}\n`;
 
 	if (def.type === ShapeDiverResponseParameterType.STRINGLIST) {
-		context += `choices: ${def.choices || "none"}\n`;
+		context += `list of options, each option on a new line, prefixed by the index of the option:\n${def.choices?.map((c, idx) => `\t${idx},"${c}"`).join("\n") || "none"}\n`;
 	} else if (
 		def.type === ShapeDiverResponseParameterType.EVEN ||
 		def.type === ShapeDiverResponseParameterType.ODD ||
@@ -69,11 +70,15 @@ name: ${name}
 		}
 		context += `max: ${def.max === null || def.max === undefined ? "none" : def.max}\n`;
 		if (def.type === ShapeDiverResponseParameterType.FLOAT) {
-			context += `decimalplaces: ${def.decimalplaces === null || def.decimalplaces === undefined ? "none" : def.decimalplaces}\n`;
+			context += `decimal places: ${def.decimalplaces === null || def.decimalplaces === undefined ? "none" : def.decimalplaces}\n`;
 		}
 	}
 
-	context += `currentValue: ${currentValue === null || currentValue === undefined ? "none" : currentValue}`;
+	if (def.type === ShapeDiverResponseParameterType.STRINGLIST) {
+		context += `current index: ${currentValue === null || currentValue === undefined ? "none" : currentValue}`;
+	} else {
+		context += `current value: ${currentValue === null || currentValue === undefined ? "none" : currentValue}`;
+	}
 
 	return context;
 }
@@ -90,17 +95,17 @@ function createParameterTypeContext(types: ShapeDiverResponseParameterType[]) {
 			if (type === ShapeDiverResponseParameterType.COLOR) {
 				return `If \`type\` is \`${ShapeDiverResponseParameterType.COLOR}\`, return the color value precisely in the following hexadecimal format: 0xRRGGBBAA where RR encodes the red channel, GG encodes the green channel, BB encodes the blue channel, AA encodes opacity.`;
 			} else if (type === ShapeDiverResponseParameterType.STRINGLIST) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.STRINGLIST}\`, return the index of the new choice from the available choices rather than the value of the choice. Don't tell the user about the index.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.STRINGLIST}\`, return the index of the new option from the list of options rather than the value of the option. Don't tell the user about the index.`;
 			} else if (type === ShapeDiverResponseParameterType.FLOAT) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.FLOAT}\`, ensure the suggested new floating point number is within the range defined by min and max and respects the number of decimalplaces.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.FLOAT}\`, ensure the new floating point number is within the range defined by min and max and respects the number of decimal places.`;
 			} else if (type === ShapeDiverResponseParameterType.INT) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.INT}\`, ensure the suggested new integer is within the range defined by min and max.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.INT}\`, ensure the new integer is within the range defined by min and max.`;
 			} else if (type === ShapeDiverResponseParameterType.ODD) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.ODD}\`, ensure the suggested new odd integer is within the range defined by min and max.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.ODD}\`, ensure the new odd integer is within the range defined by min and max.`;
 			} else if (type === ShapeDiverResponseParameterType.EVEN) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.EVEN}\`, ensure the suggested new even integer is within the range defined by min and max.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.EVEN}\`, ensure the new even integer is within the range defined by min and max.`;
 			} else if (type === ShapeDiverResponseParameterType.STRING) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.STRING}\`, ensure the length of the suggested new string does not exceed max.`;
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.STRING}\`, ensure the length of the new string does not exceed max.`;
 			}
 		})
 		.filter((s) => !!s)
@@ -195,20 +200,56 @@ type ChatHistoryType =
 const AGENT_RESPONSE_SCHEMA = z.object({
 	parameterUpdates: z
 		.array(
-			z.object({
-				id: z
-					.string()
-					.describe("The id of the parameter to be updated"),
-				name: z
-					.string()
-					.describe("The name of the parameter to be updated"),
-				newValue: z
-					.string()
-					.describe("The new value for the parameter"),
-				oldValue: z
-					.string()
-					.describe("The old value for the parameter"),
-			}),
+			z.discriminatedUnion("type", [
+				z.object({
+					type: z
+						.enum([
+							ShapeDiverResponseParameterType.BOOL,
+							ShapeDiverResponseParameterType.COLOR,
+							ShapeDiverResponseParameterType.EVEN,
+							ShapeDiverResponseParameterType.FLOAT,
+							ShapeDiverResponseParameterType.INT,
+							ShapeDiverResponseParameterType.ODD,
+							ShapeDiverResponseParameterType.STRING,
+						])
+						.describe("The type of the parameter to be updated"),
+					id: z
+						.string()
+						.describe("The id of the parameter to be updated"),
+					name: z
+						.string()
+						.describe("The name of the parameter to be updated"),
+					newValue: z
+						.string()
+						.describe("The new value for the parameter"),
+					oldValue: z
+						.string()
+						.describe("The old value for the parameter"),
+				}),
+				z.object({
+					type: z
+						.literal(ShapeDiverResponseParameterType.STRINGLIST)
+						.describe("The StringList parameter type"),
+					id: z
+						.string()
+						.describe(
+							"The id of the StringList parameter to be updated",
+						),
+					name: z
+						.string()
+						.describe(
+							"The name of the StringList parameter to be updated",
+						),
+					newIndex: z
+						.string()
+						.describe(
+							"The new 0-based index into the list of options",
+						),
+					oldIndex: z
+						.string()
+						.describe("The old index into the list of options"),
+				}),
+			]),
 		)
 		.describe("Array of parameters to update"),
 	summaryAndReasoning: z
@@ -254,15 +295,36 @@ async function setParameterValues(
 		indices.push(index);
 
 		const parameter = parameters[index];
-		if (!parameter.actions.isValid(update.newValue, false)) {
+
+		if (update.type !== parameter.definition.type) {
 			messages.push(
-				`New value ${update.newValue} is not valid for parameter with id ${update.id}.`,
+				`The type of the parameter with id ${update.id} is ${parameter.definition.type}, not ${update.type}.`,
 			);
 
 			return;
 		}
 
-		values[update.id] = update.newValue;
+		if (update.type === ShapeDiverResponseParameterType.STRINGLIST) {
+			if (!parameter.actions.isValid(update.newIndex, false)) {
+				messages.push(
+					`New index ${update.newIndex} is not valid for parameter with id ${update.id}.`,
+				);
+
+				return;
+			}
+
+			values[update.id] = update.newIndex;
+		} else {
+			if (!parameter.actions.isValid(update.newValue, false)) {
+				messages.push(
+					`New value ${update.newValue} is not valid for parameter with id ${update.id}.`,
+				);
+
+				return;
+			}
+
+			values[update.id] = update.newValue;
+		}
 	});
 
 	await batchUpdate(namespace, values);
@@ -325,6 +387,8 @@ export function useAgent(props: Props) {
 			batchParameterValueUpdate: state.batchParameterValueUpdate,
 		})),
 	);
+
+	const notifications = useContext(NotificationContext);
 
 	/** Chat history for display (user messages and assistant reasoning) */
 	const [chatHistory, setChatHistory] = useState<ChatHistoryType[]>([]);
@@ -602,11 +666,13 @@ I have provided a screenshot of the 3D view for context.`
 					name: "Parameter update errors",
 					metadata: {errors: msgs},
 				});
+				notifications.error({
+					title: "Invalid parameter updates",
+					message: msgs.join(" "),
+				});
 				// TODO handle errors, recurse llmInteraction with error messages
 			}
 			updateSpan?.end();
-
-			return `Updated parameters: ${parsedMessage.parameterUpdates.map((u) => `${u.id}: ${u.newValue}`).join(", ")} `;
 		},
 		[
 			batchParameterValueUpdate,
