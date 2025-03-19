@@ -2,6 +2,7 @@ import {MantineColor} from "@mantine/core";
 import React from "react";
 import SelectButtonFlexComponent from "./SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
+import SelectCarouselComponent from "./SelectCarouselComponent";
 import SelectChipGroupComponent from "./SelectChipGroupComponent";
 import SelectColorComponent from "./SelectColorComponent";
 import SelectDropDownComponent from "./SelectDropDownComponent";
@@ -24,6 +25,10 @@ export interface SelectComponentItemDataType {
 export interface SelectComponentSettings {
 	/** Optional width. */
 	width?: string | number;
+	/** Optional image fit property for carousel (cover or fill). */
+	imageFit?: "cover" | "fill";
+	/** Whether to show carousel indicators. */
+	withIndicators?: boolean;
 }
 
 export interface SelectComponentProps {
@@ -49,7 +54,8 @@ export type SelectComponentType =
 	| "dropdown"
 	| "color"
 	| "imagedropdown"
-	| "fullwidthcards";
+	| "fullwidthcards"
+	| "carousel";
 
 interface SelectComponentPropsExt extends SelectComponentProps {
 	/** Type of select component to use. */
@@ -75,6 +81,8 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 		return <SelectImageDropDownComponent {...rest} />;
 	} else if (type === "fullwidthcards") {
 		return <SelectFullWidthCards {...rest} />;
+	} else if (type === "carousel") {
+		return <SelectCarouselComponent {...rest} />;
 	} else {
 		return <SelectDropDownComponent {...rest} />;
 	}
