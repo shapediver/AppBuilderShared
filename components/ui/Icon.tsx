@@ -27,6 +27,8 @@ import {
 	IconCamera,
 	IconCameraOff,
 	IconCheck,
+	IconChevronLeft,
+	IconChevronRight,
 	IconCircleOff,
 	IconCopy,
 	IconDeviceDesktop,
@@ -245,6 +247,10 @@ const Icon = forwardRef<_TablerIconType, Props>(function Icon(
 			return <IconShare3 {...iconProps} />;
 		case IconTypeEnum.ShareOff:
 			return <IconShareOff {...iconProps} />;
+		case IconTypeEnum.ChevronLeft:
+			return <IconChevronLeft {...iconProps} />;
+		case IconTypeEnum.ChevronRight:
+			return <IconChevronRight {...iconProps} />;
 		case IconTypeEnum.ShoppingCartPlus:
 			return <IconShoppingCartPlus {...iconProps} />;
 		case IconTypeEnum.Sun:

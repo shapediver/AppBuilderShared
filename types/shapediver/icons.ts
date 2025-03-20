@@ -63,6 +63,8 @@ export enum IconTypeEnum {
 	Share2 = "share-2",
 	Share3 = "share-3",
 	ShareOff = "share-off",
+	ChevronLeft = "chevron-left",
+	ChevronRight = "chevron-right",
 	ShoppingCartPlus = "shopping-cart-plus",
 	Sun = "sun",
 	ThumbDown = "thumb-down",

@@ -1,16 +1,41 @@
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Carousel} from "@mantine/carousel";
 import "@mantine/carousel/styles.css";
-import {Card, Image, Text, ThemeIcon} from "@mantine/core";
-import {IconChevronLeft, IconChevronRight} from "@tabler/icons-react";
+import {
+	Box,
+	Card,
+	Image,
+	MantineThemeComponent,
+	MantineThemeOverride,
+	StyleProp,
+	Text,
+	useProps,
+} from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
+import ThemeProvider from "../../ui/ThemeProvider";
 import classes from "./SelectCarouselComponent.module.css";
 import {SelectComponentProps} from "./SelectComponent";
 
-export interface SelectCarouselSettings {
-	/** Optional image fit property (cover or fill). */
-	imageFit?: "cover" | "fill";
-	/** Whether to show carousel indicators. */
-	withIndicators?: boolean;
+interface StyleProps {
+	slideSize: StyleProp<string | number>;
+	slideGap: StyleProp<string | number>;
+	themeOverride?: MantineThemeOverride;
+}
+
+export const defaultStyleProps: Partial<StyleProps> = {
+	slideSize: {base: "100%", "200px": "50%", "500px": "33.333333%"},
+	slideGap: {base: 0, "200px": "md"},
+};
+
+type SelectCarouselComponentThemePropsType = Partial<StyleProps>;
+
+export function SelectCarouselComponentThemeProps(
+	props: SelectCarouselComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
 }
 
 /**
@@ -18,8 +43,22 @@ export interface SelectCarouselSettings {
  * Images can be displayed with or without title/description.
  * The carousel is responsive based on container width.
  */
-export default function SelectCarouselComponent(props: SelectComponentProps) {
-	const {value, onChange, items, disabled, itemData, settings} = props;
+export default function SelectCarouselComponent(
+	props: SelectComponentProps & SelectCarouselComponentThemePropsType,
+) {
+	// style properties
+	const {
+		value,
+		onChange,
+		items,
+		disabled,
+		itemData,
+		settings,
+		slideSize,
+		slideGap,
+		themeOverride,
+	} = useProps("SelectCarouselComponent", defaultStyleProps, props);
+
 	const imageFit = settings?.imageFit || "cover";
 	const withIndicators = settings?.withIndicators !== false;
 
@@ -31,7 +70,7 @@ export default function SelectCarouselComponent(props: SelectComponentProps) {
 
 				return {
 					value: item,
-					label: data?.displayname,
+					label: data?.displayname || item,
 					description: data?.description,
 					imageUrl: data?.imageUrl,
 					color: data?.color,
@@ -61,22 +100,33 @@ export default function SelectCarouselComponent(props: SelectComponentProps) {
 		return item.label || item.description;
 	}, []);
 
+	const getText = useCallback((item: (typeof carouselItems)[0]) => {
+		const text = (
+			<div>
+				{item.label && <Text size="md">{item.label}</Text>}
+				{item.description && (
+					<Text c="dimmed" size="sm">
+						{item.description}
+					</Text>
+				)}
+			</div>
+		);
+
+		return themeOverride ? (
+			<ThemeProvider theme={themeOverride}>{text}</ThemeProvider>
+		) : (
+			text
+		);
+	}, []);
+
 	return (
 		<Carousel
 			withIndicators={withIndicators}
 			type="container"
-			slideSize={{base: "100%", "200px": "50%", "500px": "33.333333%"}}
-			slideGap={{base: 0, "200px": "md"}}
-			nextControlIcon={
-				<ThemeIcon radius="xl">
-					<IconChevronRight size={16} />
-				</ThemeIcon>
-			}
-			previousControlIcon={
-				<ThemeIcon radius="xl">
-					<IconChevronLeft size={16} />
-				</ThemeIcon>
-			}
+			slideSize={slideSize}
+			slideGap={slideGap}
+			nextControlIcon={<Icon type={IconTypeEnum.ChevronRight} />}
+			previousControlIcon={<Icon type={IconTypeEnum.ChevronLeft} />}
 			loop
 			align="start"
 			classNames={{
@@ -86,7 +136,10 @@ export default function SelectCarouselComponent(props: SelectComponentProps) {
 		>
 			{carouselItems.map((item) => (
 				<Carousel.Slide key={item.value}>
-					<section className={classes.cardWrapper}>
+					<Box
+						p={"3px"} /* 1px for border + 2px for outline */
+						h="100%"
+					>
 						<Card
 							className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === item.value ? classes.cardSelected : ""}`}
 							onClick={() =>
@@ -108,21 +161,9 @@ export default function SelectCarouselComponent(props: SelectComponentProps) {
 								</div>
 							)}
 
-							{hasText(item) && (
-								<div>
-									{item.label &&
-										item.label !== item.value && (
-											<Text>{item.label}</Text>
-										)}
-									{item.description && (
-										<Text c="dimmed" size="sm">
-											{item.description}
-										</Text>
-									)}
-								</div>
-							)}
+							{hasText(item) && getText(item)}
 						</Card>
-					</section>
+					</Box>
 				</Carousel.Slide>
 			))}
 		</Carousel>
