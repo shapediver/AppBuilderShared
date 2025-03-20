@@ -497,7 +497,7 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 
 		// get the output update callbacks where the new value is not the same as the previous value
 		Object.keys(combinedIds).forEach((sessionId) => {
-			Object.keys(combinedIds[sessionId]).forEach((outputId) => {
+			combinedIds[sessionId].forEach((outputId) => {
 				// case 1: the output update callback is new
 				// it's not in the previous state
 				if (
