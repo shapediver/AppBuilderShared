@@ -16,6 +16,12 @@ export default function ThemeProvider(props: MantineThemeProviderProps) {
 	const {theme, children, ...rest} = props;
 
 	const style: CSSProperties = {
+		/** Make sure we use exactly the size and position of our parent */
+		position: "absolute",
+		top: 0,
+		right: 0,
+		bottom: 0,
+		left: 0,
 		/** Heading font sizes */
 		...(
 			Object.keys(theme?.headings?.sizes ?? {}) as Array<
