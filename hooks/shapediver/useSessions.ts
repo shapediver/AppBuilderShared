@@ -49,9 +49,11 @@ export function useSessions(props: IUseSessionDto[]) {
 			props.map((p, index) => {
 				// create an error handler for the separate session
 				const setError = (error: Error) => {
-					const newErrors = [...errors];
-					newErrors[index] = error;
-					setErrors(newErrors);
+					setErrors((prevErrors) => {
+						const newErrors = [...prevErrors];
+						newErrors[index] = error;
+						return newErrors;
+					});
 				};
 
 				promises.push(
@@ -86,12 +88,14 @@ export function useSessions(props: IUseSessionDto[]) {
 				const promises: Promise<void>[] = [];
 
 				// close each session
-				props.map((p) => {
+				props.map((p, index) => {
 					// create an error handler for the separate session
 					const setError = (error: Error) => {
-						const newErrors = [...errors];
-						newErrors[props.indexOf(p)] = error;
-						setErrors(newErrors);
+						setErrors((prevErrors) => {
+							const newErrors = [...prevErrors];
+							newErrors[index] = error;
+							return newErrors;
+						});
 					};
 
 					promises.push(closeSession(p.id, {onError: setError}));
