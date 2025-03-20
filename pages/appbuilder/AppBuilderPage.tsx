@@ -10,6 +10,7 @@ import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/paramete
 import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
+import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
@@ -22,7 +23,7 @@ import {
 	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
-import React, {useContext} from "react";
+import React, {useContext, useMemo} from "react";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 
@@ -173,20 +174,39 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		hasSession,
 	} = useAppBuilderSettings(defaultSessionDto);
 
-	// for now we only make use of the first session in the settings
-	const sessionDto = settings ? settings.sessions[0] : undefined;
+	// extract the various session types
+	const {controllerSession, secondarySessions} = useMemo(() => {
+		const sessions = settings?.sessions ?? [];
+		const instancedSessions = sessions.filter((s) => s.instance);
+		instancedSessions.forEach((s) => {
+			s.loadOutputs = false;
+		});
+
+		return {
+			controllerSession: sessions[0],
+			secondarySessions: sessions.filter((s) => !s.instance).slice(1),
+			instancedSessions: sessions.filter((s) => s.instance),
+		};
+	}, [settings]);
+
 	const {
 		namespace,
 		sessionApi,
 		error: appBuilderError,
 		hasAppBuilderOutput,
 		appBuilderData,
-	} = useSessionWithAppBuilder(sessionDto, settings?.appBuilderOverride);
+	} = useSessionWithAppBuilder(
+		controllerSession,
+		settings?.appBuilderOverride,
+	);
 	const error = settingsError ?? appBuilderError;
 
 	// get props for fallback parameters
 	const parameterProps = useSessionPropsParameter(namespace);
 	const exportProps = useSessionPropsExport(namespace);
+
+	// handle additional sessions without instances
+	useSessions(secondarySessions);
 
 	// create UI elements for containers
 	const containers: IAppBuilderTemplatePageProps = {
@@ -267,7 +287,11 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				bottom={containers.bottom}
 			>
 				{ViewportComponent && (
-					<ViewportComponent>
+					<ViewportComponent
+						visibilitySessionIds={secondarySessions.map(
+							(s) => s.id,
+						)}
+					>
 						{ViewportOverlayWrapper && (
 							<ViewportOverlayWrapper>
 								{ViewportIcons && <ViewportIcons />}

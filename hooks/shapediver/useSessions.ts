@@ -18,8 +18,11 @@ import {useShallow} from "zustand/react/shallow";
  * @returns
  */
 export function useSessions(props: IUseSessionDto[]) {
-	const syncSessions = useShapeDiverStoreSession(
-		(state) => state.syncSessions,
+	const {createSession, closeSession} = useShapeDiverStoreSession(
+		useShallow((state) => ({
+			createSession: state.createSession,
+			closeSession: state.closeSession,
+		})),
 	);
 	const {
 		addSession: addSessionParameters,
@@ -33,13 +36,32 @@ export function useSessions(props: IUseSessionDto[]) {
 	const [sessionApis, setSessionApis] = useState<(ISessionApi | undefined)[]>(
 		[],
 	);
+	const [errors, setErrors] = useState<(Error | undefined)[]>([]);
 	const promiseChain = useRef(Promise.resolve());
 
-	const errorReporting = useEventTracking();
+	const eventTracking = useEventTracking();
 
 	useEffect(() => {
 		promiseChain.current = promiseChain.current.then(async () => {
-			const apis = await syncSessions(props);
+			const promises: Promise<ISessionApi | undefined>[] = [];
+
+			// create a session for each session definition
+			props.map((p, index) => {
+				// create an error handler for the separate session
+				const setError = (error: Error) => {
+					const newErrors = [...errors];
+					newErrors[index] = error;
+					setErrors(newErrors);
+				};
+
+				promises.push(
+					createSession(
+						{throwOnCustomizationError: true, ...p},
+						{onError: setError},
+					),
+				);
+			});
+			const apis = await Promise.all(promises);
 			setSessionApis(apis);
 
 			apis.map((api, index) => {
@@ -53,7 +75,7 @@ export function useSessions(props: IUseSessionDto[]) {
 						// otherwise fall back to acceptRejectMode defined by the viewer settings
 						dto.acceptRejectMode ?? api.commitParameters,
 						dto.jwtToken,
-						errorReporting,
+						eventTracking,
 					);
 				}
 			});
@@ -61,6 +83,23 @@ export function useSessions(props: IUseSessionDto[]) {
 
 		return () => {
 			promiseChain.current = promiseChain.current.then(async () => {
+				const promises: Promise<void>[] = [];
+
+				// close each session
+				props.map((p) => {
+					// create an error handler for the separate session
+					const setError = (error: Error) => {
+						const newErrors = [...errors];
+						newErrors[props.indexOf(p)] = error;
+						setErrors(newErrors);
+					};
+
+					promises.push(closeSession(p.id, {onError: setError}));
+				});
+				await Promise.all(promises);
+
+				setSessionApis([]);
+				setErrors([]);
 				props.map((p) => {
 					const {registerParametersAndExports = true} = p;
 					if (registerParametersAndExports) {
@@ -73,5 +112,6 @@ export function useSessions(props: IUseSessionDto[]) {
 
 	return {
 		sessionApis,
+		errors,
 	};
 }
