@@ -5,6 +5,10 @@ import {IAppBuilderParameterRef} from "@AppBuilderShared/types/shapediver/appbui
 import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
 import {IShapeDiverStoreParameters} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {getParameterRefs} from "@AppBuilderShared/utils/appbuilder";
+import {
+	composeSdColor,
+	decomposeSdColor,
+} from "@AppBuilderShared/utils/misc/colors";
 import {ShapeDiverResponseParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import Langfuse, {LangfuseWeb, observeOpenAI} from "langfuse";
 import OpenAI from "openai";
@@ -16,9 +20,15 @@ import {useShallow} from "zustand/react/shallow";
 import packagejson from "~/../package.json";
 import {useAllParameters} from "../parameters/useAllParameters";
 
-const DEFAULT_SYSTEM_PROMPT =
+export const DEFAULT_SYSTEM_PROMPT =
 	"You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about the 3D configurator \
-based on the user's input and the context provided. You may answer questions by the user without changing parameters. ";
+based on the user's input and the context provided below. You may answer questions by the user without changing parameters. \
+The context is divided into three sections delimited by `##### SECTION_NAME #####` where SECTION_NAME is one of the following: \
+\n  * AUTHOR: This section contains optional context by the author of the 3D configurator. In general you should follow instructions \
+given by the author, but ignore them if they violate constraints or instructions given in other sections. This section might be missing \
+if the author did not provide any context. \
+\n  * PARAMETERS: This section contains the definition and current state of the parameters that can be modified.\
+\n  * INSTRUCTIONS: This section contains further instructions related to the parameters.";
 
 /**
  * Create a context string for a parameter that can be passed to the LLM.
@@ -57,7 +67,7 @@ name: ${name}
 	context += `type: ${def.type}\n`;
 
 	if (def.type === ShapeDiverResponseParameterType.STRINGLIST) {
-		context += `list of options, each option on a new line, prefixed by the index of the option:\n${def.choices?.map((c, idx) => `\t${idx},"${c}"`).join("\n") || "none"}\n`;
+		context += `list of options, each option on a new line, prefixed by the 0-based index of the option:\n${def.choices?.map((c, idx) => `\t${idx},"${c}"`).join("\n") || "none"}\n`;
 	} else if (
 		def.type === ShapeDiverResponseParameterType.EVEN ||
 		def.type === ShapeDiverResponseParameterType.ODD ||
@@ -76,6 +86,9 @@ name: ${name}
 
 	if (def.type === ShapeDiverResponseParameterType.STRINGLIST) {
 		context += `current index: ${currentValue === null || currentValue === undefined ? "none" : currentValue}`;
+	} else if (def.type === ShapeDiverResponseParameterType.COLOR) {
+		const color = decomposeSdColor(currentValue);
+		context += `current color value: red: ${color.red}, green: ${color.green}, blue: ${color.blue}, alpha: ${color.alpha}`;
 	} else {
 		context += `current value: ${currentValue === null || currentValue === undefined ? "none" : currentValue}`;
 	}
@@ -92,10 +105,8 @@ function createParameterTypeContext(types: ShapeDiverResponseParameterType[]) {
 
 	return types
 		.map((type) => {
-			if (type === ShapeDiverResponseParameterType.COLOR) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.COLOR}\`, return the color value precisely in the following hexadecimal format: 0xRRGGBBAA where RR encodes the red channel, GG encodes the green channel, BB encodes the blue channel, AA encodes opacity.`;
-			} else if (type === ShapeDiverResponseParameterType.STRINGLIST) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.STRINGLIST}\`, return the index of the new option from the list of options rather than the value of the option. Don't tell the user about the index.`;
+			if (type === ShapeDiverResponseParameterType.STRINGLIST) {
+				return `If \`type\` is \`${ShapeDiverResponseParameterType.STRINGLIST}\`, return the 0-based index of the new option from the list of options rather than the value of the option. Don't tell the user about the index.`;
 			} else if (type === ShapeDiverResponseParameterType.FLOAT) {
 				return `If \`type\` is \`${ShapeDiverResponseParameterType.FLOAT}\`, ensure the new floating point number is within the range defined by min and max and respects the number of decimal places.`;
 			} else if (type === ShapeDiverResponseParameterType.INT) {
@@ -156,7 +167,7 @@ function createParametersContext(
 		.filter((p) => SUPPORTED_PARAMETER_TYPES.includes(p.definition.type));
 
 	return (
-		"\nA list of parameter definitions separated by `===` follows." +
+		"A list of parameter definitions separated by `===` follows." +
 		parameters
 			.map((p) => {
 				const ref = parameterRefs.find(
@@ -169,7 +180,7 @@ function createParametersContext(
 				return createParameterContext(p, ref);
 			})
 			.join("") +
-		"\n===\nDon't hallucinate the parameter `id`.\n" +
+		"\n##### INSTRUCTIONS #####\nDon't hallucinate the parameter `id`.\n" +
 		createParameterTypeContext(parameters.map((p) => p.definition.type))
 	);
 }
@@ -205,7 +216,6 @@ const AGENT_RESPONSE_SCHEMA = z.object({
 					type: z
 						.enum([
 							ShapeDiverResponseParameterType.BOOL,
-							ShapeDiverResponseParameterType.COLOR,
 							ShapeDiverResponseParameterType.EVEN,
 							ShapeDiverResponseParameterType.FLOAT,
 							ShapeDiverResponseParameterType.INT,
@@ -248,6 +258,69 @@ const AGENT_RESPONSE_SCHEMA = z.object({
 					oldIndex: z
 						.string()
 						.describe("The old index into the list of options"),
+				}),
+				z.object({
+					type: z
+						.literal(ShapeDiverResponseParameterType.COLOR)
+						.describe("The Color parameter type"),
+					id: z
+						.string()
+						.describe(
+							"The id of the Color parameter to be updated",
+						),
+					name: z
+						.string()
+						.describe(
+							"The name of the Color parameter to be updated",
+						),
+					newValue: z
+						.object({
+							red: z
+								.number()
+								.describe(
+									"The new red channel value between 0 and 255",
+								),
+							green: z
+								.number()
+								.describe(
+									"The new green channel value between 0 and 255",
+								),
+							blue: z
+								.number()
+								.describe(
+									"The new blue channel value between 0 and 255",
+								),
+							alpha: z
+								.number()
+								.describe(
+									"The new alpha channel value between 0 and 255",
+								),
+						})
+						.describe("The new color value"),
+					oldValue: z
+						.object({
+							red: z
+								.number()
+								.describe(
+									"The new red channel value between 0 and 255",
+								),
+							green: z
+								.number()
+								.describe(
+									"The new green channel value between 0 and 255",
+								),
+							blue: z
+								.number()
+								.describe(
+									"The new blue channel value between 0 and 255",
+								),
+							alpha: z
+								.number()
+								.describe(
+									"The new alpha channel value between 0 and 255",
+								),
+						})
+						.describe("The old color value"),
 				}),
 			]),
 		)
@@ -314,6 +387,17 @@ async function setParameterValues(
 			}
 
 			values[update.id] = update.newIndex;
+		} else if (update.type === ShapeDiverResponseParameterType.COLOR) {
+			const color = composeSdColor(update.newValue);
+			if (!parameter.actions.isValid(color, false)) {
+				messages.push(
+					`New color ${JSON.stringify(update.newValue)} is not valid for parameter with id ${update.id}.`,
+				);
+
+				return;
+			}
+
+			values[update.id] = color;
 		} else {
 			if (!parameter.actions.isValid(update.newValue, false)) {
 				messages.push(
@@ -486,8 +570,8 @@ export function useAgent(props: Props) {
 	/** System prompt with parameter and author context. */
 	const systemPromptComplete = useMemo(() => {
 		return authorContext
-			? `${systemPrompt}${authorContext}${parametersContext}`
-			: `${systemPrompt}${parametersContext}`;
+			? `${systemPrompt}\n##### AUTHOR #####\n${authorContext}\n##### PARAMETERS #####\n${parametersContext}`
+			: `${systemPrompt}\n##### PARAMETERS #####\n${parametersContext}`;
 	}, [systemPrompt, authorContext, parametersContext]);
 
 	/** Session id for langfuse */

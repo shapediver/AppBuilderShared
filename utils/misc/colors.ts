@@ -50,3 +50,46 @@ export function convertToSdColor(val: string, format: ColorFormatType) {
 
 	throw new Error(`Invalid color type "${format}".`);
 }
+
+/** Decomposed color format */
+export type DecomposedColorFormat = {
+	/** Red channel value between 0 and 255 */
+	red: number;
+	/** Green channel value between 0 and 255 */
+	green: number;
+	/** Blue channel value between 0 and 255 */
+	blue: number;
+	/** Alpha channel value between 0 and 255 */
+	alpha: number;
+};
+
+/**
+ * Decompose a color string from the ShapeDiver format into its components.
+ *
+ * @param val - Color in ShapeDiver format ("0xRRGGBBAA")
+ * @returns - Color in decomposed format
+ */
+export function decomposeSdColor(val: string): DecomposedColorFormat {
+	const hex = val.replace("0x", "");
+	return {
+		red: parseInt(hex.substring(0, 2), 16),
+		green: parseInt(hex.substring(2, 4), 16),
+		blue: parseInt(hex.substring(4, 6), 16),
+		alpha: parseInt(hex.substring(6, 8), 16),
+	};
+}
+
+/**
+ * Compose a color string in ShapeDiver format fromt its components.
+ *
+ * @param val - Color in decomposed format
+ * @returns - Color in ShapeDiver format
+ */
+export function composeSdColor(val: DecomposedColorFormat) {
+	const r = val.red.toString(16).padStart(2, "0");
+	const g = val.green.toString(16).padStart(2, "0");
+	const b = val.blue.toString(16).padStart(2, "0");
+	const a = val.alpha.toString(16).padStart(2, "0");
+
+	return `0x${r}${g}${b}${a}`;
+}

@@ -2,7 +2,10 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
-import {useAgent} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAgent";
+import {
+	DEFAULT_SYSTEM_PROMPT,
+	useAgent,
+} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAgent";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
@@ -107,7 +110,7 @@ export default function AppBuilderAgentWidgetComponent(
 			urlParams.get("debug") === "true",
 		parameterNamesToInclude,
 		parameterNamesToExclude,
-		systemPrompt,
+		systemPrompt: _systemPrompt,
 		authorContext: _authorContext,
 		maxHistory = urlParams.get("maxHistory") !== null
 			? parseInt(urlParams.get("maxHistory")!)
@@ -140,6 +143,11 @@ export default function AppBuilderAgentWidgetComponent(
 	useEffect(() => {
 		setAuthorContext(_authorContext ?? context);
 	}, [context, _authorContext]);
+
+	/** System prompt */
+	const [systemPrompt, setSystemPrompt] = useState<string | undefined>(
+		_systemPrompt ?? DEFAULT_SYSTEM_PROMPT,
+	);
 
 	// Hook for getting screenshots from viewport
 	const {viewportId} = useViewportId();
@@ -209,6 +217,10 @@ export default function AppBuilderAgentWidgetComponent(
 		model,
 		namespace,
 		openaiApiKey,
+		parameterNamesToExclude:
+			parameterNamesToExclude ?? parameterNamesExclude,
+		parameterNamesToInclude: parameterNamesToInclude ?? parameterNames,
+		systemPrompt,
 	});
 
 	/** Handler for user query */
@@ -408,6 +420,15 @@ export default function AppBuilderAgentWidgetComponent(
 					</ScrollArea>
 					{debug ? (
 						<>
+							<Text size="sm">System prompt:</Text>
+							<Textarea
+								value={systemPrompt}
+								onChange={(event) =>
+									setSystemPrompt(event.currentTarget.value)
+								}
+								autosize
+								maxRows={10}
+							/>
 							<Text size="sm">Context from Grasshopper:</Text>
 							<Textarea
 								value={authorContext}
@@ -417,7 +438,7 @@ export default function AppBuilderAgentWidgetComponent(
 								autosize
 								maxRows={10}
 							/>
-							<Text size="sm">System prompt:</Text>
+							<Text size="sm">Combined prompt:</Text>
 							<Textarea
 								value={systemPromptComplete}
 								autosize
