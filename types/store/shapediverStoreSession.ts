@@ -62,17 +62,6 @@ export interface IShapeDiverStoreSession {
 	) => Promise<void>;
 
 	/**
-	 * Synchronize the sessions with the given dtos, create and close sessions as required.
-	 * @param sessionsDtos
-	 * @param callbacks
-	 * @returns
-	 */
-	syncSessions: (
-		sessionDtos: SessionCreateDto[],
-		callbacks?: IShapeDiverStoreSessionCallbacks,
-	) => Promise<(ISessionApi | undefined)[]>;
-
-	/**
 	 * The session update callbacks.
 	 * Stores the callbacks for each session id with the corresponding callback id to be able to remove them.
 	 *

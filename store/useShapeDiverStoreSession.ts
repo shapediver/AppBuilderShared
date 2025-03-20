@@ -17,11 +17,6 @@ import {devtools} from "zustand/middleware";
 /**
  * Helper for comparing sessions.
  */
-type ISessionCompare = {id: string; identifier: string; dto?: SessionCreateDto};
-
-/**
- * Helper for comparing sessions.
- */
 const createSessionIdentifier = function (
 	parameters: Pick<SessionCreateDto, "id">,
 ) {
@@ -140,83 +135,6 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 					false,
 					"closeSession",
 				);
-			},
-
-			syncSessions: async (
-				sessionDtos: SessionCreateDto[],
-				callbacks,
-			): Promise<(ISessionApi | undefined)[]> => {
-				const {sessions, createSession, closeSession} = get();
-				// Helps to skip typescript filter error
-				const isSession = (
-					session: ISessionCompare | undefined,
-				): session is ISessionCompare => !!session;
-				// Get existing sessions
-				const existingSessionData: ISessionCompare[] = Object.values(
-					sessions,
-				)
-					.map((session) =>
-						session
-							? {
-									id: session.id,
-									identifier:
-										createSessionIdentifier(session),
-								}
-							: undefined,
-					)
-					.filter(isSession);
-				// Convert SessionCreateDto[] to the ISessionCompare[]
-				const requestedSessionData = sessionDtos.map((sessionDto) => ({
-					id: sessionDto.id,
-					identifier: createSessionIdentifier(sessionDto),
-					data: sessionDto,
-				}));
-				// Find sessions to delete
-				const sessionsToDelete = existingSessionData.filter(
-					(sessionCompareExist) => {
-						return (
-							requestedSessionData.findIndex(
-								(sessionCompareNew) => {
-									return (
-										sessionCompareNew.identifier ===
-										sessionCompareExist.identifier
-									);
-								},
-							) === -1
-						);
-					},
-				);
-
-				// Find sessions to create
-				const sessionsToCreate = requestedSessionData.filter(
-					(sessionCompareNew) => {
-						return (
-							existingSessionData.findIndex(
-								(sessionCompareExist) =>
-									sessionCompareExist.identifier ===
-									sessionCompareNew.identifier,
-							) === -1
-						);
-					},
-				);
-
-				// promises
-				const sessionsToDeletePromises = sessionsToDelete.map(
-					(sessionToDelete) => closeSession(sessionToDelete.id),
-				);
-				const sessionsToCreatePromise = sessionsToCreate.map(
-					(sessionDataNew) =>
-						createSession(sessionDataNew.data, callbacks),
-				);
-
-				await Promise.all([
-					...sessionsToDeletePromises,
-					...sessionsToCreatePromise,
-				]);
-
-				const sessionApis = get().sessions;
-
-				return sessionDtos.map((dto) => sessionApis[dto.id]);
 			},
 
 			sessionUpdateCallbacks: {},
