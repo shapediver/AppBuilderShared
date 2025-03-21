@@ -27,7 +27,7 @@ export interface IShapeDiverExportActions {
 	}): Promise<ShapeDiverResponseExport>;
 
 	/**
-	 * Fetch the export from the given URL. Use is in case the model is configured to require a JWT for every request.
+	 * Fetch the export from the given URL. Use this in case the model is configured to require a JWT for every request.
 	 *
 	 * @param url The URL of the export to fetch.
 	 */

@@ -1,12 +1,13 @@
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {Button, Loader} from "@mantine/core";
+import {Button} from "@mantine/core";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import {fetchFileWithToken} from "@shapediver/viewer.utils.mime-type";
-import React, {useState} from "react";
+import React, {useCallback, useContext, useState} from "react";
 
 /**
  * Functional component that creates a button that triggers an export.
@@ -17,7 +18,9 @@ import React, {useState} from "react";
 export default function ExportButtonComponent(props: PropsExport) {
 	const {definition, actions} = useExport(props);
 
-	const exportRequest = async () => {
+	const notifications = useContext(NotificationContext);
+
+	const exportRequest = useCallback(async () => {
 		// request the export
 		const response = await actions.request();
 
@@ -28,18 +31,48 @@ export default function ExportButtonComponent(props: PropsExport) {
 				response.content[0] &&
 				response.content[0].href
 			) {
-				const url = response.content[0].href;
+				const content = response.content[0];
+				const url = content.href;
+				const filename = `${response.filename}.${content.format}`;
+				const sizemsg = content.size
+					? ` (${Math.ceil(content.size / 1000)}kB)`
+					: "";
+				notifications.success({
+					message: `Downloading file ${filename}${sizemsg}`,
+				});
 				const res = await actions.fetch(url);
-				await fetchFileWithToken(
-					res,
-					`${response.filename}.${response.content[0].format}`,
-				);
+				await fetchFileWithToken(res, filename);
+			} else if (
+				response.content &&
+				response.content.length === 0 &&
+				response.msg
+			) {
+				notifications.success({
+					message: response.msg,
+				});
+			}
+		} else if (definition.type === EXPORT_TYPE.EMAIL) {
+			// if the export is an email export, show the resulting message
+			if (response.result) {
+				const result = response.result;
+				if (result.err) {
+					notifications.error({
+						message: result.err,
+					});
+				}
+				if (result.msg) {
+					notifications.success({
+						message: result.msg,
+					});
+				}
 			}
 		}
-	};
+	}, [actions, definition.type]);
+
+	const [requestingExport, setRequestingExport] = useState(false);
 
 	// callback for when the export button has been clicked
-	const onClick = async () => {
+	const onClick = useCallback(async () => {
 		// set the requestingExport true to display a loading icon
 		setRequestingExport(true);
 
@@ -47,9 +80,7 @@ export default function ExportButtonComponent(props: PropsExport) {
 
 		// set the requestingExport false to remove the loading icon
 		setRequestingExport(false);
-	};
-
-	const [requestingExport, setRequestingExport] = useState(false);
+	}, [exportRequest]);
 
 	return (
 		<>
@@ -66,12 +97,12 @@ export default function ExportButtonComponent(props: PropsExport) {
 							)
 						}
 						onClick={onClick}
+						loading={requestingExport}
 					>
 						{definition.type === EXPORT_TYPE.DOWNLOAD
 							? "Download File"
 							: "Send Email"}
 					</Button>
-					{requestingExport && <Loader />}
 				</>
 			)}
 		</>
