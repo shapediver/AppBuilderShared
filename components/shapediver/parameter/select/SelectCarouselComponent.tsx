@@ -20,12 +20,14 @@ import {SelectComponentProps} from "./SelectComponent";
 interface StyleProps {
 	slideSize: StyleProp<string | number>;
 	slideGap: StyleProp<string | number>;
+	height: string | number;
 	themeOverride?: MantineThemeOverride;
 }
 
 export const defaultStyleProps: Partial<StyleProps> = {
 	slideSize: {base: "100%", "200px": "50%", "500px": "33.333333%"},
 	slideGap: {base: 0, "200px": "md"},
+	height: "auto",
 };
 
 type SelectCarouselComponentThemePropsType = Partial<StyleProps>;
@@ -56,6 +58,7 @@ export default function SelectCarouselComponent(
 		settings,
 		slideSize,
 		slideGap,
+		height,
 		themeOverride,
 	} = useProps("SelectCarouselComponent", defaultStyleProps, props);
 
@@ -123,6 +126,7 @@ export default function SelectCarouselComponent(
 		<Carousel
 			withIndicators={withIndicators}
 			type="container"
+			height={height}
 			slideSize={slideSize}
 			slideGap={slideGap}
 			nextControlIcon={<Icon type={IconTypeEnum.ChevronRight} />}

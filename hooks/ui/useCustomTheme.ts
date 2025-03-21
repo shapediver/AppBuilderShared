@@ -628,6 +628,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			SelectCarouselComponent: SelectCarouselComponentThemeProps({
 				//slideSize: {base: "100%", "200px": "50%", "500px": "33.333333%"},
 				//slideGap: {base: 0, "200px": "md"},
+				// height: "auto",
 				// themeOverride: {
 				// 	fontSizes: {
 				// 		sm: "0.875rem",
