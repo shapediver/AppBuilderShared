@@ -510,7 +510,7 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 				// case 2: the output update callback is removed
 				// it's not in the current state
 				if (
-					!state.outputUpdateCallbacks[sessionId] &&
+					!state.outputUpdateCallbacks[sessionId] ||
 					!state.outputUpdateCallbacks[sessionId][outputId]
 				) {
 					outputsThatNeedUpdate.push({sessionId, outputId});
