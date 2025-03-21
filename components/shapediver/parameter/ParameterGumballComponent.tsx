@@ -6,7 +6,7 @@ import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {Button, Group, Loader, Stack, Text} from "@mantine/core";
+import {Box, Button, Flex, Group, Loader, Stack, Text} from "@mantine/core";
 import {
 	GumballParameterValue,
 	IGumballParameterProps,
@@ -175,35 +175,37 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 	 */
 	const contentActive = (
 		<Stack>
-			<Button
-				justify="space-between"
-				fullWidth
-				disabled={disabled}
-				className={classes.interactionButton}
-				rightSection={<Loader size="sm" type="dots" />}
-				onClick={resetTransformation}
-			>
-				<Stack>
-					<TextWeighted
-						size="sm"
-						fontWeight="medium"
-						ta="left"
-						className={classes.interactionText}
-					>
-						{gumballProps.prompt?.activeTitle ??
-							`Currently transformed: ${transformedNodeNames.length}`}
-					</TextWeighted>
-					<Text
-						size="sm"
-						fs="italic"
-						ta="left"
-						className={classes.interactionText}
-					>
-						{gumballProps.prompt?.activeText ??
-							"Select objects to transform"}
-					</Text>
-				</Stack>
-			</Button>
+			<Group justify="space-between" className={classes.interactionMain}>
+				<Flex align="center" justify="flex-start" w={"100%"}>
+					<Box style={{flex: 1}}>
+						<TextWeighted
+							size="sm"
+							fontWeight="medium"
+							ta="left"
+							className={classes.interactionText}
+						>
+							{gumballProps.prompt?.activeTitle ??
+								`Currently transformed: ${transformedNodeNames.length}`}
+						</TextWeighted>
+					</Box>
+				</Flex>
+				<Flex align="center" justify="flex-start" w={"100%"}>
+					<Box style={{flex: 1}}>
+						<Text
+							size="sm"
+							fs="italic"
+							ta="left"
+							className={classes.interactionText}
+						>
+							{gumballProps.prompt?.activeText ??
+								"Select objects to transform"}
+						</Text>
+					</Box>
+					<Box style={{width: "auto"}}>
+						<Loader size={28} type="dots" />
+					</Box>
+				</Flex>
+			</Group>
 
 			<Group justify="space-between" w="100%" wrap="nowrap">
 				<Button
