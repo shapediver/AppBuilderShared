@@ -175,19 +175,20 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	} = useAppBuilderSettings(defaultSessionDto);
 
 	// extract the various session types
-	const {controllerSession, secondarySessions} = useMemo(() => {
-		const sessions = settings?.sessions ?? [];
-		const instancedSessions = sessions.filter((s) => s.instance);
-		instancedSessions.forEach((s) => {
-			s.loadOutputs = false;
-		});
+	const {controllerSession, secondarySessions, instancedSessions} =
+		useMemo(() => {
+			const sessions = settings?.sessions ?? [];
+			const instancedSessions = sessions.filter((s) => s.instance);
+			instancedSessions.forEach((s) => {
+				s.loadOutputs = false;
+			});
 
-		return {
-			controllerSession: sessions[0],
-			secondarySessions: sessions.filter((s) => !s.instance).slice(1),
-			instancedSessions: sessions.filter((s) => s.instance),
-		};
-	}, [settings]);
+			return {
+				controllerSession: sessions[0],
+				secondarySessions: sessions.filter((s) => !s.instance).slice(1),
+				instancedSessions: sessions.filter((s) => s.instance),
+			};
+		}, [settings]);
 
 	const {
 		namespace,
@@ -207,6 +208,9 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	// handle additional sessions without instances
 	useSessions(secondarySessions);
+
+	// handle instances
+	useSessions(instancedSessions);
 
 	// create UI elements for containers
 	const containers: IAppBuilderTemplatePageProps = {

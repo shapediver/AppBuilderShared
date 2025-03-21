@@ -319,6 +319,17 @@ export interface IAppBuilderContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
+export interface IAppBuilderInstanceDefinition {
+	/** Id of the instance. */
+	sessionId: string;
+	/** Optional name of the instance. This name will be used for the node in the scene graph, e.g. NAME_transformations_0 for the first transformation. */
+	name?: string;
+	/** Parameter set for the instance. If none is provided, the default parameter set is used. */
+	parameterSet?: {[key: string]: string};
+	/** Transformations for the instances, e.g. to position them in the scene. */
+	transformations?: number[][];
+}
+
 /**
  * Web app definition.
  * This is the root of the custom UI definition.
@@ -340,6 +351,12 @@ export interface IAppBuilder {
 	 * Containers to be displayed.
 	 */
 	containers: IAppBuilderContainer[];
+
+	/**
+	 * Optional list of instances to be created.
+	 * Instances are used to customize a session by setting parameters and transformations.
+	 */
+	instances?: IAppBuilderInstanceDefinition[];
 }
 
 /** assert widget type "accordion" */

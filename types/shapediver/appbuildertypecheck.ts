@@ -363,6 +363,7 @@ const IAppBuilderSchema = z.object({
 	parameters: z.array(IAppBuilderParameterDefinitionSchema).optional(),
 	sessionId: z.string().optional(),
 	containers: z.array(IAppBuilderContainerSchema),
+	instances: z.any().optional(),
 });
 
 export const validateAppBuilder = (value: any) => {

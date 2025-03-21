@@ -8,6 +8,7 @@ import {
 	useNodesInteractionData,
 } from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useNodeInteractionData";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {Mat4Array} from "@AppBuilderShared/types/shapediver/common";
 import {getNodesByName} from "@shapediver/viewer.features.interaction";
 import {
 	DraggingParameterValue,
@@ -185,24 +186,7 @@ export function useDragging(
 								(t) => t.id === "SD_drag_matrix",
 							);
 						const transformationMatrix = mat4.fromValues(
-							...(draggedNode.transformation as [
-								number,
-								number,
-								number,
-								number,
-								number,
-								number,
-								number,
-								number,
-								number,
-								number,
-								number,
-								number,
-								number,
-								number,
-								number,
-								number,
-							]),
+							...(draggedNode.transformation as unknown as Mat4Array),
 						);
 
 						if (transformation) {

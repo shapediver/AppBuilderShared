@@ -33,3 +33,26 @@ export interface IShapeDiverParamOrExport {
 	/** The static definition of a parameter. */
 	readonly definition: IShapeDiverParamOrExportDefinition;
 }
+
+/**
+ * Type for a 4x4 matrix.
+ * Needed for the gl-matrix library.
+ */
+export type Mat4Array = readonly [
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+	number,
+];
