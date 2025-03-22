@@ -102,9 +102,30 @@ export function useAppBuilderInstances(props: Props) {
 		if (!sessionApi) return;
 
 		appBuilderInstances.forEach((instance) => {
+			// create a callback function for the progress
+			let progressCallback: (progress: {
+				percentage: number;
+				msg?: string;
+			}) => void;
+
+			// create a function to register the progress callback
+			const onProgressCallback = (
+				callback: (progress: {
+					percentage: number;
+					msg?: string;
+				}) => void,
+			) => {
+				progressCallback = callback;
+			};
+
 			const promise = instance.session
 				.customizeParallel(instance.parameterSet)
 				.then((node) => {
+					// send a progress update
+					progressCallback({
+						percentage: 0.75,
+						msg: "Applying transformations to instance",
+					});
 					// once the node is created, add the transformations
 					instance.transformations?.forEach(
 						(transformation, index) => {
@@ -129,6 +150,11 @@ export function useAppBuilderInstances(props: Props) {
 								matrix: transformationMatrix,
 							});
 
+							// send a progress update
+							progressCallback({
+								percentage: 0.9,
+								msg: "Adding instance to scene",
+							});
 							setInstances((prev) => [...prev, clone]);
 						},
 					);
@@ -138,7 +164,7 @@ export function useAppBuilderInstances(props: Props) {
 			// add the promise to the process manager
 			// once all registered promises are resolved, the viewports are updated
 			// and the process manager is removed from the store
-			addPromise(processId, promise);
+			addPromise(processId, promise, onProgressCallback);
 		});
 
 		return () => {
