@@ -26,9 +26,8 @@ export class ProcessManager implements IProcessManager {
 
 	constructor(id: string) {
 		this._id = id;
-		// evaluate the processes when the process manager is created
 		// this is necessary to already set the flags for the viewports
-		this.evaluateProcesses();
+		this.addFlags();
 	}
 
 	public get id(): string {
@@ -200,6 +199,8 @@ export class ProcessManager implements IProcessManager {
 			this.processes.length > 0 &&
 			this.processes.some((process) => !process.resolved);
 
+		if (running) this._status = PROCESS_STATUS.RUNNING;
+
 		// check if there are any errors
 		const errors = this.processes
 			.filter((process) => process.error)
@@ -215,10 +216,13 @@ export class ProcessManager implements IProcessManager {
 				return;
 			}
 		}
-		this._status = running
-			? PROCESS_STATUS.RUNNING
-			: PROCESS_STATUS.FINISHED;
-		this._progress = running ? this._progress : {percentage: 1};
+
+		// if there are no running processes
+		// and there are processes, set the status to finished
+		if (this.processes.length > 0 && !running) {
+			this._status = PROCESS_STATUS.FINISHED;
+			this._progress = {percentage: 1};
+		}
 	}
 }
 
