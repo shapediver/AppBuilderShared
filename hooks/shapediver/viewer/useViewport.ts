@@ -52,6 +52,8 @@ export function useViewport(props: ViewportCreateDto) {
 
 						return screenshot;
 					},
+					addFlag: viewportApi.addFlag,
+					removeFlag: viewportApi.removeFlag,
 				});
 		});
 

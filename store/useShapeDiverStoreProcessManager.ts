@@ -7,7 +7,7 @@ import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 import {devtoolsSettings} from "./storeSettings";
-import {useShapeDiverStoreViewport} from "./useShapeDiverStoreViewport";
+import {useShapeDiverStoreViewportAccessFunctions} from "./useShapeDiverStoreViewportAccessFunctions";
 
 export class ProcessManager implements IProcessManager {
 	readonly _id: string;
@@ -61,12 +61,8 @@ export class ProcessManager implements IProcessManager {
 	 * and removes itself from the store.
 	 */
 	private evaluateProcesses(): void {
-		// TODO: abstraction for WebGI
-		// we shouldn't use the viewports directly here
-		// we should have a function that sets the flags for all viewports
-
-		const {viewports} = useShapeDiverStoreViewport.getState();
-
+		const {viewportAccessFunctions} =
+			useShapeDiverStoreViewportAccessFunctions.getState();
 		const noRegisteredProcesses = this.processes.length === 0;
 
 		let stillRunning = false;
@@ -78,33 +74,47 @@ export class ProcessManager implements IProcessManager {
 		// set the busy mode and suspend scene update flags for all viewports (if not already set)
 		if (noRegisteredProcesses || stillRunning) {
 			// check if viewports already have the flags, if not, add them
-			for (const token in viewports) {
-				if (!this._busyModeFlagTokens[token]) {
-					this._busyModeFlagTokens[token] = viewports[token].addFlag(
-						FLAG_TYPE.BUSY_MODE,
-					);
+			for (const viewportId in viewportAccessFunctions) {
+				if (
+					!this._busyModeFlagTokens[viewportId] &&
+					viewportAccessFunctions[viewportId].addFlag
+				) {
+					this._busyModeFlagTokens[viewportId] =
+						viewportAccessFunctions[viewportId].addFlag(
+							FLAG_TYPE.BUSY_MODE,
+						);
 				}
-				if (!this._suspendSceneUpdateFlagTokens[token]) {
-					this._suspendSceneUpdateFlagTokens[token] = viewports[
-						token
-					].addFlag(FLAG_TYPE.SUSPEND_SCENE_UPDATES);
+				if (
+					!this._suspendSceneUpdateFlagTokens[viewportId] &&
+					viewportAccessFunctions[viewportId].addFlag
+				) {
+					this._suspendSceneUpdateFlagTokens[viewportId] =
+						viewportAccessFunctions[viewportId].addFlag(
+							FLAG_TYPE.SUSPEND_SCENE_UPDATES,
+						);
 				}
 			}
 		} else {
 			// remove busy flags from all viewports
-			for (const token in this._busyModeFlagTokens) {
-				if (viewports[token]) {
-					viewports[token].removeFlag(
-						this._busyModeFlagTokens[token],
+			for (const viewportId in this._busyModeFlagTokens) {
+				if (
+					viewportAccessFunctions[viewportId] &&
+					viewportAccessFunctions[viewportId].removeFlag
+				) {
+					viewportAccessFunctions[viewportId].removeFlag(
+						this._busyModeFlagTokens[viewportId],
 					);
 				}
 			}
 
 			// remove suspend scene update flags from all viewports
-			for (const token in this._suspendSceneUpdateFlagTokens) {
-				if (viewports[token]) {
-					viewports[token].removeFlag(
-						this._suspendSceneUpdateFlagTokens[token],
+			for (const viewportId in this._suspendSceneUpdateFlagTokens) {
+				if (
+					viewportAccessFunctions[viewportId] &&
+					viewportAccessFunctions[viewportId].removeFlag
+				) {
+					viewportAccessFunctions[viewportId].removeFlag(
+						this._suspendSceneUpdateFlagTokens[viewportId],
 					);
 				}
 			}
