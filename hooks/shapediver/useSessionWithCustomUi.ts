@@ -2,12 +2,16 @@ import {
 	IUseSessionDto,
 	useSession,
 } from "@AppBuilderShared/hooks/shapediver/useSession";
-import {useOutputContent} from "@AppBuilderShared/hooks/shapediver/viewer/useOutputContent";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {
 	IGenericParameterDefinition,
 	IGenericParameterExecutor,
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
-import {ShapeDiverResponseParameter} from "@shapediver/viewer.session";
+import {
+	ITreeNode,
+	OutputApiData,
+	ShapeDiverResponseParameter,
+} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useDefineGenericParameters} from "./parameters/useDefineGenericParameters";
 import {useParameterStateless} from "./parameters/useParameterStateless";
@@ -69,6 +73,8 @@ interface ICustomUiState {
 export function useSessionWithCustomUi(props: IUseSessionDto | undefined) {
 	const namespace = props?.id || "";
 	const namespaceCustomUi = namespace + CUSTOM_SESSION_ID_POSTFIX;
+
+	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
 
 	// use a session with a ShapeDiver model and register its parameters and exports
 	const {sessionApi} = useSession(
@@ -154,13 +160,16 @@ export function useSessionWithCustomUi(props: IUseSessionDto | undefined) {
 		return outputs.length > 0 ? outputs[0].id : "";
 	}, [sessionApi]);
 
-	// get output "CUSTOM_DATA_OUTPUT_NAME", react to its changes, and set the custom UI state
-	const {outputApi, outputContent} = useOutputContent(
-		namespace,
-		customDataOutputId,
-	);
-	useEffect(() => {
+	const callback = useCallback((newNode?: ITreeNode) => {
+		if (!newNode) return;
+		const outputApi = (
+			newNode.data.find((d) => d instanceof OutputApiData) as
+				| OutputApiData
+				| undefined
+		)?.api;
+
 		if (outputApi) {
+			const outputContent = outputApi.content;
 			if (
 				outputContent &&
 				outputContent.length > 0 &&
@@ -191,7 +200,17 @@ export function useSessionWithCustomUi(props: IUseSessionDto | undefined) {
 			console.debug(
 				`Output with name "${CUSTOM_DATA_OUTPUT_NAME}" could not be found, check the available output names`,
 			);
-	}, [outputApi, outputContent]);
+	}, []);
+
+	useEffect(() => {
+		const removeOutputUpdateCallback = addOutputUpdateCallback(
+			namespace,
+			customDataOutputId,
+			callback,
+		);
+
+		return () => removeOutputUpdateCallback();
+	}, [namespace, customDataOutputId, callback]);
 
 	// get props for parameters that should not be hidden
 	const sessionParameterProps = useSessionPropsParameter(
