@@ -58,7 +58,6 @@ export default function SelectCarouselComponent(
 		slideSize,
 		slideGap,
 		height,
-		themeOverride,
 	} = useProps("SelectCarouselComponent", defaultStyleProps, props);
 
 	const imageFit = settings?.imageFit || "cover";
