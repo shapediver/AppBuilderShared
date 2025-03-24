@@ -61,6 +61,15 @@ export interface IProcessManager {
 	status: PROCESS_STATUS;
 
 	/**
+	 * Adds a the busy mode and suspend scene updates flags to the viewports.
+	 * The flags are added to all viewports.
+	 * The flags are removed once all processes have been resolved.
+	 *
+	 * If the flags are already set, this function does nothing.
+	 */
+	addFlags: () => void;
+
+	/**
 	 * Adds a promise to the process manager.
 	 * The promise is added as part of the list of processes.
 	 *

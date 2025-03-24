@@ -90,7 +90,7 @@ export class ProcessManager implements IProcessManager {
 		this.evaluateProcesses();
 	}
 
-	private addFlags(): void {
+	public addFlags(): void {
 		const {viewportAccessFunctions} =
 			useShapeDiverStoreViewportAccessFunctions.getState();
 		// check if viewports already have the flags, if not, add them
@@ -278,3 +278,13 @@ export const useShapeDiverStoreProcessManager =
 			{...devtoolsSettings, name: "ShapeDiver | Process Manager"},
 		),
 	);
+
+useShapeDiverStoreViewportAccessFunctions.subscribe(() => {
+	const {processManagers} = useShapeDiverStoreProcessManager.getState();
+
+	for (const processManagerId in processManagers) {
+		const processManager = processManagers[processManagerId];
+		// if the flags are already set, this function does nothing
+		processManager.addFlags();
+	}
+});
