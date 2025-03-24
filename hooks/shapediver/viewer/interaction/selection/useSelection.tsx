@@ -107,22 +107,43 @@ export function useSelection(
 			[key: string]: IUseNodeInteractionDataProps;
 		} = {};
 
-		Object.entries(patterns).forEach(([sessionId, pattern]) => {
-			Object.entries(pattern).forEach(([outputId, pattern]) => {
-				nodesInteractionInput[`${sessionId}_${outputId}`] = {
-					sessionId,
-					componentId,
-					outputId,
-					patterns: pattern,
-					interactionSettings: {
-						select: true,
-						hover: selectionProps.hover,
-					},
-					selectManager,
-					strictNaming,
-				};
-			});
-		});
+		if (patterns.outputPatterns) {
+			Object.entries(patterns.outputPatterns).forEach(
+				([sessionId, pattern]) => {
+					Object.entries(pattern).forEach(([outputId, pattern]) => {
+						nodesInteractionInput[`${sessionId}_${outputId}`] = {
+							sessionId,
+							componentId,
+							outputId,
+							patterns: pattern,
+							interactionSettings: {
+								select: true,
+								hover: selectionProps.hover,
+							},
+							selectManager,
+							strictNaming,
+						};
+					});
+				},
+			);
+		}
+
+		if (patterns.instancePatterns) {
+			Object.entries(patterns.instancePatterns).forEach(
+				([instanceId, pattern]) => {
+					nodesInteractionInput[instanceId] = {
+						componentId,
+						patterns: pattern,
+						interactionSettings: {
+							select: true,
+							hover: selectionProps.hover,
+						},
+						selectManager,
+						strictNaming,
+					};
+				},
+			);
+		}
 
 		return nodesInteractionInput;
 	}, [patterns, selectionProps, selectManager]);

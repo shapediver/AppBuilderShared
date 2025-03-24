@@ -1,8 +1,9 @@
+import {useShapeDiverStoreInstances} from "@AppBuilderShared/store/useShapeDiverStoreInstances";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IAppBuilder} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Mat4Array} from "@AppBuilderShared/types/shapediver/common";
-import {ISessionApi, ITreeNode} from "@shapediver/viewer.session";
+import {ISessionApi, ITreeNode, TreeNode} from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useMemo, useState} from "react";
 
@@ -34,7 +35,11 @@ export function useAppBuilderInstances(props: Props) {
 
 	const {sessions, addSessionUpdateCallback} = useShapeDiverStoreSession();
 	const {addPromise} = useShapeDiverStoreProcessManager();
+	const {addInstance, removeInstance} = useShapeDiverStoreInstances();
 
+	const [instances, setInstances] = useState<{
+		[key: string]: ITreeNode;
+	}>({});
 	/**
 	 * Parse the app builder data.
 	 * Gather all the necessary information to create the instances.
@@ -48,6 +53,7 @@ export function useAppBuilderInstances(props: Props) {
 			parameterSet: {[key: string]: string};
 			transformations?: number[][];
 			originalIndex: number;
+			name?: string;
 		}[] = [];
 
 		instances.forEach((instance, index) => {
@@ -67,18 +73,29 @@ export function useAppBuilderInstances(props: Props) {
 				parameterSet: parameterSetWithIds,
 				transformations: instance.transformations,
 				originalIndex: index,
+				name: instance.name,
 			});
 		});
 
 		return parsedInstances;
 	}, [appBuilderData, sessions]);
 
-	const [instances, setInstances] = useState<ITreeNode[]>([]);
+	useEffect(() => {
+		for (const instanceId in instances) {
+			addInstance(instanceId, instances[instanceId]);
+		}
+
+		return () => {
+			for (const instanceId in instances) {
+				removeInstance(instanceId);
+			}
+		};
+	}, [instances]);
 
 	const sessionUpdateCallback = useCallback(
 		(newNode?: ITreeNode) => {
 			if (!newNode) return;
-			instances.forEach((instance) => {
+			Object.values(instances).forEach((instance) => {
 				// add the instance to the controller session node
 				newNode.addChild(instance);
 				// update the version of the node
@@ -126,11 +143,20 @@ export function useAppBuilderInstances(props: Props) {
 						percentage: 0.75,
 						msg: "Applying transformations to instance",
 					});
+
+					const instanceId =
+						instance.name ?? `instances[${instance.originalIndex}]`;
+					const instanceNode = new TreeNode(instanceId);
+					instanceNode.originalName = instanceId;
+
 					// once the node is created, add the transformations
 					instance.transformations?.forEach(
 						(transformation, index) => {
-							// TODO add proper naming scheme
-							const clone = node.cloneInstance();
+							const transformationId = `transformations[${index}]`;
+							const transformationNode = new TreeNode(
+								transformationId,
+							);
+							transformationNode.originalName = transformationId;
 
 							// we have to transpose the matrix
 							// because of different column/row major order
@@ -141,23 +167,31 @@ export function useAppBuilderInstances(props: Props) {
 								),
 							);
 
-							clone.addTransformation({
-								id:
-									"transformation_" +
-									instance.originalIndex +
-									"_" +
-									index,
+							transformationNode.addTransformation({
+								id: transformationId,
 								matrix: transformationMatrix,
 							});
 
-							// send a progress update
-							progressCallback({
-								percentage: 0.9,
-								msg: "Adding instance to scene",
-							});
-							setInstances((prev) => [...prev, clone]);
+							for (let i = 0; i < node.children.length; i++) {
+								const child = node.children[i];
+								transformationNode.addChild(
+									child.cloneInstance(),
+								);
+							}
+
+							instanceNode.addChild(transformationNode);
 						},
 					);
+
+					// send a progress update
+					progressCallback({
+						percentage: 0.9,
+						msg: "Adding instance to scene",
+					});
+					setInstances((prevInstances) => ({
+						...prevInstances,
+						[instanceId]: instanceNode,
+					}));
 				});
 
 			if (!processId) return;
@@ -168,7 +202,7 @@ export function useAppBuilderInstances(props: Props) {
 		});
 
 		return () => {
-			setInstances([]);
+			setInstances({});
 		};
 	}, [appBuilderInstances, processId]);
 }

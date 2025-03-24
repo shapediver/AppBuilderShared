@@ -339,7 +339,7 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				};
 			},
 		}),
-		{...devtoolsSettings, name: "ShapeDiver | Viewer"},
+		{...devtoolsSettings, name: "ShapeDiver | Session"},
 	),
 );
 

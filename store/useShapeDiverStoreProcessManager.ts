@@ -275,6 +275,6 @@ export const useShapeDiverStoreProcessManager =
 					});
 				},
 			}),
-			{...devtoolsSettings, name: "ShapeDiver | Viewer"},
+			{...devtoolsSettings, name: "ShapeDiver | Process Manager"},
 		),
 	);
