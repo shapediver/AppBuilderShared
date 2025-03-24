@@ -147,9 +147,7 @@ export default function SelectCarouselComponent(
 
 							{hasText(item) && (
 								<div>
-									{item.label && (
-										<Text size="md">{item.label}</Text>
-									)}
+									<Text size="md">{item.label}</Text>
 									{item.description && (
 										<Text c="dimmed" size="sm">
 											{item.description}
