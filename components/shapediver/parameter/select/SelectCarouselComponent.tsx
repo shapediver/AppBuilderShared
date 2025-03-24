@@ -1,4 +1,5 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Carousel} from "@mantine/carousel";
 import "@mantine/carousel/styles.css";
@@ -6,31 +7,55 @@ import {
 	Card,
 	Image,
 	MantineThemeComponent,
-	StyleProp,
+	Stack,
 	Text,
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
 import classes from "./SelectCarouselComponent.module.css";
-import {SelectComponentProps} from "./SelectComponent";
+import {
+	SelectCardStyleProps,
+	SelectCarouselStyleProps,
+	SelectComponentProps,
+	SelectImageStyleProps,
+	SelectStackStyleProps,
+	SelectTextStyleProps,
+	SelectTextWeightedStyleProps,
+} from "./SelectComponent";
 
 interface StyleProps {
-	slideSize: StyleProp<string | number>;
-	slideGap: StyleProp<string | number>;
-	height: string | number;
+	carouselProps: SelectCarouselStyleProps;
+	cardProps: SelectCardStyleProps;
+	imageProps: SelectImageStyleProps;
+	stackProps: SelectStackStyleProps;
+	labelProps: SelectTextWeightedStyleProps;
+	descriptionProps: SelectTextStyleProps;
 	showLabel: boolean;
 }
 
 export const defaultStyleProps: Partial<StyleProps> = {
-	slideSize: {
-		base: "100%",
-		"16em": "50%",
-		"32em": "33.333333%",
-		"48em": "25%",
-		"64em": "20%",
+	carouselProps: {
+		align: "start",
+		height: "auto",
+		loop: true,
+		slideGap: {base: "xs"},
+		slideSize: {
+			base: "100%",
+			"16em": "50%",
+			"32em": "33.333333%",
+			"48em": "25%",
+			"64em": "20%",
+		},
+		type: "container",
 	},
-	slideGap: {base: "xs"},
-	height: "auto",
+	cardProps: {},
+	imageProps: {
+		fit: "cover",
+		fallbackSrc: "/not-found.svg",
+	},
+	stackProps: {gap: "xs"},
+	labelProps: {size: "sm", fontWeight: "medium"},
+	descriptionProps: {size: "sm", c: "dimmed"},
 	showLabel: true,
 };
 
@@ -52,7 +77,6 @@ export function SelectCarouselComponentThemeProps(
 export default function SelectCarouselComponent(
 	props: SelectComponentProps & SelectCarouselComponentThemePropsType,
 ) {
-	// style properties
 	const {
 		value,
 		onChange,
@@ -60,14 +84,19 @@ export default function SelectCarouselComponent(
 		disabled,
 		itemData,
 		settings,
-		slideSize,
-		slideGap,
-		height,
-		showLabel,
-	} = useProps("SelectCarouselComponent", defaultStyleProps, props);
+		...styleProps
+	} = props;
 
-	const imageFit = settings?.imageFit || "cover";
-	const withIndicators = settings?.withIndicators !== false;
+	// style properties
+	const {
+		carouselProps,
+		cardProps,
+		imageProps,
+		stackProps,
+		labelProps,
+		descriptionProps,
+		showLabel,
+	} = useProps("SelectCarouselComponent", defaultStyleProps, styleProps);
 
 	// Transform items array into the format expected by the component
 	const carouselItems = useMemo(
@@ -112,20 +141,16 @@ export default function SelectCarouselComponent(
 
 	return (
 		<Carousel
-			withIndicators={withIndicators}
-			type="container"
-			height={height}
-			slideSize={slideSize}
-			slideGap={slideGap}
+			withIndicators={items.length > 2 ? true : undefined}
 			initialSlide={initialSlideIndex}
 			nextControlIcon={<Icon type={IconTypeEnum.ChevronRight} />}
 			previousControlIcon={<Icon type={IconTypeEnum.ChevronLeft} />}
-			loop
-			align="start"
 			classNames={{
 				indicators: classes.indicators,
 				indicator: classes.indicator,
 			}}
+			{...carouselProps}
+			{...settings?.carouselProps}
 		>
 			{carouselItems.map((item) => (
 				<Carousel.Slide key={item.value}>
@@ -133,30 +158,42 @@ export default function SelectCarouselComponent(
 						className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === item.value ? classes.cardSelected : ""}`}
 						onClick={() => handleCardClick(item.value, disabled)}
 						style={getCardStyle(item)}
+						{...cardProps}
+						{...settings?.cardProps}
 					>
-						{item.imageUrl && (
-							<div
-								className={`${classes.imageContainer} ${showLabel ? classes.imageContainerWithText : ""}`}
-							>
-								<Image
-									src={item.imageUrl}
-									className={classes.image}
-									fit={imageFit}
-									alt={item.label || item.value}
-									fallbackSrc="/not-found.svg"
-								/>
-							</div>
-						)}
-						{showLabel && (
-							<>
-								<Text size="md">{item.label}</Text>
-								{item.description && (
-									<Text c="dimmed" size="sm">
-										{item.description}
-									</Text>
-								)}
-							</>
-						)}
+						<Stack {...stackProps} {...settings?.stackProps}>
+							{item.imageUrl && (
+								<div
+									className={`${classes.imageContainer} ${showLabel ? classes.imageContainerWithText : ""}`}
+								>
+									<Image
+										src={item.imageUrl}
+										alt={item.label}
+										className={classes.image}
+										{...imageProps}
+										{...settings?.imageProps}
+									/>
+								</div>
+							)}
+							{showLabel && (
+								<>
+									<TextWeighted
+										{...labelProps}
+										{...settings?.labelProps}
+									>
+										{item.label}
+									</TextWeighted>
+									{item.description && (
+										<Text
+											{...descriptionProps}
+											{...settings?.descriptionProps}
+										>
+											{item.description}
+										</Text>
+									)}
+								</>
+							)}
+						</Stack>
 					</Card>
 				</Carousel.Slide>
 			))}
