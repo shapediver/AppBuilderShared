@@ -13,7 +13,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
-import ThemeProvider from "../../ui/ThemeProvider";
 import classes from "./SelectCarouselComponent.module.css";
 import {SelectComponentProps} from "./SelectComponent";
 
@@ -103,25 +102,6 @@ export default function SelectCarouselComponent(
 		return item.label || item.description;
 	}, []);
 
-	const getText = useCallback((item: (typeof carouselItems)[0]) => {
-		const text = (
-			<div>
-				{item.label && <Text size="md">{item.label}</Text>}
-				{item.description && (
-					<Text c="dimmed" size="sm">
-						{item.description}
-					</Text>
-				)}
-			</div>
-		);
-
-		return themeOverride ? (
-			<ThemeProvider theme={themeOverride}>{text}</ThemeProvider>
-		) : (
-			text
-		);
-	}, []);
-
 	return (
 		<Carousel
 			withIndicators={withIndicators}
@@ -165,7 +145,18 @@ export default function SelectCarouselComponent(
 								</div>
 							)}
 
-							{hasText(item) && getText(item)}
+							{hasText(item) && (
+								<div>
+									{item.label && (
+										<Text size="md">{item.label}</Text>
+									)}
+									{item.description && (
+										<Text c="dimmed" size="sm">
+											{item.description}
+										</Text>
+									)}
+								</div>
+							)}
 						</Card>
 					</Box>
 				</Carousel.Slide>
