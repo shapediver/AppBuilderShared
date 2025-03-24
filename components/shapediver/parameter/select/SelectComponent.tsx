@@ -23,10 +23,8 @@ export interface SelectComponentItemDataType {
 }
 
 export interface SelectComponentSettings {
-	/** Optional width. */
-	width?: string | number;
 	/** Optional image fit property for carousel (cover or fill). */
-	imageFit?: "cover" | "fill";
+	imageFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
 	/** Whether to show carousel indicators. */
 	withIndicators?: boolean;
 }
