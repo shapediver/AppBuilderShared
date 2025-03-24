@@ -53,7 +53,6 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 		disabled,
 		value,
 		state,
-		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 
 	const selectionProps = definition.settings
@@ -74,7 +73,6 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 		setSelectedNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
 	} = useSelection(
-		sessionDependencies,
 		viewportId,
 		selectionProps,
 		selectionActive,

@@ -33,7 +33,6 @@ import {
  * Hook providing stateful object selection for a viewport and session.
  * This wraps lover level hooks for the select manager, hover manager, and node interaction data.
  *
- * @param sessionIds IDs of the sessions for which objects shall be selected.
  * @param viewportId ID of the viewport for which selection shall be enabled.
  * @param selectionProps Parameter properties to be used. This includes name filters, and properties for the behavior of the selection.
  * @param activate Set this to true to activate selection. If false, preparations are made but no selection is possible.
@@ -41,7 +40,6 @@ import {
  * 					Note that this initial state is not checked against the filter pattern.
  */
 export function useSelection(
-	sessionIds: string[],
 	viewportId: string,
 	selectionProps: ISelectionParameterProps,
 	activate: boolean,
@@ -89,10 +87,9 @@ export function useSelection(
 	// create the input for the name filter pattern
 	const createNameFilterInput = useMemo(() => {
 		return {
-			sessionIds,
 			nameFilter: selectionProps.nameFilter,
 		};
-	}, [sessionIds, selectionProps]);
+	}, [selectionProps]);
 
 	// convert the user-defined name filters to filter patterns, and subscribe to selection events
 	const {patterns} = useCreateNameFilterPattern(createNameFilterInput);
@@ -138,7 +135,7 @@ export function useSelection(
 				[key: string]: IOutputApi;
 			};
 		} = {};
-		for (const sessionId of sessionIds)
+		for (const sessionId in state.sessions)
 			if (state.sessions[sessionId])
 				outputs[sessionId] = state.sessions[sessionId].outputs;
 

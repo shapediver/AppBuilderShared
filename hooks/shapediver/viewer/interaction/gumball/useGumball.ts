@@ -70,7 +70,6 @@ export interface IGumballState {
  * Hook providing stateful gumball interaction for a viewport and session.
  * This wraps lower level hooks for the selection and gumball events.
  *
- * @param sessionIds IDs of the sessions for which the gumball shall be created.
  * @param viewportId ID of the viewport for which the gumball shall be created.
  * @param gumballProps Parameter properties to be used. This includes name filters, and properties for the behavior of the gumball.
  * @param activate Set this to true to activate the gumball. If false, preparations are made but no gumball is possible.
@@ -78,7 +77,6 @@ export interface IGumballState {
  * 					Note that this initial state is not checked against the filter pattern.
  */
 export function useGumball(
-	sessionIds: string[],
 	viewportId: string,
 	gumballProps: IGumballParameterProps,
 	activate: boolean,
@@ -86,9 +84,7 @@ export function useGumball(
 	strictNaming = true,
 ): IGumballState {
 	// get the session API
-	const sessionApis = useShapeDiverStoreSession((state) => {
-		return sessionIds.map((id) => state.sessions[id]);
-	});
+	const sessionApis = useShapeDiverStoreSession((state) => state.sessions);
 	// get the viewport API
 	const viewportApi = useShapeDiverStoreViewport((state) => {
 		return state.viewports[viewportId];
@@ -112,7 +108,7 @@ export function useGumball(
 		setSelectedNodeNames,
 		availableNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
-	} = useSelection(sessionIds, viewportId, selectionSettings, activate);
+	} = useSelection(viewportId, selectionSettings, activate);
 	// use the gumball events hook to get the transformed node names
 	const {transformedNodeNames, setTransformedNodeNames} = useGumballEvents(
 		selectedNodeNames,
@@ -136,7 +132,10 @@ export function useGumball(
 	useEffect(() => {
 		if (viewportApi && sessionApis && selectedNodeNames.length > 0) {
 			// whenever the selected node names change, create a new gumball
-			const nodes = getNodesByName(sessionApis, selectedNodeNames);
+			const nodes = getNodesByName(
+				Object.values(sessionApis),
+				selectedNodeNames,
+			);
 			const gumball = new Gumball(
 				viewportApi,
 				Object.values(nodes).map((n) => n.node),
@@ -174,7 +173,7 @@ export function useGumball(
 			oldTransformedNodeNames: {name: string}[],
 		) => {
 			const nodes = getNodesByName(
-				sessionApis,
+				Object.values(sessionApis),
 				oldTransformedNodeNames.map((tn) => tn.name),
 			);
 

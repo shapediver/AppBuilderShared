@@ -16,13 +16,12 @@ import {useEffect, useState} from "react";
  */
 const getPatterns = (
 	sessions: {[key: string]: ISessionApi},
-	sessionIds: string[],
 	nameFilter?: string[],
 ) => {
 	if (!nameFilter) return {};
 
 	const patterns: {[key: string]: OutputNodeNameFilterPatterns} = {};
-	const currentSessionIds = sessionIds || Object.keys(sessions);
+	const currentSessionIds = Object.keys(sessions);
 
 	currentSessionIds.forEach((sessionId) => {
 		const sessionApi = sessions[sessionId];
@@ -42,11 +41,6 @@ const getPatterns = (
 };
 
 export type IUseCreateNameFilterPatternProps = {
-	/**
-	 * The IDs of the sessions to create the filter pattern for.
-	 * If not set, all sessions are used.
-	 */
-	sessionIds?: string[];
 	/**
 	 * The user-defined name filters to convert.
 	 */
@@ -79,12 +73,8 @@ export function useCreateNameFilterPattern(
 	);
 
 	useEffect(() => {
-		const {sessionIds, nameFilter} = props;
-		const pattern = getPatterns(
-			sessions,
-			sessionIds || Object.keys(sessions),
-			nameFilter,
-		);
+		const {nameFilter} = props;
+		const pattern = getPatterns(sessions, nameFilter);
 		setPatterns(pattern);
 	}, [props, sessions]);
 
@@ -117,12 +107,8 @@ export function useCreateNameFilterPatterns(props: {
 			[key: string]: IUseCreateNameFilterPatternResult;
 		} = {};
 		Object.entries(props).forEach(([key, value]) => {
-			const {sessionIds, nameFilter} = value;
-			const pattern = getPatterns(
-				sessions,
-				sessionIds || Object.keys(sessions),
-				nameFilter,
-			);
+			const {nameFilter} = value;
+			const pattern = getPatterns(sessions, nameFilter);
 			patternDictionary[key] = pattern;
 		});
 		setPatterns(patternDictionary);
