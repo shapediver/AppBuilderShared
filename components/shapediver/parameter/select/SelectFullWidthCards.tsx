@@ -36,7 +36,7 @@ export const defaultStyleProps: Partial<StyleProps> = {
 		fit: "contain",
 		h: "auto",
 		w: "100px",
-		fallbackSrc: "/not-found.svg",
+		fallbackSrc: "not-found.svg",
 	},
 	stackProps: {},
 	labelProps: {size: "sm", fontWeight: "medium"},
