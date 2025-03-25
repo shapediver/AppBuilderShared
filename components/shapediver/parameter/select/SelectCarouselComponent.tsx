@@ -47,6 +47,7 @@ export const defaultStyleProps: Partial<StyleProps> = {
 			"64em": "20%",
 		},
 		type: "container",
+		withIndicators: false,
 	},
 	cardProps: {},
 	imageProps: {
@@ -141,7 +142,6 @@ export default function SelectCarouselComponent(
 
 	return (
 		<Carousel
-			withIndicators={items.length > 2 ? true : undefined}
 			initialSlide={initialSlideIndex}
 			nextControlIcon={<Icon type={IconTypeEnum.ChevronRight} />}
 			previousControlIcon={<Icon type={IconTypeEnum.ChevronLeft} />}
@@ -150,6 +150,11 @@ export default function SelectCarouselComponent(
 				indicator: classes.indicator,
 			}}
 			{...carouselProps}
+			withIndicators={
+				carouselProps?.withIndicators && items.length > 2
+					? true
+					: undefined
+			}
 			{...settings?.carouselProps}
 		>
 			{carouselItems.map((item) => (
