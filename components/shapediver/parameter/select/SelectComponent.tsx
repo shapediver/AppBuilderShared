@@ -75,6 +75,7 @@ export interface SelectComponentSettings {
 	stackProps?: SelectStackStyleProps;
 	labelProps?: SelectTextWeightedStyleProps;
 	descriptionProps?: SelectTextStyleProps;
+	showLabel?: boolean;
 }
 
 export interface SelectComponentProps {

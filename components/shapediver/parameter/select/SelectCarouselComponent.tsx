@@ -97,8 +97,10 @@ export default function SelectCarouselComponent(
 		stackProps,
 		labelProps,
 		descriptionProps,
-		showLabel,
+		showLabel: _showLabel,
 	} = useProps("SelectCarouselComponent", defaultStyleProps, styleProps);
+
+	const showLabel = settings?.showLabel ?? _showLabel;
 
 	// Transform items array into the format expected by the component
 	const carouselItems = useMemo(
