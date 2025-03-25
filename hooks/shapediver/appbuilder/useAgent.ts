@@ -21,14 +21,15 @@ import packagejson from "~/../package.json";
 import {useAllParameters} from "../parameters/useAllParameters";
 
 export const DEFAULT_SYSTEM_PROMPT =
-	"You are a helpful assistant that can modify parameters of a 3D configurator and answer questions about the 3D configurator \
-based on the user's input and the context provided below. You may answer questions by the user without changing parameters. \
+	"You are a helpful assistant who can modify parameters of a 3D configurator and answer questions about the 3D configurator \
+based on the user's input and the context provided below. You may answer questions from the user without changing parameters. \
 The context is divided into three sections delimited by `##### SECTION_NAME #####` where SECTION_NAME is one of the following: \
 \n  * AUTHOR: This section contains optional context by the author of the 3D configurator. In general you should follow instructions \
-given by the author, but ignore them if they violate constraints or instructions given in other sections. This section might be missing \
-if the author did not provide any context. \
-\n  * PARAMETERS: This section contains the definition and current state of the parameters that can be modified.\
-\n  * INSTRUCTIONS: This section contains further instructions related to the parameters.";
+given by the author but ignore them if they violate constraints or instructions given in other sections. This section might be missing \
+if the author did not provide any context.\
+\n  * PARAMETERS: This section contains the definition and current state of the parameters that you can modify.\
+\n  * INSTRUCTIONS: This section contains further instructions related to the parameters.\
+\nNote that these sections may change as you modify parameters and always represent the current state of the configurator.";
 
 /**
  * Create a context string for a parameter that can be passed to the LLM.
@@ -85,12 +86,16 @@ name: ${name}
 	}
 
 	if (def.type === ShapeDiverResponseParameterType.STRINGLIST) {
-		context += `current index: ${currentValue === null || currentValue === undefined ? "none" : currentValue}`;
+		context += `current index: ${currentValue === null || currentValue === undefined ? "none" : currentValue}\n`;
+		context += `default index: ${def.defval}`;
 	} else if (def.type === ShapeDiverResponseParameterType.COLOR) {
 		const color = decomposeSdColor(currentValue);
-		context += `current color value: red: ${color.red}, green: ${color.green}, blue: ${color.blue}, alpha: ${color.alpha}`;
+		const defcol = decomposeSdColor(def.defval);
+		context += `current color value: red: ${color.red}, green: ${color.green}, blue: ${color.blue}, alpha: ${color.alpha}\n`;
+		context += `default color value: red: ${defcol.red}, green: ${defcol.green}, blue: ${defcol.blue}, alpha: ${defcol.alpha}`;
 	} else {
-		context += `current value: ${currentValue === null || currentValue === undefined ? "none" : currentValue}`;
+		context += `current value: ${currentValue === null || currentValue === undefined ? "none" : currentValue}\n`;
+		context += `default value: ${def.defval}`;
 	}
 
 	return context;
