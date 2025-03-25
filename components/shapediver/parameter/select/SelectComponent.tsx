@@ -1,7 +1,9 @@
 import {TextWeightedProps} from "@AppBuilderShared/components/ui/TextWeighted";
 import {CarouselProps} from "@mantine/carousel";
 import {
+	ButtonProps,
 	CardProps,
+	FlexProps,
 	GroupProps,
 	ImageProps,
 	MantineColor,
@@ -18,6 +20,7 @@ import SelectDropDownComponent from "./SelectDropDownComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import SelectImageDropDownComponent from "./SelectImageDropDownComponent";
 
+export type SelectButtonStyleProps = Omit<ButtonProps, "children">;
 export type SelectCarouselStyleProps = Pick<
 	CarouselProps,
 	| "align"
@@ -42,6 +45,7 @@ export type SelectCarouselStyleProps = Pick<
 	| "withKeyboardEvents"
 >;
 export type SelectCardStyleProps = Omit<CardProps, "children">;
+export type SelectFlexStyleProps = Omit<FlexProps, "children">;
 export type SelectGroupStyleProps = Omit<GroupProps, "children">;
 export type SelectImageStyleProps = Omit<ImageProps, "src" | "alt" | "onError">;
 export type SelectStackStyleProps = Omit<StackProps, "children">;
@@ -62,8 +66,10 @@ export interface SelectComponentItemDataType {
 }
 
 export interface SelectComponentSettings {
+	buttonProps?: SelectButtonStyleProps;
 	carouselProps?: SelectCarouselStyleProps;
 	cardProps?: SelectCardStyleProps;
+	flexProps?: SelectFlexStyleProps;
 	groupProps?: SelectGroupStyleProps;
 	imageProps?: SelectImageStyleProps;
 	stackProps?: SelectStackStyleProps;
