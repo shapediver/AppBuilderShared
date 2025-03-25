@@ -1,12 +1,56 @@
-import {MantineColor} from "@mantine/core";
+import {TextWeightedProps} from "@AppBuilderShared/components/ui/TextWeighted";
+import {CarouselProps} from "@mantine/carousel";
+import {
+	ButtonProps,
+	CardProps,
+	FlexProps,
+	GroupProps,
+	ImageProps,
+	MantineColor,
+	StackProps,
+	TextProps,
+} from "@mantine/core";
 import React from "react";
 import SelectButtonFlexComponent from "./SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
+import SelectCarouselComponent from "./SelectCarouselComponent";
 import SelectChipGroupComponent from "./SelectChipGroupComponent";
 import SelectColorComponent from "./SelectColorComponent";
 import SelectDropDownComponent from "./SelectDropDownComponent";
-import SelectFullWidthCards from "./SelectFullWidthCards";
+import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import SelectImageDropDownComponent from "./SelectImageDropDownComponent";
+
+export type SelectButtonStyleProps = Omit<ButtonProps, "children">;
+export type SelectCarouselStyleProps = Pick<
+	CarouselProps,
+	| "align"
+	| "containScroll"
+	| "controlSize"
+	| "controlsOffset"
+	| "dragFree"
+	| "draggable"
+	| "height"
+	| "inViewThreshold"
+	| "includeGapInSize"
+	| "loop"
+	| "orientation"
+	| "skipSnaps"
+	| "slideGap"
+	| "slideSize"
+	| "slidesToScroll"
+	| "speed"
+	| "type"
+	| "withControls"
+	| "withIndicators"
+	| "withKeyboardEvents"
+>;
+export type SelectCardStyleProps = Omit<CardProps, "children">;
+export type SelectFlexStyleProps = Omit<FlexProps, "children">;
+export type SelectGroupStyleProps = Omit<GroupProps, "children">;
+export type SelectImageStyleProps = Omit<ImageProps, "src" | "alt" | "onError">;
+export type SelectStackStyleProps = Omit<StackProps, "children">;
+export type SelectTextWeightedStyleProps = Omit<TextWeightedProps, "children">;
+export type SelectTextStyleProps = Omit<TextProps, "children">;
 
 export interface SelectComponentItemDataType {
 	/** Display name to use instead of the item name. */
@@ -22,8 +66,16 @@ export interface SelectComponentItemDataType {
 }
 
 export interface SelectComponentSettings {
-	/** Optional width. */
-	width?: string | number;
+	buttonProps?: SelectButtonStyleProps;
+	carouselProps?: SelectCarouselStyleProps;
+	cardProps?: SelectCardStyleProps;
+	flexProps?: SelectFlexStyleProps;
+	groupProps?: SelectGroupStyleProps;
+	imageProps?: SelectImageStyleProps;
+	stackProps?: SelectStackStyleProps;
+	labelProps?: SelectTextWeightedStyleProps;
+	descriptionProps?: SelectTextStyleProps;
+	showLabel?: boolean;
 }
 
 export interface SelectComponentProps {
@@ -49,7 +101,8 @@ export type SelectComponentType =
 	| "dropdown"
 	| "color"
 	| "imagedropdown"
-	| "fullwidthcards";
+	| "fullwidthcards"
+	| "carousel";
 
 interface SelectComponentPropsExt extends SelectComponentProps {
 	/** Type of select component to use. */
@@ -74,7 +127,9 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	} else if (type === "imagedropdown") {
 		return <SelectImageDropDownComponent {...rest} />;
 	} else if (type === "fullwidthcards") {
-		return <SelectFullWidthCards {...rest} />;
+		return <SelectFullWidthCardsComponent {...rest} />;
+	} else if (type === "carousel") {
+		return <SelectCarouselComponent {...rest} />;
 	} else {
 		return <SelectDropDownComponent {...rest} />;
 	}

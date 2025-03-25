@@ -1,6 +1,51 @@
-import {Group, Image, Select, SelectProps, Text} from "@mantine/core";
+import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {
+	Group,
+	Image,
+	MantineThemeComponent,
+	Select,
+	SelectProps,
+	Text,
+	useProps,
+} from "@mantine/core";
 import React from "react";
-import {SelectComponentProps} from "./SelectComponent";
+import {
+	SelectComponentProps,
+	SelectGroupStyleProps,
+	SelectImageStyleProps,
+	SelectTextStyleProps,
+	SelectTextWeightedStyleProps,
+} from "./SelectComponent";
+
+interface StyleProps {
+	imageProps: SelectImageStyleProps;
+	groupProps: SelectGroupStyleProps;
+	labelProps: SelectTextWeightedStyleProps;
+	descriptionProps: SelectTextStyleProps;
+}
+
+export const defaultStyleProps: Partial<StyleProps> = {
+	imageProps: {
+		fit: "contain",
+		h: "auto",
+		w: "100px",
+		fallbackSrc: "not-found.svg",
+	},
+	groupProps: {wrap: "nowrap"},
+	labelProps: {size: "sm", fontWeight: "medium"},
+	descriptionProps: {size: "sm", c: "dimmed"},
+};
+
+type SelectImageDropDownComponentThemePropsType = Partial<StyleProps>;
+
+export function SelectImageDropDownComponentThemeProps(
+	props: SelectImageDropDownComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
 
 /**
  * Custom data type for select options with image and description
@@ -10,7 +55,6 @@ interface CustomSelectItem {
 	label: string;
 	description?: string;
 	imageUrl?: string;
-	width?: string | number;
 }
 
 /**
@@ -19,10 +63,24 @@ interface CustomSelectItem {
  * @see https://mantine.dev/combobox/?e=SelectOptionComponent
  */
 export default function SelectImageDropDownComponent(
-	props: SelectComponentProps,
+	props: SelectComponentProps & SelectImageDropDownComponentThemePropsType,
 ) {
-	const {value, onChange, items, disabled, itemData, settings} = props;
-	const width = settings?.width || "100px";
+	const {
+		value,
+		onChange,
+		items,
+		disabled,
+		itemData,
+		settings,
+		...styleProps
+	} = props;
+
+	// style properties
+	const {groupProps, imageProps, labelProps, descriptionProps} = useProps(
+		"SelectImageDropDownComponent",
+		defaultStyleProps,
+		styleProps,
+	);
 
 	// Transform items array into the format expected by Select component
 	const selectData = items.map((item) => {
@@ -33,7 +91,7 @@ export default function SelectImageDropDownComponent(
 			label: data?.displayname || item,
 			description: data?.description,
 			imageUrl: data?.imageUrl,
-			width: width,
+			tooltip: data?.tooltip,
 		};
 	});
 
@@ -43,21 +101,26 @@ export default function SelectImageDropDownComponent(
 		const customOption = option as CustomSelectItem;
 
 		return (
-			<Group wrap="nowrap">
+			<Group {...groupProps} {...settings?.groupProps}>
 				{customOption.imageUrl && (
-					<Image
-						src={customOption.imageUrl}
-						w={customOption.width}
-						h="auto"
-						fit="contain"
-						alt={customOption.label}
-						fallbackSrc="not-found.svg"
-					/>
+					<TooltipWrapper label={customOption.label}>
+						<Image
+							src={customOption.imageUrl}
+							alt={customOption.label}
+							{...imageProps}
+							{...settings?.imageProps}
+						/>
+					</TooltipWrapper>
 				)}
-				<div>
-					<Text size="sm">{customOption.label}</Text>
+				<div style={{flex: 1}}>
+					<TextWeighted {...labelProps} {...settings?.labelProps}>
+						{customOption.label}
+					</TextWeighted>
 					{customOption.description && (
-						<Text size="xs" c="dimmed">
+						<Text
+							{...descriptionProps}
+							{...settings?.descriptionProps}
+						>
 							{customOption.description}
 						</Text>
 					)}

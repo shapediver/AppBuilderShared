@@ -1,8 +1,34 @@
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {Button, Flex} from "@mantine/core";
+import {Button, Flex, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
 import classes from "./SelectColorComponent.module.css";
-import {SelectComponentProps} from "./SelectComponent";
+import {
+	SelectButtonStyleProps,
+	SelectComponentProps,
+	SelectFlexStyleProps,
+} from "./SelectComponent";
+
+interface StyleProps {
+	buttonProps: SelectButtonStyleProps;
+	flexProps: SelectFlexStyleProps;
+}
+
+export const defaultStyleProps: Partial<StyleProps> = {
+	buttonProps: {
+		variant: "filled",
+	},
+	flexProps: {gap: "xs", wrap: "wrap"},
+};
+
+type SelectColorComponentThemePropsType = Partial<StyleProps>;
+
+export function SelectColorComponentThemeProps(
+	props: SelectColorComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
 
 /**
  * Functional color select component.
@@ -10,11 +36,28 @@ import {SelectComponentProps} from "./SelectComponent";
  * @see https://mantine.dev/core/button
  * @see https://mantine.dev/core/flex/
  */
-export default function SelectColorComponent(props: SelectComponentProps) {
-	const {onChange, items, itemData, disabled, value} = props;
+export default function SelectColorComponent(
+	props: SelectComponentProps & SelectColorComponentThemePropsType,
+) {
+	const {
+		onChange,
+		items,
+		itemData,
+		disabled,
+		value,
+		settings,
+		...styleProps
+	} = props;
+
+	// style properties
+	const {buttonProps, flexProps} = useProps(
+		"SelectColorComponent",
+		defaultStyleProps,
+		styleProps,
+	);
 
 	return (
-		<Flex gap="xs" wrap="wrap">
+		<Flex {...flexProps} {...settings?.flexProps}>
 			{items.map((item) => {
 				const data = itemData?.[item];
 				const tooltip = data?.tooltip;
@@ -23,10 +66,11 @@ export default function SelectColorComponent(props: SelectComponentProps) {
 					<Button
 						key={item}
 						color={data?.color}
-						variant="filled"
 						onClick={() => onChange(item)}
 						disabled={disabled}
 						className={`${classes.btnColor} ${item === value ? classes.btnColorSelected : ""}`}
+						{...buttonProps}
+						{...settings?.buttonProps}
 					/>
 				);
 

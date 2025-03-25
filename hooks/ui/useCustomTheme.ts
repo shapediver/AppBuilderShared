@@ -6,6 +6,7 @@ import {ParameterColorComponentThemeProps} from "@AppBuilderShared/components/sh
 import {ParameterLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import {ParameterSelectComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSelectComponent";
 import {ParameterSliderComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
+import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectCarouselComponent";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
@@ -618,6 +619,16 @@ export const useCustomTheme = (props: Props = {}) => {
 			ParameterSliderComponent: ParameterSliderComponentThemeProps({
 				//sliderWidth: "60%",
 				//numberWidth: "35%",
+			}),
+			/**
+			 * SelectCarouselComponent
+			 *
+			 * Defaults for select carousel components.
+			 */
+			SelectCarouselComponent: SelectCarouselComponentThemeProps({
+				//slideSize: {base: "100%", "200px": "50%", "500px": "33.333333%"},
+				//slideGap: {base: 0, "200px": "md"},
+				// height: "auto",
 			}),
 			/**
 			 * TooltipWrapper

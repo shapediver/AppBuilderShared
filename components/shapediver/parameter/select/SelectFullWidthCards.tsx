@@ -1,8 +1,58 @@
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import {Card, Group, Image, Stack, Text} from "@mantine/core";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {
+	Card,
+	Group,
+	Image,
+	MantineThemeComponent,
+	Stack,
+	Text,
+	useProps,
+} from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
-import {SelectComponentProps} from "./SelectComponent";
+import {
+	SelectCardStyleProps,
+	SelectComponentProps,
+	SelectGroupStyleProps,
+	SelectImageStyleProps,
+	SelectStackStyleProps,
+	SelectTextStyleProps,
+	SelectTextWeightedStyleProps,
+} from "./SelectComponent";
 import classes from "./SelectFullWidthCards.module.css";
+
+interface StyleProps {
+	cardProps: SelectCardStyleProps;
+	groupProps: SelectGroupStyleProps;
+	imageProps: SelectImageStyleProps;
+	stackProps: SelectStackStyleProps;
+	labelProps: SelectTextWeightedStyleProps;
+	descriptionProps: SelectTextStyleProps;
+}
+
+export const defaultStyleProps: Partial<StyleProps> = {
+	cardProps: {},
+	groupProps: {wrap: "nowrap"},
+	imageProps: {
+		fit: "contain",
+		h: "auto",
+		w: "100px",
+		fallbackSrc: "not-found.svg",
+	},
+	stackProps: {},
+	labelProps: {size: "sm", fontWeight: "medium"},
+	descriptionProps: {size: "xs", c: "dimmed"},
+};
+
+type SelectFullWidthCardsComponentThemePropsType = Partial<StyleProps>;
+
+export function SelectFullWidthCardsComponentThemeProps(
+	props: SelectFullWidthCardsComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
 
 /**
  * Functional component that displays selectable full-width cards with images and descriptions.
@@ -10,9 +60,32 @@ import classes from "./SelectFullWidthCards.module.css";
  * @see https://mantine.dev/core/stack/
  * @see https://mantine.dev/core/card/
  */
-export default function SelectFullWidthCards(props: SelectComponentProps) {
-	const {value, onChange, items, disabled, itemData, settings} = props;
-	const width = settings?.width || "100px";
+export default function SelectFullWidthCardsComponent(
+	props: SelectComponentProps & SelectFullWidthCardsComponentThemePropsType,
+) {
+	const {
+		value,
+		onChange,
+		items,
+		disabled,
+		itemData,
+		settings,
+		...styleProps
+	} = props;
+
+	// style properties
+	const {
+		cardProps,
+		groupProps,
+		imageProps,
+		stackProps,
+		labelProps,
+		descriptionProps,
+	} = useProps(
+		"SelectFullWidthCardsComponent",
+		defaultStyleProps,
+		styleProps,
+	);
 
 	// Transform items array into the format expected by the component
 	const cardData = useMemo(
@@ -25,11 +98,11 @@ export default function SelectFullWidthCards(props: SelectComponentProps) {
 					label: data?.displayname || item,
 					description: data?.description,
 					imageUrl: data?.imageUrl,
-					width: width,
 					color: data?.color,
+					tooltip: data?.tooltip,
 				};
 			}),
-		[items, itemData, width],
+		[items, itemData],
 	);
 
 	// Handle card selection
@@ -44,37 +117,45 @@ export default function SelectFullWidthCards(props: SelectComponentProps) {
 
 	const getCardStyle = useCallback((card: (typeof cardData)[0]) => {
 		return {
-			"--card-outline-color":
+			"--card-selected-color":
 				card.color || "var(--mantine-primary-color-filled)",
 		};
 	}, []);
 
 	return (
-		<Stack>
+		<Stack {...stackProps} {...settings?.stackProps}>
 			{cardData.map((card) => (
 				<Card
 					key={card.value}
 					className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === card.value ? classes.cardSelected : ""}`}
 					onClick={() => handleCardClick(card.value, disabled)}
 					style={getCardStyle(card)}
+					{...cardProps}
+					{...settings?.cardProps}
 				>
-					<Group wrap="nowrap">
+					<Group {...groupProps} {...settings?.groupProps}>
 						{card.imageUrl && (
-							<Image
-								src={card.imageUrl}
-								w={card.width}
-								h="auto"
-								fit="contain"
-								alt={card.label}
-								fallbackSrc="not-found.svg"
-							/>
+							<TooltipWrapper label={card.tooltip}>
+								<Image
+									src={card.imageUrl}
+									alt={card.label}
+									{...imageProps}
+									{...settings?.imageProps}
+								/>
+							</TooltipWrapper>
 						)}
 						<div style={{flex: 1}}>
-							<TextWeighted size="sm" fontWeight="medium">
+							<TextWeighted
+								{...labelProps}
+								{...settings?.labelProps}
+							>
 								{card.label}
 							</TextWeighted>
 							{card.description && (
-								<Text size="xs" c="dimmed">
+								<Text
+									{...descriptionProps}
+									{...settings?.descriptionProps}
+								>
 									{card.description}
 								</Text>
 							)}

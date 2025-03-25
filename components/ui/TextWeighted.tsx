@@ -4,18 +4,18 @@ import classes from "./TextWeighted.module.css";
 
 type FontWeight = "thin" | "light" | "normal" | "medium" | "bold";
 
-type TextComponentProps<C = "p"> = PolymorphicComponentProps<C, TextProps>;
-
-type Props = TextComponentProps & {
+export type TextWeightedProps = TextProps & {
 	/**
 	 * Default font weight to use. Default weight values can be configured using the theme. See theme.other.defaultFontWeight*.
 	 */
-	fontWeight: FontWeight;
+	fontWeight?: FontWeight;
 };
+
+type Props<C = "p"> = PolymorphicComponentProps<C, TextWeightedProps>;
 
 const TextWeighted = forwardRef<HTMLParagraphElement, Props>(
 	function TextWeighted(props: Props, ref) {
-		const {fontWeight, className, fw, ...rest} = props;
+		const {fontWeight = "normal", className, fw, ...rest} = props;
 
 		const fwClass = useMemo(() => {
 			switch (fontWeight) {
