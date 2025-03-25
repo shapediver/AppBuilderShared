@@ -1,5 +1,6 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Carousel} from "@mantine/carousel";
 import "@mantine/carousel/styles.css";
@@ -111,6 +112,7 @@ export default function SelectCarouselComponent(
 					description: data?.description,
 					imageUrl: data?.imageUrl,
 					color: data?.color,
+					tooltip: data?.tooltip,
 				};
 			}),
 		[items, itemData],
@@ -171,13 +173,15 @@ export default function SelectCarouselComponent(
 								<div
 									className={`${classes.imageContainer} ${showLabel ? classes.imageContainerWithText : ""}`}
 								>
-									<Image
-										src={item.imageUrl}
-										alt={item.label}
-										className={classes.image}
-										{...imageProps}
-										{...settings?.imageProps}
-									/>
+									<TooltipWrapper label={item.tooltip}>
+										<Image
+											src={item.imageUrl}
+											alt={item.label}
+											className={classes.image}
+											{...imageProps}
+											{...settings?.imageProps}
+										/>
+									</TooltipWrapper>
 								</div>
 							)}
 							{showLabel && (

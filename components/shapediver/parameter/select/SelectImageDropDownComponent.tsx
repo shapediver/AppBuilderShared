@@ -1,4 +1,5 @@
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {
 	Group,
 	Image,
@@ -90,6 +91,7 @@ export default function SelectImageDropDownComponent(
 			label: data?.displayname || item,
 			description: data?.description,
 			imageUrl: data?.imageUrl,
+			tooltip: data?.tooltip,
 		};
 	});
 
@@ -101,12 +103,14 @@ export default function SelectImageDropDownComponent(
 		return (
 			<Group {...groupProps} {...settings?.groupProps}>
 				{customOption.imageUrl && (
-					<Image
-						src={customOption.imageUrl}
-						alt={customOption.label}
-						{...imageProps}
-						{...settings?.imageProps}
-					/>
+					<TooltipWrapper label={customOption.label}>
+						<Image
+							src={customOption.imageUrl}
+							alt={customOption.label}
+							{...imageProps}
+							{...settings?.imageProps}
+						/>
+					</TooltipWrapper>
 				)}
 				<div style={{flex: 1}}>
 					<TextWeighted {...labelProps} {...settings?.labelProps}>

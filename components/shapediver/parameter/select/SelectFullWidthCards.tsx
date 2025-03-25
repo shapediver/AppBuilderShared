@@ -1,4 +1,5 @@
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {
 	Card,
 	Group,
@@ -98,6 +99,7 @@ export default function SelectFullWidthCardsComponent(
 					description: data?.description,
 					imageUrl: data?.imageUrl,
 					color: data?.color,
+					tooltip: data?.tooltip,
 				};
 			}),
 		[items, itemData],
@@ -133,12 +135,14 @@ export default function SelectFullWidthCardsComponent(
 				>
 					<Group {...groupProps} {...settings?.groupProps}>
 						{card.imageUrl && (
-							<Image
-								src={card.imageUrl}
-								alt={card.label}
-								{...imageProps}
-								{...settings?.imageProps}
-							/>
+							<TooltipWrapper label={card.tooltip}>
+								<Image
+									src={card.imageUrl}
+									alt={card.label}
+									{...imageProps}
+									{...settings?.imageProps}
+								/>
+							</TooltipWrapper>
 						)}
 						<div style={{flex: 1}}>
 							<TextWeighted

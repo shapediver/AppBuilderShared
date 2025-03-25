@@ -45,6 +45,10 @@ export default function TooltipWrapper(
 	);
 	const theme = useMantineTheme();
 
+	if (!label) {
+		return <>{children}</>;
+	}
+
 	const _label = themeOverride ? (
 		<ThemeProvider theme={themeOverride}>{label}</ThemeProvider>
 	) : (
