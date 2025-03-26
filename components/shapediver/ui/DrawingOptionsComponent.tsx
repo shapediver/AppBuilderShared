@@ -1,4 +1,3 @@
-import {defaultStyleProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
@@ -11,8 +10,6 @@ import {
 	Collapse,
 	Group,
 	MantineSize,
-	NumberInput,
-	Slider,
 	Space,
 	Stack,
 	Switch,
@@ -21,7 +18,6 @@ import {
 import {
 	GeometryRestrictionApi,
 	IDrawingToolsApi,
-	PlaneRestrictionApi,
 } from "@shapediver/viewer.features.drawing-tools";
 import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
@@ -44,8 +40,6 @@ export default function DrawingOptionsComponent(props: {
 		setShowPointLabels,
 		showDistanceLabels,
 		setShowDistanceLabels,
-		angleStep,
-		setAngleStep,
 		snapToVertices,
 		setSnapToVertices,
 		snapToEdges,
@@ -62,9 +56,6 @@ export default function DrawingOptionsComponent(props: {
 	const viewportApi = useShapeDiverStoreViewport((state) => {
 		return state.viewports[viewportId];
 	});
-
-	// state for the plane restriction availability
-	const [hasPlaneRestriction, setHasPlaneRestriction] = useState(false);
 	// state for the geometry restriction availability
 	const [hasGeometryRestriction, setHasGeometryRestriction] = useState(false);
 
@@ -91,18 +82,6 @@ export default function DrawingOptionsComponent(props: {
 
 	useEffect(() => {
 		if (drawingToolsApi) {
-			const planeRestrictionApis = Object.values(
-				drawingToolsApi.restrictions,
-			).filter((r) => r instanceof PlaneRestrictionApi);
-			planeRestrictionApis.forEach((r) => {
-				(r as PlaneRestrictionApi).angularRestrictionApi.angleStep =
-					Math.PI / angleStep;
-			});
-		}
-	}, [angleStep, drawingToolsApi]);
-
-	useEffect(() => {
-		if (drawingToolsApi) {
 			const geometryRestrictionApis = Object.values(
 				drawingToolsApi.restrictions,
 			).filter((r) => r instanceof GeometryRestrictionApi);
@@ -116,10 +95,6 @@ export default function DrawingOptionsComponent(props: {
 
 	useEffect(() => {
 		if (drawingToolsApi) {
-			const planeRestrictionApis = Object.values(
-				drawingToolsApi.restrictions,
-			).filter((r) => r instanceof PlaneRestrictionApi);
-			setHasPlaneRestriction(planeRestrictionApis.length > 0);
 			const geometryRestrictionApis = Object.values(
 				drawingToolsApi.restrictions,
 			).filter((r) => r instanceof GeometryRestrictionApi);
@@ -214,31 +189,6 @@ export default function DrawingOptionsComponent(props: {
 						}
 						label="Show Distance Labels"
 					/>
-				)}
-				{drawingToolsApi && hasPlaneRestriction && (
-					<>
-						<Text size={size}> Angle Step </Text>
-						<Group className={classes.sliderGroup}>
-							<Slider
-								w={defaultStyleProps.sliderWidth}
-								size={size}
-								min={1}
-								max={32}
-								step={1}
-								value={angleStep}
-								onChange={setAngleStep}
-							/>
-							<NumberInput
-								size={size}
-								w={defaultStyleProps.numberWidth}
-								min={1}
-								max={32}
-								step={1}
-								value={angleStep}
-								onChange={(v) => setAngleStep(+v)}
-							/>
-						</Group>
-					</>
 				)}
 				{drawingToolsApi && hasGeometryRestriction && (
 					<>

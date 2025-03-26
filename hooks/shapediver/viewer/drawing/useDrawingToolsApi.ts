@@ -5,8 +5,6 @@ import {
 	GeometryRestrictionApi,
 	GeometryRestrictionProperties,
 	IDrawingToolsApi,
-	PlaneRestrictionApi,
-	PlaneRestrictionProperties,
 	PointsData,
 	RESTRICTION_TYPE,
 	RestrictionProperties,
@@ -46,8 +44,6 @@ export function useDrawingToolsApi(
 		setShowPointLabels,
 		showDistanceLabels,
 		setShowDistanceLabels,
-		angleStep,
-		setAngleStep,
 		snapToVertices,
 		setSnapToVertices,
 		snapToEdges,
@@ -113,31 +109,6 @@ export function useDrawingToolsApi(
 							[key: string]: RestrictionProperties;
 						})
 					: {};
-
-			// find the first plane restriction
-			const planeRestriction = Object.values(restrictions).find(
-				(r: RestrictionProperties) => r.type === RESTRICTION_TYPE.PLANE,
-			) as PlaneRestrictionProperties;
-
-			if (
-				planeRestriction?.angularSnapRestriction?.angleStep !==
-				undefined
-			) {
-				// update the store with the drawing tools options (the drawing tools are already updated correctly)
-				setAngleStep(
-					Math.PI /
-						planeRestriction?.angularSnapRestriction?.angleStep,
-				);
-			} else {
-				// set the drawing tools options from the store
-				Object.values(drawingToolsApi.restrictions)
-					.filter((r) => r instanceof PlaneRestrictionApi)
-					.forEach(
-						(p) =>
-							(p.angularRestrictionApi.angleStep =
-								Math.PI / angleStep),
-					);
-			}
 
 			// find the first geometry restriction
 			const geometryRestriction = Object.values(restrictions).find(

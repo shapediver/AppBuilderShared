@@ -10,9 +10,6 @@ interface DrawingOptionsStore {
 	// state for the distance labels
 	showDistanceLabels: boolean;
 	setShowDistanceLabels: (show: boolean) => void;
-	// state for the angle step
-	angleStep: number;
-	setAngleStep: (step: number) => void;
 	// state for the snap to vertices
 	snapToVertices: boolean;
 	setSnapToVertices: (snap: boolean) => void;
@@ -39,8 +36,6 @@ export const useDrawingOptionsStore = create<DrawingOptionsStore>((set) => ({
 	setShowPointLabels: (show: boolean) => set({showPointLabels: show}),
 	showDistanceLabels: true,
 	setShowDistanceLabels: (show: boolean) => set({showDistanceLabels: show}),
-	angleStep: 8,
-	setAngleStep: (step: number) => set({angleStep: step}),
 	snapToVertices: true,
 	setSnapToVertices: (snap: boolean) => set({snapToVertices: snap}),
 	snapToEdges: true,
