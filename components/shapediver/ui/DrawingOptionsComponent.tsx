@@ -44,8 +44,6 @@ export default function DrawingOptionsComponent(props: {
 		setShowPointLabels,
 		showDistanceLabels,
 		setShowDistanceLabels,
-		gridSize,
-		setGridSize,
 		angleStep,
 		setAngleStep,
 		snapToVertices,
@@ -90,18 +88,6 @@ export default function DrawingOptionsComponent(props: {
 			viewportApi.render();
 		}
 	}, [showDistanceLabels, drawingToolsApi]);
-
-	useEffect(() => {
-		if (drawingToolsApi) {
-			const planeRestrictionApis = Object.values(
-				drawingToolsApi.restrictions,
-			).filter((r) => r instanceof PlaneRestrictionApi);
-			planeRestrictionApis.forEach((r) => {
-				(r as PlaneRestrictionApi).gridRestrictionApi.gridUnit =
-					gridSize;
-			});
-		}
-	}, [gridSize, drawingToolsApi]);
 
 	useEffect(() => {
 		if (drawingToolsApi) {
@@ -228,31 +214,6 @@ export default function DrawingOptionsComponent(props: {
 						}
 						label="Show Distance Labels"
 					/>
-				)}
-				{drawingToolsApi && hasPlaneRestriction && (
-					<>
-						<Text size={size}> Grid Size </Text>
-						<Group className={classes.sliderGroup}>
-							<Slider
-								size={size}
-								w={defaultStyleProps.sliderWidth}
-								min={0.01}
-								max={100}
-								step={0.01}
-								value={gridSize}
-								onChange={setGridSize}
-							/>
-							<NumberInput
-								size={size}
-								w={defaultStyleProps.numberWidth}
-								min={0.01}
-								max={100}
-								step={0.01}
-								value={gridSize}
-								onChange={(v) => setGridSize(+v)}
-							/>
-						</Group>
-					</>
 				)}
 				{drawingToolsApi && hasPlaneRestriction && (
 					<>

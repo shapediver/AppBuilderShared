@@ -46,8 +46,6 @@ export function useDrawingToolsApi(
 		setShowPointLabels,
 		showDistanceLabels,
 		setShowDistanceLabels,
-		gridSize,
-		setGridSize,
 		angleStep,
 		setAngleStep,
 		snapToVertices,
@@ -120,16 +118,6 @@ export function useDrawingToolsApi(
 			const planeRestriction = Object.values(restrictions).find(
 				(r: RestrictionProperties) => r.type === RESTRICTION_TYPE.PLANE,
 			) as PlaneRestrictionProperties;
-
-			if (planeRestriction?.gridSnapRestriction?.gridUnit !== undefined) {
-				// update the store with the drawing tools options (the drawing tools are already updated correctly)
-				setGridSize(planeRestriction?.gridSnapRestriction?.gridUnit);
-			} else {
-				// set the drawing tools options from the store
-				Object.values(drawingToolsApi.restrictions)
-					.filter((r) => r instanceof PlaneRestrictionApi)
-					.forEach((p) => (p.gridRestrictionApi.gridUnit = gridSize));
-			}
 
 			if (
 				planeRestriction?.angularSnapRestriction?.angleStep !==
