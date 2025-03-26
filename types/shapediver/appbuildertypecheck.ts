@@ -357,16 +357,25 @@ const IAppBuilderContainerSchema = z
 	})
 	.extend(IAppBuilderWidgetPropsCommonSchema.shape);
 
+// Zod type definition for IAppBuilderInstances
+const IAppBuilderInstancesSchema = z.object({
+	sessionId: z.string(),
+	name: z.string().optional(),
+	parameters: z.record(z.string()).optional(),
+	transformations: z.array(z.array(z.number())).optional(),
+});
+
 // Zod type definition for IAppBuilder
 const IAppBuilderSchema = z.object({
 	version: z.literal("1.0"),
 	parameters: z.array(IAppBuilderParameterDefinitionSchema).optional(),
 	sessionId: z.string().optional(),
 	containers: z.array(IAppBuilderContainerSchema),
-	instances: z.any().optional(),
+	instances: z.array(IAppBuilderInstancesSchema).optional(),
 });
 
 export const validateAppBuilder = (value: any) => {
+	console.log(value, IAppBuilderSchema.safeParse(value));
 	return IAppBuilderSchema.safeParse(value);
 };
 
