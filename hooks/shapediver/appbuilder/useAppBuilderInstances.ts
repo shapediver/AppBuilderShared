@@ -63,9 +63,22 @@ export function useAppBuilderInstances(props: Props) {
 			const parametersWithIds: {[key: string]: string} = {};
 
 			Object.entries(instance.parameters ?? {}).map(([key, value]) => {
-				const parameter = session.getParameterByName(key);
-				if (parameter.length === 0) return;
-				parametersWithIds[parameter[0].id] = value;
+				// first, check the display name
+				Object.values(session.parameters).forEach((parameter) => {
+					if (parameter.displayname !== key) return;
+					parametersWithIds[parameter.id] = value;
+				});
+				// if the display name is not found, check the name
+				if (parametersWithIds[key]) return;
+				const parameterByName = session.getParameterByName(key);
+				if (parameterByName.length > 0) {
+					parametersWithIds[parameterByName[0].id] = value;
+					return;
+				}
+
+				// if the parameter is not found, we search by id
+				const parameterById = session.getParameterById(key);
+				if (parameterById) parametersWithIds[key] = value;
 			});
 
 			parsedInstances.push({

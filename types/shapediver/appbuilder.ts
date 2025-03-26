@@ -324,7 +324,12 @@ export interface IAppBuilderInstanceDefinition {
 	sessionId: string;
 	/** Optional name of the instance. This name will be used for the node in the scene graph, e.g. NAME_transformations_0 for the first transformation. */
 	name?: string;
-	/** Parameter set for the instance. If none is provided, the default parameter set is used. */
+	/**
+	 * Parameter set for the instance.
+	 * Defined in a parameter dictionary where the key is either the displayname, the name or the id of the parameter.
+	 * The value is the parameter value.
+	 * If none is provided, the default parameter set is used.
+	 **/
 	parameters?: {[key: string]: string};
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
