@@ -50,7 +50,7 @@ export function useAppBuilderInstances(props: Props) {
 
 		const parsedInstances: {
 			session: ISessionApi;
-			parameterSet: {[key: string]: string};
+			parameters: {[key: string]: string};
 			transformations?: number[][];
 			originalIndex: number;
 			name?: string;
@@ -60,17 +60,17 @@ export function useAppBuilderInstances(props: Props) {
 			const session = sessions[instance.sessionId];
 			if (!session) return;
 
-			const parameterSetWithIds: {[key: string]: string} = {};
+			const parametersWithIds: {[key: string]: string} = {};
 
-			Object.entries(instance.parameterSet ?? {}).map(([key, value]) => {
+			Object.entries(instance.parameters ?? {}).map(([key, value]) => {
 				const parameter = session.getParameterByName(key);
 				if (parameter.length === 0) return;
-				parameterSetWithIds[parameter[0].id] = value;
+				parametersWithIds[parameter[0].id] = value;
 			});
 
 			parsedInstances.push({
 				session,
-				parameterSet: parameterSetWithIds,
+				parameters: parametersWithIds,
 				transformations: instance.transformations,
 				originalIndex: index,
 				name: instance.name,
@@ -136,7 +136,7 @@ export function useAppBuilderInstances(props: Props) {
 			};
 
 			const promise = instance.session
-				.customizeParallel(instance.parameterSet)
+				.customizeParallel(instance.parameters)
 				.then((node) => {
 					// send a progress update
 					progressCallback({
