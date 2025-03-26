@@ -12,6 +12,7 @@ import {useShapeDiverStoreViewportAccessFunctions} from "./useShapeDiverStoreVie
 
 export class ProcessManager implements IProcessManager {
 	readonly _id: string;
+	readonly _controllerSessionId: string;
 	readonly _processes: IProcess[] = [];
 	readonly _busyModeFlagTokens: {
 		[key: string]: string;
@@ -24,10 +25,15 @@ export class ProcessManager implements IProcessManager {
 	_error?: Error[] = undefined;
 	_status: PROCESS_STATUS = PROCESS_STATUS.CREATED;
 
-	constructor(id: string) {
+	constructor(controllerSessionId: string, id: string) {
+		this._controllerSessionId = controllerSessionId;
 		this._id = id;
 		// this is necessary to already set the flags for the viewports
 		this.addFlags();
+	}
+
+	public get controllerSessionId(): string {
+		return this._controllerSessionId;
 	}
 
 	public get id(): string {
@@ -243,9 +249,13 @@ export const useShapeDiverStoreProcessManager =
 				) => {
 					set((state) => {
 						const processManagers = {...state.processManagers};
-						const processManager =
-							processManagers[processId] ??
-							new ProcessManager(processId);
+						const processManager = processManagers[processId];
+						if (!processManager) {
+							// if the process manager does not exist, throw an error
+							throw new Error(
+								`Process manager with id ${processId} does not exist.`,
+							);
+						}
 
 						processManager.addPromise(promise, onProgress);
 
@@ -258,12 +268,19 @@ export const useShapeDiverStoreProcessManager =
 						};
 					});
 				},
-				createProcessManager: (processId: string) => {
+				createProcessManager: (
+					controllerSessionId: string,
+					processId: string,
+				) => {
 					set((state) => {
 						const processManagers = {...state.processManagers};
-						const processManager =
-							processManagers[processId] ??
-							new ProcessManager(processId);
+						let processManager = processManagers[processId];
+						if (!processManager) {
+							processManager = new ProcessManager(
+								controllerSessionId,
+								processId,
+							);
+						}
 
 						return {
 							...state,

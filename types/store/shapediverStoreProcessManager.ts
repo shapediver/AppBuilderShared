@@ -34,6 +34,10 @@ export interface IProcess {
  */
 export interface IProcessManager {
 	/**
+	 * The id of the controller session.
+	 */
+	controllerSessionId: string;
+	/**
 	 * The id of the process manager.
 	 * All processes managed by this process manager have the same id.
 	 */
@@ -118,7 +122,11 @@ export interface IShapeDiverStoreProcessManager {
 	 * It is sometimes necessary to create a process manager without adding a promise.
 	 * For example, if the processes are created asynchronously, but the flags need to be set immediately.
 	 *
+	 * @param controllerSessionId The id of the controller session.
 	 * @param processId The id of the process manager.
 	 */
-	createProcessManager: (processId: string) => void;
+	createProcessManager: (
+		controllerSessionId: string,
+		processId: string,
+	) => void;
 }

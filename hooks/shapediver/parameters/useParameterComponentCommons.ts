@@ -28,8 +28,13 @@ export function useParameterComponentCommons<T>(
 		return !ids.every((id) => !state.parameterChanges[id]?.executing);
 	});
 	const processesInSession = useShapeDiverStoreProcessManager((state) => {
-		// check if there are currently processes running
-		return Object.values(state.processManagers).length > 0;
+		// check if there are currently processes running in the session
+
+		return (
+			Object.values(state.processManagers).filter(
+				(p) => p.controllerSessionId === namespace,
+			).length > 0
+		);
 	});
 	const sessionDependencies = useShapeDiverStoreParameters((state) => {
 		return state.sessionDependency[namespace];

@@ -115,40 +115,43 @@ export function useSessionWithAppBuilder(
 	 *
 	 * @param newNode
 	 */
-	const cb = useCallback((newNode?: ITreeNode) => {
-		const api = (
-			newNode?.data.find((d) => d instanceof OutputApiData) as
-				| OutputApiData
-				| undefined
-		)?.api;
-		setOutputApi(api);
+	const cb = useCallback(
+		(newNode?: ITreeNode) => {
+			const api = (
+				newNode?.data.find((d) => d instanceof OutputApiData) as
+					| OutputApiData
+					| undefined
+			)?.api;
+			setOutputApi(api);
 
-		const outputData = api?.content?.[0]?.data as
-			| IAppBuilder
-			| string
-			| undefined;
-		const parsedData = validationResult(outputData);
-		const appBuilderData =
-			parsedData instanceof Error ? undefined : parsedData;
+			const outputData = api?.content?.[0]?.data as
+				| IAppBuilder
+				| string
+				| undefined;
+			const parsedData = validationResult(outputData);
+			const appBuilderData =
+				parsedData instanceof Error ? undefined : parsedData;
 
-		let hasSubProcesses = false;
-		if (appBuilderData) {
-			if (appBuilderData.instances) {
-				hasSubProcesses = true;
+			let hasSubProcesses = false;
+			if (appBuilderData) {
+				if (appBuilderData.instances) {
+					hasSubProcesses = true;
+				}
 			}
-		}
 
-		// create a process id only if there are further processes to be executed
-		// for now this is only the case if there are instances defined in the AppBuilder data
-		// in the future, this could be extended to other cases
-		const processId = hasSubProcesses
-			? Math.random().toString(36).substring(7)
-			: undefined;
+			// create a process id only if there are further processes to be executed
+			// for now this is only the case if there are instances defined in the AppBuilder data
+			// in the future, this could be extended to other cases
+			const processId = hasSubProcesses
+				? Math.random().toString(36).substring(7)
+				: undefined;
 
-		if (processId) createProcessManager(processId);
-		setProcessId(processId);
-		setParsedData(parsedData);
-	}, []);
+			if (processId) createProcessManager(namespace, processId);
+			setProcessId(processId);
+			setParsedData(parsedData);
+		},
+		[namespace],
+	);
 
 	useEffect(() => {
 		const removeOutputUpdateCallback = addOutputUpdateCallback(
