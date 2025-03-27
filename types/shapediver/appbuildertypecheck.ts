@@ -361,7 +361,7 @@ const IAppBuilderContainerSchema = z
 const IAppBuilderInstancesSchema = z.object({
 	sessionId: z.string(),
 	name: z.string().optional(),
-	parameters: z.record(z.string()).optional(),
+	parameters: z.record(z.string().or(z.number()).or(z.boolean())).optional(),
 	transformations: z.array(z.array(z.number())).optional(),
 });
 
@@ -375,7 +375,6 @@ const IAppBuilderSchema = z.object({
 });
 
 export const validateAppBuilder = (value: any) => {
-	console.log(value, IAppBuilderSchema.safeParse(value));
 	return IAppBuilderSchema.safeParse(value);
 };
 
