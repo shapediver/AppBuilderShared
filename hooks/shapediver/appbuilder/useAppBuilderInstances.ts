@@ -5,7 +5,7 @@ import {IAppBuilder} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Mat4Array} from "@AppBuilderShared/types/shapediver/common";
 import {ISessionApi, ITreeNode, TreeNode} from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
 interface Props {
 	/**
@@ -40,6 +40,9 @@ export function useAppBuilderInstances(props: Props) {
 	const [instances, setInstances] = useState<{
 		[key: string]: ITreeNode;
 	}>({});
+
+	const sessionNodeRef = useRef<ITreeNode | undefined>(undefined);
+
 	/**
 	 * Parse the app builder data.
 	 * Gather all the necessary information to create the instances.
@@ -107,8 +110,11 @@ export function useAppBuilderInstances(props: Props) {
 
 	const sessionUpdateCallback = useCallback(
 		(newNode?: ITreeNode) => {
+			sessionNodeRef.current = newNode;
 			if (!newNode) return;
 			Object.values(instances).forEach((instance) => {
+				if (newNode.hasChild(instance)) return;
+
 				// add the instance to the controller session node
 				newNode.addChild(instance);
 				// update the version of the node
@@ -130,6 +136,20 @@ export function useAppBuilderInstances(props: Props) {
 
 	useEffect(() => {
 		if (!sessionApi) return;
+
+		// create a promise to wait for all instances to be created
+		// this is necessary to only resolve the process once all instances are created
+		// and added to the controller session node
+		let resolveMainPromise: () => void;
+		const mainPromise = new Promise<void>((resolve) => {
+			resolveMainPromise = resolve;
+		});
+		if (processId) addPromise(processId, mainPromise);
+
+		const newInstances: {
+			[key: string]: ITreeNode;
+		} = {};
+		const promises: Promise<void>[] = [];
 
 		appBuilderInstances.forEach((instance) => {
 			// create a callback function for the progress
@@ -201,17 +221,41 @@ export function useAppBuilderInstances(props: Props) {
 						percentage: 0.9,
 						msg: "Adding instance to scene",
 					});
-					setInstances((prevInstances) => ({
-						...prevInstances,
-						[instanceId]: instanceNode,
-					}));
+
+					newInstances[instanceId] = instanceNode;
 				});
+
+			promises.push(promise);
 
 			if (!processId) return;
 			// add the promise to the process manager
 			// once all registered promises are resolved, the viewports are updated
 			// and the process manager is removed from the store
 			addPromise(processId, promise, onProgressCallback);
+		});
+
+		// wait for all promises to resolve
+		// then update the instances to avoid unnecessary re-renders
+		Promise.all(promises).then(() => {
+			setInstances(newInstances);
+
+			// we add the instances to the controller session node
+			// this is necessary to happen before the process is finished
+			if (sessionNodeRef.current) {
+				Object.values(newInstances).forEach((instance) => {
+					if (sessionNodeRef.current!.hasChild(instance)) return;
+
+					// add the instance to the controller session node
+					sessionNodeRef.current!.addChild(instance);
+					// update the version of the node
+					// this won't be triggered as long as a process is running
+					sessionNodeRef.current!.updateVersion();
+				});
+			}
+
+			// resolve the main promise
+			// to signal that the process is finished
+			resolveMainPromise!();
 		});
 
 		return () => {
