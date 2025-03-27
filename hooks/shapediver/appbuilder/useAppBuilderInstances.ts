@@ -53,7 +53,7 @@ export function useAppBuilderInstances(props: Props) {
 
 		const parsedInstances: {
 			session: ISessionApi;
-			parameters: {[key: string]: string};
+			parameterValues: {[key: string]: string};
 			transformations?: number[][];
 			originalIndex: number;
 			name?: string;
@@ -63,30 +63,32 @@ export function useAppBuilderInstances(props: Props) {
 			const session = sessions[instance.sessionId];
 			if (!session) return;
 
-			const parametersWithIds: {[key: string]: string} = {};
+			const parameterValuesWithIds: {[key: string]: string} = {};
 
-			Object.entries(instance.parameters ?? {}).map(([key, value]) => {
-				// first, check the display name
-				Object.values(session.parameters).forEach((parameter) => {
-					if (parameter.displayname !== key) return;
-					parametersWithIds[parameter.id] = value;
-				});
-				// if the display name is not found, check the name
-				if (parametersWithIds[key]) return;
-				const parameterByName = session.getParameterByName(key);
-				if (parameterByName.length > 0) {
-					parametersWithIds[parameterByName[0].id] = value;
-					return;
-				}
+			Object.entries(instance.parameterValues ?? {}).map(
+				([key, value]) => {
+					// first, check the display name
+					Object.values(session.parameters).forEach((parameter) => {
+						if (parameter.displayname !== key) return;
+						parameterValuesWithIds[parameter.id] = value;
+					});
+					// if the display name is not found, check the name
+					if (parameterValuesWithIds[key]) return;
+					const parameterByName = session.getParameterByName(key);
+					if (parameterByName.length > 0) {
+						parameterValuesWithIds[parameterByName[0].id] = value;
+						return;
+					}
 
-				// if the parameter is not found, we search by id
-				const parameterById = session.getParameterById(key);
-				if (parameterById) parametersWithIds[key] = value;
-			});
+					// if the parameter is not found, we search by id
+					const parameterById = session.getParameterById(key);
+					if (parameterById) parameterValuesWithIds[key] = value;
+				},
+			);
 
 			parsedInstances.push({
 				session,
-				parameters: parametersWithIds,
+				parameterValues: parameterValuesWithIds,
 				transformations: instance.transformations,
 				originalIndex: index,
 				name: instance.name,
@@ -169,7 +171,7 @@ export function useAppBuilderInstances(props: Props) {
 			};
 
 			const promise = instance.session
-				.customizeParallel(instance.parameters)
+				.customizeParallel(instance.parameterValues)
 				.then((node) => {
 					// send a progress update
 					progressCallback({

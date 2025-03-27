@@ -330,7 +330,7 @@ export interface IAppBuilderInstanceDefinition {
 	 * The value is the parameter value.
 	 * If none is provided, the default parameter set is used.
 	 **/
-	parameters?: {[key: string]: string};
+	parameterValues?: {[key: string]: string};
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
 }
