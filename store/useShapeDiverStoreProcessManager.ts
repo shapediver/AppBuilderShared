@@ -1,6 +1,8 @@
 import {
 	IProcess,
+	IProcessDefinition,
 	IProcessManager,
+	IProgress,
 	IShapeDiverStoreProcessManager,
 	PROCESS_STATUS,
 } from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
@@ -13,23 +15,32 @@ import {useShapeDiverStoreViewportAccessFunctions} from "./useShapeDiverStoreVie
 export class ProcessManager implements IProcessManager {
 	readonly _id: string;
 	readonly _controllerSessionId: string;
-	readonly _processes: IProcess[] = [];
+	readonly _processes: {
+		[key: string]: IProcess;
+	} = {};
 	readonly _busyModeFlagTokens: {
 		[key: string]: string;
 	} = {};
 	readonly _suspendSceneUpdateFlagTokens: {
 		[key: string]: string;
 	} = {};
+	readonly _callbacks: {
+		[key: string]: (progress: {[key: string]: IProgress[]}) => void;
+	} = {};
 
-	_progress: {percentage: number; msg?: string[]} = {percentage: 0};
-	_error?: Error[] = undefined;
+	_progress: {
+		[key: string]: IProgress[];
+	} = {};
+	_error?: {
+		[key: string]: Error;
+	};
 	_status: PROCESS_STATUS = PROCESS_STATUS.CREATED;
 
 	constructor(controllerSessionId: string, id: string) {
 		this._controllerSessionId = controllerSessionId;
 		this._id = id;
 		// this is necessary to already set the flags for the viewports
-		this.addFlags();
+		this.evaluateProcesses();
 	}
 
 	public get controllerSessionId(): string {
@@ -40,15 +51,17 @@ export class ProcessManager implements IProcessManager {
 		return this._id;
 	}
 
-	public get processes(): IProcess[] {
+	public get processes(): {[key: string]: IProcess} {
 		return this._processes;
 	}
 
-	public get progress(): {percentage: number; msg?: string[]} {
+	public get progress(): {
+		[key: string]: IProgress[];
+	} {
 		return this._progress;
 	}
 
-	public get error(): Error[] | undefined {
+	public get error(): {[key: string]: Error} | undefined {
 		return this._error;
 	}
 
@@ -56,32 +69,40 @@ export class ProcessManager implements IProcessManager {
 		return this._status;
 	}
 
-	public addPromise(
-		promise: Promise<unknown>,
-		onProgress?: (
-			callback: (progress: {percentage: number; msg?: string}) => void,
-		) => void,
-	): void {
+	public addProcess(processDefinition: IProcessDefinition): void {
+		const processId =
+			processDefinition.id || Math.random().toString(36).substring(7);
 		const process: IProcess = {
+			id: processId,
+			name: processDefinition.name,
 			resolved: false,
-			promise,
-			progress: {
-				percentage: 0,
-			},
+			promise: processDefinition.promise,
+			progress: [
+				{
+					percentage: 0,
+					msg: "Process started...",
+				},
+			],
 		};
 
 		// if an onProgress callback is provided, listen to the progress of the promise
-		if (onProgress) {
-			onProgress((progress: {percentage: number; msg?: string}) => {
-				process.progress = progress;
-				this.evaluateProgress();
-			});
+		if (processDefinition.onProgress) {
+			processDefinition.onProgress(
+				(progress: {percentage: number; msg?: string}) => {
+					process.progress.push(progress);
+					this.evaluateProgress();
+				},
+			);
 		}
 
 		// once the promise is resolved, set the resolved flag to true
 		// and evaluate the processes
 		process.promise.then(() => {
 			process.resolved = true;
+			process.progress.push({
+				percentage: 1,
+				msg: "Process finished.",
+			});
 			this.evaluateProcesses();
 		});
 
@@ -92,7 +113,7 @@ export class ProcessManager implements IProcessManager {
 			this.evaluateProcesses();
 		});
 
-		this.processes.push(process);
+		this.processes[processId] = process;
 		this.evaluateProcesses();
 	}
 
@@ -119,6 +140,17 @@ export class ProcessManager implements IProcessManager {
 					);
 			}
 		}
+	}
+
+	public notifyProgressChange(
+		callback: (progress: {[key: string]: IProgress[]}) => void,
+	): () => void {
+		const id = Math.random().toString(36).substring(7);
+		this._callbacks[id] = callback;
+
+		return () => {
+			delete this._callbacks[id];
+		};
 	}
 
 	private removeFlags(): void {
@@ -173,7 +205,10 @@ export class ProcessManager implements IProcessManager {
 	 */
 	private evaluateProcesses(): void {
 		this.evaluateProgress();
-		if (this._status === PROCESS_STATUS.RUNNING) {
+		if (
+			this._status === PROCESS_STATUS.CREATED ||
+			this._status === PROCESS_STATUS.RUNNING
+		) {
 			// if the status is running, set the flags
 			// they will not be set if they already exist
 			this.addFlags();
@@ -189,30 +224,31 @@ export class ProcessManager implements IProcessManager {
 	}
 
 	private evaluateProgress(): void {
-		this._progress = {
-			percentage:
-				this.processes
-					.map((process) => process.progress.percentage)
-					.reduce((acc, curr) => acc + curr, 0) /
-				this.processes.length,
-			msg: this.processes
-				.map((process) => process.progress.msg)
-				.filter((msg) => msg !== undefined) as string[],
-		};
+		const processesList = Object.values(this.processes);
+
+		// calculate the progress of the process manager
+		this._progress = processesList.reduce(
+			(acc, process) => {
+				acc[process.id] = process.progress;
+				return acc;
+			},
+			{} as {[key: string]: IProgress[]},
+		);
 
 		// check if there are still running processes
 		const running =
-			this.processes.length > 0 &&
-			this.processes.some((process) => !process.resolved);
+			processesList.length > 0 &&
+			processesList.some((process) => !process.resolved);
 
 		if (running) this._status = PROCESS_STATUS.RUNNING;
 
 		// check if there are any errors
-		const errors = this.processes
-			.filter((process) => process.error)
-			.map((process) => process.error)
-			.filter((error) => error !== undefined);
-		this._error = errors.length > 0 ? errors : undefined;
+		const errors = Object.fromEntries(
+			processesList
+				.filter((process) => process.error)
+				.map((process) => [process.id, process.error!]),
+		);
+		this._error = Object.keys(errors).length > 0 ? errors : undefined;
 		if (this._error) {
 			// if there are errors, we have to be careful with the status
 			// we only set the status to error if there are no running processes
@@ -225,9 +261,13 @@ export class ProcessManager implements IProcessManager {
 
 		// if there are no running processes
 		// and there are processes, set the status to finished
-		if (this.processes.length > 0 && !running) {
+		if (processesList.length > 0 && !running) {
 			this._status = PROCESS_STATUS.FINISHED;
-			this._progress = {percentage: 1};
+		}
+
+		// notify all callbacks
+		for (const key in this._callbacks) {
+			this._callbacks[key](this._progress);
 		}
 	}
 }
@@ -237,48 +277,43 @@ export const useShapeDiverStoreProcessManager =
 		devtools(
 			(set) => ({
 				processManagers: {},
-				addPromise: (
-					processId: string,
-					promise: Promise<unknown>,
-					onProgress?: (
-						callback: (progress: {
-							percentage: number;
-							msg?: string;
-						}) => void,
-					) => void,
+				addProcess: (
+					processManagerId: string,
+					process: IProcessDefinition,
 				) => {
 					set((state) => {
 						const processManagers = {...state.processManagers};
-						const processManager = processManagers[processId];
+						const processManager =
+							processManagers[processManagerId];
 						if (!processManager) {
 							// if the process manager does not exist, throw an error
 							throw new Error(
-								`Process manager with id ${processId} does not exist.`,
+								`Process manager with id ${processManagerId} does not exist.`,
 							);
 						}
 
-						processManager.addPromise(promise, onProgress);
+						processManager.addProcess(process);
 
 						return {
 							...state,
 							processManagers: {
 								...processManagers,
-								[processId]: processManager,
+								[processManagerId]: processManager,
 							},
 						};
 					});
 				},
 				createProcessManager: (
 					controllerSessionId: string,
-					processId: string,
+					processManagerId: string,
 				) => {
 					set((state) => {
 						const processManagers = {...state.processManagers};
-						let processManager = processManagers[processId];
+						let processManager = processManagers[processManagerId];
 						if (!processManager) {
 							processManager = new ProcessManager(
 								controllerSessionId,
-								processId,
+								processManagerId,
 							);
 						}
 
@@ -286,7 +321,7 @@ export const useShapeDiverStoreProcessManager =
 							...state,
 							processManagers: {
 								...processManagers,
-								[processId]: processManager,
+								[processManagerId]: processManager,
 							},
 						};
 					});

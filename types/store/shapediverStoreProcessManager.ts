@@ -6,17 +6,46 @@ export enum PROCESS_STATUS {
 }
 
 /**
+ * Definition of the progress of a process.
+ * The progress is a percentage value between 0 and 1.
+ */
+export interface IProgress {
+	percentage: number;
+	msg?: string;
+}
+
+/**
+ * Definition of a process definition.
+ * A process definition is a promise that can be added to the process manager.
+ *
+ * @property {string} id - The id of the process.
+ * @property {string} name - The name of the process.
+ * @property {Promise<unknown>} promise - The promise of the process.
+ * @property {(callback: (progress: IProgress) => void) => void} onProgress - The callback function that is called when the progress of the process changes.
+ */
+export interface IProcessDefinition {
+	id?: string;
+	name?: string;
+	promise: Promise<unknown>;
+	onProgress?: (callback: (progress: IProgress) => void) => void;
+}
+
+/**
  * Definition of a single process.
  *
+ * @property {string} id - The id of the process.
+ * @property {string} name - The name of the process.
  * @property {boolean} resolved - Flag indicating if the process has been resolved.
  * @property {Promise<unknown>} promise - The promise of the process.
- * @property {{percentage: number; msg?: string}} progress - The progress of the process.
+ * @property {IProgress[]} progress - The progress of the process. The last progress is the current progress of the process.
  * @property {Error} error - The error of the process, if any.
  */
 export interface IProcess {
+	id: string;
+	name?: string;
 	resolved: boolean;
 	promise: Promise<unknown>;
-	progress: {percentage: number; msg?: string};
+	progress: IProgress[];
 	error?: Error;
 }
 
@@ -28,9 +57,6 @@ export interface IProcess {
  * A process manager is responsible for managing a list of processes.
  * Once all processes have been resolved, the process manager removes the flags from the viewports
  * and removes itself from the store.
- *
- * @property {string} id - The id of the process manager.
- * @property {IProcess[]} processes - The list of processes.
  */
 export interface IProcessManager {
 	/**
@@ -43,21 +69,25 @@ export interface IProcessManager {
 	 */
 	id: string;
 	/**
-	 * The list of processes.
+	 * The dictionary of processes.
 	 */
-	processes: IProcess[];
+	processes: {
+		[key: string]: IProcess;
+	};
 
 	/**
 	 * The progress of the process manager.
 	 * The progress is calculated based on the progress of the processes.
 	 */
-	progress: {percentage: number; msg?: string[]};
+	progress: {
+		[key: string]: IProgress[];
+	};
 
 	/**
 	 * The error of the process manager.
 	 * The error is set if any of the processes has an error.
 	 */
-	error?: Error[];
+	error?: {[key: string]: Error};
 
 	/**
 	 * The status of the process manager.
@@ -77,15 +107,19 @@ export interface IProcessManager {
 	 * Adds a promise to the process manager.
 	 * The promise is added as part of the list of processes.
 	 *
-	 * @param {Promise<unknown>} promise - The promise of the process.
-	 * @param onProgress An optional callback function that returns the progress of the process.
+	 * @param processDefinition The process to add to the process manager.
 	 */
-	addPromise(
-		promise: Promise<unknown>,
-		onProgress?: (
-			callback: (progress: {percentage: number; msg?: string}) => void,
-		) => void,
-	): void;
+	addProcess(processDefinition: IProcessDefinition): void;
+
+	/**
+	 * Register a callback function that is called when the progress of the process manager changes.
+	 * The callback function is called with the progress of the process manager.
+	 *
+	 * @returns A function that removes the callback function.
+	 */
+	notifyProgressChange: (
+		callback: (progress: {[key: string]: IProgress[]}) => void,
+	) => () => void;
 }
 
 /**
@@ -98,23 +132,19 @@ export interface IShapeDiverStoreProcessManager {
 	 * The key is the id of the process manager.
 	 */
 	processManagers: {
-		[processId: string]: IProcessManager;
+		[processManagerId: string]: IProcessManager;
 	};
 
 	/**
 	 * Adds a promise to a process manager.
 	 * If the process manager does not exist, it creates a new process manager.
 	 *
-	 * @param processId The id of the process manager.
-	 * @param promise The promise of the process.
-	 * @param onProgress An optional callback function that returns the progress of the process.
+	 * @param processManagerId The id of the process manager.
+	 * @param processDefinition The process to add to the process manager.
 	 */
-	addPromise: (
-		processId: string,
-		promise: Promise<unknown>,
-		onProgress?: (
-			callback: (progress: {percentage: number; msg?: string}) => void,
-		) => void,
+	addProcess: (
+		processManagerId: string,
+		processDefinition: IProcessDefinition,
 	) => void;
 
 	/**
@@ -123,10 +153,10 @@ export interface IShapeDiverStoreProcessManager {
 	 * For example, if the processes are created asynchronously, but the flags need to be set immediately.
 	 *
 	 * @param controllerSessionId The id of the controller session.
-	 * @param processId The id of the process manager.
+	 * @param processManagerId The id of the process manager.
 	 */
 	createProcessManager: (
 		controllerSessionId: string,
-		processId: string,
+		processManagerId: string,
 	) => void;
 }

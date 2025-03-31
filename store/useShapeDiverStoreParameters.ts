@@ -32,19 +32,27 @@ import {
 	ISessionsHistoryState,
 	IShapeDiverStoreParameters,
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {addValidator} from "@AppBuilderShared/utils/parameterValidation";
 import {
 	ShapeDiverRequestCustomization,
 	ShapeDiverRequestExport,
 } from "@shapediver/api.geometry-api-dto-v2";
 import {
+	addListener,
+	EVENTTYPE,
+	IEvent,
 	IExportApi,
 	IParameterApi,
 	ISessionApi,
 	isFileParameterApi,
+	ITaskEvent,
+	removeListener,
+	TASK_TYPE,
 } from "@shapediver/viewer.session";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {useShapeDiverStoreProcessManager} from "./useShapeDiverStoreProcessManager";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter,
@@ -125,6 +133,111 @@ type ExportResponseSetter = (response: IExportResponse) => void;
 type HistoryPusher = (entry: ISessionsHistoryState) => void;
 
 /**
+ * Register a session in the process manager.
+ * This function creates a process manager for the session and registers the progress callback.
+ *
+ * The corresponding task events are registered and unregistered automatically.
+ * Within the task events, the progress callback is called with the progress of the task.
+ *
+ * @param session
+ * @returns
+ */
+const registerInProcessManager = (session: ISessionApi) => {
+	const {createProcessManager, addProcess} =
+		useShapeDiverStoreProcessManager.getState();
+	const processManagerId = Math.random().toString(36).substring(7);
+
+	// create a process manager for the session
+	createProcessManager(session.id, processManagerId);
+
+	let resolveMainPromise: () => void;
+	const mainPromise = new Promise<void>((resolve) => {
+		resolveMainPromise = resolve;
+	});
+
+	// create a callback function for the progress
+	let progressCallback: (progress: {
+		percentage: number;
+		msg?: string;
+	}) => void;
+
+	// create a function to register the progress callback
+	const onProgressCallback = (
+		callback: (progress: {percentage: number; msg?: string}) => void,
+	) => {
+		progressCallback = callback;
+	};
+	const mainProcessDefinition: IProcessDefinition = {
+		name: "Session Process",
+		promise: mainPromise,
+		onProgress: onProgressCallback,
+	};
+
+	// add process to the process manager
+	addProcess(processManagerId, mainProcessDefinition);
+
+	// create a callback function for the progress
+	const customizationProcessCallback = (e: IEvent) => {
+		const taskEvent = e as ITaskEvent;
+		const taskData = taskEvent.data as {
+			sessionId: string;
+		};
+		if (
+			taskEvent.type === TASK_TYPE.SESSION_CUSTOMIZATION &&
+			taskData.sessionId === session.id
+		) {
+			progressCallback({
+				percentage: taskEvent.progress,
+				msg: taskEvent.status,
+			});
+		}
+	};
+
+	// create a callback function for the progress
+	// and remove the listeners when the task is cancelled or finished
+	const customizationProcessCallbackEnd = (e: IEvent) => {
+		const taskEvent = e as ITaskEvent;
+		const taskData = taskEvent.data as {
+			sessionId: string;
+		};
+		if (
+			taskEvent.type === TASK_TYPE.SESSION_CUSTOMIZATION &&
+			taskData.sessionId === session.id
+		) {
+			progressCallback({
+				percentage: taskEvent.progress,
+				msg: taskEvent.status,
+			});
+
+			// remove listeners
+			removeListener(tokenStart);
+			removeListener(tokenProcess);
+			removeListener(tokenEnd);
+			removeListener(tokenCancel);
+		}
+	};
+
+	const tokenStart = addListener(
+		EVENTTYPE.TASK.TASK_START,
+		customizationProcessCallback,
+	);
+	const tokenProcess = addListener(
+		EVENTTYPE.TASK.TASK_PROCESS,
+		customizationProcessCallback,
+	);
+	const tokenEnd = addListener(
+		EVENTTYPE.TASK.TASK_END,
+		customizationProcessCallbackEnd,
+	);
+	const tokenCancel = addListener(
+		EVENTTYPE.TASK.TASK_CANCEL,
+		customizationProcessCallbackEnd,
+	);
+
+	return resolveMainPromise!;
+};
+
+/**
  * Create an IGenericParameterExecutor  for a session.
  * @param session
  * @param getDefaultExports
@@ -167,6 +280,9 @@ function createGenericParameterExecutorForSession(
 				(id) => (session.parameters[id].value = values[id]),
 			);
 
+			// create a process manager for the session customization
+			const resolve = registerInProcessManager(session);
+
 			if (exports.length > 0) {
 				// prepare body and send request
 				action = EventActionEnum.EXPORT;
@@ -181,6 +297,9 @@ function createGenericParameterExecutorForSession(
 			} else {
 				await session.customize();
 			}
+
+			// resolve the promise of the process manager
+			resolve();
 
 			if (!skipHistory) {
 				const state: ISessionsHistoryState = {

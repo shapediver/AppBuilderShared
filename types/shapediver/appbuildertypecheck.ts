@@ -294,6 +294,14 @@ const IAppBuilderWidgetPropsAgentSchema = z.object({
 	parameterNamesExclude: z.array(z.string()).optional(),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsProgress
+const IAppBuilderWidgetPropsProgressSchema = z.object({
+	showPercentage: z.boolean().optional(),
+	showOnComplete: z.boolean().optional(),
+	showMessages: z.boolean().optional(),
+	delayRemoval: z.number().optional(),
+});
+
 // Zod type definition for IAppBuilderWidget
 const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -335,6 +343,10 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("agent"),
 		props: IAppBuilderWidgetPropsAgentSchema,
+	}),
+	z.object({
+		type: z.literal("progress"),
+		props: IAppBuilderWidgetPropsProgressSchema,
 	}),
 ]);
 

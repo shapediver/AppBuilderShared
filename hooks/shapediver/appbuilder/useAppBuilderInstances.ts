@@ -3,6 +3,7 @@ import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShape
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IAppBuilder} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Mat4Array} from "@AppBuilderShared/types/shapediver/common";
+import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {ISessionApi, ITreeNode, TreeNode} from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
@@ -20,7 +21,7 @@ interface Props {
 	/**
 	 * The process ID to add the promises to.
 	 */
-	processId: string | undefined;
+	processManagerId: string | undefined;
 }
 
 /**
@@ -31,10 +32,10 @@ interface Props {
  * @param props
  */
 export function useAppBuilderInstances(props: Props) {
-	const {sessionApi, appBuilderData, processId} = props;
+	const {sessionApi, appBuilderData, processManagerId} = props;
 
 	const {sessions, addSessionUpdateCallback} = useShapeDiverStoreSession();
-	const {addPromise} = useShapeDiverStoreProcessManager();
+	const {addProcess} = useShapeDiverStoreProcessManager();
 	const {addInstance, removeInstance} = useShapeDiverStoreInstances();
 
 	const [instances, setInstances] = useState<{
@@ -70,19 +71,20 @@ export function useAppBuilderInstances(props: Props) {
 					// first, check the display name
 					Object.values(session.parameters).forEach((parameter) => {
 						if (parameter.displayname !== key) return;
-						parameterValuesWithIds[parameter.id] = value;
+						parameterValuesWithIds[parameter.id] = value + "";
 					});
 					// if the display name is not found, check the name
 					if (parameterValuesWithIds[key]) return;
 					const parameterByName = session.getParameterByName(key);
 					if (parameterByName.length > 0) {
-						parameterValuesWithIds[parameterByName[0].id] = value;
+						parameterValuesWithIds[parameterByName[0].id] =
+							value + "";
 						return;
 					}
 
 					// if the parameter is not found, we search by id
 					const parameterById = session.getParameterById(key);
-					if (parameterById) parameterValuesWithIds[key] = value;
+					if (parameterById) parameterValuesWithIds[key] = value + "";
 				},
 			);
 
@@ -146,7 +148,13 @@ export function useAppBuilderInstances(props: Props) {
 		const mainPromise = new Promise<void>((resolve) => {
 			resolveMainPromise = resolve;
 		});
-		if (processId) addPromise(processId, mainPromise);
+
+		const mainProcessDefinition: IProcessDefinition = {
+			name: "Instance Process",
+			promise: mainPromise,
+		};
+		if (processManagerId)
+			addProcess(processManagerId, mainProcessDefinition);
 
 		const newInstances: {
 			[key: string]: ITreeNode;
@@ -170,17 +178,17 @@ export function useAppBuilderInstances(props: Props) {
 				progressCallback = callback;
 			};
 
+			const instanceId =
+				instance.name ?? `instances[${instance.originalIndex}]`;
+
 			const promise = instance.session
 				.customizeParallel(instance.parameterValues)
 				.then((node) => {
 					// send a progress update
 					progressCallback({
-						percentage: 0.75,
-						msg: "Applying transformations to instance",
+						percentage: 0.45,
+						msg: "Applying transformations to instance...",
 					});
-
-					const instanceId =
-						instance.name ?? `instances[${instance.originalIndex}]`;
 					const instanceNode = new TreeNode(instanceId);
 					instanceNode.originalName = instanceId;
 
@@ -221,7 +229,7 @@ export function useAppBuilderInstances(props: Props) {
 					// send a progress update
 					progressCallback({
 						percentage: 0.9,
-						msg: "Adding instance to scene",
+						msg: "Adding instance to scene... ",
 					});
 
 					newInstances[instanceId] = instanceNode;
@@ -229,11 +237,22 @@ export function useAppBuilderInstances(props: Props) {
 
 			promises.push(promise);
 
-			if (!processId) return;
+			if (!processManagerId) return;
 			// add the promise to the process manager
 			// once all registered promises are resolved, the viewports are updated
 			// and the process manager is removed from the store
-			addPromise(processId, promise, onProgressCallback);
+			const processDefinition: IProcessDefinition = {
+				name: instanceId,
+				promise: promise,
+				onProgress: onProgressCallback,
+			};
+			addProcess(processManagerId, processDefinition);
+
+			// call the first progress update
+			progressCallback!({
+				percentage: 0.1,
+				msg: "Creating instance...",
+			});
 		});
 
 		// wait for all promises to resolve
@@ -263,5 +282,5 @@ export function useAppBuilderInstances(props: Props) {
 		return () => {
 			setInstances({});
 		};
-	}, [appBuilderInstances, processId]);
+	}, [appBuilderInstances, processManagerId]);
 }

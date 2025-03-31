@@ -54,7 +54,9 @@ export function useSessionWithAppBuilder(
 	const [parsedData, setParsedData] = useState<
 		IAppBuilder | Error | undefined
 	>(undefined);
-	const [processId, setProcessId] = useState<string | undefined>(undefined);
+	const [processManagerId, setProcessManagerId] = useState<
+		string | undefined
+	>(undefined);
 	const [outputApi, setOutputApi] = useState<IOutputApi | undefined>(
 		undefined,
 	);
@@ -142,12 +144,13 @@ export function useSessionWithAppBuilder(
 			// create a process id only if there are further processes to be executed
 			// for now this is only the case if there are instances defined in the AppBuilder data
 			// in the future, this could be extended to other cases
-			const processId = hasSubProcesses
+			const processManagerId = hasSubProcesses
 				? Math.random().toString(36).substring(7)
 				: undefined;
 
-			if (processId) createProcessManager(namespace, processId);
-			setProcessId(processId);
+			if (processManagerId)
+				createProcessManager(namespace, processManagerId);
+			setProcessManagerId(processManagerId);
 			setParsedData(parsedData);
 		},
 		[namespace],
@@ -184,7 +187,7 @@ export function useSessionWithAppBuilder(
 	useAppBuilderInstances({
 		sessionApi,
 		appBuilderData,
-		processId,
+		processManagerId,
 	});
 
 	return {
