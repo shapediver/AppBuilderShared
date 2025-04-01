@@ -1,3 +1,4 @@
+import {useShapeDiverStoreInstances} from "@AppBuilderShared/store/useShapeDiverStoreInstances";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {
 	addInteractionData,
@@ -19,7 +20,7 @@ export type IUseNodeInteractionDataProps = {
 	/**
 	 * The ID of the session.
 	 */
-	sessionId: string;
+	sessionId?: string;
 	/**
 	 * The ID of the component.
 	 */
@@ -27,7 +28,7 @@ export type IUseNodeInteractionDataProps = {
 	/**
 	 * The ID of the output.
 	 */
-	outputId: string;
+	outputId?: string;
 	/**
 	 * The patterns for matching the node names of the given output
 	 */
@@ -74,7 +75,22 @@ export type IUseNodeInteractionDataProps = {
 
 export type IUseNodeInteractionDataResult = string[];
 
-const createCallback = (
+/**
+ * Creates an output update callback for the given properties.
+ * This output update callback will add interaction data to the nodes of the given output.
+ *
+ * It is added/removed via the {@link useShapeDiverStoreSession} store.
+ *
+ * @param setAvailableNodeNames The setter for the available node names.
+ * @param patterns The patterns for matching the node names of the given output.
+ * @param interactionSettings The settings for the interaction data.
+ * @param componentId The ID of the component.
+ * @param selectManager The select manager to be used for selection.
+ * @param strictNaming If the naming should be strict.
+ *
+ * @returns The output update callback.
+ */
+const createOutputUpdateCallback = (
 	setAvailableNodeNames: (names: IUseNodeInteractionDataResult) => void,
 	patterns: NodeNameFilterPattern[],
 	interactionSettings: IUseNodeInteractionDataProps["interactionSettings"],
@@ -160,69 +176,80 @@ const createCallback = (
 };
 
 /**
- * Hook for managing interaction data for the nodes of an output.
- * Use this hook for defining which nodes are selectable, hoverable, or draggable.
+ * The instance callback to assign the interaction data to the nodes of the given instance.
+ * This is used if no session ID or output ID is provided.
+ * The interaction data will be added to the nodes of the given instance.
  *
- * @see https://viewer.shapediver.com/v3/latest/api/features/interaction/interfaces/IInteractionData.html
+ * Compared to the output update callback, this callback does not need to be added/removed via the {@link useShapeDiverStoreSession} store.
+ * It can be called directly.
  *
- * @param sessionId The ID of the session.
- * @param componentId The ID of the component.
- * @param outputId The ID of the output.
- * @param patterns The patterns for matching the node names of the given output
+ * @param instance The instance to assign the interaction data to.
+ * @param setAvailableNodeNames The setter for the available node names.
+ * @param patterns The patterns for matching the node names of the given instance.
  * @param interactionSettings The settings for the interaction data.
- * @param selectManager The select manager to be used for selection.
- * If not provided, the selection will not be possible, but the interaction data will be added.
+ * @param componentId The ID of the component.
+ * @param strictNaming If the naming should be strict.
  *
- * @returns
+ * @returns The cleanup function to remove the interaction data.
  */
-export function useNodeInteractionData(props: IUseNodeInteractionDataProps): {
-	availableNodeNames: IUseNodeInteractionDataResult;
-} {
-	const {
-		sessionId,
-		componentId,
-		outputId,
-		patterns,
-		interactionSettings,
-		selectManager,
-		strictNaming,
-	} = props;
-
-	const [availableNodeNames, setAvailableNodeNames] =
-		useState<IUseNodeInteractionDataResult>([]);
-	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
-
-	useEffect(() => {
-		const callback = createCallback(
-			setAvailableNodeNames,
-			patterns,
+const instanceCallback = (
+	instance: ITreeNode,
+	setAvailableNodeNames: (names: IUseNodeInteractionDataResult) => void,
+	patterns: NodeNameFilterPattern[],
+	interactionSettings: IUseNodeInteractionDataProps["interactionSettings"],
+	componentId: string,
+	strictNaming?: boolean,
+) => {
+	const availableNodes: {
+		[nodeId: string]: {node: ITreeNode; name: string};
+	} = {};
+	for (const pattern of patterns) {
+		if (pattern.length === 0) {
+			availableNodes[instance.id] = {
+				node: instance,
+				name: instance.name,
+			};
+		} else {
+			for (const child of instance.children) {
+				gatherNodesForPattern(
+					child,
+					pattern,
+					instance.name,
+					availableNodes,
+					0,
+					strictNaming,
+				);
+			}
+		}
+	}
+	Object.values(availableNodes).forEach((availableNode) => {
+		addInteractionData(
+			availableNode.node,
 			interactionSettings,
 			componentId,
-			selectManager,
-			strictNaming,
 		);
+	});
 
-		const removeOutputUpdateCallback = addOutputUpdateCallback(
-			sessionId,
-			outputId,
-			callback,
-		);
+	setAvailableNodeNames(Object.values(availableNodes).map((n) => n.name));
 
-		return removeOutputUpdateCallback;
-	}, [
-		sessionId,
-		outputId,
-		patterns,
-		interactionSettings,
-		componentId,
-		selectManager,
-		strictNaming,
-	]);
-
-	return {
-		availableNodeNames,
+	return () => {
+		// remove the interaction data on unmount
+		Object.values(availableNodes).forEach((availableNode) => {
+			availableNode.node.traverse((node) => {
+				for (const data of node.data) {
+					// remove existing interaction data if it is restricted to the current component
+					if (
+						data instanceof InteractionData &&
+						data.restrictedManagers.includes(componentId)
+					) {
+						node.removeData(data);
+						node.updateVersion();
+					}
+				}
+			});
+		});
 	};
-}
+};
 
 export function useNodesInteractionData(props: {
 	[key: string]: IUseNodeInteractionDataProps;
@@ -234,6 +261,7 @@ export function useNodesInteractionData(props: {
 	const [availableNodeNames, setAvailableNodeNames] = useState<{
 		[key: string]: IUseNodeInteractionDataResult;
 	}>({});
+	const {instances} = useShapeDiverStoreInstances();
 	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
 
 	const setAvailableNodeNamesAtKey = useCallback((key: string) => {
@@ -249,7 +277,8 @@ export function useNodesInteractionData(props: {
 	useEffect(() => {
 		const removeOutputUpdateCallbacks: (() => void)[] = [];
 		Object.entries(props).forEach(([key, prop]) => {
-			const callback = createCallback(
+			if (!prop.sessionId || !prop.outputId) return;
+			const callback = createOutputUpdateCallback(
 				setAvailableNodeNamesAtKey(key),
 				prop.patterns,
 				prop.interactionSettings,
@@ -272,7 +301,35 @@ export function useNodesInteractionData(props: {
 				removeOutputUpdateCallback(),
 			);
 		};
-	}, [props]);
+	}, [props, instances]);
+
+	useEffect(() => {
+		const removeInstanceCallbacks: (() => void)[] = [];
+
+		Object.entries(props).forEach(([key, prop]) => {
+			if (prop.sessionId !== undefined && prop.outputId !== undefined)
+				return;
+			if (!instances[key]) return;
+			// if no session ID or output ID is provided, we assume that this is an instance
+			// for instances we can assign the data directly
+			removeInstanceCallbacks.push(
+				instanceCallback(
+					instances[key],
+					setAvailableNodeNamesAtKey(key),
+					prop.patterns,
+					prop.interactionSettings,
+					prop.componentId,
+					prop.strictNaming,
+				),
+			);
+		});
+
+		return () => {
+			removeInstanceCallbacks.forEach((removeInstanceCallback) =>
+				removeInstanceCallback(),
+			);
+		};
+	}, [instances, props]);
 
 	return {
 		availableNodeNames,

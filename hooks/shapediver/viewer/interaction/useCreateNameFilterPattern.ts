@@ -1,9 +1,11 @@
+import {useShapeDiverStoreInstances} from "@AppBuilderShared/store/useShapeDiverStoreInstances";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {
 	convertUserDefinedNameFilters,
+	convertUserDefinedNameFiltersForInstances,
 	OutputNodeNameFilterPatterns,
 } from "@shapediver/viewer.features.interaction";
-import {ISessionApi} from "@shapediver/viewer.session";
+import {ISessionApi, ITreeNode} from "@shapediver/viewer.session";
 import {useEffect, useState} from "react";
 
 /**
@@ -16,13 +18,14 @@ import {useEffect, useState} from "react";
  */
 const getPatterns = (
 	sessions: {[key: string]: ISessionApi},
-	sessionIds: string[],
+	instances: {[key: string]: ITreeNode},
 	nameFilter?: string[],
 ) => {
 	if (!nameFilter) return {};
-
-	const patterns: {[key: string]: OutputNodeNameFilterPatterns} = {};
-	const currentSessionIds = sessionIds || Object.keys(sessions);
+	const outputPatterns: {
+		[key: string]: OutputNodeNameFilterPatterns;
+	} = {};
+	const currentSessionIds = Object.keys(sessions);
 
 	currentSessionIds.forEach((sessionId) => {
 		const sessionApi = sessions[sessionId];
@@ -35,18 +38,22 @@ const getPatterns = (
 			nameFilter,
 			outputIdsToNamesMapping,
 		);
-		if (Object.values(pattern).length > 0) patterns[sessionId] = pattern;
+		if (Object.values(pattern).length > 0)
+			outputPatterns[sessionId] = pattern;
 	});
 
-	return patterns;
+	const instancePatterns = convertUserDefinedNameFiltersForInstances(
+		nameFilter,
+		Object.keys(instances),
+	);
+
+	return {
+		outputPatterns,
+		instancePatterns,
+	};
 };
 
 export type IUseCreateNameFilterPatternProps = {
-	/**
-	 * The IDs of the sessions to create the filter pattern for.
-	 * If not set, all sessions are used.
-	 */
-	sessionIds?: string[];
 	/**
 	 * The user-defined name filters to convert.
 	 */
@@ -54,7 +61,10 @@ export type IUseCreateNameFilterPatternProps = {
 };
 
 export type IUseCreateNameFilterPatternResult = {
-	[key: string]: OutputNodeNameFilterPatterns;
+	outputPatterns?: {
+		[key: string]: OutputNodeNameFilterPatterns;
+	};
+	instancePatterns?: OutputNodeNameFilterPatterns;
 };
 
 // #region Functions (1)
@@ -72,6 +82,7 @@ export function useCreateNameFilterPattern(
 } {
 	// get the session API
 	const sessions = useShapeDiverStoreSession((state) => state.sessions);
+	const instances = useShapeDiverStoreInstances((state) => state.instances);
 
 	// create a state for the pattern(s)
 	const [patterns, setPatterns] = useState<IUseCreateNameFilterPatternResult>(
@@ -79,14 +90,10 @@ export function useCreateNameFilterPattern(
 	);
 
 	useEffect(() => {
-		const {sessionIds, nameFilter} = props;
-		const pattern = getPatterns(
-			sessions,
-			sessionIds || Object.keys(sessions),
-			nameFilter,
-		);
-		setPatterns(pattern);
-	}, [props, sessions]);
+		const {nameFilter} = props;
+		const patterns = getPatterns(sessions, instances, nameFilter);
+		setPatterns(patterns);
+	}, [props, sessions, instances]);
 
 	return {patterns};
 }
@@ -106,6 +113,7 @@ export function useCreateNameFilterPatterns(props: {
 } {
 	// get the session API
 	const sessions = useShapeDiverStoreSession((state) => state.sessions);
+	const instances = useShapeDiverStoreInstances((state) => state.instances);
 
 	// create a state for the pattern(s)
 	const [patterns, setPatterns] = useState<{
@@ -117,16 +125,12 @@ export function useCreateNameFilterPatterns(props: {
 			[key: string]: IUseCreateNameFilterPatternResult;
 		} = {};
 		Object.entries(props).forEach(([key, value]) => {
-			const {sessionIds, nameFilter} = value;
-			const pattern = getPatterns(
-				sessions,
-				sessionIds || Object.keys(sessions),
-				nameFilter,
-			);
+			const {nameFilter} = value;
+			const pattern = getPatterns(sessions, instances, nameFilter);
 			patternDictionary[key] = pattern;
 		});
 		setPatterns(patternDictionary);
-	}, [props, sessions]);
+	}, [props, sessions, instances]);
 
 	return {patterns};
 }

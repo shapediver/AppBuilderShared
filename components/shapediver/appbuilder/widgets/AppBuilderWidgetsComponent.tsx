@@ -4,6 +4,7 @@ import AppBuilderAreaChartWidgetComponent from "@AppBuilderShared/components/sha
 import AppBuilderBarChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderBarChartWidgetComponent";
 import AppBuilderImageWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderImageWidgetComponent";
 import AppBuilderLineChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
+import AppBuilderProgressWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderProgressWidgetComponent";
 import AppBuilderRoundChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
 import AppBuilderTextWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
@@ -16,6 +17,7 @@ import {
 	isBarChartWidget,
 	isImageWidget,
 	isLineChartWidget,
+	isProgressWidget,
 	isRoundChartWidget,
 	isTextWidget,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
@@ -137,6 +139,13 @@ export default function AppBuilderWidgetsComponent({
 								{...w.props}
 							/>
 						</Suspense>
+					);
+				else if (isProgressWidget(w))
+					return (
+						<AppBuilderProgressWidgetComponent
+							key={i}
+							{...w.props}
+						/>
 					);
 				else return null;
 			})}

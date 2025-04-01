@@ -116,7 +116,6 @@ export default function SelectedAttribute(props: SelectedAttributeProps) {
 	}, [nameFilter]);
 
 	const {selectedNodeNames} = useSelection(
-		Object.keys(sessions),
 		viewportId,
 		selectionProps,
 		active,

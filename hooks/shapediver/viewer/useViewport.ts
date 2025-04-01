@@ -2,6 +2,7 @@ import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewpo
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
+import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -52,6 +53,11 @@ export function useViewport(props: ViewportCreateDto) {
 
 						return screenshot;
 					},
+					addFlag: (flag: FLAG_TYPE) => {
+						return viewportApi.addFlag(flag);
+					},
+					removeFlag: (token: string) =>
+						viewportApi.removeFlag(token),
 				});
 		});
 
