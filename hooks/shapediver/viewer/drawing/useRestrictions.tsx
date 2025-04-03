@@ -53,8 +53,9 @@ export function useRestrictions(
 			restrictionProps.forEach((restrictionDefinition, index) => {
 				if (restrictionDefinition.type !== "geometry") return;
 				nameFilter[
-					restrictionDefinition.id.replaceAll("_", "-") ||
-						`restriction-${index}`
+					restrictionDefinition.id
+						? restrictionDefinition.id.replaceAll("_", "-")
+						: `restriction-${index}`
 				] = {
 					nameFilter: restrictionDefinition.nameFilter || [],
 				};
@@ -121,8 +122,9 @@ export function useRestrictions(
 		if (restrictionProps && restrictionProps.length > 0) {
 			for (let i = 0; i < restrictionProps.length; i++) {
 				const r = restrictionProps![i];
-				const restrictionName =
-					r.id.replaceAll("_", "-") || `restriction-${i}`;
+				const restrictionName = r.id
+					? r.id.replaceAll("_", "-")
+					: `restriction-${i}`;
 				const nodesPerRestriction = nodes[restrictionName];
 
 				if (
