@@ -52,10 +52,12 @@ export function useRestrictions(
 		if (restrictionProps) {
 			restrictionProps.forEach((restrictionDefinition, index) => {
 				if (restrictionDefinition.type !== "geometry") return;
-				nameFilter[restrictionDefinition.id || `restriction_${index}`] =
-					{
-						nameFilter: restrictionDefinition.nameFilter || [],
-					};
+				nameFilter[
+					restrictionDefinition.id.replaceAll("_", "-") ||
+						`restriction-${index}`
+				] = {
+					nameFilter: restrictionDefinition.nameFilter || [],
+				};
 			});
 		}
 		return nameFilter;
@@ -119,7 +121,8 @@ export function useRestrictions(
 		if (restrictionProps && restrictionProps.length > 0) {
 			for (let i = 0; i < restrictionProps.length; i++) {
 				const r = restrictionProps![i];
-				const restrictionName = r.id || `restriction_${i}`;
+				const restrictionName =
+					r.id.replaceAll("_", "-") || `restriction-${i}`;
 				const nodesPerRestriction = nodes[restrictionName];
 
 				if (
