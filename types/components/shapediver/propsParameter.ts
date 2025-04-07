@@ -1,5 +1,23 @@
 import {PropsParameterOrExport} from "@AppBuilderShared/types/components/shapediver/propsCommon";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
+import {ComponentType, CSSProperties, JSX} from "react";
+
+export interface PropsParameterWrapper {
+	readonly wrapperComponent?:
+		| string
+		| ComponentType<any>
+		| keyof JSX.IntrinsicElements;
+	readonly wrapperProps?: {
+		className?: string;
+		style?: CSSProperties;
+		[key: string]: any;
+	};
+}
+
+export const defaultPropsParameterWrapper = {
+	wrapperComponent: "section",
+	wrapperProps: {},
+};
 
 /**
  * Props of a parameter reference.
