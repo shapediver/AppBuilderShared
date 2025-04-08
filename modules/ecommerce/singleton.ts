@@ -2,6 +2,7 @@ import {
 	DummyECommerceApi,
 	ECommerceApiFactory,
 } from "@AppBuilderShared/modules/ecommerce/ecommerceapi";
+import {isRunningInPlatform} from "@AppBuilderShared/utils/platform/environment";
 
 /** Number of key events for toggling configurator visibility. */
 const TOGGLE_CONFIGURATOR_VISIBILITY_NUM_EVENTS = 3;
@@ -14,7 +15,7 @@ const CROSSWINDOW_API_TIMEOUT = 20000;
 
 export const ECommerceApiSingleton = (async () => {
 	// if window.parent === window return a dummy api for testing
-	if (window.parent === window) {
+	if (isRunningInPlatform() || window.parent === window) {
 		return new DummyECommerceApi();
 	}
 
