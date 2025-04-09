@@ -1,7 +1,12 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ColorFormatType,
@@ -39,11 +44,19 @@ export function ParameterColorComponentThemeProps(
  *
  * @returns
  */
-export default function ParameterColorComponent(props: PropsParameter) {
+export default function ParameterColorComponent(
+	props: PropsParameter & Partial<PropsParameterWrapper>,
+) {
 	const {colorFormat} = useProps(
 		"ParameterColorComponent",
 		defaultStyleProps,
 		defaultStyleProps,
+	);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterColorComponent",
+		defaultPropsParameterWrapper,
+		props,
 	);
 
 	const {
@@ -73,7 +86,11 @@ export default function ParameterColorComponent(props: PropsParameter) {
 	}, [paramValue, colorFormat]);
 
 	return (
-		<>
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && (
 				<ColorInput
@@ -92,6 +109,6 @@ export default function ParameterColorComponent(props: PropsParameter) {
 					format={colorFormat}
 				/>
 			)}
-		</>
+		</ParameterWrapperComponent>
 	);
 }

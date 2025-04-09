@@ -1,4 +1,5 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
@@ -77,7 +78,7 @@ export default function ParameterSliderComponent(
 		props,
 	);
 
-	const {wrapperComponent: Wrapper, wrapperProps} = useProps(
+	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterSliderComponent",
 		defaultPropsParameterWrapper,
 		props,
@@ -106,7 +107,11 @@ export default function ParameterSliderComponent(
 	];
 
 	return (
-		<Wrapper {...wrapperProps}>
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && (
 				<Group justify="space-between" w="100%" wrap="nowrap">
@@ -146,6 +151,6 @@ export default function ParameterSliderComponent(
 					)}
 				</Group>
 			)}
-		</Wrapper>
+		</ParameterWrapperComponent>
 	);
 }

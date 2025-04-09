@@ -137,18 +137,18 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 				getParameterComponent(componentContext, param.definition);
 
 			elementGroups[groupId].elements.push(
-				<Paper
+				<ParameterComponent
 					key={param.definition.id}
-					pb={extraBottomPadding ? pbSlider : undefined}
-				>
-					<ParameterComponent
-						{...param.parameter}
-						disableIfDirty={
-							param.parameter.disableIfDirty ??
-							!param.parameter.acceptRejectMode
-						}
-					/>
-				</Paper>,
+					{...param.parameter}
+					wrapperComponent={Paper}
+					wrapperProps={{
+						pb: extraBottomPadding ? pbSlider : undefined,
+					}}
+					disableIfDirty={
+						param.parameter.disableIfDirty ??
+						!param.parameter.acceptRejectMode
+					}
+				/>,
 			);
 		} else if (param.export) {
 			// Get the element for the export and add it to the group
