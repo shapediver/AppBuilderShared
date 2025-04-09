@@ -48,6 +48,7 @@ export default function ParameterLabelComponent(
 	const labelcomp = (
 		<TextWeighted pb={4} size="sm" fontWeight="medium" fw={fontWeight}>
 			{label}
+			{cancel ? " *" : ""}
 		</TextWeighted>
 	);
 
