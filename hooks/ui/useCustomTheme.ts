@@ -9,6 +9,7 @@ import {ParameterSliderComponentThemeProps} from "@AppBuilderShared/components/s
 import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectCarouselComponent";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
+import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
 import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
@@ -690,6 +691,25 @@ export const useCustomTheme = (props: Props = {}) => {
 					logo: undefined,
 				},
 			}),
+			/**
+			 * ViewportAcceptRejectButtons
+			 *
+			 * Defaults for the viewport accept reject buttons.
+			 */
+			ViewportAcceptRejectButtons:
+				ViewportAcceptRejectButtonsComponentThemeProps({
+					// groupProps: {
+					// 	justify: "center",
+					// 	w: "auto",
+					// 	wrap: "nowrap",
+					// 	p: "xs",
+					// },
+					// buttonProps: {
+					// 	variant: "light",
+					// },
+					// iconProps: {},
+					// textProps: {size: "md"},
+				}),
 			/**
 			 * ViewportComponent
 			 *
