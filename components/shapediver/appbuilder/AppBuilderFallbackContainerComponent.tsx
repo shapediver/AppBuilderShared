@@ -1,4 +1,3 @@
-import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
 import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import TabsComponent, {
 	ITabsComponentProps,
@@ -31,9 +30,6 @@ export default function AppBuilderFallbackContainerComponent({
 					<ParametersAndExportsAccordionComponent
 						key={0}
 						parameters={parameters}
-						topSection={
-							<AcceptRejectButtons parameters={parameters} />
-						}
 					/>,
 				],
 			});

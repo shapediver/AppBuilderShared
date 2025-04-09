@@ -1,4 +1,3 @@
-import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
 import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
@@ -50,7 +49,6 @@ export default function AppBuilderAccordionWidgetComponent({
 			parameters={parameterProps}
 			exports={exportProps}
 			defaultGroupName={defaultGroupName}
-			topSection={<AcceptRejectButtons parameters={parameterProps} />}
 		/>
 	);
 }
