@@ -709,6 +709,7 @@ export const useCustomTheme = (props: Props = {}) => {
 					// },
 					// iconProps: {},
 					// textProps: {size: "md"},
+					// showButtons: undefined,
 				}),
 			/**
 			 * ViewportComponent

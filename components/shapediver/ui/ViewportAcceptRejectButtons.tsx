@@ -24,6 +24,13 @@ interface StyleProps {
 	buttonProps?: Partial<ButtonProps>;
 	iconProps?: IconProps;
 	textProps?: Partial<TextProps>;
+	/**
+	 * Whether to show the buttons or not.
+	 * If false, the buttons will never be rendered.
+	 * If true, the buttons will always be rendered.
+	 * If undefined, the buttons will be rendered if there are changes to accept or reject.
+	 */
+	showButtons?: boolean;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
@@ -53,7 +60,8 @@ export function ViewportAcceptRejectButtonsComponentThemeProps(
 }
 
 interface Props {
-	sessionIds: string[];
+	/** Optional list of session IDs to which the buttons should be limited. */
+	sessionIds?: string[];
 }
 
 function ViewportAcceptRejectButtons(
@@ -61,38 +69,41 @@ function ViewportAcceptRejectButtons(
 ) {
 	const {sessionIds, ...styleProps} = props;
 	// style properties
-	const {groupProps, buttonProps, iconProps, textProps} = useProps(
-		"ViewportAcceptRejectButtonsComponent",
-		defaultStyleProps,
-		styleProps,
-	);
-
-	const showButtons = useMemo(() => sessionIds.length > 0, [sessionIds]);
+	const {groupProps, buttonProps, iconProps, textProps, showButtons} =
+		useProps(
+			"ViewportAcceptRejectButtonsComponent",
+			defaultStyleProps,
+			styleProps,
+		);
 
 	// Use a more selective selector that only re-renders when relevant changes occur
 	const parameterChanges = useShapeDiverStoreParameters(
 		useCallback(
-			(state) => {
-				if (!showButtons) return [] as IParameterChanges[];
-
-				return Object.keys(state.parameterChanges)
-					.filter((id) => sessionIds.includes(id))
+			(state) =>
+				Object.keys(state.parameterChanges)
+					.filter((id) =>
+						sessionIds ? sessionIds.includes(id) : true,
+					)
 					.reduce((acc, id) => {
 						acc.push(state.parameterChanges[id]);
 						return acc;
 					}, [] as IParameterChanges[])
-					.sort((a, b) => a.priority - b.priority);
-			},
-			[sessionIds, showButtons],
+					.sort((a, b) => a.priority - b.priority),
+			[sessionIds],
 		),
 	);
 
 	const hasChanges = useMemo(
-		() => parameterChanges.length > 0,
+		() =>
+			parameterChanges.length > 0 &&
+			parameterChanges.some((c) => Object.keys(c.values).length > 0),
 		[parameterChanges],
 	);
+
 	const disableChangeControls = useMemo(
-		() => parameterChanges.some((c) => c.executing),
+		() =>
+			parameterChanges.length === 0 ||
+			parameterChanges.some((c) => c.executing),
 		[parameterChanges],
 	);
 
@@ -107,7 +118,7 @@ function ViewportAcceptRejectButtons(
 	}, [parameterChanges]);
 
 	// If there are no parameter changes to be confirmed, don't render anything
-	if (!showButtons || !hasChanges) {
+	if (showButtons == false || (!hasChanges && !showButtons)) {
 		return null;
 	}
 
