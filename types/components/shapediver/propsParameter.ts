@@ -14,7 +14,7 @@ export interface PropsParameterWrapper {
 	};
 }
 
-export const defaultPropsParameterWrapper = {
+export const defaultPropsParameterWrapper: PropsParameterWrapper = {
 	wrapperComponent: "section",
 	wrapperProps: {},
 };
