@@ -537,18 +537,11 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
  * Settings for a session used by the AppBuilder.
  */
 export interface IAppBuilderSettingsJsonSession
-	extends Omit<
-		IAppBuilderSettingsSession,
-		"modelViewUrl" | "acceptRejectMode"
-	> {
+	extends Omit<IAppBuilderSettingsSession, "modelViewUrl"> {
 	/**
 	 * Override modelViewUrl to be optional.
 	 */
 	modelViewUrl?: string;
-	/**
-	 * Optional boolean to treat this sessions as an instance (default: false).
-	 */
-	acceptRejectMode?: boolean;
 }
 
 /**

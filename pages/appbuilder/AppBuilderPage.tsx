@@ -260,19 +260,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	// key bindings
 	useKeyBindings({namespace});
-	// Get accept reject session IDs
-	const acceptRejectSessionIds = useMemo(() => {
-		const ids = [];
-		if (controllerSession?.id && controllerSession.acceptRejectMode) {
-			ids.push(controllerSession.id);
-		}
-		secondarySessions.forEach((session) => {
-			if (session.id && session.acceptRejectMode) {
-				ids.push(session.id);
-			}
-		});
-		return ids;
-	}, [controllerSession, secondarySessions]);
 
 	const showMarkdown =
 		!(settings && hasSession) && // no settings or no session
@@ -318,11 +305,9 @@ export default function AppBuilderPage(props: Partial<Props>) {
 								</ViewportOverlayWrapper>
 								<ViewportOverlayWrapper
 									position={OverlayPosition.BOTTOM_MIDDLE}
-									offset="20px"
+									offset="1em"
 								>
-									<ViewportAcceptRejectButtons
-										sessionIds={acceptRejectSessionIds}
-									/>
+									<ViewportAcceptRejectButtons />
 								</ViewportOverlayWrapper>
 							</>
 						)}
