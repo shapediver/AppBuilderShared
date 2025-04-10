@@ -2,7 +2,27 @@ import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IAppBuilderWidgetPropsAccordion} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useMemo} from "react";
+import AcceptRejectButtons from "../../ui/AcceptRejectButtons";
+
+interface StyleProps {
+	showAcceptRejectButtons: boolean;
+}
+
+const defaultStyleProps: Partial<StyleProps> = {
+	showAcceptRejectButtons: false,
+};
+
+type AppBuilderAccordionWidgetComponentThemePropsType = Partial<StyleProps>;
+
+export function AppBuilderAccordionWidgetComponentThemeProps(
+	props: AppBuilderAccordionWidgetComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
 
 interface Props extends IAppBuilderWidgetPropsAccordion {
 	/**
@@ -17,7 +37,15 @@ export default function AppBuilderAccordionWidgetComponent({
 	parameters = [],
 	exports = [],
 	defaultGroupName,
-}: Props) {
+	...styleProps
+}: Props & AppBuilderAccordionWidgetComponentThemePropsType) {
+	// style properties
+	const {showAcceptRejectButtons} = useProps(
+		"AppBuilderAccordionWidgetComponent",
+		defaultStyleProps,
+		styleProps,
+	);
+
 	const parameterProps: PropsParameter[] = useMemo(
 		() =>
 			parameters.map((p) => {
@@ -49,6 +77,11 @@ export default function AppBuilderAccordionWidgetComponent({
 			parameters={parameterProps}
 			exports={exportProps}
 			defaultGroupName={defaultGroupName}
+			topSection={
+				showAcceptRejectButtons ? (
+					<AcceptRejectButtons parameters={parameterProps} />
+				) : undefined
+			}
 		/>
 	);
 }

@@ -1,4 +1,5 @@
 import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
+import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAgentWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
@@ -298,6 +299,15 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Below here - custom components implemented by ShapeDiver
 			 */
 
+			/**
+			 * AppBuilderAccordionWidgetComponent
+			 *
+			 * Used for defining theme overrides for accordion widgets.
+			 */
+			AppBuilderAccordionWidgetComponent:
+				AppBuilderAccordionWidgetComponentThemeProps({
+					// showAcceptRejectButtons: false,
+				}),
 			/**
 			 * AppBuilderContainerWrapper
 			 *
