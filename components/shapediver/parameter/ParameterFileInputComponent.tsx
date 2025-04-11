@@ -1,9 +1,14 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {FileInput} from "@mantine/core";
+import {FileInput, useProps} from "@mantine/core";
 import {isFileParameterApi} from "@shapediver/viewer.session";
 import {
 	extendMimeTypes,
@@ -17,9 +22,17 @@ import React, {useEffect, useMemo} from "react";
  *
  * @returns
  */
-export default function ParameterFileInputComponent(props: PropsParameter) {
+export default function ParameterFileInputComponent(
+	props: PropsParameter & Partial<PropsParameterWrapper>,
+) {
 	const {definition, value, state, handleChange, onCancel, disabled} =
 		useParameterComponentCommons<File>(props, 0);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterFileInputComponent",
+		defaultPropsParameterWrapper,
+		props,
+	);
 
 	// create the file endings from all the formats that are specified in the parameter
 	const fileEndings = useMemo(() => {
@@ -54,7 +67,11 @@ export default function ParameterFileInputComponent(props: PropsParameter) {
 	}, [value]);
 
 	return (
-		<>
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && (
 				<FileInput
@@ -75,6 +92,6 @@ export default function ParameterFileInputComponent(props: PropsParameter) {
 					}
 				/>
 			)}
-		</>
+		</ParameterWrapperComponent>
 	);
 }

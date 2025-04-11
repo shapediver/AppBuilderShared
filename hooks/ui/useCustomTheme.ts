@@ -1,4 +1,5 @@
 import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
+import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAgentWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
@@ -9,6 +10,7 @@ import {ParameterSliderComponentThemeProps} from "@AppBuilderShared/components/s
 import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectCarouselComponent";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
+import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
 import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
@@ -297,6 +299,15 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Below here - custom components implemented by ShapeDiver
 			 */
 
+			/**
+			 * AppBuilderAccordionWidgetComponent
+			 *
+			 * Used for defining theme overrides for accordion widgets.
+			 */
+			AppBuilderAccordionWidgetComponent:
+				AppBuilderAccordionWidgetComponentThemeProps({
+					// showAcceptRejectButtons: false,
+				}),
 			/**
 			 * AppBuilderContainerWrapper
 			 *
@@ -690,6 +701,26 @@ export const useCustomTheme = (props: Props = {}) => {
 					logo: undefined,
 				},
 			}),
+			/**
+			 * ViewportAcceptRejectButtons
+			 *
+			 * Defaults for the viewport accept reject buttons.
+			 */
+			ViewportAcceptRejectButtons:
+				ViewportAcceptRejectButtonsComponentThemeProps({
+					// groupProps: {
+					// 	justify: "center",
+					// 	w: "auto",
+					// 	wrap: "nowrap",
+					// 	p: "xs",
+					// },
+					// buttonProps: {
+					// 	variant: "light",
+					// },
+					// iconProps: {},
+					// textProps: {size: "md"},
+					// showButtons: undefined,
+				}),
 			/**
 			 * ViewportComponent
 			 *

@@ -1,12 +1,17 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {Button, Group, Loader, Stack, Text} from "@mantine/core";
+import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
 import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
 import {
 	DraggingParameterValue,
@@ -39,7 +44,9 @@ const parseDraggedNodes = (
  *
  * @returns
  */
-export default function ParameterDraggingComponent(props: PropsParameter) {
+export default function ParameterDraggingComponent(
+	props: PropsParameter & Partial<PropsParameterWrapper>,
+) {
 	const {
 		definition,
 		handleChange,
@@ -50,6 +57,13 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 		state,
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterDraggingComponent",
+		defaultPropsParameterWrapper,
+		props,
+	);
+
 	const draggingProps = definition.settings?.props as IDraggingParameterProps;
 
 	// is the dragging active or not?
@@ -244,9 +258,13 @@ export default function ParameterDraggingComponent(props: PropsParameter) {
 	}, [_onCancelCallback]);
 
 	return (
-		<>
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && draggingActive ? contentActive : contentInactive}
-		</>
+		</ParameterWrapperComponent>
 	);
 }

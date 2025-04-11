@@ -1,6 +1,8 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
+import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
+import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
 import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
@@ -297,9 +299,17 @@ export default function AppBuilderPage(props: Partial<Props>) {
 						)}
 					>
 						{ViewportOverlayWrapper && (
-							<ViewportOverlayWrapper>
-								{ViewportIcons && <ViewportIcons />}
-							</ViewportOverlayWrapper>
+							<>
+								<ViewportOverlayWrapper>
+									{ViewportIcons && <ViewportIcons />}
+								</ViewportOverlayWrapper>
+								<ViewportOverlayWrapper
+									position={OverlayPosition.BOTTOM_MIDDLE}
+									offset="1em"
+								>
+									<ViewportAcceptRejectButtons />
+								</ViewportOverlayWrapper>
+							</>
 						)}
 					</ViewportComponent>
 				)}

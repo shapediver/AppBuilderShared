@@ -1,7 +1,12 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {
 	Group,
@@ -59,7 +64,9 @@ export function ParameterSliderComponentThemeProps(
  * @returns
  */
 export default function ParameterSliderComponent(
-	props: PropsParameter & Partial<StyleProps>,
+	props: PropsParameter &
+		Partial<PropsParameterWrapper> &
+		Partial<StyleProps>,
 ) {
 	const {definition, value, setValue, handleChange, onCancel, disabled} =
 		useParameterComponentCommons<number>(props);
@@ -68,6 +75,12 @@ export default function ParameterSliderComponent(
 	const {sliderWidth, numberWidth} = useProps(
 		"ParameterSliderComponent",
 		defaultStyleProps,
+		props,
+	);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterSliderComponent",
+		defaultPropsParameterWrapper,
 		props,
 	);
 
@@ -94,7 +107,11 @@ export default function ParameterSliderComponent(
 	];
 
 	return (
-		<>
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && (
 				<Group justify="space-between" w="100%" wrap="nowrap">
@@ -134,6 +151,6 @@ export default function ParameterSliderComponent(
 					)}
 				</Group>
 			)}
-		</>
+		</ParameterWrapperComponent>
 	);
 }

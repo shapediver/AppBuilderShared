@@ -1,6 +1,9 @@
 import {OverlayStyleProps} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IAppBuilderWidget} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {ViewportComponentProps} from "@AppBuilderShared/types/shapediver/viewport";
 import {
@@ -73,7 +76,9 @@ export interface ParameterComponentMapValueType extends ComponentType {
 	// #region Properties (2)
 
 	/** Parameter component */
-	component: (props: PropsParameter) => ReactElement;
+	component: (
+		props: PropsParameter & Partial<PropsParameterWrapper>,
+	) => ReactElement;
 	/** Defines whether extra bottom padding is required */
 	extraBottomPadding: boolean;
 

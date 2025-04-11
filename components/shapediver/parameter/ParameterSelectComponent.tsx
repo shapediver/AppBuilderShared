@@ -1,6 +1,11 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {MantineThemeComponent, MultiSelect, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
 import React, {useMemo} from "react";
@@ -42,7 +47,9 @@ export function ParameterSelectComponentThemeProps(
  * @returns
  */
 export default function ParameterSelectComponent(
-	props: PropsParameter & ParameterSelectComponentThemePropsType,
+	props: PropsParameter &
+		ParameterSelectComponentThemePropsType &
+		Partial<PropsParameterWrapper>,
 ) {
 	const {definition, value, handleChange, onCancel, disabled} =
 		useParameterComponentCommons<string>(props, 0);
@@ -51,6 +58,12 @@ export default function ParameterSelectComponent(
 	const {componentSettings} = useProps(
 		"ParameterSelectComponent",
 		defaultStyleProps,
+		props,
+	);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterSelectComponent",
+		defaultPropsParameterWrapper,
 		props,
 	);
 
@@ -128,9 +141,13 @@ export default function ParameterSelectComponent(
 		);
 
 	return (
-		<>
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && inputComponent}
-		</>
+		</ParameterWrapperComponent>
 	);
 }
