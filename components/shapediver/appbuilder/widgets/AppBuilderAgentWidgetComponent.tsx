@@ -8,6 +8,10 @@ import {
 } from "@AppBuilderShared/hooks/shapediver/appbuilder/useAgent";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
+import {
+	AppBuilderAgentWidgetComponentProps,
+	AppBuilderAgentWidgetThemePropsType,
+} from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
 import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
@@ -18,9 +22,7 @@ import {
 	FileButton,
 	Group,
 	MantineStyleProp,
-	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	ScrollArea,
 	Stack,
 	Text,
@@ -41,44 +43,8 @@ import {useShallow} from "zustand/react/shallow";
 import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";
 import AppBuilderImage from "../AppBuilderImage";
 
-/** Style properties that can be controlled via the theme. */
-type ComponentProps = PaperProps & {
-	/** The system prompt to use. */
-	systemPrompt: string;
-	/** If provided, only parameters with these names are included. */
-	parameterNamesToInclude: string[];
-	/** If provided, parameters with these names are excluded. */
-	parameterNamesToExclude: string[];
-	/** Allows to override the context given by the author of the Grasshopper model via App Builder. */
-	authorContext: string;
-	/** Set to true to show and allow to edit system prompt and author context. */
-	debug: boolean;
-	/** Maximum number of messages to keep in the context for the chat completion. */
-	maxHistory: number;
-	/** The LLM to use. */
-	model: string;
-	/** Open AI API key. */
-	openaiApiKey: string;
-	/** Langfuse secret key. */
-	langfuseSecretKey: string;
-	/** Langfuse public key. */
-	langfusePublicKey: string;
-	/** Langfuse base URL. */
-	langfuseBaseUrl: string;
-};
-
 /** Default values for component properties. */
-const defaultStyleProps: Partial<ComponentProps> = {};
-
-type AppBuilderAgentWidgetThemePropsType = Partial<ComponentProps>;
-
-export function AppBuilderAgentWidgetThemeProps(
-	props: AppBuilderAgentWidgetThemePropsType,
-): MantineThemeComponent {
-	return {
-		defaultProps: props,
-	};
-}
+const defaultStyleProps: Partial<AppBuilderAgentWidgetComponentProps> = {};
 
 type Props = IAppBuilderWidgetPropsAgent & {
 	namespace: string;
