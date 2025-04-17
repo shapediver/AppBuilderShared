@@ -8,7 +8,7 @@ import {SelectComponentProps} from "./SelectComponent";
  * @see https://mantine.dev/core/select/
  */
 export default function SelectDropDownComponent(props: SelectComponentProps) {
-	const {value, onChange, items, disabled} = props;
+	const {value, onChange, items, disabled, inputContainer} = props;
 
 	return (
 		<Select
@@ -17,6 +17,7 @@ export default function SelectDropDownComponent(props: SelectComponentProps) {
 			data={items}
 			disabled={disabled}
 			allowDeselect={false}
+			inputContainer={inputContainer}
 		/>
 	);
 }

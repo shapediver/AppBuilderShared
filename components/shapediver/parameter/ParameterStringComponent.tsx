@@ -1,5 +1,6 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
+import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
 	defaultPropsParameterWrapper,
@@ -26,6 +27,8 @@ export default function ParameterStringComponent(
 		props,
 	);
 
+	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
+
 	return (
 		<ParameterWrapperComponent
 			onCancel={onCancel}
@@ -36,9 +39,13 @@ export default function ParameterStringComponent(
 			{definition && (
 				<TextInput
 					value={value}
-					onChange={(e) => handleChange(e.target.value)}
+					onChange={(e) =>
+						handleChange(e.target.value, undefined, restoreFocus)
+					}
 					disabled={disabled}
 					maxLength={definition.max}
+					onFocus={onFocusHandler}
+					onBlur={onBlurHandler}
 				/>
 			)}
 		</ParameterWrapperComponent>

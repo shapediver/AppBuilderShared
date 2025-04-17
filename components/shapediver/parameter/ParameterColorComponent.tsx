@@ -1,6 +1,7 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
 	defaultPropsParameterWrapper,
@@ -71,16 +72,24 @@ export default function ParameterColorComponent(
 		(state) => state.uiValue,
 	);
 
+	const {onFocusHandler, onBlurHandler, restoreFocus, focusedElement} =
+		useFocus();
+
 	const handleSdColorChange = useCallback(
 		(val: string) => {
-			handleChange(convertToSdColor(val, colorFormat));
+			handleChange(
+				convertToSdColor(val, colorFormat),
+				undefined,
+				restoreFocus,
+			);
 		},
-		[handleChange, colorFormat],
+		[handleChange, colorFormat, focusedElement],
 	);
 
 	const [value, setValue] = useState(
 		convertFromSdColor(paramValue, colorFormat),
 	);
+
 	useEffect(() => {
 		setValue(convertFromSdColor(paramValue, colorFormat));
 	}, [paramValue, colorFormat]);
@@ -98,7 +107,13 @@ export default function ParameterColorComponent(
 					value={value}
 					rightSection={
 						<ActionIcon
-							onClick={() => handleChange(definition.defval)}
+							onClick={() =>
+								handleChange(
+									definition.defval,
+									undefined,
+									restoreFocus,
+								)
+							}
 						>
 							<Icon type={IconTypeEnum.Refresh} />
 						</ActionIcon>
@@ -107,6 +122,8 @@ export default function ParameterColorComponent(
 					onChangeEnd={handleSdColorChange}
 					disabled={disabled}
 					format={colorFormat}
+					onFocus={onFocusHandler}
+					onBlur={onBlurHandler}
 				/>
 			)}
 		</ParameterWrapperComponent>
