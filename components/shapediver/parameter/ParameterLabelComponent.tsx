@@ -62,7 +62,11 @@ export default function ParameterLabelComponent(
 				labelcomp
 			)}
 			{cancel && (
-				<Icon type={IconTypeEnum.X} color="red" onClick={cancel} />
+				<Icon
+					type={IconTypeEnum.X}
+					color="var(--mantine-primary-color-filled)"
+					onClick={cancel}
+				/>
 			)}
 		</Group>
 	);
