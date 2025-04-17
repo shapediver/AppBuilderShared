@@ -17,7 +17,6 @@ export const useFocus = () => {
 	};
 
 	useEffect(() => {
-		// Очистка focusedElement при размонтировании компонента
 		return () => {
 			setFocusedElement(null);
 		};
