@@ -136,6 +136,10 @@ export default function ParameterSliderComponent(
 							}
 							marks={marks}
 							disabled={disabled}
+							thumbProps={{
+								onFocus: onFocusHandler,
+								onBlur: onBlurHandler,
+							}}
 						/>
 					)}
 					{definition && (
