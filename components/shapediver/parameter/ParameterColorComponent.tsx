@@ -72,8 +72,7 @@ export default function ParameterColorComponent(
 		(state) => state.uiValue,
 	);
 
-	const {onFocusHandler, onBlurHandler, restoreFocus, focusedElement} =
-		useFocus();
+	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
 	const handleSdColorChange = useCallback(
 		(val: string) => {
@@ -83,7 +82,7 @@ export default function ParameterColorComponent(
 				restoreFocus,
 			);
 		},
-		[handleChange, colorFormat, focusedElement],
+		[handleChange, colorFormat, restoreFocus],
 	);
 
 	const [value, setValue] = useState(
