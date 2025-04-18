@@ -82,8 +82,7 @@ export default function ParameterSelectComponent(
 		definition.id,
 	]);
 
-	const {onFocusHandler, onBlurHandler, restoreFocus, focusedElement} =
-		useFocus();
+	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
 	// We need to prevent duplicate values in definition choices
 	// and append a numeric postfix to duplicate items to make them unique
@@ -124,7 +123,7 @@ export default function ParameterSelectComponent(
 				</>
 			);
 		},
-		[focusedElement],
+		[onFocusHandler, onBlurHandler],
 	);
 
 	const inputComponent =
