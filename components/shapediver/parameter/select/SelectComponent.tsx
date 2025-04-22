@@ -18,6 +18,7 @@ import SelectChipGroupComponent from "./SelectChipGroupComponent";
 import SelectColorComponent from "./SelectColorComponent";
 import SelectDropDownComponent from "./SelectDropDownComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
+import SelectGridComponent from "./SelectGridComponent";
 import SelectImageDropDownComponent from "./SelectImageDropDownComponent";
 
 export type SelectButtonStyleProps = Omit<ButtonProps, "children">;
@@ -71,6 +72,10 @@ export interface SelectComponentSettings {
 	cardProps?: SelectCardStyleProps;
 	flexProps?: SelectFlexStyleProps;
 	groupProps?: SelectGroupStyleProps;
+	gridProps?: {
+		cols?: Record<string, number>;
+		spacing?: string;
+	};
 	imageProps?: SelectImageStyleProps;
 	stackProps?: SelectStackStyleProps;
 	labelProps?: SelectTextWeightedStyleProps;
@@ -108,7 +113,8 @@ export type SelectComponentType =
 	| "color"
 	| "imagedropdown"
 	| "fullwidthcards"
-	| "carousel";
+	| "carousel"
+	| "grid";
 
 interface SelectComponentPropsExt extends SelectComponentProps {
 	/** Type of select component to use. */
@@ -136,6 +142,8 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 		return <SelectFullWidthCardsComponent {...rest} />;
 	} else if (type === "carousel") {
 		return <SelectCarouselComponent {...rest} />;
+	} else if (type === "grid") {
+		return <SelectGridComponent {...rest} />;
 	} else {
 		return <SelectDropDownComponent {...rest} />;
 	}
