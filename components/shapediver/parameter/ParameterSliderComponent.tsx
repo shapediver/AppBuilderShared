@@ -1,6 +1,7 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
 	defaultPropsParameterWrapper,
@@ -84,6 +85,8 @@ export default function ParameterSliderComponent(
 		props,
 	);
 
+	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
+
 	// calculate the step size which depends on the parameter type
 	let step = 1;
 	if (definition.type === PARAMETER_TYPE.INT) {
@@ -125,10 +128,18 @@ export default function ParameterSliderComponent(
 							step={step}
 							onChange={(v) => setValue(round(definition, v))}
 							onChangeEnd={(v) =>
-								handleChange(round(definition, v), 0)
+								handleChange(
+									round(definition, v),
+									0,
+									restoreFocus,
+								)
 							}
 							marks={marks}
 							disabled={disabled}
+							thumbProps={{
+								onFocus: onFocusHandler,
+								onBlur: onBlurHandler,
+							}}
 						/>
 					)}
 					{definition && (
@@ -143,9 +154,15 @@ export default function ParameterSliderComponent(
 								fixedDecimalScale={true}
 								clampBehavior="blur"
 								onChange={(v) =>
-									handleChange(round(definition, +v))
+									handleChange(
+										round(definition, +v),
+										undefined,
+										restoreFocus,
+									)
 								}
 								disabled={disabled}
+								onFocus={onFocusHandler}
+								onBlur={onBlurHandler}
 							/>
 						</TooltipWrapper>
 					)}

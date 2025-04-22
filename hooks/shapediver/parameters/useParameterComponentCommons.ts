@@ -47,13 +47,13 @@ export function useParameterComponentCommons<T>(
 	const debounceRef = useRef<NodeJS.Timeout>();
 
 	const handleChange = useCallback(
-		(curval: T | string, timeout?: number) => {
+		(curval: T | string, timeout?: number, cb: () => void = () => {}) => {
 			clearTimeout(debounceRef.current);
 			setValue(curval);
 			debounceRef.current = setTimeout(
 				() => {
 					if (actions.setUiValue(curval)) {
-						actions.execute(!acceptRejectMode);
+						actions.execute(!acceptRejectMode).then(() => cb());
 					}
 				},
 				timeout === undefined ? debounceTimeout : timeout,

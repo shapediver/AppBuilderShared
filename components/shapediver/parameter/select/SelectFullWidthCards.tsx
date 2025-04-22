@@ -7,6 +7,7 @@ import {
 	MantineThemeComponent,
 	Stack,
 	Text,
+	UnstyledButton,
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
@@ -125,43 +126,48 @@ export default function SelectFullWidthCardsComponent(
 	return (
 		<Stack {...stackProps} {...settings?.stackProps}>
 			{cardData.map((card) => (
-				<Card
+				<UnstyledButton
 					key={card.value}
-					className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === card.value ? classes.cardSelected : ""}`}
+					disabled={disabled}
 					onClick={() => handleCardClick(card.value, disabled)}
-					style={getCardStyle(card)}
-					{...cardProps}
-					{...settings?.cardProps}
+					aria-pressed={value === card.value}
 				>
-					<Group {...groupProps} {...settings?.groupProps}>
-						{card.imageUrl && (
-							<TooltipWrapper label={card.tooltip}>
-								<Image
-									src={card.imageUrl}
-									alt={card.label}
-									{...imageProps}
-									{...settings?.imageProps}
-								/>
-							</TooltipWrapper>
-						)}
-						<div style={{flex: 1}}>
-							<TextWeighted
-								{...labelProps}
-								{...settings?.labelProps}
-							>
-								{card.label}
-							</TextWeighted>
-							{card.description && (
-								<Text
-									{...descriptionProps}
-									{...settings?.descriptionProps}
-								>
-									{card.description}
-								</Text>
+					<Card
+						className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === card.value ? classes.cardSelected : ""}`}
+						style={getCardStyle(card)}
+						{...cardProps}
+						{...settings?.cardProps}
+					>
+						<Group {...groupProps} {...settings?.groupProps}>
+							{card.imageUrl && (
+								<TooltipWrapper label={card.tooltip}>
+									<Image
+										src={card.imageUrl}
+										alt={card.label}
+										{...imageProps}
+										{...settings?.imageProps}
+									/>
+								</TooltipWrapper>
 							)}
-						</div>
-					</Group>
-				</Card>
+							<div style={{flex: 1}}>
+								<TextWeighted
+									{...labelProps}
+									{...settings?.labelProps}
+								>
+									{card.label}
+								</TextWeighted>
+								{card.description && (
+									<Text
+										{...descriptionProps}
+										{...settings?.descriptionProps}
+									>
+										{card.description}
+									</Text>
+								)}
+							</div>
+						</Group>
+					</Card>
+				</UnstyledButton>
 			))}
 		</Stack>
 	);

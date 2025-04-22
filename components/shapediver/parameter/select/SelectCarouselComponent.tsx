@@ -10,6 +10,7 @@ import {
 	MantineThemeComponent,
 	Stack,
 	Text,
+	UnstyledButton,
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
@@ -170,41 +171,46 @@ export default function SelectCarouselComponent(
 						{...cardProps}
 						{...settings?.cardProps}
 					>
-						<Stack {...stackProps} {...settings?.stackProps}>
-							{item.imageUrl && (
-								<div
-									className={`${classes.imageContainer} ${showLabel ? classes.imageContainerWithText : ""}`}
-								>
-									<TooltipWrapper label={item.tooltip}>
-										<Image
-											src={item.imageUrl}
-											alt={item.label}
-											className={classes.image}
-											{...imageProps}
-											{...settings?.imageProps}
-										/>
-									</TooltipWrapper>
-								</div>
-							)}
-							{showLabel && (
-								<>
-									<TextWeighted
-										{...labelProps}
-										{...settings?.labelProps}
+						<UnstyledButton
+							disabled={disabled}
+							aria-pressed={value === item.value}
+						>
+							<Stack {...stackProps} {...settings?.stackProps}>
+								{item.imageUrl && (
+									<div
+										className={`${classes.imageContainer} ${showLabel ? classes.imageContainerWithText : ""}`}
 									>
-										{item.label}
-									</TextWeighted>
-									{item.description && (
-										<Text
-											{...descriptionProps}
-											{...settings?.descriptionProps}
+										<TooltipWrapper label={item.tooltip}>
+											<Image
+												src={item.imageUrl}
+												alt={item.label}
+												className={classes.image}
+												{...imageProps}
+												{...settings?.imageProps}
+											/>
+										</TooltipWrapper>
+									</div>
+								)}
+								{showLabel && (
+									<>
+										<TextWeighted
+											{...labelProps}
+											{...settings?.labelProps}
 										>
-											{item.description}
-										</Text>
-									)}
-								</>
-							)}
-						</Stack>
+											{item.label}
+										</TextWeighted>
+										{item.description && (
+											<Text
+												{...descriptionProps}
+												{...settings?.descriptionProps}
+											>
+												{item.description}
+											</Text>
+										)}
+									</>
+								)}
+							</Stack>
+						</UnstyledButton>
 					</Card>
 				</Carousel.Slide>
 			))}

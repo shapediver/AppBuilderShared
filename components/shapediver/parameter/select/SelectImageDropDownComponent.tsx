@@ -72,6 +72,7 @@ export default function SelectImageDropDownComponent(
 		disabled,
 		itemData,
 		settings,
+		inputContainer,
 		...styleProps
 	} = props;
 
@@ -137,6 +138,7 @@ export default function SelectImageDropDownComponent(
 			disabled={disabled}
 			renderOption={renderOption}
 			allowDeselect={false}
+			inputContainer={inputContainer}
 		/>
 	);
 }

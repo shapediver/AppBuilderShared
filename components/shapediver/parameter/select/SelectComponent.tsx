@@ -91,6 +91,12 @@ export interface SelectComponentProps {
 	disabled?: boolean;
 	/** Component-specific settings (e.g. width for SelectImageDropDownComponent). */
 	settings?: SelectComponentSettings;
+	/** Optional function to wrap the input component in a custom container. */
+	inputContainer?: (children: React.ReactNode) => React.ReactNode;
+	/** Optional function to handle focus events. */
+	onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
+	/** Optional function to handle blur events. */
+	onBlur?: () => void;
 }
 
 /** Types of selection components. */
