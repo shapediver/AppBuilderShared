@@ -130,7 +130,7 @@ export default function ParameterSliderComponent(
 							onChangeEnd={(v) =>
 								handleChange(
 									round(definition, v),
-									undefined,
+									0,
 									restoreFocus,
 								)
 							}
