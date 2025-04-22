@@ -7,6 +7,7 @@ import {ParameterLabelComponentThemeProps} from "@AppBuilderShared/components/sh
 import {ParameterSelectComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSelectComponent";
 import {ParameterSliderComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
 import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectCarouselComponent";
+import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectGridComponent";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
@@ -640,6 +641,15 @@ export const useCustomTheme = (props: Props = {}) => {
 				//slideSize: {base: "100%", "200px": "50%", "500px": "33.333333%"},
 				//slideGap: {base: 0, "200px": "md"},
 				// height: "auto",
+			}),
+			/**
+			 * SelectGridComponent
+			 *
+			 * Defaults for select grid components.
+			 */
+			SelectGridComponent: SelectGridComponentThemeProps({
+				//gridProps: { cols: 2, spacing: "md" },
+				//showLabel: true,
 			}),
 			/**
 			 * TooltipWrapper

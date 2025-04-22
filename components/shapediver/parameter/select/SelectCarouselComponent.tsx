@@ -1,19 +1,10 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
-import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Carousel} from "@mantine/carousel";
 import "@mantine/carousel/styles.css";
-import {
-	Card,
-	Image,
-	MantineThemeComponent,
-	Stack,
-	Text,
-	UnstyledButton,
-	useProps,
-} from "@mantine/core";
+import {MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
+import ButtonImageCard from "./ButtonImageCard";
 import classes from "./SelectCarouselComponent.module.css";
 import {
 	SelectCardStyleProps,
@@ -138,12 +129,14 @@ export default function SelectCarouselComponent(
 		[onChange],
 	);
 
-	const getCardStyle = useCallback((item: (typeof carouselItems)[0]) => {
-		return {
-			"--card-selected-color":
-				item.color || "var(--mantine-primary-color-filled)",
-		};
-	}, []);
+	// Extract card-related props for spreading
+	const cardStyleProps = {
+		cardProps,
+		imageProps,
+		stackProps,
+		labelProps,
+		descriptionProps,
+	};
 
 	return (
 		<Carousel
@@ -164,54 +157,17 @@ export default function SelectCarouselComponent(
 		>
 			{carouselItems.map((item) => (
 				<Carousel.Slide key={item.value}>
-					<Card
-						className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === item.value ? classes.cardSelected : ""}`}
-						onClick={() => handleCardClick(item.value, disabled)}
-						style={getCardStyle(item)}
-						{...cardProps}
-						{...settings?.cardProps}
-					>
-						<UnstyledButton
+					<div className={`${classes.cardWrapper}`}>
+						<ButtonImageCard
+							item={item}
+							selected={value === item.value}
 							disabled={disabled}
-							aria-pressed={value === item.value}
-						>
-							<Stack {...stackProps} {...settings?.stackProps}>
-								{item.imageUrl && (
-									<div
-										className={`${classes.imageContainer} ${showLabel ? classes.imageContainerWithText : ""}`}
-									>
-										<TooltipWrapper label={item.tooltip}>
-											<Image
-												src={item.imageUrl}
-												alt={item.label}
-												className={classes.image}
-												{...imageProps}
-												{...settings?.imageProps}
-											/>
-										</TooltipWrapper>
-									</div>
-								)}
-								{showLabel && (
-									<>
-										<TextWeighted
-											{...labelProps}
-											{...settings?.labelProps}
-										>
-											{item.label}
-										</TextWeighted>
-										{item.description && (
-											<Text
-												{...descriptionProps}
-												{...settings?.descriptionProps}
-											>
-												{item.description}
-											</Text>
-										)}
-									</>
-								)}
-							</Stack>
-						</UnstyledButton>
-					</Card>
+							onClick={handleCardClick}
+							showLabel={showLabel}
+							settings={settings}
+							{...cardStyleProps}
+						/>
+					</div>
 				</Carousel.Slide>
 			))}
 		</Carousel>
