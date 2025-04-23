@@ -14,6 +14,10 @@
 }
 
 .card.cardSelected {
-	box-shadow: inset 0 0 0 1px var(--card-selected-color, var(--mantine-primary-color-filled));
-	border-color: var(--card-selected-color, var(--mantine-primary-color-filled));
+	box-shadow: inset 0 0 0 1px
+		var(--card-selected-color, var(--mantine-primary-color-filled));
+	border-color: var(
+		--card-selected-color,
+		var(--mantine-primary-color-filled)
+	);
 }
