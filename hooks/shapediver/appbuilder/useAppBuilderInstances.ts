@@ -158,6 +158,7 @@ export function useAppBuilderInstances(props: Props) {
 
 	useEffect(() => {
 		if (!sessionApi) return;
+		if (!processManagerId) return;
 
 		// create a promise to wait for all instances to be created
 		// this is necessary to only resolve the process once all instances are created
@@ -299,7 +300,6 @@ export function useAppBuilderInstances(props: Props) {
 
 			promises.push(promise);
 
-			if (!processManagerId) return;
 			// add the promise to the process manager
 			// once all registered promises are resolved, the viewports are updated
 			// and the process manager is removed from the store

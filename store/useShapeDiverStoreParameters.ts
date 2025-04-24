@@ -149,10 +149,8 @@ type HistoryPusher = (entry: ISessionsHistoryState) => void;
 const registerInProcessManager = (session: ISessionApi) => {
 	const {createProcessManager, addProcess} =
 		useShapeDiverStoreProcessManager.getState();
-	const processManagerId = Math.random().toString(36).substring(7);
-
 	// create a process manager for the session
-	createProcessManager(session.id, processManagerId);
+	const processManagerId = createProcessManager(session.id);
 
 	let resolveMainPromise: () => void;
 	const mainPromise = new Promise<void>((resolve) => {
