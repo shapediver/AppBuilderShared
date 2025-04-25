@@ -121,6 +121,11 @@ export class ProcessManager implements IProcessManager {
 		viewportId: string,
 		addFlag?: (flag: FLAG_TYPE, token?: string) => string,
 	): void {
+		console.log(
+			"Adding flags",
+			viewportId,
+			this._busyModeFlagTokens[viewportId],
+		);
 		if (!this._busyModeFlagTokens[viewportId] && addFlag) {
 			this._busyModeFlagTokens[viewportId] = addFlag(FLAG_TYPE.BUSY_MODE);
 		}
@@ -167,6 +172,27 @@ export class ProcessManager implements IProcessManager {
 				viewportAccessFunctions[viewportId].removeFlag(
 					this._busyModeFlagTokens[viewportId],
 				);
+			} else if (!viewportAccessFunctions[viewportId]) {
+				// if the viewport access functions are not available yet,
+				// we have to wait for them to be available
+				const unsubscribe =
+					useShapeDiverStoreViewportAccessFunctions.subscribe(
+						(state) => {
+							if (state.viewportAccessFunctions[viewportId]) {
+								unsubscribe();
+								if (
+									state.viewportAccessFunctions[viewportId]
+										.removeFlag
+								) {
+									state.viewportAccessFunctions[
+										viewportId
+									].removeFlag(
+										this._busyModeFlagTokens[viewportId],
+									);
+								}
+							}
+						},
+					);
 			}
 		}
 
@@ -179,6 +205,29 @@ export class ProcessManager implements IProcessManager {
 				viewportAccessFunctions[viewportId].removeFlag(
 					this._suspendSceneUpdateFlagTokens[viewportId],
 				);
+			} else if (!viewportAccessFunctions[viewportId]) {
+				// if the viewport access functions are not available yet,
+				// we have to wait for them to be available
+				const unsubscribe =
+					useShapeDiverStoreViewportAccessFunctions.subscribe(
+						(state) => {
+							if (state.viewportAccessFunctions[viewportId]) {
+								unsubscribe();
+								if (
+									state.viewportAccessFunctions[viewportId]
+										.removeFlag
+								) {
+									state.viewportAccessFunctions[
+										viewportId
+									].removeFlag(
+										this._suspendSceneUpdateFlagTokens[
+											viewportId
+										],
+									);
+								}
+							}
+						},
+					);
 			}
 		}
 	}
