@@ -1,10 +1,15 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
@@ -15,6 +20,7 @@ import {
 	Loader,
 	Stack,
 	Text,
+	useProps,
 } from "@mantine/core";
 import {
 	ISelectionParameterProps,
@@ -44,7 +50,9 @@ const parseNames = (value?: string): string[] => {
  *
  * @returns
  */
-export default function ParameterSelectionComponent(props: PropsParameter) {
+export default function ParameterSelectionComponent(
+	props: PropsParameter & Partial<PropsParameterWrapper>,
+) {
 	const {
 		definition,
 		handleChange,
@@ -53,8 +61,13 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 		disabled,
 		value,
 		state,
-		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterSelectionComponent",
+		defaultPropsParameterWrapper,
+		props,
+	);
 
 	const selectionProps = definition.settings
 		?.props as ISelectionParameterProps;
@@ -74,7 +87,6 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 		setSelectedNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
 	} = useSelection(
-		sessionDependencies,
 		viewportId,
 		selectionProps,
 		selectionActive,
@@ -268,9 +280,13 @@ export default function ParameterSelectionComponent(props: PropsParameter) {
 	}, [_onCancelCallback]);
 
 	return (
-		<>
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && selectionActive ? contentActive : contentInactive}
-		</>
+		</ParameterWrapperComponent>
 	);
 }

@@ -8,8 +8,6 @@ import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsEx
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {
 	Accordion,
-	Group,
-	Loader,
 	MantineThemeComponent,
 	Paper,
 	Stack,
@@ -108,15 +106,11 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 
 	// as long as there are no parameters, show a loader
 	if (sortedParamsAndExports.length === 0) {
-		return (
-			<Group justify="center" pt="50">
-				<Loader size="xl" variant="dots" />
-			</Group>
-		);
+		return <></>;
 	}
 
 	// loop through the parameters and store the created elements in the elementGroups
-	sortedParamsAndExports.forEach((param, index) => {
+	sortedParamsAndExports.forEach((param) => {
 		// if a parameter is hidden, skip it
 		if (param.definition.hidden) return;
 
@@ -143,18 +137,18 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 				getParameterComponent(componentContext, param.definition);
 
 			elementGroups[groupId].elements.push(
-				<Paper
+				<ParameterComponent
 					key={param.definition.id}
-					pb={extraBottomPadding ? pbSlider : undefined}
-				>
-					<ParameterComponent
-						{...param.parameter}
-						disableIfDirty={
-							param.parameter.disableIfDirty ??
-							!param.parameter.acceptRejectMode
-						}
-					/>
-				</Paper>,
+					{...param.parameter}
+					wrapperComponent={Paper}
+					wrapperProps={{
+						pb: extraBottomPadding ? pbSlider : undefined,
+					}}
+					disableIfDirty={
+						param.parameter.disableIfDirty ??
+						!param.parameter.acceptRejectMode
+					}
+				/>,
 			);
 		} else if (param.export) {
 			// Get the element for the export and add it to the group

@@ -1,9 +1,15 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
+import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {MantineThemeComponent, MultiSelect, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
-import React, {useMemo} from "react";
+import React, {useCallback, useMemo} from "react";
 import SelectComponent, {
 	SelectComponentItemDataType,
 	SelectComponentSettings,
@@ -42,7 +48,9 @@ export function ParameterSelectComponentThemeProps(
  * @returns
  */
 export default function ParameterSelectComponent(
-	props: PropsParameter & ParameterSelectComponentThemePropsType,
+	props: PropsParameter &
+		ParameterSelectComponentThemePropsType &
+		Partial<PropsParameterWrapper>,
 ) {
 	const {definition, value, handleChange, onCancel, disabled} =
 		useParameterComponentCommons<string>(props, 0);
@@ -51,6 +59,12 @@ export default function ParameterSelectComponent(
 	const {componentSettings} = useProps(
 		"ParameterSelectComponent",
 		defaultStyleProps,
+		props,
+	);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterSelectComponent",
+		defaultPropsParameterWrapper,
 		props,
 	);
 
@@ -67,6 +81,8 @@ export default function ParameterSelectComponent(
 		definition.displayname,
 		definition.id,
 	]);
+
+	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
 	// We need to prevent duplicate values in definition choices
 	// and append a numeric postfix to duplicate items to make them unique
@@ -90,6 +106,26 @@ export default function ParameterSelectComponent(
 		return uniqueChoices;
 	}, [definition.choices]);
 
+	const inputContainer = useCallback(
+		(children: React.ReactNode) => {
+			const isValid = React.isValidElement(children);
+			return (
+				<>
+					{isValid
+						? React.cloneElement(
+								children as React.ReactElement<any>,
+								{
+									onFocus: onFocusHandler,
+									onBlur: onBlurHandler,
+								},
+							)
+						: children}
+				</>
+			);
+		},
+		[onFocusHandler, onBlurHandler],
+	);
+
 	const inputComponent =
 		definition.visualization === PARAMETER_VISUALIZATION.CHECKLIST ? (
 			<MultiSelect
@@ -101,36 +137,49 @@ export default function ParameterSelectComponent(
 						: []
 				}
 				onChange={(v) => {
-					handleChange(
-						uniqueChoices
-							// Collect indexes and values
-							.map((value, index) => ({index, value}))
-							// Filter by values
-							.filter((obj) => v.includes(obj.value))
-							// Return filtered indexes
-							.map((obj) => obj.index)
-							.join(","),
-					);
+					const choices = uniqueChoices
+						// Collect indexes and values
+						.map((value, index) => ({index, value}))
+						// Filter by values
+						.filter((obj) => v.includes(obj.value))
+						// Return filtered indexes
+						.map((obj) => obj.index)
+						.join(",");
+					handleChange(choices, undefined, restoreFocus);
 				}}
 				data={uniqueChoices}
 				disabled={disabled}
+				inputContainer={inputContainer}
 			/>
 		) : (
 			<SelectComponent
 				value={uniqueChoices[+value]}
-				onChange={(v) => handleChange(uniqueChoices.indexOf(v!) + "")}
+				onChange={(v) =>
+					handleChange(
+						uniqueChoices.indexOf(v!) + "",
+						undefined,
+						restoreFocus,
+					)
+				}
 				items={uniqueChoices}
 				disabled={disabled}
 				type={settings.type}
 				itemData={settings.itemData}
 				settings={settings.settings}
+				inputContainer={inputContainer}
+				onFocus={onFocusHandler}
+				onBlur={onBlurHandler}
 			/>
 		);
 
 	return (
-		<>
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && inputComponent}
-		</>
+		</ParameterWrapperComponent>
 	);
 }

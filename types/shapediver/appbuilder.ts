@@ -196,7 +196,8 @@ export type AppBuilderWidgetType =
 	| "barChart"
 	| "actions"
 	| "attributeVisualization"
-	| "agent";
+	| "agent"
+	| "progress";
 
 /**
  * Properties of a parameter and export accordion widget.
@@ -264,6 +265,18 @@ export interface IAppBuilderWidgetPropsAgent {
 	parameterNamesExclude?: string[];
 }
 
+/** Properties of a progress widget. */
+export interface IAppBuilderWidgetPropsProgress {
+	/** Option to show the progress bar when completed. (default: false) */
+	showOnComplete?: boolean;
+	/** Delay the removal of the last progress details (in milliseconds). (default: 1500) */
+	delayRemoval?: number;
+	/** Option to show the progress message. (default: false) */
+	showMessages?: boolean;
+	/** Option to show the progress percentage. (default: true) */
+	showPercentage?: boolean;
+}
+
 /**
  * A widget.
  *
@@ -287,7 +300,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsBarChart
 		| IAppBuilderWidgetPropsActions
 		| IAppBuilderWidgetPropsAttributeVisualization
-		| IAppBuilderWidgetPropsAgent;
+		| IAppBuilderWidgetPropsAgent
+		| IAppBuilderWidgetPropsProgress;
 }
 
 /**
@@ -319,6 +333,22 @@ export interface IAppBuilderContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
+export interface IAppBuilderInstanceDefinition {
+	/** Id of the instance. */
+	sessionId: string;
+	/** Optional name of the instance. This name will be used for the node in the scene graph, e.g. NAME_transformations_0 for the first transformation. */
+	name?: string;
+	/**
+	 * Parameter set for the instance.
+	 * Defined in a parameter dictionary where the key is either the displayname, the name or the id of the parameter.
+	 * The value is the parameter value.
+	 * If none is provided, the default parameter set is used.
+	 **/
+	parameterValues?: {[key: string]: string | number | boolean};
+	/** Transformations for the instances, e.g. to position them in the scene. */
+	transformations?: number[][];
+}
+
 /**
  * Web app definition.
  * This is the root of the custom UI definition.
@@ -340,6 +370,12 @@ export interface IAppBuilder {
 	 * Containers to be displayed.
 	 */
 	containers: IAppBuilderContainer[];
+
+	/**
+	 * Optional list of instances to be created.
+	 * Instances are used to customize a session by setting parameters and transformations.
+	 */
+	instances?: IAppBuilderInstanceDefinition[];
 }
 
 /** assert widget type "accordion" */
@@ -413,6 +449,13 @@ export function isAgentWidget(
 	widget: IAppBuilderWidget,
 ): widget is {type: "agent"; props: IAppBuilderWidgetPropsAgent} {
 	return widget.type === "agent";
+}
+
+/** assert widget type "progress" */
+export function isProgressWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "progress"; props: IAppBuilderWidgetPropsProgress} {
+	return widget.type === "progress";
 }
 
 /** assert action type "createModelState" */

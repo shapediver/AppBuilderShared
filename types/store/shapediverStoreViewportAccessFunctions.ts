@@ -1,5 +1,7 @@
 // #region Interfaces (3)
 
+import {FLAG_TYPE} from "@shapediver/viewer.session";
+
 export interface IShapeDiverStoreViewportAccessFunctions {
 	// #region Public Indexers (1)
 
@@ -40,6 +42,10 @@ export interface IViewportAccessFunctions {
 	convertToGlTF?: () => Promise<Blob>;
 	/** Function to create a screenshot and return it as a data URL. */
 	getScreenshot?: () => Promise<string>;
+	/** Function to add a flag to the viewport. */
+	addFlag?: (flag: FLAG_TYPE) => string;
+	/** Function to remove a flag from the viewport. */
+	removeFlag?: (token: string) => void;
 
 	// #endregion Properties (2)
 }

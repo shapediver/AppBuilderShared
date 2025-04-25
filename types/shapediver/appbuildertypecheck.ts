@@ -294,6 +294,14 @@ const IAppBuilderWidgetPropsAgentSchema = z.object({
 	parameterNamesExclude: z.array(z.string()).optional(),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsProgress
+const IAppBuilderWidgetPropsProgressSchema = z.object({
+	showPercentage: z.boolean().optional(),
+	showOnComplete: z.boolean().optional(),
+	showMessages: z.boolean().optional(),
+	delayRemoval: z.number().optional(),
+});
+
 // Zod type definition for IAppBuilderWidget
 const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -336,6 +344,10 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 		type: z.literal("agent"),
 		props: IAppBuilderWidgetPropsAgentSchema,
 	}),
+	z.object({
+		type: z.literal("progress"),
+		props: IAppBuilderWidgetPropsProgressSchema,
+	}),
 ]);
 
 // Zod type definition for IAppBuilderTab
@@ -357,12 +369,23 @@ const IAppBuilderContainerSchema = z
 	})
 	.extend(IAppBuilderWidgetPropsCommonSchema.shape);
 
+// Zod type definition for IAppBuilderInstances
+const IAppBuilderInstancesSchema = z.object({
+	sessionId: z.string(),
+	name: z.string().optional(),
+	parameterValues: z
+		.record(z.string().or(z.number()).or(z.boolean()))
+		.optional(),
+	transformations: z.array(z.array(z.number())).optional(),
+});
+
 // Zod type definition for IAppBuilder
 const IAppBuilderSchema = z.object({
 	version: z.literal("1.0"),
 	parameters: z.array(IAppBuilderParameterDefinitionSchema).optional(),
 	sessionId: z.string().optional(),
 	containers: z.array(IAppBuilderContainerSchema),
+	instances: z.array(IAppBuilderInstancesSchema).optional(),
 });
 
 export const validateAppBuilder = (value: any) => {

@@ -1,7 +1,13 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ColorFormatType,
@@ -39,11 +45,19 @@ export function ParameterColorComponentThemeProps(
  *
  * @returns
  */
-export default function ParameterColorComponent(props: PropsParameter) {
+export default function ParameterColorComponent(
+	props: PropsParameter & Partial<PropsParameterWrapper>,
+) {
 	const {colorFormat} = useProps(
 		"ParameterColorComponent",
 		defaultStyleProps,
 		defaultStyleProps,
+	);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterColorComponent",
+		defaultPropsParameterWrapper,
+		props,
 	);
 
 	const {
@@ -58,22 +72,33 @@ export default function ParameterColorComponent(props: PropsParameter) {
 		(state) => state.uiValue,
 	);
 
+	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
+
 	const handleSdColorChange = useCallback(
 		(val: string) => {
-			handleChange(convertToSdColor(val, colorFormat));
+			handleChange(
+				convertToSdColor(val, colorFormat),
+				undefined,
+				restoreFocus,
+			);
 		},
-		[handleChange, colorFormat],
+		[handleChange, colorFormat, restoreFocus],
 	);
 
 	const [value, setValue] = useState(
 		convertFromSdColor(paramValue, colorFormat),
 	);
+
 	useEffect(() => {
 		setValue(convertFromSdColor(paramValue, colorFormat));
 	}, [paramValue, colorFormat]);
 
 	return (
-		<>
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && (
 				<ColorInput
@@ -81,7 +106,13 @@ export default function ParameterColorComponent(props: PropsParameter) {
 					value={value}
 					rightSection={
 						<ActionIcon
-							onClick={() => handleChange(definition.defval)}
+							onClick={() =>
+								handleChange(
+									definition.defval,
+									undefined,
+									restoreFocus,
+								)
+							}
 						>
 							<Icon type={IconTypeEnum.Refresh} />
 						</ActionIcon>
@@ -90,8 +121,10 @@ export default function ParameterColorComponent(props: PropsParameter) {
 					onChangeEnd={handleSdColorChange}
 					disabled={disabled}
 					format={colorFormat}
+					onFocus={onFocusHandler}
+					onBlur={onBlurHandler}
 				/>
 			)}
-		</>
+		</ParameterWrapperComponent>
 	);
 }

@@ -1,6 +1,7 @@
 import {GumballEventResponseMapping} from "@shapediver/viewer.features.gumball";
 import {
 	checkNodeNameMatch,
+	getInstanceNodeData,
 	getNodeData,
 } from "@shapediver/viewer.features.interaction";
 import {
@@ -85,8 +86,13 @@ export function useGumballEvents(
 					const parts = name.split(".");
 
 					// get the node data to compare the output name
-					const nodeData = getNodeData(node, strictNaming);
-					if (!nodeData || nodeData.outputName !== parts[0]) return;
+					let nodeData = getNodeData(node, strictNaming);
+					if (!nodeData || nodeData.outputName !== parts[0]) {
+						nodeData = getInstanceNodeData(node, strictNaming);
+						if (!nodeData || nodeData.outputId !== parts[0]) {
+							return;
+						}
+					}
 
 					// check if the node path matches the selected node name
 					if (

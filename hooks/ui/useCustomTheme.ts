@@ -1,5 +1,5 @@
 import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
-import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAgentWidgetComponent";
+import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import {ParameterColorComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterColorComponent";
@@ -7,8 +7,10 @@ import {ParameterLabelComponentThemeProps} from "@AppBuilderShared/components/sh
 import {ParameterSelectComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSelectComponent";
 import {ParameterSliderComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
 import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectCarouselComponent";
+import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectGridComponent";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
+import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
 import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
@@ -52,6 +54,7 @@ import {
 	mergeThemeOverrides,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
+import {AppBuilderAgentWidgetThemeProps} from "~/shared/types/components/shapediver/props/appBuilderAgentWidget";
 
 /**
  * Helper function for defining CSS variables for the AppBuilderAppShellTemplate
@@ -297,6 +300,15 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Below here - custom components implemented by ShapeDiver
 			 */
 
+			/**
+			 * AppBuilderAccordionWidgetComponent
+			 *
+			 * Used for defining theme overrides for accordion widgets.
+			 */
+			AppBuilderAccordionWidgetComponent:
+				AppBuilderAccordionWidgetComponentThemeProps({
+					// showAcceptRejectButtons: false,
+				}),
 			/**
 			 * AppBuilderContainerWrapper
 			 *
@@ -631,6 +643,15 @@ export const useCustomTheme = (props: Props = {}) => {
 				// height: "auto",
 			}),
 			/**
+			 * SelectGridComponent
+			 *
+			 * Defaults for select grid components.
+			 */
+			SelectGridComponent: SelectGridComponentThemeProps({
+				//gridProps: { cols: 2, spacing: "md" },
+				//showLabel: true,
+			}),
+			/**
 			 * TooltipWrapper
 			 *
 			 * Global settings for tooltips.
@@ -690,6 +711,26 @@ export const useCustomTheme = (props: Props = {}) => {
 					logo: undefined,
 				},
 			}),
+			/**
+			 * ViewportAcceptRejectButtons
+			 *
+			 * Defaults for the viewport accept reject buttons.
+			 */
+			ViewportAcceptRejectButtons:
+				ViewportAcceptRejectButtonsComponentThemeProps({
+					// groupProps: {
+					// 	justify: "center",
+					// 	w: "auto",
+					// 	wrap: "nowrap",
+					// 	p: "xs",
+					// },
+					// buttonProps: {
+					// 	variant: "light",
+					// },
+					// iconProps: {},
+					// textProps: {size: "md"},
+					// showButtons: undefined,
+				}),
 			/**
 			 * ViewportComponent
 			 *

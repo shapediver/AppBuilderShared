@@ -1,4 +1,5 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import DrawingOptionsComponent from "@AppBuilderShared/components/shapediver/ui/DrawingOptionsComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
@@ -7,7 +8,11 @@ import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/p
 import {useDrawingTools} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingTools";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
@@ -18,6 +23,7 @@ import {
 	Loader,
 	Stack,
 	Text,
+	useProps,
 } from "@mantine/core";
 import {PointsData} from "@shapediver/viewer.features.drawing-tools";
 import {
@@ -55,9 +61,17 @@ const parsePointsData = (value?: string): PointsData => {
  *
  * @returns
  */
-export default function ParameterDrawingComponent(props: PropsParameter) {
+export default function ParameterDrawingComponent(
+	props: PropsParameter & Partial<PropsParameterWrapper>,
+) {
 	const {definition, handleChange, onCancel, disabled, state} =
 		useParameterComponentCommons<string>(props);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterDrawingComponent",
+		defaultPropsParameterWrapper,
+		props,
+	);
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
@@ -75,6 +89,9 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 	// state for the last confirmed value
 	const [parsedUiValue, setParsedUiValue] = useState<PointsData>(
 		parsePointsData(state.uiValue),
+	);
+	const [parsedExecValue, setParsedExecValue] = useState<PointsData>(
+		parsePointsData(state.execValue),
 	);
 
 	/**
@@ -146,11 +163,16 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 
 	useEffect(() => {
 		const parsed = parsePointsData(state.execValue);
-		if (JSON.stringify(parsed) !== JSON.stringify(parsedUiValue)) {
+		if (JSON.stringify(parsed) !== JSON.stringify(parsedExecValue)) {
 			setPointsData(parsed);
-			setParsedUiValue(parsed);
+			setParsedExecValue(parsed);
 		}
 	}, [definition]);
+
+	useEffect(() => {
+		const parsedExecValue = parsePointsData(state.execValue);
+		setParsedExecValue(parsedExecValue);
+	}, [state.execValue]);
 
 	// react to changes of the uiValue and update the drawing state if necessary
 	useEffect(() => {
@@ -336,13 +358,17 @@ export default function ParameterDrawingComponent(props: PropsParameter) {
 	);
 
 	return (
-		<>
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
 			<ParameterLabelComponent {...props} cancel={_onCancel} />
 			{SystemInfo.instance.isMobile
 				? contentMobile
 				: definition && drawingActive
 					? contentActive
 					: contentInactive}
-		</>
+		</ParameterWrapperComponent>
 	);
 }

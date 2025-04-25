@@ -1,12 +1,26 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {Box, Button, Flex, Group, Loader, Stack, Text} from "@mantine/core";
+import {
+	Box,
+	Button,
+	Flex,
+	Group,
+	Loader,
+	Stack,
+	Text,
+	useProps,
+} from "@mantine/core";
 import {
 	GumballParameterValue,
 	IGumballParameterProps,
@@ -44,7 +58,9 @@ const parseTransformation = (
  *
  * @returns
  */
-export default function ParameterGumballComponent(props: PropsParameter) {
+export default function ParameterGumballComponent(
+	props: PropsParameter & Partial<PropsParameterWrapper>,
+) {
 	const {
 		definition,
 		handleChange,
@@ -53,8 +69,13 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		disabled,
 		value,
 		state,
-		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterGumballComponent",
+		defaultPropsParameterWrapper,
+		props,
+	);
 
 	const gumballProps = definition.settings?.props as IGumballParameterProps;
 
@@ -85,7 +106,6 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 	} = useGumball(
-		sessionDependencies,
 		viewportId,
 		gumballProps,
 		gumballActive,
@@ -250,9 +270,13 @@ export default function ParameterGumballComponent(props: PropsParameter) {
 	);
 
 	return (
-		<>
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && gumballActive ? contentActive : contentInactive}
-		</>
+		</ParameterWrapperComponent>
 	);
 }

@@ -59,7 +59,7 @@ export interface IHistoryEntry {
  * Pending parameter changes (waiting to be executed).
  */
 export interface IParameterChanges {
-	/** The parameter values to change */
+	/** The parameter values to change. Use this read only. */
 	values: {[parameterId: string]: any};
 	/**
 	 * Promise allowing to wait for pending changes.
@@ -72,7 +72,12 @@ export interface IParameterChanges {
 	accept: (
 		/** If true, skip the creation of a history entry after successful execution. */
 		skipHistory?: boolean,
-	) => Promise<void>;
+		/**
+		 * Optional list of parameter ids for which changes should be accepted.
+		 * By default, all changes are accepted.
+		 */
+		parameterIds?: string[],
+	) => Promise<{[parameterId: string]: any}>;
 	/** Reject the changes, this rejects wait */
 	reject: () => void;
 	/** True if changes are currently being executed */
@@ -83,6 +88,15 @@ export interface IParameterChanges {
 	 * of multiple pending change objects.
 	 */
 	priority: number;
+	/** Add a parameter value change. */
+	addValueChange(id: string, value: any): void;
+	/** Remove a parameter value change for the given parameter id. */
+	removeValueChange(id: string): {
+		/** No further parameter value changes are queued. */
+		isEmpty: boolean;
+		/** True if a queued change for the given parameter id has been removed. */
+		removed: boolean;
+	};
 }
 
 export interface IParameterChangesPerSession {

@@ -3,7 +3,6 @@ import {
 	InteractionEventResponseMapping,
 	matchNodesWithPatterns,
 	MultiSelectManager,
-	OutputNodeNameFilterPatterns,
 } from "@shapediver/viewer.features.interaction";
 import {
 	addListener,
@@ -12,6 +11,7 @@ import {
 	removeListener,
 } from "@shapediver/viewer.session";
 import {useCallback, useContext, useEffect, useState} from "react";
+import {IUseCreateNameFilterPatternResult} from "../useCreateNameFilterPattern";
 
 // #region Functions (1)
 
@@ -35,6 +35,7 @@ export interface ISelectionState {
 	 */
 	resetSelectedNodeNames: () => void;
 }
+
 /**
  * This hook registers to selection events and provides a state of selected node names
  * according to the provided filter pattern.
@@ -45,7 +46,7 @@ export interface ISelectionState {
  * 					Note that this initial state is not checked against the filter pattern.
  */
 export function useSelectManagerEvents(
-	patterns: {[key: string]: OutputNodeNameFilterPatterns},
+	patterns: IUseCreateNameFilterPatternResult,
 	componentId: string,
 	initialSelectedNodeNames?: string[],
 	strictNaming = true,
@@ -81,8 +82,19 @@ export function useSelectManagerEvents(
 
 				const selected = [selectEvent.node];
 				const nodeNames = [];
-				for (const sessionId in patterns) {
-					const pattern = patterns[sessionId];
+				for (const sessionId in patterns.outputPatterns) {
+					const pattern = patterns.outputPatterns[sessionId];
+					nodeNames.push(
+						...matchNodesWithPatterns(
+							pattern,
+							selected,
+							strictNaming,
+						),
+					);
+				}
+
+				if (patterns.instancePatterns) {
+					const pattern = patterns.instancePatterns;
 					nodeNames.push(
 						...matchNodesWithPatterns(
 							pattern,
@@ -140,8 +152,8 @@ export function useSelectManagerEvents(
 
 				const selected = multiSelectEvent.nodes;
 				const nodeNames = [];
-				for (const sessionId in patterns) {
-					const pattern = patterns[sessionId];
+				for (const sessionId in patterns.outputPatterns) {
+					const pattern = patterns.outputPatterns[sessionId];
 					nodeNames.push(
 						...matchNodesWithPatterns(
 							pattern,
@@ -172,8 +184,8 @@ export function useSelectManagerEvents(
 				// remove the node from the selected nodes
 				const selected = multiSelectEvent.nodes;
 				const nodeNames = [];
-				for (const sessionId in patterns) {
-					const pattern = patterns[sessionId];
+				for (const sessionId in patterns.outputPatterns) {
+					const pattern = patterns.outputPatterns[sessionId];
 					nodeNames.push(
 						...matchNodesWithPatterns(
 							pattern,

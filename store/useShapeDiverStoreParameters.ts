@@ -32,19 +32,28 @@ import {
 	ISessionsHistoryState,
 	IShapeDiverStoreParameters,
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {addValidator} from "@AppBuilderShared/utils/parameterValidation";
 import {
 	ShapeDiverRequestCustomization,
 	ShapeDiverRequestExport,
 } from "@shapediver/api.geometry-api-dto-v2";
 import {
+	addListener,
+	EVENTTYPE,
+	IEvent,
 	IExportApi,
 	IParameterApi,
 	ISessionApi,
 	isFileParameterApi,
+	ITaskEvent,
+	removeListener,
+	TASK_TYPE,
 } from "@shapediver/viewer.session";
+import {produce} from "immer";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {useShapeDiverStoreProcessManager} from "./useShapeDiverStoreProcessManager";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter,
@@ -72,11 +81,14 @@ function createParameterExecutor<T>(
 			const changes = getChanges();
 
 			// check whether there is anything to do
-			if (paramId in changes.values && uiValue === execValue) {
-				console.log(`Removing change of parameter ${paramId}`);
-				delete changes.values[paramId];
+			const result = changes.removeValueChange(paramId);
+			if (result.removed && uiValue === execValue) {
+				console.debug(`Removing change of parameter ${paramId}`);
 				// check if there are any other parameter updates queued
-				if (Object.keys(changes.values).length === 0) {
+				if (result.isEmpty) {
+					console.debug(
+						`Rejecting changes for namespace ${namespace}`,
+					);
 					changes.reject();
 				}
 
@@ -88,10 +100,10 @@ function createParameterExecutor<T>(
 				console.debug(
 					`Queueing change of parameter ${paramId} to ${uiValue}`,
 				);
-				changes.values[paramId] = uiValue;
-				if (forceImmediate)
-					setTimeout(() => changes.accept(skipHistory), 0);
-				const values = await changes.wait;
+				changes.addValueChange(paramId, uiValue);
+				const values = forceImmediate
+					? await changes.accept(skipHistory, [paramId])
+					: await changes.wait;
 				const value = paramId in values ? values[paramId] : uiValue;
 				if (value !== uiValue)
 					console.debug(
@@ -106,7 +118,7 @@ function createParameterExecutor<T>(
 			} catch (e) {
 				console.debug(
 					`Rejecting change of parameter ${paramId} to ${uiValue}, resetting to "${execValue}"`,
-					e ?? "(Unknown error)",
+					e ?? "",
 				);
 
 				return execValue;
@@ -123,6 +135,109 @@ function createParameterExecutor<T>(
 type DefaultExportsGetter = () => string[];
 type ExportResponseSetter = (response: IExportResponse) => void;
 type HistoryPusher = (entry: ISessionsHistoryState) => void;
+
+/**
+ * Register a session in the process manager.
+ * This function creates a process manager for the session and registers the progress callback.
+ *
+ * The corresponding task events are registered and unregistered automatically.
+ * Within the task events, the progress callback is called with the progress of the task.
+ *
+ * @param session
+ * @returns
+ */
+const registerInProcessManager = (session: ISessionApi) => {
+	const {createProcessManager, addProcess} =
+		useShapeDiverStoreProcessManager.getState();
+	// create a process manager for the session
+	const processManagerId = createProcessManager(session.id);
+
+	let resolveMainPromise: () => void;
+	const mainPromise = new Promise<void>((resolve) => {
+		resolveMainPromise = resolve;
+	});
+
+	// create a callback function for the progress
+	let progressCallback: (progress: {
+		percentage: number;
+		msg?: string;
+	}) => void;
+
+	// create a function to register the progress callback
+	const onProgressCallback = (
+		callback: (progress: {percentage: number; msg?: string}) => void,
+	) => {
+		progressCallback = callback;
+	};
+	const mainProcessDefinition: IProcessDefinition = {
+		name: "Session Process",
+		promise: mainPromise,
+		onProgress: onProgressCallback,
+	};
+
+	// add process to the process manager
+	addProcess(processManagerId, mainProcessDefinition);
+
+	// create a callback function for the progress
+	const customizationProcessCallback = (e: IEvent) => {
+		const taskEvent = e as ITaskEvent;
+		const taskData = taskEvent.data as {
+			sessionId: string;
+		};
+		if (
+			taskEvent.type === TASK_TYPE.SESSION_CUSTOMIZATION &&
+			taskData.sessionId === session.id
+		) {
+			progressCallback({
+				percentage: taskEvent.progress,
+				msg: taskEvent.status,
+			});
+		}
+	};
+
+	// create a callback function for the progress
+	// and remove the listeners when the task is cancelled or finished
+	const customizationProcessCallbackEnd = (e: IEvent) => {
+		const taskEvent = e as ITaskEvent;
+		const taskData = taskEvent.data as {
+			sessionId: string;
+		};
+		if (
+			taskEvent.type === TASK_TYPE.SESSION_CUSTOMIZATION &&
+			taskData.sessionId === session.id
+		) {
+			progressCallback({
+				percentage: taskEvent.progress,
+				msg: taskEvent.status,
+			});
+
+			// remove listeners
+			removeListener(tokenStart);
+			removeListener(tokenProcess);
+			removeListener(tokenEnd);
+			removeListener(tokenCancel);
+		}
+	};
+
+	const tokenStart = addListener(
+		EVENTTYPE.TASK.TASK_START,
+		customizationProcessCallback,
+	);
+	const tokenProcess = addListener(
+		EVENTTYPE.TASK.TASK_PROCESS,
+		customizationProcessCallback,
+	);
+	const tokenEnd = addListener(
+		EVENTTYPE.TASK.TASK_END,
+		customizationProcessCallbackEnd,
+	);
+	const tokenCancel = addListener(
+		EVENTTYPE.TASK.TASK_CANCEL,
+		customizationProcessCallbackEnd,
+	);
+
+	return resolveMainPromise!;
+};
 
 /**
  * Create an IGenericParameterExecutor  for a session.
@@ -167,6 +282,9 @@ function createGenericParameterExecutorForSession(
 				(id) => (session.parameters[id].value = values[id]),
 			);
 
+			// create a process manager for the session customization
+			const resolve = registerInProcessManager(session);
+
 			if (exports.length > 0) {
 				// prepare body and send request
 				action = EventActionEnum.EXPORT;
@@ -181,6 +299,9 @@ function createGenericParameterExecutorForSession(
 			} else {
 				await session.customize();
 			}
+
+			// resolve the promise of the process manager
+			resolve();
 
 			if (!skipHistory) {
 				const state: ISessionsHistoryState = {
@@ -539,23 +660,114 @@ export const useShapeDiverStoreParameters =
 
 					const changes: IParameterChanges = {
 						values: {},
-						accept: () => Promise.resolve(),
+						accept: () => Promise.resolve({}),
 						reject: () => undefined,
 						wait: Promise.resolve({}),
 						executing: false,
 						priority,
+						addValueChange(id: string, value: any) {
+							const {parameterChanges} = get();
+							if (parameterChanges[namespace]) {
+								set(
+									produce((state) => {
+										state.parameterChanges[
+											namespace
+										].values[id] = value;
+									}),
+									false,
+									"addValueChange",
+								);
+							}
+						},
+						removeValueChange(id: string) {
+							const {parameterChanges} = get();
+
+							if (!(namespace in parameterChanges))
+								return {isEmpty: true, removed: false};
+
+							if (id in parameterChanges[namespace].values) {
+								const isEmpty =
+									Object.keys(
+										parameterChanges[namespace].values,
+									).length === 1;
+								set(
+									produce((state) => {
+										delete state.parameterChanges[namespace]
+											.values[id];
+									}),
+									false,
+									"removeValueChange",
+								);
+								return {isEmpty, removed: true};
+							}
+
+							return {
+								isEmpty:
+									Object.keys(
+										parameterChanges[namespace].values,
+									).length === 0,
+								removed: false,
+							};
+						},
 					};
 
 					changes.wait = new Promise((resolve, reject) => {
-						changes.accept = async (skipHistory) => {
+						changes.accept = async (skipHistory, parameterIds) => {
+							// get currently queued parameter value changes
+							const {parameterChanges} = get();
+							if (!(namespace in parameterChanges))
+								return Promise.resolve({});
+							const values = parameterChanges[namespace].values;
+							let allChangesAccepted = true;
 							try {
-								// get executor promise, but don't wait for it yet
+								// filter changed values by optional parameterIds
+								const changedValues = parameterIds
+									? Object.keys(values)
+											.filter((id) =>
+												parameterIds.includes(id),
+											)
+											.reduce(
+												(acc, id) => {
+													acc[id] = values[id];
+
+													return acc;
+												},
+												{} as {[key: string]: any},
+											)
+									: values;
+								// check if there are changes left
+								allChangesAccepted =
+									Object.keys(values).length ===
+									Object.keys(changedValues).length;
+								// remove changes from changed values which are part of changedValues
+								set(
+									produce((state) => {
+										Object.keys(changedValues).forEach(
+											(id) => {
+												if (
+													id in
+													state.parameterChanges[
+														namespace
+													].values
+												)
+													delete state
+														.parameterChanges[
+														namespace
+													].values[id];
+											},
+										);
+									}),
+									false,
+									"accept - remove value changes",
+								);
+								// use the optional pre-execution hook to amend the values (used for custom parameters)
 								const amendedValues = preExecutionHook
 									? await preExecutionHook(
-											changes.values,
+											changedValues,
 											namespace,
 										)
-									: changes.values;
+									: changedValues;
+								// get executor promise, but don't wait for it yet
 								const promise = executor(
 									amendedValues,
 									namespace,
@@ -563,30 +775,39 @@ export const useShapeDiverStoreParameters =
 								);
 								// set "executing" mode
 								set(
-									(_state) => ({
-										parameterChanges: {
-											..._state.parameterChanges,
-											...{
-												[namespace]: {
-													..._state.parameterChanges[
-														namespace
-													],
-													executing: true,
-												},
-											},
-										},
+									produce((state) => {
+										state.parameterChanges[
+											namespace
+										].executing = true;
 									}),
 									false,
-									"executeChanges",
+									"executeChanges - start",
 								);
 								// wait for execution
 								await promise;
-								resolve(amendedValues);
+								// if there are no changes left, resolve and remove the changes
+								if (allChangesAccepted) {
+									resolve(amendedValues);
+								} else {
+									// else disable the executing mode
+									set(
+										produce((state) => {
+											state.parameterChanges[
+												namespace
+											].executing = false;
+										}),
+										false,
+										"executeChanges - end",
+									);
+								}
+								return amendedValues;
 							} catch (e: any) {
 								reject(e);
 							} finally {
-								removeChanges(namespace);
+								if (allChangesAccepted)
+									removeChanges(namespace);
 							}
+							return {};
 						};
 						changes.reject = () => {
 							removeChanges(namespace);

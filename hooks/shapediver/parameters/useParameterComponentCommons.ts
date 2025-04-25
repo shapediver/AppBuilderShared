@@ -1,5 +1,6 @@
 import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IShapeDiverParameterState} from "@AppBuilderShared/types/shapediver/parameter";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
@@ -26,6 +27,15 @@ export function useParameterComponentCommons<T>(
 
 		return !ids.every((id) => !state.parameterChanges[id]?.executing);
 	});
+	const processesInSession = useShapeDiverStoreProcessManager((state) => {
+		// check if there are currently processes running in the session
+
+		return (
+			Object.values(state.processManagers).filter(
+				(p) => p.controllerSessionId === namespace,
+			).length > 0
+		);
+	});
 	const sessionDependencies = useShapeDiverStoreParameters((state) => {
 		return state.sessionDependency[namespace];
 	});
@@ -37,13 +47,13 @@ export function useParameterComponentCommons<T>(
 	const debounceRef = useRef<NodeJS.Timeout>();
 
 	const handleChange = useCallback(
-		(curval: T | string, timeout?: number) => {
+		(curval: T | string, timeout?: number, cb: () => void = () => {}) => {
 			clearTimeout(debounceRef.current);
 			setValue(curval);
 			debounceRef.current = setTimeout(
 				() => {
 					if (actions.setUiValue(curval)) {
-						actions.execute(!acceptRejectMode);
+						actions.execute(!acceptRejectMode).then(() => cb());
 					}
 				},
 				timeout === undefined ? debounceTimeout : timeout,
@@ -87,8 +97,10 @@ export function useParameterComponentCommons<T>(
 	 * disable the component in case
 	 *   - the parameter state is dirty AND we should disable the component if so, OR
 	 *   - changes are currently executing
+	 *   - there are processes running
 	 */
-	const disabled = (disableIfDirty && state.dirty) || executing;
+	const disabled =
+		(disableIfDirty && state.dirty) || executing || processesInSession;
 
 	const memoizedDefinition = useMemo(() => {
 		return {...definition, ...props.overrides};

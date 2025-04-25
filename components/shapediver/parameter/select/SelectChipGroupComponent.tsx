@@ -9,7 +9,7 @@ import {SelectComponentProps} from "./SelectComponent";
  * @see https://mantine.dev/core/chip/#chipgroup
  */
 export default function SelectChipGroupComponent(props: SelectComponentProps) {
-	const {value, onChange, items, disabled, itemData} = props;
+	const {value, onChange, items, disabled, itemData, onFocus, onBlur} = props;
 
 	return (
 		<Chip.Group multiple={false} value={value} onChange={onChange}>
@@ -25,6 +25,8 @@ export default function SelectChipGroupComponent(props: SelectComponentProps) {
 							value={item}
 							disabled={disabled}
 							color={data?.color}
+							onFocus={onFocus}
+							onBlur={onBlur}
 						>
 							{displayName}
 						</Chip>

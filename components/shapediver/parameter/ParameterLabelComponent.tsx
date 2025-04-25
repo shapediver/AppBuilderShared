@@ -48,6 +48,7 @@ export default function ParameterLabelComponent(
 	const labelcomp = (
 		<TextWeighted pb={4} size="sm" fontWeight="medium" fw={fontWeight}>
 			{label}
+			{cancel ? " *" : ""}
 		</TextWeighted>
 	);
 
@@ -61,7 +62,11 @@ export default function ParameterLabelComponent(
 				labelcomp
 			)}
 			{cancel && (
-				<Icon type={IconTypeEnum.X} color="red" onClick={cancel} />
+				<Icon
+					type={IconTypeEnum.X}
+					color="var(--mantine-primary-color-filled)"
+					onClick={cancel}
+				/>
 			)}
 		</Group>
 	);

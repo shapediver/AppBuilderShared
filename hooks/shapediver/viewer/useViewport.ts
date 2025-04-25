@@ -1,7 +1,10 @@
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
+import {PROCESS_STATUS} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
+import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -22,6 +25,12 @@ export function useViewport(props: ViewportCreateDto) {
 	);
 	const {addViewportAccessFunctions, removeViewportAccessFunctions} =
 		useShapeDiverStoreViewportAccessFunctions();
+	const {processManagers} = useShapeDiverStoreProcessManager(
+		useShallow((state) => ({
+			processManagers: state.processManagers,
+		})),
+	);
+
 	const [error, setError] = useState<Error | undefined>(undefined);
 	const promiseChain = useRef(Promise.resolve());
 	const canvasRef = useRef(null);
@@ -29,11 +38,38 @@ export function useViewport(props: ViewportCreateDto) {
 	const _props = {...props, id: props.id ?? defaultViewportId};
 
 	useEffect(() => {
+		processManagersRef.current = processManagers;
+	}, [processManagers]);
+	const processManagersRef = useRef(processManagers);
+
+	useEffect(() => {
 		promiseChain.current = promiseChain.current.then(async () => {
+			let flags: {[key: string]: FLAG_TYPE} | undefined = undefined;
+			if (processManagersRef.current) {
+				flags = {};
+				for (const processManager of Object.values(
+					processManagersRef.current,
+				)) {
+					if (
+						processManager.status === PROCESS_STATUS.CREATED ||
+						processManager.status === PROCESS_STATUS.RUNNING
+					) {
+						processManager.addFlag(_props.id, (flag: FLAG_TYPE) => {
+							const token = Math.random()
+								.toString(36)
+								.substring(2, 15);
+							flags![token] = flag;
+							return token;
+						});
+					}
+				}
+			}
+
 			const viewportApi = await createViewport(
 				{
 					canvas: canvasRef.current!,
 					..._props,
+					flags,
 				},
 				{onError: setError},
 			);
@@ -52,6 +88,11 @@ export function useViewport(props: ViewportCreateDto) {
 
 						return screenshot;
 					},
+					addFlag: (flag: FLAG_TYPE) => {
+						return viewportApi.addFlag(flag);
+					},
+					removeFlag: (token: string) =>
+						viewportApi.removeFlag(token),
 				});
 		});
 

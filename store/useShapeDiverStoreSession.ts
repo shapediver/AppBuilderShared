@@ -339,7 +339,7 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				};
 			},
 		}),
-		{...devtoolsSettings, name: "ShapeDiver | Viewer"},
+		{...devtoolsSettings, name: "ShapeDiver | Session"},
 	),
 );
 
@@ -438,11 +438,11 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 	 */
 	if (state.sessionUpdateCallbacks !== prevState.sessionUpdateCallbacks) {
 		// get all session ids that are in the current or previous state
-		const combinedIds = Object.keys(state.sessions).concat(
+		const combinedIds: string[] = Object.keys(state.sessions).concat(
 			Object.keys(prevState.sessions),
 		);
 
-		Object.keys(combinedIds).forEach((sessionId) => {
+		combinedIds.forEach((sessionId) => {
 			// case 1: the update callback is new
 			// it's not in the previous state
 			if (!prevState.sessionUpdateCallbacks[sessionId]) {

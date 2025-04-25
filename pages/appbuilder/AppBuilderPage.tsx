@@ -1,6 +1,8 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
+import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
+import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
 import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
@@ -175,19 +177,20 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	} = useAppBuilderSettings(defaultSessionDto);
 
 	// extract the various session types
-	const {controllerSession, secondarySessions} = useMemo(() => {
-		const sessions = settings?.sessions ?? [];
-		const instancedSessions = sessions.filter((s) => s.instance);
-		instancedSessions.forEach((s) => {
-			s.loadOutputs = false;
-		});
+	const {controllerSession, secondarySessions, instancedSessions} =
+		useMemo(() => {
+			const sessions = settings?.sessions ?? [];
+			const instancedSessions = sessions.filter((s) => s.instance);
+			instancedSessions.forEach((s) => {
+				s.loadOutputs = false;
+			});
 
-		return {
-			controllerSession: sessions[0],
-			secondarySessions: sessions.filter((s) => !s.instance).slice(1),
-			instancedSessions: sessions.filter((s) => s.instance),
-		};
-	}, [settings]);
+			return {
+				controllerSession: sessions[0],
+				secondarySessions: sessions.filter((s) => !s.instance).slice(1),
+				instancedSessions: sessions.filter((s) => s.instance),
+			};
+		}, [settings]);
 
 	const {
 		namespace,
@@ -207,6 +210,9 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	// handle additional sessions without instances
 	useSessions(secondarySessions);
+
+	// handle instances
+	useSessions(instancedSessions);
 
 	// create UI elements for containers
 	const containers: IAppBuilderTemplatePageProps = {
@@ -293,9 +299,17 @@ export default function AppBuilderPage(props: Partial<Props>) {
 						)}
 					>
 						{ViewportOverlayWrapper && (
-							<ViewportOverlayWrapper>
-								{ViewportIcons && <ViewportIcons />}
-							</ViewportOverlayWrapper>
+							<>
+								<ViewportOverlayWrapper>
+									{ViewportIcons && <ViewportIcons />}
+								</ViewportOverlayWrapper>
+								<ViewportOverlayWrapper
+									position={OverlayPosition.BOTTOM_MIDDLE}
+									offset="1em"
+								>
+									<ViewportAcceptRejectButtons />
+								</ViewportOverlayWrapper>
+							</>
 						)}
 					</ViewportComponent>
 				)}

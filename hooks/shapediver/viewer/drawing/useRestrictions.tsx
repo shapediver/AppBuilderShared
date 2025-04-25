@@ -73,17 +73,22 @@ export function useRestrictions(
 			const patternsByKeys: {[key: string]: IUseFindNodesByPatternProps} =
 				{};
 			Object.entries(patterns).forEach(([restrictionId, patterns]) => {
-				Object.entries(patterns).forEach(([sessionId, pattern]) => {
-					Object.entries(pattern).forEach(([outputId, pattern]) => {
-						patternsByKeys[
-							`${restrictionId}_${sessionId}_${outputId}`
-						] = {
-							sessionId,
-							outputId: outputId,
-							patterns: pattern,
-						};
-					});
-				});
+				if (!patterns.outputPatterns) return;
+				Object.entries(patterns.outputPatterns).forEach(
+					([sessionId, pattern]) => {
+						Object.entries(pattern).forEach(
+							([outputId, pattern]) => {
+								patternsByKeys[
+									`${restrictionId}_${sessionId}_${outputId}`
+								] = {
+									sessionId,
+									outputId: outputId,
+									patterns: pattern,
+								};
+							},
+						);
+					},
+				);
 			});
 
 			return patternsByKeys;
