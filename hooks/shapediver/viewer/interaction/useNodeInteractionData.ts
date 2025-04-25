@@ -261,7 +261,7 @@ export function useNodesInteractionData(props: {
 	const [availableNodeNames, setAvailableNodeNames] = useState<{
 		[key: string]: IUseNodeInteractionDataResult;
 	}>({});
-	const {instances} = useShapeDiverStoreInstances();
+	const instances = useShapeDiverStoreInstances((state) => state.instances);
 	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
 
 	const setAvailableNodeNamesAtKey = useCallback((key: string) => {

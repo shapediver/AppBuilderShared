@@ -9,7 +9,7 @@ import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildert
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IOutputApi, ITreeNode, OutputApiData} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useAppBuilderInstances} from "./useAppBuilderInstances";
 
 /**
@@ -33,10 +33,15 @@ export function useSessionWithAppBuilder(
 	const namespace = props?.id ?? "";
 
 	// start session and register parameters and exports
-	const {sessionApi, error: sessionError} = useSession(
+	const {
+		sessionApi,
+		error: sessionError,
+		initialProcessManagerId,
+	} = useSession(
 		props
 			? {
 					...props,
+					createProcessManager: true,
 				}
 			: undefined,
 	);
@@ -48,7 +53,8 @@ export function useSessionWithAppBuilder(
 		return outputs.length > 0 ? outputs[0].id : "";
 	}, [sessionApi]);
 
-	const {createProcessManager} = useShapeDiverStoreProcessManager();
+	const {addProcess, createProcessManager} =
+		useShapeDiverStoreProcessManager();
 	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
 
 	const [parsedData, setParsedData] = useState<
@@ -56,10 +62,15 @@ export function useSessionWithAppBuilder(
 	>(undefined);
 	const [processManagerId, setProcessManagerId] = useState<
 		string | undefined
-	>(undefined);
+	>(initialProcessManagerId);
+	const initialProcessManagerIdRef = useRef(initialProcessManagerId);
 	const [outputApi, setOutputApi] = useState<IOutputApi | undefined>(
 		undefined,
 	);
+
+	useEffect(() => {
+		initialProcessManagerIdRef.current = initialProcessManagerId;
+	}, [initialProcessManagerId]);
 
 	/**
 	 * Validate the AppBuilder data from the model or the override.
@@ -141,16 +152,30 @@ export function useSessionWithAppBuilder(
 				}
 			}
 
-			// create a process id only if there are further processes to be executed
-			// for now this is only the case if there are instances defined in the AppBuilder data
-			// in the future, this could be extended to other cases
-			const processManagerId = hasSubProcesses
-				? Math.random().toString(36).substring(7)
-				: undefined;
+			if (!hasSubProcesses) {
+				if (initialProcessManagerIdRef.current) {
+					// the initial process manager id is created when the session is initialized
+					// we resolve it here as there are no further processes to be executed
+					addProcess(initialProcessManagerIdRef.current, {
+						name: "Instance Process",
+						promise: Promise.resolve(),
+					});
+				}
+			} else {
+				if (initialProcessManagerIdRef.current) {
+					// the initial process manager id is created when the session is initialized
+					// we use it here so that we continue to use the same process manager
+					// for the AppBuilder data and the instances
+					setProcessManagerId(initialProcessManagerIdRef.current);
+				} else {
+					// create a process only if there are further processes to be executed
+					// for now this is only the case if there are instances defined in the AppBuilder data
+					// in the future, this could be extended to other cases
+					const id = createProcessManager(namespace);
+					setProcessManagerId(id);
+				}
+			}
 
-			if (processManagerId)
-				createProcessManager(namespace, processManagerId);
-			setProcessManagerId(processManagerId);
 			setParsedData(parsedData);
 		},
 		[namespace],

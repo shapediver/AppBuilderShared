@@ -1,3 +1,5 @@
+import {FLAG_TYPE} from "@shapediver/viewer.session";
+
 export enum PROCESS_STATUS {
 	CREATED = "created",
 	RUNNING = "running",
@@ -95,6 +97,19 @@ export interface IProcessManager {
 	status: PROCESS_STATUS;
 
 	/**
+	 * Add the busy mode and suspend scene updates flags to the viewport with the given id.
+	 * The flags are removed once the process has been resolved.
+	 *
+	 * @param viewportId
+	 * @param callback
+	 * @returns
+	 */
+	addFlag: (
+		viewportId: string,
+		callback: (flag: FLAG_TYPE) => string,
+	) => void;
+
+	/**
 	 * Adds a the busy mode and suspend scene updates flags to the viewports.
 	 * The flags are added to all viewports.
 	 * The flags are removed once all processes have been resolved.
@@ -153,10 +168,6 @@ export interface IShapeDiverStoreProcessManager {
 	 * For example, if the processes are created asynchronously, but the flags need to be set immediately.
 	 *
 	 * @param controllerSessionId The id of the controller session.
-	 * @param processManagerId The id of the process manager.
 	 */
-	createProcessManager: (
-		controllerSessionId: string,
-		processManagerId: string,
-	) => void;
+	createProcessManager: (controllerSessionId: string) => string;
 }

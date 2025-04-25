@@ -6,6 +6,7 @@ import {devtoolsSettings} from "./storeSettings";
 export const useShapeDiverStoreInstances = create<IShapeDiverStoreInstances>()(
 	devtools(
 		(set, get) => ({
+			customizationResults: {},
 			instances: {},
 
 			addInstance: (instanceId, instance) => {
@@ -17,7 +18,7 @@ export const useShapeDiverStoreInstances = create<IShapeDiverStoreInstances>()(
 						},
 					}),
 					false,
-					`addInstances ${instanceId}`,
+					`addInstance ${instanceId}`,
 				);
 			},
 
@@ -34,7 +35,37 @@ export const useShapeDiverStoreInstances = create<IShapeDiverStoreInstances>()(
 						return {instances: newState};
 					},
 					false,
-					`removeInstances ${instanceId}`,
+					`removeInstance ${instanceId}`,
+				);
+			},
+
+			addCustomizationResult: (instanceId, instance) => {
+				set(
+					(state) => ({
+						customizationResults: {
+							...state.customizationResults,
+							[instanceId]: instance,
+						},
+					}),
+					false,
+					`addCustomizationResult ${instanceId}`,
+				);
+			},
+
+			removeCustomizationResult: (instanceId) => {
+				const {customizationResults} = get();
+
+				if (!customizationResults[instanceId]) return;
+
+				set(
+					(state) => {
+						const newState = {...state.customizationResults};
+						delete newState[instanceId];
+
+						return {customizationResults: newState};
+					},
+					false,
+					`removeCustomizationResult ${instanceId}`,
 				);
 			},
 		}),

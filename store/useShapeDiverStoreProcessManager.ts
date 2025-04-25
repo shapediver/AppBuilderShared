@@ -117,28 +117,29 @@ export class ProcessManager implements IProcessManager {
 		this.evaluateProcesses();
 	}
 
+	public addFlag(
+		viewportId: string,
+		addFlag?: (flag: FLAG_TYPE, token?: string) => string,
+	): void {
+		if (!this._busyModeFlagTokens[viewportId] && addFlag) {
+			this._busyModeFlagTokens[viewportId] = addFlag(FLAG_TYPE.BUSY_MODE);
+		}
+		if (!this._suspendSceneUpdateFlagTokens[viewportId] && addFlag) {
+			this._suspendSceneUpdateFlagTokens[viewportId] = addFlag(
+				FLAG_TYPE.SUSPEND_SCENE_UPDATES,
+			);
+		}
+	}
+
 	public addFlags(): void {
 		const {viewportAccessFunctions} =
 			useShapeDiverStoreViewportAccessFunctions.getState();
 		// check if viewports already have the flags, if not, add them
 		for (const viewportId in viewportAccessFunctions) {
-			if (
-				!this._busyModeFlagTokens[viewportId] &&
-				viewportAccessFunctions[viewportId].addFlag
-			) {
-				this._busyModeFlagTokens[viewportId] = viewportAccessFunctions[
-					viewportId
-				].addFlag(FLAG_TYPE.BUSY_MODE);
-			}
-			if (
-				!this._suspendSceneUpdateFlagTokens[viewportId] &&
-				viewportAccessFunctions[viewportId].addFlag
-			) {
-				this._suspendSceneUpdateFlagTokens[viewportId] =
-					viewportAccessFunctions[viewportId].addFlag(
-						FLAG_TYPE.SUSPEND_SCENE_UPDATES,
-					);
-			}
+			this.addFlag(
+				viewportId,
+				viewportAccessFunctions[viewportId].addFlag,
+			);
 		}
 	}
 
@@ -303,10 +304,11 @@ export const useShapeDiverStoreProcessManager =
 						};
 					});
 				},
-				createProcessManager: (
-					controllerSessionId: string,
-					processManagerId: string,
-				) => {
+				createProcessManager: (controllerSessionId: string) => {
+					const processManagerId = Math.random()
+						.toString(36)
+						.substring(7);
+
 					set((state) => {
 						const processManagers = {...state.processManagers};
 						let processManager = processManagers[processManagerId];
@@ -316,7 +318,6 @@ export const useShapeDiverStoreProcessManager =
 								processManagerId,
 							);
 						}
-
 						return {
 							...state,
 							processManagers: {
@@ -325,6 +326,8 @@ export const useShapeDiverStoreProcessManager =
 							},
 						};
 					});
+
+					return processManagerId;
 				},
 			}),
 			{...devtoolsSettings, name: "ShapeDiver | Process Manager"},
