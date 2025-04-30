@@ -121,11 +121,6 @@ export class ProcessManager implements IProcessManager {
 		viewportId: string,
 		addFlag?: (flag: FLAG_TYPE, token?: string) => string,
 	): void {
-		console.log(
-			"Adding flags",
-			viewportId,
-			this._busyModeFlagTokens[viewportId],
-		);
 		if (!this._busyModeFlagTokens[viewportId] && addFlag) {
 			this._busyModeFlagTokens[viewportId] = addFlag(FLAG_TYPE.BUSY_MODE);
 		}

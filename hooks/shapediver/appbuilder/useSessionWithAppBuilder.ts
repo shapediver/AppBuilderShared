@@ -47,26 +47,43 @@ export function useSessionWithAppBuilder(
 	);
 	const sessionInitialized = !!sessionApi;
 
-	const appBuilderOutputId = useMemo(() => {
-		if (!sessionApi) return "";
-		const outputs = sessionApi.getOutputByName(CUSTOM_DATA_OUTPUT_NAME);
-		return outputs.length > 0 ? outputs[0].id : "";
-	}, [sessionApi]);
-
+	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
 	const {addProcess, createProcessManager} =
 		useShapeDiverStoreProcessManager();
-	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
-
+	const initialProcessManagerIdRef = useRef(initialProcessManagerId);
 	const [parsedData, setParsedData] = useState<
 		IAppBuilder | Error | undefined
 	>(undefined);
 	const [processManagerId, setProcessManagerId] = useState<
 		string | undefined
 	>(initialProcessManagerId);
-	const initialProcessManagerIdRef = useRef(initialProcessManagerId);
 	const [outputApi, setOutputApi] = useState<IOutputApi | undefined>(
 		undefined,
 	);
+
+	const appBuilderOutputId = useMemo(() => {
+		if (!sessionApi) return "";
+		const outputs = sessionApi.getOutputByName(CUSTOM_DATA_OUTPUT_NAME);
+		const outputId = outputs.length > 0 ? outputs[0].id : "";
+
+		/**
+		 * Early exit of the process manager creation if the output id is not set.
+		 * In the case of an app builder output, we have to check for subprocesses
+		 * that are created in the AppBuilder data.
+		 */
+		if (outputId === "") {
+			if (initialProcessManagerIdRef.current) {
+				// the initial process manager id is created when the session is initialized
+				// we resolve it here as there are no further processes to be executed
+				addProcess(initialProcessManagerIdRef.current, {
+					name: "Instance Process",
+					promise: Promise.resolve(),
+				});
+			}
+		}
+
+		return outputId;
+	}, [sessionApi]);
 
 	useEffect(() => {
 		initialProcessManagerIdRef.current = initialProcessManagerId;
