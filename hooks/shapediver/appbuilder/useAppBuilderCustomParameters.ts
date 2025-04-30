@@ -11,7 +11,7 @@ import {useCallback, useEffect, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /** Prefix used to register custom parameters */
-const CUSTOM_SESSION_ID_POSTFIX = "_appbuilder";
+export const CUSTOM_SESSION_ID_POSTFIX = "_appbuilder";
 
 /** Name of input (parameter of the Grasshopper model) used to consume the custom parameter values */
 const CUSTOM_DATA_INPUT_NAME = "AppBuilder";
