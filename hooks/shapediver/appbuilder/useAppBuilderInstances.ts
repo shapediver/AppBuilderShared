@@ -283,7 +283,7 @@ export function useAppBuilderInstances(props: Props) {
 
 					for (let i = 0; i < node.children.length; i++) {
 						const child = node.children[i];
-						transformationNode.addChild(child.cloneInstance());
+						transformationNode.addChild(child.clone());
 					}
 
 					instanceNode.addChild(transformationNode);
