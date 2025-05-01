@@ -134,7 +134,8 @@ export function useAppBuilderCustomParameters(props: Props) {
 	// register the pre-execution hook
 	useEffect(() => {
 		if (appBuilderParam || appBuilderFileParam) {
-			setPreExecutionHook(namespace, async (values) => {
+			setPreExecutionHook(namespace, async (_values) => {
+				const values = {..._values};
 				const json = JSON.stringify(getCustomParameterValues());
 				if (
 					appBuilderParam &&
