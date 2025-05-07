@@ -312,7 +312,11 @@ export default function MarkdownWidgetComponent(
 		},
 	};
 
-	const markdown = <Markdown {...config}>{children}</Markdown>;
+	const markdown = (
+		<Markdown className={classes.markdownNormalize} {...config}>
+			{children}
+		</Markdown>
+	);
 
 	return themeOverride ? (
 		<ThemeProvider theme={themeOverride}>{markdown}</ThemeProvider>
