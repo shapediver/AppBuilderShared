@@ -88,6 +88,7 @@ export default function ExportButtonComponent(props: PropsExport) {
 			{definition && (
 				<>
 					<Button
+						variant="filled"
 						fullWidth={true}
 						leftSection={
 							definition.type === EXPORT_TYPE.DOWNLOAD ? (

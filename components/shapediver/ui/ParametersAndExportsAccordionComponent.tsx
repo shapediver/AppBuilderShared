@@ -14,6 +14,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {ReactElement, useContext} from "react";
+import classes from "./ParametersAndExportsAccordionComponent.module.css";
 
 /**
  * Functional component that creates an accordion of parameter and export components.
@@ -189,7 +190,11 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 	for (const g of elementGroups) {
 		if (g.group && (!avoidSingleComponentGroups || g.elements.length > 1)) {
 			accordionItems.push(
-				<Accordion.Item key={g.group.id} value={g.group.id}>
+				<Accordion.Item
+					className={classes.accordionItem}
+					key={g.group.id}
+					value={g.group.id}
+				>
 					<Accordion.Control>{g.group.name}</Accordion.Control>
 					<Accordion.Panel key={g.group.id}>
 						<Stack>{g.elements}</Stack>
