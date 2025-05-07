@@ -169,6 +169,7 @@ export default function ParameterDrawingComponent(
 	// react to changes of the uiValue and update the drawing state if necessary
 	useEffect(() => {
 		const parsed = parsePointsData(state.uiValue);
+		setParsedUiValue(parsed);
 		// compare the parsed value with the current points data
 		if (
 			parsed.length !== pointsData?.length ||
@@ -178,7 +179,6 @@ export default function ParameterDrawingComponent(
 		) {
 			deactivateDrawing();
 			setPointsData(parsed);
-			setParsedUiValue(parsed);
 		}
 	}, [state.uiValue]);
 
