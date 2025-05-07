@@ -90,9 +90,6 @@ export default function ParameterDrawingComponent(
 	const [parsedUiValue, setParsedUiValue] = useState<PointsData>(
 		parsePointsData(state.uiValue),
 	);
-	const [parsedExecValue, setParsedExecValue] = useState<PointsData>(
-		parsePointsData(state.execValue),
-	);
 
 	/**
 	 * Callback function to activate the drawing.
@@ -163,16 +160,11 @@ export default function ParameterDrawingComponent(
 
 	useEffect(() => {
 		const parsed = parsePointsData(state.execValue);
-		if (JSON.stringify(parsed) !== JSON.stringify(parsedExecValue)) {
+		if (JSON.stringify(parsed) !== JSON.stringify(parsedUiValue)) {
 			setPointsData(parsed);
-			setParsedExecValue(parsed);
+			setParsedUiValue(parsed);
 		}
 	}, [definition]);
-
-	useEffect(() => {
-		const parsedExecValue = parsePointsData(state.execValue);
-		setParsedExecValue(parsedExecValue);
-	}, [state.execValue]);
 
 	// react to changes of the uiValue and update the drawing state if necessary
 	useEffect(() => {
