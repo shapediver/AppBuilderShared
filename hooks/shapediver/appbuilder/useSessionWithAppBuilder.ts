@@ -61,33 +61,23 @@ export function useSessionWithAppBuilder(
 		undefined,
 	);
 
-	const appBuilderOutputId = useMemo(() => {
-		if (!sessionApi) return "";
-		const outputs = sessionApi.getOutputByName(CUSTOM_DATA_OUTPUT_NAME);
-		const outputId = outputs.length > 0 ? outputs[0].id : "";
+	/**
+	 * Validate the AppBuilder data.
+	 * @param data
+	 * @returns
+	 */
+	const validate = (data: any): IAppBuilder | undefined | Error => {
+		const result = validateAppBuilder(data);
+		if (result.success) {
+			return result.data;
+		} else {
+			console.debug("Invalid AppBuilder data", data);
 
-		/**
-		 * Early exit of the process manager creation if the output id is not set.
-		 * In the case of an app builder output, we have to check for subprocesses
-		 * that are created in the AppBuilder data.
-		 */
-		if (outputId === "") {
-			if (initialProcessManagerIdRef.current) {
-				// the initial process manager id is created when the session is initialized
-				// we resolve it here as there are no further processes to be executed
-				addProcess(initialProcessManagerIdRef.current, {
-					name: "Instance Process",
-					promise: Promise.resolve(),
-				});
-			}
+			return new Error(
+				`Parsing AppBuilder data failed: ${result.error.message}`,
+			);
 		}
-
-		return outputId;
-	}, [sessionApi]);
-
-	useEffect(() => {
-		initialProcessManagerIdRef.current = initialProcessManagerId;
-	}, [initialProcessManagerId]);
+	};
 
 	/**
 	 * Validate the AppBuilder data from the model or the override.
@@ -120,23 +110,37 @@ export function useSessionWithAppBuilder(
 		[appBuilderOverride, sessionInitialized],
 	);
 
-	/**
-	 * Validate the AppBuilder data.
-	 * @param data
-	 * @returns
-	 */
-	const validate = (data: any): IAppBuilder | undefined | Error => {
-		const result = validateAppBuilder(data);
-		if (result.success) {
-			return result.data;
-		} else {
-			console.debug("Invalid AppBuilder data", data);
+	const appBuilderOutputId = useMemo(() => {
+		if (!sessionApi) return "";
+		const outputs = sessionApi.getOutputByName(CUSTOM_DATA_OUTPUT_NAME);
+		const outputId = outputs.length > 0 ? outputs[0].id : "";
 
-			return new Error(
-				`Parsing AppBuilder data failed: ${result.error.message}`,
-			);
+		/**
+		 * Early exit of the process manager creation if the output id is not set.
+		 * In the case of an app builder output, we have to check for subprocesses
+		 * that are created in the AppBuilder data.
+		 */
+		if (outputId === "") {
+			// as there is not app builder output, we can set the parsed data to undefined
+			// unless the app builder override is set, in which case we set it to the override
+			setParsedData(validationResult(undefined));
+
+			if (initialProcessManagerIdRef.current) {
+				// the initial process manager id is created when the session is initialized
+				// we resolve it here as there are no further processes to be executed
+				addProcess(initialProcessManagerIdRef.current, {
+					name: "Instance Process",
+					promise: Promise.resolve(),
+				});
+			}
 		}
-	};
+
+		return outputId;
+	}, [sessionApi]);
+
+	useEffect(() => {
+		initialProcessManagerIdRef.current = initialProcessManagerId;
+	}, [initialProcessManagerId]);
 
 	/**
 	 * Callback for updating the AppBuilder data.
@@ -195,7 +199,7 @@ export function useSessionWithAppBuilder(
 
 			setParsedData(parsedData);
 		},
-		[namespace],
+		[namespace, validationResult],
 	);
 
 	useEffect(() => {
@@ -208,10 +212,9 @@ export function useSessionWithAppBuilder(
 		return removeOutputUpdateCallback;
 	}, [namespace, appBuilderOutputId, cb]);
 
-	useEffect(
-		() => console.debug(CUSTOM_DATA_OUTPUT_NAME, parsedData),
-		[parsedData],
-	);
+	useEffect(() => {
+		console.debug(CUSTOM_DATA_OUTPUT_NAME, parsedData);
+	}, [parsedData]);
 
 	const error =
 		sessionError ?? (parsedData instanceof Error ? parsedData : undefined);
