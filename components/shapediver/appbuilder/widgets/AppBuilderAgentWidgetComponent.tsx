@@ -219,7 +219,6 @@ export default function AppBuilderAgentWidgetComponent(
 	} else if (containerContext.orientation === "vertical") {
 		styleProps.overflowX = "auto";
 	}
-	styleProps.fontWeight = "100";
 
 	// Duplicate and reverse the chat history for display
 	const chatHistoryReverse = chatHistory.slice().reverse();
