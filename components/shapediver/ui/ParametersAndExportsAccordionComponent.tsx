@@ -14,7 +14,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {ReactElement, useContext} from "react";
-import classes from "./ParametersAndExportsAccordionComponent.module.css";
 
 /**
  * Functional component that creates an accordion of parameter and export components.
@@ -69,7 +68,18 @@ const defaultProps: Partial<Props> = {
 	identifyGroupsById: false,
 };
 
-type ParametersAndExportsAccordionComponentThemePropsType = Partial<Props>;
+interface StyleProps {
+	accordionItemStyle?: React.CSSProperties;
+}
+
+const defaultStyleProps: Partial<StyleProps> = {
+	accordionItemStyle: {
+		boxShadow: "var(--mantine-shadow-xs)",
+	},
+};
+
+type ParametersAndExportsAccordionComponentThemePropsType = Partial<Props> &
+	Partial<StyleProps>;
 
 export function ParametersAndExportsAccordionComponentThemeProps(
 	props: ParametersAndExportsAccordionComponentThemePropsType,
@@ -79,7 +89,9 @@ export function ParametersAndExportsAccordionComponentThemeProps(
 	};
 }
 
-export default function ParametersAndExportsAccordionComponent(props: Props) {
+export default function ParametersAndExportsAccordionComponent(
+	props: Props & StyleProps,
+) {
 	const {parameters, exports, defaultGroupName, topSection} = props;
 
 	// get sorted list of parameter and export definitions
@@ -96,7 +108,12 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 		avoidSingleComponentGroups,
 		mergeAccordions,
 		identifyGroupsById,
-	} = useProps("ParametersAndExportsAccordionComponent", defaultProps, props);
+		accordionItemStyle,
+	} = useProps(
+		"ParametersAndExportsAccordionComponent",
+		{...defaultProps, ...defaultStyleProps},
+		props,
+	);
 
 	// create a data structure to store the elements within groups
 	const elementGroups: {
@@ -191,9 +208,9 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 		if (g.group && (!avoidSingleComponentGroups || g.elements.length > 1)) {
 			accordionItems.push(
 				<Accordion.Item
-					className={classes.accordionItem}
 					key={g.group.id}
 					value={g.group.id}
+					style={accordionItemStyle}
 				>
 					<Accordion.Control>{g.group.name}</Accordion.Control>
 					<Accordion.Panel key={g.group.id}>

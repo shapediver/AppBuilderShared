@@ -1,7 +1,0 @@
-.accordionItem {
-    box-shadow: var(--mantine-shadow-xs);
-
-    &[data-active="true"] {
-        box-shadow: var(--mantine-shadow-sm);
-    }
-}

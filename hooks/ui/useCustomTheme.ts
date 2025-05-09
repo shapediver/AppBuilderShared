@@ -605,6 +605,9 @@ export const useCustomTheme = (props: Props = {}) => {
 					//mergeAccordions: false,
 					//pbSlider: "md",
 					//identifyGroupsById: false,
+					// accordionItemStyle: {
+					// 	boxShadow: "var(--mantine-shadow-xs)",
+					// },
 				}),
 			/**
 			 * ParameterColorComponent
