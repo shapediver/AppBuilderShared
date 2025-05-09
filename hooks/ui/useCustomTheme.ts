@@ -54,6 +54,7 @@ import {
 	mergeThemeOverrides,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
+import {ExportButtonComponentThemeProps} from "~/shared/components/shapediver/exports/ExportButtonComponent";
 import {AppBuilderAgentWidgetThemeProps} from "~/shared/types/components/shapediver/props/appBuilderAgentWidget";
 
 /**
@@ -519,6 +520,12 @@ export const useCustomTheme = (props: Props = {}) => {
 			AppBuilderVerticalContainer: AppBuilderVerticalContainerThemeProps({
 				// p: "md",
 			}),
+			ExportButton: ExportButtonComponentThemeProps({
+				// buttonProps: {
+				// 	variant: "light",
+				//  fullWidth: true,
+				// },
+			}),
 			/**
 			 * DefaultSession
 			 *
@@ -598,6 +605,9 @@ export const useCustomTheme = (props: Props = {}) => {
 					//mergeAccordions: false,
 					//pbSlider: "md",
 					//identifyGroupsById: false,
+					// accordionItemStyle: {
+					// 	boxShadow: "var(--mantine-shadow-xs)",
+					// },
 				}),
 			/**
 			 * ParameterColorComponent

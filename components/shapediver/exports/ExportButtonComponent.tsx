@@ -4,10 +4,35 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {Button} from "@mantine/core";
+import {
+	Button,
+	ButtonProps,
+	MantineThemeComponent,
+	useProps,
+} from "@mantine/core";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import {fetchFileWithToken} from "@shapediver/viewer.utils.mime-type";
 import React, {useCallback, useContext, useState} from "react";
+
+interface StyleProps {
+	buttonProps?: Partial<ButtonProps>;
+}
+
+const defaultStyleProps: Partial<StyleProps> = {
+	buttonProps: {
+		variant: "filled",
+		fullWidth: true,
+	},
+};
+
+type ExportButtonComponentThemePropsType = Partial<StyleProps>;
+export function ExportButtonComponentThemeProps(
+	props: ExportButtonComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
 
 /**
  * Functional component that creates a button that triggers an export.
@@ -15,7 +40,15 @@ import React, {useCallback, useContext, useState} from "react";
  *
  * @returns
  */
-export default function ExportButtonComponent(props: PropsExport) {
+export default function ExportButtonComponent(
+	props: PropsExport & ExportButtonComponentThemePropsType,
+) {
+	const {buttonProps} = useProps(
+		"ExportButtonComponent",
+		defaultStyleProps,
+		props,
+	);
+
 	const {definition, actions} = useExport(props);
 
 	const notifications = useContext(NotificationContext);
@@ -88,7 +121,6 @@ export default function ExportButtonComponent(props: PropsExport) {
 			{definition && (
 				<>
 					<Button
-						fullWidth={true}
 						leftSection={
 							definition.type === EXPORT_TYPE.DOWNLOAD ? (
 								<Icon type={IconTypeEnum.Download} />
@@ -98,6 +130,7 @@ export default function ExportButtonComponent(props: PropsExport) {
 						}
 						onClick={onClick}
 						loading={requestingExport}
+						{...buttonProps}
 					>
 						{definition.type === EXPORT_TYPE.DOWNLOAD
 							? "Download File"
