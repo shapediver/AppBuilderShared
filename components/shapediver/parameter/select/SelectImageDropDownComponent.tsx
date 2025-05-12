@@ -138,13 +138,51 @@ export default function SelectImageDropDownComponent(
 					description: data?.description,
 					imageUrl: data?.imageUrl,
 					tooltip: data?.tooltip,
+					color: data?.color,
 				};
 			}),
 		[items, itemData],
 	);
 
+	const getInputStyle = useCallback((card?: (typeof selectData)[0]) => {
+		if (!card) return {};
+
+		return {
+			"--card-selected-color":
+				card.color || "var(--mantine-primary-color-filled)",
+			"--image-radius": "8px",
+		} as React.CSSProperties;
+	}, []);
+
+	const selectedOptionIndex = useMemo(() => {
+		if (!value) return -1;
+		return items.findIndex((item) => item === value);
+	}, [items, value]);
+
 	const combobox = useCombobox({
 		onDropdownClose: () => combobox.resetSelectedOption(),
+		scrollBehavior: "smooth",
+		onDropdownOpen: () => {
+			// Scroll to the selected option when the dropdown is opened
+			if (selectedOptionIndex !== -1) {
+				setTimeout(() => {
+					const options = document.querySelectorAll(
+						`.${classes.comboboxDropdown} [role="option"]`,
+					);
+					if (options && options.length > selectedOptionIndex) {
+						const option = options[
+							selectedOptionIndex
+						] as HTMLElement;
+						if (option) {
+							option.scrollIntoView({
+								behavior: "smooth",
+								block: "center",
+							});
+						}
+					}
+				}, 50);
+			}
+		},
 	});
 
 	const selectedOption = useMemo(
@@ -170,7 +208,12 @@ export default function SelectImageDropDownComponent(
 	const comboboxOptions = useMemo(
 		() =>
 			selectData.map((option) => (
-				<Combobox.Option value={option.value} key={option.value}>
+				<Combobox.Option
+					className={`${classes.input} ${selectedOption?.value === option.value ? classes.inputSelected : ""}`}
+					style={getInputStyle(selectedOption)}
+					value={option.value}
+					key={option.value}
+				>
 					<ComboboxOption
 						option={option}
 						groupProps={groupProps}
@@ -188,6 +231,8 @@ export default function SelectImageDropDownComponent(
 			labelProps,
 			descriptionProps,
 			settings,
+			getInputStyle,
+			selectedOption,
 		],
 	);
 
@@ -217,6 +262,8 @@ export default function SelectImageDropDownComponent(
 						rightSection={<Combobox.Chevron />}
 						onClick={handleDropdownToggle}
 						multiline
+						className={`${classes.input} ${selectedOption ? classes.inputSelected : ""}`}
+						style={getInputStyle(selectedOption)}
 					>
 						{value !== null && selectedOption ? (
 							<ComboboxOption
@@ -254,6 +301,7 @@ export default function SelectImageDropDownComponent(
 			descriptionProps,
 			settings,
 			dropdownContent,
+			getInputStyle,
 		],
 	);
 
