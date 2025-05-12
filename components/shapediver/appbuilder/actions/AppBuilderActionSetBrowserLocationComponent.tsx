@@ -1,8 +1,12 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
+import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {IAppBuilderActionPropsSetBrowserLocation} from "@AppBuilderShared/types/shapediver/appbuilder";
-import React, {useCallback} from "react";
+import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
+import React, {useCallback, useState} from "react";
 
-type Props = IAppBuilderActionPropsSetBrowserLocation;
+type Props = IAppBuilderActionPropsSetBrowserLocation & {
+	namespace: string;
+};
 
 function getLocation(
 	href?: string,
@@ -42,23 +46,54 @@ export default function AppBuilderActionSetBrowserLocationComponent(
 		pathname,
 		search,
 		hash,
+		namespace,
 		target,
 	} = props;
 
-	const onClick = useCallback(() => {
-		const newLocation = getLocation(href, pathname, search, hash);
+	const {createModelState} = useCreateModelState({namespace});
+	const [loading, setLoading] = useState(false);
+
+	const onClick = useCallback(async () => {
+		let newLocation = getLocation(href, pathname, search, hash);
+
+		// check if newLocation contains a URL parameter called "modelStateId"
+		const newLocationUrl = new URL(newLocation);
+		if (newLocationUrl.searchParams.has(QUERYPARAM_MODELSTATEID)) {
+			setLoading(true);
+
+			const {modelStateId} = await createModelState(
+				undefined, // <-- use parameter values of the session
+				false, // <-- use parameter values of the session
+				true, // <-- includeImage,
+				undefined, // <-- custom data
+				false, // <-- includeGltf,
+			);
+
+			// replace the value of the URL parameter "modelStateId" with the new value
+			if (modelStateId) {
+				newLocationUrl.searchParams.set(
+					QUERYPARAM_MODELSTATEID,
+					modelStateId,
+				);
+				newLocation = newLocationUrl.toString();
+			}
+
+			setLoading(false);
+		}
+
 		if (target && target !== "_self") {
 			window.open(newLocation, target);
 		} else if (newLocation !== window.location.href) {
 			window.location.href = newLocation;
 		}
-	}, [href, pathname, search, hash, target]);
+	}, [createModelState, href, pathname, search, hash, target]);
 
 	return (
 		<AppBuilderActionComponent
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
+			loading={loading}
 			onClick={onClick}
 		/>
 	);
