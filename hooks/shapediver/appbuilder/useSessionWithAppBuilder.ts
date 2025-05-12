@@ -9,7 +9,7 @@ import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildert
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IOutputApi, ITreeNode, OutputApiData} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {useAppBuilderInstances} from "./useAppBuilderInstances";
 
 /**
@@ -110,8 +110,13 @@ export function useSessionWithAppBuilder(
 		[appBuilderOverride, sessionInitialized],
 	);
 
-	const appBuilderOutputId = useMemo(() => {
-		if (!sessionApi) return "";
+	const [appBuilderOutputId, setAppBuilderOutputId] = useState<string>("");
+
+	useEffect(() => {
+		if (!sessionApi) {
+			setAppBuilderOutputId("");
+			return;
+		}
 		const outputs = sessionApi.getOutputByName(CUSTOM_DATA_OUTPUT_NAME);
 		const outputId = outputs.length > 0 ? outputs[0].id : "";
 
@@ -135,7 +140,7 @@ export function useSessionWithAppBuilder(
 			}
 		}
 
-		return outputId;
+		setAppBuilderOutputId(outputId);
 	}, [sessionApi]);
 
 	useEffect(() => {
