@@ -76,7 +76,6 @@ interface StyleProps {
 
 const defaultStyleProps: Partial<StyleProps> = {
 	accordionStyle: {
-		backgroundColor: "var(--mantine-primary-color-light)",
 		borderRadius: "var(--accordion-radius)",
 	},
 	accordionItemStyle: {

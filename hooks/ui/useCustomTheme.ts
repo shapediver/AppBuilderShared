@@ -606,7 +606,6 @@ export const useCustomTheme = (props: Props = {}) => {
 					//pbSlider: "md",
 					//identifyGroupsById: false,
 					// accordionStyle: {
-					//  backgroundColor: "var(--mantine-primary-color-light)",
 					//  borderRadius: "var(--accordion-radius)",
 					// },
 					// accordionItemStyle: {
