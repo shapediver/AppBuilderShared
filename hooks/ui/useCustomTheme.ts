@@ -605,8 +605,17 @@ export const useCustomTheme = (props: Props = {}) => {
 					//mergeAccordions: false,
 					//pbSlider: "md",
 					//identifyGroupsById: false,
+					// accordionStyle: {
+					//  backgroundColor: "var(--mantine-primary-color-light)",
+					//  borderRadius: "var(--accordion-radius)",
+					// },
 					// accordionItemStyle: {
-					// 	boxShadow: "var(--mantine-shadow-xs)",
+					//  backgroundColor: "var(--mantine-primary-color-light)",
+					// 	boxShadow: "var(--mantine-shadow-sm)",
+					//  border: "none",
+					// },
+					// accordionControlStyle: {
+					// 	backgroundColor: "transparent",
 					// },
 				}),
 			/**
