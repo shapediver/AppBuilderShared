@@ -150,7 +150,6 @@ export default function SelectImageDropDownComponent(
 		return {
 			"--card-selected-color":
 				card.color || "var(--mantine-primary-color-filled)",
-			"--image-radius": "8px",
 		} as React.CSSProperties;
 	}, []);
 
