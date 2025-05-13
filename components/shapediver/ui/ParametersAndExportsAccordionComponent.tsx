@@ -69,12 +69,22 @@ const defaultProps: Partial<Props> = {
 };
 
 interface StyleProps {
+	accordionStyle?: React.CSSProperties;
 	accordionItemStyle?: React.CSSProperties;
+	accordionControlStyle?: React.CSSProperties;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
+	accordionStyle: {
+		borderRadius: "var(--accordion-radius)",
+	},
 	accordionItemStyle: {
-		boxShadow: "var(--mantine-shadow-xs)",
+		backgroundColor: "var(--mantine-primary-color-light)",
+		boxShadow: "var(--mantine-shadow-sm)",
+		border: "none",
+	},
+	accordionControlStyle: {
+		backgroundColor: "transparent",
 	},
 };
 
@@ -108,7 +118,9 @@ export default function ParametersAndExportsAccordionComponent(
 		avoidSingleComponentGroups,
 		mergeAccordions,
 		identifyGroupsById,
+		accordionStyle,
 		accordionItemStyle,
+		accordionControlStyle,
 	} = useProps(
 		"ParametersAndExportsAccordionComponent",
 		{...defaultProps, ...defaultStyleProps},
@@ -191,7 +203,9 @@ export default function ParametersAndExportsAccordionComponent(
 		elements.push(
 			// wrap accordion in paper to show optional shadows
 			<Paper key={items[0].key} px={0} py={0} withBorder={false}>
-				<Accordion defaultValue={defaultValue}>{items}</Accordion>
+				<Accordion style={accordionStyle} defaultValue={defaultValue}>
+					{items}
+				</Accordion>
 			</Paper>,
 		);
 	};
@@ -212,7 +226,9 @@ export default function ParametersAndExportsAccordionComponent(
 					value={g.group.id}
 					style={accordionItemStyle}
 				>
-					<Accordion.Control>{g.group.name}</Accordion.Control>
+					<Accordion.Control style={accordionControlStyle}>
+						{g.group.name}
+					</Accordion.Control>
 					<Accordion.Panel key={g.group.id}>
 						<Stack>{g.elements}</Stack>
 					</Accordion.Panel>
