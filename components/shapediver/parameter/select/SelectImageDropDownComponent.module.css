@@ -1,19 +1,22 @@
 .comboboxDropdown {
-  max-height: 300px;
-  overflow-y: auto;
+	max-height: 300px;
+	overflow-y: auto;
 }
 
 .input.inputSelected {
-  --select-dropdown-border-width: 2px;
-  --image-radius: var(--mantine-radius-default);
-  padding: var(--select-dropdown-border-width);
-  border-radius: var(--mantine-radius-default);
-  box-shadow: inset 0 0 0 var(--select-dropdown-border-width) var(--card-selected-color, var(--mantine-primary-color-filled));
-  border-color: var(--card-selected-color,
-      var(--mantine-primary-color-filled));
+	--select-dropdown-border-width: 2px;
+	--image-radius: var(--mantine-radius-default);
+	padding: var(--select-dropdown-border-width);
+	border-radius: var(--mantine-radius-default);
+	box-shadow: inset 0 0 0 var(--select-dropdown-border-width)
+		var(--card-selected-color, var(--mantine-primary-color-filled));
+	border-color: var(
+		--card-selected-color,
+		var(--mantine-primary-color-filled)
+	);
 
-      :global(.mantine-Input-input) {
-        border: none; /* Hide default border */
-        border-radius: var(--mantine-radius-default);
-      }
+	:global(.mantine-Input-input) {
+		border: none; /* Hide default border */
+		border-radius: var(--mantine-radius-default);
+	}
 }
