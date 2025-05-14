@@ -26,6 +26,8 @@ export default function AppBuilderActionCreateModelStateComponent(
 		includeImage,
 		//image, // TODO use image defined by export of href
 		includeGltf,
+		parameterNamesToInclude,
+		parameterNamesToExclude,
 	} = props;
 	const notifications = useContext(NotificationContext);
 
@@ -37,8 +39,8 @@ export default function AppBuilderActionCreateModelStateComponent(
 		setLoading(true);
 
 		const {modelStateId, screenshot} = await createModelState(
-			undefined, // <-- use parameter values of the session
-			false, // <-- use parameter values of the session
+			parameterNamesToInclude,
+			parameterNamesToExclude,
 			includeImage,
 			undefined, // <-- custom data
 			includeGltf,

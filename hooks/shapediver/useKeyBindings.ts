@@ -21,8 +21,8 @@ export function useKeyBindings(props: Props) {
 
 	const callback = useCallback(async () => {
 		const {modelStateId, screenshot} = await createModelState(
-			undefined, // <-- use parameter values of the session
-			false, // <-- use parameter values of the session
+			undefined, // <-- parameterNamesToInclude
+			undefined, // <-- parameterNamesToExclude
 			true, // <-- includeImage,
 			undefined, // <-- custom data
 			false, // <-- includeGltf

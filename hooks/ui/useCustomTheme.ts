@@ -56,6 +56,7 @@ import {
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
 import {ExportButtonComponentThemeProps} from "~/shared/components/shapediver/exports/ExportButtonComponent";
 import {AppBuilderAgentWidgetThemeProps} from "~/shared/types/components/shapediver/props/appBuilderAgentWidget";
+import {CreateModelStateHookThemeProps} from "../shapediver/useCreateModelState";
 
 /**
  * Helper function for defining CSS variables for the AppBuilderAppShellTemplate
@@ -520,7 +521,20 @@ export const useCustomTheme = (props: Props = {}) => {
 			AppBuilderVerticalContainer: AppBuilderVerticalContainerThemeProps({
 				// p: "md",
 			}),
-			ExportButton: ExportButtonComponentThemeProps({
+			/**
+			 * CreateModelStateHook
+			 *
+			 * Hook for creating model states.
+			 */
+			CreateModelStateHook: CreateModelStateHookThemeProps({
+				parameterNamesToExclude: ["context"],
+			}),
+			/**
+			 * ExportButton
+			 *
+			 * Button used for export components.
+			 */
+			ExportButtonComponent: ExportButtonComponentThemeProps({
 				// buttonProps: {
 				// 	variant: "light",
 				//  fullWidth: true,
