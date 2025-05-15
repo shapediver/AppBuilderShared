@@ -258,6 +258,10 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 					if (!newOutputUpdateCallbacks[sessionId][outputId])
 						newOutputUpdateCallbacks[sessionId][outputId] = {};
 
+					newOutputUpdateCallbacks[sessionId] = {
+						...newOutputUpdateCallbacks[sessionId],
+					};
+
 					newOutputUpdateCallbacks[sessionId][outputId] = {
 						...newOutputUpdateCallbacks[sessionId][outputId],
 						[callbackId]: updateCallback,
