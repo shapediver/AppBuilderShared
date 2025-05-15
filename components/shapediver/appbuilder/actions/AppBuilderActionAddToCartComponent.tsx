@@ -28,6 +28,8 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		includeImage,
 		//image, // TODO use image defined by export of href
 		includeGltf,
+		parameterNamesToInclude,
+		parameterNamesToExclude,
 	} = props;
 
 	const {createModelState} = useCreateModelState({namespace});
@@ -42,8 +44,8 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		// IEcommerceApi will be a dummy for testing
 		const api = await ECommerceApiSingleton;
 		const {modelStateId, screenshot} = await createModelState(
-			undefined, // <-- use parameter values of the session
-			false, // <-- use parameter values of the session
+			parameterNamesToInclude,
+			parameterNamesToExclude,
 			includeImage,
 			undefined, // <-- custom data
 			includeGltf,

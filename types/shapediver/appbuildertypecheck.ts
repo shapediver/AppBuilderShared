@@ -95,6 +95,8 @@ const IAppBuilderActionPropsCreateModelStateSchema = z
 		includeImage: z.boolean().optional(),
 		image: IAppBuilderImageRefSchema.optional(),
 		includeGltf: z.boolean().optional(),
+		parameterNamesToInclude: z.array(z.string()).optional(),
+		parameterNamesToExclude: z.array(z.string()).optional(),
 	})
 	.extend(IAppBuilderActionPropsCommonSchema.shape);
 
