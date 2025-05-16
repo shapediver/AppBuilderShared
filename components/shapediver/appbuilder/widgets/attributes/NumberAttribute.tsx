@@ -3,7 +3,7 @@ import {useShapeDiverStoreAttributeVisualization} from "@AppBuilderShared/store/
 import {INumberAttributeCustomData} from "@AppBuilderShared/types/store/shapediverStoreAttributeVisualization";
 import {RangeSlider, RangeSliderValue, Space, Stack} from "@mantine/core";
 import {INumberAttribute} from "@shapediver/viewer.features.attribute-visualization";
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 export type INumberAttributeExtended = INumberAttribute &
@@ -29,6 +29,7 @@ export default function NumberAttribute(props: Props) {
 		useState<JSX.Element[]>();
 	const [minValue, setMinValue] = useState<string>(attribute.min + "");
 	const [maxValue, setMaxValue] = useState<string>(attribute.max + "");
+	const [multiplyingFactor, setMultiplyingFactor] = useState<number>(0);
 
 	useEffect(() => {
 		// Get the custom attribute data
@@ -37,44 +38,66 @@ export default function NumberAttribute(props: Props) {
 		] as INumberAttributeCustomData | undefined;
 
 		// Set default values
-		if (attribute.customMin === undefined)
+		if (
+			attribute.customMin === undefined ||
+			attribute.customMin !== customValues?.customMin
+		)
 			attribute.customMin = customValues?.customMin || attribute.min;
-		if (attribute.customMax === undefined)
+		if (
+			attribute.customMax === undefined ||
+			attribute.customMax !== customValues?.customMax
+		)
 			attribute.customMax = customValues?.customMax || attribute.max;
 
 		setMinValue(attribute.customMin + "");
 		setMaxValue(attribute.customMax + "");
 
 		const range = attribute.max - attribute.min;
-		const normalizedMin = (attribute.customMin - attribute.min) / range;
-		const normalizedMax = (attribute.customMax - attribute.min) / range;
 
-		const colorStops = (attribute.visualization as string)
-			.split("_")
-			.map((color, index) => (
-				<stop
-					key={index}
-					offset={`${normalizedMin + (normalizedMax - normalizedMin) * (index / ((attribute.visualization as string).split("_").length - 1))}`}
-					stopColor={color}
-				/>
-			));
+		// find the scaling factor so that the range is 1000
+		if (range > 0) {
+			setMultiplyingFactor(1000 / range);
+		} else {
+			setMultiplyingFactor(1);
+		}
+
+		const colorStops = createGradientColorStops(
+			attribute.visualization as string,
+			attribute.min,
+			attribute.max,
+			attribute.customMin,
+			attribute.customMax,
+		);
 		setGradientColorStops(colorStops);
 	}, [attribute, customAttributeData]);
 
 	/**
 	 * Update the custom min and max values
 	 */
-	const updateCustomMinMax = (value: RangeSliderValue) => {
-		setMinValue(value[0] + "");
-		setMaxValue(value[1] + "");
-		updateRange(value[0], value[1]);
+	const updateCustomMinMax = useCallback(
+		(value: RangeSliderValue) => {
+			const [min, max] = value.map((v) => v / multiplyingFactor);
+			setMinValue(min + "");
+			setMaxValue(max + "");
 
-		// Update the custom attribute data
-		updateCustomAttributeData(name + "_" + attribute.type, {
-			customMin: value[0],
-			customMax: value[1],
-		});
-	};
+			// Update the custom attribute data
+			updateCustomAttributeData(name + "_" + attribute.type, {
+				customMin: min,
+				customMax: max,
+			});
+
+			setGradientColorStops(
+				createGradientColorStops(
+					attribute.visualization as string,
+					attribute.min,
+					attribute.max,
+					min,
+					max,
+				),
+			);
+		},
+		[multiplyingFactor, name, attribute],
+	);
 
 	/**
 	 * Create the color legend for the attribute
@@ -113,32 +136,54 @@ export default function NumberAttribute(props: Props) {
 				<RangeSlider
 					pb="xs"
 					label={null}
-					value={[+minValue, +maxValue]}
-					onChange={updateCustomMinMax}
-					min={attribute.min}
-					max={attribute.max}
-					step={0.01}
-					marks={[
-						{
-							value: attribute.min,
-							label: attribute.min,
-						},
-						{
-							value: attribute.customMin!,
-							label: attribute.customMin,
-						},
-						{
-							value: attribute.customMax!,
-							label: attribute.customMax,
-						},
-						{
-							value: attribute.max,
-							label: attribute.max,
-						},
+					value={[
+						+minValue * multiplyingFactor,
+						+maxValue * multiplyingFactor,
 					]}
+					onChange={updateCustomMinMax}
+					onChangeEnd={(value) => {
+						const [min, max] = value.map(
+							(v) => v / multiplyingFactor,
+						);
+						updateRange(min, max);
+					}}
+					min={attribute.min * multiplyingFactor}
+					max={attribute.max * multiplyingFactor}
+					step={0.001}
+					marks={[
+						attribute.min,
+						attribute.customMin!,
+						attribute.customMax!,
+						attribute.max,
+					].map((value) => ({
+						value: value * multiplyingFactor,
+						label: value?.toFixed(4),
+					}))}
 				/>
 				<Space />
 			</Stack>
 		</BaseAttribute>
 	);
 }
+
+const createGradientColorStops = (
+	visualization: string,
+	min: number,
+	max: number,
+	customMin: number,
+	customMax: number,
+): JSX.Element[] => {
+	const range = max - min;
+	const normalizedMin = (customMin - min) / range;
+	const normalizedMax = (customMax - min) / range;
+
+	return (visualization as string)
+		.split("_")
+		.map((color, index) => (
+			<stop
+				key={index}
+				offset={`${normalizedMin + (normalizedMax - normalizedMin) * (index / ((visualization as string).split("_").length - 1))}`}
+				stopColor={color}
+			/>
+		));
+};
