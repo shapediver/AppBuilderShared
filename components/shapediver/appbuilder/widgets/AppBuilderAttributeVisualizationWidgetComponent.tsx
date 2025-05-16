@@ -25,7 +25,6 @@ import {
 	IAttribute,
 	IColorAttribute,
 	IDefaultAttribute,
-	INumberAttribute,
 	IStringAttribute,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {
@@ -44,8 +43,16 @@ import {IconEye, IconEyeOff} from "@tabler/icons-react";
 import React, {useEffect, useMemo, useState} from "react";
 import ColorAttribute from "./attributes/ColorAttribute";
 import DefaultAttribute from "./attributes/DefaultAttribute";
-import NumberAttribute from "./attributes/NumberAttribute";
+import NumberAttribute, {
+	INumberAttributeExtended,
+} from "./attributes/NumberAttribute";
 import StringAttribute from "./attributes/StringAttribute";
+
+type IAttributeDefinition =
+	| IAttribute
+	| INumberAttributeExtended
+	| IStringAttribute
+	| IDefaultAttribute;
 
 type StyleProps = PaperProps & {};
 
@@ -138,12 +145,7 @@ const getAttributeById = (
 		  )[]
 		| undefined,
 	defaultGradient: Gradient,
-):
-	| IAttribute
-	| INumberAttribute
-	| IStringAttribute
-	| IDefaultAttribute
-	| undefined => {
+): IAttributeDefinition | undefined => {
 	if (!id) return undefined;
 	if (overview[id]) {
 		const attribute = overview[id];
@@ -197,11 +199,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		{},
 	);
 	const [renderedAttribute, setRenderedAttribute] = useState<
-		| IAttribute
-		| INumberAttribute
-		| IStringAttribute
-		| IDefaultAttribute
-		| undefined
+		IAttributeDefinition | undefined
 	>();
 	const [active, setActive] = useState<boolean>(false);
 	const [sdtfLoaded, setSdtfLoaded] = useState<boolean>(false);
@@ -317,9 +315,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				<StringAttribute
 					name={renderedAttribute.key}
 					attribute={renderedAttribute as IStringAttribute}
-					updateAttribute={(attribute) =>
-						setRenderedAttribute(attribute)
-					}
 					showLegend={cleanedProps.showLegend}
 				/>
 			);
@@ -329,9 +324,13 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			return (
 				<NumberAttribute
 					name={renderedAttribute.key}
-					attribute={renderedAttribute as INumberAttribute}
-					updateAttribute={(attribute) =>
-						setRenderedAttribute(attribute)
+					attribute={renderedAttribute as INumberAttributeExtended}
+					updateRange={(min: number, max: number) =>
+						setRenderedAttribute({
+							...renderedAttribute,
+							min,
+							max,
+						} as INumberAttributeExtended)
 					}
 					showLegend={cleanedProps.showLegend}
 				/>
@@ -341,9 +340,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				<ColorAttribute
 					name={renderedAttribute.key}
 					attribute={renderedAttribute as IColorAttribute}
-					updateAttribute={(attribute) =>
-						setRenderedAttribute(attribute)
-					}
 				/>
 			);
 		} else {
@@ -351,8 +347,11 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				<DefaultAttribute
 					name={renderedAttribute.key}
 					attribute={renderedAttribute}
-					updateAttribute={(attribute) =>
-						setRenderedAttribute(attribute)
+					updateColor={(color) =>
+						setRenderedAttribute({
+							...renderedAttribute,
+							color: color,
+						} as IDefaultAttribute)
 					}
 				/>
 			);
