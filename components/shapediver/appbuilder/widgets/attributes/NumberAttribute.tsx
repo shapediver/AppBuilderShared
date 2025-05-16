@@ -80,7 +80,7 @@ export default function NumberAttribute(props: Props) {
 	 * Create the color legend for the attribute
 	 */
 	const legend = (
-		<Stack pt="xs">
+		<Stack>
 			{(props.showLegend ?? true) && (
 				<svg width="100%" height="50">
 					<defs>
