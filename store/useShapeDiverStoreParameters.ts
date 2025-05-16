@@ -286,6 +286,14 @@ function createGenericParameterExecutorForSession(
 			const resolve = registerInProcessManager(session);
 
 			if (exports.length > 0) {
+				// upload any file parameters (session.requestExports would upload them but not store the ids)
+				const fileParameters = Object.values(session.parameters).filter(
+					(param) => isFileParameterApi(param),
+				);
+				for (const fileParameter of fileParameters) {
+					const fileId = await fileParameter.upload();
+					fileParameter.value = fileId;
+				}
 				// prepare body and send request
 				action = EventActionEnum.EXPORT;
 				const body: ShapeDiverRequestExport = {
@@ -563,9 +571,10 @@ function createExportStore(
 				const parametersComplete = parameters ?? {};
 				for (const p of parameterApis) {
 					if (!(p.id in parametersComplete)) {
-						if (isFileParameterApi(p))
+						if (isFileParameterApi(p)) {
 							parametersComplete[p.id] = await p.upload();
-						else parametersComplete[p.id] = p.stringify();
+							p.value = parametersComplete[p.id];
+						} else parametersComplete[p.id] = p.stringify();
 					}
 				}
 
