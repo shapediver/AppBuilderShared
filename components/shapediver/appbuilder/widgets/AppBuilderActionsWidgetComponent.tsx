@@ -93,6 +93,7 @@ export default function AppBuilderActionsWidgetComponent(
 			return (
 				<AppBuilderActionSetBrowserLocationComponent
 					key={i}
+					namespace={namespace}
 					{...action.props}
 				/>
 			);

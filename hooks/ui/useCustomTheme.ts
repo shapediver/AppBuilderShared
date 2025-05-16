@@ -54,7 +54,9 @@ import {
 	mergeThemeOverrides,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
+import {ExportButtonComponentThemeProps} from "~/shared/components/shapediver/exports/ExportButtonComponent";
 import {AppBuilderAgentWidgetThemeProps} from "~/shared/types/components/shapediver/props/appBuilderAgentWidget";
+import {CreateModelStateHookThemeProps} from "../shapediver/useCreateModelState";
 
 /**
  * Helper function for defining CSS variables for the AppBuilderAppShellTemplate
@@ -520,6 +522,25 @@ export const useCustomTheme = (props: Props = {}) => {
 				// p: "md",
 			}),
 			/**
+			 * CreateModelStateHook
+			 *
+			 * Hook for creating model states.
+			 */
+			CreateModelStateHook: CreateModelStateHookThemeProps({
+				parameterNamesToExclude: ["context"],
+			}),
+			/**
+			 * ExportButton
+			 *
+			 * Button used for export components.
+			 */
+			ExportButtonComponent: ExportButtonComponentThemeProps({
+				// buttonProps: {
+				// 	variant: "light",
+				//  fullWidth: true,
+				// },
+			}),
+			/**
 			 * DefaultSession
 			 *
 			 * Default session to use in case none is defined.
@@ -598,6 +619,17 @@ export const useCustomTheme = (props: Props = {}) => {
 					//mergeAccordions: false,
 					//pbSlider: "md",
 					//identifyGroupsById: false,
+					// accordionStyle: {
+					//  borderRadius: "var(--accordion-radius)",
+					// },
+					// accordionItemStyle: {
+					//  backgroundColor: "var(--mantine-primary-color-light)",
+					// 	boxShadow: "var(--mantine-shadow-sm)",
+					//  border: "none",
+					// },
+					// accordionControlStyle: {
+					// 	backgroundColor: "transparent",
+					// },
 				}),
 			/**
 			 * ParameterColorComponent

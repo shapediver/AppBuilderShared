@@ -68,7 +68,28 @@ const defaultProps: Partial<Props> = {
 	identifyGroupsById: false,
 };
 
-type ParametersAndExportsAccordionComponentThemePropsType = Partial<Props>;
+interface StyleProps {
+	accordionStyle?: React.CSSProperties;
+	accordionItemStyle?: React.CSSProperties;
+	accordionControlStyle?: React.CSSProperties;
+}
+
+const defaultStyleProps: Partial<StyleProps> = {
+	accordionStyle: {
+		borderRadius: "var(--accordion-radius)",
+	},
+	accordionItemStyle: {
+		backgroundColor: "var(--mantine-primary-color-light)",
+		boxShadow: "var(--mantine-shadow-sm)",
+		border: "none",
+	},
+	accordionControlStyle: {
+		backgroundColor: "transparent",
+	},
+};
+
+type ParametersAndExportsAccordionComponentThemePropsType = Partial<Props> &
+	Partial<StyleProps>;
 
 export function ParametersAndExportsAccordionComponentThemeProps(
 	props: ParametersAndExportsAccordionComponentThemePropsType,
@@ -78,7 +99,9 @@ export function ParametersAndExportsAccordionComponentThemeProps(
 	};
 }
 
-export default function ParametersAndExportsAccordionComponent(props: Props) {
+export default function ParametersAndExportsAccordionComponent(
+	props: Props & StyleProps,
+) {
 	const {parameters, exports, defaultGroupName, topSection} = props;
 
 	// get sorted list of parameter and export definitions
@@ -95,7 +118,14 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 		avoidSingleComponentGroups,
 		mergeAccordions,
 		identifyGroupsById,
-	} = useProps("ParametersAndExportsAccordionComponent", defaultProps, props);
+		accordionStyle,
+		accordionItemStyle,
+		accordionControlStyle,
+	} = useProps(
+		"ParametersAndExportsAccordionComponent",
+		{...defaultProps, ...defaultStyleProps},
+		props,
+	);
 
 	// create a data structure to store the elements within groups
 	const elementGroups: {
@@ -173,7 +203,9 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 		elements.push(
 			// wrap accordion in paper to show optional shadows
 			<Paper key={items[0].key} px={0} py={0} withBorder={false}>
-				<Accordion defaultValue={defaultValue}>{items}</Accordion>
+				<Accordion style={accordionStyle} defaultValue={defaultValue}>
+					{items}
+				</Accordion>
 			</Paper>,
 		);
 	};
@@ -189,8 +221,14 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 	for (const g of elementGroups) {
 		if (g.group && (!avoidSingleComponentGroups || g.elements.length > 1)) {
 			accordionItems.push(
-				<Accordion.Item key={g.group.id} value={g.group.id}>
-					<Accordion.Control>{g.group.name}</Accordion.Control>
+				<Accordion.Item
+					key={g.group.id}
+					value={g.group.id}
+					style={accordionItemStyle}
+				>
+					<Accordion.Control style={accordionControlStyle}>
+						{g.group.name}
+					</Accordion.Control>
 					<Accordion.Panel key={g.group.id}>
 						<Stack>{g.elements}</Stack>
 					</Accordion.Panel>

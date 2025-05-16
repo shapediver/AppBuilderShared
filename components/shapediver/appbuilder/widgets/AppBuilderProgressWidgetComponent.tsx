@@ -228,7 +228,6 @@ export default function AppBuilderProgressWidgetComponent(
 	} else if (context.orientation === "vertical") {
 		styleProps.overflowX = "auto";
 	}
-	styleProps.fontWeight = "100";
 
 	const collectedElements = [];
 

@@ -101,6 +101,10 @@ export interface IAppBuilderActionPropsCreateModelState
 	 * included with the model state.
 	 */
 	includeGltf?: boolean;
+	/** Names of parameters to include in the model state. */
+	parameterNamesToInclude?: string[];
+	/** Names of parameters to exclude from the model state. */
+	parameterNamesToExclude?: string[];
 }
 
 /**

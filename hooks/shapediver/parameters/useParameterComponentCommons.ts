@@ -4,6 +4,7 @@ import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShape
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IShapeDiverParameterState} from "@AppBuilderShared/types/shapediver/parameter";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {CUSTOM_SESSION_ID_POSTFIX} from "../appbuilder/useAppBuilderCustomParameters";
 
 /**
  * Hook providing functionality common to all parameter components like
@@ -29,11 +30,32 @@ export function useParameterComponentCommons<T>(
 	});
 	const processesInSession = useShapeDiverStoreProcessManager((state) => {
 		// check if there are currently processes running in the session
-
 		return (
-			Object.values(state.processManagers).filter(
-				(p) => p.controllerSessionId === namespace,
-			).length > 0
+			Object.values(state.processManagers).filter((p) => {
+				// check if it is the same namespace as the current session
+				if (p.controllerSessionId === namespace) return true;
+
+				// check if the postfix was used on the controllerSessionId
+				if (
+					p.controllerSessionId.endsWith(CUSTOM_SESSION_ID_POSTFIX) &&
+					p.controllerSessionId ===
+						namespace + CUSTOM_SESSION_ID_POSTFIX
+				)
+					return true;
+
+				// check if the postfix was used on the namespace
+				if (
+					namespace.endsWith(CUSTOM_SESSION_ID_POSTFIX) &&
+					p.controllerSessionId ===
+						namespace.substring(
+							0,
+							namespace.length - CUSTOM_SESSION_ID_POSTFIX.length,
+						)
+				)
+					return true;
+
+				return false;
+			}).length > 0
 		);
 	});
 	const sessionDependencies = useShapeDiverStoreParameters((state) => {

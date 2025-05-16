@@ -1,9 +1,26 @@
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
-import {type ISessionApi} from "@shapediver/viewer.session";
+import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
+
+interface ThemeProps {
+	parameterNamesToInclude?: string[];
+	parameterNamesToExclude?: string[];
+}
+
+const defaultThemeProps: Partial<ThemeProps> = {};
+
+type CreateModelStateHookThemePropsType = Partial<ThemeProps>;
+
+export function CreateModelStateHookThemeProps(
+	props: CreateModelStateHookThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
 
 interface Props {
 	namespace: string;
@@ -17,6 +34,16 @@ interface Props {
  */
 export function useCreateModelState(props: Props) {
 	const {namespace: sessionId} = props;
+
+	const {
+		parameterNamesToInclude: parameterNamesToIncludeDefault,
+		parameterNamesToExclude: parameterNamesToExcludeDefault,
+	} = useProps(
+		"CreateModelStateHook",
+		defaultThemeProps,
+		{} as CreateModelStateHookThemePropsType,
+	);
+
 	const {viewportId} = useViewportId();
 	const {sessionApi} = useShapeDiverStoreSession(
 		useShallow((state) => ({
@@ -35,12 +62,36 @@ export function useCreateModelState(props: Props) {
 
 	const createModelState = useCallback(
 		async (
-			parameterValues?: {[key: string]: unknown},
-			omitSessionParameterValues?: boolean,
+			parameterNamesToInclude = parameterNamesToIncludeDefault,
+			parameterNamesToExclude = parameterNamesToExcludeDefault,
 			includeImage?: boolean,
 			data?: Record<string, any>,
 			includeGltf?: boolean,
 		) => {
+			const parameterValues = Object.values(sessionApi.parameters)
+				.filter(
+					(p) =>
+						(!parameterNamesToInclude ||
+							parameterNamesToInclude.includes(p.name) ||
+							(p.displayname &&
+								parameterNamesToInclude.includes(
+									p.displayname,
+								))) &&
+						(!parameterNamesToExclude ||
+							!parameterNamesToExclude.includes(p.name) ||
+							(p.displayname &&
+								!parameterNamesToExclude.includes(
+									p.displayname,
+								))),
+				)
+				.reduce(
+					(params, p) => {
+						params[p.id] = p.value;
+						return params;
+					},
+					{} as {[key: string]: unknown},
+				);
+
 			// we need to create a screenshot before the model state
 			// as the function signature of createModelState does not allow to pass a promise for the screenshot
 			// Jira-task: https://shapediver.atlassian.net/browse/SS-8363
@@ -52,7 +103,7 @@ export function useCreateModelState(props: Props) {
 			const modelStateId = sessionApi
 				? await sessionApi.createModelState(
 						parameterValues,
-						omitSessionParameterValues,
+						true, // <-- omitSessionParameterValues
 						screenshot,
 						data, // <-- custom data
 						includeGltf && convertToGlTF
@@ -63,7 +114,13 @@ export function useCreateModelState(props: Props) {
 
 			return {modelStateId, screenshot};
 		},
-		[sessionApi, getScreenshot, convertToGlTF],
+		[
+			sessionApi,
+			getScreenshot,
+			convertToGlTF,
+			parameterNamesToIncludeDefault,
+			parameterNamesToExcludeDefault,
+		],
 	);
 
 	return {

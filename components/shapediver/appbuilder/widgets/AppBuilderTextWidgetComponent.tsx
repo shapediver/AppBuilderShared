@@ -44,7 +44,6 @@ export default function AppBuilderTextWidgetComponent(
 	} else if (context.orientation === "vertical") {
 		styleProps.overflowX = "auto";
 	}
-	styleProps.fontWeight = "100";
 
 	if (text) {
 		return (
