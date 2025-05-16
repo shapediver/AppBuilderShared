@@ -42,7 +42,9 @@ import {IViewportApi} from "@shapediver/viewer.viewport";
 import {IconEye, IconEyeOff} from "@tabler/icons-react";
 import React, {useEffect, useMemo, useState} from "react";
 import ColorAttribute from "./attributes/ColorAttribute";
-import DefaultAttribute from "./attributes/DefaultAttribute";
+import DefaultAttribute, {
+	IDefaultAttributeExtended,
+} from "./attributes/DefaultAttribute";
 import NumberAttribute, {
 	INumberAttributeExtended,
 } from "./attributes/NumberAttribute";
@@ -70,18 +72,9 @@ const createAttributeId = (key: string, overview: ISDTFOverview): string[] => {
 	if (!overview[key]) return [];
 
 	const attribute = overview[key];
-
-	if (attribute.length > 0) {
-		return attribute.map((v) => {
-			if (attribute.length > 1) {
-				return key + "_" + v.typeHint;
-			} else {
-				return key;
-			}
-		});
-	} else {
-		return [key];
-	}
+	return attribute.map((v) => {
+		return key + "_" + v.typeHint;
+	});
 };
 
 const getAttributeKey = (id: string, overview: ISDTFOverview) => {
@@ -287,7 +280,36 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 */
 	useEffect(() => {
 		if (renderedAttribute) {
-			attributeVisualizationEngine?.updateAttributes([renderedAttribute]);
+			if (SdtfPrimitiveTypeGuard.isNumberType(renderedAttribute.type)) {
+				const numberAttribute =
+					renderedAttribute as INumberAttributeExtended;
+
+				attributeVisualizationEngine?.updateAttributes([
+					{
+						...numberAttribute,
+						min: numberAttribute.customMin ?? numberAttribute.min,
+						max: numberAttribute.customMax ?? numberAttribute.max,
+					} as INumberAttributeExtended,
+				]);
+			} else if (
+				!SdtfPrimitiveTypeGuard.isStringType(renderedAttribute.type) &&
+				!SdtfPrimitiveTypeGuard.isColorType(renderedAttribute.type)
+			) {
+				const defaultAttribute =
+					renderedAttribute as IDefaultAttributeExtended;
+				attributeVisualizationEngine?.updateAttributes([
+					{
+						...defaultAttribute,
+						color:
+							defaultAttribute.customColor ??
+							defaultAttribute.color,
+					} as IDefaultAttributeExtended,
+				]);
+			} else {
+				attributeVisualizationEngine?.updateAttributes([
+					renderedAttribute,
+				]);
+			}
 		} else {
 			attributeVisualizationEngine?.updateAttributes([]);
 		}
@@ -325,13 +347,13 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				<NumberAttribute
 					name={renderedAttribute.key}
 					attribute={renderedAttribute as INumberAttributeExtended}
-					updateRange={(min: number, max: number) =>
+					updateRange={(min: number, max: number) => {
 						setRenderedAttribute({
 							...renderedAttribute,
-							min,
-							max,
-						} as INumberAttributeExtended)
-					}
+							customMin: min,
+							customMax: max,
+						} as INumberAttributeExtended);
+					}}
 					showLegend={cleanedProps.showLegend}
 				/>
 			);
@@ -350,8 +372,8 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 					updateColor={(color) =>
 						setRenderedAttribute({
 							...renderedAttribute,
-							color: color,
-						} as IDefaultAttribute)
+							customColor: color,
+						} as IDefaultAttributeExtended)
 					}
 				/>
 			);
@@ -369,42 +391,46 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				placeholder="Select an attribute"
 				data={cleanedProps.attributes
 					.map((value) => {
-						const nameInDefinition =
+						const attributeId =
 							typeof value === "string" ? value : value.attribute;
 
 						const attributeKey = getAttributeKey(
-							nameInDefinition,
+							attributeId,
 							attributeOverview,
 						);
 
-						if (attributeKey !== nameInDefinition) {
+						if (!attributeKey) return undefined;
+						const attributeData = attributeOverview[attributeKey];
+						if (!attributeData) return undefined;
+
+						if (attributeData.length > 1) {
 							// we know that there are multiple attributes with the same key
 							// so we need to add the type hint to the label
 							const attribute = getAttributeById(
-								nameInDefinition,
+								attributeId,
 								attributeOverview,
 								cleanedProps.attributes,
 								cleanedProps.defaultGradient,
 							);
 
 							return {
-								value: nameInDefinition,
+								value: attributeId,
 								label:
 									attributeKey + " (" + attribute?.type + ")",
 							};
 						} else {
 							return {
-								value: nameInDefinition,
-								label: nameInDefinition,
+								value: attributeId,
+								label: attributeKey,
 							};
 						}
 					})
 					.filter((value) => value !== undefined)}
-				value={renderedAttribute?.key}
-				onChange={(v) => {
-					if (!v) return setRenderedAttribute(undefined);
+				value={renderedAttribute?.key + "_" + renderedAttribute?.type}
+				onChange={(attributeId) => {
+					if (!attributeId) return setRenderedAttribute(undefined);
 					const attribute = getAttributeById(
-						v,
+						attributeId,
 						attributeOverview,
 						cleanedProps.attributes,
 						cleanedProps.defaultGradient,

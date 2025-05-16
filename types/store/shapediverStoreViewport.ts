@@ -1,6 +1,5 @@
 import {IEventTracking} from "@AppBuilderShared/types/eventTracking";
 import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
-import {IAttributeVisualizationEngine} from "@shapediver/viewer.features.attribute-visualization";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 
 export interface IShapeDiverStoreViewports {
@@ -22,13 +21,6 @@ export interface IShapeDiverStoreViewport {
 	viewports: IShapeDiverStoreViewports;
 
 	/**
-	 * Attribute visualization engines currently known by the store.
-	 */
-	attributeVisualizationEngines: {
-		[viewportId: string]: IAttributeVisualizationEngine;
-	};
-
-	/**
 	 * Create a viewport and add it to the store.
 	 * @param dto
 	 * @returns
@@ -45,18 +37,4 @@ export interface IShapeDiverStoreViewport {
 		viewportId: string,
 		callbacks?: IShapeDiverStoreViewportCallbacks,
 	) => Promise<void>;
-
-	/**
-	 * Create an attribute visualization engine for a viewport and add it to the store.
-	 * @param viewportId
-	 * @returns
-	 */
-	createAttributeVisualizationEngine: (
-		viewportId: string,
-	) => IAttributeVisualizationEngine | undefined;
-
-	/**
-	 * Close an attribute visualization engine and remove it from the store.
-	 */
-	closeAttributeVisualizationEngine: (viewportId: string) => void;
 }
