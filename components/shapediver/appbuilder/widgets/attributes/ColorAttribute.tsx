@@ -4,28 +4,18 @@ import React from "react";
 
 interface Props {
 	name: string;
-	attribute: {
-		typeHint: string;
-	};
+	attribute: IColorAttribute;
 	updateAttribute: (attribute: IColorAttribute) => void;
-	removeAttribute: (name: string, type: string) => void;
-	changeOrder: (name: string, type: string, direction: "up" | "down") => void;
 }
 
 export default function ColorAttribute(props: Props) {
-	const {
-		name,
-		attribute: attributeDefinition,
-		removeAttribute,
-		changeOrder,
-	} = props;
+	const {name, attribute: attributeDefinition} = props;
 
 	return (
 		<BaseAttribute
+			style={{display: "none"}}
 			name={name}
-			type={attributeDefinition.typeHint}
-			removeAttribute={removeAttribute}
-			changeOrder={changeOrder}
+			type={attributeDefinition.type}
 		/>
 	);
 }
