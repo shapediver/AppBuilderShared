@@ -77,15 +77,12 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * Parsing of the incoming props and assigning default values if not provided
 	 */
 	const {
-		defaultGradient = ATTRIBUTE_VISUALIZATION.BLUE_GREEN_YELLOW_RED_PURPLE_WHITE,
+		defaultGradient = ATTRIBUTE_VISUALIZATION.BLUE_GREEN_RED,
 		initialAttribute: propsInitialAttribute,
 		attributes: propsAttributes,
 		visualizationMode = AttributeVisualizationVisibility.DefaultOff,
 		showLegend = true,
-		passiveMaterial = {
-			color: "#666",
-			opacity: 1,
-		},
+		passiveMaterial,
 		title = "Attributes",
 		tooltip = "",
 	} = props;
@@ -98,23 +95,24 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 *
 	 */
 
-	const [attributeOverview, setAttributeOverview] = useState<ISDTFOverview>(
-		{},
-	);
+	const [attributeOverview, setAttributeOverview] = useState<
+		ISDTFOverview | undefined
+	>();
 	const [renderedAttribute, setRenderedAttribute] = useState<
 		IAttributeDefinition | undefined
 	>();
 	const [active, setActive] = useState<boolean>(false);
 	const [sdtfLoaded, setSdtfLoaded] = useState<boolean>(false);
 	const [attributes, setAttributes] = useState<
-		(
-			| string
-			| {
-					attribute: string;
-					gradient: Gradient | undefined;
-			  }
-		)[]
-	>([]);
+		| (
+				| string
+				| {
+						attribute: string;
+						gradient: Gradient | undefined;
+				  }
+		  )[]
+		| undefined
+	>();
 
 	/**
 	 *
@@ -150,18 +148,17 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * If not, the default gradient is returned
 	 */
 	const getGradient = useCallback(
-		(key: string): Gradient => {
-			if (attributes) {
-				const definition = attributes.find((attribute) => {
-					if (typeof attribute === "string") return false;
-					return attribute.attribute === key;
-				}) as {
-					attribute: string;
-					gradient?: Gradient;
-				};
-				if (definition && definition.gradient) {
-					return definition.gradient;
-				}
+		(attributeId: string): Gradient => {
+			if (!attributes) return defaultGradient;
+			const definition = attributes.find((attribute) => {
+				if (typeof attribute === "string") return false;
+				return attribute.attribute === attributeId;
+			}) as {
+				attribute: string;
+				gradient?: Gradient;
+			};
+			if (definition && definition.gradient) {
+				return definition.gradient;
 			}
 			return defaultGradient;
 		},
@@ -179,7 +176,9 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 */
 	const getAttributeById = useCallback(
 		(id: string | undefined): IAttributeDefinition | undefined => {
-			if (!id) return undefined;
+			if (attributeOverview === undefined) return;
+			if (id === undefined) return undefined;
+
 			if (attributeOverview[id]) {
 				const attribute = attributeOverview[id];
 				if (attribute.length > 0) {
@@ -208,7 +207,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 								min: attribute.min,
 								max: attribute.max,
 								values: attribute.values,
-								visualization: getGradient(attributeKey),
+								visualization: getGradient(id),
 							};
 						}
 					}
@@ -241,6 +240,8 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * or if the attribute overview is available
 	 */
 	useEffect(() => {
+		if (attributeOverview === undefined) return;
+
 		const attributeIds: string[] = [];
 
 		Object.keys(attributeOverview).map((key) => {
@@ -277,8 +278,10 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * or if the attributes are available
 	 */
 	useEffect(() => {
+		if (attributeOverview === undefined) return;
 		if (renderedAttribute !== undefined) return;
 		if (sdtfLoaded === false) return;
+		if (!attributes) return;
 
 		if (propsInitialAttribute) {
 			const initialAttributesCleaned = createAttributeId(
@@ -326,13 +329,14 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * and if the passive material is provided
 	 */
 	useEffect(() => {
-		if (attributeVisualizationEngine)
+		if (attributeVisualizationEngine) {
 			attributeVisualizationEngine.updateDefaultMaterial(
 				new MaterialStandardData({
-					color: passiveMaterial.color,
-					opacity: passiveMaterial.opacity,
+					color: passiveMaterial?.color || "#666",
+					opacity: passiveMaterial?.opacity || 1,
 				}),
 			);
+		}
 	}, [attributeVisualizationEngine, passiveMaterial]);
 
 	/**
@@ -472,37 +476,48 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			<Select
 				placeholder="Select an attribute"
 				allowDeselect={false}
-				data={attributes
-					.map((value) => {
-						const attributeId =
-							typeof value === "string" ? value : value.attribute;
-						const attributeKey = getAttributeKey(
-							attributeId,
-							attributeOverview,
-						);
+				data={
+					attributes &&
+					attributes
+						.map((value) => {
+							if (!attributeOverview) return undefined;
 
-						if (!attributeKey) return undefined;
-						const attributeData = attributeOverview[attributeKey];
-						if (!attributeData) return undefined;
+							const attributeId =
+								typeof value === "string"
+									? value
+									: value.attribute;
+							const attributeKey = getAttributeKey(
+								attributeId,
+								attributeOverview,
+							);
 
-						if (attributeData.length > 1) {
-							// we know that there are multiple attributes with the same key
-							// so we need to add the type hint to the label
-							const attribute = getAttributeById(attributeId);
+							if (!attributeKey) return undefined;
+							const attributeData =
+								attributeOverview[attributeKey];
+							if (!attributeData) return undefined;
 
-							return {
-								value: attributeId,
-								label:
-									attributeKey + " (" + attribute?.type + ")",
-							};
-						} else {
-							return {
-								value: attributeId,
-								label: attributeKey,
-							};
-						}
-					})
-					.filter((value) => value !== undefined)}
+							if (attributeData.length > 1) {
+								// we know that there are multiple attributes with the same key
+								// so we need to add the type hint to the label
+								const attribute = getAttributeById(attributeId);
+
+								return {
+									value: attributeId,
+									label:
+										attributeKey +
+										" (" +
+										attribute?.type +
+										")",
+								};
+							} else {
+								return {
+									value: attributeId,
+									label: attributeKey,
+								};
+							}
+						})
+						.filter((value) => value !== undefined)
+				}
 				value={renderedAttribute?.key + "_" + renderedAttribute?.type}
 				onChange={(attributeId) => {
 					if (!attributeId) return setRenderedAttribute(undefined);
@@ -528,9 +543,9 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 						</ActionIcon>
 					</Group>
 					<Stack>
-						{attributes.length > 1 ? (
+						{attributes && attributes.length > 1 ? (
 							attributeElementSelection
-						) : attributes.length > 0 ? (
+						) : attributes && attributes.length > 0 ? (
 							<Text>
 								{typeof attributes[0] === "string"
 									? attributes[0]

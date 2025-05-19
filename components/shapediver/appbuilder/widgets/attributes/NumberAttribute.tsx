@@ -2,7 +2,12 @@ import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/wi
 import {useShapeDiverStoreAttributeVisualization} from "@AppBuilderShared/store/useShapeDiverStoreAttributeVisualization";
 import {INumberAttributeCustomData} from "@AppBuilderShared/types/store/shapediverStoreAttributeVisualization";
 import {RangeSlider, RangeSliderValue, Space, Stack} from "@mantine/core";
-import {INumberAttribute} from "@shapediver/viewer.features.attribute-visualization";
+import {
+	ATTRIBUTE_VISUALIZATION,
+	Gradient,
+	INumberAttribute,
+	isNumberGradient,
+} from "@shapediver/viewer.features.attribute-visualization";
 import React, {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -41,13 +46,31 @@ export default function NumberAttribute(props: Props) {
 		if (
 			attribute.customMin === undefined ||
 			attribute.customMin !== customValues?.customMin
-		)
-			attribute.customMin = customValues?.customMin || attribute.min;
+		) {
+			if (
+				typeof attribute.visualization !== "string" &&
+				isNumberGradient(attribute.visualization) &&
+				attribute.visualization.min !== undefined
+			) {
+				attribute.customMin = attribute.visualization.min;
+			} else {
+				attribute.customMin = customValues?.customMin || attribute.min;
+			}
+		}
 		if (
 			attribute.customMax === undefined ||
 			attribute.customMax !== customValues?.customMax
-		)
-			attribute.customMax = customValues?.customMax || attribute.max;
+		) {
+			if (
+				typeof attribute.visualization !== "string" &&
+				isNumberGradient(attribute.visualization) &&
+				attribute.visualization.max !== undefined
+			) {
+				attribute.customMax = attribute.visualization.max;
+			} else {
+				attribute.customMax = customValues?.customMax || attribute.max;
+			}
+		}
 
 		setMinValue(attribute.customMin + "");
 		setMaxValue(attribute.customMax + "");
@@ -62,7 +85,7 @@ export default function NumberAttribute(props: Props) {
 		}
 
 		const colorStops = createGradientColorStops(
-			attribute.visualization as string,
+			attribute.visualization,
 			attribute.min,
 			attribute.max,
 			attribute.customMin,
@@ -88,7 +111,7 @@ export default function NumberAttribute(props: Props) {
 
 			setGradientColorStops(
 				createGradientColorStops(
-					attribute.visualization as string,
+					attribute.visualization,
 					attribute.min,
 					attribute.max,
 					min,
@@ -167,7 +190,7 @@ export default function NumberAttribute(props: Props) {
 }
 
 const createGradientColorStops = (
-	visualization: string,
+	visualization: Gradient,
 	min: number,
 	max: number,
 	customMin: number,
@@ -177,13 +200,86 @@ const createGradientColorStops = (
 	const normalizedMin = (customMin - min) / range;
 	const normalizedMax = (customMax - min) / range;
 
-	return (visualization as string)
-		.split("_")
-		.map((color, index) => (
-			<stop
-				key={index}
-				offset={`${normalizedMin + (normalizedMax - normalizedMin) * (index / ((visualization as string).split("_").length - 1))}`}
-				stopColor={color}
-			/>
-		));
+	if (
+		visualization === ATTRIBUTE_VISUALIZATION.GRAYSCALE ||
+		visualization === ATTRIBUTE_VISUALIZATION.OPACITY
+	) {
+		// Set the color stops for grayscale and opacity
+		return [
+			<stop key={0} offset={normalizedMin} stopColor="black" />,
+			<stop key={1} offset={normalizedMax} stopColor="white" />,
+		];
+	} else if (visualization === ATTRIBUTE_VISUALIZATION.HSL) {
+		// Set the color stops for HSL
+		const hslSamples = 100;
+		const colorStops = [];
+		for (let i = 0; i < hslSamples; i++) {
+			const hue = (i / hslSamples) * 360;
+			const color = `hsl(${hue}, 100%, 50%)`;
+			colorStops.push(
+				<stop
+					key={i}
+					offset={`${normalizedMin + (normalizedMax - normalizedMin) * (i / (hslSamples - 1))}`}
+					stopColor={color}
+				/>,
+			);
+		}
+		return colorStops;
+	} else if (typeof visualization === "string") {
+		// Set the color stops for string visualization
+		const data = visualization.split("_");
+		if (data.length > 0) {
+			const colorStops = data.map((color, index) => (
+				<stop
+					key={index}
+					offset={`${normalizedMin + (normalizedMax - normalizedMin) * (index / (data.length - 1))}`}
+					stopColor={color}
+				/>
+			));
+			return colorStops;
+		}
+	} else if (isNumberGradient(visualization)) {
+		// Set the color stops for other visualizations
+		const colorStops: JSX.Element[] = [];
+
+		for (let i = 0; i < visualization.steps.length; i++) {
+			const step = visualization.steps[i];
+			const stepValue = step.value;
+			const stepOffset =
+				normalizedMin + (normalizedMax - normalizedMin) * stepValue;
+
+			// add two stops, one for the color before the step and one for the color after the step
+			colorStops.push(
+				<stop
+					key={i + "_before"}
+					offset={stepOffset}
+					stopColor={step.colorBefore as string}
+				/>,
+				<stop
+					key={i + "_after"}
+					offset={stepOffset}
+					stopColor={step.colorAfter as string}
+				/>,
+			);
+
+			// add the label if it exists
+			if (step.label) {
+				colorStops.push(
+					<text
+						key={i + "_label"}
+						x={stepOffset * 100 + "%"}
+						y="50%"
+						dominantBaseline="middle"
+						textAnchor="middle"
+						fill="black"
+					>
+						{step.label}
+					</text>,
+				);
+			}
+		}
+		return colorStops;
+	}
+
+	return [];
 };
