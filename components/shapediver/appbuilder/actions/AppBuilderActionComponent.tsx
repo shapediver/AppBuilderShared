@@ -6,7 +6,9 @@ import {
 	Button,
 	ButtonProps,
 	CloseButton,
+	MantineThemeComponent,
 	PolymorphicComponentProps,
+	useProps,
 } from "@mantine/core";
 import React from "react";
 
@@ -20,13 +22,35 @@ type Props = IAppBuilderActionPropsCommon &
 		loading?: boolean;
 	};
 
+const defaultStyleProps: Partial<Props> = {
+	variant: "filled",
+};
+
+type AppBuilderActionComponentThemePropsType = Partial<Props>;
+
+export function AppBuilderActionComponentThemeProps(
+	props: AppBuilderActionComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
 /**
  * Functional component common to all action components.
  *
  * @returns
  */
-export default function AppBuilderActionComponent(props: Props) {
+export default function AppBuilderActionComponent(
+	props: Props & AppBuilderActionComponentThemePropsType,
+) {
 	const {label, icon, tooltip, onClick, loading, ...rest} = props;
+
+	const buttonProps = useProps(
+		"AppBuilderActionComponent",
+		defaultStyleProps,
+		props,
+	);
+
 	const iconOnly = !label && icon;
 	const useCloseButton = iconOnly && icon === IconTypeEnum.X;
 	const _onclick = onClick === null ? undefined : onClick;
@@ -35,6 +59,7 @@ export default function AppBuilderActionComponent(props: Props) {
 		<CloseButton onClick={_onclick} />
 	) : (
 		<Button
+			{...buttonProps}
 			leftSection={!iconOnly && icon ? <Icon type={icon} /> : undefined}
 			{...rest}
 			onClick={_onclick}

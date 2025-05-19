@@ -1,3 +1,4 @@
+import {AppBuilderActionComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
@@ -311,6 +312,14 @@ export const useCustomTheme = (props: Props = {}) => {
 				AppBuilderAccordionWidgetComponentThemeProps({
 					// showAcceptRejectButtons: false,
 				}),
+			/**
+			 * AppBuilderActionComponent
+			 *
+			 * Used for defining theme overrides for action components.
+			 */
+			AppBuilderActionComponent: AppBuilderActionComponentThemeProps({
+				// variant: "filled",
+			}),
 			/**
 			 * AppBuilderContainerWrapper
 			 *
