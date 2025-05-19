@@ -81,8 +81,8 @@ interface StyleProps {
 const defaultStyleProps: Partial<StyleProps> = {
 	accordionStyle: {
 		borderRadius: "var(--accordion-radius)",
-		"--accordion-color": "var(--mantine-color-blue-0)",
-		"--accordion-color-hover": "var(--mantine-color-blue-1)",
+		"--accordion-color": "var(--mantine-primary-color-0)",
+		"--accordion-color-hover": "var(--mantine-primary-color-1)",
 	},
 	accordionItemStyle: {
 		boxShadow: "var(--mantine-shadow-sm)",
@@ -121,8 +121,6 @@ export default function ParametersAndExportsAccordionComponent(
 		mergeAccordions,
 		identifyGroupsById,
 		accordionStyle,
-		accordionItemStyle,
-		accordionControlStyle,
 	} = useProps(
 		"ParametersAndExportsAccordionComponent",
 		{...defaultProps, ...defaultStyleProps},
