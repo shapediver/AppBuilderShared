@@ -1,3 +1,4 @@
+import {AppBuilderActionComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
@@ -312,6 +313,14 @@ export const useCustomTheme = (props: Props = {}) => {
 					// showAcceptRejectButtons: false,
 				}),
 			/**
+			 * AppBuilderActionComponent
+			 *
+			 * Used for defining theme overrides for action components.
+			 */
+			AppBuilderActionComponent: AppBuilderActionComponentThemeProps({
+				// variant: "filled",
+			}),
+			/**
 			 * AppBuilderContainerWrapper
 			 *
 			 * Used for defining theme overrides per template and per AppBuilder container.
@@ -621,14 +630,12 @@ export const useCustomTheme = (props: Props = {}) => {
 					//identifyGroupsById: false,
 					// accordionStyle: {
 					//  borderRadius: "var(--accordion-radius)",
+					// "--accordion-color": "var(--mantine-color-blue-0)",
+					// "--accordion-color-hover": "var(--mantine-color-blue-1)",
 					// },
 					// accordionItemStyle: {
-					//  backgroundColor: "var(--mantine-primary-color-light)",
 					// 	boxShadow: "var(--mantine-shadow-sm)",
 					//  border: "none",
-					// },
-					// accordionControlStyle: {
-					// 	backgroundColor: "transparent",
 					// },
 				}),
 			/**
