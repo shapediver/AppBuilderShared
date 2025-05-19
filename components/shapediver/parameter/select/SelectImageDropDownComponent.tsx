@@ -261,7 +261,7 @@ export default function SelectImageDropDownComponent(
 						rightSection={<Combobox.Chevron />}
 						onClick={handleDropdownToggle}
 						multiline
-						className={`${classes.input} ${selectedOption ? classes.inputSelected : ""}`}
+						className={`${classes.input}`}
 						style={getInputStyle(selectedOption)}
 					>
 						{value !== null && selectedOption ? (

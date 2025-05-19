@@ -3,8 +3,14 @@
 	overflow-y: auto;
 }
 
+.input {
+	:global(.mantine-Input-input[data-expanded="true"]), :global(.mantine-Input-input:focus) {
+		border-color: var(--card-selected-color, var(--input-bd));
+	}
+}
+
 .input.inputSelected {
-	--select-dropdown-border-width: 2px;
+	--select-dropdown-border-width: 1px;
 	--image-radius: var(--mantine-radius-default);
 	padding: var(--select-dropdown-border-width);
 	border-radius: var(--mantine-radius-default);
@@ -18,5 +24,6 @@
 	:global(.mantine-Input-input) {
 		border: none; /* Hide default border */
 		border-radius: var(--mantine-radius-default);
+		border-color: var(--card-selected-color, var(--input-bd));
 	}
 }
