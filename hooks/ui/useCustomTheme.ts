@@ -630,14 +630,12 @@ export const useCustomTheme = (props: Props = {}) => {
 					//identifyGroupsById: false,
 					// accordionStyle: {
 					//  borderRadius: "var(--accordion-radius)",
+					// "--accordion-color": "var(--mantine-color-blue-0)",
+					// "--accordion-color-hover": "var(--mantine-color-blue-1)",
 					// },
 					// accordionItemStyle: {
-					//  backgroundColor: "var(--mantine-primary-color-light)",
 					// 	boxShadow: "var(--mantine-shadow-sm)",
 					//  border: "none",
-					// },
-					// accordionControlStyle: {
-					// 	backgroundColor: "transparent",
 					// },
 				}),
 			/**

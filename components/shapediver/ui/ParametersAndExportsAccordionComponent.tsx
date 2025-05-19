@@ -14,6 +14,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {ReactElement, useContext} from "react";
+import classes from "./ParametersAndExportsAccordionComponent.module.css";
 
 /**
  * Functional component that creates an accordion of parameter and export components.
@@ -69,7 +70,10 @@ const defaultProps: Partial<Props> = {
 };
 
 interface StyleProps {
-	accordionStyle?: React.CSSProperties;
+	accordionStyle?: React.CSSProperties & {
+		"--accordion-color"?: string;
+		"--accordion-color-hover"?: string;
+	};
 	accordionItemStyle?: React.CSSProperties;
 	accordionControlStyle?: React.CSSProperties;
 }
@@ -77,14 +81,12 @@ interface StyleProps {
 const defaultStyleProps: Partial<StyleProps> = {
 	accordionStyle: {
 		borderRadius: "var(--accordion-radius)",
+		"--accordion-color": "var(--mantine-color-blue-0)",
+		"--accordion-color-hover": "var(--mantine-color-blue-1)",
 	},
 	accordionItemStyle: {
-		backgroundColor: "var(--mantine-primary-color-light)",
 		boxShadow: "var(--mantine-shadow-sm)",
 		border: "none",
-	},
-	accordionControlStyle: {
-		backgroundColor: "transparent",
 	},
 };
 
@@ -203,7 +205,11 @@ export default function ParametersAndExportsAccordionComponent(
 		elements.push(
 			// wrap accordion in paper to show optional shadows
 			<Paper key={items[0].key} px={0} py={0} withBorder={false}>
-				<Accordion style={accordionStyle} defaultValue={defaultValue}>
+				<Accordion
+					className={classes.accordion}
+					style={accordionStyle}
+					defaultValue={defaultValue}
+				>
 					{items}
 				</Accordion>
 			</Paper>,
@@ -224,9 +230,9 @@ export default function ParametersAndExportsAccordionComponent(
 				<Accordion.Item
 					key={g.group.id}
 					value={g.group.id}
-					style={accordionItemStyle}
+					className={classes.accordionItem}
 				>
-					<Accordion.Control style={accordionControlStyle}>
+					<Accordion.Control className={classes.accordionControl}>
 						{g.group.name}
 					</Accordion.Control>
 					<Accordion.Panel key={g.group.id}>
