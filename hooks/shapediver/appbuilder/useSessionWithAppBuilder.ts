@@ -8,7 +8,15 @@ import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildert
 
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {IOutputApi, ITreeNode, OutputApiData} from "@shapediver/viewer.session";
+import {
+	addListener,
+	EVENTTYPE_SESSION,
+	IEvent,
+	IOutputApi,
+	ISessionEvent,
+	ITreeNode,
+	OutputApiData,
+} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useAppBuilderInstances} from "./useAppBuilderInstances";
 
@@ -60,6 +68,7 @@ export function useSessionWithAppBuilder(
 	const [outputApi, setOutputApi] = useState<IOutputApi | undefined>(
 		undefined,
 	);
+	const [loadSdTF, setLoadSdTF] = useState<boolean>(false);
 
 	/**
 	 * Validate the AppBuilder data.
@@ -171,14 +180,45 @@ export function useSessionWithAppBuilder(
 			const appBuilderData =
 				parsedData instanceof Error ? undefined : parsedData;
 
-			let hasSubProcesses = false;
+			let hasInstances = false;
+			let hasAttributeVisualizationWidget = false;
 			if (appBuilderData) {
-				if (appBuilderData.instances) {
-					hasSubProcesses = true;
-				}
+				if (appBuilderData.instances) hasInstances = true;
+
+				// try to find an attribute visualization widget
+				appBuilderData?.containers?.forEach((container) => {
+					if (container.widgets) {
+						const attributeVisualizationWidget =
+							container.widgets.find(
+								(widget) =>
+									widget.type === "attributeVisualization",
+							);
+						if (attributeVisualizationWidget) {
+							hasAttributeVisualizationWidget = true;
+						}
+					}
+
+					if (container.tabs) {
+						for (const tab of container.tabs) {
+							const attributeVisualizationWidget =
+								tab.widgets.find(
+									(widget) =>
+										widget.type ===
+										"attributeVisualization",
+								);
+							if (attributeVisualizationWidget) {
+								hasAttributeVisualizationWidget = true;
+							}
+						}
+					}
+				});
 			}
 
-			if (!hasSubProcesses) {
+			// depending on if there is an attribute visualization widget
+			// we set the loadSdTF flag to true or false
+			setLoadSdTF(hasAttributeVisualizationWidget);
+
+			if (!hasInstances && !hasAttributeVisualizationWidget) {
 				if (initialProcessManagerIdRef.current) {
 					// the initial process manager id is created when the session is initialized
 					// we resolve it here as there are no further processes to be executed
@@ -206,6 +246,38 @@ export function useSessionWithAppBuilder(
 		},
 		[namespace, validationResult],
 	);
+
+	/**
+	 * Load the SDTF data if the loadSdTF flag is set to true.
+	 * This is done by adding a process to the process manager.
+	 */
+	useEffect(() => {
+		if (!sessionApi) return;
+		if (processManagerId === undefined) return;
+
+		sessionApi.loadSdtf = loadSdTF;
+
+		if (loadSdTF) {
+			addProcess(processManagerId, {
+				name: "Loading of SDTF",
+				promise: new Promise<void>((resolve) =>
+					addListener(
+						EVENTTYPE_SESSION.SESSION_SDTF_DELAYED_LOADED,
+						(e: IEvent) => {
+							const sessionEvent = e as ISessionEvent;
+							if (sessionEvent.sessionId === sessionApi.id)
+								resolve();
+						},
+					),
+				),
+			});
+		} else {
+			addProcess(processManagerId, {
+				name: "Disable loading of SDTF",
+				promise: Promise.resolve(),
+			});
+		}
+	}, [sessionApi, loadSdTF, processManagerId]);
 
 	useEffect(() => {
 		const removeOutputUpdateCallback = addOutputUpdateCallback(
