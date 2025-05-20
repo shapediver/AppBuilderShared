@@ -26,7 +26,7 @@ export default function StringAttribute(props: Props) {
 			}[];
 		} = {};
 
-		attribute.values.forEach((item) => {
+		attribute.values.forEach((item, index) => {
 			if (typeof attribute.visualization === "string") {
 				const data = AttributeVisualizationUtils.stringVisualization(
 					item,
@@ -40,7 +40,7 @@ export default function StringAttribute(props: Props) {
 					colorToValueDictionary[c] = [
 						{
 							value: item,
-							count: 1,
+							count: attribute.countForValue[index],
 						},
 					];
 				} else {
@@ -50,10 +50,10 @@ export default function StringAttribute(props: Props) {
 					if (existingValue === undefined) {
 						colorToValueDictionary[c].push({
 							value: item,
-							count: 1,
+							count: attribute.countForValue[index],
 						});
 					} else {
-						existingValue.count++;
+						existingValue.count += attribute.countForValue[index];
 					}
 				}
 			} else if (isStringGradient(attribute.visualization)) {
@@ -65,7 +65,7 @@ export default function StringAttribute(props: Props) {
 							colorToValueDictionary[c] = [
 								{
 									value: item,
-									count: 1,
+									count: attribute.countForValue[index],
 								},
 							];
 						} else {
@@ -75,10 +75,11 @@ export default function StringAttribute(props: Props) {
 							if (existingValue === undefined) {
 								colorToValueDictionary[c].push({
 									value: item,
-									count: 1,
+									count: attribute.countForValue[index],
 								});
 							} else {
-								existingValue.count++;
+								existingValue.count +=
+									attribute.countForValue[index];
 							}
 						}
 					}
