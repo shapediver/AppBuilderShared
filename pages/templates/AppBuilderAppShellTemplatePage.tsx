@@ -123,9 +123,20 @@ export default function AppBuilderAppShellTemplatePage(
 	const [opened, {toggle}] = useDisclosure();
 	const isLandscape = useIsLandscape();
 	const theme = useMantineTheme();
+
+	// Force the initial state to desktop to prevent layout shift
+	const [initialRender, setInitialRender] = useState(true);
 	const aboveNavbarBreakpoint = useMediaQuery(
 		`(min-width: ${theme.breakpoints[navbarBreakpoint]})`,
+		// Default to true to prevent layout shift on first render
+		true,
 	);
+
+	useEffect(() => {
+		// Mark that we've completed the initial render
+		setInitialRender(false);
+	}, []);
+
 	const showBottomInGrid =
 		!!bottom && (aboveNavbarBreakpoint || keepBottomInGrid);
 	const showRightAtBottom = !!right && !showBottomInGrid && !isLandscape;
@@ -179,7 +190,13 @@ export default function AppBuilderAppShellTemplatePage(
 	]);
 
 	return (
-		<>
+		<div
+			className={
+				initialRender
+					? classes.containerHidden
+					: classes.containerVisible
+			}
+		>
 			<AppShell
 				padding="0"
 				// We hide the header in case there is no top and no left container content.
@@ -273,6 +290,6 @@ export default function AppBuilderAppShellTemplatePage(
 					) : undefined}
 				</AppShell.Main>
 			</AppShell>
-		</>
+		</div>
 	);
 }

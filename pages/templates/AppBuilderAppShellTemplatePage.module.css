@@ -98,3 +98,12 @@
 .appShellMainNavbar {
 	overflow: auto;
 }
+
+.containerHidden {
+	opacity: 0;
+}
+
+.containerVisible {
+	opacity: 1;
+	transition: opacity 0.3s ease-in-out;
+}
