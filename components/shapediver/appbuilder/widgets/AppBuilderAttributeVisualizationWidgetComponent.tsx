@@ -1,6 +1,11 @@
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {useAttributeOverview} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeOverview";
 import {useAttributeVisualizationEngine} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeVisualizationEngine";
 import {useAttributeWidgetVisibilityTracker} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeWidgetVisibilityTracker";
+import {
+	createAttributeId,
+	useConvertAttributeInputData,
+} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useConvertAttributeInputData";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
@@ -95,26 +100,12 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 *
 	 *
 	 */
-
-	const [attributeOverview, setAttributeOverview] = useState<
-		ISDTFOverview | undefined
-	>();
 	const [renderedAttribute, setRenderedAttribute] = useState<
 		IAttributeDefinition | undefined
 	>();
 	const [hasBeenLoaded, setHasBeenLoaded] = useState<boolean>(false);
 	const [active, setActive] = useState<boolean>(false);
 	const [loadSdTF, setLoadSdTF] = useState<boolean>(false);
-	const [attributes, setAttributes] = useState<
-		| (
-				| string
-				| {
-						attribute: string;
-						gradient: Gradient | undefined;
-				  }
-		  )[]
-		| undefined
-	>();
 
 	/**
 	 *
@@ -152,7 +143,13 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	const {attributeVisualizationEngine} = useAttributeVisualizationEngine(
 		loadSdTF ? viewportId : "",
 	);
-
+	const {attributeOverview} = useAttributeOverview(
+		attributeVisualizationEngine,
+	);
+	const {attributes} = useConvertAttributeInputData(
+		attributeOverview,
+		propsAttributes,
+	);
 	/**
 	 *
 	 *
@@ -240,6 +237,22 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	);
 
 	/**
+	 * Handle the attribute change
+	 * This is done by checking if the attribute is available in the overview
+	 * and if not, it tries to find the attribute by its key and type hint
+	 * @param id
+	 * @returns {string | undefined}
+	 */
+	const handleAttributeChange = useCallback(
+		(attributeId: string | null) => {
+			if (!attributeId) return setRenderedAttribute(undefined);
+			const attribute = getAttributeById(attributeId);
+			setRenderedAttribute(attribute);
+		},
+		[getAttributeById],
+	);
+
+	/**
 	 *
 	 *
 	 * USE EFFECTS
@@ -279,44 +292,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			});
 		};
 	}, [sessions]);
-
-	/**
-	 * Use effect that assigns the attributes state variable
-	 * This is done by checking if the attributes are provided in the props
-	 * or if the attribute overview is available
-	 */
-	useEffect(() => {
-		if (attributeOverview === undefined) return;
-
-		const attributeIds: string[] = [];
-
-		Object.keys(attributeOverview).map((key) => {
-			const ids = createAttributeId(key, attributeOverview);
-			attributeIds.push(...ids);
-		});
-
-		const providedAttributesCleaned = propsAttributes
-			? propsAttributes
-					.map((value) => {
-						if (typeof value === "string") {
-							return createAttributeId(value, attributeOverview);
-						} else {
-							return createAttributeId(
-								value.attribute,
-								attributeOverview,
-							).map((id) => {
-								return {
-									attribute: id,
-									gradient: value.gradient,
-								};
-							});
-						}
-					})
-					.flat()
-			: undefined;
-
-		setAttributes(providedAttributesCleaned || attributeIds);
-	}, [propsAttributes, attributeOverview]);
 
 	/**
 	 * Use effect that sets the initial attribute to be rendered
@@ -433,36 +408,12 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	}, [isEnabled, attributeVisualizationEngine, renderedAttribute]);
 
 	/**
-	 * Use effect that updates the attribute overview of the attribute visualization engine
-	 */
-	useEffect(() => {
-		if (!attributeVisualizationEngine) return;
-		setAttributeOverview(attributeVisualizationEngine.overview);
-
-		const token = attributeVisualizationEngine.addListener(() => {
-			if (!attributeVisualizationEngine) return;
-			setAttributeOverview(attributeVisualizationEngine.overview);
-		});
-
-		return () => {
-			if (token) attributeVisualizationEngine.removeListener(token);
-		};
-	}, [attributeVisualizationEngine]);
-
-	/**
 	 * UseEffect that reacts to changes to the hasPriority state variable
 	 * Please read the comment in the function to understand the different scenarios
 	 */
 	useEffect(() => {
 		if (!isInitialized) return;
 		if (!canBeEnabled) return;
-
-		console.log(
-			`DEBBUGING
-			${hasPriority}
-			${active}
-			${title}`,
-		);
 
 		if (hasPriority === true) {
 			// the priority was assigned to this widget
@@ -542,6 +493,46 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	}, [renderedAttribute, showLegend]);
 
 	/**
+	 * memoized data for the select options
+	 */
+	const selectOptions = useMemo(() => {
+		if (!attributes || !attributeOverview) return [];
+
+		return attributes
+			.map((value) => {
+				if (!attributeOverview) return undefined;
+
+				const attributeId =
+					typeof value === "string" ? value : value.attribute;
+				const attributeKey = getAttributeKey(
+					attributeId,
+					attributeOverview,
+				);
+
+				if (!attributeKey) return undefined;
+				const attributeData = attributeOverview[attributeKey];
+				if (!attributeData) return undefined;
+
+				if (attributeData.length > 1) {
+					// we know that there are multiple attributes with the same key
+					// so we need to add the type hint to the label
+					const attribute = getAttributeById(attributeId);
+
+					return {
+						value: attributeId,
+						label: attributeKey + " (" + attribute?.type + ")",
+					};
+				} else {
+					return {
+						value: attributeId,
+						label: attributeKey,
+					};
+				}
+			})
+			.filter((value) => value !== undefined);
+	}, [attributes, attributeOverview, getAttributeById]);
+
+	/**
 	 * The attribute selection element of the widget
 	 * It contains a select to select the attribute that should be displayed
 	 */
@@ -561,54 +552,9 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				rightSection={
 					attributes && attributes.length < 2 ? <></> : null
 				}
-				data={
-					attributes &&
-					attributes
-						.map((value) => {
-							if (!attributeOverview) return undefined;
-
-							const attributeId =
-								typeof value === "string"
-									? value
-									: value.attribute;
-							const attributeKey = getAttributeKey(
-								attributeId,
-								attributeOverview,
-							);
-
-							if (!attributeKey) return undefined;
-							const attributeData =
-								attributeOverview[attributeKey];
-							if (!attributeData) return undefined;
-
-							if (attributeData.length > 1) {
-								// we know that there are multiple attributes with the same key
-								// so we need to add the type hint to the label
-								const attribute = getAttributeById(attributeId);
-
-								return {
-									value: attributeId,
-									label:
-										attributeKey +
-										" (" +
-										attribute?.type +
-										")",
-								};
-							} else {
-								return {
-									value: attributeId,
-									label: attributeKey,
-								};
-							}
-						})
-						.filter((value) => value !== undefined)
-				}
+				data={selectOptions}
 				value={renderedAttribute?.key + "_" + renderedAttribute?.type}
-				onChange={(attributeId) => {
-					if (!attributeId) return setRenderedAttribute(undefined);
-					const attribute = getAttributeById(attributeId);
-					setRenderedAttribute(attribute);
-				}}
+				onChange={handleAttributeChange}
 			/>
 		</>
 	);
@@ -688,25 +634,6 @@ const toggleAttributeVisualization = (
 		sceneTree.root.updateVersion();
 		viewport.update();
 	}
-};
-
-/**
- * Function to create the attribute id
- * This is done by checking if the attribute is available in the overview
- * and if not, it tries to find the attribute by its key and type hint
- * If not found, undefined is returned
- * The gradient is also assigned to the attribute
- * @param key
- * @param overview
- * @returns {string[]}
- */
-const createAttributeId = (key: string, overview: ISDTFOverview): string[] => {
-	if (!overview[key]) return [];
-
-	const attribute = overview[key];
-	return attribute.map((v) => {
-		return key + "_" + v.typeHint;
-	});
 };
 
 /**
