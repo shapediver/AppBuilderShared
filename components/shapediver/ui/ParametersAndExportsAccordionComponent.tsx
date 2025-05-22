@@ -121,6 +121,7 @@ export default function ParametersAndExportsAccordionComponent(
 		mergeAccordions,
 		identifyGroupsById,
 		accordionStyle,
+		accordionItemStyle,
 	} = useProps(
 		"ParametersAndExportsAccordionComponent",
 		{...defaultProps, ...defaultStyleProps},
@@ -229,6 +230,7 @@ export default function ParametersAndExportsAccordionComponent(
 					key={g.group.id}
 					value={g.group.id}
 					className={classes.accordionItem}
+					style={accordionItemStyle}
 				>
 					<Accordion.Control className={classes.accordionControl}>
 						{g.group.name}
