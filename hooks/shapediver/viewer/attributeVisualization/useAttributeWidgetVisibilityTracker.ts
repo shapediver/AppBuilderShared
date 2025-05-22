@@ -13,14 +13,25 @@ export function useAttributeWidgetVisibilityTracker(props: {
 	const ref = useRef(null);
 	const [isVisible, setIsVisible] = useState(false);
 	const [hasPriority, setHasPriority] = useState(false);
-	const [noPriority, setNoPriority] = useState(true);
+	const wantsPriorityRef = useRef(props.wantsPriority ?? false);
 
 	const [id] = useState(() => idCounter++);
 
-	/**
-	 * UseEffect to set the setter function for the current element
-	 * and remove it when the component is unmounted
-	 */
+	// Always keep the latest wantsPriority in ref
+	useEffect(() => {
+		wantsPriorityRef.current = props.wantsPriority ?? false;
+
+		// Patch current map entry (without triggering notify)
+		const current = visibilityMap.get(id) ?? {
+			isVisible: false,
+			wantsPriority: false,
+		};
+		visibilityMap.set(id, {
+			...current,
+			wantsPriority: wantsPriorityRef.current,
+		});
+	}, [props.wantsPriority, id]);
+
 	useEffect(() => {
 		updateMap.set(id, setHasPriority);
 		return () => {
@@ -28,11 +39,6 @@ export function useAttributeWidgetVisibilityTracker(props: {
 		};
 	}, [id]);
 
-	/**
-	 * UseEffect to create an IntersectionObserver
-	 * and set the visibility state
-	 * and the priority state for the current element
-	 */
 	useEffect(() => {
 		const observer = new IntersectionObserver(
 			([entry]) => {
@@ -41,7 +47,7 @@ export function useAttributeWidgetVisibilityTracker(props: {
 
 				visibilityMap.set(id, {
 					isVisible: currentlyVisible,
-					wantsPriority: props.wantsPriority ?? false,
+					wantsPriority: wantsPriorityRef.current,
 				});
 
 				notifyAll();
@@ -56,12 +62,8 @@ export function useAttributeWidgetVisibilityTracker(props: {
 			visibilityMap.delete(id);
 			notifyAll();
 		};
-	}, [id, props.wantsPriority]);
+	}, [id]);
 
-	/**
-	 * Notify all elements about the current visibility state
-	 * and set the priority for the first element
-	 */
 	const notifyAll = () => {
 		const visibleEntries = Array.from(visibilityMap.entries())
 			.filter(([, data]) => data.isVisible)
@@ -76,20 +78,13 @@ export function useAttributeWidgetVisibilityTracker(props: {
 		updateMap.forEach((setPriority, instanceId) => {
 			setPriority(instanceId === priorityElementId);
 		});
-
-		setNoPriority(visibleEntries.length === 0);
 	};
 
-	/**
-	 * Enable the priority for the current element
-	 * And disable it for all other elements
-	 */
 	const requestPriority = () => {
 		updateMap.forEach((setPriority, instanceId) => {
 			setPriority(instanceId === id);
 		});
-		setNoPriority(false);
 	};
 
-	return {ref, isVisible, hasPriority, noPriority, requestPriority};
+	return {ref, isVisible, hasPriority, requestPriority};
 }
