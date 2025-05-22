@@ -172,7 +172,7 @@ export default function NumberAttribute(props: Props) {
 					}}
 					min={attribute.min * multiplyingFactor}
 					max={attribute.max * multiplyingFactor}
-					step={0.001 * multiplyingFactor}
+					step={0.01 * multiplyingFactor}
 					marks={[
 						attribute.min,
 						attribute.customMin!,
@@ -180,7 +180,7 @@ export default function NumberAttribute(props: Props) {
 						attribute.max,
 					].map((value) => ({
 						value: value * multiplyingFactor,
-						label: value?.toFixed(3),
+						label: value?.toFixed(2),
 					}))}
 				/>
 				<Space />
