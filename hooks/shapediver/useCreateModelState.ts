@@ -8,6 +8,7 @@ import {useShallow} from "zustand/react/shallow";
 interface ThemeProps {
 	parameterNamesToInclude?: string[];
 	parameterNamesToExclude?: string[];
+	parameterNamesToAlwaysExclude?: string[];
 }
 
 const defaultThemeProps: Partial<ThemeProps> = {};
@@ -38,6 +39,7 @@ export function useCreateModelState(props: Props) {
 	const {
 		parameterNamesToInclude: parameterNamesToIncludeDefault,
 		parameterNamesToExclude: parameterNamesToExcludeDefault,
+		parameterNamesToAlwaysExclude = [],
 	} = useProps(
 		"CreateModelStateHook",
 		defaultThemeProps,
@@ -82,6 +84,11 @@ export function useCreateModelState(props: Props) {
 							(p.displayname &&
 								!parameterNamesToExclude.includes(
 									p.displayname,
+								))) &&
+						(!parameterNamesToAlwaysExclude.includes(p.name) ||
+							(p.displayname &&
+								!parameterNamesToAlwaysExclude.includes(
+									p.displayname,
 								))),
 				)
 				.reduce(
@@ -120,6 +127,7 @@ export function useCreateModelState(props: Props) {
 			convertToGlTF,
 			parameterNamesToIncludeDefault,
 			parameterNamesToExcludeDefault,
+			parameterNamesToAlwaysExclude,
 		],
 	);
 

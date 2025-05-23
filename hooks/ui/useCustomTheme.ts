@@ -536,7 +536,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Hook for creating model states.
 			 */
 			CreateModelStateHook: CreateModelStateHookThemeProps({
-				parameterNamesToExclude: ["context"],
+				parameterNamesToAlwaysExclude: ["context"],
 			}),
 			/**
 			 * ExportButton
