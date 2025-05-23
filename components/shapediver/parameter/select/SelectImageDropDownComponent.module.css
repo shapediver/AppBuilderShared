@@ -4,7 +4,8 @@
 }
 
 .input {
-	:global(.mantine-Input-input[data-expanded="true"]), :global(.mantine-Input-input:focus) {
+	:global(.mantine-Input-input[data-expanded="true"]),
+	:global(.mantine-Input-input:focus) {
 		border-color: var(--card-selected-color, var(--input-bd));
 	}
 }
