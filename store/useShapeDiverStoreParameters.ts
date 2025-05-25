@@ -102,7 +102,10 @@ function createParameterExecutor<T>(
 				);
 				changes.addValueChange(paramId, uiValue);
 				const values = forceImmediate
-					? await changes.accept(skipHistory, [paramId])
+					? await changes.accept(
+							skipHistory,
+							skipHistory ? undefined : [paramId],
+						)
 					: await changes.wait;
 				const value = paramId in values ? values[paramId] : uiValue;
 				if (value !== uiValue)
