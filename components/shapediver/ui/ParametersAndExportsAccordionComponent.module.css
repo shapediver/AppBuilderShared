@@ -1,12 +1,14 @@
-.accordionItem {
-	background-color: var(--accordion-color);
+:global([data-mantine-color-scheme="light"]) {
+	.accordionItem {
+		background-color: var(--accordion-color);
 
-	&[data-active="true"] {
-		background-color: var(--accordion-color-hover) !important;
+		&[data-active="true"] {
+			background-color: var(--accordion-color-hover) !important;
+		}
 	}
-}
-.accordionControl {
-	&:hover {
-		background-color: var(--accordion-color-hover) !important;
+	.accordionControl {
+		&:hover {
+			background-color: var(--accordion-color-hover) !important;
+		}
 	}
 }
