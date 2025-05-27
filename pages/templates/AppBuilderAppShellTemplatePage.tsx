@@ -134,7 +134,9 @@ export default function AppBuilderAppShellTemplatePage(
 
 	useEffect(() => {
 		// Mark that we've completed the initial render
-		setInitialRender(false);
+		setTimeout(() => {
+			setInitialRender(false);
+		}, 1);
 	}, []);
 
 	const showBottomInGrid =
