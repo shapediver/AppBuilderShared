@@ -14,7 +14,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {ReactElement, useContext} from "react";
-import classes from "./ParametersAndExportsAccordionComponent.module.css";
 
 /**
  * Functional component that creates an accordion of parameter and export components.
@@ -69,41 +68,15 @@ const defaultProps: Partial<Props> = {
 	identifyGroupsById: false,
 };
 
-interface StyleProps {
-	accordionStyle?: React.CSSProperties & {
-		"--accordion-color"?: string;
-		"--accordion-color-hover"?: string;
-	};
-	accordionItemStyle?: React.CSSProperties;
-	accordionControlStyle?: React.CSSProperties;
-}
-
-const defaultStyleProps: Partial<StyleProps> = {
-	accordionStyle: {
-		borderRadius: "var(--accordion-radius)",
-		"--accordion-color": "var(--mantine-primary-color-0)",
-		"--accordion-color-hover": "var(--mantine-primary-color-1)",
-	},
-	accordionItemStyle: {
-		boxShadow: "var(--mantine-shadow-sm)",
-		border: "none",
-	},
-};
-
-type ParametersAndExportsAccordionComponentThemePropsType = Partial<Props> &
-	Partial<StyleProps>;
-
 export function ParametersAndExportsAccordionComponentThemeProps(
-	props: ParametersAndExportsAccordionComponentThemePropsType,
+	props: Partial<Props>,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
 	};
 }
 
-export default function ParametersAndExportsAccordionComponent(
-	props: Props & StyleProps,
-) {
+export default function ParametersAndExportsAccordionComponent(props: Props) {
 	const {parameters, exports, defaultGroupName, topSection} = props;
 
 	// get sorted list of parameter and export definitions
@@ -120,13 +93,7 @@ export default function ParametersAndExportsAccordionComponent(
 		avoidSingleComponentGroups,
 		mergeAccordions,
 		identifyGroupsById,
-		accordionStyle,
-		accordionItemStyle,
-	} = useProps(
-		"ParametersAndExportsAccordionComponent",
-		{...defaultProps, ...defaultStyleProps},
-		props,
-	);
+	} = useProps("ParametersAndExportsAccordionComponent", defaultProps, props);
 
 	// create a data structure to store the elements within groups
 	const elementGroups: {
@@ -204,13 +171,7 @@ export default function ParametersAndExportsAccordionComponent(
 		elements.push(
 			// wrap accordion in paper to show optional shadows
 			<Paper key={items[0].key} px={0} py={0} withBorder={false}>
-				<Accordion
-					className={classes.accordion}
-					style={accordionStyle}
-					defaultValue={defaultValue}
-				>
-					{items}
-				</Accordion>
+				<Accordion defaultValue={defaultValue}>{items}</Accordion>
 			</Paper>,
 		);
 	};
@@ -226,15 +187,8 @@ export default function ParametersAndExportsAccordionComponent(
 	for (const g of elementGroups) {
 		if (g.group && (!avoidSingleComponentGroups || g.elements.length > 1)) {
 			accordionItems.push(
-				<Accordion.Item
-					key={g.group.id}
-					value={g.group.id}
-					className={classes.accordionItem}
-					style={accordionItemStyle}
-				>
-					<Accordion.Control className={classes.accordionControl}>
-						{g.group.name}
-					</Accordion.Control>
+				<Accordion.Item key={g.group.id} value={g.group.id}>
+					<Accordion.Control>{g.group.name}</Accordion.Control>
 					<Accordion.Panel key={g.group.id}>
 						<Stack>{g.elements}</Stack>
 					</Accordion.Panel>

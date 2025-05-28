@@ -628,15 +628,6 @@ export const useCustomTheme = (props: Props = {}) => {
 					//mergeAccordions: false,
 					//pbSlider: "md",
 					//identifyGroupsById: false,
-					// accordionStyle: {
-					//  borderRadius: "var(--accordion-radius)",
-					// "--accordion-color": "var(--mantine-color-blue-0)",
-					// "--accordion-color-hover": "var(--mantine-color-blue-1)",
-					// },
-					// accordionItemStyle: {
-					// 	boxShadow: "var(--mantine-shadow-sm)",
-					//  border: "none",
-					// },
 				}),
 			/**
 			 * ParameterColorComponent
