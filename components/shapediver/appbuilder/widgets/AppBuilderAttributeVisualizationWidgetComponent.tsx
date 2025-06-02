@@ -1,5 +1,6 @@
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useAttributeVisualizationEngine} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeVisualizationEngine";
+import {useAttributeWidgetVisibilityTracker} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeWidgetVisibilityTracker";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
@@ -122,6 +123,21 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 *
 	 */
 
+	const {ref, isVisible, hasPriority, getPriority} =
+		useAttributeWidgetVisibilityTracker({
+			wantsPriority:
+				visualizationMode ===
+				AttributeVisualizationVisibility.DefaultOn,
+		});
+
+	const {isEnabled, canBeEnabled, isInitialized} = useMemo(() => {
+		return {
+			isEnabled: isVisible && loadSdTF && active,
+			isInitialized: renderedAttribute !== undefined,
+			canBeEnabled: isVisible && loadSdTF,
+		};
+	}, [isVisible, loadSdTF, active, renderedAttribute]);
+
 	const {viewportId} = useViewportId();
 
 	const viewport = useShapeDiverStoreViewport(
@@ -131,7 +147,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	const sessions = useShapeDiverStoreSession((state) => state.sessions);
 
 	const {attributeVisualizationEngine} = useAttributeVisualizationEngine(
-		loadSdTF ? viewportId : "",
+		canBeEnabled ? viewportId : "",
 	);
 
 	/**
@@ -228,6 +244,12 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 *
 	 */
 
+	/**
+	 * Use effect that sets the loadSdTF state variable
+	 * This is done by checking if the sessions are available
+	 * and if the sdtf is loaded
+	 * If the sdtf is loaded, the loadSdTF state variable is set to true
+	 */
 	useEffect(() => {
 		const removeListenerTokens: string[] = [];
 
@@ -261,6 +283,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * or if the attribute overview is available
 	 */
 	useEffect(() => {
+		if (canBeEnabled === false) return;
 		if (attributeOverview === undefined) return;
 
 		const attributeIds: string[] = [];
@@ -291,7 +314,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			: undefined;
 
 		setAttributes(providedAttributesCleaned || attributeIds);
-	}, [propsAttributes, attributeOverview, defaultGradient]);
+	}, [canBeEnabled, propsAttributes, attributeOverview, defaultGradient]);
 
 	/**
 	 * Use effect that sets the initial attribute to be rendered
@@ -300,8 +323,8 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 */
 	useEffect(() => {
 		if (attributeOverview === undefined) return;
-		if (renderedAttribute !== undefined) return;
-		if (loadSdTF === false) return;
+		if (isInitialized) return;
+		if (canBeEnabled === false) return;
 		if (!attributes) return;
 
 		if (propsInitialAttribute) {
@@ -328,7 +351,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		}
 	}, [
 		renderedAttribute,
-		loadSdTF,
+		canBeEnabled,
 		propsInitialAttribute,
 		attributeOverview,
 		attributes,
@@ -339,10 +362,18 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * Use effect that sets the active state variable depending on the visualization mode
 	 */
 	useEffect(() => {
+		if (hasPriority === false) {
+			setActive(false);
+			return;
+		}
+		if (canBeEnabled === false) return;
+		if (isInitialized) return;
+
+		// only set this if we just created the engine
 		setActive(
 			visualizationMode === AttributeVisualizationVisibility.DefaultOn,
 		);
-	}, [visualizationMode]);
+	}, [hasPriority, canBeEnabled, visualizationMode]);
 
 	/**
 	 * Use effect that updates the default material of the attribute visualization engine
@@ -350,6 +381,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * and if the passive material is provided
 	 */
 	useEffect(() => {
+		if (isEnabled === false) return;
 		if (attributeVisualizationEngine) {
 			attributeVisualizationEngine.updateDefaultMaterial(
 				new MaterialStandardData({
@@ -358,13 +390,15 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				}),
 			);
 		}
-	}, [attributeVisualizationEngine, passiveMaterial]);
+	}, [isEnabled, attributeVisualizationEngine, passiveMaterial]);
 
 	/**
 	 * Use effect to update the attributes of the attribute visualization engine
 	 * when the rendered attributes change
 	 */
 	useEffect(() => {
+		if (isEnabled === false) return;
+
 		if (renderedAttribute) {
 			if (SdtfPrimitiveTypeGuard.isNumberType(renderedAttribute.type)) {
 				const numberAttribute =
@@ -399,7 +433,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		} else {
 			attributeVisualizationEngine?.updateAttributes([]);
 		}
-	}, [attributeVisualizationEngine, renderedAttribute]);
+	}, [isEnabled, attributeVisualizationEngine, renderedAttribute]);
 
 	/**
 	 * Use effect that updates the attribute overview of the attribute visualization engine
@@ -422,8 +456,11 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * Use effect that toggles the attribute visualization
 	 */
 	useEffect(() => {
+		if (hasPriority === false) return;
+		if (canBeEnabled === false) return;
+
 		toggleAttributeVisualization(active, viewport as IViewportApi);
-	}, [active, viewport]);
+	}, [canBeEnabled, hasPriority, active, viewport]);
 
 	/**
 	 *
@@ -552,18 +589,33 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	return (
 		<>
 			<TooltipWrapper label={tooltip}>
-				<Paper>
+				<Paper ref={ref} {...props}>
 					<Group justify="space-between" mb={"xs"}>
 						<Title
 							order={2} // TODO make this a style prop
 						>
 							{title}
 						</Title>
-						<ActionIcon onClick={() => setActive((t) => !t)}>
+						<ActionIcon
+							onClick={() => {
+								getPriority();
+								setActive(!active);
+							}}
+						>
 							{active ? <IconEye /> : <IconEyeOff />}
 						</ActionIcon>
 					</Group>
-					<Stack>
+					<Stack
+						style={
+							active
+								? {}
+								: {
+										opacity: 0.5, // Visual "disabled" effect
+										pointerEvents: "none", // Disable interactions
+										userSelect: "none", // Prevent text selection
+									}
+						}
+					>
 						{attributes && attributes.length > 1 ? (
 							attributeElementSelection
 						) : attributes && attributes.length > 0 ? (
