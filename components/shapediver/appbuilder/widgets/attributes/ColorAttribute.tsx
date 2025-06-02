@@ -10,11 +10,5 @@ interface Props {
 export default function ColorAttribute(props: Props) {
 	const {name, attribute: attributeDefinition} = props;
 
-	return (
-		<BaseAttribute
-			style={{display: "none"}}
-			name={name}
-			type={attributeDefinition.type}
-		/>
-	);
+	return <BaseAttribute name={name} type={attributeDefinition.type} />;
 }
