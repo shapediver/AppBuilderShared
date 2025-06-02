@@ -7,21 +7,16 @@ import {
 	IStringGradient,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {Converter, MaterialStandardData} from "@shapediver/viewer.session";
-import React, {useEffect, useMemo} from "react";
+import React, {useMemo} from "react";
 
 interface Props {
 	name: string;
 	attribute: IStringAttribute;
 	showLegend?: boolean;
-	updateAttribute: (attribute: IStringAttribute) => void;
 }
 
 export default function StringAttribute(props: Props) {
-	const {attribute, name, updateAttribute} = props;
-
-	useEffect(() => {
-		updateAttribute(attribute);
-	}, [attribute]);
+	const {attribute, name} = props;
 
 	const legend = useMemo(() => {
 		const colorToValueDictionary: {
