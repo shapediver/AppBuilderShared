@@ -1,51 +1,40 @@
 import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
 import {ColorInput} from "@mantine/core";
 import {IDefaultAttribute} from "@shapediver/viewer.features.attribute-visualization";
-import {SDTF_TYPEHINT} from "@shapediver/viewer.session";
 import React, {useEffect, useState} from "react";
 
 interface Props {
 	name: string;
-	attribute: {
-		typeHint: string;
-	};
-	updateAttribute: (attribute: IDefaultAttribute) => void;
-	removeAttribute: (name: string, type: string) => void;
-	changeOrder: (name: string, type: string, direction: "up" | "down") => void;
+	attribute: Omit<IDefaultAttribute, "color"> &
+		Partial<Pick<IDefaultAttribute, "color">>;
+	updateAttribute: (
+		attribute: Omit<IDefaultAttribute, "color"> &
+			Partial<Pick<IDefaultAttribute, "color">>,
+	) => void;
 }
 
 export default function DefaultAttribute(props: Props) {
-	const {
-		attribute: attributeDefinition,
-		name,
-		updateAttribute,
-		removeAttribute,
-		changeOrder,
-	} = props;
+	const {attribute, name, updateAttribute} = props;
 
-	const [attribute, setAttribute] = useState<IDefaultAttribute>({
-		key: name,
-		type: attributeDefinition.typeHint as SDTF_TYPEHINT,
-		color: "fffffff",
-	});
+	const [color, setColor] = useState<string>(
+		(attribute.color as string) || "#ffffff",
+	);
 
 	useEffect(() => {
 		updateAttribute(attribute);
+		setColor(attribute.color as string);
 	}, [attribute]);
 
 	return (
-		<BaseAttribute
-			name={name}
-			type={attributeDefinition.typeHint}
-			removeAttribute={removeAttribute}
-			changeOrder={changeOrder}
-		>
+		<BaseAttribute name={name} type={attribute.type}>
 			<ColorInput
 				placeholder="Pick color"
-				value={attribute.color as string}
-				onChangeEnd={(value) =>
-					setAttribute({...attribute, color: value})
-				}
+				value={color}
+				onChangeEnd={(value) => {
+					setColor(value);
+					if (!value) return;
+					updateAttribute({...attribute, color: value});
+				}}
 			/>
 		</BaseAttribute>
 	);
