@@ -41,7 +41,7 @@ import {
 } from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import {IconEye, IconEyeOff} from "@tabler/icons-react";
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import ColorAttribute from "./attributes/ColorAttribute";
 import DefaultAttribute, {
 	IDefaultAttributeExtended,
@@ -69,126 +69,35 @@ export function AppBuilderAttributeVisualizationWidgetThemeProps(
 	};
 }
 
-const createAttributeId = (key: string, overview: ISDTFOverview): string[] => {
-	if (!overview[key]) return [];
-
-	const attribute = overview[key];
-	return attribute.map((v) => {
-		return key + "_" + v.typeHint;
-	});
-};
-
-const getAttributeKey = (id: string, overview: ISDTFOverview) => {
-	if (overview[id]) {
-		return id;
-	} else {
-		const parts = id.split("_");
-		if (parts.length > 1) {
-			const attributeKey = parts[0];
-			const typeHint = parts[1];
-			if (overview[attributeKey]) {
-				const attribute = overview[attributeKey].find(
-					(attribute) => attribute.typeHint === typeHint,
-				);
-				if (attribute) {
-					return attributeKey;
-				}
-			}
-		}
-	}
-};
-
-const getGradient = (
-	key: string,
-	attributeDefinition:
-		| (
-				| string
-				| {
-						attribute: string;
-						gradient?: Gradient;
-				  }
-		  )[]
-		| undefined,
-	defaultGradient: Gradient,
-): Gradient => {
-	if (attributeDefinition) {
-		const definition = attributeDefinition.find((attribute) => {
-			if (typeof attribute === "string") return false;
-			return attribute.attribute === key;
-		}) as {
-			attribute: string;
-			gradient?: Gradient;
-		};
-		if (definition && definition.gradient) {
-			return definition.gradient;
-		}
-	}
-	return defaultGradient;
-};
-
-const getAttributeById = (
-	id: string | undefined,
-	overview: ISDTFOverview,
-	attributeDefinition:
-		| (
-				| string
-				| {
-						attribute: string;
-						gradient?: Gradient;
-				  }
-		  )[]
-		| undefined,
-	defaultGradient: Gradient,
-): IAttributeDefinition | undefined => {
-	if (!id) return undefined;
-	if (overview[id]) {
-		const attribute = overview[id];
-		if (attribute.length > 0) {
-			return {
-				key: id,
-				type: attribute[0].typeHint as SDTF_TYPEHINT,
-				min: attribute[0].min,
-				max: attribute[0].max,
-				values: attribute[0].values,
-				visualization: getGradient(
-					id,
-					attributeDefinition,
-					defaultGradient,
-				),
-			};
-		}
-	} else {
-		const parts = id.split("_");
-		if (parts.length > 1) {
-			const attributeKey = parts[0];
-			const typeHint = parts[1];
-			if (overview[attributeKey]) {
-				const attribute = overview[attributeKey].find(
-					(attribute) => attribute.typeHint === typeHint,
-				);
-				if (attribute) {
-					return {
-						key: attributeKey,
-						type: attribute.typeHint as SDTF_TYPEHINT,
-						min: attribute.min,
-						max: attribute.max,
-						values: attribute.values,
-						visualization: getGradient(
-							attributeKey,
-							attributeDefinition,
-							defaultGradient,
-						),
-					};
-				}
-			}
-		}
-	}
-};
-
 export default function AppBuilderAttributeVisualizationWidgetComponent(
 	props: IAppBuilderWidgetPropsAttributeVisualization &
 		AppBuilderAttributeVisualizationWidgetThemePropsType,
 ) {
+	/**
+	 * Parsing of the incoming props and assigning default values if not provided
+	 */
+	const {
+		defaultGradient = ATTRIBUTE_VISUALIZATION.BLUE_GREEN_YELLOW_RED_PURPLE_WHITE,
+		initialAttribute: propsInitialAttribute,
+		attributes: propsAttributes,
+		visualizationMode = AttributeVisualizationVisibility.DefaultOff,
+		showLegend = true,
+		passiveMaterial = {
+			color: "#666",
+			opacity: 1,
+		},
+		title = "Attributes",
+		tooltip = "",
+	} = props;
+
+	/**
+	 *
+	 *
+	 * STATE VARIABLES
+	 *
+	 *
+	 */
+
 	const [attributeOverview, setAttributeOverview] = useState<ISDTFOverview>(
 		{},
 	);
@@ -197,20 +106,150 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	>();
 	const [active, setActive] = useState<boolean>(false);
 	const [sdtfLoaded, setSdtfLoaded] = useState<boolean>(false);
-	const cleanedProps = useMemo(() => {
-		const attributeIds: string[] = [];
+	const [attributes, setAttributes] = useState<
+		(
+			| string
+			| {
+					attribute: string;
+					gradient: Gradient | undefined;
+			  }
+		)[]
+	>([]);
 
-		const defaultGradient =
-			props.defaultGradient ||
-			ATTRIBUTE_VISUALIZATION.BLUE_GREEN_YELLOW_RED_PURPLE_WHITE;
+	/**
+	 *
+	 *
+	 * HOOKS
+	 *
+	 *
+	 */
+
+	const {viewportId} = useViewportId();
+
+	const viewport = useShapeDiverStoreViewport(
+		(state) => state.viewports[viewportId],
+	);
+	const sessions = useShapeDiverStoreSession((state) => state.sessions);
+
+	const {attributeVisualizationEngine} = useAttributeVisualizationEngine(
+		sdtfLoaded ? viewportId : "",
+	);
+
+	/**
+	 *
+	 *
+	 * CALLBACKS
+	 *
+	 *
+	 */
+
+	/**
+	 * Get the gradient of the attribute
+	 * This is done by checking if the attributes are provided in the props
+	 * and if a gradient is provided
+	 * If not, the default gradient is returned
+	 */
+	const getGradient = useCallback(
+		(key: string): Gradient => {
+			if (attributes) {
+				const definition = attributes.find((attribute) => {
+					if (typeof attribute === "string") return false;
+					return attribute.attribute === key;
+				}) as {
+					attribute: string;
+					gradient?: Gradient;
+				};
+				if (definition && definition.gradient) {
+					return definition.gradient;
+				}
+			}
+			return defaultGradient;
+		},
+		[attributes, defaultGradient],
+	);
+
+	/**
+	 * Get the attribute by id
+	 * This is done by checking if the attribute is available in the overview
+	 * and if not, it tries to find the attribute by its key and type hint
+	 * If not found, undefined is returned
+	 * The gradient is also assigned to the attribute
+	 * @param id
+	 * @returns {IAttributeDefinition | undefined}
+	 */
+	const getAttributeById = useCallback(
+		(id: string | undefined): IAttributeDefinition | undefined => {
+			if (!id) return undefined;
+			if (attributeOverview[id]) {
+				const attribute = attributeOverview[id];
+				if (attribute.length > 0) {
+					return {
+						key: id,
+						type: attribute[0].typeHint as SDTF_TYPEHINT,
+						min: attribute[0].min,
+						max: attribute[0].max,
+						values: attribute[0].values,
+						visualization: getGradient(id),
+					};
+				}
+			} else {
+				const parts = id.split("_");
+				if (parts.length > 1) {
+					const attributeKey = parts[0];
+					const typeHint = parts[1];
+					if (attributeOverview[attributeKey]) {
+						const attribute = attributeOverview[attributeKey].find(
+							(attribute) => attribute.typeHint === typeHint,
+						);
+						if (attribute) {
+							return {
+								key: attributeKey,
+								type: attribute.typeHint as SDTF_TYPEHINT,
+								min: attribute.min,
+								max: attribute.max,
+								values: attribute.values,
+								visualization: getGradient(attributeKey),
+							};
+						}
+					}
+				}
+			}
+		},
+		[attributeOverview, getGradient],
+	);
+
+	/**
+	 *
+	 *
+	 * USE EFFECTS
+	 *
+	 *
+	 */
+
+	/**
+	 * Use effect that loads the sdtf data of the session apis
+	 */
+	useEffect(() => {
+		loadSdtf(sessions).then(() => {
+			setSdtfLoaded(true);
+		});
+	}, [sessions]);
+
+	/**
+	 * Use effect that assigns the attributes state variable
+	 * This is done by checking if the attributes are provided in the props
+	 * or if the attribute overview is available
+	 */
+	useEffect(() => {
+		const attributeIds: string[] = [];
 
 		Object.keys(attributeOverview).map((key) => {
 			const ids = createAttributeId(key, attributeOverview);
 			attributeIds.push(...ids);
 		});
 
-		const providedAttributesCleaned = props.attributes
-			? props.attributes
+		const providedAttributesCleaned = propsAttributes
+			? propsAttributes
 					.map((value) => {
 						if (typeof value === "string") {
 							return createAttributeId(value, attributeOverview);
@@ -229,66 +268,72 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 					.flat()
 			: undefined;
 
-		const initialAttributeCleaned = props.initialAttribute
-			? createAttributeId(props.initialAttribute, attributeOverview)[0]
-			: attributeIds[0];
+		setAttributes(providedAttributesCleaned || attributeIds);
+	}, [propsAttributes, attributeOverview, defaultGradient]);
 
-		const initialAttribute = getAttributeById(
-			initialAttributeCleaned,
-			attributeOverview,
-			providedAttributesCleaned,
-			defaultGradient,
-		);
-		setRenderedAttribute(initialAttribute);
-
-		return {
-			title: props.title || "Attributes",
-			tooltip: props.tooltip || "",
-			attributes: providedAttributesCleaned || attributeIds,
-			visualizationMode:
-				props.visualizationMode ||
-				AttributeVisualizationVisibility.DefaultOff,
-			showLegend: props.showLegend || true,
-			defaultGradient,
-			initialAttribute: initialAttributeCleaned,
-			passiveMaterial: props.passiveMaterial || {
-				color: "#666",
-				opacity: 1,
-			},
-		};
-	}, [props, attributeOverview]);
-
-	const {viewportId} = useViewportId();
-
-	const viewport = useShapeDiverStoreViewport(
-		(state) => state.viewports[viewportId],
-	);
-	const sessions = useShapeDiverStoreSession((state) => state.sessions);
-
-	const {attributeVisualizationEngine} = useAttributeVisualizationEngine(
-		sdtfLoaded ? viewportId : "",
-	);
-
+	/**
+	 * Use effect that sets the initial attribute to be rendered
+	 * This is done by checking if the propsInitialAttribute is provided
+	 * or if the attributes are available
+	 */
 	useEffect(() => {
-		loadSdtf(sessions).then(() => {
-			setSdtfLoaded(true);
-		});
-	}, [sessions]);
+		if (renderedAttribute !== undefined) return;
+		if (sdtfLoaded === false) return;
 
+		if (propsInitialAttribute) {
+			const initialAttributesCleaned = createAttributeId(
+				propsInitialAttribute,
+				attributeOverview,
+			);
+
+			if (initialAttributesCleaned.length > 0) {
+				const initialAttribute = getAttributeById(
+					initialAttributesCleaned[0],
+				);
+				setRenderedAttribute(initialAttribute);
+				return;
+			}
+		} else if (attributes.length > 0) {
+			const initialAttributeCleaned =
+				typeof attributes[0] === "string"
+					? attributes[0]
+					: attributes[0].attribute;
+
+			const initialAttribute = getAttributeById(initialAttributeCleaned);
+			setRenderedAttribute(initialAttribute);
+		}
+	}, [
+		renderedAttribute,
+		sdtfLoaded,
+		propsInitialAttribute,
+		attributeOverview,
+		attributes,
+		getAttributeById,
+	]);
+
+	/**
+	 * Use effect that sets the active state variable depending on the visualization mode
+	 */
 	useEffect(() => {
 		setActive(
-			cleanedProps.visualizationMode ===
-				AttributeVisualizationVisibility.DefaultOn,
+			visualizationMode === AttributeVisualizationVisibility.DefaultOn,
 		);
+	}, [visualizationMode]);
 
+	/**
+	 * Use effect that updates the default material of the attribute visualization engine
+	 * This is done by checking if the attribute visualization engine is available
+	 * and if the passive material is provided
+	 */
+	useEffect(() => {
 		if (attributeVisualizationEngine)
 			attributeVisualizationEngine.updateDefaultMaterial(
 				new MaterialStandardData({
-					color: cleanedProps.passiveMaterial.color,
-					opacity: cleanedProps.passiveMaterial.opacity,
+					color: passiveMaterial.color,
+					opacity: passiveMaterial.opacity,
 				}),
 			);
-	}, [attributeVisualizationEngine, cleanedProps]);
+	}, [attributeVisualizationEngine, passiveMaterial]);
 
 	/**
 	 * Use effect to update the attributes of the attribute visualization engine
@@ -331,6 +376,9 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		}
 	}, [attributeVisualizationEngine, renderedAttribute]);
 
+	/**
+	 * Use effect that updates the attribute overview of the attribute visualization engine
+	 */
 	useEffect(() => {
 		if (!attributeVisualizationEngine) return;
 		setAttributeOverview(attributeVisualizationEngine.overview);
@@ -345,6 +393,25 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		};
 	}, [attributeVisualizationEngine]);
 
+	/**
+	 * Use effect that toggles the attribute visualization
+	 */
+	useEffect(() => {
+		toggleAttributeVisualization(active, viewport as IViewportApi);
+	}, [active, viewport]);
+
+	/**
+	 *
+	 *
+	 * RENDERING
+	 *
+	 *
+	 */
+
+	/**
+	 * Create the attribute element of the widget
+	 * It is a memoized value that is updated when the rendered attribute changes
+	 */
 	const renderedAttributeElement = useMemo(() => {
 		if (!renderedAttribute) return null;
 
@@ -353,7 +420,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				<StringAttribute
 					name={renderedAttribute.key}
 					attribute={renderedAttribute as IStringAttribute}
-					showLegend={cleanedProps.showLegend}
+					showLegend={showLegend}
 				/>
 			);
 		} else if (
@@ -370,7 +437,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 							customMax: max,
 						} as INumberAttributeExtended);
 					}}
-					showLegend={cleanedProps.showLegend}
+					showLegend={showLegend}
 				/>
 			);
 		} else if (SdtfPrimitiveTypeGuard.isColorType(renderedAttribute.type)) {
@@ -394,19 +461,18 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				/>
 			);
 		}
-	}, [renderedAttribute]);
+	}, [renderedAttribute, showLegend]);
 
 	/**
-	 * The attribute element of the widget
-	 * It contains a multiselect to select the attributes that should be displayed
-	 * and all the attribute widgets for the selected attributes
+	 * The attribute selection element of the widget
+	 * It contains a select to select the attribute that should be displayed
 	 */
 	const attributeElementSelection = (
 		<>
 			<Select
 				placeholder="Select an attribute"
 				allowDeselect={false}
-				data={cleanedProps.attributes
+				data={attributes
 					.map((value) => {
 						const attributeId =
 							typeof value === "string" ? value : value.attribute;
@@ -422,12 +488,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 						if (attributeData.length > 1) {
 							// we know that there are multiple attributes with the same key
 							// so we need to add the type hint to the label
-							const attribute = getAttributeById(
-								attributeId,
-								attributeOverview,
-								cleanedProps.attributes,
-								cleanedProps.defaultGradient,
-							);
+							const attribute = getAttributeById(attributeId);
 
 							return {
 								value: attributeId,
@@ -445,44 +506,35 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				value={renderedAttribute?.key + "_" + renderedAttribute?.type}
 				onChange={(attributeId) => {
 					if (!attributeId) return setRenderedAttribute(undefined);
-					const attribute = getAttributeById(
-						attributeId,
-						attributeOverview,
-						cleanedProps.attributes,
-						cleanedProps.defaultGradient,
-					);
+					const attribute = getAttributeById(attributeId);
 					setRenderedAttribute(attribute);
 				}}
 			/>
 		</>
 	);
 
-	useEffect(() => {
-		toggleAttributeVisualization(active, viewport as IViewportApi);
-	}, [active, viewport]);
-
 	return (
 		<>
-			<TooltipWrapper label={cleanedProps.tooltip}>
+			<TooltipWrapper label={tooltip}>
 				<Paper>
 					<Group justify="space-between" mb={"xs"}>
 						<Title
 							order={2} // TODO make this a style prop
 						>
-							{cleanedProps.title}
+							{title}
 						</Title>
 						<ActionIcon onClick={() => setActive((t) => !t)}>
 							{active ? <IconEye /> : <IconEyeOff />}
 						</ActionIcon>
 					</Group>
 					<Stack>
-						{cleanedProps.attributes.length > 1 ? (
+						{attributes.length > 1 ? (
 							attributeElementSelection
-						) : cleanedProps.attributes.length > 0 ? (
+						) : attributes.length > 0 ? (
 							<Text>
-								{typeof cleanedProps.attributes[0] === "string"
-									? cleanedProps.attributes[0]
-									: cleanedProps.attributes[0].attribute}
+								{typeof attributes[0] === "string"
+									? attributes[0]
+									: attributes[0].attribute}
 							</Text>
 						) : null}
 						{renderedAttributeElement}
@@ -542,6 +594,54 @@ const loadSdtf = async (sessionApis: IShapeDiverStoreSessions) => {
 					),
 				),
 			);
+		}
+	}
+};
+
+/**
+ * Function to create the attribute id
+ * This is done by checking if the attribute is available in the overview
+ * and if not, it tries to find the attribute by its key and type hint
+ * If not found, undefined is returned
+ * The gradient is also assigned to the attribute
+ * @param key
+ * @param overview
+ * @returns {string[]}
+ */
+const createAttributeId = (key: string, overview: ISDTFOverview): string[] => {
+	if (!overview[key]) return [];
+
+	const attribute = overview[key];
+	return attribute.map((v) => {
+		return key + "_" + v.typeHint;
+	});
+};
+
+/**
+ * Function to get the attribute key
+ * This is done by checking if the attribute is available in the overview
+ * and if not, it tries to find the attribute by its key and type hint
+ * If not found, undefined is returned
+ * @param id
+ * @param overview
+ * @returns {string | undefined}
+ */
+const getAttributeKey = (id: string, overview: ISDTFOverview) => {
+	if (overview[id]) {
+		return id;
+	} else {
+		const parts = id.split("_");
+		if (parts.length > 1) {
+			const attributeKey = parts[0];
+			const typeHint = parts[1];
+			if (overview[attributeKey]) {
+				const attribute = overview[attributeKey].find(
+					(attribute) => attribute.typeHint === typeHint,
+				);
+				if (attribute) {
+					return attributeKey;
+				}
+			}
 		}
 	}
 };
