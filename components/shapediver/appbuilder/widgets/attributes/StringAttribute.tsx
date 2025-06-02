@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function StringAttribute(props: Props) {
-	const {attribute, name} = props;
+	const {attribute, name, showLegend} = props;
 
 	const legend = useMemo(() => {
 		const colorToValueDictionary: {
@@ -109,9 +109,10 @@ export default function StringAttribute(props: Props) {
 
 	return (
 		<BaseAttribute
+			style={showLegend ? {} : {display: "none"}}
 			name={name}
 			type={attribute.type}
-			options={legend}
+			options={showLegend ? legend : undefined}
 		></BaseAttribute>
 	);
 }
