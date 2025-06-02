@@ -40,6 +40,25 @@ export function useAttributeWidgetVisibilityTracker(props: {
 	const updateVisibilityRef = useRef(() => {});
 
 	/**
+	 * Set the ref to the current wantsPriority value.
+	 * This is used to ensure that the latest value is always used when the observer callback is called.
+	 */
+	useEffect(() => {
+		wantsPriorityRef.current = props.wantsPriority ?? false;
+
+		// If the wantsPriority changes, we need to update the visibilityMap
+		if (visibilityMap.has(id)) {
+			const entry = visibilityMap.get(id);
+			if (entry) {
+				visibilityMap.set(id, {
+					...entry,
+					wantsPriority: wantsPriorityRef.current,
+				});
+			}
+		}
+	}, [props.wantsPriority]);
+
+	/**
 	 * UseEffect to register the element and update the visibilityMap
 	 * when wantsPriority or viewport changes.
 	 * This ensures the element is tracked correctly with the latest data.
@@ -47,8 +66,6 @@ export function useAttributeWidgetVisibilityTracker(props: {
 	useEffect(() => {
 		const el = ref.current;
 		if (!el) return;
-
-		wantsPriorityRef.current = props.wantsPriority ?? false;
 
 		// Update existing or set new entry
 		const prev = visibilityMap.get(id) ?? {
@@ -72,7 +89,7 @@ export function useAttributeWidgetVisibilityTracker(props: {
 			visibilityMap.delete(id);
 			notifyAll();
 		};
-	}, [props.wantsPriority, props.viewport, id]);
+	}, [props.viewport, id]);
 
 	/**
 	 * UseEffect to set the setHasPriority and setIsVisible functions in the updateMap.
