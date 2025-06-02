@@ -14,6 +14,7 @@ import {useShallow} from "zustand/react/shallow";
 export type INumberAttributeExtended = INumberAttribute &
 	INumberAttributeCustomData;
 interface Props {
+	widgetId: string;
 	name: string;
 	attribute: INumberAttributeExtended;
 	showLegend?: boolean;
@@ -21,7 +22,7 @@ interface Props {
 }
 
 export default function NumberAttribute(props: Props) {
-	const {attribute, name, updateRange} = props;
+	const {widgetId, attribute, name, updateRange} = props;
 	const {updateCustomAttributeData, customAttributeData} =
 		useShapeDiverStoreAttributeVisualization(
 			useShallow((state) => ({
@@ -38,9 +39,10 @@ export default function NumberAttribute(props: Props) {
 
 	useEffect(() => {
 		// Get the custom attribute data
-		const customValues = customAttributeData[
-			name + "_" + attribute.type
-		] as INumberAttributeCustomData | undefined;
+		const widgetData = customAttributeData[widgetId];
+		const customValues = widgetData?.[name + "_" + attribute.type] as
+			| INumberAttributeCustomData
+			| undefined;
 
 		// Set default values
 		if (
@@ -90,7 +92,7 @@ export default function NumberAttribute(props: Props) {
 			attribute.customMax,
 		);
 		setGradientColorStops(colorStops);
-	}, [attribute, customAttributeData]);
+	}, [widgetId, attribute, customAttributeData]);
 
 	/**
 	 * Update the custom min and max values
@@ -102,7 +104,7 @@ export default function NumberAttribute(props: Props) {
 			setMaxValue(max + "");
 
 			// Update the custom attribute data
-			updateCustomAttributeData(name + "_" + attribute.type, {
+			updateCustomAttributeData(widgetId, name + "_" + attribute.type, {
 				customMin: min,
 				customMax: max,
 			});
@@ -117,7 +119,7 @@ export default function NumberAttribute(props: Props) {
 				),
 			);
 		},
-		[multiplyingFactor, name, attribute],
+		[widgetId, multiplyingFactor, name, attribute],
 	);
 
 	/**
@@ -129,7 +131,7 @@ export default function NumberAttribute(props: Props) {
 				<svg width="100%" height="50">
 					<defs>
 						<linearGradient
-							id="colorRamp"
+							id={"colorRamp" + widgetId}
 							x1="0%"
 							y1="0%"
 							x2="100%"
@@ -143,7 +145,7 @@ export default function NumberAttribute(props: Props) {
 						y="0"
 						width="100%"
 						height="100%"
-						fill="url(#colorRamp)"
+						fill={"url(#colorRamp" + widgetId + ")"}
 					/>
 				</svg>
 			)}
