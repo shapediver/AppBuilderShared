@@ -40,7 +40,6 @@ import {
 	MaterialStandardData,
 	removeListener,
 	RENDERER_TYPE,
-	sceneTree,
 	SDTF_TYPEHINT,
 	SdtfPrimitiveTypeGuard,
 } from "@shapediver/viewer.session";
@@ -366,10 +365,23 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 
 	useEffect(() => {
 		if (isInitialized === false) return;
+		if (!attributeOverview) return;
 
 		// update the current rendered attribute according to the attribute overview
 		if (renderedAttribute) {
-			const attributeId = renderedAttribute.key;
+			const attributeIds = createAttributeId(
+				renderedAttribute.key,
+				attributeOverview,
+			);
+			const attributeId =
+				attributeIds.find((attributeId) => {
+					const parts = attributeId.split("_");
+					return (
+						parts[0] === renderedAttribute.key &&
+						parts[1] === renderedAttribute.type
+					);
+				}) || attributeIds[0];
+
 			const attribute = getAttributeById(attributeId);
 			if (attribute) {
 				// set custom values to the current ones
@@ -407,7 +419,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				setRenderedAttribute(undefined);
 			}
 		}
-	}, [isInitialized, attributeOverview, getAttributeById]);
+	}, [isInitialized, attributeOverview]);
 
 	/**
 	 * Use effect to update the attributes of the attribute visualization engine
@@ -670,14 +682,8 @@ const toggleAttributeVisualization = (
 	if (!viewport) return;
 	if (toggle && viewport.type !== RENDERER_TYPE.ATTRIBUTES) {
 		viewport.type = RENDERER_TYPE.ATTRIBUTES;
-		// TODO why is this necessary?
-		sceneTree.root.updateVersion();
-		viewport.update();
 	} else if (!toggle && viewport.type !== RENDERER_TYPE.STANDARD) {
 		viewport.type = RENDERER_TYPE.STANDARD;
-		// TODO why is this necessary?
-		sceneTree.root.updateVersion();
-		viewport.update();
 	}
 };
 
