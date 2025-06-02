@@ -4,10 +4,12 @@ import {INumberAttributeCustomData} from "@AppBuilderShared/types/store/shapediv
 import {RangeSlider, RangeSliderValue, Space, Stack} from "@mantine/core";
 import {
 	ATTRIBUTE_VISUALIZATION,
+	getColorSteps,
 	Gradient,
 	INumberAttribute,
 	isNumberGradient,
 } from "@shapediver/viewer.features.attribute-visualization";
+import {Converter} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -33,9 +35,147 @@ export default function NumberAttribute(props: Props) {
 
 	const [gradientColorStops, setGradientColorStops] =
 		useState<JSX.Element[]>();
-	const [minValue, setMinValue] = useState<string>(attribute.min + "");
-	const [maxValue, setMaxValue] = useState<string>(attribute.max + "");
+	const [customMinValue, setCustomMinValue] = useState<number>(
+		(
+			customAttributeData[widgetId]?.[name + "_" + attribute.type] as
+				| INumberAttributeCustomData
+				| undefined
+		)?.customMin || attribute.min,
+	);
+	const [customMaxValue, setCustomMaxValue] = useState<number>(
+		(
+			customAttributeData[widgetId]?.[name + "_" + attribute.type] as
+				| INumberAttributeCustomData
+				| undefined
+		)?.customMax || attribute.max,
+	);
+
+	const [absoluteMinValue, setAbsoluteMinValue] = useState<number>(
+		(
+			customAttributeData[widgetId]?.[name + "_" + attribute.type] as
+				| INumberAttributeCustomData
+				| undefined
+		)?.absoluteMin || attribute.min,
+	);
+	const [absoluteMaxValue, setAbsoluteMaxValue] = useState<number>(
+		(
+			customAttributeData[widgetId]?.[name + "_" + attribute.type] as
+				| INumberAttributeCustomData
+				| undefined
+		)?.absoluteMax || attribute.max,
+	);
 	const [multiplyingFactor, setMultiplyingFactor] = useState<number>(0);
+
+	const createGradientColorStops = useCallback(
+		(visualization: Gradient): JSX.Element[] => {
+			const range = absoluteMaxValue - absoluteMinValue;
+			const normalizedMin = (customMinValue - absoluteMinValue) / range;
+			const normalizedMax = (customMaxValue - absoluteMinValue) / range;
+
+			if (visualization === ATTRIBUTE_VISUALIZATION.OPACITY) {
+				// Set the color stops for grayscale and opacity
+				return [
+					<stop key={0} offset={normalizedMin} stopColor="black" />,
+					<stop key={1} offset={normalizedMax} stopColor="white" />,
+				];
+			} else if (visualization === ATTRIBUTE_VISUALIZATION.HSL) {
+				// Set the color stops for HSL
+				const hslSamples = 100;
+				const colorStops = [];
+				for (let i = 0; i < hslSamples; i++) {
+					const hue = (i / hslSamples) * 360;
+					const color = `hsl(${hue}, 100%, 50%)`;
+					colorStops.push(
+						<stop
+							key={i}
+							offset={`${normalizedMin + (normalizedMax - normalizedMin) * (i / (hslSamples - 1))}`}
+							stopColor={color}
+						/>,
+					);
+				}
+				return colorStops;
+			} else if (typeof visualization === "string") {
+				const steps = getColorSteps(visualization);
+				if (!steps) return [];
+				// Set the color steps for string visualization
+				const colorStops: JSX.Element[] = [];
+				for (let i = 0; i < steps.length; i++) {
+					const step = steps[i];
+					const stepValue = step.value;
+					const stepOffset =
+						normalizedMin +
+						(normalizedMax - normalizedMin) * stepValue;
+
+					// add two stops, one for the color before the step and one for the color after the step
+					colorStops.push(
+						<stop
+							key={i + "_before"}
+							offset={stepOffset}
+							stopColor={Converter.instance
+								.toHexColor(step.colorBefore)
+								.substring(0, 7)}
+						/>,
+						<stop
+							key={i + "_after"}
+							offset={stepOffset}
+							stopColor={Converter.instance
+								.toHexColor(step.colorAfter)
+								.substring(0, 7)}
+						/>,
+					);
+				}
+				return colorStops;
+			} else if (isNumberGradient(visualization)) {
+				// Set the color stops for other visualizations
+				const colorStops: JSX.Element[] = [];
+
+				for (let i = 0; i < visualization.steps.length; i++) {
+					const step = visualization.steps[i];
+					const stepValue = step.value;
+					const stepOffset =
+						normalizedMin +
+						(normalizedMax - normalizedMin) * stepValue;
+
+					// add two stops, one for the color before the step and one for the color after the step
+					colorStops.push(
+						<stop
+							key={i + "_before"}
+							offset={stepOffset}
+							stopColor={step.colorBefore}
+						/>,
+						<stop
+							key={i + "_after"}
+							offset={stepOffset}
+							stopColor={step.colorAfter}
+						/>,
+					);
+				}
+				return colorStops;
+			}
+
+			return [];
+		},
+		[customMinValue, customMaxValue, absoluteMinValue, absoluteMaxValue],
+	);
+
+	useEffect(() => {
+		// Just update the gradient color stops when the custom min and max values change
+		const colorStops = createGradientColorStops(attribute.visualization);
+		setGradientColorStops(colorStops);
+
+		updateCustomAttributeData(widgetId, name + "_" + attribute.type, {
+			customMin: customMinValue,
+			customMax: customMaxValue,
+			absoluteMin: absoluteMinValue,
+			absoluteMax: absoluteMaxValue,
+		});
+	}, [
+		customMinValue,
+		customMaxValue,
+		absoluteMinValue,
+		absoluteMaxValue,
+		createGradientColorStops,
+	]);
 
 	useEffect(() => {
 		// Get the custom attribute data
@@ -72,10 +212,26 @@ export default function NumberAttribute(props: Props) {
 			}
 		}
 
-		setMinValue(attribute.customMin + "");
-		setMaxValue(attribute.customMax + "");
+		setCustomMinValue(attribute.customMin);
+		setCustomMaxValue(attribute.customMax);
+		const absoluteMin = Math.min(
+			Math.min(
+				Math.min(attribute.min, attribute.customMin),
+				absoluteMinValue,
+			),
+			customValues?.absoluteMin || Infinity,
+		);
+		const absoluteMax = Math.max(
+			Math.max(
+				Math.max(attribute.max, attribute.customMax),
+				absoluteMaxValue,
+			),
+			customValues?.absoluteMax || -Infinity,
+		);
+		setAbsoluteMinValue(absoluteMin);
+		setAbsoluteMaxValue(absoluteMax);
 
-		const range = attribute.max - attribute.min;
+		const range = absoluteMax - absoluteMin;
 
 		// find the scaling factor so that the range is 1000
 		if (range > 0) {
@@ -83,15 +239,6 @@ export default function NumberAttribute(props: Props) {
 		} else {
 			setMultiplyingFactor(1);
 		}
-
-		const colorStops = createGradientColorStops(
-			attribute.visualization,
-			attribute.min,
-			attribute.max,
-			attribute.customMin,
-			attribute.customMax,
-		);
-		setGradientColorStops(colorStops);
 	}, [widgetId, attribute, customAttributeData]);
 
 	/**
@@ -100,24 +247,16 @@ export default function NumberAttribute(props: Props) {
 	const updateCustomMinMax = useCallback(
 		(value: RangeSliderValue) => {
 			const [min, max] = value.map((v) => v / multiplyingFactor);
-			setMinValue(min + "");
-			setMaxValue(max + "");
+			setCustomMinValue(min);
+			setCustomMaxValue(max);
 
 			// Update the custom attribute data
 			updateCustomAttributeData(widgetId, name + "_" + attribute.type, {
 				customMin: min,
 				customMax: max,
+				absoluteMin: absoluteMinValue,
+				absoluteMax: absoluteMaxValue,
 			});
-
-			setGradientColorStops(
-				createGradientColorStops(
-					attribute.visualization,
-					attribute.min,
-					attribute.max,
-					min,
-					max,
-				),
-			);
 		},
 		[widgetId, multiplyingFactor, name, attribute],
 	);
@@ -160,8 +299,8 @@ export default function NumberAttribute(props: Props) {
 					pb="xs"
 					label={null}
 					value={[
-						+minValue * multiplyingFactor,
-						+maxValue * multiplyingFactor,
+						customMinValue * multiplyingFactor,
+						customMaxValue * multiplyingFactor,
 					]}
 					onChange={updateCustomMinMax}
 					onChangeEnd={(value) => {
@@ -170,14 +309,14 @@ export default function NumberAttribute(props: Props) {
 						);
 						updateRange(min, max);
 					}}
-					min={attribute.min * multiplyingFactor}
-					max={attribute.max * multiplyingFactor}
+					min={absoluteMinValue * multiplyingFactor}
+					max={absoluteMaxValue * multiplyingFactor}
 					step={0.01 * multiplyingFactor}
 					marks={[
-						attribute.min,
-						attribute.customMin!,
-						attribute.customMax!,
-						attribute.max,
+						absoluteMinValue,
+						customMinValue,
+						customMaxValue,
+						absoluteMaxValue,
 					].map((value) => ({
 						value: value * multiplyingFactor,
 						label: value?.toFixed(2),
@@ -188,82 +327,3 @@ export default function NumberAttribute(props: Props) {
 		</BaseAttribute>
 	);
 }
-
-const createGradientColorStops = (
-	visualization: Gradient,
-	min: number,
-	max: number,
-	customMin: number,
-	customMax: number,
-): JSX.Element[] => {
-	const range = max - min;
-	const normalizedMin = (customMin - min) / range;
-	const normalizedMax = (customMax - min) / range;
-
-	if (
-		visualization === ATTRIBUTE_VISUALIZATION.GRAYSCALE ||
-		visualization === ATTRIBUTE_VISUALIZATION.OPACITY
-	) {
-		// Set the color stops for grayscale and opacity
-		return [
-			<stop key={0} offset={normalizedMin} stopColor="black" />,
-			<stop key={1} offset={normalizedMax} stopColor="white" />,
-		];
-	} else if (visualization === ATTRIBUTE_VISUALIZATION.HSL) {
-		// Set the color stops for HSL
-		const hslSamples = 100;
-		const colorStops = [];
-		for (let i = 0; i < hslSamples; i++) {
-			const hue = (i / hslSamples) * 360;
-			const color = `hsl(${hue}, 100%, 50%)`;
-			colorStops.push(
-				<stop
-					key={i}
-					offset={`${normalizedMin + (normalizedMax - normalizedMin) * (i / (hslSamples - 1))}`}
-					stopColor={color}
-				/>,
-			);
-		}
-		return colorStops;
-	} else if (typeof visualization === "string") {
-		// Set the color stops for string visualization
-		const data = visualization.split("_");
-		if (data.length > 0) {
-			const colorStops = data.map((color, index) => (
-				<stop
-					key={index}
-					offset={`${normalizedMin + (normalizedMax - normalizedMin) * (index / (data.length - 1))}`}
-					stopColor={color}
-				/>
-			));
-			return colorStops;
-		}
-	} else if (isNumberGradient(visualization)) {
-		// Set the color stops for other visualizations
-		const colorStops: JSX.Element[] = [];
-
-		for (let i = 0; i < visualization.steps.length; i++) {
-			const step = visualization.steps[i];
-			const stepValue = step.value;
-			const stepOffset =
-				normalizedMin + (normalizedMax - normalizedMin) * stepValue;
-
-			// add two stops, one for the color before the step and one for the color after the step
-			colorStops.push(
-				<stop
-					key={i + "_before"}
-					offset={stepOffset}
-					stopColor={step.colorBefore}
-				/>,
-				<stop
-					key={i + "_after"}
-					offset={stepOffset}
-					stopColor={step.colorAfter}
-				/>,
-			);
-		}
-		return colorStops;
-	}
-
-	return [];
-};
