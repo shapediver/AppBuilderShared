@@ -124,14 +124,19 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 *
 	 */
 
+	const {viewportId} = useViewportId();
+
+	const viewport = useShapeDiverStoreViewport(
+		(state) => state.viewports[viewportId],
+	);
 	const widgetId = useId();
-	const {ref, isVisible, hasPriority, requestPriority} =
+	const {ref, isVisible, hasPriority, requestPriority, removePriority} =
 		useAttributeWidgetVisibilityTracker({
-			wantsPriority:
-				renderedAttribute !== undefined
-					? active
-					: visualizationMode ===
-						AttributeVisualizationVisibility.DefaultOn,
+			viewport,
+			wantsPriority: hasBeenLoaded
+				? active
+				: visualizationMode ===
+					AttributeVisualizationVisibility.DefaultOn,
 		});
 
 	const {isEnabled, canBeEnabled, isInitialized} = useMemo(() => {
@@ -141,12 +146,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			canBeEnabled: isVisible && loadSdTF,
 		};
 	}, [isVisible, loadSdTF, active, renderedAttribute]);
-
-	const {viewportId} = useViewportId();
-
-	const viewport = useShapeDiverStoreViewport(
-		(state) => state.viewports[viewportId],
-	);
 
 	const sessions = useShapeDiverStoreSession((state) => state.sessions);
 
@@ -327,7 +326,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	useEffect(() => {
 		if (attributeOverview === undefined) return;
 		if (isInitialized) return;
-		if (canBeEnabled === false) return;
 		if (!attributes) return;
 
 		if (propsInitialAttribute) {
@@ -379,6 +377,19 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	}, [isEnabled, attributeVisualizationEngine, passiveMaterial]);
 
 	/**
+	 * Use effect that sets the hasBeenLoaded state variable
+	 * This is done by checking if the widget is visible once
+	 * after that point the hasBeenLoaded state variable is set to true
+	 */
+	useEffect(() => {
+		if (isVisible) {
+			if (!hasBeenLoaded) {
+				setHasBeenLoaded(true);
+			}
+		}
+	}, [isVisible, hasBeenLoaded]);
+
+	/**
 	 * Use effect to update the attributes of the attribute visualization engine
 	 * when the rendered attributes change
 	 */
@@ -386,7 +397,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		if (isEnabled === false) return;
 
 		if (renderedAttribute) {
-			if (!hasBeenLoaded) setHasBeenLoaded(true);
 			if (SdtfPrimitiveTypeGuard.isNumberType(renderedAttribute.type)) {
 				const numberAttribute =
 					renderedAttribute as INumberAttributeExtended;
@@ -447,21 +457,22 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		if (!isInitialized) return;
 		if (!canBeEnabled) return;
 
+		console.log(
+			`DEBBUGING
+			${hasPriority}
+			${active}
+			${title}`,
+		);
+
 		if (hasPriority === true) {
-			if (
-				hasBeenLoaded === false &&
-				visualizationMode === AttributeVisualizationVisibility.DefaultOn
-			) {
-				setActive(true);
-				toggleAttributeVisualization(true, viewport as IViewportApi);
-			} else if (active === true) {
-				toggleAttributeVisualization(true, viewport as IViewportApi);
-			}
+			// the priority was assigned to this widget
+			// if it was not active, we set the active state variable to true
+			if (!active) setActive(true);
+			toggleAttributeVisualization(true, viewport as IViewportApi);
 		} else if (hasPriority === false && active === true) {
 			// only if the widget can be enabled we set the wasActive state variable to false
 			// this means that the widget was disabled by another widget being enabled
 			setActive(false);
-			return;
 		}
 	}, [canBeEnabled, hasPriority, isInitialized, viewport, active]);
 
@@ -618,6 +629,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 								if (!canBeEnabled) return;
 
 								if (active) {
+									if (hasPriority) removePriority();
 									setActive(false);
 								} else {
 									if (!hasPriority) requestPriority();
