@@ -247,6 +247,8 @@ export default function NumberAttribute(props: Props) {
 	const updateCustomMinMax = useCallback(
 		(value: RangeSliderValue) => {
 			const [min, max] = value.map((v) => v / multiplyingFactor);
+			attribute.customMin = min;
+			attribute.customMax = max;
 			setCustomMinValue(min);
 			setCustomMaxValue(max);
 
