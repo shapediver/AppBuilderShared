@@ -117,7 +117,6 @@ export function useSession(props: IUseSessionDto | undefined) {
 					// in case the session definition defines acceptRejectMode, use it
 					// otherwise fall back to acceptRejectMode defined by the viewer settings
 					acceptRejectMode ?? api.commitParameters,
-					props.jwtToken,
 					eventTracking,
 				);
 			}

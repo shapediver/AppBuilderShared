@@ -554,11 +554,7 @@ function mapExportDefinition(
 /**
  * Create store for a single export.
  */
-function createExportStore(
-	session: ISessionApi,
-	exportId: string,
-	token?: string,
-) {
+function createExportStore(session: ISessionApi, exportId: string) {
 	const exportApi = session.exports[exportId];
 	/** The static definition of the export. */
 	const definition = mapExportDefinition(exportApi);
@@ -585,7 +581,9 @@ function createExportStore(
 			},
 			fetch: async (url: string) => {
 				return fetch(url, {
-					...(token ? {headers: {Authorization: token}} : {}),
+					...(session.jwtToken
+						? {headers: {Authorization: session.jwtToken}}
+						: {}),
 				});
 			},
 		},
@@ -844,7 +842,6 @@ export const useShapeDiverStoreParameters =
 				addSession: (
 					session: ISessionApi,
 					_acceptRejectMode: boolean | IAcceptRejectModeSelector,
-					token?: string,
 					callbacks?: IEventTracking,
 				) => {
 					const sessionId = session.id;
@@ -965,7 +962,6 @@ export const useShapeDiverStoreParameters =
 													createExportStore(
 														session,
 														exportId,
-														token,
 													);
 
 												return acc;
