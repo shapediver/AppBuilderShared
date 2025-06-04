@@ -249,14 +249,12 @@ export interface IShapeDiverStoreParameters {
 	 * calling addSession again for the same session.
 	 * @param session
 	 * @param acceptRejectMode If true, changes are not executed immediately. May be specified as a boolean or a function of the parameter definition.
-	 * @param token Token (JWT) that was used when creating the session. If provided, it will be used for export downloads. Optional.
 	 * @param callbacks Callbacks. Optional.
 	 * @returns
 	 */
 	readonly addSession: (
 		session: ISessionApi,
 		acceptRejectMode: boolean | IAcceptRejectModeSelector,
-		token?: string,
 		callbacks?: IShapeDiverStoreParametersCallbacks,
 	) => void;
 
