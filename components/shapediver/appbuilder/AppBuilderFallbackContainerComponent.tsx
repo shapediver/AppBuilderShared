@@ -1,4 +1,5 @@
 import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
+import DesktopClientPanel from "@AppBuilderShared/components/ui/stargate/DesktopClientPanel";
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
@@ -48,6 +49,16 @@ export default function AppBuilderFallbackContainerComponent({
 			});
 		}
 
+if (
+			parameters.length > 0 &&
+			parameters.some((p) => isStargateParameter(p.type))
+		) {
+			tabProps.tabs.push({
+				name: "Stargate",
+				icon: IconTypeEnum.Network,
+				children: [<DesktopClientPanel key={2} />],
+			});
+		}
 		return tabProps;
 	}, [parameters, exports]);
 

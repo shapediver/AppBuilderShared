@@ -12,7 +12,12 @@ import {
 	ParameterComponentMapValueType,
 } from "@AppBuilderShared/types/context/componentcontext";
 import {IShapeDiverParamOrExportDefinition} from "@AppBuilderShared/types/shapediver/common";
+import {ShapeDiverResponseParameterType} from "@shapediver/api.geometry-api-dto-v2";
 import {EXPORT_TYPE, PARAMETER_TYPE} from "@shapediver/viewer.session";
+
+export const isStargateParameter = (type: ShapeDiverResponseParameterType) => {
+	return type && type[0] === "s";
+};
 
 const defaultParameterComponentContext: IComponentContext["parameters"] = {
 	[PARAMETER_TYPE.INT]: {

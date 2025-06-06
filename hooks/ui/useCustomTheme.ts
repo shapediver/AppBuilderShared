@@ -14,6 +14,7 @@ import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShare
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
+import {DesktopClientPanelThemeProps} from "@AppBuilderShared/components/ui/stargate/DesktopClientPanel";
 import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {DefaultSessionThemeProps} from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
@@ -537,6 +538,16 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			CreateModelStateHook: CreateModelStateHookThemeProps({
 				parameterNamesToAlwaysExclude: ["context"],
+			}),
+			/**
+			 * DesktopClientPanel
+			 *
+			 * Used for displaying the desktop client panel.
+			 */
+			DesktopClientPanel: DesktopClientPanelThemeProps({
+				// iconStatusProps: {
+				// 	mb: 4,
+				// },
 			}),
 			/**
 			 * ExportButton
