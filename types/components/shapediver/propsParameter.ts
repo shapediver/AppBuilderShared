@@ -1,5 +1,6 @@
 import {PropsParameterOrExport} from "@AppBuilderShared/types/components/shapediver/propsCommon";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
+import {ShapeDiverResponseParameterType} from "@shapediver/api.geometry-api-dto-v2";
 import {ComponentType, CSSProperties, JSX} from "react";
 
 export interface PropsParameterWrapper {
@@ -37,6 +38,11 @@ export interface PropsParameter extends PropsParameterOrExport {
 	 * If true, the component can assume that changes are not executed immediately.
 	 */
 	readonly acceptRejectMode?: boolean;
+
+	/**
+	 * Type of the parameter.
+	 */
+	readonly type: ShapeDiverResponseParameterType;
 
 	/**
 	 * Properties of the parameter to be overridden.

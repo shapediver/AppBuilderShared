@@ -9,6 +9,7 @@ import {Group, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
 interface Props extends PropsParameter {
 	cancel?: () => void;
+	rightSection?: React.ReactNode;
 }
 
 interface StyleProps {
@@ -35,7 +36,7 @@ export function ParameterLabelComponentThemeProps(
 export default function ParameterLabelComponent(
 	props: Props & Partial<StyleProps>,
 ) {
-	const {cancel, ...rest} = props;
+	const {cancel, rightSection, ...rest} = props;
 	const {fontWeight} = useProps(
 		"ParameterLabelComponent",
 		defaultStyleProps,
@@ -68,6 +69,7 @@ export default function ParameterLabelComponent(
 					onClick={cancel}
 				/>
 			)}
+			{rightSection}
 		</Group>
 	);
 }

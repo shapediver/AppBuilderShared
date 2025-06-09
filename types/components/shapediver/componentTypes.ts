@@ -6,6 +6,7 @@ import ParameterFileInputComponent from "@AppBuilderShared/components/shapediver
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterSelectComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterSelectComponent";
 import ParameterSliderComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
+import ParameterStargateComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterStargateComponent";
 import ParameterStringComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterStringComponent";
 import {
 	IComponentContext,
@@ -14,6 +15,8 @@ import {
 import {IShapeDiverParamOrExportDefinition} from "@AppBuilderShared/types/shapediver/common";
 import {ShapeDiverResponseParameterType} from "@shapediver/api.geometry-api-dto-v2";
 import {EXPORT_TYPE, PARAMETER_TYPE} from "@shapediver/viewer.session";
+
+export const PARAMETER_TYPE_STARGATE = "Stargate";
 
 export const isStargateParameter = (type: ShapeDiverResponseParameterType) => {
 	return type && type[0] === "s";
@@ -74,6 +77,10 @@ const defaultParameterComponentContext: IComponentContext["parameters"] = {
 			extraBottomPadding: false,
 		},
 	},
+	[PARAMETER_TYPE_STARGATE]: {
+		component: ParameterStargateComponent,
+		extraBottomPadding: false,
+	},
 };
 
 export const getParameterComponent = (
@@ -102,6 +109,15 @@ export const getParameterComponent = (
 			component = defaultParameterComponentContext[
 				type
 			] as ParameterComponentMapValueType;
+	}
+
+	if (
+		!component &&
+		isStargateParameter(type as ShapeDiverResponseParameterType)
+	) {
+		component = defaultParameterComponentContext[
+			PARAMETER_TYPE_STARGATE
+		] as ParameterComponentMapValueType;
 	}
 
 	if (component) {
