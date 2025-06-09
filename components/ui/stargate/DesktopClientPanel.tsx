@@ -110,6 +110,7 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 						disabled={isLoading || isDisabled}
 						onClick={refreshClients}
 						loading={isLoading}
+						loaderProps={{type: "dots"}}
 					>
 						<Icon type={IconTypeEnum.Refresh} size="1rem" />
 					</ActionIcon>
@@ -128,7 +129,9 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 						disabled={isLoading || isDisabled}
 						style={{flex: 1}}
 						rightSection={
-							isLoading ? <Loader size="xs" /> : undefined
+							isLoading ? (
+								<Loader size="xs" type="dots" />
+							) : undefined
 						}
 					/>
 
