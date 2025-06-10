@@ -5,6 +5,7 @@ import {
 	getParameterComponent,
 } from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {
 	Accordion,
@@ -14,6 +15,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {ReactElement, useContext} from "react";
+import OutputStargateComponent from "../outputs/OutputStargateComponent";
 
 /**
  * Functional component that creates an accordion of parameter and export components.
@@ -30,6 +32,10 @@ interface Props {
 	 * The exports to be displayed in the accordion.
 	 */
 	exports?: PropsExport[];
+	/**
+	 * The outputs to be displayed in the accordion.
+	 */
+	outputs?: PropsOutput[];
 	/**
 	 * Name of group to use for parameters and exports which are not assigned to a group.
 	 * Leave this empty to not display such parameters and exports inside of an accordion.
@@ -59,6 +65,10 @@ interface Props {
 	 * multiple groups with the same name will be displayed as separate groups.
 	 */
 	identifyGroupsById?: boolean;
+	/**
+	 * Namespace of the parameters and exports.
+	 */
+	namespace?: string;
 }
 
 const defaultProps: Partial<Props> = {
@@ -77,12 +87,20 @@ export function ParametersAndExportsAccordionComponentThemeProps(
 }
 
 export default function ParametersAndExportsAccordionComponent(props: Props) {
-	const {parameters, exports, defaultGroupName, topSection} = props;
+	const {
+		parameters,
+		exports,
+		outputs,
+		defaultGroupName,
+		topSection,
+		namespace,
+	} = props;
 
 	// get sorted list of parameter and export definitions
 	const sortedParamsAndExports = useSortedParametersAndExports(
 		parameters,
 		exports,
+		outputs,
 	);
 
 	const componentContext = useContext(ComponentContext);
@@ -158,6 +176,15 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 			elementGroups[groupId].elements.push(
 				<Paper key={param.definition.id}>
 					<ExportComponent {...param.export} />
+				</Paper>,
+			);
+		} else if (param.output && namespace) {
+			elementGroups[groupId].elements.push(
+				<Paper key={param.definition.id}>
+					<OutputStargateComponent
+						{...param.output}
+						namespace={namespace}
+					/>
 				</Paper>,
 			);
 		}

@@ -41,14 +41,7 @@ const StargateInput: React.FC<IStargateInputProps> = ({
 				fullWidth
 				justify="space-between"
 				disabled={isBtnDisabled || isLoading || isDisabled}
-				rightSection={
-					<Icon
-						color={
-							"var(--button-color, var(--mantine-color-white))"
-						}
-						type={icon}
-					/>
-				}
+				rightSection={<Icon type={icon} />}
 				onClick={onConnect}
 			>
 				{message}
