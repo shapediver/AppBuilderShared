@@ -122,16 +122,16 @@ export const useStargateParameter = ({
 		};
 	};
 
-	const setConnectionStatusByEnum = (
-		status: ParameterStatues,
-		additionalData?: Partial<IStatusData>,
-	) => {
-		const baseStatus = ConnectionDataMap[status];
-		const newStatus = additionalData
-			? {...baseStatus, ...additionalData}
-			: baseStatus;
-		setConnectionStatus(newStatus);
-	};
+	const setConnectionStatusByEnum = useCallback(
+		(status: ParameterStatues, additionalData?: Partial<IStatusData>) => {
+			const baseStatus = ConnectionDataMap[status];
+			const newStatus = additionalData
+				? {...baseStatus, ...additionalData}
+				: baseStatus;
+			setConnectionStatus(newStatus);
+		},
+		[networkStatus, selectedClient],
+	);
 
 	const updateConnectionStatus = useCallback(() => {
 		if (
@@ -254,12 +254,12 @@ export const useStargateParameter = ({
 		}
 	};
 
-	const onClearSelection = () => {
+	const onClearSelection = useCallback(() => {
 		setConnectionStatusByEnum(ParameterStatues.noObjectSelected);
 		if (onChange) {
 			onChange("");
 		}
-	};
+	}, [connectionStatus]);
 
 	return {
 		connectionStatus,
