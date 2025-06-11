@@ -4,6 +4,7 @@ import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/co
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import {OutputLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputLabelComponent";
+import {OutputStargateComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputStargateComponent";
 import {ParameterColorComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterColorComponent";
 import {ParameterLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import {ParameterSelectComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSelectComponent";
@@ -687,6 +688,11 @@ export const useCustomTheme = (props: Props = {}) => {
 				// fontWeight: "medium",
 				//paddingBottom: 4,
 				//size: "sm",
+			}),
+			OutputStargateComponent: OutputStargateComponentThemeProps({
+				// stackProps: {
+				// 	pb: "xs",
+				// },
 			}),
 			/**
 			 * ParametersAndExportsAccordionComponent
