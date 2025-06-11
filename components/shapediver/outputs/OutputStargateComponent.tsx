@@ -2,19 +2,52 @@ import {useOutput} from "@AppBuilderShared/hooks/shapediver/parameters/useOutput
 import {useStargateConnection} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateConnection";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
-import {Accordion, Paper, Stack} from "@mantine/core";
+import {
+	Accordion,
+	MantineThemeComponent,
+	Paper,
+	Stack,
+	StackProps,
+	useProps,
+} from "@mantine/core";
 import React from "react";
 import OutputChunkComponent from "./OutputChunkComponent";
 import OutputLabelComponent from "./OutputLabelComponent";
+
+interface StyleProps {
+	stackProps?: StackProps;
+}
+
+const defaultStyleProps: Partial<StyleProps> = {
+	stackProps: {
+		pb: "xs",
+	},
+};
+
+export function OutputStargateComponentThemeProps(
+	props: Partial<StyleProps>,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
 
 /**
  * Functional component that creates a label for an output and renders chunks in an expansion panel.
  *
  * @returns
  */
-export default function OutputStargateComponent(props: PropsOutput) {
+export default function OutputStargateComponent(
+	props: PropsOutput & StyleProps,
+) {
 	const {namespace} = props;
 	const {definition} = useOutput(props);
+
+	const {stackProps} = useProps(
+		"OutputStargateComponent",
+		defaultStyleProps,
+		props,
+	);
 
 	const {networkStatus, isLoading, selectedClient} =
 		useShapeDiverStoreStargate();
@@ -35,7 +68,7 @@ export default function OutputStargateComponent(props: PropsOutput) {
 						</Accordion.Control>
 						<Accordion.Panel>
 							{definition.chunks.map((chunk) => (
-								<Stack key={chunk.id} pb={"xs"}>
+								<Stack key={chunk.id} {...stackProps}>
 									<Paper>
 										<OutputChunkComponent
 											chunk={chunk}
