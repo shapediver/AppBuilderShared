@@ -101,7 +101,6 @@ export const useStargateOutput = ({
 		const session = sessions[sessionId];
 		if (!session) return undefined;
 
-		// Early out if the output has not been computed yet
 		if (
 			!session.outputs[outputId] ||
 			!session.outputs[outputId].node ||
@@ -110,16 +109,12 @@ export const useStargateOutput = ({
 			return 0;
 		}
 
-		// Search for the node that represents the chunk
 		const chunkDef = session.outputs[outputId].chunks?.find(
 			(c: any) => c.id === chunkId,
 		);
 
-		// Early out if the node cannot be found
 		if (!chunkDef) return 0;
 
-		// Return the length of the children array at the second level
-		// The first level is the branch level (e.g. "[0]")
 		let count = 0;
 		const nodeWithChunks = chunkDef as any & {node: ITreeNode};
 		if (nodeWithChunks.node?.children) {
@@ -165,7 +160,6 @@ export const useStargateOutput = ({
 		};
 	}, [supportedData, typeHint, getObjectsNumber]);
 
-	// Function to set connection status by output status enum
 	const setConnectionStatusByEnum = (
 		status: OutputStatuses,
 		additionalData?: Partial<IStatusData>,
@@ -228,7 +222,6 @@ export const useStargateOutput = ({
 		updateConnectionStatus();
 	}, [updateConnectionStatus]);
 
-	// Watch for client changes
 	useEffect(() => {
 		if (networkStatus === NetworkStatus.connected) {
 			const {status, rewrite} = getConnectionStatusFromClient();
@@ -236,7 +229,6 @@ export const useStargateOutput = ({
 		}
 	}, [selectedClient]);
 
-	// Watch for session updates to update object count
 	useEffect(() => {
 		if (networkStatus === NetworkStatus.connected) {
 			const count = getObjectsNumber();
@@ -266,7 +258,6 @@ export const useStargateOutput = ({
 				throw new Error("Session not found");
 			}
 
-			// Get all parameter values from the session
 			const parameters = Object.values(session.parameters).reduce(
 				(acc: {[key: string]: string}, p: any) => {
 					acc[p.id] = p.stringify();
@@ -275,7 +266,6 @@ export const useStargateOutput = ({
 				{},
 			);
 
-			// Use the SDK to bake data
 			const {sdk} = useShapeDiverStoreStargate.getState();
 			if (!sdk) {
 				throw new Error("Stargate SDK not initialized");
@@ -358,9 +348,7 @@ export const useStargateOutput = ({
 			if (e.type === ERROR_TYPE_INTERRUPTED) {
 				return;
 			}
-
 			console.error(e);
-			// $sentry.captureException(e);
 			notifications.warning({
 				title: "Baking error",
 				message:

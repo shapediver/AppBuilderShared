@@ -1,6 +1,6 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import Icon, {SdIconProps} from "@AppBuilderShared/components/ui/Icon";
 import StargateInput from "@AppBuilderShared/components/ui/stargate/StargateInput";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
@@ -13,20 +13,64 @@ import {
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {ActionIcon, useProps} from "@mantine/core";
+import {
+	ActionIcon,
+	ActionIconProps,
+	MantineThemeComponent,
+	TooltipProps,
+	useProps,
+} from "@mantine/core";
 import React from "react";
 
+interface StyleProps {
+	parameterWrapperProps: Partial<PropsParameterWrapper>;
+	tooltipProps: Partial<TooltipProps>;
+	actionIconProps: Partial<ActionIconProps>;
+	iconProps: SdIconProps;
+}
+
+const defaultStyleProps: StyleProps = {
+	parameterWrapperProps: defaultPropsParameterWrapper,
+	tooltipProps: {
+		position: "left",
+		label: "Clear selection",
+	},
+	actionIconProps: {
+		size: "lg",
+		variant: "transparent",
+		loaderProps: {
+			type: "dots",
+		},
+	},
+	iconProps: {
+		type: IconTypeEnum.Cancel,
+		size: "1.2rem",
+		color: "var(--mantine-color-default-color)",
+	},
+};
+
+type ParameterStargateComponentThemePropsType = Partial<StyleProps>;
+
+export function ParameterStargateComponentThemeProps(
+	props: ParameterStargateComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
 export default function ParameterStargateComponent(
-	props: PropsParameter & Partial<PropsParameterWrapper>,
+	props: PropsParameter & Partial<StyleProps>,
 ) {
 	const {definition, value, handleChange, onCancel, disabled} =
 		useParameterComponentCommons<string>(props);
 
-	const {wrapperComponent, wrapperProps} = useProps(
-		"ParameterStargateComponent",
-		defaultPropsParameterWrapper,
-		props,
-	);
+	const {
+		tooltipProps,
+		parameterWrapperProps: {wrapperComponent, wrapperProps},
+		actionIconProps,
+		iconProps,
+	} = useProps("ParameterStargateComponent", defaultStyleProps, props);
 
 	const {networkStatus, isLoading, selectedClient} =
 		useShapeDiverStoreStargate();
@@ -67,20 +111,21 @@ export default function ParameterStargateComponent(
 				{...props}
 				cancel={onCancel}
 				rightSection={
-					<TooltipWrapper position="left" label="Clear selection">
+					<TooltipWrapper
+						{...tooltipProps}
+						label={tooltipProps.label || "Clear selection"}
+					>
 						<ActionIcon
-							size="lg"
-							variant="transparent"
 							style={{visibility: value ? "visible" : "hidden"}}
 							color={disabled ? "gray" : connectionStatus.color}
 							loading={isLoading || isParameterLoading}
-							loaderProps={{type: "dots"}}
 							disabled={
 								isLoading || isParameterLoading || disabled
 							}
+							{...actionIconProps}
 							onClick={onClearSelection}
 						>
-							<Icon type={IconTypeEnum.Cancel} size="1.2rem" />
+							<Icon {...iconProps} />
 						</ActionIcon>
 					</TooltipWrapper>
 				}
@@ -95,7 +140,6 @@ export default function ParameterStargateComponent(
 						disabled ||
 						isParameterLoading
 					}
-					isClearSelection={connectionStatus.isClearSelection}
 					icon={IconTypeEnum.DeviceDesktopUp}
 					onConnect={onObjectAdd}
 				/>

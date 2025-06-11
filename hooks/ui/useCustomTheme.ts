@@ -3,10 +3,12 @@ import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
+import {OutputLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputLabelComponent";
 import {ParameterColorComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterColorComponent";
 import {ParameterLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import {ParameterSelectComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSelectComponent";
 import {ParameterSliderComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
+import {ParameterStargateComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterStargateComponent";
 import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectCarouselComponent";
 import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectGridComponent";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
@@ -15,6 +17,7 @@ import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
 import {DesktopClientPanelThemeProps} from "@AppBuilderShared/components/ui/stargate/DesktopClientPanel";
+import {StargateInputThemeProps} from "@AppBuilderShared/components/ui/stargate/StargateInput";
 import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {DefaultSessionThemeProps} from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
@@ -540,16 +543,6 @@ export const useCustomTheme = (props: Props = {}) => {
 				parameterNamesToAlwaysExclude: ["context"],
 			}),
 			/**
-			 * DesktopClientPanel
-			 *
-			 * Used for displaying the desktop client panel.
-			 */
-			DesktopClientPanel: DesktopClientPanelThemeProps({
-				// iconStatusProps: {
-				// 	mb: 4,
-				// },
-			}),
-			/**
 			 * ExportButton
 			 *
 			 * Button used for export components.
@@ -575,6 +568,63 @@ export const useCustomTheme = (props: Props = {}) => {
 				// modelViewUrl: "",
 				// initialParameterValues: {},
 				// acceptRejectMode: true
+			}),
+			/**
+			 * DesktopClientPanel
+			 *
+			 * Used for displaying the desktop client panel.
+			 */
+			DesktopClientPanel: DesktopClientPanelThemeProps({
+				// iconStatusProps: {
+				// 	variant: "subtle",
+				// 	mb: 4,
+				// },
+				// alertProps: {
+				// 	color: "blue",
+				// 	title: "Desktop Clients",
+				// },
+				// alertTextProps: {
+				// 	size: "sm",
+				// },
+				// paperProps: {
+				// 	p: "md",
+				// 	withBorder: true,
+				// },
+				// stackProps: {
+				// 	gap: "md",
+				// },
+				// groupTopProps: {
+				// 	justify: "space-between",
+				// 	align: "center",
+				// },
+				// textProps: {
+				// 	fw: 500,
+				// 	size: "sm",
+				// },
+				// actionIconRefreshProps: {
+				// 	variant: "subtle",
+				// 	loaderProps: {type: "dots"},
+				// },
+				// iconRefreshProps: {
+				// 	type: IconTypeEnum.Refresh,
+				// 	size: "1rem",
+				// },
+				// groupBottomProps: {
+				// 	justify: "space-between",
+				// 	align: "end",
+				// },
+				// selectProps: {
+				// 	style: {flex: 1},
+				// 	label: "Clients",
+				// 	placeholder: "Select a client",
+				// },
+				// loaderProps: {
+				// 	type: "dots",
+				// 	size: "xs",
+				// },
+				// statusIconProps: {
+				// 	size: "1.2rem",
+				// },
 			}),
 			/**
 			 * ExportLabelComponent
@@ -629,6 +679,16 @@ export const useCustomTheme = (props: Props = {}) => {
 				// autoClose: 20000, // boolean | number
 			}),
 			/**
+			 * OutputLabelComponent
+			 *
+			 * Defaults for output labels.
+			 */
+			OutputLabelComponent: OutputLabelComponentThemeProps({
+				// fontWeight: "medium",
+				//paddingBottom: 4,
+				//size: "sm",
+			}),
+			/**
 			 * ParametersAndExportsAccordionComponent
 			 *
 			 * Defaults for parameter and export widgets.
@@ -673,6 +733,25 @@ export const useCustomTheme = (props: Props = {}) => {
 				//sliderWidth: "60%",
 				//numberWidth: "35%",
 			}),
+			ParameterStargateComponent: ParameterStargateComponentThemeProps({
+				//parameterWrapperProps: defaultPropsParameterWrapper,
+				//tooltipProps: {
+				//	position: "left",
+				//	label: "Clear selection",
+				//},
+				//actionIconProps: {
+				//	size: "lg",
+				//	variant: "transparent",
+				//	loaderProps: {
+				//		type: "dots",
+				//	},
+				//},
+				//iconProps: {
+				//	type: IconTypeEnum.Cancel,
+				//	size: "1.2rem",
+				//  color: "var(--mantine-color-default-color)",
+				//},
+			}),
 			/**
 			 * SelectCarouselComponent
 			 *
@@ -691,6 +770,30 @@ export const useCustomTheme = (props: Props = {}) => {
 			SelectGridComponent: SelectGridComponentThemeProps({
 				//gridProps: { cols: 2, spacing: "md" },
 				//showLabel: true,
+			}),
+			StargateInput: StargateInputThemeProps({
+				// buttonProps: {
+				// 	variant: "filled",
+				// 	fullWidth: true,
+				// 	justify: "space-between",
+				// },
+				// loadingButtonProps: {
+				// 	disabled: true,
+				// 	fullWidth: true,
+				// 	justify: "space-between",
+				// 	style: {
+				// 		backgroundColor: "transparent",
+				// 	},
+				// },
+				// textProps: {
+				// 	size: "sm",
+				// 	c: "dimmed",
+				// 	fs: "italic",
+				// },
+				// loaderProps: {
+				// 	type: "dots",
+				// 	size: "sm",
+				// },
 			}),
 			/**
 			 * TooltipWrapper

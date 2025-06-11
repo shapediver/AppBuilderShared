@@ -94,7 +94,7 @@ import {
 } from "@tabler/icons-react";
 import React, {forwardRef} from "react";
 
-interface Props extends IconProps {
+export interface SdIconProps extends IconProps {
 	type: IconTypeEnum;
 }
 
@@ -117,8 +117,8 @@ export function useIconProps(props: Partial<IconProps>): IconProps {
 	return useProps("Icon", defaultStyleProps, props);
 }
 
-const Icon = forwardRef<_TablerIconType, Props>(function Icon(
-	{type, size, stroke, color, ...rest}: Props,
+const Icon = forwardRef<_TablerIconType, SdIconProps>(function Icon(
+	{type, size, stroke, color, ...rest}: SdIconProps,
 	ref,
 ) {
 	const theme = useMantineTheme();

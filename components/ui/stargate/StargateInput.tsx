@@ -1,31 +1,95 @@
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {IStargateInputProps} from "@AppBuilderShared/types/shapediver/stargate";
-import {Box, Button, Loader, Text} from "@mantine/core";
+import {
+	Box,
+	BoxProps,
+	Button,
+	ButtonProps,
+	Loader,
+	LoaderProps,
+	MantineThemeComponent,
+	Text,
+	TextProps,
+	useProps,
+} from "@mantine/core";
 import React from "react";
 import Icon from "../Icon";
 
-const StargateInput: React.FC<IStargateInputProps> = ({
-	isLoading = false,
-	isDisabled = false,
-	isBtnDisabled = false,
-	message = "",
-	color,
-	icon = IconTypeEnum.DeviceDesktopUp,
-	onConnect,
-}) => {
+interface Props {
+	icon: IconTypeEnum;
+	color: string;
+	isLoading?: boolean;
+	isDisabled?: boolean;
+	isBtnDisabled?: boolean;
+	message?: string;
+	onConnect?: (event: React.MouseEvent) => void;
+}
+
+interface StyleProps {
+	boxProps?: BoxProps;
+	buttonProps?: ButtonProps;
+	loadingButtonProps?: ButtonProps;
+	textProps?: TextProps;
+	loaderProps?: LoaderProps;
+}
+
+const defaultStyleProps: Partial<StyleProps> = {
+	buttonProps: {
+		variant: "filled",
+		fullWidth: true,
+		justify: "space-between",
+	},
+	loadingButtonProps: {
+		disabled: true,
+		fullWidth: true,
+		justify: "space-between",
+		style: {
+			backgroundColor: "transparent",
+		},
+	},
+	textProps: {
+		size: "sm",
+		c: "dimmed",
+		fs: "italic",
+	},
+	loaderProps: {
+		type: "dots",
+		size: "sm",
+	},
+};
+
+export function StargateInputThemeProps(
+	props: Partial<Props> & Partial<StyleProps>,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+export default function StargateInput(props: Props & StyleProps) {
+	const {buttonProps, loadingButtonProps, textProps, loaderProps} = useProps(
+		"StargateInput",
+		defaultStyleProps,
+		props,
+	);
+
+	const {
+		icon = IconTypeEnum.DeviceDesktopUp,
+		color,
+		message,
+		onConnect,
+		isLoading,
+		isDisabled,
+		isBtnDisabled,
+	} = props;
+
 	if (isLoading) {
 		return (
 			<Box>
 				<Button
-					disabled
-					fullWidth
-					justify="space-between"
-					rightSection={<Loader type="dots" size="sm" />}
-					style={{
-						backgroundColor: "transparent",
-					}}
+					{...loadingButtonProps}
+					rightSection={<Loader {...loaderProps} />}
 				>
-					<Text size="sm" c="dimmed" fs="italic">
+					<Text {...textProps}>
 						Waiting for selection in the client
 					</Text>
 				</Button>
@@ -36,10 +100,8 @@ const StargateInput: React.FC<IStargateInputProps> = ({
 	return (
 		<Box>
 			<Button
+				{...buttonProps}
 				color={color}
-				variant="filled"
-				fullWidth
-				justify="space-between"
 				disabled={isBtnDisabled || isLoading || isDisabled}
 				rightSection={<Icon type={icon} />}
 				onClick={onConnect}
@@ -48,6 +110,4 @@ const StargateInput: React.FC<IStargateInputProps> = ({
 			</Button>
 		</Box>
 	);
-};
-
-export default StargateInput;
+}
