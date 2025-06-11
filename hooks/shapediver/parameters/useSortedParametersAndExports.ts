@@ -1,35 +1,41 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IShapeDiverParamOrExportDefinition} from "@AppBuilderShared/types/shapediver/common";
 import {useShallow} from "zustand/react/shallow";
 
 /**
- * The definition of a parameter or export, and the corresponding parameter or export properties.
+ * The definition of a parameter, export, or output, and the corresponding properties.
  */
 interface ParamOrExportDefinition {
 	parameter?: PropsParameter;
 	export?: PropsExport;
+	output?: PropsOutput;
 	definition: IShapeDiverParamOrExportDefinition;
 }
 
 /**
- * Hook providing a sorted list of definitions of parameters and exports, used
- * by {@link ParametersAndExportsAccordionComponent} for creating parameter and export UI components.
+ * Hook providing a sorted list of definitions of parameters, exports, and outputs, used
+ * by UI components for creating parameter, export, and output components.
  * @param parameters parameter references
  * @param exports export references
+ * @param outputs output references
  * @returns
  */
 export function useSortedParametersAndExports(
 	parameters?: PropsParameter[],
 	exports?: PropsExport[],
+	outputs?: PropsOutput[],
 ): ParamOrExportDefinition[] {
-	const {parameterStores, exportStores} = useShapeDiverStoreParameters(
-		useShallow((state) => ({
-			parameterStores: state.parameterStores,
-			exportStores: state.exportStores,
-		})),
-	);
+	const {parameterStores, exportStores, outputStores} =
+		useShapeDiverStoreParameters(
+			useShallow((state) => ({
+				parameterStores: state.parameterStores,
+				exportStores: state.exportStores,
+				outputStores: state.outputStores,
+			})),
+		);
 
 	// collect definitions of parameters and exports for sorting and grouping
 	let sortedParamsAndExports: ParamOrExportDefinition[] = [];
@@ -77,6 +83,29 @@ export function useSortedParametersAndExports(
 					return {
 						export: e,
 						definition: {...definition, ...e.overrides},
+					};
+			}
+
+			return [];
+		}),
+	); // <-- TODO SS-8052 move into useMemo
+
+	sortedParamsAndExports = sortedParamsAndExports.concat(
+		(outputs ?? []).flatMap((o) => {
+			const stores = Object.values(outputStores[o.namespace] ?? {});
+			for (const store of stores) {
+				const definition = store.getState().definition;
+				if (
+					definition.id === o.outputId ||
+					definition.name === o.outputId ||
+					definition.displayname === o.outputId
+				)
+					return {
+						output: o,
+						definition: {
+							...definition,
+							...o.overrides,
+						},
 					};
 			}
 

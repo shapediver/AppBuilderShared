@@ -2,7 +2,7 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {IconType} from "@AppBuilderShared/types/shapediver/icons";
 import {BoxProps, Stack, Tabs} from "@mantine/core";
-import React, {ReactElement, useEffect, useState} from "react";
+import React, {ReactElement, useEffect, useRef, useState} from "react";
 
 interface PropsTab extends BoxProps {
 	/** Name (value) of tab. */
@@ -28,7 +28,15 @@ export default function TabsComponent({
 	...rest
 }: ITabsComponentProps) {
 	const [activeTab, setActiveTab] = useState<string | null>(defaultValue);
+	// keepMounted=false prop unmount the tab when it is not active
+	const activeTabsHistory = useRef(new Set<string>([defaultValue]));
 	const tabNames = tabs.map((tab) => tab.name);
+	const handleActiveTabChange = (value: string | null) => {
+		setActiveTab(value);
+		if (value) {
+			activeTabsHistory.current.add(value);
+		}
+	};
 
 	useEffect(() => {
 		if (!activeTab || !tabNames.includes(activeTab)) {
@@ -43,7 +51,7 @@ export default function TabsComponent({
 	return tabs.length === 0 ? (
 		<></>
 	) : (
-		<Tabs {...rest} value={activeTab} onChange={setActiveTab}>
+		<Tabs {...rest} value={activeTab} onChange={handleActiveTabChange}>
 			<Tabs.List>
 				{tabs.map((tab, index) => {
 					const tabsTab = (
@@ -73,7 +81,9 @@ export default function TabsComponent({
 
 				return (
 					<Tabs.Panel {...rest} key={index} value={name}>
-						<Stack>{children}</Stack>
+						{activeTabsHistory.current.has(name) && (
+							<Stack>{children}</Stack>
+						)}
 					</Tabs.Panel>
 				);
 			})}

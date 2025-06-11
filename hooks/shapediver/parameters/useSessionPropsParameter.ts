@@ -27,6 +27,7 @@ export function useSessionPropsParameter(
 							namespace,
 							parameterId: pstate.definition.id,
 							acceptRejectMode: pstate.acceptRejectMode,
+							type: pstate.definition.type,
 						};
 					}),
 		),

@@ -26,12 +26,15 @@ import {
 	IconBooksOff,
 	IconCamera,
 	IconCameraOff,
+	IconCancel,
 	IconCheck,
 	IconChevronLeft,
 	IconChevronRight,
 	IconCircleOff,
 	IconCopy,
 	IconDeviceDesktop,
+	IconDeviceDesktopDown,
+	IconDeviceDesktopUp,
 	IconDeviceFloppy,
 	IconDeviceTv,
 	IconDots,
@@ -91,7 +94,7 @@ import {
 } from "@tabler/icons-react";
 import React, {forwardRef} from "react";
 
-interface Props extends IconProps {
+export interface SdIconProps extends IconProps {
 	type: IconTypeEnum;
 }
 
@@ -114,8 +117,8 @@ export function useIconProps(props: Partial<IconProps>): IconProps {
 	return useProps("Icon", defaultStyleProps, props);
 }
 
-const Icon = forwardRef<_TablerIconType, Props>(function Icon(
-	{type, size, stroke, color, ...rest}: Props,
+const Icon = forwardRef<_TablerIconType, SdIconProps>(function Icon(
+	{type, size, stroke, color, ...rest}: SdIconProps,
 	ref,
 ) {
 	const theme = useMantineTheme();
@@ -165,6 +168,8 @@ const Icon = forwardRef<_TablerIconType, Props>(function Icon(
 			return <IconCamera {...iconProps} />;
 		case IconTypeEnum.CameraOff:
 			return <IconCameraOff {...iconProps} />;
+		case IconTypeEnum.Cancel:
+			return <IconCancel {...iconProps} />;
 		case IconTypeEnum.Check:
 			return <IconCheck {...iconProps} />;
 		case IconTypeEnum.CircleOff:
@@ -173,6 +178,10 @@ const Icon = forwardRef<_TablerIconType, Props>(function Icon(
 			return <IconCopy {...iconProps} />;
 		case IconTypeEnum.DeviceDesktop:
 			return <IconDeviceDesktop {...iconProps} />;
+		case IconTypeEnum.DeviceDesktopDown:
+			return <IconDeviceDesktopDown {...iconProps} />;
+		case IconTypeEnum.DeviceDesktopUp:
+			return <IconDeviceDesktopUp {...iconProps} />;
 		case IconTypeEnum.DeviceFloppy:
 			return <IconDeviceFloppy {...iconProps} />;
 		case IconTypeEnum.DeviceTV:
