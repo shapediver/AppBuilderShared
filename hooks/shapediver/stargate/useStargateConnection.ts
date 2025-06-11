@@ -259,7 +259,6 @@ export const useStargateConnection = () => {
 		}
 	};
 
-	// Helper functions for Stargate operations
 	const getClients = async (): Promise<ISdStargateClientModel[]> => {
 		const {sdk} = useShapeDiverStoreStargate.getState();
 		if (!sdk) {

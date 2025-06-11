@@ -8,7 +8,7 @@ import {
 } from "@AppBuilderShared/types/shapediver/stargate";
 import type {ISdStargateGetSupportedDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1/dist/dto/commands/getSupportedDataCommand";
 import React from "react";
-interface OutputChunckComponentProps {
+interface Props {
 	chunk: NonNullable<IShapeDiverOutputDefinition["chunks"]>[number];
 	outputId: IShapeDiverOutputDefinition["id"];
 	outputName: IShapeDiverOutputDefinition["name"];
@@ -23,9 +23,7 @@ interface OutputChunckComponentProps {
 /**
  * Component that handles individual output chunks using Stargate
  */
-export default function OutputChunckComponent(
-	props: OutputChunckComponentProps,
-) {
+export default function OutputChunkComponent(props: Props) {
 	const {
 		chunk,
 		outputId,

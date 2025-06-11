@@ -2,32 +2,17 @@ import {useOutput} from "@AppBuilderShared/hooks/shapediver/parameters/useOutput
 import {useStargateConnection} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateConnection";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
-import {Accordion, MantineThemeComponent, Paper, Stack} from "@mantine/core";
+import {Accordion, Paper, Stack} from "@mantine/core";
 import React from "react";
-import OutputChunckComponent from "./OutputChunckComponent";
+import OutputChunkComponent from "./OutputChunkComponent";
 import OutputLabelComponent from "./OutputLabelComponent";
-
-interface StyleProps {
-	fontWeight: string;
-}
-type OutputLabelComponentPropsType = Partial<StyleProps>;
-
-export function OutputLabelComponentThemeProps(
-	props: OutputLabelComponentPropsType,
-): MantineThemeComponent {
-	return {
-		defaultProps: props,
-	};
-}
 
 /**
  * Functional component that creates a label for an output and renders chunks in an expansion panel.
  *
  * @returns
  */
-export default function OutputStargateComponent(
-	props: PropsOutput & Partial<StyleProps>,
-) {
+export default function OutputStargateComponent(props: PropsOutput) {
 	const {namespace} = props;
 	const {definition} = useOutput(props);
 
@@ -52,7 +37,7 @@ export default function OutputStargateComponent(
 							{definition.chunks.map((chunk) => (
 								<Stack key={chunk.id} pb={"xs"}>
 									<Paper>
-										<OutputChunckComponent
+										<OutputChunkComponent
 											chunk={chunk}
 											outputId={definition.id}
 											outputName={definition.name}

@@ -1,4 +1,4 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import Icon, {SdIconProps} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useStargateConnection} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateConnection";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
@@ -8,13 +8,20 @@ import {
 	ActionIcon,
 	ActionIconProps,
 	Alert,
+	AlertProps,
 	Group,
+	GroupProps,
 	Loader,
+	LoaderProps,
 	MantineThemeComponent,
 	Paper,
+	PaperProps,
 	Select,
+	SelectProps,
 	Stack,
+	StackProps,
 	Text,
+	TextProps,
 	useProps,
 } from "@mantine/core";
 import React, {useEffect} from "react";
@@ -26,11 +33,70 @@ interface Props {
 
 interface StyleProps {
 	iconStatusProps?: ActionIconProps;
+	alertProps?: AlertProps;
+	alertTextProps?: TextProps;
+	paperProps?: PaperProps;
+	stackProps?: StackProps;
+	groupTopProps?: GroupProps;
+	textProps?: TextProps;
+	selectProps?: SelectProps;
+	actionIconRefreshProps?: ActionIconProps;
+	iconRefreshProps?: SdIconProps;
+	groupBottomProps?: GroupProps;
+	loaderProps?: LoaderProps;
+	statusIconProps?: Partial<SdIconProps>;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
 	iconStatusProps: {
+		variant: "subtle",
 		mb: 4,
+	},
+	alertProps: {
+		color: "blue",
+		title: "Desktop Clients",
+	},
+	alertTextProps: {
+		size: "sm",
+	},
+	paperProps: {
+		p: "md",
+		withBorder: true,
+	},
+	stackProps: {
+		gap: "md",
+	},
+	groupTopProps: {
+		justify: "space-between",
+		align: "center",
+	},
+	textProps: {
+		fw: 500,
+		size: "sm",
+	},
+	actionIconRefreshProps: {
+		variant: "subtle",
+		loaderProps: {type: "dots"},
+	},
+	iconRefreshProps: {
+		type: IconTypeEnum.Refresh,
+		size: "1rem",
+	},
+	groupBottomProps: {
+		justify: "space-between",
+		align: "end",
+	},
+	selectProps: {
+		style: {flex: 1},
+		label: "Clients",
+		placeholder: "Select a client",
+	},
+	loaderProps: {
+		type: "dots",
+		size: "xs",
+	},
+	statusIconProps: {
+		size: "1.2rem",
 	},
 };
 
@@ -45,11 +111,21 @@ export function DesktopClientPanelThemeProps(
 export default function DesktopClientPanel(props: Props & StyleProps) {
 	const {isDisabled = false, areNoInputsAndOutputs = false, ...rest} = props;
 
-	const {iconStatusProps} = useProps(
-		"DesktopClientPanel",
-		defaultStyleProps,
-		rest,
-	);
+	const {
+		iconStatusProps,
+		alertProps,
+		alertTextProps,
+		paperProps,
+		groupTopProps,
+		selectProps,
+		stackProps,
+		textProps,
+		actionIconRefreshProps,
+		iconRefreshProps,
+		groupBottomProps,
+		loaderProps,
+		statusIconProps,
+	} = useProps("DesktopClientPanel", defaultStyleProps, rest);
 	const {selectedClient, isLoading} = useShapeDiverStoreStargate();
 	const {
 		availableClients,
@@ -68,8 +144,8 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 
 	if (!isStargateEnabled) {
 		return (
-			<Alert color="blue" title="Desktop Clients">
-				<Text size="sm">
+			<Alert {...alertProps}>
+				<Text {...alertTextProps}>
 					Interact and exchange data directly between your models and
 					local software clients. This feature is only available when
 					running on the ShapeDiver Platform.
@@ -80,8 +156,8 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 
 	if (areNoInputsAndOutputs) {
 		return (
-			<Alert color="blue" title="Desktop Clients">
-				<Text size="sm">
+			<Alert {...alertProps}>
+				<Text {...alertTextProps}>
 					Define structured geometry inputs and outputs and start
 					exchanging data with desktop clients.
 				</Text>
@@ -89,37 +165,37 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		);
 	}
 
-	const handleClientChange = (value: string | null) => {
+	const handleClientChange = async (value: string | null) => {
 		if (!value) return;
 
 		const client = availableClients.find((c) => c.value === value);
 		if (client) {
-			selectClient(client);
+			await selectClient(client);
 		}
 	};
 
 	return (
-		<Paper p="md" withBorder>
-			<Stack gap="md">
-				<Group justify="space-between" align="center">
-					<Text fw={500} size="sm">
-						Active Clients
-					</Text>
+		<Paper {...paperProps}>
+			<Stack {...stackProps}>
+				<Group {...groupTopProps}>
+					<Text {...textProps}>Active Clients</Text>
 					<ActionIcon
-						variant="subtle"
 						disabled={isLoading || isDisabled}
 						onClick={refreshClients}
 						loading={isLoading}
-						loaderProps={{type: "dots"}}
+						{...actionIconRefreshProps}
 					>
-						<Icon type={IconTypeEnum.Refresh} size="1rem" />
+						<Icon
+							{...iconRefreshProps}
+							type={
+								iconRefreshProps?.type || IconTypeEnum.Refresh
+							}
+						/>
 					</ActionIcon>
 				</Group>
 
-				<Group justify="space-between" align="end">
+				<Group {...groupBottomProps}>
 					<Select
-						label="Clients"
-						placeholder="Select a client"
 						data={availableClients.map((client) => ({
 							value: client.value,
 							label: client.text,
@@ -127,24 +203,18 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 						value={selectedClient?.value || null}
 						onChange={handleClientChange}
 						disabled={isLoading || isDisabled}
-						style={{flex: 1}}
+						{...selectProps}
 						rightSection={
-							isLoading ? (
-								<Loader size="xs" type="dots" />
-							) : undefined
+							isLoading ? <Loader {...loaderProps} /> : undefined
 						}
 					/>
 
 					{networkStatusIcon && (
 						<TooltipWrapper label={networkStatusIcon.tooltip}>
-							<ActionIcon
-								variant="subtle"
-								disabled
-								{...iconStatusProps}
-							>
+							<ActionIcon disabled {...iconStatusProps}>
 								<Icon
+									{...statusIconProps}
 									type={networkStatusIcon.icon}
-									size="1.2rem"
 									color={networkStatusIcon.color}
 								/>
 							</ActionIcon>
