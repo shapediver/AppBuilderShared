@@ -8,6 +8,7 @@ import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/ex
 import {IconType} from "@AppBuilderShared/types/shapediver/icons";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
+import {MantineColor} from "@mantine/core";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
@@ -24,6 +25,39 @@ export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
 
 /** Type used for export definitions */
 export type IAppBuilderExportDefinition = IShapeDiverExportDefinition;
+
+/** Types of selection components. */
+export type SelectComponentType =
+	| "buttonflex"
+	| "buttongroup"
+	| "chipgroup"
+	| "dropdown"
+	| "color"
+	| "imagedropdown"
+	| "fullwidthcards"
+	| "carousel"
+	| "grid";
+
+/** Data for an item shown by a selection component. */
+export interface ISelectComponentItemDataType {
+	/** Display name to use instead of the item name. */
+	displayname?: string;
+	/** Tooltip. */
+	tooltip?: string;
+	/** Description. */
+	description?: string;
+	/** URL to image. Can be a data URL including a base 64 encoded image. */
+	imageUrl?: string;
+	/** Optional color, used for color selection components. */
+	color?: MantineColor;
+}
+
+export interface ISelectParameterSettings {
+	/** Type of select component to use. */
+	type?: SelectComponentType;
+	/** Record containing optional further item data per item name. */
+	itemData?: Record<string, ISelectComponentItemDataType>;
+}
 
 /** Reference to a parameter (custom or defined by the session) */
 export interface IAppBuilderParameterRef {
