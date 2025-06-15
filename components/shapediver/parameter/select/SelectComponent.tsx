@@ -1,4 +1,8 @@
 import {TextWeightedProps} from "@AppBuilderShared/components/ui/TextWeighted";
+import {
+	ISelectComponentItemDataType,
+	SelectComponentType,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {CarouselProps} from "@mantine/carousel";
 import {
 	ButtonProps,
@@ -6,7 +10,6 @@ import {
 	FlexProps,
 	GroupProps,
 	ImageProps,
-	MantineColor,
 	StackProps,
 	TextProps,
 } from "@mantine/core";
@@ -53,19 +56,6 @@ export type SelectStackStyleProps = Omit<StackProps, "children">;
 export type SelectTextWeightedStyleProps = Omit<TextWeightedProps, "children">;
 export type SelectTextStyleProps = Omit<TextProps, "children">;
 
-export interface SelectComponentItemDataType {
-	/** Display name to use instead of the item name. */
-	displayname?: string;
-	/** Tooltip. */
-	tooltip?: string;
-	/** Description. */
-	description?: string;
-	/** URL to image. Can be a data URL including a base 64 encoded image. */
-	imageUrl?: string;
-	/** Optional color, used for color selection components. */
-	color?: MantineColor;
-}
-
 export interface SelectComponentSettings {
 	buttonProps?: SelectButtonStyleProps;
 	carouselProps?: SelectCarouselStyleProps;
@@ -91,7 +81,7 @@ export interface SelectComponentProps {
 	/** Item names that can be selected, must be unique. */
 	items: string[];
 	/** Record containing optional further item data per item name. */
-	itemData?: Record<string, SelectComponentItemDataType>;
+	itemData?: Record<string, ISelectComponentItemDataType>;
 	/** Whether the component shall be disabled. */
 	disabled?: boolean;
 	/** Component-specific settings (e.g. width for SelectImageDropDownComponent). */
@@ -103,18 +93,6 @@ export interface SelectComponentProps {
 	/** Optional function to handle blur events. */
 	onBlur?: () => void;
 }
-
-/** Types of selection components. */
-export type SelectComponentType =
-	| "buttonflex"
-	| "buttongroup"
-	| "chipgroup"
-	| "dropdown"
-	| "color"
-	| "imagedropdown"
-	| "fullwidthcards"
-	| "carousel"
-	| "grid";
 
 interface SelectComponentPropsExt extends SelectComponentProps {
 	/** Type of select component to use. */

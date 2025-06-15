@@ -7,20 +7,23 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	ISelectComponentItemDataType,
+	SelectComponentType,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {validateSelectParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import {MantineThemeComponent, MultiSelect, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
 import React, {useCallback, useMemo} from "react";
 import SelectComponent, {
-	SelectComponentItemDataType,
 	SelectComponentSettings,
-	SelectComponentType,
 } from "./select/SelectComponent";
 
 interface ISelectComponentOverrides {
 	/** Type of select component to use. */
 	type?: SelectComponentType;
 	/** Record containing optional further item data per item name. */
-	itemData?: Record<string, SelectComponentItemDataType>;
+	itemData?: Record<string, ISelectComponentItemDataType>;
 	/** Optional further settings, like image width etc. */
 	settings?: SelectComponentSettings;
 }
@@ -68,8 +71,8 @@ export default function ParameterSelectComponent(
 		props,
 	);
 
-	// get component settings for the current parameter based on displayname or name
-	const settings = useMemo(() => {
+	// get component settings for the current parameter based on displayname or name from the theme
+	const themeSettings = useMemo(() => {
 		return (
 			componentSettings?.[
 				definition.displayname || definition.name || definition.id
@@ -81,6 +84,25 @@ export default function ParameterSelectComponent(
 		definition.displayname,
 		definition.id,
 	]);
+
+	// get component settings from the parameter definition
+	const definitionSettings = useMemo(() => {
+		if (definition.settings) {
+			const result = validateSelectParameterSettings(definition.settings);
+			if (result.success) {
+				return result.data;
+			} else {
+				console.warn(
+					`Invalid settings for parameter id "${definition.id}, name "${definition.name}, type "${definition.type}": ${result.error}`,
+				);
+			}
+		}
+		return {};
+	}, [definition.settings]);
+
+	const settings = useMemo(() => {
+		return {...themeSettings, ...definitionSettings};
+	}, [themeSettings, definitionSettings]);
 
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 

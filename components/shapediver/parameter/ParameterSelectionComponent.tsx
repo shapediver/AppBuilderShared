@@ -46,7 +46,7 @@ const parseNames = (value?: string): string[] => {
 };
 
 /**
- * Functional component that creates a switch component for a selection parameter.
+ * Functional component that creates a selection parameter, allowing selection of objects in the viewport.
  *
  * @returns
  */

@@ -1,12 +1,42 @@
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ShapeDiverResponseParameterStructure} from "@shapediver/api.geometry-api-dto-v2";
 import {
-	IDrawingParameterJsonSchema,
-	IInteractionParameterJsonSchema,
 	PARAMETER_TYPE,
 	PARAMETER_VISUALIZATION,
 } from "@shapediver/viewer.session";
 import {z} from "zod";
+
+// Zod type definition for SelectComponentType
+const SelectComponentTypeSchema = z.enum([
+	"buttonflex",
+	"buttongroup",
+	"chipgroup",
+	"dropdown",
+	"color",
+	"imagedropdown",
+	"fullwidthcards",
+	"carousel",
+	"grid",
+]);
+
+// Zod type definition for ISelectComponentItemDataType
+const ISelectComponentItemDataTypeSchema = z.object({
+	displayname: z.string().optional(),
+	tooltip: z.string().optional(),
+	description: z.string().optional(),
+	imageUrl: z.string().optional(),
+	color: z.string().optional(),
+});
+
+// Zod type definition for ISelectParameterSettings
+const ISelectParameterSettingsSchema = z.object({
+	type: SelectComponentTypeSchema.optional(),
+	itemData: z.record(ISelectComponentItemDataTypeSchema).optional(),
+});
+
+export const validateSelectParameterSettings = (value: any) => {
+	return ISelectParameterSettingsSchema.safeParse(value);
+};
 
 // Zod type definition for IAppBuilderParameterDefinition
 const IAppBuilderParameterDefinitionSchema = z.object({
@@ -38,9 +68,7 @@ const IAppBuilderParameterDefinitionSchema = z.object({
 	tooltip: z.string().optional(),
 	displayname: z.string().optional(),
 	hidden: z.boolean(),
-	settings: z
-		.union([IInteractionParameterJsonSchema, IDrawingParameterJsonSchema])
-		.optional(),
+	settings: z.record(z.any()).optional(),
 	value: z.string().optional(),
 });
 
