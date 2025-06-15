@@ -8,6 +8,38 @@ import {
 } from "@shapediver/viewer.session";
 import {z} from "zod";
 
+// Zod type definition for SelectComponentType
+const SelectComponentTypeSchema = z.enum([
+	"buttonflex",
+	"buttongroup",
+	"chipgroup",
+	"dropdown",
+	"color",
+	"imagedropdown",
+	"fullwidthcards",
+	"carousel",
+	"grid",
+]);
+
+// Zod type definition for ISelectComponentItemDataType
+const ISelectComponentItemDataTypeSchema = z.object({
+	displayname: z.string().optional(),
+	tooltip: z.string().optional(),
+	description: z.string().optional(),
+	imageUrl: z.string().optional(),
+	color: z.string().optional(),
+});
+
+// Zod type definition for ISelectParameterSettings
+const ISelectParameterSettingsSchema = z.object({
+	type: SelectComponentTypeSchema.optional(),
+	itemData: z.record(ISelectComponentItemDataTypeSchema).optional(),
+});
+
+export const validateSelectParameterSettings = (value: any) => {
+	return ISelectParameterSettingsSchema.safeParse(value);
+};
+
 // Zod type definition for IAppBuilderParameterDefinition
 const IAppBuilderParameterDefinitionSchema = z.object({
 	id: z.string(),
@@ -39,7 +71,11 @@ const IAppBuilderParameterDefinitionSchema = z.object({
 	displayname: z.string().optional(),
 	hidden: z.boolean(),
 	settings: z
-		.union([IInteractionParameterJsonSchema, IDrawingParameterJsonSchema])
+		.union([
+			IInteractionParameterJsonSchema,
+			IDrawingParameterJsonSchema,
+			ISelectParameterSettingsSchema,
+		])
 		.optional(),
 	value: z.string().optional(),
 });
