@@ -1,8 +1,4 @@
-import {
-	IViewportApi,
-	RENDERER_TYPE,
-	sceneTree,
-} from "@shapediver/viewer.viewport";
+import {IViewportApi, RENDERER_TYPE} from "@shapediver/viewer.viewport";
 import {useCallback, useEffect, useRef, useState} from "react";
 
 // Map of element IDs to their properties
@@ -161,8 +157,6 @@ const disableAttributeVisualization = () => {
 		if (!viewport) return;
 		if (viewport.type === RENDERER_TYPE.ATTRIBUTES) {
 			viewport.type = RENDERER_TYPE.STANDARD;
-			sceneTree.root.updateVersion();
-			viewport.update();
 		}
 	});
 };
