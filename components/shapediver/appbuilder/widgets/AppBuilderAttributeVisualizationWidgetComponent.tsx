@@ -364,6 +364,51 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		}
 	}, [isVisible, hasBeenLoaded]);
 
+	useEffect(() => {
+		if (isInitialized === false) return;
+
+		// update the current rendered attribute according to the attribute overview
+		if (renderedAttribute) {
+			const attributeId = renderedAttribute.key;
+			const attribute = getAttributeById(attributeId);
+			if (attribute) {
+				// set custom values to the current ones
+				if (SdtfPrimitiveTypeGuard.isNumberType(attribute.type)) {
+					const numberAttribute =
+						attribute as INumberAttributeExtended;
+					const currentAttribute =
+						renderedAttribute as INumberAttributeExtended;
+					setRenderedAttribute({
+						...numberAttribute,
+						customMin:
+							currentAttribute.customMin || numberAttribute.min,
+						customMax:
+							currentAttribute.customMax || numberAttribute.max,
+					} as INumberAttributeExtended);
+				} else if (
+					!SdtfPrimitiveTypeGuard.isStringType(attribute.type) &&
+					!SdtfPrimitiveTypeGuard.isColorType(attribute.type)
+				) {
+					const defaultAttribute =
+						attribute as IDefaultAttributeExtended;
+					const currentAttribute =
+						renderedAttribute as IDefaultAttributeExtended;
+					setRenderedAttribute({
+						...defaultAttribute,
+						customColor:
+							currentAttribute.customColor ||
+							defaultAttribute.color,
+					} as IDefaultAttributeExtended);
+				} else {
+					setRenderedAttribute(attribute);
+				}
+			} else {
+				// if the attribute is not available in the overview, we set it to undefined
+				setRenderedAttribute(undefined);
+			}
+		}
+	}, [isInitialized, attributeOverview, getAttributeById]);
+
 	/**
 	 * Use effect to update the attributes of the attribute visualization engine
 	 * when the rendered attributes change

@@ -10,6 +10,14 @@ export interface INumberAttributeCustomData {
 	 * The custom number maximum value.
 	 */
 	customMax?: number;
+	/**
+	 * The custom number absolute minimum value.
+	 */
+	absoluteMin?: number;
+	/**
+	 * The custom number absolute maximum value.
+	 */
+	absoluteMax?: number;
 }
 
 export interface IDefaultAttributeCustomData {
