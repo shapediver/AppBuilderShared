@@ -320,7 +320,7 @@ export interface IAppBuilderWidgetPropsAttributeVisualization {
 	/** Initial attribute that is displayed (default: first attribute in the list) */
 	initialAttribute?: string;
 	/** Material definition for objects that don't have the selected attribute. (default: { color: "#666666", opacity: 1 }) */
-	material?: {
+	passiveMaterial?: {
 		/** Color of the material. (default: "#666666") */
 		color?: string;
 		/** Opacity of the material. (default: 1) */
