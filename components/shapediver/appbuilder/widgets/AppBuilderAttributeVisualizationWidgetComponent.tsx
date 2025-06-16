@@ -78,7 +78,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * Parsing of the incoming props and assigning default values if not provided
 	 */
 	const {
-		defaultGradient = ATTRIBUTE_VISUALIZATION.BLUE_GREEN_YELLOW_RED_PURPLE_WHITE,
+		defaultGradient = ATTRIBUTE_VISUALIZATION.BLUE_GREEN_RED,
 		initialAttribute: propsInitialAttribute,
 		attributes: propsAttributes,
 		visualizationMode = AttributeVisualizationVisibility.DefaultOff,
@@ -103,7 +103,9 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	const [renderedAttribute, setRenderedAttribute] = useState<
 		IAttributeDefinition | undefined
 	>();
+	const [hasBeenLoaded, setHasBeenLoaded] = useState<boolean>(false);
 	const [active, setActive] = useState<boolean>(false);
+	const [wasActive, setWasActive] = useState<boolean>(false);
 	const [loadSdTF, setLoadSdTF] = useState<boolean>(false);
 	const [attributes, setAttributes] = useState<
 		| (
@@ -126,7 +128,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 
 	const widgetId = useId();
 
-	const {ref, isVisible, hasPriority, getPriority} =
+	const {ref, isVisible, hasPriority, requestPriority} =
 		useAttributeWidgetVisibilityTracker({
 			wantsPriority:
 				visualizationMode ===
@@ -135,8 +137,10 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 
 	const {isEnabled, canBeEnabled, isInitialized} = useMemo(() => {
 		return {
-			isEnabled: isVisible && loadSdTF && active && hasPriority,
+			isEnabled: loadSdTF && active && hasPriority,
 			isInitialized: renderedAttribute !== undefined,
+			isFullyInitialized:
+				renderedAttribute !== undefined && hasBeenLoaded,
 			canBeEnabled: isVisible && loadSdTF,
 		};
 	}, [isVisible, loadSdTF, active, renderedAttribute]);
@@ -150,7 +154,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	const sessions = useShapeDiverStoreSession((state) => state.sessions);
 
 	const {attributeVisualizationEngine} = useAttributeVisualizationEngine(
-		canBeEnabled ? viewportId : "",
+		loadSdTF ? viewportId : "",
 	);
 
 	/**
@@ -286,7 +290,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * or if the attribute overview is available
 	 */
 	useEffect(() => {
-		if (canBeEnabled === false) return;
 		if (attributeOverview === undefined) return;
 
 		const attributeIds: string[] = [];
@@ -365,17 +368,15 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * Use effect that sets the active state variable depending on the visualization mode
 	 */
 	useEffect(() => {
-		if (hasPriority === false) {
-			setActive(false);
-			return;
-		}
+		if (hasPriority === false) return;
 		if (canBeEnabled === false) return;
 		if (isInitialized) return;
 
 		// only set this if we just created the engine
-		setActive(
-			visualizationMode === AttributeVisualizationVisibility.DefaultOn,
-		);
+		const a =
+			visualizationMode === AttributeVisualizationVisibility.DefaultOn;
+		setActive(a);
+		setWasActive(a);
 	}, [hasPriority, canBeEnabled, visualizationMode]);
 
 	/**
@@ -403,6 +404,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		if (isEnabled === false) return;
 
 		if (renderedAttribute) {
+			if (!hasBeenLoaded) setHasBeenLoaded(true);
 			if (SdtfPrimitiveTypeGuard.isNumberType(renderedAttribute.type)) {
 				const numberAttribute =
 					renderedAttribute as INumberAttributeExtended;
@@ -464,6 +466,32 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 
 		toggleAttributeVisualization(active, viewport as IViewportApi);
 	}, [canBeEnabled, hasPriority, active, viewport]);
+
+	/**
+	 * UseEffect to remember the active state of the widget when the priority changes
+	 * This is done by checking if the widget is active and if the priority is set
+	 */
+	useEffect(() => {
+		if (!isInitialized) return;
+		if (hasPriority === false && active === true) {
+			setActive(false);
+			if (canBeEnabled) {
+				setWasActive(false);
+			} else {
+				toggleAttributeVisualization(false, viewport as IViewportApi);
+			}
+			return;
+		}
+
+		if (!canBeEnabled) return;
+		// case of tab switch
+		if (hasPriority === false && wasActive) {
+			requestPriority();
+			setActive(true);
+			setWasActive(true);
+			toggleAttributeVisualization(true, viewport as IViewportApi);
+		}
+	}, [active, canBeEnabled, hasPriority, isInitialized, wasActive, viewport]);
 
 	/**
 	 *
@@ -603,7 +631,8 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 						</Title>
 						<ActionIcon
 							onClick={() => {
-								getPriority();
+								if (!hasPriority) requestPriority();
+								setWasActive(!active);
 								setActive(!active);
 							}}
 						>
