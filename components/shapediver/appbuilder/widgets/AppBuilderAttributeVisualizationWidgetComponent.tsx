@@ -42,7 +42,7 @@ import {
 } from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import {IconEye, IconEyeOff} from "@tabler/icons-react";
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
 import ColorAttribute from "./attributes/ColorAttribute";
 import DefaultAttribute, {
 	IDefaultAttributeExtended,
@@ -86,6 +86,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		passiveMaterial,
 		title = "Attributes",
 		tooltip = "",
+		...paperProps
 	} = props;
 
 	/**
@@ -123,6 +124,8 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 *
 	 */
 
+	const widgetId = useId();
+
 	const {ref, isVisible, hasPriority, getPriority} =
 		useAttributeWidgetVisibilityTracker({
 			wantsPriority:
@@ -132,7 +135,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 
 	const {isEnabled, canBeEnabled, isInitialized} = useMemo(() => {
 		return {
-			isEnabled: isVisible && loadSdTF && active,
+			isEnabled: isVisible && loadSdTF && active && hasPriority,
 			isInitialized: renderedAttribute !== undefined,
 			canBeEnabled: isVisible && loadSdTF,
 		};
@@ -500,6 +503,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 						} as INumberAttributeExtended);
 					}}
 					showLegend={showLegend}
+					widgetId={widgetId}
 				/>
 			);
 		} else if (SdtfPrimitiveTypeGuard.isColorType(renderedAttribute.type)) {
@@ -520,6 +524,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 							customColor: color,
 						} as IDefaultAttributeExtended)
 					}
+					widgetId={widgetId}
 				/>
 			);
 		}
@@ -589,7 +594,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	return (
 		<>
 			<TooltipWrapper label={tooltip}>
-				<Paper ref={ref} {...props}>
+				<Paper ref={ref} {...paperProps}>
 					<Group justify="space-between" mb={"xs"}>
 						<Title
 							order={2} // TODO make this a style prop
@@ -621,8 +626,14 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 						) : attributes && attributes.length > 0 ? (
 							<Text>
 								{typeof attributes[0] === "string"
-									? attributes[0]
-									: attributes[0].attribute}
+									? getAttributeKey(
+											attributes[0],
+											attributeOverview,
+										)
+									: getAttributeKey(
+											attributes[0].attribute,
+											attributeOverview,
+										)}
 							</Text>
 						) : null}
 						{renderedAttributeElement}
@@ -686,7 +697,8 @@ const createAttributeId = (key: string, overview: ISDTFOverview): string[] => {
  * @param overview
  * @returns {string | undefined}
  */
-const getAttributeKey = (id: string, overview: ISDTFOverview) => {
+const getAttributeKey = (id: string, overview?: ISDTFOverview) => {
+	if (!overview) return undefined;
 	if (overview[id]) {
 		return id;
 	} else {

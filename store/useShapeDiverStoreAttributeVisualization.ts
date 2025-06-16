@@ -14,19 +14,24 @@ export const useShapeDiverStoreAttributeVisualization =
 				attributeVisualizationEngines: {},
 				customAttributeData: {},
 				updateCustomAttributeData: (
+					widgetId: string,
 					attributeId: string,
 					definition:
 						| INumberAttributeCustomData
 						| IDefaultAttributeCustomData,
 				) => {
-					const {customAttributeData} = get();
 					set(
 						(state) => ({
 							customAttributeData: {
 								...state.customAttributeData,
-								[attributeId]: {
-									...customAttributeData[attributeId],
-									...definition,
+								[widgetId]: {
+									...state.customAttributeData[widgetId],
+									[attributeId]: {
+										...state.customAttributeData[
+											widgetId
+										]?.[attributeId],
+										...definition,
+									},
 								},
 							},
 						}),

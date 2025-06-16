@@ -31,19 +31,23 @@ export interface IShapeDiverStoreAttributeVisualization {
 	 * Custom attribute definitions currently known by the store.
 	 */
 	customAttributeData: {
-		[attributeId: string]:
-			| INumberAttributeCustomData
-			| IDefaultAttributeCustomData;
+		[widgetId: string]: {
+			[attributeId: string]:
+				| INumberAttributeCustomData
+				| IDefaultAttributeCustomData;
+		};
 	};
 
 	/**
 	 * Update the custom attribute data for a specific widget and attribute.
 	 *
+	 * @param widgetId
 	 * @param attributeId
 	 * @param definition
 	 * @returns
 	 */
 	updateCustomAttributeData: (
+		widgetId: string,
 		attributeId: string,
 		definition: INumberAttributeCustomData | IDefaultAttributeCustomData,
 	) => void;

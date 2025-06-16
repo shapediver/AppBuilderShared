@@ -3,7 +3,7 @@ import {useShapeDiverStoreAttributeVisualization} from "@AppBuilderShared/store/
 import {IDefaultAttributeCustomData} from "@AppBuilderShared/types/store/shapediverStoreAttributeVisualization";
 import {ColorInput} from "@mantine/core";
 import {IDefaultAttribute} from "@shapediver/viewer.features.attribute-visualization";
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 export type IDefaultAttributeExtended = Omit<IDefaultAttribute, "color"> &
@@ -11,13 +11,14 @@ export type IDefaultAttributeExtended = Omit<IDefaultAttribute, "color"> &
 	IDefaultAttributeCustomData;
 
 interface Props {
+	widgetId: string;
 	name: string;
 	attribute: IDefaultAttributeExtended;
 	updateColor: (color: string) => void;
 }
 
 export default function DefaultAttribute(props: Props) {
-	const {attribute, name, updateColor} = props;
+	const {widgetId, attribute, name, updateColor} = props;
 	const {updateCustomAttributeData, customAttributeData} =
 		useShapeDiverStoreAttributeVisualization(
 			useShallow((state) => ({
@@ -32,26 +33,30 @@ export default function DefaultAttribute(props: Props) {
 
 	useEffect(() => {
 		// Get the custom attribute data
-		const customValues = customAttributeData[
-			name + "_" + attribute.type
-		] as IDefaultAttributeExtended | undefined;
+		const widgetData = customAttributeData[widgetId];
+		const customValues = widgetData?.[name + "_" + attribute.type] as
+			| IDefaultAttributeExtended
+			| undefined;
 
 		if (attribute.customColor === undefined)
 			attribute.customColor =
 				customValues?.customColor || (attribute.color as string);
 
 		setColor(attribute.customColor as string);
-	}, [attribute]);
+	}, [widgetId, attribute]);
 
-	const updateCustomColor = (color: string) => {
-		setColor(color);
-		updateColor(color);
+	const updateCustomColor = useCallback(
+		(color: string) => {
+			setColor(color);
+			updateColor(color);
 
-		// Update the custom attribute data
-		updateCustomAttributeData(name + "_" + attribute.type, {
-			customColor: color,
-		});
-	};
+			// Update the custom attribute data
+			updateCustomAttributeData(widgetId, name + "_" + attribute.type, {
+				customColor: color,
+			});
+		},
+		[widgetId, attribute],
+	);
 
 	return (
 		<BaseAttribute name={name} type={attribute.type}>
