@@ -311,7 +311,7 @@ export default function NumberAttribute(props: Props) {
 					}}
 					min={absoluteMinValue * multiplyingFactor}
 					max={absoluteMaxValue * multiplyingFactor}
-					step={0.01 * multiplyingFactor}
+					step={0.01}
 					marks={[
 						absoluteMinValue,
 						customMinValue,
