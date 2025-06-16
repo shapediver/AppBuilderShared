@@ -304,7 +304,7 @@ export enum AttributeVisualizationVisibility {
 export interface IAppBuilderWidgetPropsAttributeVisualization {
 	/** Title for the widget (default: "Attributes") */
 	title?: string;
-	/** Tooltip for the widget (default: TODO) */
+	/** Tooltip for the widget (default: "") */
 	tooltip?: string;
 	/** List of attributes to be visualized.
 	 *  Either a string or an object with the attribute name and an optional gradient.
