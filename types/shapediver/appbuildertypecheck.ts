@@ -350,15 +350,17 @@ const IAppBuilderWidgetPropsAttributeVisualizationGradientSchema = z
 const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.object({
 	title: z.string().optional(),
 	tooltip: z.string().optional(),
-	attributes: z.array(
-		z
-			.object({
-				attribute: z.string(),
-				gradient:
-					IAppBuilderWidgetPropsAttributeVisualizationGradientSchema.optional(),
-			})
-			.or(z.string()),
-	),
+	attributes: z
+		.array(
+			z
+				.object({
+					attribute: z.string(),
+					gradient:
+						IAppBuilderWidgetPropsAttributeVisualizationGradientSchema.optional(),
+				})
+				.or(z.string()),
+		)
+		.optional(),
 	visualizationMode: z.enum(["defaultOn", "defaultOff"]).optional(),
 	showLegend: z.boolean().optional(),
 	defaultGradient:
