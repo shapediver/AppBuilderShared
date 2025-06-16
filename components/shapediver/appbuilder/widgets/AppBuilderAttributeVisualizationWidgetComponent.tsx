@@ -29,6 +29,7 @@ import {
 	IAttribute,
 	IColorAttribute,
 	IDefaultAttribute,
+	isStringGradient,
 	IStringAttribute,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {
@@ -65,6 +66,9 @@ type StyleProps = PaperProps & {};
 
 type AppBuilderAttributeVisualizationWidgetThemePropsType = Partial<StyleProps>;
 
+const defaultGeneralGradient: Gradient = ATTRIBUTE_VISUALIZATION.TURBO;
+const defaultNumberGradient: Gradient = ATTRIBUTE_VISUALIZATION.VIRIDIS;
+
 export function AppBuilderAttributeVisualizationWidgetThemeProps(
 	props: AppBuilderAttributeVisualizationWidgetThemePropsType,
 ): MantineThemeComponent {
@@ -81,7 +85,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * Parsing of the incoming props and assigning default values if not provided
 	 */
 	const {
-		defaultGradient = ATTRIBUTE_VISUALIZATION.BLUE_GREEN_RED,
+		defaultGradient,
 		initialAttribute: propsInitialAttribute,
 		attributes: propsAttributes,
 		visualizationMode = AttributeVisualizationVisibility.DefaultOff,
@@ -165,7 +169,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 */
 	const getGradient = useCallback(
 		(attributeId: string): Gradient => {
-			if (!attributes) return defaultGradient;
+			if (!attributes) return defaultGradient || defaultGeneralGradient;
 			const definition = attributes.find((attribute) => {
 				if (typeof attribute === "string") return false;
 				return attribute.attribute === attributeId;
@@ -173,10 +177,30 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				attribute: string;
 				gradient?: Gradient;
 			};
+
+			const parts = attributeId.split("_");
+			const type = parts[1] || "string";
+
 			if (definition && definition.gradient) {
+				if (typeof definition.gradient === "string")
+					return definition.gradient as Gradient;
+
+				if (
+					SdtfPrimitiveTypeGuard.isNumberType(type) &&
+					isStringGradient(definition.gradient)
+				) {
+					// in this case we use the default gradient for numbers
+					return defaultGradient || defaultNumberGradient;
+				}
+
 				return definition.gradient;
 			}
-			return defaultGradient;
+
+			return defaultGradient
+				? defaultGradient
+				: SdtfPrimitiveTypeGuard.isNumberType(type)
+					? defaultNumberGradient
+					: defaultGeneralGradient;
 		},
 		[attributes, defaultGradient],
 	);
