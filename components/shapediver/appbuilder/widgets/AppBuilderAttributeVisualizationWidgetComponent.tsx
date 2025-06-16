@@ -179,7 +179,11 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			};
 
 			const parts = attributeId.split("_");
-			const type = parts[1] || "string";
+
+			// remove the last part of the attributeId
+			// this is the type hint, which is not needed for the comparison
+			const typeHint = parts.pop();
+			const type = typeHint || "string";
 
 			if (definition && definition.gradient) {
 				if (typeof definition.gradient === "string")
@@ -235,8 +239,11 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			} else {
 				const parts = id.split("_");
 				if (parts.length > 1) {
-					const attributeKey = parts[0];
-					const typeHint = parts[1];
+					// remove the last part of the attributeId
+					// this is the type hint, which is not needed for the comparison
+					const typeHint = parts.pop();
+					// recombine the party in case of underscores in the key
+					const attributeKey = parts.join("_");
 					if (attributeOverview[attributeKey]) {
 						const attribute = attributeOverview[attributeKey].find(
 							(attribute) => attribute.typeHint === typeHint,
@@ -400,9 +407,14 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			const attributeId =
 				attributeIds.find((attributeId) => {
 					const parts = attributeId.split("_");
+					// remove the last part of the attributeId
+					// this is the type hint, which is not needed for the comparison
+					const typeHint = parts.pop();
+					// recombine the party in case of underscores in the key
+					const attributeKey = parts.join("_");
 					return (
-						parts[0] === renderedAttribute.key &&
-						parts[1] === renderedAttribute.type
+						attributeKey === renderedAttribute.key &&
+						typeHint === renderedAttribute.type
 					);
 				}) || attributeIds[0];
 
@@ -727,8 +739,12 @@ const getAttributeKey = (id: string, overview?: ISDTFOverview) => {
 	} else {
 		const parts = id.split("_");
 		if (parts.length > 1) {
-			const attributeKey = parts[0];
-			const typeHint = parts[1];
+			// remove the last part of the attributeId
+			// this is the type hint, which is not needed for the comparison
+			const typeHint = parts.pop();
+			// recombine the party in case of underscores in the key
+			const attributeKey = parts.join("_");
+
 			if (overview[attributeKey]) {
 				const attribute = overview[attributeKey].find(
 					(attribute) => attribute.typeHint === typeHint,
