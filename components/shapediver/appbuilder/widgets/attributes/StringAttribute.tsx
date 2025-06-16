@@ -1,10 +1,13 @@
 import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
-import {Box, Group, Stack, Text} from "@mantine/core";
+import {Badge} from "@mantine/core";
 import {
-	ATTRIBUTE_VISUALIZATION,
+	AttributeVisualizationUtils,
+	isStringGradient,
 	IStringAttribute,
+	IStringGradient,
 } from "@shapediver/viewer.features.attribute-visualization";
-import React, {useEffect, useState} from "react";
+import {Converter, MaterialStandardData} from "@shapediver/viewer.session";
+import React, {useEffect, useMemo} from "react";
 
 interface Props {
 	name: string;
@@ -15,55 +18,99 @@ interface Props {
 
 export default function StringAttribute(props: Props) {
 	const {attribute, name, updateAttribute} = props;
-	const [backgroundColor, setBackgroundColor] = useState<string>("");
 
 	useEffect(() => {
 		updateAttribute(attribute);
-
-		// Set background color
-		if (
-			attribute.visualization === ATTRIBUTE_VISUALIZATION.GRAYSCALE ||
-			attribute.visualization === ATTRIBUTE_VISUALIZATION.OPACITY
-		) {
-			setBackgroundColor("linear-gradient(90deg, #000000, #ffffff)");
-		} else if (attribute.visualization === ATTRIBUTE_VISUALIZATION.HSL) {
-			// show full hsl gradient
-			setBackgroundColor(
-				"linear-gradient(90deg, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))",
-			);
-		} else if (typeof attribute.visualization === "string") {
-			setBackgroundColor(
-				"linear-gradient(90deg, " +
-					(attribute.visualization as string).replaceAll("_", ", ") +
-					")",
-			);
-		}
 	}, [attribute]);
 
-	const legend = (
-		<Stack p="xs">
-			{(props.showLegend ?? true) && (
-				<Stack>
-					<Box
-						style={{
-							width: "100%",
-							height: 40,
-							borderRadius: 4,
-							background: backgroundColor,
-						}}
-					/>
-					<Stack>
-						<Group justify="space-between">
-							<Text size="xs">{attribute.values[0]}</Text>
-							<Text size="xs">
-								{attribute.values[attribute.values.length - 1]}
-							</Text>
-						</Group>
-					</Stack>
-				</Stack>
-			)}
-		</Stack>
-	);
+	const legend = useMemo(() => {
+		const colorToValueDictionary: {
+			[key: string]: {
+				value: string;
+				count: number;
+			}[];
+		} = {};
+
+		attribute.values.forEach((item) => {
+			if (typeof attribute.visualization === "string") {
+				const data = AttributeVisualizationUtils.stringVisualization(
+					item,
+					attribute.values,
+					attribute.visualization,
+					"standard",
+					new MaterialStandardData(),
+				);
+				const c = Converter.instance.toHexColor(data?.material.color);
+				if (colorToValueDictionary[c] === undefined) {
+					colorToValueDictionary[c] = [
+						{
+							value: item,
+							count: 1,
+						},
+					];
+				} else {
+					const existingValue = colorToValueDictionary[c].find(
+						(v) => v.value === item,
+					);
+					if (existingValue === undefined) {
+						colorToValueDictionary[c].push({
+							value: item,
+							count: 1,
+						});
+					} else {
+						existingValue.count++;
+					}
+				}
+			} else if (isStringGradient(attribute.visualization)) {
+				const gradient = attribute.visualization as IStringGradient;
+				gradient.labelColors.map((color) => {
+					if (color.values.includes(item)) {
+						const c = Converter.instance.toHexColor(color.color);
+						if (colorToValueDictionary[c] === undefined) {
+							colorToValueDictionary[c] = [
+								{
+									value: item,
+									count: 1,
+								},
+							];
+						} else {
+							const existingValue = colorToValueDictionary[
+								c
+							].find((v) => v.value === item);
+							if (existingValue === undefined) {
+								colorToValueDictionary[c].push({
+									value: item,
+									count: 1,
+								});
+							} else {
+								existingValue.count++;
+							}
+						}
+					}
+				});
+			}
+		});
+
+		// create badge array
+		return Object.entries(colorToValueDictionary)
+			.map(([color, value], index) => {
+				return value.map((v) => {
+					return (
+						<Badge
+							autoContrast
+							key={JSON.stringify(v) + index}
+							style={{marginRight: "10px"}} // TODO make this a style prop
+							color={color}
+						>
+							{v.count > 1
+								? v.value + " (" + v.count + ")"
+								: v.value}
+						</Badge>
+					);
+				});
+			})
+			.flat();
+	}, [attribute]);
 
 	return (
 		<BaseAttribute
