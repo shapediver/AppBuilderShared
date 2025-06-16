@@ -581,7 +581,6 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	mb: 4,
 				// },
 				// alertProps: {
-				// 	color: "blue",
 				// 	title: "Desktop Clients",
 				// },
 				// alertTextProps: {

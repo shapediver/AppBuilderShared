@@ -49,7 +49,7 @@ export const useStargateConnection = () => {
 	const selectedClientRef = useRef<IStargateClientChoice>(DEFAULT_CHOICE);
 	const isStargateEnabled = isRunningInPlatform();
 
-	const getStargateInstance = async (dcnHandler = () => {}) => {
+	const getStargateInstance = useCallback(async (dcnHandler = () => {}) => {
 		const {sdk} = useShapeDiverStoreStargate.getState();
 		if (!sdk) {
 			const {currentModel: model, clientRef} =
@@ -93,21 +93,24 @@ export const useStargateConnection = () => {
 		}
 
 		return sdk;
-	};
+	}, []);
 
-	const handleSetSelectedClient = async (choice: IStargateClientChoice) => {
-		setSelectedClient(choice);
-		selectedClientRef.current = choice;
-		setSupportedData([]);
-		if (choice.data && isInitialized()) {
-			try {
-				const data = await getSupportedData(choice.data);
-				setSupportedData(data);
-			} catch (error) {
-				console.error("Error getting supported parameters:", error);
+	const handleSetSelectedClient = useCallback(
+		async (choice: IStargateClientChoice) => {
+			setSelectedClient(choice);
+			selectedClientRef.current = choice;
+			setSupportedData([]);
+			if (choice.data && isInitialized()) {
+				try {
+					const data = await getSupportedData(choice.data);
+					setSupportedData(data);
+				} catch (error) {
+					console.error("Error getting supported parameters:", error);
+				}
 			}
-		}
-	};
+		},
+		[],
+	);
 
 	const connectionReset = useCallback(() => {
 		handleSetSelectedClient(DEFAULT_CHOICE);
@@ -115,7 +118,7 @@ export const useStargateConnection = () => {
 		pingConnectionClose();
 	}, []);
 
-	const stargateRegister = async () => {
+	const stargateRegister = useCallback(async () => {
 		if (!isStargateEnabled) return;
 
 		try {
@@ -128,9 +131,9 @@ export const useStargateConnection = () => {
 			console.error("Stargate registration failed:", error);
 			throw error;
 		}
-	};
+	}, [isStargateEnabled]);
 
-	const stargateGetClients = async () => {
+	const stargateGetClients = useCallback(async () => {
 		if (!isStargateEnabled || !isInitialized()) {
 			connectionReset();
 			return;
@@ -170,9 +173,9 @@ export const useStargateConnection = () => {
 			console.error("Error getting Stargate clients:", error);
 			connectionReset();
 		}
-	};
+	}, [isStargateEnabled]);
 
-	const refreshClients = async () => {
+	const refreshClients = useCallback(async () => {
 		try {
 			setLoading(true);
 
@@ -185,9 +188,9 @@ export const useStargateConnection = () => {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
 
-	const pingConnectionStart = () => {
+	const pingConnectionStart = useCallback(() => {
 		connectionIntervalRef.current = setInterval(async () => {
 			try {
 				const selectedClient = selectedClientRef.current;
@@ -204,7 +207,6 @@ export const useStargateConnection = () => {
 
 				if (selectedClient.data) {
 					try {
-						// Implement periodic status check
 						await checkStatus(selectedClient.data);
 						setNetworkStatus(NetworkStatus.connected);
 					} catch (error) {
@@ -217,16 +219,16 @@ export const useStargateConnection = () => {
 				setNetworkStatus(NetworkStatus.disconnected);
 			}
 		}, connectionIntervalMs);
-	};
+	}, []);
 
-	const pingConnectionClose = () => {
+	const pingConnectionClose = useCallback(() => {
 		if (connectionIntervalRef.current) {
 			clearInterval(connectionIntervalRef.current);
 			connectionIntervalRef.current = null;
 		}
-	};
+	}, []);
 
-	const selectClient = async (choice: IStargateClientChoice) => {
+	const selectClient = useCallback(async (choice: IStargateClientChoice) => {
 		try {
 			setLoading(true);
 			await handleSetSelectedClient(choice);
@@ -257,62 +259,71 @@ export const useStargateConnection = () => {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
 
-	const getClients = async (): Promise<ISdStargateClientModel[]> => {
+	const getClients = useCallback(async (): Promise<
+		ISdStargateClientModel[]
+	> => {
 		const {sdk} = useShapeDiverStoreStargate.getState();
 		if (!sdk) {
 			throw new Error("Stargate instance not initialized");
 		}
 		return sdk.listFrontendClients();
-	};
+	}, []);
 
-	const getSupportedData = async (
-		client: ISdStargateClientModel,
-	): Promise<ISdStargateGetSupportedDataReplyDto[]> => {
-		const {sdk} = useShapeDiverStoreStargate.getState();
-		if (!sdk) {
-			throw new Error("Stargate instance not initialized");
-		}
-		const command = new SdStargateGetSupportedDataCommand(sdk);
-		return command.send({}, [client]);
-	};
+	const getSupportedData = useCallback(
+		async (
+			client: ISdStargateClientModel,
+		): Promise<ISdStargateGetSupportedDataReplyDto[]> => {
+			const {sdk} = useShapeDiverStoreStargate.getState();
+			if (!sdk) {
+				throw new Error("Stargate instance not initialized");
+			}
+			const command = new SdStargateGetSupportedDataCommand(sdk);
+			return command.send({}, [client]);
+		},
+		[],
+	);
 
-	const checkStatus = async (
-		client: ISdStargateClientModel,
-	): Promise<void> => {
-		const {sdk} = useShapeDiverStoreStargate.getState();
-		if (!sdk) {
-			throw new Error("Stargate instance not initialized");
-		}
-		const command = new SdStargateStatusCommand(sdk);
-		await command.send({}, [client]);
-	};
+	const checkStatus = useCallback(
+		async (client: ISdStargateClientModel): Promise<void> => {
+			const {sdk} = useShapeDiverStoreStargate.getState();
+			if (!sdk) {
+				throw new Error("Stargate instance not initialized");
+			}
+			const command = new SdStargateStatusCommand(sdk);
+			await command.send({}, [client]);
+		},
+		[],
+	);
 
-	const prepareModel = async (
-		client: ISdStargateClientModel,
-		modelId: string,
-	): Promise<void> => {
-		const {sdk} = useShapeDiverStoreStargate.getState();
-		if (!sdk) {
-			throw new Error("Stargate instance not initialized");
-		}
+	const prepareModel = useCallback(
+		async (
+			client: ISdStargateClientModel,
+			modelId: string,
+		): Promise<void> => {
+			const {sdk} = useShapeDiverStoreStargate.getState();
+			if (!sdk) {
+				throw new Error("Stargate instance not initialized");
+			}
 
-		try {
-			const command = new SdStargatePrepareModelCommand(sdk);
-			await command.send({model: {id: modelId}}, [client]);
-		} catch (error: unknown) {
-			console.error("prepareModel error details:", error);
-			throw error;
-		}
-	};
+			try {
+				const command = new SdStargatePrepareModelCommand(sdk);
+				await command.send({model: {id: modelId}}, [client]);
+			} catch (error: unknown) {
+				console.error("prepareModel error details:", error);
+				throw error;
+			}
+		},
+		[],
+	);
 
-	const isInitialized = (): boolean => {
+	const isInitialized = useCallback((): boolean => {
 		const {sdk} = useShapeDiverStoreStargate.getState();
 		return sdk !== null;
-	};
+	}, []);
 
-	const initialize = async () => {
+	const initialize = useCallback(async () => {
 		setLoading(true);
 		setNetworkStatus(NetworkStatus.none);
 		try {
@@ -323,7 +334,7 @@ export const useStargateConnection = () => {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
 
 	return {
 		...localState,

@@ -53,7 +53,6 @@ const defaultStyleProps: Partial<StyleProps> = {
 		mb: 4,
 	},
 	alertProps: {
-		color: "blue",
 		title: "Desktop Clients",
 	},
 	alertTextProps: {

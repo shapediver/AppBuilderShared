@@ -45,6 +45,9 @@ export function shouldUsePlatform() {
  * Test whether the application is running embedded in the ShapeDiver platform.
  */
 export function isRunningInPlatform() {
+	// TODO: remove this once we have a proper way to check if we are running in the platform
+	return true;
+
 	const hostname = window.location.hostname;
 	if (
 		hostname === STAGING_PLATFORM_HOST ||
