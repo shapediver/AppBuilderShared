@@ -290,8 +290,17 @@ export interface IAppBuilderWidgetPropsActions {
 	actions?: IAppBuilderAction[];
 }
 
+/** Enum of the visibility of the attribute visualization. */
+export enum AttributeVisualizationVisibility {
+	/** The attribute visualization is always enabled. */
+	// AlwaysOn = "alwaysOn",
+	/** The attribute visualization is enabled by default, but can be turned off. */
+	DefaultOn = "defaultOn",
+	/** The attribute visualization is disabled by default, but can be turned on. */
+	DefaultOff = "defaultOff",
+}
+
 /** Properties of a widget then attribute visualization. */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IAppBuilderWidgetPropsAttributeVisualization {
 	/** Title for the widget (default: "Attributes") */
 	title?: string;
@@ -308,11 +317,8 @@ export interface IAppBuilderWidgetPropsAttributeVisualization {
 				gradient?: Gradient;
 		  }
 	)[];
-	/** Enable the attribute visualization by default. (default: false)
-	 *  In the future, this might be changed into an ENUM to allow for
-	 *  "defaultOn", "defaultOff", "alwaysOn"
-	 **/
-	visualizationDefaultEnabled?: boolean;
+	/** Enable the attribute visualization by default. (default: AttributeVisualizationVisibility.DefaultOff) */
+	visualizationMode?: AttributeVisualizationVisibility;
 	/** Show the legend, if there is one. (default: true) */
 	showLegend?: boolean;
 	/** Default gradient, that should be used if none is supplied in the definition of the attribute. (default: TODO) */
