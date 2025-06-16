@@ -215,17 +215,11 @@ export default function NumberAttribute(props: Props) {
 		setCustomMinValue(attribute.customMin);
 		setCustomMaxValue(attribute.customMax);
 		const absoluteMin = Math.min(
-			Math.min(
-				Math.min(attribute.min, attribute.customMin),
-				absoluteMinValue,
-			),
+			Math.min(attribute.min, attribute.customMin),
 			customValues?.absoluteMin || Infinity,
 		);
 		const absoluteMax = Math.max(
-			Math.max(
-				Math.max(attribute.max, attribute.customMax),
-				absoluteMaxValue,
-			),
+			Math.max(attribute.max, attribute.customMax),
 			customValues?.absoluteMax || -Infinity,
 		);
 		setAbsoluteMinValue(absoluteMin);
