@@ -308,6 +308,18 @@ export default function NumberAttribute(props: Props) {
 					min={absoluteMinValue * multiplyingFactor}
 					max={absoluteMaxValue * multiplyingFactor}
 					step={0.01}
+					styles={{
+						markLabel: {
+							transform: `translate( 
+								calc(-50% + /* default offset */
+									max(0%, calc(5% - var(--mark-offset))) * 5 - /* if under 5%, add up to 50% */
+									max(0%, calc(var(--mark-offset) - 95%)) * 5 + /* if over 95%, subtract up to 50% */
+									var(--slider-size) / 2 
+								), 
+								calc(var(--mantine-spacing-xs) / 2) 
+								)`,
+						},
+					}}
 					marks={[
 						absoluteMinValue,
 						customMinValue,
