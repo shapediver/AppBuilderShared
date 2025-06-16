@@ -15,7 +15,6 @@ import {
 	Paper,
 	PaperProps,
 	Select,
-	Space,
 	Stack,
 	Text,
 	Title,
@@ -26,9 +25,7 @@ import {
 	IAttribute,
 	IColorAttribute,
 	IDefaultAttribute,
-	INumberGradient,
 	IStringAttribute,
-	IStringGradient,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {
 	addListener,
@@ -468,10 +465,9 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		<>
 			<TooltipWrapper label={cleanedProps.tooltip}>
 				<Paper>
-					<Group justify="space-between">
+					<Group justify="space-between" mb={"xs"}>
 						<Title
 							order={2} // TODO make this a style prop
-							style={{marginBottom: "20px"}} // TODO make this a style prop
 						>
 							{cleanedProps.title}
 						</Title>
@@ -489,7 +485,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 									: cleanedProps.attributes[0].attribute}
 							</Text>
 						) : null}
-						<Space />
 						{renderedAttributeElement}
 					</Stack>
 				</Paper>

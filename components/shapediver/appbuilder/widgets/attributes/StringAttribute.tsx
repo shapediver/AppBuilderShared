@@ -109,7 +109,6 @@ export default function StringAttribute(props: Props) {
 
 	return (
 		<BaseAttribute
-			style={showLegend ? {} : {display: "none"}}
 			name={name}
 			type={attribute.type}
 			options={showLegend ? legend : undefined}
