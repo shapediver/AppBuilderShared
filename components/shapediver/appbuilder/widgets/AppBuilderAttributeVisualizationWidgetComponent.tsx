@@ -77,7 +77,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * Parsing of the incoming props and assigning default values if not provided
 	 */
 	const {
-		defaultGradient = ATTRIBUTE_VISUALIZATION.BLUE_GREEN_RED,
+		defaultGradient = ATTRIBUTE_VISUALIZATION.BLUE_GREEN_YELLOW_RED_PURPLE_WHITE,
 		initialAttribute: propsInitialAttribute,
 		attributes: propsAttributes,
 		visualizationMode = AttributeVisualizationVisibility.DefaultOff,
@@ -189,6 +189,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 						min: attribute[0].min,
 						max: attribute[0].max,
 						values: attribute[0].values,
+						countForValue: attribute[0].countForValue,
 						visualization: getGradient(id),
 					};
 				}
@@ -208,6 +209,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 								min: attribute.min,
 								max: attribute.max,
 								values: attribute.values,
+								countForValue: attribute.countForValue,
 								visualization: getGradient(id),
 							};
 						}
