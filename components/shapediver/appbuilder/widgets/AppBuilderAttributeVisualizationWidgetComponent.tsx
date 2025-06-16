@@ -41,14 +41,7 @@ import {
 } from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import {IconEye, IconEyeOff} from "@tabler/icons-react";
-import React, {
-	useCallback,
-	useEffect,
-	useId,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
 import ColorAttribute from "./attributes/ColorAttribute";
 import DefaultAttribute, {
 	IDefaultAttributeExtended,
@@ -111,7 +104,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	>();
 	const [hasBeenLoaded, setHasBeenLoaded] = useState<boolean>(false);
 	const [active, setActive] = useState<boolean>(false);
-	const [wasActive, setWasActive] = useState<boolean>(false);
 	const [loadSdTF, setLoadSdTF] = useState<boolean>(false);
 	const [attributes, setAttributes] = useState<
 		| (
@@ -133,14 +125,13 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 */
 
 	const widgetId = useId();
-
-	const wantsPriorityRef = useRef(
-		visualizationMode === AttributeVisualizationVisibility.DefaultOn,
-	);
-
-	const {ref, isVisible, hasPriority, noPriority, requestPriority} =
+	const {ref, isVisible, hasPriority, requestPriority} =
 		useAttributeWidgetVisibilityTracker({
-			wantsPriority: wantsPriorityRef.current,
+			wantsPriority:
+				renderedAttribute !== undefined
+					? active
+					: visualizationMode ===
+						AttributeVisualizationVisibility.DefaultOn,
 		});
 
 	const {isEnabled, canBeEnabled, isInitialized} = useMemo(() => {
@@ -371,22 +362,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	]);
 
 	/**
-	 * Use effect that sets the active state variable depending on the visualization mode
-	 * This only happens initially as afterwards we store the state in a ref
-	 */
-	useEffect(() => {
-		if (hasPriority === false) return;
-		if (canBeEnabled === false) return;
-		if (isInitialized) return;
-
-		// only set this if we just created the engine
-		const a =
-			visualizationMode === AttributeVisualizationVisibility.DefaultOn;
-		setActive(a);
-		setWasActive(a);
-	}, [hasPriority, canBeEnabled, visualizationMode, isInitialized]);
-
-	/**
 	 * Use effect that updates the default material of the attribute visualization engine
 	 * This is done by checking if the attribute visualization engine is available
 	 * and if the passive material is provided
@@ -473,42 +448,22 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		if (!canBeEnabled) return;
 
 		if (hasPriority === true) {
-			// the priority of the widget has been set to true
-			// we use the wasActive state variable to remember if the widget was active
-			if (wasActive && !active) setActive(true);
-			toggleAttributeVisualization(wasActive, viewport as IViewportApi);
+			if (
+				hasBeenLoaded === false &&
+				visualizationMode === AttributeVisualizationVisibility.DefaultOn
+			) {
+				setActive(true);
+				toggleAttributeVisualization(true, viewport as IViewportApi);
+			} else if (active === true) {
+				toggleAttributeVisualization(true, viewport as IViewportApi);
+			}
 		} else if (hasPriority === false && active === true) {
-			// the priority of the widget has been set to false
-			// but the widget is still active, so we need to disable it
-			setActive(false);
 			// only if the widget can be enabled we set the wasActive state variable to false
 			// this means that the widget was disabled by another widget being enabled
-			if (canBeEnabled) setWasActive(false);
+			setActive(false);
 			return;
 		}
-	}, [canBeEnabled, hasPriority, isInitialized, wasActive, viewport, active]);
-
-	/**
-	 * UseEffect to disable the attribute visualization if there is no priority assigned
-	 */
-	useEffect(() => {
-		if (!isInitialized) return;
-
-		// there is currently no widget that has priority
-		// so we need to disable the attribute visualization
-		if (noPriority)
-			toggleAttributeVisualization(false, viewport as IViewportApi);
-	}, [noPriority, viewport, isInitialized]);
-
-	/**
-	 * UseEffect to remember the wasActive state variable
-	 */
-	useEffect(() => {
-		if (!hasBeenLoaded) return;
-		// we store the wasActive state variable to remember if the widget was active
-		// we do this in a ref to avoid re-rendering the component
-		wantsPriorityRef.current = wasActive;
-	}, [hasBeenLoaded, wasActive]);
+	}, [canBeEnabled, hasPriority, isInitialized, viewport, active]);
 
 	/**
 	 *
@@ -663,11 +618,9 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 								if (!canBeEnabled) return;
 
 								if (active) {
-									setWasActive(false);
 									setActive(false);
 								} else {
 									if (!hasPriority) requestPriority();
-									setWasActive(true);
 									setActive(true);
 								}
 
