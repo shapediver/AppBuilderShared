@@ -17,6 +17,7 @@ import {
 	Select,
 	Space,
 	Stack,
+	Text,
 	Title,
 } from "@mantine/core";
 import {
@@ -25,7 +26,9 @@ import {
 	IAttribute,
 	IColorAttribute,
 	IDefaultAttribute,
+	INumberGradient,
 	IStringAttribute,
+	IStringGradient,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {
 	addListener,
@@ -33,6 +36,7 @@ import {
 	IEvent,
 	ISDTFOverview,
 	ISessionEvent,
+	MaterialStandardData,
 	RENDERER_TYPE,
 	sceneTree,
 	SDTF_TYPEHINT,
@@ -274,6 +278,21 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		});
 	}, [sessions]);
 
+	useEffect(() => {
+		setActive(
+			cleanedProps.visualizationMode ===
+				AttributeVisualizationVisibility.DefaultOn,
+		);
+
+		if (attributeVisualizationEngine)
+			attributeVisualizationEngine.updateDefaultMaterial(
+				new MaterialStandardData({
+					color: cleanedProps.passiveMaterial.color,
+					opacity: cleanedProps.passiveMaterial.opacity,
+				}),
+			);
+	}, [attributeVisualizationEngine, cleanedProps]);
+
 	/**
 	 * Use effect to update the attributes of the attribute visualization engine
 	 * when the rendered attributes change
@@ -389,11 +408,11 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		<>
 			<Select
 				placeholder="Select an attribute"
+				allowDeselect={false}
 				data={cleanedProps.attributes
 					.map((value) => {
 						const attributeId =
 							typeof value === "string" ? value : value.attribute;
-
 						const attributeKey = getAttributeKey(
 							attributeId,
 							attributeOverview,
@@ -441,6 +460,10 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		</>
 	);
 
+	useEffect(() => {
+		toggleAttributeVisualization(active, viewport as IViewportApi);
+	}, [active, viewport]);
+
 	return (
 		<>
 			<TooltipWrapper label={cleanedProps.tooltip}>
@@ -450,22 +473,22 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 							order={2} // TODO make this a style prop
 							style={{marginBottom: "20px"}} // TODO make this a style prop
 						>
-							{cleanedProps.title}{" "}
+							{cleanedProps.title}
 						</Title>
-						<ActionIcon
-							onClick={() => {
-								toggleAttributeVisualization(
-									!active,
-									viewport as IViewportApi,
-								);
-								setActive((t) => !t);
-							}}
-						>
+						<ActionIcon onClick={() => setActive((t) => !t)}>
 							{active ? <IconEye /> : <IconEyeOff />}
 						</ActionIcon>
 					</Group>
 					<Stack>
-						{attributeElementSelection}
+						{cleanedProps.attributes.length > 1 ? (
+							attributeElementSelection
+						) : cleanedProps.attributes.length > 0 ? (
+							<Text>
+								{typeof cleanedProps.attributes[0] === "string"
+									? cleanedProps.attributes[0]
+									: cleanedProps.attributes[0].attribute}
+							</Text>
+						) : null}
 						<Space />
 						{renderedAttributeElement}
 					</Stack>
@@ -486,6 +509,7 @@ const toggleAttributeVisualization = (
 	toggle: boolean,
 	viewport: IViewportApi,
 ) => {
+	if (!viewport) return;
 	if (toggle) {
 		viewport.type = RENDERER_TYPE.ATTRIBUTES;
 		// TODO why is this necessary?
