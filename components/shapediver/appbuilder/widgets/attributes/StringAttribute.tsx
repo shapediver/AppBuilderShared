@@ -1,41 +1,20 @@
 import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
-import {Box, Group, Select, Stack, Text, TextInput} from "@mantine/core";
+import {Box, Group, Stack, Text} from "@mantine/core";
 import {
 	ATTRIBUTE_VISUALIZATION,
 	IStringAttribute,
 } from "@shapediver/viewer.features.attribute-visualization";
-import {SDTF_TYPEHINT} from "@shapediver/viewer.session";
-import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
 
 interface Props {
 	name: string;
-	attribute: {
-		typeHint: string;
-		values?: string[];
-	};
+	attribute: IStringAttribute;
+	showLegend?: boolean;
 	updateAttribute: (attribute: IStringAttribute) => void;
-	removeAttribute: (name: string, type: string) => void;
-	changeOrder: (name: string, type: string, direction: "up" | "down") => void;
 }
 
 export default function StringAttribute(props: Props) {
-	const {
-		attribute: attributeDefinition,
-		name,
-		updateAttribute,
-		removeAttribute,
-		changeOrder,
-	} = props;
-
-	const [attribute, setAttribute] = useState<IStringAttribute>({
-		key: name,
-		type: attributeDefinition.typeHint as SDTF_TYPEHINT,
-		values: attributeDefinition.values || [],
-		visualization: ATTRIBUTE_VISUALIZATION.BLUE_RED,
-		countForValue: [],
-	});
-	const [optionsOpened, setOptionsOpened] = useState(false);
+	const {attribute, name, updateAttribute} = props;
 	const [backgroundColor, setBackgroundColor] = useState<string>("");
 
 	useEffect(() => {
@@ -52,7 +31,7 @@ export default function StringAttribute(props: Props) {
 			setBackgroundColor(
 				"linear-gradient(90deg, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))",
 			);
-		} else {
+		} else if (typeof attribute.visualization === "string") {
 			setBackgroundColor(
 				"linear-gradient(90deg, " +
 					(attribute.visualization as string).replaceAll("_", ", ") +
@@ -63,16 +42,7 @@ export default function StringAttribute(props: Props) {
 
 	const legend = (
 		<Stack p="xs">
-			<Group
-				justify="space-between"
-				onClick={() => setOptionsOpened((t) => !t)}
-			>
-				<Text size={"sm"} fs="italic" ta="left">
-					{optionsOpened ? "Hide Legend" : "Show Legend"}
-				</Text>
-				{optionsOpened ? <IconChevronUp /> : <IconChevronDown />}
-			</Group>
-			{optionsOpened && (
+			{(props.showLegend ?? true) && (
 				<Stack>
 					<Box
 						style={{
@@ -98,44 +68,8 @@ export default function StringAttribute(props: Props) {
 	return (
 		<BaseAttribute
 			name={name}
-			type={attributeDefinition.typeHint}
-			removeAttribute={removeAttribute}
-			changeOrder={changeOrder}
+			type={attribute.type}
 			options={legend}
-		>
-			<TextInput
-				label="Values"
-				value={attribute.values?.join(",")}
-				onChange={(event) => {
-					setAttribute((prev) => {
-						return {
-							...prev,
-							values: event.currentTarget.value
-								.split(",")
-								.map((v) => v.trim()),
-						};
-					});
-				}}
-			/>
-			<Select
-				label="Visualization"
-				value={attribute.visualization as string}
-				data={Object.values(ATTRIBUTE_VISUALIZATION).map((value) => ({
-					value,
-					label: value.toLocaleUpperCase(),
-				}))}
-				onChange={(v) => {
-					if (!v) return;
-					setAttribute((prev) => {
-						return {
-							...prev,
-							visualization: Object.values(
-								ATTRIBUTE_VISUALIZATION,
-							).find((value) => value === v)!,
-						};
-					});
-				}}
-			/>
-		</BaseAttribute>
+		></BaseAttribute>
 	);
 }

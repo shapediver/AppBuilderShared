@@ -1,53 +1,29 @@
 import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
-import {Box, Group, Select, Stack, Text, TextInput} from "@mantine/core";
+import {Box, Group, Stack, Text, TextInput} from "@mantine/core";
 import {
 	ATTRIBUTE_VISUALIZATION,
 	INumberAttribute,
 } from "@shapediver/viewer.features.attribute-visualization";
-import {SDTF_TYPEHINT} from "@shapediver/viewer.session";
-import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
 
 interface Props {
 	name: string;
-	attribute: {
-		typeHint: string;
-		count: number;
-		min?: number;
-		max?: number;
-	};
+	attribute: INumberAttribute;
+	showLegend?: boolean;
 	updateAttribute: (attribute: INumberAttribute) => void;
-	removeAttribute: (name: string, type: string) => void;
-	changeOrder: (name: string, type: string, direction: "up" | "down") => void;
 }
 
 export default function NumberAttribute(props: Props) {
-	const {
-		attribute: attributeDefinition,
-		name,
-		updateAttribute,
-		removeAttribute,
-		changeOrder,
-	} = props;
+	const {attribute, name, updateAttribute} = props;
 
-	const [attribute, setAttribute] = useState<INumberAttribute>({
-		key: name,
-		type: attributeDefinition.typeHint as SDTF_TYPEHINT,
-		visualization: ATTRIBUTE_VISUALIZATION.BLUE_RED,
-		min: attributeDefinition.min!,
-		max: attributeDefinition.max!,
-	});
-	const [optionsOpened, setOptionsOpened] = useState(false);
 	const [backgroundColor, setBackgroundColor] = useState<string>("");
-	const [minValue, setMinValue] = useState<string>(
-		attributeDefinition.min! + "",
-	);
-	const [maxValue, setMaxValue] = useState<string>(
-		attributeDefinition.max! + "",
-	);
+	const [minValue, setMinValue] = useState<string>(attribute.min + "");
+	const [maxValue, setMaxValue] = useState<string>(attribute.max + "");
 
 	useEffect(() => {
 		updateAttribute(attribute);
+		setMinValue(attribute.min + "");
+		setMaxValue(attribute.max + "");
 
 		// Set background color
 		if (
@@ -60,7 +36,7 @@ export default function NumberAttribute(props: Props) {
 			setBackgroundColor(
 				"linear-gradient(90deg, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))",
 			);
-		} else {
+		} else if (typeof attribute.visualization === "string") {
 			setBackgroundColor(
 				"linear-gradient(90deg, " +
 					(attribute.visualization as string).replaceAll("_", ", ") +
@@ -74,16 +50,7 @@ export default function NumberAttribute(props: Props) {
 	 */
 	const legend = (
 		<Stack p="xs" pb={0}>
-			<Group
-				justify="space-between"
-				onClick={() => setOptionsOpened((t) => !t)}
-			>
-				<Text size={"sm"} fs="italic" ta="left">
-					{optionsOpened ? "Hide Legend" : "Show Legend"}
-				</Text>
-				{optionsOpened ? <IconChevronUp /> : <IconChevronDown />}
-			</Group>
-			{optionsOpened && (
+			{(props.showLegend ?? true) && (
 				<Stack>
 					<Box
 						style={{
@@ -105,13 +72,7 @@ export default function NumberAttribute(props: Props) {
 	);
 
 	return (
-		<BaseAttribute
-			name={name}
-			type={attributeDefinition.typeHint}
-			removeAttribute={removeAttribute}
-			changeOrder={changeOrder}
-			options={legend}
-		>
+		<BaseAttribute name={name} type={attribute.type} options={legend}>
 			<TextInput
 				label="Minimum"
 				value={minValue}
@@ -119,8 +80,7 @@ export default function NumberAttribute(props: Props) {
 					setMinValue(event.currentTarget.value);
 					// Check if the value is a number
 					if (isNaN(+event.currentTarget.value)) return;
-
-					setAttribute({
+					updateAttribute({
 						...attribute,
 						min: +event.currentTarget.value,
 					});
@@ -134,28 +94,9 @@ export default function NumberAttribute(props: Props) {
 					// Check if the value is a number
 					if (isNaN(+event.currentTarget.value)) return;
 
-					setAttribute({
+					updateAttribute({
 						...attribute,
 						max: +event.currentTarget.value,
-					});
-				}}
-			/>
-			<Select
-				label="Visualization"
-				value={attribute.visualization as string}
-				data={Object.values(ATTRIBUTE_VISUALIZATION).map((value) => ({
-					value,
-					label: value.toLocaleUpperCase(),
-				}))}
-				onChange={(v) => {
-					if (!v) return;
-					setAttribute((prev) => {
-						return {
-							...prev,
-							visualization: Object.values(
-								ATTRIBUTE_VISUALIZATION,
-							).find((value) => value === v)!,
-						};
 					});
 				}}
 			/>
