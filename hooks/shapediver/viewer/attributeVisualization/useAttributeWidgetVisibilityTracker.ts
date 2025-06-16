@@ -5,6 +5,7 @@ import {useCallback, useEffect, useRef, useState} from "react";
 const visibilityMap = new Map<
 	number,
 	{
+		element: HTMLElement;
 		isVisible: boolean;
 		wantsPriority: boolean;
 		viewport?: IViewportApi;
@@ -18,8 +19,6 @@ const updateMap = new Map<
 		setIsVisible: (v: boolean) => void;
 	}
 >();
-// Map of DOM elements to their IDs
-const targetMap = new WeakMap<Element, number>();
 // Counter for unique IDs
 let idCounter = 0;
 
@@ -38,22 +37,41 @@ export function useAttributeWidgetVisibilityTracker(props: {
 
 	// Ref to store the current wantsPriority value
 	const wantsPriorityRef = useRef(props.wantsPriority ?? false);
+	const updateVisibilityRef = useRef(() => {});
 
 	/**
-	 * UseEffect to update the visibilityMap when the wantsPriority prop changes.
-	 * This ensures that the visibilityMap always has the latest wantsPriority value
+	 * UseEffect to register the element and update the visibilityMap
+	 * when wantsPriority or viewport changes.
+	 * This ensures the element is tracked correctly with the latest data.
 	 */
 	useEffect(() => {
+		const el = ref.current;
+		if (!el) return;
+
 		wantsPriorityRef.current = props.wantsPriority ?? false;
+
+		// Update existing or set new entry
 		const prev = visibilityMap.get(id) ?? {
+			element: el,
 			isVisible: false,
-			wantsPriority: false,
+			wantsPriority: wantsPriorityRef.current,
+			viewport: props.viewport,
 		};
+
 		visibilityMap.set(id, {
 			...prev,
+			element: el,
 			wantsPriority: wantsPriorityRef.current,
 			viewport: props.viewport,
 		});
+
+		// Initial visibility check after element is set
+		updateVisibility();
+
+		return () => {
+			visibilityMap.delete(id);
+			notifyAll();
+		};
 	}, [props.wantsPriority, props.viewport, id]);
 
 	/**
@@ -75,18 +93,57 @@ export function useAttributeWidgetVisibilityTracker(props: {
 		const el = ref.current;
 		if (!el || !observer) return;
 
-		targetMap.set(el, id);
 		observer.observe(el);
 
 		return () => {
-			if (observer && el) {
-				observer.unobserve(el);
-				targetMap.delete(el);
-			}
-			visibilityMap.delete(id);
-			notifyAll();
+			if (observer && el) observer.unobserve(el);
 		};
 	}, [id]);
+
+	/**
+	 * Manual visibility check for all tracked elements.
+	 * This replaces the IntersectionObserver logic by checking visibility on scroll and resize.
+	 */
+	const updateVisibility = useCallback(() => {
+		for (const [entryId, entry] of Array.from(visibilityMap.entries())) {
+			const el = entry.element;
+			const prev = entry;
+
+			const visible = isElementVisible(el);
+
+			if (prev.isVisible !== visible) {
+				visibilityMap.set(entryId, {
+					...prev,
+					isVisible: visible,
+				});
+				updateMap.get(entryId)?.setIsVisible(visible);
+			}
+		}
+		notifyAll();
+	}, []);
+
+	/**
+	 * UseEffect to update the visibilityRef with the latest updateVisibility function.
+	 * This ensures that the latest function is always used when the observer callback is called.
+	 */
+	useEffect(() => {
+		updateVisibilityRef.current = updateVisibility;
+	}, [updateVisibility]);
+
+	/**
+	 * Initialize the IntersectionObserver if it is not already created.
+	 * This function is called in the useEffect to ensure the observer is created only once.
+	 */
+	const initObserver = () => {
+		if (observer) return;
+
+		observer = new IntersectionObserver(
+			() => {
+				updateVisibilityRef.current();
+			},
+			{threshold: 0.1},
+		);
+	};
 
 	/**
 	 * Request priority for the current element.
@@ -108,39 +165,11 @@ export function useAttributeWidgetVisibilityTracker(props: {
 }
 
 /**
- * Initialize the IntersectionObserver instance if it is not already created.
- * This function is called in the useEffect hook when the component is mounted.
+ * This function disables the attribute visualization for all viewports if no elements are visible.
+ * It checks all viewports in the visibilityMap and sets their type to STANDARD if they are currently set to ATTRIBUTES.
+ * This is useful to ensure that the attribute visualization is only active when there are visible elements that want priority.
+ * If no elements are visible, it will toggle the attribute visualization off for all viewports.
  */
-const initObserver = () => {
-	if (observer) return;
-
-	observer = new IntersectionObserver(
-		(entries) => {
-			for (const entry of entries) {
-				const id = targetMap.get(entry.target);
-				if (id === undefined) continue;
-
-				const currentlyVisible = entry.isIntersecting;
-
-				const prev = visibilityMap.get(id) ?? {
-					isVisible: false,
-					wantsPriority: false,
-				};
-				visibilityMap.set(id, {
-					...prev,
-					isVisible: currentlyVisible,
-				});
-
-				// Update the component’s local state
-				updateMap.get(id)?.setIsVisible(currentlyVisible);
-			}
-
-			notifyAll();
-		},
-		{threshold: 0.1},
-	);
-};
-
 const disableAttributeVisualization = () => {
 	// get all viewports
 	const viewports = Array.from(visibilityMap.values())
@@ -159,6 +188,18 @@ const disableAttributeVisualization = () => {
 			viewport.type = RENDERER_TYPE.STANDARD;
 		}
 	});
+};
+
+/**
+ * Checks if the element is visible in the viewport.
+ * This function checks if the element has a non-zero size and is not hidden by CSS.
+ *
+ * @param el - The HTML element to check visibility for.
+ * @returns true if the element is visible, false otherwise.
+ */
+const isElementVisible = (el: HTMLElement) => {
+	// Checks if the element has a non-zero size and is visible
+	return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
 };
 
 /**
