@@ -1,105 +1,113 @@
 import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
-import {Box, Group, Stack, Text, TextInput} from "@mantine/core";
-import {
-	ATTRIBUTE_VISUALIZATION,
-	INumberAttribute,
-} from "@shapediver/viewer.features.attribute-visualization";
+import {RangeSlider, Space, Stack} from "@mantine/core";
+import {INumberAttribute} from "@shapediver/viewer.features.attribute-visualization";
 import React, {useEffect, useState} from "react";
-
+export type INumberAttributeExtended = INumberAttribute & {
+	defaultMin?: number;
+	defaultMax?: number;
+};
 interface Props {
 	name: string;
-	attribute: INumberAttribute;
+	attribute: INumberAttributeExtended;
 	showLegend?: boolean;
-	updateAttribute: (attribute: INumberAttribute) => void;
+	updateRange: (min: number, max: number) => void;
 }
 
 export default function NumberAttribute(props: Props) {
-	const {attribute, name, updateAttribute} = props;
+	const {attribute, name, updateRange} = props;
 
-	const [backgroundColor, setBackgroundColor] = useState<string>("");
+	const [gradientColorStops, setGradientColorStops] =
+		useState<JSX.Element[]>();
 	const [minValue, setMinValue] = useState<string>(attribute.min + "");
 	const [maxValue, setMaxValue] = useState<string>(attribute.max + "");
 
 	useEffect(() => {
-		updateAttribute(attribute);
+		// Set default values
+		if (attribute.defaultMin === undefined)
+			attribute.defaultMin = attribute.min;
+		if (attribute.defaultMax === undefined)
+			attribute.defaultMax = attribute.max;
+
 		setMinValue(attribute.min + "");
 		setMaxValue(attribute.max + "");
 
-		// Set background color
-		if (
-			attribute.visualization === ATTRIBUTE_VISUALIZATION.GRAYSCALE ||
-			attribute.visualization === ATTRIBUTE_VISUALIZATION.OPACITY
-		) {
-			setBackgroundColor("linear-gradient(90deg, #000000, #ffffff)");
-		} else if (attribute.visualization === ATTRIBUTE_VISUALIZATION.HSL) {
-			// show full hsl gradient
-			setBackgroundColor(
-				"linear-gradient(90deg, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))",
-			);
-		} else if (typeof attribute.visualization === "string") {
-			setBackgroundColor(
-				"linear-gradient(90deg, " +
-					(attribute.visualization as string).replaceAll("_", ", ") +
-					")",
-			);
-		}
+		const range = attribute.defaultMax - attribute.defaultMin;
+		const normalizedMin = (attribute.min - attribute.defaultMin) / range;
+		const normalizedMax = (attribute.max - attribute.defaultMin) / range;
+
+		const colorStops = (attribute.visualization as string)
+			.split("_")
+			.map((color, index) => (
+				<stop
+					key={index}
+					offset={`${normalizedMin + (normalizedMax - normalizedMin) * (index / ((attribute.visualization as string).split("_").length - 1))}`}
+					stopColor={color}
+				/>
+			));
+		setGradientColorStops(colorStops);
 	}, [attribute]);
 
 	/**
 	 * Create the color legend for the attribute
 	 */
 	const legend = (
-		<Stack p="xs" pb={0}>
+		<Stack pt="xs">
 			{(props.showLegend ?? true) && (
-				<Stack>
-					<Box
-						style={{
-							width: "100%",
-							height: 40,
-							borderRadius: 4,
-							background: backgroundColor,
-						}}
+				<svg width="100%" height="50">
+					<defs>
+						<linearGradient
+							id="colorRamp"
+							x1="0%"
+							y1="0%"
+							x2="100%"
+							y2="0%"
+						>
+							{gradientColorStops}
+						</linearGradient>
+					</defs>
+					<rect
+						x="0"
+						y="0"
+						width="100%"
+						height="100%"
+						fill="url(#colorRamp)"
 					/>
-					<Stack>
-						<Group justify="space-between">
-							<Text size="xs">{attribute.min}</Text>
-							<Text size="xs">{attribute.max}</Text>
-						</Group>
-					</Stack>
-				</Stack>
+				</svg>
 			)}
 		</Stack>
 	);
 
 	return (
-		<BaseAttribute name={name} type={attribute.type} options={legend}>
-			<TextInput
-				label="Minimum"
-				value={minValue}
-				onChange={(event) => {
-					setMinValue(event.currentTarget.value);
-					// Check if the value is a number
-					if (isNaN(+event.currentTarget.value)) return;
-					updateAttribute({
-						...attribute,
-						min: +event.currentTarget.value,
-					});
-				}}
-			/>
-			<TextInput
-				label="Maximum"
-				value={maxValue}
-				onChange={(event) => {
-					setMaxValue(event.currentTarget.value);
-					// Check if the value is a number
-					if (isNaN(+event.currentTarget.value)) return;
-
-					updateAttribute({
-						...attribute,
-						max: +event.currentTarget.value,
-					});
-				}}
-			/>
+		<BaseAttribute name={name} type={attribute.type}>
+			<Stack>
+				{legend}
+				<RangeSlider
+					pb="xs"
+					label={null}
+					value={[+minValue, +maxValue]}
+					onChange={(value) => {
+						setMinValue(value[0] + "");
+						setMaxValue(value[1] + "");
+						updateRange(value[0], value[1]);
+					}}
+					min={attribute.defaultMin}
+					max={attribute.defaultMax}
+					step={0.01}
+					marks={[
+						{
+							value: attribute.defaultMin!,
+							label: attribute.defaultMin,
+						},
+						{value: attribute.min, label: attribute.min},
+						{value: attribute.max, label: attribute.max},
+						{
+							value: attribute.defaultMax!,
+							label: attribute.defaultMax,
+						},
+					]}
+				/>
+				<Space />
+			</Stack>
 		</BaseAttribute>
 	);
 }

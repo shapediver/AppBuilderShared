@@ -5,7 +5,6 @@ import React from "react";
 interface Props {
 	name: string;
 	attribute: IColorAttribute;
-	updateAttribute: (attribute: IColorAttribute) => void;
 }
 
 export default function ColorAttribute(props: Props) {

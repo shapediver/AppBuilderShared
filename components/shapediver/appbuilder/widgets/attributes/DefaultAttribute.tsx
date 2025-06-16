@@ -7,21 +7,17 @@ interface Props {
 	name: string;
 	attribute: Omit<IDefaultAttribute, "color"> &
 		Partial<Pick<IDefaultAttribute, "color">>;
-	updateAttribute: (
-		attribute: Omit<IDefaultAttribute, "color"> &
-			Partial<Pick<IDefaultAttribute, "color">>,
-	) => void;
+	updateColor: (color: string) => void;
 }
 
 export default function DefaultAttribute(props: Props) {
-	const {attribute, name, updateAttribute} = props;
+	const {attribute, name, updateColor} = props;
 
 	const [color, setColor] = useState<string>(
 		(attribute.color as string) || "#ffffff",
 	);
 
 	useEffect(() => {
-		updateAttribute(attribute);
 		setColor(attribute.color as string);
 	}, [attribute]);
 
@@ -33,7 +29,7 @@ export default function DefaultAttribute(props: Props) {
 				onChangeEnd={(value) => {
 					setColor(value);
 					if (!value) return;
-					updateAttribute({...attribute, color: value});
+					updateColor(value);
 				}}
 			/>
 		</BaseAttribute>
