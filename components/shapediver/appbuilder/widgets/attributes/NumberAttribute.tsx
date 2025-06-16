@@ -63,7 +63,7 @@ export default function NumberAttribute(props: Props) {
 		} else {
 			setBackgroundColor(
 				"linear-gradient(90deg, " +
-					attribute.visualization.replaceAll("_", ", ") +
+					(attribute.visualization as string).replaceAll("_", ", ") +
 					")",
 			);
 		}
@@ -142,7 +142,7 @@ export default function NumberAttribute(props: Props) {
 			/>
 			<Select
 				label="Visualization"
-				value={attribute.visualization}
+				value={attribute.visualization as string}
 				data={Object.values(ATTRIBUTE_VISUALIZATION).map((value) => ({
 					value,
 					label: value.toLocaleUpperCase(),

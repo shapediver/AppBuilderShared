@@ -33,6 +33,7 @@ export default function StringAttribute(props: Props) {
 		type: attributeDefinition.typeHint as SDTF_TYPEHINT,
 		values: attributeDefinition.values || [],
 		visualization: ATTRIBUTE_VISUALIZATION.BLUE_RED,
+		countForValue: [],
 	});
 	const [optionsOpened, setOptionsOpened] = useState(false);
 	const [backgroundColor, setBackgroundColor] = useState<string>("");
@@ -54,7 +55,7 @@ export default function StringAttribute(props: Props) {
 		} else {
 			setBackgroundColor(
 				"linear-gradient(90deg, " +
-					attribute.visualization.replaceAll("_", ", ") +
+					(attribute.visualization as string).replaceAll("_", ", ") +
 					")",
 			);
 		}
@@ -118,7 +119,7 @@ export default function StringAttribute(props: Props) {
 			/>
 			<Select
 				label="Visualization"
-				value={attribute.visualization}
+				value={attribute.visualization as string}
 				data={Object.values(ATTRIBUTE_VISUALIZATION).map((value) => ({
 					value,
 					label: value.toLocaleUpperCase(),
