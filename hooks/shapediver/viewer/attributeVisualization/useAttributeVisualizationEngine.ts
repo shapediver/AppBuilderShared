@@ -1,5 +1,6 @@
 import {useEffect} from "react";
 
+import {useShapeDiverStoreAttributeVisualization} from "@AppBuilderShared/store/useShapeDiverStoreAttributeVisualization";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {AttributeVisualizationEngine} from "@shapediver/viewer.features.attribute-visualization";
 import {MaterialStandardData} from "@shapediver/viewer.session";
@@ -19,7 +20,7 @@ export function useAttributeVisualizationEngine(viewportId: string): {
 	const {
 		createAttributeVisualizationEngine,
 		closeAttributeVisualizationEngine,
-	} = useShapeDiverStoreViewport(
+	} = useShapeDiverStoreAttributeVisualization(
 		useShallow((state) => ({
 			createAttributeVisualizationEngine:
 				state.createAttributeVisualizationEngine,
@@ -33,11 +34,13 @@ export function useAttributeVisualizationEngine(viewportId: string): {
 		return state.viewports[viewportId];
 	});
 
-	const {attributeVisualizationEngines} = useShapeDiverStoreViewport(
-		useShallow((state) => ({
-			attributeVisualizationEngines: state.attributeVisualizationEngines,
-		})),
-	);
+	const {attributeVisualizationEngines} =
+		useShapeDiverStoreAttributeVisualization(
+			useShallow((state) => ({
+				attributeVisualizationEngines:
+					state.attributeVisualizationEngines,
+			})),
+		);
 
 	// use an effect to create the attribute visualization engine
 	useEffect(() => {
@@ -45,7 +48,7 @@ export function useAttributeVisualizationEngine(viewportId: string): {
 			// create the attribute visualization engine
 			const attributeVisualizationEngine =
 				createAttributeVisualizationEngine(
-					viewportId,
+					viewportApi,
 				) as AttributeVisualizationEngine;
 			if (!attributeVisualizationEngine) return;
 

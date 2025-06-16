@@ -1,7 +1,6 @@
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
 import {IShapeDiverStoreViewport} from "@AppBuilderShared/types/store/shapediverStoreViewport";
-import {AttributeVisualizationEngine} from "@shapediver/viewer.features.attribute-visualization";
 import {createViewport, IViewportApi} from "@shapediver/viewer.viewport";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
@@ -24,7 +23,6 @@ const createViewportIdentifier = function (
 export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 	devtools(
 		(set, get) => ({
-			attributeVisualizationEngines: {},
 			viewports: {},
 
 			createViewport: async (dto: ViewportCreateDto, callbacks) => {
@@ -92,51 +90,6 @@ export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 					false,
 					"closeViewport",
 				);
-			},
-
-			createAttributeVisualizationEngine: (viewportId) => {
-				const {attributeVisualizationEngines, viewports} = get();
-
-				const viewport = viewports[viewportId];
-				if (!viewport) return;
-
-				if (!attributeVisualizationEngines[viewportId]) {
-					// create the attribute visualization engine
-					const attributeVisualizationEngine =
-						new AttributeVisualizationEngine(viewport);
-
-					set(
-						(state) => ({
-							attributeVisualizationEngines: {
-								...state.attributeVisualizationEngines,
-								[viewportId]: attributeVisualizationEngine,
-							},
-						}),
-						false,
-						"createAttributeVisualizationEngine",
-					);
-				}
-				return attributeVisualizationEngines[viewportId];
-			},
-			closeAttributeVisualizationEngine(viewportId) {
-				const {attributeVisualizationEngines} = get();
-				if (attributeVisualizationEngines[viewportId]) {
-					set(
-						(state) => {
-							const newAttributeVisualizationEngines = {
-								...state.attributeVisualizationEngines,
-							};
-							delete newAttributeVisualizationEngines[viewportId];
-
-							return {
-								attributeVisualizationEngines:
-									newAttributeVisualizationEngines,
-							};
-						},
-						false,
-						"closeAttributeVisualizationEngine",
-					);
-				}
 			},
 		}),
 		{...devtoolsSettings, name: "ShapeDiver | Viewer"},
