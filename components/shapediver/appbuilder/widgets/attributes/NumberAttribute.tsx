@@ -48,7 +48,6 @@ export default function NumberAttribute(props: Props) {
 			attribute.customMin !== customValues?.customMin
 		) {
 			if (
-				typeof attribute.visualization !== "string" &&
 				isNumberGradient(attribute.visualization) &&
 				attribute.visualization.min !== undefined
 			) {
@@ -62,7 +61,6 @@ export default function NumberAttribute(props: Props) {
 			attribute.customMax !== customValues?.customMax
 		) {
 			if (
-				typeof attribute.visualization !== "string" &&
 				isNumberGradient(attribute.visualization) &&
 				attribute.visualization.max !== undefined
 			) {
@@ -253,30 +251,14 @@ const createGradientColorStops = (
 				<stop
 					key={i + "_before"}
 					offset={stepOffset}
-					stopColor={step.colorBefore as string}
+					stopColor={step.colorBefore}
 				/>,
 				<stop
 					key={i + "_after"}
 					offset={stepOffset}
-					stopColor={step.colorAfter as string}
+					stopColor={step.colorAfter}
 				/>,
 			);
-
-			// add the label if it exists
-			if (step.label) {
-				colorStops.push(
-					<text
-						key={i + "_label"}
-						x={stepOffset * 100 + "%"}
-						y="50%"
-						dominantBaseline="middle"
-						textAnchor="middle"
-						fill="black"
-					>
-						{step.label}
-					</text>,
-				);
-			}
 		}
 		return colorStops;
 	}

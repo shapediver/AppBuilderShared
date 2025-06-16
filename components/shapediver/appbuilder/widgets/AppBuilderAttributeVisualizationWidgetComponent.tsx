@@ -7,7 +7,6 @@ import {
 	AttributeVisualizationVisibility,
 	IAppBuilderWidgetPropsAttributeVisualization,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IShapeDiverStoreSessions} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {
 	ActionIcon,
 	Group,
@@ -34,6 +33,7 @@ import {
 	ISDTFOverview,
 	ISessionEvent,
 	MaterialStandardData,
+	removeListener,
 	RENDERER_TYPE,
 	sceneTree,
 	SDTF_TYPEHINT,
@@ -102,7 +102,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		IAttributeDefinition | undefined
 	>();
 	const [active, setActive] = useState<boolean>(false);
-	const [sdtfLoaded, setSdtfLoaded] = useState<boolean>(false);
+	const [loadSdTF, setLoadSdTF] = useState<boolean>(false);
 	const [attributes, setAttributes] = useState<
 		| (
 				| string
@@ -127,10 +127,11 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	const viewport = useShapeDiverStoreViewport(
 		(state) => state.viewports[viewportId],
 	);
+
 	const sessions = useShapeDiverStoreSession((state) => state.sessions);
 
 	const {attributeVisualizationEngine} = useAttributeVisualizationEngine(
-		sdtfLoaded ? viewportId : "",
+		loadSdTF ? viewportId : "",
 	);
 
 	/**
@@ -225,13 +226,31 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 *
 	 */
 
-	/**
-	 * Use effect that loads the sdtf data of the session apis
-	 */
 	useEffect(() => {
-		loadSdtf(sessions).then(() => {
-			setSdtfLoaded(true);
-		});
+		const removeListenerTokens: string[] = [];
+
+		// if just one session has loaded the sdtf, we can set the loadSdTF to true
+		for (const sessionId in sessions) {
+			const session = sessions[sessionId];
+
+			removeListenerTokens.push(
+				addListener(
+					EVENTTYPE_SESSION.SESSION_SDTF_DELAYED_LOADED,
+					(e: IEvent) => {
+						const sessionEvent = e as ISessionEvent;
+						if (sessionEvent.sessionId === session.id) {
+							setLoadSdTF(true);
+						}
+					},
+				),
+			);
+		}
+
+		return () => {
+			removeListenerTokens.forEach((token) => {
+				removeListener(token);
+			});
+		};
 	}, [sessions]);
 
 	/**
@@ -280,7 +299,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	useEffect(() => {
 		if (attributeOverview === undefined) return;
 		if (renderedAttribute !== undefined) return;
-		if (sdtfLoaded === false) return;
+		if (loadSdTF === false) return;
 		if (!attributes) return;
 
 		if (propsInitialAttribute) {
@@ -307,7 +326,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		}
 	}, [
 		renderedAttribute,
-		sdtfLoaded,
+		loadSdTF,
 		propsInitialAttribute,
 		attributeOverview,
 		attributes,
@@ -582,34 +601,6 @@ const toggleAttributeVisualization = (
 		// TODO why is this necessary?
 		sceneTree.root.updateVersion();
 		viewport.update();
-	}
-};
-
-/**
- * Function to load the sdtf data of the session apis
- *
- * @param sessionApis
- */
-const loadSdtf = async (sessionApis: IShapeDiverStoreSessions) => {
-	const promises = [];
-	for (const key in sessionApis) {
-		const sessionApi = sessionApis[key];
-
-		if (sessionApi.loadSdtf === false) {
-			sessionApi.loadSdtf = true;
-			promises.push(
-				await new Promise<void>((resolve) =>
-					addListener(
-						EVENTTYPE_SESSION.SESSION_SDTF_DELAYED_LOADED,
-						(e: IEvent) => {
-							const sessionEvent = e as ISessionEvent;
-							if (sessionEvent.sessionId === sessionApi.id)
-								resolve();
-						},
-					),
-				),
-			);
-		}
 	}
 };
 
