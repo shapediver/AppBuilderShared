@@ -3,7 +3,7 @@ import {
 	RENDERER_TYPE,
 	sceneTree,
 } from "@shapediver/viewer.viewport";
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 
 // Map of element IDs to their properties
 const visibilityMap = new Map<
@@ -97,16 +97,16 @@ export function useAttributeWidgetVisibilityTracker(props: {
 	 * This function is called in the element when being clicked.
 	 * It sets the hasPriority state to true for the current element and false for all other elements.
 	 */
-	const requestPriority = () => {
+	const requestPriority = useCallback(() => {
 		updateMap.forEach((updaters, instanceId) => {
 			updaters.setHasPriority(instanceId === id);
 		});
-	};
+	}, [id]);
 
-	const removePriority = () => {
+	const removePriority = useCallback(() => {
 		setHasPriority(false);
 		disableAttributeVisualization();
-	};
+	}, []);
 
 	return {ref, isVisible, hasPriority, requestPriority, removePriority};
 }
