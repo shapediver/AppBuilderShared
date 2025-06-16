@@ -13,6 +13,7 @@ export function useAttributeWidgetVisibilityTracker(props: {
 	const ref = useRef(null);
 	const [isVisible, setIsVisible] = useState(false);
 	const [hasPriority, setHasPriority] = useState(false);
+	const [noPriority, setNoPriority] = useState(true);
 
 	const [id] = useState(() => idCounter++);
 
@@ -59,17 +60,24 @@ export function useAttributeWidgetVisibilityTracker(props: {
 
 	/**
 	 * Notify all elements about the current visibility state
-	 * and set the priority for the first element that wants it
+	 * and set the priority for the first element
 	 */
 	const notifyAll = () => {
 		const visibleEntries = Array.from(visibilityMap.entries())
-			.filter(([, data]) => data.isVisible && data.wantsPriority)
-			.sort((a, b) => a[0] - b[0]);
+			.filter(([, data]) => data.isVisible)
+			.sort((a, b) => a[0] - b[0])
+			.sort((a, b) => {
+				if (a[1].wantsPriority && !b[1].wantsPriority) return -1;
+				if (!a[1].wantsPriority && b[1].wantsPriority) return 1;
+				return 0;
+			});
 
 		const priorityElementId = visibleEntries[0]?.[0];
 		updateMap.forEach((setPriority, instanceId) => {
 			setPriority(instanceId === priorityElementId);
 		});
+
+		setNoPriority(visibleEntries.length === 0);
 	};
 
 	/**
@@ -80,7 +88,8 @@ export function useAttributeWidgetVisibilityTracker(props: {
 		updateMap.forEach((setPriority, instanceId) => {
 			setPriority(instanceId === id);
 		});
+		setNoPriority(false);
 	};
 
-	return {ref, isVisible, hasPriority, requestPriority};
+	return {ref, isVisible, hasPriority, noPriority, requestPriority};
 }

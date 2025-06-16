@@ -16,7 +16,6 @@ import {
 	PaperProps,
 	Select,
 	Stack,
-	Text,
 	Title,
 } from "@mantine/core";
 import {
@@ -42,7 +41,14 @@ import {
 } from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import {IconEye, IconEyeOff} from "@tabler/icons-react";
-import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
+import React, {
+	useCallback,
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import ColorAttribute from "./attributes/ColorAttribute";
 import DefaultAttribute, {
 	IDefaultAttributeExtended,
@@ -128,19 +134,19 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 
 	const widgetId = useId();
 
-	const {ref, isVisible, hasPriority, requestPriority} =
+	const wantsPriorityRef = useRef(
+		visualizationMode === AttributeVisualizationVisibility.DefaultOn,
+	);
+
+	const {ref, isVisible, hasPriority, noPriority, requestPriority} =
 		useAttributeWidgetVisibilityTracker({
-			wantsPriority:
-				visualizationMode ===
-				AttributeVisualizationVisibility.DefaultOn,
+			wantsPriority: wantsPriorityRef.current,
 		});
 
 	const {isEnabled, canBeEnabled, isInitialized} = useMemo(() => {
 		return {
 			isEnabled: loadSdTF && active && hasPriority,
 			isInitialized: renderedAttribute !== undefined,
-			isFullyInitialized:
-				renderedAttribute !== undefined && hasBeenLoaded,
 			canBeEnabled: isVisible && loadSdTF,
 		};
 	}, [isVisible, loadSdTF, active, renderedAttribute]);
@@ -320,7 +326,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			: undefined;
 
 		setAttributes(providedAttributesCleaned || attributeIds);
-	}, [canBeEnabled, propsAttributes, attributeOverview, defaultGradient]);
+	}, [propsAttributes, attributeOverview]);
 
 	/**
 	 * Use effect that sets the initial attribute to be rendered
@@ -356,16 +362,17 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			setRenderedAttribute(initialAttribute);
 		}
 	}, [
-		renderedAttribute,
 		canBeEnabled,
 		propsInitialAttribute,
 		attributeOverview,
 		attributes,
+		isInitialized,
 		getAttributeById,
 	]);
 
 	/**
 	 * Use effect that sets the active state variable depending on the visualization mode
+	 * This only happens initially as afterwards we store the state in a ref
 	 */
 	useEffect(() => {
 		if (hasPriority === false) return;
@@ -377,7 +384,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			visualizationMode === AttributeVisualizationVisibility.DefaultOn;
 		setActive(a);
 		setWasActive(a);
-	}, [hasPriority, canBeEnabled, visualizationMode]);
+	}, [hasPriority, canBeEnabled, visualizationMode, isInitialized]);
 
 	/**
 	 * Use effect that updates the default material of the attribute visualization engine
@@ -458,40 +465,50 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	}, [attributeVisualizationEngine]);
 
 	/**
-	 * Use effect that toggles the attribute visualization
-	 */
-	useEffect(() => {
-		if (hasPriority === false) return;
-		if (canBeEnabled === false) return;
-
-		toggleAttributeVisualization(active, viewport as IViewportApi);
-	}, [canBeEnabled, hasPriority, active, viewport]);
-
-	/**
-	 * UseEffect to remember the active state of the widget when the priority changes
-	 * This is done by checking if the widget is active and if the priority is set
+	 * UseEffect that reacts to changes to the hasPriority state variable
+	 * Please read the comment in the function to understand the different scenarios
 	 */
 	useEffect(() => {
 		if (!isInitialized) return;
-		if (hasPriority === false && active === true) {
+		if (!canBeEnabled) return;
+
+		if (hasPriority === true) {
+			// the priority of the widget has been set to true
+			// we use the wasActive state variable to remember if the widget was active
+			if (wasActive && !active) setActive(true);
+			toggleAttributeVisualization(wasActive, viewport as IViewportApi);
+		} else if (hasPriority === false && active === true) {
+			// the priority of the widget has been set to false
+			// but the widget is still active, so we need to disable it
 			setActive(false);
-			if (canBeEnabled) {
-				setWasActive(false);
-			} else {
-				toggleAttributeVisualization(false, viewport as IViewportApi);
-			}
+			// only if the widget can be enabled we set the wasActive state variable to false
+			// this means that the widget was disabled by another widget being enabled
+			if (canBeEnabled) setWasActive(false);
 			return;
 		}
+	}, [canBeEnabled, hasPriority, isInitialized, wasActive, viewport, active]);
 
-		if (!canBeEnabled) return;
-		// case of tab switch
-		if (hasPriority === false && wasActive) {
-			requestPriority();
-			setActive(true);
-			setWasActive(true);
-			toggleAttributeVisualization(true, viewport as IViewportApi);
-		}
-	}, [active, canBeEnabled, hasPriority, isInitialized, wasActive, viewport]);
+	/**
+	 * UseEffect to disable the attribute visualization if there is no priority assigned
+	 */
+	useEffect(() => {
+		if (!isInitialized) return;
+
+		// there is currently no widget that has priority
+		// so we need to disable the attribute visualization
+		if (noPriority)
+			toggleAttributeVisualization(false, viewport as IViewportApi);
+	}, [noPriority, viewport, isInitialized]);
+
+	/**
+	 * UseEffect to remember the wasActive state variable
+	 */
+	useEffect(() => {
+		if (!hasBeenLoaded) return;
+		// we store the wasActive state variable to remember if the widget was active
+		// we do this in a ref to avoid re-rendering the component
+		wantsPriorityRef.current = wasActive;
+	}, [hasBeenLoaded, wasActive]);
 
 	/**
 	 *
@@ -567,6 +584,17 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 			<Select
 				placeholder="Select an attribute"
 				allowDeselect={false}
+				readOnly={attributes && attributes.length < 2}
+				style={
+					attributes && attributes.length < 2
+						? {
+								pointerEvents: "none", // disables user interaction
+							}
+						: {}
+				}
+				rightSection={
+					attributes && attributes.length < 2 ? <></> : null
+				}
 				data={
 					attributes &&
 					attributes
@@ -631,9 +659,22 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 						</Title>
 						<ActionIcon
 							onClick={() => {
-								if (!hasPriority) requestPriority();
-								setWasActive(!active);
-								setActive(!active);
+								if (!isInitialized) return;
+								if (!canBeEnabled) return;
+
+								if (active) {
+									setWasActive(false);
+									setActive(false);
+								} else {
+									if (!hasPriority) requestPriority();
+									setWasActive(true);
+									setActive(true);
+								}
+
+								toggleAttributeVisualization(
+									!active,
+									viewport as IViewportApi,
+								);
 							}}
 						>
 							{active ? <IconEye /> : <IconEyeOff />}
@@ -644,27 +685,13 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 							active
 								? {}
 								: {
-										opacity: 0.5, // Visual "disabled" effect
+										opacity: 0.25, // Visual "disabled" effect
 										pointerEvents: "none", // Disable interactions
 										userSelect: "none", // Prevent text selection
 									}
 						}
 					>
-						{attributes && attributes.length > 1 ? (
-							attributeElementSelection
-						) : attributes && attributes.length > 0 ? (
-							<Text>
-								{typeof attributes[0] === "string"
-									? getAttributeKey(
-											attributes[0],
-											attributeOverview,
-										)
-									: getAttributeKey(
-											attributes[0].attribute,
-											attributeOverview,
-										)}
-							</Text>
-						) : null}
+						{attributeElementSelection}
 						{renderedAttributeElement}
 					</Stack>
 				</Paper>
@@ -685,12 +712,12 @@ const toggleAttributeVisualization = (
 	viewport: IViewportApi,
 ) => {
 	if (!viewport) return;
-	if (toggle) {
+	if (toggle && viewport.type !== RENDERER_TYPE.ATTRIBUTES) {
 		viewport.type = RENDERER_TYPE.ATTRIBUTES;
 		// TODO why is this necessary?
 		sceneTree.root.updateVersion();
 		viewport.update();
-	} else {
+	} else if (!toggle && viewport.type !== RENDERER_TYPE.STANDARD) {
 		viewport.type = RENDERER_TYPE.STANDARD;
 		// TODO why is this necessary?
 		sceneTree.root.updateVersion();
