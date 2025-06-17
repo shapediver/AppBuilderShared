@@ -1,6 +1,7 @@
 import Icon, {SdIconProps} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useStargateConnection} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateConnection";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {NetworkStatusIcons} from "@AppBuilderShared/types/shapediver/stargate";
@@ -24,11 +25,13 @@ import {
 	TextProps,
 	useProps,
 } from "@mantine/core";
+import {addListener, EVENTTYPE_SESSION} from "@shapediver/viewer.viewport";
 import React, {useEffect} from "react";
 
 interface Props {
 	isDisabled?: boolean;
 	areNoInputsAndOutputs?: boolean;
+	namespace?: string;
 }
 
 interface StyleProps {
@@ -108,7 +111,12 @@ export function DesktopClientPanelThemeProps(
 }
 
 export default function DesktopClientPanel(props: Props & StyleProps) {
-	const {isDisabled = false, areNoInputsAndOutputs = false, ...rest} = props;
+	const {
+		isDisabled = false,
+		areNoInputsAndOutputs = false,
+		namespace,
+		...rest
+	} = props;
 
 	const {
 		iconStatusProps,
@@ -134,9 +142,19 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		initialize,
 		networkStatus,
 	} = useStargateConnection();
+	const sessions = useShapeDiverStoreSession((state) => state.sessions);
 
 	useEffect(() => {
 		initialize();
+
+		const session = namespace ? sessions[namespace] : null;
+		if (session && session.loadSdtf === false) {
+			addListener(
+				EVENTTYPE_SESSION.SESSION_SDTF_DELAYED_LOADED,
+				() => {},
+			);
+			session.loadSdtf = true;
+		}
 	}, []);
 
 	const networkStatusIcon = NetworkStatusIcons[networkStatus];

@@ -65,7 +65,9 @@ export default function AppBuilderFallbackContainerComponent({
 			tabProps.tabs.push({
 				name: "Stargate",
 				icon: IconTypeEnum.Network,
-				children: [<DesktopClientPanel key={2} />],
+				children: [
+					<DesktopClientPanel key={2} namespace={namespace} />,
+				],
 			});
 		}
 		return tabProps;
