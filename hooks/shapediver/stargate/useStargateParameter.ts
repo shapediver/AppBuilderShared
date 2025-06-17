@@ -100,7 +100,9 @@ export const useStargateParameter = ({
 		return parameterValue !== parameterDefval && parameterValue !== "";
 	}, [parameterValue, parameterDefval]);
 
-	const getConnectionStatusFromClient = (): {status: ParameterStatues} => {
+	const getConnectionStatusFromClient = useCallback((): {
+		status: ParameterStatues;
+	} => {
 		const isParameterSupported = supportedData.some((data) => {
 			return data.parameterTypes.includes(parameterType);
 		});
@@ -120,7 +122,7 @@ export const useStargateParameter = ({
 		return {
 			status: ParameterStatues.noObjectSelected,
 		};
-	};
+	}, [supportedData, parameterType, parameterValue]);
 
 	const setConnectionStatusByEnum = useCallback(
 		(status: ParameterStatues, additionalData?: Partial<IStatusData>) => {
@@ -168,7 +170,7 @@ export const useStargateParameter = ({
 		};
 	};
 
-	const onObjectAdd = async () => {
+	const onObjectAdd = useCallback(async () => {
 		setIsLoading(true);
 		const {currentModel} = useShapeDiverStorePlatform.getState();
 
@@ -252,7 +254,7 @@ export const useStargateParameter = ({
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [selectedClient, parameterId]);
 
 	const onClearSelection = useCallback(() => {
 		setConnectionStatusByEnum(ParameterStatues.noObjectSelected);
