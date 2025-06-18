@@ -428,10 +428,8 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 						renderedAttribute as INumberAttributeExtended;
 					setRenderedAttribute({
 						...numberAttribute,
-						customMin:
-							currentAttribute.customMin || numberAttribute.min,
-						customMax:
-							currentAttribute.customMax || numberAttribute.max,
+						customMin: currentAttribute.customMin,
+						customMax: currentAttribute.customMax,
 					} as INumberAttributeExtended);
 				} else if (
 					!SdtfPrimitiveTypeGuard.isStringType(attribute.type) &&

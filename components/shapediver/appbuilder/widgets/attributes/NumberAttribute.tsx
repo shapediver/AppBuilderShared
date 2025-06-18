@@ -35,39 +35,22 @@ export default function NumberAttribute(props: Props) {
 
 	const [gradientColorStops, setGradientColorStops] =
 		useState<JSX.Element[]>();
-	const [customMinValue, setCustomMinValue] = useState<number>(
-		(
-			customAttributeData[widgetId]?.[name + "_" + attribute.type] as
-				| INumberAttributeCustomData
-				| undefined
-		)?.customMin || attribute.min,
-	);
-	const [customMaxValue, setCustomMaxValue] = useState<number>(
-		(
-			customAttributeData[widgetId]?.[name + "_" + attribute.type] as
-				| INumberAttributeCustomData
-				| undefined
-		)?.customMax || attribute.max,
-	);
+	const [customMinValue, setCustomMinValue] = useState<number>();
+	const [customMaxValue, setCustomMaxValue] = useState<number>();
 
-	const [absoluteMinValue, setAbsoluteMinValue] = useState<number>(
-		(
-			customAttributeData[widgetId]?.[name + "_" + attribute.type] as
-				| INumberAttributeCustomData
-				| undefined
-		)?.absoluteMin || attribute.min,
-	);
-	const [absoluteMaxValue, setAbsoluteMaxValue] = useState<number>(
-		(
-			customAttributeData[widgetId]?.[name + "_" + attribute.type] as
-				| INumberAttributeCustomData
-				| undefined
-		)?.absoluteMax || attribute.max,
-	);
-	const [multiplyingFactor, setMultiplyingFactor] = useState<number>(0);
+	const [absoluteMinValue, setAbsoluteMinValue] = useState<number>();
+	const [absoluteMaxValue, setAbsoluteMaxValue] = useState<number>();
+	const [multiplyingFactor, setMultiplyingFactor] = useState<number>();
 
 	const createGradientColorStops = useCallback(
 		(visualization: Gradient): JSX.Element[] => {
+			if (
+				customMinValue === undefined ||
+				customMaxValue === undefined ||
+				absoluteMinValue === undefined ||
+				absoluteMaxValue === undefined
+			)
+				return [];
 			const range = absoluteMaxValue - absoluteMinValue;
 			const normalizedMin = (customMinValue - absoluteMinValue) / range;
 			const normalizedMax = (customMaxValue - absoluteMinValue) / range;
@@ -185,10 +168,7 @@ export default function NumberAttribute(props: Props) {
 			| undefined;
 
 		// Set default values
-		if (
-			attribute.customMin === undefined ||
-			attribute.customMin !== customValues?.customMin
-		) {
+		if (attribute.customMin === undefined) {
 			if (
 				isNumberGradient(attribute.visualization) &&
 				attribute.visualization.min !== undefined
@@ -197,11 +177,14 @@ export default function NumberAttribute(props: Props) {
 			} else {
 				attribute.customMin = customValues?.customMin || attribute.min;
 			}
-		}
-		if (
-			attribute.customMax === undefined ||
-			attribute.customMax !== customValues?.customMax
+		} else if (
+			attribute.customMin !== customValues?.customMin &&
+			customValues?.customMin !== undefined
 		) {
+			attribute.customMin = customValues?.customMin || attribute.min;
+		}
+
+		if (attribute.customMax === undefined) {
 			if (
 				isNumberGradient(attribute.visualization) &&
 				attribute.visualization.max !== undefined
@@ -210,17 +193,34 @@ export default function NumberAttribute(props: Props) {
 			} else {
 				attribute.customMax = customValues?.customMax || attribute.max;
 			}
+		} else if (
+			attribute.customMax !== customValues?.customMax &&
+			customValues?.customMax !== undefined
+		) {
+			attribute.customMax = customValues?.customMax || attribute.max;
 		}
 
 		setCustomMinValue(attribute.customMin);
 		setCustomMaxValue(attribute.customMax);
 		const absoluteMin = Math.min(
-			Math.min(attribute.min, attribute.customMin),
-			customValues?.absoluteMin || Infinity,
+			Math.min(
+				Math.min(attribute.min, attribute.customMin),
+				customValues?.absoluteMin || Infinity,
+			),
+			isNumberGradient(attribute.visualization) &&
+				attribute.visualization.min !== undefined
+				? attribute.visualization.min
+				: Infinity,
 		);
 		const absoluteMax = Math.max(
-			Math.max(attribute.max, attribute.customMax),
-			customValues?.absoluteMax || -Infinity,
+			Math.max(
+				Math.max(attribute.max, attribute.customMax),
+				customValues?.absoluteMax || -Infinity,
+			),
+			isNumberGradient(attribute.visualization) &&
+				attribute.visualization.max !== undefined
+				? attribute.visualization.max
+				: -Infinity,
 		);
 		setAbsoluteMinValue(absoluteMin);
 		setAbsoluteMaxValue(absoluteMax);
@@ -240,6 +240,7 @@ export default function NumberAttribute(props: Props) {
 	 */
 	const updateCustomMinMax = useCallback(
 		(value: RangeSliderValue) => {
+			if (multiplyingFactor === undefined) return;
 			const [min, max] = value.map((v) => v / multiplyingFactor);
 			attribute.customMin = min;
 			attribute.customMax = max;
@@ -295,18 +296,18 @@ export default function NumberAttribute(props: Props) {
 					pb="xs"
 					label={null}
 					value={[
-						customMinValue * multiplyingFactor,
-						customMaxValue * multiplyingFactor,
+						(customMinValue ?? 0) * (multiplyingFactor ?? 1),
+						(customMaxValue ?? 0) * (multiplyingFactor ?? 1),
 					]}
 					onChange={updateCustomMinMax}
 					onChangeEnd={(value) => {
 						const [min, max] = value.map(
-							(v) => v / multiplyingFactor,
+							(v) => v / (multiplyingFactor ?? 1),
 						);
 						updateRange(min, max);
 					}}
-					min={absoluteMinValue * multiplyingFactor}
-					max={absoluteMaxValue * multiplyingFactor}
+					min={(absoluteMinValue ?? 0) * (multiplyingFactor ?? 1)}
+					max={(absoluteMaxValue ?? 0) * (multiplyingFactor ?? 1)}
 					step={0.01}
 					styles={{
 						markLabel: {
@@ -326,7 +327,7 @@ export default function NumberAttribute(props: Props) {
 						customMaxValue,
 						absoluteMaxValue,
 					].map((value) => ({
-						value: value * multiplyingFactor,
+						value: (value ?? 0) * (multiplyingFactor ?? 1),
 						label: value?.toFixed(2),
 					}))}
 				/>
