@@ -309,8 +309,70 @@ const IAppBuilderWidgetPropsBarChartSchema = z
 	})
 	.extend(IAppBuilderWidgetPropsChartCommonSchema.shape);
 
+const IAppBuilderWidgetPropsAttributeVisualizationNumberGradientSchema =
+	z.object({
+		type: z.literal("number"),
+		min: z.number().optional(),
+		max: z.number().optional(),
+		steps: z.array(
+			z.object({
+				value: z.number(),
+				colorBefore: z.string(),
+				colorAfter: z.string(),
+			}),
+		),
+	});
+
+// Zod type definition for IAppBuilderWidgetPropsAttributeVisualizationStringGradient
+const IAppBuilderWidgetPropsAttributeVisualizationStringGradientSchema =
+	z.object({
+		type: z.literal("string"),
+		defaultColor: z.string().optional(),
+		labelColors: z
+			.array(
+				z.object({
+					values: z.array(z.string()),
+					color: z.string(),
+				}),
+			)
+			.optional(),
+	});
+
+// Zod type definition for IAppBuilderWidgetPropsAttributeVisualizationGradient
+const IAppBuilderWidgetPropsAttributeVisualizationGradientSchema = z
+	.discriminatedUnion("type", [
+		IAppBuilderWidgetPropsAttributeVisualizationNumberGradientSchema,
+		IAppBuilderWidgetPropsAttributeVisualizationStringGradientSchema,
+	])
+	.or(z.string());
+
 // Zod type definition for IAppBuilderWidgetPropsAttributeVisualization
-const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.object({});
+const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.object({
+	title: z.string().optional(),
+	tooltip: z.string().optional(),
+	attributes: z
+		.array(
+			z
+				.object({
+					attribute: z.string(),
+					gradient:
+						IAppBuilderWidgetPropsAttributeVisualizationGradientSchema.optional(),
+				})
+				.or(z.string()),
+		)
+		.optional(),
+	visualizationMode: z.enum(["defaultOn", "defaultOff"]).optional(),
+	showLegend: z.boolean().optional(),
+	defaultGradient:
+		IAppBuilderWidgetPropsAttributeVisualizationGradientSchema.optional(),
+	initialAttribute: z.string().optional(),
+	passiveMaterial: z
+		.object({
+			color: z.string().optional(),
+			opacity: z.number().optional(),
+		})
+		.optional(),
+});
 
 // Zod type definition for IAppBuilderWidgetPropsActions
 const IAppBuilderWidgetPropsActionsSchema = z.object({

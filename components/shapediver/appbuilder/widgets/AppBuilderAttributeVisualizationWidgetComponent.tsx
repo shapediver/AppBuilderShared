@@ -1,31 +1,36 @@
-import ColorAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/ColorAttribute";
-import DefaultAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/DefaultAttribute";
-import NumberAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/NumberAttribute";
-import SelectedAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/SelectedAttribute";
-import StringAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/StringAttribute";
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {useAttributeOverview} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeOverview";
+import {useAttributeVisualizationEngine} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeVisualizationEngine";
+import {useAttributeWidgetVisibilityTracker} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeWidgetVisibilityTracker";
+import {
+	createAttributeId,
+	useConvertAttributeInputData,
+} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useConvertAttributeInputData";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {IShapeDiverStoreSessions} from "@AppBuilderShared/types/store/shapediverStoreSession";
+import {
+	AttributeVisualizationVisibility,
+	IAppBuilderWidgetPropsAttributeVisualization,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	ActionIcon,
-	Grid,
 	Group,
-	MultiSelect,
+	MantineThemeComponent,
 	Paper,
-	Slider,
-	Space,
+	PaperProps,
+	Select,
 	Stack,
-	Switch,
-	Text,
 	Title,
 } from "@mantine/core";
 import {
-	AttributeVisualizationEngine,
+	ATTRIBUTE_VISUALIZATION,
+	Gradient,
 	IAttribute,
-	ILayer,
+	IColorAttribute,
+	IDefaultAttribute,
+	isStringGradient,
+	IStringAttribute,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {
 	addListener,
@@ -34,537 +39,668 @@ import {
 	ISDTFOverview,
 	ISessionEvent,
 	MaterialStandardData,
+	removeListener,
 	RENDERER_TYPE,
-	sceneTree,
+	SDTF_TYPEHINT,
 	SdtfPrimitiveTypeGuard,
 } from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
-import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import {IconEye, IconEyeOff} from "@tabler/icons-react";
+import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
+import ColorAttribute from "./attributes/ColorAttribute";
+import DefaultAttribute, {
+	IDefaultAttributeExtended,
+} from "./attributes/DefaultAttribute";
+import NumberAttribute, {
+	INumberAttributeExtended,
+} from "./attributes/NumberAttribute";
+import StringAttribute from "./attributes/StringAttribute";
 
-export default function AppBuilderAttributeVisualizationWidgetComponent() {
+type IAttributeDefinition =
+	| IAttribute
+	| INumberAttributeExtended
+	| IStringAttribute
+	| IDefaultAttribute;
+
+type StyleProps = PaperProps & {};
+
+type AppBuilderAttributeVisualizationWidgetThemePropsType = Partial<StyleProps>;
+
+const defaultGeneralGradient: Gradient = ATTRIBUTE_VISUALIZATION.TURBO;
+const defaultNumberGradient: Gradient = ATTRIBUTE_VISUALIZATION.VIRIDIS;
+
+export function AppBuilderAttributeVisualizationWidgetThemeProps(
+	props: AppBuilderAttributeVisualizationWidgetThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+export default function AppBuilderAttributeVisualizationWidgetComponent(
+	props: IAppBuilderWidgetPropsAttributeVisualization &
+		AppBuilderAttributeVisualizationWidgetThemePropsType,
+) {
+	/**
+	 * Parsing of the incoming props and assigning default values if not provided
+	 */
+	const {
+		defaultGradient,
+		initialAttribute: propsInitialAttribute,
+		attributes: propsAttributes,
+		visualizationMode = AttributeVisualizationVisibility.DefaultOff,
+		showLegend = true,
+		passiveMaterial,
+		title = "Attributes",
+		tooltip = "",
+		...paperProps
+	} = props;
+
+	/**
+	 *
+	 *
+	 * STATE VARIABLES
+	 *
+	 *
+	 */
+	const [renderedAttribute, setRenderedAttribute] = useState<
+		IAttributeDefinition | undefined
+	>();
+	const [hasBeenLoaded, setHasBeenLoaded] = useState<boolean>(false);
+	const [active, setActive] = useState<boolean>(false);
+	const [loadSdTF, setLoadSdTF] = useState<boolean>(false);
+
+	/**
+	 *
+	 *
+	 * HOOKS
+	 *
+	 *
+	 */
+
 	const {viewportId} = useViewportId();
 
 	const viewport = useShapeDiverStoreViewport(
 		(state) => state.viewports[viewportId],
 	);
+	const widgetId = useId();
+	const {ref, isVisible, hasPriority, requestPriority, removePriority} =
+		useAttributeWidgetVisibilityTracker({
+			viewport,
+			wantsPriority: hasBeenLoaded
+				? active
+				: visualizationMode ===
+					AttributeVisualizationVisibility.DefaultOn,
+		});
+
+	const {isEnabled, canBeEnabled, isInitialized} = useMemo(() => {
+		return {
+			isEnabled: loadSdTF && active && hasPriority,
+			isInitialized: renderedAttribute !== undefined,
+			canBeEnabled: isVisible && loadSdTF,
+		};
+	}, [isVisible, loadSdTF, active, renderedAttribute]);
+
 	const sessions = useShapeDiverStoreSession((state) => state.sessions);
 
-	const attributeVisualizationEngineRef =
-		useRef<AttributeVisualizationEngine | null>(null);
-
-	const [active, setActive] = useState<boolean>(false);
-	const [eventListenerToken, setEventListenerToken] = useState<string | null>(
-		null,
+	const {attributeVisualizationEngine} = useAttributeVisualizationEngine(
+		loadSdTF ? viewportId : "",
 	);
-	const [layerOptionsOpened, setLayerOptionsOpened] = useState(false);
-	const [attributeOptionsOpened, setAttributeOptionsOpened] = useState(true);
-
-	const [attributeOverview, setAttributeOverview] = useState<ISDTFOverview>(
-		{},
+	const {attributeOverview} = useAttributeOverview(
+		attributeVisualizationEngine,
 	);
-	const [attributeLayers, setAttributeLayers] = useState<{
-		[key: string]: ILayer;
-	}>({});
-
-	const [renderedAttributes, setRenderedAttributes] = useState<IAttribute[]>(
-		[],
+	const {attributes} = useConvertAttributeInputData(
+		attributeOverview,
+		propsAttributes,
 	);
-	const [selectedValues, setSelectedValues] = useState<
-		{name: string; type: string}[]
-	>([]);
-	const [defaultLayer, setDefaultLayer] = useState<ILayer>({
-		color: "#666",
-		opacity: 1,
-		enabled: true,
-	});
+	/**
+	 *
+	 *
+	 * CALLBACKS
+	 *
+	 *
+	 */
+
+	/**
+	 * Get the gradient of the attribute
+	 * This is done by checking if the attributes are provided in the props
+	 * and if a gradient is provided
+	 * If not, the default gradient is returned
+	 */
+	const getGradient = useCallback(
+		(attributeId: string): Gradient => {
+			if (!attributes) return defaultGradient || defaultGeneralGradient;
+			const definition = attributes.find((attribute) => {
+				if (typeof attribute === "string") return false;
+				return attribute.attribute === attributeId;
+			}) as {
+				attribute: string;
+				gradient?: Gradient;
+			};
+
+			const parts = attributeId.split("_");
+
+			// remove the last part of the attributeId
+			// this is the type hint, which is not needed for the comparison
+			const typeHint = parts.pop();
+			const type = typeHint || "string";
+
+			if (definition && definition.gradient) {
+				if (typeof definition.gradient === "string")
+					return definition.gradient as Gradient;
+
+				if (
+					SdtfPrimitiveTypeGuard.isNumberType(type) &&
+					isStringGradient(definition.gradient)
+				) {
+					// in this case we use the default gradient for numbers
+					return defaultGradient || defaultNumberGradient;
+				}
+
+				return definition.gradient;
+			}
+
+			return defaultGradient
+				? defaultGradient
+				: SdtfPrimitiveTypeGuard.isNumberType(type)
+					? defaultNumberGradient
+					: defaultGeneralGradient;
+		},
+		[attributes, defaultGradient],
+	);
+
+	/**
+	 * Get the attribute by id
+	 * This is done by checking if the attribute is available in the overview
+	 * and if not, it tries to find the attribute by its key and type hint
+	 * If not found, undefined is returned
+	 * The gradient is also assigned to the attribute
+	 * @param id
+	 * @returns {IAttributeDefinition | undefined}
+	 */
+	const getAttributeById = useCallback(
+		(id: string | undefined): IAttributeDefinition | undefined => {
+			if (attributeOverview === undefined) return;
+			if (id === undefined) return undefined;
+
+			if (attributeOverview[id]) {
+				const attribute = attributeOverview[id];
+				if (attribute.length > 0) {
+					return {
+						key: id,
+						type: attribute[0].typeHint as SDTF_TYPEHINT,
+						min: attribute[0].min,
+						max: attribute[0].max,
+						values: attribute[0].values,
+						countForValue: attribute[0].countForValue,
+						visualization: getGradient(id),
+					};
+				}
+			} else {
+				const parts = id.split("_");
+				if (parts.length > 1) {
+					// remove the last part of the attributeId
+					// this is the type hint, which is not needed for the comparison
+					const typeHint = parts.pop();
+					// recombine the party in case of underscores in the key
+					const attributeKey = parts.join("_");
+					if (attributeOverview[attributeKey]) {
+						const attribute = attributeOverview[attributeKey].find(
+							(attribute) => attribute.typeHint === typeHint,
+						);
+						if (attribute) {
+							return {
+								key: attributeKey,
+								type: attribute.typeHint as SDTF_TYPEHINT,
+								min: attribute.min,
+								max: attribute.max,
+								values: attribute.values,
+								countForValue: attribute.countForValue,
+								visualization: getGradient(id),
+							};
+						}
+					}
+				}
+			}
+		},
+		[attributeOverview, getGradient],
+	);
+
+	/**
+	 * Handle the attribute change
+	 * This is done by checking if the attribute is available in the overview
+	 * and if not, it tries to find the attribute by its key and type hint
+	 * @param id
+	 * @returns {string | undefined}
+	 */
+	const handleAttributeChange = useCallback(
+		(attributeId: string | null) => {
+			if (!attributeId) return setRenderedAttribute(undefined);
+			const attribute = getAttributeById(attributeId);
+			setRenderedAttribute(attribute);
+		},
+		[getAttributeById],
+	);
+
+	/**
+	 *
+	 *
+	 * USE EFFECTS
+	 *
+	 *
+	 */
+
+	/**
+	 * Use effect that sets the loadSdTF state variable
+	 * This is done by checking if the sessions are available
+	 * and if the sdtf is loaded
+	 * If the sdtf is loaded, the loadSdTF state variable is set to true
+	 */
+	useEffect(() => {
+		const removeListenerTokens: string[] = [];
+
+		// if just one session has loaded the sdtf, we can set the loadSdTF to true
+		for (const sessionId in sessions) {
+			const session = sessions[sessionId];
+
+			removeListenerTokens.push(
+				addListener(
+					EVENTTYPE_SESSION.SESSION_SDTF_DELAYED_LOADED,
+					(e: IEvent) => {
+						const sessionEvent = e as ISessionEvent;
+						if (sessionEvent.sessionId === session.id) {
+							setLoadSdTF(true);
+						}
+					},
+				),
+			);
+		}
+
+		return () => {
+			removeListenerTokens.forEach((token) => {
+				removeListener(token);
+			});
+		};
+	}, [sessions]);
+
+	/**
+	 * Use effect that sets the initial attribute to be rendered
+	 * This is done by checking if the propsInitialAttribute is provided
+	 * or if the attributes are available
+	 */
+	useEffect(() => {
+		if (attributeOverview === undefined) return;
+		if (isInitialized) return;
+		if (!attributes) return;
+
+		if (propsInitialAttribute) {
+			const initialAttributesCleaned = createAttributeId(
+				propsInitialAttribute,
+				attributeOverview,
+			);
+
+			if (initialAttributesCleaned.length > 0) {
+				const initialAttribute = getAttributeById(
+					initialAttributesCleaned[0],
+				);
+				setRenderedAttribute(initialAttribute);
+				return;
+			}
+		} else if (attributes.length > 0) {
+			const initialAttributeCleaned =
+				typeof attributes[0] === "string"
+					? attributes[0]
+					: attributes[0].attribute;
+
+			const initialAttribute = getAttributeById(initialAttributeCleaned);
+			setRenderedAttribute(initialAttribute);
+		}
+	}, [
+		canBeEnabled,
+		propsInitialAttribute,
+		attributeOverview,
+		attributes,
+		isInitialized,
+		getAttributeById,
+	]);
+
+	/**
+	 * Use effect that updates the default material of the attribute visualization engine
+	 * This is done by checking if the attribute visualization engine is available
+	 * and if the passive material is provided
+	 */
+	useEffect(() => {
+		if (isEnabled === false) return;
+		if (attributeVisualizationEngine) {
+			attributeVisualizationEngine.updateDefaultMaterial(
+				new MaterialStandardData({
+					color: passiveMaterial?.color || "#666",
+					opacity: passiveMaterial?.opacity || 1,
+				}),
+			);
+		}
+	}, [isEnabled, attributeVisualizationEngine, passiveMaterial]);
+
+	/**
+	 * Use effect that sets the hasBeenLoaded state variable
+	 * This is done by checking if the widget is visible once
+	 * after that point the hasBeenLoaded state variable is set to true
+	 */
+	useEffect(() => {
+		if (isVisible) {
+			if (!hasBeenLoaded) {
+				setHasBeenLoaded(true);
+			}
+		}
+	}, [isVisible, hasBeenLoaded]);
+
+	useEffect(() => {
+		if (isInitialized === false) return;
+		if (!attributeOverview) return;
+
+		// update the current rendered attribute according to the attribute overview
+		if (renderedAttribute) {
+			const attributeIds = createAttributeId(
+				renderedAttribute.key,
+				attributeOverview,
+			);
+			const attributeId =
+				attributeIds.find((attributeId) => {
+					const parts = attributeId.split("_");
+					// remove the last part of the attributeId
+					// this is the type hint, which is not needed for the comparison
+					const typeHint = parts.pop();
+					// recombine the party in case of underscores in the key
+					const attributeKey = parts.join("_");
+					return (
+						attributeKey === renderedAttribute.key &&
+						typeHint === renderedAttribute.type
+					);
+				}) || attributeIds[0];
+
+			const attribute = getAttributeById(attributeId);
+			if (attribute) {
+				// set custom values to the current ones
+				if (SdtfPrimitiveTypeGuard.isNumberType(attribute.type)) {
+					const numberAttribute =
+						attribute as INumberAttributeExtended;
+					const currentAttribute =
+						renderedAttribute as INumberAttributeExtended;
+					setRenderedAttribute({
+						...numberAttribute,
+						customMin: currentAttribute.customMin,
+						customMax: currentAttribute.customMax,
+					} as INumberAttributeExtended);
+				} else if (
+					!SdtfPrimitiveTypeGuard.isStringType(attribute.type) &&
+					!SdtfPrimitiveTypeGuard.isColorType(attribute.type)
+				) {
+					const defaultAttribute =
+						attribute as IDefaultAttributeExtended;
+					const currentAttribute =
+						renderedAttribute as IDefaultAttributeExtended;
+					setRenderedAttribute({
+						...defaultAttribute,
+						customColor:
+							currentAttribute.customColor ||
+							defaultAttribute.color,
+					} as IDefaultAttributeExtended);
+				} else {
+					setRenderedAttribute(attribute);
+				}
+			} else {
+				// if the attribute is not available in the overview, we set it to undefined
+				setRenderedAttribute(undefined);
+			}
+		}
+	}, [isInitialized, attributeOverview]);
 
 	/**
 	 * Use effect to update the attributes of the attribute visualization engine
 	 * when the rendered attributes change
 	 */
 	useEffect(() => {
-		attributeVisualizationEngineRef.current?.updateAttributes(
-			renderedAttributes,
-		);
-	}, [renderedAttributes]);
+		if (isEnabled === false) return;
+
+		if (renderedAttribute) {
+			if (SdtfPrimitiveTypeGuard.isNumberType(renderedAttribute.type)) {
+				const numberAttribute =
+					renderedAttribute as INumberAttributeExtended;
+
+				attributeVisualizationEngine?.updateAttributes([
+					{
+						...numberAttribute,
+						min: numberAttribute.customMin ?? numberAttribute.min,
+						max: numberAttribute.customMax ?? numberAttribute.max,
+					} as INumberAttributeExtended,
+				]);
+			} else if (
+				!SdtfPrimitiveTypeGuard.isStringType(renderedAttribute.type) &&
+				!SdtfPrimitiveTypeGuard.isColorType(renderedAttribute.type)
+			) {
+				const defaultAttribute =
+					renderedAttribute as IDefaultAttributeExtended;
+				attributeVisualizationEngine?.updateAttributes([
+					{
+						...defaultAttribute,
+						color:
+							defaultAttribute.customColor ??
+							defaultAttribute.color,
+					} as IDefaultAttributeExtended,
+				]);
+			} else {
+				attributeVisualizationEngine?.updateAttributes([
+					renderedAttribute,
+				]);
+			}
+		} else {
+			attributeVisualizationEngine?.updateAttributes([]);
+		}
+	}, [isEnabled, attributeVisualizationEngine, renderedAttribute]);
 
 	/**
-	 * Use effect to update the default layer of the attribute visualization engine
-	 * when the default layer changes
+	 * UseEffect that reacts to changes to the hasPriority state variable
+	 * Please read the comment in the function to understand the different scenarios
 	 */
 	useEffect(() => {
-		attributeVisualizationEngineRef.current?.updateDefaultLayer(
-			defaultLayer,
-		);
-	}, [defaultLayer]);
+		if (!isInitialized) return;
+		if (!canBeEnabled) return;
+
+		if (hasPriority === true) {
+			// the priority was assigned to this widget
+			// if it was not active, we set the active state variable to true
+			if (!active) setActive(true);
+			toggleAttributeVisualization(true, viewport as IViewportApi);
+		} else if (hasPriority === false && active === true) {
+			// only if the widget can be enabled we set the wasActive state variable to false
+			// this means that the widget was disabled by another widget being enabled
+			setActive(false);
+		}
+	}, [canBeEnabled, hasPriority, isInitialized, viewport, active]);
 
 	/**
-	 * Callback to handle the activation toggle of the attribute visualization
-	 * It will create a new attribute visualization engine when the attribute visualization is activated
-	 * and set the attributes and layers of the engine
+	 *
+	 *
+	 * RENDERING
+	 *
+	 *
 	 */
-	const handleActivationToggle = useCallback(
-		async (v: boolean) => {
-			await toggleAttributeVisualization(v, viewport, sessions);
-			setActive(v);
-
-			if (v) {
-				attributeVisualizationEngineRef.current =
-					createAttributeVisualizationEngine(viewport);
-				setAttributeOverview(
-					attributeVisualizationEngineRef.current.overview,
-				);
-				setAttributeLayers(
-					attributeVisualizationEngineRef.current.layers,
-				);
-
-				setEventListenerToken(
-					attributeVisualizationEngineRef.current.addListener(() => {
-						if (!attributeVisualizationEngineRef.current) return;
-						setAttributeOverview(
-							attributeVisualizationEngineRef.current.overview,
-						);
-						setAttributeLayers(
-							attributeVisualizationEngineRef.current.layers,
-						);
-					}),
-				);
-			} else {
-				if (eventListenerToken)
-					attributeVisualizationEngineRef.current?.removeListener(
-						eventListenerToken,
-					);
-				attributeVisualizationEngineRef.current = null;
-				setEventListenerToken(null);
-			}
-		},
-		[viewport],
-	);
 
 	/**
-	 * Callback to update an attribute in the rendered attributes
-	 * It will update the attribute in the rendered attributes if it already exists
-	 * or add the attribute to the rendered attributes if it does not exist
+	 * Create the attribute element of the widget
+	 * It is a memoized value that is updated when the rendered attribute changes
 	 */
-	const updateAttribute = useCallback((attribute: IAttribute) => {
-		setRenderedAttributes((prev) => {
-			const newRenderedAttributes = [...prev];
-			const index = newRenderedAttributes.findIndex(
-				(attr) =>
-					attr.key === attribute.key && attr.type === attribute.type,
+	const renderedAttributeElement = useMemo(() => {
+		if (!renderedAttribute) return null;
+
+		if (SdtfPrimitiveTypeGuard.isStringType(renderedAttribute.type)) {
+			return (
+				<StringAttribute
+					name={renderedAttribute.key}
+					attribute={renderedAttribute as IStringAttribute}
+					showLegend={showLegend}
+				/>
 			);
-			if (index !== -1) {
-				newRenderedAttributes[index] = attribute;
-			} else {
-				newRenderedAttributes.push(attribute);
-			}
-
-			return newRenderedAttributes;
-		});
-	}, []);
-
-	/**
-	 * Callback to remove an attribute from the rendered attributes
-	 */
-	const removeAttribute = useCallback((name: string, type: string) => {
-		setSelectedValues((prev) => {
-			const newSelectedValues = [...prev];
-			const index = newSelectedValues.findIndex(
-				(value) => value.name === name && value.type === type,
+		} else if (
+			SdtfPrimitiveTypeGuard.isNumberType(renderedAttribute.type)
+		) {
+			return (
+				<NumberAttribute
+					name={renderedAttribute.key}
+					attribute={renderedAttribute as INumberAttributeExtended}
+					updateRange={(min: number, max: number) => {
+						setRenderedAttribute({
+							...renderedAttribute,
+							customMin: min,
+							customMax: max,
+						} as INumberAttributeExtended);
+					}}
+					showLegend={showLegend}
+					widgetId={widgetId}
+				/>
 			);
-			if (index !== -1) newSelectedValues.splice(index, 1);
-
-			return newSelectedValues;
-		});
-
-		setRenderedAttributes((prev) => {
-			const newRenderedAttributes = [...prev];
-			const index = newRenderedAttributes.findIndex(
-				(attr) => attr.key === name && attr.type === type,
+		} else if (SdtfPrimitiveTypeGuard.isColorType(renderedAttribute.type)) {
+			return (
+				<ColorAttribute
+					name={renderedAttribute.key}
+					attribute={renderedAttribute as IColorAttribute}
+				/>
 			);
-			if (index !== -1) newRenderedAttributes.splice(index, 1);
-
-			return newRenderedAttributes;
-		});
-	}, []);
-
-	/**
-	 * Callback to change the order of an attribute in the rendered attributes
-	 */
-	const changeOrder = useCallback(
-		(name: string, type: string, direction: "up" | "down") => {
-			setSelectedValues((prev) => {
-				const newSelectedValues = [...prev];
-				const index = newSelectedValues.findIndex(
-					(value) => value.name === name && value.type === type,
-				);
-				if (index !== -1) {
-					if (direction === "up" && index > 0) {
-						const temp = newSelectedValues[index - 1];
-						newSelectedValues[index - 1] = newSelectedValues[index];
-						newSelectedValues[index] = temp;
-					} else if (
-						direction === "down" &&
-						index < newSelectedValues.length - 1
-					) {
-						const temp = newSelectedValues[index + 1];
-						newSelectedValues[index + 1] = newSelectedValues[index];
-						newSelectedValues[index] = temp;
+		} else {
+			return (
+				<DefaultAttribute
+					name={renderedAttribute.key}
+					attribute={renderedAttribute}
+					updateColor={(color) =>
+						setRenderedAttribute({
+							...renderedAttribute,
+							customColor: color,
+						} as IDefaultAttributeExtended)
 					}
-				}
+					widgetId={widgetId}
+				/>
+			);
+		}
+	}, [renderedAttribute, showLegend]);
 
-				return newSelectedValues;
-			});
+	/**
+	 * memoized data for the select options
+	 */
+	const selectOptions = useMemo(() => {
+		if (!attributes || !attributeOverview) return [];
 
-			setRenderedAttributes((prev) => {
-				const newRenderedAttributes = [...prev];
-				const index = newRenderedAttributes.findIndex(
-					(attr) => attr.key === name && attr.type === type,
+		return attributes
+			.map((value) => {
+				if (!attributeOverview) return undefined;
+
+				const attributeId =
+					typeof value === "string" ? value : value.attribute;
+				const attributeKey = getAttributeKey(
+					attributeId,
+					attributeOverview,
 				);
-				if (index !== -1) {
-					if (direction === "up" && index > 0) {
-						const temp = newRenderedAttributes[index - 1];
-						newRenderedAttributes[index - 1] =
-							newRenderedAttributes[index];
-						newRenderedAttributes[index] = temp;
-					} else if (
-						direction === "down" &&
-						index < newRenderedAttributes.length - 1
-					) {
-						const temp = newRenderedAttributes[index + 1];
-						newRenderedAttributes[index + 1] =
-							newRenderedAttributes[index];
-						newRenderedAttributes[index] = temp;
-					}
+
+				if (!attributeKey) return undefined;
+				const attributeData = attributeOverview[attributeKey];
+				if (!attributeData) return undefined;
+
+				if (attributeData.length > 1) {
+					// we know that there are multiple attributes with the same key
+					// so we need to add the type hint to the label
+					const attribute = getAttributeById(attributeId);
+
+					return {
+						value: attributeId,
+						label: attributeKey + " (" + attribute?.type + ")",
+					};
+				} else {
+					return {
+						value: attributeId,
+						label: attributeKey,
+					};
 				}
-
-				return newRenderedAttributes;
-			});
-		},
-		[],
-	);
+			})
+			.filter((value) => value !== undefined);
+	}, [attributes, attributeOverview, getAttributeById]);
 
 	/**
-	 * Callback to update a layer in the attribute visualization engine
-	 * It will update the layer in the attribute visualization engine and the attribute layers state
+	 * The attribute selection element of the widget
+	 * It contains a select to select the attribute that should be displayed
 	 */
-	const updateLayer = useCallback((name: string, layer: ILayer) => {
-		setAttributeLayers((prev) => {
-			const newAttributeLayers = {...prev};
-			newAttributeLayers[name] = layer;
-
-			return newAttributeLayers;
-		});
-
-		const currentLayers = attributeVisualizationEngineRef.current?.layers;
-		if (!currentLayers) return;
-
-		currentLayers[name] = layer;
-		attributeVisualizationEngineRef.current?.updateLayers(currentLayers);
-	}, []);
-
-	/**
-	 * The layer element of the widget
-	 * It contains the default layer and all attribute layers
-	 * The default layer is the layer that is used for all attributes that do not have a specific layer
-	 * The attribute layers are the layers that are used for specific attributes
-	 */
-	const layerElement = (
+	const attributeElementSelection = (
 		<>
-			<Group
-				justify="space-between"
-				onClick={() => setLayerOptionsOpened((t) => !t)}
-			>
-				<Title order={5}> Layers </Title>
-				{layerOptionsOpened ? <IconChevronUp /> : <IconChevronDown />}
-			</Group>
-			{layerOptionsOpened && (
-				<Paper>
-					<Stack w={"100%"}>
-						<Text>default</Text>
-
-						<Grid align="center">
-							<Grid.Col span={"auto"}>
-								<Slider
-									min={0}
-									max={1}
-									step={0.01}
-									value={defaultLayer.opacity}
-									size={"sm"}
-									onChangeEnd={(v) =>
-										setDefaultLayer({
-											...defaultLayer,
-											opacity: v,
-										})
-									}
-								/>
-							</Grid.Col>
-							<Grid.Col span={"content"}>
-								<ActionIcon
-									title="Toggle Layer"
-									size={"sm"}
-									onClick={() =>
-										setDefaultLayer({
-											...defaultLayer,
-											enabled: !defaultLayer.enabled,
-										})
-									}
-									variant={
-										defaultLayer.enabled
-											? "filled"
-											: "light"
-									}
-								>
-									<Icon type={IconTypeEnum.CircleOff} />
-								</ActionIcon>
-							</Grid.Col>
-						</Grid>
-					</Stack>
-					{Object.keys(attributeLayers).map((key) => {
-						const layer = attributeLayers[key];
-
-						return (
-							<Stack key={key} w={"100%"}>
-								<Text>{key}</Text>
-								<Grid align="center">
-									<Grid.Col span={"auto"}>
-										<Slider
-											min={0}
-											max={1}
-											step={0.01}
-											value={layer.opacity}
-											size={"sm"}
-											onChangeEnd={(v) =>
-												updateLayer(key, {
-													...layer,
-													opacity: v,
-												})
-											}
-										/>
-									</Grid.Col>
-									<Grid.Col span={"content"}>
-										<ActionIcon
-											title="Toggle Layer"
-											size={"sm"}
-											onClick={() =>
-												updateLayer(key, {
-													...layer,
-													enabled: !layer.enabled,
-												})
-											}
-											variant={
-												layer.enabled
-													? "filled"
-													: "light"
-											}
-										>
-											<Icon
-												type={IconTypeEnum.CircleOff}
-											/>
-										</ActionIcon>
-									</Grid.Col>
-								</Grid>
-							</Stack>
-						);
-					})}
-				</Paper>
-			)}
-		</>
-	);
-
-	/**
-	 * The attribute element of the widget
-	 * It contains a multiselect to select the attributes that should be displayed
-	 * and all the attribute widgets for the selected attributes
-	 */
-	const attributeElement = (
-		<>
-			<Group
-				justify="space-between"
-				onClick={() => setAttributeOptionsOpened((t) => !t)}
-			>
-				<Title order={5}> Attributes </Title>
-				{attributeOptionsOpened ? (
-					<IconChevronUp />
-				) : (
-					<IconChevronDown />
-				)}
-			</Group>
-			{
-				// we have to use the display style here, because the components still need to be rendered
-				// even if the attribute options are not opened
-				<div
-					style={{display: attributeOptionsOpened ? "block" : "none"}}
-				>
-					<MultiSelect
-						clearable
-						placeholder="Select an attribute"
-						data={Object.entries(attributeOverview)
-							.map(([key, value]) => {
-								return value.map((v) => ({
-									value: `${key}_${v.typeHint}`,
-									label:
-										value.length > 1
-											? `${key} - ${v.typeHint}`
-											: key,
-								}));
-							})
-							.flat()}
-						value={selectedValues.map((value) => {
-							return value.name + "_" + value.type;
-						})}
-						onChange={(v) => {
-							const newSelectedValues = v.map((value) => {
-								const [name, type] = value.split("_");
-
-								return {name, type};
-							});
-							setSelectedValues(newSelectedValues);
-
-							// remove from the rendered attributes if it is not selected anymore
-							const newRenderedAttributes =
-								renderedAttributes.filter((attr) => {
-									return newSelectedValues.find(
-										(value) =>
-											value.name === attr.key &&
-											value.type === attr.type,
-									);
-								});
-							setRenderedAttributes(newRenderedAttributes);
-						}}
-					/>
-					<Space />
-					{selectedValues &&
-						selectedValues.map((value) => {
-							const key = value.name;
-							if (!attributeOverview[key]) return null;
-							const attribute = attributeOverview[key].find(
-								(v) => v.typeHint === value.type,
-							);
-							if (!attribute) return null;
-
-							const attributeKey = `${key}_${attribute.typeHint}`;
-
-							if (
-								SdtfPrimitiveTypeGuard.isNumberType(
-									attribute.typeHint,
-								)
-							) {
-								return (
-									<NumberAttribute
-										key={attributeKey}
-										name={key}
-										attribute={attribute}
-										updateAttribute={updateAttribute}
-										removeAttribute={removeAttribute}
-										changeOrder={changeOrder}
-									/>
-								);
-							} else if (
-								SdtfPrimitiveTypeGuard.isStringType(
-									attribute.typeHint,
-								)
-							) {
-								return (
-									<StringAttribute
-										key={attributeKey}
-										name={key}
-										attribute={attribute}
-										updateAttribute={updateAttribute}
-										removeAttribute={removeAttribute}
-										changeOrder={changeOrder}
-									/>
-								);
-							} else if (
-								SdtfPrimitiveTypeGuard.isColorType(
-									attribute.typeHint,
-								)
-							) {
-								return (
-									<ColorAttribute
-										key={attributeKey}
-										name={key}
-										attribute={attribute}
-										updateAttribute={updateAttribute}
-										removeAttribute={removeAttribute}
-										changeOrder={changeOrder}
-									/>
-								);
-							} else {
-								return (
-									<DefaultAttribute
-										key={attributeKey}
-										name={key}
-										attribute={attribute}
-										updateAttribute={updateAttribute}
-										removeAttribute={removeAttribute}
-										changeOrder={changeOrder}
-									/>
-								);
+			<Select
+				placeholder="Select an attribute"
+				allowDeselect={false}
+				readOnly={attributes && attributes.length < 2}
+				style={
+					attributes && attributes.length < 2
+						? {
+								pointerEvents: "none", // disables user interaction
 							}
-						})}
-				</div>
-			}
+						: {}
+				}
+				rightSection={
+					attributes && attributes.length < 2 ? <></> : null
+				}
+				data={selectOptions}
+				value={renderedAttribute?.key + "_" + renderedAttribute?.type}
+				onChange={handleAttributeChange}
+			/>
 		</>
 	);
 
 	return (
 		<>
-			<Paper>
-				<Group
-					justify="space-between"
-					style={active ? {marginBottom: "10px"} : {}}
-				>
-					<Title order={3}> Attribute Visualization </Title>
-					<Switch
-						checked={active === true}
-						onChange={(e) =>
-							handleActivationToggle(e.currentTarget.checked)
+			<TooltipWrapper label={tooltip}>
+				<Paper ref={ref} {...paperProps}>
+					<Group justify="space-between" mb={"xs"}>
+						<Title
+							order={2} // TODO make this a style prop
+						>
+							{title}
+						</Title>
+						<ActionIcon
+							onClick={() => {
+								if (!isInitialized) return;
+								if (!canBeEnabled) return;
+
+								if (active) {
+									if (hasPriority) removePriority();
+									setActive(false);
+								} else {
+									if (!hasPriority) requestPriority();
+									setActive(true);
+								}
+
+								toggleAttributeVisualization(
+									!active,
+									viewport as IViewportApi,
+								);
+							}}
+						>
+							{active ? <IconEye /> : <IconEyeOff />}
+						</ActionIcon>
+					</Group>
+					<Stack
+						style={
+							active
+								? {}
+								: {
+										opacity: 0.25, // Visual "disabled" effect
+										pointerEvents: "none", // Disable interactions
+										userSelect: "none", // Prevent text selection
+									}
 						}
-					/>
-				</Group>
-				{active && (
-					<Stack>
-						{layerElement}
-						{attributeElement}
-						<SelectedAttribute
-							viewportId={viewportId}
-							active={active}
-							selectedValues={selectedValues}
-							setSelectedValues={setSelectedValues}
-							removeAttribute={removeAttribute}
-						/>
+					>
+						{attributeElementSelection}
+						{renderedAttributeElement}
 					</Stack>
-				)}
-			</Paper>
+				</Paper>
+			</TooltipWrapper>
 		</>
 	);
 }
-
-/**
- * Function to create a new attribute visualization engine
- *
- * @param viewport
- * @returns
- */
-const createAttributeVisualizationEngine = (viewport: IViewportApi) => {
-	const attributeVisualizationEngine = new AttributeVisualizationEngine(
-		viewport,
-	);
-	attributeVisualizationEngine.updateLayerMaterialType("standard");
-	attributeVisualizationEngine.updateDefaultMaterial(
-		new MaterialStandardData({color: "#666"}),
-	);
-	attributeVisualizationEngine.updateDefaultLayer({
-		color: "#666",
-		opacity: 1,
-		enabled: true,
-	});
-	attributeVisualizationEngine.updateVisualizedMaterialType("standard");
-
-	return attributeVisualizationEngine;
-};
 
 /**
  * Function to toggle the attribute visualization
@@ -573,49 +709,48 @@ const createAttributeVisualizationEngine = (viewport: IViewportApi) => {
  * @param viewport
  * @param sessionApis
  */
-const toggleAttributeVisualization = async (
+const toggleAttributeVisualization = (
 	toggle: boolean,
 	viewport: IViewportApi,
-	sessionApis: IShapeDiverStoreSessions,
 ) => {
-	if (toggle) {
-		await loadSdtf(sessionApis);
+	if (!viewport) return;
+	if (toggle && viewport.type !== RENDERER_TYPE.ATTRIBUTES) {
 		viewport.type = RENDERER_TYPE.ATTRIBUTES;
-		// TODO why is this necessary?
-		sceneTree.root.updateVersion();
-		viewport.update();
-	} else {
+	} else if (!toggle && viewport.type !== RENDERER_TYPE.STANDARD) {
 		viewport.type = RENDERER_TYPE.STANDARD;
-		// TODO why is this necessary?
-		sceneTree.root.updateVersion();
-		viewport.update();
 	}
 };
 
 /**
- * Function to load the sdtf data of the session apis
- *
- * @param sessionApis
+ * Function to get the attribute key
+ * This is done by checking if the attribute is available in the overview
+ * and if not, it tries to find the attribute by its key and type hint
+ * If not found, undefined is returned
+ * @param id
+ * @param overview
+ * @returns {string | undefined}
  */
-const loadSdtf = async (sessionApis: IShapeDiverStoreSessions) => {
-	const promises = [];
-	for (const key in sessionApis) {
-		const sessionApi = sessionApis[key];
+const getAttributeKey = (id: string, overview?: ISDTFOverview) => {
+	if (!overview) return undefined;
+	if (overview[id]) {
+		return id;
+	} else {
+		const parts = id.split("_");
+		if (parts.length > 1) {
+			// remove the last part of the attributeId
+			// this is the type hint, which is not needed for the comparison
+			const typeHint = parts.pop();
+			// recombine the party in case of underscores in the key
+			const attributeKey = parts.join("_");
 
-		if (sessionApi.loadSdtf === false) {
-			sessionApi.loadSdtf = true;
-			promises.push(
-				await new Promise<void>((resolve) =>
-					addListener(
-						EVENTTYPE_SESSION.SESSION_SDTF_DELAYED_LOADED,
-						(e: IEvent) => {
-							const sessionEvent = e as ISessionEvent;
-							if (sessionEvent.sessionId === sessionApi.id)
-								resolve();
-						},
-					),
-				),
-			);
+			if (overview[attributeKey]) {
+				const attribute = overview[attributeKey].find(
+					(attribute) => attribute.typeHint === typeHint,
+				);
+				if (attribute) {
+					return attributeKey;
+				}
+			}
 		}
 	}
 };

@@ -9,6 +9,7 @@ import {IconType} from "@AppBuilderShared/types/shapediver/icons";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {MantineColor} from "@mantine/core";
+import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
@@ -289,9 +290,49 @@ export interface IAppBuilderWidgetPropsActions {
 	actions?: IAppBuilderAction[];
 }
 
+/** Enum of the visibility of the attribute visualization. */
+export enum AttributeVisualizationVisibility {
+	/** The attribute visualization is always enabled. */
+	// AlwaysOn = "alwaysOn",
+	/** The attribute visualization is enabled by default, but can be turned off. */
+	DefaultOn = "defaultOn",
+	/** The attribute visualization is disabled by default, but can be turned on. */
+	DefaultOff = "defaultOff",
+}
+
 /** Properties of a widget then attribute visualization. */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface IAppBuilderWidgetPropsAttributeVisualization {}
+export interface IAppBuilderWidgetPropsAttributeVisualization {
+	/** Title for the widget (default: "Attributes") */
+	title?: string;
+	/** Tooltip for the widget (default: "") */
+	tooltip?: string;
+	/** List of attributes to be visualized.
+	 *  Either a string or an object with the attribute name and an optional gradient.
+	 *  If a string is provided, the attribute will be visualized with a default gradient.
+	 */
+	attributes?: (
+		| string
+		| {
+				attribute: string;
+				gradient?: Gradient;
+		  }
+	)[];
+	/** Enable the attribute visualization by default. (default: AttributeVisualizationVisibility.DefaultOff) */
+	visualizationMode?: AttributeVisualizationVisibility;
+	/** Show the legend, if there is one. (default: true) */
+	showLegend?: boolean;
+	/** Default gradient, that should be used if none is supplied in the definition of the attribute. (default: TODO) */
+	defaultGradient?: Gradient;
+	/** Initial attribute that is displayed (default: first attribute in the list) */
+	initialAttribute?: string;
+	/** Material definition for objects that don't have the selected attribute. (default: { color: "#666666", opacity: 1 }) */
+	passiveMaterial?: {
+		/** Color of the material. (default: "#666666") */
+		color?: string;
+		/** Opacity of the material. (default: 1) */
+		opacity?: number;
+	};
+}
 
 /** Properties of an AI agent widget. */
 export interface IAppBuilderWidgetPropsAgent {
