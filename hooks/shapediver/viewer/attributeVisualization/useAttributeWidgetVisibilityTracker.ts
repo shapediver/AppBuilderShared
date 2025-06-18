@@ -226,7 +226,8 @@ const isElementVisible = (el: HTMLElement) => {
  * When no elements are visible, the function will toggle the attribute visualization off.
  */
 const notifyAll = () => {
-	const visibleEntries = Array.from(visibilityMap.entries())
+	const visibilityMapEntries = Array.from(visibilityMap.entries());
+	const visibleEntries = visibilityMapEntries
 		.filter(([, data]) => data.isVisible && data.wantsPriority)
 		.sort((a, b) => a[0] - b[0])
 		.sort((a, b) => {
@@ -241,11 +242,12 @@ const notifyAll = () => {
 		updaters.setHasPriority(instanceId === priorityElementId);
 	});
 
-	// if no element is visible, toggle attribute visualization off
-	// and set the viewport type to standard
-	// this is done here as it is not related to a single element
-	// as no attribute visualization widget might be visible at this point
-	if (priorityElementId === undefined) {
+	// if there is no element with priority, we disable the attribute visualization
+	// but only if there are visible elements that do not want priority
+	if (
+		priorityElementId === undefined &&
+		visibilityMapEntries.filter(([, data]) => data.isVisible).length > 0
+	) {
 		disableAttributeVisualization();
 	}
 };
