@@ -1,8 +1,11 @@
 import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
+import DesktopClientPanel from "@AppBuilderShared/components/ui/stargate/DesktopClientPanel";
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
+import {isStargateParameter} from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import React, {useMemo} from "react";
@@ -10,11 +13,15 @@ import React, {useMemo} from "react";
 interface Props {
 	parameters: PropsParameter[];
 	exports: PropsExport[];
+	outputs: PropsOutput[];
+	namespace?: string;
 }
 
 export default function AppBuilderFallbackContainerComponent({
 	parameters,
 	exports,
+	outputs,
+	namespace,
 }: Props) {
 	const tabProps: ITabsComponentProps = useMemo(() => {
 		const tabProps: ITabsComponentProps = {
@@ -34,7 +41,7 @@ export default function AppBuilderFallbackContainerComponent({
 				],
 			});
 		}
-		if (exports.length > 0) {
+		if (exports.length > 0 || outputs.length > 0) {
 			tabProps.defaultValue = tabProps.defaultValue || "Exports";
 			tabProps.tabs.push({
 				name: "Exports",
@@ -43,13 +50,28 @@ export default function AppBuilderFallbackContainerComponent({
 					<ParametersAndExportsAccordionComponent
 						key={0}
 						exports={exports}
+						outputs={outputs}
+						namespace={namespace}
 					/>,
 				],
 			});
 		}
 
+		if (
+			(parameters.length > 0 &&
+				parameters.some((p) => isStargateParameter(p.type))) ||
+			outputs.length > 0
+		) {
+			tabProps.tabs.push({
+				name: "Stargate",
+				icon: IconTypeEnum.Network,
+				children: [
+					<DesktopClientPanel key={2} namespace={namespace} />,
+				],
+			});
+		}
 		return tabProps;
-	}, [parameters, exports]);
+	}, [parameters, exports, outputs]);
 
 	return <TabsComponent {...tabProps} />;
 }
