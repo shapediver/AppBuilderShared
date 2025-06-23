@@ -140,12 +140,22 @@ export function useSessionWithAppBuilder(
 			setParsedData(validationResult(undefined));
 
 			if (initialProcessManagerIdRef.current) {
-				// the initial process manager id is created when the session is initialized
-				// we resolve it here as there are no further processes to be executed
-				addProcess(initialProcessManagerIdRef.current, {
-					name: "Instance Process",
-					promise: Promise.resolve(),
-				});
+				// if there are s-type parameters, we need to load the SDTF data
+				const hasSTypeParameters = Object.values(
+					sessionApi.parameters,
+				).some((p) => p.type.startsWith("s"));
+
+				if (hasSTypeParameters) {
+					// if there are s-type parameters, we set the loadSdTF flag to true
+					setLoadSdTF(true);
+				} else {
+					// the initial process manager id is created when the session is initialized
+					// we resolve it here as there are no further processes to be executed
+					addProcess(initialProcessManagerIdRef.current, {
+						name: "Instance Process",
+						promise: Promise.resolve(),
+					});
+				}
 			}
 		}
 
@@ -182,6 +192,7 @@ export function useSessionWithAppBuilder(
 
 			let hasInstances = false;
 			let hasAttributeVisualizationWidget = false;
+			let hasSTypeParameters = false;
 			if (appBuilderData) {
 				if (appBuilderData.instances) hasInstances = true;
 
@@ -212,13 +223,21 @@ export function useSessionWithAppBuilder(
 						}
 					}
 				});
+
+				// check if there are any s-type parameters
+				hasSTypeParameters = (appBuilderData.parameters || []).some(
+					(p) => p.type.startsWith("s"),
+				);
 			}
 
 			// depending on if there is an attribute visualization widget
 			// we set the loadSdTF flag to true or false
-			setLoadSdTF(hasAttributeVisualizationWidget);
+			setLoadSdTF(hasAttributeVisualizationWidget || hasSTypeParameters);
 
-			if (!hasInstances && !hasAttributeVisualizationWidget) {
+			if (
+				!hasInstances &&
+				!(hasAttributeVisualizationWidget || hasSTypeParameters)
+			) {
 				if (initialProcessManagerIdRef.current) {
 					// the initial process manager id is created when the session is initialized
 					// we resolve it here as there are no further processes to be executed
