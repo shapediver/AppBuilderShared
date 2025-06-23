@@ -208,7 +208,10 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	// get props for fallback parameters
 	const parameterProps = useSessionPropsParameter(namespace);
 	const exportProps = useSessionPropsExport(namespace);
-	const outputProps = useSessionPropsOutput(namespace);
+	const outputProps = useSessionPropsOutput(
+		namespace,
+		(output) => !!output.chunks,
+	);
 
 	// handle additional sessions without instances
 	useSessions(secondarySessions);

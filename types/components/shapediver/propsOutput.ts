@@ -11,8 +11,8 @@ export interface PropsOutput extends PropsParameterOrExport {
 	/**
 	 * Properties of the output to be overridden.
 	 */
-	readonly overrides?: {
-		displayname?: string;
-		hidden?: boolean;
-	};
+	readonly overrides?: Pick<
+		Partial<IShapeDiverOutputDefinition>,
+		"displayname" | "group" | "order" | "tooltip" | "hidden"
+	>;
 }

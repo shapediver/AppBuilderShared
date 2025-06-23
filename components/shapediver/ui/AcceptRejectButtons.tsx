@@ -1,6 +1,9 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useParameterChanges} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterChanges";
-import {useSortedParametersAndExports} from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
+import {
+	isParamDefinition,
+	useSortedParametersAndExports,
+} from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Button, Group, Text} from "@mantine/core";
@@ -17,7 +20,7 @@ export default function AcceptRejectButtons({parameters}: Props) {
 	// check if there is at least one parameter for which changes can be accepted or rejected
 	const sortedParamsAndExports = useSortedParametersAndExports(parameters);
 	const showButtons = sortedParamsAndExports.some(
-		(p) => p.parameter?.acceptRejectMode,
+		(p) => isParamDefinition(p) && p.parameter.acceptRejectMode,
 	);
 
 	// disable the accept and reject buttons if there are no changes or

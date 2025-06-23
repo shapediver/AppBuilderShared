@@ -1,6 +1,6 @@
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
-import {IOutputApi} from "@shapediver/viewer.session";
+import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
 
 /**
  * Hook providing a shortcut to create output props for UI components,
@@ -11,27 +11,25 @@ import {IOutputApi} from "@shapediver/viewer.session";
  */
 export function useSessionPropsOutput(
 	namespace: string | string[],
-	filter?: (output: IOutputApi) => boolean,
+	filter?: (output: IShapeDiverOutputDefinition) => boolean,
 ): PropsOutput[] {
 	const _filter = filter || (() => true);
 
-	const propsOutputs = useShapeDiverStoreSession((state) =>
+	const propsOutputs = useShapeDiverStoreParameters((state) =>
 		(Array.isArray(namespace) ? namespace : [namespace]).flatMap(
-			(namespace) => {
-				const session = state.sessions[namespace];
-				if (!session) return [];
+			(namespace) =>
+				Object.values(state.getOutputs(namespace))
+					.filter((store) => _filter(store.getState().definition))
+					.map((store) => {
+						const state = store.getState();
 
-				return Object.values(session.outputs)
-					.filter((output) => _filter(output))
-					.map((output) => {
 						return {
 							namespace,
-							outputId: output.id,
+							outputId: state.definition.id,
 						};
-					});
-			},
+					}),
 		),
-	);
+	); // <-- TODO SS-8052 review how to avoid unnecessary re-renders
 
 	return propsOutputs;
 }

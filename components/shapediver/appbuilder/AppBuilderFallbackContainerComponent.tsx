@@ -3,7 +3,6 @@ import DesktopClientPanel from "@AppBuilderShared/components/ui/stargate/Desktop
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
-import {isStargateParameter} from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
@@ -48,7 +47,7 @@ export default function AppBuilderFallbackContainerComponent({
 				icon: IconTypeEnum.Download,
 				children: [
 					<ParametersAndExportsAccordionComponent
-						key={0}
+						key={1}
 						exports={exports}
 						outputs={outputs}
 						namespace={namespace}
@@ -57,11 +56,9 @@ export default function AppBuilderFallbackContainerComponent({
 			});
 		}
 
-		if (
-			(parameters.length > 0 &&
-				parameters.some((p) => isStargateParameter(p.type))) ||
-			outputs.length > 0
-		) {
+		// FIXME refactor this condition!
+		// It should be based on checking whether any component uses the Stargate store
+		if (outputs.length > 0) {
 			tabProps.tabs.push({
 				name: "Stargate",
 				icon: IconTypeEnum.Network,

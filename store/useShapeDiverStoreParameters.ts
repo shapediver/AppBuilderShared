@@ -570,12 +570,13 @@ function mapOutputDefinition(
 		id: outputApi.id,
 		uid: outputApi.uid,
 		name: outputApi.name,
-		displayname: outputApi.displayname,
-		chunks: outputApi.chunks,
+		dependency: outputApi.dependency,
+		group: outputApi.group,
 		order: outputApi.order,
+		tooltip: outputApi.tooltip,
+		displayname: outputApi.displayname,
 		hidden: outputApi.hidden,
-		format: outputApi.format,
-		node: outputApi.node,
+		chunks: outputApi.chunks,
 	};
 }
 
@@ -641,7 +642,6 @@ function createOutputStore(session: ISessionApi, outputId: string) {
 		devtools(
 			() => ({
 				definition,
-				outputApi,
 			}),
 			devtoolsSettings,
 		),

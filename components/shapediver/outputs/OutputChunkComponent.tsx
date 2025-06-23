@@ -38,7 +38,7 @@ export default function OutputChunkComponent(props: Props) {
 	// Use stargate output hook for this specific chunk
 	const {
 		connectionStatus,
-		isLoading: iOutputLoading,
+		isLoading: isOutputLoading,
 		onBakeData,
 	} = useStargateOutput({
 		chunkId: chunk.id,
@@ -54,11 +54,10 @@ export default function OutputChunkComponent(props: Props) {
 	return (
 		<>
 			<StargateInput
-				hint={connectionStatus.hint}
 				message={connectionStatus.message}
-				count={connectionStatus.count}
+				// count={connectionStatus.count} // TODO
 				color={connectionStatus.color}
-				isLoading={isLoading || iOutputLoading || disabled}
+				isLoading={isLoading || isOutputLoading || disabled}
 				isBtnDisabled={connectionStatus.isBtnDisabled || disabled}
 				icon={IconTypeEnum.DeviceDesktopUp}
 				onConnect={onBakeData}

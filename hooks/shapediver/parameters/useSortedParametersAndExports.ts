@@ -2,17 +2,57 @@ import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDive
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IShapeDiverParamOrExportDefinition} from "@AppBuilderShared/types/shapediver/common";
+import {
+	IShapeDiverParamOrExportDefinition,
+	IShapeDiverParamOrExportOrOutputDefinition,
+} from "@AppBuilderShared/types/shapediver/common";
 import {useShallow} from "zustand/react/shallow";
 
 /**
  * The definition of a parameter, export, or output, and the corresponding properties.
  */
-interface ParamOrExportDefinition {
-	parameter?: PropsParameter;
-	export?: PropsExport;
-	output?: PropsOutput;
+type ParamOrExportOrOutputDefinition =
+	| {
+			parameter: PropsParameter;
+			definition: IShapeDiverParamOrExportDefinition;
+	  }
+	| {
+			export: PropsExport;
+			definition: IShapeDiverParamOrExportDefinition;
+	  }
+	| {
+			output: PropsOutput;
+			definition: IShapeDiverParamOrExportOrOutputDefinition;
+	  };
+
+/** assert parameter definition */
+export function isParamDefinition(
+	def: ParamOrExportOrOutputDefinition,
+): def is {
+	parameter: PropsParameter;
 	definition: IShapeDiverParamOrExportDefinition;
+} {
+	return "parameter" in def;
+}
+
+/** assert export definition */
+export function isExportDefinition(
+	def: ParamOrExportOrOutputDefinition,
+): def is {
+	export: PropsExport;
+	definition: IShapeDiverParamOrExportDefinition;
+} {
+	return "export" in def;
+}
+
+/** assert export definition */
+export function isOutputDefinition(
+	def: ParamOrExportOrOutputDefinition,
+): def is {
+	output: PropsOutput;
+	definition: IShapeDiverParamOrExportOrOutputDefinition;
+} {
+	return "output" in def;
 }
 
 /**
@@ -27,7 +67,7 @@ export function useSortedParametersAndExports(
 	parameters?: PropsParameter[],
 	exports?: PropsExport[],
 	outputs?: PropsOutput[],
-): ParamOrExportDefinition[] {
+): ParamOrExportOrOutputDefinition[] {
 	const {parameterStores, exportStores, outputStores} =
 		useShapeDiverStoreParameters(
 			useShallow((state) => ({
@@ -38,7 +78,7 @@ export function useSortedParametersAndExports(
 		);
 
 	// collect definitions of parameters and exports for sorting and grouping
-	let sortedParamsAndExports: ParamOrExportDefinition[] = [];
+	let sortedParamsAndExports: ParamOrExportOrOutputDefinition[] = [];
 	sortedParamsAndExports = sortedParamsAndExports.concat(
 		(parameters ?? []).flatMap((p) => {
 			const stores = Object.values(parameterStores[p.namespace] ?? {});

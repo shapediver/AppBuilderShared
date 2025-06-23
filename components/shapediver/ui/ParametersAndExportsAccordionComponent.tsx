@@ -1,5 +1,10 @@
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
-import {useSortedParametersAndExports} from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
+import {
+	isExportDefinition,
+	isOutputDefinition,
+	isParamDefinition,
+	useSortedParametersAndExports,
+} from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
 import {
 	getExportComponent,
 	getParameterComponent,
@@ -147,7 +152,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 			? groupIds[groupIdentifier!]
 			: elementGroups.length - 1;
 
-		if (param.parameter) {
+		if (isParamDefinition(param)) {
 			// Get the element for the parameter and add it to the group
 			const {component: ParameterComponent, extraBottomPadding} =
 				getParameterComponent(componentContext, param.definition);
@@ -166,7 +171,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 					}
 				/>,
 			);
-		} else if (param.export) {
+		} else if (isExportDefinition(param)) {
 			// Get the element for the export and add it to the group
 			const ExportComponent = getExportComponent(
 				componentContext,
@@ -178,7 +183,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 					<ExportComponent {...param.export} />
 				</Paper>,
 			);
-		} else if (param.output && namespace) {
+		} else if (isOutputDefinition(param) && namespace) {
 			elementGroups[groupId].elements.push(
 				<Paper key={param.definition.id}>
 					<OutputStargateComponent

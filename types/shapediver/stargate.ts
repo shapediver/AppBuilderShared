@@ -69,7 +69,6 @@ export interface IConnectionBadgeProps {
  * Props for the StargateInput component
  */
 export interface IStargateInputProps {
-	hint?: string;
 	isClearSelection?: boolean;
 	isLoading?: boolean;
 	isDisabled?: boolean;
