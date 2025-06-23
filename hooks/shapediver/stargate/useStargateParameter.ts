@@ -3,7 +3,6 @@ import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverS
 import {
 	IStargateClientChoice,
 	NetworkStatus,
-	ParametersGetDataResultErrorMessages,
 } from "@AppBuilderShared/types/shapediver/stargate";
 import {ShapeDiverResponseParameterType} from "@shapediver/api.geometry-api-dto-v2";
 import {
@@ -16,6 +15,15 @@ import {
 } from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {ERROR_TYPE_INTERRUPTED, useStargateGetData} from "./useStargateGetData";
+
+const ParametersGetDataResultErrorMessages = {
+	[ISdStargateGetDataResultEnum.NOTHING]:
+		"No objects were selected in the client.",
+	[ISdStargateGetDataResultEnum.FAILURE]:
+		"The selection operation failed in the client.",
+	[ISdStargateGetDataResultEnum.CANCEL]:
+		"The selection operation was canceled in the client.",
+};
 
 export interface IUseStargateParameterProps {
 	sdk?: ISdStargateSdk;

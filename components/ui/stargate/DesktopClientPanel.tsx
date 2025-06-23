@@ -1,9 +1,9 @@
-import Icon, {SdIconProps} from "@AppBuilderShared/components/ui/Icon";
+import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useStargateConnection} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateConnection";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {NetworkStatusIcons} from "@AppBuilderShared/types/shapediver/stargate";
+import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	ActionIcon,
 	ActionIconProps,
@@ -27,6 +27,36 @@ import {
 import React, {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
 
+/**
+ * Icon configuration for network status
+ */
+export interface INetworkStatusIcon {
+	icon: IconTypeEnum;
+	color: string;
+	tooltip: string;
+}
+
+/**
+ * Map of network status to icon configurations
+ */
+export const NetworkStatusIcons: Record<NetworkStatus, INetworkStatusIcon> = {
+	[NetworkStatus.none]: {
+		icon: IconTypeEnum.Network,
+		color: "grey",
+		tooltip: "No active client",
+	},
+	[NetworkStatus.connected]: {
+		icon: IconTypeEnum.Network,
+		color: "green",
+		tooltip: "Client active",
+	},
+	[NetworkStatus.disconnected]: {
+		icon: IconTypeEnum.NetworkOff,
+		color: "red",
+		tooltip: "Client connection failed",
+	},
+};
+
 interface Props {
 	isDisabled?: boolean;
 	areNoInputsAndOutputs?: boolean;
@@ -43,10 +73,10 @@ interface StyleProps {
 	textProps?: TextProps;
 	selectProps?: SelectProps;
 	actionIconRefreshProps?: ActionIconProps;
-	iconRefreshProps?: SdIconProps;
+	iconRefreshProps?: IconProps;
 	groupBottomProps?: GroupProps;
 	loaderProps?: LoaderProps;
-	statusIconProps?: Partial<SdIconProps>;
+	statusIconProps?: Partial<IconProps>;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {

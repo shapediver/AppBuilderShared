@@ -63,7 +63,6 @@ import {
 	IconPencil,
 	IconPhoto,
 	IconPhotoOff,
-	IconProps,
 	IconRefresh,
 	IconRefreshOff,
 	IconReload,
@@ -91,19 +90,20 @@ import {
 	IconX,
 	IconZoomIn,
 	IconZoomScan,
+	IconProps as TablerIconProps,
 } from "@tabler/icons-react";
 import React, {forwardRef} from "react";
 
-export interface SdIconProps extends IconProps {
+export interface IconProps extends TablerIconProps {
 	type: IconTypeEnum;
 }
 
-const defaultStyleProps: Partial<IconProps> = {
+const defaultStyleProps: Partial<TablerIconProps> = {
 	size: "1.5rem",
 	stroke: 1,
 };
 
-type IconThemePropsType = Partial<IconProps>;
+type IconThemePropsType = Partial<TablerIconProps>;
 
 export function IconThemeProps(
 	props: IconThemePropsType,
@@ -113,12 +113,12 @@ export function IconThemeProps(
 	};
 }
 
-export function useIconProps(props: Partial<IconProps>): IconProps {
+export function useIconProps(props: Partial<TablerIconProps>): TablerIconProps {
 	return useProps("Icon", defaultStyleProps, props);
 }
 
-const Icon = forwardRef<_TablerIconType, SdIconProps>(function Icon(
-	{type, size, stroke, color, ...rest}: SdIconProps,
+const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
+	{type, size, stroke, color, ...rest}: IconProps,
 	ref,
 ) {
 	const theme = useMantineTheme();

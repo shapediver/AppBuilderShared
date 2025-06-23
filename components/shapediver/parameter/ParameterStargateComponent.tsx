@@ -1,6 +1,6 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import Icon, {SdIconProps} from "@AppBuilderShared/components/ui/Icon";
+import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
 import StargateInput from "@AppBuilderShared/components/ui/stargate/StargateInput";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
@@ -26,7 +26,7 @@ interface StyleProps {
 	parameterWrapperProps: Partial<PropsParameterWrapper>;
 	tooltipProps: Partial<TooltipProps>;
 	actionIconProps: Partial<ActionIconProps>;
-	iconProps: SdIconProps;
+	iconProps: IconProps;
 }
 
 const defaultStyleProps: StyleProps = {

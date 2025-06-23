@@ -4,7 +4,6 @@ import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverSt
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
 import {
-	GetDataResultErrorMessages,
 	IStargateClientChoice,
 	NetworkStatus,
 } from "@AppBuilderShared/types/shapediver/stargate";
@@ -16,6 +15,15 @@ import {
 import {ITreeNode} from "@shapediver/viewer.session";
 import {useCallback, useContext, useEffect, useState} from "react";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
+
+export const GetDataResultErrorMessages = {
+	[ISdStargateBakeDataResultEnum.SUCCESS]:
+		"The geometry was successfully baked in the active client.",
+	[ISdStargateBakeDataResultEnum.NOTHING]: "No geometry could be baked.",
+	[ISdStargateBakeDataResultEnum.FAILURE]: "The baking operation failed.",
+	[ISdStargateBakeDataResultEnum.CANCEL]:
+		"The baking operation was canceled.",
+};
 
 export interface IUseStargateOutputProps {
 	chunkId: string;
