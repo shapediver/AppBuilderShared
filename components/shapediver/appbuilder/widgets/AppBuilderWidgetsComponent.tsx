@@ -15,6 +15,8 @@ import {
 	isAgentWidget,
 	isAreaChartWidget,
 	isBarChartWidget,
+	isDesktopClientOutputsWidget,
+	isDesktopClientSelectionWidget,
 	isImageWidget,
 	isLineChartWidget,
 	isProgressWidget,
@@ -23,6 +25,8 @@ import {
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
+import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
+import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(
 	() => import("./AppBuilderAgentWidgetComponent"),
 );
@@ -144,6 +148,21 @@ export default function AppBuilderWidgetsComponent({
 					return (
 						<AppBuilderProgressWidgetComponent
 							key={i}
+							{...w.props}
+						/>
+					);
+				else if (isDesktopClientSelectionWidget(w))
+					return (
+						<AppBuilderDesktopClientSelectionWidgetComponent
+							key={i}
+							{...w.props}
+						/>
+					);
+				else if (isDesktopClientOutputsWidget(w))
+					return (
+						<AppBuilderDesktopClientOutputsWidgetComponent
+							key={i}
+							namespace={namespace}
 							{...w.props}
 						/>
 					);

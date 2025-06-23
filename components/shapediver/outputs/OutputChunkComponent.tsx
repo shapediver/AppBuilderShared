@@ -1,4 +1,4 @@
-import StargateInput from "@AppBuilderShared/components/ui/stargate/StargateInput";
+import StargateInput from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
 import {useStargateOutput} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateOutput";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";

@@ -1,7 +1,6 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
-import StargateInput from "@AppBuilderShared/components/ui/stargate/StargateInput";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useStargateParameter} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateParameter";
@@ -21,6 +20,7 @@ import {
 } from "@mantine/core";
 import React from "react";
 import {useShallow} from "zustand/react/shallow";
+import StargateInput from "../stargate/StargateInput";
 
 interface StyleProps {
 	parameterWrapperProps: Partial<PropsParameterWrapper>;

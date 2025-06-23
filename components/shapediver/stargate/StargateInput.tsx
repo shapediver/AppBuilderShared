@@ -12,7 +12,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import Icon from "../Icon";
+import Icon from "../../ui/Icon";
 
 interface Props {
 	icon: IconTypeEnum;

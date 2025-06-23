@@ -12,13 +12,13 @@ import {ParameterSliderComponentThemeProps} from "@AppBuilderShared/components/s
 import {ParameterStargateComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterStargateComponent";
 import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectCarouselComponent";
 import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectGridComponent";
+import {DesktopClientPanelThemeProps} from "@AppBuilderShared/components/shapediver/stargate/DesktopClientPanel";
+import {StargateInputThemeProps} from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
-import {DesktopClientPanelThemeProps} from "@AppBuilderShared/components/ui/stargate/DesktopClientPanel";
-import {StargateInputThemeProps} from "@AppBuilderShared/components/ui/stargate/StargateInput";
 import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {DefaultSessionThemeProps} from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";

@@ -58,9 +58,13 @@ export const NetworkStatusIcons: Record<NetworkStatus, INetworkStatusIcon> = {
 };
 
 interface Props {
+	/** TODO: Clarify the purpose of this property. */
 	isDisabled?: boolean;
+
+	/**
+	 * TODO: It should not be necessary to pass this information.
+	 */
 	areNoInputsAndOutputs?: boolean;
-	namespace?: string;
 }
 
 interface StyleProps {
