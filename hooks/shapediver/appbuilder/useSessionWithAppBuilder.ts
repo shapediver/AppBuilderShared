@@ -8,6 +8,7 @@ import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildert
 
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {isStargateParameter} from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {
 	addListener,
 	EVENTTYPE_SESSION,
@@ -142,7 +143,7 @@ export function useSessionWithAppBuilder(
 			// if there are s-type parameters, we need to load the SDTF data
 			const hasSTypeParameters = Object.values(
 				sessionApi.parameters,
-			).some((p) => p.type.startsWith("s"));
+			).some((p) => isStargateParameter(p.type));
 
 			if (hasSTypeParameters) {
 				// if there are s-type parameters, we set the loadSdTF flag to true
@@ -237,7 +238,7 @@ export function useSessionWithAppBuilder(
 
 				// check if there are any s-type parameters
 				hasSTypeParameters = (appBuilderData.parameters || []).some(
-					(p) => p.type.startsWith("s"),
+					(p) => isStargateParameter(p.type),
 				);
 			}
 
