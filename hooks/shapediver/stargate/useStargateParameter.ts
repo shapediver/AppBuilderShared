@@ -257,11 +257,16 @@ export const useStargateParameter = ({
 	}, [selectedClient, parameterId]);
 
 	const onClearSelection = useCallback(() => {
-		setConnectionStatusByEnum(ParameterStatues.noObjectSelected);
+		if (networkStatus === NetworkStatus.connected) {
+			setConnectionStatusByEnum(ParameterStatues.noObjectSelected);
+		} else {
+			setConnectionStatusByEnum(ParameterStatues.noActive);
+		}
+
 		if (onChange) {
 			onChange("");
 		}
-	}, [connectionStatus]);
+	}, [connectionStatus, networkStatus]);
 
 	return {
 		connectionStatus,
