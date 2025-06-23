@@ -25,6 +25,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useEffect} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 interface Props {
 	isDisabled?: boolean;
@@ -126,7 +127,12 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		loaderProps,
 		statusIconProps,
 	} = useProps("DesktopClientPanel", defaultStyleProps, rest);
-	const {selectedClient, isLoading} = useShapeDiverStoreStargate();
+	const {selectedClient, isLoading} = useShapeDiverStoreStargate(
+		useShallow((state) => ({
+			selectedClient: state.selectedClient,
+			isLoading: state.isLoading,
+		})),
+	);
 	const {
 		availableClients,
 		isStargateEnabled,

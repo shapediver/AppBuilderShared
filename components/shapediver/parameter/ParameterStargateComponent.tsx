@@ -4,7 +4,6 @@ import Icon, {SdIconProps} from "@AppBuilderShared/components/ui/Icon";
 import StargateInput from "@AppBuilderShared/components/ui/stargate/StargateInput";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {useStargateConnection} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateConnection";
 import {useStargateParameter} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateParameter";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {
@@ -21,6 +20,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
+import {useShallow} from "zustand/react/shallow";
 
 interface StyleProps {
 	parameterWrapperProps: Partial<PropsParameterWrapper>;
@@ -72,10 +72,15 @@ export default function ParameterStargateComponent(
 		iconProps,
 	} = useProps("ParameterStargateComponent", defaultStyleProps, props);
 
-	const {networkStatus, isLoading, selectedClient} =
-		useShapeDiverStoreStargate();
-
-	const {supportedData} = useStargateConnection();
+	const {networkStatus, isLoading, selectedClient, supportedData} =
+		useShapeDiverStoreStargate(
+			useShallow((state) => ({
+				networkStatus: state.networkStatus,
+				isLoading: state.isLoading,
+				selectedClient: state.selectedClient,
+				supportedData: state.supportedData,
+			})),
+		);
 
 	const {
 		connectionStatus,

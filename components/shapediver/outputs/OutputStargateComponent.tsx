@@ -1,5 +1,4 @@
 import {useOutput} from "@AppBuilderShared/hooks/shapediver/parameters/useOutput";
-import {useStargateConnection} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateConnection";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {
@@ -11,6 +10,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
+import {useShallow} from "zustand/react/shallow";
 import OutputChunkComponent from "./OutputChunkComponent";
 import OutputLabelComponent from "./OutputLabelComponent";
 
@@ -49,10 +49,15 @@ export default function OutputStargateComponent(
 		props,
 	);
 
-	const {networkStatus, isLoading, selectedClient} =
-		useShapeDiverStoreStargate();
-
-	const {supportedData} = useStargateConnection();
+	const {networkStatus, isLoading, selectedClient, supportedData} =
+		useShapeDiverStoreStargate(
+			useShallow((state) => ({
+				networkStatus: state.networkStatus,
+				isLoading: state.isLoading,
+				selectedClient: state.selectedClient,
+				supportedData: state.supportedData,
+			})),
+		);
 
 	return (
 		<>
