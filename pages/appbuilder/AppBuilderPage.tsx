@@ -249,6 +249,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 					namespace={namespace}
 					parameters={parameterProps}
 					exports={exportProps}
+					settings={defaultSessionDto}
 				/>
 			),
 		};

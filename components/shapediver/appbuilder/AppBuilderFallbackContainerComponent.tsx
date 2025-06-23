@@ -5,6 +5,7 @@ import TabsComponent, {
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ITreeNode} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo} from "react";
@@ -15,10 +16,12 @@ interface Props {
 	namespace: string;
 	parameters: PropsParameter[];
 	exports: PropsExport[];
+	settings?: IAppBuilderSettingsSession;
 }
 
 export default function AppBuilderFallbackContainerComponent({
 	namespace,
+	settings,
 	parameters,
 	exports,
 }: Props) {
@@ -63,7 +66,7 @@ export default function AppBuilderFallbackContainerComponent({
 			});
 		}
 
-		if (hasSdTFData) {
+		if (!settings?.hideAttributeVisualization && hasSdTFData) {
 			tabProps.defaultValue = tabProps.defaultValue || "Attributes";
 			tabProps.tabs.push({
 				name: "Attributes",
@@ -75,7 +78,7 @@ export default function AppBuilderFallbackContainerComponent({
 		}
 
 		return tabProps;
-	}, [parameters, exports, hasSdTFData]);
+	}, [settings, parameters, exports, hasSdTFData]);
 
 	/**
 	 * Session update callback to check for SDTF data in the session outputs.
