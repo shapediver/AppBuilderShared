@@ -139,23 +139,34 @@ export function useSessionWithAppBuilder(
 			// unless the app builder override is set, in which case we set it to the override
 			setParsedData(validationResult(undefined));
 
-			if (initialProcessManagerIdRef.current) {
-				// if there are s-type parameters, we need to load the SDTF data
-				const hasSTypeParameters = Object.values(
-					sessionApi.parameters,
-				).some((p) => p.type.startsWith("s"));
+			// if there are s-type parameters, we need to load the SDTF data
+			const hasSTypeParameters = Object.values(
+				sessionApi.parameters,
+			).some((p) => p.type.startsWith("s"));
 
-				if (hasSTypeParameters) {
-					// if there are s-type parameters, we set the loadSdTF flag to true
-					setLoadSdTF(true);
-				} else {
+			if (hasSTypeParameters) {
+				// if there are s-type parameters, we set the loadSdTF flag to true
+				setLoadSdTF(true);
+
+				if (initialProcessManagerIdRef.current) {
 					// the initial process manager id is created when the session is initialized
-					// we resolve it here as there are no further processes to be executed
-					addProcess(initialProcessManagerIdRef.current, {
-						name: "Instance Process",
-						promise: Promise.resolve(),
-					});
+					// we use it here so that we continue to use the same process manager
+					// for the AppBuilder data and the instances
+					setProcessManagerId(initialProcessManagerIdRef.current);
+				} else {
+					// create a process only if there are further processes to be executed
+					// for now this is only the case if there are instances defined in the AppBuilder data
+					// in the future, this could be extended to other cases
+					const id = createProcessManager(namespace);
+					setProcessManagerId(id);
 				}
+			} else if (initialProcessManagerIdRef.current) {
+				// the initial process manager id is created when the session is initialized
+				// we resolve it here as there are no further processes to be executed
+				addProcess(initialProcessManagerIdRef.current, {
+					name: "Instance Process",
+					promise: Promise.resolve(),
+				});
 			}
 		}
 
