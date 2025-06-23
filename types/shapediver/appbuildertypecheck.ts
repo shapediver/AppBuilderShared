@@ -1,10 +1,12 @@
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ShapeDiverResponseParameterStructure} from "@shapediver/api.geometry-api-dto-v2";
+import {ATTRIBUTE_VISUALIZATION} from "@shapediver/viewer.features.attribute-visualization";
 import {
 	PARAMETER_TYPE,
 	PARAMETER_VISUALIZATION,
 } from "@shapediver/viewer.session";
 import {z} from "zod";
+import {AttributeVisualizationVisibility} from "./appbuilder";
 
 // Zod type definition for SelectComponentType
 const SelectComponentTypeSchema = z.enum([
@@ -328,23 +330,22 @@ const IAppBuilderWidgetPropsAttributeVisualizationStringGradientSchema =
 	z.object({
 		type: z.literal("string"),
 		defaultColor: z.string().optional(),
-		labelColors: z
-			.array(
-				z.object({
-					values: z.array(z.string()),
-					color: z.string(),
-				}),
-			)
-			.optional(),
+		labelColors: z.array(
+			z.object({
+				values: z.array(z.string()),
+				color: z.string(),
+			}),
+		),
 	});
 
 // Zod type definition for IAppBuilderWidgetPropsAttributeVisualizationGradient
-const IAppBuilderWidgetPropsAttributeVisualizationGradientSchema = z
-	.discriminatedUnion("type", [
+const IAppBuilderWidgetPropsAttributeVisualizationGradientSchema = z.union([
+	z.discriminatedUnion("type", [
 		IAppBuilderWidgetPropsAttributeVisualizationNumberGradientSchema,
 		IAppBuilderWidgetPropsAttributeVisualizationStringGradientSchema,
-	])
-	.or(z.string());
+	]),
+	z.nativeEnum(ATTRIBUTE_VISUALIZATION),
+]);
 
 // Zod type definition for IAppBuilderWidgetPropsAttributeVisualization
 const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.object({
@@ -361,7 +362,9 @@ const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.object({
 				.or(z.string()),
 		)
 		.optional(),
-	visualizationMode: z.enum(["defaultOn", "defaultOff"]).optional(),
+	visualizationMode: z
+		.nativeEnum(AttributeVisualizationVisibility)
+		.optional(),
 	showLegend: z.boolean().optional(),
 	defaultGradient:
 		IAppBuilderWidgetPropsAttributeVisualizationGradientSchema.optional(),
