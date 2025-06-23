@@ -145,7 +145,12 @@ export function useSessionWithAppBuilder(
 				sessionApi.parameters,
 			).some((p) => isStargateParameter(p.type));
 
-			if (hasSTypeParameters) {
+			// if at least one output has chunks, we set the loadSdTF flag to true
+			const hasChunks = Object.values(sessionApi.outputs).some(
+				(o) => o.chunks && o.chunks.length > 0,
+			);
+
+			if (hasSTypeParameters || hasChunks) {
 				// if there are s-type parameters, we set the loadSdTF flag to true
 				setLoadSdTF(true);
 
