@@ -246,6 +246,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		containers.right = {
 			node: (
 				<AppBuilderFallbackContainerComponent
+					namespace={namespace}
 					parameters={parameterProps}
 					exports={exportProps}
 				/>
