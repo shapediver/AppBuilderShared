@@ -88,6 +88,8 @@ export default function useResolveAppBuilderSettings(
 						// this can be overridden by the optional acceptRejectMode
 						// setting in session
 						acceptRejectMode: model.settings.parameters_commit,
+						hideAttributeVisualization:
+							model.settings.hide_attribute_visualization,
 						...session,
 						ticket: model!.ticket!.ticket,
 						modelViewUrl: model!.backend_system!.model_view_url,
@@ -117,6 +119,9 @@ export default function useResolveAppBuilderSettings(
 					return {
 						acceptRejectMode:
 							iframeData.model.settings?.parameters_commit,
+						hideAttributeVisualization:
+							iframeData.model.settings
+								?.hide_attribute_visualization,
 						...session,
 						ticket: iframeData.ticket,
 						modelViewUrl: iframeData.model_view_url,
