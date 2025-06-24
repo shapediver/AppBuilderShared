@@ -1,7 +1,6 @@
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Box,
-	BoxProps,
 	Button,
 	ButtonProps,
 	Loader,
@@ -15,17 +14,23 @@ import React from "react";
 import Icon from "../../ui/Icon";
 
 interface Props {
-	icon: IconTypeEnum;
+	/** Icon to display on the right section of the button */
+	icon?: IconTypeEnum;
+	/** Color to use for the button */
 	color: string;
-	isLoading?: boolean;
-	isDisabled?: boolean;
+	/** Indicates whether we are waiting for a desktop client action to complete */
+	isWaiting?: boolean;
+	/** The text to show while waiting for a desktop client action to complete */
+	waitingText: string;
+	/** Controls the disabled state of the button */
 	isBtnDisabled?: boolean;
+	/** The message to show in the button */
 	message?: string;
-	onConnect?: (event: React.MouseEvent) => void;
+	/** Button click handler */
+	onClick?: (event: React.MouseEvent) => void;
 }
 
 interface StyleProps {
-	boxProps?: BoxProps;
 	buttonProps?: ButtonProps;
 	loadingButtonProps?: ButtonProps;
 	textProps?: TextProps;
@@ -65,6 +70,11 @@ export function StargateInputThemeProps(
 	};
 }
 
+/**
+ * Functional component representing Stargate inputs and outputs.
+ * @param props
+ * @returns
+ */
 export default function StargateInput(props: Props & StyleProps) {
 	const {buttonProps, loadingButtonProps, textProps, loaderProps} = useProps(
 		"StargateInput",
@@ -76,22 +86,20 @@ export default function StargateInput(props: Props & StyleProps) {
 		icon = IconTypeEnum.DeviceDesktopUp,
 		color,
 		message,
-		onConnect,
-		isLoading,
-		isDisabled,
+		onClick,
+		isWaiting,
+		waitingText,
 		isBtnDisabled,
 	} = props;
 
-	if (isLoading) {
+	if (isWaiting) {
 		return (
 			<Box>
 				<Button
 					{...loadingButtonProps}
 					rightSection={<Loader {...loaderProps} />}
 				>
-					<Text {...textProps}>
-						Waiting for selection in the client
-					</Text>
+					<Text {...textProps}>{waitingText}</Text>
 				</Button>
 			</Box>
 		);
@@ -102,9 +110,9 @@ export default function StargateInput(props: Props & StyleProps) {
 			<Button
 				{...buttonProps}
 				color={color}
-				disabled={isBtnDisabled || isLoading || isDisabled}
+				disabled={isBtnDisabled}
 				rightSection={<Icon type={icon} />}
-				onClick={onConnect}
+				onClick={onClick}
 			>
 				{message}
 			</Button>

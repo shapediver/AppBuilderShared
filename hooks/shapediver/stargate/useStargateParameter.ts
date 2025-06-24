@@ -1,19 +1,16 @@
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {
-	IStargateClientChoice,
-	NetworkStatus,
-} from "@AppBuilderShared/types/shapediver/stargate";
+import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
+import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {ShapeDiverResponseParameterType} from "@shapediver/api.geometry-api-dto-v2";
 import {
 	ISdStargateBakeDataResultEnum,
 	ISdStargateGetDataReplyDto,
 	ISdStargateGetDataResultEnum,
-	ISdStargateGetSupportedDataReplyDto,
-	ISdStargateSdk,
 	SdStargateErrorTypes,
 } from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useContext, useEffect, useMemo, useState} from "react";
+import {useShallow} from "zustand/react/shallow";
 import {ERROR_TYPE_INTERRUPTED, useStargateGetData} from "./useStargateGetData";
 
 const ParametersGetDataResultErrorMessages = {
@@ -26,15 +23,10 @@ const ParametersGetDataResultErrorMessages = {
 };
 
 export interface IUseStargateParameterProps {
-	sdk?: ISdStargateSdk;
 	parameterId: string;
 	parameterType: ShapeDiverResponseParameterType;
 	parameterValue: string;
 	parameterDefval: string;
-	networkStatus: NetworkStatus;
-	supportedData: ISdStargateGetSupportedDataReplyDto[];
-	selectedClient: IStargateClientChoice | null | undefined;
-	modelId?: string;
 	onChange?: (value: any) => void;
 }
 
@@ -92,15 +84,23 @@ export const useStargateParameter = ({
 	parameterType,
 	parameterValue,
 	parameterDefval,
-	networkStatus,
-	supportedData,
-	selectedClient,
 	onChange,
 }: IUseStargateParameterProps) => {
-	const [isLoading, setIsLoading] = useState(false);
+	const [isWaiting, setIsWaiting] = useState(false);
 	const [connectionStatus, setConnectionStatus] = useState<IStatusData>(
 		ConnectionDataMap[ParameterStatues.noActive],
 	);
+
+	const {networkStatus, selectedClient, supportedData, isLoading} =
+		useShapeDiverStoreStargate(
+			useShallow((state) => ({
+				networkStatus: state.networkStatus,
+				selectedClient: state.selectedClient,
+				supportedData: state.supportedData,
+				isLoading: state.isLoading,
+			})),
+		);
+
 	const {getParameterData} = useStargateGetData();
 	const notifications = useContext(NotificationContext);
 
@@ -179,7 +179,7 @@ export const useStargateParameter = ({
 	};
 
 	const onObjectAdd = useCallback(async () => {
-		setIsLoading(true);
+		setIsWaiting(true);
 		const {currentModel} = useShapeDiverStorePlatform.getState();
 
 		if (!currentModel) {
@@ -260,7 +260,7 @@ export const useStargateParameter = ({
 				});
 			}
 		} finally {
-			setIsLoading(false);
+			setIsWaiting(false);
 		}
 	}, [selectedClient, parameterId]);
 
@@ -279,6 +279,7 @@ export const useStargateParameter = ({
 	return {
 		connectionStatus,
 		isLoading,
+		isWaiting,
 		onObjectAdd,
 		onClearSelection,
 		hasSelection,

@@ -1,6 +1,5 @@
 import StargateInput from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
 import {useStargateOutput} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateOutput";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,
@@ -20,7 +19,6 @@ interface Props {
 	selectedClient?: IStargateClientChoice | null;
 	sessionId?: string;
 	isLoading: boolean;
-	disabled?: boolean;
 }
 
 /**
@@ -35,7 +33,6 @@ export default function OutputChunkComponent(props: Props) {
 		selectedClient,
 		sessionId,
 		isLoading,
-		disabled = false,
 	} = props;
 
 	// Use stargate output hook for this specific chunk
@@ -61,10 +58,10 @@ export default function OutputChunkComponent(props: Props) {
 				message={connectionStatus.message}
 				// count={connectionStatus.count} // TODO
 				color={connectionStatus.color}
-				isLoading={isLoading || isOutputLoading || disabled}
-				isBtnDisabled={connectionStatus.isBtnDisabled || disabled}
-				icon={IconTypeEnum.DeviceDesktopUp}
-				onConnect={onBakeData}
+				isWaiting={isOutputLoading}
+				waitingText="Waiting for baking data..."
+				isBtnDisabled={connectionStatus.isBtnDisabled || isLoading}
+				onClick={onBakeData}
 			/>
 		</>
 	);

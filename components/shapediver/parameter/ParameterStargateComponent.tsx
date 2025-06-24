@@ -4,7 +4,6 @@ import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useStargateParameter} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateParameter";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -19,7 +18,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import {useShallow} from "zustand/react/shallow";
 import StargateInput from "../stargate/StargateInput";
 
 interface StyleProps {
@@ -72,34 +70,22 @@ export default function ParameterStargateComponent(
 	);
 
 	const {wrapperComponent, wrapperProps} = useProps(
-		"ParameterStringComponent",
+		"ParameterStargateComponent",
 		defaultPropsParameterWrapper,
 		props,
 	);
-
-	const {networkStatus, isLoading, selectedClient, supportedData} =
-		useShapeDiverStoreStargate(
-			useShallow((state) => ({
-				networkStatus: state.networkStatus,
-				isLoading: state.isLoading,
-				selectedClient: state.selectedClient,
-				supportedData: state.supportedData,
-			})),
-		);
 
 	const {
 		connectionStatus,
 		onObjectAdd,
 		onClearSelection,
-		isLoading: isParameterLoading,
+		isWaiting,
+		isLoading,
 	} = useStargateParameter({
 		parameterId: definition.id,
 		parameterType: definition.type,
 		parameterValue: value,
 		parameterDefval: definition.defval,
-		networkStatus,
-		supportedData,
-		selectedClient,
 		onChange: (newValue) => handleChange(newValue),
 	});
 
@@ -128,10 +114,8 @@ export default function ParameterStargateComponent(
 						<ActionIcon
 							style={{visibility: value ? "visible" : "hidden"}}
 							color={disabled ? "gray" : connectionStatus.color}
-							loading={isLoading || isParameterLoading}
-							disabled={
-								isLoading || isParameterLoading || disabled
-							}
+							loading={isLoading || isWaiting}
+							disabled={isLoading || isWaiting || disabled}
 							{...actionIconProps}
 							onClick={onClearSelection}
 						>
@@ -144,14 +128,10 @@ export default function ParameterStargateComponent(
 				<StargateInput
 					message={parsedMessage}
 					color={connectionStatus.color}
-					isLoading={isLoading}
-					isBtnDisabled={
-						connectionStatus.isBtnDisabled ||
-						disabled ||
-						isParameterLoading
-					}
-					icon={IconTypeEnum.DeviceDesktopUp}
-					onConnect={onObjectAdd}
+					isWaiting={isWaiting}
+					waitingText="Waiting for selection..."
+					isBtnDisabled={connectionStatus.isBtnDisabled || disabled}
+					onClick={onObjectAdd}
 				/>
 			)}
 		</ParameterWrapperComponent>
