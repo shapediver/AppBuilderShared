@@ -3,17 +3,14 @@ import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverS
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
-import {
-	IStargateClientChoice,
-	NetworkStatus,
-} from "@AppBuilderShared/types/shapediver/stargate";
+import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	ISdStargateBakeDataResultEnum,
-	ISdStargateGetSupportedDataReplyDto,
 	SdStargateBakeDataCommand,
 } from "@shapediver/sdk.stargate-sdk-v1";
 import {ITreeNode} from "@shapediver/viewer.session";
 import {useCallback, useContext, useEffect, useState} from "react";
+import {useShallow} from "zustand/react/shallow";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
 export const GetDataResultErrorMessages = {
@@ -30,9 +27,6 @@ export interface IUseStargateOutputProps {
 	outputId: IShapeDiverOutputDefinition["id"];
 	typeHint: string;
 	name: string;
-	networkStatus: NetworkStatus;
-	supportedData: ISdStargateGetSupportedDataReplyDto[];
-	selectedClient: IStargateClientChoice | null | undefined;
 	sessionId?: string;
 }
 
@@ -91,17 +85,26 @@ export const useStargateOutput = ({
 	outputId,
 	name,
 	typeHint,
-	networkStatus,
-	supportedData,
-	selectedClient,
 	sessionId,
 }: IUseStargateOutputProps) => {
-	const [isLoading, setIsLoading] = useState(false);
+	const [isWaiting, setIsWaiting] = useState(false);
 	const [connectionStatus, setConnectionStatus] = useState<IStatusData>(
 		ConnectionDataMap[OutputStatuses.noActive],
 	);
-	const {sessions} = useShapeDiverStoreSession();
+	const {sessions} = useShapeDiverStoreSession(
+		useShallow((state) => ({sessions: state.sessions})),
+	);
 	const notifications = useContext(NotificationContext);
+
+	const {networkStatus, isLoading, selectedClient, supportedData} =
+		useShapeDiverStoreStargate(
+			useShallow((state) => ({
+				networkStatus: state.networkStatus,
+				isLoading: state.isLoading,
+				selectedClient: state.selectedClient,
+				supportedData: state.supportedData,
+			})),
+		);
 
 	const getObjectsNumber = useCallback((): number | undefined => {
 		if (!outputId || !chunkId || !sessionId) return undefined;
@@ -248,7 +251,7 @@ export const useStargateOutput = ({
 	}, [sessionId]);
 
 	const onBakeData = async () => {
-		setIsLoading(true);
+		setIsWaiting(true);
 
 		try {
 			if (!sessionId) {
@@ -365,12 +368,13 @@ export const useStargateOutput = ({
 					],
 			});
 		} finally {
-			setIsLoading(false);
+			setIsWaiting(false);
 		}
 	};
 
 	return {
 		connectionStatus,
+		isWaiting,
 		isLoading,
 		onBakeData,
 	};

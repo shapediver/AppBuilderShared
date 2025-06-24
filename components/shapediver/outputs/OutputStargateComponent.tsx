@@ -1,5 +1,4 @@
 import {useOutput} from "@AppBuilderShared/hooks/shapediver/parameters/useOutput";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {
 	Accordion,
@@ -10,7 +9,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import {useShallow} from "zustand/react/shallow";
 import OutputChunkComponent from "./OutputChunkComponent";
 
 interface StyleProps {
@@ -48,16 +46,6 @@ export default function OutputStargateComponent(
 		props,
 	);
 
-	const {networkStatus, isLoading, selectedClient, supportedData} =
-		useShapeDiverStoreStargate(
-			useShallow((state) => ({
-				networkStatus: state.networkStatus,
-				isLoading: state.isLoading,
-				selectedClient: state.selectedClient,
-				supportedData: state.supportedData,
-			})),
-		);
-
 	return (
 		<>
 			{definition && definition.chunks && (
@@ -76,11 +64,7 @@ export default function OutputStargateComponent(
 										<OutputChunkComponent
 											chunk={chunk}
 											output={definition}
-											networkStatus={networkStatus}
-											supportedData={supportedData}
-											selectedClient={selectedClient}
 											sessionId={namespace}
-											isLoading={isLoading}
 										/>
 									</Paper>
 								</Stack>

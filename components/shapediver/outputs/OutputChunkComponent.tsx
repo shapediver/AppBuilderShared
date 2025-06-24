@@ -4,52 +4,29 @@ import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,
 } from "@AppBuilderShared/types/shapediver/output";
-import {
-	IStargateClientChoice,
-	NetworkStatus,
-} from "@AppBuilderShared/types/shapediver/stargate";
-import type {ISdStargateGetSupportedDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1/dist/dto/commands/getSupportedDataCommand";
 import React from "react";
 import OutputChunkLabelComponent from "./OutputChunkLabelComponent";
 interface Props {
 	output: IShapeDiverOutputDefinition;
 	chunk: IShapeDiverOutputDefinitionChunk;
-	networkStatus: NetworkStatus;
-	supportedData: ISdStargateGetSupportedDataReplyDto[];
-	selectedClient?: IStargateClientChoice | null;
 	sessionId?: string;
-	isLoading: boolean;
 }
 
 /**
  * Component that handles individual output chunks using Stargate
  */
 export default function OutputChunkComponent(props: Props) {
-	const {
-		output,
-		chunk,
-		networkStatus,
-		supportedData,
-		selectedClient,
-		sessionId,
-		isLoading,
-	} = props;
+	const {output, chunk, sessionId} = props;
 
 	// Use stargate output hook for this specific chunk
-	const {
-		connectionStatus,
-		isLoading: isOutputLoading,
-		onBakeData,
-	} = useStargateOutput({
-		chunkId: chunk.id,
-		outputId: output.id,
-		name: chunk.displayname || chunk.name,
-		typeHint: chunk.typeHint,
-		networkStatus,
-		supportedData,
-		selectedClient,
-		sessionId,
-	});
+	const {connectionStatus, isWaiting, isLoading, onBakeData} =
+		useStargateOutput({
+			chunkId: chunk.id,
+			outputId: output.id,
+			name: chunk.displayname || chunk.name,
+			typeHint: chunk.typeHint,
+			sessionId,
+		});
 
 	return (
 		<>
@@ -58,8 +35,8 @@ export default function OutputChunkComponent(props: Props) {
 				message={connectionStatus.message}
 				// count={connectionStatus.count} // TODO
 				color={connectionStatus.color}
-				isWaiting={isOutputLoading}
-				waitingText="Waiting for baking data..."
+				isWaiting={isWaiting}
+				waitingText="Waiting for client..."
 				isBtnDisabled={connectionStatus.isBtnDisabled || isLoading}
 				onClick={onBakeData}
 			/>
