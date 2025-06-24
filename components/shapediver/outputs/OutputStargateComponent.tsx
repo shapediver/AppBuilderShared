@@ -12,7 +12,6 @@ import {
 import React from "react";
 import {useShallow} from "zustand/react/shallow";
 import OutputChunkComponent from "./OutputChunkComponent";
-import OutputLabelComponent from "./OutputLabelComponent";
 
 interface StyleProps {
 	stackProps?: StackProps;
@@ -61,7 +60,6 @@ export default function OutputStargateComponent(
 
 	return (
 		<>
-			<OutputLabelComponent {...props} />
 			{definition && definition.chunks && (
 				<Accordion>
 					<Accordion.Item
@@ -77,8 +75,7 @@ export default function OutputStargateComponent(
 									<Paper>
 										<OutputChunkComponent
 											chunk={chunk}
-											outputId={definition.id}
-											outputName={definition.name}
+											output={definition}
 											networkStatus={networkStatus}
 											supportedData={supportedData}
 											selectedClient={selectedClient}

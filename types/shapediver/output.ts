@@ -7,6 +7,10 @@ import {ShapeDiverResponseOutputDefinition} from "@shapediver/api.geometry-api-d
  */
 export type IShapeDiverOutputDefinition = ShapeDiverResponseOutputDefinition;
 
+export type IShapeDiverOutputDefinitionChunk = NonNullable<
+	IShapeDiverOutputDefinition["chunks"]
+>[number];
+
 /**
  * An output including its definition (static properties).
  */

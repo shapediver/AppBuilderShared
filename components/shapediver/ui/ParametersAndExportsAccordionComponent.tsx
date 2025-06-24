@@ -185,12 +185,10 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 			);
 		} else if (isOutputDefinition(param) && namespace) {
 			elementGroups[groupId].elements.push(
-				<Paper key={param.definition.id}>
-					<OutputStargateComponent
-						{...param.output}
-						namespace={namespace}
-					/>
-				</Paper>,
+				<OutputStargateComponent
+					{...param.output}
+					namespace={namespace}
+				/>,
 			);
 		}
 	});

@@ -1,17 +1,20 @@
 import StargateInput from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
 import {useStargateOutput} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateOutput";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
+import {
+	IShapeDiverOutputDefinition,
+	IShapeDiverOutputDefinitionChunk,
+} from "@AppBuilderShared/types/shapediver/output";
 import {
 	IStargateClientChoice,
 	NetworkStatus,
 } from "@AppBuilderShared/types/shapediver/stargate";
 import type {ISdStargateGetSupportedDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1/dist/dto/commands/getSupportedDataCommand";
 import React from "react";
+import OutputChunkLabelComponent from "./OutputChunkLabelComponent";
 interface Props {
-	chunk: NonNullable<IShapeDiverOutputDefinition["chunks"]>[number];
-	outputId: IShapeDiverOutputDefinition["id"];
-	outputName: IShapeDiverOutputDefinition["name"];
+	output: IShapeDiverOutputDefinition;
+	chunk: IShapeDiverOutputDefinitionChunk;
 	networkStatus: NetworkStatus;
 	supportedData: ISdStargateGetSupportedDataReplyDto[];
 	selectedClient?: IStargateClientChoice | null;
@@ -25,8 +28,8 @@ interface Props {
  */
 export default function OutputChunkComponent(props: Props) {
 	const {
+		output,
 		chunk,
-		outputId,
 		networkStatus,
 		supportedData,
 		selectedClient,
@@ -42,7 +45,7 @@ export default function OutputChunkComponent(props: Props) {
 		onBakeData,
 	} = useStargateOutput({
 		chunkId: chunk.id,
-		outputId,
+		outputId: output.id,
 		name: chunk.displayname || chunk.name,
 		typeHint: chunk.typeHint,
 		networkStatus,
@@ -53,6 +56,7 @@ export default function OutputChunkComponent(props: Props) {
 
 	return (
 		<>
+			<OutputChunkLabelComponent chunk={chunk} />
 			<StargateInput
 				message={connectionStatus.message}
 				// count={connectionStatus.count} // TODO

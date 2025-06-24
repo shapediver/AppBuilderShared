@@ -23,14 +23,12 @@ import {useShallow} from "zustand/react/shallow";
 import StargateInput from "../stargate/StargateInput";
 
 interface StyleProps {
-	parameterWrapperProps: Partial<PropsParameterWrapper>;
 	tooltipProps: Partial<TooltipProps>;
 	actionIconProps: Partial<ActionIconProps>;
 	iconProps: IconProps;
 }
 
 const defaultStyleProps: StyleProps = {
-	parameterWrapperProps: defaultPropsParameterWrapper,
 	tooltipProps: {
 		position: "left",
 		label: "Clear selection",
@@ -60,17 +58,24 @@ export function ParameterStargateComponentThemeProps(
 }
 
 export default function ParameterStargateComponent(
-	props: PropsParameter & Partial<StyleProps>,
+	props: PropsParameter &
+		Partial<PropsParameterWrapper> &
+		Partial<StyleProps>,
 ) {
 	const {definition, value, handleChange, onCancel, disabled} =
 		useParameterComponentCommons<string>(props);
 
-	const {
-		tooltipProps,
-		parameterWrapperProps: {wrapperComponent, wrapperProps},
-		actionIconProps,
-		iconProps,
-	} = useProps("ParameterStargateComponent", defaultStyleProps, props);
+	const {tooltipProps, actionIconProps, iconProps} = useProps(
+		"ParameterStargateComponent",
+		defaultStyleProps,
+		props,
+	);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterStringComponent",
+		defaultPropsParameterWrapper,
+		props,
+	);
 
 	const {networkStatus, isLoading, selectedClient, supportedData} =
 		useShapeDiverStoreStargate(

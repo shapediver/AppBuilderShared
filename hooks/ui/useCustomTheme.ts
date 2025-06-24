@@ -3,7 +3,7 @@ import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
-import {OutputLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputLabelComponent";
+import {OutputChunkLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputChunkLabelComponent";
 import {OutputStargateComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputStargateComponent";
 import {ParameterColorComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterColorComponent";
 import {ParameterLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
@@ -632,7 +632,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Defaults for export labels.
 			 */
 			ExportLabelComponent: ExportLabelComponentThemeProps({
-				//fontWeight: "500",
+				//fontWeight: "medium",
 			}),
 			/**
 			 * Icon
@@ -679,14 +679,12 @@ export const useCustomTheme = (props: Props = {}) => {
 				// autoClose: 20000, // boolean | number
 			}),
 			/**
-			 * OutputLabelComponent
+			 * OutputChunkLabelComponent
 			 *
-			 * Defaults for output labels.
+			 * Defaults for output chunk labels.
 			 */
-			OutputLabelComponent: OutputLabelComponentThemeProps({
-				// fontWeight: "medium",
-				//paddingBottom: 4,
-				//size: "sm",
+			OutputChunkLabelComponent: OutputChunkLabelComponentThemeProps({
+				//fontWeight: "medium",
 			}),
 			OutputStargateComponent: OutputStargateComponentThemeProps({
 				// stackProps: {
@@ -719,7 +717,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Defaults for parameter labels.
 			 */
 			ParameterLabelComponent: ParameterLabelComponentThemeProps({
-				//fontWeight: "500",
+				//fontWeight: "medium",
 			}),
 			/**
 			 * ParameterSelectComponent
