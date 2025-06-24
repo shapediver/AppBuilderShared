@@ -11,8 +11,10 @@ import {
 	IconAdjustmentsHorizontal,
 	IconAlertCircle,
 	IconArrowBack,
+	IconArrowBackUp,
 	IconArrowDown,
 	IconArrowForward,
+	IconArrowForwardUp,
 	IconArrowLeft,
 	IconArrowRight,
 	IconArrowUp,
@@ -91,7 +93,7 @@ import {
 } from "@tabler/icons-react";
 import React, {forwardRef} from "react";
 
-interface Props extends IconProps {
+export interface SdIconProps extends IconProps {
 	type: IconTypeEnum;
 }
 
@@ -114,8 +116,8 @@ export function useIconProps(props: Partial<IconProps>): IconProps {
 	return useProps("Icon", defaultStyleProps, props);
 }
 
-const Icon = forwardRef<_TablerIconType, Props>(function Icon(
-	{type, size, stroke, color, ...rest}: Props,
+const Icon = forwardRef<_TablerIconType, SdIconProps>(function Icon(
+	{type, size, stroke, color, ...rest}: SdIconProps,
 	ref,
 ) {
 	const theme = useMantineTheme();
@@ -135,10 +137,14 @@ const Icon = forwardRef<_TablerIconType, Props>(function Icon(
 			return <IconAlertCircle {...iconProps} />;
 		case IconTypeEnum.ArrowBack:
 			return <IconArrowBack {...iconProps} />;
+		case IconTypeEnum.ArrowBackUp:
+			return <IconArrowBackUp {...iconProps} />;
 		case IconTypeEnum.ArrowDown:
 			return <IconArrowDown {...iconProps} />;
 		case IconTypeEnum.ArrowForward:
 			return <IconArrowForward {...iconProps} />;
+		case IconTypeEnum.ArrowForwardUp:
+			return <IconArrowForwardUp {...iconProps} />;
 		case IconTypeEnum.ArrowLeft:
 			return <IconArrowLeft {...iconProps} />;
 		case IconTypeEnum.ArrowRight:

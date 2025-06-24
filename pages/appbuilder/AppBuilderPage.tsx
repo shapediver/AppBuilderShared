@@ -3,11 +3,11 @@ import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/s
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
+import ViewportHistoryButtons from "@AppBuilderShared/components/shapediver/viewport/ViewportHistoryButtons";
 import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
 import {useSessionWithAppBuilder} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
-import {useParameterHistory} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
 import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
 import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
@@ -255,9 +255,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	const show = !!sessionApi;
 
-	// use parameter history
-	useParameterHistory({loaded: show});
-
 	// key bindings
 	useKeyBindings({namespace});
 
@@ -308,6 +305,12 @@ export default function AppBuilderPage(props: Partial<Props>) {
 									offset="1em"
 								>
 									<ViewportAcceptRejectButtons />
+								</ViewportOverlayWrapper>
+								<ViewportOverlayWrapper
+									position={OverlayPosition.BOTTOM_RIGHT}
+									offset="1em"
+								>
+									<ViewportHistoryButtons />
 								</ViewportOverlayWrapper>
 							</>
 						)}

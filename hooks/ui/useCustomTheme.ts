@@ -12,7 +12,9 @@ import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shaped
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
+import {HintComponentProps} from "@AppBuilderShared/components/ui/HintComponent";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
+import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
 import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {DefaultSessionThemeProps} from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
@@ -574,6 +576,43 @@ export const useCustomTheme = (props: Props = {}) => {
 				//fontWeight: "500",
 			}),
 			/**
+			 * HintComponent
+			 *
+			 * Hint component that displays information about model states
+			 * with a link to documentation.
+			 */
+			HintComponent: HintComponentProps({
+				// buttonProps: {
+				// 	variant: "light",
+				// 	size: "xs",
+				// 	component: "a",
+				// 	target: "_blank",
+				// 	rel: "noopener noreferrer",
+				// },
+				// containerGroupProps: {
+				// 	justify: "space-between",
+				// 	gap: "sm",
+				// 	p: "md",
+				// 	style: {
+				// 		backgroundColor: "var(--mantine-primary-color-light)",
+				// 		borderRadius: "var(--mantine-radius-md)",
+				// 		borderLeft: "10px solid var(--mantine-primary-color-filled)",
+				// 	},
+				// },
+				// groupProps: {
+				// 	gap: "sm",
+				// },
+				// iconProps: {
+				// 	type: IconTypeEnum.IconInfoCircleFilled,
+				// 	color: "var(--mantine-primary-color-filled)",
+				// },
+				// textProps: {
+				// 	size: "sm",
+				// 	fw: 500,
+				// 	c: "var(--mantine-primary-color-filled)",
+				// },
+			}),
+			/**
 			 * Icon
 			 *
 			 * Icon component used by AppBuilder.
@@ -605,6 +644,30 @@ export const useCustomTheme = (props: Props = {}) => {
 				// strongFontWeight: "700",
 				// setHeadingFontSize: false,
 				// themeOverride: {},
+			}),
+			/**
+			 * ModalBase
+			 *
+			 * ModalBase component for dialogs and overlays.
+			 */
+			ModalBase: ModalBaseThemeProps({
+				// size: "xl",
+				// centered: true,
+				// closeButtonProps: {
+				// 	size: "md",
+				// },
+				// stackGap: "sm",
+				// groupGap: "sm",
+				// buttonContainerProps: {
+				// 	justify: "space-between",
+				// 	align: "center",
+				// },
+				// cancelButtonProps: {
+				// 	variant: "default",
+				// },
+				// confirmButtonProps: {
+				// 	variant: "filled",
+				// },
 			}),
 			/**
 			 * NotificationWrapper
