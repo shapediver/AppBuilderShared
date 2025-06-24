@@ -11,8 +11,10 @@ import {
 	IconAdjustmentsHorizontal,
 	IconAlertCircle,
 	IconArrowBack,
+	IconArrowBackUp,
 	IconArrowDown,
 	IconArrowForward,
+	IconArrowForwardUp,
 	IconArrowLeft,
 	IconArrowRight,
 	IconArrowUp,
@@ -60,7 +62,6 @@ import {
 	IconPencil,
 	IconPhoto,
 	IconPhotoOff,
-	IconProps,
 	IconRefresh,
 	IconRefreshOff,
 	IconReload,
@@ -88,19 +89,20 @@ import {
 	IconX,
 	IconZoomIn,
 	IconZoomScan,
+	IconProps as TablerIconProps,
 } from "@tabler/icons-react";
 import React, {forwardRef} from "react";
 
-interface Props extends IconProps {
+export interface IconProps extends TablerIconProps {
 	type: IconTypeEnum;
 }
 
-const defaultStyleProps: Partial<IconProps> = {
+const defaultStyleProps: Partial<TablerIconProps> = {
 	size: "1.5rem",
 	stroke: 1,
 };
 
-type IconThemePropsType = Partial<IconProps>;
+type IconThemePropsType = Partial<TablerIconProps>;
 
 export function IconThemeProps(
 	props: IconThemePropsType,
@@ -110,12 +112,12 @@ export function IconThemeProps(
 	};
 }
 
-export function useIconProps(props: Partial<IconProps>): IconProps {
+export function useIconProps(props: Partial<TablerIconProps>): TablerIconProps {
 	return useProps("Icon", defaultStyleProps, props);
 }
 
-const Icon = forwardRef<_TablerIconType, Props>(function Icon(
-	{type, size, stroke, color, ...rest}: Props,
+const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
+	{type, size, stroke, color, ...rest}: IconProps,
 	ref,
 ) {
 	const theme = useMantineTheme();
@@ -135,10 +137,14 @@ const Icon = forwardRef<_TablerIconType, Props>(function Icon(
 			return <IconAlertCircle {...iconProps} />;
 		case IconTypeEnum.ArrowBack:
 			return <IconArrowBack {...iconProps} />;
+		case IconTypeEnum.ArrowBackUp:
+			return <IconArrowBackUp {...iconProps} />;
 		case IconTypeEnum.ArrowDown:
 			return <IconArrowDown {...iconProps} />;
 		case IconTypeEnum.ArrowForward:
 			return <IconArrowForward {...iconProps} />;
+		case IconTypeEnum.ArrowForwardUp:
+			return <IconArrowForwardUp {...iconProps} />;
 		case IconTypeEnum.ArrowLeft:
 			return <IconArrowLeft {...iconProps} />;
 		case IconTypeEnum.ArrowRight:

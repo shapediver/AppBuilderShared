@@ -31,7 +31,8 @@ export default function AppBuilderActionCreateModelStateComponent(
 	} = props;
 	const notifications = useContext(NotificationContext);
 
-	const {createModelState} = useCreateModelState({namespace});
+	const {createModelState, applyModelStateToQueryParameter} =
+		useCreateModelState({namespace});
 
 	const [loading, setLoading] = useState(false);
 
@@ -48,9 +49,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 
 		// Save the modelStateId as a search parameter
 		if (modelStateId) {
-			const url = new URL(window.location.href);
-			url.searchParams.set("modelStateId", modelStateId);
-			history.replaceState(history.state, "", url.toString());
+			applyModelStateToQueryParameter(modelStateId);
 			notifications.success({
 				message: `Model state with ID ${modelStateId} has been saved.`,
 			});
