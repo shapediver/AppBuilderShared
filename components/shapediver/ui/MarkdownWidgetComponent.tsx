@@ -69,21 +69,45 @@ const spanDirective = function () {
 
 				const data = node.data || (node.data = {});
 				const attributes = node.attributes || {};
-				const {color} = attributes;
+				const {color, style} = attributes;
 
-				if (!color) {
+				if (!color && !style) {
 					file.fail(
-						"Unexpected missing `color` on `span` directive",
+						"Unexpected missing `color` or `style` on `span` directive",
 						node,
 					);
+					return;
 				}
 
 				data.hName = "span";
+				const styleObj: any = {};
+				if (color) {
+					styleObj.color = color;
+				}
+				if (style) {
+					switch (style) {
+						case "sub":
+							styleObj.verticalAlign = "sub";
+							styleObj.fontSize = "smaller";
+							break;
+						case "sup":
+							styleObj.verticalAlign = "super";
+							styleObj.fontSize = "smaller";
+							break;
+						case "ins":
+							styleObj.textDecoration = "underline";
+							break;
+						default:
+							file.fail(
+								`Unexpected style value "${style}" on span directive. Supported values: sub, sup, ins`,
+								node,
+							);
+							return;
+					}
+				}
+
 				data.hProperties = {
-					style: {color},
-					// The following uuid key causes a warning "A props object containing a 'key' prop is being spread into JSX"
-					// It's unclear why the key would be necessary here, so it's commented out.
-					//key: uuid(),
+					style: styleObj,
 				};
 			}
 		});
