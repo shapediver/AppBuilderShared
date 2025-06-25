@@ -9,7 +9,7 @@ import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildert
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IOutputApi, ITreeNode, OutputApiData} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {useAppBuilderInstances} from "./useAppBuilderInstances";
 
 /**
@@ -33,30 +33,17 @@ export function useSessionWithAppBuilder(
 	const namespace = props?.id ?? "";
 
 	// start session and register parameters and exports
-	const {
-		sessionApi,
-		error: sessionError,
-		initialProcessManagerId,
-	} = useSession(
-		props
-			? {
-					...props,
-					createProcessManager: true,
-				}
-			: undefined,
-	);
+	const {sessionApi, error: sessionError} = useSession(props);
 	const sessionInitialized = !!sessionApi;
 
 	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
-	const {addProcess, createProcessManager} =
-		useShapeDiverStoreProcessManager();
-	const initialProcessManagerIdRef = useRef(initialProcessManagerId);
+	const {createProcessManager} = useShapeDiverStoreProcessManager();
 	const [parsedData, setParsedData] = useState<
 		IAppBuilder | Error | undefined
 	>(undefined);
 	const [processManagerId, setProcessManagerId] = useState<
 		string | undefined
-	>(initialProcessManagerId);
+	>();
 	const [outputApi, setOutputApi] = useState<IOutputApi | undefined>(
 		undefined,
 	);
@@ -120,11 +107,6 @@ export function useSessionWithAppBuilder(
 		const outputs = sessionApi.getOutputByName(CUSTOM_DATA_OUTPUT_NAME);
 		const outputId = outputs.length > 0 ? outputs[0].id : "";
 
-		/**
-		 * Early exit of the process manager creation if the output id is not set.
-		 * In the case of an app builder output, we have to check for subprocesses
-		 * that are created in the AppBuilder data.
-		 */
 		if (outputId === "") {
 			// as there is not app builder output, we can set the parsed data to undefined
 			// unless the app builder override is set, in which case we set it to the override
@@ -133,10 +115,6 @@ export function useSessionWithAppBuilder(
 
 		setAppBuilderOutputId(outputId);
 	}, [sessionApi]);
-
-	useEffect(() => {
-		initialProcessManagerIdRef.current = initialProcessManagerId;
-	}, [initialProcessManagerId]);
 
 	/**
 	 * Callback for updating the AppBuilder data.
@@ -159,11 +137,17 @@ export function useSessionWithAppBuilder(
 				| string
 				| undefined;
 			const parsedData = validationResult(outputData);
+			const appBuilderData =
+				parsedData instanceof Error ? undefined : parsedData;
 
-			setProcessManagerId(
-				initialProcessManagerIdRef.current ||
-					createProcessManager(namespace),
-			);
+			// For instances, this check and the creation of the process manager
+			// has to be done here, as otherwise the viewer would already
+			// update the scene before the instances are processed
+			const instancedSessions = !!appBuilderData?.instances;
+			if (instancedSessions) {
+				const processManagerId = createProcessManager(sessionApi!.id);
+				setProcessManagerId(processManagerId);
+			}
 
 			setParsedData(parsedData);
 		},

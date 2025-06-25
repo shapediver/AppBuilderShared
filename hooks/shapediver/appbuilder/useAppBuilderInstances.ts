@@ -32,10 +32,15 @@ interface Props {
  * @param props
  */
 export function useAppBuilderInstances(props: Props) {
-	const {sessionApi, appBuilderData, processManagerId} = props;
+	const {
+		sessionApi,
+		appBuilderData,
+		processManagerId: sessionProcessManagerId,
+	} = props;
 
 	const {sessions, addSessionUpdateCallback} = useShapeDiverStoreSession();
-	const {addProcess} = useShapeDiverStoreProcessManager();
+	const {addProcess, createProcessManager} =
+		useShapeDiverStoreProcessManager();
 	const {
 		addCustomizationResult,
 		removeCustomizationResult,
@@ -158,7 +163,6 @@ export function useAppBuilderInstances(props: Props) {
 
 	useEffect(() => {
 		if (!sessionApi) return;
-		if (!processManagerId) return;
 
 		// create a promise to wait for all instances to be created
 		// this is necessary to only resolve the process once all instances are created
@@ -172,8 +176,10 @@ export function useAppBuilderInstances(props: Props) {
 			name: "Instance Process",
 			promise: mainPromise,
 		};
-		if (processManagerId)
-			addProcess(processManagerId, mainProcessDefinition);
+
+		const processManagerId =
+			sessionProcessManagerId || createProcessManager(sessionApi.id);
+		addProcess(processManagerId, mainProcessDefinition);
 
 		const newInstances: {
 			[key: string]: ITreeNode;
@@ -370,5 +376,5 @@ export function useAppBuilderInstances(props: Props) {
 			}
 			setInstances({});
 		};
-	}, [appBuilderInstances, processManagerId]);
+	}, [appBuilderInstances, sessionProcessManagerId]);
 }
