@@ -94,6 +94,12 @@ export default function ViewportHistoryButtons(props: Props) {
 		isLoading: isModelStateLoading,
 	} = useModelState(namespace || "");
 
+	const executing = useShapeDiverStoreParameters((state) => {
+		const ids = state.sessionDependency[namespace];
+
+		return !ids.every((id) => !state.parameterChanges[id]?.executing);
+	});
+
 	const parameterChanges = useShapeDiverStoreParameters(
 		useCallback(
 			(state) =>
@@ -141,7 +147,7 @@ export default function ViewportHistoryButtons(props: Props) {
 			>
 				<ActionIcon
 					onClick={goBack}
-					disabled={!canGoBack || buttonsDisabled}
+					disabled={!canGoBack || buttonsDisabled || executing}
 					size={size}
 					variant={
 						!canGoBack || buttonsDisabled
@@ -171,7 +177,7 @@ export default function ViewportHistoryButtons(props: Props) {
 			>
 				<ActionIcon
 					onClick={goForward}
-					disabled={!canGoForward || buttonsDisabled}
+					disabled={!canGoForward || buttonsDisabled || executing}
 					size={size}
 					variant={
 						!canGoForward || buttonsDisabled

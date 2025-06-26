@@ -10,21 +10,14 @@ import {useShallow} from "zustand/react/shallow";
 export function useViewportHistory() {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const {
-		parameterStores,
-		goBack: storeGoBack,
-		goForward: storeGoForward,
-		canGoBack: storeCanGoBack,
-		canGoForward: storeCanGoForward,
-	} = useShapeDiverStoreParameters(
-		useShallow((state) => ({
-			parameterStores: state.parameterStores,
-			goBack: state.goBack,
-			goForward: state.goForward,
-			canGoBack: state.canGoBack,
-			canGoForward: state.canGoForward,
-		})),
-	);
+	const {parameterStores, historyEntries, historyIndex} =
+		useShapeDiverStoreParameters(
+			useShallow((state) => ({
+				parameterStores: state.parameterStores,
+				historyEntries: state.history,
+				historyIndex: state.historyIndex,
+			})),
+		);
 
 	const {sessions} = useShapeDiverStoreSession(
 		useShallow((state) => ({
@@ -38,41 +31,41 @@ export function useViewportHistory() {
 	// Check if the session is ready
 	const sessionReady = Boolean(namespace && sessions[namespace]);
 
-	// Use session navigation capabilities
-	const canGoBack = storeCanGoBack();
-	const canGoForward = storeCanGoForward();
+	// Use history navigation capabilities
+	const canGoBack = historyIndex > 0;
+	const canGoForward = historyIndex < historyEntries.length - 1;
 
 	/**
 	 * Go back in session history
 	 */
-	const goBack = useCallback(async () => {
+	const goBack = useCallback(() => {
 		if (!canGoBack || isLoading) return;
 
 		setIsLoading(true);
 		try {
-			await storeGoBack();
+			history.back();
 		} catch (error) {
 			console.error("Error going back in history:", error);
 		} finally {
 			setIsLoading(false);
 		}
-	}, [canGoBack, isLoading]);
+	}, [canGoBack, historyIndex]);
 
 	/**
 	 * Go forward in session history
 	 */
-	const goForward = useCallback(async () => {
+	const goForward = useCallback(() => {
 		if (!canGoForward || isLoading) return;
 
 		setIsLoading(true);
 		try {
-			await storeGoForward();
+			history.forward();
 		} catch (error) {
 			console.error("Error going forward in history:", error);
 		} finally {
 			setIsLoading(false);
 		}
-	}, [canGoForward, isLoading]);
+	}, [canGoForward, historyIndex]);
 
 	return {
 		namespace,

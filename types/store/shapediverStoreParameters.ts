@@ -46,6 +46,15 @@ export type ISingleSessionHistoryState = {[parameterId: string]: any};
 export type ISessionsHistoryState = {
 	[namespace: string]: ISingleSessionHistoryState;
 };
+
+/** A state in the history for arbitrary sessions. */
+export interface IHistoryEntry {
+	/** The parameter values per session at the time of the history entry. */
+	state: ISessionsHistoryState;
+	/** The time of the history entry (return value of Date.now()). */
+	time: number;
+}
+
 /**
  * Pending parameter changes (waiting to be executed).
  */
@@ -224,6 +233,17 @@ export interface IShapeDiverStoreParameters {
 	readonly preExecutionHooks: IPreExecutionHookPerSession;
 
 	/**
+	 * History of parameter values.
+	 */
+	readonly history: IHistoryEntry[];
+
+	/**
+	 * Index of the current history entry.
+	 * If the history is empty, the index is -1.
+	 */
+	readonly historyIndex: number;
+
+	/**
 	 * Add parameter and export stores for all parameters and exports of the session.
 	 * CAUTION: Repeated calls will be ignored. Use removeSession to remove a session first before
 	 * calling addSession again for the same session.
@@ -398,29 +418,64 @@ export interface IShapeDiverStoreParameters {
 	readonly batchParameterValueUpdate: (
 		namespace: string,
 		values: {[parameterId: string]: any},
+		skipHistory?: boolean,
 	) => Promise<void>;
 
 	/**
-	 * Navigate back in session history using the session's built-in navigation.
+	 * Get history state object representing the default parameter values.
 	 * @returns
 	 */
-	readonly goBack: () => Promise<void>;
+	readonly getDefaultState: () => ISessionsHistoryState;
 
 	/**
-	 * Navigate forward in session history using the session's built-in navigation.
+	 * Reset the history to the default state (clear it).
 	 * @returns
 	 */
-	readonly goForward: () => Promise<void>;
+	readonly resetHistory: () => void;
 
 	/**
-	 * Check if any session can go back in history.
-	 * @returns
+	 * Push a state of parameter values to the history at the current index.
+	 * In case the history index is not at the end of the history,
+	 * all history entries after the current index are removed.
 	 */
-	readonly canGoBack: () => boolean;
+	readonly pushHistoryState: (state: ISessionsHistoryState) => IHistoryEntry;
 
 	/**
-	 * Check if any session can go forward in history.
+	 * Restore the state of parameter values from the given history state.
+	 * In case the history index is not at the end of the history,
+	 * all history entries after the current index are removed.
+	 * @param state
 	 * @returns
 	 */
-	readonly canGoForward: () => boolean;
+	readonly restoreHistoryState: (
+		state: ISessionsHistoryState,
+		skipHistory?: boolean,
+	) => Promise<void>;
+
+	/**
+	 * Restore the state of parameter values from the history at the given index.
+	 * @param index
+	 * @returns
+	 */
+	readonly restoreHistoryStateFromIndex: (index: number) => Promise<void>;
+
+	/**
+	 * Restore the state of parameter values from the history at the given timestamp.
+	 * Throws an error if the timestamp is not found in the history.
+	 * @param time
+	 * @returns
+	 */
+	readonly restoreHistoryStateFromTimestamp: (time: number) => Promise<void>;
+
+	/**
+	 * Restore the state of parameter values from the given history entry.
+	 * Tries to restore by timestamp, in case this fails, tries to restore by
+	 * matching parameter values to entries in the history, in case this fails
+	 * restores the state of the entry directly.
+	 * @param entry
+	 * @returns
+	 */
+	readonly restoreHistoryStateFromEntry: (
+		entry: IHistoryEntry,
+	) => Promise<void>;
 }

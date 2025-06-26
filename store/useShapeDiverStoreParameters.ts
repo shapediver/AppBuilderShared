@@ -21,6 +21,7 @@ import {
 	IExportStoresPerSession,
 	IGenericParameterDefinition,
 	IGenericParameterExecutor,
+	IHistoryEntry,
 	IParameterChanges,
 	IParameterChangesPerSession,
 	IParameterStore,
@@ -53,7 +54,6 @@ import {produce} from "immer";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 import {useShapeDiverStoreProcessManager} from "./useShapeDiverStoreProcessManager";
-import {useShapeDiverStoreSession} from "./useShapeDiverStoreSession";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter,
@@ -137,6 +137,7 @@ function createParameterExecutor<T>(
 
 type DefaultExportsGetter = () => string[];
 type ExportResponseSetter = (response: IExportResponse) => void;
+type HistoryPusher = (entry: ISessionsHistoryState) => void;
 
 /**
  * Register a session in the process manager.
@@ -252,6 +253,7 @@ function createGenericParameterExecutorForSession(
 	session: ISessionApi,
 	getDefaultExports: DefaultExportsGetter,
 	exportResponseSetter: ExportResponseSetter,
+	historyPusher: HistoryPusher,
 	callbacks?: IEventTracking,
 ): IGenericParameterExecutor {
 	/**
@@ -259,7 +261,7 @@ function createGenericParameterExecutorForSession(
 	 * that should be executed.
 	 * Typically this does not include all parameters defined by the session.
 	 */
-	return async (values, namespace) => {
+	return async (values, namespace, skipHistory) => {
 		// store previous values (we restore them in case of error)
 		const previousValues = Object.keys(values).reduce(
 			(acc, paramId) => {
@@ -311,6 +313,13 @@ function createGenericParameterExecutorForSession(
 
 			// resolve the promise of the process manager
 			resolve();
+
+			if (!skipHistory) {
+				const state: ISessionsHistoryState = {
+					[session.id]: session.parameterValues,
+				};
+				historyPusher(state);
+			}
 
 			// report success
 			callbacks?.onSuccess({
@@ -625,6 +634,7 @@ export const useShapeDiverStoreParameters =
 				defaultExportResponses: {},
 				preExecutionHooks: {},
 				history: [],
+				historyIndex: -1,
 
 				removeChanges: (namespace: string) => {
 					const {parameterChanges} = get();
@@ -839,6 +849,7 @@ export const useShapeDiverStoreParameters =
 						parameterStores: parameters,
 						exportStores: exports,
 						getChanges,
+						pushHistoryState,
 					} = get();
 
 					// check if there is something to add
@@ -859,10 +870,15 @@ export const useShapeDiverStoreParameters =
 							"setExportResponse",
 						);
 					};
+					const historyPusher = (state: ISessionsHistoryState) => {
+						const entry = pushHistoryState(state);
+						history.pushState(entry, "");
+					};
 					const executor = createGenericParameterExecutorForSession(
 						session,
 						getDefaultExports,
 						setExportResponse,
+						historyPusher,
 						callbacks,
 					);
 
@@ -1357,6 +1373,7 @@ export const useShapeDiverStoreParameters =
 				async batchParameterValueUpdate(
 					namespace: string,
 					values: {[key: string]: string},
+					skipHistory?: boolean,
 				) {
 					const {parameterStores} = get();
 					const stores = parameterStores[namespace];
@@ -1389,7 +1406,10 @@ export const useShapeDiverStoreParameters =
 						actions.setUiValue(values[paramId]);
 
 						// once we reach the last parameter, we execute the changes immediately
-						return actions.execute(index === paramIds.length - 1);
+						return actions.execute(
+							index === paramIds.length - 1,
+							skipHistory,
+						);
 					});
 
 					await Promise.all(promises);
@@ -1417,118 +1437,133 @@ export const useShapeDiverStoreParameters =
 					return state;
 				},
 
-				async goBack() {
-					const {sessions} = useShapeDiverStoreSession.getState();
-					const {parameterStores} = get();
+				resetHistory() {
+					set(
+						() => ({
+							history: [],
+							historyIndex: -1,
+						}),
+						false,
+						"resetHistory",
+					);
+				},
 
-					try {
-						// Navigate all sessions back
-						const sessionIds = Object.keys(parameterStores);
-						const navigationPromises = sessionIds.map(
-							async (sessionId) => {
-								const session = sessions[sessionId];
-								if (session && session.canGoBack()) {
-									await session.goBack();
-								}
-							},
+				pushHistoryState(state: ISessionsHistoryState) {
+					const {history, historyIndex} = get();
+					const entry: IHistoryEntry = {state, time: Date.now()};
+					const newHistory = history
+						.slice(0, historyIndex + 1)
+						.concat(entry);
+					set(
+						() => ({
+							history: newHistory,
+							historyIndex: newHistory.length - 1,
+						}),
+						false,
+						"pushHistoryState",
+					);
+
+					return entry;
+				},
+
+				async restoreHistoryState(
+					state: ISessionsHistoryState,
+					skipHistory?: boolean,
+				) {
+					const {batchParameterValueUpdate} = get();
+					const namespaces = Object.keys(state);
+					const promises = namespaces.map((namespace) =>
+						batchParameterValueUpdate(
+							namespace,
+							state[namespace],
+							skipHistory,
+						),
+					);
+					await Promise.all(promises);
+				},
+
+				async restoreHistoryStateFromIndex(index: number) {
+					const {history, restoreHistoryState} = get();
+
+					if (index < 0 || index >= history.length)
+						throw new Error(`Invalid history index ${index}`);
+
+					const entry = history[index];
+					await restoreHistoryState(entry.state, true);
+
+					set(
+						() => ({
+							historyIndex: index,
+						}),
+						false,
+						"restoreHistoryState",
+					);
+				},
+
+				async restoreHistoryStateFromTimestamp(time: number) {
+					const {history, restoreHistoryStateFromIndex} = get();
+					const index = history.findIndex(
+						(entry) => entry.time === time,
+					);
+					if (index < 0)
+						throw new Error(
+							`No history entry found for timestamp ${time}`,
 						);
 
-						await Promise.all(navigationPromises);
+					await restoreHistoryStateFromIndex(index);
+				},
 
-						// Update parameter values from sessions
-						sessionIds.forEach((sessionId) => {
-							const session = sessions[sessionId];
-							const stores = parameterStores[sessionId];
-							if (!session || !stores) return;
+				async restoreHistoryStateFromEntry(entry: IHistoryEntry) {
+					const {
+						history,
+						restoreHistoryState,
+						restoreHistoryStateFromIndex,
+						restoreHistoryStateFromTimestamp,
+					} = get();
+					try {
+						await restoreHistoryStateFromTimestamp(entry.time);
+						console.debug(
+							`Restored parameter values from history at timestamp ${entry.time}`,
+							entry,
+						);
+					} catch {
+						// find history entry whose parameter values match the given entry
+						const index = history.findIndex((e) => {
+							const namespaces = Object.keys(e.state);
+							if (
+								namespaces.length !==
+								Object.keys(entry.state).length
+							)
+								return false;
 
-							// Update parameter stores with current session values
-							Object.keys(stores).forEach((paramId) => {
-								const store = stores[paramId];
-								const sessionParam =
-									session.parameters[paramId];
-								if (sessionParam && store) {
-									const {actions} = store.getState();
-									actions.setUiAndExecValue(
-										sessionParam.value,
-									);
-								}
+							return namespaces.every((namespace) => {
+								if (!(namespace in entry.state)) return false;
+								const values = e.state[namespace];
+								const entryValues = entry.state[namespace];
+								const valueKeys = Object.keys(values);
+								const entryKeys = Object.keys(entryValues);
+								if (valueKeys.length !== entryKeys.length)
+									return false;
+
+								return valueKeys.every(
+									(key) => values[key] === entryValues[key],
+								);
 							});
 						});
-					} catch (error) {
-						console.error(
-							"Error going back in session history:",
-							error,
-						);
-						throw error;
+						if (index >= 0) {
+							console.debug(
+								`Restoring parameter values from history at index ${index}`,
+								entry,
+							);
+							await restoreHistoryStateFromIndex(index);
+						} else {
+							console.debug(
+								"No matching history entry found, directly restoring parameter values",
+								entry,
+							);
+							await restoreHistoryState(entry.state);
+						}
 					}
-				},
-
-				async goForward() {
-					const {sessions} = useShapeDiverStoreSession.getState();
-					const {parameterStores} = get();
-
-					try {
-						// Navigate all sessions forward
-						const sessionIds = Object.keys(parameterStores);
-						const navigationPromises = sessionIds.map(
-							async (sessionId) => {
-								const session = sessions[sessionId];
-								if (session && session.canGoForward()) {
-									await session.goForward();
-								}
-							},
-						);
-
-						await Promise.all(navigationPromises);
-
-						// Update parameter values from sessions
-						sessionIds.forEach((sessionId) => {
-							const session = sessions[sessionId];
-							const stores = parameterStores[sessionId];
-							if (!session || !stores) return;
-
-							// Update parameter stores with current session values
-							Object.keys(stores).forEach((paramId) => {
-								const store = stores[paramId];
-								const sessionParam =
-									session.parameters[paramId];
-								if (sessionParam && store) {
-									const {actions} = store.getState();
-									actions.setUiAndExecValue(
-										sessionParam.value,
-									);
-								}
-							});
-						});
-					} catch (error) {
-						console.error(
-							"Error going forward in session history:",
-							error,
-						);
-						throw error;
-					}
-				},
-
-				canGoBack() {
-					const {sessions} = useShapeDiverStoreSession.getState();
-					const {parameterStores} = get();
-
-					const sessionIds = Object.keys(parameterStores);
-					return sessionIds.some((sessionId) => {
-						const session = sessions[sessionId];
-						return session && session.canGoBack();
-					});
-				},
-
-				canGoForward() {
-					const {sessions} = useShapeDiverStoreSession.getState();
-					const {parameterStores} = get();
-
-					const sessionIds = Object.keys(parameterStores);
-					return sessionIds.some((sessionId) => {
-						const session = sessions[sessionId];
-						return session && session.canGoForward();
-					});
 				},
 			}),
 			{...devtoolsSettings, name: "ShapeDiver | Parameters"},
