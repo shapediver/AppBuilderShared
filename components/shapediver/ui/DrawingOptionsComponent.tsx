@@ -19,6 +19,7 @@ import {
 	GeometryRestrictionApi,
 	IDrawingToolsApi,
 } from "@shapediver/viewer.features.drawing-tools";
+import {IDrawingParameterSettings} from "@shapediver/viewer.session";
 import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
 import classes from "./DrawingOptionsComponent.module.css";
@@ -34,6 +35,7 @@ import classes from "./DrawingOptionsComponent.module.css";
 export default function DrawingOptionsComponent(props: {
 	viewportId: string;
 	drawingToolsApi: IDrawingToolsApi | undefined;
+	drawingToolsSettings: IDrawingParameterSettings;
 }) {
 	const {
 		showPointLabels,
@@ -48,7 +50,7 @@ export default function DrawingOptionsComponent(props: {
 		setSnapToFaces,
 	} = useDrawingOptionsStore();
 
-	const {drawingToolsApi, viewportId} = props;
+	const {drawingToolsApi, drawingToolsSettings, viewportId} = props;
 
 	// state for the options
 	const [optionsOpened, setOptionsOpened] = useState(false);
@@ -65,6 +67,58 @@ export default function DrawingOptionsComponent(props: {
 	 * The effects are used to set the options for the drawing tools.
 	 * The options are set depending on the state of the component.
 	 */
+
+	useEffect(() => {
+		setShowDistanceLabels(false);
+		if (
+			drawingToolsSettings &&
+			drawingToolsSettings.general &&
+			drawingToolsSettings.general.options
+		) {
+			if (
+				drawingToolsSettings.general.options.showPointLabels !==
+				undefined
+			) {
+				setShowPointLabels(
+					drawingToolsSettings.general.options.showPointLabels,
+				);
+			}
+
+			if (
+				drawingToolsSettings.general.options.showDistanceLabels !==
+				undefined
+			) {
+				setShowDistanceLabels(
+					drawingToolsSettings.general.options.showDistanceLabels,
+				);
+			}
+
+			if (
+				drawingToolsSettings.general.options.snapToVertices !==
+				undefined
+			) {
+				setSnapToVertices(
+					drawingToolsSettings.general.options.snapToVertices,
+				);
+			}
+
+			if (
+				drawingToolsSettings.general.options.snapToEdges !== undefined
+			) {
+				setSnapToEdges(
+					drawingToolsSettings.general.options.snapToEdges,
+				);
+			}
+
+			if (
+				drawingToolsSettings.general.options.snapToFaces !== undefined
+			) {
+				setSnapToFaces(
+					drawingToolsSettings.general.options.snapToFaces,
+				);
+			}
+		}
+	}, [drawingToolsSettings]);
 
 	useEffect(() => {
 		if (drawingToolsApi) {
