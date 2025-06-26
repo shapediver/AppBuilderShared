@@ -314,7 +314,9 @@ export default function AppBuilderPage(props: Partial<Props>) {
 									position={OverlayPosition.BOTTOM_RIGHT}
 									offset="1em"
 								>
-									<ViewportHistoryButtons />
+									<ViewportHistoryButtons
+										namespace={namespace}
+									/>
 								</ViewportOverlayWrapper>
 							</>
 						)}

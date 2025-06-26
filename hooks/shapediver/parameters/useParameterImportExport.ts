@@ -1,6 +1,5 @@
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useCallback, useContext} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -8,12 +7,6 @@ import {useShallow} from "zustand/react/shallow";
  * Hook for managing parameter import/export and reset functionality.
  */
 export function useParameterImportExport(namespace: string) {
-	const {sessions} = useShapeDiverStoreSession(
-		useShallow((state) => ({
-			sessions: state.sessions,
-		})),
-	);
-
 	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
 			batchParameterValueUpdate: state.batchParameterValueUpdate,
@@ -21,24 +14,21 @@ export function useParameterImportExport(namespace: string) {
 	);
 
 	const notifications = useContext(NotificationContext);
-	const sessionApi = sessions[namespace];
 
 	/**
 	 * Export parameters as JSON file
 	 */
 	const exportParameters = useCallback(async () => {
-		if (!sessionApi) {
-			console.error("Session not available for parameter export");
-			return;
-		}
-
 		try {
-			// Get current parameter values from session
-			const parameters = sessionApi.parameters;
+			// Get current parameter values from store
+			const parameters = useShapeDiverStoreParameters
+				.getState()
+				.getParameters(namespace);
 			const parameterValues: {[key: string]: any} = {};
 
-			Object.values(parameters).forEach((param) => {
-				parameterValues[param.id] = param.value;
+			Object.values(parameters).forEach((paramStore) => {
+				const param = paramStore.getState();
+				parameterValues[param.definition.id] = param.state.uiValue;
 			});
 
 			// Create JSON blob and download
@@ -88,12 +78,10 @@ export function useParameterImportExport(namespace: string) {
 					const text = await file.text();
 					const parameterValues = JSON.parse(text);
 
-					if (!sessionApi) {
-						throw new Error("Session not available");
-					}
-
-					// Validate that the parameters exist in the session
-					const sessionParameters = sessionApi.parameters;
+					// Get current parameters from store for validation
+					const sessionParameters = useShapeDiverStoreParameters
+						.getState()
+						.getParameters(namespace);
 					const validParameters: {[key: string]: any} = {};
 
 					Object.keys(parameterValues).forEach((paramId) => {
@@ -136,16 +124,19 @@ export function useParameterImportExport(namespace: string) {
 	 * Reset parameters to default values
 	 */
 	const resetParameters = useCallback(async () => {
-		if (!sessionApi) {
-			console.error("Session not available for parameter reset");
-			return;
-		}
-
 		try {
-			// Get default parameter values from session
-			const defaultValues = sessionApi.parameterDefaultValues;
+			// Get parameters from store and build default values
+			const parameters = useShapeDiverStoreParameters
+				.getState()
+				.getParameters(namespace);
+			const defaultValues: {[key: string]: any} = {};
 
-			if (!defaultValues || Object.keys(defaultValues).length === 0) {
+			Object.values(parameters).forEach((paramStore) => {
+				const param = paramStore.getState();
+				defaultValues[param.definition.id] = param.definition.defval;
+			});
+
+			if (Object.keys(defaultValues).length === 0) {
 				throw new Error("No default values available for this session");
 			}
 
@@ -167,6 +158,5 @@ export function useParameterImportExport(namespace: string) {
 		exportParameters,
 		importParameters,
 		resetParameters,
-		sessionReady: !!sessionApi,
 	};
 }

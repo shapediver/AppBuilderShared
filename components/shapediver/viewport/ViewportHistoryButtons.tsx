@@ -1,14 +1,16 @@
 import ImportModelStateDialog from "@AppBuilderShared/components/shapediver/ui/ImportModelStateDialog";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
-import {useModelState} from "@AppBuilderShared/hooks/shapediver/useModelState";
+import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import {useImportModelState} from "@AppBuilderShared/hooks/shapediver/useImportModelState";
 import {useViewportHistory} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportHistory";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {IParameterChanges} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {ActionIcon, Box, MantineStyleProp, Menu} from "@mantine/core";
-import React, {useCallback, useMemo, useState} from "react";
+import React, {useCallback, useContext, useMemo, useState} from "react";
 
 interface Props {
 	/**
@@ -40,13 +42,12 @@ interface Props {
 	 */
 	iconStyle?: MantineStyleProp;
 	/**
-	 * Optional list of session IDs to check for pending parameter changes.
-	 * If provided, buttons will be disabled when there are pending changes for these sessions.
+	 * Namespace of the session
 	 */
-	sessionIds?: string[];
+	namespace: string;
 }
 
-const defaultProps: Required<Omit<Props, "sessionIds">> = {
+const defaultProps: Required<Omit<Props, "namespace">> = {
 	style: {display: "flex", gap: "4px"},
 	size: 32,
 	color: "black",
@@ -70,29 +71,45 @@ export default function ViewportHistoryButtons(props: Props) {
 		variant,
 		variantDisabled,
 		iconStyle,
-		sessionIds,
+		namespace,
 	} = {...defaultProps, ...props};
 
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
-	const {
-		namespace,
-		canGoBack,
-		canGoForward,
-		goBack,
-		goForward,
-		isLoading,
-		sessionReady,
-	} = useViewportHistory();
+	const {canGoBack, canGoForward, goBack, goForward, isLoading} =
+		useViewportHistory();
+
+	const notifications = useContext(NotificationContext);
 
 	const {exportParameters, importParameters, resetParameters} =
-		useParameterImportExport(namespace || "");
+		useParameterImportExport(namespace);
 
-	const {
-		createModelState,
-		importModelState,
-		isLoading: isModelStateLoading,
-	} = useModelState(namespace || "");
+	const {importModelState, isLoading: isModelStateLoading} =
+		useImportModelState(namespace);
+
+	const [isCreatingModelState, setIsCreatingModelState] = useState(false);
+	const {createModelState, applyModelStateToQueryParameter} =
+		useCreateModelState({namespace});
+
+	const onCreateModelState = useCallback(async () => {
+		setIsCreatingModelState(true);
+		const {modelStateId} = await createModelState(
+			undefined, // <-- parameterNamesToInclude: use default according to the theme
+			undefined, // <-- parameterNamesToExclude: use default according to the theme
+			true, // <-- includeImage,
+			undefined, // <-- custom data
+			false, // <-- includeGltf
+		);
+
+		if (modelStateId) {
+			applyModelStateToQueryParameter(modelStateId);
+			notifications.success({
+				message: "Model state successfully created",
+			});
+		}
+
+		setIsCreatingModelState(false);
+	}, []);
 
 	const executing = useShapeDiverStoreParameters((state) => {
 		const ids = state.sessionDependency[namespace];
@@ -103,15 +120,11 @@ export default function ViewportHistoryButtons(props: Props) {
 	const parameterChanges = useShapeDiverStoreParameters(
 		useCallback(
 			(state) =>
-				Object.keys(state.parameterChanges)
-					.filter((id) =>
-						sessionIds ? sessionIds.includes(id) : true,
-					)
-					.reduce((acc, id) => {
-						acc.push(state.parameterChanges[id]);
-						return acc;
-					}, [] as IParameterChanges[]),
-			[sessionIds],
+				Object.keys(state.parameterChanges).reduce((acc, id) => {
+					acc.push(state.parameterChanges[id]);
+					return acc;
+				}, [] as IParameterChanges[]),
+			[],
 		),
 	);
 
@@ -122,10 +135,6 @@ export default function ViewportHistoryButtons(props: Props) {
 		[parameterChanges],
 	);
 
-	if (!sessionReady || !namespace) {
-		return null;
-	}
-
 	const handleImportModelState = async (modelStateId: string) => {
 		const success = await importModelState(modelStateId);
 		if (success) {
@@ -134,7 +143,10 @@ export default function ViewportHistoryButtons(props: Props) {
 	};
 
 	const buttonsDisabled =
-		hasPendingChanges || isLoading || isModelStateLoading;
+		hasPendingChanges ||
+		isLoading ||
+		isModelStateLoading ||
+		isCreatingModelState;
 
 	return (
 		<Box style={style}>
@@ -236,7 +248,7 @@ export default function ViewportHistoryButtons(props: Props) {
 					</Menu.Item>
 					<Menu.Divider />
 					<Menu.Item
-						onClick={createModelState}
+						onClick={onCreateModelState}
 						disabled={buttonsDisabled}
 					>
 						Create model state

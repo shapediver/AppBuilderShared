@@ -1,5 +1,4 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useCallback, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -10,26 +9,13 @@ import {useShallow} from "zustand/react/shallow";
 export function useViewportHistory() {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const {parameterStores, historyEntries, historyIndex} =
-		useShapeDiverStoreParameters(
-			useShallow((state) => ({
-				parameterStores: state.parameterStores,
-				historyEntries: state.history,
-				historyIndex: state.historyIndex,
-			})),
-		);
-
-	const {sessions} = useShapeDiverStoreSession(
+	const {historyEntries, historyIndex} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
-			sessions: state.sessions,
+			parameterStores: state.parameterStores,
+			historyEntries: state.history,
+			historyIndex: state.historyIndex,
 		})),
 	);
-
-	// Auto-detect the primary session namespace from parameterStores
-	const namespace = Object.keys(parameterStores)[0] || "";
-
-	// Check if the session is ready
-	const sessionReady = Boolean(namespace && sessions[namespace]);
 
 	// Use history navigation capabilities
 	const canGoBack = historyIndex > 0;
@@ -68,12 +54,10 @@ export function useViewportHistory() {
 	}, [canGoForward, historyIndex]);
 
 	return {
-		namespace,
 		canGoBack,
 		canGoForward,
 		goBack,
 		goForward,
 		isLoading,
-		sessionReady,
 	};
 }
