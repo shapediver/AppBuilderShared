@@ -76,7 +76,7 @@ export function HintComponentProps(
 }
 
 /**
- * Hint component that displays information about model states
+ * Hint component that displays information
  * with a link to documentation.
  */
 export default function HintComponent(props: Props & Partial<StyleProps> = {}) {

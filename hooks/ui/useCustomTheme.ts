@@ -578,7 +578,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			/**
 			 * HintComponent
 			 *
-			 * Hint component that displays information about model states
+			 * Hint component that displays information
 			 * with a link to documentation.
 			 */
 			HintComponent: HintComponentProps({
