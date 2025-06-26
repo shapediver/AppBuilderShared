@@ -1,7 +1,7 @@
-import HintComponent from "@AppBuilderShared/components/ui/HintComponent";
 import ModalBase from "@AppBuilderShared/components/ui/ModalBase";
 import {Stack, TextInput} from "@mantine/core";
 import React, {useState} from "react";
+import Hint from "~/shared/components/ui/Hint";
 
 interface Props {
 	/**
@@ -85,7 +85,7 @@ export default function ImportModelStateDialog({
 					data-autofocus
 				/>
 
-				<HintComponent
+				<Hint
 					title="Learn how to create model states"
 					docLink="https://help.shapediver.com/doc/model-states"
 				/>

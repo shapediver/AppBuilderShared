@@ -12,7 +12,6 @@ import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shaped
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
-import {HintComponentProps} from "@AppBuilderShared/components/ui/HintComponent";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
@@ -58,6 +57,7 @@ import {
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
 import {ExportButtonComponentThemeProps} from "~/shared/components/shapediver/exports/ExportButtonComponent";
+import {HintProps} from "~/shared/components/ui/Hint";
 import {AppBuilderAgentWidgetThemeProps} from "~/shared/types/components/shapediver/props/appBuilderAgentWidget";
 import {CreateModelStateHookThemeProps} from "../shapediver/useCreateModelState";
 
@@ -581,7 +581,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Hint component that displays information
 			 * with a link to documentation.
 			 */
-			HintComponent: HintComponentProps({
+			Hint: HintProps({
 				// buttonProps: {
 				// 	variant: "light",
 				// 	size: "xs",

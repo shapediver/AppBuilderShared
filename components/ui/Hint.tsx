@@ -65,11 +65,9 @@ const defaultStyleProps: StyleProps = {
 	},
 };
 
-type HintComponentPropsType = Partial<StyleProps>;
+type HintPropsType = Partial<StyleProps>;
 
-export function HintComponentProps(
-	props: HintComponentPropsType,
-): MantineThemeComponent {
+export function HintProps(props: HintPropsType): MantineThemeComponent {
 	return {
 		defaultProps: props,
 	};
@@ -79,11 +77,11 @@ export function HintComponentProps(
  * Hint component that displays information
  * with a link to documentation.
  */
-export default function HintComponent(props: Props & Partial<StyleProps> = {}) {
+export default function Hint(props: Props & Partial<StyleProps> = {}) {
 	const {title, docLink} = props;
 
 	const {containerGroupProps, iconProps, textProps, buttonProps, groupProps} =
-		useProps("HintComponent", defaultStyleProps, props);
+		useProps("Hint", defaultStyleProps, props);
 
 	return (
 		<Group {...containerGroupProps}>
