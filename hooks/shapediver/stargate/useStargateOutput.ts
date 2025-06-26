@@ -1,7 +1,7 @@
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
+import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate_";
 import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {

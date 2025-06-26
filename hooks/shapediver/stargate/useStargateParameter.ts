@@ -1,6 +1,6 @@
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
+import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate_";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {ShapeDiverResponseParameterType} from "@shapediver/api.geometry-api-dto-v2";
 import {

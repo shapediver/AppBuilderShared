@@ -1,5 +1,5 @@
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
+import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate_";
 import {
 	IStargateClientChoice,
 	NetworkStatus,
@@ -49,6 +49,10 @@ export const useStargateConnection = () => {
 	const selectedClientRef = useRef<IStargateClientChoice>(DEFAULT_CHOICE);
 	const isStargateEnabled = isRunningInPlatform();
 
+	/**
+	 * Return the Stargate SDK instance from the global store if it exists, otherwise:
+	 * Create a Stargate SDK instance, make registration call, set the SDK in the global store, return it.
+	 */
 	const getStargateInstance = useCallback(async (dcnHandler = () => {}) => {
 		const {sdk} = useShapeDiverStoreStargate.getState();
 		if (!sdk) {
@@ -118,6 +122,9 @@ export const useStargateConnection = () => {
 		pingConnectionClose();
 	}, []);
 
+	/**
+	 * Make sure to register with the Stargate service.
+	 */
 	const stargateRegister = useCallback(async () => {
 		if (!isStargateEnabled) return;
 
@@ -190,6 +197,7 @@ export const useStargateConnection = () => {
 		}
 	}, []);
 
+	/** Start pinging the selected client */
 	const pingConnectionStart = useCallback(() => {
 		connectionIntervalRef.current = setInterval(async () => {
 			try {
@@ -221,6 +229,7 @@ export const useStargateConnection = () => {
 		}, connectionIntervalMs);
 	}, []);
 
+	/** Stop pinging the selected client */
 	const pingConnectionClose = useCallback(() => {
 		if (connectionIntervalRef.current) {
 			clearInterval(connectionIntervalRef.current);
@@ -318,6 +327,7 @@ export const useStargateConnection = () => {
 		[],
 	);
 
+	/** Check whether an instance of the SDK has been created */
 	const isInitialized = useCallback((): boolean => {
 		const {sdk} = useShapeDiverStoreStargate.getState();
 		return sdk !== null;
@@ -340,11 +350,9 @@ export const useStargateConnection = () => {
 		...localState,
 		supportedData,
 		networkStatus,
-		getStargateInstance,
 		isStargateEnabled,
 		refreshClients,
 		selectClient,
-		connectionReset,
 		initialize,
 	};
 };

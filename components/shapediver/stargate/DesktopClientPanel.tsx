@@ -1,6 +1,5 @@
 import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {useStargateConnection} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateConnection";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
@@ -24,8 +23,29 @@ import {
 	TextProps,
 	useProps,
 } from "@mantine/core";
-import React, {useEffect} from "react";
+import {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
+import React, {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+
+/**
+ * Interface representing a client choice in the desktop client panel.
+ */
+interface IClientChoice {
+	/** The value of the choice (invisible to the user). Typically the ID of the client. */
+	value: string;
+	/** The label of the choice. Typically the name of the client. */
+	label: string;
+	/** The client model as received from Stargate. Optional to allow for the choice "None". */
+	client?: ISdStargateClientModel;
+}
+
+/**
+ * Constant representing the "None" client choice.
+ */
+const NO_CLIENT: IClientChoice = {
+	value: "none",
+	label: "None",
+};
 
 /**
  * Icon configuration for network status
@@ -43,7 +63,7 @@ export const NetworkStatusIcons: Record<NetworkStatus, INetworkStatusIcon> = {
 	[NetworkStatus.none]: {
 		icon: IconTypeEnum.Network,
 		color: "grey",
-		tooltip: "No active client",
+		tooltip: "Not connected to Stargate",
 	},
 	[NetworkStatus.connected]: {
 		icon: IconTypeEnum.Network,
@@ -53,18 +73,12 @@ export const NetworkStatusIcons: Record<NetworkStatus, INetworkStatusIcon> = {
 	[NetworkStatus.disconnected]: {
 		icon: IconTypeEnum.NetworkOff,
 		color: "red",
-		tooltip: "Client connection failed",
+		tooltip: "No active client",
 	},
 };
 
 interface Props {
-	/** TODO: Clarify the purpose of this property. */
-	isDisabled?: boolean;
-
-	/**
-	 * TODO: It should not be necessary to pass this information.
-	 */
-	areNoInputsAndOutputs?: boolean;
+	__placeholder?: never;
 }
 
 interface StyleProps {
@@ -144,7 +158,7 @@ export function DesktopClientPanelThemeProps(
 }
 
 export default function DesktopClientPanel(props: Props & StyleProps) {
-	const {isDisabled = false, areNoInputsAndOutputs = false, ...rest} = props;
+	const {...rest} = props;
 
 	const {
 		iconStatusProps,
@@ -161,24 +175,22 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		loaderProps,
 		statusIconProps,
 	} = useProps("DesktopClientPanel", defaultStyleProps, rest);
-	const {selectedClient, isLoading} = useShapeDiverStoreStargate(
+
+	const {
+		getAvailableClients,
+		isStargateEnabled,
+		networkStatus,
+		selectClient,
+		selectedClient,
+	} = useShapeDiverStoreStargate(
 		useShallow((state) => ({
+			getAvailableClients: state.getAvailableClients,
+			isStargateEnabled: state.isStargateEnabled,
+			networkStatus: state.networkStatus,
+			selectClient: state.selectClient,
 			selectedClient: state.selectedClient,
-			isLoading: state.isLoading,
 		})),
 	);
-	const {
-		availableClients,
-		isStargateEnabled,
-		refreshClients,
-		selectClient,
-		initialize,
-		networkStatus,
-	} = useStargateConnection();
-
-	useEffect(() => {
-		initialize();
-	}, []);
 
 	const networkStatusIcon = NetworkStatusIcons[networkStatus];
 
@@ -194,25 +206,51 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		);
 	}
 
-	if (areNoInputsAndOutputs) {
-		return (
-			<Alert {...alertProps}>
-				<Text {...alertTextProps}>
-					Define structured geometry inputs and outputs and start
-					exchanging data with desktop clients.
-				</Text>
-			</Alert>
-		);
-	}
+	const [loading, setLoading] = useState(false);
+	const [availableClients, setAvailableClients] = useState<IClientChoice[]>([
+		NO_CLIENT,
+	]);
+	const [selectedClientValue, setSelectedClientValue] = useState<string>(
+		NO_CLIENT.value,
+	);
 
-	const handleClientChange = async (value: string | null) => {
-		if (!value) return;
+	useEffect(() => {
+		const value = selectedClient?.id || NO_CLIENT.value;
+		setSelectedClientValue(value);
+	}, [selectedClient]);
 
-		const client = availableClients.find((c) => c.value === value);
-		if (client) {
-			await selectClient(client);
-		}
-	};
+	const refreshClients = useCallback(async (currentClientValue: string) => {
+		setLoading(true);
+		const clients = await getAvailableClients(true);
+		const clientChoices: {value: string; label: string}[] = [
+			NO_CLIENT,
+			...clients.map((client) => ({
+				value: client.id,
+				label: client.clientName,
+				client: client,
+			})),
+		];
+		setAvailableClients(clientChoices);
+		if (!clientChoices.find((c) => c.value === currentClientValue))
+			await selectClient(undefined);
+		setLoading(false);
+	}, []);
+
+	const handleClientChange = useCallback(
+		async (
+			currentlyAvailableClients: IClientChoice[],
+			value: string | null,
+		) => {
+			if (!value) return;
+			setLoading(true);
+			const client = currentlyAvailableClients.find(
+				(c) => c.value === value,
+			);
+			await selectClient(client?.client);
+			setLoading(false);
+		},
+		[],
+	);
 
 	return (
 		<Paper {...paperProps}>
@@ -220,9 +258,9 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 				<Group {...groupTopProps}>
 					<Text {...textProps}>Active Clients</Text>
 					<ActionIcon
-						disabled={isLoading || isDisabled}
-						onClick={refreshClients}
-						loading={isLoading}
+						disabled={loading}
+						onClick={() => refreshClients(selectedClientValue)}
+						loading={loading}
 						{...actionIconRefreshProps}
 					>
 						<Icon
@@ -236,16 +274,15 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 
 				<Group {...groupBottomProps}>
 					<Select
-						data={availableClients.map((client) => ({
-							value: client.value,
-							label: client.text,
-						}))}
-						value={selectedClient?.value || null}
-						onChange={handleClientChange}
-						disabled={isLoading || isDisabled}
+						data={availableClients}
+						value={selectedClientValue}
+						onChange={(value) =>
+							handleClientChange(availableClients, value)
+						}
+						disabled={loading}
 						{...selectProps}
 						rightSection={
-							isLoading ? <Loader {...loaderProps} /> : undefined
+							loading ? <Loader {...loaderProps} /> : undefined
 						}
 					/>
 

@@ -169,9 +169,8 @@ export const useShapeDiverStorePlatform =
 				): Promise<T> => {
 					const key = cacheType;
 					const {genericCache} = get();
-					const promise = genericCache[key];
 
-					if (!promise || flush) {
+					if (!(key in genericCache) || flush) {
 						const _promise = initializer();
 						set(
 							() => ({
@@ -187,7 +186,7 @@ export const useShapeDiverStorePlatform =
 						return _promise;
 					}
 
-					return promise;
+					return genericCache[key];
 				},
 
 				setCurrentModel: (

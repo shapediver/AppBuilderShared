@@ -1,4 +1,4 @@
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
+import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate_";
 import {
 	ISdStargateBakeDataCommandDto,
 	ISdStargateBakeDataReplyDto,
