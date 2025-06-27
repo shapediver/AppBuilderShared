@@ -104,14 +104,18 @@ export const useStargateOutput = ({
 	const {bakeData} = useStargateBakeData();
 	const notifications = useContext(NotificationContext);
 
-	const {networkStatus, selectedClient, getSupportedData} =
+	const {networkStatus, selectedClient, getSupportedData, registerReference} =
 		useShapeDiverStoreStargate(
 			useShallow((state) => ({
 				networkStatus: state.networkStatus,
 				selectedClient: state.selectedClient,
 				getSupportedData: state.getSupportedData,
+				registerReference: state.registerReference,
 			})),
 		);
+
+	// Increase the reference count for the Stargate SDK
+	useEffect(registerReference, [registerReference]);
 
 	/** Get number of objects available for baking */
 	const getObjectsNumber = useCallback(

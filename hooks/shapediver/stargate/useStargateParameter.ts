@@ -96,17 +96,21 @@ export const useStargateParameter = ({
 		[],
 	);
 
-	const {networkStatus, selectedClient, getSupportedData} =
+	const {networkStatus, selectedClient, getSupportedData, registerReference} =
 		useShapeDiverStoreStargate(
 			useShallow((state) => ({
 				networkStatus: state.networkStatus,
 				selectedClient: state.selectedClient,
 				getSupportedData: state.getSupportedData,
+				registerReference: state.registerReference,
 			})),
 		);
 
 	const {getParameterData} = useStargateGetData();
 	const notifications = useContext(NotificationContext);
+
+	// Increase the reference count for the Stargate SDK
+	useEffect(registerReference, [registerReference]);
 
 	// Update connection status based on network status, selected client,
 	// parameter type and value

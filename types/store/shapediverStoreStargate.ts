@@ -87,6 +87,12 @@ export interface IShapeDiverStoreStargate {
 	getSupportedData: (
 		flush?: boolean,
 	) => Promise<ISdStargateGetSupportedDataReplyDto | undefined>;
+
+	/** Counts how often registerReference has been used in a useEffect hook. */
+	referenceCount: number;
+
+	/** Register a reference, use this in a useEffect hook. */
+	registerReference: () => () => void;
 }
 
 /** Type of cache. */

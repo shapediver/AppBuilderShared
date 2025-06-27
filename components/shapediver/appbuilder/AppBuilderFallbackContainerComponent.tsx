@@ -3,11 +3,13 @@ import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
+import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import React, {useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 interface Props {
 	parameters: PropsParameter[];
@@ -22,6 +24,10 @@ export default function AppBuilderFallbackContainerComponent({
 	outputs,
 	namespace,
 }: Props) {
+	const showDesktopClientPanel = useShapeDiverStoreStargate(
+		useShallow((state) => state.referenceCount > 0),
+	);
+
 	const tabProps: ITabsComponentProps = useMemo(() => {
 		const tabProps: ITabsComponentProps = {
 			defaultValue: "",
@@ -56,9 +62,7 @@ export default function AppBuilderFallbackContainerComponent({
 			});
 		}
 
-		// FIXME refactor this condition!
-		// It should be based on checking whether any component uses the Stargate store
-		if (outputs.length > 0) {
+		if (showDesktopClientPanel) {
 			tabProps.tabs.push({
 				name: "Stargate",
 				icon: IconTypeEnum.Network,

@@ -57,6 +57,26 @@ export const useShapeDiverStoreStargate =
 
 				selectedClient: undefined,
 
+				referenceCount: 0,
+
+				registerReference: () => {
+					set(
+						(state) => ({
+							referenceCount: state.referenceCount + 1,
+						}),
+						false,
+						"registerReference",
+					);
+					return () =>
+						set(
+							(state) => ({
+								referenceCount: state.referenceCount - 1,
+							}),
+							false,
+							"unregisterReference",
+						);
+				},
+
 				handleDisconnect: (/* msg: string */) => {
 					pingConnectionClose();
 					set(
