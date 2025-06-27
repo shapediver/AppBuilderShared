@@ -8,7 +8,6 @@ import {useImportModelState} from "@AppBuilderShared/hooks/shapediver/useImportM
 import {useViewportHistory} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportHistory";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {IParameterChanges} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {ActionIcon, Box, MantineStyleProp, Menu} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 
@@ -111,21 +110,21 @@ export default function ViewportHistoryButtons(props: Props) {
 		setIsCreatingModelState(false);
 	}, []);
 
-	const executing = useShapeDiverStoreParameters((state) => {
-		const ids = state.sessionDependency[namespace];
-
-		return !ids.every((id) => !state.parameterChanges[id]?.executing);
-	});
-
 	const parameterChanges = useShapeDiverStoreParameters(
 		useCallback(
-			(state) =>
-				Object.keys(state.parameterChanges).reduce((acc, id) => {
-					acc.push(state.parameterChanges[id]);
-					return acc;
-				}, [] as IParameterChanges[]),
-			[],
+			(state) => {
+				const ids = state.sessionDependency[namespace];
+				return ids
+					.map((id) => state.parameterChanges[id])
+					.filter(Boolean);
+			},
+			[namespace],
 		),
+	);
+
+	const executing = useMemo(
+		() => parameterChanges.some((change) => change.executing),
+		[parameterChanges],
 	);
 
 	const hasPendingChanges = useMemo(
