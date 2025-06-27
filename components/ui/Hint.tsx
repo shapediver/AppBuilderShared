@@ -90,7 +90,7 @@ export default function Hint(props: Props & Partial<StyleProps> = {}) {
 				<Text {...textProps}>{title}</Text>
 			</Group>
 			<Button {...buttonProps} href={docLink}>
-				READ MORE
+				Read more
 			</Button>
 		</Group>
 	);

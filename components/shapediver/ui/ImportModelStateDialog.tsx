@@ -67,8 +67,8 @@ export default function ImportModelStateDialog({
 			onConfirm={handleImport}
 			title="Load a model state"
 			isLoading={isLoading}
-			cancelBtnTitle="CANCEL"
-			confirmBtnTitle="LOAD"
+			cancelBtnTitle="Cancel"
+			confirmBtnTitle="Load"
 			isConfirmBtnDisabled={!modelStateId.trim()}
 		>
 			<Stack gap="md">
