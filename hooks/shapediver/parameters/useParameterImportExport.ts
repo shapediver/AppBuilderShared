@@ -1,3 +1,4 @@
+import { ErrorReportingContext } from "@AppBuilderShared/context/ErrorReportingContext";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useCallback, useContext} from "react";
@@ -14,6 +15,7 @@ export function useParameterImportExport(namespace: string) {
 	);
 
 	const notifications = useContext(NotificationContext);
+	const errorReporting = useContext(ErrorReportingContext);
 
 	/**
 	 * Export parameters as JSON file
@@ -46,15 +48,15 @@ export function useParameterImportExport(namespace: string) {
 			URL.revokeObjectURL(url);
 
 			notifications.success({
-				message: "Parameters exported successfully",
+				message: "Parameter values exported successfully",
 			});
 		} catch (error) {
-			console.error("Error exporting parameters:", error);
+			errorReporting.captureException(error);
 			notifications.error({
 				message: "Failed to export parameters",
 			});
 		}
-	}, [namespace]);
+	}, [namespace, errorReporting]);
 
 	/**
 	 * Import parameters from JSON file
@@ -106,7 +108,7 @@ export function useParameterImportExport(namespace: string) {
 					});
 					resolve();
 				} catch (error) {
-					console.error("Error importing parameters:", error);
+					errorReporting.captureException(error);
 					notifications.error({
 						message:
 							"Failed to import parameters: " +
@@ -118,7 +120,7 @@ export function useParameterImportExport(namespace: string) {
 
 			fileInput.click();
 		});
-	}, [namespace]);
+	}, [namespace, errorReporting]);
 
 	/**
 	 * Reset parameters to default values
@@ -147,12 +149,12 @@ export function useParameterImportExport(namespace: string) {
 				message: "Parameters reset to default values",
 			});
 		} catch (error) {
-			console.error("Error resetting parameters:", error);
+			errorReporting.captureException(error);
 			notifications.error({
 				message: "Failed to reset parameters",
 			});
 		}
-	}, [namespace]);
+	}, [namespace, errorReporting]);
 
 	return {
 		exportParameters,

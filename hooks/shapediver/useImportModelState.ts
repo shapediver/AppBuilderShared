@@ -1,3 +1,4 @@
+import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
@@ -18,6 +19,7 @@ export function useImportModelState(namespace: string) {
 	);
 
 	const notifications = useContext(NotificationContext);
+	const errorReporting = useContext(ErrorReportingContext);
 	const sessionApi = sessions[namespace];
 
 	// Get parameter store functions for updating parameter values
@@ -64,12 +66,12 @@ export function useImportModelState(namespace: string) {
 				});
 
 				notifications.success({
-					message: "Model state imported successfully",
+					message: `Model state ${trimmedId} imported successfully`,
 				});
 
 				return true;
 			} catch (error) {
-				console.error("Error importing model state:", error);
+				errorReporting.captureException(error);
 				notifications.error({
 					message: "Failed to import model state",
 				});
@@ -78,7 +80,7 @@ export function useImportModelState(namespace: string) {
 				setIsLoading(false);
 			}
 		},
-		[sessionApi, notifications, getParameters, namespace],
+		[sessionApi, notifications, getParameters, namespace, errorReporting],
 	);
 
 	return {
