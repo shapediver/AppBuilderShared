@@ -1,9 +1,11 @@
+import {GlobalNotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	IShapeDiverStoreStargateExtended,
 	StargateCacheKeyEnum,
 } from "@AppBuilderShared/types/store/shapediverStoreStargate";
+import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
 import {
 	createSdk,
@@ -13,6 +15,7 @@ import {
 } from "@shapediver/sdk.stargate-sdk-v1";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {useShapeDiverStoreErrorReporting} from "./useShapeDiverStoreErrorReporting";
 import {useShapeDiverStorePlatform} from "./useShapeDiverStorePlatform";
 
 let pingTimeout: NodeJS.Timeout | null = null;
@@ -80,6 +83,9 @@ export const useShapeDiverStoreStargate =
 
 					const {sdkRef, cachePromise, handleDisconnect} = get();
 
+					const {errorReporting} =
+						useShapeDiverStoreErrorReporting.getState();
+
 					if (!forceReconnect && sdkRef) return sdkRef;
 
 					return cachePromise(
@@ -114,15 +120,15 @@ export const useShapeDiverStoreStargate =
 							const sdk = await createSdk()
 								.setBaseUrl(url)
 								.setServerCommandHandler((payload: unknown) => {
-									// In practice, this should never be called
-									console.log(
-										"Stargate command handler payload received",
-										payload,
+									const msg =
+										"Received unidentified Stargate command payload";
+									errorReporting.captureMessage(
+										`${msg}: ${payload}`,
 									);
 								})
 								.setConnectionErrorHandler((msg: string) => {
-									// TODO: implement a proper error handler
-									console.error("Stargate errHandler", msg);
+									const message = `Stargate connection error: ${msg}`;
+									GlobalNotificationContext.error({message});
 								})
 								.setDisconnectHandler(handleDisconnect)
 								.build();
@@ -160,9 +166,11 @@ export const useShapeDiverStoreStargate =
 					const client = _client || selectedClient;
 					if (!sdkRef || !client) return undefined;
 					const {sdk} = sdkRef;
-					const command = new SdStargateStatusCommand(sdk);
-					const result = await command.send({}, [client]);
-					return result.length > 0 ? result[0] : undefined;
+					const {result} = await exceptionWrapperAsync(async () => {
+						const command = new SdStargateStatusCommand(sdk);
+						return await command.send({}, [client]);
+					});
+					return result && result.length > 0 ? result[0] : undefined;
 				},
 
 				getAvailableClients: async (flush?: boolean) => {
@@ -190,25 +198,13 @@ export const useShapeDiverStoreStargate =
 					const {getClientStatus} = get();
 					pingConnectionClose();
 					pingTimeout = setInterval(async () => {
-						try {
-							const status = await getClientStatus();
-							if (!status) {
-								console.log(
-									"Status check failed, disconnecting",
-								);
-								pingConnectionClose();
-								set(
-									{
-										networkStatus:
-											NetworkStatus.disconnected,
-										selectedClient: undefined,
-									},
-									false,
-									"pingConnection - status check failed",
-								);
-							}
-						} catch (error) {
-							console.log("Status check failed:", error);
+						const status = await getClientStatus();
+						if (!status) {
+							const {selectedClient} = get();
+							const message = selectedClient?.clientName
+								? `Connection to desktop client "${selectedClient?.clientName}" was lost.`
+								: "Connection to desktop client was lost.";
+							GlobalNotificationContext.warning({message});
 							pingConnectionClose();
 							set(
 								{
@@ -216,7 +212,7 @@ export const useShapeDiverStoreStargate =
 									selectedClient: undefined,
 								},
 								false,
-								"pingConnection - status check error",
+								"pingConnection - status check failed",
 							);
 						}
 					}, PING_INTERVAL_MS);

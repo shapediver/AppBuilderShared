@@ -186,6 +186,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 		} else if (isOutputDefinition(param) && namespace) {
 			elementGroups[groupId].elements.push(
 				<OutputStargateComponent
+					key={param.definition.id}
 					{...param.output}
 					namespace={namespace}
 				/>,
