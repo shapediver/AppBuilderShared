@@ -1,5 +1,5 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useCallback, useState} from "react";
+import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /**
@@ -7,8 +7,6 @@ import {useShallow} from "zustand/react/shallow";
  * Uses session's built-in navigation methods for history management.
  */
 export function useViewportHistory() {
-	const [isLoading, setIsLoading] = useState(false);
-
 	const {historyEntries, historyIndex} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
 			parameterStores: state.parameterStores,
@@ -25,32 +23,18 @@ export function useViewportHistory() {
 	 * Go back in session history
 	 */
 	const goBack = useCallback(() => {
-		if (!canGoBack || isLoading) return;
+		if (!canGoBack) return;
 
-		setIsLoading(true);
-		try {
-			history.back();
-		} catch (error) {
-			console.error("Error going back in history:", error);
-		} finally {
-			setIsLoading(false);
-		}
+		history.back();
 	}, [canGoBack, historyIndex]);
 
 	/**
 	 * Go forward in session history
 	 */
 	const goForward = useCallback(() => {
-		if (!canGoForward || isLoading) return;
+		if (!canGoForward) return;
 
-		setIsLoading(true);
-		try {
-			history.forward();
-		} catch (error) {
-			console.error("Error going forward in history:", error);
-		} finally {
-			setIsLoading(false);
-		}
+		history.forward();
 	}, [canGoForward, historyIndex]);
 
 	return {
@@ -58,6 +42,5 @@ export function useViewportHistory() {
 		canGoForward,
 		goBack,
 		goForward,
-		isLoading,
 	};
 }

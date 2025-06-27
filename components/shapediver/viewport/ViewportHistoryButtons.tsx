@@ -75,8 +75,7 @@ export default function ViewportHistoryButtons(props: Props) {
 
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
-	const {canGoBack, canGoForward, goBack, goForward, isLoading} =
-		useViewportHistory();
+	const {canGoBack, canGoForward, goBack, goForward} = useViewportHistory();
 
 	const notifications = useContext(NotificationContext);
 
@@ -142,10 +141,7 @@ export default function ViewportHistoryButtons(props: Props) {
 	};
 
 	const buttonsDisabled =
-		hasPendingChanges ||
-		isLoading ||
-		isModelStateLoading ||
-		isCreatingModelState;
+		hasPendingChanges || isModelStateLoading || isCreatingModelState;
 
 	return (
 		<Box style={style}>
