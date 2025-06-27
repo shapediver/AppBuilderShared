@@ -1,4 +1,5 @@
 import {useOutput} from "@AppBuilderShared/hooks/shapediver/parameters/useOutput";
+import {useSdTFData} from "@AppBuilderShared/hooks/shapediver/viewer/useSdTFData";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {
 	Accordion,
@@ -46,9 +47,11 @@ export default function OutputStargateComponent(
 		props,
 	);
 
+	const {sdTFDataLoaded} = useSdTFData();
+
 	return (
 		<>
-			{definition && definition.chunks && (
+			{sdTFDataLoaded && definition && definition.chunks && (
 				<Accordion>
 					<Accordion.Item
 						key={`${definition.id}-chunks`}
