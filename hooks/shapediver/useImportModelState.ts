@@ -1,8 +1,7 @@
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
-import {useCallback, useContext, useEffect, useState} from "react";
+import {useCallback, useContext, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /**
@@ -81,18 +80,6 @@ export function useImportModelState(namespace: string) {
 		},
 		[sessionApi, notifications, getParameters, namespace],
 	);
-
-	// Check for modelStateId query parameter on mount and apply it
-	useEffect(() => {
-		if (!sessionApi) return;
-
-		const url = new URL(window.location.href);
-		const modelStateId = url.searchParams.get(QUERYPARAM_MODELSTATEID);
-
-		if (modelStateId) {
-			importModelState(modelStateId);
-		}
-	}, [sessionApi, importModelState]);
 
 	return {
 		importModelState,
