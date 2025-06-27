@@ -96,6 +96,11 @@ export function ParameterStargateComponentThemeProps(
 	};
 }
 
+/**
+ * Functional component representing a Stargate parameter (input).
+ * @param props
+ * @returns
+ */
 export default function ParameterStargateComponent(
 	props: PropsParameter &
 		Partial<PropsParameterWrapper> &

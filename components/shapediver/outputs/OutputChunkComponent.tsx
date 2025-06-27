@@ -1,16 +1,64 @@
 import StargateInput from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
-import {useStargateOutput} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateOutput";
+import {
+	OutputStatusEnum,
+	useStargateOutput,
+} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateOutput";
 import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,
 } from "@AppBuilderShared/types/shapediver/output";
-import React from "react";
+import React, {useMemo} from "react";
 import OutputChunkLabelComponent from "./OutputChunkLabelComponent";
+
 interface Props {
 	output: IShapeDiverOutputDefinition;
 	chunk: IShapeDiverOutputDefinitionChunk;
-	sessionId?: string;
+	sessionId: string;
 }
+
+/** Type for data related to the status of the component. */
+
+export type IStatusData = {
+	color: string;
+	message: string;
+	isBtnDisabled: boolean;
+};
+
+/**
+ * Map from status enum to status data.
+ */
+const StatusDataMap: {[key in OutputStatusEnum]: IStatusData} = {
+	[OutputStatusEnum.notActive]: {
+		color: "var(--mantine-color-gray-2)",
+		message: "No active client found",
+		isBtnDisabled: true,
+	},
+	[OutputStatusEnum.incompatible]: {
+		color: "var(--mantine-color-gray-2)",
+		message: "Incompatible output",
+		isBtnDisabled: true,
+	},
+	[OutputStatusEnum.noObjectAvailable]: {
+		color: "orange",
+		message: "This output is empty",
+		isBtnDisabled: true,
+	},
+	[OutputStatusEnum.objectAvailable]: {
+		color: "var(--mantine-primary-color-filled)",
+		message: "Bake $count objects",
+		isBtnDisabled: false,
+	},
+	[OutputStatusEnum.objectAvailableNotActive]: {
+		color: "var(--mantine-color-gray-2)",
+		message: "Bake $count objects (client not active)",
+		isBtnDisabled: true,
+	},
+	[OutputStatusEnum.unsupported]: {
+		color: "orange",
+		message: "Unsupported connection status",
+		isBtnDisabled: true,
+	},
+};
 
 /**
  * Component that handles individual output chunks using Stargate
@@ -19,25 +67,36 @@ export default function OutputChunkComponent(props: Props) {
 	const {output, chunk, sessionId} = props;
 
 	// Use stargate output hook for this specific chunk
-	const {connectionStatus, isWaiting, isLoading, onBakeData} =
-		useStargateOutput({
-			chunkId: chunk.id,
-			outputId: output.id,
-			name: chunk.displayname || chunk.name,
-			typeHint: chunk.typeHint,
-			sessionId,
-		});
+	const {isWaiting, onBakeData, status, count} = useStargateOutput({
+		chunkId: chunk.id,
+		chunkName: chunk.name,
+		outputId: output.id,
+		typeHint: chunk.typeHint,
+		sessionId,
+	});
+
+	const statusData = useMemo(() => {
+		return StatusDataMap[status];
+	}, [status]);
+
+	const parsedMessage = useMemo(() => {
+		const msg = statusData.message.replace(
+			"$count",
+			count ? count + "" : "",
+		);
+		return msg;
+	}, [count, statusData.message]);
 
 	return (
 		<>
 			<OutputChunkLabelComponent chunk={chunk} />
 			<StargateInput
-				message={connectionStatus.message}
+				message={parsedMessage}
 				// count={connectionStatus.count} // TODO
-				color={connectionStatus.color}
+				color={statusData.color}
 				isWaiting={isWaiting}
 				waitingText="Waiting for client..."
-				isBtnDisabled={connectionStatus.isBtnDisabled || isLoading}
+				isBtnDisabled={statusData.isBtnDisabled}
 				onClick={onBakeData}
 			/>
 		</>

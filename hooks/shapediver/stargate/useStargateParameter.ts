@@ -35,7 +35,7 @@ export interface IUseStargateParameterProps {
  */
 export enum ParameterStatusEnum {
 	/** The Stargate service is not available OR no client has been selected. */
-	notActive = "noActive",
+	notActive = "notActive",
 	/** The selected client does not support the type of the given parameter. */
 	incompatible = "incompatible",
 	/** A client is connected and supports the given parameter type. No objects are selected. */
@@ -46,6 +46,11 @@ export enum ParameterStatusEnum {
 	unsupported = "unsupported",
 }
 
+/**
+ * Hook providing business logic for the Stargate parameter component.
+ * @param param0
+ * @returns
+ */
 export const useStargateParameter = ({
 	parameterId,
 	parameterType,

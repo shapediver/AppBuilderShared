@@ -37,8 +37,32 @@ export const useStargateGetData = () => {
 				useShapeDiverStoreStargate.getState();
 			const sdk = sdkRef?.sdk;
 
+			// We can assume the Stargate SDK to be available, a client to be selected, and
+			// a current model to be available in the store.
+			// Calling this function without these conditions would be a developer error,
+			// and therefore we report it to Sentry.
+			if (!sdk) {
+				const error = new Error("Stargate SDK not available");
+				errorReporting.captureException(error);
+				throw error;
+			}
+
+			if (!selectedClient) {
+				const error = new Error("No client selected");
+				errorReporting.captureException(error);
+				throw error;
+			}
+
+			const {currentModel} = useShapeDiverStorePlatform.getState();
+
+			if (!currentModel) {
+				const error = new Error("Current model not available");
+				errorReporting.captureException(error);
+				throw error;
+			}
+
 			return new Promise((resolve, reject) => {
-				// Handler for rejecting a pending request
+				// Handler for rejecting the pending request
 				const rejectHandler = () => {
 					const err: Error & {type?: typeof ERROR_TYPE_INTERRUPTED} =
 						new Error("Request interrupted");
@@ -55,33 +79,6 @@ export const useStargateGetData = () => {
 						pendingRequestStack.splice(index, 1);
 					}
 				};
-
-				// We can assume the Stargate SDK to be available, a client to be selected, and
-				// a current model to be available in the store.
-				// Calling this function without these conditions would be a developer error,
-				// and therefore we report it to Sentry.
-				if (!sdk) {
-					const error = new Error("Stargate SDK not available");
-					errorReporting.captureException(error);
-					reject(error);
-					return;
-				}
-
-				if (!selectedClient) {
-					const error = new Error("No client selected");
-					errorReporting.captureException(error);
-					reject(error);
-					return;
-				}
-
-				const {currentModel} = useShapeDiverStorePlatform.getState();
-
-				if (!currentModel) {
-					const error = new Error("Current model not available");
-					errorReporting.captureException(error);
-					reject(error);
-					return;
-				}
 
 				try {
 					const command = new SdStargateGetDataCommand(sdk);
