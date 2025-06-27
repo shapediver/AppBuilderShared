@@ -92,7 +92,6 @@ export default function OutputChunkComponent(props: Props) {
 			<OutputChunkLabelComponent chunk={chunk} />
 			<StargateInput
 				message={parsedMessage}
-				// count={connectionStatus.count} // TODO
 				color={statusData.color}
 				isWaiting={isWaiting}
 				waitingText="Waiting for client..."

@@ -2,6 +2,7 @@ import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDive
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {IShapeDiverOutput} from "@AppBuilderShared/types/shapediver/output";
 import {useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 /**
  * Hook providing a shortcut to abstracted outputs managed by {@link useShapeDiverStoreParameters}.
@@ -14,9 +15,13 @@ import {useMemo} from "react";
  */
 export function useOutput(props: PropsOutput) {
 	const {namespace, outputId} = props;
-	const parametersStore = useShapeDiverStoreParameters();
-	const output = parametersStore.getOutput(namespace, outputId)!(
-		(state) => state as IShapeDiverOutput,
+	const output = useShapeDiverStoreParameters(
+		useShallow((state) => {
+			const parameter = state.getOutput(namespace, outputId)!(
+				(state) => state as IShapeDiverOutput,
+			);
+			return parameter;
+		}),
 	);
 
 	const memoizedOutput = useMemo(() => {

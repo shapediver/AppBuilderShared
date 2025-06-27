@@ -27,7 +27,7 @@ export interface IUseStargateParameterProps {
 	parameterId: string;
 	parameterType: ShapeDiverResponseParameterType;
 	parameterValue: string;
-	handleChange: (value: string) => void;
+	handleChange: (value: string, timeout?: number) => void;
 }
 
 /**
@@ -63,6 +63,9 @@ export const useStargateParameter = ({
 	 * Note: In case the input is displayed multiple times in the UI, the
 	 * count will not be shown correctly, because its state is local to
 	 * the instance of the component.
+	 * The same happens when navigating through the parameter history.
+	 * To fix this, the input sdTF would need to be downloaded and the
+	 * count would need to be read from it.
 	 */
 	const [status, setStatus_] = useState<{
 		status: ParameterStatusEnum;
@@ -225,7 +228,7 @@ export const useStargateParameter = ({
 
 		if (value) {
 			setStatus(ParameterStatusEnum.objectSelected, count);
-			handleChange(value);
+			handleChange(value, 0);
 		}
 	}, [parameterId]);
 
@@ -236,7 +239,7 @@ export const useStargateParameter = ({
 			setStatus(ParameterStatusEnum.notActive);
 		}
 
-		handleChange("");
+		handleChange("", 0);
 	}, [networkStatus]);
 
 	return {

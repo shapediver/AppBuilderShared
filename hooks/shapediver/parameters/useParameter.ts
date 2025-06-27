@@ -2,6 +2,7 @@ import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDive
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
 import {useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 /**
  * Hook providing a shortcut to abstracted parameters managed by {@link useShapeDiverStoreParameters}.
@@ -16,11 +17,13 @@ import {useMemo} from "react";
  */
 export function useParameter<T>(props: PropsParameter) {
 	const {namespace, parameterId} = props;
-	const getParameter = useShapeDiverStoreParameters(
-		(state) => state.getParameter,
-	);
-	const parameter = getParameter(namespace, parameterId)!(
-		(state) => state as IShapeDiverParameter<T>,
+	const parameter = useShapeDiverStoreParameters(
+		useShallow((state) => {
+			const parameter = state.getParameter(namespace, parameterId)!(
+				(state) => state as IShapeDiverParameter<T>,
+			);
+			return parameter;
+		}),
 	);
 
 	const memoizedParameter = useMemo(() => {
