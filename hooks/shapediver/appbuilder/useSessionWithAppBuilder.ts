@@ -8,7 +8,6 @@ import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildert
 
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {isStargateParameter} from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {
 	addListener,
 	EVENTTYPE_SESSION,
@@ -140,33 +139,7 @@ export function useSessionWithAppBuilder(
 			// unless the app builder override is set, in which case we set it to the override
 			setParsedData(validationResult(undefined));
 
-			// if there are s-type parameters, we need to load the SDTF data
-			const hasSTypeParameters = Object.values(
-				sessionApi.parameters,
-			).some((p) => isStargateParameter(p.type));
-
-			// if at least one output has chunks, we set the loadSdTF flag to true
-			const hasChunks = Object.values(sessionApi.outputs).some(
-				(o) => o.chunks && o.chunks.length > 0,
-			);
-
-			if (hasSTypeParameters || hasChunks) {
-				// if there are s-type parameters, we set the loadSdTF flag to true
-				setLoadSdTF(true);
-
-				if (initialProcessManagerIdRef.current) {
-					// the initial process manager id is created when the session is initialized
-					// we use it here so that we continue to use the same process manager
-					// for the AppBuilder data and the instances
-					setProcessManagerId(initialProcessManagerIdRef.current);
-				} else {
-					// create a process only if there are further processes to be executed
-					// for now this is only the case if there are instances defined in the AppBuilder data
-					// in the future, this could be extended to other cases
-					const id = createProcessManager(namespace);
-					setProcessManagerId(id);
-				}
-			} else if (initialProcessManagerIdRef.current) {
+			if (initialProcessManagerIdRef.current) {
 				// the initial process manager id is created when the session is initialized
 				// we resolve it here as there are no further processes to be executed
 				addProcess(initialProcessManagerIdRef.current, {
@@ -209,7 +182,6 @@ export function useSessionWithAppBuilder(
 
 			let hasInstances = false;
 			let hasAttributeVisualizationWidget = false;
-			let hasSTypeParameters = false;
 			if (appBuilderData) {
 				if (appBuilderData.instances) hasInstances = true;
 
@@ -240,21 +212,13 @@ export function useSessionWithAppBuilder(
 						}
 					}
 				});
-
-				// check if there are any s-type parameters
-				hasSTypeParameters = (appBuilderData.parameters || []).some(
-					(p) => isStargateParameter(p.type),
-				);
 			}
 
 			// depending on if there is an attribute visualization widget
 			// we set the loadSdTF flag to true or false
-			setLoadSdTF(hasAttributeVisualizationWidget || hasSTypeParameters);
+			setLoadSdTF(hasAttributeVisualizationWidget);
 
-			if (
-				!hasInstances &&
-				!(hasAttributeVisualizationWidget || hasSTypeParameters)
-			) {
+			if (!hasInstances && !hasAttributeVisualizationWidget) {
 				if (initialProcessManagerIdRef.current) {
 					// the initial process manager id is created when the session is initialized
 					// we resolve it here as there are no further processes to be executed
