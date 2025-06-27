@@ -30,13 +30,6 @@ export interface IUseStargateParameterProps {
 	handleChange: (value: string) => void;
 }
 
-export type IStatusData = {
-	color: string;
-	message: string;
-	isBtnDisabled: boolean;
-	count?: number;
-};
-
 /**
  * Possible statuses for the Stargate parameter connection.
  */
@@ -53,37 +46,6 @@ export enum ParameterStatusEnum {
 	unsupported = "unsupported",
 }
 
-/**
- * TODO ideally this should be moved to ParameterStargateComponent, as it is UI related.
- */
-const ConnectionDataMap: {[key in ParameterStatusEnum]: IStatusData} = {
-	[ParameterStatusEnum.notActive]: {
-		color: "var(--mantine-color-gray-2)",
-		message: "No active client found",
-		isBtnDisabled: true,
-	},
-	[ParameterStatusEnum.incompatible]: {
-		color: "var(--mantine-color-gray-2)",
-		message: "Incompatible input",
-		isBtnDisabled: true,
-	},
-	[ParameterStatusEnum.noObjectSelected]: {
-		color: "orange",
-		message: "No $1 selected",
-		isBtnDisabled: false,
-	},
-	[ParameterStatusEnum.objectSelected]: {
-		color: "var(--mantine-primary-color-filled)",
-		message: "Object(s) selected",
-		isBtnDisabled: false,
-	},
-	[ParameterStatusEnum.unsupported]: {
-		color: "orange",
-		message: "Unsupported input status",
-		isBtnDisabled: true,
-	},
-};
-
 export const useStargateParameter = ({
 	parameterId,
 	parameterType,
@@ -91,8 +53,39 @@ export const useStargateParameter = ({
 	handleChange,
 }: IUseStargateParameterProps) => {
 	const [isWaiting, setIsWaiting] = useState(false);
-	const [connectionStatus, setConnectionStatus] = useState<IStatusData>(
-		ConnectionDataMap[ParameterStatusEnum.notActive],
+	/**
+	 * State for keeping the status of the parameter and count of objects.
+	 * Note: In case the input is displayed multiple times in the UI, the
+	 * count will not be shown correctly, because its state is local to
+	 * the instance of the component.
+	 */
+	const [status, setStatus_] = useState<{
+		status: ParameterStatusEnum;
+		count: number | undefined;
+	}>({
+		status: ParameterStatusEnum.notActive,
+		count: undefined,
+	});
+
+	const setStatus = useCallback(
+		(status: ParameterStatusEnum, count?: number) => {
+			if (
+				status === ParameterStatusEnum.objectSelected &&
+				count === undefined
+			) {
+				// If the status is objectSelected and no count is given,
+				// we do not modify the count
+				setStatus_((s) => {
+					return {
+						...s,
+						status,
+					};
+				});
+			} else {
+				setStatus_({status, count});
+			}
+		},
+		[],
 	);
 
 	const {networkStatus, selectedClient, getSupportedData} =
@@ -107,20 +100,6 @@ export const useStargateParameter = ({
 	const {getParameterData} = useStargateGetData();
 	const notifications = useContext(NotificationContext);
 
-	const setConnectionStatusByEnum = useCallback(
-		(
-			status: ParameterStatusEnum,
-			additionalData?: Partial<IStatusData>,
-		) => {
-			const baseStatus = ConnectionDataMap[status];
-			const newStatus = additionalData
-				? {...baseStatus, ...additionalData}
-				: baseStatus;
-			setConnectionStatus(newStatus);
-		},
-		[],
-	);
-
 	// Update connection status based on network status, selected client,
 	// parameter type and value
 	useEffect(() => {
@@ -129,32 +108,27 @@ export const useStargateParameter = ({
 				networkStatus === NetworkStatus.none ||
 				networkStatus === NetworkStatus.disconnected
 			) {
-				setConnectionStatusByEnum(ParameterStatusEnum.notActive);
+				setStatus(ParameterStatusEnum.notActive);
 				return;
 			}
 
 			if (networkStatus === NetworkStatus.connected) {
 				const supportedData = await getSupportedData();
 				if (!supportedData) {
-					setConnectionStatusByEnum(ParameterStatusEnum.notActive);
+					setStatus(ParameterStatusEnum.notActive);
 					return;
 				}
 				if (!supportedData.parameterTypes.includes(parameterType)) {
-					setConnectionStatusByEnum(ParameterStatusEnum.incompatible);
+					setStatus(ParameterStatusEnum.incompatible);
 					return;
 				}
 				if (parameterValue)
-					setConnectionStatusByEnum(
-						ParameterStatusEnum.objectSelected,
-					);
-				else
-					setConnectionStatusByEnum(
-						ParameterStatusEnum.noObjectSelected,
-					);
+					setStatus(ParameterStatusEnum.objectSelected);
+				else setStatus(ParameterStatusEnum.noObjectSelected);
 				return;
 			}
 
-			setConnectionStatusByEnum(ParameterStatusEnum.unsupported);
+			setStatus(ParameterStatusEnum.unsupported);
 		})();
 	}, [networkStatus, selectedClient, parameterType, parameterValue]);
 
@@ -211,7 +185,7 @@ export const useStargateParameter = ({
 		}
 
 		if (!response.data || response.data.length === 0) {
-			setConnectionStatusByEnum(ParameterStatusEnum.noObjectSelected);
+			setStatus(ParameterStatusEnum.noObjectSelected);
 			return;
 		}
 
@@ -245,25 +219,24 @@ export const useStargateParameter = ({
 		}
 
 		if (value) {
-			setConnectionStatusByEnum(ParameterStatusEnum.objectSelected, {
-				count,
-			});
+			setStatus(ParameterStatusEnum.objectSelected, count);
 			handleChange(value);
 		}
 	}, [parameterId]);
 
 	const onClearSelection = useCallback(() => {
 		if (networkStatus === NetworkStatus.connected) {
-			setConnectionStatusByEnum(ParameterStatusEnum.noObjectSelected);
+			setStatus(ParameterStatusEnum.noObjectSelected);
 		} else {
-			setConnectionStatusByEnum(ParameterStatusEnum.notActive);
+			setStatus(ParameterStatusEnum.notActive);
 		}
 
 		handleChange("");
 	}, [networkStatus]);
 
 	return {
-		connectionStatus,
+		count: status.count,
+		status: status.status,
 		isWaiting,
 		onObjectAdd,
 		onClearSelection,

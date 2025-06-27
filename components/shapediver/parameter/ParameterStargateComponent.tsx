@@ -3,7 +3,10 @@ import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/p
 import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {useStargateParameter} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateParameter";
+import {
+	ParameterStatusEnum,
+	useStargateParameter,
+} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateParameter";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -19,6 +22,44 @@ import {
 } from "@mantine/core";
 import React, {useMemo} from "react";
 import StargateInput from "../stargate/StargateInput";
+
+/** Type for data related to the status of the component. */
+type IStatusData = {
+	color: string;
+	message: string;
+	isBtnDisabled: boolean;
+};
+
+/**
+ * Map from status enum to status data.
+ */
+const StatusDataMap: {[key in ParameterStatusEnum]: IStatusData} = {
+	[ParameterStatusEnum.notActive]: {
+		color: "var(--mantine-color-gray-2)",
+		message: "No active client found",
+		isBtnDisabled: true,
+	},
+	[ParameterStatusEnum.incompatible]: {
+		color: "var(--mantine-color-gray-2)",
+		message: "Incompatible input",
+		isBtnDisabled: true,
+	},
+	[ParameterStatusEnum.noObjectSelected]: {
+		color: "orange",
+		message: "No $type selected",
+		isBtnDisabled: false,
+	},
+	[ParameterStatusEnum.objectSelected]: {
+		color: "var(--mantine-primary-color-filled)",
+		message: "$count $type selected",
+		isBtnDisabled: false,
+	},
+	[ParameterStatusEnum.unsupported]: {
+		color: "orange",
+		message: "Unsupported input status",
+		isBtnDisabled: true,
+	},
+};
 
 interface StyleProps {
 	tooltipProps: Partial<TooltipProps>;
@@ -75,7 +116,7 @@ export default function ParameterStargateComponent(
 		props,
 	);
 
-	const {connectionStatus, onObjectAdd, onClearSelection, isWaiting} =
+	const {status, count, onObjectAdd, onClearSelection, isWaiting} =
 		useStargateParameter({
 			parameterId: definition.id,
 			parameterType: definition.type,
@@ -83,14 +124,19 @@ export default function ParameterStargateComponent(
 			handleChange,
 		});
 
-	const parsedMessage = useMemo(
-		() =>
-			connectionStatus.message.replace(
-				"$1",
-				definition.type.substring(1).toLowerCase(),
-			),
-		[connectionStatus.message, definition.type],
-	);
+	const statusData = useMemo(() => {
+		return StatusDataMap[status];
+	}, [status]);
+
+	const parsedMessage = useMemo(() => {
+		const type_ = definition.type.substring(1).toLowerCase();
+		const type = count !== undefined && count > 1 ? type_ + "s" : type_;
+		const msg = statusData.message.replace(
+			"$count",
+			count ? count + "" : "",
+		);
+		return msg.replace("$type", type);
+	}, [count, statusData.message, definition.type]);
 
 	return (
 		<ParameterWrapperComponent
@@ -108,7 +154,7 @@ export default function ParameterStargateComponent(
 					>
 						<ActionIcon
 							style={{visibility: value ? "visible" : "hidden"}}
-							color={disabled ? "gray" : connectionStatus.color}
+							color={disabled ? "gray" : statusData.color}
 							loading={isWaiting}
 							disabled={isWaiting || disabled}
 							{...actionIconProps}
@@ -122,10 +168,10 @@ export default function ParameterStargateComponent(
 			{definition && (
 				<StargateInput
 					message={parsedMessage}
-					color={connectionStatus.color}
+					color={statusData.color}
 					isWaiting={isWaiting}
 					waitingText="Waiting for selection..."
-					isBtnDisabled={connectionStatus.isBtnDisabled || disabled}
+					isBtnDisabled={statusData.isBtnDisabled || disabled}
 					onClick={onObjectAdd}
 				/>
 			)}
