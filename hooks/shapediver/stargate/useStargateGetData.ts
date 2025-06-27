@@ -1,48 +1,85 @@
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate_";
-import {
-	SdStargateGetDataCommand,
-	type ISdStargateClientModel,
-} from "@shapediver/sdk.stargate-sdk-v1";
+import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
+import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
+import {SdStargateGetDataCommand} from "@shapediver/sdk.stargate-sdk-v1";
 import {type ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1/dist/dto/commands/getDataCommand";
-import {useCallback} from "react";
+import {useCallback, useContext} from "react";
 
+/**
+ * We don't want multiple "get data" requests to be sent at the same time.
+ * An error with this type will be thrown if a request is interrupted.
+ */
 export const ERROR_TYPE_INTERRUPTED = "interrupted";
 
-const promisesStack: Array<{reject: () => void}> = [];
+/**
+ * Promises stack to keep track of pending "get data" requests.
+ */
+const pendingRequestStack: Array<{reject: () => void}> = [];
 
+/**
+ * Hook wrapping the Stargate SDK's `getData` command.
+ * @returns
+ */
 export const useStargateGetData = () => {
-	const {sdk} = useShapeDiverStoreStargate();
+	const errorReporting = useContext(ErrorReportingContext);
 
 	const getParameterData = useCallback(
-		async (
-			client: ISdStargateClientModel | null | undefined,
-			modelId: string,
-			parameterId: string,
-		): Promise<ISdStargateGetDataReplyDto[]> => {
-			if (promisesStack.length > 0) {
-				promisesStack.forEach((s) => {
+		async (parameterId: string): Promise<ISdStargateGetDataReplyDto[]> => {
+			// Reject any pending "get data" requests
+			if (pendingRequestStack.length > 0) {
+				pendingRequestStack.forEach((s) => {
 					s.reject();
 				});
-				promisesStack.length = 0;
+				pendingRequestStack.length = 0;
 			}
 
+			const {sdkRef, selectedClient} =
+				useShapeDiverStoreStargate.getState();
+			const sdk = sdkRef?.sdk;
+
 			return new Promise((resolve, reject) => {
+				// Handler for rejecting a pending request
 				const rejectHandler = () => {
 					const err: Error & {type?: typeof ERROR_TYPE_INTERRUPTED} =
 						new Error("Request interrupted");
 					err.type = ERROR_TYPE_INTERRUPTED;
 					reject(err);
 				};
+				pendingRequestStack.push({reject: rejectHandler});
 
-				promisesStack.push({reject: rejectHandler});
+				const removeRejectHandler = () => {
+					const index = pendingRequestStack.findIndex(
+						(p) => p.reject === rejectHandler,
+					);
+					if (index >= 0) {
+						pendingRequestStack.splice(index, 1);
+					}
+				};
 
+				// We can assume the Stargate SDK to be available, a client to be selected, and
+				// a current model to be available in the store.
+				// Calling this function without these conditions would be a developer error,
+				// and therefore we report it to Sentry.
 				if (!sdk) {
-					reject(new Error("Stargate SDK not available"));
+					const error = new Error("Stargate SDK not available");
+					errorReporting.captureException(error);
+					reject(error);
 					return;
 				}
 
-				if (!client) {
-					reject(new Error("No client selected"));
+				if (!selectedClient) {
+					const error = new Error("No client selected");
+					errorReporting.captureException(error);
+					reject(error);
+					return;
+				}
+
+				const {currentModel} = useShapeDiverStorePlatform.getState();
+
+				if (!currentModel) {
+					const error = new Error("Current model not available");
+					errorReporting.captureException(error);
+					reject(error);
 					return;
 				}
 
@@ -51,41 +88,26 @@ export const useStargateGetData = () => {
 					command
 						.send(
 							{
-								model: {id: modelId},
+								model: {id: currentModel.id},
 								parameter: {id: parameterId},
 							},
-							[client],
+							[selectedClient],
 						)
 						.then((res: ISdStargateGetDataReplyDto[]) => {
-							const index = promisesStack.findIndex(
-								(p) => p.reject === rejectHandler,
-							);
-							if (index >= 0) {
-								promisesStack.splice(index, 1);
-							}
+							removeRejectHandler();
 							resolve(res);
 						})
 						.catch((e: unknown) => {
-							const index = promisesStack.findIndex(
-								(p) => p.reject === rejectHandler,
-							);
-							if (index >= 0) {
-								promisesStack.splice(index, 1);
-							}
+							removeRejectHandler();
 							reject(e);
 						});
 				} catch (error) {
-					const index = promisesStack.findIndex(
-						(p) => p.reject === rejectHandler,
-					);
-					if (index >= 0) {
-						promisesStack.splice(index, 1);
-					}
+					removeRejectHandler();
 					reject(error);
 				}
 			});
 		},
-		[sdk],
+		[],
 	);
 
 	return {

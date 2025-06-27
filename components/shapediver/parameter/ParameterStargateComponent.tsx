@@ -17,7 +17,7 @@ import {
 	TooltipProps,
 	useProps,
 } from "@mantine/core";
-import React from "react";
+import React, {useMemo} from "react";
 import StargateInput from "../stargate/StargateInput";
 
 interface StyleProps {
@@ -75,27 +75,22 @@ export default function ParameterStargateComponent(
 		props,
 	);
 
-	const {
-		connectionStatus,
-		onObjectAdd,
-		onClearSelection,
-		isWaiting,
-		isLoading,
-	} = useStargateParameter({
-		parameterId: definition.id,
-		parameterType: definition.type,
-		parameterValue: value,
-		parameterDefval: definition.defval,
-		onChange: (newValue) => handleChange(newValue),
-	});
+	const {connectionStatus, onObjectAdd, onClearSelection, isWaiting} =
+		useStargateParameter({
+			parameterId: definition.id,
+			parameterType: definition.type,
+			parameterValue: value,
+			handleChange,
+		});
 
-	const parsedMessage =
-		connectionStatus.message && definition.type
-			? connectionStatus.message.replace(
-					"$1",
-					definition.type.substring(1).toLowerCase(),
-				)
-			: connectionStatus.message;
+	const parsedMessage = useMemo(
+		() =>
+			connectionStatus.message.replace(
+				"$1",
+				definition.type.substring(1).toLowerCase(),
+			),
+		[connectionStatus.message, definition.type],
+	);
 
 	return (
 		<ParameterWrapperComponent
@@ -114,8 +109,8 @@ export default function ParameterStargateComponent(
 						<ActionIcon
 							style={{visibility: value ? "visible" : "hidden"}}
 							color={disabled ? "gray" : connectionStatus.color}
-							loading={isLoading || isWaiting}
-							disabled={isLoading || isWaiting || disabled}
+							loading={isWaiting}
+							disabled={isWaiting || disabled}
 							{...actionIconProps}
 							onClick={onClearSelection}
 						>

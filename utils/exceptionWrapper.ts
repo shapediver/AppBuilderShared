@@ -1,23 +1,34 @@
+type ExceptionWrapperReturnType<T> =
+	| {
+			data: T;
+			error?: never;
+	  }
+	| {
+			data?: never;
+			error: Error;
+	  };
+
 /**
  * Wraps a function call in a try-catch block to handle exceptions.
  * Use this to simplify code for precisely handling exceptions.
  * @param fn
  * @returns
  */
-export function exceptionWrapper<T>(fn: () => T): {
-	result: T | null;
-	error: Error | null;
-} {
-	let result: T;
+export function exceptionWrapper<T>(
+	fn: () => T,
+	fin?: () => void,
+): ExceptionWrapperReturnType<T> {
+	let data: T;
 	try {
-		result = fn();
+		data = fn();
 	} catch (error) {
 		return {
 			error: error instanceof Error ? error : new Error("" + error),
-			result: null,
 		};
+	} finally {
+		fin?.();
 	}
-	return {result, error: null};
+	return {data};
 }
 
 /**
@@ -26,18 +37,19 @@ export function exceptionWrapper<T>(fn: () => T): {
  * @param fn
  * @returns
  */
-export async function exceptionWrapperAsync<T>(fn: () => Promise<T>): Promise<{
-	result: T | null;
-	error: Error | null;
-}> {
-	let result: T;
+export async function exceptionWrapperAsync<T>(
+	fn: () => Promise<T>,
+	fin?: () => void,
+): Promise<ExceptionWrapperReturnType<T>> {
+	let data: T;
 	try {
-		result = await fn();
+		data = await fn();
 	} catch (error) {
 		return {
 			error: error instanceof Error ? error : new Error("" + error),
-			result: null,
 		};
+	} finally {
+		fin?.();
 	}
-	return {result, error: null};
+	return {data};
 }

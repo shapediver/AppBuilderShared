@@ -116,4 +116,11 @@ export interface IShapeDiverStoreStargateExtended
 		flush: boolean,
 		initializer: () => Promise<T>,
 	) => Promise<T>;
+
+	/**
+	 * Prune the cache for a specific type.
+	 * @param cacheType
+	 * @returns
+	 */
+	pruneCache: (cacheType: StargateCacheKeyEnum) => void;
 }

@@ -1,7 +1,8 @@
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate_";
+import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
+import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
 import {ShapeDiverResponseParameterType} from "@shapediver/api.geometry-api-dto-v2";
 import {
 	ISdStargateBakeDataResultEnum,
@@ -9,7 +10,7 @@ import {
 	ISdStargateGetDataResultEnum,
 	SdStargateErrorTypes,
 } from "@shapediver/sdk.stargate-sdk-v1";
-import {useCallback, useContext, useEffect, useMemo, useState} from "react";
+import {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {ERROR_TYPE_INTERRUPTED, useStargateGetData} from "./useStargateGetData";
 
@@ -26,56 +27,60 @@ export interface IUseStargateParameterProps {
 	parameterId: string;
 	parameterType: ShapeDiverResponseParameterType;
 	parameterValue: string;
-	parameterDefval: string;
-	onChange?: (value: any) => void;
+	handleChange: (value: string) => void;
 }
 
 export type IStatusData = {
 	color: string;
 	message: string;
 	isBtnDisabled: boolean;
-	isClearSelection?: boolean;
 	count?: number;
 };
 
-export enum ParameterStatues {
-	noActive = "noActive",
+/**
+ * Possible statuses for the Stargate parameter connection.
+ */
+export enum ParameterStatusEnum {
+	/** The Stargate service is not available OR no client has been selected. */
+	notActive = "noActive",
+	/** The selected client does not support the type of the given parameter. */
 	incompatible = "incompatible",
+	/** A client is connected and supports the given parameter type. No objects are selected. */
 	noObjectSelected = "noObjectSelected",
+	/** A client is connected and supports the given parameter type. Objects are selected. */
 	objectSelected = "objectSelected",
+	/** This should never happen. */
 	unsupported = "unsupported",
 }
 
-const ConnectionDataMap: {[key in ParameterStatues]: IStatusData} = {
-	[ParameterStatues.noActive]: {
+/**
+ * TODO ideally this should be moved to ParameterStargateComponent, as it is UI related.
+ */
+const ConnectionDataMap: {[key in ParameterStatusEnum]: IStatusData} = {
+	[ParameterStatusEnum.notActive]: {
 		color: "var(--mantine-color-gray-2)",
 		message: "No active client found",
 		isBtnDisabled: true,
-		isClearSelection: false,
 	},
-	[ParameterStatues.incompatible]: {
+	[ParameterStatusEnum.incompatible]: {
 		color: "var(--mantine-color-gray-2)",
 		message: "Incompatible input",
 		isBtnDisabled: true,
-		isClearSelection: false,
 	},
-	[ParameterStatues.noObjectSelected]: {
+	[ParameterStatusEnum.noObjectSelected]: {
 		color: "orange",
 		message: "No $1 selected",
 		isBtnDisabled: false,
-		isClearSelection: false,
 	},
-	[ParameterStatues.objectSelected]: {
+	[ParameterStatusEnum.objectSelected]: {
 		color: "var(--mantine-primary-color-filled)",
-		message: "Object selected",
+		message: "Object(s) selected",
 		isBtnDisabled: false,
-		isClearSelection: true,
 	},
-	[ParameterStatues.unsupported]: {
+	[ParameterStatusEnum.unsupported]: {
 		color: "orange",
-		message: "Unsupported connection status",
+		message: "Unsupported input status",
 		isBtnDisabled: true,
-		isClearSelection: false,
 	},
 };
 
@@ -83,89 +88,77 @@ export const useStargateParameter = ({
 	parameterId,
 	parameterType,
 	parameterValue,
-	parameterDefval,
-	onChange,
+	handleChange,
 }: IUseStargateParameterProps) => {
 	const [isWaiting, setIsWaiting] = useState(false);
 	const [connectionStatus, setConnectionStatus] = useState<IStatusData>(
-		ConnectionDataMap[ParameterStatues.noActive],
+		ConnectionDataMap[ParameterStatusEnum.notActive],
 	);
 
-	const {networkStatus, selectedClient, supportedData, isLoading} =
+	const {networkStatus, selectedClient, getSupportedData} =
 		useShapeDiverStoreStargate(
 			useShallow((state) => ({
 				networkStatus: state.networkStatus,
 				selectedClient: state.selectedClient,
-				supportedData: state.supportedData,
-				isLoading: state.isLoading,
+				getSupportedData: state.getSupportedData,
 			})),
 		);
 
 	const {getParameterData} = useStargateGetData();
 	const notifications = useContext(NotificationContext);
 
-	const hasSelection = useMemo(() => {
-		return parameterValue !== parameterDefval && parameterValue !== "";
-	}, [parameterValue, parameterDefval]);
-
-	const getConnectionStatusFromClient = useCallback((): {
-		status: ParameterStatues;
-	} => {
-		const isParameterSupported = supportedData.some((data) => {
-			return data.parameterTypes.includes(parameterType);
-		});
-
-		if (!isParameterSupported) {
-			return {
-				status: ParameterStatues.incompatible,
-			};
-		}
-
-		if (parameterValue) {
-			return {
-				status: ParameterStatues.objectSelected,
-			};
-		}
-
-		return {
-			status: ParameterStatues.noObjectSelected,
-		};
-	}, [supportedData, parameterType, parameterValue]);
-
 	const setConnectionStatusByEnum = useCallback(
-		(status: ParameterStatues, additionalData?: Partial<IStatusData>) => {
+		(
+			status: ParameterStatusEnum,
+			additionalData?: Partial<IStatusData>,
+		) => {
 			const baseStatus = ConnectionDataMap[status];
 			const newStatus = additionalData
 				? {...baseStatus, ...additionalData}
 				: baseStatus;
 			setConnectionStatus(newStatus);
 		},
-		[networkStatus, selectedClient],
+		[],
 	);
 
-	const updateConnectionStatus = useCallback(() => {
-		if (
-			networkStatus === NetworkStatus.none ||
-			networkStatus === NetworkStatus.disconnected
-		) {
-			setConnectionStatusByEnum(ParameterStatues.noActive);
-			return;
-		}
-
-		if (networkStatus === NetworkStatus.connected) {
-			const connectionData = getConnectionStatusFromClient();
-			setConnectionStatusByEnum(connectionData.status);
-			return;
-		}
-
-		setConnectionStatusByEnum(ParameterStatues.unsupported);
-	}, [networkStatus, selectedClient]);
-
+	// Update connection status based on network status, selected client,
+	// parameter type and value
 	useEffect(() => {
-		updateConnectionStatus();
-	}, [networkStatus, selectedClient]);
+		(async () => {
+			if (
+				networkStatus === NetworkStatus.none ||
+				networkStatus === NetworkStatus.disconnected
+			) {
+				setConnectionStatusByEnum(ParameterStatusEnum.notActive);
+				return;
+			}
 
-	const handleGetDataResponse = (res: ISdStargateGetDataReplyDto) => {
+			if (networkStatus === NetworkStatus.connected) {
+				const supportedData = await getSupportedData();
+				if (!supportedData) {
+					setConnectionStatusByEnum(ParameterStatusEnum.notActive);
+					return;
+				}
+				if (!supportedData.parameterTypes.includes(parameterType)) {
+					setConnectionStatusByEnum(ParameterStatusEnum.incompatible);
+					return;
+				}
+				if (parameterValue)
+					setConnectionStatusByEnum(
+						ParameterStatusEnum.objectSelected,
+					);
+				else
+					setConnectionStatusByEnum(
+						ParameterStatusEnum.noObjectSelected,
+					);
+				return;
+			}
+
+			setConnectionStatusByEnum(ParameterStatusEnum.unsupported);
+		})();
+	}, [networkStatus, selectedClient, parameterType, parameterValue]);
+
+	const handleGetDataReplyDto = (res: ISdStargateGetDataReplyDto) => {
 		return {
 			count: res.info.count,
 			value: res.asset?.chunk
@@ -180,65 +173,20 @@ export const useStargateParameter = ({
 
 	const onObjectAdd = useCallback(async () => {
 		setIsWaiting(true);
-		const {currentModel} = useShapeDiverStorePlatform.getState();
 
+		const {currentModel} = useShapeDiverStorePlatform.getState();
 		if (!currentModel) {
-			throw new Error("Model ID is required");
+			throw new Error("Current model not available");
 		}
 
-		try {
-			const newParamData = await getParameterData(
-				selectedClient?.data,
-				currentModel.id,
-				parameterId,
-			);
+		const response = await exceptionWrapperAsync(
+			() => getParameterData(parameterId),
+			() => setIsWaiting(false),
+		);
 
-			if (newParamData.length === 0) {
-				setConnectionStatusByEnum(ParameterStatues.noObjectSelected);
-				return;
-			}
+		if (response.error) {
+			const e = response.error as any;
 
-			const response = newParamData[0]; // Suppose that we have only one connection;
-
-			const {result, message} = response.info;
-
-			if (result !== ISdStargateGetDataResultEnum.SUCCESS) {
-				notifications.warning({
-					title: "Response error",
-					message:
-						message ||
-						ParametersGetDataResultErrorMessages[result] ||
-						"Unsupported get data status.",
-				});
-				return;
-			}
-
-			const {count, value: valueData} = handleGetDataResponse(response);
-
-			if (
-				result === ISdStargateGetDataResultEnum.SUCCESS &&
-				count === 0
-			) {
-				notifications.warning({
-					title: "Response is empty",
-					message:
-						message ||
-						ParametersGetDataResultErrorMessages[
-							ISdStargateGetDataResultEnum.NOTHING
-						],
-				});
-				return;
-			}
-
-			if (valueData) {
-				setConnectionStatusByEnum(ParameterStatues.objectSelected, {
-					count,
-				});
-				if (onChange) {
-					onChange(valueData);
-				}
-			}
-		} catch (e: any) {
 			if (e.type === ERROR_TYPE_INTERRUPTED) {
 				return;
 			}
@@ -250,38 +198,74 @@ export const useStargateParameter = ({
 						"The selection operation was canceled due to inactivity in the client.",
 				});
 			} else {
-				console.error(e);
-				notifications.warning({
+				notifications.error({
 					title: "Response error",
 					message:
+						e.message ||
 						ParametersGetDataResultErrorMessages[
 							ISdStargateBakeDataResultEnum.FAILURE
 						],
 				});
 			}
-		} finally {
-			setIsWaiting(false);
+			return;
 		}
-	}, [selectedClient, parameterId]);
+
+		if (!response.data || response.data.length === 0) {
+			setConnectionStatusByEnum(ParameterStatusEnum.noObjectSelected);
+			return;
+		}
+
+		const replyDto = response.data[0]; // Suppose that we have only one connection;
+
+		const {result, message} = replyDto.info;
+
+		if (result !== ISdStargateGetDataResultEnum.SUCCESS) {
+			notifications.warning({
+				title: "Operation unsuccessful",
+				message:
+					message ||
+					ParametersGetDataResultErrorMessages[result] ||
+					"Unsupported get data status.",
+			});
+			return;
+		}
+
+		const {count, value} = handleGetDataReplyDto(replyDto);
+
+		if (result === ISdStargateGetDataResultEnum.SUCCESS && count === 0) {
+			notifications.warning({
+				title: "Response is empty",
+				message:
+					message ||
+					ParametersGetDataResultErrorMessages[
+						ISdStargateGetDataResultEnum.NOTHING
+					],
+			});
+			return;
+		}
+
+		if (value) {
+			setConnectionStatusByEnum(ParameterStatusEnum.objectSelected, {
+				count,
+			});
+			handleChange(value);
+		}
+	}, [parameterId]);
 
 	const onClearSelection = useCallback(() => {
 		if (networkStatus === NetworkStatus.connected) {
-			setConnectionStatusByEnum(ParameterStatues.noObjectSelected);
+			setConnectionStatusByEnum(ParameterStatusEnum.noObjectSelected);
 		} else {
-			setConnectionStatusByEnum(ParameterStatues.noActive);
+			setConnectionStatusByEnum(ParameterStatusEnum.notActive);
 		}
 
-		if (onChange) {
-			onChange("");
-		}
-	}, [connectionStatus, networkStatus]);
+		handleChange("");
+	}, [networkStatus]);
 
 	return {
 		connectionStatus,
-		isLoading,
 		isWaiting,
 		onObjectAdd,
 		onClearSelection,
-		hasSelection,
 	};
 };

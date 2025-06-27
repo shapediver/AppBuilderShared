@@ -33,10 +33,6 @@ function pingConnectionClose() {
 
 interface IShapeDiverStoreStargateInternal
 	extends IShapeDiverStoreStargateExtended {
-	/** Shortcut for setting networkStatus. Avoid this when doing multiple state updates in a row. */
-	setNetworkStatus: (status: NetworkStatus) => void;
-	/** Shortcut for setting selectedClient. Avoid this when doing multiple state updates in a row. */
-	setSelectedClient: (client: ISdStargateClientModel | undefined) => void;
 	/** Handler used if the SDK tells us about a disconnection from the Stargate service. */
 	handleDisconnect: (msg: string) => void;
 	/** Start a regular "ping" connection with the selected client. */
@@ -166,11 +162,13 @@ export const useShapeDiverStoreStargate =
 					const client = _client || selectedClient;
 					if (!sdkRef || !client) return undefined;
 					const {sdk} = sdkRef;
-					const {result} = await exceptionWrapperAsync(async () => {
+					const result = await exceptionWrapperAsync(async () => {
 						const command = new SdStargateStatusCommand(sdk);
 						return await command.send({}, [client]);
 					});
-					return result && result.length > 0 ? result[0] : undefined;
+					return result.data && result.data.length > 0
+						? result.data[0]
+						: undefined;
 				},
 
 				getAvailableClients: async (flush?: boolean) => {
@@ -182,16 +180,6 @@ export const useShapeDiverStoreStargate =
 						flush ?? false,
 						async () => sdkRef.sdk.listFrontendClients(),
 					);
-				},
-
-				setNetworkStatus: (status: NetworkStatus) => {
-					set({networkStatus: status}, false, "setNetworkStatus");
-				},
-
-				setSelectedClient: (
-					client: ISdStargateClientModel | undefined,
-				) => {
-					set({selectedClient: client}, false, "setSelectedClient");
 				},
 
 				pingConnectionStart: () => {
@@ -223,9 +211,9 @@ export const useShapeDiverStoreStargate =
 				) => {
 					const {
 						selectedClient,
-						setNetworkStatus,
 						getClientStatus,
 						pingConnectionStart,
+						pruneCache,
 					} = get();
 
 					if (!client) {
@@ -239,14 +227,16 @@ export const useShapeDiverStoreStargate =
 							false,
 							"selectClient - unset previous client",
 						);
-						// TODO clear cached data depending on the client
+						// Prune the cache depending on the selected client
+						pruneCache(StargateCacheKeyEnum.SupportedData);
 						return;
 					}
 
 					if (selectedClient && selectedClient.id === client.id)
 						return;
 
-					// TODO clear cached data depending on the client
+					// Prune the cache depending on the selected client
+					pruneCache(StargateCacheKeyEnum.SupportedData);
 
 					if (selectedClient && selectedClient.id !== client.id) {
 						pingConnectionClose();
@@ -274,7 +264,14 @@ export const useShapeDiverStoreStargate =
 						pingConnectionStart();
 					} else {
 						pingConnectionClose();
-						setNetworkStatus(NetworkStatus.disconnected);
+						set(
+							{
+								networkStatus: NetworkStatus.disconnected,
+								selectedClient: undefined,
+							},
+							false,
+							"selectClient - no client status",
+						);
 					}
 				},
 
@@ -307,12 +304,12 @@ export const useShapeDiverStoreStargate =
 					if (!(key in genericCache) || flush) {
 						const _promise = initializer();
 						set(
-							() => ({
+							{
 								genericCache: {
 									...genericCache,
 									...{[key]: _promise},
 								},
-							}),
+							},
 							false,
 							`cachePromise ${key}`,
 						);
@@ -321,6 +318,27 @@ export const useShapeDiverStoreStargate =
 					}
 
 					return genericCache[key];
+				},
+
+				pruneCache: (cacheType: StargateCacheKeyEnum) => {
+					const {genericCache} = get();
+					const key = cacheType;
+					if (key in genericCache) {
+						const newCache = {...genericCache};
+						delete newCache[key];
+						if (
+							Object.keys(newCache).length ===
+							Object.keys(genericCache).length
+						)
+							return;
+						set(
+							{
+								genericCache: newCache,
+							},
+							false,
+							`pruneCache ${key}`,
+						);
+					}
 				},
 			}),
 			{...devtoolsSettings, name: "ShapeDiver | Stargate"},
