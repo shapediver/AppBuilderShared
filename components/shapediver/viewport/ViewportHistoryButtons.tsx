@@ -47,13 +47,13 @@ interface Props {
 }
 
 const defaultProps: Required<Omit<Props, "namespace">> = {
-	style: {display: "flex", gap: "4px"},
+	style: {display: "flex", gap: "0.25rem"},
 	size: 32,
 	color: "black",
 	colorDisabled: "grey",
 	variant: "subtle",
 	variantDisabled: "transparent",
-	iconStyle: {m: "3px"},
+	iconStyle: {m: "0.188rem"},
 };
 
 /**
