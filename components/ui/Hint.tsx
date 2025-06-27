@@ -1,4 +1,4 @@
-import Icon, {SdIconProps} from "@AppBuilderShared/components/ui/Icon";
+import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Button,
@@ -26,7 +26,7 @@ interface StyleProps {
 	/** Group props */
 	groupProps: GroupProps;
 	/** Icon color */
-	iconProps: SdIconProps;
+	iconProps: IconProps;
 	/** Text props */
 	textProps: TextProps;
 	/** Button props */
