@@ -48,9 +48,12 @@ export enum OutputStatusEnum {
 	/**
 	 * A client is connected and supports the given output type. Objects are available.
 	 * The Stargate service is not available OR no client has been selected.
-	 * TODO: Why do we need this status?
 	 */
 	objectAvailableNotActive = "objectAvailableNotActive",
+	/**
+	 * The selected client does not support the type of the given output. Objects are available.
+	 */
+	objectAvailableIncompatible = "objectAvailableIncompatible",
 	/** This should never happen. */
 	unsupported = "unsupported",
 }
@@ -138,16 +141,6 @@ export const useStargateOutput = ({
 	// chunk type and scene tree chunk
 	useEffect(() => {
 		(async () => {
-			const supportedData = await getSupportedData();
-			if (!supportedData) {
-				setStatus(OutputStatusEnum.notActive);
-				return;
-			}
-			if (!supportedData.typeHints.includes(typeHint)) {
-				setStatus(OutputStatusEnum.incompatible);
-				return;
-			}
-
 			const objectsNumber = getObjectsNumber(chunk);
 
 			if (
@@ -165,6 +158,23 @@ export const useStargateOutput = ({
 				return;
 			}
 
+			const supportedData = await getSupportedData();
+			if (!supportedData) {
+				setStatus(OutputStatusEnum.notActive);
+				return;
+			}
+			if (!supportedData.typeHints.includes(typeHint)) {
+				if (objectsNumber > 0) {
+					setStatus(
+						OutputStatusEnum.objectAvailableIncompatible,
+						objectsNumber,
+					);
+				} else {
+					setStatus(OutputStatusEnum.incompatible);
+				}
+				return;
+			}
+
 			if (networkStatus === NetworkStatus.connected) {
 				if (objectsNumber > 0) {
 					setStatus(OutputStatusEnum.objectAvailable, objectsNumber);
@@ -178,7 +188,7 @@ export const useStargateOutput = ({
 		})();
 	}, [networkStatus, selectedClient, typeHint, chunk]);
 
-	const onBakeData = async () => {
+	const onBakeData = useCallback(async () => {
 		setIsWaiting(true);
 
 		const {currentModel} = useShapeDiverStorePlatform.getState();
@@ -258,7 +268,7 @@ export const useStargateOutput = ({
 					],
 			});
 		}
-	};
+	}, [parameterStores, bakeData, outputId, chunkId, chunkName]);
 
 	return {
 		isWaiting,

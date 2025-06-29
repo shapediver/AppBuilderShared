@@ -1,6 +1,7 @@
 import {
 	ISdStargateClientModel,
 	ISdStargateGetSupportedDataReplyDto,
+	ISdStargatePrepareModelReplyDto,
 	ISdStargateStatusReplyDto,
 	type ISdStargateSdk,
 } from "@shapediver/sdk.stargate-sdk-v1";
@@ -87,6 +88,20 @@ export interface IShapeDiverStoreStargate {
 	getSupportedData: (
 		flush?: boolean,
 	) => Promise<ISdStargateGetSupportedDataReplyDto | undefined>;
+
+	/**
+	 * Send a "prepare model" command to the given client (if any), or
+	 * the selected client (if any).
+	 * Typically the client will open a session with the given model, to
+	 * be prepared for further "get data" and "bake data" requests.
+	 * @param modelId
+	 * @param client
+	 * @returns undefined if no client is given nor selected, or if the SDK is not initialized.
+	 */
+	prepareModel: (
+		modelId: string,
+		client?: ISdStargateClientModel,
+	) => Promise<ISdStargatePrepareModelReplyDto | undefined>;
 
 	/** Counts how often registerReference has been used in a useEffect hook. */
 	referenceCount: number;

@@ -10,7 +10,9 @@ import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
 import {
 	createSdk,
 	ISdStargateClientModel,
+	ISdStargatePrepareModelResultEnum,
 	SdStargateGetSupportedDataCommand,
+	SdStargatePrepareModelCommand,
 	SdStargateStatusCommand,
 } from "@shapediver/sdk.stargate-sdk-v1";
 import {create} from "zustand";
@@ -226,6 +228,27 @@ export const useShapeDiverStoreStargate =
 					}, PING_INTERVAL_MS);
 				},
 
+				prepareModel: async (
+					modelId: string,
+					client?: ISdStargateClientModel,
+				) => {
+					const {sdkRef, selectedClient} = get();
+					if (!sdkRef) return;
+
+					const clientToUse = client || selectedClient;
+					if (!clientToUse) return;
+
+					const command = new SdStargatePrepareModelCommand(
+						sdkRef.sdk,
+					);
+					const response = await command.send(
+						{model: {id: modelId}},
+						[clientToUse],
+					);
+					if (!response || response.length === 0) return;
+					return response[0];
+				},
+
 				selectClient: async (
 					client: ISdStargateClientModel | undefined,
 				) => {
@@ -233,6 +256,7 @@ export const useShapeDiverStoreStargate =
 						selectedClient,
 						getClientStatus,
 						pingConnectionStart,
+						prepareModel,
 						pruneCache,
 					} = get();
 
@@ -272,7 +296,37 @@ export const useShapeDiverStoreStargate =
 
 					const status = await getClientStatus(client);
 					if (status) {
-						// TODO prepare model
+						// prepare model (don't wait for it on purpose)
+						const {currentModel} =
+							useShapeDiverStorePlatform.getState();
+						if (currentModel) {
+							prepareModel(currentModel.id, client).then(
+								(response) => {
+									if (
+										!response ||
+										response.info.result !==
+											ISdStargatePrepareModelResultEnum.SUCCESS
+									) {
+										pingConnectionClose();
+										set(
+											{
+												networkStatus:
+													NetworkStatus.disconnected,
+												selectedClient: undefined,
+											},
+											false,
+											"selectClient - prepare model failed",
+										);
+										if (response?.info?.message) {
+											GlobalNotificationContext.error({
+												title: "Preparing model failed",
+												message: response.info.message,
+											});
+										}
+									}
+								},
+							);
+						}
 						set(
 							{
 								networkStatus: NetworkStatus.connected,
@@ -292,6 +346,9 @@ export const useShapeDiverStoreStargate =
 							false,
 							"selectClient - no client status",
 						);
+						GlobalNotificationContext.error({
+							message: `Connection to desktop client "${client.clientName}" could not be established.`,
+						});
 					}
 				},
 

@@ -144,18 +144,21 @@ export const useStargateParameter = ({
 		})();
 	}, [networkStatus, selectedClient, parameterType, parameterValue]);
 
-	const handleGetDataReplyDto = (res: ISdStargateGetDataReplyDto) => {
-		return {
-			count: res.info.count,
-			value: res.asset?.chunk
-				? JSON.stringify(
-						{asset: {id: res.asset.id, chunk: res.asset.chunk}},
-						null,
-						0,
-					)
-				: res.asset?.id,
-		};
-	};
+	const handleGetDataReplyDto = useCallback(
+		(res: ISdStargateGetDataReplyDto) => {
+			return {
+				count: res.info.count,
+				value: res.asset?.chunk
+					? JSON.stringify(
+							{asset: {id: res.asset.id, chunk: res.asset.chunk}},
+							null,
+							0,
+						)
+					: res.asset?.id,
+			};
+		},
+		[],
+	);
 
 	const onObjectAdd = useCallback(async () => {
 		setIsWaiting(true);

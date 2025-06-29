@@ -38,6 +38,11 @@ const StatusDataMap: {[key in OutputStatusEnum]: IStatusData} = {
 		message: "Incompatible output",
 		isBtnDisabled: true,
 	},
+	[OutputStatusEnum.objectAvailableIncompatible]: {
+		color: "var(--mantine-color-gray-2)",
+		message: "$count $object available (incompatible output)",
+		isBtnDisabled: true,
+	},
 	[OutputStatusEnum.noObjectAvailable]: {
 		color: "orange",
 		message: "This output is empty",
@@ -50,7 +55,7 @@ const StatusDataMap: {[key in OutputStatusEnum]: IStatusData} = {
 	},
 	[OutputStatusEnum.objectAvailableNotActive]: {
 		color: "var(--mantine-color-gray-2)",
-		message: "Bake $count objects (client not active)",
+		message: "$count $object available (client not active)",
 		isBtnDisabled: true,
 	},
 	[OutputStatusEnum.unsupported]: {
@@ -84,7 +89,7 @@ export default function OutputChunkComponent(props: Props) {
 			"$count",
 			count ? count + "" : "",
 		);
-		return msg;
+		return msg.replace("$object", count === 1 ? "object" : "objects");
 	}, [count, statusData.message]);
 
 	return (
