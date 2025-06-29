@@ -69,11 +69,11 @@ interface StyleProps {
 
 const defaultStyleProps: StyleProps = {
 	tooltipProps: {
-		position: "left",
+		position: "top",
 		label: "Clear selection",
 	},
 	actionIconProps: {
-		size: "lg",
+		size: "1.5rem",
 		variant: "transparent",
 		loaderProps: {
 			type: "dots",
@@ -153,21 +153,25 @@ export default function ParameterStargateComponent(
 				{...props}
 				cancel={onCancel}
 				rightSection={
-					<TooltipWrapper
-						{...tooltipProps}
-						label={tooltipProps.label || "Clear selection"}
-					>
-						<ActionIcon
-							style={{visibility: value ? "visible" : "hidden"}}
-							color={disabled ? "gray" : statusData.color}
-							loading={isWaiting}
-							disabled={isWaiting || disabled}
-							{...actionIconProps}
-							onClick={onClearSelection}
+					onCancel ? undefined : (
+						<TooltipWrapper
+							{...tooltipProps}
+							label={tooltipProps.label || "Clear selection"}
 						>
-							<Icon {...iconProps} />
-						</ActionIcon>
-					</TooltipWrapper>
+							<ActionIcon
+								style={{
+									visibility: value ? "visible" : "hidden",
+								}}
+								color={disabled ? "gray" : statusData.color}
+								loading={isWaiting}
+								disabled={isWaiting || disabled}
+								{...actionIconProps}
+								onClick={onClearSelection}
+							>
+								<Icon {...iconProps} />
+							</ActionIcon>
+						</TooltipWrapper>
+					)
 				}
 			/>
 			{definition && (

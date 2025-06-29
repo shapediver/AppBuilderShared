@@ -4,7 +4,12 @@ import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {Group, MantineThemeComponent, useProps} from "@mantine/core";
+import {
+	Group,
+	MantineThemeComponent,
+	TooltipProps,
+	useProps,
+} from "@mantine/core";
 
 import React from "react";
 interface Props extends PropsParameter {
@@ -13,10 +18,16 @@ interface Props extends PropsParameter {
 }
 
 interface StyleProps {
+	tooltipProps: Partial<TooltipProps>;
 	fontWeight: string;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {};
+const defaultStyleProps: Partial<StyleProps> = {
+	tooltipProps: {
+		position: "top",
+		label: "Cancel change",
+	},
+};
 
 type ParameterLabelComponentPropsType = Partial<StyleProps>;
 
@@ -37,7 +48,7 @@ export default function ParameterLabelComponent(
 	props: Props & Partial<StyleProps>,
 ) {
 	const {cancel, rightSection, ...rest} = props;
-	const {fontWeight} = useProps(
+	const {fontWeight, tooltipProps} = useProps(
 		"ParameterLabelComponent",
 		defaultStyleProps,
 		rest,
@@ -63,11 +74,16 @@ export default function ParameterLabelComponent(
 				labelcomp
 			)}
 			{cancel && (
-				<Icon
-					type={IconTypeEnum.X}
-					color="var(--mantine-primary-color-filled)"
-					onClick={cancel}
-				/>
+				<TooltipWrapper
+					{...tooltipProps}
+					label={tooltipProps?.label || "Cancel change"}
+				>
+					<Icon
+						type={IconTypeEnum.X}
+						color="var(--mantine-primary-color-filled)"
+						onClick={cancel}
+					/>
+				</TooltipWrapper>
 			)}
 			{rightSection}
 		</Group>
