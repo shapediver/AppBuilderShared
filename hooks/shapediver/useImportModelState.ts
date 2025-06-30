@@ -22,10 +22,9 @@ export function useImportModelState(namespace: string) {
 	const errorReporting = useContext(ErrorReportingContext);
 	const sessionApi = sessions[namespace];
 
-	// Get parameter store functions for updating parameter values
-	const {getParameters} = useShapeDiverStoreParameters(
+	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
-			getParameters: state.getParameters,
+			batchParameterValueUpdate: state.batchParameterValueUpdate,
 		})),
 	);
 
@@ -51,19 +50,21 @@ export function useImportModelState(namespace: string) {
 
 			setIsLoading(true);
 			try {
-				await sessionApi.customizeWithModelState(trimmedId);
+				// TODO: get parameters from state id
+				console.log("importModelStateId", trimmedId);
 
-				// Update parameter values in the store to reflect the new model state
-				const parameterStores = getParameters(namespace);
-				Object.keys(parameterStores).forEach((paramId) => {
-					const store = parameterStores[paramId];
-					const sessionParam = sessionApi.parameters[paramId];
-					if (sessionParam && store) {
-						const {actions} = store.getState();
-						// Update both UI and execution values to match the session
-						actions.setUiAndExecValue(sessionParam.value);
-					}
-				});
+				const sessionParameters = useShapeDiverStoreParameters
+					.getState()
+					.getParameters(namespace);
+				const acceptRejectMode = Object.values(sessionParameters).some(
+					(p) => !!p?.getState().acceptRejectMode,
+				);
+
+				await batchParameterValueUpdate(
+					namespace,
+					{}, // TODO: state id parameters
+					!acceptRejectMode,
+				);
 
 				notifications.success({
 					message: `Model state ${trimmedId} imported successfully`,
@@ -80,7 +81,7 @@ export function useImportModelState(namespace: string) {
 				setIsLoading(false);
 			}
 		},
-		[sessionApi, notifications, getParameters, namespace, errorReporting],
+		[namespace],
 	);
 
 	return {
