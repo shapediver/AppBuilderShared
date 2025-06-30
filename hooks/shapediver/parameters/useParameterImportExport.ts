@@ -80,15 +80,19 @@ export function useParameterImportExport(namespace: string) {
 			fileInput.accept = ".json";
 
 			fileInput.onchange = async (event: Event) => {
-				const target = event.target as HTMLInputElement;
-				const file = target.files?.[0];
-
-				if (!file) {
-					reject(new Error("No file selected"));
-					return;
-				}
-
 				try {
+					const target = event.target as HTMLInputElement;
+					const file = target.files?.[0];
+
+					if (!file) {
+						const errorMessage = "No file selected";
+						notifications.error({
+							message: errorMessage,
+						});
+						reject(new Error(errorMessage));
+						return;
+					}
+
 					const text = await file.text();
 					const importData = JSON.parse(text);
 
@@ -109,75 +113,68 @@ export function useParameterImportExport(namespace: string) {
 						.getState()
 						.getParameters(namespace);
 
-					let isValidPartial = false;
-					let isValidFull = true;
+					const validParameters: {[key: string]: any} = {};
+					const missingParameters: string[] = [];
 					let acceptRejectMode = false;
-					const parametersJson = [...importData.parameters];
 
-					parametersJson.forEach((param, index) => {
+					for (const param of importData.parameters) {
 						if (!param.id || param.value === undefined) {
-							parametersJson.splice(index, 1);
-							if (isValidFull) isValidFull = false;
-							return;
+							continue;
 						}
 
-						const sessionParam = sessionParameters[param.id];
-						if (sessionParam) {
-							if (!isValidPartial) isValidPartial = true;
+						const sessionParam =
+							sessionParameters[param.id] ||
+							sessionParameters[param.name];
 
-							const paramActions =
-								sessionParam.getState().actions;
-							if (paramActions.isValid(param.value)) {
-								if (sessionParam.getState().acceptRejectMode) {
-									acceptRejectMode = true;
-								}
-							} else {
-								parametersJson.splice(index, 1);
-							}
-						} else {
-							if (isValidFull) isValidFull = false;
-							parametersJson.splice(index, 1);
+						if (!sessionParam) {
+							missingParameters.push(param.name || param.id);
+							continue;
 						}
-					});
 
-					if (isValidPartial) {
-						const validParameters: {[key: string]: any} = {};
-						parametersJson.forEach((param) => {
-							validParameters[param.id] = param.value;
-						});
-
-						await batchParameterValueUpdate(
-							namespace,
-							validParameters,
-							!acceptRejectMode,
-						);
-
-						if (!isValidFull) {
-							notifications.warning?.({
-								message:
-									"The parameters of the imported file and the model do not overlap entirely.",
-							});
-						} else {
-							notifications.success({
-								message: "Parameters imported successfully",
-							});
+						const paramActions = sessionParam.getState().actions;
+						if (!paramActions.isValid(param.value)) {
+							missingParameters.push(param.name || param.id);
+							continue;
 						}
-						resolve();
-					} else {
+
+						if (sessionParam.getState().acceptRejectMode) {
+							acceptRejectMode = true;
+						}
+
+						validParameters[param.id] = param.value;
+					}
+
+					if (Object.keys(validParameters).length === 0) {
 						const errorMessage =
 							"The parameters from the imported file do not match the parameters of this model.";
 						notifications.error({
 							message: errorMessage,
 						});
 						reject(new Error(errorMessage));
+						return;
 					}
+
+					await batchParameterValueUpdate(
+						namespace,
+						validParameters,
+						!acceptRejectMode,
+					);
+
+					if (missingParameters.length > 0) {
+						notifications.warning?.({
+							message: `The following parameters are missing: ${missingParameters.join(", ")}`,
+						});
+					} else {
+						notifications.success({
+							message: "Parameters imported successfully",
+						});
+					}
+
+					resolve();
 				} catch (error) {
 					errorReporting.captureException(error);
-					const errorMessage =
-						"Failed to import parameters: " +
-						(error as Error).message;
 					notifications.error({
-						message: errorMessage,
+						message: (error as Error).message,
 					});
 					reject(error);
 				}
