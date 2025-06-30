@@ -2,8 +2,13 @@ import ExportLabelComponent from "@AppBuilderShared/components/shapediver/export
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
+import {
+	ExportStatusEnum,
+	useStargateExport,
+} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateExport";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {StargateFileParamPrefix} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	Button,
 	ButtonProps,
@@ -12,7 +17,36 @@ import {
 } from "@mantine/core";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import {fetchFileWithToken} from "@shapediver/viewer.utils.mime-type";
-import React, {useCallback, useContext, useState} from "react";
+import React, {useCallback, useContext, useMemo, useState} from "react";
+import StargateInput from "../stargate/StargateInput";
+
+/** Type for data related to the status of the component. */
+type IStatusData = {
+	color: string;
+	message: string;
+	isBtnDisabled: boolean;
+};
+
+/**
+ * Map from status enum to status data.
+ */
+const StatusDataMap: {[key in ExportStatusEnum]: IStatusData} = {
+	[ExportStatusEnum.notActive]: {
+		color: "var(--mantine-color-gray-2)",
+		message: "No active client found",
+		isBtnDisabled: true,
+	},
+	[ExportStatusEnum.incompatible]: {
+		color: "var(--mantine-color-gray-2)",
+		message: "Incompatible export",
+		isBtnDisabled: true,
+	},
+	[ExportStatusEnum.active]: {
+		color: "orange",
+		message: "Export is available",
+		isBtnDisabled: false,
+	},
+};
 
 interface StyleProps {
 	buttonProps?: Partial<ButtonProps>;
@@ -53,6 +87,32 @@ export default function ExportButtonComponent(
 
 	const notifications = useContext(NotificationContext);
 
+	// Use stargate output hook for this specific chunk
+	const {isWaiting, isContentSupported, status, onExportFile} =
+		useStargateExport({
+			exportId: definition.id,
+			contentIndex: 0,
+			sessionId: props.namespace,
+		});
+
+	const statusData = useMemo(() => {
+		return StatusDataMap[status];
+	}, [status]);
+
+	// Criterion to determine if the export button shall use Stargate.
+	const {isStargate, label} = useMemo(() => {
+		const dn = definition.displayname || definition.name;
+		return dn.startsWith(StargateFileParamPrefix)
+			? {
+					isStargate: true,
+					label: dn.substring(StargateFileParamPrefix.length),
+				}
+			: {
+					isStargate: false,
+					label: dn,
+				};
+	}, [definition]);
+
 	const exportRequest = useCallback(async () => {
 		// request the export
 		const response = await actions.request();
@@ -65,16 +125,29 @@ export default function ExportButtonComponent(
 				response.content[0].href
 			) {
 				const content = response.content[0];
-				const url = content.href;
-				const filename = `${response.filename}.${content.format}`;
-				const sizemsg = content.size
-					? ` (${Math.ceil(content.size / 1000)}kB)`
-					: "";
-				notifications.success({
-					message: `Downloading file ${filename}${sizemsg}`,
-				});
-				const res = await actions.fetch(url);
-				await fetchFileWithToken(res, filename);
+				if (isStargate) {
+					if (!(await isContentSupported(content))) {
+						notifications.error({
+							title: "Unsupported content type",
+							message: `Content type ${content.format} not supported by the selected client.`,
+						});
+						return;
+					}
+					await onExportFile();
+				} else {
+					const url = content.href;
+					const filename = response.filename?.endsWith(content.format)
+						? response.filename
+						: `${response.filename}.${content.format}`;
+					const sizemsg = content.size
+						? ` (${Math.ceil(content.size / 1000)}kB)`
+						: "";
+					notifications.success({
+						message: `Downloading file ${filename}${sizemsg}`,
+					});
+					const res = await actions.fetch(url);
+					await fetchFileWithToken(res, filename);
+				}
 			} else if (
 				response.content &&
 				response.content.length === 0 &&
@@ -100,7 +173,7 @@ export default function ExportButtonComponent(
 				}
 			}
 		}
-	}, [actions, definition.type]);
+	}, [actions, definition.type, isStargate, isContentSupported]);
 
 	const [requestingExport, setRequestingExport] = useState(false);
 
@@ -117,9 +190,18 @@ export default function ExportButtonComponent(
 
 	return (
 		<>
-			<ExportLabelComponent {...props} />
-			{definition && (
-				<>
+			<ExportLabelComponent {...props} label={label} />
+			{definition &&
+				(isStargate ? (
+					<StargateInput
+						message={statusData.message}
+						color={statusData.color}
+						isWaiting={requestingExport || isWaiting}
+						waitingText="Waiting for export..."
+						isBtnDisabled={statusData.isBtnDisabled}
+						onClick={onClick}
+					/>
+				) : (
 					<Button
 						leftSection={
 							definition.type === EXPORT_TYPE.DOWNLOAD ? (
@@ -136,8 +218,7 @@ export default function ExportButtonComponent(
 							? "Download File"
 							: "Send Email"}
 					</Button>
-				</>
-			)}
+				))}
 		</>
 	);
 }

@@ -5,6 +5,11 @@ import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsEx
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
 
+interface Props extends PropsExport {
+	/** Optional label overriding the default label */
+	label?: string;
+}
+
 interface StyleProps {
 	fontWeight: string;
 }
@@ -27,20 +32,21 @@ export function ExportLabelComponentThemeProps(
  * @returns
  */
 export default function ExportLabelComponent(
-	props: PropsExport & Partial<StyleProps>,
+	props: Props & Partial<StyleProps>,
 ) {
+	const {label, ...rest} = props;
 	const {definition} = useExport(props);
 	const {fontWeight} = useProps(
 		"ExportLabelComponent",
 		defaultStyleProps,
-		props,
+		rest,
 	);
 	const {displayname, name, tooltip} = definition;
-	const label = displayname || name;
+	const label_ = label || displayname || name;
 
 	const labelcomp = (
 		<TextWeighted pb={4} size="sm" fontWeight="medium" fw={fontWeight}>
-			{label}
+			{label_}
 		</TextWeighted>
 	);
 
