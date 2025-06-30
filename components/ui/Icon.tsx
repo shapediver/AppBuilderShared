@@ -11,8 +11,10 @@ import {
 	IconAdjustmentsHorizontal,
 	IconAlertCircle,
 	IconArrowBack,
+	IconArrowBackUp,
 	IconArrowDown,
 	IconArrowForward,
+	IconArrowForwardUp,
 	IconArrowLeft,
 	IconArrowRight,
 	IconArrowUp,
@@ -138,10 +140,14 @@ const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
 			return <IconAlertCircle {...iconProps} />;
 		case IconTypeEnum.ArrowBack:
 			return <IconArrowBack {...iconProps} />;
+		case IconTypeEnum.ArrowBackUp:
+			return <IconArrowBackUp {...iconProps} />;
 		case IconTypeEnum.ArrowDown:
 			return <IconArrowDown {...iconProps} />;
 		case IconTypeEnum.ArrowForward:
 			return <IconArrowForward {...iconProps} />;
+		case IconTypeEnum.ArrowForwardUp:
+			return <IconArrowForwardUp {...iconProps} />;
 		case IconTypeEnum.ArrowLeft:
 			return <IconArrowLeft {...iconProps} />;
 		case IconTypeEnum.ArrowRight:

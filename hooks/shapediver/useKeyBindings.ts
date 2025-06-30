@@ -16,7 +16,8 @@ interface Props {
  */
 export function useKeyBindings(props: Props) {
 	const {namespace} = props;
-	const {createModelState} = useCreateModelState({namespace});
+	const {createModelState, applyModelStateToQueryParameter} =
+		useCreateModelState({namespace});
 	const notifications = useContext(NotificationContext);
 
 	const callback = useCallback(async () => {
@@ -30,9 +31,7 @@ export function useKeyBindings(props: Props) {
 
 		// Save the modelStateId as a search parameter
 		if (modelStateId) {
-			const url = new URL(window.location.href);
-			url.searchParams.set("modelStateId", modelStateId);
-			history.replaceState(history.state, "", url.toString());
+			applyModelStateToQueryParameter(modelStateId);
 			notifications.success({
 				message: `Model state with ID ${modelStateId} has been saved.`,
 			});
