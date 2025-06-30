@@ -26,3 +26,9 @@ export interface IStargateClientChoice {
 	/** The information about the client as received from Stargate */
 	data: ISdStargateClientModel | null;
 }
+
+/**
+ * Prefix used to decide whether file parameters and exports
+ * shall make use of Stargate.
+ */
+export const StargateFileParamPrefix = "SG_";

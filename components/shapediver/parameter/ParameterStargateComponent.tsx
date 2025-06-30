@@ -125,7 +125,8 @@ export default function ParameterStargateComponent(
 		useStargateParameter({
 			parameterId: definition.id,
 			parameterType: definition.type,
-			parameterValue: value,
+			hasValue: !!value,
+			parameterFormat: definition.format,
 			handleChange,
 		});
 

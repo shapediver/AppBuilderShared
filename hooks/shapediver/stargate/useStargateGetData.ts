@@ -6,7 +6,7 @@ import {type ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1/d
 import {useCallback, useContext} from "react";
 
 /**
- * We don't want multiple "get data" requests to be sent at the same time.
+ * We don't want multiple requests to be sent at the same time.
  * An error with this type will be thrown if a request is interrupted.
  */
 export const ERROR_TYPE_INTERRUPTED = "interrupted";
@@ -17,7 +17,7 @@ export const ERROR_TYPE_INTERRUPTED = "interrupted";
 const pendingRequestStack: Array<{reject: () => void}> = [];
 
 /**
- * Hook wrapping the Stargate SDK's `getData` command.
+ * Hook wrapping the Stargate SDK's command.
  * @returns
  */
 export const useStargateGetData = () => {
@@ -25,7 +25,10 @@ export const useStargateGetData = () => {
 
 	const getParameterData = useCallback(
 		async (parameterId: string): Promise<ISdStargateGetDataReplyDto[]> => {
-			// Reject any pending "get data" requests
+			// Reject any pending requests
+			// TODO This merely rejects the locally pending promises, but does not
+			// cancel any actions pending on the client side. We might want to
+			// reconsider this in the future.
 			if (pendingRequestStack.length > 0) {
 				pendingRequestStack.forEach((s) => {
 					s.reject();

@@ -17,8 +17,7 @@ interface Props {
 }
 
 /** Type for data related to the status of the component. */
-
-export type IStatusData = {
+type IStatusData = {
 	color: string;
 	message: string;
 	isBtnDisabled: boolean;
@@ -59,7 +58,7 @@ const StatusDataMap: {[key in OutputStatusEnum]: IStatusData} = {
 		isBtnDisabled: true,
 	},
 	[OutputStatusEnum.unsupported]: {
-		color: "orange",
+		color: "var(--mantine-color-gray-2)",
 		message: "Unsupported connection status",
 		isBtnDisabled: true,
 	},

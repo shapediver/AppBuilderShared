@@ -16,7 +16,8 @@ import {useAllParameters} from "../parameters/useAllParameters";
 import {useStargateBakeData} from "./useStargateBakeData";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
-export const GetDataResultErrorMessages = {
+// TODO ideally move these messages to properties that can be controlled from the theme
+export const ResultErrorMessages = {
 	[ISdStargateBakeDataResultEnum.SUCCESS]:
 		"The objects were successfully baked.",
 	[ISdStargateBakeDataResultEnum.NOTHING]: "No objects were baked.",
@@ -58,6 +59,9 @@ export enum OutputStatusEnum {
 	unsupported = "unsupported",
 }
 
+/**
+ * Hook providing business logic for Stargate output components.
+ */
 export const useStargateOutput = ({
 	chunkId,
 	chunkName,
@@ -188,6 +192,9 @@ export const useStargateOutput = ({
 		})();
 	}, [networkStatus, selectedClient, typeHint, chunk]);
 
+	/**
+	 * Handler for baking data.
+	 */
 	const onBakeData = useCallback(async () => {
 		setIsWaiting(true);
 
@@ -197,7 +204,8 @@ export const useStargateOutput = ({
 		}
 
 		const parameters = Object.values(parameterStores).reduce(
-			(acc, p) => {
+			(acc, p_) => {
+				const p = p_.getState();
 				acc[p.definition.id] = p.state.execValue.toString();
 				return acc;
 			},
@@ -220,9 +228,7 @@ export const useStargateOutput = ({
 				title: "Baking failed",
 				message:
 					e.message ||
-					GetDataResultErrorMessages[
-						ISdStargateBakeDataResultEnum.FAILURE
-					],
+					ResultErrorMessages[ISdStargateBakeDataResultEnum.FAILURE],
 			});
 			return;
 		}
@@ -236,36 +242,28 @@ export const useStargateOutput = ({
 				title: "Baking failed",
 				message:
 					message ||
-					GetDataResultErrorMessages[
-						ISdStargateBakeDataResultEnum.FAILURE
-					],
+					ResultErrorMessages[ISdStargateBakeDataResultEnum.FAILURE],
 			});
 		} else if (result === ISdStargateBakeDataResultEnum.SUCCESS) {
 			notifications.success({
 				title: "Baking successful",
 				message:
 					message ||
-					GetDataResultErrorMessages[
-						ISdStargateBakeDataResultEnum.SUCCESS
-					],
+					ResultErrorMessages[ISdStargateBakeDataResultEnum.SUCCESS],
 			});
 		} else if (result === ISdStargateBakeDataResultEnum.CANCEL) {
 			notifications.warning({
 				title: "Baking cancelled",
 				message:
 					message ||
-					GetDataResultErrorMessages[
-						ISdStargateBakeDataResultEnum.CANCEL
-					],
+					ResultErrorMessages[ISdStargateBakeDataResultEnum.CANCEL],
 			});
 		} else if (result === ISdStargateBakeDataResultEnum.NOTHING) {
 			notifications.warning({
 				title: "Nothing to bake",
 				message:
 					message ||
-					GetDataResultErrorMessages[
-						ISdStargateBakeDataResultEnum.NOTHING
-					],
+					ResultErrorMessages[ISdStargateBakeDataResultEnum.NOTHING],
 			});
 		}
 	}, [parameterStores, bakeData, outputId, chunkId, chunkName]);

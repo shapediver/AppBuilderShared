@@ -15,6 +15,8 @@ import React from "react";
 interface Props extends PropsParameter {
 	cancel?: () => void;
 	rightSection?: React.ReactNode;
+	/** Optional label overriding the default label */
+	label?: string;
 }
 
 interface StyleProps {
@@ -47,7 +49,7 @@ export function ParameterLabelComponentThemeProps(
 export default function ParameterLabelComponent(
 	props: Props & Partial<StyleProps>,
 ) {
-	const {cancel, rightSection, ...rest} = props;
+	const {cancel, rightSection, label, ...rest} = props;
 	const {fontWeight, tooltipProps} = useProps(
 		"ParameterLabelComponent",
 		defaultStyleProps,
@@ -55,11 +57,11 @@ export default function ParameterLabelComponent(
 	);
 	const {definition} = useParameter<any>(props);
 	const {displayname, name, tooltip} = definition;
-	const label = displayname || name;
+	const label_ = label || displayname || name;
 
 	const labelcomp = (
 		<TextWeighted pb={4} size="sm" fontWeight="medium" fw={fontWeight}>
-			{label}
+			{label_}
 			{cancel ? " *" : ""}
 		</TextWeighted>
 	);

@@ -8,13 +8,13 @@ import {
 import {useCallback, useContext} from "react";
 
 /**
- * We don't want multiple "bake data" requests to be sent at the same time.
+ * We don't want multiple requests to be sent at the same time.
  * An error with this type will be thrown if a request is interrupted.
  */
 export const ERROR_TYPE_INTERRUPTED = "interrupted";
 
 /**
- * Promises stack to keep track of pending "get data" requests.
+ * Promises stack to keep track of pending requests.
  */
 const pendingRequestStack: Array<{reject: () => void}> = [];
 
@@ -32,7 +32,10 @@ export const useStargateBakeData = () => {
 			chunkName: string,
 			parameters: {[id: string]: string},
 		): Promise<ISdStargateBakeDataReplyDto[]> => {
-			// Reject any pending "get data" requests
+			// Reject any pending requests
+			// TODO This merely rejects the locally pending promises, but does not
+			// cancel any actions pending on the client side. We might want to
+			// reconsider this in the future.
 			if (pendingRequestStack.length > 0) {
 				pendingRequestStack.forEach((s) => {
 					s.reject();
