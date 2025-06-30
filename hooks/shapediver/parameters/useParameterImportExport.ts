@@ -1,6 +1,7 @@
-import { ErrorReportingContext } from "@AppBuilderShared/context/ErrorReportingContext";
+import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useCallback, useContext} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -11,6 +12,12 @@ export function useParameterImportExport(namespace: string) {
 	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
 			batchParameterValueUpdate: state.batchParameterValueUpdate,
+		})),
+	);
+
+	const {currentModel} = useShapeDiverStorePlatform(
+		useShallow((state) => ({
+			currentModel: state.currentModel,
 		})),
 	);
 
@@ -26,19 +33,24 @@ export function useParameterImportExport(namespace: string) {
 			const parameters = useShapeDiverStoreParameters
 				.getState()
 				.getParameters(namespace);
-			const parameterValues: {[key: string]: any} = {};
+			const parameterArray: {id: string; value: any; name: string}[] = [];
 
 			Object.values(parameters).forEach((paramStore) => {
 				const param = paramStore.getState();
-				parameterValues[param.definition.id] = param.state.uiValue;
+				parameterArray.push({
+					id: param.definition.id,
+					value: param.state.execValue,
+					name: param.definition.name,
+				});
 			});
 
 			// Create JSON blob and download
-			const jsonContent = JSON.stringify(parameterValues, null, 2);
+			const jsonContent = JSON.stringify({
+				...(currentModel && {model_id: currentModel.id}),
+				parameters: parameterArray,
+			});
 			const blob = new Blob([jsonContent], {type: "application/json"});
 			const url = URL.createObjectURL(blob);
-
-			// Create download link
 			const link = document.createElement("a");
 			link.href = url;
 			link.download = `parameters_${namespace}_${new Date().toISOString().split("T")[0]}.json`;
@@ -56,7 +68,7 @@ export function useParameterImportExport(namespace: string) {
 				message: "Failed to export parameters",
 			});
 		}
-	}, [namespace, errorReporting]);
+	}, [namespace, currentModel]);
 
 	/**
 	 * Import parameters from JSON file
@@ -78,41 +90,94 @@ export function useParameterImportExport(namespace: string) {
 
 				try {
 					const text = await file.text();
-					const parameterValues = JSON.parse(text);
+					const importData = JSON.parse(text);
 
-					// Get current parameters from store for validation
+					if (
+						!importData.parameters ||
+						!Array.isArray(importData.parameters)
+					) {
+						const errorMessage =
+							"The file doesn't contain the parameters data";
+						notifications.error({
+							message: errorMessage,
+						});
+						reject(new Error(errorMessage));
+						return;
+					}
+
 					const sessionParameters = useShapeDiverStoreParameters
 						.getState()
 						.getParameters(namespace);
-					const validParameters: {[key: string]: any} = {};
 
-					Object.keys(parameterValues).forEach((paramId) => {
-						if (paramId in sessionParameters) {
-							validParameters[paramId] = parameterValues[paramId];
+					let isValidPartial = false;
+					let isValidFull = true;
+					let acceptRejectMode = false;
+					const parametersJson = [...importData.parameters];
+
+					parametersJson.forEach((param, index) => {
+						if (!param.id || param.value === undefined) {
+							parametersJson.splice(index, 1);
+							if (isValidFull) isValidFull = false;
+							return;
+						}
+
+						const sessionParam = sessionParameters[param.id];
+						if (sessionParam) {
+							if (!isValidPartial) isValidPartial = true;
+
+							const paramActions =
+								sessionParam.getState().actions;
+							if (paramActions.isValid(param.value)) {
+								if (sessionParam.getState().acceptRejectMode) {
+									acceptRejectMode = true;
+								}
+							} else {
+								parametersJson.splice(index, 1);
+							}
 						} else {
-							console.warn(
-								`Parameter ${paramId} not found in session, skipping`,
-							);
+							if (isValidFull) isValidFull = false;
+							parametersJson.splice(index, 1);
 						}
 					});
 
-					if (Object.keys(validParameters).length === 0) {
-						throw new Error("No valid parameters found in file");
+					if (isValidPartial) {
+						const validParameters: {[key: string]: any} = {};
+						parametersJson.forEach((param) => {
+							validParameters[param.id] = param.value;
+						});
+
+						await batchParameterValueUpdate(
+							namespace,
+							validParameters,
+							!acceptRejectMode,
+						);
+
+						if (!isValidFull) {
+							notifications.warning?.({
+								message:
+									"The parameters of the imported file and the model do not overlap entirely.",
+							});
+						} else {
+							notifications.success({
+								message: "Parameters imported successfully",
+							});
+						}
+						resolve();
+					} else {
+						const errorMessage =
+							"The parameters from the imported file do not match the parameters of this model.";
+						notifications.error({
+							message: errorMessage,
+						});
+						reject(new Error(errorMessage));
 					}
-
-					// Apply parameter values
-					await batchParameterValueUpdate(namespace, validParameters);
-
-					notifications.success({
-						message: "Parameters imported successfully",
-					});
-					resolve();
 				} catch (error) {
 					errorReporting.captureException(error);
+					const errorMessage =
+						"Failed to import parameters: " +
+						(error as Error).message;
 					notifications.error({
-						message:
-							"Failed to import parameters: " +
-							(error as Error).message,
+						message: errorMessage,
 					});
 					reject(error);
 				}
@@ -120,14 +185,13 @@ export function useParameterImportExport(namespace: string) {
 
 			fileInput.click();
 		});
-	}, [namespace, errorReporting]);
+	}, [namespace, notifications]);
 
 	/**
 	 * Reset parameters to default values
 	 */
 	const resetParameters = useCallback(async () => {
 		try {
-			// Get parameters from store and build default values
 			const parameters = useShapeDiverStoreParameters
 				.getState()
 				.getParameters(namespace);
@@ -142,7 +206,6 @@ export function useParameterImportExport(namespace: string) {
 				throw new Error("No default values available for this session");
 			}
 
-			// Apply default values
 			await batchParameterValueUpdate(namespace, defaultValues);
 
 			notifications.success({
@@ -154,7 +217,7 @@ export function useParameterImportExport(namespace: string) {
 				message: "Failed to reset parameters",
 			});
 		}
-	}, [namespace, errorReporting]);
+	}, [namespace]);
 
 	return {
 		exportParameters,
