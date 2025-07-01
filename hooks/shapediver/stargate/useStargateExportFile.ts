@@ -2,8 +2,8 @@ import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingCon
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {
-	ISdStargateBakeDataReplyDto,
-	SdStargateBakeDataCommand,
+	ISdStargateExportFileReplyDto,
+	SdStargateExportFileCommand,
 } from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useContext} from "react";
 
@@ -19,19 +19,18 @@ export const ERROR_TYPE_INTERRUPTED = "interrupted";
 const pendingRequestStack: Array<{reject: () => void}> = [];
 
 /**
- * Hook wrapping the Stargate SDK's `bakeData` command.
+ * Hook wrapping the Stargate SDK's `exportFile` command.
  * @returns
  */
-export const useStargateBakeData = () => {
+export const useStargateExportFile = () => {
 	const errorReporting = useContext(ErrorReportingContext);
 
-	const bakeData = useCallback(
+	const exportFile = useCallback(
 		async (
-			outputId: string,
-			chunkId: string,
-			chunkName: string,
+			exportId: string,
+			contentIndex: number,
 			parameters: {[id: string]: string},
-		): Promise<ISdStargateBakeDataReplyDto[]> => {
+		): Promise<ISdStargateExportFileReplyDto[]> => {
 			// Reject any pending requests
 			// TODO This merely rejects the locally pending promises, but does not
 			// cancel any actions pending on the client side. We might want to
@@ -91,23 +90,20 @@ export const useStargateBakeData = () => {
 				};
 
 				try {
-					const command = new SdStargateBakeDataCommand(sdk);
+					const command = new SdStargateExportFileCommand(sdk);
 					command
 						.send(
 							{
 								model: {id: currentModel.id},
 								parameters,
-								output: {
-									id: outputId,
-									chunk: {
-										id: chunkId,
-										name: chunkName,
-									},
+								export: {
+									id: exportId,
+									index: contentIndex,
 								},
 							},
 							[selectedClient],
 						)
-						.then((res: ISdStargateBakeDataReplyDto[]) => {
+						.then((res: ISdStargateExportFileReplyDto[]) => {
 							removeRejectHandler();
 							resolve(res);
 						})
@@ -125,6 +121,6 @@ export const useStargateBakeData = () => {
 	);
 
 	return {
-		bakeData,
+		exportFile,
 	};
 };

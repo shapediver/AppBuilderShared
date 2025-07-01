@@ -218,7 +218,7 @@ const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
 			return <IconLinkOff {...iconProps} />;
 		case IconTypeEnum.LockSquare:
 			return <IconLockSquare {...iconProps} />;
-		case IconTypeEnum.MailFoward:
+		case IconTypeEnum.MailForward:
 			return <IconMailForward {...iconProps} />;
 		case IconTypeEnum.Maximize:
 			return <IconMaximize {...iconProps} />;

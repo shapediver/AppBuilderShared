@@ -14,19 +14,26 @@ import {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {ERROR_TYPE_INTERRUPTED, useStargateGetData} from "./useStargateGetData";
 
-const ParametersGetDataResultErrorMessages = {
+// TODO SS-8820 ideally move these messages to properties that can be controlled from the theme
+const ResultErrorMessages = {
 	[ISdStargateGetDataResultEnum.NOTHING]:
 		"No objects were selected in the client.",
 	[ISdStargateGetDataResultEnum.FAILURE]:
 		"The selection operation failed in the client.",
 	[ISdStargateGetDataResultEnum.CANCEL]:
-		"The selection operation was canceled in the client.",
+		"The selection operation was cancelled in the client.",
 };
 
 export interface IUseStargateParameterProps {
+	/** ID of the parameter */
 	parameterId: string;
+	/** Type of the parameter */
 	parameterType: ShapeDiverResponseParameterType;
-	parameterValue: string;
+	/** Whether the parameter has a non-empty value */
+	hasValue: boolean;
+	/** Supported formats for parameters of type "File" */
+	parameterFormat: string[] | undefined;
+	/** Handler for changing the parameter value */
 	handleChange: (value: string, timeout?: number) => void;
 }
 
@@ -47,14 +54,13 @@ export enum ParameterStatusEnum {
 }
 
 /**
- * Hook providing business logic for the Stargate parameter component.
- * @param param0
- * @returns
+ * Hook providing business logic for Stargate parameter components.
  */
 export const useStargateParameter = ({
 	parameterId,
 	parameterType,
-	parameterValue,
+	hasValue,
+	parameterFormat,
 	handleChange,
 }: IUseStargateParameterProps) => {
 	const [isWaiting, setIsWaiting] = useState(false);
@@ -134,18 +140,43 @@ export const useStargateParameter = ({
 					setStatus(ParameterStatusEnum.incompatible);
 					return;
 				}
-				if (parameterValue)
-					setStatus(ParameterStatusEnum.objectSelected);
+				if (
+					parameterType === ShapeDiverResponseParameterType.FILE &&
+					parameterFormat &&
+					!parameterFormat.some((ct) =>
+						supportedData.contentTypes.includes(ct),
+					)
+				) {
+					setStatus(ParameterStatusEnum.incompatible);
+					return;
+				}
+				if (hasValue) setStatus(ParameterStatusEnum.objectSelected);
 				else setStatus(ParameterStatusEnum.noObjectSelected);
 				return;
 			}
 
 			setStatus(ParameterStatusEnum.unsupported);
 		})();
-	}, [networkStatus, selectedClient, parameterType, parameterValue]);
+	}, [
+		networkStatus,
+		selectedClient,
+		parameterType,
+		hasValue,
+		parameterFormat,
+	]);
 
+	/**
+	 * Handles the reply from the Stargate get data request,
+	 * depending on the parameter type.
+	 */
 	const handleGetDataReplyDto = useCallback(
 		(res: ISdStargateGetDataReplyDto) => {
+			if (parameterType === ShapeDiverResponseParameterType.FILE) {
+				return {
+					count: res.info.count,
+					value: res.asset?.id,
+				};
+			}
 			return {
 				count: res.info.count,
 				value: res.asset?.chunk
@@ -157,9 +188,12 @@ export const useStargateParameter = ({
 					: res.asset?.id,
 			};
 		},
-		[],
+		[parameterType],
 	);
 
+	/**
+	 * Handler for getting data
+	 */
 	const onObjectAdd = useCallback(async () => {
 		setIsWaiting(true);
 
@@ -184,14 +218,14 @@ export const useStargateParameter = ({
 				notifications.warning({
 					title: "Response timeout",
 					message:
-						"The selection operation was canceled due to inactivity in the client.",
+						"The selection operation was cancelled due to inactivity in the client.",
 				});
 			} else {
 				notifications.error({
 					title: "Response error",
 					message:
 						e.message ||
-						ParametersGetDataResultErrorMessages[
+						ResultErrorMessages[
 							ISdStargateBakeDataResultEnum.FAILURE
 						],
 				});
@@ -213,7 +247,7 @@ export const useStargateParameter = ({
 				title: "Operation unsuccessful",
 				message:
 					message ||
-					ParametersGetDataResultErrorMessages[result] ||
+					ResultErrorMessages[result] ||
 					"Unsupported get data status.",
 			});
 			return;
@@ -226,9 +260,7 @@ export const useStargateParameter = ({
 				title: "Response is empty",
 				message:
 					message ||
-					ParametersGetDataResultErrorMessages[
-						ISdStargateGetDataResultEnum.NOTHING
-					],
+					ResultErrorMessages[ISdStargateGetDataResultEnum.NOTHING],
 			});
 			return;
 		}

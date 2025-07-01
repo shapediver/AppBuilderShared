@@ -142,6 +142,8 @@ export interface IGenericParameterDefinition {
 
 	/**
 	 * Stringify the given value according to the parameter definition.
+	 * @param value If undefined is provided, the current value of the parameter is used.
+	 * @returns
 	 */
 	readonly stringify?: (value: any) => string;
 }

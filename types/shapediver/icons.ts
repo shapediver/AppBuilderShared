@@ -47,7 +47,7 @@ export enum IconTypeEnum {
 	Link = "link",
 	LinkOff = "link-off",
 	LockSquare = "lock-square",
-	MailFoward = "mail-forward",
+	MailForward = "mail-forward",
 	Maximize = "maximize",
 	MaximizeOff = "maximize-off",
 	MoonStars = "moon-stars",
