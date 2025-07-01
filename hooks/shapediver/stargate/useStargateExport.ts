@@ -135,7 +135,7 @@ export const useStargateExport = ({
 		const parameters = Object.values(parameterStores).reduce(
 			(acc, p_) => {
 				const p = p_.getState();
-				acc[p.definition.id] = p.state.execValue.toString();
+				acc[p.definition.id] = p.state.stringExecValue();
 				return acc;
 			},
 			{} as {[key: string]: string},
