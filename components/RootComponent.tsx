@@ -10,10 +10,11 @@ import {
 	DummyTracker,
 	TrackerContext,
 } from "@AppBuilderShared/context/TrackerContext";
+import {useShapeDiverStoreErrorReporting} from "@AppBuilderShared/store/useShapeDiverStoreErrorReporting";
 import {IComponentContext} from "@AppBuilderShared/types/context/componentcontext";
 import {IErrorReportingContext} from "@AppBuilderShared/types/context/errorreportingcontext";
 import {ITrackerContext} from "@AppBuilderShared/types/context/trackercontext";
-import React from "react";
+import React, {useEffect} from "react";
 
 interface Props {
 	children: React.ReactNode;
@@ -48,6 +49,13 @@ export default function RootComponent(props: Props) {
 		errorReporting,
 		componentContext,
 	} = props;
+
+	const {setErrorReporting} = useShapeDiverStoreErrorReporting();
+	useEffect(() => {
+		if (errorReporting) {
+			setErrorReporting(errorReporting);
+		}
+	}, [errorReporting, setErrorReporting]);
 
 	return useStrictMode ? (
 		<React.StrictMode>

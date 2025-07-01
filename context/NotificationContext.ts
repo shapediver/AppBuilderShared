@@ -30,7 +30,13 @@ export function createNotificationsWithDefaults(
 	};
 }
 
-/** Information about a template. */
+/**
+ * Global notifications provider.
+ * Use this from locations where the NotificationContext can't be used.
+ */
+export const GlobalNotificationContext = createNotificationsWithDefaults();
+
+/** Notification context. */
 export const NotificationContext = createContext<INotificationContext>(
-	createNotificationsWithDefaults(),
+	GlobalNotificationContext,
 );

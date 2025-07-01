@@ -6,8 +6,8 @@ import {
 	createAttributeId,
 	useConvertAttributeInputData,
 } from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useConvertAttributeInputData";
+import {useSdTFData} from "@AppBuilderShared/hooks/shapediver/viewer/useSdTFData";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {
 	AttributeVisualizationVisibility,
@@ -33,13 +33,8 @@ import {
 	IStringAttribute,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {
-	addListener,
-	EVENTTYPE_SESSION,
-	IEvent,
 	ISDTFOverview,
-	ISessionEvent,
 	MaterialStandardData,
-	removeListener,
 	RENDERER_TYPE,
 	SDTF_TYPEHINT,
 	SdtfPrimitiveTypeGuard,
@@ -108,7 +103,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	>();
 	const [hasBeenLoaded, setHasBeenLoaded] = useState<boolean>(false);
 	const [active, setActive] = useState<boolean>(false);
-	const [loadSdTF, setLoadSdTF] = useState<boolean>(false);
 
 	/**
 	 *
@@ -133,18 +127,18 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 					AttributeVisualizationVisibility.DefaultOn,
 		});
 
+	const {sdTFDataLoaded} = useSdTFData();
+
 	const {isEnabled, canBeEnabled, isInitialized} = useMemo(() => {
 		return {
-			isEnabled: loadSdTF && active && hasPriority,
+			isEnabled: sdTFDataLoaded && active && hasPriority,
 			isInitialized: renderedAttribute !== undefined,
-			canBeEnabled: isVisible && loadSdTF,
+			canBeEnabled: isVisible && sdTFDataLoaded,
 		};
-	}, [isVisible, loadSdTF, active, renderedAttribute]);
-
-	const sessions = useShapeDiverStoreSession((state) => state.sessions);
+	}, [isVisible, sdTFDataLoaded, active, renderedAttribute]);
 
 	const {attributeVisualizationEngine} = useAttributeVisualizationEngine(
-		loadSdTF ? viewportId : "",
+		sdTFDataLoaded ? viewportId : "",
 	);
 	const {attributeOverview} = useAttributeOverview(
 		attributeVisualizationEngine,
@@ -289,39 +283,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 *
 	 *
 	 */
-
-	/**
-	 * Use effect that sets the loadSdTF state variable
-	 * This is done by checking if the sessions are available
-	 * and if the sdtf is loaded
-	 * If the sdtf is loaded, the loadSdTF state variable is set to true
-	 */
-	useEffect(() => {
-		const removeListenerTokens: string[] = [];
-
-		// if just one session has loaded the sdtf, we can set the loadSdTF to true
-		for (const sessionId in sessions) {
-			const session = sessions[sessionId];
-
-			removeListenerTokens.push(
-				addListener(
-					EVENTTYPE_SESSION.SESSION_SDTF_DELAYED_LOADED,
-					(e: IEvent) => {
-						const sessionEvent = e as ISessionEvent;
-						if (sessionEvent.sessionId === session.id) {
-							setLoadSdTF(true);
-						}
-					},
-				),
-			);
-		}
-
-		return () => {
-			removeListenerTokens.forEach((token) => {
-				removeListener(token);
-			});
-		};
-	}, [sessions]);
 
 	/**
 	 * Use effect that sets the initial attribute to be rendered

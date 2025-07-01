@@ -10,6 +10,7 @@ import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder
 import {useSessionWithAppBuilder} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
 import {useParameterHistory} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
 import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
+import {useSessionPropsOutput} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsOutput";
 import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
@@ -208,6 +209,10 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	// get props for fallback parameters
 	const parameterProps = useSessionPropsParameter(namespace);
 	const exportProps = useSessionPropsExport(namespace);
+	const outputProps = useSessionPropsOutput(
+		namespace,
+		(output) => !!output.chunks,
+	);
 
 	// handle additional sessions without instances
 	useSessions(secondarySessions);
@@ -241,7 +246,9 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		});
 	} else if (
 		!hasAppBuilderOutput &&
-		(parameterProps.length > 0 || exportProps.length > 0) &&
+		(parameterProps.length > 0 ||
+			exportProps.length > 0 ||
+			outputProps.length > 0) &&
 		showFallbackContainers
 	) {
 		containers.right = {
@@ -249,6 +256,8 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				<AppBuilderFallbackContainerComponent
 					parameters={parameterProps}
 					exports={exportProps}
+					outputs={outputProps}
+					namespace={namespace}
 				/>
 			),
 		};

@@ -7,6 +7,8 @@ const urlSearchParams = new URLSearchParams(window.location.search);
 const useSandboxPlatform = urlSearchParams.get("useSandboxPlatform") === "true";
 const useStagingPlatform = urlSearchParams.get("useStagingPlatform") === "true";
 const useDevPlatform = urlSearchParams.get("useDevPlatform") === "true";
+const localhostRunningInPlatform =
+	urlSearchParams.get("localhostRunningInPlatform") === "true";
 
 /**
  * Get the default platform URL based on the current hostname.
@@ -67,7 +69,10 @@ export function isRunningInPlatform() {
 	)
 		return true;
 
-	return false;
+	return (
+		localhostRunningInPlatform &&
+		(hostname === "localhost" || hostname === "127.0.0.1")
+	);
 }
 
 /**

@@ -1,9 +1,12 @@
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
-import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {IShapeDiverOutputDefinitionChunk} from "@AppBuilderShared/types/shapediver/output";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
+
+interface Props {
+	chunk: IShapeDiverOutputDefinitionChunk;
+}
 
 interface StyleProps {
 	fontWeight: string;
@@ -11,10 +14,10 @@ interface StyleProps {
 
 const defaultStyleProps: Partial<StyleProps> = {};
 
-type ExportLabelComponentPropsType = Partial<StyleProps>;
+type OutputChunkLabelComponentPropsType = Partial<StyleProps>;
 
-export function ExportLabelComponentThemeProps(
-	props: ExportLabelComponentPropsType,
+export function OutputChunkLabelComponentThemeProps(
+	props: OutputChunkLabelComponentPropsType,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
@@ -22,20 +25,20 @@ export function ExportLabelComponentThemeProps(
 }
 
 /**
- * Functional component that creates a label for an export.
+ * Functional component that creates a label for an output chunk.
  *
  * @returns
  */
-export default function ExportLabelComponent(
-	props: PropsExport & Partial<StyleProps>,
+export default function OutputChunkLabelComponent(
+	props: Props & Partial<StyleProps>,
 ) {
-	const {definition} = useExport(props);
-	const {fontWeight} = useProps(
-		"ExportLabelComponent",
+	const {fontWeight, ...rest} = useProps(
+		"OutputChunkLabelComponent",
 		defaultStyleProps,
 		props,
 	);
-	const {displayname, name, tooltip} = definition;
+	const {chunk} = rest;
+	const {displayname, name, tooltip} = chunk;
 	const label = displayname || name;
 
 	const labelcomp = (

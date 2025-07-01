@@ -8,6 +8,10 @@ import {
 	IShapeDiverExportDefinition,
 } from "@AppBuilderShared/types/shapediver/export";
 import {
+	IShapeDiverOutput,
+	IShapeDiverOutputDefinition,
+} from "@AppBuilderShared/types/shapediver/output";
+import {
 	IShapeDiverParameter,
 	IShapeDiverParameterDefinition,
 	IShapeDiverParameterExecutor,
@@ -22,6 +26,8 @@ import {
 	IGenericParameterDefinition,
 	IGenericParameterExecutor,
 	IHistoryEntry,
+	IOutputStore,
+	IOutputStores,
 	IParameterChanges,
 	IParameterChangesPerSession,
 	IParameterStore,
@@ -43,6 +49,7 @@ import {
 	EVENTTYPE,
 	IEvent,
 	IExportApi,
+	IOutputApi,
 	IParameterApi,
 	ISessionApi,
 	isFileParameterApi,
@@ -552,7 +559,33 @@ function mapExportDefinition(
 }
 
 /**
- * Create store for a single export.
+ * Map definition of output from API to store.
+ * @param outputApi
+ * @returns
+ */
+function mapOutputDefinition(
+	outputApi: IOutputApi,
+): IShapeDiverOutputDefinition {
+	return {
+		id: outputApi.id,
+		uid: outputApi.uid,
+		name: outputApi.name,
+		dependency: outputApi.dependency,
+		group: outputApi.group,
+		order: outputApi.order,
+		tooltip: outputApi.tooltip,
+		displayname: outputApi.displayname,
+		hidden: outputApi.hidden,
+		chunks: outputApi.chunks,
+	};
+}
+
+/**
+ * Create export store for the given session and export id.
+ * @param session
+ * @param exportId
+ * @param token
+ * @returns
  */
 function createExportStore(session: ISessionApi, exportId: string) {
 	const exportApi = session.exports[exportId];
@@ -588,6 +621,31 @@ function createExportStore(session: ISessionApi, exportId: string) {
 			},
 		},
 	}));
+}
+
+/**
+ * Create output store for the given session and output id.
+ * @param session
+ * @param outputId
+ * @returns
+ */
+function createOutputStore(session: ISessionApi, outputId: string) {
+	const outputApi = session.outputs[outputId];
+	if (!outputApi)
+		throw new Error(
+			`Output ${outputId} does not exist for session ${session.id}`,
+		);
+
+	const definition = mapOutputDefinition(outputApi);
+
+	return create<IShapeDiverOutput>()(
+		devtools(
+			() => ({
+				definition,
+			}),
+			devtoolsSettings,
+		),
+	);
 }
 
 /**
@@ -628,6 +686,7 @@ export const useShapeDiverStoreParameters =
 			(set, get) => ({
 				parameterStores: {},
 				exportStores: {},
+				outputStores: {},
 				sessionDependency: {},
 				parameterChanges: {},
 				defaultExports: {},
@@ -848,6 +907,7 @@ export const useShapeDiverStoreParameters =
 					const {
 						parameterStores: parameters,
 						exportStores: exports,
+						outputStores: outputs,
 						getChanges,
 						pushHistoryState,
 					} = get();
@@ -967,6 +1027,24 @@ export const useShapeDiverStoreParameters =
 												return acc;
 											}, {} as IExportStores),
 										}), // Create new export stores
+							},
+							outputStores: {
+								..._state.outputStores,
+								...(outputs[sessionId]
+									? {} // Keep existing output stores
+									: {
+											[sessionId]: Object.keys(
+												session.outputs,
+											).reduce((acc, outputId) => {
+												acc[outputId] =
+													createOutputStore(
+														session,
+														outputId,
+													);
+
+												return acc;
+											}, {} as IOutputStores),
+										}), // Create new output stores
 							},
 							sessionDependency: {
 								..._state.sessionDependency,
@@ -1245,6 +1323,24 @@ export const useShapeDiverStoreParameters =
 							);
 						},
 					) as IExportStore;
+				},
+
+				getOutputs: (namespace: string) => {
+					return get().outputStores[namespace] || {};
+				},
+
+				getOutput: (namespace: string, outputId: string) => {
+					return Object.values(get().getOutputs(namespace)).find(
+						(p) => {
+							const def = p.getState().definition;
+
+							return (
+								def.id === outputId ||
+								def.name === outputId ||
+								def.displayname === outputId
+							);
+						},
+					) as IOutputStore;
 				},
 
 				registerDefaultExport: (

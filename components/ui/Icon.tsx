@@ -28,12 +28,15 @@ import {
 	IconBooksOff,
 	IconCamera,
 	IconCameraOff,
+	IconCancel,
 	IconCheck,
 	IconChevronLeft,
 	IconChevronRight,
 	IconCircleOff,
 	IconCopy,
 	IconDeviceDesktop,
+	IconDeviceDesktopDown,
+	IconDeviceDesktopUp,
 	IconDeviceFloppy,
 	IconDeviceTv,
 	IconDots,
@@ -171,6 +174,8 @@ const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
 			return <IconCamera {...iconProps} />;
 		case IconTypeEnum.CameraOff:
 			return <IconCameraOff {...iconProps} />;
+		case IconTypeEnum.Cancel:
+			return <IconCancel {...iconProps} />;
 		case IconTypeEnum.Check:
 			return <IconCheck {...iconProps} />;
 		case IconTypeEnum.CircleOff:
@@ -179,6 +184,10 @@ const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
 			return <IconCopy {...iconProps} />;
 		case IconTypeEnum.DeviceDesktop:
 			return <IconDeviceDesktop {...iconProps} />;
+		case IconTypeEnum.DeviceDesktopDown:
+			return <IconDeviceDesktopDown {...iconProps} />;
+		case IconTypeEnum.DeviceDesktopUp:
+			return <IconDeviceDesktopUp {...iconProps} />;
 		case IconTypeEnum.DeviceFloppy:
 			return <IconDeviceFloppy {...iconProps} />;
 		case IconTypeEnum.DeviceTV:

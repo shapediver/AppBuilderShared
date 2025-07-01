@@ -8,16 +8,8 @@ import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildert
 
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {
-	addListener,
-	EVENTTYPE_SESSION,
-	IEvent,
-	IOutputApi,
-	ISessionEvent,
-	ITreeNode,
-	OutputApiData,
-} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {IOutputApi, ITreeNode, OutputApiData} from "@shapediver/viewer.session";
+import {useCallback, useEffect, useState} from "react";
 import {useAppBuilderInstances} from "./useAppBuilderInstances";
 
 /**
@@ -41,34 +33,20 @@ export function useSessionWithAppBuilder(
 	const namespace = props?.id ?? "";
 
 	// start session and register parameters and exports
-	const {
-		sessionApi,
-		error: sessionError,
-		initialProcessManagerId,
-	} = useSession(
-		props
-			? {
-					...props,
-					createProcessManager: true,
-				}
-			: undefined,
-	);
+	const {sessionApi, error: sessionError} = useSession(props);
 	const sessionInitialized = !!sessionApi;
 
 	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
-	const {addProcess, createProcessManager} =
-		useShapeDiverStoreProcessManager();
-	const initialProcessManagerIdRef = useRef(initialProcessManagerId);
+	const {createProcessManager} = useShapeDiverStoreProcessManager();
 	const [parsedData, setParsedData] = useState<
 		IAppBuilder | Error | undefined
 	>(undefined);
 	const [processManagerId, setProcessManagerId] = useState<
 		string | undefined
-	>(initialProcessManagerId);
+	>();
 	const [outputApi, setOutputApi] = useState<IOutputApi | undefined>(
 		undefined,
 	);
-	const [loadSdTF, setLoadSdTF] = useState<boolean>(false);
 
 	/**
 	 * Validate the AppBuilder data.
@@ -129,32 +107,14 @@ export function useSessionWithAppBuilder(
 		const outputs = sessionApi.getOutputByName(CUSTOM_DATA_OUTPUT_NAME);
 		const outputId = outputs.length > 0 ? outputs[0].id : "";
 
-		/**
-		 * Early exit of the process manager creation if the output id is not set.
-		 * In the case of an app builder output, we have to check for subprocesses
-		 * that are created in the AppBuilder data.
-		 */
 		if (outputId === "") {
 			// as there is not app builder output, we can set the parsed data to undefined
 			// unless the app builder override is set, in which case we set it to the override
 			setParsedData(validationResult(undefined));
-
-			if (initialProcessManagerIdRef.current) {
-				// the initial process manager id is created when the session is initialized
-				// we resolve it here as there are no further processes to be executed
-				addProcess(initialProcessManagerIdRef.current, {
-					name: "Instance Process",
-					promise: Promise.resolve(),
-				});
-			}
 		}
 
 		setAppBuilderOutputId(outputId);
 	}, [sessionApi]);
-
-	useEffect(() => {
-		initialProcessManagerIdRef.current = initialProcessManagerId;
-	}, [initialProcessManagerId]);
 
 	/**
 	 * Callback for updating the AppBuilder data.
@@ -180,104 +140,19 @@ export function useSessionWithAppBuilder(
 			const appBuilderData =
 				parsedData instanceof Error ? undefined : parsedData;
 
-			let hasInstances = false;
-			let hasAttributeVisualizationWidget = false;
-			if (appBuilderData) {
-				if (appBuilderData.instances) hasInstances = true;
-
-				// try to find an attribute visualization widget
-				appBuilderData?.containers?.forEach((container) => {
-					if (container.widgets) {
-						const attributeVisualizationWidget =
-							container.widgets.find(
-								(widget) =>
-									widget.type === "attributeVisualization",
-							);
-						if (attributeVisualizationWidget) {
-							hasAttributeVisualizationWidget = true;
-						}
-					}
-
-					if (container.tabs) {
-						for (const tab of container.tabs) {
-							const attributeVisualizationWidget =
-								tab.widgets.find(
-									(widget) =>
-										widget.type ===
-										"attributeVisualization",
-								);
-							if (attributeVisualizationWidget) {
-								hasAttributeVisualizationWidget = true;
-							}
-						}
-					}
-				});
-			}
-
-			// depending on if there is an attribute visualization widget
-			// we set the loadSdTF flag to true or false
-			setLoadSdTF(hasAttributeVisualizationWidget);
-
-			if (!hasInstances && !hasAttributeVisualizationWidget) {
-				if (initialProcessManagerIdRef.current) {
-					// the initial process manager id is created when the session is initialized
-					// we resolve it here as there are no further processes to be executed
-					addProcess(initialProcessManagerIdRef.current, {
-						name: "Instance Process",
-						promise: Promise.resolve(),
-					});
-				}
-			} else {
-				if (initialProcessManagerIdRef.current) {
-					// the initial process manager id is created when the session is initialized
-					// we use it here so that we continue to use the same process manager
-					// for the AppBuilder data and the instances
-					setProcessManagerId(initialProcessManagerIdRef.current);
-				} else {
-					// create a process only if there are further processes to be executed
-					// for now this is only the case if there are instances defined in the AppBuilder data
-					// in the future, this could be extended to other cases
-					const id = createProcessManager(namespace);
-					setProcessManagerId(id);
-				}
+			// For instances, this check and the creation of the process manager
+			// has to be done here, as otherwise the viewer would already
+			// update the scene before the instances are processed
+			const instancedSessions = !!appBuilderData?.instances;
+			if (instancedSessions) {
+				const processManagerId = createProcessManager(sessionApi!.id);
+				setProcessManagerId(processManagerId);
 			}
 
 			setParsedData(parsedData);
 		},
 		[namespace, validationResult],
 	);
-
-	/**
-	 * Load the SDTF data if the loadSdTF flag is set to true.
-	 * This is done by adding a process to the process manager.
-	 */
-	useEffect(() => {
-		if (!sessionApi) return;
-		if (processManagerId === undefined) return;
-
-		sessionApi.loadSdtf = loadSdTF;
-
-		if (loadSdTF) {
-			addProcess(processManagerId, {
-				name: "Loading of SDTF",
-				promise: new Promise<void>((resolve) =>
-					addListener(
-						EVENTTYPE_SESSION.SESSION_SDTF_DELAYED_LOADED,
-						(e: IEvent) => {
-							const sessionEvent = e as ISessionEvent;
-							if (sessionEvent.sessionId === sessionApi.id)
-								resolve();
-						},
-					),
-				),
-			});
-		} else {
-			addProcess(processManagerId, {
-				name: "Disable loading of SDTF",
-				promise: Promise.resolve(),
-			});
-		}
-	}, [sessionApi, loadSdTF, processManagerId]);
 
 	useEffect(() => {
 		const removeOutputUpdateCallback = addOutputUpdateCallback(

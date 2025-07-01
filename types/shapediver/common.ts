@@ -1,6 +1,6 @@
 import {ShapeDiverCommonsGroup} from "@shapediver/api.geometry-api-dto-v2/dist/commons/SdCommonsGroup";
 
-export interface IShapeDiverParamOrExportDefinition {
+export interface IShapeDiverParamOrExportOrOutputDefinition {
 	/** ID of the parameter or export. */
 	readonly id: string;
 
@@ -13,12 +13,15 @@ export interface IShapeDiverParamOrExportDefinition {
 	/** Ordering of the parameter or export in client applications. */
 	readonly order?: number;
 
-	/** Group of the parameter or export. */
+	/** Group of the parameter or export or output. */
 	readonly group?: ShapeDiverCommonsGroup;
 
 	/** Controls whether the parameter or export should be hidden in the UI */
 	readonly hidden: boolean;
+}
 
+export interface IShapeDiverParamOrExportDefinition
+	extends IShapeDiverParamOrExportOrOutputDefinition {
 	/** The type of parameter or export. */
 	readonly type: string;
 
@@ -27,10 +30,18 @@ export interface IShapeDiverParamOrExportDefinition {
 }
 
 /**
+ * A parameter or export or output.
+ */
+export interface IShapeDiverParamOrExportOrOutput {
+	/** The static definition of a parameter or export or output. */
+	readonly definition: IShapeDiverParamOrExportOrOutputDefinition;
+}
+
+/**
  * A parameter or export.
  */
 export interface IShapeDiverParamOrExport {
-	/** The static definition of a parameter. */
+	/** The static definition of a parameter or export. */
 	readonly definition: IShapeDiverParamOrExportDefinition;
 }
 

@@ -1,3 +1,4 @@
+import {GlobalNotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {
 	Anchor,
 	Blockquote,
@@ -22,6 +23,9 @@ import remarkGfm from "remark-gfm";
 import {visit} from "unist-util-visit";
 import classes from "./MarkdownWidgetComponent.module.css";
 import ThemeProvider from "./ThemeProvider";
+
+// Set to track warnings that have already been shown to prevent duplicates
+const shownWarnings = new Set<string>();
 
 interface Props {
 	children: string;
@@ -53,12 +57,10 @@ const spanDirective = function () {
 	/**
 	 * @param {import("mdast").Root} tree
 	 *   Tree.
-	 * @param {import("vfile").VFile} file
-	 *   File.
 	 * @returns {undefined}
 	 *   Nothing.
 	 */
-	return (tree: any, file: any) => {
+	return (tree: any) => {
 		visit(tree, function (node) {
 			if (
 				node.type === "containerDirective" ||
@@ -69,21 +71,62 @@ const spanDirective = function () {
 
 				const data = node.data || (node.data = {});
 				const attributes = node.attributes || {};
-				const {color} = attributes;
+				const {color, style} = attributes;
 
-				if (!color) {
-					file.fail(
-						"Unexpected missing `color` on `span` directive",
-						node,
-					);
+				if (!color && !style) {
+					const warningKey =
+						"notification-warning-missing-color-style";
+					if (!shownWarnings.has(warningKey)) {
+						shownWarnings.add(warningKey);
+						// Defer notification to avoid setState during render
+						setTimeout(() => {
+							GlobalNotificationContext.warning({
+								title: "MarkdownWidgetComponent",
+								message:
+									"Unexpected missing `color` or `style` on `span` directive",
+							});
+						}, 0);
+					}
+					return;
 				}
 
 				data.hName = "span";
+				const styleObj: any = {};
+				if (color) {
+					styleObj.color = color;
+				}
+				if (style) {
+					switch (style) {
+						case "sub":
+							styleObj.verticalAlign = "sub";
+							styleObj.fontSize = "smaller";
+							break;
+						case "sup":
+							styleObj.verticalAlign = "super";
+							styleObj.fontSize = "smaller";
+							break;
+						case "ins":
+							styleObj.textDecoration = "underline";
+							break;
+						default: {
+							const warningKey = `invalid-style-${style}`;
+							if (!shownWarnings.has(warningKey)) {
+								shownWarnings.add(warningKey);
+								// Defer notification to avoid setState during render
+								setTimeout(() => {
+									GlobalNotificationContext.warning({
+										title: "MarkdownWidgetComponent",
+										message: `Unexpected style value "${style}" on span directive. Supported values: sub, sup, ins`,
+									});
+								}, 0);
+							}
+							return;
+						}
+					}
+				}
+
 				data.hProperties = {
-					style: {color},
-					// The following uuid key causes a warning "A props object containing a 'key' prop is being spread into JSX"
-					// It's unclear why the key would be necessary here, so it's commented out.
-					//key: uuid(),
+					style: styleObj,
 				};
 			}
 		});

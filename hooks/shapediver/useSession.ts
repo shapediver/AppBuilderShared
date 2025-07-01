@@ -1,6 +1,5 @@
 import {useEventTracking} from "@AppBuilderShared/hooks/useEventTracking";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IAcceptRejectModeSelector} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
@@ -31,8 +30,6 @@ export interface IUseSessionDto extends SessionCreateDto {
 	 * Optional callback for refreshing the JWT token.
 	 */
 	refreshJwtToken?: () => Promise<string>;
-
-	createProcessManager?: boolean;
 }
 
 /**
@@ -62,34 +59,13 @@ export function useSession(props: IUseSessionDto | undefined) {
 			removeSession: state.removeSession,
 		})),
 	);
-	const {createProcessManager} = useShapeDiverStoreProcessManager();
 	const [sessionApi, setSessionApi] = useState<ISessionApi | undefined>(
 		undefined,
 	);
 	const [error, setError] = useState<Error | undefined>(undefined);
-	const [initialProcessManagerId, setInitialProcessManagerId] = useState<
-		string | undefined
-	>(undefined);
 	const promiseChain = useRef(Promise.resolve());
 
 	const eventTracking = useEventTracking();
-
-	/**
-	 * Check if the initial process manager was removed.
-	 * If so, remove the initial process manager id from the state.
-	 */
-	useEffect(() => {
-		if (!initialProcessManagerId) return;
-		const unsubscribe = useShapeDiverStoreProcessManager.subscribe(
-			(state) => {
-				// check if the initial process manager was removed
-				if (!state.processManagers[initialProcessManagerId])
-					setInitialProcessManagerId(undefined);
-			},
-		);
-
-		return unsubscribe;
-	}, [initialProcessManagerId]);
 
 	useEffect(() => {
 		if (!props?.id) {
@@ -99,11 +75,6 @@ export function useSession(props: IUseSessionDto | undefined) {
 		const {registerParametersAndExports = true, acceptRejectMode} = props;
 
 		promiseChain.current = promiseChain.current.then(async () => {
-			if (props.createProcessManager) {
-				const initialProcessManagerId = createProcessManager(props.id);
-				setInitialProcessManagerId(initialProcessManagerId);
-			}
-
 			const api = await createSession(
 				{throwOnCustomizationError: true, ...props},
 				{onError: setError},
@@ -127,7 +98,6 @@ export function useSession(props: IUseSessionDto | undefined) {
 				await closeSession(props.id);
 				setSessionApi(undefined);
 				setError(undefined);
-				setInitialProcessManagerId(undefined);
 
 				if (registerParametersAndExports) {
 					removeSessionParameters(props.id);
@@ -139,6 +109,5 @@ export function useSession(props: IUseSessionDto | undefined) {
 	return {
 		sessionApi,
 		error,
-		initialProcessManagerId,
 	};
 }

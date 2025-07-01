@@ -3,12 +3,17 @@ import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
+import {OutputChunkLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputChunkLabelComponent";
+import {OutputStargateComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputStargateComponent";
 import {ParameterColorComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterColorComponent";
 import {ParameterLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import {ParameterSelectComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSelectComponent";
 import {ParameterSliderComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
+import {ParameterStargateComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterStargateComponent";
 import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectCarouselComponent";
 import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectGridComponent";
+import {DesktopClientPanelThemeProps} from "@AppBuilderShared/components/shapediver/stargate/DesktopClientPanel";
+import {StargateInputThemeProps} from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
@@ -568,12 +573,68 @@ export const useCustomTheme = (props: Props = {}) => {
 				// acceptRejectMode: true
 			}),
 			/**
+			 * DesktopClientPanel
+			 *
+			 * Used for displaying the desktop client panel.
+			 */
+			DesktopClientPanel: DesktopClientPanelThemeProps({
+				// iconStatusProps: {
+				// 	variant: "subtle",
+				// 	mb: 4,
+				// },
+				// alertProps: {
+				// 	title: "Desktop Clients",
+				// },
+				// alertTextProps: {
+				// 	size: "sm",
+				// },
+				// paperProps: {
+				// 	p: "md",
+				// 	withBorder: true,
+				// },
+				// stackProps: {
+				// 	gap: "md",
+				// },
+				// groupTopProps: {
+				// 	justify: "space-between",
+				// 	align: "center",
+				// },
+				// textProps: {
+				// 	fw: 500,
+				// 	size: "sm",
+				// },
+				// actionIconRefreshProps: {
+				// 	variant: "subtle",
+				// 	loaderProps: {type: "dots"},
+				// },
+				// iconRefreshProps: {
+				// 	type: IconTypeEnum.Refresh,
+				// 	size: "1rem",
+				// },
+				// groupBottomProps: {
+				// 	justify: "space-between",
+				// 	align: "end",
+				// },
+				// selectProps: {
+				// 	style: {flex: 1},
+				// 	label: "Clients",
+				// 	placeholder: "Select a client",
+				// },
+				// loaderProps: {
+				// 	type: "dots",
+				// 	size: "xs",
+				// },
+				// statusIconProps: {
+				// 	size: "1.2rem",
+				// },
+			}),
+			/**
 			 * ExportLabelComponent
 			 *
 			 * Defaults for export labels.
 			 */
 			ExportLabelComponent: ExportLabelComponentThemeProps({
-				//fontWeight: "500",
+				//fontWeight: "medium",
 			}),
 			/**
 			 * HintComponent
@@ -681,6 +742,19 @@ export const useCustomTheme = (props: Props = {}) => {
 				// autoClose: 20000, // boolean | number
 			}),
 			/**
+			 * OutputChunkLabelComponent
+			 *
+			 * Defaults for output chunk labels.
+			 */
+			OutputChunkLabelComponent: OutputChunkLabelComponentThemeProps({
+				//fontWeight: "medium",
+			}),
+			OutputStargateComponent: OutputStargateComponentThemeProps({
+				// stackProps: {
+				// 	pb: "xs",
+				// },
+			}),
+			/**
 			 * ParametersAndExportsAccordionComponent
 			 *
 			 * Defaults for parameter and export widgets.
@@ -706,7 +780,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Defaults for parameter labels.
 			 */
 			ParameterLabelComponent: ParameterLabelComponentThemeProps({
-				//fontWeight: "500",
+				//fontWeight: "medium",
 			}),
 			/**
 			 * ParameterSelectComponent
@@ -724,6 +798,25 @@ export const useCustomTheme = (props: Props = {}) => {
 			ParameterSliderComponent: ParameterSliderComponentThemeProps({
 				//sliderWidth: "60%",
 				//numberWidth: "35%",
+			}),
+			ParameterStargateComponent: ParameterStargateComponentThemeProps({
+				//parameterWrapperProps: defaultPropsParameterWrapper,
+				//tooltipProps: {
+				//	position: "left",
+				//	label: "Clear selection",
+				//},
+				//actionIconProps: {
+				//	size: "lg",
+				//	variant: "transparent",
+				//	loaderProps: {
+				//		type: "dots",
+				//	},
+				//},
+				//iconProps: {
+				//	type: IconTypeEnum.Cancel,
+				//	size: "1.2rem",
+				//  color: "var(--mantine-color-default-color)",
+				//},
 			}),
 			/**
 			 * SelectCarouselComponent
@@ -743,6 +836,30 @@ export const useCustomTheme = (props: Props = {}) => {
 			SelectGridComponent: SelectGridComponentThemeProps({
 				//gridProps: { cols: 2, spacing: "md" },
 				//showLabel: true,
+			}),
+			StargateInput: StargateInputThemeProps({
+				// buttonProps: {
+				// 	variant: "filled",
+				// 	fullWidth: true,
+				// 	justify: "space-between",
+				// },
+				// loadingButtonProps: {
+				// 	disabled: true,
+				// 	fullWidth: true,
+				// 	justify: "space-between",
+				// 	style: {
+				// 		backgroundColor: "transparent",
+				// 	},
+				// },
+				// textProps: {
+				// 	size: "sm",
+				// 	c: "dimmed",
+				// 	fs: "italic",
+				// },
+				// loaderProps: {
+				// 	type: "dots",
+				// 	size: "sm",
+				// },
 			}),
 			/**
 			 * TooltipWrapper

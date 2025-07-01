@@ -236,7 +236,9 @@ export type AppBuilderWidgetType =
 	| "actions"
 	| "attributeVisualization"
 	| "agent"
-	| "progress";
+	| "progress"
+	| "desktopClientSelection"
+	| "desktopClientOutputs";
 
 /**
  * Properties of a parameter and export accordion widget.
@@ -356,6 +358,16 @@ export interface IAppBuilderWidgetPropsProgress {
 	showPercentage?: boolean;
 }
 
+/** Properties of a desktop client selection widget. */
+export interface IAppBuilderWidgetPropsDesktopClientSelection {
+	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
+}
+
+/** Properties of a desktop client outputs widget. */
+export interface IAppBuilderWidgetPropsDesktopClientOutputs {
+	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
+}
+
 /**
  * A widget.
  *
@@ -380,7 +392,9 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsActions
 		| IAppBuilderWidgetPropsAttributeVisualization
 		| IAppBuilderWidgetPropsAgent
-		| IAppBuilderWidgetPropsProgress;
+		| IAppBuilderWidgetPropsProgress
+		| IAppBuilderWidgetPropsDesktopClientSelection
+		| IAppBuilderWidgetPropsDesktopClientOutputs;
 }
 
 /**
@@ -535,6 +549,26 @@ export function isProgressWidget(
 	widget: IAppBuilderWidget,
 ): widget is {type: "progress"; props: IAppBuilderWidgetPropsProgress} {
 	return widget.type === "progress";
+}
+
+/** assert widget type "desktopClientSelection" */
+export function isDesktopClientSelectionWidget(
+	widget: IAppBuilderWidget,
+): widget is {
+	type: "desktopClientSelection";
+	props: IAppBuilderWidgetPropsDesktopClientSelection;
+} {
+	return widget.type === "desktopClientSelection";
+}
+
+/** assert widget type "desktopClientOutputs" */
+export function isDesktopClientOutputsWidget(
+	widget: IAppBuilderWidget,
+): widget is {
+	type: "desktopClientOutputs";
+	props: IAppBuilderWidgetPropsDesktopClientOutputs;
+} {
+	return widget.type === "desktopClientOutputs";
 }
 
 /** assert action type "createModelState" */

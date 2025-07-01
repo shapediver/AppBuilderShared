@@ -110,8 +110,12 @@ export const useShapeDiverStorePlatform =
 										const provider =
 											urlParams.get("provider");
 										urlParams.delete("provider");
+										const encodedRedirect =
+											encodeURIComponent(
+												`${window.location.origin}${window.location.pathname}?${urlParams.toString()}`,
+											);
 										// redirect to platform login
-										window.location.href = `${platformUrl}/app/login?${provider ? `provider=${provider}&` : ""}redirect=${window.location.origin}${window.location.pathname}?${urlParams.toString()}`;
+										window.location.href = `${platformUrl}/app/login?${provider ? `provider=${provider}&` : ""}redirect=${encodedRedirect}`;
 									}
 								}
 
@@ -165,9 +169,8 @@ export const useShapeDiverStorePlatform =
 				): Promise<T> => {
 					const key = cacheType;
 					const {genericCache} = get();
-					const promise = genericCache[key];
 
-					if (!promise || flush) {
+					if (!(key in genericCache) || flush) {
 						const _promise = initializer();
 						set(
 							() => ({
@@ -183,7 +186,7 @@ export const useShapeDiverStorePlatform =
 						return _promise;
 					}
 
-					return promise;
+					return genericCache[key];
 				},
 
 				setCurrentModel: (

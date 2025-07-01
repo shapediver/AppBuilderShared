@@ -397,6 +397,12 @@ const IAppBuilderWidgetPropsProgressSchema = z.object({
 	delayRemoval: z.number().optional(),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsDesktopClientSelection
+const IAppBuilderWidgetPropsDesktopClientSelectionSchema = z.object({});
+
+// Zod type definition for IAppBuilderWidgetPropsDesktopClientOutputs
+const IAppBuilderWidgetPropsDesktopClientOutputsSchema = z.object({});
+
 // Zod type definition for IAppBuilderWidget
 const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -442,6 +448,14 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("progress"),
 		props: IAppBuilderWidgetPropsProgressSchema,
+	}),
+	z.object({
+		type: z.literal("desktopClientSelection"),
+		props: IAppBuilderWidgetPropsDesktopClientSelectionSchema,
+	}),
+	z.object({
+		type: z.literal("desktopClientOutputs"),
+		props: IAppBuilderWidgetPropsDesktopClientOutputsSchema,
 	}),
 ]);
 

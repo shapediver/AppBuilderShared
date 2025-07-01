@@ -1,5 +1,6 @@
 import {IEventTracking} from "@AppBuilderShared/types/eventTracking";
 import {IShapeDiverExport} from "@AppBuilderShared/types/shapediver/export";
+import {IShapeDiverOutput} from "@AppBuilderShared/types/shapediver/output";
 import {
 	IShapeDiverParameter,
 	IShapeDiverParameterDefinition,
@@ -29,6 +30,15 @@ export type IExportStores = {[exportId: string]: IExportStore};
 
 /** A map from session id to export stores per export id. */
 export type IExportStoresPerSession = {[namespace: string]: IExportStores};
+
+/** A store for an individual output. */
+export type IOutputStore = UseBoundStore<StoreApi<IShapeDiverOutput>>;
+
+/** A map from output id to output store. */
+export type IOutputStores = {[outputId: string]: IOutputStore};
+
+/** A map from session id to output stores per output id. */
+export type IOutputStoresPerSession = {[namespace: string]: IOutputStores};
 
 /** A map from session id to default export ids (ids of exports that will be requested with every computation). */
 export type IDefaultExportsPerSession = {[namespace: string]: string[]};
@@ -208,6 +218,11 @@ export interface IShapeDiverStoreParameters {
 	readonly exportStores: IExportStoresPerSession;
 
 	/**
+	 * Output stores.
+	 */
+	readonly outputStores: IOutputStoresPerSession;
+
+	/**
 	 * Session dependencies.
 	 */
 	readonly sessionDependency: ISessionDependency;
@@ -343,6 +358,24 @@ export interface IShapeDiverStoreParameters {
 		namespace: string,
 		exportId: string,
 	) => IExportStore | undefined;
+
+	/**
+	 * Get all output stores for a given session id.
+	 * @param namespace
+	 * @returns
+	 */
+	readonly getOutputs: (namespace: string) => IOutputStores;
+
+	/**
+	 * Get a single output store by output id or name.
+	 * @param namespace
+	 * @param outputId
+	 * @returns
+	 */
+	readonly getOutput: (
+		namespace: string,
+		outputId: string,
+	) => IOutputStore | undefined;
 
 	/**
 	 * Get or add pending parameter changes for a given session id.
