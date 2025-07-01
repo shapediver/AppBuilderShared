@@ -1,6 +1,6 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
-import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/modelStateNotificationCreated";
+import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/ModelStateNotificationCreated";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";

@@ -1,4 +1,4 @@
-import {IModelStateNotificationCreatedProps} from "@AppBuilderShared/components/shapediver/modelState/modelStateNotificationCreated";
+import {IModelStateNotificationCreatedProps} from "@AppBuilderShared/components/shapediver/modelState/ModelStateNotificationCreated";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {useKeyBinding} from "@AppBuilderShared/hooks/shapediver/useKeyBinding";
