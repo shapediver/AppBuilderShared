@@ -87,13 +87,7 @@ export default function AppBuilderFallbackContainerComponent({
 					sessionApi?.getOutputByName(output.outputId)[0];
 				// check if there is an output with sdtf format
 				// this is used to determine if the Attributes tab should be shown
-				return (
-					outputApi &&
-					outputApi.content &&
-					outputApi.content.some((content) =>
-						content.format.includes("sdtf"),
-					)
-				);
+				return outputApi && outputApi.chunks;
 			});
 
 			if (hasSdtfData) {
