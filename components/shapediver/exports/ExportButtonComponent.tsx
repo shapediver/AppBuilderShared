@@ -32,6 +32,7 @@ type IStatusData = {
 
 /**
  * Map from status enum to status data.
+ * TODO SS-8820 colors and messages should be controlled by the theme
  */
 const StatusDataMap: {[key in ExportStatusEnum]: IStatusData} = {
 	[ExportStatusEnum.notActive]: {

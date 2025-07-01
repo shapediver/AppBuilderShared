@@ -12,7 +12,7 @@ import {useAllParameters} from "../parameters/useAllParameters";
 import {useStargateExportFile} from "./useStargateExportFile";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
-// TODO ideally move these messages to properties that can be controlled from the theme
+// TODO SS-8820 ideally move these messages to properties that can be controlled from the theme
 export const ResultErrorMessages = {
 	[ISdStargateExportFileResultEnum.SUCCESS]:
 		"The file was successfully exported.",

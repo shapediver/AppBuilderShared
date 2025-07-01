@@ -16,7 +16,7 @@ import {useAllParameters} from "../parameters/useAllParameters";
 import {useStargateBakeData} from "./useStargateBakeData";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
-// TODO ideally move these messages to properties that can be controlled from the theme
+// TODO SS-8820 ideally move these messages to properties that can be controlled from the theme
 export const ResultErrorMessages = {
 	[ISdStargateBakeDataResultEnum.SUCCESS]:
 		"The objects were successfully baked.",

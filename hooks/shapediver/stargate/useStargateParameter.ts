@@ -14,7 +14,7 @@ import {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {ERROR_TYPE_INTERRUPTED, useStargateGetData} from "./useStargateGetData";
 
-// TODO ideally move these messages to properties that can be controlled from the theme
+// TODO SS-8820 ideally move these messages to properties that can be controlled from the theme
 const ResultErrorMessages = {
 	[ISdStargateGetDataResultEnum.NOTHING]:
 		"No objects were selected in the client.",
