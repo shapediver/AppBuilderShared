@@ -28,46 +28,39 @@ export function useParameterImportExport(namespace: string) {
 	 * Export parameters as JSON file
 	 */
 	const exportParameters = useCallback(async () => {
-		try {
-			// Get current parameter values from store
-			const parameters = useShapeDiverStoreParameters
-				.getState()
-				.getParameters(namespace);
-			const parameterArray: {id: string; value: any; name: string}[] = [];
+		// Get current parameter values from store
+		const parameters = useShapeDiverStoreParameters
+			.getState()
+			.getParameters(namespace);
+		const parameterArray: {id: string; value: any; name: string}[] = [];
 
-			Object.values(parameters).forEach((paramStore) => {
-				const param = paramStore.getState();
-				parameterArray.push({
-					id: param.definition.id,
-					value: param.state.execValue,
-					name: param.definition.name,
-				});
+		Object.values(parameters).forEach((paramStore) => {
+			const param = paramStore.getState();
+			parameterArray.push({
+				id: param.definition.id,
+				value: param.state.execValue,
+				name: param.definition.name,
 			});
+		});
 
-			// Create JSON blob and download
-			const jsonContent = JSON.stringify({
-				...(currentModel && {model_id: currentModel.id}),
-				parameters: parameterArray,
-			});
-			const blob = new Blob([jsonContent], {type: "application/json"});
-			const url = URL.createObjectURL(blob);
-			const link = document.createElement("a");
-			link.href = url;
-			link.download = `parameters_${namespace}_${new Date().toISOString().split("T")[0]}.json`;
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
-			URL.revokeObjectURL(url);
+		// Create JSON blob and download
+		const jsonContent = JSON.stringify({
+			...(currentModel && {model_id: currentModel.id}),
+			parameters: parameterArray,
+		});
+		const blob = new Blob([jsonContent], {type: "application/json"});
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = `parameters_${namespace}_${new Date().toISOString().split("T")[0]}.json`;
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		URL.revokeObjectURL(url);
 
-			notifications.success({
-				message: "Parameter values exported successfully",
-			});
-		} catch (error) {
-			errorReporting.captureException(error);
-			notifications.error({
-				message: "Failed to export parameters",
-			});
-		}
+		notifications.success({
+			message: "Parameter values exported successfully",
+		});
 	}, [namespace, currentModel]);
 
 	/**
@@ -188,32 +181,25 @@ export function useParameterImportExport(namespace: string) {
 	 * Reset parameters to default values
 	 */
 	const resetParameters = useCallback(async () => {
-		try {
-			const parameters = useShapeDiverStoreParameters
-				.getState()
-				.getParameters(namespace);
-			const defaultValues: {[key: string]: any} = {};
+		const parameters = useShapeDiverStoreParameters
+			.getState()
+			.getParameters(namespace);
+		const defaultValues: {[key: string]: any} = {};
 
-			Object.values(parameters).forEach((paramStore) => {
-				const param = paramStore.getState();
-				defaultValues[param.definition.id] = param.definition.defval;
-			});
+		Object.values(parameters).forEach((paramStore) => {
+			const param = paramStore.getState();
+			defaultValues[param.definition.id] = param.definition.defval;
+		});
 
-			if (Object.keys(defaultValues).length === 0) {
-				throw new Error("No default values available for this session");
-			}
-
-			await batchParameterValueUpdate(namespace, defaultValues);
-
-			notifications.success({
-				message: "Parameters reset to default values",
-			});
-		} catch (error) {
-			errorReporting.captureException(error);
-			notifications.error({
-				message: "Failed to reset parameters",
-			});
+		if (Object.keys(defaultValues).length === 0) {
+			throw new Error("No default values available for this session");
 		}
+
+		await batchParameterValueUpdate(namespace, defaultValues);
+
+		notifications.success({
+			message: "Parameters reset to default values",
+		});
 	}, [namespace]);
 
 	return {
