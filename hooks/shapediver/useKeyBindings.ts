@@ -1,3 +1,4 @@
+import {IModelStateNotificationCreatedProps} from "@AppBuilderShared/components/shapediver/modelState/modelStateNotificationCreated";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {useKeyBinding} from "@AppBuilderShared/hooks/shapediver/useKeyBinding";
@@ -6,6 +7,9 @@ import {useCallback, useContext} from "react";
 
 interface Props {
 	namespace: string;
+	getNotification: (
+		props: IModelStateNotificationCreatedProps,
+	) => React.ReactNode;
 }
 
 /**
@@ -15,7 +19,7 @@ interface Props {
  * @returns
  */
 export function useKeyBindings(props: Props) {
-	const {namespace} = props;
+	const {namespace, getNotification} = props;
 	const {createModelState, applyModelStateToQueryParameter} =
 		useCreateModelState({namespace});
 	const notifications = useContext(NotificationContext);
@@ -31,14 +35,20 @@ export function useKeyBindings(props: Props) {
 
 		// Save the modelStateId as a search parameter
 		if (modelStateId) {
-			applyModelStateToQueryParameter(modelStateId);
+			const url = applyModelStateToQueryParameter(modelStateId);
 			notifications.success({
-				message: `Model state with ID ${modelStateId} has been saved.`,
+				message: getNotification({
+					modelStateId,
+					link: url.toString(),
+				}),
 			});
 			// in case we are not running inside an iframe, the instance of
 			// IEcommerceApi will be a dummy for testing
 			const api = await ECommerceApiSingleton;
-			await api.updateSharingLink({modelStateId, imageUrl: screenshot});
+			await api.updateSharingLink({
+				modelStateId,
+				imageUrl: screenshot,
+			});
 		}
 	}, [createModelState]);
 

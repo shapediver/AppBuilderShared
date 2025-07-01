@@ -137,6 +137,7 @@ export function useCreateModelState(props: Props) {
 			const url = new URL(window.location.href);
 			url.searchParams.set(QUERYPARAM_MODELSTATEID, modelStateId);
 			window.history.replaceState({}, "", url.toString());
+			return url;
 		},
 		[],
 	);

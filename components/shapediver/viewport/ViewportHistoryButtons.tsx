@@ -1,3 +1,4 @@
+import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/modelStateNotificationCreated";
 import ImportModelStateDialog from "@AppBuilderShared/components/shapediver/ui/ImportModelStateDialog";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
@@ -100,9 +101,14 @@ export default function ViewportHistoryButtons(props: Props) {
 		);
 
 		if (modelStateId) {
-			applyModelStateToQueryParameter(modelStateId);
+			const url = applyModelStateToQueryParameter(modelStateId);
 			notifications.success({
-				message: "Model state successfully created",
+				message: (
+					<ModelStateNotificationCreated
+						modelStateId={modelStateId}
+						link={url.toString()}
+					/>
+				),
 			});
 		}
 

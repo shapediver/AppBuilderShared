@@ -1,5 +1,6 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
+import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/modelStateNotificationCreated";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
@@ -269,7 +270,12 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	useParameterHistory({loaded: show});
 
 	// key bindings
-	useKeyBindings({namespace});
+	useKeyBindings({
+		namespace,
+		getNotification: (props) => (
+			<ModelStateNotificationCreated {...props} />
+		),
+	});
 
 	const showMarkdown =
 		!(settings && hasSession) && // no settings or no session

@@ -1,4 +1,5 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
+import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/modelStateNotificationCreated";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
@@ -49,9 +50,14 @@ export default function AppBuilderActionCreateModelStateComponent(
 
 		// Save the modelStateId as a search parameter
 		if (modelStateId) {
-			applyModelStateToQueryParameter(modelStateId);
+			const url = applyModelStateToQueryParameter(modelStateId);
 			notifications.success({
-				message: `Model state with ID ${modelStateId} has been saved.`,
+				message: (
+					<ModelStateNotificationCreated
+						modelStateId={modelStateId}
+						link={url.toString()}
+					/>
+				),
 			});
 			// in case we are not running inside an iframe, the instance of
 			// IEcommerceApi will be a dummy for testing
