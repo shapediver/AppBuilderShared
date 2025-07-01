@@ -633,6 +633,10 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 */
 	acceptRejectMode?: boolean;
 	/**
+	 * If the attribute visualization should be hidden by default.
+	 */
+	hideAttributeVisualization?: boolean;
+	/**
 	 * Optional model state id.
 	 */
 	modelStateId?: string;

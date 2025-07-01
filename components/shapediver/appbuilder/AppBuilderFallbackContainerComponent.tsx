@@ -3,19 +3,23 @@ import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import React, {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
+import AppBuilderAttributeVisualizationWidgetComponent from "./widgets/AppBuilderAttributeVisualizationWidgetComponent";
 
 interface Props {
 	parameters: PropsParameter[];
 	exports: PropsExport[];
 	outputs: PropsOutput[];
 	namespace?: string;
+	settings?: IAppBuilderSettingsSession;
 }
 
 export default function AppBuilderFallbackContainerComponent({
@@ -23,9 +27,15 @@ export default function AppBuilderFallbackContainerComponent({
 	exports,
 	outputs,
 	namespace,
+	settings,
 }: Props) {
 	const showDesktopClientPanel = useShapeDiverStoreStargate(
 		useShallow((state) => state.referenceCount > 0),
+	);
+	const {sessionApi} = useShapeDiverStoreSession(
+		useShallow((state) => ({
+			sessionApi: namespace ? state.sessions[namespace] : undefined,
+		})),
 	);
 
 	const tabProps: ITabsComponentProps = useMemo(() => {
@@ -69,8 +79,38 @@ export default function AppBuilderFallbackContainerComponent({
 				children: [<DesktopClientPanel key={2} />],
 			});
 		}
+
+		if (!settings?.hideAttributeVisualization) {
+			const hasSdtfData = outputs.some((output) => {
+				const outputApi =
+					sessionApi?.getOutputById(output.outputId) ||
+					sessionApi?.getOutputByName(output.outputId)[0];
+				// check if there is an output with sdtf format
+				// this is used to determine if the Attributes tab should be shown
+				return (
+					outputApi &&
+					outputApi.content &&
+					outputApi.content.some((content) =>
+						content.format.includes("sdtf"),
+					)
+				);
+			});
+
+			if (hasSdtfData) {
+				tabProps.tabs.push({
+					name: "Attributes",
+					icon: IconTypeEnum.Tags,
+					children: [
+						<AppBuilderAttributeVisualizationWidgetComponent
+							key={0}
+						/>,
+					],
+				});
+			}
+		}
+
 		return tabProps;
-	}, [parameters, exports, outputs]);
+	}, [settings, parameters, exports, outputs]);
 
 	return <TabsComponent {...tabProps} />;
 }
