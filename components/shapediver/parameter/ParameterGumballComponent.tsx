@@ -24,8 +24,9 @@ import {
 import {
 	GumballParameterValue,
 	IGumballParameterProps,
+	validateGumballParameterSettings,
 } from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**
@@ -77,7 +78,13 @@ export default function ParameterGumballComponent(
 		props,
 	);
 
-	const gumballProps = definition.settings?.props as IGumballParameterProps;
+	// settings validation
+	const gumballProps = useMemo(() => {
+		const result = validateGumballParameterSettings(definition.settings);
+		return result.success
+			? (result.data.props as IGumballParameterProps)
+			: {};
+	}, [definition.settings]);
 
 	// state for the gumball application
 	const [gumballActive, setGumballActive] = useState<boolean>(false);

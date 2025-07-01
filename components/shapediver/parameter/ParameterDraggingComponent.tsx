@@ -16,8 +16,9 @@ import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interac
 import {
 	DraggingParameterValue,
 	IDraggingParameterProps,
+	validateDraggingParameterSettings,
 } from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**
@@ -64,7 +65,13 @@ export default function ParameterDraggingComponent(
 		props,
 	);
 
-	const draggingProps = definition.settings?.props as IDraggingParameterProps;
+	// settings validation
+	const draggingProps = useMemo(() => {
+		const result = validateDraggingParameterSettings(definition.settings);
+		return result.success
+			? (result.data.props as IDraggingParameterProps)
+			: {};
+	}, [definition.settings]);
 
 	// is the dragging active or not?
 	const [draggingActive, setDraggingActive] = useState<boolean>(false);
