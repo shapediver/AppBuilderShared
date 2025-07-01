@@ -25,8 +25,9 @@ import {
 import {
 	ISelectionParameterProps,
 	SelectionParameterValue,
+	validateSelectionParameterSettings,
 } from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**
@@ -69,8 +70,14 @@ export default function ParameterSelectionComponent(
 		props,
 	);
 
-	const selectionProps = definition.settings
-		?.props as ISelectionParameterProps;
+	// settings validation
+	const selectionProps = useMemo(() => {
+		const result = validateSelectionParameterSettings(definition.settings);
+		return result.success
+			? (result.data.props as ISelectionParameterProps)
+			: {};
+	}, [definition.settings]);
+
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
 

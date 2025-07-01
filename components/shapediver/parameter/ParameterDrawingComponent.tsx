@@ -29,6 +29,7 @@ import {PointsData} from "@shapediver/viewer.features.drawing-tools";
 import {
 	IDrawingParameterSettings as IDrawingParameterProps,
 	SystemInfo,
+	validateDrawingParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {
 	useCallback,
@@ -81,8 +82,11 @@ export default function ParameterDrawingComponent(
 	// get the notification context
 	const notifications = useContext(NotificationContext);
 
-	// get the drawing parameter properties
-	const drawingProps = definition.settings as IDrawingParameterProps;
+	// settings validation
+	const drawingProps = useMemo(() => {
+		const result = validateDrawingParameterSettings(definition.settings);
+		return result.success ? (result.data as IDrawingParameterProps) : {};
+	}, [definition.settings]);
 
 	// state for the drawing application
 	const [drawingActive, setDrawingActive] = useState<boolean>(false);
