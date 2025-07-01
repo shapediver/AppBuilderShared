@@ -1,5 +1,6 @@
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {
@@ -12,7 +13,9 @@ import {StargateFileParamPrefix} from "@AppBuilderShared/types/shapediver/starga
 import {
 	Button,
 	ButtonProps,
+	Group,
 	MantineThemeComponent,
+	TooltipProps,
 	useProps,
 } from "@mantine/core";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
@@ -38,24 +41,33 @@ const StatusDataMap: {[key in ExportStatusEnum]: IStatusData} = {
 	},
 	[ExportStatusEnum.incompatible]: {
 		color: "var(--mantine-color-gray-2)",
-		message: "Incompatible export",
+		message: "Export not supported",
 		isBtnDisabled: true,
 	},
 	[ExportStatusEnum.active]: {
 		color: "orange",
-		message: "Export is available",
+		message: "Export to client",
 		isBtnDisabled: false,
 	},
 };
 
 interface StyleProps {
 	buttonProps?: Partial<ButtonProps>;
+	downloadTooltipProps: Partial<TooltipProps>;
+	downloadButtonProps?: Partial<ButtonProps>;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
 	buttonProps: {
 		variant: "filled",
 		fullWidth: true,
+	},
+	downloadTooltipProps: {
+		position: "top",
+		label: "Download file",
+	},
+	downloadButtonProps: {
+		variant: "default",
 	},
 };
 
@@ -77,7 +89,7 @@ export function ExportButtonComponentThemeProps(
 export default function ExportButtonComponent(
 	props: PropsExport & ExportButtonComponentThemePropsType,
 ) {
-	const {buttonProps} = useProps(
+	const {buttonProps, downloadTooltipProps, downloadButtonProps} = useProps(
 		"ExportButtonComponent",
 		defaultStyleProps,
 		props,
@@ -104,7 +116,7 @@ export default function ExportButtonComponent(
 		const dn = definition.displayname || definition.name;
 		return dn.startsWith(StargateFileParamPrefix)
 			? {
-					isStargate: true,
+					isStargate: definition.type === EXPORT_TYPE.DOWNLOAD,
 					label: dn.substring(StargateFileParamPrefix.length),
 				}
 			: {
@@ -113,106 +125,130 @@ export default function ExportButtonComponent(
 				};
 	}, [definition]);
 
-	const exportRequest = useCallback(async () => {
-		// request the export
-		const response = await actions.request();
+	const exportRequest = useCallback(
+		async (skipStargate?: boolean) => {
+			// request the export
+			const response = await actions.request();
 
-		// if the export is a download export, download it
-		if (definition.type === EXPORT_TYPE.DOWNLOAD) {
-			if (
-				response.content &&
-				response.content[0] &&
-				response.content[0].href
-			) {
-				const content = response.content[0];
-				if (isStargate) {
-					if (!(await isContentSupported(content))) {
-						notifications.error({
-							title: "Unsupported content type",
-							message: `Content type ${content.format} not supported by the selected client.`,
+			// if the export is a download export, download it
+			if (definition.type === EXPORT_TYPE.DOWNLOAD) {
+				if (
+					response.content &&
+					response.content[0] &&
+					response.content[0].href
+				) {
+					const content = response.content[0];
+					if (!skipStargate && isStargate) {
+						if (!(await isContentSupported(content))) {
+							notifications.error({
+								title: "Unsupported content type",
+								message: `Content type ${content.format} not supported by the selected client.`,
+							});
+							return;
+						}
+						await onExportFile();
+					} else {
+						const url = content.href;
+						const filename = response.filename?.endsWith(
+							content.format,
+						)
+							? response.filename
+							: `${response.filename}.${content.format}`;
+						const sizemsg = content.size
+							? ` (${Math.ceil(content.size / 1000)}kB)`
+							: "";
+						notifications.success({
+							message: `Downloading file ${filename}${sizemsg}`,
 						});
-						return;
+						const res = await actions.fetch(url);
+						await fetchFileWithToken(res, filename);
 					}
-					await onExportFile();
-				} else {
-					const url = content.href;
-					const filename = response.filename?.endsWith(content.format)
-						? response.filename
-						: `${response.filename}.${content.format}`;
-					const sizemsg = content.size
-						? ` (${Math.ceil(content.size / 1000)}kB)`
-						: "";
+				} else if (
+					response.content &&
+					response.content.length === 0 &&
+					response.msg
+				) {
 					notifications.success({
-						message: `Downloading file ${filename}${sizemsg}`,
-					});
-					const res = await actions.fetch(url);
-					await fetchFileWithToken(res, filename);
-				}
-			} else if (
-				response.content &&
-				response.content.length === 0 &&
-				response.msg
-			) {
-				notifications.success({
-					message: response.msg,
-				});
-			}
-		} else if (definition.type === EXPORT_TYPE.EMAIL) {
-			// if the export is an email export, show the resulting message
-			if (response.result) {
-				const result = response.result;
-				if (result.err) {
-					notifications.error({
-						message: result.err,
+						message: response.msg,
 					});
 				}
-				if (result.msg) {
-					notifications.success({
-						message: result.msg,
-					});
+			} else if (definition.type === EXPORT_TYPE.EMAIL) {
+				// if the export is an email export, show the resulting message
+				if (response.result) {
+					const result = response.result;
+					if (result.err) {
+						notifications.error({
+							message: result.err,
+						});
+					}
+					if (result.msg) {
+						notifications.success({
+							message: result.msg,
+						});
+					}
 				}
 			}
-		}
-	}, [actions, definition.type, isStargate, isContentSupported]);
+		},
+		[actions, definition.type, isStargate, isContentSupported],
+	);
 
 	const [requestingExport, setRequestingExport] = useState(false);
 
 	// callback for when the export button has been clicked
-	const onClick = useCallback(async () => {
-		// set the requestingExport true to display a loading icon
-		setRequestingExport(true);
+	const onClick = useCallback(
+		async (skipStargate?: boolean) => {
+			// set the requestingExport true to display a loading icon
+			setRequestingExport(true);
 
-		await exportRequest();
+			await exportRequest(skipStargate);
 
-		// set the requestingExport false to remove the loading icon
-		setRequestingExport(false);
-	}, [exportRequest]);
+			// set the requestingExport false to remove the loading icon
+			setRequestingExport(false);
+		},
+		[exportRequest],
+	);
 
 	return (
 		<>
 			<ExportLabelComponent {...props} label={label} />
 			{definition &&
 				(isStargate ? (
-					<StargateInput
-						message={statusData.message}
-						color={statusData.color}
-						isWaiting={requestingExport || isWaiting}
-						waitingText="Waiting for export..."
-						disabled={statusData.isBtnDisabled}
-						onClick={onClick}
-					/>
+					<Group wrap="nowrap">
+						<StargateInput
+							message={statusData.message}
+							color={statusData.color}
+							isWaiting={requestingExport || isWaiting}
+							waitingText="Waiting for export..."
+							disabled={statusData.isBtnDisabled}
+							onClick={() => onClick()}
+						/>
+						<TooltipWrapper
+							{...downloadTooltipProps}
+							label={
+								downloadTooltipProps?.label || "Download file"
+							}
+						>
+							<Button
+								{...downloadButtonProps}
+								onClick={() => onClick(true)}
+								loading={requestingExport}
+							>
+								<Icon type={IconTypeEnum.Download} />
+							</Button>
+						</TooltipWrapper>
+					</Group>
 				) : (
 					<Button
+						{...buttonProps}
 						leftSection={
 							definition.type === EXPORT_TYPE.DOWNLOAD ? (
 								<Icon type={IconTypeEnum.Download} />
 							) : (
-								<Icon type={IconTypeEnum.MailFoward} />
+								<Icon type={IconTypeEnum.MailForward} />
 							)
 						}
-						onClick={onClick}
+						onClick={() => onClick()}
 						loading={requestingExport}
-						{...buttonProps}
 					>
 						{definition.type === EXPORT_TYPE.DOWNLOAD
 							? "Download File"

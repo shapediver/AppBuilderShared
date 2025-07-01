@@ -256,6 +256,7 @@ export default function ParameterFileInputComponent(
 								leftSection={
 									<Icon type={IconTypeEnum.Upload} />
 								}
+								leftSectionPointerEvents="none"
 								disabled={disabled}
 								valueComponent={() => null}
 								value={
@@ -265,7 +266,7 @@ export default function ParameterFileInputComponent(
 											: null
 										: value
 								}
-							/>
+							></FileInput>
 						</TooltipWrapper>
 					</Group>
 				) : (
@@ -277,6 +278,7 @@ export default function ParameterFileInputComponent(
 							handleChange(guessMissingMimeType(v || ""))
 						}
 						leftSection={<Icon type={IconTypeEnum.Upload} />}
+						leftSectionPointerEvents="none"
 						disabled={disabled}
 						valueComponent={undefined}
 						value={

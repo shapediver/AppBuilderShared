@@ -100,7 +100,7 @@ interface StyleProps {
 const defaultStyleProps: Partial<StyleProps> = {
 	iconStatusProps: {
 		variant: "subtle",
-		mb: 4,
+		size: "2.25rem",
 	},
 	alertProps: {
 		title: "Desktop Clients",
