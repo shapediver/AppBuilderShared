@@ -99,7 +99,7 @@ export default function OutputChunkComponent(props: Props) {
 				color={statusData.color}
 				isWaiting={isWaiting}
 				waitingText="Waiting for client..."
-				isBtnDisabled={statusData.isBtnDisabled}
+				disabled={statusData.isBtnDisabled}
 				onClick={onBakeData}
 			/>
 		</>

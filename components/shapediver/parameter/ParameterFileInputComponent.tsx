@@ -18,6 +18,7 @@ import {
 	ActionIcon,
 	ActionIconProps,
 	FileInput,
+	Group,
 	MantineThemeComponent,
 	TooltipProps,
 	useProps,
@@ -71,27 +72,32 @@ const StatusDataMap: {[key in ParameterStatusEnum]: IStatusData} = {
 };
 
 interface StyleProps {
-	tooltipProps: Partial<TooltipProps>;
-	actionIconProps: Partial<ActionIconProps>;
-	iconProps: IconProps;
+	cancelTooltipProps: Partial<TooltipProps>;
+	cancelActionIconProps: Partial<ActionIconProps>;
+	cancelIconProps: IconProps;
+	uploadTooltipProps: Partial<TooltipProps>;
 }
 
 const defaultStyleProps: StyleProps = {
-	tooltipProps: {
+	cancelTooltipProps: {
 		position: "top",
 		label: "Drop imported file",
 	},
-	actionIconProps: {
+	cancelActionIconProps: {
 		size: "1.5rem",
 		variant: "transparent",
 		loaderProps: {
 			type: "dots",
 		},
 	},
-	iconProps: {
+	cancelIconProps: {
 		type: IconTypeEnum.Cancel,
 		size: "1.2rem",
 		color: "var(--mantine-color-default-color)",
+	},
+	uploadTooltipProps: {
+		position: "top",
+		label: "Upload file",
 	},
 };
 
@@ -118,11 +124,12 @@ export default function ParameterFileInputComponent(
 	const {definition, value, state, handleChange, onCancel, disabled} =
 		useParameterComponentCommons<File>(props, 0);
 
-	const {tooltipProps, actionIconProps, iconProps} = useProps(
-		"ParameterFileInputComponent",
-		defaultStyleProps,
-		props,
-	);
+	const {
+		cancelTooltipProps,
+		cancelActionIconProps,
+		cancelIconProps,
+		uploadTooltipProps,
+	} = useProps("ParameterFileInputComponent", defaultStyleProps, props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterFileInputComponent",
@@ -203,20 +210,22 @@ export default function ParameterFileInputComponent(
 				rightSection={
 					onCancel || !isStargate ? undefined : (
 						<TooltipWrapper
-							{...tooltipProps}
-							label={tooltipProps.label || "Drop imported file"}
+							{...cancelTooltipProps}
+							label={
+								cancelTooltipProps.label || "Drop imported file"
+							}
 						>
 							<ActionIcon
+								{...cancelActionIconProps}
 								style={{
 									visibility: value ? "visible" : "hidden",
 								}}
 								color={disabled ? "gray" : statusData.color}
 								loading={isWaiting}
 								disabled={isWaiting || disabled}
-								{...actionIconProps}
 								onClick={onClearSelection}
 							>
-								<Icon {...iconProps} />
+								<Icon {...cancelIconProps} />
 							</ActionIcon>
 						</TooltipWrapper>
 					)
@@ -224,17 +233,44 @@ export default function ParameterFileInputComponent(
 			/>
 			{definition &&
 				(isStargate ? (
-					<StargateInput
-						message={statusData.message}
-						color={statusData.color}
-						isWaiting={isWaiting}
-						waitingText="Waiting for import..."
-						isBtnDisabled={statusData.isBtnDisabled || disabled}
-						onClick={onObjectAdd}
-					/>
+					<Group wrap="nowrap">
+						<StargateInput
+							message={statusData.message}
+							color={statusData.color}
+							isWaiting={isWaiting}
+							waitingText="Waiting for import..."
+							disabled={statusData.isBtnDisabled || disabled}
+							onClick={onObjectAdd}
+							icon={IconTypeEnum.DeviceDesktopDown}
+						/>
+						<TooltipWrapper
+							{...uploadTooltipProps}
+							label={uploadTooltipProps.label || "Upload file"}
+						>
+							<FileInput
+								accept={fileEndings.join(",")}
+								clearable={false}
+								onChange={(v) =>
+									handleChange(guessMissingMimeType(v || ""))
+								}
+								leftSection={
+									<Icon type={IconTypeEnum.Upload} />
+								}
+								disabled={disabled}
+								valueComponent={() => null}
+								value={
+									typeof value === "string"
+										? value === definition.defval
+											? defaultFile
+											: null
+										: value
+								}
+							/>
+						</TooltipWrapper>
+					</Group>
 				) : (
 					<FileInput
-						placeholder="File Upload"
+						placeholder="File upload"
 						accept={fileEndings.join(",")}
 						clearable={!!state.execValue}
 						onChange={(v) =>
@@ -242,6 +278,7 @@ export default function ParameterFileInputComponent(
 						}
 						leftSection={<Icon type={IconTypeEnum.Upload} />}
 						disabled={disabled}
+						valueComponent={undefined}
 						value={
 							typeof value === "string"
 								? value === definition.defval

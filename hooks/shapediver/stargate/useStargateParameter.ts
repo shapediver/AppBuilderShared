@@ -21,7 +21,7 @@ const ResultErrorMessages = {
 	[ISdStargateGetDataResultEnum.FAILURE]:
 		"The selection operation failed in the client.",
 	[ISdStargateGetDataResultEnum.CANCEL]:
-		"The selection operation was canceled in the client.",
+		"The selection operation was cancelled in the client.",
 };
 
 export interface IUseStargateParameterProps {
@@ -218,7 +218,7 @@ export const useStargateParameter = ({
 				notifications.warning({
 					title: "Response timeout",
 					message:
-						"The selection operation was canceled due to inactivity in the client.",
+						"The selection operation was cancelled due to inactivity in the client.",
 				});
 			} else {
 				notifications.error({

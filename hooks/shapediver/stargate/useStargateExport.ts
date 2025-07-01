@@ -15,11 +15,11 @@ import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 // TODO ideally move these messages to properties that can be controlled from the theme
 export const ResultErrorMessages = {
 	[ISdStargateExportFileResultEnum.SUCCESS]:
-		"The file was successfully export.",
-	[ISdStargateExportFileResultEnum.NOTHING]: "No objects were exported.",
+		"The file was successfully exported.",
+	[ISdStargateExportFileResultEnum.NOTHING]: "No data was exported.",
 	[ISdStargateExportFileResultEnum.FAILURE]: "The export operation failed.",
 	[ISdStargateExportFileResultEnum.CANCEL]:
-		"The export operation was canceled.",
+		"The export operation was cancelled.",
 };
 
 export interface IUseStargateExportProps {
@@ -170,7 +170,7 @@ export const useStargateExport = ({
 
 		if (result === ISdStargateExportFileResultEnum.FAILURE) {
 			notifications.warning({
-				title: "Exporting failed",
+				title: "Export failed",
 				message:
 					message ||
 					ResultErrorMessages[
@@ -195,7 +195,7 @@ export const useStargateExport = ({
 			});
 		} else if (result === ISdStargateExportFileResultEnum.NOTHING) {
 			notifications.warning({
-				title: "Nothing exported",
+				title: "Nothing was exported",
 				message:
 					message ||
 					ResultErrorMessages[

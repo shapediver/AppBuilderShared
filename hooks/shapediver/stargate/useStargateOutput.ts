@@ -23,7 +23,7 @@ export const ResultErrorMessages = {
 	[ISdStargateBakeDataResultEnum.NOTHING]: "No objects were baked.",
 	[ISdStargateBakeDataResultEnum.FAILURE]: "The baking operation failed.",
 	[ISdStargateBakeDataResultEnum.CANCEL]:
-		"The baking operation was canceled.",
+		"The baking operation was cancelled.",
 };
 
 export interface IUseStargateOutputProps {
@@ -238,29 +238,25 @@ export const useStargateOutput = ({
 		const {result, message} = replyDto.info;
 
 		if (result === ISdStargateBakeDataResultEnum.FAILURE) {
-			notifications.warning({
-				title: "Baking failed",
+			notifications.error({
 				message:
 					message ||
 					ResultErrorMessages[ISdStargateBakeDataResultEnum.FAILURE],
 			});
 		} else if (result === ISdStargateBakeDataResultEnum.SUCCESS) {
 			notifications.success({
-				title: "Baking successful",
 				message:
 					message ||
 					ResultErrorMessages[ISdStargateBakeDataResultEnum.SUCCESS],
 			});
 		} else if (result === ISdStargateBakeDataResultEnum.CANCEL) {
 			notifications.warning({
-				title: "Baking cancelled",
 				message:
 					message ||
 					ResultErrorMessages[ISdStargateBakeDataResultEnum.CANCEL],
 			});
 		} else if (result === ISdStargateBakeDataResultEnum.NOTHING) {
 			notifications.warning({
-				title: "Nothing to bake",
 				message:
 					message ||
 					ResultErrorMessages[ISdStargateBakeDataResultEnum.NOTHING],

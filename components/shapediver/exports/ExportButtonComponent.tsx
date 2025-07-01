@@ -198,7 +198,7 @@ export default function ExportButtonComponent(
 						color={statusData.color}
 						isWaiting={requestingExport || isWaiting}
 						waitingText="Waiting for export..."
-						isBtnDisabled={statusData.isBtnDisabled}
+						disabled={statusData.isBtnDisabled}
 						onClick={onClick}
 					/>
 				) : (

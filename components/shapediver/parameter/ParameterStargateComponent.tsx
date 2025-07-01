@@ -181,8 +181,9 @@ export default function ParameterStargateComponent(
 					color={statusData.color}
 					isWaiting={isWaiting}
 					waitingText="Waiting for selection..."
-					isBtnDisabled={statusData.isBtnDisabled || disabled}
+					disabled={statusData.isBtnDisabled || disabled}
 					onClick={onObjectAdd}
+					icon={IconTypeEnum.DeviceDesktopDown}
 				/>
 			)}
 		</ParameterWrapperComponent>
