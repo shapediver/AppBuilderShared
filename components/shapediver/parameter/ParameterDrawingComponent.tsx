@@ -291,6 +291,7 @@ export default function ParameterDrawingComponent(
 			<DrawingOptionsComponent
 				viewportId={viewportId}
 				drawingToolsApi={drawingToolsApi}
+				drawingToolsSettings={drawingProps}
 			/>
 
 			<Group justify="space-between" w="100%" wrap="nowrap">
