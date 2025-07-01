@@ -128,13 +128,11 @@ export function useAttributeWidgetVisibilityTracker(props: {
 
 			const visible = isElementVisible(el);
 
-			if (prev.isVisible !== visible) {
-				visibilityMap.set(entryId, {
-					...prev,
-					isVisible: visible,
-				});
-				updateMap.get(entryId)?.setIsVisible(visible);
-			}
+			visibilityMap.set(entryId, {
+				...prev,
+				isVisible: visible,
+			});
+			updateMap.get(entryId)?.setIsVisible(visible);
 		}
 		notifyAll();
 	}, []);
