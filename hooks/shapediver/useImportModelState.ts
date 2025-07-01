@@ -50,8 +50,9 @@ export function useImportModelState(namespace: string) {
 
 			setIsLoading(true);
 			try {
-				// TODO: get parameters from state id
-				console.log("importModelStateId", trimmedId);
+				const {
+					modelState: {parameters},
+				} = await sessionApi.getModelState(trimmedId);
 
 				const sessionParameters = useShapeDiverStoreParameters
 					.getState()
@@ -60,9 +61,9 @@ export function useImportModelState(namespace: string) {
 					(p) => !!p?.getState().acceptRejectMode,
 				);
 
-				await batchParameterValueUpdate(
+				batchParameterValueUpdate(
 					namespace,
-					{}, // TODO: state id parameters
+					parameters,
 					!acceptRejectMode,
 				);
 
