@@ -1,3 +1,4 @@
+import {GlobalNotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {
 	Anchor,
 	Blockquote,
@@ -22,6 +23,9 @@ import remarkGfm from "remark-gfm";
 import {visit} from "unist-util-visit";
 import classes from "./MarkdownWidgetComponent.module.css";
 import ThemeProvider from "./ThemeProvider";
+
+// Set to track warnings that have already been shown to prevent duplicates
+const shownWarnings = new Set<string>();
 
 interface Props {
 	children: string;
@@ -53,12 +57,10 @@ const spanDirective = function () {
 	/**
 	 * @param {import("mdast").Root} tree
 	 *   Tree.
-	 * @param {import("vfile").VFile} file
-	 *   File.
 	 * @returns {undefined}
 	 *   Nothing.
 	 */
-	return (tree: any, file: any) => {
+	return (tree: any) => {
 		visit(tree, function (node) {
 			if (
 				node.type === "containerDirective" ||
@@ -72,10 +74,19 @@ const spanDirective = function () {
 				const {color, style} = attributes;
 
 				if (!color && !style) {
-					file.fail(
-						"Unexpected missing `color` or `style` on `span` directive",
-						node,
-					);
+					const warningKey =
+						"notification-warning-missing-color-style";
+					if (!shownWarnings.has(warningKey)) {
+						shownWarnings.add(warningKey);
+						// Defer notification to avoid setState during render
+						setTimeout(() => {
+							GlobalNotificationContext.warning({
+								title: "MarkdownWidgetComponent",
+								message:
+									"Unexpected missing `color` or `style` on `span` directive",
+							});
+						}, 0);
+					}
 					return;
 				}
 
@@ -97,12 +108,20 @@ const spanDirective = function () {
 						case "ins":
 							styleObj.textDecoration = "underline";
 							break;
-						default:
-							file.fail(
-								`Unexpected style value "${style}" on span directive. Supported values: sub, sup, ins`,
-								node,
-							);
+						default: {
+							const warningKey = `invalid-style-${style}`;
+							if (!shownWarnings.has(warningKey)) {
+								shownWarnings.add(warningKey);
+								// Defer notification to avoid setState during render
+								setTimeout(() => {
+									GlobalNotificationContext.warning({
+										title: "MarkdownWidgetComponent",
+										message: `Unexpected style value "${style}" on span directive. Supported values: sub, sup, ins`,
+									});
+								}, 0);
+							}
 							return;
+						}
 					}
 				}
 
