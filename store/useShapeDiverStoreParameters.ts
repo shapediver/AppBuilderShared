@@ -39,7 +39,7 @@ import {
 	IShapeDiverStoreParameters,
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
-import {addValidator} from "@AppBuilderShared/utils/parameterValidation";
+import {addValidator} from "@AppBuilderShared/utils/parameters/parameterValidation";
 import {
 	ShapeDiverRequestCustomization,
 	ShapeDiverRequestExport,
