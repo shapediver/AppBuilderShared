@@ -2,6 +2,11 @@ import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingCon
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
+import {
+	filterAndValidateModelStateParameters,
+	generateParameterFeedback,
+} from "@AppBuilderShared/utils/parameters/parametersFilter";
 import {useCallback, useContext, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -34,9 +39,6 @@ export function useImportModelState(namespace: string) {
 	const importModelState = useCallback(
 		async (modelStateId: string) => {
 			if (!sessionApi) {
-				notifications.error({
-					message: "Session not available",
-				});
 				return false;
 			}
 
@@ -49,38 +51,63 @@ export function useImportModelState(namespace: string) {
 			}
 
 			setIsLoading(true);
-			try {
-				const {
-					modelState: {parameters},
-				} = await sessionApi.getModelState(trimmedId);
+			const response = await exceptionWrapperAsync(
+				() => sessionApi.getModelState(trimmedId),
+				() => setIsLoading(false),
+			);
 
-				const sessionParameters = useShapeDiverStoreParameters
-					.getState()
-					.getParameters(namespace);
-				const acceptRejectMode = Object.values(sessionParameters).some(
-					(p) => !!p?.getState().acceptRejectMode,
-				);
-
-				batchParameterValueUpdate(
-					namespace,
-					parameters,
-					!acceptRejectMode,
-				);
-
-				notifications.success({
-					message: `Model state ${trimmedId} imported successfully`,
-				});
-
-				return true;
-			} catch (error) {
-				errorReporting.captureException(error);
+			if (response.error) {
+				errorReporting.captureException(response.error);
 				notifications.error({
 					message: "Failed to import model state",
 				});
 				return false;
-			} finally {
-				setIsLoading(false);
 			}
+
+			const parameters = response.data.modelState?.parameters;
+
+			if (!parameters) {
+				notifications.error({
+					message: "Model state does not contain parameter data",
+				});
+				return false;
+			}
+
+			// Get session parameters and pass to utility function
+			const sessionParameters = useShapeDiverStoreParameters
+				.getState()
+				.getParameters(namespace);
+
+			const validationResult = filterAndValidateModelStateParameters(
+				sessionParameters,
+				parameters,
+			);
+
+			if (!validationResult.hasValidParameters) {
+				const feedback = generateParameterFeedback(validationResult);
+				notifications[feedback.type]({
+					message: feedback.message,
+				});
+				return false;
+			}
+
+			await batchParameterValueUpdate(
+				namespace,
+				validationResult.validParameters,
+				!validationResult.acceptRejectMode,
+			);
+
+			// Provide user feedback
+			const feedback = generateParameterFeedback(
+				validationResult,
+				`Model state ${trimmedId} imported successfully`,
+			);
+
+			notifications[feedback.type]({
+				message: feedback.message,
+			});
+
+			return true;
 		},
 		[namespace],
 	);

@@ -38,6 +38,12 @@ export interface NotificationStyleProps {
 	autoClose?: boolean | number;
 }
 
+export enum NotificationAction {
+	SUCCESS = "success",
+	WARNING = "warning",
+	ERROR = "error",
+}
+
 /**
  * Type declaration for the notification context.
  * This could be abstracted from mantine if necessary.
@@ -66,17 +72,23 @@ export interface INotificationContext {
 	 * @param message
 	 * @returns
 	 */
-	error: (notification: AppBuilderNotificationData) => string;
+	[NotificationAction.ERROR]: (
+		notification: AppBuilderNotificationData,
+	) => string;
 	/**
 	 * Show a warning notification
 	 * @param message
 	 * @returns
 	 */
-	warning: (notification: AppBuilderNotificationData) => string;
+	[NotificationAction.WARNING]: (
+		notification: AppBuilderNotificationData,
+	) => string;
 	/**
 	 * Show a success notification
 	 * @param message
 	 * @returns
 	 */
-	success: (notification: AppBuilderNotificationData) => string;
+	[NotificationAction.SUCCESS]: (
+		notification: AppBuilderNotificationData,
+	) => string;
 }

@@ -1,4 +1,5 @@
 import ModalBase from "@AppBuilderShared/components/ui/ModalBase";
+import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
 import {Stack, TextInput} from "@mantine/core";
 import React, {useState} from "react";
 import Hint from "~/shared/components/ui/Hint";
@@ -36,15 +37,18 @@ export default function ImportModelStateDialog({
 		setIsLoading(true);
 		setError(null);
 
-		try {
-			await onImport(modelStateId.trim());
-			handleClose();
-		} catch (error) {
+		const response = await exceptionWrapperAsync(
+			() => onImport(modelStateId.trim()),
+			() => setIsLoading(false),
+		);
+
+		if (response.error) {
 			setError("Failed to import model state");
-			console.error("Import error:", error);
-		} finally {
-			setIsLoading(false);
+			console.error("Import error:", response.error);
+			return;
 		}
+
+		handleClose();
 	};
 
 	const handleClose = () => {

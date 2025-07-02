@@ -2,6 +2,11 @@ import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingCon
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
+import {
+	filterAndValidateParameters,
+	generateParameterFeedback,
+} from "@AppBuilderShared/utils/parameters/parametersFilter";
 import {useCallback, useContext} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -66,111 +71,89 @@ export function useParameterImportExport(namespace: string) {
 	/**
 	 * Import parameters from JSON file
 	 */
-	const importParameters = useCallback(async () => {
+	const importParameters = useCallback(() => {
 		return new Promise<void>((resolve, reject) => {
 			const fileInput = document.createElement("input");
 			fileInput.type = "file";
 			fileInput.accept = ".json";
 
 			fileInput.onchange = async (event: Event) => {
-				try {
-					const target = event.target as HTMLInputElement;
-					const file = target.files?.[0];
+				const target = event.target as HTMLInputElement;
+				const file = target.files?.[0];
 
-					if (!file) {
-						const errorMessage = "No file selected";
-						notifications.error({
-							message: errorMessage,
-						});
-						reject(new Error(errorMessage));
-						return;
-					}
-
-					const text = await file.text();
-					const importData = JSON.parse(text);
-
-					if (
-						!importData.parameters ||
-						!Array.isArray(importData.parameters)
-					) {
-						const errorMessage =
-							"The file doesn't contain the parameters data";
-						notifications.error({
-							message: errorMessage,
-						});
-						reject(new Error(errorMessage));
-						return;
-					}
-
-					const sessionParameters = useShapeDiverStoreParameters
-						.getState()
-						.getParameters(namespace);
-
-					const validParameters: {[key: string]: any} = {};
-					const missingParameters: string[] = [];
-					let acceptRejectMode = false;
-
-					for (const param of importData.parameters) {
-						if (!param.id || param.value === undefined) {
-							continue;
-						}
-
-						const sessionParam =
-							sessionParameters[param.id] ||
-							sessionParameters[param.name];
-
-						if (!sessionParam) {
-							missingParameters.push(param.name || param.id);
-							continue;
-						}
-
-						const paramActions = sessionParam.getState().actions;
-						if (!paramActions.isValid(param.value)) {
-							missingParameters.push(param.name || param.id);
-							continue;
-						}
-
-						if (sessionParam.getState().acceptRejectMode) {
-							acceptRejectMode = true;
-						}
-
-						validParameters[param.id] = param.value;
-					}
-
-					if (Object.keys(validParameters).length === 0) {
-						const errorMessage =
-							"The parameters from the imported file do not match the parameters of this model.";
-						notifications.error({
-							message: errorMessage,
-						});
-						reject(new Error(errorMessage));
-						return;
-					}
-
-					await batchParameterValueUpdate(
-						namespace,
-						validParameters,
-						!acceptRejectMode,
-					);
-
-					if (missingParameters.length > 0) {
-						notifications.warning?.({
-							message: `The following parameters are missing: ${missingParameters.join(", ")}`,
-						});
-					} else {
-						notifications.success({
-							message: "Parameters imported successfully",
-						});
-					}
-
-					resolve();
-				} catch (error) {
-					errorReporting.captureException(error);
+				if (!file) {
+					const errorMessage = "No file selected";
 					notifications.error({
-						message: (error as Error).message,
+						message: errorMessage,
 					});
-					reject(error);
+					reject(new Error(errorMessage));
+					return;
 				}
+
+				const response = await exceptionWrapperAsync<string>(() =>
+					file.text(),
+				);
+
+				if (response.error) {
+					errorReporting.captureException(response.error);
+					notifications.error({
+						message: (response.error as Error).message,
+					});
+					reject(response.error);
+					return;
+				}
+
+				const importData = JSON.parse(response.data);
+
+				if (
+					!importData.parameters ||
+					!Array.isArray(importData.parameters)
+				) {
+					const errorMessage =
+						"The file doesn't contain the parameters data";
+					notifications.error({
+						message: errorMessage,
+					});
+					reject(new Error(errorMessage));
+					return;
+				}
+
+				const sessionParameters = useShapeDiverStoreParameters
+					.getState()
+					.getParameters(namespace);
+
+				const validationResult = filterAndValidateParameters(
+					sessionParameters,
+					importData.parameters,
+				);
+
+				if (!validationResult.hasValidParameters) {
+					const feedback =
+						generateParameterFeedback(validationResult);
+					notifications[feedback.type]({
+						message: feedback.message,
+					});
+					reject(new Error(feedback.message));
+					return;
+				}
+
+				await batchParameterValueUpdate(
+					namespace,
+					validationResult.validParameters,
+					!validationResult.acceptRejectMode,
+				);
+
+				// Provide user feedback
+				const feedback = generateParameterFeedback(
+					validationResult,
+					"Parameters imported successfully",
+				);
+
+				notifications[feedback.type]({
+					message: feedback.message,
+				});
+
+				resolve();
 			};
 
 			fileInput.click();
