@@ -9,7 +9,12 @@ import {
 } from "@AppBuilderShared/hooks/shapediver/stargate/useStargateExport";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {StargateFileParamPrefix} from "@AppBuilderShared/types/shapediver/stargate";
+import {
+	IStargateComponentStatusDefinition,
+	mapStargateComponentStatusDefinition,
+	StargateFileParamPrefix,
+	StargateStatusColorTypeEnum,
+} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	Button,
 	ButtonProps,
@@ -22,33 +27,31 @@ import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import {fetchFileWithToken} from "@shapediver/viewer.utils.mime-type";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 import StargateInput from "../stargate/StargateInput";
-
-/** Type for data related to the status of the component. */
-type IStatusData = {
-	color: string;
-	message: string;
-	isBtnDisabled: boolean;
-};
+import {
+	DefaultStargateStyleProps,
+	StargateStyleProps,
+} from "../stargate/stargateShared";
 
 /**
  * Map from status enum to status data.
- * TODO SS-8820 colors and messages should be controlled by the theme
  */
-const StatusDataMap: {[key in ExportStatusEnum]: IStatusData} = {
+const StatusDataMap: {
+	[key in ExportStatusEnum]: IStargateComponentStatusDefinition;
+} = {
 	[ExportStatusEnum.notActive]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "No active client found",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 	[ExportStatusEnum.incompatible]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "Export not supported",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 	[ExportStatusEnum.active]: {
-		color: "orange",
+		colorType: StargateStatusColorTypeEnum.primary,
 		message: "Export to client",
-		isBtnDisabled: false,
+		disabled: false,
 	},
 };
 
@@ -88,12 +91,17 @@ export function ExportButtonComponentThemeProps(
  * @returns
  */
 export default function ExportButtonComponent(
-	props: PropsExport & ExportButtonComponentThemePropsType,
+	props: PropsExport &
+		ExportButtonComponentThemePropsType &
+		Partial<StargateStyleProps>,
 ) {
-	const {buttonProps, downloadTooltipProps, downloadButtonProps} = useProps(
-		"ExportButtonComponent",
-		defaultStyleProps,
-		props,
+	const {buttonProps, downloadTooltipProps, downloadButtonProps, ...rest} =
+		useProps("ExportButtonComponent", defaultStyleProps, props);
+
+	const {stargateColorProps} = useProps(
+		"StargateShared",
+		DefaultStargateStyleProps,
+		rest,
 	);
 
 	const {definition, actions} = useExport(props);
@@ -109,8 +117,11 @@ export default function ExportButtonComponent(
 		});
 
 	const statusData = useMemo(() => {
-		return StatusDataMap[status];
-	}, [status]);
+		return mapStargateComponentStatusDefinition(
+			StatusDataMap[status],
+			stargateColorProps,
+		);
+	}, [status, stargateColorProps]);
 
 	// Criterion to determine if the export button shall use Stargate.
 	const {isStargate, label} = useMemo(() => {
@@ -220,7 +231,7 @@ export default function ExportButtonComponent(
 							color={statusData.color}
 							isWaiting={requestingExport || isWaiting}
 							waitingText="Waiting for export..."
-							disabled={statusData.isBtnDisabled}
+							disabled={statusData.disabled}
 							onClick={() => onClick()}
 						/>
 						<TooltipWrapper

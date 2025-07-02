@@ -7,7 +7,17 @@ import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,
 } from "@AppBuilderShared/types/shapediver/output";
+import {
+	IStargateComponentStatusDefinition,
+	mapStargateComponentStatusDefinition,
+	StargateStatusColorTypeEnum,
+} from "@AppBuilderShared/types/shapediver/stargate";
+import {useProps} from "@mantine/core";
 import React, {useMemo} from "react";
+import {
+	DefaultStargateStyleProps,
+	StargateStyleProps,
+} from "../stargate/stargateShared";
 import OutputChunkLabelComponent from "./OutputChunkLabelComponent";
 
 interface Props {
@@ -16,60 +26,62 @@ interface Props {
 	sessionId: string;
 }
 
-/** Type for data related to the status of the component. */
-type IStatusData = {
-	color: string;
-	message: string;
-	isBtnDisabled: boolean;
-};
-
 /**
  * Map from status enum to status data.
- * TODO SS-8820 colors and messages should be controlled by the theme
  */
-const StatusDataMap: {[key in OutputStatusEnum]: IStatusData} = {
+const StatusDataMap: {
+	[key in OutputStatusEnum]: IStargateComponentStatusDefinition;
+} = {
 	[OutputStatusEnum.notActive]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "No active client found",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 	[OutputStatusEnum.incompatible]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "Incompatible output",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 	[OutputStatusEnum.objectAvailableIncompatible]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "$count $object available (incompatible output)",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 	[OutputStatusEnum.noObjectAvailable]: {
-		color: "orange",
+		colorType: StargateStatusColorTypeEnum.focused,
 		message: "This output is empty",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 	[OutputStatusEnum.objectAvailable]: {
-		color: "var(--mantine-primary-color-filled)",
+		colorType: StargateStatusColorTypeEnum.primary,
 		message: "Bake $count objects",
-		isBtnDisabled: false,
+		disabled: false,
 	},
 	[OutputStatusEnum.objectAvailableNotActive]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "$count $object available (client not active)",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 	[OutputStatusEnum.unsupported]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "Unsupported connection status",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 };
 
 /**
  * Component that handles individual output chunks using Stargate
  */
-export default function OutputChunkComponent(props: Props) {
-	const {output, chunk, sessionId} = props;
+export default function OutputChunkComponent(
+	props: Props & Partial<StargateStyleProps>,
+) {
+	const {output, chunk, sessionId, ...rest} = props;
+
+	const {stargateColorProps} = useProps(
+		"StargateShared",
+		DefaultStargateStyleProps,
+		rest,
+	);
 
 	// Use stargate output hook for this specific chunk
 	const {isWaiting, onBakeData, status, count} = useStargateOutput({
@@ -81,8 +93,11 @@ export default function OutputChunkComponent(props: Props) {
 	});
 
 	const statusData = useMemo(() => {
-		return StatusDataMap[status];
-	}, [status]);
+		return mapStargateComponentStatusDefinition(
+			StatusDataMap[status],
+			stargateColorProps,
+		);
+	}, [status, stargateColorProps]);
 
 	const parsedMessage = useMemo(() => {
 		const msg = statusData.message.replace(
@@ -100,7 +115,7 @@ export default function OutputChunkComponent(props: Props) {
 				color={statusData.color}
 				isWaiting={isWaiting}
 				waitingText="Waiting for client..."
-				disabled={statusData.isBtnDisabled}
+				disabled={statusData.disabled}
 				onClick={onBakeData}
 			/>
 		</>

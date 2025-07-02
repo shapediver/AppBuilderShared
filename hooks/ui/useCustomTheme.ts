@@ -14,6 +14,7 @@ import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/sh
 import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectGridComponent";
 import {DesktopClientPanelThemeProps} from "@AppBuilderShared/components/shapediver/stargate/DesktopClientPanel";
 import {StargateInputThemeProps} from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
+import {StargateSharedThemeProps} from "@AppBuilderShared/components/shapediver/stargate/stargateShared";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
@@ -859,6 +860,13 @@ export const useCustomTheme = (props: Props = {}) => {
 				// loaderProps: {
 				// 	type: "dots",
 				// 	size: "sm",
+				// },
+			}),
+			StargateShared: StargateSharedThemeProps({
+				// stargateColorProps: {
+				// 	primary: "var(--mantine-primary-color-filled)",
+				// 	focused: "var(--mantine-color-orange-7)",
+				// 	dimmed: "var(--mantine-color-gray-2)",
 				// },
 			}),
 			/**

@@ -13,7 +13,12 @@ import {
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {StargateFileParamPrefix} from "@AppBuilderShared/types/shapediver/stargate";
+import {
+	IStargateComponentStatusDefinition,
+	mapStargateComponentStatusDefinition,
+	StargateFileParamPrefix,
+	StargateStatusColorTypeEnum,
+} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	ActionIcon,
 	ActionIconProps,
@@ -31,43 +36,41 @@ import {
 } from "@shapediver/viewer.utils.mime-type";
 import React, {useEffect, useMemo} from "react";
 import StargateInput from "../stargate/StargateInput";
-
-/** Type for data related to the status of the component. */
-type IStatusData = {
-	color: string;
-	message: string;
-	isBtnDisabled: boolean;
-};
+import {
+	DefaultStargateStyleProps,
+	StargateStyleProps,
+} from "../stargate/stargateShared";
 
 /**
  * Map from status enum to status data.
- * TODO SS-8820 colors and messages should be controlled by the theme
  */
-const StatusDataMap: {[key in ParameterStatusEnum]: IStatusData} = {
+const StatusDataMap: {
+	[key in ParameterStatusEnum]: IStargateComponentStatusDefinition;
+} = {
 	[ParameterStatusEnum.notActive]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "No active client found",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 	[ParameterStatusEnum.incompatible]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "Incompatible input",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 	[ParameterStatusEnum.noObjectSelected]: {
-		color: "orange",
+		colorType: StargateStatusColorTypeEnum.focused,
 		message: "No file imported",
-		isBtnDisabled: false,
+		disabled: false,
 	},
 	[ParameterStatusEnum.objectSelected]: {
-		color: "var(--mantine-primary-color-filled)",
+		colorType: StargateStatusColorTypeEnum.primary,
 		message: "File imported",
-		isBtnDisabled: false,
+		disabled: false,
 	},
 	[ParameterStatusEnum.unsupported]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "Unsupported input status",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 };
 
@@ -119,7 +122,8 @@ export function ParameterFileInputComponentThemeProps(
 export default function ParameterFileInputComponent(
 	props: PropsParameter &
 		Partial<PropsParameterWrapper> &
-		Partial<StyleProps>,
+		Partial<StyleProps> &
+		Partial<StargateStyleProps>,
 ) {
 	const {definition, value, state, handleChange, onCancel, disabled} =
 		useParameterComponentCommons<File>(props, 0);
@@ -129,12 +133,19 @@ export default function ParameterFileInputComponent(
 		cancelActionIconProps,
 		cancelIconProps,
 		uploadTooltipProps,
+		...rest
 	} = useProps("ParameterFileInputComponent", defaultStyleProps, props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterFileInputComponent",
 		defaultPropsParameterWrapper,
-		props,
+		rest,
+	);
+
+	const {stargateColorProps} = useProps(
+		"StargateShared",
+		DefaultStargateStyleProps,
+		rest,
 	);
 
 	// File parameters can optionally use Stargate to import files.
@@ -148,8 +159,11 @@ export default function ParameterFileInputComponent(
 		});
 
 	const statusData = useMemo(() => {
-		return StatusDataMap[status];
-	}, [status]);
+		return mapStargateComponentStatusDefinition(
+			StatusDataMap[status],
+			stargateColorProps,
+		);
+	}, [status, stargateColorProps]);
 
 	// Criterion to determine if the parameter shall use Stargate.
 	const {isStargate, label} = useMemo(() => {
@@ -239,7 +253,7 @@ export default function ParameterFileInputComponent(
 							color={statusData.color}
 							isWaiting={isWaiting}
 							waitingText="Waiting for import..."
-							disabled={statusData.isBtnDisabled || disabled}
+							disabled={statusData.disabled || disabled}
 							onClick={onObjectAdd}
 							icon={IconTypeEnum.DeviceDesktopDown}
 						/>

@@ -4,6 +4,7 @@ import {
 	ButtonProps,
 	Loader,
 	LoaderProps,
+	MantineColor,
 	MantineThemeComponent,
 	Text,
 	TextProps,
@@ -16,7 +17,7 @@ interface Props {
 	/** Icon to display on the right section of the button */
 	icon?: IconTypeEnum;
 	/** Color to use for the button */
-	color: string;
+	color: MantineColor;
 	/** Indicates whether we are waiting for a desktop client action to complete */
 	isWaiting?: boolean;
 	/** The text to show while waiting for a desktop client action to complete */
