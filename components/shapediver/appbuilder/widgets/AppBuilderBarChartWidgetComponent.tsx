@@ -2,25 +2,60 @@ import {
 	convertChartData,
 	IAppBuilderWidgetPropsBarChart,
 } from "@AppBuilderShared/types/shapediver/appbuildercharts";
-import {BarChart} from "@mantine/charts";
-import {Paper, Title} from "@mantine/core";
+import {BarChart, BarChartProps} from "@mantine/charts";
+import {
+	MantineThemeComponent,
+	Paper,
+	PaperProps,
+	Title,
+	TitleProps,
+	useProps,
+} from "@mantine/core";
 import React from "react";
 
+type StyleProps = {
+	widgetProps?: Partial<PaperProps>;
+	titleProps?: Partial<TitleProps>;
+	barChartProps?: Partial<BarChartProps>;
+};
+
+const defaultStyleProps: Partial<StyleProps> = {
+	widgetProps: {},
+	titleProps: {
+		style: {marginBottom: "20px"},
+	},
+	barChartProps: {
+		h: 250,
+	},
+};
+
+type AppBuilderBarChartWidgetComponentThemePropsType = Partial<StyleProps>;
+
+export function AppBuilderBarChartWidgetComponentThemeProps(
+	props: AppBuilderBarChartWidgetComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
 export default function AppBuilderBarChartWidgetComponent(
-	props: IAppBuilderWidgetPropsBarChart,
+	props: IAppBuilderWidgetPropsBarChart &
+		AppBuilderBarChartWidgetComponentThemePropsType,
 ) {
-	const {name, type, plotSettings, data} = props;
+	const {name, type, plotSettings, data, ...rest} = props;
+
+	const {widgetProps, titleProps, barChartProps} = useProps(
+		"AppBuilderBarChartWidgetComponent",
+		defaultStyleProps,
+		rest,
+	);
 
 	return (
-		<Paper>
-			<Title
-				order={2} // TODO make this a style prop
-				style={{marginBottom: "20px"}} // TODO make this a style prop
-			>
-				{name}
-			</Title>
+		<Paper {...widgetProps}>
+			<Title {...titleProps}>{name}</Title>
 			<BarChart
-				h={250} // TODO make this a style prop
+				{...barChartProps}
 				withXAxis={plotSettings.xaxis}
 				xAxisLabel={plotSettings.xlabel}
 				withYAxis={plotSettings.yaxis}

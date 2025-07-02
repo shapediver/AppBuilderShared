@@ -1,7 +1,53 @@
 import {IAppBuilderWidgetPropsRoundChart} from "@AppBuilderShared/types/shapediver/appbuildercharts";
-import {DonutChart, PieChart} from "@mantine/charts";
-import {Badge, Paper, Title} from "@mantine/core";
+import {
+	DonutChart,
+	DonutChartProps,
+	PieChart,
+	PieChartProps,
+} from "@mantine/charts";
+import {
+	Badge,
+	BadgeProps,
+	MantineThemeComponent,
+	Paper,
+	PaperProps,
+	Title,
+	TitleProps,
+	useProps,
+} from "@mantine/core";
 import React from "react";
+
+type StyleProps = {
+	widgetProps?: Partial<PaperProps>;
+	titleProps?: Partial<TitleProps>;
+	pieChartProps?: Partial<PieChartProps>;
+	donutChartProps?: Partial<DonutChartProps>;
+	badgeProps?: Partial<BadgeProps>;
+};
+
+const defaultStyleProps: Partial<StyleProps> = {
+	widgetProps: {},
+	titleProps: {},
+	pieChartProps: {
+		h: 250,
+	},
+	donutChartProps: {
+		h: 250,
+	},
+	badgeProps: {
+		style: {marginRight: "10px"},
+	},
+};
+
+type AppBuilderRoundChartWidgetComponentThemePropsType = Partial<StyleProps>;
+
+export function AppBuilderRoundChartWidgetComponentThemeProps(
+	props: AppBuilderRoundChartWidgetComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
 
 /**
  * Try to keep the string representation of the value to a
@@ -26,28 +72,41 @@ const valueFormatter = (value: number, maxChars: number) => {
 };
 
 export default function AppBuilderRoundChartWidgetComponent(
-	props: IAppBuilderWidgetPropsRoundChart,
+	props: IAppBuilderWidgetPropsRoundChart &
+		AppBuilderRoundChartWidgetComponentThemePropsType,
 ) {
-	const {name, style, labels = true, legend, data} = props;
+	const {name, style, labels = true, legend, data, ...rest} = props;
+
+	const {
+		widgetProps,
+		titleProps,
+		pieChartProps,
+		donutChartProps,
+		badgeProps,
+	} = useProps(
+		"AppBuilderRoundChartWidgetComponent",
+		defaultStyleProps,
+		rest,
+	);
 
 	return (
-		<Paper>
-			<Title order={2}>{name}</Title>
+		<Paper {...widgetProps}>
+			<Title {...titleProps}>{name}</Title>
 			{style == "pie" ? (
 				<PieChart
+					{...pieChartProps}
 					{...(labels ? {withLabels: true} : {})}
 					labelsPosition="inside"
 					labelsType="value"
 					withTooltip={!labels}
 					tooltipDataSource="all"
-					style={{height: "250px"}} // TODO make this a style prop
 					data={data}
 					valueFormatter={(v) => valueFormatter(v, labels ? 6 : 8)}
 				/>
 			) : (
 				<DonutChart
+					{...donutChartProps}
 					{...(labels ? {withLabels: true} : {})}
-					style={{height: "250px"}} // TODO make this a style prop
 					withTooltip={!labels}
 					data={data}
 					/**
@@ -61,11 +120,7 @@ export default function AppBuilderRoundChartWidgetComponent(
 			)}
 			{(legend ?? true)
 				? data.map((item, index) => (
-						<Badge
-							key={index}
-							style={{marginRight: "10px"}} // TODO make this a style prop
-							color={item.color}
-						>
+						<Badge {...badgeProps} key={index} color={item.color}>
 							{item.name}
 						</Badge>
 					))

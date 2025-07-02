@@ -2,25 +2,59 @@ import {
 	convertChartData,
 	IAppBuilderWidgetPropsLineChart,
 } from "@AppBuilderShared/types/shapediver/appbuildercharts";
-import {LineChart} from "@mantine/charts";
-import {Paper, Title} from "@mantine/core";
+import {LineChart, LineChartProps} from "@mantine/charts";
+import {
+	MantineThemeComponent,
+	Paper,
+	PaperProps,
+	Title,
+	TitleProps,
+	useProps,
+} from "@mantine/core";
 import React from "react";
 
-export default function AppBuilderLineChartWidgetComponent(
-	props: IAppBuilderWidgetPropsLineChart,
-) {
-	const {name, style, plotSettings, data} = props;
+type StyleProps = {
+	widgetProps?: Partial<PaperProps>;
+	titleProps?: Partial<TitleProps>;
+	lineChartProps?: Partial<LineChartProps>;
+};
 
+const defaultStyleProps: Partial<StyleProps> = {
+	widgetProps: {},
+	titleProps: {
+		style: {marginBottom: "20px"},
+	},
+	lineChartProps: {
+		h: 250,
+	},
+};
+
+type AppBuilderLineChartWidgetComponentThemePropsType = Partial<StyleProps>;
+
+export function AppBuilderLineChartWidgetComponentThemeProps(
+	props: AppBuilderLineChartWidgetComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+export default function AppBuilderLineChartWidgetComponent(
+	props: IAppBuilderWidgetPropsLineChart &
+		AppBuilderLineChartWidgetComponentThemePropsType,
+) {
+	const {name, style, plotSettings, data, ...rest} = props;
+
+	const {widgetProps, titleProps, lineChartProps} = useProps(
+		"AppBuilderLineChartWidgetComponent",
+		defaultStyleProps,
+		rest,
+	);
 	return (
-		<Paper>
-			<Title
-				order={2} // TODO make this a style prop
-				style={{marginBottom: "20px"}} // TODO make this a style prop
-			>
-				{name}
-			</Title>
+		<Paper {...widgetProps}>
+			<Title {...titleProps}>{name}</Title>
 			<LineChart
-				h={250} // TODO make this a style prop
+				{...lineChartProps}
 				withXAxis={plotSettings.xaxis}
 				xAxisLabel={plotSettings.xlabel}
 				withYAxis={plotSettings.yaxis}

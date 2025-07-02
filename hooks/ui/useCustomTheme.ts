@@ -1,7 +1,12 @@
 import {AppBuilderActionComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
+import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAreaChartWidgetComponent";
+import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
+import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
+import {NumberAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/NumberAttribute";
+import {StringAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/StringAttribute";
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import {OutputChunkLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputChunkLabelComponent";
 import {OutputStargateComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputStargateComponent";
@@ -37,9 +42,17 @@ import {
 import {ViewportIconsThemeProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {ViewportOverlayWrapperThemeProps} from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
 import {
+	AreaChart,
+	BarChart,
+	DonutChart,
+	LineChart,
+	PieChart,
+} from "@mantine/charts";
+import {
 	Accordion,
 	Anchor,
 	AppShellResponsiveSize,
+	Badge,
 	Button,
 	CSSVariablesResolver,
 	CloseButton,
@@ -50,11 +63,13 @@ import {
 	MantineSpacing,
 	MantineThemeOverride,
 	Paper,
+	RangeSlider,
 	Stack,
 	StyleProp,
 	Switch,
 	Tabs,
 	Text,
+	Title,
 	Tooltip,
 	createTheme,
 	mergeThemeOverrides,
@@ -201,6 +216,27 @@ export const useCustomTheme = (props: Props = {}) => {
 				},
 			}),
 			/**
+			 * AreaChart
+			 * @see https://mantine.dev/charts/area-chart/?t=props
+			 */
+			AreaChart: AreaChart.extend({
+				defaultProps: {},
+			}),
+			/**
+			 * Badge
+			 * @see https://mantine.dev/core/badge/?t=props
+			 */
+			Badge: Badge.extend({
+				defaultProps: {},
+			}),
+			/**
+			 * BarChart
+			 * @see https://mantine.dev/charts/bar-chart/?t=props
+			 */
+			BarChart: BarChart.extend({
+				defaultProps: {},
+			}),
+			/**
 			 * Button
 			 * @see https://mantine.dev/core/button/?t=props
 			 */
@@ -229,6 +265,11 @@ export const useCustomTheme = (props: Props = {}) => {
 				},
 			}),
 			/**
+			 * DonutChart
+			 * @see https://mantine.dev/charts/donut-chart/?t=props
+			 */
+			DonutChart: DonutChart.extend({}),
+			/**
 			 * Group
 			 * @see https://mantine.dev/core/group/?t=props
 			 */
@@ -237,6 +278,11 @@ export const useCustomTheme = (props: Props = {}) => {
 					gap: padding,
 				},
 			}),
+			/**
+			 * LineChart
+			 * @see https://mantine.dev/charts/line-chart/?t=props
+			 */
+			LineChart: LineChart.extend({}),
 			/**
 			 * Paper
 			 * @see https://mantine.dev/core/paper/?t=props
@@ -249,6 +295,16 @@ export const useCustomTheme = (props: Props = {}) => {
 					withBorder: true,
 				},
 			}),
+			/**
+			 * PieChart
+			 * @see https://mantine.dev/charts/pie-chart/?t=props
+			 */
+			PieChart: PieChart.extend({}),
+			/**
+			 * RangeSlider
+			 * @see https://mantine.dev/core/range-slider/?t=props
+			 */
+			RangeSlider: RangeSlider.extend({}),
 			/**
 			 * Stack
 			 * @see https://mantine.dev/core/stack/?t=props
@@ -295,6 +351,15 @@ export const useCustomTheme = (props: Props = {}) => {
 				},
 			}),
 			/**
+			 * Title
+			 * @see https://mantine.dev/core/title/?t=props
+			 */
+			Title: Title.extend({
+				defaultProps: {
+					order: 2, // default order
+				},
+			}),
+			/**
 			 * Tooltip
 			 * @see https://mantine.dev/core/tooltip/?t=props
 			 */
@@ -325,6 +390,27 @@ export const useCustomTheme = (props: Props = {}) => {
 			AppBuilderActionComponent: AppBuilderActionComponentThemeProps({
 				// variant: "filled",
 			}),
+			/**
+			 * AppBuilderAreaChartWidgetComponent
+			 *
+			 * Used for defining theme overrides for area chart widgets.
+			 */
+			AppBuilderAreaChartWidgetComponent:
+				AppBuilderAreaChartWidgetComponentThemeProps({}),
+			/**
+			 * AppBuilderAgentWidgetComponent
+			 *
+			 * Used for defining theme overrides for agent widgets.
+			 */
+			AppBuilderAttributeVisualizationWidgetComponent:
+				AppBuilderAccordionWidgetComponentThemeProps({}),
+			/**
+			 * AppBuilderBarChartWidgetComponent
+			 *
+			 * Used for defining theme overrides for bar chart widgets.
+			 */
+			AppBuilderBarChartWidgetComponent:
+				AppBuilderAreaChartWidgetComponentThemeProps({}),
 			/**
 			 * AppBuilderContainerWrapper
 			 *
@@ -494,6 +580,20 @@ export const useCustomTheme = (props: Props = {}) => {
 					// wrap: "nowrap",
 					// p: "xs",
 				}),
+			/**
+			 * AppBuilderLineChartWidgetComponent
+			 *
+			 * Used for defining theme overrides for line chart widgets.
+			 */
+			AppBuilderLineChartWidgetComponent:
+				AppBuilderLineChartWidgetComponentThemeProps({}),
+			/**
+			 * AppBuilderRoundChartWidgetComponent
+			 *
+			 * Used for defining theme overrides for round chart widgets.
+			 */
+			AppBuilderRoundChartWidgetComponent:
+				AppBuilderRoundChartWidgetComponentThemeProps({}),
 			/**
 			 * AppBuilderTemplateSelector
 			 *
@@ -679,6 +779,12 @@ export const useCustomTheme = (props: Props = {}) => {
 				// autoClose: 20000, // boolean | number
 			}),
 			/**
+			 * NumberAttribute
+			 *
+			 * Defaults for number attributes.
+			 */
+			NumberAttribute: NumberAttributeThemeProps({}),
+			/**
 			 * OutputChunkLabelComponent
 			 *
 			 * Defaults for output chunk labels.
@@ -798,6 +904,12 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	size: "sm",
 				// },
 			}),
+			/**
+			 * StringAttribute
+			 *
+			 * Defaults for string attributes.
+			 */
+			StringAttribute: StringAttributeThemeProps({}),
 			/**
 			 * TooltipWrapper
 			 *

@@ -1,7 +1,15 @@
 import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
 import {useShapeDiverStoreAttributeVisualization} from "@AppBuilderShared/store/useShapeDiverStoreAttributeVisualization";
 import {INumberAttributeCustomData} from "@AppBuilderShared/types/store/shapediverStoreAttributeVisualization";
-import {RangeSlider, RangeSliderValue, Space, Stack} from "@mantine/core";
+import {
+	MantineThemeComponent,
+	RangeSlider,
+	RangeSliderProps,
+	RangeSliderValue,
+	Space,
+	Stack,
+	useProps,
+} from "@mantine/core";
 import {
 	ATTRIBUTE_VISUALIZATION,
 	getColorSteps,
@@ -13,6 +21,38 @@ import {Converter} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
+type StyleProps = {
+	rangeSliderProps?: Partial<RangeSliderProps>;
+};
+
+const defaultStyleProps: Partial<StyleProps> = {
+	rangeSliderProps: {
+		pb: "xs",
+		styles: {
+			markLabel: {
+				transform: `translate( 
+					calc(-50% + /* default offset */
+						max(0%, calc(5% - var(--mark-offset))) * 5 - /* if under 5%, add up to 50% */
+						max(0%, calc(var(--mark-offset) - 95%)) * 5 + /* if over 95%, subtract up to 50% */
+						var(--slider-size) / 2 
+					), 
+					calc(var(--mantine-spacing-xs) / 2) 
+					)`,
+			},
+		},
+	},
+};
+
+type NumberAttributeThemePropsType = Partial<StyleProps>;
+
+export function NumberAttributeThemeProps(
+	props: StyleProps,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
 export type INumberAttributeExtended = INumberAttribute &
 	INumberAttributeCustomData;
 interface Props {
@@ -23,8 +63,17 @@ interface Props {
 	updateRange: (min: number, max: number) => void;
 }
 
-export default function NumberAttribute(props: Props) {
-	const {widgetId, attribute, name, updateRange} = props;
+export default function NumberAttribute(
+	props: Props & NumberAttributeThemePropsType,
+) {
+	const {widgetId, attribute, name, updateRange, ...rest} = props;
+
+	const {rangeSliderProps} = useProps(
+		"NumberAttribute",
+		defaultStyleProps,
+		rest,
+	);
+
 	const {updateCustomAttributeData, customAttributeData} =
 		useShapeDiverStoreAttributeVisualization(
 			useShallow((state) => ({
@@ -293,7 +342,7 @@ export default function NumberAttribute(props: Props) {
 			<Stack>
 				{legend}
 				<RangeSlider
-					pb="xs"
+					{...rangeSliderProps}
 					label={null}
 					value={[
 						(customMinValue ?? 0) * (multiplyingFactor ?? 1),
@@ -309,18 +358,6 @@ export default function NumberAttribute(props: Props) {
 					min={(absoluteMinValue ?? 0) * (multiplyingFactor ?? 1)}
 					max={(absoluteMaxValue ?? 0) * (multiplyingFactor ?? 1)}
 					step={0.01}
-					styles={{
-						markLabel: {
-							transform: `translate( 
-								calc(-50% + /* default offset */
-									max(0%, calc(5% - var(--mark-offset))) * 5 - /* if under 5%, add up to 50% */
-									max(0%, calc(var(--mark-offset) - 95%)) * 5 + /* if over 95%, subtract up to 50% */
-									var(--slider-size) / 2 
-								), 
-								calc(var(--mantine-spacing-xs) / 2) 
-								)`,
-						},
-					}}
 					marks={[
 						absoluteMinValue,
 						customMinValue,
