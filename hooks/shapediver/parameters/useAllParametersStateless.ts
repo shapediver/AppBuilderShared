@@ -15,7 +15,6 @@ export function useAllParametersStateless(namespace: string) {
 	const {getParameters} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
 			getParameters: state.getParameters,
-			getParameter: state.getParameter,
 		})),
 	);
 
