@@ -28,6 +28,7 @@ const ISelectComponentItemDataTypeSchema = z.object({
 	description: z.string().optional(),
 	imageUrl: z.string().optional(),
 	color: z.string().optional(),
+	hidden: z.boolean().optional(),
 });
 
 // Zod type definition for ISelectParameterSettings

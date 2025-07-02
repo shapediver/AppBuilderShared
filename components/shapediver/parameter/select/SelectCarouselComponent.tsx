@@ -44,7 +44,7 @@ export const defaultStyleProps: Partial<StyleProps> = {
 	},
 	cardProps: {},
 	imageProps: {
-		fit: "cover",
+		fit: "contain",
 		fallbackSrc: "not-found.svg",
 	},
 	stackProps: {gap: "xs"},

@@ -100,7 +100,7 @@ interface StyleProps {
 const defaultStyleProps: Partial<StyleProps> = {
 	iconStatusProps: {
 		variant: "subtle",
-		mb: 4,
+		size: "2.25rem",
 	},
 	alertProps: {
 		title: "Desktop Clients",
@@ -214,11 +214,6 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		NO_CLIENT.value,
 	);
 
-	useEffect(() => {
-		const value = selectedClient?.id || NO_CLIENT.value;
-		setSelectedClientValue(value);
-	}, [selectedClient]);
-
 	const refreshClients = useCallback(async (currentClientValue: string) => {
 		setLoading(true);
 		const clients = await getAvailableClients(true);
@@ -235,6 +230,16 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 			await selectClient(undefined);
 		setLoading(false);
 	}, []);
+
+	useEffect(() => {
+		const value = selectedClient?.id || NO_CLIENT.value;
+		if (
+			value !== NO_CLIENT.value &&
+			!availableClients.find((c) => c.value === value)
+		)
+			refreshClients(value);
+		else setSelectedClientValue(value);
+	}, [selectedClient, availableClients]);
 
 	const handleClientChange = useCallback(
 		async (

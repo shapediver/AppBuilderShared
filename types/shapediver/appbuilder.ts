@@ -51,6 +51,8 @@ export interface ISelectComponentItemDataType {
 	imageUrl?: string;
 	/** Optional color, used for color selection components. */
 	color?: MantineColor;
+	/** Optionally hide the item. */
+	hidden?: boolean;
 }
 
 export interface ISelectParameterSettings {
@@ -632,6 +634,10 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 * Set to true to require confirmation of the user to accept or reject changed parameter values.
 	 */
 	acceptRejectMode?: boolean;
+	/**
+	 * If the attribute visualization should be hidden by default.
+	 */
+	hideAttributeVisualization?: boolean;
 	/**
 	 * Optional model state id.
 	 */

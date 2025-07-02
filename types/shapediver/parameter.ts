@@ -29,6 +29,14 @@ export interface IShapeDiverParameterState<T> {
 	 * This might be the case during background executions.
 	 */
 	readonly dirty: boolean;
+
+	/**
+	 * Get the string representation of the currently executed value.
+	 * This is useful for parameters of type "File", whose execValue is a file object.
+	 * The value returned by this function is the id assigned to the uploaded file, if available.
+	 * @returns
+	 */
+	stringExecValue(): string;
 }
 
 /**

@@ -32,6 +32,7 @@ type IStatusData = {
 
 /**
  * Map from status enum to status data.
+ * TODO SS-8820 colors and messages should be controlled by the theme
  */
 const StatusDataMap: {[key in ParameterStatusEnum]: IStatusData} = {
 	[ParameterStatusEnum.notActive]: {
@@ -125,7 +126,8 @@ export default function ParameterStargateComponent(
 		useStargateParameter({
 			parameterId: definition.id,
 			parameterType: definition.type,
-			parameterValue: value,
+			hasValue: !!value,
+			parameterFormat: definition.format,
 			handleChange,
 		});
 
@@ -180,8 +182,9 @@ export default function ParameterStargateComponent(
 					color={statusData.color}
 					isWaiting={isWaiting}
 					waitingText="Waiting for selection..."
-					isBtnDisabled={statusData.isBtnDisabled || disabled}
+					disabled={statusData.isBtnDisabled || disabled}
 					onClick={onObjectAdd}
+					icon={IconTypeEnum.DeviceDesktopDown}
 				/>
 			)}
 		</ParameterWrapperComponent>

@@ -1,6 +1,5 @@
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
-	Box,
 	Button,
 	ButtonProps,
 	Loader,
@@ -23,7 +22,7 @@ interface Props {
 	/** The text to show while waiting for a desktop client action to complete */
 	waitingText: string;
 	/** Controls the disabled state of the button */
-	isBtnDisabled?: boolean;
+	disabled?: boolean;
 	/** The message to show in the button */
 	message?: string;
 	/** Button click handler */
@@ -89,33 +88,29 @@ export default function StargateInput(props: Props & StyleProps) {
 		onClick,
 		isWaiting,
 		waitingText,
-		isBtnDisabled,
+		disabled,
 	} = props;
 
 	if (isWaiting) {
 		return (
-			<Box>
-				<Button
-					{...loadingButtonProps}
-					rightSection={<Loader {...loaderProps} />}
-				>
-					<Text {...textProps}>{waitingText}</Text>
-				</Button>
-			</Box>
+			<Button
+				{...loadingButtonProps}
+				rightSection={<Loader {...loaderProps} />}
+			>
+				<Text {...textProps}>{waitingText}</Text>
+			</Button>
 		);
 	}
 
 	return (
-		<Box>
-			<Button
-				{...buttonProps}
-				color={color}
-				disabled={isBtnDisabled}
-				rightSection={<Icon type={icon} />}
-				onClick={onClick}
-			>
-				{message}
-			</Button>
-		</Box>
+		<Button
+			{...buttonProps}
+			color={color}
+			disabled={disabled}
+			rightSection={<Icon type={icon} />}
+			onClick={onClick}
+		>
+			{message}
+		</Button>
 	);
 }

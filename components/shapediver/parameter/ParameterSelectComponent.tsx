@@ -108,25 +108,44 @@ export default function ParameterSelectComponent(
 
 	// We need to prevent duplicate values in definition choices
 	// and append a numeric postfix to duplicate items to make them unique
-	const uniqueChoices = useMemo(() => {
-		if (!definition.choices) return [];
+	const {uniqueChoices, uniqueChoicesIncludingHidden} = useMemo(() => {
 		const uniqueChoices: string[] = [];
+		const uniqueChoicesIncludingHidden: string[] = [];
 		const choiceCounts: {[key: string]: number} = {};
-		definition.choices.forEach((choice) => {
+		definition?.choices?.forEach((choice) => {
+			const itemSettings = settings.itemData?.[choice];
 			if (choiceCounts[choice] === undefined) {
 				choiceCounts[choice] = 0;
 			} else {
 				choiceCounts[choice]++;
 			}
-			uniqueChoices.push(
+			const choice_ =
 				choiceCounts[choice] > 0
 					? `${choice} ${choiceCounts[choice]}`
-					: choice,
-			);
+					: choice;
+			if (!itemSettings?.hidden) uniqueChoices.push(choice_);
+			uniqueChoicesIncludingHidden.push(choice_);
 		});
 
-		return uniqueChoices;
-	}, [definition.choices]);
+		return {uniqueChoices, uniqueChoicesIncludingHidden};
+	}, [definition.choices, settings.itemData]);
+
+	// filter hidden choices from value
+	const filteredValue = useMemo(() => {
+		if (value === undefined || value === null) return undefined;
+		const getIndex = (v: string) =>
+			uniqueChoices.indexOf(uniqueChoicesIncludingHidden[+v]);
+		if (definition.visualization === PARAMETER_VISUALIZATION.CHECKLIST) {
+			const indexes = value
+				.split(",")
+				.map((v) => getIndex(v))
+				.filter((index) => index >= 0);
+			return indexes.length > 0 ? indexes.join(",") : undefined;
+		} else {
+			const index = getIndex(value);
+			return index >= 0 ? index + "" : undefined;
+		}
+	}, [value, uniqueChoices, uniqueChoicesIncludingHidden]);
 
 	const inputContainer = useCallback(
 		(children: React.ReactNode) => {
@@ -152,14 +171,14 @@ export default function ParameterSelectComponent(
 		definition.visualization === PARAMETER_VISUALIZATION.CHECKLIST ? (
 			<MultiSelect
 				value={
-					value
-						? value
+					filteredValue
+						? filteredValue
 								.split(",")
 								.map((v) => uniqueChoices[parseInt(v)])
 						: []
 				}
 				onChange={(v) => {
-					const choices = uniqueChoices
+					const choices = uniqueChoicesIncludingHidden
 						// Collect indexes and values
 						.map((value, index) => ({index, value}))
 						// Filter by values
@@ -175,10 +194,12 @@ export default function ParameterSelectComponent(
 			/>
 		) : (
 			<SelectComponent
-				value={uniqueChoices[+value]}
+				value={
+					filteredValue ? uniqueChoices[+filteredValue] : undefined
+				}
 				onChange={(v) =>
 					handleChange(
-						uniqueChoices.indexOf(v!) + "",
+						uniqueChoicesIncludingHidden.indexOf(v!) + "",
 						undefined,
 						restoreFocus,
 					)

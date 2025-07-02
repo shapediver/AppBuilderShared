@@ -148,7 +148,9 @@ export function useSelection(
 		return nodesInteractionInput;
 	}, [patterns, selectionProps, selectManager]);
 
-	const {availableNodeNames} = useNodesInteractionData(nodesInteractionInput);
+	const {availableNodeNames} = useNodesInteractionData(
+		activate ? nodesInteractionInput : {},
+	);
 
 	const outputsPerSession = useShapeDiverStoreSession((state) => {
 		const outputs: {

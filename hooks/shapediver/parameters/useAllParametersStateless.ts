@@ -1,4 +1,5 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
 import {useShallow} from "zustand/react/shallow";
 
 /**
@@ -10,7 +11,7 @@ import {useShallow} from "zustand/react/shallow";
  * @param namespace q
  * @returns
  */
-export function useAllParameters(namespace: string) {
+export function useAllParametersStateless(namespace: string) {
 	const {getParameters} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
 			getParameters: state.getParameters,
@@ -19,7 +20,17 @@ export function useAllParameters(namespace: string) {
 
 	const paramStores = getParameters(namespace);
 
+	const paramStoresStateless = Object.values(paramStores).reduce(
+		(acc, store) => {
+			const pstate = store.getState();
+			acc[pstate.definition.id] = pstate;
+
+			return acc;
+		},
+		{} as {[key: string]: IShapeDiverParameter<any>},
+	);
+
 	return {
-		parameters: paramStores,
+		parameters: paramStoresStateless,
 	};
 }

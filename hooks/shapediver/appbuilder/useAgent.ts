@@ -18,7 +18,7 @@ import {useCallback, useContext, useMemo, useState} from "react";
 import {z} from "zod";
 import {useShallow} from "zustand/react/shallow";
 import packagejson from "~/../package.json";
-import {useAllParameters} from "../parameters/useAllParameters";
+import {useAllParametersStateless} from "../parameters/useAllParametersStateless";
 
 export const DEFAULT_SYSTEM_PROMPT =
 	"You are a helpful assistant who can modify parameters of a 3D configurator and answer questions about the 3D configurator \
@@ -465,8 +465,10 @@ export function useAgent(props: Props) {
 	} = props;
 
 	// Get stateful access to all parameters
-	const {parameters} = useAllParameters(namespace);
-	const {parameters: dynamicParameters} = useAllParameters(
+	// TODO the use of useAllParametersStateless instead of useAllParameters
+	// might be a bug. To be checked.
+	const {parameters} = useAllParametersStateless(namespace);
+	const {parameters: dynamicParameters} = useAllParametersStateless(
 		`${namespace}_appbuilder`,
 	);
 

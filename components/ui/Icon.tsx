@@ -76,6 +76,11 @@ import {
 	IconShareOff,
 	IconShoppingCartPlus,
 	IconSun,
+	IconTag,
+	IconTagOff,
+	IconTags,
+	IconTagsOff,
+	IconTagStarred,
 	IconThumbDown,
 	IconThumbUp,
 	IconUpload,
@@ -224,7 +229,7 @@ const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
 			return <IconLinkOff {...iconProps} />;
 		case IconTypeEnum.LockSquare:
 			return <IconLockSquare {...iconProps} />;
-		case IconTypeEnum.MailFoward:
+		case IconTypeEnum.MailForward:
 			return <IconMailForward {...iconProps} />;
 		case IconTypeEnum.Maximize:
 			return <IconMaximize {...iconProps} />;
@@ -270,6 +275,16 @@ const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
 			return <IconShoppingCartPlus {...iconProps} />;
 		case IconTypeEnum.Sun:
 			return <IconSun {...iconProps} />;
+		case IconTypeEnum.Tag:
+			return <IconTag {...iconProps} />;
+		case IconTypeEnum.TagOff:
+			return <IconTagOff {...iconProps} />;
+		case IconTypeEnum.TagStarred:
+			return <IconTagStarred {...iconProps} />;
+		case IconTypeEnum.Tags:
+			return <IconTags {...iconProps} />;
+		case IconTypeEnum.TagsOff:
+			return <IconTagsOff {...iconProps} />;
 		case IconTypeEnum.ThumbDown:
 			return <IconThumbDown {...iconProps} />;
 		case IconTypeEnum.ThumbUp:

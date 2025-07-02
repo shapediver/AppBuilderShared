@@ -365,6 +365,9 @@ function createParameterStore<T>(
 		uiValue: defval,
 		execValue: defval,
 		dirty: false,
+		stringExecValue() {
+			return executor.stringify(undefined);
+		},
 	};
 
 	return create<IShapeDiverParameter<T>>()(
@@ -400,8 +403,9 @@ function createParameterStore<T>(
 						const actions = get().actions;
 						if (!actions.isValid(value, false)) return false;
 						set(
-							() => ({
+							(_state) => ({
 								state: {
+									..._state.state,
 									uiValue: value,
 									execValue: value,
 									dirty: false,
@@ -487,6 +491,7 @@ function createParameterStore<T>(
 							"resetToExecValue",
 						);
 					},
+					// TODO add action to get the stringified value of the parameter
 				},
 			}),
 			{
