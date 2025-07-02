@@ -138,7 +138,7 @@ export function useDragging(
 	}, [objects, componentId, draggingProps]);
 
 	// call the node interaction data hook
-	useNodesInteractionData(nodesInteractionInput);
+	useNodesInteractionData(activate ? nodesInteractionInput : {});
 
 	/**
 	 * Restore the dragged nodes.

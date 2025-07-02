@@ -62,7 +62,7 @@ export function useDragManager(
 	dragManager?: DragManager;
 } {
 	// call the interaction engine hook
-	const {interactionEngine} = useInteractionEngine(viewportId);
+	const {interactionEngine} = useInteractionEngine(viewportId, componentId);
 
 	// create an empty object for the drag managers of the viewport
 	if (!dragManagers[viewportId]) {
