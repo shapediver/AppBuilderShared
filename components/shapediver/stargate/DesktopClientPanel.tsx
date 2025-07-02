@@ -231,6 +231,7 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		setLoading(false);
 	}, []);
 
+	// Keep the local state in sync with the global one
 	useEffect(() => {
 		const value = selectedClient?.id || NO_CLIENT.value;
 		if (
@@ -240,6 +241,11 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 			refreshClients(value);
 		else setSelectedClientValue(value);
 	}, [selectedClient, availableClients]);
+
+	// Initial loading of available clients
+	useEffect(() => {
+		refreshClients(NO_CLIENT.value);
+	}, []);
 
 	const handleClientChange = useCallback(
 		async (
