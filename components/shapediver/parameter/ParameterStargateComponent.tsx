@@ -14,6 +14,11 @@ import {
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
+	IStargateComponentStatusDefinition,
+	mapStargateComponentStatusDefinition,
+	StargateStatusColorTypeEnum,
+} from "@AppBuilderShared/types/shapediver/stargate";
+import {
 	ActionIcon,
 	ActionIconProps,
 	MantineThemeComponent,
@@ -22,43 +27,41 @@ import {
 } from "@mantine/core";
 import React, {useMemo} from "react";
 import StargateInput from "../stargate/StargateInput";
-
-/** Type for data related to the status of the component. */
-type IStatusData = {
-	color: string;
-	message: string;
-	isBtnDisabled: boolean;
-};
+import {
+	DefaultStargateStyleProps,
+	StargateStyleProps,
+} from "../stargate/stargateShared";
 
 /**
  * Map from status enum to status data.
- * TODO SS-8820 colors and messages should be controlled by the theme
  */
-const StatusDataMap: {[key in ParameterStatusEnum]: IStatusData} = {
+const StatusDataMap: {
+	[key in ParameterStatusEnum]: IStargateComponentStatusDefinition;
+} = {
 	[ParameterStatusEnum.notActive]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "No active client found",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 	[ParameterStatusEnum.incompatible]: {
-		color: "var(--mantine-color-gray-2)",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "Incompatible input",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 	[ParameterStatusEnum.noObjectSelected]: {
-		color: "orange",
+		colorType: StargateStatusColorTypeEnum.focused,
 		message: "No $type selected",
-		isBtnDisabled: false,
+		disabled: false,
 	},
 	[ParameterStatusEnum.objectSelected]: {
-		color: "var(--mantine-primary-color-filled)",
+		colorType: StargateStatusColorTypeEnum.primary,
 		message: "$count $type selected",
-		isBtnDisabled: false,
+		disabled: false,
 	},
 	[ParameterStatusEnum.unsupported]: {
-		color: "orange",
+		colorType: StargateStatusColorTypeEnum.dimmed,
 		message: "Unsupported input status",
-		isBtnDisabled: true,
+		disabled: true,
 	},
 };
 
@@ -105,12 +108,13 @@ export function ParameterStargateComponentThemeProps(
 export default function ParameterStargateComponent(
 	props: PropsParameter &
 		Partial<PropsParameterWrapper> &
-		Partial<StyleProps>,
+		Partial<StyleProps> &
+		Partial<StargateStyleProps>,
 ) {
 	const {definition, value, handleChange, onCancel, disabled} =
 		useParameterComponentCommons<string>(props);
 
-	const {tooltipProps, actionIconProps, iconProps} = useProps(
+	const {tooltipProps, actionIconProps, iconProps, ...rest} = useProps(
 		"ParameterStargateComponent",
 		defaultStyleProps,
 		props,
@@ -119,7 +123,13 @@ export default function ParameterStargateComponent(
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterStargateComponent",
 		defaultPropsParameterWrapper,
-		props,
+		rest,
+	);
+
+	const {stargateColorProps} = useProps(
+		"StargateShared",
+		DefaultStargateStyleProps,
+		rest,
 	);
 
 	const {status, count, onObjectAdd, onClearSelection, isWaiting} =
@@ -132,8 +142,11 @@ export default function ParameterStargateComponent(
 		});
 
 	const statusData = useMemo(() => {
-		return StatusDataMap[status];
-	}, [status]);
+		return mapStargateComponentStatusDefinition(
+			StatusDataMap[status],
+			stargateColorProps,
+		);
+	}, [status, stargateColorProps]);
 
 	const parsedMessage = useMemo(() => {
 		const type_ = definition.type.substring(1).toLowerCase();
@@ -182,7 +195,7 @@ export default function ParameterStargateComponent(
 					color={statusData.color}
 					isWaiting={isWaiting}
 					waitingText="Waiting for selection..."
-					disabled={statusData.isBtnDisabled || disabled}
+					disabled={statusData.disabled || disabled}
 					onClick={onObjectAdd}
 					icon={IconTypeEnum.DeviceDesktopDown}
 				/>
