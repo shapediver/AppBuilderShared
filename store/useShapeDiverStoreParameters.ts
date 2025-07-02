@@ -109,10 +109,7 @@ function createParameterExecutor<T>(
 				);
 				changes.addValueChange(paramId, uiValue);
 				const values = forceImmediate
-					? await changes.accept(
-							skipHistory,
-							skipHistory ? undefined : [paramId],
-						)
+					? await changes.accept(skipHistory, [paramId])
 					: await changes.wait;
 				const value = paramId in values ? values[paramId] : uiValue;
 				if (value !== uiValue)
@@ -1476,6 +1473,7 @@ export const useShapeDiverStoreParameters =
 					if (!stores) return;
 
 					const paramIds = Object.keys(values);
+					if (paramIds.length === 0) return;
 
 					// verify that all parameter stores exist and values are valid
 					paramIds.forEach((paramId) => {
@@ -1496,19 +1494,19 @@ export const useShapeDiverStoreParameters =
 					// update values and return execution promises
 					// TODO SS-8042 this could be optimized by supporting changes of multiple parameters
 					// at once, which would require a refactoring of the state management
-					const promises = paramIds.map((paramId, index) => {
+					const promises = paramIds.map((paramId) => {
 						const store = stores[paramId];
 						const {actions} = store.getState();
 						actions.setUiValue(values[paramId]);
-
-						// once we reach the last parameter, we execute the changes immediately
-						return actions.execute(
-							index === paramIds.length - 1,
-							skipHistory,
-						);
+						return actions.execute(false, skipHistory);
 					});
 
-					await Promise.all(promises);
+					const {parameterChanges} = get();
+					const changes = parameterChanges[namespace];
+					await Promise.all([
+						changes.accept(skipHistory),
+						...promises,
+					]);
 				},
 
 				getDefaultState(): ISessionsHistoryState {
