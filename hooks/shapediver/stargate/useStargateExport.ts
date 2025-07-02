@@ -4,11 +4,11 @@ import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverS
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
+import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
 import {ISdStargateExportFileResultEnum} from "@shapediver/sdk.stargate-sdk-v1";
 import {ShapeDiverResponseExportContent} from "@shapediver/viewer.session";
 import {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useAllParameters} from "../parameters/useAllParameters";
 import {useStargateExportFile} from "./useStargateExportFile";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
@@ -59,9 +59,6 @@ export const useStargateExport = ({
 	const [status, setStatus] = useState<ExportStatusEnum>(
 		ExportStatusEnum.notActive,
 	);
-
-	/** Get parameter stores of session */
-	const {parameters: parameterStores} = useAllParameters(sessionId);
 
 	const {exportFile} = useStargateExportFile();
 	const notifications = useContext(NotificationContext);
@@ -132,9 +129,8 @@ export const useStargateExport = ({
 			throw new Error("Current model not available");
 		}
 
-		const parameters = Object.values(parameterStores).reduce(
-			(acc, p_) => {
-				const p = p_.getState();
+		const parameters = getParameterStates(sessionId).reduce(
+			(acc, p) => {
 				acc[p.definition.id] = p.state.stringExecValue();
 				return acc;
 			},
@@ -203,7 +199,7 @@ export const useStargateExport = ({
 					],
 			});
 		}
-	}, [parameterStores, exportFile, exportId, contentIndex]);
+	}, [sessionId, exportFile, exportId, contentIndex]);
 
 	return {
 		isWaiting,

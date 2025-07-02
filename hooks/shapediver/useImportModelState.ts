@@ -8,6 +8,7 @@ import {
 	filterAndValidateModelStateParameters,
 	generateParameterFeedback,
 } from "@AppBuilderShared/utils/parameters/parametersFilter";
+import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
 import {useCallback, useContext, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -75,13 +76,8 @@ export function useImportModelState(namespace: string) {
 				return false;
 			}
 
-			// Get session parameters and pass to utility function
-			const sessionParameters = useShapeDiverStoreParameters
-				.getState()
-				.getParameters(namespace);
-
 			const validationResult = filterAndValidateModelStateParameters(
-				sessionParameters,
+				getParameterStates(namespace),
 				parameters,
 			);
 

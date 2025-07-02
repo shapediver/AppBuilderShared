@@ -9,7 +9,9 @@ import {
 import {
 	filterAndValidateParameters,
 	generateParameterFeedback,
+	isImportParameterArray,
 } from "@AppBuilderShared/utils/parameters/parametersFilter";
+import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
 import {useCallback, useContext} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -36,20 +38,11 @@ export function useParameterImportExport(namespace: string) {
 	 * Export parameters as JSON file
 	 */
 	const exportParameters = useCallback(async () => {
-		// Get current parameter values from store
-		const parameters = useShapeDiverStoreParameters
-			.getState()
-			.getParameters(namespace);
-		const parameterArray: {id: string; value: any; name: string}[] = [];
-
-		Object.values(parameters).forEach((paramStore) => {
-			const param = paramStore.getState();
-			parameterArray.push({
-				id: param.definition.id,
-				value: param.state.execValue,
-				name: param.definition.name,
-			});
-		});
+		const parameterArray = getParameterStates(namespace).map((param) => ({
+			id: param.definition.id,
+			value: param.state.execValue,
+			name: param.definition.name,
+		}));
 
 		// Create JSON blob and download
 		const jsonContent = JSON.stringify({
@@ -134,12 +127,18 @@ export function useParameterImportExport(namespace: string) {
 					return;
 				}
 
-				const sessionParameters = useShapeDiverStoreParameters
-					.getState()
-					.getParameters(namespace);
+				if (!isImportParameterArray(importData.parameters)) {
+					const errorMessage =
+						"The schema of the parameters is not valid";
+					notifications.error({
+						message: errorMessage,
+					});
+					reject(new Error(errorMessage));
+					return;
+				}
 
 				const validationResult = filterAndValidateParameters(
-					sessionParameters,
+					getParameterStates(namespace),
 					importData.parameters,
 				);
 
@@ -179,15 +178,13 @@ export function useParameterImportExport(namespace: string) {
 	 * Reset parameters to default values
 	 */
 	const resetParameters = useCallback(async () => {
-		const parameters = useShapeDiverStoreParameters
-			.getState()
-			.getParameters(namespace);
-		const defaultValues: {[key: string]: any} = {};
-
-		Object.values(parameters).forEach((paramStore) => {
-			const param = paramStore.getState();
-			defaultValues[param.definition.id] = param.definition.defval;
-		});
+		const defaultValues = getParameterStates(namespace).reduce(
+			(acc, param) => {
+				acc[param.definition.id] = param.definition.defval;
+				return acc;
+			},
+			{} as Record<string, any>,
+		);
 
 		await batchParameterValueUpdate(namespace, defaultValues);
 

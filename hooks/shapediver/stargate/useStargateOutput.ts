@@ -5,6 +5,7 @@ import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverS
 import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
+import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
 import {ISdStargateBakeDataResultEnum} from "@shapediver/sdk.stargate-sdk-v1";
 import {
 	ITreeNode,
@@ -12,7 +13,6 @@ import {
 } from "@shapediver/viewer.session";
 import {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useAllParameters} from "../parameters/useAllParameters";
 import {useStargateBakeData} from "./useStargateBakeData";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
@@ -104,9 +104,6 @@ export const useStargateOutput = ({
 			return chunk;
 		}),
 	);
-
-	/** Get parameter stores of session */
-	const {parameters: parameterStores} = useAllParameters(sessionId);
 
 	const {bakeData} = useStargateBakeData();
 	const notifications = useContext(NotificationContext);
@@ -203,10 +200,9 @@ export const useStargateOutput = ({
 			throw new Error("Current model not available");
 		}
 
-		const parameters = Object.values(parameterStores).reduce(
-			(acc, p_) => {
-				const p = p_.getState();
-				acc[p.definition.id] = p.state.execValue.toString();
+		const parameters = getParameterStates(sessionId).reduce(
+			(acc, p) => {
+				acc[p.definition.id] = p.state.stringExecValue();
 				return acc;
 			},
 			{} as {[key: string]: string},
@@ -262,7 +258,7 @@ export const useStargateOutput = ({
 					ResultErrorMessages[ISdStargateBakeDataResultEnum.NOTHING],
 			});
 		}
-	}, [parameterStores, bakeData, outputId, chunkId, chunkName]);
+	}, [sessionId, bakeData, outputId, chunkId, chunkName]);
 
 	return {
 		isWaiting,

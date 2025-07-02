@@ -1,57 +1,74 @@
 import {NotificationAction} from "@AppBuilderShared/types/context/notificationcontext";
+import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
+import {z} from "zod";
 
 export interface ParameterValidationResult {
+	/** Validated (id,value) pairs of parameters */
 	validParameters: {[key: string]: any};
-	missingParameters: string[];
+	/** Names or IDs of parameters present in the input that could not be matched  */
+	skippedParameters: string[];
+	/** Whether any valid parameters were found */
 	hasValidParameters: boolean;
 }
 
-export interface ImportParameter {
-	id: string;
-	value: any;
-	name?: string;
-}
+const ParameterArraySchema = z.array(
+	z.object({
+		id: z.string(),
+		value: z.any(),
+		name: z.string().optional(),
+	}),
+);
 
-export interface SessionParameterStore {
-	getState: () => {
-		actions: {
-			isValid: (value: any) => boolean;
-		};
-	};
-}
+type ParameterArrayType = z.infer<typeof ParameterArraySchema>;
+
+/**
+ * Checks if the given value is a valid import parameter schema
+ * @param value
+ * @returns
+ */
+export const isImportParameterArray = (
+	value: any,
+): value is ParameterArrayType => {
+	return ParameterArraySchema.safeParse(value).success;
+};
 
 /**
  * Filters and validates imported parameters against current session parameters
- * @param sessionParameters - Object with parameter stores keyed by parameter id
- * @param parameters - Array of parameters to validate
- * @returns Validation result with valid parameters, missing parameters, and accept/reject mode info
+ * @param parameterStates - Array of current parameter states from the session
+ * @param parameterArray - Array of parameters to validate
+ * @returns Validation result with valid parameters, missing parameters
  */
 export function filterAndValidateParameters(
-	sessionParameters: {[key: string]: SessionParameterStore},
-	parameters: ImportParameter[],
+	parameterStates: IShapeDiverParameter<any>[],
+	parameterArray: ParameterArrayType,
 ): ParameterValidationResult {
 	const validParameters: {[key: string]: any} = {};
-	const missingParameters: string[] = [];
+	const skippedParameters: string[] = [];
 
-	for (const param of parameters) {
+	for (const param of parameterArray) {
 		// Skip parameters without id or value
 		if (!param.id || param.value === undefined) {
 			continue;
 		}
 
 		// Try to find parameter by id or name
-		const sessionParam =
-			sessionParameters[param.id] || sessionParameters[param.name || ""];
+		let paramState = parameterStates.find(
+			(p) => p.definition.id === param.id,
+		);
+		if (!paramState && param.name) {
+			paramState = parameterStates.find(
+				(p) => p.definition.name === param.name,
+			);
+		}
 
-		if (!sessionParam) {
-			missingParameters.push(param.name || param.id);
+		if (!paramState) {
+			skippedParameters.push(param.name || param.id);
 			continue;
 		}
 
 		// Validate parameter value
-		const paramActions = sessionParam.getState().actions;
-		if (!paramActions.isValid(param.value)) {
-			missingParameters.push(param.name || param.id);
+		if (!paramState.actions.isValid(param.value)) {
+			skippedParameters.push(param.name || param.id);
 			continue;
 		}
 
@@ -60,30 +77,30 @@ export function filterAndValidateParameters(
 
 	return {
 		validParameters,
-		missingParameters,
+		skippedParameters: skippedParameters,
 		hasValidParameters: Object.keys(validParameters).length > 0,
 	};
 }
 
 /**
  * Filters and validates parameters from model state (object format)
- * @param sessionParameters - Object with parameter stores keyed by parameter id
- * @param parameters - Object with parameter id as key and value as value
+ * @param parameterStates - Array of current parameter states from the session
+ * @param parameterObject - Object with parameter id as key and value as value
  * @returns Validation result with valid parameters, missing parameters, and accept/reject mode info
  */
 export function filterAndValidateModelStateParameters(
-	sessionParameters: {[key: string]: SessionParameterStore},
-	parameters: {[key: string]: any},
+	parameterStates: IShapeDiverParameter<any>[],
+	parameterObject: {[key: string]: any},
 ): ParameterValidationResult {
 	// Convert object format to array format for consistency
-	const parameterArray: ImportParameter[] = Object.entries(parameters).map(
-		([id, value]) => ({
-			id,
-			value,
-		}),
-	);
+	const parameterArray: ParameterArrayType = Object.entries(
+		parameterObject,
+	).map(([id, value]) => ({
+		id,
+		value,
+	}));
 
-	return filterAndValidateParameters(sessionParameters, parameterArray);
+	return filterAndValidateParameters(parameterStates, parameterArray);
 }
 
 /**
@@ -107,10 +124,10 @@ export function generateParameterFeedback(
 		};
 	}
 
-	if (result.missingParameters.length > 0) {
+	if (result.skippedParameters.length > 0) {
 		return {
 			type: NotificationAction.WARNING,
-			message: `The following parameters are missing or invalid: ${result.missingParameters.join(", ")}`,
+			message: `The following parameters could not be matched or ar invalid: ${result.skippedParameters.join(", ")}`,
 		};
 	}
 
