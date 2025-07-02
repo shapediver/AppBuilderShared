@@ -51,6 +51,8 @@ export interface ISelectComponentItemDataType {
 	imageUrl?: string;
 	/** Optional color, used for color selection components. */
 	color?: MantineColor;
+	/** Optionally hide the item. */
+	hidden?: boolean;
 }
 
 export interface ISelectParameterSettings {
