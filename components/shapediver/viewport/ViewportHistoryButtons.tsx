@@ -5,7 +5,6 @@ import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
-import {useImportModelState} from "@AppBuilderShared/hooks/shapediver/useImportModelState";
 import {useViewportHistory} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportHistory";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
@@ -83,9 +82,6 @@ export default function ViewportHistoryButtons(props: Props) {
 	const {exportParameters, importParameters, resetParameters} =
 		useParameterImportExport(namespace);
 
-	const {importModelState, isLoading: isModelStateLoading} =
-		useImportModelState(namespace);
-
 	const [isCreatingModelState, setIsCreatingModelState] = useState(false);
 	const {createModelState, applyModelStateToQueryParameter} =
 		useCreateModelState({namespace});
@@ -139,15 +135,7 @@ export default function ViewportHistoryButtons(props: Props) {
 		[parameterChanges],
 	);
 
-	const handleImportModelState = async (modelStateId: string) => {
-		const success = await importModelState(modelStateId);
-		if (success) {
-			setIsImportDialogOpen(false);
-		}
-	};
-
-	const buttonsDisabled =
-		hasPendingChanges || isModelStateLoading || isCreatingModelState;
+	const buttonsDisabled = hasPendingChanges || isCreatingModelState;
 
 	return (
 		<Box style={style}>
@@ -266,7 +254,7 @@ export default function ViewportHistoryButtons(props: Props) {
 			<ImportModelStateDialog
 				opened={isImportDialogOpen}
 				onClose={() => setIsImportDialogOpen(false)}
-				onImport={handleImportModelState}
+				namespace={namespace}
 			/>
 		</Box>
 	);

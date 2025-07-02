@@ -3,7 +3,6 @@ import {NotificationAction} from "@AppBuilderShared/types/context/notificationco
 export interface ParameterValidationResult {
 	validParameters: {[key: string]: any};
 	missingParameters: string[];
-	acceptRejectMode: boolean;
 	hasValidParameters: boolean;
 }
 
@@ -18,7 +17,6 @@ export interface SessionParameterStore {
 		actions: {
 			isValid: (value: any) => boolean;
 		};
-		acceptRejectMode?: boolean;
 	};
 }
 
@@ -34,7 +32,6 @@ export function filterAndValidateParameters(
 ): ParameterValidationResult {
 	const validParameters: {[key: string]: any} = {};
 	const missingParameters: string[] = [];
-	let acceptRejectMode = false;
 
 	for (const param of parameters) {
 		// Skip parameters without id or value
@@ -58,18 +55,12 @@ export function filterAndValidateParameters(
 			continue;
 		}
 
-		// Check for accept/reject mode
-		if (sessionParam.getState().acceptRejectMode) {
-			acceptRejectMode = true;
-		}
-
 		validParameters[param.id] = param.value;
 	}
 
 	return {
 		validParameters,
 		missingParameters,
-		acceptRejectMode,
 		hasValidParameters: Object.keys(validParameters).length > 0,
 	};
 }
@@ -93,19 +84,6 @@ export function filterAndValidateModelStateParameters(
 	);
 
 	return filterAndValidateParameters(sessionParameters, parameterArray);
-}
-
-/**
- * Checks if any session parameters are in accept/reject mode
- * @param sessionParameters - Object with parameter stores keyed by parameter id
- * @returns True if any parameter is in accept/reject mode
- */
-export function hasAcceptRejectMode(sessionParameters: {
-	[key: string]: SessionParameterStore;
-}): boolean {
-	return Object.values(sessionParameters).some(
-		(paramStore) => !!paramStore?.getState().acceptRejectMode,
-	);
 }
 
 /**

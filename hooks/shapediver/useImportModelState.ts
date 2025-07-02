@@ -2,6 +2,7 @@ import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingCon
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
 import {
 	filterAndValidateModelStateParameters,
@@ -17,15 +18,12 @@ import {useShallow} from "zustand/react/shallow";
 export function useImportModelState(namespace: string) {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const {sessions} = useShapeDiverStoreSession(
-		useShallow((state) => ({
-			sessions: state.sessions,
-		})),
+	const sessionApi = useShapeDiverStoreSession(
+		useShallow((state) => state.sessions[namespace]),
 	);
 
 	const notifications = useContext(NotificationContext);
 	const errorReporting = useContext(ErrorReportingContext);
-	const sessionApi = sessions[namespace];
 
 	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
@@ -37,29 +35,33 @@ export function useImportModelState(namespace: string) {
 	 * Import a model state by ID
 	 */
 	const importModelState = useCallback(
-		async (modelStateId: string) => {
-			if (!sessionApi) {
-				return false;
+		async (modelStateId: string): Promise<boolean> => {
+			// sanitize input
+			modelStateId = modelStateId.trim();
+			if (modelStateId.startsWith("http")) {
+				const url = new URL(modelStateId);
+				modelStateId =
+					url.searchParams.get(QUERYPARAM_MODELSTATEID) || "";
 			}
-
-			const trimmedId = modelStateId.trim();
-			if (!trimmedId) {
+			if (!modelStateId) {
 				notifications.error({
-					message: "Please enter a valid model state ID",
+					message: `Please enter a valid model state ID or a URL including a '${QUERYPARAM_MODELSTATEID}' parameter`,
 				});
 				return false;
 			}
 
 			setIsLoading(true);
 			const response = await exceptionWrapperAsync(
-				() => sessionApi.getModelState(trimmedId),
+				() => sessionApi.getModelState(modelStateId),
 				() => setIsLoading(false),
 			);
 
 			if (response.error) {
 				errorReporting.captureException(response.error);
 				notifications.error({
-					message: "Failed to import model state",
+					title: "Failed to fetch model state",
+					message:
+						response.error.message || "An unknown error occurred",
 				});
 				return false;
 			}
@@ -94,13 +96,12 @@ export function useImportModelState(namespace: string) {
 			await batchParameterValueUpdate(
 				namespace,
 				validationResult.validParameters,
-				!validationResult.acceptRejectMode,
 			);
 
 			// Provide user feedback
 			const feedback = generateParameterFeedback(
 				validationResult,
-				`Model state ${trimmedId} imported successfully`,
+				`Model state ${modelStateId} imported successfully`,
 			);
 
 			notifications[feedback.type]({
@@ -109,7 +110,7 @@ export function useImportModelState(namespace: string) {
 
 			return true;
 		},
-		[namespace],
+		[sessionApi, namespace],
 	);
 
 	return {

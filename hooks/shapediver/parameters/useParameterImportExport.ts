@@ -2,7 +2,10 @@ import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingCon
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
+import {
+	exceptionWrapper,
+	exceptionWrapperAsync,
+} from "@AppBuilderShared/utils/exceptionWrapper";
 import {
 	filterAndValidateParameters,
 	generateParameterFeedback,
@@ -57,7 +60,7 @@ export function useParameterImportExport(namespace: string) {
 		const url = URL.createObjectURL(blob);
 		const link = document.createElement("a");
 		link.href = url;
-		link.download = `parameters_${namespace}_${new Date().toISOString().split("T")[0]}.json`;
+		link.download = `parameters_${currentModel ? currentModel.slug : namespace}_${new Date().toISOString().split("T")[0]}.json`;
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
@@ -103,7 +106,20 @@ export function useParameterImportExport(namespace: string) {
 					return;
 				}
 
-				const importData = JSON.parse(response.data);
+				const importResult = exceptionWrapper(() =>
+					JSON.parse(response.data),
+				);
+
+				if (importResult.error) {
+					errorReporting.captureException(importResult.error);
+					notifications.error({
+						message: (importResult.error as Error).message,
+					});
+					reject(importResult.error);
+					return;
+				}
+
+				const importData = importResult.data;
 
 				if (
 					!importData.parameters ||
@@ -140,13 +156,12 @@ export function useParameterImportExport(namespace: string) {
 				await batchParameterValueUpdate(
 					namespace,
 					validationResult.validParameters,
-					!validationResult.acceptRejectMode,
 				);
 
 				// Provide user feedback
 				const feedback = generateParameterFeedback(
 					validationResult,
-					"Parameters imported successfully",
+					"Parameter values imported successfully",
 				);
 
 				notifications[feedback.type]({
@@ -173,10 +188,6 @@ export function useParameterImportExport(namespace: string) {
 			const param = paramStore.getState();
 			defaultValues[param.definition.id] = param.definition.defval;
 		});
-
-		if (Object.keys(defaultValues).length === 0) {
-			throw new Error("No default values available for this session");
-		}
 
 		await batchParameterValueUpdate(namespace, defaultValues);
 

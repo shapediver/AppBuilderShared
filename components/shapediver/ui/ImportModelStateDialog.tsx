@@ -1,7 +1,8 @@
 import ModalBase from "@AppBuilderShared/components/ui/ModalBase";
-import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
+import {useImportModelState} from "@AppBuilderShared/hooks/shapediver/useImportModelState";
+import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {Stack, TextInput} from "@mantine/core";
-import React, {useState} from "react";
+import React, {useCallback, useState} from "react";
 import Hint from "~/shared/components/ui/Hint";
 
 interface Props {
@@ -13,43 +14,33 @@ interface Props {
 	 * Callback when the modal should be closed
 	 */
 	onClose: () => void;
-	/**
-	 * Callback when a model state should be imported
-	 */
-	onImport: (modelStateId: string) => Promise<void>;
+	/** Namespace of session to use */
+	namespace: string;
 }
 
 export default function ImportModelStateDialog({
 	opened,
 	onClose,
-	onImport,
+	namespace,
 }: Props) {
 	const [modelStateId, setModelStateId] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const handleImport = async () => {
-		if (!modelStateId.trim()) {
-			setError("Please enter a model state ID or URL");
-			return;
-		}
+	const {importModelState, isLoading: isLoadingModelState} =
+		useImportModelState(namespace);
 
-		setIsLoading(true);
+	const handleImport = useCallback(async (modelStateId: string) => {
 		setError(null);
-
-		const response = await exceptionWrapperAsync(
-			() => onImport(modelStateId.trim()),
-			() => setIsLoading(false),
-		);
-
-		if (response.error) {
+		setIsLoading(true);
+		const result = await importModelState(modelStateId);
+		setIsLoading(false);
+		if (!result) {
 			setError("Failed to import model state");
-			console.error("Import error:", response.error);
 			return;
 		}
-
 		handleClose();
-	};
+	}, []);
 
 	const handleClose = () => {
 		setModelStateId("");
@@ -60,7 +51,7 @@ export default function ImportModelStateDialog({
 
 	const handleKeyPress = (event: React.KeyboardEvent) => {
 		if (event.key === "Enter") {
-			handleImport();
+			handleImport(modelStateId);
 		}
 	};
 
@@ -68,24 +59,24 @@ export default function ImportModelStateDialog({
 		<ModalBase
 			opened={opened}
 			onClose={handleClose}
-			onConfirm={handleImport}
-			title="Load a model state"
-			isLoading={isLoading}
+			onConfirm={() => handleImport(modelStateId)}
+			title="Import a model state"
+			isLoading={isLoading || isLoadingModelState}
 			cancelBtnTitle="Cancel"
 			confirmBtnTitle="Load"
 			isConfirmBtnDisabled={!modelStateId.trim()}
 		>
 			<Stack gap="md">
 				<TextInput
-					label="Copy the state id or URL:"
-					placeholder="Enter model state ID or URL"
+					label={`Paste a model state ID or a URL containing a '${QUERYPARAM_MODELSTATEID}' parameter:`}
+					placeholder="Model state ID or URL"
 					value={modelStateId}
 					onChange={(event) =>
 						setModelStateId(event.currentTarget.value)
 					}
 					onKeyUp={handleKeyPress}
 					error={error}
-					disabled={isLoading}
+					disabled={isLoading || isLoadingModelState}
 					data-autofocus
 				/>
 
