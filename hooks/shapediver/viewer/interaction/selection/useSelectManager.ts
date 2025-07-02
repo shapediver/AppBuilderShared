@@ -86,7 +86,7 @@ export function useSelectManager(
 	selectManager?: SelectManager | MultiSelectManager;
 } {
 	// call the interaction engine hook
-	const {interactionEngine} = useInteractionEngine(viewportId);
+	const {interactionEngine} = useInteractionEngine(viewportId, componentId);
 
 	// create an empty object for the select managers of the viewport
 	if (!selectManagers[viewportId]) {
@@ -101,8 +101,6 @@ export function useSelectManager(
 	// use an effect to create the select manager
 	useEffect(() => {
 		if (settings) {
-			let changed = false;
-
 			// whenever this output node changes, we want to create the interaction engine
 			const selectMultiple =
 				settings.minimumSelection !== undefined &&
@@ -122,11 +120,13 @@ export function useSelectManager(
 					componentId,
 					interactionEngine,
 				);
-				changed = true;
 			}
 
-			if (interactionEngine && interactionEngine.closed === false) {
-				changed = true;
+			if (
+				!selectManagers[viewportId][componentId] &&
+				interactionEngine &&
+				interactionEngine.closed === false
+			) {
 				// depending on the settings, create a select manager or a multi select manager
 				if (selectMultiple) {
 					// create a multi select manager with the given settings
@@ -147,6 +147,7 @@ export function useSelectManager(
 						token,
 						selectMultiple,
 					};
+					setSelectManager(selectManager);
 				} else {
 					// create a select manager with the given settings
 					const selectManager = new SelectManager(
@@ -164,13 +165,12 @@ export function useSelectManager(
 						token,
 						selectMultiple,
 					};
+					setSelectManager(selectManager);
 				}
 			}
 
-			if (changed) {
-				setSelectManager(
-					selectManagers[viewportId][componentId].selectManager,
-				);
+			if (!selectManagers[viewportId][componentId]) {
+				setSelectManager(undefined);
 			}
 		}
 

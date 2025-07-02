@@ -62,7 +62,7 @@ export function useHoverManager(
 	hoverManager?: HoverManager;
 } {
 	// call the interaction engine hook
-	const {interactionEngine} = useInteractionEngine(viewportId);
+	const {interactionEngine} = useInteractionEngine(viewportId, componentId);
 
 	// create an empty object for the hover managers of the viewport
 	if (!hoverManagers[viewportId]) {
