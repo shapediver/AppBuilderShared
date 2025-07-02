@@ -255,7 +255,7 @@ export default function ParameterFileInputComponent(
 							waitingText="Waiting for import..."
 							disabled={statusData.disabled || disabled}
 							onClick={onObjectAdd}
-							icon={IconTypeEnum.DeviceDesktopDown}
+							icon={IconTypeEnum.DeviceDesktopUp}
 						/>
 						<TooltipWrapper
 							{...uploadTooltipProps}

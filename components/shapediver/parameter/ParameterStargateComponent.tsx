@@ -50,12 +50,12 @@ const StatusDataMap: {
 	},
 	[ParameterStatusEnum.noObjectSelected]: {
 		colorType: StargateStatusColorTypeEnum.focused,
-		message: "No $type selected",
+		message: "No $type_l selected",
 		disabled: false,
 	},
 	[ParameterStatusEnum.objectSelected]: {
 		colorType: StargateStatusColorTypeEnum.primary,
-		message: "$count $type selected",
+		message: "$type_u selected $count",
 		disabled: false,
 	},
 	[ParameterStatusEnum.unsupported]: {
@@ -149,13 +149,15 @@ export default function ParameterStargateComponent(
 	}, [status, stargateColorProps]);
 
 	const parsedMessage = useMemo(() => {
-		const type_ = definition.type.substring(1).toLowerCase();
+		const type_ = definition.type.substring(1);
 		const type = count !== undefined && count > 1 ? type_ + "s" : type_;
 		const msg = statusData.message.replace(
 			"$count",
-			count ? count + "" : "",
+			count ? `(${count})` : "",
 		);
-		return msg.replace("$type", type);
+		return msg
+			.replace("$type_u", type)
+			.replace("$type_l", type_.toLowerCase());
 	}, [count, statusData.message, definition.type]);
 
 	return (
@@ -197,7 +199,7 @@ export default function ParameterStargateComponent(
 					waitingText="Waiting for selection..."
 					disabled={statusData.disabled || disabled}
 					onClick={onObjectAdd}
-					icon={IconTypeEnum.DeviceDesktopDown}
+					icon={IconTypeEnum.DeviceDesktopUp}
 				/>
 			)}
 		</ParameterWrapperComponent>

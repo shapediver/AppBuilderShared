@@ -3,6 +3,7 @@ import {
 	OutputStatusEnum,
 	useStargateOutput,
 } from "@AppBuilderShared/hooks/shapediver/stargate/useStargateOutput";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,
@@ -44,7 +45,7 @@ const StatusDataMap: {
 	},
 	[OutputStatusEnum.objectAvailableIncompatible]: {
 		colorType: StargateStatusColorTypeEnum.dimmed,
-		message: "$count $object available (incompatible output)",
+		message: "Incompatible output $count",
 		disabled: true,
 	},
 	[OutputStatusEnum.noObjectAvailable]: {
@@ -54,12 +55,12 @@ const StatusDataMap: {
 	},
 	[OutputStatusEnum.objectAvailable]: {
 		colorType: StargateStatusColorTypeEnum.primary,
-		message: "Bake $count objects",
+		message: "Bake in the active client $count",
 		disabled: false,
 	},
 	[OutputStatusEnum.objectAvailableNotActive]: {
 		colorType: StargateStatusColorTypeEnum.dimmed,
-		message: "$count $object available (client not active)",
+		message: "Client not active $count",
 		disabled: true,
 	},
 	[OutputStatusEnum.unsupported]: {
@@ -102,7 +103,7 @@ export default function OutputChunkComponent(
 	const parsedMessage = useMemo(() => {
 		const msg = statusData.message.replace(
 			"$count",
-			count ? count + "" : "",
+			count ? `(${count})` : "",
 		);
 		return msg.replace("$object", count === 1 ? "object" : "objects");
 	}, [count, statusData.message]);
@@ -111,6 +112,7 @@ export default function OutputChunkComponent(
 		<>
 			<OutputChunkLabelComponent chunk={chunk} />
 			<StargateInput
+				icon={IconTypeEnum.DeviceDesktopDown}
 				message={parsedMessage}
 				color={statusData.color}
 				isWaiting={isWaiting}

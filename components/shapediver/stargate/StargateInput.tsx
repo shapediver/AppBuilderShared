@@ -15,7 +15,7 @@ import Icon from "../../ui/Icon";
 
 interface Props {
 	/** Icon to display on the right section of the button */
-	icon?: IconTypeEnum;
+	icon: IconTypeEnum;
 	/** Color to use for the button */
 	color: MantineColor;
 	/** Indicates whether we are waiting for a desktop client action to complete */
@@ -82,15 +82,8 @@ export default function StargateInput(props: Props & StyleProps) {
 		props,
 	);
 
-	const {
-		icon = IconTypeEnum.DeviceDesktopUp,
-		color,
-		message,
-		onClick,
-		isWaiting,
-		waitingText,
-		disabled,
-	} = props;
+	const {icon, color, message, onClick, isWaiting, waitingText, disabled} =
+		props;
 
 	if (isWaiting) {
 		return (

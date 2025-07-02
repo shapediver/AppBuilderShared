@@ -227,6 +227,7 @@ export default function ExportButtonComponent(
 				(isStargate ? (
 					<Group wrap="nowrap">
 						<StargateInput
+							icon={IconTypeEnum.DeviceDesktopDown}
 							message={statusData.message}
 							color={statusData.color}
 							isWaiting={requestingExport || isWaiting}
