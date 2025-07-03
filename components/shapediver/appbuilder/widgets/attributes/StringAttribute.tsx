@@ -1,5 +1,10 @@
 import BaseAttribute from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/BaseAttribute";
-import {Badge} from "@mantine/core";
+import {
+	Badge,
+	BadgeProps,
+	MantineThemeComponent,
+	useProps,
+} from "@mantine/core";
 import {
 	AttributeVisualizationUtils,
 	isStringGradient,
@@ -9,14 +14,37 @@ import {
 import {Converter, MaterialStandardData} from "@shapediver/viewer.session";
 import React, {useMemo} from "react";
 
+type StyleProps = {
+	badgeProps?: Partial<BadgeProps>;
+};
+
+const defaultStyleProps: Partial<StyleProps> = {
+	badgeProps: {
+		style: {marginRight: "10px"},
+	},
+};
+
+type StringAttributeThemePropsType = Partial<StyleProps>;
+
+export function StringAttributeThemeProps(
+	props: StyleProps,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
 interface Props {
 	name: string;
 	attribute: IStringAttribute;
 	showLegend?: boolean;
 }
 
-export default function StringAttribute(props: Props) {
-	const {attribute, name, showLegend} = props;
+export default function StringAttribute(
+	props: Props & StringAttributeThemePropsType,
+) {
+	const {attribute, name, showLegend, ...rest} = props;
+
+	const {badgeProps} = useProps("StringAttribute", defaultStyleProps, rest);
 
 	const legend = useMemo(() => {
 		const colorToValueDictionary: {
@@ -93,9 +121,9 @@ export default function StringAttribute(props: Props) {
 				return value.map((v) => {
 					return (
 						<Badge
+							{...badgeProps}
 							autoContrast
 							key={JSON.stringify(v) + index}
-							style={{marginRight: "10px"}} // TODO make this a style prop
 							color={color}
 						>
 							{v.count > 1

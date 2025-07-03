@@ -16,12 +16,15 @@ import {
 import {
 	ActionIcon,
 	Group,
+	GroupProps,
 	MantineThemeComponent,
 	Paper,
 	PaperProps,
 	Select,
 	Stack,
 	Title,
+	TitleProps,
+	useProps,
 } from "@mantine/core";
 import {
 	ATTRIBUTE_VISUALIZATION,
@@ -57,7 +60,17 @@ type IAttributeDefinition =
 	| IStringAttribute
 	| IDefaultAttribute;
 
-type StyleProps = PaperProps & {};
+type StyleProps = {
+	widgetProps?: Partial<PaperProps>;
+	widgetGroupProps?: Partial<GroupProps>;
+	titleProps?: Partial<TitleProps>;
+};
+const defaultStyleProps: Partial<StyleProps> = {
+	widgetGroupProps: {
+		justify: "space-between",
+		mb: "xs",
+	},
+};
 
 type AppBuilderAttributeVisualizationWidgetThemePropsType = Partial<StyleProps>;
 
@@ -88,8 +101,14 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		passiveMaterial,
 		title = "Attributes",
 		tooltip = "",
-		...paperProps
+		...rest
 	} = props;
+
+	const {widgetProps, titleProps, widgetGroupProps} = useProps(
+		"AppBuilderAttributeVisualizationWidgetComponent",
+		defaultStyleProps,
+		rest,
+	);
 
 	/**
 	 *
@@ -614,13 +633,9 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	return (
 		<>
 			<TooltipWrapper label={tooltip}>
-				<Paper ref={ref} {...paperProps}>
-					<Group justify="space-between" mb={"xs"}>
-						<Title
-							order={2} // TODO make this a style prop
-						>
-							{title}
-						</Title>
+				<Paper ref={ref} {...widgetProps}>
+					<Group {...widgetGroupProps}>
+						<Title {...titleProps}>{title}</Title>
 						<ActionIcon
 							onClick={() => {
 								if (!isInitialized) return;
