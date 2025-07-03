@@ -2,6 +2,7 @@ import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/par
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
@@ -18,7 +19,14 @@ import {
 	IDraggingParameterProps,
 	validateDraggingParameterSettings,
 } from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**
@@ -65,14 +73,21 @@ export default function ParameterDraggingComponent(
 		props,
 	);
 
+	// get the notification context
+	const notifications = useContext(NotificationContext);
+
 	// settings validation
 	const draggingProps = useMemo(() => {
 		const result = validateDraggingParameterSettings(definition.settings);
 		if (result.success) {
 			return result.data.props as IDraggingParameterProps;
 		} else {
+			notifications.error({
+				title: "Invalid Parameter Settings",
+				message: `Invalid settings for Dragging parameter "${definition.name}", see console for details.`,
+			});
 			console.warn(
-				`Invalid settings for Dragging parameter "${definition.name}": ${result.error}`,
+				`Invalid settings for Dragging parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
 			return {};
 		}

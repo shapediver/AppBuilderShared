@@ -88,8 +88,12 @@ export default function ParameterDrawingComponent(
 		if (result.success) {
 			return result.data as IDrawingParameterProps;
 		} else {
+			notifications.error({
+				title: "Invalid Parameter Settings",
+				message: `Invalid settings for Drawing parameter "${definition.name}", see console for details.`,
+			});
 			console.warn(
-				`Invalid settings for Drawing parameter "${definition.name}": ${result.error}`,
+				`Invalid settings for Drawing parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
 			return {};
 		}
