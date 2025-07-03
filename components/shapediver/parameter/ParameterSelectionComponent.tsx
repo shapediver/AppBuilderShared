@@ -73,9 +73,14 @@ export default function ParameterSelectionComponent(
 	// settings validation
 	const selectionProps = useMemo(() => {
 		const result = validateSelectionParameterSettings(definition.settings);
-		return result.success
-			? (result.data.props as ISelectionParameterProps)
-			: {};
+		if (result.success) {
+			return result.data.props as ISelectionParameterProps;
+		} else {
+			console.warn(
+				`Invalid settings for Selection parameter "${definition.name}": ${result.error}`,
+			);
+			return {};
+		}
 	}, [definition.settings]);
 
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;

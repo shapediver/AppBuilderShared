@@ -81,9 +81,14 @@ export default function ParameterGumballComponent(
 	// settings validation
 	const gumballProps = useMemo(() => {
 		const result = validateGumballParameterSettings(definition.settings);
-		return result.success
-			? (result.data.props as IGumballParameterProps)
-			: {};
+		if (result.success) {
+			return result.data.props as IGumballParameterProps;
+		} else {
+			console.warn(
+				`Invalid settings for Gumball parameter "${definition.name}": ${result.error}`,
+			);
+			return {};
+		}
 	}, [definition.settings]);
 
 	// state for the gumball application

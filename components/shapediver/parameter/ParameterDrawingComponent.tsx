@@ -85,7 +85,14 @@ export default function ParameterDrawingComponent(
 	// settings validation
 	const drawingProps = useMemo(() => {
 		const result = validateDrawingParameterSettings(definition.settings);
-		return result.success ? (result.data as IDrawingParameterProps) : {};
+		if (result.success) {
+			return result.data as IDrawingParameterProps;
+		} else {
+			console.warn(
+				`Invalid settings for Drawing parameter "${definition.name}": ${result.error}`,
+			);
+			return {};
+		}
 	}, [definition.settings]);
 
 	// state for the drawing application

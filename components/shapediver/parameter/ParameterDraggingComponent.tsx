@@ -68,9 +68,14 @@ export default function ParameterDraggingComponent(
 	// settings validation
 	const draggingProps = useMemo(() => {
 		const result = validateDraggingParameterSettings(definition.settings);
-		return result.success
-			? (result.data.props as IDraggingParameterProps)
-			: {};
+		if (result.success) {
+			return result.data.props as IDraggingParameterProps;
+		} else {
+			console.warn(
+				`Invalid settings for Dragging parameter "${definition.name}": ${result.error}`,
+			);
+			return {};
+		}
 	}, [definition.settings]);
 
 	// is the dragging active or not?
