@@ -139,6 +139,7 @@ export default function ParameterStargateComponent(
 			hasValue: !!value,
 			parameterFormat: definition.format,
 			handleChange,
+			increaseReferenceCount: true,
 		});
 
 	const statusData = useMemo(() => {

@@ -108,21 +108,6 @@ export default function ExportButtonComponent(
 
 	const notifications = useContext(NotificationContext);
 
-	// Use stargate output hook for this specific chunk
-	const {isWaiting, isContentSupported, status, onExportFile} =
-		useStargateExport({
-			exportId: definition.id,
-			contentIndex: 0,
-			sessionId: props.namespace,
-		});
-
-	const statusData = useMemo(() => {
-		return mapStargateComponentStatusDefinition(
-			StatusDataMap[status],
-			stargateColorProps,
-		);
-	}, [status, stargateColorProps]);
-
 	// Criterion to determine if the export button shall use Stargate.
 	const {isStargate, label} = useMemo(() => {
 		const dn = definition.displayname || definition.name;
@@ -136,6 +121,21 @@ export default function ExportButtonComponent(
 					label: dn,
 				};
 	}, [definition]);
+
+	const {isWaiting, isContentSupported, status, onExportFile} =
+		useStargateExport({
+			exportId: definition.id,
+			contentIndex: 0,
+			sessionId: props.namespace,
+			increaseReferenceCount: isStargate,
+		});
+
+	const statusData = useMemo(() => {
+		return mapStargateComponentStatusDefinition(
+			StatusDataMap[status],
+			stargateColorProps,
+		);
+	}, [status, stargateColorProps]);
 
 	const exportRequest = useCallback(
 		async (skipStargate?: boolean) => {

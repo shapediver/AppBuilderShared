@@ -35,6 +35,11 @@ export interface IUseStargateParameterProps {
 	parameterFormat: string[] | undefined;
 	/** Handler for changing the parameter value */
 	handleChange: (value: string, timeout?: number) => void;
+	/**
+	 * Whether to increase the reference count for Stargate (this is
+	 * used to decide whether to show the desktop client connection widget)
+	 */
+	increaseReferenceCount: boolean;
 }
 
 /**
@@ -62,6 +67,7 @@ export const useStargateParameter = ({
 	hasValue,
 	parameterFormat,
 	handleChange,
+	increaseReferenceCount,
 }: IUseStargateParameterProps) => {
 	const [isWaiting, setIsWaiting] = useState(false);
 	/**
@@ -116,7 +122,9 @@ export const useStargateParameter = ({
 	const notifications = useContext(NotificationContext);
 
 	// Increase the reference count for the Stargate SDK
-	useEffect(registerReference, [registerReference]);
+	useEffect(() => {
+		if (increaseReferenceCount) return registerReference();
+	}, [increaseReferenceCount, registerReference]);
 
 	// Update connection status based on network status, selected client,
 	// parameter type and value

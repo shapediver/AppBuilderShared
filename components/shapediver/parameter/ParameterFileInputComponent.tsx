@@ -148,23 +148,6 @@ export default function ParameterFileInputComponent(
 		rest,
 	);
 
-	// File parameters can optionally use Stargate to import files.
-	const {status, onObjectAdd, onClearSelection, isWaiting} =
-		useStargateParameter({
-			parameterId: definition.id,
-			parameterType: definition.type,
-			hasValue: !!value,
-			parameterFormat: definition.format,
-			handleChange,
-		});
-
-	const statusData = useMemo(() => {
-		return mapStargateComponentStatusDefinition(
-			StatusDataMap[status],
-			stargateColorProps,
-		);
-	}, [status, stargateColorProps]);
-
 	// Criterion to determine if the parameter shall use Stargate.
 	const {isStargate, label} = useMemo(() => {
 		const dn = definition.displayname || definition.name;
@@ -178,6 +161,24 @@ export default function ParameterFileInputComponent(
 					label: dn,
 				};
 	}, [definition]);
+
+	// File parameters can optionally use Stargate to import files.
+	const {status, onObjectAdd, onClearSelection, isWaiting} =
+		useStargateParameter({
+			parameterId: definition.id,
+			parameterType: definition.type,
+			hasValue: !!value,
+			parameterFormat: definition.format,
+			handleChange,
+			increaseReferenceCount: isStargate,
+		});
+
+	const statusData = useMemo(() => {
+		return mapStargateComponentStatusDefinition(
+			StatusDataMap[status],
+			stargateColorProps,
+		);
+	}, [status, stargateColorProps]);
 
 	// create the file endings from all the formats that are specified in the parameter
 	const fileEndings = useMemo(() => {

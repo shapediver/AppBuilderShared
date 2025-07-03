@@ -26,6 +26,11 @@ export interface IUseStargateExportProps {
 	exportId: IShapeDiverExportDefinition["id"];
 	contentIndex: number;
 	sessionId: string;
+	/**
+	 * Whether to increase the reference count for Stargate (this is
+	 * used to decide whether to show the desktop client connection widget)
+	 */
+	increaseReferenceCount: boolean;
 }
 
 /**
@@ -51,6 +56,7 @@ export const useStargateExport = ({
 	exportId,
 	contentIndex,
 	sessionId,
+	increaseReferenceCount,
 }: IUseStargateExportProps) => {
 	const [isWaiting, setIsWaiting] = useState(false);
 	/**
@@ -74,7 +80,9 @@ export const useStargateExport = ({
 		);
 
 	// Increase the reference count for the Stargate SDK
-	useEffect(registerReference, [registerReference]);
+	useEffect(() => {
+		if (increaseReferenceCount) return registerReference();
+	}, [increaseReferenceCount, registerReference]);
 
 	// Update connection status based on network status and selected client.
 	useEffect(() => {
