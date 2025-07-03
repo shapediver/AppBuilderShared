@@ -1,5 +1,6 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
@@ -14,7 +15,7 @@ import {
 import {validateSelectParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import {MantineThemeComponent, MultiSelect, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
-import React, {useCallback, useMemo} from "react";
+import React, {useCallback, useContext, useMemo} from "react";
 import SelectComponent, {
 	SelectComponentSettings,
 } from "./select/SelectComponent";
@@ -85,6 +86,9 @@ export default function ParameterSelectComponent(
 		definition.id,
 	]);
 
+	// get the notification context
+	const notifications = useContext(NotificationContext);
+
 	// get component settings from the parameter definition
 	const definitionSettings = useMemo(() => {
 		if (definition.settings) {
@@ -92,8 +96,12 @@ export default function ParameterSelectComponent(
 			if (result.success) {
 				return result.data;
 			} else {
+				notifications.error({
+					title: "Invalid Parameter Settings",
+					message: `Invalid settings for parameter "${definition.name}", see console for details.`,
+				});
 				console.warn(
-					`Invalid settings for parameter id "${definition.id}, name "${definition.name}, type "${definition.type}": ${result.error}`,
+					`Invalid settings for parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 				);
 			}
 		}
