@@ -868,10 +868,12 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			ParametersAndExportsAccordionComponent:
 				ParametersAndExportsAccordionComponentThemeProps({
+					//defaultGroupName: "Default",
 					//avoidSingleComponentGroups: true,
 					//mergeAccordions: false,
 					//pbSlider: "md",
 					//identifyGroupsById: false,
+					// see ParametersAndExportsAccordionComponent for more style properties
 				}),
 			/**
 			 * ParameterColorComponent

@@ -22,6 +22,7 @@ import {
 import {
 	ActionIcon,
 	ActionIconProps,
+	FactoryPayload,
 	FileInput,
 	Group,
 	MantineThemeComponent,
@@ -121,7 +122,7 @@ export function ParameterFileInputComponentThemeProps(
  */
 export default function ParameterFileInputComponent(
 	props: PropsParameter &
-		Partial<PropsParameterWrapper> &
+		Partial<PropsParameterWrapper<FactoryPayload>> &
 		Partial<StyleProps> &
 		Partial<StargateStyleProps>,
 ) {

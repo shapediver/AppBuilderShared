@@ -14,9 +14,15 @@ import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOu
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {
 	Accordion,
+	AccordionControlProps,
+	AccordionItemProps,
+	AccordionPanelProps,
+	AccordionProps,
 	MantineThemeComponent,
 	Paper,
+	PaperProps,
 	Stack,
+	StackProps,
 	useProps,
 } from "@mantine/core";
 import React, {ReactElement, useContext} from "react";
@@ -42,6 +48,18 @@ interface Props {
 	 */
 	outputs?: PropsOutput[];
 	/**
+	 * Component to be displayed at the top of the accordion. Typically used for
+	 * accept / reject buttons.
+	 */
+	topSection?: React.ReactNode;
+	/**
+	 * Namespace of the parameters and exports.
+	 */
+	namespace?: string;
+}
+
+interface StyleProps {
+	/**
 	 * Name of group to use for parameters and exports which are not assigned to a group.
 	 * Leave this empty to not display such parameters and exports inside of an accordion.
 	 */
@@ -57,11 +75,6 @@ interface Props {
 	 */
 	mergeAccordions?: boolean;
 	/**
-	 * Component to be displayed at the top of the accordion. Typically used for
-	 * accept / reject buttons.
-	 */
-	topSection?: React.ReactNode;
-	/**
 	 * Bottom padding of Paper component wrapping slider components.
 	 */
 	pbSlider?: string;
@@ -71,35 +84,65 @@ interface Props {
 	 */
 	identifyGroupsById?: boolean;
 	/**
-	 * Namespace of the parameters and exports.
+	 * Props for the Paper component wrapping each accordion.
 	 */
-	namespace?: string;
+	accordionPaperProps?: PaperProps;
+	/**
+	 * Props for the Paper component wrapping each element inside the accordion.
+	 */
+	elementPaperProps?: PaperProps;
+	/**
+	 * Props for the Accordion component.
+	 */
+	accordionProps?: AccordionProps;
+	/**
+	 * Props for the c.Item component.
+	 */
+	accordionItemProps?: AccordionItemProps;
+	/**
+	 * Props for the Accordion.Control component.
+	 */
+	accordionControlProps?: AccordionControlProps;
+	/**
+	 * Props for the Accordion.Panel component.
+	 */
+	accordionPanelProps?: AccordionPanelProps;
+	/**
+	 * Props for the Stack component wrapping everything.
+	 */
+	wrapperStackProps?: StackProps;
+	/**
+	 * Props for the Stack component wrapping the elements except the topSection.
+	 */
+	elementStackProps?: StackProps;
+	/**
+	 * Props for the Stack component wrapping the elements inside accordion panels.
+	 */
+	panelStackProps?: StackProps;
 }
 
-const defaultProps: Partial<Props> = {
+const defaultStyleProps: Partial<StyleProps> = {
 	avoidSingleComponentGroups: true,
-	mergeAccordions: false,
+	mergeAccordions: true,
 	pbSlider: "md",
 	identifyGroupsById: false,
+	accordionPaperProps: {px: 0, py: 0, withBorder: false},
+	//elementPaperProps: {withBorder: false},
 };
 
 export function ParametersAndExportsAccordionComponentThemeProps(
-	props: Partial<Props>,
+	props: Partial<StyleProps>,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
 	};
 }
 
-export default function ParametersAndExportsAccordionComponent(props: Props) {
-	const {
-		parameters,
-		exports,
-		outputs,
-		defaultGroupName,
-		topSection,
-		namespace,
-	} = props;
+export default function ParametersAndExportsAccordionComponent(
+	props: Props & StyleProps,
+) {
+	const {parameters, exports, outputs, topSection, namespace, ...rest} =
+		props;
 
 	// get sorted list of parameter and export definitions
 	const sortedParamsAndExports = useSortedParametersAndExports(
@@ -114,9 +157,23 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 	const {
 		pbSlider,
 		avoidSingleComponentGroups,
+		defaultGroupName,
 		mergeAccordions,
 		identifyGroupsById,
-	} = useProps("ParametersAndExportsAccordionComponent", defaultProps, props);
+		accordionPaperProps,
+		elementPaperProps,
+		accordionProps,
+		accordionItemProps,
+		accordionControlProps,
+		accordionPanelProps,
+		wrapperStackProps,
+		elementStackProps,
+		panelStackProps,
+	} = useProps(
+		"ParametersAndExportsAccordionComponent",
+		defaultStyleProps,
+		rest,
+	);
 
 	// create a data structure to store the elements within groups
 	const elementGroups: {
@@ -163,6 +220,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 					{...param.parameter}
 					wrapperComponent={Paper}
 					wrapperProps={{
+						...elementPaperProps,
 						pb: extraBottomPadding ? pbSlider : undefined,
 					}}
 					disableIfDirty={
@@ -179,7 +237,7 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 			);
 
 			elementGroups[groupId].elements.push(
-				<Paper key={param.definition.id}>
+				<Paper key={param.definition.id} {...elementPaperProps}>
 					<ExportComponent {...param.export} />
 				</Paper>,
 			);
@@ -201,8 +259,10 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 	) => {
 		elements.push(
 			// wrap accordion in paper to show optional shadows
-			<Paper key={items[0].key} px={0} py={0} withBorder={false}>
-				<Accordion defaultValue={defaultValue}>{items}</Accordion>
+			<Paper key={items[0].key} {...accordionPaperProps}>
+				<Accordion {...accordionProps} defaultValue={defaultValue}>
+					{items}
+				</Accordion>
 			</Paper>,
 		);
 	};
@@ -218,10 +278,16 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 	for (const g of elementGroups) {
 		if (g.group && (!avoidSingleComponentGroups || g.elements.length > 1)) {
 			accordionItems.push(
-				<Accordion.Item key={g.group.id} value={g.group.id}>
-					<Accordion.Control>{g.group.name}</Accordion.Control>
-					<Accordion.Panel key={g.group.id}>
-						<Stack>{g.elements}</Stack>
+				<Accordion.Item
+					{...accordionItemProps}
+					key={g.group.id}
+					value={g.group.id}
+				>
+					<Accordion.Control {...accordionControlProps}>
+						{g.group.name}
+					</Accordion.Control>
+					<Accordion.Panel {...accordionPanelProps} key={g.group.id}>
+						<Stack {...panelStackProps}>{g.elements}</Stack>
 					</Accordion.Panel>
 				</Accordion.Item>,
 			);
@@ -242,11 +308,9 @@ export default function ParametersAndExportsAccordionComponent(props: Props) {
 	}
 
 	return (
-		<>
-			<Stack>
-				{topSection}
-				<Stack>{elements}</Stack>
-			</Stack>
-		</>
+		<Stack {...wrapperStackProps}>
+			{topSection}
+			<Stack {...elementStackProps}>{elements}</Stack>
+		</Stack>
 	);
 }
