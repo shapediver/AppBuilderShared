@@ -198,7 +198,6 @@ export default function ParametersAndExportsAccordionComponent(
 			(defaultGroupName
 				? {id: "default", name: defaultGroupName}
 				: undefined);
-		console.debug(param.definition, group);
 		const groupIdentifier = identifyGroupsById ? group?.id : group?.name;
 		if (!group) {
 			elementGroups.push({elements: []});
