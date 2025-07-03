@@ -3,8 +3,13 @@ import {useSdTFData} from "@AppBuilderShared/hooks/shapediver/viewer/useSdTFData
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {
 	Accordion,
+	AccordionControlProps,
+	AccordionItemProps,
+	AccordionPanelProps,
+	AccordionProps,
 	MantineThemeComponent,
 	Paper,
+	PaperProps,
 	Stack,
 	StackProps,
 	useProps,
@@ -14,13 +19,14 @@ import OutputChunkComponent from "./OutputChunkComponent";
 
 interface StyleProps {
 	stackProps?: StackProps;
+	paperProps?: PaperProps;
+	accordionProps?: AccordionProps;
+	accordionItemProps?: AccordionItemProps;
+	accordionControlProps?: AccordionControlProps;
+	accordionPanelProps?: AccordionPanelProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
-	stackProps: {
-		pb: "xs",
-	},
-};
+const defaultStyleProps: Partial<StyleProps> = {};
 
 export function OutputStargateComponentThemeProps(
 	props: Partial<StyleProps>,
@@ -41,41 +47,45 @@ export default function OutputStargateComponent(
 	const {namespace} = props;
 	const {definition} = useOutput(props);
 
-	const {stackProps} = useProps(
-		"OutputStargateComponent",
-		defaultStyleProps,
-		props,
-	);
+	const {
+		stackProps,
+		paperProps,
+		accordionProps,
+		accordionItemProps,
+		accordionControlProps,
+		accordionPanelProps,
+	} = useProps("OutputStargateComponent", defaultStyleProps, props);
 
 	const {sdTFDataLoaded} = useSdTFData();
 
 	return (
-		<>
-			{sdTFDataLoaded && definition && definition.chunks && (
-				<Accordion>
-					<Accordion.Item
-						key={`${definition.id}-chunks`}
-						value="chunks"
-					>
-						<Accordion.Control>
-							{definition.displayname || definition.name}
-						</Accordion.Control>
-						<Accordion.Panel>
+		sdTFDataLoaded &&
+		definition &&
+		definition.chunks && (
+			<Accordion {...accordionProps}>
+				<Accordion.Item
+					{...accordionItemProps}
+					key={`${definition.id}-chunks`}
+					value="chunks"
+				>
+					<Accordion.Control {...accordionControlProps}>
+						{definition.displayname || definition.name}
+					</Accordion.Control>
+					<Accordion.Panel {...accordionPanelProps} key="chunks">
+						<Stack {...stackProps}>
 							{definition.chunks.map((chunk) => (
-								<Stack key={chunk.id} {...stackProps}>
-									<Paper>
-										<OutputChunkComponent
-											chunk={chunk}
-											output={definition}
-											sessionId={namespace}
-										/>
-									</Paper>
-								</Stack>
+								<Paper key={chunk.id} {...paperProps}>
+									<OutputChunkComponent
+										chunk={chunk}
+										output={definition}
+										sessionId={namespace}
+									/>
+								</Paper>
 							))}
-						</Accordion.Panel>
-					</Accordion.Item>
-				</Accordion>
-			)}
-		</>
+						</Stack>
+					</Accordion.Panel>
+				</Accordion.Item>
+			</Accordion>
+		)
 	);
 }

@@ -11,7 +11,15 @@ import {
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
+import {
+	Button,
+	FactoryPayload,
+	Group,
+	Loader,
+	Stack,
+	Text,
+	useProps,
+} from "@mantine/core";
 import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
 import {
 	DraggingParameterValue,
@@ -46,7 +54,7 @@ const parseDraggedNodes = (
  * @returns
  */
 export default function ParameterDraggingComponent(
-	props: PropsParameter & Partial<PropsParameterWrapper>,
+	props: PropsParameter & Partial<PropsParameterWrapper<FactoryPayload>>,
 ) {
 	const {
 		definition,

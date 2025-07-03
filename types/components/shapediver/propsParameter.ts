@@ -1,23 +1,25 @@
 import {PropsParameterOrExport} from "@AppBuilderShared/types/components/shapediver/propsCommon";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
-import {ComponentType, CSSProperties, JSX} from "react";
+import {FactoryPayload, StylesApiProps} from "@mantine/core";
+import {ComponentType, JSX} from "react";
 
-export interface PropsParameterWrapper {
+export interface PropsParameterWrapper<T extends FactoryPayload> {
 	readonly wrapperComponent?:
 		| string
 		| ComponentType<any>
 		| keyof JSX.IntrinsicElements;
 	readonly wrapperProps?: {
 		className?: string;
-		style?: CSSProperties;
+		style?: StylesApiProps<T>;
 		[key: string]: any;
 	};
 }
 
-export const defaultPropsParameterWrapper: PropsParameterWrapper = {
-	wrapperComponent: "section",
-	wrapperProps: {},
-};
+export const defaultPropsParameterWrapper: PropsParameterWrapper<FactoryPayload> =
+	{
+		wrapperComponent: "section",
+		wrapperProps: {},
+	};
 
 /**
  * Props of a parameter reference.
