@@ -180,6 +180,13 @@ export const useCustomTheme = (props: Props = {}) => {
 			defaultFontWeightMedium: "500",
 			defaultFontWeightBold: "700",
 		},
+		shadows: {
+			xs: "0 1px 2px rgba(0, 0, 0, 0.1)",
+			sm: "0 1px 3px rgba(0, 0, 0, 0.1)",
+			md: "0 2px 4px rgba(0, 0, 0, 0.1)",
+			lg: "0 4px 8px rgba(0, 0, 0, 0.1)",
+			xl: "0 8px 16px rgba(0, 0, 0, 0.1)",
+		},
 		components: {
 			/**
 			 * Default properties of Mantine components
@@ -873,6 +880,7 @@ export const useCustomTheme = (props: Props = {}) => {
 					//mergeAccordions: false,
 					//pbSlider: "md",
 					//identifyGroupsById: false,
+					//accordionPaperProps: {px: 0, py: 0, withBorder: false /*, shadow: "md"*/}
 					// see ParametersAndExportsAccordionComponent for more style properties
 				}),
 			/**

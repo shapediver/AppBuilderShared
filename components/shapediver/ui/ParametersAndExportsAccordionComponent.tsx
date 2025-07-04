@@ -123,10 +123,10 @@ interface StyleProps {
 
 const defaultStyleProps: Partial<StyleProps> = {
 	avoidSingleComponentGroups: true,
-	mergeAccordions: true,
+	mergeAccordions: false,
 	pbSlider: "md",
 	identifyGroupsById: false,
-	accordionPaperProps: {px: 0, py: 0, withBorder: false},
+	accordionPaperProps: {px: 0, py: 0, withBorder: false /*, shadow: "md"*/},
 	//elementPaperProps: {withBorder: false},
 };
 
@@ -275,7 +275,7 @@ export default function ParametersAndExportsAccordionComponent(
 
 	// loop through the created elementGroups to add them
 	let accordionItems: ReactElement[] = [];
-	for (const g of elementGroups) {
+	elementGroups.map((g, index) => {
 		if (g.group && (!avoidSingleComponentGroups || g.elements.length > 1)) {
 			accordionItems.push(
 				<Accordion.Item
@@ -300,9 +300,13 @@ export default function ParametersAndExportsAccordionComponent(
 				addAccordion(accordionItems, defaultValue);
 				accordionItems = [];
 			}
-			elements.push(g.elements[0]);
+			elements.push(
+				<Paper key={index} {...accordionPaperProps}>
+					{g.elements[0]}
+				</Paper>,
+			);
 		}
-	}
+	});
 	if (accordionItems.length > 0) {
 		addAccordion(accordionItems, defaultValue);
 	}
