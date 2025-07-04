@@ -126,8 +126,8 @@ const defaultStyleProps: Partial<StyleProps> = {
 	mergeAccordions: false,
 	pbSlider: "md",
 	identifyGroupsById: false,
-	accordionPaperProps: {px: 0, py: 0, withBorder: false /*, shadow: "md"*/},
-	//elementPaperProps: {withBorder: false},
+	accordionPaperProps: {px: 0, py: 0, withBorder: false, shadow: "md"},
+	elementPaperProps: {shadow: "none" /*, withBorder: true*/},
 };
 
 export function ParametersAndExportsAccordionComponentThemeProps(
@@ -243,11 +243,13 @@ export default function ParametersAndExportsAccordionComponent(
 			);
 		} else if (isOutputDefinition(param) && namespace) {
 			elementGroups[groupId].elements.push(
-				<OutputStargateComponent
-					key={param.definition.id}
-					{...param.output}
-					namespace={namespace}
-				/>,
+				<Paper key={param.definition.id} {...accordionPaperProps}>
+					<OutputStargateComponent
+						key={param.definition.id}
+						{...param.output}
+						namespace={namespace}
+					/>
+				</Paper>,
 			);
 		}
 	});
@@ -275,7 +277,7 @@ export default function ParametersAndExportsAccordionComponent(
 
 	// loop through the created elementGroups to add them
 	let accordionItems: ReactElement[] = [];
-	elementGroups.map((g, index) => {
+	elementGroups.map((g) => {
 		if (g.group && (!avoidSingleComponentGroups || g.elements.length > 1)) {
 			accordionItems.push(
 				<Accordion.Item
@@ -300,11 +302,7 @@ export default function ParametersAndExportsAccordionComponent(
 				addAccordion(accordionItems, defaultValue);
 				accordionItems = [];
 			}
-			elements.push(
-				<Paper key={index} {...accordionPaperProps}>
-					{g.elements[0]}
-				</Paper>,
-			);
+			elements.push(g.elements[0]);
 		}
 	});
 	if (accordionItems.length > 0) {

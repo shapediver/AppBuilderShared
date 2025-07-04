@@ -72,14 +72,6 @@ export default function AppBuilderFallbackContainerComponent({
 			});
 		}
 
-		if (showDesktopClientPanel) {
-			tabProps.tabs.push({
-				name: "Stargate",
-				icon: IconTypeEnum.Network,
-				children: [<DesktopClientPanel key={2} />],
-			});
-		}
-
 		if (!settings?.hideAttributeVisualization) {
 			const hasSdtfData = outputs.some((output) => {
 				const outputApi =
@@ -101,6 +93,14 @@ export default function AppBuilderFallbackContainerComponent({
 					],
 				});
 			}
+		}
+
+		if (showDesktopClientPanel) {
+			tabProps.tabs.push({
+				name: "Stargate",
+				icon: IconTypeEnum.Network,
+				children: [<DesktopClientPanel key={2} />],
+			});
 		}
 
 		return tabProps;

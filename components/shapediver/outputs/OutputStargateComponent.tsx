@@ -26,7 +26,9 @@ interface StyleProps {
 	accordionPanelProps?: AccordionPanelProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {};
+const defaultStyleProps: Partial<StyleProps> = {
+	paperProps: {shadow: "none"},
+};
 
 export function OutputStargateComponentThemeProps(
 	props: Partial<StyleProps>,
