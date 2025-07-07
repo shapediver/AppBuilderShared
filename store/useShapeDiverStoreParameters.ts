@@ -247,7 +247,7 @@ const registerInProcessManager = (session: ISessionApi) => {
 };
 
 /**
- * Create an IGenericParameterExecutor  for a session.
+ * Create an IGenericParameterExecutor for a session.
  * @param session
  * @param getDefaultExports
  * @param exportResponseSetter
@@ -265,7 +265,7 @@ function createGenericParameterExecutorForSession(
 	 * that should be executed.
 	 * Typically this does not include all parameters defined by the session.
 	 */
-	return async (values, namespace, skipHistory) => {
+	return async (values, namespace, skipHistory, furtherHistoryState) => {
 		// store previous values (we restore them in case of error)
 		const previousValues = Object.keys(values).reduce(
 			(acc, paramId) => {
@@ -320,6 +320,7 @@ function createGenericParameterExecutorForSession(
 
 			if (!skipHistory) {
 				const state: ISessionsHistoryState = {
+					...furtherHistoryState,
 					[session.id]: session.parameterValues,
 				};
 				historyPusher(state);
@@ -832,17 +833,19 @@ export const useShapeDiverStoreParameters =
 									"accept - remove value changes",
 								);
 								// use the optional pre-execution hook to amend the values (used for custom parameters)
-								const amendedValues = preExecutionHook
-									? await preExecutionHook(
-											changedValues,
-											namespace,
-										)
-									: changedValues;
+								const {amendedValues, historyState} =
+									preExecutionHook
+										? await preExecutionHook(
+												changedValues,
+												namespace,
+											)
+										: {amendedValues: changedValues};
 								// get executor promise, but don't wait for it yet
 								const promise = executor(
 									amendedValues,
 									namespace,
 									skipHistory,
+									historyState,
 								);
 								// set "executing" mode
 								set(
@@ -1503,6 +1506,8 @@ export const useShapeDiverStoreParameters =
 						const store = stores[paramId];
 						const {actions} = store.getState();
 						actions.setUiValue(values[paramId]);
+						// Note: We do not execute the changes immediately here,
+						// but call changes.accept below.
 						return actions.execute(false, skipHistory);
 					});
 
@@ -1571,6 +1576,9 @@ export const useShapeDiverStoreParameters =
 				) {
 					const {batchParameterValueUpdate} = get();
 					const namespaces = Object.keys(state);
+					// TODO SS-8828 if there are multiple namespaces,
+					// we should likely first deal with the namespace
+					// containing dynamic parameters
 					const promises = namespaces.map((namespace) =>
 						batchParameterValueUpdate(
 							namespace,
@@ -1660,7 +1668,7 @@ export const useShapeDiverStoreParameters =
 								"No matching history entry found, directly restoring parameter values",
 								entry,
 							);
-							await restoreHistoryState(entry.state);
+							await restoreHistoryState(entry.state, true);
 						}
 					}
 				},

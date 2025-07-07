@@ -86,8 +86,14 @@ export function useAppBuilderCustomParameters(props: Props) {
 	useEffect(() => {
 		if (appBuilderData?.parameters) {
 			appBuilderData.parameters.forEach((p) => {
+				// If a "value" is given as part of the custom parameter definition,
+				// we use it to define the default value of the custom parameter.
 				defaultCustomParameterValues.current[p.id] =
 					p.value ?? p.defval;
+				// If a "value" is given as part of the custom parameter definition,
+				// AND if a value has already been set for the custom parameter,
+				// we remove this current value of the custom parameter
+				// (thereby overriding the current value with the given one).
 				if (
 					p.value !== undefined &&
 					p.id in customParameterValues.current
@@ -103,19 +109,28 @@ export function useAppBuilderCustomParameters(props: Props) {
 
 	// executor function for changes of custom parameter values
 	const executor = useCallback<IGenericParameterExecutor>(
-		async (values: {[key: string]: any}) => {
+		async (values: {[key: string]: any}, _, skipHistory) => {
 			Object.keys(values).forEach(
 				(key) => (customParameterValues.current[key] = values[key]),
 			);
-			// strictly speaking there would be no need to set the value of the parameter,
-			// as it is already set by the pre-execution hook
+
+			// Note: Strictly speaking there would be no need to set the value of
+			// the "AppBuilder" parameter, as it is set by the pre-execution hook anyway.
+
+			// Note: we call actions.execute with `true` to immediately execute
+			// the parameter change of the "AppBuilder" parameter and await the
+			// execution to finish (this will call the pre-execution hook).
+			// In case both the static and dynamic parameters are configured for
+			// accept/reject mode, the changes of the custom parameters will be
+			// accepted first (see IParameterChanges.priority).
+
 			const json = JSON.stringify(getCustomParameterValues());
 			if (
 				appBuilderParam &&
 				json.length <= appBuilderParam.definition.max!
 			) {
 				appBuilderParam.actions.setUiValue(json);
-				await appBuilderParam.actions.execute(true);
+				await appBuilderParam.actions.execute(true, skipHistory);
 			} else if (
 				appBuilderFileParam &&
 				appBuilderFileParam.definition.format?.includes(
@@ -125,7 +140,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 				appBuilderFileParam.actions.setUiValue(
 					new Blob([json], {type: "application/json"}),
 				);
-				await appBuilderFileParam.actions.execute(true);
+				await appBuilderFileParam.actions.execute(true, skipHistory);
 			}
 		},
 		[appBuilderParam, appBuilderFileParam],
@@ -136,7 +151,8 @@ export function useAppBuilderCustomParameters(props: Props) {
 		if (appBuilderParam || appBuilderFileParam) {
 			setPreExecutionHook(namespace, async (_values) => {
 				const values = {..._values};
-				const json = JSON.stringify(getCustomParameterValues());
+				const customValues = getCustomParameterValues();
+				const json = JSON.stringify(customValues);
 				if (
 					appBuilderParam &&
 					json.length <= appBuilderParam.definition.max!
@@ -158,7 +174,10 @@ export function useAppBuilderCustomParameters(props: Props) {
 					);
 				}
 
-				return values;
+				return {
+					amendedValues: values,
+					historyState: {[namespaceAppBuilder]: customValues},
+				};
 			});
 		}
 
@@ -177,7 +196,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 	);
 
 	// define custom parameters and an execution callback for them
-	useDefineGenericParameters(
+	const {loaded} = useDefineGenericParameters(
 		namespaceAppBuilder,
 		acceptRejectMode ?? false,
 		parameterDefinitions,
@@ -185,5 +204,5 @@ export function useAppBuilderCustomParameters(props: Props) {
 		namespace,
 	);
 
-	return {};
+	return {loaded};
 }

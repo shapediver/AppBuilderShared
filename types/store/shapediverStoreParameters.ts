@@ -96,6 +96,7 @@ export interface IParameterChanges {
 	 * Priority of pending changes.
 	 * This is used to determine the order of accepting changes in case
 	 * of multiple pending change objects.
+	 * The lower the number, the earlier the changes will be executed.
 	 */
 	priority: number;
 	/** Add a parameter value change. */
@@ -160,20 +161,36 @@ export type IGenericParameterExecutor = (
 	 * include all parameters defined by the session.
 	 */
 	values: {[key: string]: any},
-	/** The session namespace. */
+	/**
+	 * The session namespace.
+	 */
 	namespace: string,
-	/** If true, skip the creation of a history entry after successful execution. */
+	/**
+	 * If true, skip the creation of a history entry after successful execution.
+	 */
 	skipHistory?: boolean,
+	/**
+	 * Optional further history state to merge with the history state created by the executor.
+	 * This is used for saving the state of dynamic parameters.
+	 */
+	furtherHistoryState?: ISessionsHistoryState,
 ) => Promise<unknown | void>;
 
 /**
  * Hook to be executed before executor.
- * This can be used to override or retrieve parameter values immediately before execution.
+ * This can be used to override or retrieve parameter values immediately before changes are executed.
+ * The optional pre-execution hook for a namespace is executed before {@link IParameterChanges.accept}
+ * calls the executor function {@link IGenericParameterExecutor}.
  */
 export type IPreExecutionHook = (
 	values: {[key: string]: any},
 	namespace: string,
-) => Promise<{[key: string]: any}>;
+) => Promise<{
+	/** The amended parameter values */
+	amendedValues: {[key: string]: any};
+	/** Optional history state to be merged */
+	historyState?: ISessionsHistoryState;
+}>;
 
 /**
  * Executor function override per session.

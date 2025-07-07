@@ -174,7 +174,7 @@ export function useSessionWithAppBuilder(
 	const hasAppBuilderOutput = !!outputApi;
 
 	// register custom parameters
-	useAppBuilderCustomParameters({
+	const {loaded: customParametersLoaded} = useAppBuilderCustomParameters({
 		sessionApi,
 		appBuilderData,
 		acceptRejectMode: props?.acceptRejectMode,
@@ -193,6 +193,7 @@ export function useSessionWithAppBuilder(
 		error,
 		appBuilderData,
 		hasAppBuilderOutput,
+		customParametersLoaded,
 	};
 }
 

@@ -201,6 +201,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		error: appBuilderError,
 		hasAppBuilderOutput,
 		appBuilderData,
+		customParametersLoaded,
 	} = useSessionWithAppBuilder(
 		controllerSession,
 		settings?.appBuilderOverride,
@@ -268,7 +269,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	const show = !!sessionApi;
 
 	// use parameter history
-	useParameterHistory({loaded: show});
+	useParameterHistory({loaded: show && customParametersLoaded});
 
 	// key bindings
 	useKeyBindings({
