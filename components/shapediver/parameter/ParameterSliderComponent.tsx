@@ -8,7 +8,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {
 	Group,
 	MantineThemeComponent,
@@ -17,25 +16,35 @@ import {
 	useProps,
 } from "@mantine/core";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import React from "react";
+import React, {useCallback, useMemo} from "react";
 
 /**
- * Round the number depending on the parameter type.
- *
- * @param parameter
- * @param n
+ * Round and clamp the number to the given min, max and step.
+ * @param min The minimum allowed value
+ * @param max The maximum allowed value
+ * @param step The step size, starting from min, to which the value should be clamped
+ * @param n The number to round and clamp
  * @returns
  */
-const round = (parameter: IShapeDiverParameterDefinition, n: number) => {
-	if (
-		parameter.type === PARAMETER_TYPE.INT ||
-		parameter.type === PARAMETER_TYPE.EVEN ||
-		parameter.type === PARAMETER_TYPE.ODD
-	)
-		n = +n.toFixed(0);
-	n = +n.toFixed(parameter.decimalplaces);
-
-	return n;
+const _roundAndClamp = (
+	min: number,
+	max: number,
+	decimalplaces: number,
+	step: number,
+	n: number,
+) => {
+	// clamp the number to the min and max
+	n = Math.max(min, n);
+	n = Math.min(max, n);
+	// round the number to the nearest step
+	n = Math.round((n - min) / step) * step + min;
+	// rounding to the nearest step can result in a number larger than max, so we clamp again
+	n = n > max ? n - step : n;
+	// CAUTION: this last step converts to a fixed point number with the given decimal places,
+	// which can result in a number lower than min!!!
+	// This can happen if the given number of decimal places is lower than required
+	// to represent the min value correctly.
+	return +n.toFixed(decimalplaces);
 };
 
 interface StyleProps {
@@ -88,17 +97,38 @@ export default function ParameterSliderComponent(
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
 	// calculate the step size which depends on the parameter type
-	let step = 1;
-	if (definition.type === PARAMETER_TYPE.INT) {
-		step = 1;
-	} else if (
-		definition.type === PARAMETER_TYPE.EVEN ||
-		definition.type === PARAMETER_TYPE.ODD
-	) {
-		step = 2;
-	} else {
-		step = 1 / Math.pow(10, definition.decimalplaces!);
-	}
+	const step = useMemo(() => {
+		if (definition.type === PARAMETER_TYPE.INT) {
+			return definition.step !== undefined && definition.step % 1 === 0
+				? definition.step
+				: 1;
+		} else if (
+			definition.type === PARAMETER_TYPE.EVEN ||
+			definition.type === PARAMETER_TYPE.ODD
+		) {
+			return definition.step !== undefined && definition.step % 2 === 0
+				? definition.step
+				: 2;
+		} else {
+			return definition.step !== undefined
+				? +definition.step.toFixed(definition.decimalplaces!)
+				: 1 / Math.pow(10, definition.decimalplaces!);
+		}
+	}, [definition]);
+
+	const roundAndClamp = useCallback(
+		(n: number) =>
+			_roundAndClamp(
+				+definition.min!,
+				+definition.max!,
+				+definition.decimalplaces!,
+				step,
+				n,
+			),
+		[definition, step],
+	);
+
+	const valueClamped = roundAndClamp(+value);
 
 	// choose width of numeric input based on number of decimals
 
@@ -121,18 +151,14 @@ export default function ParameterSliderComponent(
 					{definition && (
 						<Slider
 							w={sliderWidth}
-							label={round(definition, +value)}
-							value={+value}
+							label={valueClamped}
+							value={valueClamped}
 							min={+definition.min!}
 							max={+definition.max!}
 							step={step}
-							onChange={(v) => setValue(round(definition, v))}
+							onChange={(v) => setValue(roundAndClamp(v))}
 							onChangeEnd={(v) =>
-								handleChange(
-									round(definition, v),
-									0,
-									restoreFocus,
-								)
+								handleChange(roundAndClamp(v), 0, restoreFocus)
 							}
 							marks={marks}
 							disabled={disabled}
@@ -146,7 +172,7 @@ export default function ParameterSliderComponent(
 						<TooltipWrapper label={tooltip}>
 							<NumberInput
 								w={numberWidth}
-								value={+value}
+								value={valueClamped}
 								min={+definition.min!}
 								max={+definition.max!}
 								step={step}
@@ -155,7 +181,7 @@ export default function ParameterSliderComponent(
 								clampBehavior="blur"
 								onChange={(v) =>
 									handleChange(
-										round(definition, +v),
+										roundAndClamp(+v),
 										undefined,
 										restoreFocus,
 									)

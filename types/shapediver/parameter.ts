@@ -5,7 +5,12 @@ import {ShapeDiverResponseParameter} from "@shapediver/viewer.session";
  * The static definition of a parameter.
  * We reuse the definition of the parameter on the Geometry Backend here.
  */
-export type IShapeDiverParameterDefinition = ShapeDiverResponseParameter;
+export type IShapeDiverParameterDefinition = ShapeDiverResponseParameter & {
+	/**
+	 * Optional step value for numeric parameters.
+	 */
+	step?: number;
+};
 
 /**
  * The dynamic properties of a parameter.
