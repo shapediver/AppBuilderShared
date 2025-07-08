@@ -21,7 +21,6 @@ import {
 import {
 	ActionIcon,
 	ActionIconProps,
-	FactoryPayload,
 	MantineThemeComponent,
 	TooltipProps,
 	useProps,
@@ -108,7 +107,7 @@ export function ParameterStargateComponentThemeProps(
  */
 export default function ParameterStargateComponent(
 	props: PropsParameter &
-		Partial<PropsParameterWrapper<FactoryPayload>> &
+		Partial<PropsParameterWrapper> &
 		Partial<StyleProps> &
 		Partial<StargateStyleProps>,
 ) {

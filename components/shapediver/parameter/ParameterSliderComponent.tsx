@@ -10,7 +10,6 @@ import {
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {
-	FactoryPayload,
 	Group,
 	MantineThemeComponent,
 	NumberInput,
@@ -67,7 +66,7 @@ export function ParameterSliderComponentThemeProps(
  */
 export default function ParameterSliderComponent(
 	props: PropsParameter &
-		Partial<PropsParameterWrapper<FactoryPayload>> &
+		Partial<PropsParameterWrapper> &
 		Partial<StyleProps>,
 ) {
 	const {definition, value, setValue, handleChange, onCancel, disabled} =
