@@ -84,6 +84,7 @@ function createParameterExecutor<T>(
 			execValue: T | string,
 			forceImmediate?: boolean,
 			skipHistory?: boolean,
+			acceptAll?: boolean,
 		) => {
 			const changes = getChanges();
 
@@ -109,7 +110,10 @@ function createParameterExecutor<T>(
 				);
 				changes.addValueChange(paramId, uiValue);
 				const values = forceImmediate
-					? await changes.accept(skipHistory, [paramId])
+					? await changes.accept(
+							skipHistory,
+							acceptAll ? undefined : [paramId],
+						)
 					: await changes.wait;
 				const value = paramId in values ? values[paramId] : uiValue;
 				if (value !== uiValue)
@@ -247,7 +251,7 @@ const registerInProcessManager = (session: ISessionApi) => {
 };
 
 /**
- * Create an IGenericParameterExecutor  for a session.
+ * Create an IGenericParameterExecutor for a session.
  * @param session
  * @param getDefaultExports
  * @param exportResponseSetter
@@ -265,7 +269,7 @@ function createGenericParameterExecutorForSession(
 	 * that should be executed.
 	 * Typically this does not include all parameters defined by the session.
 	 */
-	return async (values, namespace, skipHistory) => {
+	return async (values, namespace, skipHistory, furtherHistoryState) => {
 		// store previous values (we restore them in case of error)
 		const previousValues = Object.keys(values).reduce(
 			(acc, paramId) => {
@@ -320,6 +324,7 @@ function createGenericParameterExecutorForSession(
 
 			if (!skipHistory) {
 				const state: ISessionsHistoryState = {
+					...furtherHistoryState,
 					[session.id]: session.parameterValues,
 				};
 				historyPusher(state);
@@ -420,6 +425,7 @@ function createParameterStore<T>(
 					execute: async function (
 						forceImmediate?: boolean,
 						skipHistory?: boolean,
+						acceptAll?: boolean,
 					): Promise<T | string> {
 						const state = get().state;
 						const result = await executor.execute(
@@ -427,6 +433,7 @@ function createParameterStore<T>(
 							state.execValue,
 							forceImmediate,
 							skipHistory,
+							acceptAll,
 						);
 						// TODO in case result is not the current uiValue, we could somehow visualize
 						// the fact that the uiValue gets reset here
@@ -832,17 +839,19 @@ export const useShapeDiverStoreParameters =
 									"accept - remove value changes",
 								);
 								// use the optional pre-execution hook to amend the values (used for custom parameters)
-								const amendedValues = preExecutionHook
-									? await preExecutionHook(
-											changedValues,
-											namespace,
-										)
-									: changedValues;
+								const {amendedValues, historyState} =
+									preExecutionHook
+										? await preExecutionHook(
+												changedValues,
+												namespace,
+											)
+										: {amendedValues: changedValues};
 								// get executor promise, but don't wait for it yet
 								const promise = executor(
 									amendedValues,
 									namespace,
 									skipHistory,
+									historyState,
 								);
 								// set "executing" mode
 								set(
@@ -1469,49 +1478,59 @@ export const useShapeDiverStoreParameters =
 				},
 
 				async batchParameterValueUpdate(
-					namespace: string,
-					values: {[key: string]: string},
+					state: ISessionsHistoryState,
 					skipHistory?: boolean,
 				) {
 					const {parameterStores} = get();
-					const stores = parameterStores[namespace];
-					if (!stores) return;
 
-					const paramIds = Object.keys(values);
-					if (paramIds.length === 0) return;
+					// update parameter values in all namespaces
+					const paramUpdatePromises: Promise<void>[] = [];
+					for (const namespace in state) {
+						const values = state[namespace];
+						const stores = parameterStores[namespace];
+						if (!stores) return;
 
-					// verify that all parameter stores exist and values are valid
-					paramIds.forEach((paramId) => {
-						const store = stores[paramId];
-						if (!store)
-							throw new Error(
-								`Parameter ${paramId} does not exist for session namespace ${namespace}`,
-							);
+						const paramIds = Object.keys(values);
+						if (paramIds.length === 0) return;
 
-						const {actions} = store.getState();
-						const value = values[paramId];
-						if (!actions.isValid(value))
-							throw new Error(
-								`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
-							);
-					});
+						// verify that all parameter stores exist and values are valid
+						paramIds.forEach((paramId) => {
+							const store = stores[paramId];
+							if (!store)
+								throw new Error(
+									`Parameter ${paramId} does not exist for session namespace ${namespace}`,
+								);
 
-					// update values and return execution promises
-					// TODO SS-8042 this could be optimized by supporting changes of multiple parameters
-					// at once, which would require a refactoring of the state management
-					const promises = paramIds.map((paramId) => {
-						const store = stores[paramId];
-						const {actions} = store.getState();
-						actions.setUiValue(values[paramId]);
-						return actions.execute(false, skipHistory);
-					});
+							const {actions} = store.getState();
+							const value = values[paramId];
+							if (!actions.isValid(value))
+								throw new Error(
+									`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
+								);
+						});
 
+						// update values and return execution promises
+						const promises = paramIds.map((paramId) => {
+							const store = stores[paramId];
+							const {actions} = store.getState();
+							actions.setUiValue(values[paramId]);
+							// Note: We do not execute the changes immediately here,
+							// but call changes.accept below.
+							return actions.execute(false, skipHistory);
+						});
+						paramUpdatePromises.push(...promises);
+					}
+
+					// accept changes for all namespaces
 					const {parameterChanges} = get();
-					const changes = parameterChanges[namespace];
-					await Promise.all([
-						changes.accept(skipHistory),
-						...promises,
-					]);
+					const acceptPromises = Object.keys(state)
+						.map((namespace) => parameterChanges[namespace])
+						.sort((a, b) => a.priority - b.priority)
+						.map((c) => c.accept(skipHistory));
+
+					// wait for all parameter updates and accept promises
+					await Promise.all(acceptPromises);
+					await Promise.all(paramUpdatePromises);
 				},
 
 				getDefaultState(): ISessionsHistoryState {
@@ -1570,15 +1589,7 @@ export const useShapeDiverStoreParameters =
 					skipHistory?: boolean,
 				) {
 					const {batchParameterValueUpdate} = get();
-					const namespaces = Object.keys(state);
-					const promises = namespaces.map((namespace) =>
-						batchParameterValueUpdate(
-							namespace,
-							state[namespace],
-							skipHistory,
-						),
-					);
-					await Promise.all(promises);
+					await batchParameterValueUpdate(state, skipHistory);
 				},
 
 				async restoreHistoryStateFromIndex(index: number) {
@@ -1660,7 +1671,7 @@ export const useShapeDiverStoreParameters =
 								"No matching history entry found, directly restoring parameter values",
 								entry,
 							);
-							await restoreHistoryState(entry.state);
+							await restoreHistoryState(entry.state, true);
 						}
 					}
 				},

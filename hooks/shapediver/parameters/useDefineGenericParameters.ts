@@ -28,10 +28,11 @@ export function useDefineGenericParameters(
 	executor: IGenericParameterExecutor,
 	dependsOnSessions?: string[] | string | undefined,
 ) {
-	const {syncGeneric, removeSession} = useShapeDiverStoreParameters(
+	const {syncGeneric, removeSession, loaded} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
 			syncGeneric: state.syncGeneric,
 			removeSession: state.removeSession,
+			loaded: namespace in state.parameterStores,
 		})),
 	);
 
@@ -53,5 +54,7 @@ export function useDefineGenericParameters(
 		};
 	}, [namespace]);
 
-	return {};
+	return {
+		loaded,
+	};
 }

@@ -89,10 +89,9 @@ export function useImportModelState(namespace: string) {
 				return false;
 			}
 
-			await batchParameterValueUpdate(
-				namespace,
-				validationResult.validParameters,
-			);
+			await batchParameterValueUpdate({
+				[namespace]: validationResult.validParameters,
+			});
 
 			// Provide user feedback
 			const feedback = generateParameterFeedback(

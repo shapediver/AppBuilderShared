@@ -4,6 +4,10 @@ import {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 interface Props {
+	/**
+	 * Indicates that all parameters relevant for creation of the
+	 * default state have been loaded (registered).
+	 */
 	loaded: boolean;
 }
 
@@ -27,6 +31,7 @@ export function useParameterHistory(props: Props) {
 		})),
 	);
 
+	/** Handler for history events */
 	useEffect(() => {
 		const handlePopState = async (event: any) => {
 			if (!event.state) return;
@@ -41,6 +46,7 @@ export function useParameterHistory(props: Props) {
 		};
 	}, [restoreHistoryStateFromEntry]);
 
+	/** Save the default state */
 	useEffect(() => {
 		if (!loaded) return;
 

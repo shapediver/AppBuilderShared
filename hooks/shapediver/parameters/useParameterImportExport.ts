@@ -152,10 +152,9 @@ export function useParameterImportExport(namespace: string) {
 					return;
 				}
 
-				await batchParameterValueUpdate(
-					namespace,
-					validationResult.validParameters,
-				);
+				await batchParameterValueUpdate({
+					[namespace]: validationResult.validParameters,
+				});
 
 				// Provide user feedback
 				const feedback = generateParameterFeedback(
@@ -186,7 +185,7 @@ export function useParameterImportExport(namespace: string) {
 			{} as Record<string, any>,
 		);
 
-		await batchParameterValueUpdate(namespace, defaultValues);
+		await batchParameterValueUpdate({[namespace]: defaultValues});
 
 		notifications.success({
 			message: "Parameters reset to default values",
