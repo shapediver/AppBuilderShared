@@ -84,6 +84,7 @@ function createParameterExecutor<T>(
 			execValue: T | string,
 			forceImmediate?: boolean,
 			skipHistory?: boolean,
+			acceptAll?: boolean,
 		) => {
 			const changes = getChanges();
 
@@ -109,7 +110,10 @@ function createParameterExecutor<T>(
 				);
 				changes.addValueChange(paramId, uiValue);
 				const values = forceImmediate
-					? await changes.accept(skipHistory, [paramId])
+					? await changes.accept(
+							skipHistory,
+							acceptAll ? undefined : [paramId],
+						)
 					: await changes.wait;
 				const value = paramId in values ? values[paramId] : uiValue;
 				if (value !== uiValue)
@@ -421,6 +425,7 @@ function createParameterStore<T>(
 					execute: async function (
 						forceImmediate?: boolean,
 						skipHistory?: boolean,
+						acceptAll?: boolean,
 					): Promise<T | string> {
 						const state = get().state;
 						const result = await executor.execute(
@@ -428,6 +433,7 @@ function createParameterStore<T>(
 							state.execValue,
 							forceImmediate,
 							skipHistory,
+							acceptAll,
 						);
 						// TODO in case result is not the current uiValue, we could somehow visualize
 						// the fact that the uiValue gets reset here
@@ -1519,7 +1525,7 @@ export const useShapeDiverStoreParameters =
 					const {parameterChanges} = get();
 					const acceptPromises = Object.keys(state)
 						.map((namespace) => parameterChanges[namespace])
-						.sort((a, b) => b.priority - a.priority)
+						.sort((a, b) => a.priority - b.priority)
 						.map((c) => c.accept(skipHistory));
 
 					// wait for all parameter updates and accept promises

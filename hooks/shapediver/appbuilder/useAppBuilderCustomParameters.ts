@@ -117,10 +117,12 @@ export function useAppBuilderCustomParameters(props: Props) {
 			// Note: Strictly speaking there would be no need to set the value of
 			// the "AppBuilder" parameter, as it is set by the pre-execution hook anyway.
 
-			// Note: we call actions.execute with `true` to immediately execute
-			// the parameter change of the "AppBuilder" parameter and await the
-			// execution to finish (this will call the pre-execution hook).
-			// In case both the static and dynamic parameters are configured for
+			// Note: we call actions.execute with forceImmediate `true` to
+			// immediately execute the parameter change of the "AppBuilder" parameter
+			// and await the execution to finish (this will call the pre-execution hook).
+			// We also skip the history state update, as the pre-execution hook
+			// includes the state update of custom parameters.
+			// In case both the static and custom parameters are configured for
 			// accept/reject mode, the changes of the custom parameters will be
 			// accepted first (see IParameterChanges.priority).
 
@@ -130,7 +132,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 				json.length <= appBuilderParam.definition.max!
 			) {
 				appBuilderParam.actions.setUiValue(json);
-				await appBuilderParam.actions.execute(true, skipHistory);
+				await appBuilderParam.actions.execute(true, skipHistory, true);
 			} else if (
 				appBuilderFileParam &&
 				appBuilderFileParam.definition.format?.includes(
@@ -140,7 +142,11 @@ export function useAppBuilderCustomParameters(props: Props) {
 				appBuilderFileParam.actions.setUiValue(
 					new Blob([json], {type: "application/json"}),
 				);
-				await appBuilderFileParam.actions.execute(true, skipHistory);
+				await appBuilderFileParam.actions.execute(
+					true,
+					skipHistory,
+					true,
+				);
 			}
 		},
 		[appBuilderParam, appBuilderFileParam],

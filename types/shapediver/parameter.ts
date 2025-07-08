@@ -67,15 +67,18 @@ export interface IShapeDiverParameterActions<T> {
 	 * Note: The returned promise might not resolve for quite some time, e.g. in
 	 * case parameter changes are waiting to be confirmed by the user.
 	 *
-	 * @@param forceImmediate Set to true if the change should be executed immediately
+	 * @param forceImmediate Set to true if the change should be executed immediately
 	 *                       regardless of other settings.
-	 * @@param skipHistory If true, skip the creation of a history entry after successful execution.
+	 * @param skipHistory If true, skip the creation of a history entry after successful execution.
+	 * @param acceptAll If true and if forceImmediate, accept all pending changes for other
+	 * 					parameters of the same namespace.
 	 *
 	 * @returns the value that was executed.
 	 */
 	execute(
 		forceImmediate?: boolean,
 		skipHistory?: boolean,
+		acceptAll?: boolean,
 	): Promise<T | string>;
 
 	/**
@@ -156,6 +159,8 @@ export interface IShapeDiverParameterExecutor<T> {
 	 * @param forceImmediate Set to true if the change should be executed immediately
 	 *                       regardless of other settings.
 	 * @param skipHistory If true, skip the creation of a history entry after successful execution.
+	 * @param acceptAll If true and if forceImmediate, accept all pending changes for other
+	 * 					parameters of the same namespace.
 	 *
 	 * @returns the value that was executed, which might be different from uiValue and execValue.
 	 */
@@ -164,6 +169,7 @@ export interface IShapeDiverParameterExecutor<T> {
 		execValue: T | string,
 		forceImmediate?: boolean,
 		skipHistory?: boolean,
+		acceptAll?: boolean,
 	) => Promise<T | string>;
 
 	/**
