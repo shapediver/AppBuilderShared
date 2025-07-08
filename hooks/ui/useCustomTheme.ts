@@ -202,6 +202,9 @@ export const useCustomTheme = (props: Props = {}) => {
 				},
 				styles: {
 					content: {padding: "0"},
+					// By default the Accordion items use a background color of var(--item-filled-color).
+					// This can be changed by overriding the backgroundColor property as shown below.
+					//item: {backgroundColor: "var(--item-filled-color)"},
 				},
 			}),
 			/**
