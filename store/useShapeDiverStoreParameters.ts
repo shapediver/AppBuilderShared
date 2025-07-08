@@ -1472,51 +1472,59 @@ export const useShapeDiverStoreParameters =
 				},
 
 				async batchParameterValueUpdate(
-					namespace: string,
-					values: {[key: string]: string},
+					state: ISessionsHistoryState,
 					skipHistory?: boolean,
 				) {
 					const {parameterStores} = get();
-					const stores = parameterStores[namespace];
-					if (!stores) return;
 
-					const paramIds = Object.keys(values);
-					if (paramIds.length === 0) return;
+					// update parameter values in all namespaces
+					const paramUpdatePromises: Promise<void>[] = [];
+					for (const namespace in state) {
+						const values = state[namespace];
+						const stores = parameterStores[namespace];
+						if (!stores) return;
 
-					// verify that all parameter stores exist and values are valid
-					paramIds.forEach((paramId) => {
-						const store = stores[paramId];
-						if (!store)
-							throw new Error(
-								`Parameter ${paramId} does not exist for session namespace ${namespace}`,
-							);
+						const paramIds = Object.keys(values);
+						if (paramIds.length === 0) return;
 
-						const {actions} = store.getState();
-						const value = values[paramId];
-						if (!actions.isValid(value))
-							throw new Error(
-								`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
-							);
-					});
+						// verify that all parameter stores exist and values are valid
+						paramIds.forEach((paramId) => {
+							const store = stores[paramId];
+							if (!store)
+								throw new Error(
+									`Parameter ${paramId} does not exist for session namespace ${namespace}`,
+								);
 
-					// update values and return execution promises
-					// TODO SS-8042 this could be optimized by supporting changes of multiple parameters
-					// at once, which would require a refactoring of the state management
-					const promises = paramIds.map((paramId) => {
-						const store = stores[paramId];
-						const {actions} = store.getState();
-						actions.setUiValue(values[paramId]);
-						// Note: We do not execute the changes immediately here,
-						// but call changes.accept below.
-						return actions.execute(false, skipHistory);
-					});
+							const {actions} = store.getState();
+							const value = values[paramId];
+							if (!actions.isValid(value))
+								throw new Error(
+									`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
+								);
+						});
 
+						// update values and return execution promises
+						const promises = paramIds.map((paramId) => {
+							const store = stores[paramId];
+							const {actions} = store.getState();
+							actions.setUiValue(values[paramId]);
+							// Note: We do not execute the changes immediately here,
+							// but call changes.accept below.
+							return actions.execute(false, skipHistory);
+						});
+						paramUpdatePromises.push(...promises);
+					}
+
+					// accept changes for all namespaces
 					const {parameterChanges} = get();
-					const changes = parameterChanges[namespace];
-					await Promise.all([
-						changes.accept(skipHistory),
-						...promises,
-					]);
+					const acceptPromises = Object.keys(state)
+						.map((namespace) => parameterChanges[namespace])
+						.sort((a, b) => b.priority - a.priority)
+						.map((c) => c.accept(skipHistory));
+
+					// wait for all parameter updates and accept promises
+					await Promise.all(acceptPromises);
+					await Promise.all(paramUpdatePromises);
 				},
 
 				getDefaultState(): ISessionsHistoryState {
@@ -1575,18 +1583,7 @@ export const useShapeDiverStoreParameters =
 					skipHistory?: boolean,
 				) {
 					const {batchParameterValueUpdate} = get();
-					const namespaces = Object.keys(state);
-					// TODO SS-8828 if there are multiple namespaces,
-					// we should likely first deal with the namespace
-					// containing dynamic parameters
-					const promises = namespaces.map((namespace) =>
-						batchParameterValueUpdate(
-							namespace,
-							state[namespace],
-							skipHistory,
-						),
-					);
-					await Promise.all(promises);
+					await batchParameterValueUpdate(state, skipHistory);
 				},
 
 				async restoreHistoryStateFromIndex(index: number) {

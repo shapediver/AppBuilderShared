@@ -462,14 +462,12 @@ export interface IShapeDiverStoreParameters {
 	/**
 	 * Set the values of multiple parameters of a session at once,
 	 * execute and await the changes immediately.
-	 * @param namespace
-	 * @param values
+	 * @param state
 	 * @param skipHistory If true, skip the creation of a history entry after successful execution.
 	 * @returns
 	 */
 	readonly batchParameterValueUpdate: (
-		namespace: string,
-		values: {[parameterId: string]: any},
+		state: ISessionsHistoryState,
 		skipHistory?: boolean,
 	) => Promise<void>;
 

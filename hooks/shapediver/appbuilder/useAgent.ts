@@ -416,7 +416,7 @@ async function setParameterValues(
 		}
 	});
 
-	await batchUpdate(namespace, values);
+	await batchUpdate({[namespace]: values});
 
 	return messages;
 }
