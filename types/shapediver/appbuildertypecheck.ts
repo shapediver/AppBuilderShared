@@ -317,12 +317,14 @@ const IAppBuilderWidgetPropsAttributeVisualizationNumberGradientSchema =
 		type: z.literal("number"),
 		min: z.number().optional(),
 		max: z.number().optional(),
-		steps: z.array(
-			z.object({
-				value: z.number(),
-				colorBefore: z.string(),
-				colorAfter: z.string(),
-			}),
+		steps: z.nativeEnum(ATTRIBUTE_VISUALIZATION).or(
+			z.array(
+				z.object({
+					value: z.number(),
+					colorBefore: z.string(),
+					colorAfter: z.string(),
+				}),
+			),
 		),
 	});
 

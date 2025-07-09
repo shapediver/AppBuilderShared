@@ -107,13 +107,20 @@ export default function NumberAttribute(
 			const normalizedMax =
 				range <= 0 ? 1 : (customMaxValue - absoluteMinValue) / range;
 
-			if (visualization === ATTRIBUTE_VISUALIZATION.OPACITY) {
+			let parsedVisualization: Gradient = visualization;
+			if (
+				isNumberGradient(visualization) &&
+				typeof visualization.steps === "string"
+			)
+				parsedVisualization = visualization.steps as Gradient;
+
+			if (parsedVisualization === ATTRIBUTE_VISUALIZATION.OPACITY) {
 				// Set the color stops for grayscale and opacity
 				return [
 					<stop key={0} offset={normalizedMin} stopColor="black" />,
 					<stop key={1} offset={normalizedMax} stopColor="white" />,
 				];
-			} else if (visualization === ATTRIBUTE_VISUALIZATION.HSL) {
+			} else if (parsedVisualization === ATTRIBUTE_VISUALIZATION.HSL) {
 				// Set the color stops for HSL
 				const hslSamples = 100;
 				const colorStops = [];
@@ -129,8 +136,8 @@ export default function NumberAttribute(
 					);
 				}
 				return colorStops;
-			} else if (typeof visualization === "string") {
-				const steps = getColorSteps(visualization);
+			} else if (typeof parsedVisualization === "string") {
+				const steps = getColorSteps(parsedVisualization);
 				if (!steps) return [];
 				// Set the color steps for string visualization
 				const colorStops: JSX.Element[] = [];
@@ -160,12 +167,15 @@ export default function NumberAttribute(
 					);
 				}
 				return colorStops;
-			} else if (isNumberGradient(visualization)) {
+			} else if (
+				isNumberGradient(parsedVisualization) &&
+				typeof parsedVisualization.steps !== "string"
+			) {
 				// Set the color stops for other visualizations
 				const colorStops: JSX.Element[] = [];
 
-				for (let i = 0; i < visualization.steps.length; i++) {
-					const step = visualization.steps[i];
+				for (let i = 0; i < parsedVisualization.steps.length; i++) {
+					const step = parsedVisualization.steps[i];
 					const stepValue = step.value;
 					const stepOffset =
 						normalizedMin +
