@@ -126,7 +126,9 @@ function validateParameterValue(
 							);
 						choicesChecker(values[i]);
 					}
-				} else {
+				}
+				// allow empty string
+				else if (value) {
 					// to number
 					let temp = value as number;
 					if (typeof value === "string") temp = +value;
@@ -137,7 +139,9 @@ function validateParameterValue(
 					);
 					choicesChecker(value as string);
 				}
-			} else {
+			}
+			// allow empty string
+			else if (value) {
 				// to number
 				let temp = value as number;
 				if (typeof value === "string") temp = +value;
