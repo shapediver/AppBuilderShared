@@ -430,6 +430,8 @@ export type AppBuilderContainerLocationType = {
 	justification?: TAG3D_JUSTIFICATION;
 	/** Optional boolean to allow pointer events on the container. (default: true) */
 	allowPointerEvents?: boolean;
+	/** Optional icon to be displayed to show the container. */
+	previewIcon?: IconType;
 };
 
 /**

@@ -1,6 +1,10 @@
+import Icon from "@AppBuilderShared/components/ui/Icon";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import {Group, Portal} from "@mantine/core";
+import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
+import {ActionIcon, Group, Portal, useProps} from "@mantine/core";
 import {
 	HTMLElementAnchorCustomData,
 	HTMLElementAnchorData,
@@ -8,20 +12,54 @@ import {
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.session";
 import {vec2, vec3} from "gl-matrix";
-import React, {ReactNode, useEffect, useState} from "react";
-
+import React, {ReactNode, useEffect, useId, useRef, useState} from "react";
+import classes from "./ViewportIcons.module.css";
 interface Props {
 	allowPointerEvents?: boolean;
 	location: number[];
 	justification?: TAG3D_JUSTIFICATION;
 
 	element?: JSX.Element | ReactNode;
+	previewIcon?: IconTypeEnum;
 }
+const defaultProps: ViewportIconsOptionalProps = {
+	color: "black",
+	colorDisabled: "grey",
+	enableArBtn: true,
+	enableCamerasBtn: true,
+	enableFullscreenBtn: true,
+	enableZoomBtn: true,
+	fullscreenId: "viewer-fullscreen-area",
+	iconStyle: {m: "3px"},
+	size: 32,
+	style: {display: "flex"},
+	variant: "subtle",
+	variantDisabled: "transparent",
+};
 
-export default function ViewportAnchor(props: Props) {
-	const {allowPointerEvents, justification, location, element} = props;
+const anchors: {
+	[key: string]: React.Dispatch<React.SetStateAction<boolean>>;
+} = {};
+
+export default function ViewportAnchor(
+	props: Props & Partial<ViewportIconsOptionalProps>,
+) {
+	const {
+		allowPointerEvents,
+		justification,
+		location,
+		element,
+		previewIcon,
+		...rest
+	} = props;
 
 	const {viewportId} = useViewportId();
+
+	const {color, iconStyle, size, variant} = useProps(
+		"ViewportIcons",
+		defaultProps,
+		rest,
+	);
 
 	const viewport = useShapeDiverStoreViewport(
 		(state) => state.viewports[viewportId],
@@ -30,6 +68,16 @@ export default function ViewportAnchor(props: Props) {
 	const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
 	const [canvasWidth, setCanvasWidth] = useState<number>(0);
 	const [canvasHeight, setCanvasHeight] = useState<number>(0);
+	const [showPreviewIcon, setShowPreviewIcon] =
+		useState<boolean>(!!previewIcon);
+	const id = useId();
+	anchors[id] = setShowPreviewIcon;
+
+	const showPreviewIconRef = useRef(showPreviewIcon);
+	useEffect(() => {
+		viewport?.render();
+		showPreviewIconRef.current = showPreviewIcon;
+	}, [showPreviewIcon]);
 
 	useEffect(() => {
 		if (viewport?.canvas) setCanvas(viewport.canvas);
@@ -74,9 +122,13 @@ export default function ViewportAnchor(props: Props) {
 		}) => {
 			if (!portalRef.current) return;
 			// first letter is vertical
-			const vertical = justification?.[0] || "M";
+			const vertical = showPreviewIconRef.current
+				? "M"
+				: justification?.[0] || "M";
 			// second letter is horizontal
-			const horizontal = justification?.[1] || "C";
+			const horizontal = showPreviewIconRef.current
+				? "C"
+				: justification?.[1] || "C";
 
 			let x, y;
 			if (horizontal === "R") {
@@ -122,6 +174,22 @@ export default function ViewportAnchor(props: Props) {
 		};
 	}, [location, justification]);
 
+	const onAnchorClick = () => {
+		setShowPreviewIcon((prev) => {
+			if (prev) {
+				Object.keys(anchors).forEach((key) => {
+					if (key !== id) {
+						anchors[key](true);
+					}
+				});
+				return false;
+			} else {
+				return true;
+			}
+		});
+		viewport?.render();
+	};
+
 	return (
 		canvas && (
 			<Portal target={canvas.parentElement || undefined}>
@@ -150,12 +218,33 @@ export default function ViewportAnchor(props: Props) {
 							style={{
 								maxWidth: "var(--app-shell-navbar-width)",
 								pointerEvents:
-									allowPointerEvents === false
+									allowPointerEvents === false &&
+									showPreviewIcon === false
 										? "none"
 										: "auto",
 							}}
 						>
-							{element}
+							{showPreviewIcon ? (
+								<TooltipWrapper label="Open Element">
+									<div>
+										<ActionIcon
+											onClick={onAnchorClick}
+											size={size}
+											variant={variant}
+											aria-label="Open Element"
+											style={iconStyle}
+										>
+											<Icon
+												type={previewIcon!}
+												color={color}
+												className={classes.viewportIcon}
+											/>
+										</ActionIcon>
+									</div>
+								</TooltipWrapper>
+							) : (
+								<Group>{element}</Group>
+							)}
 						</Group>
 					</Group>
 				</Group>

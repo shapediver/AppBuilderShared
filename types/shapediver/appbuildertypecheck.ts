@@ -489,6 +489,7 @@ const IAppBuilderContainerSchema = z
 					return val;
 				}, z.boolean().optional()),
 				justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
+				previewIcon: z.nativeEnum(IconTypeEnum).optional(),
 			}),
 		]),
 		tabs: z.array(IAppBuilderTabSchema).optional(),
