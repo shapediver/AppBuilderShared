@@ -1199,6 +1199,12 @@ export const useShapeDiverStoreParameters =
 								),
 								acceptRejectMode,
 							);
+							if (!def.isValid?.(def.definition.defval)) {
+								console.warn(
+									`Generic parameter ${paramId} has an invalid default value: ${def.definition.defval}`,
+								);
+							}
+
 							hasChanges = true;
 							setUiAndExecValue = def.value !== undefined;
 						}
