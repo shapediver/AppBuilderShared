@@ -101,8 +101,11 @@ export default function NumberAttribute(
 			)
 				return [];
 			const range = absoluteMaxValue - absoluteMinValue;
-			const normalizedMin = (customMinValue - absoluteMinValue) / range;
-			const normalizedMax = (customMaxValue - absoluteMinValue) / range;
+
+			const normalizedMin =
+				range <= 0 ? 0 : (customMinValue - absoluteMinValue) / range;
+			const normalizedMax =
+				range <= 0 ? 1 : (customMaxValue - absoluteMinValue) / range;
 
 			if (visualization === ATTRIBUTE_VISUALIZATION.OPACITY) {
 				// Set the color stops for grayscale and opacity
@@ -342,6 +345,13 @@ export default function NumberAttribute(
 			<Stack>
 				{legend}
 				<RangeSlider
+					display={
+						absoluteMinValue !== undefined &&
+						absoluteMaxValue !== undefined &&
+						absoluteMaxValue - absoluteMinValue <= 0
+							? "none"
+							: undefined
+					}
 					{...rangeSliderProps}
 					label={null}
 					value={[
