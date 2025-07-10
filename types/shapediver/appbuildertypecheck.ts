@@ -73,6 +73,7 @@ const IAppBuilderParameterDefinitionSchema = z.object({
 	hidden: z.boolean(),
 	settings: z.record(z.any()).optional(),
 	value: z.string().optional(),
+	step: z.number().optional(),
 });
 
 // Zod type definition for property "overrides" of IAppBuilderParameterRef
