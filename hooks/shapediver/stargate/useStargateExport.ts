@@ -2,10 +2,12 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
-import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
+import {
+	IExportFileResultEnum,
+	NetworkStatus,
+} from "@AppBuilderShared/types/shapediver/stargate";
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
 import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
-import {ISdStargateExportFileResultEnum} from "@shapediver/sdk.stargate-sdk-v1";
 import {ShapeDiverResponseExportContent} from "@shapediver/viewer.session";
 import {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -14,12 +16,10 @@ import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
 // TODO SS-8820 ideally move these messages to properties that can be controlled from the theme
 export const ResultErrorMessages = {
-	[ISdStargateExportFileResultEnum.SUCCESS]:
-		"The file was successfully exported.",
-	[ISdStargateExportFileResultEnum.NOTHING]: "No data was exported.",
-	[ISdStargateExportFileResultEnum.FAILURE]: "The export operation failed.",
-	[ISdStargateExportFileResultEnum.CANCEL]:
-		"The export operation was cancelled.",
+	[IExportFileResultEnum.SUCCESS]: "The file was successfully exported.",
+	[IExportFileResultEnum.NOTHING]: "No data was exported.",
+	[IExportFileResultEnum.FAILURE]: "The export operation failed.",
+	[IExportFileResultEnum.CANCEL]: "The export operation was cancelled.",
 };
 
 export interface IUseStargateExportProps {
@@ -161,9 +161,7 @@ export const useStargateExport = ({
 				title: "Export failed",
 				message:
 					e.message ||
-					ResultErrorMessages[
-						ISdStargateExportFileResultEnum.FAILURE
-					],
+					ResultErrorMessages[IExportFileResultEnum.FAILURE],
 			});
 			return;
 		}
@@ -171,40 +169,35 @@ export const useStargateExport = ({
 		const replyDto = response.data[0]; // Suppose that we have only one connection;
 
 		const {result, message} = replyDto.info;
+		const resultTyped = result as unknown as IExportFileResultEnum;
 
-		if (result === ISdStargateExportFileResultEnum.FAILURE) {
+		if (resultTyped === IExportFileResultEnum.FAILURE) {
 			notifications.warning({
 				title: "Export failed",
 				message:
 					message ||
-					ResultErrorMessages[
-						ISdStargateExportFileResultEnum.FAILURE
-					],
+					ResultErrorMessages[IExportFileResultEnum.FAILURE],
 			});
-		} else if (result === ISdStargateExportFileResultEnum.SUCCESS) {
+		} else if (resultTyped === IExportFileResultEnum.SUCCESS) {
 			notifications.success({
 				title: "Export successful",
 				message:
 					message ||
-					ResultErrorMessages[
-						ISdStargateExportFileResultEnum.SUCCESS
-					],
+					ResultErrorMessages[IExportFileResultEnum.SUCCESS],
 			});
-		} else if (result === ISdStargateExportFileResultEnum.CANCEL) {
+		} else if (resultTyped === IExportFileResultEnum.CANCEL) {
 			notifications.warning({
 				title: "Export cancelled",
 				message:
 					message ||
-					ResultErrorMessages[ISdStargateExportFileResultEnum.CANCEL],
+					ResultErrorMessages[IExportFileResultEnum.CANCEL],
 			});
-		} else if (result === ISdStargateExportFileResultEnum.NOTHING) {
+		} else if (resultTyped === IExportFileResultEnum.NOTHING) {
 			notifications.warning({
 				title: "Nothing was exported",
 				message:
 					message ||
-					ResultErrorMessages[
-						ISdStargateExportFileResultEnum.NOTHING
-					],
+					ResultErrorMessages[IExportFileResultEnum.NOTHING],
 			});
 		}
 	}, [sessionId, exportFile, exportId, contentIndex]);

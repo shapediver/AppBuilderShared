@@ -1,10 +1,10 @@
 import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {
-	ISdStargateBakeDataReplyDto,
-	SdStargateBakeDataCommand,
-} from "@shapediver/sdk.stargate-sdk-v1";
+	getStargateSDK,
+	useShapeDiverStoreStargate,
+} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
+import type {ISdStargateBakeDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useContext} from "react";
 
 /**
@@ -70,6 +70,8 @@ export const useStargateBakeData = () => {
 				errorReporting.captureException(error);
 				throw error;
 			}
+
+			const {SdStargateBakeDataCommand} = await getStargateSDK();
 
 			return new Promise((resolve, reject) => {
 				// Handler for rejecting a pending request
