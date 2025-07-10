@@ -140,7 +140,8 @@ export default function ParameterSelectComponent(
 
 	// filter hidden choices from value
 	const filteredValue = useMemo(() => {
-		if (value === undefined || value === null) return undefined;
+		if (value === undefined || value === null || value == "")
+			return undefined;
 		const getIndex = (v: string) =>
 			uniqueChoices.indexOf(uniqueChoicesIncludingHidden[+v]);
 		if (definition.visualization === PARAMETER_VISUALIZATION.CHECKLIST) {
