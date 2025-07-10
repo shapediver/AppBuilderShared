@@ -1,5 +1,5 @@
 import {MantineColor} from "@mantine/core";
-import {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
+import type {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
 
 /**
  * Network status for Stargate connection
@@ -77,4 +77,31 @@ export function mapStargateComponentStatusDefinition(
 		message: def.message,
 		disabled: def.disabled,
 	};
+}
+
+export enum IBakeDataResultEnum {
+	/** The data output was successful. */
+	SUCCESS = "success",
+	/** The user cancelled the data output. This applies to clients which require user interaction for data output. */
+	CANCEL = "cancel",
+	/** The user did nothing. This applies to clients which require user interaction for data output. */
+	NOTHING = "nothing",
+	/** The data output failed. */
+	FAILURE = "failure",
+}
+
+export enum IExportFileResultEnum {
+	/** The file export was successful. */
+	SUCCESS = "success",
+	/**
+	 * The user cancelled the file export. This applies to clients which require user interaction for
+	 * file export.
+	 */
+	CANCEL = "cancel",
+	/**
+	 * The user did nothing. This applies to clients which require user interaction for file export.
+	 */
+	NOTHING = "nothing",
+	/** The file export failed. */
+	FAILURE = "failure",
 }

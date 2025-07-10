@@ -1,26 +1,35 @@
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
-import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
+import {
+	IBakeDataResultEnum,
+	NetworkStatus,
+} from "@AppBuilderShared/types/shapediver/stargate";
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
 import {ShapeDiverResponseParameterType} from "@shapediver/api.geometry-api-dto-v2";
-import {
-	ISdStargateBakeDataResultEnum,
-	ISdStargateGetDataReplyDto,
-	ISdStargateGetDataResultEnum,
-	SdStargateErrorTypes,
-} from "@shapediver/sdk.stargate-sdk-v1";
+import type {ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {ERROR_TYPE_INTERRUPTED, useStargateGetData} from "./useStargateGetData";
 
+/** Enum describing possible outcomes of the data input by the user. */
+export enum IGetDataResultEnum {
+	/** The user input was successful. */
+	SUCCESS = "success",
+	/** The user cancelled the data input. */
+	CANCEL = "cancel",
+	/** The user did nothing. */
+	NOTHING = "nothing",
+	/** The data input failed. */
+	FAILURE = "failure",
+}
+
 // TODO SS-8820 ideally move these messages to properties that can be controlled from the theme
 const ResultErrorMessages = {
-	[ISdStargateGetDataResultEnum.NOTHING]:
-		"No objects were selected in the client.",
-	[ISdStargateGetDataResultEnum.FAILURE]:
+	[IGetDataResultEnum.NOTHING]: "No objects were selected in the client.",
+	[IGetDataResultEnum.FAILURE]:
 		"The selection operation failed in the client.",
-	[ISdStargateGetDataResultEnum.CANCEL]:
+	[IGetDataResultEnum.CANCEL]:
 		"The selection operation was cancelled in the client.",
 };
 
@@ -222,7 +231,7 @@ export const useStargateParameter = ({
 				return;
 			}
 
-			if (e.type === SdStargateErrorTypes.CommandTimeoutError) {
+			if (e.type === "CommandTimeoutError") {
 				notifications.warning({
 					title: "Response timeout",
 					message:
@@ -233,9 +242,7 @@ export const useStargateParameter = ({
 					title: "Response error",
 					message:
 						e.message ||
-						ResultErrorMessages[
-							ISdStargateBakeDataResultEnum.FAILURE
-						],
+						ResultErrorMessages[IBakeDataResultEnum.FAILURE],
 				});
 			}
 			return;
@@ -249,13 +256,14 @@ export const useStargateParameter = ({
 		const replyDto = response.data[0]; // Suppose that we have only one connection;
 
 		const {result, message} = replyDto.info;
+		const resultTyped = result as unknown as IGetDataResultEnum;
 
-		if (result !== ISdStargateGetDataResultEnum.SUCCESS) {
+		if (resultTyped !== IGetDataResultEnum.SUCCESS) {
 			notifications.warning({
 				title: "Operation unsuccessful",
 				message:
 					message ||
-					ResultErrorMessages[result] ||
+					ResultErrorMessages[resultTyped] ||
 					"Unsupported get data status.",
 			});
 			return;
@@ -263,12 +271,11 @@ export const useStargateParameter = ({
 
 		const {count, value} = handleGetDataReplyDto(replyDto);
 
-		if (result === ISdStargateGetDataResultEnum.SUCCESS && count === 0) {
+		if (resultTyped === IGetDataResultEnum.SUCCESS && count === 0) {
 			notifications.warning({
 				title: "Response is empty",
 				message:
-					message ||
-					ResultErrorMessages[ISdStargateGetDataResultEnum.NOTHING],
+					message || ResultErrorMessages[IGetDataResultEnum.NOTHING],
 			});
 			return;
 		}
