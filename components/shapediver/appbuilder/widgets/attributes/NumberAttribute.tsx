@@ -18,7 +18,7 @@ import {
 	isNumberGradient,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {Converter} from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 type StyleProps = {
@@ -90,22 +90,31 @@ export default function NumberAttribute(
 	const [absoluteMinValue, setAbsoluteMinValue] = useState<number>();
 	const [absoluteMaxValue, setAbsoluteMaxValue] = useState<number>();
 	const [multiplyingFactor, setMultiplyingFactor] = useState<number>();
+	const invalidRange = useMemo(() => {
+		return (
+			absoluteMinValue !== undefined &&
+			absoluteMaxValue !== undefined &&
+			absoluteMaxValue - absoluteMinValue <= 0
+		);
+	}, [absoluteMinValue, absoluteMaxValue]);
 
 	const createGradientColorStops = useCallback(
 		(visualization: Gradient): JSX.Element[] => {
 			if (
-				customMinValue === undefined ||
-				customMaxValue === undefined ||
 				absoluteMinValue === undefined ||
 				absoluteMaxValue === undefined
 			)
 				return [];
 			const range = absoluteMaxValue - absoluteMinValue;
 
-			const normalizedMin =
-				range <= 0 ? 0 : (customMinValue - absoluteMinValue) / range;
-			const normalizedMax =
-				range <= 0 ? 1 : (customMaxValue - absoluteMinValue) / range;
+			const normalizedMin = invalidRange
+				? 0
+				: ((customMinValue || absoluteMinValue) - absoluteMinValue) /
+					range;
+			const normalizedMax = invalidRange
+				? 1
+				: ((customMaxValue || absoluteMaxValue) - absoluteMinValue) /
+					range;
 
 			let parsedVisualization: Gradient = visualization;
 			if (
@@ -200,7 +209,13 @@ export default function NumberAttribute(
 
 			return [];
 		},
-		[customMinValue, customMaxValue, absoluteMinValue, absoluteMaxValue],
+		[
+			invalidRange,
+			customMinValue,
+			customMaxValue,
+			absoluteMinValue,
+			absoluteMaxValue,
+		],
 	);
 
 	useEffect(() => {
@@ -208,6 +223,7 @@ export default function NumberAttribute(
 		const colorStops = createGradientColorStops(attribute.visualization);
 		setGradientColorStops(colorStops);
 
+		if (invalidRange) return;
 		updateCustomAttributeData(widgetId, name + "_" + attribute.type, {
 			customMin: customMinValue,
 			customMax: customMaxValue,
@@ -215,6 +231,7 @@ export default function NumberAttribute(
 			absoluteMax: absoluteMaxValue,
 		});
 	}, [
+		invalidRange,
 		customMinValue,
 		customMaxValue,
 		absoluteMinValue,
@@ -262,8 +279,6 @@ export default function NumberAttribute(
 			attribute.customMax = customValues?.customMax || attribute.max;
 		}
 
-		setCustomMinValue(attribute.customMin);
-		setCustomMaxValue(attribute.customMax);
 		const absoluteMin = Math.min(
 			Math.min(
 				Math.min(attribute.min, attribute.customMin),
@@ -286,8 +301,16 @@ export default function NumberAttribute(
 		);
 		setAbsoluteMinValue(absoluteMin);
 		setAbsoluteMaxValue(absoluteMax);
-
 		const range = absoluteMax - absoluteMin;
+		if (range <= 0) {
+			// If the range is zero or negative, set custom min and max to undefined
+			// and don't store them in the custom attribute data
+			attribute.customMin = undefined;
+			attribute.customMax = undefined;
+			return;
+		}
+		setCustomMinValue(attribute.customMin);
+		setCustomMaxValue(attribute.customMax);
 
 		// find the scaling factor so that the range is 1000
 		if (range > 0) {
@@ -303,6 +326,7 @@ export default function NumberAttribute(
 	const updateCustomMinMax = useCallback(
 		(value: RangeSliderValue) => {
 			if (multiplyingFactor === undefined) return;
+			if (invalidRange) return;
 			const [min, max] = value.map((v) => v / multiplyingFactor);
 			attribute.customMin = min;
 			attribute.customMax = max;
@@ -317,7 +341,7 @@ export default function NumberAttribute(
 				absoluteMax: absoluteMaxValue,
 			});
 		},
-		[widgetId, multiplyingFactor, name, attribute],
+		[invalidRange, widgetId, multiplyingFactor, name, attribute],
 	);
 
 	/**
@@ -355,18 +379,16 @@ export default function NumberAttribute(
 			<Stack>
 				{legend}
 				<RangeSlider
-					display={
-						absoluteMinValue !== undefined &&
-						absoluteMaxValue !== undefined &&
-						absoluteMaxValue - absoluteMinValue <= 0
-							? "none"
-							: undefined
-					}
+					disabled={invalidRange}
 					{...rangeSliderProps}
 					label={null}
 					value={[
-						(customMinValue ?? 0) * (multiplyingFactor ?? 1),
-						(customMaxValue ?? 0) * (multiplyingFactor ?? 1),
+						invalidRange
+							? 0
+							: (customMinValue ?? 0) * (multiplyingFactor ?? 1),
+						invalidRange
+							? 1
+							: (customMaxValue ?? 0) * (multiplyingFactor ?? 1),
 					]}
 					onChange={updateCustomMinMax}
 					onChangeEnd={(value) => {
@@ -375,8 +397,16 @@ export default function NumberAttribute(
 						);
 						updateRange(min, max);
 					}}
-					min={(absoluteMinValue ?? 0) * (multiplyingFactor ?? 1)}
-					max={(absoluteMaxValue ?? 0) * (multiplyingFactor ?? 1)}
+					min={
+						invalidRange
+							? 0
+							: (absoluteMinValue ?? 0) * (multiplyingFactor ?? 1)
+					}
+					max={
+						invalidRange
+							? 1
+							: (absoluteMaxValue ?? 0) * (multiplyingFactor ?? 1)
+					}
 					step={0.01}
 					marks={[
 						absoluteMinValue,
@@ -384,7 +414,9 @@ export default function NumberAttribute(
 						customMaxValue,
 						absoluteMaxValue,
 					].map((value) => ({
-						value: (value ?? 0) * (multiplyingFactor ?? 1),
+						value: invalidRange
+							? 0.5
+							: (value ?? 0) * (multiplyingFactor ?? 1),
 						label: value?.toFixed(2),
 					}))}
 				/>
