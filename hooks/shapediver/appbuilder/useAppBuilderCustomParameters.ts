@@ -131,20 +131,12 @@ export function useAppBuilderCustomParameters(props: Props) {
 			// accepted first (see IParameterChanges.priority).
 
 			const json = JSON.stringify(getCustomParameterValues());
-			if (appBuilderParam) {
-				if (json.length <= appBuilderParam.definition.max!) {
-					appBuilderParam.actions.setUiValue(json);
-					await appBuilderParam.actions.execute(
-						true,
-						skipHistory,
-						true,
-					);
-				} else {
-					notifications.error({
-						title: "Custom parameter value too long",
-						message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
-					});
-				}
+			if (
+				appBuilderParam &&
+				json.length <= appBuilderParam.definition.max!
+			) {
+				appBuilderParam.actions.setUiValue(json);
+				await appBuilderParam.actions.execute(true, skipHistory, true);
 			} else if (
 				appBuilderFileParam &&
 				appBuilderFileParam.definition.format?.includes(
@@ -159,6 +151,15 @@ export function useAppBuilderCustomParameters(props: Props) {
 					skipHistory,
 					true,
 				);
+			} else if (appBuilderParam) {
+				notifications.error({
+					title: "Custom parameter value too long",
+					message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
+				});
+			} else {
+				console.warn(
+					`Could not find a suitable parameter named "${CUSTOM_DATA_INPUT_NAME}" whose type is 'String' or 'File'!`,
+				);
 			}
 		},
 		[appBuilderParam, appBuilderFileParam],
@@ -171,15 +172,11 @@ export function useAppBuilderCustomParameters(props: Props) {
 				const values = {..._values};
 				const customValues = getCustomParameterValues();
 				const json = JSON.stringify(customValues);
-				if (appBuilderParam) {
-					if (json.length <= appBuilderParam.definition.max!) {
-						values[appBuilderParam.definition.id] = json;
-					} else {
-						notifications.error({
-							title: "Custom parameter value too long",
-							message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
-						});
-					}
+				if (
+					appBuilderParam &&
+					json.length <= appBuilderParam.definition.max!
+				) {
+					values[appBuilderParam.definition.id] = json;
 				} else if (
 					appBuilderFileParam &&
 					appBuilderFileParam.definition.format?.includes(
@@ -190,6 +187,11 @@ export function useAppBuilderCustomParameters(props: Props) {
 						[json],
 						{type: "application/json"},
 					);
+				} else if (appBuilderParam) {
+					notifications.error({
+						title: "Custom parameter value too long",
+						message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
+					});
 				} else {
 					console.warn(
 						`Could not find a suitable parameter named "${CUSTOM_DATA_INPUT_NAME}" whose type is 'String' or 'File'!`,
