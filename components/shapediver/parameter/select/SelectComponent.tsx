@@ -27,22 +27,15 @@ import SelectImageDropDownComponent from "./SelectImageDropDownComponent";
 export type SelectButtonStyleProps = Omit<ButtonProps, "children">;
 export type SelectCarouselStyleProps = Pick<
 	CarouselProps,
-	| "align"
-	| "containScroll"
 	| "controlSize"
 	| "controlsOffset"
-	| "dragFree"
 	| "draggable"
+	| "emblaOptions"
 	| "height"
-	| "inViewThreshold"
 	| "includeGapInSize"
-	| "loop"
 	| "orientation"
-	| "skipSnaps"
 	| "slideGap"
 	| "slideSize"
-	| "slidesToScroll"
-	| "speed"
 	| "type"
 	| "withControls"
 	| "withIndicators"
