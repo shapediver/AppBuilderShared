@@ -1,3 +1,4 @@
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useDefineGenericParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useDefineGenericParameters";
 import {useParameterStateless} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterStateless";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
@@ -7,7 +8,7 @@ import {
 	IGenericParameterExecutor,
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {ISessionApi, PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useMemo, useRef} from "react";
+import {useCallback, useContext, useEffect, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /** Prefix used to register custom parameters */
@@ -35,6 +36,9 @@ export function useAppBuilderCustomParameters(props: Props) {
 	const {sessionApi, appBuilderData, acceptRejectMode} = props;
 	const namespace = sessionApi?.id ?? "";
 	const namespaceAppBuilder = namespace + CUSTOM_SESSION_ID_POSTFIX;
+
+	// get the notification context
+	const notifications = useContext(NotificationContext);
 
 	// default values and current values of the custom parameters
 	const defaultCustomParameterValues = useRef<{[key: string]: any}>({});
@@ -127,12 +131,20 @@ export function useAppBuilderCustomParameters(props: Props) {
 			// accepted first (see IParameterChanges.priority).
 
 			const json = JSON.stringify(getCustomParameterValues());
-			if (
-				appBuilderParam &&
-				json.length <= appBuilderParam.definition.max!
-			) {
-				appBuilderParam.actions.setUiValue(json);
-				await appBuilderParam.actions.execute(true, skipHistory, true);
+			if (appBuilderParam) {
+				if (json.length <= appBuilderParam.definition.max!) {
+					appBuilderParam.actions.setUiValue(json);
+					await appBuilderParam.actions.execute(
+						true,
+						skipHistory,
+						true,
+					);
+				} else {
+					notifications.error({
+						title: "Custom parameter value too long",
+						message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
+					});
+				}
 			} else if (
 				appBuilderFileParam &&
 				appBuilderFileParam.definition.format?.includes(
@@ -159,11 +171,15 @@ export function useAppBuilderCustomParameters(props: Props) {
 				const values = {..._values};
 				const customValues = getCustomParameterValues();
 				const json = JSON.stringify(customValues);
-				if (
-					appBuilderParam &&
-					json.length <= appBuilderParam.definition.max!
-				) {
-					values[appBuilderParam.definition.id] = json;
+				if (appBuilderParam) {
+					if (json.length <= appBuilderParam.definition.max!) {
+						values[appBuilderParam.definition.id] = json;
+					} else {
+						notifications.error({
+							title: "Custom parameter value too long",
+							message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
+						});
+					}
 				} else if (
 					appBuilderFileParam &&
 					appBuilderFileParam.definition.format?.includes(
