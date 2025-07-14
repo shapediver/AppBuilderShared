@@ -78,7 +78,7 @@ export function mapStargateComponentStatusDefinition(
 		disabled: def.disabled,
 	};
 }
-
+/** Caution: The enum redefined due to lazy loading. Be careful when updating the Stargate SDK. */
 export enum IBakeDataResultEnum {
 	/** The data output was successful. */
 	SUCCESS = "success",
@@ -89,7 +89,7 @@ export enum IBakeDataResultEnum {
 	/** The data output failed. */
 	FAILURE = "failure",
 }
-
+/** Caution: The enum redefined due to lazy loading. Be careful when updating the Stargate SDK. */
 export enum IExportFileResultEnum {
 	/** The file export was successful. */
 	SUCCESS = "success",
@@ -103,5 +103,17 @@ export enum IExportFileResultEnum {
 	 */
 	NOTHING = "nothing",
 	/** The file export failed. */
+	FAILURE = "failure",
+}
+/** Caution: The enum redefined due to lazy loading. Be careful when updating the Stargate SDK. */
+/** Enum describing possible outcomes of the data input by the user. */
+export enum IGetDataResultEnum {
+	/** The user input was successful. */
+	SUCCESS = "success",
+	/** The user cancelled the data input. */
+	CANCEL = "cancel",
+	/** The user did nothing. */
+	NOTHING = "nothing",
+	/** The data input failed. */
 	FAILURE = "failure",
 }

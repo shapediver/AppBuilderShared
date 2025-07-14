@@ -3,6 +3,7 @@ import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverS
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {
 	IBakeDataResultEnum,
+	IGetDataResultEnum,
 	NetworkStatus,
 } from "@AppBuilderShared/types/shapediver/stargate";
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
@@ -11,18 +12,6 @@ import type {ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {ERROR_TYPE_INTERRUPTED, useStargateGetData} from "./useStargateGetData";
-
-/** Enum describing possible outcomes of the data input by the user. */
-export enum IGetDataResultEnum {
-	/** The user input was successful. */
-	SUCCESS = "success",
-	/** The user cancelled the data input. */
-	CANCEL = "cancel",
-	/** The user did nothing. */
-	NOTHING = "nothing",
-	/** The data input failed. */
-	FAILURE = "failure",
-}
 
 // TODO SS-8820 ideally move these messages to properties that can be controlled from the theme
 const ResultErrorMessages = {
