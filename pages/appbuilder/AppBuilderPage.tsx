@@ -4,7 +4,6 @@ import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediv
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
-import ViewportHistoryButtons from "@AppBuilderShared/components/shapediver/viewport/ViewportHistoryButtons";
 import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
@@ -318,22 +317,14 @@ export default function AppBuilderPage(props: Partial<Props>) {
 					>
 						{ViewportOverlayWrapper && (
 							<>
-								<ViewportOverlayWrapper>
-									{ViewportIcons && <ViewportIcons />}
-								</ViewportOverlayWrapper>
+								{ViewportIcons && (
+									<ViewportIcons namespace={namespace} />
+								)}
 								<ViewportOverlayWrapper
 									position={OverlayPosition.BOTTOM_MIDDLE}
 									offset="1em"
 								>
 									<ViewportAcceptRejectButtons />
-								</ViewportOverlayWrapper>
-								<ViewportOverlayWrapper
-									position={OverlayPosition.BOTTOM_RIGHT}
-									offset="1em"
-								>
-									<ViewportHistoryButtons
-										namespace={namespace}
-									/>
 								</ViewportOverlayWrapper>
 							</>
 						)}
