@@ -1,3 +1,4 @@
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useDefineGenericParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useDefineGenericParameters";
 import {useParameterStateless} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterStateless";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
@@ -7,7 +8,7 @@ import {
 	IGenericParameterExecutor,
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {ISessionApi, PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useMemo, useRef} from "react";
+import {useCallback, useContext, useEffect, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /** Prefix used to register custom parameters */
@@ -35,6 +36,9 @@ export function useAppBuilderCustomParameters(props: Props) {
 	const {sessionApi, appBuilderData, acceptRejectMode} = props;
 	const namespace = sessionApi?.id ?? "";
 	const namespaceAppBuilder = namespace + CUSTOM_SESSION_ID_POSTFIX;
+
+	// get the notification context
+	const notifications = useContext(NotificationContext);
 
 	// default values and current values of the custom parameters
 	const defaultCustomParameterValues = useRef<{[key: string]: any}>({});
@@ -147,6 +151,15 @@ export function useAppBuilderCustomParameters(props: Props) {
 					skipHistory,
 					true,
 				);
+			} else if (appBuilderParam) {
+				notifications.error({
+					title: "Custom parameter value too long",
+					message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
+				});
+			} else {
+				console.warn(
+					`Could not find a suitable parameter named "${CUSTOM_DATA_INPUT_NAME}" whose type is 'String' or 'File'!`,
+				);
 			}
 		},
 		[appBuilderParam, appBuilderFileParam],
@@ -174,6 +187,11 @@ export function useAppBuilderCustomParameters(props: Props) {
 						[json],
 						{type: "application/json"},
 					);
+				} else if (appBuilderParam) {
+					notifications.error({
+						title: "Custom parameter value too long",
+						message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
+					});
 				} else {
 					console.warn(
 						`Could not find a suitable parameter named "${CUSTOM_DATA_INPUT_NAME}" whose type is 'String' or 'File'!`,
