@@ -1,289 +1,215 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {useClickEventHandler} from "@AppBuilderShared/hooks/misc/useClickEventHandler";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useFullscreen} from "@AppBuilderShared/hooks/ui/useFullscreen";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {isIPhone} from "@AppBuilderShared/utils/misc/navigator";
-import {firstLetterUppercase} from "@AppBuilderShared/utils/misc/strings";
+import {Paper, useProps} from "@mantine/core";
+import React, {useCallback, useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
+import {OverlayPosition} from "~/shared/components/shapediver/ui/OverlayWrapper";
+import ViewportOverlayWrapper from "./ViewportOverlayWrapper";
+import ArButton from "./buttons/ArButton";
+import CamerasButton from "./buttons/CamerasButton";
+import FullscreenButton from "./buttons/FullscreenButton";
+import HistoryMenuButton from "./buttons/HistoryMenuButton";
+import RedoButton from "./buttons/RedoButton";
+import UndoButton from "./buttons/UndoButton";
+import ZoomButton from "./buttons/ZoomButton";
 import {
-	ActionIcon,
-	Box,
-	Loader,
-	Menu,
-	Modal,
-	Text,
-	useProps,
-} from "@mantine/core";
-import {FLAG_TYPE} from "@shapediver/viewer.session";
-import React, {useState} from "react";
-import classes from "./ViewportIcons.module.css";
+	IconColor,
+	IconColorDisabled,
+	IconSize,
+	IconVariant,
+	IconVariantDisabled,
+} from "./buttons/types";
 
-const defaultProps: ViewportIconsOptionalProps = {
-	color: "black",
-	colorDisabled: "grey",
+const defaultStyleProps: ViewportIconsOptionalProps = {
+	position: OverlayPosition.TOP_MIDDLE,
+	style: {
+		display: "flex",
+		gap: "0.25rem",
+		alignItems: "center",
+		flexDirection: "row",
+	},
+	offset: "0.5em",
+	py: 1,
+	px: 0,
+	size: IconSize,
+	color: IconColor,
+	colorDisabled: IconColorDisabled,
+	variant: IconVariant,
+	variantDisabled: IconVariantDisabled,
+	iconStyle: {m: "0.188rem"},
+	fullscreenId: "viewer-fullscreen-area",
+	enableHistoryButtons: true,
+	enableModelStateButtons: true,
+	enableImportExportButtons: true,
+	enableResetButton: true,
 	enableArBtn: true,
 	enableCamerasBtn: true,
 	enableFullscreenBtn: true,
 	enableZoomBtn: true,
-	fullscreenId: "viewer-fullscreen-area",
-	iconStyle: {m: "3px"},
-	size: 32,
-	style: {display: "flex"},
-	variant: "subtle",
-	variantDisabled: "transparent",
 };
 
 export default function ViewportIcons(
-	props: ViewportIconsProps & Partial<ViewportIconsOptionalProps>,
+	props: ViewportIconsProps & ViewportIconsOptionalProps,
 ) {
-	const {viewportId: _viewportId, ...rest} = props;
+	const {viewportId: _viewportId, namespace = "", ...rest} = props;
+
 	const {
+		position,
+		style,
+		shadow,
+		offset,
+		size,
+		py,
+		px,
 		color,
 		colorDisabled,
+		variant,
+		variantDisabled,
+		iconStyle,
+		fullscreenId,
+		enableHistoryButtons,
+		enableModelStateButtons,
+		enableImportExportButtons,
+		enableResetButton,
 		enableArBtn,
 		enableCamerasBtn,
 		enableFullscreenBtn,
 		enableZoomBtn,
-		fullscreenId,
-		iconStyle,
-		size,
-		style,
-		variant,
-		variantDisabled,
-	} = useProps("ViewportIcons", defaultProps, rest);
+	} = useProps("ViewportIcons", defaultStyleProps, rest);
+
 	const {viewportId: defaultViewportId} = useViewportId();
 	const viewportId = _viewportId ?? defaultViewportId;
-
 	const viewport = useShapeDiverStoreViewport(
-		(state) => state.viewports[viewportId],
+		useShallow((state) => state.viewports[viewportId]),
 	);
 
+	const parameterChanges = useShapeDiverStoreParameters(
+		useCallback(
+			(state) => {
+				if (!namespace) {
+					return [];
+				}
+
+				const ids = state.sessionDependency[namespace];
+				return ids
+					.map((id) => state.parameterChanges[id])
+					.filter(Boolean);
+			},
+			[namespace],
+		),
+	);
+
+	const executing = useMemo(
+		() => parameterChanges.some((change) => change.executing),
+		[parameterChanges],
+	);
+
+	const hasPendingChanges = useMemo(
+		() =>
+			parameterChanges.length > 0 &&
+			parameterChanges.some((c) => Object.keys(c.values).length > 0),
+		[parameterChanges],
+	);
+
+	const buttonsDisabled = hasPendingChanges;
 	const isArEnabled = viewport ? viewport.enableAR : false;
-	const isViewableInAr = viewport ? viewport.viewableInAR() : false;
-	const [arLink, setArLink] = useState("");
-	const [isArLoading, setIsArLoading] = useState(false);
-	const [isModalArOpened, setIsModalArOpened] = useState(false);
-	const [isModalArError, setIsModalArError] = useState("");
-
-	const onViewInARDesktopLinkRequest = async () => {
-		setIsModalArError("");
-		setArLink("");
-
-		if (!viewport) return;
-
-		try {
-			setIsModalArOpened(true);
-			setIsArLoading(true);
-			const arLink = await viewport.createArSessionLink();
-			setArLink(arLink);
-		} catch (e: any) {
-			setIsModalArError("Error while creating QR code");
-			console.error(e);
-		} finally {
-			setIsArLoading(false);
-		}
-	};
-
-	const onArClick = async () => {
-		if (!viewport) return;
-
-		if (isViewableInAr) {
-			const token = viewport.addFlag(FLAG_TYPE.BUSY_MODE);
-			if (viewport.viewableInAR()) await viewport.viewInAR();
-			viewport.removeFlag(token);
-		} else {
-			await onViewInARDesktopLinkRequest();
-		}
-	};
-
-	const onZoomClick = () => {
-		if (!viewport || !viewport.camera) return;
-
-		viewport.camera.zoomTo();
-	};
-
-	const onZoomDoubleClick = () => {
-		if (!viewport || !viewport.camera) return;
-
-		viewport.camera.reset({});
-	};
-
-	const {clickEventHandler: zoomClickHandler} = useClickEventHandler(
-		onZoomClick,
-		onZoomDoubleClick,
-	);
-
-	const isFullscreenDisabled = !enableFullscreenBtn || isIPhone();
-
-	const {makeElementFullscreen, isFullScreenAvailable} =
-		useFullscreen(fullscreenId);
-
-	const cameras = enableCamerasBtn && viewport ? viewport.cameras : {};
-	const noCamerasAvailable = Object.keys(cameras).length === 0;
-
-	const [isCamerasMenuOpened, setIsCamerasMenuOpened] = useState(false);
-
-	const onCameraSelect = (cameraId: string) => {
-		if (!viewport) return;
-
-		viewport.assignCamera(cameraId);
-	};
-
-	const cameraElements = Object.values(cameras).map((camera, i) => {
-		return (
-			<Menu.Item onClick={() => onCameraSelect(camera.id)} key={i}>
-				{firstLetterUppercase(camera.name || camera.id)}
-			</Menu.Item>
-		);
-	});
 
 	return (
-		<Box style={style}>
-			{enableArBtn && isArEnabled && (
-				<TooltipWrapper label="View in AR">
-					<div>
-						<ActionIcon
-							onClick={onArClick}
-							disabled={isArLoading}
-							size={size}
-							variant={isViewableInAr ? variantDisabled : variant}
-							aria-label="View in AR"
-							style={iconStyle}
-						>
-							<Icon
-								type={IconTypeEnum.AugmentedReality}
-								color={isArLoading ? colorDisabled : color}
-								className={classes.viewportIcon}
-							/>
-						</ActionIcon>
-					</div>
-				</TooltipWrapper>
-			)}
-
-			{enableArBtn && (
-				<Modal
-					opened={isModalArOpened}
-					onClose={() => setIsModalArOpened(false)}
-					title="Scan the code"
-					centered
-				>
-					{isModalArError ? (
-						<Text c="red">{isModalArError}</Text>
-					) : (
-						<>
-							<Text>
-								Scan the QR code below using your mobile device
-								to see the model in AR. The code is compatible
-								with Android and iOS devices.
-							</Text>
-							<section className={classes.containerAr}>
-								{isArLoading ? (
-									<section className={classes.loaderAr}>
-										<Loader />
-									</section>
-								) : (
-									<img
-										src={arLink}
-										height="180px"
-										alt="ar_link"
-									/>
-								)}
-							</section>
-						</>
-					)}
-				</Modal>
-			)}
-
-			{enableZoomBtn && (
-				<TooltipWrapper label="Zoom extents">
-					<ActionIcon
-						onClick={zoomClickHandler}
+		<ViewportOverlayWrapper position={position} offset={offset}>
+			<Paper style={style} shadow={shadow} py={py} px={px}>
+				{enableArBtn && isArEnabled && (
+					<ArButton
+						viewport={viewport}
 						size={size}
+						color={color}
+						colorDisabled={colorDisabled}
 						variant={variant}
-						aria-label="Zoom extents"
-						style={iconStyle}
-					>
-						<Icon
-							type={IconTypeEnum.ZoomIn}
+						variantDisabled={variantDisabled}
+						iconStyle={iconStyle}
+					/>
+				)}
+
+				{enableZoomBtn && (
+					<ZoomButton
+						viewport={viewport}
+						size={size}
+						color={color}
+						variant={variant}
+						iconStyle={iconStyle}
+					/>
+				)}
+
+				{enableFullscreenBtn && (
+					<FullscreenButton
+						fullscreenId={fullscreenId}
+						enableFullscreenBtn={enableFullscreenBtn}
+						size={size}
+						color={color}
+						colorDisabled={colorDisabled}
+						variant={variant}
+						variantDisabled={variantDisabled}
+						iconStyle={iconStyle}
+					/>
+				)}
+
+				{enableCamerasBtn && (
+					<CamerasButton
+						viewport={viewport}
+						size={size}
+						color={color}
+						variant={variant}
+						variantDisabled={variantDisabled}
+						iconStyle={iconStyle}
+					/>
+				)}
+
+				{enableHistoryButtons && (
+					<>
+						<UndoButton
+							disabled={buttonsDisabled || executing}
+							hasPendingChanges={hasPendingChanges}
+							executing={executing}
+							size={size}
 							color={color}
-							className={classes.viewportIcon}
+							colorDisabled={colorDisabled}
+							variant={variant}
+							variantDisabled={variantDisabled}
+							iconStyle={iconStyle}
 						/>
-					</ActionIcon>
-				</TooltipWrapper>
-			)}
 
-			{enableFullscreenBtn && (
-				<TooltipWrapper label="Fullscreen">
-					<ActionIcon
-						onClick={makeElementFullscreen}
-						disabled={
-							isFullscreenDisabled ||
-							!isFullScreenAvailable.current
-						}
-						size={size}
-						variant={
-							isFullscreenDisabled ||
-							!isFullScreenAvailable.current
-								? variantDisabled
-								: variant
-						}
-						aria-label="Fullscreen"
-						style={iconStyle}
-					>
-						<Icon
-							type={IconTypeEnum.Maximize}
-							color={
-								isFullscreenDisabled ||
-								!isFullScreenAvailable.current
-									? colorDisabled
-									: color
-							}
-							className={classes.viewportIcon}
+						<RedoButton
+							disabled={buttonsDisabled || executing}
+							hasPendingChanges={hasPendingChanges}
+							executing={executing}
+							size={size}
+							color={color}
+							colorDisabled={colorDisabled}
+							variant={variant}
+							variantDisabled={variantDisabled}
+							iconStyle={iconStyle}
 						/>
-					</ActionIcon>
-				</TooltipWrapper>
-			)}
+					</>
+				)}
 
-			{enableCamerasBtn && (
-				<Menu
-					opened={isCamerasMenuOpened}
-					onChange={setIsCamerasMenuOpened}
-					shadow="md"
-					width={200}
-					position={"bottom-end"}
-				>
-					<ActionIcon
-						onClick={() =>
-							setIsCamerasMenuOpened(!isCamerasMenuOpened)
-						}
-						disabled={noCamerasAvailable}
-						size={size}
-						variant={noCamerasAvailable ? variantDisabled : variant}
-						aria-label="Cameras"
-						style={iconStyle}
-					>
-						<TooltipWrapper
-							disabled={isCamerasMenuOpened}
-							label="Cameras"
-						>
-							<Menu.Target>
-								<Icon
-									type={IconTypeEnum.Video}
-									className={classes.viewportIcon}
-									color={color}
-								/>
-							</Menu.Target>
-						</TooltipWrapper>
-					</ActionIcon>
-					<Menu.Dropdown>{cameraElements}</Menu.Dropdown>
-				</Menu>
-			)}
-		</Box>
+				<HistoryMenuButton
+					disabled={!namespace || buttonsDisabled}
+					namespace={namespace}
+					enableResetButton={enableResetButton}
+					enableImportExportButtons={enableImportExportButtons}
+					enableModelStateButtons={enableModelStateButtons}
+					size={size}
+					color={color}
+					colorDisabled={colorDisabled}
+					variant={variant}
+					variantDisabled={variantDisabled}
+					iconStyle={iconStyle}
+				/>
+			</Paper>
+		</ViewportOverlayWrapper>
 	);
 }
