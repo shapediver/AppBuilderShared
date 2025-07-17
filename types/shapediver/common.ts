@@ -1,4 +1,4 @@
-import {ShapeDiverCommonsGroup} from "@shapediver/api.geometry-api-dto-v2/dist/commons/SdCommonsGroup";
+import {CommonsGroup} from "@shapediver/sdk.geometry-api-sdk-v2";
 
 export interface IShapeDiverParamOrExportOrOutputDefinition {
 	/** ID of the parameter or export. */
@@ -14,7 +14,7 @@ export interface IShapeDiverParamOrExportOrOutputDefinition {
 	readonly order?: number;
 
 	/** Group of the parameter or export or output. */
-	readonly group?: ShapeDiverCommonsGroup;
+	readonly group?: CommonsGroup;
 
 	/** Controls whether the parameter or export should be hidden in the UI */
 	readonly hidden: boolean;

@@ -4,7 +4,7 @@ import {
 	SessionCreateDto,
 	UpdateCallbackType,
 } from "@AppBuilderShared/types/store/shapediverStoreSession";
-import {ShapeDiverResponseErrorType} from "@shapediver/api.geometry-api-dto-v2";
+import {ResErrorType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	createSession,
 	IOutputApi,
@@ -53,7 +53,7 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 						if (
 							isViewerGeometryBackendResponseError(e) &&
 							e.geometryBackendErrorType ===
-								ShapeDiverResponseErrorType.REQUEST_VALIDATION_ERROR &&
+								ResErrorType.REQUEST_VALIDATION_ERROR &&
 							e.message.startsWith("Invalid parameter") &&
 							e.message.includes("'context'")
 						) {

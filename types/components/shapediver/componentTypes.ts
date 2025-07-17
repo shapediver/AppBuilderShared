@@ -13,12 +13,12 @@ import {
 	ParameterComponentMapValueType,
 } from "@AppBuilderShared/types/context/componentcontext";
 import {IShapeDiverParamOrExportDefinition} from "@AppBuilderShared/types/shapediver/common";
-import {ShapeDiverResponseParameterType} from "@shapediver/api.geometry-api-dto-v2";
+import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {EXPORT_TYPE, PARAMETER_TYPE} from "@shapediver/viewer.session";
 
 const PARAMETER_TYPE_STARGATE_DUMMY = "Stargate";
 
-export const isStargateParameter = (type: ShapeDiverResponseParameterType) => {
+export const isStargateParameter = (type: ResParameterType) => {
 	return type && type[0] === "s";
 };
 
@@ -111,10 +111,7 @@ export const getParameterComponent = (
 			] as ParameterComponentMapValueType;
 	}
 
-	if (
-		!component &&
-		isStargateParameter(type as ShapeDiverResponseParameterType)
-	) {
+	if (!component && isStargateParameter(type as ResParameterType)) {
 		component = defaultParameterComponentContext[
 			PARAMETER_TYPE_STARGATE_DUMMY
 		] as ParameterComponentMapValueType;
