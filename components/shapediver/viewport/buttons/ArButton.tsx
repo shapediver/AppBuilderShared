@@ -10,7 +10,6 @@ import {
 	CommonButtonProps,
 	IconColor,
 	IconColorDisabled,
-	IconSize,
 	IconVariant,
 	IconVariantDisabled,
 } from "./types";
@@ -21,7 +20,7 @@ interface ArButtonProps extends CommonButtonProps {
 
 export default function ArButton({
 	viewport,
-	size = IconSize,
+	size = undefined,
 	color = IconColor,
 	colorDisabled = IconColorDisabled,
 	variant = IconVariant,
@@ -75,22 +74,20 @@ export default function ArButton({
 	return (
 		<>
 			<TooltipWrapper label="View in AR">
-				<div>
-					<ActionIcon
-						onClick={handleArClick}
-						disabled={isArLoading}
-						size={size}
-						variant={isViewableInAr ? variantDisabled : variant}
-						aria-label="View in AR"
-						style={iconStyle}
-					>
-						<Icon
-							type={IconTypeEnum.AugmentedReality}
-							color={isArLoading ? colorDisabled : color}
-							className={classes.viewportIcon}
-						/>
-					</ActionIcon>
-				</div>
+				<ActionIcon
+					onClick={handleArClick}
+					disabled={isArLoading}
+					size={size}
+					variant={isViewableInAr ? variantDisabled : variant}
+					aria-label="View in AR"
+					style={iconStyle}
+				>
+					<Icon
+						type={IconTypeEnum.AugmentedReality}
+						color={isArLoading ? colorDisabled : color}
+						className={classes.viewportIcon}
+					/>
+				</ActionIcon>
 			</TooltipWrapper>
 
 			<Modal

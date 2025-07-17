@@ -20,7 +20,6 @@ import ZoomButton from "./buttons/ZoomButton";
 import {
 	IconColor,
 	IconColorDisabled,
-	IconSize,
 	IconVariant,
 	IconVariantDisabled,
 } from "./buttons/types";
@@ -36,7 +35,7 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	offset: "0.5em",
 	py: 1,
 	px: 0,
-	size: IconSize,
+	size: undefined,
 	color: IconColor,
 	colorDisabled: IconColorDisabled,
 	variant: IconVariant,
