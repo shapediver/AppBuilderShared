@@ -9,7 +9,6 @@ export interface CommonButtonProps {
 	iconStyle?: MantineStyleProp;
 }
 
-export const IconSize = 32;
 export const IconColor = "black";
 export const IconColorDisabled = "grey";
 export const IconVariant = "subtle";

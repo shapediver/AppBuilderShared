@@ -8,7 +8,6 @@ import {
 	CommonButtonProps,
 	IconColor,
 	IconColorDisabled,
-	IconSize,
 	IconVariant,
 	IconVariantDisabled,
 } from "./types";
@@ -23,7 +22,7 @@ export default function RedoButton({
 	disabled,
 	hasPendingChanges,
 	executing,
-	size = IconSize,
+	size = undefined,
 	color = IconColor,
 	colorDisabled = IconColorDisabled,
 	variant = IconVariant,

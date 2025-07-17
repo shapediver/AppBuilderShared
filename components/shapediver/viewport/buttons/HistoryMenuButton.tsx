@@ -11,7 +11,6 @@ import {
 	CommonButtonProps,
 	IconColor,
 	IconColorDisabled,
-	IconSize,
 	IconVariant,
 	IconVariantDisabled,
 } from "./types";
@@ -30,7 +29,7 @@ export default function HistoryMenuButton({
 	enableResetButton = false,
 	enableImportExportButtons = false,
 	enableModelStateButtons = false,
-	size = IconSize,
+	size = undefined,
 	color = IconColor,
 	colorDisabled = IconColorDisabled,
 	variant = IconVariant,

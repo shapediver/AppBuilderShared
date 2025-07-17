@@ -9,7 +9,6 @@ import classes from "../ViewportIcons.module.css";
 import {
 	CommonButtonProps,
 	IconColor,
-	IconSize,
 	IconVariant,
 	IconVariantDisabled,
 } from "./types";
@@ -20,7 +19,7 @@ interface CamerasButtonProps extends CommonButtonProps {
 
 export default function CamerasButton({
 	viewport,
-	size = IconSize,
+	size = undefined,
 	color = IconColor,
 	variant = IconVariant,
 	variantDisabled = IconVariantDisabled,

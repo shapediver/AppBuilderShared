@@ -10,7 +10,6 @@ import {
 	CommonButtonProps,
 	IconColor,
 	IconColorDisabled,
-	IconSize,
 	IconVariant,
 	IconVariantDisabled,
 } from "./types";
@@ -23,7 +22,7 @@ interface FullscreenButtonProps extends CommonButtonProps {
 export default function FullscreenButton({
 	fullscreenId = "viewer-fullscreen-area",
 	enableFullscreenBtn = true,
-	size = IconSize,
+	size = undefined,
 	color = IconColor,
 	colorDisabled = IconColorDisabled,
 	variant = IconVariant,
