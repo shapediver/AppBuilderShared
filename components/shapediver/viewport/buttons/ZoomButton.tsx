@@ -5,7 +5,7 @@ import {ActionIcon} from "@mantine/core";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React from "react";
 import classes from "../ViewportIcons.module.css";
-import {CommonButtonProps, IconColor, IconVariant} from "./types";
+import {CommonButtonProps, IconProps} from "./types";
 
 interface ZoomButtonProps extends CommonButtonProps {
 	viewport?: IViewportApi;
@@ -14,9 +14,8 @@ interface ZoomButtonProps extends CommonButtonProps {
 export default function ZoomButton({
 	viewport,
 	size = undefined,
-	color = IconColor,
-	variant = IconVariant,
-	iconStyle = {},
+	variant = IconProps.variant,
+	iconStyle = IconProps.style,
 }: ZoomButtonProps) {
 	const onZoomClick = () => {
 		if (!viewport || !viewport.camera) return;
@@ -40,7 +39,6 @@ export default function ZoomButton({
 			>
 				<Icon
 					type={IconTypeEnum.ZoomIn}
-					color={color}
 					className={classes.viewportIcon}
 				/>
 			</ActionIcon>

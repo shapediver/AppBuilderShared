@@ -4,13 +4,8 @@ import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ActionIcon} from "@mantine/core";
 import React from "react";
 import {useViewportHistory} from "~/shared/hooks/shapediver/viewer/useViewportHistory";
-import {
-	CommonButtonProps,
-	IconColor,
-	IconColorDisabled,
-	IconVariant,
-	IconVariantDisabled,
-} from "./types";
+import classes from "../ViewportIcons.module.css";
+import {CommonButtonProps, IconProps} from "./types";
 
 interface UndoButtonProps extends CommonButtonProps {
 	disabled: boolean;
@@ -23,11 +18,9 @@ export default function UndoButton({
 	hasPendingChanges,
 	executing,
 	size = undefined,
-	color = IconColor,
-	colorDisabled = IconColorDisabled,
-	variant = IconVariant,
-	variantDisabled = IconVariantDisabled,
-	iconStyle = {},
+	variant = IconProps.variant,
+	variantDisabled = IconProps.variantDisabled,
+	iconStyle = IconProps.style,
 }: UndoButtonProps) {
 	const {canGoBack, goBack} = useViewportHistory();
 	const isDisabled = !canGoBack || disabled || executing;
@@ -48,7 +41,7 @@ export default function UndoButton({
 			>
 				<Icon
 					type={IconTypeEnum.ArrowBackUp}
-					color={isDisabled ? colorDisabled : color}
+					className={classes.viewportIcon}
 				/>
 			</ActionIcon>
 		</TooltipWrapper>

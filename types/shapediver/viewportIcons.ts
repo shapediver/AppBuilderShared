@@ -27,10 +27,6 @@ export interface ViewportIconsOptionalProps {
 	 */
 	style?: React.CSSProperties;
 	/**
-	 * Size of the action icons
-	 */
-	size?: number;
-	/**
 	 * Offset of the container
 	 */
 	offset?: string;
@@ -47,25 +43,22 @@ export interface ViewportIconsOptionalProps {
 	 */
 	px?: MantineSpacing;
 	/**
-	 * Icon color
+	 * Icon props
 	 */
-	color?: string;
-	/**
-	 * Icon color when disabled
-	 */
-	colorDisabled?: string;
-	/**
-	 * Button variant
-	 */
-	variant?: string;
-	/**
-	 * Button variant when disabled
-	 */
-	variantDisabled?: string;
-	/**
-	 * Style for individual icons
-	 */
-	iconStyle?: MantineStyleProp;
+	iconProps?: {
+		/**
+		 * Button variant
+		 */
+		variant?: string;
+		/**
+		 * Button variant when disabled
+		 */
+		variantDisabled?: string;
+		/**
+		 * Style for individual icons
+		 */
+		style?: MantineStyleProp;
+	};
 	/**
 	 * ID of the fullscreen area
 	 */

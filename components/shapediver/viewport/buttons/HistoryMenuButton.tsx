@@ -7,13 +7,8 @@ import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateM
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ActionIcon, Menu} from "@mantine/core";
 import React, {useCallback, useContext, useState} from "react";
-import {
-	CommonButtonProps,
-	IconColor,
-	IconColorDisabled,
-	IconVariant,
-	IconVariantDisabled,
-} from "./types";
+import classes from "../ViewportIcons.module.css";
+import {CommonButtonProps, IconProps} from "./types";
 
 interface HistoryMenuButtonProps extends CommonButtonProps {
 	disabled: boolean;
@@ -30,11 +25,9 @@ export default function HistoryMenuButton({
 	enableImportExportButtons = false,
 	enableModelStateButtons = false,
 	size = undefined,
-	color = IconColor,
-	colorDisabled = IconColorDisabled,
-	variant = IconVariant,
-	variantDisabled = IconVariantDisabled,
-	iconStyle = {},
+	variant = IconProps.variant,
+	variantDisabled = IconProps.variantDisabled,
+	iconStyle = IconProps.style,
 }: HistoryMenuButtonProps) {
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const [isCreatingModelState, setIsCreatingModelState] = useState(false);
@@ -96,11 +89,7 @@ export default function HistoryMenuButton({
 					>
 						<Icon
 							type={IconTypeEnum.DotsVertical}
-							color={
-								disabled || isCreatingModelState
-									? colorDisabled
-									: color
-							}
+							className={classes.viewportIcon}
 						/>
 					</ActionIcon>
 				</Menu.Target>

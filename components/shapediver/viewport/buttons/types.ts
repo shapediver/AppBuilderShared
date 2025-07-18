@@ -9,7 +9,8 @@ export interface CommonButtonProps {
 	iconStyle?: MantineStyleProp;
 }
 
-export const IconColor = "black";
-export const IconColorDisabled = "grey";
-export const IconVariant = "subtle";
-export const IconVariantDisabled = "transparent";
+export const IconProps = {
+	variant: "subtle",
+	variantDisabled: "transparent",
+	style: {},
+};
