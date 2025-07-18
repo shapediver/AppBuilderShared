@@ -6,13 +6,7 @@ import {ActionIcon} from "@mantine/core";
 import React from "react";
 import {isIPhone} from "~/shared/utils/misc/navigator";
 import classes from "../ViewportIcons.module.css";
-import {
-	CommonButtonProps,
-	IconColor,
-	IconColorDisabled,
-	IconVariant,
-	IconVariantDisabled,
-} from "./types";
+import {CommonButtonProps, IconProps} from "./types";
 
 interface FullscreenButtonProps extends CommonButtonProps {
 	fullscreenId?: string;
@@ -23,11 +17,9 @@ export default function FullscreenButton({
 	fullscreenId = "viewer-fullscreen-area",
 	enableFullscreenBtn = true,
 	size = undefined,
-	color = IconColor,
-	colorDisabled = IconColorDisabled,
-	variant = IconVariant,
-	variantDisabled = IconVariantDisabled,
-	iconStyle = {},
+	variant = IconProps.variant,
+	variantDisabled = IconProps.variantDisabled,
+	iconStyle = IconProps.style,
 }: FullscreenButtonProps) {
 	const isFullscreenDisabled = !enableFullscreenBtn || isIPhone();
 	const {makeElementFullscreen, isFullScreenAvailable} =
@@ -46,7 +38,6 @@ export default function FullscreenButton({
 			>
 				<Icon
 					type={IconTypeEnum.Maximize}
-					color={disabled ? colorDisabled : color}
 					className={classes.viewportIcon}
 				/>
 			</ActionIcon>

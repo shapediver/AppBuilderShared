@@ -6,13 +6,7 @@ import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React, {useState} from "react";
 import classes from "../ViewportIcons.module.css";
-import {
-	CommonButtonProps,
-	IconColor,
-	IconColorDisabled,
-	IconVariant,
-	IconVariantDisabled,
-} from "./types";
+import {CommonButtonProps, IconProps} from "./types";
 
 interface ArButtonProps extends CommonButtonProps {
 	viewport?: IViewportApi;
@@ -21,11 +15,9 @@ interface ArButtonProps extends CommonButtonProps {
 export default function ArButton({
 	viewport,
 	size = undefined,
-	color = IconColor,
-	colorDisabled = IconColorDisabled,
-	variant = IconVariant,
-	variantDisabled = IconVariantDisabled,
-	iconStyle = {},
+	variant = IconProps.variant,
+	variantDisabled = IconProps.variantDisabled,
+	iconStyle = IconProps.style,
 }: ArButtonProps) {
 	const [isModalArOpened, setIsModalArOpened] = useState(false);
 	const [arLink, setArLink] = useState("");
@@ -84,7 +76,6 @@ export default function ArButton({
 				>
 					<Icon
 						type={IconTypeEnum.AugmentedReality}
-						color={isArLoading ? colorDisabled : color}
 						className={classes.viewportIcon}
 					/>
 				</ActionIcon>

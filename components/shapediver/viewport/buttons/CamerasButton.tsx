@@ -6,12 +6,7 @@ import {ActionIcon, Menu} from "@mantine/core";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React, {useState} from "react";
 import classes from "../ViewportIcons.module.css";
-import {
-	CommonButtonProps,
-	IconColor,
-	IconVariant,
-	IconVariantDisabled,
-} from "./types";
+import {CommonButtonProps, IconProps} from "./types";
 
 interface CamerasButtonProps extends CommonButtonProps {
 	viewport?: IViewportApi;
@@ -20,10 +15,9 @@ interface CamerasButtonProps extends CommonButtonProps {
 export default function CamerasButton({
 	viewport,
 	size = undefined,
-	color = IconColor,
-	variant = IconVariant,
-	variantDisabled = IconVariantDisabled,
-	iconStyle = {},
+	variant = IconProps.variant,
+	variantDisabled = IconProps.variantDisabled,
+	iconStyle = IconProps.style,
 }: CamerasButtonProps) {
 	const [isCamerasMenuOpened, setIsCamerasMenuOpened] = useState(false);
 	const cameras = viewport ? viewport.cameras : {};
@@ -63,7 +57,6 @@ export default function CamerasButton({
 						<Icon
 							type={IconTypeEnum.Video}
 							className={classes.viewportIcon}
-							color={color}
 						/>
 					</Menu.Target>
 				</TooltipWrapper>

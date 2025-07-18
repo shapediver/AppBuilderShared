@@ -17,12 +17,7 @@ import HistoryMenuButton from "./buttons/HistoryMenuButton";
 import RedoButton from "./buttons/RedoButton";
 import UndoButton from "./buttons/UndoButton";
 import ZoomButton from "./buttons/ZoomButton";
-import {
-	IconColor,
-	IconColorDisabled,
-	IconVariant,
-	IconVariantDisabled,
-} from "./buttons/types";
+import {IconProps} from "./buttons/types";
 
 const defaultStyleProps: ViewportIconsOptionalProps = {
 	position: OverlayPosition.TOP_MIDDLE,
@@ -35,12 +30,10 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	offset: "0.5em",
 	py: 1,
 	px: 0,
-	size: undefined,
-	color: IconColor,
-	colorDisabled: IconColorDisabled,
-	variant: IconVariant,
-	variantDisabled: IconVariantDisabled,
-	iconStyle: {m: "0.188rem"},
+	iconProps: {
+		...IconProps,
+		style: {m: "0.188rem"},
+	},
 	fullscreenId: "viewer-fullscreen-area",
 	enableHistoryButtons: true,
 	enableModelStateButtons: true,
@@ -59,17 +52,12 @@ export default function ViewportIcons(
 
 	const {
 		position,
-		style,
 		shadow,
 		offset,
-		size,
+		style,
 		py,
 		px,
-		color,
-		colorDisabled,
-		variant,
-		variantDisabled,
-		iconStyle,
+		iconProps: {variant, variantDisabled, style: iconStyle} = {},
 		fullscreenId,
 		enableHistoryButtons,
 		enableModelStateButtons,
@@ -124,9 +112,6 @@ export default function ViewportIcons(
 				{enableArBtn && isArEnabled && (
 					<ArButton
 						viewport={viewport}
-						size={size}
-						color={color}
-						colorDisabled={colorDisabled}
 						variant={variant}
 						variantDisabled={variantDisabled}
 						iconStyle={iconStyle}
@@ -136,8 +121,6 @@ export default function ViewportIcons(
 				{enableZoomBtn && (
 					<ZoomButton
 						viewport={viewport}
-						size={size}
-						color={color}
 						variant={variant}
 						iconStyle={iconStyle}
 					/>
@@ -147,9 +130,6 @@ export default function ViewportIcons(
 					<FullscreenButton
 						fullscreenId={fullscreenId}
 						enableFullscreenBtn={enableFullscreenBtn}
-						size={size}
-						color={color}
-						colorDisabled={colorDisabled}
 						variant={variant}
 						variantDisabled={variantDisabled}
 						iconStyle={iconStyle}
@@ -159,8 +139,6 @@ export default function ViewportIcons(
 				{enableCamerasBtn && (
 					<CamerasButton
 						viewport={viewport}
-						size={size}
-						color={color}
 						variant={variant}
 						variantDisabled={variantDisabled}
 						iconStyle={iconStyle}
@@ -173,9 +151,6 @@ export default function ViewportIcons(
 							disabled={buttonsDisabled || executing}
 							hasPendingChanges={hasPendingChanges}
 							executing={executing}
-							size={size}
-							color={color}
-							colorDisabled={colorDisabled}
 							variant={variant}
 							variantDisabled={variantDisabled}
 							iconStyle={iconStyle}
@@ -185,9 +160,6 @@ export default function ViewportIcons(
 							disabled={buttonsDisabled || executing}
 							hasPendingChanges={hasPendingChanges}
 							executing={executing}
-							size={size}
-							color={color}
-							colorDisabled={colorDisabled}
 							variant={variant}
 							variantDisabled={variantDisabled}
 							iconStyle={iconStyle}
@@ -201,9 +173,6 @@ export default function ViewportIcons(
 					enableResetButton={enableResetButton}
 					enableImportExportButtons={enableImportExportButtons}
 					enableModelStateButtons={enableModelStateButtons}
-					size={size}
-					color={color}
-					colorDisabled={colorDisabled}
 					variant={variant}
 					variantDisabled={variantDisabled}
 					iconStyle={iconStyle}
