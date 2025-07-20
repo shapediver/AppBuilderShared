@@ -108,6 +108,9 @@ const spanDirective = function () {
 						case "ins":
 							styleObj.textDecoration = "underline";
 							break;
+						case "overline":
+							styleObj.textDecoration = "overline";
+							break;
 						default: {
 							const warningKey = `invalid-style-${style}`;
 							if (!shownWarnings.has(warningKey)) {
@@ -116,7 +119,7 @@ const spanDirective = function () {
 								setTimeout(() => {
 									GlobalNotificationContext.warning({
 										title: "MarkdownWidgetComponent",
-										message: `Unexpected style value "${style}" on span directive. Supported values: sub, sup, ins`,
+										message: `Unexpected style value "${style}" on span directive. Supported values: sub, sup, ins, overline`,
 									});
 								}, 0);
 							}
