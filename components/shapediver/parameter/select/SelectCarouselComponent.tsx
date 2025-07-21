@@ -28,9 +28,12 @@ interface StyleProps {
 
 export const defaultStyleProps: Partial<StyleProps> = {
 	carouselProps: {
-		align: "start",
+		emblaOptions: {
+			align: "start",
+			loop: true,
+			slidesToScroll: 1,
+		},
 		height: "auto",
-		loop: true,
 		slideGap: {base: "xs"},
 		slideSize: {
 			base: "100%",
@@ -148,6 +151,7 @@ export default function SelectCarouselComponent(
 				indicator: classes.indicator,
 			}}
 			{...carouselProps}
+			emblaOptions={{loop: true}}
 			withIndicators={
 				carouselProps?.withIndicators && items.length > 2
 					? true
