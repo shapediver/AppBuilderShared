@@ -75,7 +75,7 @@ export function useSessions(props: IUseSessionDto[]) {
 						api,
 						// in case the session definition defines acceptRejectMode, use it
 						// otherwise fall back to acceptRejectMode defined by the viewer settings
-						dto.acceptRejectMode ?? api.commitParameters,
+						(dto.acceptRejectMode ?? api.parametersCommit) || false,
 						eventTracking,
 					);
 				}

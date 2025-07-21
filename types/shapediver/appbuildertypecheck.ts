@@ -1,5 +1,5 @@
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {ShapeDiverResponseParameterStructure} from "@shapediver/api.geometry-api-dto-v2";
+import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {ATTRIBUTE_VISUALIZATION} from "@shapediver/viewer.features.attribute-visualization";
 import {
 	PARAMETER_TYPE,
@@ -59,7 +59,7 @@ const IAppBuilderParameterDefinitionSchema = z.object({
 	name: z.string(),
 	type: z.nativeEnum(PARAMETER_TYPE),
 	visualization: z.nativeEnum(PARAMETER_VISUALIZATION).optional(),
-	structure: z.nativeEnum(ShapeDiverResponseParameterStructure).optional(),
+	structure: z.nativeEnum(ResStructureType).optional(),
 	group: z
 		.object({
 			id: z.string(),

@@ -40,10 +40,7 @@ import {
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {addValidator} from "@AppBuilderShared/utils/parameters/parameterValidation";
-import {
-	ShapeDiverRequestCustomization,
-	ShapeDiverRequestExport,
-} from "@shapediver/api.geometry-api-dto-v2";
+import {ReqCustomization, ReqExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	addListener,
 	EVENTTYPE,
@@ -307,9 +304,8 @@ function createGenericParameterExecutorForSession(
 				}
 				// prepare body and send request
 				action = EventActionEnum.EXPORT;
-				const body: ShapeDiverRequestExport = {
-					parameters:
-						session.parameterValues as ShapeDiverRequestCustomization, // TODO fix this
+				const body: ReqExport = {
+					parameters: session.parameterValues as ReqCustomization, // TODO fix this
 					exports,
 					outputs: Object.keys(session.outputs),
 				};
@@ -365,7 +361,7 @@ function createParameterStore<T>(
 
 	/** The static definition of a parameter. */
 	const defval =
-		defaultValue !== undefined ? defaultValue : definition.defval;
+		defaultValue !== undefined ? defaultValue : definition.defval!;
 	const state: IShapeDiverParameterState<T> = {
 		uiValue: defval,
 		execValue: defval,
@@ -474,7 +470,7 @@ function createParameterStore<T>(
 							(_state) => ({
 								state: {
 									..._state.state,
-									uiValue: definition.defval,
+									uiValue: definition.defval!,
 									dirty:
 										definition.defval !==
 										_state.state.execValue,
@@ -1199,6 +1195,12 @@ export const useShapeDiverStoreParameters =
 								),
 								acceptRejectMode,
 							);
+							if (!def.isValid?.(def.definition.defval)) {
+								console.warn(
+									`Generic parameter ${paramId} has an invalid default value: ${def.definition.defval}`,
+								);
+							}
+
 							hasChanges = true;
 							setUiAndExecValue = def.value !== undefined;
 						}
@@ -1544,7 +1546,7 @@ export const useShapeDiverStoreParameters =
 								const {
 									definition: {defval},
 								} = store.getState();
-								acc[paramId] = defval;
+								acc[paramId] = defval!;
 
 								return acc;
 							},

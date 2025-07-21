@@ -1,8 +1,8 @@
 import {IGenericParameterDefinition} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {
-	ShapeDiverResponseParameter,
-	ShapeDiverResponseParameterType,
-	ShapeDiverResponseParameterVisualization,
+	ResParameter,
+	ResParameterType,
+	ResVisualizationType,
 } from "@shapediver/sdk.geometry-api-sdk-v2";
 
 export function addValidator(
@@ -25,13 +25,13 @@ export function addValidator(
 }
 
 function validateParameterValue(
-	definition: ShapeDiverResponseParameter,
+	definition: ResParameter,
 	value: unknown,
 ): boolean {
 	const {id, type, min, max, decimalplaces, choices, visualization} =
 		definition;
 	switch (true) {
-		case type === ShapeDiverResponseParameterType.BOOL:
+		case type === ResParameterType.BOOL:
 			if (typeof value === "string") {
 				if (!(value === "true" || value === "false"))
 					throw new Error(
@@ -41,31 +41,31 @@ function validateParameterValue(
 				validateAndError(`Parameter(${id}).isValid`, value, "boolean");
 			}
 			break;
-		case type === ShapeDiverResponseParameterType.COLOR:
+		case type === ResParameterType.COLOR:
 			validateAndError(`Parameter(${id}).isValid`, value, "color");
 			break;
-		case type === ShapeDiverResponseParameterType.FILE:
+		case type === ResParameterType.FILE:
 			validateAndError(`Parameter(${id}).isValid`, value, "file");
 			break;
-		case type === ShapeDiverResponseParameterType.EVEN ||
-			type === ShapeDiverResponseParameterType.FLOAT ||
-			type === ShapeDiverResponseParameterType.INT ||
-			type === ShapeDiverResponseParameterType.ODD:
+		case type === ResParameterType.EVEN ||
+			type === ResParameterType.FLOAT ||
+			type === ResParameterType.INT ||
+			type === ResParameterType.ODD:
 			{
 				let temp = value as number;
 				if (typeof value === "string") temp = +value;
 				validateAndError(`Parameter(${id}).isValid`, temp, "number");
-				if (type === ShapeDiverResponseParameterType.EVEN) {
+				if (type === ResParameterType.EVEN) {
 					if (temp % 2 !== 0)
 						throw new Error(
 							`Parameter(${id}).isValid: The value ${value} is not even.`,
 						);
-				} else if (type === ShapeDiverResponseParameterType.ODD) {
+				} else if (type === ResParameterType.ODD) {
 					if (temp % 2 === 0)
 						throw new Error(
 							`Parameter(${id}).isValid: The value ${value} is not odd.`,
 						);
-				} else if (type === ShapeDiverResponseParameterType.INT) {
+				} else if (type === ResParameterType.INT) {
 					if (!Number.isInteger(temp))
 						throw new Error(
 							`Parameter(${id}).isValid: The value ${value} is not an integer.`,
@@ -95,7 +95,7 @@ function validateParameterValue(
 				}
 			}
 			break;
-		case type === ShapeDiverResponseParameterType.STRINGLIST: {
+		case type === ResParameterType.STRINGLIST: {
 			validateAndError(`Parameter(${id}).isValid`, value, "string");
 			const choicesChecker = (v: string) => {
 				// has to be a single value that is
@@ -109,10 +109,7 @@ function validateParameterValue(
 					);
 			};
 
-			if (
-				visualization ===
-				ShapeDiverResponseParameterVisualization.CHECKLIST
-			) {
+			if (visualization === ResVisualizationType.CHECKLIST) {
 				// comma separated numbers
 				if ((value as string).includes(",")) {
 					const values: string[] = (value as string).split(",");
@@ -126,7 +123,9 @@ function validateParameterValue(
 							);
 						choicesChecker(values[i]);
 					}
-				} else {
+				}
+				// allow empty string
+				else if (value) {
 					// to number
 					let temp = value as number;
 					if (typeof value === "string") temp = +value;
@@ -137,7 +136,9 @@ function validateParameterValue(
 					);
 					choicesChecker(value as string);
 				}
-			} else {
+			}
+			// allow empty string
+			else if (value) {
 				// to number
 				let temp = value as number;
 				if (typeof value === "string") temp = +value;

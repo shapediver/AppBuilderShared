@@ -7,7 +7,7 @@ import {
 	NetworkStatus,
 } from "@AppBuilderShared/types/shapediver/stargate";
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
-import {ShapeDiverResponseParameterType} from "@shapediver/api.geometry-api-dto-v2";
+import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import type {ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -26,7 +26,7 @@ export interface IUseStargateParameterProps {
 	/** ID of the parameter */
 	parameterId: string;
 	/** Type of the parameter */
-	parameterType: ShapeDiverResponseParameterType;
+	parameterType: ResParameterType;
 	/** Whether the parameter has a non-empty value */
 	hasValue: boolean;
 	/** Supported formats for parameters of type "File" */
@@ -147,7 +147,7 @@ export const useStargateParameter = ({
 					return;
 				}
 				if (
-					parameterType === ShapeDiverResponseParameterType.FILE &&
+					parameterType === ResParameterType.FILE &&
 					parameterFormat &&
 					!parameterFormat.some((ct) =>
 						supportedData.contentTypes.includes(ct),
@@ -177,7 +177,7 @@ export const useStargateParameter = ({
 	 */
 	const handleGetDataReplyDto = useCallback(
 		(res: ISdStargateGetDataReplyDto) => {
-			if (parameterType === ShapeDiverResponseParameterType.FILE) {
+			if (parameterType === ResParameterType.FILE) {
 				return {
 					count: res.info.count,
 					value: res.asset?.id,

@@ -1,14 +1,14 @@
 import {IShapeDiverParamOrExport} from "@AppBuilderShared/types/shapediver/common";
 import {
-	ShapeDiverResponseExport,
-	ShapeDiverResponseExportDefinition,
-} from "@shapediver/api.geometry-api-dto-v2";
+	ResExport,
+	ResExportDefinition,
+} from "@shapediver/sdk.geometry-api-sdk-v2";
 
 /**
  * The static definition of an export.
  * We reuse the definition of the export on the Geometry Backend here.
  */
-export type IShapeDiverExportDefinition = ShapeDiverResponseExportDefinition;
+export type IShapeDiverExportDefinition = ResExportDefinition;
 
 /**
  * Actions which can be taken on an export.
@@ -22,9 +22,7 @@ export interface IShapeDiverExportActions {
 	 *
 	 * @throws {@type ShapeDiverViewerError}
 	 */
-	request(parameters?: {
-		[key: string]: string;
-	}): Promise<ShapeDiverResponseExport>;
+	request(parameters?: {[key: string]: string}): Promise<ResExport>;
 
 	/**
 	 * Fetch the export from the given URL. Use this in case the model is configured to require a JWT for every request.

@@ -12,7 +12,7 @@ export default function SelectChipGroupComponent(props: SelectComponentProps) {
 	const {value, onChange, items, disabled, itemData, onFocus, onBlur} = props;
 
 	return (
-		<Chip.Group multiple={false} value={value} onChange={onChange}>
+		<Chip.Group multiple={false} value={value ?? null} onChange={onChange}>
 			<Flex gap="xs" wrap="wrap">
 				{items.map((item) => {
 					const data = itemData?.[item];

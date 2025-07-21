@@ -59,6 +59,8 @@ export interface IShapeDiverParameterActions<T> {
 	 * CAUTION: Typically you want to use setUiValue instead of this function.
 	 *
 	 * @param value the value to use for setting state.uiValue and state.execValue
+	 *
+	 * @returns true if the value was set, false if the value was invalid.
 	 */
 	setUiAndExecValue(value: T | string): boolean;
 

@@ -1,5 +1,5 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import {useParameterStateless} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterStateless";
+import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
 import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useCallback} from "react";
 
@@ -25,10 +25,10 @@ export default function AppBuilderActionSetParameterValueComponent(
 	} = props;
 
 	// TODO: Implement the action
-	const parameter = useParameterStateless<string>(
-		namespace ?? namespaceFromProps,
-		name,
-	);
+	const parameter = useParameter<string>({
+		namespace: namespace ?? namespaceFromProps,
+		parameterId: name,
+	});
 
 	const onClick = useCallback(() => {
 		if (!parameter?.actions.isUiValueDifferent(value)) return;

@@ -6,10 +6,8 @@ import {
 	IEventTrackingProps,
 } from "@AppBuilderShared/types/eventTracking";
 import {roundToBracket} from "@AppBuilderShared/utils/numerics";
-import {
-	isViewerCustomizationError,
-	ShapeDiverResponseModelComputationStatus,
-} from "@shapediver/viewer.session";
+import {ResComputationStatus} from "@shapediver/sdk.geometry-api-sdk-v2";
+import {isViewerCustomizationError} from "@shapediver/viewer.session";
 import {useContext, useMemo} from "react";
 
 /**
@@ -49,12 +47,7 @@ export const useEventTracking = () => {
 								(o) => o.status_collect,
 							),
 						)
-						.find(
-							(s) =>
-								s &&
-								s !==
-									ShapeDiverResponseModelComputationStatus.SUCCESS,
-						);
+						.find((s) => s && s !== ResComputationStatus.SUCCESS);
 					const title = status ? `${_title} (${status})` : _title;
 					console.warn(title, e);
 					notifications.error({title, message: e.message});

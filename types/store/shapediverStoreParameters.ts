@@ -5,7 +5,7 @@ import {
 	IShapeDiverParameter,
 	IShapeDiverParameterDefinition,
 } from "@AppBuilderShared/types/shapediver/parameter";
-import {ShapeDiverResponseExport} from "@shapediver/api.geometry-api-dto-v2";
+import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {ISessionApi} from "@shapediver/viewer.session";
 import {StoreApi, UseBoundStore} from "zustand";
 
@@ -44,7 +44,7 @@ export type IOutputStoresPerSession = {[namespace: string]: IOutputStores};
 export type IDefaultExportsPerSession = {[namespace: string]: string[]};
 
 /** A map from export id to export response. Used for responses of default exports. */
-export type IExportResponse = {[exportId: string]: ShapeDiverResponseExport};
+export type IExportResponse = {[exportId: string]: ResExport};
 
 /** A map from session id to export responses per export id. */
 export type IExportResponsesPerSession = {[namespace: string]: IExportResponse};
