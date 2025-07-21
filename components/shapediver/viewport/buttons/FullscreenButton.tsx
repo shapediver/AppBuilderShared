@@ -16,6 +16,8 @@ interface FullscreenButtonProps extends CommonButtonProps {
 export default function FullscreenButton({
 	fullscreenId = "viewer-fullscreen-area",
 	enableFullscreenBtn = true,
+	color = IconProps.color,
+	colorDisabled = IconProps.colorDisabled,
 	size = undefined,
 	variant = IconProps.variant,
 	variantDisabled = IconProps.variantDisabled,
@@ -38,6 +40,7 @@ export default function FullscreenButton({
 			>
 				<Icon
 					type={IconTypeEnum.Maximize}
+					color={disabled ? colorDisabled : color}
 					className={classes.viewportIcon}
 				/>
 			</ActionIcon>

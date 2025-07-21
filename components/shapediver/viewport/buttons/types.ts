@@ -10,7 +10,10 @@ export interface CommonButtonProps {
 }
 
 export const IconProps = {
+	color: "black",
+	colorDisabled: "grey",
 	variant: "subtle",
 	variantDisabled: "transparent",
+	size: 32,
 	style: {},
 };

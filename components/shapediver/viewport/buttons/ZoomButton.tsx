@@ -14,6 +14,7 @@ interface ZoomButtonProps extends CommonButtonProps {
 export default function ZoomButton({
 	viewport,
 	size = undefined,
+	color = IconProps.color,
 	variant = IconProps.variant,
 	iconStyle = IconProps.style,
 }: ZoomButtonProps) {
@@ -39,6 +40,7 @@ export default function ZoomButton({
 			>
 				<Icon
 					type={IconTypeEnum.ZoomIn}
+					color={color}
 					className={classes.viewportIcon}
 				/>
 			</ActionIcon>

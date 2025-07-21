@@ -25,6 +25,8 @@ export default function HistoryMenuButton({
 	enableImportExportButtons = false,
 	enableModelStateButtons = false,
 	size = undefined,
+	color = IconProps.color,
+	colorDisabled = IconProps.colorDisabled,
 	variant = IconProps.variant,
 	variantDisabled = IconProps.variantDisabled,
 	iconStyle = IconProps.style,
@@ -90,6 +92,11 @@ export default function HistoryMenuButton({
 						<Icon
 							type={IconTypeEnum.DotsVertical}
 							className={classes.viewportIcon}
+							color={
+								disabled || isCreatingModelState
+									? colorDisabled
+									: color
+							}
 						/>
 					</ActionIcon>
 				</Menu.Target>

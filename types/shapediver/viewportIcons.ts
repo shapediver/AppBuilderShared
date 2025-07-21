@@ -95,6 +95,30 @@ export interface ViewportIconsOptionalProps {
 	 * enable/disable the "zoom" button
 	 */
 	enableZoomBtn?: boolean;
+	/**
+	 * color of the icons
+	 */
+	color?: string;
+	/**
+	 * color of the icons when disabled
+	 */
+	colorDisabled?: string;
+	/**
+	 * variant of the icons
+	 */
+	variant?: string;
+	/**
+	 * variant of the icons when disabled
+	 */
+	variantDisabled?: string;
+	/**
+	 * style of the icons
+	 */
+	iconStyle?: MantineStyleProp;
+	/**
+	 * size of the icons
+	 */
+	size?: number;
 }
 
 type ViewportIconsThemePropsType = Partial<ViewportIconsOptionalProps>;
