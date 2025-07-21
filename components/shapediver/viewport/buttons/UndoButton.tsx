@@ -18,6 +18,8 @@ export default function UndoButton({
 	hasPendingChanges,
 	executing,
 	size = undefined,
+	color = IconProps.color,
+	colorDisabled = IconProps.colorDisabled,
 	variant = IconProps.variant,
 	variantDisabled = IconProps.variantDisabled,
 	iconStyle = IconProps.style,
@@ -41,6 +43,7 @@ export default function UndoButton({
 			>
 				<Icon
 					type={IconTypeEnum.ArrowBackUp}
+					color={isDisabled ? colorDisabled : color}
 					className={classes.viewportIcon}
 				/>
 			</ActionIcon>

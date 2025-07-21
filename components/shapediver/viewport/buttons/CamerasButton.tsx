@@ -15,6 +15,8 @@ interface CamerasButtonProps extends CommonButtonProps {
 export default function CamerasButton({
 	viewport,
 	size = undefined,
+	color = IconProps.color,
+	colorDisabled = IconProps.colorDisabled,
 	variant = IconProps.variant,
 	variantDisabled = IconProps.variantDisabled,
 	iconStyle = IconProps.style,
@@ -56,6 +58,7 @@ export default function CamerasButton({
 					<Menu.Target>
 						<Icon
 							type={IconTypeEnum.Video}
+							color={noCamerasAvailable ? colorDisabled : color}
 							className={classes.viewportIcon}
 						/>
 					</Menu.Target>

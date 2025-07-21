@@ -15,6 +15,8 @@ interface ArButtonProps extends CommonButtonProps {
 export default function ArButton({
 	viewport,
 	size = undefined,
+	color = IconProps.color,
+	colorDisabled = IconProps.colorDisabled,
 	variant = IconProps.variant,
 	variantDisabled = IconProps.variantDisabled,
 	iconStyle = IconProps.style,
@@ -76,6 +78,7 @@ export default function ArButton({
 				>
 					<Icon
 						type={IconTypeEnum.AugmentedReality}
+						color={isArLoading ? colorDisabled : color}
 						className={classes.viewportIcon}
 					/>
 				</ActionIcon>
