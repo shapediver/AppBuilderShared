@@ -108,7 +108,7 @@ export default function ParameterColorComponent(
 						<ActionIcon
 							onClick={() =>
 								handleChange(
-									definition.defval,
+									definition.defval!,
 									undefined,
 									restoreFocus,
 								)

@@ -9,7 +9,7 @@ import {
 	composeSdColor,
 	decomposeSdColor,
 } from "@AppBuilderShared/utils/misc/colors";
-import {ShapeDiverResponseParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
+import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import Langfuse, {LangfuseWeb, observeOpenAI} from "langfuse";
 import OpenAI from "openai";
 import {zodResponseFormat} from "openai/helpers/zod";
@@ -67,30 +67,30 @@ name: ${name}
 
 	context += `type: ${def.type}\n`;
 
-	if (def.type === ShapeDiverResponseParameterType.STRINGLIST) {
+	if (def.type === ResParameterType.STRINGLIST) {
 		context += `list of options, each option on a new line, prefixed by the 0-based index of the option:\n${def.choices?.map((c, idx) => `\t${idx},"${c}"`).join("\n") || "none"}\n`;
 	} else if (
-		def.type === ShapeDiverResponseParameterType.EVEN ||
-		def.type === ShapeDiverResponseParameterType.ODD ||
-		def.type === ShapeDiverResponseParameterType.INT ||
-		def.type === ShapeDiverResponseParameterType.FLOAT ||
-		def.type === ShapeDiverResponseParameterType.STRING
+		def.type === ResParameterType.EVEN ||
+		def.type === ResParameterType.ODD ||
+		def.type === ResParameterType.INT ||
+		def.type === ResParameterType.FLOAT ||
+		def.type === ResParameterType.STRING
 	) {
-		if (def.type !== ShapeDiverResponseParameterType.STRING) {
+		if (def.type !== ResParameterType.STRING) {
 			context += `min: ${def.min === null || def.min === undefined ? "none" : def.min}\n`;
 		}
 		context += `max: ${def.max === null || def.max === undefined ? "none" : def.max}\n`;
-		if (def.type === ShapeDiverResponseParameterType.FLOAT) {
+		if (def.type === ResParameterType.FLOAT) {
 			context += `decimal places: ${def.decimalplaces === null || def.decimalplaces === undefined ? "none" : def.decimalplaces}\n`;
 		}
 	}
 
-	if (def.type === ShapeDiverResponseParameterType.STRINGLIST) {
+	if (def.type === ResParameterType.STRINGLIST) {
 		context += `current index: ${currentValue === null || currentValue === undefined ? "none" : currentValue}\n`;
 		context += `default index: ${def.defval}`;
-	} else if (def.type === ShapeDiverResponseParameterType.COLOR) {
+	} else if (def.type === ResParameterType.COLOR) {
 		const color = decomposeSdColor(currentValue);
-		const defcol = decomposeSdColor(def.defval);
+		const defcol = decomposeSdColor(def.defval!);
 		context += `current color value: red: ${color.red}, green: ${color.green}, blue: ${color.blue}, alpha: ${color.alpha}\n`;
 		context += `default color value: red: ${defcol.red}, green: ${defcol.green}, blue: ${defcol.blue}, alpha: ${defcol.alpha}`;
 	} else {
@@ -104,24 +104,24 @@ name: ${name}
 /**
  * Create a context string for the given types of parameters.
  */
-function createParameterTypeContext(types: ShapeDiverResponseParameterType[]) {
+function createParameterTypeContext(types: ResParameterType[]) {
 	// ensure types are unique
 	types = Array.from(new Set(types));
 
 	return types
 		.map((type) => {
-			if (type === ShapeDiverResponseParameterType.STRINGLIST) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.STRINGLIST}\`, return the 0-based index of the new option from the list of options rather than the value of the option. Don't tell the user about the index.`;
-			} else if (type === ShapeDiverResponseParameterType.FLOAT) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.FLOAT}\`, ensure the new floating point number is within the range defined by min and max and respects the number of decimal places.`;
-			} else if (type === ShapeDiverResponseParameterType.INT) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.INT}\`, ensure the new integer is within the range defined by min and max.`;
-			} else if (type === ShapeDiverResponseParameterType.ODD) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.ODD}\`, ensure the new odd integer is within the range defined by min and max.`;
-			} else if (type === ShapeDiverResponseParameterType.EVEN) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.EVEN}\`, ensure the new even integer is within the range defined by min and max.`;
-			} else if (type === ShapeDiverResponseParameterType.STRING) {
-				return `If \`type\` is \`${ShapeDiverResponseParameterType.STRING}\`, ensure the length of the new string does not exceed max.`;
+			if (type === ResParameterType.STRINGLIST) {
+				return `If \`type\` is \`${ResParameterType.STRINGLIST}\`, return the 0-based index of the new option from the list of options rather than the value of the option. Don't tell the user about the index.`;
+			} else if (type === ResParameterType.FLOAT) {
+				return `If \`type\` is \`${ResParameterType.FLOAT}\`, ensure the new floating point number is within the range defined by min and max and respects the number of decimal places.`;
+			} else if (type === ResParameterType.INT) {
+				return `If \`type\` is \`${ResParameterType.INT}\`, ensure the new integer is within the range defined by min and max.`;
+			} else if (type === ResParameterType.ODD) {
+				return `If \`type\` is \`${ResParameterType.ODD}\`, ensure the new odd integer is within the range defined by min and max.`;
+			} else if (type === ResParameterType.EVEN) {
+				return `If \`type\` is \`${ResParameterType.EVEN}\`, ensure the new even integer is within the range defined by min and max.`;
+			} else if (type === ResParameterType.STRING) {
+				return `If \`type\` is \`${ResParameterType.STRING}\`, ensure the length of the new string does not exceed max.`;
 			}
 		})
 		.filter((s) => !!s)
@@ -129,15 +129,15 @@ function createParameterTypeContext(types: ShapeDiverResponseParameterType[]) {
 }
 
 /** Supported types of parameters (for now). */
-const SUPPORTED_PARAMETER_TYPES = [
-	ShapeDiverResponseParameterType.BOOL,
-	ShapeDiverResponseParameterType.COLOR,
-	ShapeDiverResponseParameterType.EVEN,
-	ShapeDiverResponseParameterType.FLOAT,
-	ShapeDiverResponseParameterType.INT,
-	ShapeDiverResponseParameterType.ODD,
-	ShapeDiverResponseParameterType.STRING,
-	ShapeDiverResponseParameterType.STRINGLIST,
+const SUPPORTED_PARAMETER_TYPES: ResParameterType[] = [
+	ResParameterType.BOOL,
+	ResParameterType.COLOR,
+	ResParameterType.EVEN,
+	ResParameterType.FLOAT,
+	ResParameterType.INT,
+	ResParameterType.ODD,
+	ResParameterType.STRING,
+	ResParameterType.STRINGLIST,
 ];
 
 /**
@@ -220,12 +220,12 @@ const AGENT_RESPONSE_SCHEMA = z.object({
 				z.object({
 					type: z
 						.enum([
-							ShapeDiverResponseParameterType.BOOL,
-							ShapeDiverResponseParameterType.EVEN,
-							ShapeDiverResponseParameterType.FLOAT,
-							ShapeDiverResponseParameterType.INT,
-							ShapeDiverResponseParameterType.ODD,
-							ShapeDiverResponseParameterType.STRING,
+							ResParameterType.BOOL,
+							ResParameterType.EVEN,
+							ResParameterType.FLOAT,
+							ResParameterType.INT,
+							ResParameterType.ODD,
+							ResParameterType.STRING,
 						])
 						.describe("The type of the parameter to be updated"),
 					id: z
@@ -243,7 +243,7 @@ const AGENT_RESPONSE_SCHEMA = z.object({
 				}),
 				z.object({
 					type: z
-						.literal(ShapeDiverResponseParameterType.STRINGLIST)
+						.literal(ResParameterType.STRINGLIST)
 						.describe("The StringList parameter type"),
 					id: z
 						.string()
@@ -266,7 +266,7 @@ const AGENT_RESPONSE_SCHEMA = z.object({
 				}),
 				z.object({
 					type: z
-						.literal(ShapeDiverResponseParameterType.COLOR)
+						.literal(ResParameterType.COLOR)
 						.describe("The Color parameter type"),
 					id: z
 						.string()
@@ -382,7 +382,7 @@ async function setParameterValues(
 			return;
 		}
 
-		if (update.type === ShapeDiverResponseParameterType.STRINGLIST) {
+		if (update.type === ResParameterType.STRINGLIST) {
 			if (!parameter.actions.isValid(update.newIndex, false)) {
 				messages.push(
 					`New index ${update.newIndex} is not valid for parameter with id ${update.id}.`,
@@ -392,7 +392,7 @@ async function setParameterValues(
 			}
 
 			values[update.id] = update.newIndex;
-		} else if (update.type === ShapeDiverResponseParameterType.COLOR) {
+		} else if (update.type === ResParameterType.COLOR) {
 			const color = composeSdColor(update.newValue);
 			if (!parameter.actions.isValid(color, false)) {
 				messages.push(

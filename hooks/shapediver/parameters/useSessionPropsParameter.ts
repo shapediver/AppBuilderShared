@@ -1,6 +1,6 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {ShapeDiverResponseParameter} from "@shapediver/api.geometry-api-dto-v2";
+import {ResParameter} from "@shapediver/sdk.geometry-api-sdk-v2";
 
 /**
  * Hook providing a shortcut to create parameter props for the {@link ParametersAndExportsAccordionComponent}
@@ -11,7 +11,7 @@ import {ShapeDiverResponseParameter} from "@shapediver/api.geometry-api-dto-v2";
  */
 export function useSessionPropsParameter(
 	namespace: string | string[],
-	filter?: (param: ShapeDiverResponseParameter) => boolean,
+	filter?: (param: ResParameter) => boolean,
 ): PropsParameter[] {
 	const _filter = filter || (() => true);
 
