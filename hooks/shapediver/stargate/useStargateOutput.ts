@@ -3,10 +3,12 @@ import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverS
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
-import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
+import {
+	IBakeDataResultEnum,
+	NetworkStatus,
+} from "@AppBuilderShared/types/shapediver/stargate";
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
 import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
-import {ISdStargateBakeDataResultEnum} from "@shapediver/sdk.stargate-sdk-v1";
 import {
 	ITreeNode,
 	ShapeDiverResponseOutputChunk,
@@ -18,12 +20,10 @@ import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
 // TODO SS-8820 ideally move these messages to properties that can be controlled from the theme
 export const ResultErrorMessages = {
-	[ISdStargateBakeDataResultEnum.SUCCESS]:
-		"The objects were successfully baked.",
-	[ISdStargateBakeDataResultEnum.NOTHING]: "No objects were baked.",
-	[ISdStargateBakeDataResultEnum.FAILURE]: "The baking operation failed.",
-	[ISdStargateBakeDataResultEnum.CANCEL]:
-		"The baking operation was cancelled.",
+	[IBakeDataResultEnum.SUCCESS]: "The objects were successfully baked.",
+	[IBakeDataResultEnum.NOTHING]: "No objects were baked.",
+	[IBakeDataResultEnum.FAILURE]: "The baking operation failed.",
+	[IBakeDataResultEnum.CANCEL]: "The baking operation was cancelled.",
 };
 
 export interface IUseStargateOutputProps {
@@ -224,7 +224,7 @@ export const useStargateOutput = ({
 				title: "Baking failed",
 				message:
 					e.message ||
-					ResultErrorMessages[ISdStargateBakeDataResultEnum.FAILURE],
+					ResultErrorMessages[IBakeDataResultEnum.FAILURE],
 			});
 			return;
 		}
@@ -233,29 +233,27 @@ export const useStargateOutput = ({
 
 		const {result, message} = replyDto.info;
 
-		if (result === ISdStargateBakeDataResultEnum.FAILURE) {
+		const resultTyped = result as unknown as IBakeDataResultEnum;
+
+		if (resultTyped === IBakeDataResultEnum.FAILURE) {
 			notifications.error({
 				message:
-					message ||
-					ResultErrorMessages[ISdStargateBakeDataResultEnum.FAILURE],
+					message || ResultErrorMessages[IBakeDataResultEnum.FAILURE],
 			});
-		} else if (result === ISdStargateBakeDataResultEnum.SUCCESS) {
+		} else if (resultTyped === IBakeDataResultEnum.SUCCESS) {
 			notifications.success({
 				message:
-					message ||
-					ResultErrorMessages[ISdStargateBakeDataResultEnum.SUCCESS],
+					message || ResultErrorMessages[IBakeDataResultEnum.SUCCESS],
 			});
-		} else if (result === ISdStargateBakeDataResultEnum.CANCEL) {
+		} else if (resultTyped === IBakeDataResultEnum.CANCEL) {
 			notifications.warning({
 				message:
-					message ||
-					ResultErrorMessages[ISdStargateBakeDataResultEnum.CANCEL],
+					message || ResultErrorMessages[IBakeDataResultEnum.CANCEL],
 			});
-		} else if (result === ISdStargateBakeDataResultEnum.NOTHING) {
+		} else if (resultTyped === IBakeDataResultEnum.NOTHING) {
 			notifications.warning({
 				message:
-					message ||
-					ResultErrorMessages[ISdStargateBakeDataResultEnum.NOTHING],
+					message || ResultErrorMessages[IBakeDataResultEnum.NOTHING],
 			});
 		}
 	}, [sessionId, bakeData, outputId, chunkId, chunkName]);

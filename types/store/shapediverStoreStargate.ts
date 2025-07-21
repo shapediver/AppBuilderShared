@@ -1,9 +1,9 @@
-import {
+import type {
 	ISdStargateClientModel,
 	ISdStargateGetSupportedDataReplyDto,
 	ISdStargatePrepareModelReplyDto,
+	ISdStargateSdk,
 	ISdStargateStatusReplyDto,
-	type ISdStargateSdk,
 } from "@shapediver/sdk.stargate-sdk-v1";
 import {NetworkStatus} from "../shapediver/stargate";
 

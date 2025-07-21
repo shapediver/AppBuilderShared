@@ -7,22 +7,25 @@ import {
 } from "@AppBuilderShared/types/store/shapediverStoreStargate";
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
-import {
-	createSdk,
-	ISdStargateClientModel,
-	ISdStargatePrepareModelResultEnum,
-	SdStargateGetSupportedDataCommand,
-	SdStargatePrepareModelCommand,
-	SdStargateStatusCommand,
-} from "@shapediver/sdk.stargate-sdk-v1";
+import type {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 import {useShapeDiverStoreErrorReporting} from "./useShapeDiverStoreErrorReporting";
 import {useShapeDiverStorePlatform} from "./useShapeDiverStorePlatform";
 
+// Dynamic import function for stargate SDK
+const importStargateSDK = () => import("@shapediver/sdk.stargate-sdk-v1");
+
 let pingTimeout: NodeJS.Timeout | null = null;
 const PING_INTERVAL_MS = 1000 * 30; // 30 seconds
+let stargateSDKPromise: ReturnType<typeof importStargateSDK> | null = null;
 
+export const getStargateSDK = async () => {
+	if (!stargateSDKPromise) {
+		stargateSDKPromise = importStargateSDK();
+	}
+	return await stargateSDKPromise;
+};
 /**
  * Stop pinging the selected client
  */
@@ -110,6 +113,8 @@ export const useShapeDiverStoreStargate =
 						StargateCacheKeyEnum.Authenticate,
 						forceReconnect ?? false,
 						async () => {
+							const {createSdk} = await getStargateSDK();
+
 							// TODO clarify whether we should do some cleanup in case
 							// there is a previous clientRef (cleanup the websocket connection or similar)
 
@@ -184,6 +189,9 @@ export const useShapeDiverStoreStargate =
 					const client = _client || selectedClient;
 					if (!sdkRef || !client) return undefined;
 					const {sdk} = sdkRef;
+
+					const {SdStargateStatusCommand} = await getStargateSDK();
+
 					const result = await exceptionWrapperAsync(async () => {
 						const command = new SdStargateStatusCommand(sdk);
 						return await command.send({}, [client]);
@@ -237,6 +245,9 @@ export const useShapeDiverStoreStargate =
 
 					const clientToUse = client || selectedClient;
 					if (!clientToUse) return;
+
+					const {SdStargatePrepareModelCommand} =
+						await getStargateSDK();
 
 					const command = new SdStargatePrepareModelCommand(
 						sdkRef.sdk,
@@ -300,6 +311,9 @@ export const useShapeDiverStoreStargate =
 						const {currentModel} =
 							useShapeDiverStorePlatform.getState();
 						if (currentModel) {
+							const {ISdStargatePrepareModelResultEnum} =
+								await getStargateSDK();
+
 							prepareModel(currentModel.id, client).then(
 								(response) => {
 									if (
@@ -360,6 +374,9 @@ export const useShapeDiverStoreStargate =
 						StargateCacheKeyEnum.SupportedData,
 						flush ?? false,
 						async () => {
+							const {SdStargateGetSupportedDataCommand} =
+								await getStargateSDK();
+
 							const command =
 								new SdStargateGetSupportedDataCommand(sdk);
 							const result = await command.send({}, [
