@@ -22,6 +22,11 @@ export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
 	 * parameter definition.
 	 */
 	value?: string;
+
+	/**
+	 * Optional step value for numeric parameters.
+	 */
+	step?: number;
 };
 
 /** Type used for export definitions */
