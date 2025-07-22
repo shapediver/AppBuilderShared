@@ -43,7 +43,7 @@ export default function NumberInputModal({
 	prompt,
 	numberInputProps = {},
 	modalBaseProps = {
-		opened: true,
+		opened: false,
 		confirmBtnTitle: "Save",
 		cancelBtnTitle: "Cancel",
 		onClose: () => {},
