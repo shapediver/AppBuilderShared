@@ -267,8 +267,13 @@ export function useAppBuilderInstances(props: Props) {
 				const instanceNode = new TreeNode(instanceName);
 				instanceNode.originalName = instanceName;
 
+				// if no transformations are defined, we use the identity matrix
+				const transformations = instance.transformations ?? [
+					[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+				];
+
 				// once the node is created, add the transformations
-				instance.transformations?.forEach((transformation, index) => {
+				transformations.forEach((transformation, index) => {
 					const transformationId = `transformations[${index}]`;
 					const transformationNode = new TreeNode(transformationId);
 					transformationNode.originalName = transformationId;
