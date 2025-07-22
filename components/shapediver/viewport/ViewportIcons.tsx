@@ -20,16 +20,12 @@ import ZoomButton from "./buttons/ZoomButton";
 import {IconProps} from "./buttons/types";
 
 const defaultStyleProps: ViewportIconsOptionalProps = {
-	position: OverlayPosition.TOP_MIDDLE,
 	style: {
 		display: "flex",
 		gap: "0.25rem",
 		alignItems: "center",
 		flexDirection: "row",
 	},
-	offset: "0.5em",
-	py: 1,
-	px: 0,
 	fullscreenId: "viewer-fullscreen-area",
 	enableHistoryButtons: true,
 	enableModelStateButtons: true,
@@ -45,6 +41,15 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	variantDisabled: IconProps.variantDisabled,
 	size: IconProps.size,
 	iconStyle: {m: "0.188rem"},
+	viewportOverlayProps: {
+		position: OverlayPosition.TOP_MIDDLE,
+		offset: "0.5em",
+	},
+	paperProps: {
+		py: 1,
+		px: 0,
+		shadow: "md",
+	},
 };
 
 export default function ViewportIcons(
@@ -53,12 +58,7 @@ export default function ViewportIcons(
 	const {viewportId: _viewportId, namespace = "", ...rest} = props;
 
 	const {
-		position,
-		shadow,
-		offset,
 		style,
-		py,
-		px,
 		iconStyle,
 		fullscreenId,
 		enableHistoryButtons,
@@ -74,6 +74,8 @@ export default function ViewportIcons(
 		variant,
 		variantDisabled,
 		size,
+		viewportOverlayProps,
+		paperProps,
 	} = useProps("ViewportIcons", defaultStyleProps, rest);
 
 	const {viewportId: defaultViewportId} = useViewportId();
@@ -114,8 +116,8 @@ export default function ViewportIcons(
 	const isArEnabled = viewport ? viewport.enableAR : false;
 
 	return (
-		<ViewportOverlayWrapper position={position} offset={offset}>
-			<Paper style={style} shadow={shadow} py={py} px={px}>
+		<ViewportOverlayWrapper {...viewportOverlayProps}>
+			<Paper style={style} {...paperProps}>
 				{enableArBtn && isArEnabled && (
 					<ArButton
 						viewport={viewport}
