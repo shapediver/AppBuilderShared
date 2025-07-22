@@ -1,10 +1,12 @@
-import {OverlayPositionType} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
+import {OverlayStyleProps} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import {
 	MantineShadow,
 	MantineSpacing,
 	MantineStyleProp,
 	MantineThemeComponent,
+	PaperProps,
 } from "@mantine/core";
+import {ViewportOverlayWrapperProps} from "./viewportOverlayWrapper";
 
 export interface ViewportIconsProps {
 	/**
@@ -19,17 +21,9 @@ export interface ViewportIconsProps {
 
 export interface ViewportIconsOptionalProps {
 	/**
-	 * Position of the buttons
-	 */
-	position?: OverlayPositionType;
-	/**
 	 * Style properties for the container
 	 */
 	style?: React.CSSProperties;
-	/**
-	 * Offset of the container
-	 */
-	offset?: string;
 	/**
 	 * Shadow of the container
 	 */
@@ -119,6 +113,15 @@ export interface ViewportIconsOptionalProps {
 	 * size of the icons
 	 */
 	size?: number;
+	/**
+	 * viewport overlay props
+	 */
+	viewportOverlayProps?: ViewportOverlayWrapperProps &
+		Partial<OverlayStyleProps>;
+	/**
+	 * paper props
+	 */
+	paperProps?: PaperProps;
 }
 
 type ViewportIconsThemePropsType = Partial<ViewportIconsOptionalProps>;
