@@ -2,12 +2,14 @@ import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import {MantineThemeComponent, useProps} from "@mantine/core";
+import {Group, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
 
 interface Props extends PropsExport {
 	/** Optional label overriding the default label */
 	label?: string;
+	/** Component to show on the right hand side of the label */
+	rightSection?: React.ReactNode;
 }
 
 interface StyleProps {
@@ -34,7 +36,7 @@ export function ExportLabelComponentThemeProps(
 export default function ExportLabelComponent(
 	props: Props & Partial<StyleProps>,
 ) {
-	const {label, ...rest} = props;
+	const {label, rightSection, ...rest} = props;
 	const {definition} = useExport(props);
 	const {fontWeight} = useProps(
 		"ExportLabelComponent",
@@ -50,11 +52,16 @@ export default function ExportLabelComponent(
 		</TextWeighted>
 	);
 
-	return tooltip ? (
-		<TooltipWrapper label={tooltip} position="top">
-			{labelcomp}
-		</TooltipWrapper>
-	) : (
-		labelcomp
+	return (
+		<Group justify="space-between" w="100%" wrap="nowrap">
+			{tooltip ? (
+				<TooltipWrapper label={tooltip} position="top">
+					{labelcomp}
+				</TooltipWrapper>
+			) : (
+				labelcomp
+			)}
+			{rightSection}
+		</Group>
 	);
 }
