@@ -108,6 +108,8 @@ type StyleProps = ModalProps & {
 	confirmButtonProps?: Record<string, any>;
 };
 
+export type ModalBaseProps = Props & Partial<StyleProps>;
+
 /**
  * Default style properties for the modal.
  */
