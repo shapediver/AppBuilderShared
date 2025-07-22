@@ -70,9 +70,6 @@ export function useParameterComponentCommons<T>(
 
 	const handleChange = useCallback(
 		(curval: T | string, timeout?: number, cb: () => void = () => {}) => {
-			// if the value is already the same, do not change it
-			if (curval === value) return;
-
 			clearTimeout(debounceRef.current);
 			setValue(curval);
 			debounceRef.current = setTimeout(
