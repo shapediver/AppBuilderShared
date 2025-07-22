@@ -152,16 +152,22 @@ export default function ParameterSelectionComponent(
 	 * This function is called when the selection is confirmed (by the user, or automatically).
 	 * It also ends the selection process.
 	 */
-	const changeValue = useCallback((names: string[]) => {
-		setSelectionActive(false);
-		const parameterValue: SelectionParameterValue = {names};
-		handleChange(JSON.stringify(parameterValue), 0);
-	}, []);
+	const changeValue = useCallback(
+		(names: string[]) => {
+			setSelectionActive(false);
+			const parameterValue: SelectionParameterValue = {names};
+
+			// if the value is already the same, do not change it
+			if (value === JSON.stringify(parameterValue)) return;
+			handleChange(JSON.stringify(parameterValue), 0);
+		},
+		[value],
+	);
 
 	// check whether the selection should be accepted immediately
 	useEffect(() => {
 		if (acceptImmediately) changeValue(selectedNodeNames);
-	}, [acceptImmediately, selectedNodeNames]);
+	}, [acceptImmediately, selectedNodeNames, changeValue]);
 
 	/**
 	 * Callback function to reset the selected node names.
