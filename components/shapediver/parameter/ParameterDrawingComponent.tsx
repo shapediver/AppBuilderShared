@@ -65,7 +65,7 @@ const parsePointsData = (value?: string): PointsData => {
 export default function ParameterDrawingComponent(
 	props: PropsParameter & Partial<PropsParameterWrapper>,
 ) {
-	const {definition, handleChange, onCancel, disabled, state} =
+	const {definition, handleChange, onCancel, disabled, state, value} =
 		useParameterComponentCommons<string>(props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
@@ -139,11 +139,16 @@ export default function ParameterDrawingComponent(
 	 * This function is called when the drawing is confirmed.
 	 * It also ends the drawing process.
 	 */
-	const confirmDrawing = useCallback((pointsData?: PointsData) => {
-		deactivateDrawing();
-		setParsedUiValue(pointsData ?? []);
-		handleChange(JSON.stringify({points: pointsData}), 0);
-	}, []);
+	const confirmDrawing = useCallback(
+		(pointsData?: PointsData) => {
+			deactivateDrawing();
+			setParsedUiValue(pointsData ?? []);
+			// if the value is already the same, do not change it
+			if (value === JSON.stringify({points: pointsData})) return;
+			handleChange(JSON.stringify({points: pointsData}), 0);
+		},
+		[value],
+	);
 
 	/**
 	 * Callback function to cancel the drawing.

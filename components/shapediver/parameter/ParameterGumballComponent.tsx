@@ -180,10 +180,12 @@ export default function ParameterGumballComponent(
 				JSON.stringify(transformedNodeNames),
 			);
 			setLastConfirmedValue(transformedNodeNamesCopy);
+			// if the value is already the same, do not change it
+			if (value === JSON.stringify(parameterValue)) return;
 			handleChange(JSON.stringify(parameterValue), 0);
 			setSelectedNodeNames([]);
 		},
-		[],
+		[value],
 	);
 
 	/**

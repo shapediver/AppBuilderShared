@@ -175,8 +175,11 @@ export default function ParameterDraggingComponent(
 		);
 		const parameterValue: DraggingParameterValue = {objects: objects};
 		lastConfirmedValueRef.current = [...draggedNodes];
+
+		// if the value is already the same, do not change it
+		if (value === JSON.stringify(parameterValue)) return;
 		handleChange(JSON.stringify(parameterValue), 0);
-	}, [parsedExecValue, draggedNodes]);
+	}, [parsedExecValue, draggedNodes, value]);
 
 	/**
 	 * Callback function to reset the dragged nodes.
