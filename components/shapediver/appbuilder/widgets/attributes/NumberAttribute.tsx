@@ -408,17 +408,25 @@ export default function NumberAttribute(
 							: (absoluteMaxValue ?? 0) * (multiplyingFactor ?? 1)
 					}
 					step={0.01}
-					marks={[
-						absoluteMinValue,
-						customMinValue,
-						customMaxValue,
-						absoluteMaxValue,
-					].map((value) => ({
-						value: invalidRange
-							? 0.5
-							: (value ?? 0) * (multiplyingFactor ?? 1),
-						label: value?.toFixed(2),
-					}))}
+					marks={
+						invalidRange
+							? [
+									{
+										value: 0.5,
+										label: absoluteMinValue?.toFixed(2),
+									},
+								]
+							: [
+									absoluteMinValue,
+									customMinValue,
+									customMaxValue,
+									absoluteMaxValue,
+								].map((value) => ({
+									value:
+										(value ?? 0) * (multiplyingFactor ?? 1),
+									label: value?.toFixed(2),
+								}))
+					}
 				/>
 				<Space />
 			</Stack>
