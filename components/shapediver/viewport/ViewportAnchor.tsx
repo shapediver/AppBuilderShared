@@ -362,9 +362,11 @@ export default function ViewportAnchor(
 								previewIconElement
 							) : (
 								<Stack gap={0}>
-									<Group ref={controlElementGroupRef}>
-										{closeIconElement}
-									</Group>
+									{previewIcon && (
+										<Group ref={controlElementGroupRef}>
+											{closeIconElement}
+										</Group>
+									)}
 									<Group
 										style={{
 											width: "var(--app-shell-navbar-width)",
