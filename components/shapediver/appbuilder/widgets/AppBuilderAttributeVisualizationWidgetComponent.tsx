@@ -367,12 +367,12 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 * after that point the hasBeenLoaded state variable is set to true
 	 */
 	useEffect(() => {
-		if (isVisible) {
+		if (isVisible && sdTFDataLoaded) {
 			if (!hasBeenLoaded) {
 				setHasBeenLoaded(true);
 			}
 		}
-	}, [isVisible, hasBeenLoaded]);
+	}, [isVisible, sdTFDataLoaded, hasBeenLoaded]);
 
 	useEffect(() => {
 		if (isInitialized === false) return;
