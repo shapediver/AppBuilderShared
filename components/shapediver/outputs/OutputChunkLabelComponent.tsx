@@ -1,11 +1,13 @@
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {IShapeDiverOutputDefinitionChunk} from "@AppBuilderShared/types/shapediver/output";
-import {MantineThemeComponent, useProps} from "@mantine/core";
+import {Group, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
 
 interface Props {
 	chunk: IShapeDiverOutputDefinitionChunk;
+	/** Component to show on the right hand side of the label */
+	rightSection?: React.ReactNode;
 }
 
 interface StyleProps {
@@ -32,7 +34,7 @@ export function OutputChunkLabelComponentThemeProps(
 export default function OutputChunkLabelComponent(
 	props: Props & Partial<StyleProps>,
 ) {
-	const {fontWeight, ...rest} = useProps(
+	const {fontWeight, rightSection, ...rest} = useProps(
 		"OutputChunkLabelComponent",
 		defaultStyleProps,
 		props,
@@ -47,11 +49,16 @@ export default function OutputChunkLabelComponent(
 		</TextWeighted>
 	);
 
-	return tooltip ? (
-		<TooltipWrapper label={tooltip} position="top">
-			{labelcomp}
-		</TooltipWrapper>
-	) : (
-		labelcomp
+	return (
+		<Group justify="space-between" w="100%" wrap="nowrap">
+			{tooltip ? (
+				<TooltipWrapper label={tooltip} position="top">
+					{labelcomp}
+				</TooltipWrapper>
+			) : (
+				labelcomp
+			)}
+			{rightSection}
+		</Group>
 	);
 }

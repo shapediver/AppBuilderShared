@@ -1,4 +1,5 @@
 import StargateInput from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
+import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
 import {
 	OutputStatusEnum,
 	useStargateOutput,
@@ -14,7 +15,7 @@ import {
 	StargateStatusColorTypeEnum,
 } from "@AppBuilderShared/types/shapediver/stargate";
 import {useProps} from "@mantine/core";
-import React, {useMemo} from "react";
+import React, {useContext, useMemo} from "react";
 import {
 	DefaultStargateStyleProps,
 	StargateStyleProps,
@@ -93,6 +94,9 @@ export default function OutputChunkComponent(
 		sessionId,
 	});
 
+	// get optional distribution-specific click interceptor and right section from context
+	const {interceptClick, rightSection} = useContext(ExportInterceptorContext);
+
 	const statusData = useMemo(() => {
 		return mapStargateComponentStatusDefinition(
 			StatusDataMap[status],
@@ -110,7 +114,10 @@ export default function OutputChunkComponent(
 
 	return (
 		<>
-			<OutputChunkLabelComponent chunk={chunk} />
+			<OutputChunkLabelComponent
+				chunk={chunk}
+				rightSection={rightSection}
+			/>
 			<StargateInput
 				icon={IconTypeEnum.DeviceDesktopDown}
 				message={parsedMessage}
@@ -118,7 +125,11 @@ export default function OutputChunkComponent(
 				isWaiting={isWaiting}
 				waitingText="Waiting for client..."
 				disabled={statusData.disabled}
-				onClick={onBakeData}
+				onClick={
+					interceptClick
+						? () => interceptClick(onBakeData)
+						: onBakeData
+				}
 			/>
 		</>
 	);

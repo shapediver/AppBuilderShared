@@ -14,7 +14,7 @@ export interface ITrackerEventOptions {
 	props?: undefined | {[key: string]: any};
 }
 
-export type TrackerMetricType = "Web vitals";
+export type TrackerMetricType = "Web vitals" | "Time savings";
 
 export interface IDelayedTrackerPropsAwaiter {
 	/**

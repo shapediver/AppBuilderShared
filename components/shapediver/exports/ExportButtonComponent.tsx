@@ -1,6 +1,7 @@
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {
@@ -107,6 +108,9 @@ export default function ExportButtonComponent(
 	const {definition, actions} = useExport(props);
 
 	const notifications = useContext(NotificationContext);
+
+	// get optional distribution-specific click interceptor and right section from context
+	const {interceptClick, rightSection} = useContext(ExportInterceptorContext);
 
 	// Criterion to determine if the export button shall use Stargate.
 	const {isStargate, label} = useMemo(() => {
@@ -220,9 +224,21 @@ export default function ExportButtonComponent(
 		[exportRequest],
 	);
 
+	const onClickIntercepted = useCallback(
+		(skipStargate?: boolean) =>
+			interceptClick
+				? interceptClick(() => onClick(skipStargate))
+				: onClick(skipStargate),
+		[onClick, interceptClick],
+	);
+
 	return (
 		<>
-			<ExportLabelComponent {...props} label={label} />
+			<ExportLabelComponent
+				{...props}
+				label={label}
+				rightSection={rightSection}
+			/>
 			{definition &&
 				(isStargate ? (
 					<Group wrap="nowrap">
@@ -233,7 +249,7 @@ export default function ExportButtonComponent(
 							isWaiting={requestingExport || isWaiting}
 							waitingText="Waiting for export..."
 							disabled={statusData.disabled}
-							onClick={() => onClick()}
+							onClick={() => onClickIntercepted()}
 						/>
 						<TooltipWrapper
 							{...downloadTooltipProps}
@@ -243,7 +259,7 @@ export default function ExportButtonComponent(
 						>
 							<Button
 								{...downloadButtonProps}
-								onClick={() => onClick(true)}
+								onClick={() => onClickIntercepted(true)}
 								loading={requestingExport}
 							>
 								<Icon type={IconTypeEnum.Download} />
@@ -260,7 +276,7 @@ export default function ExportButtonComponent(
 								<Icon type={IconTypeEnum.MailForward} />
 							)
 						}
-						onClick={() => onClick()}
+						onClick={() => onClickIntercepted()}
 						loading={requestingExport}
 					>
 						{definition.type === EXPORT_TYPE.DOWNLOAD
