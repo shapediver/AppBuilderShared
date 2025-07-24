@@ -102,6 +102,7 @@ export default function ViewportAnchor(
 	}, [canvas]);
 
 	const portalRef = React.useRef<HTMLDivElement>(null);
+	const controlElementGroupRef = React.useRef<HTMLDivElement>(null);
 
 	/**
 	 * We need to observe the portalRef for changes in size
@@ -146,17 +147,24 @@ export default function ViewportAnchor(
 				? "C"
 				: justification?.[1] || "C";
 
+			const offsetWidth = portalRef.current.offsetWidth;
+			// we adjust the offsetHeight to ignore the height of the control element group
+			// this is necessary to ensure that the portal is positioned correctly
+			const offsetHeight =
+				portalRef.current.offsetHeight +
+				(controlElementGroupRef.current?.offsetHeight || 0);
+
 			let x, y;
 			if (horizontal === "R") {
 				x =
 					properties.container[0] * (1 / properties.scale[0]) -
-					portalRef.current.offsetWidth;
+					offsetWidth;
 			} else if (horizontal === "L") {
 				x = properties.container[0] * (1 / properties.scale[0]);
 			} else {
 				x =
 					properties.container[0] * (1 / properties.scale[0]) -
-					portalRef.current.offsetWidth / 2;
+					offsetWidth / 2;
 			}
 
 			if (vertical === "B") {
@@ -164,11 +172,11 @@ export default function ViewportAnchor(
 			} else if (vertical === "T") {
 				y =
 					properties.container[1] * (1 / properties.scale[1]) -
-					portalRef.current.offsetHeight;
+					offsetHeight;
 			} else {
 				y =
 					properties.container[1] * (1 / properties.scale[1]) -
-					portalRef.current.offsetHeight / 2;
+					offsetHeight / 2;
 			}
 
 			portalRef.current.style.left = x + "px";
@@ -286,7 +294,9 @@ export default function ViewportAnchor(
 								previewIconElement
 							) : (
 								<Stack gap={0}>
-									{closeIconElement}
+									<Group ref={controlElementGroupRef}>
+										{closeIconElement}
+									</Group>
 									<Group
 										style={{
 											width: "var(--app-shell-navbar-width)",
