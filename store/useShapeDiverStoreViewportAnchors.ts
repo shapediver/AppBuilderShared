@@ -46,20 +46,32 @@ export const useShapeDiverStoreViewportAnchors =
 
 				updateDistance: (viewportId, anchorId, distance) => {
 					const {anchors} = get();
-					const anchor = anchors[viewportId]?.find(
-						(anchor) => anchor.id === anchorId,
+					const anchorList = anchors[viewportId];
+					if (!anchorList) return;
+
+					// Update the anchor's distance first
+					const updatedAnchors = anchorList.map((a) =>
+						a.id === anchorId ? {...a, distance} : a,
 					);
-					if (!anchor) return;
+
+					// Sort by the new distances
+					const sortedAnchors = [...updatedAnchors].sort((a, b) => {
+						// special case if currently showing content
+						if (!a.showContent && b.showContent) return -1;
+						if (a.showContent && !b.showContent) return 1;
+						return b.distance - a.distance;
+					});
+
+					// Update zIndex for all anchors based on sorted order
+					sortedAnchors.forEach((a, idx) => {
+						a.setZIndex(idx);
+					});
+
 					set(
 						(state) => ({
 							anchors: {
 								...state.anchors,
-								[viewportId]: state.anchors[viewportId].map(
-									(a) =>
-										a.id === anchorId
-											? {...a, distance}
-											: a,
-								),
+								[viewportId]: updatedAnchors,
 							},
 						}),
 						false,

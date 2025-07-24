@@ -157,6 +157,17 @@ export default function ViewportAnchor(
 	const controlElementGroupRef = React.useRef<HTMLDivElement>(null);
 
 	/**
+	 * Use effect that listens to the zIndex changes of the anchor.
+	 * It updates the zIndex of the portal element
+	 * to ensure that the portal is displayed on top of other elements.
+	 */
+	useEffect(() => {
+		if (!portalRef.current) return;
+		// Set the zIndex of the portal element
+		portalRef.current.style.zIndex = zIndex.toString();
+	}, [zIndex]);
+
+	/**
 	 * We need to observe the portalRef for changes in size
 	 * to ensure that the viewport is re-rendered when the size changes.
 	 * This is necessary because only then the update function will be called
