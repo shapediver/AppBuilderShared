@@ -23,7 +23,7 @@ import React, {
 import classes from "./ViewportIcons.module.css";
 interface Props {
 	allowPointerEvents?: boolean;
-	location: number[];
+	location: number[] | vec3;
 	justification?: TAG3D_JUSTIFICATION;
 	element?: JSX.Element | ReactNode;
 	previewIcon?: IconTypeEnum;
@@ -189,6 +189,8 @@ export default function ViewportAnchor(
 	 * and adds it to the scene tree.
 	 */
 	useEffect(() => {
+		if (!canvas) return;
+
 		const create = () => {
 			if (!portalRef.current) return;
 			portalRef.current.style.display = "block";
@@ -198,14 +200,7 @@ export default function ViewportAnchor(
 		// you can do anything here
 		const update = (properties: IHTMLElementAnchorUpdateProperties) => {
 			if (!portalRef.current) return;
-			// first letter is vertical
-			const vertical = !showContentRef.current
-				? "M"
-				: justification?.[0] || "M";
-			// second letter is horizontal
-			const horizontal = !showContentRef.current
-				? "C"
-				: justification?.[1] || "C";
+			if (!canvas || !canvas.parentElement) return;
 
 			const offsetWidth = portalRef.current.offsetWidth;
 			// we adjust the offsetHeight to ignore the height of the control element group
@@ -213,6 +208,37 @@ export default function ViewportAnchor(
 			const offsetHeight =
 				portalRef.current.offsetHeight +
 				(controlElementGroupRef.current?.offsetHeight || 0);
+
+			// first letter is vertical
+			let vertical = !showContentRef.current ? "M" : justification?.[0];
+			if (!vertical) {
+				// if undefined, we check if the normalized coordinates are above or below the center
+				// and then set the vertical position accordingly either to top or bottom
+				const canvasHeight = canvas.parentElement.offsetHeight;
+				const relativeY =
+					(properties.container[1] * (1 / properties.scale[1])) /
+					canvasHeight;
+				if (relativeY < 0.5) {
+					vertical = "B"; // Bottom
+				} else {
+					vertical = "T"; // Top
+				}
+			}
+			// second letter is horizontal
+			let horizontal = !showContentRef.current ? "C" : justification?.[1];
+			if (!horizontal) {
+				// if undefined, we check if the normalized coordinates are to the left or right of the center
+				// and then set the horizontal position accordingly either to right or left
+				const canvasWidth = canvas.parentElement.offsetWidth;
+				const relativeX =
+					(properties.container[0] * (1 / properties.scale[0])) /
+					canvasWidth;
+				if (relativeX < 0.5) {
+					horizontal = "L"; // Left
+				} else {
+					horizontal = "R"; // Right
+				}
+			}
 
 			let x, y;
 			if (horizontal === "R") {
@@ -261,7 +287,7 @@ export default function ViewportAnchor(
 			sceneTree.root.removeData(anchorData);
 			sceneTree.root.updateVersion();
 		};
-	}, [location, justification]);
+	}, [canvas, location, justification]);
 
 	/**
 	 * This function handles the click event on the anchor.
@@ -369,7 +395,10 @@ export default function ViewportAnchor(
 									)}
 									<Group
 										style={{
-											width: "var(--app-shell-navbar-width)",
+											minWidth:
+												"calc(18.75rem * var(--mantine-scale))",
+											maxWidth:
+												"calc(22.25rem * var(--mantine-scale))",
 											backgroundColor:
 												"var(--mantine-color-default)",
 											borderRadius:
