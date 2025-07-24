@@ -425,13 +425,15 @@ export enum AppBuilderContainerNameType {
 	Right = "right",
 	Top = "top",
 	Bottom = "bottom",
+	Anchor3d = "anchor3d",
+	// Anchor2d = "anchor2d",
 }
 
 /** Type for the anchor containers */
-export type AppBuilderContainerLocationType = {
+export type AppBuilderAnchor3dContainerProperties = {
 	/** Id of the container. */
 	id: string;
-	/** 2D or 3D location */
+	/** 3D location */
 	location: number[];
 	/** Optional justification of the container. (default: "MC") */
 	justification?: TAG3D_JUSTIFICATION;
@@ -446,7 +448,9 @@ export type AppBuilderContainerLocationType = {
  */
 export interface IAppBuilderContainer {
 	/** Name of the container. */
-	name: AppBuilderContainerNameType | AppBuilderContainerLocationType;
+	name: AppBuilderContainerNameType;
+	/** Optional props, depending on the container type */
+	props?: AppBuilderAnchor3dContainerProperties;
 	/** Tabs displayed in the container. */
 	tabs?: IAppBuilderTab[];
 	/** Further widgets displayed in the container. */

@@ -477,27 +477,43 @@ const IAppBuilderTabSchema = z
 	})
 	.extend(IAppBuilderWidgetPropsCommonSchema.shape);
 
+// Zod type definition for IAppBuilderAnchor3dContainerProperties
+const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
+	id: z.string(),
+	location: z.array(z.number()),
+	allowPointerEvents: z.preprocess((val) => {
+		if (val === "true") return true;
+		if (val === "false") return false;
+		return val;
+	}, z.boolean().optional()),
+	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
+	previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+});
+
 // Zod type definition for IAppBuilderContainer
-const IAppBuilderContainerSchema = z
-	.object({
-		name: z.union([
-			z.nativeEnum(AppBuilderContainerNameType),
-			z.object({
-				id: z.string(),
-				location: z.array(z.number()),
-				allowPointerEvents: z.preprocess((val) => {
-					if (val === "true") return true;
-					if (val === "false") return false;
-					return val;
-				}, z.boolean().optional()),
-				justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
-				previewIcon: z.nativeEnum(IconTypeEnum).optional(),
-			}),
-		]),
-		tabs: z.array(IAppBuilderTabSchema).optional(),
-		widgets: z.array(IAppBuilderWidgetSchema).optional(),
-	})
-	.extend(IAppBuilderWidgetPropsCommonSchema.shape);
+const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
+	z
+		.object({
+			name: z.literal(AppBuilderContainerNameType.Anchor3d),
+			props: IAppBuilderAnchor3dContainerPropertiesSchema,
+			tabs: z.array(IAppBuilderTabSchema).optional(),
+			widgets: z.array(IAppBuilderWidgetSchema).optional(),
+		})
+		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
+	// all other container props should be empty or undefined
+	z
+		.object({
+			name: z.enum(
+				Object.values(AppBuilderContainerNameType).filter(
+					(n) => n !== AppBuilderContainerNameType.Anchor3d,
+				) as [string, ...string[]],
+			),
+			props: z.object({}).optional(),
+			tabs: z.array(IAppBuilderTabSchema).optional(),
+			widgets: z.array(IAppBuilderWidgetSchema).optional(),
+		})
+		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
+]);
 
 // Zod type definition for IAppBuilderInstances
 const IAppBuilderInstancesSchema = z.object({
