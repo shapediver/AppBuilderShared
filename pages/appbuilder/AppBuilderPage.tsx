@@ -4,7 +4,6 @@ import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediv
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
-import ViewportAnchor from "@AppBuilderShared/components/shapediver/viewport/ViewportAnchor";
 import ViewportHistoryButtons from "@AppBuilderShared/components/shapediver/viewport/ViewportHistoryButtons";
 import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
@@ -17,6 +16,7 @@ import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/param
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
 import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
+import {useViewportAnchors} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportAnchors";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
@@ -25,13 +25,12 @@ import {
 	IAppBuilderTemplatePageProps,
 } from "@AppBuilderShared/types/pages/appbuildertemplates";
 import {
-	AppBuilderContainerLocationType,
 	AppBuilderContainerNameType,
 	IAppBuilderContainer,
 	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
-import React, {ReactNode, useContext, useMemo} from "react";
+import React, {useContext, useMemo} from "react";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 
@@ -232,10 +231,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		left: undefined,
 		right: undefined,
 	};
-	const anchorContainers: {
-		data: IAppBuilderContainer;
-		node: ReactNode;
-	}[] = [];
 
 	// should fallback containers be shown?
 	const showFallbackContainers =
@@ -244,11 +239,14 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	if (appBuilderData?.containers) {
 		appBuilderData.containers.forEach((container) => {
 			if (
-				Object.values(AppBuilderContainerNameType).includes(
-					container.name as AppBuilderContainerNameType,
-				)
+				Object.prototype.hasOwnProperty.call(containers, container.name)
 			) {
-				containers[container.name as AppBuilderContainerNameType] = {
+				containers[
+					container.name as Exclude<
+						AppBuilderContainerNameType,
+						AppBuilderContainerNameType.Anchor3d
+					>
+				] = {
 					node: (
 						<AppBuilderContainerComponent
 							namespace={namespace}
@@ -257,17 +255,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 					),
 					hints: createContainerHints(container),
 				};
-			} else {
-				// if the container is not a known container, add it as an anchor
-				anchorContainers.push({
-					data: container,
-					node: (
-						<AppBuilderContainerComponent
-							namespace={namespace}
-							{...container}
-						/>
-					),
-				});
 			}
 		});
 	} else if (
@@ -301,6 +288,12 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		getNotification: (props) => (
 			<ModelStateNotificationCreated {...props} />
 		),
+	});
+
+	// viewport anchors
+	const anchors = useViewportAnchors({
+		namespace,
+		containers: appBuilderData?.containers,
 	});
 
 	const showMarkdown =
@@ -340,26 +333,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 							(s) => s.id,
 						)}
 					>
-						{anchorContainers.map((container) => {
-							const anchorContainer = container.data
-								.name as AppBuilderContainerLocationType;
-							return (
-								<ViewportAnchor
-									key={JSON.stringify(container.data)}
-									id={anchorContainer.id}
-									location={anchorContainer.location}
-									justification={
-										anchorContainer.justification
-									}
-									allowPointerEvents={
-										anchorContainer.allowPointerEvents ??
-										true
-									}
-									element={container.node}
-									previewIcon={anchorContainer.previewIcon}
-								/>
-							);
-						})}
 						{ViewportOverlayWrapper && (
 							<>
 								<ViewportOverlayWrapper>
@@ -383,6 +356,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 						)}
 					</ViewportComponent>
 				)}
+				{anchors}
 			</AppBuilderTemplateSelector>
 		</AppBuilderDataContext.Provider>
 	) : (
