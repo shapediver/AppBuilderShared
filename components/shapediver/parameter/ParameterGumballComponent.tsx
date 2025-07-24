@@ -94,14 +94,15 @@ export default function ParameterGumballComponent(
 		if (result.success) {
 			return result.data.props as IGumballParameterProps;
 		} else {
-			notifications.error({
-				title: "Invalid Parameter Settings",
-				message: `Invalid settings for Gumball parameter "${definition.name}", see console for details.`,
-			});
+			// notifications.error({
+			// 	title: "Invalid Parameter Settings",
+			// 	message: `Invalid settings for Gumball parameter "${definition.name}", see console for details.`,
+			// });
 			console.warn(
 				`Invalid settings for Gumball parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
-			return {};
+			return (definition.settings as {props: IGumballParameterProps})
+				.props;
 		}
 	}, [definition.settings]);
 

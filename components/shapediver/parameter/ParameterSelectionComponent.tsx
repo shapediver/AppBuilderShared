@@ -86,14 +86,15 @@ export default function ParameterSelectionComponent(
 		if (result.success) {
 			return result.data.props as ISelectionParameterProps;
 		} else {
-			notifications.error({
-				title: "Invalid Parameter Settings",
-				message: `Invalid settings for Selection parameter "${definition.name}", see console for details.`,
-			});
+			// notifications.error({
+			// 	title: "Invalid Parameter Settings",
+			// 	message: `Invalid settings for Selection parameter "${definition.name}", see console for details.`,
+			// });
 			console.warn(
 				`Invalid settings for Selection parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
-			return {};
+			return (definition.settings as {props: ISelectionParameterProps})
+				.props;
 		}
 	}, [definition.settings]);
 

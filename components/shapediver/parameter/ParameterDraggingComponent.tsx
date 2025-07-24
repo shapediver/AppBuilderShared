@@ -82,14 +82,15 @@ export default function ParameterDraggingComponent(
 		if (result.success) {
 			return result.data.props as IDraggingParameterProps;
 		} else {
-			notifications.error({
-				title: "Invalid Parameter Settings",
-				message: `Invalid settings for Dragging parameter "${definition.name}", see console for details.`,
-			});
+			// notifications.error({
+			// 	title: "Invalid Parameter Settings",
+			// 	message: `Invalid settings for Dragging parameter "${definition.name}", see console for details.`,
+			// });
 			console.warn(
 				`Invalid settings for Dragging parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
-			return {};
+			return (definition.settings as {props: IDraggingParameterProps})
+				.props;
 		}
 	}, [definition.settings]);
 
