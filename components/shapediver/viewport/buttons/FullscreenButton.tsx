@@ -5,7 +5,6 @@ import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ActionIcon} from "@mantine/core";
 import React from "react";
 import {isIPhone} from "~/shared/utils/misc/navigator";
-import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
 
 interface FullscreenButtonProps extends CommonButtonProps {
@@ -41,7 +40,6 @@ export default function FullscreenButton({
 				<Icon
 					type={IconTypeEnum.Maximize}
 					color={disabled ? colorDisabled : color}
-					className={classes.viewportIcon}
 				/>
 			</ActionIcon>
 		</TooltipWrapper>

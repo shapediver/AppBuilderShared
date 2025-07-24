@@ -5,7 +5,7 @@ import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {Paper, useProps} from "@mantine/core";
+import {Divider, Paper, useProps} from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {OverlayPosition} from "~/shared/components/shapediver/ui/OverlayWrapper";
@@ -35,8 +35,9 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	enableCamerasBtn: true,
 	enableFullscreenBtn: true,
 	enableZoomBtn: true,
-	color: IconProps.color,
-	colorDisabled: IconProps.colorDisabled,
+	enableHistoryMenuButton: true,
+	color: undefined,
+	colorDisabled: undefined,
 	variant: IconProps.variant,
 	variantDisabled: IconProps.variantDisabled,
 	size: IconProps.size,
@@ -49,6 +50,9 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		py: 1,
 		px: 0,
 		shadow: "md",
+	},
+	dividerProps: {
+		orientation: "vertical",
 	},
 };
 
@@ -69,6 +73,7 @@ export default function ViewportIcons(
 		enableCamerasBtn,
 		enableFullscreenBtn,
 		enableZoomBtn,
+		enableHistoryMenuButton,
 		color,
 		colorDisabled,
 		variant,
@@ -76,6 +81,7 @@ export default function ViewportIcons(
 		size,
 		viewportOverlayProps,
 		paperProps,
+		dividerProps,
 	} = useProps("ViewportIcons", defaultStyleProps, rest);
 
 	const {viewportId: defaultViewportId} = useViewportId();
@@ -115,9 +121,9 @@ export default function ViewportIcons(
 	const buttonsDisabled = hasPendingChanges;
 	const isArEnabled = viewport ? viewport.enableAR : false;
 
-	return (
-		<ViewportOverlayWrapper {...viewportOverlayProps}>
-			<Paper style={style} {...paperProps}>
+	const ViewerIconsGroup = useMemo(
+		() => (
+			<>
 				{enableArBtn && isArEnabled && (
 					<ArButton
 						viewport={viewport}
@@ -164,7 +170,48 @@ export default function ViewportIcons(
 						iconStyle={iconStyle}
 					/>
 				)}
+			</>
+		),
+		[
+			enableArBtn,
+			isArEnabled,
+			enableZoomBtn,
+			enableFullscreenBtn,
+			enableCamerasBtn,
+			color,
+			colorDisabled,
+			variant,
+			variantDisabled,
+			size,
+			iconStyle,
+			fullscreenId,
+			viewport,
+		],
+	);
+	const showHistoryDivider = useMemo(() => {
+		const hasViewerIcons =
+			(enableArBtn && isArEnabled) ||
+			enableZoomBtn ||
+			enableFullscreenBtn ||
+			enableCamerasBtn;
 
+		const hasHistoryButtons =
+			enableHistoryButtons && enableHistoryMenuButton;
+
+		return hasViewerIcons && hasHistoryButtons;
+	}, [
+		enableArBtn,
+		isArEnabled,
+		enableZoomBtn,
+		enableFullscreenBtn,
+		enableCamerasBtn,
+		enableHistoryButtons,
+		enableHistoryMenuButton,
+	]);
+
+	const HistoryButtonsGroup = useMemo(
+		() => (
+			<>
 				{enableHistoryButtons && (
 					<>
 						<UndoButton
@@ -192,20 +239,47 @@ export default function ViewportIcons(
 						/>
 					</>
 				)}
+				{enableHistoryMenuButton && (
+					<HistoryMenuButton
+						disabled={!namespace || buttonsDisabled}
+						namespace={namespace}
+						enableResetButton={enableResetButton}
+						enableImportExportButtons={enableImportExportButtons}
+						enableModelStateButtons={enableModelStateButtons}
+						color={color}
+						colorDisabled={colorDisabled}
+						variant={variant}
+						variantDisabled={variantDisabled}
+						size={size}
+						iconStyle={iconStyle}
+					/>
+				)}
+			</>
+		),
+		[
+			enableHistoryButtons,
+			buttonsDisabled,
+			executing,
+			hasPendingChanges,
+			namespace,
+			enableResetButton,
+			enableImportExportButtons,
+			enableModelStateButtons,
+			color,
+			colorDisabled,
+			variant,
+			variantDisabled,
+			size,
+			iconStyle,
+		],
+	);
 
-				<HistoryMenuButton
-					disabled={!namespace || buttonsDisabled}
-					namespace={namespace}
-					enableResetButton={enableResetButton}
-					enableImportExportButtons={enableImportExportButtons}
-					enableModelStateButtons={enableModelStateButtons}
-					color={color}
-					colorDisabled={colorDisabled}
-					variant={variant}
-					variantDisabled={variantDisabled}
-					size={size}
-					iconStyle={iconStyle}
-				/>
+	return (
+		<ViewportOverlayWrapper {...viewportOverlayProps}>
+			<Paper style={style} {...paperProps}>
+				{ViewerIconsGroup}
+				{showHistoryDivider && <Divider {...dividerProps} />}
+				{HistoryButtonsGroup}
 			</Paper>
 		</ViewportOverlayWrapper>
 	);

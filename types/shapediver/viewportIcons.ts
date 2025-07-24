@@ -1,5 +1,6 @@
 import {OverlayStyleProps} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import {
+	DividerProps,
 	MantineShadow,
 	MantineSpacing,
 	MantineStyleProp,
@@ -90,6 +91,10 @@ export interface ViewportIconsOptionalProps {
 	 */
 	enableZoomBtn?: boolean;
 	/**
+	 * enable/disable the "history menu" button
+	 */
+	enableHistoryMenuButton?: boolean;
+	/**
 	 * color of the icons
 	 */
 	color?: string;
@@ -122,6 +127,10 @@ export interface ViewportIconsOptionalProps {
 	 * paper props
 	 */
 	paperProps?: PaperProps;
+	/**
+	 * divider props
+	 */
+	dividerProps?: DividerProps;
 }
 
 type ViewportIconsThemePropsType = Partial<ViewportIconsOptionalProps>;
