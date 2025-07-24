@@ -41,7 +41,10 @@ const defaultStyleProps: Partial<StyleProps> = {
 		p: "xs",
 	},
 	buttonProps: {
-		variant: "light",
+		variant: "default",
+		style: {
+			boxShadow: "var(--mantine-shadow-md)",
+		},
 	},
 	iconProps: {},
 	textProps: {
@@ -125,7 +128,7 @@ function ViewportAcceptRejectButtons(
 	return (
 		<Group {...groupProps}>
 			<Button
-				leftSection={<Icon type={IconTypeEnum.Check} {...iconProps} />}
+				rightSection={<Icon type={IconTypeEnum.Check} {...iconProps} />}
 				onClick={acceptChanges}
 				disabled={disableChangeControls}
 				{...buttonProps}
@@ -133,7 +136,7 @@ function ViewportAcceptRejectButtons(
 				<Text {...textProps}>Accept</Text>
 			</Button>
 			<Button
-				leftSection={<Icon type={IconTypeEnum.X} {...iconProps} />}
+				rightSection={<Icon type={IconTypeEnum.X} {...iconProps} />}
 				onClick={rejectChanges}
 				disabled={disableChangeControls}
 				{...buttonProps}

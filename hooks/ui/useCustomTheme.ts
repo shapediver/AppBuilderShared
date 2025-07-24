@@ -1076,7 +1076,10 @@ export const useCustomTheme = (props: Props = {}) => {
 					// 	p: "xs",
 					// },
 					// buttonProps: {
-					// 	variant: "light",
+					// 	variant: "default",
+					// 	style: {
+					// 		boxShadow: "var(--mantine-shadow-md)",
+					// 	},
 					// },
 					// iconProps: {},
 					// textProps: {size: "md"},
