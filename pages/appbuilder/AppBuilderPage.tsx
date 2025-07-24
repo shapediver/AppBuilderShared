@@ -362,6 +362,12 @@ export default function AppBuilderPage(props: Partial<Props>) {
 									).allowPointerEvents ?? true
 								}
 								element={container.node}
+								previewIcon={
+									(
+										container.data
+											.name as AppBuilderContainerLocationType
+									).previewIcon
+								}
 							/>
 						))}
 						{ViewportOverlayWrapper && (
