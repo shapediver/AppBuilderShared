@@ -25,9 +25,9 @@ import {
 	IAppBuilderTemplatePageProps,
 } from "@AppBuilderShared/types/pages/appbuildertemplates";
 import {
-	AppBuilderContainerNameType,
 	IAppBuilderContainer,
 	IAppBuilderSettingsSession,
+	isStandardContainer,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
 import React, {useContext, useMemo} from "react";
@@ -238,15 +238,8 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	if (appBuilderData?.containers) {
 		appBuilderData.containers.forEach((container) => {
-			if (
-				Object.prototype.hasOwnProperty.call(containers, container.name)
-			) {
-				containers[
-					container.name as Exclude<
-						AppBuilderContainerNameType,
-						AppBuilderContainerNameType.Anchor3d
-					>
-				] = {
+			if (isStandardContainer(container)) {
+				containers[container.name] = {
 					node: (
 						<AppBuilderContainerComponent
 							namespace={namespace}

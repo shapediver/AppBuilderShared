@@ -502,6 +502,35 @@ export interface IAppBuilder {
 	instances?: IAppBuilderInstanceDefinition[];
 }
 
+/** assert default containers */
+export function isStandardContainer(
+	container: IAppBuilderContainer,
+): container is {
+	name:
+		| AppBuilderContainerNameType.Left
+		| AppBuilderContainerNameType.Right
+		| AppBuilderContainerNameType.Top
+		| AppBuilderContainerNameType.Bottom;
+	props?: undefined;
+} {
+	return (
+		container.name === AppBuilderContainerNameType.Left ||
+		container.name === AppBuilderContainerNameType.Right ||
+		container.name === AppBuilderContainerNameType.Top ||
+		container.name === AppBuilderContainerNameType.Bottom
+	);
+}
+
+/** assert anchor 3d container */
+export function isAnchor3dContainer(
+	container: IAppBuilderContainer,
+): container is {
+	name: AppBuilderContainerNameType.Anchor3d;
+	props: AppBuilderAnchor3dContainerProperties;
+} {
+	return container.name === AppBuilderContainerNameType.Anchor3d;
+}
+
 /** assert widget type "accordion" */
 export function isAccordionWidget(
 	widget: IAppBuilderWidget,

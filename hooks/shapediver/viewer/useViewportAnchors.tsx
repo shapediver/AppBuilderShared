@@ -1,8 +1,8 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
 import ViewportAnchor from "@AppBuilderShared/components/shapediver/viewport/ViewportAnchor";
 import {
-	AppBuilderContainerNameType,
 	IAppBuilderContainer,
+	isAnchor3dContainer,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useEffect, useState} from "react";
 
@@ -24,12 +24,8 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 
 	useEffect(() => {
 		const anchors: JSX.Element[] = [];
-		console.log(containers);
 		containers?.forEach((container) => {
-			if (
-				container.name === AppBuilderContainerNameType.Anchor3d &&
-				container.props
-			) {
+			if (isAnchor3dContainer(container)) {
 				anchors.push(
 					<ViewportAnchor
 						key={JSON.stringify(container)}
