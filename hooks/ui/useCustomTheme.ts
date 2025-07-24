@@ -61,6 +61,7 @@ import {
 	ColorInput,
 	DEFAULT_THEME,
 	Group,
+	Image,
 	MantineSize,
 	MantineSpacing,
 	MantineThemeOverride,
@@ -282,6 +283,13 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * @see https://mantine.dev/charts/donut-chart/?t=props
 			 */
 			DonutChart: DonutChart.extend({}),
+			Image: Image.extend({
+				styles: {
+					root: {
+						flex: 0,
+					},
+				},
+			}),
 			/**
 			 * Group
 			 * @see https://mantine.dev/core/group/?t=props
