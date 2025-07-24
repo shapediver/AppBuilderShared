@@ -503,12 +503,12 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 	// all other container props should be empty or undefined
 	z
 		.object({
-			name: z.enum(
-				Object.values(AppBuilderContainerNameType).filter(
-					(n) => n !== AppBuilderContainerNameType.Anchor3d,
-				) as [string, ...string[]],
-			),
-			props: z.object({}).optional(),
+			name: z
+				.literal(AppBuilderContainerNameType.Left)
+				.or(z.literal(AppBuilderContainerNameType.Right))
+				.or(z.literal(AppBuilderContainerNameType.Bottom))
+				.or(z.literal(AppBuilderContainerNameType.Top)),
+			props: z.undefined(),
 			tabs: z.array(IAppBuilderTabSchema).optional(),
 			widgets: z.array(IAppBuilderWidgetSchema).optional(),
 		})
