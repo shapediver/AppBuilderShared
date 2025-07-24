@@ -340,36 +340,25 @@ export default function AppBuilderPage(props: Partial<Props>) {
 							(s) => s.id,
 						)}
 					>
-						{anchorContainers.map((container) => (
-							<ViewportAnchor
-								key={JSON.stringify(container.data)}
-								location={
-									(
-										container.data
-											.name as AppBuilderContainerLocationType
-									).location
-								}
-								justification={
-									(
-										container.data
-											.name as AppBuilderContainerLocationType
-									).justification
-								}
-								allowPointerEvents={
-									(
-										container.data
-											.name as AppBuilderContainerLocationType
-									).allowPointerEvents ?? true
-								}
-								element={container.node}
-								previewIcon={
-									(
-										container.data
-											.name as AppBuilderContainerLocationType
-									).previewIcon
-								}
-							/>
-						))}
+						{anchorContainers.map((container) => {
+							const anchorContainer = container.data
+								.name as AppBuilderContainerLocationType;
+							return (
+								<ViewportAnchor
+									key={JSON.stringify(container.data)}
+									location={anchorContainer.location}
+									justification={
+										anchorContainer.justification
+									}
+									allowPointerEvents={
+										anchorContainer.allowPointerEvents ??
+										true
+									}
+									element={container.node}
+									previewIcon={anchorContainer.previewIcon}
+								/>
+							);
+						})}
 						{ViewportOverlayWrapper && (
 							<>
 								<ViewportOverlayWrapper>

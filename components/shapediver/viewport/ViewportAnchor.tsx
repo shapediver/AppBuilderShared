@@ -4,7 +4,7 @@ import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewpo
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {ActionIcon, Group, Portal, useProps} from "@mantine/core";
+import {ActionIcon, Group, Portal, Stack, useProps} from "@mantine/core";
 import {
 	HTMLElementAnchorCustomData,
 	HTMLElementAnchorData,
@@ -103,6 +103,22 @@ export default function ViewportAnchor(
 
 	const portalRef = React.useRef<HTMLDivElement>(null);
 
+	/**
+	 * We need to observe the portalRef for changes in size
+	 * to ensure that the viewport is re-rendered when the size changes.
+	 * This is necessary because only then the update function will be called
+	 * and the position of the portal will be updated accordingly.
+	 */
+	useEffect(() => {
+		if (!portalRef.current) return;
+		const observer = new ResizeObserver(() => {
+			viewport?.render();
+		});
+		observer.observe(portalRef.current);
+
+		return () => observer.disconnect();
+	}, [portalRef.current, viewport]);
+
 	useEffect(() => {
 		const create = () => {
 			if (!portalRef.current) return;
@@ -190,6 +206,50 @@ export default function ViewportAnchor(
 		viewport?.render();
 	};
 
+	const previewIconElement = (
+		<TooltipWrapper label="Open Element">
+			<div>
+				<ActionIcon
+					onClick={onAnchorClick}
+					size={size}
+					variant={variant}
+					aria-label="Open Element"
+					style={iconStyle}
+				>
+					<Icon
+						type={previewIcon!}
+						color={color}
+						className={classes.viewportIcon}
+					/>
+				</ActionIcon>
+			</div>
+		</TooltipWrapper>
+	);
+
+	const closeIconElement = (
+		<Group
+			style={{
+				display: "flex",
+				justifyContent: "flex-end",
+				width: "100%",
+				pointerEvents: "auto",
+			}}
+		>
+			<ActionIcon
+				onClick={onAnchorClick}
+				size="sm"
+				variant={variant}
+				style={iconStyle}
+			>
+				<Icon
+					type={IconTypeEnum.X}
+					color={color}
+					className={classes.viewportIcon}
+				/>
+			</ActionIcon>
+		</Group>
+	);
+
 	return (
 		canvas && (
 			<Portal target={canvas.parentElement || undefined}>
@@ -210,13 +270,11 @@ export default function ViewportAnchor(
 							position: "absolute",
 							top: 0,
 							left: 0,
-							width: "max-content",
 						}}
 					>
 						<Group
 							color="inherit"
 							style={{
-								maxWidth: "var(--app-shell-navbar-width)",
 								pointerEvents:
 									allowPointerEvents === false &&
 									showPreviewIcon === false
@@ -225,25 +283,24 @@ export default function ViewportAnchor(
 							}}
 						>
 							{showPreviewIcon ? (
-								<TooltipWrapper label="Open Element">
-									<div>
-										<ActionIcon
-											onClick={onAnchorClick}
-											size={size}
-											variant={variant}
-											aria-label="Open Element"
-											style={iconStyle}
-										>
-											<Icon
-												type={previewIcon!}
-												color={color}
-												className={classes.viewportIcon}
-											/>
-										</ActionIcon>
-									</div>
-								</TooltipWrapper>
+								previewIconElement
 							) : (
-								<Group>{element}</Group>
+								<Stack gap={0}>
+									{closeIconElement}
+									<Group
+										style={{
+											width: "var(--app-shell-navbar-width)",
+											backgroundColor:
+												"var(--mantine-color-default)",
+											borderRadius:
+												"var(--mantine-radius-md)",
+										}}
+									>
+										<div style={{width: "100%"}}>
+											{element}
+										</div>
+									</Group>
+								</Stack>
 							)}
 						</Group>
 					</Group>
