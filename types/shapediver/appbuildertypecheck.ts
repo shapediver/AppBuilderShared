@@ -483,6 +483,7 @@ const IAppBuilderContainerSchema = z
 		name: z.union([
 			z.nativeEnum(AppBuilderContainerNameType),
 			z.object({
+				id: z.string(),
 				location: z.array(z.number()),
 				allowPointerEvents: z.preprocess((val) => {
 					if (val === "true") return true;

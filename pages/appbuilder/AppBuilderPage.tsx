@@ -346,6 +346,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 							return (
 								<ViewportAnchor
 									key={JSON.stringify(container.data)}
+									id={anchorContainer.id}
 									location={anchorContainer.location}
 									justification={
 										anchorContainer.justification

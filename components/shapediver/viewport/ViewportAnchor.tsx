@@ -2,25 +2,32 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {useShapeDiverStoreViewportAnchors} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {ActionIcon, Group, Portal, Stack, useProps} from "@mantine/core";
 import {
 	HTMLElementAnchorCustomData,
-	HTMLElementAnchorData,
+	IHTMLElementAnchorUpdateProperties,
 	sceneTree,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.session";
-import {vec2, vec3} from "gl-matrix";
-import React, {ReactNode, useEffect, useId, useRef, useState} from "react";
+import {vec3} from "gl-matrix";
+import React, {
+	ReactNode,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import classes from "./ViewportIcons.module.css";
 interface Props {
 	allowPointerEvents?: boolean;
 	location: number[];
 	justification?: TAG3D_JUSTIFICATION;
-
 	element?: JSX.Element | ReactNode;
 	previewIcon?: IconTypeEnum;
+	id: string;
 }
 const defaultProps: ViewportIconsOptionalProps = {
 	color: "black",
@@ -37,15 +44,12 @@ const defaultProps: ViewportIconsOptionalProps = {
 	variantDisabled: "transparent",
 };
 
-const anchors: {
-	[key: string]: React.Dispatch<React.SetStateAction<boolean>>;
-} = {};
-
 export default function ViewportAnchor(
 	props: Props & Partial<ViewportIconsOptionalProps>,
 ) {
 	const {
 		allowPointerEvents,
+		id,
 		justification,
 		location,
 		element,
@@ -65,24 +69,72 @@ export default function ViewportAnchor(
 		(state) => state.viewports[viewportId],
 	);
 
+	const {anchors, addViewportAnchor, removeViewportAnchor, updateDistance} =
+		useShapeDiverStoreViewportAnchors((state) => ({
+			anchors: state.anchors,
+			addViewportAnchor: state.addAnchor,
+			removeViewportAnchor: state.removeAnchor,
+			updateDistance: state.updateDistance,
+		}));
+
 	const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
 	const [canvasWidth, setCanvasWidth] = useState<number>(0);
 	const [canvasHeight, setCanvasHeight] = useState<number>(0);
-	const [showPreviewIcon, setShowPreviewIcon] =
-		useState<boolean>(!!previewIcon);
-	const id = useId();
-	anchors[id] = setShowPreviewIcon;
+	const [showContent, setShowContent] = useState<boolean>(!previewIcon);
+	const [zIndex, setZIndex] = useState<number>(0);
 
-	const showPreviewIconRef = useRef(showPreviewIcon);
+	/**
+	 * This effect runs when the component mounts and adds the anchor to the store.
+	 * It checks if there is already an anchor with the same id in the store.
+	 * If there is, it sets the showContent state to the existing anchor's showContent state
+	 * and removes the existing anchor.
+	 *
+	 * Then it adds the new anchor to the store with the given id and initial properties.
+	 */
 	useEffect(() => {
-		viewport?.render();
-		showPreviewIconRef.current = showPreviewIcon;
-	}, [showPreviewIcon]);
+		const existingAnchor = anchors[viewportId]?.find(
+			(anchor) => anchor.id === id,
+		);
+		// check if there is already an anchor with the same id
+		if (existingAnchor) {
+			// set the showContent state to the existing anchor's showContent state
+			setShowContent(existingAnchor.showContent);
+			// remove the existing anchor
+			removeViewportAnchor(viewportId, id);
+		}
 
+		addViewportAnchor(viewportId, {
+			id,
+			distance: 0,
+			showContent,
+			setShowContent,
+			setZIndex,
+		});
+	}, [viewportId, id]);
+
+	/**
+	 * This effect handles the showContent state.
+	 * It updates the showContent state in the store whenever it changes.
+	 */
+	const showContentRef = useRef(showContent);
+	useEffect(() => {
+		showContentRef.current = showContent;
+		// update the anchor's showContent state in the store
+		const anchor = anchors[viewportId]?.find((anchor) => anchor.id === id);
+		if (anchor) anchor.showContent = showContent;
+	}, [showContent]);
+
+	/**
+	 * This effect updates the canvas reference when the viewport changes.
+	 */
 	useEffect(() => {
 		if (viewport?.canvas) setCanvas(viewport.canvas);
 	}, [viewport]);
 
+	/**
+	 * This effect observes the canvas for size changes and updates the canvasWidth and canvasHeight state.
+	 * It also sets the initial size of the canvas.
+	 */
 	useEffect(() => {
 		if (!canvas) return;
 		const observer = new ResizeObserver((entries) => {
@@ -120,6 +172,11 @@ export default function ViewportAnchor(
 		return () => observer.disconnect();
 	}, [portalRef.current, viewport]);
 
+	/**
+	 * The main use effect for the anchor.
+	 * It creates a new HTMLElementAnchorCustomData instance
+	 * and adds it to the scene tree.
+	 */
 	useEffect(() => {
 		const create = () => {
 			if (!portalRef.current) return;
@@ -128,22 +185,14 @@ export default function ViewportAnchor(
 
 		// the update function that is called on every render call
 		// you can do anything here
-		const update = (properties: {
-			anchor: HTMLElementAnchorData;
-			htmlElement: HTMLDivElement;
-			page: vec2;
-			container: vec2;
-			client: vec2;
-			scale: vec2;
-			hidden: boolean;
-		}) => {
+		const update = (properties: IHTMLElementAnchorUpdateProperties) => {
 			if (!portalRef.current) return;
 			// first letter is vertical
-			const vertical = showPreviewIconRef.current
+			const vertical = !showContentRef.current
 				? "M"
 				: justification?.[0] || "M";
 			// second letter is horizontal
-			const horizontal = showPreviewIconRef.current
+			const horizontal = !showContentRef.current
 				? "C"
 				: justification?.[1] || "C";
 
@@ -181,6 +230,11 @@ export default function ViewportAnchor(
 
 			portalRef.current.style.left = x + "px";
 			portalRef.current.style.top = y + "px";
+
+			// we store the distance in the anchor store
+			// this will the update the z-index of the portal
+			// to ensure that closer anchors are displayed on top
+			updateDistance(viewportId, id, properties.distance);
 		};
 
 		const anchorData = new HTMLElementAnchorCustomData({
@@ -198,21 +252,24 @@ export default function ViewportAnchor(
 		};
 	}, [location, justification]);
 
-	const onAnchorClick = () => {
-		setShowPreviewIcon((prev) => {
-			if (prev) {
-				Object.keys(anchors).forEach((key) => {
-					if (key !== id) {
-						anchors[key](true);
-					}
+	/**
+	 * This function handles the click event on the anchor.
+	 * It toggles the showContent state and updates the viewport.
+	 * If showContent is true, it hides all other anchors' content.
+	 */
+	const onAnchorClick = useCallback(() => {
+		setShowContent((prev) => {
+			if (!prev) {
+				anchors[viewportId].forEach((anchor) => {
+					if (anchor.id !== id) anchor.setShowContent(false);
 				});
-				return false;
-			} else {
 				return true;
+			} else {
+				return false;
 			}
 		});
 		viewport?.render();
-	};
+	}, [viewportId, id, anchors, viewport]);
 
 	const previewIconElement = (
 		<TooltipWrapper label="Open Element">
@@ -285,12 +342,12 @@ export default function ViewportAnchor(
 							style={{
 								pointerEvents:
 									allowPointerEvents === false &&
-									showPreviewIcon === false
+									showContent === true
 										? "none"
 										: "auto",
 							}}
 						>
-							{showPreviewIcon ? (
+							{showContent === false ? (
 								previewIconElement
 							) : (
 								<Stack gap={0}>

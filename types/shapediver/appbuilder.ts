@@ -429,6 +429,8 @@ export enum AppBuilderContainerNameType {
 
 /** Type for the anchor containers */
 export type AppBuilderContainerLocationType = {
+	/** Id of the container. */
+	id: string;
 	/** 2D or 3D location */
 	location: number[];
 	/** Optional justification of the container. (default: "MC") */
