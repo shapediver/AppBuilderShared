@@ -7,8 +7,13 @@ import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {ActionIcon, Group, Portal, Stack, useProps} from "@mantine/core";
 import {
+	addListener,
+	EventResponseMapping,
+	EVENTTYPE_CAMERA,
 	HTMLElementAnchorCustomData,
+	IEvent,
 	IHTMLElementAnchorUpdateProperties,
+	removeListener,
 	sceneTree,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.session";
@@ -77,6 +82,8 @@ export default function ViewportAnchor(
 			updateDistance: state.updateDistance,
 		}));
 
+	const [allowPointerEventsGlobal, setAllowPointerEventsGlobal] =
+		useState<boolean>(true);
 	const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
 	const [canvasWidth, setCanvasWidth] = useState<number>(0);
 	const [canvasHeight, setCanvasHeight] = useState<number>(0);
@@ -126,9 +133,36 @@ export default function ViewportAnchor(
 
 	/**
 	 * This effect updates the canvas reference when the viewport changes.
+	 * It also adds event listeners for camera start and end events
+	 * to manage the allowPointerEventsGlobal state.
 	 */
 	useEffect(() => {
 		if (viewport?.canvas) setCanvas(viewport.canvas);
+
+		const tokenStart = addListener(
+			EVENTTYPE_CAMERA.CAMERA_START,
+			(e: IEvent) => {
+				const cameraEvent =
+					e as EventResponseMapping[EVENTTYPE_CAMERA.CAMERA_START];
+				if (cameraEvent.viewportId !== viewport.id) return;
+				setAllowPointerEventsGlobal(false);
+			},
+		);
+
+		const tokenEnd = addListener(
+			EVENTTYPE_CAMERA.CAMERA_END,
+			(e: IEvent) => {
+				const cameraEvent =
+					e as EventResponseMapping[EVENTTYPE_CAMERA.CAMERA_END];
+				if (cameraEvent.viewportId !== viewport.id) return;
+				setAllowPointerEventsGlobal(true);
+			},
+		);
+
+		return () => {
+			removeListener(tokenStart);
+			removeListener(tokenEnd);
+		};
 	}, [viewport]);
 
 	/**
@@ -378,8 +412,9 @@ export default function ViewportAnchor(
 							color="inherit"
 							style={{
 								pointerEvents:
-									allowPointerEvents === false &&
-									showContent === true
+									allowPointerEventsGlobal === false ||
+									(allowPointerEvents === false &&
+										showContent === true)
 										? "none"
 										: "auto",
 							}}
