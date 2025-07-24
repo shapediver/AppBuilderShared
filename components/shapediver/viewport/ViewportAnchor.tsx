@@ -1,11 +1,18 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAnchors} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {ActionIcon, Group, Portal, Stack, useProps} from "@mantine/core";
+import {
+	ActionIcon,
+	ActionIconProps,
+	Group,
+	GroupProps,
+	MantineThemeComponent,
+	Portal,
+	Stack,
+	useProps,
+} from "@mantine/core";
 import {
 	addListener,
 	EventResponseMapping,
@@ -26,6 +33,7 @@ import React, {
 	useState,
 } from "react";
 import classes from "./ViewportIcons.module.css";
+
 interface Props {
 	allowPointerEvents?: boolean;
 	location: number[] | vec3;
@@ -34,24 +42,39 @@ interface Props {
 	previewIcon?: IconTypeEnum;
 	id: string;
 }
-const defaultProps: ViewportIconsOptionalProps = {
-	color: "black",
-	colorDisabled: "grey",
-	enableArBtn: true,
-	enableCamerasBtn: true,
-	enableFullscreenBtn: true,
-	enableZoomBtn: true,
-	fullscreenId: "viewer-fullscreen-area",
-	iconStyle: {m: "3px"},
-	size: 32,
-	style: {display: "flex"},
-	variant: "subtle",
-	variantDisabled: "transparent",
+
+type StyleProps = {
+	iconProps?: Partial<ActionIconProps>;
+	anchorGroupProps?: Partial<GroupProps>;
 };
 
-export default function ViewportAnchor(
-	props: Props & Partial<ViewportIconsOptionalProps>,
-) {
+const defaultStyleProps: Partial<StyleProps> = {
+	iconProps: {
+		size: "md",
+		variant: "subtle",
+		color: "black",
+	},
+	anchorGroupProps: {
+		style: {
+			minWidth: "calc(18.75rem * var(--mantine-scale))",
+			maxWidth: "calc(22.25rem * var(--mantine-scale))",
+			backgroundColor: "var(--mantine-color-default)",
+			borderRadius: "var(--mantine-radius-md)",
+		},
+	},
+};
+
+type ViewportAnchorThemePropsType = Partial<StyleProps>;
+
+export function ViewportAnchorThemeProps(
+	props: ViewportAnchorThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+export default function ViewportAnchor(props: Props & Partial<StyleProps>) {
 	const {
 		allowPointerEvents,
 		id,
@@ -64,9 +87,9 @@ export default function ViewportAnchor(
 
 	const {viewportId} = useViewportId();
 
-	const {color, iconStyle, size, variant} = useProps(
+	const {iconProps, anchorGroupProps} = useProps(
 		"ViewportIcons",
-		defaultProps,
+		defaultStyleProps,
 		rest,
 	);
 
@@ -343,23 +366,13 @@ export default function ViewportAnchor(
 	}, [viewportId, id, anchors, viewport]);
 
 	const previewIconElement = (
-		<TooltipWrapper label="Open Element">
-			<div>
-				<ActionIcon
-					onClick={onAnchorClick}
-					size={size}
-					variant={variant}
-					aria-label="Open Element"
-					style={iconStyle}
-				>
-					<Icon
-						type={previewIcon!}
-						color={color}
-						className={classes.viewportIcon}
-					/>
-				</ActionIcon>
-			</div>
-		</TooltipWrapper>
+		<ActionIcon onClick={onAnchorClick} {...iconProps}>
+			<Icon
+				type={previewIcon!}
+				color={iconProps?.color}
+				className={classes.viewportIcon}
+			/>
+		</ActionIcon>
 	);
 
 	const closeIconElement = (
@@ -371,15 +384,10 @@ export default function ViewportAnchor(
 				pointerEvents: "auto",
 			}}
 		>
-			<ActionIcon
-				onClick={onAnchorClick}
-				size="sm"
-				variant={variant}
-				style={iconStyle}
-			>
+			<ActionIcon onClick={onAnchorClick} {...iconProps}>
 				<Icon
 					type={IconTypeEnum.X}
-					color={color}
+					color={iconProps?.color}
 					className={classes.viewportIcon}
 				/>
 			</ActionIcon>
@@ -428,18 +436,7 @@ export default function ViewportAnchor(
 											{closeIconElement}
 										</Group>
 									)}
-									<Group
-										style={{
-											minWidth:
-												"calc(18.75rem * var(--mantine-scale))",
-											maxWidth:
-												"calc(22.25rem * var(--mantine-scale))",
-											backgroundColor:
-												"var(--mantine-color-default)",
-											borderRadius:
-												"var(--mantine-radius-md)",
-										}}
-									>
+									<Group {...anchorGroupProps}>
 										<div style={{width: "100%"}}>
 											{element}
 										</div>
