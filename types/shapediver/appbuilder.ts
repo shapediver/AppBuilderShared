@@ -10,6 +10,7 @@ import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {MantineColor} from "@mantine/core";
 import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
+import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
@@ -419,14 +420,29 @@ export interface IAppBuilderTab {
 }
 
 /** Types of hints for containers */
-export type AppBuilderContainerNameType = "left" | "right" | "top" | "bottom";
+export enum AppBuilderContainerNameType {
+	Left = "left",
+	Right = "right",
+	Top = "top",
+	Bottom = "bottom",
+}
+
+/** Type for the anchor containers */
+export type AppBuilderContainerLocationType = {
+	/** 2D or 3D location */
+	location: number[];
+	/** Optional justification of the container. (default: "MC") */
+	justification?: TAG3D_JUSTIFICATION;
+	/** Optional boolean to allow pointer events on the container. (default: true) */
+	allowPointerEvents?: boolean;
+};
 
 /**
  * A container for UI elements
  */
 export interface IAppBuilderContainer {
 	/** Name of the container. */
-	name: AppBuilderContainerNameType;
+	name: AppBuilderContainerNameType | AppBuilderContainerLocationType;
 	/** Tabs displayed in the container. */
 	tabs?: IAppBuilderTab[];
 	/** Further widgets displayed in the container. */

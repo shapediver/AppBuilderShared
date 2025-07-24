@@ -4,9 +4,13 @@ import {ATTRIBUTE_VISUALIZATION} from "@shapediver/viewer.features.attribute-vis
 import {
 	PARAMETER_TYPE,
 	PARAMETER_VISUALIZATION,
+	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.session";
 import {z} from "zod";
-import {AttributeVisualizationVisibility} from "./appbuilder";
+import {
+	AppBuilderContainerNameType,
+	AttributeVisualizationVisibility,
+} from "./appbuilder";
 
 // Zod type definition for SelectComponentType
 const SelectComponentTypeSchema = z.enum([
@@ -476,7 +480,18 @@ const IAppBuilderTabSchema = z
 // Zod type definition for IAppBuilderContainer
 const IAppBuilderContainerSchema = z
 	.object({
-		name: z.enum(["left", "right", "top", "bottom"]),
+		name: z.union([
+			z.nativeEnum(AppBuilderContainerNameType),
+			z.object({
+				location: z.array(z.number()),
+				allowPointerEvents: z.preprocess((val) => {
+					if (val === "true") return true;
+					if (val === "false") return false;
+					return val;
+				}, z.boolean().optional()),
+				justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
+			}),
+		]),
 		tabs: z.array(IAppBuilderTabSchema).optional(),
 		widgets: z.array(IAppBuilderWidgetSchema).optional(),
 	})

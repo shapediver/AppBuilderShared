@@ -4,6 +4,7 @@ import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediv
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
+import ViewportAnchor from "@AppBuilderShared/components/shapediver/viewport/ViewportAnchor";
 import ViewportHistoryButtons from "@AppBuilderShared/components/shapediver/viewport/ViewportHistoryButtons";
 import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
@@ -24,11 +25,13 @@ import {
 	IAppBuilderTemplatePageProps,
 } from "@AppBuilderShared/types/pages/appbuildertemplates";
 import {
+	AppBuilderContainerLocationType,
+	AppBuilderContainerNameType,
 	IAppBuilderContainer,
 	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
-import React, {useContext, useMemo} from "react";
+import React, {ReactNode, useContext, useMemo} from "react";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 
@@ -229,6 +232,10 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		left: undefined,
 		right: undefined,
 	};
+	const anchorContainers: {
+		data: IAppBuilderContainer;
+		node: ReactNode;
+	}[] = [];
 
 	// should fallback containers be shown?
 	const showFallbackContainers =
@@ -236,15 +243,32 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	if (appBuilderData?.containers) {
 		appBuilderData.containers.forEach((container) => {
-			containers[container.name] = {
-				node: (
-					<AppBuilderContainerComponent
-						namespace={namespace}
-						{...container}
-					/>
-				),
-				hints: createContainerHints(container),
-			};
+			if (
+				Object.values(AppBuilderContainerNameType).includes(
+					container.name as AppBuilderContainerNameType,
+				)
+			) {
+				containers[container.name as AppBuilderContainerNameType] = {
+					node: (
+						<AppBuilderContainerComponent
+							namespace={namespace}
+							{...container}
+						/>
+					),
+					hints: createContainerHints(container),
+				};
+			} else {
+				// if the container is not a known container, add it as an anchor
+				anchorContainers.push({
+					data: container,
+					node: (
+						<AppBuilderContainerComponent
+							namespace={namespace}
+							{...container}
+						/>
+					),
+				});
+			}
 		});
 	} else if (
 		!hasAppBuilderOutput &&
@@ -316,6 +340,30 @@ export default function AppBuilderPage(props: Partial<Props>) {
 							(s) => s.id,
 						)}
 					>
+						{anchorContainers.map((container) => (
+							<ViewportAnchor
+								key={JSON.stringify(container.data)}
+								location={
+									(
+										container.data
+											.name as AppBuilderContainerLocationType
+									).location
+								}
+								justification={
+									(
+										container.data
+											.name as AppBuilderContainerLocationType
+									).justification
+								}
+								allowPointerEvents={
+									(
+										container.data
+											.name as AppBuilderContainerLocationType
+									).allowPointerEvents ?? true
+								}
+								element={container.node}
+							/>
+						))}
 						{ViewportOverlayWrapper && (
 							<>
 								<ViewportOverlayWrapper>
