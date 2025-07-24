@@ -1104,8 +1104,9 @@ export const useCustomTheme = (props: Props = {}) => {
 				// enableCamerasBtn: true,
 				// enableFullscreenBtn: true,
 				// enableZoomBtn: true,
-				// color: "black",
-				// colorDisabled: "grey",
+				// enableHistoryMenuButton: true,
+				// color: undefined,
+				// colorDisabled: undefined,
 				// variant: "subtle",
 				// variantDisabled: "transparent",
 				// size: 32,
@@ -1118,6 +1119,9 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	py: 1,
 				// 	px: 0,
 				// 	shadow: "md",
+				// },
+				// dividerProps: {
+				// 	orientation: "vertical",
 				// },
 			}),
 			/**
