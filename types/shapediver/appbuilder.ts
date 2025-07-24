@@ -10,6 +10,7 @@ import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {MantineColor} from "@mantine/core";
 import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
+import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
@@ -419,7 +420,28 @@ export interface IAppBuilderTab {
 }
 
 /** Types of hints for containers */
-export type AppBuilderContainerNameType = "left" | "right" | "top" | "bottom";
+export enum AppBuilderContainerNameType {
+	Left = "left",
+	Right = "right",
+	Top = "top",
+	Bottom = "bottom",
+	Anchor3d = "anchor3d",
+	// Anchor2d = "anchor2d",
+}
+
+/** Type for the anchor containers */
+export type AppBuilderAnchor3dContainerProperties = {
+	/** Id of the container. */
+	id: string;
+	/** 3D location */
+	location: number[];
+	/** Optional justification of the container. (default: "MC") */
+	justification?: TAG3D_JUSTIFICATION;
+	/** Optional boolean to allow pointer events on the container. (default: true) */
+	allowPointerEvents?: boolean;
+	/** Optional icon to be displayed to show the container. */
+	previewIcon?: IconType;
+};
 
 /**
  * A container for UI elements
@@ -427,6 +449,8 @@ export type AppBuilderContainerNameType = "left" | "right" | "top" | "bottom";
 export interface IAppBuilderContainer {
 	/** Name of the container. */
 	name: AppBuilderContainerNameType;
+	/** Optional props, depending on the container type */
+	props?: AppBuilderAnchor3dContainerProperties;
 	/** Tabs displayed in the container. */
 	tabs?: IAppBuilderTab[];
 	/** Further widgets displayed in the container. */
@@ -476,6 +500,35 @@ export interface IAppBuilder {
 	 * Instances are used to customize a session by setting parameters and transformations.
 	 */
 	instances?: IAppBuilderInstanceDefinition[];
+}
+
+/** assert default containers */
+export function isStandardContainer(
+	container: IAppBuilderContainer,
+): container is {
+	name:
+		| AppBuilderContainerNameType.Left
+		| AppBuilderContainerNameType.Right
+		| AppBuilderContainerNameType.Top
+		| AppBuilderContainerNameType.Bottom;
+	props?: undefined;
+} {
+	return (
+		container.name === AppBuilderContainerNameType.Left ||
+		container.name === AppBuilderContainerNameType.Right ||
+		container.name === AppBuilderContainerNameType.Top ||
+		container.name === AppBuilderContainerNameType.Bottom
+	);
+}
+
+/** assert anchor 3d container */
+export function isAnchor3dContainer(
+	container: IAppBuilderContainer,
+): container is {
+	name: AppBuilderContainerNameType.Anchor3d;
+	props: AppBuilderAnchor3dContainerProperties;
+} {
+	return container.name === AppBuilderContainerNameType.Anchor3d;
 }
 
 /** assert widget type "accordion" */

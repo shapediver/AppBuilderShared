@@ -16,6 +16,7 @@ import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/param
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
 import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
+import {useViewportAnchors} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportAnchors";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
@@ -26,6 +27,7 @@ import {
 import {
 	IAppBuilderContainer,
 	IAppBuilderSettingsSession,
+	isStandardContainer,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
 import React, {useContext, useMemo} from "react";
@@ -236,15 +238,17 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	if (appBuilderData?.containers) {
 		appBuilderData.containers.forEach((container) => {
-			containers[container.name] = {
-				node: (
-					<AppBuilderContainerComponent
-						namespace={namespace}
-						{...container}
-					/>
-				),
-				hints: createContainerHints(container),
-			};
+			if (isStandardContainer(container)) {
+				containers[container.name] = {
+					node: (
+						<AppBuilderContainerComponent
+							namespace={namespace}
+							{...container}
+						/>
+					),
+					hints: createContainerHints(container),
+				};
+			}
 		});
 	} else if (
 		!hasAppBuilderOutput &&
@@ -277,6 +281,12 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		getNotification: (props) => (
 			<ModelStateNotificationCreated {...props} />
 		),
+	});
+
+	// viewport anchors
+	const anchors = useViewportAnchors({
+		namespace,
+		containers: appBuilderData?.containers,
 	});
 
 	const showMarkdown =
@@ -339,6 +349,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 						)}
 					</ViewportComponent>
 				)}
+				{anchors}
 			</AppBuilderTemplateSelector>
 		</AppBuilderDataContext.Provider>
 	) : (
