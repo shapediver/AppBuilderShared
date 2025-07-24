@@ -1,8 +1,32 @@
 export interface IAnchor {
+	/**
+	 * The distance from the camera to the anchor.
+	 * This is used to sort the anchors by distance.
+	 * The anchor with the smallest distance will have the highest z-index.
+	 */
 	distance: number;
+	/**
+	 * Whether the anchor is currently showing content.
+	 * This is used to switch off the other anchors when one is showing content.
+	 * If an anchor is showing content, it will be placed on top of the others.
+	 */
 	showContent: boolean;
+	/**
+	 * The setter for the showContent property.
+	 *
+	 * @param showContent
+	 */
 	setShowContent: (showContent: boolean) => void;
+	/**
+	 * The setter for the z-index of the anchor.
+	 *
+	 * @param zIndex
+	 */
 	setZIndex: (zIndex: number) => void;
+	/**
+	 * The unique identifier for the anchor.
+	 * This is used to identify the anchor in the store.
+	 */
 	id: string;
 }
 
