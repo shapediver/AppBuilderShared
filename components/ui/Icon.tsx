@@ -33,6 +33,7 @@ import {
 	IconChevronLeft,
 	IconChevronRight,
 	IconCircleOff,
+	IconClockHour4,
 	IconCopy,
 	IconDeviceDesktop,
 	IconDeviceDesktopDown,
@@ -43,6 +44,7 @@ import {
 	IconDotsVertical,
 	IconDownload,
 	IconDownloadOff,
+	IconExclamationMark,
 	IconEye,
 	IconEyeOff,
 	IconFileDownload,
@@ -183,6 +185,8 @@ const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
 			return <IconCancel {...iconProps} />;
 		case IconTypeEnum.Check:
 			return <IconCheck {...iconProps} />;
+		case IconTypeEnum.ClockHour4:
+			return <IconClockHour4 {...iconProps} />;
 		case IconTypeEnum.CircleOff:
 			return <IconCircleOff {...iconProps} />;
 		case IconTypeEnum.Copy:
@@ -205,6 +209,8 @@ const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
 			return <IconDownload {...iconProps} />;
 		case IconTypeEnum.DownloadOff:
 			return <IconDownloadOff {...iconProps} />;
+		case IconTypeEnum.ExclamationMark:
+			return <IconExclamationMark {...iconProps} />;
 		case IconTypeEnum.Eye:
 			return <IconEye {...iconProps} />;
 		case IconTypeEnum.EyeOff:
