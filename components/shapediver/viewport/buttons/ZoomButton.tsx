@@ -4,7 +4,6 @@ import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ActionIcon} from "@mantine/core";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React from "react";
-import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
 
 interface ZoomButtonProps extends CommonButtonProps {
@@ -38,11 +37,7 @@ export default function ZoomButton({
 				aria-label="Zoom extents"
 				style={iconStyle}
 			>
-				<Icon
-					type={IconTypeEnum.ZoomIn}
-					color={color}
-					className={classes.viewportIcon}
-				/>
+				<Icon type={IconTypeEnum.ZoomIn} color={color} />
 			</ActionIcon>
 		</TooltipWrapper>
 	);

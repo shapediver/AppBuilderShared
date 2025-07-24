@@ -10,8 +10,8 @@ export interface CommonButtonProps {
 }
 
 export const IconProps = {
-	color: "black",
-	colorDisabled: "grey",
+	color: "var(--mantine-color-text)",
+	colorDisabled: "var(--mantine-color-dimmed)",
 	variant: "subtle",
 	variantDisabled: "transparent",
 	size: 32,

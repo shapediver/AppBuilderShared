@@ -1,7 +1,7 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {ActionIcon, Loader, Modal, Text} from "@mantine/core";
+import {ActionIcon, Loader, Modal, Text, Title} from "@mantine/core";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React, {useState} from "react";
@@ -79,7 +79,6 @@ export default function ArButton({
 					<Icon
 						type={IconTypeEnum.AugmentedReality}
 						color={isArLoading ? colorDisabled : color}
-						className={classes.viewportIcon}
 					/>
 				</ActionIcon>
 			</TooltipWrapper>
@@ -87,7 +86,7 @@ export default function ArButton({
 			<Modal
 				opened={isModalArOpened}
 				onClose={() => setIsModalArOpened(false)}
-				title="Scan the code"
+				title={<Title>Scan the code</Title>}
 				centered
 			>
 				{isModalArError ? (
