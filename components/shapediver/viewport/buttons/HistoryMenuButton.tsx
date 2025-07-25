@@ -7,6 +7,7 @@ import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateM
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ActionIcon, Menu} from "@mantine/core";
 import React, {useCallback, useContext, useState} from "react";
+import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
 
 interface HistoryMenuButtonProps extends CommonButtonProps {
@@ -87,6 +88,7 @@ export default function HistoryMenuButton({
 						aria-label="More options"
 						style={iconStyle}
 						disabled={disabled}
+						className={classes.ViewportIcon}
 					>
 						<Icon
 							type={IconTypeEnum.DotsVertical}

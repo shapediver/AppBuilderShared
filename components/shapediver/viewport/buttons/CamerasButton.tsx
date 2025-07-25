@@ -5,6 +5,7 @@ import {firstLetterUppercase} from "@AppBuilderShared/utils/misc/strings";
 import {ActionIcon, Menu} from "@mantine/core";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React, {useState} from "react";
+import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
 
 interface CamerasButtonProps extends CommonButtonProps {
@@ -52,6 +53,7 @@ export default function CamerasButton({
 				variant={noCamerasAvailable ? variantDisabled : variant}
 				aria-label="Cameras"
 				style={iconStyle}
+				className={classes.ViewportIcon}
 			>
 				<TooltipWrapper disabled={isCamerasMenuOpened} label="Cameras">
 					<Menu.Target>

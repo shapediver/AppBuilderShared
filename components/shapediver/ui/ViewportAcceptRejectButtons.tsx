@@ -44,6 +44,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 		variant: "default",
 		style: {
 			boxShadow: "var(--mantine-shadow-md)",
+			backgroundColor: "rgba(var(--button-bg), 0.5)",
 		},
 	},
 	iconProps: {},

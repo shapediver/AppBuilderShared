@@ -4,6 +4,7 @@ import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ActionIcon} from "@mantine/core";
 import React from "react";
 import {useViewportHistory} from "~/shared/hooks/shapediver/viewer/useViewportHistory";
+import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
 
 interface UndoButtonProps extends CommonButtonProps {
@@ -39,6 +40,7 @@ export default function UndoButton({
 				variant={isDisabled ? variantDisabled : variant}
 				aria-label="Undo"
 				style={iconStyle}
+				className={classes.ViewportIcon}
 			>
 				<Icon
 					type={IconTypeEnum.ArrowBackUp}

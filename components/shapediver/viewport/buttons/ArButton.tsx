@@ -71,6 +71,7 @@ export default function ArButton({
 				<ActionIcon
 					onClick={handleArClick}
 					disabled={isArLoading}
+					className={classes.ViewportIcon}
 					size={size}
 					variant={isViewableInAr ? variantDisabled : variant}
 					aria-label="View in AR"

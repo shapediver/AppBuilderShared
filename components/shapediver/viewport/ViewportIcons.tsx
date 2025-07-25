@@ -25,6 +25,7 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		gap: "0.25rem",
 		alignItems: "center",
 		flexDirection: "row",
+		backgroundColor: "rgba(var(--mantine-color-body), 0.5)",
 	},
 	fullscreenId: "viewer-fullscreen-area",
 	enableHistoryButtons: true,
@@ -41,7 +42,9 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	variant: IconProps.variant,
 	variantDisabled: IconProps.variantDisabled,
 	size: IconProps.size,
-	iconStyle: {m: "0.188rem"},
+	iconStyle: {
+		m: "0.188rem",
+	},
 	viewportOverlayProps: {
 		position: OverlayPosition.TOP_MIDDLE,
 		offset: "0.5em",
