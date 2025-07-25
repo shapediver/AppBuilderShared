@@ -76,12 +76,17 @@ export function useParameterComponentCommons<T>(
 				() => {
 					if (actions.setUiValue(curval)) {
 						actions.execute(!acceptRejectMode).then(() => cb());
+					} else {
+						console.warn(
+							`setUiValue failed for parameter ${definition.id}, the value is not valid.`,
+							curval,
+						);
 					}
 				},
 				timeout === undefined ? debounceTimeout : timeout,
 			);
 		},
-		[acceptRejectMode, debounceTimeout],
+		[acceptRejectMode, debounceTimeout, actions, definition],
 	);
 
 	useEffect(() => {
