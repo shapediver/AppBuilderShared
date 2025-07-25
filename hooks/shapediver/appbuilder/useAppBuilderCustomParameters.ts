@@ -135,22 +135,38 @@ export function useAppBuilderCustomParameters(props: Props) {
 				appBuilderParam &&
 				json.length <= appBuilderParam.definition.max!
 			) {
-				appBuilderParam.actions.setUiValue(json);
-				await appBuilderParam.actions.execute(true, skipHistory, true);
+				if (appBuilderParam.actions.setUiValue(json)) {
+					await appBuilderParam.actions.execute(
+						true,
+						skipHistory,
+						true,
+					);
+				} else {
+					console.warn(
+						`setUiValue failed for "${CUSTOM_DATA_INPUT_NAME}" parameter ${appBuilderParam.definition.id}, the value is not valid.`,
+					);
+				}
 			} else if (
 				appBuilderFileParam &&
 				appBuilderFileParam.definition.format?.includes(
 					"application/json",
 				)
 			) {
-				appBuilderFileParam.actions.setUiValue(
-					new Blob([json], {type: "application/json"}),
-				);
-				await appBuilderFileParam.actions.execute(
-					true,
-					skipHistory,
-					true,
-				);
+				if (
+					appBuilderFileParam.actions.setUiValue(
+						new Blob([json], {type: "application/json"}),
+					)
+				) {
+					await appBuilderFileParam.actions.execute(
+						true,
+						skipHistory,
+						true,
+					);
+				} else {
+					console.warn(
+						`setUiValue failed for "${CUSTOM_DATA_INPUT_NAME}" parameter ${appBuilderFileParam.definition.id}, the value is not valid.`,
+					);
+				}
 			} else if (appBuilderParam) {
 				notifications.error({
 					title: "Custom parameter value too long",

@@ -32,9 +32,14 @@ export default function AppBuilderActionSetParameterValueComponent(
 
 	const onClick = useCallback(() => {
 		if (!parameter?.actions.isUiValueDifferent(value)) return;
-		if (parameter?.actions.setUiValue(value))
+		if (parameter.actions.setUiValue(value))
 			parameter.actions.execute(true);
-	}, [parameter?.state, parameter?.actions, value]);
+		else
+			console.warn(
+				`setUiValue failed for parameter ${parameter.definition.id}, the value is not valid.`,
+				value,
+			);
+	}, [parameter?.state, parameter?.actions, parameter?.definition, value]);
 
 	return (
 		<AppBuilderActionComponent
