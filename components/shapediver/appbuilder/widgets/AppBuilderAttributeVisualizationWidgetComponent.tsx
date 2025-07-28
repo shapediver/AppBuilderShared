@@ -1,5 +1,6 @@
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useAttributeOverview} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeOverview";
+import useAttributeSelection from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeSelection";
 import {useAttributeVisualizationEngine} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeVisualizationEngine";
 import {useAttributeWidgetVisibilityTracker} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeWidgetVisibilityTracker";
 import {
@@ -45,6 +46,8 @@ import {
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import {IconEye, IconEyeOff} from "@tabler/icons-react";
 import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
+import SelectedAttributeComponent from "../../ui/SelectedAttributeComponent";
+import ViewportAnchor from "../../viewport/ViewportAnchor";
 import ColorAttribute from "./attributes/ColorAttribute";
 import DefaultAttribute, {
 	IDefaultAttributeExtended,
@@ -54,7 +57,7 @@ import NumberAttribute, {
 } from "./attributes/NumberAttribute";
 import StringAttribute from "./attributes/StringAttribute";
 
-type IAttributeDefinition =
+export type IAttributeDefinition =
 	| IAttribute
 	| INumberAttributeExtended
 	| IStringAttribute
@@ -166,6 +169,12 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		attributeOverview,
 		propsAttributes,
 	);
+	const attributeSelectionData = useAttributeSelection(
+		viewportId,
+		active,
+		renderedAttribute,
+	);
+
 	/**
 	 *
 	 *
@@ -674,6 +683,22 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 					</Stack>
 				</Paper>
 			</TooltipWrapper>
+			{attributeSelectionData && (
+				<ViewportAnchor
+					location={attributeSelectionData.location}
+					id={`${widgetId}_anchor`}
+					element={
+						<SelectedAttributeComponent
+							renderedAttribute={renderedAttribute}
+							attributes={attributes}
+							selectedItemData={
+								attributeSelectionData.selectedItemData
+							}
+							handleAttributeChange={handleAttributeChange}
+						/>
+					}
+				/>
+			)}
 		</>
 	);
 }
