@@ -1,4 +1,6 @@
+import {ViewportControlsVisibilityContext} from "@AppBuilderShared/context/ViewportControlsVisibilityContext";
 import {useViewport} from "@AppBuilderShared/hooks/shapediver/viewer/useViewport";
+import {useViewportControlsVisibility} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControlsVisibility";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import {
 	ViewportBrandingProps,
@@ -27,6 +29,8 @@ export default function ViewportComponent(props: ViewportComponentProps) {
 		{},
 	) as ViewportBrandingProps;
 	const scheme = useComputedColorScheme();
+	const {showControls, containerProps} =
+		useViewportControlsVisibility();
 	if (!_props.branding) _props.branding = brandingProps[scheme];
 	if (!_props.sessionSettingsMode) {
 		_props.sessionSettingsMode = SESSION_SETTINGS_MODE.MANUAL;
@@ -45,9 +49,14 @@ export default function ViewportComponent(props: ViewportComponentProps) {
 	return error ? (
 		<AlertPage title="Error">{error.message}</AlertPage>
 	) : (
-		<div className={`${classes.container} ${className}`}>
-			<canvas ref={canvasRef} />
-			{children}
-		</div>
+		<ViewportControlsVisibilityContext.Provider value={{showControls}}>
+			<div
+				className={`${classes.container} ${className}`}
+				{...containerProps}
+			>
+				<canvas ref={canvasRef} />
+				{children}
+			</div>
+		</ViewportControlsVisibilityContext.Provider>
 	);
 }

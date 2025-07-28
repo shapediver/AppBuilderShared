@@ -1134,6 +1134,11 @@ export const useCustomTheme = (props: Props = {}) => {
 				// dividerProps: {
 				// 	orientation: "vertical",
 				// },
+				// transitionProps: {
+				// 	transition: "fade-down",
+				// 	duration: 400,
+				// 	timingFunction: "ease",
+				// },
 			}),
 			/**
 			 * ViewportOverlayWrapper
