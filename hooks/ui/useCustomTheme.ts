@@ -1133,6 +1133,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// },
 				// dividerProps: {
 				// 	orientation: "vertical",
+				// 	color: "var(--mantine-color-dimmed)",
 				// },
 				// transitionProps: {
 				// 	transition: "fade-down",

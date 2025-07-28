@@ -57,6 +57,7 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	},
 	dividerProps: {
 		orientation: "vertical",
+		color: "var(--mantine-color-dimmed)",
 	},
 	transitionProps: {
 		transition: "fade-down",
@@ -287,7 +288,7 @@ export default function ViewportIcons(
 
 	return (
 		<ViewportOverlayWrapper {...viewportOverlayProps}>
-			<Transition mounted={showControls} {...transitionProps}>
+			<Transition mounted={true} {...transitionProps}>
 				{(styles) => (
 					<Paper style={{...style, ...styles}} {...paperProps}>
 						{ViewerIconsGroup}
