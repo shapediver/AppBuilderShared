@@ -1,10 +1,10 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
-import {IAppBuilderActionPropsSetBrowserLocation} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderLegacyActionPropsSetBrowserLocation} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import React, {useCallback, useState} from "react";
 
-type Props = IAppBuilderActionPropsSetBrowserLocation & {
+type Props = IAppBuilderLegacyActionPropsSetBrowserLocation & {
 	namespace: string;
 };
 
