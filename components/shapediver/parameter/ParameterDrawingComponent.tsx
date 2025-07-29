@@ -36,6 +36,7 @@ import React, {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import classes from "./ParameterInteractionComponent.module.css";
@@ -102,14 +103,21 @@ export default function ParameterDrawingComponent(
 
 	// state for the drawing application
 	const [drawingActive, setDrawingActive] = useState<boolean>(false);
+	// state for the interaction permission
+	const [hasInteractionPermission, setHasInteractionPermission] =
+		useState<boolean>(false);
 	// state for the last confirmed value
 	const [parsedUiValue, setParsedUiValue] = useState<PointsData>(
 		parsePointsData(state.uiValue),
 	);
-	// state to manage the interaction request token
-	const [interactionRequestToken, setInteractionRequestToken] = useState<
-		string | undefined
-	>(undefined);
+	// reference to manage the interaction request token
+	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
+
+	// update the interaction request token and activate drawing tools if necessary
+	const updateInteractionRequestToken = (token: string | undefined) => {
+		interactionRequestTokenRef.current = token;
+		setHasInteractionPermission(token !== undefined);
+	};
 
 	/**
 	 * Callback function to change the value of the parameter.
@@ -151,7 +159,7 @@ export default function ParameterDrawingComponent(
 		drawingProps,
 		confirmDrawing,
 		cancelDrawing,
-		drawingActive && interactionRequestToken !== undefined,
+		drawingActive && hasInteractionPermission,
 		parsedUiValue,
 	);
 
@@ -236,25 +244,25 @@ export default function ParameterDrawingComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the drawing state changes.
 	 */
 	useEffect(() => {
-		if (drawingActive && !interactionRequestToken) {
+		if (drawingActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
 				viewportId,
 				disable: cancelDrawing,
 			});
-			setInteractionRequestToken(returnedToken);
-		} else if (!drawingActive && interactionRequestToken) {
-			removeInteractionRequest(interactionRequestToken);
-			setInteractionRequestToken(undefined);
+			updateInteractionRequestToken(returnedToken);
+		} else if (!drawingActive && interactionRequestTokenRef.current) {
+			removeInteractionRequest(interactionRequestTokenRef.current);
+			updateInteractionRequestToken(undefined);
 		}
 
 		return () => {
-			if (interactionRequestToken) {
-				removeInteractionRequest(interactionRequestToken);
-				setInteractionRequestToken(undefined);
+			if (interactionRequestTokenRef.current) {
+				removeInteractionRequest(interactionRequestTokenRef.current);
+				updateInteractionRequestToken(undefined);
 			}
 		};
-	}, [drawingActive, interactionRequestToken, cancelDrawing]);
+	}, [drawingActive, cancelDrawing]);
 
 	/**
 	 * The content of the parameter when it is active.

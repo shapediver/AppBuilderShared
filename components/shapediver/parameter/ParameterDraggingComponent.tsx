@@ -109,10 +109,8 @@ export default function ParameterDraggingComponent(
 	const [parsedUiValue, setParsedUiValue] = useState<
 		DraggingParameterValue["objects"]
 	>(parseDraggedNodes(state.uiValue));
-	// state to manage the interaction request token
-	const [interactionRequestToken, setInteractionRequestToken] = useState<
-		string | undefined
-	>(undefined);
+	// reference to manage the interaction request token
+	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
@@ -216,25 +214,25 @@ export default function ParameterDraggingComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the dragging state changes.
 	 */
 	useEffect(() => {
-		if (draggingActive && !interactionRequestToken) {
+		if (draggingActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
 				viewportId,
 				disable: cancel,
 			});
-			setInteractionRequestToken(returnedToken);
-		} else if (!draggingActive && interactionRequestToken) {
-			removeInteractionRequest(interactionRequestToken);
-			setInteractionRequestToken(undefined);
+			interactionRequestTokenRef.current = returnedToken;
+		} else if (!draggingActive && interactionRequestTokenRef.current) {
+			removeInteractionRequest(interactionRequestTokenRef.current);
+			interactionRequestTokenRef.current = undefined;
 		}
 
 		return () => {
-			if (interactionRequestToken) {
-				removeInteractionRequest(interactionRequestToken);
-				setInteractionRequestToken(undefined);
+			if (interactionRequestTokenRef.current) {
+				removeInteractionRequest(interactionRequestTokenRef.current);
+				interactionRequestTokenRef.current = undefined;
 			}
 		};
-	}, [draggingActive, interactionRequestToken, cancel]);
+	}, [draggingActive, cancel]);
 
 	/**
 	 * The content of the parameter when it is active.
