@@ -1,6 +1,6 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {IAppBuilderLegacyActionPropsCommon} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderActionPropsCommon} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Button,
@@ -17,7 +17,7 @@ type ButtonComponentProps<C = "button"> = PolymorphicComponentProps<
 	ButtonProps
 >;
 
-type Props = IAppBuilderLegacyActionPropsCommon &
+type Props = IAppBuilderActionPropsCommon &
 	ButtonComponentProps & {
 		loading?: boolean;
 	};

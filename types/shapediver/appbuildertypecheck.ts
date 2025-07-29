@@ -126,15 +126,19 @@ const IAppBuilderActionPropsCommonSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderActionPropsCreateModelState
-const IAppBuilderActionPropsCreateModelStateSchema = z
-	.object({
-		includeImage: z.boolean().optional(),
-		image: IAppBuilderImageRefSchema.optional(),
-		includeGltf: z.boolean().optional(),
-		parameterNamesToInclude: z.array(z.string()).optional(),
-		parameterNamesToExclude: z.array(z.string()).optional(),
-	})
-	.extend(IAppBuilderActionPropsCommonSchema.shape);
+const IAppBuilderActionPropsCreateModelStateSchema = z.object({
+	includeImage: z.boolean().optional(),
+	image: IAppBuilderImageRefSchema.optional(),
+	includeGltf: z.boolean().optional(),
+	parameterNamesToInclude: z.array(z.string()).optional(),
+	parameterNamesToExclude: z.array(z.string()).optional(),
+});
+
+// Zod type definition for IAppBuilderLegacyActionPropsCreateModelState
+const IAppBuilderLegacyActionPropsCreateModelStateSchema =
+	IAppBuilderActionPropsCreateModelStateSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
 
 // Zod type definition for IAppBuilderActionPropsAddToCart
 const IAppBuilderActionPropsAddToCartSchema = z
@@ -146,35 +150,117 @@ const IAppBuilderActionPropsAddToCartSchema = z
 	})
 	.extend(IAppBuilderActionPropsCreateModelStateSchema.shape);
 
+// Zod type definition for IAppBuilderLegacyActionPropsAddToCart
+const IAppBuilderLegacyActionPropsAddToCartSchema =
+	IAppBuilderActionPropsAddToCartSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
 // Zod type definition for IAppBuilderActionPropsSetParameterValue
-const IAppBuilderActionPropsSetParameterValueSchema = z
-	.object({
-		parameter: IAppBuilderParameterRefSchema.pick({
-			name: true,
-			sessionId: true,
-		}),
-		value: z.string(),
-	})
-	.extend(IAppBuilderActionPropsCommonSchema.shape);
+const IAppBuilderActionPropsSetParameterValueSchema = z.object({
+	parameter: IAppBuilderParameterRefSchema.pick({
+		name: true,
+		sessionId: true,
+	}),
+	value: z.string(),
+});
+
+// Zod type definition for IAppBuilderLegacyActionPropsSetParameterValue
+const IAppBuilderLegacyActionPropsSetParameterValueSchema =
+	IAppBuilderActionPropsSetParameterValueSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderActionPropsSetParameterValues
+const IAppBuilderActionPropsSetParameterValuesSchema = z.object({
+	parameterValues: z.array(
+		IAppBuilderLegacyActionPropsSetParameterValueSchema,
+	),
+});
+
+// Zod type definition for IAppBuilderLegacyActionPropsSetParameterValues
+const IAppBuilderLegacyActionPropsSetParameterValuesSchema =
+	IAppBuilderActionPropsSetParameterValuesSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
 
 // Zod type definition for IAppBuilderActionPropsSetBrowserLocation
-const IAppBuilderActionPropsSetBrowserLocationSchema = z
-	.object({
-		href: z.string().optional(),
-		pathname: z.string().optional(),
-		search: z.string().optional(),
-		hash: z.string().optional(),
-		target: z.enum(["_self", "_blank", "_parent", "_top"]).optional(),
-	})
-	.extend(IAppBuilderActionPropsCommonSchema.shape);
+const IAppBuilderActionPropsSetBrowserLocationSchema = z.object({
+	href: z.string().optional(),
+	pathname: z.string().optional(),
+	search: z.string().optional(),
+	hash: z.string().optional(),
+	target: z.enum(["_self", "_blank", "_parent", "_top"]).optional(),
+});
+// Zod type definition for IAppBuilderLegacyActionPropsSetBrowserLocation
+const IAppBuilderLegacyActionPropsSetBrowserLocationSchema =
+	IAppBuilderActionPropsSetBrowserLocationSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
 
 // Zod type definition for IAppBuilderActionPropsCloseConfigurator
-const IAppBuilderActionPropsCloseConfigurator = z
-	.object({})
-	.extend(IAppBuilderActionPropsCommonSchema.shape);
+const IAppBuilderActionPropsCloseConfigurator = z.object({});
 
-// Zod type definition for IAppBuilderAction
-const IAppBuilderActionSchema = z.discriminatedUnion("type", [
+// Zod type definition for IAppBuilderLegacyActionPropsCloseConfigurator
+const IAppBuilderLegacyActionPropsCloseConfiguratorSchema =
+	IAppBuilderActionPropsCloseConfigurator.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderLegacyActionDefinition
+const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
+	z.object({
+		type: z.literal("createModelState"),
+		props: IAppBuilderLegacyActionPropsCreateModelStateSchema,
+	}),
+	z.object({
+		type: z.literal("addToCart"),
+		props: IAppBuilderLegacyActionPropsAddToCartSchema,
+	}),
+	z.object({
+		type: z.literal("setParameterValue"),
+		props: IAppBuilderLegacyActionPropsSetParameterValueSchema,
+	}),
+	z.object({
+		type: z.literal("setParameterValues"),
+		props: IAppBuilderLegacyActionPropsSetParameterValuesSchema,
+	}),
+	z.object({
+		type: z.literal("setBrowserLocation"),
+		props: IAppBuilderLegacyActionPropsSetBrowserLocationSchema,
+	}),
+	z.object({
+		type: z.literal("closeConfigurator"),
+		props: IAppBuilderLegacyActionPropsCloseConfiguratorSchema,
+	}),
+]);
+
+// Zod type definition for property "overrides" of IAppBuilderControlParameterRef and IAppBuilderControlExportRef
+const IAppBuilderControlParameterRefOverridesSchema =
+	IAppBuilderParameterDefinitionSchema.partial().pick({
+		displayname: true,
+		tooltip: true,
+		hidden: true,
+	});
+
+// Zod type definition for IAppBuilderControlParameterRef
+const IAppBuilderControlParameterRefSchema = z.object({
+	name: z.string(),
+	sessionId: z.string().optional(),
+	overrides: IAppBuilderControlParameterRefOverridesSchema.optional(),
+	disableIfDirty: z.boolean().optional(),
+	acceptRejectMode: z.boolean().optional(),
+});
+
+// Zod type definition for IAppBuilderControlExportRef
+const IAppBuilderControlExportRefSchema = z.object({
+	name: z.string(),
+	sessionId: z.string().optional(),
+	overrides: IAppBuilderControlParameterRefOverridesSchema.optional(),
+});
+
+// Zod type definition for IAppBuilderActionDefinition
+const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("createModelState"),
 		props: IAppBuilderActionPropsCreateModelStateSchema,
@@ -188,12 +274,39 @@ const IAppBuilderActionSchema = z.discriminatedUnion("type", [
 		props: IAppBuilderActionPropsSetParameterValueSchema,
 	}),
 	z.object({
+		type: z.literal("setParameterValues"),
+		props: IAppBuilderActionPropsSetParameterValuesSchema,
+	}),
+	z.object({
 		type: z.literal("setBrowserLocation"),
 		props: IAppBuilderActionPropsSetBrowserLocationSchema,
 	}),
 	z.object({
 		type: z.literal("closeConfigurator"),
 		props: IAppBuilderActionPropsCloseConfigurator,
+	}),
+]);
+
+// Zod type definition for IAppBuilderControlActionRef
+const IAppBuilderControlActionRefSchema = z
+	.object({
+		definition: IAppBuilderActionDefinitionSchema,
+	})
+	.extend(IAppBuilderActionPropsCommonSchema.shape);
+
+// Zod type definition for IAppBuilderControl
+const IAppBuilderControlSchema = z.discriminatedUnion("type", [
+	z.object({
+		type: z.literal("parameter"),
+		props: IAppBuilderControlParameterRefSchema,
+	}),
+	z.object({
+		type: z.literal("export"),
+		props: IAppBuilderControlExportRefSchema,
+	}),
+	z.object({
+		type: z.literal("action"),
+		props: IAppBuilderControlActionRefSchema,
 	}),
 ]);
 
@@ -387,7 +500,7 @@ const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.object({
 
 // Zod type definition for IAppBuilderWidgetPropsActions
 const IAppBuilderWidgetPropsActionsSchema = z.object({
-	actions: z.array(IAppBuilderActionSchema),
+	actions: z.array(IAppBuilderLegacyActionDefinitionSchema),
 });
 
 // Zod type definition for IAppBuilderWidgetPropsAgent
@@ -410,6 +523,29 @@ const IAppBuilderWidgetPropsDesktopClientSelectionSchema = z.object({});
 
 // Zod type definition for IAppBuilderWidgetPropsDesktopClientOutputs
 const IAppBuilderWidgetPropsDesktopClientOutputsSchema = z.object({});
+
+// Zod type definition for IAppBuilderWidgetPropsControls
+const IAppBuilderWidgetPropsControlsSchema = z.object({
+	controls: z.array(IAppBuilderControlSchema),
+});
+
+// Zod type definition for IAppBuilderWidgetPropsAccordionUi
+const IAppBuilderWidgetPropsAccordionUiSchema = z.object({
+	items: z.array(
+		z.object({
+			value: z.string().optional(),
+			name: z.string(),
+			icon: z.nativeEnum(IconTypeEnum).optional(),
+			tooltip: z.string().optional(),
+			widgets: z.array(
+				z.lazy((): z.ZodTypeAny => IAppBuilderWidgetSchema),
+			),
+		}),
+	),
+	multiple: z.boolean().optional(),
+	defaultValue: z.union([z.string(), z.array(z.string())]).optional(),
+	value: z.union([z.string(), z.array(z.string())]).optional(),
+});
 
 // Zod type definition for IAppBuilderWidget
 const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
@@ -464,6 +600,14 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("desktopClientOutputs"),
 		props: IAppBuilderWidgetPropsDesktopClientOutputsSchema,
+	}),
+	z.object({
+		type: z.literal("controls"),
+		props: IAppBuilderWidgetPropsControlsSchema,
+	}),
+	z.object({
+		type: z.literal("accordionUi"),
+		props: IAppBuilderWidgetPropsAccordionUiSchema,
 	}),
 ]);
 

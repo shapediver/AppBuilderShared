@@ -156,14 +156,19 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsCloseConfigurator;
 }
 
-/** Control referencing an action */
-export interface IAppBuilderControlActionRef {
+/** Common properties of App Builder action controls and legacy actions. */
+export interface IAppBuilderActionPropsCommon {
 	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. */
 	label?: string;
 	/** Optional icon (of the button etc). */
 	icon?: IconType;
 	/** Optional tooltip. */
 	tooltip?: string;
+}
+
+/** Control referencing an action */
+export interface IAppBuilderControlActionRef
+	extends IAppBuilderActionPropsCommon {
 	/** Embedded action definition. */
 	definition: IAppBuilderActionDefinition;
 	/** In the future we might include a reference to a globally defined action here.  */
@@ -185,16 +190,6 @@ export type AppBuilderActionType =
 	| "setParameterValues"
 	| "setBrowserLocation"
 	| "closeConfigurator";
-
-/** Common properties of App Builder actions. */
-export interface IAppBuilderLegacyActionPropsCommon {
-	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. */
-	label?: string;
-	/** Optional icon (of the button etc). */
-	icon?: IconType;
-	/** Optional tooltip. */
-	tooltip?: string;
-}
 
 /** Properties of a "createModelState" action. */
 export interface IAppBuilderActionPropsCreateModelState {
@@ -222,7 +217,7 @@ export interface IAppBuilderActionPropsCreateModelState {
 
 /** Properties of a legacy "createModelState" action. */
 export type IAppBuilderLegacyActionPropsCreateModelState =
-	IAppBuilderActionPropsCreateModelState & IAppBuilderLegacyActionPropsCommon;
+	IAppBuilderActionPropsCreateModelState & IAppBuilderActionPropsCommon;
 
 /**
  * Properties of an "addToCart" action.
@@ -251,7 +246,7 @@ export interface IAppBuilderActionPropsAddToCart
  * Properties of a legacy "addToCart" action.
  */
 export type IAppBuilderLegacyActionPropsAddToCart =
-	IAppBuilderActionPropsAddToCart & IAppBuilderLegacyActionPropsCommon;
+	IAppBuilderActionPropsAddToCart & IAppBuilderActionPropsCommon;
 
 /**
  * Properties of a "setParameterValue" action.
@@ -268,8 +263,7 @@ export interface IAppBuilderActionPropsSetParameterValue {
 
 /** Properties of legacy a "setParameterValue" action. */
 export type IAppBuilderLegacyActionPropsSetParameterValue =
-	IAppBuilderActionPropsSetParameterValue &
-		IAppBuilderLegacyActionPropsCommon;
+	IAppBuilderActionPropsSetParameterValue & IAppBuilderActionPropsCommon;
 
 /** Properties of a "setParameterValues" action. */
 export interface IAppBuilderActionPropsSetParameterValues {
@@ -279,8 +273,7 @@ export interface IAppBuilderActionPropsSetParameterValues {
 
 /** Properties of legacy a "setParameterValues" action. */
 export type IAppBuilderLegacyActionPropsSetParameterValues =
-	IAppBuilderActionPropsSetParameterValues &
-		IAppBuilderLegacyActionPropsCommon;
+	IAppBuilderActionPropsSetParameterValues & IAppBuilderActionPropsCommon;
 
 /**
  * Properties of a "setBrowserLocation" action.
@@ -316,16 +309,14 @@ export interface IAppBuilderActionPropsSetBrowserLocation {
 
 /** Properties of legacy a "setBrowserLocation" action. */
 export type IAppBuilderLegacyActionPropsSetBrowserLocation =
-	IAppBuilderActionPropsSetBrowserLocation &
-		IAppBuilderLegacyActionPropsCommon;
+	IAppBuilderActionPropsSetBrowserLocation & IAppBuilderActionPropsCommon;
 
 /** Properties of a "closeConfigurator" action. */
 export type IAppBuilderActionPropsCloseConfigurator = object;
 
 /** Properties of legacy a "closeConfigurator" action. */
 export type IAppBuilderLegacyActionPropsCloseConfigurator =
-	IAppBuilderActionPropsCloseConfigurator &
-		IAppBuilderLegacyActionPropsCommon;
+	IAppBuilderActionPropsCloseConfigurator & IAppBuilderActionPropsCommon;
 
 /** A legacy App Builder action definition. */
 export interface IAppBuilderLegacyActionDefinition {
