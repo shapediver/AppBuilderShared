@@ -494,6 +494,41 @@ export interface IAppBuilderWidgetPropsDesktopClientOutputs {
 }
 
 /**
+ * Properties of a generic accordion widget, grouping further widgets
+ * into an accordion.
+ */
+export interface IAppBuilderWidgetPropsAccordionUi {
+	/** Items of the accordion. */
+	items: {
+		/**
+		 * Optional unique identifier for the accordion item.
+		 * Used to identify items when controlling state of the accordion.
+		 */
+		value?: string;
+		/** Label shown for the accordion control of the item. */
+		name: string;
+		/** Optional icon of the accordion control of the item. */
+		icon?: IconType;
+		/** Optional tooltip for the accordion control of the item. */
+		tooltip?: string;
+		/** Widgets displayed in the accordion item. */
+		widgets: IAppBuilderWidget[];
+	}[];
+	/** If set, multiple items can be opened at the same time. */
+	multiple?: boolean;
+	/**
+	 * Optional default state of the accordion items.
+	 * Only used for the initial state of the accordion.
+	 */
+	defaultValue?: string | string[];
+	/**
+	 * Optional state of the accordion items.
+	 * Used to override the current state of the accordion.
+	 */
+	value?: string | string[];
+}
+
+/**
  * A widget.
  *
  * When implementing a new widget type, extend this interface and
@@ -520,7 +555,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsProgress
 		| IAppBuilderWidgetPropsDesktopClientSelection
 		| IAppBuilderWidgetPropsDesktopClientOutputs
-		| IAppBuilderWidgetPropsControls;
+		| IAppBuilderWidgetPropsControls
+		| IAppBuilderWidgetPropsAccordionUi;
 }
 
 /**
@@ -749,6 +785,22 @@ export function isDesktopClientOutputsWidget(
 	return widget.type === "desktopClientOutputs";
 }
 
+/** assert widget type "controls" */
+export function isControlsWidget(widget: IAppBuilderWidget): widget is {
+	type: "controls";
+	props: IAppBuilderWidgetPropsControls;
+} {
+	return widget.type === "controls";
+}
+
+/** assert widget type "accordionUi" */
+export function isAccordionUiWidget(widget: IAppBuilderWidget): widget is {
+	type: "accordionUi";
+	props: IAppBuilderWidgetPropsAccordionUi;
+} {
+	return widget.type === "accordionUi";
+}
+
 /** assert action type "createModelState" */
 export function isCreateModelStateAction(
 	action: IAppBuilderLegacyActionDefinition,
@@ -774,6 +826,16 @@ export function isSetParameterValueAction(
 	props: IAppBuilderLegacyActionPropsSetParameterValue;
 } {
 	return action.type === "setParameterValue";
+}
+
+/** assert action type "setParameterValues" */
+export function isSetParameterValuesAction(
+	action: IAppBuilderLegacyActionDefinition,
+): action is {
+	type: "setParameterValues";
+	props: IAppBuilderLegacyActionPropsSetParameterValues;
+} {
+	return action.type === "setParameterValues";
 }
 
 /** assert action type "setBrowserLocation" */
