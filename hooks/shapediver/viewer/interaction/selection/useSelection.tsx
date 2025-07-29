@@ -179,6 +179,14 @@ export function useSelection(
 			});
 		}
 
+		// if the selected node names are the same, we don't need to update the state
+		if (
+			newSelectedNodeNames.length === selectedNodeNames.length &&
+			newSelectedNodeNames.every((name) =>
+				selectedNodeNames.includes(name),
+			)
+		)
+			return;
 		setSelectedNodeNames(newSelectedNodeNames);
 	}, [availableNodeNames]);
 
