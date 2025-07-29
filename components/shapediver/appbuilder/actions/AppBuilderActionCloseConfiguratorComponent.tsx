@@ -8,7 +8,7 @@ import React, {useCallback, useContext} from "react";
 type Props = IAppBuilderLegacyActionPropsCloseConfigurator & {};
 
 /**
- * Functional component for an "addToCart" action.
+ * Functional component for an "closeConfigurator" action.
  *
  * @returns
  */
