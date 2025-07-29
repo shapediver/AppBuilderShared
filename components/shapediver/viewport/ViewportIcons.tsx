@@ -6,7 +6,7 @@ import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {Divider, Paper, Transition, useProps} from "@mantine/core";
+import {alpha, Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {OverlayPosition} from "~/shared/components/shapediver/ui/OverlayWrapper";
@@ -26,7 +26,8 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		gap: "0.25rem",
 		alignItems: "center",
 		flexDirection: "row",
-		backgroundColor: "rgba(var(--mantine-color-body), 0.5)",
+		backgroundColor: alpha("var(--mantine-color-body)", 0.5),
+		backdropFilter: "blur(10px)",
 	},
 	fullscreenId: "viewer-fullscreen-area",
 	enableHistoryButtons: true,
@@ -57,7 +58,7 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	},
 	dividerProps: {
 		orientation: "vertical",
-		color: "var(--mantine-color-dimmed)",
+		color: "var(--mantine-color-disabled-color)",
 	},
 	transitionProps: {
 		transition: "fade-down",
@@ -288,7 +289,7 @@ export default function ViewportIcons(
 
 	return (
 		<ViewportOverlayWrapper {...viewportOverlayProps}>
-			<Transition mounted={true} {...transitionProps}>
+			<Transition mounted={showControls} {...transitionProps}>
 				{(styles) => (
 					<Paper style={{...style, ...styles}} {...paperProps}>
 						{ViewerIconsGroup}
