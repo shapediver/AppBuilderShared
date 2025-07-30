@@ -1,8 +1,9 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {firstLetterUppercase} from "@AppBuilderShared/utils/misc/strings";
-import {ActionIcon, Menu} from "@mantine/core";
+import {ActionIcon, Menu, MenuDropdownProps} from "@mantine/core";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React, {useState} from "react";
 import classes from "../ViewportIcons.module.css";
@@ -10,6 +11,8 @@ import {CommonButtonProps, IconProps} from "./types";
 
 interface CamerasButtonProps extends CommonButtonProps {
 	viewport?: IViewportApi;
+	menuDropdownProps?: MenuDropdownProps;
+	visible?: boolean;
 }
 
 export default function CamerasButton({
@@ -20,6 +23,10 @@ export default function CamerasButton({
 	variant = IconProps.variant,
 	variantDisabled = IconProps.variantDisabled,
 	iconStyle = IconProps.style,
+	menuDropdownProps = {
+		style: ViewportTransparentBackgroundStyle,
+	},
+	visible = true,
 }: CamerasButtonProps) {
 	const [isCamerasMenuOpened, setIsCamerasMenuOpened] = useState(false);
 	const cameras = viewport ? viewport.cameras : {};
@@ -40,7 +47,7 @@ export default function CamerasButton({
 
 	return (
 		<Menu
-			opened={isCamerasMenuOpened}
+			opened={visible && isCamerasMenuOpened}
 			onChange={setIsCamerasMenuOpened}
 			shadow="md"
 			width={200}
@@ -64,7 +71,9 @@ export default function CamerasButton({
 					</Menu.Target>
 				</TooltipWrapper>
 			</ActionIcon>
-			<Menu.Dropdown>{cameraElements}</Menu.Dropdown>
+			<Menu.Dropdown {...menuDropdownProps}>
+				{cameraElements}
+			</Menu.Dropdown>
 		</Menu>
 	);
 }

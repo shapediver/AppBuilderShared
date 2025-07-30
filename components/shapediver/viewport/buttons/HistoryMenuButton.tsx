@@ -5,7 +5,8 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import {ActionIcon, Menu} from "@mantine/core";
+import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
+import {ActionIcon, Menu, MenuDropdownProps} from "@mantine/core";
 import React, {useCallback, useContext, useState} from "react";
 import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
@@ -16,6 +17,8 @@ interface HistoryMenuButtonProps extends CommonButtonProps {
 	enableResetButton?: boolean;
 	enableImportExportButtons?: boolean;
 	enableModelStateButtons?: boolean;
+	menuDropdownProps?: MenuDropdownProps;
+	visible?: boolean;
 }
 
 export default function HistoryMenuButton({
@@ -30,9 +33,14 @@ export default function HistoryMenuButton({
 	variant = IconProps.variant,
 	variantDisabled = IconProps.variantDisabled,
 	iconStyle = IconProps.style,
+	menuDropdownProps = {
+		style: ViewportTransparentBackgroundStyle,
+	},
+	visible = true,
 }: HistoryMenuButtonProps) {
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const [isCreatingModelState, setIsCreatingModelState] = useState(false);
+	const [isMenuOpened, setIsMenuOpened] = useState(false);
 
 	const notifications = useContext(NotificationContext);
 
@@ -76,7 +84,12 @@ export default function HistoryMenuButton({
 
 	return (
 		<>
-			<Menu shadow="md" width={200} position="bottom-end">
+			<Menu
+				shadow="md"
+				width={200}
+				position="bottom-end"
+				opened={visible && isMenuOpened}
+			>
 				<Menu.Target>
 					<ActionIcon
 						size={size}
@@ -89,6 +102,7 @@ export default function HistoryMenuButton({
 						style={iconStyle}
 						disabled={disabled}
 						className={classes.ViewportIcon}
+						onClick={() => setIsMenuOpened(!isMenuOpened)}
 					>
 						<Icon
 							type={IconTypeEnum.DotsVertical}
@@ -101,7 +115,7 @@ export default function HistoryMenuButton({
 					</ActionIcon>
 				</Menu.Target>
 
-				<Menu.Dropdown>
+				<Menu.Dropdown {...menuDropdownProps}>
 					{enableResetButton && (
 						<Menu.Item
 							onClick={resetParameters}
@@ -147,7 +161,6 @@ export default function HistoryMenuButton({
 					)}
 				</Menu.Dropdown>
 			</Menu>
-
 			{enableModelStateButtons && (
 				<ImportModelStateDialog
 					opened={isImportDialogOpen}

@@ -2,12 +2,13 @@ import {useViewportControls} from "@AppBuilderShared/hooks/shapediver/viewer/use
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {alpha, Divider, Paper, Transition, useProps} from "@mantine/core";
-import React, {useCallback, useMemo} from "react";
+import {Divider, Paper, Transition, useProps} from "@mantine/core";
+import React, {useCallback, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {OverlayPosition} from "~/shared/components/shapediver/ui/OverlayWrapper";
 import ViewportOverlayWrapper from "./ViewportOverlayWrapper";
@@ -26,9 +27,8 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		gap: "0.25rem",
 		alignItems: "center",
 		flexDirection: "row",
-		backgroundColor: alpha("var(--mantine-color-body)", 0.5),
-		backdropFilter: "blur(10px)",
 		border: "none",
+		...ViewportTransparentBackgroundStyle,
 	},
 	fullscreenId: "viewer-fullscreen-area",
 	enableHistoryButtons: true,
@@ -99,6 +99,7 @@ export default function ViewportIcons(
 	} = useProps("ViewportIcons", defaultStyleProps, rest);
 
 	const {viewportId: defaultViewportId} = useViewportId();
+	const [iconsVisible, setIconsVisible] = useState(true);
 	const viewportId = _viewportId ?? defaultViewportId;
 	const viewport = useShapeDiverStoreViewport(
 		useShallow((state) => state.viewports[viewportId]),
@@ -183,6 +184,7 @@ export default function ViewportIcons(
 						variantDisabled={variantDisabled}
 						size={size}
 						iconStyle={iconStyle}
+						visible={iconsVisible}
 					/>
 				)}
 			</>
@@ -201,6 +203,7 @@ export default function ViewportIcons(
 			iconStyle,
 			fullscreenId,
 			viewport,
+			iconsVisible,
 		],
 	);
 	const showHistoryDivider = useMemo(() => {
@@ -267,6 +270,7 @@ export default function ViewportIcons(
 						variantDisabled={variantDisabled}
 						size={size}
 						iconStyle={iconStyle}
+						visible={iconsVisible}
 					/>
 				)}
 			</>
@@ -286,6 +290,8 @@ export default function ViewportIcons(
 			variantDisabled,
 			size,
 			iconStyle,
+			showControls,
+			iconsVisible,
 		],
 	);
 
@@ -297,7 +303,12 @@ export default function ViewportIcons(
 
 	return (
 		<ViewportOverlayWrapper {...viewportOverlayProps}>
-			<Transition mounted={showControls} {...transitionProps}>
+			<Transition
+				mounted={showControls}
+				{...transitionProps}
+				onEntered={() => setIconsVisible(true)}
+				onExit={() => setIconsVisible(false)}
+			>
 				{(styles) => (
 					<Paper
 						style={{...style, ...styles}}
