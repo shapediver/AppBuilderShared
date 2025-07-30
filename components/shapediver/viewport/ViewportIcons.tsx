@@ -1,3 +1,4 @@
+import {useViewportControls} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControls";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
@@ -5,7 +6,7 @@ import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {Divider, Paper, useProps} from "@mantine/core";
+import {alpha, Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {OverlayPosition} from "~/shared/components/shapediver/ui/OverlayWrapper";
@@ -25,6 +26,9 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		gap: "0.25rem",
 		alignItems: "center",
 		flexDirection: "row",
+		backgroundColor: alpha("var(--mantine-color-body)", 0.5),
+		backdropFilter: "blur(10px)",
+		border: "none",
 	},
 	fullscreenId: "viewer-fullscreen-area",
 	enableHistoryButtons: true,
@@ -41,7 +45,9 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	variant: IconProps.variant,
 	variantDisabled: IconProps.variantDisabled,
 	size: IconProps.size,
-	iconStyle: {m: "0.188rem"},
+	iconStyle: {
+		m: "0.188rem",
+	},
 	viewportOverlayProps: {
 		position: OverlayPosition.TOP_MIDDLE,
 		offset: "0.5em",
@@ -53,6 +59,12 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	},
 	dividerProps: {
 		orientation: "vertical",
+		color: "var(--mantine-color-disabled-color)",
+	},
+	transitionProps: {
+		transition: "fade-down",
+		duration: 400,
+		timingFunction: "ease",
 	},
 };
 
@@ -82,6 +94,7 @@ export default function ViewportIcons(
 		viewportOverlayProps,
 		paperProps,
 		dividerProps,
+		transitionProps,
 	} = useProps("ViewportIcons", defaultStyleProps, rest);
 
 	const {viewportId: defaultViewportId} = useViewportId();
@@ -89,6 +102,7 @@ export default function ViewportIcons(
 	const viewport = useShapeDiverStoreViewport(
 		useShallow((state) => state.viewports[viewportId]),
 	);
+	const {showControls} = useViewportControls();
 
 	const parameterChanges = useShapeDiverStoreParameters(
 		useCallback(
@@ -276,11 +290,15 @@ export default function ViewportIcons(
 
 	return (
 		<ViewportOverlayWrapper {...viewportOverlayProps}>
-			<Paper style={style} {...paperProps}>
-				{ViewerIconsGroup}
-				{showHistoryDivider && <Divider {...dividerProps} />}
-				{HistoryButtonsGroup}
-			</Paper>
+			<Transition mounted={showControls} {...transitionProps}>
+				{(styles) => (
+					<Paper style={{...style, ...styles}} {...paperProps}>
+						{ViewerIconsGroup}
+						{showHistoryDivider && <Divider {...dividerProps} />}
+						{HistoryButtonsGroup}
+					</Paper>
+				)}
+			</Transition>
 		</ViewportOverlayWrapper>
 	);
 }

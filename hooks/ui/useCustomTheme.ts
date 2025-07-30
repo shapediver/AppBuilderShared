@@ -1079,6 +1079,9 @@ export const useCustomTheme = (props: Props = {}) => {
 					// 	variant: "default",
 					// 	style: {
 					// 		boxShadow: "var(--mantine-shadow-md)",
+					// 		backgroundColor: alpha("var(--mantine-color-body)", 0.5),
+					// 		backdropFilter: "blur(10px)",
+					// 		border: "none",
 					// 	},
 					// },
 					// iconProps: {},
@@ -1101,6 +1104,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			ViewportIcons: ViewportIconsThemeProps({
 				// style: {
+				//  border: "none",
 				// 	display: "flex",
 				// 	gap: "0.25rem",
 				// 	alignItems: "center",
@@ -1133,6 +1137,12 @@ export const useCustomTheme = (props: Props = {}) => {
 				// },
 				// dividerProps: {
 				// 	orientation: "vertical",
+				// 	color: "var(--mantine-color-dimmed)",
+				// },
+				// transitionProps: {
+				// 	transition: "fade-down",
+				// 	duration: 400,
+				// 	timingFunction: "ease",
 				// },
 			}),
 			/**

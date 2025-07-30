@@ -6,6 +6,7 @@ import {
 	MantineStyleProp,
 	MantineThemeComponent,
 	PaperProps,
+	TransitionProps,
 } from "@mantine/core";
 import {ViewportOverlayWrapperProps} from "./viewportOverlayWrapper";
 
@@ -131,6 +132,10 @@ export interface ViewportIconsOptionalProps {
 	 * divider props
 	 */
 	dividerProps?: DividerProps;
+	/**
+	 * transition props
+	 */
+	transitionProps?: Partial<TransitionProps>;
 }
 
 type ViewportIconsThemePropsType = Partial<ViewportIconsOptionalProps>;
