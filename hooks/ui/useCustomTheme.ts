@@ -1143,6 +1143,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	transition: "fade-down",
 				// 	duration: 400,
 				// 	timingFunction: "ease",
+				//	keepMounted: true,
 				// },
 			}),
 			/**
