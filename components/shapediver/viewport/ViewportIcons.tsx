@@ -56,6 +56,9 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		py: 1,
 		px: 0,
 		shadow: "md",
+		onTouchStart: (e: React.TouchEvent) => e.stopPropagation(),
+		onTouchMove: (e: React.TouchEvent) => e.stopPropagation(),
+		onTouchEnd: (e: React.TouchEvent) => e.stopPropagation(),
 	},
 	dividerProps: {
 		orientation: "vertical",
@@ -65,6 +68,7 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		transition: "fade-down",
 		duration: 400,
 		timingFunction: "ease",
+		keepMounted: true,
 	},
 };
 

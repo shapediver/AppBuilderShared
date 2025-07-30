@@ -1134,6 +1134,9 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	py: 1,
 				// 	px: 0,
 				// 	shadow: "md",
+				// onTouchStart: (e: React.TouchEvent) => e.stopPropagation(),
+				// onTouchMove: (e: React.TouchEvent) => e.stopPropagation(),
+				// onTouchEnd: (e: React.TouchEvent) => e.stopPropagation(),
 				// },
 				// dividerProps: {
 				// 	orientation: "vertical",
@@ -1143,6 +1146,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	transition: "fade-down",
 				// 	duration: 400,
 				// 	timingFunction: "ease",
+				//	keepMounted: true,
 				// },
 			}),
 			/**
