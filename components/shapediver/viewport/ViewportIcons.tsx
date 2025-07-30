@@ -56,9 +56,6 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		py: 1,
 		px: 0,
 		shadow: "md",
-		onTouchStart: (e: React.TouchEvent) => e.stopPropagation(),
-		onTouchMove: (e: React.TouchEvent) => e.stopPropagation(),
-		onTouchEnd: (e: React.TouchEvent) => e.stopPropagation(),
 	},
 	dividerProps: {
 		orientation: "vertical",
@@ -292,11 +289,23 @@ export default function ViewportIcons(
 		],
 	);
 
+	// Prevent event propagation to avoid triggering viewport interactions
+	// when touching the icons.
+	const preventEventPropagation = (e: React.TouchEvent) => {
+		e.stopPropagation();
+	};
+
 	return (
 		<ViewportOverlayWrapper {...viewportOverlayProps}>
 			<Transition mounted={showControls} {...transitionProps}>
 				{(styles) => (
-					<Paper style={{...style, ...styles}} {...paperProps}>
+					<Paper
+						style={{...style, ...styles}}
+						{...paperProps}
+						onTouchStart={preventEventPropagation}
+						onTouchMove={preventEventPropagation}
+						onTouchEnd={preventEventPropagation}
+					>
 						{ViewerIconsGroup}
 						{showHistoryDivider && <Divider {...dividerProps} />}
 						{HistoryButtonsGroup}

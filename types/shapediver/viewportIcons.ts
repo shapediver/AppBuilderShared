@@ -127,11 +127,7 @@ export interface ViewportIconsOptionalProps {
 	/**
 	 * paper props
 	 */
-	paperProps?: PaperProps & {
-		onTouchStart?: (e: React.TouchEvent) => void;
-		onTouchMove?: (e: React.TouchEvent) => void;
-		onTouchEnd?: (e: React.TouchEvent) => void;
-	};
+	paperProps?: PaperProps;
 	/**
 	 * divider props
 	 */
