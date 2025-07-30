@@ -1,4 +1,4 @@
-import {MantineThemeComponent} from "@mantine/core";
+import {alpha, MantineThemeComponent} from "@mantine/core";
 import {
 	BUSY_MODE_DISPLAY,
 	SPINNER_POSITIONING,
@@ -74,3 +74,8 @@ export function ViewportBrandingThemeProps(
 		defaultProps: props,
 	};
 }
+
+export const ViewportTransparentBackgroundStyle: React.CSSProperties = {
+	backgroundColor: alpha("var(--mantine-color-body)", 0.5),
+	backdropFilter: "blur(10px)",
+};
