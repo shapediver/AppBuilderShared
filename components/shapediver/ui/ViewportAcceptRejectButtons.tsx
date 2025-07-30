@@ -3,6 +3,7 @@ import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDive
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {IParameterChanges} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {
+	alpha,
 	Button,
 	ButtonProps,
 	Group,
@@ -44,7 +45,9 @@ const defaultStyleProps: Partial<StyleProps> = {
 		variant: "default",
 		style: {
 			boxShadow: "var(--mantine-shadow-md)",
-			backgroundColor: "rgba(var(--button-bg), 0.5)",
+			backgroundColor: alpha("var(--mantine-color-body)", 0.5),
+			backdropFilter: "blur(10px)",
+			border: "none",
 		},
 	},
 	iconProps: {},

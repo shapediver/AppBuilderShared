@@ -28,6 +28,7 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		flexDirection: "row",
 		backgroundColor: alpha("var(--mantine-color-body)", 0.5),
 		backdropFilter: "blur(10px)",
+		border: "none",
 	},
 	fullscreenId: "viewer-fullscreen-area",
 	enableHistoryButtons: true,
