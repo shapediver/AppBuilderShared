@@ -1,3 +1,4 @@
+import {IconProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/types";
 import {alpha, MantineThemeComponent} from "@mantine/core";
 import {
 	BUSY_MODE_DISPLAY,
@@ -75,7 +76,13 @@ export function ViewportBrandingThemeProps(
 	};
 }
 
-export const ViewportTransparentBackgroundStyle: React.CSSProperties = {
+type ViewportTransparentBackgroundStyleVariables = {
+	"--vpi-menu-item-hover": string;
+};
+
+export const ViewportTransparentBackgroundStyle: React.CSSProperties &
+	ViewportTransparentBackgroundStyleVariables = {
 	backgroundColor: alpha("var(--mantine-color-body)", 0.5),
 	backdropFilter: "blur(10px)",
+	"--vpi-menu-item-hover": IconProps.colorHover,
 };
