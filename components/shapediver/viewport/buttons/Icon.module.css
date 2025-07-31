@@ -1,0 +1,5 @@
+.menuItem {
+    &:hover {
+        background-color: var(--vpi-menu-item-hover, var(--menu-item-hover, var(--mantine-color-gray-1)));
+    }
+}

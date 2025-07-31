@@ -9,6 +9,7 @@ import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shaped
 import {ActionIcon, Menu, MenuDropdownProps} from "@mantine/core";
 import React, {useCallback, useContext, useState} from "react";
 import classes from "../ViewportIcons.module.css";
+import iconClasses from "./Icon.module.css";
 import {CommonButtonProps, IconProps} from "./types";
 
 interface HistoryMenuButtonProps extends CommonButtonProps {
@@ -118,8 +119,10 @@ export default function HistoryMenuButton({
 				<Menu.Dropdown {...menuDropdownProps}>
 					{enableResetButton && (
 						<Menu.Item
+							color={IconProps.color}
 							onClick={resetParameters}
 							disabled={disabled || isCreatingModelState}
+							className={iconClasses.menuItem}
 						>
 							Reset to default values
 						</Menu.Item>
@@ -128,14 +131,18 @@ export default function HistoryMenuButton({
 						<>
 							{enableResetButton && <Menu.Divider />}
 							<Menu.Item
+								color={IconProps.color}
 								onClick={importParameters}
 								disabled={disabled || isCreatingModelState}
+								className={iconClasses.menuItem}
 							>
 								Import parameter values
 							</Menu.Item>
 							<Menu.Item
+								color={IconProps.color}
 								onClick={exportParameters}
 								disabled={disabled || isCreatingModelState}
+								className={iconClasses.menuItem}
 							>
 								Export parameter values
 							</Menu.Item>
@@ -146,14 +153,17 @@ export default function HistoryMenuButton({
 							{(enableResetButton ||
 								enableImportExportButtons) && <Menu.Divider />}
 							<Menu.Item
+								color={IconProps.color}
 								onClick={onCreateModelState}
 								disabled={disabled || isCreatingModelState}
+								className={iconClasses.menuItem}
 							>
 								Create model state
 							</Menu.Item>
 							<Menu.Item
 								onClick={() => setIsImportDialogOpen(true)}
 								disabled={disabled || isCreatingModelState}
+								className={iconClasses.menuItem}
 							>
 								Import model state
 							</Menu.Item>
