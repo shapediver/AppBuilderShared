@@ -206,12 +206,12 @@ export default function SelectImageDropDownComponent(
 	// Custom option components - memoize to prevent unnecessary rerenders
 	const comboboxOptions = useMemo(
 		() =>
-			selectData.map((option) => (
+			selectData.map((option, index) => (
 				<Combobox.Option
 					className={`${classes.input} ${selectedOption?.value === option.value ? classes.inputSelected : ""}`}
 					style={getInputStyle(selectedOption)}
 					value={option.value}
-					key={option.value}
+					key={index}
 				>
 					<ComboboxOption
 						option={option}
@@ -251,6 +251,7 @@ export default function SelectImageDropDownComponent(
 				store={combobox}
 				onOptionSubmit={handleOptionSelect}
 				disabled={disabled}
+				withinPortal={false}
 			>
 				<Combobox.Target>
 					<InputBase
