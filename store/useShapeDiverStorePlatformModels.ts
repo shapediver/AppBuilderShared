@@ -173,8 +173,13 @@ export const useShapeDiverStorePlatformModels =
 					// define key for query cache
 					const key = useMemo(
 						() =>
-							`${JSON.stringify(cacheKeys)}-${JSON.stringify(queryParamsExt)}`,
-						[cacheKeys, queryParamsExt],
+							`${JSON.stringify(cacheKeys)}-${JSON.stringify(queryParamsExt)}-${filterByUser}-${filterByOrganization}`,
+						[
+							cacheKeys,
+							queryParamsExt,
+							filterByUser,
+							filterByOrganization,
+						],
 					);
 
 					// get data from cache, or create it and update cache
