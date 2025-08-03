@@ -24,7 +24,10 @@ export interface TSavedStateActions {
 export type TSavedStateData = SdPlatformResponseSavedStatePublic;
 
 /** The model item type. */
-export type TModelItem = IPlatformItem<TSavedStateData, TSavedStateActions>;
+export type TSavedStateItem = IPlatformItem<
+	TSavedStateData,
+	TSavedStateActions
+>;
 
 /** The data type for model query response items (just the saved state id). */
 export type TSavedStateQueryItem = string;

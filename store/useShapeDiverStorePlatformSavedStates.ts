@@ -259,6 +259,8 @@ export const useShapeDiverStorePlatformSavedStates =
 						queryParamsExt,
 						filterByUser,
 						filterByOrganization,
+						filterByModel,
+						currentModel,
 						key,
 					]);
 
