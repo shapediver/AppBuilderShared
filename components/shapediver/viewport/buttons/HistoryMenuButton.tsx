@@ -4,6 +4,7 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import useIconMenu from "@AppBuilderShared/hooks/shapediver/viewer/icons/useIconMenu";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {ActionIcon, Menu, MenuDropdownProps} from "@mantine/core";
@@ -40,7 +41,6 @@ export default function HistoryMenuButton({
 }: HistoryMenuButtonProps) {
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const [isCreatingModelState, setIsCreatingModelState] = useState(false);
-	const [isMenuOpened, setIsMenuOpened] = useState(false);
 
 	const notifications = useContext(NotificationContext);
 
@@ -75,6 +75,15 @@ export default function HistoryMenuButton({
 		setIsCreatingModelState(false);
 	}, []);
 
+	const onClickOutside = () => {
+		setIsMenuOpened(false);
+	};
+
+	const {menuRef, isMenuOpened, setIsMenuOpened} = useIconMenu(
+		visible,
+		onClickOutside,
+	);
+
 	const hasMenuItems =
 		enableResetButton ||
 		enableImportExportButtons ||
@@ -89,6 +98,7 @@ export default function HistoryMenuButton({
 				width={200}
 				position="bottom-end"
 				opened={visible && isMenuOpened}
+				onChange={setIsMenuOpened}
 			>
 				<Menu.Target>
 					<ActionIcon
@@ -115,7 +125,7 @@ export default function HistoryMenuButton({
 					</ActionIcon>
 				</Menu.Target>
 
-				<Menu.Dropdown {...menuDropdownProps}>
+				<Menu.Dropdown ref={menuRef} {...menuDropdownProps}>
 					{enableResetButton && (
 						<Menu.Item
 							onClick={resetParameters}

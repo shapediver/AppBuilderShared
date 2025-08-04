@@ -3,10 +3,13 @@ import {useEffect, useRef, useState} from "react";
 
 export function useViewportControlsVisibility(delay = 3000) {
 	const [showControls, setShowControls] = useState(true);
+	const [isHoveringControls, setIsHoveringControls] = useState(false);
 	const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const showControlsHandler = () => {
-		setShowControls(true);
+		if (!showControls) {
+			setShowControls(true);
+		}
 
 		if (timeoutRef.current) {
 			clearTimeout(timeoutRef.current);
@@ -17,7 +20,9 @@ export function useViewportControlsVisibility(delay = 3000) {
 		}
 
 		timeoutRef.current = setTimeout(() => {
-			setShowControls(false);
+			if (showControls && !isHoveringControls) {
+				setShowControls(false);
+			}
 		}, delay);
 	};
 
@@ -30,10 +35,22 @@ export function useViewportControlsVisibility(delay = 3000) {
 			return; // Do not hide controls on mobile
 		}
 
+		if (isHoveringControls) {
+			return; // Do not hide controls if hovering over them
+		}
+
 		timeoutRef.current = setTimeout(() => {
-			setShowControls(false);
+			if (showControls) {
+				setShowControls(false);
+			}
 		}, delay);
 	};
+
+	useEffect(() => {
+		if (!isHoveringControls) {
+			hideControlsHandler();
+		}
+	}, [isHoveringControls]);
 
 	useEffect(() => {
 		if (SystemInfo.instance.isMobile) {
@@ -54,6 +71,8 @@ export function useViewportControlsVisibility(delay = 3000) {
 
 	return {
 		showControls,
+		isHoveringControls,
+		setIsHoveringControls,
 		containerProps: {
 			onMouseMove: showControlsHandler,
 			onMouseLeave: hideControlsHandler,
