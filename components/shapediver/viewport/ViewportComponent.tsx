@@ -29,7 +29,7 @@ export default function ViewportComponent(props: ViewportComponentProps) {
 		{},
 	) as ViewportBrandingProps;
 	const scheme = useComputedColorScheme();
-	const {showControls, containerProps} =
+	const {showControls, containerProps, setIsHoveringControls} =
 		useViewportControlsVisibility();
 	if (!_props.branding) _props.branding = brandingProps[scheme];
 	if (!_props.sessionSettingsMode) {
@@ -49,7 +49,9 @@ export default function ViewportComponent(props: ViewportComponentProps) {
 	return error ? (
 		<AlertPage title="Error">{error.message}</AlertPage>
 	) : (
-		<ViewportControlsVisibilityContext.Provider value={{showControls}}>
+		<ViewportControlsVisibilityContext.Provider
+			value={{showControls, setIsHoveringControls}}
+		>
 			<div
 				className={`${classes.container} ${className}`}
 				{...containerProps}

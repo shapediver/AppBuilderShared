@@ -104,7 +104,7 @@ export default function ViewportIcons(
 	const viewport = useShapeDiverStoreViewport(
 		useShallow((state) => state.viewports[viewportId]),
 	);
-	const {showControls} = useViewportControls();
+	const {showControls, setIsHoveringControls} = useViewportControls();
 
 	const parameterChanges = useShapeDiverStoreParameters(
 		useCallback(
@@ -316,6 +316,8 @@ export default function ViewportIcons(
 						onTouchStart={preventEventPropagation}
 						onTouchMove={preventEventPropagation}
 						onTouchEnd={preventEventPropagation}
+						onMouseLeave={() => setIsHoveringControls(false)}
+						onMouseEnter={() => setIsHoveringControls(true)}
 					>
 						{ViewerIconsGroup}
 						{showHistoryDivider && <Divider {...dividerProps} />}

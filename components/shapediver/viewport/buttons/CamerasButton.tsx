@@ -1,11 +1,12 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import useIconMenu from "@AppBuilderShared/hooks/shapediver/viewer/icons/useIconMenu";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {firstLetterUppercase} from "@AppBuilderShared/utils/misc/strings";
 import {ActionIcon, Menu, MenuDropdownProps} from "@mantine/core";
 import {IViewportApi} from "@shapediver/viewer.viewport";
-import React, {useState} from "react";
+import React from "react";
 import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
 
@@ -28,14 +29,21 @@ export default function CamerasButton({
 	},
 	visible = true,
 }: CamerasButtonProps) {
-	const [isCamerasMenuOpened, setIsCamerasMenuOpened] = useState(false);
 	const cameras = viewport ? viewport.cameras : {};
 	const noCamerasAvailable = Object.keys(cameras).length === 0;
-
 	const onCameraSelect = (cameraId: string) => {
 		if (!viewport) return;
 		viewport.assignCamera(cameraId);
 	};
+
+	const onClickOutside = () => {
+		setIsMenuOpened(false);
+	};
+
+	const {menuRef, isMenuOpened, setIsMenuOpened} = useIconMenu(
+		visible,
+		onClickOutside,
+	);
 
 	const cameraElements = Object.values(cameras).map((camera, i) => {
 		return (
@@ -47,14 +55,14 @@ export default function CamerasButton({
 
 	return (
 		<Menu
-			opened={visible && isCamerasMenuOpened}
-			onChange={setIsCamerasMenuOpened}
+			opened={visible && isMenuOpened}
+			onChange={setIsMenuOpened}
 			shadow="md"
 			width={200}
 			position={"bottom-end"}
 		>
 			<ActionIcon
-				onClick={() => setIsCamerasMenuOpened(!isCamerasMenuOpened)}
+				onClick={() => setIsMenuOpened(!isMenuOpened)}
 				disabled={noCamerasAvailable}
 				size={size}
 				variant={noCamerasAvailable ? variantDisabled : variant}
@@ -62,7 +70,7 @@ export default function CamerasButton({
 				style={iconStyle}
 				className={classes.ViewportIcon}
 			>
-				<TooltipWrapper disabled={isCamerasMenuOpened} label="Cameras">
+				<TooltipWrapper disabled={isMenuOpened} label="Cameras">
 					<Menu.Target>
 						<Icon
 							type={IconTypeEnum.Video}
@@ -71,7 +79,7 @@ export default function CamerasButton({
 					</Menu.Target>
 				</TooltipWrapper>
 			</ActionIcon>
-			<Menu.Dropdown {...menuDropdownProps}>
+			<Menu.Dropdown ref={menuRef} {...menuDropdownProps}>
 				{cameraElements}
 			</Menu.Dropdown>
 		</Menu>
