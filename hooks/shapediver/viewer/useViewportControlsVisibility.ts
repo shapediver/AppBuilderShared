@@ -1,6 +1,5 @@
 import {SystemInfo} from "@shapediver/viewer.session";
 import {useEffect, useRef, useState} from "react";
-import {useDebounce} from "~/shared/hooks/misc/useDebounce";
 
 export function useViewportControlsVisibility(delay = 3000) {
 	const [showControls, setShowControls] = useState(true);
@@ -47,10 +46,6 @@ export function useViewportControlsVisibility(delay = 3000) {
 		}, delay);
 	};
 
-	// Debounce the mouse event handlers
-	const debouncedShowControls = useDebounce(showControlsHandler, 50);
-	const debouncedHideControls = useDebounce(hideControlsHandler, 50);
-
 	useEffect(() => {
 		if (!isHoveringControls) {
 			hideControlsHandler();
@@ -79,9 +74,9 @@ export function useViewportControlsVisibility(delay = 3000) {
 		isHoveringControls,
 		setIsHoveringControls,
 		containerProps: {
-			onMouseMove: debouncedShowControls,
-			onMouseLeave: debouncedHideControls,
-			onMouseEnter: debouncedShowControls,
+			onMouseMove: showControlsHandler,
+			onMouseLeave: hideControlsHandler,
+			onMouseEnter: showControlsHandler,
 		},
 	};
 }
