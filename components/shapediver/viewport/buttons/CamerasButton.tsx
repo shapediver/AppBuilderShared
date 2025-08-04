@@ -58,7 +58,6 @@ export default function CamerasButton({
 			opened={visible && isMenuOpened}
 			onChange={setIsMenuOpened}
 			shadow="md"
-			width={200}
 			position={"bottom-end"}
 		>
 			<ActionIcon
