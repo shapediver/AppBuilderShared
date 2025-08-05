@@ -72,21 +72,27 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 export default function ViewportIcons(
 	props: ViewportIconsProps & ViewportIconsOptionalProps,
 ) {
-	const {viewportId: _viewportId, namespace = "", ...rest} = props;
+	const {
+		viewportId: _viewportId,
+		namespace = "",
+		hideJsonMenu,
+		hideSavedStates,
+		...rest
+	} = props;
 
 	const {
 		style,
 		iconStyle,
 		fullscreenId,
 		enableHistoryButtons,
-		enableModelStateButtons,
-		enableImportExportButtons,
-		enableResetButton,
 		enableArBtn,
 		enableCamerasBtn,
 		enableFullscreenBtn,
 		enableZoomBtn,
-		enableHistoryMenuButton,
+		enableModelStateButtons: enableModelStateButtonsStyleProp,
+		enableImportExportButtons: enableImportExportButtonsStyleProp,
+		enableResetButton: enableResetButtonStyleProp,
+		enableHistoryMenuButton: enableHistoryMenuButtonStyleProp,
 		color,
 		colorDisabled,
 		variant,
@@ -206,6 +212,67 @@ export default function ViewportIcons(
 			iconsVisible,
 		],
 	);
+
+	/**
+	 * The reset button depends on the following:
+	 * - enableResetButtonStyleProp: if false, return false
+	 * - hideJsonMenu: if true, return false
+	 * otherwise, return true
+	 */
+	const enableResetButton = useMemo(() => {
+		if (enableResetButtonStyleProp === false) return false;
+		if (hideJsonMenu) return false;
+		return true;
+	}, [enableResetButtonStyleProp, hideJsonMenu]);
+
+	/**
+	 * The model state buttons depend on the following:
+	 * - enableModelStateButtonsStyleProp: if false, return false
+	 * - hideSavedStates: if true, return false
+	 * otherwise, return true
+	 */
+	const enableModelStateButtons = useMemo(() => {
+		if (enableModelStateButtonsStyleProp === false) return false;
+		if (hideSavedStates) return false;
+		return true;
+	}, [enableModelStateButtonsStyleProp, hideSavedStates]);
+
+	/**
+	 * The import/export buttons depend on the following:
+	 * - enableImportExportButtonsStyleProp: if false, return false
+	 * - hideJsonMenu: if true, return false
+	 * otherwise, return true
+	 */
+	const enableImportExportButtons = useMemo(() => {
+		if (enableImportExportButtonsStyleProp === false) return false;
+		if (hideJsonMenu) return false;
+		return true;
+	}, [enableImportExportButtonsStyleProp, hideJsonMenu]);
+
+	/**
+	 * The history menu button depends on the following:
+	 * - enableHistoryMenuButtonProp: if false, return false
+	 * - enableResetButton && enableImportExportButtons & enableModelStateButtons: if all false, return false
+	 * - otherwise, return true
+	 */
+	const enableHistoryMenuButton = useMemo(() => {
+		if (enableHistoryMenuButtonStyleProp === false) return false;
+		if (
+			enableResetButtonStyleProp === false &&
+			enableImportExportButtonsStyleProp === false &&
+			enableModelStateButtonsStyleProp === false
+		) {
+			return false;
+		}
+
+		return true;
+	}, [
+		enableHistoryMenuButtonStyleProp,
+		enableResetButtonStyleProp,
+		enableImportExportButtonsStyleProp,
+		enableModelStateButtonsStyleProp,
+	]);
+
 	const showHistoryDivider = useMemo(() => {
 		const hasViewerIcons =
 			(enableArBtn && isArEnabled) ||

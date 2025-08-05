@@ -19,6 +19,14 @@ export interface ViewportIconsProps {
 	 * Viewport ID
 	 */
 	viewportId?: string;
+	/**
+	 * If the JSON menu should be hidden by default.
+	 */
+	hideJsonMenu?: boolean;
+	/**
+	 * If the saved states menu should be hidden by default.
+	 */
+	hideSavedStates?: boolean;
 }
 
 export interface ViewportIconsOptionalProps {
