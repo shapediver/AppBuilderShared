@@ -697,6 +697,14 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 */
 	hideAttributeVisualization?: boolean;
 	/**
+	 * If the JSON menu should be hidden by default.
+	 */
+	hideJsonMenu?: boolean;
+	/**
+	 * If the saved states menu should be hidden by default.
+	 */
+	hideSavedStates?: boolean;
+	/**
 	 * Optional model state id.
 	 */
 	modelStateId?: string;

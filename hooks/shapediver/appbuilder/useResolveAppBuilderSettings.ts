@@ -89,7 +89,9 @@ export default function useResolveAppBuilderSettings(
 						// setting in session
 						acceptRejectMode: model.settings.parameters_commit,
 						hideAttributeVisualization:
-							model.settings.hide_attribute_visualization,
+							model.settings.hide_attribute_visualization_iframe,
+						hideJsonMenu: model.settings.hide_json_menu_iframe,
+						hideSavedStates: model.settings.hide_json_menu_iframe,
 						...session,
 						ticket: model!.ticket!.ticket,
 						modelViewUrl: model!.backend_system!.model_view_url,
@@ -121,7 +123,11 @@ export default function useResolveAppBuilderSettings(
 							iframeData.model.settings?.parameters_commit,
 						hideAttributeVisualization:
 							iframeData.model.settings
-								?.hide_attribute_visualization,
+								?.hide_attribute_visualization_iframe,
+						hideJsonMenu:
+							iframeData.model.settings?.hide_json_menu_iframe,
+						hideSavedStates:
+							iframeData.model.settings?.hide_saved_states_iframe,
 						...session,
 						ticket: iframeData.ticket,
 						modelViewUrl: iframeData.model_view_url,

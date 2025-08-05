@@ -328,7 +328,15 @@ export default function AppBuilderPage(props: Partial<Props>) {
 						{ViewportOverlayWrapper && (
 							<>
 								{ViewportIcons && (
-									<ViewportIcons namespace={namespace} />
+									<ViewportIcons
+										namespace={namespace}
+										hideJsonMenu={
+											controllerSession.hideJsonMenu
+										}
+										hideSavedStates={
+											controllerSession.hideSavedStates
+										}
+									/>
 								)}
 								<ViewportOverlayWrapper
 									position={OverlayPosition.BOTTOM_MIDDLE}
