@@ -14,6 +14,7 @@ import {
 	SdPlatformModelGetEmbeddableFields,
 	create,
 } from "@shapediver/sdk.platform-api-sdk-v1";
+import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /**
@@ -41,9 +42,13 @@ export default function useResolveAppBuilderSettings(
 	});
 
 	// resolve session data using iframe embedding or token
-	const {value, error, loading} = useAsync(async () => {
+	const {
+		value: resolvedSessions,
+		error,
+		loading,
+	} = useAsync(async () => {
 		if (shouldUsePlatform() && !sdkRef) return;
-		if (!settings) return;
+		if (!settings?.sessions) return;
 
 		const sessions = await Promise.all(
 			settings.sessions.map(async (session) => {
@@ -141,17 +146,23 @@ export default function useResolveAppBuilderSettings(
 				}
 			}),
 		);
+		return sessions;
+	}, [settings?.sessions, sdkRef]);
 
-		const settingsResolved: IAppBuilderSettingsResolved = {
+	// Create the final resolved settings combining current settings with resolved sessions
+	const settingsResolved = useMemo<
+		IAppBuilderSettingsResolved | undefined
+	>(() => {
+		if (!settings || !resolvedSessions) return undefined;
+
+		return {
 			...settings,
-			sessions,
+			sessions: resolvedSessions,
 		};
-
-		return settingsResolved;
-	}, [settings, sdkRef]);
+	}, [settings, resolvedSessions]);
 
 	return {
-		settings: value,
+		settings: settingsResolved,
 		error: platformError ?? error,
 		loading,
 	};
