@@ -129,36 +129,50 @@ export default function useAppBuilderSettings(
 			: undefined;
 	}, [template]);
 
-	// use settings loaded from json, or settings defined by query parameters, or default settings
-	const settings = useMemo<IAppBuilderSettings | undefined>(() => {
-		if (!value) {
-			const session = defaultSession || queryParamSession;
-			if (session) {
-				return {
-					version: "1.0",
-					sessions: [session],
-					settings: {disableFallbackUi},
-					themeOverrides: themeOverrides,
-				};
-			} else {
-				return undefined;
-			}
-		} else {
-			const session = defaultSession || queryParamSession;
-			const {sessions, ...rest} = value;
+	// create the session array in a memo, otherwise it is recreated every time
+	const sessionsArray = useMemo<
+		IAppBuilderSettingsJsonSession[] | undefined
+	>(() => {
+		if (loading) return undefined;
 
-			// if the value has sessions, combine them with the default session
-			let combinedSessions: IAppBuilderSettingsJsonSession[] | undefined =
-				[];
+		if (!value) {
+			// No JSON loaded, use query params or default session
+			const session = defaultSession || queryParamSession;
+			return session ? [session] : undefined;
+		} else {
+			// JSON loaded, combine with query params/default session
+			const session = defaultSession || queryParamSession;
+			const {sessions} = value;
+
+			let combinedSessions: IAppBuilderSettingsJsonSession[] = [];
 			if (session) combinedSessions.push(session);
 			if (sessions) combinedSessions = combinedSessions.concat(sessions);
 
+			return combinedSessions;
+		}
+	}, [loading, value, defaultSession, queryParamSession]);
+
+	// create the settings object, either with the json data or without
+	const settings = useMemo<IAppBuilderSettings | undefined>(() => {
+		if (!sessionsArray) return undefined;
+		if (loading) return undefined;
+
+		if (!value) {
 			return {
-				sessions: combinedSessions,
+				version: "1.0",
+				sessions: sessionsArray,
+				settings: {disableFallbackUi},
+				themeOverrides: themeOverrides,
+			};
+		} else {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const {sessions: _, ...rest} = value;
+			return {
+				sessions: sessionsArray,
 				...rest,
 			};
 		}
-	}, [value, defaultSession, queryParamSession, themeOverrides]);
+	}, [loading, sessionsArray, value, queryParamSession, themeOverrides]);
 
 	// register theme overrides
 	const setThemeOverride = useThemeOverrideStore(
