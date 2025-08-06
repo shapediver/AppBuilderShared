@@ -124,7 +124,9 @@ export default function ParameterSelectionComponent(
 		selectedNodeNames.length >= minimumSelection &&
 		selectedNodeNames.length <= maximumSelection;
 	const acceptImmediately =
-		minimumSelection === maximumSelection && acceptable;
+		(minimumSelection === maximumSelection ||
+			(minimumSelection === 0 && maximumSelection === 1)) &&
+		acceptable;
 
 	useEffect(() => {
 		const parsed = parseNames(state.uiValue);
