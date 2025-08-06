@@ -49,7 +49,7 @@ export default function SelectedAttributeComponent(props: Props) {
 			return Object.entries(selectedItemData).reduce(
 				(acc, [key, value]) => {
 					acc[key] = {
-						value: JSON.stringify(value.value),
+						value: value.value as string,
 						typeHint: value.typeHint,
 						ableToActivate: false,
 						currentlyActive:
@@ -80,7 +80,7 @@ export default function SelectedAttributeComponent(props: Props) {
 				// and the currentlyActive property based on the rendered attribute
 				return {
 					[realKey]: {
-						value: JSON.stringify(value.value),
+						value: value.value as string,
 						typeHint: value.typeHint,
 						ableToActivate: true,
 						currentlyActive:
