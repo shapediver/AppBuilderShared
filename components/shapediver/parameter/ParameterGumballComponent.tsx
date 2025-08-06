@@ -33,6 +33,7 @@ import React, {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import classes from "./ParameterInteractionComponent.module.css";
@@ -128,10 +129,8 @@ export default function ParameterGumballComponent(
 			localTransformations?: number[];
 		}[]
 	>([]);
-	// state to manage the interaction request token
-	const [interactionRequestToken, setInteractionRequestToken] = useState<
-		string | undefined
-	>(undefined);
+	// reference to manage the interaction request token
+	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 
 	const {viewportId} = useViewportId();
 
@@ -227,25 +226,25 @@ export default function ParameterGumballComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the gumball state changes.
 	 */
 	useEffect(() => {
-		if (gumballActive && !interactionRequestToken) {
+		if (gumballActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
 				viewportId,
 				disable: resetTransformation,
 			});
-			setInteractionRequestToken(returnedToken);
-		} else if (!gumballActive && interactionRequestToken) {
-			removeInteractionRequest(interactionRequestToken);
-			setInteractionRequestToken(undefined);
+			interactionRequestTokenRef.current = returnedToken;
+		} else if (!gumballActive && interactionRequestTokenRef.current) {
+			removeInteractionRequest(interactionRequestTokenRef.current);
+			interactionRequestTokenRef.current = undefined;
 		}
 
 		return () => {
-			if (interactionRequestToken) {
-				removeInteractionRequest(interactionRequestToken);
-				setInteractionRequestToken(undefined);
+			if (interactionRequestTokenRef.current) {
+				removeInteractionRequest(interactionRequestTokenRef.current);
+				interactionRequestTokenRef.current = undefined;
 			}
 		};
-	}, [gumballActive, interactionRequestToken, resetTransformation]);
+	}, [gumballActive, resetTransformation]);
 
 	/**
 	 * The content of the parameter when it is active.

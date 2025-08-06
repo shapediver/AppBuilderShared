@@ -34,6 +34,7 @@ import React, {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import classes from "./ParameterInteractionComponent.module.css";
@@ -109,10 +110,8 @@ export default function ParameterSelectionComponent(
 	const [selectionActive, setSelectionActive] = useState<boolean>(false);
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
-	// state to manage the interaction request token
-	const [interactionRequestToken, setInteractionRequestToken] = useState<
-		string | undefined
-	>(undefined);
+	// reference to manage the interaction request token
+	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
@@ -224,25 +223,25 @@ export default function ParameterSelectionComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the selection state changes.
 	 */
 	useEffect(() => {
-		if (selectionActive && !interactionRequestToken) {
+		if (selectionActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
 				viewportId,
 				disable: cancel,
 			});
-			setInteractionRequestToken(returnedToken);
-		} else if (!selectionActive && interactionRequestToken) {
-			removeInteractionRequest(interactionRequestToken);
-			setInteractionRequestToken(undefined);
+			interactionRequestTokenRef.current = returnedToken;
+		} else if (!selectionActive && interactionRequestTokenRef.current) {
+			removeInteractionRequest(interactionRequestTokenRef.current);
+			interactionRequestTokenRef.current = undefined;
 		}
 
 		return () => {
-			if (interactionRequestToken) {
-				removeInteractionRequest(interactionRequestToken);
-				setInteractionRequestToken(undefined);
+			if (interactionRequestTokenRef.current) {
+				removeInteractionRequest(interactionRequestTokenRef.current);
+				interactionRequestTokenRef.current = undefined;
 			}
 		};
-	}, [selectionActive, interactionRequestToken, cancel]);
+	}, [selectionActive, cancel]);
 
 	/**
 	 * The content of the parameter when it is active.
