@@ -71,7 +71,7 @@ export interface IShapeDiverStoreInteractionRequestManagement {
 	 * This method handles both active and passive requests.
 	 *
 	 * If the request is active:
-	 * - if there already is an active request for the same viewport, it will be replaced.
+	 * - if there already is an active request for the same viewport, it will be disabled and replaced.
 	 * - disable all passive requests for the same viewport.
 	 * If the request is passive:
 	 * - disable the request if there is an active request for the same viewport.
