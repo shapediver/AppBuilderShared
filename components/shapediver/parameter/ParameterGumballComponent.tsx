@@ -6,6 +6,7 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -85,6 +86,10 @@ export default function ParameterGumballComponent(
 		props,
 	);
 
+	// get the interaction request management
+	const {addInteractionRequest, removeInteractionRequest} =
+		useShapeDiverStoreInteractionRequestManagement();
+
 	// get the notification context
 	const notifications = useContext(NotificationContext);
 
@@ -123,6 +128,10 @@ export default function ParameterGumballComponent(
 			localTransformations?: number[];
 		}[]
 	>([]);
+	// state to manage the interaction request token
+	const [interactionRequestToken, setInteractionRequestToken] = useState<
+		string | undefined
+	>(undefined);
 
 	const {viewportId} = useViewportId();
 
@@ -211,6 +220,32 @@ export default function ParameterGumballComponent(
 	useEffect(() => {
 		setOnCancelCallback(() => _onCancelCallback);
 	}, [_onCancelCallback]);
+
+	/**
+	 * Effect to manage the interaction request for the gumball.
+	 * It adds an interaction request when the gumball is active and removes it when the gumball is inactive.
+	 * It also cleans up the interaction request when the component is unmounted or when the gumball state changes.
+	 */
+	useEffect(() => {
+		if (gumballActive && !interactionRequestToken) {
+			const returnedToken = addInteractionRequest({
+				type: "active",
+				viewportId,
+				disable: resetTransformation,
+			});
+			setInteractionRequestToken(returnedToken);
+		} else if (!gumballActive && interactionRequestToken) {
+			removeInteractionRequest(interactionRequestToken);
+			setInteractionRequestToken(undefined);
+		}
+
+		return () => {
+			if (interactionRequestToken) {
+				removeInteractionRequest(interactionRequestToken);
+				setInteractionRequestToken(undefined);
+			}
+		};
+	}, [gumballActive, interactionRequestToken, resetTransformation]);
 
 	/**
 	 * The content of the parameter when it is active.

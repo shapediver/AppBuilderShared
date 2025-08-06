@@ -6,6 +6,7 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -73,6 +74,10 @@ export default function ParameterDraggingComponent(
 		props,
 	);
 
+	// get the interaction request management
+	const {addInteractionRequest, removeInteractionRequest} =
+		useShapeDiverStoreInteractionRequestManagement();
+
 	// get the notification context
 	const notifications = useContext(NotificationContext);
 
@@ -104,6 +109,10 @@ export default function ParameterDraggingComponent(
 	const [parsedUiValue, setParsedUiValue] = useState<
 		DraggingParameterValue["objects"]
 	>(parseDraggedNodes(state.uiValue));
+	// state to manage the interaction request token
+	const [interactionRequestToken, setInteractionRequestToken] = useState<
+		string | undefined
+	>(undefined);
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
@@ -196,6 +205,37 @@ export default function ParameterDraggingComponent(
 		[draggedNodes],
 	);
 
+	const cancel = useCallback(() => {
+		// reset the dragged nodes to the last confirmed value
+		resetValue(lastConfirmedValueRef.current);
+	}, [resetValue]);
+
+	/**
+	 * Effect to manage the interaction request for the dragging.
+	 * It adds an interaction request when the dragging is active and removes it when the dragging is inactive.
+	 * It also cleans up the interaction request when the component is unmounted or when the dragging state changes.
+	 */
+	useEffect(() => {
+		if (draggingActive && !interactionRequestToken) {
+			const returnedToken = addInteractionRequest({
+				type: "active",
+				viewportId,
+				disable: cancel,
+			});
+			setInteractionRequestToken(returnedToken);
+		} else if (!draggingActive && interactionRequestToken) {
+			removeInteractionRequest(interactionRequestToken);
+			setInteractionRequestToken(undefined);
+		}
+
+		return () => {
+			if (interactionRequestToken) {
+				removeInteractionRequest(interactionRequestToken);
+				setInteractionRequestToken(undefined);
+			}
+		};
+	}, [draggingActive, interactionRequestToken, cancel]);
+
 	/**
 	 * The content of the parameter when it is active.
 	 *
@@ -240,15 +280,11 @@ export default function ParameterDraggingComponent(
 					fullWidth={true}
 					disabled={!dirty}
 					variant="filled"
-					onClick={() => changeValue()}
+					onClick={changeValue}
 				>
 					<Text>Confirm</Text>
 				</Button>
-				<Button
-					fullWidth={true}
-					variant={"light"}
-					onClick={() => resetValue(lastConfirmedValueRef.current)}
-				>
+				<Button fullWidth={true} variant={"light"} onClick={cancel}>
 					<Text>Cancel</Text>
 				</Button>
 			</Group>
