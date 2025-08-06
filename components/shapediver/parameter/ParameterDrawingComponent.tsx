@@ -7,7 +7,7 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDrawingTools} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingTools";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
+import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -36,6 +36,7 @@ import React, {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import classes from "./ParameterInteractionComponent.module.css";
@@ -74,11 +75,12 @@ export default function ParameterDrawingComponent(
 		props,
 	);
 
+	// get the interaction request management
+	const {addInteractionRequest, removeInteractionRequest} =
+		useShapeDiverStoreInteractionRequestManagement();
+
 	// get the viewport ID
 	const {viewportId} = useViewportId();
-
-	// get the active parameter from the store
-	const {activeParameter, setActiveParameter} = useDrawingOptionsStore();
 	// get the notification context
 	const notifications = useContext(NotificationContext);
 
@@ -101,38 +103,21 @@ export default function ParameterDrawingComponent(
 
 	// state for the drawing application
 	const [drawingActive, setDrawingActive] = useState<boolean>(false);
+	// state for the interaction permission
+	const [hasInteractionPermission, setHasInteractionPermission] =
+		useState<boolean>(false);
 	// state for the last confirmed value
 	const [parsedUiValue, setParsedUiValue] = useState<PointsData>(
 		parsePointsData(state.uiValue),
 	);
+	// reference to manage the interaction request token
+	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 
-	/**
-	 * Callback function to activate the drawing.
-	 *
-	 * If another drawing parameter is already active, a notification is shown.
-	 * Otherwise, the drawing is activated and the active parameter ID is set.
-	 */
-	const activateDrawing = useCallback(() => {
-		if (activeParameter === undefined) {
-			setDrawingActive(true);
-			setActiveParameter(definition.id);
-		} else {
-			notifications.warning({
-				title: "A drawing parameter is already active",
-				message:
-					"Please confirm or cancel the current drawing parameter first.",
-			});
-		}
-	}, [activeParameter]);
-
-	/**
-	 * Callback function to deactivate the drawing.
-	 * The drawing is deactivated and the active parameter ID is reset.
-	 */
-	const deactivateDrawing = useCallback(() => {
-		setDrawingActive(false);
-		setActiveParameter(undefined);
-	}, []);
+	// update the interaction request token and activate drawing tools if necessary
+	const updateInteractionRequestToken = (token: string | undefined) => {
+		interactionRequestTokenRef.current = token;
+		setHasInteractionPermission(token !== undefined);
+	};
 
 	/**
 	 * Callback function to change the value of the parameter.
@@ -141,7 +126,7 @@ export default function ParameterDrawingComponent(
 	 */
 	const confirmDrawing = useCallback(
 		(pointsData?: PointsData) => {
-			deactivateDrawing();
+			setDrawingActive(false);
 			setParsedUiValue(pointsData ?? []);
 			// if the value is already the same, do not change it
 			if (value === JSON.stringify({points: pointsData})) return;
@@ -156,7 +141,7 @@ export default function ParameterDrawingComponent(
 	 */
 	const cancelDrawing = useCallback(() => {
 		if (drawingToolsApi) drawingToolsApi.close();
-		deactivateDrawing();
+		setDrawingActive(false);
 	}, []);
 
 	/**
@@ -174,7 +159,7 @@ export default function ParameterDrawingComponent(
 		drawingProps,
 		confirmDrawing,
 		cancelDrawing,
-		drawingActive,
+		drawingActive && hasInteractionPermission,
 		parsedUiValue,
 	);
 
@@ -197,7 +182,7 @@ export default function ParameterDrawingComponent(
 				(p, i) => JSON.stringify(p) === JSON.stringify(pointsData[i]),
 			)
 		) {
-			deactivateDrawing();
+			setDrawingActive(false);
 			setPointsData(parsed);
 		}
 	}, [state.uiValue]);
@@ -207,7 +192,7 @@ export default function ParameterDrawingComponent(
 		() =>
 			onCancel
 				? () => {
-						deactivateDrawing();
+						setDrawingActive(false);
 						onCancel?.();
 					}
 				: undefined,
@@ -252,6 +237,32 @@ export default function ParameterDrawingComponent(
 			setIsWithinConstraints(false);
 		}
 	}, [pointsData]);
+
+	/**
+	 * Effect to manage the interaction request for the drawing.
+	 * It adds an interaction request when the drawing is active and removes it when the drawing is inactive.
+	 * It also cleans up the interaction request when the component is unmounted or when the drawing state changes.
+	 */
+	useEffect(() => {
+		if (drawingActive && !interactionRequestTokenRef.current) {
+			const returnedToken = addInteractionRequest({
+				type: "active",
+				viewportId,
+				disable: cancelDrawing,
+			});
+			updateInteractionRequestToken(returnedToken);
+		} else if (!drawingActive && interactionRequestTokenRef.current) {
+			removeInteractionRequest(interactionRequestTokenRef.current);
+			updateInteractionRequestToken(undefined);
+		}
+
+		return () => {
+			if (interactionRequestTokenRef.current) {
+				removeInteractionRequest(interactionRequestTokenRef.current);
+				updateInteractionRequestToken(undefined);
+			}
+		};
+	}, [drawingActive, cancelDrawing]);
 
 	/**
 	 * The content of the parameter when it is active.
@@ -362,7 +373,7 @@ export default function ParameterDrawingComponent(
 			className={classes.interactionButton}
 			rightSection={<Icon type={IconTypeEnum.Pencil} />}
 			variant={pointsData?.length === 0 ? "light" : "filled"}
-			onClick={activateDrawing}
+			onClick={() => setDrawingActive(true)}
 		>
 			<Text size="sm" className={classes.interactionText}>
 				{drawingProps.general?.prompt?.inactiveTitle ?? "Start drawing"}
