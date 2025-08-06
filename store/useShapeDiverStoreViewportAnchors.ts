@@ -61,7 +61,7 @@ export const useShapeDiverStoreViewportAnchors =
 						// special case if currently showing content
 						if (!a.showContent && b.showContent) return -1;
 						if (a.showContent && !b.showContent) return 1;
-						return b.distance - a.distance;
+						return (b.distance || 0) - (a.distance || 0);
 					});
 
 					// Update zIndex for all anchors based on sorted order

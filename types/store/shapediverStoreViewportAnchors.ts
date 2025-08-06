@@ -32,7 +32,7 @@ export interface IAnchor3d extends IAnchorGeneric {
 	 * This is used to sort the anchors by distance.
 	 * The anchor with the smallest distance will have the highest z-index.
 	 */
-	distance: number;
+	distance?: number;
 	/**
 	 * The setter for the z-index of the anchor.
 	 *
