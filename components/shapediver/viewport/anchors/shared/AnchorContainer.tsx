@@ -11,6 +11,7 @@ import {
 import {
 	ActionIcon,
 	ActionIconProps,
+	Flex,
 	Group,
 	GroupProps,
 	Portal,
@@ -88,7 +89,7 @@ interface AnchorContainerProps {
 	properties: (ViewportAnchorProps2d | ViewportAnchorProps3d) &
 		Partial<ViewportAnchorStyleProps>;
 	/** Optional mouse down handler for the anchor, this is only needed for draggable anchors */
-	handleMouseDown?: (event: React.MouseEvent<HTMLDivElement>) => void;
+	handleMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 /**
@@ -263,7 +264,7 @@ export function useAnchorContainer({
 	 * It contains the icon and toggles the content visibility
 	 * when clicked. The iconProps are applied to the ActionIcon.
 	 *
-	 * This will be replace once this task is done:
+	 * This will be replaced once this task is done:
 	 * https://shapediver.atlassian.net/browse/SS-8888
 	 */
 	const previewIconElement = (
@@ -282,13 +283,32 @@ export function useAnchorContainer({
 	 * It contains the close icon and toggles the content visibility
 	 * when clicked. The iconProps are applied to the ActionIcon.
 	 *
-	 * This will be replace once this task is done:
+	 * This will be replaced once this task is done:
 	 * https://shapediver.atlassian.net/browse/SS-8888
 	 */
 	const closeIconElement = (
 		<ActionIcon onClick={toggleContent} {...iconProps}>
 			<Icon
 				type={IconTypeEnum.X}
+				color={iconProps?.color}
+				className={classes.viewportIcon}
+			/>
+		</ActionIcon>
+	);
+
+	/**
+	 * If the anchor is draggable, we create an ActionIcon element
+	 * that will be displayed in the control element group.
+	 * It contains the drag icon and handles the mouse down event.
+	 * The iconProps are applied to the ActionIcon.
+	 *
+	 * This will be replaced once this task is done:
+	 * https://shapediver.atlassian.net/browse/SS-8888
+	 */
+	const dragIconElement = (
+		<ActionIcon onMouseDown={handleMouseDown} {...iconProps}>
+			<Icon
+				type={IconTypeEnum.GridDots}
 				color={iconProps?.color}
 				className={classes.viewportIcon}
 			/>
@@ -325,21 +345,19 @@ export function useAnchorContainer({
 					{showContent === false ? (
 						previewIconElement
 					) : (
-						<Stack
-							gap={0}
-							onMouseDown={
-								draggable ? handleMouseDown : undefined
-							}
-						>
+						<Stack gap={0}>
 							<Group
 								ref={updateControlElementGroupRef}
 								style={{
 									display: "flex",
-									justifyContent: "flex-end",
+									justifyContent: "space-between",
 									width: "100%",
 									pointerEvents: "auto",
 								}}
 							>
+								{draggable && dragIconElement}
+								{/** The Flex element is used to push the close icon to the right. */}
+								<Flex />
 								{previewIcon && closeIconElement}
 							</Group>
 							<Group {...anchorGroupProps} w={width} h={height}>
