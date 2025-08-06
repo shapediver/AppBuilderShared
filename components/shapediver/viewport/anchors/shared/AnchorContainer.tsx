@@ -360,8 +360,18 @@ export function useAnchorContainer({
 								<Flex />
 								{previewIcon && closeIconElement}
 							</Group>
-							<Group {...anchorGroupProps} w={width} h={height}>
-								<Stack style={{width: "100%"}}>{element}</Stack>
+							<Group
+								{...anchorGroupProps}
+								w={width}
+								h={height}
+								style={{
+									...anchorGroupProps?.style,
+									overflow: "auto",
+								}}
+							>
+								<Stack style={{width: "100%", height: "100%"}}>
+									{element}
+								</Stack>
 							</Group>
 						</Stack>
 					)}
