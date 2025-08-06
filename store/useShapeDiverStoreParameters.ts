@@ -1496,23 +1496,28 @@ export const useShapeDiverStoreParameters =
 						if (paramIds.length === 0) return;
 
 						// verify that all parameter stores exist and values are valid
-						paramIds.forEach((paramId) => {
+						const paramIdsValid = paramIds.filter((paramId) => {
 							const store = stores[paramId];
-							if (!store)
-								throw new Error(
+							if (!store) {
+								console.warn(
 									`Parameter ${paramId} does not exist for session namespace ${namespace}`,
 								);
+								return false;
+							}
 
 							const {actions} = store.getState();
 							const value = values[paramId];
-							if (!actions.isValid(value))
-								throw new Error(
+							if (!actions.isValid(value)) {
+								console.warn(
 									`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
 								);
+								return false;
+							}
+							return true;
 						});
 
 						// update values and return execution promises
-						const promises = paramIds.map((paramId) => {
+						const promises = paramIdsValid.map((paramId) => {
 							const store = stores[paramId];
 							const {actions} = store.getState();
 							actions.setUiValue(values[paramId]);
