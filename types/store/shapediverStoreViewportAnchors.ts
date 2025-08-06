@@ -1,4 +1,32 @@
-export interface IAnchor3d {
+interface IAnchorGeneric {
+	/**
+	 * The unique identifier for the anchor.
+	 * This is used to identify the anchor in the store.
+	 */
+	id: string;
+	/**
+	 * Whether the anchor is currently showing content.
+	 */
+	showContent: boolean;
+	/**
+	 * The setter for the showContent property.
+	 * In case of type "3d", this will be used to disable the anchor if another anchor is showing content.
+	 *
+	 * @param showContent
+	 */
+	setShowContent: (showContent: boolean) => void;
+	/**
+	 * The type of the anchor.
+	 */
+	type: "2d" | "3d";
+}
+
+export interface IAnchor2d extends IAnchorGeneric {
+	type: "2d";
+}
+
+export interface IAnchor3d extends IAnchorGeneric {
+	type: "3d";
 	/**
 	 * The distance from the camera to the anchor.
 	 * This is used to sort the anchors by distance.
@@ -6,37 +34,22 @@ export interface IAnchor3d {
 	 */
 	distance: number;
 	/**
-	 * Whether the anchor is currently showing content.
-	 * This is used to switch off the other anchors when one is showing content.
-	 * If an anchor is showing content, it will be placed on top of the others.
-	 */
-	showContent: boolean;
-	/**
-	 * The setter for the showContent property.
-	 *
-	 * @param showContent
-	 */
-	setShowContent: (showContent: boolean) => void;
-	/**
 	 * The setter for the z-index of the anchor.
 	 *
 	 * @param zIndex
 	 */
 	setZIndex: (zIndex: number) => void;
-	/**
-	 * The unique identifier for the anchor.
-	 * This is used to identify the anchor in the store.
-	 */
-	id: string;
 }
 
-export interface IShapeDiverStoreViewportAnchors3d {
+type IAnchor = IAnchor2d | IAnchor3d;
+
+export interface IShapeDiverStoreViewportAnchors {
 	/**
 	 * The viewport anchors currently known by the store.
 	 * The key is the anchor ID.
 	 */
 	anchors: {
-		[viewportId: string]: IAnchor3d[];
+		[viewportId: string]: IAnchor[];
 	};
 
 	/**
@@ -45,7 +58,7 @@ export interface IShapeDiverStoreViewportAnchors3d {
 	 * @param viewportId
 	 * @param anchor
 	 */
-	addAnchor: (viewportId: string, anchor: IAnchor3d) => void;
+	addAnchor: (viewportId: string, anchor: IAnchor) => void;
 
 	/**
 	 * Remove an anchor from the store.
@@ -59,13 +72,13 @@ export interface IShapeDiverStoreViewportAnchors3d {
 	 * Update the distance of an anchor in the store.
 	 *
 	 * @param viewportId
-	 * @param anchor3dId
+	 * @param anchorId
 	 * @param distance
 	 * @returns
 	 */
 	updateDistance: (
 		viewportId: string,
-		anchor3dId: string,
+		anchorId: string,
 		distance: number,
 	) => void;
 }

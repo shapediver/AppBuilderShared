@@ -1,10 +1,10 @@
-import {IShapeDiverStoreViewportAnchors3d} from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors3d";
+import {IShapeDiverStoreViewportAnchors} from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 import {devtoolsSettings} from "./storeSettings";
 
-export const useShapeDiverStoreViewportAnchors3d =
-	create<IShapeDiverStoreViewportAnchors3d>()(
+export const useShapeDiverStoreViewportAnchors =
+	create<IShapeDiverStoreViewportAnchors>()(
 		devtools(
 			(set, get) => ({
 				anchors: {},
@@ -46,7 +46,9 @@ export const useShapeDiverStoreViewportAnchors3d =
 
 				updateDistance: (viewportId, anchorId, distance) => {
 					const {anchors} = get();
-					const anchorList = anchors[viewportId];
+					const anchorList = anchors[viewportId].filter(
+						(a) => a.type === "3d",
+					);
 					if (!anchorList) return;
 
 					// Update the anchor's distance first
