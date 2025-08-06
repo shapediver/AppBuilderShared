@@ -47,7 +47,7 @@ import {IViewportApi} from "@shapediver/viewer.viewport";
 import {IconEye, IconEyeOff} from "@tabler/icons-react";
 import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
 import SelectedAttributeComponent from "../../ui/SelectedAttributeComponent";
-import ViewportAnchor from "../../viewport/ViewportAnchor";
+import ViewportAnchor3d from "../../viewport/anchors/ViewportAnchor3d";
 import ColorAttribute from "./attributes/ColorAttribute";
 import DefaultAttribute, {
 	IDefaultAttributeExtended,
@@ -684,7 +684,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 				</Paper>
 			</TooltipWrapper>
 			{active && attributeSelectionData && (
-				<ViewportAnchor
+				<ViewportAnchor3d
 					location={attributeSelectionData.location}
 					id={`${widgetId}_anchor`}
 					element={

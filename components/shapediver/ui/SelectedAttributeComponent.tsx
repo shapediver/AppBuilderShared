@@ -156,7 +156,7 @@ export default function SelectedAttributeComponent(props: Props) {
 								{Object.values(attributeDataToShow).filter(
 									(v) => v.ableToActivate,
 								).length > 0 && (
-									<Table.Th style={{width: "15%"}}>
+									<Table.Th style={{width: "20%"}}>
 										Show
 									</Table.Th>
 								)}
