@@ -151,11 +151,11 @@ export default function ViewportAnchor3d(
 			}
 
 			if (vertical === "B") {
-				y = properties.container[1] * (1 / properties.scale[1]);
-			} else if (vertical === "T") {
 				y =
 					properties.container[1] * (1 / properties.scale[1]) -
 					offsetHeight;
+			} else if (vertical === "T") {
+				y = properties.container[1] * (1 / properties.scale[1]);
 			} else {
 				y =
 					properties.container[1] * (1 / properties.scale[1]) -

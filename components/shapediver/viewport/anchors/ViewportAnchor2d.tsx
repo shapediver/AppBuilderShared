@@ -126,9 +126,9 @@ export default function ViewportAnchor2d(
 		}
 
 		if (vertical === "B") {
-			y = location[1];
-		} else if (vertical === "T") {
 			y = `calc(${location[1]} - ${offsetHeight}px)`;
+		} else if (vertical === "T") {
+			y = location[1];
 		} else {
 			y = `calc(${location[1]} - ${offsetHeight / 2}px)`;
 		}
