@@ -539,6 +539,16 @@ export function isStandardContainer(
 	);
 }
 
+/** assert anchor 2d container */
+export function isAnchor2dContainer(
+	container: IAppBuilderContainer,
+): container is {
+	name: AppBuilderContainerNameType.Anchor2d;
+	props: AppBuilderAnchor2dContainerProperties;
+} {
+	return container.name === AppBuilderContainerNameType.Anchor2d;
+}
+
 /** assert anchor 3d container */
 export function isAnchor3dContainer(
 	container: IAppBuilderContainer,
