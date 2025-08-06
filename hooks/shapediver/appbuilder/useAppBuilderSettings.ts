@@ -172,7 +172,7 @@ export default function useAppBuilderSettings(
 				...rest,
 			};
 		}
-	}, [loading, sessionsArray, value, queryParamSession, themeOverrides]);
+	}, [loading, sessionsArray, value, disableFallbackUi, themeOverrides]);
 
 	// register theme overrides
 	const setThemeOverride = useThemeOverrideStore(
