@@ -171,6 +171,7 @@ export function useAnchorContainer({
 	const {canvas, allowPointerEventsGlobal} = useCanvasPortalUtilities(
 		viewportId,
 		portalRef,
+		portalUpdate,
 	);
 
 	/**

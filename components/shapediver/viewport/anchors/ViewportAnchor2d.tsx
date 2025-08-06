@@ -31,8 +31,10 @@ export default function ViewportAnchor2d(
 	const {location: inputLocation, justification} = props;
 
 	const [dragging, setDragging] = useState(false);
-	const [initialized, setInitialized] = useState(false);
+	const [updatePositionCalculation, setUpdatePositionCalculation] =
+		useState(0);
 
+	const initializedRef = useRef(false);
 	const showContentRef = useRef(false);
 	const offset = useRef({x: "0px", y: "0px"});
 	const position = useRef({x: "0px", y: "0px"});
@@ -71,7 +73,8 @@ export default function ViewportAnchor2d(
 	 */
 	useEffect(() => {
 		showContentRef.current = showContent;
-		setInitialized(false);
+		initializedRef.current = false;
+		setUpdatePositionCalculation((prev) => prev + 1);
 	}, [showContent]);
 
 	/**
@@ -82,7 +85,7 @@ export default function ViewportAnchor2d(
 	useEffect(() => {
 		if (!portalRef.current) return;
 		if (!canvas) return;
-		if (initialized) return;
+		if (initializedRef.current) return;
 
 		const offsetWidth = portalRef.current.offsetWidth;
 		if (!offsetWidth) return;
@@ -151,14 +154,14 @@ export default function ViewportAnchor2d(
 		y = `calc(${y} + ${offsetY})`;
 
 		updatePosition(x, y, portalRef, position);
-		setInitialized(true);
+		initializedRef.current = true;
 		portalRef.current.style.display = "block";
 	}, [
+		updatePositionCalculation,
 		portalUpdate,
 		controlElementGroupUpdate,
 		inputLocation,
 		justification,
-		initialized,
 	]);
 
 	/**
@@ -178,26 +181,24 @@ export default function ViewportAnchor2d(
 	};
 
 	/**
-	 * This function handles the mouse up event on the anchor.
-	 * It sets the dragging state to false.
-	 */
-	const handleMouseUp = () => {
-		setDragging(false);
-	};
-
-	/**
 	 * This effect adds event listeners for mouse move and mouse up events
 	 * to handle dragging of the anchor.
 	 */
 	useEffect(() => {
 		if (!dragging) return;
+		// Disable the dragging state when the mouse is released
+		const pointerEndEvent = () => {
+			setDragging(false);
+		};
 
-		window.addEventListener("mousemove", handleMouseMove);
-		window.addEventListener("mouseup", handleMouseUp);
+		window.addEventListener("pointermove", handleMouseMove);
+		window.addEventListener("pointerup", pointerEndEvent);
+		window.addEventListener("pointercancel", pointerEndEvent);
 
 		return () => {
-			window.removeEventListener("mousemove", handleMouseMove);
-			window.removeEventListener("mouseup", handleMouseUp);
+			window.removeEventListener("pointermove", handleMouseMove);
+			window.removeEventListener("pointerup", pointerEndEvent);
+			window.removeEventListener("pointercancel", pointerEndEvent);
 		};
 	}, [dragging]);
 

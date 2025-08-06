@@ -29,6 +29,7 @@ import {useEffect, useState} from "react";
 export function useCanvasPortalUtilities(
 	viewportId: string,
 	portalRef: React.RefObject<HTMLDivElement>,
+	portalUpdate: number,
 ): {
 	canvas: HTMLCanvasElement | null;
 	allowPointerEventsGlobal: boolean;
@@ -56,21 +57,31 @@ export function useCanvasPortalUtilities(
 			},
 		);
 
-		const tokenEnd = addListener(
-			EVENTTYPE_CAMERA.CAMERA_END,
-			(e: IEvent) => {
-				const cameraEvent =
-					e as EventResponseMapping[EVENTTYPE_CAMERA.CAMERA_END];
-				if (cameraEvent.viewportId !== viewport.id) return;
-				setAllowPointerEventsGlobal(true);
-			},
-		);
-
 		return () => {
 			removeListener(tokenStart);
-			removeListener(tokenEnd);
 		};
 	}, [viewport]);
+
+	/**
+	 * This effect adds event listeners for pointer end events
+	 * when the allowPointerEventsGlobal state is false.
+	 * It ensures that global pointer events are only allowed
+	 * when the camera is not active in the viewport.
+	 */
+	useEffect(() => {
+		const pointerEndEvent = () => {
+			// Only update state if currently disabled
+			setAllowPointerEventsGlobal((prev) => (prev ? prev : true));
+		};
+
+		window.addEventListener("pointerup", pointerEndEvent);
+		window.addEventListener("pointercancel", pointerEndEvent);
+
+		return () => {
+			window.removeEventListener("pointerup", pointerEndEvent);
+			window.removeEventListener("pointercancel", pointerEndEvent);
+		};
+	}, []);
 
 	/**
 	 * We need to observe the portalRef for changes in size
@@ -86,7 +97,7 @@ export function useCanvasPortalUtilities(
 		observer.observe(portalRef.current);
 
 		return () => observer.disconnect();
-	}, [portalRef.current, viewport]);
+	}, [viewport, portalUpdate]);
 
 	return {canvas, allowPointerEventsGlobal};
 }
