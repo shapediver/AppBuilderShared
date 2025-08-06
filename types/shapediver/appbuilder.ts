@@ -426,22 +426,38 @@ export enum AppBuilderContainerNameType {
 	Top = "top",
 	Bottom = "bottom",
 	Anchor3d = "anchor3d",
-	// Anchor2d = "anchor2d",
+	Anchor2d = "anchor2d",
 }
 
 /** Type for the anchor containers */
-export type AppBuilderAnchor3dContainerProperties = {
+export type AppBuilderAnchorContainerProperties = {
 	/** Id of the container. */
 	id: string;
-	/** 3D location */
-	location: number[];
 	/** Optional justification of the container. (default: "MC") */
 	justification?: TAG3D_JUSTIFICATION;
 	/** Optional boolean to allow pointer events on the container. (default: true) */
 	allowPointerEvents?: boolean;
 	/** Optional icon to be displayed to show the container. */
 	previewIcon?: IconType;
+	/** Optional width of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
+	width?: string | number;
+	/** Optional height of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
+	height?: string | number;
 };
+
+/** Type for the anchor 2d containers */
+export type AppBuilderAnchor2dContainerProperties = {
+	/** 2D location */
+	location: (string | number)[];
+	/** Optional boolean to allow dragging of the container. (default: true) */
+	draggable?: boolean;
+} & AppBuilderAnchorContainerProperties;
+
+/** Type for the anchor 3d containers */
+export type AppBuilderAnchor3dContainerProperties = {
+	/** 3D location */
+	location: number[];
+} & AppBuilderAnchorContainerProperties;
 
 /**
  * A container for UI elements
@@ -450,7 +466,9 @@ export interface IAppBuilderContainer {
 	/** Name of the container. */
 	name: AppBuilderContainerNameType;
 	/** Optional props, depending on the container type */
-	props?: AppBuilderAnchor3dContainerProperties;
+	props?:
+		| AppBuilderAnchor3dContainerProperties
+		| AppBuilderAnchor2dContainerProperties;
 	/** Tabs displayed in the container. */
 	tabs?: IAppBuilderTab[];
 	/** Further widgets displayed in the container. */
