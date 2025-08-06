@@ -54,6 +54,22 @@ export interface IShapeDiverStoreViewportAnchors {
 	};
 
 	/**
+	 * Store the state of the showContent for each anchor.
+	 * This is used to manage the visibility of anchor content.
+	 * The key is the viewportId, the value is an object where the key is the anchorId
+	 * and the value is an object with the showContent state for each anchor type.
+	 */
+	showContentMap: {
+		[viewportId: string]: {
+			[anchorId: string]: {
+				[K in
+					| AppBuilderContainerNameType.Anchor2d
+					| AppBuilderContainerNameType.Anchor3d]?: boolean;
+			};
+		};
+	};
+
+	/**
 	 * Add an anchor to the store.
 	 *
 	 * @param viewportId

@@ -9,12 +9,14 @@ export const useShapeDiverStoreViewportAnchors =
 		devtools(
 			(set, get) => ({
 				anchors: {},
+				showContentMap: {},
 
 				addAnchor: (viewportId, anchor) => {
 					set(
 						(state) => {
 							const existingAnchors =
 								state.anchors[viewportId] || [];
+
 							// Remove any anchor with the same id and type
 							const filteredAnchors = existingAnchors.filter(
 								(a) =>
@@ -23,22 +25,20 @@ export const useShapeDiverStoreViewportAnchors =
 										a.type === anchor.type
 									),
 							);
-							// If an anchor existed, update showContent on the new anchor
-							const existingAnchor = existingAnchors.find(
-								(a) =>
-									a.id === anchor.id &&
-									a.type === anchor.type,
-							);
-							if (existingAnchor) {
-								anchor = {
-									...anchor,
-									showContent: existingAnchor.showContent,
-								};
-							}
+							// Restore showContent from map if present
+							const showContent =
+								state.showContentMap[viewportId]?.[anchor.id]?.[
+									anchor.type
+								] ??
+								anchor.showContent ??
+								false;
 							return {
 								anchors: {
 									...state.anchors,
-									[viewportId]: [...filteredAnchors, anchor],
+									[viewportId]: [
+										...filteredAnchors,
+										{...anchor, showContent},
+									],
 								},
 							};
 						},
@@ -145,6 +145,15 @@ export const useShapeDiverStoreViewportAnchors =
 							anchors: {
 								...state.anchors,
 								[viewportId]: updatedAnchors,
+							},
+							showContentMap: {
+								...state.showContentMap,
+								[viewportId]: {
+									...state.showContentMap[viewportId],
+									[anchorId]: {
+										[anchorType]: showContent,
+									},
+								},
 							},
 						}),
 						false,
