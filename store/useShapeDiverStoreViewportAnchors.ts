@@ -128,8 +128,13 @@ export const useShapeDiverStoreViewportAnchors =
 					const updatedAnchors = anchorList.map((a) => {
 						if (a.id === anchorId) {
 							return {...a, showContent};
-						} else if (showContent && a.type === anchorType) {
+						} else if (
+							showContent &&
+							a.type === anchorType &&
+							a.hideable
+						) {
 							// If we are showing content, hide all other anchors
+							// If they are hideable (if a previewIcon is defined)
 							return {...a, showContent: false};
 						}
 						return a;

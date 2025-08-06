@@ -11,6 +11,10 @@ interface IAnchorGeneric {
 	 */
 	showContent: boolean;
 	/**
+	 * Whether the anchor is currently hideable.
+	 */
+	hideable: boolean;
+	/**
 	 * The type of the anchor.
 	 */
 	type:

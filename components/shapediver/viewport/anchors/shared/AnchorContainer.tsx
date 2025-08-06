@@ -183,6 +183,7 @@ export function useAnchorContainer({
 			type,
 			id,
 			showContent: !previewIcon,
+			hideable: !!previewIcon,
 		};
 	}, [type, id, previewIcon]);
 
