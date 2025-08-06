@@ -1,7 +1,9 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
-import ViewportAnchor3d from "@AppBuilderShared/components/shapediver/viewport/ViewportAnchor3d";
+import ViewportAnchor2d from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor2d";
+import ViewportAnchor3d from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor3d";
 import {
 	IAppBuilderContainer,
+	isAnchor2dContainer,
 	isAnchor3dContainer,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useEffect, useState} from "react";
@@ -17,7 +19,7 @@ interface Props {
  * @param props - The properties containing namespace and containers.
  * @returns An array of JSX elements representing the viewport anchors.
  */
-export function useViewportAnchors3d(props: Props): JSX.Element[] {
+export function useViewportAnchors(props: Props): JSX.Element[] {
 	const {namespace, containers} = props;
 
 	const [anchors, setAnchors] = useState<JSX.Element[]>([]);
@@ -42,6 +44,30 @@ export function useViewportAnchors3d(props: Props): JSX.Element[] {
 							/>
 						}
 						previewIcon={container.props.previewIcon}
+						width={container.props.width}
+						height={container.props.height}
+					/>,
+				);
+			} else if (isAnchor2dContainer(container)) {
+				anchors.push(
+					<ViewportAnchor2d
+						key={JSON.stringify(container)}
+						id={container.props.id}
+						location={container.props.location}
+						justification={container.props.justification}
+						allowPointerEvents={
+							container.props.allowPointerEvents ?? true
+						}
+						element={
+							<AppBuilderContainerComponent
+								namespace={namespace}
+								{...container}
+							/>
+						}
+						previewIcon={container.props.previewIcon}
+						draggable={container.props.draggable}
+						width={container.props.width}
+						height={container.props.height}
 					/>,
 				);
 			}
