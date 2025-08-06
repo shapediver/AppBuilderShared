@@ -1,5 +1,6 @@
 import {IAttributeDefinition} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAttributeVisualizationWidgetComponent";
 import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
+import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {getNodesByName} from "@shapediver/viewer.features.interaction";
 import {
@@ -8,7 +9,7 @@ import {
 	SDTFItemData,
 	SessionApiData,
 } from "@shapediver/viewer.session";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
 export type AttributeSelectionData = {
 	selectedItemData: {
@@ -34,7 +35,46 @@ export default function useAttributeSelection(
 	const [attributeSelectionData, setAttributeSelectionData] = useState<
 		AttributeSelectionData | undefined
 	>();
+	const [allowed, setAllowed] = useState<boolean>(true);
+	// reference to manage the interaction request token
+	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
+
 	const {addSessionUpdateCallback} = useShapeDiverStoreSession();
+
+	// get the interaction request management
+	const {addInteractionRequest, removeInteractionRequest} =
+		useShapeDiverStoreInteractionRequestManagement();
+
+	/**
+	 * Effect to manage the interaction request for the selection.
+	 * It adds an interaction request when the selection is active and removes it when the selection is inactive.
+	 * It also cleans up the interaction request when the component is unmounted or when the selection state changes.
+	 */
+	useEffect(() => {
+		if (active && !interactionRequestTokenRef.current) {
+			const returnedToken = addInteractionRequest({
+				type: "passive",
+				viewportId,
+				disable: () => {
+					setAllowed(false);
+				},
+				enable: () => {
+					setAllowed(true);
+				},
+			});
+			interactionRequestTokenRef.current = returnedToken;
+		} else if (!active && interactionRequestTokenRef.current) {
+			removeInteractionRequest(interactionRequestTokenRef.current);
+			interactionRequestTokenRef.current = undefined;
+		}
+
+		return () => {
+			if (interactionRequestTokenRef.current) {
+				removeInteractionRequest(interactionRequestTokenRef.current);
+				interactionRequestTokenRef.current = undefined;
+			}
+		};
+	}, [active]);
 
 	/**
 	 * Whenever the session is updated, the name filter is updated as well.
@@ -125,7 +165,7 @@ export default function useAttributeSelection(
 	const {selectedNodeNames} = useSelection(
 		viewportId,
 		selectionProps,
-		active,
+		active && allowed,
 		undefined,
 		false,
 	);

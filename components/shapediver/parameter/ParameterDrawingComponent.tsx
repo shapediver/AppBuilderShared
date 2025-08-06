@@ -8,6 +8,7 @@ import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/p
 import {useDrawingTools} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingTools";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
+import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -28,6 +29,7 @@ import {
 import {PointsData} from "@shapediver/viewer.features.drawing-tools";
 import {
 	IDrawingParameterSettings as IDrawingParameterProps,
+	RENDERER_TYPE,
 	SystemInfo,
 	validateDrawingParameterSettings,
 } from "@shapediver/viewer.session";
@@ -81,6 +83,10 @@ export default function ParameterDrawingComponent(
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
+	// get the viewport from the store
+	const {viewport} = useShapeDiverStoreViewport((state) => ({
+		viewport: state.viewports[viewportId],
+	}));
 	// get the notification context
 	const notifications = useContext(NotificationContext);
 
@@ -346,6 +352,22 @@ export default function ParameterDrawingComponent(
 	);
 
 	/**
+	 * The drawing tools currently don't work in Attribute Visualization mode,
+	 * so we show a message that the drawing is not supported while the Attribute Visualization is active.
+	 * Task: https://shapediver.atlassian.net/browse/SS-8901
+	 */
+	const contentAttributeVisualization = (
+		<Button
+			justify="space-between"
+			fullWidth={true}
+			disabled={disabled}
+			className={classes.interactionButton}
+		>
+			<Text size="sm">Not supported in Attribute Visualization mode</Text>
+		</Button>
+	);
+
+	/**
 	 * For mobile devices, just show a warning that the drawing is not supported.
 	 */
 	const contentMobile = (
@@ -390,9 +412,11 @@ export default function ParameterDrawingComponent(
 			<ParameterLabelComponent {...props} cancel={_onCancel} />
 			{SystemInfo.instance.isMobile
 				? contentMobile
-				: definition && drawingActive
-					? contentActive
-					: contentInactive}
+				: viewport?.type === RENDERER_TYPE.ATTRIBUTES
+					? contentAttributeVisualization
+					: definition && drawingActive && hasInteractionPermission
+						? contentActive
+						: contentInactive}
 		</ParameterWrapperComponent>
 	);
 }
