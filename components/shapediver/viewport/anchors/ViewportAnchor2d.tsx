@@ -38,10 +38,10 @@ export default function ViewportAnchor2d(
 
 	const initializedRef = useRef(false);
 	const showContentRef = useRef(false);
-	const dragStartPosition = useRef({x: "0px", y: "0px"});
+	const dragStartPosition = useRef({x: "", y: ""});
 	const offset = useRef({x: "0px", y: "0px"});
 	const position = useRef({x: "0px", y: "0px"});
-	const lastComputedPosition = useRef({x: "0px", y: "0px"});
+	const lastComputedPosition = useRef({x: "", y: ""});
 
 	const {viewportId} = useViewportId();
 	const {dragOffset, updateDragOffset} = useShapeDiverStoreViewportAnchors(
@@ -155,10 +155,8 @@ export default function ViewportAnchor2d(
 		if (lastComputedPosition.current.x && lastComputedPosition.current.y) {
 			offsetX = `calc(${position.current.x} - ${lastComputedPosition.current.x})`;
 			offsetY = `calc(${position.current.y} - ${lastComputedPosition.current.y})`;
-		}
-
-		// if there is already an offset in the store, add it
-		if (dragOffset) {
+		} else if (dragOffset) {
+			// if there is no last computed position, we use the drag offset
 			offsetX = `calc(${offsetX} + ${dragOffset.x})`;
 			offsetY = `calc(${offsetY} + ${dragOffset.y})`;
 		}
