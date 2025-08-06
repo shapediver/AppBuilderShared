@@ -12,15 +12,36 @@ export const useShapeDiverStoreViewportAnchors =
 
 				addAnchor: (viewportId, anchor) => {
 					set(
-						(state) => ({
-							anchors: {
-								...state.anchors,
-								[viewportId]: [
-									...(state.anchors[viewportId] || []),
-									anchor,
-								],
-							},
-						}),
+						(state) => {
+							const existingAnchors =
+								state.anchors[viewportId] || [];
+							// Remove any anchor with the same id and type
+							const filteredAnchors = existingAnchors.filter(
+								(a) =>
+									!(
+										a.id === anchor.id &&
+										a.type === anchor.type
+									),
+							);
+							// If an anchor existed, update showContent on the new anchor
+							const existingAnchor = existingAnchors.find(
+								(a) =>
+									a.id === anchor.id &&
+									a.type === anchor.type,
+							);
+							if (existingAnchor) {
+								anchor = {
+									...anchor,
+									showContent: existingAnchor.showContent,
+								};
+							}
+							return {
+								anchors: {
+									...state.anchors,
+									[viewportId]: [...filteredAnchors, anchor],
+								},
+							};
+						},
 						false,
 						`addAnchor ${viewportId} ${anchor.id}`,
 					);
@@ -65,9 +86,53 @@ export const useShapeDiverStoreViewportAnchors =
 						return (b.distance || 0) - (a.distance || 0);
 					});
 
-					// Update zIndex for all anchors based on sorted order
-					sortedAnchors.forEach((a, idx) => {
-						a.setZIndex(idx);
+					// Create a new array with updated zIndex immutably
+					const sortedAnchorsWithZIndex = sortedAnchors.map(
+						(a, idx) => ({
+							...a,
+							zIndex: idx,
+						}),
+					);
+
+					set(
+						(state) => ({
+							anchors: {
+								...state.anchors,
+								[viewportId]: [
+									// keep non-3d anchors untouched
+									...(state.anchors[viewportId]?.filter(
+										(a) =>
+											a.type !==
+											AppBuilderContainerNameType.Anchor3d,
+									) ?? []),
+									...sortedAnchorsWithZIndex,
+								],
+							},
+						}),
+						false,
+						`updateDistance ${viewportId} ${anchorId} ${distance}`,
+					);
+				},
+
+				updateShowContent: (viewportId, anchorId, showContent) => {
+					const {anchors} = get();
+					const anchorList = anchors[viewportId];
+					if (!anchorList) return;
+
+					const anchorType = anchorList.find(
+						(a) => a.id === anchorId,
+					)?.type;
+
+					if (!anchorType) return;
+
+					const updatedAnchors = anchorList.map((a) => {
+						if (a.id === anchorId) {
+							return {...a, showContent};
+						} else if (showContent && a.type === anchorType) {
+							// If we are showing content, hide all other anchors
+							return {...a, showContent: false};
+						}
+						return a;
 					});
 
 					set(
@@ -78,7 +143,7 @@ export const useShapeDiverStoreViewportAnchors =
 							},
 						}),
 						false,
-						`updateDistance ${viewportId} ${anchorId} ${distance}`,
+						`updateShowContent ${viewportId} ${anchorId} ${showContent}`,
 					);
 				},
 			}),

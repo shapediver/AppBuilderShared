@@ -11,13 +11,6 @@ interface IAnchorGeneric {
 	 */
 	showContent: boolean;
 	/**
-	 * The setter for the showContent property.
-	 * In case of type "3d", this will be used to disable the anchor if another anchor is showing content.
-	 *
-	 * @param showContent
-	 */
-	setShowContent: (showContent: boolean) => void;
-	/**
 	 * The type of the anchor.
 	 */
 	type:
@@ -38,11 +31,11 @@ export interface IAnchor3d extends IAnchorGeneric {
 	 */
 	distance?: number;
 	/**
-	 * The setter for the z-index of the anchor.
-	 *
-	 * @param zIndex
+	 * The z-index of the anchor.
+	 * This is used to control the stacking order of the anchors.
+	 * The anchor with the highest z-index will be on top.
 	 */
-	setZIndex: (zIndex: number) => void;
+	zIndex?: number;
 }
 
 type IAnchor = IAnchor2d | IAnchor3d;
@@ -84,5 +77,21 @@ export interface IShapeDiverStoreViewportAnchors {
 		viewportId: string,
 		anchorId: string,
 		distance: number,
+	) => void;
+
+	/**
+	 * Update the showContent state of an anchor in the store.
+	 * If the showContent state is set to true, it will hide all other anchors' content
+	 * where the anchor shares the same viewportId and type.
+	 *
+	 * @param viewportId
+	 * @param anchorId
+	 * @param showContent
+	 * @returns
+	 */
+	updateShowContent: (
+		viewportId: string,
+		anchorId: string,
+		showContent: boolean,
 	) => void;
 }

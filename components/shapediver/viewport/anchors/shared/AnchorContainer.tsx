@@ -18,13 +18,19 @@ import {
 	useProps,
 } from "@mantine/core";
 import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
-import React, {ReactNode, useCallback, useMemo, useRef, useState} from "react";
+import React, {
+	ReactNode,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import classes from "../../ViewportIcons.module.css";
 import {ViewportAnchorProps2d} from "../ViewportAnchor2d";
 import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
+import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
 import {useCanvasSize} from "./useCanvasSize";
-import {useRegisterAnchor} from "./useRegisterAnchor";
-import {useViewportCanvasPortal} from "./useViewportUtilities";
 import {cleanUnit} from "./utils";
 
 export interface ViewportAnchorProps {
@@ -111,9 +117,6 @@ export function useAnchorContainer({
 		...rest
 	} = properties;
 
-	const [showContent, setShowContent] = useState<boolean>(!previewIcon);
-	const [zIndex, setZIndex] = useState<number>(0);
-
 	const portalRef = useRef<HTMLDivElement | null>(null);
 	const [portalUpdate, setPortalUpdate] = useState(0);
 	const controlElementGroupRef = useRef<HTMLDivElement | null>(null);
@@ -139,40 +142,61 @@ export function useAnchorContainer({
 	const viewport = useShapeDiverStoreViewport(
 		(state) => state.viewports[viewportId],
 	);
-	const {anchors} = useShapeDiverStoreViewportAnchors((state) => ({
-		anchors: state.anchors,
-	}));
-	const {canvas, allowPointerEventsGlobal} = useViewportCanvasPortal(
+	const {addAnchor, removeAnchor, updateShowContent, showContent, zIndex} =
+		useShapeDiverStoreViewportAnchors((state) => ({
+			addAnchor: state.addAnchor,
+			removeAnchor: state.removeAnchor,
+			updateShowContent: state.updateShowContent,
+			showContent:
+				state.anchors[viewportId]?.find(
+					(a) => a.id === id && a.type === type,
+				)?.showContent ?? false,
+			zIndex: (() => {
+				const anchor = state.anchors[viewportId]?.find(
+					(a) =>
+						a.id === id &&
+						a.type === type &&
+						a.type === AppBuilderContainerNameType.Anchor3d,
+				);
+				if (
+					anchor &&
+					anchor.type === AppBuilderContainerNameType.Anchor3d &&
+					"zIndex" in anchor
+				) {
+					return (anchor as IAnchor3d).zIndex;
+				}
+				return undefined;
+			})(),
+		}));
+	const {canvas, allowPointerEventsGlobal} = useCanvasPortalUtilities(
 		viewportId,
 		portalRef,
 	);
 
 	/**
 	 * Creates the anchor definition for the store.
-	 * In case of type "3d", it includes the setZIndex function
-	 * to update the z-index of the anchor.
 	 */
 	const anchorDefinition: IAnchor2d | IAnchor3d = useMemo(() => {
-		if (type === AppBuilderContainerNameType.Anchor3d) {
-			return {
-				type,
-				id,
-				showContent,
-				setShowContent: setShowContent,
-				setZIndex: setZIndex,
-			} as IAnchor3d;
-		} else {
-			return {
-				type,
-				id,
-				showContent,
-				setShowContent,
-			};
-		}
-	}, [type, id, showContent]);
+		return {
+			type,
+			id,
+			showContent: !previewIcon,
+		};
+	}, [type, id, previewIcon]);
 
-	// Register the anchor in the store
-	useRegisterAnchor(viewportId, anchorDefinition);
+	/**
+	 * This effect adds the anchor to the store when the component is mounted
+	 * and removes it when the component is unmounted.
+	 */
+	useEffect(() => {
+		// Add the anchor to the store
+		addAnchor(viewportId, anchorDefinition);
+
+		return () => {
+			// Remove the anchor from the store when the component is unmounted
+			removeAnchor(viewportId, id);
+		};
+	}, [viewportId, id, anchorDefinition]);
 
 	// Extract the draggable property if it exists
 	const draggable =
@@ -203,19 +227,12 @@ export function useAnchorContainer({
 	 * If showContent is true, it hides all other anchors' content.
 	 */
 	const toggleContent = useCallback(() => {
-		setShowContent((prev) => {
-			if (!prev) {
-				anchors[viewportId].forEach((anchor) => {
-					if (anchor.id !== id && anchor.type === type)
-						anchor.setShowContent(false);
-				});
-				return true;
-			} else {
-				return false;
-			}
-		});
+		if (!viewport) return;
+
+		// Update the showContent state for the current anchor
+		updateShowContent(viewportId, id, !showContent);
 		viewport?.render();
-	}, [viewport, type]);
+	}, [viewportId, id, showContent, updateShowContent, viewport]);
 
 	/**
 	 * This effect updates the portal reference when the viewport changes.
@@ -279,7 +296,8 @@ export function useAnchorContainer({
 
 	const AnchorElement = canvas && (
 		<Portal
-			// We only display the portal if the canvas is available
+			// We only display the portal once the canvas is available
+			// the style is changed in the corresponding functions of the ViewportAnchors
 			style={{display: "none"}}
 			target={canvas.parentElement || undefined}
 		>

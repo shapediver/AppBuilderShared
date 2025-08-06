@@ -8,7 +8,7 @@ import {
 	sceneTree,
 } from "@shapediver/viewer.session";
 import {vec3} from "gl-matrix";
-import {useEffect, useRef} from "react";
+import {useCallback, useEffect, useRef} from "react";
 import {
 	useAnchorContainer,
 	ViewportAnchorProps,
@@ -55,10 +55,9 @@ export default function ViewportAnchor3d(
 		properties: props,
 	});
 
-	const {updateDistance} = useShapeDiverStoreViewportAnchors((state) => ({
-		anchors: state.anchors,
-		updateDistance: state.updateDistance,
-	}));
+	const updateDistance = useShapeDiverStoreViewportAnchors(
+		(state) => state.updateDistance,
+	);
 
 	/**
 	 * This effect updates the showContentRef when the showContent state changes.
@@ -73,27 +72,30 @@ export default function ViewportAnchor3d(
 	 * to ensure that the portal is displayed on top of other elements.
 	 */
 	useEffect(() => {
-		if (!portalRef.current) return;
+		if (!portalRef.current || zIndex === undefined) return;
 		// Set the zIndex of the portal element
 		portalRef.current.style.zIndex = zIndex.toString();
 	}, [zIndex]);
 
 	/**
-	 * The main use effect for the anchor.
-	 * It creates a new HTMLElementAnchorCustomData instance
-	 * and adds it to the scene tree.
+	 * Create function for the anchor.
+	 *
+	 * @returns
 	 */
-	useEffect(() => {
-		if (!canvas) return;
+	const create = useCallback(() => {
+		if (!portalRef.current) return;
+		portalRef.current.style.display = "block";
+	}, []);
 
-		const create = () => {
-			if (!portalRef.current) return;
-			portalRef.current.style.display = "block";
-		};
-
-		// the update function that is called on every render call
-		// you can do anything here
-		const update = (properties: IHTMLElementAnchorUpdateProperties) => {
+	/**
+	 * The update function that is called on every render call.
+	 * It updates the position of the portal element
+	 * based on the properties passed to the anchor.
+	 *
+	 * @param properties - The properties to update.
+	 */
+	const update = useCallback(
+		(properties: IHTMLElementAnchorUpdateProperties) => {
 			if (!portalRef.current) return;
 			if (!canvas || !canvas.parentElement) return;
 
@@ -166,7 +168,28 @@ export default function ViewportAnchor3d(
 			// this will the update the z-index of the portal
 			// to ensure that closer anchors are displayed on top
 			updateDistance(viewportId, id, properties.distance);
-		};
+		},
+		[
+			portalUpdate,
+			controlElementGroupUpdate,
+			viewportId,
+			id,
+			canvas,
+			justification,
+			updateDistance,
+		],
+	);
+
+	/**
+	 * The main use effect for the anchor.
+	 * It creates a new HTMLElementAnchorCustomData instance
+	 * and adds it to the scene tree.
+	 */
+	useEffect(() => {
+		if (!canvas) return;
+
+		// check if location is a valid array of three numbers
+		if (!Array.isArray(location) || location.length !== 3) return;
 
 		const anchorData = new HTMLElementAnchorCustomData({
 			location: vec3.fromValues(location[0], location[1], location[2]),
@@ -181,13 +204,7 @@ export default function ViewportAnchor3d(
 			sceneTree.root.removeData(anchorData);
 			sceneTree.root.updateVersion();
 		};
-	}, [
-		portalUpdate,
-		controlElementGroupUpdate,
-		canvas,
-		location,
-		justification,
-	]);
+	}, [canvas, location, create, update]);
 
 	return AnchorElement;
 }

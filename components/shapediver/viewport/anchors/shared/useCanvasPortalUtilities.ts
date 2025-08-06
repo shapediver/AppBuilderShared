@@ -1,3 +1,4 @@
+import {useViewportCanvas} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportCanvas";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {
 	addListener,
@@ -10,12 +11,22 @@ import {useEffect, useState} from "react";
 
 /**
  * Hook to manage the viewport canvas portal.
+ * This hook provides the canvas element and manages global pointer events
+ * when the camera is active in the viewport.
+ *
+ * It observes the portalRef for size changes to ensure the viewport is re-rendered
+ * when the size changes, which is necessary for the update function to be called.
+ *
+ * It also adds event listeners for camera start and end events
+ * to manage the allowPointerEventsGlobal state,
+ * which determines whether global pointer events are allowed
+ * or not during camera interactions.
  *
  * @param viewportId The ID of the viewport.
  * @param portalRef The reference to the portal element.
  * @returns An object containing the canvas element and the global pointer events state.
  */
-export function useViewportCanvasPortal(
+export function useCanvasPortalUtilities(
 	viewportId: string,
 	portalRef: React.RefObject<HTMLDivElement>,
 ): {
@@ -27,7 +38,7 @@ export function useViewportCanvasPortal(
 	);
 	const [allowPointerEventsGlobal, setAllowPointerEventsGlobal] =
 		useState<boolean>(true);
-	const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
+	const {canvas} = useViewportCanvas(viewportId);
 
 	/**
 	 * This effect updates the canvas reference when the viewport changes.
@@ -35,8 +46,6 @@ export function useViewportCanvasPortal(
 	 * to manage the allowPointerEventsGlobal state.
 	 */
 	useEffect(() => {
-		if (viewport?.canvas) setCanvas(viewport.canvas);
-
 		const tokenStart = addListener(
 			EVENTTYPE_CAMERA.CAMERA_START,
 			(e: IEvent) => {

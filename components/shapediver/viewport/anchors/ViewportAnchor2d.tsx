@@ -92,7 +92,16 @@ export default function ViewportAnchor2d(
 			portalRef.current.offsetHeight +
 			(controlElementGroupRef.current?.offsetHeight || 0);
 
-		const location = inputLocation.map((p) => cleanUnit(p)!);
+		// clean the input location
+		const location = inputLocation.map((p, i) => {
+			const cleaned = cleanUnit(p);
+			// this should never happen, but we handle it gracefully
+			if (cleaned == null) {
+				console.warn(`Invalid location at index ${i}:`, p);
+				return "0px";
+			}
+			return cleaned;
+		});
 
 		// first letter is vertical
 		const vertical = !showContentRef.current
@@ -143,13 +152,12 @@ export default function ViewportAnchor2d(
 
 		updatePosition(x, y, portalRef, position);
 		setInitialized(true);
-		portalRef.current.style.display = "flex";
+		portalRef.current.style.display = "block";
 	}, [
 		portalUpdate,
 		controlElementGroupUpdate,
 		inputLocation,
 		justification,
-		portalRef,
 		initialized,
 	]);
 
@@ -192,6 +200,17 @@ export default function ViewportAnchor2d(
 			window.removeEventListener("mouseup", handleMouseUp);
 		};
 	}, [dragging]);
+
+	/**
+	 * This effect cleans up the dragging state when the component unmounts.
+	 * It ensures that the dragging state is reset to false
+	 * to avoid any lingering effects after the component is removed.
+	 */
+	useEffect(() => {
+		return () => {
+			setDragging(false);
+		};
+	}, []);
 
 	return AnchorElement;
 }
