@@ -8,14 +8,13 @@ import {
 	SDTFItemData,
 	SessionApiData,
 } from "@shapediver/viewer.session";
-import {vec3} from "gl-matrix";
 import {useCallback, useEffect, useMemo, useState} from "react";
 
 export type AttributeSelectionData = {
 	selectedItemData: {
 		[key: string]: ISDTFAttributeData;
 	};
-	location: vec3;
+	location: number[];
 };
 
 /**
@@ -150,7 +149,11 @@ export default function useAttributeSelection(
 				if (sdtfItemData) {
 					setAttributeSelectionData({
 						selectedItemData: sdtfItemData.attributes,
-						location: node.boundingBox.boundingSphere.center,
+						location: [
+							node.boundingBox.boundingSphere.center[0],
+							node.boundingBox.boundingSphere.center[1],
+							node.boundingBox.boundingSphere.center[2],
+						],
 					});
 					return;
 				}
@@ -162,137 +165,3 @@ export default function useAttributeSelection(
 
 	return attributeSelectionData;
 }
-
-/**
-	return (
-		<>
-			{selectedItemData && (
-				<Stack>
-					<Group
-						justify="space-between"
-						onClick={() => setOpened((t) => !t)}
-					>
-						<Title order={5}> Selected Item </Title>
-						{opened ? <IconChevronUp /> : <IconChevronDown />}
-					</Group>
-					{opened && (
-						<Table highlightOnHover withTableBorder>
-							<Table.Thead>
-								<Table.Tr bg={"var(--table-hover-color)"}>
-									<Table.Th
-										style={{
-											width: "20%",
-											whiteSpace: "nowrap",
-										}}
-									>
-										Name
-									</Table.Th>
-									<Table.Th style={{width: "100%"}}>
-										Value
-									</Table.Th>
-									<Table.Th
-										style={{
-											width: "auto",
-											whiteSpace: "nowrap",
-										}}
-									>
-										Show
-									</Table.Th>
-								</Table.Tr>
-							</Table.Thead>
-							<Table.Tbody>
-								{Object.entries(selectedItemData).map(
-									([key, value]) => (
-										<Table.Tr
-											key={key}
-											bg={
-												selectedValues.find(
-													(s) =>
-														s.name === key &&
-														s.type ===
-															value.typeHint,
-												)
-													? "var(--mantine-primary-color-light)"
-													: undefined
-											}
-										>
-											<Table.Td>{key}</Table.Td>
-											<Table.Td>
-												{JSON.stringify(
-													selectedItemData[key].value,
-												)}
-											</Table.Td>
-											<Table.Td align="center">
-												<ActionIcon
-													title="Toggle Layer"
-													size={"sm"}
-													onClick={() => {
-														if (
-															selectedValues.find(
-																(s) =>
-																	s.name ===
-																		key &&
-																	s.type ===
-																		value.typeHint,
-															)
-														) {
-															removeAttribute(
-																key,
-																value.typeHint,
-															);
-														} else {
-															setSelectedValues(
-																(prev) => [
-																	...prev,
-																	{
-																		name: key,
-																		type: value.typeHint,
-																	},
-																],
-															);
-														}
-													}}
-													variant={
-														selectedValues.find(
-															(s) =>
-																s.name ===
-																	key &&
-																s.type ===
-																	value.typeHint,
-														)
-															? "filled"
-															: "light"
-													}
-												>
-													{selectedValues.find(
-														(s) =>
-															s.name === key &&
-															s.type ===
-																value.typeHint,
-													) ? (
-														<Icon
-															type={
-																IconTypeEnum.EyeOff
-															}
-														/>
-													) : (
-														<Icon
-															type={
-																IconTypeEnum.Eye
-															}
-														/>
-													)}
-												</ActionIcon>
-											</Table.Td>
-										</Table.Tr>
-									),
-								)}
-							</Table.Tbody>
-						</Table>
-					)}
-				</Stack>
-			)}
-		</>
-	);
-}
-    */

@@ -683,7 +683,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 					</Stack>
 				</Paper>
 			</TooltipWrapper>
-			{attributeSelectionData && (
+			{active && attributeSelectionData && (
 				<ViewportAnchor
 					location={attributeSelectionData.location}
 					id={`${widgetId}_anchor`}
