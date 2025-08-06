@@ -1,3 +1,5 @@
+import {AppBuilderContainerNameType} from "../shapediver/appbuilder";
+
 interface IAnchorGeneric {
 	/**
 	 * The unique identifier for the anchor.
@@ -18,15 +20,17 @@ interface IAnchorGeneric {
 	/**
 	 * The type of the anchor.
 	 */
-	type: "2d" | "3d";
+	type:
+		| AppBuilderContainerNameType.Anchor2d
+		| AppBuilderContainerNameType.Anchor3d;
 }
 
 export interface IAnchor2d extends IAnchorGeneric {
-	type: "2d";
+	type: AppBuilderContainerNameType.Anchor2d;
 }
 
 export interface IAnchor3d extends IAnchorGeneric {
-	type: "3d";
+	type: AppBuilderContainerNameType.Anchor3d;
 	/**
 	 * The distance from the camera to the anchor.
 	 * This is used to sort the anchors by distance.

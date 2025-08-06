@@ -1,3 +1,4 @@
+import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverStoreViewportAnchors} from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
@@ -47,7 +48,7 @@ export const useShapeDiverStoreViewportAnchors =
 				updateDistance: (viewportId, anchorId, distance) => {
 					const {anchors} = get();
 					const anchorList = anchors[viewportId].filter(
-						(a) => a.type === "3d",
+						(a) => a.type === AppBuilderContainerNameType.Anchor3d,
 					);
 					if (!anchorList) return;
 
