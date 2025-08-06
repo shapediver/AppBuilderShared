@@ -70,6 +70,21 @@ export interface IShapeDiverStoreViewportAnchors {
 	};
 
 	/**
+	 * Store the drag offsets for each anchor.
+	 * This is used to manage the position of anchors when they are dragged.
+	 * The key is the viewportId, the value is an object where the key is the anchorId
+	 * and the value is an object with the x and y offsets.
+	 */
+	dragOffsetMap: {
+		[viewportId: string]: {
+			[anchorId: string]: {
+				x: string;
+				y: string;
+			};
+		};
+	};
+
+	/**
 	 * Add an anchor to the store.
 	 *
 	 * @param viewportId
@@ -113,5 +128,20 @@ export interface IShapeDiverStoreViewportAnchors {
 		viewportId: string,
 		anchorId: string,
 		showContent: boolean,
+	) => void;
+
+	/**
+	 * Update the drag offset of an anchor in the store.
+	 * If there already is a drag offset for the anchor, it will be added to the existing offset.
+	 *
+	 * @param viewportId
+	 * @param anchorId
+	 * @param offset
+	 * @returns
+	 */
+	updateDragOffset: (
+		viewportId: string,
+		anchorId: string,
+		offset: {x: string; y: string},
 	) => void;
 }

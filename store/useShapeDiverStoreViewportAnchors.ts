@@ -10,6 +10,7 @@ export const useShapeDiverStoreViewportAnchors =
 			(set, get) => ({
 				anchors: {},
 				showContentMap: {},
+				dragOffsetMap: {},
 
 				addAnchor: (viewportId, anchor) => {
 					set(
@@ -158,6 +159,32 @@ export const useShapeDiverStoreViewportAnchors =
 						}),
 						false,
 						`updateShowContent ${viewportId} ${anchorId} ${showContent}`,
+					);
+				},
+
+				updateDragOffset: (viewportId, anchorId, offset) => {
+					const {dragOffsetMap} = get();
+
+					const prevOffset = dragOffsetMap[viewportId]?.[anchorId];
+					const newOffset = prevOffset
+						? {
+								x: `calc(${prevOffset.x} + ${offset.x})`,
+								y: `calc(${prevOffset.y} + ${offset.y})`,
+							}
+						: offset;
+
+					set(
+						(state) => ({
+							dragOffsetMap: {
+								...state.dragOffsetMap,
+								[viewportId]: {
+									...state.dragOffsetMap[viewportId],
+									[anchorId]: newOffset,
+								},
+							},
+						}),
+						false,
+						`updateDragOffset ${viewportId} ${anchorId} ${JSON.stringify(newOffset)}`,
 					);
 				},
 			}),

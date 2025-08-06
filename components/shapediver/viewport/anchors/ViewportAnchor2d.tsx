@@ -1,3 +1,5 @@
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreViewportAnchors} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors";
 import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {MantineThemeComponent} from "@mantine/core";
 import React, {useEffect, useRef, useState} from "react";
@@ -36,9 +38,18 @@ export default function ViewportAnchor2d(
 
 	const initializedRef = useRef(false);
 	const showContentRef = useRef(false);
+	const dragStartPosition = useRef({x: "0px", y: "0px"});
 	const offset = useRef({x: "0px", y: "0px"});
 	const position = useRef({x: "0px", y: "0px"});
 	const lastComputedPosition = useRef({x: "0px", y: "0px"});
+
+	const {viewportId} = useViewportId();
+	const {dragOffset, updateDragOffset} = useShapeDiverStoreViewportAnchors(
+		(state) => ({
+			dragOffset: state.dragOffsetMap[viewportId]?.[props.id],
+			updateDragOffset: state.updateDragOffset,
+		}),
+	);
 
 	/**
 	 * This function handles the mouse down event on the anchor.
@@ -51,6 +62,10 @@ export default function ViewportAnchor2d(
 		offset.current = {
 			x: `calc(${e.clientX}px - ${position.current.x})`,
 			y: `calc(${e.clientY}px - ${position.current.y})`,
+		};
+		dragStartPosition.current = {
+			x: position.current.x,
+			y: position.current.y,
 		};
 	};
 
@@ -142,6 +157,12 @@ export default function ViewportAnchor2d(
 			offsetY = `calc(${position.current.y} - ${lastComputedPosition.current.y})`;
 		}
 
+		// if there is already an offset in the store, add it
+		if (dragOffset) {
+			offsetX = `calc(${offsetX} + ${dragOffset.x})`;
+			offsetY = `calc(${offsetY} + ${dragOffset.y})`;
+		}
+
 		// we store the last computed position
 		// so that we can evaluate the offset
 		lastComputedPosition.current = {
@@ -162,6 +183,7 @@ export default function ViewportAnchor2d(
 		controlElementGroupUpdate,
 		inputLocation,
 		justification,
+		dragOffset,
 	]);
 
 	/**
@@ -189,6 +211,15 @@ export default function ViewportAnchor2d(
 		// Disable the dragging state when the mouse is released
 		const pointerEndEvent = () => {
 			setDragging(false);
+
+			// calculate the difference between dragStartPosition and the current position
+			const deltaX = `calc(${position.current.x} - ${dragStartPosition.current.x})`;
+			const deltaY = `calc(${position.current.y} - ${dragStartPosition.current.y})`;
+			// add this difference to the dragOffset in the store
+			updateDragOffset(viewportId, props.id, {
+				x: deltaX,
+				y: deltaY,
+			});
 		};
 
 		window.addEventListener("pointermove", handleMouseMove);
