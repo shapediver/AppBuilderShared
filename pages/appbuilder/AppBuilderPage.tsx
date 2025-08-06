@@ -15,7 +15,7 @@ import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/param
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
 import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
-import {useViewportAnchors} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportAnchors";
+import {useViewportAnchors3d} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportAnchors3d";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
@@ -282,8 +282,8 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		),
 	});
 
-	// viewport anchors
-	const anchors = useViewportAnchors({
+	// viewport anchors 3d
+	const anchors = useViewportAnchors3d({
 		namespace,
 		containers: appBuilderData?.containers,
 	});

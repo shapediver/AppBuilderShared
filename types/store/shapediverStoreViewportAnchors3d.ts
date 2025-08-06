@@ -1,4 +1,4 @@
-export interface IAnchor {
+export interface IAnchor3d {
 	/**
 	 * The distance from the camera to the anchor.
 	 * This is used to sort the anchors by distance.
@@ -30,13 +30,13 @@ export interface IAnchor {
 	id: string;
 }
 
-export interface IShapeDiverStoreViewportAnchors {
+export interface IShapeDiverStoreViewportAnchors3d {
 	/**
 	 * The viewport anchors currently known by the store.
 	 * The key is the anchor ID.
 	 */
 	anchors: {
-		[viewportId: string]: IAnchor[];
+		[viewportId: string]: IAnchor3d[];
 	};
 
 	/**
@@ -45,7 +45,7 @@ export interface IShapeDiverStoreViewportAnchors {
 	 * @param viewportId
 	 * @param anchor
 	 */
-	addAnchor: (viewportId: string, anchor: IAnchor) => void;
+	addAnchor: (viewportId: string, anchor: IAnchor3d) => void;
 
 	/**
 	 * Remove an anchor from the store.
@@ -59,13 +59,13 @@ export interface IShapeDiverStoreViewportAnchors {
 	 * Update the distance of an anchor in the store.
 	 *
 	 * @param viewportId
-	 * @param anchorId
+	 * @param anchor3dId
 	 * @param distance
 	 * @returns
 	 */
 	updateDistance: (
 		viewportId: string,
-		anchorId: string,
+		anchor3dId: string,
 		distance: number,
 	) => void;
 }

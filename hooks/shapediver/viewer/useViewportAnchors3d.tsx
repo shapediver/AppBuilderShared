@@ -1,5 +1,5 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
-import ViewportAnchor from "@AppBuilderShared/components/shapediver/viewport/ViewportAnchor";
+import ViewportAnchor3d from "@AppBuilderShared/components/shapediver/viewport/ViewportAnchor3d";
 import {
 	IAppBuilderContainer,
 	isAnchor3dContainer,
@@ -17,7 +17,7 @@ interface Props {
  * @param props - The properties containing namespace and containers.
  * @returns An array of JSX elements representing the viewport anchors.
  */
-export function useViewportAnchors(props: Props): JSX.Element[] {
+export function useViewportAnchors3d(props: Props): JSX.Element[] {
 	const {namespace, containers} = props;
 
 	const [anchors, setAnchors] = useState<JSX.Element[]>([]);
@@ -27,7 +27,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 		containers?.forEach((container) => {
 			if (isAnchor3dContainer(container)) {
 				anchors.push(
-					<ViewportAnchor
+					<ViewportAnchor3d
 						key={JSON.stringify(container)}
 						id={container.props.id}
 						location={container.props.location}

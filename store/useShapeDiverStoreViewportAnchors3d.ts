@@ -1,10 +1,10 @@
-import {IShapeDiverStoreViewportAnchors} from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors";
+import {IShapeDiverStoreViewportAnchors3d} from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors3d";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 import {devtoolsSettings} from "./storeSettings";
 
-export const useShapeDiverStoreViewportAnchors =
-	create<IShapeDiverStoreViewportAnchors>()(
+export const useShapeDiverStoreViewportAnchors3d =
+	create<IShapeDiverStoreViewportAnchors3d>()(
 		devtools(
 			(set, get) => ({
 				anchors: {},

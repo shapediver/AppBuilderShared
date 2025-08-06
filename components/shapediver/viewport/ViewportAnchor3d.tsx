@@ -1,7 +1,7 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import {useShapeDiverStoreViewportAnchors} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors";
+import {useShapeDiverStoreViewportAnchors3d} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors3d";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
@@ -66,7 +66,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 
 type ViewportAnchorThemePropsType = Partial<StyleProps>;
 
-export function ViewportAnchorThemeProps(
+export function ViewportAnchor3dThemeProps(
 	props: ViewportAnchorThemePropsType,
 ): MantineThemeComponent {
 	return {
@@ -74,7 +74,7 @@ export function ViewportAnchorThemeProps(
 	};
 }
 
-export default function ViewportAnchor(props: Props & Partial<StyleProps>) {
+export default function ViewportAnchor3d(props: Props & Partial<StyleProps>) {
 	const {
 		allowPointerEvents,
 		id,
@@ -88,7 +88,7 @@ export default function ViewportAnchor(props: Props & Partial<StyleProps>) {
 	const {viewportId} = useViewportId();
 
 	const {iconProps, anchorGroupProps} = useProps(
-		"ViewportIcons",
+		"ViewportAnchor3d",
 		defaultStyleProps,
 		rest,
 	);
@@ -98,7 +98,7 @@ export default function ViewportAnchor(props: Props & Partial<StyleProps>) {
 	);
 
 	const {anchors, addViewportAnchor, removeViewportAnchor, updateDistance} =
-		useShapeDiverStoreViewportAnchors((state) => ({
+		useShapeDiverStoreViewportAnchors3d((state) => ({
 			anchors: state.anchors,
 			addViewportAnchor: state.addAnchor,
 			removeViewportAnchor: state.removeAnchor,
