@@ -1,7 +1,7 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import {useShapeDiverStoreViewportAnchors3d} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors3d";
+import {useShapeDiverStoreViewportAnchors2d} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors2d";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
@@ -17,18 +17,15 @@ import {
 	addListener,
 	EventResponseMapping,
 	EVENTTYPE_CAMERA,
-	HTMLElementAnchorCustomData,
 	IEvent,
-	IHTMLElementAnchorUpdateProperties,
 	removeListener,
-	sceneTree,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.session";
-import {vec3} from "gl-matrix";
 import React, {
 	ReactNode,
 	useCallback,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -36,10 +33,15 @@ import classes from "./ViewportIcons.module.css";
 
 interface Props {
 	allowPointerEvents?: boolean;
-	location: number[] | vec3;
+	location: (string | number)[];
 	justification?: TAG3D_JUSTIFICATION;
 	element?: JSX.Element | ReactNode;
 	previewIcon?: IconTypeEnum;
+	draggable?: boolean;
+	/** Optional width of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), or % (e.g. 100%) */
+	width?: string | number;
+	/** Optional height of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), or % (e.g. 100%) */
+	height?: string | number;
 	id: string;
 }
 
@@ -52,12 +54,14 @@ const defaultStyleProps: Partial<StyleProps> = {
 	iconProps: {
 		size: "md",
 		variant: "subtle",
-		color: "black",
+		color: "white",
+		style: {
+			mixBlendMode: "difference",
+			filter: "contrast(0.5)",
+		},
 	},
 	anchorGroupProps: {
 		style: {
-			minWidth: "calc(18.75rem * var(--mantine-scale))",
-			maxWidth: "calc(22.25rem * var(--mantine-scale))",
 			backgroundColor: "var(--mantine-color-body)",
 			borderRadius: "var(--mantine-radius-md)",
 		},
@@ -66,7 +70,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 
 type ViewportAnchorThemePropsType = Partial<StyleProps>;
 
-export function ViewportAnchor3dThemeProps(
+export function ViewportAnchorThemeProps(
 	props: ViewportAnchorThemePropsType,
 ): MantineThemeComponent {
 	return {
@@ -74,21 +78,39 @@ export function ViewportAnchor3dThemeProps(
 	};
 }
 
-export default function ViewportAnchor3d(props: Props & Partial<StyleProps>) {
+export default function ViewportAnchor2d(props: Props & Partial<StyleProps>) {
 	const {
 		allowPointerEvents,
-		id,
+		location: inputLocation,
 		justification,
-		location,
 		element,
 		previewIcon,
+		draggable = true,
+		width: inputWidth = "var(--app-shell-navbar-width)",
+		height: inputHeight,
+		id,
 		...rest
 	} = props;
+
+	const {location, width, height} = useMemo(() => {
+		return {
+			location: inputLocation.map((p) => {
+				if (typeof p === "number") return `${p}px`;
+				return p;
+			}),
+			width:
+				typeof inputWidth === "number" ? `${inputWidth}px` : inputWidth,
+			height:
+				typeof inputHeight === "number"
+					? `${inputHeight}px`
+					: inputHeight,
+		};
+	}, [inputLocation, inputWidth, inputHeight]);
 
 	const {viewportId} = useViewportId();
 
 	const {iconProps, anchorGroupProps} = useProps(
-		"ViewportAnchor3d",
+		"ViewportAnchor2d",
 		defaultStyleProps,
 		rest,
 	);
@@ -97,12 +119,11 @@ export default function ViewportAnchor3d(props: Props & Partial<StyleProps>) {
 		(state) => state.viewports[viewportId],
 	);
 
-	const {anchors, addViewportAnchor, removeViewportAnchor, updateDistance} =
-		useShapeDiverStoreViewportAnchors3d((state) => ({
+	const {anchors, addViewportAnchor, removeViewportAnchor} =
+		useShapeDiverStoreViewportAnchors2d((state) => ({
 			anchors: state.anchors,
 			addViewportAnchor: state.addAnchor,
 			removeViewportAnchor: state.removeAnchor,
-			updateDistance: state.updateDistance,
 		}));
 
 	const [allowPointerEventsGlobal, setAllowPointerEventsGlobal] =
@@ -112,6 +133,18 @@ export default function ViewportAnchor3d(props: Props & Partial<StyleProps>) {
 	const [canvasHeight, setCanvasHeight] = useState<number>(0);
 	const [showContent, setShowContent] = useState<boolean>(!previewIcon);
 	const [zIndex, setZIndex] = useState<number>(0);
+	const [dragging, setDragging] = useState(false);
+	const offset = useRef({x: "0px", y: "0px"});
+	const position = useRef({x: "0px", y: "0px"});
+	const [initialized, setInitialized] = useState(false);
+
+	const updatePosition = (x: string, y: string) => {
+		if (!portalRef.current) return;
+		position.current.x = x;
+		position.current.y = y;
+		portalRef.current.style.left = x;
+		portalRef.current.style.top = y;
+	};
 
 	/**
 	 * This effect runs when the component mounts and adds the anchor to the store.
@@ -135,7 +168,6 @@ export default function ViewportAnchor3d(props: Props & Partial<StyleProps>) {
 
 		addViewportAnchor(viewportId, {
 			id,
-			distance: 0,
 			showContent,
 			setShowContent,
 			setZIndex,
@@ -246,105 +278,47 @@ export default function ViewportAnchor3d(props: Props & Partial<StyleProps>) {
 	 * and adds it to the scene tree.
 	 */
 	useEffect(() => {
-		if (!canvas) return;
+		if (!portalRef.current) return;
+		if (initialized) return;
 
-		const create = () => {
-			if (!portalRef.current) return;
-			portalRef.current.style.display = "block";
-		};
+		const offsetWidth = portalRef.current.offsetWidth;
+		// we adjust the offsetHeight to ignore the height of the control element group
+		// this is necessary to ensure that the portal is positioned correctly
+		const offsetHeight =
+			portalRef.current.offsetHeight +
+			(controlElementGroupRef.current?.offsetHeight || 0);
 
-		// the update function that is called on every render call
-		// you can do anything here
-		const update = (properties: IHTMLElementAnchorUpdateProperties) => {
-			if (!portalRef.current) return;
-			if (!canvas || !canvas.parentElement) return;
+		// first letter is vertical
+		const vertical = !showContentRef.current
+			? "M"
+			: justification?.[0] || "M";
 
-			const offsetWidth = portalRef.current.offsetWidth;
-			// we adjust the offsetHeight to ignore the height of the control element group
-			// this is necessary to ensure that the portal is positioned correctly
-			const offsetHeight =
-				portalRef.current.offsetHeight +
-				(controlElementGroupRef.current?.offsetHeight || 0);
+		// second letter is horizontal
+		const horizontal = !showContentRef.current
+			? "C"
+			: justification?.[1] || "C";
 
-			// first letter is vertical
-			let vertical = !showContentRef.current ? "M" : justification?.[0];
-			if (!vertical) {
-				// if undefined, we check if the normalized coordinates are above or below the center
-				// and then set the vertical position accordingly either to top or bottom
-				const canvasHeight = canvas.parentElement.offsetHeight;
-				const relativeY =
-					(properties.container[1] * (1 / properties.scale[1])) /
-					canvasHeight;
-				if (relativeY < 0.5) {
-					vertical = "B"; // Bottom
-				} else {
-					vertical = "T"; // Top
-				}
-			}
-			// second letter is horizontal
-			let horizontal = !showContentRef.current ? "C" : justification?.[1];
-			if (!horizontal) {
-				// if undefined, we check if the normalized coordinates are to the left or right of the center
-				// and then set the horizontal position accordingly either to right or left
-				const canvasWidth = canvas.parentElement.offsetWidth;
-				const relativeX =
-					(properties.container[0] * (1 / properties.scale[0])) /
-					canvasWidth;
-				if (relativeX < 0.5) {
-					horizontal = "L"; // Left
-				} else {
-					horizontal = "R"; // Right
-				}
-			}
+		let x, y;
+		if (horizontal === "R") {
+			x = `calc(${location[0]} - ${offsetWidth}px)`;
+		} else if (horizontal === "L") {
+			x = location[0];
+		} else {
+			x = `calc(${location[0]} - ${offsetWidth / 2}px)`;
+		}
 
-			let x, y;
-			if (horizontal === "R") {
-				x =
-					properties.container[0] * (1 / properties.scale[0]) -
-					offsetWidth;
-			} else if (horizontal === "L") {
-				x = properties.container[0] * (1 / properties.scale[0]);
-			} else {
-				x =
-					properties.container[0] * (1 / properties.scale[0]) -
-					offsetWidth / 2;
-			}
+		if (vertical === "B") {
+			y = location[1];
+		} else if (vertical === "T") {
+			y = `calc(${location[1]} - ${offsetHeight}px)`;
+		} else {
+			y = `calc(${location[1]} - ${offsetHeight / 2}px)`;
+		}
 
-			if (vertical === "B") {
-				y = properties.container[1] * (1 / properties.scale[1]);
-			} else if (vertical === "T") {
-				y =
-					properties.container[1] * (1 / properties.scale[1]) -
-					offsetHeight;
-			} else {
-				y =
-					properties.container[1] * (1 / properties.scale[1]) -
-					offsetHeight / 2;
-			}
-
-			portalRef.current.style.left = x + "px";
-			portalRef.current.style.top = y + "px";
-
-			// we store the distance in the anchor store
-			// this will the update the z-index of the portal
-			// to ensure that closer anchors are displayed on top
-			updateDistance(viewportId, id, properties.distance);
-		};
-
-		const anchorData = new HTMLElementAnchorCustomData({
-			location: vec3.fromValues(location[0], location[1], location[2]),
-			data: {},
-			create,
-			update,
-		});
-		sceneTree.root.addData(anchorData);
-		sceneTree.root.updateVersion();
-
-		return () => {
-			sceneTree.root.removeData(anchorData);
-			sceneTree.root.updateVersion();
-		};
-	}, [canvas, location, justification]);
+		updatePosition(x, y);
+		setInitialized(true);
+		portalRef.current.style.display = "flex";
+	}, [canvasWidth, canvasHeight, location, justification]);
 
 	/**
 	 * This function handles the click event on the anchor.
@@ -365,6 +339,39 @@ export default function ViewportAnchor3d(props: Props & Partial<StyleProps>) {
 		viewport?.render();
 	}, [viewportId, id, anchors, viewport]);
 
+	const handleMouseDown = (e: React.MouseEvent) => {
+		e.preventDefault();
+		setDragging(true);
+		offset.current = {
+			x: `calc(${e.clientX}px - ${position.current.x})`,
+			y: `calc(${e.clientY}px - ${position.current.y})`,
+		};
+	};
+
+	const handleMouseMove = (e: MouseEvent) => {
+		if (!dragging) return;
+		if (!portalRef.current) return;
+
+		updatePosition(
+			`calc(${e.clientX}px - ${offset.current.x})`,
+			`calc(${e.clientY}px - ${offset.current.y})`,
+		);
+	};
+
+	const handleMouseUp = () => {
+		setDragging(false);
+	};
+
+	useEffect(() => {
+		window.addEventListener("mousemove", handleMouseMove);
+		window.addEventListener("mouseup", handleMouseUp);
+
+		return () => {
+			window.removeEventListener("mousemove", handleMouseMove);
+			window.removeEventListener("mouseup", handleMouseUp);
+		};
+	}, [dragging]);
+
 	const previewIconElement = (
 		<ActionIcon onClick={onAnchorClick} {...iconProps}>
 			<Icon
@@ -376,27 +383,21 @@ export default function ViewportAnchor3d(props: Props & Partial<StyleProps>) {
 	);
 
 	const closeIconElement = (
-		<Group
-			style={{
-				display: "flex",
-				justifyContent: "flex-end",
-				width: "100%",
-				pointerEvents: "auto",
-			}}
-		>
-			<ActionIcon onClick={onAnchorClick} {...iconProps}>
-				<Icon
-					type={IconTypeEnum.X}
-					color={iconProps?.color}
-					className={classes.viewportIcon}
-				/>
-			</ActionIcon>
-		</Group>
+		<ActionIcon onClick={onAnchorClick} {...iconProps}>
+			<Icon
+				type={IconTypeEnum.X}
+				color={iconProps?.color}
+				className={classes.viewportIcon}
+			/>
+		</ActionIcon>
 	);
 
 	return (
 		canvas && (
-			<Portal target={canvas.parentElement || undefined}>
+			<Portal
+				style={{display: "none"}}
+				target={canvas.parentElement || undefined}
+			>
 				<Group
 					style={{
 						position: "absolute",
@@ -412,8 +413,8 @@ export default function ViewportAnchor3d(props: Props & Partial<StyleProps>) {
 						ref={portalRef}
 						style={{
 							position: "absolute",
-							top: 0,
-							left: 0,
+							top: position.current.y,
+							left: position.current.x,
 						}}
 					>
 						<Group
@@ -430,13 +431,28 @@ export default function ViewportAnchor3d(props: Props & Partial<StyleProps>) {
 							{showContent === false ? (
 								previewIconElement
 							) : (
-								<Stack gap={0}>
-									{previewIcon && (
-										<Group ref={controlElementGroupRef}>
-											{closeIconElement}
-										</Group>
-									)}
-									<Group {...anchorGroupProps}>
+								<Stack
+									gap={0}
+									onMouseDown={
+										draggable ? handleMouseDown : undefined
+									}
+								>
+									<Group
+										ref={controlElementGroupRef}
+										style={{
+											display: "flex",
+											justifyContent: "flex-end",
+											width: "100%",
+											pointerEvents: "auto",
+										}}
+									>
+										{previewIcon && closeIconElement}
+									</Group>
+									<Group
+										{...anchorGroupProps}
+										w={width}
+										h={height}
+									>
 										<div style={{width: "100%"}}>
 											{element}
 										</div>
