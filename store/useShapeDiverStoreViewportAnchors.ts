@@ -1,3 +1,4 @@
+import {simplifyCalc} from "@AppBuilderShared/components/shapediver/viewport/anchors/shared/utils";
 import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverStoreViewportAnchors} from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors";
 import {create} from "zustand";
@@ -168,8 +169,12 @@ export const useShapeDiverStoreViewportAnchors =
 					const prevOffset = dragOffsetMap[viewportId]?.[anchorId];
 					const newOffset = prevOffset
 						? {
-								x: `calc(${prevOffset.x} + ${offset.x})`,
-								y: `calc(${prevOffset.y} + ${offset.y})`,
+								x: simplifyCalc(
+									`calc(${prevOffset.x} + ${offset.x})`,
+								),
+								y: simplifyCalc(
+									`calc(${prevOffset.y} + ${offset.y})`,
+								),
 							}
 						: offset;
 

@@ -8,7 +8,7 @@ import {
 	ViewportAnchorProps,
 	ViewportAnchorStyleProps,
 } from "./shared/AnchorContainer";
-import {cleanUnit, updatePosition} from "./shared/utils";
+import {cleanUnit, simplifyCalc, updatePosition} from "./shared/utils";
 
 export interface ViewportAnchorProps2d extends ViewportAnchorProps {
 	/** Optional draggable properties */
@@ -60,8 +60,8 @@ export default function ViewportAnchor2d(
 		e.preventDefault();
 		setDragging(true);
 		offset.current = {
-			x: `calc(${e.clientX}px - ${position.current.x})`,
-			y: `calc(${e.clientY}px - ${position.current.y})`,
+			x: simplifyCalc(`calc(${e.clientX}px - ${position.current.x})`),
+			y: simplifyCalc(`calc(${e.clientY}px - ${position.current.y})`),
 		};
 		dragStartPosition.current = {
 			x: position.current.x,
@@ -164,13 +164,13 @@ export default function ViewportAnchor2d(
 		// we store the last computed position
 		// so that we can evaluate the offset
 		lastComputedPosition.current = {
-			x,
-			y,
+			x: simplifyCalc(x),
+			y: simplifyCalc(y),
 		};
 
 		// apply the offset to the newly computed position
-		x = `calc(${x} + ${offsetX})`;
-		y = `calc(${y} + ${offsetY})`;
+		x = simplifyCalc(`calc(${x} + ${offsetX})`);
+		y = simplifyCalc(`calc(${y} + ${offsetY})`);
 
 		updatePosition(x, y, portalRef, position);
 		initializedRef.current = true;
@@ -193,8 +193,8 @@ export default function ViewportAnchor2d(
 		if (!portalRef.current) return;
 
 		updatePosition(
-			`calc(${e.clientX}px - ${offset.current.x})`,
-			`calc(${e.clientY}px - ${offset.current.y})`,
+			simplifyCalc(`calc(${e.clientX}px - ${offset.current.x})`),
+			simplifyCalc(`calc(${e.clientY}px - ${offset.current.y})`),
 			portalRef,
 			position,
 		);
@@ -211,8 +211,12 @@ export default function ViewportAnchor2d(
 			setDragging(false);
 
 			// calculate the difference between dragStartPosition and the current position
-			const deltaX = `calc(${position.current.x} - ${dragStartPosition.current.x})`;
-			const deltaY = `calc(${position.current.y} - ${dragStartPosition.current.y})`;
+			const deltaX = simplifyCalc(
+				`calc(${position.current.x} - ${dragStartPosition.current.x})`,
+			);
+			const deltaY = simplifyCalc(
+				`calc(${position.current.y} - ${dragStartPosition.current.y})`,
+			);
 			// add this difference to the dragOffset in the store
 			updateDragOffset(viewportId, props.id, {
 				x: deltaX,
