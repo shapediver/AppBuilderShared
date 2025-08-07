@@ -448,7 +448,7 @@ export type AppBuilderAnchorContainerProperties = {
 /** Type for the anchor 2d containers */
 export type AppBuilderAnchor2dContainerProperties = {
 	/** 2D location */
-	location: (string | number)[];
+	location: [string | number, string | number];
 	/** Optional boolean to allow dragging of the container. (default: true) */
 	draggable?: boolean;
 } & AppBuilderAnchorContainerProperties;
@@ -456,7 +456,7 @@ export type AppBuilderAnchor2dContainerProperties = {
 /** Type for the anchor 3d containers */
 export type AppBuilderAnchor3dContainerProperties = {
 	/** 3D location */
-	location: number[];
+	location: [number, number, number];
 } & AppBuilderAnchorContainerProperties;
 
 /**

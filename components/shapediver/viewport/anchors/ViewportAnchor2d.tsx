@@ -14,7 +14,7 @@ export interface ViewportAnchorProps2d extends ViewportAnchorProps {
 	/** Optional draggable properties */
 	draggable?: boolean;
 	/** The location of the anchor in the viewport. Can be px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
-	location: (string | number)[];
+	location: [string | number, string | number];
 }
 
 type ViewportAnchorThemePropsType = Partial<ViewportAnchorStyleProps>;

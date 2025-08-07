@@ -480,7 +480,7 @@ const IAppBuilderTabSchema = z
 // Zod type definition for IAppBuilderAnchor3dContainerProperties
 const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	id: z.string(),
-	location: z.array(z.number()),
+	location: z.tuple([z.number(), z.number(), z.number()]),
 	allowPointerEvents: z.boolean().optional(),
 	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
 	previewIcon: z.nativeEnum(IconTypeEnum).optional(),
@@ -491,7 +491,10 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 // Zod type definition for IAppBuilderAnchor2dContainerProperties
 const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	id: z.string(),
-	location: z.array(z.union([z.string(), z.number()])),
+	location: z.union([
+		z.tuple([z.string(), z.string()]),
+		z.tuple([z.number(), z.number()]),
+	]),
 	allowPointerEvents: z.boolean().optional(),
 	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
 	previewIcon: z.nativeEnum(IconTypeEnum).optional(),

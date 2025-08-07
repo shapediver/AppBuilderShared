@@ -43,7 +43,7 @@ export interface ViewportAnchorProps {
 	element?: JSX.Element | ReactNode;
 	/** Optional icon to be displayed as a preview */
 	previewIcon?: IconTypeEnum;
-	/** Optional width of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
+	/** Optional width of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) (default: var(--app-shell-navbar-width)) */
 	width?: string | number;
 	/** Optional height of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
 	height?: string | number;
