@@ -9,8 +9,13 @@ export function useCanvasSize(canvas?: HTMLCanvasElement | null): {
 	width: number;
 	height: number;
 } {
-	const [canvasWidth, setCanvasWidth] = useState<number>(0);
-	const [canvasHeight, setCanvasHeight] = useState<number>(0);
+	const [canvasSize, setCanvasSize] = useState<{
+		width: number;
+		height: number;
+	}>({
+		width: 0,
+		height: 0,
+	});
 
 	/**
 	 * This effect observes the canvas for size changes and updates the canvasWidth and canvasHeight state.
@@ -21,18 +26,22 @@ export function useCanvasSize(canvas?: HTMLCanvasElement | null): {
 		const observer = new ResizeObserver((entries) => {
 			for (const entry of entries) {
 				const {width, height} = entry.contentRect;
-				setCanvasWidth(width);
-				setCanvasHeight(height);
+				setCanvasSize({
+					width,
+					height,
+				});
 			}
 		});
 		observer.observe(canvas);
 
 		// Set initial size
-		setCanvasWidth(canvas.offsetWidth);
-		setCanvasHeight(canvas.offsetHeight);
+		setCanvasSize({
+			width: canvas.offsetWidth,
+			height: canvas.offsetHeight,
+		});
 
 		return () => observer.disconnect();
 	}, [canvas]);
 
-	return {width: canvasWidth, height: canvasHeight};
+	return {width: canvasSize.width, height: canvasSize.height};
 }
