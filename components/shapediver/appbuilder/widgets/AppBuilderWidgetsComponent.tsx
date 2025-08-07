@@ -21,12 +21,14 @@ import {
 	isLineChartWidget,
 	isProgressWidget,
 	isRoundChartWidget,
+	isSceneTreeExplorerWidget,
 	isTextWidget,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
 import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
+import AppBuilderSceneTreeExplorerWidgetComponent from "./AppBuilderSceneTreeExplorerWidgetComponent";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(
 	() => import("./AppBuilderAgentWidgetComponent"),
 );
@@ -163,6 +165,13 @@ export default function AppBuilderWidgetsComponent({
 						<AppBuilderDesktopClientOutputsWidgetComponent
 							key={i}
 							namespace={namespace}
+							{...w.props}
+						/>
+					);
+				else if (isSceneTreeExplorerWidget(w))
+					return (
+						<AppBuilderSceneTreeExplorerWidgetComponent
+							key={i}
 							{...w.props}
 						/>
 					);
