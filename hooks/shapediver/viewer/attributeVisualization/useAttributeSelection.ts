@@ -15,7 +15,7 @@ export type AttributeSelectionData = {
 	selectedItemData: {
 		[key: string]: ISDTFAttributeData;
 	};
-	location: number[];
+	location: [number, number, number];
 };
 
 /**

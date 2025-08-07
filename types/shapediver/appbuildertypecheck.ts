@@ -480,14 +480,27 @@ const IAppBuilderTabSchema = z
 // Zod type definition for IAppBuilderAnchor3dContainerProperties
 const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	id: z.string(),
-	location: z.array(z.number()),
-	allowPointerEvents: z.preprocess((val) => {
-		if (val === "true") return true;
-		if (val === "false") return false;
-		return val;
-	}, z.boolean().optional()),
+	location: z.tuple([z.number(), z.number(), z.number()]),
+	allowPointerEvents: z.boolean().optional(),
 	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
 	previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+	width: z.union([z.string(), z.number()]).optional(),
+	height: z.union([z.string(), z.number()]).optional(),
+});
+
+// Zod type definition for IAppBuilderAnchor2dContainerProperties
+const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
+	id: z.string(),
+	location: z.union([
+		z.tuple([z.string(), z.string()]),
+		z.tuple([z.number(), z.number()]),
+	]),
+	allowPointerEvents: z.boolean().optional(),
+	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
+	previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+	draggable: z.boolean().optional(),
+	width: z.union([z.string(), z.number()]).optional(),
+	height: z.union([z.string(), z.number()]).optional(),
 });
 
 // Zod type definition for IAppBuilderContainer
@@ -496,6 +509,14 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 		.object({
 			name: z.literal(AppBuilderContainerNameType.Anchor3d),
 			props: IAppBuilderAnchor3dContainerPropertiesSchema,
+			tabs: z.array(IAppBuilderTabSchema).optional(),
+			widgets: z.array(IAppBuilderWidgetSchema).optional(),
+		})
+		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
+	z
+		.object({
+			name: z.literal(AppBuilderContainerNameType.Anchor2d),
+			props: IAppBuilderAnchor2dContainerPropertiesSchema,
 			tabs: z.array(IAppBuilderTabSchema).optional(),
 			widgets: z.array(IAppBuilderWidgetSchema).optional(),
 		})
