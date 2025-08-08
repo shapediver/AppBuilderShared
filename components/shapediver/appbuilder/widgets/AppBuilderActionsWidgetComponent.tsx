@@ -1,17 +1,6 @@
-import AppBuilderActionAddToCartComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionAddToCartComponent";
-import AppBuilderActionCloseConfiguratorComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCloseConfiguratorComponent";
-import AppBuilderActionCreateModelStateComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCreateModelStateComponent";
-import AppBuilderActionSetBrowserLocationComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetBrowserLocationComponent";
-import AppBuilderActionSetParameterValueComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValueComponent";
+import {AppBuilderActionFromType} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionFromType";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
-import {
-	IAppBuilderWidgetPropsActions,
-	isAddToCartAction,
-	isCloseConfiguratorAction,
-	isCreateModelStateAction,
-	isSetBrowserLocationAction,
-	isSetParameterValueAction,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderWidgetPropsActions} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	Group,
 	MantineThemeComponent,
@@ -58,46 +47,7 @@ export default function AppBuilderActionsWidgetComponent(
 	}
 
 	const actionComponents = actions.map((action, i) => {
-		if (isCreateModelStateAction(action))
-			return (
-				<AppBuilderActionCreateModelStateComponent
-					key={i}
-					namespace={namespace}
-					{...action.props}
-				/>
-			);
-		else if (isAddToCartAction(action))
-			return (
-				<AppBuilderActionAddToCartComponent
-					key={i}
-					namespace={namespace}
-					{...action.props}
-				/>
-			);
-		else if (isCloseConfiguratorAction(action))
-			return (
-				<AppBuilderActionCloseConfiguratorComponent
-					key={i}
-					{...action.props}
-				/>
-			);
-		else if (isSetParameterValueAction(action))
-			return (
-				<AppBuilderActionSetParameterValueComponent
-					key={i}
-					namespace={namespace}
-					{...action.props}
-				/>
-			);
-		else if (isSetBrowserLocationAction(action))
-			return (
-				<AppBuilderActionSetBrowserLocationComponent
-					key={i}
-					namespace={namespace}
-					{...action.props}
-				/>
-			);
-		else return null;
+		return AppBuilderActionFromType(action, namespace, i);
 	});
 
 	if (actions.length === 1) return actionComponents[0];
