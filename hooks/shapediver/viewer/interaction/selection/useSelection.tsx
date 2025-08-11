@@ -168,6 +168,9 @@ export function useSelection(
 	// when the available node names change, we need to update the selected node names
 	// to ensure that the selected nodes are still available
 	useEffect(() => {
+		// intentionally stale to only re-render when availableNodeNames changes
+		if (!activate) return;
+
 		const newSelectedNodeNames: string[] = [];
 		if (selectedNodeNames.length > 0 && availableNodeNames) {
 			selectedNodeNames.forEach((name) => {
