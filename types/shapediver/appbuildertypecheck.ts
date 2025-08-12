@@ -88,6 +88,7 @@ const IAppBuilderParameterOverridesSchema =
 		order: true,
 		tooltip: true,
 		hidden: true,
+		settings: true,
 	});
 
 // Zod type definition for IAppBuilderParameterRef
