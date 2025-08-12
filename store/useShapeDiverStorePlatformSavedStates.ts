@@ -8,6 +8,7 @@ import {
 	TSavedStateEmbed,
 	TSavedStateQueryPropsExt,
 } from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
+import {defineFilter} from "@AppBuilderShared/utils/platform/filter";
 import {
 	SdPlatformRequestSavedStatePatch,
 	SdPlatformSavedStateApiQueryParameters,
@@ -191,31 +192,21 @@ export const useShapeDiverStorePlatformSavedStates =
 
 						// Note: We can't define the following filter criteria outside of loadMore,
 						// because some of them require a promise to be resolved.
-						const userFilter = filterByUser
-							? {
-									"owner_id[=]":
-										typeof filterByUser === "string"
-											? filterByUser
-											: ((await getUser())?.id ?? "%"),
-								}
-							: undefined;
-						const orgFilter = filterByOrganization
-							? {
-									"organization_id[=]":
-										typeof filterByOrganization === "string"
-											? filterByOrganization
-											: ((await getUser())?.organization
-													?.id ?? "%"),
-								}
-							: undefined;
-						const modelFilter = filterByModel
-							? {
-									"model_id[=]":
-										typeof filterByModel === "string"
-											? filterByModel
-											: (currentModel?.id ?? "%"),
-								}
-							: undefined;
+						const userFilter = defineFilter(
+							"owner_id[=]",
+							filterByUser,
+							(await getUser())?.id ?? "%",
+						);
+						const orgFilter = defineFilter(
+							"organization_id[=]",
+							filterByOrganization,
+							(await getUser())?.organization?.id ?? "%",
+						);
+						const modelFilter = defineFilter(
+							"model_id[=]",
+							filterByModel,
+							currentModel?.id ?? "%",
+						);
 
 						const params: SdPlatformSavedStateApiQueryParameters = {
 							...queryParamsExt,
