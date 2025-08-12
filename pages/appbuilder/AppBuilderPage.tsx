@@ -203,6 +203,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		hasAppBuilderOutput,
 		appBuilderData,
 		customParametersLoaded,
+		sessionSettings,
 	} = useSessionWithAppBuilder(
 		controllerSession,
 		settings?.appBuilderOverride,
@@ -263,7 +264,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 					exports={exportProps}
 					outputs={outputProps}
 					namespace={namespace}
-					settings={defaultSessionDto}
+					settings={sessionSettings}
 				/>
 			),
 		};

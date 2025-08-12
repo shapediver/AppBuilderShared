@@ -750,6 +750,22 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 */
 	hideSavedStates?: boolean;
 	/**
+	 * If the desktop clients should be hidden by default.
+	 */
+	hideDesktopClients?: boolean;
+	/**
+	 * If the data outputs should be hidden by default.
+	 */
+	hideDataOutputs?: boolean;
+	/**
+	 * If the exports should be hidden by default.
+	 */
+	hideExports?: boolean;
+	/**
+	 * In case we cannot connect to the platform, load settings from the viewer, if they were stored there. (default: undefined)
+	 */
+	loadPlatformSettingsFromViewer?: "platform" | "iframe";
+	/**
 	 * Optional model state id.
 	 */
 	modelStateId?: string;
