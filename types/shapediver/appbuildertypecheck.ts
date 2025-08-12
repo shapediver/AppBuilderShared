@@ -405,6 +405,9 @@ const IAppBuilderWidgetPropsProgressSchema = z.object({
 	delayRemoval: z.number().optional(),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsSceneTreeExplorer
+const IAppBuilderWidgetPropsSceneTreeExplorerSchema = z.object({});
+
 // Zod type definition for IAppBuilderWidgetPropsDesktopClientSelection
 const IAppBuilderWidgetPropsDesktopClientSelectionSchema = z.object({});
 
@@ -464,6 +467,10 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("desktopClientOutputs"),
 		props: IAppBuilderWidgetPropsDesktopClientOutputsSchema,
+	}),
+	z.object({
+		type: z.literal("sceneTreeExplorer"),
+		props: IAppBuilderWidgetPropsSceneTreeExplorerSchema,
 	}),
 ]);
 

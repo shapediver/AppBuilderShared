@@ -246,7 +246,8 @@ export type AppBuilderWidgetType =
 	| "agent"
 	| "progress"
 	| "desktopClientSelection"
-	| "desktopClientOutputs";
+	| "desktopClientOutputs"
+	| "sceneTreeExplorer";
 
 /**
  * Properties of a parameter and export accordion widget.
@@ -366,6 +367,11 @@ export interface IAppBuilderWidgetPropsProgress {
 	showPercentage?: boolean;
 }
 
+/** Properties of a scene tree explorer widget. */
+export interface IAppBuilderWidgetPropsSceneTreeExplorer {
+	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
+}
+
 /** Properties of a desktop client selection widget. */
 export interface IAppBuilderWidgetPropsDesktopClientSelection {
 	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
@@ -402,7 +408,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsAgent
 		| IAppBuilderWidgetPropsProgress
 		| IAppBuilderWidgetPropsDesktopClientSelection
-		| IAppBuilderWidgetPropsDesktopClientOutputs;
+		| IAppBuilderWidgetPropsDesktopClientOutputs
+		| IAppBuilderWidgetPropsSceneTreeExplorer;
 }
 
 /**
@@ -637,6 +644,16 @@ export function isProgressWidget(
 	widget: IAppBuilderWidget,
 ): widget is {type: "progress"; props: IAppBuilderWidgetPropsProgress} {
 	return widget.type === "progress";
+}
+
+/** assert widget type "sceneTreeExplorer" */
+export function isSceneTreeExplorerWidget(
+	widget: IAppBuilderWidget,
+): widget is {
+	type: "sceneTreeExplorer";
+	props: IAppBuilderWidgetPropsSceneTreeExplorer;
+} {
+	return widget.type === "sceneTreeExplorer";
 }
 
 /** assert widget type "desktopClientSelection" */
