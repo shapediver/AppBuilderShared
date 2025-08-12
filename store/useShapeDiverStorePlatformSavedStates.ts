@@ -2,16 +2,17 @@ import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {IPlatformPagedItemQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformGeneric";
 import {
-	IShapeDiverStorePlatformModelExtended,
-	ModelCacheKeyEnum,
-	TModelData,
-	TModelEmbed,
-	TModelQueryPropsExt,
-} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
+	IShapeDiverStorePlatformSavedStateExtended,
+	SavedStateCacheKeyEnum,
+	TSavedStateData,
+	TSavedStateEmbed,
+	TSavedStateQueryPropsExt,
+} from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
 import {defineFilter} from "@AppBuilderShared/utils/platform/filter";
 import {
-	SdPlatformModelQueryEmbeddableFields,
-	SdPlatformModelQueryParameters,
+	SdPlatformRequestSavedStatePatch,
+	SdPlatformSavedStateApiQueryParameters,
+	SdPlatformSavedStateQueryEmbeddableFields,
 	SdPlatformSortingOrder,
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {produce} from "immer";
@@ -21,88 +22,58 @@ import {devtools} from "zustand/middleware";
 import {useShallow} from "zustand/react/shallow";
 
 /**
- * Store for ShapeDiver Platform models.
- * @see {@link IShapeDiverStorePlatform}
+ * Store for ShapeDiver Platform saved states.
+ * @see {@link IShapeDiverStorePlatformSavedState}
  */
-export const useShapeDiverStorePlatformModels =
-	create<IShapeDiverStorePlatformModelExtended>()(
+export const useShapeDiverStorePlatformSavedStates =
+	create<IShapeDiverStorePlatformSavedStateExtended>()(
 		devtools(
 			(set, get) => ({
 				items: {},
 
 				queryCache: {},
 
-				addItem(data: TModelData) {
+				addItem(data: TSavedStateData) {
 					const clientRef =
 						useShapeDiverStorePlatform.getState().clientRef!;
-					const pruneCache = get().pruneCache;
+					const {pruneCache} = get();
 
 					const actions = {
-						bookmark: async () => {
-							await clientRef.client.bookmarks.create({
-								model_id: data.id,
-							});
+						update: async (
+							body: SdPlatformRequestSavedStatePatch,
+						) => {
+							const result =
+								await clientRef!.client.savedStates.patch(
+									data.id,
+									body,
+								);
 							set(
 								produce((state) => {
-									state.items[data.id].data.bookmark = {
-										bookmarked: true,
-									};
+									state.items[data.id].data = result.data;
 								}),
 								false,
-								`bookmark ${data.id}`,
+								`update ${data.id}`,
 							);
-							pruneCache(ModelCacheKeyEnum.BookmarkedModels);
+							// depending on the updated properties, further query caches might need to be pruned
+							if ("visibility" in body) {
+								pruneCache(
+									SavedStateCacheKeyEnum.OrganizationSavedStates,
+								);
+								pruneCache(
+									SavedStateCacheKeyEnum.PublicSavedStates,
+								);
+							}
 						},
-						unbookmark: async () => {
-							await clientRef.client.bookmarks.delete(data.id);
+						delete: async () => {
+							await clientRef!.client.savedStates.delete(data.id);
 							set(
 								produce((state) => {
-									state.items[data.id].data.bookmark = {
-										bookmarked: false,
-									};
+									delete state.items[data.id];
 								}),
 								false,
-								`unbookmark ${data.id}`,
+								`delete ${data.id}`,
 							);
-							pruneCache(ModelCacheKeyEnum.BookmarkedModels);
-						},
-						confirmForOrganization: async () => {
-							await clientRef.client.models.patch(data.id, {
-								organization_settings: {confirmed: true},
-							});
-							set(
-								produce((state) => {
-									state.items[
-										data.id
-									].data.organization_settings = {
-										confirmed: true,
-									};
-								}),
-								false,
-								`confirmForOrganization ${data.id}`,
-							);
-							pruneCache(
-								ModelCacheKeyEnum.OrganizationConfirmedModels,
-							);
-						},
-						revokeForOrganization: async () => {
-							await clientRef.client.models.patch(data.id, {
-								organization_settings: {confirmed: false},
-							});
-							set(
-								produce((state) => {
-									state.items[
-										data.id
-									].data.organization_settings = {
-										confirmed: false,
-									};
-								}),
-								false,
-								`revokeForOrganization ${data.id}`,
-							);
-							pruneCache(
-								ModelCacheKeyEnum.OrganizationConfirmedModels,
-							);
+							pruneCache(SavedStateCacheKeyEnum.AllSavedStates);
 						},
 					};
 
@@ -123,38 +94,39 @@ export const useShapeDiverStorePlatformModels =
 
 				useQuery(
 					params: IPlatformPagedItemQueryProps<
-						TModelEmbed,
-						TModelQueryPropsExt
+						TSavedStateEmbed,
+						TSavedStateQueryPropsExt
 					>,
 				) {
-					const {clientRef, getUser} = useShapeDiverStorePlatform(
-						useShallow((state) => ({
-							clientRef: state.clientRef,
-							getUser: state.getUser,
-						})),
-					);
+					const {clientRef, getUser, currentModel} =
+						useShapeDiverStorePlatform(
+							useShallow((state) => ({
+								clientRef: state.clientRef,
+								getUser: state.getUser,
+								currentModel: state.currentModel,
+							})),
+						);
 					const {addItem, queryCache} = get();
 
 					const {
 						queryParams,
 						filterByUser,
 						filterByOrganization,
+						filterByModel,
 						cacheKey,
 					} = params;
 
 					// here we define default query parameters and overwrite them by the provided ones
 					const queryParamsExt = useMemo(
 						() => ({
-							filters: {deleted_at: null, status: "done"},
+							filters: {},
 							sorters: {created_at: SdPlatformSortingOrder.Desc},
 							embed: [
-								SdPlatformModelQueryEmbeddableFields.Bookmark,
-								SdPlatformModelQueryEmbeddableFields.Decoration,
-								SdPlatformModelQueryEmbeddableFields.Tags,
-								SdPlatformModelQueryEmbeddableFields.User,
+								SdPlatformSavedStateQueryEmbeddableFields.Image,
+								SdPlatformSavedStateQueryEmbeddableFields.Owner,
 							],
 							strict_limit: true,
-							limit: 12,
+							limit: 3,
 							...queryParams,
 						}),
 						[queryParams],
@@ -174,12 +146,13 @@ export const useShapeDiverStorePlatformModels =
 					// define key for query cache
 					const key = useMemo(
 						() =>
-							`${JSON.stringify(cacheKeys)}-${JSON.stringify(queryParamsExt)}-${filterByUser}-${filterByOrganization}`,
+							`${JSON.stringify(cacheKeys)}-${JSON.stringify(queryParamsExt)}-${filterByUser}-${filterByOrganization}-${filterByModel}`,
 						[
 							cacheKeys,
 							queryParamsExt,
 							filterByUser,
 							filterByOrganization,
+							filterByModel,
 						],
 					);
 
@@ -217,8 +190,10 @@ export const useShapeDiverStorePlatformModels =
 
 						const {queryCache} = get();
 
+						// Note: We can't define the following filter criteria outside of loadMore,
+						// because some of them require a promise to be resolved.
 						const userFilter = defineFilter(
-							"user_id[=]",
+							"owner_id[=]",
 							filterByUser,
 							(await getUser())?.id ?? "%",
 						);
@@ -227,8 +202,13 @@ export const useShapeDiverStorePlatformModels =
 							filterByOrganization,
 							(await getUser())?.organization?.id ?? "%",
 						);
+						const modelFilter = defineFilter(
+							"model_id[=]",
+							filterByModel,
+							currentModel?.id ?? "%",
+						);
 
-						const params: SdPlatformModelQueryParameters = {
+						const params: SdPlatformSavedStateApiQueryParameters = {
 							...queryParamsExt,
 							offset:
 								queryCache[key]?.pagination?.next_offset ??
@@ -237,13 +217,14 @@ export const useShapeDiverStorePlatformModels =
 								...queryParamsExt.filters,
 								...(userFilter ?? {}),
 								...(orgFilter ?? {}),
+								...(modelFilter ?? {}),
 							},
 						};
 
 						setLoading(true);
 						try {
 							const {pagination, result: items} = (
-								await clientRef.client.models.query(params)
+								await clientRef.client.savedStates.query(params)
 							).data;
 							items.forEach((item) => addItem(item));
 							set(
@@ -269,6 +250,8 @@ export const useShapeDiverStorePlatformModels =
 						queryParamsExt,
 						filterByUser,
 						filterByOrganization,
+						filterByModel,
+						currentModel,
 						key,
 					]);
 
@@ -282,7 +265,7 @@ export const useShapeDiverStorePlatformModels =
 					};
 				},
 
-				pruneCache: (cacheType: ModelCacheKeyEnum) => {
+				pruneCache: (cacheType: SavedStateCacheKeyEnum) => {
 					const key = cacheType;
 
 					const {queryCache} = get();
@@ -304,6 +287,6 @@ export const useShapeDiverStorePlatformModels =
 						);
 				},
 			}),
-			{...devtoolsSettings, name: "ShapeDiver | Platform | Models"},
+			{...devtoolsSettings, name: "ShapeDiver | Platform | Saved States"},
 		),
 	);
