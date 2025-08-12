@@ -1,6 +1,5 @@
 import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";
 import {
 	IAppBuilderSettings,
 	IAppBuilderSettingsResolved,
@@ -15,7 +14,6 @@ import {
 	SdPlatformModelGetEmbeddableFields,
 	create,
 } from "@shapediver/sdk.platform-api-sdk-v1";
-import {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /**
@@ -31,28 +29,6 @@ export default function useResolveAppBuilderSettings(
 			setCurrentModel: state.setCurrentModel,
 		})),
 	);
-
-	// TODO remove this
-	// temporary saved state testing
-	const {currentModel} = useShapeDiverStorePlatform();
-	const {useQuery} = useShapeDiverStorePlatformSavedStates();
-	const {
-		loading: savedStateLoading,
-		error: savedStateError,
-		items,
-		hasMore,
-		loadMore,
-	} = useQuery({
-		queryParams: {},
-		filterByModel: currentModel?.id,
-	});
-	useEffect(() => {
-		if (hasMore) {
-			loadMore();
-		}
-	}, [currentModel, items, hasMore]);
-	console.log(savedStateLoading, savedStateError, items, hasMore);
-	// END remove this
 
 	// when running on the platform, try to get a token (refresh token grant)
 	const {value: sdkRef, error: platformError} = useAsync(async () => {
