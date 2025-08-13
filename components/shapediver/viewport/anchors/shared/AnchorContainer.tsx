@@ -127,16 +127,7 @@ export function useAnchorContainer({
 		previewIcon: inputPreviewIcon,
 		width: inputWidth = "var(--app-shell-navbar-width)",
 		height: inputHeight,
-		mobileFallback = {
-			/**
-			 * By default, if we get into the mobile behavior,
-			 * we put everything into the right container.
-			 *
-			 * If a previewIcon was defined, it is being re-used.
-			 */
-			container: AppBuilderContainerNameType.Right,
-			previewIcon: undefined,
-		},
+		mobileFallback: inputMobileFallback,
 		...rest
 	} = properties;
 
@@ -179,6 +170,16 @@ export function useAnchorContainer({
 		true,
 	);
 
+	const {mobileDisabled, mobilePreviewIcon, mobileContainer} = useMemo(() => {
+		return {
+			mobileDisabled: inputMobileFallback?.disabled,
+			mobilePreviewIcon: inputMobileFallback?.previewIcon,
+			mobileContainer:
+				inputMobileFallback?.container ||
+				AppBuilderContainerNameType.Right,
+		};
+	}, [inputMobileFallback]);
+
 	/**
 	 * Get the preview icon for the anchor.
 	 * This will return the inputPreviewIcon if we are above the mobile breakpoint,
@@ -188,8 +189,8 @@ export function useAnchorContainer({
 		if (aboveMobileBreakpoint) {
 			return inputPreviewIcon;
 		}
-		return mobileFallback?.previewIcon || inputPreviewIcon;
-	}, [aboveMobileBreakpoint, inputPreviewIcon, mobileFallback]);
+		return mobilePreviewIcon || inputPreviewIcon;
+	}, [aboveMobileBreakpoint, inputPreviewIcon, mobilePreviewIcon]);
 
 	const {viewportId} = useViewportId();
 	const viewport = useShapeDiverStoreViewport(
@@ -453,18 +454,18 @@ export function useAnchorContainer({
 	useEffect(() => {
 		if (aboveMobileBreakpoint || !showContent) return;
 		// if this is disabled on mobile, we don't do anything
-		if (mobileFallback.disabled) return;
+		if (mobileDisabled) return;
 
 		const token = addAdditionalContainer(
 			// we know this is a standard container, as otherwise it wouldn't have passed the zod checks
-			mobileFallback.container as AppBuilderStandardContainerNameType,
+			mobileContainer as AppBuilderStandardContainerNameType,
 			inner,
 		);
 
 		return () => {
 			if (token) removeAdditionalContainer(token);
 		};
-	}, [aboveMobileBreakpoint, showContent, mobileFallback]);
+	}, [aboveMobileBreakpoint, showContent, mobileContainer, mobileDisabled]);
 
 	return {
 		AnchorElement,
