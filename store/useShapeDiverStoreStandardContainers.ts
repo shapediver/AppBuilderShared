@@ -10,13 +10,13 @@ import {devtools} from "zustand/middleware";
 /**
  * Helper function to merge default and additional containers.
  *
- * @param position - The position for which to merge containers.
+ * @param name - The name for which to merge containers.
  * @param defaultContainer - The default container definition.
  * @param additionalContainers - The additional container elements to merge.
  * @returns The merged container definition.
  */
 const merge = (
-	position: AppBuilderStandardContainerNameType,
+	name: AppBuilderStandardContainerNameType,
 	defaultContainer: IAppBuilderContainer | undefined,
 	additionalContainers: Record<string, JSX.Element>,
 ): IAppBuilderContainer | undefined => {
@@ -27,7 +27,7 @@ const merge = (
 
 	// Start with base container or create new one
 	const baseContainer = defaultContainer || {
-		name: position,
+		name: name,
 		tabs: [],
 		widgets: [],
 	};
@@ -87,11 +87,11 @@ const updateMergedContainers = (
 		AppBuilderStandardContainerNameType,
 		IAppBuilderContainer | undefined
 	> = {} as any;
-	for (const position of AppBuilderStandardContainerNames) {
-		result[position] = merge(
-			position,
-			defaultContainers[position],
-			additionalContainerContent[position],
+	for (const name of AppBuilderStandardContainerNames) {
+		result[name] = merge(
+			name,
+			defaultContainers[name],
+			additionalContainerContent[name],
 		);
 	}
 	return result;
@@ -120,12 +120,12 @@ export const useShapeDiverStoreStandardContainers =
 					right: undefined,
 				},
 
-				setDefaultContainer: (position, container) =>
+				setDefaultContainer: (name, container) =>
 					set(
 						(state) => {
 							const newDefaultContainers = {
 								...state.defaultContainers,
-								[position]: container,
+								[name]: container,
 							};
 							return {
 								defaultContainers: newDefaultContainers,
@@ -136,7 +136,7 @@ export const useShapeDiverStoreStandardContainers =
 							};
 						},
 						false,
-						`setDefaultContainer-${position}`,
+						`setDefaultContainer-${name}`,
 					),
 
 				setDefaultContainers: (containers) =>
@@ -180,18 +180,16 @@ export const useShapeDiverStoreStandardContainers =
 					),
 
 				// Additional container actions
-				addAdditionalContainer: (position, container) => {
+				addAdditionalContainerContent: (name, content) => {
 					const token = Math.random().toString(36).substring(7);
 
 					set(
 						(state) => {
 							const newAdditionalContent = {
 								...state.additionalContainerContent,
-								[position]: {
-									...state.additionalContainerContent[
-										position
-									],
-									[token]: container,
+								[name]: {
+									...state.additionalContainerContent[name],
+									[token]: content,
 								},
 							};
 							return {
@@ -204,29 +202,29 @@ export const useShapeDiverStoreStandardContainers =
 							};
 						},
 						false,
-						`addAdditionalContainer-${position}-${token}`,
+						`addAdditionalContainerContent-${name}-${token}`,
 					);
 
 					return token;
 				},
 
-				removeAdditionalContainer: (token) => {
+				removeAdditionalContainerContent: (token) => {
 					const state = get();
 					let found = false;
-					let targetPosition: AppBuilderStandardContainerNameType | null =
+					let targetName: AppBuilderStandardContainerNameType | null =
 						null;
 
-					// Find which position contains the token
-					for (const position of AppBuilderStandardContainerNames) {
-						if (state.additionalContainerContent[position][token]) {
+					// Find which name contains the token
+					for (const name of AppBuilderStandardContainerNames) {
+						if (state.additionalContainerContent[name][token]) {
 							found = true;
-							targetPosition = position;
+							targetName = name;
 							break;
 						}
 					}
 
 					// If not found, return false
-					if (!found || !targetPosition) {
+					if (!found || !targetName) {
 						return false;
 					}
 
@@ -234,10 +232,10 @@ export const useShapeDiverStoreStandardContainers =
 						(state) => {
 							const newAdditionalContent = {
 								...state.additionalContainerContent,
-								[targetPosition!]: Object.fromEntries(
+								[targetName!]: Object.fromEntries(
 									Object.entries(
 										state.additionalContainerContent[
-											targetPosition!
+											targetName!
 										],
 									).filter(([key]) => key !== token),
 								),
@@ -252,7 +250,7 @@ export const useShapeDiverStoreStandardContainers =
 							};
 						},
 						false,
-						`removeAdditionalContainer-${token}`,
+						`removeAdditionalContainerContent-${token}`,
 					);
 
 					return true;

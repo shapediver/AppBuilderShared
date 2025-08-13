@@ -27,8 +27,8 @@ export const AppBuilderStandardContainerNames: readonly AppBuilderStandardContai
 
 export interface IShapeDiverStoreStandardContainers {
 	/**
-	 * The default containers for each position.
-	 * These are the containers that are either specified by the user or created as a fallback.
+	 * The default container state for each of the standard container names.
+	 * This container state is defined by the AppBuilder output of the controller session, or the fallback logic in case no AppBuilder output exists.
 	 *
 	 * We store the definition of these containers here, to be able to adjust them later if needed.
 	 */
@@ -38,8 +38,8 @@ export interface IShapeDiverStoreStandardContainers {
 	>;
 
 	/**
-	 * The additional content for containers.
-	 * This includes all elements that should be added to the default container with the AppBuilderStandardContainerNameType.
+	 * The additional content to be added to the default container state.
+	 * This includes all elements that should be added to the default container with the corresponding type.
 	 *
 	 * There are already created elements that can just be added to the container.
 	 */
@@ -49,7 +49,7 @@ export interface IShapeDiverStoreStandardContainers {
 	>;
 
 	/**
-	 * The merged containers for each position.
+	 * The merged containers for each name.
 	 * These are the containers that result from combining the default containers with the additional content.
 	 * This property is updated whenever the default containers or additional content change.
 	 */
@@ -59,19 +59,19 @@ export interface IShapeDiverStoreStandardContainers {
 	>;
 
 	/**
-	 * Set the default container definition for a specific position.
+	 * Set the default container definition for a specific name.
 	 *
-	 * @param position - The position for which to set the default container.
+	 * @param name - The name for which to set the default container.
 	 * @param container - The container definition to set as the default.
 	 * @returns
 	 */
 	setDefaultContainer: (
-		position: AppBuilderStandardContainerNameType,
+		name: AppBuilderStandardContainerNameType,
 		container: IAppBuilderContainer | undefined,
 	) => void;
 
 	/**
-	 * Set the default container definitions for all positions.
+	 * Set the default container definitions for all names.
 	 *
 	 * @param containers - The container definitions to set as the default.
 	 * @returns
@@ -90,22 +90,22 @@ export interface IShapeDiverStoreStandardContainers {
 	resetDefaultContainers: () => void;
 
 	/**
-	 * Add an additional container for a specific position.
+	 * Add an additional container for a specific name.
 	 *
-	 * @param position - The position for which to add the additional container.
-	 * @param container - The additional container element to add.
+	 * @param name - The name for which to add the additional container.
+	 * @param content - The additional content to add.
 	 * @returns A unique token representing the added container.
 	 */
-	addAdditionalContainer: (
-		position: AppBuilderStandardContainerNameType,
-		container: JSX.Element,
+	addAdditionalContainerContent: (
+		name: AppBuilderStandardContainerNameType,
+		content: JSX.Element,
 	) => string;
 
 	/**
-	 * Remove an additional container for a specific position.
+	 * Remove an additional container for a specific name.
 	 *
 	 * @param token - The unique token representing the added container.
 	 * @returns A boolean indicating whether the container was successfully removed.
 	 */
-	removeAdditionalContainer: (token: string) => boolean;
+	removeAdditionalContainerContent: (token: string) => boolean;
 }

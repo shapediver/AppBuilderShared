@@ -137,10 +137,11 @@ export function useAnchorContainer({
 	const [controlElementGroupUpdate, setControlElementGroupUpdate] =
 		useState(0);
 
-	const {addAdditionalContainer, removeAdditionalContainer} =
+	const {addAdditionalContainerContent, removeAdditionalContainerContent} =
 		useShapeDiverStoreStandardContainers((state) => ({
-			addAdditionalContainer: state.addAdditionalContainer,
-			removeAdditionalContainer: state.removeAdditionalContainer,
+			addAdditionalContainerContent: state.addAdditionalContainerContent,
+			removeAdditionalContainerContent:
+				state.removeAdditionalContainerContent,
 		}));
 
 	/**
@@ -456,14 +457,14 @@ export function useAnchorContainer({
 		// if this is disabled on mobile, we don't do anything
 		if (mobileDisabled) return;
 
-		const token = addAdditionalContainer(
+		const token = addAdditionalContainerContent(
 			// we know this is a standard container, as otherwise it wouldn't have passed the zod checks
 			mobileContainer as AppBuilderStandardContainerNameType,
 			inner,
 		);
 
 		return () => {
-			if (token) removeAdditionalContainer(token);
+			if (token) removeAdditionalContainerContent(token);
 		};
 	}, [aboveMobileBreakpoint, showContent, mobileContainer, mobileDisabled]);
 
