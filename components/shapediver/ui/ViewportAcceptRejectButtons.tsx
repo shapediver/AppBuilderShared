@@ -1,6 +1,5 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {IParameterChanges} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {
@@ -13,6 +12,7 @@ import {
 	TextProps,
 	useProps,
 } from "@mantine/core";
+import {IconCheck, IconX} from "@tabler/icons-react";
 import React, {useCallback, useMemo} from "react";
 
 interface IconProps {
@@ -131,7 +131,7 @@ function ViewportAcceptRejectButtons(
 	return (
 		<Group {...groupProps}>
 			<Button
-				rightSection={<Icon type={IconTypeEnum.Check} {...iconProps} />}
+				rightSection={<Icon iconType={IconCheck} {...iconProps} />}
 				onClick={acceptChanges}
 				disabled={disableChangeControls}
 				{...buttonProps}
@@ -139,7 +139,7 @@ function ViewportAcceptRejectButtons(
 				<Text {...textProps}>Accept</Text>
 			</Button>
 			<Button
-				rightSection={<Icon type={IconTypeEnum.X} {...iconProps} />}
+				rightSection={<Icon iconType={IconX} {...iconProps} />}
 				onClick={rejectChanges}
 				disabled={disableChangeControls}
 				{...buttonProps}

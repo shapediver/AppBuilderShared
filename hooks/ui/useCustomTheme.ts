@@ -729,7 +729,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	loaderProps: {type: "dots"},
 				// },
 				// iconRefreshProps: {
-				// 	type: IconTypeEnum.Refresh,
+				// 	iconType: IconRefresh,
 				// 	size: "1rem",
 				// },
 				// groupBottomProps: {
@@ -785,7 +785,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	gap: "sm",
 				// },
 				// iconProps: {
-				// 	type: IconTypeEnum.IconInfoCircleFilled,
+				// 	iconType: IconInfoCircleFilled,
 				// 	color: "var(--mantine-primary-color-filled)",
 				// },
 				// textProps: {
@@ -943,7 +943,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				//	},
 				//},
 				//iconProps: {
-				//	type: IconTypeEnum.Cancel,
+				//	iconType: IconCancel,
 				//	size: "1.2rem",
 				//  color: "var(--mantine-color-default-color)",
 				//},

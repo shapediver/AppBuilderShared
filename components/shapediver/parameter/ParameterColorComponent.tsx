@@ -8,7 +8,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ColorFormatType,
 	convertFromSdColor,
@@ -20,6 +19,7 @@ import {
 	MantineThemeComponent,
 	useProps,
 } from "@mantine/core";
+import {IconRefresh} from "@tabler/icons-react";
 import React, {useCallback, useEffect, useState} from "react";
 
 interface StyleProps {
@@ -114,7 +114,7 @@ export default function ParameterColorComponent(
 								)
 							}
 						>
-							<Icon type={IconTypeEnum.Refresh} />
+							<Icon iconType={IconRefresh} />
 						</ActionIcon>
 					}
 					onChange={setValue}

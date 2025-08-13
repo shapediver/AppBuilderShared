@@ -12,7 +12,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
 	Box,
@@ -29,6 +28,7 @@ import {
 	SelectionParameterValue,
 	validateSelectionParameterSettings,
 } from "@shapediver/viewer.session";
+import {IconCircleOff, IconHandFinger} from "@tabler/icons-react";
 import React, {
 	useCallback,
 	useContext,
@@ -277,7 +277,7 @@ export default function ParameterSelectionComponent(
 									: "filled"
 							}
 						>
-							<Icon type={IconTypeEnum.CircleOff} />
+							<Icon iconType={IconCircleOff} />
 						</ActionIcon>
 					</Box>
 				</Flex>
@@ -331,7 +331,7 @@ export default function ParameterSelectionComponent(
 			fullWidth={true}
 			disabled={disabled}
 			className={classes.interactionButton}
-			rightSection={<Icon type={IconTypeEnum.IconHandFinger} />}
+			rightSection={<Icon iconType={IconHandFinger} />}
 			variant={selectedNodeNames.length === 0 ? "light" : "filled"}
 			onClick={() => setSelectionActive(true)}
 		>

@@ -1,3 +1,4 @@
+import {IconType} from "@AppBuilderShared/components/ui/Icon";
 import {
 	IAppBuilderWidgetPropsAreaChart,
 	IAppBuilderWidgetPropsBarChart,
@@ -5,7 +6,6 @@ import {
 	IAppBuilderWidgetPropsRoundChart,
 } from "@AppBuilderShared/types/shapediver/appbuildercharts";
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
-import {IconType} from "@AppBuilderShared/types/shapediver/icons";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {MantineColor} from "@mantine/core";

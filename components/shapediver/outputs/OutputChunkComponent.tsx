@@ -4,7 +4,6 @@ import {
 	OutputStatusEnum,
 	useStargateOutput,
 } from "@AppBuilderShared/hooks/shapediver/stargate/useStargateOutput";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,
@@ -15,6 +14,7 @@ import {
 	StargateStatusColorTypeEnum,
 } from "@AppBuilderShared/types/shapediver/stargate";
 import {useProps} from "@mantine/core";
+import {IconDeviceDesktopDown} from "@tabler/icons-react";
 import React, {useContext, useMemo} from "react";
 import {
 	DefaultStargateStyleProps,
@@ -119,7 +119,7 @@ export default function OutputChunkComponent(
 				rightSection={rightSection}
 			/>
 			<StargateInput
-				icon={IconTypeEnum.DeviceDesktopDown}
+				icon={IconDeviceDesktopDown}
 				message={parsedMessage}
 				color={statusData.color}
 				isWaiting={isWaiting}

@@ -1,5 +1,4 @@
 import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Button,
 	ButtonProps,
@@ -11,6 +10,7 @@ import {
 	TextProps,
 	useProps,
 } from "@mantine/core";
+import {IconInfoCircleFilled} from "@tabler/icons-react";
 import React from "react";
 
 interface Props {
@@ -55,7 +55,7 @@ const defaultStyleProps: StyleProps = {
 		gap: "sm",
 	},
 	iconProps: {
-		type: IconTypeEnum.IconInfoCircleFilled,
+		iconType: IconInfoCircleFilled,
 		color: "var(--mantine-primary-color-filled)",
 	},
 	textProps: {

@@ -1,12 +1,19 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {
 	SdPlatformModelVisibility,
 	SdPlatformResponseModelPublic,
 } from "@shapediver/sdk.platform-api-sdk-v1";
+import {
+	IconLockSquare,
+	IconUserCheck,
+	IconUserQuestion,
+	IconUsersGroup,
+	IconWorld,
+	Icon as TablerIcon,
+} from "@tabler/icons-react";
 import React, {useMemo} from "react";
 
 interface Props {
@@ -21,7 +28,7 @@ interface Props {
 }
 
 const createStatusDescription = (
-	icon: IconTypeEnum,
+	icon: TablerIcon | string,
 	status: Status,
 	description: string,
 ) => ({icon, status, description});
@@ -34,17 +41,17 @@ enum Status {
 	Public = "public",
 }
 
-const IconTypeOrganizationPending = IconTypeEnum.UserQuestion;
-const IconTypeOrganizationConfirmed = IconTypeEnum.UserCheck;
+const IconTypeOrganizationPending = IconUserQuestion;
+const IconTypeOrganizationConfirmed = IconUserCheck;
 
 const StatusDescriptionMap = {
 	[Status.Private]: createStatusDescription(
-		IconTypeEnum.LockSquare,
+		IconLockSquare,
 		Status.Private,
 		"Private",
 	),
 	[Status.Organization]: createStatusDescription(
-		IconTypeEnum.UsersGroup,
+		IconUsersGroup,
 		Status.Organization,
 		"Visible to organization",
 	),
@@ -59,7 +66,7 @@ const StatusDescriptionMap = {
 		"Visible to organization",
 	),
 	[Status.Public]: createStatusDescription(
-		IconTypeEnum.World,
+		IconWorld,
 		Status.Public,
 		"Public",
 	),
@@ -117,7 +124,7 @@ export default function ModelStatusIcon(props: Props) {
 		/>
 	) : statusDescription ? (
 		<TooltipWrapper label={statusDescription.description}>
-			<Icon type={statusDescription.icon} className={className} />
+			<Icon iconType={statusDescription.icon} className={className} />
 		</TooltipWrapper>
 	) : null;
 }

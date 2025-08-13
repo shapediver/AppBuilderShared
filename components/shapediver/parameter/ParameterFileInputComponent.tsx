@@ -12,7 +12,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	IStargateComponentStatusDefinition,
 	mapStargateComponentStatusDefinition,
@@ -34,6 +33,7 @@ import {
 	guessMissingMimeType,
 	mapMimeTypeToFileEndings,
 } from "@shapediver/viewer.utils.mime-type";
+import {IconCancel, IconDeviceDesktopUp, IconUpload} from "@tabler/icons-react";
 import React, {useEffect, useMemo} from "react";
 import StargateInput from "../stargate/StargateInput";
 import {
@@ -94,7 +94,7 @@ const defaultStyleProps: StyleProps = {
 		},
 	},
 	cancelIconProps: {
-		type: IconTypeEnum.Cancel,
+		iconType: IconCancel,
 		size: "1.2rem",
 		color: "var(--mantine-color-default-color)",
 	},
@@ -256,7 +256,7 @@ export default function ParameterFileInputComponent(
 							waitingText="Waiting for import..."
 							disabled={statusData.disabled || disabled}
 							onClick={onObjectAdd}
-							icon={IconTypeEnum.DeviceDesktopUp}
+							icon={IconDeviceDesktopUp}
 						/>
 						<TooltipWrapper
 							{...uploadTooltipProps}
@@ -268,9 +268,7 @@ export default function ParameterFileInputComponent(
 								onChange={(v) =>
 									handleChange(guessMissingMimeType(v || ""))
 								}
-								leftSection={
-									<Icon type={IconTypeEnum.Upload} />
-								}
+								leftSection={<Icon iconType={IconUpload} />}
 								leftSectionPointerEvents="none"
 								disabled={disabled}
 								valueComponent={() => null}
@@ -292,7 +290,7 @@ export default function ParameterFileInputComponent(
 						onChange={(v) =>
 							handleChange(guessMissingMimeType(v || ""))
 						}
-						leftSection={<Icon type={IconTypeEnum.Upload} />}
+						leftSection={<Icon iconType={IconUpload} />}
 						leftSectionPointerEvents="none"
 						disabled={disabled}
 						valueComponent={undefined}

@@ -1,8 +1,8 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Carousel} from "@mantine/carousel";
 import "@mantine/carousel/styles.css";
 import {MantineThemeComponent, useProps} from "@mantine/core";
+import {IconChevronLeft, IconChevronRight} from "@tabler/icons-react";
 import React, {useCallback, useMemo} from "react";
 import ButtonImageCard from "./ButtonImageCard";
 import classes from "./SelectCarouselComponent.module.css";
@@ -144,8 +144,8 @@ export default function SelectCarouselComponent(
 	return (
 		<Carousel
 			initialSlide={initialSlideIndex}
-			nextControlIcon={<Icon type={IconTypeEnum.ChevronRight} />}
-			previousControlIcon={<Icon type={IconTypeEnum.ChevronLeft} />}
+			nextControlIcon={<Icon iconType={IconChevronRight} />}
+			previousControlIcon={<Icon iconType={IconChevronLeft} />}
 			classNames={{
 				indicators: classes.indicators,
 				indicator: classes.indicator,

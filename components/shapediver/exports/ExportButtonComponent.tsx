@@ -9,7 +9,6 @@ import {
 	useStargateExport,
 } from "@AppBuilderShared/hooks/shapediver/stargate/useStargateExport";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	IStargateComponentStatusDefinition,
 	mapStargateComponentStatusDefinition,
@@ -26,6 +25,11 @@ import {
 } from "@mantine/core";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import {fetchFileWithToken} from "@shapediver/viewer.utils.mime-type";
+import {
+	IconDeviceDesktopDown,
+	IconDownload,
+	IconMailForward,
+} from "@tabler/icons-react";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 import StargateInput from "../stargate/StargateInput";
 import {
@@ -243,7 +247,7 @@ export default function ExportButtonComponent(
 				(isStargate ? (
 					<Group wrap="nowrap">
 						<StargateInput
-							icon={IconTypeEnum.DeviceDesktopDown}
+							icon={IconDeviceDesktopDown}
 							message={statusData.message}
 							color={statusData.color}
 							isWaiting={requestingExport || isWaiting}
@@ -262,7 +266,7 @@ export default function ExportButtonComponent(
 								onClick={() => onClickIntercepted(true)}
 								loading={requestingExport}
 							>
-								<Icon type={IconTypeEnum.Download} />
+								<Icon iconType={IconDownload} />
 							</Button>
 						</TooltipWrapper>
 					</Group>
@@ -271,9 +275,9 @@ export default function ExportButtonComponent(
 						{...buttonProps}
 						leftSection={
 							definition.type === EXPORT_TYPE.DOWNLOAD ? (
-								<Icon type={IconTypeEnum.Download} />
+								<Icon iconType={IconDownload} />
 							) : (
-								<Icon type={IconTypeEnum.MailForward} />
+								<Icon iconType={IconMailForward} />
 							)
 						}
 						onClick={() => onClickIntercepted()}

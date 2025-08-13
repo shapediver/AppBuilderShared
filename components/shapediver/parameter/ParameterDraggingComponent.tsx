@@ -12,7 +12,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
 import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
 import {
@@ -20,6 +19,7 @@ import {
 	IDraggingParameterProps,
 	validateDraggingParameterSettings,
 } from "@shapediver/viewer.session";
+import {IconHandFinger} from "@tabler/icons-react";
 import React, {
 	useCallback,
 	useContext,
@@ -301,7 +301,7 @@ export default function ParameterDraggingComponent(
 			fullWidth={true}
 			disabled={disabled}
 			className={classes.interactionButton}
-			rightSection={<Icon type={IconTypeEnum.IconHandFinger} />}
+			rightSection={<Icon iconType={IconHandFinger} />}
 			variant={parsedUiValue.length === 0 ? "light" : "filled"}
 			onClick={() => setDraggingActive(true)}
 		>

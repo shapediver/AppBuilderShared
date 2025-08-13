@@ -1,4 +1,3 @@
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	MantineThemeComponent,
 	parseThemeColor,
@@ -6,106 +5,15 @@ import {
 	useProps,
 } from "@mantine/core";
 import {
-	Icon as _TablerIconType,
-	IconAdjustments,
-	IconAdjustmentsHorizontal,
-	IconAlertCircle,
-	IconArrowBack,
-	IconArrowBackUp,
-	IconArrowDown,
-	IconArrowForward,
-	IconArrowForwardUp,
-	IconArrowLeft,
-	IconArrowRight,
-	IconArrowUp,
-	IconAugmentedReality,
-	IconAugmentedRealityOff,
-	IconBookmark,
-	IconBookmarkOff,
-	IconBookmarks,
-	IconBookmarksOff,
-	IconBooks,
-	IconBooksOff,
-	IconCamera,
-	IconCameraOff,
-	IconCancel,
-	IconCheck,
-	IconChevronLeft,
-	IconChevronRight,
-	IconCircleOff,
-	IconClockHour4,
-	IconCopy,
-	IconDeviceDesktop,
-	IconDeviceDesktopDown,
-	IconDeviceDesktopUp,
-	IconDeviceFloppy,
-	IconDeviceTv,
-	IconDots,
-	IconDotsVertical,
-	IconDownload,
-	IconDownloadOff,
-	IconExclamationMark,
-	IconEye,
-	IconEyeOff,
-	IconFileDownload,
-	IconFileExport,
-	IconFileImport,
-	IconGridDots,
-	IconHandFinger,
-	IconInfoCircleFilled,
-	IconKey,
-	IconKeyOff,
-	IconLink,
-	IconLinkOff,
-	IconLockSquare,
-	IconMailForward,
-	IconMaximize,
-	IconMaximizeOff,
-	IconMoonStars,
-	IconNetwork,
-	IconNetworkOff,
-	IconPaperclip,
-	IconPencil,
-	IconPhoto,
-	IconPhotoOff,
-	IconRefresh,
-	IconRefreshOff,
-	IconReload,
-	IconReplace,
-	IconSettings,
-	IconShare,
-	IconShare2,
-	IconShare3,
-	IconShareOff,
-	IconShoppingCartPlus,
-	IconSun,
-	IconTag,
-	IconTagOff,
-	IconTags,
-	IconTagsOff,
-	IconTagStarred,
-	IconThumbDown,
-	IconThumbUp,
-	IconUpload,
-	IconUser,
-	IconUserCheck,
-	IconUserOff,
-	IconUserQuestion,
-	IconUsers,
-	IconUsersGroup,
-	IconVideo,
-	IconVideoOff,
-	IconWorld,
-	IconWorldOff,
-	IconX,
-	IconZoomIn,
-	IconZoomScan,
+	Icon as TablerIcon,
 	IconProps as TablerIconProps,
 } from "@tabler/icons-react";
-import React, {forwardRef} from "react";
+import React, {forwardRef, useEffect, useState} from "react";
+
+export type IconType = React.ComponentType<TablerIconProps> | string;
 
 export interface IconProps extends TablerIconProps {
-	type: IconTypeEnum;
+	iconType: IconType;
 }
 
 const defaultStyleProps: Partial<TablerIconProps> = {
@@ -127,11 +35,71 @@ export function useIconProps(props: Partial<TablerIconProps>): TablerIconProps {
 	return useProps("Icon", defaultStyleProps, props);
 }
 
-const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
-	{type, size, stroke, color, ...rest}: IconProps,
+// Helper function to convert icon name to proper import name
+const getIconImportName = (iconName: string): string => {
+	// Handle special cases first
+	// These are needed to have full backwards compatibility
+	const specialCases: Record<string, string> = {
+		"icon-hand-finger": "IconHandFinger",
+		"icon-info-circle-filled": "IconInfoCircleFilled",
+		"paper-clip": "IconPaperclip", // lowercase 'c'
+	};
+
+	if (specialCases[iconName]) {
+		return specialCases[iconName];
+	}
+	// Convert kebab-case or other formats to PascalCase with Icon prefix
+	const pascalCase = iconName
+		.split(/[-_\s]/)
+		.map(
+			(word) =>
+				word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+		)
+		.join("");
+
+	return `Icon${pascalCase}`;
+};
+
+const Icon = forwardRef<TablerIcon, IconProps>(function Icon(
+	{iconType, size, stroke, color, ...rest}: IconProps,
 	ref,
 ) {
 	const theme = useMantineTheme();
+	const [IconComponent, setIconComponent] =
+		useState<React.ComponentType<TablerIconProps> | null>(null);
+
+	useEffect(() => {
+		if (typeof iconType === "string") {
+			const iconImportName = getIconImportName(iconType);
+
+			// Dynamic import of the icon
+			import("@tabler/icons-react")
+				.then((module) => {
+					const Component =
+						module[iconImportName as keyof typeof module];
+					if (Component) {
+						setIconComponent(
+							() =>
+								Component as React.ComponentType<TablerIconProps>,
+						);
+					} else {
+						console.warn(
+							`Icon "${iconImportName}" not found in @tabler/icons-react`,
+						);
+						setIconComponent(null);
+					}
+				})
+				.catch((error) => {
+					console.error(
+						`Failed to load icon "${iconImportName}":`,
+						error,
+					);
+					setIconComponent(null);
+				});
+		} else {
+			setIconComponent(() => iconType);
+		}
+	}, [iconType]);
 
 	const iconPropsStyle = useIconProps({size, stroke, color});
 	const parsedColor = iconPropsStyle.color
@@ -139,196 +107,11 @@ const Icon = forwardRef<_TablerIconType, IconProps>(function Icon(
 		: iconPropsStyle.color;
 	const iconProps = {...iconPropsStyle, ref, color: parsedColor, ...rest};
 
-	switch (type) {
-		case IconTypeEnum.Adjustments:
-			return <IconAdjustments {...iconProps} />;
-		case IconTypeEnum.AdjustmentsHorizontal:
-			return <IconAdjustmentsHorizontal {...iconProps} />;
-		case IconTypeEnum.AlertCircle:
-			return <IconAlertCircle {...iconProps} />;
-		case IconTypeEnum.ArrowBack:
-			return <IconArrowBack {...iconProps} />;
-		case IconTypeEnum.ArrowBackUp:
-			return <IconArrowBackUp {...iconProps} />;
-		case IconTypeEnum.ArrowDown:
-			return <IconArrowDown {...iconProps} />;
-		case IconTypeEnum.ArrowForward:
-			return <IconArrowForward {...iconProps} />;
-		case IconTypeEnum.ArrowForwardUp:
-			return <IconArrowForwardUp {...iconProps} />;
-		case IconTypeEnum.ArrowLeft:
-			return <IconArrowLeft {...iconProps} />;
-		case IconTypeEnum.ArrowRight:
-			return <IconArrowRight {...iconProps} />;
-		case IconTypeEnum.ArrowUp:
-			return <IconArrowUp {...iconProps} />;
-		case IconTypeEnum.AugmentedReality:
-			return <IconAugmentedReality {...iconProps} />;
-		case IconTypeEnum.AugmentedRealityOff:
-			return <IconAugmentedRealityOff {...iconProps} />;
-		case IconTypeEnum.Bookmark:
-			return <IconBookmark {...iconProps} />;
-		case IconTypeEnum.BookmarkOff:
-			return <IconBookmarkOff {...iconProps} />;
-		case IconTypeEnum.Bookmarks:
-			return <IconBookmarks {...iconProps} />;
-		case IconTypeEnum.BookmarksOff:
-			return <IconBookmarksOff {...iconProps} />;
-		case IconTypeEnum.Books:
-			return <IconBooks {...iconProps} />;
-		case IconTypeEnum.BooksOff:
-			return <IconBooksOff {...iconProps} />;
-		case IconTypeEnum.Camera:
-			return <IconCamera {...iconProps} />;
-		case IconTypeEnum.CameraOff:
-			return <IconCameraOff {...iconProps} />;
-		case IconTypeEnum.Cancel:
-			return <IconCancel {...iconProps} />;
-		case IconTypeEnum.Check:
-			return <IconCheck {...iconProps} />;
-		case IconTypeEnum.ClockHour4:
-			return <IconClockHour4 {...iconProps} />;
-		case IconTypeEnum.CircleOff:
-			return <IconCircleOff {...iconProps} />;
-		case IconTypeEnum.Copy:
-			return <IconCopy {...iconProps} />;
-		case IconTypeEnum.DeviceDesktop:
-			return <IconDeviceDesktop {...iconProps} />;
-		case IconTypeEnum.DeviceDesktopDown:
-			return <IconDeviceDesktopDown {...iconProps} />;
-		case IconTypeEnum.DeviceDesktopUp:
-			return <IconDeviceDesktopUp {...iconProps} />;
-		case IconTypeEnum.DeviceFloppy:
-			return <IconDeviceFloppy {...iconProps} />;
-		case IconTypeEnum.DeviceTV:
-			return <IconDeviceTv {...iconProps} />;
-		case IconTypeEnum.Dots:
-			return <IconDots {...iconProps} />;
-		case IconTypeEnum.DotsVertical:
-			return <IconDotsVertical {...iconProps} />;
-		case IconTypeEnum.Download:
-			return <IconDownload {...iconProps} />;
-		case IconTypeEnum.DownloadOff:
-			return <IconDownloadOff {...iconProps} />;
-		case IconTypeEnum.ExclamationMark:
-			return <IconExclamationMark {...iconProps} />;
-		case IconTypeEnum.Eye:
-			return <IconEye {...iconProps} />;
-		case IconTypeEnum.EyeOff:
-			return <IconEyeOff {...iconProps} />;
-		case IconTypeEnum.FileDownload:
-			return <IconFileDownload {...iconProps} />;
-		case IconTypeEnum.FileExport:
-			return <IconFileExport {...iconProps} />;
-		case IconTypeEnum.FileImport:
-			return <IconFileImport {...iconProps} />;
-		case IconTypeEnum.GridDots:
-			return <IconGridDots {...iconProps} />;
-		case IconTypeEnum.IconHandFinger:
-			return <IconHandFinger {...iconProps} />;
-		case IconTypeEnum.IconInfoCircleFilled:
-			return <IconInfoCircleFilled {...iconProps} />;
-		case IconTypeEnum.Key:
-			return <IconKey {...iconProps} />;
-		case IconTypeEnum.KeyOff:
-			return <IconKeyOff {...iconProps} />;
-		case IconTypeEnum.Link:
-			return <IconLink {...iconProps} />;
-		case IconTypeEnum.LinkOff:
-			return <IconLinkOff {...iconProps} />;
-		case IconTypeEnum.LockSquare:
-			return <IconLockSquare {...iconProps} />;
-		case IconTypeEnum.MailForward:
-			return <IconMailForward {...iconProps} />;
-		case IconTypeEnum.Maximize:
-			return <IconMaximize {...iconProps} />;
-		case IconTypeEnum.MaximizeOff:
-			return <IconMaximizeOff {...iconProps} />;
-		case IconTypeEnum.MoonStars:
-			return <IconMoonStars {...iconProps} />;
-		case IconTypeEnum.Network:
-			return <IconNetwork {...iconProps} />;
-		case IconTypeEnum.NetworkOff:
-			return <IconNetworkOff {...iconProps} />;
-		case IconTypeEnum.PaperClip:
-			return <IconPaperclip {...iconProps} />;
-		case IconTypeEnum.Pencil:
-			return <IconPencil {...iconProps} />;
-		case IconTypeEnum.Photo:
-			return <IconPhoto {...iconProps} />;
-		case IconTypeEnum.PhotoOff:
-			return <IconPhotoOff {...iconProps} />;
-		case IconTypeEnum.Refresh:
-			return <IconRefresh {...iconProps} />;
-		case IconTypeEnum.RefreshOff:
-			return <IconRefreshOff {...iconProps} />;
-		case IconTypeEnum.Reload:
-			return <IconReload {...iconProps} />;
-		case IconTypeEnum.Replace:
-			return <IconReplace {...iconProps} />;
-		case IconTypeEnum.Settings:
-			return <IconSettings {...iconProps} />;
-		case IconTypeEnum.Share:
-			return <IconShare {...iconProps} />;
-		case IconTypeEnum.Share2:
-			return <IconShare2 {...iconProps} />;
-		case IconTypeEnum.Share3:
-			return <IconShare3 {...iconProps} />;
-		case IconTypeEnum.ShareOff:
-			return <IconShareOff {...iconProps} />;
-		case IconTypeEnum.ChevronLeft:
-			return <IconChevronLeft {...iconProps} />;
-		case IconTypeEnum.ChevronRight:
-			return <IconChevronRight {...iconProps} />;
-		case IconTypeEnum.ShoppingCartPlus:
-			return <IconShoppingCartPlus {...iconProps} />;
-		case IconTypeEnum.Sun:
-			return <IconSun {...iconProps} />;
-		case IconTypeEnum.Tag:
-			return <IconTag {...iconProps} />;
-		case IconTypeEnum.TagOff:
-			return <IconTagOff {...iconProps} />;
-		case IconTypeEnum.TagStarred:
-			return <IconTagStarred {...iconProps} />;
-		case IconTypeEnum.Tags:
-			return <IconTags {...iconProps} />;
-		case IconTypeEnum.TagsOff:
-			return <IconTagsOff {...iconProps} />;
-		case IconTypeEnum.ThumbDown:
-			return <IconThumbDown {...iconProps} />;
-		case IconTypeEnum.ThumbUp:
-			return <IconThumbUp {...iconProps} />;
-		case IconTypeEnum.Upload:
-			return <IconUpload {...iconProps} />;
-		case IconTypeEnum.User:
-			return <IconUser {...iconProps} />;
-		case IconTypeEnum.UserCheck:
-			return <IconUserCheck {...iconProps} />;
-		case IconTypeEnum.UserOff:
-			return <IconUserOff {...iconProps} />;
-		case IconTypeEnum.UserQuestion:
-			return <IconUserQuestion {...iconProps} />;
-		case IconTypeEnum.Users:
-			return <IconUsers {...iconProps} />;
-		case IconTypeEnum.UsersGroup:
-			return <IconUsersGroup {...iconProps} />;
-		case IconTypeEnum.Video:
-			return <IconVideo {...iconProps} />;
-		case IconTypeEnum.VideoOff:
-			return <IconVideoOff {...iconProps} />;
-		case IconTypeEnum.World:
-			return <IconWorld {...iconProps} />;
-		case IconTypeEnum.WorldOff:
-			return <IconWorldOff {...iconProps} />;
-		case IconTypeEnum.X:
-			return <IconX {...iconProps} />;
-		case IconTypeEnum.ZoomIn:
-			return <IconZoomIn {...iconProps} />;
-		case IconTypeEnum.ZoomScan:
-			return <IconZoomScan {...iconProps} />;
-		default:
-			return null;
+	if (!IconComponent) {
+		return null; // or a fallback icon
 	}
+
+	return <IconComponent {...iconProps} />;
 });
 
 export default Icon;

@@ -3,13 +3,13 @@ import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Group,
 	MantineThemeComponent,
 	TooltipProps,
 	useProps,
 } from "@mantine/core";
+import {IconX} from "@tabler/icons-react";
 
 import React from "react";
 interface Props extends PropsParameter {
@@ -81,7 +81,7 @@ export default function ParameterLabelComponent(
 					label={tooltipProps?.label || "Cancel change"}
 				>
 					<Icon
-						type={IconTypeEnum.X}
+						iconType={IconX}
 						color="var(--mantine-primary-color-filled)"
 						onClick={cancel}
 					/>

@@ -3,7 +3,6 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Button,
 	Checkbox,
@@ -20,7 +19,11 @@ import {
 	IDrawingToolsApi,
 } from "@shapediver/viewer.features.drawing-tools";
 import {IDrawingParameterSettings} from "@shapediver/viewer.session";
-import {IconChevronDown, IconChevronUp} from "@tabler/icons-react";
+import {
+	IconChevronDown,
+	IconChevronUp,
+	IconInfoCircleFilled,
+} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
 import classes from "./DrawingOptionsComponent.module.css";
 
@@ -218,7 +221,7 @@ export default function DrawingOptionsComponent(props: {
 						h="100%"
 						className={classes.padding}
 					>
-						<Icon type={IconTypeEnum.IconInfoCircleFilled} />
+						<Icon iconType={IconInfoCircleFilled} />
 						<Space />
 						<Text className={classes.paddingLeft} size={size}>
 							{" "}

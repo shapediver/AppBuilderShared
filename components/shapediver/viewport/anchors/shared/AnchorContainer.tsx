@@ -1,10 +1,9 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import Icon, {IconType} from "@AppBuilderShared/components/ui/Icon";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderShared/store/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAnchors} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors";
 import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {AppBuilderStandardContainerNameType} from "@AppBuilderShared/types/store/shapediverStoreStandardContainers";
 import {
 	IAnchor2d,
@@ -24,7 +23,15 @@ import {
 } from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
 import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {IconGridDots, IconX} from "@tabler/icons-react";
+import {
+	default as React,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import classes from "../../ViewportIcons.module.css";
 import {ViewportAnchorProps2d} from "../ViewportAnchor2d";
 import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
@@ -40,7 +47,7 @@ export interface ViewportAnchorProps {
 	/** The element to be rendered as the anchor */
 	element?: JSX.Element;
 	/** Optional icon to be displayed as a preview */
-	previewIcon?: IconTypeEnum;
+	previewIcon?: IconType;
 	/** Optional width of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) (default: var(--app-shell-navbar-width)) */
 	width?: string | number;
 	/** Optional height of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
@@ -55,7 +62,7 @@ export interface ViewportAnchorProps {
 		 * either a different or a new preview icon to show
 		 * if undefined, the original previewIcon logic will be used
 		 */
-		previewIcon?: IconTypeEnum;
+		previewIcon?: IconType;
 		/** fallback container to be used ("left", "right", "top", "bottom") */
 		container: AppBuilderContainerNameType;
 	};
@@ -325,7 +332,7 @@ export function useAnchorContainer({
 	const previewIconElement = (
 		<ActionIcon onClick={toggleContent} {...iconProps}>
 			<Icon
-				type={previewIcon!}
+				iconType={previewIcon!}
 				color={iconProps?.color}
 				className={classes.viewportIcon}
 			/>
@@ -344,7 +351,7 @@ export function useAnchorContainer({
 	const closeIconElement = (
 		<ActionIcon onClick={toggleContent} {...iconProps}>
 			<Icon
-				type={IconTypeEnum.X}
+				iconType={IconX}
 				color={iconProps?.color}
 				className={classes.viewportIcon}
 			/>
@@ -363,7 +370,7 @@ export function useAnchorContainer({
 	const dragIconElement = (
 		<ActionIcon onMouseDown={handleMouseDown} {...iconProps}>
 			<Icon
-				type={IconTypeEnum.GridDots}
+				iconType={IconGridDots}
 				color={iconProps?.color}
 				className={classes.viewportIcon}
 			/>

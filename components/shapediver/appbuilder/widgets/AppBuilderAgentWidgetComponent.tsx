@@ -13,7 +13,6 @@ import {
 	AppBuilderAgentWidgetThemePropsType,
 } from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
 import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
 	Box,
@@ -31,7 +30,14 @@ import {
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
-import {IconRobot, IconUser} from "@tabler/icons-react";
+import {
+	IconDeviceDesktop,
+	IconPaperclip,
+	IconRobot,
+	IconThumbDown,
+	IconThumbUp,
+	IconUser,
+} from "@tabler/icons-react";
 import React, {
 	useCallback,
 	useContext,
@@ -243,7 +249,7 @@ export default function AppBuilderAgentWidgetComponent(
 						{userImage ? (
 							<TooltipWrapper label={"Remove image"}>
 								<ActionIcon onClick={() => setUserImage(null)}>
-									<Icon type={IconTypeEnum.PaperClip} />
+									<Icon iconType={IconPaperclip} />
 								</ActionIcon>
 							</TooltipWrapper>
 						) : (
@@ -259,9 +265,7 @@ export default function AppBuilderAgentWidgetComponent(
 											disabled={!!screenshot}
 											{...props}
 										>
-											<Icon
-												type={IconTypeEnum.PaperClip}
-											/>
+											<Icon iconType={IconPaperclip} />
 										</ActionIcon>
 									</TooltipWrapper>
 								)}
@@ -270,7 +274,7 @@ export default function AppBuilderAgentWidgetComponent(
 						{screenshot ? (
 							<TooltipWrapper label={"Remove screenshot"}>
 								<ActionIcon onClick={() => setScreenshot(null)}>
-									<Icon type={IconTypeEnum.DeviceDesktop} />
+									<Icon iconType={IconDeviceDesktop} />
 								</ActionIcon>
 							</TooltipWrapper>
 						) : (
@@ -280,7 +284,7 @@ export default function AppBuilderAgentWidgetComponent(
 									onClick={handleGetScreenshot}
 									disabled={!!userImage}
 								>
-									<Icon type={IconTypeEnum.DeviceDesktop} />
+									<Icon iconType={IconDeviceDesktop} />
 								</ActionIcon>
 							</TooltipWrapper>
 						)}
@@ -359,9 +363,7 @@ export default function AppBuilderAgentWidgetComponent(
 													)
 												}
 											>
-												<Icon
-													type={IconTypeEnum.ThumbUp}
-												/>
+												<Icon iconType={IconThumbUp} />
 											</ActionIcon>
 											<ActionIcon
 												variant="subtle"
@@ -373,9 +375,7 @@ export default function AppBuilderAgentWidgetComponent(
 												}
 											>
 												<Icon
-													type={
-														IconTypeEnum.ThumbDown
-													}
+													iconType={IconThumbDown}
 												/>
 											</ActionIcon>
 										</Group>

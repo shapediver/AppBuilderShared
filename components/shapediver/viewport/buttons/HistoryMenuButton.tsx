@@ -5,9 +5,9 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import useIconMenu from "@AppBuilderShared/hooks/shapediver/viewer/icons/useIconMenu";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {ActionIcon, Menu, MenuDropdownProps} from "@mantine/core";
+import {IconDotsVertical} from "@tabler/icons-react";
 import React, {useCallback, useContext, useState} from "react";
 import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
@@ -115,7 +115,7 @@ export default function HistoryMenuButton({
 						onClick={() => setIsMenuOpened(!isMenuOpened)}
 					>
 						<Icon
-							type={IconTypeEnum.DotsVertical}
+							iconType={IconDotsVertical}
 							color={
 								disabled || isCreatingModelState
 									? colorDisabled

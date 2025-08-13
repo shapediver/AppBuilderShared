@@ -14,7 +14,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
 	Box,
@@ -33,6 +32,7 @@ import {
 	SystemInfo,
 	validateDrawingParameterSettings,
 } from "@shapediver/viewer.session";
+import {IconCircleOff, IconPencil} from "@tabler/icons-react";
 import React, {
 	useCallback,
 	useContext,
@@ -302,7 +302,7 @@ export default function ParameterDrawingComponent(
 								pointsData?.length === 0 ? "light" : "filled"
 							}
 						>
-							<Icon type={IconTypeEnum.CircleOff} />
+							<Icon iconType={IconCircleOff} />
 						</ActionIcon>
 					</Box>
 				</Flex>
@@ -393,7 +393,7 @@ export default function ParameterDrawingComponent(
 			fullWidth={true}
 			disabled={disabled}
 			className={classes.interactionButton}
-			rightSection={<Icon type={IconTypeEnum.Pencil} />}
+			rightSection={<Icon iconType={IconPencil} />}
 			variant={pointsData?.length === 0 ? "light" : "filled"}
 			onClick={() => setDrawingActive(true)}
 		>

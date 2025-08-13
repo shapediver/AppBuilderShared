@@ -12,7 +12,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	IStargateComponentStatusDefinition,
 	mapStargateComponentStatusDefinition,
@@ -25,6 +24,7 @@ import {
 	TooltipProps,
 	useProps,
 } from "@mantine/core";
+import {IconCancel, IconDeviceDesktopUp} from "@tabler/icons-react";
 import React, {useMemo} from "react";
 import StargateInput from "../stargate/StargateInput";
 import {
@@ -84,7 +84,7 @@ const defaultStyleProps: StyleProps = {
 		},
 	},
 	iconProps: {
-		type: IconTypeEnum.Cancel,
+		iconType: IconCancel,
 		size: "1.2rem",
 		color: "var(--mantine-color-default-color)",
 	},
@@ -200,7 +200,7 @@ export default function ParameterStargateComponent(
 					waitingText="Waiting for selection..."
 					disabled={statusData.disabled || disabled}
 					onClick={onObjectAdd}
-					icon={IconTypeEnum.DeviceDesktopUp}
+					icon={IconDeviceDesktopUp}
 				/>
 			)}
 		</ParameterWrapperComponent>

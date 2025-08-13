@@ -1,9 +1,9 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ActionIcon, Loader, Modal, Text, Title} from "@mantine/core";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
+import {IconAugmentedReality} from "@tabler/icons-react";
 import React, {useState} from "react";
 import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
@@ -78,7 +78,7 @@ export default function ArButton({
 					style={iconStyle}
 				>
 					<Icon
-						type={IconTypeEnum.AugmentedReality}
+						iconType={IconAugmentedReality}
 						color={isArLoading ? colorDisabled : color}
 					/>
 				</ActionIcon>
