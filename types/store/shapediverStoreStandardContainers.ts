@@ -71,6 +71,19 @@ export interface IShapeDiverStoreStandardContainers {
 	) => void;
 
 	/**
+	 * Set the default container definitions for all positions.
+	 *
+	 * @param containers - The container definitions to set as the default.
+	 * @returns
+	 */
+	setDefaultContainers: (
+		containers: Record<
+			AppBuilderStandardContainerNameType,
+			IAppBuilderContainer | undefined
+		>,
+	) => void;
+
+	/**
 	 * Reset the default container definitions to their initial state.
 	 * This will remove any user-defined containers and restore the default containers.
 	 */

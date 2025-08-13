@@ -139,6 +139,25 @@ export const useShapeDiverStoreStandardContainers =
 						`setDefaultContainer-${position}`,
 					),
 
+				setDefaultContainers: (containers) =>
+					set(
+						(state) => {
+							const newDefaultContainers = {
+								...state.defaultContainers,
+								...containers,
+							};
+							return {
+								defaultContainers: newDefaultContainers,
+								mergedContainers: updateMergedContainers(
+									newDefaultContainers,
+									state.additionalContainerContent,
+								),
+							};
+						},
+						false,
+						`setDefaultContainers`,
+					),
+
 				resetDefaultContainers: () =>
 					set(
 						(state) => {

@@ -74,11 +74,11 @@ export function useAppBuilderStandardContainers(props: Props) {
 		(output) => !!output.chunks,
 	);
 
-	const {mergedContainers, resetDefaultContainers, setDefaultContainer} =
+	const {mergedContainers, resetDefaultContainers, setDefaultContainers} =
 		useShapeDiverStoreStandardContainers((state) => ({
 			mergedContainers: state.mergedContainers,
 			resetDefaultContainers: state.resetDefaultContainers,
-			setDefaultContainer: state.setDefaultContainer,
+			setDefaultContainers: state.setDefaultContainers,
 		}));
 
 	// viewport anchors
@@ -98,16 +98,23 @@ export function useAppBuilderStandardContainers(props: Props) {
 		resetDefaultContainers();
 
 		if (appBuilderData?.containers) {
-			// Set containers from appBuilderData
-			appBuilderData.containers.forEach((container) => {
-				if (isStandardContainer(container)) {
-					setDefaultContainer(container.name, container);
-				}
-			});
+			const standardContainers = appBuilderData.containers
+				.filter((container) => isStandardContainer(container))
+				.reduce(
+					(acc, container) => ({
+						...acc,
+						[container.name]: container,
+					}),
+					{} as Record<
+						AppBuilderContainerNameType,
+						IAppBuilderContainer | undefined
+					>,
+				);
+			setDefaultContainers(standardContainers);
 		}
 	}, [
 		appBuilderData?.containers,
-		setDefaultContainer,
+		setDefaultContainers,
 		resetDefaultContainers,
 	]);
 
