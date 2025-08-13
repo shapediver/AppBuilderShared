@@ -76,7 +76,6 @@ export default function ViewportIcons(
 		viewportId: _viewportId,
 		namespace = "",
 		hideJsonMenu,
-		hideSavedStates,
 		...rest
 	} = props;
 
@@ -120,6 +119,10 @@ export default function ViewportIcons(
 				}
 
 				const ids = state.sessionDependency[namespace];
+				if (ids === undefined || ids.length === 0) {
+					return [];
+				}
+
 				return ids
 					.map((id) => state.parameterChanges[id])
 					.filter(Boolean);
@@ -228,14 +231,14 @@ export default function ViewportIcons(
 	/**
 	 * The model state buttons depend on the following:
 	 * - enableModelStateButtonsStyleProp: if false, return false
-	 * - hideSavedStates: if true, return false
+	 * - hideJsonMenu: if true, return false
 	 * otherwise, return true
 	 */
 	const enableModelStateButtons = useMemo(() => {
 		if (enableModelStateButtonsStyleProp === false) return false;
-		if (hideSavedStates) return false;
+		if (hideJsonMenu) return false;
 		return true;
-	}, [enableModelStateButtonsStyleProp, hideSavedStates]);
+	}, [enableModelStateButtonsStyleProp, hideJsonMenu]);
 
 	/**
 	 * The import/export buttons depend on the following:

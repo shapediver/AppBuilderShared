@@ -56,7 +56,10 @@ export default function AppBuilderFallbackContainerComponent({
 				],
 			});
 		}
-		if (exports.length > 0 || outputs.length > 0) {
+		if (
+			(!settings?.hideExports && exports.length > 0) ||
+			(!settings?.hideDataOutputs && outputs.length > 0)
+		) {
 			tabProps.defaultValue = tabProps.defaultValue || "Exports";
 			tabProps.tabs.push({
 				name: "Exports",
@@ -64,8 +67,8 @@ export default function AppBuilderFallbackContainerComponent({
 				children: [
 					<ParametersAndExportsAccordionComponent
 						key={1}
-						exports={exports}
-						outputs={outputs}
+						exports={!settings?.hideExports ? exports : []}
+						outputs={!settings?.hideDataOutputs ? outputs : []}
 						namespace={namespace}
 					/>,
 				],
@@ -95,7 +98,7 @@ export default function AppBuilderFallbackContainerComponent({
 			}
 		}
 
-		if (showDesktopClientPanel) {
+		if (showDesktopClientPanel && !settings?.hideDesktopClients) {
 			tabProps.tabs.push({
 				name: "Stargate",
 				icon: IconTypeEnum.Network,
