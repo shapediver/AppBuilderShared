@@ -10,6 +10,11 @@ import {
 } from "@tabler/icons-react";
 import React, {forwardRef, useEffect, useState} from "react";
 
+// Pre-register all icon files so Vite can code-split them.
+const iconLoaders = import.meta.glob(
+	"/node_modules/@tabler/icons-react/dist/esm/icons/*.{js,mjs}",
+	{import: "default"},
+);
 export type IconType = React.ComponentType<TablerIconProps> | string;
 
 export interface IconProps extends TablerIconProps {
@@ -60,6 +65,27 @@ const getIconImportName = (iconName: string): string => {
 	return `Icon${pascalCase}`;
 };
 
+// Dynamic import of individual icons
+const loadIcon = async (iconImportName: string) => {
+	try {
+		const keyJs = `/node_modules/@tabler/icons-react/dist/esm/icons/${iconImportName}.js`;
+		const keyMjs = `/node_modules/@tabler/icons-react/dist/esm/icons/${iconImportName}.mjs`;
+		const loader = iconLoaders[keyJs] || iconLoaders[keyMjs];
+		if (!loader) {
+			console.warn(
+				`Icon "${iconImportName}" not found (no matching file)`,
+			);
+			return null;
+		}
+
+		const IconComponent = await loader();
+		return IconComponent as React.ComponentType<TablerIconProps>;
+	} catch (e) {
+		console.warn(`Icon "${iconImportName}" failed to load`, e);
+		return null;
+	}
+};
+
 const Icon = forwardRef<TablerIcon, IconProps>(function Icon(
 	{iconType, size, stroke, color, ...rest}: IconProps,
 	ref,
@@ -71,31 +97,13 @@ const Icon = forwardRef<TablerIcon, IconProps>(function Icon(
 	useEffect(() => {
 		if (typeof iconType === "string") {
 			const iconImportName = getIconImportName(iconType);
-
-			// Dynamic import of the icon
-			import("@tabler/icons-react")
-				.then((module) => {
-					const Component =
-						module[iconImportName as keyof typeof module];
-					if (Component) {
-						setIconComponent(
-							() =>
-								Component as React.ComponentType<TablerIconProps>,
-						);
-					} else {
-						console.warn(
-							`Icon "${iconImportName}" not found in @tabler/icons-react`,
-						);
-						setIconComponent(null);
-					}
-				})
-				.catch((error) => {
-					console.error(
-						`Failed to load icon "${iconImportName}":`,
-						error,
-					);
+			loadIcon(iconImportName).then((Component) => {
+				if (Component) {
+					setIconComponent(() => Component);
+				} else {
 					setIconComponent(null);
-				});
+				}
+			});
 		} else {
 			setIconComponent(() => iconType);
 		}
