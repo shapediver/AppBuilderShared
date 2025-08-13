@@ -1,9 +1,11 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreStandardContainers} from "@AppBuilderShared/store/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAnchors} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors";
 import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import {AppBuilderStandardContainerNameType} from "@AppBuilderShared/types/store/shapediverStoreStandardContainers";
 import {
 	IAnchor2d,
 	IAnchor3d,
@@ -14,19 +16,15 @@ import {
 	Flex,
 	Group,
 	GroupProps,
+	MantineBreakpoint,
 	Portal,
 	Stack,
+	useMantineTheme,
 	useProps,
 } from "@mantine/core";
+import {useMediaQuery} from "@mantine/hooks";
 import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
-import React, {
-	ReactNode,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import classes from "../../ViewportIcons.module.css";
 import {ViewportAnchorProps2d} from "../ViewportAnchor2d";
 import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
@@ -40,7 +38,7 @@ export interface ViewportAnchorProps {
 	/** The justification of the anchor in relation to the location */
 	justification?: TAG3D_JUSTIFICATION;
 	/** The element to be rendered as the anchor */
-	element?: JSX.Element | ReactNode;
+	element?: JSX.Element;
 	/** Optional icon to be displayed as a preview */
 	previewIcon?: IconTypeEnum;
 	/** Optional width of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) (default: var(--app-shell-navbar-width)) */
@@ -49,36 +47,50 @@ export interface ViewportAnchorProps {
 	height?: string | number;
 	/** The unique identifier for the anchor */
 	id: string;
+	/** Mobile fallback options */
+	mobileFallback?: {
+		/** if the anchor should be completely disabled */
+		disabled?: boolean;
+		/**
+		 * either a different or a new preview icon to show
+		 * if undefined, the original previewIcon logic will be used
+		 */
+		previewIcon?: IconTypeEnum;
+		/** fallback container to be used ("left", "right", "top", "bottom") */
+		container: AppBuilderContainerNameType;
+	};
 }
 
 export type ViewportAnchorStyleProps = {
 	iconProps?: Partial<ActionIconProps>;
 	anchorGroupProps?: Partial<GroupProps>;
+	/** Breakpoint below which to to switch to the mobile behavior */
+	mobileBreakpoint: MantineBreakpoint;
 };
 
-export const viewportAnchorDefaultStyleProps: Partial<ViewportAnchorStyleProps> =
-	{
-		// These icon properties will be replace once this task is done:
-		// https://shapediver.atlassian.net/browse/SS-8888
-		iconProps: {
-			size: "md",
-			variant: "subtle",
-			color: "white",
-			style: {
-				mixBlendMode: "difference",
-				filter: "contrast(0.5)",
-			},
+export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
+	// These icon properties will be replace once this task is done:
+	// https://shapediver.atlassian.net/browse/SS-8888
+	iconProps: {
+		size: "md",
+		variant: "subtle",
+		color: "white",
+		style: {
+			mixBlendMode: "difference",
+			filter: "contrast(0.5)",
 		},
-		anchorGroupProps: {
-			style: {
-				// this background color is the same as used in all other containers
-				backgroundColor: "var(--mantine-color-body)",
-				// the only other styling I added is the border radius
-				// as otherwise this looks really bad
-				borderRadius: "var(--mantine-radius-md)",
-			},
+	},
+	anchorGroupProps: {
+		style: {
+			// this background color is the same as used in all other containers
+			backgroundColor: "var(--mantine-color-body)",
+			// the only other styling I added is the border radius
+			// as otherwise this looks really bad
+			borderRadius: "var(--mantine-radius-md)",
 		},
-	};
+	},
+	mobileBreakpoint: "sm",
+};
 
 interface AnchorContainerProps {
 	/** The type of the component, used for styling */
@@ -112,9 +124,19 @@ export function useAnchorContainer({
 		allowPointerEvents,
 		element,
 		id,
-		previewIcon,
+		previewIcon: inputPreviewIcon,
 		width: inputWidth = "var(--app-shell-navbar-width)",
 		height: inputHeight,
+		mobileFallback = {
+			/**
+			 * By default, if we get into the mobile behavior,
+			 * we put everything into the right container.
+			 *
+			 * If a previewIcon was defined, it is being re-used.
+			 */
+			container: AppBuilderContainerNameType.Right,
+			previewIcon: undefined,
+		},
 		...rest
 	} = properties;
 
@@ -124,6 +146,12 @@ export function useAnchorContainer({
 	const [controlElementGroupUpdate, setControlElementGroupUpdate] =
 		useState(0);
 
+	const {addAdditionalContainer, removeAdditionalContainer} =
+		useShapeDiverStoreStandardContainers((state) => ({
+			addAdditionalContainer: state.addAdditionalContainer,
+			removeAdditionalContainer: state.removeAdditionalContainer,
+		}));
+
 	/**
 	 * Get the styling properties for the anchor container.
 	 * This includes the icon properties and the anchor group properties.
@@ -131,13 +159,37 @@ export function useAnchorContainer({
 	 *
 	 * Depending on the type of the anchor, it will return different properties.
 	 */
-	const {iconProps, anchorGroupProps} = useProps(
+	const {iconProps, anchorGroupProps, mobileBreakpoint} = useProps(
 		type === AppBuilderContainerNameType.Anchor2d
 			? "ViewportAnchor2d"
 			: "ViewportAnchor3d",
 		viewportAnchorDefaultStyleProps,
 		rest,
 	);
+
+	/**
+	 * Get the theme object from Mantine.
+	 * This includes the breakpoints which we can use to determine if we are above the mobile breakpoint.
+	 * The mobileBreakpoint can be set by the user in the theme.
+	 */
+	const theme = useMantineTheme();
+	const aboveMobileBreakpoint = useMediaQuery(
+		`(min-width: ${theme.breakpoints[mobileBreakpoint]})`,
+		// Default to true to prevent layout shift on first render
+		true,
+	);
+
+	/**
+	 * Get the preview icon for the anchor.
+	 * This will return the inputPreviewIcon if we are above the mobile breakpoint,
+	 * otherwise it will return the mobileFallback.previewIcon or the inputPreviewIcon.
+	 */
+	const previewIcon = useMemo(() => {
+		if (aboveMobileBreakpoint) {
+			return inputPreviewIcon;
+		}
+		return mobileFallback?.previewIcon || inputPreviewIcon;
+	}, [aboveMobileBreakpoint, inputPreviewIcon, mobileFallback]);
 
 	const {viewportId} = useViewportId();
 	const viewport = useShapeDiverStoreViewport(
@@ -316,6 +368,50 @@ export function useAnchorContainer({
 		</ActionIcon>
 	);
 
+	/**
+	 * The content of the anchor
+	 * Here we have a group with the icons and a group with the main element.
+	 */
+	const inner = (
+		<Stack gap={0} key={id}>
+			<Group
+				ref={updateControlElementGroupRef}
+				style={{
+					display: "flex",
+					justifyContent: "space-between",
+					width: "100%",
+					pointerEvents: "auto",
+				}}
+			>
+				{aboveMobileBreakpoint && draggable && dragIconElement}
+				{/** The Flex element is used to push the close icon to the right. */}
+				<Flex />
+				{previewIcon && closeIconElement}
+			</Group>
+			<Group
+				{...anchorGroupProps}
+				w={aboveMobileBreakpoint ? width : "100%"}
+				h={aboveMobileBreakpoint ? height : "100%"}
+				style={{
+					...anchorGroupProps?.style,
+					overflow: "auto",
+				}}
+			>
+				<Stack
+					style={{
+						width: "100%",
+						height: "100%",
+					}}
+				>
+					{element}
+				</Stack>
+			</Group>
+		</Stack>
+	);
+
+	/**
+	 * The main anchor element.
+	 */
 	const AnchorElement = canvas && (
 		<Portal
 			// We only display the portal once the canvas is available
@@ -343,43 +439,32 @@ export function useAnchorContainer({
 						pointerEvents: pointerEvents,
 					}}
 				>
-					{showContent === false ? (
-						previewIconElement
-					) : (
-						<Stack gap={0}>
-							<Group
-								ref={updateControlElementGroupRef}
-								style={{
-									display: "flex",
-									justifyContent: "space-between",
-									width: "100%",
-									pointerEvents: "auto",
-								}}
-							>
-								{draggable && dragIconElement}
-								{/** The Flex element is used to push the close icon to the right. */}
-								<Flex />
-								{previewIcon && closeIconElement}
-							</Group>
-							<Group
-								{...anchorGroupProps}
-								w={width}
-								h={height}
-								style={{
-									...anchorGroupProps?.style,
-									overflow: "auto",
-								}}
-							>
-								<Stack style={{width: "100%", height: "100%"}}>
-									{element}
-								</Stack>
-							</Group>
-						</Stack>
-					)}
+					{showContent === false
+						? previewIconElement
+						: aboveMobileBreakpoint && inner}
 				</Group>
 			</Group>
 		</Portal>
 	);
+
+	/**
+	 * If we are below the mobile breakpoint, we add the element to the container store.
+	 */
+	useEffect(() => {
+		if (aboveMobileBreakpoint || !showContent) return;
+		// if this is disabled on mobile, we don't do anything
+		if (mobileFallback.disabled) return;
+
+		const token = addAdditionalContainer(
+			// we know this is a standard container, as otherwise it wouldn't have passed the zod checks
+			mobileFallback.container as AppBuilderStandardContainerNameType,
+			inner,
+		);
+
+		return () => {
+			if (token) removeAdditionalContainer(token);
+		};
+	}, [aboveMobileBreakpoint, showContent, mobileFallback]);
 
 	return {
 		AnchorElement,

@@ -1,5 +1,3 @@
-import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
-import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
 import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/ModelStateNotificationCreated";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
@@ -7,27 +5,16 @@ import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver
 import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
+import {useAppBuilderStandardContainers} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderStandardContainers";
 import {useSessionWithAppBuilder} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
 import {useParameterHistory} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
-import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
-import {useSessionPropsOutput} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsOutput";
-import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
 import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
-import {useViewportAnchors} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportAnchors";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
-import {
-	IAppBuilderTemplatePageContainerHints,
-	IAppBuilderTemplatePageProps,
-} from "@AppBuilderShared/types/pages/appbuildertemplates";
-import {
-	IAppBuilderContainer,
-	IAppBuilderSettingsSession,
-	isStandardContainer,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
 import React, {useContext, useMemo} from "react";
 
@@ -135,26 +122,6 @@ interface Props extends IAppBuilderSettingsSession {
 }
 
 /**
- * Create rendering hints for the container.
- * @param container
- * @returns
- */
-const createContainerHints = (
-	container: IAppBuilderContainer,
-): IAppBuilderTemplatePageContainerHints | undefined => {
-	// if the bottom container contains tabs, prefer vertical layout
-	if (
-		container.name === "bottom" &&
-		container.tabs &&
-		container.tabs.length > 0
-	) {
-		return {
-			preferVertical: true,
-		};
-	}
-};
-
-/**
  * Function that creates the web app page.
  *
  * @returns
@@ -210,14 +177,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	);
 	const error = settingsError ?? appBuilderError;
 
-	// get props for fallback parameters
-	const parameterProps = useSessionPropsParameter(namespace);
-	const exportProps = useSessionPropsExport(namespace);
-	const outputProps = useSessionPropsOutput(
-		namespace,
-		(output) => !!output.chunks,
-	);
-
 	// handle additional sessions without instances
 	useSessions(secondarySessions);
 
@@ -225,50 +184,13 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	useSessions(instancedSessions);
 
 	// create UI elements for containers
-	const containers: IAppBuilderTemplatePageProps = {
-		top: undefined,
-		bottom: undefined,
-		left: undefined,
-		right: undefined,
-	};
-
-	// should fallback containers be shown?
-	const showFallbackContainers =
-		settings?.settings?.disableFallbackUi !== true;
-
-	if (appBuilderData?.containers) {
-		appBuilderData.containers.forEach((container) => {
-			if (isStandardContainer(container)) {
-				containers[container.name] = {
-					node: (
-						<AppBuilderContainerComponent
-							namespace={namespace}
-							{...container}
-						/>
-					),
-					hints: createContainerHints(container),
-				};
-			}
-		});
-	} else if (
-		!hasAppBuilderOutput &&
-		(parameterProps.length > 0 ||
-			exportProps.length > 0 ||
-			outputProps.length > 0) &&
-		showFallbackContainers
-	) {
-		containers.right = {
-			node: (
-				<AppBuilderFallbackContainerComponent
-					parameters={parameterProps}
-					exports={exportProps}
-					outputs={outputProps}
-					namespace={namespace}
-					settings={sessionSettings}
-				/>
-			),
-		};
-	}
+	const {containers, anchors} = useAppBuilderStandardContainers({
+		namespace,
+		appBuilderData,
+		sessionSettings,
+		settings,
+		hasAppBuilderOutput,
+	});
 
 	const show = !!sessionApi;
 
@@ -281,12 +203,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		getNotification: (props) => (
 			<ModelStateNotificationCreated {...props} />
 		),
-	});
-
-	// viewport anchors
-	const anchors = useViewportAnchors({
-		namespace,
-		containers: appBuilderData?.containers,
 	});
 
 	const showMarkdown =

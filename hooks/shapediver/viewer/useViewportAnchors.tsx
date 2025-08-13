@@ -46,6 +46,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						previewIcon={container.props.previewIcon}
 						width={container.props.width}
 						height={container.props.height}
+						mobileFallback={container.props.mobileFallback}
 					/>,
 				);
 			} else if (isAnchor2dContainer(container)) {
@@ -68,6 +69,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						draggable={container.props.draggable}
 						width={container.props.width}
 						height={container.props.height}
+						mobileFallback={container.props.mobileFallback}
 					/>,
 				);
 			}

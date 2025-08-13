@@ -40,7 +40,7 @@ interface Props {
 	 */
 	namespace: string;
 	/** The widgets to display. */
-	widgets: IAppBuilderWidget[] | undefined;
+	widgets: (IAppBuilderWidget | JSX.Element)[] | undefined;
 }
 
 export default function AppBuilderWidgetsComponent({
@@ -175,7 +175,14 @@ export default function AppBuilderWidgetsComponent({
 							{...w.props}
 						/>
 					);
-				else return null;
+				else if (React.isValidElement(w)) {
+					// In this case, we can just return the element as is
+					// As it is a valid React element
+					// This is for example used in the useAppBuilderStoreStandardContainers
+					return w;
+				} else {
+					return null;
+				}
 			})}
 		</>
 	);
