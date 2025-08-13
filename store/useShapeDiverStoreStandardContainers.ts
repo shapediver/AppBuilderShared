@@ -50,10 +50,10 @@ const merge = (
 		// Create new tab object instead of mutating
 		newTabs[0] = {
 			...newTabs[0],
-			widgets: [...(newTabs[0].widgets || []), ...allAdditionalItems],
+			widgets: [...allAdditionalItems, ...(newTabs[0].widgets || [])],
 		};
 	} else {
-		newWidgets = [...newWidgets, ...allAdditionalItems];
+		newWidgets = [...allAdditionalItems, ...newWidgets];
 	}
 
 	return {
