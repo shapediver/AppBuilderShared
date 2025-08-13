@@ -450,6 +450,18 @@ export type AppBuilderAnchorContainerProperties = {
 	width?: string | number;
 	/** Optional height of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
 	height?: string | number;
+	/** Options for the mobile fallback */
+	mobileFallback?: {
+		/** if the anchor should be completely disabled */
+		disabled?: boolean;
+		/**
+		 * either a different or a new preview icon to show
+		 * if undefined, the original previewIcon logic will be used
+		 */
+		previewIcon?: IconType;
+		/** fallback container to be used ("left", "right", "top", "bottom") */
+		container: AppBuilderContainerNameType;
+	};
 };
 
 /** Type for the anchor 2d containers */

@@ -494,6 +494,20 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	previewIcon: z.nativeEnum(IconTypeEnum).optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
+	mobileFallback: z
+		.object({
+			disabled: z.boolean().optional(),
+			previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+			container: z
+				.enum([
+					AppBuilderContainerNameType.Left,
+					AppBuilderContainerNameType.Right,
+					AppBuilderContainerNameType.Bottom,
+					AppBuilderContainerNameType.Top,
+				])
+				.optional(),
+		})
+		.optional(),
 });
 
 // Zod type definition for IAppBuilderAnchor2dContainerProperties
@@ -509,6 +523,20 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	draggable: z.boolean().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
+	mobileFallback: z
+		.object({
+			disabled: z.boolean().optional(),
+			previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+			container: z
+				.enum([
+					AppBuilderContainerNameType.Left,
+					AppBuilderContainerNameType.Right,
+					AppBuilderContainerNameType.Bottom,
+					AppBuilderContainerNameType.Top,
+				])
+				.optional(),
+		})
+		.optional(),
 });
 
 // Zod type definition for IAppBuilderContainer
