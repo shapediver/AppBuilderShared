@@ -18,7 +18,7 @@ import {updatePosition} from "./shared/utils";
 
 export interface ViewportAnchorProps3d extends ViewportAnchorProps {
 	/** The 3D location of the anchor in the viewport. */
-	location: [number, number, number] | vec3;
+	location: number[] | vec3;
 }
 
 type ViewportAnchorThemePropsType = Partial<ViewportAnchorStyleProps>;

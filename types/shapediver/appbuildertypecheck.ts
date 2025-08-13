@@ -496,7 +496,7 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),
-			previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+			previewIcon: z.string().optional(),
 			container: z
 				.enum([
 					AppBuilderContainerNameType.Left,
@@ -525,7 +525,7 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),
-			previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+			previewIcon: z.string().optional(),
 			container: z
 				.enum([
 					AppBuilderContainerNameType.Left,

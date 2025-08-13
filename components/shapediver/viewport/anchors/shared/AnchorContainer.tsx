@@ -64,7 +64,7 @@ export interface ViewportAnchorProps {
 		 */
 		previewIcon?: IconType;
 		/** fallback container to be used ("left", "right", "top", "bottom") */
-		container: AppBuilderContainerNameType;
+		container?: AppBuilderContainerNameType;
 	};
 }
 
