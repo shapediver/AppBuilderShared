@@ -1,7 +1,6 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import useIconMenu from "@AppBuilderShared/hooks/shapediver/viewer/icons/useIconMenu";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {firstLetterUppercase} from "@AppBuilderShared/utils/misc/strings";
 import {ActionIcon, Menu, MenuDropdownProps} from "@mantine/core";
@@ -72,7 +71,7 @@ export default function CamerasButton({
 				<TooltipWrapper disabled={isMenuOpened} label="Cameras">
 					<Menu.Target>
 						<Icon
-							type={IconTypeEnum.Video}
+							iconType={"tabler:video"}
 							color={noCamerasAvailable ? colorDisabled : color}
 						/>
 					</Menu.Target>

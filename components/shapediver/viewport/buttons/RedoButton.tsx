@@ -1,6 +1,5 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ActionIcon} from "@mantine/core";
 import React from "react";
 import {useViewportHistory} from "~/shared/hooks/shapediver/viewer/useViewportHistory";
@@ -43,7 +42,7 @@ export default function RedoButton({
 				className={classes.ViewportIcon}
 			>
 				<Icon
-					type={IconTypeEnum.ArrowForwardUp}
+					iconType={"tabler:arrow-forward-up"}
 					color={isDisabled ? colorDisabled : color}
 				/>
 			</ActionIcon>

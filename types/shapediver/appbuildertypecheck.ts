@@ -1,4 +1,3 @@
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {ATTRIBUTE_VISUALIZATION} from "@shapediver/viewer.features.attribute-visualization";
 import {
@@ -122,7 +121,7 @@ const IAppBuilderImageRefSchema = z.object({
 // Zod type definition for IAppBuilderActionPropsCommon
 const IAppBuilderActionPropsCommonSchema = z.object({
 	label: z.string().optional(),
-	icon: z.nativeEnum(IconTypeEnum).optional(),
+	icon: z.string().optional(),
 	tooltip: z.string().optional(),
 });
 
@@ -479,7 +478,7 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 const IAppBuilderTabSchema = z
 	.object({
 		name: z.string(),
-		icon: z.nativeEnum(IconTypeEnum).optional(),
+		icon: z.string().optional(),
 		tooltip: z.string().optional(),
 		widgets: z.array(IAppBuilderWidgetSchema),
 	})
@@ -491,13 +490,13 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	location: z.tuple([z.number(), z.number(), z.number()]),
 	allowPointerEvents: z.boolean().optional(),
 	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
-	previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+	previewIcon: z.string().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),
-			previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+			previewIcon: z.string().optional(),
 			container: z
 				.enum([
 					AppBuilderContainerNameType.Left,
@@ -519,14 +518,14 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	]),
 	allowPointerEvents: z.boolean().optional(),
 	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
-	previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+	previewIcon: z.string().optional(),
 	draggable: z.boolean().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),
-			previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+			previewIcon: z.string().optional(),
 			container: z
 				.enum([
 					AppBuilderContainerNameType.Left,

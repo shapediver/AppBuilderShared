@@ -12,7 +12,6 @@ import {
 	useModelSelectStore,
 } from "@AppBuilderShared/store/useModelSelectStore";
 import {IShapeDiverExampleModels} from "@AppBuilderShared/types/shapediver/examplemodel";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {MultiSelect, Notification} from "@mantine/core";
 import React, {useMemo} from "react";
 
@@ -51,7 +50,7 @@ export default function ModelSelect({exampleModels}: Props) {
 	// show a notification in case no models are selected
 	const noModelsNotification = (
 		<Notification
-			icon={<Icon type={IconTypeEnum.AlertCircle} />}
+			icon={<Icon iconType={"tabler:alert-circle"} />}
 			mt="xs"
 			title="Model Select"
 			withCloseButton={false}

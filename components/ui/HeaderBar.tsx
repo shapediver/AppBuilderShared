@@ -1,5 +1,4 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
 	Image,
@@ -67,9 +66,9 @@ export default function HeaderBar() {
 				title="Toggle color scheme"
 			>
 				{colorScheme === "dark" ? (
-					<Icon type={IconTypeEnum.Sun} />
+					<Icon iconType={"tabler:sun"} />
 				) : (
-					<Icon type={IconTypeEnum.MoonStars} />
+					<Icon iconType={"tabler:moon-stars"} />
 				)}
 			</ActionIcon>
 		</>

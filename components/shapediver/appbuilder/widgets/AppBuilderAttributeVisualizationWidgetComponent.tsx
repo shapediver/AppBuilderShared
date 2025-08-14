@@ -1,3 +1,4 @@
+import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useAttributeOverview} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeOverview";
 import useAttributeSelection from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeSelection";
@@ -44,7 +45,6 @@ import {
 	SdtfPrimitiveTypeGuard,
 } from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
-import {IconEye, IconEyeOff} from "@tabler/icons-react";
 import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
 import SelectedAttributeComponent from "../../ui/SelectedAttributeComponent";
 import ViewportAnchor3d from "../../viewport/anchors/ViewportAnchor3d";
@@ -664,7 +664,11 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 								);
 							}}
 						>
-							{active ? <IconEye /> : <IconEyeOff />}
+							{active ? (
+								<Icon iconType={"tabler:eye"} />
+							) : (
+								<Icon iconType={"tabler:eye-off"} />
+							)}
 						</ActionIcon>
 					</Group>
 					<Stack

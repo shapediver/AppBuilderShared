@@ -1,6 +1,5 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ActionIcon} from "@mantine/core";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React from "react";
@@ -39,7 +38,7 @@ export default function ZoomButton({
 				style={iconStyle}
 				className={classes.ViewportIcon}
 			>
-				<Icon type={IconTypeEnum.ZoomIn} color={color} />
+				<Icon iconType={"tabler:zoom-in"} color={color} />
 			</ActionIcon>
 		</TooltipWrapper>
 	);

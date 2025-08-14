@@ -1,3 +1,4 @@
+import {IconType} from "@AppBuilderShared/components/ui/Icon";
 import {
 	IAppBuilderWidgetPropsAreaChart,
 	IAppBuilderWidgetPropsBarChart,
@@ -5,7 +6,6 @@ import {
 	IAppBuilderWidgetPropsRoundChart,
 } from "@AppBuilderShared/types/shapediver/appbuildercharts";
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
-import {IconType} from "@AppBuilderShared/types/shapediver/icons";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {MantineColor} from "@mantine/core";
@@ -460,14 +460,14 @@ export type AppBuilderAnchorContainerProperties = {
 		 */
 		previewIcon?: IconType;
 		/** fallback container to be used ("left", "right", "top", "bottom") */
-		container: AppBuilderContainerNameType;
+		container?: AppBuilderContainerNameType;
 	};
 };
 
 /** Type for the anchor 2d containers */
 export type AppBuilderAnchor2dContainerProperties = {
 	/** 2D location */
-	location: [string | number, string | number];
+	location: (string | number)[];
 	/** Optional boolean to allow dragging of the container. (default: true) */
 	draggable?: boolean;
 } & AppBuilderAnchorContainerProperties;
@@ -475,7 +475,7 @@ export type AppBuilderAnchor2dContainerProperties = {
 /** Type for the anchor 3d containers */
 export type AppBuilderAnchor3dContainerProperties = {
 	/** 3D location */
-	location: [number, number, number];
+	location: number[];
 } & AppBuilderAnchorContainerProperties;
 
 /**

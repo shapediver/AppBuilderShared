@@ -1,0 +1,6 @@
+.tablerIconify [stroke-width],
+.tablerIconify [style*="stroke-width"],
+.tablerIconify g,
+.tablerIconify g * {
+  stroke-width: var(--icon-stroke-width) !important;
+}

@@ -1,6 +1,5 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Anchor} from "@mantine/core";
 import React, {useCallback, useContext} from "react";
 
@@ -35,7 +34,7 @@ export default function ModelStateNotificationCreated({
 			Model state with ID {modelStateId} has been saved.
 			<Anchor ml={4} size="sm" component="span" onClick={copyStateLink}>
 				Copy state
-				<Icon type={IconTypeEnum.Copy} size={14} />
+				<Icon iconType={"tabler:copy"} size={14} />
 			</Anchor>
 		</>
 	);

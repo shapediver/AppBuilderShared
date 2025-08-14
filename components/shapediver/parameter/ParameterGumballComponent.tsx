@@ -12,7 +12,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Box,
 	Button,
@@ -321,7 +320,7 @@ export default function ParameterGumballComponent(
 			fullWidth={true}
 			disabled={disabled}
 			className={classes.interactionButton}
-			rightSection={<Icon type={IconTypeEnum.IconHandFinger} />}
+			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={transformedNodeNames.length === 0 ? "light" : "filled"}
 			onClick={() => setGumballActive(true)}
 		>

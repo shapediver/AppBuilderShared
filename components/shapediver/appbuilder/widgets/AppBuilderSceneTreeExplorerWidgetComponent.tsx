@@ -2,7 +2,6 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useShapeDiverStoreInstances} from "@AppBuilderShared/store/useShapeDiverStoreInstances";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IAppBuilderWidgetPropsSceneTreeExplorer} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
 	ActionIconProps,
@@ -28,7 +27,6 @@ import {
 	isOnBlacklist,
 } from "@shapediver/viewer.features.interaction";
 import {ITreeNode} from "@shapediver/viewer.session";
-import {IconChevronDown} from "@tabler/icons-react";
 import React, {useCallback, useEffect, useState} from "react";
 
 type StyleProps = {
@@ -194,7 +192,8 @@ export default function AppBuilderSceneTreeExplorerWidgetComponent(
 		return (
 			<Group {...elementProps}>
 				{hasChildren && (
-					<IconChevronDown
+					<Icon
+						iconType={"tabler:chevron-down"}
 						size={14}
 						style={{
 							transform: expanded
@@ -216,10 +215,10 @@ export default function AppBuilderSceneTreeExplorerWidgetComponent(
 						}}
 					>
 						<Icon
-							type={
+							iconType={
 								node.nodeProps?.node.visible
-									? IconTypeEnum.Eye
-									: IconTypeEnum.EyeOff
+									? "tabler:eye"
+									: "tabler:eye-off"
 							}
 						/>
 					</ActionIcon>

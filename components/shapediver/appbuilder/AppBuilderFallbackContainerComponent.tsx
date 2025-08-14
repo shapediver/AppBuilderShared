@@ -9,7 +9,6 @@ import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsEx
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import React, {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderAttributeVisualizationWidgetComponent from "./widgets/AppBuilderAttributeVisualizationWidgetComponent";
@@ -47,7 +46,7 @@ export default function AppBuilderFallbackContainerComponent({
 			tabProps.defaultValue = "Parameters";
 			tabProps.tabs.push({
 				name: "Parameters",
-				icon: IconTypeEnum.AdjustmentsHorizontal,
+				icon: "tabler:adjustments-horizontal",
 				children: [
 					<ParametersAndExportsAccordionComponent
 						key={0}
@@ -63,7 +62,7 @@ export default function AppBuilderFallbackContainerComponent({
 			tabProps.defaultValue = tabProps.defaultValue || "Exports";
 			tabProps.tabs.push({
 				name: "Exports",
-				icon: IconTypeEnum.Download,
+				icon: "tabler:download",
 				children: [
 					<ParametersAndExportsAccordionComponent
 						key={1}
@@ -88,7 +87,7 @@ export default function AppBuilderFallbackContainerComponent({
 			if (hasSdtfData) {
 				tabProps.tabs.push({
 					name: "Attributes",
-					icon: IconTypeEnum.Tags,
+					icon: "tabler:tags",
 					children: [
 						<AppBuilderAttributeVisualizationWidgetComponent
 							key={0}
@@ -101,7 +100,7 @@ export default function AppBuilderFallbackContainerComponent({
 		if (showDesktopClientPanel && !settings?.hideDesktopClients) {
 			tabProps.tabs.push({
 				name: "Stargate",
-				icon: IconTypeEnum.Network,
+				icon: "tabler:network",
 				children: [<DesktopClientPanel key={2} />],
 			});
 		}

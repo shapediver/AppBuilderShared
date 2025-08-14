@@ -4,7 +4,6 @@ import {
 	OutputStatusEnum,
 	useStargateOutput,
 } from "@AppBuilderShared/hooks/shapediver/stargate/useStargateOutput";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,
@@ -119,7 +118,7 @@ export default function OutputChunkComponent(
 				rightSection={rightSection}
 			/>
 			<StargateInput
-				icon={IconTypeEnum.DeviceDesktopDown}
+				icon={"tabler:device-desktop-down"}
 				message={parsedMessage}
 				color={statusData.color}
 				isWaiting={isWaiting}

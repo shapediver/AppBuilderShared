@@ -1,6 +1,5 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {IParameterChanges} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {
@@ -131,7 +130,7 @@ function ViewportAcceptRejectButtons(
 	return (
 		<Group {...groupProps}>
 			<Button
-				rightSection={<Icon type={IconTypeEnum.Check} {...iconProps} />}
+				rightSection={<Icon iconType={"tabler:check"} {...iconProps} />}
 				onClick={acceptChanges}
 				disabled={disableChangeControls}
 				{...buttonProps}
@@ -139,7 +138,7 @@ function ViewportAcceptRejectButtons(
 				<Text {...textProps}>Accept</Text>
 			</Button>
 			<Button
-				rightSection={<Icon type={IconTypeEnum.X} {...iconProps} />}
+				rightSection={<Icon iconType={"tabler:x"} {...iconProps} />}
 				onClick={rejectChanges}
 				disabled={disableChangeControls}
 				{...buttonProps}

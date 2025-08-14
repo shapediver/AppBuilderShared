@@ -13,7 +13,6 @@ import {
 	AppBuilderAgentWidgetThemePropsType,
 } from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
 import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
 	Box,
@@ -31,7 +30,6 @@ import {
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
-import {IconRobot, IconUser} from "@tabler/icons-react";
 import React, {
 	useCallback,
 	useContext,
@@ -243,7 +241,7 @@ export default function AppBuilderAgentWidgetComponent(
 						{userImage ? (
 							<TooltipWrapper label={"Remove image"}>
 								<ActionIcon onClick={() => setUserImage(null)}>
-									<Icon type={IconTypeEnum.PaperClip} />
+									<Icon iconType={"tabler:paperclip"} />
 								</ActionIcon>
 							</TooltipWrapper>
 						) : (
@@ -260,7 +258,7 @@ export default function AppBuilderAgentWidgetComponent(
 											{...props}
 										>
 											<Icon
-												type={IconTypeEnum.PaperClip}
+												iconType={"tabler:paperclip"}
 											/>
 										</ActionIcon>
 									</TooltipWrapper>
@@ -270,7 +268,7 @@ export default function AppBuilderAgentWidgetComponent(
 						{screenshot ? (
 							<TooltipWrapper label={"Remove screenshot"}>
 								<ActionIcon onClick={() => setScreenshot(null)}>
-									<Icon type={IconTypeEnum.DeviceDesktop} />
+									<Icon iconType={"tabler:device-desktop"} />
 								</ActionIcon>
 							</TooltipWrapper>
 						) : (
@@ -280,7 +278,7 @@ export default function AppBuilderAgentWidgetComponent(
 									onClick={handleGetScreenshot}
 									disabled={!!userImage}
 								>
-									<Icon type={IconTypeEnum.DeviceDesktop} />
+									<Icon iconType={"tabler:device-desktop"} />
 								</ActionIcon>
 							</TooltipWrapper>
 						)}
@@ -309,9 +307,9 @@ export default function AppBuilderAgentWidgetComponent(
 								<Group align="start" w="100%" wrap="nowrap">
 									<Box pt="xs">
 										{message.role === "user" ? (
-											<IconUser />
+											<Icon iconType={"tabler:user"} />
 										) : (
-											<IconRobot />
+											<Icon iconType={"tabler:robot"} />
 										)}
 									</Box>
 
@@ -360,7 +358,7 @@ export default function AppBuilderAgentWidgetComponent(
 												}
 											>
 												<Icon
-													type={IconTypeEnum.ThumbUp}
+													iconType={"tabler:thumb-up"}
 												/>
 											</ActionIcon>
 											<ActionIcon
@@ -373,8 +371,8 @@ export default function AppBuilderAgentWidgetComponent(
 												}
 											>
 												<Icon
-													type={
-														IconTypeEnum.ThumbDown
+													iconType={
+														"tabler:thumb-down"
 													}
 												/>
 											</ActionIcon>

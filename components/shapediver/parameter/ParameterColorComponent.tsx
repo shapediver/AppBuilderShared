@@ -8,7 +8,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ColorFormatType,
 	convertFromSdColor,
@@ -114,7 +113,7 @@ export default function ParameterColorComponent(
 								)
 							}
 						>
-							<Icon type={IconTypeEnum.Refresh} />
+							<Icon iconType={"tabler:refresh"} />
 						</ActionIcon>
 					}
 					onChange={setValue}

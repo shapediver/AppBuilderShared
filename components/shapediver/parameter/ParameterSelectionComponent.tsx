@@ -12,7 +12,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
 	Box,
@@ -277,7 +276,7 @@ export default function ParameterSelectionComponent(
 									: "filled"
 							}
 						>
-							<Icon type={IconTypeEnum.CircleOff} />
+							<Icon iconType={"tabler:circle-off"} />
 						</ActionIcon>
 					</Box>
 				</Flex>
@@ -331,7 +330,7 @@ export default function ParameterSelectionComponent(
 			fullWidth={true}
 			disabled={disabled}
 			className={classes.interactionButton}
-			rightSection={<Icon type={IconTypeEnum.IconHandFinger} />}
+			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={selectedNodeNames.length === 0 ? "light" : "filled"}
 			onClick={() => setSelectionActive(true)}
 		>
