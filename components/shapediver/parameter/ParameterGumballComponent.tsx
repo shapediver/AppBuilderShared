@@ -27,7 +27,6 @@ import {
 	IGumballParameterProps,
 	validateGumballParameterSettings,
 } from "@shapediver/viewer.session";
-import {IconHandFinger} from "@tabler/icons-react";
 import React, {
 	useCallback,
 	useContext,
@@ -321,7 +320,7 @@ export default function ParameterGumballComponent(
 			fullWidth={true}
 			disabled={disabled}
 			className={classes.interactionButton}
-			rightSection={<Icon iconType={IconHandFinger} />}
+			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={transformedNodeNames.length === 0 ? "light" : "filled"}
 			onClick={() => setGumballActive(true)}
 		>

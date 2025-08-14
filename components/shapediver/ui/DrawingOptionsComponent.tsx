@@ -19,11 +19,6 @@ import {
 	IDrawingToolsApi,
 } from "@shapediver/viewer.features.drawing-tools";
 import {IDrawingParameterSettings} from "@shapediver/viewer.session";
-import {
-	IconChevronDown,
-	IconChevronUp,
-	IconInfoCircleFilled,
-} from "@tabler/icons-react";
 import React, {useEffect, useState} from "react";
 import classes from "./DrawingOptionsComponent.module.css";
 
@@ -221,7 +216,7 @@ export default function DrawingOptionsComponent(props: {
 						h="100%"
 						className={classes.padding}
 					>
-						<Icon iconType={IconInfoCircleFilled} />
+						<Icon iconType={"tabler:info-circle-filled"} />
 						<Space />
 						<Text className={classes.paddingLeft} size={size}>
 							{" "}
@@ -287,7 +282,11 @@ export default function DrawingOptionsComponent(props: {
 				<Text size={size} fs="italic" ta="left">
 					{optionsOpened ? "Hide Options" : "Show Options"}
 				</Text>
-				{optionsOpened ? <IconChevronUp /> : <IconChevronDown />}
+				{optionsOpened ? (
+					<Icon iconType={"tabler:chevron-up"} />
+				) : (
+					<Icon iconType={"tabler:chevron-down"} />
+				)}
 			</Group>
 			{options}
 		</Stack>

@@ -32,7 +32,6 @@ import {
 	SystemInfo,
 	validateDrawingParameterSettings,
 } from "@shapediver/viewer.session";
-import {IconCircleOff, IconPencil} from "@tabler/icons-react";
 import React, {
 	useCallback,
 	useContext,
@@ -302,7 +301,7 @@ export default function ParameterDrawingComponent(
 								pointsData?.length === 0 ? "light" : "filled"
 							}
 						>
-							<Icon iconType={IconCircleOff} />
+							<Icon iconType={"tabler:circle-off"} />
 						</ActionIcon>
 					</Box>
 				</Flex>
@@ -393,7 +392,7 @@ export default function ParameterDrawingComponent(
 			fullWidth={true}
 			disabled={disabled}
 			className={classes.interactionButton}
-			rightSection={<Icon iconType={IconPencil} />}
+			rightSection={<Icon iconType={"tabler:pencil"} />}
 			variant={pointsData?.length === 0 ? "light" : "filled"}
 			onClick={() => setDrawingActive(true)}
 		>

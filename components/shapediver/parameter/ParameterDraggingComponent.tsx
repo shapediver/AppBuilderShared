@@ -19,7 +19,6 @@ import {
 	IDraggingParameterProps,
 	validateDraggingParameterSettings,
 } from "@shapediver/viewer.session";
-import {IconHandFinger} from "@tabler/icons-react";
 import React, {
 	useCallback,
 	useContext,
@@ -301,7 +300,7 @@ export default function ParameterDraggingComponent(
 			fullWidth={true}
 			disabled={disabled}
 			className={classes.interactionButton}
-			rightSection={<Icon iconType={IconHandFinger} />}
+			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={parsedUiValue.length === 0 ? "light" : "filled"}
 			onClick={() => setDraggingActive(true)}
 		>

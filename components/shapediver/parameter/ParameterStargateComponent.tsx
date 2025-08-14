@@ -24,7 +24,6 @@ import {
 	TooltipProps,
 	useProps,
 } from "@mantine/core";
-import {IconCancel, IconDeviceDesktopUp} from "@tabler/icons-react";
 import React, {useMemo} from "react";
 import StargateInput from "../stargate/StargateInput";
 import {
@@ -84,7 +83,7 @@ const defaultStyleProps: StyleProps = {
 		},
 	},
 	iconProps: {
-		iconType: IconCancel,
+		iconType: "tabler:x",
 		size: "1.2rem",
 		color: "var(--mantine-color-default-color)",
 	},
@@ -200,7 +199,7 @@ export default function ParameterStargateComponent(
 					waitingText="Waiting for selection..."
 					disabled={statusData.disabled || disabled}
 					onClick={onObjectAdd}
-					icon={IconDeviceDesktopUp}
+					icon={"tabler:device-desktop-up"}
 				/>
 			)}
 		</ParameterWrapperComponent>

@@ -23,7 +23,6 @@ import {
 } from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
 import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
-import {IconGridDots, IconX} from "@tabler/icons-react";
 import {
 	default as React,
 	useCallback,
@@ -351,7 +350,7 @@ export function useAnchorContainer({
 	const closeIconElement = (
 		<ActionIcon onClick={toggleContent} {...iconProps}>
 			<Icon
-				iconType={IconX}
+				iconType={"tabler:x"}
 				color={iconProps?.color}
 				className={classes.viewportIcon}
 			/>
@@ -370,7 +369,7 @@ export function useAnchorContainer({
 	const dragIconElement = (
 		<ActionIcon onMouseDown={handleMouseDown} {...iconProps}>
 			<Icon
-				iconType={IconGridDots}
+				iconType={"tabler:grid-dots"}
 				color={iconProps?.color}
 				className={classes.viewportIcon}
 			/>

@@ -1,32 +1,34 @@
 import {
+	Icon as IconifyIconComponent,
+	IconifyIcon as IconifyIconDefinition,
+	IconProps as IconifyIconProps,
+} from "@iconify/react";
+import {
+	MantineSize,
 	MantineThemeComponent,
 	parseThemeColor,
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
-import {
-	Icon as TablerIcon,
-	IconProps as TablerIconProps,
-} from "@tabler/icons-react";
-import React, {forwardRef, useEffect, useState} from "react";
+import React, {CSSProperties, forwardRef, useMemo} from "react";
+import classes from "./Icon.module.css";
 
-// Pre-register all icon files so Vite can code-split them.
-const iconLoaders = import.meta.glob(
-	"/node_modules/@tabler/icons-react/dist/esm/icons/*.{js,mjs}",
-	{import: "default"},
-);
-export type IconType = React.ComponentType<TablerIconProps> | string;
+interface CustomCSSProperties extends CSSProperties {
+	"--icon-stroke-width"?: string | number;
+}
+export type IconType = IconifyIconDefinition | string;
 
-export interface IconProps extends TablerIconProps {
+export interface IconProps extends Omit<IconifyIconProps, "icon"> {
 	iconType: IconType;
+	size?: MantineSize | number | string; // MantineSize or CSS size value
 }
 
-const defaultStyleProps: Partial<TablerIconProps> = {
+const defaultStyleProps: Partial<IconProps> = {
 	size: "1.5rem",
-	stroke: 1,
+	stroke: "1px",
 };
 
-type IconThemePropsType = Partial<TablerIconProps>;
+type IconThemePropsType = Partial<IconProps>;
 
 export function IconThemeProps(
 	props: IconThemePropsType,
@@ -36,7 +38,7 @@ export function IconThemeProps(
 	};
 }
 
-export function useIconProps(props: Partial<TablerIconProps>): TablerIconProps {
+export function useIconProps(props: Partial<IconProps>): Partial<IconProps> {
 	return useProps("Icon", defaultStyleProps, props);
 }
 
@@ -45,81 +47,89 @@ const getIconImportName = (iconName: string): string => {
 	// Handle special cases first
 	// These are needed to have full backwards compatibility
 	const specialCases: Record<string, string> = {
-		"icon-hand-finger": "IconHandFinger",
-		"icon-info-circle-filled": "IconInfoCircleFilled",
-		"paper-clip": "IconPaperclip", // lowercase 'c'
+		"icon-hand-finger": "hand-finger",
+		"icon-info-circle-filled": "info-circle-filled",
+		"paper-clip": "paperclip", // lowercase 'c'
 	};
 
 	if (specialCases[iconName]) {
-		return specialCases[iconName];
+		return `tabler:${specialCases[iconName]}`;
 	}
-	// Convert kebab-case or other formats to PascalCase with Icon prefix
-	const pascalCase = iconName
-		.split(/[-_\s]/)
-		.map(
-			(word) =>
-				word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-		)
-		.join("");
 
-	return `Icon${pascalCase}`;
-};
-
-// Dynamic import of individual icons
-const loadIcon = async (iconImportName: string) => {
-	try {
-		const keyJs = `/node_modules/@tabler/icons-react/dist/esm/icons/${iconImportName}.js`;
-		const keyMjs = `/node_modules/@tabler/icons-react/dist/esm/icons/${iconImportName}.mjs`;
-		const loader = iconLoaders[keyJs] || iconLoaders[keyMjs];
-		if (!loader) {
-			console.warn(
-				`Icon "${iconImportName}" not found (no matching file)`,
-			);
-			return null;
-		}
-
-		const IconComponent = await loader();
-		return IconComponent as React.ComponentType<TablerIconProps>;
-	} catch (e) {
-		console.warn(`Icon "${iconImportName}" failed to load`, e);
-		return null;
+	// check if the name has "tabler:" prefix
+	if (iconName.startsWith("tabler:")) {
+		return iconName;
+	} else {
+		return `tabler:${iconName}`;
 	}
 };
 
-const Icon = forwardRef<TablerIcon, IconProps>(function Icon(
-	{iconType, size, stroke, color, ...rest}: IconProps,
+const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
+	{iconType, ...rest}: IconProps,
 	ref,
 ) {
 	const theme = useMantineTheme();
-	const [IconComponent, setIconComponent] =
-		useState<React.ComponentType<TablerIconProps> | null>(null);
 
-	useEffect(() => {
-		if (typeof iconType === "string") {
-			const iconImportName = getIconImportName(iconType);
-			loadIcon(iconImportName).then((Component) => {
-				if (Component) {
-					setIconComponent(() => Component);
-				} else {
-					setIconComponent(null);
+	const {color, size, stroke, ...iconPropsStyle} = useIconProps(rest);
+	const parsedColor = useMemo(() => {
+		return color ? parseThemeColor({color, theme}).value : color;
+	}, [color, theme]);
+
+	const iconProps = useMemo(
+		() => ({
+			...iconPropsStyle,
+			ref,
+			color: parsedColor,
+			...rest,
+		}),
+		[iconPropsStyle, ref, parsedColor, rest],
+	);
+
+	// convert the mantine size prop to a CSS value
+	const cssSize = useMemo(() => {
+		return size
+			? typeof size === "number"
+				? `${size}px`
+				: `${size}`
+			: undefined;
+	}, [size]);
+
+	if (typeof iconType === "string") {
+		const iconImportName = getIconImportName(iconType);
+		return (
+			<IconifyIconComponent
+				icon={iconImportName}
+				{...iconProps}
+				className={classes.tablerIconify}
+				width={cssSize}
+				style={
+					{
+						...iconProps.style,
+						// Apply stroke width as a CSS variable
+						// Which is used in the icon's CSS
+						"--icon-stroke-width": stroke,
+					} as CustomCSSProperties
 				}
-			});
-		} else {
-			setIconComponent(() => iconType);
-		}
-	}, [iconType]);
-
-	const iconPropsStyle = useIconProps({size, stroke, color});
-	const parsedColor = iconPropsStyle.color
-		? parseThemeColor({color: iconPropsStyle.color, theme}).value
-		: iconPropsStyle.color;
-	const iconProps = {...iconPropsStyle, ref, color: parsedColor, ...rest};
-
-	if (!IconComponent) {
-		return null; // or a fallback icon
+			/>
+		);
+	} else {
+		return (
+			<IconifyIconComponent
+				icon={iconType}
+				{...iconProps}
+				className={classes.tablerIconify}
+				width={cssSize}
+				style={
+					{
+						...iconProps.style,
+						// Apply stroke width as a CSS variable
+						// Which is used in the icon's CSS
+						"--icon-stroke-width": stroke,
+					} as CustomCSSProperties
+				}
+			/>
+		);
 	}
-
-	return <IconComponent {...iconProps} />;
 });
 
 export default Icon;

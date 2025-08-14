@@ -2,7 +2,6 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useFullscreen} from "@AppBuilderShared/hooks/ui/useFullscreen";
 import {ActionIcon} from "@mantine/core";
-import {IconMaximize} from "@tabler/icons-react";
 import React from "react";
 import {isIPhone} from "~/shared/utils/misc/navigator";
 import classes from "../ViewportIcons.module.css";
@@ -40,7 +39,7 @@ export default function FullscreenButton({
 				className={classes.ViewportIcon}
 			>
 				<Icon
-					iconType={IconMaximize}
+					iconType={"tabler:maximize"}
 					color={disabled ? colorDisabled : color}
 				/>
 			</ActionIcon>

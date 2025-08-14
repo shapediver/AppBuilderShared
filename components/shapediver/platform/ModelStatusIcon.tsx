@@ -1,4 +1,4 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import Icon, {IconType} from "@AppBuilderShared/components/ui/Icon";
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
@@ -6,14 +6,6 @@ import {
 	SdPlatformModelVisibility,
 	SdPlatformResponseModelPublic,
 } from "@shapediver/sdk.platform-api-sdk-v1";
-import {
-	IconLockSquare,
-	IconUserCheck,
-	IconUserQuestion,
-	IconUsersGroup,
-	IconWorld,
-	Icon as TablerIcon,
-} from "@tabler/icons-react";
 import React, {useMemo} from "react";
 
 interface Props {
@@ -28,7 +20,7 @@ interface Props {
 }
 
 const createStatusDescription = (
-	icon: TablerIcon | string,
+	icon: IconType,
 	status: Status,
 	description: string,
 ) => ({icon, status, description});
@@ -41,17 +33,17 @@ enum Status {
 	Public = "public",
 }
 
-const IconTypeOrganizationPending = IconUserQuestion;
-const IconTypeOrganizationConfirmed = IconUserCheck;
+const IconTypeOrganizationPending = "tabler:user-question";
+const IconTypeOrganizationConfirmed = "tabler:user-check";
 
 const StatusDescriptionMap = {
 	[Status.Private]: createStatusDescription(
-		IconLockSquare,
+		"tabler:lock-square",
 		Status.Private,
 		"Private",
 	),
 	[Status.Organization]: createStatusDescription(
-		IconUsersGroup,
+		"tabler:users-group",
 		Status.Organization,
 		"Visible to organization",
 	),
@@ -66,7 +58,7 @@ const StatusDescriptionMap = {
 		"Visible to organization",
 	),
 	[Status.Public]: createStatusDescription(
-		IconWorld,
+		"tabler:world",
 		Status.Public,
 		"Public",
 	),

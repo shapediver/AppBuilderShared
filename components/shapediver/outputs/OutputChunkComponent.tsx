@@ -14,7 +14,6 @@ import {
 	StargateStatusColorTypeEnum,
 } from "@AppBuilderShared/types/shapediver/stargate";
 import {useProps} from "@mantine/core";
-import {IconDeviceDesktopDown} from "@tabler/icons-react";
 import React, {useContext, useMemo} from "react";
 import {
 	DefaultStargateStyleProps,
@@ -119,7 +118,7 @@ export default function OutputChunkComponent(
 				rightSection={rightSection}
 			/>
 			<StargateInput
-				icon={IconDeviceDesktopDown}
+				icon={"tabler:device-desktop-down"}
 				message={parsedMessage}
 				color={statusData.color}
 				isWaiting={isWaiting}

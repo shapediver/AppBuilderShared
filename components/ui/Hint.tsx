@@ -10,7 +10,6 @@ import {
 	TextProps,
 	useProps,
 } from "@mantine/core";
-import {IconInfoCircleFilled} from "@tabler/icons-react";
 import React from "react";
 
 interface Props {
@@ -55,7 +54,7 @@ const defaultStyleProps: StyleProps = {
 		gap: "sm",
 	},
 	iconProps: {
-		iconType: IconInfoCircleFilled,
+		iconType: "tabler:info-circle-filled",
 		color: "var(--mantine-primary-color-filled)",
 	},
 	textProps: {

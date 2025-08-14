@@ -30,14 +30,6 @@ import {
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
-import {
-	IconDeviceDesktop,
-	IconPaperclip,
-	IconRobot,
-	IconThumbDown,
-	IconThumbUp,
-	IconUser,
-} from "@tabler/icons-react";
 import React, {
 	useCallback,
 	useContext,
@@ -249,7 +241,7 @@ export default function AppBuilderAgentWidgetComponent(
 						{userImage ? (
 							<TooltipWrapper label={"Remove image"}>
 								<ActionIcon onClick={() => setUserImage(null)}>
-									<Icon iconType={IconPaperclip} />
+									<Icon iconType={"tabler:paperclip"} />
 								</ActionIcon>
 							</TooltipWrapper>
 						) : (
@@ -265,7 +257,9 @@ export default function AppBuilderAgentWidgetComponent(
 											disabled={!!screenshot}
 											{...props}
 										>
-											<Icon iconType={IconPaperclip} />
+											<Icon
+												iconType={"tabler:paperclip"}
+											/>
 										</ActionIcon>
 									</TooltipWrapper>
 								)}
@@ -274,7 +268,7 @@ export default function AppBuilderAgentWidgetComponent(
 						{screenshot ? (
 							<TooltipWrapper label={"Remove screenshot"}>
 								<ActionIcon onClick={() => setScreenshot(null)}>
-									<Icon iconType={IconDeviceDesktop} />
+									<Icon iconType={"tabler:device-desktop"} />
 								</ActionIcon>
 							</TooltipWrapper>
 						) : (
@@ -284,7 +278,7 @@ export default function AppBuilderAgentWidgetComponent(
 									onClick={handleGetScreenshot}
 									disabled={!!userImage}
 								>
-									<Icon iconType={IconDeviceDesktop} />
+									<Icon iconType={"tabler:device-desktop"} />
 								</ActionIcon>
 							</TooltipWrapper>
 						)}
@@ -313,9 +307,9 @@ export default function AppBuilderAgentWidgetComponent(
 								<Group align="start" w="100%" wrap="nowrap">
 									<Box pt="xs">
 										{message.role === "user" ? (
-											<IconUser />
+											<Icon iconType={"tabler:user"} />
 										) : (
-											<IconRobot />
+											<Icon iconType={"tabler:robot"} />
 										)}
 									</Box>
 
@@ -363,7 +357,9 @@ export default function AppBuilderAgentWidgetComponent(
 													)
 												}
 											>
-												<Icon iconType={IconThumbUp} />
+												<Icon
+													iconType={"tabler:thumb-up"}
+												/>
 											</ActionIcon>
 											<ActionIcon
 												variant="subtle"
@@ -375,7 +371,9 @@ export default function AppBuilderAgentWidgetComponent(
 												}
 											>
 												<Icon
-													iconType={IconThumbDown}
+													iconType={
+														"tabler:thumb-down"
+													}
 												/>
 											</ActionIcon>
 										</Group>

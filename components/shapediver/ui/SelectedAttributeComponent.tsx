@@ -2,7 +2,6 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import {Attributes} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useConvertAttributeInputData";
 import {ActionIcon, Stack, Table} from "@mantine/core";
 import {ISDTFAttributeData} from "@shapediver/viewer.session";
-import {IconEye, IconEyeOff} from "@tabler/icons-react";
 import React, {useMemo} from "react";
 import {IAttributeDefinition} from "../appbuilder/widgets/AppBuilderAttributeVisualizationWidgetComponent";
 import classes from "./SelectedAttributeComponent.module.css";
@@ -118,7 +117,7 @@ export default function SelectedAttributeComponent(props: Props) {
 			{value.ableToActivate && (
 				<Table.Td align="center">
 					{value.currentlyActive ? (
-						<Icon iconType={IconEye} />
+						<Icon iconType={"tabler:eye"} />
 					) : (
 						<ActionIcon
 							title="Toggle Layer"
@@ -131,7 +130,7 @@ export default function SelectedAttributeComponent(props: Props) {
 							}}
 							variant={"light"}
 						>
-							<Icon iconType={IconEyeOff} />
+							<Icon iconType={"tabler:eye-off"} />
 						</ActionIcon>
 					)}
 				</Table.Td>

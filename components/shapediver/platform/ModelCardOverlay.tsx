@@ -3,7 +3,6 @@ import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {Avatar} from "@mantine/core";
-import {IconBookmark, IconBookmarkOff} from "@tabler/icons-react";
 import React, {useMemo} from "react";
 
 export interface IModelCardOverlayProps {
@@ -58,8 +57,8 @@ export default function ModelCardOverlay(props: Props) {
 				<ModelCardOverlayWrapper position="top-left">
 					<ToggleIcon
 						value={model.bookmark?.bookmarked ?? false}
-						iconActive={IconBookmark}
-						iconInactive={IconBookmarkOff}
+						iconActive={"tabler:bookmark"}
+						iconInactive={"tabler:bookmark-off"}
 						onActivate={actions.bookmark}
 						onDeactivate={actions.unbookmark}
 						tooltipActive="Remove bookmark"

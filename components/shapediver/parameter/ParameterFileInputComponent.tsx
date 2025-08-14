@@ -33,7 +33,6 @@ import {
 	guessMissingMimeType,
 	mapMimeTypeToFileEndings,
 } from "@shapediver/viewer.utils.mime-type";
-import {IconCancel, IconDeviceDesktopUp, IconUpload} from "@tabler/icons-react";
 import React, {useEffect, useMemo} from "react";
 import StargateInput from "../stargate/StargateInput";
 import {
@@ -94,7 +93,7 @@ const defaultStyleProps: StyleProps = {
 		},
 	},
 	cancelIconProps: {
-		iconType: IconCancel,
+		iconType: "tabler:circle-off",
 		size: "1.2rem",
 		color: "var(--mantine-color-default-color)",
 	},
@@ -256,7 +255,7 @@ export default function ParameterFileInputComponent(
 							waitingText="Waiting for import..."
 							disabled={statusData.disabled || disabled}
 							onClick={onObjectAdd}
-							icon={IconDeviceDesktopUp}
+							icon={"tabler:device-desktop-up"}
 						/>
 						<TooltipWrapper
 							{...uploadTooltipProps}
@@ -268,7 +267,9 @@ export default function ParameterFileInputComponent(
 								onChange={(v) =>
 									handleChange(guessMissingMimeType(v || ""))
 								}
-								leftSection={<Icon iconType={IconUpload} />}
+								leftSection={
+									<Icon iconType={"tabler:upload"} />
+								}
 								leftSectionPointerEvents="none"
 								disabled={disabled}
 								valueComponent={() => null}
@@ -290,7 +291,7 @@ export default function ParameterFileInputComponent(
 						onChange={(v) =>
 							handleChange(guessMissingMimeType(v || ""))
 						}
-						leftSection={<Icon iconType={IconUpload} />}
+						leftSection={<Icon iconType={"tabler:upload"} />}
 						leftSectionPointerEvents="none"
 						disabled={disabled}
 						valueComponent={undefined}

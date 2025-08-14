@@ -19,7 +19,6 @@ import {
 	MantineThemeComponent,
 	useProps,
 } from "@mantine/core";
-import {IconRefresh} from "@tabler/icons-react";
 import React, {useCallback, useEffect, useState} from "react";
 
 interface StyleProps {
@@ -114,7 +113,7 @@ export default function ParameterColorComponent(
 								)
 							}
 						>
-							<Icon iconType={IconRefresh} />
+							<Icon iconType={"tabler:refresh"} />
 						</ActionIcon>
 					}
 					onChange={setValue}

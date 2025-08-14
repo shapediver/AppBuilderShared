@@ -27,7 +27,6 @@ import {
 	isOnBlacklist,
 } from "@shapediver/viewer.features.interaction";
 import {ITreeNode} from "@shapediver/viewer.session";
-import {IconChevronDown, IconEye, IconEyeOff} from "@tabler/icons-react";
 import React, {useCallback, useEffect, useState} from "react";
 
 type StyleProps = {
@@ -193,7 +192,8 @@ export default function AppBuilderSceneTreeExplorerWidgetComponent(
 		return (
 			<Group {...elementProps}>
 				{hasChildren && (
-					<IconChevronDown
+					<Icon
+						iconType={"tabler:chevron-down"}
 						size={14}
 						style={{
 							transform: expanded
@@ -217,8 +217,8 @@ export default function AppBuilderSceneTreeExplorerWidgetComponent(
 						<Icon
 							iconType={
 								node.nodeProps?.node.visible
-									? IconEye
-									: IconEyeOff
+									? "tabler:eye"
+									: "tabler:eye-off"
 							}
 						/>
 					</ActionIcon>

@@ -5,7 +5,6 @@ import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shaped
 import {firstLetterUppercase} from "@AppBuilderShared/utils/misc/strings";
 import {ActionIcon, Menu, MenuDropdownProps} from "@mantine/core";
 import {IViewportApi} from "@shapediver/viewer.viewport";
-import {IconVideo} from "@tabler/icons-react";
 import React from "react";
 import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
@@ -72,7 +71,7 @@ export default function CamerasButton({
 				<TooltipWrapper disabled={isMenuOpened} label="Cameras">
 					<Menu.Target>
 						<Icon
-							iconType={IconVideo}
+							iconType={"tabler:video"}
 							color={noCamerasAvailable ? colorDisabled : color}
 						/>
 					</Menu.Target>

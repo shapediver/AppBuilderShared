@@ -25,11 +25,6 @@ import {
 } from "@mantine/core";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import {fetchFileWithToken} from "@shapediver/viewer.utils.mime-type";
-import {
-	IconDeviceDesktopDown,
-	IconDownload,
-	IconMailForward,
-} from "@tabler/icons-react";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 import StargateInput from "../stargate/StargateInput";
 import {
@@ -247,7 +242,7 @@ export default function ExportButtonComponent(
 				(isStargate ? (
 					<Group wrap="nowrap">
 						<StargateInput
-							icon={IconDeviceDesktopDown}
+							icon={"tabler:device-desktop-down"}
 							message={statusData.message}
 							color={statusData.color}
 							isWaiting={requestingExport || isWaiting}
@@ -266,7 +261,7 @@ export default function ExportButtonComponent(
 								onClick={() => onClickIntercepted(true)}
 								loading={requestingExport}
 							>
-								<Icon iconType={IconDownload} />
+								<Icon iconType={"tabler:download"} />
 							</Button>
 						</TooltipWrapper>
 					</Group>
@@ -275,9 +270,9 @@ export default function ExportButtonComponent(
 						{...buttonProps}
 						leftSection={
 							definition.type === EXPORT_TYPE.DOWNLOAD ? (
-								<Icon iconType={IconDownload} />
+								<Icon iconType={"tabler:download"} />
 							) : (
-								<Icon iconType={IconMailForward} />
+								<Icon iconType={"tabler:mail-forward"} />
 							)
 						}
 						onClick={() => onClickIntercepted()}

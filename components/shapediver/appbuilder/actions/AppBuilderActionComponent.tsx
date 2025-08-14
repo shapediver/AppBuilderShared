@@ -9,7 +9,6 @@ import {
 	PolymorphicComponentProps,
 	useProps,
 } from "@mantine/core";
-import {IconX} from "@tabler/icons-react";
 import React from "react";
 
 type ButtonComponentProps<C = "button"> = PolymorphicComponentProps<
@@ -52,7 +51,7 @@ export default function AppBuilderActionComponent(
 	);
 
 	const iconOnly = !label && icon;
-	const useCloseButton = iconOnly && icon === IconX;
+	const useCloseButton = iconOnly && icon === "tabler:x";
 	const _onclick = onClick === null ? undefined : onClick;
 
 	const button = useCloseButton ? (

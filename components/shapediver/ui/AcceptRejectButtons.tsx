@@ -6,7 +6,6 @@ import {
 } from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {Button, Group, Text} from "@mantine/core";
-import {IconCheck, IconX} from "@tabler/icons-react";
 import React from "react";
 
 interface Props {
@@ -49,7 +48,7 @@ export default function AcceptRejectButtons({parameters}: Props) {
 			>
 				<Button
 					fullWidth={true}
-					leftSection={<Icon iconType={IconCheck} />}
+					leftSection={<Icon iconType={"tabler:check"} />}
 					onClick={acceptChanges}
 					disabled={disableChangeControls}
 					variant="light"
@@ -58,7 +57,7 @@ export default function AcceptRejectButtons({parameters}: Props) {
 				</Button>
 				<Button
 					fullWidth={true}
-					leftSection={<Icon iconType={IconX} />}
+					leftSection={<Icon iconType={"tabler:x"} />}
 					onClick={rejectChanges}
 					disabled={disableChangeControls}
 					variant="light"

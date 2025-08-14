@@ -9,7 +9,6 @@ import {
 	TooltipProps,
 	useProps,
 } from "@mantine/core";
-import {IconX} from "@tabler/icons-react";
 
 import React from "react";
 interface Props extends PropsParameter {
@@ -81,7 +80,7 @@ export default function ParameterLabelComponent(
 					label={tooltipProps?.label || "Cancel change"}
 				>
 					<Icon
-						iconType={IconX}
+						iconType={"tabler:x"}
 						color="var(--mantine-primary-color-filled)"
 						onClick={cancel}
 					/>

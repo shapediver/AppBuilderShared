@@ -4,7 +4,6 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {IAppBuilderActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IconDeviceFloppy} from "@tabler/icons-react";
 import React, {useCallback, useContext, useState} from "react";
 
 type Props = IAppBuilderActionPropsAddToCart & {
@@ -21,7 +20,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 ) {
 	const {
 		label = "Save configuration",
-		icon = IconDeviceFloppy,
+		icon = "tabler:device-floppy",
 		tooltip,
 		namespace,
 		includeImage,

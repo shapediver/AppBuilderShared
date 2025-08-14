@@ -12,7 +12,6 @@ import {
 	TextProps,
 	useProps,
 } from "@mantine/core";
-import {IconCheck, IconX} from "@tabler/icons-react";
 import React, {useCallback, useMemo} from "react";
 
 interface IconProps {
@@ -131,7 +130,7 @@ function ViewportAcceptRejectButtons(
 	return (
 		<Group {...groupProps}>
 			<Button
-				rightSection={<Icon iconType={IconCheck} {...iconProps} />}
+				rightSection={<Icon iconType={"tabler:check"} {...iconProps} />}
 				onClick={acceptChanges}
 				disabled={disableChangeControls}
 				{...buttonProps}
@@ -139,7 +138,7 @@ function ViewportAcceptRejectButtons(
 				<Text {...textProps}>Accept</Text>
 			</Button>
 			<Button
-				rightSection={<Icon iconType={IconX} {...iconProps} />}
+				rightSection={<Icon iconType={"tabler:x"} {...iconProps} />}
 				onClick={rejectChanges}
 				disabled={disableChangeControls}
 				{...buttonProps}

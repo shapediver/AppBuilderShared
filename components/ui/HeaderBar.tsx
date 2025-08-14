@@ -5,7 +5,6 @@ import {
 	useComputedColorScheme,
 	useMantineColorScheme,
 } from "@mantine/core";
-import {IconMoonStars, IconSun} from "@tabler/icons-react";
 import React from "react";
 import {useLinkClickHandler} from "react-router-dom";
 import classes from "./HeaderBar.module.css";
@@ -67,9 +66,9 @@ export default function HeaderBar() {
 				title="Toggle color scheme"
 			>
 				{colorScheme === "dark" ? (
-					<Icon iconType={IconSun} />
+					<Icon iconType={"tabler:sun"} />
 				) : (
-					<Icon iconType={IconMoonStars} />
+					<Icon iconType={"tabler:moon-stars"} />
 				)}
 			</ActionIcon>
 		</>

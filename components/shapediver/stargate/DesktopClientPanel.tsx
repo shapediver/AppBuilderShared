@@ -23,7 +23,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
-import {IconNetwork, IconNetworkOff, IconRefresh} from "@tabler/icons-react";
 import React, {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -61,17 +60,17 @@ export interface INetworkStatusIcon {
  */
 export const NetworkStatusIcons: Record<NetworkStatus, INetworkStatusIcon> = {
 	[NetworkStatus.none]: {
-		icon: IconNetwork,
+		icon: "tabler:network",
 		color: "grey",
 		tooltip: "Not connected to Stargate",
 	},
 	[NetworkStatus.connected]: {
-		icon: IconNetwork,
+		icon: "tabler:network",
 		color: "green",
 		tooltip: "Client active",
 	},
 	[NetworkStatus.disconnected]: {
-		icon: IconNetworkOff,
+		icon: "tabler:network-off",
 		color: "red",
 		tooltip: "No active client",
 	},
@@ -128,7 +127,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 		loaderProps: {type: "dots"},
 	},
 	iconRefreshProps: {
-		iconType: IconRefresh,
+		iconType: "tabler:refresh",
 		size: "1rem",
 	},
 	groupBottomProps: {
@@ -276,7 +275,9 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 					>
 						<Icon
 							{...iconRefreshProps}
-							iconType={iconRefreshProps?.iconType || IconRefresh}
+							iconType={
+								iconRefreshProps?.iconType || "tabler:refresh"
+							}
 						/>
 					</ActionIcon>
 				</Group>
