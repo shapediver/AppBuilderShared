@@ -159,7 +159,9 @@ export function useAppBuilderStandardContainers(props: Props) {
 			right: undefined,
 		};
 
-		const mergedContainerArray = Object.values(mergedContainers);
+		const mergedContainerArray = Object.values(mergedContainers).filter(
+			(container): container is IAppBuilderContainer => !!container,
+		);
 
 		if (mergedContainerArray.length === 0) {
 			if (fallbackContainer) {

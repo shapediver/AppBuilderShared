@@ -248,10 +248,10 @@ export default function AppBuilderPage(props: Partial<Props>) {
 									<ViewportIcons
 										namespace={namespace}
 										hideJsonMenu={
-											controllerSession.hideJsonMenu
+											sessionSettings?.hideJsonMenu
 										}
 										hideSavedStates={
-											controllerSession.hideSavedStates
+											sessionSettings?.hideSavedStates
 										}
 									/>
 								)}
