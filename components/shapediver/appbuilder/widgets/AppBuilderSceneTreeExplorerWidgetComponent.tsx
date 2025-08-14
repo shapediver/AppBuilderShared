@@ -27,7 +27,7 @@ import {
 	isOnBlacklist,
 } from "@shapediver/viewer.features.interaction";
 import {ITreeNode} from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 
 type StyleProps = {
 	paperProps?: Partial<PaperProps>;
@@ -227,11 +227,15 @@ export default function AppBuilderSceneTreeExplorerWidgetComponent(
 		);
 	};
 
+	const flatData = useMemo(() => {
+		return Object.values(data).flat();
+	}, [data]);
+
 	return (
 		<Paper {...paperProps}>
 			<Title {...titleProps}>Scene Tree Explorer</Title>
 			<Tree
-				data={Object.values(data).flat()}
+				data={flatData}
 				tree={tree}
 				renderNode={renderTreeNode}
 				{...treeProps}
