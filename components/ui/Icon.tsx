@@ -2,6 +2,7 @@ import {
 	Icon as IconifyIconComponent,
 	IconifyIcon as IconifyIconDefinition,
 	IconProps as IconifyIconProps,
+	loadIcons,
 } from "@iconify/react";
 import {
 	MantineSize,
@@ -12,6 +13,62 @@ import {
 } from "@mantine/core";
 import React, {CSSProperties, forwardRef, useMemo} from "react";
 import classes from "./Icon.module.css";
+
+// List of all Tabler icons used in the app for preloading
+// Icons don't have to be pre-loaded, we just do it for the ones we know that are used
+const PRELOAD_ICONS = [
+	"tabler:adjustments-horizontal",
+	"tabler:alert-circle",
+	"tabler:arrow-back-up",
+	"tabler:arrow-forward-up",
+	"tabler:augmented-reality",
+	"tabler:bookmark",
+	"tabler:bookmark-off",
+	"tabler:check",
+	"tabler:chevron-down",
+	"tabler:chevron-left",
+	"tabler:chevron-right",
+	"tabler:chevron-up",
+	"tabler:circle-off",
+	"tabler:copy",
+	"tabler:device-desktop",
+	"tabler:device-desktop-down",
+	"tabler:device-desktop-up",
+	"tabler:device-floppy",
+	"tabler:dots-vertical",
+	"tabler:download",
+	"tabler:eye",
+	"tabler:eye-off",
+	"tabler:grid-dots",
+	"tabler:hand-finger",
+	"tabler:info-circle",
+	"tabler:info-circle-filled",
+	"tabler:lock-square",
+	"tabler:mail-forward",
+	"tabler:maximize",
+	"tabler:moon-stars",
+	"tabler:network",
+	"tabler:network-off",
+	"tabler:paperclip",
+	"tabler:pencil",
+	"tabler:refresh",
+	"tabler:robot",
+	"tabler:shopping-cart-plus",
+	"tabler:sun",
+	"tabler:tags",
+	"tabler:thumb-down",
+	"tabler:thumb-up",
+	"tabler:upload",
+	"tabler:user",
+	"tabler:user-check",
+	"tabler:user-question",
+	"tabler:users-group",
+	"tabler:video",
+	"tabler:world",
+	"tabler:x",
+	"tabler:zoom-in",
+];
+loadIcons(PRELOAD_ICONS);
 
 interface CustomCSSProperties extends CSSProperties {
 	"--icon-stroke-width"?: string | number;
