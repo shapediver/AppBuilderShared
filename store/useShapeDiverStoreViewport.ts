@@ -1,9 +1,11 @@
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
 import {IShapeDiverStoreViewport} from "@AppBuilderShared/types/store/shapediverStoreViewport";
+import {ViewportIconButtonType} from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
 import {createViewport, IViewportApi} from "@shapediver/viewer.viewport";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {useShapeDiverViewportIconsStore} from "./useShapeDiverViewportIconsStore";
 
 /**
  * Helper for comparing viewports.
@@ -41,6 +43,23 @@ export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 
 				try {
 					viewport = await createViewport(dto);
+
+					// Add viewport icons using external store access
+					const iconStore =
+						useShapeDiverViewportIconsStore.getState();
+					iconStore.add(viewport.id, [
+						...(viewport.enableAR
+							? [{type: ViewportIconButtonType.Ar}]
+							: []),
+						{type: ViewportIconButtonType.Zoom},
+						{type: ViewportIconButtonType.Fullscreen},
+						{type: ViewportIconButtonType.Cameras},
+					]);
+					iconStore.add(viewport.id, [
+						{type: ViewportIconButtonType.Undo},
+						{type: ViewportIconButtonType.Redo},
+						{type: ViewportIconButtonType.HistoryMenu},
+					]);
 				} catch (e: any) {
 					callbacks?.onError(e);
 				}

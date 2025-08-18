@@ -1,11 +1,8 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useFullscreen} from "@AppBuilderShared/hooks/ui/useFullscreen";
-import {ActionIcon} from "@mantine/core";
 import React from "react";
 import {isIPhone} from "~/shared/utils/misc/navigator";
-import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
+import ViewportIconButton from "./ViewportIconButton";
 
 interface FullscreenButtonProps extends CommonButtonProps {
 	fullscreenId?: string;
@@ -28,21 +25,17 @@ export default function FullscreenButton({
 	const disabled = isFullscreenDisabled || !isFullScreenAvailable.current;
 
 	return (
-		<TooltipWrapper label="Fullscreen">
-			<ActionIcon
-				onClick={makeElementFullscreen}
-				disabled={disabled}
-				size={size}
-				variant={disabled ? variantDisabled : variant}
-				aria-label="Fullscreen"
-				style={iconStyle}
-				className={classes.ViewportIcon}
-			>
-				<Icon
-					iconType={"tabler:maximize"}
-					color={disabled ? colorDisabled : color}
-				/>
-			</ActionIcon>
-		</TooltipWrapper>
+		<ViewportIconButton
+			iconType={"tabler:maximize"}
+			onClick={makeElementFullscreen}
+			disabled={disabled}
+			size={size}
+			color={color}
+			colorDisabled={colorDisabled}
+			variant={variant}
+			variantDisabled={variantDisabled}
+			iconStyle={iconStyle}
+			tooltip="Fullscreen"
+		/>
 	);
 }

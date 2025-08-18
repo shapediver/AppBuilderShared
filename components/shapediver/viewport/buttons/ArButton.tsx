@@ -1,11 +1,10 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {ActionIcon, Loader, Modal, Text, Title} from "@mantine/core";
+import {Loader, Modal, Text} from "@mantine/core";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React, {useState} from "react";
 import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
+import ViewportIconButton from "./ViewportIconButton";
 
 interface ArButtonProps extends CommonButtonProps {
 	viewport?: IViewportApi;
@@ -66,27 +65,23 @@ export default function ArButton({
 
 	return (
 		<>
-			<TooltipWrapper label="View in AR">
-				<ActionIcon
-					onClick={handleArClick}
-					disabled={isArLoading}
-					className={classes.ViewportIcon}
-					size={size}
-					variant={isViewableInAr ? variantDisabled : variant}
-					aria-label="View in AR"
-					style={iconStyle}
-				>
-					<Icon
-						iconType={"tabler:augmented-reality"}
-						color={isArLoading ? colorDisabled : color}
-					/>
-				</ActionIcon>
-			</TooltipWrapper>
+			<ViewportIconButton
+				iconType={"tabler:augmented-reality"}
+				onClick={handleArClick}
+				disabled={isArLoading}
+				size={size}
+				color={color}
+				colorDisabled={colorDisabled}
+				variant={isViewableInAr ? variantDisabled : variant}
+				variantDisabled={variantDisabled}
+				iconStyle={iconStyle}
+				tooltip="View in AR"
+			/>
 
 			<Modal
 				opened={isModalArOpened}
 				onClose={() => setIsModalArOpened(false)}
-				title={<Title>Scan the code</Title>}
+				title="Scan the code"
 				centered
 			>
 				{isModalArError ? (

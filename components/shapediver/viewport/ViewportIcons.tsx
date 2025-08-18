@@ -2,11 +2,13 @@ import {useViewportControls} from "@AppBuilderShared/hooks/shapediver/viewer/use
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {useShapeDiverViewportIconsStore} from "@AppBuilderShared/store/useShapeDiverViewportIconsStore";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
+import {ViewportIconButtonType} from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -19,7 +21,7 @@ import HistoryMenuButton from "./buttons/HistoryMenuButton";
 import RedoButton from "./buttons/RedoButton";
 import UndoButton from "./buttons/UndoButton";
 import ZoomButton from "./buttons/ZoomButton";
-import {IconProps} from "./buttons/types";
+import {CommonButtonProps, IconProps} from "./buttons/types";
 
 const defaultStyleProps: ViewportIconsOptionalProps = {
 	style: {
@@ -31,15 +33,6 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		...ViewportTransparentBackgroundStyle,
 	},
 	fullscreenId: "viewer-fullscreen-area",
-	enableHistoryButtons: true,
-	enableModelStateButtons: true,
-	enableImportExportButtons: true,
-	enableResetButton: true,
-	enableArBtn: true,
-	enableCamerasBtn: true,
-	enableFullscreenBtn: true,
-	enableZoomBtn: true,
-	enableHistoryMenuButton: true,
 	color: undefined,
 	colorDisabled: undefined,
 	variant: IconProps.variant,
@@ -69,6 +62,91 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	},
 };
 
+interface ButtonRenderContext extends CommonButtonProps {
+	viewport?: any;
+	namespace?: string;
+	buttonsDisabled: boolean;
+	executing: boolean;
+	hasPendingChanges: boolean;
+	iconsVisible: boolean;
+	fullscreenId: string;
+}
+
+function renderButtonByKind(
+	kind: ViewportIconButtonType,
+	context: ButtonRenderContext,
+): React.ReactNode {
+	const {
+		viewport,
+		namespace,
+		buttonsDisabled,
+		executing,
+		hasPendingChanges,
+		iconsVisible,
+		fullscreenId,
+		...commonProps
+	} = context;
+
+	switch (kind) {
+		case ViewportIconButtonType.Ar:
+			return <ArButton key="ar" viewport={viewport} {...commonProps} />;
+		case ViewportIconButtonType.Zoom:
+			return (
+				<ZoomButton key="zoom" viewport={viewport} {...commonProps} />
+			);
+		case ViewportIconButtonType.Fullscreen:
+			return (
+				<FullscreenButton
+					key="fullscreen"
+					fullscreenId={fullscreenId}
+					enableFullscreenBtn={true}
+					{...commonProps}
+				/>
+			);
+		case ViewportIconButtonType.Cameras:
+			return (
+				<CamerasButton
+					key="cameras"
+					viewport={viewport}
+					visible={iconsVisible}
+					{...commonProps}
+				/>
+			);
+		case ViewportIconButtonType.Undo:
+			return (
+				<UndoButton
+					key="undo"
+					disabled={buttonsDisabled || executing}
+					hasPendingChanges={hasPendingChanges}
+					executing={executing}
+					{...commonProps}
+				/>
+			);
+		case ViewportIconButtonType.Redo:
+			return (
+				<RedoButton
+					key="redo"
+					disabled={buttonsDisabled || executing}
+					hasPendingChanges={hasPendingChanges}
+					executing={executing}
+					{...commonProps}
+				/>
+			);
+		case ViewportIconButtonType.HistoryMenu:
+			return (
+				<HistoryMenuButton
+					key="historyMenu"
+					disabled={!namespace || buttonsDisabled}
+					namespace={namespace || ""}
+					visible={iconsVisible}
+					{...commonProps}
+				/>
+			);
+		default:
+			return null;
+	}
+}
+
 export default function ViewportIcons(
 	props: ViewportIconsProps & ViewportIconsOptionalProps,
 ) {
@@ -83,15 +161,6 @@ export default function ViewportIcons(
 		style,
 		iconStyle,
 		fullscreenId,
-		enableHistoryButtons,
-		enableArBtn,
-		enableCamerasBtn,
-		enableFullscreenBtn,
-		enableZoomBtn,
-		enableModelStateButtons: enableModelStateButtonsStyleProp,
-		enableImportExportButtons: enableImportExportButtonsStyleProp,
-		enableResetButton: enableResetButtonStyleProp,
-		enableHistoryMenuButton: enableHistoryMenuButtonStyleProp,
 		color,
 		colorDisabled,
 		variant,
@@ -110,6 +179,15 @@ export default function ViewportIcons(
 		useShallow((state) => state.viewports[viewportId]),
 	);
 	const {showControls, setIsHoveringControls} = useViewportControls();
+
+	const {viewportIcons} = useShapeDiverViewportIconsStore(
+		useShallow((state) => ({
+			viewportIcons:
+				viewportId && state.viewports[viewportId]
+					? state.viewports[viewportId].layout
+					: [],
+		})),
+	);
 
 	const parameterChanges = useShapeDiverStoreParameters(
 		useCallback(
@@ -144,78 +222,6 @@ export default function ViewportIcons(
 	);
 
 	const buttonsDisabled = hasPendingChanges;
-	const isArEnabled = viewport ? viewport.enableAR : false;
-
-	const ViewerIconsGroup = useMemo(
-		() => (
-			<>
-				{enableArBtn && isArEnabled && (
-					<ArButton
-						viewport={viewport}
-						color={color}
-						colorDisabled={colorDisabled}
-						variant={variant}
-						variantDisabled={variantDisabled}
-						size={size}
-						iconStyle={iconStyle}
-					/>
-				)}
-
-				{enableZoomBtn && (
-					<ZoomButton
-						viewport={viewport}
-						color={color}
-						variant={variant}
-						size={size}
-						iconStyle={iconStyle}
-					/>
-				)}
-
-				{enableFullscreenBtn && (
-					<FullscreenButton
-						fullscreenId={fullscreenId}
-						enableFullscreenBtn={enableFullscreenBtn}
-						color={color}
-						colorDisabled={colorDisabled}
-						variant={variant}
-						variantDisabled={variantDisabled}
-						size={size}
-						iconStyle={iconStyle}
-					/>
-				)}
-
-				{enableCamerasBtn && (
-					<CamerasButton
-						viewport={viewport}
-						color={color}
-						colorDisabled={colorDisabled}
-						variant={variant}
-						variantDisabled={variantDisabled}
-						size={size}
-						iconStyle={iconStyle}
-						visible={iconsVisible}
-					/>
-				)}
-			</>
-		),
-		[
-			enableArBtn,
-			isArEnabled,
-			enableZoomBtn,
-			enableFullscreenBtn,
-			enableCamerasBtn,
-			color,
-			colorDisabled,
-			variant,
-			variantDisabled,
-			size,
-			iconStyle,
-			fullscreenId,
-			viewport,
-			iconsVisible,
-		],
-	);
-
 	/**
 	 * The reset button depends on the following:
 	 * - enableResetButtonStyleProp: if false, return false
@@ -223,10 +229,9 @@ export default function ViewportIcons(
 	 * otherwise, return true
 	 */
 	const enableResetButton = useMemo(() => {
-		if (enableResetButtonStyleProp === false) return false;
 		if (hideJsonMenu) return false;
 		return true;
-	}, [enableResetButtonStyleProp, hideJsonMenu]);
+	}, [hideJsonMenu]);
 
 	/**
 	 * The model state buttons depend on the following:
@@ -235,10 +240,9 @@ export default function ViewportIcons(
 	 * otherwise, return true
 	 */
 	const enableModelStateButtons = useMemo(() => {
-		if (enableModelStateButtonsStyleProp === false) return false;
 		if (hideJsonMenu) return false;
 		return true;
-	}, [enableModelStateButtonsStyleProp, hideJsonMenu]);
+	}, [hideJsonMenu]);
 
 	/**
 	 * The import/export buttons depend on the following:
@@ -247,123 +251,104 @@ export default function ViewportIcons(
 	 * otherwise, return true
 	 */
 	const enableImportExportButtons = useMemo(() => {
-		if (enableImportExportButtonsStyleProp === false) return false;
 		if (hideJsonMenu) return false;
 		return true;
-	}, [enableImportExportButtonsStyleProp, hideJsonMenu]);
+	}, [hideJsonMenu]);
 
-	/**
-	 * The history menu button depends on the following:
-	 * - enableHistoryMenuButtonProp: if false, return false
-	 * - enableResetButton && enableImportExportButtons & enableModelStateButtons: if all false, return false
-	 * - otherwise, return true
-	 */
-	const enableHistoryMenuButton = useMemo(() => {
-		if (enableHistoryMenuButtonStyleProp === false) return false;
-		if (
-			enableResetButtonStyleProp === false &&
-			enableImportExportButtonsStyleProp === false &&
-			enableModelStateButtonsStyleProp === false
-		) {
-			return false;
-		}
-
-		return true;
-	}, [
-		enableHistoryMenuButtonStyleProp,
-		enableResetButtonStyleProp,
-		enableImportExportButtonsStyleProp,
-		enableModelStateButtonsStyleProp,
-	]);
-
-	const showHistoryDivider = useMemo(() => {
-		const hasViewerIcons =
-			(enableArBtn && isArEnabled) ||
-			enableZoomBtn ||
-			enableFullscreenBtn ||
-			enableCamerasBtn;
-
-		const hasHistoryButtons =
-			enableHistoryButtons && enableHistoryMenuButton;
-
-		return hasViewerIcons && hasHistoryButtons;
-	}, [
-		enableArBtn,
-		isArEnabled,
-		enableZoomBtn,
-		enableFullscreenBtn,
-		enableCamerasBtn,
-		enableHistoryButtons,
-		enableHistoryMenuButton,
-	]);
-
-	const HistoryButtonsGroup = useMemo(
-		() => (
-			<>
-				{enableHistoryButtons && (
-					<>
-						<UndoButton
-							disabled={buttonsDisabled || executing}
-							hasPendingChanges={hasPendingChanges}
-							executing={executing}
-							color={color}
-							colorDisabled={colorDisabled}
-							variant={variant}
-							variantDisabled={variantDisabled}
-							size={size}
-							iconStyle={iconStyle}
-						/>
-
-						<RedoButton
-							disabled={buttonsDisabled || executing}
-							hasPendingChanges={hasPendingChanges}
-							executing={executing}
-							color={color}
-							colorDisabled={colorDisabled}
-							variant={variant}
-							variantDisabled={variantDisabled}
-							size={size}
-							iconStyle={iconStyle}
-						/>
-					</>
-				)}
-				{enableHistoryMenuButton && (
-					<HistoryMenuButton
-						disabled={!namespace || buttonsDisabled}
-						namespace={namespace}
-						enableResetButton={enableResetButton}
-						enableImportExportButtons={enableImportExportButtons}
-						enableModelStateButtons={enableModelStateButtons}
-						color={color}
-						colorDisabled={colorDisabled}
-						variant={variant}
-						variantDisabled={variantDisabled}
-						size={size}
-						iconStyle={iconStyle}
-						visible={iconsVisible}
-					/>
-				)}
-			</>
-		),
-		[
-			enableHistoryButtons,
+	// Create button render context
+	const buttonContext: ButtonRenderContext = useMemo(
+		() => ({
+			viewport,
+			namespace,
 			buttonsDisabled,
 			executing,
 			hasPendingChanges,
-			namespace,
+			iconsVisible,
 			enableResetButton,
 			enableImportExportButtons,
 			enableModelStateButtons,
+			fullscreenId: fullscreenId || "viewer-fullscreen-area",
 			color,
 			colorDisabled,
 			variant,
 			variantDisabled,
 			size,
 			iconStyle,
-			showControls,
+		}),
+		[
+			viewport,
+			namespace,
+			buttonsDisabled,
+			executing,
+			hasPendingChanges,
 			iconsVisible,
+			enableResetButton,
+			enableImportExportButtons,
+			enableModelStateButtons,
+			fullscreenId,
+			color,
+			colorDisabled,
+			variant,
+			variantDisabled,
+			size,
+			iconStyle,
 		],
 	);
+
+	// Render layout items dynamically
+	const dynamicContent = useMemo(() => {
+		const sections: React.ReactNode[] = [];
+
+		viewportIcons.forEach((item, index) => {
+			if (item.type === "button") {
+				const button = renderButtonByKind(
+					item.button.type,
+					buttonContext,
+				);
+				if (button) sections.push(button);
+			} else if (item.type === "group") {
+				const groupButtons: React.ReactNode[] = [];
+				item.sections.forEach((section) => {
+					section.forEach((buttonDef) => {
+						const button = renderButtonByKind(
+							buttonDef.type,
+							buttonContext,
+						);
+						if (button) groupButtons.push(button);
+					});
+					// Add divider between sections within a group
+					if (
+						groupButtons.length > 0 &&
+						section !== item.sections[item.sections.length - 1]
+					) {
+						groupButtons.push(
+							<Divider
+								key={`divider-${index}-${section.length}`}
+								{...dividerProps}
+							/>,
+						);
+					}
+				});
+				sections.push(
+					<React.Fragment key={`group-${index}`}>
+						{groupButtons}
+					</React.Fragment>,
+				);
+			}
+
+			// Add divider between layout items
+			if (index < viewportIcons.length - 1) {
+				sections.push(
+					<Divider
+						key={`layout-divider-${index}`}
+						{...dividerProps}
+					/>,
+				);
+			}
+		});
+
+		return sections;
+	}, [viewportIcons, buttonContext, dividerProps]);
 
 	// Prevent event propagation to avoid triggering viewport interactions
 	// when touching the icons.
@@ -389,9 +374,7 @@ export default function ViewportIcons(
 						onMouseLeave={() => setIsHoveringControls(false)}
 						onMouseEnter={() => setIsHoveringControls(true)}
 					>
-						{ViewerIconsGroup}
-						{showHistoryDivider && <Divider {...dividerProps} />}
-						{HistoryButtonsGroup}
+						{dynamicContent}
 					</Paper>
 				)}
 			</Transition>
