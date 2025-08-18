@@ -1,10 +1,7 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {ActionIcon} from "@mantine/core";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React from "react";
-import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
+import ViewportIconButton from "./ViewportIconButton";
 
 interface ZoomButtonProps extends CommonButtonProps {
 	viewport?: IViewportApi;
@@ -28,18 +25,16 @@ export default function ZoomButton({
 	};
 
 	return (
-		<TooltipWrapper label="Zoom extents">
-			<ActionIcon
+		<div onDoubleClick={onZoomDoubleClick}>
+			<ViewportIconButton
+				iconType={"tabler:zoom-in"}
 				onClick={onZoomClick}
-				onDoubleClick={onZoomDoubleClick}
 				size={size}
+				color={color}
 				variant={variant}
-				aria-label="Zoom extents"
-				style={iconStyle}
-				className={classes.ViewportIcon}
-			>
-				<Icon iconType={"tabler:zoom-in"} color={color} />
-			</ActionIcon>
-		</TooltipWrapper>
+				iconStyle={iconStyle}
+				tooltip="Zoom extents"
+			/>
+		</div>
 	);
 }

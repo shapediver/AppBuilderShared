@@ -1,22 +1,17 @@
 import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/ModelStateNotificationCreated";
 import ImportModelStateDialog from "@AppBuilderShared/components/shapediver/ui/ImportModelStateDialog";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
-import useIconMenu from "@AppBuilderShared/hooks/shapediver/viewer/icons/useIconMenu";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
-import {ActionIcon, Menu, MenuDropdownProps} from "@mantine/core";
-import React, {useCallback, useContext, useState} from "react";
-import classes from "../ViewportIcons.module.css";
+import {MenuDropdownProps} from "@mantine/core";
+import React, {useCallback, useContext, useMemo, useState} from "react";
 import {CommonButtonProps, IconProps} from "./types";
+import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 
 interface HistoryMenuButtonProps extends CommonButtonProps {
 	disabled: boolean;
 	namespace: string;
-	enableResetButton?: boolean;
-	enableImportExportButtons?: boolean;
-	enableModelStateButtons?: boolean;
 	menuDropdownProps?: MenuDropdownProps;
 	visible?: boolean;
 }
@@ -24,9 +19,6 @@ interface HistoryMenuButtonProps extends CommonButtonProps {
 export default function HistoryMenuButton({
 	disabled,
 	namespace,
-	enableResetButton = false,
-	enableImportExportButtons = false,
-	enableModelStateButtons = false,
 	size = undefined,
 	color = IconProps.color,
 	colorDisabled = IconProps.colorDisabled,
@@ -74,109 +66,68 @@ export default function HistoryMenuButton({
 		setIsCreatingModelState(false);
 	}, []);
 
-	const onClickOutside = () => {
-		setIsMenuOpened(false);
-	};
-
-	const {menuRef, isMenuOpened, setIsMenuOpened} = useIconMenu(
-		visible,
-		onClickOutside,
+	const sections: {
+		name: string;
+		onClick: () => void;
+		disabled?: boolean;
+	}[][] = useMemo(
+		() => [
+			[
+				{
+					name: "Reset to default values",
+					onClick: resetParameters,
+					disabled: disabled || isCreatingModelState,
+				},
+			],
+			[
+				{
+					name: "Import parameter values",
+					onClick: importParameters,
+					disabled: disabled || isCreatingModelState,
+				},
+				{
+					name: "Export parameter values",
+					onClick: exportParameters,
+					disabled: disabled || isCreatingModelState,
+				},
+			],
+			[
+				{
+					name: "Create model state",
+					onClick: onCreateModelState,
+					disabled: disabled || isCreatingModelState,
+				},
+				{
+					name: "Import model state",
+					onClick: () => setIsImportDialogOpen(true),
+					disabled: disabled || isCreatingModelState,
+				},
+			],
+		],
+		[disabled, isCreatingModelState],
 	);
-
-	const hasMenuItems =
-		enableResetButton ||
-		enableImportExportButtons ||
-		enableModelStateButtons;
-
-	if (!hasMenuItems) return null;
 
 	return (
 		<>
-			<Menu
-				shadow="md"
-				width={200}
-				position="bottom-end"
-				opened={visible && isMenuOpened}
-				onChange={setIsMenuOpened}
-			>
-				<Menu.Target>
-					<ActionIcon
-						size={size}
-						variant={
-							disabled || isCreatingModelState
-								? variantDisabled
-								: variant
-						}
-						aria-label="More options"
-						style={iconStyle}
-						disabled={disabled}
-						className={classes.ViewportIcon}
-						onClick={() => setIsMenuOpened(!isMenuOpened)}
-					>
-						<Icon
-							iconType={"tabler:dots-vertical"}
-							color={
-								disabled || isCreatingModelState
-									? colorDisabled
-									: color
-							}
-						/>
-					</ActionIcon>
-				</Menu.Target>
-
-				<Menu.Dropdown ref={menuRef} {...menuDropdownProps}>
-					{enableResetButton && (
-						<Menu.Item
-							onClick={resetParameters}
-							disabled={disabled || isCreatingModelState}
-						>
-							Reset to default values
-						</Menu.Item>
-					)}
-					{enableImportExportButtons && (
-						<>
-							{enableResetButton && <Menu.Divider />}
-							<Menu.Item
-								onClick={importParameters}
-								disabled={disabled || isCreatingModelState}
-							>
-								Import parameter values
-							</Menu.Item>
-							<Menu.Item
-								onClick={exportParameters}
-								disabled={disabled || isCreatingModelState}
-							>
-								Export parameter values
-							</Menu.Item>
-						</>
-					)}
-					{enableModelStateButtons && (
-						<>
-							{(enableResetButton ||
-								enableImportExportButtons) && <Menu.Divider />}
-							<Menu.Item
-								onClick={onCreateModelState}
-								disabled={disabled || isCreatingModelState}
-							>
-								Create model state
-							</Menu.Item>
-							<Menu.Item
-								onClick={() => setIsImportDialogOpen(true)}
-								disabled={disabled || isCreatingModelState}
-							>
-								Import model state
-							</Menu.Item>
-						</>
-					)}
-				</Menu.Dropdown>
-			</Menu>
-			{enableModelStateButtons && (
-				<ImportModelStateDialog
-					opened={isImportDialogOpen}
-					onClose={() => setIsImportDialogOpen(false)}
-					namespace={namespace}
-				/>
-			)}
+			<ViewportIconButtonDropdown
+				iconType={"tabler:dots-vertical"}
+				tooltip="More options"
+				disabled={disabled}
+				sections={sections}
+				menuDropdownProps={menuDropdownProps}
+				visible={visible}
+				size={size}
+				color={color}
+				colorDisabled={colorDisabled}
+				variant={variant}
+				variantDisabled={variantDisabled}
+				iconStyle={iconStyle}
+			/>
+			<ImportModelStateDialog
+				opened={isImportDialogOpen}
+				onClose={() => setIsImportDialogOpen(false)}
+				namespace={namespace}
+			/>
 		</>
 	);
 }

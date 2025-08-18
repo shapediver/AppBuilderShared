@@ -1,10 +1,7 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {ActionIcon} from "@mantine/core";
 import React from "react";
 import {useViewportHistory} from "~/shared/hooks/shapediver/viewer/useViewportHistory";
-import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
+import ViewportIconButton from "./ViewportIconButton";
 
 interface RedoButtonProps extends CommonButtonProps {
 	disabled: boolean;
@@ -27,25 +24,19 @@ export default function RedoButton({
 	const isDisabled = !canGoForward || disabled || executing;
 
 	return (
-		<TooltipWrapper
-			label={
+		<ViewportIconButton
+			iconType={"tabler:arrow-forward-up"}
+			onClick={goForward}
+			disabled={isDisabled}
+			size={size}
+			color={color}
+			colorDisabled={colorDisabled}
+			variant={variant}
+			variantDisabled={variantDisabled}
+			iconStyle={iconStyle}
+			tooltip={
 				hasPendingChanges ? "Accept or reject changes first" : "Redo"
 			}
-		>
-			<ActionIcon
-				onClick={goForward}
-				disabled={isDisabled}
-				size={size}
-				variant={isDisabled ? variantDisabled : variant}
-				aria-label="Redo"
-				style={iconStyle}
-				className={classes.ViewportIcon}
-			>
-				<Icon
-					iconType={"tabler:arrow-forward-up"}
-					color={isDisabled ? colorDisabled : color}
-				/>
-			</ActionIcon>
-		</TooltipWrapper>
+		/>
 	);
 }
