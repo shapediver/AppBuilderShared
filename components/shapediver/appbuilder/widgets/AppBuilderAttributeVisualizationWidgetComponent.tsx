@@ -363,8 +363,8 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		if (attributeVisualizationEngine) {
 			attributeVisualizationEngine.updateDefaultMaterial(
 				new MaterialStandardData({
-					color: passiveMaterial?.color || "#666",
-					opacity: passiveMaterial?.opacity || 1,
+					color: passiveMaterial?.color || "#000",
+					opacity: passiveMaterial?.opacity || 0.1,
 				}),
 			);
 		}
