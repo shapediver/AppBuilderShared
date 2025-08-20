@@ -45,7 +45,14 @@ import {
 	SdtfPrimitiveTypeGuard,
 } from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
-import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
+import React, {
+	useCallback,
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import SelectedAttributeComponent from "../../ui/SelectedAttributeComponent";
 import ViewportAnchor3d from "../../viewport/anchors/ViewportAnchor3d";
 import ColorAttribute from "./attributes/ColorAttribute";
@@ -125,6 +132,8 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	>();
 	const [hasBeenLoaded, setHasBeenLoaded] = useState<boolean>(false);
 	const [active, setActive] = useState<boolean>(false);
+
+	const currentAttributeIdRef = useRef<string | null>(null);
 
 	/**
 	 *
@@ -297,12 +306,20 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 */
 	const handleAttributeChange = useCallback(
 		(attributeId: string | null) => {
+			currentAttributeIdRef.current = attributeId;
 			if (!attributeId) return setRenderedAttribute(undefined);
 			const attribute = getAttributeById(attributeId);
 			setRenderedAttribute(attribute);
 		},
 		[getAttributeById],
 	);
+
+	/**
+	 * Use effect that re-initializes the attribute when the callback changes
+	 */
+	useEffect(() => {
+		handleAttributeChange(currentAttributeIdRef.current);
+	}, [handleAttributeChange]);
 
 	/**
 	 *
