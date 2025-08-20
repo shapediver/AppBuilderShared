@@ -187,7 +187,17 @@ export function useAppBuilderCustomParameters(props: Props) {
 			setPreExecutionHook(namespace, async (_values) => {
 				const values = {..._values};
 				const customValues = getCustomParameterValues();
-				const json = JSON.stringify(customValues);
+
+				// if within the values that should be set, there is a AppBuilder parameter defined
+				// we don't use the custom values, but the values within that parameter
+				// as the custom values are stale in that case
+				let json;
+				if (appBuilderParam && values[appBuilderParam.definition.id]) {
+					json = values[appBuilderParam.definition.id];
+				} else {
+					json = JSON.stringify(customValues);
+				}
+
 				if (
 					appBuilderParam &&
 					json.length <= appBuilderParam.definition.max!
