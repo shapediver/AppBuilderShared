@@ -226,7 +226,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 
 				return {
 					amendedValues: values,
-					historyState: {[namespaceAppBuilder]: customValues},
+					historyState: {[namespaceAppBuilder]: JSON.parse(json)},
 				};
 			});
 		}
