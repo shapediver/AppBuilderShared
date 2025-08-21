@@ -14,6 +14,7 @@ import {useSessionPropsOutput} from "@AppBuilderShared/hooks/shapediver/paramete
 import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
+import {IUseSessionDto} from "@AppBuilderShared/hooks/shapediver/useSession";
 import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
 import {useViewportAnchors} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportAnchors";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
@@ -183,10 +184,12 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	// extract the various session types
 	const {controllerSession, secondarySessions, instancedSessions} =
 		useMemo(() => {
-			const sessions = settings?.sessions ?? [];
+			const sessions: (IUseSessionDto & IAppBuilderSettingsSession)[] =
+				settings?.sessions ?? [];
 			const instancedSessions = sessions.filter((s) => s.instance);
 			instancedSessions.forEach((s) => {
 				s.loadOutputs = false;
+				s.registerParametersAndExports = false;
 			});
 
 			return {
