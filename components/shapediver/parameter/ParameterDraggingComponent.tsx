@@ -6,12 +6,12 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
 import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
 import {
@@ -73,6 +73,10 @@ export default function ParameterDraggingComponent(
 		props,
 	);
 
+	// get the interaction request management
+	const {addInteractionRequest, removeInteractionRequest} =
+		useShapeDiverStoreInteractionRequestManagement();
+
 	// get the notification context
 	const notifications = useContext(NotificationContext);
 
@@ -104,6 +108,8 @@ export default function ParameterDraggingComponent(
 	const [parsedUiValue, setParsedUiValue] = useState<
 		DraggingParameterValue["objects"]
 	>(parseDraggedNodes(state.uiValue));
+	// reference to manage the interaction request token
+	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
@@ -196,6 +202,37 @@ export default function ParameterDraggingComponent(
 		[draggedNodes],
 	);
 
+	const cancel = useCallback(() => {
+		// reset the dragged nodes to the last confirmed value
+		resetValue(lastConfirmedValueRef.current);
+	}, [resetValue]);
+
+	/**
+	 * Effect to manage the interaction request for the dragging.
+	 * It adds an interaction request when the dragging is active and removes it when the dragging is inactive.
+	 * It also cleans up the interaction request when the component is unmounted or when the dragging state changes.
+	 */
+	useEffect(() => {
+		if (draggingActive && !interactionRequestTokenRef.current) {
+			const returnedToken = addInteractionRequest({
+				type: "active",
+				viewportId,
+				disable: cancel,
+			});
+			interactionRequestTokenRef.current = returnedToken;
+		} else if (!draggingActive && interactionRequestTokenRef.current) {
+			removeInteractionRequest(interactionRequestTokenRef.current);
+			interactionRequestTokenRef.current = undefined;
+		}
+
+		return () => {
+			if (interactionRequestTokenRef.current) {
+				removeInteractionRequest(interactionRequestTokenRef.current);
+				interactionRequestTokenRef.current = undefined;
+			}
+		};
+	}, [draggingActive, cancel]);
+
 	/**
 	 * The content of the parameter when it is active.
 	 *
@@ -240,15 +277,11 @@ export default function ParameterDraggingComponent(
 					fullWidth={true}
 					disabled={!dirty}
 					variant="filled"
-					onClick={() => changeValue()}
+					onClick={changeValue}
 				>
 					<Text>Confirm</Text>
 				</Button>
-				<Button
-					fullWidth={true}
-					variant={"light"}
-					onClick={() => resetValue(lastConfirmedValueRef.current)}
-				>
+				<Button fullWidth={true} variant={"light"} onClick={cancel}>
 					<Text>Cancel</Text>
 				</Button>
 			</Group>
@@ -267,7 +300,7 @@ export default function ParameterDraggingComponent(
 			fullWidth={true}
 			disabled={disabled}
 			className={classes.interactionButton}
-			rightSection={<Icon type={IconTypeEnum.IconHandFinger} />}
+			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={parsedUiValue.length === 0 ? "light" : "filled"}
 			onClick={() => setDraggingActive(true)}
 		>

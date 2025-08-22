@@ -1,7 +1,9 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
-import ViewportAnchor from "@AppBuilderShared/components/shapediver/viewport/ViewportAnchor";
+import ViewportAnchor2d from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor2d";
+import ViewportAnchor3d from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor3d";
 import {
 	IAppBuilderContainer,
+	isAnchor2dContainer,
 	isAnchor3dContainer,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useEffect, useState} from "react";
@@ -27,7 +29,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 		containers?.forEach((container) => {
 			if (isAnchor3dContainer(container)) {
 				anchors.push(
-					<ViewportAnchor
+					<ViewportAnchor3d
 						key={JSON.stringify(container)}
 						id={container.props.id}
 						location={container.props.location}
@@ -42,6 +44,32 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 							/>
 						}
 						previewIcon={container.props.previewIcon}
+						width={container.props.width}
+						height={container.props.height}
+						mobileFallback={container.props.mobileFallback}
+					/>,
+				);
+			} else if (isAnchor2dContainer(container)) {
+				anchors.push(
+					<ViewportAnchor2d
+						key={JSON.stringify(container)}
+						id={container.props.id}
+						location={container.props.location}
+						justification={container.props.justification}
+						allowPointerEvents={
+							container.props.allowPointerEvents ?? true
+						}
+						element={
+							<AppBuilderContainerComponent
+								namespace={namespace}
+								{...container}
+							/>
+						}
+						previewIcon={container.props.previewIcon}
+						draggable={container.props.draggable}
+						width={container.props.width}
+						height={container.props.height}
+						mobileFallback={container.props.mobileFallback}
 					/>,
 				);
 			}

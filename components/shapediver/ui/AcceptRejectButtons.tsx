@@ -5,7 +5,6 @@ import {
 	useSortedParametersAndExports,
 } from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {Button, Group, Text} from "@mantine/core";
 import React from "react";
 
@@ -49,7 +48,7 @@ export default function AcceptRejectButtons({parameters}: Props) {
 			>
 				<Button
 					fullWidth={true}
-					leftSection={<Icon type={IconTypeEnum.Check} />}
+					leftSection={<Icon iconType={"tabler:check"} />}
 					onClick={acceptChanges}
 					disabled={disableChangeControls}
 					variant="light"
@@ -58,7 +57,7 @@ export default function AcceptRejectButtons({parameters}: Props) {
 				</Button>
 				<Button
 					fullWidth={true}
-					leftSection={<Icon type={IconTypeEnum.X} />}
+					leftSection={<Icon iconType={"tabler:x"} />}
 					onClick={rejectChanges}
 					disabled={disableChangeControls}
 					variant="light"

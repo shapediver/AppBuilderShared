@@ -23,6 +23,8 @@ import {StargateSharedThemeProps} from "@AppBuilderShared/components/shapediver/
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
+import {ViewportAnchor2dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor2d";
+import {ViewportAnchor3dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor3d";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
@@ -727,7 +729,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	loaderProps: {type: "dots"},
 				// },
 				// iconRefreshProps: {
-				// 	type: IconTypeEnum.Refresh,
+				// 	iconType: IconRefresh,
 				// 	size: "1rem",
 				// },
 				// groupBottomProps: {
@@ -783,7 +785,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	gap: "sm",
 				// },
 				// iconProps: {
-				// 	type: IconTypeEnum.IconInfoCircleFilled,
+				// 	iconType: IconInfoCircleFilled,
 				// 	color: "var(--mantine-primary-color-filled)",
 				// },
 				// textProps: {
@@ -941,7 +943,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				//	},
 				//},
 				//iconProps: {
-				//	type: IconTypeEnum.Cancel,
+				//	iconType: IconCancel,
 				//	size: "1.2rem",
 				//  color: "var(--mantine-color-default-color)",
 				//},
@@ -1047,6 +1049,60 @@ export const useCustomTheme = (props: Props = {}) => {
 					// },
 				},
 			}),
+
+			/**
+			 * ViewportAnchor2d
+			 *
+			 *
+			 */
+			ViewportAnchor2d: ViewportAnchor2dThemeProps({
+				// iconProps: {
+				// 	size: "md",
+				// 	variant: "subtle",
+				// 	color: "white",
+				// 	style: {
+				// 		mixBlendMode: "difference",
+				// 		filter: "contrast(0.5)",
+				// 	},
+				// },
+				// anchorGroupProps: {
+				// 	style: {
+				// 		// this background color is the same as used in all other containers
+				// 		backgroundColor: "var(--mantine-color-body)",
+				// 		// the only other styling I added is the border radius
+				// 		// as otherwise this looks really bad
+				// 		borderRadius: "var(--mantine-radius-md)",
+				// 	},
+				// },
+				// mobileBreakpoint: "sm",
+			}),
+
+			/**
+			 * ViewportAnchor3d
+			 *
+			 *
+			 */
+			ViewportAnchor3d: ViewportAnchor3dThemeProps({
+				// iconProps: {
+				// 	size: "md",
+				// 	variant: "subtle",
+				// 	color: "white",
+				// 	style: {
+				// 		mixBlendMode: "difference",
+				// 		filter: "contrast(0.5)",
+				// 	},
+				// },
+				// anchorGroupProps: {
+				// 	style: {
+				// 		// this background color is the same as used in all other containers
+				// 		backgroundColor: "var(--mantine-color-body)",
+				// 		// the only other styling I added is the border radius
+				// 		// as otherwise this looks really bad
+				// 		borderRadius: "var(--mantine-radius-md)",
+				// 	},
+				// },
+				// mobileBreakpoint: "sm",
+			}),
 			/**
 			 * ViewportBranding
 			 *
@@ -1079,6 +1135,9 @@ export const useCustomTheme = (props: Props = {}) => {
 					// 	variant: "default",
 					// 	style: {
 					// 		boxShadow: "var(--mantine-shadow-md)",
+					// 		backgroundColor: alpha("var(--mantine-color-body)", 0.5),
+					// 		backdropFilter: "blur(10px)",
+					// 		border: "none",
 					// 	},
 					// },
 					// iconProps: {},
@@ -1101,6 +1160,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			ViewportIcons: ViewportIconsThemeProps({
 				// style: {
+				//  border: "none",
 				// 	display: "flex",
 				// 	gap: "0.25rem",
 				// 	alignItems: "center",
@@ -1133,6 +1193,13 @@ export const useCustomTheme = (props: Props = {}) => {
 				// },
 				// dividerProps: {
 				// 	orientation: "vertical",
+				// 	color: "var(--mantine-color-dimmed)",
+				// },
+				// transitionProps: {
+				// 	transition: "fade-down",
+				// 	duration: 400,
+				// 	timingFunction: "ease",
+				//	keepMounted: true,
 				// },
 			}),
 			/**

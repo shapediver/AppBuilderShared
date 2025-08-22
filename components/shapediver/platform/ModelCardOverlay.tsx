@@ -1,7 +1,6 @@
 import ModelCardOverlayWrapper from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlayWrapper";
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {Avatar} from "@mantine/core";
 import React, {useMemo} from "react";
@@ -58,8 +57,8 @@ export default function ModelCardOverlay(props: Props) {
 				<ModelCardOverlayWrapper position="top-left">
 					<ToggleIcon
 						value={model.bookmark?.bookmarked ?? false}
-						iconActive={IconTypeEnum.Bookmark}
-						iconInactive={IconTypeEnum.BookmarkOff}
+						iconActive={"tabler:bookmark"}
+						iconInactive={"tabler:bookmark-off"}
 						onActivate={actions.bookmark}
 						onDeactivate={actions.unbookmark}
 						tooltipActive="Remove bookmark"

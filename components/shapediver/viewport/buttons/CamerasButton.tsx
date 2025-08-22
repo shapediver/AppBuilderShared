@@ -1,14 +1,18 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
+import useIconMenu from "@AppBuilderShared/hooks/shapediver/viewer/icons/useIconMenu";
+import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {firstLetterUppercase} from "@AppBuilderShared/utils/misc/strings";
-import {ActionIcon, Menu} from "@mantine/core";
+import {ActionIcon, Menu, MenuDropdownProps} from "@mantine/core";
 import {IViewportApi} from "@shapediver/viewer.viewport";
-import React, {useState} from "react";
+import React from "react";
+import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
 
 interface CamerasButtonProps extends CommonButtonProps {
 	viewport?: IViewportApi;
+	menuDropdownProps?: MenuDropdownProps;
+	visible?: boolean;
 }
 
 export default function CamerasButton({
@@ -19,15 +23,26 @@ export default function CamerasButton({
 	variant = IconProps.variant,
 	variantDisabled = IconProps.variantDisabled,
 	iconStyle = IconProps.style,
+	menuDropdownProps = {
+		style: ViewportTransparentBackgroundStyle,
+	},
+	visible = true,
 }: CamerasButtonProps) {
-	const [isCamerasMenuOpened, setIsCamerasMenuOpened] = useState(false);
 	const cameras = viewport ? viewport.cameras : {};
 	const noCamerasAvailable = Object.keys(cameras).length === 0;
-
 	const onCameraSelect = (cameraId: string) => {
 		if (!viewport) return;
 		viewport.assignCamera(cameraId);
 	};
+
+	const onClickOutside = () => {
+		setIsMenuOpened(false);
+	};
+
+	const {menuRef, isMenuOpened, setIsMenuOpened} = useIconMenu(
+		visible,
+		onClickOutside,
+	);
 
 	const cameraElements = Object.values(cameras).map((camera, i) => {
 		return (
@@ -39,30 +54,32 @@ export default function CamerasButton({
 
 	return (
 		<Menu
-			opened={isCamerasMenuOpened}
-			onChange={setIsCamerasMenuOpened}
+			opened={visible && isMenuOpened}
+			onChange={setIsMenuOpened}
 			shadow="md"
-			width={200}
 			position={"bottom-end"}
 		>
 			<ActionIcon
-				onClick={() => setIsCamerasMenuOpened(!isCamerasMenuOpened)}
+				onClick={() => setIsMenuOpened(!isMenuOpened)}
 				disabled={noCamerasAvailable}
 				size={size}
 				variant={noCamerasAvailable ? variantDisabled : variant}
 				aria-label="Cameras"
 				style={iconStyle}
+				className={classes.ViewportIcon}
 			>
-				<TooltipWrapper disabled={isCamerasMenuOpened} label="Cameras">
+				<TooltipWrapper disabled={isMenuOpened} label="Cameras">
 					<Menu.Target>
 						<Icon
-							type={IconTypeEnum.Video}
+							iconType={"tabler:video"}
 							color={noCamerasAvailable ? colorDisabled : color}
 						/>
 					</Menu.Target>
 				</TooltipWrapper>
 			</ActionIcon>
-			<Menu.Dropdown>{cameraElements}</Menu.Dropdown>
+			<Menu.Dropdown ref={menuRef} {...menuDropdownProps}>
+				{cameraElements}
+			</Menu.Dropdown>
 		</Menu>
 	);
 }

@@ -1,3 +1,4 @@
+import {IconType} from "@AppBuilderShared/components/ui/Icon";
 import {
 	IAppBuilderWidgetPropsAreaChart,
 	IAppBuilderWidgetPropsBarChart,
@@ -5,7 +6,6 @@ import {
 	IAppBuilderWidgetPropsRoundChart,
 } from "@AppBuilderShared/types/shapediver/appbuildercharts";
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
-import {IconType} from "@AppBuilderShared/types/shapediver/icons";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {MantineColor} from "@mantine/core";
@@ -77,7 +77,7 @@ export interface IAppBuilderParameterRef {
 	/** Properties of the parameter to be overridden. */
 	overrides?: Pick<
 		Partial<IAppBuilderParameterDefinition>,
-		"displayname" | "group" | "order" | "tooltip" | "hidden"
+		"displayname" | "group" | "order" | "tooltip" | "hidden" | "settings"
 	>;
 	/** Disable the UI element of the parameter if its state is dirty. */
 	disableIfDirty?: boolean;
@@ -348,7 +348,8 @@ export type AppBuilderWidgetType =
 	| "desktopClientSelection"
 	| "desktopClientOutputs"
 	| "controls"
-	| "accordionUi";
+	| "accordionUi"
+	| "sceneTreeExplorer";
 
 /**
  * Properties of a parameter and export accordion widget.
@@ -474,6 +475,11 @@ export interface IAppBuilderWidgetPropsProgress {
 	showPercentage?: boolean;
 }
 
+/** Properties of a scene tree explorer widget. */
+export interface IAppBuilderWidgetPropsSceneTreeExplorer {
+	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
+}
+
 /** Properties of a desktop client selection widget. */
 export interface IAppBuilderWidgetPropsDesktopClientSelection {
 	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
@@ -547,7 +553,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsDesktopClientSelection
 		| IAppBuilderWidgetPropsDesktopClientOutputs
 		| IAppBuilderWidgetPropsControls
-		| IAppBuilderWidgetPropsAccordionUi;
+		| IAppBuilderWidgetPropsAccordionUi
+		| IAppBuilderWidgetPropsSceneTreeExplorer;
 }
 
 /**
@@ -571,22 +578,50 @@ export enum AppBuilderContainerNameType {
 	Top = "top",
 	Bottom = "bottom",
 	Anchor3d = "anchor3d",
-	// Anchor2d = "anchor2d",
+	Anchor2d = "anchor2d",
 }
 
 /** Type for the anchor containers */
-export type AppBuilderAnchor3dContainerProperties = {
+export type AppBuilderAnchorContainerProperties = {
 	/** Id of the container. */
 	id: string;
-	/** 3D location */
-	location: number[];
 	/** Optional justification of the container. (default: "MC") */
 	justification?: TAG3D_JUSTIFICATION;
 	/** Optional boolean to allow pointer events on the container. (default: true) */
 	allowPointerEvents?: boolean;
 	/** Optional icon to be displayed to show the container. */
 	previewIcon?: IconType;
+	/** Optional width of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
+	width?: string | number;
+	/** Optional height of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
+	height?: string | number;
+	/** Options for the mobile fallback */
+	mobileFallback?: {
+		/** if the anchor should be completely disabled */
+		disabled?: boolean;
+		/**
+		 * either a different or a new preview icon to show
+		 * if undefined, the original previewIcon logic will be used
+		 */
+		previewIcon?: IconType;
+		/** fallback container to be used ("left", "right", "top", "bottom") */
+		container?: AppBuilderContainerNameType;
+	};
 };
+
+/** Type for the anchor 2d containers */
+export type AppBuilderAnchor2dContainerProperties = {
+	/** 2D location */
+	location: (string | number)[];
+	/** Optional boolean to allow dragging of the container. (default: true) */
+	draggable?: boolean;
+} & AppBuilderAnchorContainerProperties;
+
+/** Type for the anchor 3d containers */
+export type AppBuilderAnchor3dContainerProperties = {
+	/** 3D location */
+	location: number[];
+} & AppBuilderAnchorContainerProperties;
 
 /**
  * A container for UI elements
@@ -595,7 +630,9 @@ export interface IAppBuilderContainer {
 	/** Name of the container. */
 	name: AppBuilderContainerNameType;
 	/** Optional props, depending on the container type */
-	props?: AppBuilderAnchor3dContainerProperties;
+	props?:
+		| AppBuilderAnchor3dContainerProperties
+		| AppBuilderAnchor2dContainerProperties;
 	/** Tabs displayed in the container. */
 	tabs?: IAppBuilderTab[];
 	/** Further widgets displayed in the container. */
@@ -664,6 +701,16 @@ export function isStandardContainer(
 		container.name === AppBuilderContainerNameType.Top ||
 		container.name === AppBuilderContainerNameType.Bottom
 	);
+}
+
+/** assert anchor 2d container */
+export function isAnchor2dContainer(
+	container: IAppBuilderContainer,
+): container is {
+	name: AppBuilderContainerNameType.Anchor2d;
+	props: AppBuilderAnchor2dContainerProperties;
+} {
+	return container.name === AppBuilderContainerNameType.Anchor2d;
 }
 
 /** assert anchor 3d container */
@@ -754,6 +801,16 @@ export function isProgressWidget(
 	widget: IAppBuilderWidget,
 ): widget is {type: "progress"; props: IAppBuilderWidgetPropsProgress} {
 	return widget.type === "progress";
+}
+
+/** assert widget type "sceneTreeExplorer" */
+export function isSceneTreeExplorerWidget(
+	widget: IAppBuilderWidget,
+): widget is {
+	type: "sceneTreeExplorer";
+	props: IAppBuilderWidgetPropsSceneTreeExplorer;
+} {
+	return widget.type === "sceneTreeExplorer";
 }
 
 /** assert widget type "desktopClientSelection" */
@@ -869,6 +926,30 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 * If the attribute visualization should be hidden by default.
 	 */
 	hideAttributeVisualization?: boolean;
+	/**
+	 * If the JSON menu should be hidden by default.
+	 */
+	hideJsonMenu?: boolean;
+	/**
+	 * If the saved states menu should be hidden by default.
+	 */
+	hideSavedStates?: boolean;
+	/**
+	 * If the desktop clients should be hidden by default.
+	 */
+	hideDesktopClients?: boolean;
+	/**
+	 * If the data outputs should be hidden by default.
+	 */
+	hideDataOutputs?: boolean;
+	/**
+	 * If the exports should be hidden by default.
+	 */
+	hideExports?: boolean;
+	/**
+	 * In case we cannot connect to the platform, load settings from the viewer, if they were stored there. (default: undefined)
+	 */
+	loadPlatformSettingsFromViewer?: "platform" | "iframe";
 	/**
 	 * Optional model state id.
 	 */

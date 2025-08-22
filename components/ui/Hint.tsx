@@ -1,5 +1,4 @@
 import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Button,
 	ButtonProps,
@@ -55,7 +54,7 @@ const defaultStyleProps: StyleProps = {
 		gap: "sm",
 	},
 	iconProps: {
-		type: IconTypeEnum.IconInfoCircleFilled,
+		iconType: "tabler:info-circle-filled",
 		color: "var(--mantine-primary-color-filled)",
 	},
 	textProps: {

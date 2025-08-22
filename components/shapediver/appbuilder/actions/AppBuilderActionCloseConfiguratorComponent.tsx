@@ -2,7 +2,6 @@ import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/a
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {IAppBuilderLegacyActionPropsCloseConfigurator} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import React, {useCallback, useContext} from "react";
 
 type Props = IAppBuilderLegacyActionPropsCloseConfigurator & {};
@@ -15,11 +14,7 @@ type Props = IAppBuilderLegacyActionPropsCloseConfigurator & {};
 export default function AppBuilderActionCloseConfiguratorComponent(
 	props: Props,
 ) {
-	const {
-		label = "Close configurator",
-		icon = IconTypeEnum.X,
-		tooltip,
-	} = props;
+	const {label = "Close configurator", icon = "tabler:x", tooltip} = props;
 	const notifications = useContext(NotificationContext);
 
 	const onClick = useCallback(async () => {

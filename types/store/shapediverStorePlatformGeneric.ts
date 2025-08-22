@@ -44,6 +44,7 @@ export interface IPlatformPagedItems<TQueryItem> extends IPlatformPaging {
 	 * The items that have been fetched so far.
 	 * We typically do not return the items directly, but rather their IDs.
 	 * This means TQueryItem typically does not correspond to IPlatformItem<TData, TActions>.
+	 * This allows the items to be updated by actions without having to refetch them.
 	 */
 	items: Array<TQueryItem>;
 }

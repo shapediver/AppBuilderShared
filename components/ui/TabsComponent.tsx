@@ -1,6 +1,5 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import Icon, {IconType} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {IconType} from "@AppBuilderShared/types/shapediver/icons";
 import {BoxProps, Stack, Tabs} from "@mantine/core";
 import React, {ReactElement, useEffect, useRef, useState} from "react";
 
@@ -59,7 +58,9 @@ export default function TabsComponent({
 							key={index}
 							value={tab.name}
 							leftSection={
-								tab.icon ? <Icon type={tab.icon} /> : undefined
+								tab.icon ? (
+									<Icon iconType={tab.icon} />
+								) : undefined
 							}
 						>
 							{tab.name}

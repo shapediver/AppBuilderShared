@@ -9,7 +9,6 @@ import {
 	useStargateExport,
 } from "@AppBuilderShared/hooks/shapediver/stargate/useStargateExport";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	IStargateComponentStatusDefinition,
 	mapStargateComponentStatusDefinition,
@@ -243,7 +242,7 @@ export default function ExportButtonComponent(
 				(isStargate ? (
 					<Group wrap="nowrap">
 						<StargateInput
-							icon={IconTypeEnum.DeviceDesktopDown}
+							icon={"tabler:device-desktop-down"}
 							message={statusData.message}
 							color={statusData.color}
 							isWaiting={requestingExport || isWaiting}
@@ -262,7 +261,7 @@ export default function ExportButtonComponent(
 								onClick={() => onClickIntercepted(true)}
 								loading={requestingExport}
 							>
-								<Icon type={IconTypeEnum.Download} />
+								<Icon iconType={"tabler:download"} />
 							</Button>
 						</TooltipWrapper>
 					</Group>
@@ -271,9 +270,9 @@ export default function ExportButtonComponent(
 						{...buttonProps}
 						leftSection={
 							definition.type === EXPORT_TYPE.DOWNLOAD ? (
-								<Icon type={IconTypeEnum.Download} />
+								<Icon iconType={"tabler:download"} />
 							) : (
-								<Icon type={IconTypeEnum.MailForward} />
+								<Icon iconType={"tabler:mail-forward"} />
 							)
 						}
 						onClick={() => onClickIntercepted()}

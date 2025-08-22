@@ -3,7 +3,6 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {IAppBuilderLegacyActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import React, {useCallback, useContext, useState} from "react";
 
 type Props = IAppBuilderLegacyActionPropsAddToCart & {
@@ -18,7 +17,7 @@ type Props = IAppBuilderLegacyActionPropsAddToCart & {
 export default function AppBuilderActionAddToCartComponent(props: Props) {
 	const {
 		label = "Add to cart",
-		icon = IconTypeEnum.ShoppingCartPlus,
+		icon = "tabler:shopping-cart-plus",
 		tooltip,
 		namespace,
 		productId,

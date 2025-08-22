@@ -3,7 +3,10 @@ import {
 	IUseSessionDto,
 	useSession,
 } from "@AppBuilderShared/hooks/shapediver/useSession";
-import {IAppBuilder} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {
+	IAppBuilder,
+	IAppBuilderSettingsSession,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
@@ -27,7 +30,7 @@ import {useAppBuilderInstances} from "./useAppBuilderInstances";
  * @returns
  */
 export function useSessionWithAppBuilder(
-	props: IUseSessionDto | undefined,
+	props: (IUseSessionDto & IAppBuilderSettingsSession) | undefined,
 	appBuilderOverride?: IAppBuilder,
 ) {
 	const namespace = props?.id ?? "";
@@ -99,11 +102,47 @@ export function useSessionWithAppBuilder(
 
 	const [appBuilderOutputId, setAppBuilderOutputId] = useState<string>("");
 
+	const [sessionSettings, setSessionSettings] = useState<
+		(IUseSessionDto & IAppBuilderSettingsSession) | undefined
+	>(props);
+
 	useEffect(() => {
 		if (!sessionApi) {
 			setAppBuilderOutputId("");
 			return;
 		}
+
+		if (props?.loadPlatformSettingsFromViewer !== undefined) {
+			if (props.loadPlatformSettingsFromViewer === "platform") {
+				// Load platform settings from viewer
+				setSessionSettings({
+					...(props as IAppBuilderSettingsSession),
+					acceptRejectMode: sessionApi.parametersCommit,
+					hideAttributeVisualization:
+						sessionApi.hideAttributeVisualization,
+					hideJsonMenu: sessionApi.hideJsonMenu,
+					hideSavedStates: sessionApi.hideSavedStates,
+					hideDesktopClients: sessionApi.hideDesktopClients,
+					hideDataOutputs: sessionApi.hideDataOutputs,
+					hideExports: sessionApi.hideExports,
+				});
+			} else if (props.loadPlatformSettingsFromViewer === "iframe") {
+				// Load iframe settings from viewer
+				setSessionSettings({
+					...(props as IAppBuilderSettingsSession),
+					acceptRejectMode: sessionApi.parametersCommit,
+					hideAttributeVisualization:
+						sessionApi.hideAttributeVisualizationIframe,
+					hideJsonMenu: sessionApi.hideJsonMenuIframe,
+					hideSavedStates: sessionApi.hideSavedStatesIframe,
+					hideDataOutputs: sessionApi.hideDataOutputsIframe,
+					hideExports: sessionApi.hideExportsIframe,
+				});
+			}
+		} else {
+			setSessionSettings(props);
+		}
+
 		const outputs = sessionApi.getOutputByName(CUSTOM_DATA_OUTPUT_NAME);
 		const outputId = outputs.length > 0 ? outputs[0].id : "";
 
@@ -114,7 +153,7 @@ export function useSessionWithAppBuilder(
 		}
 
 		setAppBuilderOutputId(outputId);
-	}, [sessionApi]);
+	}, [sessionApi, props]);
 
 	/**
 	 * Callback for updating the AppBuilder data.
@@ -194,6 +233,7 @@ export function useSessionWithAppBuilder(
 		appBuilderData,
 		hasAppBuilderOutput,
 		customParametersLoaded,
+		sessionSettings,
 	};
 }
 

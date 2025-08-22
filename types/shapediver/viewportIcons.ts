@@ -6,6 +6,7 @@ import {
 	MantineStyleProp,
 	MantineThemeComponent,
 	PaperProps,
+	TransitionProps,
 } from "@mantine/core";
 import {ViewportOverlayWrapperProps} from "./viewportOverlayWrapper";
 
@@ -18,6 +19,14 @@ export interface ViewportIconsProps {
 	 * Viewport ID
 	 */
 	viewportId?: string;
+	/**
+	 * If the JSON menu should be hidden by default.
+	 */
+	hideJsonMenu?: boolean;
+	/**
+	 * If the saved states menu should be hidden by default.
+	 */
+	hideSavedStates?: boolean;
 }
 
 export interface ViewportIconsOptionalProps {
@@ -131,6 +140,10 @@ export interface ViewportIconsOptionalProps {
 	 * divider props
 	 */
 	dividerProps?: DividerProps;
+	/**
+	 * transition props
+	 */
+	transitionProps?: Partial<TransitionProps>;
 }
 
 type ViewportIconsThemePropsType = Partial<ViewportIconsOptionalProps>;

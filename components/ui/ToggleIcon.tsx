@@ -1,6 +1,8 @@
-import Icon, {useIconProps} from "@AppBuilderShared/components/ui/Icon";
+import Icon, {
+	IconType,
+	useIconProps,
+} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {IconType} from "@AppBuilderShared/types/shapediver/icons";
 import {preventDefault} from "@AppBuilderShared/utils/misc/events";
 import {Loader, MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
@@ -99,7 +101,7 @@ export default function ToggleIcon(_props: Props & Partial<StyleProps>) {
 
 	const icon = value ? (
 		<Icon
-			type={hovered ? iconInactive : iconActive}
+			iconType={hovered ? iconInactive : iconActive}
 			onClick={onDeactivate && preventDefault(() => update(onDeactivate))}
 			onMouseEnter={onDeactivate && (() => setHovered(true))}
 			onMouseLeave={onDeactivate && (() => setHovered(false))}
@@ -108,7 +110,7 @@ export default function ToggleIcon(_props: Props & Partial<StyleProps>) {
 		/>
 	) : (
 		<Icon
-			type={hovered ? iconActive : iconInactive}
+			iconType={hovered ? iconActive : iconInactive}
 			onClick={onActivate && preventDefault(() => update(onActivate))}
 			onMouseEnter={onActivate && (() => setHovered(true))}
 			onMouseLeave={onActivate && (() => setHovered(false))}

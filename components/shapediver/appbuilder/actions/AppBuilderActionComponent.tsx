@@ -1,7 +1,6 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {IAppBuilderActionPropsCommon} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Button,
 	ButtonProps,
@@ -52,7 +51,7 @@ export default function AppBuilderActionComponent(
 	);
 
 	const iconOnly = !label && icon;
-	const useCloseButton = iconOnly && icon === IconTypeEnum.X;
+	const useCloseButton = iconOnly && icon === "tabler:x";
 	const _onclick = onClick === null ? undefined : onClick;
 
 	const button = useCloseButton ? (
@@ -60,12 +59,14 @@ export default function AppBuilderActionComponent(
 	) : (
 		<Button
 			{...buttonProps}
-			leftSection={!iconOnly && icon ? <Icon type={icon} /> : undefined}
+			leftSection={
+				!iconOnly && icon ? <Icon iconType={icon} /> : undefined
+			}
 			{...rest}
 			onClick={_onclick}
 			loading={loading}
 		>
-			{iconOnly ? <Icon type={icon} /> : label}
+			{iconOnly ? <Icon iconType={icon} /> : label}
 		</Button>
 	);
 

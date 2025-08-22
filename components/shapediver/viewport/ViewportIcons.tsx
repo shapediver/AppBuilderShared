@@ -1,12 +1,14 @@
+import {useViewportControls} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControls";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {Divider, Paper, useProps} from "@mantine/core";
-import React, {useCallback, useMemo} from "react";
+import {Divider, Paper, Transition, useProps} from "@mantine/core";
+import React, {useCallback, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {OverlayPosition} from "~/shared/components/shapediver/ui/OverlayWrapper";
 import ViewportOverlayWrapper from "./ViewportOverlayWrapper";
@@ -25,6 +27,8 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		gap: "0.25rem",
 		alignItems: "center",
 		flexDirection: "row",
+		border: "none",
+		...ViewportTransparentBackgroundStyle,
 	},
 	fullscreenId: "viewer-fullscreen-area",
 	enableHistoryButtons: true,
@@ -41,7 +45,9 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	variant: IconProps.variant,
 	variantDisabled: IconProps.variantDisabled,
 	size: IconProps.size,
-	iconStyle: {m: "0.188rem"},
+	iconStyle: {
+		m: "0.188rem",
+	},
 	viewportOverlayProps: {
 		position: OverlayPosition.TOP_MIDDLE,
 		offset: "0.5em",
@@ -53,27 +59,39 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 	},
 	dividerProps: {
 		orientation: "vertical",
+		color: "var(--mantine-color-disabled-color)",
+	},
+	transitionProps: {
+		transition: "fade-down",
+		duration: 400,
+		timingFunction: "ease",
+		keepMounted: true,
 	},
 };
 
 export default function ViewportIcons(
 	props: ViewportIconsProps & ViewportIconsOptionalProps,
 ) {
-	const {viewportId: _viewportId, namespace = "", ...rest} = props;
+	const {
+		viewportId: _viewportId,
+		namespace = "",
+		hideJsonMenu,
+		...rest
+	} = props;
 
 	const {
 		style,
 		iconStyle,
 		fullscreenId,
 		enableHistoryButtons,
-		enableModelStateButtons,
-		enableImportExportButtons,
-		enableResetButton,
 		enableArBtn,
 		enableCamerasBtn,
 		enableFullscreenBtn,
 		enableZoomBtn,
-		enableHistoryMenuButton,
+		enableModelStateButtons: enableModelStateButtonsStyleProp,
+		enableImportExportButtons: enableImportExportButtonsStyleProp,
+		enableResetButton: enableResetButtonStyleProp,
+		enableHistoryMenuButton: enableHistoryMenuButtonStyleProp,
 		color,
 		colorDisabled,
 		variant,
@@ -82,13 +100,16 @@ export default function ViewportIcons(
 		viewportOverlayProps,
 		paperProps,
 		dividerProps,
+		transitionProps,
 	} = useProps("ViewportIcons", defaultStyleProps, rest);
 
 	const {viewportId: defaultViewportId} = useViewportId();
+	const [iconsVisible, setIconsVisible] = useState(true);
 	const viewportId = _viewportId ?? defaultViewportId;
 	const viewport = useShapeDiverStoreViewport(
 		useShallow((state) => state.viewports[viewportId]),
 	);
+	const {showControls, setIsHoveringControls} = useViewportControls();
 
 	const parameterChanges = useShapeDiverStoreParameters(
 		useCallback(
@@ -98,6 +119,10 @@ export default function ViewportIcons(
 				}
 
 				const ids = state.sessionDependency[namespace];
+				if (ids === undefined || ids.length === 0) {
+					return [];
+				}
+
 				return ids
 					.map((id) => state.parameterChanges[id])
 					.filter(Boolean);
@@ -168,6 +193,7 @@ export default function ViewportIcons(
 						variantDisabled={variantDisabled}
 						size={size}
 						iconStyle={iconStyle}
+						visible={iconsVisible}
 					/>
 				)}
 			</>
@@ -186,8 +212,70 @@ export default function ViewportIcons(
 			iconStyle,
 			fullscreenId,
 			viewport,
+			iconsVisible,
 		],
 	);
+
+	/**
+	 * The reset button depends on the following:
+	 * - enableResetButtonStyleProp: if false, return false
+	 * - hideJsonMenu: if true, return false
+	 * otherwise, return true
+	 */
+	const enableResetButton = useMemo(() => {
+		if (enableResetButtonStyleProp === false) return false;
+		if (hideJsonMenu) return false;
+		return true;
+	}, [enableResetButtonStyleProp, hideJsonMenu]);
+
+	/**
+	 * The model state buttons depend on the following:
+	 * - enableModelStateButtonsStyleProp: if false, return false
+	 * - hideJsonMenu: if true, return false
+	 * otherwise, return true
+	 */
+	const enableModelStateButtons = useMemo(() => {
+		if (enableModelStateButtonsStyleProp === false) return false;
+		if (hideJsonMenu) return false;
+		return true;
+	}, [enableModelStateButtonsStyleProp, hideJsonMenu]);
+
+	/**
+	 * The import/export buttons depend on the following:
+	 * - enableImportExportButtonsStyleProp: if false, return false
+	 * - hideJsonMenu: if true, return false
+	 * otherwise, return true
+	 */
+	const enableImportExportButtons = useMemo(() => {
+		if (enableImportExportButtonsStyleProp === false) return false;
+		if (hideJsonMenu) return false;
+		return true;
+	}, [enableImportExportButtonsStyleProp, hideJsonMenu]);
+
+	/**
+	 * The history menu button depends on the following:
+	 * - enableHistoryMenuButtonProp: if false, return false
+	 * - enableResetButton && enableImportExportButtons & enableModelStateButtons: if all false, return false
+	 * - otherwise, return true
+	 */
+	const enableHistoryMenuButton = useMemo(() => {
+		if (enableHistoryMenuButtonStyleProp === false) return false;
+		if (
+			enableResetButtonStyleProp === false &&
+			enableImportExportButtonsStyleProp === false &&
+			enableModelStateButtonsStyleProp === false
+		) {
+			return false;
+		}
+
+		return true;
+	}, [
+		enableHistoryMenuButtonStyleProp,
+		enableResetButtonStyleProp,
+		enableImportExportButtonsStyleProp,
+		enableModelStateButtonsStyleProp,
+	]);
+
 	const showHistoryDivider = useMemo(() => {
 		const hasViewerIcons =
 			(enableArBtn && isArEnabled) ||
@@ -252,6 +340,7 @@ export default function ViewportIcons(
 						variantDisabled={variantDisabled}
 						size={size}
 						iconStyle={iconStyle}
+						visible={iconsVisible}
 					/>
 				)}
 			</>
@@ -271,16 +360,41 @@ export default function ViewportIcons(
 			variantDisabled,
 			size,
 			iconStyle,
+			showControls,
+			iconsVisible,
 		],
 	);
 
+	// Prevent event propagation to avoid triggering viewport interactions
+	// when touching the icons.
+	const preventEventPropagation = (e: React.TouchEvent) => {
+		e.stopPropagation();
+	};
+
 	return (
 		<ViewportOverlayWrapper {...viewportOverlayProps}>
-			<Paper style={style} {...paperProps}>
-				{ViewerIconsGroup}
-				{showHistoryDivider && <Divider {...dividerProps} />}
-				{HistoryButtonsGroup}
-			</Paper>
+			<Transition
+				mounted={showControls}
+				{...transitionProps}
+				onEntered={() => setIconsVisible(true)}
+				onExit={() => setIconsVisible(false)}
+			>
+				{(styles) => (
+					<Paper
+						style={{...style, ...styles}}
+						{...paperProps}
+						onTouchStart={preventEventPropagation}
+						onTouchMove={preventEventPropagation}
+						onTouchEnd={preventEventPropagation}
+						onMouseLeave={() => setIsHoveringControls(false)}
+						onMouseEnter={() => setIsHoveringControls(true)}
+					>
+						{ViewerIconsGroup}
+						{showHistoryDivider && <Divider {...dividerProps} />}
+						{HistoryButtonsGroup}
+					</Paper>
+				)}
+			</Transition>
 		</ViewportOverlayWrapper>
 	);
 }

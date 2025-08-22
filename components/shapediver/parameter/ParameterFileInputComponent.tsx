@@ -12,7 +12,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	IStargateComponentStatusDefinition,
 	mapStargateComponentStatusDefinition,
@@ -94,7 +93,7 @@ const defaultStyleProps: StyleProps = {
 		},
 	},
 	cancelIconProps: {
-		type: IconTypeEnum.Cancel,
+		iconType: "tabler:circle-off",
 		size: "1.2rem",
 		color: "var(--mantine-color-default-color)",
 	},
@@ -256,7 +255,7 @@ export default function ParameterFileInputComponent(
 							waitingText="Waiting for import..."
 							disabled={statusData.disabled || disabled}
 							onClick={onObjectAdd}
-							icon={IconTypeEnum.DeviceDesktopUp}
+							icon={"tabler:device-desktop-up"}
 						/>
 						<TooltipWrapper
 							{...uploadTooltipProps}
@@ -269,7 +268,7 @@ export default function ParameterFileInputComponent(
 									handleChange(guessMissingMimeType(v || ""))
 								}
 								leftSection={
-									<Icon type={IconTypeEnum.Upload} />
+									<Icon iconType={"tabler:upload"} />
 								}
 								leftSectionPointerEvents="none"
 								disabled={disabled}
@@ -292,7 +291,7 @@ export default function ParameterFileInputComponent(
 						onChange={(v) =>
 							handleChange(guessMissingMimeType(v || ""))
 						}
-						leftSection={<Icon type={IconTypeEnum.Upload} />}
+						leftSection={<Icon iconType={"tabler:upload"} />}
 						leftSectionPointerEvents="none"
 						disabled={disabled}
 						valueComponent={undefined}

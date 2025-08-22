@@ -6,12 +6,12 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	ActionIcon,
 	Box,
@@ -33,6 +33,7 @@ import React, {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import classes from "./ParameterInteractionComponent.module.css";
@@ -77,6 +78,10 @@ export default function ParameterSelectionComponent(
 		props,
 	);
 
+	// get the interaction request management
+	const {addInteractionRequest, removeInteractionRequest} =
+		useShapeDiverStoreInteractionRequestManagement();
+
 	// get the notification context
 	const notifications = useContext(NotificationContext);
 
@@ -104,6 +109,8 @@ export default function ParameterSelectionComponent(
 	const [selectionActive, setSelectionActive] = useState<boolean>(false);
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
+	// reference to manage the interaction request token
+	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
@@ -124,7 +131,9 @@ export default function ParameterSelectionComponent(
 		selectedNodeNames.length >= minimumSelection &&
 		selectedNodeNames.length <= maximumSelection;
 	const acceptImmediately =
-		minimumSelection === maximumSelection && acceptable;
+		(minimumSelection === maximumSelection ||
+			(minimumSelection === 0 && maximumSelection === 1)) &&
+		acceptable;
 
 	useEffect(() => {
 		const parsed = parseNames(state.uiValue);
@@ -193,11 +202,45 @@ export default function ParameterSelectionComponent(
 	}, [state.uiValue]);
 
 	/**
+	 * Callback function to cancel the selection.
+	 * It resets the selection to the last value and ends the selection process.
+	 */
+	const cancel = useCallback(() => {
+		resetSelection(value);
+	}, [resetSelection, value]);
+
+	/**
 	 * Callback function to clear the selection.
 	 */
 	const clearSelection = useCallback(() => {
 		setSelectedNodeNamesAndRestoreSelection([]);
 	}, []);
+
+	/**
+	 * Effect to manage the interaction request for the selection.
+	 * It adds an interaction request when the selection is active and removes it when the selection is inactive.
+	 * It also cleans up the interaction request when the component is unmounted or when the selection state changes.
+	 */
+	useEffect(() => {
+		if (selectionActive && !interactionRequestTokenRef.current) {
+			const returnedToken = addInteractionRequest({
+				type: "active",
+				viewportId,
+				disable: cancel,
+			});
+			interactionRequestTokenRef.current = returnedToken;
+		} else if (!selectionActive && interactionRequestTokenRef.current) {
+			removeInteractionRequest(interactionRequestTokenRef.current);
+			interactionRequestTokenRef.current = undefined;
+		}
+
+		return () => {
+			if (interactionRequestTokenRef.current) {
+				removeInteractionRequest(interactionRequestTokenRef.current);
+				interactionRequestTokenRef.current = undefined;
+			}
+		};
+	}, [selectionActive, cancel]);
 
 	/**
 	 * The content of the parameter when it is active.
@@ -233,7 +276,7 @@ export default function ParameterSelectionComponent(
 									: "filled"
 							}
 						>
-							<Icon type={IconTypeEnum.CircleOff} />
+							<Icon iconType={"tabler:circle-off"} />
 						</ActionIcon>
 					</Box>
 				</Flex>
@@ -267,11 +310,7 @@ export default function ParameterSelectionComponent(
 					>
 						<Text>Confirm</Text>
 					</Button>
-					<Button
-						fullWidth={true}
-						variant={"light"}
-						onClick={() => resetSelection(value)}
-					>
+					<Button fullWidth={true} variant={"light"} onClick={cancel}>
 						<Text>Cancel</Text>
 					</Button>
 				</Group>
@@ -291,7 +330,7 @@ export default function ParameterSelectionComponent(
 			fullWidth={true}
 			disabled={disabled}
 			className={classes.interactionButton}
-			rightSection={<Icon type={IconTypeEnum.IconHandFinger} />}
+			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={selectedNodeNames.length === 0 ? "light" : "filled"}
 			onClick={() => setSelectionActive(true)}
 		>

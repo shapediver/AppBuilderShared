@@ -1,5 +1,7 @@
+import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useAttributeOverview} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeOverview";
+import useAttributeSelection from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeSelection";
 import {useAttributeVisualizationEngine} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeVisualizationEngine";
 import {useAttributeWidgetVisibilityTracker} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeWidgetVisibilityTracker";
 import {
@@ -43,8 +45,16 @@ import {
 	SdtfPrimitiveTypeGuard,
 } from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
-import {IconEye, IconEyeOff} from "@tabler/icons-react";
-import React, {useCallback, useEffect, useId, useMemo, useState} from "react";
+import React, {
+	useCallback,
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import SelectedAttributeComponent from "../../ui/SelectedAttributeComponent";
+import ViewportAnchor3d from "../../viewport/anchors/ViewportAnchor3d";
 import ColorAttribute from "./attributes/ColorAttribute";
 import DefaultAttribute, {
 	IDefaultAttributeExtended,
@@ -54,7 +64,7 @@ import NumberAttribute, {
 } from "./attributes/NumberAttribute";
 import StringAttribute from "./attributes/StringAttribute";
 
-type IAttributeDefinition =
+export type IAttributeDefinition =
 	| IAttribute
 	| INumberAttributeExtended
 	| IStringAttribute
@@ -123,6 +133,8 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	const [hasBeenLoaded, setHasBeenLoaded] = useState<boolean>(false);
 	const [active, setActive] = useState<boolean>(false);
 
+	const currentAttributeIdRef = useRef<string | null>(null);
+
 	/**
 	 *
 	 *
@@ -166,6 +178,12 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		attributeOverview,
 		propsAttributes,
 	);
+	const attributeSelectionData = useAttributeSelection(
+		viewportId,
+		active,
+		renderedAttribute,
+	);
+
 	/**
 	 *
 	 *
@@ -288,12 +306,20 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	 */
 	const handleAttributeChange = useCallback(
 		(attributeId: string | null) => {
+			currentAttributeIdRef.current = attributeId;
 			if (!attributeId) return setRenderedAttribute(undefined);
 			const attribute = getAttributeById(attributeId);
 			setRenderedAttribute(attribute);
 		},
 		[getAttributeById],
 	);
+
+	/**
+	 * Use effect that re-initializes the attribute when the callback changes
+	 */
+	useEffect(() => {
+		handleAttributeChange(currentAttributeIdRef.current);
+	}, [handleAttributeChange]);
 
 	/**
 	 *
@@ -354,8 +380,8 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		if (attributeVisualizationEngine) {
 			attributeVisualizationEngine.updateDefaultMaterial(
 				new MaterialStandardData({
-					color: passiveMaterial?.color || "#666",
-					opacity: passiveMaterial?.opacity || 1,
+					color: passiveMaterial?.color || "#000",
+					opacity: passiveMaterial?.opacity || 0.1,
 				}),
 			);
 		}
@@ -655,7 +681,11 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 								);
 							}}
 						>
-							{active ? <IconEye /> : <IconEyeOff />}
+							{active ? (
+								<Icon iconType={"tabler:eye"} />
+							) : (
+								<Icon iconType={"tabler:eye-off"} />
+							)}
 						</ActionIcon>
 					</Group>
 					<Stack
@@ -674,6 +704,22 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 					</Stack>
 				</Paper>
 			</TooltipWrapper>
+			{active && attributeSelectionData && (
+				<ViewportAnchor3d
+					location={attributeSelectionData.location}
+					id={`${widgetId}_anchor`}
+					element={
+						<SelectedAttributeComponent
+							renderedAttribute={renderedAttribute}
+							attributes={attributes}
+							selectedItemData={
+								attributeSelectionData.selectedItemData
+							}
+							handleAttributeChange={handleAttributeChange}
+						/>
+					}
+				/>
+			)}
 		</>
 	);
 }

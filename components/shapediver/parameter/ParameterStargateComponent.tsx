@@ -12,7 +12,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	IStargateComponentStatusDefinition,
 	mapStargateComponentStatusDefinition,
@@ -84,7 +83,7 @@ const defaultStyleProps: StyleProps = {
 		},
 	},
 	iconProps: {
-		type: IconTypeEnum.Cancel,
+		iconType: "tabler:x",
 		size: "1.2rem",
 		color: "var(--mantine-color-default-color)",
 	},
@@ -200,7 +199,7 @@ export default function ParameterStargateComponent(
 					waitingText="Waiting for selection..."
 					disabled={statusData.disabled || disabled}
 					onClick={onObjectAdd}
-					icon={IconTypeEnum.DeviceDesktopUp}
+					icon={"tabler:device-desktop-up"}
 				/>
 			)}
 		</ParameterWrapperComponent>

@@ -1,6 +1,5 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ActionIcon, Loader, Modal, Text, Title} from "@mantine/core";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
@@ -71,13 +70,14 @@ export default function ArButton({
 				<ActionIcon
 					onClick={handleArClick}
 					disabled={isArLoading}
+					className={classes.ViewportIcon}
 					size={size}
 					variant={isViewableInAr ? variantDisabled : variant}
 					aria-label="View in AR"
 					style={iconStyle}
 				>
 					<Icon
-						type={IconTypeEnum.AugmentedReality}
+						iconType={"tabler:augmented-reality"}
 						color={isArLoading ? colorDisabled : color}
 					/>
 				</ActionIcon>

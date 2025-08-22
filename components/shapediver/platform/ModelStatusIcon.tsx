@@ -1,7 +1,6 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import Icon, {IconType} from "@AppBuilderShared/components/ui/Icon";
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {
 	SdPlatformModelVisibility,
@@ -21,7 +20,7 @@ interface Props {
 }
 
 const createStatusDescription = (
-	icon: IconTypeEnum,
+	icon: IconType,
 	status: Status,
 	description: string,
 ) => ({icon, status, description});
@@ -34,17 +33,17 @@ enum Status {
 	Public = "public",
 }
 
-const IconTypeOrganizationPending = IconTypeEnum.UserQuestion;
-const IconTypeOrganizationConfirmed = IconTypeEnum.UserCheck;
+const IconTypeOrganizationPending = "tabler:user-question";
+const IconTypeOrganizationConfirmed = "tabler:user-check";
 
 const StatusDescriptionMap = {
 	[Status.Private]: createStatusDescription(
-		IconTypeEnum.LockSquare,
+		"tabler:lock-square",
 		Status.Private,
 		"Private",
 	),
 	[Status.Organization]: createStatusDescription(
-		IconTypeEnum.UsersGroup,
+		"tabler:users-group",
 		Status.Organization,
 		"Visible to organization",
 	),
@@ -59,7 +58,7 @@ const StatusDescriptionMap = {
 		"Visible to organization",
 	),
 	[Status.Public]: createStatusDescription(
-		IconTypeEnum.World,
+		"tabler:world",
 		Status.Public,
 		"Public",
 	),
@@ -117,7 +116,7 @@ export default function ModelStatusIcon(props: Props) {
 		/>
 	) : statusDescription ? (
 		<TooltipWrapper label={statusDescription.description}>
-			<Icon type={statusDescription.icon} className={className} />
+			<Icon iconType={statusDescription.icon} className={className} />
 		</TooltipWrapper>
 	) : null;
 }

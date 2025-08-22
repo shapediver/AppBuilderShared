@@ -1,0 +1,10 @@
+.selectedAttributeTd {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selectedAttributeTd:hover {
+  overflow: visible !important;
+  white-space: normal !important;
+}

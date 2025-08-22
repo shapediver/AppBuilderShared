@@ -1,4 +1,3 @@
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Button,
 	ButtonProps,
@@ -11,11 +10,11 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import Icon from "../../ui/Icon";
+import Icon, {IconType} from "../../ui/Icon";
 
 interface Props {
 	/** Icon to display on the right section of the button */
-	icon: IconTypeEnum;
+	icon: IconType;
 	/** Color to use for the button */
 	color: MantineColor;
 	/** Indicates whether we are waiting for a desktop client action to complete */
@@ -101,7 +100,7 @@ export default function StargateInput(props: Props & StyleProps) {
 			{...buttonProps}
 			color={color}
 			disabled={disabled}
-			rightSection={<Icon type={icon} />}
+			rightSection={<Icon iconType={icon} />}
 			onClick={onClick}
 		>
 			{message}

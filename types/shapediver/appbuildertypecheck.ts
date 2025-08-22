@@ -1,4 +1,3 @@
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {ATTRIBUTE_VISUALIZATION} from "@shapediver/viewer.features.attribute-visualization";
 import {
@@ -88,6 +87,7 @@ const IAppBuilderParameterOverridesSchema =
 		order: true,
 		tooltip: true,
 		hidden: true,
+		settings: true,
 	});
 
 // Zod type definition for IAppBuilderParameterRef
@@ -121,7 +121,7 @@ const IAppBuilderImageRefSchema = z.object({
 // Zod type definition for IAppBuilderActionPropsCommon
 const IAppBuilderActionPropsCommonSchema = z.object({
 	label: z.string().optional(),
-	icon: z.nativeEnum(IconTypeEnum).optional(),
+	icon: z.string().optional(),
 	tooltip: z.string().optional(),
 });
 
@@ -518,6 +518,9 @@ const IAppBuilderWidgetPropsProgressSchema = z.object({
 	delayRemoval: z.number().optional(),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsSceneTreeExplorer
+const IAppBuilderWidgetPropsSceneTreeExplorerSchema = z.object({});
+
 // Zod type definition for IAppBuilderWidgetPropsDesktopClientSelection
 const IAppBuilderWidgetPropsDesktopClientSelectionSchema = z.object({});
 
@@ -609,13 +612,17 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 		type: z.literal("accordionUi"),
 		props: IAppBuilderWidgetPropsAccordionUiSchema,
 	}),
+	z.object({
+		type: z.literal("sceneTreeExplorer"),
+		props: IAppBuilderWidgetPropsSceneTreeExplorerSchema,
+	}),
 ]);
 
 // Zod type definition for IAppBuilderTab
 const IAppBuilderTabSchema = z
 	.object({
 		name: z.string(),
-		icon: z.nativeEnum(IconTypeEnum).optional(),
+		icon: z.string().optional(),
 		tooltip: z.string().optional(),
 		widgets: z.array(IAppBuilderWidgetSchema),
 	})
@@ -624,14 +631,55 @@ const IAppBuilderTabSchema = z
 // Zod type definition for IAppBuilderAnchor3dContainerProperties
 const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	id: z.string(),
-	location: z.array(z.number()),
-	allowPointerEvents: z.preprocess((val) => {
-		if (val === "true") return true;
-		if (val === "false") return false;
-		return val;
-	}, z.boolean().optional()),
+	location: z.tuple([z.number(), z.number(), z.number()]),
+	allowPointerEvents: z.boolean().optional(),
 	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
-	previewIcon: z.nativeEnum(IconTypeEnum).optional(),
+	previewIcon: z.string().optional(),
+	width: z.union([z.string(), z.number()]).optional(),
+	height: z.union([z.string(), z.number()]).optional(),
+	mobileFallback: z
+		.object({
+			disabled: z.boolean().optional(),
+			previewIcon: z.string().optional(),
+			container: z
+				.enum([
+					AppBuilderContainerNameType.Left,
+					AppBuilderContainerNameType.Right,
+					AppBuilderContainerNameType.Bottom,
+					AppBuilderContainerNameType.Top,
+				])
+				.optional(),
+		})
+		.optional(),
+});
+
+// Zod type definition for IAppBuilderAnchor2dContainerProperties
+const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
+	id: z.string(),
+	location: z.union([
+		z.tuple([z.string(), z.string()]),
+		z.tuple([z.number(), z.number()]),
+	]),
+	allowPointerEvents: z.boolean().optional(),
+	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
+	previewIcon: z.string().optional(),
+	draggable: z.boolean().optional(),
+	width: z.union([z.string(), z.number()]).optional(),
+	height: z.union([z.string(), z.number()]).optional(),
+	mobileFallback: z
+		.object({
+			disabled: z.boolean().optional(),
+			previewIcon: z.string().optional(),
+			container: z
+				.enum([
+					AppBuilderContainerNameType.Left,
+					AppBuilderContainerNameType.Right,
+					AppBuilderContainerNameType.Bottom,
+					AppBuilderContainerNameType.Top,
+				])
+				.optional(),
+		})
+		.optional(),
 });
 
 // Zod type definition for IAppBuilderContainer
@@ -640,6 +688,14 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 		.object({
 			name: z.literal(AppBuilderContainerNameType.Anchor3d),
 			props: IAppBuilderAnchor3dContainerPropertiesSchema,
+			tabs: z.array(IAppBuilderTabSchema).optional(),
+			widgets: z.array(IAppBuilderWidgetSchema).optional(),
+		})
+		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
+	z
+		.object({
+			name: z.literal(AppBuilderContainerNameType.Anchor2d),
+			props: IAppBuilderAnchor2dContainerPropertiesSchema,
 			tabs: z.array(IAppBuilderTabSchema).optional(),
 			widgets: z.array(IAppBuilderWidgetSchema).optional(),
 		})

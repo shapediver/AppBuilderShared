@@ -6,12 +6,12 @@ import {NotificationContext} from "@AppBuilderShared/context/NotificationContext
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {
 	Box,
 	Button,
@@ -32,6 +32,7 @@ import React, {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import classes from "./ParameterInteractionComponent.module.css";
@@ -85,6 +86,10 @@ export default function ParameterGumballComponent(
 		props,
 	);
 
+	// get the interaction request management
+	const {addInteractionRequest, removeInteractionRequest} =
+		useShapeDiverStoreInteractionRequestManagement();
+
 	// get the notification context
 	const notifications = useContext(NotificationContext);
 
@@ -123,6 +128,8 @@ export default function ParameterGumballComponent(
 			localTransformations?: number[];
 		}[]
 	>([]);
+	// reference to manage the interaction request token
+	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 
 	const {viewportId} = useViewportId();
 
@@ -213,6 +220,32 @@ export default function ParameterGumballComponent(
 	}, [_onCancelCallback]);
 
 	/**
+	 * Effect to manage the interaction request for the gumball.
+	 * It adds an interaction request when the gumball is active and removes it when the gumball is inactive.
+	 * It also cleans up the interaction request when the component is unmounted or when the gumball state changes.
+	 */
+	useEffect(() => {
+		if (gumballActive && !interactionRequestTokenRef.current) {
+			const returnedToken = addInteractionRequest({
+				type: "active",
+				viewportId,
+				disable: resetTransformation,
+			});
+			interactionRequestTokenRef.current = returnedToken;
+		} else if (!gumballActive && interactionRequestTokenRef.current) {
+			removeInteractionRequest(interactionRequestTokenRef.current);
+			interactionRequestTokenRef.current = undefined;
+		}
+
+		return () => {
+			if (interactionRequestTokenRef.current) {
+				removeInteractionRequest(interactionRequestTokenRef.current);
+				interactionRequestTokenRef.current = undefined;
+			}
+		};
+	}, [gumballActive, resetTransformation]);
+
+	/**
 	 * The content of the parameter when it is active.
 	 *
 	 * It contains a button to confirm the gumball interaction and a button to cancel the interaction.
@@ -287,7 +320,7 @@ export default function ParameterGumballComponent(
 			fullWidth={true}
 			disabled={disabled}
 			className={classes.interactionButton}
-			rightSection={<Icon type={IconTypeEnum.IconHandFinger} />}
+			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={transformedNodeNames.length === 0 ? "light" : "filled"}
 			onClick={() => setGumballActive(true)}
 		>

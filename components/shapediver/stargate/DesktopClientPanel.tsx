@@ -1,7 +1,6 @@
-import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
+import Icon, {IconProps, IconType} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	ActionIcon,
@@ -51,7 +50,7 @@ const NO_CLIENT: IClientChoice = {
  * Icon configuration for network status
  */
 export interface INetworkStatusIcon {
-	icon: IconTypeEnum;
+	icon: IconType;
 	color: string;
 	tooltip: string;
 }
@@ -61,17 +60,17 @@ export interface INetworkStatusIcon {
  */
 export const NetworkStatusIcons: Record<NetworkStatus, INetworkStatusIcon> = {
 	[NetworkStatus.none]: {
-		icon: IconTypeEnum.Network,
+		icon: "tabler:network",
 		color: "grey",
 		tooltip: "Not connected to Stargate",
 	},
 	[NetworkStatus.connected]: {
-		icon: IconTypeEnum.Network,
+		icon: "tabler:network",
 		color: "green",
 		tooltip: "Client active",
 	},
 	[NetworkStatus.disconnected]: {
-		icon: IconTypeEnum.NetworkOff,
+		icon: "tabler:network-off",
 		color: "red",
 		tooltip: "No active client",
 	},
@@ -128,7 +127,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 		loaderProps: {type: "dots"},
 	},
 	iconRefreshProps: {
-		type: IconTypeEnum.Refresh,
+		iconType: "tabler:refresh",
 		size: "1rem",
 	},
 	groupBottomProps: {
@@ -276,8 +275,8 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 					>
 						<Icon
 							{...iconRefreshProps}
-							type={
-								iconRefreshProps?.type || IconTypeEnum.Refresh
+							iconType={
+								iconRefreshProps?.iconType || "tabler:refresh"
 							}
 						/>
 					</ActionIcon>
@@ -302,7 +301,7 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 							<ActionIcon disabled {...iconStatusProps}>
 								<Icon
 									{...statusIconProps}
-									type={networkStatusIcon.icon}
+									iconType={networkStatusIcon.icon}
 									color={networkStatusIcon.color}
 								/>
 							</ActionIcon>

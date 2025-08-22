@@ -24,6 +24,7 @@ import {
 	isLineChartWidget,
 	isProgressWidget,
 	isRoundChartWidget,
+	isSceneTreeExplorerWidget,
 	isTextWidget,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Loader, Paper} from "@mantine/core";
@@ -31,6 +32,7 @@ import React, {Suspense, useContext} from "react";
 import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetComponent";
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
 import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
+import AppBuilderSceneTreeExplorerWidgetComponent from "./AppBuilderSceneTreeExplorerWidgetComponent";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(
 	() => import("./AppBuilderAgentWidgetComponent"),
 );
@@ -42,7 +44,7 @@ interface Props {
 	 */
 	namespace: string;
 	/** The widgets to display. */
-	widgets: IAppBuilderWidget[] | undefined;
+	widgets: (IAppBuilderWidget | JSX.Element)[] | undefined;
 }
 
 export default function AppBuilderWidgetsComponent({
@@ -186,7 +188,21 @@ export default function AppBuilderWidgetsComponent({
 							{...w.props}
 						/>
 					);
-				else return null;
+				else if (isSceneTreeExplorerWidget(w))
+					return (
+						<AppBuilderSceneTreeExplorerWidgetComponent
+							key={i}
+							{...w.props}
+						/>
+					);
+				else if (React.isValidElement(w)) {
+					// In this case, we can just return the element as is
+					// As it is a valid React element
+					// This is for example used in the useAppBuilderStoreStandardContainers
+					return w;
+				} else {
+					return null;
+				}
 			})}
 		</>
 	);

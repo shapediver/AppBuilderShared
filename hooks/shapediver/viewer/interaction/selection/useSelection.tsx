@@ -165,6 +165,34 @@ export function useSelection(
 		return outputs;
 	});
 
+	// when the available node names change, we need to update the selected node names
+	// to ensure that the selected nodes are still available
+	useEffect(() => {
+		// intentionally stale to only re-render when availableNodeNames changes
+		if (!activate) return;
+
+		const newSelectedNodeNames: string[] = [];
+		if (selectedNodeNames.length > 0 && availableNodeNames) {
+			selectedNodeNames.forEach((name) => {
+				Object.values(availableNodeNames).forEach((availableNames) => {
+					if (availableNames.includes(name)) {
+						newSelectedNodeNames.push(name);
+					}
+				});
+			});
+		}
+
+		// if the selected node names are the same, we don't need to update the state
+		if (
+			newSelectedNodeNames.length === selectedNodeNames.length &&
+			newSelectedNodeNames.every((name) =>
+				selectedNodeNames.includes(name),
+			)
+		)
+			return;
+		setSelectedNodeNames(newSelectedNodeNames);
+	}, [availableNodeNames]);
+
 	// in case selection becomes active or the output node changes, restore the selection status
 	useEffect(() => {
 		if (!selectManager) return;
