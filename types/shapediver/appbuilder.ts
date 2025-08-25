@@ -192,15 +192,20 @@ export type AppBuilderParameterValueSourceType =
 	| "screenshot"
 	| "dataOutput"
 	| "export"
-	| "sdtf";
+	| "sdtf"
+	| "modelState";
 
-/** Properties for the "screenshot" parameter value source. */
+/**
+ * Properties for the "screenshot" parameter value source.
+ * This parameter value source is compatible with parameters of type "File".
+ * The specified contentType must be supported by the respective "File"	parameter.
+ */
 export interface IAppBuilderParameterValueSourcePropsScreenshot {
 	/**
 	 * Optional type of the screenshot, defaults to "image/png".
 	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IViewportApi.html#getScreenshot
 	 */
-	type?: string;
+	contentType?: string;
 	/**
 	 * Optional quality of the screenshot, between 0 and 1, defaults to 1.
 	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IViewportApi.html#getScreenshot
@@ -221,25 +226,41 @@ export interface IAppBuilderParameterValueSourcePropsScreenshot {
 		| Pick<IOrthographicCameraApi, "direction">;
 }
 
-/** Properties for the "dataOutput" parameter value source. */
+/**
+ * Properties for the "dataOutput" parameter value source.
+ * This parameter value source is compatible with parameters of type "String" and "File".
+ * For "File" parameters, the content type "application/json" is used.
+ */
 export interface IAppBuilderParameterValueSourcePropsDataOutput {
-	/** Id of the sessionId to use for finding the data output. Defaults to the controller session. */
+	/** Id of the session to use for finding the data output. Defaults to the controller session. */
 	sessionId?: string;
 	/** Id or name or displayname of the referenced data output (in that order). */
 	name: string;
 }
 
-/** Properties for the "export" parameter value source. */
+/**
+ * Properties for the "export" parameter value source.
+ * This parameter value source is compatible with parameters of type "File".
+ * The content type of the exported file must be supported by the "File" parameter.
+ */
 export interface IAppBuilderParameterValueSourcePropsExport {
-	/** Id of the sessionId to use for finding the export. Defaults to the controller session. */
+	/** Id of the session to use for finding the export. Defaults to the controller session. */
 	sessionId?: string;
 	/** Id or name or displayname of the referenced export (in that order). */
 	name: string;
 }
 
-/** Properties for the "sdtf" parameter value source. */
+/**
+ * Properties for the "sdtf" parameter value source.
+ * This parameter value source is compatible with parameters of type "s*".
+ *
+ * Note: The specified chunk must be compatible with the parameter type,
+ * otherwise no data will be set in Grasshopper.
+ *
+ * @see https://help.shapediver.com/doc/sdtf-structured-data-transfer-format#sdTF-Structureddatatransferformat-Chunkselectionlogic
+ */
 export interface IAppBuilderParameterValueSourcePropsSdtf {
-	/** Id of the sessionId to use for finding the sdtf output. Defaults to the controller session. */
+	/** Id of the session to use for finding the sdtf output. Defaults to the controller session. */
 	sessionId?: string;
 	/** Id or name or displayname of the referenced sdtf output (in that order). */
 	name: string;
@@ -255,6 +276,25 @@ export interface IAppBuilderParameterValueSourcePropsSdtf {
 	};
 }
 
+/**
+ * Properties for the "modelState" parameter value source.
+ * A new model state will be created according to the properties.
+ * This parameter value source is compatible with parameters of type "String".
+ *
+ * The parameter value resulting from this source is the current location (URL),
+ * including the following query parameters:
+ *   * modelStateId: the id of the created model state
+ *   * other query parameters defined in the current URL, except for UTM parameters
+ */
+export interface IAppBuilderParameterValueSourcePropsModelState
+	extends IAppBuilderActionPropsCreateModelState {
+	/**
+	 * Whether the URL shown in the browser shall be updated
+	 * with the newly created modelStateId.
+	 */
+	updateUrl?: boolean;
+}
+
 /** Definition of a parameter value source. */
 export interface IAppBuilderParameterValueSourceDefinition {
 	/** Type of the parameter value source. */
@@ -264,7 +304,8 @@ export interface IAppBuilderParameterValueSourceDefinition {
 		| IAppBuilderParameterValueSourcePropsScreenshot
 		| IAppBuilderParameterValueSourcePropsDataOutput
 		| IAppBuilderParameterValueSourcePropsExport
-		| IAppBuilderParameterValueSourcePropsSdtf;
+		| IAppBuilderParameterValueSourcePropsSdtf
+		| IAppBuilderParameterValueSourcePropsModelState;
 }
 
 /** Types of actions */
