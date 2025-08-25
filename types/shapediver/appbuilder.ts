@@ -11,6 +11,11 @@ import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSes
 import {MantineColor} from "@mantine/core";
 import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
 import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
+import {
+	ICameraApi,
+	IOrthographicCameraApi,
+	IPerspectiveCameraApi,
+} from "@shapediver/viewer.viewport";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
@@ -182,6 +187,86 @@ export interface IAppBuilderImageRef {
 	href?: string;
 }
 
+/** Types of parameter value sources */
+export type AppBuilderParameterValueSourceType =
+	| "screenshot"
+	| "dataOutput"
+	| "export"
+	| "sdtf";
+
+/** Properties for the "screenshot" parameter value source. */
+export interface IAppBuilderParameterValueSourcePropsScreenshot {
+	/**
+	 * Optional type of the screenshot, defaults to "image/png".
+	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IViewportApi.html#getScreenshot
+	 */
+	type?: string;
+	/**
+	 * Optional quality of the screenshot, between 0 and 1, defaults to 1.
+	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IViewportApi.html#getScreenshot
+	 */
+	quality?: number;
+	/**
+	 * Optional resolution of the screenshot, defaults to the current resolution of the viewport.
+	 * TODO SS-8346 define type
+	 */
+	resolution?: unknown;
+	/**
+	 * Optional camera settings to be used for the screenshot. Defaults to the current camera of the viewport.
+	 * If a "name" is provided, the settings of the camera with that name are used as a base.
+	 */
+	camera?:
+		| Pick<ICameraApi, "name" | "position" | "target" | "type">
+		| Pick<IPerspectiveCameraApi, "fov">
+		| Pick<IOrthographicCameraApi, "direction">;
+}
+
+/** Properties for the "dataOutput" parameter value source. */
+export interface IAppBuilderParameterValueSourcePropsDataOutput {
+	/** Id of the sessionId to use for finding the data output. Defaults to the controller session. */
+	sessionId?: string;
+	/** Id or name or displayname of the referenced data output (in that order). */
+	name: string;
+}
+
+/** Properties for the "export" parameter value source. */
+export interface IAppBuilderParameterValueSourcePropsExport {
+	/** Id of the sessionId to use for finding the export. Defaults to the controller session. */
+	sessionId?: string;
+	/** Id or name or displayname of the referenced export (in that order). */
+	name: string;
+}
+
+/** Properties for the "sdtf" parameter value source. */
+export interface IAppBuilderParameterValueSourcePropsSdtf {
+	/** Id of the sessionId to use for finding the sdtf output. Defaults to the controller session. */
+	sessionId?: string;
+	/** Id or name or displayname of the referenced sdtf output (in that order). */
+	name: string;
+	/**
+	 * Optional, defines chunk to be used.
+	 * @see https://help.shapediver.com/doc/sdtf-structured-data-transfer-format#sdTF-Structureddatatransferformat-Advancedcase
+	 */
+	chunk?: {
+		/** Id of the chunk to be used. */
+		id?: string;
+		/** Name of the chunk to be used. */
+		name?: string;
+	};
+}
+
+/** Definition of a parameter value source. */
+export interface IAppBuilderParameterValueSourceDefinition {
+	/** Type of the parameter value source. */
+	type: AppBuilderParameterValueSourceType;
+	/** Properties of the parameter value source, depending on type. */
+	props:
+		| IAppBuilderParameterValueSourcePropsScreenshot
+		| IAppBuilderParameterValueSourcePropsDataOutput
+		| IAppBuilderParameterValueSourcePropsExport
+		| IAppBuilderParameterValueSourcePropsSdtf;
+}
+
 /** Types of actions */
 export type AppBuilderActionType =
 	| "createModelState"
@@ -257,8 +342,10 @@ export type IAppBuilderLegacyActionPropsAddToCart =
 export interface IAppBuilderActionPropsSetParameterValue {
 	/** The parameter that should be set. */
 	parameter: Pick<IAppBuilderParameterRef, "name" | "sessionId">;
-	/** Value to set. */
+	/** Value to set. Either "value" or "source" must be set. */
 	value: string;
+	/** Source of the parameter value. Either "source" or "value" must be set. */
+	source?: IAppBuilderParameterValueSourceDefinition;
 }
 
 /** Properties of legacy a "setParameterValue" action. */
