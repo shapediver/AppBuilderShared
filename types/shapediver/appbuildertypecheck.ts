@@ -538,7 +538,7 @@ const IAppBuilderWidgetPropsAccordionUiSchema = z.object({
 		z.object({
 			value: z.string().optional(),
 			name: z.string(),
-			icon: z.nativeEnum(IconTypeEnum).optional(),
+			icon: z.string().optional(),
 			tooltip: z.string().optional(),
 			widgets: z.array(
 				z.lazy((): z.ZodTypeAny => IAppBuilderWidgetSchema),
