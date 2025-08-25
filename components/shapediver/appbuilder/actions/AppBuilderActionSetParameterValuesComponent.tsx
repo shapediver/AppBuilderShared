@@ -1,7 +1,6 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
-import {IconTypeEnum} from "@AppBuilderShared/types/shapediver/icons";
-import React, {useCallback} from "react";
+import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";
+import React, {useCallback, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useShapeDiverStoreParameters} from "~/shared/store/useShapeDiverStoreParameters";
 import {
@@ -24,23 +23,29 @@ export default function AppBuilderActionSetParameterValuesComponent(
 ) {
 	const {
 		label = "Set parameters",
-		icon = IconTypeEnum.Settings,
+		icon = "tabler:settings",
 		tooltip,
 		parameterValues,
 		namespace,
 	} = props;
 
-	// Get all parameters that need to be updated
-	const parameters = parameterValues.map((paramValue) => {
-		const parameter = useParameter<string>({
-			namespace: paramValue.parameter.sessionId ?? namespace,
-			parameterId: paramValue.parameter.name,
-		});
-		return {
+	const parameterProps = useMemo(
+		() =>
+			parameterValues.map((paramValue) => ({
+				namespace: paramValue.parameter.sessionId ?? namespace,
+				parameterId: paramValue.parameter.name,
+			})),
+		[parameterValues, namespace],
+	);
+
+	const parametersList = useParameters<string>(parameterProps);
+
+	const parameters = useMemo(() => {
+		return parametersList.map((parameter, index) => ({
 			parameter,
-			value: paramValue.value,
-		};
-	});
+			value: parameterValues[index].value,
+		}));
+	}, [parametersList]);
 
 	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
@@ -48,7 +53,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		})),
 	);
 
-	const onClick = useCallback(async () => {
+	const onClick = useCallback(() => {
 		let hasChanges = false;
 		const validParameters: {[key: string]: any} = {};
 
@@ -78,7 +83,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		if (!hasChanges || Object.keys(validParameters).length === 0) return;
 
 		// Use batch parameter update
-		await batchParameterValueUpdate({
+		batchParameterValueUpdate({
 			[namespace]: validParameters,
 		});
 	}, [parameters, namespace]);
