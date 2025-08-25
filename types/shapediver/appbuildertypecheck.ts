@@ -162,7 +162,7 @@ const IAppBuilderActionPropsSetParameterValueSchema = z.object({
 		name: true,
 		sessionId: true,
 	}),
-	value: z.string(),
+	value: z.string().optional(),
 });
 
 // Zod type definition for IAppBuilderLegacyActionPropsSetParameterValue

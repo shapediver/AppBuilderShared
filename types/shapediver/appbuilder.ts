@@ -11,6 +11,11 @@ import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSes
 import {MantineColor} from "@mantine/core";
 import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
 import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
+import {
+	ICameraApi,
+	IOrthographicCameraApi,
+	IPerspectiveCameraApi,
+} from "@shapediver/viewer.viewport";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
@@ -182,6 +187,127 @@ export interface IAppBuilderImageRef {
 	href?: string;
 }
 
+/** Types of parameter value sources */
+export type AppBuilderParameterValueSourceType =
+	| "screenshot"
+	| "dataOutput"
+	| "export"
+	| "sdtf"
+	| "modelState";
+
+/**
+ * Properties for the "screenshot" parameter value source.
+ * This parameter value source is compatible with parameters of type "File".
+ * The specified contentType must be supported by the respective "File"	parameter.
+ */
+export interface IAppBuilderParameterValueSourcePropsScreenshot {
+	/**
+	 * Optional type of the screenshot, defaults to "image/png".
+	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IViewportApi.html#getScreenshot
+	 */
+	contentType?: string;
+	/**
+	 * Optional quality of the screenshot, between 0 and 1, defaults to 1.
+	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IViewportApi.html#getScreenshot
+	 */
+	quality?: number;
+	/**
+	 * Optional resolution of the screenshot, defaults to the current resolution of the viewport.
+	 * TODO SS-8346 define type
+	 */
+	resolution?: unknown;
+	/**
+	 * Optional camera settings to be used for the screenshot. Defaults to the current camera of the viewport.
+	 * If a "name" is provided, the settings of the camera with that name are used as a base.
+	 */
+	camera?:
+		| Pick<ICameraApi, "name" | "position" | "target" | "type">
+		| Pick<IPerspectiveCameraApi, "fov">
+		| Pick<IOrthographicCameraApi, "direction">;
+}
+
+/**
+ * Properties for the "dataOutput" parameter value source.
+ * This parameter value source is compatible with parameters of type "String" and "File".
+ * For "File" parameters, the content type "application/json" is used.
+ */
+export interface IAppBuilderParameterValueSourcePropsDataOutput {
+	/** Id of the session to use for finding the data output. Defaults to the controller session. */
+	sessionId?: string;
+	/** Id or name or displayname of the referenced data output (in that order). */
+	name: string;
+}
+
+/**
+ * Properties for the "export" parameter value source.
+ * This parameter value source is compatible with parameters of type "File".
+ * The content type of the exported file must be supported by the "File" parameter.
+ */
+export interface IAppBuilderParameterValueSourcePropsExport {
+	/** Id of the session to use for finding the export. Defaults to the controller session. */
+	sessionId?: string;
+	/** Id or name or displayname of the referenced export (in that order). */
+	name: string;
+}
+
+/**
+ * Properties for the "sdtf" parameter value source.
+ * This parameter value source is compatible with parameters of type "s*".
+ *
+ * Note: The specified chunk must be compatible with the parameter type,
+ * otherwise no data will be set in Grasshopper.
+ *
+ * @see https://help.shapediver.com/doc/sdtf-structured-data-transfer-format#sdTF-Structureddatatransferformat-Chunkselectionlogic
+ */
+export interface IAppBuilderParameterValueSourcePropsSdtf {
+	/** Id of the session to use for finding the sdtf output. Defaults to the controller session. */
+	sessionId?: string;
+	/** Id or name or displayname of the referenced sdtf output (in that order). */
+	name: string;
+	/**
+	 * Optional, defines chunk to be used.
+	 * @see https://help.shapediver.com/doc/sdtf-structured-data-transfer-format#sdTF-Structureddatatransferformat-Advancedcase
+	 */
+	chunk?: {
+		/** Id of the chunk to be used. */
+		id?: string;
+		/** Name of the chunk to be used. */
+		name?: string;
+	};
+}
+
+/**
+ * Properties for the "modelState" parameter value source.
+ * A new model state will be created according to the properties.
+ * This parameter value source is compatible with parameters of type "String".
+ *
+ * The parameter value resulting from this source is the current location (URL),
+ * including the following query parameters:
+ *   * modelStateId: the id of the created model state
+ *   * other query parameters defined in the current URL, except for UTM parameters
+ */
+export interface IAppBuilderParameterValueSourcePropsModelState
+	extends IAppBuilderActionPropsCreateModelState {
+	/**
+	 * Whether the URL shown in the browser shall be updated
+	 * with the newly created modelStateId.
+	 */
+	updateUrl?: boolean;
+}
+
+/** Definition of a parameter value source. */
+export interface IAppBuilderParameterValueSourceDefinition {
+	/** Type of the parameter value source. */
+	type: AppBuilderParameterValueSourceType;
+	/** Properties of the parameter value source, depending on type. */
+	props:
+		| IAppBuilderParameterValueSourcePropsScreenshot
+		| IAppBuilderParameterValueSourcePropsDataOutput
+		| IAppBuilderParameterValueSourcePropsExport
+		| IAppBuilderParameterValueSourcePropsSdtf
+		| IAppBuilderParameterValueSourcePropsModelState;
+}
+
 /** Types of actions */
 export type AppBuilderActionType =
 	| "createModelState"
@@ -257,8 +383,10 @@ export type IAppBuilderLegacyActionPropsAddToCart =
 export interface IAppBuilderActionPropsSetParameterValue {
 	/** The parameter that should be set. */
 	parameter: Pick<IAppBuilderParameterRef, "name" | "sessionId">;
-	/** Value to set. */
-	value: string;
+	/** Value to set. Either "value" or "source" must be set. */
+	value?: string;
+	/** Source of the parameter value. Either "source" or "value" must be set. */
+	source?: IAppBuilderParameterValueSourceDefinition;
 }
 
 /** Properties of legacy a "setParameterValue" action. */
