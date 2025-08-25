@@ -343,7 +343,7 @@ export interface IAppBuilderActionPropsSetParameterValue {
 	/** The parameter that should be set. */
 	parameter: Pick<IAppBuilderParameterRef, "name" | "sessionId">;
 	/** Value to set. Either "value" or "source" must be set. */
-	value: string;
+	value?: string;
 	/** Source of the parameter value. Either "source" or "value" must be set. */
 	source?: IAppBuilderParameterValueSourceDefinition;
 }
