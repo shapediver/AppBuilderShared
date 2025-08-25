@@ -3,10 +3,10 @@ import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediv
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
-import {IAppBuilderActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderLegacyActionPropsCreateModelState} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useCallback, useContext, useState} from "react";
 
-type Props = IAppBuilderActionPropsAddToCart & {
+type Props = IAppBuilderLegacyActionPropsCreateModelState & {
 	namespace: string;
 };
 

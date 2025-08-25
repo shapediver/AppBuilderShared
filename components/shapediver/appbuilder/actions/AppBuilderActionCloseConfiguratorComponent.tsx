@@ -1,13 +1,13 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
-import {IAppBuilderActionPropsCloseConfigurator} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderLegacyActionPropsCloseConfigurator} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useCallback, useContext} from "react";
 
-type Props = IAppBuilderActionPropsCloseConfigurator & {};
+type Props = IAppBuilderLegacyActionPropsCloseConfigurator & {};
 
 /**
- * Functional component for an "addToCart" action.
+ * Functional component for an "closeConfigurator" action.
  *
  * @returns
  */

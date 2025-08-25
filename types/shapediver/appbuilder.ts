@@ -98,6 +98,82 @@ export interface IAppBuilderExportRef {
 	>;
 }
 
+/** An App Builder control. */
+export interface IAppBuilderControl {
+	/** Type of the control. */
+	type: AppBuilderControlType;
+	/** Properties of the control. */
+	props:
+		| IAppBuilderControlParameterRef
+		| IAppBuilderControlExportRef
+		| IAppBuilderControlActionRef;
+}
+
+/** Types of controls */
+export type AppBuilderControlType = "parameter" | "export" | "action";
+
+/** Control referencing a parameter (custom or defined by the session) */
+export interface IAppBuilderControlParameterRef {
+	/** Id or name or displayname of the referenced parameter (in that order). */
+	name: string;
+	/** Optional id of the session the referenced parameter belongs to. */
+	sessionId?: string;
+	/** Properties of the parameter to be overridden. */
+	overrides?: Pick<
+		Partial<IAppBuilderParameterDefinition>,
+		"displayname" | "tooltip" | "hidden"
+	>;
+	/** Disable the UI element of the parameter if its state is dirty. */
+	disableIfDirty?: boolean;
+	/** Ask the user to accept or reject changes of this parameter before executing them. */
+	acceptRejectMode?: boolean;
+}
+
+/** Control referencing an export (defined by the session) */
+export interface IAppBuilderControlExportRef {
+	/** Id or name or displayname of the referenced export (in that order). */
+	name: string;
+	/** Optional id of the session the referenced parameter belongs to. */
+	sessionId?: string;
+	/** Properties of the export to be overridden. */
+	overrides?: Pick<
+		Partial<IAppBuilderExportDefinition>,
+		"displayname" | "tooltip" | "hidden"
+	>;
+}
+
+/** An App Builder action definition. */
+export interface IAppBuilderActionDefinition {
+	/** Type of the action. */
+	type: AppBuilderActionType;
+	/** Properties of the action. */
+	props:
+		| IAppBuilderActionPropsCreateModelState
+		| IAppBuilderActionPropsAddToCart
+		| IAppBuilderActionPropsSetParameterValue
+		| IAppBuilderActionPropsSetParameterValues
+		| IAppBuilderActionPropsSetBrowserLocation
+		| IAppBuilderActionPropsCloseConfigurator;
+}
+
+/** Common properties of App Builder action controls and legacy actions. */
+export interface IAppBuilderActionPropsCommon {
+	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. */
+	label?: string;
+	/** Optional icon (of the button etc). */
+	icon?: IconType;
+	/** Optional tooltip. */
+	tooltip?: string;
+}
+
+/** Control referencing an action */
+export interface IAppBuilderControlActionRef
+	extends IAppBuilderActionPropsCommon {
+	/** Embedded action definition. */
+	definition: IAppBuilderActionDefinition;
+	/** In the future we might include a reference to a globally defined action here.  */
+}
+
 /** Reference to an image */
 export interface IAppBuilderImageRef {
 	/** Optional reference to export which provides the image. */
@@ -111,23 +187,12 @@ export type AppBuilderActionType =
 	| "createModelState"
 	| "addToCart"
 	| "setParameterValue"
+	| "setParameterValues"
 	| "setBrowserLocation"
 	| "closeConfigurator";
 
-/** Common properties of App Builder actions. */
-export interface IAppBuilderActionPropsCommon {
-	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. */
-	label?: string;
-	/** Optional icon (of the button etc). */
-	icon?: IconType;
-	/** Optional tooltip. */
-	tooltip?: string;
-	// TODO: allow to define what should happen in case of success or error.
-}
-
 /** Properties of a "createModelState" action. */
-export interface IAppBuilderActionPropsCreateModelState
-	extends IAppBuilderActionPropsCommon {
+export interface IAppBuilderActionPropsCreateModelState {
 	/**
 	 * Optional flag to control whether an image of the scene shall be
 	 * included with the model state.
@@ -149,6 +214,10 @@ export interface IAppBuilderActionPropsCreateModelState
 	/** Names of parameters to exclude from the model state. */
 	parameterNamesToExclude?: string[];
 }
+
+/** Properties of a legacy "createModelState" action. */
+export type IAppBuilderLegacyActionPropsCreateModelState =
+	IAppBuilderActionPropsCreateModelState & IAppBuilderActionPropsCommon;
 
 /**
  * Properties of an "addToCart" action.
@@ -173,22 +242,45 @@ export interface IAppBuilderActionPropsAddToCart
 	description?: string;
 }
 
-/** Properties of a "setParameterValue" action. */
-export interface IAppBuilderActionPropsSetParameterValue
-	extends IAppBuilderActionPropsCommon {
+/**
+ * Properties of a legacy "addToCart" action.
+ */
+export type IAppBuilderLegacyActionPropsAddToCart =
+	IAppBuilderActionPropsAddToCart & IAppBuilderActionPropsCommon;
+
+/**
+ * Properties of a "setParameterValue" action.
+ * This is a generalized parameter "key, value" pair, given by a
+ *   * reference to a parameter, and
+ *   * the value to set.
+ */
+export interface IAppBuilderActionPropsSetParameterValue {
 	/** The parameter that should be set. */
 	parameter: Pick<IAppBuilderParameterRef, "name" | "sessionId">;
 	/** Value to set. */
 	value: string;
 }
 
+/** Properties of legacy a "setParameterValue" action. */
+export type IAppBuilderLegacyActionPropsSetParameterValue =
+	IAppBuilderActionPropsSetParameterValue & IAppBuilderActionPropsCommon;
+
+/** Properties of a "setParameterValues" action. */
+export interface IAppBuilderActionPropsSetParameterValues {
+	/** Parameter values to set. */
+	parameterValues: IAppBuilderActionPropsSetParameterValue[];
+}
+
+/** Properties of legacy a "setParameterValues" action. */
+export type IAppBuilderLegacyActionPropsSetParameterValues =
+	IAppBuilderActionPropsSetParameterValues & IAppBuilderActionPropsCommon;
+
 /**
  * Properties of a "setBrowserLocation" action.
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Location
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/open
  */
-export interface IAppBuilderActionPropsSetBrowserLocation
-	extends IAppBuilderActionPropsCommon {
+export interface IAppBuilderActionPropsSetBrowserLocation {
 	/**
 	 * href to set.
 	 * If this is defined, pathname, search and hash are ignored.
@@ -215,21 +307,29 @@ export interface IAppBuilderActionPropsSetBrowserLocation
 	target?: "_self" | "_blank" | "_parent" | "_top";
 }
 
-/** Properties of a "closeConfigurator" action. */
-export type IAppBuilderActionPropsCloseConfigurator =
-	IAppBuilderActionPropsCommon;
+/** Properties of legacy a "setBrowserLocation" action. */
+export type IAppBuilderLegacyActionPropsSetBrowserLocation =
+	IAppBuilderActionPropsSetBrowserLocation & IAppBuilderActionPropsCommon;
 
-/** An App Builder action. */
-export interface IAppBuilderAction {
+/** Properties of a "closeConfigurator" action. */
+export type IAppBuilderActionPropsCloseConfigurator = object;
+
+/** Properties of legacy a "closeConfigurator" action. */
+export type IAppBuilderLegacyActionPropsCloseConfigurator =
+	IAppBuilderActionPropsCloseConfigurator & IAppBuilderActionPropsCommon;
+
+/** A legacy App Builder action definition. */
+export interface IAppBuilderLegacyActionDefinition {
 	/** Type of the action. */
 	type: AppBuilderActionType;
 	/** Properties of the action. */
 	props:
-		| IAppBuilderActionPropsCreateModelState
-		| IAppBuilderActionPropsAddToCart
-		| IAppBuilderActionPropsSetParameterValue
-		| IAppBuilderActionPropsSetBrowserLocation
-		| IAppBuilderActionPropsCloseConfigurator;
+		| IAppBuilderLegacyActionPropsCreateModelState
+		| IAppBuilderLegacyActionPropsAddToCart
+		| IAppBuilderLegacyActionPropsSetParameterValue
+		| IAppBuilderLegacyActionPropsSetParameterValues
+		| IAppBuilderLegacyActionPropsSetBrowserLocation
+		| IAppBuilderLegacyActionPropsCloseConfigurator;
 }
 
 /** Types of widgets */
@@ -247,6 +347,8 @@ export type AppBuilderWidgetType =
 	| "progress"
 	| "desktopClientSelection"
 	| "desktopClientOutputs"
+	| "controls"
+	| "accordionUi"
 	| "sceneTreeExplorer";
 
 /**
@@ -298,7 +400,13 @@ export interface IAppBuilderWidgetPropsImage
 /** Properties of a widget presenting actions. */
 export interface IAppBuilderWidgetPropsActions {
 	/** The actions. */
-	actions?: IAppBuilderAction[];
+	actions?: IAppBuilderLegacyActionDefinition[];
+}
+
+/** Properties of a widget presenting controls. */
+export interface IAppBuilderWidgetPropsControls {
+	/** The controls. */
+	controls?: IAppBuilderControl[];
 }
 
 /** Enum of the visibility of the attribute visualization. */
@@ -383,6 +491,41 @@ export interface IAppBuilderWidgetPropsDesktopClientOutputs {
 }
 
 /**
+ * Properties of a generic accordion widget, grouping further widgets
+ * into an accordion.
+ */
+export interface IAppBuilderWidgetPropsAccordionUi {
+	/** Items of the accordion. */
+	items: {
+		/**
+		 * Optional unique identifier for the accordion item.
+		 * Used to identify items when controlling state of the accordion.
+		 */
+		value?: string;
+		/** Label shown for the accordion control of the item. */
+		name: string;
+		/** Optional icon of the accordion control of the item. */
+		icon?: IconType;
+		/** Optional tooltip for the accordion control of the item. */
+		tooltip?: string;
+		/** Widgets displayed in the accordion item. */
+		widgets: IAppBuilderWidget[];
+	}[];
+	/** If set, multiple items can be opened at the same time. */
+	multiple?: boolean;
+	/**
+	 * Optional default state of the accordion items.
+	 * Only used for the initial state of the accordion.
+	 */
+	defaultValue?: string | string[];
+	/**
+	 * Optional state of the accordion items.
+	 * Used to override the current state of the accordion.
+	 */
+	value?: string | string[];
+}
+
+/**
  * A widget.
  *
  * When implementing a new widget type, extend this interface and
@@ -409,6 +552,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsProgress
 		| IAppBuilderWidgetPropsDesktopClientSelection
 		| IAppBuilderWidgetPropsDesktopClientOutputs
+		| IAppBuilderWidgetPropsControls
+		| IAppBuilderWidgetPropsAccordionUi
 		| IAppBuilderWidgetPropsSceneTreeExplorer;
 }
 
@@ -688,47 +833,75 @@ export function isDesktopClientOutputsWidget(
 	return widget.type === "desktopClientOutputs";
 }
 
+/** assert widget type "controls" */
+export function isControlsWidget(widget: IAppBuilderWidget): widget is {
+	type: "controls";
+	props: IAppBuilderWidgetPropsControls;
+} {
+	return widget.type === "controls";
+}
+
+/** assert widget type "accordionUi" */
+export function isAccordionUiWidget(widget: IAppBuilderWidget): widget is {
+	type: "accordionUi";
+	props: IAppBuilderWidgetPropsAccordionUi;
+} {
+	return widget.type === "accordionUi";
+}
+
 /** assert action type "createModelState" */
-export function isCreateModelStateAction(action: IAppBuilderAction): action is {
+export function isCreateModelStateAction(
+	action: IAppBuilderLegacyActionDefinition,
+): action is {
 	type: "createModelState";
-	props: IAppBuilderActionPropsCreateModelState;
+	props: IAppBuilderLegacyActionPropsCreateModelState;
 } {
 	return action.type === "createModelState";
 }
 
 /** assert action type "addToCart" */
 export function isAddToCartAction(
-	action: IAppBuilderAction,
-): action is {type: "addToCart"; props: IAppBuilderActionPropsAddToCart} {
+	action: IAppBuilderLegacyActionDefinition,
+): action is {type: "addToCart"; props: IAppBuilderLegacyActionPropsAddToCart} {
 	return action.type === "addToCart";
 }
 
 /** assert action type "setParameterValue" */
 export function isSetParameterValueAction(
-	action: IAppBuilderAction,
+	action: IAppBuilderLegacyActionDefinition,
 ): action is {
 	type: "setParameterValue";
-	props: IAppBuilderActionPropsSetParameterValue;
+	props: IAppBuilderLegacyActionPropsSetParameterValue;
 } {
 	return action.type === "setParameterValue";
 }
 
+/** assert action type "setParameterValues" */
+export function isSetParameterValuesAction(
+	action: IAppBuilderLegacyActionDefinition,
+): action is {
+	type: "setParameterValues";
+	props: IAppBuilderLegacyActionPropsSetParameterValues;
+} {
+	return action.type === "setParameterValues";
+}
+
 /** assert action type "setBrowserLocation" */
 export function isSetBrowserLocationAction(
-	action: IAppBuilderAction,
+	action: IAppBuilderLegacyActionDefinition,
 ): action is {
 	type: "setBrowserLocation";
-	props: IAppBuilderActionPropsSetBrowserLocation;
+	props: IAppBuilderLegacyActionPropsSetBrowserLocation;
 } {
 	return action.type === "setBrowserLocation";
 }
 
 /** assert action type "closeConfigurator" */
 export function isCloseConfiguratorAction(
-	action: IAppBuilderAction,
+	action: IAppBuilderLegacyActionDefinition,
 ): action is {
 	type: "closeConfigurator";
-	props: IAppBuilderActionPropsCloseConfigurator;
+	props: IAppBuilderLegacyActionPropsCloseConfigurator;
 } {
 	return action.type === "closeConfigurator";
 }
