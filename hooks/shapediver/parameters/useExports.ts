@@ -1,9 +1,7 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {PropsParameterOrExport} from "@AppBuilderShared/types/components/shapediver/propsCommon";
-import {
-	IShapeDiverExport,
-	IShapeDiverExportDefinition,
-} from "@AppBuilderShared/types/shapediver/export";
+import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {IShapeDiverExport} from "@AppBuilderShared/types/shapediver/export";
 import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -12,15 +10,7 @@ export interface PropsExports extends PropsParameterOrExport {
 	/**
 	 * Array of export specifications.
 	 */
-	readonly exports: Array<{
-		/** Id, name, or displayname of the export */
-		readonly exportId: string;
-		/** Properties of the export to be overridden. */
-		readonly overrides?: Pick<
-			Partial<IShapeDiverExportDefinition>,
-			"displayname" | "group" | "order" | "tooltip" | "hidden"
-		>;
-	}>;
+	readonly exports: Array<PropsExport>;
 }
 
 /**

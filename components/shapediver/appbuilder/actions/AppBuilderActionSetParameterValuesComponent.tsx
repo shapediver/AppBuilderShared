@@ -1,12 +1,12 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";
-import React, {useCallback, useMemo} from "react";
-import {useShallow} from "zustand/react/shallow";
-import {useShapeDiverStoreParameters} from "~/shared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {
 	IAppBuilderActionPropsCommon,
 	IAppBuilderActionPropsSetParameterValues,
-} from "~/shared/types/shapediver/appbuilder";
+} from "@AppBuilderShared/types/shapediver/appbuilder";
+import React, {useCallback, useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 type Props = IAppBuilderActionPropsSetParameterValues &
 	IAppBuilderActionPropsCommon & {
@@ -23,7 +23,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 ) {
 	const {
 		label = "Set parameters",
-		icon = "tabler:settings",
+		icon,
 		tooltip,
 		parameterValues,
 		namespace,

@@ -49,6 +49,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 				.map((control) => {
 					const p = control.props as IAppBuilderControlExportRef;
 					return {
+						namespace: p.sessionId ?? namespace,
 						exportId: p.name,
 						overrides: p.overrides,
 					};

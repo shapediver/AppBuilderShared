@@ -1,3 +1,4 @@
+import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import {useViewportControls} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControls";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
@@ -10,7 +11,6 @@ import {
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {OverlayPosition} from "~/shared/components/shapediver/ui/OverlayWrapper";
 import ViewportOverlayWrapper from "./ViewportOverlayWrapper";
 import ArButton from "./buttons/ArButton";
 import CamerasButton from "./buttons/CamerasButton";
