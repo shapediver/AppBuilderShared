@@ -1,17 +1,8 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {PropsParameterOrExport} from "@AppBuilderShared/types/components/shapediver/propsCommon";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IShapeDiverExport} from "@AppBuilderShared/types/shapediver/export";
 import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
-
-/** Props for multiple exports reference. */
-export interface PropsExports extends PropsParameterOrExport {
-	/**
-	 * Array of export specifications.
-	 */
-	readonly exports: Array<PropsExport>;
-}
 
 /**
  * Hook providing a shortcut to multiple abstracted exports managed by {@link useShapeDiverStoreParameters}.
@@ -21,25 +12,24 @@ export interface PropsExports extends PropsParameterOrExport {
  * @param props Configuration containing namespace and array of export specifications
  * @returns Array of exports with the same order as provided in props.exports
  */
-export function useExports(props: PropsExports) {
-	const {namespace, exports} = props;
+export function useExports(props: PropsExport[]) {
 	const parameters = useShapeDiverStoreParameters(
 		useShallow((state) => {
-			return exports.map(({exportId}) => {
+			return props.map(({exportId, namespace, overrides}) => {
 				const parameter = state.getExport(namespace, exportId)!(
 					(state) => state as IShapeDiverExport,
 				);
-				return parameter;
+				return {parameter, overrides};
 			});
 		}),
 	);
 
 	const memoizedParameters = useMemo(() => {
-		return parameters.map((parameter, index) => ({
-			...parameter,
-			definition: {...parameter.definition, ...exports[index].overrides},
+		return parameters.map((p) => ({
+			...p.parameter,
+			definition: {...p.parameter.definition, ...p.overrides},
 		}));
-	}, [parameters, exports]);
+	}, [parameters]);
 
 	return memoizedParameters;
 }

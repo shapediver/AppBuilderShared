@@ -1,7 +1,7 @@
 import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {IAppBuilderWidgetPropsAccordionUi} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {Accordion} from "@mantine/core";
+import {Accordion, Stack} from "@mantine/core";
 import React, {useEffect, useState} from "react";
 
 type Props = IAppBuilderWidgetPropsAccordionUi & {
@@ -48,10 +48,12 @@ export default function AppBuilderAccordionUiWidgetComponent({
 						{item.name}
 					</Accordion.Control>
 					<Accordion.Panel>
-						<AppBuilderWidgetsComponent
-							namespace={namespace}
-							widgets={item.widgets}
-						/>
+						<Stack>
+							<AppBuilderWidgetsComponent
+								namespace={namespace}
+								widgets={item.widgets}
+							/>
+						</Stack>
 					</Accordion.Panel>
 				</Accordion.Item>
 			))}
