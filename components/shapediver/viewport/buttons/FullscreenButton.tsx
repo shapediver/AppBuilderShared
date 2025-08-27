@@ -1,9 +1,9 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useFullscreen} from "@AppBuilderShared/hooks/ui/useFullscreen";
+import {isIPhone} from "@AppBuilderShared/utils/misc/navigator";
 import {ActionIcon} from "@mantine/core";
 import React from "react";
-import {isIPhone} from "~/shared/utils/misc/navigator";
 import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
 

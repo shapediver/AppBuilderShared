@@ -1,3 +1,4 @@
+import AppBuilderAccordionUiWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionUiWidgetComponent";
 import AppBuilderAccordionWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import AppBuilderActionsWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderActionsWidgetComponent";
 import AppBuilderAreaChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAreaChartWidgetComponent";
@@ -10,11 +11,13 @@ import AppBuilderTextWidgetComponent from "@AppBuilderShared/components/shapediv
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {
 	IAppBuilderWidget,
+	isAccordionUiWidget,
 	isAccordionWidget,
 	isActionsWidget,
 	isAgentWidget,
 	isAreaChartWidget,
 	isBarChartWidget,
+	isControlsWidget,
 	isDesktopClientOutputsWidget,
 	isDesktopClientSelectionWidget,
 	isImageWidget,
@@ -26,6 +29,7 @@ import {
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
+import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetComponent";
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
 import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
 import AppBuilderSceneTreeExplorerWidgetComponent from "./AppBuilderSceneTreeExplorerWidgetComponent";
@@ -93,6 +97,14 @@ export default function AppBuilderWidgetsComponent({
 							{...w.props}
 						/>
 					);
+				else if (isAccordionUiWidget(w))
+					return (
+						<AppBuilderAccordionUiWidgetComponent
+							key={i}
+							namespace={namespace}
+							{...w.props}
+						/>
+					);
 				else if (isRoundChartWidget(w))
 					return (
 						<AppBuilderRoundChartWidgetComponent
@@ -124,6 +136,14 @@ export default function AppBuilderWidgetsComponent({
 				else if (isActionsWidget(w))
 					return (
 						<AppBuilderActionsWidgetComponent
+							key={i}
+							namespace={namespace}
+							{...w.props}
+						/>
+					);
+				else if (isControlsWidget(w))
+					return (
+						<AppBuilderControlsWidgetComponent
 							key={i}
 							namespace={namespace}
 							{...w.props}

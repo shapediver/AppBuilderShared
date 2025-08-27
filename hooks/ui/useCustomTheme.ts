@@ -1,12 +1,15 @@
 import {AppBuilderActionComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
+import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionUiWidgetComponent";
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAreaChartWidgetComponent";
+import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderControlsWidgetComponent";
 import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
 import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {NumberAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/NumberAttribute";
 import {StringAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/StringAttribute";
+import {ExportButtonComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportButtonComponent";
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import {OutputChunkLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputChunkLabelComponent";
 import {OutputStargateComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputStargateComponent";
@@ -25,6 +28,7 @@ import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShare
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
 import {ViewportAnchor2dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor2d";
 import {ViewportAnchor3dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor3d";
+import {HintProps} from "@AppBuilderShared/components/ui/Hint";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
@@ -39,6 +43,7 @@ import {AppBuilderHorizontalContainerThemeProps} from "@AppBuilderShared/pages/t
 import {AppBuilderTemplateSelectorThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
 import {AppBuilderVerticalContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
+import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
 import {
 	ViewportBrandingThemeProps,
 	ViewportComponentThemeProps,
@@ -80,9 +85,6 @@ import {
 	mergeThemeOverrides,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
-import {ExportButtonComponentThemeProps} from "~/shared/components/shapediver/exports/ExportButtonComponent";
-import {HintProps} from "~/shared/components/ui/Hint";
-import {AppBuilderAgentWidgetThemeProps} from "~/shared/types/components/shapediver/props/appBuilderAgentWidget";
 import {CreateModelStateHookThemeProps} from "../shapediver/useCreateModelState";
 
 /**
@@ -406,6 +408,17 @@ export const useCustomTheme = (props: Props = {}) => {
 					// showAcceptRejectButtons: false,
 				}),
 			/**
+			 * AppBuilderAccordionUiWidgetComponent
+			 *
+			 * Used for defining theme overrides for accordion ui widgets.
+			 */
+			AppBuilderAccordionUiWidgetComponent:
+				AppBuilderAccordionUiWidgetComponentThemeProps({
+					accordionProps: {
+						// variant: "default",
+					},
+				}),
+			/**
 			 * AppBuilderActionComponent
 			 *
 			 * Used for defining theme overrides for action components.
@@ -533,6 +546,19 @@ export const useCustomTheme = (props: Props = {}) => {
 					},
 				},
 			}),
+			/**
+			 * AppBuilderControlsWidgetComponent
+			 *
+			 * Used for defining theme overrides for controls widgets.
+			 */
+			AppBuilderControlsWidgetComponent:
+				AppBuilderControlsWidgetComponentThemeProps({
+					// stackProps: {
+					// },
+					// elementPaperProps: {
+					// 	shadow: "none",
+					// },
+				}),
 			AppBuilderContainer: AppBuilderContainerThemeProps({
 				// orientation: "unspecified"
 			}),

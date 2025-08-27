@@ -1,9 +1,9 @@
+import Hint from "@AppBuilderShared/components/ui/Hint";
 import ModalBase from "@AppBuilderShared/components/ui/ModalBase";
 import {useImportModelState} from "@AppBuilderShared/hooks/shapediver/useImportModelState";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {Stack, TextInput} from "@mantine/core";
 import React, {useCallback, useState} from "react";
-import Hint from "~/shared/components/ui/Hint";
 
 interface Props {
 	/**

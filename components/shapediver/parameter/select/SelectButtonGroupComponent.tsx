@@ -1,6 +1,6 @@
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {Button} from "@mantine/core";
 import React from "react";
-import TooltipWrapper from "~/shared/components/ui/TooltipWrapper";
 import {SelectComponentProps} from "./SelectComponent";
 
 /**
