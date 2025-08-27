@@ -1,5 +1,6 @@
 import {AppBuilderActionComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
+import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionUiWidgetComponent";
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAreaChartWidgetComponent";
 import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
@@ -404,6 +405,17 @@ export const useCustomTheme = (props: Props = {}) => {
 			AppBuilderAccordionWidgetComponent:
 				AppBuilderAccordionWidgetComponentThemeProps({
 					// showAcceptRejectButtons: false,
+				}),
+			/**
+			 * AppBuilderAccordionUiWidgetComponent
+			 *
+			 * Used for defining theme overrides for accordion ui widgets.
+			 */
+			AppBuilderAccordionUiWidgetComponent:
+				AppBuilderAccordionUiWidgetComponentThemeProps({
+					accordionProps: {
+						// variant: "default",
+					},
 				}),
 			/**
 			 * AppBuilderActionComponent

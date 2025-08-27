@@ -1,20 +1,47 @@
 import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
 import {IAppBuilderWidgetPropsAccordionUi} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {Accordion} from "@mantine/core";
+import {
+	Accordion,
+	AccordionProps,
+	MantineThemeComponent,
+	useProps,
+} from "@mantine/core";
 import React, {useEffect, useState} from "react";
 
-type Props = IAppBuilderWidgetPropsAccordionUi & {
-	namespace: string;
+interface StyleProps {
+	accordionProps?: AccordionProps;
+}
+
+const defaultStyleProps: Partial<StyleProps> = {
+	accordionProps: {},
 };
 
-export default function AppBuilderAccordionUiWidgetComponent({
-	namespace,
-	items,
-	multiple,
-	defaultValue,
-	value,
-}: Props) {
+type AppBuilderAccordionUiWidgetComponentThemePropsType = Partial<StyleProps>;
+
+export function AppBuilderAccordionUiWidgetComponentThemeProps(
+	props: AppBuilderAccordionUiWidgetComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+type Props = IAppBuilderWidgetPropsAccordionUi &
+	AppBuilderAccordionUiWidgetComponentThemePropsType & {
+		namespace: string;
+	};
+
+export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
+	const {namespace, items, multiple, defaultValue, value, ...styleProps} =
+		props;
+
+	const {accordionProps} = useProps(
+		"AppBuilderAccordionUiWidgetComponent",
+		defaultStyleProps,
+		styleProps,
+	);
+
 	// Local state for uncontrolled mode
 	const [localValue, setLocalValue] = useState<
 		string | string[] | null | undefined
@@ -32,8 +59,9 @@ export default function AppBuilderAccordionUiWidgetComponent({
 	return (
 		<Accordion
 			value={localValue}
-			onChange={handleValueChange}
 			multiple={multiple || false}
+			{...accordionProps}
+			onChange={handleValueChange}
 		>
 			{items.map((item, index) => (
 				<Accordion.Item key={index} value={item.value || item.name}>
