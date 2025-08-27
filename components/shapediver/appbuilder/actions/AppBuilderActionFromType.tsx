@@ -5,7 +5,7 @@ import AppBuilderActionSetBrowserLocationComponent from "@AppBuilderShared/compo
 import AppBuilderActionSetParameterValueComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValueComponent";
 import AppBuilderActionSetParameterValuesComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValuesComponent";
 import {
-	IAppBuilderActionDefinition,
+	IAppBuilderControlActionRef,
 	isAddToCartAction,
 	isCloseConfiguratorAction,
 	isCreateModelStateAction,
@@ -16,55 +16,65 @@ import {
 import React from "react";
 
 export function AppBuilderActionFromType(
-	action: IAppBuilderActionDefinition,
+	actionRef: IAppBuilderControlActionRef,
 	namespace: string,
 	key: string | number,
 ): React.ReactElement | null {
-	if (isCreateModelStateAction(action))
+	const actionPropsCommon = {
+		...actionRef,
+		definition: undefined, // avoid passing down the definition again
+	};
+	if (isCreateModelStateAction(actionRef.definition))
 		return (
 			<AppBuilderActionCreateModelStateComponent
 				key={key}
 				namespace={namespace}
-				{...action.props}
+				{...actionPropsCommon}
+				{...actionRef.definition.props}
 			/>
 		);
-	else if (isAddToCartAction(action))
+	else if (isAddToCartAction(actionRef.definition))
 		return (
 			<AppBuilderActionAddToCartComponent
 				key={key}
 				namespace={namespace}
-				{...action.props}
+				{...actionPropsCommon}
+				{...actionRef.definition.props}
 			/>
 		);
-	else if (isCloseConfiguratorAction(action))
+	else if (isCloseConfiguratorAction(actionRef.definition))
 		return (
 			<AppBuilderActionCloseConfiguratorComponent
 				key={key}
-				{...action.props}
+				{...actionPropsCommon}
+				{...actionRef.definition.props}
 			/>
 		);
-	else if (isSetParameterValueAction(action))
+	else if (isSetParameterValueAction(actionRef.definition))
 		return (
 			<AppBuilderActionSetParameterValueComponent
 				key={key}
 				namespace={namespace}
-				{...action.props}
+				{...actionPropsCommon}
+				{...actionRef.definition.props}
 			/>
 		);
-	else if (isSetParameterValuesAction(action))
+	else if (isSetParameterValuesAction(actionRef.definition))
 		return (
 			<AppBuilderActionSetParameterValuesComponent
 				key={key}
 				namespace={namespace}
-				{...action.props}
+				{...actionPropsCommon}
+				{...actionRef.definition.props}
 			/>
 		);
-	else if (isSetBrowserLocationAction(action))
+	else if (isSetBrowserLocationAction(actionRef.definition))
 		return (
 			<AppBuilderActionSetBrowserLocationComponent
 				key={key}
 				namespace={namespace}
-				{...action.props}
+				{...actionPropsCommon}
+				{...actionRef.definition.props}
 			/>
 		);
 	else return null;

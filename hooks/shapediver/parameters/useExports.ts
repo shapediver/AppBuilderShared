@@ -16,20 +16,22 @@ export function useExports(props: PropsExport[]) {
 	const parameters = useShapeDiverStoreParameters(
 		useShallow((state) => {
 			return props.map(({exportId, namespace, overrides}) => {
-				const parameter = state.getExport(namespace, exportId)!(
-					(state) => state as IShapeDiverExport,
-				);
+				if (!state) return;
+				const _parameter = state.getExport(namespace, exportId);
+				if (!_parameter) return;
+				const parameter = _parameter.getState() as IShapeDiverExport;
 				return {parameter, overrides};
 			});
 		}),
 	);
 
-	const memoizedParameters = useMemo(() => {
-		return parameters.map((p) => ({
-			...p.parameter,
-			definition: {...p.parameter.definition, ...p.overrides},
-		}));
+	return useMemo(() => {
+		return parameters.map((p) => {
+			if (!p) return;
+			return {
+				...p.parameter,
+				definition: {...p.parameter.definition, ...p.overrides},
+			};
+		});
 	}, [parameters]);
-
-	return memoizedParameters;
 }

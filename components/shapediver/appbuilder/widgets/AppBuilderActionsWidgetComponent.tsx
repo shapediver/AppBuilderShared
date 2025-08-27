@@ -47,7 +47,17 @@ export default function AppBuilderActionsWidgetComponent(
 	}
 
 	const actionComponents = actions.map((action, i) => {
-		return AppBuilderActionFromType(action, namespace, i);
+		const {icon, label, tooltip, ...props} = action.props;
+		return AppBuilderActionFromType(
+			{
+				label,
+				icon,
+				tooltip,
+				definition: {type: action.type, props},
+			},
+			namespace,
+			i,
+		);
 	});
 
 	if (actions.length === 1) return actionComponents[0];

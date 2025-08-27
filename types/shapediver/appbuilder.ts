@@ -851,59 +851,83 @@ export function isAccordionUiWidget(widget: IAppBuilderWidget): widget is {
 
 /** assert action type "createModelState" */
 export function isCreateModelStateAction(
-	action: IAppBuilderLegacyActionDefinition,
+	action: IAppBuilderActionDefinition,
 ): action is {
 	type: "createModelState";
-	props: IAppBuilderLegacyActionPropsCreateModelState;
+	props: IAppBuilderActionPropsCreateModelState;
 } {
 	return action.type === "createModelState";
 }
 
 /** assert action type "addToCart" */
 export function isAddToCartAction(
-	action: IAppBuilderLegacyActionDefinition,
-): action is {type: "addToCart"; props: IAppBuilderLegacyActionPropsAddToCart} {
+	action: IAppBuilderActionDefinition,
+): action is {type: "addToCart"; props: IAppBuilderActionPropsAddToCart} {
 	return action.type === "addToCart";
 }
 
 /** assert action type "setParameterValue" */
 export function isSetParameterValueAction(
-	action: IAppBuilderLegacyActionDefinition,
+	action: IAppBuilderActionDefinition,
 ): action is {
 	type: "setParameterValue";
-	props: IAppBuilderLegacyActionPropsSetParameterValue;
+	props: IAppBuilderActionPropsSetParameterValue;
 } {
 	return action.type === "setParameterValue";
 }
 
 /** assert action type "setParameterValues" */
 export function isSetParameterValuesAction(
-	action: IAppBuilderLegacyActionDefinition,
+	action: IAppBuilderActionDefinition,
 ): action is {
 	type: "setParameterValues";
-	props: IAppBuilderLegacyActionPropsSetParameterValues;
+	props: IAppBuilderActionPropsSetParameterValues;
 } {
 	return action.type === "setParameterValues";
 }
 
 /** assert action type "setBrowserLocation" */
 export function isSetBrowserLocationAction(
-	action: IAppBuilderLegacyActionDefinition,
+	action: IAppBuilderActionDefinition,
 ): action is {
 	type: "setBrowserLocation";
-	props: IAppBuilderLegacyActionPropsSetBrowserLocation;
+	props: IAppBuilderActionPropsSetBrowserLocation;
 } {
 	return action.type === "setBrowserLocation";
 }
 
 /** assert action type "closeConfigurator" */
 export function isCloseConfiguratorAction(
-	action: IAppBuilderLegacyActionDefinition,
+	action: IAppBuilderActionDefinition,
 ): action is {
 	type: "closeConfigurator";
-	props: IAppBuilderLegacyActionPropsCloseConfigurator;
+	props: IAppBuilderActionPropsCloseConfigurator;
 } {
 	return action.type === "closeConfigurator";
+}
+
+/** assert control type "parameter" */
+export function isParameterRefControl(control: IAppBuilderControl): control is {
+	type: "parameter";
+	props: IAppBuilderControlParameterRef;
+} {
+	return control.type === "parameter";
+}
+
+/** assert control type "export" */
+export function isExportRefControl(control: IAppBuilderControl): control is {
+	type: "export";
+	props: IAppBuilderControlExportRef;
+} {
+	return control.type === "export";
+}
+
+/** assert control type "action" */
+export function isActionRefControl(control: IAppBuilderControl): control is {
+	type: "action";
+	props: IAppBuilderControlActionRef;
+} {
+	return control.type === "action";
 }
 
 /**

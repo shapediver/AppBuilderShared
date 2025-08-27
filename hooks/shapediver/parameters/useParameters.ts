@@ -6,8 +6,6 @@ import {useShallow} from "zustand/react/shallow";
 
 /**
  * Hook providing a shortcut to multiple abstracted parameters managed by {@link useShapeDiverStoreParameters}.
- * CAUTION: Use this hook only if you are sure that all parameters are already defined in the store.
- * In case some parameters might not be defined yet in the store, use {@link useParametersStateless} instead.
  *
  * @see {@link IShapeDiverParameter<T>}
  *
@@ -18,10 +16,14 @@ export function useParameters<T>(props: PropsParameter[]) {
 	const parameters = useShapeDiverStoreParameters(
 		useShallow((state) => {
 			return props.map((prop) => {
-				const parameter = state.getParameter(
+				if (!state) return;
+				const _parameter = state.getParameter(
 					prop.namespace,
 					prop.parameterId,
-				)!((state) => state as IShapeDiverParameter<T>);
+				);
+				if (!_parameter) return;
+				const parameter =
+					_parameter.getState() as IShapeDiverParameter<T>;
 				return {parameter, overrides: prop.overrides};
 			});
 		}),
@@ -29,6 +31,7 @@ export function useParameters<T>(props: PropsParameter[]) {
 
 	return useMemo(() => {
 		return parameters.map((p) => {
+			if (!p) return;
 			return {
 				...p.parameter,
 				definition: {...p.parameter.definition, ...p.overrides},

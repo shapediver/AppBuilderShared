@@ -8,10 +8,10 @@ import {
 } from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {
-	IAppBuilderControlActionRef,
-	IAppBuilderControlExportRef,
-	IAppBuilderControlParameterRef,
 	IAppBuilderWidgetPropsControls,
+	isActionRefControl,
+	isExportRefControl,
+	isParameterRefControl,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	MantineThemeComponent,
@@ -24,18 +24,13 @@ import {
 import React, {ReactElement, useContext, useMemo} from "react";
 
 interface StyleProps {
-	paperProps?: PaperProps;
 	stackProps?: StackProps;
-	parameterPaperProps?: PaperProps;
-	exportPaperProps?: PaperProps;
+	elementPaperProps?: PaperProps;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
-	paperProps: {
-		shadow: "none",
-	},
 	stackProps: {},
-	parameterPaperProps: {
+	elementPaperProps: {
 		shadow: "none",
 	},
 };
@@ -59,7 +54,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 	const {controls = [], namespace, ...styleProps} = props;
 	const componentContext = useContext(ComponentContext);
 
-	const {paperProps, stackProps, parameterPaperProps} = useProps(
+	const {stackProps, elementPaperProps} = useProps(
 		"AppBuilderControlsWidgetComponent",
 		defaultStyleProps,
 		styleProps,
@@ -68,33 +63,29 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 	// Convert parameter and export references to component props
 	const parameterProps: PropsParameter[] = useMemo(
 		() =>
-			controls
-				.filter((control) => control.type === "parameter")
-				.map((control) => {
-					const p = control.props as IAppBuilderControlParameterRef;
-					return {
-						namespace: p.sessionId ?? namespace,
-						parameterId: p.name,
-						disableIfDirty: p.disableIfDirty,
-						acceptRejectMode: p.acceptRejectMode,
-						overrides: p.overrides,
-					};
-				}),
+			controls.filter(isParameterRefControl).map((control) => {
+				const p = control.props;
+				return {
+					namespace: p.sessionId ?? namespace,
+					parameterId: p.name,
+					disableIfDirty: p.disableIfDirty,
+					acceptRejectMode: p.acceptRejectMode,
+					overrides: p.overrides,
+				};
+			}),
 		[controls, namespace],
 	);
 
 	const exportProps = useMemo(
 		() =>
-			controls
-				.filter((control) => control.type === "export")
-				.map((control) => {
-					const p = control.props as IAppBuilderControlExportRef;
-					return {
-						namespace: p.sessionId ?? namespace,
-						exportId: p.name,
-						overrides: p.overrides,
-					};
-				}),
+			controls.filter(isExportRefControl).map((control) => {
+				const p = control.props;
+				return {
+					namespace: p.sessionId ?? namespace,
+					exportId: p.name,
+					overrides: p.overrides,
+				};
+			}),
 		[controls, namespace],
 	);
 
@@ -106,6 +97,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 	const parameterMap = useMemo(() => {
 		const map = new Map<string, ReactElement>();
 		parameters.forEach((param, index) => {
+			if (!param) return;
 			const {component: ParameterComponent, extraBottomPadding} =
 				getParameterComponent(componentContext, param.definition);
 
@@ -116,7 +108,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 					{...parameterProps[index]}
 					wrapperComponent={Paper}
 					wrapperProps={{
-						...parameterPaperProps,
+						...elementPaperProps,
 						pb: extraBottomPadding ? "md" : undefined,
 					}}
 					disableIfDirty={
@@ -127,12 +119,13 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 			);
 		});
 		return map;
-	}, [parameters, componentContext, parameterPaperProps]);
+	}, [parameters, componentContext, elementPaperProps]);
 
 	// Create export map for quick lookup
 	const exportMap = useMemo(() => {
 		const map = new Map<string, ReactElement>();
 		exports.forEach((exp, index) => {
+			if (!exp) return;
 			const ExportComponent = getExportComponent(
 				componentContext,
 				exp.definition,
@@ -140,36 +133,32 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 
 			map.set(
 				exportProps[index].exportId,
-				<Paper key={exp.definition.id} {...paperProps}>
+				<Paper key={exp.definition.id} {...elementPaperProps}>
 					<ExportComponent {...exportProps[index]} />
 				</Paper>,
 			);
 		});
 		return map;
-	}, [exports, componentContext, paperProps]);
+	}, [exports, componentContext, elementPaperProps]);
 
 	// Create components in the exact order specified by controls array
 	const orderedComponents = useMemo(() => {
 		const components: ReactElement[] = [];
 
 		controls.forEach((control, index) => {
-			if (control.type === "parameter") {
-				const p = control.props as IAppBuilderControlParameterRef;
-				const component = parameterMap.get(p.name);
+			if (isParameterRefControl(control)) {
+				const component = parameterMap.get(control.props.name);
 				if (component) {
 					components.push(component);
 				}
-			} else if (control.type === "export") {
-				const e = control.props as IAppBuilderControlExportRef;
-				const component = exportMap.get(e.name);
+			} else if (isExportRefControl(control)) {
+				const component = exportMap.get(control.props.name);
 				if (component) {
 					components.push(component);
 				}
-			} else if (control.type === "action") {
-				const action = (control.props as IAppBuilderControlActionRef)
-					.definition;
+			} else if (isActionRefControl(control)) {
 				const actionComponent = AppBuilderActionFromType(
-					action,
+					control.props,
 					namespace,
 					index,
 				);

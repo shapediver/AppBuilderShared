@@ -553,10 +553,9 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			AppBuilderControlsWidgetComponent:
 				AppBuilderControlsWidgetComponentThemeProps({
-					// paperProps: {
-					// 	shadow: "none",
+					// stackProps: {
 					// },
-					// parameterPaperProps: {
+					// elementPaperProps: {
 					// 	shadow: "none",
 					// },
 				}),
