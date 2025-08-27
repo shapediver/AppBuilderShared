@@ -178,7 +178,7 @@ export default function ParameterSliderComponent(
 								step={step}
 								decimalScale={definition.decimalplaces}
 								fixedDecimalScale={true}
-								clampBehavior="blur"
+								clampBehavior="strict"
 								onChange={(v) =>
 									handleChange(
 										roundAndClamp(+v),
