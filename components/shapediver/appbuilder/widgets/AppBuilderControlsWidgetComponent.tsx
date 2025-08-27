@@ -42,9 +42,8 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 	);
 
 	const exportProps = useMemo(
-		() => ({
-			namespace,
-			exports: controls
+		() =>
+			controls
 				.filter((control) => control.type === "export")
 				.map((control) => {
 					const p = control.props as IAppBuilderControlExportRef;
@@ -54,7 +53,6 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 						overrides: p.overrides,
 					};
 				}),
-		}),
 		[controls, namespace],
 	);
 
@@ -99,13 +97,9 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 			);
 
 			map.set(
-				exportProps.exports[index].exportId,
+				exportProps[index].exportId,
 				<Paper key={exp.definition.id} shadow="none">
-					<ExportComponent
-						namespace={namespace}
-						exportId={exportProps.exports[index].exportId}
-						overrides={exportProps.exports[index].overrides}
-					/>
+					<ExportComponent {...exportProps[index]} />
 				</Paper>,
 			);
 		});

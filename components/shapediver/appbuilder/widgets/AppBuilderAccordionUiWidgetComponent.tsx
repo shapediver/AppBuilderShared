@@ -5,6 +5,7 @@ import {
 	Accordion,
 	AccordionProps,
 	MantineThemeComponent,
+	Stack,
 	useProps,
 } from "@mantine/core";
 import React, {useEffect, useState} from "react";
@@ -76,10 +77,12 @@ export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
 						{item.name}
 					</Accordion.Control>
 					<Accordion.Panel>
-						<AppBuilderWidgetsComponent
-							namespace={namespace}
-							widgets={item.widgets}
-						/>
+						<Stack>
+							<AppBuilderWidgetsComponent
+								namespace={namespace}
+								widgets={item.widgets}
+							/>
+						</Stack>
 					</Accordion.Panel>
 				</Accordion.Item>
 			))}
