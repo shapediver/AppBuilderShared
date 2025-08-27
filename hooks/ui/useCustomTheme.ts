@@ -3,6 +3,7 @@ import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver
 import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionUiWidgetComponent";
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAreaChartWidgetComponent";
+import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderControlsWidgetComponent";
 import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
 import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
@@ -545,6 +546,20 @@ export const useCustomTheme = (props: Props = {}) => {
 					},
 				},
 			}),
+			/**
+			 * AppBuilderControlsWidgetComponent
+			 *
+			 * Used for defining theme overrides for controls widgets.
+			 */
+			AppBuilderControlsWidgetComponent:
+				AppBuilderControlsWidgetComponentThemeProps({
+					// paperProps: {
+					// 	shadow: "none",
+					// },
+					// parameterPaperProps: {
+					// 	shadow: "none",
+					// },
+				}),
 			AppBuilderContainer: AppBuilderContainerThemeProps({
 				// orientation: "unspecified"
 			}),

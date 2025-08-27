@@ -13,15 +13,57 @@ import {
 	IAppBuilderControlParameterRef,
 	IAppBuilderWidgetPropsControls,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import {Paper, Stack} from "@mantine/core";
+import {
+	MantineThemeComponent,
+	Paper,
+	PaperProps,
+	Stack,
+	StackProps,
+	useProps,
+} from "@mantine/core";
 import React, {ReactElement, useContext, useMemo} from "react";
-type Props = IAppBuilderWidgetPropsControls & {
-	namespace: string;
+
+interface StyleProps {
+	paperProps?: PaperProps;
+	stackProps?: StackProps;
+	parameterPaperProps?: PaperProps;
+	exportPaperProps?: PaperProps;
+}
+
+const defaultStyleProps: Partial<StyleProps> = {
+	paperProps: {
+		shadow: "none",
+	},
+	stackProps: {},
+	parameterPaperProps: {
+		shadow: "none",
+	},
 };
 
+type AppBuilderControlsWidgetComponentThemePropsType = Partial<StyleProps>;
+
+export function AppBuilderControlsWidgetComponentThemeProps(
+	props: AppBuilderControlsWidgetComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+type Props = IAppBuilderWidgetPropsControls &
+	AppBuilderControlsWidgetComponentThemePropsType & {
+		namespace: string;
+	};
+
 export default function AppBuilderControlsWidgetComponent(props: Props) {
-	const {controls = [], namespace} = props;
+	const {controls = [], namespace, ...styleProps} = props;
 	const componentContext = useContext(ComponentContext);
+
+	const {paperProps, stackProps, parameterPaperProps} = useProps(
+		"AppBuilderControlsWidgetComponent",
+		defaultStyleProps,
+		styleProps,
+	);
 
 	// Convert parameter and export references to component props
 	const parameterProps: PropsParameter[] = useMemo(
@@ -74,7 +116,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 					{...parameterProps[index]}
 					wrapperComponent={Paper}
 					wrapperProps={{
-						shadow: "none",
+						...parameterPaperProps,
 						pb: extraBottomPadding ? "md" : undefined,
 					}}
 					disableIfDirty={
@@ -85,7 +127,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 			);
 		});
 		return map;
-	}, [parameters, componentContext]);
+	}, [parameters, componentContext, parameterPaperProps]);
 
 	// Create export map for quick lookup
 	const exportMap = useMemo(() => {
@@ -98,13 +140,13 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 
 			map.set(
 				exportProps[index].exportId,
-				<Paper key={exp.definition.id} shadow="none">
+				<Paper key={exp.definition.id} {...paperProps}>
 					<ExportComponent {...exportProps[index]} />
 				</Paper>,
 			);
 		});
 		return map;
-	}, [exports, componentContext]);
+	}, [exports, componentContext, paperProps]);
 
 	// Create components in the exact order specified by controls array
 	const orderedComponents = useMemo(() => {
@@ -150,5 +192,5 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 	}
 
 	// Return all components in a stack
-	return <Stack>{orderedComponents}</Stack>;
+	return <Stack {...stackProps}>{orderedComponents}</Stack>;
 }

@@ -3,19 +3,31 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import {IAppBuilderWidgetPropsAccordionUi} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	Accordion,
+	AccordionControlProps,
+	AccordionItemProps,
+	AccordionPanelProps,
 	AccordionProps,
 	MantineThemeComponent,
 	Stack,
+	StackProps,
 	useProps,
 } from "@mantine/core";
 import React, {useEffect, useState} from "react";
 
 interface StyleProps {
 	accordionProps?: AccordionProps;
+	accordionItemProps?: Partial<AccordionItemProps>;
+	accordionControlProps?: AccordionControlProps;
+	accordionPanelProps?: AccordionPanelProps;
+	stackProps?: StackProps;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
 	accordionProps: {},
+	accordionPanelProps: {},
+	accordionItemProps: {},
+	accordionControlProps: {},
+	stackProps: {},
 };
 
 type AppBuilderAccordionUiWidgetComponentThemePropsType = Partial<StyleProps>;
@@ -37,7 +49,13 @@ export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
 	const {namespace, items, multiple, defaultValue, value, ...styleProps} =
 		props;
 
-	const {accordionProps} = useProps(
+	const {
+		accordionProps,
+		accordionPanelProps,
+		accordionItemProps,
+		accordionControlProps,
+		stackProps,
+	} = useProps(
 		"AppBuilderAccordionUiWidgetComponent",
 		defaultStyleProps,
 		styleProps,
@@ -65,7 +83,11 @@ export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
 			onChange={handleValueChange}
 		>
 			{items.map((item, index) => (
-				<Accordion.Item key={index} value={item.value || item.name}>
+				<Accordion.Item
+					key={index}
+					value={item.value || item.name}
+					{...accordionItemProps}
+				>
 					<Accordion.Control
 						icon={
 							item.icon ? (
@@ -73,11 +95,12 @@ export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
 							) : undefined
 						}
 						title={item.tooltip}
+						{...accordionControlProps}
 					>
 						{item.name}
 					</Accordion.Control>
-					<Accordion.Panel>
-						<Stack>
+					<Accordion.Panel {...accordionPanelProps}>
+						<Stack {...stackProps}>
 							<AppBuilderWidgetsComponent
 								namespace={namespace}
 								widgets={item.widgets}
