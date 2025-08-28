@@ -145,6 +145,9 @@ export default function ViewportIcons(
 
 	const buttonsDisabled = hasPendingChanges;
 	const isArEnabled = viewport ? viewport.enableAR : false;
+	const showCamerasButton =
+		enableCamerasBtn &&
+		Object.keys(viewport ? viewport.cameras : {}).length > 1; // Don't show the cameras button if there is only one camera or no cameras
 
 	const ViewerIconsGroup = useMemo(
 		() => (
@@ -171,6 +174,19 @@ export default function ViewportIcons(
 					/>
 				)}
 
+				{showCamerasButton && (
+					<CamerasButton
+						viewport={viewport}
+						color={color}
+						colorDisabled={colorDisabled}
+						variant={variant}
+						variantDisabled={variantDisabled}
+						size={size}
+						iconStyle={iconStyle}
+						visible={iconsVisible}
+					/>
+				)}
+
 				{enableFullscreenBtn && (
 					<FullscreenButton
 						fullscreenId={fullscreenId}
@@ -183,19 +199,6 @@ export default function ViewportIcons(
 						iconStyle={iconStyle}
 					/>
 				)}
-
-				{enableCamerasBtn && (
-					<CamerasButton
-						viewport={viewport}
-						color={color}
-						colorDisabled={colorDisabled}
-						variant={variant}
-						variantDisabled={variantDisabled}
-						size={size}
-						iconStyle={iconStyle}
-						visible={iconsVisible}
-					/>
-				)}
 			</>
 		),
 		[
@@ -203,7 +206,7 @@ export default function ViewportIcons(
 			isArEnabled,
 			enableZoomBtn,
 			enableFullscreenBtn,
-			enableCamerasBtn,
+			showCamerasButton,
 			color,
 			colorDisabled,
 			variant,
@@ -281,7 +284,7 @@ export default function ViewportIcons(
 			(enableArBtn && isArEnabled) ||
 			enableZoomBtn ||
 			enableFullscreenBtn ||
-			enableCamerasBtn;
+			showCamerasButton;
 
 		const hasHistoryButtons =
 			enableHistoryButtons && enableHistoryMenuButton;
@@ -292,7 +295,7 @@ export default function ViewportIcons(
 		isArEnabled,
 		enableZoomBtn,
 		enableFullscreenBtn,
-		enableCamerasBtn,
+		showCamerasButton,
 		enableHistoryButtons,
 		enableHistoryMenuButton,
 	]);
