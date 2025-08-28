@@ -106,11 +106,16 @@ export interface IAppBuilderControl {
 	props:
 		| IAppBuilderControlParameterRef
 		| IAppBuilderControlExportRef
-		| IAppBuilderControlActionRef;
+		| IAppBuilderControlActionRef
+		| IAppBuilderControlOutputRef;
 }
 
 /** Types of controls */
-export type AppBuilderControlType = "parameter" | "export" | "action";
+export type AppBuilderControlType =
+	| "parameter"
+	| "export"
+	| "action"
+	| "output";
 
 /** Control referencing a parameter (custom or defined by the session) */
 export interface IAppBuilderControlParameterRef {
@@ -121,7 +126,7 @@ export interface IAppBuilderControlParameterRef {
 	/** Properties of the parameter to be overridden. */
 	overrides?: Pick<
 		Partial<IAppBuilderParameterDefinition>,
-		"displayname" | "tooltip" | "hidden"
+		"displayname" | "tooltip" | "hidden" | "settings"
 	>;
 	/** Disable the UI element of the parameter if its state is dirty. */
 	disableIfDirty?: boolean;
@@ -136,6 +141,19 @@ export interface IAppBuilderControlExportRef {
 	/** Optional id of the session the referenced parameter belongs to. */
 	sessionId?: string;
 	/** Properties of the export to be overridden. */
+	overrides?: Pick<
+		Partial<IAppBuilderExportDefinition>,
+		"displayname" | "tooltip" | "hidden"
+	>;
+}
+
+/** Control referencing an output (defined by the session) */
+export interface IAppBuilderControlOutputRef {
+	/** Id or name or displayname of the referenced output (in that order). */
+	name: string;
+	/** Optional id of the session the referenced output belongs to. */
+	sessionId?: string;
+	/** Properties of the output to be overridden. */
 	overrides?: Pick<
 		Partial<IAppBuilderExportDefinition>,
 		"displayname" | "tooltip" | "hidden"
@@ -928,6 +946,14 @@ export function isActionRefControl(control: IAppBuilderControl): control is {
 	props: IAppBuilderControlActionRef;
 } {
 	return control.type === "action";
+}
+
+/** assert control type "output" */
+export function isOutputRefControl(control: IAppBuilderControl): control is {
+	type: "output";
+	props: IAppBuilderControlOutputRef;
+} {
+	return control.type === "output";
 }
 
 /**

@@ -15,16 +15,13 @@ import {useShallow} from "zustand/react/shallow";
 export function useParameters<T>(props: PropsParameter[]) {
 	const parameters = useShapeDiverStoreParameters(
 		useShallow((state) => {
-			return props.map((prop) => {
+			return props.map(({parameterId, namespace, overrides}) => {
 				if (!state) return;
-				const _parameter = state.getParameter(
-					prop.namespace,
-					prop.parameterId,
-				);
+				const _parameter = state.getParameter(namespace, parameterId);
 				if (!_parameter) return;
 				const parameter =
 					_parameter.getState() as IShapeDiverParameter<T>;
-				return {parameter, overrides: prop.overrides};
+				return {parameter, overrides: overrides};
 			});
 		}),
 	);

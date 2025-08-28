@@ -235,8 +235,25 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	}),
 ]);
 
-// Zod type definition for property "overrides" of IAppBuilderControlParameterRef and IAppBuilderControlExportRef
+// Zod type definition for property "overrides" of IAppBuilderControlParameterRef
 const IAppBuilderControlParameterRefOverridesSchema =
+	IAppBuilderParameterDefinitionSchema.partial().pick({
+		displayname: true,
+		tooltip: true,
+		hidden: true,
+		settings: true,
+	});
+
+// Zod type definition for property "overrides" of IAppBuilderControlExportRef
+const IAppBuilderControlExportRefOverridesSchema =
+	IAppBuilderParameterDefinitionSchema.partial().pick({
+		displayname: true,
+		tooltip: true,
+		hidden: true,
+	});
+
+// Zod type definition for property "overrides" of IAppBuilderControlOutputRef
+const IAppBuilderControlOutputRefOverridesSchema =
 	IAppBuilderParameterDefinitionSchema.partial().pick({
 		displayname: true,
 		tooltip: true,
@@ -256,7 +273,7 @@ const IAppBuilderControlParameterRefSchema = z.object({
 const IAppBuilderControlExportRefSchema = z.object({
 	name: z.string(),
 	sessionId: z.string().optional(),
-	overrides: IAppBuilderControlParameterRefOverridesSchema.optional(),
+	overrides: IAppBuilderControlExportRefOverridesSchema.optional(),
 });
 
 // Zod type definition for IAppBuilderActionDefinition
@@ -294,6 +311,13 @@ const IAppBuilderControlActionRefSchema = z
 	})
 	.extend(IAppBuilderActionPropsCommonSchema.shape);
 
+// Zod type definition for IAppBuilderControlOutputRef
+const IAppBuilderControlOutputRefSchema = z.object({
+	name: z.string(),
+	sessionId: z.string().optional(),
+	overrides: IAppBuilderControlOutputRefOverridesSchema.optional(),
+});
+
 // Zod type definition for IAppBuilderControl
 const IAppBuilderControlSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -307,6 +331,10 @@ const IAppBuilderControlSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("action"),
 		props: IAppBuilderControlActionRefSchema,
+	}),
+	z.object({
+		type: z.literal("output"),
+		props: IAppBuilderControlOutputRefSchema,
 	}),
 ]);
 
