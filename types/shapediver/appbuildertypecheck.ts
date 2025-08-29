@@ -88,6 +88,7 @@ const IAppBuilderParameterOverridesSchema =
 		tooltip: true,
 		hidden: true,
 		settings: true,
+		step: true,
 	});
 
 // Zod type definition for IAppBuilderParameterRef
@@ -242,6 +243,7 @@ const IAppBuilderControlParameterRefOverridesSchema =
 		tooltip: true,
 		hidden: true,
 		settings: true,
+		step: true,
 	});
 
 // Zod type definition for property "overrides" of IAppBuilderControlExportRef

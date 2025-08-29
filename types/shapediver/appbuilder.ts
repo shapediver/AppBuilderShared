@@ -77,7 +77,13 @@ export interface IAppBuilderParameterRef {
 	/** Properties of the parameter to be overridden. */
 	overrides?: Pick<
 		Partial<IAppBuilderParameterDefinition>,
-		"displayname" | "group" | "order" | "tooltip" | "hidden" | "settings"
+		| "displayname"
+		| "group"
+		| "order"
+		| "tooltip"
+		| "hidden"
+		| "settings"
+		| "step"
 	>;
 	/** Disable the UI element of the parameter if its state is dirty. */
 	disableIfDirty?: boolean;
@@ -126,7 +132,7 @@ export interface IAppBuilderControlParameterRef {
 	/** Properties of the parameter to be overridden. */
 	overrides?: Pick<
 		Partial<IAppBuilderParameterDefinition>,
-		"displayname" | "tooltip" | "hidden" | "settings"
+		"displayname" | "tooltip" | "hidden" | "settings" | "step"
 	>;
 	/** Disable the UI element of the parameter if its state is dirty. */
 	disableIfDirty?: boolean;
