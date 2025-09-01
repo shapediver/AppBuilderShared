@@ -1,4 +1,4 @@
-import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
+import {useAllParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useAllParameters";
 import {useViewportControls} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControls";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
@@ -11,6 +11,7 @@ import {
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {OverlayPosition} from "~/shared/components/shapediver/ui/OverlayWrapper";
 import ViewportOverlayWrapper from "./ViewportOverlayWrapper";
 import ArButton from "./buttons/ArButton";
 import CamerasButton from "./buttons/CamerasButton";
@@ -142,6 +143,13 @@ export default function ViewportIcons(
 			parameterChanges.some((c) => Object.keys(c.values).length > 0),
 		[parameterChanges],
 	);
+
+	const {parameters} = useAllParameters(namespace);
+	const isAcceptRejectModeActivated = useMemo(() => {
+		return Object.values(parameters).some(
+			(p) => p.getState().acceptRejectMode,
+		);
+	}, [parameters]);
 
 	const buttonsDisabled = hasPendingChanges;
 	const isArEnabled = viewport ? viewport.enableAR : false;
@@ -306,7 +314,12 @@ export default function ViewportIcons(
 				{enableHistoryButtons && (
 					<>
 						<UndoButton
-							disabled={buttonsDisabled || executing}
+							disabled={
+								buttonsDisabled ||
+								executing ||
+								(isAcceptRejectModeActivated &&
+									hasPendingChanges)
+							}
 							hasPendingChanges={hasPendingChanges}
 							executing={executing}
 							color={color}
@@ -318,7 +331,12 @@ export default function ViewportIcons(
 						/>
 
 						<RedoButton
-							disabled={buttonsDisabled || executing}
+							disabled={
+								buttonsDisabled ||
+								executing ||
+								(isAcceptRejectModeActivated &&
+									hasPendingChanges)
+							}
 							hasPendingChanges={hasPendingChanges}
 							executing={executing}
 							color={color}
@@ -332,7 +350,11 @@ export default function ViewportIcons(
 				)}
 				{enableHistoryMenuButton && (
 					<HistoryMenuButton
-						disabled={!namespace || buttonsDisabled}
+						disabled={
+							!namespace ||
+							buttonsDisabled ||
+							(isAcceptRejectModeActivated && hasPendingChanges)
+						}
 						namespace={namespace}
 						enableResetButton={enableResetButton}
 						enableImportExportButtons={enableImportExportButtons}
