@@ -144,7 +144,7 @@ export interface IAppBuilderControlParameterRef {
 export interface IAppBuilderControlExportRef {
 	/** Id or name or displayname of the referenced export (in that order). */
 	name: string;
-	/** Optional id of the session the referenced parameter belongs to. */
+	/** Optional id of the session the referenced export belongs to. */
 	sessionId?: string;
 	/** Properties of the export to be overridden. */
 	overrides?: Pick<

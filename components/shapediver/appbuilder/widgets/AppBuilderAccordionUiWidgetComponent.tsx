@@ -1,5 +1,6 @@
 import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
 import Icon from "@AppBuilderShared/components/ui/Icon";
+import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {IAppBuilderWidgetPropsAccordionUi} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	Accordion,
@@ -72,7 +73,7 @@ export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
 	};
 
 	useEffect(() => {
-		setLocalValue(value);
+		if (value !== undefined) setLocalValue(value);
 	}, [value]);
 
 	return (
@@ -97,7 +98,13 @@ export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
 						title={item.tooltip}
 						{...accordionControlProps}
 					>
-						{item.name}
+						{item.tooltip ? (
+							<TooltipWrapper label={item.tooltip}>
+								<div>{item.name}</div>
+							</TooltipWrapper>
+						) : (
+							item.name
+						)}
 					</Accordion.Control>
 					<Accordion.Panel {...accordionPanelProps}>
 						<Stack {...stackProps}>
