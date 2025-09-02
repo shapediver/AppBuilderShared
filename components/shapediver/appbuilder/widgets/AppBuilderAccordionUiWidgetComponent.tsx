@@ -65,7 +65,13 @@ export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
 	// Local state for uncontrolled mode
 	const [localValue, setLocalValue] = useState<
 		string | string[] | null | undefined
-	>(defaultValue || null);
+	>(
+		multiple === false && Array.isArray(defaultValue)
+			? defaultValue.length > 0
+				? defaultValue[0]
+				: null
+			: defaultValue || null,
+	);
 
 	const handleValueChange = (newValue: string | string[] | null) => {
 		// Update local state (uncontrolled mode)
@@ -73,7 +79,13 @@ export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
 	};
 
 	useEffect(() => {
-		if (value !== undefined) setLocalValue(value);
+		if (value !== undefined) {
+			if (multiple === false && Array.isArray(value)) {
+				setLocalValue(value.length > 0 ? value[0] : null);
+			} else {
+				setLocalValue(value);
+			}
+		}
 	}, [value]);
 
 	return (
