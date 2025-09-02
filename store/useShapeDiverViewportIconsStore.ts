@@ -1,9 +1,9 @@
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 import {
 	IShapeDiverViewportIconsStore,
-	ViewportIconButtonDef,
+	ViewportIconButton,
 	ViewportIconLayoutItem,
-	ViewportIconLayoutItemType,
+	ViewportIconLayoutItemEnum,
 	ViewportIconViewportState,
 } from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
 import {create} from "zustand";
@@ -14,17 +14,18 @@ const emptyViewport: ViewportIconViewportState = {layout: []};
 const getCurrentViewport = (
 	state: IShapeDiverViewportIconsStore,
 	viewportId: string,
-): ViewportIconViewportState => state.viewports[viewportId] ?? emptyViewport;
+): ViewportIconViewportState =>
+	state.viewportIcons[viewportId] ?? emptyViewport;
 
 export const useShapeDiverViewportIconsStore =
 	create<IShapeDiverViewportIconsStore>()(
 		devtools(
 			(set) => ({
-				viewports: {},
+				viewportIcons: {},
 
 				add: (
 					viewportId: string,
-					input: ViewportIconButtonDef | ViewportIconButtonDef[],
+					input: ViewportIconButton | ViewportIconButton[],
 					index?: number,
 				) => {
 					set(
@@ -37,16 +38,14 @@ export const useShapeDiverViewportIconsStore =
 							const toInsert: ViewportIconLayoutItem = (() => {
 								if (!Array.isArray(input)) {
 									return {
-										type: ViewportIconLayoutItemType.Button,
-										button: input as ViewportIconButtonDef,
+										type: ViewportIconLayoutItemEnum.Button,
+										button: input as ViewportIconButton,
 									};
 								}
 
 								return {
-									type: ViewportIconLayoutItemType.Group,
-									sections: [
-										input as ViewportIconButtonDef[],
-									],
+									type: ViewportIconLayoutItemEnum.Group,
+									sections: [input as ViewportIconButton[]],
 								};
 							})();
 
@@ -64,8 +63,8 @@ export const useShapeDiverViewportIconsStore =
 
 							return {
 								...state,
-								viewports: {
-									...state.viewports,
+								viewportIcons: {
+									...state.viewportIcons,
 									[viewportId]: nextVp,
 								},
 							};
@@ -92,8 +91,8 @@ export const useShapeDiverViewportIconsStore =
 
 							return {
 								...state,
-								viewports: {
-									...state.viewports,
+								viewportIcons: {
+									...state.viewportIcons,
 									[viewportId]: nextVp,
 								},
 							};
@@ -107,8 +106,8 @@ export const useShapeDiverViewportIconsStore =
 						(state) => {
 							return {
 								...state,
-								viewports: {
-									...state.viewports,
+								viewportIcons: {
+									...state.viewportIcons,
 									[viewportId]: emptyViewport,
 								},
 							};

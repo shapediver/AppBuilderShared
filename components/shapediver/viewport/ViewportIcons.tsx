@@ -8,7 +8,7 @@ import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {ViewportIconButtonType} from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
+import {ViewportIconButtonEnum} from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -65,7 +65,7 @@ interface ButtonRenderContext extends CommonButtonProps {
 }
 
 function renderButtonByKind(
-	kind: ViewportIconButtonType,
+	kind: ViewportIconButtonEnum,
 	context: ButtonRenderContext,
 ): React.ReactNode {
 	const {
@@ -80,13 +80,13 @@ function renderButtonByKind(
 	} = context;
 
 	switch (kind) {
-		case ViewportIconButtonType.Ar:
+		case ViewportIconButtonEnum.Ar:
 			return <ArButton key="ar" viewport={viewport} {...commonProps} />;
-		case ViewportIconButtonType.Zoom:
+		case ViewportIconButtonEnum.Zoom:
 			return (
 				<ZoomButton key="zoom" viewport={viewport} {...commonProps} />
 			);
-		case ViewportIconButtonType.Fullscreen:
+		case ViewportIconButtonEnum.Fullscreen:
 			return (
 				<FullscreenButton
 					key="fullscreen"
@@ -95,7 +95,7 @@ function renderButtonByKind(
 					{...commonProps}
 				/>
 			);
-		case ViewportIconButtonType.Cameras:
+		case ViewportIconButtonEnum.Cameras:
 			return (
 				<CamerasButton
 					key="cameras"
@@ -104,7 +104,7 @@ function renderButtonByKind(
 					{...commonProps}
 				/>
 			);
-		case ViewportIconButtonType.Undo:
+		case ViewportIconButtonEnum.Undo:
 			return (
 				<UndoButton
 					key="undo"
@@ -114,7 +114,7 @@ function renderButtonByKind(
 					{...commonProps}
 				/>
 			);
-		case ViewportIconButtonType.Redo:
+		case ViewportIconButtonEnum.Redo:
 			return (
 				<RedoButton
 					key="redo"
@@ -124,7 +124,7 @@ function renderButtonByKind(
 					{...commonProps}
 				/>
 			);
-		case ViewportIconButtonType.HistoryMenu:
+		case ViewportIconButtonEnum.HistoryMenu:
 			return (
 				<HistoryMenuButton
 					key="historyMenu"
@@ -175,8 +175,8 @@ export default function ViewportIcons(
 	const {viewportIcons} = useShapeDiverViewportIconsStore(
 		useShallow((state) => ({
 			viewportIcons:
-				viewportId && state.viewports[viewportId]
-					? state.viewports[viewportId].layout
+				viewportId && state.viewportIcons[viewportId]
+					? state.viewportIcons[viewportId].layout
 					: [],
 		})),
 	);

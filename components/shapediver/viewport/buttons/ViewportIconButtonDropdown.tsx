@@ -4,6 +4,7 @@ import {
 	MantineThemeComponent,
 	Menu,
 	MenuDropdownProps,
+	MenuProps,
 	useProps,
 } from "@mantine/core";
 import React from "react";
@@ -20,10 +21,12 @@ interface ViewportIconButtonDropdownProps extends CommonButtonProps {
 }
 
 export type StyleProps = {
+	menuProps?: MenuProps;
 	menuDropdownProps?: MenuDropdownProps;
 };
 
 const defaultStyleProps: StyleProps = {
+	menuProps: {shadow: "md", position: "bottom-end"},
 	menuDropdownProps: {style: ViewportTransparentBackgroundStyle},
 };
 
@@ -47,7 +50,7 @@ export default function ViewportIconButtonDropdown(
 		...rest
 	} = props;
 
-	const {menuDropdownProps} = useProps(
+	const {menuDropdownProps, menuProps} = useProps(
 		"ViewportIconButtonDropdowns",
 		defaultStyleProps,
 		rest,
@@ -64,8 +67,7 @@ export default function ViewportIconButtonDropdown(
 
 	return (
 		<Menu
-			shadow="md"
-			position="bottom-end"
+			{...menuProps}
 			opened={visible && isMenuOpened}
 			onChange={setIsMenuOpened}
 		>

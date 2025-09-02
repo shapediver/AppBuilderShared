@@ -1,4 +1,4 @@
-export enum ViewportIconButtonType {
+export enum ViewportIconButtonEnum {
 	Ar = "ar",
 	Zoom = "zoom",
 	Fullscreen = "fullscreen",
@@ -8,21 +8,21 @@ export enum ViewportIconButtonType {
 	HistoryMenu = "historyMenu",
 }
 
-export interface ViewportIconButtonDef {
-	type: ViewportIconButtonType;
+export interface ViewportIconButton {
+	type: ViewportIconButtonEnum;
 	data?: Record<string, any>;
 }
 
-export enum ViewportIconLayoutItemType {
+export enum ViewportIconLayoutItemEnum {
 	Button = "button",
 	Group = "group",
 }
 
 export type ViewportIconLayoutItem =
-	| {type: ViewportIconLayoutItemType.Button; button: ViewportIconButtonDef}
+	| {type: ViewportIconLayoutItemEnum.Button; button: ViewportIconButton}
 	| {
-			type: ViewportIconLayoutItemType.Group;
-			sections: ViewportIconButtonDef[][];
+			type: ViewportIconLayoutItemEnum.Group;
+			sections: ViewportIconButton[][];
 	  };
 
 export interface ViewportIconViewportState {
@@ -35,12 +35,12 @@ export type ViewportIconsStateByViewport = Record<
 >;
 
 export interface IShapeDiverViewportIconsStore {
-	viewports: ViewportIconsStateByViewport;
+	viewportIcons: ViewportIconsStateByViewport;
 
 	// add icon or group (array => group). Optional index; append if omitted/invalid.
 	add: (
 		viewportId: string,
-		input: ViewportIconButtonDef | ViewportIconButtonDef[],
+		input: ViewportIconButton | ViewportIconButton[],
 		index?: number,
 	) => void;
 

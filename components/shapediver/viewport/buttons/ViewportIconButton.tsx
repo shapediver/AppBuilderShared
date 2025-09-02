@@ -80,7 +80,7 @@ export default function ViewportIconButton(
 				onClick={onClick}
 				disabled={disabled}
 				variant={disabled ? variantDisabled : variant}
-				aria-label={label ?? "Button"}
+				aria-label={label ?? undefined}
 				className={classes.ViewportIcon}
 				{...restActionIconProps}
 			>
