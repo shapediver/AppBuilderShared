@@ -1,11 +1,9 @@
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
 import {IShapeDiverStoreViewport} from "@AppBuilderShared/types/store/shapediverStoreViewport";
-import {ViewportIconButtonEnum} from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
 import {createViewport, IViewportApi} from "@shapediver/viewer.viewport";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
-import {useShapeDiverViewportIconsStore} from "./useShapeDiverViewportIconsStore";
 
 /**
  * Helper for comparing viewports.
@@ -43,30 +41,13 @@ export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 
 				try {
 					viewport = await createViewport(dto);
-					const showCamerasButton =
-						Object.keys(viewport ? viewport.cameras : {}).length >
-						1; // Don't show the cameras button if there is only one camera or no cameras
-
-					// Add viewport icons using external store access
-					const iconStore =
-						useShapeDiverViewportIconsStore.getState();
-					iconStore.add(viewport.id, [
-						...(viewport.enableAR
-							? [{type: ViewportIconButtonEnum.Ar}]
-							: []),
-						{type: ViewportIconButtonEnum.Zoom},
-						...(showCamerasButton
-							? [{type: ViewportIconButtonEnum.Cameras}]
-							: []),
-						{type: ViewportIconButtonEnum.Fullscreen},
-					]);
-					iconStore.add(viewport.id, [
-						{type: ViewportIconButtonEnum.Undo},
-						{type: ViewportIconButtonEnum.Redo},
-						{type: ViewportIconButtonEnum.HistoryMenu},
-					]);
+					if (callbacks?.onCreated) {
+						callbacks.onCreated(viewport);
+					}
 				} catch (e: any) {
-					callbacks?.onError(e);
+					if (callbacks?.onError) {
+						callbacks.onError(e);
+					}
 				}
 
 				set(
@@ -92,8 +73,13 @@ export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 
 				try {
 					await viewport.close();
+					if (callbacks?.onClosed) {
+						callbacks.onClosed(viewportId);
+					}
 				} catch (e) {
-					callbacks?.onError(e);
+					if (callbacks?.onError) {
+						callbacks.onError(e);
+					}
 
 					return;
 				}

@@ -9,7 +9,12 @@ export interface IShapeDiverStoreViewports {
 /**
  * Callbacks related to IShapeDiverStore.
  */
-export type IShapeDiverStoreViewportCallbacks = Pick<IEventTracking, "onError">;
+export type IShapeDiverStoreViewportCallbacks = Partial<
+	Pick<IEventTracking, "onError">
+> & {
+	onCreated?: (viewport: IViewportApi) => void;
+	onClosed?: (viewportId: string) => void;
+};
 
 /**
  * Interface for the store of viewer-related data.

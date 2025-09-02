@@ -2,16 +2,18 @@ import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 import {
 	IShapeDiverViewportIconsStore,
 	ViewportIconButton,
+	ViewportIconButtonEnum,
 	ViewportIconLayoutItem,
 	ViewportIconLayoutItemEnum,
 	ViewportIconViewportState,
 } from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
+import {IViewportApi} from "@shapediver/viewer.viewport";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 
 const emptyViewport: ViewportIconViewportState = {layout: []};
 
-const getCurrentViewport = (
+const getCurrentViewportIcons = (
 	state: IShapeDiverViewportIconsStore,
 	viewportId: string,
 ): ViewportIconViewportState =>
@@ -20,8 +22,30 @@ const getCurrentViewport = (
 export const useShapeDiverViewportIconsStore =
 	create<IShapeDiverViewportIconsStore>()(
 		devtools(
-			(set) => ({
+			(set, get) => ({
 				viewportIcons: {},
+
+				initialize: (viewport: IViewportApi) => {
+					const showCamerasButton =
+						Object.keys(viewport ? viewport.cameras : {}).length >
+						1; // Don't show the cameras button if there is only one camera or no cameras
+
+					get().add(viewport.id, [
+						...(viewport.enableAR
+							? [{type: ViewportIconButtonEnum.Ar}]
+							: []),
+						{type: ViewportIconButtonEnum.Zoom},
+						...(showCamerasButton
+							? [{type: ViewportIconButtonEnum.Cameras}]
+							: []),
+						{type: ViewportIconButtonEnum.Fullscreen},
+					]);
+					get().add(viewport.id, [
+						{type: ViewportIconButtonEnum.Undo},
+						{type: ViewportIconButtonEnum.Redo},
+						{type: ViewportIconButtonEnum.HistoryMenu},
+					]);
+				},
 
 				add: (
 					viewportId: string,
@@ -30,7 +54,7 @@ export const useShapeDiverViewportIconsStore =
 				) => {
 					set(
 						(state) => {
-							const currentVp = getCurrentViewport(
+							const currentVp = getCurrentViewportIcons(
 								state,
 								viewportId,
 							);
@@ -77,7 +101,7 @@ export const useShapeDiverViewportIconsStore =
 				remove: (viewportId: string, index: number) => {
 					set(
 						(state) => {
-							const prevVp = getCurrentViewport(
+							const prevVp = getCurrentViewportIcons(
 								state,
 								viewportId,
 							);

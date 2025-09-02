@@ -1,3 +1,5 @@
+import {IViewportApi} from "@shapediver/viewer.viewport";
+
 export enum ViewportIconButtonEnum {
 	Ar = "ar",
 	Zoom = "zoom",
@@ -36,7 +38,11 @@ export type ViewportIconsStateByViewport = Record<
 
 export interface IShapeDiverViewportIconsStore {
 	viewportIcons: ViewportIconsStateByViewport;
-
+	/**
+	 * Initialize the viewport icons store for a viewport.
+	 * @param viewportId
+	 */
+	initialize: (viewport: IViewportApi) => void;
 	// add icon or group (array => group). Optional index; append if omitted/invalid.
 	add: (
 		viewportId: string,
