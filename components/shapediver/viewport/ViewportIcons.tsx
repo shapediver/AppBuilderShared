@@ -306,7 +306,11 @@ export default function ViewportIcons(
 				{enableHistoryButtons && (
 					<>
 						<UndoButton
-							disabled={buttonsDisabled || executing}
+							disabled={
+								buttonsDisabled ||
+								executing ||
+								hasPendingChanges
+							}
 							hasPendingChanges={hasPendingChanges}
 							executing={executing}
 							color={color}
@@ -318,7 +322,11 @@ export default function ViewportIcons(
 						/>
 
 						<RedoButton
-							disabled={buttonsDisabled || executing}
+							disabled={
+								buttonsDisabled ||
+								executing ||
+								hasPendingChanges
+							}
 							hasPendingChanges={hasPendingChanges}
 							executing={executing}
 							color={color}
@@ -332,7 +340,9 @@ export default function ViewportIcons(
 				)}
 				{enableHistoryMenuButton && (
 					<HistoryMenuButton
-						disabled={!namespace || buttonsDisabled}
+						disabled={
+							!namespace || buttonsDisabled || hasPendingChanges
+						}
 						namespace={namespace}
 						enableResetButton={enableResetButton}
 						enableImportExportButtons={enableImportExportButtons}
