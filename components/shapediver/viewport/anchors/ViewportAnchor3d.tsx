@@ -116,9 +116,9 @@ export default function ViewportAnchor3d(
 					(properties.container[1] * (1 / properties.scale[1])) /
 					canvasHeight;
 				if (relativeY < 0.5) {
-					vertical = "B"; // Bottom
+					vertical = "T"; // Bottom
 				} else {
-					vertical = "T"; // Top
+					vertical = "B"; // Top
 				}
 			}
 			// second letter is horizontal

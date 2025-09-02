@@ -1,9 +1,9 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
-import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderLegacyActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useCallback} from "react";
 
-type Props = IAppBuilderActionPropsSetParameterValue & {
+type Props = IAppBuilderLegacyActionPropsSetParameterValue & {
 	namespace: string;
 };
 
