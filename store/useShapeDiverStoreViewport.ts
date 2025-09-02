@@ -43,6 +43,9 @@ export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 
 				try {
 					viewport = await createViewport(dto);
+					const showCamerasButton =
+						Object.keys(viewport ? viewport.cameras : {}).length >
+						1; // Don't show the cameras button if there is only one camera or no cameras
 
 					// Add viewport icons using external store access
 					const iconStore =
@@ -52,8 +55,10 @@ export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 							? [{type: ViewportIconButtonEnum.Ar}]
 							: []),
 						{type: ViewportIconButtonEnum.Zoom},
+						...(showCamerasButton
+							? [{type: ViewportIconButtonEnum.Cameras}]
+							: []),
 						{type: ViewportIconButtonEnum.Fullscreen},
-						{type: ViewportIconButtonEnum.Cameras},
 					]);
 					iconStore.add(viewport.id, [
 						{type: ViewportIconButtonEnum.Undo},
