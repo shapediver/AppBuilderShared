@@ -1,37 +1,58 @@
 import useIconMenu from "@AppBuilderShared/hooks/shapediver/viewer/icons/useIconMenu";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
-import {Menu, MenuDropdownProps} from "@mantine/core";
-import React from "react";
-import ViewportIconButton from "./ViewportIconButton";
 import {
-	CommonButtonProps,
-	IconProps,
-	ViewportIconButtonDropdownSections,
-} from "./types";
+	MantineThemeComponent,
+	Menu,
+	MenuDropdownProps,
+	useProps,
+} from "@mantine/core";
+import React from "react";
+import ViewportIconButton, {
+	ViewportIconButtonProps,
+} from "./ViewportIconButton";
+import {CommonButtonProps, ViewportIconButtonDropdownSections} from "./types";
 
 interface ViewportIconButtonDropdownProps extends CommonButtonProps {
-	iconType: string;
-	tooltip?: string;
 	disabled?: boolean;
 	sections: ViewportIconButtonDropdownSections;
-	menuDropdownProps?: MenuDropdownProps;
 	visible?: boolean;
+	viewportIconButtonProps: ViewportIconButtonProps;
 }
 
-export default function ViewportIconButtonDropdown({
-	iconType,
-	tooltip,
-	disabled = false,
-	sections,
-	menuDropdownProps = {style: ViewportTransparentBackgroundStyle},
-	visible = true,
-	size = undefined,
-	color = IconProps.color,
-	colorDisabled = IconProps.colorDisabled,
-	variant = IconProps.variant,
-	variantDisabled = IconProps.variantDisabled,
-	iconStyle = IconProps.style,
-}: ViewportIconButtonDropdownProps) {
+export type StyleProps = {
+	menuDropdownProps?: MenuDropdownProps;
+};
+
+const defaultStyleProps: StyleProps = {
+	menuDropdownProps: {style: ViewportTransparentBackgroundStyle},
+};
+
+type ViewportIconButtonDropdownThemePropsType = Partial<StyleProps>;
+export function ViewportIconButtonDropdownThemeProps(
+	props: ViewportIconButtonDropdownThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+export default function ViewportIconButtonDropdown(
+	props: ViewportIconButtonDropdownProps & StyleProps,
+) {
+	const {
+		viewportIconButtonProps,
+		disabled = false,
+		visible = true,
+		sections,
+		...rest
+	} = props;
+
+	const {menuDropdownProps} = useProps(
+		"ViewportIconButtonDropdowns",
+		defaultStyleProps,
+		rest,
+	);
+
 	const onClickOutside = () => setIsMenuOpened(false);
 	const {menuRef, isMenuOpened, setIsMenuOpened} = useIconMenu(
 		visible,
@@ -51,15 +72,8 @@ export default function ViewportIconButtonDropdown({
 			<Menu.Target>
 				<div>
 					<ViewportIconButton
-						iconType={iconType}
-						tooltip={tooltip ?? "Menu"}
+						{...viewportIconButtonProps}
 						disabled={disabled}
-						size={size}
-						color={color}
-						colorDisabled={colorDisabled}
-						variant={variant}
-						variantDisabled={variantDisabled}
-						iconStyle={iconStyle}
 						onClick={() => setIsMenuOpened(!isMenuOpened)}
 					/>
 				</div>

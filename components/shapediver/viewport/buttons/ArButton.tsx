@@ -12,12 +12,8 @@ interface ArButtonProps extends CommonButtonProps {
 
 export default function ArButton({
 	viewport,
-	size = undefined,
-	color = IconProps.color,
-	colorDisabled = IconProps.colorDisabled,
 	variant = IconProps.variant,
 	variantDisabled = IconProps.variantDisabled,
-	iconStyle = IconProps.style,
 }: ArButtonProps) {
 	const [isModalArOpened, setIsModalArOpened] = useState(false);
 	const [arLink, setArLink] = useState("");
@@ -66,16 +62,13 @@ export default function ArButton({
 	return (
 		<>
 			<ViewportIconButton
-				iconType={"tabler:augmented-reality"}
+				label="View in AR"
+				iconType="tabler:augmented-reality"
 				onClick={handleArClick}
 				disabled={isArLoading}
-				size={size}
-				color={color}
-				colorDisabled={colorDisabled}
-				variant={isViewableInAr ? variantDisabled : variant}
-				variantDisabled={variantDisabled}
-				iconStyle={iconStyle}
-				tooltip="View in AR"
+				actionIconProps={{
+					variant: isViewableInAr ? variantDisabled : variant,
+				}}
 			/>
 
 			<Modal

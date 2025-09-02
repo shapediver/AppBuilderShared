@@ -15,7 +15,9 @@ export const IconProps = {
 	variant: "subtle",
 	variantDisabled: "transparent",
 	size: 32,
-	style: {},
+	style: {
+		m: "0.188rem",
+	},
 };
 
 /**

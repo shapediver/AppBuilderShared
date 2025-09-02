@@ -3,31 +3,19 @@ import ImportModelStateDialog from "@AppBuilderShared/components/shapediver/ui/I
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
-import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
-import {MenuDropdownProps} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
-import {CommonButtonProps, IconProps} from "./types";
+import {CommonButtonProps} from "./types";
 import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 
 interface HistoryMenuButtonProps extends CommonButtonProps {
 	disabled: boolean;
 	namespace: string;
-	menuDropdownProps?: MenuDropdownProps;
 	visible?: boolean;
 }
 
 export default function HistoryMenuButton({
 	disabled,
 	namespace,
-	size = undefined,
-	color = IconProps.color,
-	colorDisabled = IconProps.colorDisabled,
-	variant = IconProps.variant,
-	variantDisabled = IconProps.variantDisabled,
-	iconStyle = IconProps.style,
-	menuDropdownProps = {
-		style: ViewportTransparentBackgroundStyle,
-	},
 	visible = true,
 }: HistoryMenuButtonProps) {
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -110,18 +98,13 @@ export default function HistoryMenuButton({
 	return (
 		<>
 			<ViewportIconButtonDropdown
-				iconType={"tabler:dots-vertical"}
-				tooltip="More options"
+				viewportIconButtonProps={{
+					iconType: "tabler:dots-vertical",
+					label: "More options",
+				}}
 				disabled={disabled}
 				sections={sections}
-				menuDropdownProps={menuDropdownProps}
 				visible={visible}
-				size={size}
-				color={color}
-				colorDisabled={colorDisabled}
-				variant={variant}
-				variantDisabled={variantDisabled}
-				iconStyle={iconStyle}
 			/>
 			<ImportModelStateDialog
 				opened={isImportDialogOpen}

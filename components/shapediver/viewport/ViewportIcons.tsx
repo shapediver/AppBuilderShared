@@ -21,7 +21,7 @@ import HistoryMenuButton from "./buttons/HistoryMenuButton";
 import RedoButton from "./buttons/RedoButton";
 import UndoButton from "./buttons/UndoButton";
 import ZoomButton from "./buttons/ZoomButton";
-import {CommonButtonProps, IconProps} from "./buttons/types";
+import {CommonButtonProps} from "./buttons/types";
 
 const defaultStyleProps: ViewportIconsOptionalProps = {
 	style: {
@@ -33,14 +33,6 @@ const defaultStyleProps: ViewportIconsOptionalProps = {
 		...ViewportTransparentBackgroundStyle,
 	},
 	fullscreenId: "viewer-fullscreen-area",
-	color: undefined,
-	colorDisabled: undefined,
-	variant: IconProps.variant,
-	variantDisabled: IconProps.variantDisabled,
-	size: IconProps.size,
-	iconStyle: {
-		m: "0.188rem",
-	},
 	viewportOverlayProps: {
 		position: OverlayPosition.TOP_MIDDLE,
 		offset: "0.5em",
