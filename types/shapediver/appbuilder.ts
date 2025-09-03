@@ -68,6 +68,11 @@ export interface ISelectParameterSettings {
 	itemData?: Record<string, ISelectComponentItemDataType>;
 }
 
+export interface IStringParameterSettings {
+	/** Number of lines to display. If > 1, a Textarea is used with autosize and fixed rows. Default: 1 */
+	lines?: number;
+}
+
 /** Reference to a parameter (custom or defined by the session) */
 export interface IAppBuilderParameterRef {
 	/** Id or name or displayname of the referenced parameter (in that order). */
