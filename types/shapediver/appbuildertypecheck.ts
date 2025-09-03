@@ -44,6 +44,15 @@ export const validateSelectParameterSettings = (value: any) => {
 	return ISelectParameterSettingsSchema.safeParse(value);
 };
 
+// Zod type definition for IStringParameterSettings
+const IStringParameterSettingsSchema = z.object({
+	lines: z.number().int().positive().optional(),
+});
+
+export const validateStringParameterSettings = (value: any) => {
+	return IStringParameterSettingsSchema.safeParse(value);
+};
+
 // Zod type definition for IAppBuilderParameterDefinition
 const IAppBuilderParameterDefinitionSchema = z.object({
 	id: z.string(),
