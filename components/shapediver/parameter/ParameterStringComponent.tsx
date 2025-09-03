@@ -74,7 +74,7 @@ export default function ParameterStringComponent(
 						onChange={(e) =>
 							handleChange(
 								e.currentTarget.value,
-								500,
+								undefined,
 								restoreFocus,
 							)
 						}
@@ -90,7 +90,11 @@ export default function ParameterStringComponent(
 					<TextInput
 						value={value}
 						onChange={(e) =>
-							handleChange(e.target.value, 500, restoreFocus)
+							handleChange(
+								e.target.value,
+								undefined,
+								restoreFocus,
+							)
 						}
 						disabled={disabled}
 						maxLength={definition.max}
