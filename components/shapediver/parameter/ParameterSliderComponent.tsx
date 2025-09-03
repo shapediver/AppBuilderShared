@@ -139,7 +139,7 @@ export default function ParameterSliderComponent(
 	const handleChangeCustom = useCallback(
 		(v: number | string, callback?: () => void) => {
 			const roundedValue = roundAndClamp(+v);
-			setParameterValueDebounced(roundedValue, 500, {
+			setParameterValueDebounced(roundedValue, undefined, {
 				onBefore: () => {
 					// In case user inputs value out of the min/max range, we get value rendering issues
 					// The reason is that the value do not change if user inputs lower or greater than min/max twice in a row
