@@ -221,6 +221,8 @@ export default function ParameterSelectComponent(
 				inputContainer={inputContainer}
 				onFocus={onFocusHandler}
 				onBlur={onBlurHandler}
+				searchable={settings.searchable}
+				limit={settings.limit}
 			/>
 		);
 

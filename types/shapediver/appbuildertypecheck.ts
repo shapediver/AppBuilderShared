@@ -40,8 +40,22 @@ const ISelectParameterSettingsSchema = z.object({
 	itemData: z.record(ISelectComponentItemDataTypeSchema).optional(),
 });
 
+const ISelectParameterSettingsSearchableSchema = z.intersection(
+	ISelectParameterSettingsSchema,
+	z.discriminatedUnion("searchable", [
+		z.object({
+			searchable: z.literal(true),
+			limit: z.number().int().positive(),
+		}),
+		z.object({
+			searchable: z.literal(false).optional(),
+			limit: z.undefined().optional(),
+		}),
+	]),
+);
+
 export const validateSelectParameterSettings = (value: any) => {
-	return ISelectParameterSettingsSchema.safeParse(value);
+	return ISelectParameterSettingsSearchableSchema.safeParse(value);
 };
 
 // Zod type definition for IStringParameterSettings
