@@ -214,25 +214,28 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		NO_CLIENT.value,
 	);
 
-	const connectAttempt = async (
-		client: ISdStargateClientModel | undefined,
-	): Promise<boolean> => {
-		await selectClient(client);
-		// Check if connection was successful
-		const currentNetworkStatus =
-			useShapeDiverStoreStargate.getState().networkStatus;
-		if (currentNetworkStatus === NetworkStatus.connected) {
-			notifications.show({
-				message: `Connection to the client "${client?.clientName}" successful.`,
-			});
-			return true;
-		} else {
-			notifications.error({
-				message: `Connection to the client "${client?.clientName}" failed, please check the status of the client and try again.`,
-			});
-			return false;
-		}
-	};
+	const connectAttempt = useCallback(
+		async (
+			client: ISdStargateClientModel | undefined,
+		): Promise<boolean> => {
+			await selectClient(client);
+			// Check if connection was successful
+			const currentNetworkStatus =
+				useShapeDiverStoreStargate.getState().networkStatus;
+			if (currentNetworkStatus === NetworkStatus.connected) {
+				notifications.show({
+					message: `Connection to the client "${client?.clientName}" successful.`,
+				});
+				return true;
+			} else {
+				notifications.error({
+					message: `Connection to the client "${client?.clientName}" failed, please check the status of the client and try again.`,
+				});
+				return false;
+			}
+		},
+		[],
+	);
 
 	const refreshClients = useCallback(
 		async (currentClientValue: string) => {
@@ -313,28 +316,10 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 			const client = currentlyAvailableClients.find(
 				(c) => c.value === value,
 			);
-
-			const previousNetworkStatus = networkStatus;
 			await selectClient(client?.client);
-
-			// Check if connection was successful by comparing network status
-			// Note: We need to check the store state after selectClient completes
-			const currentNetworkStatus =
-				useShapeDiverStoreStargate.getState().networkStatus;
-
-			if (
-				client?.client &&
-				currentNetworkStatus === NetworkStatus.connected &&
-				previousNetworkStatus !== NetworkStatus.connected
-			) {
-				notifications.show({
-					message: "Connection to the client successful.",
-				});
-			}
-
 			setLoading(false);
 		},
-		[networkStatus, notifications, selectClient],
+		[],
 	);
 
 	return (
