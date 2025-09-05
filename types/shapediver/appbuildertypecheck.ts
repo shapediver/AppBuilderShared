@@ -575,7 +575,10 @@ const IAppBuilderWidgetPropsProgressSchema = z.object({
 const IAppBuilderWidgetPropsSceneTreeExplorerSchema = z.object({});
 
 // Zod type definition for IAppBuilderWidgetPropsDesktopClientSelection
-const IAppBuilderWidgetPropsDesktopClientSelectionSchema = z.object({});
+const IAppBuilderWidgetPropsDesktopClientSelectionSchema = z.object({
+	clientsFilter: z.array(z.string()).optional(),
+	autoConnect: z.boolean().optional(),
+});
 
 // Zod type definition for IAppBuilderWidgetPropsDesktopClientOutputs
 const IAppBuilderWidgetPropsDesktopClientOutputsSchema = z.object({});
