@@ -25,6 +25,7 @@ export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
 	value?: string;
 
 	/**
+	 * @deprecated use settings.step instead
 	 * Optional step value for numeric parameters.
 	 */
 	step?: number;
@@ -75,6 +76,13 @@ export interface ISelectParameterSettings {
 export interface IStringParameterSettings {
 	/** Number of lines to display. If > 1, a Textarea is used with autosize and fixed rows. Default: 1 */
 	lines?: number;
+}
+
+export interface INumberParameterSettings {
+	/**
+	 * Optional step value for numeric parameters.
+	 */
+	step?: number;
 }
 
 /** Reference to a parameter (custom or defined by the session) */

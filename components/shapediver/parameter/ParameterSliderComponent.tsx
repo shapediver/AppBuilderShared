@@ -8,6 +8,7 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {validateNumberParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import {
 	Group,
 	MantineThemeComponent,
@@ -105,20 +106,18 @@ export default function ParameterSliderComponent(
 
 	// calculate the step size which depends on the parameter type
 	const step = useMemo(() => {
+		const result = validateNumberParameterSettings(definition?.settings);
+		const _step = result.success ? result.data.step : definition.step;
 		if (definition.type === PARAMETER_TYPE.INT) {
-			return definition.step !== undefined && definition.step % 1 === 0
-				? definition.step
-				: 1;
+			return _step !== undefined && _step % 1 === 0 ? _step : 1;
 		} else if (
 			definition.type === PARAMETER_TYPE.EVEN ||
 			definition.type === PARAMETER_TYPE.ODD
 		) {
-			return definition.step !== undefined && definition.step % 2 === 0
-				? definition.step
-				: 2;
+			return _step !== undefined && _step % 2 === 0 ? _step : 2;
 		} else {
-			return definition.step !== undefined
-				? +definition.step.toFixed(definition.decimalplaces!)
+			return _step !== undefined
+				? +_step.toFixed(definition.decimalplaces!)
 				: 1 / Math.pow(10, definition.decimalplaces!);
 		}
 	}, [definition]);
