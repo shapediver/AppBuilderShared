@@ -214,6 +214,26 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		NO_CLIENT.value,
 	);
 
+	const connectAttempt = async (
+		client: ISdStargateClientModel | undefined,
+	): Promise<boolean> => {
+		await selectClient(client);
+		// Check if connection was successful
+		const currentNetworkStatus =
+			useShapeDiverStoreStargate.getState().networkStatus;
+		if (currentNetworkStatus === NetworkStatus.connected) {
+			notifications.show({
+				message: `Connection to the client "${client?.clientName}" successful.`,
+			});
+			return true;
+		} else {
+			notifications.error({
+				message: `Connection to the client "${client?.clientName}" failed, please check the status of the client and try again.`,
+			});
+			return false;
+		}
+	};
+
 	const refreshClients = useCallback(
 		async (currentClientValue: string) => {
 			setLoading(true);
@@ -241,12 +261,25 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 				return;
 			}
 
-			// Auto-connect if enabled and exactly one client is available (excluding "None")
-			if (autoConnect && filteredClients.length === 1) {
-				await selectClient(filteredClients[0]);
-				notifications.show({
-					message: "Connection to the client successful.",
-				});
+			// Auto-connect logic: try clients in order if clientsFilter is provided, or connect to single client
+			if (autoConnect && filteredClients.length > 0 && !selectedClient) {
+				if (clientsFilter && clientsFilter.length > 0) {
+					// Try connecting to clients in the order specified by clientsFilter
+					for (const clientName of clientsFilter) {
+						const clientToTry = filteredClients.find(
+							(client) => client.clientName === clientName,
+						);
+						if (clientToTry) {
+							const success = await connectAttempt(clientToTry);
+							if (success) {
+								break; // Stop trying other clients
+							}
+						}
+					}
+				} else if (filteredClients.length === 1) {
+					// Original logic: auto-connect if exactly one client available
+					await connectAttempt(filteredClients[0]);
+				}
 			}
 
 			setLoading(false);
