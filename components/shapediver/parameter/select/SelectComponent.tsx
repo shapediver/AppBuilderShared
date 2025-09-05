@@ -85,6 +85,10 @@ export interface SelectComponentProps {
 	onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
 	/** Optional function to handle blur events. */
 	onBlur?: () => void;
+	/** Enable search (only used by dropdown type). */
+	searchable?: boolean;
+	/** Max number of options rendered at the same time (only used by dropdown type with searchable). */
+	limit?: number;
 }
 
 interface SelectComponentPropsExt extends SelectComponentProps {

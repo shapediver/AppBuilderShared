@@ -66,6 +66,10 @@ export interface ISelectParameterSettings {
 	type?: SelectComponentType;
 	/** Record containing optional further item data per item name. */
 	itemData?: Record<string, ISelectComponentItemDataType>;
+	/** Enable search for string list inputs (only for type=="dropdown"). */
+	searchable?: boolean;
+	/** Max number of options rendered at the same time (only for type=="dropdown"). Default: 5 if searchable is enabled */
+	limit?: number;
 }
 
 export interface IStringParameterSettings {
