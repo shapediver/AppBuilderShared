@@ -160,7 +160,7 @@ export default function ParameterSliderComponent(
 			// In non-acceptRejectMode display current user input in real time - especially for the NumberInput right section buttons
 			// And update once more on parameter updated
 			if (!props.acceptRejectMode) {
-				setValue(roundedValue);
+				setValue(+v);
 			}
 			setParameterValueDebounced(roundedValue, undefined, {
 				onBefore: () => {
@@ -224,7 +224,7 @@ export default function ParameterSliderComponent(
 						<TooltipWrapper label={tooltip}>
 							<NumberInput
 								w={numberWidth}
-								value={valueClamped}
+								value={+value}
 								min={+definition.min!}
 								max={+definition.max!}
 								step={step}
