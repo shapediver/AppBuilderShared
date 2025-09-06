@@ -136,50 +136,29 @@ export default function ParameterSliderComponent(
 	);
 
 	const valueClamped = roundAndClamp(+value);
-	const applyValueAndRerender = useCallback(
-		// In case user inputs value out of the min/max range, we get value rendering issues
-		// The reason is that the value do not change if user inputs lower or greater than min/max twice in a row
-		// So we need additional rerendering cycle to force the value to be updated
-		// Detect out of range value and set different value
-		(vRaw: number, vClamped: number) => {
-			if (vRaw < definition.min!) {
-				setValue(definition.max!);
-			} else if (vRaw > definition.max!) {
-				setValue(definition.min!);
-			}
-			// Finally, set the right value on the next macrotask (setTimeout)
-			setTimeout(() => {
-				setValue(vClamped);
-			}, 0);
-		},
-		[definition],
-	);
 	const handleChangeCustom = useCallback(
 		(v: number | string, callback?: () => void) => {
 			const roundedValue = roundAndClamp(+v);
-			// In non-acceptRejectMode display current user input in real time - especially for the NumberInput right section buttons
-			// And update once more on parameter updated
-			if (!props.acceptRejectMode) {
-				setValue(roundedValue);
-			}
 			setParameterValueDebounced(roundedValue, undefined, {
 				onBefore: () => {
-					if (props.acceptRejectMode) {
-						// In acceptRejectMode, we need to apply the value immediately
-						// Parameter won't be affected until accept or reject
-						applyValueAndRerender(+v, roundedValue);
+					// In case user inputs value out of the min/max range, we get value rendering issues
+					// The reason is that the value do not change if user inputs lower or greater than min/max twice in a row
+					// So we need additional rerendering cycle to force the value to be updated
+					// Detect out of range value and set different value
+					if (+v < definition.min!) {
+						setValue(definition.max!);
+					} else if (+v > definition.max!) {
+						setValue(definition.min!);
 					}
+					// Finally, set the right value on the next macrotask (setTimeout)
+					setTimeout(() => {
+						setValue(roundedValue);
+					}, 0);
 				},
-				onAfter: () => {
-					callback?.();
-					if (!props.acceptRejectMode) {
-						// In non-acceptRejectMode, we wait for the final value before update component value
-						applyValueAndRerender(+v, roundedValue);
-					}
-				},
+				onAfter: callback,
 			});
 		},
-		[handleChange, value, definition, props.acceptRejectMode],
+		[handleChange, value],
 	);
 
 	// choose width of numeric input based on number of decimals
