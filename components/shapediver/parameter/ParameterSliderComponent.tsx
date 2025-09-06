@@ -78,15 +78,8 @@ export default function ParameterSliderComponent(
 		Partial<PropsParameterWrapper> &
 		Partial<StyleProps>,
 ) {
-	const {
-		definition,
-		value,
-		setValue,
-		handleChange,
-		setParameterValueDebounced,
-		onCancel,
-		disabled,
-	} = useParameterComponentCommons<number>(props);
+	const {definition, value, setValue, handleChange, onCancel, disabled} =
+		useParameterComponentCommons<number>(props);
 
 	// style properties
 	const {sliderWidth, numberWidth} = useProps(
@@ -136,30 +129,6 @@ export default function ParameterSliderComponent(
 	);
 
 	const valueClamped = roundAndClamp(+value);
-	const handleChangeCustom = useCallback(
-		(v: number | string, callback?: () => void) => {
-			const roundedValue = roundAndClamp(+v);
-			setParameterValueDebounced(roundedValue, undefined, {
-				onBefore: () => {
-					// In case user inputs value out of the min/max range, we get value rendering issues
-					// The reason is that the value do not change if user inputs lower or greater than min/max twice in a row
-					// So we need additional rerendering cycle to force the value to be updated
-					// Detect out of range value and set different value
-					if (+v < definition.min!) {
-						setValue(definition.max!);
-					} else if (+v > definition.max!) {
-						setValue(definition.min!);
-					}
-					// Finally, set the right value on the next macrotask (setTimeout)
-					setTimeout(() => {
-						setValue(roundedValue);
-					}, 0);
-				},
-				onAfter: callback,
-			});
-		},
-		[handleChange, value],
-	);
 
 	// choose width of numeric input based on number of decimals
 
@@ -210,11 +179,14 @@ export default function ParameterSliderComponent(
 								decimalScale={definition.decimalplaces}
 								fixedDecimalScale={true}
 								clampBehavior="blur"
-								onChange={(v) => {
-									handleChangeCustom(v, restoreFocus);
-								}}
+								onChange={(v) =>
+									handleChange(
+										roundAndClamp(+v),
+										undefined,
+										restoreFocus,
+									)
+								}
 								disabled={disabled}
-								allowLeadingZeros={false}
 								onFocus={onFocusHandler}
 								onBlur={onBlurHandler}
 							/>
