@@ -230,16 +230,23 @@ export default function ParameterSliderComponent(
 	);
 
 	/** Reset changes to the NumberInput component. */
-	const resetNumberInput = useCallback(() => {
-		setNiState((s) => ({
-			...s,
-			latest: {
-				value: "" + s.previous,
-				floatValue: undefined,
-			},
-			valid: undefined,
-		}));
-	}, []);
+	const resetNumberInput = useCallback(
+		(state: typeof niState) => {
+			if ("" + state.previous !== state.latest.value) {
+				setNiState({
+					previous: state.previous,
+					latest: {
+						value: "" + state.previous,
+						floatValue: undefined,
+					},
+					valid: undefined,
+				});
+			} else {
+				onCancel?.();
+			}
+		},
+		[onCancel],
+	);
 
 	// update the NumberInput state if the value changes from outside, or from the slider
 	useEffect(() => {
@@ -312,7 +319,7 @@ export default function ParameterSliderComponent(
 									if (event.key === "Enter") {
 										commitNumberInput(niState);
 									} else if (event.key === "Escape") {
-										resetNumberInput();
+										resetNumberInput(niState);
 									}
 								}}
 							/>
