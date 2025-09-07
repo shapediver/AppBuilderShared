@@ -93,6 +93,10 @@ export function useParameterComponentCommons<T>(
 		setValue(state.uiValue);
 	}, [state.uiValue]);
 
+	const clearQueuedChange = useCallback(() => {
+		clearTimeout(debounceRef.current);
+	}, []);
+
 	// state for the onCancel callback which can be set from the parameter components
 	const [onCancelCallback, setOnCancelCallback] = useState<
 		(() => void) | undefined
@@ -144,5 +148,6 @@ export function useParameterComponentCommons<T>(
 		onCancel,
 		disabled,
 		sessionDependencies,
+		clearQueuedChange,
 	};
 }

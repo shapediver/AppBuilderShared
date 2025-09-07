@@ -16,7 +16,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import React, {useCallback, useMemo} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 
 /**
  * Round and clamp the number to the given min, max and step.
@@ -78,8 +78,16 @@ export default function ParameterSliderComponent(
 		Partial<PropsParameterWrapper> &
 		Partial<StyleProps>,
 ) {
-	const {definition, value, setValue, handleChange, onCancel, disabled} =
-		useParameterComponentCommons<number>(props);
+	const {
+		definition,
+		value,
+		setValue,
+		handleChange,
+		onCancel,
+		disabled,
+		clearQueuedChange,
+		state,
+	} = useParameterComponentCommons<number>(props);
 
 	// style properties
 	const {sliderWidth, numberWidth} = useProps(
@@ -130,6 +138,118 @@ export default function ParameterSliderComponent(
 
 	const valueClamped = roundAndClamp(+value);
 
+	// dummy state for NumberInput value, working around its internal state issues
+	const [dummy, setDummy] = useState<{
+		// the current value to be shown in the NumberInput
+		value: number;
+		// the last clamped value, or undefined if no change has been made by the user
+		clampedValue: number | undefined;
+		// whether to ignore the change
+		// (used to forcefully update and reset the NumberInput value, working around its internal state issues)
+		ignore: boolean;
+		// whether to reset the "ignore the change" flag
+		resetIgnore: boolean;
+	}>({
+		value: valueClamped,
+		clampedValue: undefined,
+		ignore: false,
+		resetIgnore: false,
+	});
+	// custom variant of handleChange, working around the NumberInput's internal state issues
+	const handleChangeCustom = useCallback(
+		(
+			v: number | undefined,
+			timeout: number | undefined,
+			lastDummy: typeof dummy,
+			cb: () => void = () => {},
+		) => {
+			if (lastDummy.resetIgnore) {
+				setDummy((d) => ({
+					...d,
+					ignore: false,
+					resetIgnore: false,
+				}));
+				console.log("handleChangeCustom resetIgnore", v, lastDummy);
+			}
+			if (lastDummy.ignore) {
+				console.log("handleChangeCustom ignore", v, lastDummy);
+				return;
+			}
+			// cancel a potential previous queued change
+			clearQueuedChange();
+			// onValueChange might provide us with an undefined value
+			if (v === undefined) {
+				setDummy((d) => ({...d, clampedValue: undefined}));
+				console.log("handleChangeCustom undefined", v, lastDummy);
+				return;
+			}
+			const _v = roundAndClamp(v);
+			console.log("handleChangeCustom", v, _v);
+			// If the given value is valid, queue the change.
+			// This applies to valid values provided by onValueChange,
+			// and to clamped values provided by onBlur or Enter key.
+			// If the given value is not valid, store the clamped value
+			// but do not queue the change.
+			if (_v !== v) {
+				setDummy((d) => ({...d, clampedValue: _v}));
+			} else {
+				setDummy((d) => ({...d, value: _v, clampedValue: _v}));
+				handleChange(_v, timeout, () => {
+					// call the given callback (typically for restoring the focus)
+					cb();
+					// below here: workaround for NumberInput issues
+					// if the value was at the boundary, we need to forcefully
+					// set it to the other boundary and back, to make sure re-rendering happens.
+					if (_v >= definition.max!) {
+						setDummy({
+							value: definition.min!,
+							clampedValue: undefined,
+							ignore: true,
+							resetIgnore: false,
+						});
+						setTimeout(
+							() =>
+								setDummy({
+									value: _v,
+									clampedValue: undefined,
+									ignore: true,
+									resetIgnore: true,
+								}),
+							0,
+						);
+					} else if (_v <= definition.min!) {
+						setDummy({
+							value: definition.max!,
+							clampedValue: undefined,
+							ignore: true,
+							resetIgnore: false,
+						});
+						setTimeout(
+							() =>
+								setDummy({
+									value: _v,
+									clampedValue: undefined,
+									ignore: true,
+									resetIgnore: true,
+								}),
+							0,
+						);
+					}
+				});
+			}
+		},
+		[],
+	);
+
+	useEffect(() => {
+		setDummy({
+			value: valueClamped,
+			clampedValue: undefined,
+			ignore: true,
+			resetIgnore: true,
+		});
+	}, [valueClamped]);
+
 	// choose width of numeric input based on number of decimals
 
 	// tooltip, marks
@@ -156,10 +276,27 @@ export default function ParameterSliderComponent(
 							min={+definition.min!}
 							max={+definition.max!}
 							step={step}
-							onChange={(v) => setValue(roundAndClamp(v))}
-							onChangeEnd={(v) =>
-								handleChange(roundAndClamp(v), 0, restoreFocus)
-							}
+							onChange={(v) => {
+								const _v = roundAndClamp(v);
+								setValue(_v);
+								// make sure the number shown in the NumberInput is updated
+								// setDummy((d) => ({
+								// 	...d,
+								// 	value: _v,
+								// 	ignore: true,
+								// 	resetIgnore: false,
+								// }));
+							}}
+							onChangeEnd={(v) => {
+								handleChange(v, 0, restoreFocus);
+								// make sure the number shown in the NumberInput is updated
+								// setDummy((d) => ({
+								// 	...d,
+								// 	value: roundAndClamp(v),
+								// 	ignore: true,
+								// 	resetIgnore: true,
+								// }));
+							}}
 							marks={marks}
 							disabled={disabled}
 							thumbProps={{
@@ -172,23 +309,41 @@ export default function ParameterSliderComponent(
 						<TooltipWrapper label={tooltip}>
 							<NumberInput
 								w={numberWidth}
-								value={valueClamped}
+								value={dummy.value}
 								min={+definition.min!}
 								max={+definition.max!}
 								step={step}
 								decimalScale={definition.decimalplaces}
 								fixedDecimalScale={true}
-								clampBehavior="blur"
-								onChange={(v) =>
-									handleChange(
-										roundAndClamp(+v),
+								clampBehavior="none"
+								onValueChange={(v) =>
+									handleChangeCustom(
+										+v.value,
 										undefined,
+										dummy,
 										restoreFocus,
 									)
 								}
 								disabled={disabled}
 								onFocus={onFocusHandler}
-								onBlur={onBlurHandler}
+								onBlur={() => {
+									onBlurHandler();
+									handleChangeCustom(
+										dummy.clampedValue,
+										0,
+										dummy,
+									);
+								}}
+								onKeyDown={(event) => {
+									if (event.key === "Enter") {
+										handleChangeCustom(
+											dummy.clampedValue,
+											0,
+											dummy,
+											restoreFocus,
+										);
+									}
+								}}
 							/>
 						</TooltipWrapper>
 					)}
