@@ -1,13 +1,20 @@
 import {FocusEvent, useCallback, useEffect, useState} from "react";
 export const useFocus = () => {
 	const [focusedElement, setFocusedElement] = useState<
-		HTMLInputElement | HTMLTextAreaElement | null
+		HTMLInputElement | HTMLTextAreaElement | HTMLDivElement | null
 	>(null);
 	const onFocusHandler = useCallback(
-		(e: FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+		(
+			e: FocusEvent<
+				HTMLInputElement | HTMLTextAreaElement | HTMLDivElement
+			>,
+		) => {
 			if (e.target) {
 				setFocusedElement(
-					e.target as HTMLInputElement | HTMLTextAreaElement,
+					e.target as
+						| HTMLInputElement
+						| HTMLTextAreaElement
+						| HTMLDivElement,
 				);
 			}
 		},
