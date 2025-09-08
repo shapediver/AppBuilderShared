@@ -16,7 +16,14 @@ import {
 	useProps,
 } from "@mantine/core";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import React, {useCallback, useMemo} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
+
+interface NumberFormatValues {
+	/** The value converted to a float, if valid. */
+	floatValue: number | undefined;
+	/** The value currently displayed. */
+	value: string;
+}
 
 /**
  * Round and clamp the number to the given min, max and step.
@@ -78,15 +85,8 @@ export default function ParameterSliderComponent(
 		Partial<PropsParameterWrapper> &
 		Partial<StyleProps>,
 ) {
-	const {
-		definition,
-		value,
-		setValue,
-		handleChange,
-		setParameterValueDebounced,
-		onCancel,
-		disabled,
-	} = useParameterComponentCommons<number>(props);
+	const {definition, value, setValue, handleChange, onCancel, disabled} =
+		useParameterComponentCommons<number>(props);
 
 	// style properties
 	const {sliderWidth, numberWidth} = useProps(
@@ -136,53 +136,131 @@ export default function ParameterSliderComponent(
 	);
 
 	const valueClamped = roundAndClamp(+value);
-	const applyValueAndRerender = useCallback(
-		// In case user inputs value out of the min/max range, we get value rendering issues
-		// The reason is that the value do not change if user inputs lower or greater than min/max twice in a row
-		// So we need additional rerendering cycle to force the value to be updated
-		// Detect out of range value and set different value
-		(vRaw: number, vClamped: number) => {
-			if (vRaw < definition.min!) {
-				setValue(definition.max!);
-			} else if (vRaw > definition.max!) {
-				setValue(definition.min!);
-			}
-			// Finally, set the right value on the next macrotask (setTimeout)
-			setTimeout(() => {
-				setValue(vClamped);
-			}, 0);
+
+	// State for the NumberInput component
+	const [niState, setNiState] = useState<{
+		/** Latest change event data. */
+		latest: NumberFormatValues;
+		/** Latest valid (clamped) value input by the user which has not been committed yet. */
+		valid: number | undefined;
+		/** Previous valid (clamped) value. */
+		previous: number;
+	}>({
+		latest: {
+			value: "" + valueClamped,
+			floatValue: undefined,
 		},
-		[definition],
-	);
-	const handleChangeCustom = useCallback(
-		(v: number | string, callback?: () => void) => {
-			const roundedValue = roundAndClamp(+v);
-			// In non-acceptRejectMode display current user input in real time - especially for the NumberInput right section buttons
-			// And update once more on parameter updated
-			if (!props.acceptRejectMode) {
-				setValue(roundedValue);
+		valid: undefined,
+		previous: valueClamped,
+	});
+
+	/** Handler for value changes of the NumberInput component */
+	const onNumberInputValueChange = useCallback((v: NumberFormatValues) => {
+		const clamped =
+			v.floatValue !== undefined
+				? roundAndClamp(v.floatValue)
+				: undefined;
+		setNiState((s) => ({
+			...s,
+			latest: v,
+			valid:
+				v.floatValue !== undefined && clamped === v.floatValue
+					? clamped
+					: undefined,
+		}));
+	}, []);
+
+	/**
+	 * Commit changes for the NumberInput component, called if the
+	 * user hits enter or the input looses focus.
+	 */
+	const commitNumberInput = useCallback(
+		(
+			state: typeof niState,
+			blurEvent?: React.FocusEvent<HTMLInputElement>,
+		) => {
+			if (state.valid !== undefined) {
+				setNiState({
+					valid: undefined,
+					previous: state.valid!,
+					latest: {
+						value: "" + state.valid,
+						floatValue: undefined,
+					},
+				});
+				handleChange(
+					state.valid,
+					0,
+					blurEvent ? undefined : restoreFocus,
+				);
+				if (blurEvent) onBlurHandler();
+				//console.debug(`Committing change to ${state.valid}`);
+				return;
 			}
-			setParameterValueDebounced(roundedValue, undefined, {
-				onBefore: () => {
-					if (props.acceptRejectMode) {
-						// In acceptRejectMode, we need to apply the value immediately
-						// Parameter won't be affected until accept or reject
-						applyValueAndRerender(+v, roundedValue);
+			if (state.latest.floatValue === undefined) {
+				if (blurEvent) {
+					if ("" + state.previous !== state.latest.value) {
+						setNiState({
+							latest: {
+								value: "" + state.previous,
+								floatValue: undefined,
+							},
+							valid: undefined,
+							previous: state.previous,
+						});
+						blurEvent.target.focus();
+						//console.debug(`Resetting value to ${state.previous}`);
 					}
+				}
+				return;
+			}
+			const clamped = roundAndClamp(state.latest.floatValue);
+			setNiState({
+				...state,
+				latest: {
+					value: "" + clamped,
+					floatValue: undefined,
 				},
-				onAfter: () => {
-					callback?.();
-					if (!props.acceptRejectMode) {
-						// In non-acceptRejectMode, we wait for the final value before update component value
-						applyValueAndRerender(+v, roundedValue);
-					}
-				},
+				valid: clamped,
 			});
+			blurEvent?.target.focus();
+			//console.debug(`Clamping ${state.latest.floatValue} to ${clamped}`);
 		},
-		[handleChange, value, definition, props.acceptRejectMode],
+		[],
 	);
 
-	// choose width of numeric input based on number of decimals
+	/** Reset changes to the NumberInput component. */
+	const resetNumberInput = useCallback(
+		(state: typeof niState) => {
+			if ("" + state.previous !== state.latest.value) {
+				setNiState({
+					previous: state.previous,
+					latest: {
+						value: "" + state.previous,
+						floatValue: undefined,
+					},
+					valid: undefined,
+				});
+			} else {
+				onCancel?.();
+			}
+		},
+		[onCancel],
+	);
+
+	// update the NumberInput state if the value changes from outside, or from the slider
+	useEffect(() => {
+		setNiState({
+			latest: {
+				value: "" + valueClamped,
+				floatValue: undefined,
+			},
+			valid: undefined,
+			previous: valueClamped,
+		});
+	}, [valueClamped]);
+
+	// TODO: choose width of numeric input based on number of decimals
 
 	// tooltip, marks
 	const tooltip = `Min: ${definition.min}, Max: ${definition.max}`;
@@ -224,20 +302,26 @@ export default function ParameterSliderComponent(
 						<TooltipWrapper label={tooltip}>
 							<NumberInput
 								w={numberWidth}
-								value={valueClamped}
+								value={niState.latest.value}
 								min={+definition.min!}
 								max={+definition.max!}
 								step={step}
 								decimalScale={definition.decimalplaces}
 								fixedDecimalScale={true}
-								clampBehavior="blur"
-								onChange={(v) => {
-									handleChangeCustom(v, restoreFocus);
-								}}
+								clampBehavior="none"
+								onValueChange={onNumberInputValueChange}
 								disabled={disabled}
-								allowLeadingZeros={false}
 								onFocus={onFocusHandler}
-								onBlur={onBlurHandler}
+								onBlur={(event) =>
+									commitNumberInput(niState, event)
+								}
+								onKeyDown={(event) => {
+									if (event.key === "Enter") {
+										commitNumberInput(niState);
+									} else if (event.key === "Escape") {
+										resetNumberInput(niState);
+									}
+								}}
 							/>
 						</TooltipWrapper>
 					)}

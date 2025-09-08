@@ -68,47 +68,20 @@ export function useParameterComponentCommons<T>(
 		: debounceTimeoutForImmediateExecution;
 	const debounceRef = useRef<NodeJS.Timeout>();
 
-	const setParameterValue = useCallback(
-		(curval: T | string, cb: () => void = () => {}) => {
-			if (actions.setUiValue(curval)) {
-				actions.execute(!acceptRejectMode).then(() => cb());
-			} else {
-				console.warn(
-					`setUiValue failed for parameter ${definition.id}, the value is not valid.`,
-					curval,
-				);
-			}
-		},
-		[actions, definition, acceptRejectMode],
-	);
-
 	const handleChange = useCallback(
 		(curval: T | string, timeout?: number, cb: () => void = () => {}) => {
 			clearTimeout(debounceRef.current);
 			setValue(curval);
 			debounceRef.current = setTimeout(
 				() => {
-					setParameterValue(curval, cb);
-				},
-				timeout === undefined ? debounceTimeout : timeout,
-			);
-		},
-		[acceptRejectMode, debounceTimeout, actions, definition],
-	);
-
-	// Manually managed parameter value update with custom events
-	// @internal use only
-	const setParameterValueDebounced = useCallback(
-		(
-			curval: T | string,
-			timeout?: number,
-			events: {onBefore?: () => void; onAfter?: () => void} = {},
-		) => {
-			clearTimeout(debounceRef.current);
-			debounceRef.current = setTimeout(
-				() => {
-					if (events.onBefore) events.onBefore();
-					setParameterValue(curval, events.onAfter);
+					if (actions.setUiValue(curval)) {
+						actions.execute(!acceptRejectMode).then(() => cb());
+					} else {
+						console.warn(
+							`setUiValue failed for parameter ${definition.id}, the value is not valid.`,
+							curval,
+						);
+					}
 				},
 				timeout === undefined ? debounceTimeout : timeout,
 			);
@@ -167,7 +140,6 @@ export function useParameterComponentCommons<T>(
 		value,
 		setValue,
 		handleChange,
-		setParameterValueDebounced,
 		setOnCancelCallback,
 		onCancel,
 		disabled,
