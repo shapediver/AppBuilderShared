@@ -157,7 +157,6 @@ export function DesktopClientPanelThemeProps(
 }
 
 export default function DesktopClientPanel(props: Props & StyleProps) {
-	const {clientsFilter, autoConnect = false, ...rest} = props;
 	const notifications = useContext(NotificationContext);
 
 	const {
@@ -174,7 +173,9 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		groupBottomProps,
 		loaderProps,
 		statusIconProps,
-	} = useProps("DesktopClientPanel", defaultStyleProps, rest);
+		clientsFilter,
+		autoConnect = false,
+	} = useProps("DesktopClientPanel", defaultStyleProps, props);
 
 	const {
 		getAvailableClients,
