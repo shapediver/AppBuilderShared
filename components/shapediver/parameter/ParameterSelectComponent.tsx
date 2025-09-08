@@ -159,19 +159,18 @@ export default function ParameterSelectComponent(
 	const inputContainer = useCallback(
 		(children: React.ReactNode) => {
 			const isValid = React.isValidElement(children);
-			return (
-				<>
-					{isValid
-						? React.cloneElement(
-								children as React.ReactElement<any>,
-								{
-									onFocus: onFocusHandler,
-									onBlur: onBlurHandler,
-								},
-							)
-						: children}
-				</>
-			);
+			if (!isValid) return children;
+			const child = children as React.ReactElement<any>;
+			return React.cloneElement(child, {
+				onFocus: (e: any) => {
+					child.props?.onFocus?.(e);
+					onFocusHandler(e);
+				},
+				onBlur: (e: any) => {
+					child.props?.onBlur?.(e);
+					onBlurHandler();
+				},
+			});
 		},
 		[onFocusHandler, onBlurHandler],
 	);
