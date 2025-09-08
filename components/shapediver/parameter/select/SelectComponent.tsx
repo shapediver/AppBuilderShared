@@ -89,11 +89,34 @@ export interface SelectComponentProps {
 	searchable?: boolean;
 	/** Max number of options rendered at the same time (only used by dropdown type with searchable). */
 	limit?: number;
+	/**
+	 * Optional properties for infinite scrolling.
+	 * Most of these properties can be used with the useInfiniteScroll hook,
+	 * see example in the ModelLibrary component.
+	 * https://www.npmjs.com/package/react-infinite-scroll-hook
+	 */
+	scrolling?: {
+		/** Whether loading is currently going on. */
+		loading: boolean;
+		/** Potential loading error. */
+		error: Error | undefined;
+		/** Whether calling loadMore will result in further items. */
+		hasNextPage: boolean;
+		/** Function to continue loading. */
+		loadMore: () => Promise<unknown>;
+		/** Set a search term to use. This is independent of useInfiniteScroll. */
+		setSearchTerm: (term: string) => void;
+	};
 }
 
 interface SelectComponentPropsExt extends SelectComponentProps {
 	/** Type of select component to use. */
 	type?: SelectComponentType;
+	/**
+	 * Name of the "data source" to fetch items and item data from.
+	 * This is used for connecting to data sources via the e-commerce API.
+	 */
+	source?: string;
 }
 
 /**
@@ -101,7 +124,9 @@ interface SelectComponentPropsExt extends SelectComponentProps {
  * At most one item can be selected at a time.
  */
 export default function SelectComponent(props: SelectComponentPropsExt) {
-	const {type, ...rest} = props;
+	const {type, /*source,*/ ...rest} = props;
+
+	// TODO Alex use source to define properties for infinite scrolling.
 
 	if (type === "buttonflex") {
 		return <SelectButtonFlexComponent {...rest} />;
