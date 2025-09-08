@@ -67,6 +67,15 @@ export const validateStringParameterSettings = (value: any) => {
 	return IStringParameterSettingsSchema.safeParse(value);
 };
 
+// Zod type definition for INumberParameterSettings
+const INumberParameterSettingsSchema = z.object({
+	step: z.number().positive().optional(),
+});
+
+export const validateNumberParameterSettings = (value: any) => {
+	return INumberParameterSettingsSchema.safeParse(value);
+};
+
 // Zod type definition for IAppBuilderParameterDefinition
 const IAppBuilderParameterDefinitionSchema = z.object({
 	id: z.string(),
@@ -99,7 +108,7 @@ const IAppBuilderParameterDefinitionSchema = z.object({
 	hidden: z.boolean(),
 	settings: z.record(z.any()).optional(),
 	value: z.string().optional(),
-	step: z.number().optional(),
+	step: z.number().positive().optional(),
 });
 
 // Zod type definition for property "overrides" of IAppBuilderParameterRef
