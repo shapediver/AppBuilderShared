@@ -107,7 +107,9 @@ export default function ParameterSliderComponent(
 	// calculate the step size which depends on the parameter type
 	const step = useMemo(() => {
 		const result = validateNumberParameterSettings(definition?.settings);
-		const _step = result.success ? result.data.step : definition.step;
+		const _step = result.success
+			? (result.data.step ?? definition.step)
+			: definition.step;
 		if (definition.type === PARAMETER_TYPE.INT) {
 			return _step !== undefined && _step % 1 === 0 ? _step : 1;
 		} else if (
