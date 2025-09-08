@@ -224,12 +224,12 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 				useShapeDiverStoreStargate.getState().networkStatus;
 			if (currentNetworkStatus === NetworkStatus.connected) {
 				notifications.show({
-					message: `Connection to the client "${client?.clientName}" successful.`,
+					message: `Successfully connected to client "${client?.clientName}".`,
 				});
 				return true;
 			} else {
 				notifications.error({
-					message: `Connection to the client "${client?.clientName}" failed, please check the status of the client and try again.`,
+					message: `Failed to connect to client "${client?.clientName}", please check the status of the client and try again.`,
 				});
 				return false;
 			}
