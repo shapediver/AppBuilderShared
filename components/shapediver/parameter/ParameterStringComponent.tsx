@@ -90,7 +90,8 @@ export default function ParameterStringComponent(
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition &&
-				(selectSettings && selectSettings.items ? (
+				(selectSettings &&
+				(selectSettings.items || selectSettings.source) ? (
 					<SelectComponent
 						value={undefined}
 						onChange={(v) =>
@@ -102,7 +103,7 @@ export default function ParameterStringComponent(
 						inputContainer={inputContainer}
 						onFocus={onFocusHandler}
 						onBlur={onBlurHandler}
-						items={selectSettings.items}
+						items={selectSettings.items ?? []}
 						{...selectSettings}
 					/>
 				) : lines > 1 ? (

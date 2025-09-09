@@ -106,6 +106,9 @@ export interface SelectComponentProps {
 	 * Most of these properties can be used with the useInfiniteScroll hook,
 	 * see example in the ModelLibrary component.
 	 * https://www.npmjs.com/package/react-infinite-scroll-hook
+	 *
+	 * NOTE: If this property is defined, components must use property
+	 * scrollingApi.items instead of items!!!
 	 */
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>;
 }
