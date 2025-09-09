@@ -523,7 +523,8 @@ export interface IAppBuilderWidgetPropsSceneTreeExplorer {
 
 /** Properties of a desktop client selection widget. */
 export interface IAppBuilderWidgetPropsDesktopClientSelection {
-	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
+	clientsFilter?: string[]; // allowed client names that can be filtered out.
+	autoConnect?: boolean; // if true and a single client is detected, it will be automatically connected.
 }
 
 /** Properties of a desktop client outputs widget. */

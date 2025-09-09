@@ -1,6 +1,8 @@
 import Icon, {IconProps, IconType} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
+import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	ActionIcon,
@@ -23,7 +25,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /**
@@ -76,9 +78,7 @@ export const NetworkStatusIcons: Record<NetworkStatus, INetworkStatusIcon> = {
 	},
 };
 
-interface Props {
-	__placeholder?: never;
-}
+type Props = IAppBuilderWidgetPropsDesktopClientSelection;
 
 interface StyleProps {
 	iconStatusProps?: ActionIconProps;
@@ -157,7 +157,7 @@ export function DesktopClientPanelThemeProps(
 }
 
 export default function DesktopClientPanel(props: Props & StyleProps) {
-	const {...rest} = props;
+	const notifications = useContext(NotificationContext);
 
 	const {
 		iconStatusProps,
@@ -173,7 +173,9 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		groupBottomProps,
 		loaderProps,
 		statusIconProps,
-	} = useProps("DesktopClientPanel", defaultStyleProps, rest);
+		clientsFilter,
+		autoConnect = false,
+	} = useProps("DesktopClientPanel", defaultStyleProps, props);
 
 	const {
 		getAvailableClients,
@@ -213,22 +215,81 @@ export default function DesktopClientPanel(props: Props & StyleProps) {
 		NO_CLIENT.value,
 	);
 
-	const refreshClients = useCallback(async (currentClientValue: string) => {
-		setLoading(true);
-		const clients = await getAvailableClients(true);
-		const clientChoices: {value: string; label: string}[] = [
-			NO_CLIENT,
-			...clients.map((client) => ({
-				value: client.id,
-				label: client.clientName,
-				client: client,
-			})),
-		];
-		setAvailableClients(clientChoices);
-		if (!clientChoices.find((c) => c.value === currentClientValue))
-			await selectClient(undefined);
-		setLoading(false);
-	}, []);
+	const connectAttempt = useCallback(
+		async (
+			client: ISdStargateClientModel | undefined,
+		): Promise<boolean> => {
+			await selectClient(client);
+			// Check if connection was successful
+			const currentNetworkStatus =
+				useShapeDiverStoreStargate.getState().networkStatus;
+			if (currentNetworkStatus === NetworkStatus.connected) {
+				notifications.show({
+					message: `Successfully connected to client "${client?.clientName}".`,
+				});
+				return true;
+			} else {
+				notifications.error({
+					message: `Failed to connect to client "${client?.clientName}", please check the status of the client and try again.`,
+				});
+				return false;
+			}
+		},
+		[],
+	);
+
+	const refreshClients = useCallback(
+		async (currentClientValue: string) => {
+			setLoading(true);
+			const clients = await getAvailableClients(true);
+
+			// Filter clients based on clientsFilter prop
+			const filteredClients = clientsFilter
+				? clients.filter((client) =>
+						clientsFilter.includes(client.clientName),
+					)
+				: clients;
+
+			const clientChoices: IClientChoice[] = [
+				NO_CLIENT,
+				...filteredClients.map((client) => ({
+					value: client.id,
+					label: client.clientName,
+					client: client,
+				})),
+			];
+			setAvailableClients(clientChoices);
+			if (!clientChoices.find((c) => c.value === currentClientValue)) {
+				await selectClient(undefined);
+				setLoading(false);
+				return;
+			}
+
+			// Auto-connect logic: try clients in order if clientsFilter is provided, or connect to single client
+			if (autoConnect && filteredClients.length > 0 && !selectedClient) {
+				if (clientsFilter && clientsFilter.length > 0) {
+					// Try connecting to clients in the order specified by clientsFilter
+					for (const clientName of clientsFilter) {
+						const clientToTry = filteredClients.find(
+							(client) => client.clientName === clientName,
+						);
+						if (clientToTry) {
+							const success = await connectAttempt(clientToTry);
+							if (success) {
+								break; // Stop trying other clients
+							}
+						}
+					}
+				} else if (filteredClients.length === 1) {
+					// Original logic: auto-connect if exactly one client available
+					await connectAttempt(filteredClients[0]);
+				}
+			}
+
+			setLoading(false);
+		},
+		[clientsFilter, autoConnect, selectedClient],
+	);
 
 	// Keep the local state in sync with the global one
 	useEffect(() => {
