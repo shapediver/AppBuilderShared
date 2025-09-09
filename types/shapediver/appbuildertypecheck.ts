@@ -40,6 +40,7 @@ const ISelectParameterSettingsSchema = z.object({
 	itemData: z.record(ISelectComponentItemDataTypeSchema).optional(),
 	searchable: z.boolean().optional(),
 	limit: z.number().int().positive().optional(),
+	height: z.string().optional(),
 });
 
 export const validateSelectParameterSettings = (value: any) => {

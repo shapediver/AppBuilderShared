@@ -90,6 +90,13 @@ export interface SelectComponentProps {
 	/** Max number of options rendered at the same time (only used by dropdown type with searchable). */
 	limit?: number;
 	/**
+	 * Optional CSS controlling the absolute height of the widget.
+	 * In case this is not specified, the default behavior of the widget
+	 * is to adapt its height according to the items.
+	 * This should always be specified in case of infinite scrolling.
+	 */
+	height?: string;
+	/**
 	 * Optional properties for infinite scrolling.
 	 * Most of these properties can be used with the useInfiniteScroll hook,
 	 * see example in the ModelLibrary component.

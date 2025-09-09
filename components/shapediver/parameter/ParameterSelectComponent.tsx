@@ -223,6 +223,7 @@ export default function ParameterSelectComponent(
 				onBlur={onBlurHandler}
 				searchable={settings.searchable}
 				limit={settings.limit}
+				height={settings.height}
 			/>
 		);
 
