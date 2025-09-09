@@ -1,4 +1,9 @@
 import {TextWeightedProps} from "@AppBuilderShared/components/ui/TextWeighted";
+import {ScrollingApiFactory} from "@AppBuilderShared/modules/ecommerce/scrollingapi";
+import {
+	IScrollingApi,
+	IScrollingApiItemTypeSelect,
+} from "@AppBuilderShared/modules/ecommerce/types/scrollingapi";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
@@ -13,7 +18,7 @@ import {
 	StackProps,
 	TextProps,
 } from "@mantine/core";
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import SelectButtonFlexComponent from "./SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
 import SelectCarouselComponent from "./SelectCarouselComponent";
@@ -102,18 +107,7 @@ export interface SelectComponentProps {
 	 * see example in the ModelLibrary component.
 	 * https://www.npmjs.com/package/react-infinite-scroll-hook
 	 */
-	scrolling?: {
-		/** Whether loading is currently going on. */
-		loading: boolean;
-		/** Potential loading error. */
-		error: Error | undefined;
-		/** Whether calling loadMore will result in further items. */
-		hasNextPage: boolean;
-		/** Function to continue loading. */
-		loadMore: () => Promise<unknown>;
-		/** Set a search term to use. This is independent of useInfiniteScroll. */
-		setSearchTerm: (term: string) => void;
-	};
+	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>;
 }
 
 interface SelectComponentPropsExt extends SelectComponentProps {
@@ -131,9 +125,32 @@ interface SelectComponentPropsExt extends SelectComponentProps {
  * At most one item can be selected at a time.
  */
 export default function SelectComponent(props: SelectComponentPropsExt) {
-	const {type, /*source,*/ ...rest} = props;
+	const {type, source, ..._rest} = props;
 
-	// TODO Alex use source to define properties for infinite scrolling.
+	// scrolling API reference
+	const scrollingApi = useRef<
+		IScrollingApi<IScrollingApiItemTypeSelect> | undefined
+	>(undefined);
+
+	// if source changes, get new scrolling API
+	useEffect(() => {
+		if (source) {
+			scrollingApi.current = ScrollingApiFactory.getApiSelect(source);
+			// TODO remove debug code
+			// setInterval(async () => {
+			// 	await scrollingApi.current?.loadMore();
+			// 	console.log(
+			// 		scrollingApi.current?.items.length,
+			// 		scrollingApi.current?.hasNextPage,
+			// 	);
+			// }, 1000);
+		}
+		return () => {
+			scrollingApi.current = undefined;
+		};
+	}, [source]);
+
+	const rest = {..._rest, scrollingApi: scrollingApi.current};
 
 	if (type === "buttonflex") {
 		return <SelectButtonFlexComponent {...rest} />;

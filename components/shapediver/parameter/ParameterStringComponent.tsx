@@ -96,17 +96,14 @@ export default function ParameterStringComponent(
 						onChange={(v) =>
 							handleChange(v ?? "", undefined, restoreFocus)
 						}
-						items={selectSettings.items}
 						disabled={disabled}
-						type={selectSettings.type}
-						itemData={selectSettings.itemData}
 						// TODO add these settings as an optional theme property to the ParameterStringComponent
 						//settings={settings.settings}
 						inputContainer={inputContainer}
 						onFocus={onFocusHandler}
 						onBlur={onBlurHandler}
-						searchable={selectSettings.searchable}
-						limit={selectSettings.limit}
+						items={selectSettings.items}
+						{...selectSettings}
 					/>
 				) : lines > 1 ? (
 					<Textarea

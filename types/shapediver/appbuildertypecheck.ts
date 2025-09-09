@@ -25,7 +25,7 @@ const SelectComponentTypeSchema = z.enum([
 ]);
 
 // Zod type definition for ISelectComponentItemDataType
-const ISelectComponentItemDataTypeSchema = z.object({
+export const ISelectComponentItemDataTypeSchema = z.object({
 	displayname: z.string().optional(),
 	tooltip: z.string().optional(),
 	description: z.string().optional(),

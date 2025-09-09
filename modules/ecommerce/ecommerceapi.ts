@@ -198,9 +198,7 @@ export class DummyECommerceApiActions implements IECommerceApiActions {
 		return Promise.resolve(reply);
 	}
 
-	updateSharingLink(
-		data: IUpdateSharingLinkData,
-	): Promise<IUpdateSharingLinkReply> {
+	updateSharingLink(/*data: IUpdateSharingLinkData,*/): Promise<IUpdateSharingLinkReply> {
 		return Promise.resolve({href: window.location.href});
 	}
 }
