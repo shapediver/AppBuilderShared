@@ -1,9 +1,9 @@
 import {TextWeightedProps} from "@AppBuilderShared/components/ui/TextWeighted";
-import {ScrollingApiFactory} from "@AppBuilderShared/modules/ecommerce/scrollingapi";
 import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
 } from "@AppBuilderShared/modules/ecommerce/types/scrollingapi";
+import {useScrollingApiStore} from "@AppBuilderShared/store/useScrollingApiStore";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
@@ -18,7 +18,8 @@ import {
 	StackProps,
 	TextProps,
 } from "@mantine/core";
-import React, {useEffect, useRef} from "react";
+import React, {useEffect} from "react";
+import {useShallow} from "zustand/react/shallow";
 import SelectButtonFlexComponent from "./SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
 import SelectCarouselComponent from "./SelectCarouselComponent";
@@ -130,30 +131,37 @@ interface SelectComponentPropsExt extends SelectComponentProps {
 export default function SelectComponent(props: SelectComponentPropsExt) {
 	const {type, source, ..._rest} = props;
 
-	// scrolling API reference
-	const scrollingApi = useRef<
-		IScrollingApi<IScrollingApiItemTypeSelect> | undefined
-	>(undefined);
+	// scrolling API
+	const {scrollingApi, addScrollingApiSelect, removeScrollingApiSelect} =
+		useScrollingApiStore(
+			useShallow((state) => ({
+				scrollingApi: state.scrollingApisSelect[source ?? ""],
+				addScrollingApiSelect: state.addScrollingApiSelect,
+				removeScrollingApiSelect: state.removeScrollingApiSelect,
+			})),
+		);
 
 	// if source changes, get new scrolling API
 	useEffect(() => {
 		if (source) {
-			scrollingApi.current = ScrollingApiFactory.getApiSelect(source);
+			addScrollingApiSelect(source);
 			// TODO remove debug code
+			// const api = addScrollingApiSelect(source);
 			// setInterval(async () => {
-			// 	await scrollingApi.current?.loadMore();
-			// 	console.log(
-			// 		scrollingApi.current?.items.length,
-			// 		scrollingApi.current?.hasNextPage,
-			// 	);
-			// }, 1000);
+			// 	await api.loadMore();
+			// }, 2000);
 		}
 		return () => {
-			scrollingApi.current = undefined;
+			removeScrollingApiSelect(source ?? "");
 		};
 	}, [source]);
 
-	const rest = {..._rest, scrollingApi: scrollingApi.current};
+	// TODO remove debug code
+	// useEffect(() => {
+	// 	console.log("scrollingApi items", scrollingApi?.items);
+	// }, [scrollingApi?.items]);
+
+	const rest = {..._rest, scrollingApi};
 
 	if (type === "buttonflex") {
 		return <SelectButtonFlexComponent {...rest} />;
