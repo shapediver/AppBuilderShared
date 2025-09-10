@@ -1,12 +1,6 @@
 import {ISelectComponentItemDataType} from "@AppBuilderShared/types/shapediver/appbuilder";
 
 /**
- * Types for infinite scrolling API results.
- * Used to validate items received from the peer.
- */
-export type ScrollingApiType = "select" | "unknown";
-
-/**
  * Generic interface for infinite scrolling API results.
  * Some of these properties can be used with the useInfiniteScroll hook.
  * https://www.npmjs.com/package/react-infinite-scroll-hook
