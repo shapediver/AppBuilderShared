@@ -24,7 +24,7 @@ export interface IScrollingApi<TItem> {
 	 * Set a search term to use.
 	 * This is independent of useInfiniteScroll.
 	 */
-	setSearchTerm: (term: string) => Promise<unknown>;
+	setSearchTerms: (terms: string[]) => Promise<unknown>;
 	/**
 	 * Set a preferred page size.
 	 * Note: The page size will not necessarily be attained in all cases.

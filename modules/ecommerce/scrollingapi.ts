@@ -1,3 +1,5 @@
+import {isRunningInPlatform} from "@AppBuilderShared/utils/platform/environment";
+import {ECommerceApiSingleton} from "./singleton";
 import {
 	IScrollingApi,
 	IScrollingApiFactory,
@@ -7,14 +9,12 @@ import {
 export class DummyScrollingApiSelect
 	implements IScrollingApi<IScrollingApiItemTypeSelect>
 {
-	private source: string;
 	private _dummyItems: IScrollingApiItemTypeSelect[] = [];
 	private _filteredDummyItems: IScrollingApiItemTypeSelect[] = [];
 	private _pageSize: number = 10;
 	private _counter: number = 0;
 
-	constructor(source: string) {
-		this.source = source;
+	constructor(private source: string) {
 		this._dummyItems = Array.from({length: 95}, (_, i) => ({
 			item: `Option ${String(i).padStart(3, "0")}`,
 			data: {
@@ -51,12 +51,13 @@ export class DummyScrollingApiSelect
 		return Promise.resolve<unknown>(undefined);
 	}
 
-	setSearchTerm(term: string) {
-		this._filteredDummyItems = term
-			? this._dummyItems.filter((it) =>
-					it.item.toLowerCase().includes(term.toLowerCase()),
-				)
-			: this._dummyItems;
+	setSearchTerms(terms: string[]) {
+		this._filteredDummyItems =
+			terms.length > 0
+				? this._dummyItems.filter((it) =>
+						it.item.toLowerCase().includes(terms[0].toLowerCase()),
+					)
+				: this._dummyItems;
 		this._counter = 0;
 		this.items = [];
 		return Promise.resolve<unknown>(undefined);
@@ -70,9 +71,67 @@ export class DummyScrollingApiSelect
 	items: IScrollingApiItemTypeSelect[] = [];
 }
 
+export class ECommerceScrollingApiSelect
+	implements IScrollingApi<IScrollingApiItemTypeSelect>
+{
+	constructor(private source: string) {}
+
+	loading: boolean = false;
+
+	error: Error | undefined;
+
+	hasNextPage: boolean = true;
+
+	async loadMore() {
+		this.loading = true;
+		const api = await ECommerceApiSingleton;
+		const result =
+			await api.scrollingApiLoadMore<IScrollingApiItemTypeSelect>({
+				source: this.source,
+			});
+		this.hasNextPage = result.hasNextPage;
+		this.items = result.items;
+		this.loading = false;
+	}
+
+	async setSearchTerms(terms: string[]) {
+		this.loading = true;
+		const api = await ECommerceApiSingleton;
+		const result =
+			await api.scrollingApiSetParameters<IScrollingApiItemTypeSelect>({
+				source: this.source,
+				terms,
+			});
+		if (result.hasNextPage !== undefined)
+			this.hasNextPage = result.hasNextPage;
+		if (result.items !== undefined) this.items = result.items;
+		this.loading = false;
+	}
+
+	async setPageSize(pageSize: number) {
+		this.loading = true;
+		const api = await ECommerceApiSingleton;
+		const result =
+			await api.scrollingApiSetParameters<IScrollingApiItemTypeSelect>({
+				source: this.source,
+				pageSize,
+			});
+		if (result.hasNextPage !== undefined)
+			this.hasNextPage = result.hasNextPage;
+		if (result.items !== undefined) this.items = result.items;
+		this.loading = false;
+	}
+
+	items: IScrollingApiItemTypeSelect[] = [];
+}
+
 class _ScrollingApiFactory implements IScrollingApiFactory {
 	getApiSelect(source: string): IScrollingApi<IScrollingApiItemTypeSelect> {
-		return new DummyScrollingApiSelect(source);
+		// if window.parent === window return a dummy api for testing
+		if (isRunningInPlatform() || window.parent === window) {
+			return new DummyScrollingApiSelect(source);
+		}
+		return new ECommerceScrollingApiSelect(source);
 	}
 }
 

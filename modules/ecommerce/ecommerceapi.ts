@@ -14,6 +14,10 @@ import {
 	IECommerceApiFactory,
 	IGetParentPageInfoReply,
 	IGetUserProfileReply,
+	IScrollingApiLoadMoreData,
+	IScrollingApiLoadMoreReply,
+	IScrollingApiSetParametersData,
+	IScrollingApiSetParametersReply,
 	IUpdateSharingLinkData,
 	IUpdateSharingLinkReply,
 } from "@AppBuilderShared/modules/ecommerce/types/ecommerceapi";
@@ -27,6 +31,8 @@ const MESSAGE_TYPE_GET_USER_PROFILE = "GET_USER_PROFILE";
 const MESSAGE_TYPE_CLOSE_CONFIGURATOR = "CLOSE_CONFIGURATOR";
 const MESSAGE_TYPE_GET_PARENT_PAGE_INFO = "GET_PARENT_PAGE_INFO";
 const MESSAGE_TYPE_UPDATE_SHARING_LINK = "UPDATE_SHARING_LINK";
+const MESSAGE_TYPE_SCROLLINGAPI_SET_PARAMETERS = "SCROLLINGAPI_SET_PARAMETERS";
+const MESSAGE_TYPE_SCROLLINGAPI_LOAD_MORE = "SCROLLINGAPI_LOAD_MORE";
 const MESSAGE_TYPE_HANDSHAKE = "HANDSHAKE";
 
 export class ECommerceApi implements IECommerceApi {
@@ -105,6 +111,30 @@ export class ECommerceApi implements IECommerceApi {
 
 		return this.crossWindowApi.send(
 			MESSAGE_TYPE_UPDATE_SHARING_LINK,
+			data,
+			this.timeout,
+		);
+	}
+
+	async scrollingApiSetParameters<TItem>(
+		data: IScrollingApiSetParametersData,
+	): Promise<IScrollingApiSetParametersReply<TItem>> {
+		await this.peerIsReady;
+
+		return this.crossWindowApi.send(
+			MESSAGE_TYPE_SCROLLINGAPI_SET_PARAMETERS,
+			data,
+			this.timeout,
+		);
+	}
+
+	async scrollingApiLoadMore<TItem>(
+		data: IScrollingApiLoadMoreData,
+	): Promise<IScrollingApiLoadMoreReply<TItem>> {
+		await this.peerIsReady;
+
+		return this.crossWindowApi.send(
+			MESSAGE_TYPE_SCROLLINGAPI_LOAD_MORE,
 			data,
 			this.timeout,
 		);
@@ -201,6 +231,20 @@ export class DummyECommerceApiActions implements IECommerceApiActions {
 	updateSharingLink(/*data: IUpdateSharingLinkData,*/): Promise<IUpdateSharingLinkReply> {
 		return Promise.resolve({href: window.location.href});
 	}
+
+	scrollingApiSetParameters<
+		TItem,
+	>(/*data: IScrollingApiSetParametersData,*/): Promise<
+		IScrollingApiSetParametersReply<TItem>
+	> {
+		return Promise.resolve({hasNextPage: false, items: []});
+	}
+
+	scrollingApiLoadMore<TItem>(/*data: IScrollingApiLoadMoreData,*/): Promise<
+		IScrollingApiLoadMoreReply<TItem>
+	> {
+		return Promise.resolve({hasNextPage: false, items: []});
+	}
 }
 
 export class DummyECommerceApi implements IECommerceApi {
@@ -226,11 +270,25 @@ export class DummyECommerceApi implements IECommerceApi {
 	addItemToCart(data: IAddItemToCartData): Promise<IAddItemToCartReply> {
 		return this.actions.addItemToCart(data);
 	}
+
 	getUserProfile(): Promise<IGetUserProfileReply> {
 		return this.actions.getUserProfile();
 	}
+
 	closeConfigurator(): Promise<boolean> {
 		return this.actions.closeConfigurator();
+	}
+
+	scrollingApiSetParameters<TItem>(
+		data: IScrollingApiSetParametersData,
+	): Promise<IScrollingApiSetParametersReply<TItem>> {
+		return this.actions.scrollingApiSetParameters<TItem>(data);
+	}
+
+	scrollingApiLoadMore<TItem>(
+		data: IScrollingApiLoadMoreData,
+	): Promise<IScrollingApiLoadMoreReply<TItem>> {
+		return this.actions.scrollingApiLoadMore<TItem>(data);
 	}
 }
 
