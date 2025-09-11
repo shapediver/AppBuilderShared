@@ -1,10 +1,5 @@
 import {GumballEventResponseMapping} from "@shapediver/viewer.features.gumball";
 import {
-	checkNodeNameMatch,
-	getInstanceNodeData,
-	getNodeData,
-} from "@shapediver/viewer.features.interaction";
-import {
 	addListener,
 	EVENTTYPE_GUMBALL,
 	removeListener,
@@ -24,7 +19,6 @@ import {useEffect, useRef, useState} from "react";
 export function useGumballEvents(
 	selectedNodeNames: string[],
 	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
-	strictNaming = true,
 ): {
 	/**
 	 * The transformed nodes.
@@ -76,53 +70,29 @@ export function useGumballEvents(
 			];
 
 			for (let i = 0; i < gumballEvent.nodes.length; i++) {
-				const node = gumballEvent.nodes[i];
 				const transformation = gumballEvent.transformations[i];
 				const localTransformation =
 					gumballEvent.localTransformations[i];
 
 				// search for the node in the selected nodes
 				selectedNodeNames.forEach((name) => {
-					const parts = name.split(".");
-
-					// get the node data to compare the output name
-					let nodeData = getNodeData(node, strictNaming);
-					if (!nodeData || nodeData.outputName !== parts[0]) {
-						nodeData = getInstanceNodeData(node, strictNaming);
-						if (!nodeData || nodeData.outputId !== parts[0]) {
-							return;
-						}
-					}
-
-					// check if the node path matches the selected node name
-					if (
-						parts.length === 1 ||
-						checkNodeNameMatch(
-							node,
-							parts.slice(1).join("."),
-							strictNaming,
-						)
-					) {
-						// determine if the node is already in the transformed nodes array
-						// if not add it, otherwise update the transformation
-						const index = newTransformedNodeNames.findIndex(
-							(tn) => tn.name === name,
-						);
-						if (index !== -1) {
-							newTransformedNodeNames[index].transformation =
-								Array.from(transformation);
-							newTransformedNodeNames[
-								index
-							].localTransformations =
-								Array.from(localTransformation);
-						} else {
-							newTransformedNodeNames.push({
-								name: name,
-								transformation: Array.from(transformation),
-								localTransformations:
-									Array.from(localTransformation),
-							});
-						}
+					// determine if the node is already in the transformed nodes array
+					// if not add it, otherwise update the transformation
+					const index = newTransformedNodeNames.findIndex(
+						(tn) => tn.name === name,
+					);
+					if (index !== -1) {
+						newTransformedNodeNames[index].transformation =
+							Array.from(transformation);
+						newTransformedNodeNames[index].localTransformations =
+							Array.from(localTransformation);
+					} else {
+						newTransformedNodeNames.push({
+							name: name,
+							transformation: Array.from(transformation),
+							localTransformations:
+								Array.from(localTransformation),
+						});
 					}
 				});
 			}
