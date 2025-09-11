@@ -97,8 +97,8 @@ export function useGumball(
 		return {
 			nameFilter: gumballProps.nameFilter,
 			hover: gumballProps.hover,
-			minimumSelection: 0,
-			maximumSelection: Infinity,
+			minimumSelection: gumballProps.minimumSelection ?? 0,
+			maximumSelection: gumballProps.maximumSelection ?? Infinity,
 		} as ISelectionParameterProps;
 	}, [gumballProps]);
 
