@@ -14,7 +14,7 @@ const defaultStyleProps: OverlayStyleProps = {
 	offset: "1rem",
 };
 
-type ModelCardOverlayWrapperThemePropsType = Partial<OverlayStyleProps>;
+export type ModelCardOverlayWrapperThemePropsType = Partial<OverlayStyleProps>;
 
 export function ModelCardOverlayWrapperThemeProps(
 	props: ModelCardOverlayWrapperThemePropsType,

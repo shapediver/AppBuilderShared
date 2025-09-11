@@ -80,6 +80,14 @@ export interface IconProps extends Omit<IconifyIconProps, "icon"> {
 	size?: MantineSize | number | string; // MantineSize or CSS size value
 }
 
+const sizeMap: Record<string, string> = {
+	xs: "0.75rem",
+	sm: "0.875rem",
+	md: "1rem",
+	lg: "1.125rem",
+	xl: "1.25rem",
+};
+
 const defaultStyleProps: Partial<IconProps> = {
 	size: "1.5rem",
 	stroke: "1px",
@@ -147,7 +155,7 @@ const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
 		return size
 			? typeof size === "number"
 				? `${size}px`
-				: `${size}`
+				: (sizeMap[size] ?? `${size}`)
 			: undefined;
 	}, [size]);
 
