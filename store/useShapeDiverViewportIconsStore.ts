@@ -74,7 +74,7 @@ function renderButtonByKind(
 				ViewportTypeToIcon[ViewportIconButtonEnum.Undo],
 				{
 					key: "undo",
-					disabled: buttonsDisabled || executing,
+					disabled: buttonsDisabled || executing || hasPendingChanges,
 					hasPendingChanges,
 					executing,
 					...commonProps,
@@ -85,7 +85,7 @@ function renderButtonByKind(
 				ViewportTypeToIcon[ViewportIconButtonEnum.Redo],
 				{
 					key: "redo",
-					disabled: buttonsDisabled || executing,
+					disabled: buttonsDisabled || executing || hasPendingChanges,
 					hasPendingChanges,
 					executing,
 					...commonProps,
@@ -96,7 +96,8 @@ function renderButtonByKind(
 				ViewportTypeToIcon[ViewportIconButtonEnum.HistoryMenu],
 				{
 					key: "historyMenu",
-					disabled: !namespace || buttonsDisabled,
+					disabled:
+						!namespace || buttonsDisabled || hasPendingChanges,
 					namespace: namespace || "",
 					visible: iconsVisible,
 					...commonProps,
