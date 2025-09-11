@@ -229,6 +229,7 @@ export const useShapeDiverViewportIconsStore =
 						`icons:clear ${viewportId}`,
 					);
 				},
+				/** Manage common props and render the viewport icons, based on the viewport icons state (buttons and groups) */
 				render: (
 					viewportId: string,
 					buttonContext: ButtonRenderContext,
