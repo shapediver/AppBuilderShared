@@ -9,18 +9,10 @@ import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {ViewportIconButtonEnum} from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
-import {Divider, Paper, Transition, useProps} from "@mantine/core";
+import {DividerProps, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import ViewportOverlayWrapper from "./ViewportOverlayWrapper";
-import ArButton from "./buttons/ArButton";
-import CamerasButton from "./buttons/CamerasButton";
-import FullscreenButton from "./buttons/FullscreenButton";
-import HistoryMenuButton from "./buttons/HistoryMenuButton";
-import RedoButton from "./buttons/RedoButton";
-import UndoButton from "./buttons/UndoButton";
-import ZoomButton from "./buttons/ZoomButton";
 import {CommonButtonProps} from "./buttons/types";
 
 const defaultStyleProps: ViewportIconsOptionalProps = {
@@ -64,81 +56,6 @@ interface ButtonRenderContext extends CommonButtonProps {
 	fullscreenId: string;
 }
 
-function renderButtonByKind(
-	kind: ViewportIconButtonEnum,
-	context: ButtonRenderContext,
-): React.ReactNode {
-	const {
-		viewport,
-		namespace,
-		buttonsDisabled,
-		executing,
-		hasPendingChanges,
-		iconsVisible,
-		fullscreenId,
-		...commonProps
-	} = context;
-
-	switch (kind) {
-		case ViewportIconButtonEnum.Ar:
-			return <ArButton key="ar" viewport={viewport} {...commonProps} />;
-		case ViewportIconButtonEnum.Zoom:
-			return (
-				<ZoomButton key="zoom" viewport={viewport} {...commonProps} />
-			);
-		case ViewportIconButtonEnum.Fullscreen:
-			return (
-				<FullscreenButton
-					key="fullscreen"
-					fullscreenId={fullscreenId}
-					enableFullscreenBtn={true}
-					{...commonProps}
-				/>
-			);
-		case ViewportIconButtonEnum.Cameras:
-			return (
-				<CamerasButton
-					key="cameras"
-					viewport={viewport}
-					visible={iconsVisible}
-					{...commonProps}
-				/>
-			);
-		case ViewportIconButtonEnum.Undo:
-			return (
-				<UndoButton
-					key="undo"
-					disabled={buttonsDisabled || executing}
-					hasPendingChanges={hasPendingChanges}
-					executing={executing}
-					{...commonProps}
-				/>
-			);
-		case ViewportIconButtonEnum.Redo:
-			return (
-				<RedoButton
-					key="redo"
-					disabled={buttonsDisabled || executing}
-					hasPendingChanges={hasPendingChanges}
-					executing={executing}
-					{...commonProps}
-				/>
-			);
-		case ViewportIconButtonEnum.HistoryMenu:
-			return (
-				<HistoryMenuButton
-					key="historyMenu"
-					disabled={!namespace || buttonsDisabled}
-					namespace={namespace || ""}
-					visible={iconsVisible}
-					{...commonProps}
-				/>
-			);
-		default:
-			return null;
-	}
-}
-
 export default function ViewportIcons(
 	props: ViewportIconsProps & ViewportIconsOptionalProps,
 ) {
@@ -172,12 +89,15 @@ export default function ViewportIcons(
 	);
 	const {showControls, setIsHoveringControls} = useViewportControls();
 
-	const {viewportIcons} = useShapeDiverViewportIconsStore(
+	const {render} = useShapeDiverViewportIconsStore(
 		useShallow((state) => ({
-			viewportIcons:
-				viewportId && state.viewportIcons[viewportId]
-					? state.viewportIcons[viewportId].layout
-					: [],
+			render: (
+				viewportId: string,
+				buttonContext: ButtonRenderContext,
+				dividerProps: DividerProps,
+			) => {
+				return state.render(viewportId, buttonContext, dividerProps);
+			},
 		})),
 	);
 
@@ -288,59 +208,9 @@ export default function ViewportIcons(
 	);
 
 	// Render layout items dynamically
-	const dynamicContent = useMemo(() => {
-		const sections: React.ReactNode[] = [];
-
-		viewportIcons.forEach((item, index) => {
-			if (item.type === "button") {
-				const button = renderButtonByKind(
-					item.button.type,
-					buttonContext,
-				);
-				if (button) sections.push(button);
-			} else if (item.type === "group") {
-				const groupButtons: React.ReactNode[] = [];
-				item.sections.forEach((section) => {
-					section.forEach((buttonDef) => {
-						const button = renderButtonByKind(
-							buttonDef.type,
-							buttonContext,
-						);
-						if (button) groupButtons.push(button);
-					});
-					// Add divider between sections within a group
-					if (
-						groupButtons.length > 0 &&
-						section !== item.sections[item.sections.length - 1]
-					) {
-						groupButtons.push(
-							<Divider
-								key={`divider-${index}-${section.length}`}
-								{...dividerProps}
-							/>,
-						);
-					}
-				});
-				sections.push(
-					<React.Fragment key={`group-${index}`}>
-						{groupButtons}
-					</React.Fragment>,
-				);
-			}
-
-			// Add divider between layout items
-			if (index < viewportIcons.length - 1) {
-				sections.push(
-					<Divider
-						key={`layout-divider-${index}`}
-						{...dividerProps}
-					/>,
-				);
-			}
-		});
-
-		return sections;
-	}, [viewportIcons, buttonContext, dividerProps]);
+	const dynamicContent = useCallback(() => {
+		return render(viewportId, buttonContext, dividerProps || {});
+	}, [viewportId, buttonContext, dividerProps]);
 
 	// Prevent event propagation to avoid triggering viewport interactions
 	// when touching the icons.
@@ -366,7 +236,7 @@ export default function ViewportIcons(
 						onMouseLeave={() => setIsHoveringControls(false)}
 						onMouseEnter={() => setIsHoveringControls(true)}
 					>
-						{dynamicContent}
+						{dynamicContent()}
 					</Paper>
 				)}
 			</Transition>

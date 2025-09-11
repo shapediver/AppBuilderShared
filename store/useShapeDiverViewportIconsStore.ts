@@ -1,13 +1,17 @@
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 import {
+	ButtonRenderContext,
 	IShapeDiverViewportIconsStore,
 	ViewportIconButton,
 	ViewportIconButtonEnum,
 	ViewportIconLayoutItem,
 	ViewportIconLayoutItemEnum,
 	ViewportIconViewportState,
+	ViewportTypeToIcon,
 } from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
+import {Divider, DividerProps} from "@mantine/core";
 import {IViewportApi} from "@shapediver/viewer.viewport";
+import React from "react";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 
@@ -18,6 +22,90 @@ const getCurrentViewportIcons = (
 	viewportId: string,
 ): ViewportIconViewportState =>
 	state.viewportIcons[viewportId] ?? emptyViewport;
+
+function renderButtonByKind(
+	kind: ViewportIconButtonEnum,
+	context: ButtonRenderContext,
+): React.ReactNode {
+	const {
+		viewport,
+		namespace,
+		buttonsDisabled,
+		executing,
+		hasPendingChanges,
+		iconsVisible,
+		fullscreenId,
+		...commonProps
+	} = context;
+
+	switch (kind) {
+		case ViewportIconButtonEnum.Ar:
+			return React.createElement(
+				ViewportTypeToIcon[ViewportIconButtonEnum.Ar],
+				{key: "ar", viewport, ...commonProps},
+			);
+		case ViewportIconButtonEnum.Zoom:
+			return React.createElement(
+				ViewportTypeToIcon[ViewportIconButtonEnum.Zoom],
+				{key: "zoom", viewport, ...commonProps},
+			);
+		case ViewportIconButtonEnum.Fullscreen:
+			return React.createElement(
+				ViewportTypeToIcon[ViewportIconButtonEnum.Fullscreen],
+				{
+					key: "fullscreen",
+					fullscreenId,
+					enableFullscreenBtn: true,
+					...commonProps,
+				},
+			);
+		case ViewportIconButtonEnum.Cameras:
+			return React.createElement(
+				ViewportTypeToIcon[ViewportIconButtonEnum.Cameras],
+				{
+					key: "cameras",
+					viewport,
+					visible: iconsVisible,
+					...commonProps,
+				},
+			);
+		case ViewportIconButtonEnum.Undo:
+			return React.createElement(
+				ViewportTypeToIcon[ViewportIconButtonEnum.Undo],
+				{
+					key: "undo",
+					disabled: buttonsDisabled || executing,
+					hasPendingChanges,
+					executing,
+					...commonProps,
+				},
+			);
+		case ViewportIconButtonEnum.Redo:
+			return React.createElement(
+				ViewportTypeToIcon[ViewportIconButtonEnum.Redo],
+				{
+					key: "redo",
+					disabled: buttonsDisabled || executing,
+					hasPendingChanges,
+					executing,
+					...commonProps,
+				},
+			);
+		case ViewportIconButtonEnum.HistoryMenu:
+			return React.createElement(
+				ViewportTypeToIcon[ViewportIconButtonEnum.HistoryMenu],
+				{
+					key: "historyMenu",
+					disabled: !namespace || buttonsDisabled,
+					namespace: namespace || "",
+					visible: iconsVisible,
+					...commonProps,
+				},
+			);
+		default:
+			return null;
+	}
+}
 
 export const useShapeDiverViewportIconsStore =
 	create<IShapeDiverViewportIconsStore>()(
@@ -139,6 +227,70 @@ export const useShapeDiverViewportIconsStore =
 						false,
 						`icons:clear ${viewportId}`,
 					);
+				},
+				render: (
+					viewportId: string,
+					buttonContext: ButtonRenderContext,
+					dividerProps: DividerProps,
+				) => {
+					const sections: React.ReactNode[] = [];
+					const viewportIcons =
+						get().viewportIcons[viewportId]?.layout;
+
+					if (!viewportIcons) return sections;
+
+					viewportIcons.forEach((item, index) => {
+						if (item.type === "button") {
+							const button = renderButtonByKind(
+								item.button.type,
+								buttonContext,
+							);
+							if (button) sections.push(button);
+						} else if (item.type === "group") {
+							const groupButtons: React.ReactNode[] = [];
+							item.sections.forEach((section) => {
+								section.forEach((buttonDef) => {
+									const button = renderButtonByKind(
+										buttonDef.type,
+										buttonContext,
+									);
+									if (button) groupButtons.push(button);
+								});
+								// Add divider between sections within a group
+								if (
+									groupButtons.length > 0 &&
+									section !==
+										item.sections[item.sections.length - 1]
+								) {
+									groupButtons.push(
+										React.createElement(Divider, {
+											key: `divider-${index}-${section.length}`,
+											...dividerProps,
+										}),
+									);
+								}
+							});
+							sections.push(
+								React.createElement(
+									React.Fragment,
+									{key: `group-${index}`},
+									...groupButtons,
+								),
+							);
+						}
+
+						// Add divider between layout items
+						if (index < viewportIcons.length - 1) {
+							sections.push(
+								React.createElement(Divider, {
+									key: `layout-divider-${index}`,
+									...dividerProps,
+								}),
+							);
+						}
+					});
+
+					return sections;
 				},
 			}),
 			{...devtoolsSettings, name: "ShapeDiver | ViewportIcons"},
