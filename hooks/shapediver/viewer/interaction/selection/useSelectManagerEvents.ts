@@ -8,6 +8,7 @@ import {
 	addListener,
 	EVENTTYPE_INTERACTION,
 	IEvent,
+	ITreeNode,
 	removeListener,
 } from "@shapediver/viewer.session";
 import {useCallback, useContext, useEffect, useState} from "react";
@@ -35,6 +36,29 @@ export interface ISelectionState {
 	 */
 	resetSelectedNodeNames: () => void;
 }
+
+const getNodeNames = (
+	patterns: IUseCreateNameFilterPatternResult,
+	selected: ITreeNode[],
+	strictNaming: boolean,
+) => {
+	const nodeNames = [];
+	for (const sessionId in patterns.outputPatterns) {
+		const pattern = patterns.outputPatterns[sessionId];
+		nodeNames.push(
+			...matchNodesWithPatterns(pattern, selected, strictNaming),
+		);
+	}
+
+	if (patterns.instancePatterns) {
+		const pattern = patterns.instancePatterns;
+		nodeNames.push(
+			...matchNodesWithPatterns(pattern, selected, strictNaming),
+		);
+	}
+
+	return nodeNames;
+};
 
 /**
  * This hook registers to selection events and provides a state of selected node names
@@ -81,29 +105,9 @@ export function useSelectManagerEvents(
 				if (selectEvent.manager.id !== componentId) return;
 
 				const selected = [selectEvent.node];
-				const nodeNames = [];
-				for (const sessionId in patterns.outputPatterns) {
-					const pattern = patterns.outputPatterns[sessionId];
-					nodeNames.push(
-						...matchNodesWithPatterns(
-							pattern,
-							selected,
-							strictNaming,
-						),
-					);
-				}
-
-				if (patterns.instancePatterns) {
-					const pattern = patterns.instancePatterns;
-					nodeNames.push(
-						...matchNodesWithPatterns(
-							pattern,
-							selected,
-							strictNaming,
-						),
-					);
-				}
-				setSelectedNodeNames(nodeNames);
+				setSelectedNodeNames(
+					getNodeNames(patterns, selected, strictNaming),
+				);
 			},
 		);
 
@@ -151,18 +155,9 @@ export function useSelectManagerEvents(
 				if (multiSelectEvent.manager.id !== componentId) return;
 
 				const selected = multiSelectEvent.nodes;
-				const nodeNames = [];
-				for (const sessionId in patterns.outputPatterns) {
-					const pattern = patterns.outputPatterns[sessionId];
-					nodeNames.push(
-						...matchNodesWithPatterns(
-							pattern,
-							selected,
-							strictNaming,
-						),
-					);
-				}
-				setSelectedNodeNames(nodeNames);
+				setSelectedNodeNames(
+					getNodeNames(patterns, selected, strictNaming),
+				);
 			},
 		);
 
@@ -183,18 +178,9 @@ export function useSelectManagerEvents(
 
 				// remove the node from the selected nodes
 				const selected = multiSelectEvent.nodes;
-				const nodeNames = [];
-				for (const sessionId in patterns.outputPatterns) {
-					const pattern = patterns.outputPatterns[sessionId];
-					nodeNames.push(
-						...matchNodesWithPatterns(
-							pattern,
-							selected,
-							strictNaming,
-						),
-					);
-				}
-				setSelectedNodeNames(nodeNames);
+				setSelectedNodeNames(
+					getNodeNames(patterns, selected, strictNaming),
+				);
 			},
 		);
 

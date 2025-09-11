@@ -97,8 +97,8 @@ export function useGumball(
 		return {
 			nameFilter: gumballProps.nameFilter,
 			hover: gumballProps.hover,
-			minimumSelection: 0,
-			maximumSelection: Infinity,
+			minimumSelection: gumballProps.minimumSelection ?? 0,
+			maximumSelection: gumballProps.maximumSelection ?? Infinity,
 		} as ISelectionParameterProps;
 	}, [gumballProps]);
 
@@ -113,7 +113,6 @@ export function useGumball(
 	const {transformedNodeNames, setTransformedNodeNames} = useGumballEvents(
 		selectedNodeNames,
 		initialTransformedNodeNames,
-		strictNaming,
 	);
 
 	// use an effect to set the selected node names to the first available node name if only one is available
