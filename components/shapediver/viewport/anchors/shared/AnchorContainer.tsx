@@ -1,4 +1,4 @@
-import Icon, {IconType} from "@AppBuilderShared/components/ui/Icon";
+import {IconType} from "@AppBuilderShared/components/ui/Icon";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderShared/store/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
@@ -10,8 +10,6 @@ import {
 	IAnchor3d,
 } from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors";
 import {
-	ActionIcon,
-	ActionIconProps,
 	Flex,
 	Group,
 	GroupProps,
@@ -31,7 +29,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import classes from "../../ViewportIcons.module.css";
+import ViewportIconButton from "../../buttons/ViewportIconButton";
 import {ViewportAnchorProps2d} from "../ViewportAnchor2d";
 import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
 import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
@@ -68,24 +66,12 @@ export interface ViewportAnchorProps {
 }
 
 export type ViewportAnchorStyleProps = {
-	iconProps?: Partial<ActionIconProps>;
 	anchorGroupProps?: Partial<GroupProps>;
 	/** Breakpoint below which to to switch to the mobile behavior */
 	mobileBreakpoint: MantineBreakpoint;
 };
 
 export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
-	// These icon properties will be replace once this task is done:
-	// https://shapediver.atlassian.net/browse/SS-8888
-	iconProps: {
-		size: "md",
-		variant: "subtle",
-		color: "white",
-		style: {
-			mixBlendMode: "difference",
-			filter: "contrast(0.5)",
-		},
-	},
 	anchorGroupProps: {
 		style: {
 			// this background color is the same as used in all other containers
@@ -157,7 +143,7 @@ export function useAnchorContainer({
 	 *
 	 * Depending on the type of the anchor, it will return different properties.
 	 */
-	const {iconProps, anchorGroupProps, mobileBreakpoint} = useProps(
+	const {anchorGroupProps, mobileBreakpoint} = useProps(
 		type === AppBuilderContainerNameType.Anchor2d
 			? "ViewportAnchor2d"
 			: "ViewportAnchor3d",
@@ -324,18 +310,13 @@ export function useAnchorContainer({
 	 *
 	 * It contains the icon and toggles the content visibility
 	 * when clicked. The iconProps are applied to the ActionIcon.
-	 *
-	 * This will be replaced once this task is done:
-	 * https://shapediver.atlassian.net/browse/SS-8888
 	 */
 	const previewIconElement = (
-		<ActionIcon onClick={toggleContent} {...iconProps}>
-			<Icon
-				iconType={previewIcon!}
-				color={iconProps?.color}
-				className={classes.viewportIcon}
-			/>
-		</ActionIcon>
+		<ViewportIconButton
+			label="Open"
+			iconType={previewIcon! as string}
+			onClick={toggleContent}
+		/>
 	);
 
 	/**
@@ -343,18 +324,13 @@ export function useAnchorContainer({
 	 * that will be displayed when the anchor content is shown.
 	 * It contains the close icon and toggles the content visibility
 	 * when clicked. The iconProps are applied to the ActionIcon.
-	 *
-	 * This will be replaced once this task is done:
-	 * https://shapediver.atlassian.net/browse/SS-8888
 	 */
 	const closeIconElement = (
-		<ActionIcon onClick={toggleContent} {...iconProps}>
-			<Icon
-				iconType={"tabler:x"}
-				color={iconProps?.color}
-				className={classes.viewportIcon}
-			/>
-		</ActionIcon>
+		<ViewportIconButton
+			label="Close"
+			iconType={"tabler:x"}
+			onClick={toggleContent}
+		/>
 	);
 
 	/**
@@ -362,18 +338,13 @@ export function useAnchorContainer({
 	 * that will be displayed in the control element group.
 	 * It contains the drag icon and handles the mouse down event.
 	 * The iconProps are applied to the ActionIcon.
-	 *
-	 * This will be replaced once this task is done:
-	 * https://shapediver.atlassian.net/browse/SS-8888
 	 */
 	const dragIconElement = (
-		<ActionIcon onMouseDown={handleMouseDown} {...iconProps}>
-			<Icon
-				iconType={"tabler:grid-dots"}
-				color={iconProps?.color}
-				className={classes.viewportIcon}
-			/>
-		</ActionIcon>
+		<ViewportIconButton
+			label=""
+			iconType={"tabler:grid-dots"}
+			onMouseDown={handleMouseDown}
+		/>
 	);
 
 	/**
