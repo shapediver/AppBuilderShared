@@ -41,8 +41,13 @@ export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 
 				try {
 					viewport = await createViewport(dto);
+					if (callbacks?.onCreated) {
+						callbacks.onCreated(viewport);
+					}
 				} catch (e: any) {
-					callbacks?.onError(e);
+					if (callbacks?.onError) {
+						callbacks.onError(e);
+					}
 				}
 
 				set(
@@ -68,8 +73,13 @@ export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 
 				try {
 					await viewport.close();
+					if (callbacks?.onClosed) {
+						callbacks.onClosed(viewportId);
+					}
 				} catch (e) {
-					callbacks?.onError(e);
+					if (callbacks?.onError) {
+						callbacks.onError(e);
+					}
 
 					return;
 				}

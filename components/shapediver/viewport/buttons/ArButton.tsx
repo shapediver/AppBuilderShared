@@ -1,11 +1,10 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {ActionIcon, Loader, Modal, Text, Title} from "@mantine/core";
+import {Loader, Modal, Text} from "@mantine/core";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React, {useState} from "react";
 import classes from "../ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "./types";
+import ViewportIconButton from "./ViewportIconButton";
 
 interface ArButtonProps extends CommonButtonProps {
 	viewport?: IViewportApi;
@@ -13,12 +12,8 @@ interface ArButtonProps extends CommonButtonProps {
 
 export default function ArButton({
 	viewport,
-	size = undefined,
-	color = IconProps.color,
-	colorDisabled = IconProps.colorDisabled,
 	variant = IconProps.variant,
 	variantDisabled = IconProps.variantDisabled,
-	iconStyle = IconProps.style,
 }: ArButtonProps) {
 	const [isModalArOpened, setIsModalArOpened] = useState(false);
 	const [arLink, setArLink] = useState("");
@@ -66,27 +61,20 @@ export default function ArButton({
 
 	return (
 		<>
-			<TooltipWrapper label="View in AR">
-				<ActionIcon
-					onClick={handleArClick}
-					disabled={isArLoading}
-					className={classes.ViewportIcon}
-					size={size}
-					variant={isViewableInAr ? variantDisabled : variant}
-					aria-label="View in AR"
-					style={iconStyle}
-				>
-					<Icon
-						iconType={"tabler:augmented-reality"}
-						color={isArLoading ? colorDisabled : color}
-					/>
-				</ActionIcon>
-			</TooltipWrapper>
+			<ViewportIconButton
+				label="View in AR"
+				iconType="tabler:augmented-reality"
+				onClick={handleArClick}
+				disabled={isArLoading}
+				actionIconProps={{
+					variant: isViewableInAr ? variantDisabled : variant,
+				}}
+			/>
 
 			<Modal
 				opened={isModalArOpened}
 				onClose={() => setIsModalArOpened(false)}
-				title={<Title>Scan the code</Title>}
+				title="Scan the code"
 				centered
 			>
 				{isModalArError ? (

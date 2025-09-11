@@ -2,6 +2,7 @@ import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewpo
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
+import {useShapeDiverViewportIconsStore} from "@AppBuilderShared/store/useShapeDiverViewportIconsStore";
 import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
 import {PROCESS_STATUS} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
@@ -71,7 +72,14 @@ export function useViewport(props: ViewportCreateDto) {
 					..._props,
 					flags,
 				},
-				{onError: setError},
+				{
+					onCreated: (viewport) => {
+						const iconStore =
+							useShapeDiverViewportIconsStore.getState();
+						iconStore.initialize(viewport);
+					},
+					onError: setError,
+				},
 			);
 			if (viewportApi && props.showStatistics)
 				viewportApi.showStatistics = true;
@@ -98,7 +106,15 @@ export function useViewport(props: ViewportCreateDto) {
 
 		return () => {
 			promiseChain.current = promiseChain.current
-				.then(() => closeViewport(_props.id))
+				.then(() =>
+					closeViewport(_props.id, {
+						onClosed: (viewportId) => {
+							const iconStore =
+								useShapeDiverViewportIconsStore.getState();
+							iconStore.clear(viewportId);
+						},
+					}),
+				)
 				.then(() => removeViewportAccessFunctions(_props.id));
 		};
 	}, [props.id]);

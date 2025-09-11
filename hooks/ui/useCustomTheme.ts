@@ -29,6 +29,8 @@ import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/
 import {ViewportAnchor2dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor2d";
 import {ViewportAnchor3dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor3d";
 import {HintProps} from "@AppBuilderShared/components/ui/Hint";
+import {ViewportIconButtonThemeProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/ViewportIconButton";
+import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/ViewportIconButtonDropdown";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
@@ -1204,12 +1206,6 @@ export const useCustomTheme = (props: Props = {}) => {
 				// enableFullscreenBtn: true,
 				// enableZoomBtn: true,
 				// enableHistoryMenuButton: true,
-				// color: undefined,
-				// colorDisabled: undefined,
-				// variant: "subtle",
-				// variantDisabled: "transparent",
-				// size: 32,
-				// iconStyle: { m: "0.188rem" },
 				// viewportOverlayProps: {
 				// 	position: OverlayPosition.TOP_MIDDLE,
 				// 	offset: "0.5em",
@@ -1228,6 +1224,30 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	duration: 400,
 				// 	timingFunction: "ease",
 				//	keepMounted: true,
+				// },
+			}),
+			ViewportIconButton: ViewportIconButtonThemeProps({
+				// actionIconProps: {
+				// 	size: 32,
+				// 	variant: "subtle",
+				// 	variantDisabled: "transparent",
+				// 	style: {
+				// 		m: "0.188rem",
+				// 	},
+				// },
+				// iconProps: {
+				// 	color: "var(--mantine-color-default-color)",
+				// 	colorDisabled: "var(--mantine-color-disabled-color)",
+				// },
+			}),
+			ViewportIconButtonDropdown: ViewportIconButtonDropdownThemeProps({
+				// menuProps: {shadow: "md", position: "bottom-end"},
+				// menuDropdownProps: {
+				// 	style: {
+				// 		backgroundColor:
+				// 			"alpha(\"var(--mantine-color-body)\", 0.5)",
+				// 		backdropFilter: "blur(10px)",
+				// 	},
 				// },
 			}),
 			/**

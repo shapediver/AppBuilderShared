@@ -1,10 +1,7 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {useViewportHistory} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportHistory";
-import {ActionIcon} from "@mantine/core";
 import React from "react";
-import classes from "../ViewportIcons.module.css";
-import {CommonButtonProps, IconProps} from "./types";
+import {useViewportHistory} from "~/shared/hooks/shapediver/viewer/useViewportHistory";
+import {CommonButtonProps} from "./types";
+import ViewportIconButton from "./ViewportIconButton";
 
 interface UndoButtonProps extends CommonButtonProps {
 	disabled: boolean;
@@ -16,36 +13,18 @@ export default function UndoButton({
 	disabled,
 	hasPendingChanges,
 	executing,
-	size = undefined,
-	color = IconProps.color,
-	colorDisabled = IconProps.colorDisabled,
-	variant = IconProps.variant,
-	variantDisabled = IconProps.variantDisabled,
-	iconStyle = IconProps.style,
 }: UndoButtonProps) {
 	const {canGoBack, goBack} = useViewportHistory();
 	const isDisabled = !canGoBack || disabled || executing;
 
 	return (
-		<TooltipWrapper
+		<ViewportIconButton
+			iconType="tabler:arrow-back-up"
 			label={
 				hasPendingChanges ? "Accept or reject changes first" : "Undo"
 			}
-		>
-			<ActionIcon
-				onClick={goBack}
-				disabled={isDisabled}
-				size={size}
-				variant={isDisabled ? variantDisabled : variant}
-				aria-label="Undo"
-				style={iconStyle}
-				className={classes.ViewportIcon}
-			>
-				<Icon
-					iconType={"tabler:arrow-back-up"}
-					color={isDisabled ? colorDisabled : color}
-				/>
-			</ActionIcon>
-		</TooltipWrapper>
+			onClick={goBack}
+			disabled={isDisabled}
+		/>
 	);
 }

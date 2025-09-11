@@ -15,5 +15,20 @@ export const IconProps = {
 	variant: "subtle",
 	variantDisabled: "transparent",
 	size: 32,
-	style: {},
+	style: {
+		m: "0.188rem",
+	},
 };
+
+/**
+ * Dropdown item and sections model for unified viewport icon menus.
+ */
+export interface ViewportIconButtonDropdownItem {
+	name: string;
+	onClick: () => void;
+	iconType?: string;
+	disabled?: boolean;
+}
+
+export type ViewportIconButtonDropdownSections =
+	ViewportIconButtonDropdownItem[][];
