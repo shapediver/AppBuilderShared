@@ -29,7 +29,6 @@ import {PointsData} from "@shapediver/viewer.features.drawing-tools";
 import {
 	IDrawingParameterSettings as IDrawingParameterProps,
 	RENDERER_TYPE,
-	SystemInfo,
 	validateDrawingParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {
@@ -367,20 +366,6 @@ export default function ParameterDrawingComponent(
 	);
 
 	/**
-	 * For mobile devices, just show a warning that the drawing is not supported.
-	 */
-	const contentMobile = (
-		<Button
-			justify="space-between"
-			fullWidth={true}
-			disabled={disabled}
-			className={classes.interactionButton}
-		>
-			<Text size="sm">Not supported on mobile devices</Text>
-		</Button>
-	);
-
-	/**
 	 * The content of the parameter when it is inactive.
 	 *
 	 * It contains a button to start the drawing.
@@ -409,13 +394,11 @@ export default function ParameterDrawingComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={_onCancel} />
-			{SystemInfo.instance.isMobile
-				? contentMobile
-				: viewport?.type === RENDERER_TYPE.ATTRIBUTES
-					? contentAttributeVisualization
-					: definition && drawingActive && hasInteractionPermission
-						? contentActive
-						: contentInactive}
+			{viewport?.type === RENDERER_TYPE.ATTRIBUTES
+				? contentAttributeVisualization
+				: definition && drawingActive && hasInteractionPermission
+					? contentActive
+					: contentInactive}
 		</ParameterWrapperComponent>
 	);
 }
