@@ -1,29 +1,29 @@
-import {FocusEvent, useCallback, useEffect, useState} from "react";
+import {FocusEvent, useCallback, useRef} from "react";
 export const useFocus = () => {
-	const [focusedElement, setFocusedElement] =
-		useState<HTMLInputElement | null>(null);
+	const focusedElementRef = useRef<
+		HTMLInputElement | HTMLTextAreaElement | HTMLDivElement | null
+	>(null);
+
 	const onFocusHandler = useCallback(
-		(e: FocusEvent<HTMLInputElement>) => {
+		(
+			e: FocusEvent<
+				HTMLInputElement | HTMLTextAreaElement | HTMLDivElement
+			>,
+		) => {
 			if (e.target) {
-				setFocusedElement(e.target as HTMLInputElement);
+				focusedElementRef.current = e.target;
 			}
 		},
-		[focusedElement],
+		[],
 	);
-	const restoreFocus = useCallback(() => {
-		if (focusedElement) {
-			focusedElement.focus();
-		}
-	}, [focusedElement]);
-	const onBlurHandler = useCallback(() => {
-		setFocusedElement(null);
-	}, [focusedElement]);
 
-	useEffect(() => {
-		return () => {
-			setFocusedElement(null);
-		};
+	const restoreFocus = useCallback(() => {
+		setTimeout(() => focusedElementRef.current?.focus(), 0);
 	}, []);
 
-	return {focusedElement, onFocusHandler, restoreFocus, onBlurHandler};
+	const onBlurHandler = useCallback(() => {
+		focusedElementRef.current = null;
+	}, []);
+
+	return {onFocusHandler, restoreFocus, onBlurHandler};
 };

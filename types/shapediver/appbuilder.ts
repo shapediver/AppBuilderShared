@@ -25,6 +25,7 @@ export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
 	value?: string;
 
 	/**
+	 * @deprecated use settings.step instead
 	 * Optional step value for numeric parameters.
 	 */
 	step?: number;
@@ -66,6 +67,22 @@ export interface ISelectParameterSettings {
 	type?: SelectComponentType;
 	/** Record containing optional further item data per item name. */
 	itemData?: Record<string, ISelectComponentItemDataType>;
+	/** Enable search for string list inputs (only for type=="dropdown"). */
+	searchable?: boolean;
+	/** Max number of options rendered at the same time (only for type=="dropdown"). Default: 5 if searchable is enabled */
+	limit?: number;
+}
+
+export interface IStringParameterSettings {
+	/** Number of lines to display. If > 1, a Textarea is used with autosize and fixed rows. Default: 1 */
+	lines?: number;
+}
+
+export interface INumberParameterSettings {
+	/**
+	 * Optional step value for numeric parameters.
+	 */
+	step?: number;
 }
 
 /** Reference to a parameter (custom or defined by the session) */
@@ -506,7 +523,8 @@ export interface IAppBuilderWidgetPropsSceneTreeExplorer {
 
 /** Properties of a desktop client selection widget. */
 export interface IAppBuilderWidgetPropsDesktopClientSelection {
-	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
+	clientsFilter?: string[]; // allowed client names that can be filtered out.
+	autoConnect?: boolean; // if true and a single client is detected, it will be automatically connected.
 }
 
 /** Properties of a desktop client outputs widget. */

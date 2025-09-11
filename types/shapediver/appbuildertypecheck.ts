@@ -40,8 +40,40 @@ const ISelectParameterSettingsSchema = z.object({
 	itemData: z.record(ISelectComponentItemDataTypeSchema).optional(),
 });
 
+const ISelectParameterSettingsSearchableSchema = z.intersection(
+	ISelectParameterSettingsSchema,
+	z.discriminatedUnion("searchable", [
+		z.object({
+			searchable: z.literal(true),
+			limit: z.number().int().positive(),
+		}),
+		z.object({
+			searchable: z.literal(false).optional(),
+			limit: z.undefined().optional(),
+		}),
+	]),
+);
+
 export const validateSelectParameterSettings = (value: any) => {
-	return ISelectParameterSettingsSchema.safeParse(value);
+	return ISelectParameterSettingsSearchableSchema.safeParse(value);
+};
+
+// Zod type definition for IStringParameterSettings
+const IStringParameterSettingsSchema = z.object({
+	lines: z.number().int().positive().optional(),
+});
+
+export const validateStringParameterSettings = (value: any) => {
+	return IStringParameterSettingsSchema.safeParse(value);
+};
+
+// Zod type definition for INumberParameterSettings
+const INumberParameterSettingsSchema = z.object({
+	step: z.number().positive().optional(),
+});
+
+export const validateNumberParameterSettings = (value: any) => {
+	return INumberParameterSettingsSchema.safeParse(value);
 };
 
 // Zod type definition for IAppBuilderParameterDefinition
@@ -76,7 +108,7 @@ const IAppBuilderParameterDefinitionSchema = z.object({
 	hidden: z.boolean(),
 	settings: z.record(z.any()).optional(),
 	value: z.string().optional(),
-	step: z.number().optional(),
+	step: z.number().positive().optional(),
 });
 
 // Zod type definition for property "overrides" of IAppBuilderParameterRef
@@ -552,7 +584,10 @@ const IAppBuilderWidgetPropsProgressSchema = z.object({
 const IAppBuilderWidgetPropsSceneTreeExplorerSchema = z.object({});
 
 // Zod type definition for IAppBuilderWidgetPropsDesktopClientSelection
-const IAppBuilderWidgetPropsDesktopClientSelectionSchema = z.object({});
+const IAppBuilderWidgetPropsDesktopClientSelectionSchema = z.object({
+	clientsFilter: z.array(z.string()).optional(),
+	autoConnect: z.boolean().optional(),
+});
 
 // Zod type definition for IAppBuilderWidgetPropsDesktopClientOutputs
 const IAppBuilderWidgetPropsDesktopClientOutputsSchema = z.object({});

@@ -8,6 +8,7 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {validateNumberParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import {
 	Group,
 	MantineThemeComponent,
@@ -16,7 +17,14 @@ import {
 	useProps,
 } from "@mantine/core";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import React, {useCallback, useMemo} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
+
+interface NumberFormatValues {
+	/** The value converted to a float, if valid. */
+	floatValue: number | undefined;
+	/** The value currently displayed. */
+	value: string;
+}
 
 /**
  * Round and clamp the number to the given min, max and step.
@@ -98,20 +106,20 @@ export default function ParameterSliderComponent(
 
 	// calculate the step size which depends on the parameter type
 	const step = useMemo(() => {
+		const result = validateNumberParameterSettings(definition?.settings);
+		const _step = result.success
+			? (result.data.step ?? definition.step)
+			: definition.step;
 		if (definition.type === PARAMETER_TYPE.INT) {
-			return definition.step !== undefined && definition.step % 1 === 0
-				? definition.step
-				: 1;
+			return _step !== undefined && _step % 1 === 0 ? _step : 1;
 		} else if (
 			definition.type === PARAMETER_TYPE.EVEN ||
 			definition.type === PARAMETER_TYPE.ODD
 		) {
-			return definition.step !== undefined && definition.step % 2 === 0
-				? definition.step
-				: 2;
+			return _step !== undefined && _step % 2 === 0 ? _step : 2;
 		} else {
-			return definition.step !== undefined
-				? +definition.step.toFixed(definition.decimalplaces!)
+			return _step !== undefined
+				? +_step.toFixed(definition.decimalplaces!)
 				: 1 / Math.pow(10, definition.decimalplaces!);
 		}
 	}, [definition]);
@@ -130,7 +138,130 @@ export default function ParameterSliderComponent(
 
 	const valueClamped = roundAndClamp(+value);
 
-	// choose width of numeric input based on number of decimals
+	// State for the NumberInput component
+	const [niState, setNiState] = useState<{
+		/** Latest change event data. */
+		latest: NumberFormatValues;
+		/** Latest valid (clamped) value input by the user which has not been committed yet. */
+		valid: number | undefined;
+		/** Previous valid (clamped) value. */
+		previous: number;
+	}>({
+		latest: {
+			value: "" + valueClamped,
+			floatValue: undefined,
+		},
+		valid: undefined,
+		previous: valueClamped,
+	});
+
+	/** Handler for value changes of the NumberInput component */
+	const onNumberInputValueChange = useCallback((v: NumberFormatValues) => {
+		const clamped =
+			v.floatValue !== undefined
+				? roundAndClamp(v.floatValue)
+				: undefined;
+		setNiState((s) => ({
+			...s,
+			latest: v,
+			valid:
+				v.floatValue !== undefined && clamped === v.floatValue
+					? clamped
+					: undefined,
+		}));
+	}, []);
+
+	/**
+	 * Commit changes for the NumberInput component, called if the
+	 * user hits enter or the input looses focus.
+	 */
+	const commitNumberInput = useCallback(
+		(
+			state: typeof niState,
+			blurEvent?: React.FocusEvent<HTMLInputElement>,
+		) => {
+			if (state.valid !== undefined) {
+				setNiState({
+					valid: undefined,
+					previous: state.valid!,
+					latest: {
+						value: "" + state.valid,
+						floatValue: undefined,
+					},
+				});
+				handleChange(
+					state.valid,
+					0,
+					blurEvent ? undefined : restoreFocus,
+				);
+				if (blurEvent) onBlurHandler();
+				//console.debug(`Committing change to ${state.valid}`);
+				return;
+			}
+			if (state.latest.floatValue === undefined) {
+				if (blurEvent) {
+					if ("" + state.previous !== state.latest.value) {
+						setNiState({
+							latest: {
+								value: "" + state.previous,
+								floatValue: undefined,
+							},
+							valid: undefined,
+							previous: state.previous,
+						});
+						blurEvent.target.focus();
+						//console.debug(`Resetting value to ${state.previous}`);
+					}
+				}
+				return;
+			}
+			const clamped = roundAndClamp(state.latest.floatValue);
+			setNiState({
+				...state,
+				latest: {
+					value: "" + clamped,
+					floatValue: undefined,
+				},
+				valid: clamped,
+			});
+			blurEvent?.target.focus();
+			//console.debug(`Clamping ${state.latest.floatValue} to ${clamped}`);
+		},
+		[],
+	);
+
+	/** Reset changes to the NumberInput component. */
+	const resetNumberInput = useCallback(
+		(state: typeof niState) => {
+			if ("" + state.previous !== state.latest.value) {
+				setNiState({
+					previous: state.previous,
+					latest: {
+						value: "" + state.previous,
+						floatValue: undefined,
+					},
+					valid: undefined,
+				});
+			} else {
+				onCancel?.();
+			}
+		},
+		[onCancel],
+	);
+
+	// update the NumberInput state if the value changes from outside, or from the slider
+	useEffect(() => {
+		setNiState({
+			latest: {
+				value: "" + valueClamped,
+				floatValue: undefined,
+			},
+			valid: undefined,
+			previous: valueClamped,
+		});
+	}, [valueClamped]);
+
+	// TODO: choose width of numeric input based on number of decimals
 
 	// tooltip, marks
 	const tooltip = `Min: ${definition.min}, Max: ${definition.max}`;
@@ -172,23 +303,26 @@ export default function ParameterSliderComponent(
 						<TooltipWrapper label={tooltip}>
 							<NumberInput
 								w={numberWidth}
-								value={valueClamped}
+								value={niState.latest.value}
 								min={+definition.min!}
 								max={+definition.max!}
 								step={step}
 								decimalScale={definition.decimalplaces}
 								fixedDecimalScale={true}
-								clampBehavior="blur"
-								onChange={(v) =>
-									handleChange(
-										roundAndClamp(+v),
-										undefined,
-										restoreFocus,
-									)
-								}
+								clampBehavior="none"
+								onValueChange={onNumberInputValueChange}
 								disabled={disabled}
 								onFocus={onFocusHandler}
-								onBlur={onBlurHandler}
+								onBlur={(event) =>
+									commitNumberInput(niState, event)
+								}
+								onKeyDown={(event) => {
+									if (event.key === "Enter") {
+										commitNumberInput(niState);
+									} else if (event.key === "Escape") {
+										resetNumberInput(niState);
+									}
+								}}
 							/>
 						</TooltipWrapper>
 					)}

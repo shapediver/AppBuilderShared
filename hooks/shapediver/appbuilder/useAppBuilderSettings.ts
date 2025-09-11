@@ -148,9 +148,19 @@ export default function useAppBuilderSettings(
 			if (session) combinedSessions.push(session);
 			if (sessions) combinedSessions = combinedSessions.concat(sessions);
 
+			// ensure modelStateId is set on the first session
+			// if it was defined via query params and was not set yet
+			if (
+				modelStateId &&
+				combinedSessions.length > 0 &&
+				!combinedSessions[0].modelStateId
+			) {
+				combinedSessions[0].modelStateId = modelStateId;
+			}
+
 			return combinedSessions;
 		}
-	}, [loading, value, defaultSession, queryParamSession]);
+	}, [loading, value, defaultSession, queryParamSession, modelStateId]);
 
 	// create the settings object, either with the json data or without
 	const settings = useMemo<IAppBuilderSettings | undefined>(() => {

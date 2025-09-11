@@ -776,6 +776,8 @@ export const useCustomTheme = (props: Props = {}) => {
 				// statusIconProps: {
 				// 	size: "1.2rem",
 				// },
+				// clientsFilter: [],
+				// autoConnect: true,
 			}),
 			/**
 			 * ExportLabelComponent
