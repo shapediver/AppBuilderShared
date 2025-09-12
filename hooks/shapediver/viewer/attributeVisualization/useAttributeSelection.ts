@@ -99,6 +99,7 @@ export default function useAttributeSelection(
 						// separate criteria if the current selected attribute is present in the item data
 						// if the item data is not present, we can skip this node
 						if (
+							data.attributes &&
 							Object.entries(data.attributes).some(
 								([key, value]) =>
 									renderedAttribute.key === key &&

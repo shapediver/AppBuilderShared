@@ -327,7 +327,9 @@ export default function NumberAttribute(
 		(value: RangeSliderValue) => {
 			if (multiplyingFactor === undefined) return;
 			if (invalidRange) return;
-			const [min, max] = value.map((v) => v / multiplyingFactor);
+			const [min, max] = value.map(
+				(v) => +(v / multiplyingFactor).toFixed(10),
+			);
 			attribute.customMin = min;
 			attribute.customMax = max;
 			setCustomMinValue(min);
@@ -395,7 +397,7 @@ export default function NumberAttribute(
 						const [min, max] = value.map(
 							(v) => v / (multiplyingFactor ?? 1),
 						);
-						updateRange(min, max);
+						updateRange(+min.toFixed(10), +max.toFixed(10));
 					}}
 					min={
 						invalidRange
