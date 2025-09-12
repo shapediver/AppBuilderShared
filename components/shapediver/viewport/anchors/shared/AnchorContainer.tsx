@@ -1,4 +1,4 @@
-import {IconType} from "@AppBuilderShared/components/ui/Icon";
+import Icon, {IconType} from "@AppBuilderShared/components/ui/Icon";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderShared/store/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
@@ -10,12 +10,14 @@ import {
 	IAnchor3d,
 } from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors";
 import {
+	ActionIcon,
+	Box,
 	Flex,
 	Group,
-	GroupProps,
 	MantineBreakpoint,
 	Portal,
 	Stack,
+	StackProps,
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
@@ -35,6 +37,8 @@ import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
 import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
 import {useCanvasSize} from "./useCanvasSize";
 import {cleanUnit} from "./utils";
+
+import classes from "../../ViewportIcons.module.css";
 
 export interface ViewportAnchorProps {
 	/** If the anchor allows pointer events */
@@ -66,13 +70,13 @@ export interface ViewportAnchorProps {
 }
 
 export type ViewportAnchorStyleProps = {
-	anchorGroupProps?: Partial<GroupProps>;
+	anchorStackProps?: Partial<StackProps>;
 	/** Breakpoint below which to to switch to the mobile behavior */
 	mobileBreakpoint: MantineBreakpoint;
 };
 
 export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
-	anchorGroupProps: {
+	anchorStackProps: {
 		style: {
 			// this background color is the same as used in all other containers
 			backgroundColor: "var(--mantine-color-body)",
@@ -143,7 +147,7 @@ export function useAnchorContainer({
 	 *
 	 * Depending on the type of the anchor, it will return different properties.
 	 */
-	const {anchorGroupProps, mobileBreakpoint} = useProps(
+	const {anchorStackProps, mobileBreakpoint} = useProps(
 		type === AppBuilderContainerNameType.Anchor2d
 			? "ViewportAnchor2d"
 			: "ViewportAnchor3d",
@@ -333,6 +337,7 @@ export function useAnchorContainer({
 		/>
 	);
 
+	const marginOffset = "calc(-0.2rem * var(--mantine-scale))";
 	/**
 	 * If the anchor is draggable, we create an ActionIcon element
 	 * that will be displayed in the control element group.
@@ -340,11 +345,27 @@ export function useAnchorContainer({
 	 * The iconProps are applied to the ActionIcon.
 	 */
 	const dragIconElement = (
-		<ViewportIconButton
-			label=""
-			iconType={"tabler:grid-dots"}
+		<ActionIcon
 			onMouseDown={handleMouseDown}
-		/>
+			className={classes.ViewportIcon}
+			w={"4.5rem"} // icon size is 1.5rem, so we multiply by 3
+			variant="subtle"
+		>
+			<Icon
+				iconType={"tabler:grip-horizontal"}
+				color={"var(--mantine-color-default-color)"}
+			/>
+			<Icon
+				iconType={"tabler:grip-horizontal"}
+				color={"var(--mantine-color-default-color)"}
+				// offset so that the icons appear as a single icon
+				style={{marginLeft: marginOffset, marginRight: marginOffset}}
+			/>
+			<Icon
+				iconType={"tabler:grip-horizontal"}
+				color={"var(--mantine-color-default-color)"}
+			/>
+		</ActionIcon>
 	);
 
 	/**
@@ -352,27 +373,33 @@ export function useAnchorContainer({
 	 * Here we have a group with the icons and a group with the main element.
 	 */
 	const inner = (
-		<Stack gap={0} key={id}>
-			<Group
+		<Stack gap={0} key={id} {...anchorStackProps}>
+			<Flex
 				ref={updateControlElementGroupRef}
+				align="center"
 				style={{
-					display: "flex",
-					justifyContent: "space-between",
 					width: "100%",
 					pointerEvents: "auto",
 				}}
 			>
-				{aboveMobileBreakpoint && draggable && dragIconElement}
-				{/** The Flex element is used to push the close icon to the right. */}
-				<Flex />
-				{previewIcon && closeIconElement}
-			</Group>
+				<Box style={{flex: 1}} />
+				<Group ta="center">
+					{aboveMobileBreakpoint && draggable && dragIconElement}
+				</Group>
+				<Group
+					style={{
+						flex: 1,
+						display: "flex",
+						justifyContent: "flex-end",
+					}}
+				>
+					{previewIcon && closeIconElement}
+				</Group>
+			</Flex>
 			<Group
-				{...anchorGroupProps}
 				w={aboveMobileBreakpoint ? width : "100%"}
 				h={aboveMobileBreakpoint ? height : "100%"}
 				style={{
-					...anchorGroupProps?.style,
 					overflow: "auto",
 				}}
 			>
