@@ -15,7 +15,8 @@ interface Props {
 	label: string;
 	iconType: string;
 	disabled?: boolean;
-	onClick?: () => void;
+	onClick?: React.MouseEventHandler<HTMLButtonElement>;
+	onMouseDown?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 type StyleProps = {
@@ -57,7 +58,14 @@ export function ViewportIconButtonThemeProps(
 export default function ViewportIconButton(
 	props: Props & ViewportIconButtonThemePropsType,
 ) {
-	const {label, iconType, disabled = false, onClick, ...rest} = props;
+	const {
+		label,
+		iconType,
+		disabled = false,
+		onClick,
+		onMouseDown,
+		...rest
+	} = props;
 
 	const {tooltipWrapperProps, actionIconProps, iconProps} = useProps(
 		"ViewportIconButton",
@@ -78,6 +86,7 @@ export default function ViewportIconButton(
 		<TooltipWrapper label={label ?? ""} {...tooltipWrapperProps}>
 			<ActionIcon
 				onClick={onClick}
+				onMouseDown={onMouseDown}
 				disabled={disabled}
 				variant={disabled ? variantDisabled : variant}
 				aria-label={label ?? undefined}

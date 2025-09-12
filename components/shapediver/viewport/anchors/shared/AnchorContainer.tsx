@@ -11,13 +11,13 @@ import {
 } from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors";
 import {
 	ActionIcon,
-	ActionIconProps,
+	Box,
 	Flex,
 	Group,
-	GroupProps,
 	MantineBreakpoint,
 	Portal,
 	Stack,
+	StackProps,
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
@@ -31,12 +31,14 @@ import {
 	useRef,
 	useState,
 } from "react";
-import classes from "../../ViewportIcons.module.css";
+import ViewportIconButton from "../../buttons/ViewportIconButton";
 import {ViewportAnchorProps2d} from "../ViewportAnchor2d";
 import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
 import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
 import {useCanvasSize} from "./useCanvasSize";
 import {cleanUnit} from "./utils";
+
+import classes from "../../ViewportIcons.module.css";
 
 export interface ViewportAnchorProps {
 	/** If the anchor allows pointer events */
@@ -68,25 +70,13 @@ export interface ViewportAnchorProps {
 }
 
 export type ViewportAnchorStyleProps = {
-	iconProps?: Partial<ActionIconProps>;
-	anchorGroupProps?: Partial<GroupProps>;
+	anchorStackProps?: Partial<StackProps>;
 	/** Breakpoint below which to to switch to the mobile behavior */
 	mobileBreakpoint: MantineBreakpoint;
 };
 
 export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
-	// These icon properties will be replace once this task is done:
-	// https://shapediver.atlassian.net/browse/SS-8888
-	iconProps: {
-		size: "md",
-		variant: "subtle",
-		color: "white",
-		style: {
-			mixBlendMode: "difference",
-			filter: "contrast(0.5)",
-		},
-	},
-	anchorGroupProps: {
+	anchorStackProps: {
 		style: {
 			// this background color is the same as used in all other containers
 			backgroundColor: "var(--mantine-color-body)",
@@ -157,7 +147,7 @@ export function useAnchorContainer({
 	 *
 	 * Depending on the type of the anchor, it will return different properties.
 	 */
-	const {iconProps, anchorGroupProps, mobileBreakpoint} = useProps(
+	const {anchorStackProps, mobileBreakpoint} = useProps(
 		type === AppBuilderContainerNameType.Anchor2d
 			? "ViewportAnchor2d"
 			: "ViewportAnchor3d",
@@ -324,18 +314,13 @@ export function useAnchorContainer({
 	 *
 	 * It contains the icon and toggles the content visibility
 	 * when clicked. The iconProps are applied to the ActionIcon.
-	 *
-	 * This will be replaced once this task is done:
-	 * https://shapediver.atlassian.net/browse/SS-8888
 	 */
 	const previewIconElement = (
-		<ActionIcon onClick={toggleContent} {...iconProps}>
-			<Icon
-				iconType={previewIcon!}
-				color={iconProps?.color}
-				className={classes.viewportIcon}
-			/>
-		</ActionIcon>
+		<ViewportIconButton
+			label="Open"
+			iconType={previewIcon! as string}
+			onClick={toggleContent}
+		/>
 	);
 
 	/**
@@ -343,35 +328,42 @@ export function useAnchorContainer({
 	 * that will be displayed when the anchor content is shown.
 	 * It contains the close icon and toggles the content visibility
 	 * when clicked. The iconProps are applied to the ActionIcon.
-	 *
-	 * This will be replaced once this task is done:
-	 * https://shapediver.atlassian.net/browse/SS-8888
 	 */
 	const closeIconElement = (
-		<ActionIcon onClick={toggleContent} {...iconProps}>
-			<Icon
-				iconType={"tabler:x"}
-				color={iconProps?.color}
-				className={classes.viewportIcon}
-			/>
-		</ActionIcon>
+		<ViewportIconButton
+			label="Close"
+			iconType={"tabler:x"}
+			onClick={toggleContent}
+		/>
 	);
 
+	const marginOffset = "calc(-0.2rem * var(--mantine-scale))";
 	/**
 	 * If the anchor is draggable, we create an ActionIcon element
 	 * that will be displayed in the control element group.
 	 * It contains the drag icon and handles the mouse down event.
 	 * The iconProps are applied to the ActionIcon.
-	 *
-	 * This will be replaced once this task is done:
-	 * https://shapediver.atlassian.net/browse/SS-8888
 	 */
 	const dragIconElement = (
-		<ActionIcon onMouseDown={handleMouseDown} {...iconProps}>
+		<ActionIcon
+			onMouseDown={handleMouseDown}
+			className={classes.ViewportIcon}
+			w={"4.5rem"} // icon size is 1.5rem, so we multiply by 3
+			variant="subtle"
+		>
 			<Icon
-				iconType={"tabler:grid-dots"}
-				color={iconProps?.color}
-				className={classes.viewportIcon}
+				iconType={"tabler:grip-horizontal"}
+				color={"var(--mantine-color-default-color)"}
+			/>
+			<Icon
+				iconType={"tabler:grip-horizontal"}
+				color={"var(--mantine-color-default-color)"}
+				// offset so that the icons appear as a single icon
+				style={{marginLeft: marginOffset, marginRight: marginOffset}}
+			/>
+			<Icon
+				iconType={"tabler:grip-horizontal"}
+				color={"var(--mantine-color-default-color)"}
 			/>
 		</ActionIcon>
 	);
@@ -381,27 +373,33 @@ export function useAnchorContainer({
 	 * Here we have a group with the icons and a group with the main element.
 	 */
 	const inner = (
-		<Stack gap={0} key={id}>
-			<Group
+		<Stack gap={0} key={id} {...anchorStackProps}>
+			<Flex
 				ref={updateControlElementGroupRef}
+				align="center"
 				style={{
-					display: "flex",
-					justifyContent: "space-between",
 					width: "100%",
 					pointerEvents: "auto",
 				}}
 			>
-				{aboveMobileBreakpoint && draggable && dragIconElement}
-				{/** The Flex element is used to push the close icon to the right. */}
-				<Flex />
-				{previewIcon && closeIconElement}
-			</Group>
+				<Box style={{flex: 1}} />
+				<Group ta="center">
+					{aboveMobileBreakpoint && draggable && dragIconElement}
+				</Group>
+				<Group
+					style={{
+						flex: 1,
+						display: "flex",
+						justifyContent: "flex-end",
+					}}
+				>
+					{previewIcon && closeIconElement}
+				</Group>
+			</Flex>
 			<Group
-				{...anchorGroupProps}
 				w={aboveMobileBreakpoint ? width : "100%"}
 				h={aboveMobileBreakpoint ? height : "100%"}
 				style={{
-					...anchorGroupProps?.style,
 					overflow: "auto",
 				}}
 			>

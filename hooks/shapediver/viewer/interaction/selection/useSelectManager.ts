@@ -76,7 +76,10 @@ export function useSelectManager(
 	componentId: string,
 	settings?: Pick<
 		ISelectionParameterProps,
-		"minimumSelection" | "maximumSelection" | "selectionColor"
+		| "minimumSelection"
+		| "maximumSelection"
+		| "selectionColor"
+		| "deselectOnEmpty"
 	>,
 ): {
 	/**
@@ -138,7 +141,8 @@ export function useSelectManager(
 						settings.minimumSelection!,
 						settings.maximumSelection!,
 					);
-					selectManager.deselectOnEmpty = false;
+					selectManager.deselectOnEmpty =
+						settings.deselectOnEmpty ?? false;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);
@@ -156,7 +160,8 @@ export function useSelectManager(
 							color: settings.selectionColor || "#0d44f0",
 						}),
 					);
-					selectManager.deselectOnEmpty = false;
+					selectManager.deselectOnEmpty =
+						settings.deselectOnEmpty ?? false;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);

@@ -8,7 +8,10 @@ import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverS
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {
+	AttributeVisualizationVisibility,
+	IAppBuilderSettingsSession,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderAttributeVisualizationWidgetComponent from "./widgets/AppBuilderAttributeVisualizationWidgetComponent";
@@ -91,6 +94,9 @@ export default function AppBuilderFallbackContainerComponent({
 					children: [
 						<AppBuilderAttributeVisualizationWidgetComponent
 							key={0}
+							visualizationMode={
+								AttributeVisualizationVisibility.DefaultOn
+							}
 						/>,
 					],
 				});

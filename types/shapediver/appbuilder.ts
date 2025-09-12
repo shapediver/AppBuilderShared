@@ -492,6 +492,8 @@ export interface IAppBuilderWidgetPropsAttributeVisualization {
 		/** Opacity of the material. (default: 1) */
 		opacity?: number;
 	};
+	/** Option to disable the anchors when clicking on an attribute. (default: false) */
+	disableAttributeAnchors?: boolean;
 }
 
 /** Properties of an AI agent widget. */
