@@ -647,6 +647,7 @@ function createOutputStore(session: ISessionApi, outputId: string) {
 		devtools(
 			() => ({
 				definition,
+				content: outputApi.content,
 			}),
 			devtoolsSettings,
 		),
