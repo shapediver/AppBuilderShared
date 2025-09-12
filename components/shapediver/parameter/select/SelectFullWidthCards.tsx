@@ -52,9 +52,6 @@ export const defaultStyleProps: Partial<StyleProps> = {
 	labelProps: {size: "sm", fontWeight: "medium"},
 	descriptionProps: {size: "xs", c: "dimmed"},
 	searchable: false,
-	bottomSection: <></>,
-	useLocalSearch: true,
-	onSearch: () => {},
 };
 
 export type SelectFullWidthCardsComponentThemePropsType = Partial<StyleProps>;
@@ -83,6 +80,9 @@ export default function SelectFullWidthCardsComponent(
 		disabled,
 		itemData,
 		settings,
+		bottomSection = <></>,
+		useLocalSearch = true,
+		onSearch = () => {},
 		...styleProps
 	} = props;
 
@@ -97,9 +97,6 @@ export default function SelectFullWidthCardsComponent(
 		searchable,
 		height,
 		limit,
-		bottomSection,
-		useLocalSearch,
-		onSearch,
 	} = useProps(
 		"SelectFullWidthCardsComponent",
 		defaultStyleProps,

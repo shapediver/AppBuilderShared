@@ -1,24 +1,24 @@
 import {useAsync} from "@AppBuilderShared/hooks/shapediver/parameters/select/useAsync";
 import React from "react";
 import {SelectComponentProps} from "./SelectComponent";
-import SelectFullWidthCardsComponent, {
-	SelectFullWidthCardsComponentThemePropsType,
-} from "./SelectFullWidthCards";
+import SelectGridComponent, {
+	SelectGridComponentThemePropsType,
+} from "./SelectGridComponent";
 
 /**
- * Async wrapper component for SelectFullWidthCardsComponent that adds search and infinite scrolling capabilities.
+ * Async wrapper component for SelectGridComponent that adds search and infinite scrolling capabilities.
  * This higher-order component handles filtering, search input, and lazy loading while delegating
- * the actual card rendering to the base SelectFullWidthCardsComponent.
+ * the actual grid rendering to the base SelectGridComponent.
  */
-export default function SelectFullWidthCardsAsyncComponent(
-	props: SelectComponentProps & SelectFullWidthCardsComponentThemePropsType,
+export default function SelectGridAsyncComponent(
+	props: SelectComponentProps & SelectGridComponentThemePropsType,
 ) {
 	const {scrollingApi, ...propsDefault} = props;
 	const {debouncedOnSearch, items, itemsData, bottomSection} =
 		useAsync(scrollingApi);
 
 	return (
-		<SelectFullWidthCardsComponent
+		<SelectGridComponent
 			{...propsDefault}
 			bottomSection={bottomSection}
 			onSearch={(s) => debouncedOnSearch([s])}

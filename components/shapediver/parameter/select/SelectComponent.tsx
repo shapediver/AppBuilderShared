@@ -183,7 +183,11 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	} else if (type === "carousel") {
 		return <SelectCarouselComponent {...rest} />;
 	} else if (type === "grid") {
-		return <SelectGridComponent {...rest} />;
+		if (rest.scrollingApi) {
+			return <SelectGridAsyncComponent {...rest} />;
+		} else {
+			return <SelectGridComponent {...rest} />;
+		}
 	} else {
 		return <SelectDropDownComponent {...rest} />;
 	}

@@ -1,0 +1,67 @@
+import {
+	IScrollingApi,
+	IScrollingApiItemTypeSelect,
+} from "@AppBuilderShared/modules/ecommerce/types/scrollingapi";
+import {ISelectComponentItemDataType} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {Loader} from "@mantine/core";
+import React, {useCallback, useMemo, useRef} from "react";
+import useInfiniteScroll from "react-infinite-scroll-hook";
+
+export const useAsync = (
+	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>,
+) => {
+	const debounceRef = useRef<NodeJS.Timeout>();
+	const handleLoadMore = useCallback(() => {
+		return scrollingApi?.loadMore?.();
+	}, [scrollingApi]);
+
+	const debouncedOnSearch = useCallback(
+		(searchTerms: string[]) => {
+			clearTimeout(debounceRef.current);
+			debounceRef.current = setTimeout(async () => {
+				await scrollingApi?.setSearchTerms?.(searchTerms);
+			}, 500);
+		},
+		[scrollingApi],
+	);
+
+	const [infiniteRef] = useInfiniteScroll({
+		loading: !!scrollingApi?.loading,
+		hasNextPage: !!scrollingApi?.hasNextPage,
+		onLoadMore: handleLoadMore,
+		disabled: !!scrollingApi?.error,
+		rootMargin: "0px 0px 400px 0px",
+	});
+
+	const items = useMemo(
+		() => scrollingApi?.items.map((item) => item.item) || [],
+		[scrollingApi],
+	);
+
+	const itemsData = useMemo(
+		() =>
+			scrollingApi?.items.reduce(
+				(acc, item) => {
+					acc[item.item] = item.data || {};
+					return acc;
+				},
+				{} as Record<string, ISelectComponentItemDataType>,
+			),
+		[scrollingApi],
+	);
+
+	const bottomSection = useMemo(() => {
+		return (
+			scrollingApi?.hasNextPage &&
+			!scrollingApi?.loading &&
+			React.createElement(Loader, {ref: infiniteRef})
+		);
+	}, [scrollingApi, infiniteRef]);
+
+	return {
+		debouncedOnSearch,
+		items,
+		itemsData,
+		bottomSection,
+	};
+};
