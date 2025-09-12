@@ -20,13 +20,14 @@ import {
 } from "@mantine/core";
 import React, {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
+import SelectFullWidthCardsComponent from "~/shared/components/shapediver/parameter/select/SelectFullWidthCards";
 import SelectButtonFlexComponent from "./SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
 import SelectCarouselComponent from "./SelectCarouselComponent";
 import SelectChipGroupComponent from "./SelectChipGroupComponent";
 import SelectColorComponent from "./SelectColorComponent";
 import SelectDropDownComponent from "./SelectDropDownComponent";
-import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
+import SelectFullWidthCardsAsyncComponent from "./SelectFullWidthCardsAsyncComponent";
 import SelectGridComponent from "./SelectGridComponent";
 import SelectImageDropDownComponent from "./SelectImageDropDownComponent";
 
@@ -129,7 +130,7 @@ interface SelectComponentPropsExt extends SelectComponentProps {
  * At most one item can be selected at a time.
  */
 export default function SelectComponent(props: SelectComponentPropsExt) {
-	const {type, source, ..._rest} = props;
+	const {type, source, ...rest} = props;
 
 	// scrolling API
 	const {scrollingApi, addScrollingApiSelect, removeScrollingApiSelect} =
@@ -161,7 +162,7 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	// 	console.log("scrollingApi items", scrollingApi?.items);
 	// }, [scrollingApi?.items]);
 
-	const rest = {..._rest, scrollingApi};
+	// const rest = {..._rest, scrollingApi};
 
 	if (type === "buttonflex") {
 		return <SelectButtonFlexComponent {...rest} />;
@@ -174,7 +175,11 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	} else if (type === "imagedropdown") {
 		return <SelectImageDropDownComponent {...rest} />;
 	} else if (type === "fullwidthcards") {
-		return <SelectFullWidthCardsComponent {...rest} />;
+		if (rest.scrollingApi) {
+			return <SelectFullWidthCardsAsyncComponent {...rest} />;
+		} else {
+			return <SelectFullWidthCardsComponent {...rest} />;
+		}
 	} else if (type === "carousel") {
 		return <SelectCarouselComponent {...rest} />;
 	} else if (type === "grid") {
