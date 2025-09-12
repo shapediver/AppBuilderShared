@@ -999,6 +999,9 @@ export const useCustomTheme = (props: Props = {}) => {
 			SelectGridComponent: SelectGridComponentThemeProps({
 				//gridProps: { cols: 2, spacing: "md" },
 				//showLabel: true,
+				// height: "300px",
+				// searchable: true,
+				// limit: 5,
 			}),
 			StargateInput: StargateInputThemeProps({
 				// buttonProps: {
