@@ -99,6 +99,7 @@ export function useGumball(
 			hover: gumballProps.hover,
 			minimumSelection: gumballProps.minimumSelection ?? 0,
 			maximumSelection: gumballProps.maximumSelection ?? Infinity,
+			deselectOnEmpty: gumballProps.deselectOnEmpty ?? false,
 		} as ISelectionParameterProps;
 	}, [gumballProps]);
 

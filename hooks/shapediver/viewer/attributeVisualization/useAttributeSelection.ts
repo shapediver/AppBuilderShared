@@ -159,6 +159,7 @@ export default function useAttributeSelection(
 			selectionColor: "#0d44f0",
 			hover: true,
 			hoverColor: "#00ff78",
+			deselectOnEmpty: true,
 		};
 	}, [nameFilter]);
 
