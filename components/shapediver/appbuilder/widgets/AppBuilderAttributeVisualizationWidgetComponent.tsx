@@ -109,6 +109,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		visualizationMode = AttributeVisualizationVisibility.DefaultOff,
 		showLegend = true,
 		passiveMaterial,
+		disableAttributeAnchors = false,
 		title = "Attributes",
 		tooltip = "",
 		...rest
@@ -180,7 +181,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	);
 	const attributeSelectionData = useAttributeSelection(
 		viewportId,
-		active,
+		active && !disableAttributeAnchors,
 		renderedAttribute,
 	);
 

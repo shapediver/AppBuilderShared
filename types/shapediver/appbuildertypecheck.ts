@@ -558,6 +558,7 @@ const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.object({
 			opacity: z.number().optional(),
 		})
 		.optional(),
+	disableAttributeAnchors: z.boolean().optional(),
 });
 
 // Zod type definition for IAppBuilderWidgetPropsActions
