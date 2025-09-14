@@ -1,4 +1,4 @@
-import {useAsync} from "@AppBuilderShared/hooks/shapediver/parameters/select/useAsync";
+import {useSelectAsync} from "@AppBuilderShared/hooks/shapediver/parameters/select/useSelectAsync";
 import React from "react";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectGridComponent, {
@@ -15,7 +15,7 @@ export default function SelectGridAsyncComponent(
 ) {
 	const {scrollingApi, ...propsDefault} = props;
 	const {debouncedOnSearch, items, itemsData, bottomSection} =
-		useAsync(scrollingApi);
+		useSelectAsync(scrollingApi);
 
 	return (
 		<SelectGridComponent

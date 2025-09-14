@@ -7,7 +7,7 @@ import {Loader} from "@mantine/core";
 import React, {useCallback, useMemo, useRef} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 
-export const useAsync = (
+export const useSelectAsync = (
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>,
 ) => {
 	const debounceRef = useRef<NodeJS.Timeout>();
