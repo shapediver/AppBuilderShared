@@ -28,6 +28,7 @@ import SelectChipGroupComponent from "./SelectChipGroupComponent";
 import SelectColorComponent from "./SelectColorComponent";
 import SelectDropDownComponent from "./SelectDropDownComponent";
 import SelectFullWidthCardsAsyncComponent from "./SelectFullWidthCardsAsyncComponent";
+import SelectGridAsyncComponent from "./SelectGridAsyncComponent";
 import SelectGridComponent from "./SelectGridComponent";
 import SelectImageDropDownComponent from "./SelectImageDropDownComponent";
 
@@ -115,7 +116,8 @@ export interface SelectComponentProps {
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>;
 }
 
-interface SelectComponentPropsExt extends SelectComponentProps {
+interface SelectComponentPropsExt
+	extends Omit<SelectComponentProps, "scrollingApi"> {
 	/** Type of select component to use. */
 	type?: SelectComponentType;
 	/**
@@ -175,16 +177,26 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	} else if (type === "imagedropdown") {
 		return <SelectImageDropDownComponent {...rest} />;
 	} else if (type === "fullwidthcards") {
-		if (rest.scrollingApi) {
-			return <SelectFullWidthCardsAsyncComponent {...rest} />;
+		if (scrollingApi) {
+			return (
+				<SelectFullWidthCardsAsyncComponent
+					{...rest}
+					scrollingApi={scrollingApi}
+				/>
+			);
 		} else {
 			return <SelectFullWidthCardsComponent {...rest} />;
 		}
 	} else if (type === "carousel") {
 		return <SelectCarouselComponent {...rest} />;
 	} else if (type === "grid") {
-		if (rest.scrollingApi) {
-			return <SelectGridAsyncComponent {...rest} />;
+		if (scrollingApi) {
+			return (
+				<SelectGridAsyncComponent
+					{...rest}
+					scrollingApi={scrollingApi}
+				/>
+			);
 		} else {
 			return <SelectGridComponent {...rest} />;
 		}
