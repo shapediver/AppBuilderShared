@@ -12,6 +12,8 @@ interface PropsTab extends BoxProps {
 	children: ReactElement[];
 	/** Optional tooltip to show when hovering the tab. */
 	tooltip?: string;
+	/** Optional - hide the name of the tab. */
+	hideName?: boolean;
 }
 
 export interface ITabsComponentProps extends BoxProps {
@@ -63,7 +65,7 @@ export default function TabsComponent({
 								) : undefined
 							}
 						>
-							{tab.name}
+							{tab.hideName ? "" : tab.name}
 						</Tabs.Tab>
 					);
 

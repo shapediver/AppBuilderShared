@@ -45,32 +45,50 @@ export default function AppBuilderFallbackContainerComponent({
 			defaultValue: "",
 			tabs: [],
 		};
+		const hideExportsTab = settings?.hideExports || exports.length == 0;
+		const hideOutputsTab = settings?.hideDataOutputs || outputs.length == 0;
+
 		if (parameters.length > 0) {
+			const props: {
+				parameters: PropsParameter[];
+				exports?: PropsExport[];
+				outputs?: PropsOutput[];
+			} = {
+				parameters,
+			};
+			if (hideExportsTab) {
+				props.exports = exports;
+			}
+			if (hideOutputsTab) {
+				props.outputs = outputs;
+			}
+
 			tabProps.defaultValue = "Parameters";
 			tabProps.tabs.push({
 				name: "Parameters",
+				hideName: true,
+				tooltip: "Parameters",
 				icon: "tabler:adjustments-horizontal",
 				children: [
 					<ParametersAndExportsAccordionComponent
 						key={0}
-						parameters={parameters}
+						{...props}
 					/>,
 				],
 			});
 		}
-		if (
-			(!settings?.hideExports && exports.length > 0) ||
-			(!settings?.hideDataOutputs && outputs.length > 0)
-		) {
+		if (!hideExportsTab || !hideOutputsTab) {
 			tabProps.defaultValue = tabProps.defaultValue || "Exports";
 			tabProps.tabs.push({
 				name: "Exports",
+				hideName: true,
+				tooltip: "Exports",
 				icon: "tabler:download",
 				children: [
 					<ParametersAndExportsAccordionComponent
 						key={1}
-						exports={!settings?.hideExports ? exports : []}
-						outputs={!settings?.hideDataOutputs ? outputs : []}
+						exports={hideExportsTab ? [] : exports}
+						outputs={hideOutputsTab ? [] : outputs}
 						namespace={namespace}
 					/>,
 				],
@@ -90,6 +108,8 @@ export default function AppBuilderFallbackContainerComponent({
 			if (hasSdtfData) {
 				tabProps.tabs.push({
 					name: "Attributes",
+					hideName: true,
+					tooltip: "Attributes",
 					icon: "tabler:tags",
 					children: [
 						<AppBuilderAttributeVisualizationWidgetComponent
@@ -106,6 +126,8 @@ export default function AppBuilderFallbackContainerComponent({
 		if (showDesktopClientPanel && !settings?.hideDesktopClients) {
 			tabProps.tabs.push({
 				name: "Stargate",
+				hideName: true,
+				tooltip: "Desktop Clients",
 				icon: "tabler:network",
 				children: [<DesktopClientPanel key={2} />],
 			});
