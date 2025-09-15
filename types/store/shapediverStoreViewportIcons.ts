@@ -3,6 +3,7 @@ import CamerasButton from "@AppBuilderShared/components/shapediver/viewport/butt
 import FullscreenButton from "@AppBuilderShared/components/shapediver/viewport/buttons/FullscreenButton";
 import HistoryMenuButton from "@AppBuilderShared/components/shapediver/viewport/buttons/HistoryMenuButton";
 import RedoButton from "@AppBuilderShared/components/shapediver/viewport/buttons/RedoButton";
+import ReloadButton from "@AppBuilderShared/components/shapediver/viewport/buttons/ReloadButton";
 import {CommonButtonProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/types";
 import UndoButton from "@AppBuilderShared/components/shapediver/viewport/buttons/UndoButton";
 import ZoomButton from "@AppBuilderShared/components/shapediver/viewport/buttons/ZoomButton";
@@ -17,6 +18,7 @@ export enum ViewportIconButtonEnum {
 	Cameras = "cameras",
 	Undo = "undo",
 	Redo = "redo",
+	Reload = "reload",
 	HistoryMenu = "historyMenu",
 }
 
@@ -89,5 +91,6 @@ export const ViewportTypeToIcon = {
 	[ViewportIconButtonEnum.Cameras]: CamerasButton,
 	[ViewportIconButtonEnum.Undo]: UndoButton,
 	[ViewportIconButtonEnum.Redo]: RedoButton,
+	[ViewportIconButtonEnum.Reload]: ReloadButton,
 	[ViewportIconButtonEnum.HistoryMenu]: HistoryMenuButton,
 };
