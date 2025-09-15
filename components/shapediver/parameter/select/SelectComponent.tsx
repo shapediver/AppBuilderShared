@@ -21,6 +21,7 @@ import {
 import React, {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
 import SelectFullWidthCardsComponent from "~/shared/components/shapediver/parameter/select/SelectFullWidthCards";
+import SelectGridAsyncComponent from "~/shared/components/shapediver/parameter/select/SelectGridAsyncComponent";
 import SelectButtonFlexComponent from "./SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
 import SelectCarouselComponent from "./SelectCarouselComponent";
