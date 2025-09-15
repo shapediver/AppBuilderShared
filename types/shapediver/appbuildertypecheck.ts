@@ -178,16 +178,16 @@ const IAppBuilderParameterValueSourcePropsExportSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsSdtf
-const IAppBuilderParameterValueSourcePropsSdtfSchema = z
-	.object({
-		sessionId: z.string().optional(),
-		name: z.string(),
-		chunk: z.object({
+const IAppBuilderParameterValueSourcePropsSdtfSchema = z.object({
+	sessionId: z.string().optional(),
+	name: z.string(),
+	chunk: z
+		.object({
 			id: z.string().optional(),
 			name: z.string().optional(),
-		}),
-	})
-	.optional();
+		})
+		.optional(),
+});
 
 // Zod type definition for IAppBuilderActionPropsCreateModelState
 const IAppBuilderActionPropsCreateModelStateSchema = z.object({
@@ -381,7 +381,7 @@ const IAppBuilderControlExportRefSchema = z.object({
 	sessionId: z.string().optional(),
 	overrides: IAppBuilderControlExportRefOverridesSchema.optional(),
 	parameterValues: z
-		.array(IAppBuilderActionPropsSetParameterValuesSchema)
+		.array(IAppBuilderLegacyActionPropsSetParameterValueSchema)
 		.optional(),
 });
 
