@@ -151,12 +151,43 @@ const IAppBuilderImageRefSchema = z.object({
 	href: z.string().optional(),
 });
 
-// Zod type definition for IAppBuilderActionPropsCommon
-const IAppBuilderActionPropsCommonSchema = z.object({
-	label: z.string().optional(),
-	icon: z.string().optional(),
-	tooltip: z.string().optional(),
+// Zod type definition for IAppBuilderParameterValueSourcePropsScreenshot
+const IAppBuilderParameterValueSourcePropsScreenshotSchema = z.object({
+	contentType: z.string().optional(),
+	quality: z.number().min(0).max(1).optional(),
+	resolution: z
+		.object({
+			width: z.number().int().positive(),
+			height: z.number().int().positive(),
+		})
+		.optional(),
+	// TODO @MajorMeerkatThe3rd please specify type
+	camera: z.unknown().optional(),
 });
+
+// Zod type definition for IAppBuilderParameterValueSourcePropsDataOutput
+const IAppBuilderParameterValueSourcePropsDataOutputSchema = z.object({
+	sessionId: z.string().optional(),
+	name: z.string(),
+});
+
+// Zod type definition for IAppBuilderParameterValueSourcePropsExport
+const IAppBuilderParameterValueSourcePropsExportSchema = z.object({
+	sessionId: z.string().optional(),
+	name: z.string(),
+});
+
+// Zod type definition for IAppBuilderParameterValueSourcePropsSdtf
+const IAppBuilderParameterValueSourcePropsSdtfSchema = z
+	.object({
+		sessionId: z.string().optional(),
+		name: z.string(),
+		chunk: z.object({
+			id: z.string().optional(),
+			name: z.string().optional(),
+		}),
+	})
+	.optional();
 
 // Zod type definition for IAppBuilderActionPropsCreateModelState
 const IAppBuilderActionPropsCreateModelStateSchema = z.object({
@@ -165,6 +196,46 @@ const IAppBuilderActionPropsCreateModelStateSchema = z.object({
 	includeGltf: z.boolean().optional(),
 	parameterNamesToInclude: z.array(z.string()).optional(),
 	parameterNamesToExclude: z.array(z.string()).optional(),
+});
+
+// Zod type definition for IAppBuilderParameterValueSourcePropsModelState
+const IAppBuilderParameterValueSourcePropsModelStateSchema =
+	IAppBuilderActionPropsCreateModelStateSchema.extend({
+		updateUrl: z.boolean().optional(),
+	});
+
+// Zod type definition for IAppBuilderParameterValueSourceDefinition
+const IAppBuilderParameterValueSourceDefinitionSchema = z.discriminatedUnion(
+	"type",
+	[
+		z.object({
+			type: z.literal("dataOutput"),
+			props: IAppBuilderParameterValueSourcePropsDataOutputSchema,
+		}),
+		z.object({
+			type: z.literal("export"),
+			props: IAppBuilderParameterValueSourcePropsExportSchema,
+		}),
+		z.object({
+			type: z.literal("modelState"),
+			props: IAppBuilderParameterValueSourcePropsModelStateSchema,
+		}),
+		z.object({
+			type: z.literal("screenshot"),
+			props: IAppBuilderParameterValueSourcePropsScreenshotSchema,
+		}),
+		z.object({
+			type: z.literal("sdtf"),
+			props: IAppBuilderParameterValueSourcePropsSdtfSchema,
+		}),
+	],
+);
+
+// Zod type definition for IAppBuilderActionPropsCommon
+const IAppBuilderActionPropsCommonSchema = z.object({
+	label: z.string().optional(),
+	icon: z.string().optional(),
+	tooltip: z.string().optional(),
 });
 
 // Zod type definition for IAppBuilderLegacyActionPropsCreateModelState
@@ -196,6 +267,7 @@ const IAppBuilderActionPropsSetParameterValueSchema = z.object({
 		sessionId: true,
 	}),
 	value: z.string().optional(),
+	source: IAppBuilderParameterValueSourceDefinitionSchema.optional(),
 });
 
 // Zod type definition for IAppBuilderLegacyActionPropsSetParameterValue
@@ -308,6 +380,9 @@ const IAppBuilderControlExportRefSchema = z.object({
 	name: z.string(),
 	sessionId: z.string().optional(),
 	overrides: IAppBuilderControlExportRefOverridesSchema.optional(),
+	parameterValues: z
+		.array(IAppBuilderActionPropsSetParameterValuesSchema)
+		.optional(),
 });
 
 // Zod type definition for IAppBuilderActionDefinition

@@ -173,6 +173,11 @@ export interface IAppBuilderControlExportRef {
 		Partial<IAppBuilderExportDefinition>,
 		"displayname" | "tooltip" | "hidden"
 	>;
+	/**
+	 * The parameter values that should be used for the export.
+	 * These parameter values must belong to the same session as the export.
+	 */
+	parameterValues?: IAppBuilderActionPropsSetParameterValue[];
 }
 
 /** Control referencing an output (defined by the session) */
@@ -256,10 +261,11 @@ export interface IAppBuilderParameterValueSourcePropsScreenshot {
 	 * Optional resolution of the screenshot, defaults to the current resolution of the viewport.
 	 * TODO SS-8346 define type
 	 */
-	resolution?: unknown;
+	resolution?: {width: number; height: number};
 	/**
 	 * Optional camera settings to be used for the screenshot. Defaults to the current camera of the viewport.
 	 * If a "name" is provided, the settings of the camera with that name are used as a base.
+	 * TODO @MajorMeerkatThe3rd please specify type
 	 */
 	camera?:
 		| Pick<ICameraApi, "name" | "position" | "target" | "type">
