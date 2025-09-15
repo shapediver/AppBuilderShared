@@ -9,6 +9,7 @@ import {
 	AccordionPanelProps,
 	AccordionProps,
 	MantineThemeComponent,
+	Paper,
 	Stack,
 	StackProps,
 	useProps,
@@ -17,6 +18,10 @@ import React, {useEffect, useState} from "react";
 
 interface StyleProps {
 	accordionProps?: AccordionProps;
+	/**
+	 * Props for the Paper component wrapping each accordion.
+	 */
+	accordionPaperProps?: PaperProps;
 	accordionItemProps?: Partial<AccordionItemProps>;
 	accordionControlProps?: AccordionControlProps;
 	accordionPanelProps?: AccordionPanelProps;
@@ -25,6 +30,7 @@ interface StyleProps {
 
 const defaultStyleProps: Partial<StyleProps> = {
 	accordionProps: {},
+	accordionPaperProps: {px: 0, py: 0, withBorder: false, shadow: "md"},
 	accordionPanelProps: {},
 	accordionItemProps: {},
 	accordionControlProps: {},
@@ -52,6 +58,7 @@ export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
 
 	const {
 		accordionProps,
+		accordionPaperProps,
 		accordionPanelProps,
 		accordionItemProps,
 		accordionControlProps,
@@ -89,45 +96,47 @@ export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
 	}, [value]);
 
 	return (
-		<Accordion
-			value={localValue}
-			multiple={multiple || false}
-			{...accordionProps}
-			onChange={handleValueChange}
-		>
-			{items.map((item, index) => (
-				<Accordion.Item
-					key={index}
-					value={item.value || item.name}
-					{...accordionItemProps}
-				>
-					<Accordion.Control
-						icon={
-							item.icon ? (
-								<Icon iconType={item.icon} />
-							) : undefined
-						}
-						title={item.tooltip}
-						{...accordionControlProps}
+		<Paper {...accordionPaperProps}>
+			<Accordion
+				value={localValue}
+				multiple={multiple || false}
+				{...accordionProps}
+				onChange={handleValueChange}
+			>
+				{items.map((item, index) => (
+					<Accordion.Item
+						key={index}
+						value={item.value || item.name}
+						{...accordionItemProps}
 					>
-						{item.tooltip ? (
-							<TooltipWrapper label={item.tooltip}>
-								<div>{item.name}</div>
-							</TooltipWrapper>
-						) : (
-							item.name
-						)}
-					</Accordion.Control>
-					<Accordion.Panel {...accordionPanelProps}>
-						<Stack {...stackProps}>
-							<AppBuilderWidgetsComponent
-								namespace={namespace}
-								widgets={item.widgets}
-							/>
-						</Stack>
-					</Accordion.Panel>
-				</Accordion.Item>
-			))}
-		</Accordion>
+						<Accordion.Control
+							icon={
+								item.icon ? (
+									<Icon iconType={item.icon} />
+								) : undefined
+							}
+							title={item.tooltip}
+							{...accordionControlProps}
+						>
+							{item.tooltip ? (
+								<TooltipWrapper label={item.tooltip}>
+									<div>{item.name}</div>
+								</TooltipWrapper>
+							) : (
+								item.name
+							)}
+						</Accordion.Control>
+						<Accordion.Panel {...accordionPanelProps}>
+							<Stack {...stackProps}>
+								<AppBuilderWidgetsComponent
+									namespace={namespace}
+									widgets={item.widgets}
+								/>
+							</Stack>
+						</Accordion.Panel>
+					</Accordion.Item>
+				))}
+			</Accordion>
+		</Paper>
 	);
 }
