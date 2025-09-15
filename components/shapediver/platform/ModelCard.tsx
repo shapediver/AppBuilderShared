@@ -55,7 +55,7 @@ export default function ModelCard(props: Props) {
 
 	return (
 		<Card w="18em">
-			<Card.Section>
+			<Card.Section className={classes.firstCardSection}>
 				<Anchor href={href} target={target}>
 					<Image
 						src={model.thumbnail_url}
@@ -71,7 +71,7 @@ export default function ModelCard(props: Props) {
 				</Anchor>
 			</Card.Section>
 			<Group justify="space-between" pt="sm" wrap="nowrap">
-				<Anchor href={href} target={target} underline="never">
+				<Anchor href={href} target={target} underline="never" mb="0">
 					<TextWeighted
 						size="md"
 						fontWeight="medium"

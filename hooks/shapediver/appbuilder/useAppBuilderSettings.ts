@@ -21,6 +21,7 @@ import {
 	QUERYPARAM_TICKET,
 } from "@AppBuilderShared/types/shapediver/queryparams";
 import {getDefaultPlatformUrl} from "@AppBuilderShared/utils/platform/environment";
+import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useEffect, useMemo} from "react";
 
 /**
@@ -30,6 +31,22 @@ import {useEffect, useMemo} from "react";
  */
 function isTrueish(value: string | null | undefined) {
 	return value === "true" || value === "1";
+}
+
+/**
+ * Theme property which allows to define default sessions.
+ * These sessions will be used in addition to sessions defined via JSON or URL query parameters.
+ */
+interface DefaultSessionsThemePropsType {
+	sessions?: IAppBuilderSettingsJsonSession[];
+}
+
+export function DefaultSessionsThemeProps(
+	props: DefaultSessionsThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
 }
 
 /**
@@ -43,7 +60,7 @@ function isTrueish(value: string | null | undefined) {
  * @returns
  */
 export default function useAppBuilderSettings(
-	defaultSession?: IAppBuilderSettingsSession,
+	defaultSession?: IAppBuilderSettingsJsonSession,
 	queryParamName = QUERYPARAM_SETTINGSURL,
 ) {
 	const parameters = useMemo<URLSearchParams>(
@@ -129,6 +146,13 @@ export default function useAppBuilderSettings(
 			: undefined;
 	}, [template]);
 
+	// get further optional session definitions from theme
+	const {sessions: themeSessions} = useProps(
+		"DefaultSessions",
+		{},
+		{} as DefaultSessionsThemePropsType,
+	);
+
 	// create the session array in a memo, otherwise it is recreated every time
 	const sessionsArray = useMemo<
 		IAppBuilderSettingsJsonSession[] | undefined
@@ -138,7 +162,9 @@ export default function useAppBuilderSettings(
 		if (!value) {
 			// No JSON loaded, use query params or default session
 			const session = defaultSession || queryParamSession;
-			return session ? [session] : undefined;
+			return session
+				? [session, ...(themeSessions ?? [])]
+				: themeSessions;
 		} else {
 			// JSON loaded, combine with query params/default session
 			const session = defaultSession || queryParamSession;
@@ -158,9 +184,16 @@ export default function useAppBuilderSettings(
 				combinedSessions[0].modelStateId = modelStateId;
 			}
 
-			return combinedSessions;
+			return combinedSessions.concat(themeSessions ?? []);
 		}
-	}, [loading, value, defaultSession, queryParamSession, modelStateId]);
+	}, [
+		loading,
+		value,
+		defaultSession,
+		queryParamSession,
+		modelStateId,
+		themeSessions,
+	]);
 
 	// create the settings object, either with the json data or without
 	const settings = useMemo<IAppBuilderSettings | undefined>(() => {

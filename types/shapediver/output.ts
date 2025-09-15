@@ -1,5 +1,8 @@
 import {IShapeDiverParamOrExportOrOutput} from "@AppBuilderShared/types/shapediver/common";
-import {ResOutputDefinition} from "@shapediver/sdk.geometry-api-sdk-v2";
+import {
+	ResOutputContent,
+	ResOutputDefinition,
+} from "@shapediver/sdk.geometry-api-sdk-v2";
 
 /**
  * The static definition of an output.
@@ -17,4 +20,6 @@ export type IShapeDiverOutputDefinitionChunk = NonNullable<
 export interface IShapeDiverOutput extends IShapeDiverParamOrExportOrOutput {
 	/** The static definition of the output. */
 	readonly definition: IShapeDiverOutputDefinition;
+	/** Content provided by the output. */
+	readonly content: ResOutputContent[] | undefined;
 }

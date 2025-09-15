@@ -1,3 +1,4 @@
+import {ModelCardOverlayPropsType} from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlay";
 import {OverlayStyleProps} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {
@@ -40,6 +41,18 @@ export interface ExportComponentMapValueType extends ComponentType {
 
 	// #endregion Properties (1)
 }
+/**
+ * Type alias for model card overlays.
+ */
+export interface ModelCardOverlayType extends ComponentType {
+	// #region Properties (1)
+
+	component: (props: ModelCardOverlayPropsType) => ReactElement;
+
+	// #endregion Properties (1)
+}
+
+//IModelCardOverlayProps
 
 export interface IComponentContext {
 	// #region Properties (6)
@@ -54,6 +67,7 @@ export interface IComponentContext {
 	viewportIcons?: ViewportIconsComponentMapValueType;
 	viewportOverlayWrapper?: ViewportOverlayWrapperComponentMapValueType;
 	widgets?: {[key: string]: WidgetComponentMapValueType};
+	modelCardOverlay?: ModelCardOverlayType;
 
 	// #endregion Properties (6)
 }

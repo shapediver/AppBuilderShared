@@ -1,27 +1,28 @@
-import ModelCardOverlayWrapper from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlayWrapper";
+import ModelCardOverlayWrapper, {
+	ModelCardOverlayWrapperThemePropsType,
+} from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlayWrapper";
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {Avatar} from "@mantine/core";
-import React, {useMemo} from "react";
+import React, {useContext, useMemo} from "react";
 
-export interface IModelCardOverlayProps {
+export type ModelCardOverlayPropsType = {
 	/** If true, show the model's bookmark status. Defaults to false. */
 	showBookmark?: boolean;
 	/** If true, show information about the owner of the model. Defaults to true. */
 	showUser?: boolean;
-}
-
-interface Props extends IModelCardOverlayProps {
 	/** Model to be displayed */
 	item: TModelItem;
-}
+} & ModelCardOverlayWrapperThemePropsType;
 
-export default function ModelCardOverlay(props: Props) {
+export default function ModelCardOverlay(props: ModelCardOverlayPropsType) {
 	const {
 		item: {data: model, actions},
 		showBookmark = false,
 		showUser = true,
+		...overlayProps
 	} = props;
 
 	const displayBookmark = showBookmark; // && model.bookmark?.bookmarked;
@@ -51,10 +52,13 @@ export default function ModelCardOverlay(props: Props) {
 		return "?";
 	}, [model.user]);
 
+	const {modelCardOverlay: {component: CustomModelCardOverlay} = {}} =
+		useContext(ComponentContext);
+
 	return (
 		<>
 			{displayBookmark ? (
-				<ModelCardOverlayWrapper position="top-left">
+				<ModelCardOverlayWrapper {...overlayProps} position="top-left">
 					<ToggleIcon
 						value={model.bookmark?.bookmarked ?? false}
 						iconActive={"tabler:bookmark"}
@@ -68,7 +72,7 @@ export default function ModelCardOverlay(props: Props) {
 				</ModelCardOverlayWrapper>
 			) : undefined}
 			{displayUser ? (
-				<ModelCardOverlayWrapper position="top-right">
+				<ModelCardOverlayWrapper {...overlayProps} position="top-right">
 					<TooltipWrapper label={username}>
 						{model.user.avatar_url ? (
 							<Avatar
@@ -80,6 +84,9 @@ export default function ModelCardOverlay(props: Props) {
 						)}
 					</TooltipWrapper>
 				</ModelCardOverlayWrapper>
+			) : undefined}
+			{CustomModelCardOverlay ? (
+				<CustomModelCardOverlay {...props} />
 			) : undefined}
 		</>
 	);

@@ -13,11 +13,11 @@ export interface IModelLibraryTabProps extends IModelLibraryProps {
 	tooltip?: string;
 }
 
-interface Props extends BoxProps {
+export interface LibraryPageProps extends BoxProps {
 	tabs: IModelLibraryTabProps[];
 }
 
-export default function LibraryPage(props: Props) {
+export default function LibraryPage(props: LibraryPageProps) {
 	const {tabs, ...rest} = props;
 
 	const tabDefinitions = useMemo((): ITabsComponentProps => {
