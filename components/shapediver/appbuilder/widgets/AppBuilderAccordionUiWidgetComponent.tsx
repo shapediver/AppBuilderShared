@@ -10,6 +10,7 @@ import {
 	AccordionProps,
 	MantineThemeComponent,
 	Paper,
+	PaperProps,
 	Stack,
 	StackProps,
 	useProps,
