@@ -377,7 +377,7 @@ export function useAnchorContainer({
 			}}
 			label=""
 			iconType={previewIcon! as string}
-			onClick={toggleContent}
+			onMouseDown={toggleContent}
 		/>
 	);
 
@@ -397,7 +397,7 @@ export function useAnchorContainer({
 			}}
 			label=""
 			iconType={"tabler:x"}
-			onClick={toggleContent}
+			onMouseDown={toggleContent}
 		/>
 	);
 
