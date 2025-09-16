@@ -15,7 +15,7 @@ import {useShallow} from "zustand/react/shallow";
 import ViewportOverlayWrapper from "./ViewportOverlayWrapper";
 import {CommonButtonProps} from "./buttons/types";
 
-const defaultStyleProps: ViewportIconsOptionalProps = {
+export const defaultStyleProps: ViewportIconsOptionalProps = {
 	style: {
 		display: "flex",
 		gap: "0.25rem",

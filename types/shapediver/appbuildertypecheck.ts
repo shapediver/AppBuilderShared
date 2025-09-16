@@ -703,6 +703,8 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	previewIcon: z.string().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
+	useContainer: z.boolean().optional(),
+	useCloseButton: z.boolean().optional(),
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),
@@ -732,6 +734,7 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	draggable: z.boolean().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
+	useContainer: z.boolean().optional(),
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),

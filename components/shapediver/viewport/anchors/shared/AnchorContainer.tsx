@@ -15,6 +15,8 @@ import {
 	Flex,
 	Group,
 	MantineBreakpoint,
+	Paper,
+	PaperProps,
 	Portal,
 	Stack,
 	StackProps,
@@ -38,6 +40,7 @@ import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
 import {useCanvasSize} from "./useCanvasSize";
 import {cleanUnit} from "./utils";
 
+import {defaultStyleProps} from "../../ViewportIcons";
 import classes from "../../ViewportIcons.module.css";
 
 export interface ViewportAnchorProps {
@@ -55,6 +58,10 @@ export interface ViewportAnchorProps {
 	height?: string | number;
 	/** The unique identifier for the anchor */
 	id: string;
+	/** Option to use Paper component (default: true) */
+	useContainer?: boolean;
+	/** Closing strategy if the anchor can be closed.  */
+	closingStrategy?: "button" | "emptyClick";
 	/** Mobile fallback options */
 	mobileFallback?: {
 		/** if the anchor should be completely disabled */
@@ -70,16 +77,22 @@ export interface ViewportAnchorProps {
 }
 
 export type ViewportAnchorStyleProps = {
+	anchorPaperProps?: Partial<PaperProps>;
 	anchorStackProps?: Partial<StackProps>;
 	/** Breakpoint below which to to switch to the mobile behavior */
 	mobileBreakpoint: MantineBreakpoint;
 };
 
 export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
+	anchorPaperProps: {
+		style: {
+			...defaultStyleProps.style,
+		},
+		pt: 0,
+		shadow: "md",
+	},
 	anchorStackProps: {
 		style: {
-			// this background color is the same as used in all other containers
-			backgroundColor: "var(--mantine-color-body)",
 			// the only other styling I added is the border radius
 			// as otherwise this looks really bad
 			borderRadius: "var(--mantine-radius-md)",
@@ -124,6 +137,8 @@ export function useAnchorContainer({
 		width: inputWidth = "var(--app-shell-navbar-width)",
 		height: inputHeight,
 		mobileFallback: inputMobileFallback,
+		useContainer = true,
+		closingStrategy,
 		...rest
 	} = properties;
 
@@ -147,7 +162,7 @@ export function useAnchorContainer({
 	 *
 	 * Depending on the type of the anchor, it will return different properties.
 	 */
-	const {anchorStackProps, mobileBreakpoint} = useProps(
+	const {anchorPaperProps, anchorStackProps, mobileBreakpoint} = useProps(
 		type === AppBuilderContainerNameType.Anchor2d
 			? "ViewportAnchor2d"
 			: "ViewportAnchor3d",
@@ -255,6 +270,43 @@ export function useAnchorContainer({
 	const draggable =
 		"draggable" in properties ? (properties.draggable ?? false) : false;
 
+	// Extract the useCloseButton property if it exists
+	const useCloseButton =
+		"useCloseButton" in properties
+			? (properties.useCloseButton ?? false)
+			: false;
+
+	useEffect(() => {
+		if (!canvas) return;
+
+		if (previewIcon && closingStrategy === "emptyClick" && showContent) {
+			const handleClickOutside = (event: MouseEvent) => {
+				// only move forward if the left mouse button was clicked
+				if (event.button === 0) {
+					updateShowContent(viewportId, id, false);
+					canvas.removeEventListener(
+						"pointerdown",
+						handleClickOutside,
+					);
+				}
+			};
+
+			canvas.addEventListener("pointerdown", handleClickOutside);
+			return () => {
+				canvas.removeEventListener("pointerdown", handleClickOutside);
+			};
+		}
+	}, [
+		canvas,
+		previewIcon,
+		closingStrategy,
+		showContent,
+		viewportId,
+		id,
+		updateShowContent,
+		viewport,
+	]);
+
 	// Calculate the width and height based on the input values
 	const {width, height} = useMemo(() => {
 		return {
@@ -317,9 +369,15 @@ export function useAnchorContainer({
 	 */
 	const previewIconElement = (
 		<ViewportIconButton
-			label="Open"
+			styles={{
+				root: {
+					backgroundColor:
+						"var(--ai-bg, var(--mantine-primary-color-filled))",
+				},
+			}}
+			label=""
 			iconType={previewIcon! as string}
-			onClick={toggleContent}
+			onMouseDown={toggleContent}
 		/>
 	);
 
@@ -331,9 +389,15 @@ export function useAnchorContainer({
 	 */
 	const closeIconElement = (
 		<ViewportIconButton
-			label="Close"
+			styles={{
+				root: {
+					backgroundColor:
+						"var(--ai-bg, var(--mantine-primary-color-filled))",
+				},
+			}}
+			label=""
 			iconType={"tabler:x"}
-			onClick={toggleContent}
+			onMouseDown={toggleContent}
 		/>
 	);
 
@@ -350,6 +414,12 @@ export function useAnchorContainer({
 			className={classes.ViewportIcon}
 			w={"4.5rem"} // icon size is 1.5rem, so we multiply by 3
 			variant="subtle"
+			styles={{
+				root: {
+					backgroundColor:
+						"var(--ai-bg, var(--mantine-primary-color-filled))",
+				},
+			}}
 		>
 			<Icon
 				iconType={"tabler:grip-horizontal"}
@@ -368,6 +438,15 @@ export function useAnchorContainer({
 		</ActionIcon>
 	);
 
+	const hasDragIcon = useMemo(
+		() => aboveMobileBreakpoint && draggable,
+		[aboveMobileBreakpoint, draggable],
+	);
+	const hasCloseIcon = useMemo(
+		() => previewIcon && (closingStrategy === "button" || useCloseButton),
+		[previewIcon, closingStrategy, useCloseButton],
+	);
+
 	/**
 	 * The content of the anchor
 	 * Here we have a group with the icons and a group with the main element.
@@ -383,9 +462,7 @@ export function useAnchorContainer({
 				}}
 			>
 				<Box style={{flex: 1}} />
-				<Group ta="center">
-					{aboveMobileBreakpoint && draggable && dragIconElement}
-				</Group>
+				<Group ta="center">{hasDragIcon && dragIconElement}</Group>
 				<Group
 					style={{
 						flex: 1,
@@ -393,7 +470,7 @@ export function useAnchorContainer({
 						justifyContent: "flex-end",
 					}}
 				>
-					{previewIcon && closeIconElement}
+					{hasCloseIcon && closeIconElement}
 				</Group>
 			</Flex>
 			<Group
@@ -401,6 +478,7 @@ export function useAnchorContainer({
 				h={aboveMobileBreakpoint ? height : "100%"}
 				style={{
 					overflow: "auto",
+					scrollbarWidth: "none",
 				}}
 			>
 				<Stack
@@ -445,9 +523,18 @@ export function useAnchorContainer({
 						pointerEvents: pointerEvents,
 					}}
 				>
-					{showContent === false
-						? previewIconElement
-						: aboveMobileBreakpoint && inner}
+					{showContent === false ? (
+						previewIconElement
+					) : aboveMobileBreakpoint && useContainer ? (
+						<Paper
+							{...anchorPaperProps}
+							pt={hasCloseIcon || hasDragIcon ? 0 : undefined}
+						>
+							{inner}
+						</Paper>
+					) : (
+						inner
+					)}
 				</Group>
 			</Group>
 		</Portal>

@@ -109,15 +109,29 @@ export default function SelectedAttributeComponent(props: Props) {
 					? "var(--mantine-primary-color-light)"
 					: undefined
 			}
+			className={classes.rowHover}
 		>
 			<Table.Td className={classes.selectedAttributeTd}>{key}</Table.Td>
 			<Table.Td className={classes.selectedAttributeTd}>
 				{JSON.stringify(value.value)}
 			</Table.Td>
 			{value.ableToActivate && (
-				<Table.Td align="center">
+				<Table.Td align="center" className={classes.actionCell}>
 					{value.currentlyActive ? (
-						<Icon iconType={"tabler:eye"} />
+						<ActionIcon
+							title="Toggle Layer"
+							size={"sm"}
+							variant="subtle"
+							color="var(--mantine-color-gray-8)"
+							styles={{
+								root: {
+									backgroundColor:
+										"var(--ai-bg, var(--mantine-primary-color-filled))",
+								},
+							}}
+						>
+							<Icon iconType={"tabler:eye"} />
+						</ActionIcon>
 					) : (
 						<ActionIcon
 							title="Toggle Layer"
@@ -128,9 +142,11 @@ export default function SelectedAttributeComponent(props: Props) {
 									key + "_" + value.typeHint,
 								);
 							}}
-							variant={"light"}
+							variant="subtle"
+							className={classes.showOnRowHover}
+							color="var(--mantine-color-gray-6)"
 						>
-							<Icon iconType={"tabler:eye-off"} />
+							<Icon iconType={"tabler:eye"} />
 						</ActionIcon>
 					)}
 				</Table.Td>

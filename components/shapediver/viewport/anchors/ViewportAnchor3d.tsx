@@ -19,6 +19,8 @@ import {updatePosition} from "./shared/utils";
 export interface ViewportAnchorProps3d extends ViewportAnchorProps {
 	/** The 3D location of the anchor in the viewport. */
 	location: number[] | vec3;
+	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
+	useCloseButton?: boolean;
 }
 
 type ViewportAnchorThemePropsType = Partial<ViewportAnchorStyleProps>;

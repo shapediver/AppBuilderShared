@@ -3,6 +3,7 @@ import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {
 	ActionIcon,
 	ActionIconProps,
+	MantineStyleProp,
 	MantineThemeComponent,
 	TooltipProps,
 	useProps,
@@ -15,6 +16,7 @@ interface Props {
 	label: string;
 	iconType: string;
 	disabled?: boolean;
+	styles?: MantineStyleProp;
 	onClick?: React.MouseEventHandler<HTMLButtonElement>;
 	onMouseDown?: React.MouseEventHandler<HTMLButtonElement>;
 }
@@ -62,6 +64,7 @@ export default function ViewportIconButton(
 		label,
 		iconType,
 		disabled = false,
+		styles,
 		onClick,
 		onMouseDown,
 		...rest
@@ -92,6 +95,7 @@ export default function ViewportIconButton(
 				aria-label={label ?? undefined}
 				className={classes.ViewportIcon}
 				{...restActionIconProps}
+				styles={{...restActionIconProps.styles, ...styles}}
 			>
 				<Icon
 					iconType={iconType}
