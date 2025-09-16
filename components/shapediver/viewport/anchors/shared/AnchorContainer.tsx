@@ -494,6 +494,38 @@ export function useAnchorContainer({
 	);
 
 	/**
+	 * The inner container that wraps the content of the anchor.
+	 * If useContainer is true, we wrap the content in a Paper component
+	 * with the provided anchorPaperProps. If not, we just return the inner content.
+	 * If we are below the mobile breakpoint, we return null as the content
+	 * will be rendered in the standard container.
+	 */
+	const innerContainer = useMemo(() => {
+		if (aboveMobileBreakpoint) {
+			if (useContainer) {
+				return (
+					<Paper
+						{...anchorPaperProps}
+						pt={hasCloseIcon || hasDragIcon ? 0 : undefined}
+					>
+						{inner}
+					</Paper>
+				);
+			} else {
+				return inner;
+			}
+		}
+		return null;
+	}, [
+		aboveMobileBreakpoint,
+		anchorPaperProps,
+		hasCloseIcon,
+		hasDragIcon,
+		inner,
+		useContainer,
+	]);
+
+	/**
 	 * The main anchor element.
 	 */
 	const AnchorElement = canvas && (
@@ -523,18 +555,9 @@ export function useAnchorContainer({
 						pointerEvents: pointerEvents,
 					}}
 				>
-					{showContent === false ? (
-						previewIconElement
-					) : aboveMobileBreakpoint && useContainer ? (
-						<Paper
-							{...anchorPaperProps}
-							pt={hasCloseIcon || hasDragIcon ? 0 : undefined}
-						>
-							{inner}
-						</Paper>
-					) : (
-						inner
-					)}
+					{showContent === false
+						? previewIconElement
+						: innerContainer}
 				</Group>
 			</Group>
 		</Portal>
