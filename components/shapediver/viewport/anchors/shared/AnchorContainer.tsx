@@ -15,6 +15,8 @@ import {
 	Flex,
 	Group,
 	MantineBreakpoint,
+	Paper,
+	PaperProps,
 	Portal,
 	Stack,
 	StackProps,
@@ -38,6 +40,7 @@ import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
 import {useCanvasSize} from "./useCanvasSize";
 import {cleanUnit} from "./utils";
 
+import {defaultStyleProps} from "../../ViewportIcons";
 import classes from "../../ViewportIcons.module.css";
 
 export interface ViewportAnchorProps {
@@ -72,16 +75,22 @@ export interface ViewportAnchorProps {
 }
 
 export type ViewportAnchorStyleProps = {
+	anchorPaperProps?: Partial<PaperProps>;
 	anchorStackProps?: Partial<StackProps>;
 	/** Breakpoint below which to to switch to the mobile behavior */
 	mobileBreakpoint: MantineBreakpoint;
 };
 
 export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
+	anchorPaperProps: {
+		style: {
+			...defaultStyleProps.style,
+		},
+		pt: 0,
+		shadow: "md",
+	},
 	anchorStackProps: {
 		style: {
-			// this background color is the same as used in all other containers
-			backgroundColor: "var(--mantine-color-body)",
 			// the only other styling I added is the border radius
 			// as otherwise this looks really bad
 			borderRadius: "var(--mantine-radius-md)",
@@ -150,7 +159,7 @@ export function useAnchorContainer({
 	 *
 	 * Depending on the type of the anchor, it will return different properties.
 	 */
-	const {anchorStackProps, mobileBreakpoint} = useProps(
+	const {anchorPaperProps, anchorStackProps, mobileBreakpoint} = useProps(
 		type === AppBuilderContainerNameType.Anchor2d
 			? "ViewportAnchor2d"
 			: "ViewportAnchor3d",
@@ -320,7 +329,13 @@ export function useAnchorContainer({
 	 */
 	const previewIconElement = (
 		<ViewportIconButton
-			label="Open"
+			styles={{
+				root: {
+					backgroundColor:
+						"var(--ai-bg, var(--mantine-primary-color-filled))",
+				},
+			}}
+			label=""
 			iconType={previewIcon! as string}
 			onClick={toggleContent}
 		/>
@@ -334,7 +349,13 @@ export function useAnchorContainer({
 	 */
 	const closeIconElement = (
 		<ViewportIconButton
-			label="Close"
+			styles={{
+				root: {
+					backgroundColor:
+						"var(--ai-bg, var(--mantine-primary-color-filled))",
+				},
+			}}
+			label=""
 			iconType={"tabler:x"}
 			onClick={toggleContent}
 		/>
@@ -353,6 +374,12 @@ export function useAnchorContainer({
 			className={classes.ViewportIcon}
 			w={"4.5rem"} // icon size is 1.5rem, so we multiply by 3
 			variant="subtle"
+			styles={{
+				root: {
+					backgroundColor:
+						"var(--ai-bg, var(--mantine-primary-color-filled))",
+				},
+			}}
 		>
 			<Icon
 				iconType={"tabler:grip-horizontal"}
@@ -404,6 +431,7 @@ export function useAnchorContainer({
 				h={aboveMobileBreakpoint ? height : "100%"}
 				style={{
 					overflow: "auto",
+					scrollbarWidth: "none",
 				}}
 			>
 				<Stack
