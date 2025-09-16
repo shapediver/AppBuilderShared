@@ -4,16 +4,19 @@ import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewpo
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {useShapeDiverViewportIconsStore} from "@AppBuilderShared/store/useShapeDiverViewportIconsStore";
+import {
+	ButtonRenderContext,
+	renderViewportIcons,
+} from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {DividerProps, Paper, Transition, useProps} from "@mantine/core";
+import {Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import ViewportOverlayWrapper from "./ViewportOverlayWrapper";
-import {CommonButtonProps} from "./buttons/types";
 
 export const defaultStyleProps: ViewportIconsOptionalProps = {
 	style: {
@@ -45,16 +48,6 @@ export const defaultStyleProps: ViewportIconsOptionalProps = {
 		keepMounted: true,
 	},
 };
-
-interface ButtonRenderContext extends CommonButtonProps {
-	viewport?: any;
-	namespace?: string;
-	buttonsDisabled: boolean;
-	executing: boolean;
-	hasPendingChanges: boolean;
-	iconsVisible: boolean;
-	fullscreenId: string;
-}
 
 export default function ViewportIcons(
 	props: ViewportIconsProps & ViewportIconsOptionalProps,
@@ -89,17 +82,10 @@ export default function ViewportIcons(
 	);
 	const {showControls, setIsHoveringControls} = useViewportControls();
 
-	const {render} = useShapeDiverViewportIconsStore(
-		useShallow((state) => ({
-			render: (
-				viewportId: string,
-				buttonContext: ButtonRenderContext,
-				dividerProps: DividerProps,
-			) => {
-				return state.render(viewportId, buttonContext, dividerProps);
-			},
-		})),
-	);
+	const layout =
+		useShapeDiverViewportIconsStore(
+			useShallow((state) => state.viewportIcons[viewportId]?.layout),
+		) ?? [];
 
 	const parameterChanges = useShapeDiverStoreParameters(
 		useCallback(
@@ -207,10 +193,9 @@ export default function ViewportIcons(
 		],
 	);
 
-	// Render layout items dynamically
-	const dynamicContent = useCallback(() => {
-		return render(viewportId, buttonContext, dividerProps || {});
-	}, [viewportId, buttonContext, dividerProps]);
+	const content = useMemo(() => {
+		return renderViewportIcons(layout, buttonContext, dividerProps);
+	}, [layout, buttonContext, dividerProps]);
 
 	// Prevent event propagation to avoid triggering viewport interactions
 	// when touching the icons.
@@ -236,7 +221,7 @@ export default function ViewportIcons(
 						onMouseLeave={() => setIsHoveringControls(false)}
 						onMouseEnter={() => setIsHoveringControls(true)}
 					>
-						{dynamicContent()}
+						{content}
 					</Paper>
 				)}
 			</Transition>
