@@ -116,9 +116,9 @@ export class ECommerceApi implements IECommerceApi {
 		);
 	}
 
-	async scrollingApiSetParameters<TItem>(
+	async scrollingApiSetParameters(
 		data: IScrollingApiSetParametersData,
-	): Promise<IScrollingApiSetParametersReply<TItem>> {
+	): Promise<IScrollingApiSetParametersReply<unknown>> {
 		await this.peerIsReady;
 
 		return this.crossWindowApi.send(
@@ -128,9 +128,9 @@ export class ECommerceApi implements IECommerceApi {
 		);
 	}
 
-	async scrollingApiLoadMore<TItem>(
+	async scrollingApiLoadMore(
 		data: IScrollingApiLoadMoreData,
-	): Promise<IScrollingApiLoadMoreReply<TItem>> {
+	): Promise<IScrollingApiLoadMoreReply<unknown>> {
 		await this.peerIsReady;
 
 		return this.crossWindowApi.send(
@@ -279,16 +279,16 @@ export class DummyECommerceApi implements IECommerceApi {
 		return this.actions.closeConfigurator();
 	}
 
-	scrollingApiSetParameters<TItem>(
+	scrollingApiSetParameters(
 		data: IScrollingApiSetParametersData,
-	): Promise<IScrollingApiSetParametersReply<TItem>> {
-		return this.actions.scrollingApiSetParameters<TItem>(data);
+	): Promise<IScrollingApiSetParametersReply<unknown>> {
+		return this.actions.scrollingApiSetParameters(data);
 	}
 
-	scrollingApiLoadMore<TItem>(
+	scrollingApiLoadMore(
 		data: IScrollingApiLoadMoreData,
-	): Promise<IScrollingApiLoadMoreReply<TItem>> {
-		return this.actions.scrollingApiLoadMore<TItem>(data);
+	): Promise<IScrollingApiLoadMoreReply<unknown>> {
+		return this.actions.scrollingApiLoadMore(data);
 	}
 }
 
