@@ -55,6 +55,8 @@ export interface ViewportAnchorProps {
 	height?: string | number;
 	/** The unique identifier for the anchor */
 	id: string;
+	/** Option to use Paper component (default: true) */
+	useContainer?: boolean;
 	/** Mobile fallback options */
 	mobileFallback?: {
 		/** if the anchor should be completely disabled */
@@ -124,6 +126,7 @@ export function useAnchorContainer({
 		width: inputWidth = "var(--app-shell-navbar-width)",
 		height: inputHeight,
 		mobileFallback: inputMobileFallback,
+		useContainer = true,
 		...rest
 	} = properties;
 
@@ -445,9 +448,13 @@ export function useAnchorContainer({
 						pointerEvents: pointerEvents,
 					}}
 				>
-					{showContent === false
-						? previewIconElement
-						: aboveMobileBreakpoint && inner}
+					{showContent === false ? (
+						previewIconElement
+					) : aboveMobileBreakpoint && useContainer ? (
+						<Paper {...anchorPaperProps}>{inner}</Paper>
+					) : (
+						inner
+					)}
 				</Group>
 			</Group>
 		</Portal>

@@ -639,6 +639,8 @@ export type AppBuilderAnchorContainerProperties = {
 	width?: string | number;
 	/** Optional height of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
 	height?: string | number;
+	/** Option to use Paper component (default: true) */
+	useContainer?: boolean;
 	/** Options for the mobile fallback */
 	mobileFallback?: {
 		/** if the anchor should be completely disabled */

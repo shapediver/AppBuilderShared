@@ -47,6 +47,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						width={container.props.width}
 						height={container.props.height}
 						mobileFallback={container.props.mobileFallback}
+						useContainer={container.props.useContainer ?? true}
 					/>,
 				);
 			} else if (isAnchor2dContainer(container)) {
@@ -70,6 +71,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						width={container.props.width}
 						height={container.props.height}
 						mobileFallback={container.props.mobileFallback}
+						useContainer={container.props.useContainer ?? true}
 					/>,
 				);
 			}
