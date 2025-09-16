@@ -47,7 +47,7 @@ export default function OutputStargateComponent(
 	props: PropsOutput & StyleProps,
 ) {
 	const {namespace} = props;
-	const {definition} = useOutput(props);
+	const {definition} = useOutput(props) ?? {};
 
 	const {
 		stackProps,
