@@ -271,7 +271,14 @@ export function useAnchorContainer({
 
 		if (previewIcon && closingStrategy === "emptyClick" && showContent) {
 			const handleClickOutside = (event: MouseEvent) => {
-				updateShowContent(viewportId, id, false);
+				// only move forward if the left mouse button was clicked
+				if (event.button === 0) {
+					updateShowContent(viewportId, id, false);
+					canvas.removeEventListener(
+						"pointerdown",
+						handleClickOutside,
+					);
+				}
 			};
 
 			canvas.addEventListener("pointerdown", handleClickOutside);
