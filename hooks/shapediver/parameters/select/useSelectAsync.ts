@@ -3,9 +3,9 @@ import {
 	IScrollingApiItemTypeSelect,
 } from "@AppBuilderShared/modules/ecommerce/types/scrollingapi";
 import {ISelectComponentItemDataType} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {Loader} from "@mantine/core";
 import React, {useCallback, useMemo, useRef} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
+import classes from "./useSelectAsync.module.css";
 
 export const useSelectAsync = (
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>,
@@ -54,7 +54,11 @@ export const useSelectAsync = (
 		return (
 			scrollingApi?.hasNextPage &&
 			!scrollingApi?.loading &&
-			React.createElement(Loader, {ref: infiniteRef})
+			React.createElement("div", {
+				ref: infiniteRef,
+				className: classes.sentinel,
+				"aria-hidden": true,
+			})
 		);
 	}, [scrollingApi, infiniteRef]);
 
