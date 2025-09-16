@@ -65,8 +65,7 @@ export default function AppBuilderFallbackContainerComponent({
 
 			tabProps.defaultValue = "Parameters";
 			tabProps.tabs.push({
-				name: "Parameters",
-				hideName: true,
+				value: "Parameters",
 				tooltip: "Parameters",
 				icon: "tabler:adjustments-horizontal",
 				children: [
@@ -80,8 +79,7 @@ export default function AppBuilderFallbackContainerComponent({
 		if (!hideExportsTab || !hideOutputsTab) {
 			tabProps.defaultValue = tabProps.defaultValue || "Exports";
 			tabProps.tabs.push({
-				name: "Exports",
-				hideName: true,
+				value: "Exports",
 				tooltip: "Exports",
 				icon: "tabler:download",
 				children: [
@@ -107,8 +105,7 @@ export default function AppBuilderFallbackContainerComponent({
 
 			if (hasSdtfData) {
 				tabProps.tabs.push({
-					name: "Attributes",
-					hideName: true,
+					value: "Attributes",
 					tooltip: "Attributes",
 					icon: "tabler:tags",
 					children: [
@@ -125,8 +122,7 @@ export default function AppBuilderFallbackContainerComponent({
 
 		if (showDesktopClientPanel && !settings?.hideDesktopClients) {
 			tabProps.tabs.push({
-				name: "Stargate",
-				hideName: true,
+				value: "Stargate",
 				tooltip: "Desktop Clients",
 				icon: "tabler:network",
 				children: [<DesktopClientPanel key={2} />],

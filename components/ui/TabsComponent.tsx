@@ -4,16 +4,16 @@ import {BoxProps, Stack, Tabs} from "@mantine/core";
 import React, {ReactElement, useEffect, useRef, useState} from "react";
 
 interface PropsTab extends BoxProps {
-	/** Name (value) of tab. */
-	name: string;
+	/** Value of tab. */
+	value?: string;
+	/** Optional name (value) of tab. */
+	name?: string;
 	/** Optional icon of tab. */
 	icon?: IconType;
 	/** Children of tab. */
 	children: ReactElement[];
 	/** Optional tooltip to show when hovering the tab. */
 	tooltip?: string;
-	/** Optional - hide the name of the tab. */
-	hideName?: boolean;
 }
 
 export interface ITabsComponentProps extends BoxProps {
@@ -23,6 +23,10 @@ export interface ITabsComponentProps extends BoxProps {
 	tabs: PropsTab[];
 }
 
+const getTabValue = (props: PropsTab, index: number) => {
+	return props.value || props.name || index.toString();
+};
+
 export default function TabsComponent({
 	defaultValue,
 	tabs,
@@ -31,7 +35,7 @@ export default function TabsComponent({
 	const [activeTab, setActiveTab] = useState<string | null>(defaultValue);
 	// keepMounted=false prop unmount the tab when it is not active
 	const activeTabsHistory = useRef(new Set<string>([defaultValue]));
-	const tabNames = tabs.map((tab) => tab.name);
+	const tabValues = tabs.map((tab, index) => getTabValue(tab, index));
 	const handleActiveTabChange = (value: string | null) => {
 		setActiveTab(value);
 		if (value) {
@@ -40,14 +44,14 @@ export default function TabsComponent({
 	};
 
 	useEffect(() => {
-		if (!activeTab || !tabNames.includes(activeTab)) {
-			if (tabNames.includes(defaultValue)) {
+		if (!activeTab || !tabValues.includes(activeTab)) {
+			if (tabValues.includes(defaultValue)) {
 				setActiveTab(defaultValue);
 			} else {
-				setActiveTab(tabNames[0]);
+				setActiveTab(tabValues[0]);
 			}
 		}
-	}, [tabNames.join(""), defaultValue]);
+	}, [tabValues.join(""), defaultValue]);
 
 	return tabs.length === 0 ? (
 		<></>
@@ -58,14 +62,14 @@ export default function TabsComponent({
 					const tabsTab = (
 						<Tabs.Tab
 							key={index}
-							value={tab.name}
+							value={getTabValue(tab, index)}
 							leftSection={
 								tab.icon ? (
 									<Icon iconType={tab.icon} />
 								) : undefined
 							}
 						>
-							{tab.hideName ? "" : tab.name}
+							{tab.name}
 						</Tabs.Tab>
 					);
 
@@ -80,13 +84,17 @@ export default function TabsComponent({
 			</Tabs.List>
 			{tabs.map((tab, index) => {
 				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				const {name, icon, children, ...rest} = tab;
+				const {value, name, icon, children, ...rest} = tab;
 
 				return (
-					<Tabs.Panel {...rest} key={index} value={name}>
-						{activeTabsHistory.current.has(name) && (
-							<Stack>{children}</Stack>
-						)}
+					<Tabs.Panel
+						{...rest}
+						key={index}
+						value={getTabValue(tab, index)}
+					>
+						{activeTabsHistory.current.has(
+							getTabValue(tab, index),
+						) && <Stack>{children}</Stack>}
 					</Tabs.Panel>
 				);
 			})}
