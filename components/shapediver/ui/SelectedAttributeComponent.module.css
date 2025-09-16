@@ -8,3 +8,12 @@
   overflow: visible !important;
   white-space: normal !important;
 }
+
+.showOnRowHover {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.rowHover:hover .showOnRowHover {
+  opacity: 1;
+}
