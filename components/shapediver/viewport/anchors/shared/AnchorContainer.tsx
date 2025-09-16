@@ -60,6 +60,8 @@ export interface ViewportAnchorProps {
 	id: string;
 	/** Option to use Paper component (default: true) */
 	useContainer?: boolean;
+	/** Closing strategy if the anchor can be closed.  */
+	closingStrategy?: "button" | "emptyClick";
 	/** Mobile fallback options */
 	mobileFallback?: {
 		/** if the anchor should be completely disabled */
@@ -136,6 +138,7 @@ export function useAnchorContainer({
 		height: inputHeight,
 		mobileFallback: inputMobileFallback,
 		useContainer = true,
+		closingStrategy,
 		...rest
 	} = properties;
 
@@ -262,6 +265,30 @@ export function useAnchorContainer({
 			removeAnchor(viewportId, id);
 		};
 	}, [viewportId, id, anchorDefinition]);
+
+	useEffect(() => {
+		if (!canvas) return;
+
+		if (previewIcon && closingStrategy === "emptyClick" && showContent) {
+			const handleClickOutside = (event: MouseEvent) => {
+				updateShowContent(viewportId, id, false);
+			};
+
+			canvas.addEventListener("pointerdown", handleClickOutside);
+			return () => {
+				canvas.removeEventListener("pointerdown", handleClickOutside);
+			};
+		}
+	}, [
+		canvas,
+		previewIcon,
+		closingStrategy,
+		showContent,
+		viewportId,
+		id,
+		updateShowContent,
+		viewport,
+	]);
 
 	// Extract the draggable property if it exists
 	const draggable =
@@ -398,6 +425,15 @@ export function useAnchorContainer({
 		</ActionIcon>
 	);
 
+	const hasDragIcon = useMemo(
+		() => aboveMobileBreakpoint && draggable,
+		[aboveMobileBreakpoint, draggable],
+	);
+	const hasCloseIcon = useMemo(
+		() => previewIcon && closingStrategy === "button",
+		[previewIcon, closingStrategy],
+	);
+
 	/**
 	 * The content of the anchor
 	 * Here we have a group with the icons and a group with the main element.
@@ -413,9 +449,7 @@ export function useAnchorContainer({
 				}}
 			>
 				<Box style={{flex: 1}} />
-				<Group ta="center">
-					{aboveMobileBreakpoint && draggable && dragIconElement}
-				</Group>
+				<Group ta="center">{hasDragIcon && dragIconElement}</Group>
 				<Group
 					style={{
 						flex: 1,
@@ -423,7 +457,7 @@ export function useAnchorContainer({
 						justifyContent: "flex-end",
 					}}
 				>
-					{previewIcon && closeIconElement}
+					{hasCloseIcon && closeIconElement}
 				</Group>
 			</Flex>
 			<Group
@@ -479,7 +513,12 @@ export function useAnchorContainer({
 					{showContent === false ? (
 						previewIconElement
 					) : aboveMobileBreakpoint && useContainer ? (
-						<Paper {...anchorPaperProps}>{inner}</Paper>
+						<Paper
+							{...anchorPaperProps}
+							pt={hasCloseIcon || hasDragIcon ? 0 : undefined}
+						>
+							{inner}
+						</Paper>
 					) : (
 						inner
 					)}
