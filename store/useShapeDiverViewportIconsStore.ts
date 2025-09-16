@@ -91,6 +91,22 @@ function renderButtonByKind(
 					...commonProps,
 				},
 			);
+		case ViewportIconButtonEnum.Reload:
+			return React.createElement(
+				ViewportTypeToIcon[ViewportIconButtonEnum.Reload],
+				{
+					key: "reload",
+					disabled:
+						!namespace ||
+						buttonsDisabled ||
+						executing ||
+						hasPendingChanges,
+					namespace: namespace || "",
+					hasPendingChanges,
+					executing,
+					...commonProps,
+				},
+			);
 		case ViewportIconButtonEnum.HistoryMenu:
 			return React.createElement(
 				ViewportTypeToIcon[ViewportIconButtonEnum.HistoryMenu],
@@ -132,6 +148,7 @@ export const useShapeDiverViewportIconsStore =
 					get().add(viewport.id, [
 						{type: ViewportIconButtonEnum.Undo},
 						{type: ViewportIconButtonEnum.Redo},
+						{type: ViewportIconButtonEnum.Reload},
 						{type: ViewportIconButtonEnum.HistoryMenu},
 					]);
 				},

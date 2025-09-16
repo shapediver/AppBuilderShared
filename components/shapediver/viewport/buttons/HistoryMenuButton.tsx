@@ -23,7 +23,7 @@ export default function HistoryMenuButton({
 
 	const notifications = useContext(NotificationContext);
 
-	const {exportParameters, importParameters, resetParameters} =
+	const {exportParameters, importParameters} =
 		useParameterImportExport(namespace);
 
 	const {createModelState, applyModelStateToQueryParameter} =
@@ -60,13 +60,6 @@ export default function HistoryMenuButton({
 		disabled?: boolean;
 	}[][] = useMemo(
 		() => [
-			[
-				{
-					name: "Reset to default values",
-					onClick: resetParameters,
-					disabled: disabled || isCreatingModelState,
-				},
-			],
 			[
 				{
 					name: "Import parameter values",
