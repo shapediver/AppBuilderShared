@@ -704,6 +704,7 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
+	useCloseButton: z.boolean().optional(),
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),

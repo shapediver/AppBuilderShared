@@ -266,6 +266,16 @@ export function useAnchorContainer({
 		};
 	}, [viewportId, id, anchorDefinition]);
 
+	// Extract the draggable property if it exists
+	const draggable =
+		"draggable" in properties ? (properties.draggable ?? false) : false;
+
+	// Extract the useCloseButton property if it exists
+	const useCloseButton =
+		"useCloseButton" in properties
+			? (properties.useCloseButton ?? false)
+			: false;
+
 	useEffect(() => {
 		if (!canvas) return;
 
@@ -296,10 +306,6 @@ export function useAnchorContainer({
 		updateShowContent,
 		viewport,
 	]);
-
-	// Extract the draggable property if it exists
-	const draggable =
-		"draggable" in properties ? (properties.draggable ?? false) : false;
 
 	// Calculate the width and height based on the input values
 	const {width, height} = useMemo(() => {
@@ -437,8 +443,8 @@ export function useAnchorContainer({
 		[aboveMobileBreakpoint, draggable],
 	);
 	const hasCloseIcon = useMemo(
-		() => previewIcon && closingStrategy === "button",
-		[previewIcon, closingStrategy],
+		() => previewIcon && (closingStrategy === "button" || useCloseButton),
+		[previewIcon, closingStrategy, useCloseButton],
 	);
 
 	/**

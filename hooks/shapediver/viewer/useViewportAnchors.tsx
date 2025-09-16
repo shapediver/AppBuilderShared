@@ -49,6 +49,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						mobileFallback={container.props.mobileFallback}
 						useContainer={container.props.useContainer ?? true}
 						closingStrategy={"emptyClick"}
+						useCloseButton={container.props.useCloseButton}
 					/>,
 				);
 			} else if (isAnchor2dContainer(container)) {

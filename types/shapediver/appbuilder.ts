@@ -667,6 +667,8 @@ export type AppBuilderAnchor2dContainerProperties = {
 export type AppBuilderAnchor3dContainerProperties = {
 	/** 3D location */
 	location: number[];
+	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
+	useCloseButton?: boolean;
 } & AppBuilderAnchorContainerProperties;
 
 /**
