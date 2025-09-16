@@ -25,7 +25,7 @@ const SelectComponentTypeSchema = z.enum([
 ]);
 
 // Zod type definition for ISelectComponentItemDataType
-const ISelectComponentItemDataTypeSchema = z.object({
+export const ISelectComponentItemDataTypeSchema = z.object({
 	displayname: z.string().optional(),
 	tooltip: z.string().optional(),
 	description: z.string().optional(),
@@ -38,29 +38,28 @@ const ISelectComponentItemDataTypeSchema = z.object({
 const ISelectParameterSettingsSchema = z.object({
 	type: SelectComponentTypeSchema.optional(),
 	itemData: z.record(ISelectComponentItemDataTypeSchema).optional(),
+	searchable: z.boolean().optional(),
+	limit: z.number().int().positive().optional(),
+	height: z.string().optional(),
 });
 
-const ISelectParameterSettingsSearchableSchema = z.intersection(
-	ISelectParameterSettingsSchema,
-	z.discriminatedUnion("searchable", [
-		z.object({
-			searchable: z.literal(true),
-			limit: z.number().int().positive(),
-		}),
-		z.object({
-			searchable: z.literal(false).optional(),
-			limit: z.undefined().optional(),
-		}),
-	]),
-);
-
 export const validateSelectParameterSettings = (value: any) => {
-	return ISelectParameterSettingsSearchableSchema.safeParse(value);
+	return ISelectParameterSettingsSchema.safeParse(value);
 };
+
+// Zod type definition for IStringParameterSelectSettings
+const IStringParameterSelectSettingsSchema =
+	ISelectParameterSettingsSchema.extend(
+		z.object({
+			items: z.array(z.string()).optional(),
+			source: z.string().optional(),
+		}).shape,
+	);
 
 // Zod type definition for IStringParameterSettings
 const IStringParameterSettingsSchema = z.object({
 	lines: z.number().int().positive().optional(),
+	selectSettings: IStringParameterSelectSettingsSchema.optional(),
 });
 
 export const validateStringParameterSettings = (value: any) => {

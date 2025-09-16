@@ -1,0 +1,12 @@
+.sentinel {
+	/* Keep it in layout so IO can observe it */
+	width: 100%;
+	/* ≥1px so it has an area */
+	height: 1px;
+	/* invisible */
+	opacity: 0;
+	/* ignore clicks */
+	pointer-events: none;
+	/* If your list uses flex, prevent collapse: */
+	flex-shrink: 0;
+}

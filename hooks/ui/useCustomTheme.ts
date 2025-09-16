@@ -19,6 +19,7 @@ import {ParameterSelectComponentThemeProps} from "@AppBuilderShared/components/s
 import {ParameterSliderComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
 import {ParameterStargateComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/ParameterStargateComponent";
 import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectCarouselComponent";
+import {SelectFullWidthCardsComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectFullWidthCards";
 import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectGridComponent";
 import {DesktopClientPanelThemeProps} from "@AppBuilderShared/components/shapediver/stargate/DesktopClientPanel";
 import {StargateInputThemeProps} from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
@@ -779,6 +780,12 @@ export const useCustomTheme = (props: Props = {}) => {
 				// clientsFilter: [],
 				// autoConnect: true,
 			}),
+			SelectFullWidthCardsComponent:
+				SelectFullWidthCardsComponentThemeProps({
+					// height: "300px",
+					// searchable: true,
+					// limit: 5,
+				}),
 			/**
 			 * ExportLabelComponent
 			 *
@@ -996,6 +1003,9 @@ export const useCustomTheme = (props: Props = {}) => {
 			SelectGridComponent: SelectGridComponentThemeProps({
 				//gridProps: { cols: 2, spacing: "md" },
 				//showLabel: true,
+				// height: "300px",
+				// searchable: true,
+				// limit: 5,
 			}),
 			StargateInput: StargateInputThemeProps({
 				// buttonProps: {

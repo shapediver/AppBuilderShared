@@ -10,7 +10,8 @@ import {
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {validateStringParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import {Textarea, TextInput, useProps} from "@mantine/core";
-import React, {useContext, useEffect, useMemo} from "react";
+import React, {useCallback, useContext, useEffect, useMemo} from "react";
+import SelectComponent from "./select/SelectComponent";
 
 /**
  * Functional component that creates a string input component for a string parameter.
@@ -32,19 +33,20 @@ export default function ParameterStringComponent(
 	const notifications = useContext(NotificationContext);
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
-	const lines = useMemo(() => {
+	const {lines, selectSettings} = useMemo(() => {
 		if (definition?.settings) {
 			const result = validateStringParameterSettings(definition.settings);
 			if (result.success) {
-				return result.data.lines ?? 1;
+				const selectSettings = result.data.selectSettings;
+				return {lines: result.data.lines ?? 1, selectSettings};
 			} else {
 				console.warn(
 					`Invalid settings for parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 				);
-				return 1; // Return default value when validation fails
+				return {lines: 1}; // Return default value when validation fails
 			}
 		}
-		return 1;
+		return {lines: 1};
 	}, [definition?.settings, definition?.id, definition?.name]);
 
 	// Show error notification in useEffect to avoid setState during render
@@ -60,6 +62,26 @@ export default function ParameterStringComponent(
 		}
 	}, [definition?.settings, definition?.name, notifications]);
 
+	const inputContainer = useCallback(
+		(children: React.ReactNode) => {
+			const isValid = React.isValidElement(children);
+			return (
+				<>
+					{isValid
+						? React.cloneElement(
+								children as React.ReactElement<any>,
+								{
+									onFocus: onFocusHandler,
+									onBlur: onBlurHandler,
+								},
+							)
+						: children}
+				</>
+			);
+		},
+		[onFocusHandler, onBlurHandler],
+	);
+
 	return (
 		<ParameterWrapperComponent
 			onCancel={onCancel}
@@ -68,7 +90,23 @@ export default function ParameterStringComponent(
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition &&
-				(lines > 1 ? (
+				(selectSettings &&
+				(selectSettings.items || selectSettings.source) ? (
+					<SelectComponent
+						value={undefined}
+						onChange={(v) =>
+							handleChange(v ?? "", undefined, restoreFocus)
+						}
+						disabled={disabled}
+						// TODO add these settings as an optional theme property to the ParameterStringComponent
+						//settings={settings.settings}
+						inputContainer={inputContainer}
+						onFocus={onFocusHandler}
+						onBlur={onBlurHandler}
+						items={selectSettings.items ?? []}
+						{...selectSettings}
+					/>
+				) : lines > 1 ? (
 					<Textarea
 						value={value}
 						onChange={(e) =>

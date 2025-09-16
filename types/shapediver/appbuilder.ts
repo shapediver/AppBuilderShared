@@ -62,6 +62,7 @@ export interface ISelectComponentItemDataType {
 	hidden?: boolean;
 }
 
+/** Settings for selection parameters (typically used for parameters of type "StringList") */
 export interface ISelectParameterSettings {
 	/** Type of select component to use. */
 	type?: SelectComponentType;
@@ -71,13 +72,45 @@ export interface ISelectParameterSettings {
 	searchable?: boolean;
 	/** Max number of options rendered at the same time (only for type=="dropdown"). Default: 5 if searchable is enabled */
 	limit?: number;
+	/**
+	 * Optional CSS controlling the absolute height of the widget.
+	 * In case this is not specified, the default behavior of the widget
+	 * is to adapt its height according to the items.
+	 */
+	height?: string;
 }
 
+/**
+ * Settings for string parameters visualized as selection parameters.
+ * In this case, the selected item is set as the string value of the parameter.
+ */
+export interface IStringParameterSelectSettings
+	extends ISelectParameterSettings {
+	/**
+	 * The items to select from.
+	 * In case this is not specified, "source" must be given.
+	 */
+	items?: string[];
+	/**
+	 * Name of the "data source" to fetch items and item data from.
+	 * This is used for connecting to data sources via the e-commerce API.
+	 */
+	source?: string;
+}
+
+/** Settings for parameters of type "String" */
 export interface IStringParameterSettings {
 	/** Number of lines to display. If > 1, a Textarea is used with autosize and fixed rows. Default: 1 */
 	lines?: number;
+	/**
+	 * Optional selection settings.
+	 * If this is specified, the parameter is visualized as a selection parameter.
+	 * In this case, the selected item is set as the string value of the parameter.
+	 */
+	selectSettings?: IStringParameterSelectSettings;
 }
 
+/** Settings for numeric parameters (type "Float", "Int", "Even", "Odd") */
 export interface INumberParameterSettings {
 	/**
 	 * Optional step value for numeric parameters.

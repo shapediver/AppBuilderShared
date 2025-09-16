@@ -1,5 +1,10 @@
 import {TextWeightedProps} from "@AppBuilderShared/components/ui/TextWeighted";
 import {
+	IScrollingApi,
+	IScrollingApiItemTypeSelect,
+} from "@AppBuilderShared/modules/ecommerce/types/scrollingapi";
+import {useScrollingApiStore} from "@AppBuilderShared/store/useScrollingApiStore";
+import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
@@ -13,14 +18,17 @@ import {
 	StackProps,
 	TextProps,
 } from "@mantine/core";
-import React from "react";
+import React, {useEffect} from "react";
+import {useShallow} from "zustand/react/shallow";
+import SelectFullWidthCardsComponent from "~/shared/components/shapediver/parameter/select/SelectFullWidthCards";
 import SelectButtonFlexComponent from "./SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
 import SelectCarouselComponent from "./SelectCarouselComponent";
 import SelectChipGroupComponent from "./SelectChipGroupComponent";
 import SelectColorComponent from "./SelectColorComponent";
 import SelectDropDownComponent from "./SelectDropDownComponent";
-import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
+import SelectFullWidthCardsAsyncComponent from "./SelectFullWidthCardsAsyncComponent";
+import SelectGridAsyncComponent from "./SelectGridAsyncComponent";
 import SelectGridComponent from "./SelectGridComponent";
 import SelectImageDropDownComponent from "./SelectImageDropDownComponent";
 
@@ -89,11 +97,34 @@ export interface SelectComponentProps {
 	searchable?: boolean;
 	/** Max number of options rendered at the same time (only used by dropdown type with searchable). */
 	limit?: number;
+	/**
+	 * Optional CSS controlling the absolute height of the widget.
+	 * In case this is not specified, the default behavior of the widget
+	 * is to adapt its height according to the items.
+	 * This should always be specified in case of infinite scrolling.
+	 */
+	height?: string;
+	/**
+	 * Optional properties for infinite scrolling.
+	 * Most of these properties can be used with the useInfiniteScroll hook,
+	 * see example in the ModelLibrary component.
+	 * https://www.npmjs.com/package/react-infinite-scroll-hook
+	 *
+	 * NOTE: If this property is defined, components must use property
+	 * scrollingApi.items instead of items!!!
+	 */
+	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>;
 }
 
-interface SelectComponentPropsExt extends SelectComponentProps {
+interface SelectComponentPropsExt
+	extends Omit<SelectComponentProps, "scrollingApi"> {
 	/** Type of select component to use. */
 	type?: SelectComponentType;
+	/**
+	 * Name of the "data source" to fetch items and item data from.
+	 * This is used for connecting to data sources via the e-commerce API.
+	 */
+	source?: string;
 }
 
 /**
@@ -101,7 +132,39 @@ interface SelectComponentPropsExt extends SelectComponentProps {
  * At most one item can be selected at a time.
  */
 export default function SelectComponent(props: SelectComponentPropsExt) {
-	const {type, ...rest} = props;
+	const {type, source, ...rest} = props;
+
+	// scrolling API
+	const {scrollingApi, addScrollingApiSelect, removeScrollingApiSelect} =
+		useScrollingApiStore(
+			useShallow((state) => ({
+				scrollingApi: state.scrollingApisSelect[source ?? ""],
+				addScrollingApiSelect: state.addScrollingApiSelect,
+				removeScrollingApiSelect: state.removeScrollingApiSelect,
+			})),
+		);
+
+	// if source changes, get new scrolling API
+	useEffect(() => {
+		if (source) {
+			addScrollingApiSelect(source);
+			// TODO remove debug code
+			// const api = addScrollingApiSelect(source);
+			// setInterval(async () => {
+			// 	await api.loadMore();
+			// }, 2000);
+		}
+		return () => {
+			removeScrollingApiSelect(source ?? "");
+		};
+	}, [source]);
+
+	// TODO remove debug code
+	// useEffect(() => {
+	// 	console.log("scrollingApi items", scrollingApi?.items);
+	// }, [scrollingApi?.items]);
+
+	// const rest = {..._rest, scrollingApi};
 
 	if (type === "buttonflex") {
 		return <SelectButtonFlexComponent {...rest} />;
@@ -114,11 +177,29 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	} else if (type === "imagedropdown") {
 		return <SelectImageDropDownComponent {...rest} />;
 	} else if (type === "fullwidthcards") {
-		return <SelectFullWidthCardsComponent {...rest} />;
+		if (scrollingApi) {
+			return (
+				<SelectFullWidthCardsAsyncComponent
+					{...rest}
+					scrollingApi={scrollingApi}
+				/>
+			);
+		} else {
+			return <SelectFullWidthCardsComponent {...rest} />;
+		}
 	} else if (type === "carousel") {
 		return <SelectCarouselComponent {...rest} />;
 	} else if (type === "grid") {
-		return <SelectGridComponent {...rest} />;
+		if (scrollingApi) {
+			return (
+				<SelectGridAsyncComponent
+					{...rest}
+					scrollingApi={scrollingApi}
+				/>
+			);
+		} else {
+			return <SelectGridComponent {...rest} />;
+		}
 	} else {
 		return <SelectDropDownComponent {...rest} />;
 	}

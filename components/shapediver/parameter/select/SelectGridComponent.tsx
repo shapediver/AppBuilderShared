@@ -2,9 +2,12 @@ import {
 	MantineThemeComponent,
 	SimpleGrid,
 	SimpleGridProps,
+	Stack,
+	TextInput,
 	useProps,
 } from "@mantine/core";
-import React, {useCallback, useMemo} from "react";
+import React, {useCallback, useMemo, useState} from "react";
+import Icon from "~/shared/components/ui/Icon";
 import ButtonImageCard from "./ButtonImageCard";
 import {
 	SelectCardStyleProps,
@@ -23,6 +26,12 @@ interface StyleProps {
 	labelProps: SelectTextWeightedStyleProps;
 	descriptionProps: SelectTextStyleProps;
 	showLabel: boolean;
+	searchable: boolean;
+	limit: number;
+	height: string;
+	bottomSection: React.ReactNode;
+	useLocalSearch: boolean;
+	onSearch: (search: string) => void;
 }
 
 export const defaultStyleProps: Partial<StyleProps> = {
@@ -39,9 +48,10 @@ export const defaultStyleProps: Partial<StyleProps> = {
 	labelProps: {size: "sm", fontWeight: "medium"},
 	descriptionProps: {size: "sm", c: "dimmed"},
 	showLabel: true,
+	searchable: false,
 };
 
-type SelectGridComponentThemePropsType = Partial<StyleProps>;
+export type SelectGridComponentThemePropsType = Partial<StyleProps>;
 
 export function SelectGridComponentThemeProps(
 	props: SelectGridComponentThemePropsType,
@@ -66,6 +76,9 @@ export default function SelectGridComponent(
 		disabled,
 		itemData,
 		settings,
+		bottomSection = <></>,
+		useLocalSearch = true,
+		onSearch = () => {},
 		...styleProps
 	} = props;
 
@@ -78,9 +91,13 @@ export default function SelectGridComponent(
 		labelProps,
 		descriptionProps,
 		showLabel: _showLabel,
+		searchable,
+		height,
+		limit,
 	} = useProps("SelectGridComponent", defaultStyleProps, styleProps);
 
 	const showLabel = settings?.showLabel ?? _showLabel;
+	const [search, setSearch] = useState("");
 
 	// Transform items array into the format expected by the component
 	const gridItems = useMemo(
@@ -100,6 +117,25 @@ export default function SelectGridComponent(
 		[items, itemData],
 	);
 
+	const filteredItems = useMemo(() => {
+		let out = gridItems;
+		const isSearchable = searchable && search.trim();
+		if (isSearchable) {
+			const q = search.toLowerCase();
+			if (useLocalSearch) {
+				out = gridItems.filter(
+					(c) =>
+						c.value.toLowerCase().includes(q) ||
+						(c.label || "").toLowerCase().includes(q) ||
+						(c.description || "").toLowerCase().includes(q),
+				);
+			}
+		}
+		return isSearchable && useLocalSearch && limit
+			? out.slice(0, limit)
+			: out;
+	}, [gridItems, searchable, search, limit, useLocalSearch]);
+
 	// Handle card selection
 	const handleCardClick = useCallback(
 		(itemValue: string, disabled: boolean | undefined) => {
@@ -110,6 +146,27 @@ export default function SelectGridComponent(
 		[onChange],
 	);
 
+	const renderSearchInput = () => {
+		if (!searchable) return null;
+
+		return (
+			<TextInput
+				value={search}
+				onChange={(e) => {
+					const term = e.currentTarget.value;
+					setSearch(term);
+					if (onSearch) {
+						onSearch(term);
+					}
+				}}
+				placeholder="Search"
+				leftSection={<Icon iconType="search" size="1rem" />}
+				disabled={disabled}
+				aria-label="Search options"
+			/>
+		);
+	};
+
 	const cardStyleProps = {
 		cardProps,
 		imageProps,
@@ -118,24 +175,42 @@ export default function SelectGridComponent(
 		descriptionProps,
 	};
 
+	// Merge styles for container; enforce fixed height with internal scroll if provided
+	const containerStyle = height
+		? {
+				...(settings?.stackProps?.style as any),
+				height,
+				overflowY: "auto",
+			}
+		: {
+				...(settings?.stackProps?.style as any),
+			};
+
 	return (
-		<SimpleGrid
-			cols={gridProps?.cols}
-			spacing={gridProps?.spacing}
-			{...settings?.gridProps}
+		<Stack
+			{...stackProps}
+			style={{...(stackProps?.style || {}), ...containerStyle}}
 		>
-			{gridItems.map((item) => (
-				<ButtonImageCard
-					key={item.value}
-					item={item}
-					selected={value === item.value}
-					disabled={disabled}
-					onClick={handleCardClick}
-					showLabel={showLabel}
-					settings={settings}
-					{...cardStyleProps}
-				/>
-			))}
-		</SimpleGrid>
+			{renderSearchInput()}
+			<SimpleGrid
+				cols={gridProps?.cols}
+				spacing={gridProps?.spacing}
+				{...settings?.gridProps}
+			>
+				{filteredItems.map((item) => (
+					<ButtonImageCard
+						key={item.value}
+						item={item}
+						selected={value === item.value}
+						disabled={disabled}
+						onClick={handleCardClick}
+						showLabel={showLabel}
+						settings={settings}
+						{...cardStyleProps}
+					/>
+				))}
+			</SimpleGrid>
+			{bottomSection}
+		</Stack>
 	);
 }

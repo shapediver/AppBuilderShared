@@ -96,6 +96,52 @@ export interface IUpdateSharingLinkReply {
 }
 
 /**
+ * Data for setting parameters for a scrolling API data source.
+ */
+export interface IScrollingApiSetParametersData {
+	/** The data source name. */
+	source: string;
+	/** The search terms to set. */
+	terms?: string[];
+	/** The preferred page size to set. */
+	pageSize?: number;
+}
+
+/**
+ * Reply from the parent page to setting parameters
+ * for a scrolling API data source.
+ */
+export interface IScrollingApiSetParametersReply<TItem> {
+	/** If this is defined, the value to set for "hasNextPage" */
+	hasNextPage: boolean | undefined;
+	/**
+	 * If this is defined, the list of items to set.
+	 */
+	items: TItem[] | undefined;
+}
+
+/**
+ * Data for getting more items from a scrolling API data source.
+ */
+export interface IScrollingApiLoadMoreData {
+	/** The data source name. */
+	source: string;
+}
+
+/**
+ * Reply from the parent page to loading more data
+ * from a scrolling API data source.
+ */
+export interface IScrollingApiLoadMoreReply<TItem> {
+	/** The value to set for "hasNextPage" */
+	hasNextPage: boolean;
+	/**
+	 * The list of items to append to the existing items.
+	 */
+	items: TItem[];
+}
+
+/**
  * Generic e-commerce API actions.
  */
 export interface IECommerceApiActions {
@@ -128,6 +174,22 @@ export interface IECommerceApiActions {
 	updateSharingLink(
 		data: IUpdateSharingLinkData,
 	): Promise<IUpdateSharingLinkReply>;
+
+	/**
+	 * Set the parameters for a scrolling API data source.
+	 * @param data
+	 */
+	scrollingApiSetParameters<TItem>(
+		data: IScrollingApiSetParametersData,
+	): Promise<IScrollingApiSetParametersReply<TItem>>;
+
+	/**
+	 * Load more items from a scrolling API data source.
+	 * @param data
+	 */
+	scrollingApiLoadMore<TItem>(
+		data: IScrollingApiLoadMoreData,
+	): Promise<IScrollingApiLoadMoreReply<TItem>>;
 }
 
 /**

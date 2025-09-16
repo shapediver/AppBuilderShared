@@ -7,10 +7,12 @@ import {
 	MantineThemeComponent,
 	Stack,
 	Text,
+	TextInput,
 	UnstyledButton,
 	useProps,
 } from "@mantine/core";
-import React, {useCallback, useMemo} from "react";
+import React, {useCallback, useMemo, useState} from "react";
+import Icon from "~/shared/components/ui/Icon";
 import {
 	SelectCardStyleProps,
 	SelectComponentProps,
@@ -29,6 +31,12 @@ interface StyleProps {
 	stackProps: SelectStackStyleProps;
 	labelProps: SelectTextWeightedStyleProps;
 	descriptionProps: SelectTextStyleProps;
+	searchable: boolean;
+	limit: number;
+	height: string;
+	bottomSection: React.ReactNode;
+	useLocalSearch: boolean;
+	onSearch: (search: string) => void;
 }
 
 export const defaultStyleProps: Partial<StyleProps> = {
@@ -43,9 +51,10 @@ export const defaultStyleProps: Partial<StyleProps> = {
 	stackProps: {},
 	labelProps: {size: "sm", fontWeight: "medium"},
 	descriptionProps: {size: "xs", c: "dimmed"},
+	searchable: false,
 };
 
-type SelectFullWidthCardsComponentThemePropsType = Partial<StyleProps>;
+export type SelectFullWidthCardsComponentThemePropsType = Partial<StyleProps>;
 
 export function SelectFullWidthCardsComponentThemeProps(
 	props: SelectFullWidthCardsComponentThemePropsType,
@@ -71,6 +80,9 @@ export default function SelectFullWidthCardsComponent(
 		disabled,
 		itemData,
 		settings,
+		bottomSection = <></>,
+		useLocalSearch = true,
+		onSearch = () => {},
 		...styleProps
 	} = props;
 
@@ -82,12 +94,16 @@ export default function SelectFullWidthCardsComponent(
 		stackProps,
 		labelProps,
 		descriptionProps,
+		searchable,
+		height,
+		limit,
 	} = useProps(
 		"SelectFullWidthCardsComponent",
 		defaultStyleProps,
 		styleProps,
 	);
 
+	const [search, setSearch] = useState("");
 	// Transform items array into the format expected by the component
 	const cardData = useMemo(
 		() =>
@@ -106,7 +122,6 @@ export default function SelectFullWidthCardsComponent(
 		[items, itemData],
 	);
 
-	// Handle card selection
 	const handleCardClick = useCallback(
 		(cardValue: string, disabled: boolean | undefined) => {
 			if (!disabled) {
@@ -123,52 +138,112 @@ export default function SelectFullWidthCardsComponent(
 		};
 	}, []);
 
-	return (
-		<Stack {...stackProps} {...settings?.stackProps}>
-			{cardData.map((card) => (
-				<UnstyledButton
-					key={card.value}
-					disabled={disabled}
-					onClick={() => handleCardClick(card.value, disabled)}
-					aria-pressed={value === card.value}
+	const renderSearchInput = () => {
+		if (!searchable) return null;
+
+		return (
+			<TextInput
+				value={search}
+				onChange={(e) => {
+					const term = e.currentTarget.value;
+					setSearch(term);
+					if (onSearch) {
+						onSearch(term);
+					}
+				}}
+				placeholder="Search"
+				leftSection={<Icon iconType="search" size="1rem" />}
+				disabled={disabled}
+				aria-label="Search options"
+			/>
+		);
+	};
+
+	// Merge styles for container; enforce fixed height with internal scroll if provided
+	const containerStyle = height
+		? {
+				...(settings?.stackProps?.style as any),
+				height,
+				overflowY: "auto",
+			}
+		: {
+				...(settings?.stackProps?.style as any),
+			};
+
+	const filteredCards = useMemo(() => {
+		let out = cardData;
+		const isSearchable = searchable && search.trim();
+		if (isSearchable) {
+			const q = search.toLowerCase();
+			if (useLocalSearch) {
+				out = cardData.filter(
+					(c) =>
+						c.value.toLowerCase().includes(q) ||
+						(c.label || "").toLowerCase().includes(q) ||
+						(c.description || "").toLowerCase().includes(q),
+				);
+			}
+		}
+		return isSearchable && useLocalSearch && limit
+			? out.slice(0, limit)
+			: out;
+	}, [cardData, searchable, search, limit, useLocalSearch]);
+
+	const renderCards = () => {
+		return filteredCards.map((card) => (
+			<UnstyledButton
+				key={card.value}
+				disabled={disabled}
+				onClick={() => handleCardClick(card.value, disabled)}
+				aria-pressed={value === card.value}
+			>
+				<Card
+					className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === card.value ? classes.cardSelected : ""}`}
+					style={getCardStyle(card)}
+					{...cardProps}
+					{...settings?.cardProps}
 				>
-					<Card
-						className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === card.value ? classes.cardSelected : ""}`}
-						style={getCardStyle(card)}
-						{...cardProps}
-						{...settings?.cardProps}
-					>
-						<Group {...groupProps} {...settings?.groupProps}>
-							{card.imageUrl && (
-								<TooltipWrapper label={card.tooltip}>
-									<Image
-										src={card.imageUrl}
-										alt={card.label}
-										{...imageProps}
-										{...settings?.imageProps}
-									/>
-								</TooltipWrapper>
-							)}
-							<div style={{flex: 1}}>
-								<TextWeighted
-									{...labelProps}
-									{...settings?.labelProps}
+					<Group {...groupProps} {...settings?.groupProps}>
+						{card.imageUrl && (
+							<TooltipWrapper label={card.tooltip}>
+								<Image
+									src={card.imageUrl}
+									alt={card.label}
+									{...imageProps}
+									{...settings?.imageProps}
+								/>
+							</TooltipWrapper>
+						)}
+						<div style={{flex: 1}}>
+							<TextWeighted
+								{...labelProps}
+								{...settings?.labelProps}
+							>
+								{card.label}
+							</TextWeighted>
+							{card.description && (
+								<Text
+									{...descriptionProps}
+									{...settings?.descriptionProps}
 								>
-									{card.label}
-								</TextWeighted>
-								{card.description && (
-									<Text
-										{...descriptionProps}
-										{...settings?.descriptionProps}
-									>
-										{card.description}
-									</Text>
-								)}
-							</div>
-						</Group>
-					</Card>
-				</UnstyledButton>
-			))}
+									{card.description}
+								</Text>
+							)}
+						</div>
+					</Group>
+				</Card>
+			</UnstyledButton>
+		));
+	};
+
+	return (
+		<Stack
+			{...stackProps}
+			style={{...(stackProps?.style || {}), ...containerStyle}}
+		>
+			{renderSearchInput()}
+			{renderCards()}
+			{bottomSection}
 		</Stack>
 	);
 }
