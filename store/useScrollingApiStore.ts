@@ -2,6 +2,7 @@ import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singlet
 import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
+	validateScrollingApiItemTypeSelectArray,
 } from "@AppBuilderShared/modules/ecommerce/types/scrollingapi";
 import {isRunningInPlatform} from "@AppBuilderShared/utils/platform/environment";
 import {produce} from "immer";
@@ -171,29 +172,33 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 							);
 							const api = await ECommerceApiSingleton;
 							try {
-								const result =
-									await api.scrollingApiLoadMore<IScrollingApiItemTypeSelect>(
-										{
-											source,
-										},
+								const result = await api.scrollingApiLoadMore({
+									source,
+								});
+								const validation =
+									validateScrollingApiItemTypeSelectArray(
+										result.items,
 									);
+								if (!validation.success) throw validation.error;
 								set(
 									produce((state) => {
-										const api =
-											state.scrollingApisSelect[source];
+										const api = state.scrollingApisSelect[
+											source
+										] as IScrollingApi<IScrollingApiItemTypeSelect>;
 										api.loading = false;
 										if (result.hasNextPage !== undefined)
 											api.hasNextPage =
 												result.hasNextPage;
 										if (result.items !== undefined)
-											api.items = result.items;
+											api.items = validation.data;
 									}),
 								);
 							} catch (error) {
 								set(
 									produce((state) => {
-										const api =
-											state.scrollingApisSelect[source];
+										const api = state.scrollingApisSelect[
+											source
+										] as IScrollingApi<IScrollingApiItemTypeSelect>;
 										api.loading = false;
 										api.error = error as Error;
 									}),
@@ -203,36 +208,44 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 						setSearchTerms: async (terms: string[]) => {
 							set(
 								produce((state) => {
-									state.scrollingApisSelect[source].loading =
-										true;
+									(
+										state.scrollingApisSelect[
+											source
+										] as IScrollingApi<IScrollingApiItemTypeSelect>
+									).loading = true;
 								}),
 							);
 							const api = await ECommerceApiSingleton;
 							try {
 								const result =
-									await api.scrollingApiSetParameters<IScrollingApiItemTypeSelect>(
-										{
-											source,
-											terms,
-										},
+									await api.scrollingApiSetParameters({
+										source,
+										terms,
+									});
+								const validation =
+									validateScrollingApiItemTypeSelectArray(
+										result.items,
 									);
+								if (!validation.success) throw validation.error;
 								set(
 									produce((state) => {
-										const api =
-											state.scrollingApisSelect[source];
+										const api = state.scrollingApisSelect[
+											source
+										] as IScrollingApi<IScrollingApiItemTypeSelect>;
 										api.loading = false;
 										if (result.hasNextPage !== undefined)
 											api.hasNextPage =
 												result.hasNextPage;
 										if (result.items !== undefined)
-											api.items = result.items;
+											api.items = validation.data;
 									}),
 								);
 							} catch (error) {
 								set(
 									produce((state) => {
-										const api =
-											state.scrollingApisSelect[source];
+										const api = state.scrollingApisSelect[
+											source
+										] as IScrollingApi<IScrollingApiItemTypeSelect>;
 										api.loading = false;
 										api.error = error as Error;
 									}),
@@ -242,36 +255,44 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 						setPageSize: async (pageSize: number) => {
 							set(
 								produce((state) => {
-									state.scrollingApisSelect[source].loading =
-										true;
+									(
+										state.scrollingApisSelect[
+											source
+										] as IScrollingApi<IScrollingApiItemTypeSelect>
+									).loading = true;
 								}),
 							);
 							const api = await ECommerceApiSingleton;
 							try {
 								const result =
-									await api.scrollingApiSetParameters<IScrollingApiItemTypeSelect>(
-										{
-											source,
-											pageSize,
-										},
+									await api.scrollingApiSetParameters({
+										source,
+										pageSize,
+									});
+								const validation =
+									validateScrollingApiItemTypeSelectArray(
+										result.items,
 									);
+								if (!validation.success) throw validation.error;
 								set(
 									produce((state) => {
-										const api =
-											state.scrollingApisSelect[source];
+										const api = state.scrollingApisSelect[
+											source
+										] as IScrollingApi<IScrollingApiItemTypeSelect>;
 										api.loading = false;
 										if (result.hasNextPage !== undefined)
 											api.hasNextPage =
 												result.hasNextPage;
 										if (result.items !== undefined)
-											api.items = result.items;
+											api.items = validation.data;
 									}),
 								);
 							} catch (error) {
 								set(
 									produce((state) => {
-										const api =
-											state.scrollingApisSelect[source];
+										const api = state.scrollingApisSelect[
+											source
+										] as IScrollingApi<IScrollingApiItemTypeSelect>;
 										api.loading = false;
 										api.error = error as Error;
 									}),

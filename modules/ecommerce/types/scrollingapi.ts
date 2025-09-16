@@ -1,4 +1,6 @@
 import {ISelectComponentItemDataType} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {ISelectComponentItemDataTypeSchema} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
+import {z} from "zod";
 
 /**
  * Generic interface for infinite scrolling API results.
@@ -38,6 +40,18 @@ export interface IScrollingApiItemTypeSelect {
 	/** Optional additional item data. */
 	data?: ISelectComponentItemDataType;
 }
+
+// Zod type definition for IScrollingApiItemTypeSelect
+export const IScrollingApiItemTypeSelectArraySchema = z.array(
+	z.object({
+		item: z.string(),
+		data: ISelectComponentItemDataTypeSchema.optional(),
+	}),
+);
+
+export const validateScrollingApiItemTypeSelectArray = (value: any) => {
+	return IScrollingApiItemTypeSelectArraySchema.safeParse(value);
+};
 
 /** Factory for scrolling APIs */
 export interface IScrollingApiFactory {
