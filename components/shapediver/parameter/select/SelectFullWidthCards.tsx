@@ -164,7 +164,8 @@ export default function SelectFullWidthCardsComponent(
 		? {
 				...(settings?.stackProps?.style as any),
 				height,
-				overflowY: "auto",
+				display: "flex",
+				flexDirection: "column",
 			}
 		: {
 				...(settings?.stackProps?.style as any),
@@ -190,7 +191,7 @@ export default function SelectFullWidthCardsComponent(
 	}, [cardData, searchable, search, limit, useLocalSearch]);
 
 	const renderCards = () => {
-		return filteredCards.map((card) => (
+		const cards = filteredCards.map((card) => (
 			<UnstyledButton
 				key={card.value}
 				disabled={disabled}
@@ -234,6 +235,22 @@ export default function SelectFullWidthCardsComponent(
 				</Card>
 			</UnstyledButton>
 		));
+
+		if (height) {
+			return (
+				<div className={classes.scrollableCards}>
+					{cards}
+					{bottomSection}
+				</div>
+			);
+		}
+
+		return (
+			<>
+				{cards}
+				{bottomSection}
+			</>
+		);
 	};
 
 	return (
@@ -243,7 +260,6 @@ export default function SelectFullWidthCardsComponent(
 		>
 			{renderSearchInput()}
 			{renderCards()}
-			{bottomSection}
 		</Stack>
 	);
 }
