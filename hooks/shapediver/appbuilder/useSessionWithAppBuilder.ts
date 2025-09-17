@@ -12,7 +12,7 @@ import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildert
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IOutputApi, ITreeNode, OutputApiData} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {useAppBuilderInstances} from "./useAppBuilderInstances";
 
 /**
@@ -45,12 +45,11 @@ export function useSessionWithAppBuilder(
 	const [parsedData, setParsedData] = useState<
 		IAppBuilder | Error | undefined
 	>(undefined);
-	const [processManagerId, setProcessManagerId] = useState<
-		string | undefined
-	>();
 	const [outputApi, setOutputApi] = useState<IOutputApi | undefined>(
 		undefined,
 	);
+
+	const processManagerIdRef = useRef<string | undefined>(undefined);
 
 	/**
 	 * Validate the AppBuilder data.
@@ -184,9 +183,9 @@ export function useSessionWithAppBuilder(
 			// has to be done here, as otherwise the viewer would already
 			// update the scene before the instances are processed
 			const instancedSessions = !!appBuilderData?.instances;
-			if (instancedSessions) {
+			if (instancedSessions && !processManagerIdRef.current) {
 				const processManagerId = createProcessManager(sessionApi!.id);
-				setProcessManagerId(processManagerId);
+				processManagerIdRef.current = processManagerId;
 			}
 
 			setParsedData(parsedData);
@@ -196,13 +195,13 @@ export function useSessionWithAppBuilder(
 
 	// if the process manager id is not valid anymore, reset it
 	useEffect(() => {
-		if (!processManagerId) return;
+		if (!processManagerIdRef.current) return;
 
-		if (!processManagers[processManagerId]) {
-			setProcessManagerId(undefined);
+		if (!processManagers[processManagerIdRef.current]) {
+			processManagerIdRef.current = undefined;
 			return;
 		}
-	}, [processManagerId, processManagers]);
+	}, [processManagers]);
 
 	useEffect(() => {
 		const removeOutputUpdateCallback = addOutputUpdateCallback(
@@ -234,7 +233,7 @@ export function useSessionWithAppBuilder(
 	useAppBuilderInstances({
 		sessionApi,
 		appBuilderData,
-		processManagerId,
+		processManagerId: processManagerIdRef.current,
 	});
 
 	return {
