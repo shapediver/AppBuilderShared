@@ -195,6 +195,16 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 					(data: IUpdateSharingLinkData) =>
 						this.actions.updateSharingLink(data),
 				);
+				this.crossWindowApi.on(
+					MESSAGE_TYPE_SCROLLINGAPI_SET_PARAMETERS,
+					(data: IScrollingApiSetParametersData) =>
+						this.actions.scrollingApiSetParameters(data),
+				);
+				this.crossWindowApi.on(
+					MESSAGE_TYPE_SCROLLINGAPI_LOAD_MORE,
+					(data: IScrollingApiLoadMoreData) =>
+						this.actions.scrollingApiLoadMore(data),
+				);
 
 				return peerInfo;
 			});
