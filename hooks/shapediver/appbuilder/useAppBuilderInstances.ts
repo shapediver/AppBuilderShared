@@ -39,7 +39,7 @@ export function useAppBuilderInstances(props: Props) {
 	} = props;
 
 	const {sessions, addSessionUpdateCallback} = useShapeDiverStoreSession();
-	const {addProcess, createProcessManager} =
+	const {addProcess, createProcessManager, processManagers} =
 		useShapeDiverStoreProcessManager();
 	const {
 		addCustomizationResult,
@@ -54,6 +54,11 @@ export function useAppBuilderInstances(props: Props) {
 	}>({});
 
 	const sessionNodeRef = useRef<ITreeNode | undefined>(undefined);
+	const processManagersRef = useRef(processManagers);
+
+	useEffect(() => {
+		processManagersRef.current = processManagers;
+	}, [processManagers]);
 
 	/**
 	 * Parse the app builder data.
@@ -177,8 +182,13 @@ export function useAppBuilderInstances(props: Props) {
 			promise: mainPromise,
 		};
 
+		// we check if a process manager id is given
+		// and if it is still valid
 		const processManagerId =
-			sessionProcessManagerId || createProcessManager(sessionApi.id);
+			sessionProcessManagerId &&
+			processManagersRef.current[sessionProcessManagerId]
+				? sessionProcessManagerId
+				: createProcessManager(sessionApi.id);
 		addProcess(processManagerId, mainProcessDefinition);
 
 		const newInstances: {
