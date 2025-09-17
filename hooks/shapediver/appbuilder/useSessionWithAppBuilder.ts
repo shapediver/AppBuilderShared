@@ -40,7 +40,8 @@ export function useSessionWithAppBuilder(
 	const sessionInitialized = !!sessionApi;
 
 	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
-	const {createProcessManager} = useShapeDiverStoreProcessManager();
+	const {createProcessManager, processManagers} =
+		useShapeDiverStoreProcessManager();
 	const [parsedData, setParsedData] = useState<
 		IAppBuilder | Error | undefined
 	>(undefined);
@@ -192,6 +193,16 @@ export function useSessionWithAppBuilder(
 		},
 		[namespace, validationResult],
 	);
+
+	// if the process manager id is not valid anymore, reset it
+	useEffect(() => {
+		if (!processManagerId) return;
+
+		if (!processManagers[processManagerId]) {
+			setProcessManagerId(undefined);
+			return;
+		}
+	}, [processManagerId, processManagers]);
 
 	useEffect(() => {
 		const removeOutputUpdateCallback = addOutputUpdateCallback(
