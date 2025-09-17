@@ -39,7 +39,7 @@ export function useAppBuilderInstances(props: Props) {
 	} = props;
 
 	const {sessions, addSessionUpdateCallback} = useShapeDiverStoreSession();
-	const {addProcess, createProcessManager} =
+	const {addProcess, createProcessManager, processManagers} =
 		useShapeDiverStoreProcessManager();
 	const {
 		addCustomizationResult,
@@ -53,7 +53,25 @@ export function useAppBuilderInstances(props: Props) {
 		[key: string]: ITreeNode;
 	}>({});
 
+	const customizationResultInStoreRef = useRef(customizationResults);
+	const instancesRef = useRef<{
+		[key: string]: ITreeNode;
+	}>({});
 	const sessionNodeRef = useRef<ITreeNode | undefined>(undefined);
+	const sessionProcessManagerIdRef = useRef(sessionProcessManagerId);
+	const processManagersRef = useRef(processManagers);
+
+	useEffect(() => {
+		processManagersRef.current = processManagers;
+	}, [processManagers]);
+
+	useEffect(() => {
+		sessionProcessManagerIdRef.current = sessionProcessManagerId;
+	}, [sessionProcessManagerId]);
+
+	useEffect(() => {
+		customizationResultInStoreRef.current = customizationResults;
+	}, [customizationResults]);
 
 	/**
 	 * Parse the app builder data.
@@ -111,10 +129,6 @@ export function useAppBuilderInstances(props: Props) {
 		return parsedInstances;
 	}, [appBuilderData, sessions]);
 
-	const instancesRef = useRef<{
-		[key: string]: ITreeNode;
-	}>({});
-
 	const sessionUpdateCallback = useCallback((newNode?: ITreeNode) => {
 		sessionNodeRef.current = newNode;
 		if (!newNode) return;
@@ -155,12 +169,6 @@ export function useAppBuilderInstances(props: Props) {
 		};
 	}, [sessionApi, sessionUpdateCallback]);
 
-	const customizationResultInStoreRef = useRef(customizationResults);
-
-	useEffect(() => {
-		customizationResultInStoreRef.current = customizationResults;
-	}, [customizationResults]);
-
 	useEffect(() => {
 		if (!sessionApi) return;
 
@@ -177,8 +185,13 @@ export function useAppBuilderInstances(props: Props) {
 			promise: mainPromise,
 		};
 
+		// we check if a process manager id is given
+		// and if it is still valid
 		const processManagerId =
-			sessionProcessManagerId || createProcessManager(sessionApi.id);
+			sessionProcessManagerIdRef.current &&
+			processManagersRef.current[sessionProcessManagerIdRef.current]
+				? sessionProcessManagerIdRef.current
+				: createProcessManager(sessionApi.id);
 		addProcess(processManagerId, mainProcessDefinition);
 
 		const newInstances: {
@@ -381,5 +394,5 @@ export function useAppBuilderInstances(props: Props) {
 			}
 			setInstances({});
 		};
-	}, [appBuilderInstances, sessionProcessManagerId]);
+	}, [appBuilderInstances]);
 }
