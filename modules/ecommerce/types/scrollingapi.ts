@@ -1,5 +1,3 @@
-import {ISelectComponentItemDataType} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {ISelectComponentItemDataTypeSchema} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import {z} from "zod";
 
 /**
@@ -33,19 +31,45 @@ export interface IScrollingApi<TItem> {
 	items: TItem[];
 }
 
+/** Data for an item shown by a selection component. */
+export interface IScrollingApiItemTypeSelectData {
+	/** Display name to use instead of the item name. */
+	displayname?: string;
+	/** Tooltip. */
+	tooltip?: string;
+	/** Description. */
+	description?: string;
+	/** URL to image. Can be a data URL including a base 64 encoded image. */
+	imageUrl?: string;
+	/** Optional color, used for color selection components. */
+	color?: string;
+	/** Optionally hide the item. */
+	hidden?: boolean;
+}
+
 /** Item type for scrolling APIs of type "select". */
 export interface IScrollingApiItemTypeSelect {
 	/** The item identifier. */
 	item: string;
 	/** Optional additional item data. */
-	data?: ISelectComponentItemDataType;
+	data?: IScrollingApiItemTypeSelectData;
 }
+
+// Zod type definition for IScrollingApiItemTypeSelectData
+export const IScrollingApiItemTypeSelectDataSchema = z.object({
+	displayname: z.string().optional(),
+	tooltip: z.string().optional(),
+	description: z.string().optional(),
+	imageUrl: z.string().optional(),
+	color: z.string().optional(),
+	hidden: z.boolean().optional(),
+});
 
 // Zod type definition for IScrollingApiItemTypeSelect
 export const IScrollingApiItemTypeSelectArraySchema = z.array(
 	z.object({
 		item: z.string(),
-		data: ISelectComponentItemDataTypeSchema.optional(),
+		data: IScrollingApiItemTypeSelectDataSchema.optional(),
 	}),
 );
 
