@@ -136,6 +136,7 @@ export default function ParameterGumballComponent(
 	// get the transformed nodes and the selected nods
 	const {
 		transformedNodeNames,
+		setTransformedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 	} = useGumball(
@@ -158,6 +159,7 @@ export default function ParameterGumballComponent(
 		if (JSON.stringify(parsed) !== JSON.stringify(parsedExecValue)) {
 			setParsedExecValue(parsed);
 			setLastConfirmedValue(parsed);
+			setTransformedNodeNames(parsed);
 		}
 	}, [definition]);
 

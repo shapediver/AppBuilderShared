@@ -17,6 +17,7 @@ import {
 	SelectTextStyleProps,
 	SelectTextWeightedStyleProps,
 } from "./SelectComponent";
+import classes from "./SelectGridComponent.module.css";
 
 interface StyleProps {
 	gridProps: SimpleGridProps;
@@ -180,18 +181,15 @@ export default function SelectGridComponent(
 		? {
 				...(settings?.stackProps?.style as any),
 				height,
-				overflowY: "auto",
+				display: "flex",
+				flexDirection: "column",
 			}
 		: {
 				...(settings?.stackProps?.style as any),
 			};
 
-	return (
-		<Stack
-			{...stackProps}
-			style={{...(stackProps?.style || {}), ...containerStyle}}
-		>
-			{renderSearchInput()}
+	const renderCards = () => {
+		const cards = (
 			<SimpleGrid
 				cols={gridProps?.cols}
 				spacing={gridProps?.spacing}
@@ -210,7 +208,31 @@ export default function SelectGridComponent(
 					/>
 				))}
 			</SimpleGrid>
-			{bottomSection}
+		);
+
+		if (height) {
+			return (
+				<div className={classes.scrollableCards}>
+					{cards}
+					{bottomSection}
+				</div>
+			);
+		}
+		return (
+			<>
+				{cards}
+				{bottomSection}
+			</>
+		);
+	};
+
+	return (
+		<Stack
+			{...stackProps}
+			style={{...(stackProps?.style || {}), ...containerStyle}}
+		>
+			{renderSearchInput()}
+			{renderCards()}
 		</Stack>
 	);
 }
