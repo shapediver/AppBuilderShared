@@ -784,6 +784,11 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
 ]);
 
+const IAppBuilderOutputActionsPropsSetParameterValueSchema = z.object({
+	parameter: z.string(),
+	output: z.string(),
+});
+
 // Zod type definition for IAppBuilderInstances
 const IAppBuilderInstancesSchema = z.object({
 	sessionId: z.string(),
@@ -792,6 +797,16 @@ const IAppBuilderInstancesSchema = z.object({
 		.record(z.string().or(z.number()).or(z.boolean()))
 		.optional(),
 	transformations: z.array(z.array(z.number())).optional(),
+	outputActions: z
+		.array(
+			z.discriminatedUnion("type", [
+				z.object({
+					type: z.literal("setParameterValue"),
+					props: IAppBuilderOutputActionsPropsSetParameterValueSchema,
+				}),
+			]),
+		)
+		.optional(),
 });
 
 // Zod type definition for IAppBuilder

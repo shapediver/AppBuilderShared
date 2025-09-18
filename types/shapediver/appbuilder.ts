@@ -720,6 +720,15 @@ export interface IAppBuilderContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
+export type AppBuilderOutputActionsType = "setParameterValue";
+
+export interface IAppBuilderOutputActionsPropsSetParameterValue {
+	/** the displayname/name/id of the output */
+	output: string;
+	/** the displayname/name/id of the parameter that should be set */
+	parameter: string;
+}
+
 export interface IAppBuilderInstanceDefinition {
 	/** Id of the instance. */
 	sessionId: string;
@@ -734,6 +743,12 @@ export interface IAppBuilderInstanceDefinition {
 	parameterValues?: {[key: string]: string | number | boolean};
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
+	/** The output actions that should be done after an output has been updated. */
+	outputActions?: {
+		// the type of action that should be used on the output
+		type: AppBuilderOutputActionsType;
+		props: IAppBuilderOutputActionsPropsSetParameterValue;
+	}[];
 }
 
 /**
