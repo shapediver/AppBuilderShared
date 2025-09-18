@@ -529,6 +529,7 @@ const processOutputActions = (
 	// to only call the batch update once
 	// this is necessary as multiple instances might want to set the same parameter
 	const outputReturns: {
+		// the parameter id
 		[key: string]: {
 			// first level, "instances[INDEX]" or name of the instance (if a name was provided)
 			[key: string]: {
