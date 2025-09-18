@@ -254,5 +254,10 @@ export function useAppBuilderCustomParameters(props: Props) {
 		namespace,
 	);
 
+	// Don't block parameters history initialization if there are no custom parameters
+	if (parameterDefinitions.length === 0) {
+		return {loaded: true};
+	}
+
 	return {loaded};
 }
