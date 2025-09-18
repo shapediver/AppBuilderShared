@@ -17,18 +17,21 @@ export function useExport(props: PropsExport) {
 	const {namespace, exportId} = props;
 	const parameter = useShapeDiverStoreParameters(
 		useShallow((state) => {
-			const parameter = state.getExport(namespace, exportId)!(
-				(state) => state as IShapeDiverExport,
-			);
-			return parameter;
+			const exportStore = state.getExport(namespace, exportId);
+
+			return exportStore
+				? exportStore((state) => state as IShapeDiverExport)
+				: undefined;
 		}),
 	);
 
 	const memoizedParameter = useMemo(() => {
-		return {
-			...parameter,
-			definition: {...parameter.definition, ...props.overrides},
-		};
+		return parameter
+			? {
+					...parameter,
+					definition: {...parameter.definition, ...props.overrides},
+				}
+			: undefined;
 	}, [parameter, props.overrides]);
 
 	return memoizedParameter;
