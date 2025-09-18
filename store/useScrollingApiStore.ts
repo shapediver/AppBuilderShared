@@ -189,8 +189,12 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 										if (result.hasNextPage !== undefined)
 											api.hasNextPage =
 												result.hasNextPage;
-										if (result.items !== undefined)
-											api.items = validation.data;
+										if (result.items !== undefined) {
+											api.items = [
+												...api.items,
+												...validation.data,
+											];
+										}
 									}),
 								);
 							} catch (error) {
