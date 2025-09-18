@@ -148,23 +148,11 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	useEffect(() => {
 		if (source) {
 			addScrollingApiSelect(source);
-			// TODO remove debug code
-			// const api = addScrollingApiSelect(source);
-			// setInterval(async () => {
-			// 	await api.loadMore();
-			// }, 2000);
 		}
 		return () => {
 			removeScrollingApiSelect(source ?? "");
 		};
 	}, [source]);
-
-	// TODO remove debug code
-	// useEffect(() => {
-	// 	console.log("scrollingApi items", scrollingApi?.items);
-	// }, [scrollingApi?.items]);
-
-	// const rest = {..._rest, scrollingApi};
 
 	if (type === "buttonflex") {
 		return <SelectButtonFlexComponent {...rest} />;

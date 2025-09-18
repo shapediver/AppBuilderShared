@@ -1,5 +1,5 @@
 import {useSelectAsync} from "@AppBuilderShared/hooks/shapediver/parameters/select/useSelectAsync";
-import React from "react";
+import React, {useCallback} from "react";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent, {
 	SelectFullWidthCardsComponentThemePropsType,
@@ -13,13 +13,23 @@ import SelectFullWidthCardsComponent, {
 export default function SelectFullWidthCardsAsyncComponent(
 	props: SelectComponentProps & SelectFullWidthCardsComponentThemePropsType,
 ) {
-	const {scrollingApi, ...propsDefault} = props;
+	const {scrollingApi, onChange, ...propsDefault} = props;
 	const {debouncedOnSearch, items, itemsData, bottomSection} =
 		useSelectAsync(scrollingApi);
+
+	const _onChange = useCallback(
+		(v: string | null) => {
+			if (v && itemsData?.[v].data)
+				onChange(JSON.stringify(itemsData[v].data));
+			else onChange(v);
+		},
+		[onChange, itemsData],
+	);
 
 	return (
 		<SelectFullWidthCardsComponent
 			{...propsDefault}
+			onChange={_onChange}
 			bottomSection={bottomSection}
 			onSearch={(s) => debouncedOnSearch([s])}
 			useLocalSearch={false} // Disable local search

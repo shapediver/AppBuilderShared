@@ -45,6 +45,11 @@ export interface IScrollingApiItemTypeSelectData {
 	color?: string;
 	/** Optionally hide the item. */
 	hidden?: boolean;
+	/**
+	 * Optional additional data that can be sent to a String parameter
+	 * represented by a selection component, instead of the selected item value.
+	 */
+	data?: Record<string, any>;
 }
 
 /** Item type for scrolling APIs of type "select". */
@@ -63,6 +68,7 @@ export const IScrollingApiItemTypeSelectDataSchema = z.object({
 	imageUrl: z.string().optional(),
 	color: z.string().optional(),
 	hidden: z.boolean().optional(),
+	data: z.record(z.any()).optional(),
 });
 
 // Zod type definition for IScrollingApiItemTypeSelect
