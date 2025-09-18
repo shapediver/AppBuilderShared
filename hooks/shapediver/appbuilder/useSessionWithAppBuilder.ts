@@ -231,6 +231,7 @@ export function useSessionWithAppBuilder(
 
 	// create the instances defined in the AppBuilder data
 	useAppBuilderInstances({
+		namespace,
 		sessionApi,
 		appBuilderData,
 		processManagerId: processManagerIdRef.current,
