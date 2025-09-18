@@ -1,8 +1,15 @@
 import AppBuilderImage from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 interface Props {
@@ -17,7 +24,15 @@ interface Props {
 
 export default function AppBuilderImageExportWidgetComponent(props: Props) {
 	const {namespace, exportId, ...rest} = props;
-	const {definition, actions} = useExport({namespace, exportId});
+	const {definition, actions} = useExport({namespace, exportId}) ?? {};
+	const notifications = useContext(NotificationContext);
+
+	if (!definition || !actions) {
+		notifications.error({
+			message: `Export ${exportId} not found`,
+		});
+		return <></>;
+	}
 
 	const promiseChain = useRef(Promise.resolve());
 	const objectUrl = useRef<string | undefined>(undefined);
