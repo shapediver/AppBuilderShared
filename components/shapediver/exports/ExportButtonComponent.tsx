@@ -104,9 +104,15 @@ export default function ExportButtonComponent(
 		rest,
 	);
 
-	const {definition, actions} = useExport(props);
-
+	const {definition, actions} = useExport(props) ?? {};
 	const notifications = useContext(NotificationContext);
+
+	if (!definition || !actions) {
+		notifications.error({
+			message: `Export ${props.exportId} not found`,
+		});
+		return <></>;
+	}
 
 	// get optional distribution-specific click interceptor and right section from context
 	const {interceptClick, rightSection} = useContext(ExportInterceptorContext);
