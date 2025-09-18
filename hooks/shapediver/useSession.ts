@@ -1,6 +1,7 @@
 import {useEventTracking} from "@AppBuilderShared/hooks/useEventTracking";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IAcceptRejectModeSelector} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {ISessionApi} from "@shapediver/viewer.session";
@@ -43,7 +44,9 @@ export interface IUseSessionDto extends SessionCreateDto {
  * @param props {@link IUseSessionDto}
  * @returns
  */
-export function useSession(props: IUseSessionDto | undefined) {
+export function useSession(
+	props: (IUseSessionDto & IAppBuilderSettingsSession) | undefined,
+) {
 	const {createSession, closeSession} = useShapeDiverStoreSession(
 		useShallow((state) => ({
 			createSession: state.createSession,
@@ -78,6 +81,7 @@ export function useSession(props: IUseSessionDto | undefined) {
 			const api = await createSession(
 				{throwOnCustomizationError: true, ...props},
 				{onError: setError},
+				!props.loadOnFirstUse,
 			);
 			if (api) api.refreshJwtToken = props.refreshJwtToken;
 			setSessionApi(api);

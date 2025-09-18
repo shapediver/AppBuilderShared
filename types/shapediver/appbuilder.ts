@@ -1090,6 +1090,10 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 * Optional boolean to treat this sessions as an instance (default: false).
 	 */
 	instance?: boolean;
+	/**
+	 * If the session is an instance, optional property to delay loading of the instance until the first time it is used. (default: false)
+	 */
+	loadOnFirstUse?: boolean;
 }
 
 /**
