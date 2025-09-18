@@ -151,6 +151,7 @@ export default function ParameterGumballComponent(
 		const parsedExecValue = parseTransformation(state.execValue);
 		setParsedExecValue(parsedExecValue);
 		setLastConfirmedValue(parsedExecValue);
+		setTransformedNodeNames(parsedExecValue);
 	}, [state.execValue]);
 
 	// reset the transformed nodes when the definition changes
