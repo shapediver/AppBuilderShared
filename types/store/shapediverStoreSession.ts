@@ -55,8 +55,12 @@ export interface IShapeDiverStoreSession {
 
 	/**
 	 * Create a session and add it to the store.
+	 * The load parameter allows to create the session without loading it right away.
+	 * It stores the received data in the pending sessions and only loads it when created via createPendingSession.
+	 *
 	 * @param dto
 	 * @param callbacks
+	 * @param load Whether to load the session right away or store it. (default: true)
 	 * @returns
 	 */
 	createSession: (
