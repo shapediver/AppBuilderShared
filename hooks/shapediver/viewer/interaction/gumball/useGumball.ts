@@ -13,6 +13,7 @@ import {
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useMemo, useRef} from "react";
+import {useRestrictions} from "../../drawing/useRestrictions";
 
 // #region Functions (1)
 
@@ -128,6 +129,9 @@ export function useGumball(
 	// create a reference for the gumball
 	const gumballRef = useRef<Gumball | undefined>(undefined);
 
+	// use the restrictions
+	const {restrictions} = useRestrictions(gumballProps.restrictions);
+
 	// use an effect to create the gumball whenever the selected node names change
 	useEffect(() => {
 		if (viewportApi && sessionApis && selectedNodeNames.length > 0) {
@@ -136,10 +140,16 @@ export function useGumball(
 				Object.values(sessionApis),
 				selectedNodeNames,
 			);
+
+			const props = {
+				...gumballProps,
+				restrictions,
+			};
+
 			const gumball = new Gumball(
 				viewportApi,
 				Object.values(nodes).map((n) => n.node),
-				gumballProps,
+				props,
 			);
 			gumballRef.current = gumball;
 		}
@@ -151,7 +161,7 @@ export function useGumball(
 				gumballRef.current = undefined;
 			}
 		};
-	}, [viewportApi, sessionApis, selectedNodeNames]);
+	}, [viewportApi, sessionApis, selectedNodeNames, restrictions]);
 
 	/**
 	 * Restore the transformed node names.
