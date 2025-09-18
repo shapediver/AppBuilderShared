@@ -16,7 +16,7 @@ import {
 	TreeNode,
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 interface Props {
@@ -60,7 +60,12 @@ export function useAppBuilderInstances(props: Props) {
 		processManagerId: sessionProcessManagerId,
 	} = props;
 
-	const {sessions, addSessionUpdateCallback} = useShapeDiverStoreSession();
+	const {
+		sessions,
+		pendingSessions,
+		addSessionUpdateCallback,
+		createPendingSession,
+	} = useShapeDiverStoreSession();
 	const {addProcess, createProcessManager, processManagers} =
 		useShapeDiverStoreProcessManager();
 	const {
@@ -101,59 +106,83 @@ export function useAppBuilderInstances(props: Props) {
 		customizationResultInStoreRef.current = customizationResults;
 	}, [customizationResults]);
 
-	useEffect(() => {
-		customizationResultInStoreRef.current = customizationResults;
-	}, [customizationResults]);
+	// store for the parsed app builder instances
+	const [appBuilderInstances, setAppBuilderInstances] = useState<
+		IParsedInstanceDefinition[]
+	>([]);
 
 	/**
 	 * Parse the app builder data.
 	 * Gather all the necessary information to create the instances.
 	 */
-	const appBuilderInstances = useMemo(() => {
-		if (!appBuilderData) return [];
+	useEffect(() => {
+		if (!appBuilderData) {
+			setAppBuilderInstances([]);
+			return;
+		}
 		const instances = appBuilderData.instances ?? [];
 
 		const parsedInstances: IParsedInstanceDefinition[] = [];
 
-		instances.forEach((instance, index) => {
+		const sessionApiPromises: Promise<ISessionApi | undefined>[] = [];
+
+		instances.forEach((instance) => {
 			const session = sessions[instance.sessionId];
-			if (!session) return;
 
-			const parameterValuesWithIds: {[key: string]: string} = {};
-
-			Object.entries(instance.parameterValues ?? {}).map(
-				([key, value]) => {
-					// first, check the display name
-					Object.values(session.parameters).forEach((parameter) => {
-						if (parameter.displayname !== key) return;
-						parameterValuesWithIds[parameter.id] = value + "";
-					});
-					// if the display name is not found, check the name
-					if (parameterValuesWithIds[key]) return;
-					const parameterByName = session.getParameterByName(key);
-					if (parameterByName.length > 0) {
-						parameterValuesWithIds[parameterByName[0].id] =
-							value + "";
-						return;
-					}
-
-					// if the parameter is not found, we search by id
-					const parameterById = session.getParameterById(key);
-					if (parameterById) parameterValuesWithIds[key] = value + "";
-				},
-			);
-
-			parsedInstances.push({
-				session,
-				parameterValues: parameterValuesWithIds,
-				transformations: instance.transformations,
-				originalIndex: index,
-				name: instance.name,
-				outputActions: instance.outputActions,
-			});
+			if (!session) {
+				// check if there are sessions that were not created yet
+				sessionApiPromises.push(
+					createPendingSession(instance.sessionId),
+				);
+			} else {
+				sessionApiPromises.push(Promise.resolve(session));
+			}
 		});
 
-		return parsedInstances;
+		Promise.all(sessionApiPromises).then((sessionApis) => {
+			instances.forEach((instance, index) => {
+				const session = sessionApis[index];
+				if (!session) return;
+
+				const parameterValuesWithIds: {[key: string]: string} = {};
+
+				Object.entries(instance.parameterValues ?? {}).map(
+					([key, value]) => {
+						// first, check the display name
+						Object.values(session.parameters).forEach(
+							(parameter) => {
+								if (parameter.displayname !== key) return;
+								parameterValuesWithIds[parameter.id] =
+									value + "";
+							},
+						);
+						// if the display name is not found, check the name
+						if (parameterValuesWithIds[key]) return;
+						const parameterByName = session.getParameterByName(key);
+						if (parameterByName.length > 0) {
+							parameterValuesWithIds[parameterByName[0].id] =
+								value + "";
+							return;
+						}
+
+						// if the parameter is not found, we search by id
+						const parameterById = session.getParameterById(key);
+						if (parameterById)
+							parameterValuesWithIds[key] = value + "";
+					},
+				);
+
+				parsedInstances.push({
+					session,
+					parameterValues: parameterValuesWithIds,
+					transformations: instance.transformations,
+					originalIndex: index,
+					name: instance.name,
+					outputActions: instance.outputActions,
+				});
+			});
+			setAppBuilderInstances(parsedInstances);
+		});
 	}, [appBuilderData, sessions]);
 
 	const sessionUpdateCallback = useCallback((newNode?: ITreeNode) => {
