@@ -1,4 +1,4 @@
-import {ISelectComponentItemDataType} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {z} from "zod";
 
 /**
  * Generic interface for infinite scrolling API results.
@@ -31,13 +31,57 @@ export interface IScrollingApi<TItem> {
 	items: TItem[];
 }
 
+/** Data for an item shown by a selection component. */
+export interface IScrollingApiItemTypeSelectData {
+	/** Display name to use instead of the item name. */
+	displayname?: string;
+	/** Tooltip. */
+	tooltip?: string;
+	/** Description. */
+	description?: string;
+	/** URL to image. Can be a data URL including a base 64 encoded image. */
+	imageUrl?: string;
+	/** Optional color, used for color selection components. */
+	color?: string;
+	/** Optionally hide the item. */
+	hidden?: boolean;
+	/**
+	 * Optional additional data that can be sent to a String parameter
+	 * represented by a selection component, instead of the selected item value.
+	 */
+	data?: Record<string, any>;
+}
+
 /** Item type for scrolling APIs of type "select". */
 export interface IScrollingApiItemTypeSelect {
 	/** The item identifier. */
 	item: string;
 	/** Optional additional item data. */
-	data?: ISelectComponentItemDataType;
+	data?: IScrollingApiItemTypeSelectData;
 }
+
+// Zod type definition for IScrollingApiItemTypeSelectData
+export const IScrollingApiItemTypeSelectDataSchema = z.object({
+	displayname: z.string().optional(),
+	tooltip: z.string().optional(),
+	description: z.string().optional(),
+	imageUrl: z.string().optional(),
+	color: z.string().optional(),
+	hidden: z.boolean().optional(),
+	data: z.record(z.any()).optional(),
+});
+
+// Zod type definition for IScrollingApiItemTypeSelect
+export const IScrollingApiItemTypeSelectArraySchema = z.array(
+	z.object({
+		item: z.string(),
+		data: IScrollingApiItemTypeSelectDataSchema.optional(),
+	}),
+);
+
+export const validateScrollingApiItemTypeSelectArray = (value: any) => {
+	return IScrollingApiItemTypeSelectArraySchema.safeParse(value);
+};
 
 /** Factory for scrolling APIs */
 export interface IScrollingApiFactory {

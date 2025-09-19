@@ -116,9 +116,9 @@ export class ECommerceApi implements IECommerceApi {
 		);
 	}
 
-	async scrollingApiSetParameters<TItem>(
+	async scrollingApiSetParameters(
 		data: IScrollingApiSetParametersData,
-	): Promise<IScrollingApiSetParametersReply<TItem>> {
+	): Promise<IScrollingApiSetParametersReply<unknown>> {
 		await this.peerIsReady;
 
 		return this.crossWindowApi.send(
@@ -128,9 +128,9 @@ export class ECommerceApi implements IECommerceApi {
 		);
 	}
 
-	async scrollingApiLoadMore<TItem>(
+	async scrollingApiLoadMore(
 		data: IScrollingApiLoadMoreData,
-	): Promise<IScrollingApiLoadMoreReply<TItem>> {
+	): Promise<IScrollingApiLoadMoreReply<unknown>> {
 		await this.peerIsReady;
 
 		return this.crossWindowApi.send(
@@ -194,6 +194,16 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 					MESSAGE_TYPE_UPDATE_SHARING_LINK,
 					(data: IUpdateSharingLinkData) =>
 						this.actions.updateSharingLink(data),
+				);
+				this.crossWindowApi.on(
+					MESSAGE_TYPE_SCROLLINGAPI_SET_PARAMETERS,
+					(data: IScrollingApiSetParametersData) =>
+						this.actions.scrollingApiSetParameters(data),
+				);
+				this.crossWindowApi.on(
+					MESSAGE_TYPE_SCROLLINGAPI_LOAD_MORE,
+					(data: IScrollingApiLoadMoreData) =>
+						this.actions.scrollingApiLoadMore(data),
 				);
 
 				return peerInfo;
@@ -279,16 +289,16 @@ export class DummyECommerceApi implements IECommerceApi {
 		return this.actions.closeConfigurator();
 	}
 
-	scrollingApiSetParameters<TItem>(
+	scrollingApiSetParameters(
 		data: IScrollingApiSetParametersData,
-	): Promise<IScrollingApiSetParametersReply<TItem>> {
-		return this.actions.scrollingApiSetParameters<TItem>(data);
+	): Promise<IScrollingApiSetParametersReply<unknown>> {
+		return this.actions.scrollingApiSetParameters(data);
 	}
 
-	scrollingApiLoadMore<TItem>(
+	scrollingApiLoadMore(
 		data: IScrollingApiLoadMoreData,
-	): Promise<IScrollingApiLoadMoreReply<TItem>> {
-		return this.actions.scrollingApiLoadMore<TItem>(data);
+	): Promise<IScrollingApiLoadMoreReply<unknown>> {
+		return this.actions.scrollingApiLoadMore(data);
 	}
 }
 

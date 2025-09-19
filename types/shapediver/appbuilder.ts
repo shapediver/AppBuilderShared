@@ -60,6 +60,11 @@ export interface ISelectComponentItemDataType {
 	color?: MantineColor;
 	/** Optionally hide the item. */
 	hidden?: boolean;
+	/**
+	 * Optional additional data that can be sent to a String parameter
+	 * represented by a selection component, instead of the selected item value.
+	 */
+	data?: Record<string, any>;
 }
 
 /** Settings for selection parameters (typically used for parameters of type "StringList") */

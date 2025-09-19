@@ -31,7 +31,7 @@ interface StyleProps {
 	limit: number;
 	height: string;
 	bottomSection: React.ReactNode;
-	useLocalSearch: boolean;
+	topSection: React.ReactNode;
 	onSearch: (search: string) => void;
 }
 
@@ -78,8 +78,8 @@ export default function SelectGridComponent(
 		itemData,
 		settings,
 		bottomSection = <></>,
-		useLocalSearch = true,
-		onSearch = () => {},
+		topSection = <></>,
+		onSearch,
 		...styleProps
 	} = props;
 
@@ -98,7 +98,7 @@ export default function SelectGridComponent(
 	} = useProps("SelectGridComponent", defaultStyleProps, styleProps);
 
 	const showLabel = settings?.showLabel ?? _showLabel;
-	const [search, setSearch] = useState("");
+	const [searchTerm, setSearchTerm] = useState("");
 
 	// Transform items array into the format expected by the component
 	const gridItems = useMemo(
@@ -119,23 +119,16 @@ export default function SelectGridComponent(
 	);
 
 	const filteredItems = useMemo(() => {
-		let out = gridItems;
-		const isSearchable = searchable && search.trim();
-		if (isSearchable) {
-			const q = search.toLowerCase();
-			if (useLocalSearch) {
-				out = gridItems.filter(
-					(c) =>
-						c.value.toLowerCase().includes(q) ||
-						(c.label || "").toLowerCase().includes(q) ||
-						(c.description || "").toLowerCase().includes(q),
-				);
-			}
-		}
-		return isSearchable && useLocalSearch && limit
-			? out.slice(0, limit)
-			: out;
-	}, [gridItems, searchable, search, limit, useLocalSearch]);
+		if (!searchable || !searchTerm.trim() || onSearch) return gridItems;
+		const q = searchTerm.toLowerCase();
+		const filteredItems = gridItems.filter(
+			(c) =>
+				c.value.toLowerCase().includes(q) ||
+				(c.label || "").toLowerCase().includes(q) ||
+				(c.description || "").toLowerCase().includes(q),
+		);
+		return limit ? filteredItems.slice(0, limit) : filteredItems;
+	}, [gridItems, searchable, searchTerm, limit, onSearch]);
 
 	// Handle card selection
 	const handleCardClick = useCallback(
@@ -152,17 +145,14 @@ export default function SelectGridComponent(
 
 		return (
 			<TextInput
-				value={search}
+				value={searchTerm}
 				onChange={(e) => {
 					const term = e.currentTarget.value;
-					setSearch(term);
-					if (onSearch) {
-						onSearch(term);
-					}
+					setSearchTerm(term);
+					onSearch?.(term);
 				}}
 				placeholder="Search"
 				leftSection={<Icon iconType="search" size="1rem" />}
-				disabled={disabled}
 				aria-label="Search options"
 			/>
 		);
@@ -232,6 +222,7 @@ export default function SelectGridComponent(
 			style={{...(stackProps?.style || {}), ...containerStyle}}
 		>
 			{renderSearchInput()}
+			{topSection}
 			{renderCards()}
 		</Stack>
 	);

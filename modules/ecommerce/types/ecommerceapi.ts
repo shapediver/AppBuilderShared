@@ -179,17 +179,17 @@ export interface IECommerceApiActions {
 	 * Set the parameters for a scrolling API data source.
 	 * @param data
 	 */
-	scrollingApiSetParameters<TItem>(
+	scrollingApiSetParameters(
 		data: IScrollingApiSetParametersData,
-	): Promise<IScrollingApiSetParametersReply<TItem>>;
+	): Promise<IScrollingApiSetParametersReply<unknown>>;
 
 	/**
 	 * Load more items from a scrolling API data source.
 	 * @param data
 	 */
-	scrollingApiLoadMore<TItem>(
+	scrollingApiLoadMore(
 		data: IScrollingApiLoadMoreData,
-	): Promise<IScrollingApiLoadMoreReply<TItem>>;
+	): Promise<IScrollingApiLoadMoreReply<unknown>>;
 }
 
 /**
