@@ -16,11 +16,11 @@ export const useSelectAsync = (
 	}, [scrollingApi]);
 
 	const debouncedOnSearch = useCallback(
-		(searchTerms: string[]) => {
+		(searchTerms: string[], timeout: number = 500) => {
 			clearTimeout(debounceRef.current);
 			debounceRef.current = setTimeout(async () => {
 				await scrollingApi?.setSearchTerms?.(searchTerms);
-			}, 500);
+			}, timeout);
 		},
 		[scrollingApi],
 	);
@@ -67,5 +67,6 @@ export const useSelectAsync = (
 		items,
 		itemsData,
 		bottomSection,
+		loading: scrollingApi?.loading,
 	};
 };

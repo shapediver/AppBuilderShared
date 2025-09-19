@@ -1,9 +1,12 @@
 import {useSelectAsync} from "@AppBuilderShared/hooks/shapediver/parameters/select/useSelectAsync";
-import React, {useCallback} from "react";
+import {Anchor, Group, Loader} from "@mantine/core";
+import React, {useCallback, useState} from "react";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent, {
 	SelectFullWidthCardsComponentThemePropsType,
 } from "./SelectFullWidthCards";
+
+const SEARCH_PREFIX = "search:";
 
 /**
  * Async wrapper component for SelectFullWidthCardsComponent that adds search and infinite scrolling capabilities.
@@ -14,27 +17,57 @@ export default function SelectFullWidthCardsAsyncComponent(
 	props: SelectComponentProps & SelectFullWidthCardsComponentThemePropsType,
 ) {
 	const {scrollingApi, onChange, ...propsDefault} = props;
-	const {debouncedOnSearch, items, itemsData, bottomSection} =
+	const {debouncedOnSearch, items, itemsData, bottomSection, loading} =
 		useSelectAsync(scrollingApi);
+	// stack of search terms
+	const [searchTerms, setSearchTerms] = useState<string[]>([]);
 
 	const _onChange = useCallback(
 		(v: string | null) => {
-			if (v && itemsData?.[v].data)
+			// if the value starts with SEARCH_PREFIX,
+			// strip off the prefix and add the remaining value
+			// to the stack of search terms
+			if (v?.startsWith(SEARCH_PREFIX)) {
+				const term = v.substring(SEARCH_PREFIX.length);
+				setSearchTerms((prev) => [...prev, term]);
+				debouncedOnSearch([...searchTerms, term], 0);
+			} else if (v && itemsData?.[v].data)
 				onChange(JSON.stringify(itemsData[v].data));
 			else onChange(v);
 		},
-		[onChange, itemsData],
+		[onChange, itemsData, debouncedOnSearch, searchTerms],
+	);
+
+	// show stack of search terms and allow to remove them
+	const topSection = (
+		<Group>
+			{searchTerms.map((term, index) => (
+				<Anchor
+					key={index}
+					onClick={() => {
+						const terms = searchTerms.slice(0, index);
+						setSearchTerms(terms);
+						debouncedOnSearch(terms, 0);
+					}}
+				>
+					{term}
+				</Anchor>
+			))}
+		</Group>
 	);
 
 	return (
 		<SelectFullWidthCardsComponent
 			{...propsDefault}
 			onChange={_onChange}
-			bottomSection={bottomSection}
-			onSearch={(s) => debouncedOnSearch([s])}
-			useLocalSearch={false} // Disable local search
+			bottomSection={
+				loading && items.length === 0 ? <Loader /> : bottomSection
+			}
+			topSection={topSection}
+			onSearch={(s) => debouncedOnSearch([...searchTerms, s])}
 			items={items}
 			itemData={itemsData}
+			disabled={loading}
 		/>
 	);
 }

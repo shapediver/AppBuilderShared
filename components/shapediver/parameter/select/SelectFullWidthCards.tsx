@@ -35,6 +35,7 @@ interface StyleProps {
 	limit: number;
 	height: string;
 	bottomSection: React.ReactNode;
+	topSection: React.ReactNode;
 	useLocalSearch: boolean;
 	onSearch: (search: string) => void;
 }
@@ -81,8 +82,8 @@ export default function SelectFullWidthCardsComponent(
 		itemData,
 		settings,
 		bottomSection = <></>,
-		useLocalSearch = true,
-		onSearch = () => {},
+		topSection = <></>,
+		onSearch,
 		...styleProps
 	} = props;
 
@@ -103,7 +104,7 @@ export default function SelectFullWidthCardsComponent(
 		styleProps,
 	);
 
-	const [search, setSearch] = useState("");
+	const [searchTerm, setSearchTerm] = useState("");
 	// Transform items array into the format expected by the component
 	const cardData = useMemo(
 		() =>
@@ -143,13 +144,11 @@ export default function SelectFullWidthCardsComponent(
 
 		return (
 			<TextInput
-				value={search}
+				value={searchTerm}
 				onChange={(e) => {
 					const term = e.currentTarget.value;
-					setSearch(term);
-					if (onSearch) {
-						onSearch(term);
-					}
+					setSearchTerm(term);
+					onSearch?.(term);
 				}}
 				placeholder="Search"
 				leftSection={<Icon iconType="search" size="1rem" />}
@@ -172,23 +171,16 @@ export default function SelectFullWidthCardsComponent(
 			};
 
 	const filteredCards = useMemo(() => {
-		let out = cardData;
-		const isSearchable = searchable && search.trim();
-		if (isSearchable) {
-			const q = search.toLowerCase();
-			if (useLocalSearch) {
-				out = cardData.filter(
-					(c) =>
-						c.value.toLowerCase().includes(q) ||
-						(c.label || "").toLowerCase().includes(q) ||
-						(c.description || "").toLowerCase().includes(q),
-				);
-			}
-		}
-		return isSearchable && useLocalSearch && limit
-			? out.slice(0, limit)
-			: out;
-	}, [cardData, searchable, search, limit, useLocalSearch]);
+		if (!searchable || !searchTerm.trim() || onSearch) return cardData;
+		const q = searchTerm.toLowerCase();
+		const filteredItems = cardData.filter(
+			(c) =>
+				c.value.toLowerCase().includes(q) ||
+				(c.label || "").toLowerCase().includes(q) ||
+				(c.description || "").toLowerCase().includes(q),
+		);
+		return limit ? filteredItems.slice(0, limit) : filteredItems;
+	}, [cardData, searchable, searchTerm, limit, onSearch]);
 
 	const renderCards = () => {
 		const cards = filteredCards.map((card) => (
@@ -259,6 +251,7 @@ export default function SelectFullWidthCardsComponent(
 			style={{...(stackProps?.style || {}), ...containerStyle}}
 		>
 			{renderSearchInput()}
+			{topSection}
 			{renderCards()}
 		</Stack>
 	);
