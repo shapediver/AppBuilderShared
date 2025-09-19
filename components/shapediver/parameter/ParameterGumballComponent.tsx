@@ -146,6 +146,11 @@ export default function ParameterGumballComponent(
 		parseTransformation(value),
 	);
 
+	const transformedNodeNamesRef = useRef(transformedNodeNames);
+	useEffect(() => {
+		transformedNodeNamesRef.current = transformedNodeNames;
+	}, [transformedNodeNames]);
+
 	// react to changes of the execValue and reset the last confirmed value
 	useEffect(() => {
 		const parsedExecValue = parseTransformation(state.execValue);
@@ -156,8 +161,11 @@ export default function ParameterGumballComponent(
 
 	// reset the transformed nodes when the definition changes
 	useEffect(() => {
-		const parsed = parseTransformation(state.execValue);
-		if (JSON.stringify(parsed) !== JSON.stringify(parsedExecValue)) {
+		const parsed = parseTransformation(definition.defval);
+		if (
+			JSON.stringify(parsed) !==
+			JSON.stringify(transformedNodeNamesRef.current)
+		) {
 			setParsedExecValue(parsed);
 			setLastConfirmedValue(parsed);
 			setTransformedNodeNames(parsed);
