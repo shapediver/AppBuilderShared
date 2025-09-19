@@ -152,7 +152,6 @@ export default function SelectFullWidthCardsComponent(
 				}}
 				placeholder="Search"
 				leftSection={<Icon iconType="search" size="1rem" />}
-				disabled={disabled}
 				aria-label="Search options"
 			/>
 		);
