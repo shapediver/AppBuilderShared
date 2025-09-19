@@ -2,23 +2,28 @@ import {useSelectAsync} from "@AppBuilderShared/hooks/shapediver/parameters/sele
 import {Anchor, Group, Loader} from "@mantine/core";
 import React, {useCallback, useState} from "react";
 import {SelectComponentProps} from "./SelectComponent";
-import SelectGridComponent, {
-	SelectGridComponentThemePropsType,
-} from "./SelectGridComponent";
+import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
+import SelectGridComponent from "./SelectGridComponent";
 
 const SEARCH_PREFIX = "search:";
 
+type SelectComponentAsyncType = "grid" | "fullwidthcards";
+
+interface SelectComponentAsyncProps extends SelectComponentProps {
+	/** Type of select component to use. */
+	type: SelectComponentAsyncType;
+}
+
 /**
- * Async wrapper component for SelectGridComponent that adds search and infinite scrolling capabilities.
+ * Async wrapper component for SelectFullWidthCardsComponent that adds search and infinite scrolling capabilities.
  * This higher-order component handles filtering, search input, and lazy loading while delegating
- * the actual grid rendering to the base SelectGridComponent.
+ * the actual card rendering to the base SelectFullWidthCardsComponent.
  */
-export default function SelectGridAsyncComponent(
-	props: SelectComponentProps & SelectGridComponentThemePropsType,
-) {
-	const {scrollingApi, onChange, ...propsDefault} = props;
+export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
+	const {type, scrollingApi, onChange, ...propsDefault} = props;
 	const {debouncedOnSearch, items, itemsData, bottomSection, loading} =
 		useSelectAsync(scrollingApi);
+
 	// stack of search terms
 	const [searchTerms, setSearchTerms] = useState<string[]>([]);
 
@@ -56,18 +61,35 @@ export default function SelectGridAsyncComponent(
 		</Group>
 	);
 
-	return (
-		<SelectGridComponent
-			{...propsDefault}
-			onChange={_onChange}
-			bottomSection={
-				loading && items.length === 0 ? <Loader /> : bottomSection
-			}
-			topSection={topSection}
-			onSearch={(s) => debouncedOnSearch([...searchTerms, s])}
-			items={items}
-			itemData={itemsData}
-			disabled={loading}
-		/>
-	);
+	if (type === "fullwidthcards") {
+		return (
+			<SelectFullWidthCardsComponent
+				{...propsDefault}
+				onChange={_onChange}
+				bottomSection={
+					loading && items.length === 0 ? <Loader /> : bottomSection
+				}
+				topSection={topSection}
+				onSearch={(s) => debouncedOnSearch([...searchTerms, s])}
+				items={items}
+				itemData={itemsData}
+				disabled={loading}
+			/>
+		);
+	} else if (type === "grid") {
+		return (
+			<SelectGridComponent
+				{...propsDefault}
+				onChange={_onChange}
+				bottomSection={
+					loading && items.length === 0 ? <Loader /> : bottomSection
+				}
+				topSection={topSection}
+				onSearch={(s) => debouncedOnSearch([...searchTerms, s])}
+				items={items}
+				itemData={itemsData}
+				disabled={loading}
+			/>
+		);
+	} else return <></>;
 }

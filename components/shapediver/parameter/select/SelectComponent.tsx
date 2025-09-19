@@ -26,9 +26,8 @@ import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
 import SelectCarouselComponent from "./SelectCarouselComponent";
 import SelectChipGroupComponent from "./SelectChipGroupComponent";
 import SelectColorComponent from "./SelectColorComponent";
+import SelectComponentAsync from "./SelectComponentAsync";
 import SelectDropDownComponent from "./SelectDropDownComponent";
-import SelectFullWidthCardsAsyncComponent from "./SelectFullWidthCardsAsyncComponent";
-import SelectGridAsyncComponent from "./SelectGridAsyncComponent";
 import SelectGridComponent from "./SelectGridComponent";
 import SelectImageDropDownComponent from "./SelectImageDropDownComponent";
 
@@ -154,7 +153,15 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 		};
 	}, [source]);
 
-	if (type === "buttonflex") {
+	if (scrollingApi && (type === "fullwidthcards" || type === "grid"))
+		return (
+			<SelectComponentAsync
+				{...rest}
+				type={type}
+				scrollingApi={scrollingApi}
+			/>
+		);
+	else if (type === "buttonflex") {
 		return <SelectButtonFlexComponent {...rest} />;
 	} else if (type === "buttongroup") {
 		return <SelectButtonGroupComponent {...rest} />;
@@ -165,29 +172,11 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	} else if (type === "imagedropdown") {
 		return <SelectImageDropDownComponent {...rest} />;
 	} else if (type === "fullwidthcards") {
-		if (scrollingApi) {
-			return (
-				<SelectFullWidthCardsAsyncComponent
-					{...rest}
-					scrollingApi={scrollingApi}
-				/>
-			);
-		} else {
-			return <SelectFullWidthCardsComponent {...rest} />;
-		}
+		return <SelectFullWidthCardsComponent {...rest} />;
 	} else if (type === "carousel") {
 		return <SelectCarouselComponent {...rest} />;
 	} else if (type === "grid") {
-		if (scrollingApi) {
-			return (
-				<SelectGridAsyncComponent
-					{...rest}
-					scrollingApi={scrollingApi}
-				/>
-			);
-		} else {
-			return <SelectGridComponent {...rest} />;
-		}
+		return <SelectGridComponent {...rest} />;
 	} else {
 		return <SelectDropDownComponent {...rest} />;
 	}
