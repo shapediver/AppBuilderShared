@@ -828,7 +828,13 @@ export interface IAppBuilderInstanceDefinition {
 	 * The value is the parameter value.
 	 * If none is provided, the default parameter set is used.
 	 **/
-	parameterValues?: {[key: string]: string | number | boolean};
+	parameterValues?: {
+		[key: string]:
+			| string
+			| number
+			| boolean
+			| IAppBuilderParameterValueSourceDefinition;
+	};
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
 }
