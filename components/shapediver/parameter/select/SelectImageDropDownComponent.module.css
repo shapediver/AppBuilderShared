@@ -4,7 +4,6 @@
 }
 
 .input {
-
 	:global(.mantine-Input-input[data-expanded="true"]),
 	:global(.mantine-Input-input:focus) {
 		border-color: var(--card-selected-color, var(--input-bd));
@@ -14,9 +13,12 @@
 .input.inputSelected {
 	--select-dropdown-border-width: 1px;
 	border-radius: var(--mantine-radius-default);
-	box-shadow: inset 0 0 0 var(--select-dropdown-border-width) var(--card-selected-color, var(--mantine-primary-color-filled));
-	border-color: var(--card-selected-color,
-			var(--mantine-primary-color-filled));
+	box-shadow: inset 0 0 0 var(--select-dropdown-border-width)
+		var(--card-selected-color, var(--mantine-primary-color-filled));
+	border-color: var(
+		--card-selected-color,
+		var(--mantine-primary-color-filled)
+	);
 	border-width: calc(0.0625rem * var(--mantine-scale));
 	border-style: solid;
 }

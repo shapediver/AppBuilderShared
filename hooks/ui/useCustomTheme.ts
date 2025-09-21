@@ -29,9 +29,9 @@ import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShare
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
 import {ViewportAnchor2dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor2d";
 import {ViewportAnchor3dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor3d";
-import {HintProps} from "@AppBuilderShared/components/ui/Hint";
 import {ViewportIconButtonThemeProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/ViewportIconButton";
 import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/ViewportIconButtonDropdown";
+import {HintProps} from "@AppBuilderShared/components/ui/Hint";
 import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";

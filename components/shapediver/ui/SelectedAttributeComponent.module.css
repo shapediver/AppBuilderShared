@@ -1,19 +1,19 @@
 .selectedAttributeTd {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .selectedAttributeTd:hover {
-  overflow: visible !important;
-  white-space: normal !important;
+	overflow: visible !important;
+	white-space: normal !important;
 }
 
 .showOnRowHover {
-  opacity: 0;
-  transition: opacity 0.2s ease;
+	opacity: 0;
+	transition: opacity 0.2s ease;
 }
 
 .rowHover:hover .showOnRowHover {
-  opacity: 1;
+	opacity: 1;
 }

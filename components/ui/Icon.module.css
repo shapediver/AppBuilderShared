@@ -2,5 +2,5 @@
 .tablerIconify [style*="stroke-width"],
 .tablerIconify g,
 .tablerIconify g * {
-  stroke-width: var(--icon-stroke-width) !important;
+	stroke-width: var(--icon-stroke-width) !important;
 }
