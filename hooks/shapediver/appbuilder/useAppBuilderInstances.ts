@@ -7,6 +7,7 @@ import {
 	IAppBuilderInstanceDefinition,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Mat4Array} from "@AppBuilderShared/types/shapediver/common";
+import {IParameterStore} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {ResOutput, ResOutputContent} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
@@ -76,11 +77,13 @@ export function useAppBuilderInstances(props: Props) {
 		removeInstance,
 	} = useShapeDiverStoreInstances();
 
-	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
-		useShallow((state) => ({
-			batchParameterValueUpdate: state.batchParameterValueUpdate,
-		})),
-	);
+	const {batchParameterValueUpdate, getParameter} =
+		useShapeDiverStoreParameters(
+			useShallow((state) => ({
+				batchParameterValueUpdate: state.batchParameterValueUpdate,
+				getParameter: state.getParameter,
+			})),
+		);
 
 	const [instances, setInstances] = useState<{
 		[key: string]: ITreeNode;
@@ -282,6 +285,7 @@ export function useAppBuilderInstances(props: Props) {
 				newInstances,
 				namespace,
 				batchParameterValueUpdate,
+				getParameter,
 			);
 
 			// wait for all output callbacks to resolve
@@ -305,7 +309,7 @@ export function useAppBuilderInstances(props: Props) {
 
 				// resolve the main promise
 				// to signal that the process is finished
-				resolveMainPromise!();
+				if (outputCallbackPromises.length === 0) resolveMainPromise!();
 
 				// clean up the session instances
 				// only instances that are currently in the scene are kept
@@ -551,6 +555,10 @@ const processOutputActions = (
 	},
 	namespace: string,
 	batchParameterValueUpdate: (params: Record<string, any>) => Promise<void>,
+	getParameter: (
+		namespace: string,
+		key: string,
+	) => IParameterStore | undefined,
 ) => {
 	let outputCallbackPromises: Promise<void>[] = [];
 
@@ -652,11 +660,24 @@ const processOutputActions = (
 	if (Object.keys(outputReturns).length > 0) {
 		const param = Object.entries(outputReturns).reduce(
 			(acc, [key, value]) => {
-				acc[key] = JSON.stringify(value);
+				const parameter = getParameter(namespace, key);
+				if (!parameter) return acc;
+
+				const v = JSON.stringify(value);
+				// check if the parameter already has the correct value
+				if (parameter.getState().actions.isUiValueDifferent(v))
+					acc[key] = v;
+
 				return acc;
 			},
 			{} as Record<string, any>,
 		);
+
+		// if there are no parameters to set, we skip the update call
+		// this can happen if the output action wants to set a value
+		// that is already set in the parameter
+		if (Object.keys(param).length === 0) return outputCallbackPromises;
+
 		outputCallbackPromises.push(
 			batchParameterValueUpdate({
 				[namespace]: param,

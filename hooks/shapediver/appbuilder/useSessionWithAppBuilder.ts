@@ -40,7 +40,7 @@ export function useSessionWithAppBuilder(
 	const sessionInitialized = !!sessionApi;
 
 	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
-	const {createProcessManager, processManagers} =
+	const {createProcessManager, removeProcessManager, processManagers} =
 		useShapeDiverStoreProcessManager();
 	const [parsedData, setParsedData] = useState<
 		IAppBuilder | Error | undefined
@@ -183,10 +183,21 @@ export function useSessionWithAppBuilder(
 			// has to be done here, as otherwise the viewer would already
 			// update the scene before the instances are processed
 			const instancedSessions = !!appBuilderData?.instances;
-			if (instancedSessions && !processManagerIdRef.current) {
-				const processManagerId = createProcessManager(sessionApi!.id);
-				processManagerIdRef.current = processManagerId;
-			}
+
+			// if there are instances defined in the app builder data, we need a process manager
+			let newProcessManagerId: string | undefined = undefined;
+			if (instancedSessions)
+				newProcessManagerId = createProcessManager(sessionApi!.id);
+
+			// if there is still a processManager active, we remove it
+			// and assign the id of the new one
+			// we have to do this after creating the new one, as otherwise
+			// the viewer would already update the scene before the instances are processed
+			if (processManagerIdRef.current)
+				removeProcessManager(processManagerIdRef.current);
+
+			// assign the new process manager id (or undefined) to the ref
+			processManagerIdRef.current = newProcessManagerId;
 
 			setParsedData(parsedData);
 		},
@@ -197,10 +208,8 @@ export function useSessionWithAppBuilder(
 	useEffect(() => {
 		if (!processManagerIdRef.current) return;
 
-		if (!processManagers[processManagerIdRef.current]) {
+		if (!processManagers[processManagerIdRef.current])
 			processManagerIdRef.current = undefined;
-			return;
-		}
 	}, [processManagers]);
 
 	useEffect(() => {
