@@ -78,6 +78,7 @@ export default function ParameterGumballComponent(
 		disabled,
 		value,
 		state,
+		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
@@ -140,6 +141,7 @@ export default function ParameterGumballComponent(
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 	} = useGumball(
+		sessionDependencies,
 		viewportId,
 		gumballProps,
 		gumballActive,

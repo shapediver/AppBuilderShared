@@ -6,7 +6,11 @@ import {
 	Gumball,
 	updateGumballTransformation,
 } from "@shapediver/viewer.features.gumball";
-import {getNodesByName} from "@shapediver/viewer.features.interaction";
+import {
+	getNodesByName,
+	matchNodesWithPatterns,
+	RestrictionProperties,
+} from "@shapediver/viewer.features.interaction";
 import {
 	IGumballParameterProps,
 	ISelectionParameterProps,
@@ -14,6 +18,7 @@ import {
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useMemo, useRef} from "react";
 import {useRestrictions} from "../../drawing/useRestrictions";
+import {useConvertDraggingData} from "../useConvertDraggingData";
 
 // #region Functions (1)
 
@@ -71,6 +76,7 @@ export interface IGumballState {
  * Hook providing stateful gumball interaction for a viewport and session.
  * This wraps lower level hooks for the selection and gumball events.
  *
+ * @param sessionIds IDs of the sessions which depend on the gumball parameter.
  * @param viewportId ID of the viewport for which the gumball shall be created.
  * @param gumballProps Parameter properties to be used. This includes name filters, and properties for the behavior of the gumball.
  * @param activate Set this to true to activate the gumball. If false, preparations are made but no gumball is possible.
@@ -78,6 +84,7 @@ export interface IGumballState {
  * 					Note that this initial state is not checked against the filter pattern.
  */
 export function useGumball(
+	sessionIds: string[],
 	viewportId: string,
 	gumballProps: IGumballParameterProps,
 	activate: boolean,
@@ -95,8 +102,14 @@ export function useGumball(
 	const selectionSettings = useMemo(() => {
 		if (!gumballProps) return {};
 
+		const nameFilter: string[] = [];
+		nameFilter.concat(gumballProps.nameFilter ?? []);
+		gumballProps.objects?.forEach((element) => {
+			nameFilter.push(element.nameFilter);
+		});
+
 		return {
-			nameFilter: gumballProps.nameFilter,
+			nameFilter,
 			hover: gumballProps.hover,
 			minimumSelection: gumballProps.minimumSelection ?? 0,
 			maximumSelection: gumballProps.maximumSelection ?? Infinity,
@@ -111,6 +124,10 @@ export function useGumball(
 		availableNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
 	} = useSelection(viewportId, selectionSettings, activate);
+
+	// convert the dragging data
+	const {objects} = useConvertDraggingData(sessionIds, gumballProps);
+
 	// use the gumball events hook to get the transformed node names
 	const {transformedNodeNames, setTransformedNodeNames} = useGumballEvents(
 		selectedNodeNames,
@@ -141,9 +158,52 @@ export function useGumball(
 				selectedNodeNames,
 			);
 
+			// for the nodes, we search for the correct restrictions in the dragging objects
+			// this allows us to have different restrictions for different nodes
+			// if no restrictions are found, we use an empty object
+			// this allows the gumball to have no restrictions
+			// NOTE: We only do this if there is only one node selected
+			// if multiple nodes are selected, we use no restrictions
+			let restrictionsToUse: {[key: string]: RestrictionProperties} = {};
+			if (nodes.length === 1 && restrictions) {
+				const node = nodes[0];
+				for (let i = 0; i < objects.length; i++) {
+					for (const sessionId in objects[i].patterns) {
+						const patterns = objects[i].patterns[sessionId];
+
+						// check if there are any patterns that match the selected nodes
+						const matchedNodeNames = matchNodesWithPatterns(
+							patterns,
+							[node.node],
+							strictNaming,
+						);
+
+						if (matchedNodeNames.length > 0) {
+							if (
+								objects[i].restrictions &&
+								objects[i].restrictions.length > 0
+							) {
+								objects[i].restrictions.forEach(
+									(restrictionId) => {
+										const restriction =
+											restrictions[restrictionId];
+										if (!restriction) return;
+										restrictionsToUse[restrictionId] =
+											restriction;
+									},
+								);
+							}
+						}
+					}
+				}
+			}
+
 			const props = {
 				...gumballProps,
-				restrictions,
+				restrictions:
+					Object.values(restrictionsToUse).length === 0
+						? undefined
+						: restrictionsToUse,
 			};
 
 			const gumball = new Gumball(
@@ -161,7 +221,7 @@ export function useGumball(
 				gumballRef.current = undefined;
 			}
 		};
-	}, [viewportApi, sessionApis, selectedNodeNames, restrictions]);
+	}, [viewportApi, sessionApis, selectedNodeNames, objects, restrictions]);
 
 	/**
 	 * Restore the transformed node names.
