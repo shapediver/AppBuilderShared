@@ -6,12 +6,14 @@ import {useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useViewportId} from "../../viewer/useViewportId";
 
-export function useScreenshot(props?: {
+export function useScreenshotSource(props?: {
 	namespace: string;
 	sources?: IAppBuilderParameterValueSourcePropsScreenshot[];
 }): {
-	screenshots: unknown[] | undefined;
-	setScreenshots: React.Dispatch<React.SetStateAction<unknown[] | undefined>>;
+	screenshotValues: unknown[] | undefined;
+	setScreenshotValues: React.Dispatch<
+		React.SetStateAction<unknown[] | undefined>
+	>;
 } {
 	// default to empty values if no props are given
 	const {namespace, sources} = props ?? {
@@ -19,9 +21,9 @@ export function useScreenshot(props?: {
 		sources: [],
 	};
 
-	const [screenshots, setScreenshots] = useState<unknown[] | undefined>(
-		undefined,
-	);
+	const [screenshotValues, setScreenshotValues] = useState<
+		unknown[] | undefined
+	>(undefined);
 
 	const {viewportId} = useViewportId();
 	const {getScreenshot} = useShapeDiverStoreViewportAccessFunctions(
@@ -52,13 +54,13 @@ export function useScreenshot(props?: {
 			}
 
 			Promise.all(promises).then((results) => {
-				setScreenshots(results);
+				setScreenshotValues(results);
 			});
 		}
 	}, [getScreenshot, namespace, sources]);
 
 	return {
-		screenshots,
-		setScreenshots,
+		screenshotValues,
+		setScreenshotValues,
 	};
 }

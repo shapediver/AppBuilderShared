@@ -7,12 +7,12 @@ import {useEffect, useState} from "react";
  * @param props
  * @returns
  */
-export function useOutputValueSources(props: {
+export function useOutputDataSources(props: {
 	namespace: string;
 	sources?: IAppBuilderParameterValueSourcePropsDataOutput[];
 }): {
-	outputValues: (string | undefined)[] | undefined;
-	setOutputValues: React.Dispatch<
+	outputDataValues: (string | undefined)[] | undefined;
+	setOutputDataValues: React.Dispatch<
 		React.SetStateAction<(string | undefined)[] | undefined>
 	>;
 } {
@@ -22,7 +22,7 @@ export function useOutputValueSources(props: {
 		return state.sessions[namespace];
 	});
 
-	const [outputValues, setOutputValues] = useState<
+	const [outputDataValues, setOutputDataValues] = useState<
 		(string | undefined)[] | undefined
 	>(undefined);
 
@@ -56,11 +56,11 @@ export function useOutputValueSources(props: {
 			}
 		}
 
-		setOutputValues(outputValues);
+		setOutputDataValues(outputValues);
 	}, [sources, namespace, session]);
 
 	return {
-		outputValues,
-		setOutputValues,
+		outputDataValues,
+		setOutputDataValues,
 	};
 }

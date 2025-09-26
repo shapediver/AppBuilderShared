@@ -4,8 +4,8 @@ import {
 	IAppBuilderParameterValueSourcePropsScreenshot,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {useOutputValueSources} from "./valueSources/useOutputValueSources";
-import {useScreenshot} from "./valueSources/useScreenshot";
+import {useOutputDataSources} from "./valueSources/useOutputDataSources";
+import {useScreenshotSource} from "./valueSources/useScreenshotSource";
 
 /**
  * Hook to load an array of parameter value sources and return their values in the same order.
@@ -27,7 +27,7 @@ export function useParameterValueSources(props?: {
 		IAppBuilderParameterValueSourceDefinition[] | undefined
 	>(sources);
 
-	const [outputSources, setOutputSources] =
+	const [outputDataSources, setOutputDataSources] =
 		useState<IAppBuilderParameterValueSourcePropsDataOutput[]>();
 	const [screenshotSources, setScreenshotSources] =
 		useState<IAppBuilderParameterValueSourcePropsScreenshot[]>();
@@ -39,7 +39,7 @@ export function useParameterValueSources(props?: {
 			return;
 		}
 
-		const outputSources: IAppBuilderParameterValueSourcePropsDataOutput[] =
+		const outputDataSources: IAppBuilderParameterValueSourcePropsDataOutput[] =
 			[];
 		const screenshotSources: IAppBuilderParameterValueSourcePropsScreenshot[] =
 			[];
@@ -47,7 +47,7 @@ export function useParameterValueSources(props?: {
 		for (let i = 0; i < sources.length; i++) {
 			const source = sources[i];
 			if (source.type === "dataOutput") {
-				outputSources.push(
+				outputDataSources.push(
 					source.props as IAppBuilderParameterValueSourcePropsDataOutput,
 				);
 			} else if (source.type === "screenshot") {
@@ -58,20 +58,20 @@ export function useParameterValueSources(props?: {
 		}
 
 		sourcesRef.current = sources;
-		setOutputValues(undefined);
-		setOutputSources(outputSources);
-		setScreenshots(undefined);
+		setOutputDataValues(undefined);
+		setOutputDataSources(outputDataSources);
+		setScreenshotValues(undefined);
 		setScreenshotSources(screenshotSources);
 	}, [sources]);
 
 	// get output values
-	const {outputValues, setOutputValues} = useOutputValueSources({
+	const {outputDataValues, setOutputDataValues} = useOutputDataSources({
 		namespace,
-		sources: outputSources,
+		sources: outputDataSources,
 	});
 
 	// get screenshot values
-	const {screenshots, setScreenshots} = useScreenshot({
+	const {screenshotValues, setScreenshotValues} = useScreenshotSource({
 		namespace,
 		sources: screenshotSources,
 	});
@@ -84,12 +84,12 @@ export function useParameterValueSources(props?: {
 		// first, we need to check if ALL sources have been loaded
 		// we cannot return partial results
 		if (
-			!outputSources ||
-			(outputSources.length > 0 &&
-				outputSources.length !== outputValues?.length) ||
+			!outputDataSources ||
+			(outputDataSources.length > 0 &&
+				outputDataSources.length !== outputDataValues?.length) ||
 			!screenshotSources ||
 			(screenshotSources.length > 0 &&
-				screenshotSources.length !== screenshots?.length)
+				screenshotSources.length !== screenshotValues?.length)
 		) {
 			return;
 		}
@@ -102,11 +102,11 @@ export function useParameterValueSources(props?: {
 
 		for (let i = 0; i < sourcesRef.current.length; i++) {
 			const source = sourcesRef.current[i];
-			if (source.type === "dataOutput" && outputValues) {
-				sourceResults.push(outputValues[outputIndex]);
+			if (source.type === "dataOutput" && outputDataValues) {
+				sourceResults.push(outputDataValues[outputIndex]);
 				outputIndex++;
-			} else if (source.type === "screenshot" && screenshots) {
-				sourceResults.push(screenshots[screenshotIndex]);
+			} else if (source.type === "screenshot" && screenshotValues) {
+				sourceResults.push(screenshotValues[screenshotIndex]);
 				screenshotIndex++;
 			} else {
 				sourceResults.push(undefined);
@@ -115,5 +115,5 @@ export function useParameterValueSources(props?: {
 
 		sourcesRef.current = undefined;
 		return sourceResults;
-	}, [outputValues, screenshots]);
+	}, [outputDataValues, screenshotValues]);
 }
