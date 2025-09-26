@@ -1,5 +1,9 @@
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IAppBuilderParameterValueSourcePropsSdtf} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {
+	ResAssetDefinition,
+	ResStypeParameter,
+} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useEffect, useState} from "react";
 
@@ -31,10 +35,11 @@ export function useSdtfSources(props?: {
 
 	useEffect(() => {
 		if (!sessions || !sources) return;
-		const sdtfValuesArray: (string | File | undefined)[] = [];
+
+		const promises = [];
 
 		for (let i = 0; i < sources.length; i++) {
-			const {source, type} = sources[i];
+			const {source} = sources[i];
 			const {sessionId, name, chunk} = source;
 
 			const session = sessions[sessionId || namespace];
@@ -42,7 +47,7 @@ export function useSdtfSources(props?: {
 				console.warn(
 					`Session with id ${sessionId || namespace} not found`,
 				);
-				sdtfValuesArray.push(undefined);
+				promises.push(Promise.resolve(undefined));
 				continue;
 			}
 
@@ -54,28 +59,62 @@ export function useSdtfSources(props?: {
 				console.warn(
 					`sdTF output with name ${name} not found in session ${namespace}`,
 				);
-				sdtfValuesArray.push(undefined);
+				promises.push(Promise.resolve(undefined));
 			} else {
 				// we found the sdTF output, now we have to upload it
-				// TODO, see what actual data is here
-				// if (sdtfOutput.content === undefined) {
-				// 	console.warn(
-				// 		`sdTF output with name ${name} has no content in session ${namespace}`,
-				// 	);
-				// 	sdtfValuesArray.push(undefined);
-				// } else {
-				// 	new SdtfApi(config).uploadSdtf(session.id, [
-				// 		{
-				// 			namespace: "appbuilder",
-				// 			content_length: sdtfOutput.content.length,
-				// 			content_type: ReqSdtfType.MODEL_SDTF,
-				// 		},
-				// 	]);
-				// }
+				if (sdtfOutput.content === undefined) {
+					console.warn(
+						`sdTF output with name ${name} has no content in session ${namespace}`,
+					);
+					promises.push(Promise.resolve(undefined));
+				} else {
+					console.log("sdtfOutput", sdtfOutput);
+
+					if (
+						sdtfOutput.content &&
+						sdtfOutput.content[0] &&
+						sdtfOutput.content[0].href
+					) {
+						// download the href and create an arrayBuffer
+						const response = sdtfOutput.content[0];
+						const url = response.href!;
+						const file = fetch(url)
+							.then((r) => r.arrayBuffer())
+							.then(async (ab) => {
+								const response: ResAssetDefinition[] =
+									await session.uploadSDTF([ab]);
+
+								// now create a ResStypeParameter object
+								// with the uploaded asset id and the chunk if provided
+								const sdtfResponse: ResStypeParameter = {
+									asset: {
+										id: response[0].id,
+										chunk: chunk,
+									},
+								};
+
+								// create a file json object from the sdtfResponse
+								const file = new File(
+									[JSON.stringify(sdtfResponse)],
+									`${sdtfOutput.id}_${sdtfOutput.version}.json`,
+									{type: "application/json"},
+								);
+
+								return file;
+							});
+
+						promises.push(file);
+					} else {
+						promises.push(undefined);
+					}
+					promises.push(undefined);
+				}
 			}
 		}
 
-		setSdtfValues(sdtfValuesArray);
+		Promise.all(promises).then((res) => {
+			setSdtfValues(res);
+		});
 	}, [sessions, sources]);
 
 	return {sdtfValues, setSdtfValues};
