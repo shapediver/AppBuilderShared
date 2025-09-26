@@ -6,7 +6,7 @@ import {useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useViewportId} from "../../viewer/useViewportId";
 
-export function useScreenshotSource(props?: {
+export function useScreenshotSources(props?: {
 	namespace: string;
 	sources?: {
 		source: IAppBuilderParameterValueSourcePropsScreenshot;

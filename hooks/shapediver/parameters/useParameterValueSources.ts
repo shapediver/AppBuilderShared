@@ -1,17 +1,23 @@
 import {
 	IAppBuilderParameterValueSourceDefinition,
 	IAppBuilderParameterValueSourcePropsDataOutput,
+	IAppBuilderParameterValueSourcePropsExport,
 	IAppBuilderParameterValueSourcePropsModelState,
 	IAppBuilderParameterValueSourcePropsScreenshot,
+	IAppBuilderParameterValueSourcePropsSdtf,
 	isDataOutputSource,
+	isExportSource,
 	isModelStateSource,
 	isScreenshotSource,
+	isSdtfSource,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {useModelStateSource} from "./valueSources/useModelStateSource";
+import {useExportSources} from "./valueSources/useExportSources";
+import {useModelStateSources} from "./valueSources/useModelStateSources";
 import {useOutputDataSources} from "./valueSources/useOutputDataSources";
-import {useScreenshotSource} from "./valueSources/useScreenshotSource";
+import {useScreenshotSources} from "./valueSources/useScreenshotSources";
+import {useSdtfSources} from "./valueSources/useSdtfSources";
 
 /**
  * Hook to load an array of parameter value sources and return their values in the same order.
@@ -58,6 +64,18 @@ export function useParameterValueSources(props?: {
 			type: PARAMETER_TYPE;
 		}[]
 	>();
+	const [sdtfSources, setSdtfSources] = useState<
+		{
+			source: IAppBuilderParameterValueSourcePropsSdtf;
+			type: PARAMETER_TYPE;
+		}[]
+	>();
+	const [exportSources, setExportSources] = useState<
+		{
+			source: IAppBuilderParameterValueSourcePropsExport;
+			type: PARAMETER_TYPE;
+		}[]
+	>();
 
 	// separate sources by type and call their respective hooks
 	useEffect(() => {
@@ -78,6 +96,14 @@ export function useParameterValueSources(props?: {
 			source: IAppBuilderParameterValueSourcePropsModelState;
 			type: PARAMETER_TYPE;
 		}[] = [];
+		const sdTFSources: {
+			source: IAppBuilderParameterValueSourcePropsSdtf;
+			type: PARAMETER_TYPE;
+		}[] = [];
+		const exportSources: {
+			source: IAppBuilderParameterValueSourcePropsExport;
+			type: PARAMETER_TYPE;
+		}[] = [];
 
 		for (let i = 0; i < sources.length; i++) {
 			const {source, type} = sources[i];
@@ -96,6 +122,10 @@ export function useParameterValueSources(props?: {
 				type === PARAMETER_TYPE.STRING
 			) {
 				modelStateSources.push({source: source.props, type});
+			} else if (isSdtfSource(source) && type.startsWith("s")) {
+				sdTFSources.push({source: source.props, type});
+			} else if (isExportSource(source) && type === PARAMETER_TYPE.FILE) {
+				exportSources.push({source: source.props, type});
 			}
 		}
 
@@ -106,6 +136,10 @@ export function useParameterValueSources(props?: {
 		setScreenshotSources(screenshotSources);
 		setModelStateValues(undefined);
 		setModelStateSources(modelStateSources);
+		setSdtfValues(undefined);
+		setSdtfSources(sdTFSources);
+		setExportValues(undefined);
+		setExportSources(exportSources);
 	}, [sources]);
 
 	// get output values
@@ -115,15 +149,27 @@ export function useParameterValueSources(props?: {
 	});
 
 	// get screenshot values
-	const {screenshotValues, setScreenshotValues} = useScreenshotSource({
+	const {screenshotValues, setScreenshotValues} = useScreenshotSources({
 		namespace,
 		sources: screenshotSources,
 	});
 
 	// get model state values
-	const {modelStateValues, setModelStateValues} = useModelStateSource({
+	const {modelStateValues, setModelStateValues} = useModelStateSources({
 		namespace,
 		sources: modelStateSources,
+	});
+
+	// get sdTF values
+	const {sdtfValues, setSdtfValues} = useSdtfSources({
+		namespace,
+		sources: sdtfSources,
+	});
+
+	// get export values
+	const {exportValues, setExportValues} = useExportSources({
+		namespace,
+		sources: exportSources,
 	});
 
 	// map output values to their source names
@@ -142,7 +188,13 @@ export function useParameterValueSources(props?: {
 				screenshotSources.length !== screenshotValues?.length) ||
 			!modelStateSources ||
 			(modelStateSources.length > 0 &&
-				modelStateSources.length !== modelStateValues?.length)
+				modelStateSources.length !== modelStateValues?.length) ||
+			!sdtfSources ||
+			(sdtfSources.length > 0 &&
+				sdtfSources.length !== sdtfValues?.length) ||
+			!exportSources ||
+			(exportSources.length > 0 &&
+				exportSources.length !== exportValues?.length)
 		) {
 			return;
 		}
@@ -153,7 +205,11 @@ export function useParameterValueSources(props?: {
 		let outputIndex = 0;
 		let screenshotIndex = 0;
 		let modelStateIndex = 0;
+		let sdtfIndex = 0;
+		let exportIndex = 0;
 
+		// now loop through the original sources and map the values
+		// to their respective source type
 		for (let i = 0; i < sourcesRef.current.length; i++) {
 			const {source} = sourcesRef.current[i];
 			if (isDataOutputSource(source) && outputDataValues) {
@@ -165,6 +221,12 @@ export function useParameterValueSources(props?: {
 			} else if (isModelStateSource(source) && modelStateValues) {
 				sourceResults.push(modelStateValues[modelStateIndex]);
 				modelStateIndex++;
+			} else if (isSdtfSource(source) && sdtfValues) {
+				sourceResults.push(sdtfValues[sdtfIndex]);
+				sdtfIndex++;
+			} else if (isExportSource(source) && exportValues) {
+				sourceResults.push(exportValues[exportIndex]);
+				exportIndex++;
 			} else {
 				sourceResults.push(undefined);
 			}
@@ -172,5 +234,11 @@ export function useParameterValueSources(props?: {
 
 		sourcesRef.current = undefined;
 		return sourceResults;
-	}, [outputDataValues, screenshotValues, modelStateValues]);
+	}, [
+		outputDataValues,
+		screenshotValues,
+		modelStateValues,
+		sdtfValues,
+		exportValues,
+	]);
 }

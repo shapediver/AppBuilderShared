@@ -22,8 +22,8 @@ export function useOutputDataSources(props: {
 } {
 	const {namespace, sources} = props;
 
-	const session = useShapeDiverStoreSession((state) => {
-		return state.sessions[namespace];
+	const sessions = useShapeDiverStoreSession((state) => {
+		return state.sessions;
 	});
 
 	const [outputDataValues, setOutputDataValues] = useState<
@@ -31,28 +31,35 @@ export function useOutputDataSources(props: {
 	>(undefined);
 
 	useEffect(() => {
-		if (!session || !sources) return;
+		if (!sessions || !sources) return;
 
 		const outputValues: (string | File | undefined)[] = [];
 
 		for (let i = 0; i < sources.length; i++) {
 			const {source, type} = sources[i];
+			const {sessionId, name} = source;
+			const session = sessions[sessionId || namespace];
+			if (!session) {
+				console.warn(
+					`Session with id ${sessionId || namespace} not found`,
+				);
+				outputValues.push(undefined);
+				continue;
+			}
 
 			const output = Object.values(session.outputs).find(
 				(o) =>
-					o.displayname === source.name ||
-					o.name === source.name ||
-					o.id === source.name,
+					o.displayname === name || o.name === name || o.id === name,
 			);
 
 			if (!output) {
 				console.warn(
-					`Output with name ${source.name} not found in session ${namespace}`,
+					`Output with name ${name} not found in session ${namespace}`,
 				);
 				outputValues.push(undefined);
 			} else if (output.content === undefined) {
 				console.warn(
-					`Output with name ${source.name} has no content in session ${namespace}`,
+					`Output with name ${name} has no content in session ${namespace}`,
 				);
 				outputValues.push(undefined);
 			} else {
@@ -76,7 +83,7 @@ export function useOutputDataSources(props: {
 		}
 
 		setOutputDataValues(outputValues);
-	}, [sources, namespace, session]);
+	}, [sources, namespace, sessions]);
 
 	return {
 		outputDataValues,

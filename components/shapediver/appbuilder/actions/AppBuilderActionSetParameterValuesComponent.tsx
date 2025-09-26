@@ -1,5 +1,6 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";
+import {useParameterValueSources} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterValueSources";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {
 	IAppBuilderActionPropsCommon,
@@ -7,6 +8,7 @@ import {
 	IAppBuilderLegacyActionPropsSetParameterValue,
 	IAppBuilderParameterValueSourceDefinition,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
+import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -67,17 +69,26 @@ export default function AppBuilderActionSetParameterValuesComponent(
 	const [sourceData, setSourceData] = useState<
 		| {
 				namespace: string;
-				sources: IAppBuilderParameterValueSourceDefinition[];
+				sources: {
+					source: IAppBuilderParameterValueSourceDefinition;
+					type: PARAMETER_TYPE;
+				}[];
 		  }
 		| undefined
 	>(undefined);
 
 	const sourceDataRef = useRef(sourceData);
+	useEffect(() => {
+		sourceDataRef.current = sourceData;
+	}, [sourceData]);
 
 	const onClick = useCallback(() => {
 		let hasChanges = false;
 		let hasSourceData = false;
-		const sources: IAppBuilderParameterValueSourceDefinition[] = [];
+		const sources: {
+			source: IAppBuilderParameterValueSourceDefinition;
+			type: PARAMETER_TYPE;
+		}[] = [];
 		const validParameters: {[key: string]: any} = {};
 
 		// First, check if any parameters have changes and validate all values
@@ -111,7 +122,10 @@ export default function AppBuilderActionSetParameterValuesComponent(
 				}
 			} else if (source !== undefined) {
 				hasSourceData = true;
-				sources.push(source);
+				sources.push({
+					source,
+					type: parameter.definition.type,
+				});
 			}
 		}
 
@@ -134,49 +148,71 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		});
 	}, [parameters, namespace]);
 
+	const sourceResults = useParameterValueSources(sourceData);
+
+	// when sourceData changes, we need to set the parameter value
+	// this is done here to avoid setting the parameter value
+	// before the source data has been loaded
 	useEffect(() => {
-		const {getParameter} = useShapeDiverStoreParameters.getState();
+		if (
+			!sourceDataRef.current ||
+			!sourceResults ||
+			sourceResults.length === 0 ||
+			!parameters
+		)
+			return;
 
-		// Subscribe to each parameter's dirty state
-		const unsubscribes = parameterValues.map(
-			({parameter: {sessionId, name}}) => {
-				const paramNamespace = sessionId ?? namespace;
-				const parameterStore = getParameter(paramNamespace, name);
+		let hasChanges = false;
+		let sourceIndex = 0;
+		const validParameters: {[key: string]: any} = {};
 
-				if (!parameterStore) return () => {};
+		// First, check if any parameters have changes and validate all values
+		for (const {parameter, value, source} of parameters) {
+			if (!parameter) {
+				console.warn("Parameter not found for value:", value);
+				continue;
+			}
 
-				// Subscribe to the parameter store's state changes
-				return parameterStore.subscribe((state) => {
-					// Check if any parameter is dirty
-					const anyDirty = parameterValues.some(
-						({parameter: {sessionId, name}}) => {
-							const ns = sessionId ?? namespace;
-							const store = useShapeDiverStoreParameters
-								.getState()
-								.getParameter(ns, name);
-							return store?.getState().state.dirty ?? false;
-						},
-					);
+			if (value === undefined && source === undefined) {
+				console.warn(
+					"No value or source defined for parameter:",
+					parameter.definition.id,
+				);
+				continue;
+			}
 
-					setIsDisabled(anyDirty);
-				});
-			},
-		);
+			if (value !== undefined) {
+				if (parameter.actions.isUiValueDifferent(value)) {
+					hasChanges = true;
+					// Pre-validate the value
+					if (parameter.actions.setUiValue(value)) {
+						validParameters[parameter.definition.id] = value;
+					} else {
+						console.warn(
+							`setUiValue failed for parameter ${parameter.definition.id}, the value is not valid.`,
+							value,
+						);
+					}
+				}
+			} else if (source !== undefined) {
+				hasChanges = true;
+				validParameters[parameter.definition.id] =
+					sourceResults[sourceIndex++];
+			}
+		}
 
-		// Initial check
-		const initialDirty = parameterValues.some(
-			({parameter: {sessionId, name}}) => {
-				const ns = sessionId ?? namespace;
-				const store = getParameter(ns, name);
-				return store?.getState().state.dirty ?? false;
-			},
-		);
-		setIsDisabled(initialDirty);
+		// reset sourceData to avoid re-running this effect
+		sourceDataRef.current = undefined;
+		setSourceData(undefined);
 
-		return () => {
-			unsubscribes.forEach((unsubscribe) => unsubscribe());
-		};
-	}, [parameterValues, namespace]);
+		// If no changes or no valid parameters, return early
+		if (!hasChanges || Object.keys(validParameters).length === 0) return;
+
+		// Use batch parameter update
+		batchParameterValueUpdate({
+			[namespace]: validParameters,
+		});
+	}, [sourceResults]);
 
 	useEffect(() => {
 		const {getParameter} = useShapeDiverStoreParameters.getState();

@@ -4,7 +4,7 @@ import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useEffect, useState} from "react";
 import {useCreateModelState} from "../../useCreateModelState";
 
-export function useModelStateSource(props: {
+export function useModelStateSources(props: {
 	namespace: string;
 	sources?: {
 		source: IAppBuilderParameterValueSourcePropsModelState;
@@ -66,7 +66,7 @@ export function useModelStateSource(props: {
 						});
 					}
 
-					url.toString();
+					return url.toString();
 				});
 				promises.push(promise);
 			}
