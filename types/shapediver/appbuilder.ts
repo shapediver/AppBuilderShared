@@ -12,9 +12,8 @@ import {MantineColor} from "@mantine/core";
 import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
 import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
 import {
-	ICameraApi,
-	IOrthographicCameraApi,
-	IPerspectiveCameraApi,
+	OrthographicCameraProperties,
+	PerspectiveCameraProperties,
 } from "@shapediver/viewer.viewport";
 
 /** Type used for parameter definitions */
@@ -303,12 +302,8 @@ export interface IAppBuilderParameterValueSourcePropsScreenshot {
 	/**
 	 * Optional camera settings to be used for the screenshot. Defaults to the current camera of the viewport.
 	 * If a "name" is provided, the settings of the camera with that name are used as a base.
-	 * TODO @MajorMeerkatThe3rd please specify type
 	 */
-	camera?:
-		| Pick<ICameraApi, "name" | "position" | "target" | "type">
-		| Pick<IPerspectiveCameraApi, "fov">
-		| Pick<IOrthographicCameraApi, "direction">;
+	camera?: OrthographicCameraProperties | PerspectiveCameraProperties;
 }
 
 /**

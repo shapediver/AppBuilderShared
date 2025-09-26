@@ -57,7 +57,7 @@ export function useScreenshotSource(props?: {
 				setScreenshotValues(results);
 			});
 		}
-	}, [getScreenshot, namespace, sources]);
+	}, [sources]);
 
 	return {
 		screenshotValues,

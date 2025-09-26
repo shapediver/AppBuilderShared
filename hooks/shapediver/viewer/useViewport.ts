@@ -3,6 +3,7 @@ import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShape
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {useShapeDiverViewportIconsStore} from "@AppBuilderShared/store/useShapeDiverViewportIconsStore";
+import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
 import {PROCESS_STATUS} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
@@ -89,8 +90,17 @@ export function useViewport(props: ViewportCreateDto) {
 					convertToGlTF: async () => {
 						return viewportApi.convertToGlTF(undefined, true);
 					},
-					getScreenshot: async () => {
-						const screenshot = viewportApi.getScreenshot();
+					getScreenshot: async (
+						props?: IAppBuilderParameterValueSourcePropsScreenshot,
+					) => {
+						const {contentType, quality, resolution, camera} =
+							props || {};
+						const screenshot = viewportApi.getScreenshotAdvanced(
+							contentType,
+							quality,
+							resolution,
+							camera,
+						);
 						// sometimes the screenshot is not ready immediately (even though it should be)
 						await new Promise((resolve) => setTimeout(resolve, 0));
 

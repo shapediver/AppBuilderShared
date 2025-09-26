@@ -161,8 +161,21 @@ const IAppBuilderParameterValueSourcePropsScreenshotSchema = z.object({
 			height: z.number().int().positive(),
 		})
 		.optional(),
-	// TODO @MajorMeerkatThe3rd please specify type
-	camera: z.unknown().optional(),
+	// check if there is either a name or type present
+	camera: z
+		.union([
+			z
+				.object({
+					name: z.string(),
+				})
+				.passthrough(),
+			z
+				.object({
+					type: z.enum(["perspective", "orthographic"]),
+				})
+				.passthrough(),
+		])
+		.optional(),
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsDataOutput
