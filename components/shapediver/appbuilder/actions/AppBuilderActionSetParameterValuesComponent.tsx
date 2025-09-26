@@ -4,11 +4,16 @@ import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDive
 import {
 	IAppBuilderActionPropsCommon,
 	IAppBuilderActionPropsSetParameterValues,
+	IAppBuilderLegacyActionPropsSetParameterValue,
+	IAppBuilderParameterValueSourceDefinition,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
-type Props = IAppBuilderActionPropsSetParameterValues &
+type Props = (
+	| IAppBuilderActionPropsSetParameterValues
+	| IAppBuilderLegacyActionPropsSetParameterValue
+) &
 	IAppBuilderActionPropsCommon & {
 		namespace: string;
 	};
@@ -21,13 +26,16 @@ type Props = IAppBuilderActionPropsSetParameterValues &
 export default function AppBuilderActionSetParameterValuesComponent(
 	props: Props,
 ) {
-	const {
-		label = "Set parameters",
-		icon,
-		tooltip,
-		parameterValues,
-		namespace,
-	} = props;
+	const {label = "Set parameters", icon, tooltip, namespace} = props;
+
+	const parameterValues = useMemo(() => {
+		if ("parameterValues" in props) {
+			return props.parameterValues;
+		} else {
+			// legacy support for single parameter value
+			return [props];
+		}
+	}, [props]);
 
 	const [isDisabled, setIsDisabled] = useState(true);
 
@@ -46,6 +54,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		return parametersList.map((parameter, index) => ({
 			parameter,
 			value: parameterValues[index].value,
+			source: parameterValues[index].source,
 		}));
 	}, [parametersList]);
 
@@ -55,30 +64,65 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		})),
 	);
 
+	const [sourceData, setSourceData] = useState<
+		| {
+				namespace: string;
+				sources: IAppBuilderParameterValueSourceDefinition[];
+		  }
+		| undefined
+	>(undefined);
+
+	const sourceDataRef = useRef(sourceData);
+
 	const onClick = useCallback(() => {
 		let hasChanges = false;
+		let hasSourceData = false;
+		const sources: IAppBuilderParameterValueSourceDefinition[] = [];
 		const validParameters: {[key: string]: any} = {};
 
 		// First, check if any parameters have changes and validate all values
-		for (const {parameter, value} of parameters) {
+		for (const {parameter, value, source} of parameters) {
 			if (!parameter) {
 				console.warn("Parameter not found for value:", value);
 				continue;
 			}
 
-			if (parameter.actions.isUiValueDifferent(value)) {
-				hasChanges = true;
-
-				// Pre-validate the value
-				if (parameter.actions.setUiValue(value)) {
-					validParameters[parameter.definition.id] = value;
-				} else {
-					console.warn(
-						`setUiValue failed for parameter ${parameter.definition.id}, the value is not valid.`,
-						value,
-					);
-				}
+			if (value === undefined && source === undefined) {
+				console.warn(
+					"No value or source defined for parameter:",
+					parameter.definition.id,
+				);
+				continue;
 			}
+
+			if (value !== undefined) {
+				if (parameter.actions.isUiValueDifferent(value)) {
+					hasChanges = true;
+
+					// Pre-validate the value
+					if (parameter.actions.setUiValue(value)) {
+						validParameters[parameter.definition.id] = value;
+					} else {
+						console.warn(
+							`setUiValue failed for parameter ${parameter.definition.id}, the value is not valid.`,
+							value,
+						);
+					}
+				}
+			} else if (source !== undefined) {
+				hasSourceData = true;
+				sources.push(source);
+			}
+		}
+
+		if (hasSourceData) {
+			setSourceData({
+				namespace,
+				sources,
+			});
+			// The actual setting of the parameter values will be done
+			// in the useEffect below when sourceData changes
+			return;
 		}
 
 		// If no changes or no valid parameters, return early

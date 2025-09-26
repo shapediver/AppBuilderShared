@@ -2,7 +2,6 @@ import AppBuilderActionAddToCartComponent from "@AppBuilderShared/components/sha
 import AppBuilderActionCloseConfiguratorComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCloseConfiguratorComponent";
 import AppBuilderActionCreateModelStateComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCreateModelStateComponent";
 import AppBuilderActionSetBrowserLocationComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetBrowserLocationComponent";
-import AppBuilderActionSetParameterValueComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValueComponent";
 import AppBuilderActionSetParameterValuesComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValuesComponent";
 import {
 	IAppBuilderControlActionRef,
@@ -52,7 +51,7 @@ export function AppBuilderActionFromType(
 		);
 	else if (isSetParameterValueAction(actionRef.definition))
 		return (
-			<AppBuilderActionSetParameterValueComponent
+			<AppBuilderActionSetParameterValuesComponent
 				key={key}
 				namespace={namespace}
 				{...actionPropsCommon}
