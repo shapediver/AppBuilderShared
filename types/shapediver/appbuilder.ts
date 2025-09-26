@@ -1179,6 +1179,56 @@ export function isOutputRefControl(control: IAppBuilderControl): control is {
 	return control.type === "output";
 }
 
+/** assert source type "dataOutput" */
+export function isDataOutputSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "dataOutput";
+	props: IAppBuilderParameterValueSourcePropsDataOutput;
+} {
+	return source.type === "dataOutput";
+}
+
+/** assert source type "export" */
+export function isExportSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "export";
+	props: IAppBuilderParameterValueSourcePropsExport;
+} {
+	return source.type === "export";
+}
+
+/** assert source type "sdtf" */
+export function isSdtfSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "sdtf";
+	props: IAppBuilderParameterValueSourcePropsSdtf;
+} {
+	return source.type === "sdtf";
+}
+
+/** assert source type "modelState" */
+export function isModelStateSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "modelState";
+	props: IAppBuilderParameterValueSourcePropsModelState;
+} {
+	return source.type === "modelState";
+}
+
+/** assert source type "screenshot" */
+export function isScreenshotSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "screenshot";
+	props: IAppBuilderParameterValueSourcePropsScreenshot;
+} {
+	return source.type === "screenshot";
+}
+
 /**
  * Settings for a session used by the AppBuilder.
  */

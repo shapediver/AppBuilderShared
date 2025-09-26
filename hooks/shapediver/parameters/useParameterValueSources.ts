@@ -2,6 +2,8 @@ import {
 	IAppBuilderParameterValueSourceDefinition,
 	IAppBuilderParameterValueSourcePropsDataOutput,
 	IAppBuilderParameterValueSourcePropsScreenshot,
+	isDataOutputSource,
+	isScreenshotSource,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {useOutputDataSources} from "./valueSources/useOutputDataSources";
@@ -46,14 +48,10 @@ export function useParameterValueSources(props?: {
 
 		for (let i = 0; i < sources.length; i++) {
 			const source = sources[i];
-			if (source.type === "dataOutput") {
-				outputDataSources.push(
-					source.props as IAppBuilderParameterValueSourcePropsDataOutput,
-				);
-			} else if (source.type === "screenshot") {
-				screenshotSources.push(
-					source.props as IAppBuilderParameterValueSourcePropsScreenshot,
-				);
+			if (isDataOutputSource(source)) {
+				outputDataSources.push(source.props);
+			} else if (isScreenshotSource(source)) {
+				screenshotSources.push(source.props);
 			}
 		}
 
@@ -102,10 +100,10 @@ export function useParameterValueSources(props?: {
 
 		for (let i = 0; i < sourcesRef.current.length; i++) {
 			const source = sourcesRef.current[i];
-			if (source.type === "dataOutput" && outputDataValues) {
+			if (isDataOutputSource(source) && outputDataValues) {
 				sourceResults.push(outputDataValues[outputIndex]);
 				outputIndex++;
-			} else if (source.type === "screenshot" && screenshotValues) {
+			} else if (isScreenshotSource(source) && screenshotValues) {
 				sourceResults.push(screenshotValues[screenshotIndex]);
 				screenshotIndex++;
 			} else {
