@@ -107,6 +107,7 @@ export function useParameterValueSources(props?: {
 
 		for (let i = 0; i < sources.length; i++) {
 			const {source, type} = sources[i];
+			console.log(source, type);
 			if (
 				isDataOutputSource(source) &&
 				(type === PARAMETER_TYPE.STRING || type === PARAMETER_TYPE.FILE)

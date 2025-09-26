@@ -325,6 +325,70 @@ const IAppBuilderLegacyActionPropsCloseConfiguratorSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
+const IAppBuilderActionPropsCameraCommonSchema = z.object({
+	camera: z
+		.union([
+			z
+				.object({
+					name: z.string(),
+				})
+				.passthrough(),
+			z
+				.object({
+					type: z.enum(["perspective", "orthographic"]),
+				})
+				.passthrough(),
+		])
+		.optional(),
+	options: z.record(z.any()).optional(),
+});
+
+// Zod type definition for IAppBuilderActionPropsCameraCommon
+const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
+	z
+		.object({
+			type: z.literal("animate"),
+			props: z
+				.object({
+					path: z.array(
+						z.object({
+							position: z.array(z.number()).length(3),
+							target: z.array(z.number()).length(3),
+						}),
+					),
+				})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.object({
+			type: z.literal("set"),
+			props: z
+				.object({
+					position: z.array(z.number()).length(3),
+					target: z.array(z.number()).length(3),
+				})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.object({
+			type: z.literal("reset"),
+			props: z
+				.object({})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.object({
+			type: z.literal("zoomTo"),
+			props: z
+				.object({})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+]);
+
 // Zod type definition for IAppBuilderLegacyActionDefinition
 const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -350,6 +414,10 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("closeConfigurator"),
 		props: IAppBuilderLegacyActionPropsCloseConfiguratorSchema,
+	}),
+	z.object({
+		type: z.literal("camera"),
+		props: IAppBuilderActionPropsCameraSchema,
 	}),
 ]);
 
@@ -423,6 +491,10 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("closeConfigurator"),
 		props: IAppBuilderActionPropsCloseConfigurator,
+	}),
+	z.object({
+		type: z.literal("camera"),
+		props: IAppBuilderActionPropsCameraSchema,
 	}),
 ]);
 

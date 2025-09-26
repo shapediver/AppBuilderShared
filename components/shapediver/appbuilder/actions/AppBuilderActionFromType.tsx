@@ -6,6 +6,7 @@ import AppBuilderActionSetParameterValuesComponent from "@AppBuilderShared/compo
 import {
 	IAppBuilderControlActionRef,
 	isAddToCartAction,
+	isCameraAction,
 	isCloseConfiguratorAction,
 	isCreateModelStateAction,
 	isSetBrowserLocationAction,
@@ -13,6 +14,7 @@ import {
 	isSetParameterValuesAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import React from "react";
+import AppBuilderActionCameraComponent from "./AppBuilderActionCameraComponent";
 
 export function AppBuilderActionFromType(
 	actionRef: IAppBuilderControlActionRef,
@@ -70,6 +72,15 @@ export function AppBuilderActionFromType(
 	else if (isSetBrowserLocationAction(actionRef.definition))
 		return (
 			<AppBuilderActionSetBrowserLocationComponent
+				key={key}
+				namespace={namespace}
+				{...actionPropsCommon}
+				{...actionRef.definition.props}
+			/>
+		);
+	else if (isCameraAction(actionRef.definition))
+		return (
+			<AppBuilderActionCameraComponent
 				key={key}
 				namespace={namespace}
 				{...actionPropsCommon}

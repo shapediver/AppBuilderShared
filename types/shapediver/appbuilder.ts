@@ -12,6 +12,7 @@ import {MantineColor} from "@mantine/core";
 import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
 import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
 import {
+	ICameraOptions,
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 } from "@shapediver/viewer.viewport";
@@ -241,7 +242,8 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsSetParameterValue
 		| IAppBuilderActionPropsSetParameterValues
 		| IAppBuilderActionPropsSetBrowserLocation
-		| IAppBuilderActionPropsCloseConfigurator;
+		| IAppBuilderActionPropsCloseConfigurator
+		| IAppBuilderActionPropsCamera;
 }
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -395,7 +397,8 @@ export type AppBuilderActionType =
 	| "setParameterValue"
 	| "setParameterValues"
 	| "setBrowserLocation"
-	| "closeConfigurator";
+	| "closeConfigurator"
+	| "camera";
 
 /** Properties of a "createModelState" action. */
 export interface IAppBuilderActionPropsCreateModelState {
@@ -526,6 +529,49 @@ export type IAppBuilderActionPropsCloseConfigurator = object;
 export type IAppBuilderLegacyActionPropsCloseConfigurator =
 	IAppBuilderActionPropsCloseConfigurator & IAppBuilderActionPropsCommon;
 
+type IAppBuilderPropsCameraCommon = {
+	/** Optional camera settings to be used. Defaults to the initial camera of the viewport. */
+	camera?: OrthographicCameraProperties | PerspectiveCameraProperties;
+	/** Camera properties, including duration and easing. */
+	options?: ICameraOptions;
+};
+
+/** Properties of a "animate" action, where the camera is defined by an array of position and targets. */
+export type IAppBuilderPropsAnimateCamera = {
+	path: {
+		/** The position of the camera. */
+		position: [number, number, number];
+		/** The target the camera is looking at. */
+		target: [number, number, number];
+	}[];
+} & IAppBuilderPropsCameraCommon;
+
+/** Properties of a "set" action, where the camera is defined by position and target. */
+export type IAppBuilderPropsSetCamera = {
+	/** The position of the camera. */
+	position?: [number, number, number];
+	/** The target the camera is looking at. */
+	target?: [number, number, number];
+} & IAppBuilderPropsCameraCommon;
+
+/** Properties of a "reset" action. */
+export type IAppBuilderPropsReset = IAppBuilderPropsCameraCommon;
+
+/** Properties of a "zoomToCCamera" action. */
+export type IAppBuilderPropsZoomToCamera = IAppBuilderPropsCameraCommon;
+
+/** Properties of a camera action. */
+export type IAppBuilderActionPropsCamera = {
+	/** Type of camera action. */
+	type: "animate" | "set" | "reset" | "zoomTo";
+	/** Properties of the camera action. */
+	props:
+		| IAppBuilderPropsAnimateCamera
+		| IAppBuilderPropsSetCamera
+		| IAppBuilderPropsReset
+		| IAppBuilderPropsZoomToCamera;
+} & IAppBuilderActionPropsCommon;
+
 /** A legacy App Builder action definition. */
 export interface IAppBuilderLegacyActionDefinition {
 	/** Type of the action. */
@@ -537,7 +583,8 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsSetParameterValue
 		| IAppBuilderLegacyActionPropsSetParameterValues
 		| IAppBuilderLegacyActionPropsSetBrowserLocation
-		| IAppBuilderLegacyActionPropsCloseConfigurator;
+		| IAppBuilderLegacyActionPropsCloseConfigurator
+		| IAppBuilderActionPropsCamera;
 }
 
 /** Types of widgets */
@@ -1140,6 +1187,51 @@ export function isCloseConfiguratorAction(
 	props: IAppBuilderActionPropsCloseConfigurator;
 } {
 	return action.type === "closeConfigurator";
+}
+
+/** assert action type "camera" */
+export function isCameraAction(
+	action: IAppBuilderActionDefinition,
+): action is {type: "camera"; props: IAppBuilderActionPropsCamera} {
+	return action.type === "camera";
+}
+
+/** assert camera action "animate" */
+export function isAnimateCameraAction(
+	action: IAppBuilderActionPropsCamera,
+): action is {
+	type: "animate";
+	props: IAppBuilderPropsAnimateCamera;
+} {
+	return action.type === "animate";
+}
+
+/** assert camera action "set" */
+export function isSetCameraAction(
+	action: IAppBuilderActionPropsCamera,
+): action is {
+	type: "set";
+	props: IAppBuilderPropsSetCamera;
+} {
+	return action.type === "set";
+}
+
+/** assert camera action "reset" */
+export function isResetAction(action: IAppBuilderActionPropsCamera): action is {
+	type: "reset";
+	props: IAppBuilderPropsReset;
+} {
+	return action.type === "reset";
+}
+
+/** assert camera action "zoomTo" */
+export function isZoomToCameraAction(
+	action: IAppBuilderActionPropsCamera,
+): action is {
+	type: "zoomTo";
+	props: IAppBuilderPropsZoomToCamera;
+} {
+	return action.type === "zoomTo";
 }
 
 /** assert control type "parameter" */
