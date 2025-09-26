@@ -178,6 +178,50 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		};
 	}, [parameterValues, namespace]);
 
+	useEffect(() => {
+		const {getParameter} = useShapeDiverStoreParameters.getState();
+
+		// Subscribe to each parameter's dirty state
+		const unsubscribes = parameterValues.map(
+			({parameter: {sessionId, name}}) => {
+				const paramNamespace = sessionId ?? namespace;
+				const parameterStore = getParameter(paramNamespace, name);
+
+				if (!parameterStore) return () => {};
+
+				// Subscribe to the parameter store's state changes
+				return parameterStore.subscribe((state) => {
+					// Check if any parameter is dirty
+					const anyDirty = parameterValues.some(
+						({parameter: {sessionId, name}}) => {
+							const ns = sessionId ?? namespace;
+							const store = useShapeDiverStoreParameters
+								.getState()
+								.getParameter(ns, name);
+							return store?.getState().state.dirty ?? false;
+						},
+					);
+
+					setIsDisabled(anyDirty);
+				});
+			},
+		);
+
+		// Initial check
+		const initialDirty = parameterValues.some(
+			({parameter: {sessionId, name}}) => {
+				const ns = sessionId ?? namespace;
+				const store = getParameter(ns, name);
+				return store?.getState().state.dirty ?? false;
+			},
+		);
+		setIsDisabled(initialDirty);
+
+		return () => {
+			unsubscribes.forEach((unsubscribe) => unsubscribe());
+		};
+	}, [parameterValues, namespace]);
+
 	return (
 		<AppBuilderActionComponent
 			label={label}
