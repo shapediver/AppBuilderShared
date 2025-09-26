@@ -1,4 +1,3 @@
-import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {IAppBuilderParameterValueSourcePropsModelState} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useEffect, useState} from "react";
@@ -38,7 +37,7 @@ export function useModelStateSources(props: {
 			for (let i = 0; i < sources.length; i++) {
 				const {source} = sources[i];
 				const {
-					updateUrl,
+					updateUrl = false,
 					includeImage,
 					// image, // TODO use image defined by export of href
 					includeGltf,
@@ -52,21 +51,12 @@ export function useModelStateSources(props: {
 					includeImage,
 					undefined,
 					includeGltf,
-				).then(({modelStateId, screenshot}) => {
+				).then(({modelStateId}) => {
 					if (!modelStateId) return undefined;
-
-					const url = applyModelStateToQueryParameter(modelStateId);
-
-					if (updateUrl) {
-						ECommerceApiSingleton.then(async (api) => {
-							api.updateSharingLink({
-								modelStateId,
-								imageUrl: screenshot,
-							});
-						});
-					}
-
-					return url.toString();
+					return applyModelStateToQueryParameter(
+						modelStateId,
+						updateUrl,
+					).toString();
 				});
 				promises.push(promise);
 			}

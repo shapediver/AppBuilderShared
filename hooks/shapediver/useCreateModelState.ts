@@ -133,10 +133,10 @@ export function useCreateModelState(props: Props) {
 	);
 
 	const applyModelStateToQueryParameter = useCallback(
-		(modelStateId: string) => {
+		(modelStateId: string, updateUrl: boolean = true) => {
 			const url = new URL(window.location.href);
 			url.searchParams.set(QUERYPARAM_MODELSTATEID, modelStateId);
-			window.history.replaceState({}, "", url.toString());
+			if (updateUrl) window.history.replaceState({}, "", url.toString());
 			return url;
 		},
 		[],
