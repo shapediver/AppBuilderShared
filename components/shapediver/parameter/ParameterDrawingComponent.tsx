@@ -173,7 +173,7 @@ export default function ParameterDrawingComponent(
 			setPointsData(parsed);
 			setParsedUiValue(parsed);
 		}
-	}, [definition]);
+	}, [JSON.stringify(definition)]);
 
 	// react to changes of the uiValue and update the drawing state if necessary
 	useEffect(() => {
