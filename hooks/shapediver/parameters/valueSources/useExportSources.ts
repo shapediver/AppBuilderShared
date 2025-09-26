@@ -98,7 +98,7 @@ export function useExportSources(props?: {
 								`${exportValueState.definition.id}_${exportValueState.definition.version}`,
 							{type: blob.type},
 						);
-						return url;
+						return file;
 					} else if (
 						response.content &&
 						response.content.length === 0 &&
