@@ -103,7 +103,7 @@ export function useGumball(
 		if (!gumballProps) return {};
 
 		const nameFilter: string[] = [];
-		nameFilter.concat(gumballProps.nameFilter ?? []);
+		nameFilter.push(...(gumballProps.nameFilter ?? []));
 		gumballProps.objects?.forEach((element) => {
 			nameFilter.push(element.nameFilter);
 		});

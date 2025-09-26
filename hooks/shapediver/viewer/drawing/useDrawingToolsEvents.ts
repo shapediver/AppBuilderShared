@@ -20,6 +20,7 @@ import {useContext, useEffect, useState} from "react";
  */
 export function useDrawingToolsEvents(
 	viewportId: string,
+	activate: boolean,
 	initialPointsData?: PointsData,
 ): {
 	/**
@@ -43,6 +44,8 @@ export function useDrawingToolsEvents(
 
 	// register an event handler and listen for updates
 	useEffect(() => {
+		if (!activate) return;
+
 		/**
 		 * Event handler for the minimum points event.
 		 * In this event handler, a notification is shown.
@@ -111,7 +114,7 @@ export function useDrawingToolsEvents(
 			removeListener(tokenDrawingToolsMaximumPoints);
 			removeListener(tokenDrawingToolsGeometryChanged);
 		};
-	}, []);
+	}, [activate]);
 
 	return {
 		pointsData,
