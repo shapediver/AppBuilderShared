@@ -1,12 +1,15 @@
 import {
 	IAppBuilderParameterValueSourceDefinition,
 	IAppBuilderParameterValueSourcePropsDataOutput,
+	IAppBuilderParameterValueSourcePropsModelState,
 	IAppBuilderParameterValueSourcePropsScreenshot,
 	isDataOutputSource,
+	isModelStateSource,
 	isScreenshotSource,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useEffect, useMemo, useRef, useState} from "react";
+import {useModelStateSource} from "./valueSources/useModelStateSource";
 import {useOutputDataSources} from "./valueSources/useOutputDataSources";
 import {useScreenshotSource} from "./valueSources/useScreenshotSource";
 
@@ -49,6 +52,12 @@ export function useParameterValueSources(props?: {
 			type: PARAMETER_TYPE;
 		}[]
 	>();
+	const [modelStateSources, setModelStateSources] = useState<
+		{
+			source: IAppBuilderParameterValueSourcePropsModelState;
+			type: PARAMETER_TYPE;
+		}[]
+	>();
 
 	// separate sources by type and call their respective hooks
 	useEffect(() => {
@@ -65,6 +74,10 @@ export function useParameterValueSources(props?: {
 			source: IAppBuilderParameterValueSourcePropsScreenshot;
 			type: PARAMETER_TYPE;
 		}[] = [];
+		const modelStateSources: {
+			source: IAppBuilderParameterValueSourcePropsModelState;
+			type: PARAMETER_TYPE;
+		}[] = [];
 
 		for (let i = 0; i < sources.length; i++) {
 			const {source, type} = sources[i];
@@ -78,6 +91,11 @@ export function useParameterValueSources(props?: {
 				type === PARAMETER_TYPE.FILE
 			) {
 				screenshotSources.push({source: source.props, type});
+			} else if (
+				isModelStateSource(source) &&
+				type === PARAMETER_TYPE.STRING
+			) {
+				modelStateSources.push({source: source.props, type});
 			}
 		}
 
@@ -86,6 +104,8 @@ export function useParameterValueSources(props?: {
 		setOutputDataSources(outputDataSources);
 		setScreenshotValues(undefined);
 		setScreenshotSources(screenshotSources);
+		setModelStateValues(undefined);
+		setModelStateSources(modelStateSources);
 	}, [sources]);
 
 	// get output values
@@ -98,6 +118,12 @@ export function useParameterValueSources(props?: {
 	const {screenshotValues, setScreenshotValues} = useScreenshotSource({
 		namespace,
 		sources: screenshotSources,
+	});
+
+	// get model state values
+	const {modelStateValues, setModelStateValues} = useModelStateSource({
+		namespace,
+		sources: modelStateSources,
 	});
 
 	// map output values to their source names
@@ -113,7 +139,10 @@ export function useParameterValueSources(props?: {
 				outputDataSources.length !== outputDataValues?.length) ||
 			!screenshotSources ||
 			(screenshotSources.length > 0 &&
-				screenshotSources.length !== screenshotValues?.length)
+				screenshotSources.length !== screenshotValues?.length) ||
+			!modelStateSources ||
+			(modelStateSources.length > 0 &&
+				modelStateSources.length !== modelStateValues?.length)
 		) {
 			return;
 		}
@@ -123,6 +152,7 @@ export function useParameterValueSources(props?: {
 		const sourceResults: unknown[] = [];
 		let outputIndex = 0;
 		let screenshotIndex = 0;
+		let modelStateIndex = 0;
 
 		for (let i = 0; i < sourcesRef.current.length; i++) {
 			const {source} = sourcesRef.current[i];
@@ -132,6 +162,9 @@ export function useParameterValueSources(props?: {
 			} else if (isScreenshotSource(source) && screenshotValues) {
 				sourceResults.push(screenshotValues[screenshotIndex]);
 				screenshotIndex++;
+			} else if (isModelStateSource(source) && modelStateValues) {
+				sourceResults.push(modelStateValues[modelStateIndex]);
+				modelStateIndex++;
 			} else {
 				sourceResults.push(undefined);
 			}
@@ -139,5 +172,5 @@ export function useParameterValueSources(props?: {
 
 		sourcesRef.current = undefined;
 		return sourceResults;
-	}, [outputDataValues, screenshotValues]);
+	}, [outputDataValues, screenshotValues, modelStateValues]);
 }
