@@ -1,6 +1,6 @@
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {Converter} from "@shapediver/viewer.session";
+import {Converter, PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {guessMissingMimeType} from "@shapediver/viewer.utils.mime-type";
 import {useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -8,7 +8,10 @@ import {useViewportId} from "../../viewer/useViewportId";
 
 export function useScreenshotSource(props?: {
 	namespace: string;
-	sources?: IAppBuilderParameterValueSourcePropsScreenshot[];
+	sources?: {
+		source: IAppBuilderParameterValueSourcePropsScreenshot;
+		type: PARAMETER_TYPE;
+	}[];
 }): {
 	screenshotValues: unknown[] | undefined;
 	setScreenshotValues: React.Dispatch<
@@ -16,7 +19,7 @@ export function useScreenshotSource(props?: {
 	>;
 } {
 	// default to empty values if no props are given
-	const {namespace, sources} = props ?? {
+	const {sources} = props ?? {
 		namespace: "",
 		sources: [],
 	};
@@ -40,8 +43,8 @@ export function useScreenshotSource(props?: {
 		if (getScreenshot && sources && sources.length > 0) {
 			const promises = [];
 			for (let i = 0; i < sources.length; i++) {
-				const source = sources[i];
-				const screenshot = getScreenshot().then((data) => {
+				const {source} = sources[i];
+				const screenshot = getScreenshot(source).then((data) => {
 					// create a file from the data string
 					const {blob} = Converter.instance.dataURLtoBlob(data);
 					const file = new File([blob], "screenshot.png", {

@@ -5,6 +5,7 @@ import {
 	isDataOutputSource,
 	isScreenshotSource,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
+import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {useOutputDataSources} from "./valueSources/useOutputDataSources";
 import {useScreenshotSource} from "./valueSources/useScreenshotSource";
@@ -17,7 +18,10 @@ import {useScreenshotSource} from "./valueSources/useScreenshotSource";
  */
 export function useParameterValueSources(props?: {
 	namespace: string;
-	sources: IAppBuilderParameterValueSourceDefinition[];
+	sources: {
+		source: IAppBuilderParameterValueSourceDefinition;
+		type: PARAMETER_TYPE;
+	}[];
 }): unknown[] | undefined {
 	// default to empty values if no props are given
 	// this avoids issues with useMemo and useOutputValueSources
@@ -26,13 +30,25 @@ export function useParameterValueSources(props?: {
 		sources: [],
 	};
 	const sourcesRef = useRef<
-		IAppBuilderParameterValueSourceDefinition[] | undefined
+		| {
+				source: IAppBuilderParameterValueSourceDefinition;
+				type: PARAMETER_TYPE;
+		  }[]
+		| undefined
 	>(sources);
 
-	const [outputDataSources, setOutputDataSources] =
-		useState<IAppBuilderParameterValueSourcePropsDataOutput[]>();
-	const [screenshotSources, setScreenshotSources] =
-		useState<IAppBuilderParameterValueSourcePropsScreenshot[]>();
+	const [outputDataSources, setOutputDataSources] = useState<
+		{
+			source: IAppBuilderParameterValueSourcePropsDataOutput;
+			type: PARAMETER_TYPE;
+		}[]
+	>();
+	const [screenshotSources, setScreenshotSources] = useState<
+		{
+			source: IAppBuilderParameterValueSourcePropsScreenshot;
+			type: PARAMETER_TYPE;
+		}[]
+	>();
 
 	// separate sources by type and call their respective hooks
 	useEffect(() => {
@@ -41,17 +57,27 @@ export function useParameterValueSources(props?: {
 			return;
 		}
 
-		const outputDataSources: IAppBuilderParameterValueSourcePropsDataOutput[] =
-			[];
-		const screenshotSources: IAppBuilderParameterValueSourcePropsScreenshot[] =
-			[];
+		const outputDataSources: {
+			source: IAppBuilderParameterValueSourcePropsDataOutput;
+			type: PARAMETER_TYPE;
+		}[] = [];
+		const screenshotSources: {
+			source: IAppBuilderParameterValueSourcePropsScreenshot;
+			type: PARAMETER_TYPE;
+		}[] = [];
 
 		for (let i = 0; i < sources.length; i++) {
-			const source = sources[i];
-			if (isDataOutputSource(source)) {
-				outputDataSources.push(source.props);
-			} else if (isScreenshotSource(source)) {
-				screenshotSources.push(source.props);
+			const {source, type} = sources[i];
+			if (
+				isDataOutputSource(source) &&
+				(type === PARAMETER_TYPE.STRING || type === PARAMETER_TYPE.FILE)
+			) {
+				outputDataSources.push({source: source.props, type});
+			} else if (
+				isScreenshotSource(source) &&
+				type === PARAMETER_TYPE.FILE
+			) {
+				screenshotSources.push({source: source.props, type});
 			}
 		}
 
@@ -99,7 +125,7 @@ export function useParameterValueSources(props?: {
 		let screenshotIndex = 0;
 
 		for (let i = 0; i < sourcesRef.current.length; i++) {
-			const source = sourcesRef.current[i];
+			const {source} = sourcesRef.current[i];
 			if (isDataOutputSource(source) && outputDataValues) {
 				sourceResults.push(outputDataValues[outputIndex]);
 				outputIndex++;

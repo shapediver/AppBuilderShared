@@ -1,5 +1,6 @@
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IAppBuilderParameterValueSourcePropsDataOutput} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useEffect, useState} from "react";
 
 /**
@@ -9,11 +10,14 @@ import {useEffect, useState} from "react";
  */
 export function useOutputDataSources(props: {
 	namespace: string;
-	sources?: IAppBuilderParameterValueSourcePropsDataOutput[];
+	sources?: {
+		source: IAppBuilderParameterValueSourcePropsDataOutput;
+		type: PARAMETER_TYPE;
+	}[];
 }): {
-	outputDataValues: (string | undefined)[] | undefined;
+	outputDataValues: (string | File | undefined)[] | undefined;
 	setOutputDataValues: React.Dispatch<
-		React.SetStateAction<(string | undefined)[] | undefined>
+		React.SetStateAction<(string | File | undefined)[] | undefined>
 	>;
 } {
 	const {namespace, sources} = props;
@@ -23,16 +27,16 @@ export function useOutputDataSources(props: {
 	});
 
 	const [outputDataValues, setOutputDataValues] = useState<
-		(string | undefined)[] | undefined
+		(string | File | undefined)[] | undefined
 	>(undefined);
 
 	useEffect(() => {
 		if (!session || !sources) return;
 
-		const outputValues: (string | undefined)[] = [];
+		const outputValues: (string | File | undefined)[] = [];
 
 		for (let i = 0; i < sources.length; i++) {
-			const source = sources[i];
+			const {source, type} = sources[i];
 
 			const output = Object.values(session.outputs).find(
 				(o) =>
@@ -52,7 +56,22 @@ export function useOutputDataSources(props: {
 				);
 				outputValues.push(undefined);
 			} else {
-				outputValues.push(JSON.stringify(output.content));
+				if (type === PARAMETER_TYPE.STRING) {
+					outputValues.push(JSON.stringify(output.content));
+				} else if (type === PARAMETER_TYPE.FILE) {
+					// create a blob url for the output content
+					const blob = new Blob([JSON.stringify(output.content)], {
+						type: "application/json",
+					});
+					const file = new File(
+						[blob],
+						`${output.id}_${output.version}.json`,
+						{
+							type: blob.type,
+						},
+					);
+					outputValues.push(file);
+				}
 			}
 		}
 
