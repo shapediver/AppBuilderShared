@@ -28,6 +28,7 @@ export function useOutputDataSources(props: {
 		(string | File | undefined)[] | undefined
 	>(undefined);
 
+	// create output map from sources
 	const outputMap: PropsOutput[] = useMemo(() => {
 		if (!sources) return [];
 		return sources
@@ -41,8 +42,10 @@ export function useOutputDataSources(props: {
 			.filter((o) => o.outputId);
 	}, [namespace, sources]);
 
+	// get all outputs
 	const outputs: (IShapeDiverOutput | undefined)[] = useOutputs(outputMap);
 
+	// create a combined array of outputs and their types
 	const outputResults:
 		| {
 				output: IShapeDiverOutput | undefined;
@@ -56,6 +59,7 @@ export function useOutputDataSources(props: {
 		}));
 	}, [outputs, sources]);
 
+	// load all outputs
 	useEffect(() => {
 		if (!outputResults || outputResults.length === 0) return;
 
