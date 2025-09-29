@@ -13,6 +13,7 @@ import {
 } from "@shapediver/viewer.session";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**
  * Helper for comparing sessions.
@@ -408,6 +409,7 @@ const assignSessionUpdateCallback = (
  * @param outputUpdateCallbacks
  */
 const assignOutputUpdateCallback = (
+	sessionApi: ISessionApi,
 	outputApi: IOutputApi,
 	outputUpdateCallbacks: {
 		// callback id
@@ -420,6 +422,30 @@ const assignOutputUpdateCallback = (
 				cb(newNode, oldNode),
 			),
 		);
+
+		// Then, automatically sync with parameter store
+		// This ensures output content is always up-to-date
+		try {
+			const parameterStore = useShapeDiverStoreParameters.getState();
+			const outputStore = parameterStore.getOutput(
+				sessionApi.id,
+				outputApi.id,
+			);
+			if (outputStore) {
+				outputStore.setState(
+					() => ({
+						content: outputApi.content,
+					}),
+					false,
+				);
+			}
+		} catch (error) {
+			// Silent fail to avoid breaking existing functionality
+			console.warn(
+				`Failed to sync output ${outputApi.id} for session ${sessionApi.id}:`,
+				error,
+			);
+		}
 	};
 };
 
@@ -611,6 +637,7 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 			return;
 
 		assignOutputUpdateCallback(
+			session,
 			output,
 			state.outputUpdateCallbacks[sessionId][outputId],
 		);
@@ -631,9 +658,16 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 		// for all outputs, call the output update callback once
 		for (const outputId in session.outputs) {
 			const output = session.outputs[outputId];
-			if (!output.updateCallback) continue;
+			const callbacks =
+				state.outputUpdateCallbacks[session.id]?.[outputId] || {};
 
-			output.updateCallback(output.node, undefined);
+			// Always assign callback for parameter store sync
+			assignOutputUpdateCallback(session, output, callbacks);
+
+			// Call the callback once if it exists
+			if (output.updateCallback) {
+				output.updateCallback(output.node, undefined);
+			}
 		}
 	});
 });
