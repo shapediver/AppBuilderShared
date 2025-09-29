@@ -68,8 +68,6 @@ export function useSdtfSources(props?: {
 					);
 					promises.push(Promise.resolve(undefined));
 				} else {
-					console.log("sdtfOutput", sdtfOutput);
-
 					if (
 						sdtfOutput.content &&
 						sdtfOutput.content[0] &&
@@ -89,25 +87,20 @@ export function useSdtfSources(props?: {
 								const sdtfResponse: ResStypeParameter = {
 									asset: {
 										id: response[0].id,
-										chunk: chunk,
 									},
 								};
 
-								// create a file json object from the sdtfResponse
-								const file = new File(
-									[JSON.stringify(sdtfResponse)],
-									`${sdtfOutput.id}_${sdtfOutput.version}.json`,
-									{type: "application/json"},
-								);
+								if (chunk !== undefined) {
+									sdtfResponse.asset!.chunk = chunk;
+								}
 
-								return file;
+								return JSON.stringify(sdtfResponse, null, 2);
 							});
 
 						promises.push(file);
 					} else {
 						promises.push(undefined);
 					}
-					promises.push(undefined);
 				}
 			}
 		}
