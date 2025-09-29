@@ -1,7 +1,9 @@
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {IAppBuilderParameterValueSourcePropsDataOutput} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IShapeDiverOutput} from "@AppBuilderShared/types/shapediver/output";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
+import {useOutputs} from "../useOutputs";
 
 /**
  * Hook to load an array of output value sources and return their values mapped by source name.
@@ -22,44 +24,49 @@ export function useOutputDataSources(props: {
 } {
 	const {namespace, sources} = props;
 
-	const sessions = useShapeDiverStoreSession((state) => {
-		return state.sessions;
-	});
-
 	const [outputDataValues, setOutputDataValues] = useState<
 		(string | File | undefined)[] | undefined
 	>(undefined);
 
+	const outputMap: PropsOutput[] = useMemo(() => {
+		if (!sources) return [];
+		return sources
+			.map(({source}) => {
+				const {sessionId, name} = source;
+				return {
+					namespace: sessionId || namespace,
+					outputId: name,
+				};
+			})
+			.filter((o) => o.outputId);
+	}, [namespace, sources]);
+
+	const outputs: (IShapeDiverOutput | undefined)[] = useOutputs(outputMap);
+
+	const outputResults:
+		| {
+				output: IShapeDiverOutput | undefined;
+				type: PARAMETER_TYPE;
+		  }[]
+		| undefined = useMemo(() => {
+		if (!outputs || !sources) return undefined;
+		return outputs.map((output, index) => ({
+			output,
+			type: sources[index]?.type,
+		}));
+	}, [outputs, sources]);
+
 	useEffect(() => {
-		if (!sessions || !sources) return;
+		if (!outputResults || outputResults.length === 0) return;
 
 		const outputValues: (string | File | undefined)[] = [];
-
-		for (let i = 0; i < sources.length; i++) {
-			const {source, type} = sources[i];
-			const {sessionId, name} = source;
-			const session = sessions[sessionId || namespace];
-			if (!session) {
-				console.warn(
-					`Session with id ${sessionId || namespace} not found`,
-				);
-				outputValues.push(undefined);
-				continue;
-			}
-
-			const output = Object.values(session.outputs).find(
-				(o) =>
-					o.displayname === name || o.name === name || o.id === name,
-			);
-
+		for (let i = 0; i < outputResults.length; i++) {
+			const {output, type} = outputResults[i];
 			if (!output) {
-				console.warn(
-					`Output with name ${name} not found in session ${namespace}`,
-				);
 				outputValues.push(undefined);
 			} else if (output.content === undefined) {
 				console.warn(
-					`Output with name ${name} has no content in session ${namespace}`,
+					`Output with id ${output.definition.id} has no content`,
 				);
 				outputValues.push(undefined);
 			} else {
@@ -72,7 +79,7 @@ export function useOutputDataSources(props: {
 					});
 					const file = new File(
 						[blob],
-						`${output.id}_${output.version}.json`,
+						`${output.definition.id}_${output.definition.version}.json`,
 						{
 							type: blob.type,
 						},
@@ -81,9 +88,8 @@ export function useOutputDataSources(props: {
 				}
 			}
 		}
-
 		setOutputDataValues(outputValues);
-	}, [sources, namespace, sessions]);
+	}, [outputResults]);
 
 	return {
 		outputDataValues,
