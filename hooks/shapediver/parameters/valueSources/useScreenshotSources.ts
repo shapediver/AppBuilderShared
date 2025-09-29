@@ -6,7 +6,7 @@ import {useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useViewportId} from "../../viewer/useViewportId";
 
-export function useScreenshotSources(props?: {
+export function useScreenshotSources(props: {
 	namespace: string;
 	sources?: {
 		source: IAppBuilderParameterValueSourcePropsScreenshot;
@@ -18,11 +18,7 @@ export function useScreenshotSources(props?: {
 		React.SetStateAction<unknown[] | undefined>
 	>;
 } {
-	// default to empty values if no props are given
-	const {sources} = props ?? {
-		namespace: "",
-		sources: [],
-	};
+	const {sources} = props;
 
 	const [screenshotValues, setScreenshotValues] = useState<
 		unknown[] | undefined

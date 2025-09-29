@@ -1,13 +1,16 @@
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {IAppBuilderParameterValueSourcePropsSdtf} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IShapeDiverOutput} from "@AppBuilderShared/types/shapediver/output";
 import {
 	ResAssetDefinition,
 	ResStypeParameter,
 } from "@shapediver/sdk.geometry-api-sdk-v2";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
+import {useOutputs} from "../useOutputs";
 
-export function useSdtfSources(props?: {
+export function useSdtfSources(props: {
 	namespace: string;
 	sources?: {
 		source: IAppBuilderParameterValueSourcePropsSdtf;
@@ -19,62 +22,82 @@ export function useSdtfSources(props?: {
 		React.SetStateAction<(string | File | undefined)[] | undefined>
 	>;
 } {
-	// default to empty values if no props are given
-	const {namespace, sources} = props ?? {
-		namespace: "",
-		sources: [],
-	};
-
-	const sessions = useShapeDiverStoreSession((state) => {
-		return state.sessions;
-	});
+	const {namespace, sources} = props;
 
 	const [sdtfValues, setSdtfValues] = useState<
 		(string | File | undefined)[] | undefined
 	>(undefined);
 
+	const session = useShapeDiverStoreSession(
+		(state) => state.sessions[namespace],
+	);
+
+	// create output map from sources
+	const outputMap: PropsOutput[] = useMemo(() => {
+		if (!sources) return [];
+		return sources
+			.map(({source}) => {
+				const {sessionId, name} = source;
+				return {
+					namespace: sessionId || namespace,
+					outputId: name,
+				};
+			})
+			.filter((o) => o.outputId);
+	}, [namespace, sources]);
+
+	// get all outputs
+	const outputs: (IShapeDiverOutput | undefined)[] = useOutputs(outputMap);
+
+	// create a combined array of outputs and their types
+	const outputResults:
+		| {
+				output: IShapeDiverOutput | undefined;
+				source: IAppBuilderParameterValueSourcePropsSdtf | undefined;
+		  }[]
+		| undefined = useMemo(() => {
+		if (!outputs || !sources) return undefined;
+		return outputs.map((output, index) => ({
+			output,
+			source: sources[index]?.source,
+		}));
+	}, [outputs, sources]);
+
+	// load all outputs
+	// and only set the return values once all are loaded
+	// to avoid multiple re-renders
 	useEffect(() => {
-		if (!sessions || !sources) return;
+		if (!outputResults || outputResults.length === 0) return;
 
 		const promises = [];
 
-		for (let i = 0; i < sources.length; i++) {
-			const {source} = sources[i];
-			const {sessionId, name, chunk} = source;
-
-			const session = sessions[sessionId || namespace];
-			if (!session) {
-				console.warn(
-					`Session with id ${sessionId || namespace} not found`,
-				);
+		for (let i = 0; i < outputResults.length; i++) {
+			const {output, source} = outputResults[i];
+			if (!source) {
 				promises.push(Promise.resolve(undefined));
 				continue;
 			}
 
-			const sdtfOutput = Object.values(session.outputs).find(
-				(o) =>
-					o.displayname === name || o.name === name || o.id === name,
-			);
-			if (!sdtfOutput) {
-				console.warn(
-					`sdTF output with name ${name} not found in session ${namespace}`,
-				);
+			const {name, chunk} = source;
+
+			if (!output) {
+				console.warn(`sdTF output with name ${name} not found. `);
 				promises.push(Promise.resolve(undefined));
 			} else {
 				// we found the sdTF output, now we have to upload it
-				if (sdtfOutput.content === undefined) {
+				if (output.content === undefined) {
 					console.warn(
-						`sdTF output with name ${name} has no content in session ${namespace}`,
+						`sdTF output with name ${name} has no content.`,
 					);
 					promises.push(Promise.resolve(undefined));
 				} else {
 					if (
-						sdtfOutput.content &&
-						sdtfOutput.content[0] &&
-						sdtfOutput.content[0].href
+						output.content &&
+						output.content[0] &&
+						output.content[0].href
 					) {
 						// download the href and create an arrayBuffer
-						const response = sdtfOutput.content[0];
+						const response = output.content[0];
 						const url = response.href!;
 						const file = fetch(url)
 							.then((r) => r.arrayBuffer())
@@ -108,7 +131,7 @@ export function useSdtfSources(props?: {
 		Promise.all(promises).then((res) => {
 			setSdtfValues(res);
 		});
-	}, [sessions, sources]);
+	}, [outputResults, session]);
 
 	return {sdtfValues, setSdtfValues};
 }

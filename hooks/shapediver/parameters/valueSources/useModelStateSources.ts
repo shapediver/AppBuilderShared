@@ -15,11 +15,7 @@ export function useModelStateSources(props: {
 		React.SetStateAction<(string | undefined)[] | undefined>
 	>;
 } {
-	// default to empty values if no props are given
-	const {namespace, sources} = props ?? {
-		namespace: "",
-		sources: [],
-	};
+	const {namespace, sources} = props;
 
 	const {createModelState, applyModelStateToQueryParameter} =
 		useCreateModelState({namespace});
