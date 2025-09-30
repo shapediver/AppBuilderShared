@@ -95,7 +95,7 @@ export function useOutputDataSources(props: {
 			}
 		}
 		setOutputDataValues(outputValues);
-	}, [outputResults]);
+	}, [JSON.stringify(outputResults)]);
 
 	return {
 		outputDataValues,

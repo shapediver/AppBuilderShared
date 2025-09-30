@@ -182,16 +182,16 @@ export function useParameterValueSources(props?: {
 		sources: sourcesByType?.export,
 	});
 
-	// map output values to their source names
-	// and create an array of results in the same order as sources
-	return useMemo(() => {
+	// check if all values are loaded
+	// if one of the values is not loaded, we return undefined
+	// this avoids returning partial results
+	const loadedValues = useMemo(() => {
 		if (!sourcesRef.current) return;
-
 		// check if sourcesByType is defined
 		if (!sourcesByType) return;
 
 		// gather all loaded values
-		const loadedValues = {
+		const currentlyLoadedValues = {
 			outputData: outputDataValues,
 			screenshot: screenshotValues,
 			modelState: modelStateValues,
@@ -199,21 +199,36 @@ export function useParameterValueSources(props?: {
 			export: exportValues,
 		};
 
-		// first, we need to check if ALL sources have been loaded
-		// we cannot return partial results
-		if (!loadedValues) return;
-
 		// check for each value if it is loaded
 		// the number of values must match the number of sources for each type
 		// if one of them is not loaded, we return undefined
-		for (const key in loadedValues) {
-			const typedKey = key as keyof typeof loadedValues;
-			const value = loadedValues[typedKey];
+		for (const key in currentlyLoadedValues) {
+			const typedKey = key as keyof typeof currentlyLoadedValues;
+			const value = currentlyLoadedValues[typedKey];
 			const source = sourcesByType[typedKey];
 			// if the number of values does not match the number of sources, we are not loaded
 			if (source && source.length > 0 && source.length !== value?.length)
 				return;
 		}
+
+		return currentlyLoadedValues;
+	}, [
+		sourcesByType,
+		outputDataValues,
+		screenshotValues,
+		modelStateValues,
+		sdtfValues,
+		exportValues,
+	]);
+
+	// map output values to their source names
+	// and create an array of results in the same order as sources
+	return useMemo(() => {
+		if (!sourcesRef.current) return;
+
+		// first, we need to check if ALL sources have been loaded
+		// we cannot return partial results
+		if (!loadedValues) return;
 
 		// here we also add other source types
 		// so that we can return them all together
@@ -249,11 +264,5 @@ export function useParameterValueSources(props?: {
 
 		sourcesRef.current = undefined;
 		return sourceResults;
-	}, [
-		outputDataValues,
-		screenshotValues,
-		modelStateValues,
-		sdtfValues,
-		exportValues,
-	]);
+	}, [loadedValues]);
 }
