@@ -1266,6 +1266,19 @@ export function isOutputRefControl(control: IAppBuilderControl): control is {
 	return control.type === "output";
 }
 
+/** assert parameter source */
+export function isParameterSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is IAppBuilderParameterValueSourceDefinition {
+	return (
+		isDataOutputSource(source) ||
+		isExportSource(source) ||
+		isSdtfSource(source) ||
+		isModelStateSource(source) ||
+		isScreenshotSource(source)
+	);
+}
+
 /** assert source type "dataOutput" */
 export function isDataOutputSource(
 	source: IAppBuilderParameterValueSourceDefinition,

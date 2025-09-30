@@ -5,6 +5,9 @@ import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverSt
 import {
 	IAppBuilder,
 	IAppBuilderInstanceDefinition,
+	IAppBuilderParameterValueSourceDefinition,
+	isDataOutputSource,
+	isParameterSource,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Mat4Array} from "@AppBuilderShared/types/shapediver/common";
 import {IParameterStore} from "@AppBuilderShared/types/store/shapediverStoreParameters";
@@ -13,12 +16,14 @@ import {ResOutput, ResOutputContent} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	ISessionApi,
 	ITreeNode,
+	PARAMETER_TYPE,
 	SessionOutputData,
 	TreeNode,
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {useParameterValueSources} from "../parameters/useParameterValueSources";
 
 interface Props {
 	namespace: string;
@@ -61,12 +66,8 @@ export function useAppBuilderInstances(props: Props) {
 		processManagerId: sessionProcessManagerId,
 	} = props;
 
-	const {
-		sessions,
-		pendingSessions,
-		addSessionUpdateCallback,
-		createPendingSession,
-	} = useShapeDiverStoreSession();
+	const {sessions, addSessionUpdateCallback, createPendingSession} =
+		useShapeDiverStoreSession();
 	const {addProcess, createProcessManager, processManagers} =
 		useShapeDiverStoreProcessManager();
 	const {
@@ -85,7 +86,7 @@ export function useAppBuilderInstances(props: Props) {
 			})),
 		);
 
-	const [instances, setInstances] = useState<{
+	const [instanceNodes, setInstanceNodes] = useState<{
 		[key: string]: ITreeNode;
 	}>({});
 
@@ -93,6 +94,7 @@ export function useAppBuilderInstances(props: Props) {
 	const instancesRef = useRef<{
 		[key: string]: ITreeNode;
 	}>({});
+	const sessionsRef = useRef(sessions);
 	const sessionNodeRef = useRef<ITreeNode | undefined>(undefined);
 	const sessionProcessManagerIdRef = useRef(sessionProcessManagerId);
 	const processManagersRef = useRef(processManagers);
@@ -109,42 +111,45 @@ export function useAppBuilderInstances(props: Props) {
 		customizationResultInStoreRef.current = customizationResults;
 	}, [customizationResults]);
 
+	useEffect(() => {
+		sessionsRef.current = sessions;
+	}, [sessions]);
+
 	// store for the parsed app builder instances
-	const [appBuilderInstances, setAppBuilderInstances] = useState<
+	const [parsedAppBuilderInstances, setParsedAppBuilderInstances] = useState<
 		IParsedInstanceDefinition[]
 	>([]);
+	const [pendingSources, setPendingSources] = useState<{
+		namespace: string;
+		sources: {
+			source: IAppBuilderParameterValueSourceDefinition;
+			type: PARAMETER_TYPE;
+		}[];
+	}>();
+	const [pendingSourcesInformation, setPendingSourcesInformation] = useState<
+		| {
+				sourceMap: {
+					[key: string]: number;
+				};
+				instances?: IAppBuilderInstanceDefinition[];
+		  }
+		| undefined
+	>();
 
-	/**
-	 * Parse the app builder data.
-	 * Gather all the necessary information to create the instances.
-	 */
-	useEffect(() => {
+	const instances = useMemo(() => {
 		if (!appBuilderData) {
-			setAppBuilderInstances([]);
+			setParsedAppBuilderInstances([]);
 			return;
 		}
-		const instances = appBuilderData.instances ?? [];
+		return appBuilderData.instances;
+	}, [appBuilderData]);
 
-		const parsedInstances: IParsedInstanceDefinition[] = [];
+	const createParsedInstances = useCallback(
+		(instances: IAppBuilderInstanceDefinition[]) => {
+			const parsedInstances: IParsedInstanceDefinition[] = [];
 
-		const sessionApiPromises: Promise<ISessionApi | undefined>[] = [];
-
-		instances.forEach((instance) => {
-			const session = sessions[instance.sessionId];
-
-			if (!session) {
-				// check if there are sessions that were not created yet
-				sessionApiPromises.push(
-					createPendingSession(instance.sessionId),
-				);
-			} else {
-				sessionApiPromises.push(Promise.resolve(session));
-			}
-		});
-
-		Promise.all(sessionApiPromises).then((sessionApis) => {
 			instances.forEach((instance, index) => {
-				const session = sessionApis[index];
+				const session = sessionsRef.current[instance.sessionId];
 				if (!session) return;
 
 				const parameterValuesWithIds: {[key: string]: string} = {};
@@ -184,9 +189,142 @@ export function useAppBuilderInstances(props: Props) {
 					outputActions: instance.outputActions,
 				});
 			});
-			setAppBuilderInstances(parsedInstances);
+			setParsedAppBuilderInstances(parsedInstances);
+		},
+		[],
+	);
+
+	const resolvedParameterValueSources =
+		useParameterValueSources(pendingSources);
+
+	// once the pending sources are loaded, we can create the instances
+	useEffect(() => {
+		if (!pendingSources || !resolvedParameterValueSources) return;
+		if (!pendingSourcesInformation) return;
+		const {sourceMap, instances} = pendingSourcesInformation;
+		if (!instances) return;
+
+		const instancesCopy = [...instances];
+		instancesCopy.forEach((instance) => {
+			Object.entries(sourceMap ?? {}).forEach(([key, value]) => {
+				if (sourceMap[key] !== undefined) {
+					const resolvedValue = resolvedParameterValueSources[value];
+
+					if (!instance.parameterValues)
+						instance.parameterValues = {};
+
+					if (resolvedValue !== undefined) {
+						instance.parameterValues[key] = resolvedValue + "";
+					} else {
+						instance.parameterValues[key] = "";
+						console.warn(
+							`Could not resolve parameter value source for parameter ${key} in instance ${instance.name}. Setting value to empty string.`,
+						);
+					}
+				}
+			});
 		});
-	}, [appBuilderData, sessions]);
+
+		createParsedInstances(instancesCopy);
+		setPendingSources(undefined);
+		setPendingSourcesInformation(undefined);
+	}, [
+		pendingSourcesInformation,
+		resolvedParameterValueSources,
+		pendingSources,
+		createParsedInstances,
+	]);
+
+	useEffect(() => {
+		if (!instances) return;
+
+		instances.forEach((instance) => {
+			const session = sessionsRef.current[instance.sessionId];
+
+			if (!session)
+				// check if there are sessions that were not created yet
+				createPendingSession(instance.sessionId);
+		});
+	}, [instances]);
+
+	/**
+	 * Parse the app builder data.
+	 * Gather all the necessary information to create the instances.
+	 */
+	useEffect(() => {
+		if (!instances) return;
+
+		const missingSession = instances.find((instance) => {
+			const session = sessions[instance.sessionId];
+			return !session;
+		});
+		if (missingSession) return;
+
+		// check if there are parameter value sources that need to be loaded first
+		const sourcesToLoad: {
+			[key: string]: {
+				source: IAppBuilderParameterValueSourceDefinition;
+				type: PARAMETER_TYPE;
+			}[];
+		} = {};
+
+		instances.forEach((instance) => {
+			Object.entries(instance.parameterValues ?? {}).forEach(
+				([key, value]) => {
+					if (
+						typeof value === "object" &&
+						isParameterSource(value) &&
+						isDataOutputSource(value) // we only support data output sources for parameter value sources
+					) {
+						if (!sourcesToLoad[key]) sourcesToLoad[key] = [];
+						sourcesToLoad[key].push({
+							source: value,
+							type: PARAMETER_TYPE.STRING, // we currently only support string parameters as sources for instances
+						});
+					}
+				},
+			);
+		});
+
+		if (Object.keys(sourcesToLoad).length > 0) {
+			const pendingSources: {
+				source: IAppBuilderParameterValueSourceDefinition;
+				type: PARAMETER_TYPE;
+			}[] = [];
+			const sourceMap: {
+				[key: string]: number;
+			} = {};
+			// we now go through all sources that need to be loaded and add them to the pending sources
+			// if a source is used multiple times, we add it only once and store the indices
+			Object.entries(sourcesToLoad).forEach(([key, sources]) => {
+				sources.forEach((source) => {
+					const index = pendingSources.findIndex(
+						(s) =>
+							JSON.stringify(s.source) ===
+							JSON.stringify(source.source),
+					);
+					if (index === -1) {
+						pendingSources.push({
+							source: source.source,
+							type: source.type,
+						});
+					}
+					sourceMap[key] = index;
+				});
+			});
+
+			setPendingSources({
+				namespace,
+				sources: pendingSources,
+			});
+			setPendingSourcesInformation({
+				sourceMap,
+				instances,
+			});
+		} else {
+			createParsedInstances(instances);
+		}
+	}, [instances, sessions]);
 
 	const sessionUpdateCallback = useCallback((newNode?: ITreeNode) => {
 		sessionNodeRef.current = newNode;
@@ -204,18 +342,18 @@ export function useAppBuilderInstances(props: Props) {
 	}, []);
 
 	useEffect(() => {
-		for (const instanceId in instances) {
-			addInstance(instanceId, instances[instanceId]);
+		for (const instanceId in instanceNodes) {
+			addInstance(instanceId, instanceNodes[instanceId]);
 		}
 
-		instancesRef.current = instances;
+		instancesRef.current = instanceNodes;
 
 		return () => {
-			for (const instanceId in instances) {
+			for (const instanceId in instanceNodes) {
 				removeInstance(instanceId);
 			}
 		};
-	}, [instances]);
+	}, [instanceNodes]);
 
 	useEffect(() => {
 		const removeSessionUpdateCallback = addSessionUpdateCallback(
@@ -264,7 +402,7 @@ export function useAppBuilderInstances(props: Props) {
 		} = {};
 		const promises: Promise<void>[] = [];
 
-		appBuilderInstances.forEach((instance) => {
+		parsedAppBuilderInstances.forEach((instance) => {
 			const promise = createInstance(
 				instance,
 				customizationResultPromise,
@@ -297,7 +435,7 @@ export function useAppBuilderInstances(props: Props) {
 					sessionNodeRef.current,
 				);
 
-				setInstances(
+				setInstanceNodes(
 					Object.entries(newInstances).reduce(
 						(acc, [key, cur]) => {
 							acc[key] = cur.node;
@@ -334,9 +472,9 @@ export function useAppBuilderInstances(props: Props) {
 					}
 				});
 			}
-			setInstances({});
+			setInstanceNodes({});
 		};
-	}, [appBuilderInstances, namespace]);
+	}, [parsedAppBuilderInstances, namespace]);
 }
 
 /**

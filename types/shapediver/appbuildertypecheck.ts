@@ -955,7 +955,13 @@ const IAppBuilderInstancesSchema = z.object({
 	sessionId: z.string(),
 	name: z.string().optional(),
 	parameterValues: z
-		.record(z.string().or(z.number()).or(z.boolean()))
+		.record(
+			z
+				.string()
+				.or(z.number())
+				.or(z.boolean())
+				.or(IAppBuilderParameterValueSourceDefinitionSchema),
+		)
 		.optional(),
 	transformations: z.array(z.array(z.number())).optional(),
 	outputActions: z

@@ -84,12 +84,17 @@ export function useOutputDataSources(props: {
 				outputValues.push(undefined);
 			} else {
 				if (type === PARAMETER_TYPE.STRING) {
-					outputValues.push(JSON.stringify(output.content));
+					outputValues.push(
+						JSON.stringify({content: output.content}),
+					);
 				} else if (type === PARAMETER_TYPE.FILE) {
 					// create a blob url for the output content
-					const blob = new Blob([JSON.stringify(output.content)], {
-						type: "application/json",
-					});
+					const blob = new Blob(
+						[JSON.stringify({content: output.content})],
+						{
+							type: "application/json",
+						},
+					);
 					const file = new File(
 						[blob],
 						`${output.definition.id}_${output.definition.version}.json`,
