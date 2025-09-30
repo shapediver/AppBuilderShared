@@ -38,12 +38,14 @@ export function useSdtfSources(props: {
 		return sources
 			.map(({source}) => {
 				const {sessionId, name} = source;
+				if (!namespace && !sessionId) return;
+
 				return {
 					namespace: sessionId || namespace,
 					outputId: name,
 				};
 			})
-			.filter((o) => o.outputId);
+			.filter((e): e is PropsOutput => !!e);
 	}, [namespace, sources]);
 
 	// get all outputs

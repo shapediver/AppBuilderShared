@@ -30,12 +30,14 @@ export function useExportSources(props: {
 		return sources
 			.map(({source}) => {
 				const {sessionId, name} = source;
+				if (!namespace && !sessionId) return;
+
 				return {
 					namespace: sessionId || namespace,
 					exportId: name,
 				};
 			})
-			.filter((o) => o.exportId);
+			.filter((e): e is PropsExport => !!e);
 	}, [namespace, sources]);
 
 	// get all exports
