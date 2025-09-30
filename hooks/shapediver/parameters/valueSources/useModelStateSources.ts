@@ -55,9 +55,8 @@ export function useModelStateSources(props: {
 					includeImage,
 					undefined,
 					includeGltf,
-				).then((modelState) => {
-					const modelStateId = modelState?.modelStateId;
-					if (!modelStateId) return undefined;
+				).then(({modelStateId}) => {
+					if (!modelStateId) return;
 					return applyModelStateToQueryParameter(
 						modelStateId,
 						updateUrl,

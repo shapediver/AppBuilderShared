@@ -72,7 +72,7 @@ export function useCreateModelState(props: Props) {
 			data?: Record<string, any>,
 			includeGltf?: boolean,
 		) => {
-			if (!sessionApi) return;
+			if (!sessionApi) return {};
 			const parameterValues = Object.values(sessionApi.parameters)
 				.filter(
 					(p) =>
