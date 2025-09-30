@@ -46,35 +46,30 @@ export function useParameterValueSources(props?: {
 		| undefined
 	>(sources);
 
-	const [outputDataSources, setOutputDataSources] = useState<
-		{
-			source: IAppBuilderParameterValueSourcePropsDataOutput;
-			type: PARAMETER_TYPE;
-		}[]
-	>();
-	const [screenshotSources, setScreenshotSources] = useState<
-		{
-			source: IAppBuilderParameterValueSourcePropsScreenshot;
-			type: PARAMETER_TYPE;
-		}[]
-	>();
-	const [modelStateSources, setModelStateSources] = useState<
-		{
-			source: IAppBuilderParameterValueSourcePropsModelState;
-			type: PARAMETER_TYPE;
-		}[]
-	>();
-	const [sdtfSources, setSdtfSources] = useState<
-		{
-			source: IAppBuilderParameterValueSourcePropsSdtf;
-			type: PARAMETER_TYPE;
-		}[]
-	>();
-	const [exportSources, setExportSources] = useState<
-		{
-			source: IAppBuilderParameterValueSourcePropsExport;
-			type: PARAMETER_TYPE;
-		}[]
+	const [sourcesByType, setSourcesByType] = useState<
+		| {
+				outputData: {
+					source: IAppBuilderParameterValueSourcePropsDataOutput;
+					type: PARAMETER_TYPE;
+				}[];
+				screenshot: {
+					source: IAppBuilderParameterValueSourcePropsScreenshot;
+					type: PARAMETER_TYPE;
+				}[];
+				modelState: {
+					source: IAppBuilderParameterValueSourcePropsModelState;
+					type: PARAMETER_TYPE;
+				}[];
+				sdtf: {
+					source: IAppBuilderParameterValueSourcePropsSdtf;
+					type: PARAMETER_TYPE;
+				}[];
+				export: {
+					source: IAppBuilderParameterValueSourcePropsExport;
+					type: PARAMETER_TYPE;
+				}[];
+		  }
+		| undefined
 	>();
 
 	// separate sources by type and call their respective hooks
@@ -83,6 +78,8 @@ export function useParameterValueSources(props?: {
 			sourcesRef.current = undefined;
 			return;
 		}
+
+		const approvedSources = [];
 
 		const outputDataSources: {
 			source: IAppBuilderParameterValueSourcePropsDataOutput;
@@ -107,70 +104,101 @@ export function useParameterValueSources(props?: {
 
 		for (let i = 0; i < sources.length; i++) {
 			const {source, type} = sources[i];
-			console.log(source, type);
-			if (
-				isDataOutputSource(source) &&
-				(type === PARAMETER_TYPE.STRING || type === PARAMETER_TYPE.FILE)
-			) {
-				outputDataSources.push({source: source.props, type});
-			} else if (
-				isScreenshotSource(source) &&
-				type === PARAMETER_TYPE.FILE
-			) {
-				screenshotSources.push({source: source.props, type});
-			} else if (
-				isModelStateSource(source) &&
-				type === PARAMETER_TYPE.STRING
-			) {
-				modelStateSources.push({source: source.props, type});
-			} else if (isSdtfSource(source) && type.startsWith("s")) {
-				sdTFSources.push({source: source.props, type});
-			} else if (isExportSource(source) && type === PARAMETER_TYPE.FILE) {
-				exportSources.push({source: source.props, type});
+			if (isDataOutputSource(source)) {
+				if (
+					type === PARAMETER_TYPE.STRING ||
+					type === PARAMETER_TYPE.FILE
+				) {
+					outputDataSources.push({source: source.props, type});
+					approvedSources.push(sources[i]);
+				} else {
+					console.warn(
+						`Data output source parameter has invalid type ${type}. Only STRING and FILE are supported.`,
+					);
+				}
+			} else if (isScreenshotSource(source)) {
+				if (type === PARAMETER_TYPE.FILE) {
+					screenshotSources.push({source: source.props, type});
+					approvedSources.push(sources[i]);
+				} else {
+					console.warn(
+						`Screenshot source parameter has invalid type ${type}. Only FILE is supported.`,
+					);
+				}
+			} else if (isModelStateSource(source)) {
+				if (type === PARAMETER_TYPE.STRING) {
+					modelStateSources.push({source: source.props, type});
+					approvedSources.push(sources[i]);
+				} else {
+					console.warn(
+						`Model state source parameter has invalid type ${type}. Only STRING is supported.`,
+					);
+				}
+			} else if (isSdtfSource(source)) {
+				if (type.startsWith("s")) {
+					sdTFSources.push({source: source.props, type});
+					approvedSources.push(sources[i]);
+				} else {
+					console.warn(
+						`sdTF source parameter has invalid type ${type}. Only s-type parameters are supported.`,
+					);
+				}
+			} else if (isExportSource(source)) {
+				if (type === PARAMETER_TYPE.FILE) {
+					exportSources.push({source: source.props, type});
+					approvedSources.push(sources[i]);
+				} else {
+					console.warn(
+						`Export source parameter has invalid type ${type}. Only FILE is supported.`,
+					);
+				}
 			}
 		}
 
-		sourcesRef.current = sources;
+		sourcesRef.current = approvedSources;
 		setOutputDataValues(undefined);
-		setOutputDataSources(outputDataSources);
 		setScreenshotValues(undefined);
-		setScreenshotSources(screenshotSources);
 		setModelStateValues(undefined);
-		setModelStateSources(modelStateSources);
 		setSdtfValues(undefined);
-		setSdtfSources(sdTFSources);
 		setExportValues(undefined);
-		setExportSources(exportSources);
+
+		setSourcesByType({
+			outputData: outputDataSources,
+			screenshot: screenshotSources,
+			modelState: modelStateSources,
+			sdtf: sdTFSources,
+			export: exportSources,
+		});
 	}, [sources]);
 
 	// get output values
 	const {outputDataValues, setOutputDataValues} = useOutputDataSources({
 		namespace,
-		sources: outputDataSources,
+		sources: sourcesByType?.outputData,
 	});
 
 	// get screenshot values
 	const {screenshotValues, setScreenshotValues} = useScreenshotSources({
 		namespace,
-		sources: screenshotSources,
+		sources: sourcesByType?.screenshot,
 	});
 
 	// get model state values
 	const {modelStateValues, setModelStateValues} = useModelStateSources({
 		namespace,
-		sources: modelStateSources,
+		sources: sourcesByType?.modelState,
 	});
 
 	// get sdTF values
 	const {sdtfValues, setSdtfValues} = useSdtfSources({
 		namespace,
-		sources: sdtfSources,
+		sources: sourcesByType?.sdtf,
 	});
 
 	// get export values
 	const {exportValues, setExportValues} = useExportSources({
 		namespace,
-		sources: exportSources,
+		sources: sourcesByType?.export,
 	});
 
 	// map output values to their source names
@@ -178,26 +206,32 @@ export function useParameterValueSources(props?: {
 	return useMemo(() => {
 		if (!sourcesRef.current) return;
 
+		// check if sourcesByType is defined
+		if (!sourcesByType) return;
+
+		// gather all loaded values
+		const loadedValues = {
+			outputData: outputDataValues,
+			screenshot: screenshotValues,
+			modelState: modelStateValues,
+			sdtf: sdtfValues,
+			export: exportValues,
+		};
+
 		// first, we need to check if ALL sources have been loaded
 		// we cannot return partial results
-		if (
-			!outputDataSources ||
-			(outputDataSources.length > 0 &&
-				outputDataSources.length !== outputDataValues?.length) ||
-			!screenshotSources ||
-			(screenshotSources.length > 0 &&
-				screenshotSources.length !== screenshotValues?.length) ||
-			!modelStateSources ||
-			(modelStateSources.length > 0 &&
-				modelStateSources.length !== modelStateValues?.length) ||
-			!sdtfSources ||
-			(sdtfSources.length > 0 &&
-				sdtfSources.length !== sdtfValues?.length) ||
-			!exportSources ||
-			(exportSources.length > 0 &&
-				exportSources.length !== exportValues?.length)
-		) {
-			return;
+		if (!loadedValues) return;
+
+		// check for each value if it is loaded
+		// the number of values must match the number of sources for each type
+		// if one of them is not loaded, we return undefined
+		for (const key in loadedValues) {
+			const typedKey = key as keyof typeof loadedValues;
+			const value = loadedValues[typedKey];
+			const source = sourcesByType[typedKey];
+			// if the number of values does not match the number of sources, we are not loaded
+			if (source && source.length > 0 && source.length !== value?.length)
+				return;
 		}
 
 		// here we also add other source types
@@ -213,21 +247,20 @@ export function useParameterValueSources(props?: {
 		// to their respective source type
 		for (let i = 0; i < sourcesRef.current.length; i++) {
 			const {source} = sourcesRef.current[i];
-			if (isDataOutputSource(source) && outputDataValues) {
-				sourceResults.push(outputDataValues[outputIndex]);
-				outputIndex++;
-			} else if (isScreenshotSource(source) && screenshotValues) {
-				sourceResults.push(screenshotValues[screenshotIndex]);
-				screenshotIndex++;
-			} else if (isModelStateSource(source) && modelStateValues) {
-				sourceResults.push(modelStateValues[modelStateIndex]);
-				modelStateIndex++;
-			} else if (isSdtfSource(source) && sdtfValues) {
-				sourceResults.push(sdtfValues[sdtfIndex]);
-				sdtfIndex++;
-			} else if (isExportSource(source) && exportValues) {
-				sourceResults.push(exportValues[exportIndex]);
-				exportIndex++;
+			if (isDataOutputSource(source)) {
+				sourceResults.push(loadedValues.outputData?.[outputIndex++]);
+			} else if (isScreenshotSource(source)) {
+				sourceResults.push(
+					loadedValues.screenshot?.[screenshotIndex++],
+				);
+			} else if (isModelStateSource(source)) {
+				sourceResults.push(
+					loadedValues.modelState?.[modelStateIndex++],
+				);
+			} else if (isSdtfSource(source)) {
+				sourceResults.push(loadedValues.sdtf?.[sdtfIndex++]);
+			} else if (isExportSource(source)) {
+				sourceResults.push(loadedValues.export?.[exportIndex++]);
 			} else {
 				sourceResults.push(undefined);
 			}
