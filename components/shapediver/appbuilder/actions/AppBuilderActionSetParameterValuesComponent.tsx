@@ -82,77 +82,95 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		sourceDataRef.current = sourceData;
 	}, [sourceData]);
 
-	const onClick = useCallback(() => {
-		let hasChanges = false;
-		let hasSourceData = false;
-		const sources: {
-			source: IAppBuilderParameterValueSourceDefinition;
-			type: PARAMETER_TYPE;
-		}[] = [];
-		const validParameters: {[key: string]: any} = {};
+	const processParameterUpdates = useCallback(
+		(sourceResults?: any[]) => {
+			let hasChanges = false;
+			let sourceIndex = 0;
+			const validParameters: {[key: string]: any} = {};
 
-		// First, check if any parameters have changes and validate all values
-		for (const {parameter, value, source} of parameters) {
-			if (!parameter) {
-				console.warn("Parameter not found for value:", value);
-				continue;
-			}
-
-			if (value === undefined && source === undefined) {
-				console.warn(
-					"No value or source defined for parameter:",
-					parameter.definition.id,
-				);
-				continue;
-			}
-
-			if (value !== undefined) {
-				if (parameter.actions.isUiValueDifferent(value)) {
-					hasChanges = true;
-
-					// Pre-validate the value
-					if (parameter.actions.setUiValue(value)) {
-						validParameters[parameter.definition.id] = value;
-					} else {
-						console.warn(
-							`setUiValue failed for parameter ${parameter.definition.id}, the value is not valid.`,
-							value,
-						);
-					}
+			// First, check if any parameters have changes and validate all values
+			for (const {parameter, value, source} of parameters) {
+				if (!parameter) {
+					console.warn("Parameter not found for value:", value);
+					continue;
 				}
-			} else if (source !== undefined) {
-				hasSourceData = true;
-				sources.push({
-					source,
-					type: parameter.definition.type,
-				});
-			}
-		}
 
-		if (hasSourceData) {
+				if (value === undefined && source === undefined) {
+					console.warn(
+						"No value or source defined for parameter:",
+						parameter.definition.id,
+					);
+					continue;
+				}
+
+				if (value !== undefined) {
+					if (parameter.actions.isUiValueDifferent(value)) {
+						hasChanges = true;
+
+						// Pre-validate the value
+						if (parameter.actions.setUiValue(value)) {
+							validParameters[parameter.definition.id] = value;
+						} else {
+							console.warn(
+								`setUiValue failed for parameter ${parameter.definition.id}, the value is not valid.`,
+								value,
+							);
+						}
+					}
+				} else if (source !== undefined) {
+					validParameters[parameter.definition.id] =
+						sourceResults?.[sourceIndex++];
+					hasChanges = true;
+				}
+			}
+
+			// If no changes or no valid parameters, return early
+			if (!hasChanges || Object.keys(validParameters).length === 0)
+				return;
+
+			// Use batch parameter update
+			batchParameterValueUpdate({
+				[namespace]: validParameters,
+			});
+		},
+		[parameters, namespace, batchParameterValueUpdate],
+	);
+
+	const onClick = useCallback(() => {
+		// Check if any parameters need source data
+		const needsSourceData = parameters.some(
+			({source}) => source !== undefined,
+		);
+
+		if (needsSourceData) {
+			const sources: {
+				source: IAppBuilderParameterValueSourceDefinition;
+				type: PARAMETER_TYPE;
+			}[] = [];
+
+			for (const {parameter, source} of parameters) {
+				if (source !== undefined && parameter) {
+					sources.push({
+						source,
+						type: parameter.definition.type,
+					});
+				}
+			}
+
 			setSourceData({
 				namespace,
 				sources,
 			});
-			// The actual setting of the parameter values will be done
-			// in the useEffect below when sourceData changes
 			return;
 		}
 
-		// If no changes or no valid parameters, return early
-		if (!hasChanges || Object.keys(validParameters).length === 0) return;
-
-		// Use batch parameter update
-		batchParameterValueUpdate({
-			[namespace]: validParameters,
-		});
-	}, [parameters, namespace]);
+		// Process parameters without source data
+		processParameterUpdates();
+	}, [parameters, namespace, processParameterUpdates]);
 
 	const sourceResults = useParameterValueSources(sourceData);
 
 	// when sourceData changes, we need to set the parameter value
-	// this is done here to avoid setting the parameter value
-	// before the source data has been loaded
 	useEffect(() => {
 		if (
 			!sourceDataRef.current ||
@@ -162,57 +180,13 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		)
 			return;
 
-		let hasChanges = false;
-		let sourceIndex = 0;
-		const validParameters: {[key: string]: any} = {};
-
-		// First, check if any parameters have changes and validate all values
-		for (const {parameter, value, source} of parameters) {
-			if (!parameter) {
-				console.warn("Parameter not found for value:", value);
-				continue;
-			}
-
-			if (value === undefined && source === undefined) {
-				console.warn(
-					"No value or source defined for parameter:",
-					parameter.definition.id,
-				);
-				continue;
-			}
-
-			if (value !== undefined) {
-				if (parameter.actions.isUiValueDifferent(value)) {
-					hasChanges = true;
-					// Pre-validate the value
-					if (parameter.actions.setUiValue(value)) {
-						validParameters[parameter.definition.id] = value;
-					} else {
-						console.warn(
-							`setUiValue failed for parameter ${parameter.definition.id}, the value is not valid.`,
-							value,
-						);
-					}
-				}
-			} else if (source !== undefined) {
-				hasChanges = true;
-				validParameters[parameter.definition.id] =
-					sourceResults[sourceIndex++];
-			}
-		}
+		// Process parameters with source data
+		processParameterUpdates(sourceResults);
 
 		// reset sourceData to avoid re-running this effect
 		sourceDataRef.current = undefined;
 		setSourceData(undefined);
-
-		// If no changes or no valid parameters, return early
-		if (!hasChanges || Object.keys(validParameters).length === 0) return;
-
-		// Use batch parameter update
-		batchParameterValueUpdate({
-			[namespace]: validParameters,
-		});
-	}, [sourceResults]);
+	}, [sourceResults, processParameterUpdates]);
 
 	useEffect(() => {
 		const {getParameter} = useShapeDiverStoreParameters.getState();
