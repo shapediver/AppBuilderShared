@@ -7,7 +7,7 @@ import {
 	ResStypeParameter,
 } from "@shapediver/sdk.geometry-api-sdk-v2";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {useOutputs} from "../useOutputs";
 
 export function useSdtfSources(props: {
@@ -16,17 +16,24 @@ export function useSdtfSources(props: {
 		source: IAppBuilderParameterValueSourcePropsSdtf;
 		type: PARAMETER_TYPE;
 	}[];
+	resetSignal?: number;
 }): {
 	sdtfValues: (string | File | undefined)[] | undefined;
-	setSdtfValues: React.Dispatch<
-		React.SetStateAction<(string | File | undefined)[] | undefined>
-	>;
 } {
-	const {namespace, sources} = props;
+	const {namespace, sources, resetSignal} = props;
 
 	const [sdtfValues, setSdtfValues] = useState<
 		(string | File | undefined)[] | undefined
 	>(undefined);
+	const prevResetSignal = useRef(resetSignal);
+
+	// reset sdtf values if reset signal changes
+	useEffect(() => {
+		if (prevResetSignal.current !== resetSignal) {
+			setSdtfValues(undefined);
+			prevResetSignal.current = resetSignal;
+		}
+	}, [resetSignal]);
 
 	const session = useShapeDiverStoreSession(
 		(state) => state.sessions[namespace],
@@ -135,5 +142,5 @@ export function useSdtfSources(props: {
 		});
 	}, [outputResults, session]);
 
-	return {sdtfValues, setSdtfValues};
+	return {sdtfValues};
 }

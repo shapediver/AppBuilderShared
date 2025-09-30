@@ -2,7 +2,7 @@ import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store
 import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Converter, PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {guessMissingMimeType} from "@shapediver/viewer.utils.mime-type";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useViewportId} from "../../viewer/useViewportId";
 
@@ -12,17 +12,24 @@ export function useScreenshotSources(props: {
 		source: IAppBuilderParameterValueSourcePropsScreenshot;
 		type: PARAMETER_TYPE;
 	}[];
+	resetSignal?: number;
 }): {
 	screenshotValues: unknown[] | undefined;
-	setScreenshotValues: React.Dispatch<
-		React.SetStateAction<unknown[] | undefined>
-	>;
 } {
-	const {sources} = props;
+	const {sources, resetSignal} = props;
 
 	const [screenshotValues, setScreenshotValues] = useState<
 		unknown[] | undefined
 	>(undefined);
+	const prevResetSignal = useRef(resetSignal);
+
+	// reset screenshot values if reset signal changes
+	useEffect(() => {
+		if (prevResetSignal.current !== resetSignal) {
+			setScreenshotValues(undefined);
+			prevResetSignal.current = resetSignal;
+		}
+	}, [resetSignal]);
 
 	const {viewportId} = useViewportId();
 	const {getScreenshot} = useShapeDiverStoreViewportAccessFunctions(
@@ -60,6 +67,5 @@ export function useScreenshotSources(props: {
 
 	return {
 		screenshotValues,
-		setScreenshotValues,
 	};
 }

@@ -2,7 +2,7 @@ import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOu
 import {IAppBuilderParameterValueSourcePropsDataOutput} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverOutput} from "@AppBuilderShared/types/shapediver/output";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {useOutputs} from "../useOutputs";
 
 /**
@@ -16,17 +16,24 @@ export function useOutputDataSources(props: {
 		source: IAppBuilderParameterValueSourcePropsDataOutput;
 		type: PARAMETER_TYPE;
 	}[];
+	resetSignal?: number;
 }): {
 	outputDataValues: (string | File | undefined)[] | undefined;
-	setOutputDataValues: React.Dispatch<
-		React.SetStateAction<(string | File | undefined)[] | undefined>
-	>;
 } {
-	const {namespace, sources} = props;
+	const {namespace, sources, resetSignal} = props;
 
 	const [outputDataValues, setOutputDataValues] = useState<
 		(string | File | undefined)[] | undefined
 	>(undefined);
+	const prevResetSignal = useRef(resetSignal);
+
+	// reset output data values if reset signal changes
+	useEffect(() => {
+		if (prevResetSignal.current !== resetSignal) {
+			setOutputDataValues(undefined);
+			prevResetSignal.current = resetSignal;
+		}
+	}, [resetSignal]);
 
 	// create output map from sources
 	const outputMap: PropsOutput[] = useMemo(() => {
@@ -99,6 +106,5 @@ export function useOutputDataSources(props: {
 
 	return {
 		outputDataValues,
-		setOutputDataValues,
 	};
 }

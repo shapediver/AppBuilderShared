@@ -69,6 +69,8 @@ export function useParameterValueSources(props?: {
 		| undefined
 	>(sources);
 
+	const [resetSignal, setResetSignal] = useState(0);
+
 	const [sourcesByType, setSourcesByType] = useState<
 		ParameterValueSourcesByType | undefined
 	>();
@@ -143,43 +145,45 @@ export function useParameterValueSources(props?: {
 		}
 
 		sourcesRef.current = approvedSources;
-		setOutputDataValues(undefined);
-		setScreenshotValues(undefined);
-		setModelStateValues(undefined);
-		setSdtfValues(undefined);
-		setExportValues(undefined);
+		// set the reset signal so that the individual hooks can reset their state
+		setResetSignal((prev) => prev + 1);
 
 		setSourcesByType(sourcesByType);
 	}, [sources]);
 
 	// get output values
-	const {outputDataValues, setOutputDataValues} = useOutputDataSources({
+	const {outputDataValues} = useOutputDataSources({
 		namespace,
 		sources: sourcesByType?.outputData,
+		resetSignal,
 	});
 
 	// get screenshot values
-	const {screenshotValues, setScreenshotValues} = useScreenshotSources({
+	const {screenshotValues} = useScreenshotSources({
 		namespace,
 		sources: sourcesByType?.screenshot,
+		resetSignal,
 	});
 
 	// get model state values
-	const {modelStateValues, setModelStateValues} = useModelStateSources({
+	const {modelStateValues} = useModelStateSources({
 		namespace,
 		sources: sourcesByType?.modelState,
+		resetSignal,
 	});
 
 	// get sdTF values
-	const {sdtfValues, setSdtfValues} = useSdtfSources({
+	const {sdtfValues} = useSdtfSources({
 		namespace,
 		sources: sourcesByType?.sdtf,
+		resetSignal,
 	});
 
 	// get export values
-	const {exportValues, setExportValues} = useExportSources({
+	const {exportValues} = useExportSources({
 		namespace,
 		sources: sourcesByType?.export,
+		resetSignal,
 	});
 
 	// check if all values are loaded

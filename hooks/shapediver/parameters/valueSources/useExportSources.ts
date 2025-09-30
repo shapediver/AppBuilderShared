@@ -3,7 +3,7 @@ import {IAppBuilderParameterValueSourcePropsExport} from "@AppBuilderShared/type
 import {IShapeDiverExport} from "@AppBuilderShared/types/shapediver/export";
 import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {EXPORT_TYPE, PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {useExports} from "../useExports";
 
 export function useExportSources(props: {
@@ -12,17 +12,24 @@ export function useExportSources(props: {
 		source: IAppBuilderParameterValueSourcePropsExport;
 		type: PARAMETER_TYPE;
 	}[];
+	resetSignal?: number;
 }): {
 	exportValues: (string | File | undefined)[] | undefined;
-	setExportValues: React.Dispatch<
-		React.SetStateAction<(string | File | undefined)[] | undefined>
-	>;
 } {
-	const {namespace, sources} = props;
+	const {namespace, sources, resetSignal} = props;
 
 	const [exportValues, setExportValues] = useState<
 		(string | File | undefined)[] | undefined
 	>(undefined);
+	const prevResetSignal = useRef(resetSignal);
+
+	// reset export values if reset signal changes
+	useEffect(() => {
+		if (prevResetSignal.current !== resetSignal) {
+			setExportValues(undefined);
+			prevResetSignal.current = resetSignal;
+		}
+	}, [resetSignal]);
 
 	// create export map from sources
 	const exportMap: PropsExport[] = useMemo(() => {
@@ -110,6 +117,5 @@ export function useExportSources(props: {
 
 	return {
 		exportValues,
-		setExportValues,
 	};
 }
