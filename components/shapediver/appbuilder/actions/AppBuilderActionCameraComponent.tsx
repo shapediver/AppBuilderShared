@@ -4,7 +4,7 @@ import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverS
 import {
 	IAppBuilderActionPropsCamera,
 	isAnimateCameraAction,
-	isResetAction,
+	isResetCameraAction,
 	isSetCameraAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {CAMERA_TYPE} from "@shapediver/viewer.viewport";
@@ -112,7 +112,7 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 				target ? vec3.fromValues(...target) : viewportApi.camera.target,
 				options,
 			);
-		} else if (isResetAction(props)) {
+		} else if (isResetCameraAction(props)) {
 			const {options} = props.props;
 			await viewportApi.camera.reset(options);
 		} else {

@@ -555,9 +555,9 @@ export type IAppBuilderPropsSetCamera = {
 } & IAppBuilderPropsCameraCommon;
 
 /** Properties of a "reset" action. */
-export type IAppBuilderPropsReset = IAppBuilderPropsCameraCommon;
+export type IAppBuilderPropsResetCamera = IAppBuilderPropsCameraCommon;
 
-/** Properties of a "zoomToCCamera" action. */
+/** Properties of a "zoomTo" action. */
 export type IAppBuilderPropsZoomToCamera = IAppBuilderPropsCameraCommon;
 
 /** Properties of a camera action. */
@@ -568,7 +568,7 @@ export type IAppBuilderActionPropsCamera = {
 	props:
 		| IAppBuilderPropsAnimateCamera
 		| IAppBuilderPropsSetCamera
-		| IAppBuilderPropsReset
+		| IAppBuilderPropsResetCamera
 		| IAppBuilderPropsZoomToCamera;
 } & IAppBuilderActionPropsCommon;
 
@@ -1217,9 +1217,11 @@ export function isSetCameraAction(
 }
 
 /** assert camera action "reset" */
-export function isResetAction(action: IAppBuilderActionPropsCamera): action is {
+export function isResetCameraAction(
+	action: IAppBuilderActionPropsCamera,
+): action is {
 	type: "reset";
-	props: IAppBuilderPropsReset;
+	props: IAppBuilderPropsResetCamera;
 } {
 	return action.type === "reset";
 }

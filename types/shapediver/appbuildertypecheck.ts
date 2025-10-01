@@ -336,7 +336,7 @@ const IAppBuilderActionPropsCameraCommonSchema = z.object({
 				.passthrough(),
 			z
 				.object({
-					type: z.enum(["perspective", "orthographic"]),
+					type: z.nativeEnum(CAMERA_TYPE),
 				})
 				.passthrough(),
 		])
