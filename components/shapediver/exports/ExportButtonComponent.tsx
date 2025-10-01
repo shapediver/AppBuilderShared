@@ -280,7 +280,7 @@ export default function ExportButtonComponent(
 		exportRequest(
 			sourceData.information.skipStargate,
 			parameterValues,
-		).then(() => {
+		).finally(() => {
 			// reset source data to avoid multiple calls
 			setSourceData(undefined);
 			// set the requestingExport false to remove the loading icon
