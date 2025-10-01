@@ -6,10 +6,11 @@ import {
 	isAnimateCameraAction,
 	isResetCameraAction,
 	isSetCameraAction,
+	isZoomToCameraAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {CAMERA_TYPE} from "@shapediver/viewer.viewport";
 import {vec3} from "gl-matrix";
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useMemo, useState} from "react";
 
 type Props = IAppBuilderActionPropsCamera & {
 	namespace: string;
@@ -21,7 +22,7 @@ type Props = IAppBuilderActionPropsCamera & {
  * @returns
  */
 export default function AppBuilderActionCameraComponent(props: Props) {
-	const {label = "Start camera", icon = "tabler:video", tooltip} = props;
+	const {icon = "tabler:video", tooltip} = props;
 
 	const {viewportId} = useViewportId();
 
@@ -32,6 +33,15 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 	});
 
 	const [loading, setLoading] = useState(false);
+
+	const label = useMemo(() => {
+		if (props.label) return props.label;
+		if (isAnimateCameraAction(props)) return "Animate camera";
+		if (isSetCameraAction(props)) return "Set camera";
+		if (isResetCameraAction(props)) return "Reset camera";
+		if (isZoomToCameraAction(props)) return "Zoom extents";
+		return "Start camera";
+	}, [props]);
 
 	const onClick = useCallback(async () => {
 		if (!viewportApi || !viewportApi.camera) return;
