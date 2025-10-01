@@ -425,25 +425,17 @@ const assignOutputUpdateCallback = (
 
 		// Then, automatically sync with parameter store
 		// This ensures output content is always up-to-date
-		try {
-			const parameterStore = useShapeDiverStoreParameters.getState();
-			const outputStore = parameterStore.getOutput(
-				sessionApi.id,
-				outputApi.id,
-			);
-			if (outputStore) {
-				outputStore.setState(
-					() => ({
-						content: outputApi.content,
-					}),
-					false,
-				);
-			}
-		} catch (error) {
-			// Silent fail to avoid breaking existing functionality
-			console.warn(
-				`Failed to sync output ${outputApi.id} for session ${sessionApi.id}:`,
-				error,
+		const parameterStore = useShapeDiverStoreParameters.getState();
+		const outputStore = parameterStore.getOutput(
+			sessionApi.id,
+			outputApi.id,
+		);
+		if (outputStore) {
+			outputStore.setState(
+				() => ({
+					content: outputApi.content,
+				}),
+				false,
 			);
 		}
 	};
