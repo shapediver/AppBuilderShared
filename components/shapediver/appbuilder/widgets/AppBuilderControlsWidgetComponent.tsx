@@ -91,6 +91,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 					namespace: p.sessionId ?? namespace,
 					exportId: p.name,
 					overrides: p.overrides,
+					parameterValues: p.parameterValues,
 				};
 			}),
 		[controls, namespace],
