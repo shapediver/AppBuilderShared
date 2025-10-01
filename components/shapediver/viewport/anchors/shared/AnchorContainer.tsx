@@ -33,13 +33,16 @@ import {
 	useRef,
 	useState,
 } from "react";
-import ViewportIconButton from "../../buttons/ViewportIconButton";
+import ViewportIconButton, {
+	ViewportIconButtonThemePropsType,
+} from "../../buttons/ViewportIconButton";
 import {ViewportAnchorProps2d} from "../ViewportAnchor2d";
 import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
 import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
 import {useCanvasSize} from "./useCanvasSize";
 import {cleanUnit} from "./utils";
 
+import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {defaultStyleProps} from "../../ViewportIcons";
 import classes from "../../ViewportIcons.module.css";
 
@@ -79,6 +82,7 @@ export interface ViewportAnchorProps {
 export type ViewportAnchorStyleProps = {
 	anchorPaperProps?: Partial<PaperProps>;
 	anchorStackProps?: Partial<StackProps>;
+	previewIconProps?: ViewportIconButtonThemePropsType;
 	/** Breakpoint below which to to switch to the mobile behavior */
 	mobileBreakpoint: MantineBreakpoint;
 };
@@ -99,6 +103,15 @@ export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
 		},
 	},
 	mobileBreakpoint: "sm",
+	previewIconProps: {
+		actionIconProps: {
+			styles: {
+				root: {
+					...ViewportTransparentBackgroundStyle,
+				},
+			},
+		},
+	},
 };
 
 interface AnchorContainerProps {
@@ -162,7 +175,12 @@ export function useAnchorContainer({
 	 *
 	 * Depending on the type of the anchor, it will return different properties.
 	 */
-	const {anchorPaperProps, anchorStackProps, mobileBreakpoint} = useProps(
+	const {
+		anchorPaperProps,
+		anchorStackProps,
+		previewIconProps,
+		mobileBreakpoint,
+	} = useProps(
 		type === AppBuilderContainerNameType.Anchor2d
 			? "ViewportAnchor2d"
 			: "ViewportAnchor3d",
@@ -369,12 +387,7 @@ export function useAnchorContainer({
 	 */
 	const previewIconElement = (
 		<ViewportIconButton
-			styles={{
-				root: {
-					backgroundColor:
-						"var(--ai-bg, var(--mantine-primary-color-filled))",
-				},
-			}}
+			{...previewIconProps}
 			label=""
 			iconType={previewIcon! as string}
 			onMouseDown={toggleContent}

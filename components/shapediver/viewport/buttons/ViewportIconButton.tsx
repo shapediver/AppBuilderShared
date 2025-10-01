@@ -47,7 +47,7 @@ const defaultStyleProps: StyleProps = {
 	},
 };
 
-type ViewportIconButtonThemePropsType = Partial<StyleProps>;
+export type ViewportIconButtonThemePropsType = Partial<StyleProps>;
 
 export function ViewportIconButtonThemeProps(
 	props: ViewportIconButtonThemePropsType,

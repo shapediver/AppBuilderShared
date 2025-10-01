@@ -1096,25 +1096,30 @@ export const useCustomTheme = (props: Props = {}) => {
 			 *
 			 */
 			ViewportAnchor2d: ViewportAnchor2dThemeProps({
-				// iconProps: {
-				// 	size: "md",
-				// 	variant: "subtle",
-				// 	color: "white",
+				// anchorPaperProps: {
 				// 	style: {
-				// 		mixBlendMode: "difference",
-				// 		filter: "contrast(0.5)",
+				// 		...defaultStyleProps.style,
 				// 	},
+				// 	pt: 0,
+				// 	shadow: "md",
 				// },
-				// anchorGroupProps: {
+				// anchorStackProps: {
 				// 	style: {
-				// 		// this background color is the same as used in all other containers
-				// 		backgroundColor: "var(--mantine-color-body)",
 				// 		// the only other styling I added is the border radius
 				// 		// as otherwise this looks really bad
 				// 		borderRadius: "var(--mantine-radius-md)",
 				// 	},
 				// },
 				// mobileBreakpoint: "sm",
+				// previewIconProps: {
+				// 	actionIconProps: {
+				// 		styles: {
+				// 			root: {
+				// 				...ViewportTransparentBackgroundStyle,
+				// 			},
+				// 		},
+				// 	},
+				// },
 			}),
 
 			/**
@@ -1123,25 +1128,30 @@ export const useCustomTheme = (props: Props = {}) => {
 			 *
 			 */
 			ViewportAnchor3d: ViewportAnchor3dThemeProps({
-				// iconProps: {
-				// 	size: "md",
-				// 	variant: "subtle",
-				// 	color: "white",
+				// anchorPaperProps: {
 				// 	style: {
-				// 		mixBlendMode: "difference",
-				// 		filter: "contrast(0.5)",
+				// 		...defaultStyleProps.style,
 				// 	},
+				// 	pt: 0,
+				// 	shadow: "md",
 				// },
-				// anchorGroupProps: {
+				// anchorStackProps: {
 				// 	style: {
-				// 		// this background color is the same as used in all other containers
-				// 		backgroundColor: "var(--mantine-color-body)",
 				// 		// the only other styling I added is the border radius
 				// 		// as otherwise this looks really bad
 				// 		borderRadius: "var(--mantine-radius-md)",
 				// 	},
 				// },
 				// mobileBreakpoint: "sm",
+				// previewIconProps: {
+				// 	actionIconProps: {
+				// 		styles: {
+				// 			root: {
+				// 				...ViewportTransparentBackgroundStyle,
+				// 			},
+				// 		},
+				// 	},
+				// },
 			}),
 			/**
 			 * ViewportBranding
