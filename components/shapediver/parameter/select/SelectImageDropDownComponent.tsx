@@ -78,7 +78,7 @@ const ComboboxOption = React.memo(function ComboboxOption({
 	return (
 		<Group {...groupProps} {...settings?.groupProps}>
 			{option.imageUrl && (
-				<TooltipWrapper label={option.label}>
+				<TooltipWrapper label={option.tooltip}>
 					<Image
 						src={option.imageUrl}
 						alt={option.label}
