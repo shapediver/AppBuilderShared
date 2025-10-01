@@ -1,8 +1,7 @@
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {IAppBuilderParameterValueSourcePropsDataOutput} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverOutput} from "@AppBuilderShared/types/shapediver/output";
-import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {useOutputs} from "../useOutputs";
 
 /**
@@ -14,26 +13,17 @@ export function useOutputDataSources(props: {
 	namespace: string;
 	sources?: {
 		source: IAppBuilderParameterValueSourcePropsDataOutput;
-		type: PARAMETER_TYPE;
+		upload?: (file: File) => Promise<string>;
 	}[];
-	resetSignal?: number;
 }): {
-	outputDataValues: (string | File | undefined)[] | undefined;
+	outputDataValues: (string | undefined)[] | undefined;
+	resetOutputDataValues: () => void;
 } {
-	const {namespace, sources, resetSignal} = props;
+	const {namespace, sources} = props;
 
 	const [outputDataValues, setOutputDataValues] = useState<
-		(string | File | undefined)[] | undefined
+		(string | undefined)[] | undefined
 	>(undefined);
-	const prevResetSignal = useRef(resetSignal);
-
-	// reset output data values if reset signal changes
-	useEffect(() => {
-		if (prevResetSignal.current !== resetSignal) {
-			setOutputDataValues(undefined);
-			prevResetSignal.current = resetSignal;
-		}
-	}, [resetSignal]);
 
 	// create output map from sources
 	const outputMap: PropsOutput[] = useMemo(() => {
@@ -58,13 +48,13 @@ export function useOutputDataSources(props: {
 	const outputResults:
 		| {
 				output: IShapeDiverOutput | undefined;
-				type: PARAMETER_TYPE;
+				upload?: (file: File) => Promise<string>;
 		  }[]
 		| undefined = useMemo(() => {
 		if (!outputs || !sources) return undefined;
 		return outputs.map((output, index) => ({
 			output,
-			type: sources[index]?.type,
+			upload: sources[index]?.upload,
 		}));
 	}, [outputs, sources]);
 
@@ -72,22 +62,18 @@ export function useOutputDataSources(props: {
 	useEffect(() => {
 		if (!outputResults || outputResults.length === 0) return;
 
-		const outputValues: (string | File | undefined)[] = [];
+		const promises = [];
 		for (let i = 0; i < outputResults.length; i++) {
-			const {output, type} = outputResults[i];
+			const {output, upload} = outputResults[i];
 			if (!output) {
-				outputValues.push(undefined);
+				promises.push(Promise.resolve(undefined));
 			} else if (output.content === undefined) {
 				console.warn(
 					`Output with id ${output.definition.id} has no content`,
 				);
-				outputValues.push(undefined);
+				promises.push(Promise.resolve(undefined));
 			} else {
-				if (type === PARAMETER_TYPE.STRING) {
-					outputValues.push(
-						JSON.stringify({content: output.content}),
-					);
-				} else if (type === PARAMETER_TYPE.FILE) {
+				if (upload) {
 					// create a blob url for the output content
 					const blob = new Blob(
 						[JSON.stringify({content: output.content})],
@@ -102,14 +88,20 @@ export function useOutputDataSources(props: {
 							type: blob.type,
 						},
 					);
-					outputValues.push(file);
+					promises.push(upload(file));
+				} else {
+					promises.push(JSON.stringify({content: output.content}));
 				}
 			}
 		}
-		setOutputDataValues(outputValues);
-	}, [JSON.stringify(outputResults)]);
+
+		Promise.all(promises).then((values) => {
+			setOutputDataValues(values);
+		});
+	}, [outputResults]);
 
 	return {
 		outputDataValues,
+		resetOutputDataValues: () => setOutputDataValues(undefined),
 	};
 }

@@ -1,32 +1,20 @@
 import {IAppBuilderParameterValueSourcePropsModelState} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import {useCreateModelState} from "../../useCreateModelState";
 
 export function useModelStateSources(props: {
 	namespace: string;
 	sources?: {
 		source: IAppBuilderParameterValueSourcePropsModelState;
-		type: PARAMETER_TYPE;
 	}[];
-	resetSignal?: number;
 }): {
 	modelStateValues: (string | undefined)[] | undefined;
+	resetModelStateValues: () => void;
 } {
-	const {namespace, sources, resetSignal} = props;
+	const {namespace, sources} = props;
 
 	const {createModelState, applyModelStateToQueryParameter} =
 		useCreateModelState({namespace});
-
-	const prevResetSignal = useRef(resetSignal);
-
-	// reset model state values if reset signal changes
-	useEffect(() => {
-		if (prevResetSignal.current !== resetSignal) {
-			setModelStateValues(undefined);
-			prevResetSignal.current = resetSignal;
-		}
-	}, [resetSignal]);
 
 	const [modelStateValues, setModelStateValues] = useState<
 		(string | undefined)[] | undefined
@@ -72,5 +60,6 @@ export function useModelStateSources(props: {
 
 	return {
 		modelStateValues,
+		resetModelStateValues: () => setModelStateValues(undefined),
 	};
 }

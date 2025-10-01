@@ -1,3 +1,4 @@
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {
 	IAppBuilderParameterValueSourceDefinition,
 	IAppBuilderParameterValueSourcePropsDataOutput,
@@ -11,8 +12,8 @@ import {
 	isScreenshotSource,
 	isSdtfSource,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {IFileParameterApi, PARAMETER_TYPE} from "@shapediver/viewer.session";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useExportSources} from "./valueSources/useExportSources";
 import {useModelStateSources} from "./valueSources/useModelStateSources";
 import {useOutputDataSources} from "./valueSources/useOutputDataSources";
@@ -22,23 +23,21 @@ import {useSdtfSources} from "./valueSources/useSdtfSources";
 type ParameterValueSourcesByType = {
 	outputData: {
 		source: IAppBuilderParameterValueSourcePropsDataOutput;
-		type: PARAMETER_TYPE;
+		upload?: (file: File) => Promise<string>;
 	}[];
 	screenshot: {
 		source: IAppBuilderParameterValueSourcePropsScreenshot;
-		type: PARAMETER_TYPE;
+		upload: (file: File) => Promise<string>;
 	}[];
 	modelState: {
 		source: IAppBuilderParameterValueSourcePropsModelState;
-		type: PARAMETER_TYPE;
 	}[];
 	sdtf: {
 		source: IAppBuilderParameterValueSourcePropsSdtf;
-		type: PARAMETER_TYPE;
 	}[];
 	export: {
 		source: IAppBuilderParameterValueSourcePropsExport;
-		type: PARAMETER_TYPE;
+		upload: (file: File) => Promise<string>;
 	}[];
 };
 
@@ -52,7 +51,11 @@ export function useParameterValueSources(props?: {
 	namespace: string;
 	sources: {
 		source: IAppBuilderParameterValueSourceDefinition;
-		type: PARAMETER_TYPE;
+		parameterId: string;
+		// if a different namespace should be used for the parameter
+		// this allows to set different namespaces for different parameters in the sources
+		// if not set, the main namespace will be used
+		parameterNamespace?: string;
 	}[];
 }): unknown[] | undefined {
 	// default to empty values if no props are given
@@ -61,15 +64,23 @@ export function useParameterValueSources(props?: {
 		namespace: "",
 		sources: [],
 	};
+
+	const sessions = useShapeDiverStoreSession((state) => {
+		return state.sessions;
+	});
+
+	const sessionsRef = useRef(sessions);
+	useEffect(() => {
+		sessionsRef.current = sessions;
+	}, [sessions]);
+
 	const sourcesRef = useRef<
 		| {
 				source: IAppBuilderParameterValueSourceDefinition;
-				type: PARAMETER_TYPE;
+				parameterId: string;
 		  }[]
 		| undefined
 	>(sources);
-
-	const [resetSignal, setResetSignal] = useState(0);
 
 	const [sourcesByType, setSourcesByType] = useState<
 		ParameterValueSourcesByType | undefined
@@ -77,6 +88,8 @@ export function useParameterValueSources(props?: {
 
 	// separate sources by type and call their respective hooks
 	useEffect(() => {
+		if (!sessionsRef.current) return;
+
 		if (!sources || sources.length === 0) {
 			sourcesRef.current = undefined;
 			return;
@@ -92,13 +105,39 @@ export function useParameterValueSources(props?: {
 		};
 
 		for (let i = 0; i < sources.length; i++) {
-			const {source, type} = sources[i];
+			const {source, parameterId, parameterNamespace} = sources[i];
+
+			// get the session for the source
+			// if no namespace is given for the source, use the main namespace
+			const session =
+				sessionsRef.current[parameterNamespace || namespace];
+
+			if (!session) continue;
+
+			const parameter = Object.values(session.parameters).find(
+				(p) =>
+					p.id === parameterId ||
+					p.name === parameterId ||
+					p.displayname === parameterId,
+			);
+			if (!parameter) continue;
+			const type = parameter.type;
+
 			if (isDataOutputSource(source)) {
 				if (
 					type === PARAMETER_TYPE.STRING ||
 					type === PARAMETER_TYPE.FILE
 				) {
-					sourcesByType.outputData.push({source: source.props, type});
+					const upload =
+						type === PARAMETER_TYPE.FILE
+							? (parameter as IFileParameterApi).upload.bind(
+									parameter,
+								)
+							: undefined;
+					sourcesByType.outputData.push({
+						source: source.props,
+						upload,
+					});
 					approvedSources.push(sources[i]);
 				} else {
 					console.warn(
@@ -107,7 +146,12 @@ export function useParameterValueSources(props?: {
 				}
 			} else if (isScreenshotSource(source)) {
 				if (type === PARAMETER_TYPE.FILE) {
-					sourcesByType.screenshot.push({source: source.props, type});
+					sourcesByType.screenshot.push({
+						source: source.props,
+						upload: (parameter as IFileParameterApi).upload.bind(
+							parameter,
+						),
+					});
 					approvedSources.push(sources[i]);
 				} else {
 					console.warn(
@@ -116,7 +160,7 @@ export function useParameterValueSources(props?: {
 				}
 			} else if (isModelStateSource(source)) {
 				if (type === PARAMETER_TYPE.STRING) {
-					sourcesByType.modelState.push({source: source.props, type});
+					sourcesByType.modelState.push({source: source.props});
 					approvedSources.push(sources[i]);
 				} else {
 					console.warn(
@@ -125,7 +169,7 @@ export function useParameterValueSources(props?: {
 				}
 			} else if (isSdtfSource(source)) {
 				if (type.startsWith("s")) {
-					sourcesByType.sdtf.push({source: source.props, type});
+					sourcesByType.sdtf.push({source: source.props});
 					approvedSources.push(sources[i]);
 				} else {
 					console.warn(
@@ -134,7 +178,12 @@ export function useParameterValueSources(props?: {
 				}
 			} else if (isExportSource(source)) {
 				if (type === PARAMETER_TYPE.FILE) {
-					sourcesByType.export.push({source: source.props, type});
+					sourcesByType.export.push({
+						source: source.props,
+						upload: (parameter as IFileParameterApi).upload.bind(
+							parameter,
+						),
+					});
 					approvedSources.push(sources[i]);
 				} else {
 					console.warn(
@@ -146,45 +195,53 @@ export function useParameterValueSources(props?: {
 
 		sourcesRef.current = approvedSources;
 		// set the reset signal so that the individual hooks can reset their state
-		setResetSignal((prev) => prev + 1);
-
+		resetValues();
 		setSourcesByType(sourcesByType);
 	}, [sources]);
 
 	// get output values
-	const {outputDataValues} = useOutputDataSources({
+	const {outputDataValues, resetOutputDataValues} = useOutputDataSources({
 		namespace,
 		sources: sourcesByType?.outputData,
-		resetSignal,
 	});
 
 	// get screenshot values
-	const {screenshotValues} = useScreenshotSources({
+	const {screenshotValues, resetScreenshotValues} = useScreenshotSources({
 		namespace,
 		sources: sourcesByType?.screenshot,
-		resetSignal,
 	});
 
 	// get model state values
-	const {modelStateValues} = useModelStateSources({
+	const {modelStateValues, resetModelStateValues} = useModelStateSources({
 		namespace,
 		sources: sourcesByType?.modelState,
-		resetSignal,
 	});
 
 	// get sdTF values
-	const {sdtfValues} = useSdtfSources({
+	const {sdtfValues, resetSdtfValues} = useSdtfSources({
 		namespace,
 		sources: sourcesByType?.sdtf,
-		resetSignal,
 	});
 
 	// get export values
-	const {exportValues} = useExportSources({
+	const {exportValues, resetExportValues} = useExportSources({
 		namespace,
 		sources: sourcesByType?.export,
-		resetSignal,
 	});
+
+	const resetValues = useCallback(() => {
+		resetOutputDataValues();
+		resetScreenshotValues();
+		resetModelStateValues();
+		resetSdtfValues();
+		resetExportValues();
+	}, [
+		resetOutputDataValues,
+		resetScreenshotValues,
+		resetModelStateValues,
+		resetSdtfValues,
+		resetExportValues,
+	]);
 
 	// check if all values are loaded
 	// if one of the values is not loaded, we return undefined

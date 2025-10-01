@@ -6,34 +6,23 @@ import {
 	ResAssetDefinition,
 	ResStypeParameter,
 } from "@shapediver/sdk.geometry-api-sdk-v2";
-import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {useOutputs} from "../useOutputs";
 
 export function useSdtfSources(props: {
 	namespace: string;
 	sources?: {
 		source: IAppBuilderParameterValueSourcePropsSdtf;
-		type: PARAMETER_TYPE;
 	}[];
-	resetSignal?: number;
 }): {
-	sdtfValues: (string | File | undefined)[] | undefined;
+	sdtfValues: (string | undefined)[] | undefined;
+	resetSdtfValues: () => void;
 } {
-	const {namespace, sources, resetSignal} = props;
+	const {namespace, sources} = props;
 
 	const [sdtfValues, setSdtfValues] = useState<
-		(string | File | undefined)[] | undefined
+		(string | undefined)[] | undefined
 	>(undefined);
-	const prevResetSignal = useRef(resetSignal);
-
-	// reset sdtf values if reset signal changes
-	useEffect(() => {
-		if (prevResetSignal.current !== resetSignal) {
-			setSdtfValues(undefined);
-			prevResetSignal.current = resetSignal;
-		}
-	}, [resetSignal]);
 
 	const session = useShapeDiverStoreSession(
 		(state) => state.sessions[namespace],
@@ -108,7 +97,7 @@ export function useSdtfSources(props: {
 						// download the href and create an arrayBuffer
 						const response = output.content[0];
 						const url = response.href!;
-						const file = fetch(url)
+						const assetDefinition = fetch(url)
 							.then((r) => r.arrayBuffer())
 							.then(async (ab) => {
 								const response: ResAssetDefinition[] =
@@ -129,7 +118,7 @@ export function useSdtfSources(props: {
 								return JSON.stringify(sdtfResponse, null, 2);
 							});
 
-						promises.push(file);
+						promises.push(assetDefinition);
 					} else {
 						promises.push(undefined);
 					}
@@ -142,5 +131,5 @@ export function useSdtfSources(props: {
 		});
 	}, [outputResults, session]);
 
-	return {sdtfValues};
+	return {sdtfValues, resetSdtfValues: () => setSdtfValues(undefined)};
 }

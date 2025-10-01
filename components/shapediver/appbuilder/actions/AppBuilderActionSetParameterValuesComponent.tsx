@@ -8,7 +8,6 @@ import {
 	IAppBuilderLegacyActionPropsSetParameterValue,
 	IAppBuilderParameterValueSourceDefinition,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -71,7 +70,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 				namespace: string;
 				sources: {
 					source: IAppBuilderParameterValueSourceDefinition;
-					type: PARAMETER_TYPE;
+					parameterId: string;
 				}[];
 		  }
 		| undefined
@@ -145,14 +144,14 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		if (needsSourceData) {
 			const sources: {
 				source: IAppBuilderParameterValueSourceDefinition;
-				type: PARAMETER_TYPE;
+				parameterId: string;
 			}[] = [];
 
 			for (const {parameter, source} of parameters) {
 				if (source !== undefined && parameter) {
 					sources.push({
 						source,
-						type: parameter.definition.type,
+						parameterId: parameter.definition.id,
 					});
 				}
 			}

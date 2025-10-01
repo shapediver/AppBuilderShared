@@ -5,6 +5,7 @@ import {
 	PARAMETER_VISUALIZATION,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.session";
+import {CAMERA_TYPE} from "@shapediver/viewer.viewport";
 import {z} from "zod";
 import {
 	AppBuilderContainerNameType,
@@ -171,7 +172,7 @@ const IAppBuilderParameterValueSourcePropsScreenshotSchema = z.object({
 				.passthrough(),
 			z
 				.object({
-					type: z.enum(["perspective", "orthographic"]),
+					type: z.nativeEnum(CAMERA_TYPE),
 				})
 				.passthrough(),
 		])

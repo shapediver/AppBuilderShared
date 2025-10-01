@@ -1,8 +1,8 @@
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {Converter, PARAMETER_TYPE} from "@shapediver/viewer.session";
+import {Converter} from "@shapediver/viewer.session";
 import {guessMissingMimeType} from "@shapediver/viewer.utils.mime-type";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useViewportId} from "../../viewer/useViewportId";
 
@@ -10,26 +10,17 @@ export function useScreenshotSources(props: {
 	namespace: string;
 	sources?: {
 		source: IAppBuilderParameterValueSourcePropsScreenshot;
-		type: PARAMETER_TYPE;
+		upload: (file: File) => Promise<string>;
 	}[];
-	resetSignal?: number;
 }): {
-	screenshotValues: unknown[] | undefined;
+	screenshotValues: string[] | undefined;
+	resetScreenshotValues: () => void;
 } {
-	const {sources, resetSignal} = props;
+	const {sources} = props;
 
 	const [screenshotValues, setScreenshotValues] = useState<
-		unknown[] | undefined
+		string[] | undefined
 	>(undefined);
-	const prevResetSignal = useRef(resetSignal);
-
-	// reset screenshot values if reset signal changes
-	useEffect(() => {
-		if (prevResetSignal.current !== resetSignal) {
-			setScreenshotValues(undefined);
-			prevResetSignal.current = resetSignal;
-		}
-	}, [resetSignal]);
 
 	const {viewportId} = useViewportId();
 	const {getScreenshot} = useShapeDiverStoreViewportAccessFunctions(
@@ -46,17 +37,16 @@ export function useScreenshotSources(props: {
 		if (getScreenshot && sources && sources.length > 0) {
 			const promises = [];
 			for (let i = 0; i < sources.length; i++) {
-				const {source} = sources[i];
-				const screenshot = getScreenshot(source).then((data) => {
+				const {source, upload} = sources[i];
+				const screenshotPromise = getScreenshot(source).then((data) => {
 					// create a file from the data string
 					const {blob} = Converter.instance.dataURLtoBlob(data);
 					const file = new File([blob], "screenshot.png", {
 						type: blob.type,
 					});
-					return guessMissingMimeType(file);
+					return upload(guessMissingMimeType(file) as File);
 				});
-
-				promises.push(screenshot);
+				promises.push(screenshotPromise);
 			}
 
 			Promise.all(promises).then((results) => {
@@ -67,5 +57,6 @@ export function useScreenshotSources(props: {
 
 	return {
 		screenshotValues,
+		resetScreenshotValues: () => setScreenshotValues(undefined),
 	};
 }

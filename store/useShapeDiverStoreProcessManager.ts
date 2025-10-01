@@ -167,6 +167,7 @@ export class ProcessManager implements IProcessManager {
 				});
 			}
 		}
+		this._status = PROCESS_STATUS.FINISHED;
 		this.evaluateProcesses();
 	}
 

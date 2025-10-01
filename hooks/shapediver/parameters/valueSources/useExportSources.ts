@@ -2,34 +2,25 @@ import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsEx
 import {IAppBuilderParameterValueSourcePropsExport} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverExport} from "@AppBuilderShared/types/shapediver/export";
 import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {EXPORT_TYPE, PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {EXPORT_TYPE} from "@shapediver/viewer.session";
+import {useEffect, useMemo, useState} from "react";
 import {useExports} from "../useExports";
 
 export function useExportSources(props: {
 	namespace: string;
 	sources?: {
 		source: IAppBuilderParameterValueSourcePropsExport;
-		type: PARAMETER_TYPE;
+		upload: (file: File) => Promise<string>;
 	}[];
-	resetSignal?: number;
 }): {
-	exportValues: (string | File | undefined)[] | undefined;
+	exportValues: (string | undefined)[] | undefined;
+	resetExportValues: () => void;
 } {
-	const {namespace, sources, resetSignal} = props;
+	const {namespace, sources} = props;
 
 	const [exportValues, setExportValues] = useState<
-		(string | File | undefined)[] | undefined
+		(string | undefined)[] | undefined
 	>(undefined);
-	const prevResetSignal = useRef(resetSignal);
-
-	// reset export values if reset signal changes
-	useEffect(() => {
-		if (prevResetSignal.current !== resetSignal) {
-			setExportValues(undefined);
-			prevResetSignal.current = resetSignal;
-		}
-	}, [resetSignal]);
 
 	// create export map from sources
 	const exportMap: PropsExport[] = useMemo(() => {
@@ -50,15 +41,29 @@ export function useExportSources(props: {
 	// get all exports
 	const exports: (IShapeDiverExport | undefined)[] = useExports(exportMap);
 
+	// create a combined array of exports and the parameter upload functions
+	const exportResults:
+		| {
+				export: IShapeDiverExport | undefined;
+				upload: (file: File) => Promise<string>;
+		  }[]
+		| undefined = useMemo(() => {
+		if (!exports || !sources) return undefined;
+		return exports.map((exportItem, index) => ({
+			export: exportItem,
+			upload: sources[index].upload,
+		}));
+	}, [exports, sources]);
+
 	// load all exports
 	// and only set the return values once all are loaded
 	useEffect(() => {
-		if (!exports) return;
+		if (!exportResults) return;
 
 		const promises = [];
 
-		for (let i = 0; i < exports.length; i++) {
-			const e = exports[i];
+		for (let i = 0; i < exportResults.length; i++) {
+			const {export: e, upload} = exportResults[i];
 
 			if (!e) {
 				console.warn(`Export for parameter value source not found.`);
@@ -96,7 +101,7 @@ export function useExportSources(props: {
 							`${definition.id}_${definition.version}`,
 						{type: blob.type},
 					);
-					return file;
+					return upload(file);
 				} else if (
 					response.content &&
 					response.content.length === 0 &&
@@ -113,9 +118,10 @@ export function useExportSources(props: {
 		Promise.all(promises).then((results) => {
 			setExportValues(results);
 		});
-	}, [exports]);
+	}, [exportResults]);
 
 	return {
 		exportValues,
+		resetExportValues: () => setExportValues(undefined),
 	};
 }
