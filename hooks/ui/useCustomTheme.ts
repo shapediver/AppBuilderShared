@@ -88,6 +88,7 @@ import {
 	mergeThemeOverrides,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
+import {MultiSelectCheckboxesProps} from "~/shared/components/shapediver/parameter/multiselect/MultiSelectCheckboxesComponent.tsx";
 import {CreateModelStateHookThemeProps} from "../shapediver/useCreateModelState";
 
 /**
@@ -886,6 +887,22 @@ export const useCustomTheme = (props: Props = {}) => {
 				// },
 				// confirmButtonProps: {
 				// 	variant: "filled",
+				// },
+			}),
+			/**
+			 * MultiSelectCheckboxes
+			 *
+			 * Defaults for multi select checkboxes.
+			 */
+			MultiSelectCheckboxes: MultiSelectCheckboxesProps({
+				// stackProps: {
+				// 	gap: "xs",
+				// },
+				// checkboxProps: {
+				// 	ml: "md",
+				// },
+				// checkboxPropsSelectAll: {
+				// 	label: "Select all",
 				// },
 			}),
 			/**

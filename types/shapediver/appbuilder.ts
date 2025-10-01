@@ -44,7 +44,9 @@ export type SelectComponentType =
 	| "imagedropdown"
 	| "fullwidthcards"
 	| "carousel"
-	| "grid";
+	| "grid"
+	| "multiselect-chips"
+	| "multiselect-checkboxes";
 
 /** Data for an item shown by a selection component. */
 export interface ISelectComponentItemDataType {
