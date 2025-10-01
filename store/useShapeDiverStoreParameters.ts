@@ -607,14 +607,28 @@ function createExportStore(session: ISessionApi, exportId: string) {
 			request: async (parameters?: {[key: string]: string}) => {
 				const parametersComplete = parameters ?? {};
 				for (const p of parameterApis) {
-					if (!(p.id in parametersComplete)) {
+					const param = Object.entries(parametersComplete).find(
+						([key]) =>
+							key === p.id ||
+							key === p.name ||
+							key === p.displayname,
+					);
+
+					if (!param) {
 						if (isFileParameterApi(p)) {
 							parametersComplete[p.id] = await p.upload();
 							p.value = parametersComplete[p.id];
 						} else parametersComplete[p.id] = p.stringify();
+					} else {
+						const [key, value] = param;
+
+						// if the key matches the name or displayname, we need to convert it to the id
+						if (key === p.name || key === p.displayname) {
+							parametersComplete[p.id] = value;
+							delete parametersComplete[key];
+						}
 					}
 				}
-
 				return sessionExport.request(parametersComplete);
 			},
 			fetch: async (url: string) => {
