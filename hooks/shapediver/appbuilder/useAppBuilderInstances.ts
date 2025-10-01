@@ -123,24 +123,23 @@ export function useAppBuilderInstances(props: Props) {
 	const [parsedAppBuilderInstances, setParsedAppBuilderInstances] = useState<
 		IParsedInstanceDefinition[]
 	>([]);
-	const [pendingSources, setPendingSources] = useState<{
-		namespace: string;
-		sources: {
-			source: IAppBuilderParameterValueSourceDefinition;
-			parameterId: string;
-		}[];
-	}>();
-	const [pendingSourcesInformation, setPendingSourcesInformation] = useState<
-		| {
-				sourceMap: {
-					[key: string]: {
-						[key: string]: number;
-					};
+	const [sourceData, setSourceData] = useState<{
+		data: {
+			namespace: string;
+			sources: {
+				source: IAppBuilderParameterValueSourceDefinition;
+				parameterId: string;
+			}[];
+		};
+		information: {
+			sourceMap: {
+				[key: string]: {
+					[key: string]: number;
 				};
-				instances?: IAppBuilderInstanceDefinition[];
-		  }
-		| undefined
-	>();
+			};
+			instances?: IAppBuilderInstanceDefinition[];
+		};
+	}>();
 
 	const instances = useMemo(() => {
 		if (!appBuilderData) {
@@ -189,14 +188,14 @@ export function useAppBuilderInstances(props: Props) {
 		[],
 	);
 
-	const resolvedParameterValueSources =
-		useParameterValueSources(pendingSources);
+	const resolvedParameterValueSources = useParameterValueSources(
+		sourceData?.data,
+	);
 
 	// once the pending sources are loaded, we can create the instances
 	useEffect(() => {
-		if (!pendingSources || !resolvedParameterValueSources) return;
-		if (!pendingSourcesInformation) return;
-		const {sourceMap, instances} = pendingSourcesInformation;
+		if (!sourceData || !resolvedParameterValueSources) return;
+		const {sourceMap, instances} = sourceData.information;
 		if (!instances) return;
 
 		const instancesCopy = JSON.parse(
@@ -231,14 +230,8 @@ export function useAppBuilderInstances(props: Props) {
 		);
 
 		createParsedInstances(instancesCopy);
-		setPendingSources(undefined);
-		setPendingSourcesInformation(undefined);
-	}, [
-		pendingSourcesInformation,
-		resolvedParameterValueSources,
-		pendingSources,
-		createParsedInstances,
-	]);
+		setSourceData(undefined);
+	}, [resolvedParameterValueSources, createParsedInstances]);
 
 	useEffect(() => {
 		if (!instances) return;
@@ -312,7 +305,7 @@ export function useAppBuilderInstances(props: Props) {
 		});
 
 		if (Object.keys(sourcesToLoad).length > 0) {
-			const pendingSources: {
+			const sourceData: {
 				source: IAppBuilderParameterValueSourceDefinition;
 				parameterId: string;
 				parameterNamespace?: string;
@@ -331,7 +324,7 @@ export function useAppBuilderInstances(props: Props) {
 									instances[parseInt(instanceIndex)]
 										.sessionId;
 
-								let index = pendingSources.findIndex(
+								let index = sourceData.findIndex(
 									(s) =>
 										JSON.stringify(s.source) ===
 											JSON.stringify(source.source) &&
@@ -340,7 +333,7 @@ export function useAppBuilderInstances(props: Props) {
 								);
 								if (index === -1) {
 									index =
-										pendingSources.push({
+										sourceData.push({
 											source: source.source,
 											parameterId: source.parameterId,
 											parameterNamespace:
@@ -358,13 +351,15 @@ export function useAppBuilderInstances(props: Props) {
 				},
 			);
 
-			setPendingSources({
-				namespace,
-				sources: pendingSources,
-			});
-			setPendingSourcesInformation({
-				sourceMap,
-				instances,
+			setSourceData({
+				data: {
+					namespace,
+					sources: sourceData,
+				},
+				information: {
+					sourceMap,
+					instances,
+				},
 			});
 		} else {
 			createParsedInstances(instances);
