@@ -1,14 +1,14 @@
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
+import {
+	ComponentContext,
+	getExportComponent,
+	getParameterComponent,
+} from "@AppBuilderShared/context/ComponentContext";
 import {
 	isExportDefinition,
 	isOutputDefinition,
 	isParamDefinition,
 	useSortedParametersAndExports,
 } from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
-import {
-	getExportComponent,
-	getParameterComponent,
-} from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
