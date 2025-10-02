@@ -1112,13 +1112,11 @@ export const useCustomTheme = (props: Props = {}) => {
 				// },
 				// mobileBreakpoint: "sm",
 				// previewIconProps: {
-				// 	actionIconProps: {
-				// 		styles: {
-				// 			root: {
-				// 				...ViewportTransparentBackgroundStyle,
-				// 			},
-				// 		},
-				// 	},
+				// 	paperStyleProps: ViewportIconsDefaultStyleProps.style,
+				// 	paperProps: ViewportIconsDefaultStyleProps.paperProps,
+				// 	iconProps: ViewportIconButtonDefaultStyleProps.iconProps,
+				// 	actionIconProps:
+				// 		ViewportIconButtonDefaultStyleProps.actionIconProps,
 				// },
 			}),
 
@@ -1144,13 +1142,11 @@ export const useCustomTheme = (props: Props = {}) => {
 				// },
 				// mobileBreakpoint: "sm",
 				// previewIconProps: {
-				// 	actionIconProps: {
-				// 		styles: {
-				// 			root: {
-				// 				...ViewportTransparentBackgroundStyle,
-				// 			},
-				// 		},
-				// 	},
+				// 	paperStyleProps: ViewportIconsDefaultStyleProps.style,
+				// 	paperProps: ViewportIconsDefaultStyleProps.paperProps,
+				// 	iconProps: ViewportIconButtonDefaultStyleProps.iconProps,
+				// 	actionIconProps:
+				// 		ViewportIconButtonDefaultStyleProps.actionIconProps,
 				// },
 			}),
 			/**

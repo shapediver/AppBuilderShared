@@ -34,7 +34,7 @@ import {
 	useState,
 } from "react";
 import ViewportIconButton, {
-	ViewportIconButtonThemePropsType,
+	ViewportIconButtonProps,
 } from "../../buttons/ViewportIconButton";
 import {ViewportAnchorProps2d} from "../ViewportAnchor2d";
 import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
@@ -42,8 +42,9 @@ import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
 import {useCanvasSize} from "./useCanvasSize";
 import {cleanUnit} from "./utils";
 
-import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
-import {defaultStyleProps} from "../../ViewportIcons";
+import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
+import {defaultStyleProps as ViewportIconButtonDefaultStyleProps} from "../../buttons/ViewportIconButton";
+import {defaultStyleProps as ViewportIconsDefaultStyleProps} from "../../ViewportIcons";
 import classes from "../../ViewportIcons.module.css";
 
 export interface ViewportAnchorProps {
@@ -82,7 +83,12 @@ export interface ViewportAnchorProps {
 export type ViewportAnchorStyleProps = {
 	anchorPaperProps?: Partial<PaperProps>;
 	anchorStackProps?: Partial<StackProps>;
-	previewIconProps?: ViewportIconButtonThemePropsType;
+	previewIconProps?: {
+		paperStyleProps?: ViewportIconsOptionalProps["style"];
+		paperProps?: ViewportIconsOptionalProps["paperProps"];
+		iconProps?: ViewportIconButtonProps["iconProps"];
+		actionIconProps?: ViewportIconButtonProps["actionIconProps"];
+	};
 	/** Breakpoint below which to to switch to the mobile behavior */
 	mobileBreakpoint: MantineBreakpoint;
 };
@@ -90,7 +96,7 @@ export type ViewportAnchorStyleProps = {
 export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
 	anchorPaperProps: {
 		style: {
-			...defaultStyleProps.style,
+			...ViewportIconsDefaultStyleProps.style,
 		},
 		pt: 0,
 		shadow: "md",
@@ -104,13 +110,10 @@ export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
 	},
 	mobileBreakpoint: "sm",
 	previewIconProps: {
-		actionIconProps: {
-			styles: {
-				root: {
-					...ViewportTransparentBackgroundStyle,
-				},
-			},
-		},
+		paperStyleProps: ViewportIconsDefaultStyleProps.style,
+		paperProps: ViewportIconsDefaultStyleProps.paperProps,
+		iconProps: ViewportIconButtonDefaultStyleProps.iconProps,
+		actionIconProps: ViewportIconButtonDefaultStyleProps.actionIconProps,
 	},
 };
 
@@ -386,12 +389,22 @@ export function useAnchorContainer({
 	 * when clicked. The iconProps are applied to the ActionIcon.
 	 */
 	const previewIconElement = (
-		<ViewportIconButton
-			{...previewIconProps}
-			label=""
-			iconType={previewIcon! as string}
-			onMouseDown={toggleContent}
-		/>
+		<Paper
+			style={{...previewIconProps?.paperStyleProps}}
+			{...previewIconProps?.paperProps}
+		>
+			<ViewportIconButton
+				actionIconProps={{
+					...previewIconProps?.actionIconProps,
+				}}
+				iconProps={{
+					...previewIconProps?.iconProps,
+				}}
+				label=""
+				iconType={previewIcon! as string}
+				onMouseDown={toggleContent}
+			/>
+		</Paper>
 	);
 
 	/**

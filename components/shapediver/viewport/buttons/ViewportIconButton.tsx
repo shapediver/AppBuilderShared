@@ -34,7 +34,7 @@ type StyleProps = {
 
 export type ViewportIconButtonProps = Props & StyleProps;
 
-const defaultStyleProps: StyleProps = {
+export const defaultStyleProps: StyleProps = {
 	tooltipWrapperProps: {},
 	actionIconProps: {
 		size: IconPropsType.size,
