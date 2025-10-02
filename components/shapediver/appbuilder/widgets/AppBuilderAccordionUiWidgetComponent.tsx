@@ -128,7 +128,10 @@ export default function AppBuilderAccordionUiWidgetComponent(props: Props) {
 							)}
 						</Accordion.Control>
 						<Accordion.Panel {...accordionPanelProps}>
-							<Stack {...stackProps}>
+							<Stack
+								style={{"--paper-shadow": "none"}} // remove shadow propagation from child Papers
+								{...stackProps}
+							>
 								<AppBuilderWidgetsComponent
 									namespace={namespace}
 									widgets={item.widgets}
