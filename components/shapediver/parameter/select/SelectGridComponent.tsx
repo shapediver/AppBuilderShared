@@ -8,6 +8,7 @@ import {
 } from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
 import Icon from "~/shared/components/ui/Icon";
+import {useCustomHeight} from "~/shared/hooks/shapediver/parameters/useCustomHeight";
 import ButtonImageCard from "./ButtonImageCard";
 import {
 	SelectCardStyleProps,
@@ -17,7 +18,6 @@ import {
 	SelectTextStyleProps,
 	SelectTextWeightedStyleProps,
 } from "./SelectComponent";
-import classes from "./SelectGridComponent.module.css";
 
 interface StyleProps {
 	gridProps: SimpleGridProps;
@@ -166,20 +166,9 @@ export default function SelectGridComponent(
 		descriptionProps,
 	};
 
-	// Merge styles for container; enforce fixed height with internal scroll if provided
-	const containerStyle = height
-		? {
-				...(settings?.stackProps?.style as any),
-				height,
-				display: "flex",
-				flexDirection: "column",
-			}
-		: {
-				...(settings?.stackProps?.style as any),
-			};
-
-	const renderCards = () => {
-		const cards = (
+	// Use custom height hook to handle height-related styling and scrollable content
+	const cardsContent = (
+		<>
 			<SimpleGrid
 				cols={gridProps?.cols}
 				spacing={gridProps?.spacing}
@@ -198,32 +187,25 @@ export default function SelectGridComponent(
 					/>
 				))}
 			</SimpleGrid>
-		);
+			{bottomSection}
+		</>
+	);
 
-		if (height) {
-			return (
-				<div className={classes.scrollableCards}>
-					{cards}
-					{bottomSection}
-				</div>
-			);
-		}
-		return (
-			<>
-				{cards}
-				{bottomSection}
-			</>
-		);
-	};
+	const {containerStyle: heightContainerStyle, element: heightWrapper} =
+		useCustomHeight(cardsContent, height);
 
 	return (
 		<Stack
 			{...stackProps}
-			style={{...(stackProps?.style || {}), ...containerStyle}}
+			style={{
+				...(stackProps?.style || {}),
+				...(settings?.stackProps?.style as any),
+				...heightContainerStyle,
+			}}
 		>
 			{renderSearchInput()}
 			{topSection}
-			{renderCards()}
+			{heightWrapper}
 		</Stack>
 	);
 }
