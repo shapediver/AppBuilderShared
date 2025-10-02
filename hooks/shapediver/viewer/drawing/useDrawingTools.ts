@@ -48,6 +48,7 @@ export function useDrawingTools(
 	// use the drawing tools events
 	const {pointsData, setPointsData} = useDrawingToolsEvents(
 		viewportId,
+		activate,
 		initialPointsData,
 	);
 

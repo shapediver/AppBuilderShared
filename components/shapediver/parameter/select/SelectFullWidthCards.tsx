@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
 import Icon from "~/shared/components/ui/Icon";
+import {useCustomHeight} from "~/shared/hooks/shapediver/parameters/useCustomHeight";
 import {
 	SelectCardStyleProps,
 	SelectComponentProps,
@@ -35,6 +36,7 @@ interface StyleProps {
 	limit: number;
 	height: string;
 	bottomSection: React.ReactNode;
+	topSection: React.ReactNode;
 	useLocalSearch: boolean;
 	onSearch: (search: string) => void;
 }
@@ -81,8 +83,8 @@ export default function SelectFullWidthCardsComponent(
 		itemData,
 		settings,
 		bottomSection = <></>,
-		useLocalSearch = true,
-		onSearch = () => {},
+		topSection = <></>,
+		onSearch,
 		...styleProps
 	} = props;
 
@@ -103,7 +105,7 @@ export default function SelectFullWidthCardsComponent(
 		styleProps,
 	);
 
-	const [search, setSearch] = useState("");
+	const [searchTerm, setSearchTerm] = useState("");
 	// Transform items array into the format expected by the component
 	const cardData = useMemo(
 		() =>
@@ -143,107 +145,97 @@ export default function SelectFullWidthCardsComponent(
 
 		return (
 			<TextInput
-				value={search}
+				value={searchTerm}
 				onChange={(e) => {
 					const term = e.currentTarget.value;
-					setSearch(term);
-					if (onSearch) {
-						onSearch(term);
-					}
+					setSearchTerm(term);
+					onSearch?.(term);
 				}}
 				placeholder="Search"
 				leftSection={<Icon iconType="search" size="1rem" />}
-				disabled={disabled}
 				aria-label="Search options"
 			/>
 		);
 	};
 
-	// Merge styles for container; enforce fixed height with internal scroll if provided
-	const containerStyle = height
-		? {
-				...(settings?.stackProps?.style as any),
-				height,
-				overflowY: "auto",
-			}
-		: {
-				...(settings?.stackProps?.style as any),
-			};
-
 	const filteredCards = useMemo(() => {
-		let out = cardData;
-		const isSearchable = searchable && search.trim();
-		if (isSearchable) {
-			const q = search.toLowerCase();
-			if (useLocalSearch) {
-				out = cardData.filter(
-					(c) =>
-						c.value.toLowerCase().includes(q) ||
-						(c.label || "").toLowerCase().includes(q) ||
-						(c.description || "").toLowerCase().includes(q),
-				);
-			}
-		}
-		return isSearchable && useLocalSearch && limit
-			? out.slice(0, limit)
-			: out;
-	}, [cardData, searchable, search, limit, useLocalSearch]);
+		if (!searchable || !searchTerm.trim() || onSearch) return cardData;
+		const q = searchTerm.toLowerCase();
+		const filteredItems = cardData.filter(
+			(c) =>
+				c.value.toLowerCase().includes(q) ||
+				(c.label || "").toLowerCase().includes(q) ||
+				(c.description || "").toLowerCase().includes(q),
+		);
+		return limit ? filteredItems.slice(0, limit) : filteredItems;
+	}, [cardData, searchable, searchTerm, limit, onSearch]);
 
-	const renderCards = () => {
-		return filteredCards.map((card) => (
-			<UnstyledButton
-				key={card.value}
-				disabled={disabled}
-				onClick={() => handleCardClick(card.value, disabled)}
-				aria-pressed={value === card.value}
-			>
-				<Card
-					className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === card.value ? classes.cardSelected : ""}`}
-					style={getCardStyle(card)}
-					{...cardProps}
-					{...settings?.cardProps}
+	// Use custom height hook to handle height-related styling and scrollable content
+	const cardsContent = (
+		<>
+			{filteredCards.map((card) => (
+				<UnstyledButton
+					key={card.value}
+					disabled={disabled}
+					onClick={() => handleCardClick(card.value, disabled)}
+					aria-pressed={value === card.value}
 				>
-					<Group {...groupProps} {...settings?.groupProps}>
-						{card.imageUrl && (
-							<TooltipWrapper label={card.tooltip}>
-								<Image
-									src={card.imageUrl}
-									alt={card.label}
-									{...imageProps}
-									{...settings?.imageProps}
-								/>
-							</TooltipWrapper>
-						)}
-						<div style={{flex: 1}}>
-							<TextWeighted
-								{...labelProps}
-								{...settings?.labelProps}
-							>
-								{card.label}
-							</TextWeighted>
-							{card.description && (
-								<Text
-									{...descriptionProps}
-									{...settings?.descriptionProps}
-								>
-									{card.description}
-								</Text>
+					<Card
+						className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === card.value ? classes.cardSelected : ""}`}
+						style={getCardStyle(card)}
+						{...cardProps}
+						{...settings?.cardProps}
+					>
+						<Group {...groupProps} {...settings?.groupProps}>
+							{card.imageUrl && (
+								<TooltipWrapper label={card.tooltip}>
+									<Image
+										src={card.imageUrl}
+										alt={card.label}
+										{...imageProps}
+										{...settings?.imageProps}
+									/>
+								</TooltipWrapper>
 							)}
-						</div>
-					</Group>
-				</Card>
-			</UnstyledButton>
-		));
-	};
+							<div style={{flex: 1}}>
+								<TextWeighted
+									{...labelProps}
+									{...settings?.labelProps}
+								>
+									{card.label}
+								</TextWeighted>
+								{card.description && (
+									<Text
+										{...descriptionProps}
+										{...settings?.descriptionProps}
+									>
+										{card.description}
+									</Text>
+								)}
+							</div>
+						</Group>
+					</Card>
+				</UnstyledButton>
+			))}
+			{bottomSection}
+		</>
+	);
+
+	const {containerStyle: heightContainerStyle, element: heightWrapper} =
+		useCustomHeight(cardsContent, height);
 
 	return (
 		<Stack
 			{...stackProps}
-			style={{...(stackProps?.style || {}), ...containerStyle}}
+			style={{
+				...(stackProps?.style || {}),
+				...(settings?.stackProps?.style as any),
+				...heightContainerStyle,
+			}}
 		>
 			{renderSearchInput()}
-			{renderCards()}
-			{bottomSection}
+			{topSection}
+			{heightWrapper}
 		</Stack>
 	);
 }

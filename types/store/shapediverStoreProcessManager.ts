@@ -135,6 +135,14 @@ export interface IProcessManager {
 	notifyProgressChange: (
 		callback: (progress: {[key: string]: IProgress[]}) => void,
 	) => () => void;
+
+	/**
+	 * Resolves all processes.
+	 * This function is called to resolve all processes.
+	 * Once all processes have been resolved, the flags are removed from the viewports
+	 * and the process manager removes itself from the store.
+	 */
+	resolveAllProcesses(): void;
 }
 
 /**
@@ -170,4 +178,13 @@ export interface IShapeDiverStoreProcessManager {
 	 * @param controllerSessionId The id of the controller session.
 	 */
 	createProcessManager: (controllerSessionId: string) => string;
+
+	/**
+	 * Removes a process manager from the store.
+	 * First all processes of the process manager are resolved,
+	 * then the process manager is removed from the store.
+	 *
+	 * @param processManagerId The id of the process manager to remove.
+	 */
+	removeProcessManager: (processManagerId: string) => void;
 }

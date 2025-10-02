@@ -154,6 +154,23 @@ export class ProcessManager implements IProcessManager {
 		};
 	}
 
+	public resolveAllProcesses(): void {
+		for (const processId in this._processes) {
+			const process = this._processes[processId];
+			if (!process.resolved && process.promise) {
+				// resolve the promise to avoid hanging processes
+				Promise.resolve(process.promise);
+				process.resolved = true;
+				process.progress.push({
+					percentage: 1,
+					msg: "Process forcefully resolved.",
+				});
+			}
+		}
+		this._status = PROCESS_STATUS.FINISHED;
+		this.evaluateProcesses();
+	}
+
 	private removeFlags(): void {
 		const {viewportAccessFunctions} =
 			useShapeDiverStoreViewportAccessFunctions.getState();
@@ -372,6 +389,14 @@ export const useShapeDiverStoreProcessManager =
 					});
 
 					return processManagerId;
+				},
+
+				removeProcessManager: (processManagerId: string) => {
+					const processManagers =
+						useShapeDiverStoreProcessManager.getState()
+							.processManagers;
+					if (!processManagers[processManagerId]) return;
+					processManagers[processManagerId].resolveAllProcesses();
 				},
 			}),
 			{...devtoolsSettings, name: "ShapeDiver | Process Manager"},

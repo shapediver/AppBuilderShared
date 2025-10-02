@@ -6,11 +6,13 @@ import TabsComponent, {
 } from "@AppBuilderShared/components/ui/TabsComponent";
 import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
 import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
+import {IUseSessionDto} from "@AppBuilderShared/hooks/shapediver/useSession";
 import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
 import {
 	ISelectedModel,
 	useModelSelectStore,
 } from "@AppBuilderShared/store/useModelSelectStore";
+import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverExampleModels} from "@AppBuilderShared/types/shapediver/examplemodel";
 import {MultiSelect, Notification} from "@mantine/core";
 import React, {useMemo} from "react";
@@ -31,7 +33,9 @@ export default function ModelSelect({exampleModels}: Props) {
 	);
 	const acceptRejectMode = true;
 
-	useSessions(selectedModels);
+	useSessions(
+		selectedModels as (IUseSessionDto & IAppBuilderSettingsSession)[],
+	);
 
 	// callback to handle changes of the model selection
 	const handleChange = (values: string[]) => {

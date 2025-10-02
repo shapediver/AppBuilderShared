@@ -1,6 +1,7 @@
 // #region Interfaces (3)
 
 import {FLAG_TYPE} from "@shapediver/viewer.session";
+import {IAppBuilderParameterValueSourcePropsScreenshot} from "../shapediver/appbuilder";
 
 export interface IShapeDiverStoreViewportAccessFunctions {
 	// #region Public Indexers (1)
@@ -41,7 +42,9 @@ export interface IViewportAccessFunctions {
 	/** Function to convert the viewport to glTF */
 	convertToGlTF?: () => Promise<Blob>;
 	/** Function to create a screenshot and return it as a data URL. */
-	getScreenshot?: () => Promise<string>;
+	getScreenshot?: (
+		props?: IAppBuilderParameterValueSourcePropsScreenshot,
+	) => Promise<string>;
 	/** Function to add a flag to the viewport. */
 	addFlag?: (flag: FLAG_TYPE) => string;
 	/** Function to remove a flag from the viewport. */

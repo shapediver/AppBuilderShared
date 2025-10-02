@@ -13,6 +13,7 @@ import {
 } from "@shapediver/viewer.session";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**
  * Helper for comparing sessions.
@@ -33,8 +34,13 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 	devtools(
 		(set, get) => ({
 			sessions: {},
+			pendingSessions: {},
 
-			createSession: async (dto: SessionCreateDto, callbacks) => {
+			createSession: async (
+				dto: SessionCreateDto,
+				callbacks,
+				load = true,
+			) => {
 				// in case a session with the same identifier exists, skip creating a new one
 				const identifier = createSessionIdentifier(dto);
 				const {sessions} = get();
@@ -45,53 +51,83 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				)
 					return;
 
-				let session: ISessionApi | undefined = undefined;
-				try {
+				if (load) {
+					let session: ISessionApi | undefined = undefined;
 					try {
-						session = await createSession(dto);
-					} catch (e: any) {
-						if (
-							isViewerGeometryBackendResponseError(e) &&
-							e.geometryBackendErrorType ===
-								ResErrorType.REQUEST_VALIDATION_ERROR &&
-							e.message.startsWith("Invalid parameter") &&
-							e.message.includes("'context'")
-						) {
-							console.warn(
-								"Session creation failed due to invalid or missing 'context' parameter. Retrying without 'context' parameter.",
-							);
+						try {
+							session = await createSession(dto);
+						} catch (e: any) {
+							if (
+								isViewerGeometryBackendResponseError(e) &&
+								e.geometryBackendErrorType ===
+									ResErrorType.REQUEST_VALIDATION_ERROR &&
+								e.message.startsWith("Invalid parameter") &&
+								e.message.includes("'context'")
+							) {
+								console.warn(
+									"Session creation failed due to invalid or missing 'context' parameter. Retrying without 'context' parameter.",
+								);
 
-							const dtoWithoutContext: SessionCreateDto = {
-								...dto,
-								initialParameterValues: {
-									...dto.initialParameterValues,
+								const dtoWithoutContext: SessionCreateDto = {
+									...dto,
+									initialParameterValues: {
+										...dto.initialParameterValues,
+									},
+								};
+								delete dtoWithoutContext
+									.initialParameterValues!["context"];
+								session =
+									await createSession(dtoWithoutContext);
+							} else {
+								throw e;
+							}
+						}
+					} catch (e: any) {
+						callbacks?.onError(e);
+					}
+
+					set(
+						(state) => {
+							return {
+								sessions: {
+									...state.sessions,
+									...(session ? {[session.id]: session} : {}),
 								},
 							};
-							delete dtoWithoutContext.initialParameterValues![
-								"context"
-							];
-							session = await createSession(dtoWithoutContext);
-						} else {
-							throw e;
-						}
-					}
-				} catch (e: any) {
-					callbacks?.onError(e);
+						},
+						false,
+						"createSession",
+					);
+					return session;
+				} else {
+					// add the input to the pending sessions
+					set((state) => ({
+						...state,
+						pendingSessions: {
+							...state.pendingSessions,
+							[identifier]: {dto, callbacks},
+						},
+					}));
 				}
+			},
 
-				set(
-					(state) => {
-						return {
-							sessions: {
-								...state.sessions,
-								...(session ? {[session.id]: session} : {}),
-							},
-						};
-					},
-					false,
-					"createSession",
-				);
+			createPendingSession: async (sessionId) => {
+				const {pendingSessions} = get();
+				const identifier = createSessionIdentifier({id: sessionId});
 
+				const pendingSession = pendingSessions[identifier];
+				if (!pendingSession) return;
+
+				const {dto, callbacks} = pendingSession;
+
+				const session = await get().createSession(dto, callbacks, true);
+
+				// remove the input from the pending sessions
+				set((state) => {
+					const newPendingSessions = {...state.pendingSessions};
+					delete newPendingSessions[identifier];
+					return {...state, pendingSessions: newPendingSessions};
+				});
 				return session;
 			},
 
@@ -373,6 +409,7 @@ const assignSessionUpdateCallback = (
  * @param outputUpdateCallbacks
  */
 const assignOutputUpdateCallback = (
+	sessionApi: ISessionApi,
 	outputApi: IOutputApi,
 	outputUpdateCallbacks: {
 		// callback id
@@ -385,6 +422,22 @@ const assignOutputUpdateCallback = (
 				cb(newNode, oldNode),
 			),
 		);
+
+		// Then, automatically sync with parameter store
+		// This ensures output content is always up-to-date
+		const parameterStore = useShapeDiverStoreParameters.getState();
+		const outputStore = parameterStore.getOutput(
+			sessionApi.id,
+			outputApi.id,
+		);
+		if (outputStore) {
+			outputStore.setState(
+				() => ({
+					content: outputApi.content,
+				}),
+				false,
+			);
+		}
 	};
 };
 
@@ -576,6 +629,7 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 			return;
 
 		assignOutputUpdateCallback(
+			session,
 			output,
 			state.outputUpdateCallbacks[sessionId][outputId],
 		);
@@ -596,9 +650,16 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 		// for all outputs, call the output update callback once
 		for (const outputId in session.outputs) {
 			const output = session.outputs[outputId];
-			if (!output.updateCallback) continue;
+			const callbacks =
+				state.outputUpdateCallbacks[session.id]?.[outputId] || {};
 
-			output.updateCallback(output.node, undefined);
+			// Always assign callback for parameter store sync
+			assignOutputUpdateCallback(session, output, callbacks);
+
+			// Call the callback once if it exists
+			if (output.updateCallback) {
+				output.updateCallback(output.node, undefined);
+			}
 		}
 	});
 });

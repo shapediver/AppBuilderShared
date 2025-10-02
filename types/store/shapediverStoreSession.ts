@@ -43,14 +43,41 @@ export interface IShapeDiverStoreSession {
 	sessions: IShapeDiverStoreSessions;
 
 	/**
+	 * Sessions that are created on first use.
+	 * These sessions are not created right away, but only when first used.
+	 */
+	pendingSessions: {
+		[sessionId: string]: {
+			dto: SessionCreateDto;
+			callbacks?: IShapeDiverStoreSessionCallbacks;
+		};
+	};
+
+	/**
 	 * Create a session and add it to the store.
+	 * The load parameter allows to create the session without loading it right away.
+	 * It stores the received data in the pending sessions and only loads it when created via createPendingSession.
+	 *
 	 * @param dto
 	 * @param callbacks
+	 * @param load Whether to load the session right away or store it. (default: true)
 	 * @returns
 	 */
 	createSession: (
 		dto: SessionCreateDto,
 		callbacks?: IShapeDiverStoreSessionCallbacks,
+		load?: boolean,
+	) => Promise<ISessionApi | undefined>;
+
+	/**
+	 * Create a session that is only created when first used.
+	 * This is useful for instances where many sessions are created but not all are used right away.
+	 * @param dto
+	 * @param callbacks
+	 * @returns
+	 */
+	createPendingSession: (
+		sessionId: string,
 	) => Promise<ISessionApi | undefined>;
 
 	/**

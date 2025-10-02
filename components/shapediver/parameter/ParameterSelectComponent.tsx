@@ -13,9 +13,10 @@ import {
 	SelectComponentType,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {validateSelectParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
-import {MantineThemeComponent, MultiSelect, useProps} from "@mantine/core";
+import {MantineThemeComponent, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
 import React, {useCallback, useContext, useMemo} from "react";
+import MultiSelectComponent from "./multiselect/MultiSelectComponent";
 import SelectComponent, {
 	SelectComponentSettings,
 } from "./select/SelectComponent";
@@ -177,7 +178,7 @@ export default function ParameterSelectComponent(
 
 	const inputComponent =
 		definition.visualization === PARAMETER_VISUALIZATION.CHECKLIST ? (
-			<MultiSelect
+			<MultiSelectComponent
 				value={
 					filteredValue
 						? filteredValue
@@ -196,9 +197,11 @@ export default function ParameterSelectComponent(
 						.join(",");
 					handleChange(choices, undefined, restoreFocus);
 				}}
-				data={uniqueChoices}
+				items={uniqueChoices}
 				disabled={disabled}
 				inputContainer={inputContainer}
+				type={settings.type}
+				height={settings.height}
 			/>
 		) : (
 			<SelectComponent

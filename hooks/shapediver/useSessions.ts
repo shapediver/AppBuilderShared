@@ -2,6 +2,7 @@ import {IUseSessionDto} from "@AppBuilderShared/hooks/shapediver/useSession";
 import {useEventTracking} from "@AppBuilderShared/hooks/useEventTracking";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {ISessionApi} from "@shapediver/viewer.session";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -17,7 +18,9 @@ import {useShallow} from "zustand/react/shallow";
  * @param props {@link IUseSessionDto}
  * @returns
  */
-export function useSessions(props: IUseSessionDto[]) {
+export function useSessions(
+	props: (IUseSessionDto & IAppBuilderSettingsSession)[],
+) {
 	const {createSession, closeSession} = useShapeDiverStoreSession(
 		useShallow((state) => ({
 			createSession: state.createSession,
@@ -60,6 +63,7 @@ export function useSessions(props: IUseSessionDto[]) {
 					createSession(
 						{throwOnCustomizationError: true, ...p},
 						{onError: setError},
+						!p.loadOnFirstUse,
 					),
 				);
 			});

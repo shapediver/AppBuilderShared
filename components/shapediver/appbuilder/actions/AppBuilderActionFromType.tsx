@@ -2,11 +2,11 @@ import AppBuilderActionAddToCartComponent from "@AppBuilderShared/components/sha
 import AppBuilderActionCloseConfiguratorComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCloseConfiguratorComponent";
 import AppBuilderActionCreateModelStateComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCreateModelStateComponent";
 import AppBuilderActionSetBrowserLocationComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetBrowserLocationComponent";
-import AppBuilderActionSetParameterValueComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValueComponent";
 import AppBuilderActionSetParameterValuesComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValuesComponent";
 import {
 	IAppBuilderControlActionRef,
 	isAddToCartAction,
+	isCameraAction,
 	isCloseConfiguratorAction,
 	isCreateModelStateAction,
 	isSetBrowserLocationAction,
@@ -14,6 +14,7 @@ import {
 	isSetParameterValuesAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import React from "react";
+import AppBuilderActionCameraComponent from "./AppBuilderActionCameraComponent";
 
 export function AppBuilderActionFromType(
 	actionRef: IAppBuilderControlActionRef,
@@ -52,7 +53,7 @@ export function AppBuilderActionFromType(
 		);
 	else if (isSetParameterValueAction(actionRef.definition))
 		return (
-			<AppBuilderActionSetParameterValueComponent
+			<AppBuilderActionSetParameterValuesComponent
 				key={key}
 				namespace={namespace}
 				{...actionPropsCommon}
@@ -71,6 +72,15 @@ export function AppBuilderActionFromType(
 	else if (isSetBrowserLocationAction(actionRef.definition))
 		return (
 			<AppBuilderActionSetBrowserLocationComponent
+				key={key}
+				namespace={namespace}
+				{...actionPropsCommon}
+				{...actionRef.definition.props}
+			/>
+		);
+	else if (isCameraAction(actionRef.definition))
+		return (
+			<AppBuilderActionCameraComponent
 				key={key}
 				namespace={namespace}
 				{...actionPropsCommon}

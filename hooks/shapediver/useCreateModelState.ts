@@ -3,6 +3,7 @@ import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverSt
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {MantineThemeComponent, useProps} from "@mantine/core";
+import {ISessionApi} from "@shapediver/viewer.session";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -71,6 +72,7 @@ export function useCreateModelState(props: Props) {
 			data?: Record<string, any>,
 			includeGltf?: boolean,
 		) => {
+			if (!sessionApi) return {};
 			const parameterValues = Object.values(sessionApi.parameters)
 				.filter(
 					(p) =>
@@ -133,10 +135,10 @@ export function useCreateModelState(props: Props) {
 	);
 
 	const applyModelStateToQueryParameter = useCallback(
-		(modelStateId: string) => {
+		(modelStateId: string, updateUrl: boolean = true) => {
 			const url = new URL(window.location.href);
 			url.searchParams.set(QUERYPARAM_MODELSTATEID, modelStateId);
-			window.history.replaceState({}, "", url.toString());
+			if (updateUrl) window.history.replaceState({}, "", url.toString());
 			return url;
 		},
 		[],

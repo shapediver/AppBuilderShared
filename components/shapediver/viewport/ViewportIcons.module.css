@@ -14,7 +14,7 @@
 
 .ViewportIcon {
 	&:disabled,
-    &[data-disabled] {
-        background-color: transparent;
-    }
+	&[data-disabled] {
+		background-color: transparent;
+	}
 }

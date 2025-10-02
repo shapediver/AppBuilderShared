@@ -11,6 +11,11 @@ import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSes
 import {MantineColor} from "@mantine/core";
 import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
 import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
+import {
+	ICameraOptions,
+	OrthographicCameraProperties,
+	PerspectiveCameraProperties,
+} from "@shapediver/viewer.viewport";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
@@ -44,7 +49,9 @@ export type SelectComponentType =
 	| "imagedropdown"
 	| "fullwidthcards"
 	| "carousel"
-	| "grid";
+	| "grid"
+	| "multiselect-chips"
+	| "multiselect-checkboxes";
 
 /** Data for an item shown by a selection component. */
 export interface ISelectComponentItemDataType {
@@ -60,6 +67,11 @@ export interface ISelectComponentItemDataType {
 	color?: MantineColor;
 	/** Optionally hide the item. */
 	hidden?: boolean;
+	/**
+	 * Optional additional data that can be sent to a String parameter
+	 * represented by a selection component, instead of the selected item value.
+	 */
+	data?: Record<string, any>;
 }
 
 /** Settings for selection parameters (typically used for parameters of type "StringList") */
@@ -201,6 +213,11 @@ export interface IAppBuilderControlExportRef {
 		Partial<IAppBuilderExportDefinition>,
 		"displayname" | "tooltip" | "hidden"
 	>;
+	/**
+	 * The parameter values that should be used for the export.
+	 * These parameter values must belong to the same session as the export.
+	 */
+	parameterValues?: IAppBuilderActionPropsSetParameterValue[];
 }
 
 /** Control referencing an output (defined by the session) */
@@ -227,7 +244,8 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsSetParameterValue
 		| IAppBuilderActionPropsSetParameterValues
 		| IAppBuilderActionPropsSetBrowserLocation
-		| IAppBuilderActionPropsCloseConfigurator;
+		| IAppBuilderActionPropsCloseConfigurator
+		| IAppBuilderActionPropsCamera;
 }
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -256,6 +274,124 @@ export interface IAppBuilderImageRef {
 	href?: string;
 }
 
+/** Types of parameter value sources */
+export type AppBuilderParameterValueSourceType =
+	| "screenshot"
+	| "dataOutput"
+	| "export"
+	| "sdtf"
+	| "modelState";
+
+/**
+ * Properties for the "screenshot" parameter value source.
+ * This parameter value source is compatible with parameters of type "File".
+ * The specified contentType must be supported by the respective "File"	parameter.
+ */
+export interface IAppBuilderParameterValueSourcePropsScreenshot {
+	/**
+	 * Optional type of the screenshot, defaults to "image/png".
+	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IViewportApi.html#getScreenshot
+	 */
+	contentType?: string;
+	/**
+	 * Optional quality of the screenshot, between 0 and 1, defaults to 1.
+	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IViewportApi.html#getScreenshot
+	 */
+	quality?: number;
+	/**
+	 * Optional resolution of the screenshot, defaults to the current resolution of the viewport.
+	 * TODO SS-8346 define type
+	 */
+	resolution?: {width: number; height: number};
+	/**
+	 * Optional camera settings to be used for the screenshot. Defaults to the current camera of the viewport.
+	 * If a "name" is provided, the settings of the camera with that name are used as a base.
+	 */
+	camera?: OrthographicCameraProperties | PerspectiveCameraProperties;
+}
+
+/**
+ * Properties for the "dataOutput" parameter value source.
+ * This parameter value source is compatible with parameters of type "String" and "File".
+ * For "File" parameters, the content type "application/json" is used.
+ */
+export interface IAppBuilderParameterValueSourcePropsDataOutput {
+	/** Id of the session to use for finding the data output. Defaults to the controller session. */
+	sessionId?: string;
+	/** Id or name or displayname of the referenced data output (in that order). */
+	name: string;
+}
+
+/**
+ * Properties for the "export" parameter value source.
+ * This parameter value source is compatible with parameters of type "File".
+ * The content type of the exported file must be supported by the "File" parameter.
+ */
+export interface IAppBuilderParameterValueSourcePropsExport {
+	/** Id of the session to use for finding the export. Defaults to the controller session. */
+	sessionId?: string;
+	/** Id or name or displayname of the referenced export (in that order). */
+	name: string;
+}
+
+/**
+ * Properties for the "sdtf" parameter value source.
+ * This parameter value source is compatible with parameters of type "s*".
+ *
+ * Note: The specified chunk must be compatible with the parameter type,
+ * otherwise no data will be set in Grasshopper.
+ *
+ * @see https://help.shapediver.com/doc/sdtf-structured-data-transfer-format#sdTF-Structureddatatransferformat-Chunkselectionlogic
+ */
+export interface IAppBuilderParameterValueSourcePropsSdtf {
+	/** Id of the session to use for finding the sdtf output. Defaults to the controller session. */
+	sessionId?: string;
+	/** Id or name or displayname of the referenced sdtf output (in that order). */
+	name: string;
+	/**
+	 * Optional, defines chunk to be used.
+	 * @see https://help.shapediver.com/doc/sdtf-structured-data-transfer-format#sdTF-Structureddatatransferformat-Advancedcase
+	 */
+	chunk?: {
+		/** Id of the chunk to be used. */
+		id?: string;
+		/** Name of the chunk to be used. */
+		name?: string;
+	};
+}
+
+/**
+ * Properties for the "modelState" parameter value source.
+ * A new model state will be created according to the properties.
+ * This parameter value source is compatible with parameters of type "String".
+ *
+ * The parameter value resulting from this source is the current location (URL),
+ * including the following query parameters:
+ *   * modelStateId: the id of the created model state
+ *   * other query parameters defined in the current URL, except for UTM parameters
+ */
+export interface IAppBuilderParameterValueSourcePropsModelState
+	extends IAppBuilderActionPropsCreateModelState {
+	/**
+	 * Whether the URL shown in the browser shall be updated
+	 * with the newly created modelStateId.
+	 */
+	updateUrl?: boolean;
+}
+
+/** Definition of a parameter value source. */
+export interface IAppBuilderParameterValueSourceDefinition {
+	/** Type of the parameter value source. */
+	type: AppBuilderParameterValueSourceType;
+	/** Properties of the parameter value source, depending on type. */
+	props:
+		| IAppBuilderParameterValueSourcePropsScreenshot
+		| IAppBuilderParameterValueSourcePropsDataOutput
+		| IAppBuilderParameterValueSourcePropsExport
+		| IAppBuilderParameterValueSourcePropsSdtf
+		| IAppBuilderParameterValueSourcePropsModelState;
+}
+
 /** Types of actions */
 export type AppBuilderActionType =
 	| "createModelState"
@@ -263,7 +399,8 @@ export type AppBuilderActionType =
 	| "setParameterValue"
 	| "setParameterValues"
 	| "setBrowserLocation"
-	| "closeConfigurator";
+	| "closeConfigurator"
+	| "camera";
 
 /** Properties of a "createModelState" action. */
 export interface IAppBuilderActionPropsCreateModelState {
@@ -331,8 +468,10 @@ export type IAppBuilderLegacyActionPropsAddToCart =
 export interface IAppBuilderActionPropsSetParameterValue {
 	/** The parameter that should be set. */
 	parameter: Pick<IAppBuilderParameterRef, "name" | "sessionId">;
-	/** Value to set. */
-	value: string;
+	/** Value to set. Either "value" or "source" must be set. */
+	value?: string;
+	/** Source of the parameter value. Either "source" or "value" must be set. */
+	source?: IAppBuilderParameterValueSourceDefinition;
 }
 
 /** Properties of legacy a "setParameterValue" action. */
@@ -392,6 +531,49 @@ export type IAppBuilderActionPropsCloseConfigurator = object;
 export type IAppBuilderLegacyActionPropsCloseConfigurator =
 	IAppBuilderActionPropsCloseConfigurator & IAppBuilderActionPropsCommon;
 
+type IAppBuilderPropsCameraCommon = {
+	/** Optional camera settings to be used. Defaults to the initial camera of the viewport. */
+	camera?: OrthographicCameraProperties | PerspectiveCameraProperties;
+	/** Camera properties, including duration and easing. */
+	options?: ICameraOptions;
+};
+
+/** Properties of a "animate" action, where the camera is defined by an array of position and targets. */
+export type IAppBuilderPropsAnimateCamera = {
+	path: {
+		/** The position of the camera. */
+		position: [number, number, number];
+		/** The target the camera is looking at. */
+		target: [number, number, number];
+	}[];
+} & IAppBuilderPropsCameraCommon;
+
+/** Properties of a "set" action, where the camera is defined by position and target. */
+export type IAppBuilderPropsSetCamera = {
+	/** The position of the camera. */
+	position?: [number, number, number];
+	/** The target the camera is looking at. */
+	target?: [number, number, number];
+} & IAppBuilderPropsCameraCommon;
+
+/** Properties of a "reset" action. */
+export type IAppBuilderPropsResetCamera = IAppBuilderPropsCameraCommon;
+
+/** Properties of a "zoomTo" action. */
+export type IAppBuilderPropsZoomToCamera = IAppBuilderPropsCameraCommon;
+
+/** Properties of a camera action. */
+export type IAppBuilderActionPropsCamera = {
+	/** Type of camera action. */
+	type: "animate" | "set" | "reset" | "zoomTo";
+	/** Properties of the camera action. */
+	props:
+		| IAppBuilderPropsAnimateCamera
+		| IAppBuilderPropsSetCamera
+		| IAppBuilderPropsResetCamera
+		| IAppBuilderPropsZoomToCamera;
+} & IAppBuilderActionPropsCommon;
+
 /** A legacy App Builder action definition. */
 export interface IAppBuilderLegacyActionDefinition {
 	/** Type of the action. */
@@ -403,7 +585,8 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsSetParameterValue
 		| IAppBuilderLegacyActionPropsSetParameterValues
 		| IAppBuilderLegacyActionPropsSetBrowserLocation
-		| IAppBuilderLegacyActionPropsCloseConfigurator;
+		| IAppBuilderLegacyActionPropsCloseConfigurator
+		| IAppBuilderActionPropsCamera;
 }
 
 /** Types of widgets */
@@ -720,6 +903,15 @@ export interface IAppBuilderContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
+export type AppBuilderOutputActionsType = "setParameterValue";
+
+export interface IAppBuilderOutputActionsPropsSetParameterValue {
+	/** the displayname/name/id of the output */
+	output: string;
+	/** the displayname/name/id of the parameter that should be set */
+	parameter: string;
+}
+
 export interface IAppBuilderInstanceDefinition {
 	/** Id of the instance. */
 	sessionId: string;
@@ -731,9 +923,21 @@ export interface IAppBuilderInstanceDefinition {
 	 * The value is the parameter value.
 	 * If none is provided, the default parameter set is used.
 	 **/
-	parameterValues?: {[key: string]: string | number | boolean};
+	parameterValues?: {
+		[key: string]:
+			| string
+			| number
+			| boolean
+			| IAppBuilderParameterValueSourceDefinition;
+	};
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
+	/** The output actions that should be done after an output has been updated. */
+	outputActions?: {
+		// the type of action that should be used on the output
+		type: AppBuilderOutputActionsType;
+		props: IAppBuilderOutputActionsPropsSetParameterValue;
+	}[];
 }
 
 /**
@@ -987,6 +1191,53 @@ export function isCloseConfiguratorAction(
 	return action.type === "closeConfigurator";
 }
 
+/** assert action type "camera" */
+export function isCameraAction(
+	action: IAppBuilderActionDefinition,
+): action is {type: "camera"; props: IAppBuilderActionPropsCamera} {
+	return action.type === "camera";
+}
+
+/** assert camera action "animate" */
+export function isAnimateCameraAction(
+	action: IAppBuilderActionPropsCamera,
+): action is {
+	type: "animate";
+	props: IAppBuilderPropsAnimateCamera;
+} {
+	return action.type === "animate";
+}
+
+/** assert camera action "set" */
+export function isSetCameraAction(
+	action: IAppBuilderActionPropsCamera,
+): action is {
+	type: "set";
+	props: IAppBuilderPropsSetCamera;
+} {
+	return action.type === "set";
+}
+
+/** assert camera action "reset" */
+export function isResetCameraAction(
+	action: IAppBuilderActionPropsCamera,
+): action is {
+	type: "reset";
+	props: IAppBuilderPropsResetCamera;
+} {
+	return action.type === "reset";
+}
+
+/** assert camera action "zoomTo" */
+export function isZoomToCameraAction(
+	action: IAppBuilderActionPropsCamera,
+): action is {
+	type: "zoomTo";
+	props: IAppBuilderPropsZoomToCamera;
+} {
+	return action.type === "zoomTo";
+}
+
 /** assert control type "parameter" */
 export function isParameterRefControl(control: IAppBuilderControl): control is {
 	type: "parameter";
@@ -1017,6 +1268,69 @@ export function isOutputRefControl(control: IAppBuilderControl): control is {
 	props: IAppBuilderControlOutputRef;
 } {
 	return control.type === "output";
+}
+
+/** assert parameter source */
+export function isParameterSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is IAppBuilderParameterValueSourceDefinition {
+	return (
+		isDataOutputSource(source) ||
+		isExportSource(source) ||
+		isSdtfSource(source) ||
+		isModelStateSource(source) ||
+		isScreenshotSource(source)
+	);
+}
+
+/** assert source type "dataOutput" */
+export function isDataOutputSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "dataOutput";
+	props: IAppBuilderParameterValueSourcePropsDataOutput;
+} {
+	return source.type === "dataOutput";
+}
+
+/** assert source type "export" */
+export function isExportSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "export";
+	props: IAppBuilderParameterValueSourcePropsExport;
+} {
+	return source.type === "export";
+}
+
+/** assert source type "sdtf" */
+export function isSdtfSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "sdtf";
+	props: IAppBuilderParameterValueSourcePropsSdtf;
+} {
+	return source.type === "sdtf";
+}
+
+/** assert source type "modelState" */
+export function isModelStateSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "modelState";
+	props: IAppBuilderParameterValueSourcePropsModelState;
+} {
+	return source.type === "modelState";
+}
+
+/** assert source type "screenshot" */
+export function isScreenshotSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "screenshot";
+	props: IAppBuilderParameterValueSourcePropsScreenshot;
+} {
+	return source.type === "screenshot";
 }
 
 /**
@@ -1075,6 +1389,10 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 * Optional boolean to treat this sessions as an instance (default: false).
 	 */
 	instance?: boolean;
+	/**
+	 * If the session is an instance, optional property to delay loading of the instance until the first time it is used. (default: false)
+	 */
+	loadOnFirstUse?: boolean;
 }
 
 /**

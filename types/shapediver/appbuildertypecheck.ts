@@ -5,6 +5,7 @@ import {
 	PARAMETER_VISUALIZATION,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.session";
+import {CAMERA_TYPE} from "@shapediver/viewer.viewport";
 import {z} from "zod";
 import {
 	AppBuilderContainerNameType,
@@ -32,6 +33,7 @@ export const ISelectComponentItemDataTypeSchema = z.object({
 	imageUrl: z.string().optional(),
 	color: z.string().optional(),
 	hidden: z.boolean().optional(),
+	data: z.record(z.any()).optional(),
 });
 
 // Zod type definition for ISelectParameterSettings
@@ -150,11 +152,55 @@ const IAppBuilderImageRefSchema = z.object({
 	href: z.string().optional(),
 });
 
-// Zod type definition for IAppBuilderActionPropsCommon
-const IAppBuilderActionPropsCommonSchema = z.object({
-	label: z.string().optional(),
-	icon: z.string().optional(),
-	tooltip: z.string().optional(),
+// Zod type definition for IAppBuilderParameterValueSourcePropsScreenshot
+const IAppBuilderParameterValueSourcePropsScreenshotSchema = z.object({
+	contentType: z.string().optional(),
+	quality: z.number().min(0).max(1).optional(),
+	resolution: z
+		.object({
+			width: z.number().int().positive(),
+			height: z.number().int().positive(),
+		})
+		.optional(),
+	// check if there is either a name or type present
+	camera: z
+		.union([
+			z
+				.object({
+					name: z.string(),
+				})
+				.passthrough(),
+			z
+				.object({
+					type: z.nativeEnum(CAMERA_TYPE),
+				})
+				.passthrough(),
+		])
+		.optional(),
+});
+
+// Zod type definition for IAppBuilderParameterValueSourcePropsDataOutput
+const IAppBuilderParameterValueSourcePropsDataOutputSchema = z.object({
+	sessionId: z.string().optional(),
+	name: z.string(),
+});
+
+// Zod type definition for IAppBuilderParameterValueSourcePropsExport
+const IAppBuilderParameterValueSourcePropsExportSchema = z.object({
+	sessionId: z.string().optional(),
+	name: z.string(),
+});
+
+// Zod type definition for IAppBuilderParameterValueSourcePropsSdtf
+const IAppBuilderParameterValueSourcePropsSdtfSchema = z.object({
+	sessionId: z.string().optional(),
+	name: z.string(),
+	chunk: z
+		.object({
+			id: z.string().optional(),
+			name: z.string().optional(),
+		})
+		.optional(),
 });
 
 // Zod type definition for IAppBuilderActionPropsCreateModelState
@@ -164,6 +210,46 @@ const IAppBuilderActionPropsCreateModelStateSchema = z.object({
 	includeGltf: z.boolean().optional(),
 	parameterNamesToInclude: z.array(z.string()).optional(),
 	parameterNamesToExclude: z.array(z.string()).optional(),
+});
+
+// Zod type definition for IAppBuilderParameterValueSourcePropsModelState
+const IAppBuilderParameterValueSourcePropsModelStateSchema =
+	IAppBuilderActionPropsCreateModelStateSchema.extend({
+		updateUrl: z.boolean().optional(),
+	});
+
+// Zod type definition for IAppBuilderParameterValueSourceDefinition
+const IAppBuilderParameterValueSourceDefinitionSchema = z.discriminatedUnion(
+	"type",
+	[
+		z.object({
+			type: z.literal("dataOutput"),
+			props: IAppBuilderParameterValueSourcePropsDataOutputSchema,
+		}),
+		z.object({
+			type: z.literal("export"),
+			props: IAppBuilderParameterValueSourcePropsExportSchema,
+		}),
+		z.object({
+			type: z.literal("modelState"),
+			props: IAppBuilderParameterValueSourcePropsModelStateSchema,
+		}),
+		z.object({
+			type: z.literal("screenshot"),
+			props: IAppBuilderParameterValueSourcePropsScreenshotSchema,
+		}),
+		z.object({
+			type: z.literal("sdtf"),
+			props: IAppBuilderParameterValueSourcePropsSdtfSchema,
+		}),
+	],
+);
+
+// Zod type definition for IAppBuilderActionPropsCommon
+const IAppBuilderActionPropsCommonSchema = z.object({
+	label: z.string().optional(),
+	icon: z.string().optional(),
+	tooltip: z.string().optional(),
 });
 
 // Zod type definition for IAppBuilderLegacyActionPropsCreateModelState
@@ -194,7 +280,8 @@ const IAppBuilderActionPropsSetParameterValueSchema = z.object({
 		name: true,
 		sessionId: true,
 	}),
-	value: z.string(),
+	value: z.string().optional(),
+	source: IAppBuilderParameterValueSourceDefinitionSchema.optional(),
 });
 
 // Zod type definition for IAppBuilderLegacyActionPropsSetParameterValue
@@ -239,6 +326,70 @@ const IAppBuilderLegacyActionPropsCloseConfiguratorSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
+const IAppBuilderActionPropsCameraCommonSchema = z.object({
+	camera: z
+		.union([
+			z
+				.object({
+					name: z.string(),
+				})
+				.passthrough(),
+			z
+				.object({
+					type: z.nativeEnum(CAMERA_TYPE),
+				})
+				.passthrough(),
+		])
+		.optional(),
+	options: z.record(z.any()).optional(),
+});
+
+// Zod type definition for IAppBuilderActionPropsCameraCommon
+const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
+	z
+		.object({
+			type: z.literal("animate"),
+			props: z
+				.object({
+					path: z.array(
+						z.object({
+							position: z.array(z.number()).length(3),
+							target: z.array(z.number()).length(3),
+						}),
+					),
+				})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.object({
+			type: z.literal("set"),
+			props: z
+				.object({
+					position: z.array(z.number()).length(3),
+					target: z.array(z.number()).length(3),
+				})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.object({
+			type: z.literal("reset"),
+			props: z
+				.object({})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.object({
+			type: z.literal("zoomTo"),
+			props: z
+				.object({})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+]);
+
 // Zod type definition for IAppBuilderLegacyActionDefinition
 const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -264,6 +415,10 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("closeConfigurator"),
 		props: IAppBuilderLegacyActionPropsCloseConfiguratorSchema,
+	}),
+	z.object({
+		type: z.literal("camera"),
+		props: IAppBuilderActionPropsCameraSchema,
 	}),
 ]);
 
@@ -307,6 +462,9 @@ const IAppBuilderControlExportRefSchema = z.object({
 	name: z.string(),
 	sessionId: z.string().optional(),
 	overrides: IAppBuilderControlExportRefOverridesSchema.optional(),
+	parameterValues: z
+		.array(IAppBuilderLegacyActionPropsSetParameterValueSchema)
+		.optional(),
 });
 
 // Zod type definition for IAppBuilderActionDefinition
@@ -334,6 +492,10 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("closeConfigurator"),
 		props: IAppBuilderActionPropsCloseConfigurator,
+	}),
+	z.object({
+		type: z.literal("camera"),
+		props: IAppBuilderActionPropsCameraSchema,
 	}),
 ]);
 
@@ -784,14 +946,35 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
 ]);
 
+const IAppBuilderOutputActionsPropsSetParameterValueSchema = z.object({
+	parameter: z.string(),
+	output: z.string(),
+});
+
 // Zod type definition for IAppBuilderInstances
 const IAppBuilderInstancesSchema = z.object({
 	sessionId: z.string(),
 	name: z.string().optional(),
 	parameterValues: z
-		.record(z.string().or(z.number()).or(z.boolean()))
+		.record(
+			z
+				.string()
+				.or(z.number())
+				.or(z.boolean())
+				.or(IAppBuilderParameterValueSourceDefinitionSchema),
+		)
 		.optional(),
 	transformations: z.array(z.array(z.number())).optional(),
+	outputActions: z
+		.array(
+			z.discriminatedUnion("type", [
+				z.object({
+					type: z.literal("setParameterValue"),
+					props: IAppBuilderOutputActionsPropsSetParameterValueSchema,
+				}),
+			]),
+		)
+		.optional(),
 });
 
 // Zod type definition for IAppBuilder
@@ -823,6 +1006,7 @@ const IAppBuilderSettingsSessionSchema = z.object({
 	acceptRejectMode: z.boolean().optional(),
 	modelStateId: z.string().optional(),
 	instance: z.boolean().optional(),
+	loadOnFirstUse: z.boolean().optional(),
 });
 
 // Zod type definition for IAppBuilderSettingsSettings

@@ -8,6 +8,7 @@ import {
 } from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
 import Icon from "~/shared/components/ui/Icon";
+import {useCustomHeight} from "~/shared/hooks/shapediver/parameters/useCustomHeight";
 import ButtonImageCard from "./ButtonImageCard";
 import {
 	SelectCardStyleProps,
@@ -30,7 +31,7 @@ interface StyleProps {
 	limit: number;
 	height: string;
 	bottomSection: React.ReactNode;
-	useLocalSearch: boolean;
+	topSection: React.ReactNode;
 	onSearch: (search: string) => void;
 }
 
@@ -77,8 +78,8 @@ export default function SelectGridComponent(
 		itemData,
 		settings,
 		bottomSection = <></>,
-		useLocalSearch = true,
-		onSearch = () => {},
+		topSection = <></>,
+		onSearch,
 		...styleProps
 	} = props;
 
@@ -97,7 +98,7 @@ export default function SelectGridComponent(
 	} = useProps("SelectGridComponent", defaultStyleProps, styleProps);
 
 	const showLabel = settings?.showLabel ?? _showLabel;
-	const [search, setSearch] = useState("");
+	const [searchTerm, setSearchTerm] = useState("");
 
 	// Transform items array into the format expected by the component
 	const gridItems = useMemo(
@@ -118,23 +119,16 @@ export default function SelectGridComponent(
 	);
 
 	const filteredItems = useMemo(() => {
-		let out = gridItems;
-		const isSearchable = searchable && search.trim();
-		if (isSearchable) {
-			const q = search.toLowerCase();
-			if (useLocalSearch) {
-				out = gridItems.filter(
-					(c) =>
-						c.value.toLowerCase().includes(q) ||
-						(c.label || "").toLowerCase().includes(q) ||
-						(c.description || "").toLowerCase().includes(q),
-				);
-			}
-		}
-		return isSearchable && useLocalSearch && limit
-			? out.slice(0, limit)
-			: out;
-	}, [gridItems, searchable, search, limit, useLocalSearch]);
+		if (!searchable || !searchTerm.trim() || onSearch) return gridItems;
+		const q = searchTerm.toLowerCase();
+		const filteredItems = gridItems.filter(
+			(c) =>
+				c.value.toLowerCase().includes(q) ||
+				(c.label || "").toLowerCase().includes(q) ||
+				(c.description || "").toLowerCase().includes(q),
+		);
+		return limit ? filteredItems.slice(0, limit) : filteredItems;
+	}, [gridItems, searchable, searchTerm, limit, onSearch]);
 
 	// Handle card selection
 	const handleCardClick = useCallback(
@@ -151,17 +145,14 @@ export default function SelectGridComponent(
 
 		return (
 			<TextInput
-				value={search}
+				value={searchTerm}
 				onChange={(e) => {
 					const term = e.currentTarget.value;
-					setSearch(term);
-					if (onSearch) {
-						onSearch(term);
-					}
+					setSearchTerm(term);
+					onSearch?.(term);
 				}}
 				placeholder="Search"
 				leftSection={<Icon iconType="search" size="1rem" />}
-				disabled={disabled}
 				aria-label="Search options"
 			/>
 		);
@@ -175,23 +166,9 @@ export default function SelectGridComponent(
 		descriptionProps,
 	};
 
-	// Merge styles for container; enforce fixed height with internal scroll if provided
-	const containerStyle = height
-		? {
-				...(settings?.stackProps?.style as any),
-				height,
-				overflowY: "auto",
-			}
-		: {
-				...(settings?.stackProps?.style as any),
-			};
-
-	return (
-		<Stack
-			{...stackProps}
-			style={{...(stackProps?.style || {}), ...containerStyle}}
-		>
-			{renderSearchInput()}
+	// Use custom height hook to handle height-related styling and scrollable content
+	const cardsContent = (
+		<>
 			<SimpleGrid
 				cols={gridProps?.cols}
 				spacing={gridProps?.spacing}
@@ -211,6 +188,24 @@ export default function SelectGridComponent(
 				))}
 			</SimpleGrid>
 			{bottomSection}
+		</>
+	);
+
+	const {containerStyle: heightContainerStyle, element: heightWrapper} =
+		useCustomHeight(cardsContent, height);
+
+	return (
+		<Stack
+			{...stackProps}
+			style={{
+				...(stackProps?.style || {}),
+				...(settings?.stackProps?.style as any),
+				...heightContainerStyle,
+			}}
+		>
+			{renderSearchInput()}
+			{topSection}
+			{heightWrapper}
 		</Stack>
 	);
 }

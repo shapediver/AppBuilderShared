@@ -78,6 +78,7 @@ export default function ParameterGumballComponent(
 		disabled,
 		value,
 		state,
+		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
@@ -136,28 +137,40 @@ export default function ParameterGumballComponent(
 	// get the transformed nodes and the selected nods
 	const {
 		transformedNodeNames,
+		setTransformedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
 	} = useGumball(
+		sessionDependencies,
 		viewportId,
 		gumballProps,
 		gumballActive,
 		parseTransformation(value),
 	);
 
+	const transformedNodeNamesRef = useRef(transformedNodeNames);
+	useEffect(() => {
+		transformedNodeNamesRef.current = transformedNodeNames;
+	}, [transformedNodeNames]);
+
 	// react to changes of the execValue and reset the last confirmed value
 	useEffect(() => {
 		const parsedExecValue = parseTransformation(state.execValue);
 		setParsedExecValue(parsedExecValue);
 		setLastConfirmedValue(parsedExecValue);
+		setTransformedNodeNames(parsedExecValue);
 	}, [state.execValue]);
 
 	// reset the transformed nodes when the definition changes
 	useEffect(() => {
-		const parsed = parseTransformation(state.execValue);
-		if (JSON.stringify(parsed) !== JSON.stringify(parsedExecValue)) {
+		const parsed = parseTransformation(definition.defval);
+		if (
+			JSON.stringify(parsed) !==
+			JSON.stringify(transformedNodeNamesRef.current)
+		) {
 			setParsedExecValue(parsed);
 			setLastConfirmedValue(parsed);
+			setTransformedNodeNames(parsed);
 		}
 	}, [definition]);
 
