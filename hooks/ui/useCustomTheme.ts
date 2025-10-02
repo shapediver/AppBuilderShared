@@ -88,7 +88,7 @@ import {
 	mergeThemeOverrides,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
-import {MultiSelectCheckboxesProps} from "~/shared/components/shapediver/parameter/multiselect/MultiSelectCheckboxesComponent.tsx";
+import {MultiSelectCheckboxesProps} from "~/shared/components/shapediver/parameter/multiselect/MultiSelectCheckboxesComponent";
 import {CreateModelStateHookThemeProps} from "../shapediver/useCreateModelState";
 
 /**

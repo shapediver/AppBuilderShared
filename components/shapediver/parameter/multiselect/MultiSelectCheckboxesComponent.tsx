@@ -1,4 +1,4 @@
-import {useCustomHeight} from "@AppBuilderShared/hooks/shapediver/parameters/useCustomHeight.tsx";
+import {useCustomHeight} from "@AppBuilderShared/hooks/shapediver/parameters/useCustomHeight";
 import {
 	Checkbox,
 	CheckboxProps,

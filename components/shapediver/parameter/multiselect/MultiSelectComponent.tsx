@@ -1,6 +1,6 @@
 import {SelectComponentType} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React from "react";
-import MultiSelectCheckboxesComponent from "./MultiSelectCheckboxesComponent.tsx";
+import MultiSelectCheckboxesComponent from "./MultiSelectCheckboxesComponent";
 import MultiSelectDropDownComponent from "./MultiSelectDropDownComponent";
 
 export interface MultiSelectComponentProps {
