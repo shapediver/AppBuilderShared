@@ -1,17 +1,17 @@
+import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
 import React from "react";
-import {useParameterImportExport} from "~/shared/hooks/shapediver/parameters/useParameterImportExport";
 import {CommonButtonProps} from "./types";
 import ViewportIconButton from "./ViewportIconButton";
 
 interface ReloadButtonProps extends CommonButtonProps {
-	disabled: boolean;
+	disabled?: boolean;
 	namespace: string;
 	hasPendingChanges: boolean;
 	executing: boolean;
 }
 
 export default function ReloadButton({
-	disabled,
+	disabled = false,
 	namespace,
 	hasPendingChanges,
 	executing,
