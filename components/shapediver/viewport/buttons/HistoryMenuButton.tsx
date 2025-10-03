@@ -8,13 +8,13 @@ import {CommonButtonProps} from "./types";
 import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 
 interface HistoryMenuButtonProps extends CommonButtonProps {
-	disabled: boolean;
+	disabled?: boolean;
 	namespace: string;
 	visible?: boolean;
 }
 
 export default function HistoryMenuButton({
-	disabled,
+	disabled = false,
 	namespace,
 	visible = true,
 }: HistoryMenuButtonProps) {

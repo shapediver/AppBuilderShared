@@ -1,5 +1,6 @@
 import {ModelCardOverlayPropsType} from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlay";
 import {OverlayStyleProps} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
+import {ButtonRenderContext} from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {
 	PropsParameter,
@@ -7,10 +8,7 @@ import {
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IAppBuilderWidget} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {ViewportComponentProps} from "@AppBuilderShared/types/shapediver/viewport";
-import {
-	ViewportIconsOptionalProps,
-	ViewportIconsProps,
-} from "@AppBuilderShared/types/shapediver/viewportIcons";
+import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {ViewportOverlayWrapperProps} from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
 import {ReactElement} from "react";
 
@@ -119,7 +117,7 @@ export interface ViewportIconsComponentMapValueType extends ComponentType {
 
 	/** Viewport icons component */
 	component: (
-		props: ViewportIconsProps & Partial<ViewportIconsOptionalProps>,
+		props: ButtonRenderContext & Partial<ViewportIconsOptionalProps>,
 	) => ReactElement;
 
 	// #endregion Properties (1)
