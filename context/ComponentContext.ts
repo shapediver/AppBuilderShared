@@ -1,172 +1,168 @@
 import {
-	IComponentContext,
-	ParameterComponentMapValueType,
-} from "@AppBuilderShared/types/context/componentcontext";
-import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {EXPORT_TYPE, PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {createContext} from "react";
-import ExportButtonComponent from "~/shared/components/shapediver/exports/ExportButtonComponent";
-import ExportLabelComponent from "~/shared/components/shapediver/exports/ExportLabelComponent";
-import ParameterBooleanComponent from "~/shared/components/shapediver/parameter/ParameterBooleanComponent";
-import ParameterColorComponent from "~/shared/components/shapediver/parameter/ParameterColorComponent";
-import ParameterFileInputComponent from "~/shared/components/shapediver/parameter/ParameterFileInputComponent";
-import ParameterLabelComponent from "~/shared/components/shapediver/parameter/ParameterLabelComponent";
-import ParameterSelectComponent from "~/shared/components/shapediver/parameter/ParameterSelectComponent";
-import ParameterSliderComponent from "~/shared/components/shapediver/parameter/ParameterSliderComponent";
-import ParameterStargateComponent from "~/shared/components/shapediver/parameter/ParameterStargateComponent";
-import ParameterStringComponent from "~/shared/components/shapediver/parameter/ParameterStringComponent";
-import ArButton from "~/shared/components/shapediver/viewport/buttons/ArButton";
-import CamerasButton from "~/shared/components/shapediver/viewport/buttons/CamerasButton";
-import FullscreenButton from "~/shared/components/shapediver/viewport/buttons/FullscreenButton";
-import HistoryMenuButton from "~/shared/components/shapediver/viewport/buttons/HistoryMenuButton";
-import RedoButton from "~/shared/components/shapediver/viewport/buttons/RedoButton";
-import ReloadButton from "~/shared/components/shapediver/viewport/buttons/ReloadButton";
-import UndoButton from "~/shared/components/shapediver/viewport/buttons/UndoButton";
-import ZoomButton from "~/shared/components/shapediver/viewport/buttons/ZoomButton";
-import {PARAMETER_TYPE_STARGATE_DUMMY} from "~/shared/types/components/shapediver/componentTypes";
-import {IShapeDiverParamOrExportDefinition} from "~/shared/types/shapediver/common";
-import {ViewportIconButtonEnum} from "~/shared/types/store/shapediverStoreViewportIcons";
+	ButtonRenderContext,
+	getViewportIconComponent,
+} from "@AppBuilderShared/types/components/shapediver/componentTypes";
+import {IComponentContext} from "@AppBuilderShared/types/context/componentcontext";
+import {
+	ViewportIconButtonEnum,
+	ViewportIconLayoutItem,
+} from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
+import {Divider, DividerProps} from "@mantine/core";
+import React, {createContext} from "react";
 
 export const DummyComponent: IComponentContext = {};
 
 export const ComponentContext =
 	createContext<IComponentContext>(DummyComponent);
 
-export const ViewportTypeToIcon = {
-	[ViewportIconButtonEnum.Ar]: ArButton,
-	[ViewportIconButtonEnum.Zoom]: ZoomButton,
-	[ViewportIconButtonEnum.Fullscreen]: FullscreenButton,
-	[ViewportIconButtonEnum.Cameras]: CamerasButton,
-	[ViewportIconButtonEnum.Undo]: UndoButton,
-	[ViewportIconButtonEnum.Redo]: RedoButton,
-	[ViewportIconButtonEnum.Reload]: ReloadButton,
-	[ViewportIconButtonEnum.HistoryMenu]: HistoryMenuButton,
-};
-export const isStargateParameter = (type: ResParameterType) => {
-	return type && type[0] === "s";
-};
-const defaultParameterComponentContext: IComponentContext["parameters"] = {
-	[PARAMETER_TYPE.INT]: {
-		component: ParameterSliderComponent,
-		extraBottomPadding: true,
-	},
-	[PARAMETER_TYPE.FLOAT]: {
-		component: ParameterSliderComponent,
-		extraBottomPadding: true,
-	},
-	[PARAMETER_TYPE.EVEN]: {
-		component: ParameterSliderComponent,
-		extraBottomPadding: true,
-	},
-	[PARAMETER_TYPE.ODD]: {
-		component: ParameterSliderComponent,
-		extraBottomPadding: true,
-	},
-	[PARAMETER_TYPE.BOOL]: {
-		component: ParameterBooleanComponent,
-		extraBottomPadding: false,
-	},
-	[PARAMETER_TYPE.STRING]: {
-		component: ParameterStringComponent,
-		extraBottomPadding: false,
-	},
-	[PARAMETER_TYPE.STRINGLIST]: {
-		component: ParameterSelectComponent,
-		extraBottomPadding: false,
-	},
-	[PARAMETER_TYPE.COLOR]: {
-		component: ParameterColorComponent,
-		extraBottomPadding: false,
-	},
-	[PARAMETER_TYPE.FILE]: {
-		component: ParameterFileInputComponent,
-		extraBottomPadding: false,
-	},
-	[PARAMETER_TYPE.DRAWING]: {
-		component: ParameterStringComponent,
-		extraBottomPadding: true,
-	},
-	[PARAMETER_TYPE.INTERACTION]: {
-		selection: {
-			component: ParameterStringComponent,
-			extraBottomPadding: false,
-		},
-		gumball: {
-			component: ParameterStringComponent,
-			extraBottomPadding: false,
-		},
-		dragging: {
-			component: ParameterStringComponent,
-			extraBottomPadding: false,
-		},
-	},
-	[PARAMETER_TYPE_STARGATE_DUMMY]: {
-		component: ParameterStargateComponent,
-		extraBottomPadding: false,
-	},
-};
-export const getParameterComponent = (
-	context: IComponentContext,
-	definition: IShapeDiverParamOrExportDefinition,
-): ParameterComponentMapValueType => {
-	const type = definition.type;
-	let component = context.parameters?.[type];
-
-	// check if the component is already a component or a map
-	if (type === PARAMETER_TYPE.INTERACTION) {
-		component = (
-			component as
-				| {[key: string]: ParameterComponentMapValueType}
-				| undefined
-		)?.[definition.settings.type];
-		if (!component)
-			component = (
-				defaultParameterComponentContext[type] as {
-					[key: string]: ParameterComponentMapValueType;
-				}
-			)[definition.settings.type];
-	} else {
-		component = component as ParameterComponentMapValueType | undefined;
-		if (!component)
-			component = defaultParameterComponentContext[
-				type
-			] as ParameterComponentMapValueType;
-	}
-
-	if (!component && isStargateParameter(type as ResParameterType)) {
-		component = defaultParameterComponentContext[
-			PARAMETER_TYPE_STARGATE_DUMMY
-		] as ParameterComponentMapValueType;
-	}
-
-	if (component) {
-		return {
-			component: component.component,
-			extraBottomPadding: component.extraBottomPadding,
-		};
-	}
-
-	return {
-		component: ParameterLabelComponent,
-		extraBottomPadding: false,
-	};
-};
-const defaultExportComponentContext: IComponentContext["exports"] = {
-	[EXPORT_TYPE.DOWNLOAD]: {component: ExportButtonComponent},
-	[EXPORT_TYPE.EMAIL]: {component: ExportButtonComponent},
-};
-export const getExportComponent = (
-	context: IComponentContext,
-	definition: IShapeDiverParamOrExportDefinition,
+const renderButtonByKind = (
+	kind: ViewportIconButtonEnum,
+	componentContext: any,
+	buttonContext: any,
 ) => {
-	const type = definition.type;
+	const {
+		viewport,
+		namespace,
+		buttonsDisabled,
+		executing,
+		hasPendingChanges,
+		iconsVisible,
+		fullscreenId,
+		...commonProps
+	} = buttonContext;
 
-	if (context.exports?.[type]) {
-		return context.exports[type].component;
-	} else {
-		return (
-			defaultExportComponentContext[type].component ||
-			ExportLabelComponent
-		);
+	const ButtonComponent = getViewportIconComponent(componentContext, kind);
+	if (!ButtonComponent) return null;
+
+	switch (kind) {
+		case ViewportIconButtonEnum.Ar:
+			return React.createElement(ButtonComponent, {
+				key: "ar",
+				viewport,
+				...commonProps,
+			});
+		case ViewportIconButtonEnum.Zoom:
+			return React.createElement(ButtonComponent, {
+				key: "zoom",
+				viewport,
+				...commonProps,
+			});
+		case ViewportIconButtonEnum.Fullscreen:
+			return React.createElement(ButtonComponent, {
+				key: "fullscreen",
+				fullscreenId,
+				enableFullscreenBtn: true,
+				...commonProps,
+			});
+		case ViewportIconButtonEnum.Cameras:
+			return React.createElement(ButtonComponent, {
+				key: "cameras",
+				viewport,
+				visible: iconsVisible,
+				...commonProps,
+			});
+		case ViewportIconButtonEnum.Undo:
+			return React.createElement(ButtonComponent, {
+				key: "undo",
+				disabled: buttonsDisabled || executing || hasPendingChanges,
+				hasPendingChanges,
+				executing,
+				...commonProps,
+			});
+		case ViewportIconButtonEnum.Redo:
+			return React.createElement(ButtonComponent, {
+				key: "redo",
+				disabled: buttonsDisabled || executing || hasPendingChanges,
+				hasPendingChanges,
+				executing,
+				...commonProps,
+			});
+		case ViewportIconButtonEnum.Reload:
+			return React.createElement(ButtonComponent, {
+				key: "reload",
+				disabled:
+					!namespace ||
+					buttonsDisabled ||
+					executing ||
+					hasPendingChanges,
+				namespace: namespace || "",
+				hasPendingChanges,
+				executing,
+				...commonProps,
+			});
+		case ViewportIconButtonEnum.HistoryMenu:
+			return React.createElement(ButtonComponent, {
+				key: "historyMenu",
+				disabled: !namespace || buttonsDisabled || hasPendingChanges,
+				namespace: namespace || "",
+				visible: iconsVisible,
+				...commonProps,
+			});
+		default:
+			return null;
 	}
+};
+
+export const renderViewportIcons = (
+	viewportIcons: ViewportIconLayoutItem[],
+	componentContext: any,
+	buttonContext: ButtonRenderContext,
+	dividerProps: DividerProps = {},
+) => {
+	const sections: React.ReactNode[] = [];
+	if (viewportIcons.length === 0) return sections;
+
+	viewportIcons.forEach((item, index) => {
+		if (item.type === "button") {
+			const button = renderButtonByKind(
+				item.button.type,
+				componentContext,
+				buttonContext,
+			);
+			if (button) sections.push(button);
+		} else if (item.type === "group") {
+			const groupButtons: React.ReactNode[] = [];
+			item.sections.forEach((section) => {
+				section.forEach((buttonDef) => {
+					const button = renderButtonByKind(
+						buttonDef.type,
+						componentContext,
+						buttonContext,
+					);
+					if (button) groupButtons.push(button);
+				});
+				// Add divider between sections within a group
+				if (
+					groupButtons.length > 0 &&
+					section !== item.sections[item.sections.length - 1]
+				) {
+					groupButtons.push(
+						React.createElement(Divider, {
+							key: `divider-${index}-${section.length}`,
+							...dividerProps,
+						}),
+					);
+				}
+			});
+			sections.push(
+				React.createElement(
+					React.Fragment,
+					{key: `group-${index}`},
+					...groupButtons,
+				),
+			);
+		}
+
+		// Add divider between layout items
+		if (index < viewportIcons.length - 1) {
+			sections.push(
+				React.createElement(Divider, {
+					key: `layout-divider-${index}`,
+					...dividerProps,
+				}),
+			);
+		}
+	});
+
+	return sections;
 };

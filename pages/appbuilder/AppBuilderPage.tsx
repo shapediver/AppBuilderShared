@@ -2,6 +2,7 @@ import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediv
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
+import ViewportIcons from "@AppBuilderShared/components/shapediver/viewport/ViewportIcons";
 import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
@@ -136,7 +137,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	const {
 		viewportComponent: {component: ViewportComponent} = {},
 		viewportOverlayWrapper: {component: ViewportOverlayWrapper} = {},
-		viewportIcons: {component: ViewportIcons} = {},
+		viewportIcons: {component: ViewportIconsComponent} = {},
 	} = componentContext;
 
 	// get settings for app builder from query string
@@ -247,7 +248,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 					>
 						{ViewportOverlayWrapper && (
 							<>
-								{ViewportIcons && (
+								{ViewportIconsComponent && (
 									<ViewportIcons
 										namespace={namespace}
 										hideJsonMenu={

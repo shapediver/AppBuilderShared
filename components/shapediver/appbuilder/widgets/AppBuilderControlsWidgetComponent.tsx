@@ -1,12 +1,12 @@
 import {AppBuilderActionFromType} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionFromType";
-import {
-	ComponentContext,
-	getExportComponent,
-	getParameterComponent,
-} from "@AppBuilderShared/context/ComponentContext";
+import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {useExports} from "@AppBuilderShared/hooks/shapediver/parameters/useExports";
 import {useOutputs} from "@AppBuilderShared/hooks/shapediver/parameters/useOutputs";
 import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";
+import {
+	getExportComponent,
+	getParameterComponent,
+} from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
