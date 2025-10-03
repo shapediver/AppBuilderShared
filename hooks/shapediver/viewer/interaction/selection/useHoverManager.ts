@@ -86,7 +86,7 @@ export function useHoverManager(
 			const hoverManager = new HoverManager(
 				componentId,
 				new MaterialStandardData({
-					color: settings.hoverColor || "#00ff78",
+					color: (settings.hoverColor as string) || "#00ff78",
 				}),
 			);
 			const token = interactionEngine.addInteractionManager(hoverManager);

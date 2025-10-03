@@ -86,7 +86,7 @@ export function useDragManager(
 			const dragManager = new DragManager(
 				componentId,
 				new MaterialStandardData({
-					color: settings.draggingColor || "#9e27d8",
+					color: (settings.draggingColor as string) || "#9e27d8",
 				}),
 			);
 			const token = interactionEngine.addInteractionManager(dragManager);
