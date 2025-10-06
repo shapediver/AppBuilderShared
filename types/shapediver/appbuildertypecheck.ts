@@ -10,10 +10,11 @@ import {z} from "zod";
 import {
 	AppBuilderContainerNameType,
 	AttributeVisualizationVisibility,
+	SelectComponentType,
 } from "./appbuilder";
 
 // Zod type definition for SelectComponentType
-const SelectComponentTypeSchema = z.enum([
+const selectComponentTypes = [
 	"buttonflex",
 	"buttongroup",
 	"chipgroup",
@@ -23,7 +24,11 @@ const SelectComponentTypeSchema = z.enum([
 	"fullwidthcards",
 	"carousel",
 	"grid",
-]);
+	"multiselect-chips",
+	"multiselect-checkboxes",
+] as const satisfies readonly SelectComponentType[];
+
+const SelectComponentTypeSchema = z.enum(selectComponentTypes);
 
 // Zod type definition for ISelectComponentItemDataType
 export const ISelectComponentItemDataTypeSchema = z.object({
