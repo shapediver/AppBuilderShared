@@ -639,7 +639,6 @@ const createInstance = (
 	/**
 	 * After the creation progress is finished, we need to add the transformations
 	 * to the instance node.
-	 * We need to transpose the matrix because of different column/row major order.
 	 * The transformations are added to the instance node as children.
 	 * The instance node is then added to the controller session node.
 	 */
@@ -663,11 +662,9 @@ const createInstance = (
 			const transformationNode = new TreeNode(transformationId);
 			transformationNode.originalName = transformationId;
 
-			// we have to transpose the matrix
-			// because of different column/row major order
-			const transformationMatrix = mat4.transpose(
-				mat4.create(),
-				mat4.fromValues(...(transformation as unknown as Mat4Array)),
+			// convert the transformation to a mat4
+			const transformationMatrix = mat4.fromValues(
+				...(transformation as unknown as Mat4Array),
 			);
 
 			transformationNode.addTransformation({

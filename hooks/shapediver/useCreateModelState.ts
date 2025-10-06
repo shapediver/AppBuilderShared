@@ -3,7 +3,6 @@ import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverSt
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {MantineThemeComponent, useProps} from "@mantine/core";
-import {ISessionApi} from "@shapediver/viewer.session";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -71,7 +70,20 @@ export function useCreateModelState(props: Props) {
 			includeImage?: boolean,
 			data?: Record<string, any>,
 			includeGltf?: boolean,
-		) => {
+		): Promise<{
+			/** Id of created model state. */
+			modelStateId?: string;
+			/** Data URL of the created screenshot. */
+			screenshot?: string;
+			/** Model view URL of the Geometry Backend system the model state was created on. */
+			modelViewUrl?: string;
+			/** URL of the image saved as part of the model state. */
+			modelStateImageUrl?: string;
+			/** URL of the glTF asset saved as part of the model state. */
+			modelStateGltfUrl?: string;
+			/** URL of the usdz asset saved as part of the model state. */
+			modelStateUsdzUrl?: string;
+		}> => {
 			if (!sessionApi) return {};
 			const parameterValues = Object.values(sessionApi.parameters)
 				.filter(
@@ -122,7 +134,31 @@ export function useCreateModelState(props: Props) {
 					)
 				: undefined;
 
-			return {modelStateId, screenshot};
+			const modelViewUrl = sessionApi.modelViewUrl.endsWith("/")
+				? sessionApi.modelViewUrl.substring(
+						0,
+						sessionApi.modelViewUrl.length - 1,
+					)
+				: sessionApi.modelViewUrl;
+
+			return {
+				modelStateId,
+				screenshot,
+				modelViewUrl,
+				modelStateImageUrl:
+					screenshot && modelStateId
+						? modelViewUrl +
+							`/api/v2/model-state/${modelStateId}/image`
+						: undefined,
+				modelStateGltfUrl:
+					includeGltf && modelStateId
+						? modelViewUrl + `/api/v2/ar-scene/${modelStateId}/gltf`
+						: undefined,
+				modelStateUsdzUrl:
+					includeGltf && modelStateId
+						? modelViewUrl + `/api/v2/ar-scene/${modelStateId}/usdz`
+						: undefined,
+			};
 		},
 		[
 			sessionApi,
