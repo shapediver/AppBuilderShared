@@ -8,7 +8,7 @@ import {
 	IAppBuilderLegacyActionPropsSetParameterValue,
 	IAppBuilderParameterValueSourceDefinition,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 type Props = (
@@ -75,6 +75,11 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		  }
 		| undefined
 	>(undefined);
+
+	const sourceDataRef = useRef(sourceData);
+	useEffect(() => {
+		sourceDataRef.current = sourceData;
+	}, [sourceData]);
 
 	const processParameterUpdates = useCallback(
 		(sourceResults?: any[]) => {
@@ -167,7 +172,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 	// when sourceData changes, we need to set the parameter value
 	useEffect(() => {
 		if (
-			!sourceData ||
+			!sourceDataRef.current ||
 			!sourceResults ||
 			sourceResults.length === 0 ||
 			!parameters
@@ -178,6 +183,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		processParameterUpdates(sourceResults);
 
 		// reset sourceData to avoid re-running this effect
+		sourceDataRef.current = undefined;
 		setSourceData(undefined);
 	}, [sourceResults, processParameterUpdates]);
 
