@@ -31,7 +31,7 @@ export function useModelStateSources(props: {
 				const {
 					updateUrl = false,
 					includeImage,
-					// image, // TODO use image defined by export of href
+					image,
 					includeGltf,
 					parameterNamesToInclude,
 					parameterNamesToExclude,
@@ -41,6 +41,7 @@ export function useModelStateSources(props: {
 					parameterNamesToInclude,
 					parameterNamesToExclude,
 					includeImage,
+					image,
 					undefined,
 					includeGltf,
 				).then(({modelStateId}) => {

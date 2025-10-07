@@ -24,7 +24,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 		tooltip,
 		namespace,
 		includeImage,
-		//image, // TODO use image defined by export of href
+		image,
 		includeGltf,
 		parameterNamesToInclude,
 		parameterNamesToExclude,
@@ -43,6 +43,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 			parameterNamesToInclude,
 			parameterNamesToExclude,
 			includeImage,
+			image,
 			undefined, // <-- custom data
 			includeGltf,
 		);

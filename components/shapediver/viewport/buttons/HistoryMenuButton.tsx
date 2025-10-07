@@ -35,6 +35,7 @@ export default function HistoryMenuButton({
 			undefined, // <-- parameterNamesToInclude: use default according to the theme
 			undefined, // <-- parameterNamesToExclude: use default according to the theme
 			true, // <-- includeImage,
+			undefined, // <-- image
 			undefined, // <-- custom data
 			false, // <-- includeGltf
 		);

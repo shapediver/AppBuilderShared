@@ -1,8 +1,10 @@
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
+import {IAppBuilderImageRef} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {MantineThemeComponent, useProps} from "@mantine/core";
+import {ISessionApi} from "@shapediver/viewer.session";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -48,11 +50,12 @@ export function useCreateModelState(props: Props) {
 	);
 
 	const {viewportId} = useViewportId();
-	const {sessionApi} = useShapeDiverStoreSession(
+	const {sessions} = useShapeDiverStoreSession(
 		useShallow((state) => ({
-			sessionApi: state.sessions[sessionId],
+			sessions: state.sessions,
 		})),
 	);
+
 	const {getScreenshot, convertToGlTF} =
 		useShapeDiverStoreViewportAccessFunctions(
 			useShallow((state) => ({
@@ -68,12 +71,13 @@ export function useCreateModelState(props: Props) {
 			parameterNamesToInclude = parameterNamesToIncludeDefault,
 			parameterNamesToExclude = parameterNamesToExcludeDefault,
 			includeImage?: boolean,
+			image?: IAppBuilderImageRef | undefined,
 			data?: Record<string, any>,
 			includeGltf?: boolean,
 		): Promise<{
 			/** Id of created model state. */
 			modelStateId?: string;
-			/** Data URL of the created screenshot. */
+			/** Data URL of the created screenshot or href to a specified image (either via export or directly) */
 			screenshot?: string;
 			/** Model view URL of the Geometry Backend system the model state was created on. */
 			modelViewUrl?: string;
@@ -84,6 +88,7 @@ export function useCreateModelState(props: Props) {
 			/** URL of the usdz asset saved as part of the model state. */
 			modelStateUsdzUrl?: string;
 		}> => {
+			const sessionApi = sessions[sessionId];
 			if (!sessionApi) return {};
 			const parameterValues = Object.values(sessionApi.parameters)
 				.filter(
@@ -114,19 +119,51 @@ export function useCreateModelState(props: Props) {
 					{} as {[key: string]: unknown},
 				);
 
-			// we need to create a screenshot before the model state
-			// as the function signature of createModelState does not allow to pass a promise for the screenshot
-			// Jira-task: https://shapediver.atlassian.net/browse/SS-8363
-			const screenshot =
-				includeImage && getScreenshot
-					? await getScreenshot()
-					: undefined;
+			// create the image for the model state (if includeImage is true)
+			// if an image ref is provided, use that
+			// if the image ref points to an export, try to get the export from the session and request it
+			// otherwise, if no image ref is provided, use getScreenshot (if available)
+			// if includeImage is false or undefined, do not create an image
+			let modelStateImage: string | undefined = undefined;
+			if (includeImage) {
+				if (image) {
+					if (image.href) {
+						modelStateImage = image.href;
+					} else if (image.export) {
+						const exportSession =
+							sessions[image.export.sessionId || sessionId];
+						if (exportSession) {
+							const exp = Object.values(
+								exportSession.exports,
+							).find(
+								(e) =>
+									e.id === image.export?.name ||
+									e.name === image.export?.name ||
+									e.displayname === image.export?.name,
+							);
+							if (exp) {
+								const exportResult = await exp.request();
+								if (
+									exportResult.content &&
+									exportResult.content[0] &&
+									exportResult.content[0].href
+								) {
+									modelStateImage =
+										exportResult.content[0].href;
+								}
+							}
+						}
+					}
+				} else if (getScreenshot) {
+					modelStateImage = await getScreenshot();
+				}
+			}
 
 			const modelStateId = sessionApi
 				? await sessionApi.createModelState(
 						parameterValues,
 						true, // <-- omitSessionParameterValues
-						screenshot,
+						modelStateImage, // <-- screenshot or provided image
 						data, // <-- custom data
 						includeGltf && convertToGlTF
 							? async () => convertToGlTF()
@@ -143,10 +180,10 @@ export function useCreateModelState(props: Props) {
 
 			return {
 				modelStateId,
-				screenshot,
+				screenshot: modelStateImage,
 				modelViewUrl,
 				modelStateImageUrl:
-					screenshot && modelStateId
+					modelStateImage && modelStateId
 						? modelViewUrl +
 							`/api/v2/model-state/${modelStateId}/image`
 						: undefined,
@@ -161,7 +198,8 @@ export function useCreateModelState(props: Props) {
 			};
 		},
 		[
-			sessionApi,
+			sessions,
+			sessionId,
 			getScreenshot,
 			convertToGlTF,
 			parameterNamesToIncludeDefault,

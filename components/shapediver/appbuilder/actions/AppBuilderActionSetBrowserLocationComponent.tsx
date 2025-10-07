@@ -65,6 +65,7 @@ export default function AppBuilderActionSetBrowserLocationComponent(
 				undefined, // <-- parameterNamesToInclude: use default according to the theme
 				undefined, // <-- parameterNamesToExclude: use default according to the theme
 				true, // <-- includeImage,
+				undefined,
 				undefined, // <-- custom data
 				false, // <-- includeGltf,
 			);
