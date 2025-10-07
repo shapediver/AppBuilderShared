@@ -46,7 +46,6 @@ export default function AppBuilderFallbackContainerComponent({
 			tabs: [],
 		};
 		const hideExportsTab = settings?.hideExports || exports.length == 0;
-		const hideOutputsTab = settings?.hideDataOutputs || outputs.length == 0;
 
 		if (parameters.length > 0) {
 			const props: {
@@ -59,9 +58,7 @@ export default function AppBuilderFallbackContainerComponent({
 			if (hideExportsTab) {
 				props.exports = exports;
 			}
-			if (hideOutputsTab) {
-				props.outputs = outputs;
-			}
+			props.outputs = outputs;
 
 			tabProps.defaultValue = "Parameters";
 			tabProps.tabs.push({
@@ -76,7 +73,7 @@ export default function AppBuilderFallbackContainerComponent({
 				],
 			});
 		}
-		if (!hideExportsTab || !hideOutputsTab) {
+		if (!hideExportsTab) {
 			tabProps.defaultValue = tabProps.defaultValue || "Exports";
 			tabProps.tabs.push({
 				value: "Exports",
@@ -86,7 +83,7 @@ export default function AppBuilderFallbackContainerComponent({
 					<ParametersAndExportsAccordionComponent
 						key={1}
 						exports={hideExportsTab ? [] : exports}
-						outputs={hideOutputsTab ? [] : outputs}
+						outputs={outputs}
 						namespace={namespace}
 					/>,
 				],
