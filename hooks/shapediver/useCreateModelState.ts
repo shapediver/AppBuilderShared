@@ -1,8 +1,11 @@
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
+import {IAppBuilderImageRef} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {MantineThemeComponent, useProps} from "@mantine/core";
+import {ISessionApi} from "@shapediver/viewer.session";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -53,6 +56,12 @@ export function useCreateModelState(props: Props) {
 			sessionApi: state.sessions[sessionId],
 		})),
 	);
+	const {exportsPerSession} = useShapeDiverStoreParameters(
+		useShallow((state) => ({
+			exportsPerSession: state.exportStores,
+		})),
+	);
+
 	const {getScreenshot, convertToGlTF} =
 		useShapeDiverStoreViewportAccessFunctions(
 			useShallow((state) => ({
@@ -68,6 +77,7 @@ export function useCreateModelState(props: Props) {
 			parameterNamesToInclude = parameterNamesToIncludeDefault,
 			parameterNamesToExclude = parameterNamesToExcludeDefault,
 			includeImage?: boolean,
+			image?: IAppBuilderImageRef | undefined,
 			data?: Record<string, any>,
 			includeGltf?: boolean,
 		): Promise<{
@@ -114,19 +124,57 @@ export function useCreateModelState(props: Props) {
 					{} as {[key: string]: unknown},
 				);
 
-			// we need to create a screenshot before the model state
-			// as the function signature of createModelState does not allow to pass a promise for the screenshot
-			// Jira-task: https://shapediver.atlassian.net/browse/SS-8363
-			const screenshot =
-				includeImage && getScreenshot
-					? await getScreenshot()
-					: undefined;
+			// create the image for the model state (if includeImage is true)
+			// if an image ref is provided, use that
+			// if the image ref points to an export, try to get the export from the session and request it
+			// otherwise, if no image ref is provided, use getScreenshot (if available)
+			// if includeImage is false or undefined, do not create an image
+			let modelStateImage: string | undefined = undefined;
+			if (includeImage) {
+				if (image) {
+					if (image.href) {
+						modelStateImage = image.href;
+					} else if (image.export) {
+						const sessionForExport =
+							exportsPerSession[
+								image.export.sessionId || sessionId
+							];
+						if (sessionForExport) {
+							const exp = Object.values(sessionForExport).find(
+								(e) => {
+									const def = e.getState().definition;
+									return (
+										def.id === image.export?.name ||
+										def.name === image.export?.name ||
+										def.displayname === image.export?.name
+									);
+								},
+							);
+							if (exp) {
+								const exportResult = await exp
+									.getState()
+									.actions.request();
+								if (
+									exportResult.content &&
+									exportResult.content[0] &&
+									exportResult.content[0].href
+								) {
+									modelStateImage =
+										exportResult.content[0].href;
+								}
+							}
+						}
+					}
+				} else if (getScreenshot) {
+					modelStateImage = await getScreenshot();
+				}
+			}
 
 			const modelStateId = sessionApi
 				? await sessionApi.createModelState(
 						parameterValues,
 						true, // <-- omitSessionParameterValues
-						screenshot,
+						modelStateImage, // <-- screenshot or provided image
 						data, // <-- custom data
 						includeGltf && convertToGlTF
 							? async () => convertToGlTF()
@@ -143,10 +191,10 @@ export function useCreateModelState(props: Props) {
 
 			return {
 				modelStateId,
-				screenshot,
+				screenshot: modelStateImage,
 				modelViewUrl,
 				modelStateImageUrl:
-					screenshot && modelStateId
+					modelStateImage && modelStateId
 						? modelViewUrl +
 							`/api/v2/model-state/${modelStateId}/image`
 						: undefined,
@@ -162,6 +210,8 @@ export function useCreateModelState(props: Props) {
 		},
 		[
 			sessionApi,
+			sessionId,
+			exportsPerSession,
 			getScreenshot,
 			convertToGlTF,
 			parameterNamesToIncludeDefault,
