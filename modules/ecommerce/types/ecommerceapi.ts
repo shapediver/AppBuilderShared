@@ -92,6 +92,12 @@ export interface IUpdateSharingLinkData {
 	modelStateId: string;
 
 	/**
+	 * Whether the URL shown in the browser shall be updated
+	 * with the newly created modelStateId.
+	 */
+	updateUrl?: boolean;
+
+	/**
 	 * Image URL of the screenshot associated with the model state.
 	 */
 	imageUrl?: string;

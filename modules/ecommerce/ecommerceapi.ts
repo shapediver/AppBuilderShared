@@ -21,6 +21,7 @@ import {
 	IUpdateSharingLinkData,
 	IUpdateSharingLinkReply,
 } from "@AppBuilderShared/modules/ecommerce/types/ecommerceapi";
+import {applyModelStateToUrl} from "@AppBuilderShared/utils/applyModelStateToUrl";
 
 // Message types for the API calls.
 // CAUTION: When implementing new API calls and messages type, make sure to add
@@ -238,8 +239,12 @@ export class DummyECommerceApiActions implements IECommerceApiActions {
 		return Promise.resolve(reply);
 	}
 
-	updateSharingLink(/*data: IUpdateSharingLinkData,*/): Promise<IUpdateSharingLinkReply> {
-		return Promise.resolve({href: window.location.href});
+	updateSharingLink({
+		modelStateId,
+		updateUrl,
+	}: IUpdateSharingLinkData): Promise<IUpdateSharingLinkReply> {
+		const url = applyModelStateToUrl(modelStateId, updateUrl);
+		return Promise.resolve({href: url.toString()});
 	}
 
 	scrollingApiSetParameters<

@@ -2,7 +2,6 @@ import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewpo
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {IAppBuilderImageRef} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {ISessionApi} from "@shapediver/viewer.session";
 import {useCallback} from "react";
@@ -208,18 +207,7 @@ export function useCreateModelState(props: Props) {
 		],
 	);
 
-	const applyModelStateToQueryParameter = useCallback(
-		(modelStateId: string, updateUrl: boolean = true) => {
-			const url = new URL(window.location.href);
-			url.searchParams.set(QUERYPARAM_MODELSTATEID, modelStateId);
-			if (updateUrl) window.history.replaceState({}, "", url.toString());
-			return url;
-		},
-		[],
-	);
-
 	return {
 		createModelState,
-		applyModelStateToQueryParameter,
 	};
 }

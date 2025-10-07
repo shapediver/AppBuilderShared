@@ -1,3 +1,4 @@
+import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {IAppBuilderParameterValueSourcePropsModelState} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {useEffect, useState} from "react";
 import {useCreateModelState} from "../../useCreateModelState";
@@ -13,8 +14,7 @@ export function useModelStateSources(props: {
 } {
 	const {namespace, sources} = props;
 
-	const {createModelState, applyModelStateToQueryParameter} =
-		useCreateModelState({namespace});
+	const {createModelState} = useCreateModelState({namespace});
 
 	const [modelStateValues, setModelStateValues] = useState<
 		(string | undefined)[] | undefined
@@ -44,12 +44,16 @@ export function useModelStateSources(props: {
 					image,
 					undefined,
 					includeGltf,
-				).then(({modelStateId}) => {
+				).then(async ({modelStateId}) => {
 					if (!modelStateId) return;
-					return applyModelStateToQueryParameter(
+					// in case we are not running inside an iframe, the instance of
+					// IEcommerceApi is a dummy implementation
+					const api = await ECommerceApiSingleton;
+					const {href} = await api.updateSharingLink({
 						modelStateId,
 						updateUrl,
-					).toString();
+					});
+					return href.toString();
 				});
 				promises.push(promise);
 			}

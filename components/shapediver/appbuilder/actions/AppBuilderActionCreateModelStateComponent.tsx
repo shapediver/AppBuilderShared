@@ -31,8 +31,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 	} = props;
 	const notifications = useContext(NotificationContext);
 
-	const {createModelState, applyModelStateToQueryParameter} =
-		useCreateModelState({namespace});
+	const {createModelState} = useCreateModelState({namespace});
 
 	const [loading, setLoading] = useState(false);
 
@@ -50,19 +49,22 @@ export default function AppBuilderActionCreateModelStateComponent(
 
 		// Save the modelStateId as a search parameter
 		if (modelStateId) {
-			const url = applyModelStateToQueryParameter(modelStateId);
+			// in case we are not running inside an iframe, the instance of
+			// IEcommerceApi is a dummy implementation
+			const api = await ECommerceApiSingleton;
+			const {href} = await api.updateSharingLink({
+				modelStateId,
+				updateUrl: true,
+				imageUrl: screenshot,
+			});
 			notifications.success({
 				message: (
 					<ModelStateNotificationCreated
 						modelStateId={modelStateId}
-						link={url.toString()}
+						link={href}
 					/>
 				),
 			});
-			// in case we are not running inside an iframe, the instance of
-			// IEcommerceApi will be a dummy for testing
-			const api = await ECommerceApiSingleton;
-			await api.updateSharingLink({modelStateId, imageUrl: screenshot});
 		}
 
 		setLoading(false);

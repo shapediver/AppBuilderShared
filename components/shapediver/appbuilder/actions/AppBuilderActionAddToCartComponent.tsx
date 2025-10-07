@@ -83,15 +83,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		} finally {
 			setLoading(false);
 		}
-	}, [
-		productId,
-		quantity,
-		price,
-		description,
-		createModelState,
-		includeImage,
-		includeGltf,
-	]);
+	}, [productId, quantity, price, description, includeImage, includeGltf]);
 
 	return (
 		<AppBuilderActionComponent
