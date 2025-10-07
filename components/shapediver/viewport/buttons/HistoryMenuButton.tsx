@@ -1,11 +1,11 @@
 import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/ModelStateNotificationCreated";
 import ImportModelStateDialog from "@AppBuilderShared/components/shapediver/ui/ImportModelStateDialog";
-import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
-import { useParameterImportExport } from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
-import { useCreateModelState } from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
-import { ECommerceApiSingleton } from "@AppBuilderShared/modules/ecommerce/singleton";
-import React, { useCallback, useContext, useMemo, useState } from "react";
-import { CommonButtonProps } from "./types";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
+import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
+import React, {useCallback, useContext, useMemo, useState} from "react";
+import {CommonButtonProps} from "./types";
 import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 
 interface HistoryMenuButtonProps extends CommonButtonProps {
@@ -24,14 +24,14 @@ export default function HistoryMenuButton({
 
 	const notifications = useContext(NotificationContext);
 
-	const { exportParameters, importParameters } =
+	const {exportParameters, importParameters} =
 		useParameterImportExport(namespace);
 
-	const { createModelState } = useCreateModelState({ namespace });
+	const {createModelState} = useCreateModelState({namespace});
 
 	const onCreateModelState = useCallback(async () => {
 		setIsCreatingModelState(true);
-		const { modelStateId } = await createModelState(
+		const {modelStateId} = await createModelState(
 			undefined, // <-- parameterNamesToInclude: use default according to the theme
 			undefined, // <-- parameterNamesToExclude: use default according to the theme
 			true, // <-- includeImage,
@@ -44,7 +44,7 @@ export default function HistoryMenuButton({
 			// in case we are not running inside an iframe, the instance of
 			// IEcommerceApi is a dummy implementation
 			const api = await ECommerceApiSingleton;
-			const { href } = await api.updateSharingLink({
+			const {href} = await api.updateSharingLink({
 				modelStateId,
 				updateUrl: true,
 			});
