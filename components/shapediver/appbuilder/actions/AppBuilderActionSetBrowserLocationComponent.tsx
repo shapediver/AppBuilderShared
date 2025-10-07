@@ -64,7 +64,7 @@ export default function AppBuilderActionSetBrowserLocationComponent(
 			const {modelStateId} = await createModelState(
 				undefined, // <-- parameterNamesToInclude: use default according to the theme
 				undefined, // <-- parameterNamesToExclude: use default according to the theme
-				false, // <-- includeImage,
+				true, // <-- includeImage,
 				undefined,
 				undefined, // <-- custom data
 				false, // <-- includeGltf,
