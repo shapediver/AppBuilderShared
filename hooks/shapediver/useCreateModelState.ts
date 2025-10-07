@@ -1,5 +1,4 @@
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {IAppBuilderImageRef} from "@AppBuilderShared/types/shapediver/appbuilder";
@@ -51,14 +50,9 @@ export function useCreateModelState(props: Props) {
 	);
 
 	const {viewportId} = useViewportId();
-	const {sessionApi} = useShapeDiverStoreSession(
+	const {sessions} = useShapeDiverStoreSession(
 		useShallow((state) => ({
-			sessionApi: state.sessions[sessionId],
-		})),
-	);
-	const {exportsPerSession} = useShapeDiverStoreParameters(
-		useShallow((state) => ({
-			exportsPerSession: state.exportStores,
+			sessions: state.sessions,
 		})),
 	);
 
@@ -83,7 +77,7 @@ export function useCreateModelState(props: Props) {
 		): Promise<{
 			/** Id of created model state. */
 			modelStateId?: string;
-			/** Data URL of the created screenshot. */
+			/** Data URL of the created screenshot or href to a specified image (either via export or directly) */
 			screenshot?: string;
 			/** Model view URL of the Geometry Backend system the model state was created on. */
 			modelViewUrl?: string;
@@ -94,6 +88,7 @@ export function useCreateModelState(props: Props) {
 			/** URL of the usdz asset saved as part of the model state. */
 			modelStateUsdzUrl?: string;
 		}> => {
+			const sessionApi = sessions[sessionId];
 			if (!sessionApi) return {};
 			const parameterValues = Object.values(sessionApi.parameters)
 				.filter(
@@ -135,25 +130,19 @@ export function useCreateModelState(props: Props) {
 					if (image.href) {
 						modelStateImage = image.href;
 					} else if (image.export) {
-						const sessionForExport =
-							exportsPerSession[
-								image.export.sessionId || sessionId
-							];
-						if (sessionForExport) {
-							const exp = Object.values(sessionForExport).find(
-								(e) => {
-									const def = e.getState().definition;
-									return (
-										def.id === image.export?.name ||
-										def.name === image.export?.name ||
-										def.displayname === image.export?.name
-									);
-								},
+						const exportSession =
+							sessions[image.export.sessionId || sessionId];
+						if (exportSession) {
+							const exp = Object.values(
+								exportSession.exports,
+							).find(
+								(e) =>
+									e.id === image.export?.name ||
+									e.name === image.export?.name ||
+									e.displayname === image.export?.name,
 							);
 							if (exp) {
-								const exportResult = await exp
-									.getState()
-									.actions.request();
+								const exportResult = await exp.request();
 								if (
 									exportResult.content &&
 									exportResult.content[0] &&
@@ -209,9 +198,8 @@ export function useCreateModelState(props: Props) {
 			};
 		},
 		[
-			sessionApi,
+			sessions,
 			sessionId,
-			exportsPerSession,
 			getScreenshot,
 			convertToGlTF,
 			parameterNamesToIncludeDefault,
