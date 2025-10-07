@@ -1,7 +1,7 @@
 import Icon from "@AppBuilderShared/components/ui/Icon";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
-import {Anchor} from "@mantine/core";
-import React, {useCallback, useContext} from "react";
+import { NotificationContext } from "@AppBuilderShared/context/NotificationContext";
+import { Anchor } from "@mantine/core";
+import React, { useCallback, useContext } from "react";
 
 export interface IModelStateNotificationCreatedProps {
 	modelStateId: string;
@@ -22,11 +22,18 @@ export default function ModelStateNotificationCreated({
 }: IModelStateNotificationCreatedProps) {
 	const notifications = useContext(NotificationContext);
 
-	const copyStateLink = useCallback(() => {
-		navigator.clipboard.writeText(link);
-		notifications.success({
-			message: "State link copied to clipboard!",
-		});
+	const copyStateLink = useCallback(async () => {
+		try {
+			await navigator.clipboard.writeText(link);
+			notifications.success({
+				message: "State link copied to clipboard!",
+			});
+		} catch {
+			/* clipboard write failed */
+			notifications.warning({
+				message: `State link could not be copied to clipboard, please copy it from here: ${link}`,
+			});
+		}
 	}, [modelStateId, link, notifications]);
 
 	return (
