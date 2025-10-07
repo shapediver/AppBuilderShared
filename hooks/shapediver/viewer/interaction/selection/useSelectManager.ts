@@ -136,7 +136,9 @@ export function useSelectManager(
 					const selectManager = new MultiSelectManager(
 						componentId,
 						new MaterialStandardData({
-							color: settings.selectionColor || "#0d44f0",
+							color:
+								(settings.selectionColor as string) ||
+								"#0d44f0",
 						}),
 						settings.minimumSelection!,
 						settings.maximumSelection!,
@@ -157,7 +159,9 @@ export function useSelectManager(
 					const selectManager = new SelectManager(
 						componentId,
 						new MaterialStandardData({
-							color: settings.selectionColor || "#0d44f0",
+							color:
+								(settings.selectionColor as string) ||
+								"#0d44f0",
 						}),
 					);
 					selectManager.deselectOnEmpty =
