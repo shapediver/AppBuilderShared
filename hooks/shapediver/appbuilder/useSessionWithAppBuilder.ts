@@ -123,7 +123,6 @@ export function useSessionWithAppBuilder(
 					hideJsonMenu: sessionApi.hideJsonMenu,
 					hideSavedStates: sessionApi.hideSavedStates,
 					hideDesktopClients: sessionApi.hideDesktopClients,
-					hideDataOutputs: sessionApi.hideDataOutputs,
 					hideExports: sessionApi.hideExports,
 				});
 			} else if (props.loadPlatformSettingsFromViewer === "iframe") {
@@ -135,7 +134,6 @@ export function useSessionWithAppBuilder(
 						sessionApi.hideAttributeVisualizationIframe,
 					hideJsonMenu: sessionApi.hideJsonMenuIframe,
 					hideSavedStates: sessionApi.hideSavedStatesIframe,
-					hideDataOutputs: sessionApi.hideDataOutputsIframe,
 					hideExports: sessionApi.hideExportsIframe,
 				});
 			}
