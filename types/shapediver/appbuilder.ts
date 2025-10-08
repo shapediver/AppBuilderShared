@@ -10,7 +10,10 @@ import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {MantineColor} from "@mantine/core";
 import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
-import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
+import {
+	ISelectionParameterProps,
+	TAG3D_JUSTIFICATION,
+} from "@shapediver/viewer.session";
 import {
 	ICameraOptions,
 	OrthographicCameraProperties,
@@ -887,6 +890,11 @@ export type AppBuilderAnchor3dContainerProperties = {
 	useCloseButton?: boolean;
 	/** Option to make the anchor hideable by geometry in the scene (default: false) */
 	hideable?: boolean;
+	/** Optional selection options. These options replace the behavior of the previewIcon and show the corresponding Anchor when the selection is active. (default: undefined) */
+	selectionProperties?: Omit<
+		ISelectionParameterProps,
+		"minimumSelection" | "maximumSelection" | "deselectOnEmpty" | "prompt"
+	>;
 } & AppBuilderAnchorContainerProperties;
 
 /**
