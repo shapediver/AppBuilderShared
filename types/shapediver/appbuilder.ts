@@ -885,6 +885,8 @@ export type AppBuilderAnchor3dContainerProperties = {
 	location: number[];
 	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
 	useCloseButton?: boolean;
+	/** Option to make the anchor hideable by geometry in the scene (default: false) */
+	hideable?: boolean;
 } & AppBuilderAnchorContainerProperties;
 
 /**
