@@ -3,6 +3,7 @@ import ImportModelStateDialog from "@AppBuilderShared/components/shapediver/ui/I
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 import {CommonButtonProps} from "./types";
 import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
@@ -26,8 +27,7 @@ export default function HistoryMenuButton({
 	const {exportParameters, importParameters} =
 		useParameterImportExport(namespace);
 
-	const {createModelState, applyModelStateToQueryParameter} =
-		useCreateModelState({namespace});
+	const {createModelState} = useCreateModelState({namespace});
 
 	const onCreateModelState = useCallback(async () => {
 		setIsCreatingModelState(true);
@@ -35,17 +35,24 @@ export default function HistoryMenuButton({
 			undefined, // <-- parameterNamesToInclude: use default according to the theme
 			undefined, // <-- parameterNamesToExclude: use default according to the theme
 			true, // <-- includeImage,
+			undefined, // <-- image
 			undefined, // <-- custom data
 			false, // <-- includeGltf
 		);
 
 		if (modelStateId) {
-			const url = applyModelStateToQueryParameter(modelStateId);
+			// in case we are not running inside an iframe, the instance of
+			// IEcommerceApi is a dummy implementation
+			const api = await ECommerceApiSingleton;
+			const {href} = await api.updateSharingLink({
+				modelStateId,
+				updateUrl: true,
+			});
 			notifications.success({
 				message: (
 					<ModelStateNotificationCreated
 						modelStateId={modelStateId}
-						link={url.toString()}
+						link={href}
 					/>
 				),
 			});

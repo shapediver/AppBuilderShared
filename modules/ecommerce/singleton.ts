@@ -3,6 +3,7 @@ import {
 	ECommerceApiFactory,
 } from "@AppBuilderShared/modules/ecommerce/ecommerceapi";
 import {isRunningInPlatform} from "@AppBuilderShared/utils/platform/environment";
+import {IECommerceApi} from "./types/ecommerceapi";
 
 /** Number of key events for toggling configurator visibility. */
 const TOGGLE_CONFIGURATOR_VISIBILITY_NUM_EVENTS = 3;
@@ -19,12 +20,21 @@ export const ECommerceApiSingleton = (async () => {
 		return new DummyECommerceApi();
 	}
 
-	const eCommerceApi = await ECommerceApiFactory.getApplicationApi(
-		"app",
-		"plugin",
-		{timeout: CROSSWINDOW_API_TIMEOUT, debug: false},
-	);
-	console.log("Successfully resolved ECommerceApi", eCommerceApi);
+	let eCommerceApi: IECommerceApi | undefined;
+	try {
+		eCommerceApi = await ECommerceApiFactory.getApplicationApi(
+			"app",
+			"plugin",
+			{timeout: CROSSWINDOW_API_TIMEOUT, debug: false},
+		);
+		console.log("Successfully resolved ECommerceApi", eCommerceApi);
+	} catch (error) {
+		console.log(
+			"Could not resolve ECommerceApi, falling back to dummy implementation",
+			error,
+		);
+		return new DummyECommerceApi();
+	}
 
 	// event handler for toggling configurator visibility
 	let toggleKeyPressCount = 0;

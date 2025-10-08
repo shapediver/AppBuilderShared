@@ -25,7 +25,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		price,
 		description,
 		includeImage,
-		//image, // TODO use image defined by export of href
+		image,
 		includeGltf,
 		parameterNamesToInclude,
 		parameterNamesToExclude,
@@ -53,6 +53,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 			parameterNamesToInclude,
 			parameterNamesToExclude,
 			includeImage,
+			image,
 			undefined, // <-- custom data
 			includeGltf,
 		);
@@ -82,15 +83,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		} finally {
 			setLoading(false);
 		}
-	}, [
-		productId,
-		quantity,
-		price,
-		description,
-		createModelState,
-		includeImage,
-		includeGltf,
-	]);
+	}, [productId, quantity, price, description, includeImage, includeGltf]);
 
 	return (
 		<AppBuilderActionComponent

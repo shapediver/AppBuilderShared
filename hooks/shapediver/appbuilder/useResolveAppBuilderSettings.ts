@@ -108,7 +108,6 @@ export default function useResolveAppBuilderSettings(
 						hideJsonMenu: model.settings.hide_json_menu,
 						hideSavedStates: model.settings.hide_saved_states,
 						hideDesktopClients: model.settings.hide_desktop_clients,
-						hideDataOutputs: model.settings.hide_data_outputs,
 						hideExports: model.settings.hide_exports,
 						...session,
 						ticket: model!.ticket!.ticket,
@@ -146,8 +145,6 @@ export default function useResolveAppBuilderSettings(
 							iframeData.model.settings?.hide_json_menu_iframe,
 						hideSavedStates:
 							iframeData.model.settings?.hide_saved_states_iframe,
-						hideDataOutputs:
-							iframeData.model.settings?.hide_data_outputs_iframe,
 						hideExports:
 							iframeData.model.settings?.hide_exports_iframe,
 						...session,

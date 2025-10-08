@@ -1366,10 +1366,6 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 */
 	hideDesktopClients?: boolean;
 	/**
-	 * If the data outputs should be hidden by default.
-	 */
-	hideDataOutputs?: boolean;
-	/**
 	 * If the exports should be hidden by default.
 	 */
 	hideExports?: boolean;
