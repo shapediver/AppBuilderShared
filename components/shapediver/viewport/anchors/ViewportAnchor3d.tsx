@@ -106,7 +106,7 @@ export default function ViewportAnchor3d(
 			// check if the anchor is hidden by other geometry in the scene
 			// if so, we hide the portal element and return
 			// otherwise we show the portal element
-			if (properties.hidden) {
+			if (properties.hidden && hideable) {
 				portalRef.current.style.display = "none";
 				return;
 			} else {
@@ -184,6 +184,7 @@ export default function ViewportAnchor3d(
 			updateDistance(viewportId, id, properties.distance);
 		},
 		[
+			hideable,
 			portalUpdate,
 			controlElementGroupUpdate,
 			viewportId,
