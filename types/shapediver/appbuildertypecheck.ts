@@ -1,6 +1,7 @@
 import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {ATTRIBUTE_VISUALIZATION} from "@shapediver/viewer.features.attribute-visualization";
 import {
+	ISelectionParameterPropsJsonSchema,
 	PARAMETER_TYPE,
 	PARAMETER_VISUALIZATION,
 	TAG3D_JUSTIFICATION,
@@ -872,6 +873,8 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	useContainer: z.boolean().optional(),
 	useCloseButton: z.boolean().optional(),
 	hideable: z.boolean().optional(),
+	selectionProperties:
+		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),
