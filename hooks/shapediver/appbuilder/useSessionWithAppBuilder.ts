@@ -48,6 +48,22 @@ export function useSessionWithAppBuilder(
 	const [outputApi, setOutputApi] = useState<IOutputApi | undefined>(
 		undefined,
 	);
+	const [appBuilderOutputId, setAppBuilderOutputId] = useState<
+		string | undefined
+	>(undefined);
+	const [sessionSettings, setSessionSettings] = useState<
+		(IUseSessionDto & IAppBuilderSettingsSession) | undefined
+	>(props);
+
+	const initialProcessManagerIdRef = useRef<string | undefined>(undefined);
+	// create an initial process manager to handle the session creation process
+	// and bridge the gap until the callback for the app builder output is called
+	useEffect(() => {
+		if (!initialProcessManagerIdRef.current) {
+			initialProcessManagerIdRef.current =
+				createProcessManager(namespace);
+		}
+	}, [namespace]);
 
 	const processManagerIdRef = useRef<string | undefined>(undefined);
 
@@ -100,15 +116,9 @@ export function useSessionWithAppBuilder(
 		[appBuilderOverride, sessionInitialized],
 	);
 
-	const [appBuilderOutputId, setAppBuilderOutputId] = useState<string>("");
-
-	const [sessionSettings, setSessionSettings] = useState<
-		(IUseSessionDto & IAppBuilderSettingsSession) | undefined
-	>(props);
-
 	useEffect(() => {
 		if (!sessionApi) {
-			setAppBuilderOutputId("");
+			setAppBuilderOutputId(undefined);
 			return;
 		}
 
@@ -211,11 +221,19 @@ export function useSessionWithAppBuilder(
 	}, [processManagers]);
 
 	useEffect(() => {
+		if (appBuilderOutputId === undefined) return;
 		const removeOutputUpdateCallback = addOutputUpdateCallback(
 			namespace,
 			appBuilderOutputId,
 			cb,
 		);
+
+		// whether we have an app builder output or not is not relevant here
+		// the initial process creation is done as soon as the session data has been parsed
+		if (initialProcessManagerIdRef.current) {
+			removeProcessManager(initialProcessManagerIdRef.current);
+			initialProcessManagerIdRef.current = undefined;
+		}
 
 		return removeOutputUpdateCallback;
 	}, [namespace, appBuilderOutputId, cb]);
