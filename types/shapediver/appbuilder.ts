@@ -583,9 +583,12 @@ export type IAppBuilderActionPropsCamera = {
 export type IAppBuilderActionPropsSound = {
 	/** URL of the sound file to play */
 	href: string;
-	/** @see TODO */
+	/**
+	 * Start playing the sound as soon as a control embedding the action gets rendered.
+	 * Note: The browser may block this.
+	 */
 	autoplay?: boolean;
-	/** @see TODO */
+	/** Loop the audio file. */
 	loop?: boolean;
 	/** Label to show when the sound is playing. */
 	labelPlaying?: string;
