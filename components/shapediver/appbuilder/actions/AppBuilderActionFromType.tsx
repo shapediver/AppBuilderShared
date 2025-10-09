@@ -12,9 +12,11 @@ import {
 	isSetBrowserLocationAction,
 	isSetParameterValueAction,
 	isSetParameterValuesAction,
+	isSoundAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import React from "react";
 import AppBuilderActionCameraComponent from "./AppBuilderActionCameraComponent";
+import AppBuilderActionSoundComponent from "./AppBuilderActionSoundComponent";
 
 export function AppBuilderActionFromType(
 	actionRef: IAppBuilderControlActionRef,
@@ -83,6 +85,14 @@ export function AppBuilderActionFromType(
 			<AppBuilderActionCameraComponent
 				key={key}
 				namespace={namespace}
+				{...actionPropsCommon}
+				{...actionRef.definition.props}
+			/>
+		);
+	else if (isSoundAction(actionRef.definition))
+		return (
+			<AppBuilderActionSoundComponent
+				key={key}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
 			/>
