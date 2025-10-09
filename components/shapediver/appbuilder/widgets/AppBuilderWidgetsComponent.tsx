@@ -7,6 +7,7 @@ import AppBuilderImageWidgetComponent from "@AppBuilderShared/components/shapedi
 import AppBuilderLineChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
 import AppBuilderProgressWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderProgressWidgetComponent";
 import AppBuilderRoundChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
+import AppBuilderStackUiWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidgetComponent";
 import AppBuilderTextWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {
@@ -25,6 +26,7 @@ import {
 	isProgressWidget,
 	isRoundChartWidget,
 	isSceneTreeExplorerWidget,
+	isStackUiWidget,
 	isTextWidget,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Loader, Paper} from "@mantine/core";
@@ -100,6 +102,14 @@ export default function AppBuilderWidgetsComponent({
 				else if (isAccordionUiWidget(w))
 					return (
 						<AppBuilderAccordionUiWidgetComponent
+							key={i}
+							namespace={namespace}
+							{...w.props}
+						/>
+					);
+				else if (isStackUiWidget(w))
+					return (
+						<AppBuilderStackUiWidgetComponent
 							key={i}
 							namespace={namespace}
 							{...w.props}

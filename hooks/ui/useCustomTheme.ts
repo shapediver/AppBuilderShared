@@ -6,6 +6,7 @@ import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderShared/co
 import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderControlsWidgetComponent";
 import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
 import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
+import {AppBuilderStackUiWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {NumberAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/NumberAttribute";
 import {StringAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/StringAttribute";
@@ -647,6 +648,56 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			AppBuilderRoundChartWidgetComponent:
 				AppBuilderRoundChartWidgetComponentThemeProps({}),
+			/**
+			 * AppBuilderStackUiWidgetComponent
+			 *
+			 * Used for defining theme overrides for stack ui widgets.
+			 */
+			AppBuilderStackUiWidgetComponent:
+				AppBuilderStackUiWidgetComponentThemeProps({
+					// stackPaperProps: {
+					// 	px: 0,
+					// 	py: 0,
+					// 	withBorder: false,
+					// 	shadow: "md",
+					// 	style: {backgroundColor: "var(--mantine-color-gray-0)"},
+					// },
+					// stackProps: {gap: "xs"},
+					// itemTextProps: {size: "md"},
+					// buttonForwardProps: {
+					// 	justify: "space-between",
+					// 	fullWidth: true,
+					// 	size: "lg",
+					// 	px: "md",
+					// 	variant: "default",
+					// },
+					// iconForwardProps: {
+					// 	size: 18,
+					// 	iconType: "tabler:chevron-right",
+					// },
+					// transitionForwardProps: {
+					// 	transition: "slide-left",
+					// 	duration: 300,
+					// 	timingFunction: "ease",
+					// },
+					// buttonBackProps: {
+					// 	mt: "xs",
+					// 	variant: "subtle",
+					// },
+					// iconBackProps: {
+					// 	size: 18,
+					// 	iconType: "tabler:chevron-left",
+					// },
+					// transitionBackProps: {
+					// 	transition: "slide-right",
+					// 	duration: 300,
+					// 	timingFunction: "ease",
+					// },
+					// stackContentProps: {
+					// 	pb: "xs",
+					// 	px: "xs",
+					// },
+				}),
 			/**
 			 * AppBuilderTemplateSelector
 			 *
