@@ -10,7 +10,10 @@ import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {MantineColor} from "@mantine/core";
 import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
-import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
+import {
+	ISelectionParameterProps,
+	TAG3D_JUSTIFICATION,
+} from "@shapediver/viewer.session";
 import {
 	ICameraOptions,
 	OrthographicCameraProperties,
@@ -909,6 +912,13 @@ export type AppBuilderAnchor3dContainerProperties = {
 	location: number[];
 	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
 	useCloseButton?: boolean;
+	/** Option to make the anchor hideable by geometry in the scene (default: false) */
+	hideable?: boolean;
+	/** Optional selection options. These options replace the behavior of the previewIcon and show the corresponding Anchor when the selection is active. (default: undefined) */
+	selectionProperties?: Omit<
+		ISelectionParameterProps,
+		"minimumSelection" | "maximumSelection" | "deselectOnEmpty" | "prompt"
+	>;
 } & AppBuilderAnchorContainerProperties;
 
 /**
@@ -1397,10 +1407,6 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 * If the desktop clients should be hidden by default.
 	 */
 	hideDesktopClients?: boolean;
-	/**
-	 * If the data outputs should be hidden by default.
-	 */
-	hideDataOutputs?: boolean;
 	/**
 	 * If the exports should be hidden by default.
 	 */

@@ -1,6 +1,7 @@
 import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {ATTRIBUTE_VISUALIZATION} from "@shapediver/viewer.features.attribute-visualization";
 import {
+	ISelectionParameterPropsJsonSchema,
 	PARAMETER_TYPE,
 	PARAMETER_VISUALIZATION,
 	TAG3D_JUSTIFICATION,
@@ -10,10 +11,11 @@ import {z} from "zod";
 import {
 	AppBuilderContainerNameType,
 	AttributeVisualizationVisibility,
+	SelectComponentType,
 } from "./appbuilder";
 
 // Zod type definition for SelectComponentType
-const SelectComponentTypeSchema = z.enum([
+const selectComponentTypes = [
 	"buttonflex",
 	"buttongroup",
 	"chipgroup",
@@ -23,7 +25,11 @@ const SelectComponentTypeSchema = z.enum([
 	"fullwidthcards",
 	"carousel",
 	"grid",
-]);
+	"multiselect-chips",
+	"multiselect-checkboxes",
+] as const satisfies readonly SelectComponentType[];
+
+const SelectComponentTypeSchema = z.enum(selectComponentTypes);
 
 // Zod type definition for ISelectComponentItemDataType
 export const ISelectComponentItemDataTypeSchema = z.object({
@@ -885,6 +891,9 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	height: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
 	useCloseButton: z.boolean().optional(),
+	hideable: z.boolean().optional(),
+	selectionProperties:
+		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),

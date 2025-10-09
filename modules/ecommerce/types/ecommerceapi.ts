@@ -38,9 +38,21 @@ export interface IAddItemToCartData {
 	modelStateId?: string;
 
 	/**
-	 * Image URL of the product to be added to the cart.
+	 * Image data URL of the product to be added to the cart.
 	 */
 	imageUrl?: string;
+
+	/** Model view URL of the Geometry Backend system the model state was created on. */
+	modelViewUrl?: string;
+
+	/** URL of the image saved as part of the model state. */
+	modelStateImageUrl?: string;
+
+	/** URL of the glTF asset saved as part of the model state. */
+	modelStateGltfUrl?: string;
+
+	/** URL of the usdz asset saved as part of the model state. */
+	modelStateUsdzUrl?: string;
 }
 
 export interface IAddItemToCartReply {
@@ -78,6 +90,12 @@ export interface IUpdateSharingLinkData {
 	 * The id of the ShapeDiver model state that was created.
 	 */
 	modelStateId: string;
+
+	/**
+	 * Whether the URL shown in the browser shall be updated
+	 * with the newly created modelStateId.
+	 */
+	updateUrl?: boolean;
 
 	/**
 	 * Image URL of the screenshot associated with the model state.

@@ -1,16 +1,16 @@
+import {useViewportHistory} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportHistory";
 import React from "react";
-import {useViewportHistory} from "~/shared/hooks/shapediver/viewer/useViewportHistory";
 import {CommonButtonProps} from "./types";
 import ViewportIconButton from "./ViewportIconButton";
 
 interface RedoButtonProps extends CommonButtonProps {
-	disabled: boolean;
+	disabled?: boolean;
 	hasPendingChanges: boolean;
 	executing: boolean;
 }
 
 export default function RedoButton({
-	disabled,
+	disabled = false,
 	hasPendingChanges,
 	executing,
 }: RedoButtonProps) {

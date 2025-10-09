@@ -25,7 +25,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		price,
 		description,
 		includeImage,
-		//image, // TODO use image defined by export of href
+		image,
 		includeGltf,
 		parameterNamesToInclude,
 		parameterNamesToExclude,
@@ -42,10 +42,18 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		// in case we are not running inside an iframe, the instance of
 		// IEcommerceApi will be a dummy for testing
 		const api = await ECommerceApiSingleton;
-		const {modelStateId, screenshot} = await createModelState(
+		const {
+			modelStateId,
+			screenshot,
+			modelViewUrl,
+			modelStateImageUrl,
+			modelStateGltfUrl,
+			modelStateUsdzUrl,
+		} = await createModelState(
 			parameterNamesToInclude,
 			parameterNamesToExclude,
 			includeImage,
+			image,
 			undefined, // <-- custom data
 			includeGltf,
 		);
@@ -57,6 +65,10 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 				price,
 				description,
 				imageUrl: screenshot,
+				modelViewUrl,
+				modelStateImageUrl,
+				modelStateGltfUrl,
+				modelStateUsdzUrl,
 			});
 			// TODO display modal instead of notification, offer possibility to hide configurator
 			notifications.success({
@@ -71,15 +83,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		} finally {
 			setLoading(false);
 		}
-	}, [
-		productId,
-		quantity,
-		price,
-		description,
-		createModelState,
-		includeImage,
-		includeGltf,
-	]);
+	}, [productId, quantity, price, description, includeImage, includeGltf]);
 
 	return (
 		<AppBuilderActionComponent

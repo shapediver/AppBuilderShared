@@ -40,11 +40,6 @@ export const useShapeDiverStoreInteractionRequestManagement =
 					} else if (type === "passive") {
 						if (interactionRequests[viewportId].activeRequest) {
 							request.disable();
-						} else {
-							// Disable all other passive requests for the same viewport
-							interactionRequests[
-								viewportId
-							].passiveRequests.forEach((req) => req.disable());
 						}
 						interactionRequests[viewportId] = {
 							activeRequest:
@@ -70,9 +65,7 @@ export const useShapeDiverStoreInteractionRequestManagement =
 				 * This method will remove the request associated with the given token.
 				 *
 				 * If the request is active:
-				 * - enable the first passive request (if there is one).
-				 * If the request is passive:
-				 * - enable the first passive request (if there is one).
+				 * - enable the all passive requests (if there are any).
 				 *
 				 * @param token The token associated with the interaction request to remove.
 				 */
@@ -91,9 +84,7 @@ export const useShapeDiverStoreInteractionRequestManagement =
 							interactionRequests[viewportId].activeRequest =
 								undefined;
 
-							if (passiveRequests.length > 0) {
-								passiveRequests[0].enable();
-							}
+							passiveRequests.forEach((req) => req.enable());
 						} else {
 							const index = passiveRequests.findIndex(
 								(req) => req.token === token,
@@ -101,9 +92,6 @@ export const useShapeDiverStoreInteractionRequestManagement =
 							if (index !== -1) {
 								passiveRequests.splice(index, 1);
 								found = true;
-								if (passiveRequests.length > 0) {
-									passiveRequests[0].enable();
-								}
 							}
 						}
 					});

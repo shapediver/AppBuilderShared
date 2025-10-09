@@ -3,6 +3,7 @@ import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {
 	ActionIcon,
 	ActionIconProps,
+	Box,
 	MantineStyleProp,
 	MantineThemeComponent,
 	TooltipProps,
@@ -33,7 +34,7 @@ type StyleProps = {
 
 export type ViewportIconButtonProps = Props & StyleProps;
 
-const defaultStyleProps: StyleProps = {
+export const defaultStyleProps: StyleProps = {
 	tooltipWrapperProps: {},
 	actionIconProps: {
 		size: IconPropsType.size,
@@ -47,7 +48,7 @@ const defaultStyleProps: StyleProps = {
 	},
 };
 
-type ViewportIconButtonThemePropsType = Partial<StyleProps>;
+export type ViewportIconButtonThemePropsType = Partial<StyleProps>;
 
 export function ViewportIconButtonThemeProps(
 	props: ViewportIconButtonThemePropsType,
@@ -85,6 +86,9 @@ export default function ViewportIconButton(
 		...iconProps,
 	};
 
+	const isTextIcon =
+		typeof iconType === "string" && iconType.startsWith("SD_");
+
 	return (
 		<TooltipWrapper label={label ?? ""} {...tooltipWrapperProps}>
 			<ActionIcon
@@ -96,12 +100,24 @@ export default function ViewportIconButton(
 				className={classes.ViewportIcon}
 				{...restActionIconProps}
 				styles={{...restActionIconProps.styles, ...styles}}
+				w={isTextIcon ? "100%" : undefined}
 			>
-				<Icon
-					iconType={iconType}
-					color={disabled ? colorDisabled : color}
-					{...restIconProps}
-				/>
+				{isTextIcon ? (
+					<Box
+						p={"xs"}
+						style={{
+							color: iconProps?.color,
+						}}
+					>
+						{iconType.substring(3)}
+					</Box>
+				) : (
+					<Icon
+						iconType={iconType}
+						color={disabled ? colorDisabled : color}
+						{...restIconProps}
+					/>
+				)}
 			</ActionIcon>
 		</TooltipWrapper>
 	);

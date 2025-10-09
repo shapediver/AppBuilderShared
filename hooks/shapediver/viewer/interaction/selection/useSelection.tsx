@@ -23,7 +23,6 @@ import {vec3} from "gl-matrix";
 import React, {useCallback, useEffect, useId, useMemo} from "react";
 import {
 	IUseNodeInteractionDataProps,
-	IUseNodeInteractionDataResult,
 	useNodesInteractionData,
 } from "../useNodeInteractionData";
 
@@ -62,7 +61,7 @@ export function useSelection(
 	const componentId = useId();
 
 	// call the select manager hook
-	const {selectManager} = useSelectManager(
+	const {selectManager, setAvailableNodes} = useSelectManager(
 		viewportId,
 		componentId,
 		activate ? selectionProps : undefined,
@@ -175,7 +174,7 @@ export function useSelection(
 		if (selectedNodeNames.length > 0 && availableNodeNames) {
 			selectedNodeNames.forEach((name) => {
 				Object.values(availableNodeNames).forEach((availableNames) => {
-					if (availableNames.includes(name)) {
+					if (availableNames.map((n) => n.name).includes(name)) {
 						newSelectedNodeNames.push(name);
 					}
 				});
@@ -192,6 +191,21 @@ export function useSelection(
 			return;
 		setSelectedNodeNames(newSelectedNodeNames);
 	}, [availableNodeNames]);
+
+	/**
+	 * Effect to update the available nodes in the select manager.
+	 * The available nodes are all nodes that match the filter pattern and are not currently selected.
+	 */
+	useEffect(() => {
+		const nodes = Object.values(availableNodeNames).flatMap(
+			(availableNames) => {
+				return availableNames.filter(
+					(available) => !selectedNodeNames.includes(available.name),
+				);
+			},
+		);
+		setAvailableNodes(nodes.map((n) => n.node));
+	}, [availableNodeNames, selectedNodeNames]);
 
 	// in case selection becomes active or the output node changes, restore the selection status
 	useEffect(() => {
@@ -211,14 +225,16 @@ export function useSelection(
 	// with session and output IDs as keys
 	const availableNodeNamesReturn = useMemo(() => {
 		const availableNodeNamesPerOutput: {
-			[key: string]: {[key: string]: IUseNodeInteractionDataResult};
+			[key: string]: {[key: string]: string[]};
 		} = {};
 
 		Object.entries(availableNodeNames).forEach(([key, value]) => {
 			const [sessionId, outputId] = key.split("_");
 			if (!availableNodeNamesPerOutput[sessionId])
 				availableNodeNamesPerOutput[sessionId] = {};
-			availableNodeNamesPerOutput[sessionId][outputId] = value;
+			availableNodeNamesPerOutput[sessionId][outputId] = value.map(
+				(v) => v.name,
+			);
 		});
 
 		return availableNodeNamesPerOutput;

@@ -50,6 +50,10 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						useContainer={container.props.useContainer ?? true}
 						closingStrategy={"emptyClick"}
 						useCloseButton={container.props.useCloseButton}
+						hideable={container.props.hideable}
+						selectionProperties={
+							container.props.selectionProperties
+						}
 					/>,
 				);
 			} else if (isAnchor2dContainer(container)) {
