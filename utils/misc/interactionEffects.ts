@@ -13,8 +13,11 @@ export const parseInteractionEffect = async (
 	effect?:
 		| string
 		| IMaterialStandardDataPropertiesDefinition
-		| IPostProcessingEffectDefinition,
+		| IPostProcessingEffectDefinition
+		| null,
 ) => {
+	if (!effect) return effect;
+
 	if (typeof effect === "string") {
 		// we received a color
 		return new MaterialStandardData({
