@@ -604,6 +604,7 @@ export function useAnchorContainer({
 					style={{
 						position: "absolute",
 						pointerEvents: pointerEvents,
+						display: "none",
 					}}
 				>
 					{showContent === false
