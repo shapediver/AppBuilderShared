@@ -248,7 +248,8 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsSetParameterValues
 		| IAppBuilderActionPropsSetBrowserLocation
 		| IAppBuilderActionPropsCloseConfigurator
-		| IAppBuilderActionPropsCamera;
+		| IAppBuilderActionPropsCamera
+		| IAppBuilderActionPropsSound;
 }
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -403,7 +404,8 @@ export type AppBuilderActionType =
 	| "setParameterValues"
 	| "setBrowserLocation"
 	| "closeConfigurator"
-	| "camera";
+	| "camera"
+	| "sound";
 
 /** Properties of a "createModelState" action. */
 export interface IAppBuilderActionPropsCreateModelState {
@@ -577,6 +579,24 @@ export type IAppBuilderActionPropsCamera = {
 		| IAppBuilderPropsZoomToCamera;
 } & IAppBuilderActionPropsCommon;
 
+/** Properties of a "sound" action. */
+export type IAppBuilderActionPropsSound = {
+	/** URL of the sound file to play */
+	href: string;
+	/** @see TODO */
+	autoplay?: boolean;
+	/** @see TODO */
+	loop?: boolean;
+	/** Label to show when the sound is playing. */
+	labelPlaying?: string;
+	/** Icon to show when the sound is playing. */
+	iconPlaying?: IconType;
+};
+
+/** Properties of a legacy "sound" action. */
+export type IAppBuilderLegacyActionPropsSound = IAppBuilderActionPropsSound &
+	IAppBuilderActionPropsCommon;
+
 /** A legacy App Builder action definition. */
 export interface IAppBuilderLegacyActionDefinition {
 	/** Type of the action. */
@@ -589,7 +609,8 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsSetParameterValues
 		| IAppBuilderLegacyActionPropsSetBrowserLocation
 		| IAppBuilderLegacyActionPropsCloseConfigurator
-		| IAppBuilderActionPropsCamera;
+		| IAppBuilderActionPropsCamera
+		| IAppBuilderLegacyActionPropsSound;
 }
 
 /** Types of widgets */
@@ -1246,6 +1267,13 @@ export function isZoomToCameraAction(
 	props: IAppBuilderPropsZoomToCamera;
 } {
 	return action.type === "zoomTo";
+}
+
+/** assert action type "sound" */
+export function isSoundAction(
+	action: IAppBuilderActionDefinition,
+): action is {type: "sound"; props: IAppBuilderActionPropsSound} {
+	return action.type === "sound";
 }
 
 /** assert control type "parameter" */

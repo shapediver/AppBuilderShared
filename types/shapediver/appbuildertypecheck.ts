@@ -396,6 +396,21 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 		.extend(IAppBuilderActionPropsCommonSchema.shape),
 ]);
 
+// Zod type definition for IAppBuilderActionPropsSound
+const IAppBuilderActionPropsSoundSchema = z.object({
+	href: z.string(),
+	autoplay: z.boolean().optional(),
+	loop: z.boolean().optional(),
+	labelPlaying: z.string().optional(),
+	iconPlaying: z.string().optional(),
+});
+
+// Zod type definition for IAppBuilderLegacyActionPropsSetParameterValues
+const IAppBuilderLegacyActionPropsSound =
+	IAppBuilderActionPropsSoundSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
 // Zod type definition for IAppBuilderLegacyActionDefinition
 const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -425,6 +440,10 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("camera"),
 		props: IAppBuilderActionPropsCameraSchema,
+	}),
+	z.object({
+		type: z.literal("sound"),
+		props: IAppBuilderLegacyActionPropsSound,
 	}),
 ]);
 
@@ -502,6 +521,10 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("camera"),
 		props: IAppBuilderActionPropsCameraSchema,
+	}),
+	z.object({
+		type: z.literal("sound"),
+		props: IAppBuilderActionPropsSoundSchema,
 	}),
 ]);
 
