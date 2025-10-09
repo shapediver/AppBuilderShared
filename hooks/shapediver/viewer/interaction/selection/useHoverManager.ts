@@ -102,10 +102,9 @@ export function useHoverManager(
 						blendFunction: BlendFunction.ALPHA,
 						blur: true,
 						edgeStrength: 10,
-						hiddenEdgeColor: "#00ff32",
+						hiddenEdgeColor: "#ffffff",
 						kernelSize: KernelSize.LARGE,
-						visibleEdgeColor: "#00ff32",
-						xRay: true,
+						visibleEdgeColor: "#ffffff",
 					},
 					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
 				});

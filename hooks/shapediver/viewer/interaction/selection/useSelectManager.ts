@@ -178,7 +178,6 @@ export function useSelectManager(
 						hiddenEdgeColor: "#0d44f0",
 						kernelSize: KernelSize.LARGE,
 						visibleEdgeColor: "#0d44f0",
-						xRay: true,
 					},
 					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
 				});
