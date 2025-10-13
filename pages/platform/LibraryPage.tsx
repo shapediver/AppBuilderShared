@@ -20,12 +20,9 @@ export interface LibraryPageProps extends BoxProps {
 export default function LibraryPage(props: LibraryPageProps) {
 	const {tabs, ...rest} = props;
 
-	const tabDefinitions = useMemo((): ITabsComponentProps => {
+	const tabDefinitions = useMemo((): ITabsComponentProps | undefined => {
 		if (tabs.length === 0) {
-			return {
-				defaultValue: "",
-				tabs: [],
-			};
+			return;
 		}
 
 		return {
@@ -44,10 +41,12 @@ export default function LibraryPage(props: LibraryPageProps) {
 	}, [tabs]);
 
 	return (
-		<TabsComponent
-			className={classes.tabsRoot}
-			{...tabDefinitions}
-			{...rest}
-		/>
+		tabDefinitions && (
+			<TabsComponent
+				className={classes.tabsRoot}
+				{...tabDefinitions}
+				{...rest}
+			/>
+		)
 	);
 }
