@@ -928,6 +928,8 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
+	selectionProperties:
+		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),

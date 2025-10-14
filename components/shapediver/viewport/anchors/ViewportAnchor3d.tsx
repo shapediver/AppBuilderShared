@@ -5,7 +5,6 @@ import {MantineThemeComponent} from "@mantine/core";
 import {
 	HTMLElementAnchorCustomData,
 	IHTMLElementAnchorUpdateProperties,
-	ISelectionParameterProps,
 	sceneTree,
 } from "@shapediver/viewer.session";
 import {vec3} from "gl-matrix";
@@ -24,11 +23,6 @@ export interface ViewportAnchorProps3d extends ViewportAnchorProps {
 	useCloseButton?: boolean;
 	/** Option to make the anchor hideable by geometry in the scene (default: false) */
 	hideable?: boolean;
-	/** Optional selection options. These options replace the behavior of the previewIcon and show the corresponding Anchor when the selection is active. (default: undefined) */
-	selectionProperties?: Omit<
-		ISelectionParameterProps,
-		"minimumSelection" | "maximumSelection" | "deselectOnEmpty" | "prompt"
-	>;
 }
 
 type ViewportAnchorThemePropsType = Partial<ViewportAnchorStyleProps>;

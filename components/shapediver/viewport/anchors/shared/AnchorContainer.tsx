@@ -24,7 +24,10 @@ import {
 	useProps,
 } from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
-import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
+import {
+	ISelectionParameterProps,
+	TAG3D_JUSTIFICATION,
+} from "@shapediver/viewer.session";
 import {
 	default as React,
 	useCallback,
@@ -79,6 +82,11 @@ export interface ViewportAnchorProps {
 		/** fallback container to be used ("left", "right", "top", "bottom") */
 		container?: AppBuilderContainerNameType;
 	};
+	/** Optional selection options. These options replace the behavior of the previewIcon and show the corresponding Anchor when the selection is active. (default: undefined) */
+	selectionProperties?: Omit<
+		ISelectionParameterProps,
+		"minimumSelection" | "maximumSelection" | "deselectOnEmpty" | "prompt"
+	>;
 }
 
 export type ViewportAnchorStyleProps = {
@@ -156,6 +164,7 @@ export function useAnchorContainer({
 		mobileFallback: inputMobileFallback,
 		useContainer = true,
 		closingStrategy,
+		selectionProperties,
 		...rest
 	} = properties;
 
@@ -201,12 +210,6 @@ export function useAnchorContainer({
 		"useCloseButton" in properties
 			? (properties.useCloseButton ?? false)
 			: false;
-
-	// Extract the selectionProperties property if it exists
-	const selectionProperties =
-		"selectionProperties" in properties
-			? (properties.selectionProperties ?? undefined)
-			: undefined;
 
 	/**
 	 * Get the theme object from Mantine.

@@ -896,6 +896,11 @@ export type AppBuilderAnchorContainerProperties = {
 		/** fallback container to be used ("left", "right", "top", "bottom") */
 		container?: AppBuilderContainerNameType;
 	};
+	/** Optional selection options. These options replace the behavior of the previewIcon and show the corresponding Anchor when the selection is active. (default: undefined) */
+	selectionProperties?: Omit<
+		ISelectionParameterProps,
+		"minimumSelection" | "maximumSelection" | "deselectOnEmpty" | "prompt"
+	>;
 };
 
 /** Type for the anchor 2d containers */
@@ -914,11 +919,6 @@ export type AppBuilderAnchor3dContainerProperties = {
 	useCloseButton?: boolean;
 	/** Option to make the anchor hideable by geometry in the scene (default: false) */
 	hideable?: boolean;
-	/** Optional selection options. These options replace the behavior of the previewIcon and show the corresponding Anchor when the selection is active. (default: undefined) */
-	selectionProperties?: Omit<
-		ISelectionParameterProps,
-		"minimumSelection" | "maximumSelection" | "deselectOnEmpty" | "prompt"
-	>;
 } & AppBuilderAnchorContainerProperties;
 
 /**
