@@ -169,8 +169,13 @@ export function useAppBuilderInstances(props: Props) {
 								p.id === key ||
 								p.name === key,
 						);
-						if (parameter)
+						if (parameter) {
 							parameterValuesWithIds[parameter.id] = value + "";
+						} else {
+							console.warn(
+								`Could not find parameter for key ${key} in session ${session.id}.`,
+							);
+						}
 					},
 				);
 
