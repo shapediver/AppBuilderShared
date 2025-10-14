@@ -1,11 +1,14 @@
+import {useShapeDiverStoreInstances} from "@AppBuilderShared/store/useShapeDiverStoreInstances";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {
 	convertUserDefinedNameFilters,
+	convertUserDefinedNameFiltersForInstances,
 	OutputNodeNameFilterPatterns,
 } from "@shapediver/viewer.features.interaction";
 import {IDraggingParameterProps} from "@shapediver/viewer.session";
 import {vec3} from "gl-matrix";
 import {useEffect, useState} from "react";
+import {IUseCreateNameFilterPatternResult} from "./useCreateNameFilterPattern";
 
 // #region Type aliases (1)
 
@@ -14,7 +17,7 @@ import {useEffect, useState} from "react";
  * This includes the conversion of name filters to filter patterns.
  */
 export type ConvertedDragObject = {
-	patterns: {[key: string]: OutputNodeNameFilterPatterns};
+	patterns: IUseCreateNameFilterPatternResult;
 	restrictions: string[];
 	dragOrigin?: vec3;
 	dragAnchors?: {
@@ -50,6 +53,9 @@ export function useConvertDraggingData(
 		return state.sessions;
 	});
 
+	// get the instances
+	const instances = useShapeDiverStoreInstances((state) => state.instances);
+
 	// create a state for the pattern
 	const [objects, setObjects] = useState<ConvertedDragObject[]>([]);
 
@@ -70,6 +76,7 @@ export function useConvertDraggingData(
 					([outputId, output]) =>
 						(outputIdsToNamesMapping[outputId] = output.name),
 				);
+
 				const pattern = convertUserDefinedNameFilters(
 					[nameFilter],
 					outputIdsToNamesMapping,
@@ -78,9 +85,18 @@ export function useConvertDraggingData(
 					patterns[sessionId] = pattern;
 			});
 
+			// create the pattern for each instance if no session IDs are provided
+			const instancePatterns = convertUserDefinedNameFiltersForInstances(
+				[nameFilter],
+				Object.keys(instances),
+			);
+
 			// create the new object
 			newObjects.push({
-				patterns: patterns,
+				patterns: {
+					outputPatterns: patterns,
+					instancePatterns: instancePatterns,
+				},
 				restrictions: object.restrictions ?? [],
 				dragOrigin: object.dragOrigin
 					? vec3.fromValues(
@@ -116,7 +132,7 @@ export function useConvertDraggingData(
 			});
 		}
 		setObjects(newObjects);
-	}, [draggingProps, sessions]);
+	}, [draggingProps, sessions, instances]);
 
 	return {
 		objects,

@@ -139,31 +139,35 @@ export function useRestrictions(
 		if (restrictionProps && restrictionProps.length > 0) {
 			for (let i = 0; i < restrictionProps.length; i++) {
 				const r = restrictionProps![i];
-				const restrictionName = r.id
-					? r.id.replaceAll("_", "-")
-					: `restriction-${i}`;
-				const nodesPerRestriction = nodes[restrictionName];
+				let restrictionName = r.id ? r.id : `restriction-${i}`;
 
-				if (
-					r.type === "geometry" &&
-					nodesPerRestriction &&
-					Object.keys(nodesPerRestriction).length !== 0
-				) {
-					const nodesArray: ITreeNode[] = [];
-					for (const sessionId in nodesPerRestriction) {
-						for (const outputId in nodesPerRestriction[sessionId]) {
-							nodesArray.push(
-								...nodesPerRestriction[sessionId][outputId],
-							);
+				if (r.type === "geometry") {
+					restrictionName = r.id
+						? r.id.replaceAll("_", "-")
+						: `restriction-${i}`;
+					const nodesPerRestriction = nodes[restrictionName];
+					if (
+						nodesPerRestriction &&
+						Object.keys(nodesPerRestriction).length !== 0
+					) {
+						const nodesArray: ITreeNode[] = [];
+						for (const sessionId in nodesPerRestriction) {
+							for (const outputId in nodesPerRestriction[
+								sessionId
+							]) {
+								nodesArray.push(
+									...nodesPerRestriction[sessionId][outputId],
+								);
+							}
 						}
-					}
 
-					restrictions[restrictionName] = {
-						...r,
-						nodes: nodesArray,
-					} as GeometryRestrictionProperties;
-					continue;
-				} else if (r.type !== "geometry") {
+						restrictions[restrictionName] = {
+							...r,
+							nodes: nodesArray,
+						} as GeometryRestrictionProperties;
+						continue;
+					}
+				} else {
 					restrictions[restrictionName] = r as
 						| PlaneRestrictionProperties
 						| CameraPlaneRestrictionProperties
