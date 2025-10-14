@@ -1,17 +1,41 @@
 import {
 	InteractionEventResponseMapping,
 	matchNodesWithPatterns,
-	OutputNodeNameFilterPatterns,
 } from "@shapediver/viewer.features.interaction";
 import {
 	addListener,
 	EVENTTYPE_INTERACTION,
 	IEvent,
+	ITreeNode,
 	removeListener,
 } from "@shapediver/viewer.session";
 import {useEffect, useState} from "react";
+import {IUseCreateNameFilterPatternResult} from "../useCreateNameFilterPattern";
 
 // #region Functions (1)
+
+const getNodeNames = (
+	patterns: IUseCreateNameFilterPatternResult,
+	hovered: ITreeNode[],
+	strictNaming: boolean,
+) => {
+	const nodeNames = [];
+	for (const sessionId in patterns.outputPatterns) {
+		const pattern = patterns.outputPatterns[sessionId];
+		nodeNames.push(
+			...matchNodesWithPatterns(pattern, hovered, strictNaming),
+		);
+	}
+
+	if (patterns.instancePatterns) {
+		const pattern = patterns.instancePatterns;
+		nodeNames.push(
+			...matchNodesWithPatterns(pattern, hovered, strictNaming),
+		);
+	}
+
+	return nodeNames;
+};
 
 /**
  * Hook allowing to create the hover manager events.
@@ -20,7 +44,7 @@ import {useEffect, useState} from "react";
  * @param componentId The ID of the component.
  */
 export function useHoverManagerEvents(
-	pattern: OutputNodeNameFilterPatterns,
+	patterns: IUseCreateNameFilterPatternResult,
 	componentId: string,
 	strictNaming = true,
 ): {
@@ -50,12 +74,9 @@ export function useHoverManagerEvents(
 				if (hoverEvent.manager.id !== componentId) return;
 
 				const hovered = [hoverEvent.node];
-				const nodeNames = matchNodesWithPatterns(
-					pattern,
-					hovered,
-					strictNaming,
+				setHoveredNodeNames(
+					getNodeNames(patterns, hovered, strictNaming),
 				);
-				setHoveredNodeNames(nodeNames);
 			},
 		);
 
@@ -85,7 +106,7 @@ export function useHoverManagerEvents(
 			removeListener(tokenHoverOn);
 			removeListener(tokenHoverOff);
 		};
-	}, [pattern, componentId]);
+	}, [patterns, componentId]);
 
 	return {
 		hoveredNodeNames,
