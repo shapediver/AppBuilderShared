@@ -609,8 +609,8 @@ export type AppBuilderWidgetType =
 	| "desktopClientOutputs"
 	| "controls"
 	| "accordionUi"
-	| "stackUi"
-	| "sceneTreeExplorer";
+	| "sceneTreeExplorer"
+	| "stackUi";
 
 /**
  * Properties of a parameter and export accordion widget.
@@ -790,25 +790,18 @@ export interface IAppBuilderWidgetPropsAccordionUi {
 }
 
 /**
- * Properties of a generic stack widget, grouping further widgets
- * into a navigable stack structure.
+ * Properties of a stack widget, grouping further widgets
+ * into a stack.
  */
 export interface IAppBuilderWidgetPropsStackUi {
-	/** Items of the stack. */
-	items: {
-		/**
-		 * Optional unique identifier for the stack item.
-		 */
-		value?: string;
-		/** Label shown for the stack button. */
-		name: string;
-		/** Optional icon of the stack button. */
-		icon?: IconType;
-		/** Optional tooltip for the stack button. */
-		tooltip?: string;
-		/** Widgets displayed when the stack item is active. */
-		widgets: IAppBuilderWidget[];
-	}[];
+	/** Label shown for the stack control. */
+	name: string;
+	/** Optional icon of the stack control. */
+	icon?: IconType;
+	/** Optional tooltip of the stack control. */
+	tooltip?: string;
+	/** Widgets displayed in the stack. */
+	widgets: IAppBuilderWidget[];
 }
 
 /**
@@ -840,8 +833,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsDesktopClientOutputs
 		| IAppBuilderWidgetPropsControls
 		| IAppBuilderWidgetPropsAccordionUi
-		| IAppBuilderWidgetPropsStackUi
-		| IAppBuilderWidgetPropsSceneTreeExplorer;
+		| IAppBuilderWidgetPropsSceneTreeExplorer
+		| IAppBuilderWidgetPropsStackUi;
 }
 
 /**

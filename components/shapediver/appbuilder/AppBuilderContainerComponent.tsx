@@ -1,7 +1,9 @@
 import AppBuilderTabsComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderTabsComponent";
 import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
+import {AppBuilderStackContext} from "@AppBuilderShared/context/StackContext";
+import {IAppBuilderStackContextElement} from "@AppBuilderShared/types/context/stackcontext";
 import {IAppBuilderContainer} from "@AppBuilderShared/types/shapediver/appbuilder";
-import React from "react";
+import React, {useCallback} from "react";
 
 interface Props extends IAppBuilderContainer {
 	/**
@@ -16,13 +18,29 @@ export default function AppBuilderContainerComponent({
 	widgets,
 	tabs,
 }: Props) {
+	const [stackElements, setStackElements] = React.useState<
+		IAppBuilderStackContextElement[]
+	>([]);
+
+	const push = useCallback((element: IAppBuilderStackContextElement) => {
+		setStackElements((prev) => [...prev, element]);
+	}, []);
+
+	const pop = useCallback(() => {
+		setStackElements((prev) => prev.slice(0, -1));
+	}, []);
+
+	// TODO finish implementation of SS-9065
+
 	return (
 		<>
-			<AppBuilderTabsComponent namespace={namespace} tabs={tabs} />
-			<AppBuilderWidgetsComponent
-				namespace={namespace}
-				widgets={widgets}
-			/>
+			<AppBuilderStackContext.Provider value={{push, pop}}>
+				<AppBuilderTabsComponent namespace={namespace} tabs={tabs} />
+				<AppBuilderWidgetsComponent
+					namespace={namespace}
+					widgets={widgets}
+				/>
+			</AppBuilderStackContext.Provider>
 		</>
 	);
 }

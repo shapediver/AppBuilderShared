@@ -785,17 +785,10 @@ const IAppBuilderWidgetPropsAccordionUiSchema = z.object({
 
 // Zod type definition for IAppBuilderWidgetPropsStackUi
 const IAppBuilderWidgetPropsStackUiSchema = z.object({
-	items: z.array(
-		z.object({
-			value: z.string().optional(),
-			name: z.string(),
-			icon: z.string().optional(),
-			tooltip: z.string().optional(),
-			widgets: z.array(
-				z.lazy((): z.ZodTypeAny => IAppBuilderWidgetSchema),
-			),
-		}),
-	),
+	name: z.string(),
+	icon: z.string().optional(),
+	tooltip: z.string().optional(),
+	widgets: z.array(z.lazy((): z.ZodTypeAny => IAppBuilderWidgetSchema)),
 });
 
 // Zod type definition for IAppBuilderWidget
@@ -867,6 +860,10 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("sceneTreeExplorer"),
 		props: IAppBuilderWidgetPropsSceneTreeExplorerSchema,
+	}),
+	z.object({
+		type: z.literal("stackUi"),
+		props: IAppBuilderWidgetPropsStackUiSchema,
 	}),
 ]);
 
