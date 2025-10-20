@@ -149,7 +149,9 @@ export const useShapeDiverStoreViewportAnchors =
 					// and updating the current one
 					const updateShowContentMap: {
 						[id: string]: {[type: string]: boolean};
-					} = {};
+					} = {
+						[anchorId]: {[anchorType]: showContent},
+					};
 					Object.keys(showContentMapEntry).forEach((key) => {
 						const entry = showContentMapEntry[key];
 						if (key !== anchorId) {
@@ -166,11 +168,6 @@ export const useShapeDiverStoreViewportAnchors =
 							} else {
 								updateShowContentMap[key] = entry;
 							}
-						} else {
-							updateShowContentMap[key] = {
-								...entry,
-								[anchorType]: showContent,
-							};
 						}
 					});
 
