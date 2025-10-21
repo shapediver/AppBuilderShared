@@ -96,6 +96,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 	buttonBackProps: {
 		mt: "xs",
+		ml: "xs",
 		variant: "subtle",
 	},
 	iconBackProps: {
@@ -129,7 +130,7 @@ type Props = IAppBuilderWidgetPropsStackUi &
 	};
 
 export default function AppBuilderStackUiWidgetComponent(props: Props) {
-	const {namespace, items, ...styleProps} = props;
+	const {namespace, widgets, name, icon, tooltip, ...styleProps} = props;
 
 	const {
 		stackPaperProps,
@@ -148,115 +149,108 @@ export default function AppBuilderStackUiWidgetComponent(props: Props) {
 		styleProps,
 	);
 
-	const [activeItem, setActiveItem] = useState<number | null>(null);
-	const handleButtonClick = (index: number) => {
-		setActiveItem(index);
+	const [isOpen, setIsOpen] = useState(false);
+	const handleButtonClick = () => {
+		setIsOpen(true);
 	};
 
 	const handleBackClick = () => {
-		setActiveItem(null);
+		setIsOpen(false);
 	};
 
 	return (
-		<Paper {...stackPaperProps}>
-			<Transition
-				mounted={activeItem === null}
-				{...transitionForwardProps}
-			>
+		<Paper
+			{...stackPaperProps}
+			style={{
+				...stackPaperProps?.style,
+				position: !isOpen ? "relative" : "absolute",
+				inset: 0,
+				height: !isOpen ? "auto" : "100%",
+				width: "100%",
+				zIndex: !isOpen ? undefined : 1000,
+				overflowX: "hidden",
+				overflowY: !isOpen ? "hidden" : "auto",
+			}}
+		>
+			<Transition mounted={!isOpen} {...transitionForwardProps}>
 				{(styles) => (
 					<Stack {...stackProps} style={styles}>
-						{items.map((item, index) => (
-							<Button
-								key={index}
-								onClick={() => handleButtonClick(index)}
-								rightSection={
-									<Icon
-										{...iconForwardProps}
-										iconType={
-											iconForwardProps?.iconType ||
-											"tabler:chevron-right"
-										}
-									/>
-								}
-								leftSection={
-									item.icon ? (
-										<Icon iconType={item.icon} />
-									) : undefined
-								}
-								{...buttonForwardProps}
-								style={{
-									position:
-										activeItem === null
-											? "relative"
-											: "absolute", // Escape height shift when collapsing
-								}}
-							>
-								<Text {...itemTextProps}>
-									{item.tooltip ? (
-										<TooltipWrapper label={item.tooltip}>
-											<div>{item.name}</div>
-										</TooltipWrapper>
-									) : (
-										item.name
-									)}
-								</Text>
-							</Button>
-						))}
+						<Button
+							onClick={() => handleButtonClick()}
+							rightSection={
+								<Icon
+									{...iconForwardProps}
+									iconType={
+										iconForwardProps?.iconType ||
+										"tabler:chevron-right"
+									}
+								/>
+							}
+							leftSection={
+								icon ? <Icon iconType={icon} /> : undefined
+							}
+							{...buttonForwardProps}
+							style={{
+								position: !isOpen ? "relative" : "absolute", // Escape height shift when collapsing
+							}}
+						>
+							<Text {...itemTextProps}>
+								{tooltip ? (
+									<TooltipWrapper label={tooltip}>
+										<div>{name}</div>
+									</TooltipWrapper>
+								) : (
+									name
+								)}
+							</Text>
+						</Button>
 					</Stack>
 				)}
 			</Transition>
 
-			{items.map((item, index) => (
-				<Stack key={index}>
-					<Transition
-						mounted={activeItem === index}
-						{...transitionBackProps}
-					>
+			<Stack>
+				<Transition mounted={isOpen} {...transitionBackProps}>
+					{(styles) => (
+						<Box style={styles}>
+							<Button
+								onClick={handleBackClick}
+								leftSection={
+									<Icon
+										{...iconBackProps}
+										iconType={
+											iconBackProps?.iconType ||
+											"tabler:chevron-left"
+										}
+									/>
+								}
+								{...buttonBackProps}
+							>
+								Back
+							</Button>
+						</Box>
+					)}
+				</Transition>
+				<Collapse in={isOpen}>
+					<Transition mounted={isOpen} {...transitionBackProps}>
 						{(styles) => (
-							<Box style={styles}>
-								<Button
-									onClick={handleBackClick}
-									leftSection={
-										<Icon
-											{...iconBackProps}
-											iconType={
-												iconBackProps?.iconType ||
-												"tabler:chevron-left"
-											}
-										/>
-									}
-									{...buttonBackProps}
+							<Box style={{...{styles}, height: "100%"}}>
+								<Stack
+									{...stackContentProps}
+									style={{
+										...{"--paper-shadow": "none"},
+										...(stackContentProps?.style || {}),
+									}}
 								>
-									Back
-								</Button>
+									<AppBuilderWidgetsComponent
+										namespace={namespace}
+										widgets={widgets}
+									/>
+								</Stack>
 							</Box>
 						)}
 					</Transition>
-					<Collapse in={activeItem === index}>
-						<Transition
-							mounted={activeItem === index}
-							{...transitionBackProps}
-						>
-							{(styles) => (
-								<Box style={styles}>
-									<Stack
-										{...stackContentProps}
-										style={{
-											...{"--paper-shadow": "none"},
-											...(stackContentProps?.style || {}),
-										}}
-									>
-										<AppBuilderWidgetsComponent
-											namespace={namespace}
-											widgets={item.widgets}
-										/>
-									</Stack>
-								</Box>
-							)}
-						</Transition>
-					</Collapse>
-				</Stack>
-			))}
+				</Collapse>
+			</Stack>
 		</Paper>
 	);
 }

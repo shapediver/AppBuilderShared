@@ -854,10 +854,6 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 		props: IAppBuilderWidgetPropsAccordionUiSchema,
 	}),
 	z.object({
-		type: z.literal("stackUi"),
-		props: IAppBuilderWidgetPropsStackUiSchema,
-	}),
-	z.object({
 		type: z.literal("sceneTreeExplorer"),
 		props: IAppBuilderWidgetPropsSceneTreeExplorerSchema,
 	}),
