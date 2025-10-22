@@ -25,7 +25,6 @@ const selectComponentTypes = [
 	"fullwidthcards",
 	"carousel",
 	"grid",
-	"multiselect-chips",
 	"multiselect-checkboxes",
 ] as const satisfies readonly SelectComponentType[];
 

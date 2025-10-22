@@ -1,7 +1,8 @@
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {useMultiSelect} from "@AppBuilderShared/hooks/shapediver/parameters/select/useMultiSelect";
 import {Button, Flex} from "@mantine/core";
 import React from "react";
-import {SelectComponentProps} from "./SelectComponent";
+import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 
 /**
  * Functional button flex select component.
@@ -9,8 +10,15 @@ import {SelectComponentProps} from "./SelectComponent";
  * @see https://mantine.dev/core/button
  * @see https://mantine.dev/core/flex/
  */
-export default function SelectButtonFlexComponent(props: SelectComponentProps) {
-	const {value, onChange, items, disabled, itemData} = props;
+export default function SelectButtonFlexComponent(
+	props: UniversalMultiSelectComponentProps,
+) {
+	const {value, onChange, items, disabled, itemData, multiselect} = props;
+	const {handleClick, isSelected} = useMultiSelect(
+		value,
+		onChange,
+		multiselect,
+	);
 
 	return (
 		<Flex gap="xs" wrap="wrap">
@@ -22,9 +30,9 @@ export default function SelectButtonFlexComponent(props: SelectComponentProps) {
 				const button = (
 					<Button
 						key={item}
-						variant={value === item ? "filled" : "default"}
+						variant={isSelected(item) ? "filled" : "default"}
 						color={data?.color}
-						onClick={() => onChange(item)}
+						onClick={() => handleClick(item)}
 						disabled={disabled}
 					>
 						{displayName}
