@@ -22,11 +22,19 @@ export default function SelectChipGroupComponent(
 		multiselect,
 	} = props;
 
+	const handleChange = (val: string | string[]) => {
+		if (multiselect) {
+			(onChange as (value: string[]) => void)(val as string[]);
+		} else {
+			(onChange as (value: string | null) => void)(val as string);
+		}
+	};
+
 	return (
 		<Chip.Group
 			multiple={multiselect}
 			value={value ?? (multiselect ? [] : null)}
-			onChange={onChange as any}
+			onChange={handleChange}
 		>
 			<Flex gap="xs" wrap="wrap">
 				{items.map((item) => {
