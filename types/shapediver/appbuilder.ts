@@ -730,9 +730,9 @@ export interface IAppBuilderWidgetPropsAttributeVisualization {
 	initialAttribute?: string;
 	/** Material definition for objects that don't have the selected attribute. (default: { color: "#666666", opacity: 1 }) */
 	passiveMaterial?: {
-		/** Color of the material. (default: "#666666") */
+		/** Color of the material. (default: "#000") */
 		color?: string;
-		/** Opacity of the material. (default: 1) */
+		/** Opacity of the material. (default: 0.1) */
 		opacity?: number;
 	};
 	/** Option to disable the anchors when clicking on an attribute. (default: false) */
