@@ -1,4 +1,4 @@
-export const useMultiSelect = (
+export const parameterMultiSelect = (
 	value: string | string[] | null | undefined,
 	onChange: ((value: string[]) => void) | ((value: string | null) => void),
 	multiselect: boolean,

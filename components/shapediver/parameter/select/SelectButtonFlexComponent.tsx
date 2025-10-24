@@ -1,7 +1,7 @@
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {useMultiSelect} from "@AppBuilderShared/hooks/shapediver/parameters/select/useMultiSelect";
 import {Button, Flex} from "@mantine/core";
 import React from "react";
+import {parameterMultiSelect} from "~/shared/utils/parameters/parameterMultiSelect";
 import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 
 /**
@@ -14,7 +14,7 @@ export default function SelectButtonFlexComponent(
 	props: UniversalMultiSelectComponentProps,
 ) {
 	const {value, onChange, items, disabled, itemData, multiselect} = props;
-	const {handleClick, isSelected} = useMultiSelect(
+	const {handleClick, isSelected} = parameterMultiSelect(
 		value,
 		onChange,
 		multiselect,

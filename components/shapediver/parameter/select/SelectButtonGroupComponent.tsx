@@ -1,7 +1,7 @@
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {useMultiSelect} from "@AppBuilderShared/hooks/shapediver/parameters/select/useMultiSelect";
 import {Button} from "@mantine/core";
 import React from "react";
+import {parameterMultiSelect} from "~/shared/utils/parameters/parameterMultiSelect";
 import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 /**
  * Functional button group select component.
@@ -12,7 +12,7 @@ export default function SelectButtonGroupComponent(
 	props: UniversalMultiSelectComponentProps,
 ) {
 	const {value, onChange, items, itemData, disabled, multiselect} = props;
-	const {handleClick, isSelected} = useMultiSelect(
+	const {handleClick, isSelected} = parameterMultiSelect(
 		value,
 		onChange,
 		multiselect,
