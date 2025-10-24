@@ -113,6 +113,8 @@ export interface SelectComponentProps {
 	 * scrollingApi.items instead of items!!!
 	 */
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>;
+	/** Whether the component shall be a multiselect component. */
+	multiselect?: boolean;
 }
 
 interface SelectComponentPropsExt
@@ -162,11 +164,11 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 			/>
 		);
 	else if (type === "buttonflex") {
-		return <SelectButtonFlexComponent {...rest} />;
+		return <SelectButtonFlexComponent {...rest} multiselect={false} />;
 	} else if (type === "buttongroup") {
-		return <SelectButtonGroupComponent {...rest} />;
+		return <SelectButtonGroupComponent {...rest} multiselect={false} />;
 	} else if (type === "chipgroup") {
-		return <SelectChipGroupComponent {...rest} />;
+		return <SelectChipGroupComponent {...rest} multiselect={false} />;
 	} else if (type === "color") {
 		return <SelectColorComponent {...rest} />;
 	} else if (type === "imagedropdown") {
@@ -178,6 +180,6 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	} else if (type === "grid") {
 		return <SelectGridComponent {...rest} />;
 	} else {
-		return <SelectDropDownComponent {...rest} />;
+		return <SelectDropDownComponent {...rest} multiselect={false} />;
 	}
 }

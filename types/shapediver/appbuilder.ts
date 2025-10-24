@@ -53,7 +53,6 @@ export type SelectComponentType =
 	| "fullwidthcards"
 	| "carousel"
 	| "grid"
-	| "multiselect-chips"
 	| "multiselect-checkboxes";
 
 /** Data for an item shown by a selection component. */
