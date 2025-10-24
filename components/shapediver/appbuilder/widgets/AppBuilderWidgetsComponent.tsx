@@ -7,7 +7,6 @@ import AppBuilderImageWidgetComponent from "@AppBuilderShared/components/shapedi
 import AppBuilderLineChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
 import AppBuilderProgressWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderProgressWidgetComponent";
 import AppBuilderRoundChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
-import AppBuilderStackUiWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidgetComponent";
 import AppBuilderTextWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {
@@ -31,6 +30,7 @@ import {
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
+import AppBuilderStackUiWidgetButtonComponent from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidget/AppBuilderStackUiWidgetButtonComponent";
 import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetComponent";
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
 import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
@@ -109,7 +109,7 @@ export default function AppBuilderWidgetsComponent({
 					);
 				else if (isStackUiWidget(w))
 					return (
-						<AppBuilderStackUiWidgetComponent
+						<AppBuilderStackUiWidgetButtonComponent
 							key={i}
 							namespace={namespace}
 							{...w.props}
