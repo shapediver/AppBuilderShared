@@ -3,7 +3,10 @@ import {
 	SelectComponentType,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import React from "react";
-import {SelectComponentProps} from "~/shared/components/shapediver/parameter/select/SelectComponent";
+import {
+	SelectComponentProps,
+	SelectComponentSettings,
+} from "~/shared/components/shapediver/parameter/select/SelectComponent";
 import SelectDropDownComponent from "~/shared/components/shapediver/parameter/select/SelectDropDownComponent";
 import SelectButtonFlexComponent from "../select/SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "../select/SelectButtonGroupComponent";
@@ -21,6 +24,8 @@ export interface MultiSelectComponentProps {
 	items: string[];
 	/** Whether the component shall be disabled. */
 	disabled?: boolean;
+	/** Component-specific settings (e.g. width for SelectImageDropDownComponent). */
+	settings?: SelectComponentSettings;
 	/** Optional function to wrap the input component in a custom container. */
 	inputContainer?: (children: React.ReactNode) => React.ReactNode;
 	/** Optional function to handle focus events. */

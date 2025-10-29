@@ -201,6 +201,8 @@ export default function ParameterSelectComponent(
 				disabled={disabled}
 				inputContainer={inputContainer}
 				type={settings.type}
+				itemData={settings.itemData}
+				settings={settings.settings}
 				height={settings.height}
 			/>
 		) : (
