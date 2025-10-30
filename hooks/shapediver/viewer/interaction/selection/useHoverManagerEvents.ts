@@ -73,7 +73,7 @@ export function useHoverManagerEvents(
 				// We ignore the event if it's not based on the component ID.
 				if (hoverEvent.manager.id !== componentId) return;
 
-				const hovered = [hoverEvent.node];
+				const hovered = hoverEvent.nodes;
 				setHoveredNodeNames(
 					getNodeNames(patterns, hovered, strictNaming),
 				);

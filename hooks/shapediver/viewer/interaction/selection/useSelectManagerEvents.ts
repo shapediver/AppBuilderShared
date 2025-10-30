@@ -1,8 +1,6 @@
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {
 	InteractionEventResponseMapping,
 	matchNodesWithPatterns,
-	MultiSelectManager,
 } from "@shapediver/viewer.features.interaction";
 import {
 	addListener,
@@ -11,7 +9,7 @@ import {
 	ITreeNode,
 	removeListener,
 } from "@shapediver/viewer.session";
-import {useCallback, useContext, useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {IUseCreateNameFilterPatternResult} from "../useCreateNameFilterPattern";
 
 // #region Functions (1)
@@ -84,9 +82,6 @@ export function useSelectManagerEvents(
 		[],
 	);
 
-	// get notifications from the context
-	const notifications = useContext(NotificationContext);
-
 	// register an event handler and listen for output updates
 	useEffect(() => {
 		/**
@@ -144,13 +139,6 @@ export function useSelectManagerEvents(
 
 				// We ignore the event if it's not based on an event triggered by the UI.
 				if (!multiSelectEvent.event) return;
-				// We ignore the event if the number of selected nodes exceeds the maximum number of nodes.
-				if (
-					multiSelectEvent.nodes.length >
-					(multiSelectEvent.manager as MultiSelectManager)
-						.maximumNodes
-				)
-					return;
 				// We ignore the event if it's not based on the component ID.
 				if (multiSelectEvent.manager.id !== componentId) return;
 
@@ -185,29 +173,6 @@ export function useSelectManagerEvents(
 		);
 
 		/**
-		 * Event handler for the maximum multi select event.
-		 * In this event handler, a notification is shown.
-		 */
-		const tokenMaximumMultiSelect = addListener(
-			EVENTTYPE_INTERACTION.MULTI_SELECT_MAXIMUM_NODES,
-			async (event: IEvent) => {
-				const multiSelectEvent =
-					event as InteractionEventResponseMapping[EVENTTYPE_INTERACTION.MULTI_SELECT_MAXIMUM_NODES];
-
-				// We ignore the event if it's not based on an event triggered by the UI.
-				if (!multiSelectEvent.event) return;
-				// We ignore the event if it's not based on the component ID.
-				if (multiSelectEvent.manager.id !== componentId) return;
-
-				// TODO: refactor this to use a store instead of calling mantine notifications directly
-				notifications.warning({
-					title: "Maximum number of objects has already been selected",
-					message: `Expected at most ${(multiSelectEvent.manager as MultiSelectManager).maximumNodes} objects, but ${multiSelectEvent.nodes.length + 1} were selected.`,
-				});
-			},
-		);
-
-		/**
 		 * Remove the event listeners when the component is unmounted.
 		 */
 		return () => {
@@ -215,7 +180,6 @@ export function useSelectManagerEvents(
 			removeListener(tokenSelectOff);
 			removeListener(tokenMultiSelectOn);
 			removeListener(tokenMultiSelectOff);
-			removeListener(tokenMaximumMultiSelect);
 		};
 	}, [patterns, componentId]);
 
