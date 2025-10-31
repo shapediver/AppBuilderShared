@@ -936,12 +936,29 @@ export interface IAppBuilderContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
+/** Types of actions to be executed after updating outputs. */
 export type AppBuilderOutputActionsType = "setParameterValue";
 
+/**
+ * Properties of a "setParameterValue" output action.
+ *
+ * The returned parameter value is returned in the following format:
+ * {
+ *   [instanceId: string]: {
+ *     [output: string]: ResOutputContent[] | undefined
+ *   }
+ * }
+ * where the key `instanceId` is the name of the instance (if provided) or the identifier `instance[i]`
+ * with i being the index of the instance in the instances array.
+ *
+ * The key `output` is the displayname/name/id of the output specified in the output action.
+ *
+ * The value is the array of ResOutputContent returned by the output.
+ */
 export interface IAppBuilderOutputActionsPropsSetParameterValue {
-	/** the displayname/name/id of the output */
+	/** The displayname/name/id of the output to check for updates. */
 	output: string;
-	/** the displayname/name/id of the parameter that should be set */
+	/** The displayname/name/id of the parameter that should be set based on the value of the output. */
 	parameter: string;
 }
 
@@ -965,10 +982,11 @@ export interface IAppBuilderInstanceDefinition {
 	};
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
-	/** The output actions that should be done after an output has been updated. */
+	/** The actions that should be executed after an output of the instance has been updated. */
 	outputActions?: {
-		// the type of action that should be used on the output
+		/** The type of output action that should be used. */
 		type: AppBuilderOutputActionsType;
+		/** Properties of the output action. */
 		props: IAppBuilderOutputActionsPropsSetParameterValue;
 	}[];
 }
