@@ -7,11 +7,9 @@ import {
 	StackProps,
 	Text,
 	TextProps,
-	Transition,
-	TransitionProps,
 	useProps,
 } from "@mantine/core";
-import React, {useContext, useState} from "react";
+import React, {useContext} from "react";
 import Icon, {IconProps} from "~/shared/components/ui/Icon";
 import TooltipWrapper from "~/shared/components/ui/TooltipWrapper";
 import {AppBuilderStackContext} from "~/shared/context/StackContext";
@@ -39,10 +37,6 @@ export interface StyleProps {
 	 */
 	buttonForwardProps?: ButtonProps;
 	/**
-	 * Props for the forward transition.
-	 */
-	transitionForwardProps?: Partial<TransitionProps>;
-	/**
 	 * Props for the back button.
 	 */
 	buttonBackProps?: ButtonProps;
@@ -69,11 +63,6 @@ const defaultStyleProps: Partial<StyleProps> = {
 		size: 18,
 		iconType: "tabler:chevron-right",
 	},
-	transitionForwardProps: {
-		transition: "slide-left",
-		duration: 300,
-		timingFunction: "ease",
-	},
 };
 
 type Props = IAppBuilderWidgetPropsStackUi &
@@ -83,69 +72,47 @@ type Props = IAppBuilderWidgetPropsStackUi &
 
 export default function AppBuilderStackUiWidgetButtonComponent(props: Props) {
 	const {name, icon, tooltip, ...styleProps} = props;
-	const [isOpen, setIsOpen] = useState(true);
 	const {
 		stackPaperProps,
 		stackProps,
 		itemTextProps,
 		buttonForwardProps,
 		iconForwardProps,
-		transitionForwardProps,
 	} = useProps(
 		"AppBuilderStackUiWidgetComponent",
 		defaultStyleProps,
 		styleProps,
 	);
 	const stackContext = useContext(AppBuilderStackContext);
-	const handleButtonClick = () => {
-		setIsOpen(false);
-		setTimeout(() => {
-			stackContext.push(props);
-			setIsOpen(true);
-		}, transitionForwardProps?.duration ?? 300);
-	};
 
 	return (
-		<Paper
-			{...stackPaperProps}
-			style={{
-				...stackPaperProps?.style,
-				overflowX: "hidden",
-				overflowY: "hidden",
-			}}
-		>
-			<Transition mounted={isOpen} {...transitionForwardProps}>
-				{(styles) => (
-					<Stack {...stackProps} style={styles}>
-						<Button
-							onClick={() => handleButtonClick()}
-							rightSection={
-								<Icon
-									{...iconForwardProps}
-									iconType={
-										iconForwardProps?.iconType ||
-										"tabler:chevron-right"
-									}
-								/>
+		<Paper {...stackPaperProps}>
+			<Stack {...stackProps}>
+				<Button
+					onClick={() => stackContext.push(props)}
+					rightSection={
+						<Icon
+							{...iconForwardProps}
+							iconType={
+								iconForwardProps?.iconType ||
+								"tabler:chevron-right"
 							}
-							leftSection={
-								icon ? <Icon iconType={icon} /> : undefined
-							}
-							{...buttonForwardProps}
-						>
-							<Text {...itemTextProps}>
-								{tooltip ? (
-									<TooltipWrapper label={tooltip}>
-										<div>{name}</div>
-									</TooltipWrapper>
-								) : (
-									name
-								)}
-							</Text>
-						</Button>
-					</Stack>
-				)}
-			</Transition>
+						/>
+					}
+					leftSection={icon ? <Icon iconType={icon} /> : undefined}
+					{...buttonForwardProps}
+				>
+					<Text {...itemTextProps}>
+						{tooltip ? (
+							<TooltipWrapper label={tooltip}>
+								<div>{name}</div>
+							</TooltipWrapper>
+						) : (
+							name
+						)}
+					</Text>
+				</Button>
+			</Stack>
 		</Paper>
 	);
 }

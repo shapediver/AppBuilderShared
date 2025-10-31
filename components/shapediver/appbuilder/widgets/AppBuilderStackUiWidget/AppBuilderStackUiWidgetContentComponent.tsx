@@ -7,15 +7,15 @@ import {
 	PaperProps,
 	Stack,
 	StackProps,
-	Transition,
-	TransitionProps,
 	useProps,
 } from "@mantine/core";
-import React, {useContext, useState} from "react";
+import React, {useContext} from "react";
 import AppBuilderWidgetsComponent from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
 import Icon, {IconProps} from "~/shared/components/ui/Icon";
 import {AppBuilderStackContext} from "~/shared/context/StackContext";
+import {useStackContext} from "~/shared/hooks/context/useStackContext";
 import {IAppBuilderWidgetPropsStackUi} from "~/shared/types/shapediver/appbuilder";
+import AppBuilderStackUiWidgetComponent from "./AppBuilderStackUiWidgetComponent";
 
 export interface StyleProps {
 	/**
@@ -30,10 +30,6 @@ export interface StyleProps {
 	 * Props for the icon on the left of the back button.
 	 */
 	iconBackProps?: IconProps;
-	/**
-	 * Props for the back transition.
-	 */
-	transitionBackProps?: Partial<TransitionProps>;
 	/**
 	 * Props for the content Stack.
 	 */
@@ -61,11 +57,6 @@ const defaultStyleProps: Partial<StyleProps> = {
 		size: 18,
 		iconType: "tabler:chevron-left",
 	},
-	transitionBackProps: {
-		transition: "slide-right",
-		duration: 300,
-		timingFunction: "ease",
-	},
 	stackContentProps: {
 		pb: "xs",
 		px: "xs",
@@ -80,61 +71,65 @@ type Props = IAppBuilderWidgetPropsStackUi &
 
 export default function AppBuilderStackUiWidgetContentComponent(props: Props) {
 	const {namespace, widgets, ...styleProps} = props;
-	const [isOpen, setIsOpen] = useState(true);
+	const {stackPaperProps, buttonBackProps, iconBackProps, stackContentProps} =
+		useProps(
+			"AppBuilderStackUiWidgetComponent",
+			defaultStyleProps,
+			styleProps,
+		);
+
+	const parentStackContext = useContext(AppBuilderStackContext);
+
 	const {
-		stackPaperProps,
-		buttonBackProps,
-		iconBackProps,
-		transitionBackProps,
-		stackContentProps,
-	} = useProps(
-		"AppBuilderStackUiWidgetComponent",
-		defaultStyleProps,
-		styleProps,
-	);
-
-	const stackContext = useContext(AppBuilderStackContext);
-
-	const handleBackClick = () => {
-		setIsOpen(false);
-		setTimeout(() => {
-			stackContext.pop();
-			setIsOpen(true);
-		}, transitionBackProps?.duration ?? 300);
-	};
+		push: nestedPush,
+		pop: nestedPop,
+		animationDuration,
+		isTransitioning: isNestedTransitioning,
+		setIsTransitioning: setIsNestedTransitioning,
+		currentStackElement: currentNestedStackElement,
+	} = useStackContext(parentStackContext.animationDuration);
 
 	return (
 		<Paper
 			{...stackPaperProps}
 			style={{
 				...stackPaperProps?.style,
-				position: "absolute",
-				inset: 0,
 				height: "100%",
 				width: "100%",
 			}}
 		>
-			<Transition mounted={isOpen} {...transitionBackProps}>
-				{(styles) => (
-					<Stack style={styles}>
-						<Box>
-							<Button
-								onClick={handleBackClick}
-								leftSection={
-									<Icon
-										{...iconBackProps}
-										iconType={
-											iconBackProps?.iconType ||
-											"tabler:chevron-left"
-										}
-									/>
+			<Stack>
+				<Box>
+					<Button
+						onClick={() => parentStackContext.pop()}
+						leftSection={
+							<Icon
+								{...iconBackProps}
+								iconType={
+									iconBackProps?.iconType ||
+									"tabler:chevron-left"
 								}
-								{...buttonBackProps}
-							>
-								Back
-							</Button>
-						</Box>
-						<Box style={{height: "100%"}}>
+							/>
+						}
+						{...buttonBackProps}
+					>
+						Back
+					</Button>
+				</Box>
+				<Box style={{height: "100%"}}>
+					<AppBuilderStackContext.Provider
+						value={{
+							push: nestedPush,
+							pop: nestedPop,
+							animationDuration,
+							isTransitioning: isNestedTransitioning,
+							setIsTransitioning: setIsNestedTransitioning,
+						}}
+					>
+						<AppBuilderStackUiWidgetComponent
+							namespace={namespace}
+							stackElement={currentNestedStackElement}
+						>
 							<Stack
 								{...stackContentProps}
 								style={{
@@ -147,10 +142,10 @@ export default function AppBuilderStackUiWidgetContentComponent(props: Props) {
 									widgets={widgets}
 								/>
 							</Stack>
-						</Box>
-					</Stack>
-				)}
-			</Transition>
+						</AppBuilderStackUiWidgetComponent>
+					</AppBuilderStackContext.Provider>
+				</Box>
+			</Stack>
 		</Paper>
 	);
 }

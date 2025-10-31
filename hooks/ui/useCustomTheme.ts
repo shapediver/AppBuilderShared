@@ -675,11 +675,6 @@ export const useCustomTheme = (props: Props = {}) => {
 					// 	size: 18,
 					// 	iconType: "tabler:chevron-right",
 					// },
-					// transitionForwardProps: {
-					// 	transition: "slide-left",
-					// 	duration: 300,
-					// 	timingFunction: "ease",
-					// },
 					// buttonBackProps: {
 					// 	mt: "xs",
 					// 	variant: "subtle",

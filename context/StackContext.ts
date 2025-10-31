@@ -5,4 +5,7 @@ import {createContext} from "react";
 export const AppBuilderStackContext = createContext<IAppBuilderStackContext>({
 	push: () => {},
 	pop: () => {},
+	animationDuration: 300,
+	isTransitioning: false,
+	setIsTransitioning: () => {},
 });
