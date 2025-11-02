@@ -79,6 +79,9 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						mobileFallback={container.props.mobileFallback}
 						useContainer={container.props.useContainer ?? true}
 						closingStrategy={"button"}
+						selectionProperties={
+							container.props.selectionProperties
+						}
 					/>,
 				);
 			}

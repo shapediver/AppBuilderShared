@@ -58,6 +58,8 @@ export const useShapeDiverStoreAttributeVisualization =
 							false,
 							"createAttributeVisualizationEngine",
 						);
+
+						return attributeVisualizationEngine;
 					}
 					return attributeVisualizationEngines[viewport.id];
 				},

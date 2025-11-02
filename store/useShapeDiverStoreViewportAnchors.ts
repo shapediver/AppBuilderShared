@@ -117,8 +117,10 @@ export const useShapeDiverStoreViewportAnchors =
 				},
 
 				updateShowContent: (viewportId, anchorId, showContent) => {
-					const {anchors} = get();
+					const {anchors, showContentMap} = get();
 					const anchorList = anchors[viewportId];
+					const showContentMapEntry =
+						showContentMap[viewportId] || {};
 					if (!anchorList) return;
 
 					const anchorType = anchorList.find(
@@ -142,6 +144,33 @@ export const useShapeDiverStoreViewportAnchors =
 						return a;
 					});
 
+					// adjust the showContentMap for this viewport
+					// by setting all other anchors of the same type to false
+					// and updating the current one
+					const updateShowContentMap: {
+						[id: string]: {[type: string]: boolean};
+					} = {
+						[anchorId]: {[anchorType]: showContent},
+					};
+					Object.keys(showContentMapEntry).forEach((key) => {
+						const entry = showContentMapEntry[key];
+						if (key !== anchorId) {
+							if (
+								entry[anchorType] &&
+								updatedAnchors.find((a) => a.id === key)
+									?.hideable
+							) {
+								// only set to false if it was true and the anchor is hideable
+								updateShowContentMap[key] = {
+									...entry,
+									[anchorType]: false,
+								};
+							} else {
+								updateShowContentMap[key] = entry;
+							}
+						}
+					});
+
 					set(
 						(state) => ({
 							anchors: {
@@ -151,10 +180,7 @@ export const useShapeDiverStoreViewportAnchors =
 							showContentMap: {
 								...state.showContentMap,
 								[viewportId]: {
-									...state.showContentMap[viewportId],
-									[anchorId]: {
-										[anchorType]: showContent,
-									},
+									...updateShowContentMap,
 								},
 							},
 						}),

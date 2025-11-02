@@ -41,7 +41,7 @@ const cleanUpHoverManager = (
 	interactionEngine?: InteractionEngine,
 ) => {
 	if (hoverManagers[viewportId][componentId]) {
-		hoverManagers[viewportId][componentId].hoverManager.deselect();
+		hoverManagers[viewportId][componentId].hoverManager.deselectAll();
 		if (interactionEngine && interactionEngine.closed === false)
 			interactionEngine.removeInteractionManager(
 				hoverManagers[viewportId][componentId].token,

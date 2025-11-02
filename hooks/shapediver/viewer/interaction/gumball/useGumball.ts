@@ -168,8 +168,40 @@ export function useGumball(
 			if (nodes.length === 1 && restrictions) {
 				const node = nodes[0];
 				for (let i = 0; i < objects.length; i++) {
-					for (const sessionId in objects[i].patterns) {
-						const patterns = objects[i].patterns[sessionId];
+					if (objects[i].patterns.outputPatterns) {
+						Object.values(
+							objects[i].patterns.outputPatterns!,
+						).forEach((pattern) => {
+							// check if there are any patterns that match the selected nodes
+							const matchedNodeNames = matchNodesWithPatterns(
+								pattern,
+								[node.node],
+								strictNaming,
+							);
+
+							if (matchedNodeNames.length > 0) {
+								if (
+									objects[i].restrictions &&
+									objects[i].restrictions.length > 0
+								) {
+									objects[i].restrictions.forEach(
+										(restrictionId) => {
+											const restriction =
+												restrictions[restrictionId];
+											if (!restriction) return;
+											restrictionsToUse[restrictionId] =
+												restriction;
+										},
+									);
+								}
+							}
+						});
+					}
+
+					if (objects[i].patterns.instancePatterns) {
+						const patterns = objects[i].patterns.instancePatterns!;
+
+						if (!patterns) continue;
 
 						// check if there are any patterns that match the selected nodes
 						const matchedNodeNames = matchNodesWithPatterns(

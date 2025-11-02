@@ -1,5 +1,6 @@
 import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";
 import {
 	IAppBuilderSettings,
 	IAppBuilderSettingsResolved,
@@ -29,6 +30,10 @@ export default function useResolveAppBuilderSettings(
 			authenticate: state.authenticate,
 			setCurrentModel: state.setCurrentModel,
 		})),
+	);
+
+	const {addItem: addSavedState} = useShapeDiverStorePlatformSavedStates(
+		useShallow((state) => ({addItem: state.addItem})),
 	);
 
 	// when running on the platform, try to get a token (refresh token grant)
@@ -129,11 +134,17 @@ export default function useResolveAppBuilderSettings(
 						});
 						const result = await client.models.iframeEmbedding(
 							session.slug!,
+							{saved_states: true},
 						);
 
 						return result.data;
 					};
 					const iframeData = await getIframeData();
+
+					for (const savedState of iframeData.model.saved_states ??
+						[]) {
+						await addSavedState(savedState);
+					}
 
 					return {
 						acceptRejectMode:

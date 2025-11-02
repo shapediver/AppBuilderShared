@@ -1,7 +1,7 @@
 import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {ISelectionParameterProps} from "@shapediver/viewer.session";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
 export function useAnchorSelection(
 	selectionProperties:
@@ -81,20 +81,25 @@ export function useAnchorSelection(
 		selectionActive && selectionAllowed,
 	);
 
-	useEffect(() => {
-		if (!selectionProperties) return;
+	const updateShowContentCallback = useCallback(
+		(selectedNodeNames: string[]) => {
+			if (!selectionProperties) return;
+			if (selectedNodeNames.length > 0 && !showContent) {
+				updateShowContent(viewportId, id, true);
+			} else if (selectedNodeNames.length === 0 && showContent) {
+				updateShowContent(viewportId, id, false);
+			}
+		},
+		[showContent, selectionProperties, viewportId, id, updateShowContent],
+	);
 
-		if (selectedNodeNames.length > 0 && !showContent) {
-			updateShowContent(viewportId, id, true);
-		} else if (selectedNodeNames.length === 0 && showContent) {
-			updateShowContent(viewportId, id, false);
-		}
-	}, [
-		selectionProperties,
-		selectedNodeNames,
-		showContent,
-		viewportId,
-		id,
-		updateShowContent,
-	]);
+	const updateShowContentCallbackRef = useRef(updateShowContentCallback);
+
+	useEffect(() => {
+		updateShowContentCallbackRef.current = updateShowContentCallback;
+	}, [updateShowContentCallback]);
+
+	useEffect(() => {
+		updateShowContentCallbackRef.current(selectedNodeNames);
+	}, [selectedNodeNames]);
 }

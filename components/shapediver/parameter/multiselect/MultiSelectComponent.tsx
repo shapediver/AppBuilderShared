@@ -1,17 +1,31 @@
-import {SelectComponentType} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {
+	ISelectComponentItemDataType,
+	SelectComponentType,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React from "react";
+import {
+	SelectComponentProps,
+	SelectComponentSettings,
+} from "~/shared/components/shapediver/parameter/select/SelectComponent";
+import SelectDropDownComponent from "~/shared/components/shapediver/parameter/select/SelectDropDownComponent";
+import SelectButtonFlexComponent from "../select/SelectButtonFlexComponent";
+import SelectButtonGroupComponent from "../select/SelectButtonGroupComponent";
+import SelectChipGroupComponent from "../select/SelectChipGroupComponent";
 import MultiSelectCheckboxesComponent from "./MultiSelectCheckboxesComponent";
-import MultiSelectDropDownComponent from "./MultiSelectDropDownComponent";
 
 export interface MultiSelectComponentProps {
 	/** Controlled value (array of selected item names). */
 	value: string[];
 	/** Handler for updating the value. */
 	onChange: (value: string[]) => void;
+	/** Record containing optional further item data per item name. */
+	itemData?: Record<string, ISelectComponentItemDataType>;
 	/** Item names that can be selected, must be unique. */
 	items: string[];
 	/** Whether the component shall be disabled. */
 	disabled?: boolean;
+	/** Component-specific settings (e.g. width for SelectImageDropDownComponent). */
+	settings?: SelectComponentSettings;
 	/** Optional function to wrap the input component in a custom container. */
 	inputContainer?: (children: React.ReactNode) => React.ReactNode;
 	/** Optional function to handle focus events. */
@@ -27,7 +41,15 @@ export interface MultiSelectComponentProps {
 	height?: string;
 	/** Type of select component to use. */
 	type?: SelectComponentType;
+	/** Enable search (only used by dropdown type). */
+	searchable?: boolean;
+	/** Max number of options rendered at the same time (only used by dropdown type with searchable). */
+	limit?: number;
 }
+
+export type UniversalMultiSelectComponentProps =
+	| (SelectComponentProps & {multiselect: false})
+	| (MultiSelectComponentProps & {multiselect: true});
 
 /**
  * Functional multiselect component.
@@ -40,5 +62,17 @@ export default function MultiSelectComponent(props: MultiSelectComponentProps) {
 		return <MultiSelectCheckboxesComponent {...rest} />;
 	}
 
-	return <MultiSelectDropDownComponent {...rest} />;
+	if (type === "buttonflex") {
+		return <SelectButtonFlexComponent {...rest} multiselect={true} />;
+	}
+
+	if (type === "buttongroup") {
+		return <SelectButtonGroupComponent {...rest} multiselect={true} />;
+	}
+
+	if (type === "chipgroup") {
+		return <SelectChipGroupComponent {...rest} multiselect={true} />;
+	}
+
+	return <SelectDropDownComponent {...rest} multiselect={true} />;
 }

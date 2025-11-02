@@ -101,6 +101,7 @@ export default function ViewportAnchor2d(
 		if (!portalRef.current) return;
 		if (!canvas) return;
 		if (initializedRef.current) return;
+		portalRef.current.style.display = "block";
 
 		const offsetWidth = portalRef.current.offsetWidth;
 		if (!offsetWidth) return;
