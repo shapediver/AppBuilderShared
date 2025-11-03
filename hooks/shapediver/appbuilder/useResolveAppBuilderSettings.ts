@@ -13,10 +13,19 @@ import {
 } from "@AppBuilderShared/utils/platform/environment";
 import {
 	SdPlatformModelGetEmbeddableFields,
+	SdPlatformResponseModelPublic,
 	create,
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
+
+import {MODELS} from "@modelstorage";
+
+// Type assertion for MODELS
+const ModelStorage = MODELS as unknown as Record<
+	string,
+	SdPlatformResponseModelPublic
+>;
 
 /**
  * In case the session settings contain a slug and a platformUrl,
@@ -79,9 +88,35 @@ export default function useResolveAppBuilderSettings(
 					return session as IAppBuilderSettingsSession;
 				}
 
+				// special case for local development:
+				// check if there is stored data for the slug
+				// this will always fail in production!
+				if (session.slug && ModelStorage[session.slug]) {
+					// in case the slug is found in model storage, use the stored data
+					const model = ModelStorage[session.slug];
+
+					setCurrentModel(model);
+					document.title = `${model?.title ?? model?.slug} | ShapeDiver App Builder`;
+
+					// we store exactly the same data as in the platform response,
+					// only leaving out the refresh token function
+					return {
+						acceptRejectMode: model.settings.parameters_commit,
+						hideAttributeVisualization:
+							model.settings.hide_attribute_visualization,
+						hideJsonMenu: model.settings.hide_json_menu,
+						hideSavedStates: model.settings.hide_saved_states,
+						hideDesktopClients: model.settings.hide_desktop_clients,
+						hideExports: model.settings.hide_exports,
+						...session,
+						ticket: model!.ticket!.ticket,
+						modelViewUrl: model!.backend_system!.model_view_url,
+						jwtToken: model.access_token,
+					} as IAppBuilderSettingsSession;
+				}
 				// in case we are running on the platform and the session is on the same platform,
 				// use a model get call to get ticket, modelViewUrl and token
-				if (
+				else if (
 					shouldUsePlatform() &&
 					sdkRef!.platformUrl === platformUrl
 				) {
