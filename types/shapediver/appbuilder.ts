@@ -965,6 +965,8 @@ export interface IAppBuilderOutputActionsPropsSetParameterValue {
 export interface IAppBuilderInstanceDefinition {
 	/** Id of the instance. */
 	sessionId: string;
+	/** Optional slug of the instance. If a slug is provided, the instance will be loaded immediately with that slug. */
+	slug?: string;
 	/** Optional name of the instance. This name will be used for the node in the scene graph, e.g. NAME_transformations_0 for the first transformation. */
 	name?: string;
 	/**
