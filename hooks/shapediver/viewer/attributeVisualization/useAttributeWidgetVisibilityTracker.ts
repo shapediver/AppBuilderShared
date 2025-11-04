@@ -1,4 +1,8 @@
-import {IViewportApi, RENDERER_TYPE} from "@shapediver/viewer.viewport";
+import {
+	IViewportApi,
+	RENDERER_TYPE,
+	viewports,
+} from "@shapediver/viewer.viewport";
 import {useCallback, useEffect, useRef, useState} from "react";
 
 // Map of element IDs to their properties
@@ -28,7 +32,6 @@ let observer: IntersectionObserver | null = null;
 
 export function useAttributeWidgetVisibilityTracker(props: {
 	wantsPriority?: boolean;
-	viewport: IViewportApi;
 }) {
 	const ref = useRef(null);
 	const [isVisible, setIsVisible] = useState(false);
@@ -72,14 +75,12 @@ export function useAttributeWidgetVisibilityTracker(props: {
 			element: el,
 			isVisible: false,
 			wantsPriority: wantsPriorityRef.current,
-			viewport: props.viewport,
 		};
 
 		visibilityMap.set(id, {
 			...prev,
 			element: el,
 			wantsPriority: wantsPriorityRef.current,
-			viewport: props.viewport,
 		});
 
 		// Initial visibility check after element is set
@@ -89,7 +90,7 @@ export function useAttributeWidgetVisibilityTracker(props: {
 			visibilityMap.delete(id);
 			notifyAll();
 		};
-	}, [props.viewport, id]);
+	}, [id]);
 
 	/**
 	 * UseEffect to set the setHasPriority and setIsVisible functions in the updateMap.
@@ -186,18 +187,8 @@ export function useAttributeWidgetVisibilityTracker(props: {
  * If no elements are visible, it will toggle the attribute visualization off for all viewports.
  */
 const disableAttributeVisualization = () => {
-	// get all viewports
-	const viewports = Array.from(visibilityMap.values())
-		.map((data) => data.viewport)
-		.filter((v): v is IViewportApi => !!v);
-
-	// filter out duplicates
-	const uniqueViewports = Array.from(new Set(viewports.map((v) => v.id))).map(
-		(id) => viewports.find((v) => v.id === id),
-	);
-
 	// toggle attribute visualization off
-	uniqueViewports.forEach((viewport) => {
+	Object.values(viewports).forEach((viewport) => {
 		if (!viewport) return;
 		if (viewport.type === RENDERER_TYPE.ATTRIBUTES) {
 			viewport.type = RENDERER_TYPE.STANDARD;
@@ -241,10 +232,13 @@ const notifyAll = () => {
 	});
 
 	// if there is no element with priority, we disable the attribute visualization
-	// but only if there are visible elements that do not want priority
+	// but only if there are no visible entries or
+	// if there are visible elements that do not want priority
 	if (
 		priorityElementId === undefined &&
-		visibilityMapEntries.filter(([, data]) => data.isVisible).length > 0
+		(visibleEntries.length === 0 ||
+			visibilityMapEntries.filter(([, data]) => data.isVisible).length >
+				0)
 	) {
 		disableAttributeVisualization();
 	}
