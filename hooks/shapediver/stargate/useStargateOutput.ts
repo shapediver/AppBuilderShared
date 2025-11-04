@@ -98,9 +98,8 @@ export const useStargateOutput = ({
 			) {
 				return;
 			}
-			const chunk = session.outputs[outputId].chunks.find(
-				(c) => c.id === chunkId,
-			);
+			const chunk: ShapeDiverResponseOutputChunk | undefined =
+				session.outputs[outputId].chunks.find((c) => c.id === chunkId);
 			return chunk;
 		}),
 	);
@@ -125,11 +124,9 @@ export const useStargateOutput = ({
 	const getObjectsNumber = useCallback(
 		(chunk: ShapeDiverResponseOutputChunk | undefined): number => {
 			if (!chunk) return 0;
-			// TODO file viewer task to type chunks correctly (including node)
 			let count = 0;
-			const nodeWithChunks = chunk as any & {node: ITreeNode};
-			if (nodeWithChunks.node?.children) {
-				nodeWithChunks.node.children.forEach((c: ITreeNode) => {
+			if (chunk.node?.children) {
+				chunk.node.children.forEach((c: ITreeNode) => {
 					count += c.children?.length || 0;
 				});
 			}
@@ -187,7 +184,7 @@ export const useStargateOutput = ({
 
 			setStatus(OutputStatusEnum.unsupported);
 		})();
-	}, [networkStatus, selectedClient, typeHint, chunk]);
+	}, [networkStatus, selectedClient, typeHint, chunk, chunk?.node]);
 
 	/**
 	 * Handler for baking data.
