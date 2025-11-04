@@ -152,7 +152,6 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	const widgetId = useId();
 	const {ref, isVisible, hasPriority, requestPriority, removePriority} =
 		useAttributeWidgetVisibilityTracker({
-			viewport,
 			wantsPriority: hasBeenLoaded
 				? active
 				: visualizationMode ===
