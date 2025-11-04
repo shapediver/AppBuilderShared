@@ -46,7 +46,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 		py: 0,
 		withBorder: false,
 		shadow: "md",
-		style: {backgroundColor: "var(--mantine-color-gray-0)"},
+		style: {backgroundColor: "var(--mantine-color-body)"},
 	},
 	buttonBackProps: {
 		mt: "xs",
