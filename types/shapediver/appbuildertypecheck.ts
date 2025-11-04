@@ -987,6 +987,7 @@ const IAppBuilderOutputActionsPropsSetParameterValueSchema = z.object({
 // Zod type definition for IAppBuilderInstances
 const IAppBuilderInstancesSchema = z.object({
 	sessionId: z.string(),
+	slug: z.string().optional(),
 	name: z.string().optional(),
 	parameterValues: z
 		.record(

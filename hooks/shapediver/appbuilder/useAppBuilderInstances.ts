@@ -1,3 +1,4 @@
+import {IUseSessionDto} from "@AppBuilderShared/hooks/shapediver/useSession";
 import {useShapeDiverStoreInstances} from "@AppBuilderShared/store/useShapeDiverStoreInstances";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
@@ -6,6 +7,7 @@ import {
 	IAppBuilder,
 	IAppBuilderInstanceDefinition,
 	IAppBuilderParameterValueSourceDefinition,
+	IAppBuilderSettingsSession,
 	isParameterSource,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Mat4Array} from "@AppBuilderShared/types/shapediver/common";
@@ -23,6 +25,8 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useParameterValueSources} from "../parameters/useParameterValueSources";
 
+import {useSessions} from "../useSessions";
+import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 interface Props {
 	namespace: string;
 	/**
@@ -64,8 +68,12 @@ export function useAppBuilderInstances(props: Props) {
 		processManagerId: sessionProcessManagerId,
 	} = props;
 
-	const {sessions, addSessionUpdateCallback, createPendingSession} =
-		useShapeDiverStoreSession();
+	const {
+		sessions,
+		pendingSessions,
+		addSessionUpdateCallback,
+		createPendingSession,
+	} = useShapeDiverStoreSession();
 	const {
 		addProcess,
 		createProcessManager,
@@ -99,6 +107,7 @@ export function useAppBuilderInstances(props: Props) {
 	}>({});
 	const instancesRef = useRef<IAppBuilderInstanceDefinition[]>([]);
 	const sessionsRef = useRef(sessions);
+	const pendingSessionsRef = useRef(pendingSessions);
 	const sessionNodeRef = useRef<ITreeNode | undefined>(undefined);
 	const sessionProcessManagerIdRef = useRef(sessionProcessManagerId);
 	const processManagersRef = useRef(processManagers);
@@ -118,6 +127,10 @@ export function useAppBuilderInstances(props: Props) {
 	useEffect(() => {
 		sessionsRef.current = sessions;
 	}, [sessions]);
+
+	useEffect(() => {
+		pendingSessionsRef.current = pendingSessions;
+	}, [pendingSessions]);
 
 	// store for the parsed app builder instances
 	const [parsedAppBuilderInstances, setParsedAppBuilderInstances] = useState<
@@ -141,13 +154,83 @@ export function useAppBuilderInstances(props: Props) {
 		};
 	}>();
 
-	const instances = useMemo(() => {
+	const {instances, embeddedSessions} = useMemo(() => {
 		if (!appBuilderData) {
 			setParsedAppBuilderInstances([]);
-			return;
+			return {
+				instances: undefined,
+				embeddedSessions: [],
+			};
 		}
-		return appBuilderData.instances;
+
+		const sessionsDescriptions: {slug: string; id: string}[] = [];
+		appBuilderData.instances?.forEach((instance) => {
+			// check if the session is already added
+			// either in the currently loaded sessions, or in the pending sessions
+			if (
+				!sessionsRef.current[instance.sessionId] &&
+				!Object.values(pendingSessionsRef.current).find(
+					(session) => session.dto.id === instance.sessionId,
+				)
+			) {
+				// use slug if available, otherwise use sessionId
+				const slug = instance.slug || instance.sessionId;
+
+				const index = sessionsDescriptions.findIndex(
+					(session) => session.slug === slug,
+				);
+
+				// there already is a session with this slug
+				// check if the ids match, if not, warn the user
+				if (index !== -1) {
+					if (sessionsDescriptions[index].id !== instance.sessionId) {
+						console.warn(
+							`Multiple instances are using the same slug "${slug}" but different session ids ("${sessionsDescriptions[index].id}" and "${instance.sessionId}"). This can lead to unexpected behavior.`,
+						);
+					}
+					return;
+				}
+
+				sessionsDescriptions.push({
+					slug,
+					id: instance.sessionId,
+				});
+			}
+		});
+
+		return {
+			instances: appBuilderData.instances,
+			embeddedSessions: sessionsDescriptions as (IUseSessionDto &
+				IAppBuilderSettingsSession)[],
+		};
 	}, [appBuilderData]);
+
+	// from the incoming slugs, retrieve the session data from the platform
+	const {sessions: sessionData, error: platformError} =
+		useResolveAppBuilderSessions(embeddedSessions);
+
+	// add some necessary flags to the resolved sessions
+	const resolvedSessions = useMemo(() => {
+		if (!sessionData) return [];
+		(
+			sessionData as (IUseSessionDto & IAppBuilderSettingsSession)[]
+		).forEach((s) => {
+			s.loadOutputs = false;
+			s.registerParametersAndExports = false;
+		});
+		return sessionData;
+	}, [sessionData]);
+
+	// create the sessions
+	const {errors: sessionErrors} = useSessions(resolvedSessions ?? []);
+
+	useEffect(() => {
+		if (platformError)
+			console.warn("Error resolving sessions:", platformError);
+
+		for (const sessionError of sessionErrors)
+			console.warn("Error creating sessions:", sessionError);
+	}, [platformError, sessionErrors]);
 
 	const createParsedInstances = useCallback(
 		(instances: IAppBuilderInstanceDefinition[]) => {
