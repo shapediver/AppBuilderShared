@@ -51,7 +51,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 		style: {backgroundColor: "var(--mantine-color-body)"},
 	},
 	stackProps: {gap: "xs"},
-	itemTextProps: {size: "md"},
+	itemTextProps: {size: "md", c: "var(--mantine-color-text)"},
 	buttonForwardProps: {
 		justify: "space-between",
 		fullWidth: true,
