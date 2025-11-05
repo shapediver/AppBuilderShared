@@ -61,6 +61,7 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 		<section
 			style={{
 				overflowX: "hidden",
+				display: "contents", // Inherit parent paddings
 			}}
 		>
 			{showFallback && (
