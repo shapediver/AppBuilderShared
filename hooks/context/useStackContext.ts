@@ -11,17 +11,24 @@ export const useStackContext = (animationDurationMs: number = 300) => {
 		[animationDurationMs],
 	);
 
-	const push = useCallback((element: IAppBuilderStackContextElement) => {
-		setStackElements((prev) => [...prev, element]);
-	}, []);
+	const push = useCallback(
+		(element: IAppBuilderStackContextElement) => {
+			if (!isTransitioning) {
+				setStackElements((prev) => [...prev, element]);
+			}
+		},
+		[isTransitioning],
+	);
 
 	const pop = useCallback(() => {
-		setIsTransitioning(true);
-		setTimeout(() => {
-			setStackElements((prev) => prev.slice(0, -1));
-			setIsTransitioning(false);
-		}, animationDuration);
-	}, [animationDuration]);
+		if (!isTransitioning) {
+			setIsTransitioning(true);
+			setTimeout(() => {
+				setStackElements((prev) => prev.slice(0, -1));
+				setIsTransitioning(false);
+			}, animationDuration);
+		}
+	}, [animationDuration, isTransitioning]);
 
 	const currentStackElement = stackElements[stackElements.length - 1];
 

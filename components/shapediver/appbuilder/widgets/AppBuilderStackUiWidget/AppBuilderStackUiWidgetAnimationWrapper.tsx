@@ -1,6 +1,6 @@
 import {AppBuilderStackContext} from "@AppBuilderShared/context/StackContext";
 import {Box, Stack} from "@mantine/core";
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 
 interface Props {
 	isOpen: boolean;
@@ -20,8 +20,13 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 	const [fallbackPosition, setFallbackPosition] = useState(
 		isOpen ? "-100%" : "0",
 	);
+	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	useEffect(() => {
+		if (timeoutRef.current) {
+			clearTimeout(timeoutRef.current);
+		}
+
 		if (isOpen) {
 			if (stackContext.isTransitioning) {
 				// Backward (clicking "back"): left to right
@@ -32,7 +37,7 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 					setFallbackPosition("0");
 					setStackPosition("100%");
 				}, 10);
-				setTimeout(() => {
+				timeoutRef.current = setTimeout(() => {
 					setShowStack(false);
 				}, stackContext.animationDuration);
 			} else {
@@ -45,12 +50,12 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 					setFallbackPosition("-100%");
 					setStackPosition("0");
 				}, 10);
-				setTimeout(() => {
+				timeoutRef.current = setTimeout(() => {
 					setShowFallback(false);
 				}, stackContext.animationDuration);
 			}
 		}
-	}, [isOpen, stackContext.isTransitioning]);
+	}, [isOpen, stackContext.isTransitioning, stackContext.animationDuration]);
 
 	return (
 		<section
