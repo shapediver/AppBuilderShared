@@ -1,6 +1,12 @@
 import {AppBuilderStackContext} from "@AppBuilderShared/context/StackContext";
 import {Box, Stack} from "@mantine/core";
-import React, {useContext, useEffect, useRef, useState} from "react";
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 interface Props {
 	isOpen: boolean;
@@ -21,11 +27,26 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 		isOpen ? "-100%" : "0",
 	);
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const rafStartRef = useRef<number | null>(null);
+	const rafEndRef = useRef<number | null>(null);
 
-	useEffect(() => {
+	const resetAnimation = useCallback(() => {
 		if (timeoutRef.current) {
 			clearTimeout(timeoutRef.current);
+			timeoutRef.current = null;
 		}
+		if (rafStartRef.current !== null) {
+			cancelAnimationFrame(rafStartRef.current);
+			rafStartRef.current = null;
+		}
+		if (rafEndRef.current !== null) {
+			cancelAnimationFrame(rafEndRef.current);
+			rafEndRef.current = null;
+		}
+	}, []);
+
+	useEffect(() => {
+		resetAnimation();
 
 		if (isOpen) {
 			if (stackContext.isTransitioning) {
@@ -33,10 +54,12 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 				setShowFallback(true);
 				setStackPosition("0");
 				setFallbackPosition("-100%");
-				setTimeout(() => {
-					setFallbackPosition("0");
-					setStackPosition("100%");
-				}, 10);
+				rafStartRef.current = requestAnimationFrame(() => {
+					rafEndRef.current = requestAnimationFrame(() => {
+						setFallbackPosition("0");
+						setStackPosition("100%");
+					});
+				});
 				timeoutRef.current = setTimeout(() => {
 					setShowStack(false);
 				}, stackContext.animationDuration);
@@ -46,15 +69,21 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 				setShowFallback(true);
 				setStackPosition("100%");
 				setFallbackPosition("0");
-				setTimeout(() => {
-					setFallbackPosition("-100%");
-					setStackPosition("0");
-				}, 10);
+				rafStartRef.current = requestAnimationFrame(() => {
+					rafEndRef.current = requestAnimationFrame(() => {
+						setFallbackPosition("-100%");
+						setStackPosition("0");
+					});
+				});
 				timeoutRef.current = setTimeout(() => {
 					setShowFallback(false);
 				}, stackContext.animationDuration);
 			}
 		}
+
+		return () => {
+			resetAnimation();
+		};
 	}, [isOpen, stackContext.isTransitioning, stackContext.animationDuration]);
 
 	return (
