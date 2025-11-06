@@ -1,14 +1,22 @@
 import {useInteractionEngine} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useInteractionEngine";
+import {parseInteractionEffect} from "@AppBuilderShared/utils/misc/interactionEffects";
 import {
 	InteractionEngine,
 	MultiSelectManager,
 	SelectManager,
 } from "@shapediver/viewer.features.interaction";
+import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
 import {
 	ISelectionParameterProps,
+	ITreeNode,
 	MaterialStandardData,
 } from "@shapediver/viewer.session";
-import {useEffect, useState} from "react";
+import {
+	BlendFunction,
+	KernelSize,
+	POST_PROCESSING_EFFECT_TYPE,
+} from "@shapediver/viewer.viewport";
+import {useEffect, useRef, useState} from "react";
 
 // #region Functions (1)
 
@@ -34,6 +42,10 @@ const selectManagers: {
 const cleanUpSelectManager = (
 	viewportId: string,
 	componentId: string,
+	availableNodeData?: {
+		nodes: ITreeNode[] | undefined;
+		tokens: string[] | undefined;
+	},
 	interactionEngine?: InteractionEngine,
 ) => {
 	if (selectManagers[viewportId][componentId]) {
@@ -54,6 +66,22 @@ const cleanUpSelectManager = (
 					.selectManager as MultiSelectManager
 			).deselectAll();
 		}
+
+		if (
+			availableNodeData &&
+			availableNodeData.nodes &&
+			availableNodeData.tokens
+		) {
+			availableNodeData.nodes.forEach((node, index) => {
+				selectManagers[viewportId][
+					componentId
+				].selectManager!.interactionEffectUtils.removeInteractionEffect(
+					node,
+					availableNodeData.tokens![index],
+				);
+			});
+		}
+
 		if (interactionEngine && interactionEngine.closed === false)
 			interactionEngine.removeInteractionManager(
 				selectManagers[viewportId][componentId].token,
@@ -79,6 +107,7 @@ export function useSelectManager(
 		| "minimumSelection"
 		| "maximumSelection"
 		| "selectionColor"
+		| "availableColor"
 		| "deselectOnEmpty"
 	>,
 ): {
@@ -87,6 +116,13 @@ export function useSelectManager(
 	 * Depending on the settings, this can be a select manager or a multi select manager.
 	 */
 	selectManager?: SelectManager | MultiSelectManager;
+	/**
+	 * Set the available nodes for the select manager.
+	 * These nodes will be highlighted with the available color.
+	 *
+	 * @param nodes - The nodes to be set as available.
+	 */
+	setAvailableNodes(nodes: ITreeNode[] | undefined): void;
 } {
 	// call the interaction engine hook
 	const {interactionEngine} = useInteractionEngine(viewportId, componentId);
@@ -100,6 +136,118 @@ export function useSelectManager(
 	const [selectManager, setSelectManager] = useState<
 		SelectManager | MultiSelectManager | undefined
 	>(undefined);
+
+	const [availableNodes, setAvailableNodes] = useState<
+		ITreeNode[] | undefined
+	>(undefined);
+
+	const [selectionEffect, setSelectionEffect] = useState<
+		IInteractionEffect | undefined
+	>();
+
+	const [availableEffect, setAvailableEffect] = useState<
+		IInteractionEffect | undefined
+	>();
+
+	const availableNodeDataRef = useRef<{
+		nodes: ITreeNode[] | undefined;
+		tokens: string[] | undefined;
+	}>({
+		nodes: undefined,
+		tokens: undefined,
+	});
+
+	useEffect(() => {
+		const effect = parseInteractionEffect(settings?.selectionColor);
+
+		effect.then((e) => {
+			if (e) {
+				if (e instanceof Promise) {
+					e.then((e) =>
+						setSelectionEffect(e as MaterialStandardData),
+					);
+				} else {
+					setSelectionEffect(e as IInteractionEffect);
+				}
+			} else if (settings?.selectionColor !== null) {
+				setSelectionEffect({
+					properties: {
+						blendFunction: BlendFunction.ALPHA,
+						blur: true,
+						edgeStrength: 10,
+						hiddenEdgeColor: "#0d44f0",
+						kernelSize: KernelSize.LARGE,
+						visibleEdgeColor: "#0d44f0",
+					},
+					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				});
+			} else {
+				setSelectionEffect(undefined);
+			}
+		});
+	}, [settings?.selectionColor]);
+
+	useEffect(() => {
+		const effect = parseInteractionEffect(settings?.availableColor);
+
+		effect.then((e) => {
+			if (e) {
+				if (e instanceof MaterialStandardData) {
+					setAvailableEffect(e);
+				} else {
+					setAvailableEffect(e as IInteractionEffect);
+				}
+			} else if (settings?.availableColor !== null) {
+				setAvailableEffect({
+					properties: {
+						blendFunction: BlendFunction.ALPHA,
+						blur: true,
+						edgeStrength: 10,
+						hiddenEdgeColor: "#ffffff",
+						kernelSize: KernelSize.LARGE,
+						pulseSpeed: 0.5,
+						visibleEdgeColor: "#ffffff",
+					},
+					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				});
+			} else {
+				setAvailableEffect(undefined);
+			}
+		});
+	}, [settings?.availableColor]);
+
+	// whenever the passive nodes change, we need to update the select manager
+	useEffect(() => {
+		if (!availableEffect) return;
+		let tokens: string[] = [];
+
+		if (availableNodes && selectManager) {
+			availableNodes.forEach((node) => {
+				const token =
+					selectManager.interactionEffectUtils.applyInteractionEffect(
+						node,
+						availableEffect,
+					);
+				tokens.push(token);
+			});
+
+			availableNodeDataRef.current = {
+				nodes: availableNodes,
+				tokens,
+			};
+		}
+
+		return () => {
+			if (availableNodes && selectManager) {
+				availableNodes.forEach((node, index) => {
+					selectManager.interactionEffectUtils.removeInteractionEffect(
+						node,
+						tokens[index],
+					);
+				});
+			}
+		};
+	}, [availableEffect, availableNodes]);
 
 	// use an effect to create the select manager
 	useEffect(() => {
@@ -121,6 +269,7 @@ export function useSelectManager(
 				cleanUpSelectManager(
 					viewportId,
 					componentId,
+					availableNodeDataRef.current,
 					interactionEngine,
 				);
 			}
@@ -135,11 +284,7 @@ export function useSelectManager(
 					// create a multi select manager with the given settings
 					const selectManager = new MultiSelectManager(
 						componentId,
-						new MaterialStandardData({
-							color:
-								(settings.selectionColor as string) ||
-								"#0d44f0",
-						}),
+						selectionEffect,
 						settings.minimumSelection!,
 						settings.maximumSelection!,
 					);
@@ -158,11 +303,7 @@ export function useSelectManager(
 					// create a select manager with the given settings
 					const selectManager = new SelectManager(
 						componentId,
-						new MaterialStandardData({
-							color:
-								(settings.selectionColor as string) ||
-								"#0d44f0",
-						}),
+						selectionEffect,
 					);
 					selectManager.deselectOnEmpty =
 						settings.deselectOnEmpty ?? false;
@@ -189,15 +330,17 @@ export function useSelectManager(
 				cleanUpSelectManager(
 					viewportId,
 					componentId,
+					availableNodeDataRef.current,
 					interactionEngine,
 				);
 				setSelectManager(undefined);
 			}
 		};
-	}, [interactionEngine, settings]);
+	}, [interactionEngine, settings, selectionEffect]);
 
 	return {
 		selectManager,
+		setAvailableNodes,
 	};
 }
 

@@ -21,6 +21,8 @@ export interface ViewportAnchorProps3d extends ViewportAnchorProps {
 	location: number[] | vec3;
 	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
 	useCloseButton?: boolean;
+	/** Option to make the anchor hideable by geometry in the scene (default: false) */
+	hideable?: boolean;
 }
 
 type ViewportAnchorThemePropsType = Partial<ViewportAnchorStyleProps>;
@@ -36,7 +38,7 @@ export function ViewportAnchor3dThemeProps(
 export default function ViewportAnchor3d(
 	props: ViewportAnchorProps3d & Partial<ViewportAnchorStyleProps>,
 ) {
-	const {id, justification, location} = props;
+	const {id, justification, location, hideable = false} = props;
 
 	const showContentRef = useRef(false);
 	const position = useRef({x: "0px", y: "0px"});
@@ -100,6 +102,16 @@ export default function ViewportAnchor3d(
 		(properties: IHTMLElementAnchorUpdateProperties) => {
 			if (!portalRef.current) return;
 			if (!canvas || !canvas.parentElement) return;
+
+			// check if the anchor is hidden by other geometry in the scene
+			// if so, we hide the portal element and return
+			// otherwise we show the portal element
+			if (properties.hidden && hideable) {
+				portalRef.current.style.display = "none";
+				return;
+			} else {
+				portalRef.current.style.display = "block";
+			}
 
 			const offsetWidth = portalRef.current.offsetWidth;
 			// we adjust the offsetHeight to ignore the height of the control element group
@@ -172,6 +184,7 @@ export default function ViewportAnchor3d(
 			updateDistance(viewportId, id, properties.distance);
 		},
 		[
+			hideable,
 			portalUpdate,
 			controlElementGroupUpdate,
 			viewportId,
@@ -196,6 +209,7 @@ export default function ViewportAnchor3d(
 		const anchorData = new HTMLElementAnchorCustomData({
 			location: vec3.fromValues(location[0], location[1], location[2]),
 			data: {},
+			hideable,
 			create,
 			update,
 		});
@@ -206,7 +220,7 @@ export default function ViewportAnchor3d(
 			sceneTree.root.removeData(anchorData);
 			sceneTree.root.updateVersion();
 		};
-	}, [canvas, location, create, update]);
+	}, [canvas, location, hideable, create, update]);
 
 	return AnchorElement;
 }

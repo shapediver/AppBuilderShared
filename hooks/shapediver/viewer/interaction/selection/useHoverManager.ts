@@ -1,12 +1,19 @@
 import {useInteractionEngine} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useInteractionEngine";
+import {parseInteractionEffect} from "@AppBuilderShared/utils/misc/interactionEffects";
 import {
 	HoverManager,
 	InteractionEngine,
 } from "@shapediver/viewer.features.interaction";
+import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
 import {
 	IInteractionParameterProps,
 	MaterialStandardData,
 } from "@shapediver/viewer.session";
+import {
+	BlendFunction,
+	KernelSize,
+	POST_PROCESSING_EFFECT_TYPE,
+} from "@shapediver/viewer.viewport";
 import {useEffect, useState} from "react";
 
 // #region Functions (1)
@@ -34,6 +41,7 @@ const cleanUpHoverManager = (
 	interactionEngine?: InteractionEngine,
 ) => {
 	if (hoverManagers[viewportId][componentId]) {
+		hoverManagers[viewportId][componentId].hoverManager.deselectAll();
 		if (interactionEngine && interactionEngine.closed === false)
 			interactionEngine.removeInteractionManager(
 				hoverManagers[viewportId][componentId].token,
@@ -74,6 +82,38 @@ export function useHoverManager(
 		undefined,
 	);
 
+	const [hoverEffect, setHoverEffect] = useState<
+		IInteractionEffect | undefined
+	>();
+
+	useEffect(() => {
+		const effect = parseInteractionEffect(settings?.hoverColor);
+
+		effect.then((e) => {
+			if (e) {
+				if (e instanceof Promise) {
+					e.then((e) => setHoverEffect(e as MaterialStandardData));
+				} else {
+					setHoverEffect(e as IInteractionEffect);
+				}
+			} else if (settings?.hoverColor !== null) {
+				setHoverEffect({
+					properties: {
+						blendFunction: BlendFunction.ALPHA,
+						blur: true,
+						edgeStrength: 10,
+						hiddenEdgeColor: "#ffffff",
+						kernelSize: KernelSize.LARGE,
+						visibleEdgeColor: "#ffffff",
+					},
+					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				});
+			} else {
+				setHoverEffect(undefined);
+			}
+		});
+	}, [settings?.hoverColor]);
+
 	// use an effect to create the hover manager
 	useEffect(() => {
 		if (
@@ -83,12 +123,7 @@ export function useHoverManager(
 			!hoverManagers[viewportId][componentId]
 		) {
 			// create the hover manager with the given settings
-			const hoverManager = new HoverManager(
-				componentId,
-				new MaterialStandardData({
-					color: (settings.hoverColor as string) || "#00ff78",
-				}),
-			);
+			const hoverManager = new HoverManager(componentId, hoverEffect);
 			const token = interactionEngine.addInteractionManager(hoverManager);
 			hoverManagers[viewportId][componentId] = {hoverManager, token};
 			setHoverManager(
@@ -103,7 +138,7 @@ export function useHoverManager(
 				setHoverManager(undefined);
 			}
 		};
-	}, [interactionEngine, settings]);
+	}, [interactionEngine, settings, hoverEffect]);
 
 	return {
 		hoverManager,

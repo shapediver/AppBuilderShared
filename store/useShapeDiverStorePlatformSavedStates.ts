@@ -35,15 +35,21 @@ export const useShapeDiverStorePlatformSavedStates =
 
 				addItem(data: TSavedStateData) {
 					const clientRef =
-						useShapeDiverStorePlatform.getState().clientRef!;
+						useShapeDiverStorePlatform.getState().clientRef;
 					const {pruneCache} = get();
 
 					const actions = {
 						update: async (
 							body: SdPlatformRequestSavedStatePatch,
 						) => {
+							if (!clientRef) {
+								console.warn(
+									`Updating saved state ${data.id} skipped because platform client is not available.`,
+								);
+								return;
+							}
 							const result =
-								await clientRef!.client.savedStates.patch(
+								await clientRef.client.savedStates.patch(
 									data.id,
 									body,
 								);
@@ -65,7 +71,13 @@ export const useShapeDiverStorePlatformSavedStates =
 							}
 						},
 						delete: async () => {
-							await clientRef!.client.savedStates.delete(data.id);
+							if (!clientRef) {
+								console.warn(
+									`Deleting saved state ${data.id} skipped because platform client is not available.`,
+								);
+								return;
+							}
+							await clientRef.client.savedStates.delete(data.id);
 							set(
 								produce((state) => {
 									delete state.items[data.id];

@@ -24,7 +24,10 @@ import {
 	useProps,
 } from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
-import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
+import {
+	ISelectionParameterProps,
+	TAG3D_JUSTIFICATION,
+} from "@shapediver/viewer.session";
 import {
 	default as React,
 	useCallback,
@@ -33,15 +36,20 @@ import {
 	useRef,
 	useState,
 } from "react";
-import ViewportIconButton from "../../buttons/ViewportIconButton";
+import ViewportIconButton, {
+	ViewportIconButtonProps,
+} from "../../buttons/ViewportIconButton";
 import {ViewportAnchorProps2d} from "../ViewportAnchor2d";
 import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
 import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
 import {useCanvasSize} from "./useCanvasSize";
 import {cleanUnit} from "./utils";
 
-import {defaultStyleProps} from "../../ViewportIcons";
+import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
+import {defaultStyleProps as ViewportIconButtonDefaultStyleProps} from "../../buttons/ViewportIconButton";
+import {defaultStyleProps as ViewportIconsDefaultStyleProps} from "../../ViewportIcons";
 import classes from "../../ViewportIcons.module.css";
+import {useAnchorSelection} from "./useAnchorSelection";
 
 export interface ViewportAnchorProps {
 	/** If the anchor allows pointer events */
@@ -74,11 +82,22 @@ export interface ViewportAnchorProps {
 		/** fallback container to be used ("left", "right", "top", "bottom") */
 		container?: AppBuilderContainerNameType;
 	};
+	/** Optional selection options. These options replace the behavior of the previewIcon and show the corresponding Anchor when the selection is active. (default: undefined) */
+	selectionProperties?: Omit<
+		ISelectionParameterProps,
+		"minimumSelection" | "maximumSelection" | "deselectOnEmpty" | "prompt"
+	>;
 }
 
 export type ViewportAnchorStyleProps = {
 	anchorPaperProps?: Partial<PaperProps>;
 	anchorStackProps?: Partial<StackProps>;
+	previewIconProps?: {
+		paperStyleProps?: ViewportIconsOptionalProps["style"];
+		paperProps?: ViewportIconsOptionalProps["paperProps"];
+		iconProps?: ViewportIconButtonProps["iconProps"];
+		actionIconProps?: ViewportIconButtonProps["actionIconProps"];
+	};
 	/** Breakpoint below which to to switch to the mobile behavior */
 	mobileBreakpoint: MantineBreakpoint;
 };
@@ -86,7 +105,7 @@ export type ViewportAnchorStyleProps = {
 export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
 	anchorPaperProps: {
 		style: {
-			...defaultStyleProps.style,
+			...ViewportIconsDefaultStyleProps.style,
 		},
 		pt: 0,
 		shadow: "md",
@@ -99,6 +118,12 @@ export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
 		},
 	},
 	mobileBreakpoint: "sm",
+	previewIconProps: {
+		paperStyleProps: ViewportIconsDefaultStyleProps.style,
+		paperProps: ViewportIconsDefaultStyleProps.paperProps,
+		iconProps: ViewportIconButtonDefaultStyleProps.iconProps,
+		actionIconProps: ViewportIconButtonDefaultStyleProps.actionIconProps,
+	},
 };
 
 interface AnchorContainerProps {
@@ -139,6 +164,7 @@ export function useAnchorContainer({
 		mobileFallback: inputMobileFallback,
 		useContainer = true,
 		closingStrategy,
+		selectionProperties,
 		...rest
 	} = properties;
 
@@ -162,13 +188,28 @@ export function useAnchorContainer({
 	 *
 	 * Depending on the type of the anchor, it will return different properties.
 	 */
-	const {anchorPaperProps, anchorStackProps, mobileBreakpoint} = useProps(
+	const {
+		anchorPaperProps,
+		anchorStackProps,
+		previewIconProps,
+		mobileBreakpoint,
+	} = useProps(
 		type === AppBuilderContainerNameType.Anchor2d
 			? "ViewportAnchor2d"
 			: "ViewportAnchor3d",
 		viewportAnchorDefaultStyleProps,
 		rest,
 	);
+
+	// Extract the draggable property if it exists
+	const draggable =
+		"draggable" in properties ? (properties.draggable ?? false) : false;
+
+	// Extract the useCloseButton property if it exists
+	const useCloseButton =
+		"useCloseButton" in properties
+			? (properties.useCloseButton ?? false)
+			: false;
 
 	/**
 	 * Get the theme object from Mantine.
@@ -203,6 +244,10 @@ export function useAnchorContainer({
 		}
 		return mobilePreviewIcon || inputPreviewIcon;
 	}, [aboveMobileBreakpoint, inputPreviewIcon, mobilePreviewIcon]);
+
+	const canBeHidden = useMemo(() => {
+		return !!previewIcon || !!selectionProperties;
+	}, [previewIcon, selectionProperties]);
 
 	const {viewportId} = useViewportId();
 	const viewport = useShapeDiverStoreViewport(
@@ -247,10 +292,10 @@ export function useAnchorContainer({
 		return {
 			type,
 			id,
-			showContent: !previewIcon,
-			hideable: !!previewIcon,
+			showContent: !canBeHidden,
+			hideable: canBeHidden,
 		};
-	}, [type, id, previewIcon]);
+	}, [type, id, canBeHidden]);
 
 	/**
 	 * This effect adds the anchor to the store when the component is mounted
@@ -266,20 +311,12 @@ export function useAnchorContainer({
 		};
 	}, [viewportId, id, anchorDefinition]);
 
-	// Extract the draggable property if it exists
-	const draggable =
-		"draggable" in properties ? (properties.draggable ?? false) : false;
-
-	// Extract the useCloseButton property if it exists
-	const useCloseButton =
-		"useCloseButton" in properties
-			? (properties.useCloseButton ?? false)
-			: false;
-
 	useEffect(() => {
 		if (!canvas) return;
+		// don't do this if we use selection properties
+		if (!!selectionProperties) return;
 
-		if (previewIcon && closingStrategy === "emptyClick" && showContent) {
+		if (canBeHidden && closingStrategy === "emptyClick" && showContent) {
 			const handleClickOutside = (event: MouseEvent) => {
 				// only move forward if the left mouse button was clicked
 				if (event.button === 0) {
@@ -297,8 +334,9 @@ export function useAnchorContainer({
 			};
 		}
 	}, [
+		selectionProperties,
 		canvas,
-		previewIcon,
+		canBeHidden,
 		closingStrategy,
 		showContent,
 		viewportId,
@@ -306,6 +344,17 @@ export function useAnchorContainer({
 		updateShowContent,
 		viewport,
 	]);
+
+	// use the selection hook to manage the selection state
+	// and open the anchor when an object is selected
+	useAnchorSelection(
+		selectionProperties,
+		viewportId,
+		showContent,
+		aboveMobileBreakpoint,
+		id,
+		updateShowContent,
+	);
 
 	// Calculate the width and height based on the input values
 	const {width, height} = useMemo(() => {
@@ -367,19 +416,24 @@ export function useAnchorContainer({
 	 * It contains the icon and toggles the content visibility
 	 * when clicked. The iconProps are applied to the ActionIcon.
 	 */
-	const previewIconElement = (
-		<ViewportIconButton
-			styles={{
-				root: {
-					backgroundColor:
-						"var(--ai-bg, var(--mantine-primary-color-filled))",
-				},
-			}}
-			label=""
-			iconType={previewIcon! as string}
-			onMouseDown={toggleContent}
-		/>
-	);
+	const previewIconElement = previewIcon ? (
+		<Paper
+			style={{...previewIconProps?.paperStyleProps}}
+			{...previewIconProps?.paperProps}
+		>
+			<ViewportIconButton
+				actionIconProps={{
+					...previewIconProps?.actionIconProps,
+				}}
+				iconProps={{
+					...previewIconProps?.iconProps,
+				}}
+				label=""
+				iconType={previewIcon! as string}
+				onMouseDown={toggleContent}
+			/>
+		</Paper>
+	) : undefined;
 
 	/**
 	 * If the previewIcon is provided, we create an ActionIcon element
@@ -443,8 +497,8 @@ export function useAnchorContainer({
 		[aboveMobileBreakpoint, draggable],
 	);
 	const hasCloseIcon = useMemo(
-		() => previewIcon && (closingStrategy === "button" || useCloseButton),
-		[previewIcon, closingStrategy, useCloseButton],
+		() => canBeHidden && (closingStrategy === "button" || useCloseButton),
+		[canBeHidden, closingStrategy, useCloseButton],
 	);
 
 	/**
@@ -553,6 +607,7 @@ export function useAnchorContainer({
 					style={{
 						position: "absolute",
 						pointerEvents: pointerEvents,
+						display: "none",
 					}}
 				>
 					{showContent === false

@@ -1,22 +1,36 @@
-import {ComboboxParsedItem, Select, defaultOptionsFilter} from "@mantine/core";
+import {
+	ComboboxParsedItem,
+	MultiSelect,
+	Select,
+	defaultOptionsFilter,
+} from "@mantine/core";
 import React, {useCallback} from "react";
-import {SelectComponentProps} from "./SelectComponent";
+import {UniversalMultiSelectComponentProps} from "~/shared/components/shapediver/parameter/multiselect/MultiSelectComponent";
 
 /**
  * Functional dropdown select component.
  *
  * @see https://mantine.dev/core/select/
  */
-export default function SelectDropDownComponent(props: SelectComponentProps) {
-	const {
-		value,
-		onChange,
-		items,
-		disabled,
-		inputContainer,
-		searchable,
-		limit,
-	} = props;
+export default function SelectDropDownComponent(
+	props: UniversalMultiSelectComponentProps,
+) {
+	const {items, disabled, inputContainer, searchable, limit} = props;
+
+	if (props.multiselect) {
+		const {value, onChange} = props;
+		return (
+			<MultiSelect
+				value={value}
+				onChange={onChange}
+				data={items}
+				disabled={disabled}
+				inputContainer={inputContainer}
+			/>
+		);
+	}
+
+	const {value, onChange} = props;
 
 	const onSearch = useCallback(
 		({

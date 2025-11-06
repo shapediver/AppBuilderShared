@@ -38,15 +38,15 @@ export default function ParameterStringComponent(
 			const result = validateStringParameterSettings(definition.settings);
 			if (result.success) {
 				const selectSettings = result.data.selectSettings;
-				return {lines: result.data.lines ?? 1, selectSettings};
+				return {lines: result.data.lines, selectSettings};
 			} else {
 				console.warn(
 					`Invalid settings for parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 				);
-				return {lines: 1}; // Return default value when validation fails
+				return {lines: undefined}; // Return undefined when validation fails
 			}
 		}
-		return {lines: 1};
+		return {lines: undefined};
 	}, [definition?.settings, definition?.id, definition?.name]);
 
 	// Show error notification in useEffect to avoid setState during render
@@ -106,7 +106,7 @@ export default function ParameterStringComponent(
 						items={selectSettings.items ?? []}
 						{...selectSettings}
 					/>
-				) : lines > 1 ? (
+				) : lines !== undefined ? (
 					<Textarea
 						value={value}
 						onChange={(e) =>

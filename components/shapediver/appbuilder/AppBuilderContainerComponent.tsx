@@ -1,7 +1,10 @@
 import AppBuilderTabsComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderTabsComponent";
 import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
+import {AppBuilderStackContext} from "@AppBuilderShared/context/StackContext";
 import {IAppBuilderContainer} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React from "react";
+import AppBuilderStackUiWidgetComponent from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
+import {useStackContext} from "~/shared/hooks/context/useStackContext";
 
 interface Props extends IAppBuilderContainer {
 	/**
@@ -16,13 +19,37 @@ export default function AppBuilderContainerComponent({
 	widgets,
 	tabs,
 }: Props) {
+	const {
+		push,
+		pop,
+		animationDuration,
+		isTransitioning,
+		setIsTransitioning,
+		currentStackElement,
+	} = useStackContext(300);
+
 	return (
 		<>
-			<AppBuilderTabsComponent namespace={namespace} tabs={tabs} />
-			<AppBuilderWidgetsComponent
-				namespace={namespace}
-				widgets={widgets}
-			/>
+			<AppBuilderStackContext.Provider
+				value={{
+					push,
+					pop,
+					animationDuration,
+					isTransitioning,
+					setIsTransitioning,
+				}}
+			>
+				<AppBuilderTabsComponent namespace={namespace} tabs={tabs} />
+				<AppBuilderStackUiWidgetComponent
+					namespace={namespace}
+					stackElement={currentStackElement}
+				>
+					<AppBuilderWidgetsComponent
+						namespace={namespace}
+						widgets={widgets}
+					/>
+				</AppBuilderStackUiWidgetComponent>
+			</AppBuilderStackContext.Provider>
 		</>
 	);
 }

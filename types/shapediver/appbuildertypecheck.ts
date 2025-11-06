@@ -1,6 +1,7 @@
 import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {ATTRIBUTE_VISUALIZATION} from "@shapediver/viewer.features.attribute-visualization";
 import {
+	ISelectionParameterPropsJsonSchema,
 	PARAMETER_TYPE,
 	PARAMETER_VISUALIZATION,
 	TAG3D_JUSTIFICATION,
@@ -24,7 +25,6 @@ const selectComponentTypes = [
 	"fullwidthcards",
 	"carousel",
 	"grid",
-	"multiselect-chips",
 	"multiselect-checkboxes",
 ] as const satisfies readonly SelectComponentType[];
 
@@ -395,6 +395,21 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 		.extend(IAppBuilderActionPropsCommonSchema.shape),
 ]);
 
+// Zod type definition for IAppBuilderActionPropsSound
+const IAppBuilderActionPropsSoundSchema = z.object({
+	href: z.string(),
+	autoplay: z.boolean().optional(),
+	loop: z.boolean().optional(),
+	labelPlaying: z.string().optional(),
+	iconPlaying: z.string().optional(),
+});
+
+// Zod type definition for IAppBuilderLegacyActionPropsSetParameterValues
+const IAppBuilderLegacyActionPropsSound =
+	IAppBuilderActionPropsSoundSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
 // Zod type definition for IAppBuilderLegacyActionDefinition
 const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -424,6 +439,10 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("camera"),
 		props: IAppBuilderActionPropsCameraSchema,
+	}),
+	z.object({
+		type: z.literal("sound"),
+		props: IAppBuilderLegacyActionPropsSound,
 	}),
 ]);
 
@@ -501,6 +520,10 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("camera"),
 		props: IAppBuilderActionPropsCameraSchema,
+	}),
+	z.object({
+		type: z.literal("sound"),
+		props: IAppBuilderActionPropsSoundSchema,
 	}),
 ]);
 
@@ -782,6 +805,14 @@ const IAppBuilderWidgetPropsAccordionUiSchema = z.object({
 	value: z.union([z.string(), z.array(z.string())]).optional(),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsStackUi
+const IAppBuilderWidgetPropsStackUiSchema = z.object({
+	name: z.string(),
+	icon: z.string().optional(),
+	tooltip: z.string().optional(),
+	widgets: z.array(z.lazy((): z.ZodTypeAny => IAppBuilderWidgetSchema)),
+});
+
 // Zod type definition for IAppBuilderWidget
 const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -848,6 +879,10 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 		type: z.literal("sceneTreeExplorer"),
 		props: IAppBuilderWidgetPropsSceneTreeExplorerSchema,
 	}),
+	z.object({
+		type: z.literal("stackUi"),
+		props: IAppBuilderWidgetPropsStackUiSchema,
+	}),
 ]);
 
 // Zod type definition for IAppBuilderTab
@@ -871,6 +906,9 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	height: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
 	useCloseButton: z.boolean().optional(),
+	hideable: z.boolean().optional(),
+	selectionProperties:
+		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),
@@ -901,6 +939,8 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
+	selectionProperties:
+		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
 	mobileFallback: z
 		.object({
 			disabled: z.boolean().optional(),
@@ -959,6 +999,7 @@ const IAppBuilderOutputActionsPropsSetParameterValueSchema = z.object({
 // Zod type definition for IAppBuilderInstances
 const IAppBuilderInstancesSchema = z.object({
 	sessionId: z.string(),
+	slug: z.string().optional(),
 	name: z.string().optional(),
 	parameterValues: z
 		.record(

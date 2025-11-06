@@ -67,9 +67,61 @@ export function useDragManagerEvents(
 				const dragged = [dragEvent.node];
 
 				for (let i = 0; i < convertedDragObjects.length; i++) {
-					for (const sessionId in convertedDragObjects[i].patterns) {
-						const patterns =
-							convertedDragObjects[i].patterns[sessionId];
+					const {outputPatterns, instancePatterns} =
+						convertedDragObjects[i].patterns;
+
+					if (outputPatterns) {
+						for (const sessionId in outputPatterns) {
+							const patterns = outputPatterns[sessionId];
+
+							// check if there are any patterns that match the dragged nodes
+							const draggedNodeNames = matchNodesWithPatterns(
+								patterns,
+								dragged,
+								strictNaming,
+							);
+							// if there are, add the restrictions to the drag manager
+							if (draggedNodeNames.length > 0) {
+								let addedRestrictions = false;
+								if (
+									convertedDragObjects[i].restrictions &&
+									convertedDragObjects[i].restrictions
+										.length > 0
+								) {
+									// add the restrictions
+									convertedDragObjects[
+										i
+									].restrictions.forEach((restrictionId) => {
+										const restriction =
+											restrictions[restrictionId];
+										if (!restriction) return;
+										(
+											dragEvent.manager as DragManager
+										).addRestriction(restriction);
+										addedRestrictions = true;
+									});
+								}
+
+								if (!addedRestrictions) {
+									// add a default plane restriction if no restrictions were added
+									(
+										dragEvent.manager as DragManager
+									).addRestriction(
+										(restrictions["default"] = {
+											type: RESTRICTION_TYPE.PLANE,
+											id: "default",
+											origin: [0, 0, 0],
+											vector_u: [1, 0, 0],
+											vector_v: [0, 1, 0],
+										}),
+									);
+								}
+							}
+						}
+					}
+
+					if (instancePatterns) {
+						const patterns = instancePatterns;
 
 						// check if there are any patterns that match the dragged nodes
 						const draggedNodeNames = matchNodesWithPatterns(
@@ -148,9 +200,48 @@ export function useDragManagerEvents(
 				];
 
 				for (let i = 0; i < convertedDragObjects.length; i++) {
-					for (const sessionId in convertedDragObjects[i].patterns) {
-						const patterns =
-							convertedDragObjects[i].patterns[sessionId];
+					const {outputPatterns, instancePatterns} =
+						convertedDragObjects[i].patterns;
+
+					if (outputPatterns) {
+						for (const sessionId in outputPatterns) {
+							const patterns = outputPatterns[sessionId];
+							const draggedNodeNames = matchNodesWithPatterns(
+								patterns,
+								dragged,
+								strictNaming,
+							);
+							if (draggedNodeNames.length > 0) {
+								draggedNodeNames.forEach((draggedNodeName) => {
+									const index = newDraggedNodes.findIndex(
+										(n) => n.name === draggedNodeName,
+									);
+
+									// create the object from the event data
+									const object = {
+										name: draggedNodeName,
+										transformation: Array.from(
+											dragEvent.matrix,
+										),
+										dragAnchorId: dragEvent.dragAnchor
+											? dragEvent.dragAnchor.id
+											: undefined,
+										restrictionId:
+											dragEvent.restriction!.id,
+									};
+
+									if (index > -1) {
+										newDraggedNodes[index] = object;
+									} else {
+										newDraggedNodes.push(object);
+									}
+								});
+							}
+						}
+					}
+
+					if (instancePatterns) {
+						const patterns = instancePatterns;
 						const draggedNodeNames = matchNodesWithPatterns(
 							patterns,
 							dragged,

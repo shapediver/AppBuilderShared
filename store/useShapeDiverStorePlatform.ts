@@ -52,8 +52,12 @@ export const useShapeDiverStorePlatform =
 								baseUrl: platformUrl,
 							});
 							try {
+								const refreshToken =
+									localStorage.getItem("refresh_token");
 								const result =
-									await client.authorization.refreshToken();
+									await client.authorization.refreshToken(
+										refreshToken ?? undefined,
+									);
 
 								const sdkRef = {
 									platformUrl,

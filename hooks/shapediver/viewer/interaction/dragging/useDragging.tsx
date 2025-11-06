@@ -15,7 +15,7 @@ import {
 	IDraggingParameterProps,
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
-import {useCallback, useId, useMemo} from "react";
+import {useCallback, useEffect, useId, useMemo} from "react";
 
 /**
  * Hook providing stateful object dragging for a viewport and session.
@@ -67,7 +67,7 @@ export function useDragging(
 	const {restrictions} = useRestrictions(draggingProps.restrictions);
 
 	// call the drag manager hook
-	useDragManager(
+	const {setAvailableNodes} = useDragManager(
 		viewportId,
 		componentId,
 		activate ? draggingProps : undefined,
@@ -138,7 +138,27 @@ export function useDragging(
 	}, [objects, componentId, draggingProps]);
 
 	// call the node interaction data hook
-	useNodesInteractionData(activate ? nodesInteractionInput : {});
+	const {availableNodeNames} = useNodesInteractionData(
+		activate ? nodesInteractionInput : {},
+	);
+
+	/**
+	 * Effect to update the available nodes in the drag manager.
+	 * The available nodes are all nodes that match the filter pattern and are not currently dragged.
+	 */
+	useEffect(() => {
+		const nodes = Object.values(availableNodeNames).flatMap(
+			(availableNames) => {
+				return availableNames.filter(
+					(available) =>
+						!draggedNodes
+							.map((n) => n.name)
+							.includes(available.name),
+				);
+			},
+		);
+		setAvailableNodes(nodes.map((n) => n.node));
+	}, [availableNodeNames, draggedNodes]);
 
 	/**
 	 * Restore the dragged nodes.

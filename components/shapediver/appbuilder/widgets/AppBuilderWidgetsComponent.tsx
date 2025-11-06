@@ -25,10 +25,12 @@ import {
 	isProgressWidget,
 	isRoundChartWidget,
 	isSceneTreeExplorerWidget,
+	isStackUiWidget,
 	isTextWidget,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
+import AppBuilderStackUiWidgetButtonComponent from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidget/AppBuilderStackUiWidgetButtonComponent";
 import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetComponent";
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
 import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
@@ -100,6 +102,14 @@ export default function AppBuilderWidgetsComponent({
 				else if (isAccordionUiWidget(w))
 					return (
 						<AppBuilderAccordionUiWidgetComponent
+							key={i}
+							namespace={namespace}
+							{...w.props}
+						/>
+					);
+				else if (isStackUiWidget(w))
+					return (
+						<AppBuilderStackUiWidgetButtonComponent
 							key={i}
 							namespace={namespace}
 							{...w.props}

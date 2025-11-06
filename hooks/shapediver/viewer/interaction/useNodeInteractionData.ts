@@ -73,7 +73,10 @@ export type IUseNodeInteractionDataProps = {
 	strictNaming?: boolean;
 };
 
-export type IUseNodeInteractionDataResult = string[];
+export type IUseNodeInteractionDataResult = {
+	node: ITreeNode;
+	name: string;
+}[];
 
 /**
  * Creates an output update callback for the given properties.
@@ -164,7 +167,10 @@ const createOutputUpdateCallback = (
 			});
 
 			setAvailableNodeNames(
-				Object.values(availableNodes).map((n) => n.name),
+				Object.values(availableNodes).map((n) => ({
+					node: n.node,
+					name: n.name,
+				})),
 			);
 		}
 
@@ -230,7 +236,12 @@ const instanceCallback = (
 		);
 	});
 
-	setAvailableNodeNames(Object.values(availableNodes).map((n) => n.name));
+	setAvailableNodeNames(
+		Object.values(availableNodes).map((n) => ({
+			node: n.node,
+			name: n.name,
+		})),
+	);
 
 	return () => {
 		// remove the interaction data on unmount

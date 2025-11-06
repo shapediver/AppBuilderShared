@@ -10,7 +10,10 @@ import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {MantineColor} from "@mantine/core";
 import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
-import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
+import {
+	ISelectionParameterProps,
+	TAG3D_JUSTIFICATION,
+} from "@shapediver/viewer.session";
 import {
 	ICameraOptions,
 	OrthographicCameraProperties,
@@ -50,7 +53,6 @@ export type SelectComponentType =
 	| "fullwidthcards"
 	| "carousel"
 	| "grid"
-	| "multiselect-chips"
 	| "multiselect-checkboxes";
 
 /** Data for an item shown by a selection component. */
@@ -245,7 +247,8 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsSetParameterValues
 		| IAppBuilderActionPropsSetBrowserLocation
 		| IAppBuilderActionPropsCloseConfigurator
-		| IAppBuilderActionPropsCamera;
+		| IAppBuilderActionPropsCamera
+		| IAppBuilderActionPropsSound;
 }
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -400,7 +403,8 @@ export type AppBuilderActionType =
 	| "setParameterValues"
 	| "setBrowserLocation"
 	| "closeConfigurator"
-	| "camera";
+	| "camera"
+	| "sound";
 
 /** Properties of a "createModelState" action. */
 export interface IAppBuilderActionPropsCreateModelState {
@@ -574,6 +578,27 @@ export type IAppBuilderActionPropsCamera = {
 		| IAppBuilderPropsZoomToCamera;
 } & IAppBuilderActionPropsCommon;
 
+/** Properties of a "sound" action. */
+export type IAppBuilderActionPropsSound = {
+	/** URL of the sound file to play */
+	href: string;
+	/**
+	 * Start playing the sound as soon as a control embedding the action gets rendered.
+	 * Note: The browser may block this.
+	 */
+	autoplay?: boolean;
+	/** Loop the audio file. */
+	loop?: boolean;
+	/** Label to show when the sound is playing. */
+	labelPlaying?: string;
+	/** Icon to show when the sound is playing. */
+	iconPlaying?: IconType;
+};
+
+/** Properties of a legacy "sound" action. */
+export type IAppBuilderLegacyActionPropsSound = IAppBuilderActionPropsSound &
+	IAppBuilderActionPropsCommon;
+
 /** A legacy App Builder action definition. */
 export interface IAppBuilderLegacyActionDefinition {
 	/** Type of the action. */
@@ -586,7 +611,8 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsSetParameterValues
 		| IAppBuilderLegacyActionPropsSetBrowserLocation
 		| IAppBuilderLegacyActionPropsCloseConfigurator
-		| IAppBuilderActionPropsCamera;
+		| IAppBuilderActionPropsCamera
+		| IAppBuilderLegacyActionPropsSound;
 }
 
 /** Types of widgets */
@@ -606,7 +632,8 @@ export type AppBuilderWidgetType =
 	| "desktopClientOutputs"
 	| "controls"
 	| "accordionUi"
-	| "sceneTreeExplorer";
+	| "sceneTreeExplorer"
+	| "stackUi";
 
 /**
  * Properties of a parameter and export accordion widget.
@@ -703,9 +730,9 @@ export interface IAppBuilderWidgetPropsAttributeVisualization {
 	initialAttribute?: string;
 	/** Material definition for objects that don't have the selected attribute. (default: { color: "#666666", opacity: 1 }) */
 	passiveMaterial?: {
-		/** Color of the material. (default: "#666666") */
+		/** Color of the material. (default: "#000") */
 		color?: string;
-		/** Opacity of the material. (default: 1) */
+		/** Opacity of the material. (default: 0.1) */
 		opacity?: number;
 	};
 	/** Option to disable the anchors when clicking on an attribute. (default: false) */
@@ -786,6 +813,21 @@ export interface IAppBuilderWidgetPropsAccordionUi {
 }
 
 /**
+ * Properties of a stack widget, grouping further widgets
+ * into a stack.
+ */
+export interface IAppBuilderWidgetPropsStackUi {
+	/** Label shown for the stack control. */
+	name: string;
+	/** Optional icon of the stack control. */
+	icon?: IconType;
+	/** Optional tooltip of the stack control. */
+	tooltip?: string;
+	/** Widgets displayed in the stack. */
+	widgets: IAppBuilderWidget[];
+}
+
+/**
  * A widget.
  *
  * When implementing a new widget type, extend this interface and
@@ -814,7 +856,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsDesktopClientOutputs
 		| IAppBuilderWidgetPropsControls
 		| IAppBuilderWidgetPropsAccordionUi
-		| IAppBuilderWidgetPropsSceneTreeExplorer;
+		| IAppBuilderWidgetPropsSceneTreeExplorer
+		| IAppBuilderWidgetPropsStackUi;
 }
 
 /**
@@ -869,6 +912,11 @@ export type AppBuilderAnchorContainerProperties = {
 		/** fallback container to be used ("left", "right", "top", "bottom") */
 		container?: AppBuilderContainerNameType;
 	};
+	/** Optional selection options. These options replace the behavior of the previewIcon and show the corresponding Anchor when the selection is active. (default: undefined) */
+	selectionProperties?: Omit<
+		ISelectionParameterProps,
+		"minimumSelection" | "maximumSelection" | "deselectOnEmpty" | "prompt"
+	>;
 };
 
 /** Type for the anchor 2d containers */
@@ -885,6 +933,8 @@ export type AppBuilderAnchor3dContainerProperties = {
 	location: number[];
 	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
 	useCloseButton?: boolean;
+	/** Option to make the anchor hideable by geometry in the scene (default: false) */
+	hideable?: boolean;
 } & AppBuilderAnchorContainerProperties;
 
 /**
@@ -903,18 +953,37 @@ export interface IAppBuilderContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
+/** Types of actions to be executed after updating outputs. */
 export type AppBuilderOutputActionsType = "setParameterValue";
 
+/**
+ * Properties of a "setParameterValue" output action.
+ *
+ * The returned parameter value is returned in the following format:
+ * {
+ *   [instanceId: string]: {
+ *     [output: string]: ResOutputContent[] | undefined
+ *   }
+ * }
+ * where the key `instanceId` is the name of the instance (if provided) or the identifier `instance[i]`
+ * with i being the index of the instance in the instances array.
+ *
+ * The key `output` is the displayname/name/id of the output specified in the output action.
+ *
+ * The value is the array of ResOutputContent returned by the output.
+ */
 export interface IAppBuilderOutputActionsPropsSetParameterValue {
-	/** the displayname/name/id of the output */
+	/** The displayname/name/id of the output to check for updates. */
 	output: string;
-	/** the displayname/name/id of the parameter that should be set */
+	/** The displayname/name/id of the parameter that should be set based on the value of the output. */
 	parameter: string;
 }
 
 export interface IAppBuilderInstanceDefinition {
 	/** Id of the instance. */
 	sessionId: string;
+	/** Optional slug of the instance. If a slug is provided, the instance will be loaded immediately with that slug. */
+	slug?: string;
 	/** Optional name of the instance. This name will be used for the node in the scene graph, e.g. NAME_transformations_0 for the first transformation. */
 	name?: string;
 	/**
@@ -932,10 +1001,11 @@ export interface IAppBuilderInstanceDefinition {
 	};
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
-	/** The output actions that should be done after an output has been updated. */
+	/** The actions that should be executed after an output of the instance has been updated. */
 	outputActions?: {
-		// the type of action that should be used on the output
+		/** The type of output action that should be used. */
 		type: AppBuilderOutputActionsType;
+		/** Properties of the output action. */
 		props: IAppBuilderOutputActionsPropsSetParameterValue;
 	}[];
 }
@@ -1134,6 +1204,14 @@ export function isAccordionUiWidget(widget: IAppBuilderWidget): widget is {
 	return widget.type === "accordionUi";
 }
 
+/** assert widget type "stackUi" */
+export function isStackUiWidget(widget: IAppBuilderWidget): widget is {
+	type: "stackUi";
+	props: IAppBuilderWidgetPropsStackUi;
+} {
+	return widget.type === "stackUi";
+}
+
 /** assert action type "createModelState" */
 export function isCreateModelStateAction(
 	action: IAppBuilderActionDefinition,
@@ -1236,6 +1314,13 @@ export function isZoomToCameraAction(
 	props: IAppBuilderPropsZoomToCamera;
 } {
 	return action.type === "zoomTo";
+}
+
+/** assert action type "sound" */
+export function isSoundAction(
+	action: IAppBuilderActionDefinition,
+): action is {type: "sound"; props: IAppBuilderActionPropsSound} {
+	return action.type === "sound";
 }
 
 /** assert control type "parameter" */

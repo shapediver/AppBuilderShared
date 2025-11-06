@@ -157,9 +157,8 @@ export default function useAttributeSelection(
 			maximumSelection: 1,
 			minimumSelection: 1,
 			nameFilter: Object.values(nameFilter).flat(),
-			selectionColor: "#0d44f0",
+			availableColor: null,
 			hover: true,
-			hoverColor: "#00ff78",
 			deselectOnEmpty: true,
 		};
 	}, [nameFilter]);
