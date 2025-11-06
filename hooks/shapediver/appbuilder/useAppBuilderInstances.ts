@@ -377,7 +377,19 @@ export function useAppBuilderInstances(props: Props) {
 			};
 		} = {};
 
+		const existingNames = new Set<string>();
 		instances.forEach((instance, index) => {
+			if (instance.name) {
+				if (existingNames.has(instance.name)) {
+					Logger.warn(
+						`Duplicate instance name found: ${instance.name}. Instance names must be unique, skipping instance.`,
+					);
+					return;
+				} else {
+					existingNames.add(instance.name);
+				}
+			}
+
 			Object.entries(instance.parameterValues ?? {}).forEach(
 				([key, value]) => {
 					if (typeof value === "object" && isParameterSource(value)) {
