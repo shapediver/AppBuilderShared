@@ -13,6 +13,16 @@ import {
 	AppBuilderAgentWidgetThemePropsType,
 } from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
 import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {
+	QUERYPARAM_DEBUG,
+	QUERYPARAM_LANGFUSE_BASE_URL,
+	QUERYPARAM_LANGFUSE_PUBLIC_KEY,
+	QUERYPARAM_LANGFUSE_SECRET_KEY,
+	QUERYPARAM_MAX_HISTORY,
+	QUERYPARAM_MODEL,
+	QUERYPARAM_OPENAI_API_KEY,
+	QUERYPARAM_SLUG,
+} from "@AppBuilderShared/types/shapediver/queryparams";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	ActionIcon,
@@ -71,23 +81,23 @@ export default function AppBuilderAgentWidgetComponent(
 	);
 
 	const {
-		debug = urlParams.get("debug") === "1" ||
-			urlParams.get("debug") === "true",
+		debug = urlParams.get(QUERYPARAM_DEBUG) === "1" ||
+			urlParams.get(QUERYPARAM_DEBUG) === "true",
 		parameterNamesToInclude,
 		parameterNamesToExclude,
 		systemPrompt: _systemPrompt,
 		authorContext: _authorContext,
-		maxHistory = urlParams.get("maxHistory") !== null
-			? parseInt(urlParams.get("maxHistory")!)
+		maxHistory = urlParams.get(QUERYPARAM_MAX_HISTORY) !== null
+			? parseInt(urlParams.get(QUERYPARAM_MAX_HISTORY)!)
 			: 10,
-		model = urlParams.get("model") ?? "gpt-4o-mini",
-		openaiApiKey = urlParams.get("openaiApiKey") ??
+		model = urlParams.get(QUERYPARAM_MODEL) ?? "gpt-4o-mini",
+		openaiApiKey = urlParams.get(QUERYPARAM_OPENAI_API_KEY) ??
 			import.meta.env.VITE_OPENAI_API_KEY,
-		langfusePublicKey = urlParams.get("langfusePublicKey") ??
+		langfusePublicKey = urlParams.get(QUERYPARAM_LANGFUSE_PUBLIC_KEY) ??
 			import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
-		langfuseSecretKey = urlParams.get("langfuseSecretKey") ??
+		langfuseSecretKey = urlParams.get(QUERYPARAM_LANGFUSE_SECRET_KEY) ??
 			import.meta.env.VITE_LANGFUSE_SECRET_KEY,
-		langfuseBaseUrl = urlParams.get("langfuseBaseUrl") ??
+		langfuseBaseUrl = urlParams.get(QUERYPARAM_LANGFUSE_BASE_URL) ??
 			import.meta.env.VITE_LANGFUSE_BASE_URL,
 		...paperProps
 	} = themeProps;
@@ -161,7 +171,7 @@ export default function AppBuilderAgentWidgetComponent(
 
 	/** Tags to attach to langfuse traces. */
 	const langfuseTags = useMemo(() => {
-		const slug = urlParams.get("slug");
+		const slug = urlParams.get(QUERYPARAM_SLUG);
 
 		return slug ? [slug] : [];
 	}, [urlParams]);

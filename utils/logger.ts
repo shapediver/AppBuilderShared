@@ -1,7 +1,8 @@
 import {GlobalNotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {QUERYPARAM_LOGGING_LEVEL} from "@AppBuilderShared/types/shapediver/queryparams";
 
 const urlSearchParams = new URLSearchParams(window.location.search);
-const loggingLevelInput = urlSearchParams.get("loggingLevel");
+const loggingLevelInput = urlSearchParams.get(QUERYPARAM_LOGGING_LEVEL);
 
 type LoggingLevel = "debug" | "info" | "warn";
 
