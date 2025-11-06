@@ -13,6 +13,7 @@ import {
 	AppBuilderAgentWidgetThemePropsType,
 } from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
 import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	ActionIcon,
 	Box,
@@ -197,7 +198,7 @@ export default function AppBuilderAgentWidgetComponent(
 			if (userImage) setUserImage(null);
 			if (screenshot) setScreenshot(null);
 		} catch (error) {
-			console.error("Error calling LLM: ", error);
+			Logger.error("Error calling LLM: ", error);
 			notifications.error({
 				title: "Error calling LLM",
 				message:

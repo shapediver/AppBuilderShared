@@ -8,6 +8,7 @@ import {
 	IAppBuilderLegacyActionPropsSetParameterValue,
 	IAppBuilderParameterValueSourceDefinition,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -90,12 +91,12 @@ export default function AppBuilderActionSetParameterValuesComponent(
 			// First, check if any parameters have changes and validate all values
 			for (const {parameter, value, source} of parameters) {
 				if (!parameter) {
-					console.warn("Parameter not found for value:", value);
+					Logger.warn("Parameter not found for value:", value);
 					continue;
 				}
 
 				if (value === undefined && source === undefined) {
-					console.warn(
+					Logger.warn(
 						"No value or source defined for parameter:",
 						parameter.definition.id,
 					);
@@ -110,7 +111,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 						if (parameter.actions.setUiValue(value)) {
 							validParameters[parameter.definition.id] = value;
 						} else {
-							console.warn(
+							Logger.warn(
 								`setUiValue failed for parameter ${parameter.definition.id}, the value is not valid.`,
 								value,
 							);

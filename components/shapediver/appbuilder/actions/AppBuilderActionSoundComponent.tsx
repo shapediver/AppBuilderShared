@@ -1,5 +1,6 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {IAppBuilderLegacyActionPropsSound} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import React, {useCallback, useEffect, useRef, useState} from "react";
 
 type Props = IAppBuilderLegacyActionPropsSound;
@@ -84,7 +85,7 @@ export default function AppBuilderActionSoundComponent(props: Props) {
 				// Try autoplay when audio is loaded
 				if (autoplay) {
 					audio.play().catch((err) => {
-						console.warn(
+						Logger.warn(
 							"Autoplay failed (likely blocked by browser):",
 							err,
 						);
@@ -160,7 +161,7 @@ export default function AppBuilderActionSoundComponent(props: Props) {
 				}
 			} catch (err) {
 				setError("Playback failed");
-				console.error("Audio playback error:", err);
+				Logger.error("Audio playback error:", err);
 			}
 		}
 	}, [error]);

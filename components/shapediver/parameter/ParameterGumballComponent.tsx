@@ -12,6 +12,7 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	Box,
 	Button,
@@ -104,7 +105,7 @@ export default function ParameterGumballComponent(
 				title: "Invalid Parameter Settings",
 				message: `Invalid settings for Gumball parameter "${definition.name}", see console for details.`,
 			});
-			console.warn(
+			Logger.warn(
 				`Invalid settings for Gumball parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
 			return {};

@@ -1,6 +1,7 @@
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {IAppBuilderParameterValueSourcePropsDataOutput} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverOutput} from "@AppBuilderShared/types/shapediver/output";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {useEffect, useMemo, useState} from "react";
 import {useOutputs} from "../useOutputs";
 
@@ -68,7 +69,7 @@ export function useOutputDataSources(props: {
 			if (!output) {
 				promises.push(Promise.resolve(undefined));
 			} else if (output.content === undefined) {
-				console.warn(
+				Logger.warn(
 					`Output with id ${output.definition.id} has no content`,
 				);
 				promises.push(Promise.resolve(undefined));

@@ -5,6 +5,7 @@ import {
 	ITrackerEventOptions,
 	TrackerMetricType,
 } from "@AppBuilderShared/types/context/trackercontext";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {createContext} from "react";
 
 export class DelayedTrackerPropsAwaiter implements IDelayedTrackerPropsAwaiter {
@@ -133,14 +134,14 @@ export const DummyTracker: ITrackerContext = {
 		eventData?: ITrackerEventData,
 		options?: ITrackerEventOptions,
 	): void {
-		console.debug("Tracking pageview", eventData, options);
+		Logger.debug("Tracking pageview", eventData, options);
 	},
 	trackEvent: function (
 		eventName: string,
 		options?: ITrackerEventOptions,
 		eventData?: ITrackerEventData,
 	): void {
-		console.debug("Tracking event", eventName, options, eventData);
+		Logger.debug("Tracking event", eventName, options, eventData);
 	},
 	trackMetric: function (
 		type: TrackerMetricType,
@@ -148,7 +149,7 @@ export const DummyTracker: ITrackerContext = {
 		value: number,
 		options?: ITrackerEventOptions,
 	): void {
-		console.debug("Tracking metric", type, metricName, value, options);
+		Logger.debug("Tracking metric", type, metricName, value, options);
 	},
 	delayedPropsAwaiter: new DelayedTrackerPropsAwaiter(),
 };

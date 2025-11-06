@@ -1,3 +1,4 @@
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {Loader, Modal, Text} from "@mantine/core";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
@@ -34,7 +35,7 @@ export default function ArButton({
 			setArLink(arLink);
 		} catch (e: any) {
 			setIsModalArError("Error while creating QR code");
-			console.error(e);
+			Logger.error(e);
 		} finally {
 			setIsArLoading(false);
 		}

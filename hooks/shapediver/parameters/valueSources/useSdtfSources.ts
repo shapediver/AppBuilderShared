@@ -2,6 +2,7 @@ import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverSt
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {IAppBuilderParameterValueSourcePropsSdtf} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverOutput} from "@AppBuilderShared/types/shapediver/output";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	ResAssetDefinition,
 	ResStypeParameter,
@@ -79,12 +80,12 @@ export function useSdtfSources(props: {
 			const {name, chunk} = source;
 
 			if (!output) {
-				console.warn(`sdTF output with name ${name} not found. `);
+				Logger.warn(`sdTF output with name ${name} not found. `);
 				promises.push(Promise.resolve(undefined));
 			} else {
 				// we found the sdTF output, now we have to upload it
 				if (output.content === undefined) {
-					console.warn(
+					Logger.warn(
 						`sdTF output with name ${name} has no content.`,
 					);
 					promises.push(Promise.resolve(undefined));

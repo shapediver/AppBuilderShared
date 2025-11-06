@@ -11,6 +11,7 @@ import {validateAppBuilder} from "@AppBuilderShared/types/shapediver/appbuildert
 
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {IOutputApi, ITreeNode, OutputApiData} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useAppBuilderInstances} from "./useAppBuilderInstances";
@@ -77,7 +78,7 @@ export function useSessionWithAppBuilder(
 		if (result.success) {
 			return result.data;
 		} else {
-			console.debug("Invalid AppBuilder data", data);
+			Logger.debug("Invalid AppBuilder data", data);
 
 			return new Error(
 				`Parsing AppBuilder data failed: ${result.error.message}`,
@@ -93,7 +94,7 @@ export function useSessionWithAppBuilder(
 		(data: IAppBuilder | string | undefined) => {
 			if (appBuilderOverride && sessionInitialized) {
 				if (data)
-					console.debug("Overriding AppBuilder data from settings!");
+					Logger.debug("Overriding AppBuilder data from settings!");
 
 				return validate(appBuilderOverride);
 			}
@@ -239,7 +240,7 @@ export function useSessionWithAppBuilder(
 	}, [namespace, appBuilderOutputId, cb]);
 
 	useEffect(() => {
-		console.debug(CUSTOM_DATA_OUTPUT_NAME, parsedData);
+		Logger.debug(CUSTOM_DATA_OUTPUT_NAME, parsedData);
 	}, [parsedData]);
 
 	const error =

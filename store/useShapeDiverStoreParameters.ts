@@ -39,6 +39,7 @@ import {
 	IShapeDiverStoreParameters,
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {addValidator} from "@AppBuilderShared/utils/parameters/parameterValidation";
 import {ReqCustomization, ReqExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
@@ -88,10 +89,10 @@ function createParameterExecutor<T>(
 			// check whether there is anything to do
 			const result = changes.removeValueChange(paramId);
 			if (result.removed && uiValue === execValue) {
-				console.debug(`Removing change of parameter ${paramId}`);
+				Logger.debug(`Removing change of parameter ${paramId}`);
 				// check if there are any other parameter updates queued
 				if (result.isEmpty) {
-					console.debug(
+					Logger.debug(
 						`Rejecting changes for namespace ${namespace}`,
 					);
 					changes.reject();
@@ -102,7 +103,7 @@ function createParameterExecutor<T>(
 
 			// execute the change
 			try {
-				console.debug(
+				Logger.debug(
 					`Queueing change of parameter ${paramId} to ${uiValue}`,
 				);
 				changes.addValueChange(paramId, uiValue);
@@ -114,17 +115,17 @@ function createParameterExecutor<T>(
 					: await changes.wait;
 				const value = paramId in values ? values[paramId] : uiValue;
 				if (value !== uiValue)
-					console.debug(
+					Logger.debug(
 						`Executed change of parameter ${paramId} to ${value} instead of ${uiValue} (overridden by pre-execution hook)`,
 					);
 				else
-					console.debug(
+					Logger.debug(
 						`Executed change of parameter ${paramId} to ${uiValue}`,
 					);
 
 				return value;
 			} catch (e) {
-				console.debug(
+				Logger.debug(
 					`Rejecting change of parameter ${paramId} to ${uiValue}, resetting to "${execValue}"`,
 					e ?? "",
 				);
@@ -1211,7 +1212,7 @@ export const useShapeDiverStoreParameters =
 								acceptRejectMode,
 							);
 							if (!def.isValid?.(def.definition.defval)) {
-								console.warn(
+								Logger.warn(
 									`Generic parameter ${paramId} has an invalid default value: ${def.definition.defval}`,
 								);
 							}
@@ -1224,11 +1225,11 @@ export const useShapeDiverStoreParameters =
 							const {actions} =
 								parameterStores[paramId].getState();
 							if (!actions.setUiAndExecValue(def.value)) {
-								console.warn(
+								Logger.warn(
 									`Could not update value of generic parameter ${paramId} to ${def.value}`,
 								);
 							} else {
-								console.debug(
+								Logger.debug(
 									`Updated value of generic parameter ${paramId} to ${def.value}`,
 								);
 							}
@@ -1458,7 +1459,7 @@ export const useShapeDiverStoreParameters =
 
 					const {preExecutionHooks} = get();
 					if (namespace in preExecutionHooks)
-						console.warn(
+						Logger.warn(
 							`Pre-execution hook for session namespace ${namespace} already exists, overwriting it.`,
 						);
 
@@ -1514,7 +1515,7 @@ export const useShapeDiverStoreParameters =
 						const paramIdsValid = paramIds.filter((paramId) => {
 							const store = stores[paramId];
 							if (!store) {
-								console.warn(
+								Logger.warn(
 									`Parameter ${paramId} does not exist for session namespace ${namespace}`,
 								);
 								return false;
@@ -1523,7 +1524,7 @@ export const useShapeDiverStoreParameters =
 							const {actions} = store.getState();
 							const value = values[paramId];
 							if (!actions.isValid(value)) {
-								console.warn(
+								Logger.warn(
 									`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
 								);
 								return false;
@@ -1654,7 +1655,7 @@ export const useShapeDiverStoreParameters =
 					} = get();
 					try {
 						await restoreHistoryStateFromTimestamp(entry.time);
-						console.debug(
+						Logger.debug(
 							`Restored parameter values from history at timestamp ${entry.time}`,
 							entry,
 						);
@@ -1683,13 +1684,13 @@ export const useShapeDiverStoreParameters =
 							});
 						});
 						if (index >= 0) {
-							console.debug(
+							Logger.debug(
 								`Restoring parameter values from history at index ${index}`,
 								entry,
 							);
 							await restoreHistoryStateFromIndex(index);
 						} else {
-							console.debug(
+							Logger.debug(
 								"No matching history entry found, directly restoring parameter values",
 								entry,
 							);
