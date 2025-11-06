@@ -20,6 +20,7 @@ import {
 	QUERYPARAM_TEMPLATE,
 	QUERYPARAM_TICKET,
 } from "@AppBuilderShared/types/shapediver/queryparams";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {getDefaultPlatformUrl} from "@AppBuilderShared/utils/platform/environment";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useEffect, useMemo} from "react";
@@ -222,7 +223,7 @@ export default function useAppBuilderSettings(
 		(state) => state.setThemeOverride,
 	);
 	useEffect(() => {
-		console.debug("Theme overrides", value);
+		Logger.debug("Theme overrides", value);
 		setThemeOverride(settings?.themeOverrides);
 	}, [settings?.themeOverrides]);
 

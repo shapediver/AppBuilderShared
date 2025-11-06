@@ -1,3 +1,4 @@
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {useEffect, useRef} from "react";
 
 interface CrossBrowserDocument extends Document {
@@ -34,7 +35,7 @@ export const useFullscreen = (fullscreenId: string) => {
 			.item(0);
 
 		if (!element) {
-			console.debug(
+			Logger.debug(
 				`Fullscreen element with ID ${fullscreenId} not found.`,
 			);
 			isFullScreenAvailable.current = false;
@@ -87,7 +88,7 @@ export const useFullscreen = (fullscreenId: string) => {
 				.item(0);
 
 			if (!element) {
-				console.debug(
+				Logger.debug(
 					`Fullscreen element with ID ${fullscreenId} not found.`,
 				);
 				isFullScreenAvailable.current = false;

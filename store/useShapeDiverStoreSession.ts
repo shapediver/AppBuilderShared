@@ -4,6 +4,7 @@ import {
 	SessionCreateDto,
 	UpdateCallbackType,
 } from "@AppBuilderShared/types/store/shapediverStoreSession";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {ResErrorType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	createSession,
@@ -64,7 +65,7 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 								e.message.startsWith("Invalid parameter") &&
 								e.message.includes("'context'")
 							) {
-								console.warn(
+								Logger.warn(
 									"Session creation failed due to invalid or missing 'context' parameter. Retrying without 'context' parameter.",
 								);
 

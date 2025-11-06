@@ -14,6 +14,7 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	ActionIcon,
 	Box,
@@ -98,7 +99,7 @@ export default function ParameterDrawingComponent(
 				title: "Invalid Parameter Settings",
 				message: `Invalid settings for Drawing parameter "${definition.name}", see console for details.`,
 			});
-			console.warn(
+			Logger.warn(
 				`Invalid settings for Drawing parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
 			return {};

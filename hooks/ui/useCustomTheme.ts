@@ -53,6 +53,7 @@ import {
 } from "@AppBuilderShared/types/shapediver/viewport";
 import {ViewportIconsThemeProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {ViewportOverlayWrapperThemeProps} from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	AreaChart,
 	BarChart,
@@ -1346,7 +1347,7 @@ export const useCustomTheme = (props: Props = {}) => {
 		globalThemeOverrides,
 		themeOverride,
 	);
-	console.debug("Theme", theme);
+	Logger.debug("Theme", theme);
 
 	/**
 	 * @see https://mantine.dev/styles/css-variables/#css-variables-resolver

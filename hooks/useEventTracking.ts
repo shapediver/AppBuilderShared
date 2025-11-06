@@ -5,6 +5,7 @@ import {
 	IEventTracking,
 	IEventTrackingProps,
 } from "@AppBuilderShared/types/eventTracking";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {roundToBracket} from "@AppBuilderShared/utils/numerics";
 import {ResComputationStatus} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {isViewerCustomizationError} from "@shapediver/viewer.session";
@@ -49,7 +50,7 @@ export const useEventTracking = () => {
 						)
 						.find((s) => s && s !== ResComputationStatus.SUCCESS);
 					const title = status ? `${_title} (${status})` : _title;
-					console.warn(title, e);
+					Logger.warn(title, e);
 					notifications.error({title, message: e.message});
 					tracker.trackEvent(`${action}_error`, {
 						props: {
@@ -68,7 +69,7 @@ export const useEventTracking = () => {
 						? `${_title} after ${duration} ms`
 						: _title;
 					errorReporting.captureException(e);
-					console.error(title, e);
+					Logger.error(title, e);
 					notifications.error({title, message: e.message});
 					tracker.trackEvent(`${action}_error`, {
 						props: {

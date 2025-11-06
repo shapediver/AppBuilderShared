@@ -1,6 +1,7 @@
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreViewportAnchors} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors";
 import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {MantineThemeComponent} from "@mantine/core";
 import React, {useEffect, useRef, useState} from "react";
 import {
@@ -116,7 +117,7 @@ export default function ViewportAnchor2d(
 			const cleaned = cleanUnit(p);
 			// this should never happen, but we handle it gracefully
 			if (cleaned == null) {
-				console.warn(`Invalid location at index ${i}:`, p);
+				Logger.warn(`Invalid location at index ${i}:`, p);
 				return "0px";
 			}
 			return cleaned;

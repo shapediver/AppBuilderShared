@@ -1,6 +1,7 @@
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IAppBuilderParameterValueSourcePropsExport} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverExport} from "@AppBuilderShared/types/shapediver/export";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import {useEffect, useMemo, useState} from "react";
@@ -66,7 +67,7 @@ export function useExportSources(props: {
 			const {export: e, upload} = exportResults[i];
 
 			if (!e) {
-				console.warn(`Export for parameter value source not found.`);
+				Logger.warn(`Export for parameter value source not found.`);
 				promises.push(Promise.resolve(undefined));
 				continue;
 			}
@@ -75,7 +76,7 @@ export function useExportSources(props: {
 
 			// check if the export is a download export
 			if (definition.type !== EXPORT_TYPE.DOWNLOAD) {
-				console.warn(
+				Logger.warn(
 					`Export with name ${definition.name} is not a download export and cannot be used as a parameter value source.`,
 				);
 				promises.push(Promise.resolve(undefined));
