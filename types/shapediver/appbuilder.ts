@@ -632,7 +632,8 @@ export type AppBuilderWidgetType =
 	| "desktopClientOutputs"
 	| "controls"
 	| "accordionUi"
-	| "sceneTreeExplorer";
+	| "sceneTreeExplorer"
+	| "stackUi";
 
 /**
  * Properties of a parameter and export accordion widget.
@@ -812,6 +813,21 @@ export interface IAppBuilderWidgetPropsAccordionUi {
 }
 
 /**
+ * Properties of a stack widget, grouping further widgets
+ * into a stack.
+ */
+export interface IAppBuilderWidgetPropsStackUi {
+	/** Label shown for the stack control. */
+	name: string;
+	/** Optional icon of the stack control. */
+	icon?: IconType;
+	/** Optional tooltip of the stack control. */
+	tooltip?: string;
+	/** Widgets displayed in the stack. */
+	widgets: IAppBuilderWidget[];
+}
+
+/**
  * A widget.
  *
  * When implementing a new widget type, extend this interface and
@@ -840,7 +856,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsDesktopClientOutputs
 		| IAppBuilderWidgetPropsControls
 		| IAppBuilderWidgetPropsAccordionUi
-		| IAppBuilderWidgetPropsSceneTreeExplorer;
+		| IAppBuilderWidgetPropsSceneTreeExplorer
+		| IAppBuilderWidgetPropsStackUi;
 }
 
 /**
@@ -1185,6 +1202,14 @@ export function isAccordionUiWidget(widget: IAppBuilderWidget): widget is {
 	props: IAppBuilderWidgetPropsAccordionUi;
 } {
 	return widget.type === "accordionUi";
+}
+
+/** assert widget type "stackUi" */
+export function isStackUiWidget(widget: IAppBuilderWidget): widget is {
+	type: "stackUi";
+	props: IAppBuilderWidgetPropsStackUi;
+} {
+	return widget.type === "stackUi";
 }
 
 /** assert action type "createModelState" */

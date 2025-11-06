@@ -88,6 +88,7 @@ import {
 	mergeThemeOverrides,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
+import {AppBuilderStackUiWidgetComponentThemeProps} from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
 import {MultiSelectCheckboxesProps} from "~/shared/components/shapediver/parameter/multiselect/MultiSelectCheckboxesComponent";
 import {CreateModelStateHookThemeProps} from "../shapediver/useCreateModelState";
 
@@ -647,6 +648,51 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			AppBuilderRoundChartWidgetComponent:
 				AppBuilderRoundChartWidgetComponentThemeProps({}),
+			/**
+			 * AppBuilderStackUiWidgetComponent
+			 *
+			 * Used for defining theme overrides for stack ui widgets.
+			 */
+			AppBuilderStackUiWidgetComponent:
+				AppBuilderStackUiWidgetComponentThemeProps({
+					// stackPaperProps: {
+					// 	px: 0,
+					// 	py: 0,
+					// 	withBorder: false,
+					// 	shadow: "md",
+					// 	style: {backgroundColor: "var(--mantine-color-gray-0)"},
+					// },
+					// stackProps: {gap: "xs"},
+					// itemTextProps: {size: "md"},
+					// buttonForwardProps: {
+					// 	justify: "space-between",
+					// 	fullWidth: true,
+					// 	size: "lg",
+					// 	px: "md",
+					// 	variant: "default",
+					// },
+					// iconForwardProps: {
+					// 	size: 18,
+					// 	iconType: "tabler:chevron-right",
+					// },
+					// buttonBackProps: {
+					// 	mt: "xs",
+					// 	variant: "subtle",
+					// },
+					// iconBackProps: {
+					// 	size: 18,
+					// 	iconType: "tabler:chevron-left",
+					// },
+					// transitionBackProps: {
+					// 	transition: "slide-right",
+					// 	duration: 300,
+					// 	timingFunction: "ease",
+					// },
+					// stackContentProps: {
+					// 	pb: "xs",
+					// 	px: "xs",
+					// },
+				}),
 			/**
 			 * AppBuilderTemplateSelector
 			 *
