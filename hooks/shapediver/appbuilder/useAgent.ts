@@ -5,6 +5,7 @@ import {IAppBuilderParameterRef} from "@AppBuilderShared/types/shapediver/appbui
 import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
 import {IShapeDiverStoreParameters} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {getParameterRefs} from "@AppBuilderShared/utils/appbuilder";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	composeSdColor,
 	decomposeSdColor,
