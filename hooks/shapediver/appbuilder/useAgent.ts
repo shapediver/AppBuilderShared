@@ -715,7 +715,7 @@ I have provided a screenshot of the 3D view for context.`
 
 			const parsedMessage = message.parsed;
 			if (!parsedMessage) {
-				console.warn("No LLM response ?!", parsedMessage);
+				Logger.warn("No LLM response ?!", parsedMessage);
 
 				return;
 			}
