@@ -27,6 +27,13 @@ export const AppBuilderStandardContainerNames: readonly AppBuilderStandardContai
 
 export interface IShapeDiverStoreStandardContainers {
 	/**
+	 * The active tab indices for each of the standard container names.
+	 * This is used to keep track of which tab is currently active in each container.
+	 * If a container does not have tabs, the index is ignored.
+	 */
+	activeTabIndices: Record<AppBuilderStandardContainerNameType, number>;
+
+	/**
 	 * The default container state for each of the standard container names.
 	 * This container state is defined by the AppBuilder output of the controller session, or the fallback logic in case no AppBuilder output exists.
 	 *
@@ -57,6 +64,14 @@ export interface IShapeDiverStoreStandardContainers {
 		AppBuilderStandardContainerNameType,
 		IAppBuilderContainer | undefined
 	>;
+
+	/**
+	 * Set the active tab for a specific container.
+	 *
+	 * @param containerName - The name of the container.
+	 * @param tabIndex - The index of the tab to set as active.
+	 */
+	setActiveTab: (containerName: string, tabIndex: number) => void;
 
 	/**
 	 * Set the default container definition for a specific name.
