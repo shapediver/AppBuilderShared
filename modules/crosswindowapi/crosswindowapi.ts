@@ -5,7 +5,6 @@ import {
 	ICrossWindowFactory,
 	ICrossWindowPeerInfo,
 } from "@AppBuilderShared/modules/crosswindowapi/types/crosswindowapi";
-import {Logger} from "@AppBuilderShared/utils/logger";
 import postRobot from "post-robot";
 
 type CrossDomainWindowType = Window | null;
@@ -142,7 +141,7 @@ class CrossWindowApi implements ICrossWindowApi {
 
 	log(...message: any[]): void {
 		if (this.debug)
-			Logger.info(
+			console.log(
 				`CrossWindowApi (name = "${this.name}", peerName = "${this.peerName}"):`,
 				...message,
 			);

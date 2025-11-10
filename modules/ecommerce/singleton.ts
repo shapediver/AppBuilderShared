@@ -2,7 +2,6 @@ import {
 	DummyECommerceApi,
 	ECommerceApiFactory,
 } from "@AppBuilderShared/modules/ecommerce/ecommerceapi";
-import {Logger} from "@AppBuilderShared/utils/logger";
 import {isRunningInPlatform} from "@AppBuilderShared/utils/platform/environment";
 import {IECommerceApi} from "./types/ecommerceapi";
 
@@ -28,9 +27,9 @@ export const ECommerceApiSingleton = (async () => {
 			"plugin",
 			{timeout: CROSSWINDOW_API_TIMEOUT, debug: false},
 		);
-		Logger.info("Successfully resolved ECommerceApi", eCommerceApi);
+		console.log("Successfully resolved ECommerceApi", eCommerceApi);
 	} catch (error) {
-		Logger.info(
+		console.log(
 			"Could not resolve ECommerceApi, falling back to dummy implementation",
 			error,
 		);
