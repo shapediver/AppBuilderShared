@@ -2,6 +2,7 @@ import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
+import {useShapeDiverStoreStandardContainers} from "@AppBuilderShared/store/useShapeDiverStoreStandardContainers";
 import {IAppBuilderTab} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useMemo} from "react";
 
@@ -13,9 +14,17 @@ interface Props {
 	namespace: string;
 	/** The tabs to display. */
 	tabs: IAppBuilderTab[] | undefined;
+	/** Optional name of the container. */
+	containerName?: string;
 }
 
-export default function AppBuilderTabsComponent({namespace, tabs}: Props) {
+export default function AppBuilderTabsComponent({
+	namespace,
+	tabs,
+	containerName,
+}: Props) {
+	const {setActiveTab} = useShapeDiverStoreStandardContainers();
+
 	if (!tabs || tabs.length === 0) {
 		return <></>;
 	}
@@ -37,6 +46,9 @@ export default function AppBuilderTabsComponent({namespace, tabs}: Props) {
 					],
 				};
 			}),
+			onActiveTabChange: containerName
+				? (tabIndex: number) => setActiveTab(containerName, tabIndex)
+				: undefined,
 		};
 	}, [namespace, tabs]);
 

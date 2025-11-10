@@ -630,7 +630,13 @@ export function useAnchorContainer({
 		return () => {
 			if (token) removeAdditionalContainerContent(token);
 		};
-	}, [aboveMobileBreakpoint, showContent, mobileContainer, mobileDisabled]);
+	}, [
+		aboveMobileBreakpoint,
+		showContent,
+		mobileContainer,
+		mobileDisabled,
+		inner.key,
+	]);
 
 	return {
 		AnchorElement,

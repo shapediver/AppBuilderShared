@@ -18,6 +18,7 @@ export default function AppBuilderContainerComponent({
 	namespace,
 	widgets,
 	tabs,
+	name,
 }: Props) {
 	const {
 		push,
@@ -39,7 +40,11 @@ export default function AppBuilderContainerComponent({
 					setIsTransitioning,
 				}}
 			>
-				<AppBuilderTabsComponent namespace={namespace} tabs={tabs} />
+				<AppBuilderTabsComponent
+					namespace={namespace}
+					tabs={tabs}
+					containerName={name}
+				/>
 				<AppBuilderStackUiWidgetComponent
 					namespace={namespace}
 					stackElement={currentStackElement}

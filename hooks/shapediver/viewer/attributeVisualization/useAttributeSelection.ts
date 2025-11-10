@@ -176,7 +176,7 @@ export default function useAttributeSelection(
 	 * If it does, we set the attribute selection data to the attributes of the SDTFItemData.
 	 */
 	useEffect(() => {
-		if (selectedNodeNames.length > 0) {
+		if (selectedNodeNames.length > 0 && active && allowed) {
 			const nodes = getNodesByName(
 				Object.values(sessions),
 				selectedNodeNames,
@@ -202,7 +202,7 @@ export default function useAttributeSelection(
 		}
 
 		setAttributeSelectionData(undefined);
-	}, [selectedNodeNames]);
+	}, [selectedNodeNames, active, allowed]);
 
 	return attributeSelectionData;
 }
