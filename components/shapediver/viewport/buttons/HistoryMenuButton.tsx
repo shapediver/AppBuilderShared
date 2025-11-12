@@ -12,12 +12,16 @@ interface HistoryMenuButtonProps extends CommonButtonProps {
 	disabled?: boolean;
 	namespace: string;
 	visible?: boolean;
+	enableImportExportButtons?: boolean;
+	enableModelStateButtons?: boolean;
 }
 
 export default function HistoryMenuButton({
 	disabled = false,
 	namespace,
 	visible = true,
+	enableImportExportButtons = true,
+	enableModelStateButtons = true,
 }: HistoryMenuButtonProps) {
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const [isCreatingModelState, setIsCreatingModelState] = useState(false);
@@ -67,30 +71,34 @@ export default function HistoryMenuButton({
 		disabled?: boolean;
 	}[][] = useMemo(
 		() => [
-			[
-				{
-					name: "Import parameter values",
-					onClick: importParameters,
-					disabled: disabled || isCreatingModelState,
-				},
-				{
-					name: "Export parameter values",
-					onClick: exportParameters,
-					disabled: disabled || isCreatingModelState,
-				},
-			],
-			[
-				{
-					name: "Create model state",
-					onClick: onCreateModelState,
-					disabled: disabled || isCreatingModelState,
-				},
-				{
-					name: "Import model state",
-					onClick: () => setIsImportDialogOpen(true),
-					disabled: disabled || isCreatingModelState,
-				},
-			],
+			enableImportExportButtons
+				? [
+						{
+							name: "Import parameter values",
+							onClick: importParameters,
+							disabled: disabled || isCreatingModelState,
+						},
+						{
+							name: "Export parameter values",
+							onClick: exportParameters,
+							disabled: disabled || isCreatingModelState,
+						},
+					]
+				: [],
+			enableModelStateButtons
+				? [
+						{
+							name: "Create model state",
+							onClick: onCreateModelState,
+							disabled: disabled || isCreatingModelState,
+						},
+						{
+							name: "Import model state",
+							onClick: () => setIsImportDialogOpen(true),
+							disabled: disabled || isCreatingModelState,
+						},
+					]
+				: [],
 		],
 		[disabled, isCreatingModelState],
 	);
