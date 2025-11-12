@@ -63,6 +63,7 @@ export function useDrawingTools(
 				...drawingParameterProps?.geometry,
 			},
 			restrictions,
+			visualization: drawingParameterProps?.display,
 		};
 	}, [drawingParameterProps, initialPointsData, restrictions]);
 
