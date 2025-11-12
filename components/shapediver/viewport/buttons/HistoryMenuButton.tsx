@@ -100,7 +100,12 @@ export default function HistoryMenuButton({
 					]
 				: [],
 		],
-		[disabled, isCreatingModelState],
+		[
+			disabled,
+			isCreatingModelState,
+			enableImportExportButtons,
+			enableModelStateButtons,
+		],
 	);
 
 	return (
