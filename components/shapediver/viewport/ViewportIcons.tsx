@@ -364,7 +364,7 @@ export default function ViewportIcons(
 	return (
 		<ViewportOverlayWrapper {...viewportOverlayProps}>
 			<Transition
-				mounted={true}
+				mounted={showControls}
 				{...transitionProps}
 				onEntered={() => setIconsVisible(true)}
 				onExit={() => setIconsVisible(false)}
