@@ -38,7 +38,13 @@ export function ViewportAnchor3dThemeProps(
 export default function ViewportAnchor3d(
 	props: ViewportAnchorProps3d & Partial<ViewportAnchorStyleProps>,
 ) {
-	const {id, justification, location, hideable = false} = props;
+	const {
+		id,
+		justification,
+		location,
+		selectionProperties,
+		hideable = false,
+	} = props;
 
 	const showContentRef = useRef(false);
 	const position = useRef({x: "0px", y: "0px"});
@@ -206,6 +212,10 @@ export default function ViewportAnchor3d(
 		// check if location is a valid array of three numbers
 		if (!Array.isArray(location) || location.length !== 3) return;
 
+		// check if the selectionProperties are defined
+		// and if the showContent is false, we do not create the anchor
+		if (selectionProperties && !showContent) return;
+
 		const anchorData = new HTMLElementAnchorCustomData({
 			location: vec3.fromValues(location[0], location[1], location[2]),
 			data: {},
@@ -220,7 +230,15 @@ export default function ViewportAnchor3d(
 			sceneTree.root.removeData(anchorData);
 			sceneTree.root.updateVersion();
 		};
-	}, [canvas, location, hideable, create, update]);
+	}, [
+		canvas,
+		location,
+		hideable,
+		selectionProperties,
+		showContent,
+		create,
+		update,
+	]);
 
 	return AnchorElement;
 }
