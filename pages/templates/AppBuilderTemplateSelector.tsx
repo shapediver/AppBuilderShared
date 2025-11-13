@@ -4,9 +4,10 @@ import AppBuilderGridTemplatePage from "@AppBuilderShared/pages/templates/AppBui
 import {IAppBuilderTemplatePageProps} from "@AppBuilderShared/types/pages/appbuildertemplates";
 import {Button, MantineThemeComponent, useProps} from "@mantine/core";
 import React, {ReactElement, useState} from "react";
+import AppBuilderFloatingTemplatePage from "./AppBuilderFloatingTemplatePage";
 import classes from "./AppBuilderTemplateSelector.module.css";
 
-export type AppBuilderTemplateType = "grid" | "appshell";
+export type AppBuilderTemplateType = "grid" | "appshell" | "floating";
 
 type TemplateMapType = Record<
 	AppBuilderTemplateType,
@@ -16,6 +17,7 @@ type TemplateMapType = Record<
 const templateMap: TemplateMapType = {
 	appshell: AppBuilderAppShellTemplatePage,
 	grid: AppBuilderGridTemplatePage,
+	floating: AppBuilderFloatingTemplatePage,
 };
 
 interface StyleProps {

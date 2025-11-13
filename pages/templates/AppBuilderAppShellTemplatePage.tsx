@@ -21,7 +21,7 @@ import {useDisclosure, useMediaQuery} from "@mantine/hooks";
 import React, {useEffect, useState} from "react";
 import classes from "./AppBuilderAppShellTemplatePage.module.css";
 
-interface StyleProps {
+export interface StyleProps {
 	/** Height of the header (responsive) */
 	headerHeight: AppShellResponsiveSize | AppShellSize;
 	/** Breakpoint below which to hide the navigation bar */
@@ -52,7 +52,7 @@ interface StyleProps {
 	keepBottomInGrid: boolean;
 }
 
-const defaultStyleProps: StyleProps = {
+export const defaultStyleProps: StyleProps = {
 	headerHeight: {base: "4em", md: "4em"},
 	navbarBreakpoint: "md",
 	navbarWidth: {md: 250, lg: 300},
@@ -67,7 +67,7 @@ const defaultStyleProps: StyleProps = {
 	keepBottomInGrid: false,
 };
 
-type AppBuilderAppShellTemplatePageThemePropsType = Partial<StyleProps>;
+export type AppBuilderAppShellTemplatePageThemePropsType = Partial<StyleProps>;
 
 export function AppBuilderAppShellTemplatePageThemeProps(
 	props: AppBuilderAppShellTemplatePageThemePropsType,

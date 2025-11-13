@@ -603,6 +603,20 @@ export const useCustomTheme = (props: Props = {}) => {
 					// rightBorder: true,
 					// keepBottomInGrid: false,
 				}),
+
+			/**
+			 * AppBuilderFloatingTemplatePage
+			 *
+			 * Floating layout template for AppBuilder.
+			 */
+			AppBuilderFloatingTemplatePage:
+				AppBuilderAppShellTemplatePageThemeProps({
+					// headerHeight: "4em",
+					// headerHeight: { base: "4em", md: "6em"},
+					// navbarBreakpoint: "md",
+					// navbarWidth: { md: 200, lg: 250 },
+					// columns: 3, // responsive example: { base: 2, lg: 3 },
+				}),
 			/**
 			 * AppBuilderGridTemplatePage
 			 *

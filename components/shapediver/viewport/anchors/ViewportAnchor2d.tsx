@@ -91,7 +91,7 @@ export default function ViewportAnchor2d(
 		showContentRef.current = showContent;
 		initializedRef.current = false;
 		setUpdatePositionCalculation((prev) => prev + 1);
-	}, [showContent]);
+	}, [showContent, inputLocation, justification]);
 
 	/**
 	 * The main use effect for the anchor.

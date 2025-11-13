@@ -15,7 +15,11 @@ export interface IAppBuilderContainerContext {
 }
 
 /** Types of templates */
-export type AppBuilderTemplateType = "appshell" | "grid" | "unspecified";
+export type AppBuilderTemplateType =
+	| "appshell"
+	| "grid"
+	| "floating"
+	| "unspecified";
 
 /** Contextual information for App Builder template. */
 export interface IAppBuilderTemplateContext {
