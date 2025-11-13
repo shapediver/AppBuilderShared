@@ -34,41 +34,9 @@ export interface ViewportIconsOptionalProps {
 	 */
 	fullscreenId?: string;
 	/**
-	 * enable/disable the "parameter history" buttons
-	 */
-	enableHistoryButtons?: boolean;
-	/**
-	 * enable/disable the "model state" buttons
-	 */
-	enableModelStateButtons?: boolean;
-	/**
-	 * enable/disable the "import/export JSON file" buttons
-	 */
-	enableImportExportButtons?: boolean;
-	/**
-	 * enable/disable the "reset parameter values" button
-	 */
-	enableResetButton?: boolean;
-	/**
-	 * enable/disable the "AR" button
-	 */
-	enableArBtn?: boolean;
-	/**
-	 * enable/disable the "cameras" button
-	 */
-	enableCamerasBtn?: boolean;
-	/**
 	 * enable/disable the "fullscreen" button
 	 */
 	enableFullscreenBtn?: boolean;
-	/**
-	 * enable/disable the "zoom" button
-	 */
-	enableZoomBtn?: boolean;
-	/**
-	 * enable/disable the "history menu" button
-	 */
-	enableHistoryMenuButton?: boolean;
 	/**
 	 * color of the icons
 	 */

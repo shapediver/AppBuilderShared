@@ -123,38 +123,6 @@ export default function ViewportIcons(
 	);
 
 	const buttonsDisabled = hasPendingChanges;
-	/**
-	 * The reset button depends on the following:
-	 * - enableResetButtonStyleProp: if false, return false
-	 * - hideJsonMenu: if true, return false
-	 * otherwise, return true
-	 */
-	const enableResetButton = useMemo(() => {
-		if (hideJsonMenu) return false;
-		return true;
-	}, [hideJsonMenu]);
-
-	/**
-	 * The model state buttons depend on the following:
-	 * - enableModelStateButtonsStyleProp: if false, return false
-	 * - hideJsonMenu: if true, return false
-	 * otherwise, return true
-	 */
-	const enableModelStateButtons = useMemo(() => {
-		if (hideJsonMenu) return false;
-		return true;
-	}, [hideJsonMenu]);
-
-	/**
-	 * The import/export buttons depend on the following:
-	 * - enableImportExportButtonsStyleProp: if false, return false
-	 * - hideJsonMenu: if true, return false
-	 * otherwise, return true
-	 */
-	const enableImportExportButtons = useMemo(() => {
-		if (hideJsonMenu) return false;
-		return true;
-	}, [hideJsonMenu]);
 
 	// Create button render context
 	const buttonContext: ButtonRenderContext = useMemo(
@@ -165,9 +133,6 @@ export default function ViewportIcons(
 			executing,
 			hasPendingChanges,
 			iconsVisible,
-			enableResetButton,
-			enableImportExportButtons,
-			enableModelStateButtons,
 			fullscreenId: fullscreenId || "viewer-fullscreen-area",
 			color,
 			colorDisabled,
@@ -183,9 +148,6 @@ export default function ViewportIcons(
 			executing,
 			hasPendingChanges,
 			iconsVisible,
-			enableResetButton,
-			enableImportExportButtons,
-			enableModelStateButtons,
 			fullscreenId,
 			color,
 			colorDisabled,
@@ -278,6 +240,7 @@ export default function ViewportIcons(
 						...commonProps,
 					});
 				case ViewportIconButtonEnum.HistoryMenu:
+					if (hideJsonMenu) return null;
 					return React.createElement(ButtonComponent, {
 						key: "historyMenu",
 						disabled:
