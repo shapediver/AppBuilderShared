@@ -6,6 +6,7 @@ import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderShared/co
 import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderControlsWidgetComponent";
 import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
 import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
+import {AppBuilderSavedStatesWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderSavedStatesWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {NumberAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/NumberAttribute";
 import {StringAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/StringAttribute";
@@ -649,6 +650,25 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			AppBuilderRoundChartWidgetComponent:
 				AppBuilderRoundChartWidgetComponentThemeProps({}),
+			/**
+			 * AppBuilderSavedStatesWidgetComponent
+			 *
+			 * Used for defining theme overrides for saved states widgets.
+			 */
+			AppBuilderSavedStatesWidgetComponent:
+				AppBuilderSavedStatesWidgetComponentThemeProps({
+					// paperProps: {
+					// 	p: "md",
+					// },
+					// stackProps: {
+					// 	gap: "md",
+					// },
+					// loaderFlexProps: {
+					// 	justify: "center",
+					// 	align: "center",
+					// },
+					// loaderProps: {},
+				}),
 			/**
 			 * AppBuilderStackUiWidgetComponent
 			 *

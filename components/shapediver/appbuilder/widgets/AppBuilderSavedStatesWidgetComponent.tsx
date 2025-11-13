@@ -11,24 +11,50 @@ import {TSavedStateQueryProps} from "@AppBuilderShared/types/store/shapediverSto
 import {
 	Alert,
 	Flex,
+	FlexProps,
 	Loader,
+	LoaderProps,
 	MantineStyleProp,
+	MantineThemeComponent,
 	Paper,
 	PaperProps,
 	Stack,
+	StackProps,
 	useProps,
 } from "@mantine/core";
 import React, {useContext, useEffect, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
 
-type StyleProps = PaperProps;
+interface StyleProps {
+	paperProps?: PaperProps;
+	stackProps?: StackProps;
+	loaderFlexProps?: FlexProps;
+	loaderProps?: LoaderProps;
+}
 
 const defaultStyleProps: Partial<StyleProps> = {
-	p: "md",
+	paperProps: {
+		p: "md",
+	},
+	stackProps: {
+		gap: "md",
+	},
+	loaderFlexProps: {
+		justify: "center",
+		align: "center",
+	},
 };
 
 type AppBuilderSavedStatesWidgetThemePropsType = Partial<StyleProps>;
+
+export function AppBuilderSavedStatesWidgetComponentThemeProps(
+	props: AppBuilderSavedStatesWidgetThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
 
 type Props = IAppBuilderWidgetPropsSavedStates &
 	AppBuilderSavedStatesWidgetThemePropsType &
@@ -49,7 +75,7 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		...rest
 	} = props;
 
-	const themeProps = useProps(
+	const {paperProps, stackProps, loaderFlexProps, loaderProps} = useProps(
 		"AppBuilderSavedStatesWidgetComponent",
 		defaultStyleProps,
 		rest,
@@ -184,7 +210,7 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 
 	if (error) {
 		return (
-			<Paper {...themeProps} style={styleProps}>
+			<Paper {...paperProps} style={styleProps}>
 				<Alert title="Error">{error.message}</Alert>
 			</Paper>
 		);
@@ -195,8 +221,8 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 	}
 
 	return (
-		<Paper {...themeProps} style={styleProps}>
-			<Stack gap="md">
+		<Paper {...paperProps} style={styleProps}>
+			<Stack {...stackProps}>
 				<SelectComponent
 					type={selectType}
 					value={selectedValue}
@@ -205,8 +231,8 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 					itemData={itemData}
 				/>
 				{(loading || hasNextPage) && (
-					<Flex justify="center" align="center">
-						<Loader ref={sentryRef} />
+					<Flex {...loaderFlexProps}>
+						<Loader ref={sentryRef} {...loaderProps} />
 					</Flex>
 				)}
 			</Stack>
