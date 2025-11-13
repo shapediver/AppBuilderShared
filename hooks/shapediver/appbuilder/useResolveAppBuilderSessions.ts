@@ -40,8 +40,10 @@ export default function useResolveAppBuilderSessions(
 		})),
 	);
 
-	const {addItem: addSavedState} = useShapeDiverStorePlatformSavedStates(
-		useShallow((state) => ({addItem: state.addItem})),
+	const {handleInitialSavedState} = useShapeDiverStorePlatformSavedStates(
+		useShallow((state) => ({
+			handleInitialSavedState: state.handleInitialSavedState,
+		})),
 	);
 
 	// when running on the platform, try to get a token (refresh token grant)
@@ -135,6 +137,7 @@ export default function useResolveAppBuilderSessions(
 					};
 					const model = await getModel();
 					setCurrentModel(model);
+					await handleInitialSavedState(session.id);
 					document.title = `${model?.title ?? model?.slug} | ShapeDiver App Builder`;
 
 					return {
@@ -174,11 +177,8 @@ export default function useResolveAppBuilderSessions(
 						return result.data;
 					};
 					const iframeData = await getIframeData();
-
-					for (const savedState of iframeData.model.saved_states ??
-						[]) {
-						await addSavedState(savedState);
-					}
+					setCurrentModel(iframeData.model);
+					await handleInitialSavedState(session.id);
 
 					return {
 						acceptRejectMode:

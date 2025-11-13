@@ -15,6 +15,7 @@ import {
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
+import {useShapeDiverStorePlatformSavedStates} from "./useShapeDiverStorePlatformSavedStates";
 
 /**
  * Helper for comparing sessions.
@@ -53,6 +54,21 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 					return;
 
 				if (load) {
+					const {initialSavedState, setSelectedSavedStateId} =
+						useShapeDiverStorePlatformSavedStates.getState();
+
+					const sessionSavedState = initialSavedState[dto.id];
+					if (sessionSavedState?.parameters) {
+						dto = {
+							...dto,
+							initialParameterValues: {
+								...dto.initialParameterValues,
+								...sessionSavedState.parameters,
+							},
+						};
+						setSelectedSavedStateId(dto.id, sessionSavedState.id);
+					}
+
 					let session: ISessionApi | undefined = undefined;
 					try {
 						try {

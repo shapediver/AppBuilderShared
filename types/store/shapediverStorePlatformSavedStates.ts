@@ -91,4 +91,27 @@ export type IShapeDiverStorePlatformSavedStateExtended =
 		TSavedStateQueryItem,
 		TSavedStateQueryPropsExt,
 		SavedStateCacheKeyEnum
-	>;
+	> & {
+		/** The initial saved state to be applied on load, indexed by session ID */
+		initialSavedState: Record<string, TSavedStateData | undefined>;
+		/** Set the initial saved state for a specific session */
+		setInitialSavedState: (
+			sessionId: string,
+			savedState: TSavedStateData | undefined,
+		) => void;
+		/** Handle initial saved state from query parameter */
+		handleInitialSavedState: (sessionId: string) => Promise<void>;
+		/** The currently selected saved state ID, indexed by session ID */
+		selectedSavedStateId: Record<string, string | undefined>;
+		/** Set the selected saved state ID for a specific session */
+		setSelectedSavedStateId: (
+			sessionId: string,
+			savedStateId: string | undefined,
+		) => void;
+		/** Flag indicating if a saved state is currently being applied, indexed by session ID */
+		isExecuting: Record<string, boolean>;
+		/** Set the isExecuting flag for a specific session */
+		setIsExecuting: (sessionId: string, isExecuting: boolean) => void;
+	};
+
+export const QUERY_SAVED_STATE_ID = "savedStateId";

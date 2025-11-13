@@ -3,6 +3,7 @@ import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverS
 import {IPlatformPagedItemQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformGeneric";
 import {
 	IShapeDiverStorePlatformSavedStateExtended,
+	QUERY_SAVED_STATE_ID,
 	SavedStateCacheKeyEnum,
 	TSavedStateData,
 	TSavedStateEmbed,
@@ -33,6 +34,98 @@ export const useShapeDiverStorePlatformSavedStates =
 				items: {},
 
 				queryCache: {},
+
+				initialSavedState: {},
+
+				setInitialSavedState(
+					sessionId: string,
+					savedState: TSavedStateData | undefined,
+				) {
+					set(
+						(state) => ({
+							initialSavedState: {
+								...state.initialSavedState,
+								[sessionId]: savedState,
+							},
+						}),
+						false,
+						`setInitialSavedState ${sessionId} ${savedState?.id ?? "undefined"}`,
+					);
+				},
+
+				selectedSavedStateId: {},
+
+				setSelectedSavedStateId(
+					sessionId: string,
+					savedStateId: string | undefined,
+				) {
+					// Update query parameter
+					const url = new URL(window.location.href);
+					if (savedStateId) {
+						url.searchParams.set(
+							QUERY_SAVED_STATE_ID,
+							savedStateId,
+						);
+					} else {
+						url.searchParams.delete(QUERY_SAVED_STATE_ID);
+					}
+					window.history.replaceState({}, "", url.toString());
+
+					set(
+						(state) => ({
+							selectedSavedStateId: {
+								...state.selectedSavedStateId,
+								[sessionId]: savedStateId,
+							},
+						}),
+						false,
+						`setSelectedSavedStateId ${sessionId} ${savedStateId ?? "undefined"}`,
+					);
+				},
+
+				isExecuting: {},
+
+				setIsExecuting(sessionId: string, isExecuting: boolean) {
+					set(
+						(state) => ({
+							isExecuting: {
+								...state.isExecuting,
+								[sessionId]: isExecuting,
+							},
+						}),
+						false,
+						`setIsExecuting ${sessionId} ${isExecuting}`,
+					);
+				},
+
+				async handleInitialSavedState(sessionId: string) {
+					const clientRef =
+						useShapeDiverStorePlatform.getState().clientRef;
+					const {setInitialSavedState} = get();
+
+					if (!clientRef) {
+						console.warn(
+							"Handling default saved state skipped because platform client is not available.",
+						);
+						return;
+					}
+
+					const params = new URLSearchParams(window.location.search);
+					const savedStateId = params.get("savedStateId");
+					if (savedStateId) {
+						try {
+							const {data: savedState} =
+								await clientRef.client.savedStates.get(
+									savedStateId,
+								);
+							if (savedState) {
+								setInitialSavedState(sessionId, savedState);
+							}
+						} catch (error) {
+							console.error("Failed to get saved state:", error);
+						}
+					}
+				},
 
 				addItem(data: TSavedStateData) {
 					const clientRef =

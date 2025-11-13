@@ -58,6 +58,7 @@ import {
 import {produce} from "immer";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {useShapeDiverStorePlatformSavedStates} from "./useShapeDiverStorePlatformSavedStates";
 import {useShapeDiverStoreProcessManager} from "./useShapeDiverStoreProcessManager";
 
 /**
@@ -318,6 +319,14 @@ function createGenericParameterExecutorForSession(
 
 			// resolve the promise of the process manager
 			resolve();
+
+			// Clear selected saved state ID since parameters have changed
+			// (unless we're currently executing a saved state)
+			const {setSelectedSavedStateId, isExecuting} =
+				useShapeDiverStorePlatformSavedStates.getState();
+			if (!isExecuting[session.id]) {
+				setSelectedSavedStateId(session.id, undefined);
+			}
 
 			if (!skipHistory) {
 				const state: ISessionsHistoryState = {
