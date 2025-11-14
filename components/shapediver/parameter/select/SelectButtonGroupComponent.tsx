@@ -11,7 +11,8 @@ import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComp
 export default function SelectButtonGroupComponent(
 	props: UniversalMultiSelectComponentProps,
 ) {
-	const {value, onChange, items, itemData, disabled, multiselect} = props;
+	const {value, onChange, items, itemData, disabled, multiselect, ...rest} =
+		props;
 	const {handleClick, isSelected} = parameterMultiSelect(
 		value,
 		onChange,
@@ -19,7 +20,7 @@ export default function SelectButtonGroupComponent(
 	);
 
 	return (
-		<Button.Group>
+		<Button.Group {...rest}>
 			{items.map((item) => {
 				const data = itemData?.[item];
 				const displayName = data?.displayname || item;
