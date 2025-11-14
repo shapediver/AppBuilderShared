@@ -657,6 +657,9 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			AppBuilderSavedStatesWidgetComponent:
 				AppBuilderSavedStatesWidgetComponentThemeProps({
+					// selectProps: {
+					// 	type: "fullwidthcards",
+					// },
 					// paperProps: {
 					// 	p: "md",
 					// },

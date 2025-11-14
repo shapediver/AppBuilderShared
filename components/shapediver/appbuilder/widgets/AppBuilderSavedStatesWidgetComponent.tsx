@@ -1,4 +1,6 @@
-import SelectComponent from "@AppBuilderShared/components/shapediver/parameter/select/SelectComponent";
+import SelectComponent, {
+	SelectComponentPropsExt,
+} from "@AppBuilderShared/components/shapediver/parameter/select/SelectComponent";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";
@@ -27,6 +29,19 @@ import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
 
 interface StyleProps {
+	selectProps?: Partial<SelectComponentPropsExt> & {
+		type: Extract<
+			SelectComponentType,
+			| "buttonflex"
+			| "buttongroup"
+			| "chipgroup"
+			| "dropdown"
+			| "imagedropdown"
+			| "fullwidthcards"
+			| "carousel"
+			| "grid"
+		>;
+	};
 	paperProps?: PaperProps;
 	stackProps?: StackProps;
 	loaderFlexProps?: FlexProps;
@@ -34,6 +49,9 @@ interface StyleProps {
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
+	selectProps: {
+		type: "fullwidthcards",
+	},
 	paperProps: {
 		p: "md",
 	},
@@ -66,7 +84,6 @@ type Props = IAppBuilderWidgetPropsSavedStates &
 export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 	const {
 		namespace,
-		selectType = "fullwidthcards",
 		queryParams,
 		filterByUser,
 		filterByOrganization,
@@ -75,11 +92,12 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		...rest
 	} = props;
 
-	const {paperProps, stackProps, loaderFlexProps, loaderProps} = useProps(
-		"AppBuilderSavedStatesWidgetComponent",
-		defaultStyleProps,
-		rest,
-	);
+	const {selectProps, paperProps, stackProps, loaderFlexProps, loaderProps} =
+		useProps(
+			"AppBuilderSavedStatesWidgetComponent",
+			defaultStyleProps,
+			rest,
+		);
 
 	const context = useContext(AppBuilderContainerContext);
 
@@ -224,11 +242,12 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		<Paper {...paperProps} style={styleProps}>
 			<Stack {...stackProps}>
 				<SelectComponent
-					type={selectType}
 					value={selectedValue}
 					onChange={handleChange}
 					items={items}
 					itemData={itemData}
+					disabled={loading}
+					{...selectProps}
 				/>
 				{(loading || hasNextPage) && (
 					<Flex {...loaderFlexProps}>
