@@ -119,7 +119,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 	const parameterMap = useMemo(() => {
 		const map = new Map<string, ReactElement>();
 		parameters.forEach((param, index) => {
-			if (!param) return;
+			if (!param || param.definition.hidden) return;
 			const {component: ParameterComponent, extraBottomPadding} =
 				getParameterComponent(componentContext, param.definition);
 
@@ -147,7 +147,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 	const exportMap = useMemo(() => {
 		const map = new Map<string, ReactElement>();
 		exports.forEach((exp, index) => {
-			if (!exp) return;
+			if (!exp || exp.definition.hidden) return;
 			const ExportComponent = getExportComponent(
 				componentContext,
 				exp.definition,
@@ -167,7 +167,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 	const outputMap = useMemo(() => {
 		const map = new Map<string, ReactElement>();
 		outputs.forEach((output, index) => {
-			if (!output) return;
+			if (!output || output.definition.hidden) return;
 
 			map.set(
 				outputProps[index].outputId,
