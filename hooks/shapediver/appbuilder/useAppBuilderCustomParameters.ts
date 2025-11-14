@@ -78,13 +78,17 @@ export function useAppBuilderCustomParameters(props: Props) {
 
 	// prepare for adding pre-execution hook, which will set the value of the parameter named "AppBuilder"
 	// to a JSON string of the current custom parameter values
-	const {setPreExecutionHook, removePreExecutionHook} =
-		useShapeDiverStoreParameters(
-			useShallow((state) => ({
-				setPreExecutionHook: state.setPreExecutionHook,
-				removePreExecutionHook: state.removePreExecutionHook,
-			})),
-		);
+	const {
+		setPreExecutionHook,
+		removePreExecutionHook,
+		batchParameterValueUpdate,
+	} = useShapeDiverStoreParameters(
+		useShallow((state) => ({
+			setPreExecutionHook: state.setPreExecutionHook,
+			removePreExecutionHook: state.removePreExecutionHook,
+			batchParameterValueUpdate: state.batchParameterValueUpdate,
+		})),
+	);
 
 	// set the default values of the custom parameters whenever the
 	// custom parameter definitions change
@@ -137,15 +141,24 @@ export function useAppBuilderCustomParameters(props: Props) {
 				json.length <= appBuilderParam.definition.max!
 			) {
 				if (appBuilderParam.actions.setUiValue(json)) {
-					// clear the appBuilderFileParam in case it exists
-					if (appBuilderFileParam)
-						appBuilderFileParam.actions.setUiValue("");
-
-					await appBuilderParam.actions.execute(
-						true,
-						skipHistory,
-						true,
-					);
+					if (appBuilderFileParam) {
+						// clear the appBuilderFileParam in case it exists
+						await batchParameterValueUpdate(
+							{
+								[namespace]: {
+									[appBuilderParam?.definition.id]: json,
+									[appBuilderFileParam.definition.id]: "",
+								},
+							},
+							true,
+						);
+					} else {
+						await appBuilderParam.actions.execute(
+							true,
+							skipHistory,
+							true,
+						);
+					}
 				} else {
 					Logger.warn(
 						`setUiValue failed for "${CUSTOM_DATA_INPUT_NAME}" parameter ${appBuilderParam.definition.id}, the value is not valid.`,
@@ -162,14 +175,25 @@ export function useAppBuilderCustomParameters(props: Props) {
 						new Blob([json], {type: "application/json"}),
 					)
 				) {
-					// clear the appBuilderParam in case it exists
-					if (appBuilderParam) appBuilderParam.actions.setUiValue("");
-
-					await appBuilderFileParam.actions.execute(
-						true,
-						skipHistory,
-						true,
-					);
+					if (appBuilderParam) {
+						// clear the appBuilderParam in case it exists
+						await batchParameterValueUpdate(
+							{
+								[namespace]: {
+									[appBuilderParam?.definition.id]: "",
+									[appBuilderFileParam.definition.id]:
+										appBuilderFileParam.state.uiValue,
+								},
+							},
+							true,
+						);
+					} else {
+						await appBuilderFileParam.actions.execute(
+							true,
+							skipHistory,
+							true,
+						);
+					}
 				} else {
 					Logger.warn(
 						`setUiValue failed for "${CUSTOM_DATA_INPUT_NAME}" parameter ${appBuilderFileParam.definition.id}, the value is not valid.`,
