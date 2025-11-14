@@ -310,7 +310,9 @@ export interface IAppBuilderParameterValueSourcePropsScreenshot {
 	 * Optional camera settings to be used for the screenshot. Defaults to the current camera of the viewport.
 	 * If a "name" is provided, the settings of the camera with that name are used as a base.
 	 */
-	camera?: OrthographicCameraProperties | PerspectiveCameraProperties;
+	camera?:
+		| Partial<OrthographicCameraProperties>
+		| Partial<PerspectiveCameraProperties>;
 }
 
 /**
@@ -537,7 +539,9 @@ export type IAppBuilderLegacyActionPropsCloseConfigurator =
 
 type IAppBuilderPropsCameraCommon = {
 	/** Optional camera settings to be used. Defaults to the initial camera of the viewport. */
-	camera?: OrthographicCameraProperties | PerspectiveCameraProperties;
+	camera?:
+		| Partial<OrthographicCameraProperties>
+		| Partial<PerspectiveCameraProperties>;
 	/** Camera properties, including duration and easing. */
 	options?: ICameraOptions;
 };
