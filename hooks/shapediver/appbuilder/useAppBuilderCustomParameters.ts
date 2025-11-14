@@ -137,6 +137,10 @@ export function useAppBuilderCustomParameters(props: Props) {
 				json.length <= appBuilderParam.definition.max!
 			) {
 				if (appBuilderParam.actions.setUiValue(json)) {
+					// clear the appBuilderFileParam in case it exists
+					if (appBuilderFileParam)
+						appBuilderFileParam.actions.setUiValue("");
+
 					await appBuilderParam.actions.execute(
 						true,
 						skipHistory,
@@ -158,6 +162,9 @@ export function useAppBuilderCustomParameters(props: Props) {
 						new Blob([json], {type: "application/json"}),
 					)
 				) {
+					// clear the appBuilderParam in case it exists
+					if (appBuilderParam) appBuilderParam.actions.setUiValue("");
+
 					await appBuilderFileParam.actions.execute(
 						true,
 						skipHistory,
