@@ -7,8 +7,10 @@
 }
 
 .appShellGridAreaRight {
+    position: relative;
 	grid-area: right;
-	overflow: auto;
+	overflow-y: auto;
+    overflow-x: hidden;
 	&[data-with-border] {
 		border-inline-start: calc(0.0625rem * var(--mantine-scale)) solid
 			var(--app-shell-border-color);
