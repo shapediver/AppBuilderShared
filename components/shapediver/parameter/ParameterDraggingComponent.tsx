@@ -12,6 +12,7 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
 import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
 import {
@@ -90,7 +91,7 @@ export default function ParameterDraggingComponent(
 				title: "Invalid Parameter Settings",
 				message: `Invalid settings for Dragging parameter "${definition.name}", see console for details.`,
 			});
-			console.warn(
+			Logger.warn(
 				`Invalid settings for Dragging parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
 			return {};

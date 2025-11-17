@@ -18,6 +18,7 @@ import {
 	Paper,
 	PaperProps,
 	Portal,
+	ScrollArea,
 	Stack,
 	StackProps,
 	useMantineTheme,
@@ -532,17 +533,11 @@ export function useAnchorContainer({
 				h={aboveMobileBreakpoint ? height : "100%"}
 				style={{
 					overflow: "auto",
-					scrollbarWidth: "none",
 				}}
 			>
-				<Stack
-					style={{
-						width: "100%",
-						height: "100%",
-					}}
-				>
+				<ScrollArea h={"100%"} w={"100%"} type="auto">
 					{element}
-				</Stack>
+				</ScrollArea>
 			</Group>
 		</Stack>
 	);
@@ -635,7 +630,13 @@ export function useAnchorContainer({
 		return () => {
 			if (token) removeAdditionalContainerContent(token);
 		};
-	}, [aboveMobileBreakpoint, showContent, mobileContainer, mobileDisabled]);
+	}, [
+		aboveMobileBreakpoint,
+		showContent,
+		mobileContainer,
+		mobileDisabled,
+		inner.key,
+	]);
 
 	return {
 		AnchorElement,

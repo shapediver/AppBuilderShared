@@ -15,6 +15,22 @@ export const QUERYPARAM_UTM_TERM = "utm_term";
 export const QUERYPARAM_UTM_CONTENT = "utm_content";
 export const QUERYPARAM_UTM_USER = "utm_user";
 export const QUERYPARAM_TRACKING_DOMAIN = "trackingDomain";
+export const QUERYPARAM_LOGGING_LEVEL = "loggingLevel";
+export const QUERYPARAM_DEBUG = "debug";
+export const QUERYPARAM_MAX_HISTORY = "maxHistory";
+export const QUERYPARAM_MODEL = "model";
+export const QUERYPARAM_OPENAI_API_KEY = "openaiApiKey";
+export const QUERYPARAM_LANGFUSE_PUBLIC_KEY = "langfusePublicKey";
+export const QUERYPARAM_LANGFUSE_SECRET_KEY = "langfuseSecretKey";
+export const QUERYPARAM_LANGFUSE_BASE_URL = "langfuseBaseUrl";
+export const QUERYPARAM_REDIRECT = "redirect";
+export const QUERYPARAM_PROVIDER = "provider";
+export const QUERYPARAM_USE_DEV_PLATFORM = "useDevPlatform";
+export const QUERYPARAM_USE_STAGING_PLATFORM = "useStagingPlatform";
+export const QUERYPARAM_USE_SANDBOX_PLATFORM = "useSandboxPlatform";
+
+export const QUERYPARAM_LOCALHOST_RUNNING_IN_PLATFORM =
+	"localhostRunningInPlatform";
 
 export const DEFAULT_TRACKING_PARAMS = [
 	QUERYPARAM_SLUG,

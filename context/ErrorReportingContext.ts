@@ -1,13 +1,14 @@
 import {IErrorReportingContext} from "@AppBuilderShared/types/context/errorreportingcontext";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {createContext} from "react";
 
 export const DummyErrorReporting: IErrorReportingContext = {
 	captureException: function (exception: any): string {
-		console.debug("Exception captured:", exception);
+		Logger.debug("Exception captured:", exception);
 		return "";
 	},
 	captureMessage: function (message: string): string {
-		console.debug("Message captured:", message);
+		Logger.debug("Message captured:", message);
 		return "";
 	},
 };

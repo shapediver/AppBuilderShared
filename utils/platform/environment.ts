@@ -1,14 +1,24 @@
+import {
+	QUERYPARAM_LOCALHOST_RUNNING_IN_PLATFORM,
+	QUERYPARAM_USE_DEV_PLATFORM,
+	QUERYPARAM_USE_SANDBOX_PLATFORM,
+	QUERYPARAM_USE_STAGING_PLATFORM,
+} from "@AppBuilderShared/types/shapediver/queryparams";
+
 const PROD_PLATFORM_HOST = "shapediver.com";
 const STAGING_PLATFORM_HOST = "staging-wwwcdn.us-east-1.shapediver.com";
 const DEV_PLATFORM_HOST = "dev-wwwcdn.us-east-1.shapediver.com";
 const SANDBOX_PLATFORM_HOST = "sandbox-wwwcdn.us-east-1.shapediver.com";
 
 const urlSearchParams = new URLSearchParams(window.location.search);
-const useSandboxPlatform = urlSearchParams.get("useSandboxPlatform") === "true";
-const useStagingPlatform = urlSearchParams.get("useStagingPlatform") === "true";
-const useDevPlatform = urlSearchParams.get("useDevPlatform") === "true";
+const useSandboxPlatform =
+	urlSearchParams.get(QUERYPARAM_USE_SANDBOX_PLATFORM) === "true";
+const useStagingPlatform =
+	urlSearchParams.get(QUERYPARAM_USE_STAGING_PLATFORM) === "true";
+const useDevPlatform =
+	urlSearchParams.get(QUERYPARAM_USE_DEV_PLATFORM) === "true";
 const localhostRunningInPlatform =
-	urlSearchParams.get("localhostRunningInPlatform") === "true";
+	urlSearchParams.get(QUERYPARAM_LOCALHOST_RUNNING_IN_PLATFORM) === "true";
 
 /**
  * Get the default platform URL based on the current hostname.

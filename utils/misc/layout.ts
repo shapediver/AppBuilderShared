@@ -101,7 +101,7 @@ export function createGridLayout(props: GridLayoutProps): React.CSSProperties {
 
 	gridTemplateAreas = gridTemplateAreas.trim();
 
-	// console.debug("gridTemplateAreas", gridTemplateAreas);
+	// Logger.debug("gridTemplateAreas", gridTemplateAreas);
 
 	return {
 		gridTemplateAreas,

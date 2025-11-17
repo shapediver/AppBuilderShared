@@ -8,6 +8,7 @@ import {
 	TSavedStateEmbed,
 	TSavedStateQueryPropsExt,
 } from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {defineFilter} from "@AppBuilderShared/utils/platform/filter";
 import {
 	SdPlatformRequestSavedStatePatch,
@@ -43,7 +44,7 @@ export const useShapeDiverStorePlatformSavedStates =
 							body: SdPlatformRequestSavedStatePatch,
 						) => {
 							if (!clientRef) {
-								console.warn(
+								Logger.warn(
 									`Updating saved state ${data.id} skipped because platform client is not available.`,
 								);
 								return;
@@ -72,7 +73,7 @@ export const useShapeDiverStorePlatformSavedStates =
 						},
 						delete: async () => {
 							if (!clientRef) {
-								console.warn(
+								Logger.warn(
 									`Deleting saved state ${data.id} skipped because platform client is not available.`,
 								);
 								return;

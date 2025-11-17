@@ -18,6 +18,7 @@ import {
 	StargateFileParamPrefix,
 	StargateStatusColorTypeEnum,
 } from "@AppBuilderShared/types/shapediver/stargate";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	ActionIcon,
 	ActionIconProps,
@@ -201,7 +202,7 @@ export default function ParameterFileInputComponent(
 					),
 				)
 				.catch((error) =>
-					console.error(
+					Logger.error(
 						`Error getting filename for file with id ${value}`,
 						error,
 					),

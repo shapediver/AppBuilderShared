@@ -9,6 +9,7 @@ import {
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {validateStringParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {Textarea, TextInput, useProps} from "@mantine/core";
 import React, {useCallback, useContext, useEffect, useMemo} from "react";
 import SelectComponent from "./select/SelectComponent";
@@ -40,7 +41,7 @@ export default function ParameterStringComponent(
 				const selectSettings = result.data.selectSettings;
 				return {lines: result.data.lines, selectSettings};
 			} else {
-				console.warn(
+				Logger.warn(
 					`Invalid settings for parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 				);
 				return {lines: undefined}; // Return undefined when validation fails

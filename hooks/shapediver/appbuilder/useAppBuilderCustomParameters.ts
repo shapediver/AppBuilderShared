@@ -7,6 +7,7 @@ import {
 	IAcceptRejectModeSelector,
 	IGenericParameterExecutor,
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {ISessionApi, PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useCallback, useContext, useEffect, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -142,7 +143,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 						true,
 					);
 				} else {
-					console.warn(
+					Logger.warn(
 						`setUiValue failed for "${CUSTOM_DATA_INPUT_NAME}" parameter ${appBuilderParam.definition.id}, the value is not valid.`,
 					);
 				}
@@ -163,7 +164,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 						true,
 					);
 				} else {
-					console.warn(
+					Logger.warn(
 						`setUiValue failed for "${CUSTOM_DATA_INPUT_NAME}" parameter ${appBuilderFileParam.definition.id}, the value is not valid.`,
 					);
 				}
@@ -173,7 +174,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 					message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
 				});
 			} else {
-				console.warn(
+				Logger.warn(
 					`Could not find a suitable parameter named "${CUSTOM_DATA_INPUT_NAME}" whose type is 'String' or 'File'!`,
 				);
 			}
@@ -219,7 +220,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 						message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
 					});
 				} else {
-					console.warn(
+					Logger.warn(
 						`Could not find a suitable parameter named "${CUSTOM_DATA_INPUT_NAME}" whose type is 'String' or 'File'!`,
 					);
 				}

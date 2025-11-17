@@ -195,7 +195,7 @@ export default function ParameterSliderComponent(
 					blurEvent ? undefined : restoreFocus,
 				);
 				if (blurEvent) onBlurHandler();
-				//console.debug(`Committing change to ${state.valid}`);
+				//Logger.debug(`Committing change to ${state.valid}`);
 				return;
 			}
 			if (state.latest.floatValue === undefined) {
@@ -210,7 +210,7 @@ export default function ParameterSliderComponent(
 							previous: state.previous,
 						});
 						blurEvent.target.focus();
-						//console.debug(`Resetting value to ${state.previous}`);
+						//Logger.debug(`Resetting value to ${state.previous}`);
 					}
 				}
 				return;
@@ -225,7 +225,7 @@ export default function ParameterSliderComponent(
 				valid: clamped,
 			});
 			blurEvent?.target.focus();
-			//console.debug(`Clamping ${state.latest.floatValue} to ${clamped}`);
+			//Logger.debug(`Clamping ${state.latest.floatValue} to ${clamped}`);
 		},
 		[],
 	);
