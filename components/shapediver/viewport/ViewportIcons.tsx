@@ -60,6 +60,16 @@ export const defaultStyleProps: ViewportIconsOptionalProps = {
 	enableHistoryMenuButton: true,
 };
 
+export type ShowButtons = {
+	history?: boolean;
+	reset?: boolean;
+	ar?: boolean;
+	cameras?: boolean;
+	fullscreen?: boolean;
+	zoom?: boolean;
+	historyMenu?: boolean;
+};
+
 export default function ViewportIcons(
 	props: ViewportIconsProps & ViewportIconsOptionalProps,
 ) {
@@ -94,6 +104,28 @@ export default function ViewportIcons(
 		enableZoomBtn,
 		enableHistoryMenuButton,
 	} = useProps("ViewportIcons", defaultStyleProps, rest);
+
+	/* Convert bad naming enable{Name}Buttons for compatibility */
+	const showButtons = useMemo<ShowButtons>(
+		() => ({
+			history: enableHistoryButtons,
+			reset: enableResetButton,
+			ar: enableArBtn,
+			cameras: enableCamerasBtn,
+			fullscreen: enableFullscreenBtn,
+			zoom: enableZoomBtn,
+			historyMenu: enableHistoryMenuButton,
+		}),
+		[
+			enableHistoryButtons,
+			enableResetButton,
+			enableArBtn,
+			enableCamerasBtn,
+			enableFullscreenBtn,
+			enableZoomBtn,
+			enableHistoryMenuButton,
+		],
+	);
 
 	const {viewportId: defaultViewportId} = useViewportId();
 	const [iconsVisible, setIconsVisible] = useState(true);
@@ -151,15 +183,8 @@ export default function ViewportIcons(
 			executing,
 			hasPendingChanges,
 			iconsVisible,
-			enableResetButton,
-			enableImportExportButtons,
-			enableModelStateButtons,
-			enableHistoryButtons,
-			enableArBtn,
-			enableCamerasBtn,
-			enableFullscreenBtn,
-			enableZoomBtn,
-			enableHistoryMenuButton,
+			enableImportExportButtons, // Manages visibility inside HistoryMenuButton
+			enableModelStateButtons, // Manages visibility inside HistoryMenuButton
 			fullscreenId: fullscreenId || "viewer-fullscreen-area",
 			color,
 			colorDisabled,
@@ -175,15 +200,8 @@ export default function ViewportIcons(
 			executing,
 			hasPendingChanges,
 			iconsVisible,
-			enableResetButton,
-			enableImportExportButtons,
 			enableModelStateButtons,
 			enableHistoryButtons,
-			enableArBtn,
-			enableCamerasBtn,
-			enableFullscreenBtn,
-			enableZoomBtn,
-			enableHistoryMenuButton,
 			fullscreenId,
 			color,
 			colorDisabled,
@@ -199,6 +217,7 @@ export default function ViewportIcons(
 			kind: ViewportIconButtonEnum,
 			componentContext: any,
 			buttonContext: any,
+			showButtons: ShowButtons,
 		) => {
 			const {
 				viewport,
@@ -219,29 +238,28 @@ export default function ViewportIcons(
 
 			switch (kind) {
 				case ViewportIconButtonEnum.Ar:
-					if (!enableArBtn) return null;
+					if (!showButtons.ar) return null;
 					return React.createElement(ButtonComponent, {
 						key: "ar",
 						viewport,
 						...commonProps,
 					});
 				case ViewportIconButtonEnum.Zoom:
-					if (!enableZoomBtn) return null;
+					if (!showButtons.zoom) return null;
 					return React.createElement(ButtonComponent, {
 						key: "zoom",
 						viewport,
 						...commonProps,
 					});
 				case ViewportIconButtonEnum.Fullscreen:
-					if (!enableFullscreenBtn) return null;
+					if (!showButtons.fullscreen) return null;
 					return React.createElement(ButtonComponent, {
 						key: "fullscreen",
 						fullscreenId,
-						enableFullscreenBtn: true,
 						...commonProps,
 					});
 				case ViewportIconButtonEnum.Cameras:
-					if (!enableCamerasBtn) return null;
+					if (!showButtons.cameras) return null;
 					return React.createElement(ButtonComponent, {
 						key: "cameras",
 						viewport,
@@ -249,7 +267,7 @@ export default function ViewportIcons(
 						...commonProps,
 					});
 				case ViewportIconButtonEnum.Undo:
-					if (!enableHistoryButtons) return null;
+					if (!showButtons.history) return null;
 					return React.createElement(ButtonComponent, {
 						key: "undo",
 						disabled:
@@ -259,7 +277,7 @@ export default function ViewportIcons(
 						...commonProps,
 					});
 				case ViewportIconButtonEnum.Redo:
-					if (!enableHistoryButtons) return null;
+					if (!showButtons.history) return null;
 					return React.createElement(ButtonComponent, {
 						key: "redo",
 						disabled:
@@ -269,7 +287,7 @@ export default function ViewportIcons(
 						...commonProps,
 					});
 				case ViewportIconButtonEnum.Reload:
-					if (!enableResetButton) return null;
+					if (!showButtons.reset) return null;
 					return React.createElement(ButtonComponent, {
 						key: "reload",
 						disabled:
@@ -283,7 +301,7 @@ export default function ViewportIcons(
 						...commonProps,
 					});
 				case ViewportIconButtonEnum.HistoryMenu:
-					if (hideJsonMenu || !enableHistoryMenuButton) return null;
+					if (hideJsonMenu || !showButtons.historyMenu) return null;
 					return React.createElement(ButtonComponent, {
 						key: "historyMenu",
 						disabled:
@@ -306,6 +324,7 @@ export default function ViewportIcons(
 					item.button.type,
 					componentContext,
 					buttonContext,
+					showButtons,
 				);
 				if (button) sections.push(button);
 			} else if (item.type === "group") {
@@ -316,6 +335,7 @@ export default function ViewportIcons(
 							buttonDef.type,
 							componentContext,
 							buttonContext,
+							showButtons,
 						);
 						if (button) groupButtons.push(button);
 					});
@@ -353,7 +373,7 @@ export default function ViewportIcons(
 		});
 
 		return sections;
-	}, [layout, componentContext, buttonContext, dividerProps]);
+	}, [layout, componentContext, buttonContext, dividerProps, showButtons]);
 
 	// Prevent event propagation to avoid triggering viewport interactions
 	// when touching the icons.
