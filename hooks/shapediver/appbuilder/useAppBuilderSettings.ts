@@ -114,6 +114,15 @@ export default function useAppBuilderSettings(
 			paramValues.set(key, value);
 	});
 
+	// TODO SS-7401: if there is a savedStateId query parameter, load the saved state,
+	// and set the initialParameterValues of the first session accordingly.
+	// "useQuery" from the saved state store shall be used for this purpose!
+	// In case of iframe embedding, the useResolveAppBuilderSessions hook makes the
+	// iframe embedding API call, which also returns saved states. The hook adds
+	// these saved states to the saved state store, so they can be used here.
+	const initialParameterValues: {[key: string]: string} | undefined =
+		undefined;
+
 	// define fallback session settings to be used in case loading from json failed
 	// in case slug and optionally platformUrl are defined, use them
 	// otherwise, if ticket and modelViewUrl are defined, use them
@@ -125,9 +134,15 @@ export default function useAppBuilderSettings(
 						slug,
 						platformUrl: platformUrl ?? getDefaultPlatformUrl(),
 						modelStateId,
+						initialParameterValues,
 					} as IAppBuilderSettingsSession)
 				: ticket && modelViewUrl
-					? {id: "default", ticket, modelViewUrl, modelStateId}
+					? {
+							id: "default",
+							ticket,
+							modelViewUrl,
+							modelStateId,
+						}
 					: undefined,
 		[slug, platformUrl, ticket, modelViewUrl],
 	);
@@ -257,6 +272,9 @@ export default function useAppBuilderSettings(
 		}
 	}
 
+	// TODO SS-7401: if we are loading an initial saved state, we must wait
+	// until the initialParameterValues property has been set accordingly.
+	// "loading" must be set to true until then.
 	return {
 		settings: resolvedSettings,
 		error: error || resolveError,
