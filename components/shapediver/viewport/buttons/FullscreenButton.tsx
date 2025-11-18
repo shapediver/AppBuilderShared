@@ -6,14 +6,12 @@ import ViewportIconButton from "./ViewportIconButton";
 
 interface FullscreenButtonProps extends CommonButtonProps {
 	fullscreenId?: string;
-	enableFullscreenBtn?: boolean;
 }
 
 export default function FullscreenButton({
 	fullscreenId = "viewer-fullscreen-area",
-	enableFullscreenBtn = true,
 }: FullscreenButtonProps) {
-	const isFullscreenDisabled = !enableFullscreenBtn || isIPhone();
+	const isFullscreenDisabled = isIPhone();
 	const {makeElementFullscreen, isFullScreenAvailable} =
 		useFullscreen(fullscreenId);
 	const disabled = isFullscreenDisabled || !isFullScreenAvailable.current;
