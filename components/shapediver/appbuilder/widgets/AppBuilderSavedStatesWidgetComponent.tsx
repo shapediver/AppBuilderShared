@@ -24,9 +24,10 @@ import {
 	StackProps,
 	useProps,
 } from "@mantine/core";
-import React, {useContext, useEffect, useMemo, useState} from "react";
+import React, {useContext, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
+import {Logger} from "~/shared/utils/logger";
 
 interface StyleProps {
 	selectProps?: Partial<SelectComponentPropsExt> & {
@@ -101,21 +102,13 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 
 	const context = useContext(AppBuilderContainerContext);
 
-	const {
-		useQuery,
-		items: savedStateItems,
-		selectedSavedStateId,
-		setSelectedSavedStateId,
-		setIsExecuting,
-	} = useShapeDiverStorePlatformSavedStates(
-		useShallow((state) => ({
-			useQuery: state.useQuery,
-			items: state.items,
-			selectedSavedStateId: state.selectedSavedStateId,
-			setSelectedSavedStateId: state.setSelectedSavedStateId,
-			setIsExecuting: state.setIsExecuting,
-		})),
-	);
+	const {useQuery, items: savedStateItems} =
+		useShapeDiverStorePlatformSavedStates(
+			useShallow((state) => ({
+				useQuery: state.useQuery,
+				items: state.items,
+			})),
+		);
 
 	const {
 		loading,
@@ -187,27 +180,15 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 	}, [savedStateIds, savedStateItems]);
 
 	const [selectedValue, setSelectedValue] = useState<string | null>(null);
-
-	// Sync selectedValue with store changes
-	useEffect(() => {
-		if (namespace) {
-			const storeValue = selectedSavedStateId[namespace];
-			setSelectedValue(storeValue ?? null);
-		}
-	}, [namespace, selectedSavedStateId]);
-
 	const handleChange = async (value: string | null) => {
 		if (namespace && value) {
 			// Set selected saved state ID
-			setSelectedSavedStateId(namespace, value);
+			setSelectedValue(value);
 
 			// Apply saved state parameters
 			const savedStateItem = savedStateItems[value];
 			if (savedStateItem?.data?.parameters) {
 				try {
-					// Set isExecuting flag to prevent clearing selection during parameter changes
-					setIsExecuting(namespace, true);
-
 					await batchParameterValueUpdate(
 						{
 							[namespace]: savedStateItem.data.parameters,
@@ -215,14 +196,11 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 						false,
 					);
 				} catch (error) {
-					console.error("Failed to apply saved state:", error);
-				} finally {
-					// Clear isExecuting flag after parameters are applied
-					setIsExecuting(namespace, false);
+					Logger.error("Failed to apply saved state:", error);
 				}
 			}
-		} else if (namespace) {
-			setSelectedSavedStateId(namespace, undefined);
+		} else {
+			setSelectedValue(null);
 		}
 	};
 

@@ -1,6 +1,5 @@
 import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";
 import {
 	IAppBuilderSettingsJsonSession,
 	IAppBuilderSettingsSession,
@@ -19,6 +18,7 @@ import {useShallow} from "zustand/react/shallow";
 
 import {QUERYPARAM_REDIRECT} from "@AppBuilderShared/types/shapediver/queryparams";
 import {MODELS} from "@modelstorage";
+import {useShapeDiverStorePlatformSavedStates} from "~/shared/store/useShapeDiverStorePlatformSavedStates";
 
 // Type assertion for MODELS
 const ModelStorage = MODELS as unknown as Record<
@@ -40,10 +40,8 @@ export default function useResolveAppBuilderSessions(
 		})),
 	);
 
-	const {handleInitialSavedState} = useShapeDiverStorePlatformSavedStates(
-		useShallow((state) => ({
-			handleInitialSavedState: state.handleInitialSavedState,
-		})),
+	const {addItem: addSavedState} = useShapeDiverStorePlatformSavedStates(
+		useShallow((state) => ({addItem: state.addItem})),
 	);
 
 	// when running on the platform, try to get a token (refresh token grant)
@@ -51,7 +49,7 @@ export default function useResolveAppBuilderSessions(
 		// in case query parameter QUERYPARAM_REDIRECT is set to "0", do not redirect
 		// on authentication failure
 		const params = new URLSearchParams(window.location.search);
-		const redirect = params.get(QUERYPARAM_REDIRECT) === "0" ? false : true;
+		const redirect = params.get(QUERYPARAM_REDIRECT) !== "0";
 
 		return await authenticate(redirect);
 	});
@@ -137,7 +135,6 @@ export default function useResolveAppBuilderSessions(
 					};
 					const model = await getModel();
 					setCurrentModel(model);
-					await handleInitialSavedState(session.id);
 					document.title = `${model?.title ?? model?.slug} | ShapeDiver App Builder`;
 
 					return {
@@ -178,7 +175,10 @@ export default function useResolveAppBuilderSessions(
 					};
 					const iframeData = await getIframeData();
 					setCurrentModel(iframeData.model);
-					await handleInitialSavedState(session.id);
+					for (const savedState of iframeData.model.saved_states ??
+						[]) {
+						addSavedState(savedState);
+					}
 
 					return {
 						acceptRejectMode:
