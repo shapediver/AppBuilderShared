@@ -3,6 +3,8 @@ import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/
 import {ISelectionParameterProps} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
+const selectedNodeNamesCache: {[key: string]: string[]} = {};
+
 export function useAnchorSelection(
 	selectionProperties:
 		| Omit<
@@ -75,11 +77,22 @@ export function useAnchorSelection(
 		};
 	}, [selectionProperties]);
 
-	const {selectedNodeNames} = useSelection(
-		viewportId,
-		cleanSelectionProps,
-		selectionActive && selectionAllowed,
-	);
+	const {selectedNodeNames, setSelectedNodeNamesAndRestoreSelection} =
+		useSelection(
+			viewportId,
+			cleanSelectionProps,
+			selectionActive && selectionAllowed,
+		);
+
+	/**
+	 * Effect to restore the selected node names from the cache when the viewportId or id changes.
+	 * This ensures that the selection is preserved when the hook reloads.
+	 */
+	useEffect(() => {
+		setSelectedNodeNamesAndRestoreSelection(
+			selectedNodeNamesCache[`${viewportId}-${id}`] || [],
+		);
+	}, [viewportId, id]);
 
 	const updateShowContentCallback = useCallback(
 		(selectedNodeNames: string[]) => {
@@ -100,6 +113,7 @@ export function useAnchorSelection(
 	}, [updateShowContentCallback]);
 
 	useEffect(() => {
+		selectedNodeNamesCache[`${viewportId}-${id}`] = selectedNodeNames;
 		updateShowContentCallbackRef.current(selectedNodeNames);
 	}, [selectedNodeNames]);
 }
