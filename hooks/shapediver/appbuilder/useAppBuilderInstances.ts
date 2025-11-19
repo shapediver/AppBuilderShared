@@ -15,6 +15,7 @@ import {IParameterStore} from "@AppBuilderShared/types/store/shapediverStorePara
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {ResOutput, ResOutputContent} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
+	assignMaterialFromDatabase,
 	ISessionApi,
 	ITreeNode,
 	SessionOutputData,
@@ -781,6 +782,10 @@ const createInstance = (
 
 			instanceNode.addChild(transformationNode);
 		});
+
+		// if there is a material database, we need to apply it
+		if (assignMaterialFromDatabase)
+			assignMaterialFromDatabase(instanceNode);
 
 		// send a progress update
 		progressCallback({
