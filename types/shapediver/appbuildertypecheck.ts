@@ -1053,6 +1053,7 @@ const IAppBuilderSettingsSessionSchema = z.object({
 	modelStateId: z.string().optional(),
 	instance: z.boolean().optional(),
 	loadOnFirstUse: z.boolean().optional(),
+	keepInStore: z.boolean().optional(),
 });
 
 // Zod type definition for IAppBuilderSettingsSettings

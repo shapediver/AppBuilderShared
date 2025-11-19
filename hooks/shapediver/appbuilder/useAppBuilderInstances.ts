@@ -218,6 +218,7 @@ export function useAppBuilderInstances(props: Props) {
 		).forEach((s) => {
 			s.loadOutputs = false;
 			s.registerParametersAndExports = false;
+			s.keepInStore = true;
 		});
 		return sessionData;
 	}, [sessionData]);
