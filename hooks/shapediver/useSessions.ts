@@ -101,7 +101,8 @@ export function useSessions(
 						});
 					};
 
-					promises.push(closeSession(p.id, {onError: setError}));
+					if (!p.keepInStore)
+						promises.push(closeSession(p.id, {onError: setError}));
 				});
 				await Promise.all(promises);
 
