@@ -19,7 +19,9 @@
 
 .appShellGridAreaBottom {
 	grid-area: bottom;
-	overflow: auto;
+	position: relative;
+	overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .appShellGridAreaBottomPortrait {
