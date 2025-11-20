@@ -1,11 +1,11 @@
 import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
 import useResolveAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder//useResolveAppBuilderSettings";
+import useQuerySavedState from "@AppBuilderShared/hooks/shapediver/useQuerySavedState";
 import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
 import {
 	IAppBuilderSettings,
 	IAppBuilderSettingsJson,
 	IAppBuilderSettingsJsonSession,
-	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {validateAppBuilderSettingsJson} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import {
@@ -15,13 +15,13 @@ import {
 	QUERYPARAM_MODELVIEWURL,
 	QUERYPARAM_PARAMVALUE_PREFIX,
 	QUERYPARAM_PLATFORMURL,
+	QUERYPARAM_SAVEDSTATEID,
 	QUERYPARAM_SETTINGSURL,
 	QUERYPARAM_SLUG,
 	QUERYPARAM_TEMPLATE,
 	QUERYPARAM_TICKET,
 } from "@AppBuilderShared/types/shapediver/queryparams";
 import {Logger} from "@AppBuilderShared/utils/logger";
-import {getDefaultPlatformUrl} from "@AppBuilderShared/utils/platform/environment";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useEffect, useMemo} from "react";
 
@@ -106,6 +106,17 @@ export default function useAppBuilderSettings(
 			? parameters.get(QUERYPARAM_MODELSTATEID)!
 			: undefined;
 	const context = parameters.get(QUERYPARAM_CONTEXT);
+	const savedStateId = parameters.get(QUERYPARAM_SAVEDSTATEID);
+	const {initialSavedState, queryParamSession} = useQuerySavedState(
+		savedStateId,
+		{
+			slug,
+			platformUrl,
+			ticket,
+			modelViewUrl,
+			modelStateId,
+		},
+	);
 
 	// get all query parameters starting with QUERYPARAM_PARAMVALUE_PREFIX
 	const paramValues = new Map<string, string>();
@@ -113,39 +124,6 @@ export default function useAppBuilderSettings(
 		if (key.startsWith(QUERYPARAM_PARAMVALUE_PREFIX))
 			paramValues.set(key, value);
 	});
-
-	// TODO SS-7401: if there is a savedStateId query parameter, load the saved state,
-	// and set the initialParameterValues of the first session accordingly.
-	// "useQuery" from the saved state store shall be used for this purpose!
-	// In case of iframe embedding, the useResolveAppBuilderSessions hook makes the
-	// iframe embedding API call, which also returns saved states. The hook adds
-	// these saved states to the saved state store, so they can be used here.
-	const initialParameterValues: {[key: string]: string} | undefined =
-		undefined;
-
-	// define fallback session settings to be used in case loading from json failed
-	// in case slug and optionally platformUrl are defined, use them
-	// otherwise, if ticket and modelViewUrl are defined, use them
-	const queryParamSession = useMemo<IAppBuilderSettingsSession | undefined>(
-		() =>
-			slug
-				? ({
-						id: "default",
-						slug,
-						platformUrl: platformUrl ?? getDefaultPlatformUrl(),
-						modelStateId,
-						initialParameterValues,
-					} as IAppBuilderSettingsSession)
-				: ticket && modelViewUrl
-					? {
-							id: "default",
-							ticket,
-							modelViewUrl,
-							modelStateId,
-						}
-					: undefined,
-		[slug, platformUrl, ticket, modelViewUrl],
-	);
 
 	// define theme overrides based on query string params
 	const themeOverrides = useMemo(() => {
@@ -173,7 +151,7 @@ export default function useAppBuilderSettings(
 	const sessionsArray = useMemo<
 		IAppBuilderSettingsJsonSession[] | undefined
 	>(() => {
-		if (loading) return undefined;
+		if (loading || initialSavedState.status === "loading") return undefined;
 
 		if (!value) {
 			// No JSON loaded, use query params or default session
@@ -272,13 +250,11 @@ export default function useAppBuilderSettings(
 		}
 	}
 
-	// TODO SS-7401: if we are loading an initial saved state, we must wait
-	// until the initialParameterValues property has been set accordingly.
-	// "loading" must be set to true until then.
 	return {
 		settings: resolvedSettings,
 		error: error || resolveError,
-		loading: loading || resolveLoading,
+		loading:
+			loading || resolveLoading || initialSavedState.status === "loading",
 		hasSettings: parameters.size > 0,
 		hasSession:
 			(settings?.sessions && settings.sessions.length > 0) ||
