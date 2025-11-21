@@ -104,7 +104,7 @@ export default function AppBuilderFallbackContainerComponent({
 						key={2}
 						namespace={namespace}
 						queryParams={{
-							sorters: {created_at: SdPlatformSortingOrder.Asc},
+							sorters: {created_at: SdPlatformSortingOrder.Desc},
 							limit: 5,
 						}}
 						filterByModel={true}
