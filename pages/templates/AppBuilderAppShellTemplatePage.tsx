@@ -213,6 +213,7 @@ export default function AppBuilderAppShellTemplatePage(
 						desktop: !hasNavbarContent,
 					},
 				}}
+				className={classes.appShellRoot}
 				// We need to define the background color here, because the corresponding element
 				// is used for fullscreen mode and would otherwise be transparent (show as black).
 				style={{backgroundColor: "var(--mantine-color-body)"}}
@@ -268,7 +269,7 @@ export default function AppBuilderAppShellTemplatePage(
 					</section>
 					{!right || showRightInNavbar ? undefined : (
 						<section
-							className={`${!showRightAtBottom ? classes.appShellGridAreaRight : classes.appShellGridAreaBottomPortrait}`}
+							className={`${classes.addShellWidgetsContainer} ${!showRightAtBottom ? classes.appShellGridAreaRight : classes.appShellGridAreaBottomPortrait}`}
 							data-with-border={rightBorder ? true : undefined}
 						>
 							<AppBuilderContainerWrapper name="right">
@@ -277,7 +278,9 @@ export default function AppBuilderAppShellTemplatePage(
 						</section>
 					)}
 					{bottom && showBottomInGrid ? (
-						<section className={classes.appShellGridAreaBottom}>
+						<section
+							className={`${classes.addShellWidgetsContainer} ${classes.appShellGridAreaBottom}`}
+						>
 							<AppBuilderContainerWrapper
 								orientation={
 									bottom.hints?.preferVertical

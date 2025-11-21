@@ -1,3 +1,9 @@
+.appShellRoot .addShellWidgetsContainer {
+	position: relative;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
 .appShellMain {
 	display: grid;
 }
@@ -7,10 +13,7 @@
 }
 
 .appShellGridAreaRight {
-    position: relative;
 	grid-area: right;
-	overflow-y: auto;
-    overflow-x: hidden;
 	&[data-with-border] {
 		border-inline-start: calc(0.0625rem * var(--mantine-scale)) solid
 			var(--app-shell-border-color);
@@ -19,9 +22,6 @@
 
 .appShellGridAreaBottom {
 	grid-area: bottom;
-	position: relative;
-	overflow-y: auto;
-    overflow-x: hidden;
 }
 
 .appShellGridAreaBottomPortrait {
@@ -37,11 +37,11 @@
 }
 
 /**
- * Breakpoints defined by the theme (CSS variables) can't be used in media queries, 
- * see https://mantine.dev/styles/responsive/, therefore we have to hard-code them here. 
- * 
- * The calc function can't be used in responsive properties, therefore we change the 
- * definition of the class for the main and aside areas based on media queries here. 
+ * Breakpoints defined by the theme (CSS variables) can't be used in media queries,
+ * see https://mantine.dev/styles/responsive/, therefore we have to hard-code them here.
+ *
+ * The calc function can't be used in responsive properties, therefore we change the
+ * definition of the class for the main and aside areas based on media queries here.
  */
 @media (max-width: 36em) {
 	.appShellMaxHeightBelowHeader {

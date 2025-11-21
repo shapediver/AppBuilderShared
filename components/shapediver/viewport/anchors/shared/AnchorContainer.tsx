@@ -46,6 +46,7 @@ import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
 import {useCanvasSize} from "./useCanvasSize";
 import {cleanUnit} from "./utils";
 
+import shellClasses from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage.module.css";
 import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {defaultStyleProps as ViewportIconButtonDefaultStyleProps} from "../../buttons/ViewportIconButton";
 import {defaultStyleProps as ViewportIconsDefaultStyleProps} from "../../ViewportIcons";
@@ -535,7 +536,12 @@ export function useAnchorContainer({
 					overflow: "auto",
 				}}
 			>
-				<ScrollArea h={"100%"} w={"100%"} type="auto">
+				<ScrollArea
+					h={"100%"}
+					w={"100%"}
+					className={shellClasses.addShellWidgetsContainer}
+					type="auto"
+				>
 					{element}
 				</ScrollArea>
 			</Group>
