@@ -6,6 +6,7 @@ export const QUERYPARAM_DISABLEFALLBACKUI = "disableFallbackUi";
 export const QUERYPARAM_TEMPLATE = "template";
 export const QUERYPARAM_SETTINGSURL = "g";
 export const QUERYPARAM_MODELSTATEID = "modelStateId";
+export const QUERYPARAM_SAVEDSTATEID = "savedStateId";
 export const QUERYPARAM_CONTEXT = "context";
 export const QUERYPARAM_PARAMVALUE_PREFIX = "_";
 export const QUERYPARAM_UTM_SOURCE = "utm_source";

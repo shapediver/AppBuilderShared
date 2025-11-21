@@ -781,6 +781,11 @@ export interface IAppBuilderWidgetPropsDesktopClientOutputs {
 	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
 }
 
+/** Properties of a saved states widget. */
+export interface IAppBuilderWidgetPropsSavedStates {
+	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
+}
+
 /**
  * Properties of a generic accordion widget, grouping further widgets
  * into an accordion.

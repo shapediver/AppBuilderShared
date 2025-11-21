@@ -56,7 +56,7 @@ export type IPlatformPagedItemQueryProps<TEmbed, TQueryPropsExt> = {
 	/** Parameters for the platform query. */
 	queryParams: Pick<
 		SdPlatformQueryParameters<TEmbed>,
-		"embed" | "filters" | "sorters"
+		"embed" | "filters" | "sorters" | "limit"
 	>;
 } & TQueryPropsExt & {
 		/** The key(s) used for caching the query (used for cache pruning). */
