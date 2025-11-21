@@ -1,25 +1,14 @@
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";
-import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {getDefaultPlatformUrl} from "@AppBuilderShared/utils/platform/environment";
 import {
 	SdPlatformQueryResponse,
 	SdPlatformResponseSavedStatePublic,
 } from "@shapediver/sdk.platform-api-sdk-v1";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import useAsync from "~/shared/hooks/misc/useAsync";
 
-export default function useQuerySavedState(
-	savedStateId: string | null,
-	options?: {
-		slug?: string | null;
-		platformUrl?: string | null;
-		ticket?: string | null;
-		modelViewUrl?: string | null;
-		modelStateId?: string;
-	},
-) {
+export default function useQuerySavedState(savedStateId: string | null) {
 	const [initialSavedState, setInitialSavedState] = useState<{
 		status: "loading" | "success" | "error";
 		data: SdPlatformResponseSavedStatePublic | undefined;
@@ -109,46 +98,5 @@ export default function useQuerySavedState(
 		},
 	);
 
-	// define fallback session settings to be used in case loading from json failed
-	// in case slug and optionally platformUrl are defined, use them
-	// otherwise, if ticket and modelViewUrl are defined, use them
-	const queryParamSession = useMemo<
-		IAppBuilderSettingsSession | undefined
-	>(() => {
-		if (!options) return undefined;
-
-		const {slug, platformUrl, ticket, modelViewUrl, modelStateId} = options;
-		const initialParameterValues =
-			initialSavedState.status === "success" &&
-			initialSavedState.data?.parameters
-				? initialSavedState.data.parameters
-				: undefined;
-
-		return slug
-			? ({
-					id: "default",
-					slug,
-					platformUrl: platformUrl ?? getDefaultPlatformUrl(),
-					modelStateId,
-					initialParameterValues,
-				} as IAppBuilderSettingsSession)
-			: ticket && modelViewUrl
-				? {
-						id: "default",
-						ticket,
-						modelViewUrl,
-						modelStateId,
-						initialParameterValues,
-					}
-				: undefined;
-	}, [
-		options?.slug,
-		options?.platformUrl,
-		options?.ticket,
-		options?.modelViewUrl,
-		options?.modelStateId,
-		initialSavedState,
-	]);
-
-	return {initialSavedState, queryParamSession};
+	return {initialSavedState};
 }

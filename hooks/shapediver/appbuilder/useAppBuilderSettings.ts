@@ -6,6 +6,7 @@ import {
 	IAppBuilderSettings,
 	IAppBuilderSettingsJson,
 	IAppBuilderSettingsJsonSession,
+	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {validateAppBuilderSettingsJson} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import {
@@ -22,6 +23,7 @@ import {
 	QUERYPARAM_TICKET,
 } from "@AppBuilderShared/types/shapediver/queryparams";
 import {Logger} from "@AppBuilderShared/utils/logger";
+import {getDefaultPlatformUrl} from "@AppBuilderShared/utils/platform/environment";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useEffect, useMemo} from "react";
 
@@ -107,16 +109,42 @@ export default function useAppBuilderSettings(
 			: undefined;
 	const context = parameters.get(QUERYPARAM_CONTEXT);
 	const savedStateId = parameters.get(QUERYPARAM_SAVEDSTATEID);
-	const {initialSavedState, queryParamSession} = useQuerySavedState(
-		savedStateId,
-		{
-			slug,
-			platformUrl,
-			ticket,
-			modelViewUrl,
-			modelStateId,
-		},
-	);
+	const {initialSavedState} = useQuerySavedState(savedStateId);
+
+	const queryParamSession = useMemo<
+		IAppBuilderSettingsSession | undefined
+	>(() => {
+		const initialParameterValues =
+			initialSavedState.status === "success" &&
+			initialSavedState.data?.parameters
+				? initialSavedState.data.parameters
+				: undefined;
+
+		return slug
+			? ({
+					id: "default",
+					slug,
+					platformUrl: platformUrl ?? getDefaultPlatformUrl(),
+					modelStateId,
+					initialParameterValues,
+				} as IAppBuilderSettingsSession)
+			: ticket && modelViewUrl
+				? {
+						id: "default",
+						ticket,
+						modelViewUrl,
+						modelStateId,
+						initialParameterValues,
+					}
+				: undefined;
+	}, [
+		slug,
+		platformUrl,
+		ticket,
+		modelViewUrl,
+		modelStateId,
+		initialSavedState,
+	]);
 
 	// get all query parameters starting with QUERYPARAM_PARAMVALUE_PREFIX
 	const paramValues = new Map<string, string>();
