@@ -8,6 +8,7 @@ import {
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {useEffect, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import useAsync from "~/shared/hooks/misc/useAsync";
 
 export default function useQuerySavedState(
 	savedStateId: string | null,
@@ -24,13 +25,12 @@ export default function useQuerySavedState(
 		data: SdPlatformResponseSavedStatePublic | undefined;
 	}>({status: savedStateId ? "loading" : "success", data: undefined});
 
-	const {useQuery, items: savedStateItems} =
-		useShapeDiverStorePlatformSavedStates(
-			useShallow((state) => ({
-				useQuery: state.useQuery,
-				items: state.items,
-			})),
-		);
+	const {useQuery} = useShapeDiverStorePlatformSavedStates(
+		useShallow((state) => ({
+			useQuery: state.useQuery,
+			items: state.items,
+		})),
+	);
 
 	const {clientRef} = useShapeDiverStorePlatform(
 		useShallow((state) => ({
@@ -64,49 +64,50 @@ export default function useQuerySavedState(
 				},
 	);
 
-	// Trigger loading of the saved state if it's not already in the store
-	useEffect(() => {
-		if (initialSavedState.status !== "loading") return;
+	useAsync(
+		async () => {
+			if (initialSavedState.status !== "loading") return;
 
-		if (savedStateId && savedStateIds.length === 0 && !savedStateLoading) {
-			// Check if the saved state is already in the store
-			const isInStore = savedStateItems[savedStateId] !== undefined;
-			if (!isInStore) {
-				(
-					loadSavedState() as Promise<
-						| SdPlatformQueryResponse<SdPlatformResponseSavedStatePublic>
-						| Error
-						| undefined
-					>
-				).then(
-					(
-						response:
-							| SdPlatformQueryResponse<SdPlatformResponseSavedStatePublic>
-							| Error
-							| undefined,
-					) => {
-						if (!response || response instanceof Error) return;
-
-						const {
-							success,
-							data: {result},
-						} = response;
-						if (success && result && result.length > 0) {
-							setInitialSavedState({
-								status: "success",
-								data: result[0],
-							});
-						} else {
-							setInitialSavedState({
-								status: "error",
-								data: undefined,
-							});
-						}
-					},
-				);
+			if (
+				savedStateId &&
+				savedStateIds.length === 0 &&
+				!savedStateLoading
+			) {
+				return loadSavedState() as Promise<
+					| SdPlatformQueryResponse<SdPlatformResponseSavedStatePublic>
+					| Error
+					| undefined
+				>;
 			}
-		}
-	}, [savedStateId, savedStateLoading, initialSavedState, clientInitialized]);
+		},
+		[savedStateId, savedStateLoading, initialSavedState, clientInitialized],
+		{
+			onSuccess: (
+				response:
+					| SdPlatformQueryResponse<SdPlatformResponseSavedStatePublic>
+					| Error
+					| undefined,
+			) => {
+				if (!response || response instanceof Error) return;
+
+				const {
+					success,
+					data: {result},
+				} = response;
+				if (success && result && result.length > 0) {
+					setInitialSavedState({
+						status: "success",
+						data: result[0],
+					});
+				} else {
+					setInitialSavedState({
+						status: "error",
+						data: undefined,
+					});
+				}
+			},
+		},
+	);
 
 	// define fallback session settings to be used in case loading from json failed
 	// in case slug and optionally platformUrl are defined, use them

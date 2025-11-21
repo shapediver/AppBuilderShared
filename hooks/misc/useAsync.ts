@@ -11,11 +11,20 @@ import {useCallback, useEffect, useRef, useState} from "react";
  *
  * @param callback
  * @param dependencies
+ * @param events
+ * @param events.onLoading
+ * @param events.onError
+ * @param events.onSuccess
  * @returns
  */
 export default function useAsync<T>(
 	callback: () => Promise<T>,
 	dependencies: React.DependencyList = [],
+	events: {
+		onLoading?: () => void;
+		onError?: (error: any) => void;
+		onSuccess?: (value: T) => void;
+	} = {},
 ) {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<Error | undefined>();
@@ -24,13 +33,20 @@ export default function useAsync<T>(
 	const promiseChain = useRef(Promise.resolve());
 
 	const callbackMemoized = useCallback(() => {
+		events.onLoading?.();
 		setLoading(true);
 		setError(undefined);
 		setValue(undefined);
 
 		return callback()
-			.then(setValue)
-			.catch(setError)
+			.then((value) => {
+				events.onSuccess?.(value);
+				setValue(value);
+			})
+			.catch((error) => {
+				events.onError?.(error);
+				setError(error);
+			})
 			.finally(() => setLoading(false));
 	}, dependencies);
 
