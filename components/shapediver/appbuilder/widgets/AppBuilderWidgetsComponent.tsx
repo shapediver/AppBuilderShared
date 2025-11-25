@@ -24,12 +24,14 @@ import {
 	isLineChartWidget,
 	isProgressWidget,
 	isRoundChartWidget,
+	isSavedStatesWidget,
 	isSceneTreeExplorerWidget,
 	isStackUiWidget,
 	isTextWidget,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
+import AppBuilderSavedStatesWidgetComponent from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderSavedStatesWidgetComponent";
 import AppBuilderStackUiWidgetButtonComponent from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidget/AppBuilderStackUiWidgetButtonComponent";
 import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetComponent";
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
@@ -202,6 +204,14 @@ export default function AppBuilderWidgetsComponent({
 					return (
 						<AppBuilderSceneTreeExplorerWidgetComponent
 							key={i}
+							{...w.props}
+						/>
+					);
+				else if (isSavedStatesWidget(w))
+					return (
+						<AppBuilderSavedStatesWidgetComponent
+							key={i}
+							namespace={namespace}
 							{...w.props}
 						/>
 					);
