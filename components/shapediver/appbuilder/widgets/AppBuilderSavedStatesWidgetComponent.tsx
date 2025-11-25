@@ -10,6 +10,7 @@ import {
 	SelectComponentType,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {TSavedStateQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
+import {applySavedStateToUrl} from "@AppBuilderShared/utils/modifyUrl";
 import {
 	Alert,
 	Flex,
@@ -27,7 +28,6 @@ import {
 import React, {useContext, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
-import {QUERYPARAM_SAVEDSTATEID} from "~/shared/types/shapediver/queryparams";
 import {Logger} from "~/shared/utils/logger";
 
 interface StyleProps {
@@ -182,14 +182,8 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 
 	const [selectedValue, setSelectedValue] = useState<string | null>(null);
 	const handleChange = async (value: string | null) => {
-		// Update query parameter
-		const url = new URL(window.location.href);
-		if (value) {
-			url.searchParams.set(QUERYPARAM_SAVEDSTATEID, value);
-		} else {
-			url.searchParams.delete(QUERYPARAM_SAVEDSTATEID);
-		}
-		window.history.replaceState({}, "", url.toString());
+		// Update query parameter in URL
+		applySavedStateToUrl(value, true);
 
 		if (namespace && value) {
 			// Set selected saved state ID
