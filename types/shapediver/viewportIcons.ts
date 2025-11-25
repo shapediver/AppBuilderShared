@@ -66,10 +66,6 @@ export interface ViewportIconsOptionalProps {
 	 */
 	enableZoomBtn?: boolean;
 	/**
-	 * enable/disable the "history menu" button
-	 */
-	enableHistoryMenuButton?: boolean;
-	/**
 	 * color of the icons
 	 */
 	color?: string;
