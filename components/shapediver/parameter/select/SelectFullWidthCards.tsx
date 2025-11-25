@@ -14,9 +14,10 @@ import {
 import React, {useCallback, useMemo, useState} from "react";
 import Icon from "~/shared/components/ui/Icon";
 import {useCustomHeight} from "~/shared/hooks/shapediver/parameters/useCustomHeight";
+import {parameterMultiSelect} from "~/shared/utils/parameters/parameterMultiSelect";
+import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 import {
 	SelectCardStyleProps,
-	SelectComponentProps,
 	SelectGroupStyleProps,
 	SelectImageStyleProps,
 	SelectStackStyleProps,
@@ -73,7 +74,8 @@ export function SelectFullWidthCardsComponentThemeProps(
  * @see https://mantine.dev/core/card/
  */
 export default function SelectFullWidthCardsComponent(
-	props: SelectComponentProps & SelectFullWidthCardsComponentThemePropsType,
+	props: UniversalMultiSelectComponentProps &
+		SelectFullWidthCardsComponentThemePropsType,
 ) {
 	const {
 		value,
@@ -82,11 +84,18 @@ export default function SelectFullWidthCardsComponent(
 		disabled,
 		itemData,
 		settings,
+		multiselect,
 		bottomSection = <></>,
 		topSection = <></>,
 		onSearch,
 		...styleProps
 	} = props;
+
+	const {handleClick, isSelected} = parameterMultiSelect(
+		value,
+		onChange,
+		multiselect,
+	);
 
 	// style properties
 	const {
@@ -122,15 +131,6 @@ export default function SelectFullWidthCardsComponent(
 				};
 			}),
 		[items, itemData],
-	);
-
-	const handleCardClick = useCallback(
-		(cardValue: string, disabled: boolean | undefined) => {
-			if (!disabled) {
-				onChange(cardValue);
-			}
-		},
-		[onChange],
 	);
 
 	const getCardStyle = useCallback((card: (typeof cardData)[0]) => {
@@ -177,11 +177,11 @@ export default function SelectFullWidthCardsComponent(
 				<UnstyledButton
 					key={card.value}
 					disabled={disabled}
-					onClick={() => handleCardClick(card.value, disabled)}
-					aria-pressed={value === card.value}
+					onClick={() => !disabled && handleClick(card.value)}
+					aria-pressed={isSelected(card.value)}
 				>
 					<Card
-						className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${value === card.value ? classes.cardSelected : ""}`}
+						className={`${classes.card} ${disabled ? classes.cardDisabled : ""} ${isSelected(card.value) ? classes.cardSelected : ""}`}
 						style={getCardStyle(card)}
 						{...cardProps}
 						{...settings?.cardProps}

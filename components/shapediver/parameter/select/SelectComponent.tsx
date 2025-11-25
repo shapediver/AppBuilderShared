@@ -181,6 +181,7 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 				{...rest}
 				type={type}
 				scrollingApi={scrollingApi}
+				multiselect={false}
 			/>
 		);
 	else if (type === "buttonflex") {
@@ -194,7 +195,7 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	} else if (type === "imagedropdown") {
 		return <SelectImageDropDownComponent {...rest} />;
 	} else if (type === "fullwidthcards") {
-		return <SelectFullWidthCardsComponent {...rest} />;
+		return <SelectFullWidthCardsComponent {...rest} multiselect={false} />;
 	} else if (type === "carousel") {
 		return <SelectCarouselComponent {...rest} />;
 	} else if (type === "grid") {
