@@ -12,7 +12,6 @@ import {
 	AttributeVisualizationVisibility,
 	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import {SdPlatformSortingOrder} from "@shapediver/sdk.platform-api-sdk-v1";
 import React, {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderAttributeVisualizationWidgetComponent from "./widgets/AppBuilderAttributeVisualizationWidgetComponent";
@@ -103,11 +102,6 @@ export default function AppBuilderFallbackContainerComponent({
 					<AppBuilderSavedStatesWidgetComponent
 						key={2}
 						namespace={namespace}
-						queryParams={{
-							sorters: {created_at: SdPlatformSortingOrder.Desc},
-							limit: 5,
-						}}
-						filterByModel={true}
 					/>,
 				],
 			});
