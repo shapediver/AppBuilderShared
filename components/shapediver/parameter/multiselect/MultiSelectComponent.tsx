@@ -12,6 +12,7 @@ import SelectButtonFlexComponent from "../select/SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "../select/SelectButtonGroupComponent";
 import SelectChipGroupComponent from "../select/SelectChipGroupComponent";
 import SelectFullWidthCardsComponent from "../select/SelectFullWidthCards";
+import SelectGridComponent from "../select/SelectGridComponent";
 import MultiSelectCheckboxesComponent from "./MultiSelectCheckboxesComponent";
 
 export interface MultiSelectComponentProps {
@@ -77,6 +78,10 @@ export default function MultiSelectComponent(props: MultiSelectComponentProps) {
 
 	if (type === "fullwidthcards") {
 		return <SelectFullWidthCardsComponent {...rest} multiselect={true} />;
+	}
+
+	if (type === "grid") {
+		return <SelectGridComponent {...rest} multiselect={true} />;
 	}
 
 	return <SelectDropDownComponent {...rest} multiselect={true} />;

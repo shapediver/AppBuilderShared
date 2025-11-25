@@ -6,13 +6,14 @@ import {
 	TextInput,
 	useProps,
 } from "@mantine/core";
-import React, {useCallback, useMemo, useState} from "react";
+import React, {useMemo, useState} from "react";
 import Icon from "~/shared/components/ui/Icon";
 import {useCustomHeight} from "~/shared/hooks/shapediver/parameters/useCustomHeight";
+import {parameterMultiSelect} from "~/shared/utils/parameters/parameterMultiSelect";
+import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 import ButtonImageCard from "./ButtonImageCard";
 import {
 	SelectCardStyleProps,
-	SelectComponentProps,
 	SelectImageStyleProps,
 	SelectStackStyleProps,
 	SelectTextStyleProps,
@@ -68,7 +69,8 @@ export function SelectGridComponentThemeProps(
  * The grid is responsive based on container width.
  */
 export default function SelectGridComponent(
-	props: SelectComponentProps & SelectGridComponentThemePropsType,
+	props: UniversalMultiSelectComponentProps &
+		SelectGridComponentThemePropsType,
 ) {
 	const {
 		value,
@@ -77,11 +79,18 @@ export default function SelectGridComponent(
 		disabled,
 		itemData,
 		settings,
+		multiselect,
 		bottomSection = <></>,
 		topSection = <></>,
 		onSearch,
 		...styleProps
 	} = props;
+
+	const {handleClick, isSelected} = parameterMultiSelect(
+		value,
+		onChange,
+		multiselect,
+	);
 
 	// style properties
 	const {
@@ -131,14 +140,11 @@ export default function SelectGridComponent(
 	}, [gridItems, searchable, searchTerm, limit, onSearch]);
 
 	// Handle card selection
-	const handleCardClick = useCallback(
-		(itemValue: string, disabled: boolean | undefined) => {
-			if (!disabled) {
-				onChange(itemValue);
-			}
-		},
-		[onChange],
-	);
+	const handleCardClick = (itemValue: string, disabled?: boolean) => {
+		if (!disabled) {
+			handleClick(itemValue);
+		}
+	};
 
 	const renderSearchInput = () => {
 		if (!searchable) return null;
@@ -178,7 +184,7 @@ export default function SelectGridComponent(
 					<ButtonImageCard
 						key={item.value}
 						item={item}
-						selected={value === item.value}
+						selected={isSelected(item.value)}
 						disabled={disabled}
 						onClick={handleCardClick}
 						showLabel={showLabel}

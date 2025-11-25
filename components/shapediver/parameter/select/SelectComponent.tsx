@@ -199,7 +199,7 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	} else if (type === "carousel") {
 		return <SelectCarouselComponent {...rest} />;
 	} else if (type === "grid") {
-		return <SelectGridComponent {...rest} />;
+		return <SelectGridComponent {...rest} multiselect={false} />;
 	} else {
 		return <SelectDropDownComponent {...rest} multiselect={false} />;
 	}
