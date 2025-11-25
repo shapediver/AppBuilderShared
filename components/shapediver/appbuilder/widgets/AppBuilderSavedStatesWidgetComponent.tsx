@@ -182,26 +182,26 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 
 	const [selectedValue, setSelectedValue] = useState<string | null>(null);
 	const handleChange = async (value: string | null) => {
-		// Update query parameter in URL
-		applySavedStateToUrl(value, true);
-
 		if (namespace && value) {
 			// Set selected saved state ID
 			setSelectedValue(value);
 
 			// Apply saved state parameters
 			const savedStateItem = savedStateItems[value];
-			if (savedStateItem?.data?.parameters) {
-				try {
+			try {
+				if (savedStateItem?.data?.parameters) {
 					await batchParameterValueUpdate(
 						{
 							[namespace]: savedStateItem.data.parameters,
 						},
 						false,
 					);
-				} catch (error) {
-					Logger.error("Failed to apply saved state:", error);
 				}
+
+				// Update query parameter in URL
+				applySavedStateToUrl(value, true);
+			} catch (error) {
+				Logger.error("Failed to apply saved state:", error);
 			}
 		} else {
 			setSelectedValue(null);
