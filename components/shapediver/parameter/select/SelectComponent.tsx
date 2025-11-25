@@ -197,7 +197,7 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	} else if (type === "fullwidthcards") {
 		return <SelectFullWidthCardsComponent {...rest} multiselect={false} />;
 	} else if (type === "carousel") {
-		return <SelectCarouselComponent {...rest} />;
+		return <SelectCarouselComponent {...rest} multiselect={false} />;
 	} else if (type === "grid") {
 		return <SelectGridComponent {...rest} multiselect={false} />;
 	} else {

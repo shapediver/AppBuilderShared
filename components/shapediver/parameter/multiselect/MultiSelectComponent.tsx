@@ -10,6 +10,7 @@ import {
 import SelectDropDownComponent from "~/shared/components/shapediver/parameter/select/SelectDropDownComponent";
 import SelectButtonFlexComponent from "../select/SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "../select/SelectButtonGroupComponent";
+import SelectCarouselComponent from "../select/SelectCarouselComponent";
 import SelectChipGroupComponent from "../select/SelectChipGroupComponent";
 import SelectFullWidthCardsComponent from "../select/SelectFullWidthCards";
 import SelectGridComponent from "../select/SelectGridComponent";
@@ -82,6 +83,10 @@ export default function MultiSelectComponent(props: MultiSelectComponentProps) {
 
 	if (type === "grid") {
 		return <SelectGridComponent {...rest} multiselect={true} />;
+	}
+
+	if (type === "carousel") {
+		return <SelectCarouselComponent {...rest} multiselect={true} />;
 	}
 
 	return <SelectDropDownComponent {...rest} multiselect={true} />;
