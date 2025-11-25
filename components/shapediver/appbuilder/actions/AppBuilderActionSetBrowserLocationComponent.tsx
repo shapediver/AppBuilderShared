@@ -72,7 +72,11 @@ export default function AppBuilderActionSetBrowserLocationComponent(
 			);
 
 			// replace the value of the URL parameter "modelStateId" with the new value
-			newLocation = applyModelStateToUrl(modelStateId, false).toString();
+			newLocation = applyModelStateToUrl(
+				modelStateId,
+				false,
+				newLocationUrl,
+			).toString();
 
 			setLoading(false);
 		}
