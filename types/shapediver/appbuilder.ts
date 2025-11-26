@@ -636,6 +636,7 @@ export type AppBuilderWidgetType =
 	| "desktopClientOutputs"
 	| "controls"
 	| "accordionUi"
+	| "savedStates"
 	| "sceneTreeExplorer"
 	| "stackUi";
 
@@ -706,6 +707,18 @@ export enum AttributeVisualizationVisibility {
 	/** The attribute visualization is disabled by default, but can be turned on. */
 	DefaultOff = "defaultOff",
 }
+
+export type SavedStatesVisualization = Extract<
+	SelectComponentType,
+	| "buttonflex"
+	| "buttongroup"
+	| "chipgroup"
+	| "dropdown"
+	| "imagedropdown"
+	| "fullwidthcards"
+	| "carousel"
+	| "grid"
+>;
 
 /** Properties of a widget then attribute visualization. */
 export interface IAppBuilderWidgetPropsAttributeVisualization {
@@ -783,7 +796,7 @@ export interface IAppBuilderWidgetPropsDesktopClientOutputs {
 
 /** Properties of a saved states widget. */
 export interface IAppBuilderWidgetPropsSavedStates {
-	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
+	visualization?: SavedStatesVisualization;
 }
 
 /**
@@ -865,6 +878,7 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsDesktopClientOutputs
 		| IAppBuilderWidgetPropsControls
 		| IAppBuilderWidgetPropsAccordionUi
+		| IAppBuilderWidgetPropsSavedStates
 		| IAppBuilderWidgetPropsSceneTreeExplorer
 		| IAppBuilderWidgetPropsStackUi;
 }
@@ -1211,6 +1225,14 @@ export function isAccordionUiWidget(widget: IAppBuilderWidget): widget is {
 	props: IAppBuilderWidgetPropsAccordionUi;
 } {
 	return widget.type === "accordionUi";
+}
+
+/** assert widget type "savedStates" */
+export function isSavedStatesWidget(widget: IAppBuilderWidget): widget is {
+	type: "savedStates";
+	props: IAppBuilderWidgetPropsSavedStates;
+} {
+	return widget.type === "savedStates";
 }
 
 /** assert widget type "stackUi" */

@@ -7,6 +7,7 @@ import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/use
 import {
 	IAppBuilderWidgetPropsSavedStates,
 	ISelectComponentItemDataType,
+	SavedStatesVisualization,
 	SelectComponentType,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {TSavedStateQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
@@ -25,6 +26,7 @@ import {
 	StackProps,
 	useProps,
 } from "@mantine/core";
+import {SdPlatformSortingOrder} from "@shapediver/sdk.platform-api-sdk-v1";
 import React, {useContext, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
@@ -32,17 +34,7 @@ import {Logger} from "~/shared/utils/logger";
 
 interface StyleProps {
 	selectProps?: Partial<SelectComponentPropsExt> & {
-		type: Extract<
-			SelectComponentType,
-			| "buttonflex"
-			| "buttongroup"
-			| "chipgroup"
-			| "dropdown"
-			| "imagedropdown"
-			| "fullwidthcards"
-			| "carousel"
-			| "grid"
-		>;
+		type: SavedStatesVisualization;
 	};
 	paperProps?: PaperProps;
 	stackProps?: StackProps;
@@ -78,7 +70,7 @@ export function AppBuilderSavedStatesWidgetComponentThemeProps(
 
 type Props = IAppBuilderWidgetPropsSavedStates &
 	AppBuilderSavedStatesWidgetThemePropsType &
-	TSavedStateQueryProps & {
+	Partial<TSavedStateQueryProps> & {
 		namespace?: string;
 		selectType?: SelectComponentType;
 	};
@@ -86,10 +78,14 @@ type Props = IAppBuilderWidgetPropsSavedStates &
 export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 	const {
 		namespace,
-		queryParams,
+		visualization,
+		queryParams = {
+			sorters: {created_at: SdPlatformSortingOrder.Desc},
+			limit: 5,
+		},
 		filterByUser,
 		filterByOrganization,
-		filterByModel,
+		filterByModel = true,
 		cacheKey,
 		...rest
 	} = props;
@@ -102,6 +98,12 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		);
 
 	const context = useContext(AppBuilderContainerContext);
+
+	const {currentModel} = useShapeDiverStorePlatform(
+		useShallow((state) => ({
+			currentModel: state.currentModel,
+		})),
+	);
 
 	const {useQuery, items: savedStateItems} =
 		useShapeDiverStorePlatformSavedStates(
@@ -208,6 +210,10 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		}
 	};
 
+	if (!currentModel) {
+		return null;
+	}
+
 	if (error) {
 		return (
 			<Paper {...paperProps} style={styleProps}>
@@ -230,6 +236,7 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 					itemData={itemData}
 					disabled={loading}
 					{...selectProps}
+					type={visualization ?? selectProps?.type}
 				/>
 				{(loading || hasNextPage) && (
 					<Flex {...loaderFlexProps}>
