@@ -176,7 +176,6 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 				displayname: savedState.name || savedState.id,
 				description: savedState.description,
 				imageUrl: savedState.image?.url,
-				tooltip: savedState.name,
 			};
 		});
 
