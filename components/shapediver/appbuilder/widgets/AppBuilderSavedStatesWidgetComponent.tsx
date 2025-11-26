@@ -11,6 +11,7 @@ import {
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
+import {QUERYPARAM_SAVEDSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {TSavedStateQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
 import {applySavedStateToUrl} from "@AppBuilderShared/utils/modifyUrl";
 import {
@@ -28,7 +29,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import {SdPlatformSortingOrder} from "@shapediver/sdk.platform-api-sdk-v1";
-import React, {useContext, useMemo, useState} from "react";
+import React, {useContext, useEffect, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
 import {Logger} from "~/shared/utils/logger";
@@ -210,6 +211,26 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 			setSelectedValue(null);
 		}
 	};
+
+	// Keep track of window location search to detect query parameter changes
+	const [windowLocationSearch, setWindowLocationSearch] = useState(
+		window.location.search,
+	);
+
+	// listen to popstate events to capture browser navigation (back/forward)
+	useEffect(() => {
+		const handler = () => setWindowLocationSearch(window.location.search);
+		window.addEventListener("popstate", handler);
+		return () => window.removeEventListener("popstate", handler);
+	}, []);
+
+	// listen to the query parameters in the URL and remove the selected value if it is removed
+	useEffect(() => {
+		const parameters = new URLSearchParams(windowLocationSearch);
+		const savedStatesIdParam = parameters.get(QUERYPARAM_SAVEDSTATEID);
+
+		if (!savedStatesIdParam) setSelectedValue(null);
+	}, [windowLocationSearch]);
 
 	if (!currentModel) {
 		return null;
