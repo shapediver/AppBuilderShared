@@ -2,7 +2,6 @@ import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/a
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {IAppBuilderLegacyActionPropsSetBrowserLocation} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
-import {applyModelStateToUrl} from "@AppBuilderShared/utils/modifyUrl";
 import React, {useCallback, useState} from "react";
 
 type Props = IAppBuilderLegacyActionPropsSetBrowserLocation & {
@@ -72,11 +71,13 @@ export default function AppBuilderActionSetBrowserLocationComponent(
 			);
 
 			// replace the value of the URL parameter "modelStateId" with the new value
-			newLocation = applyModelStateToUrl(
-				modelStateId,
-				false,
-				newLocationUrl,
-			).toString();
+			if (modelStateId) {
+				newLocationUrl.searchParams.set(
+					QUERYPARAM_MODELSTATEID,
+					modelStateId,
+				);
+				newLocation = newLocationUrl.toString();
+			}
 
 			setLoading(false);
 		}
