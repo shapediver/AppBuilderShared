@@ -3,7 +3,6 @@ import SelectComponent, {
 } from "@AppBuilderShared/components/shapediver/parameter/select/SelectComponent";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";
 import {
 	IAppBuilderWidgetPropsSavedStates,
