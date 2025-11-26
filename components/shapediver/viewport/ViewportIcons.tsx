@@ -49,15 +49,15 @@ export const defaultStyleProps: ViewportIconsOptionalProps = {
 		timingFunction: "ease",
 		keepMounted: true,
 	},
-	enableImportExportButtons: true,
-	enableModelStateButtons: true,
+	enableImportExportButtons: undefined,
+	enableModelStateButtons: undefined,
 	enableHistoryButtons: true,
 	enableResetButton: true,
 	enableArBtn: true,
 	enableCamerasBtn: true,
 	enableFullscreenBtn: true,
 	enableZoomBtn: true,
-	enableHistoryMenuButton: true,
+	enableHistoryMenuButton: undefined,
 };
 
 export type ShowButtons = {
@@ -115,8 +115,12 @@ export default function ViewportIcons(
 			fullscreen: enableFullscreenBtn,
 			zoom: enableZoomBtn,
 			historyMenu:
-				enableHistoryMenuButton &&
-				(enableImportExportButtons || enableModelStateButtons),
+				enableImportExportButtons !== undefined ||
+				enableModelStateButtons !== undefined
+					? enableImportExportButtons || enableModelStateButtons
+					: enableHistoryMenuButton !== undefined
+						? enableHistoryMenuButton
+						: !hideJsonMenu,
 		}),
 		[
 			enableHistoryButtons,
@@ -128,6 +132,7 @@ export default function ViewportIcons(
 			enableHistoryMenuButton,
 			enableImportExportButtons,
 			enableModelStateButtons,
+			hideJsonMenu,
 		],
 	);
 
