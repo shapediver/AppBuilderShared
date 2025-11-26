@@ -1,5 +1,5 @@
 import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
-import useResolveAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder//useResolveAppBuilderSettings";
+import useResolveAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useResolveAppBuilderSettings";
 import useQuerySavedState from "@AppBuilderShared/hooks/shapediver/useQuerySavedState";
 import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
 import {
@@ -95,7 +95,13 @@ export default function useAppBuilderSettings(
 	const modelViewUrl = parameters
 		.get(QUERYPARAM_MODELVIEWURL)
 		?.replace(/\/+$/, "");
-	const slug = parameters.get(QUERYPARAM_SLUG);
+	const slug = useMemo(
+		() =>
+			parameters.get(QUERYPARAM_SLUG) ??
+			value?.sessions?.find((s) => s.slug)?.slug,
+		[parameters, value],
+	);
+
 	const platformUrl = parameters
 		.get(QUERYPARAM_PLATFORMURL)
 		?.replace(/\/+$/, "");
@@ -215,6 +221,7 @@ export default function useAppBuilderSettings(
 		queryParamSession,
 		modelStateId,
 		themeSessions,
+		initialSavedState,
 	]);
 
 	// create the settings object, either with the json data or without
