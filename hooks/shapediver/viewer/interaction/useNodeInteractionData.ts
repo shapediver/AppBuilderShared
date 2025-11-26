@@ -320,7 +320,7 @@ export function useNodesInteractionData(props: {
 		Object.entries(props).forEach(([key, prop]) => {
 			if (prop.sessionId !== undefined && prop.outputId !== undefined)
 				return;
-			if (!instances[key]) return;
+			if (!instances[key] || !instances[key].parent) return;
 			// if no session ID or output ID is provided, we assume that this is an instance
 			// for instances we can assign the data directly
 			removeInstanceCallbacks.push(

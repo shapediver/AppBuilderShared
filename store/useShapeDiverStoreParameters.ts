@@ -40,6 +40,7 @@ import {
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {Logger} from "@AppBuilderShared/utils/logger";
+import {removeStatesFromUrl} from "@AppBuilderShared/utils/modifyUrl";
 import {addValidator} from "@AppBuilderShared/utils/parameters/parameterValidation";
 import {ReqCustomization, ReqExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
@@ -267,7 +268,13 @@ function createGenericParameterExecutorForSession(
 	 * that should be executed.
 	 * Typically this does not include all parameters defined by the session.
 	 */
-	return async (values, namespace, skipHistory, furtherHistoryState) => {
+	return async (
+		values,
+		namespace,
+		skipHistory,
+		furtherHistoryState,
+		skipUrlUpdate,
+	) => {
 		// store previous values (we restore them in case of error)
 		const previousValues = Object.keys(values).reduce(
 			(acc, paramId) => {
@@ -326,6 +333,9 @@ function createGenericParameterExecutorForSession(
 				};
 				historyPusher(state);
 			}
+
+			// cleanup url
+			if (!skipUrlUpdate) removeStatesFromUrl(true, true, true);
 
 			// report success
 			callbacks?.onSuccess({
@@ -423,6 +433,7 @@ function createParameterStore<T>(
 						forceImmediate?: boolean,
 						skipHistory?: boolean,
 						acceptAll?: boolean,
+						skipUrlUpdate?: boolean,
 					): Promise<T | string> {
 						const state = get().state;
 						const result = await executor.execute(
@@ -431,6 +442,7 @@ function createParameterStore<T>(
 							forceImmediate,
 							skipHistory,
 							acceptAll,
+							skipUrlUpdate,
 						);
 						// TODO in case result is not the current uiValue, we could somehow visualize
 						// the fact that the uiValue gets reset here
@@ -1498,6 +1510,7 @@ export const useShapeDiverStoreParameters =
 				async batchParameterValueUpdate(
 					state: ISessionsHistoryState,
 					skipHistory?: boolean,
+					skipUrlUpdate?: boolean,
 				) {
 					const {parameterStores} = get();
 
@@ -1539,7 +1552,12 @@ export const useShapeDiverStoreParameters =
 							actions.setUiValue(values[paramId]);
 							// Note: We do not execute the changes immediately here,
 							// but call changes.accept below.
-							return actions.execute(false, skipHistory);
+							return actions.execute(
+								false,
+								skipHistory,
+								undefined,
+								skipUrlUpdate,
+							);
 						});
 						paramUpdatePromises.push(...promises);
 					}
@@ -1549,7 +1567,9 @@ export const useShapeDiverStoreParameters =
 					const acceptPromises = Object.keys(state)
 						.map((namespace) => parameterChanges[namespace])
 						.sort((a, b) => a.priority - b.priority)
-						.map((c) => c.accept(skipHistory));
+						.map((c) =>
+							c.accept(skipHistory, undefined, skipUrlUpdate),
+						);
 
 					// wait for all parameter updates and accept promises
 					await Promise.all(acceptPromises);
