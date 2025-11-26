@@ -3,6 +3,7 @@ import SelectComponent, {
 } from "@AppBuilderShared/components/shapediver/parameter/select/SelectComponent";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";
 import {
 	IAppBuilderWidgetPropsSavedStates,
@@ -11,6 +12,7 @@ import {
 	SelectComponentType,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {TSavedStateQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
+import {applySavedStateToUrl} from "@AppBuilderShared/utils/modifyUrl";
 import {
 	Alert,
 	Flex,
@@ -29,8 +31,6 @@ import {SdPlatformSortingOrder} from "@shapediver/sdk.platform-api-sdk-v1";
 import React, {useContext, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
-import {useShapeDiverStorePlatform} from "~/shared/store/useShapeDiverStorePlatform";
-import {QUERYPARAM_SAVEDSTATEID} from "~/shared/types/shapediver/queryparams";
 import {Logger} from "~/shared/utils/logger";
 
 interface StyleProps {
@@ -185,32 +185,26 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 
 	const [selectedValue, setSelectedValue] = useState<string | null>(null);
 	const handleChange = async (value: string | null) => {
-		// Update query parameter
-		const url = new URL(window.location.href);
-		if (value) {
-			url.searchParams.set(QUERYPARAM_SAVEDSTATEID, value);
-		} else {
-			url.searchParams.delete(QUERYPARAM_SAVEDSTATEID);
-		}
-		window.history.replaceState({}, "", url.toString());
-
 		if (namespace && value) {
 			// Set selected saved state ID
 			setSelectedValue(value);
 
 			// Apply saved state parameters
 			const savedStateItem = savedStateItems[value];
-			if (savedStateItem?.data?.parameters) {
-				try {
+			try {
+				if (savedStateItem?.data?.parameters) {
 					await batchParameterValueUpdate(
 						{
 							[namespace]: savedStateItem.data.parameters,
 						},
 						false,
 					);
-				} catch (error) {
-					Logger.error("Failed to apply saved state:", error);
 				}
+
+				// Update query parameter in URL
+				applySavedStateToUrl(value, true);
+			} catch (error) {
+				Logger.error("Failed to apply saved state:", error);
 			}
 		} else {
 			setSelectedValue(null);

@@ -4,6 +4,7 @@ import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDive
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
+import {applyModelStateToUrl} from "@AppBuilderShared/utils/modifyUrl";
 import {
 	filterAndValidateModelStateParameters,
 	generateParameterFeedback,
@@ -92,6 +93,9 @@ export function useImportModelState(namespace: string) {
 			await batchParameterValueUpdate({
 				[namespace]: validationResult.validParameters,
 			});
+
+			// set as modelStateId in the URL
+			applyModelStateToUrl(modelStateId, true);
 
 			// Provide user feedback
 			const feedback = generateParameterFeedback(

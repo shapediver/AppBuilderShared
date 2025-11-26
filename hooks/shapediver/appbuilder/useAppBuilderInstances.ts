@@ -837,7 +837,11 @@ const processOutputActions = (
 		};
 	},
 	namespace: string,
-	batchParameterValueUpdate: (params: Record<string, any>) => Promise<void>,
+	batchParameterValueUpdate: (
+		params: Record<string, any>,
+		skipHistory?: boolean,
+		skipUrlUpdate?: boolean,
+	) => Promise<void>,
 	getParameter: (
 		namespace: string,
 		key: string,
@@ -962,9 +966,13 @@ const processOutputActions = (
 		if (Object.keys(param).length === 0) return outputCallbackPromises;
 
 		outputCallbackPromises.push(
-			batchParameterValueUpdate({
-				[namespace]: param,
-			}),
+			batchParameterValueUpdate(
+				{
+					[namespace]: param,
+				},
+				true,
+				true,
+			),
 		);
 	}
 
