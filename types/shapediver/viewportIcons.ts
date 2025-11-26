@@ -66,6 +66,11 @@ export interface ViewportIconsOptionalProps {
 	 */
 	enableZoomBtn?: boolean;
 	/**
+	 * enable/disable the "history menu" button
+	 * @deprecated Use Hide JSON parameters menu on the model edit page
+	 */
+	enableHistoryMenuButton?: boolean;
+	/**
 	 * color of the icons
 	 */
 	color?: string;

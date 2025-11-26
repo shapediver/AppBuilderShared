@@ -1308,6 +1308,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// enableCamerasBtn: true,
 				// enableFullscreenBtn: true,
 				// enableZoomBtn: true,
+				// enableHistoryMenuButton: true,
 				// viewportOverlayProps: {
 				// 	position: OverlayPosition.TOP_MIDDLE,
 				// 	offset: "0.5em",

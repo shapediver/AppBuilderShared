@@ -57,6 +57,7 @@ export const defaultStyleProps: ViewportIconsOptionalProps = {
 	enableCamerasBtn: true,
 	enableFullscreenBtn: true,
 	enableZoomBtn: true,
+	enableHistoryMenuButton: true,
 };
 
 export type ShowButtons = {
@@ -101,6 +102,7 @@ export default function ViewportIcons(
 		enableCamerasBtn,
 		enableFullscreenBtn,
 		enableZoomBtn,
+		enableHistoryMenuButton,
 	} = useProps("ViewportIcons", defaultStyleProps, rest);
 
 	/* Convert bad naming enable{Name}Buttons for compatibility */
@@ -112,7 +114,9 @@ export default function ViewportIcons(
 			cameras: enableCamerasBtn,
 			fullscreen: enableFullscreenBtn,
 			zoom: enableZoomBtn,
-			historyMenu: enableImportExportButtons || enableModelStateButtons,
+			historyMenu:
+				enableHistoryMenuButton &&
+				(enableImportExportButtons || enableModelStateButtons),
 		}),
 		[
 			enableHistoryButtons,
@@ -121,6 +125,7 @@ export default function ViewportIcons(
 			enableCamerasBtn,
 			enableFullscreenBtn,
 			enableZoomBtn,
+			enableHistoryMenuButton,
 			enableImportExportButtons,
 			enableModelStateButtons,
 		],
