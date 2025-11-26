@@ -26,7 +26,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import {SdPlatformSortingOrder} from "@shapediver/sdk.platform-api-sdk-v1";
-import React, {useContext, useMemo, useState} from "react";
+import React, {useContext, useEffect, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
 import {useShapeDiverStorePlatform} from "~/shared/store/useShapeDiverStorePlatform";
@@ -134,6 +134,15 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		})),
 	);
 
+	const parameters = useMemo<URLSearchParams>(
+		() => new URLSearchParams(window.location.search),
+		[],
+	);
+	const initialSavedStateId = useMemo(
+		() => parameters.get(QUERYPARAM_SAVEDSTATEID),
+		[parameters],
+	);
+
 	const styleProps: MantineStyleProp = {};
 	if (context.orientation === "horizontal") {
 		styleProps.height = "100%";
@@ -215,6 +224,15 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 			setSelectedValue(null);
 		}
 	};
+
+	useEffect(() => {
+		if (
+			initialSavedStateId &&
+			savedStateIds.includes(initialSavedStateId)
+		) {
+			setSelectedValue(initialSavedStateId);
+		}
+	}, [savedStateIds]);
 
 	if (!currentModel) {
 		return null;
