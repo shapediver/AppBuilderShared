@@ -40,6 +40,7 @@ import {
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {Logger} from "@AppBuilderShared/utils/logger";
+import {removeStatesFromUrl} from "@AppBuilderShared/utils/modifyUrl";
 import {addValidator} from "@AppBuilderShared/utils/parameters/parameterValidation";
 import {ReqCustomization, ReqExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
@@ -326,6 +327,9 @@ function createGenericParameterExecutorForSession(
 				};
 				historyPusher(state);
 			}
+
+			// cleanup url
+			removeStatesFromUrl(true, true, true);
 
 			// report success
 			callbacks?.onSuccess({

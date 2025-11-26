@@ -21,7 +21,7 @@ import {
 	IUpdateSharingLinkData,
 	IUpdateSharingLinkReply,
 } from "@AppBuilderShared/modules/ecommerce/types/ecommerceapi";
-import {applyModelStateToUrl} from "@AppBuilderShared/utils/applyModelStateToUrl";
+import {applyModelStateToUrl} from "@AppBuilderShared/utils/modifyUrl";
 
 // Message types for the API calls.
 // CAUTION: When implementing new API calls and messages type, make sure to add
