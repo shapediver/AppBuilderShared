@@ -206,6 +206,17 @@ export default function useAppBuilderSettings(
 				combinedSessions[0].modelStateId = modelStateId;
 			}
 
+			const initialParameterValues =
+				initialSavedState.status === "success" &&
+				initialSavedState.data?.parameters
+					? initialSavedState.data.parameters
+					: undefined;
+
+			if (initialParameterValues && combinedSessions.length > 0) {
+				combinedSessions[0].initialParameterValues =
+					initialParameterValues;
+			}
+
 			return combinedSessions.concat(themeSessions ?? []);
 		}
 	}, [
