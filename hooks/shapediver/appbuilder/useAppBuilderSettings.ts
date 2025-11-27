@@ -110,41 +110,52 @@ export default function useAppBuilderSettings(
 	const context = parameters.get(QUERYPARAM_CONTEXT);
 	const savedStateId = parameters.get(QUERYPARAM_SAVEDSTATEID);
 	const {initialSavedState} = useQuerySavedState(savedStateId);
-
-	const queryParamSession = useMemo<
-		IAppBuilderSettingsSession | undefined
-	>(() => {
-		const initialParameterValues =
+	const initialParameterValues = useMemo(
+		() =>
 			initialSavedState.status === "success" &&
 			initialSavedState.data?.parameters
-				? initialSavedState.data.parameters
-				: undefined;
+				? Object.keys(initialSavedState.data.parameters).reduce(
+						(o, key) => {
+							o[key] =
+								initialSavedState.data!.parameters[
+									key
+								].toString();
+							return o;
+						},
+						{} as {[key: string]: string},
+					)
+				: undefined,
+		[initialSavedState],
+	);
 
-		return slug
-			? ({
-					id: "default",
-					slug,
-					platformUrl: platformUrl ?? getDefaultPlatformUrl(),
-					modelStateId,
-					initialParameterValues,
-				} as IAppBuilderSettingsSession)
-			: ticket && modelViewUrl
-				? {
+	const queryParamSession = useMemo<IAppBuilderSettingsSession | undefined>(
+		() =>
+			slug
+				? ({
 						id: "default",
-						ticket,
-						modelViewUrl,
+						slug,
+						platformUrl: platformUrl ?? getDefaultPlatformUrl(),
 						modelStateId,
 						initialParameterValues,
-					}
-				: undefined;
-	}, [
-		slug,
-		platformUrl,
-		ticket,
-		modelViewUrl,
-		modelStateId,
-		initialSavedState,
-	]);
+					} as IAppBuilderSettingsSession)
+				: ticket && modelViewUrl
+					? {
+							id: "default",
+							ticket,
+							modelViewUrl,
+							modelStateId,
+							initialParameterValues,
+						}
+					: undefined,
+		[
+			slug,
+			platformUrl,
+			ticket,
+			modelViewUrl,
+			modelStateId,
+			initialParameterValues,
+		],
+	);
 
 	// get all query parameters starting with QUERYPARAM_PARAMVALUE_PREFIX
 	const paramValues = new Map<string, string>();
@@ -206,13 +217,11 @@ export default function useAppBuilderSettings(
 				combinedSessions[0].modelStateId = modelStateId;
 			}
 
-			const initialParameterValues =
-				initialSavedState.status === "success" &&
-				initialSavedState.data?.parameters
-					? initialSavedState.data.parameters
-					: undefined;
-
-			if (initialParameterValues && combinedSessions.length > 0) {
+			if (
+				initialParameterValues &&
+				combinedSessions.length > 0 &&
+				!combinedSessions[0].initialParameterValues
+			) {
 				combinedSessions[0].initialParameterValues =
 					initialParameterValues;
 			}
@@ -226,7 +235,7 @@ export default function useAppBuilderSettings(
 		queryParamSession,
 		modelStateId,
 		themeSessions,
-		initialSavedState,
+		initialParameterValues,
 	]);
 
 	// create the settings object, either with the json data or without
