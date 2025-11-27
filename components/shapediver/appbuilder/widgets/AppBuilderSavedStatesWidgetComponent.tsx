@@ -13,7 +13,10 @@ import {
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {QUERYPARAM_SAVEDSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {TSavedStateQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
-import {applySavedStateToUrl} from "@AppBuilderShared/utils/modifyUrl";
+import {
+	applySavedStateToUrl,
+	URL_CHANGED_EVENT,
+} from "@AppBuilderShared/utils/modifyUrl";
 import {
 	Alert,
 	Flex,
@@ -234,11 +237,17 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		}
 	}, [savedStateIds]);
 
-	// listen to popstate events to capture browser navigation (back/forward)
+	// Listen to URL changes:
+	// - popstate: browser navigation (back/forward)
+	// - urlchanged: programmatic URL changes via modifyUrl functions
 	useEffect(() => {
 		const handler = () => setWindowLocationSearch(window.location.search);
 		window.addEventListener("popstate", handler);
-		return () => window.removeEventListener("popstate", handler);
+		window.addEventListener(URL_CHANGED_EVENT, handler);
+		return () => {
+			window.removeEventListener("popstate", handler);
+			window.removeEventListener(URL_CHANGED_EVENT, handler);
+		};
 	}, []);
 
 	// listen to the query parameters in the URL and remove the selected value if it is removed

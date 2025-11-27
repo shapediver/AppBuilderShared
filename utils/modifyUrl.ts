@@ -4,6 +4,19 @@ import {
 } from "@AppBuilderShared/types/shapediver/queryparams";
 
 /**
+ * Custom event name for URL changes made via modifyUrl functions.
+ * Listen to this event to detect programmatic URL changes (pushState/replaceState don't fire popstate).
+ */
+export const URL_CHANGED_EVENT = "urlchanged";
+
+/**
+ * Dispatches a custom event to notify listeners that the URL has changed.
+ */
+function dispatchUrlChangedEvent() {
+	window.dispatchEvent(new CustomEvent(URL_CHANGED_EVENT));
+}
+
+/**
  * Apply a model state id to the current URL as a query parameter.
  * @param modelStateId The model state id to apply to the URL, if not provided or null, it will be removed instead
  * @param updateUrl If true, the browser URL will be updated using the History API
@@ -25,7 +38,10 @@ export function applyModelStateToUrl(
 	if (url.searchParams.has(QUERYPARAM_SAVEDSTATEID))
 		url.searchParams.delete(QUERYPARAM_SAVEDSTATEID);
 
-	if (updateUrl) window.history.replaceState({}, "", url.toString());
+	if (updateUrl) {
+		window.history.replaceState({}, "", url.toString());
+		dispatchUrlChangedEvent();
+	}
 	return url;
 }
 
@@ -51,7 +67,10 @@ export function applySavedStateToUrl(
 	if (url.searchParams.has(QUERYPARAM_MODELSTATEID))
 		url.searchParams.delete(QUERYPARAM_MODELSTATEID);
 
-	if (updateUrl) window.history.replaceState({}, "", url.toString());
+	if (updateUrl) {
+		window.history.replaceState({}, "", url.toString());
+		dispatchUrlChangedEvent();
+	}
 	return url;
 }
 
@@ -74,6 +93,9 @@ export function removeStatesFromUrl(
 		url.searchParams.delete(QUERYPARAM_MODELSTATEID);
 	if (savedStateId && url.searchParams.has(QUERYPARAM_SAVEDSTATEID))
 		url.searchParams.delete(QUERYPARAM_SAVEDSTATEID);
-	if (updateUrl) window.history.replaceState({}, "", url.toString());
+	if (updateUrl) {
+		window.history.replaceState({}, "", url.toString());
+		dispatchUrlChangedEvent();
+	}
 	return url;
 }
