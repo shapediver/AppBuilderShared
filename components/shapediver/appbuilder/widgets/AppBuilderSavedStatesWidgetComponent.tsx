@@ -228,9 +228,15 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		window.location.search,
 	);
 
+	// NOTE: savedStateIds updates regularly (e.g., during infinite scroll fetching),
+	// causing this hook to re-execute. This may trigger unnecessary state updates.
+	// TODO: If initialSavedStateId is not found in savedStateIds, we should ideally
+	// continue fetching until it's found or we reach the end of the list.
+	// For now, this edge case is not handled.
 	useEffect(() => {
 		if (
 			initialSavedStateId &&
+			selectedValue !== initialSavedStateId &&
 			savedStateIds.includes(initialSavedStateId)
 		) {
 			setSelectedValue(initialSavedStateId);
