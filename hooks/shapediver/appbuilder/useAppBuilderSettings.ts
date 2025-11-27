@@ -215,6 +215,7 @@ export default function useAppBuilderSettings(
 		queryParamSession,
 		modelStateId,
 		themeSessions,
+		initialSavedState,
 	]);
 
 	// create the settings object, either with the json data or without

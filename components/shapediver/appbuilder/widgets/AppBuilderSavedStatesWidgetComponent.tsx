@@ -86,7 +86,7 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		visualization,
 		queryParams = {
 			sorters: {created_at: SdPlatformSortingOrder.Desc},
-			limit: 5,
+			limit: 10,
 		},
 		filterByUser,
 		filterByOrganization,
