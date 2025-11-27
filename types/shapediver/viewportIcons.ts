@@ -1,13 +1,12 @@
 import {OverlayStyleProps} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import {
 	DividerProps,
-	MantineShadow,
-	MantineSpacing,
 	MantineStyleProp,
 	MantineThemeComponent,
 	PaperProps,
 	TransitionProps,
 } from "@mantine/core";
+import React from "react";
 import {ViewportOverlayWrapperProps} from "./viewportOverlayWrapper";
 
 export interface ViewportIconsProps {
@@ -23,10 +22,6 @@ export interface ViewportIconsProps {
 	 * If the JSON menu should be hidden by default.
 	 */
 	hideJsonMenu?: boolean;
-	/**
-	 * If the saved states menu should be hidden by default.
-	 */
-	hideSavedStates?: boolean;
 }
 
 export interface ViewportIconsOptionalProps {
@@ -34,35 +29,6 @@ export interface ViewportIconsOptionalProps {
 	 * Style properties for the container
 	 */
 	style?: React.CSSProperties;
-	/**
-	 * Shadow of the container
-	 */
-	shadow?: MantineShadow;
-	/**
-	 * Padding of the container
-	 */
-	py?: MantineSpacing;
-	/**
-	 * Padding of the container
-	 */
-	px?: MantineSpacing;
-	/**
-	 * Icon props
-	 */
-	iconProps?: {
-		/**
-		 * Button variant
-		 */
-		variant?: string;
-		/**
-		 * Button variant when disabled
-		 */
-		variantDisabled?: string;
-		/**
-		 * Style for individual icons
-		 */
-		style?: MantineStyleProp;
-	};
 	/**
 	 * ID of the fullscreen area
 	 */
@@ -101,6 +67,7 @@ export interface ViewportIconsOptionalProps {
 	enableZoomBtn?: boolean;
 	/**
 	 * enable/disable the "history menu" button
+	 * @deprecated Use Hide JSON parameters menu on the model edit page
 	 */
 	enableHistoryMenuButton?: boolean;
 	/**

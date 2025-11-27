@@ -19,6 +19,7 @@ const merge = (
 	name: AppBuilderStandardContainerNameType,
 	defaultContainer: IAppBuilderContainer | undefined,
 	additionalContainers: Record<string, JSX.Element>,
+	activeTabIndex: number,
 ): IAppBuilderContainer | undefined => {
 	// Return undefined if no default container and no additional containers
 	if (!defaultContainer && Object.keys(additionalContainers).length === 0) {
@@ -44,16 +45,18 @@ const merge = (
 	let newTabs = [...(baseContainer.tabs || [])];
 	let newWidgets = [...(baseContainer.widgets || [])];
 
-	// If there is a tab present, we need to add the additional items to the first tab
+	// If there is a tab present, we need to add the additional items to the current tab
 	// Otherwise we add them to the main widget array
 	if (baseContainer.tabs && baseContainer.tabs.length > 0) {
-		// Create new tab object instead of mutating
-		newTabs[0] = {
-			...newTabs[0],
-			widgets: [...allAdditionalItems, ...(newTabs[0].widgets || [])],
+		newTabs[activeTabIndex] = {
+			...newTabs[activeTabIndex],
+			widgets: [
+				...(newTabs[activeTabIndex].widgets || []),
+				...allAdditionalItems,
+			],
 		};
 	} else {
-		newWidgets = [...allAdditionalItems, ...newWidgets];
+		newWidgets = [...newWidgets, ...allAdditionalItems];
 	}
 
 	return {
@@ -79,6 +82,7 @@ const updateMergedContainers = (
 		AppBuilderStandardContainerNameType,
 		Record<string, JSX.Element>
 	>,
+	activeTabIndices: Record<AppBuilderStandardContainerNameType, number>,
 ): Record<
 	AppBuilderStandardContainerNameType,
 	IAppBuilderContainer | undefined
@@ -92,6 +96,7 @@ const updateMergedContainers = (
 			name,
 			defaultContainers[name],
 			additionalContainerContent[name],
+			activeTabIndices[name],
 		);
 	}
 	return result;
@@ -119,6 +124,32 @@ export const useShapeDiverStoreStandardContainers =
 					left: undefined,
 					right: undefined,
 				},
+				activeTabIndices: {
+					top: 0,
+					bottom: 0,
+					left: 0,
+					right: 0,
+				},
+
+				setActiveTab: (containerName, tabIndex) =>
+					set(
+						(state) => {
+							const newActiveTabIndices = {
+								...state.activeTabIndices,
+								[containerName]: tabIndex,
+							};
+							return {
+								activeTabIndices: newActiveTabIndices,
+								mergedContainers: updateMergedContainers(
+									state.defaultContainers,
+									state.additionalContainerContent,
+									newActiveTabIndices,
+								),
+							};
+						},
+						false,
+						`setActiveTab-${containerName}-${tabIndex}`,
+					),
 
 				setDefaultContainer: (name, container) =>
 					set(
@@ -132,6 +163,7 @@ export const useShapeDiverStoreStandardContainers =
 								mergedContainers: updateMergedContainers(
 									newDefaultContainers,
 									state.additionalContainerContent,
+									state.activeTabIndices,
 								),
 							};
 						},
@@ -151,6 +183,7 @@ export const useShapeDiverStoreStandardContainers =
 								mergedContainers: updateMergedContainers(
 									newDefaultContainers,
 									state.additionalContainerContent,
+									state.activeTabIndices,
 								),
 							};
 						},
@@ -172,6 +205,7 @@ export const useShapeDiverStoreStandardContainers =
 								mergedContainers: updateMergedContainers(
 									newDefaultContainers,
 									state.additionalContainerContent,
+									state.activeTabIndices,
 								),
 							};
 						},
@@ -198,6 +232,7 @@ export const useShapeDiverStoreStandardContainers =
 								mergedContainers: updateMergedContainers(
 									state.defaultContainers,
 									newAdditionalContent,
+									state.activeTabIndices,
 								),
 							};
 						},
@@ -246,6 +281,7 @@ export const useShapeDiverStoreStandardContainers =
 								mergedContainers: updateMergedContainers(
 									state.defaultContainers,
 									newAdditionalContent,
+									state.activeTabIndices,
 								),
 							};
 						},

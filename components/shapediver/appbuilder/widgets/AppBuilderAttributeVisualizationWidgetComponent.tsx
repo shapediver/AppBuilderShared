@@ -180,7 +180,7 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 	);
 	const attributeSelectionData = useAttributeSelection(
 		viewportId,
-		active && !disableAttributeAnchors,
+		active && isVisible && !disableAttributeAnchors,
 		renderedAttribute,
 	);
 
@@ -656,6 +656,44 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		</>
 	);
 
+	const attributeElement = useMemo(() => {
+		if (!active) return;
+		if (!attributeSelectionData) return;
+		return (
+			<SelectedAttributeComponent
+				renderedAttribute={renderedAttribute}
+				attributes={attributes}
+				selectedItemData={attributeSelectionData.selectedItemData}
+				handleAttributeChange={handleAttributeChange}
+			/>
+		);
+	}, [
+		active,
+		renderedAttribute,
+		attributes,
+		attributeSelectionData,
+		handleAttributeChange,
+	]);
+
+	const viewportAnchor = useMemo(() => {
+		if (!active) return;
+		if (!attributeSelectionData) return;
+
+		const uniqueId = `${widgetId}_anchor_${Object.keys(attributeSelectionData.selectedItemData).join("_")}_${Object.values(
+			attributeSelectionData.selectedItemData,
+		)
+			.flatMap((v) => v.value + v.typeHint)
+			.join("_")}`;
+
+		return (
+			<ViewportAnchor3d
+				location={attributeSelectionData.location}
+				id={uniqueId}
+				element={attributeElement}
+			/>
+		);
+	}, [active, attributeSelectionData, attributeElement, widgetId]);
+
 	return (
 		<>
 			<TooltipWrapper label={tooltip}>
@@ -702,24 +740,9 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 						{attributeElementSelection}
 						{renderedAttributeElement}
 					</Stack>
+					{viewportAnchor}
 				</Paper>
 			</TooltipWrapper>
-			{active && attributeSelectionData && (
-				<ViewportAnchor3d
-					location={attributeSelectionData.location}
-					id={`${widgetId}_anchor`}
-					element={
-						<SelectedAttributeComponent
-							renderedAttribute={renderedAttribute}
-							attributes={attributes}
-							selectedItemData={
-								attributeSelectionData.selectedItemData
-							}
-							handleAttributeChange={handleAttributeChange}
-						/>
-					}
-				/>
-			)}
 		</>
 	);
 }

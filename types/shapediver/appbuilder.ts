@@ -310,7 +310,9 @@ export interface IAppBuilderParameterValueSourcePropsScreenshot {
 	 * Optional camera settings to be used for the screenshot. Defaults to the current camera of the viewport.
 	 * If a "name" is provided, the settings of the camera with that name are used as a base.
 	 */
-	camera?: OrthographicCameraProperties | PerspectiveCameraProperties;
+	camera?:
+		| Partial<OrthographicCameraProperties>
+		| Partial<PerspectiveCameraProperties>;
 }
 
 /**
@@ -537,7 +539,9 @@ export type IAppBuilderLegacyActionPropsCloseConfigurator =
 
 type IAppBuilderPropsCameraCommon = {
 	/** Optional camera settings to be used. Defaults to the initial camera of the viewport. */
-	camera?: OrthographicCameraProperties | PerspectiveCameraProperties;
+	camera?:
+		| Partial<OrthographicCameraProperties>
+		| Partial<PerspectiveCameraProperties>;
 	/** Camera properties, including duration and easing. */
 	options?: ICameraOptions;
 };
@@ -632,6 +636,7 @@ export type AppBuilderWidgetType =
 	| "desktopClientOutputs"
 	| "controls"
 	| "accordionUi"
+	| "savedStates"
 	| "sceneTreeExplorer"
 	| "stackUi";
 
@@ -702,6 +707,18 @@ export enum AttributeVisualizationVisibility {
 	/** The attribute visualization is disabled by default, but can be turned on. */
 	DefaultOff = "defaultOff",
 }
+
+export type SavedStatesVisualization = Extract<
+	SelectComponentType,
+	| "buttonflex"
+	| "buttongroup"
+	| "chipgroup"
+	| "dropdown"
+	| "imagedropdown"
+	| "fullwidthcards"
+	| "carousel"
+	| "grid"
+>;
 
 /** Properties of a widget then attribute visualization. */
 export interface IAppBuilderWidgetPropsAttributeVisualization {
@@ -775,6 +792,11 @@ export interface IAppBuilderWidgetPropsDesktopClientSelection {
 /** Properties of a desktop client outputs widget. */
 export interface IAppBuilderWidgetPropsDesktopClientOutputs {
 	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
+}
+
+/** Properties of a saved states widget. */
+export interface IAppBuilderWidgetPropsSavedStates {
+	visualization?: SavedStatesVisualization;
 }
 
 /**
@@ -856,6 +878,7 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsDesktopClientOutputs
 		| IAppBuilderWidgetPropsControls
 		| IAppBuilderWidgetPropsAccordionUi
+		| IAppBuilderWidgetPropsSavedStates
 		| IAppBuilderWidgetPropsSceneTreeExplorer
 		| IAppBuilderWidgetPropsStackUi;
 }
@@ -1204,6 +1227,14 @@ export function isAccordionUiWidget(widget: IAppBuilderWidget): widget is {
 	return widget.type === "accordionUi";
 }
 
+/** assert widget type "savedStates" */
+export function isSavedStatesWidget(widget: IAppBuilderWidget): widget is {
+	type: "savedStates";
+	props: IAppBuilderWidgetPropsSavedStates;
+} {
+	return widget.type === "savedStates";
+}
+
 /** assert widget type "stackUi" */
 export function isStackUiWidget(widget: IAppBuilderWidget): widget is {
 	type: "stackUi";
@@ -1474,6 +1505,10 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 * If the session is an instance, optional property to delay loading of the instance until the first time it is used. (default: false)
 	 */
 	loadOnFirstUse?: boolean;
+	/**
+	 * If the session should be kept in the store after the first use (default: false)
+	 */
+	keepInStore?: boolean;
 }
 
 /**

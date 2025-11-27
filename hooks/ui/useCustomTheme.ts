@@ -6,6 +6,7 @@ import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderShared/co
 import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderControlsWidgetComponent";
 import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
 import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
+import {AppBuilderSavedStatesWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderSavedStatesWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
 import {NumberAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/NumberAttribute";
 import {StringAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/StringAttribute";
@@ -53,6 +54,7 @@ import {
 } from "@AppBuilderShared/types/shapediver/viewport";
 import {ViewportIconsThemeProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {ViewportOverlayWrapperThemeProps} from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	AreaChart,
 	BarChart,
@@ -648,6 +650,28 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			AppBuilderRoundChartWidgetComponent:
 				AppBuilderRoundChartWidgetComponentThemeProps({}),
+			/**
+			 * AppBuilderSavedStatesWidgetComponent
+			 *
+			 * Used for defining theme overrides for saved states widgets.
+			 */
+			AppBuilderSavedStatesWidgetComponent:
+				AppBuilderSavedStatesWidgetComponentThemeProps({
+					// selectProps: {
+					// 	type: "fullwidthcards",
+					// },
+					// paperProps: {
+					// 	p: "md",
+					// },
+					// stackProps: {
+					// 	gap: "md",
+					// },
+					// loaderFlexProps: {
+					// 	justify: "center",
+					// 	align: "center",
+					// },
+					// loaderProps: {},
+				}),
 			/**
 			 * AppBuilderStackUiWidgetComponent
 			 *
@@ -1346,7 +1370,7 @@ export const useCustomTheme = (props: Props = {}) => {
 		globalThemeOverrides,
 		themeOverride,
 	);
-	console.debug("Theme", theme);
+	Logger.debug("Theme", theme);
 
 	/**
 	 * @see https://mantine.dev/styles/css-variables/#css-variables-resolver

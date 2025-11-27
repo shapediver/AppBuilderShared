@@ -119,43 +119,38 @@ export function useCreateModelState(props: Props) {
 				);
 
 			// create the image for the model state (if includeImage is true)
-			// if an image ref is provided, use that
+			// if an image ref is provided, use that (unless includeImage is false)
 			// if the image ref points to an export, try to get the export from the session and request it
 			// otherwise, if no image ref is provided, use getScreenshot (if available)
 			// if includeImage is false or undefined, do not create an image
 			let modelStateImage: string | undefined = undefined;
-			if (includeImage) {
-				if (image) {
-					if (image.href) {
-						modelStateImage = image.href;
-					} else if (image.export) {
-						const exportSession =
-							sessions[image.export.sessionId || sessionId];
-						if (exportSession) {
-							const exp = Object.values(
-								exportSession.exports,
-							).find(
-								(e) =>
-									e.id === image.export?.name ||
-									e.name === image.export?.name ||
-									e.displayname === image.export?.name,
-							);
-							if (exp) {
-								const exportResult = await exp.request();
-								if (
-									exportResult.content &&
-									exportResult.content[0] &&
-									exportResult.content[0].href
-								) {
-									modelStateImage =
-										exportResult.content[0].href;
-								}
+			if (includeImage !== false && image) {
+				if (image.href) {
+					modelStateImage = image.href;
+				} else if (image.export) {
+					const exportSession =
+						sessions[image.export.sessionId || sessionId];
+					if (exportSession) {
+						const exp = Object.values(exportSession.exports).find(
+							(e) =>
+								e.id === image.export?.name ||
+								e.name === image.export?.name ||
+								e.displayname === image.export?.name,
+						);
+						if (exp) {
+							const exportResult = await exp.request();
+							if (
+								exportResult.content &&
+								exportResult.content[0] &&
+								exportResult.content[0].href
+							) {
+								modelStateImage = exportResult.content[0].href;
 							}
 						}
 					}
-				} else if (getScreenshot) {
-					modelStateImage = await getScreenshot();
 				}
+			} else if (includeImage && getScreenshot) {
+				modelStateImage = await getScreenshot();
 			}
 
 			const modelStateId = sessionApi

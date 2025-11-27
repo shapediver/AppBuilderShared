@@ -254,9 +254,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 										hideJsonMenu={
 											sessionSettings?.hideJsonMenu
 										}
-										hideSavedStates={
-											sessionSettings?.hideSavedStates
-										}
 									/>
 								)}
 								<ViewportOverlayWrapper

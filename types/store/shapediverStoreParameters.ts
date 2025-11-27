@@ -87,6 +87,14 @@ export interface IParameterChanges {
 		 * By default, all changes are accepted.
 		 */
 		parameterIds?: string[],
+		/**
+		 * If true, skip updating the URL after executing the changes.
+		 * The URL update would remove the model state id and saved state id
+		 * from the URL query parameters if they were present.
+		 * This is useful in case the changes are part of a larger process,
+		 * like output actions.
+		 */
+		skipUrlUpdate?: boolean,
 	) => Promise<{[parameterId: string]: any}>;
 	/** Reject the changes, this rejects wait */
 	reject: () => void;
@@ -174,6 +182,14 @@ export type IGenericParameterExecutor = (
 	 * This is used for saving the state of dynamic parameters.
 	 */
 	furtherHistoryState?: ISessionsHistoryState,
+	/**
+	 * If true, skip updating the URL after executing the changes.
+	 * The URL update would remove the model state id and saved state id
+	 * from the URL query parameters if they were present.
+	 * This is useful in case the changes are part of a larger process,
+	 * like output actions.
+	 */
+	skipUrlUpdate?: boolean,
 ) => Promise<unknown | void>;
 
 /**
@@ -464,11 +480,13 @@ export interface IShapeDiverStoreParameters {
 	 * execute and await the changes immediately.
 	 * @param state
 	 * @param skipHistory If true, skip the creation of a history entry after successful execution.
+	 * @param skipUrlUpdate If true, skip updating the URL after executing the changes.
 	 * @returns
 	 */
 	readonly batchParameterValueUpdate: (
 		state: ISessionsHistoryState,
 		skipHistory?: boolean,
+		skipUrlUpdate?: boolean,
 	) => Promise<void>;
 
 	/**

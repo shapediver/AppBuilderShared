@@ -2,13 +2,14 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import {Carousel} from "@mantine/carousel";
 import "@mantine/carousel/styles.css";
 import {MantineThemeComponent, useProps} from "@mantine/core";
-import React, {useCallback, useMemo} from "react";
+import React, {useMemo} from "react";
+import {parameterMultiSelect} from "~/shared/utils/parameters/parameterMultiSelect";
+import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 import ButtonImageCard from "./ButtonImageCard";
 import classes from "./SelectCarouselComponent.module.css";
 import {
 	SelectCardStyleProps,
 	SelectCarouselStyleProps,
-	SelectComponentProps,
 	SelectImageStyleProps,
 	SelectStackStyleProps,
 	SelectTextStyleProps,
@@ -71,7 +72,8 @@ export function SelectCarouselComponentThemeProps(
  * The carousel is responsive based on container width.
  */
 export default function SelectCarouselComponent(
-	props: SelectComponentProps & SelectCarouselComponentThemePropsType,
+	props: UniversalMultiSelectComponentProps &
+		SelectCarouselComponentThemePropsType,
 ) {
 	const {
 		value,
@@ -80,8 +82,15 @@ export default function SelectCarouselComponent(
 		disabled,
 		itemData,
 		settings,
+		multiselect,
 		...styleProps
 	} = props;
+
+	const {handleClick, isSelected} = parameterMultiSelect(
+		value,
+		onChange,
+		multiselect,
+	);
 
 	// style properties
 	const {
@@ -122,14 +131,11 @@ export default function SelectCarouselComponent(
 	}, [items]);
 
 	// Handle card selection
-	const handleCardClick = useCallback(
-		(itemValue: string, disabled: boolean | undefined) => {
-			if (!disabled) {
-				onChange(itemValue);
-			}
-		},
-		[onChange],
-	);
+	const handleCardClick = (itemValue: string, disabled?: boolean) => {
+		if (!disabled) {
+			handleClick(itemValue);
+		}
+	};
 
 	// Extract card-related props for spreading
 	const cardStyleProps = {
@@ -163,7 +169,7 @@ export default function SelectCarouselComponent(
 					<div className={`${classes.cardWrapper}`}>
 						<ButtonImageCard
 							item={item}
-							selected={value === item.value}
+							selected={isSelected(item.value)}
 							disabled={disabled}
 							onClick={handleCardClick}
 							showLabel={showLabel}

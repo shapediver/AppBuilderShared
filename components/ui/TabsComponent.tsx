@@ -21,6 +21,8 @@ export interface ITabsComponentProps extends BoxProps {
 	defaultValue: string;
 	/** The tabs. */
 	tabs: PropsTab[];
+	/** Optional callback when active tab changes */
+	onActiveTabChange?: (tabIndex: number) => void;
 }
 
 const getTabValue = (props: PropsTab, index: number) => {
@@ -30,6 +32,7 @@ const getTabValue = (props: PropsTab, index: number) => {
 export default function TabsComponent({
 	defaultValue,
 	tabs,
+	onActiveTabChange,
 	...rest
 }: ITabsComponentProps) {
 	const [activeTab, setActiveTab] = useState<string | null>(defaultValue);
@@ -40,6 +43,13 @@ export default function TabsComponent({
 		setActiveTab(value);
 		if (value) {
 			activeTabsHistory.current.add(value);
+			// Notify parent component of tab change
+			if (onActiveTabChange) {
+				const tabIndex = tabValues.findIndex(
+					(tabValue) => tabValue === value,
+				);
+				if (tabIndex !== -1) onActiveTabChange(tabIndex);
+			}
 		}
 	};
 

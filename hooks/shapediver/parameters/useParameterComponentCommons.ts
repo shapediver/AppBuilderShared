@@ -3,6 +3,7 @@ import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDive
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IShapeDiverParameterState} from "@AppBuilderShared/types/shapediver/parameter";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {CUSTOM_SESSION_ID_POSTFIX} from "../appbuilder/useAppBuilderCustomParameters";
 
@@ -77,7 +78,7 @@ export function useParameterComponentCommons<T>(
 					if (actions.setUiValue(curval)) {
 						actions.execute(!acceptRejectMode).then(() => cb());
 					} else {
-						console.warn(
+						Logger.warn(
 							`setUiValue failed for parameter ${definition.id}, the value is not valid.`,
 							curval,
 						);

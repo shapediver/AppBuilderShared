@@ -68,7 +68,14 @@ export default function AppBuilderActionCreateModelStateComponent(
 		}
 
 		setLoading(false);
-	}, [createModelState, includeImage, includeGltf]);
+	}, [
+		createModelState,
+		parameterNamesToInclude,
+		parameterNamesToExclude,
+		image,
+		includeImage,
+		includeGltf,
+	]);
 
 	return (
 		<AppBuilderActionComponent

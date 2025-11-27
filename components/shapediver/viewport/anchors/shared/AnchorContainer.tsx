@@ -18,6 +18,7 @@ import {
 	Paper,
 	PaperProps,
 	Portal,
+	ScrollArea,
 	Stack,
 	StackProps,
 	useMantineTheme,
@@ -45,6 +46,7 @@ import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
 import {useCanvasSize} from "./useCanvasSize";
 import {cleanUnit} from "./utils";
 
+import shellClasses from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage.module.css";
 import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {defaultStyleProps as ViewportIconButtonDefaultStyleProps} from "../../buttons/ViewportIconButton";
 import {defaultStyleProps as ViewportIconsDefaultStyleProps} from "../../ViewportIcons";
@@ -532,17 +534,16 @@ export function useAnchorContainer({
 				h={aboveMobileBreakpoint ? height : "100%"}
 				style={{
 					overflow: "auto",
-					scrollbarWidth: "none",
 				}}
 			>
-				<Stack
-					style={{
-						width: "100%",
-						height: "100%",
-					}}
+				<ScrollArea
+					h={"100%"}
+					w={"100%"}
+					className={shellClasses.addShellWidgetsContainer}
+					type="auto"
 				>
 					{element}
-				</Stack>
+				</ScrollArea>
 			</Group>
 		</Stack>
 	);
@@ -635,7 +636,13 @@ export function useAnchorContainer({
 		return () => {
 			if (token) removeAdditionalContainerContent(token);
 		};
-	}, [aboveMobileBreakpoint, showContent, mobileContainer, mobileDisabled]);
+	}, [
+		aboveMobileBreakpoint,
+		showContent,
+		mobileContainer,
+		mobileDisabled,
+		inner.key,
+	]);
 
 	return {
 		AnchorElement,

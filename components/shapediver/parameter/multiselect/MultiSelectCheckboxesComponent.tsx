@@ -8,6 +8,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
+import TooltipWrapper from "~/shared/components/ui/TooltipWrapper";
 import {MultiSelectComponentProps} from "./MultiSelectComponent";
 
 interface StyleProps {
@@ -47,7 +48,8 @@ export function MultiSelectCheckboxesProps(
 export default function MultiSelectCheckboxesComponent(
 	props: MultiSelectComponentProps & MultiSelectCheckboxesPropsType,
 ) {
-	const {value, onChange, items, disabled, height, ...styleProps} = props;
+	const {value, onChange, items, disabled, height, itemData, ...styleProps} =
+		props;
 
 	// style properties
 	const {stackProps, checkboxProps, checkboxPropsSelectAll} = useProps(
@@ -91,18 +93,31 @@ export default function MultiSelectCheckboxesComponent(
 	);
 
 	const checkboxElements = useMemo(() => {
-		return items.map((item) => (
-			<Checkbox
-				{...checkboxProps}
-				key={item}
-				label={item}
-				checked={value.includes(item)}
-				onChange={(event) =>
-					handleItemChange(item, event.currentTarget.checked)
-				}
-				disabled={disabled}
-			/>
-		));
+		return items.map((item) => {
+			const data = itemData?.[item];
+			const displayName = data?.displayname || item;
+			const tooltip = data?.tooltip;
+			const checkbox = (
+				<Checkbox
+					{...checkboxProps}
+					key={item}
+					label={displayName}
+					checked={value.includes(item)}
+					onChange={(event) =>
+						handleItemChange(item, event.currentTarget.checked)
+					}
+					disabled={disabled}
+				/>
+			);
+
+			return tooltip ? (
+				<TooltipWrapper key={item} label={tooltip}>
+					{checkbox}
+				</TooltipWrapper>
+			) : (
+				checkbox
+			);
+		});
 	}, [items, value, disabled, checkboxProps]);
 
 	// Custom height hook

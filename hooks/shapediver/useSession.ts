@@ -99,7 +99,7 @@ export function useSession(
 
 		return () => {
 			promiseChain.current = promiseChain.current.then(async () => {
-				await closeSession(props.id);
+				if (!props.keepInStore) await closeSession(props.id);
 				setSessionApi(undefined);
 				setError(undefined);
 

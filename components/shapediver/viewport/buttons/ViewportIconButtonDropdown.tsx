@@ -83,7 +83,9 @@ export default function ViewportIconButtonDropdown(
 			<Menu.Dropdown ref={menuRef} {...menuDropdownProps}>
 				{sections.map((section, i) => (
 					<React.Fragment key={i}>
-						{i > 0 && <Menu.Divider />}
+						{i > 0 && sections[i - 1].length > 0 && (
+							<Menu.Divider />
+						)}
 						{section.map((item, j) => (
 							<Menu.Item
 								key={`${i}-${j}`}

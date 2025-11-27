@@ -1,6 +1,5 @@
 import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";
 import {
 	IAppBuilderSettingsJsonSession,
 	IAppBuilderSettingsSession,
@@ -17,7 +16,9 @@ import {
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {useShallow} from "zustand/react/shallow";
 
+import {QUERYPARAM_REDIRECT} from "@AppBuilderShared/types/shapediver/queryparams";
 import {MODELS} from "@modelstorage";
+import {useShapeDiverStorePlatformSavedStates} from "~/shared/store/useShapeDiverStorePlatformSavedStates";
 
 // Type assertion for MODELS
 const ModelStorage = MODELS as unknown as Record<
@@ -45,10 +46,10 @@ export default function useResolveAppBuilderSessions(
 
 	// when running on the platform, try to get a token (refresh token grant)
 	const {value: sdkRef, error: platformError} = useAsync(async () => {
-		// in case query parameter "redirect" is set to "0", do not redirect
+		// in case query parameter QUERYPARAM_REDIRECT is set to "0", do not redirect
 		// on authentication failure
 		const params = new URLSearchParams(window.location.search);
-		const redirect = params.get("redirect") === "0" ? false : true;
+		const redirect = params.get(QUERYPARAM_REDIRECT) !== "0";
 
 		return await authenticate(redirect);
 	});
@@ -173,10 +174,10 @@ export default function useResolveAppBuilderSessions(
 						return result.data;
 					};
 					const iframeData = await getIframeData();
-
+					setCurrentModel(iframeData.model);
 					for (const savedState of iframeData.model.saved_states ??
 						[]) {
-						await addSavedState(savedState);
+						addSavedState(savedState);
 					}
 
 					return {

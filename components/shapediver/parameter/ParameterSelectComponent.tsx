@@ -13,6 +13,7 @@ import {
 	SelectComponentType,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {validateSelectParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
 import React, {useCallback, useContext, useMemo} from "react";
@@ -101,7 +102,7 @@ export default function ParameterSelectComponent(
 					title: "Invalid Parameter Settings",
 					message: `Invalid settings for parameter "${definition.name}", see console for details.`,
 				});
-				console.warn(
+				Logger.warn(
 					`Invalid settings for parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 				);
 			}

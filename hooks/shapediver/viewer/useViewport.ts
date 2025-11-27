@@ -7,6 +7,10 @@ import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderShared/
 import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
 import {PROCESS_STATUS} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
+import {
+	OrthographicCameraProperties,
+	PerspectiveCameraProperties,
+} from "@shapediver/viewer.viewport";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
@@ -99,7 +103,10 @@ export function useViewport(props: ViewportCreateDto) {
 							contentType,
 							quality,
 							resolution,
-							camera,
+							camera as
+								| OrthographicCameraProperties
+								| PerspectiveCameraProperties
+								| undefined,
 						);
 						// sometimes the screenshot is not ready immediately (even though it should be)
 						await new Promise((resolve) => setTimeout(resolve, 0));

@@ -39,6 +39,8 @@ import {
 	IShapeDiverStoreParameters,
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
+import {Logger} from "@AppBuilderShared/utils/logger";
+import {removeStatesFromUrl} from "@AppBuilderShared/utils/modifyUrl";
 import {addValidator} from "@AppBuilderShared/utils/parameters/parameterValidation";
 import {ReqCustomization, ReqExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
@@ -88,10 +90,10 @@ function createParameterExecutor<T>(
 			// check whether there is anything to do
 			const result = changes.removeValueChange(paramId);
 			if (result.removed && uiValue === execValue) {
-				console.debug(`Removing change of parameter ${paramId}`);
+				Logger.debug(`Removing change of parameter ${paramId}`);
 				// check if there are any other parameter updates queued
 				if (result.isEmpty) {
-					console.debug(
+					Logger.debug(
 						`Rejecting changes for namespace ${namespace}`,
 					);
 					changes.reject();
@@ -102,7 +104,7 @@ function createParameterExecutor<T>(
 
 			// execute the change
 			try {
-				console.debug(
+				Logger.debug(
 					`Queueing change of parameter ${paramId} to ${uiValue}`,
 				);
 				changes.addValueChange(paramId, uiValue);
@@ -114,17 +116,17 @@ function createParameterExecutor<T>(
 					: await changes.wait;
 				const value = paramId in values ? values[paramId] : uiValue;
 				if (value !== uiValue)
-					console.debug(
+					Logger.debug(
 						`Executed change of parameter ${paramId} to ${value} instead of ${uiValue} (overridden by pre-execution hook)`,
 					);
 				else
-					console.debug(
+					Logger.debug(
 						`Executed change of parameter ${paramId} to ${uiValue}`,
 					);
 
 				return value;
 			} catch (e) {
-				console.debug(
+				Logger.debug(
 					`Rejecting change of parameter ${paramId} to ${uiValue}, resetting to "${execValue}"`,
 					e ?? "",
 				);
@@ -266,7 +268,13 @@ function createGenericParameterExecutorForSession(
 	 * that should be executed.
 	 * Typically this does not include all parameters defined by the session.
 	 */
-	return async (values, namespace, skipHistory, furtherHistoryState) => {
+	return async (
+		values,
+		namespace,
+		skipHistory,
+		furtherHistoryState,
+		skipUrlUpdate,
+	) => {
 		// store previous values (we restore them in case of error)
 		const previousValues = Object.keys(values).reduce(
 			(acc, paramId) => {
@@ -325,6 +333,9 @@ function createGenericParameterExecutorForSession(
 				};
 				historyPusher(state);
 			}
+
+			// cleanup url
+			if (!skipUrlUpdate) removeStatesFromUrl(true, true, true);
 
 			// report success
 			callbacks?.onSuccess({
@@ -422,6 +433,7 @@ function createParameterStore<T>(
 						forceImmediate?: boolean,
 						skipHistory?: boolean,
 						acceptAll?: boolean,
+						skipUrlUpdate?: boolean,
 					): Promise<T | string> {
 						const state = get().state;
 						const result = await executor.execute(
@@ -430,6 +442,7 @@ function createParameterStore<T>(
 							forceImmediate,
 							skipHistory,
 							acceptAll,
+							skipUrlUpdate,
 						);
 						// TODO in case result is not the current uiValue, we could somehow visualize
 						// the fact that the uiValue gets reset here
@@ -1211,7 +1224,7 @@ export const useShapeDiverStoreParameters =
 								acceptRejectMode,
 							);
 							if (!def.isValid?.(def.definition.defval)) {
-								console.warn(
+								Logger.warn(
 									`Generic parameter ${paramId} has an invalid default value: ${def.definition.defval}`,
 								);
 							}
@@ -1224,11 +1237,11 @@ export const useShapeDiverStoreParameters =
 							const {actions} =
 								parameterStores[paramId].getState();
 							if (!actions.setUiAndExecValue(def.value)) {
-								console.warn(
+								Logger.warn(
 									`Could not update value of generic parameter ${paramId} to ${def.value}`,
 								);
 							} else {
-								console.debug(
+								Logger.debug(
 									`Updated value of generic parameter ${paramId} to ${def.value}`,
 								);
 							}
@@ -1458,7 +1471,7 @@ export const useShapeDiverStoreParameters =
 
 					const {preExecutionHooks} = get();
 					if (namespace in preExecutionHooks)
-						console.warn(
+						Logger.warn(
 							`Pre-execution hook for session namespace ${namespace} already exists, overwriting it.`,
 						);
 
@@ -1497,6 +1510,7 @@ export const useShapeDiverStoreParameters =
 				async batchParameterValueUpdate(
 					state: ISessionsHistoryState,
 					skipHistory?: boolean,
+					skipUrlUpdate?: boolean,
 				) {
 					const {parameterStores} = get();
 
@@ -1514,7 +1528,7 @@ export const useShapeDiverStoreParameters =
 						const paramIdsValid = paramIds.filter((paramId) => {
 							const store = stores[paramId];
 							if (!store) {
-								console.warn(
+								Logger.warn(
 									`Parameter ${paramId} does not exist for session namespace ${namespace}`,
 								);
 								return false;
@@ -1523,7 +1537,7 @@ export const useShapeDiverStoreParameters =
 							const {actions} = store.getState();
 							const value = values[paramId];
 							if (!actions.isValid(value)) {
-								console.warn(
+								Logger.warn(
 									`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
 								);
 								return false;
@@ -1538,7 +1552,12 @@ export const useShapeDiverStoreParameters =
 							actions.setUiValue(values[paramId]);
 							// Note: We do not execute the changes immediately here,
 							// but call changes.accept below.
-							return actions.execute(false, skipHistory);
+							return actions.execute(
+								false,
+								skipHistory,
+								undefined,
+								skipUrlUpdate,
+							);
 						});
 						paramUpdatePromises.push(...promises);
 					}
@@ -1548,7 +1567,9 @@ export const useShapeDiverStoreParameters =
 					const acceptPromises = Object.keys(state)
 						.map((namespace) => parameterChanges[namespace])
 						.sort((a, b) => a.priority - b.priority)
-						.map((c) => c.accept(skipHistory));
+						.map((c) =>
+							c.accept(skipHistory, undefined, skipUrlUpdate),
+						);
 
 					// wait for all parameter updates and accept promises
 					await Promise.all(acceptPromises);
@@ -1654,7 +1675,7 @@ export const useShapeDiverStoreParameters =
 					} = get();
 					try {
 						await restoreHistoryStateFromTimestamp(entry.time);
-						console.debug(
+						Logger.debug(
 							`Restored parameter values from history at timestamp ${entry.time}`,
 							entry,
 						);
@@ -1683,13 +1704,13 @@ export const useShapeDiverStoreParameters =
 							});
 						});
 						if (index >= 0) {
-							console.debug(
+							Logger.debug(
 								`Restoring parameter values from history at index ${index}`,
 								entry,
 							);
 							await restoreHistoryStateFromIndex(index);
 						} else {
-							console.debug(
+							Logger.debug(
 								"No matching history entry found, directly restoring parameter values",
 								entry,
 							);

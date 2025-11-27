@@ -7,6 +7,7 @@ import {
 	IAcceptRejectModeSelector,
 	IGenericParameterExecutor,
 } from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {ISessionApi, PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useCallback, useContext, useEffect, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -77,13 +78,17 @@ export function useAppBuilderCustomParameters(props: Props) {
 
 	// prepare for adding pre-execution hook, which will set the value of the parameter named "AppBuilder"
 	// to a JSON string of the current custom parameter values
-	const {setPreExecutionHook, removePreExecutionHook} =
-		useShapeDiverStoreParameters(
-			useShallow((state) => ({
-				setPreExecutionHook: state.setPreExecutionHook,
-				removePreExecutionHook: state.removePreExecutionHook,
-			})),
-		);
+	const {
+		setPreExecutionHook,
+		removePreExecutionHook,
+		batchParameterValueUpdate,
+	} = useShapeDiverStoreParameters(
+		useShallow((state) => ({
+			setPreExecutionHook: state.setPreExecutionHook,
+			removePreExecutionHook: state.removePreExecutionHook,
+			batchParameterValueUpdate: state.batchParameterValueUpdate,
+		})),
+	);
 
 	// set the default values of the custom parameters whenever the
 	// custom parameter definitions change
@@ -136,13 +141,26 @@ export function useAppBuilderCustomParameters(props: Props) {
 				json.length <= appBuilderParam.definition.max!
 			) {
 				if (appBuilderParam.actions.setUiValue(json)) {
-					await appBuilderParam.actions.execute(
-						true,
-						skipHistory,
-						true,
-					);
+					if (appBuilderFileParam) {
+						// clear the appBuilderFileParam in case it exists
+						await batchParameterValueUpdate(
+							{
+								[namespace]: {
+									[appBuilderParam?.definition.id]: json,
+									[appBuilderFileParam.definition.id]: "",
+								},
+							},
+							true,
+						);
+					} else {
+						await appBuilderParam.actions.execute(
+							true,
+							skipHistory,
+							true,
+						);
+					}
 				} else {
-					console.warn(
+					Logger.warn(
 						`setUiValue failed for "${CUSTOM_DATA_INPUT_NAME}" parameter ${appBuilderParam.definition.id}, the value is not valid.`,
 					);
 				}
@@ -157,13 +175,27 @@ export function useAppBuilderCustomParameters(props: Props) {
 						new Blob([json], {type: "application/json"}),
 					)
 				) {
-					await appBuilderFileParam.actions.execute(
-						true,
-						skipHistory,
-						true,
-					);
+					if (appBuilderParam) {
+						// clear the appBuilderParam in case it exists
+						await batchParameterValueUpdate(
+							{
+								[namespace]: {
+									[appBuilderParam?.definition.id]: "",
+									[appBuilderFileParam.definition.id]:
+										appBuilderFileParam.state.uiValue,
+								},
+							},
+							true,
+						);
+					} else {
+						await appBuilderFileParam.actions.execute(
+							true,
+							skipHistory,
+							true,
+						);
+					}
 				} else {
-					console.warn(
+					Logger.warn(
 						`setUiValue failed for "${CUSTOM_DATA_INPUT_NAME}" parameter ${appBuilderFileParam.definition.id}, the value is not valid.`,
 					);
 				}
@@ -173,7 +205,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 					message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
 				});
 			} else {
-				console.warn(
+				Logger.warn(
 					`Could not find a suitable parameter named "${CUSTOM_DATA_INPUT_NAME}" whose type is 'String' or 'File'!`,
 				);
 			}
@@ -219,7 +251,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 						message: `The custom parameter value length ${json.length} exceeds the maximum length of ${appBuilderParam.definition.max!} characters. Please use a file parameter instead.`,
 					});
 				} else {
-					console.warn(
+					Logger.warn(
 						`Could not find a suitable parameter named "${CUSTOM_DATA_INPUT_NAME}" whose type is 'String' or 'File'!`,
 					);
 				}

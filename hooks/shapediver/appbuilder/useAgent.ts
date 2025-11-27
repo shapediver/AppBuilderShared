@@ -5,6 +5,7 @@ import {IAppBuilderParameterRef} from "@AppBuilderShared/types/shapediver/appbui
 import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
 import {IShapeDiverStoreParameters} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {getParameterRefs} from "@AppBuilderShared/utils/appbuilder";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	composeSdColor,
 	decomposeSdColor,
@@ -715,7 +716,7 @@ I have provided a screenshot of the 3D view for context.`
 
 			const parsedMessage = message.parsed;
 			if (!parsedMessage) {
-				console.warn("No LLM response ?!", parsedMessage);
+				Logger.warn("No LLM response ?!", parsedMessage);
 
 				return;
 			}

@@ -15,6 +15,7 @@ import {
 import React, {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderAttributeVisualizationWidgetComponent from "./widgets/AppBuilderAttributeVisualizationWidgetComponent";
+import AppBuilderSavedStatesWidgetComponent from "./widgets/AppBuilderSavedStatesWidgetComponent";
 
 interface Props {
 	parameters: PropsParameter[];
@@ -86,6 +87,20 @@ export default function AppBuilderFallbackContainerComponent({
 						key={1}
 						exports={exports}
 						outputs={outputs}
+						namespace={namespace}
+					/>,
+				],
+			});
+		}
+
+		if (!settings?.hideSavedStates) {
+			tabProps.tabs.push({
+				value: "Saved States",
+				tooltip: "Saved States",
+				icon: "tabler:bookmarks",
+				children: [
+					<AppBuilderSavedStatesWidgetComponent
+						key={2}
 						namespace={namespace}
 					/>,
 				],

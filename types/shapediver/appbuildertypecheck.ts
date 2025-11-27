@@ -11,6 +11,7 @@ import {z} from "zod";
 import {
 	AppBuilderContainerNameType,
 	AttributeVisualizationVisibility,
+	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
 
@@ -813,6 +814,22 @@ const IAppBuilderWidgetPropsStackUiSchema = z.object({
 	widgets: z.array(z.lazy((): z.ZodTypeAny => IAppBuilderWidgetSchema)),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsSavedStates
+const savedStatesVisualizationValues = [
+	"buttonflex",
+	"buttongroup",
+	"chipgroup",
+	"dropdown",
+	"imagedropdown",
+	"fullwidthcards",
+	"carousel",
+	"grid",
+] as const satisfies readonly SavedStatesVisualization[];
+
+const IAppBuilderWidgetPropsSavedStatesSchema = z.object({
+	visualization: z.enum(savedStatesVisualizationValues).optional(),
+});
+
 // Zod type definition for IAppBuilderWidget
 const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -882,6 +899,10 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("stackUi"),
 		props: IAppBuilderWidgetPropsStackUiSchema,
+	}),
+	z.object({
+		type: z.literal("savedStates"),
+		props: IAppBuilderWidgetPropsSavedStatesSchema,
 	}),
 ]);
 
@@ -1053,6 +1074,7 @@ const IAppBuilderSettingsSessionSchema = z.object({
 	modelStateId: z.string().optional(),
 	instance: z.boolean().optional(),
 	loadOnFirstUse: z.boolean().optional(),
+	keepInStore: z.boolean().optional(),
 });
 
 // Zod type definition for IAppBuilderSettingsSettings

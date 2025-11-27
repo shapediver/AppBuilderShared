@@ -1,4 +1,5 @@
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
+import {QUERYPARAM_PROVIDER} from "@AppBuilderShared/types/shapediver/queryparams";
 import {
 	IShapeDiverStorePlatformExtended,
 	PlatformCacheKeyEnum,
@@ -112,8 +113,8 @@ export const useShapeDiverStorePlatform =
 											window.location.search,
 										);
 										const provider =
-											urlParams.get("provider");
-										urlParams.delete("provider");
+											urlParams.get(QUERYPARAM_PROVIDER);
+										urlParams.delete(QUERYPARAM_PROVIDER);
 										const encodedRedirect =
 											encodeURIComponent(
 												`${window.location.origin}${window.location.pathname}?${urlParams.toString()}`,

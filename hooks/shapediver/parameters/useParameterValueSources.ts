@@ -12,6 +12,7 @@ import {
 	isScreenshotSource,
 	isSdtfSource,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {IFileParameterApi, PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useExportSources} from "./valueSources/useExportSources";
@@ -140,7 +141,7 @@ export function useParameterValueSources(props?: {
 					});
 					approvedSources.push(sources[i]);
 				} else {
-					console.warn(
+					Logger.warn(
 						`Data output source parameter has invalid type ${type}. Only STRING and FILE are supported.`,
 					);
 				}
@@ -154,7 +155,7 @@ export function useParameterValueSources(props?: {
 					});
 					approvedSources.push(sources[i]);
 				} else {
-					console.warn(
+					Logger.warn(
 						`Screenshot source parameter has invalid type ${type}. Only FILE is supported.`,
 					);
 				}
@@ -163,7 +164,7 @@ export function useParameterValueSources(props?: {
 					sourcesByType.modelState.push({source: source.props});
 					approvedSources.push(sources[i]);
 				} else {
-					console.warn(
+					Logger.warn(
 						`Model state source parameter has invalid type ${type}. Only STRING is supported.`,
 					);
 				}
@@ -172,7 +173,7 @@ export function useParameterValueSources(props?: {
 					sourcesByType.sdtf.push({source: source.props});
 					approvedSources.push(sources[i]);
 				} else {
-					console.warn(
+					Logger.warn(
 						`sdTF source parameter has invalid type ${type}. Only s-type parameters are supported.`,
 					);
 				}
@@ -186,7 +187,7 @@ export function useParameterValueSources(props?: {
 					});
 					approvedSources.push(sources[i]);
 				} else {
-					console.warn(
+					Logger.warn(
 						`Export source parameter has invalid type ${type}. Only FILE is supported.`,
 					);
 				}

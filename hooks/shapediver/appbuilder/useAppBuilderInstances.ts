@@ -15,6 +15,7 @@ import {IParameterStore} from "@AppBuilderShared/types/store/shapediverStorePara
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {ResOutput, ResOutputContent} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
+	assignMaterialFromDatabase,
 	ISessionApi,
 	ITreeNode,
 	SessionOutputData,
@@ -25,6 +26,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useParameterValueSources} from "../parameters/useParameterValueSources";
 
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {useSessions} from "../useSessions";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 interface Props {
@@ -184,7 +186,7 @@ export function useAppBuilderInstances(props: Props) {
 				// check if the ids match, if not, warn the user
 				if (index !== -1) {
 					if (sessionsDescriptions[index].id !== instance.sessionId) {
-						console.warn(
+						Logger.warn(
 							`Multiple instances are using the same slug "${slug}" but different session ids ("${sessionsDescriptions[index].id}" and "${instance.sessionId}"). This can lead to unexpected behavior.`,
 						);
 					}
@@ -217,6 +219,7 @@ export function useAppBuilderInstances(props: Props) {
 		).forEach((s) => {
 			s.loadOutputs = false;
 			s.registerParametersAndExports = false;
+			s.keepInStore = true;
 		});
 		return sessionData;
 	}, [sessionData]);
@@ -226,10 +229,10 @@ export function useAppBuilderInstances(props: Props) {
 
 	useEffect(() => {
 		if (platformError)
-			console.warn("Error resolving sessions:", platformError);
+			Logger.warn("Error resolving sessions:", platformError);
 
 		for (const sessionError of sessionErrors)
-			console.warn("Error creating sessions:", sessionError);
+			Logger.warn("Error creating sessions:", sessionError);
 	}, [platformError, sessionErrors]);
 
 	const createParsedInstances = useCallback(
@@ -255,7 +258,7 @@ export function useAppBuilderInstances(props: Props) {
 						if (parameter) {
 							parameterValuesWithIds[parameter.id] = value + "";
 						} else {
-							console.warn(
+							Logger.warn(
 								`Could not find parameter for key ${key} in session ${session.id}.`,
 							);
 						}
@@ -308,7 +311,7 @@ export function useAppBuilderInstances(props: Props) {
 							instance.parameterValues[key] = resolvedValue + "";
 						} else {
 							instance.parameterValues[key] = "";
-							console.warn(
+							Logger.warn(
 								`Could not resolve parameter value source for parameter ${key} in instance ${instance.name}. Setting value to empty string.`,
 							);
 						}
@@ -376,7 +379,19 @@ export function useAppBuilderInstances(props: Props) {
 			};
 		} = {};
 
+		const existingNames = new Set<string>();
 		instances.forEach((instance, index) => {
+			if (instance.name) {
+				if (existingNames.has(instance.name)) {
+					Logger.warn(
+						`Duplicate instance name found: ${instance.name}. Instance names must be unique, skipping instance.`,
+					);
+					return;
+				} else {
+					existingNames.add(instance.name);
+				}
+			}
+
 			Object.entries(instance.parameterValues ?? {}).forEach(
 				([key, value]) => {
 					if (typeof value === "object" && isParameterSource(value)) {
@@ -768,6 +783,10 @@ const createInstance = (
 			instanceNode.addChild(transformationNode);
 		});
 
+		// if there is a material database, we need to apply it
+		if (assignMaterialFromDatabase)
+			assignMaterialFromDatabase(instanceNode);
+
 		// send a progress update
 		progressCallback({
 			percentage: 0.9,
@@ -818,7 +837,11 @@ const processOutputActions = (
 		};
 	},
 	namespace: string,
-	batchParameterValueUpdate: (params: Record<string, any>) => Promise<void>,
+	batchParameterValueUpdate: (
+		params: Record<string, any>,
+		skipHistory?: boolean,
+		skipUrlUpdate?: boolean,
+	) => Promise<void>,
 	getParameter: (
 		namespace: string,
 		key: string,
@@ -943,9 +966,13 @@ const processOutputActions = (
 		if (Object.keys(param).length === 0) return outputCallbackPromises;
 
 		outputCallbackPromises.push(
-			batchParameterValueUpdate({
-				[namespace]: param,
-			}),
+			batchParameterValueUpdate(
+				{
+					[namespace]: param,
+				},
+				true,
+				true,
+			),
 		);
 	}
 

@@ -4,7 +4,7 @@ import {
 	Select,
 	defaultOptionsFilter,
 } from "@mantine/core";
-import React, {useCallback} from "react";
+import React, {useCallback, useMemo} from "react";
 import {UniversalMultiSelectComponentProps} from "~/shared/components/shapediver/parameter/multiselect/MultiSelectComponent";
 
 /**
@@ -15,7 +15,20 @@ import {UniversalMultiSelectComponentProps} from "~/shared/components/shapediver
 export default function SelectDropDownComponent(
 	props: UniversalMultiSelectComponentProps,
 ) {
-	const {items, disabled, inputContainer, searchable, limit} = props;
+	const {items, disabled, inputContainer, searchable, limit, itemData} =
+		props;
+
+	const selectData = useMemo(
+		() =>
+			items.map((item) => {
+				const data = itemData?.[item];
+				return {
+					value: item,
+					label: data?.displayname || item,
+				};
+			}),
+		[items, itemData],
+	);
 
 	if (props.multiselect) {
 		const {value, onChange} = props;
@@ -23,7 +36,7 @@ export default function SelectDropDownComponent(
 			<MultiSelect
 				value={value}
 				onChange={onChange}
-				data={items}
+				data={selectData}
 				disabled={disabled}
 				inputContainer={inputContainer}
 			/>
@@ -81,7 +94,7 @@ export default function SelectDropDownComponent(
 		<Select
 			value={value}
 			onChange={onChange}
-			data={items}
+			data={selectData}
 			disabled={disabled}
 			allowDeselect={false}
 			inputContainer={inputContainer}

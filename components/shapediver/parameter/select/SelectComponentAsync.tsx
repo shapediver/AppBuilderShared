@@ -74,6 +74,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				items={items}
 				itemData={itemsData}
 				disabled={loading}
+				multiselect={false}
 			/>
 		);
 	} else if (type === "grid") {
@@ -89,6 +90,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				items={items}
 				itemData={itemsData}
 				disabled={loading}
+				multiselect={false}
 			/>
 		);
 	} else return <></>;

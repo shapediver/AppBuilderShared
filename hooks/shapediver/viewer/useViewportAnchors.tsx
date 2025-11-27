@@ -6,6 +6,7 @@ import {
 	isAnchor2dContainer,
 	isAnchor3dContainer,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import React, {useEffect, useState} from "react";
 
 interface Props {
@@ -26,8 +27,20 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 
 	useEffect(() => {
 		const anchors: JSX.Element[] = [];
+
+		const existingIds = new Set<string>();
 		containers?.forEach((container) => {
 			if (isAnchor3dContainer(container)) {
+				// check if there are anchors with the same id
+				if (existingIds.has(container.props.id)) {
+					Logger.warn(
+						`Duplicate anchor id found: ${container.props.id}. Anchor ids must be unique, skipping anchor.`,
+					);
+					return;
+				} else {
+					existingIds.add(container.props.id);
+				}
+
 				anchors.push(
 					<ViewportAnchor3d
 						key={JSON.stringify(container)}
@@ -57,6 +70,16 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 					/>,
 				);
 			} else if (isAnchor2dContainer(container)) {
+				// check if there are anchors with the same id
+				if (existingIds.has(container.props.id)) {
+					Logger.warn(
+						`Duplicate anchor id found: ${container.props.id}. Anchor ids must be unique, skipping anchor.`,
+					);
+					return;
+				} else {
+					existingIds.add(container.props.id);
+				}
+
 				anchors.push(
 					<ViewportAnchor2d
 						key={JSON.stringify(container)}

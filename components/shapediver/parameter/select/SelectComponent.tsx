@@ -10,6 +10,7 @@ import {
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {CarouselProps} from "@mantine/carousel";
 import {
+	ButtonGroupProps,
 	ButtonProps,
 	CardProps,
 	FlexProps,
@@ -117,16 +118,35 @@ export interface SelectComponentProps {
 	multiselect?: boolean;
 }
 
-interface SelectComponentPropsExt
-	extends Omit<SelectComponentProps, "scrollingApi"> {
-	/** Type of select component to use. */
-	type?: SelectComponentType;
+/** Base props shared by all select component types */
+type SelectComponentPropsBase = Omit<SelectComponentProps, "scrollingApi"> & {
 	/**
 	 * Name of the "data source" to fetch items and item data from.
 	 * This is used for connecting to data sources via the e-commerce API.
 	 */
 	source?: string;
-}
+};
+
+/** Type-specific props for each select component type */
+type SelectComponentPropsByType = {
+	buttongroup?: ButtonGroupProps;
+};
+
+/** Discriminated union type that combines base props with type-specific props */
+export type SelectComponentPropsExt = SelectComponentPropsBase &
+	(
+		| {
+				type?: Exclude<
+					SelectComponentType,
+					keyof SelectComponentPropsByType
+				>;
+		  }
+		| {
+				[K in keyof SelectComponentPropsByType]: {
+					type: K;
+				} & SelectComponentPropsByType[K];
+		  }[keyof SelectComponentPropsByType]
+	);
 
 /**
  * Functional select component.
@@ -161,6 +181,7 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 				{...rest}
 				type={type}
 				scrollingApi={scrollingApi}
+				multiselect={false}
 			/>
 		);
 	else if (type === "buttonflex") {
@@ -174,11 +195,11 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 	} else if (type === "imagedropdown") {
 		return <SelectImageDropDownComponent {...rest} />;
 	} else if (type === "fullwidthcards") {
-		return <SelectFullWidthCardsComponent {...rest} />;
+		return <SelectFullWidthCardsComponent {...rest} multiselect={false} />;
 	} else if (type === "carousel") {
-		return <SelectCarouselComponent {...rest} />;
+		return <SelectCarouselComponent {...rest} multiselect={false} />;
 	} else if (type === "grid") {
-		return <SelectGridComponent {...rest} />;
+		return <SelectGridComponent {...rest} multiselect={false} />;
 	} else {
 		return <SelectDropDownComponent {...rest} multiselect={false} />;
 	}

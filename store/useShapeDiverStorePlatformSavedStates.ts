@@ -8,9 +8,12 @@ import {
 	TSavedStateEmbed,
 	TSavedStateQueryPropsExt,
 } from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {defineFilter} from "@AppBuilderShared/utils/platform/filter";
 import {
+	SdPlatformQueryResponse,
 	SdPlatformRequestSavedStatePatch,
+	SdPlatformResponseSavedStatePublic,
 	SdPlatformSavedStateApiQueryParameters,
 	SdPlatformSavedStateQueryEmbeddableFields,
 	SdPlatformSortingOrder,
@@ -43,7 +46,7 @@ export const useShapeDiverStorePlatformSavedStates =
 							body: SdPlatformRequestSavedStatePatch,
 						) => {
 							if (!clientRef) {
-								console.warn(
+								Logger.warn(
 									`Updating saved state ${data.id} skipped because platform client is not available.`,
 								);
 								return;
@@ -72,7 +75,7 @@ export const useShapeDiverStorePlatformSavedStates =
 						},
 						delete: async () => {
 							if (!clientRef) {
-								console.warn(
+								Logger.warn(
 									`Deleting saved state ${data.id} skipped because platform client is not available.`,
 								);
 								return;
@@ -234,10 +237,15 @@ export const useShapeDiverStorePlatformSavedStates =
 						};
 
 						setLoading(true);
+						let response:
+							| SdPlatformQueryResponse<SdPlatformResponseSavedStatePublic>
+							| Error;
 						try {
-							const {pagination, result: items} = (
-								await clientRef.client.savedStates.query(params)
-							).data;
+							response =
+								await clientRef.client.savedStates.query(
+									params,
+								);
+							const {pagination, result: items} = response.data;
 							items.forEach((item) => addItem(item));
 							set(
 								produce((state) => {
@@ -253,9 +261,12 @@ export const useShapeDiverStorePlatformSavedStates =
 						} catch (error) {
 							// TODO central error handling
 							setError(error as Error);
+							response = error as Error;
 						} finally {
 							setLoading(false);
 						}
+
+						return response;
 					}, [
 						clientRef,
 						getUser,
