@@ -1,5 +1,5 @@
-import {GlobalNotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
+import {getNotificationActions} from "@AppBuilderShared/store/useNotificationStore";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	IShapeDiverStoreStargateExtended,
@@ -151,7 +151,7 @@ export const useShapeDiverStoreStargate =
 								})
 								.setConnectionErrorHandler((msg: string) => {
 									const message = `Stargate connection error: ${msg}`;
-									GlobalNotificationContext.error({message});
+									getNotificationActions().error({message});
 								})
 								.setDisconnectHandler(handleDisconnect)
 								.build();
@@ -222,7 +222,7 @@ export const useShapeDiverStoreStargate =
 							const message = selectedClient?.clientName
 								? `Connection to desktop client "${selectedClient?.clientName}" was lost.`
 								: "Connection to desktop client was lost.";
-							GlobalNotificationContext.warning({message});
+							getNotificationActions().warning({message});
 							pingConnectionClose();
 							set(
 								{
@@ -332,7 +332,7 @@ export const useShapeDiverStoreStargate =
 											"selectClient - prepare model failed",
 										);
 										if (response?.info?.message) {
-											GlobalNotificationContext.error({
+											getNotificationActions().error({
 												title: "Preparing model failed",
 												message: response.info.message,
 											});
@@ -360,7 +360,7 @@ export const useShapeDiverStoreStargate =
 							false,
 							"selectClient - no client status",
 						);
-						GlobalNotificationContext.error({
+						getNotificationActions().error({
 							message: `Connection to desktop client "${client.clientName}" could not be established.`,
 						});
 					}

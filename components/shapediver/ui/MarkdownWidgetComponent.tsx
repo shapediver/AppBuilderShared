@@ -1,4 +1,4 @@
-import {GlobalNotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {getNotificationActions} from "@AppBuilderShared/store/useNotificationStore";
 import {
 	Anchor,
 	Blockquote,
@@ -80,7 +80,7 @@ const spanDirective = function () {
 						shownWarnings.add(warningKey);
 						// Defer notification to avoid setState during render
 						setTimeout(() => {
-							GlobalNotificationContext.warning({
+							getNotificationActions().warning({
 								title: "MarkdownWidgetComponent",
 								message:
 									"Unexpected missing `color` or `style` on `span` directive",
@@ -117,7 +117,7 @@ const spanDirective = function () {
 								shownWarnings.add(warningKey);
 								// Defer notification to avoid setState during render
 								setTimeout(() => {
-									GlobalNotificationContext.warning({
+									getNotificationActions().warning({
 										title: "MarkdownWidgetComponent",
 										message: `Unexpected style value "${style}" on span directive. Supported values: sub, sup, ins, overline`,
 									});

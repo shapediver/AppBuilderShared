@@ -1,10 +1,10 @@
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {Group, MantineThemeComponent, useProps} from "@mantine/core";
-import React, {useContext} from "react";
+import React from "react";
 
 interface Props extends PropsExport {
 	/** Optional label overriding the default label */
@@ -38,7 +38,7 @@ export default function ExportLabelComponent(
 	props: Props & Partial<StyleProps>,
 ) {
 	const {label, rightSection, ...rest} = props;
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 	const {definition} = useExport(props) ?? {};
 
 	if (!definition) {

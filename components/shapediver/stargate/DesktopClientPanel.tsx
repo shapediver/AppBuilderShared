@@ -1,6 +1,6 @@
 import Icon, {IconProps, IconType} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
@@ -25,7 +25,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
-import React, {useCallback, useContext, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /**
@@ -157,7 +157,7 @@ export function DesktopClientPanelThemeProps(
 }
 
 export default function DesktopClientPanel(props: Props & StyleProps) {
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	const {
 		iconStatusProps,

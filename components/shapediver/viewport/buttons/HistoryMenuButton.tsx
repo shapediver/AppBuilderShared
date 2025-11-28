@@ -1,10 +1,11 @@
-import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/ModelStateNotificationCreated";
+import NotificationModelStateCreated from "@AppBuilderShared/components/shapediver/notifications/NotificationModelStateCreated";
 import ImportModelStateDialog from "@AppBuilderShared/components/shapediver/ui/ImportModelStateDialog";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
-import React, {useCallback, useContext, useMemo, useState} from "react";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
+import React, {useCallback, useMemo, useState} from "react";
+import {NotificationDisplayMode} from "~/shared/types/store/shapediverStoreNotifications";
 import {CommonButtonProps} from "./types";
 import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 
@@ -26,7 +27,7 @@ export default function HistoryMenuButton({
 	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 	const [isCreatingModelState, setIsCreatingModelState] = useState(false);
 
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	const {exportParameters, importParameters} =
 		useParameterImportExport(namespace);
@@ -54,11 +55,12 @@ export default function HistoryMenuButton({
 			});
 			notifications.success({
 				message: (
-					<ModelStateNotificationCreated
+					<NotificationModelStateCreated
 						modelStateId={modelStateId}
 						link={href}
 					/>
 				),
+				displayMode: NotificationDisplayMode.IFRAME,
 			});
 		}
 

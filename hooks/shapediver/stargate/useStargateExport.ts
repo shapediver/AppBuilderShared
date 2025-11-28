@@ -1,4 +1,4 @@
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
@@ -9,7 +9,7 @@ import {
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
 import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
 import {ShapeDiverResponseExportContent} from "@shapediver/viewer.session";
-import {useCallback, useContext, useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useStargateExportFile} from "./useStargateExportFile";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
@@ -67,7 +67,7 @@ export const useStargateExport = ({
 	);
 
 	const {exportFile} = useStargateExportFile();
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	const {networkStatus, selectedClient, getSupportedData, registerReference} =
 		useShapeDiverStoreStargate(

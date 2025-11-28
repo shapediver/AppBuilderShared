@@ -1,9 +1,9 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {IAppBuilderLegacyActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
-import React, {useCallback, useContext, useState} from "react";
+import React, {useCallback, useState} from "react";
 
 type Props = IAppBuilderLegacyActionPropsAddToCart & {
 	namespace: string;
@@ -33,7 +33,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 
 	const {createModelState} = useCreateModelState({namespace});
 
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	const [loading, setLoading] = useState(false);
 
