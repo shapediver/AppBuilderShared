@@ -21,7 +21,7 @@ const defaultStyleProps: NotificationStyleProps = {
 	errorColor: "red",
 	warningColor: "yellow",
 	successColor: undefined,
-	autoClose: 10000,
+	autoClose: 20000,
 };
 
 /**

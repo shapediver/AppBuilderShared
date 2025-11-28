@@ -5,7 +5,6 @@ import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateM
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import React, {useCallback, useMemo, useState} from "react";
-import {NotificationDisplayMode} from "~/shared/types/store/shapediverStoreNotifications";
 import {CommonButtonProps} from "./types";
 import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 
@@ -60,7 +59,6 @@ export default function HistoryMenuButton({
 						link={href}
 					/>
 				),
-				displayMode: NotificationDisplayMode.IFRAME,
 			});
 		}
 
