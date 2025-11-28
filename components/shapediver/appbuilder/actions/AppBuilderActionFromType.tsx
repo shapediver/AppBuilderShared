@@ -3,10 +3,10 @@ import AppBuilderActionCloseConfiguratorComponent from "@AppBuilderShared/compon
 import AppBuilderActionCreateModelStateComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCreateModelStateComponent";
 import AppBuilderActionSetBrowserLocationComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetBrowserLocationComponent";
 import AppBuilderActionSetParameterValuesComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValuesComponent";
+import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {
 	IAppBuilderControlActionRef,
 	isAddToCartAction,
-	isCameraAction,
 	isCloseConfiguratorAction,
 	isCreateModelStateAction,
 	isSetBrowserLocationAction,
@@ -14,8 +14,7 @@ import {
 	isSetParameterValuesAction,
 	isSoundAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import React from "react";
-import AppBuilderActionCameraComponent from "./AppBuilderActionCameraComponent";
+import React, {useContext} from "react";
 import AppBuilderActionSoundComponent from "./AppBuilderActionSoundComponent";
 
 export function AppBuilderActionFromType(
@@ -27,6 +26,26 @@ export function AppBuilderActionFromType(
 		...actionRef,
 		definition: undefined, // avoid passing down the definition again
 	};
+
+	const componentContext = useContext(ComponentContext);
+
+	// first we loop through all registered components to see if we can find a match
+	// here some of the default actions could be overwritten by custom components
+	for (const key in componentContext.actions) {
+		const componentDefinition = componentContext.actions[key];
+		if (componentDefinition.isAction(actionRef.definition)) {
+			const Component = componentDefinition.component;
+			return (
+				<Component
+					key={key}
+					namespace={namespace}
+					{...actionPropsCommon}
+					{...actionRef.definition.props}
+				/>
+			);
+		}
+	}
+
 	if (isCreateModelStateAction(actionRef.definition))
 		return (
 			<AppBuilderActionCreateModelStateComponent
@@ -74,15 +93,6 @@ export function AppBuilderActionFromType(
 	else if (isSetBrowserLocationAction(actionRef.definition))
 		return (
 			<AppBuilderActionSetBrowserLocationComponent
-				key={key}
-				namespace={namespace}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isCameraAction(actionRef.definition))
-		return (
-			<AppBuilderActionCameraComponent
 				key={key}
 				namespace={namespace}
 				{...actionPropsCommon}

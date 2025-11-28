@@ -1,13 +1,13 @@
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
-import ViewportAnchor2d from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor2d";
-import ViewportAnchor3d from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor3d";
+import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {
+	AppBuilderContainerNameType,
 	IAppBuilderContainer,
 	isAnchor2dContainer,
 	isAnchor3dContainer,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Logger} from "@AppBuilderShared/utils/logger";
-import React, {useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 
 interface Props {
 	namespace: string;
@@ -25,6 +25,8 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 
 	const [anchors, setAnchors] = useState<JSX.Element[]>([]);
 
+	const componentContext = useContext(ComponentContext);
+
 	useEffect(() => {
 		const anchors: JSX.Element[] = [];
 
@@ -41,8 +43,20 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 					existingIds.add(container.props.id);
 				}
 
+				const ViewportAnchor3d =
+					componentContext.viewportAnchors?.[
+						AppBuilderContainerNameType.Anchor3d
+					];
+
+				if (!ViewportAnchor3d) {
+					Logger.warn(
+						`No ViewportAnchor3d component registered in ComponentContext, cannot render 3D anchor with id: ${container.props.id}.`,
+					);
+					return;
+				}
+
 				anchors.push(
-					<ViewportAnchor3d
+					<ViewportAnchor3d.component
 						key={JSON.stringify(container)}
 						id={container.props.id}
 						location={container.props.location}
@@ -80,8 +94,20 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 					existingIds.add(container.props.id);
 				}
 
+				const ViewportAnchor2d =
+					componentContext.viewportAnchors?.[
+						AppBuilderContainerNameType.Anchor2d
+					];
+
+				if (!ViewportAnchor2d) {
+					Logger.warn(
+						`No ViewportAnchor2d component registered in ComponentContext, cannot render 2D anchor with id: ${container.props.id}.`,
+					);
+					return;
+				}
+
 				anchors.push(
-					<ViewportAnchor2d
+					<ViewportAnchor2d.component
 						key={JSON.stringify(container)}
 						id={container.props.id}
 						location={container.props.location}
@@ -110,7 +136,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 			}
 		});
 		setAnchors(anchors);
-	}, [containers, props.namespace]);
+	}, [componentContext, containers, props.namespace]);
 
 	return anchors;
 }
