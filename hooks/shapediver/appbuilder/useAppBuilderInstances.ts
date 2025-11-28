@@ -18,6 +18,7 @@ import {
 	assignMaterialFromDatabase,
 	ISessionApi,
 	ITreeNode,
+	SessionData,
 	SessionOutputData,
 	TreeNode,
 } from "@shapediver/viewer.session";
@@ -758,6 +759,11 @@ const createInstance = (
 		const transformations = instance.transformations ?? [
 			[1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
 		];
+
+		// add the session data to the instance node
+		const sessionData = node.data.find((d) => d instanceof SessionData);
+		if (sessionData && !instanceNode.hasData(sessionData))
+			instanceNode.addData(sessionData);
 
 		// once the node is created, add the transformations
 		transformations.forEach((transformation, index) => {

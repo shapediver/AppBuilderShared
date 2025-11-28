@@ -8,21 +8,13 @@ import ParameterSelectComponent from "@AppBuilderShared/components/shapediver/pa
 import ParameterSliderComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
 import ParameterStargateComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterStargateComponent";
 import ParameterStringComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterStringComponent";
-import ArButton from "@AppBuilderShared/components/shapediver/viewport/buttons/ArButton";
-import CamerasButton from "@AppBuilderShared/components/shapediver/viewport/buttons/CamerasButton";
-import FullscreenButton from "@AppBuilderShared/components/shapediver/viewport/buttons/FullscreenButton";
-import HistoryMenuButton from "@AppBuilderShared/components/shapediver/viewport/buttons/HistoryMenuButton";
-import RedoButton from "@AppBuilderShared/components/shapediver/viewport/buttons/RedoButton";
-import ReloadButton from "@AppBuilderShared/components/shapediver/viewport/buttons/ReloadButton";
 import {CommonButtonProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/types";
-import UndoButton from "@AppBuilderShared/components/shapediver/viewport/buttons/UndoButton";
-import ZoomButton from "@AppBuilderShared/components/shapediver/viewport/buttons/ZoomButton";
 import {
 	IComponentContext,
 	ParameterComponentMapValueType,
 } from "@AppBuilderShared/types/context/componentcontext";
 import {IShapeDiverParamOrExportDefinition} from "@AppBuilderShared/types/shapediver/common";
-import {ViewportIconButtonEnum} from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
+import {ViewportIconButtonEnum} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {EXPORT_TYPE, PARAMETER_TYPE} from "@shapediver/viewer.session";
 
@@ -161,28 +153,12 @@ export const getExportComponent = (
 	}
 };
 
-const defaultViewportIconComponentContext: Record<
-	ViewportIconButtonEnum,
-	IComponentContext["viewportIcons"]
-> = {
-	[ViewportIconButtonEnum.Ar]: {component: ArButton},
-	[ViewportIconButtonEnum.Zoom]: {component: ZoomButton},
-	[ViewportIconButtonEnum.Fullscreen]: {component: FullscreenButton},
-	[ViewportIconButtonEnum.Cameras]: {component: CamerasButton},
-	[ViewportIconButtonEnum.Undo]: {component: UndoButton},
-	[ViewportIconButtonEnum.Redo]: {component: RedoButton},
-	[ViewportIconButtonEnum.Reload]: {component: ReloadButton},
-	[ViewportIconButtonEnum.HistoryMenu]: {component: HistoryMenuButton},
-};
-
 export const getViewportIconComponent = (
 	context: IComponentContext,
 	type: ViewportIconButtonEnum,
 ) => {
-	return defaultViewportIconComponentContext &&
-		defaultViewportIconComponentContext[type]
-		? defaultViewportIconComponentContext[type].component
-		: undefined;
+	const component = context.viewportIconButtons?.[type];
+	return component?.component;
 };
 
 export interface ButtonRenderContext extends CommonButtonProps {

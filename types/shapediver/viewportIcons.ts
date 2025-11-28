@@ -9,6 +9,17 @@ import {
 import React from "react";
 import {ViewportOverlayWrapperProps} from "./viewportOverlayWrapper";
 
+export enum ViewportIconButtonEnum {
+	Ar = "ar",
+	Zoom = "zoom",
+	Fullscreen = "fullscreen",
+	Cameras = "cameras",
+	Undo = "undo",
+	Redo = "redo",
+	Reload = "reload",
+	HistoryMenu = "historyMenu",
+}
+
 export interface ViewportIconsProps {
 	/**
 	 * Namespace of the session

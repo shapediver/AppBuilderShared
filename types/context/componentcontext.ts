@@ -6,10 +6,17 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {IAppBuilderWidget} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {
+	IAppBuilderActionDefinition,
+	IAppBuilderWidget,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {ViewportComponentProps} from "@AppBuilderShared/types/shapediver/viewport";
-import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
+import {
+	ViewportIconsOptionalProps,
+	ViewportIconsProps,
+} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {ViewportOverlayWrapperProps} from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
+import {MantineThemeComponent} from "@mantine/core";
 import {ReactElement} from "react";
 
 // #region Interfaces (7)
@@ -24,7 +31,7 @@ import {ReactElement} from "react";
 interface ComponentType {
 	// #region Properties (1)
 
-	component: (props: any) => ReactElement;
+	component: (props: any) => ReactElement | null;
 
 	// #endregion Properties (1)
 }
@@ -61,13 +68,29 @@ export interface IComponentContext {
 			| ParameterComponentMapValueType
 			| {[key: string]: ParameterComponentMapValueType};
 	};
+	viewportAnchors?: {[key: string]: ViewportAnchorComponentMapValueType};
 	viewportComponent?: ViewportComponentMapValueType;
 	viewportIcons?: ViewportIconsComponentMapValueType;
+	viewportIconButtons?: {
+		[key: string]: ViewportIconButtonComponentMapValueType;
+	};
 	viewportOverlayWrapper?: ViewportOverlayWrapperComponentMapValueType;
 	widgets?: {[key: string]: WidgetComponentMapValueType};
+	actions?: {[key: string]: ActionComponentMapValueType};
 	modelCardOverlay?: ModelCardOverlayType;
 
 	// #endregion Properties (6)
+}
+
+export interface ViewportAnchorComponentMapValueType extends ComponentType {
+	// #region Properties (2)
+
+	/** Viewport anchor component */
+	component: (props: any) => ReactElement | null;
+	/** Theme properties for the viewport anchor */
+	themeProps: (props: any) => MantineThemeComponent;
+
+	// #endregion Properties (2)
 }
 
 export interface WidgetComponentMapValueType extends ComponentType {
@@ -77,6 +100,19 @@ export interface WidgetComponentMapValueType extends ComponentType {
 	component: (props: any) => ReactElement;
 	/** Defines whether the widget is of this type */
 	isComponent: (widget: IAppBuilderWidget) => boolean;
+	/** Theme properties dictionary for the widget */
+	themeProps?: Record<string, (props: any) => MantineThemeComponent>;
+
+	// #endregion Properties (1)
+}
+
+export interface ActionComponentMapValueType extends ComponentType {
+	// #region Properties (1)
+
+	/** Action component */
+	component: (props: any) => ReactElement;
+	/** Defines whether the action is of this type */
+	isAction: (action: IAppBuilderActionDefinition) => boolean;
 
 	// #endregion Properties (1)
 }
@@ -116,6 +152,20 @@ export interface ViewportIconsComponentMapValueType extends ComponentType {
 	// #region Properties (1)
 
 	/** Viewport icons component */
+	component: (
+		props: ViewportIconsProps & ViewportIconsOptionalProps,
+	) => ReactElement;
+
+	// #endregion Properties (1)
+}
+
+/**
+ * Type alias for the viewport icon button component map value type.
+ */
+export interface ViewportIconButtonComponentMapValueType extends ComponentType {
+	// #region Properties (1)
+
+	/** Viewport icon button component */
 	component: (
 		props: ButtonRenderContext & Partial<ViewportIconsOptionalProps>,
 	) => ReactElement;
