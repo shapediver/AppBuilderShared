@@ -9,6 +9,7 @@ import React from "react";
 
 interface Props {
 	children?: React.ReactNode;
+	style?: StyleProp<React.CSSProperties>;
 }
 
 interface StyleProps {
@@ -27,7 +28,7 @@ const defaultStyleProps: StyleProps = {
 	p: "xs",
 };
 
-type AppBuilderHorizontalContainerThemePropsType = Partial<StyleProps>;
+export type AppBuilderHorizontalContainerThemePropsType = Partial<StyleProps>;
 
 export function AppBuilderHorizontalContainerThemeProps(
 	props: AppBuilderHorizontalContainerThemePropsType,
