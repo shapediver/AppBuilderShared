@@ -1,5 +1,5 @@
 import {AppBuilderStackContext} from "@AppBuilderShared/context/StackContext";
-import {Box, Stack} from "@mantine/core";
+import {Box} from "@mantine/core";
 import React, {
 	useCallback,
 	useContext,
@@ -7,6 +7,7 @@ import React, {
 	useRef,
 	useState,
 } from "react";
+import AppBuilderContainer from "~/shared/pages/templates/AppBuilderContainer";
 
 interface Props {
 	isOpen: boolean;
@@ -94,14 +95,15 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 			}}
 		>
 			{showFallback && (
-				<Stack
+				<AppBuilderContainer
+					p={0} // do not duplicate paddings with high level AppBuilderContainer
 					style={{
 						transform: `translateX(${fallbackPosition})`,
 						transition: `transform ${stackContext.animationDuration}ms ease`,
 					}}
 				>
 					{fallbackContent}
-				</Stack>
+				</AppBuilderContainer>
 			)}
 			{showStack && (
 				<Box

@@ -1,16 +1,21 @@
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {usePropsAppBuilder} from "@AppBuilderShared/hooks/ui/usePropsAppBuilder";
-import AppBuilderHorizontalContainer from "@AppBuilderShared/pages/templates/AppBuilderHorizontalContainer";
-import AppBuilderVerticalContainer from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
+import AppBuilderHorizontalContainer, {
+	AppBuilderHorizontalContainerThemePropsType,
+} from "@AppBuilderShared/pages/templates/AppBuilderHorizontalContainer";
+import AppBuilderVerticalContainer, {
+	AppBuilderVerticalContainerThemePropsType,
+} from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 import {
 	AppBuilderContainerOrientationType,
 	IAppBuilderContainerContext,
 } from "@AppBuilderShared/types/context/appbuildercontext";
-import {MantineThemeComponent} from "@mantine/core";
-import React, {useContext} from "react";
+import {MantineThemeComponent, StyleProp} from "@mantine/core";
+import React, {CSSProperties, useContext} from "react";
 
 interface Props {
 	children?: React.ReactNode;
+	style?: StyleProp<CSSProperties>;
 }
 
 interface StyleProps {
@@ -21,7 +26,9 @@ const defaultStyleProps: StyleProps = {
 	orientation: "unspecified",
 };
 
-type AppBuilderContainerThemePropsType = Partial<StyleProps>;
+type AppBuilderContainerThemePropsType = Partial<StyleProps> &
+	AppBuilderVerticalContainerThemePropsType &
+	AppBuilderHorizontalContainerThemePropsType;
 
 export function AppBuilderContainerThemeProps(
 	props: AppBuilderContainerThemePropsType,
@@ -39,13 +46,18 @@ export function AppBuilderContainerThemeProps(
 export default function AppBuilderContainer(
 	props: Props & AppBuilderContainerThemePropsType,
 ) {
-	const {children, ...rest} = props;
+	const {
+		children,
+		orientation: orientationProp,
+		style,
+		...containerProps
+	} = props;
 
 	// style properties
 	const {orientation} = usePropsAppBuilder(
 		"AppBuilderContainer",
 		defaultStyleProps,
-		rest,
+		{orientation: orientationProp},
 	);
 
 	const {name} = useContext(AppBuilderContainerContext);
@@ -62,11 +74,11 @@ export default function AppBuilderContainer(
 
 	const container =
 		context.orientation === "vertical" ? (
-			<AppBuilderVerticalContainer>
+			<AppBuilderVerticalContainer style={style} {...containerProps}>
 				{children}
 			</AppBuilderVerticalContainer>
 		) : (
-			<AppBuilderHorizontalContainer>
+			<AppBuilderHorizontalContainer style={style} {...containerProps}>
 				{children}
 			</AppBuilderHorizontalContainer>
 		);
