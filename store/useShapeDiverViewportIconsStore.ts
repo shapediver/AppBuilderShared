@@ -24,6 +24,14 @@ export const useShapeDiverViewportIconsStore =
 		devtools(
 			(set, get) => ({
 				viewportIcons: {},
+				viewerFullscreen: false,
+
+				setViewerFullscreen: (value: boolean) =>
+					set(
+						{viewerFullscreen: value},
+						false,
+						"setViewerFullscreen",
+					),
 
 				initialize: (viewport: IViewportApi) => {
 					const showCamerasButton =

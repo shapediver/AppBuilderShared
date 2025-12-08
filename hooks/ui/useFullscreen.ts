@@ -1,5 +1,7 @@
+import {useShapeDiverViewportIconsStore} from "@AppBuilderShared/store/useShapeDiverViewportIconsStore";
 import {Logger} from "@AppBuilderShared/utils/logger";
-import {useEffect, useRef} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 interface CrossBrowserDocument extends Document {
 	webkitFullscreenElement?: Element;
@@ -19,125 +21,211 @@ const eventsFullScreen = [
 	"MSFullscreenChange", // IE11
 ];
 
-export const useFullscreen = (fullscreenId: string) => {
-	const isFullScreenMode = useRef(false);
-	const isFullScreenAvailable = useRef(true);
-	const cbDocument = useRef({} as CrossBrowserDocument);
+/**
+ * Fullscreen state enum:
+ * - default: not in fullscreen
+ * - app: app area (viewer-fullscreen-area) is fullscreen
+ * - viewer: app is fullscreen AND UI elements are hidden (only viewer visible)
+ */
+export enum FullscreenState {
+	DEFAULT = "default",
+	APP = "app",
+	VIEWER = "viewer",
+}
 
-	const onFullScreenChange = () => {
-		isFullScreenMode.current = !!cbDocument.current.fullscreenElement;
-	};
+/**
+ * Request fullscreen on an element with cross-browser support.
+ * Returns true if request was successful, false otherwise.
+ */
+const requestFullscreenOnElement = (element: Element): boolean => {
+	if (element.requestFullscreen) {
+		element.requestFullscreen().catch(() => {});
+		return true;
+	} else if ((element as any).webkitRequestFullScreen) {
+		// Safari
+		(element as any).webkitRequestFullScreen().catch(() => {});
+		return true;
+	} else if ((element as any).mozRequestFullScreen) {
+		// Firefox
+		(element as any).mozRequestFullScreen().catch(() => {});
+		return true;
+	} else if ((element as any).msRequestFullscreen) {
+		// IE
+		(element as any).msRequestFullscreen().catch(() => {});
+		return true;
+	}
+	return false;
+};
+
+/**
+ * Exit fullscreen with cross-browser support.
+ */
+const exitFullscreen = (doc: CrossBrowserDocument): void => {
+	if (doc.fullscreenElement) {
+		doc.exitFullscreen();
+	} else if (doc.webkitFullscreenElement && doc.webkitExitFullscreen) {
+		doc.webkitExitFullscreen();
+	} else if (doc.mozRequestFullScreen && doc.mozExitFullScreen) {
+		doc.mozExitFullScreen();
+	} else if (doc.msRequestFullscreen && doc.msExitFullScreen) {
+		doc.msExitFullScreen();
+	}
+};
+
+/**
+ * Get the current fullscreen element with cross-browser support.
+ */
+const getFullscreenElement = (doc: CrossBrowserDocument): Element | null => {
+	return (
+		doc.fullscreenElement ||
+		doc.webkitFullscreenElement ||
+		(doc.mozRequestFullScreen as unknown as Element) ||
+		(doc.msRequestFullscreen as unknown as Element) ||
+		null
+	);
+};
+
+const getAppElement = (
+	doc: CrossBrowserDocument,
+	fullscreenId: string,
+): Element | null => {
+	return doc.getElementsByClassName(fullscreenId).item(0);
+};
+
+export const useFullscreen = (fullscreenId: string) => {
+	const [fullscreenState, setFullscreenState] = useState<FullscreenState>(
+		FullscreenState.DEFAULT,
+	);
+	const isFullScreenAvailable = useRef(true);
+	const cbDocument = useRef<CrossBrowserDocument>(
+		typeof document !== "undefined"
+			? (document as CrossBrowserDocument)
+			: ({} as CrossBrowserDocument),
+	);
+	const appElementRef = useRef<Element | null>(null);
+
+	// Get viewerFullscreen state and setter from store
+	const {viewerFullscreen, setViewerFullscreen} =
+		useShapeDiverViewportIconsStore(
+			useShallow((state) => ({
+				viewerFullscreen: state.viewerFullscreen,
+				setViewerFullscreen: state.setViewerFullscreen,
+			})),
+		);
+
+	// Sync internal state with browser fullscreen + store flag
+	const updateFullscreenState = useCallback(() => {
+		const fullscreenElement = getFullscreenElement(cbDocument.current);
+		if (!fullscreenElement) {
+			setFullscreenState(FullscreenState.DEFAULT);
+		} else if (viewerFullscreen) {
+			setFullscreenState(FullscreenState.VIEWER);
+		} else {
+			setFullscreenState(FullscreenState.APP);
+		}
+	}, [viewerFullscreen]);
 
 	useEffect(() => {
 		cbDocument.current = document;
-		const element = cbDocument.current
-			.getElementsByClassName(fullscreenId)
-			.item(0);
+		const appElement = getAppElement(cbDocument.current, fullscreenId);
 
-		if (!element) {
+		if (!appElement) {
 			Logger.debug(
 				`Fullscreen element with ID ${fullscreenId} not found.`,
 			);
 			isFullScreenAvailable.current = false;
-
 			return;
 		}
 
+		appElementRef.current = appElement;
+
+		// Listen for fullscreen changes to keep state in sync
 		eventsFullScreen.forEach((event) => {
-			element.addEventListener(event, onFullScreenChange);
+			document.addEventListener(event, updateFullscreenState);
 		});
 
+		// Initial sync
+		updateFullscreenState();
+
 		return () => {
-			cbDocument.current = document;
-			const element = cbDocument.current
-				.getElementsByClassName(fullscreenId)
-				.item(0);
-
-			if (element) {
-				eventsFullScreen.forEach((event) => {
-					element.removeEventListener(event, onFullScreenChange);
-				});
-			}
+			eventsFullScreen.forEach((event) => {
+				document.removeEventListener(event, updateFullscreenState);
+			});
 		};
-	}, [fullscreenId]);
+	}, [fullscreenId, updateFullscreenState]);
 
-	const makeElementFullscreen = () => {
-		if (cbDocument.current.fullscreenElement) {
-			cbDocument.current.exitFullscreen();
-		} else if (
-			cbDocument.current.webkitFullscreenElement &&
-			cbDocument.current.webkitExitFullscreen
-		) {
-			// Safari
-			cbDocument.current.webkitExitFullscreen();
-		} else if (
-			cbDocument.current.mozRequestFullScreen &&
-			cbDocument.current.mozExitFullScreen
-		) {
-			// Firefox
-			cbDocument.current.mozExitFullScreen();
-		} else if (
-			cbDocument.current.msRequestFullscreen &&
-			cbDocument.current.msExitFullScreen
-		) {
-			// IE
-			cbDocument.current.msExitFullScreen();
-		} else {
-			const element = document
-				.getElementsByClassName(fullscreenId)
-				.item(0);
+	// Also resync when viewerFullscreen flag changes
+	useEffect(() => {
+		updateFullscreenState();
+	}, [viewerFullscreen, updateFullscreenState]);
 
-			if (!element) {
-				Logger.debug(
-					`Fullscreen element with ID ${fullscreenId} not found.`,
-				);
-				isFullScreenAvailable.current = false;
+	// State 1 → State 2: Enter app fullscreen
+	const enterAppFullscreen = useCallback(() => {
+		// Ensure UI elements are visible when entering app fullscreen
+		setViewerFullscreen(false);
 
-				return;
-			}
-
-			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-			// @ts-ignore
-			if (document.documentElement.requestFullscreen) {
-				element.requestFullscreen().catch(() => {
-					isFullScreenAvailable.current = false;
-				});
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
-			} else if (element.webkitRequestFullScreen) {
-				// If doesn't have default support, check for Safari
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
-				element.webkitRequestFullScreen().catch(() => {
-					isFullScreenAvailable.current = false;
-				});
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
-			} else if (element.mozRequestFullScreen) {
-				// If doesn't have default support, check for Firefox
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
-				element.mozRequestFullScreen().catch(() => {
-					isFullScreenAvailable.current = false;
-				});
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
-			} else if (element.msRequestFullscreen) {
-				// If doesn't have default support, check for IE
-				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-				// @ts-ignore
-				element.msRequestFullscreen().catch(() => {
-					isFullScreenAvailable.current = false;
-				});
-			} else {
-				isFullScreenAvailable.current = false;
+		// Try to get element from ref, or find it directly
+		let appElement = appElementRef.current;
+		if (!appElement) {
+			appElement = getAppElement(cbDocument.current, fullscreenId);
+			if (appElement) {
+				appElementRef.current = appElement;
 			}
 		}
-	};
+
+		if (!appElement) {
+			Logger.debug(
+				`Fullscreen element with ID ${fullscreenId} not found.`,
+			);
+			isFullScreenAvailable.current = false;
+			return;
+		}
+
+		if (!requestFullscreenOnElement(appElement)) {
+			isFullScreenAvailable.current = false;
+		}
+	}, [fullscreenId, setViewerFullscreen]);
+
+	// State 2 → State 3: Enter viewer fullscreen (hide UI elements)
+	const enterViewerFullscreen = useCallback(() => {
+		// Instead of requesting fullscreen on canvas, just hide UI elements
+		setViewerFullscreen(true);
+	}, [setViewerFullscreen]);
+
+	// State 3 → State 1: Exit fullscreen completely
+	const exitFullscreenCompletely = useCallback(() => {
+		// First, show UI elements
+		setViewerFullscreen(false);
+		// Then exit browser fullscreen
+		exitFullscreen(cbDocument.current);
+	}, [setViewerFullscreen]);
+
+	// Main click handler - transitions based on current state
+	const handleFullscreenClick = useCallback(() => {
+		switch (fullscreenState) {
+			case FullscreenState.DEFAULT:
+				enterAppFullscreen();
+				break;
+			case FullscreenState.APP:
+				enterViewerFullscreen();
+				break;
+			case FullscreenState.VIEWER:
+				exitFullscreenCompletely();
+				break;
+		}
+	}, [
+		fullscreenState,
+		enterAppFullscreen,
+		enterViewerFullscreen,
+		exitFullscreenCompletely,
+	]);
 
 	return {
-		isFullScreenMode,
+		fullscreenState,
+		handleFullscreenClick,
+		enterAppFullscreen,
+		enterViewerFullscreen,
+		exitFullscreenCompletely,
 		isFullScreenAvailable,
-		makeElementFullscreen,
 	};
 };
