@@ -30,9 +30,12 @@ interface NumberFormatValues {
  * Round and clamp the number to the given min, max and step.
  * @param min The minimum allowed value
  * @param max The maximum allowed value
+ * @param decimalplaces Number of decimal places to round the value to
  * @param step The step size, starting from min, to which the value should be clamped
  * @param n The number to round and clamp
- * @returns
+ * @param restrictToMarks Whether to restrict the value to the marks. Default is false.
+ * @param marks Marks to restrict the value to. Default is undefined.
+ * @returns The rounded and clamped value
  */
 const _roundAndClamp = (
 	min: number,
@@ -40,10 +43,27 @@ const _roundAndClamp = (
 	decimalplaces: number,
 	step: number,
 	n: number,
+	restrictToMarks?: boolean,
+	marks?: {value: number; label?: string}[],
 ) => {
 	// clamp the number to the min and max
 	n = Math.max(min, n);
 	n = Math.min(max, n);
+	// if we must stick to marks, find the nearest mark within range and return it
+	const validMarks =
+		restrictToMarks && marks?.length
+			? marks.filter((mark) => mark.value >= min && mark.value <= max)
+			: undefined;
+	if (restrictToMarks && validMarks?.length) {
+		const closest = validMarks.reduce(
+			(prev, current) =>
+				Math.abs(current.value - n) < Math.abs(prev - n)
+					? current.value
+					: prev,
+			validMarks[0].value,
+		);
+		return +closest.toFixed(decimalplaces);
+	}
 	// round the number to the nearest step
 	n = Math.round((n - min) / step) * step + min;
 	// rounding to the nearest step can result in a number larger than max, so we clamp again
@@ -102,13 +122,17 @@ export default function ParameterSliderComponent(
 		props,
 	);
 
+	const validatedSettings = useMemo(
+		() => validateNumberParameterSettings(definition?.settings),
+		[definition],
+	);
+
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
 	// calculate the step size which depends on the parameter type
 	const step = useMemo(() => {
-		const result = validateNumberParameterSettings(definition?.settings);
-		const _step = result.success
-			? (result.data.step ?? definition.step)
+		const _step = validatedSettings.success
+			? (validatedSettings.data.step ?? definition.step)
 			: definition.step;
 		if (definition.type === PARAMETER_TYPE.INT) {
 			return _step !== undefined && _step % 1 === 0 ? _step : 1;
@@ -122,7 +146,43 @@ export default function ParameterSliderComponent(
 				? +_step.toFixed(definition.decimalplaces!)
 				: 1 / Math.pow(10, definition.decimalplaces!);
 		}
-	}, [definition]);
+	}, [definition, validatedSettings]);
+
+	const settingsMarks = useMemo(
+		() =>
+			validatedSettings.success
+				? validatedSettings.data.marks
+				: undefined,
+		[validatedSettings],
+	);
+
+	// Prefer provided marks; otherwise fall back to min/max and keep only marks within range
+	const sliderMarks = useMemo(() => {
+		const providedMarks =
+			settingsMarks && settingsMarks.length > 0
+				? settingsMarks
+				: undefined;
+		const fallbackMarks = [
+			{value: +definition.min!, label: definition.min + ""},
+			{value: +definition.max!, label: definition.max + ""},
+		];
+		// pick provided marks or fallback, then drop anything outside min/max
+		return (providedMarks ?? fallbackMarks).filter((mark) => {
+			return (
+				mark.value >= +definition.min! && mark.value <= +definition.max!
+			);
+		});
+	}, [settingsMarks, definition]);
+
+	const restrictToMarks = useMemo(
+		() =>
+			!!(
+				validatedSettings.success &&
+				validatedSettings.data.restrictToMarks &&
+				sliderMarks.length
+			),
+		[validatedSettings, sliderMarks],
+	);
 
 	const roundAndClamp = useCallback(
 		(n: number) =>
@@ -132,8 +192,10 @@ export default function ParameterSliderComponent(
 				+definition.decimalplaces!,
 				step,
 				n,
+				restrictToMarks,
+				sliderMarks,
 			),
-		[definition, step],
+		[definition, step, restrictToMarks, sliderMarks],
 	);
 
 	const valueClamped = roundAndClamp(+value);
@@ -265,10 +327,6 @@ export default function ParameterSliderComponent(
 
 	// tooltip, marks
 	const tooltip = `Min: ${definition.min}, Max: ${definition.max}`;
-	const marks = [
-		{value: +definition.min!, label: definition.min + ""},
-		{value: +definition.max!, label: definition.max + ""},
-	];
 
 	return (
 		<ParameterWrapperComponent
@@ -291,7 +349,8 @@ export default function ParameterSliderComponent(
 							onChangeEnd={(v) =>
 								handleChange(roundAndClamp(v), 0, restoreFocus)
 							}
-							marks={marks}
+							marks={sliderMarks}
+							restrictToMarks={restrictToMarks}
 							disabled={disabled}
 							thumbProps={{
 								onFocus: onFocusHandler,
