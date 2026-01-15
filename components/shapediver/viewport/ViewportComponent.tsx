@@ -13,6 +13,7 @@ import {
 	VISIBILITY_MODE,
 } from "@shapediver/viewer.session";
 import React from "react";
+import {useShallow} from "zustand/react/shallow";
 import classes from "./ViewportComponent.module.css";
 
 /**
@@ -34,8 +35,8 @@ export default function ViewportComponent(props: ViewportComponentProps) {
 		useViewportControlsVisibility();
 
 	// Get viewer fullscreen state from store
-	const viewerFullscreen = useShapeDiverViewportIconsStore(
-		(state) => state.viewerFullscreen,
+	const viewerFullscreen3States = useShapeDiverViewportIconsStore(
+		useShallow((state) => state.viewerFullscreen3States),
 	);
 	if (!_props.branding) _props.branding = brandingProps[scheme];
 	if (!_props.sessionSettingsMode) {
@@ -59,7 +60,7 @@ export default function ViewportComponent(props: ViewportComponentProps) {
 			value={{showControls, setIsHoveringControls}}
 		>
 			<div
-				className={`${classes.container} ${className} ${viewerFullscreen ? classes.viewerFullscreen : ""}`}
+				className={`${classes.container} ${className} ${viewerFullscreen3States ? classes.viewerFullscreen3States : ""}`}
 				{...containerProps}
 			>
 				<canvas ref={canvasRef} />

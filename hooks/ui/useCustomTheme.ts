@@ -1317,6 +1317,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// enableArBtn: true,
 				// enableCamerasBtn: true,
 				// enableFullscreenBtn: true,
+				// enableFullscreenBtn3States: false,
 				// enableZoomBtn: true,
 				// enableHistoryMenuButton: true,
 				// viewportOverlayProps: {

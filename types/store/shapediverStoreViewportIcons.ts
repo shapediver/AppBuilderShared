@@ -33,12 +33,12 @@ export interface IShapeDiverViewportIconsStore {
 	 * Whether the viewer is in fullscreen mode (UI elements hidden).
 	 * When true, ViewportComponent covers the entire screen.
 	 */
-	viewerFullscreen: boolean;
+	viewerFullscreen3States: boolean;
 	/**
 	 * Set the viewer fullscreen state.
 	 * @param value - true to enable viewer fullscreen, false to disable
 	 */
-	setViewerFullscreen: (value: boolean) => void;
+	setViewerFullscreen3States: (value: boolean) => void;
 	/**
 	 * Initialize the viewport icons store for a viewport.
 	 * @param viewportId

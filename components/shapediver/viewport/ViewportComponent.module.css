@@ -5,7 +5,7 @@
 	overflow: hidden;
 }
 
-.viewerFullscreen {
+.viewerFullscreen3States {
 	position: fixed;
 	inset: 0;
 	z-index: calc((var(--mantine-z-index-modal, 200) + var(--mantine-z-index-app, 100)) / 2);  /*Medium between modal and app*/

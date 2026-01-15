@@ -24,15 +24,14 @@ export const useShapeDiverViewportIconsStore =
 		devtools(
 			(set, get) => ({
 				viewportIcons: {},
-				viewerFullscreen: false,
+				viewerFullscreen3States: false,
 
-				setViewerFullscreen: (value: boolean) =>
+				setViewerFullscreen3States: (value: boolean) =>
 					set(
-						{viewerFullscreen: value},
+						{viewerFullscreen3States: value},
 						false,
-						"setViewerFullscreen",
+						"setViewerFullscreen3States",
 					),
-
 				initialize: (viewport: IViewportApi) => {
 					const showCamerasButton =
 						Object.keys(viewport ? viewport.cameras : {}).length >
@@ -47,6 +46,7 @@ export const useShapeDiverViewportIconsStore =
 							? [{type: ViewportIconButtonEnum.Cameras}]
 							: []),
 						{type: ViewportIconButtonEnum.Fullscreen},
+						{type: ViewportIconButtonEnum.Fullscreen3States},
 					]);
 					get().add(viewport.id, [
 						{type: ViewportIconButtonEnum.Undo},

@@ -56,6 +56,7 @@ export const defaultStyleProps: ViewportIconsOptionalProps = {
 	enableArBtn: true,
 	enableCamerasBtn: true,
 	enableFullscreenBtn: true,
+	enableFullscreenBtn3States: false,
 	enableZoomBtn: true,
 	enableHistoryMenuButton: undefined,
 };
@@ -66,6 +67,7 @@ export type ShowButtons = {
 	ar?: boolean;
 	cameras?: boolean;
 	fullscreen?: boolean;
+	fullscreen3States?: boolean;
 	zoom?: boolean;
 	historyMenu?: boolean;
 };
@@ -101,6 +103,7 @@ export default function ViewportIcons(
 		enableArBtn,
 		enableCamerasBtn,
 		enableFullscreenBtn,
+		enableFullscreenBtn3States,
 		enableZoomBtn,
 		enableHistoryMenuButton,
 	} = useProps("ViewportIcons", defaultStyleProps, rest);
@@ -113,6 +116,7 @@ export default function ViewportIcons(
 			ar: enableArBtn,
 			cameras: enableCamerasBtn,
 			fullscreen: enableFullscreenBtn,
+			fullscreen3States: enableFullscreenBtn3States,
 			zoom: enableZoomBtn,
 			historyMenu:
 				enableImportExportButtons !== undefined ||
@@ -128,6 +132,7 @@ export default function ViewportIcons(
 			enableArBtn,
 			enableCamerasBtn,
 			enableFullscreenBtn,
+			enableFullscreenBtn3States,
 			enableZoomBtn,
 			enableHistoryMenuButton,
 			enableImportExportButtons,
@@ -243,7 +248,24 @@ export default function ViewportIcons(
 				componentContext,
 				kind,
 			);
+			console.log("kind", kind, ButtonComponent);
 			if (!ButtonComponent) return null;
+
+			// // Override component for fullscreen based on config
+			// if (
+			// 	kind === ViewportIconButtonEnum.Fullscreen &&
+			// 	enableFullscreenBtn3States
+			// ) {
+			// 	const overrideComponent = getViewportIconComponent(
+			// 		componentContext,
+			// 		ViewportIconButtonEnum.Fullscreen3States,
+			// 	);
+			// 	if (overrideComponent) {
+			// 		ButtonComponent = overrideComponent;
+			// 	}
+			// }
+			//
+			// if (!ButtonComponent) return null;
 
 			switch (kind) {
 				case ViewportIconButtonEnum.Ar:
@@ -264,6 +286,13 @@ export default function ViewportIcons(
 					if (!showButtons.fullscreen) return null;
 					return React.createElement(ButtonComponent, {
 						key: "fullscreen",
+						fullscreenId,
+						...commonProps,
+					});
+				case ViewportIconButtonEnum.Fullscreen3States:
+					if (!showButtons.fullscreen3States) return null;
+					return React.createElement(ButtonComponent, {
+						key: "fullscreen3States",
 						fullscreenId,
 						...commonProps,
 					});

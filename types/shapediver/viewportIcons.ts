@@ -13,6 +13,7 @@ export enum ViewportIconButtonEnum {
 	Ar = "ar",
 	Zoom = "zoom",
 	Fullscreen = "fullscreen",
+	Fullscreen3States = "fullscreen3States",
 	Cameras = "cameras",
 	Undo = "undo",
 	Redo = "redo",
@@ -72,6 +73,10 @@ export interface ViewportIconsOptionalProps {
 	 * enable/disable the "fullscreen" button
 	 */
 	enableFullscreenBtn?: boolean;
+	/**
+	 * enable/disable the "fullscreen 3 states (normal | fullscreen with inputs | viewer only fullscreen)" button
+	 */
+	enableFullscreenBtn3States?: boolean;
 	/**
 	 * enable/disable the "zoom" button
 	 */
