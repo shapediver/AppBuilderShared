@@ -251,22 +251,6 @@ export default function ViewportIcons(
 			console.log("kind", kind, ButtonComponent);
 			if (!ButtonComponent) return null;
 
-			// // Override component for fullscreen based on config
-			// if (
-			// 	kind === ViewportIconButtonEnum.Fullscreen &&
-			// 	enableFullscreenBtn3States
-			// ) {
-			// 	const overrideComponent = getViewportIconComponent(
-			// 		componentContext,
-			// 		ViewportIconButtonEnum.Fullscreen3States,
-			// 	);
-			// 	if (overrideComponent) {
-			// 		ButtonComponent = overrideComponent;
-			// 	}
-			// }
-			//
-			// if (!ButtonComponent) return null;
-
 			switch (kind) {
 				case ViewportIconButtonEnum.Ar:
 					if (!showButtons.ar) return null;
