@@ -79,6 +79,15 @@ export const validateStringParameterSettings = (value: any) => {
 // Zod type definition for INumberParameterSettings
 const INumberParameterSettingsSchema = z.object({
 	step: z.number().positive().optional(),
+	marks: z
+		.array(
+			z.object({
+				value: z.number(),
+				label: z.string().optional(),
+			}),
+		)
+		.optional(),
+	restrictToMarks: z.boolean().optional(),
 });
 
 export const validateNumberParameterSettings = (value: any) => {
