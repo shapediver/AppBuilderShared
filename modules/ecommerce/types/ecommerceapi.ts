@@ -123,6 +123,8 @@ export interface IScrollingApiSetParametersData {
 	terms?: string[];
 	/** The preferred page size to set. */
 	pageSize?: number;
+	/** Optional function for resetting the (potentially cached) state of the scrolling API. */
+	reset?: () => Promise<void>;
 }
 
 /**
