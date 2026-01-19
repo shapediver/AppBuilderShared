@@ -14,30 +14,21 @@ export enum NotificationDisplayMode {
 	PLATFORM = "platform",
 	/** Display only when running as iframe/embedded */
 	IFRAME = "iframe",
+	/** Do not display notifications */
+	NONE = "none",
 }
 
 /**
- * Type of special notification.
+ * Base interface for all custom notification data.
+ * Each custom notification component should define its own specific interface
+ * that extends this base by including a unique 'type' property.
  */
-export enum SpecialNotificationType {
-	MODEL_STATE_CREATED = "model_state_created",
+export interface ICustomNotificationData {
+	/** Unique type identifier for the custom notification */
+	type: string;
+	/** Additional properties specific to each notification type */
+	[key: string]: unknown;
 }
-
-/**
- * Special notification for model state created.
- */
-export interface IModelStateCreatedNotificationData {
-	type: SpecialNotificationType.MODEL_STATE_CREATED;
-	/** The ID of the created model state */
-	modelStateId: string;
-	/** Link to the model state */
-	link: string;
-}
-
-/**
- * Union type for all special notification data.
- */
-export type SpecialNotificationData = IModelStateCreatedNotificationData;
 
 /**
  * Extended notification data with display mode support.
@@ -50,21 +41,21 @@ export interface INotificationDataExtended extends AppBuilderNotificationData {
 }
 
 /**
- * Input type for show method - either regular or special notification.
- * Special notifications are detected by the presence of "type" property.
+ * Input type for show method - either regular or custom notification.
+ * Custom notifications are detected by the presence of "type" property with a string value.
  */
 export type NotificationInput =
 	| INotificationDataExtended
-	| (INotificationDataExtended & SpecialNotificationData);
+	| (INotificationDataExtended & ICustomNotificationData);
 
 /**
- * Stored special notification with metadata.
+ * Stored custom notification with metadata.
  */
-export interface ISpecialNotificationStored {
+export interface ICustomNotificationStored {
 	/** Unique identifier for the notification */
 	id: string;
 	/** Notification data */
-	data: SpecialNotificationData;
+	data: ICustomNotificationData;
 	/** Display mode for the notification */
 	displayMode?: NotificationDisplayMode;
 	/** Timestamp when notification was created */
@@ -76,15 +67,15 @@ export interface ISpecialNotificationStored {
  */
 export interface INotificationStoreActions {
 	/**
-	 * Show a notification. If notification has a "type" property from SpecialNotificationType,
-	 * it will be treated as a special notification with custom rendering.
-	 * @param notification Notification data (regular or special)
+	 * Show a notification. If notification has a "type" property (string),
+	 * it will be treated as a custom notification with custom rendering.
+	 * @param notification Notification data (regular or custom)
 	 * @returns id of notification
 	 */
-	show: (notification: NotificationInput) => string;
+	show: (notification: NotificationInput) => string | undefined;
 
 	/**
-	 * Hide a notification (both regular and special).
+	 * Hide a notification (both regular and custom).
 	 * @param id Notification id
 	 */
 	hide: (id: string) => void;
@@ -93,28 +84,28 @@ export interface INotificationStoreActions {
 	 * Update an existing notification.
 	 * @param notification Notification data with id
 	 */
-	update: (notification: INotificationDataExtended & {id: string}) => void;
+	update: (notification: NotificationInput & {id: string}) => void;
 
 	/**
 	 * Show an error notification.
 	 * @param notification Notification data
 	 * @returns id of notification
 	 */
-	error: (notification: INotificationDataExtended) => string;
+	error: (notification: NotificationInput) => string | undefined;
 
 	/**
 	 * Show a warning notification.
 	 * @param notification Notification data
 	 * @returns id of notification
 	 */
-	warning: (notification: INotificationDataExtended) => string;
+	warning: (notification: NotificationInput) => string | undefined;
 
 	/**
 	 * Show a success notification.
 	 * @param notification Notification data
 	 * @returns id of notification
 	 */
-	success: (notification: INotificationDataExtended) => string;
+	success: (notification: NotificationInput) => string | undefined;
 
 	/**
 	 * Update style properties for notifications.
@@ -129,8 +120,8 @@ export interface INotificationStoreActions {
 export interface INotificationStoreState {
 	/** Style properties for notifications */
 	styleProps: NotificationStyleProps;
-	/** Active special notifications (for custom rendering) */
-	specialNotifications: ISpecialNotificationStored[];
+	/** Active custom notifications (for custom rendering) */
+	customNotifications: ICustomNotificationStored[];
 }
 
 /**
@@ -141,15 +132,11 @@ export interface IShapeDiverStoreNotifications
 		INotificationStoreActions {}
 
 /**
- * Type guard to check if notification is a special notification.
+ * Type guard to check if notification is a custom notification.
+ * A notification is considered custom if it has a "type" property with a string value.
  */
-export function isSpecialNotification(
+export function isCustomNotification(
 	notification: NotificationInput,
-): notification is INotificationDataExtended & SpecialNotificationData {
-	return (
-		"type" in notification &&
-		Object.values(SpecialNotificationType).includes(
-			notification.type as SpecialNotificationType,
-		)
-	);
+): notification is INotificationDataExtended & ICustomNotificationData {
+	return "type" in notification;
 }

@@ -3,6 +3,10 @@ import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore
 import {Anchor} from "@mantine/core";
 import React, {useCallback} from "react";
 
+/**
+ * Props for the NotificationModelStateCreated component.
+ * External components can use this without the type discriminator.
+ */
 export interface INotificationModelStateCreatedProps {
 	modelStateId: string;
 	link: string;

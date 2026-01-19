@@ -1,13 +1,13 @@
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 import {NotificationStyleProps} from "@AppBuilderShared/types/context/notificationcontext";
 import {
+	ICustomNotificationData,
+	ICustomNotificationStored,
 	INotificationDataExtended,
+	isCustomNotification,
 	IShapeDiverStoreNotifications,
-	ISpecialNotificationStored,
-	isSpecialNotification,
 	NotificationDisplayMode,
 	NotificationInput,
-	SpecialNotificationData,
 } from "@AppBuilderShared/types/store/shapediverStoreNotifications";
 import {
 	getEnvironmentIdentifier,
@@ -41,6 +41,10 @@ function shouldDisplayNotification(
 		return true;
 	}
 
+	if (displayMode === NotificationDisplayMode.NONE) {
+		return false;
+	}
+
 	const envIdentifier = getEnvironmentIdentifier();
 	const inPlatform = isRunningInPlatform();
 
@@ -57,55 +61,45 @@ function shouldDisplayNotification(
 
 /**
  * Notification store for managing application notifications.
- * Supports both regular Mantine notifications and special notifications with custom rendering.
+ * Supports both regular Mantine notifications and custom notifications with custom rendering.
  */
 export const useNotificationStore = create<IShapeDiverStoreNotifications>()(
 	devtools(
 		(set, get) => ({
 			styleProps: defaultStyleProps,
-			specialNotifications: [],
+			customNotifications: [],
 
-			show: (notification: NotificationInput): string => {
+			show: (notification: NotificationInput): string | undefined => {
 				const {styleProps} = get();
 				const {displayMode, ...rest} = notification;
 
 				// Check if notification should be displayed in current environment
 				if (!shouldDisplayNotification(displayMode)) {
-					return "";
+					return undefined;
 				}
 
 				const id = notification.id || generateNotificationId();
 
-				// Check if this is a special notification
-				if (isSpecialNotification(notification)) {
-					const {type, ...specialData} = notification;
-					const specialNotification: ISpecialNotificationStored = {
+				// Check if this is a custom notification
+				if (isCustomNotification(notification)) {
+					const {type, ...customData} = notification;
+					const customNotification: ICustomNotificationStored = {
 						id,
-						data: {type, ...specialData} as SpecialNotificationData,
+						data: {type, ...customData} as ICustomNotificationData,
 						displayMode,
 						createdAt: Date.now(),
 					};
 
 					set(
 						(state) => ({
-							specialNotifications: [
-								...state.specialNotifications,
-								specialNotification,
+							customNotifications: [
+								...state.customNotifications,
+								customNotification,
 							],
 						}),
 						false,
-						"show (special)",
+						"show (custom)",
 					);
-
-					// Show Mantine notification for special notifications too
-					// The message will be rendered by the special notification component
-					notifications.show({
-						id,
-						autoClose: styleProps.autoClose,
-						...rest,
-					});
-
-					return id;
 				}
 
 				// Regular notification
@@ -122,10 +116,10 @@ export const useNotificationStore = create<IShapeDiverStoreNotifications>()(
 				// Hide from Mantine notifications
 				notifications.hide(id);
 
-				// Remove from special notifications if present
+				// Remove from custom notifications if present
 				set(
 					(state) => ({
-						specialNotifications: state.specialNotifications.filter(
+						customNotifications: state.customNotifications.filter(
 							(n) => n.id !== id,
 						),
 					}),
@@ -139,13 +133,15 @@ export const useNotificationStore = create<IShapeDiverStoreNotifications>()(
 
 				// Check if notification should be displayed in current environment
 				if (!shouldDisplayNotification(displayMode)) {
-					return;
+					return undefined;
 				}
 
 				notifications.update(rest);
 			},
 
-			error: (notification: INotificationDataExtended): string => {
+			error: (
+				notification: INotificationDataExtended,
+			): string | undefined => {
 				const {styleProps, show} = get();
 				return show({
 					...notification,
@@ -153,7 +149,9 @@ export const useNotificationStore = create<IShapeDiverStoreNotifications>()(
 				});
 			},
 
-			warning: (notification: INotificationDataExtended): string => {
+			warning: (
+				notification: INotificationDataExtended,
+			): string | undefined => {
 				const {styleProps, show} = get();
 				return show({
 					...notification,
@@ -161,7 +159,9 @@ export const useNotificationStore = create<IShapeDiverStoreNotifications>()(
 				});
 			},
 
-			success: (notification: INotificationDataExtended): string => {
+			success: (
+				notification: INotificationDataExtended,
+			): string | undefined => {
 				const {styleProps, show} = get();
 				return show({
 					...notification,
