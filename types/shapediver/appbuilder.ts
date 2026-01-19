@@ -248,7 +248,8 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsSetBrowserLocation
 		| IAppBuilderActionPropsCloseConfigurator
 		| IAppBuilderActionPropsCamera
-		| IAppBuilderActionPropsSound;
+		| IAppBuilderActionPropsSound
+		| IAppBuilderActionPropsMessageToParent;
 }
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -406,7 +407,8 @@ export type AppBuilderActionType =
 	| "setBrowserLocation"
 	| "closeConfigurator"
 	| "camera"
-	| "sound";
+	| "sound"
+	| "messageToParent";
 
 /** Properties of a "createModelState" action. */
 export interface IAppBuilderActionPropsCreateModelState {
@@ -603,6 +605,18 @@ export type IAppBuilderActionPropsSound = {
 export type IAppBuilderLegacyActionPropsSound = IAppBuilderActionPropsSound &
 	IAppBuilderActionPropsCommon;
 
+/** Properties of a "messageToParent" action. */
+export interface IAppBuilderActionPropsMessageToParent {
+	/** Type identifier for the message. */
+	type: string;
+	/** Optional message data. */
+	data?: Record<string, unknown>;
+}
+
+/** Properties of legacy a "messageToParent" action. */
+export type IAppBuilderLegacyActionPropsMessageToParent =
+	IAppBuilderActionPropsMessageToParent & IAppBuilderActionPropsCommon;
+
 /** A legacy App Builder action definition. */
 export interface IAppBuilderLegacyActionDefinition {
 	/** Type of the action. */
@@ -616,7 +630,8 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsSetBrowserLocation
 		| IAppBuilderLegacyActionPropsCloseConfigurator
 		| IAppBuilderActionPropsCamera
-		| IAppBuilderLegacyActionPropsSound;
+		| IAppBuilderLegacyActionPropsSound
+		| IAppBuilderLegacyActionPropsMessageToParent;
 }
 
 /** Types of widgets */
@@ -1352,6 +1367,16 @@ export function isSoundAction(
 	action: IAppBuilderActionDefinition,
 ): action is {type: "sound"; props: IAppBuilderActionPropsSound} {
 	return action.type === "sound";
+}
+
+/** assert action type "messageToParent" */
+export function isMessageToParentAction(
+	action: IAppBuilderActionDefinition,
+): action is {
+	type: "messageToParent";
+	props: IAppBuilderActionPropsMessageToParent;
+} {
+	return action.type === "messageToParent";
 }
 
 /** assert control type "parameter" */
