@@ -1,15 +1,5 @@
 import {IViewportApi} from "@shapediver/viewer.viewport";
-
-export enum ViewportIconButtonEnum {
-	Ar = "ar",
-	Zoom = "zoom",
-	Fullscreen = "fullscreen",
-	Cameras = "cameras",
-	Undo = "undo",
-	Redo = "redo",
-	Reload = "reload",
-	HistoryMenu = "historyMenu",
-}
+import {ViewportIconButtonEnum} from "../shapediver/viewportIcons";
 
 export interface ViewportIconButton {
 	type: ViewportIconButtonEnum;

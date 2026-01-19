@@ -8,8 +8,6 @@ import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderShared/co
 import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
 import {AppBuilderSavedStatesWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderSavedStatesWidgetComponent";
 import {AppBuilderTextWidgetThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
-import {NumberAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/NumberAttribute";
-import {StringAttributeThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/attributes/StringAttribute";
 import {ExportButtonComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportButtonComponent";
 import {ExportLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import {OutputChunkLabelComponentThemeProps} from "@AppBuilderShared/components/shapediver/outputs/OutputChunkLabelComponent";
@@ -28,8 +26,6 @@ import {StargateSharedThemeProps} from "@AppBuilderShared/components/shapediver/
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
-import {ViewportAnchor2dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor2d";
-import {ViewportAnchor3dThemeProps} from "@AppBuilderShared/components/shapediver/viewport/anchors/ViewportAnchor3d";
 import {ViewportIconButtonThemeProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/ViewportIconButton";
 import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/ViewportIconButtonDropdown";
 import {HintProps} from "@AppBuilderShared/components/ui/Hint";
@@ -37,6 +33,7 @@ import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
 import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {DefaultSessionThemeProps} from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
 import {AppBuilderAppShellTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
@@ -48,6 +45,7 @@ import {AppBuilderTemplateSelectorThemeProps} from "@AppBuilderShared/pages/temp
 import {AppBuilderVerticalContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
 import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
+import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	ViewportBrandingThemeProps,
 	ViewportComponentThemeProps,
@@ -90,6 +88,7 @@ import {
 	mergeThemeOverrides,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
+import {useContext} from "react";
 import {AppBuilderStackUiWidgetComponentThemeProps} from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
 import {MultiSelectCheckboxesProps} from "~/shared/components/shapediver/parameter/multiselect/MultiSelectCheckboxesComponent";
 import {CreateModelStateHookThemeProps} from "../shapediver/useCreateModelState";
@@ -162,6 +161,8 @@ interface Props {
 export const useCustomTheme = (props: Props = {}) => {
 	const {globalThemeOverrides = {}} = props;
 
+	const componentContext = useContext(ComponentContext);
+
 	/**
 	 * Padding value used in various places.
 	 * Note that there is no need to use this global value, this is
@@ -169,7 +170,6 @@ export const useCustomTheme = (props: Props = {}) => {
 	 * feel free to set individual values.
 	 */
 	const padding: StyleProp<MantineSpacing> = "xs";
-
 	/**
 	 * Mantine theme object: @see https://mantine.dev/theming/theme-object/
 	 * The theme can be used to set global default properties, and
@@ -991,7 +991,10 @@ export const useCustomTheme = (props: Props = {}) => {
 			 *
 			 * Defaults for number attributes.
 			 */
-			NumberAttribute: NumberAttributeThemeProps({}),
+			NumberAttribute:
+				componentContext.widgets?.attributeVisualization.themeProps?.NumberAttribute(
+					{},
+				),
 			/**
 			 * OutputChunkLabelComponent
 			 *
@@ -1130,7 +1133,10 @@ export const useCustomTheme = (props: Props = {}) => {
 			 *
 			 * Defaults for string attributes.
 			 */
-			StringAttribute: StringAttributeThemeProps({}),
+			StringAttribute:
+				componentContext.widgets?.attributeVisualization.themeProps?.StringAttribute(
+					{},
+				),
 			/**
 			 * TooltipWrapper
 			 *
@@ -1182,7 +1188,9 @@ export const useCustomTheme = (props: Props = {}) => {
 			 *
 			 *
 			 */
-			ViewportAnchor2d: ViewportAnchor2dThemeProps({
+			ViewportAnchor2d: componentContext.viewportAnchors?.[
+				AppBuilderContainerNameType.Anchor2d
+			].themeProps({
 				// anchorPaperProps: {
 				// 	style: {
 				// 		...defaultStyleProps.style,
@@ -1212,7 +1220,9 @@ export const useCustomTheme = (props: Props = {}) => {
 			 *
 			 *
 			 */
-			ViewportAnchor3d: ViewportAnchor3dThemeProps({
+			ViewportAnchor3d: componentContext.viewportAnchors?.[
+				AppBuilderContainerNameType.Anchor3d
+			].themeProps({
 				// anchorPaperProps: {
 				// 	style: {
 				// 		...defaultStyleProps.style,

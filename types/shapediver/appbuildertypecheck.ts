@@ -1,12 +1,14 @@
 import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {ATTRIBUTE_VISUALIZATION} from "@shapediver/viewer.features.attribute-visualization";
 import {
 	ISelectionParameterPropsJsonSchema,
 	PARAMETER_TYPE,
 	PARAMETER_VISUALIZATION,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.session";
-import {CAMERA_TYPE} from "@shapediver/viewer.viewport";
+import {
+	ATTRIBUTE_VISUALIZATION,
+	CAMERA_TYPE,
+} from "@shapediver/viewer.shared.types";
 import {z} from "zod";
 import {
 	AppBuilderContainerNameType,

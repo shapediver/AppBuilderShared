@@ -11,10 +11,10 @@ import {
 } from "@AppBuilderShared/types/components/shapediver/componentTypes";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {
+	ViewportIconButtonEnum,
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {ViewportIconButtonEnum} from "@AppBuilderShared/types/store/shapediverStoreViewportIcons";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";

@@ -25,7 +25,6 @@ import {
 	isProgressWidget,
 	isRoundChartWidget,
 	isSavedStatesWidget,
-	isSceneTreeExplorerWidget,
 	isStackUiWidget,
 	isTextWidget,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
@@ -36,7 +35,6 @@ import AppBuilderStackUiWidgetButtonComponent from "~/shared/components/shapediv
 import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetComponent";
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
 import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
-import AppBuilderSceneTreeExplorerWidgetComponent from "./AppBuilderSceneTreeExplorerWidgetComponent";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(
 	() => import("./AppBuilderAgentWidgetComponent"),
 );
@@ -197,13 +195,6 @@ export default function AppBuilderWidgetsComponent({
 						<AppBuilderDesktopClientOutputsWidgetComponent
 							key={i}
 							namespace={namespace}
-							{...w.props}
-						/>
-					);
-				else if (isSceneTreeExplorerWidget(w))
-					return (
-						<AppBuilderSceneTreeExplorerWidgetComponent
-							key={i}
 							{...w.props}
 						/>
 					);

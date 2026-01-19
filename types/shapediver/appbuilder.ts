@@ -9,16 +9,16 @@ import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/ex
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {MantineColor} from "@mantine/core";
-import {Gradient} from "@shapediver/viewer.features.attribute-visualization";
 import {
 	ISelectionParameterProps,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.session";
 import {
+	Gradient,
 	ICameraOptions,
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
-} from "@shapediver/viewer.viewport";
+} from "@shapediver/viewer.shared.types";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {

@@ -89,12 +89,16 @@ export function removeStatesFromUrl(
 	initialUrl?: URL,
 ) {
 	const url = initialUrl ?? new URL(window.location.href);
-	if (modelStateId && url.searchParams.has(QUERYPARAM_MODELSTATEID))
-		url.searchParams.delete(QUERYPARAM_MODELSTATEID);
-	if (savedStateId && url.searchParams.has(QUERYPARAM_SAVEDSTATEID))
-		url.searchParams.delete(QUERYPARAM_SAVEDSTATEID);
+	const deleteModelStateId =
+		modelStateId && url.searchParams.has(QUERYPARAM_MODELSTATEID);
+	const deleteSavedStateId =
+		savedStateId && url.searchParams.has(QUERYPARAM_SAVEDSTATEID);
+	if (!deleteModelStateId && !deleteSavedStateId) return url;
+
+	if (deleteModelStateId) url.searchParams.delete(QUERYPARAM_MODELSTATEID);
+	if (deleteSavedStateId) url.searchParams.delete(QUERYPARAM_SAVEDSTATEID);
 	if (updateUrl) {
-		window.history.replaceState({}, "", url.toString());
+		window.history.replaceState(window.history.state, "", url.toString());
 		dispatchUrlChangedEvent();
 	}
 	return url;
