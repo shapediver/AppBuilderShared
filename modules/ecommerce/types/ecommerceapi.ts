@@ -162,6 +162,32 @@ export interface IScrollingApiLoadMoreReply<TItem> {
 }
 
 /**
+ * Data for a message to the parent page.
+ */
+export interface IMessageToParentData {
+	/** Type identifier for the message. */
+	type: string;
+	/** Optional message data. */
+	data?: Record<string, unknown>;
+}
+
+/**
+ * Reply from the parent page to a message.
+ */
+export interface IMessageToParentReply {
+	/** Optional notification to show in response to message. */
+	notification?: {
+		/** Optional type of notification. */
+		type?: string;
+		/** Notification data. */
+		data: {
+			message: string;
+			title?: string;
+		};
+	};
+}
+
+/**
  * Generic e-commerce API actions.
  */
 export interface IECommerceApiActions {
@@ -210,6 +236,12 @@ export interface IECommerceApiActions {
 	scrollingApiLoadMore(
 		data: IScrollingApiLoadMoreData,
 	): Promise<IScrollingApiLoadMoreReply<unknown>>;
+
+	/**
+	 * Send a message to the parent page.
+	 * @param data
+	 */
+	messageToParent(data: IMessageToParentData): Promise<IMessageToParentReply>;
 }
 
 /**
