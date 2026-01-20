@@ -5,7 +5,7 @@ import {
 	isParameterSource,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Logger} from "@AppBuilderShared/utils/logger";
-import {useMemo} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {useParameterValueSources} from "./useParameterValueSources";
 
 export type ParameterValueDefinition = {
@@ -19,6 +19,8 @@ type SourceEntry = {
 	source: IAppBuilderParameterValueSourceDefinition;
 	id: string;
 	namespace?: string;
+	// For export sources with nested sources, track the nested source keys and their resolved values
+	nestedSourceKeys?: Map<string, string>;
 };
 
 /**
@@ -69,6 +71,34 @@ const addSourceToFlatMap = (
 
 	resolving.add(value);
 
+	// check for nested sources, currently only Export sources can have nested sources
+	const nested = isExportSource(value) && value.props.parameterValues;
+
+	// track nested source keys for this export source
+	const nestedSourceKeys = new Map<string, string>();
+
+	// recursively add nested sources
+	if (nested) {
+		for (const [childKey, child] of Object.entries(nested)) {
+			// check if the child is a source
+			if (
+				typeof child === "object" &&
+				child !== null &&
+				isParameterSource(child)
+			) {
+				// track this nested source
+				nestedSourceKeys.set(childKey, createSourceKey(child));
+			}
+
+			addSourceToFlatMap(
+				{id: childKey, value: child},
+				map,
+				resolving,
+				resolved,
+			);
+		}
+	}
+
 	// add to map if not already present
 	const key = createSourceKey(value);
 	if (!map.has(key)) {
@@ -77,22 +107,9 @@ const addSourceToFlatMap = (
 			source: value,
 			id: id,
 			namespace: namespace,
+			nestedSourceKeys:
+				nestedSourceKeys.size > 0 ? nestedSourceKeys : undefined,
 		});
-	}
-
-	// check for nested sources, currently only Export sources can have nested sources
-	const nested = isExportSource(value) && value.props.parameterValues;
-
-	// recursively add nested sources
-	if (nested) {
-		for (const [childKey, child] of Object.entries(nested)) {
-			addSourceToFlatMap(
-				{id: childKey, value: child},
-				map,
-				resolving,
-				resolved,
-			);
-		}
 	}
 
 	// mark as resolved
@@ -178,18 +195,219 @@ export function useResolveParameterValues(props?: {
 			}
 		}
 
-		return {sources, topLevelParameterToIndex};
+		return {sources, topLevelParameterToIndex, flat};
 	}, [parameterValues, namespace]);
 
-	// Resolve flattened sources once
-	const resolvedSources = useParameterValueSources(
-		sourceData && namespace
+	// Multi-pass resolution: iteratively resolve sources until all are resolved or no progress is made
+	// This handles n-level nested sources
+	const [resolutionState, setResolutionState] = useState<
+		| {
+				currentPass: number;
+				resolvedMap: Map<string, unknown>;
+				pendingSources: {
+					source: IAppBuilderParameterValueSourceDefinition;
+					id: string;
+					namespace?: string;
+					entryIndex: number;
+				}[];
+		  }
+		| undefined
+	>(undefined);
+
+	// Initialize resolution state when sourceData changes
+	useEffect(() => {
+		if (!sourceData) {
+			setResolutionState(undefined);
+			return;
+		}
+
+		const flatArray = Array.from(sourceData.flat.values());
+		const pendingSources = flatArray.map((entry, index) => ({
+			source: entry.source,
+			id: entry.id,
+			namespace: entry.namespace,
+			entryIndex: index,
+		}));
+
+		setResolutionState({
+			currentPass: 0,
+			resolvedMap: new Map(),
+			pendingSources,
+		});
+	}, [sourceData]);
+
+	// Determine which sources can be resolved in the current pass
+	const currentPassSources = useMemo(() => {
+		if (!sourceData || !resolutionState) return undefined;
+
+		const flatArray = Array.from(sourceData.flat.values());
+		const sources: {
+			source: IAppBuilderParameterValueSourceDefinition;
+			id: string;
+			namespace?: string;
+			entryIndex: number;
+		}[] = [];
+
+		// Find sources whose all dependencies are resolved
+		for (const pending of resolutionState.pendingSources) {
+			const entry = flatArray[pending.entryIndex];
+			let canResolve = true;
+
+			// Check if all nested sources are already resolved
+			if (entry.nestedSourceKeys && entry.nestedSourceKeys.size > 0) {
+				for (const nestedSourceKey of Array.from(
+					entry.nestedSourceKeys.values(),
+				)) {
+					if (!resolutionState.resolvedMap.has(nestedSourceKey)) {
+						canResolve = false;
+						break;
+					}
+				}
+
+				// If we can resolve, create modified source with resolved nested values
+				if (canResolve && isExportSource(entry.source)) {
+					const originalParams =
+						entry.source.props.parameterValues || {};
+					const resolvedParams: {
+						[key: string]: IAppBuilderParameterValueDefinition;
+					} = {};
+
+					// Replace nested sources with their resolved values
+					for (const [paramKey, paramValue] of Object.entries(
+						originalParams,
+					)) {
+						const nestedSourceKey =
+							entry.nestedSourceKeys.get(paramKey);
+						if (nestedSourceKey) {
+							const resolved =
+								resolutionState.resolvedMap.get(
+									nestedSourceKey,
+								);
+							if (resolved !== undefined) {
+								resolvedParams[paramKey] =
+									resolved as IAppBuilderParameterValueDefinition;
+							} else {
+								Logger.warn(
+									`Could not find resolved value for nested source in export parameter ${paramKey}`,
+								);
+								resolvedParams[paramKey] = paramValue;
+							}
+						} else {
+							resolvedParams[paramKey] = paramValue;
+						}
+					}
+
+					// Create modified export source with resolved params
+					const modifiedSource: IAppBuilderParameterValueSourceDefinition =
+						{
+							...entry.source,
+							props: {
+								...entry.source.props,
+								parameterValues: resolvedParams,
+							},
+						};
+
+					sources.push({
+						source: modifiedSource,
+						id: pending.id,
+						namespace: pending.namespace,
+						entryIndex: pending.entryIndex,
+					});
+				}
+			} else {
+				// No dependencies, can resolve immediately
+				sources.push(pending);
+			}
+		}
+
+		if (sources.length === 0) {
+			// No progress can be made
+			if (resolutionState.pendingSources.length > 0) {
+				Logger.warn(
+					`Cannot resolve ${resolutionState.pendingSources.length} sources. Possible circular dependency or missing nested sources.`,
+				);
+			}
+			return undefined;
+		}
+
+		return sources;
+	}, [sourceData, resolutionState]);
+
+	// Resolve sources for current pass
+	const currentPassResolved = useParameterValueSources(
+		currentPassSources && namespace
 			? {
 					namespace,
-					sources: sourceData.sources,
+					sources: currentPassSources,
 				}
 			: undefined,
 	);
+
+	// Update resolution state with newly resolved values
+	useEffect(() => {
+		if (
+			!sourceData ||
+			!resolutionState ||
+			!currentPassSources ||
+			!currentPassResolved
+		) {
+			return;
+		}
+
+		const flatArray = Array.from(sourceData.flat.values());
+		const newResolvedMap = new Map(resolutionState.resolvedMap);
+		const newPending = [...resolutionState.pendingSources];
+
+		// Add newly resolved values to the map
+		for (let i = 0; i < currentPassSources.length; i++) {
+			const source = currentPassSources[i];
+			const entry = flatArray[source.entryIndex];
+			const key = createSourceKey(entry.source);
+			newResolvedMap.set(key, currentPassResolved[i]);
+
+			// Remove from pending
+			const pendingIndex = newPending.findIndex(
+				(p) => p.entryIndex === source.entryIndex,
+			);
+			if (pendingIndex >= 0) {
+				newPending.splice(pendingIndex, 1);
+			}
+		}
+
+		// Check if we're done or need another pass
+		if (newPending.length === 0) {
+			// All sources resolved
+			setResolutionState({
+				currentPass: resolutionState.currentPass + 1,
+				resolvedMap: newResolvedMap,
+				pendingSources: [],
+			});
+		} else {
+			// More sources to resolve, trigger next pass
+			setResolutionState({
+				currentPass: resolutionState.currentPass + 1,
+				resolvedMap: newResolvedMap,
+				pendingSources: newPending,
+			});
+		}
+	}, [sourceData, currentPassSources, currentPassResolved]);
+
+	// Extract final resolved sources in correct order
+	const resolvedSources = useMemo(() => {
+		if (!sourceData || !resolutionState) return undefined;
+		if (resolutionState.pendingSources.length > 0) return undefined;
+
+		const flatArray = Array.from(sourceData.flat.values());
+		const result: unknown[] = [];
+
+		for (const entry of flatArray) {
+			const key = createSourceKey(entry.source);
+			const resolved = resolutionState.resolvedMap.get(key);
+			result.push(resolved);
+		}
+
+		return result;
+	}, [sourceData, resolutionState]);
 
 	// Once the sources are resolved, map them back to the original parameter values
 	// Return exact same structure as before, the indexes match the original parameterValues array
