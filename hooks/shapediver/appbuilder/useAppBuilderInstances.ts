@@ -6,9 +6,7 @@ import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverSt
 import {
 	IAppBuilder,
 	IAppBuilderInstanceDefinition,
-	IAppBuilderParameterValueSourceDefinition,
 	IAppBuilderSettingsSession,
-	isParameterSource,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Mat4Array} from "@AppBuilderShared/types/shapediver/common";
 import {IParameterStore} from "@AppBuilderShared/types/store/shapediverStoreParameters";
@@ -25,7 +23,10 @@ import {
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useParameterValueSources} from "../parameters/useParameterValueSources";
+import {
+	ParameterValueDefinition,
+	useResolveParameterValues,
+} from "../parameters/useResolveParameterValues";
 
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {useSessions} from "../useSessions";
@@ -139,16 +140,10 @@ export function useAppBuilderInstances(props: Props) {
 	const [parsedAppBuilderInstances, setParsedAppBuilderInstances] = useState<
 		IParsedInstanceDefinition[]
 	>([]);
-	const [sourceData, setSourceData] = useState<{
-		data: {
-			namespace: string;
-			sources: {
-				source: IAppBuilderParameterValueSourceDefinition;
-				parameterId: string;
-			}[];
-		};
+	const [parameterValuesData, setParameterValuesData] = useState<{
+		parameterValues: ParameterValueDefinition[];
 		information: {
-			sourceMap: {
+			parameterValuesMap: {
 				[key: string]: {
 					[key: string]: number;
 				};
@@ -280,28 +275,30 @@ export function useAppBuilderInstances(props: Props) {
 		[],
 	);
 
-	const resolvedParameterValueSources = useParameterValueSources(
-		sourceData?.data,
-	);
+	// Use useResolvedParameters to resolve the parameter values
+	const resolvedParameterValuesArray = useResolveParameterValues({
+		namespace,
+		parameterValues: parameterValuesData?.parameterValues,
+	});
 
 	// once the pending sources are loaded, we can create the instances
 	useEffect(() => {
-		if (!sourceData || !resolvedParameterValueSources) return;
-		const {sourceMap, instances} = sourceData.information;
+		if (!parameterValuesData || !resolvedParameterValuesArray) return;
+		const {parameterValuesMap, instances} = parameterValuesData.information;
 		if (!instances) return;
 
 		const instancesCopy = JSON.parse(
 			JSON.stringify(instances),
 		) as IAppBuilderInstanceDefinition[];
-		Object.entries(sourceMap ?? {}).forEach(
+		Object.entries(parameterValuesMap ?? {}).forEach(
 			([instanceIndex, instanceSourceMap]) => {
 				Object.entries(instanceSourceMap).forEach(([key, value]) => {
 					if (
-						sourceMap[instanceIndex] !== undefined &&
-						sourceMap[instanceIndex][key] !== undefined
+						parameterValuesMap[instanceIndex] !== undefined &&
+						parameterValuesMap[instanceIndex][key] !== undefined
 					) {
 						const resolvedValue =
-							resolvedParameterValueSources[value];
+							resolvedParameterValuesArray[value];
 
 						const instance = instancesCopy[parseInt(instanceIndex)];
 
@@ -322,8 +319,12 @@ export function useAppBuilderInstances(props: Props) {
 		);
 
 		createParsedInstances(instancesCopy);
-		setSourceData(undefined);
-	}, [resolvedParameterValueSources, createParsedInstances]);
+		setParameterValuesData(undefined);
+	}, [
+		resolvedParameterValuesArray,
+		createParsedInstances,
+		parameterValuesData,
+	]);
 
 	useEffect(() => {
 		if (!instances) return;
@@ -370,17 +371,12 @@ export function useAppBuilderInstances(props: Props) {
 		instancesRef.current = JSON.parse(JSON.stringify(instances));
 		loadedRef.current = false;
 
-		// check if there are parameter value sources that need to be loaded first
-		const sourcesToLoad: {
-			[key: string]: {
-				[key: string]: {
-					source: IAppBuilderParameterValueSourceDefinition;
-					parameterId: string;
-				}[];
-			};
-		} = {};
-
 		const existingNames = new Set<string>();
+		const parameterValuesMap: {
+			[key: string]: {[key: string]: number};
+		} = {};
+		const parameterValuesToLoad: ParameterValueDefinition[] = [];
+
 		instances.forEach((instance, index) => {
 			if (instance.name) {
 				if (existingNames.has(instance.name)) {
@@ -395,79 +391,28 @@ export function useAppBuilderInstances(props: Props) {
 
 			Object.entries(instance.parameterValues ?? {}).forEach(
 				([key, value]) => {
-					if (typeof value === "object" && isParameterSource(value)) {
-						if (!sourcesToLoad[index]) sourcesToLoad[index] = {};
-						if (!sourcesToLoad[index][key])
-							sourcesToLoad[index][key] = [];
-						sourcesToLoad[index][key].push({
-							source: value,
-							parameterId: key,
-						});
-					}
+					const parameterIndex =
+						parameterValuesToLoad.push({
+							id: key,
+							value: value,
+							namespace: instance.sessionId,
+						}) - 1;
+
+					if (!parameterValuesMap[index])
+						parameterValuesMap[index] = {};
+
+					parameterValuesMap[index][key] = parameterIndex;
 				},
 			);
 		});
 
-		if (Object.keys(sourcesToLoad).length > 0) {
-			const sourceData: {
-				source: IAppBuilderParameterValueSourceDefinition;
-				parameterId: string;
-				parameterNamespace?: string;
-			}[] = [];
-			const sourceMap: {
-				[key: string]: {[key: string]: number};
-			} = {};
-			// we now go through all sources that need to be loaded and add them to the pending sources
-			// if a source is used multiple times, we add it only once and store the indices
-			Object.entries(sourcesToLoad).forEach(
-				([instanceIndex, instanceSources]) => {
-					Object.entries(instanceSources).forEach(
-						([key, sources]) => {
-							sources.forEach((source) => {
-								const instanceSessionId =
-									instances[parseInt(instanceIndex)]
-										.sessionId;
-
-								let index = sourceData.findIndex(
-									(s) =>
-										JSON.stringify(s.source) ===
-											JSON.stringify(source.source) &&
-										s.parameterNamespace ===
-											instanceSessionId,
-								);
-								if (index === -1) {
-									index =
-										sourceData.push({
-											source: source.source,
-											parameterId: source.parameterId,
-											parameterNamespace:
-												instanceSessionId,
-										}) - 1;
-								}
-
-								if (!sourceMap[instanceIndex])
-									sourceMap[instanceIndex] = {};
-
-								sourceMap[instanceIndex][key] = index;
-							});
-						},
-					);
-				},
-			);
-
-			setSourceData({
-				data: {
-					namespace,
-					sources: sourceData,
-				},
-				information: {
-					sourceMap,
-					instances,
-				},
-			});
-		} else {
-			createParsedInstances(instances);
-		}
+		setParameterValuesData({
+			parameterValues: parameterValuesToLoad,
+			information: {
+				parameterValuesMap,
+				instances,
+			},
+		});
 	}, [instances, sessions]);
 
 	const sessionUpdateCallback = useCallback((newNode?: ITreeNode) => {

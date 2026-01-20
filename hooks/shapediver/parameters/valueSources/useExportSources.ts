@@ -1,11 +1,11 @@
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IAppBuilderParameterValueSourcePropsExport} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IShapeDiverExport} from "@AppBuilderShared/types/shapediver/export";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {EXPORT_TYPE} from "@shapediver/viewer.session";
+import {EXPORT_TYPE, IExportApi} from "@shapediver/viewer.session";
 import {useEffect, useMemo, useState} from "react";
-import {useExports} from "../useExports";
+import {useShallow} from "zustand/react/shallow";
 
 export function useExportSources(props: {
 	namespace: string;
@@ -39,22 +39,39 @@ export function useExportSources(props: {
 			.filter((e): e is PropsExport => !!e);
 	}, [namespace, sources]);
 
-	// get all exports
-	const exports: (IShapeDiverExport | undefined)[] = useExports(exportMap);
+	// get all export APIs from store
+	// we don't use the useExports hook here because instances are not registered as exports in the store
+	const exportApis: (IExportApi | undefined)[] = useShapeDiverStoreSession(
+		useShallow((state) => {
+			return exportMap.map(({namespace, exportId}) => {
+				if (!state) return;
+				const session = state.sessions[namespace];
+				if (!session) return;
+
+				const exportApi = Object.values(session.exports).find(
+					(e) =>
+						e.id === exportId ||
+						e.name === exportId ||
+						e.displayname === exportId,
+				);
+				return exportApi;
+			});
+		}),
+	);
 
 	// create a combined array of exports and the parameter upload functions
 	const exportResults:
 		| {
-				export: IShapeDiverExport | undefined;
+				export: IExportApi | undefined;
 				upload: (file: File) => Promise<string>;
 		  }[]
 		| undefined = useMemo(() => {
-		if (!exports || !sources) return undefined;
-		return exports.map((exportItem, index) => ({
+		if (!exportApis || !sources) return undefined;
+		return exportApis.map((exportItem, index) => ({
 			export: exportItem,
 			upload: sources[index].upload,
 		}));
-	}, [exports, sources]);
+	}, [exportApis, sources]);
 
 	// load all exports
 	// and only set the return values once all are loaded
@@ -72,18 +89,16 @@ export function useExportSources(props: {
 				continue;
 			}
 
-			const {definition, actions} = e;
-
 			// check if the export is a download export
-			if (definition.type !== EXPORT_TYPE.DOWNLOAD) {
+			if (e.type !== EXPORT_TYPE.DOWNLOAD) {
 				Logger.warn(
-					`Export with name ${definition.name} is not a download export and cannot be used as a parameter value source.`,
+					`Export with name ${e.name} is not a download export and cannot be used as a parameter value source.`,
 				);
 				promises.push(Promise.resolve(undefined));
 				continue;
 			}
 
-			const file = actions.request().then(async (response: ResExport) => {
+			const file = e.request().then(async (response: ResExport) => {
 				if (
 					response.content &&
 					response.content[0] &&
@@ -91,15 +106,14 @@ export function useExportSources(props: {
 				) {
 					const content = response.content[0];
 					const url = content.href;
-					const res = await actions.fetch(url);
+					const res = await fetch(url);
 					const fetched = await (typeof res === "string"
 						? fetch(res)
 						: Promise.resolve(res));
 					const blob = await fetched.blob();
 					const file = new File(
 						[blob],
-						response.filename ||
-							`${definition.id}_${definition.version}`,
+						response.filename || `${e.id}_${e.version}`,
 						{type: blob.type},
 					);
 					return upload(file);

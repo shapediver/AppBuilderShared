@@ -315,28 +315,37 @@ export interface IAppBuilderParameterValueSourcePropsScreenshot {
 		| Partial<PerspectiveCameraProperties>;
 }
 
+export interface IAppBuilderParameterValueSourcePropsCommon {
+	/** Id of the session to use for finding the parameter value source. Defaults to the controller session. */
+	sessionId?: string;
+	/** Id or name or displayname of the referenced parameter value source (in that order). */
+	name: string;
+}
+
 /**
  * Properties for the "dataOutput" parameter value source.
  * This parameter value source is compatible with parameters of type "String" and "File".
  * For "File" parameters, the content type "application/json" is used.
  */
-export interface IAppBuilderParameterValueSourcePropsDataOutput {
-	/** Id of the session to use for finding the data output. Defaults to the controller session. */
-	sessionId?: string;
-	/** Id or name or displayname of the referenced data output (in that order). */
-	name: string;
-}
+export interface IAppBuilderParameterValueSourcePropsDataOutput
+	extends IAppBuilderParameterValueSourcePropsCommon {}
 
 /**
  * Properties for the "export" parameter value source.
  * This parameter value source is compatible with parameters of type "File".
  * The content type of the exported file must be supported by the "File" parameter.
  */
-export interface IAppBuilderParameterValueSourcePropsExport {
-	/** Id of the session to use for finding the export. Defaults to the controller session. */
-	sessionId?: string;
-	/** Id or name or displayname of the referenced export (in that order). */
-	name: string;
+export interface IAppBuilderParameterValueSourcePropsExport
+	extends IAppBuilderParameterValueSourcePropsCommon {
+	/**
+	 * Parameter set tha is used in the session to get the parameter value source.
+	 * Defined in a parameter dictionary where the key is either the displayname, the name or the id of the parameter.
+	 * The value is the parameter value.
+	 * If none is provided, the default parameter set is used.
+	 **/
+	parameterValues?: {
+		[key: string]: IAppBuilderParameterValueDefinition;
+	};
 }
 
 /**
@@ -348,11 +357,8 @@ export interface IAppBuilderParameterValueSourcePropsExport {
  *
  * @see https://help.shapediver.com/doc/sdtf-structured-data-transfer-format#sdTF-Structureddatatransferformat-Chunkselectionlogic
  */
-export interface IAppBuilderParameterValueSourcePropsSdtf {
-	/** Id of the session to use for finding the sdtf output. Defaults to the controller session. */
-	sessionId?: string;
-	/** Id or name or displayname of the referenced sdtf output (in that order). */
-	name: string;
+export interface IAppBuilderParameterValueSourcePropsSdtf
+	extends IAppBuilderParameterValueSourcePropsCommon {
 	/**
 	 * Optional, defines chunk to be used.
 	 * @see https://help.shapediver.com/doc/sdtf-structured-data-transfer-format#sdTF-Structureddatatransferformat-Advancedcase
@@ -396,6 +402,13 @@ export interface IAppBuilderParameterValueSourceDefinition {
 		| IAppBuilderParameterValueSourcePropsSdtf
 		| IAppBuilderParameterValueSourcePropsModelState;
 }
+
+/** Type used for parameter value definitions */
+export type IAppBuilderParameterValueDefinition =
+	| string
+	| number
+	| boolean
+	| IAppBuilderParameterValueSourceDefinition;
 
 /** Types of actions */
 export type AppBuilderActionType =
@@ -1016,11 +1029,7 @@ export interface IAppBuilderInstanceDefinition {
 	 * If none is provided, the default parameter set is used.
 	 **/
 	parameterValues?: {
-		[key: string]:
-			| string
-			| number
-			| boolean
-			| IAppBuilderParameterValueSourceDefinition;
+		[key: string]: IAppBuilderParameterValueDefinition;
 	};
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
