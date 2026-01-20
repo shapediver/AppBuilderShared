@@ -20,6 +20,13 @@ interface IScrollingApiDummy<TItem> extends IScrollingApi<TItem> {
 	_counter: number;
 }
 
+const scrollingApiDefaultValues = {
+	loading: false,
+	error: undefined,
+	hasNextPage: true,
+	items: [],
+};
+
 /**
  * Store for scrolling APIs.
  */
@@ -28,9 +35,12 @@ interface IScrollingApiStore {
 		[source: string]: IScrollingApi<IScrollingApiItemTypeSelect>;
 	};
 
+	scrollingApisInitialized: Array<string>;
+
 	addScrollingApiSelect: (
 		source: string,
 	) => IScrollingApi<IScrollingApiItemTypeSelect>;
+
 	removeScrollingApiSelect: (source: string) => void;
 }
 
@@ -38,6 +48,8 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 	devtools(
 		(set, get) => ({
 			scrollingApisSelect: {},
+
+			scrollingApisInitialized: [],
 
 			addScrollingApiSelect: (source) => {
 				const {scrollingApisSelect} = get();
@@ -47,6 +59,7 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 				let newApi:
 					| IScrollingApi<IScrollingApiItemTypeSelect>
 					| undefined;
+				let isInitialized = false;
 
 				// if window.parent === window return a dummy api for testing
 				if (isRunningInPlatform() || window.parent === window) {
@@ -59,10 +72,7 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 					}));
 					const dummyApi: IScrollingApiDummy<IScrollingApiItemTypeSelect> =
 						{
-							loading: false,
-							error: undefined,
-							hasNextPage: true,
-							items: [],
+							...scrollingApiDefaultValues,
 							_dummyItems,
 							_filteredDummyItems: _dummyItems,
 							_pageSize: 10,
@@ -155,15 +165,33 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 									}),
 								);
 							},
+							reset: () => {
+								set(
+									produce((state) => {
+										const api = state.scrollingApisSelect[
+											source
+										] as IScrollingApiDummy<IScrollingApiItemTypeSelect>;
+										state.scrollingApisSelect[source] = {
+											...api,
+											...scrollingApiDefaultValues,
+											_counter: 0,
+											_filteredDummyItems:
+												api._dummyItems,
+										};
+									}),
+								);
+							},
 						};
 					newApi = dummyApi;
+					isInitialized = true;
 				} else {
 					newApi = {
-						loading: false,
-						error: undefined,
-						hasNextPage: true,
-						items: [],
+						...scrollingApiDefaultValues,
 						loadMore: async () => {
+							const {
+								scrollingApisSelect,
+								scrollingApisInitialized,
+							} = get();
 							set(
 								produce((state) => {
 									state.scrollingApisSelect[source].loading =
@@ -172,6 +200,24 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 							);
 							const api = await ECommerceApiSingleton;
 							try {
+								// initialize if not done yet
+								if (
+									!scrollingApisInitialized.includes(source)
+								) {
+									await api.scrollingApiSetParameters({
+										reset: () => {
+											scrollingApisSelect[source].reset();
+											return Promise.resolve();
+										},
+										source,
+									});
+									set((state) => ({
+										scrollingApisInitialized: [
+											...state.scrollingApisInitialized,
+											source,
+										],
+									}));
+								}
 								const result = await api.scrollingApiLoadMore({
 									source,
 								});
@@ -303,6 +349,19 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 								);
 							}
 						},
+						reset: () => {
+							set(
+								produce((state) => {
+									const api = state.scrollingApisSelect[
+										source
+									] as IScrollingApi<IScrollingApiItemTypeSelect>;
+									state.scrollingApisSelect[source] = {
+										...api,
+										...scrollingApiDefaultValues,
+									};
+								}),
+							);
+						},
 					};
 				}
 
@@ -312,6 +371,10 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 							...state.scrollingApisSelect,
 							[source]: newApi,
 						},
+						scrollingApisInitialized: [
+							...state.scrollingApisInitialized,
+							isInitialized ? source : "",
+						].filter((s) => s !== ""),
 					}),
 					false,
 					`addScrollingApiSelect ${source}`,
@@ -327,7 +390,13 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 					(state) => {
 						const newState = {...state.scrollingApisSelect};
 						delete newState[source];
-						return {scrollingApisSelect: newState};
+						return {
+							scrollingApisSelect: newState,
+							scrollingApisInitialized:
+								state.scrollingApisInitialized.filter(
+									(s) => s !== source,
+								),
+						};
 					},
 					false,
 					`removeScrollingApiSelect ${source}`,

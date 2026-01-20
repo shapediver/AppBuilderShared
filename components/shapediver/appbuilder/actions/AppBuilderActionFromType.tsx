@@ -9,12 +9,14 @@ import {
 	isAddToCartAction,
 	isCloseConfiguratorAction,
 	isCreateModelStateAction,
+	isMessageToParentAction,
 	isSetBrowserLocationAction,
 	isSetParameterValueAction,
 	isSetParameterValuesAction,
 	isSoundAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useContext} from "react";
+import AppBuilderActionMessageToParentComponent from "./AppBuilderActionMessageToParentComponent";
 import AppBuilderActionSoundComponent from "./AppBuilderActionSoundComponent";
 
 export function AppBuilderActionFromType(
@@ -102,6 +104,14 @@ export function AppBuilderActionFromType(
 	else if (isSoundAction(actionRef.definition))
 		return (
 			<AppBuilderActionSoundComponent
+				key={key}
+				{...actionPropsCommon}
+				{...actionRef.definition.props}
+			/>
+		);
+	else if (isMessageToParentAction(actionRef.definition))
+		return (
+			<AppBuilderActionMessageToParentComponent
 				key={key}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}

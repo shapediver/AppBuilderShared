@@ -14,6 +14,8 @@ import {
 	IECommerceApiFactory,
 	IGetParentPageInfoReply,
 	IGetUserProfileReply,
+	IMessageToParentData,
+	IMessageToParentReply,
 	IScrollingApiLoadMoreData,
 	IScrollingApiLoadMoreReply,
 	IScrollingApiSetParametersData,
@@ -34,6 +36,7 @@ const MESSAGE_TYPE_GET_PARENT_PAGE_INFO = "GET_PARENT_PAGE_INFO";
 const MESSAGE_TYPE_UPDATE_SHARING_LINK = "UPDATE_SHARING_LINK";
 const MESSAGE_TYPE_SCROLLINGAPI_SET_PARAMETERS = "SCROLLINGAPI_SET_PARAMETERS";
 const MESSAGE_TYPE_SCROLLINGAPI_LOAD_MORE = "SCROLLINGAPI_LOAD_MORE";
+const MESSAGE_TYPE_MESSAGE_TO_PARENT = "MESSAGE_TO_PARENT";
 const MESSAGE_TYPE_HANDSHAKE = "HANDSHAKE";
 
 export class ECommerceApi implements IECommerceApi {
@@ -141,6 +144,18 @@ export class ECommerceApi implements IECommerceApi {
 		);
 	}
 
+	async messageToParent(
+		data: IMessageToParentData,
+	): Promise<IMessageToParentReply> {
+		await this.peerIsReady;
+
+		return this.crossWindowApi.send(
+			MESSAGE_TYPE_MESSAGE_TO_PARENT,
+			data,
+			this.timeout,
+		);
+	}
+
 	peerIsReady: Promise<ICrossWindowPeerInfo>;
 }
 
@@ -206,6 +221,11 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 					(data: IScrollingApiLoadMoreData) =>
 						this.actions.scrollingApiLoadMore(data),
 				);
+				this.crossWindowApi.on(
+					MESSAGE_TYPE_MESSAGE_TO_PARENT,
+					(data: IMessageToParentData) =>
+						this.actions.messageToParent(data),
+				);
 
 				return peerInfo;
 			});
@@ -260,6 +280,11 @@ export class DummyECommerceApiActions implements IECommerceApiActions {
 	> {
 		return Promise.resolve({hasNextPage: false, items: []});
 	}
+
+	messageToParent() /*data: IMessageToParentData,*/
+	: Promise<IMessageToParentReply> {
+		return Promise.resolve({});
+	}
 }
 
 export class DummyECommerceApi implements IECommerceApi {
@@ -304,6 +329,12 @@ export class DummyECommerceApi implements IECommerceApi {
 		data: IScrollingApiLoadMoreData,
 	): Promise<IScrollingApiLoadMoreReply<unknown>> {
 		return this.actions.scrollingApiLoadMore(data);
+	}
+
+	messageToParent(
+		data: IMessageToParentData,
+	): Promise<IMessageToParentReply> {
+		return this.actions.messageToParent(data);
 	}
 }
 

@@ -408,8 +408,20 @@ const IAppBuilderActionPropsSoundSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderLegacyActionPropsSetParameterValues
-const IAppBuilderLegacyActionPropsSound =
+const IAppBuilderLegacyActionPropsSoundSchema =
 	IAppBuilderActionPropsSoundSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderActionPropsMessageToParent
+const IAppBuilderActionPropsMessageToParentSchema = z.object({
+	type: z.string(),
+	data: z.record(z.unknown()).optional(),
+});
+
+// Zod type definition for IAppBuilderLegacyActionPropsMessageToParent
+const IAppBuilderLegacyActionPropsMessageToParentSchema =
+	IAppBuilderActionPropsMessageToParentSchema.extend(
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
@@ -445,7 +457,11 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	}),
 	z.object({
 		type: z.literal("sound"),
-		props: IAppBuilderLegacyActionPropsSound,
+		props: IAppBuilderLegacyActionPropsSoundSchema,
+	}),
+	z.object({
+		type: z.literal("messageToParent"),
+		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
 	}),
 ]);
 
@@ -527,6 +543,10 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("sound"),
 		props: IAppBuilderActionPropsSoundSchema,
+	}),
+	z.object({
+		type: z.literal("messageToParent"),
+		props: IAppBuilderActionPropsMessageToParentSchema,
 	}),
 ]);
 
