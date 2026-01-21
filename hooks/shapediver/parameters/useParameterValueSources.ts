@@ -52,11 +52,11 @@ export function useParameterValueSources(props?: {
 	namespace: string;
 	sources: {
 		source: IAppBuilderParameterValueSourceDefinition;
-		parameterId: string;
+		id: string;
 		// if a different namespace should be used for the parameter
 		// this allows to set different namespaces for different parameters in the sources
 		// if not set, the main namespace will be used
-		parameterNamespace?: string;
+		namespace?: string;
 	}[];
 }): unknown[] | undefined {
 	// default to empty values if no props are given
@@ -78,7 +78,7 @@ export function useParameterValueSources(props?: {
 	const sourcesRef = useRef<
 		| {
 				source: IAppBuilderParameterValueSourceDefinition;
-				parameterId: string;
+				id: string;
 		  }[]
 		| undefined
 	>(sources);
@@ -106,20 +106,16 @@ export function useParameterValueSources(props?: {
 		};
 
 		for (let i = 0; i < sources.length; i++) {
-			const {source, parameterId, parameterNamespace} = sources[i];
+			const {source, id, namespace: paramNamespace} = sources[i];
 
 			// get the session for the source
 			// if no namespace is given for the source, use the main namespace
-			const session =
-				sessionsRef.current[parameterNamespace || namespace];
+			const session = sessionsRef.current[paramNamespace || namespace];
 
 			if (!session) continue;
 
 			const parameter = Object.values(session.parameters).find(
-				(p) =>
-					p.id === parameterId ||
-					p.name === parameterId ||
-					p.displayname === parameterId,
+				(p) => p.id === id || p.name === id || p.displayname === id,
 			);
 			if (!parameter) continue;
 			const type = parameter.type;

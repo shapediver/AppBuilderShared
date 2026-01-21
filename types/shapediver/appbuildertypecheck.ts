@@ -197,6 +197,20 @@ const IAppBuilderParameterValueSourcePropsDataOutputSchema = z.object({
 const IAppBuilderParameterValueSourcePropsExportSchema = z.object({
 	sessionId: z.string().optional(),
 	name: z.string(),
+	parameterValues: z
+		.record(
+			z
+				.string()
+				.or(z.number())
+				.or(z.boolean())
+				.or(
+					z.lazy(
+						(): z.ZodTypeAny =>
+							IAppBuilderParameterValueSourceDefinitionSchema,
+					),
+				),
+		)
+		.optional(),
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsSdtf
