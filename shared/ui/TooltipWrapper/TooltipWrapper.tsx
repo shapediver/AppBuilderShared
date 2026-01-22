@@ -1,25 +1,20 @@
 import {
 	MantineThemeComponent,
-	MantineThemeOverride,
 	Tooltip,
-	TooltipProps,
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import ThemeProvider from "../shapediver/ui/ThemeProvider";
+import {ThemeProvider} from "~/shared/shared/ui/ThemeProvider";
+import {
+	TooltipWrapperComponentProps,
+	TooltipWrapperThemePropsType,
+} from "./TooltipWrapper.types";
 
-interface TooltipWrapperProps {
-	floating?: boolean;
-	themeOverride?: MantineThemeOverride;
-}
-
-const defaultStyleProps: Partial<TooltipWrapperProps & TooltipProps> = {
+const defaultStyleProps: Partial<TooltipWrapperComponentProps> = {
 	withArrow: true,
 	//keepMounted: true,
 };
-
-type TooltipWrapperThemePropsType = Partial<TooltipWrapperProps & TooltipProps>;
 
 export function TooltipWrapperThemeProps(
 	props: TooltipWrapperThemePropsType,
@@ -34,9 +29,7 @@ export function TooltipWrapperThemeProps(
  * @param props
  * @returns
  */
-export default function TooltipWrapper(
-	props: TooltipWrapperProps & TooltipProps,
-) {
+export default function TooltipWrapper(props: TooltipWrapperComponentProps) {
 	const {children = <></>, ...rest} = props;
 	const {color, floating, themeOverride, label, ..._props} = useProps(
 		"TooltipWrapper",

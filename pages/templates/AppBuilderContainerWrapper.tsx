@@ -1,4 +1,4 @@
-import ThemeProvider from "@AppBuilderShared/components/shapediver/ui/ThemeProvider";
+import {ThemeProvider} from "~/shared/shared/ui/ThemeProvider";
 import {
 	AppBuilderContainerContext,
 	AppBuilderTemplateContext,

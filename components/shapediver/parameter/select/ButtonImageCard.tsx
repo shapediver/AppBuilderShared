@@ -1,5 +1,4 @@
-import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {TooltipWrapper} from "@AppBuilderShared/shared/ui/TooltipWrapper";
 import {Card, Image, Stack, Text, UnstyledButton} from "@mantine/core";
 import React from "react";
 import classes from "./ButtonImageCard.module.css";

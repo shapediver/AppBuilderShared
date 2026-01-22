@@ -1,10 +1,6 @@
-import {
-	CSSProperties,
-	MantineTheme,
-	MantineThemeProvider,
-	MantineThemeProviderProps,
-} from "@mantine/core";
+import {CSSProperties, MantineTheme, MantineThemeProvider} from "@mantine/core";
 import React from "react";
+import {ThemeProviderProps} from "./ThemeProvider.types";
 
 /**
  * Provide a mantine theme override and also override mantine CSS variables which are based on the theme.
@@ -12,7 +8,7 @@ import React from "react";
  * @param props
  * @returns
  */
-export default function ThemeProvider(props: MantineThemeProviderProps) {
+export default function ThemeProvider(props: ThemeProviderProps) {
 	const {theme, children, ...rest} = props;
 
 	const style: CSSProperties = {

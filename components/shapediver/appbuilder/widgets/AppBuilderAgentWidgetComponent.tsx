@@ -1,6 +1,21 @@
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {
+	ActionIcon,
+	Box,
+	Button,
+	createTheme,
+	FileButton,
+	Group,
+	MantineStyleProp,
+	Paper,
+	ScrollArea,
+	Stack,
+	Text,
+	Textarea,
+	TextInput,
+	useMantineTheme,
+	useProps,
+} from "@mantine/core";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {
 	DEFAULT_SYSTEM_PROMPT,
 	useAgent,
@@ -23,23 +38,6 @@ import {
 	QUERYPARAM_SLUG,
 } from "@AppBuilderShared/types/shapediver/queryparams";
 import {Logger} from "@AppBuilderShared/utils/logger";
-import {
-	ActionIcon,
-	Box,
-	Button,
-	createTheme,
-	FileButton,
-	Group,
-	MantineStyleProp,
-	Paper,
-	ScrollArea,
-	Stack,
-	Text,
-	Textarea,
-	TextInput,
-	useMantineTheme,
-	useProps,
-} from "@mantine/core";
 import React, {
 	useCallback,
 	useContext,

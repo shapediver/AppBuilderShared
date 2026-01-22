@@ -22,7 +22,7 @@ import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
 import {visit} from "unist-util-visit";
 import classes from "./MarkdownWidgetComponent.module.css";
-import ThemeProvider from "./ThemeProvider";
+import {ThemeProvider} from "~/shared/shared/ui/ThemeProvider";
 
 // Set to track warnings that have already been shown to prevent duplicates
 const shownWarnings = new Set<string>();

@@ -31,7 +31,7 @@ import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderShared/components
 import {HintProps} from "@AppBuilderShared/components/ui/Hint";
 import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
-import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {TooltipWrapperThemeProps} from "~/shared/shared/ui/TooltipWrapper";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {DefaultSessionThemeProps} from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";

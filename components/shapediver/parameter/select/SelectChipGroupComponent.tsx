@@ -1,4 +1,4 @@
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {Chip, Flex} from "@mantine/core";
 import React from "react";
 import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";

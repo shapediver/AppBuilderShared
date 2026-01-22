@@ -2,7 +2,7 @@ import ModelCardOverlayWrapper, {
 	ModelCardOverlayWrapperThemePropsType,
 } from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlayWrapper";
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {Avatar} from "@mantine/core";

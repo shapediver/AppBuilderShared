@@ -1,5 +1,4 @@
 import {MantineColor} from "@mantine/core";
-import type {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
 
 /**
  * Network status for Stargate connection
@@ -14,18 +13,6 @@ export enum NetworkStatus {
 	 * we are not connected to a client.
 	 */
 	disconnected = "disconnected",
-}
-
-/**
- * Client choice interface for desktop client selection
- */
-export interface IStargateClientChoice {
-	/** The name of the client */
-	text: string;
-	/** The id of the client */
-	value: string;
-	/** The information about the client as received from Stargate */
-	data: ISdStargateClientModel | null;
 }
 
 /**

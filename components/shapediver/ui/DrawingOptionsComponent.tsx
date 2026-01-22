@@ -1,7 +1,5 @@
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
-import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {
 	Button,
 	Checkbox,
@@ -20,6 +18,7 @@ import {
 import {IDrawingParameterSettings} from "@shapediver/viewer.session";
 import React, {useEffect, useState} from "react";
 import {Icon} from "~/shared/shared/ui/Icon";
+import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import classes from "./DrawingOptionsComponent.module.css";
 
 /**

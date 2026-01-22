@@ -1,5 +1,5 @@
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {
 	Card,
 	Group,

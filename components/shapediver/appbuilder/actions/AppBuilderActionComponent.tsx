@@ -1,4 +1,4 @@
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {TooltipWrapper} from "@AppBuilderShared/shared/ui/TooltipWrapper";
 import {IAppBuilderActionPropsCommon} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	Button,

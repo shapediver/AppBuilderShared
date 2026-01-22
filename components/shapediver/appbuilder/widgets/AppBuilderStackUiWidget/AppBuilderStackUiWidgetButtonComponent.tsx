@@ -10,9 +10,9 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useContext} from "react";
-import TooltipWrapper from "~/shared/components/ui/TooltipWrapper";
 import {AppBuilderStackContext} from "~/shared/context/StackContext";
 import {Icon, IconProps} from "~/shared/shared/ui/Icon";
+import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {IAppBuilderWidgetPropsStackUi} from "~/shared/types/shapediver/appbuilder";
 
 export interface StyleProps {

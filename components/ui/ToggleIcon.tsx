@@ -1,4 +1,4 @@
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {preventDefault} from "@AppBuilderShared/utils/misc/events";
 import {Loader, MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";

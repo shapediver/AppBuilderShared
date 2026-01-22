@@ -1,5 +1,5 @@
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {

@@ -1,5 +1,5 @@
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {
 	SdPlatformModelVisibility,

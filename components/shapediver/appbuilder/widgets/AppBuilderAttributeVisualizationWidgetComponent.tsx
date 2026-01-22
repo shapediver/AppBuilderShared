@@ -1,19 +1,3 @@
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {useAttributeOverview} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeOverview";
-import useAttributeSelection from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeSelection";
-import {useAttributeVisualizationEngine} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeVisualizationEngine";
-import {useAttributeWidgetVisibilityTracker} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeWidgetVisibilityTracker";
-import {
-	createAttributeId,
-	useConvertAttributeInputData,
-} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useConvertAttributeInputData";
-import {useSdTFData} from "@AppBuilderShared/hooks/shapediver/viewer/useSdTFData";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import {
-	AttributeVisualizationVisibility,
-	IAppBuilderWidgetPropsAttributeVisualization,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	ActionIcon,
 	Group,
@@ -27,6 +11,20 @@ import {
 	TitleProps,
 	useProps,
 } from "@mantine/core";
+import {useAttributeOverview} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeOverview";
+import {useAttributeVisualizationEngine} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeVisualizationEngine";
+import {useAttributeWidgetVisibilityTracker} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeWidgetVisibilityTracker";
+import {
+	createAttributeId,
+	useConvertAttributeInputData,
+} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useConvertAttributeInputData";
+import {useSdTFData} from "@AppBuilderShared/hooks/shapediver/viewer/useSdTFData";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {
+	AttributeVisualizationVisibility,
+	IAppBuilderWidgetPropsAttributeVisualization,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	ATTRIBUTE_VISUALIZATION,
 	Gradient,

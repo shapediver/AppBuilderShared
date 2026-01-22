@@ -1,5 +1,5 @@
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";

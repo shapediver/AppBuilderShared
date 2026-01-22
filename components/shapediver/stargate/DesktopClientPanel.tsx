@@ -1,8 +1,3 @@
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
-import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	ActionIcon,
 	ActionIconProps,
@@ -23,10 +18,15 @@ import {
 	TextProps,
 	useProps,
 } from "@mantine/core";
+import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
+import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
 import React, {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {Icon, IconProps, IconType} from "~/shared/shared/ui/Icon";
+import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 
 /**
  * Interface representing a client choice in the desktop client panel.
