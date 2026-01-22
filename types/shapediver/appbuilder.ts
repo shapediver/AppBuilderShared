@@ -8,7 +8,7 @@ import {
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
 import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
-import {MantineColor} from "@mantine/core";
+import {MantineColor, SliderProps} from "@mantine/core";
 import {
 	ISelectionParameterProps,
 	TAG3D_JUSTIFICATION,
@@ -125,12 +125,8 @@ export interface IStringParameterSettings {
 }
 
 /** Settings for numeric parameters (type "Float", "Int", "Even", "Odd") */
-export interface INumberParameterSettings {
-	/**
-	 * Optional step value for numeric parameters.
-	 */
-	step?: number;
-}
+export interface INumberParameterSettings
+	extends Pick<SliderProps, "marks" | "restrictToMarks" | "step"> {}
 
 /** Reference to a parameter (custom or defined by the session) */
 export interface IAppBuilderParameterRef {
