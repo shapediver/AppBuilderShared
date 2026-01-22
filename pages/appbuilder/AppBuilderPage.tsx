@@ -1,4 +1,4 @@
-import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/ModelStateNotificationCreated";
+import NotificationModelStateCreated from "@AppBuilderShared/components/shapediver/notifications/NotificationModelStateCreated";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
@@ -204,7 +204,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	useKeyBindings({
 		namespace,
 		getNotification: (props) => (
-			<ModelStateNotificationCreated {...props} />
+			<NotificationModelStateCreated {...props} />
 		),
 	});
 

@@ -1,10 +1,10 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import ModelStateNotificationCreated from "@AppBuilderShared/components/shapediver/modelState/ModelStateNotificationCreated";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import NotificationModelStateCreated from "@AppBuilderShared/components/shapediver/notifications/NotificationModelStateCreated";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {IAppBuilderLegacyActionPropsCreateModelState} from "@AppBuilderShared/types/shapediver/appbuilder";
-import React, {useCallback, useContext, useState} from "react";
+import React, {useCallback, useState} from "react";
 
 type Props = IAppBuilderLegacyActionPropsCreateModelState & {
 	namespace: string;
@@ -29,7 +29,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 		parameterNamesToInclude,
 		parameterNamesToExclude,
 	} = props;
-	const notifications = useContext(NotificationContext);
+	const {success} = useNotificationStore();
 
 	const {createModelState} = useCreateModelState({namespace});
 
@@ -57,9 +57,9 @@ export default function AppBuilderActionCreateModelStateComponent(
 				updateUrl: true,
 				imageUrl: screenshot,
 			});
-			notifications.success({
+			success({
 				message: (
-					<ModelStateNotificationCreated
+					<NotificationModelStateCreated
 						modelStateId={modelStateId}
 						link={href}
 					/>

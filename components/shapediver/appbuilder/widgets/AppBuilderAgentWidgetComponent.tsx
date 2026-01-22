@@ -21,6 +21,7 @@ import {
 	useAgent,
 } from "@AppBuilderShared/hooks/shapediver/appbuilder/useAgent";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {
 	AppBuilderAgentWidgetComponentProps,
@@ -132,7 +133,7 @@ export default function AppBuilderAgentWidgetComponent(
 	);
 
 	// Notifications
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	/**
 	 * Handler for image provided by the user.

@@ -2,10 +2,10 @@ import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/par
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import DrawingOptionsComponent from "@AppBuilderShared/components/shapediver/ui/DrawingOptionsComponent";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDrawingTools} from "@AppBuilderShared/hooks/shapediver/viewer/drawing/useDrawingTools";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {
@@ -33,7 +33,6 @@ import {
 } from "@shapediver/viewer.session";
 import React, {
 	useCallback,
-	useContext,
 	useEffect,
 	useMemo,
 	useRef,
@@ -86,8 +85,8 @@ export default function ParameterDrawingComponent(
 	const {viewport} = useShapeDiverStoreViewport((state) => ({
 		viewport: state.viewports[viewportId],
 	}));
-	// get the notification context
-	const notifications = useContext(NotificationContext);
+	// get the notification store
+	const notifications = useNotificationStore();
 
 	// settings validation
 	const drawingProps = useMemo(() => {

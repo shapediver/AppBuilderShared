@@ -1,5 +1,5 @@
 import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
@@ -24,7 +24,7 @@ export function useImportModelState(namespace: string) {
 		useShallow((state) => state.sessions[namespace]),
 	);
 
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 	const errorReporting = useContext(ErrorReportingContext);
 
 	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(

@@ -2,6 +2,7 @@ import {ViewportControlsVisibilityContext} from "@AppBuilderShared/context/Viewp
 import {useViewport} from "@AppBuilderShared/hooks/shapediver/viewer/useViewport";
 import {useViewportControlsVisibility} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControlsVisibility";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
+import {useShapeDiverViewportIconsStore} from "@AppBuilderShared/store/useShapeDiverViewportIconsStore";
 import {
 	ViewportBrandingProps,
 	ViewportComponentProps,
@@ -12,6 +13,7 @@ import {
 	VISIBILITY_MODE,
 } from "@shapediver/viewer.session";
 import React from "react";
+import {useShallow} from "zustand/react/shallow";
 import classes from "./ViewportComponent.module.css";
 
 /**
@@ -31,6 +33,11 @@ export default function ViewportComponent(props: ViewportComponentProps) {
 	const scheme = useComputedColorScheme();
 	const {showControls, containerProps, setIsHoveringControls} =
 		useViewportControlsVisibility();
+
+	// Get viewer fullscreen state from store
+	const viewerFullscreen3States = useShapeDiverViewportIconsStore(
+		useShallow((state) => state.viewerFullscreen3States),
+	);
 	if (!_props.branding) _props.branding = brandingProps[scheme];
 	if (!_props.sessionSettingsMode) {
 		_props.sessionSettingsMode = SESSION_SETTINGS_MODE.MANUAL;
@@ -53,7 +60,7 @@ export default function ViewportComponent(props: ViewportComponentProps) {
 			value={{showControls, setIsHoveringControls}}
 		>
 			<div
-				className={`${classes.container} ${className}`}
+				className={`${classes.container} ${className} ${viewerFullscreen3States ? classes.viewerFullscreen3States : ""}`}
 				{...containerProps}
 			>
 				<canvas ref={canvasRef} />

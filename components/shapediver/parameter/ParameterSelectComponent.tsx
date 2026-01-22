@@ -1,8 +1,8 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -16,7 +16,7 @@ import {validateSelectParameterSettings} from "@AppBuilderShared/types/shapedive
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
-import React, {useCallback, useContext, useMemo} from "react";
+import React, {useCallback, useMemo} from "react";
 import MultiSelectComponent from "./multiselect/MultiSelectComponent";
 import SelectComponent, {
 	SelectComponentSettings,
@@ -88,8 +88,8 @@ export default function ParameterSelectComponent(
 		definition.id,
 	]);
 
-	// get the notification context
-	const notifications = useContext(NotificationContext);
+	// get the notification store
+	const notifications = useNotificationStore();
 
 	// get component settings from the parameter definition
 	const definitionSettings = useMemo(() => {

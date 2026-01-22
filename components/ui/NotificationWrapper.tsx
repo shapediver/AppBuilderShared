@@ -1,10 +1,7 @@
-import {
-	createNotificationsWithDefaults,
-	NotificationContext,
-} from "@AppBuilderShared/context/NotificationContext";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {NotificationStyleProps} from "@AppBuilderShared/types/context/notificationcontext";
 import {MantineThemeComponent, useProps} from "@mantine/core";
-import React, {useMemo} from "react";
+import React, {useEffect} from "react";
 
 interface Props {
 	children?: React.ReactNode;
@@ -28,7 +25,7 @@ export function NotificationWrapperThemeProps(
 }
 
 /**
- * Provides a context for notifications, styled according to the theme.
+ * Initializes notification store with theme-based style props.
  * @param props
  * @returns
  */
@@ -37,15 +34,18 @@ export default function NotificationWrapper(
 ) {
 	const {children = <></>, ...rest} = props;
 	const _props = useProps("NotificationWrapper", defaultStyleProps, rest);
+	const setStyleProps = useNotificationStore((state) => state.setStyleProps);
 
-	const notificationsWithDefaults = useMemo(
-		() => createNotificationsWithDefaults(_props),
-		[_props.errorColor, _props.successColor],
-	);
+	// Initialize store with style props from theme
+	useEffect(() => {
+		setStyleProps(_props);
+	}, [
+		_props.errorColor,
+		_props.successColor,
+		_props.warningColor,
+		_props.autoClose,
+		setStyleProps,
+	]);
 
-	return (
-		<NotificationContext.Provider value={notificationsWithDefaults}>
-			{children}
-		</NotificationContext.Provider>
-	);
+	return <>{children}</>;
 }
