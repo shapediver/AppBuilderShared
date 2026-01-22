@@ -1,5 +1,5 @@
 import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {
@@ -31,7 +31,7 @@ export function useParameterImportExport(namespace: string) {
 		})),
 	);
 
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 	const errorReporting = useContext(ErrorReportingContext);
 
 	/**

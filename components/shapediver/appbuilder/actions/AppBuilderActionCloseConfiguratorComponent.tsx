@@ -1,8 +1,8 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {IAppBuilderLegacyActionPropsCloseConfigurator} from "@AppBuilderShared/types/shapediver/appbuilder";
-import React, {useCallback, useContext} from "react";
+import React, {useCallback} from "react";
 
 type Props = IAppBuilderLegacyActionPropsCloseConfigurator & {};
 
@@ -15,7 +15,7 @@ export default function AppBuilderActionCloseConfiguratorComponent(
 	props: Props,
 ) {
 	const {label = "Close configurator", icon = "tabler:x", tooltip} = props;
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	const onClick = useCallback(async () => {
 		// in case we are not running inside an iframe, the instance of

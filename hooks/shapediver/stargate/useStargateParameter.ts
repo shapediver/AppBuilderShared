@@ -1,4 +1,4 @@
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {
@@ -9,7 +9,7 @@ import {
 import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import type {ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
-import {useCallback, useContext, useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {ERROR_TYPE_INTERRUPTED, useStargateGetData} from "./useStargateGetData";
 
@@ -117,7 +117,7 @@ export const useStargateParameter = ({
 		);
 
 	const {getParameterData} = useStargateGetData();
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	// Increase the reference count for the Stargate SDK
 	useEffect(() => {

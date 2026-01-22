@@ -1,14 +1,14 @@
-import {IModelStateNotificationCreatedProps} from "@AppBuilderShared/components/shapediver/modelState/ModelStateNotificationCreated";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {INotificationModelStateCreatedProps} from "@AppBuilderShared/components/shapediver/notifications/NotificationModelStateCreated";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {useKeyBinding} from "@AppBuilderShared/hooks/shapediver/useKeyBinding";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
-import {useCallback, useContext} from "react";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
+import {useCallback} from "react";
 
 interface Props {
 	namespace: string;
 	getNotification: (
-		props: IModelStateNotificationCreatedProps,
+		props: INotificationModelStateCreatedProps,
 	) => React.ReactNode;
 }
 
@@ -21,7 +21,7 @@ interface Props {
 export function useKeyBindings(props: Props) {
 	const {namespace, getNotification} = props;
 	const {createModelState} = useCreateModelState({namespace});
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	const callback = useCallback(async () => {
 		const {modelStateId, screenshot} = await createModelState(

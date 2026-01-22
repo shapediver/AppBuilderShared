@@ -1,4 +1,4 @@
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {
 	DrawingToolsEventResponseMapping,
 	PointsData,
@@ -9,7 +9,7 @@ import {
 	IEvent,
 	removeListener,
 } from "@shapediver/viewer.session";
-import {useContext, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 
 // #region Functions (1)
 
@@ -39,8 +39,8 @@ export function useDrawingToolsEvents(
 		initialPointsData,
 	);
 
-	// get the notification context
-	const notifications = useContext(NotificationContext);
+	// get the notification store
+	const notifications = useNotificationStore();
 
 	// register an event handler and listen for updates
 	useEffect(() => {

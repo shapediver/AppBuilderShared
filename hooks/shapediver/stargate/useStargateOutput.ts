@@ -1,4 +1,4 @@
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
@@ -13,7 +13,7 @@ import {
 	ITreeNode,
 	ShapeDiverResponseOutputChunk,
 } from "@shapediver/viewer.session";
-import {useCallback, useContext, useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useStargateBakeData} from "./useStargateBakeData";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
@@ -105,7 +105,7 @@ export const useStargateOutput = ({
 	);
 
 	const {bakeData} = useStargateBakeData();
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	const {networkStatus, selectedClient, getSupportedData, registerReference} =
 		useShapeDiverStoreStargate(

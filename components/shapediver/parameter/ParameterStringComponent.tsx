@@ -1,8 +1,8 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
+import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -11,7 +11,7 @@ import {
 import {validateStringParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {Textarea, TextInput, useProps} from "@mantine/core";
-import React, {useCallback, useContext, useEffect, useMemo} from "react";
+import React, {useCallback, useEffect, useMemo} from "react";
 import SelectComponent from "./select/SelectComponent";
 
 /**
@@ -31,7 +31,7 @@ export default function ParameterStringComponent(
 		props,
 	);
 
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
 	const {lines, selectSettings} = useMemo(() => {
