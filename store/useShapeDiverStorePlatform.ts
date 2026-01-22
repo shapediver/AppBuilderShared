@@ -33,6 +33,39 @@ export const useShapeDiverStorePlatform =
 				currentModel: undefined,
 				genericCache: {},
 
+				authWrapper: async <T>(
+					cb: (clientRef: IPlatformClientRef) => Promise<T>,
+					redirect: boolean = true,
+				) => {
+					const {authenticate} = get();
+					const clientRef = await authenticate(redirect);
+					if (!clientRef || !clientRef.jwtToken) {
+						throw new Error("Authentication failed");
+					}
+
+					try {
+						return await cb(clientRef);
+					} catch (error) {
+						if (
+							isPBUnauthorizedResponseError(error) // <-- thrown if the access token is not valid anymore
+							// && error.error_description === "..." // <-- to be clarified: check for specific error descriptions
+						) {
+							// try to re-authenticate
+							const newClientRef = await authenticate(
+								redirect,
+								true,
+							);
+							if (!newClientRef || !newClientRef.jwtToken) {
+								console.error("Re-authentication failed");
+								throw error;
+							}
+							return await cb(newClientRef);
+						} else {
+							throw error;
+						}
+					}
+				},
+
 				authenticate: async (
 					redirect: boolean = true,
 					forceReAuthenticate?: boolean,
