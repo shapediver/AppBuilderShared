@@ -1,6 +1,7 @@
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 import {QUERYPARAM_PROVIDER} from "@AppBuilderShared/types/shapediver/queryparams";
 import {
+	IPlatformClientRef,
 	IShapeDiverStorePlatformExtended,
 	PlatformCacheKeyEnum,
 } from "@AppBuilderShared/types/store/shapediverStorePlatform";
@@ -13,6 +14,7 @@ import {
 	create as createSdk,
 	isPBInvalidGrantOAuthResponseError,
 	isPBInvalidRequestOAuthResponseError,
+	isPBUnauthorizedResponseError,
 	SdPlatformResponseModelPublic,
 	SdPlatformResponseUserSelf,
 	SdPlatformUserGetEmbeddableFields,
@@ -166,7 +168,7 @@ export const useShapeDiverStorePlatform =
 				getUser: async (forceRefresh?: boolean) => {
 					if (!shouldUsePlatform()) return;
 
-					const {user, cachePromise} = get();
+					const {user, cachePromise, authWrapper} = get();
 
 					if (!forceRefresh && user) return user;
 
@@ -181,15 +183,16 @@ export const useShapeDiverStorePlatform =
 								clientRef.client.authorization.authData.userId;
 							if (!userId) return;
 
-							const result =
-								await clientRef.client.users.get<SdPlatformResponseUserSelf>(
+							const result = await authWrapper((c) =>
+								c.client.users.get<SdPlatformResponseUserSelf>(
 									userId,
 									[
 										SdPlatformUserGetEmbeddableFields.BackendSystem,
 										SdPlatformUserGetEmbeddableFields.GlobalAccessDomains,
 										SdPlatformUserGetEmbeddableFields.Organization,
 									],
-								);
+								),
+							);
 
 							const user = result.data;
 
