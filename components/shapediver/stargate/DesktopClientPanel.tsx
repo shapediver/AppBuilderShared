@@ -1,4 +1,3 @@
-import Icon, {IconProps, IconType} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
@@ -27,6 +26,7 @@ import {
 import {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
 import React, {useCallback, useContext, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {Icon, IconProps, IconType} from "~/shared/shared/ui/Icon";
 
 /**
  * Interface representing a client choice in the desktop client panel.

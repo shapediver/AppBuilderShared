@@ -1,6 +1,5 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
@@ -36,6 +35,7 @@ import React, {
 	useRef,
 	useState,
 } from "react";
+import {Icon} from "~/shared/shared/ui/Icon";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**

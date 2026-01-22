@@ -1,6 +1,5 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
@@ -35,6 +34,7 @@ import {
 	mapMimeTypeToFileEndings,
 } from "@shapediver/viewer.utils.mime-type";
 import React, {useEffect, useMemo} from "react";
+import {Icon, IconProps} from "~/shared/shared/ui/Icon";
 import StargateInput from "../stargate/StargateInput";
 import {
 	DefaultStargateStyleProps,

@@ -1,8 +1,8 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import {Attributes} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useConvertAttributeInputData";
 import {ActionIcon, Stack, Table} from "@mantine/core";
 import {ISDTFAttributeData} from "@shapediver/viewer.session";
 import React, {useMemo} from "react";
+import {Icon} from "~/shared/shared/ui/Icon";
 import {IAttributeDefinition} from "../appbuilder/widgets/AppBuilderAttributeVisualizationWidgetComponent";
 import classes from "./SelectedAttributeComponent.module.css";
 

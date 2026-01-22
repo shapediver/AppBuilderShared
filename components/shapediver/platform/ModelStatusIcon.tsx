@@ -1,4 +1,3 @@
-import Icon, {IconType} from "@AppBuilderShared/components/ui/Icon";
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
@@ -7,6 +6,7 @@ import {
 	SdPlatformResponseModelPublic,
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import React, {useMemo} from "react";
+import {Icon, IconType} from "~/shared/shared/ui/Icon";
 
 interface Props {
 	/** Model to be displayed */

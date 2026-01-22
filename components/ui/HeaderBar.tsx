@@ -1,4 +1,3 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import {
 	ActionIcon,
 	Image,
@@ -7,6 +6,7 @@ import {
 } from "@mantine/core";
 import React from "react";
 import {useLinkClickHandler} from "react-router-dom";
+import {Icon} from "~/shared/shared/ui/Icon";
 import classes from "./HeaderBar.module.css";
 
 /**

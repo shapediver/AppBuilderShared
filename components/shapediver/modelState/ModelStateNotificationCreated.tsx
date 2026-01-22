@@ -1,7 +1,7 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {Anchor} from "@mantine/core";
 import React, {useCallback, useContext} from "react";
+import {Icon} from "~/shared/shared/ui/Icon";
 
 export interface IModelStateNotificationCreatedProps {
 	modelStateId: string;

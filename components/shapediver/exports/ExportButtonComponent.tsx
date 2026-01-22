@@ -1,5 +1,4 @@
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
@@ -37,6 +36,7 @@ import React, {
 	useMemo,
 	useState,
 } from "react";
+import {Icon} from "~/shared/shared/ui/Icon";
 import StargateInput from "../stargate/StargateInput";
 import {
 	DefaultStargateStyleProps,

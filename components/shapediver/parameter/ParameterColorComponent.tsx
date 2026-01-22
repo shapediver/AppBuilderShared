@@ -1,6 +1,5 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
@@ -20,6 +19,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useEffect, useState} from "react";
+import {Icon} from "~/shared/shared/ui/Icon";
 
 interface StyleProps {
 	colorFormat: ColorFormatType;

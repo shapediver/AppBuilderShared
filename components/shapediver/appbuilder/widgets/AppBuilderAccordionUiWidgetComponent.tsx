@@ -1,5 +1,4 @@
 import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {IAppBuilderWidgetPropsAccordionUi} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
@@ -16,6 +15,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useEffect, useState} from "react";
+import {Icon} from "~/shared/shared/ui/Icon";
 
 interface StyleProps {
 	accordionProps?: AccordionProps;

@@ -1,4 +1,3 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useShapeDiverStoreInstances} from "@AppBuilderShared/store/useShapeDiverStoreInstances";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IAppBuilderWidgetPropsSceneTreeExplorer} from "@AppBuilderShared/types/shapediver/appbuilder";
@@ -28,6 +27,7 @@ import {
 } from "@shapediver/viewer.features.interaction";
 import {ITreeNode} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useState} from "react";
+import {Icon} from "~/shared/shared/ui/Icon";
 
 type StyleProps = {
 	paperProps?: Partial<PaperProps>;

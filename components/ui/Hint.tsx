@@ -1,4 +1,3 @@
-import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
 import {
 	Button,
 	ButtonProps,
@@ -11,6 +10,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
+import {Icon, IconProps} from "~/shared/shared/ui/Icon";
 
 interface Props {
 	/** Title text to display */

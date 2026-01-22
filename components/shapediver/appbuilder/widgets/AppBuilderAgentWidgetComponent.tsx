@@ -1,4 +1,3 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
@@ -49,6 +48,7 @@ import React, {
 	useState,
 } from "react";
 import {useShallow} from "zustand/react/shallow";
+import {Icon} from "~/shared/shared/ui/Icon";
 import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";
 import AppBuilderImage from "../AppBuilderImage";
 

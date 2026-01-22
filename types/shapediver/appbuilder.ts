@@ -1,4 +1,3 @@
-import {IconType} from "@AppBuilderShared/components/ui/Icon";
 import {
 	IAppBuilderWidgetPropsAreaChart,
 	IAppBuilderWidgetPropsBarChart,
@@ -19,6 +18,7 @@ import {
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 } from "@shapediver/viewer.shared.types";
+import {IconType} from "~/shared/shared/ui/Icon";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {

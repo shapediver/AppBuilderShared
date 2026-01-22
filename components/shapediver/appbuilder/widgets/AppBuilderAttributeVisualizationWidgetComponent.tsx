@@ -1,4 +1,3 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useAttributeOverview} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeOverview";
 import useAttributeSelection from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeSelection";
@@ -53,6 +52,7 @@ import React, {
 	useRef,
 	useState,
 } from "react";
+import {Icon} from "~/shared/shared/ui/Icon";
 import SelectedAttributeComponent from "../../ui/SelectedAttributeComponent";
 import ViewportAnchor3d from "../../viewport/anchors/ViewportAnchor3d";
 import ColorAttribute from "./attributes/ColorAttribute";

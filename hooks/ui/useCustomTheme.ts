@@ -29,7 +29,6 @@ import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/
 import {ViewportIconButtonThemeProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/ViewportIconButton";
 import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/ViewportIconButtonDropdown";
 import {HintProps} from "@AppBuilderShared/components/ui/Hint";
-import {IconThemeProps} from "@AppBuilderShared/components/ui/Icon";
 import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
 import {TooltipWrapperThemeProps} from "@AppBuilderShared/components/ui/TooltipWrapper";
@@ -91,6 +90,7 @@ import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types
 import {useContext} from "react";
 import {AppBuilderStackUiWidgetComponentThemeProps} from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
 import {MultiSelectCheckboxesProps} from "~/shared/components/shapediver/parameter/multiselect/MultiSelectCheckboxesComponent";
+import {IconThemeProps} from "~/shared/shared/ui/Icon/Icon";
 import {CreateModelStateHookThemeProps} from "../shapediver/useCreateModelState";
 
 /**

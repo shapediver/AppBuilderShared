@@ -1,4 +1,3 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {IParameterChanges} from "@AppBuilderShared/types/store/shapediverStoreParameters";
@@ -13,6 +12,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
+import {Icon} from "~/shared/shared/ui/Icon";
 
 interface IconProps {
 	size?: string | number;

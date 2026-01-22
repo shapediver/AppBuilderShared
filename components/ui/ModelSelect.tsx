@@ -1,6 +1,5 @@
 import AcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/AcceptRejectButtons";
 import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
@@ -16,6 +15,7 @@ import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/app
 import {IShapeDiverExampleModels} from "@AppBuilderShared/types/shapediver/examplemodel";
 import {MultiSelect, Notification} from "@mantine/core";
 import React, {useMemo} from "react";
+import {Icon} from "~/shared/shared/ui/Icon";
 
 interface Props {
 	exampleModels: IShapeDiverExampleModels;

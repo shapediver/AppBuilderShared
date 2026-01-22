@@ -1,21 +1,22 @@
+import {Icon as IconifyIconComponent, loadIcons} from "@iconify/react";
 import {
-	Icon as IconifyIconComponent,
-	IconifyIcon as IconifyIconDefinition,
-	IconProps as IconifyIconProps,
-	loadIcons,
-} from "@iconify/react";
-import {
-	MantineSize,
 	MantineThemeComponent,
 	parseThemeColor,
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
-import React, {CSSProperties, forwardRef, useMemo} from "react";
+import React, {forwardRef, useMemo} from "react";
 import classes from "./Icon.module.css";
+import {
+	CustomCSSProperties,
+	defaultStyleProps,
+	IconProps,
+	IconThemePropsType,
+	sizeMap,
+} from "./Icon.types";
 
 // List of all Tabler icons used in the app for preloading
-// Icons don't have to be pre-loaded, we just do it for the ones we know that are used
+// Icons don't have to be preloaded, we just do it for the ones we know that are used
 const PRELOAD_ICONS = [
 	"tabler:adjustments-horizontal",
 	"tabler:alert-circle",
@@ -69,31 +70,6 @@ const PRELOAD_ICONS = [
 	"tabler:zoom-in",
 ];
 loadIcons(PRELOAD_ICONS);
-
-interface CustomCSSProperties extends CSSProperties {
-	"--icon-stroke-width"?: string | number;
-}
-export type IconType = IconifyIconDefinition | string;
-
-export interface IconProps extends Omit<IconifyIconProps, "icon"> {
-	iconType: IconType;
-	size?: MantineSize | number | string; // MantineSize or CSS size value
-}
-
-const sizeMap: Record<string, string> = {
-	xs: "0.75rem",
-	sm: "0.875rem",
-	md: "1rem",
-	lg: "1.125rem",
-	xl: "1.25rem",
-};
-
-const defaultStyleProps: Partial<IconProps> = {
-	size: "1.5rem",
-	stroke: "1px",
-};
-
-type IconThemePropsType = Partial<IconProps>;
 
 export function IconThemeProps(
 	props: IconThemePropsType,

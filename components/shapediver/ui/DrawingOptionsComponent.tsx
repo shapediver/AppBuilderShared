@@ -1,5 +1,4 @@
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
@@ -20,6 +19,7 @@ import {
 } from "@shapediver/viewer.features.drawing-tools";
 import {IDrawingParameterSettings} from "@shapediver/viewer.session";
 import React, {useEffect, useState} from "react";
+import {Icon} from "~/shared/shared/ui/Icon";
 import classes from "./DrawingOptionsComponent.module.css";
 
 /**
