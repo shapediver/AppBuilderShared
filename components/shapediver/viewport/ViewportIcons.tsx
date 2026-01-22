@@ -115,7 +115,9 @@ export default function ViewportIcons(
 			reset: enableResetButton,
 			ar: enableArBtn,
 			cameras: enableCamerasBtn,
-			fullscreen: enableFullscreenBtn,
+			fullscreen: enableFullscreenBtn3States
+				? false
+				: enableFullscreenBtn,
 			fullscreen3States: enableFullscreenBtn3States,
 			zoom: enableZoomBtn,
 			historyMenu:
@@ -248,7 +250,6 @@ export default function ViewportIcons(
 				componentContext,
 				kind,
 			);
-			console.log("kind", kind, ButtonComponent);
 			if (!ButtonComponent) return null;
 
 			switch (kind) {
