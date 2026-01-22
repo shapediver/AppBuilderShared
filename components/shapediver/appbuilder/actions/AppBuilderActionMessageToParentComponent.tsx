@@ -1,8 +1,8 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import {NotificationContext} from "@AppBuilderShared/context/NotificationContext";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {IAppBuilderLegacyActionPropsMessageToParent} from "@AppBuilderShared/types/shapediver/appbuilder";
-import React, {useCallback, useContext, useState} from "react";
+import React, {useCallback, useState} from "react";
+import {useNotificationStore} from "~/shared/store/useNotificationStore";
 
 /**
  * Functional component for an "messageToParent" action.
@@ -20,7 +20,7 @@ export default function AppBuilderActionMessageToParentComponent(
 		data,
 	} = props;
 
-	const notifications = useContext(NotificationContext);
+	const notifications = useNotificationStore();
 
 	const [loading, setLoading] = useState(false);
 
