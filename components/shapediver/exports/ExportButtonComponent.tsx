@@ -3,17 +3,17 @@ import Icon from "@AppBuilderShared/components/ui/Icon";
 import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
-import {useParameterValueSources} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterValueSources";
+import {
+	ParameterValueDefinition,
+	useResolveParameterValues,
+} from "@AppBuilderShared/hooks/shapediver/parameters/useResolveParameterValues";
 import {
 	ExportStatusEnum,
 	useStargateExport,
 } from "@AppBuilderShared/hooks/shapediver/stargate/useStargateExport";
 import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import {
-	IAppBuilderActionPropsSetParameterValue,
-	IAppBuilderParameterValueSourceDefinition,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	IStargateComponentStatusDefinition,
 	mapStargateComponentStatusDefinition,
@@ -234,15 +234,11 @@ export default function ExportButtonComponent(
 
 	const [requestingExport, setRequestingExport] = useState(false);
 
-	const [sourceData, setSourceData] = useState<
+	const [parameterValueSourcesData, setParameterValueSourcesData] = useState<
 		| {
 				data: {
 					namespace: string;
-					sources: {
-						source: IAppBuilderParameterValueSourceDefinition;
-						parameterId: string;
-						parameterNamespace?: string;
-					}[];
+					parameterValues: ParameterValueDefinition[];
 				};
 				information: {
 					sourceMap: {
@@ -255,21 +251,25 @@ export default function ExportButtonComponent(
 		| undefined
 	>(undefined);
 
-	const sourceResults = useParameterValueSources(sourceData?.data);
+	const parameterValueSourcesResults = useResolveParameterValues(
+		parameterValueSourcesData?.data,
+	);
 
 	useEffect(() => {
-		if (!sourceData || !sourceResults) return;
+		if (!parameterValueSourcesData || !parameterValueSourcesResults) return;
 
 		const parameterValues: {[key: string]: string} = {};
-		for (const p of sourceData.information.parameterValues) {
+		for (const p of parameterValueSourcesData.information.parameterValues) {
 			if (p.value) {
 				parameterValues[p.parameter.name] = p.value;
 			} else if (p.source) {
 				// get the index of the source result for this parameter
 				const sourceIndex =
-					sourceData.information.sourceMap[p.parameter.name];
+					parameterValueSourcesData.information.sourceMap[
+						p.parameter.name
+					];
 				if (sourceIndex === undefined) continue;
-				const sourceResult = sourceResults[sourceIndex];
+				const sourceResult = parameterValueSourcesResults[sourceIndex];
 				if (sourceResult && typeof sourceResult === "string") {
 					parameterValues[p.parameter.name] = sourceResult;
 				}
@@ -278,15 +278,15 @@ export default function ExportButtonComponent(
 
 		// request the export
 		exportRequest(
-			sourceData.information.skipStargate,
+			parameterValueSourcesData.information.skipStargate,
 			parameterValues,
 		).finally(() => {
 			// reset source data to avoid multiple calls
-			setSourceData(undefined);
+			setParameterValueSourcesData(undefined);
 			// set the requestingExport false to remove the loading icon
 			setRequestingExport(false);
 		});
-	}, [sourceResults, exportRequest]);
+	}, [parameterValueSourcesResults, exportRequest]);
 
 	// callback for when the export button has been clicked
 	const onClick = useCallback(
@@ -315,18 +315,23 @@ export default function ExportButtonComponent(
 					.map((p, index) => {
 						if (p.source) {
 							information.sourceMap[p.parameter.name] = index;
+
+							// while we could let the useResolveParameterValues hook handle all parameters
+							// we only want to pass those with sources to it
+							// as otherwise we would have to filter the results again later
 							return {
-								source: p.source,
-								parameterId: p.parameter.name,
-								parameterNamespace: p.parameter.sessionId,
+								value: p.source,
+								id: p.parameter.name,
+								namespace: p.parameter.sessionId,
 							};
 						}
 					})
 					.filter((p) => p !== undefined);
-				setSourceData({
+
+				setParameterValueSourcesData({
 					data: {
 						namespace: props.namespace,
-						sources: sources,
+						parameterValues: sources,
 					},
 					information,
 				});

@@ -1,12 +1,14 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";
-import {useParameterValueSources} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterValueSources";
+import {
+	ParameterValueDefinition,
+	useResolveParameterValues,
+} from "@AppBuilderShared/hooks/shapediver/parameters/useResolveParameterValues";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {
 	IAppBuilderActionPropsCommon,
 	IAppBuilderActionPropsSetParameterValues,
 	IAppBuilderLegacyActionPropsSetParameterValue,
-	IAppBuilderParameterValueSourceDefinition,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
@@ -66,21 +68,14 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		})),
 	);
 
-	const [sourceData, setSourceData] = useState<
-		| {
-				namespace: string;
-				sources: {
-					source: IAppBuilderParameterValueSourceDefinition;
-					parameterId: string;
-				}[];
-		  }
-		| undefined
+	const [parameterValueSourcesData, setParameterValueSourcesData] = useState<
+		ParameterValueDefinition[] | undefined
 	>(undefined);
 
-	const sourceDataRef = useRef(sourceData);
+	const parameterValueSourcesDataRef = useRef(parameterValueSourcesData);
 	useEffect(() => {
-		sourceDataRef.current = sourceData;
-	}, [sourceData]);
+		parameterValueSourcesDataRef.current = parameterValueSourcesData;
+	}, [parameterValueSourcesData]);
 
 	const processParameterUpdates = useCallback(
 		(sourceResults?: any[]) => {
@@ -143,24 +138,20 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		);
 
 		if (needsSourceData) {
-			const sources: {
-				source: IAppBuilderParameterValueSourceDefinition;
-				parameterId: string;
-			}[] = [];
+			const parameterValueSources: ParameterValueDefinition[] = [];
 
 			for (const {parameter, source} of parameters) {
-				if (source !== undefined && parameter) {
-					sources.push({
-						source,
-						parameterId: parameter.definition.id,
-					});
-				}
+				if (parameter === undefined || source === undefined) continue;
+				// while we could let the useResolveParameterValues hook handle all parameters
+				// we only want to pass those with sources to it
+				// as otherwise we would have to filter the results again later
+				parameterValueSources.push({
+					id: parameter.definition.id,
+					value: source,
+				});
 			}
 
-			setSourceData({
-				namespace,
-				sources,
-			});
+			setParameterValueSourcesData(parameterValueSources);
 			return;
 		}
 
@@ -168,25 +159,28 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		processParameterUpdates();
 	}, [parameters, namespace, processParameterUpdates]);
 
-	const sourceResults = useParameterValueSources(sourceData);
+	const parameterValueSourcesResults = useResolveParameterValues({
+		namespace,
+		parameterValues: parameterValueSourcesData,
+	});
 
-	// when sourceData changes, we need to set the parameter value
+	// when parameterValueSourcesData changes, we need to set the parameter value
 	useEffect(() => {
 		if (
-			!sourceDataRef.current ||
-			!sourceResults ||
-			sourceResults.length === 0 ||
+			!parameterValueSourcesDataRef.current ||
+			!parameterValueSourcesResults ||
+			parameterValueSourcesResults.length === 0 ||
 			!parameters
 		)
 			return;
 
 		// Process parameters with source data
-		processParameterUpdates(sourceResults);
+		processParameterUpdates(parameterValueSourcesResults);
 
-		// reset sourceData to avoid re-running this effect
-		sourceDataRef.current = undefined;
-		setSourceData(undefined);
-	}, [sourceResults, processParameterUpdates]);
+		// reset parameterValueSourcesData to avoid re-running this effect
+		parameterValueSourcesDataRef.current = undefined;
+		setParameterValueSourcesData(undefined);
+	}, [parameterValueSourcesResults, processParameterUpdates]);
 
 	useEffect(() => {
 		const {getParameter} = useShapeDiverStoreParameters.getState();

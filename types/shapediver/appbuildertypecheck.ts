@@ -79,6 +79,15 @@ export const validateStringParameterSettings = (value: any) => {
 // Zod type definition for INumberParameterSettings
 const INumberParameterSettingsSchema = z.object({
 	step: z.number().positive().optional(),
+	marks: z
+		.array(
+			z.object({
+				value: z.number(),
+				label: z.string().optional(),
+			}),
+		)
+		.optional(),
+	restrictToMarks: z.boolean().optional(),
 });
 
 export const validateNumberParameterSettings = (value: any) => {
@@ -197,6 +206,20 @@ const IAppBuilderParameterValueSourcePropsDataOutputSchema = z.object({
 const IAppBuilderParameterValueSourcePropsExportSchema = z.object({
 	sessionId: z.string().optional(),
 	name: z.string(),
+	parameterValues: z
+		.record(
+			z
+				.string()
+				.or(z.number())
+				.or(z.boolean())
+				.or(
+					z.lazy(
+						(): z.ZodTypeAny =>
+							IAppBuilderParameterValueSourceDefinitionSchema,
+					),
+				),
+		)
+		.optional(),
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsSdtf
@@ -408,8 +431,20 @@ const IAppBuilderActionPropsSoundSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderLegacyActionPropsSetParameterValues
-const IAppBuilderLegacyActionPropsSound =
+const IAppBuilderLegacyActionPropsSoundSchema =
 	IAppBuilderActionPropsSoundSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderActionPropsMessageToParent
+const IAppBuilderActionPropsMessageToParentSchema = z.object({
+	type: z.string(),
+	data: z.record(z.unknown()).optional(),
+});
+
+// Zod type definition for IAppBuilderLegacyActionPropsMessageToParent
+const IAppBuilderLegacyActionPropsMessageToParentSchema =
+	IAppBuilderActionPropsMessageToParentSchema.extend(
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
@@ -445,7 +480,11 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	}),
 	z.object({
 		type: z.literal("sound"),
-		props: IAppBuilderLegacyActionPropsSound,
+		props: IAppBuilderLegacyActionPropsSoundSchema,
+	}),
+	z.object({
+		type: z.literal("messageToParent"),
+		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
 	}),
 ]);
 
@@ -527,6 +566,10 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("sound"),
 		props: IAppBuilderActionPropsSoundSchema,
+	}),
+	z.object({
+		type: z.literal("messageToParent"),
+		props: IAppBuilderActionPropsMessageToParentSchema,
 	}),
 ]);
 

@@ -1,6 +1,6 @@
 import {useSelectAsync} from "@AppBuilderShared/hooks/shapediver/parameters/select/useSelectAsync";
 import {Anchor, Group, Loader} from "@mantine/core";
-import React, {useCallback, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import SelectGridComponent from "./SelectGridComponent";
@@ -42,6 +42,14 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		},
 		[onChange, itemsData, debouncedOnSearch, searchTerms],
 	);
+
+	// in case no items are available, reset the value
+	useEffect(() => {
+		if (items.length === 0) {
+			onChange(null);
+			setSearchTerms([]);
+		}
+	}, [onChange, items]);
 
 	// show stack of search terms and allow to remove them
 	const topSection = (
