@@ -123,6 +123,8 @@ export interface IScrollingApiSetParametersData {
 	terms?: string[];
 	/** The preferred page size to set. */
 	pageSize?: number;
+	/** Optional function for resetting the (potentially cached) state of the scrolling API. */
+	reset?: () => Promise<void>;
 }
 
 /**
@@ -157,6 +159,32 @@ export interface IScrollingApiLoadMoreReply<TItem> {
 	 * The list of items to append to the existing items.
 	 */
 	items: TItem[];
+}
+
+/**
+ * Data for a message to the parent page.
+ */
+export interface IMessageToParentData {
+	/** Type identifier for the message. */
+	type: string;
+	/** Optional message data. */
+	data?: Record<string, unknown>;
+}
+
+/**
+ * Reply from the parent page to a message.
+ */
+export interface IMessageToParentReply {
+	/** Optional notification to show in response to message. */
+	notification?: {
+		/** Optional type of notification. */
+		type?: string;
+		/** Notification data. */
+		data: {
+			message: string;
+			title?: string;
+		};
+	};
 }
 
 /**
@@ -208,6 +236,12 @@ export interface IECommerceApiActions {
 	scrollingApiLoadMore(
 		data: IScrollingApiLoadMoreData,
 	): Promise<IScrollingApiLoadMoreReply<unknown>>;
+
+	/**
+	 * Send a message to the parent page.
+	 * @param data
+	 */
+	messageToParent(data: IMessageToParentData): Promise<IMessageToParentReply>;
 }
 
 /**
