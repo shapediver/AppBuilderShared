@@ -22,6 +22,8 @@ import {
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 
+const LOCAL_STORAGE_REFRESH_TOKEN = "refresh_token";
+
 /**
  * Store data related to the ShapeDiver Platform.
  * @see {@link IShapeDiverStorePlatform}
@@ -86,10 +88,32 @@ export const useShapeDiverStorePlatform =
 							const client = createSdk({
 								clientId: getPlatformClientId(),
 								baseUrl: platformUrl,
+								tokenStorage: {
+									getRefreshToken: () => {
+										return Promise.resolve(
+											localStorage.getItem(
+												LOCAL_STORAGE_REFRESH_TOKEN,
+											),
+										);
+									},
+									setRefreshToken: (token: string | null) => {
+										if (token)
+											localStorage.setItem(
+												LOCAL_STORAGE_REFRESH_TOKEN,
+												token,
+											);
+										else
+											localStorage.removeItem(
+												LOCAL_STORAGE_REFRESH_TOKEN,
+											);
+										return Promise.resolve();
+									},
+								},
 							});
 							try {
-								const refreshToken =
-									localStorage.getItem("refresh_token");
+								const refreshToken = localStorage.getItem(
+									LOCAL_STORAGE_REFRESH_TOKEN,
+								);
 								const result =
 									await client.authorization.refreshToken(
 										refreshToken ?? undefined,
