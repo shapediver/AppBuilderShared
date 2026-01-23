@@ -4,7 +4,7 @@ import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/param
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import React, {useCallback, useMemo, useState} from "react";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 import {CommonButtonProps} from "./types";
 import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 

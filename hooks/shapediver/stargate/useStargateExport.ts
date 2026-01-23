@@ -1,5 +1,4 @@
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
 import {
 	IExportFileResultEnum,
@@ -10,7 +9,8 @@ import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterSt
 import {ShapeDiverResponseExportContent} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useShapeDiverStoreStargate} from "~/shared/entities/stargate/model/useShapeDiverStoreStargate";
+import {useNotificationStore} from "~/shared/shared/model";
 import {useStargateExportFile} from "./useStargateExportFile";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 

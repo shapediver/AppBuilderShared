@@ -10,7 +10,7 @@ import {Logger} from "@AppBuilderShared/utils/logger";
 import {ISessionApi, PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 
 /** Prefix used to register custom parameters */
 export const CUSTOM_SESSION_ID_POSTFIX = "_appbuilder";

@@ -9,7 +9,7 @@ import {
 	removeListener,
 } from "@shapediver/viewer.session";
 import {useEffect, useState} from "react";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 
 // #region Functions (1)
 

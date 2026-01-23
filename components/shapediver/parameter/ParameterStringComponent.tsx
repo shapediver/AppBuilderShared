@@ -11,7 +11,7 @@ import {validateStringParameterSettings} from "@AppBuilderShared/types/shapedive
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {Textarea, TextInput, useProps} from "@mantine/core";
 import React, {useCallback, useEffect, useMemo} from "react";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 import SelectComponent from "./select/SelectComponent";
 
 /**

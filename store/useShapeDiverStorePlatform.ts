@@ -5,11 +5,6 @@ import {
 	PlatformCacheKeyEnum,
 } from "@AppBuilderShared/types/store/shapediverStorePlatform";
 import {
-	getDefaultPlatformUrl,
-	getPlatformClientId,
-	shouldUsePlatform,
-} from "@AppBuilderShared/utils/platform/environment";
-import {
 	create as createSdk,
 	isPBInvalidGrantOAuthResponseError,
 	isPBInvalidRequestOAuthResponseError,
@@ -19,6 +14,11 @@ import {
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {
+	getDefaultPlatformUrl,
+	getPlatformClientId,
+	shouldUsePlatform,
+} from "~/shared/shared/lib/platform";
 
 /**
  * Store data related to the ShapeDiver Platform.

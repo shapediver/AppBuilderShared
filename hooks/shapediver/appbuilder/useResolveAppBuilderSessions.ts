@@ -5,16 +5,16 @@ import {
 	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
-	getDefaultPlatformUrl,
-	getPlatformClientId,
-	shouldUsePlatform,
-} from "@AppBuilderShared/utils/platform/environment";
-import {
 	SdPlatformModelGetEmbeddableFields,
 	SdPlatformResponseModelPublic,
 	create,
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {useShallow} from "zustand/react/shallow";
+import {
+	getDefaultPlatformUrl,
+	getPlatformClientId,
+	shouldUsePlatform,
+} from "~/shared/shared/lib/platform";
 
 import {QUERYPARAM_REDIRECT} from "@AppBuilderShared/types/shapediver/queryparams";
 import {MODELS} from "@modelstorage";

@@ -2,7 +2,7 @@ import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/a
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {IAppBuilderLegacyActionPropsCloseConfigurator} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useCallback} from "react";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 
 type Props = IAppBuilderLegacyActionPropsCloseConfigurator & {};
 

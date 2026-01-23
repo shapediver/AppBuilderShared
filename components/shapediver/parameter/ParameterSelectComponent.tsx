@@ -16,7 +16,7 @@ import {Logger} from "@AppBuilderShared/utils/logger";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
 import React, {useCallback, useMemo} from "react";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 import MultiSelectComponent from "./multiselect/MultiSelectComponent";
 import SelectComponent, {
 	SelectComponentSettings,

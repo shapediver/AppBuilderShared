@@ -1,5 +1,4 @@
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {
 	IBakeDataResultEnum,
 	IGetDataResultEnum,
@@ -10,7 +9,8 @@ import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import type {ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useShapeDiverStoreStargate} from "~/shared/entities/stargate/model/useShapeDiverStoreStargate";
+import {useNotificationStore} from "~/shared/shared/model";
 import {ERROR_TYPE_INTERRUPTED, useStargateGetData} from "./useStargateGetData";
 
 // TODO SS-8820 ideally move these messages to properties that can be controlled from the theme

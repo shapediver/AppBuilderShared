@@ -19,7 +19,7 @@ import {
 	validateDraggingParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 import {Icon} from "~/shared/shared/ui/icon";
 import classes from "./ParameterInteractionComponent.module.css";
 

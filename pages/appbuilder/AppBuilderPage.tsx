@@ -16,8 +16,8 @@ import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
 import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
 import React, {useContext, useMemo} from "react";
+import {shouldUsePlatform} from "~/shared/shared/lib/platform";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 

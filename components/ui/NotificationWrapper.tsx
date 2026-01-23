@@ -1,7 +1,7 @@
 import {NotificationStyleProps} from "@AppBuilderShared/types/context/notificationcontext";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useEffect} from "react";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 
 interface Props {
 	children?: React.ReactNode;

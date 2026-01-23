@@ -1,6 +1,10 @@
 import {notifications} from "@mantine/notifications";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {
+	getEnvironmentIdentifier,
+	isRunningInPlatform,
+} from "~/shared/shared/lib/platform";
 import {devtoolsSettings} from "~/shared/store/storeSettings";
 import {NotificationStyleProps} from "~/shared/types/context/notificationcontext";
 import {
@@ -12,10 +16,6 @@ import {
 	NotificationDisplayMode,
 	NotificationInput,
 } from "~/shared/types/store/shapediverStoreNotifications";
-import {
-	getEnvironmentIdentifier,
-	isRunningInPlatform,
-} from "~/shared/utils/platform/environment";
 
 const defaultStyleProps: NotificationStyleProps = {
 	errorColor: "red",

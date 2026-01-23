@@ -4,10 +4,10 @@ import {
 	IScrollingApiItemTypeSelect,
 	validateScrollingApiItemTypeSelectArray,
 } from "@AppBuilderShared/modules/ecommerce/types/scrollingapi";
-import {isRunningInPlatform} from "@AppBuilderShared/utils/platform/environment";
 import {produce} from "immer";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {isRunningInPlatform} from "~/shared/shared/lib/platform";
 import {devtoolsSettings} from "./storeSettings";
 
 /**

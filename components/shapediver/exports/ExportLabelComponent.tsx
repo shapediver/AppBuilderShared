@@ -3,7 +3,7 @@ import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {Group, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 
 interface Props extends PropsExport {

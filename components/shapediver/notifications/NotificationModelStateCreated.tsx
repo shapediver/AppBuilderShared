@@ -1,6 +1,6 @@
 import {Anchor} from "@mantine/core";
 import React, {useCallback} from "react";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 import {Icon} from "~/shared/shared/ui/icon";
 
 /**

@@ -1,6 +1,5 @@
-import {useNotificationStore} from "@AppBuilderShared/shared/model/useNotificationStore";
+import {useNotificationStore} from "@AppBuilderShared/shared/model";
 import {TooltipWrapper} from "@AppBuilderShared/shared/ui/tooltip";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {
@@ -26,6 +25,7 @@ import {
 import {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
 import React, {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {useShapeDiverStoreStargate} from "~/shared/entities/stargate/model/useShapeDiverStoreStargate";
 import {Icon, IconProps, IconType} from "~/shared/shared/ui/icon";
 
 /**

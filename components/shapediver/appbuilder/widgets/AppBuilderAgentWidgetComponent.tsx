@@ -46,7 +46,7 @@ import React, {
 	useState,
 } from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 import {Icon} from "~/shared/shared/ui/icon";
 import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";

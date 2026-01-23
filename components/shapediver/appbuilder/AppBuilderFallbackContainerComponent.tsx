@@ -5,7 +5,6 @@ import TabsComponent, {
 } from "@AppBuilderShared/components/ui/TabsComponent";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
@@ -15,6 +14,7 @@ import {
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useContext, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {useShapeDiverStoreStargate} from "~/shared/entities/stargate/model/useShapeDiverStoreStargate";
 import AppBuilderSavedStatesWidgetComponent from "./widgets/AppBuilderSavedStatesWidgetComponent";
 
 interface Props {

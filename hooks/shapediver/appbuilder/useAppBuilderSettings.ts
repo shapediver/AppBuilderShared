@@ -23,9 +23,9 @@ import {
 	QUERYPARAM_TICKET,
 } from "@AppBuilderShared/types/shapediver/queryparams";
 import {Logger} from "@AppBuilderShared/utils/logger";
-import {getDefaultPlatformUrl} from "@AppBuilderShared/utils/platform/environment";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useEffect, useMemo} from "react";
+import {getDefaultPlatformUrl} from "~/shared/shared/lib/platform";
 
 /**
  * Test a string value for being "true" or "1".

@@ -9,7 +9,6 @@ import {
 	TSavedStateQueryPropsExt,
 } from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
 import {Logger} from "@AppBuilderShared/utils/logger";
-import {defineFilter} from "@AppBuilderShared/utils/platform/filter";
 import {
 	SdPlatformQueryResponse,
 	SdPlatformRequestSavedStatePatch,
@@ -23,6 +22,7 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 import {useShallow} from "zustand/react/shallow";
+import {defineFilter} from "~/shared/shared/lib/platform";
 
 /**
  * Store for ShapeDiver Platform saved states.

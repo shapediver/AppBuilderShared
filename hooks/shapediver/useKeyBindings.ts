@@ -3,7 +3,7 @@ import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateM
 import {useKeyBinding} from "@AppBuilderShared/hooks/shapediver/useKeyBinding";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {useCallback} from "react";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model";
 
 interface Props {
 	namespace: string;

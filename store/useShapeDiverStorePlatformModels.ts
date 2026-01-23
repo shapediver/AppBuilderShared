@@ -8,7 +8,6 @@ import {
 	TModelEmbed,
 	TModelQueryPropsExt,
 } from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
-import {defineFilter} from "@AppBuilderShared/utils/platform/filter";
 import {
 	SdPlatformModelQueryEmbeddableFields,
 	SdPlatformModelQueryParameters,
@@ -19,6 +18,7 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 import {useShallow} from "zustand/react/shallow";
+import {defineFilter} from "~/shared/shared/lib/platform";
 
 /**
  * Store for ShapeDiver Platform models.

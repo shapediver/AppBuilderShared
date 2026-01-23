@@ -1,6 +1,5 @@
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
 import {
 	IBakeDataResultEnum,
@@ -14,7 +13,8 @@ import {
 } from "@shapediver/viewer.session";
 import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {useShapeDiverStoreStargate} from "~/shared/entities/stargate/model/useShapeDiverStoreStargate";
+import {useNotificationStore} from "~/shared/shared/model";
 import {useStargateBakeData} from "./useStargateBakeData";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 

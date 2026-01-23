@@ -20,7 +20,7 @@ import {Options} from "react-markdown/lib";
 import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
 import {visit} from "unist-util-visit";
-import {getNotificationActions} from "~/shared/shared/model/useNotificationStore";
+import {getNotificationActions} from "~/shared/shared/model";
 import {ThemeProvider} from "~/shared/shared/ui/theme";
 import classes from "./MarkdownWidgetComponent.module.css";
 
