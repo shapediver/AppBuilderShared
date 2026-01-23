@@ -1,10 +1,10 @@
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {Group, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
+import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 
 interface Props extends PropsExport {
 	/** Optional label overriding the default label */

@@ -2,7 +2,7 @@ import {Attributes} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVis
 import {ActionIcon, Stack, Table} from "@mantine/core";
 import {ISDTFAttributeData} from "@shapediver/viewer.session";
 import React, {useMemo} from "react";
-import {Icon} from "~/shared/shared/ui/Icon";
+import {Icon} from "~/shared/shared/ui/icon";
 import {IAttributeDefinition} from "../appbuilder/widgets/AppBuilderAttributeVisualizationWidgetComponent";
 import classes from "./SelectedAttributeComponent.module.css";
 

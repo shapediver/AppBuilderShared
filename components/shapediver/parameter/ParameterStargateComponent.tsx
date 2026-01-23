@@ -1,6 +1,5 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
 	ParameterStatusEnum,
@@ -24,7 +23,8 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useMemo} from "react";
-import {Icon, IconProps} from "~/shared/shared/ui/Icon";
+import {Icon, IconProps} from "~/shared/shared/ui/icon";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import StargateInput from "../stargate/StargateInput";
 import {
 	DefaultStargateStyleProps,

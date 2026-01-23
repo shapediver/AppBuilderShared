@@ -2,7 +2,7 @@ import {Carousel} from "@mantine/carousel";
 import "@mantine/carousel/styles.css";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useMemo} from "react";
-import {Icon} from "~/shared/shared/ui/Icon";
+import {Icon} from "~/shared/shared/ui/icon";
 import {parameterMultiSelect} from "~/shared/utils/parameters/parameterMultiSelect";
 import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 import ButtonImageCard from "./ButtonImageCard";

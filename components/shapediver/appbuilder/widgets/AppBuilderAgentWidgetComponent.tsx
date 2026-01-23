@@ -1,27 +1,9 @@
-import {
-	ActionIcon,
-	Box,
-	Button,
-	createTheme,
-	FileButton,
-	Group,
-	MantineStyleProp,
-	Paper,
-	ScrollArea,
-	Stack,
-	Text,
-	Textarea,
-	TextInput,
-	useMantineTheme,
-	useProps,
-} from "@mantine/core";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {
 	DEFAULT_SYSTEM_PROMPT,
 	useAgent,
 } from "@AppBuilderShared/hooks/shapediver/appbuilder/useAgent";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
 import {
 	AppBuilderAgentWidgetComponentProps,
@@ -39,6 +21,23 @@ import {
 	QUERYPARAM_SLUG,
 } from "@AppBuilderShared/types/shapediver/queryparams";
 import {Logger} from "@AppBuilderShared/utils/logger";
+import {
+	ActionIcon,
+	Box,
+	Button,
+	createTheme,
+	FileButton,
+	Group,
+	MantineStyleProp,
+	Paper,
+	ScrollArea,
+	Stack,
+	Text,
+	Textarea,
+	TextInput,
+	useMantineTheme,
+	useProps,
+} from "@mantine/core";
 import React, {
 	useCallback,
 	useContext,
@@ -47,7 +46,9 @@ import React, {
 	useState,
 } from "react";
 import {useShallow} from "zustand/react/shallow";
-import {Icon} from "~/shared/shared/ui/Icon";
+import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {Icon} from "~/shared/shared/ui/icon";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";
 import AppBuilderImage from "../AppBuilderImage";
 

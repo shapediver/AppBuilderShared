@@ -4,7 +4,6 @@ import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {
 	defaultPropsParameterWrapper,
@@ -19,14 +18,9 @@ import {
 	IDraggingParameterProps,
 	validateDraggingParameterSettings,
 } from "@shapediver/viewer.session";
-import React, {
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
-import {Icon} from "~/shared/shared/ui/Icon";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {Icon} from "~/shared/shared/ui/icon";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**

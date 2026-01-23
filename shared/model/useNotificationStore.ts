@@ -1,5 +1,8 @@
-import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
-import {NotificationStyleProps} from "@AppBuilderShared/types/context/notificationcontext";
+import {notifications} from "@mantine/notifications";
+import {create} from "zustand";
+import {devtools} from "zustand/middleware";
+import {devtoolsSettings} from "~/shared/store/storeSettings";
+import {NotificationStyleProps} from "~/shared/types/context/notificationcontext";
 import {
 	ICustomNotificationData,
 	ICustomNotificationStored,
@@ -8,14 +11,11 @@ import {
 	IShapeDiverStoreNotifications,
 	NotificationDisplayMode,
 	NotificationInput,
-} from "@AppBuilderShared/types/store/shapediverStoreNotifications";
+} from "~/shared/types/store/shapediverStoreNotifications";
 import {
 	getEnvironmentIdentifier,
 	isRunningInPlatform,
-} from "@AppBuilderShared/utils/platform/environment";
-import {notifications} from "@mantine/notifications";
-import {create} from "zustand";
-import {devtools} from "zustand/middleware";
+} from "~/shared/utils/platform/environment";
 
 const defaultStyleProps: NotificationStyleProps = {
 	errorColor: "red",

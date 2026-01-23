@@ -1,5 +1,4 @@
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
-import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {
@@ -10,7 +9,6 @@ import {
 	ExportStatusEnum,
 	useStargateExport,
 } from "@AppBuilderShared/hooks/shapediver/stargate/useStargateExport";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
@@ -36,7 +34,9 @@ import React, {
 	useMemo,
 	useState,
 } from "react";
-import {Icon} from "~/shared/shared/ui/Icon";
+import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
+import {Icon} from "~/shared/shared/ui/icon";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import StargateInput from "../stargate/StargateInput";
 import {
 	DefaultStargateStyleProps,

@@ -10,7 +10,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import {Icon, IconType} from "~/shared/shared/ui/Icon";
+import {Icon, IconType} from "~/shared/shared/ui/icon";
 
 interface Props {
 	/** Icon to display on the right section of the button */

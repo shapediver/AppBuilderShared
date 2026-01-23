@@ -27,7 +27,7 @@ import {
 } from "@shapediver/viewer.features.interaction";
 import {ITreeNode} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useState} from "react";
-import {Icon} from "~/shared/shared/ui/Icon";
+import {Icon} from "~/shared/shared/ui/icon";
 
 type StyleProps = {
 	paperProps?: Partial<PaperProps>;

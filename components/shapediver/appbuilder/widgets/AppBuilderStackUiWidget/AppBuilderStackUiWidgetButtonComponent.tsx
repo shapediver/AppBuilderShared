@@ -11,8 +11,8 @@ import {
 } from "@mantine/core";
 import React, {useContext} from "react";
 import {AppBuilderStackContext} from "~/shared/context/StackContext";
-import {Icon, IconProps} from "~/shared/shared/ui/Icon";
-import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
+import {Icon, IconProps} from "~/shared/shared/ui/icon";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import {IAppBuilderWidgetPropsStackUi} from "~/shared/types/shapediver/appbuilder";
 
 export interface StyleProps {

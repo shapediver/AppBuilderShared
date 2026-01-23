@@ -2,7 +2,7 @@ import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/a
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {IAppBuilderLegacyActionPropsMessageToParent} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useCallback, useState} from "react";
-import {useNotificationStore} from "~/shared/store/useNotificationStore";
+import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
 
 /**
  * Functional component for an "messageToParent" action.

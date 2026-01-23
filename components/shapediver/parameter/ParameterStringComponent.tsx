@@ -2,7 +2,6 @@ import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/par
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -12,6 +11,7 @@ import {validateStringParameterSettings} from "@AppBuilderShared/types/shapedive
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {Textarea, TextInput, useProps} from "@mantine/core";
 import React, {useCallback, useEffect, useMemo} from "react";
+import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
 import SelectComponent from "./select/SelectComponent";
 
 /**

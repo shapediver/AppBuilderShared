@@ -50,7 +50,7 @@ import React, {
 	useRef,
 	useState,
 } from "react";
-import {Icon} from "~/shared/shared/ui/Icon";
+import {Icon} from "~/shared/shared/ui/icon";
 import SelectedAttributeComponent from "../../ui/SelectedAttributeComponent";
 import ViewportAnchor3d from "../../viewport/anchors/ViewportAnchor3d";
 import ColorAttribute from "./attributes/ColorAttribute";

@@ -6,7 +6,7 @@ import {
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {Button, Group, Text} from "@mantine/core";
 import React from "react";
-import {Icon} from "~/shared/shared/ui/Icon";
+import {Icon} from "~/shared/shared/ui/icon";
 
 interface Props {
 	parameters?: PropsParameter[];

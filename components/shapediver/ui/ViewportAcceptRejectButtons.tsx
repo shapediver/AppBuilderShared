@@ -12,7 +12,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
-import {Icon} from "~/shared/shared/ui/Icon";
+import {Icon} from "~/shared/shared/ui/icon";
 
 interface IconProps {
 	size?: string | number;

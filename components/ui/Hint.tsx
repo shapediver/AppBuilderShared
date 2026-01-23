@@ -10,7 +10,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import {Icon, IconProps} from "~/shared/shared/ui/Icon";
+import {Icon, IconProps} from "~/shared/shared/ui/icon";
 
 interface Props {
 	/** Title text to display */

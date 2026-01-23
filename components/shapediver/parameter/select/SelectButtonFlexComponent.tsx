@@ -1,6 +1,6 @@
-import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {Button, Flex} from "@mantine/core";
 import React from "react";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import {parameterMultiSelect} from "~/shared/utils/parameters/parameterMultiSelect";
 import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 

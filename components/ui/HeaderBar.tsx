@@ -6,7 +6,7 @@ import {
 } from "@mantine/core";
 import React from "react";
 import {useLinkClickHandler} from "react-router-dom";
-import {Icon} from "~/shared/shared/ui/Icon";
+import {Icon} from "~/shared/shared/ui/icon";
 import classes from "./HeaderBar.module.css";
 
 /**

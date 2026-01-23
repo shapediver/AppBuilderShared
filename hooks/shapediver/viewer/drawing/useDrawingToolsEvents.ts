@@ -1,4 +1,3 @@
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {
 	DrawingToolsEventResponseMapping,
 	PointsData,
@@ -10,6 +9,7 @@ import {
 	removeListener,
 } from "@shapediver/viewer.session";
 import {useEffect, useState} from "react";
+import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
 
 // #region Functions (1)
 

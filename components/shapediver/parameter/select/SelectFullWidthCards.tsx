@@ -1,5 +1,4 @@
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {
 	Card,
 	Group,
@@ -13,7 +12,8 @@ import {
 } from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
 import {useCustomHeight} from "~/shared/hooks/shapediver/parameters/useCustomHeight";
-import {Icon} from "~/shared/shared/ui/Icon";
+import {Icon} from "~/shared/shared/ui/icon";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import {parameterMultiSelect} from "~/shared/utils/parameters/parameterMultiSelect";
 import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 import {

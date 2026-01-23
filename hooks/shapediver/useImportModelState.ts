@@ -1,5 +1,4 @@
 import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
@@ -12,6 +11,7 @@ import {
 import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
 import {useCallback, useContext, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
 
 /**
  * Hook for managing model state import functionality.

@@ -17,8 +17,8 @@ import {
 } from "@shapediver/viewer.features.drawing-tools";
 import {IDrawingParameterSettings} from "@shapediver/viewer.session";
 import React, {useEffect, useState} from "react";
-import {Icon} from "~/shared/shared/ui/Icon";
-import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
+import {Icon} from "~/shared/shared/ui/icon";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import classes from "./DrawingOptionsComponent.module.css";
 
 /**

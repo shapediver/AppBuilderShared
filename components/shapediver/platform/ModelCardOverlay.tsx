@@ -2,11 +2,11 @@ import ModelCardOverlayWrapper, {
 	ModelCardOverlayWrapperThemePropsType,
 } from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlayWrapper";
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
-import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {Avatar} from "@mantine/core";
 import React, {useContext, useMemo} from "react";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 
 export type ModelCardOverlayPropsType = {
 	/** If true, show the model's bookmark status. Defaults to false. */

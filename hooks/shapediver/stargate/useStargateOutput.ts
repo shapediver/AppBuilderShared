@@ -1,4 +1,3 @@
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
@@ -15,6 +14,7 @@ import {
 } from "@shapediver/viewer.session";
 import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
 import {useStargateBakeData} from "./useStargateBakeData";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 

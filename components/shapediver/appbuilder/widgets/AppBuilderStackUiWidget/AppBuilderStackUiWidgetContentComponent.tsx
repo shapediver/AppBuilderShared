@@ -13,7 +13,7 @@ import React, {useContext} from "react";
 import AppBuilderWidgetsComponent from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
 import {AppBuilderStackContext} from "~/shared/context/StackContext";
 import {useStackContext} from "~/shared/hooks/context/useStackContext";
-import {Icon, IconProps} from "~/shared/shared/ui/Icon";
+import {Icon, IconProps} from "~/shared/shared/ui/icon";
 import {IAppBuilderWidgetPropsStackUi} from "~/shared/types/shapediver/appbuilder";
 import AppBuilderStackUiWidgetComponent from "./AppBuilderStackUiWidgetComponent";
 

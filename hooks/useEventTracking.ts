@@ -1,6 +1,5 @@
 import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
 import {TrackerContext} from "@AppBuilderShared/context/TrackerContext";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {
 	IEventTracking,
 	IEventTrackingProps,
@@ -10,6 +9,7 @@ import {roundToBracket} from "@AppBuilderShared/utils/numerics";
 import {ResComputationStatus} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {isViewerCustomizationError} from "@shapediver/viewer.session";
 import {useContext, useMemo} from "react";
+import {useNotificationStore} from "~/shared/shared/model/useNotificationStore";
 
 /**
  * Hook for event tracking.

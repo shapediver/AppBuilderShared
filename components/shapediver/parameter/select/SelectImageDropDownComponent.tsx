@@ -1,5 +1,4 @@
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
-import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {
 	Combobox,
 	Group,
@@ -11,6 +10,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import {
 	SelectComponentProps,
 	SelectGroupStyleProps,

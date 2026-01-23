@@ -1,6 +1,5 @@
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
@@ -18,6 +17,7 @@ import {
 } from "@mantine/core";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useState} from "react";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 
 interface NumberFormatValues {
 	/** The value converted to a float, if valid. */

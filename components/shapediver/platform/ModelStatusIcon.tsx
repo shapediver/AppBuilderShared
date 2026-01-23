@@ -1,12 +1,12 @@
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
-import {TooltipWrapper} from "~/shared/shared/ui/TooltipWrapper";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {
 	SdPlatformModelVisibility,
 	SdPlatformResponseModelPublic,
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import React, {useMemo} from "react";
-import {Icon, IconType} from "~/shared/shared/ui/Icon";
+import {Icon, IconType} from "~/shared/shared/ui/icon";
+import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 
 interface Props {
 	/** Model to be displayed */

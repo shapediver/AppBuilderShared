@@ -1,5 +1,4 @@
 import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
-import {getNotificationActions} from "@AppBuilderShared/store/useNotificationStore";
 import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	IShapeDiverStoreStargateExtended,
@@ -10,6 +9,7 @@ import {shouldUsePlatform} from "@AppBuilderShared/utils/platform/environment";
 import type {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {getNotificationActions} from "~/shared/shared/model/useNotificationStore";
 import {useShapeDiverStoreErrorReporting} from "./useShapeDiverStoreErrorReporting";
 import {useShapeDiverStorePlatform} from "./useShapeDiverStorePlatform";
 

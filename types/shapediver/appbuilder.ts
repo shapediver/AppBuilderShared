@@ -18,7 +18,7 @@ import {
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 } from "@shapediver/viewer.shared.types";
-import {IconType} from "~/shared/shared/ui/Icon";
+import {IconType} from "~/shared/shared/ui/icon";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
