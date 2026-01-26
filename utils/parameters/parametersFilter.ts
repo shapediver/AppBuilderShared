@@ -1,4 +1,4 @@
-import {NotificationAction} from "@AppBuilderShared/types/context/notificationcontext";
+import {NotificationAction} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
 import {z} from "zod";
 

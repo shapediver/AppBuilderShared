@@ -1,7 +1,9 @@
-import {useNotificationStore} from "@AppBuilderShared/shared/model";
-import {TooltipWrapper} from "@AppBuilderShared/shared/ui/tooltip";
-import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {NetworkStatus} from "@AppBuilderShared/types/shapediver/stargate";
+import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate";
+import {NetworkStatus} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {Icon, IconProps, IconType} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderLib/types/shapediver/appbuilder";
 import {
 	ActionIcon,
 	ActionIconProps,
@@ -25,8 +27,6 @@ import {
 import {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
 import React, {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useShapeDiverStoreStargate} from "~/shared/entities/stargate/model/useShapeDiverStoreStargate";
-import {Icon, IconProps, IconType} from "~/shared/shared/ui/icon";
 
 /**
  * Interface representing a client choice in the desktop client panel.

@@ -1,5 +1,5 @@
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {DummyErrorReporting} from "@AppBuilderShared/context/ErrorReportingContext";
-import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
 import {IErrorReportingContext} from "@AppBuilderShared/types/context/errorreportingcontext";
 import {IShapeDiverStoreErrorReporting} from "@AppBuilderShared/types/store/shapediverStoreErrorReporting";
 import {create} from "zustand";

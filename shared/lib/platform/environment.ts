@@ -3,7 +3,7 @@ import {
 	QUERYPARAM_USE_DEV_PLATFORM,
 	QUERYPARAM_USE_SANDBOX_PLATFORM,
 	QUERYPARAM_USE_STAGING_PLATFORM,
-} from "~/shared/types/shapediver/queryparams";
+} from "@AppBuilderLib/shared/config/queryparams";
 
 const PROD_PLATFORM_HOST = "shapediver.com";
 const STAGING_PLATFORM_HOST = "staging-wwwcdn.us-east-1.shapediver.com";

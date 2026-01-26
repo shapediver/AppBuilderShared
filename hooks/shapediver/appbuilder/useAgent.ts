@@ -1,3 +1,4 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {IAppBuilderParameterRef} from "@AppBuilderShared/types/shapediver/appbuilder";
@@ -18,7 +19,6 @@ import {useCallback, useContext, useMemo, useState} from "react";
 import {z} from "zod";
 import {useShallow} from "zustand/react/shallow";
 import packagejson from "~/../package.json";
-import {useNotificationStore} from "~/shared/shared/model";
 import {useAllParametersStateless} from "../parameters/useAllParametersStateless";
 
 export const DEFAULT_SYSTEM_PROMPT =

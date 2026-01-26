@@ -5,7 +5,7 @@ import type {
 	ISdStargateSdk,
 	ISdStargateStatusReplyDto,
 } from "@shapediver/sdk.stargate-sdk-v1";
-import {NetworkStatus} from "../shapediver/stargate";
+import {NetworkStatus} from "./stargate";
 
 /**
  * Reference to the Stargate SDK.

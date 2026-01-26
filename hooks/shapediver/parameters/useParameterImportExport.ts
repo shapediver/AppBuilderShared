@@ -1,10 +1,11 @@
-import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {
 	exceptionWrapper,
 	exceptionWrapperAsync,
-} from "@AppBuilderShared/utils/exceptionWrapper";
+} from "@AppBuilderLib/shared/lib/exceptionWrapper";
+import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {
 	filterAndValidateParameters,
 	generateParameterFeedback,
@@ -13,7 +14,6 @@ import {
 import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
 import {useCallback, useContext} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useNotificationStore} from "~/shared/shared/model";
 
 /**
  * Hook for managing parameter import/export and reset functionality.

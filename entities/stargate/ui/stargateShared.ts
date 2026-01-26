@@ -1,4 +1,4 @@
-import {StargateStatusColorProps} from "@AppBuilderShared/types/shapediver/stargate";
+import {StargateStatusColorProps} from "@AppBuilderLib/entities/stargate/config/stargate";
 import {MantineThemeComponent} from "@mantine/core";
 
 export interface StargateStyleProps {

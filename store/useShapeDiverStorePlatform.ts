@@ -1,5 +1,5 @@
-import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
-import {QUERYPARAM_PROVIDER} from "@AppBuilderShared/types/shapediver/queryparams";
+import {QUERYPARAM_PROVIDER} from "@AppBuilderLib/shared/config/queryparams";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {
 	IShapeDiverStorePlatformExtended,
 	PlatformCacheKeyEnum,

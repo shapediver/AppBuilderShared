@@ -1,4 +1,4 @@
-import DesktopClientPanel from "@AppBuilderShared/components/shapediver/stargate/DesktopClientPanel";
+import DesktopClientPanel from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
 import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import TabsComponent, {
 	ITabsComponentProps,

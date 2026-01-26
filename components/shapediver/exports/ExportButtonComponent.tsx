@@ -1,3 +1,15 @@
+import {
+	IStargateComponentStatusDefinition,
+	mapStargateComponentStatusDefinition,
+	StargateFileParamPrefix,
+	StargateStatusColorTypeEnum,
+} from "@AppBuilderLib/entities/stargate/config/stargate";
+import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import {
+	DefaultStargateStyleProps,
+	StargateStyleProps,
+} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
@@ -11,12 +23,6 @@ import {
 } from "@AppBuilderShared/hooks/shapediver/stargate/useStargateExport";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {
-	IStargateComponentStatusDefinition,
-	mapStargateComponentStatusDefinition,
-	StargateFileParamPrefix,
-	StargateStatusColorTypeEnum,
-} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	Button,
 	ButtonProps,
@@ -34,14 +40,8 @@ import React, {
 	useMemo,
 	useState,
 } from "react";
-import {useNotificationStore} from "~/shared/shared/model";
 import {Icon} from "~/shared/shared/ui/icon";
 import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
-import StargateInput from "../stargate/StargateInput";
-import {
-	DefaultStargateStyleProps,
-	StargateStyleProps,
-} from "../stargate/stargateShared";
 
 /**
  * Map from status enum to status data.

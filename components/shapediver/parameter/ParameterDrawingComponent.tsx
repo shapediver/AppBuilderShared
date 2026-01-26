@@ -1,3 +1,4 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import DrawingOptionsComponent from "@AppBuilderShared/components/shapediver/ui/DrawingOptionsComponent";
@@ -31,7 +32,6 @@ import {
 	validateDrawingParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useNotificationStore} from "~/shared/shared/model";
 import {Icon} from "~/shared/shared/ui/icon";
 import classes from "./ParameterInteractionComponent.module.css";
 

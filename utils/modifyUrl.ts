@@ -1,7 +1,7 @@
 import {
 	QUERYPARAM_MODELSTATEID,
 	QUERYPARAM_SAVEDSTATEID,
-} from "@AppBuilderShared/types/shapediver/queryparams";
+} from "@AppBuilderLib/shared/config/queryparams";
 
 /**
  * Custom event name for URL changes made via modifyUrl functions.

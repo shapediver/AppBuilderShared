@@ -1,10 +1,10 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import NotificationModelStateCreated from "@AppBuilderShared/components/shapediver/notifications/NotificationModelStateCreated";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {IAppBuilderLegacyActionPropsCreateModelState} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useCallback, useState} from "react";
-import {useNotificationStore} from "~/shared/shared/model";
 
 type Props = IAppBuilderLegacyActionPropsCreateModelState & {
 	namespace: string;

@@ -16,7 +16,7 @@ import {
 	shouldUsePlatform,
 } from "~/shared/shared/lib/platform";
 
-import {QUERYPARAM_REDIRECT} from "@AppBuilderShared/types/shapediver/queryparams";
+import {QUERYPARAM_REDIRECT} from "@AppBuilderLib/shared/config/queryparams";
 import {MODELS} from "@modelstorage";
 import {useShapeDiverStorePlatformSavedStates} from "~/shared/store/useShapeDiverStorePlatformSavedStates";
 

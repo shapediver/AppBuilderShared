@@ -1,3 +1,14 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {
+	QUERYPARAM_DEBUG,
+	QUERYPARAM_LANGFUSE_BASE_URL,
+	QUERYPARAM_LANGFUSE_PUBLIC_KEY,
+	QUERYPARAM_LANGFUSE_SECRET_KEY,
+	QUERYPARAM_MAX_HISTORY,
+	QUERYPARAM_MODEL,
+	QUERYPARAM_OPENAI_API_KEY,
+	QUERYPARAM_SLUG,
+} from "@AppBuilderLib/shared/config/queryparams";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {
 	DEFAULT_SYSTEM_PROMPT,
@@ -10,16 +21,6 @@ import {
 	AppBuilderAgentWidgetThemePropsType,
 } from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
 import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {
-	QUERYPARAM_DEBUG,
-	QUERYPARAM_LANGFUSE_BASE_URL,
-	QUERYPARAM_LANGFUSE_PUBLIC_KEY,
-	QUERYPARAM_LANGFUSE_SECRET_KEY,
-	QUERYPARAM_MAX_HISTORY,
-	QUERYPARAM_MODEL,
-	QUERYPARAM_OPENAI_API_KEY,
-	QUERYPARAM_SLUG,
-} from "@AppBuilderShared/types/shapediver/queryparams";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	ActionIcon,
@@ -46,7 +47,6 @@ import React, {
 	useState,
 } from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useNotificationStore} from "~/shared/shared/model";
 import {Icon} from "~/shared/shared/ui/icon";
 import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";

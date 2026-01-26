@@ -1,4 +1,13 @@
-import StargateInput from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
+import {
+	IStargateComponentStatusDefinition,
+	mapStargateComponentStatusDefinition,
+	StargateStatusColorTypeEnum,
+} from "@AppBuilderLib/entities/stargate/config/stargate";
+import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import {
+	DefaultStargateStyleProps,
+	StargateStyleProps,
+} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
 import {
 	OutputStatusEnum,
@@ -8,17 +17,8 @@ import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,
 } from "@AppBuilderShared/types/shapediver/output";
-import {
-	IStargateComponentStatusDefinition,
-	mapStargateComponentStatusDefinition,
-	StargateStatusColorTypeEnum,
-} from "@AppBuilderShared/types/shapediver/stargate";
 import {useProps} from "@mantine/core";
 import React, {useContext, useMemo} from "react";
-import {
-	DefaultStargateStyleProps,
-	StargateStyleProps,
-} from "../stargate/stargateShared";
 import OutputChunkLabelComponent from "./OutputChunkLabelComponent";
 
 interface Props {

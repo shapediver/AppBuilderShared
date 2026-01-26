@@ -1,3 +1,4 @@
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {
 	IScrollingApi,
@@ -8,7 +9,6 @@ import {produce} from "immer";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 import {isRunningInPlatform} from "~/shared/shared/lib/platform";
-import {devtoolsSettings} from "./storeSettings";
 
 /**
  * A dummy scrolling API implementation for testing without the e-commerce API.

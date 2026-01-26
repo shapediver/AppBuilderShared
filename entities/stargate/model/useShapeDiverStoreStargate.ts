@@ -1,17 +1,17 @@
-import type {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
-import {useShapeDiverStoreErrorReporting} from "shared/store/useShapeDiverStoreErrorReporting";
-import {useShapeDiverStorePlatform} from "shared/store/useShapeDiverStorePlatform";
-import {create} from "zustand";
-import {devtools} from "zustand/middleware";
-import {shouldUsePlatform} from "~/shared/shared/lib/platform";
-import {getNotificationActions} from "~/shared/shared/model";
-import {devtoolsSettings} from "~/shared/store/storeSettings";
-import {NetworkStatus} from "~/shared/types/shapediver/stargate";
 import {
 	IShapeDiverStoreStargateExtended,
 	StargateCacheKeyEnum,
-} from "~/shared/types/store/shapediverStoreStargate";
-import {exceptionWrapperAsync} from "~/shared/utils/exceptionWrapper";
+} from "@AppBuilderLib/entities/stargate/config/shapediverStoreStargate";
+import {NetworkStatus} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {getNotificationActions} from "@AppBuilderLib/features/notifications";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
+import {useShapeDiverStoreErrorReporting} from "@AppBuilderLib/store/useShapeDiverStoreErrorReporting";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/store/useShapeDiverStorePlatform";
+import type {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
+import {create} from "zustand";
+import {devtools} from "zustand/middleware";
+import {shouldUsePlatform} from "~/shared/shared/lib/platform";
 
 // Dynamic import function for stargate SDK
 const importStargateSDK = () => import("@shapediver/sdk.stargate-sdk-v1");

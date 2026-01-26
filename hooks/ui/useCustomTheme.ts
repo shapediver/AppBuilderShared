@@ -1,3 +1,6 @@
+import {DesktopClientPanelThemeProps} from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
+import {StargateInputThemeProps} from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import {StargateSharedThemeProps} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import {AppBuilderActionComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
 import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionUiWidgetComponent";
@@ -20,9 +23,6 @@ import {ParameterStargateComponentThemeProps} from "@AppBuilderShared/components
 import {SelectCarouselComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectCarouselComponent";
 import {SelectFullWidthCardsComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectFullWidthCards";
 import {SelectGridComponentThemeProps} from "@AppBuilderShared/components/shapediver/parameter/select/SelectGridComponent";
-import {DesktopClientPanelThemeProps} from "@AppBuilderShared/components/shapediver/stargate/DesktopClientPanel";
-import {StargateInputThemeProps} from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
-import {StargateSharedThemeProps} from "@AppBuilderShared/components/shapediver/stargate/stargateShared";
 import {MarkdownWidgetComponentProps} from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";

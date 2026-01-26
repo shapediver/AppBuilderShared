@@ -1,7 +1,7 @@
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {IShapeDiverStoreInstances} from "@AppBuilderShared/types/store/shapediverStoreInstances";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
-import {devtoolsSettings} from "./storeSettings";
 
 export const useShapeDiverStoreInstances = create<IShapeDiverStoreInstances>()(
 	devtools(

@@ -1,3 +1,4 @@
+import {QUERYPARAM_SAVEDSTATEID} from "@AppBuilderLib/shared/config/queryparams";
 import SelectComponent, {
 	SelectComponentPropsExt,
 } from "@AppBuilderShared/components/shapediver/parameter/select/SelectComponent";
@@ -11,7 +12,6 @@ import {
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import {QUERYPARAM_SAVEDSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {TSavedStateQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
 import {
 	applySavedStateToUrl,

@@ -1,11 +1,12 @@
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
 import {
 	IBakeDataResultEnum,
 	NetworkStatus,
-} from "@AppBuilderShared/types/shapediver/stargate";
-import {exceptionWrapperAsync} from "@AppBuilderShared/utils/exceptionWrapper";
+} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
+import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
 import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
 import {
 	ITreeNode,
@@ -14,7 +15,6 @@ import {
 import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useShapeDiverStoreStargate} from "~/shared/entities/stargate/model/useShapeDiverStoreStargate";
-import {useNotificationStore} from "~/shared/shared/model";
 import {useStargateBakeData} from "./useStargateBakeData";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 

@@ -1,3 +1,14 @@
+import {
+	IStargateComponentStatusDefinition,
+	mapStargateComponentStatusDefinition,
+	StargateFileParamPrefix,
+	StargateStatusColorTypeEnum,
+} from "@AppBuilderLib/entities/stargate/config/stargate";
+import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import {
+	DefaultStargateStyleProps,
+	StargateStyleProps,
+} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
@@ -10,12 +21,6 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
-import {
-	IStargateComponentStatusDefinition,
-	mapStargateComponentStatusDefinition,
-	StargateFileParamPrefix,
-	StargateStatusColorTypeEnum,
-} from "@AppBuilderShared/types/shapediver/stargate";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	ActionIcon,
@@ -35,11 +40,6 @@ import {
 import React, {useEffect, useMemo} from "react";
 import {Icon, IconProps} from "~/shared/shared/ui/icon";
 import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
-import StargateInput from "../stargate/StargateInput";
-import {
-	DefaultStargateStyleProps,
-	StargateStyleProps,
-} from "../stargate/stargateShared";
 
 /**
  * Map from status enum to status data.
