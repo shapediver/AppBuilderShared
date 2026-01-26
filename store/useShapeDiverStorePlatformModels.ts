@@ -33,15 +33,16 @@ export const useShapeDiverStorePlatformModels =
 				queryCache: {},
 
 				addItem(data: TModelData) {
-					const clientRef =
-						useShapeDiverStorePlatform.getState().clientRef!;
+					const {authWrapper} = useShapeDiverStorePlatform.getState();
 					const pruneCache = get().pruneCache;
 
 					const actions = {
 						bookmark: async () => {
-							await clientRef.client.bookmarks.create({
-								model_id: data.id,
-							});
+							await authWrapper((c) =>
+								c.client.bookmarks.create({
+									model_id: data.id,
+								}),
+							);
 							set(
 								produce((state) => {
 									state.items[data.id].data.bookmark = {
@@ -54,7 +55,9 @@ export const useShapeDiverStorePlatformModels =
 							pruneCache(ModelCacheKeyEnum.BookmarkedModels);
 						},
 						unbookmark: async () => {
-							await clientRef.client.bookmarks.delete(data.id);
+							await authWrapper((c) =>
+								c.client.bookmarks.delete(data.id),
+							);
 							set(
 								produce((state) => {
 									state.items[data.id].data.bookmark = {
@@ -67,9 +70,11 @@ export const useShapeDiverStorePlatformModels =
 							pruneCache(ModelCacheKeyEnum.BookmarkedModels);
 						},
 						confirmForOrganization: async () => {
-							await clientRef.client.models.patch(data.id, {
-								organization_settings: {confirmed: true},
-							});
+							await authWrapper((c) =>
+								c.client.models.patch(data.id, {
+									organization_settings: {confirmed: true},
+								}),
+							);
 							set(
 								produce((state) => {
 									state.items[
@@ -86,9 +91,11 @@ export const useShapeDiverStorePlatformModels =
 							);
 						},
 						revokeForOrganization: async () => {
-							await clientRef.client.models.patch(data.id, {
-								organization_settings: {confirmed: false},
-							});
+							await authWrapper((c) =>
+								c.client.models.patch(data.id, {
+									organization_settings: {confirmed: false},
+								}),
+							);
 							set(
 								produce((state) => {
 									state.items[
@@ -127,12 +134,14 @@ export const useShapeDiverStorePlatformModels =
 						TModelQueryPropsExt
 					>,
 				) {
-					const {clientRef, getUser} = useShapeDiverStorePlatform(
-						useShallow((state) => ({
-							clientRef: state.clientRef,
-							getUser: state.getUser,
-						})),
-					);
+					const {authWrapper, clientRef, getUser} =
+						useShapeDiverStorePlatform(
+							useShallow((state) => ({
+								authWrapper: state.authWrapper,
+								clientRef: state.clientRef,
+								getUser: state.getUser,
+							})),
+						);
 					const {addItem, queryCache} = get();
 
 					const {
@@ -243,7 +252,9 @@ export const useShapeDiverStorePlatformModels =
 						setLoading(true);
 						try {
 							const {pagination, result: items} = (
-								await clientRef.client.models.query(params)
+								await authWrapper((c) =>
+									c.client.models.query(params),
+								)
 							).data;
 							items.forEach((item) => addItem(item));
 							set(
@@ -265,6 +276,7 @@ export const useShapeDiverStorePlatformModels =
 						}
 					}, [
 						clientRef,
+						authWrapper,
 						getUser,
 						queryParamsExt,
 						filterByUser,
