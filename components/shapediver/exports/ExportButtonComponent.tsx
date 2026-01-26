@@ -10,6 +10,8 @@ import {
 	StargateStyleProps,
 } from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
@@ -40,8 +42,6 @@ import React, {
 	useMemo,
 	useState,
 } from "react";
-import {Icon} from "~/shared/shared/ui/icon";
-import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 
 /**
  * Map from status enum to status data.

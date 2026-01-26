@@ -9,6 +9,8 @@ import {
 	DefaultStargateStyleProps,
 	StargateStyleProps,
 } from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
@@ -38,8 +40,6 @@ import {
 	mapMimeTypeToFileEndings,
 } from "@shapediver/viewer.utils.mime-type";
 import React, {useEffect, useMemo} from "react";
-import {Icon, IconProps} from "~/shared/shared/ui/icon";
-import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 
 /**
  * Map from status enum to status data.

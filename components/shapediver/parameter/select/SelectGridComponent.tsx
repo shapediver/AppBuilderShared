@@ -1,3 +1,4 @@
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {
 	MantineThemeComponent,
 	SimpleGrid,
@@ -8,7 +9,6 @@ import {
 } from "@mantine/core";
 import React, {useMemo, useState} from "react";
 import {useCustomHeight} from "~/shared/hooks/shapediver/parameters/useCustomHeight";
-import {Icon} from "~/shared/shared/ui/icon";
 import {parameterMultiSelect} from "~/shared/utils/parameters/parameterMultiSelect";
 import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 import ButtonImageCard from "./ButtonImageCard";

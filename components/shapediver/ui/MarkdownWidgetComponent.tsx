@@ -1,4 +1,5 @@
 import {getNotificationActions} from "@AppBuilderLib/features/notifications";
+import {ThemeProvider} from "@AppBuilderLib/shared/ui/theme";
 import {
 	Anchor,
 	Blockquote,
@@ -21,7 +22,6 @@ import {Options} from "react-markdown/lib";
 import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
 import {visit} from "unist-util-visit";
-import {ThemeProvider} from "~/shared/shared/ui/theme";
 import classes from "./MarkdownWidgetComponent.module.css";
 
 // Set to track warnings that have already been shown to prevent duplicates

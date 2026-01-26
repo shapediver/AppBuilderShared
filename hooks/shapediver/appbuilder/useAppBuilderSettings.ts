@@ -11,6 +11,7 @@ import {
 	QUERYPARAM_TEMPLATE,
 	QUERYPARAM_TICKET,
 } from "@AppBuilderLib/shared/config/queryparams";
+import {getDefaultPlatformUrl} from "@AppBuilderLib/shared/lib/platform";
 import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
 import useResolveAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder//useResolveAppBuilderSettings";
 import useQuerySavedState from "@AppBuilderShared/hooks/shapediver/useQuerySavedState";
@@ -25,7 +26,6 @@ import {validateAppBuilderSettingsJson} from "@AppBuilderShared/types/shapediver
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useEffect, useMemo} from "react";
-import {getDefaultPlatformUrl} from "~/shared/shared/lib/platform";
 
 /**
  * Test a string value for being "true" or "1".

@@ -6,12 +6,12 @@ import {NetworkStatus} from "@AppBuilderLib/entities/stargate/config/stargate";
 import {getNotificationActions} from "@AppBuilderLib/features/notifications";
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
+import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform";
 import {useShapeDiverStoreErrorReporting} from "@AppBuilderLib/store/useShapeDiverStoreErrorReporting";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/store/useShapeDiverStorePlatform";
 import type {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
-import {shouldUsePlatform} from "~/shared/shared/lib/platform";
 
 // Dynamic import function for stargate SDK
 const importStargateSDK = () => import("@shapediver/sdk.stargate-sdk-v1");

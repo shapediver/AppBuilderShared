@@ -9,6 +9,8 @@ import {
 	QUERYPARAM_OPENAI_API_KEY,
 	QUERYPARAM_SLUG,
 } from "@AppBuilderLib/shared/config/queryparams";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {
 	DEFAULT_SYSTEM_PROMPT,
@@ -47,8 +49,6 @@ import React, {
 	useState,
 } from "react";
 import {useShallow} from "zustand/react/shallow";
-import {Icon} from "~/shared/shared/ui/icon";
-import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import MarkdownWidgetComponent from "../../ui/MarkdownWidgetComponent";
 import AppBuilderImage from "../AppBuilderImage";
 

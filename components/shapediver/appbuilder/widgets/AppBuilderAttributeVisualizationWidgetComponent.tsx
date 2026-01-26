@@ -1,16 +1,4 @@
-import {
-	ActionIcon,
-	Group,
-	GroupProps,
-	MantineThemeComponent,
-	Paper,
-	PaperProps,
-	Select,
-	Stack,
-	Title,
-	TitleProps,
-	useProps,
-} from "@mantine/core";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {useAttributeOverview} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeOverview";
 import {useAttributeVisualizationEngine} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeVisualizationEngine";
 import {useAttributeWidgetVisibilityTracker} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeWidgetVisibilityTracker";
@@ -25,6 +13,19 @@ import {
 	AttributeVisualizationVisibility,
 	IAppBuilderWidgetPropsAttributeVisualization,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
+import {
+	ActionIcon,
+	Group,
+	GroupProps,
+	MantineThemeComponent,
+	Paper,
+	PaperProps,
+	Select,
+	Stack,
+	Title,
+	TitleProps,
+	useProps,
+} from "@mantine/core";
 import {
 	ATTRIBUTE_VISUALIZATION,
 	Gradient,
@@ -50,7 +51,6 @@ import React, {
 	useRef,
 	useState,
 } from "react";
-import {Icon} from "~/shared/shared/ui/icon";
 import SelectedAttributeComponent from "../../ui/SelectedAttributeComponent";
 import ViewportAnchor3d from "../../viewport/anchors/ViewportAnchor3d";
 import ColorAttribute from "./attributes/ColorAttribute";

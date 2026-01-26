@@ -1,4 +1,4 @@
-import {ThemeProvider} from "~/shared/shared/ui/theme";
+import {ThemeProvider} from "@AppBuilderLib/shared/ui/theme";
 import {
 	AppBuilderContainerContext,
 	AppBuilderTemplateContext,

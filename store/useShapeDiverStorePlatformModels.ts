@@ -1,4 +1,5 @@
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {defineFilter} from "@AppBuilderLib/shared/lib/platform";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {IPlatformPagedItemQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformGeneric";
 import {
@@ -18,7 +19,6 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 import {useShallow} from "zustand/react/shallow";
-import {defineFilter} from "~/shared/shared/lib/platform";
 
 /**
  * Store for ShapeDiver Platform models.

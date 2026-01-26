@@ -1,3 +1,5 @@
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
 import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
@@ -7,8 +9,6 @@ import {
 	TooltipProps,
 	useProps,
 } from "@mantine/core";
-import {Icon} from "~/shared/shared/ui/icon";
-import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 
 import React from "react";
 interface Props extends PropsParameter {

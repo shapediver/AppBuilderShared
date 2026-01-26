@@ -1,3 +1,4 @@
+import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform";
 import NotificationModelStateCreated from "@AppBuilderShared/components/shapediver/notifications/NotificationModelStateCreated";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
@@ -17,7 +18,6 @@ import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
 import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useContext, useMemo} from "react";
-import {shouldUsePlatform} from "~/shared/shared/lib/platform";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 

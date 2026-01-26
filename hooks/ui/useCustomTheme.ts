@@ -1,6 +1,8 @@
 import {DesktopClientPanelThemeProps} from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
 import {StargateInputThemeProps} from "@AppBuilderLib/entities/stargate/ui/StargateInput";
 import {StargateSharedThemeProps} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapperThemeProps} from "@AppBuilderLib/shared/ui/tooltip";
 import {AppBuilderActionComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderImage";
 import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionUiWidgetComponent";
@@ -89,8 +91,6 @@ import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types
 import {useContext} from "react";
 import {AppBuilderStackUiWidgetComponentThemeProps} from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
 import {MultiSelectCheckboxesProps} from "~/shared/components/shapediver/parameter/multiselect/MultiSelectCheckboxesComponent";
-import {IconThemeProps} from "~/shared/shared/ui/icon";
-import {TooltipWrapperThemeProps} from "~/shared/shared/ui/tooltip";
 import {CreateModelStateHookThemeProps} from "../shapediver/useCreateModelState";
 
 /**

@@ -1,3 +1,4 @@
+import {ThemeProvider} from "@AppBuilderLib/shared/ui/theme";
 import {
 	MantineThemeComponent,
 	Tooltip,
@@ -5,7 +6,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import {ThemeProvider} from "~/shared/shared/ui/theme";
 import {
 	TooltipWrapperComponentProps,
 	TooltipWrapperThemePropsType,

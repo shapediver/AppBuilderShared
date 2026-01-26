@@ -1,3 +1,5 @@
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {IAppBuilderActionPropsCommon} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	Button,
@@ -8,8 +10,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import {Icon} from "~/shared/shared/ui/icon";
-import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 
 type ButtonComponentProps<C = "button"> = PolymorphicComponentProps<
 	C,

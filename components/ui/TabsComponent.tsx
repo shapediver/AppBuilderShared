@@ -1,7 +1,7 @@
+import {Icon, IconType} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {BoxProps, Stack, Tabs} from "@mantine/core";
 import React, {ReactElement, useEffect, useRef, useState} from "react";
-import {Icon, IconType} from "~/shared/shared/ui/icon";
-import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 
 interface PropsTab extends BoxProps {
 	/** Value of tab. */

@@ -1,3 +1,5 @@
+import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	ActionIcon,
 	ActionIconProps,
@@ -8,8 +10,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import {Icon, IconProps} from "~/shared/shared/ui/icon";
-import {TooltipWrapper} from "~/shared/shared/ui/tooltip";
 import classes from "../ViewportIcons.module.css";
 import {IconProps as IconPropsType} from "./types";
 

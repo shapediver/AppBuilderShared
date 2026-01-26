@@ -9,13 +9,13 @@ import {
 	NotificationInput,
 } from "@AppBuilderLib/features/notifications/config/shapediverStoreNotifications";
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
-import {notifications} from "@mantine/notifications";
-import {create} from "zustand";
-import {devtools} from "zustand/middleware";
 import {
 	getEnvironmentIdentifier,
 	isRunningInPlatform,
-} from "~/shared/shared/lib/platform";
+} from "@AppBuilderLib/shared/lib/platform";
+import {notifications} from "@mantine/notifications";
+import {create} from "zustand";
+import {devtools} from "zustand/middleware";
 
 const defaultStyleProps: NotificationStyleProps = {
 	errorColor: "red",

@@ -1,3 +1,4 @@
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
@@ -19,7 +20,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useEffect, useState} from "react";
-import {Icon} from "~/shared/shared/ui/icon";
 
 interface StyleProps {
 	colorFormat: ColorFormatType;

@@ -1,3 +1,4 @@
+import {Icon, IconType} from "@AppBuilderLib/shared/ui/Icon";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import shellClasses from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage.module.css";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderShared/store/useShapeDiverStoreStandardContainers";
@@ -38,7 +39,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import {Icon, IconType} from "~/shared/shared/ui/Icon";
 import ViewportIconButton, {
 	defaultStyleProps as ViewportIconButtonDefaultStyleProps,
 	ViewportIconButtonProps,

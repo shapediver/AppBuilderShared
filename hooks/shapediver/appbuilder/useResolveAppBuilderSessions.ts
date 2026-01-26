@@ -1,3 +1,8 @@
+import {
+	getDefaultPlatformUrl,
+	getPlatformClientId,
+	shouldUsePlatform,
+} from "@AppBuilderLib/shared/lib/platform";
 import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {
@@ -10,11 +15,6 @@ import {
 	create,
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {useShallow} from "zustand/react/shallow";
-import {
-	getDefaultPlatformUrl,
-	getPlatformClientId,
-	shouldUsePlatform,
-} from "~/shared/shared/lib/platform";
 
 import {QUERYPARAM_REDIRECT} from "@AppBuilderLib/shared/config/queryparams";
 import {MODELS} from "@modelstorage";

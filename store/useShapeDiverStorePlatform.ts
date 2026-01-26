@@ -1,6 +1,11 @@
 import {QUERYPARAM_PROVIDER} from "@AppBuilderLib/shared/config/queryparams";
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {
+	getDefaultPlatformUrl,
+	getPlatformClientId,
+	shouldUsePlatform,
+} from "@AppBuilderLib/shared/lib/platform";
+import {
 	IShapeDiverStorePlatformExtended,
 	PlatformCacheKeyEnum,
 } from "@AppBuilderShared/types/store/shapediverStorePlatform";
@@ -14,11 +19,6 @@ import {
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
-import {
-	getDefaultPlatformUrl,
-	getPlatformClientId,
-	shouldUsePlatform,
-} from "~/shared/shared/lib/platform";
 
 /**
  * Store data related to the ShapeDiver Platform.

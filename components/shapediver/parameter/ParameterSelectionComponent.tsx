@@ -1,4 +1,5 @@
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -29,7 +30,6 @@ import {
 	validateSelectionParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {Icon} from "~/shared/shared/ui/icon";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**
