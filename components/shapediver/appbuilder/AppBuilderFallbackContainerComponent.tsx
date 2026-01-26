@@ -1,3 +1,4 @@
+import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
 import DesktopClientPanel from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
 import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import TabsComponent, {
@@ -14,7 +15,6 @@ import {
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useContext, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useShapeDiverStoreStargate} from "~/shared/entities/stargate/model/useShapeDiverStoreStargate";
 import AppBuilderSavedStatesWidgetComponent from "./widgets/AppBuilderSavedStatesWidgetComponent";
 
 interface Props {

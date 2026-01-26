@@ -1,11 +1,11 @@
+import {
+	getStargateSDK,
+	useShapeDiverStoreStargate,
+} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
 import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import type {ISdStargateExportFileReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useContext} from "react";
-import {
-	getStargateSDK,
-	useShapeDiverStoreStargate,
-} from "~/shared/entities/stargate/model/useShapeDiverStoreStargate";
 
 /**
  * We don't want multiple requests to be sent at the same time.

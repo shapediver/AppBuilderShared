@@ -2,6 +2,7 @@ import {
 	IExportFileResultEnum,
 	NetworkStatus,
 } from "@AppBuilderLib/entities/stargate/config/stargate";
+import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
@@ -10,7 +11,6 @@ import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterSt
 import {ShapeDiverResponseExportContent} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useShapeDiverStoreStargate} from "~/shared/entities/stargate/model/useShapeDiverStoreStargate";
 import {useStargateExportFile} from "./useStargateExportFile";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
