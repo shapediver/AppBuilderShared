@@ -1,4 +1,4 @@
-import {IAppBuilder} from "../shapediver/appbuilder";
+import {IAppBuilder} from "@AppBuilderShared/types/shapediver/appbuilder";
 
 /** Types of containers */
 export type AppBuilderContainerOrientationType =

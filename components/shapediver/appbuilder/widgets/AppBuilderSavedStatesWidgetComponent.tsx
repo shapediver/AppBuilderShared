@@ -1,8 +1,8 @@
+import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {QUERYPARAM_SAVEDSTATEID} from "@AppBuilderLib/shared/config/queryparams";
 import SelectComponent, {
 	SelectComponentPropsExt,
 } from "@AppBuilderShared/components/shapediver/parameter/select/SelectComponent";
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";

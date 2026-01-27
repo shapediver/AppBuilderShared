@@ -1,3 +1,5 @@
+import {useStargateExportFile} from "@AppBuilderLib/entities/stargate/api/useStargateExportFile";
+import {ERROR_TYPE_INTERRUPTED} from "@AppBuilderLib/entities/stargate/api/useStargateGetData";
 import {
 	IExportFileResultEnum,
 	NetworkStatus,
@@ -11,11 +13,9 @@ import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterSt
 import {ShapeDiverResponseExportContent} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useStargateExportFile} from "./useStargateExportFile";
-import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
 // TODO SS-8820 ideally move these messages to properties that can be controlled from the theme
-export const ResultErrorMessages = {
+export const ExportResultErrorMessages = {
 	[IExportFileResultEnum.SUCCESS]: "The file was successfully exported.",
 	[IExportFileResultEnum.NOTHING]: "No data was exported.",
 	[IExportFileResultEnum.FAILURE]: "The export operation failed.",
@@ -161,7 +161,7 @@ export const useStargateExport = ({
 				title: "Export failed",
 				message:
 					e.message ||
-					ResultErrorMessages[IExportFileResultEnum.FAILURE],
+					ExportResultErrorMessages[IExportFileResultEnum.FAILURE],
 			});
 			return;
 		}
@@ -176,28 +176,28 @@ export const useStargateExport = ({
 				title: "Export failed",
 				message:
 					message ||
-					ResultErrorMessages[IExportFileResultEnum.FAILURE],
+					ExportResultErrorMessages[IExportFileResultEnum.FAILURE],
 			});
 		} else if (resultTyped === IExportFileResultEnum.SUCCESS) {
 			notifications.success({
 				title: "Export successful",
 				message:
 					message ||
-					ResultErrorMessages[IExportFileResultEnum.SUCCESS],
+					ExportResultErrorMessages[IExportFileResultEnum.SUCCESS],
 			});
 		} else if (resultTyped === IExportFileResultEnum.CANCEL) {
 			notifications.warning({
 				title: "Export cancelled",
 				message:
 					message ||
-					ResultErrorMessages[IExportFileResultEnum.CANCEL],
+					ExportResultErrorMessages[IExportFileResultEnum.CANCEL],
 			});
 		} else if (resultTyped === IExportFileResultEnum.NOTHING) {
 			notifications.warning({
 				title: "Nothing was exported",
 				message:
 					message ||
-					ResultErrorMessages[IExportFileResultEnum.NOTHING],
+					ExportResultErrorMessages[IExportFileResultEnum.NOTHING],
 			});
 		}
 	}, [sessionId, exportFile, exportId, contentIndex]);

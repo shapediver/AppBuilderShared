@@ -1,3 +1,5 @@
+import {useStargateBakeData} from "@AppBuilderLib/entities/stargate/api/useStargateBakeData";
+import {ERROR_TYPE_INTERRUPTED} from "@AppBuilderLib/entities/stargate/api/useStargateGetData";
 import {
 	IBakeDataResultEnum,
 	NetworkStatus,
@@ -15,11 +17,9 @@ import {
 } from "@shapediver/viewer.session";
 import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useStargateBakeData} from "./useStargateBakeData";
-import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
 // TODO SS-8820 ideally move these messages to properties that can be controlled from the theme
-export const ResultErrorMessages = {
+export const OutputResultErrorMessages = {
 	[IBakeDataResultEnum.SUCCESS]: "The objects were successfully baked.",
 	[IBakeDataResultEnum.NOTHING]: "No objects were baked.",
 	[IBakeDataResultEnum.FAILURE]: "The baking operation failed.",
@@ -221,7 +221,7 @@ export const useStargateOutput = ({
 				title: "Baking failed",
 				message:
 					e.message ||
-					ResultErrorMessages[IBakeDataResultEnum.FAILURE],
+					OutputResultErrorMessages[IBakeDataResultEnum.FAILURE],
 			});
 			return;
 		}
@@ -235,22 +235,22 @@ export const useStargateOutput = ({
 		if (resultTyped === IBakeDataResultEnum.FAILURE) {
 			notifications.error({
 				message:
-					message || ResultErrorMessages[IBakeDataResultEnum.FAILURE],
+					message || OutputResultErrorMessages[IBakeDataResultEnum.FAILURE],
 			});
 		} else if (resultTyped === IBakeDataResultEnum.SUCCESS) {
 			notifications.success({
 				message:
-					message || ResultErrorMessages[IBakeDataResultEnum.SUCCESS],
+					message || OutputResultErrorMessages[IBakeDataResultEnum.SUCCESS],
 			});
 		} else if (resultTyped === IBakeDataResultEnum.CANCEL) {
 			notifications.warning({
 				message:
-					message || ResultErrorMessages[IBakeDataResultEnum.CANCEL],
+					message || OutputResultErrorMessages[IBakeDataResultEnum.CANCEL],
 			});
 		} else if (resultTyped === IBakeDataResultEnum.NOTHING) {
 			notifications.warning({
 				message:
-					message || ResultErrorMessages[IBakeDataResultEnum.NOTHING],
+					message || OutputResultErrorMessages[IBakeDataResultEnum.NOTHING],
 			});
 		}
 	}, [sessionId, bakeData, outputId, chunkId, chunkName]);

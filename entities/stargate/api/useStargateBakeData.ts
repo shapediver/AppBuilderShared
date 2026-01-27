@@ -2,31 +2,31 @@ import {
 	getStargateSDK,
 	useShapeDiverStoreStargate,
 } from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
-import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import type {ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1/dist/dto/commands/getDataCommand";
+import type {ISdStargateBakeDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useContext} from "react";
+import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
 /**
- * We don't want multiple requests to be sent at the same time.
- * An error with this type will be thrown if a request is interrupted.
- */
-export const ERROR_TYPE_INTERRUPTED = "interrupted";
-
-/**
- * Promises stack to keep track of pending "get data" requests.
+ * Promises stack to keep track of pending requests.
  */
 const pendingRequestStack: Array<{reject: () => void}> = [];
 
 /**
- * Hook wrapping the Stargate SDK's command.
+ * Hook wrapping the Stargate SDK's `bakeData` command.
  * @returns
  */
-export const useStargateGetData = () => {
+export const useStargateBakeData = () => {
 	const errorReporting = useContext(ErrorReportingContext);
 
-	const getParameterData = useCallback(
-		async (parameterId: string): Promise<ISdStargateGetDataReplyDto[]> => {
+	const bakeData = useCallback(
+		async (
+			outputId: string,
+			chunkId: string,
+			chunkName: string,
+			parameters: {[id: string]: string},
+		): Promise<ISdStargateBakeDataReplyDto[]> => {
 			// Reject any pending requests
 			// TODO This merely rejects the locally pending promises, but does not
 			// cancel any actions pending on the client side. We might want to
@@ -66,10 +66,10 @@ export const useStargateGetData = () => {
 				throw error;
 			}
 
-			const {SdStargateGetDataCommand} = await getStargateSDK();
+			const {SdStargateBakeDataCommand} = await getStargateSDK();
 
 			return new Promise((resolve, reject) => {
-				// Handler for rejecting the pending request
+				// Handler for rejecting a pending request
 				const rejectHandler = () => {
 					const err: Error & {type?: typeof ERROR_TYPE_INTERRUPTED} =
 						new Error("Request interrupted");
@@ -88,16 +88,23 @@ export const useStargateGetData = () => {
 				};
 
 				try {
-					const command = new SdStargateGetDataCommand(sdk);
+					const command = new SdStargateBakeDataCommand(sdk);
 					command
 						.send(
 							{
 								model: {id: currentModel.id},
-								parameter: {id: parameterId},
+								parameters,
+								output: {
+									id: outputId,
+									chunk: {
+										id: chunkId,
+										name: chunkName,
+									},
+								},
 							},
 							[selectedClient],
 						)
-						.then((res: ISdStargateGetDataReplyDto[]) => {
+						.then((res: ISdStargateBakeDataReplyDto[]) => {
 							removeRejectHandler();
 							resolve(res);
 						})
@@ -115,6 +122,6 @@ export const useStargateGetData = () => {
 	);
 
 	return {
-		getParameterData,
+		bakeData,
 	};
 };

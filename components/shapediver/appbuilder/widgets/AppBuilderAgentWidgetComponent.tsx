@@ -1,3 +1,4 @@
+import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {
 	QUERYPARAM_DEBUG,
@@ -11,7 +12,6 @@ import {
 } from "@AppBuilderLib/shared/config/queryparams";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {
 	DEFAULT_SYSTEM_PROMPT,
 	useAgent,

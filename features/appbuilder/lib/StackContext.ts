@@ -1,5 +1,5 @@
-import {IAppBuilderStackContext} from "@AppBuilderShared/types/context/stackcontext";
 import {createContext} from "react";
+import {IAppBuilderStackContext} from "./StackContext.types";
 
 /** Information about a container's context. */
 export const AppBuilderStackContext = createContext<IAppBuilderStackContext>({

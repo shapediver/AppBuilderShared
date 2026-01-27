@@ -1,3 +1,7 @@
+import {
+	IComponentContext,
+	ParameterComponentMapValueType,
+} from "@AppBuilderLib/shared/lib/ComponentContext.types";
 import ExportButtonComponent from "@AppBuilderShared/components/shapediver/exports/ExportButtonComponent";
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import ParameterBooleanComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterBooleanComponent";
@@ -9,10 +13,6 @@ import ParameterSliderComponent from "@AppBuilderShared/components/shapediver/pa
 import ParameterStargateComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterStargateComponent";
 import ParameterStringComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterStringComponent";
 import {CommonButtonProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/types";
-import {
-	IComponentContext,
-	ParameterComponentMapValueType,
-} from "@AppBuilderShared/types/context/componentcontext";
 import {IShapeDiverParamOrExportDefinition} from "@AppBuilderShared/types/shapediver/common";
 import {ViewportIconButtonEnum} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";

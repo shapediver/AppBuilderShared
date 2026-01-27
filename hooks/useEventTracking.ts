@@ -1,6 +1,6 @@
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
-import {TrackerContext} from "@AppBuilderShared/context/TrackerContext";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
+import {TrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext";
 import {
 	IEventTracking,
 	IEventTrackingProps,

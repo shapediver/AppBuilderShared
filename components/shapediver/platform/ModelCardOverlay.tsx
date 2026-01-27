@@ -1,9 +1,9 @@
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ModelCardOverlayWrapper, {
 	ModelCardOverlayWrapperThemePropsType,
 } from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlayWrapper";
 import ToggleIcon from "@AppBuilderShared/components/ui/ToggleIcon";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
 import {Avatar} from "@mantine/core";
 import React, {useContext, useMemo} from "react";

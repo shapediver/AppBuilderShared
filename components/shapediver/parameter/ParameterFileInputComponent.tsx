@@ -4,6 +4,10 @@ import {
 	StargateFileParamPrefix,
 	StargateStatusColorTypeEnum,
 } from "@AppBuilderLib/entities/stargate/config/stargate";
+import {
+	ParameterStatusEnum,
+	useStargateParameter,
+} from "@AppBuilderLib/entities/stargate/model/useStargateParameter";
 import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
 import {
 	DefaultStargateStyleProps,
@@ -14,10 +18,6 @@ import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {
-	ParameterStatusEnum,
-	useStargateParameter,
-} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateParameter";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,

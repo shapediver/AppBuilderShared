@@ -3,16 +3,16 @@ import {
 	mapStargateComponentStatusDefinition,
 	StargateStatusColorTypeEnum,
 } from "@AppBuilderLib/entities/stargate/config/stargate";
+import {
+	OutputStatusEnum,
+	useStargateOutput,
+} from "@AppBuilderLib/entities/stargate/model/useStargateOutput";
 import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
 import {
 	DefaultStargateStyleProps,
 	StargateStyleProps,
 } from "@AppBuilderLib/entities/stargate/ui/stargateShared";
-import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
-import {
-	OutputStatusEnum,
-	useStargateOutput,
-} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateOutput";
+import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
 import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,

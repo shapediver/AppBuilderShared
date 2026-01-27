@@ -1,5 +1,5 @@
-import {IComponentContext} from "@AppBuilderShared/types/context/componentcontext";
 import {createContext} from "react";
+import {IComponentContext} from "./ComponentContext.types";
 
 export const DummyComponent: IComponentContext = {};
 

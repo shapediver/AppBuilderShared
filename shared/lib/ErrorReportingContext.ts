@@ -1,6 +1,6 @@
-import {IErrorReportingContext} from "@AppBuilderShared/types/context/errorreportingcontext";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {createContext} from "react";
+import {IErrorReportingContext} from "./ErrorReportingContext.types";
 
 export const DummyErrorReporting: IErrorReportingContext = {
 	captureException: function (exception: any): string {

@@ -1,5 +1,5 @@
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {useViewportControls} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControls";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";

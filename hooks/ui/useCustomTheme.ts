@@ -1,6 +1,7 @@
 import {DesktopClientPanelThemeProps} from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
 import {StargateInputThemeProps} from "@AppBuilderLib/entities/stargate/ui/StargateInput";
 import {StargateSharedThemeProps} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapperThemeProps} from "@AppBuilderLib/shared/ui/tooltip";
 import {AppBuilderActionComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
@@ -33,7 +34,6 @@ import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderShared/components
 import {HintProps} from "@AppBuilderShared/components/ui/Hint";
 import {ModalBaseThemeProps} from "@AppBuilderShared/components/ui/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderShared/components/ui/NotificationWrapper";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {DefaultSessionThemeProps} from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
 import {AppBuilderAppShellTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";

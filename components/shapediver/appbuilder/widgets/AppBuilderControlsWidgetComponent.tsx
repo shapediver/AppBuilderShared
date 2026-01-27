@@ -1,5 +1,5 @@
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import {AppBuilderActionFromType} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionFromType";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {useExports} from "@AppBuilderShared/hooks/shapediver/parameters/useExports";
 import {useOutputs} from "@AppBuilderShared/hooks/shapediver/parameters/useOutputs";
 import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";

@@ -1,9 +1,9 @@
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {
 	exceptionWrapper,
 	exceptionWrapperAsync,
 } from "@AppBuilderLib/shared/lib/exceptionWrapper";
-import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {

@@ -1,4 +1,4 @@
-import {IAppBuilderWidgetPropsStackUi} from "../shapediver/appbuilder";
+import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderShared/types/shapediver/appbuilder";
 
 /** Type for the contents of a single stack widget */
 export type IAppBuilderStackContextElement = IAppBuilderWidgetPropsStackUi;

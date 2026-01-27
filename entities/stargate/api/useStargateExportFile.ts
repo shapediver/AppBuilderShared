@@ -2,16 +2,11 @@ import {
 	getStargateSDK,
 	useShapeDiverStoreStargate,
 } from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
-import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import type {ISdStargateExportFileReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useContext} from "react";
-
-/**
- * We don't want multiple requests to be sent at the same time.
- * An error with this type will be thrown if a request is interrupted.
- */
-export const ERROR_TYPE_INTERRUPTED = "interrupted";
+import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";
 
 /**
  * Promises stack to keep track of pending requests.
