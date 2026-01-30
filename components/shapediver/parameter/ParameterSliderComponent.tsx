@@ -5,7 +5,7 @@ import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
 	defaultPropsParameterWrapper,
-	PropsParameter,
+	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {validateNumberParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
@@ -102,12 +102,20 @@ export function ParameterSliderComponentThemeProps(
  * @returns
  */
 export default function ParameterSliderComponent(
-	props: PropsParameter &
+	props: PropsParameterComponent &
 		Partial<PropsParameterWrapper> &
 		Partial<StyleProps>,
 ) {
-	const {definition, value, setValue, handleChange, onCancel, disabled} =
-		useParameterComponentCommons<number>(props);
+	const {
+		definition,
+		value,
+		setValue,
+		handleChange,
+		onCancel,
+		disabled,
+		formInputProps,
+		formKey,
+	} = useParameterComponentCommons<number>(props);
 
 	// style properties
 	const {sliderWidth, numberWidth} = useProps(
@@ -361,6 +369,8 @@ export default function ParameterSliderComponent(
 					{definition && (
 						<TooltipWrapper label={tooltip}>
 							<NumberInput
+								key={formKey}
+								{...(formInputProps || {})}
 								w={numberWidth}
 								value={niState.latest.value}
 								min={+definition.min!}
@@ -371,10 +381,18 @@ export default function ParameterSliderComponent(
 								clampBehavior="none"
 								onValueChange={onNumberInputValueChange}
 								disabled={disabled}
-								onFocus={onFocusHandler}
-								onBlur={(event) =>
-									commitNumberInput(niState, event)
-								}
+								onFocus={(e) => {
+									onFocusHandler(e);
+									if (formInputProps?.onFocus) {
+										formInputProps.onFocus(e);
+									}
+								}}
+								onBlur={(event) => {
+									commitNumberInput(niState, event);
+									if (formInputProps?.onBlur) {
+										formInputProps.onBlur();
+									}
+								}}
 								onKeyDown={(event) => {
 									if (event.key === "Enter") {
 										commitNumberInput(niState);

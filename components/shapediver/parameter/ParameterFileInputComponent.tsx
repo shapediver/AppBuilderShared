@@ -9,7 +9,7 @@ import {
 } from "@AppBuilderShared/hooks/shapediver/stargate/useStargateParameter";
 import {
 	defaultPropsParameterWrapper,
-	PropsParameter,
+	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {
@@ -120,13 +120,21 @@ export function ParameterFileInputComponentThemeProps(
  * @returns
  */
 export default function ParameterFileInputComponent(
-	props: PropsParameter &
+	props: PropsParameterComponent &
 		Partial<PropsParameterWrapper> &
 		Partial<StyleProps> &
 		Partial<StargateStyleProps>,
 ) {
-	const {definition, value, state, handleChange, onCancel, disabled} =
-		useParameterComponentCommons<File>(props, 0);
+	const {
+		definition,
+		value,
+		state,
+		handleChange,
+		onCancel,
+		disabled,
+		formInputProps,
+		formKey,
+	} = useParameterComponentCommons<File>(props, 0);
 
 	const {
 		cancelTooltipProps,
@@ -263,11 +271,16 @@ export default function ParameterFileInputComponent(
 							label={uploadTooltipProps.label || "Upload file"}
 						>
 							<FileInput
+								key={formKey}
+								{...(formInputProps || {})}
 								accept={fileEndings.join(",")}
 								clearable={false}
-								onChange={(v) =>
-									handleChange(guessMissingMimeType(v || ""))
-								}
+								onChange={(v) => {
+									handleChange(guessMissingMimeType(v || ""));
+									if (formInputProps?.onChange) {
+										formInputProps.onChange(v);
+									}
+								}}
 								leftSection={
 									<Icon iconType={"tabler:upload"} />
 								}
@@ -286,12 +299,17 @@ export default function ParameterFileInputComponent(
 					</Group>
 				) : (
 					<FileInput
+						key={formKey}
+						{...(formInputProps || {})}
 						placeholder="File upload"
 						accept={fileEndings.join(",")}
 						clearable={!!state.execValue}
-						onChange={(v) =>
-							handleChange(guessMissingMimeType(v || ""))
-						}
+						onChange={(v) => {
+							handleChange(guessMissingMimeType(v || ""));
+							if (formInputProps?.onChange) {
+								formInputProps.onChange(v);
+							}
+						}}
 						leftSection={<Icon iconType={"tabler:upload"} />}
 						leftSectionPointerEvents="none"
 						disabled={disabled}

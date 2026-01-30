@@ -12,7 +12,10 @@ import {
 	useStargateExport,
 } from "@AppBuilderShared/hooks/shapediver/stargate/useStargateExport";
 import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
-import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {
+	IParameterValues,
+	PropsExportWithForm,
+} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	IStargateComponentStatusDefinition,
@@ -102,10 +105,11 @@ export function ExportButtonComponentThemeProps(
  * @returns
  */
 export default function ExportButtonComponent(
-	props: PropsExport &
+	props: PropsExportWithForm &
 		ExportButtonComponentThemePropsType &
 		Partial<StargateStyleProps>,
 ) {
+	const {form, onSuccess} = props;
 	const {
 		buttonProps,
 		downloadTooltipProps,
@@ -281,16 +285,20 @@ export default function ExportButtonComponent(
 			parameterValueSourcesData.information.skipStargate,
 			parameterValues,
 		).finally(() => {
+			// Call onSuccess if provided
+			if (onSuccess) {
+				onSuccess(parameterValues);
+			}
 			// reset source data to avoid multiple calls
 			setParameterValueSourcesData(undefined);
 			// set the requestingExport false to remove the loading icon
 			setRequestingExport(false);
 		});
-	}, [parameterValueSourcesResults, exportRequest]);
+	}, [parameterValueSourcesResults, exportRequest, onSuccess]);
 
 	// callback for when the export button has been clicked
 	const onClick = useCallback(
-		async (skipStargate?: boolean) => {
+		async (skipStargate?: boolean, customValues?: IParameterValues) => {
 			// set the requestingExport true to display a loading icon
 			setRequestingExport(true);
 
@@ -337,30 +345,37 @@ export default function ExportButtonComponent(
 				});
 				return;
 			} else {
-				await exportRequest(
-					skipStargate,
-					parameterValues?.reduce(
-						(acc, p) => {
-							if (p.value) acc[p.parameter.name] = p.value;
-							return acc;
-						},
-						{} as {[key: string]: string},
-					),
-				);
+				const pValues =
+					customValues ||
+					parameterValues?.reduce((acc, p) => {
+						if (p.value) acc[p.parameter.name] = p.value;
+						return acc;
+					}, {} as IParameterValues);
+				await exportRequest(skipStargate, pValues);
+				// Call onSuccess if provided
+				if (onSuccess) {
+					onSuccess(pValues);
+				}
 			}
 
 			// set the requestingExport false to remove the loading icon
 			setRequestingExport(false);
 		},
-		[exportRequest, parameterValues],
+		[exportRequest, parameterValues, onSuccess],
 	);
 
 	const onClickIntercepted = useCallback(
-		(skipStargate?: boolean) =>
-			interceptClick
-				? interceptClick(() => onClick(skipStargate))
-				: onClick(skipStargate),
-		[onClick, interceptClick],
+		(skipStargate?: boolean) => {
+			return (event: React.MouseEvent) => {
+				const cb = async (values?: IParameterValues) => {
+					return interceptClick
+						? interceptClick(() => onClick(skipStargate, values))
+						: onClick(skipStargate, values);
+				};
+				return form ? form.onSubmit(cb)(event as any) : cb();
+			};
+		},
+		[onClick, interceptClick, form],
 	);
 
 	return (
@@ -407,7 +422,7 @@ export default function ExportButtonComponent(
 								<Icon iconType={"tabler:mail-forward"} />
 							)
 						}
-						onClick={() => onClickIntercepted()}
+						onClick={onClickIntercepted()}
 						loading={requestingExport}
 					>
 						{definition.type === EXPORT_TYPE.DOWNLOAD

@@ -13,6 +13,7 @@ import {z} from "zod";
 import {
 	AppBuilderContainerNameType,
 	AttributeVisualizationVisibility,
+	FormWidgetSubmitBehavior,
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
@@ -833,6 +834,16 @@ const IAppBuilderWidgetPropsControlsSchema = z.object({
 	controls: z.array(IAppBuilderControlSchema),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsForm
+const IAppBuilderWidgetPropsFormSchema = z.object({
+	controls: z.array(IAppBuilderControlSchema).optional(),
+	parameters: z.array(IAppBuilderParameterRefSchema).optional(),
+	export: IAppBuilderExportRefSchema.optional(),
+	submit: z.nativeEnum(FormWidgetSubmitBehavior).optional(),
+	successMessage: z.string().optional(),
+	errorMessage: z.string().optional(),
+});
+
 // Zod type definition for IAppBuilderWidgetPropsAccordionUi
 const IAppBuilderWidgetPropsAccordionUiSchema = z.object({
 	items: z.array(
@@ -932,6 +943,10 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("controls"),
 		props: IAppBuilderWidgetPropsControlsSchema,
+	}),
+	z.object({
+		type: z.literal("form"),
+		props: IAppBuilderWidgetPropsFormSchema,
 	}),
 	z.object({
 		type: z.literal("accordionUi"),

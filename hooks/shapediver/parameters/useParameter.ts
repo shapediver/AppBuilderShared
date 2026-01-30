@@ -11,9 +11,8 @@ import {useShallow} from "zustand/react/shallow";
  *
  * @see {@link IShapeDiverParameter<T>}
  *
- * @param namespace
- * @param parameterId Id, name, or displayname of the parameter
  * @returns
+ * @param props<PropsParameter>
  */
 export function useParameter<T>(props: PropsParameter) {
 	const {namespace, parameterId} = props;

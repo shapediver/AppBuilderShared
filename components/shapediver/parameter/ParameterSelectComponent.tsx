@@ -5,7 +5,7 @@ import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/p
 import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {
 	defaultPropsParameterWrapper,
-	PropsParameter,
+	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {
@@ -54,12 +54,19 @@ export function ParameterSelectComponentThemeProps(
  * @returns
  */
 export default function ParameterSelectComponent(
-	props: PropsParameter &
+	props: PropsParameterComponent &
 		ParameterSelectComponentThemePropsType &
 		Partial<PropsParameterWrapper>,
 ) {
-	const {definition, value, handleChange, onCancel, disabled} =
-		useParameterComponentCommons<string>(props, 0);
+	const {
+		definition,
+		value,
+		handleChange,
+		onCancel,
+		disabled,
+		formInputProps,
+		formKey,
+	} = useParameterComponentCommons<string>(props, 0);
 
 	// theme properties
 	const {componentSettings} = useProps(
@@ -180,6 +187,8 @@ export default function ParameterSelectComponent(
 	const inputComponent =
 		definition.visualization === PARAMETER_VISUALIZATION.CHECKLIST ? (
 			<MultiSelectComponent
+				key={formKey}
+				{...(formInputProps || {})}
 				value={
 					filteredValue
 						? filteredValue
@@ -208,24 +217,39 @@ export default function ParameterSelectComponent(
 			/>
 		) : (
 			<SelectComponent
+				key={formKey}
+				{...(formInputProps || {})}
 				value={
 					filteredValue ? uniqueChoices[+filteredValue] : undefined
 				}
-				onChange={(v) =>
+				onChange={(v) => {
 					handleChange(
 						uniqueChoicesIncludingHidden.indexOf(v!) + "",
 						undefined,
 						restoreFocus,
-					)
-				}
+					);
+					if (formInputProps?.onChange) {
+						formInputProps.onChange(v);
+					}
+				}}
 				items={uniqueChoices}
 				disabled={disabled}
 				type={settings.type}
 				itemData={settings.itemData}
 				settings={settings.settings}
 				inputContainer={inputContainer}
-				onFocus={onFocusHandler}
-				onBlur={onBlurHandler}
+				onFocus={(e) => {
+					onFocusHandler(e);
+					if (formInputProps?.onFocus) {
+						formInputProps.onFocus(e);
+					}
+				}}
+				onBlur={() => {
+					onBlurHandler();
+					if (formInputProps?.onBlur) {
+						formInputProps.onBlur();
+					}
+				}}
 				searchable={settings.searchable}
 				limit={settings.limit}
 				height={settings.height}
