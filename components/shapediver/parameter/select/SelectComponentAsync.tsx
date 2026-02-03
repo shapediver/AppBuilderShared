@@ -45,11 +45,11 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 
 	// in case no items are available, reset the value
 	useEffect(() => {
-		if (items.length === 0) {
+		if (scrollingApi?.resetState) {
 			onChange(null);
 			setSearchTerms([]);
 		}
-	}, [onChange, items]);
+	}, [scrollingApi?.resetState]);
 
 	// show stack of search terms and allow to remove them
 	const topSection = (
