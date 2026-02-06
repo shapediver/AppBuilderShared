@@ -1,9 +1,9 @@
 import {
 	IShapeDiverStoreStargateExtended,
+	NetworkStatus,
 	StargateCacheKeyEnum,
-} from "@AppBuilderLib/entities/stargate/config/shapediverStoreStargate";
-import {NetworkStatus} from "@AppBuilderLib/entities/stargate/config/stargate";
-import {getNotificationActions} from "@AppBuilderLib/features/notifications";
+} from "@AppBuilderLib/entities/stargate";
+import {getNotificationActions} from "@AppBuilderLib/features";
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform";

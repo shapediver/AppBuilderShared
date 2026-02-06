@@ -1,6 +1,8 @@
-import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate";
-import {NetworkStatus} from "@AppBuilderLib/entities/stargate/config/stargate";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {
+	NetworkStatus,
+	useShapeDiverStoreStargate,
+} from "@AppBuilderLib/entities/stargate";
+import {useNotificationStore} from "@AppBuilderLib/features";
 import {Icon, IconProps, IconType} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderLib/types/shapediver/appbuilder";

@@ -1,11 +1,11 @@
-import {useStargateBakeData} from "@AppBuilderLib/entities/stargate/api/useStargateBakeData";
-import {ERROR_TYPE_INTERRUPTED} from "@AppBuilderLib/entities/stargate/api/useStargateGetData";
 import {
+	ERROR_TYPE_INTERRUPTED,
 	IBakeDataResultEnum,
 	NetworkStatus,
-} from "@AppBuilderLib/entities/stargate/config/stargate";
-import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+	useShapeDiverStoreStargate,
+	useStargateBakeData,
+} from "@AppBuilderLib/entities/stargate";
+import {useNotificationStore} from "@AppBuilderLib/features";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
@@ -235,22 +235,26 @@ export const useStargateOutput = ({
 		if (resultTyped === IBakeDataResultEnum.FAILURE) {
 			notifications.error({
 				message:
-					message || OutputResultErrorMessages[IBakeDataResultEnum.FAILURE],
+					message ||
+					OutputResultErrorMessages[IBakeDataResultEnum.FAILURE],
 			});
 		} else if (resultTyped === IBakeDataResultEnum.SUCCESS) {
 			notifications.success({
 				message:
-					message || OutputResultErrorMessages[IBakeDataResultEnum.SUCCESS],
+					message ||
+					OutputResultErrorMessages[IBakeDataResultEnum.SUCCESS],
 			});
 		} else if (resultTyped === IBakeDataResultEnum.CANCEL) {
 			notifications.warning({
 				message:
-					message || OutputResultErrorMessages[IBakeDataResultEnum.CANCEL],
+					message ||
+					OutputResultErrorMessages[IBakeDataResultEnum.CANCEL],
 			});
 		} else if (resultTyped === IBakeDataResultEnum.NOTHING) {
 			notifications.warning({
 				message:
-					message || OutputResultErrorMessages[IBakeDataResultEnum.NOTHING],
+					message ||
+					OutputResultErrorMessages[IBakeDataResultEnum.NOTHING],
 			});
 		}
 	}, [sessionId, bakeData, outputId, chunkId, chunkName]);

@@ -1,4 +1,3 @@
-import {NotificationStyleProps} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {
 	ICustomNotificationData,
 	ICustomNotificationStored,
@@ -7,7 +6,8 @@ import {
 	IShapeDiverStoreNotifications,
 	NotificationDisplayMode,
 	NotificationInput,
-} from "@AppBuilderLib/features/notifications/config/shapediverStoreNotifications";
+	NotificationStyleProps,
+} from "@AppBuilderLib/features/notifications";
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {
 	getEnvironmentIdentifier,

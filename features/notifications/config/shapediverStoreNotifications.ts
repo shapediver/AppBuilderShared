@@ -1,7 +1,7 @@
 import {
 	AppBuilderNotificationData,
 	NotificationStyleProps,
-} from "@AppBuilderLib/features/notifications/config/notificationcontext";
+} from "@AppBuilderLib/features/notifications";
 
 /**
  * Environment display mode for notifications.

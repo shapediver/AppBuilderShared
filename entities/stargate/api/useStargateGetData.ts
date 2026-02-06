@@ -1,7 +1,7 @@
 import {
 	getStargateSDK,
 	useShapeDiverStoreStargate,
-} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
+} from "@AppBuilderLib/entities/stargate";
 import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import type {ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1/dist/dto/commands/getDataCommand";
