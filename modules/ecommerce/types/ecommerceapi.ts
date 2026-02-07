@@ -189,6 +189,8 @@ export interface IMessageToParentReply {
 
 /**
  * Generic e-commerce API actions.
+ * These actions are provided by the connector (e.g. the ShapeDiver Shopify or WooCommerce plugin)
+ * and can be called by to the application consuming the e-commerce functionality (e.g. a configurator).
  */
 export interface IECommerceApiActions {
 	/**
@@ -244,6 +246,50 @@ export interface IECommerceApiActions {
 	messageToParent(data: IMessageToParentData): Promise<IMessageToParentReply>;
 }
 
+/** The parameter values for a single session. */
+export type ISingleSessionParameterValuesState = {[parameterId: string]: any};
+
+/** The parameter values for multiple sessions. */
+export type IUpdateParameterValuesState = {
+	[namespace: string]: ISingleSessionParameterValuesState;
+};
+
+/**
+ * Data for updating parameter values in the application.
+ */
+export interface IUpdateParameterValuesData {
+	/** The parameter values to set. */
+	state: IUpdateParameterValuesState;
+	/** If true, skip the creation of a history entry after successful execution. */
+	skipHistory?: boolean;
+	/** If true, skip updating the URL after executing the changes. */
+	skipUrlUpdate?: boolean;
+}
+
+/**
+ * Reply from the application to the parent page after updating parameter values.
+ */
+export interface IUpdateParameterValuesReply {
+	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
+}
+
+/**
+ * Generic e-commerce API connector actions.
+ * These actions are provided by the application (e.g. a configurator)
+ * and can be called by the connector (e.g. the ShapeDiver Shopify or WooCommerce plugin).
+ */
+export interface IECommerceApiConnectorActions {
+	/**
+	 * Update parameter values of the application.
+	 * @param state
+	 * @param skipHistory
+	 * @param skipUrlUpdate
+	 */
+	updateParameterValues(
+		data: IUpdateParameterValuesData,
+	): Promise<IUpdateParameterValuesReply>;
+}
+
 /**
  * Generic e-commerce API for the application consuming
  * the e-commerce functionality (e.g. a configurator).
@@ -254,13 +300,19 @@ export interface IECommerceApi extends IECommerceApiActions {
 	 * Rejected if the peer does not respond within the timeout.
 	 */
 	readonly peerIsReady: Promise<ICrossWindowPeerInfo>;
+
+	/**
+	 * Set the actions to be used for executing requests by the parent page (the connector).
+	 * @param actions
+	 */
+	setApiConnectorActions(actions: IECommerceApiConnectorActions): void;
 }
 
 /**
  * Connector between the e-commerce API (used by the application consuming the
- * e-commerce functionality) and the e-commerce plugin (e.g. the ShapeDiver WooCommerce plugin).
+ * e-commerce functionality) and the e-commerce plugin (e.g. the ShapeDiver Shopify or WooCommerce plugin).
  */
-export interface IECommerceApiConnector {
+export interface IECommerceApiConnector extends IECommerceApiConnectorActions {
 	/**
 	 * Resolved once the peer is ready.
 	 * Rejected if the peer does not respond within the timeout.
