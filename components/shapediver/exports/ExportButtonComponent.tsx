@@ -284,11 +284,12 @@ export default function ExportButtonComponent(
 		exportRequest(
 			parameterValueSourcesData.information.skipStargate,
 			parameterValues,
-		).finally(() => {
+		).then(() => {
 			// Call onSuccess if provided
 			if (onSuccess) {
 				onSuccess(parameterValues);
 			}
+		}).finally(() => {
 			// reset source data to avoid multiple calls
 			setParameterValueSourcesData(undefined);
 			// set the requestingExport false to remove the loading icon
