@@ -4,6 +4,7 @@ import {
 	IUpdateParameterValuesData,
 	IUpdateParameterValuesReply,
 } from "@AppBuilderShared/modules/ecommerce/types/ecommerceapi";
+import {validateUpdateParameterValuesData} from "@AppBuilderShared/modules/ecommerce/types/ecommerceapitypecheck";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -25,6 +26,14 @@ export function useECommerceApiConnectorActions() {
 		const updateParameterValues = async (
 			data: IUpdateParameterValuesData,
 		): Promise<IUpdateParameterValuesReply> => {
+			const result = validateUpdateParameterValuesData(data);
+			if (!result.success) {
+				throw new Error(
+					"Invalid data for updateParameterValues",
+					result.error,
+				);
+			}
+
 			await batchParameterValueUpdate(
 				data.state,
 				data.skipHistory,
