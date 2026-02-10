@@ -61,6 +61,8 @@ import NumberAttribute, {
 	INumberAttributeExtended,
 } from "./attributes/NumberAttribute";
 import StringAttribute from "./attributes/StringAttribute";
+import useAttributeSelection from "~/shared/hooks/shapediver/viewer/attributeVisualization/useAttributeSelection";
+import { TooltipWrapper } from "@AppBuilderShared/shared";
 
 export type IAttributeDefinition =
 	| IAttribute

@@ -1,4 +1,4 @@
-import {Icon, IconType} from "@AppBuilderLib/shared/ui/Icon";
+import {Icon, IconType} from "@AppBuilderLib/shared/ui/icon";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import shellClasses from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage.module.css";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderShared/store/useShapeDiverStoreStandardContainers";
