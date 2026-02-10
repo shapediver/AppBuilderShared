@@ -247,7 +247,9 @@ export interface IECommerceApiActions {
 }
 
 /** The parameter values for a single session. */
-export type ISingleSessionParameterValuesState = {[parameterId: string]: any};
+export type ISingleSessionParameterValuesState = {
+	[parameterId: string]: string | number | boolean;
+};
 
 /** The parameter values for multiple sessions. */
 export type IUpdateParameterValuesState = {
