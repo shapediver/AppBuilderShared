@@ -109,7 +109,7 @@ export default function ExportButtonComponent(
 		ExportButtonComponentThemePropsType &
 		Partial<StargateStyleProps>,
 ) {
-	const {form, onSuccess} = props;
+	const {form, onSuccess, onError} = props;
 	const {
 		buttonProps,
 		downloadTooltipProps,
@@ -284,18 +284,25 @@ export default function ExportButtonComponent(
 		exportRequest(
 			parameterValueSourcesData.information.skipStargate,
 			parameterValues,
-		).then(() => {
-			// Call onSuccess if provided
-			if (onSuccess) {
-				onSuccess(parameterValues);
-			}
-		}).finally(() => {
-			// reset source data to avoid multiple calls
-			setParameterValueSourcesData(undefined);
-			// set the requestingExport false to remove the loading icon
-			setRequestingExport(false);
-		});
-	}, [parameterValueSourcesResults, exportRequest, onSuccess]);
+		)
+			.then(() => {
+				// Call onSuccess if provided
+				if (onSuccess) {
+					onSuccess(parameterValues);
+				}
+			})
+			.catch((error) => {
+				if (onError) {
+					onError(error, parameterValues);
+				}
+			})
+			.finally(() => {
+				// reset source data to avoid multiple calls
+				setParameterValueSourcesData(undefined);
+				// set the requestingExport false to remove the loading icon
+				setRequestingExport(false);
+			});
+	}, [parameterValueSourcesResults, exportRequest, onSuccess, onError]);
 
 	// callback for when the export button has been clicked
 	const onClick = useCallback(
@@ -352,17 +359,24 @@ export default function ExportButtonComponent(
 						if (p.value) acc[p.parameter.name] = p.value;
 						return acc;
 					}, {} as IParameterValues);
-				await exportRequest(skipStargate, pValues);
-				// Call onSuccess if provided
-				if (onSuccess) {
-					onSuccess(pValues);
+				try {
+					await exportRequest(skipStargate, pValues);
+					// Call onSuccess if provided
+					if (onSuccess) {
+						onSuccess(pValues);
+					}
+				} catch (error) {
+					if (onError) {
+						onError(error, pValues);
+					}
+					throw error;
+				} finally {
+					// set the requestingExport false to remove the loading icon
+					setRequestingExport(false);
 				}
 			}
-
-			// set the requestingExport false to remove the loading icon
-			setRequestingExport(false);
 		},
-		[exportRequest, parameterValues, onSuccess],
+		[exportRequest, parameterValues, onSuccess, onError],
 	);
 
 	const onClickIntercepted = useCallback(

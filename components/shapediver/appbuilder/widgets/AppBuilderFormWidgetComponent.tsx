@@ -204,6 +204,17 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 		form.reset();
 	}, [initialValues, form]);
 
+	const handleError = useCallback(
+		(error: any) => {
+			setIsSuccess(false);
+			if (submit === "message") {
+				setShowMessage(true);
+			}
+			console.error("Export request failed:", error);
+		},
+		[submit],
+	);
+
 	// Handle form submission with Mantine form validation
 	const handleSubmit = useCallback(
 		async (values: Record<string, any>) => {
@@ -218,11 +229,9 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 				Object.entries(values).forEach(([id, value]) => {
 					parameterValues[id] = String(value);
 				});
-
 				// Request export with form parameter values
 				// Values are NOT applied to the app - they're only used for export
-				// await exportData.actions.request(parameterValues);
-
+				await exportData.actions.request(parameterValues);
 				// Handle success
 				setIsSuccess(true);
 
@@ -232,14 +241,7 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 					setShowMessage(true);
 				}
 			} catch (error) {
-				// Handle error
-				setIsSuccess(false);
-
-				if (submit === "message") {
-					setShowMessage(true);
-				}
-
-				console.error("Export request failed:", error);
+				handleError(error);
 			}
 		},
 		[exportData, submit, resetParameters],
@@ -319,9 +321,19 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 				{...exportProps}
 				form={form}
 				onSuccess={() => handleSubmit(values)}
+				onError={handleError}
 			/>
 		) : null;
-	}, [exportData, exportProps, componentContext, form]);
+	}, [
+		exportData,
+		exportProps,
+		componentContext,
+		form,
+		handleError,
+		handleSubmit,
+		submit,
+		values,
+	]);
 
 	// Handle reset from message view
 	const handleReset = useCallback(() => {
