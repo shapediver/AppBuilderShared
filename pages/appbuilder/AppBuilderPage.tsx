@@ -10,6 +10,7 @@ import {useAppBuilderStandardContainers} from "@AppBuilderShared/hooks/shapedive
 import {useSessionWithAppBuilder} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
 import {useParameterHistory} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
+import {useECommerceApiConnectorActions} from "@AppBuilderShared/hooks/shapediver/useECommerceApiConnectorActions";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
 import {IUseSessionDto} from "@AppBuilderShared/hooks/shapediver/useSession";
 import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
@@ -207,6 +208,8 @@ export default function AppBuilderPage(props: Partial<Props>) {
 			<NotificationModelStateCreated {...props} />
 		),
 	});
+
+	useECommerceApiConnectorActions();
 
 	const showMarkdown =
 		!(settings && hasSession) && // no settings or no session

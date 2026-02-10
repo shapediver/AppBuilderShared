@@ -55,8 +55,8 @@ export const defaultStyleProps: ViewportIconsOptionalProps = {
 	enableResetButton: true,
 	enableArBtn: true,
 	enableCamerasBtn: true,
-	enableFullscreenBtn: true,
-	enableFullscreenBtn3States: false,
+	enableFullscreenBtn: false,
+	enableFullscreenBtn3States: true,
 	enableZoomBtn: true,
 	enableHistoryMenuButton: undefined,
 };

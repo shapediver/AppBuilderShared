@@ -6,6 +6,7 @@ import {
 	shouldUsePlatform,
 } from "@AppBuilderLib/shared/lib/platform";
 import {
+	IPlatformClientRef,
 	IShapeDiverStorePlatformExtended,
 	PlatformCacheKeyEnum,
 } from "@AppBuilderShared/types/store/shapediverStorePlatform";
@@ -13,12 +14,15 @@ import {
 	create as createSdk,
 	isPBInvalidGrantOAuthResponseError,
 	isPBInvalidRequestOAuthResponseError,
+	isPBUnauthorizedResponseError,
 	SdPlatformResponseModelPublic,
 	SdPlatformResponseUserSelf,
 	SdPlatformUserGetEmbeddableFields,
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+
+const LOCAL_STORAGE_REFRESH_TOKEN = "refresh_token";
 
 /**
  * Store data related to the ShapeDiver Platform.
@@ -32,6 +36,39 @@ export const useShapeDiverStorePlatform =
 				user: undefined,
 				currentModel: undefined,
 				genericCache: {},
+
+				authWrapper: async <T>(
+					cb: (clientRef: IPlatformClientRef) => Promise<T>,
+					redirect: boolean = true,
+				) => {
+					const {authenticate} = get();
+					const clientRef = await authenticate(redirect);
+					if (!clientRef || !clientRef.jwtToken) {
+						throw new Error("Authentication failed");
+					}
+
+					try {
+						return await cb(clientRef);
+					} catch (error) {
+						if (
+							isPBUnauthorizedResponseError(error) // <-- thrown if the access token is not valid anymore
+							// && error.error_description === "..." // <-- to be clarified: check for specific error descriptions
+						) {
+							// try to re-authenticate
+							const newClientRef = await authenticate(
+								redirect,
+								true,
+							);
+							if (!newClientRef || !newClientRef.jwtToken) {
+								console.error("Re-authentication failed");
+								throw error;
+							}
+							return await cb(newClientRef);
+						} else {
+							throw error;
+						}
+					}
+				},
 
 				authenticate: async (
 					redirect: boolean = true,
@@ -51,10 +88,32 @@ export const useShapeDiverStorePlatform =
 							const client = createSdk({
 								clientId: getPlatformClientId(),
 								baseUrl: platformUrl,
+								tokenStorage: {
+									getRefreshToken: () => {
+										return Promise.resolve(
+											localStorage.getItem(
+												LOCAL_STORAGE_REFRESH_TOKEN,
+											),
+										);
+									},
+									setRefreshToken: (token: string | null) => {
+										if (token)
+											localStorage.setItem(
+												LOCAL_STORAGE_REFRESH_TOKEN,
+												token,
+											);
+										else
+											localStorage.removeItem(
+												LOCAL_STORAGE_REFRESH_TOKEN,
+											);
+										return Promise.resolve();
+									},
+								},
 							});
 							try {
-								const refreshToken =
-									localStorage.getItem("refresh_token");
+								const refreshToken = localStorage.getItem(
+									LOCAL_STORAGE_REFRESH_TOKEN,
+								);
 								const result =
 									await client.authorization.refreshToken(
 										refreshToken ?? undefined,
@@ -133,7 +192,7 @@ export const useShapeDiverStorePlatform =
 				getUser: async (forceRefresh?: boolean) => {
 					if (!shouldUsePlatform()) return;
 
-					const {user, cachePromise} = get();
+					const {user, cachePromise, authWrapper} = get();
 
 					if (!forceRefresh && user) return user;
 
@@ -148,15 +207,16 @@ export const useShapeDiverStorePlatform =
 								clientRef.client.authorization.authData.userId;
 							if (!userId) return;
 
-							const result =
-								await clientRef.client.users.get<SdPlatformResponseUserSelf>(
+							const result = await authWrapper((c) =>
+								c.client.users.get<SdPlatformResponseUserSelf>(
 									userId,
 									[
 										SdPlatformUserGetEmbeddableFields.BackendSystem,
 										SdPlatformUserGetEmbeddableFields.GlobalAccessDomains,
 										SdPlatformUserGetEmbeddableFields.Organization,
 									],
-								);
+								),
+							);
 
 							const user = result.data;
 

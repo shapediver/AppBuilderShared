@@ -118,7 +118,7 @@ export const useShapeDiverStoreStargate =
 							// TODO clarify whether we should do some cleanup in case
 							// there is a previous clientRef (cleanup the websocket connection or similar)
 
-							const {authenticate} =
+							const {authenticate, authWrapper} =
 								useShapeDiverStorePlatform.getState();
 							const platformClientRef = await authenticate(
 								redirect,
@@ -132,38 +132,49 @@ export const useShapeDiverStoreStargate =
 
 							const {
 								data: {endpoint},
-							} =
-								await platformClientRef.client.stargate.getConfig();
+							} = await authWrapper((c) =>
+								c.client.stargate.getConfig(),
+							);
 
 							const url =
 								typeof endpoint === "string"
 									? endpoint
 									: Object.values(endpoint)[0];
 
-							const sdk = await createSdk()
-								.setBaseUrl(url)
-								.setServerCommandHandler((payload: unknown) => {
-									const msg =
-										"Received unidentified Stargate command payload";
-									errorReporting.captureMessage(
-										`${msg}: ${payload}`,
-									);
-								})
-								.setConnectionErrorHandler((msg: string) => {
-									const message = `Stargate connection error: ${msg}`;
-									getNotificationActions().error({message});
-								})
-								.setDisconnectHandler(handleDisconnect)
-								.build();
+							const sdk = await authWrapper(async (c) => {
+								const sdk = await createSdk()
+									.setBaseUrl(url)
+									.setServerCommandHandler(
+										(payload: unknown) => {
+											const msg =
+												"Received unidentified Stargate command payload";
+											errorReporting.captureMessage(
+												`${msg}: ${payload}`,
+											);
+										},
+									)
+									.setConnectionErrorHandler(
+										(msg: string) => {
+											const message = `Stargate connection error: ${msg}`;
+											getNotificationActions().error({
+												message,
+											});
+										},
+									)
+									.setDisconnectHandler(handleDisconnect)
+									.build();
 
-							await sdk.register(
-								platformClientRef.jwtToken,
-								"React App Builder",
-								"1.0.0",
-								navigator.platform || "",
-								window.location.hostname,
-								"",
-							);
+								await sdk.register(
+									c.jwtToken!,
+									"React App Builder",
+									"1.0.0",
+									navigator.platform || "",
+									window.location.hostname,
+									"",
+								);
+
+								return sdk;
+							});
 
 							const newSdkRef = {
 								...sdkRef,

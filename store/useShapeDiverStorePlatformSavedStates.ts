@@ -37,8 +37,8 @@ export const useShapeDiverStorePlatformSavedStates =
 				queryCache: {},
 
 				addItem(data: TSavedStateData) {
-					const clientRef =
-						useShapeDiverStorePlatform.getState().clientRef;
+					const {authWrapper, clientRef} =
+						useShapeDiverStorePlatform.getState();
 					const {pruneCache} = get();
 
 					const actions = {
@@ -51,11 +51,9 @@ export const useShapeDiverStorePlatformSavedStates =
 								);
 								return;
 							}
-							const result =
-								await clientRef.client.savedStates.patch(
-									data.id,
-									body,
-								);
+							const result = await authWrapper((c) =>
+								c.client.savedStates.patch(data.id, body),
+							);
 							set(
 								produce((state) => {
 									state.items[data.id].data = result.data;
@@ -80,7 +78,9 @@ export const useShapeDiverStorePlatformSavedStates =
 								);
 								return;
 							}
-							await clientRef.client.savedStates.delete(data.id);
+							await authWrapper((c) =>
+								c.client.savedStates.delete(data.id),
+							);
 							set(
 								produce((state) => {
 									delete state.items[data.id];
@@ -113,10 +113,11 @@ export const useShapeDiverStorePlatformSavedStates =
 						TSavedStateQueryPropsExt
 					>,
 				) {
-					const {clientRef, getUser, currentModel} =
+					const {clientRef, authWrapper, getUser, currentModel} =
 						useShapeDiverStorePlatform(
 							useShallow((state) => ({
 								clientRef: state.clientRef,
+								authWrapper: state.authWrapper,
 								getUser: state.getUser,
 								currentModel: state.currentModel,
 							})),
@@ -241,10 +242,9 @@ export const useShapeDiverStorePlatformSavedStates =
 							| SdPlatformQueryResponse<SdPlatformResponseSavedStatePublic>
 							| Error;
 						try {
-							response =
-								await clientRef.client.savedStates.query(
-									params,
-								);
+							response = await authWrapper((c) =>
+								c.client.savedStates.query(params),
+							);
 							const {pagination, result: items} = response.data;
 							items.forEach((item) => addItem(item));
 							set(
@@ -269,6 +269,7 @@ export const useShapeDiverStorePlatformSavedStates =
 						return response;
 					}, [
 						clientRef,
+						authWrapper,
 						getUser,
 						queryParamsExt,
 						filterByUser,
