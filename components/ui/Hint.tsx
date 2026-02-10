@@ -1,4 +1,4 @@
-import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
+import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
 import {
 	Button,
 	ButtonProps,

@@ -1,9 +1,9 @@
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {simplifyCalc} from "@AppBuilderShared/components/shapediver/viewport/anchors/shared/utils";
 import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverStoreViewportAnchors} from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
-import {devtoolsSettings} from "./storeSettings";
 
 export const useShapeDiverStoreViewportAnchors =
 	create<IShapeDiverStoreViewportAnchors>()(

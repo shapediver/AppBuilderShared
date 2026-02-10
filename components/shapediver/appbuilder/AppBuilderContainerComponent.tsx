@@ -1,6 +1,6 @@
+import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
 import AppBuilderTabsComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderTabsComponent";
 import AppBuilderWidgetsComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderWidgetsComponent";
-import {AppBuilderStackContext} from "@AppBuilderShared/context/StackContext";
 import {IAppBuilderContainer} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React from "react";
 import AppBuilderStackUiWidgetComponent from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";

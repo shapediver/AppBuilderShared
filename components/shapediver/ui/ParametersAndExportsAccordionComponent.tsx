@@ -1,4 +1,4 @@
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import {
 	isExportDefinition,
 	isOutputDefinition,

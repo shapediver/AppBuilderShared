@@ -1,5 +1,5 @@
-import {AppBuilderDataContext} from "@AppBuilderShared/context/AppBuilderContext";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
+import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {IAppBuilderParameterRef} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";

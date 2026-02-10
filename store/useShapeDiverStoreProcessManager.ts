@@ -1,3 +1,4 @@
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {
 	IProcess,
 	IProcessDefinition,
@@ -9,7 +10,6 @@ import {
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
-import {devtoolsSettings} from "./storeSettings";
 import {useShapeDiverStoreViewportAccessFunctions} from "./useShapeDiverStoreViewportAccessFunctions";
 
 export class ProcessManager implements IProcessManager {

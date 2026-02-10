@@ -1,5 +1,5 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {Anchor} from "@mantine/core";
 import React, {useCallback} from "react";
 

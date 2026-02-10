@@ -1,4 +1,4 @@
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
+import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {IAppBuilderWidgetPropsProgress} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IProgress} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";

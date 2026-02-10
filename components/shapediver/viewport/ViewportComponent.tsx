@@ -1,4 +1,4 @@
-import {ViewportControlsVisibilityContext} from "@AppBuilderShared/context/ViewportControlsVisibilityContext";
+import {ViewportControlsVisibilityContext} from "@AppBuilderLib/shared/lib/ViewportControlsVisibilityContext";
 import {useViewport} from "@AppBuilderShared/hooks/shapediver/viewer/useViewport";
 import {useViewportControlsVisibility} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControlsVisibility";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";

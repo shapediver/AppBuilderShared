@@ -1,3 +1,4 @@
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import AppBuilderAccordionUiWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionUiWidgetComponent";
 import AppBuilderAccordionWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import AppBuilderActionsWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderActionsWidgetComponent";
@@ -8,7 +9,6 @@ import AppBuilderLineChartWidgetComponent from "@AppBuilderShared/components/sha
 import AppBuilderProgressWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderProgressWidgetComponent";
 import AppBuilderRoundChartWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
 import AppBuilderTextWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderTextWidgetComponent";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {
 	IAppBuilderWidget,
 	isAccordionUiWidget,

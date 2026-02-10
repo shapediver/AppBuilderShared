@@ -1,5 +1,5 @@
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {
 	AppBuilderContainerNameType,
 	IAppBuilderContainer,

@@ -1,4 +1,5 @@
-import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {defineFilter} from "@AppBuilderLib/shared/lib/platform";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {IPlatformPagedItemQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformGeneric";
 import {
@@ -8,7 +9,6 @@ import {
 	TModelEmbed,
 	TModelQueryPropsExt,
 } from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
-import {defineFilter} from "@AppBuilderShared/utils/platform/filter";
 import {
 	SdPlatformModelQueryEmbeddableFields,
 	SdPlatformModelQueryParameters,

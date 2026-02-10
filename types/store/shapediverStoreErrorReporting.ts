@@ -1,4 +1,4 @@
-import {IErrorReportingContext} from "../context/errorreportingcontext";
+import {IErrorReportingContext} from "~/shared/shared/lib/ErrorReportingContext.types";
 
 /**
  * In addition to making the error reporting implementation available

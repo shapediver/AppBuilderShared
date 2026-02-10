@@ -1,11 +1,11 @@
 import {MantineThemeComponent} from "@mantine/core";
 import React from "react";
 import {StyleProps as StylePropsButton} from "~/shared/components/shapediver/appbuilder/widgets/AppBuilderStackUiWidget/AppBuilderStackUiWidgetButtonComponent";
-import {IAppBuilderStackContextElement} from "~/shared/types/context/stackcontext";
 import {AppBuilderStackUiWidgetAnimationWrapper} from "./AppBuilderStackUiWidgetAnimationWrapper";
 import AppBuilderStackUiWidgetContentComponent, {
 	StyleProps as StylePropsContent,
 } from "./AppBuilderStackUiWidgetContentComponent";
+import {IAppBuilderStackContextElement} from "~/shared/features";
 
 interface Props {
 	namespace: string;

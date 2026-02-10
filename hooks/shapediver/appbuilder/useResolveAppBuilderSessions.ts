@@ -1,3 +1,8 @@
+import {
+	getDefaultPlatformUrl,
+	getPlatformClientId,
+	shouldUsePlatform,
+} from "@AppBuilderLib/shared/lib/platform";
 import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {
@@ -5,18 +10,13 @@ import {
 	IAppBuilderSettingsSession,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
-	getDefaultPlatformUrl,
-	getPlatformClientId,
-	shouldUsePlatform,
-} from "@AppBuilderShared/utils/platform/environment";
-import {
 	SdPlatformModelGetEmbeddableFields,
 	SdPlatformResponseModelPublic,
 	create,
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {useShallow} from "zustand/react/shallow";
 
-import {QUERYPARAM_REDIRECT} from "@AppBuilderShared/types/shapediver/queryparams";
+import {QUERYPARAM_REDIRECT} from "@AppBuilderLib/shared/config/queryparams";
 import {MODELS} from "@modelstorage";
 import {useShapeDiverStorePlatformSavedStates} from "~/shared/store/useShapeDiverStorePlatformSavedStates";
 

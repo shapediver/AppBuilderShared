@@ -1,0 +1,268 @@
+import {
+	ERROR_TYPE_INTERRUPTED,
+	IBakeDataResultEnum,
+	NetworkStatus,
+	useShapeDiverStoreStargate,
+	useStargateBakeData,
+} from "@AppBuilderLib/entities/stargate";
+import {useNotificationStore} from "@AppBuilderLib/features";
+import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
+import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
+import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
+import {
+	ITreeNode,
+	ShapeDiverResponseOutputChunk,
+} from "@shapediver/viewer.session";
+import {useCallback, useEffect, useState} from "react";
+import {useShallow} from "zustand/react/shallow";
+
+// TODO SS-8820 ideally move these messages to properties that can be controlled from the theme
+export const OutputResultErrorMessages = {
+	[IBakeDataResultEnum.SUCCESS]: "The objects were successfully baked.",
+	[IBakeDataResultEnum.NOTHING]: "No objects were baked.",
+	[IBakeDataResultEnum.FAILURE]: "The baking operation failed.",
+	[IBakeDataResultEnum.CANCEL]: "The baking operation was cancelled.",
+};
+
+export interface IUseStargateOutputProps {
+	chunkId: string;
+	chunkName: string;
+	outputId: IShapeDiverOutputDefinition["id"];
+	typeHint: string;
+	sessionId: string;
+}
+
+/**
+ * Possible statuses for the Stargate output connection.
+ */
+export enum OutputStatusEnum {
+	/** The Stargate service is not available OR no client has been selected. */
+	notActive = "notActive",
+	/** The selected client does not support the type of the given output. */
+	incompatible = "incompatible",
+	/** A client is connected and supports the given output type. No objects are available. */
+	noObjectAvailable = "noObjectAvailable",
+	/** A client is connected and supports the given output type. Objects are available. */
+	objectAvailable = "objectAvailable",
+	/**
+	 * A client is connected and supports the given output type. Objects are available.
+	 * The Stargate service is not available OR no client has been selected.
+	 */
+	objectAvailableNotActive = "objectAvailableNotActive",
+	/**
+	 * The selected client does not support the type of the given output. Objects are available.
+	 */
+	objectAvailableIncompatible = "objectAvailableIncompatible",
+	/** This should never happen. */
+	unsupported = "unsupported",
+}
+
+/**
+ * Hook providing business logic for Stargate output components.
+ */
+export const useStargateOutput = ({
+	chunkId,
+	chunkName,
+	outputId,
+	typeHint,
+	sessionId,
+}: IUseStargateOutputProps) => {
+	const [isWaiting, setIsWaiting] = useState(false);
+	/**
+	 * State for keeping the status of the output and count of objects.
+	 */
+	const [status, setStatus_] = useState<{
+		status: OutputStatusEnum;
+		count: number | undefined;
+	}>({
+		status: OutputStatusEnum.notActive,
+		count: undefined,
+	});
+
+	const setStatus = useCallback(
+		(status: OutputStatusEnum, count?: number) =>
+			setStatus_({status, count}),
+		[],
+	);
+
+	/** The representation of the chunk in the scene tree */
+	const chunk = useShapeDiverStoreSession(
+		useShallow((state) => {
+			const session = state.sessions[sessionId];
+			if (
+				!session.outputs[outputId] ||
+				!session.outputs[outputId].node ||
+				!session.outputs[outputId].chunks
+			) {
+				return;
+			}
+			const chunk: ShapeDiverResponseOutputChunk | undefined =
+				session.outputs[outputId].chunks.find((c) => c.id === chunkId);
+			return chunk;
+		}),
+	);
+
+	const {bakeData} = useStargateBakeData();
+	const notifications = useNotificationStore();
+
+	const {networkStatus, selectedClient, getSupportedData, registerReference} =
+		useShapeDiverStoreStargate(
+			useShallow((state) => ({
+				networkStatus: state.networkStatus,
+				selectedClient: state.selectedClient,
+				getSupportedData: state.getSupportedData,
+				registerReference: state.registerReference,
+			})),
+		);
+
+	// Increase the reference count for the Stargate SDK
+	useEffect(registerReference, [registerReference]);
+
+	/** Get number of objects available for baking */
+	const getObjectsNumber = useCallback(
+		(chunk: ShapeDiverResponseOutputChunk | undefined): number => {
+			if (!chunk) return 0;
+			let count = 0;
+			if (chunk.node?.children) {
+				chunk.node.children.forEach((c: ITreeNode) => {
+					count += c.children?.length || 0;
+				});
+			}
+			return count;
+		},
+		[],
+	);
+
+	// Update connection status based on network status, selected client,
+	// chunk type and scene tree chunk
+	useEffect(() => {
+		(async () => {
+			const objectsNumber = getObjectsNumber(chunk);
+
+			if (
+				networkStatus === NetworkStatus.none ||
+				networkStatus === NetworkStatus.disconnected
+			) {
+				if (objectsNumber > 0) {
+					setStatus(
+						OutputStatusEnum.objectAvailableNotActive,
+						objectsNumber,
+					);
+				} else {
+					setStatus(OutputStatusEnum.notActive);
+				}
+				return;
+			}
+
+			const supportedData = await getSupportedData();
+			if (!supportedData) {
+				setStatus(OutputStatusEnum.notActive);
+				return;
+			}
+			if (!supportedData.typeHints.includes(typeHint)) {
+				if (objectsNumber > 0) {
+					setStatus(
+						OutputStatusEnum.objectAvailableIncompatible,
+						objectsNumber,
+					);
+				} else {
+					setStatus(OutputStatusEnum.incompatible);
+				}
+				return;
+			}
+
+			if (networkStatus === NetworkStatus.connected) {
+				if (objectsNumber > 0) {
+					setStatus(OutputStatusEnum.objectAvailable, objectsNumber);
+				} else {
+					setStatus(OutputStatusEnum.noObjectAvailable);
+				}
+				return;
+			}
+
+			setStatus(OutputStatusEnum.unsupported);
+		})();
+	}, [networkStatus, selectedClient, typeHint, chunk, chunk?.node]);
+
+	/**
+	 * Handler for baking data.
+	 */
+	const onBakeData = useCallback(async () => {
+		setIsWaiting(true);
+
+		const {currentModel} = useShapeDiverStorePlatform.getState();
+		if (!currentModel) {
+			throw new Error("Current model not available");
+		}
+
+		const parameters = getParameterStates(sessionId).reduce(
+			(acc, p) => {
+				acc[p.definition.id] = p.state.stringExecValue();
+				return acc;
+			},
+			{} as {[key: string]: string},
+		);
+
+		const response = await exceptionWrapperAsync(
+			() => bakeData(outputId, chunkId, chunkName, parameters),
+			() => setIsWaiting(false),
+		);
+
+		if (response.error) {
+			const e = response.error as any;
+
+			if (e.type === ERROR_TYPE_INTERRUPTED) {
+				return;
+			}
+
+			notifications.error({
+				title: "Baking failed",
+				message:
+					e.message ||
+					OutputResultErrorMessages[IBakeDataResultEnum.FAILURE],
+			});
+			return;
+		}
+
+		const replyDto = response.data[0]; // Suppose that we have only one connection;
+
+		const {result, message} = replyDto.info;
+
+		const resultTyped = result as unknown as IBakeDataResultEnum;
+
+		if (resultTyped === IBakeDataResultEnum.FAILURE) {
+			notifications.error({
+				message:
+					message ||
+					OutputResultErrorMessages[IBakeDataResultEnum.FAILURE],
+			});
+		} else if (resultTyped === IBakeDataResultEnum.SUCCESS) {
+			notifications.success({
+				message:
+					message ||
+					OutputResultErrorMessages[IBakeDataResultEnum.SUCCESS],
+			});
+		} else if (resultTyped === IBakeDataResultEnum.CANCEL) {
+			notifications.warning({
+				message:
+					message ||
+					OutputResultErrorMessages[IBakeDataResultEnum.CANCEL],
+			});
+		} else if (resultTyped === IBakeDataResultEnum.NOTHING) {
+			notifications.warning({
+				message:
+					message ||
+					OutputResultErrorMessages[IBakeDataResultEnum.NOTHING],
+			});
+		}
+	}, [sessionId, bakeData, outputId, chunkId, chunkName]);
+
+	return {
+		isWaiting,
+		status: status.status,
+		count: status.count,
+		onBakeData,
+	};
+};

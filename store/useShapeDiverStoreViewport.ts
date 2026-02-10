@@ -1,4 +1,4 @@
-import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {ViewportCreateDto} from "@AppBuilderShared/types/shapediver/viewport";
 import {IShapeDiverStoreViewport} from "@AppBuilderShared/types/store/shapediverStoreViewport";
 import {createViewport, IViewportApi} from "@shapediver/viewer.viewport";
