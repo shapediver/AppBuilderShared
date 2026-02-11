@@ -66,7 +66,7 @@ export default function useResolveAppBuilderSessions(
 		if (!sessions) return;
 
 		const resolvedSessions = await Promise.all(
-			sessions.map(async (session) => {
+			sessions.map(async (session, sessionIdx) => {
 				const platformUrl =
 					session.platformUrl ?? getDefaultPlatformUrl();
 
@@ -96,8 +96,7 @@ export default function useResolveAppBuilderSessions(
 					// in case the slug is found in model storage, use the stored data
 					const model = ModelStorage[session.slug];
 
-					setCurrentModel(model);
-					document.title = `${model?.title ?? model?.slug} | ShapeDiver App Builder`;
+					if (sessionIdx === 0) setCurrentModel(model);
 
 					// we store exactly the same data as in the platform response,
 					// only leaving out the refresh token function
@@ -135,8 +134,7 @@ export default function useResolveAppBuilderSessions(
 						return result?.data;
 					};
 					const model = await getModel();
-					setCurrentModel(model);
-					document.title = `${model?.title ?? model?.slug} | ShapeDiver App Builder`;
+					if (sessionIdx === 0) setCurrentModel(model);
 
 					return {
 						// use the acceptRejectMode setting store on the platform
@@ -175,7 +173,7 @@ export default function useResolveAppBuilderSessions(
 						return result.data;
 					};
 					const iframeData = await getIframeData();
-					setCurrentModel(iframeData.model);
+					if (sessionIdx === 0) setCurrentModel(iframeData.model);
 					for (const savedState of iframeData.model.saved_states ??
 						[]) {
 						addSavedState(savedState);
