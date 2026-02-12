@@ -1,4 +1,4 @@
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";
 import {
@@ -37,7 +37,7 @@ import React, {
 } from "react";
 import {undefined} from "zod";
 import MarkdownWidgetComponent from "~/shared/components/shapediver/ui/MarkdownWidgetComponent";
-import Icon from "~/shared/components/ui/Icon";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {PropsExportWithForm} from "~/shared/types/components/shapediver/propsExport";
 import {IShapeDiverParameterActions} from "~/shared/types/shapediver/parameter";
 
