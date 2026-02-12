@@ -253,39 +253,23 @@ export default function ExportButtonComponent(
 						});
 						return true;
 					}
-					
-					// Unexpected result structure for EMAIL export
-					const errorMessage = `Unexpected response for export of type email`;
-					notifications.error({
-						message: errorMessage,
-					});
-					errorReporting.captureException({
-						message: errorMessage,
-						exportResponse: response,
-						exportDefinition: {
-							id: definition.id,
-							name: definition.name,
-							type: definition.type,
-						},
-					});
-					return false;
-				} else {
-					// No result in response for EMAIL export
-					const errorMessage = `Unexpected response for export of type email`;
-					notifications.error({
-						message: errorMessage,
-					});
-					errorReporting.captureException({
-						message: errorMessage,
-						exportResponse: response,
-						exportDefinition: {
-							id: definition.id,
-							name: definition.name,
-							type: definition.type,
-						},
-					});
-					return false;
 				}
+				
+				// Unexpected response for EMAIL export
+				const errorMessage = `Unexpected response for export of type email`;
+				notifications.error({
+					message: errorMessage,
+				});
+				errorReporting.captureException({
+					message: errorMessage,
+					exportResponse: response,
+					exportDefinition: {
+						id: definition.id,
+						name: definition.name,
+						type: definition.type,
+					},
+				});
+				return false;
 			}
 			
 			// Unexpected export type
