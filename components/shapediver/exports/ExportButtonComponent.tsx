@@ -220,6 +220,22 @@ export default function ExportButtonComponent(
 						message: response.msg,
 					});
 					return true;
+				} else {
+					// Unexpected response for DOWNLOAD export type
+					const errorMessage = `Unexpected response for export of type download`;
+					notifications.error({
+						message: errorMessage,
+					});
+					errorReporting.captureException({
+						message: errorMessage,
+						exportResponse: response,
+						exportDefinition: {
+							id: definition.id,
+							name: definition.name,
+							type: definition.type,
+						},
+					});
+					return false;
 				}
 			} else if (definition.type === EXPORT_TYPE.EMAIL) {
 				// if the export is an email export, show the resulting message
@@ -237,6 +253,38 @@ export default function ExportButtonComponent(
 						});
 						return true;
 					}
+					
+					// Unexpected result structure for EMAIL export
+					const errorMessage = `Unexpected response for export of type email`;
+					notifications.error({
+						message: errorMessage,
+					});
+					errorReporting.captureException({
+						message: errorMessage,
+						exportResponse: response,
+						exportDefinition: {
+							id: definition.id,
+							name: definition.name,
+							type: definition.type,
+						},
+					});
+					return false;
+				} else {
+					// No result in response for EMAIL export
+					const errorMessage = `Unexpected response for export of type email`;
+					notifications.error({
+						message: errorMessage,
+					});
+					errorReporting.captureException({
+						message: errorMessage,
+						exportResponse: response,
+						exportDefinition: {
+							id: definition.id,
+							name: definition.name,
+							type: definition.type,
+						},
+					});
+					return false;
 				}
 			}
 			
