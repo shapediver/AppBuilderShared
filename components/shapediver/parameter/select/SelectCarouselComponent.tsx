@@ -1,4 +1,4 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {Carousel} from "@mantine/carousel";
 import "@mantine/carousel/styles.css";
 import {MantineThemeComponent, useProps} from "@mantine/core";

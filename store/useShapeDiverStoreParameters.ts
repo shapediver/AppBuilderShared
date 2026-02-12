@@ -1,4 +1,4 @@
-import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
+import { devtoolsSettings } from "@AppBuilderLib/shared/config/storeSettings";
 import {
 	EventActionEnum,
 	IEventTracking,
@@ -1524,41 +1524,47 @@ export const useShapeDiverStoreParameters =
 						const paramIds = Object.keys(values);
 						if (paramIds.length === 0) return;
 
-						// verify that all parameter stores exist and values are valid
-						const paramIdsValid = paramIds.filter((paramId) => {
-							const store = stores[paramId];
-							if (!store) {
-								Logger.warn(
-									`Parameter ${paramId} does not exist for session namespace ${namespace}`,
-								);
-								return false;
-							}
+						// verify that all parameter stores exist and values are valid before updating any value or executing any change
+						const promises = paramIds
+							.map((paramId) => {
+								const paramStore = Object.values(stores)
+									.map((s) => s.getState())
+									.find((s) => {
+										const def = s.definition;
+										return (
+											def.id === paramId ||
+											def.name === paramId ||
+											def.displayname === paramId
+										);
+									});
+								if (!paramStore) {
+									Logger.warn(
+										`Parameter ${paramId} does not exist for session namespace ${namespace}`,
+									);
+									return undefined;
+								}
 
-							const {actions} = store.getState();
-							const value = values[paramId];
-							if (!actions.isValid(value)) {
-								Logger.warn(
-									`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
+								const {actions} = paramStore;
+								const value = values[paramId];
+								if (!actions.isValid(value)) {
+									Logger.warn(
+										`Value ${value} is not valid for parameter ${paramId} of session namespace ${namespace}`,
+									);
+									return undefined;
+								}
+								// update value and return execution promise
+								actions.setUiValue(value);
+								// Note: We do not execute the changes immediately here,
+								// but call changes.accept below.
+								return actions.execute(
+									false,
+									skipHistory,
+									undefined,
+									skipUrlUpdate,
 								);
-								return false;
-							}
-							return true;
-						});
+							})
+							.filter((p) => p !== undefined);
 
-						// update values and return execution promises
-						const promises = paramIdsValid.map((paramId) => {
-							const store = stores[paramId];
-							const {actions} = store.getState();
-							actions.setUiValue(values[paramId]);
-							// Note: We do not execute the changes immediately here,
-							// but call changes.accept below.
-							return actions.execute(
-								false,
-								skipHistory,
-								undefined,
-								skipUrlUpdate,
-							);
-						});
 						paramUpdatePromises.push(...promises);
 					}
 
@@ -1566,6 +1572,7 @@ export const useShapeDiverStoreParameters =
 					const {parameterChanges} = get();
 					const acceptPromises = Object.keys(state)
 						.map((namespace) => parameterChanges[namespace])
+						.filter((c) => c !== undefined)
 						.sort((a, b) => a.priority - b.priority)
 						.map((c) =>
 							c.accept(skipHistory, undefined, skipUrlUpdate),

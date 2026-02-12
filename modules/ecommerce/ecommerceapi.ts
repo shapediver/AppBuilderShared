@@ -11,6 +11,7 @@ import {
 	IECommerceApi,
 	IECommerceApiActions,
 	IECommerceApiConnector,
+	IECommerceApiConnectorActions,
 	IECommerceApiFactory,
 	IGetParentPageInfoReply,
 	IGetUserProfileReply,
@@ -20,12 +21,14 @@ import {
 	IScrollingApiLoadMoreReply,
 	IScrollingApiSetParametersData,
 	IScrollingApiSetParametersReply,
+	IUpdateParameterValuesData,
+	IUpdateParameterValuesReply,
 	IUpdateSharingLinkData,
 	IUpdateSharingLinkReply,
 } from "@AppBuilderShared/modules/ecommerce/types/ecommerceapi";
 import {applyModelStateToUrl} from "@AppBuilderShared/utils/modifyUrl";
 
-// Message types for the API calls.
+// Message types for the API calls from application to connector.
 // CAUTION: When implementing new API calls and messages type, make sure to add
 // the corresponding listener in the ECommerceApiConnector constructor.
 
@@ -39,7 +42,16 @@ const MESSAGE_TYPE_SCROLLINGAPI_LOAD_MORE = "SCROLLINGAPI_LOAD_MORE";
 const MESSAGE_TYPE_MESSAGE_TO_PARENT = "MESSAGE_TO_PARENT";
 const MESSAGE_TYPE_HANDSHAKE = "HANDSHAKE";
 
+// Message types for the API calls from connector to application.
+const MESSAGE_TYPE_CONNECTOR_UPDATE_PARAMETER_VALUES =
+	"CONNECTOR_UPDATE_PARAMETER_VALUES";
+
 export class ECommerceApi implements IECommerceApi {
+	/**
+	 * Implementation of the connector API actions.
+	 */
+	connectorActions: IECommerceApiConnectorActions;
+
 	/**
 	 * The cross window API instance to use for communication
 	 * with the e-commerce plugin.
@@ -54,16 +66,28 @@ export class ECommerceApi implements IECommerceApi {
 	debug: boolean;
 
 	constructor(
+		actions: IECommerceApiConnectorActions,
 		crossWindowApi: ICrossWindowApi,
 		options?: ICrossWindowApiOptions,
 	) {
+		this.connectorActions = actions;
 		this.crossWindowApi = crossWindowApi;
 		this.debug = options?.debug ?? false;
 		this.timeout = options?.timeout;
-		this.peerIsReady = this.crossWindowApi.handshake(
-			MESSAGE_TYPE_HANDSHAKE,
-			this.timeout,
-		);
+		this.peerIsReady = this.crossWindowApi
+			.handshake(MESSAGE_TYPE_HANDSHAKE, this.timeout)
+			.then((peerInfo) => {
+				this.crossWindowApi.on(
+					MESSAGE_TYPE_CONNECTOR_UPDATE_PARAMETER_VALUES,
+					(data: IUpdateParameterValuesData) =>
+						this.connectorActions.updateParameterValues(data),
+				);
+				return peerInfo;
+			});
+	}
+
+	setApiConnectorActions(actions: IECommerceApiConnectorActions): void {
+		this.connectorActions = actions;
 	}
 
 	async closeConfigurator(): Promise<boolean> {
@@ -230,6 +254,18 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 				return peerInfo;
 			});
 	}
+
+	async updateParameterValues(
+		data: IUpdateParameterValuesData,
+	): Promise<IUpdateParameterValuesReply> {
+		await this.peerIsReady;
+
+		return this.crossWindowApi.send(
+			MESSAGE_TYPE_CONNECTOR_UPDATE_PARAMETER_VALUES,
+			data,
+			this.timeout,
+		);
+	}
 }
 
 export class DummyECommerceApiActions implements IECommerceApiActions {
@@ -287,14 +323,28 @@ export class DummyECommerceApiActions implements IECommerceApiActions {
 	}
 }
 
+export class DummyECommerceApiConnectorActions implements IECommerceApiConnectorActions {
+	updateParameterValues() /*data: IUpdateParameterValuesData,*/
+	: Promise<IUpdateParameterValuesReply> {
+		return Promise.resolve({});
+	}
+}
+
 export class DummyECommerceApi implements IECommerceApi {
 	peerIsReady: Promise<ICrossWindowPeerInfo>;
 
 	actions: IECommerceApiActions;
 
+	connectorActions: IECommerceApiConnectorActions;
+
 	constructor() {
 		this.peerIsReady = Promise.resolve({origin: "dummy", name: "dummy"});
 		this.actions = new DummyECommerceApiActions();
+		this.connectorActions = new DummyECommerceApiConnectorActions();
+	}
+
+	setApiConnectorActions(actions: IECommerceApiConnectorActions): void {
+		this.connectorActions = actions;
 	}
 
 	updateSharingLink(
@@ -356,7 +406,11 @@ class _ECommerceApiFactory implements IECommerceApiFactory {
 			options,
 		);
 
-		return new ECommerceApi(api, options);
+		return new ECommerceApi(
+			new DummyECommerceApiConnectorActions(),
+			api,
+			options,
+		);
 	}
 
 	async getConnectorApi(

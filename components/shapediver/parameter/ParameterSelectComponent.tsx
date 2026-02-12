@@ -1,8 +1,8 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
 import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,

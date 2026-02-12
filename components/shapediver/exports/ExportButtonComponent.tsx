@@ -1,28 +1,33 @@
+import {
+	IStargateComponentStatusDefinition,
+	mapStargateComponentStatusDefinition,
+	StargateFileParamPrefix,
+	StargateStatusColorTypeEnum,
+} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {
+	ExportStatusEnum,
+	useStargateExport,
+} from "@AppBuilderLib/entities/stargate/model/useStargateExport";
+import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import {
+	DefaultStargateStyleProps,
+	StargateStyleProps,
+} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
+import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
 } from "@AppBuilderShared/hooks/shapediver/parameters/useResolveParameterValues";
 import {
-	ExportStatusEnum,
-	useStargateExport,
-} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateExport";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
-import {
 	IParameterValues,
 	PropsExportWithForm,
 } from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {
-	IStargateComponentStatusDefinition,
-	mapStargateComponentStatusDefinition,
-	StargateFileParamPrefix,
-	StargateStatusColorTypeEnum,
-} from "@AppBuilderShared/types/shapediver/stargate";
 import {
 	Button,
 	ButtonProps,
@@ -40,11 +45,6 @@ import React, {
 	useMemo,
 	useState,
 } from "react";
-import StargateInput from "../stargate/StargateInput";
-import {
-	DefaultStargateStyleProps,
-	StargateStyleProps,
-} from "../stargate/stargateShared";
 
 /**
  * Map from status enum to status data.

@@ -1,4 +1,4 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {Attributes} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useConvertAttributeInputData";
 import {ActionIcon, Stack, Table} from "@mantine/core";
 import {ISDTFAttributeData} from "@shapediver/viewer.session";

@@ -1,11 +1,11 @@
-import DesktopClientPanel from "@AppBuilderShared/components/shapediver/stargate/DesktopClientPanel";
+import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
+import DesktopClientPanel from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components/shapediver/ui/ParametersAndExportsAccordionComponent";
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {useShapeDiverStoreStargate} from "@AppBuilderShared/store/useShapeDiverStoreStargate";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";

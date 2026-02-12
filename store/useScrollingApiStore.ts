@@ -1,14 +1,14 @@
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {isRunningInPlatform} from "@AppBuilderLib/shared/lib/platform";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
 	validateScrollingApiItemTypeSelectArray,
 } from "@AppBuilderShared/modules/ecommerce/types/scrollingapi";
-import {isRunningInPlatform} from "@AppBuilderShared/utils/platform/environment";
 import {produce} from "immer";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
-import {devtoolsSettings} from "./storeSettings";
 
 /**
  * A dummy scrolling API implementation for testing without the e-commerce API.
@@ -73,6 +73,7 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 					const dummyApi: IScrollingApiDummy<IScrollingApiItemTypeSelect> =
 						{
 							...scrollingApiDefaultValues,
+							resetState: 0,
 							_dummyItems,
 							_filteredDummyItems: _dummyItems,
 							_pageSize: 10,
@@ -177,6 +178,8 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 											_counter: 0,
 											_filteredDummyItems:
 												api._dummyItems,
+											resetState:
+												(api.resetState as number) + 1,
 										};
 									}),
 								);
@@ -187,6 +190,7 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 				} else {
 					newApi = {
 						...scrollingApiDefaultValues,
+						resetState: 0,
 						loadMore: async () => {
 							const {
 								scrollingApisSelect,
@@ -358,6 +362,8 @@ export const useScrollingApiStore = create<IScrollingApiStore>()(
 									state.scrollingApisSelect[source] = {
 										...api,
 										...scrollingApiDefaultValues,
+										resetState:
+											(api.resetState as number) + 1,
 									};
 								}),
 							);

@@ -1,11 +1,11 @@
-import {ErrorReportingContext} from "@AppBuilderShared/context/ErrorReportingContext";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {
 	exceptionWrapper,
 	exceptionWrapperAsync,
-} from "@AppBuilderShared/utils/exceptionWrapper";
+} from "@AppBuilderLib/shared/lib/exceptionWrapper";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {
 	filterAndValidateParameters,
 	generateParameterFeedback,

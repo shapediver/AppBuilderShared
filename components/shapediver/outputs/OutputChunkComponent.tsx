@@ -1,24 +1,24 @@
-import StargateInput from "@AppBuilderShared/components/shapediver/stargate/StargateInput";
-import {ExportInterceptorContext} from "@AppBuilderShared/context/ExportInterceptorContext";
-import {
-	OutputStatusEnum,
-	useStargateOutput,
-} from "@AppBuilderShared/hooks/shapediver/stargate/useStargateOutput";
-import {
-	IShapeDiverOutputDefinition,
-	IShapeDiverOutputDefinitionChunk,
-} from "@AppBuilderShared/types/shapediver/output";
 import {
 	IStargateComponentStatusDefinition,
 	mapStargateComponentStatusDefinition,
 	StargateStatusColorTypeEnum,
-} from "@AppBuilderShared/types/shapediver/stargate";
-import {useProps} from "@mantine/core";
-import React, {useContext, useMemo} from "react";
+} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {
+	OutputStatusEnum,
+	useStargateOutput,
+} from "@AppBuilderLib/entities/stargate/model/useStargateOutput";
+import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
 import {
 	DefaultStargateStyleProps,
 	StargateStyleProps,
-} from "../stargate/stargateShared";
+} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
+import {
+	IShapeDiverOutputDefinition,
+	IShapeDiverOutputDefinitionChunk,
+} from "@AppBuilderShared/types/shapediver/output";
+import {useProps} from "@mantine/core";
+import React, {useContext, useMemo} from "react";
 import OutputChunkLabelComponent from "./OutputChunkLabelComponent";
 
 interface Props {

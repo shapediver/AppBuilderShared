@@ -1,6 +1,6 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {useDefineGenericParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useDefineGenericParameters";
 import {useParameterStateless} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterStateless";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {IAppBuilder} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {

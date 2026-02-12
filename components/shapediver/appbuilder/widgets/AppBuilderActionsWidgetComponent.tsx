@@ -1,5 +1,5 @@
+import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {AppBuilderActionFromType} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionFromType";
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
 import {IAppBuilderWidgetPropsActions} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	Group,

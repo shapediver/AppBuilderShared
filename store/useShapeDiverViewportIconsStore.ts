@@ -1,4 +1,4 @@
-import {devtoolsSettings} from "@AppBuilderShared/store/storeSettings";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {ViewportIconButtonEnum} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {
 	IShapeDiverViewportIconsStore,

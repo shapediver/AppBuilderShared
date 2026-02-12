@@ -1,4 +1,5 @@
-import {getNotificationActions} from "@AppBuilderShared/store/useNotificationStore";
+import {getNotificationActions} from "@AppBuilderLib/features/notifications";
+import {ThemeProvider} from "@AppBuilderLib/shared/ui/theme";
 import {
 	Anchor,
 	Blockquote,
@@ -22,7 +23,6 @@ import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
 import {visit} from "unist-util-visit";
 import classes from "./MarkdownWidgetComponent.module.css";
-import ThemeProvider from "./ThemeProvider";
 
 // Set to track warnings that have already been shown to prevent duplicates
 const shownWarnings = new Set<string>();

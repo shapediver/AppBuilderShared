@@ -1,4 +1,4 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {IParameterChanges} from "@AppBuilderShared/types/store/shapediverStoreParameters";

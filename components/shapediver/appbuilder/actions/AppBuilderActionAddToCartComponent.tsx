@@ -1,7 +1,7 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
 import {IAppBuilderLegacyActionPropsAddToCart} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useCallback, useState} from "react";
 

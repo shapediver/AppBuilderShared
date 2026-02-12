@@ -1,4 +1,4 @@
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {
 	DrawingToolsEventResponseMapping,
 	PointsData,

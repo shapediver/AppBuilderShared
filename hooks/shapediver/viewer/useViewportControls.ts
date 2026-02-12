@@ -1,4 +1,4 @@
-import {ViewportControlsVisibilityContext} from "@AppBuilderShared/context/ViewportControlsVisibilityContext";
+import {ViewportControlsVisibilityContext} from "@AppBuilderLib/shared/lib";
 import {useContext} from "react";
 
 export function useViewportControls() {

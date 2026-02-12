@@ -1,4 +1,4 @@
-import {IconType} from "@AppBuilderShared/components/ui/Icon";
+import {IconType} from "@AppBuilderLib/shared/ui/icon";
 import {
 	IAppBuilderWidgetPropsAreaChart,
 	IAppBuilderWidgetPropsBarChart,

@@ -1,5 +1,5 @@
+import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
-import {ComponentContext} from "@AppBuilderShared/context/ComponentContext";
 import {useViewportControls} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControls";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
@@ -55,8 +55,8 @@ export const defaultStyleProps: ViewportIconsOptionalProps = {
 	enableResetButton: true,
 	enableArBtn: true,
 	enableCamerasBtn: true,
-	enableFullscreenBtn: true,
-	enableFullscreenBtn3States: false,
+	enableFullscreenBtn: false,
+	enableFullscreenBtn3States: true,
 	enableZoomBtn: true,
 	enableHistoryMenuButton: undefined,
 };

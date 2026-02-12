@@ -1,14 +1,3 @@
-import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
-import useResolveAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder//useResolveAppBuilderSettings";
-import useQuerySavedState from "@AppBuilderShared/hooks/shapediver/useQuerySavedState";
-import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
-import {
-	IAppBuilderSettings,
-	IAppBuilderSettingsJson,
-	IAppBuilderSettingsJsonSession,
-	IAppBuilderSettingsSession,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {validateAppBuilderSettingsJson} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import {
 	QUERYPARAM_CONTEXT,
 	QUERYPARAM_DISABLEFALLBACKUI,
@@ -21,9 +10,20 @@ import {
 	QUERYPARAM_SLUG,
 	QUERYPARAM_TEMPLATE,
 	QUERYPARAM_TICKET,
-} from "@AppBuilderShared/types/shapediver/queryparams";
+} from "@AppBuilderLib/shared/config/queryparams";
+import {getDefaultPlatformUrl} from "@AppBuilderLib/shared/lib/platform";
+import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
+import useResolveAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder//useResolveAppBuilderSettings";
+import useQuerySavedState from "@AppBuilderShared/hooks/shapediver/useQuerySavedState";
+import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
+import {
+	IAppBuilderSettings,
+	IAppBuilderSettingsJson,
+	IAppBuilderSettingsJsonSession,
+	IAppBuilderSettingsSession,
+} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {validateAppBuilderSettingsJson} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
 import {Logger} from "@AppBuilderShared/utils/logger";
-import {getDefaultPlatformUrl} from "@AppBuilderShared/utils/platform/environment";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useEffect, useMemo} from "react";
 

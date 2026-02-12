@@ -1,4 +1,8 @@
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
+import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {
+	AppBuilderContainerOrientationType,
+	IAppBuilderContainerContext,
+} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
 import {usePropsAppBuilder} from "@AppBuilderShared/hooks/ui/usePropsAppBuilder";
 import AppBuilderHorizontalContainer, {
 	AppBuilderHorizontalContainerThemePropsType,
@@ -6,10 +10,6 @@ import AppBuilderHorizontalContainer, {
 import AppBuilderVerticalContainer, {
 	AppBuilderVerticalContainerThemePropsType,
 } from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
-import {
-	AppBuilderContainerOrientationType,
-	IAppBuilderContainerContext,
-} from "@AppBuilderShared/types/context/appbuildercontext";
 import {MantineThemeComponent, StyleProp} from "@mantine/core";
 import React, {CSSProperties, useContext} from "react";
 

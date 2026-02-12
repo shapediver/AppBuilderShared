@@ -1,13 +1,13 @@
-import ThemeProvider from "@AppBuilderShared/components/shapediver/ui/ThemeProvider";
 import {
 	AppBuilderContainerContext,
 	AppBuilderTemplateContext,
-} from "@AppBuilderShared/context/AppBuilderContext";
-import AppBuilderContainer from "@AppBuilderShared/pages/templates/AppBuilderContainer";
+} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {
 	AppBuilderContainerOrientationType,
 	IAppBuilderContainerContext,
-} from "@AppBuilderShared/types/context/appbuildercontext";
+} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
+import {ThemeProvider} from "@AppBuilderLib/shared/ui/theme";
+import AppBuilderContainer from "@AppBuilderShared/pages/templates/AppBuilderContainer";
 import {
 	MantineThemeComponent,
 	MantineThemeOverride,

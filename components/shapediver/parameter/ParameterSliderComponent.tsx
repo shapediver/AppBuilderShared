@@ -1,6 +1,6 @@
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterWrapperComponent";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
 import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {

@@ -1,18 +1,5 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
-import {AppBuilderContainerContext} from "@AppBuilderShared/context/AppBuilderContext";
-import {
-	DEFAULT_SYSTEM_PROMPT,
-	useAgent,
-} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAgent";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useNotificationStore} from "@AppBuilderShared/store/useNotificationStore";
-import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
-import {
-	AppBuilderAgentWidgetComponentProps,
-	AppBuilderAgentWidgetThemePropsType,
-} from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
-import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {
 	QUERYPARAM_DEBUG,
 	QUERYPARAM_LANGFUSE_BASE_URL,
@@ -22,7 +9,20 @@ import {
 	QUERYPARAM_MODEL,
 	QUERYPARAM_OPENAI_API_KEY,
 	QUERYPARAM_SLUG,
-} from "@AppBuilderShared/types/shapediver/queryparams";
+} from "@AppBuilderLib/shared/config/queryparams";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {
+	DEFAULT_SYSTEM_PROMPT,
+	useAgent,
+} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAgent";
+import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
+import {
+	AppBuilderAgentWidgetComponentProps,
+	AppBuilderAgentWidgetThemePropsType,
+} from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
+import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	ActionIcon,

@@ -1,4 +1,4 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {useShapeDiverStoreInstances} from "@AppBuilderShared/store/useShapeDiverStoreInstances";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IAppBuilderWidgetPropsSceneTreeExplorer} from "@AppBuilderShared/types/shapediver/appbuilder";

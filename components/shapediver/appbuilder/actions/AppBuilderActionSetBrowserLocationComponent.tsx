@@ -1,7 +1,7 @@
+import {QUERYPARAM_MODELSTATEID} from "@AppBuilderLib/shared/config/queryparams";
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {IAppBuilderLegacyActionPropsSetBrowserLocation} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {QUERYPARAM_MODELSTATEID} from "@AppBuilderShared/types/shapediver/queryparams";
 import {applyModelStateToUrl} from "@AppBuilderShared/utils/modifyUrl";
 import React, {useCallback, useState} from "react";
 

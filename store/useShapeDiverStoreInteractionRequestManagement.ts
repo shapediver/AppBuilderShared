@@ -1,7 +1,7 @@
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {IShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/types/store/shapediverStoreInteractionRequestManagement";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
-import {devtoolsSettings} from "./storeSettings";
 
 export const useShapeDiverStoreInteractionRequestManagement =
 	create<IShapeDiverStoreInteractionRequestManagement>()(

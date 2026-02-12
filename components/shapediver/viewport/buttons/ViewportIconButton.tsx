@@ -1,5 +1,5 @@
-import Icon, {IconProps} from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	ActionIcon,
 	ActionIconProps,

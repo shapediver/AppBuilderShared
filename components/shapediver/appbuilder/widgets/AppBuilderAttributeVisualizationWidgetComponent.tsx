@@ -1,7 +1,5 @@
-import Icon from "@AppBuilderShared/components/ui/Icon";
-import TooltipWrapper from "@AppBuilderShared/components/ui/TooltipWrapper";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {useAttributeOverview} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeOverview";
-import useAttributeSelection from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeSelection";
 import {useAttributeVisualizationEngine} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeVisualizationEngine";
 import {useAttributeWidgetVisibilityTracker} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeWidgetVisibilityTracker";
 import {
@@ -63,6 +61,8 @@ import NumberAttribute, {
 	INumberAttributeExtended,
 } from "./attributes/NumberAttribute";
 import StringAttribute from "./attributes/StringAttribute";
+import useAttributeSelection from "~/shared/hooks/shapediver/viewer/attributeVisualization/useAttributeSelection";
+import { TooltipWrapper } from "@AppBuilderShared/shared";
 
 export type IAttributeDefinition =
 	| IAttribute
