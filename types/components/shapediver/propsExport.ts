@@ -44,7 +44,7 @@ export interface PropsExportFormIntegration {
 	/**
 	 * Optional callback to be called when export fails.
 	 */
-	readonly onError?: (error: any, values?: IParameterValues) => void;
+	readonly onError?: (values?: IParameterValues) => void;
 }
 
 /**

@@ -205,12 +205,12 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 	}, [initialValues, form]);
 
 	const handleError = useCallback(
-		(error: any) => {
+		() => {
 			setIsSuccess(false);
 			if (submit === "message") {
 				setShowMessage(true);
 			}
-			console.error("Export request failed:", error);
+			console.error("Export request failed");
 		},
 		[submit],
 	);
@@ -241,7 +241,7 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 					setShowMessage(true);
 				}
 			} catch (error) {
-				handleError(error);
+				handleError();
 			}
 		},
 		[exportData, submit, resetParameters],

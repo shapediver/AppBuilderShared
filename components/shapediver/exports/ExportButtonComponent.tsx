@@ -170,7 +170,7 @@ export default function ExportButtonComponent(
 		async (
 			skipStargate?: boolean,
 			parameterValues?: {[key: string]: string},
-		) => {
+		): Promise<boolean> => {
 			// request the export
 			const response = await actions.request(parameterValues);
 
@@ -188,9 +188,10 @@ export default function ExportButtonComponent(
 								title: "Unsupported content type",
 								message: `Content type ${content.format} not supported by the selected client.`,
 							});
-							return;
+							return false;
 						}
 						await onExportFile();
+						return true;
 					} else {
 						const url = content.href;
 						const filename = response.filename?.endsWith(
@@ -206,6 +207,7 @@ export default function ExportButtonComponent(
 						});
 						const res = await actions.fetch(url);
 						await fetchFileWithToken(res, filename);
+						return true;
 					}
 				} else if (
 					response.content &&
@@ -215,6 +217,7 @@ export default function ExportButtonComponent(
 					notifications.success({
 						message: response.msg,
 					});
+					return true;
 				}
 			} else if (definition.type === EXPORT_TYPE.EMAIL) {
 				// if the export is an email export, show the resulting message
@@ -224,14 +227,17 @@ export default function ExportButtonComponent(
 						notifications.error({
 							message: result.err,
 						});
+						return false;
 					}
 					if (result.msg) {
 						notifications.success({
 							message: result.msg,
 						});
+						return true;
 					}
 				}
 			}
+			return true;
 		},
 		[actions, definition.type, isStargate, isContentSupported],
 	);
@@ -285,15 +291,14 @@ export default function ExportButtonComponent(
 			parameterValueSourcesData.information.skipStargate,
 			parameterValues,
 		)
-			.then(() => {
+			.then((result) => {
 				// Call onSuccess if provided
-				if (onSuccess) {
+				if (result && onSuccess) {
 					onSuccess(parameterValues);
 				}
-			})
-			.catch((error) => {
-				if (onError) {
-					onError(error, parameterValues);
+
+				if (!result && onError) {
+					onError(parameterValues);
 				}
 			})
 			.finally(() => {
@@ -360,16 +365,15 @@ export default function ExportButtonComponent(
 						return acc;
 					}, {} as IParameterValues);
 				try {
-					await exportRequest(skipStargate, pValues);
+					const result = await exportRequest(skipStargate, pValues);
 					// Call onSuccess if provided
-					if (onSuccess) {
+					if (result && onSuccess) {
 						onSuccess(pValues);
 					}
-				} catch (error) {
-					if (onError) {
-						onError(error, pValues);
+
+					if (!result && onError) {
+						onError(pValues);
 					}
-					throw error;
 				} finally {
 					// set the requestingExport false to remove the loading icon
 					setRequestingExport(false);
