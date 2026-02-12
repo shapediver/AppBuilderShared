@@ -18,6 +18,7 @@ import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
 import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {
 	ParameterValueDefinition,
@@ -126,6 +127,7 @@ export default function ExportButtonComponent(
 
 	const {definition, actions} = useExport(props) ?? {};
 	const notifications = useNotificationStore();
+	const errorReporting = useContext(ErrorReportingContext);
 
 	if (!definition || !actions) {
 		notifications.error({
@@ -237,9 +239,16 @@ export default function ExportButtonComponent(
 					}
 				}
 			}
-			return true;
+			
+			// Unexpected export type
+			const errorMessage = `Unexpected export type: ${definition.type}`;
+			notifications.error({
+				message: errorMessage,
+			});
+			errorReporting.captureMessage(errorMessage);
+			return false;
 		},
-		[actions, definition.type, isStargate, isContentSupported],
+		[actions, definition.type, isStargate, isContentSupported, notifications, errorReporting],
 	);
 
 	const [requestingExport, setRequestingExport] = useState(false);
