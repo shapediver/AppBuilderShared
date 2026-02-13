@@ -1,5 +1,4 @@
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {IAppBuilderParameterValueSourcePropsModelState} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {useEffect, useState} from "react";
 import {useCreateModelState} from "../../useCreateModelState";
@@ -15,13 +14,6 @@ export function useModelStateSources(props: {
 } {
 	const {namespace, sources} = props;
 
-	const {createProcessManager, addProcess} = useShapeDiverStoreProcessManager(
-		(state) => ({
-			createProcessManager: state.createProcessManager,
-			addProcess: state.addProcess,
-		}),
-	);
-
 	const {createModelState} = useCreateModelState({namespace});
 
 	const [modelStateValues, setModelStateValues] = useState<
@@ -33,9 +25,6 @@ export function useModelStateSources(props: {
 	// to avoid multiple re-renders
 	useEffect(() => {
 		if (createModelState && sources && sources.length > 0) {
-			// Create a process manager for model state resolution
-			const processManagerId = createProcessManager(namespace);
-
 			const promises = [];
 			for (let i = 0; i < sources.length; i++) {
 				const {source} = sources[i];
@@ -66,19 +55,13 @@ export function useModelStateSources(props: {
 					});
 					return href.toString();
 				});
-				// Register this model state creation as a process
-				addProcess(processManagerId, {
-					id: `modelstate-${i}`,
-					name: `Model State ${i + 1}`,
-					promise: promise,
-				});
 				promises.push(promise);
 			}
 			Promise.all(promises).then((results) => {
 				setModelStateValues(results);
 			});
 		}
-	}, [sources, createModelState, namespace, createProcessManager, addProcess]);
+	}, [sources, createModelState, namespace]);
 
 	return {
 		modelStateValues,

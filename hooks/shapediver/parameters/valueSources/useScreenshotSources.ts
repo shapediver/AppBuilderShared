@@ -1,5 +1,4 @@
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Converter} from "@shapediver/viewer.session";
 import {guessMissingMimeType} from "@shapediver/viewer.utils.mime-type";
@@ -14,20 +13,13 @@ export function useScreenshotSources(props: {
 		upload: (file: File) => Promise<string>;
 	}[];
 }): {
-	screenshotValues: string[] | undefined;
+	screenshotValues: (string | undefined)[] | undefined;
 	resetScreenshotValues: () => void;
 } {
 	const {sources, namespace} = props;
 
-	const {createProcessManager, addProcess} = useShapeDiverStoreProcessManager(
-		(state) => ({
-			createProcessManager: state.createProcessManager,
-			addProcess: state.addProcess,
-		}),
-	);
-
 	const [screenshotValues, setScreenshotValues] = useState<
-		string[] | undefined
+		(string | undefined)[] | undefined
 	>(undefined);
 
 	const {viewportId} = useViewportId();
@@ -43,9 +35,6 @@ export function useScreenshotSources(props: {
 	// to avoid multiple re-renders
 	useEffect(() => {
 		if (getScreenshot && sources && sources.length > 0) {
-			// Create a process manager for screenshot resolution
-			const processManagerId = createProcessManager(namespace);
-
 			const promises = [];
 			for (let i = 0; i < sources.length; i++) {
 				const {source, upload} = sources[i];
@@ -55,7 +44,7 @@ export function useScreenshotSources(props: {
 						if (!data) {
 							return undefined;
 						}
-						
+
 						// Convert to file and upload
 						const {blob} = Converter.instance.dataURLtoBlob(data);
 						const file = new File([blob], "screenshot.png", {
@@ -68,13 +57,6 @@ export function useScreenshotSources(props: {
 						return undefined;
 					});
 
-				// Register this screenshot as a process
-				addProcess(processManagerId, {
-					id: `screenshot-${i}`,
-					name: `Screenshot ${i + 1}`,
-					promise: screenshotPromise,
-				});
-
 				promises.push(screenshotPromise);
 			}
 
@@ -82,7 +64,7 @@ export function useScreenshotSources(props: {
 				setScreenshotValues(results);
 			});
 		}
-	}, [sources, getScreenshot, namespace, createProcessManager, addProcess]);
+	}, [sources, getScreenshot, namespace]);
 
 	return {
 		screenshotValues,

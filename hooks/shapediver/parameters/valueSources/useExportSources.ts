@@ -1,5 +1,4 @@
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {
 	IAppBuilderParameterValueDefinition,
@@ -22,13 +21,6 @@ export function useExportSources(props: {
 	resetExportValues: () => void;
 } {
 	const {namespace, sources} = props;
-
-	const {createProcessManager, addProcess} = useShapeDiverStoreProcessManager(
-		(state) => ({
-			createProcessManager: state.createProcessManager,
-			addProcess: state.addProcess,
-		}),
-	);
 
 	const [exportValues, setExportValues] = useState<
 		(string | undefined)[] | undefined
@@ -104,9 +96,6 @@ export function useExportSources(props: {
 			return;
 		}
 
-		// Create a process manager for this export resolution
-		const processManagerId = createProcessManager(namespace);
-
 		const promises = [];
 
 		for (let i = 0; i < exportResults.length; i++) {
@@ -161,13 +150,6 @@ export function useExportSources(props: {
 				.catch((error) => {
 					return undefined;
 				});
-
-			// Register this export as a process
-			addProcess(processManagerId, {
-				id: `export-${e.id}-${i}`,
-				name: `Export: ${e.name || e.displayname || e.id}`,
-				promise: filePromise,
-			});
 
 			promises.push(filePromise);
 		}

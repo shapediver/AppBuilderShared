@@ -112,13 +112,13 @@ export function useParameterValueSources(props?: {
 			// if no namespace is given for the source, use the main namespace
 			const session = sessionsRef.current[paramNamespace || namespace];
 
-			if (!session)  continue;
+			if (!session) continue;
 
 			const parameter = Object.values(session.parameters).find(
 				(p) => p.id === id || p.name === id || p.displayname === id,
 			);
 			if (!parameter) continue;
-			
+
 			const type = parameter.type;
 
 			if (isDataOutputSource(source)) {
@@ -190,7 +190,6 @@ export function useParameterValueSources(props?: {
 				}
 			}
 		}
-
 
 		sourcesRef.current = approvedSources;
 		// set the reset signal so that the individual hooks can reset their state
