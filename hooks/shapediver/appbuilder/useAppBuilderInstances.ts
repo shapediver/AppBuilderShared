@@ -320,11 +320,7 @@ export function useAppBuilderInstances(props: Props) {
 
 		createParsedInstances(instancesCopy);
 		setParameterValuesData(undefined);
-	}, [
-		resolvedParameterValuesArray,
-		createParsedInstances,
-		parameterValuesData,
-	]);
+	}, [resolvedParameterValuesArray, parameterValuesData]);
 
 	useEffect(() => {
 		if (!instances) return;
@@ -692,7 +688,7 @@ const createInstance = (
 	 * The transformations are added to the instance node as children.
 	 * The instance node is then added to the controller session node.
 	 */
-	const promise = creationPromise.then((node) => {
+	const promise = creationPromise.then(async (node) => {
 		// send a progress update
 		progressCallback({
 			percentage: 0.45,
@@ -737,7 +733,7 @@ const createInstance = (
 
 		// if there is a material database, we need to apply it
 		if (assignMaterialFromDatabase)
-			assignMaterialFromDatabase(instanceNode);
+			await assignMaterialFromDatabase(instanceNode);
 
 		// send a progress update
 		progressCallback({
