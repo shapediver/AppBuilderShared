@@ -1,5 +1,6 @@
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {AppBuilderActionFromType} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionFromType";
+import {ComponentContext} from "@AppBuilderShared/shared/lib/ComponentContext";
 import {IAppBuilderWidgetPropsActions} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	Group,
@@ -41,6 +42,7 @@ export default function AppBuilderActionsWidgetComponent(
 	//const themeProps = useProps("AppBuilderActionsWidgetComponent", defaultStyleProps, rest);
 
 	const context = useContext(AppBuilderContainerContext);
+	const componentContext = useContext(ComponentContext);
 
 	if (!actions || actions.length === 0) {
 		return <></>;
@@ -57,6 +59,7 @@ export default function AppBuilderActionsWidgetComponent(
 			},
 			namespace,
 			i,
+			componentContext,
 		);
 	});
 
