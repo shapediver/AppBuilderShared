@@ -1,9 +1,9 @@
-import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import AppBuilderActionAddToCartComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionAddToCartComponent";
 import AppBuilderActionCloseConfiguratorComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCloseConfiguratorComponent";
 import AppBuilderActionCreateModelStateComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCreateModelStateComponent";
 import AppBuilderActionSetBrowserLocationComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetBrowserLocationComponent";
 import AppBuilderActionSetParameterValuesComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValuesComponent";
+import {IComponentContext} from "@AppBuilderShared/shared";
 import {
 	IAppBuilderControlActionRef,
 	isAddToCartAction,
@@ -18,7 +18,6 @@ import {
 import React from "react";
 import AppBuilderActionMessageToParentComponent from "./AppBuilderActionMessageToParentComponent";
 import AppBuilderActionSoundComponent from "./AppBuilderActionSoundComponent";
-import { IComponentContext } from "@AppBuilderShared/types/context/componentcontext";
 
 export function AppBuilderActionFromType(
 	actionRef: IAppBuilderControlActionRef,
