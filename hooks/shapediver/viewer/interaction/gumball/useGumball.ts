@@ -9,6 +9,7 @@ import {
 import {
 	getNodesByName,
 	matchNodesWithPatterns,
+	OutputNodeNameFilterPatterns,
 	RestrictionProperties,
 } from "@shapediver/viewer.features.interaction";
 import {
@@ -167,65 +168,49 @@ export function useGumball(
 			let restrictionsToUse: {[key: string]: RestrictionProperties} = {};
 			if (nodes.length === 1 && restrictions) {
 				const node = nodes[0];
+
+				const processPatterns = (
+					pattern: OutputNodeNameFilterPatterns,
+					index: number,
+				) => {
+					// check if there are any patterns that match the selected nodes
+					const matchedNodeNames = matchNodesWithPatterns(
+						pattern,
+						[node.node],
+						strictNaming,
+					);
+
+					if (matchedNodeNames.length > 0) {
+						if (
+							objects[index].restrictions &&
+							objects[index].restrictions.length > 0
+						) {
+							objects[index].restrictions.forEach(
+								(restrictionId) => {
+									const restriction =
+										restrictions[restrictionId];
+									if (!restriction) return;
+									restrictionsToUse[restrictionId] =
+										restriction;
+								},
+							);
+						}
+					}
+				};
+
 				for (let i = 0; i < objects.length; i++) {
 					if (objects[i].patterns.outputPatterns) {
 						Object.values(
 							objects[i].patterns.outputPatterns!,
 						).forEach((pattern) => {
-							// check if there are any patterns that match the selected nodes
-							const matchedNodeNames = matchNodesWithPatterns(
-								pattern,
-								[node.node],
-								strictNaming,
-							);
-
-							if (matchedNodeNames.length > 0) {
-								if (
-									objects[i].restrictions &&
-									objects[i].restrictions.length > 0
-								) {
-									objects[i].restrictions.forEach(
-										(restrictionId) => {
-											const restriction =
-												restrictions[restrictionId];
-											if (!restriction) return;
-											restrictionsToUse[restrictionId] =
-												restriction;
-										},
-									);
-								}
-							}
+							processPatterns(pattern, i);
 						});
 					}
 
 					if (objects[i].patterns.instancePatterns) {
 						const patterns = objects[i].patterns.instancePatterns!;
-
 						if (!patterns) continue;
-
-						// check if there are any patterns that match the selected nodes
-						const matchedNodeNames = matchNodesWithPatterns(
-							patterns,
-							[node.node],
-							strictNaming,
-						);
-
-						if (matchedNodeNames.length > 0) {
-							if (
-								objects[i].restrictions &&
-								objects[i].restrictions.length > 0
-							) {
-								objects[i].restrictions.forEach(
-									(restrictionId) => {
-										const restriction =
-											restrictions[restrictionId];
-										if (!restriction) return;
-										restrictionsToUse[restrictionId] =
-											restriction;
-									},
-								);
-							}
-						}
+						processPatterns(patterns, i);
 					}
 				}
 			}
