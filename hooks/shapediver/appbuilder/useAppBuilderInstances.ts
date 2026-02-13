@@ -515,6 +515,8 @@ export function useAppBuilderInstances(props: Props) {
 				getParameter,
 			);
 
+			loadedRef.current = true;
+
 			// wait for all output callbacks to resolve
 			// before we add the instances to the session node
 			Promise.all(outputCallbackPromises).then(() => {
@@ -550,7 +552,6 @@ export function useAppBuilderInstances(props: Props) {
 						removeCustomizationResult(instanceId);
 					},
 				);
-				loadedRef.current = true;
 			});
 		});
 
