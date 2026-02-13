@@ -126,7 +126,7 @@ export default function ExportButtonComponent(
 	const {definition, actions} = useExport(props) ?? {};
 	const notifications = useNotificationStore();
 
-	const {addProcess, createProcessManager, removeProcessManager} =
+	const {addProcess, createProcessManager} =
 		useShapeDiverStoreProcessManager();
 
 	const resolveMainPromiseRef = useRef<(() => void) | undefined>(undefined);
@@ -249,9 +249,6 @@ export default function ExportButtonComponent(
 					parameterValues: ParameterValueDefinition[];
 				};
 				information: {
-					sourceMap: {
-						[key: string]: number;
-					};
 					skipStargate?: boolean;
 					parameterValues: IAppBuilderActionPropsSetParameterValue[];
 				};
@@ -266,17 +263,13 @@ export default function ExportButtonComponent(
 		if (!parameterValueSourcesData || !parameterValueSourcesResults) return;
 
 		const parameterValues: {[key: string]: string} = {};
+		let sourceIndex = 0;
 		for (const p of parameterValueSourcesData.information.parameterValues) {
 			if (p.value) {
 				parameterValues[p.parameter.name] = p.value;
 			} else if (p.source) {
-				// get the index of the source result for this parameter
-				const sourceIndex =
-					parameterValueSourcesData.information.sourceMap[
-						p.parameter.name
-					];
-				if (sourceIndex === undefined) continue;
-				const sourceResult = parameterValueSourcesResults[sourceIndex];
+				const sourceResult =
+					parameterValueSourcesResults[sourceIndex++];
 				if (sourceResult && typeof sourceResult === "string") {
 					parameterValues[p.parameter.name] = sourceResult;
 				}
@@ -314,20 +307,16 @@ export default function ExportButtonComponent(
 				// and afterwards we request the export
 
 				const information: {
-					sourceMap: {[key: string]: number};
 					skipStargate?: boolean;
 					parameterValues: IAppBuilderActionPropsSetParameterValue[];
 				} = {
-					sourceMap: {},
 					skipStargate,
 					parameterValues: parameterValues!,
 				};
 
 				const sources = parameterValues!
-					.map((p, index) => {
+					.map((p) => {
 						if (p.source) {
-							information.sourceMap[p.parameter.name] = index;
-
 							// while we could let the useResolveParameterValues hook handle all parameters
 							// we only want to pass those with sources to it
 							// as otherwise we would have to filter the results again later
