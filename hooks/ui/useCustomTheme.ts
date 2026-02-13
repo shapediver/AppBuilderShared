@@ -590,7 +590,7 @@ export const useCustomTheme = (props: Props = {}) => {
 					//   variant: "subtle",
 					//   size: "sm",
 					// },
-					// resetButtonTitle: "Reset form",
+					// resetMessage: "Reset form",
 				}),
 			AppBuilderContainer: AppBuilderContainerThemeProps({
 				// orientation: "unspecified"
