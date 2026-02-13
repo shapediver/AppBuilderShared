@@ -5,11 +5,13 @@ import {
 	useResolveParameterValues,
 } from "@AppBuilderShared/hooks/shapediver/parameters/useResolveParameterValues";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {
 	IAppBuilderActionPropsCommon,
 	IAppBuilderActionPropsSetParameterValues,
 	IAppBuilderLegacyActionPropsSetParameterValue,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -76,6 +78,11 @@ export default function AppBuilderActionSetParameterValuesComponent(
 	useEffect(() => {
 		parameterValueSourcesDataRef.current = parameterValueSourcesData;
 	}, [parameterValueSourcesData]);
+
+	const {addProcess, createProcessManager} =
+		useShapeDiverStoreProcessManager();
+
+	const resolveMainPromiseRef = useRef<(() => void) | undefined>(undefined);
 
 	const processParameterUpdates = useCallback(
 		(sourceResults?: any[]) => {
@@ -151,6 +158,20 @@ export default function AppBuilderActionSetParameterValuesComponent(
 				});
 			}
 
+			// create a promise to wait for all sources to be resolved before setting the parameter values
+			const mainPromise = new Promise<void>((resolve) => {
+				resolveMainPromiseRef.current = resolve;
+			});
+
+			const mainProcessDefinition: IProcessDefinition = {
+				name: "Set Parameter Values Action - Parameter Values Sources Process",
+				promise: mainPromise,
+			};
+
+			// we have to await the sources, therefore we create a processManager
+			const processManagerId = createProcessManager(props.namespace);
+			addProcess(processManagerId, mainProcessDefinition);
+
 			setParameterValueSourcesData(parameterValueSources);
 			return;
 		}
@@ -159,10 +180,11 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		processParameterUpdates();
 	}, [parameters, namespace, processParameterUpdates]);
 
-	const parameterValueSourcesResults = useResolveParameterValues({
-		namespace,
-		parameterValues: parameterValueSourcesData,
-	});
+	const {values: parameterValueSourcesResults, isResolving} =
+		useResolveParameterValues({
+			namespace,
+			parameterValues: parameterValueSourcesData,
+		});
 
 	// when parameterValueSourcesData changes, we need to set the parameter value
 	useEffect(() => {
@@ -180,6 +202,12 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		// reset parameterValueSourcesData to avoid re-running this effect
 		parameterValueSourcesDataRef.current = undefined;
 		setParameterValueSourcesData(undefined);
+
+		// resolve the main promise to indicate that the process is complete
+		if (resolveMainPromiseRef.current) {
+			resolveMainPromiseRef.current();
+			resolveMainPromiseRef.current = undefined;
+		}
 	}, [parameterValueSourcesResults, processParameterUpdates]);
 
 	useEffect(() => {
@@ -232,7 +260,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 			icon={icon}
 			tooltip={tooltip}
 			onClick={onClick}
-			disabled={isDisabled}
+			disabled={isDisabled || isResolving}
 		/>
 	);
 }

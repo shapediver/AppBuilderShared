@@ -79,6 +79,12 @@ const addSourceToFlatMap = (
 
 	// recursively add nested sources
 	if (nested) {
+		// For export sources, nested parameters should use the export's sessionId if specified
+		const nestedNamespace =
+			isExportSource(value) && value.props.sessionId
+				? value.props.sessionId
+				: namespace;
+
 		for (const [childKey, child] of Object.entries(nested)) {
 			// check if the child is a source
 			if (
@@ -87,11 +93,12 @@ const addSourceToFlatMap = (
 				isParameterSource(child)
 			) {
 				// track this nested source
-				nestedSourceKeys.set(childKey, createSourceKey(child));
+				const childSourceKey = createSourceKey(child);
+				nestedSourceKeys.set(childKey, childSourceKey);
 			}
 
 			addSourceToFlatMap(
-				{id: childKey, value: child},
+				{id: childKey, value: child, namespace: nestedNamespace},
 				map,
 				resolving,
 				resolved,
@@ -150,7 +157,10 @@ const flattenSources = (
 export function useResolveParameterValues(props?: {
 	namespace: string;
 	parameterValues?: ParameterValueDefinition[];
-}): string[] | undefined {
+}): {
+	values: string[] | undefined;
+	isResolving: boolean;
+} {
 	const {namespace, parameterValues} = props || {};
 
 	/**
@@ -258,6 +268,8 @@ export function useResolveParameterValues(props?: {
 				for (const nestedSourceKey of Array.from(
 					entry.nestedSourceKeys.values(),
 				)) {
+					// Only check if the key exists in the map, not if the value is undefined
+					// undefined is a valid resolved value (e.g., screenshot not yet taken)
 					if (!resolutionState.resolvedMap.has(nestedSourceKey)) {
 						canResolve = false;
 						break;
@@ -279,16 +291,18 @@ export function useResolveParameterValues(props?: {
 						const nestedSourceKey =
 							entry.nestedSourceKeys.get(paramKey);
 						if (nestedSourceKey) {
-							const resolved =
-								resolutionState.resolvedMap.get(
-									nestedSourceKey,
-								);
-							if (resolved !== undefined) {
+							if (
+								resolutionState.resolvedMap.has(nestedSourceKey)
+							) {
+								const resolved =
+									resolutionState.resolvedMap.get(
+										nestedSourceKey,
+									);
 								resolvedParams[paramKey] =
 									resolved as IAppBuilderParameterValueDefinition;
 							} else {
 								Logger.warn(
-									`Could not find resolved value for nested source in export parameter ${paramKey}`,
+									`Could not find resolved value for nested source in export parameter ${paramKey}. NestedSourceKey: ${nestedSourceKey}`,
 								);
 								resolvedParams[paramKey] = paramValue;
 							}
@@ -321,11 +335,44 @@ export function useResolveParameterValues(props?: {
 		}
 
 		if (sources.length === 0) {
-			// No progress can be made
+			// No progress can be made - check if sources are waiting for undefined values
 			if (resolutionState.pendingSources.length > 0) {
-				Logger.warn(
-					`Cannot resolve ${resolutionState.pendingSources.length} sources. Possible circular dependency or missing nested sources.`,
+				// Check if any pending sources are waiting for undefined nested dependencies
+				const waitingForUndefined = resolutionState.pendingSources.some(
+					(pending) => {
+						const entry = flatArray[pending.entryIndex];
+						if (
+							entry.nestedSourceKeys &&
+							entry.nestedSourceKeys.size > 0
+						) {
+							for (const nestedSourceKey of Array.from(
+								entry.nestedSourceKeys.values(),
+							)) {
+								if (
+									resolutionState.resolvedMap.has(
+										nestedSourceKey,
+									)
+								) {
+									const resolvedValue =
+										resolutionState.resolvedMap.get(
+											nestedSourceKey,
+										);
+									if (resolvedValue === undefined) {
+										return true;
+									}
+								}
+							}
+						}
+						return false;
+					},
 				);
+
+				// Only warn if sources are truly stuck (not just waiting for undefined values)
+				if (!waitingForUndefined) {
+					Logger.warn(
+						`Cannot resolve ${resolutionState.pendingSources.length} sources. Possible circular dependency or missing nested sources.`,
+					);
+				}
 			}
 			return undefined;
 		}
@@ -443,14 +490,10 @@ export function useResolveParameterValues(props?: {
 				const resolvedValue =
 					index !== undefined ? resolvedSources?.[index] : undefined;
 
-				if (resolvedValue !== undefined) {
-					result.push(resolvedValue + "");
-				} else {
-					result.push("");
-					Logger.warn(
-						`Could not resolve parameter value source for parameter ${id}. Setting value to empty string.`,
-					);
-				}
+				// Convert the resolved value to string, using empty string if undefined
+				result.push(
+					resolvedValue !== undefined ? resolvedValue + "" : "",
+				);
 			} else {
 				result.push(value + "");
 			}
@@ -459,5 +502,20 @@ export function useResolveParameterValues(props?: {
 		return result;
 	}, [parameterValues, resolvedSources, sourceData]);
 
-	return resolvedParameters;
+	// Determine if we're still resolving
+	// We're resolving if:
+	// 1. We have sources to resolve, AND
+	// 2. There are pending sources, OR the resolved parameters are not ready yet
+	const isResolving = useMemo(() => {
+		if (!sourceData) return false;
+		if (!resolutionState) return true; // Still initializing
+		if (resolutionState.pendingSources.length > 0) return true; // Still resolving
+		if (sourceData.flat.size > 0 && !resolvedParameters) return true; // Sources exist but not resolved yet
+		return false;
+	}, [sourceData, resolutionState, resolvedParameters]);
+
+	return {
+		values: resolvedParameters,
+		isResolving,
+	};
 }

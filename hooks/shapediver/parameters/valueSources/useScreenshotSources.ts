@@ -13,13 +13,13 @@ export function useScreenshotSources(props: {
 		upload: (file: File) => Promise<string>;
 	}[];
 }): {
-	screenshotValues: string[] | undefined;
+	screenshotValues: (string | undefined)[] | undefined;
 	resetScreenshotValues: () => void;
 } {
-	const {sources} = props;
+	const {sources, namespace} = props;
 
 	const [screenshotValues, setScreenshotValues] = useState<
-		string[] | undefined
+		(string | undefined)[] | undefined
 	>(undefined);
 
 	const {viewportId} = useViewportId();
@@ -38,14 +38,25 @@ export function useScreenshotSources(props: {
 			const promises = [];
 			for (let i = 0; i < sources.length; i++) {
 				const {source, upload} = sources[i];
-				const screenshotPromise = getScreenshot(source).then((data) => {
-					// create a file from the data string
-					const {blob} = Converter.instance.dataURLtoBlob(data);
-					const file = new File([blob], "screenshot.png", {
-						type: blob.type,
+				const screenshotPromise = getScreenshot(source)
+					.then((data) => {
+						// If screenshot returns undefined or empty, return undefined
+						if (!data) {
+							return undefined;
+						}
+
+						// Convert to file and upload
+						const {blob} = Converter.instance.dataURLtoBlob(data);
+						const file = new File([blob], "screenshot.png", {
+							type: blob.type,
+						});
+						return upload(guessMissingMimeType(file) as File);
+					})
+					.catch((error) => {
+						console.error(`Screenshot ${i} error:`, error);
+						return undefined;
 					});
-					return upload(guessMissingMimeType(file) as File);
-				});
+
 				promises.push(screenshotPromise);
 			}
 
@@ -53,7 +64,7 @@ export function useScreenshotSources(props: {
 				setScreenshotValues(results);
 			});
 		}
-	}, [sources]);
+	}, [sources, getScreenshot, namespace]);
 
 	return {
 		screenshotValues,
