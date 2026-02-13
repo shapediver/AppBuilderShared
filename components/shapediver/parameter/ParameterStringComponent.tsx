@@ -5,7 +5,7 @@ import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
 	defaultPropsParameterWrapper,
-	PropsParameter,
+	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {validateStringParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
@@ -20,10 +20,17 @@ import SelectComponent from "./select/SelectComponent";
  * @returns
  */
 export default function ParameterStringComponent(
-	props: PropsParameter & Partial<PropsParameterWrapper>,
+	props: PropsParameterComponent & Partial<PropsParameterWrapper>,
 ) {
-	const {definition, value, handleChange, onCancel, disabled} =
-		useParameterComponentCommons<string>(props);
+	const {
+		definition,
+		value,
+		handleChange,
+		onCancel,
+		disabled,
+		formInputProps,
+		formKey,
+	} = useParameterComponentCommons<string>(props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterStringComponent",
@@ -94,51 +101,97 @@ export default function ParameterStringComponent(
 				(selectSettings &&
 				(selectSettings.items || selectSettings.source) ? (
 					<SelectComponent
+						key={formKey}
 						value={undefined}
-						onChange={(v) =>
-							handleChange(v ?? "", undefined, restoreFocus)
-						}
+						{...(formInputProps || {})}
+						onChange={(v) => {
+							const val = v ?? "";
+							handleChange(val, undefined, restoreFocus);
+							if (formInputProps?.onChange) {
+								formInputProps.onChange(val);
+							}
+						}}
 						disabled={disabled}
 						// TODO add these settings as an optional theme property to the ParameterStringComponent
 						//settings={settings.settings}
 						inputContainer={inputContainer}
-						onFocus={onFocusHandler}
-						onBlur={onBlurHandler}
+						onFocus={(e) => {
+							onFocusHandler(e);
+							if (formInputProps?.onFocus) {
+								formInputProps.onFocus(e);
+							}
+						}}
+						onBlur={() => {
+							onBlurHandler();
+							if (formInputProps?.onBlur) {
+								formInputProps.onBlur();
+							}
+						}}
 						items={selectSettings.items ?? []}
 						{...selectSettings}
 					/>
 				) : lines !== undefined ? (
 					<Textarea
+						key={formKey}
 						value={value}
-						onChange={(e) =>
+						{...(formInputProps || {})}
+						onChange={(e) => {
 							handleChange(
 								e.currentTarget.value,
 								undefined,
 								restoreFocus,
-							)
-						}
+							);
+							if (formInputProps?.onChange) {
+								formInputProps.onChange(e);
+							}
+						}}
 						disabled={disabled}
 						maxLength={definition.max}
 						autosize
 						minRows={lines}
 						maxRows={lines}
-						onFocus={onFocusHandler}
-						onBlur={onBlurHandler}
+						onFocus={(e) => {
+							onFocusHandler(e);
+							if (formInputProps?.onFocus) {
+								formInputProps.onFocus(e);
+							}
+						}}
+						onBlur={() => {
+							onBlurHandler();
+							if (formInputProps?.onBlur) {
+								formInputProps.onBlur();
+							}
+						}}
 					/>
 				) : (
 					<TextInput
+						key={formKey}
+						{...(formInputProps || {})}
 						value={value}
-						onChange={(e) =>
+						onChange={(e) => {
 							handleChange(
 								e.target.value,
 								undefined,
 								restoreFocus,
-							)
-						}
+							);
+							if (formInputProps?.onChange) {
+								formInputProps.onChange(e);
+							}
+						}}
 						disabled={disabled}
 						maxLength={definition.max}
-						onFocus={onFocusHandler}
-						onBlur={onBlurHandler}
+						onFocus={(e) => {
+							onFocusHandler(e);
+							if (formInputProps?.onFocus) {
+								formInputProps.onFocus(e);
+							}
+						}}
+						onBlur={() => {
+							onBlurHandler();
+							if (formInputProps?.onBlur) {
+								formInputProps.onBlur();
+							}
+						}}
 					/>
 				))}
 		</ParameterWrapperComponent>

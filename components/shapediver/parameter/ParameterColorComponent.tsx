@@ -5,7 +5,7 @@ import {useFocus} from "@AppBuilderShared/hooks/shapediver/parameters/useFocus";
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
 	defaultPropsParameterWrapper,
-	PropsParameter,
+	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {
@@ -45,7 +45,7 @@ export function ParameterColorComponentThemeProps(
  * @returns
  */
 export default function ParameterColorComponent(
-	props: PropsParameter & Partial<PropsParameterWrapper>,
+	props: PropsParameterComponent & Partial<PropsParameterWrapper>,
 ) {
 	const {colorFormat} = useProps(
 		"ParameterColorComponent",
@@ -65,6 +65,8 @@ export default function ParameterColorComponent(
 		value: paramValue,
 		onCancel,
 		disabled,
+		formInputProps,
+		formKey,
 	} = useParameterComponentCommons<string>(
 		props,
 		0,
@@ -72,7 +74,6 @@ export default function ParameterColorComponent(
 	);
 
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
-
 	const handleSdColorChange = useCallback(
 		(val: string) => {
 			handleChange(
@@ -101,6 +102,8 @@ export default function ParameterColorComponent(
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && (
 				<ColorInput
+					key={formKey}
+					{...(formInputProps || {})}
 					placeholder="Pick color"
 					value={value}
 					rightSection={
@@ -120,8 +123,18 @@ export default function ParameterColorComponent(
 					onChangeEnd={handleSdColorChange}
 					disabled={disabled}
 					format={colorFormat}
-					onFocus={onFocusHandler}
-					onBlur={onBlurHandler}
+					onFocus={(e) => {
+						onFocusHandler(e);
+						if (formInputProps?.onFocus) {
+							formInputProps.onFocus(e);
+						}
+					}}
+					onBlur={() => {
+						onBlurHandler();
+						if (formInputProps?.onBlur) {
+							formInputProps.onBlur();
+						}
+					}}
 				/>
 			)}
 		</ParameterWrapperComponent>

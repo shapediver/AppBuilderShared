@@ -1,5 +1,9 @@
 import {PropsParameterOrExport} from "@AppBuilderShared/types/components/shapediver/propsCommon";
-import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
+import {
+	IShapeDiverParameterActions,
+	IShapeDiverParameterDefinition,
+} from "@AppBuilderShared/types/shapediver/parameter";
+import {UseFormReturnType} from "@mantine/form";
 
 export interface PropsParameterWrapper {
 	readonly wrapperComponent?:
@@ -14,6 +18,17 @@ export const defaultPropsParameterWrapper: PropsParameterWrapper = {
 	wrapperComponent: "section",
 	wrapperProps: {},
 };
+
+/**
+ * Props for Mantine form integration with parameter components.
+ */
+export interface PropsParameterFormIntegration {
+	/**
+	 * Optional form instance from useParameterForm().
+	 * When provided, the component will use the form for validation and state management.
+	 */
+	readonly form?: UseFormReturnType<Record<string, string>>;
+}
 
 /**
  * Props of a parameter reference.
@@ -41,4 +56,41 @@ export interface PropsParameter extends PropsParameterOrExport {
 		Partial<IShapeDiverParameterDefinition>,
 		"displayname" | "group" | "order" | "tooltip" | "hidden" | "settings"
 	>;
+
+	/**
+	 * Parameter actions for replacement
+	 */
+	readonly customActions?: Partial<IShapeDiverParameterActions<any>>;
 }
+
+/**
+ * Extended props for parameter components with Mantine form integration support.
+ */
+export type PropsParameterWithForm = PropsParameter &
+	Partial<PropsParameterFormIntegration>;
+
+export type PropsParameterComponent = (
+	| PropsParameter
+	| PropsParameterWithForm
+) &
+	(
+		| {
+				/**
+				 * Keep value synchronized with store
+				 */
+				readonly reactive: false;
+
+				/**
+				 * Value of the parameter (only if reactive is false)
+				 */
+				value?: any;
+		  }
+		| {
+				/**
+				 * Keep value synchronized with store
+				 */
+				readonly reactive?: true;
+
+				value?: never;
+		  }
+	);

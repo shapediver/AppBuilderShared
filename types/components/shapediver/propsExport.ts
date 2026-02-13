@@ -1,7 +1,10 @@
 import {PropsParameterOrExport} from "@AppBuilderShared/types/components/shapediver/propsCommon";
 import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
+import {UseFormReturnType} from "@mantine/form";
 
+/** Export parameters **/
+export type IParameterValues = {[key: string]: string};
 /** Props of an export reference. */
 export interface PropsExport extends PropsParameterOrExport {
 	/**
@@ -22,3 +25,30 @@ export interface PropsExport extends PropsParameterOrExport {
 	 */
 	readonly parameterValues?: IAppBuilderActionPropsSetParameterValue[];
 }
+
+/**
+ * Props for Mantine form integration with export components.
+ */
+export interface PropsExportFormIntegration {
+	/**
+	 * Optional form instance from useExport().
+	 * When provided, the component will use the form for form submission.
+	 */
+	readonly form?: UseFormReturnType<any>;
+
+	/**
+	 * Optional callback to be called after successful form validation and export.
+	 */
+	readonly onSuccess?: (values?: IParameterValues) => void;
+
+	/**
+	 * Optional callback to be called when export fails.
+	 */
+	readonly onError?: (values?: IParameterValues) => void;
+}
+
+/**
+ * Extended props for export components with Mantine form integration support.
+ */
+export type PropsExportWithForm = PropsExport &
+	Partial<PropsExportFormIntegration>;

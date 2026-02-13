@@ -1,7 +1,7 @@
 import {ModelCardOverlayPropsType} from "@AppBuilderShared/components/shapediver/platform/ModelCardOverlay";
 import {OverlayStyleProps} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import {ButtonRenderContext} from "@AppBuilderShared/types/components/shapediver/componentTypes";
-import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {PropsExportWithForm} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {
 	PropsParameter,
 	PropsParameterWrapper,
@@ -42,7 +42,7 @@ interface ComponentType {
 export interface ExportComponentMapValueType extends ComponentType {
 	// #region Properties (1)
 
-	component: (props: PropsExport) => ReactElement;
+	component: (props: PropsExportWithForm) => ReactElement;
 
 	// #endregion Properties (1)
 }

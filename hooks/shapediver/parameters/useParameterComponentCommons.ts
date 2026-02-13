@@ -1,7 +1,10 @@
 import {useParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useParameter";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+import {
+	PropsParameterComponent,
+	PropsParameterWithForm,
+} from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {IShapeDiverParameterState} from "@AppBuilderShared/types/shapediver/parameter";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
@@ -10,20 +13,33 @@ import {CUSTOM_SESSION_ID_POSTFIX} from "../appbuilder/useAppBuilderCustomParame
 /**
  * Hook providing functionality common to all parameter components like
  * {@link ParameterSliderComponent}, {@link ParameterStringComponent}, etc.
- * @param props
+ * Optionally accepts a form instance for Mantine form integration.
+ * @param props - Parameter props, optionally including form instance
  * @param debounceTimeoutForImmediateExecution
  * @param initializer
- * @returns
+ * @returns Common parameter functionality including optional form instance
  */
 export function useParameterComponentCommons<T>(
-	props: PropsParameter,
+	props: PropsParameterComponent,
 	debounceTimeoutForImmediateExecution: number = 1000,
 	initializer: (
 		state: IShapeDiverParameterState<T | string>,
 	) => T | string = (state) => state.uiValue,
 ) {
-	const {namespace, disableIfDirty, acceptRejectMode} = props;
-	const {definition, actions, state} = useParameter<T | string>(props);
+	const {
+		namespace,
+		disableIfDirty,
+		acceptRejectMode,
+		reactive = true,
+		value: customValue,
+	} = props;
+	const {
+		definition,
+		actions: paramActions,
+		state,
+	} = useParameter<T | string>(props);
+	const customActions = props.customActions || {};
+	const actions = {...paramActions, ...customActions};
 	const executing = useShapeDiverStoreParameters((state) => {
 		const ids = state.sessionDependency[namespace];
 
@@ -91,8 +107,16 @@ export function useParameterComponentCommons<T>(
 	);
 
 	useEffect(() => {
-		setValue(state.uiValue);
-	}, [state.uiValue]);
+		if (reactive) {
+			setValue(state.uiValue);
+		}
+	}, [state.uiValue, reactive]);
+
+	useEffect(() => {
+		if (!reactive) {
+			setValue(customValue);
+		}
+	}, [customValue, reactive]);
 
 	// state for the onCancel callback which can be set from the parameter components
 	const [onCancelCallback, setOnCancelCallback] = useState<
@@ -134,6 +158,20 @@ export function useParameterComponentCommons<T>(
 		return {...definition, ...props.overrides};
 	}, [definition, props.overrides]);
 
+	// Extract form from props if provided
+	const form = (props as PropsParameterWithForm).form;
+
+	// Get form input props once if form is available
+	const formInputProps = useMemo(() => {
+		if (!form || !definition) return null;
+		return form.getInputProps(definition.id);
+	}, [form, definition]);
+
+	const formKey = useMemo(() => {
+		if (!form || !definition) return null;
+		return form.key(definition.id);
+	}, [form, definition]);
+
 	return {
 		definition: memoizedDefinition,
 		actions,
@@ -145,5 +183,9 @@ export function useParameterComponentCommons<T>(
 		onCancel,
 		disabled,
 		sessionDependencies,
+		// Form instance (optional)
+		form,
+		formInputProps,
+		formKey,
 	};
 }

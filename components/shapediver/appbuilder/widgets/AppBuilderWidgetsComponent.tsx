@@ -20,6 +20,7 @@ import {
 	isControlsWidget,
 	isDesktopClientOutputsWidget,
 	isDesktopClientSelectionWidget,
+	isFormWidget,
 	isImageWidget,
 	isLineChartWidget,
 	isProgressWidget,
@@ -35,6 +36,7 @@ import AppBuilderStackUiWidgetButtonComponent from "~/shared/components/shapediv
 import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetComponent";
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
 import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
+import AppBuilderFormWidgetComponent from "./AppBuilderFormWidgetComponent";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(
 	() => import("./AppBuilderAgentWidgetComponent"),
 );
@@ -154,6 +156,14 @@ export default function AppBuilderWidgetsComponent({
 				else if (isControlsWidget(w))
 					return (
 						<AppBuilderControlsWidgetComponent
+							key={i}
+							namespace={namespace}
+							{...w.props}
+						/>
+					);
+				else if (isFormWidget(w))
+					return (
+						<AppBuilderFormWidgetComponent
 							key={i}
 							namespace={namespace}
 							{...w.props}

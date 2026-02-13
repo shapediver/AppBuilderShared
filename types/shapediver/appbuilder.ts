@@ -659,6 +659,7 @@ export type AppBuilderWidgetType =
 	| "desktopClientSelection"
 	| "desktopClientOutputs"
 	| "controls"
+	| "form"
 	| "accordionUi"
 	| "savedStates"
 	| "sceneTreeExplorer"
@@ -720,6 +721,29 @@ export interface IAppBuilderWidgetPropsActions {
 export interface IAppBuilderWidgetPropsControls {
 	/** The controls. */
 	controls?: IAppBuilderControl[];
+}
+
+/** Submit behavior for form widget */
+export enum FormWidgetSubmitBehavior {
+	NONE = "none",
+	RESET = "reset",
+	MESSAGE = "message",
+}
+
+/** Properties of a form widget. */
+export interface IAppBuilderWidgetPropsForm {
+	/** The controls to display in the form. */
+	controls?: IAppBuilderControl[];
+	/** References to parameters which shall be displayed by the form. */
+	parameters?: IAppBuilderParameterRef[];
+	/** Export to trigger on form submission. */
+	export?: IAppBuilderExportRef;
+	/** What to do after successful form submission. */
+	submit?: FormWidgetSubmitBehavior;
+	/** Success message to display (when submit is "message"). */
+	successMessage?: string;
+	/** Error message to display (when submit is "message"). */
+	errorMessage?: string;
 }
 
 /** Enum of the visibility of the attribute visualization. */
@@ -901,6 +925,7 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsDesktopClientSelection
 		| IAppBuilderWidgetPropsDesktopClientOutputs
 		| IAppBuilderWidgetPropsControls
+		| IAppBuilderWidgetPropsForm
 		| IAppBuilderWidgetPropsAccordionUi
 		| IAppBuilderWidgetPropsSavedStates
 		| IAppBuilderWidgetPropsSceneTreeExplorer
@@ -1237,6 +1262,14 @@ export function isControlsWidget(widget: IAppBuilderWidget): widget is {
 	props: IAppBuilderWidgetPropsControls;
 } {
 	return widget.type === "controls";
+}
+
+/** assert widget type "form" */
+export function isFormWidget(widget: IAppBuilderWidget): widget is {
+	type: "form";
+	props: IAppBuilderWidgetPropsForm;
+} {
+	return widget.type === "form";
 }
 
 /** assert widget type "accordionUi" */

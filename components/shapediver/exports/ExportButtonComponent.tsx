@@ -14,18 +14,21 @@ import {
 	StargateStyleProps,
 } from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
+import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
 } from "@AppBuilderShared/hooks/shapediver/parameters/useResolveParameterValues";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
-import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {
+	IParameterValues,
+	PropsExportWithForm,
+} from "@AppBuilderShared/types/components/shapediver/propsExport";import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {
 	Button,
@@ -105,10 +108,11 @@ export function ExportButtonComponentThemeProps(
  * @returns
  */
 export default function ExportButtonComponent(
-	props: PropsExport &
+	props: PropsExportWithForm &
 		ExportButtonComponentThemePropsType &
 		Partial<StargateStyleProps>,
 ) {
+	const {form, onSuccess, onError} = props;
 	const {
 		buttonProps,
 		downloadTooltipProps,
@@ -125,6 +129,7 @@ export default function ExportButtonComponent(
 
 	const {definition, actions} = useExport(props) ?? {};
 	const notifications = useNotificationStore();
+	const errorReporting = useContext(ErrorReportingContext);
 
 	const {addProcess, createProcessManager} =
 		useShapeDiverStoreProcessManager();
@@ -174,7 +179,7 @@ export default function ExportButtonComponent(
 		async (
 			skipStargate?: boolean,
 			parameterValues?: {[key: string]: string},
-		) => {
+		): Promise<boolean> => {
 			// request the export
 			const response = await actions.request(parameterValues);
 
@@ -192,9 +197,10 @@ export default function ExportButtonComponent(
 								title: "Unsupported content type",
 								message: `Content type ${content.format} not supported by the selected client.`,
 							});
-							return;
+							return false;
 						}
 						await onExportFile();
+						return true;
 					} else {
 						const url = content.href;
 						const filename = response.filename?.endsWith(
@@ -210,6 +216,7 @@ export default function ExportButtonComponent(
 						});
 						const res = await actions.fetch(url);
 						await fetchFileWithToken(res, filename);
+						return true;
 					}
 				} else if (
 					response.content &&
@@ -219,6 +226,23 @@ export default function ExportButtonComponent(
 					notifications.success({
 						message: response.msg,
 					});
+					return true;
+				} else {
+					// Unexpected response for DOWNLOAD export type
+					const errorMessage = `Unexpected response for export of type download`;
+					notifications.error({
+						message: errorMessage,
+					});
+					errorReporting.captureException({
+						message: errorMessage,
+						exportResponse: response,
+						exportDefinition: {
+							id: definition.id,
+							name: definition.name,
+							type: definition.type,
+						},
+					});
+					return false;
 				}
 			} else if (definition.type === EXPORT_TYPE.EMAIL) {
 				// if the export is an email export, show the resulting message
@@ -228,16 +252,42 @@ export default function ExportButtonComponent(
 						notifications.error({
 							message: result.err,
 						});
+						return false;
 					}
 					if (result.msg) {
 						notifications.success({
 							message: result.msg,
 						});
+						return true;
 					}
 				}
+
+				// Unexpected response for EMAIL export
+				const errorMessage = `Unexpected response for export of type email`;
+				notifications.error({
+					message: errorMessage,
+				});
+				errorReporting.captureException({
+					message: errorMessage,
+					exportResponse: response,
+					exportDefinition: {
+						id: definition.id,
+						name: definition.name,
+						type: definition.type,
+					},
+				});
+				return false;
 			}
+
+			// Unexpected export type
+			const errorMessage = `Unexpected export type: ${definition.type}`;
+			notifications.error({
+				message: errorMessage,
+			});
+			errorReporting.captureMessage(errorMessage);
+			return false;
 		},
-		[actions, definition.type, isStargate, isContentSupported],
+		[actions, definition.type, isStargate, isContentSupported, notifications, errorReporting],
 	);
 
 	const [requestingExport, setRequestingExport] = useState(false);
@@ -280,22 +330,33 @@ export default function ExportButtonComponent(
 		exportRequest(
 			parameterValueSourcesData.information.skipStargate,
 			parameterValues,
-		).finally(() => {
-			// reset source data to avoid multiple calls
-			setParameterValueSourcesData(undefined);
-			// set the requestingExport false to remove the loading icon
-			setRequestingExport(false);
-			// resolve the main promise of the process manager to indicate that the process is finished
-			if (resolveMainPromiseRef.current) {
-				resolveMainPromiseRef.current();
-				resolveMainPromiseRef.current = undefined;
-			}
-		});
-	}, [parameterValueSourcesResults, exportRequest]);
+		)
+			.then((result) => {
+				// Call onSuccess if provided
+				if (result && onSuccess) {
+					onSuccess(parameterValues);
+				}
+
+				if (!result && onError) {
+					onError(parameterValues);
+				}
+			})
+			.finally(() => {
+				// reset source data to avoid multiple calls
+				setParameterValueSourcesData(undefined);
+				// set the requestingExport false to remove the loading icon
+				setRequestingExport(false);
+				// resolve the main promise of the process manager to indicate that the process is finished
+				if (resolveMainPromiseRef.current) {
+					resolveMainPromiseRef.current();
+					resolveMainPromiseRef.current = undefined;
+				}
+			});
+	}, [parameterValueSourcesResults, exportRequest, resolveMainPromiseRef, onSuccess, onError]);
 
 	// callback for when the export button has been clicked
 	const onClick = useCallback(
-		async (skipStargate?: boolean) => {
+		async (skipStargate?: boolean, customValues?: IParameterValues) => {
 			// set the requestingExport true to display a loading icon
 			setRequestingExport(true);
 
@@ -352,30 +413,43 @@ export default function ExportButtonComponent(
 				});
 				return;
 			} else {
-				await exportRequest(
-					skipStargate,
-					parameterValues?.reduce(
-						(acc, p) => {
-							if (p.value) acc[p.parameter.name] = p.value;
-							return acc;
-						},
-						{} as {[key: string]: string},
-					),
-				);
-			}
+				const pValues =
+					customValues ||
+					parameterValues?.reduce((acc, p) => {
+						if (p.value) acc[p.parameter.name] = p.value;
+						return acc;
+					}, {} as IParameterValues);
+				try {
+					const result = await exportRequest(skipStargate, pValues);
+					// Call onSuccess if provided
+					if (result && onSuccess) {
+						onSuccess(pValues);
+					}
 
-			// set the requestingExport false to remove the loading icon
-			setRequestingExport(false);
+					if (!result && onError) {
+						onError(pValues);
+					}
+				} finally {
+					// set the requestingExport false to remove the loading icon
+					setRequestingExport(false);
+				}
+			}
 		},
-		[exportRequest, parameterValues],
+		[exportRequest, parameterValues, onSuccess, onError],
 	);
 
 	const onClickIntercepted = useCallback(
-		(skipStargate?: boolean) =>
-			interceptClick
-				? interceptClick(() => onClick(skipStargate))
-				: onClick(skipStargate),
-		[onClick, interceptClick],
+		(skipStargate?: boolean) => {
+			return (event: React.MouseEvent) => {
+				const cb = async (values?: IParameterValues) => {
+					return interceptClick
+						? interceptClick(() => onClick(skipStargate, values))
+						: onClick(skipStargate, values);
+				};
+				return form ? form.onSubmit(cb)(event as any) : cb();
+			};
+		},
+		[onClick, interceptClick, form],
 	);
 
 	return (
@@ -422,7 +496,7 @@ export default function ExportButtonComponent(
 								<Icon iconType={"tabler:mail-forward"} />
 							)
 						}
-						onClick={() => onClickIntercepted()}
+						onClick={onClickIntercepted()}
 						loading={requestingExport}
 					>
 						{definition.type === EXPORT_TYPE.DOWNLOAD

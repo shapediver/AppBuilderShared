@@ -3,7 +3,7 @@ import ParameterWrapperComponent from "@AppBuilderShared/components/shapediver/p
 import {useParameterComponentCommons} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterComponentCommons";
 import {
 	defaultPropsParameterWrapper,
-	PropsParameter,
+	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderShared/types/components/shapediver/propsParameter";
 import {Switch, useProps} from "@mantine/core";
@@ -15,10 +15,17 @@ import React from "react";
  * @returns
  */
 export default function ParameterBooleanComponent(
-	props: PropsParameter & Partial<PropsParameterWrapper>,
+	props: PropsParameterComponent & Partial<PropsParameterWrapper>,
 ) {
-	const {definition, value, handleChange, onCancel, disabled} =
-		useParameterComponentCommons<boolean>(props, 0);
+	const {
+		definition,
+		value,
+		handleChange,
+		onCancel,
+		disabled,
+		formInputProps,
+		formKey,
+	} = useParameterComponentCommons<boolean>(props, 0);
 
 	// Get wrapperProps from useProps
 	const {wrapperComponent, wrapperProps} = useProps(
@@ -36,11 +43,18 @@ export default function ParameterBooleanComponent(
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && (
 				<Switch
+					key={formKey}
+					{...(formInputProps || {})}
 					checked={
 						value === true ||
 						value.toString().toLowerCase() === "true"
 					}
-					onChange={(e) => handleChange(e.currentTarget.checked)}
+					onChange={(e) => {
+						handleChange(e.currentTarget.checked);
+						if (formInputProps?.onChange) {
+							formInputProps.onChange(e);
+						}
+					}}
 					disabled={disabled}
 				/>
 			)}

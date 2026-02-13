@@ -10,6 +10,7 @@ import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderShared/
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAreaChartWidgetComponent";
 import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderControlsWidgetComponent";
+import {AppBuilderFormWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderFormWidgetComponent";
 import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderLineChartWidgetComponent";
 import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderRoundChartWidgetComponent";
 import {AppBuilderSavedStatesWidgetComponentThemeProps} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderSavedStatesWidgetComponent";
@@ -565,6 +566,31 @@ export const useCustomTheme = (props: Props = {}) => {
 					// elementPaperProps: {
 					// 	shadow: "none",
 					// },
+				}),
+			/**
+			 * AppBuilderFormWidgetComponent
+			 *
+			 * Form widget with parameter controls, export submission, and message display.
+			 * Supports form validation, parameter reset, and success/error message display.
+			 * When submit="message", displays a reset button at top right to fill the form again.
+			 */
+			AppBuilderFormWidgetComponent:
+				AppBuilderFormWidgetComponentThemeProps({
+					// stackProps: {
+					//   gap: "md",
+					// },
+					// elementPaperProps: {
+					//   shadow: "none",
+					// },
+					// messagePaperProps: {
+					//   shadow: "sm",
+					//   p: "md",
+					// },
+					// resetButtonProps: {
+					//   variant: "subtle",
+					//   size: "sm",
+					// },
+					// resetMessage: "Reset form",
 				}),
 			AppBuilderContainer: AppBuilderContainerThemeProps({
 				// orientation: "unspecified"
