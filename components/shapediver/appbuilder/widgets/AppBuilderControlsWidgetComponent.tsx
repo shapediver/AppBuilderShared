@@ -202,6 +202,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 					control.props,
 					namespace,
 					index,
+					componentContext,
 				);
 				if (actionComponent) {
 					components.push(actionComponent);
@@ -215,7 +216,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 		});
 
 		return components;
-	}, [controls, parameterMap, exportMap, namespace]);
+	}, [controls, parameterMap, exportMap, namespace, componentContext]);
 
 	if (orderedComponents.length === 0) {
 		return <></>;
