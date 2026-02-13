@@ -47,10 +47,6 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 		if (!viewportApi || !viewportApi.camera) return;
 		setLoading(true);
 
-		let originalCameraId: string | undefined = undefined;
-		let originalCameraProperties:
-			| {id: string; properties: Record<string, any>}
-			| undefined = undefined;
 		let newCamera: any = undefined;
 		if (props.props.camera) {
 			const camera = props.props.camera;
@@ -61,20 +57,10 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 				} else if (viewportApi.cameras[camera.name]) {
 					const specifiedCamera = viewportApi.cameras[camera.name];
 
-					originalCameraId = viewportApi.camera?.id;
 					viewportApi.assignCamera(specifiedCamera.id);
 				}
-
-				originalCameraProperties = {
-					id: viewportApi.camera!.id,
-					properties: {},
-				};
 				Object.keys(viewportApi.camera!).forEach((key) => {
 					if (key !== "name") {
-						originalCameraProperties!.properties[key] = (
-							viewportApi.camera as any
-						)[key];
-
 						if (
 							(camera as Record<string, any>)[key] !== undefined
 						) {
@@ -91,7 +77,6 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 					camera.type === CAMERA_TYPE.PERSPECTIVE
 						? viewportApi.createPerspectiveCamera()
 						: viewportApi.createOrthographicCamera();
-				originalCameraId = viewportApi.camera?.id;
 				viewportApi.assignCamera(newCamera.id);
 
 				// assign the properties
@@ -128,29 +113,6 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 		} else {
 			const {options} = props.props;
 			await viewportApi.camera.zoomTo(undefined, options);
-		}
-
-		// if we created a new camera or changed something, we need to remove it again
-		if (props.props.camera) {
-			if (originalCameraId) {
-				viewportApi.assignCamera(originalCameraId);
-			}
-
-			if (originalCameraProperties) {
-				if (viewportApi.camera?.id === originalCameraProperties.id) {
-					Object.keys(originalCameraProperties.properties).forEach(
-						(key) => {
-							// @ts-ignore
-							(viewportApi.camera as any)[key] =
-								originalCameraProperties!.properties[key];
-						},
-					);
-				}
-			}
-
-			if (newCamera) {
-				viewportApi.removeCamera(newCamera.id);
-			}
 		}
 
 		setLoading(false);
