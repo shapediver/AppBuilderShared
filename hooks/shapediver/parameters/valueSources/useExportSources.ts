@@ -1,4 +1,5 @@
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {
 	IAppBuilderParameterValueDefinition,
@@ -21,6 +22,13 @@ export function useExportSources(props: {
 	resetExportValues: () => void;
 } {
 	const {namespace, sources} = props;
+
+	const {createProcessManager, addProcess} = useShapeDiverStoreProcessManager(
+		(state) => ({
+			createProcessManager: state.createProcessManager,
+			addProcess: state.addProcess,
+		}),
+	);
 
 	const [exportValues, setExportValues] = useState<
 		(string | undefined)[] | undefined
@@ -85,7 +93,19 @@ export function useExportSources(props: {
 	// Note: parameterValues at this point should only contain primitives (string | number | boolean)
 	// as nested sources have already been resolved by useResolveParameterValues
 	useEffect(() => {
-		if (!exportResults) return;
+		if (!exportResults) {
+			return;
+		}
+
+		// If there are no exports to process, don't set exportValues yet
+		// This prevents the parent hook from thinking we're ready when we're actually
+		// waiting for nested sources to resolve
+		if (exportResults.length === 0) {
+			return;
+		}
+
+		// Create a process manager for this export resolution
+		const processManagerId = createProcessManager(namespace);
 
 		const promises = [];
 
@@ -107,7 +127,7 @@ export function useExportSources(props: {
 				continue;
 			}
 
-			const file = e
+			const filePromise = e
 				.request(parameterValues)
 				.then(async (response: ResExport) => {
 					if (
@@ -127,7 +147,8 @@ export function useExportSources(props: {
 							response.filename || `${e.id}_${e.version}`,
 							{type: blob.type},
 						);
-						return upload(file);
+						const uploadResult = await upload(file);
+						return uploadResult;
 					} else if (
 						response.content &&
 						response.content.length === 0 &&
@@ -136,9 +157,19 @@ export function useExportSources(props: {
 						return response.msg;
 					}
 					return undefined;
+				})
+				.catch((error) => {
+					return undefined;
 				});
 
-			promises.push(file);
+			// Register this export as a process
+			addProcess(processManagerId, {
+				id: `export-${e.id}-${i}`,
+				name: `Export: ${e.name || e.displayname || e.id}`,
+				promise: filePromise,
+			});
+
+			promises.push(filePromise);
 		}
 
 		Promise.all(promises).then((results) => {

@@ -159,7 +159,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		processParameterUpdates();
 	}, [parameters, namespace, processParameterUpdates]);
 
-	const parameterValueSourcesResults = useResolveParameterValues({
+	const {values: parameterValueSourcesResults, isResolving} = useResolveParameterValues({
 		namespace,
 		parameterValues: parameterValueSourcesData,
 	});
@@ -232,7 +232,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 			icon={icon}
 			tooltip={tooltip}
 			onClick={onClick}
-			disabled={isDisabled}
+			disabled={isDisabled || isResolving}
 		/>
 	);
 }

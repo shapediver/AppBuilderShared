@@ -251,7 +251,7 @@ export default function ExportButtonComponent(
 		| undefined
 	>(undefined);
 
-	const parameterValueSourcesResults = useResolveParameterValues(
+	const {values: parameterValueSourcesResults, isResolving} = useResolveParameterValues(
 		parameterValueSourcesData?.data,
 	);
 

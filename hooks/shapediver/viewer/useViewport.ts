@@ -99,7 +99,7 @@ export function useViewport(props: ViewportCreateDto) {
 					) => {
 						const {contentType, quality, resolution, camera} =
 							props || {};
-						const screenshot = viewportApi.getScreenshotAdvanced(
+						const screenshot = await viewportApi.getScreenshotAdvanced(
 							contentType,
 							quality,
 							resolution,

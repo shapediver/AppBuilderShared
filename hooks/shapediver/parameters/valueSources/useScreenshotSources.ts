@@ -1,4 +1,5 @@
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {Converter} from "@shapediver/viewer.session";
 import {guessMissingMimeType} from "@shapediver/viewer.utils.mime-type";
@@ -16,7 +17,14 @@ export function useScreenshotSources(props: {
 	screenshotValues: string[] | undefined;
 	resetScreenshotValues: () => void;
 } {
-	const {sources} = props;
+	const {sources, namespace} = props;
+
+	const {createProcessManager, addProcess} = useShapeDiverStoreProcessManager(
+		(state) => ({
+			createProcessManager: state.createProcessManager,
+			addProcess: state.addProcess,
+		}),
+	);
 
 	const [screenshotValues, setScreenshotValues] = useState<
 		string[] | undefined
@@ -35,17 +43,38 @@ export function useScreenshotSources(props: {
 	// to avoid multiple re-renders
 	useEffect(() => {
 		if (getScreenshot && sources && sources.length > 0) {
+			// Create a process manager for screenshot resolution
+			const processManagerId = createProcessManager(namespace);
+
 			const promises = [];
 			for (let i = 0; i < sources.length; i++) {
 				const {source, upload} = sources[i];
-				const screenshotPromise = getScreenshot(source).then((data) => {
-					// create a file from the data string
-					const {blob} = Converter.instance.dataURLtoBlob(data);
-					const file = new File([blob], "screenshot.png", {
-						type: blob.type,
+				const screenshotPromise = getScreenshot(source)
+					.then((data) => {
+						// If screenshot returns undefined or empty, return undefined
+						if (!data) {
+							return undefined;
+						}
+						
+						// Convert to file and upload
+						const {blob} = Converter.instance.dataURLtoBlob(data);
+						const file = new File([blob], "screenshot.png", {
+							type: blob.type,
+						});
+						return upload(guessMissingMimeType(file) as File);
+					})
+					.catch((error) => {
+						console.error(`Screenshot ${i} error:`, error);
+						return undefined;
 					});
-					return upload(guessMissingMimeType(file) as File);
+
+				// Register this screenshot as a process
+				addProcess(processManagerId, {
+					id: `screenshot-${i}`,
+					name: `Screenshot ${i + 1}`,
+					promise: screenshotPromise,
 				});
+
 				promises.push(screenshotPromise);
 			}
 
@@ -53,7 +82,7 @@ export function useScreenshotSources(props: {
 				setScreenshotValues(results);
 			});
 		}
-	}, [sources]);
+	}, [sources, getScreenshot, namespace, createProcessManager, addProcess]);
 
 	return {
 		screenshotValues,

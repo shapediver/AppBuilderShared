@@ -276,7 +276,7 @@ export function useAppBuilderInstances(props: Props) {
 	);
 
 	// Use useResolvedParameters to resolve the parameter values
-	const resolvedParameterValuesArray = useResolveParameterValues({
+	const {values: resolvedParameterValuesArray} = useResolveParameterValues({
 		namespace,
 		parameterValues: parameterValuesData?.parameterValues,
 	});
