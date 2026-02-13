@@ -48,6 +48,7 @@ interface StyleProps {
 	messagePaperProps?: PaperProps;
 	submitButtonProps?: ButtonProps;
 	resetButtonProps?: ActionIconProps;
+	resetButtonTitle?: string;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
@@ -70,6 +71,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 		variant: "subtle",
 		size: "sm",
 	},
+	resetButtonTitle: "Reset form",
 };
 
 export type AppBuilderFormWidgetComponentThemePropsType = Partial<StyleProps>;
@@ -101,7 +103,7 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 
 	const componentContext = useContext(ComponentContext);
 
-	const {stackProps, elementPaperProps, messagePaperProps, resetButtonProps} =
+	const {stackProps, elementPaperProps, messagePaperProps, resetButtonProps, resetButtonTitle} =
 		useProps(
 			"AppBuilderFormWidgetComponent",
 			defaultStyleProps,
@@ -355,8 +357,8 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 					<div style={{flex: 1}} />
 					<ActionIcon
 						onClick={handleReset}
-						title="Reset form"
-						aria-label="Reset form"
+						title={resetButtonTitle}
+						aria-label={resetButtonTitle}
 						{...resetButtonProps}
 					>
 						<Icon iconType={"tabler:refresh"} />
