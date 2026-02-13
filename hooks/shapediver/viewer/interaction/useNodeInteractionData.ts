@@ -312,7 +312,7 @@ export function useNodesInteractionData(props: {
 				removeOutputUpdateCallback(),
 			);
 		};
-	}, [props, instances]);
+	}, [props]);
 
 	useEffect(() => {
 		const removeInstanceCallbacks: (() => void)[] = [];

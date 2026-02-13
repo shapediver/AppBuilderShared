@@ -118,6 +118,7 @@ export function useParameterValueSources(props?: {
 				(p) => p.id === id || p.name === id || p.displayname === id,
 			);
 			if (!parameter) continue;
+
 			const type = parameter.type;
 
 			if (isDataOutputSource(source)) {
@@ -286,7 +287,9 @@ export function useParameterValueSources(props?: {
 
 		// first, we need to check if ALL sources have been loaded
 		// we cannot return partial results
-		if (!loadedValues) return;
+		if (!loadedValues) {
+			return;
+		}
 
 		// here we also add other source types
 		// so that we can return them all together
@@ -322,5 +325,5 @@ export function useParameterValueSources(props?: {
 
 		sourcesRef.current = undefined;
 		return sourceResults;
-	}, [loadedValues]);
+	}, [loadedValues, sources]);
 }

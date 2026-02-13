@@ -1,4 +1,5 @@
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
 import {IAppBuilderParameterValueSourcePropsSdtf} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverOutput} from "@AppBuilderShared/types/shapediver/output";
@@ -20,6 +21,13 @@ export function useSdtfSources(props: {
 	resetSdtfValues: () => void;
 } {
 	const {namespace, sources} = props;
+
+	const {createProcessManager, addProcess} = useShapeDiverStoreProcessManager(
+		(state) => ({
+			createProcessManager: state.createProcessManager,
+			addProcess: state.addProcess,
+		}),
+	);
 
 	const [sdtfValues, setSdtfValues] = useState<
 		(string | undefined)[] | undefined
@@ -67,6 +75,9 @@ export function useSdtfSources(props: {
 	// to avoid multiple re-renders
 	useEffect(() => {
 		if (!outputResults || outputResults.length === 0) return;
+
+		// Create a process manager for sdTF resolution
+		const processManagerId = createProcessManager(namespace);
 
 		const promises = [];
 
@@ -118,7 +129,12 @@ export function useSdtfSources(props: {
 
 								return JSON.stringify(sdtfResponse, null, 2);
 							});
-
+					// Register this sdTF upload as a process
+					addProcess(processManagerId, {
+						id: `sdtf-${name}-${i}`,
+						name: `sdTF: ${name}`,
+						promise: assetDefinition,
+					});
 						promises.push(assetDefinition);
 					} else {
 						promises.push(undefined);
@@ -130,7 +146,7 @@ export function useSdtfSources(props: {
 		Promise.all(promises).then((res) => {
 			setSdtfValues(res);
 		});
-	}, [outputResults, session]);
+	}, [outputResults, session, namespace, createProcessManager, addProcess]);
 
 	return {sdtfValues, resetSdtfValues: () => setSdtfValues(undefined)};
 }

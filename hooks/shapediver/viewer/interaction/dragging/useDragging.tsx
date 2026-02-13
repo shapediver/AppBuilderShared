@@ -105,34 +105,57 @@ export function useDragging(
 			[key: string]: IUseNodeInteractionDataProps;
 		} = {};
 
-		objects.forEach((object, index) =>
-			Object.entries(object.patterns).forEach(
-				([sessionId, sessionData]) =>
-					Object.entries(sessionData).forEach(
-						([outputId, pattern]) => {
-							// create the interaction data
-							// here the key doesn't matter much as we don't need the data later
-							// but it must be unique to avoid conflicts
-							nodesInteractionInput[
-								`object${index}_${sessionId}_${outputId}`
-							] = {
-								sessionId,
-								componentId,
-								outputId,
-								patterns: pattern,
-								interactionSettings: {
-									select: false,
-									hover: draggingProps.hover,
-									drag: true,
-									dragOrigin: object.dragOrigin,
-									dragAnchors: object.dragAnchors,
-								},
-								strictNaming,
-							};
-						},
-					),
-			),
-		);
+		objects.forEach((object, index) => {
+			const patterns = object.patterns;
+
+			if (patterns.outputPatterns) {
+				Object.entries(patterns.outputPatterns).forEach(
+					([sessionId, pattern]) => {
+						Object.entries(pattern).forEach(
+							([outputId, pattern]) => {
+								nodesInteractionInput[
+									`object${index}_${sessionId}_${outputId}`
+								] = {
+									sessionId,
+									componentId,
+									outputId,
+									patterns: pattern,
+									interactionSettings: {
+										select: false,
+										hover: draggingProps.hover,
+										drag: true,
+										dragOrigin: object.dragOrigin,
+										dragAnchors: object.dragAnchors,
+									},
+									strictNaming,
+								};
+							},
+						);
+					},
+				);
+			}
+
+			if (patterns.instancePatterns) {
+				Object.entries(patterns.instancePatterns).forEach(
+					([instanceId, pattern]) => {
+						nodesInteractionInput[
+							`object${index}_instance_${instanceId}`
+						] = {
+							componentId,
+							patterns: pattern,
+							interactionSettings: {
+								select: false,
+								hover: draggingProps.hover,
+								drag: true,
+								dragOrigin: object.dragOrigin,
+								dragAnchors: object.dragAnchors,
+							},
+							strictNaming,
+						};
+					},
+				);
+			}
+		});
 
 		return nodesInteractionInput;
 	}, [objects, componentId, draggingProps]);

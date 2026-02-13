@@ -61,7 +61,7 @@ export function useModelStateSources(props: {
 				setModelStateValues(results);
 			});
 		}
-	}, [sources]);
+	}, [sources, createModelState, namespace]);
 
 	return {
 		modelStateValues,

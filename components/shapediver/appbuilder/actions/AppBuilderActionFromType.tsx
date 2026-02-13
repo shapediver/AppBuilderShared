@@ -1,9 +1,9 @@
-import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
 import AppBuilderActionAddToCartComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionAddToCartComponent";
 import AppBuilderActionCloseConfiguratorComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCloseConfiguratorComponent";
 import AppBuilderActionCreateModelStateComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionCreateModelStateComponent";
 import AppBuilderActionSetBrowserLocationComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetBrowserLocationComponent";
 import AppBuilderActionSetParameterValuesComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionSetParameterValuesComponent";
+import {IComponentContext} from "@AppBuilderShared/shared";
 import {
 	IAppBuilderControlActionRef,
 	isAddToCartAction,
@@ -15,7 +15,7 @@ import {
 	isSetParameterValuesAction,
 	isSoundAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import React, {useContext} from "react";
+import React from "react";
 import AppBuilderActionMessageToParentComponent from "./AppBuilderActionMessageToParentComponent";
 import AppBuilderActionSoundComponent from "./AppBuilderActionSoundComponent";
 
@@ -23,13 +23,12 @@ export function AppBuilderActionFromType(
 	actionRef: IAppBuilderControlActionRef,
 	namespace: string,
 	key: string | number,
+	componentContext: IComponentContext,
 ): React.ReactElement | null {
 	const actionPropsCommon = {
 		...actionRef,
 		definition: undefined, // avoid passing down the definition again
 	};
-
-	const componentContext = useContext(ComponentContext);
 
 	// first we loop through all registered components to see if we can find a match
 	// here some of the default actions could be overwritten by custom components
