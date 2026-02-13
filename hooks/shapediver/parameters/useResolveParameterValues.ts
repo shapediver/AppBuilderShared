@@ -47,7 +47,7 @@ const addSourceToFlatMap = (
 	parameterInfo: ParameterValueDefinition,
 	map: Map<string, SourceEntry>,
 	resolving: WeakSet<IAppBuilderParameterValueSourceDefinition>,
-	resolved: WeakSet<IAppBuilderParameterValueSourceDefinition>
+	resolved: WeakSet<IAppBuilderParameterValueSourceDefinition>,
 ) => {
 	const {id, value, namespace} = parameterInfo;
 
@@ -80,10 +80,11 @@ const addSourceToFlatMap = (
 	// recursively add nested sources
 	if (nested) {
 		// For export sources, nested parameters should use the export's sessionId if specified
-		const nestedNamespace = isExportSource(value) && value.props.sessionId
-			? value.props.sessionId
-			: namespace;
-			
+		const nestedNamespace =
+			isExportSource(value) && value.props.sessionId
+				? value.props.sessionId
+				: namespace;
+
 		for (const [childKey, child] of Object.entries(nested)) {
 			// check if the child is a source
 			if (
@@ -100,7 +101,7 @@ const addSourceToFlatMap = (
 				{id: childKey, value: child, namespace: nestedNamespace},
 				map,
 				resolving,
-				resolved
+				resolved,
 			);
 		}
 	}
@@ -290,7 +291,9 @@ export function useResolveParameterValues(props?: {
 						const nestedSourceKey =
 							entry.nestedSourceKeys.get(paramKey);
 						if (nestedSourceKey) {
-							if (resolutionState.resolvedMap.has(nestedSourceKey)) {
+							if (
+								resolutionState.resolvedMap.has(nestedSourceKey)
+							) {
 								const resolved =
 									resolutionState.resolvedMap.get(
 										nestedSourceKey,
@@ -335,22 +338,34 @@ export function useResolveParameterValues(props?: {
 			// No progress can be made - check if sources are waiting for undefined values
 			if (resolutionState.pendingSources.length > 0) {
 				// Check if any pending sources are waiting for undefined nested dependencies
-				const waitingForUndefined = resolutionState.pendingSources.some((pending) => {
-					const entry = flatArray[pending.entryIndex];
-					if (entry.nestedSourceKeys && entry.nestedSourceKeys.size > 0) {
-						for (const nestedSourceKey of Array.from(
-							entry.nestedSourceKeys.values(),
-						)) {
-							if (resolutionState.resolvedMap.has(nestedSourceKey)) {
-								const resolvedValue = resolutionState.resolvedMap.get(nestedSourceKey);
-								if (resolvedValue === undefined) {
-									return true;
+				const waitingForUndefined = resolutionState.pendingSources.some(
+					(pending) => {
+						const entry = flatArray[pending.entryIndex];
+						if (
+							entry.nestedSourceKeys &&
+							entry.nestedSourceKeys.size > 0
+						) {
+							for (const nestedSourceKey of Array.from(
+								entry.nestedSourceKeys.values(),
+							)) {
+								if (
+									resolutionState.resolvedMap.has(
+										nestedSourceKey,
+									)
+								) {
+									const resolvedValue =
+										resolutionState.resolvedMap.get(
+											nestedSourceKey,
+										);
+									if (resolvedValue === undefined) {
+										return true;
+									}
 								}
 							}
 						}
-					}
-					return false;
-				});
+						return false;
+					},
+				);
 
 				// Only warn if sources are truly stuck (not just waiting for undefined values)
 				if (!waitingForUndefined) {
@@ -476,7 +491,9 @@ export function useResolveParameterValues(props?: {
 					index !== undefined ? resolvedSources?.[index] : undefined;
 
 				// Convert the resolved value to string, using empty string if undefined
-				result.push(resolvedValue !== undefined ? resolvedValue + "" : "");
+				result.push(
+					resolvedValue !== undefined ? resolvedValue + "" : "",
+				);
 			} else {
 				result.push(value + "");
 			}

@@ -14,17 +14,19 @@ import {
 	StargateStyleProps,
 } from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
-import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
 } from "@AppBuilderShared/hooks/shapediver/parameters/useResolveParameterValues";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
 import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {
 	Button,
 	ButtonProps,
@@ -40,6 +42,7 @@ import React, {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 
@@ -122,6 +125,11 @@ export default function ExportButtonComponent(
 
 	const {definition, actions} = useExport(props) ?? {};
 	const notifications = useNotificationStore();
+
+	const {addProcess, createProcessManager, removeProcessManager} =
+		useShapeDiverStoreProcessManager();
+
+	const resolveMainPromiseRef = useRef<(() => void) | undefined>(undefined);
 
 	if (!definition || !actions) {
 		notifications.error({
@@ -251,9 +259,8 @@ export default function ExportButtonComponent(
 		| undefined
 	>(undefined);
 
-	const {values: parameterValueSourcesResults, isResolving} = useResolveParameterValues(
-		parameterValueSourcesData?.data,
-	);
+	const {values: parameterValueSourcesResults, isResolving} =
+		useResolveParameterValues(parameterValueSourcesData?.data);
 
 	useEffect(() => {
 		if (!parameterValueSourcesData || !parameterValueSourcesResults) return;
@@ -285,6 +292,11 @@ export default function ExportButtonComponent(
 			setParameterValueSourcesData(undefined);
 			// set the requestingExport false to remove the loading icon
 			setRequestingExport(false);
+			// resolve the main promise of the process manager to indicate that the process is finished
+			if (resolveMainPromiseRef.current) {
+				resolveMainPromiseRef.current();
+				resolveMainPromiseRef.current = undefined;
+			}
 		});
 	}, [parameterValueSourcesResults, exportRequest]);
 
@@ -327,6 +339,20 @@ export default function ExportButtonComponent(
 						}
 					})
 					.filter((p) => p !== undefined);
+
+				// create a promise to wait for all sources to be resolved before requesting the export
+				const mainPromise = new Promise<void>((resolve) => {
+					resolveMainPromiseRef.current = resolve;
+				});
+
+				const mainProcessDefinition: IProcessDefinition = {
+					name: "Export - Parameter Values Sources Process",
+					promise: mainPromise,
+				};
+
+				// we have to await the sources, therefore we create a processManager
+				const processManagerId = createProcessManager(props.namespace);
+				addProcess(processManagerId, mainProcessDefinition);
 
 				setParameterValueSourcesData({
 					data: {
