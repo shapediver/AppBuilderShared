@@ -224,17 +224,8 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 			}
 
 			try {
-				// Build parameter values from form values
-				const parameterValues: {[key: string]: string} = {};
-				Object.entries(values).forEach(([id, value]) => {
-					parameterValues[id] = String(value);
-				});
-				// Request export with form parameter values
-				// Values are NOT applied to the app - they're only used for export
-				await exportData.actions.request(parameterValues);
 				// Handle success
 				setIsSuccess(true);
-
 				if (submit === "reset") {
 					resetParameters();
 				} else if (submit === "message") {
