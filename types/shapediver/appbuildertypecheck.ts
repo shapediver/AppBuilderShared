@@ -395,6 +395,14 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 		.extend(IAppBuilderActionPropsCommonSchema.shape),
 	z
 		.object({
+			type: z.literal("assign"),
+			props: z
+				.object({})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.object({
 			type: z.literal("set"),
 			props: z
 				.object({
@@ -416,7 +424,10 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 		.object({
 			type: z.literal("zoomTo"),
 			props: z
-				.object({})
+				.object({
+					initialPosition: z.array(z.number()).length(3).optional(),
+					initialTarget: z.array(z.number()).length(3).optional(),
+				})
 				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
 		})
 		.extend(IAppBuilderActionPropsCommonSchema.shape),
