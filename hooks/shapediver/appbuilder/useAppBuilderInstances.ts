@@ -515,8 +515,8 @@ export function useAppBuilderInstances(props: Props) {
 
 			// wait for all output callbacks to resolve
 			// before we add the instances to the session node
-			Promise.all(outputCallbackPromises).then(() => {
-				addInstanceToSceneTree(
+			Promise.all(outputCallbackPromises).then(async () => {
+				await addInstanceToSceneTree(
 					newInstances,
 					instanceNodesRef.current,
 					sessionNodeRef.current,
@@ -573,7 +573,7 @@ export function useAppBuilderInstances(props: Props) {
  * @param instances
  * @param sessionNode
  */
-const addInstanceToSceneTree = (
+const addInstanceToSceneTree = async (
 	newInstances: {
 		[key: string]: {
 			node: ITreeNode;
@@ -594,8 +594,16 @@ const addInstanceToSceneTree = (
 			}
 		});
 
+		const promises: Promise<void>[] = [];
+
 		Object.values(newInstances).forEach((instance) => {
 			if (sessionNode!.hasChild(instance.node)) return;
+
+			// if there is a material database, we need to apply it
+			// we do this at the latest possible stage to avoid unnecessary calls to the material database
+			// as the material database may be updated during the instance creation process
+			if (assignMaterialFromDatabase)
+				promises.push(assignMaterialFromDatabase(instance.node));
 
 			// add the instance to the controller session node
 			sessionNode!.addChild(instance.node);
@@ -603,6 +611,8 @@ const addInstanceToSceneTree = (
 			// this won't be triggered as long as a process is running
 			sessionNode!.updateVersion();
 		});
+
+		await Promise.all(promises);
 	}
 };
 
@@ -730,10 +740,6 @@ const createInstance = (
 
 			instanceNode.addChild(transformationNode);
 		});
-
-		// if there is a material database, we need to apply it
-		if (assignMaterialFromDatabase)
-			await assignMaterialFromDatabase(instanceNode);
 
 		// send a progress update
 		progressCallback({
