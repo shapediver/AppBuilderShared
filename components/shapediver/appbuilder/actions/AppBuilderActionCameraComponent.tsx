@@ -8,7 +8,7 @@ import {
 	isSetCameraAction,
 	isZoomToCameraAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import {CAMERA_TYPE} from "@shapediver/viewer.viewport";
+import {CAMERA_TYPE, ICameraApi} from "@shapediver/viewer.viewport";
 import {vec3} from "gl-matrix";
 import React, {useCallback, useMemo, useState} from "react";
 
@@ -47,43 +47,54 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 		if (!viewportApi || !viewportApi.camera) return;
 		setLoading(true);
 
-		let newCamera: any = undefined;
+		let newCamera: ICameraApi | undefined = undefined;
 		if (props.props.camera) {
 			const camera = props.props.camera;
 
-			if (camera.name) {
-				if (viewportApi.camera?.name === camera.name) {
-					// nothing to do, already assigned
-				} else if (viewportApi.cameras[camera.name]) {
-					const specifiedCamera = viewportApi.cameras[camera.name];
+			let skipKeys: string[] = [];
 
-					viewportApi.assignCamera(specifiedCamera.id);
-				}
-				Object.keys(viewportApi.camera!).forEach((key) => {
-					if (key !== "name") {
+			if (camera.name) {
+				const existingCamera = Object.entries(viewportApi.cameras).find(
+					([key, value]) => {
+						// check against the name -> case insensitive
 						if (
-							(camera as Record<string, any>)[key] !== undefined
+							value.name?.toLowerCase() ===
+							camera.name!.toLowerCase()
 						) {
-							// @ts-ignore
-							viewportApi.camera[key] = (
-								camera as Record<string, any>
-							)[key];
+							return true;
 						}
-					}
-				});
-			} else if (camera.type) {
+
+						// if the camera doesn't have a name, check against the key -> case insensitive
+						if (
+							!value.name &&
+							key.toLowerCase() === camera.name!.toLowerCase()
+						) {
+							return true;
+						}
+						return false;
+					},
+				);
+				if (existingCamera) {
+					viewportApi.assignCamera(existingCamera[1].id);
+					skipKeys.push("name");
+					newCamera = existingCamera[1];
+				}
+			}
+
+			if (!newCamera && camera.type) {
 				// create a new camera
 				newCamera =
 					camera.type === CAMERA_TYPE.PERSPECTIVE
 						? viewportApi.createPerspectiveCamera()
 						: viewportApi.createOrthographicCamera();
 				viewportApi.assignCamera(newCamera.id);
+			}
 
-				// assign the properties
+			if (newCamera) {
 				Object.keys(camera).forEach((key) => {
-					if (key !== "type") {
+					if (key !== "type" && !skipKeys.includes(key)) {
 						// @ts-ignore
-						(newCamera as any)[key] = (camera as any)[key];
+						newCamera[key] = (camera as Record<string, any>)[key];
 					}
 				});
 			}
@@ -116,7 +127,7 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 		}
 
 		setLoading(false);
-	}, [viewportApi]);
+	}, [viewportApi, props]);
 
 	return (
 		<AppBuilderActionComponent
