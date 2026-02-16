@@ -8,7 +8,7 @@ import {
 	isSetCameraAction,
 	isZoomToCameraAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
-import {CAMERA_TYPE} from "@shapediver/viewer.viewport";
+import {CAMERA_TYPE, ICameraApi} from "@shapediver/viewer.viewport";
 import {vec3} from "gl-matrix";
 import React, {useCallback, useMemo, useState} from "react";
 
@@ -47,58 +47,54 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 		if (!viewportApi || !viewportApi.camera) return;
 		setLoading(true);
 
-		let originalCameraId: string | undefined = undefined;
-		let originalCameraProperties:
-			| {id: string; properties: Record<string, any>}
-			| undefined = undefined;
-		let newCamera: any = undefined;
+		let newCamera: ICameraApi | undefined = undefined;
 		if (props.props.camera) {
 			const camera = props.props.camera;
 
+			let skipKeys: string[] = [];
+
 			if (camera.name) {
-				if (viewportApi.camera?.name === camera.name) {
-					// nothing to do, already assigned
-				} else if (viewportApi.cameras[camera.name]) {
-					const specifiedCamera = viewportApi.cameras[camera.name];
-
-					originalCameraId = viewportApi.camera?.id;
-					viewportApi.assignCamera(specifiedCamera.id);
-				}
-
-				originalCameraProperties = {
-					id: viewportApi.camera!.id,
-					properties: {},
-				};
-				Object.keys(viewportApi.camera!).forEach((key) => {
-					if (key !== "name") {
-						originalCameraProperties!.properties[key] = (
-							viewportApi.camera as any
-						)[key];
-
+				const existingCamera = Object.entries(viewportApi.cameras).find(
+					([key, value]) => {
+						// check against the name -> case insensitive
 						if (
-							(camera as Record<string, any>)[key] !== undefined
+							value.name?.toLowerCase() ===
+							camera.name!.toLowerCase()
 						) {
-							// @ts-ignore
-							viewportApi.camera[key] = (
-								camera as Record<string, any>
-							)[key];
+							return true;
 						}
-					}
-				});
-			} else if (camera.type) {
+
+						// if the camera doesn't have a name, check against the key -> case insensitive
+						if (
+							!value.name &&
+							key.toLowerCase() === camera.name!.toLowerCase()
+						) {
+							return true;
+						}
+						return false;
+					},
+				);
+				if (existingCamera) {
+					viewportApi.assignCamera(existingCamera[1].id);
+					skipKeys.push("name");
+					newCamera = existingCamera[1];
+				}
+			}
+
+			if (!newCamera && camera.type) {
 				// create a new camera
 				newCamera =
 					camera.type === CAMERA_TYPE.PERSPECTIVE
 						? viewportApi.createPerspectiveCamera()
 						: viewportApi.createOrthographicCamera();
-				originalCameraId = viewportApi.camera?.id;
 				viewportApi.assignCamera(newCamera.id);
+			}
 
-				// assign the properties
+			if (newCamera) {
 				Object.keys(camera).forEach((key) => {
-					if (key !== "type") {
+					if (key !== "type" && !skipKeys.includes(key)) {
 						// @ts-ignore
-						(newCamera as any)[key] = (camera as any)[key];
+						newCamera[key] = (camera as Record<string, any>)[key];
 					}
 				});
 			}
@@ -130,31 +126,8 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 			await viewportApi.camera.zoomTo(undefined, options);
 		}
 
-		// if we created a new camera or changed something, we need to remove it again
-		if (props.props.camera) {
-			if (originalCameraId) {
-				viewportApi.assignCamera(originalCameraId);
-			}
-
-			if (originalCameraProperties) {
-				if (viewportApi.camera?.id === originalCameraProperties.id) {
-					Object.keys(originalCameraProperties.properties).forEach(
-						(key) => {
-							// @ts-ignore
-							(viewportApi.camera as any)[key] =
-								originalCameraProperties!.properties[key];
-						},
-					);
-				}
-			}
-
-			if (newCamera) {
-				viewportApi.removeCamera(newCamera.id);
-			}
-		}
-
 		setLoading(false);
-	}, [viewportApi]);
+	}, [viewportApi, props]);
 
 	return (
 		<AppBuilderActionComponent
