@@ -1,4 +1,9 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
+import {useCreateNameFilterPattern} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useCreateNameFilterPattern";
+import {
+	IUseFindNodesByPatternProps,
+	useFindNodesByPatterns,
+} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useFindNodesByPattern";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
 import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
 import {
@@ -10,7 +15,9 @@ import {
 	isZoomToCameraAction,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
+	Box,
 	CAMERA_TYPE,
+	IBox,
 	ICameraApi,
 	IOrthographicCameraApi,
 	ORTHOGRAPHIC_CAMERA_DIRECTION,
@@ -49,6 +56,54 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 		if (isZoomToCameraAction(props)) return "Zoom extents";
 		return "Start camera";
 	}, [props]);
+
+	const nameFilter = useMemo(() => {
+		if (isZoomToCameraAction(props)) {
+			return {nameFilter: props.props.nameFilter || []};
+		}
+		return {nameFilter: []};
+	}, [props]);
+
+	// create the patterns for the geometry restrictions based on the filter patterns
+	const {patterns} = useCreateNameFilterPattern(nameFilter);
+
+	// create a map of the patterns by the restriction ID, session ID, and output ID
+	const patternsByKeys: {[key: string]: IUseFindNodesByPatternProps} =
+		useMemo(() => {
+			const patternsByKeys: {[key: string]: IUseFindNodesByPatternProps} =
+				{};
+			if (patterns.instancePatterns) {
+				Object.entries(patterns.instancePatterns).forEach(
+					([instanceId, pattern]) => {
+						patternsByKeys[`${instanceId}`] = {
+							instanceId,
+							patterns: pattern,
+						};
+					},
+				);
+			}
+
+			if (patterns.outputPatterns) {
+				Object.entries(patterns.outputPatterns).forEach(
+					([sessionId, pattern]) => {
+						Object.entries(pattern).forEach(
+							([outputId, pattern]) => {
+								patternsByKeys[`${sessionId}_${outputId}`] = {
+									sessionId,
+									outputId: outputId,
+									patterns: pattern,
+								};
+							},
+						);
+					},
+				);
+			}
+
+			return patternsByKeys;
+		}, [patterns]);
+
+	// get the nodes based on the patterns
+	const {nodes} = useFindNodesByPatterns(patternsByKeys);
 
 	const onClick = useCallback(async () => {
 		if (!viewportApi || !viewportApi.camera) return;
@@ -166,8 +221,17 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 						? vec3.fromValues(...inputInitialTarget)
 						: undefined,
 				);
+
+			let bb: IBox | undefined = undefined;
+			Object.entries(nodes).forEach(([key, data]) => {
+				data.forEach((node) => {
+					if (!bb) bb = new Box();
+					bb.union(node.boundingBox);
+				});
+			});
+
 			const {position, target} = viewportApi.camera.calculateZoomTo(
-				undefined,
+				bb,
 				inputInitialPosition ? initialPosition : undefined,
 				inputInitialTarget ? initialTarget : undefined,
 			);
@@ -175,7 +239,7 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 		}
 
 		setLoading(false);
-	}, [viewportApi, props]);
+	}, [viewportApi, nodes, props]);
 
 	return (
 		<AppBuilderActionComponent

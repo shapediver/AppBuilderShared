@@ -582,6 +582,8 @@ export type IAppBuilderPropsZoomToCamera = {
 	initialPosition?: [number, number, number];
 	/** The initial target from which to start the zoom. */
 	initialTarget?: [number, number, number];
+	/** Optional name filter to restrict the zoom to specific nodes. */
+	nameFilter?: string[];
 } & IAppBuilderPropsCameraCommon;
 
 /** Properties of a camera action. */
