@@ -427,6 +427,7 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 				.object({
 					initialPosition: z.array(z.number()).length(3).optional(),
 					initialTarget: z.array(z.number()).length(3).optional(),
+					nameFilter: z.array(z.string()).optional(),
 				})
 				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
 		})
