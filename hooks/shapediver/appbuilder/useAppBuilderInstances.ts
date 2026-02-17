@@ -13,13 +13,13 @@ import {IParameterStore} from "@AppBuilderShared/types/store/shapediverStorePara
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {ResOutput, ResOutputContent} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
-	assignMaterialFromDatabase,
 	ISessionApi,
 	ITreeNode,
 	SessionData,
 	SessionOutputData,
 	TreeNode,
 } from "@shapediver/viewer.session";
+import {GlobalAccessObjects} from "@shapediver/viewer.shared.global-access-objects";
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -417,7 +417,6 @@ export function useAppBuilderInstances(props: Props) {
 
 		Object.values(instanceNodesRef.current).forEach((instance) => {
 			if (newNode.hasChild(instance)) return;
-
 			// add the instance to the controller session node
 			newNode.addChild(instance);
 			// update the version of the node
@@ -602,8 +601,13 @@ const addInstanceToSceneTree = async (
 			// if there is a material database, we need to apply it
 			// we do this at the latest possible stage to avoid unnecessary calls to the material database
 			// as the material database may be updated during the instance creation process
-			if (assignMaterialFromDatabase)
-				promises.push(assignMaterialFromDatabase(instance.node));
+			if (GlobalAccessObjects.instance.assignMaterialFromDatabase) {
+				promises.push(
+					GlobalAccessObjects.instance.assignMaterialFromDatabase(
+						instance.node,
+					),
+				);
+			}
 
 			// add the instance to the controller session node
 			sessionNode!.addChild(instance.node);
