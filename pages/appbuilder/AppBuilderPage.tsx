@@ -17,8 +17,10 @@ import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
+import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
-import React, {useContext, useMemo} from "react";
+import React, {useContext, useEffect, useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
 
@@ -208,6 +210,18 @@ export default function AppBuilderPage(props: Partial<Props>) {
 			<NotificationModelStateCreated {...props} />
 		),
 	});
+
+	// set title of the page to the name of the model
+	const {currentModel} = useShapeDiverStorePlatform(
+		useShallow((state) => ({
+			currentModel: state.currentModel,
+		})),
+	);
+	useEffect(() => {
+		if (currentModel) {
+			document.title = `${currentModel?.title ?? currentModel?.slug} | ShapeDiver App Builder`;
+		}
+	}, [currentModel]);
 
 	useECommerceApiConnectorActions();
 
