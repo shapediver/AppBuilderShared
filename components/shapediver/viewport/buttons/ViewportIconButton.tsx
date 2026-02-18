@@ -58,6 +58,8 @@ export function ViewportIconButtonThemeProps(
 	};
 }
 
+const iconRegex = new RegExp("^[a-z0-9-]+$");
+
 export default function ViewportIconButton(
 	props: Props & ViewportIconButtonThemePropsType,
 ) {
@@ -86,8 +88,9 @@ export default function ViewportIconButton(
 		...iconProps,
 	};
 
-	const isTextIcon =
-		typeof iconType === "string" && iconType.startsWith("SD_");
+	// if the iconType only contain lowercase letters, numbers and dashes
+	// we consider it as text and render the text instead of an icon
+	const isIcon = iconRegex.test(iconType);
 
 	return (
 		<TooltipWrapper label={label ?? ""} {...tooltipWrapperProps}>
@@ -100,23 +103,30 @@ export default function ViewportIconButton(
 				className={classes.ViewportIcon}
 				{...restActionIconProps}
 				styles={{...restActionIconProps.styles, ...styles}}
-				w={isTextIcon ? "100%" : undefined}
+				w={isIcon ? undefined : "100%"}
 			>
-				{isTextIcon ? (
+				{isIcon ? (
+					<Icon
+						iconType={iconType}
+						color={disabled ? colorDisabled : color}
+						{...restIconProps}
+					/>
+				) : (
 					<Box
 						p={"xs"}
 						style={{
 							color: iconProps?.color,
 						}}
 					>
-						{iconType.substring(3)}
+						{
+							// if the iconType starts with "SD_", we remove the "SD_" prefix and render the rest as text
+							// this was initially implemented as a way to determine text from icons
+							// and can still be used for specific cases like numbers that match existing icon names
+							iconType.startsWith("SD_")
+								? iconType.substring(3)
+								: iconType
+						}
 					</Box>
-				) : (
-					<Icon
-						iconType={iconType}
-						color={disabled ? colorDisabled : color}
-						{...restIconProps}
-					/>
 				)}
 			</ActionIcon>
 		</TooltipWrapper>
