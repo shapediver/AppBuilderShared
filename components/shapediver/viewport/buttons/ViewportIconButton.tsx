@@ -58,6 +58,8 @@ export function ViewportIconButtonThemeProps(
 	};
 }
 
+const iconRegex = new RegExp("^[a-z0-9-]+$");
+
 export default function ViewportIconButton(
 	props: Props & ViewportIconButtonThemePropsType,
 ) {
@@ -88,7 +90,7 @@ export default function ViewportIconButton(
 
 	// if the iconType only contain lowercase letters, numbers and dashes
 	// we consider it as text and render the text instead of an icon
-	const isIcon = new RegExp("^[a-z0-9-]+$").test(iconType);
+	const isIcon = iconRegex.test(iconType);
 
 	return (
 		<TooltipWrapper label={label ?? ""} {...tooltipWrapperProps}>
