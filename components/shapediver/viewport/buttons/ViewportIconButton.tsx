@@ -58,7 +58,7 @@ export function ViewportIconButtonThemeProps(
 	};
 }
 
-const iconRegex = new RegExp("^[a-z0-9-]+$");
+const iconRegex = new RegExp("^[a-z0-9-:]+$");
 
 export default function ViewportIconButton(
 	props: Props & ViewportIconButtonThemePropsType,
