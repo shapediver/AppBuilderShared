@@ -528,22 +528,29 @@ export function useAnchorContainer({
 					{hasCloseIcon && closeIconElement}
 				</Group>
 			</Flex>
-			<Group
-				w={aboveMobileBreakpoint ? width : "100%"}
+			<Box
+				w={
+					typeof width === "string" && width.endsWith("%")
+						? "max-content"
+						: aboveMobileBreakpoint
+							? width
+							: "100%"
+				}
 				h={aboveMobileBreakpoint ? height : "100%"}
-				style={{
-					overflow: "auto",
-				}}
 			>
 				<ScrollArea
 					h={"100%"}
-					w={"100%"}
 					className={shellClasses.addShellWidgetsContainer}
 					type="auto"
+					styles={{
+						viewport: {
+							overflowX: "visible",
+						},
+					}}
 				>
 					{element}
 				</ScrollArea>
-			</Group>
+			</Box>
 		</Stack>
 	);
 
