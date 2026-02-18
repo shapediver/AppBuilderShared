@@ -1,4 +1,4 @@
-import { devtoolsSettings } from "@AppBuilderLib/shared/config/storeSettings";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {
 	EventActionEnum,
 	IEventTracking,
@@ -157,7 +157,7 @@ type HistoryPusher = (entry: ISessionsHistoryState) => void;
  * @returns
  */
 const registerInProcessManager = (session: ISessionApi) => {
-	const {createProcessManager, addProcess} =
+	const {createProcessManager, addProcess, removeProcessManager} =
 		useShapeDiverStoreProcessManager.getState();
 	// create a process manager for the session
 	const processManagerId = createProcessManager(session.id);
@@ -246,7 +246,21 @@ const registerInProcessManager = (session: ISessionApi) => {
 		customizationProcessCallbackEnd,
 	);
 
-	return resolveMainPromise!;
+	const reject = () => {
+		// cancel process manager
+		removeProcessManager(processManagerId);
+
+		// remove listeners
+		removeListener(tokenStart);
+		removeListener(tokenProcess);
+		removeListener(tokenEnd);
+		removeListener(tokenCancel);
+	};
+
+	return {
+		resolve: resolveMainPromise!,
+		reject,
+	};
 };
 
 /**
@@ -292,14 +306,14 @@ function createGenericParameterExecutorForSession(
 		const start = performance.now();
 		let action: EventActionEnum = EventActionEnum.CUSTOMIZE;
 
+		// create a process manager for the session customization
+		const {resolve, reject} = registerInProcessManager(session);
+
 		try {
 			// set values and call customize
 			Object.keys(values).forEach(
 				(id) => (session.parameters[id].value = values[id]),
 			);
-
-			// create a process manager for the session customization
-			const resolve = registerInProcessManager(session);
 
 			if (exports.length > 0) {
 				// upload any file parameters (session.requestExports would upload them but not store the ids)
@@ -344,6 +358,8 @@ function createGenericParameterExecutorForSession(
 				action,
 			});
 		} catch (e: any) {
+			// cancel process manager
+			reject();
 			// in case of an error, restore the previous values
 			Object.keys(previousValues).forEach(
 				(id) => (session.parameters[id].value = previousValues[id]),
