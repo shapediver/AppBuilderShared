@@ -65,6 +65,50 @@ const parseValue = (str: string): ParsedValue => {
 };
 
 /**
+ * Function to convert width/height values to canvas-relative pixels,
+ * including support for calc() and mixed expressions with percentages.
+ *
+ * The reason for this is that percentages need to be in relation to the canvas size,
+ * and calc() expressions can combine different units.
+ *
+ * @param value The width/height value to convert
+ * @param canvasSize The size of the canvas to use for percentage calculations
+ * @returns The converted value in pixels or the original value if it cannot be converted
+ */
+export const toCanvasPixels = (
+	value: string | number | undefined,
+	canvasSize: number,
+): string | number | undefined => {
+	if (typeof value === "number") return value;
+	if (!value) return value;
+	const trimmed = value.trim();
+
+	// Handle simple percent only
+	if (/^\d+(\.\d+)?%$/.test(trimmed)) {
+		const percent = parseFloat(trimmed.slice(0, -1));
+		if (!isNaN(percent)) {
+			return (canvasSize * percent) / 100;
+		}
+	}
+
+	// Handle calc() and mixed expressions with %, including cases like '10% + 1rem'
+	if (/%/.test(trimmed)) {
+		// Replace all percentages (with or without spaces/operators) with their px equivalent
+		const replaced = trimmed.replace(/(\d+(?:\.\d+)?)%/g, (match, p1) => {
+			const percent = parseFloat(p1);
+			if (!isNaN(percent)) {
+				return `${(canvasSize * percent) / 100}px`;
+			}
+			return match;
+		});
+
+		return simplifyCalc(`calc(${replaced})`);
+	}
+
+	return value;
+};
+
+/**
  * Simplifies nested calc() expressions by combining the same units and removing unnecessary nesting.
  * This prevents exceedingly long CSS calc() properties that can impact performance.
  *

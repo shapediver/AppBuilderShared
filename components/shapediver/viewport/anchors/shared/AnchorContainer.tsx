@@ -50,7 +50,7 @@ import {ViewportAnchorProps3d} from "../ViewportAnchor3d";
 import {useAnchorSelection} from "./useAnchorSelection";
 import {useCanvasPortalUtilities} from "./useCanvasPortalUtilities";
 import {useCanvasSize} from "./useCanvasSize";
-import {cleanUnit} from "./utils";
+import {cleanUnit, toCanvasPixels} from "./utils";
 
 export interface ViewportAnchorProps {
 	/** If the anchor allows pointer events */
@@ -357,16 +357,16 @@ export function useAnchorContainer({
 		updateShowContent,
 	);
 
-	// Calculate the width and height based on the input values
-	const {width, height} = useMemo(() => {
-		return {
-			width: cleanUnit(inputWidth),
-			height: cleanUnit(inputHeight),
-		};
-	}, [inputWidth, inputHeight]);
-
 	// Get the canvas size
 	const {width: canvasWidth, height: canvasHeight} = useCanvasSize(canvas);
+
+	// Calculate the width and height based on the input values, handling % as canvas-relative
+	const {width, height} = useMemo(() => {
+		return {
+			width: toCanvasPixels(cleanUnit(inputWidth), canvasWidth),
+			height: toCanvasPixels(cleanUnit(inputHeight), canvasHeight),
+		};
+	}, [inputWidth, inputHeight, canvasWidth, canvasHeight]);
 
 	// Determine the pointer events style based on the global state and anchor properties
 	const pointerEvents = useMemo(() => {
