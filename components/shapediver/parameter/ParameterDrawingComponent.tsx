@@ -100,7 +100,9 @@ export default function ParameterDrawingComponent(
 	}, [definition.settings]);
 
 	// state for the drawing application
-	const [drawingActive, setDrawingActive] = useState<boolean>(false);
+	const [drawingActive, setDrawingActive] = useState<boolean>(
+		drawingProps.general?.activeMode === "activeOnStart" ? true : false,
+	);
 	// state for the interaction permission
 	const [hasInteractionPermission, setHasInteractionPermission] =
 		useState<boolean>(false);

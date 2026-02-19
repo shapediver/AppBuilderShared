@@ -106,7 +106,9 @@ export default function ParameterGumballComponent(
 	}, [definition.settings]);
 
 	// state for the gumball application
-	const [gumballActive, setGumballActive] = useState<boolean>(false);
+	const [gumballActive, setGumballActive] = useState<boolean>(
+		gumballProps.activeMode === "activeOnStart" ? true : false,
+	);
 	// store the last confirmed value in a state to reset the transformation
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
 		{
