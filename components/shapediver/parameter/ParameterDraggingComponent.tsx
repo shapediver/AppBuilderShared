@@ -92,7 +92,9 @@ export default function ParameterDraggingComponent(
 	}, [definition.settings]);
 
 	// is the dragging active or not?
-	const [draggingActive, setDraggingActive] = useState<boolean>(false);
+	const [draggingActive, setDraggingActive] = useState<boolean>(
+		draggingProps.activeMode === "activeOnStart" ? true : false,
+	);
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
 	// parsed execValue

@@ -100,7 +100,9 @@ export default function ParameterSelectionComponent(
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
 
 	// is the selection active or not?
-	const [selectionActive, setSelectionActive] = useState<boolean>(false);
+	const [selectionActive, setSelectionActive] = useState<boolean>(
+		selectionProps.activeMode === "activeOnStart" ? true : false,
+	);
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
 	// reference to manage the interaction request token
