@@ -37,8 +37,9 @@ export const useStargateExportFile = () => {
 				pendingRequestStack.length = 0;
 			}
 
-			const {sdkRef, selectedClient} =
+			const {authWrapper, selectedClient} =
 				useShapeDiverStoreStargate.getState();
+			const sdkRef = await authWrapper(async (c) => c);
 			const sdk = sdkRef?.sdk;
 
 			// We can assume the Stargate SDK to be available, a client to be selected, and

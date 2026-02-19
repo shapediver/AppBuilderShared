@@ -1,5 +1,6 @@
 import {
 	IShapeDiverStoreStargateExtended,
+	IStargateClientRef,
 	NetworkStatus,
 	StargateCacheKeyEnum,
 } from "@AppBuilderLib/entities/stargate";
@@ -36,8 +37,7 @@ function pingConnectionClose() {
 	}
 }
 
-interface IShapeDiverStoreStargateInternal
-	extends IShapeDiverStoreStargateExtended {
+interface IShapeDiverStoreStargateInternal extends IShapeDiverStoreStargateExtended {
 	/** Handler used if the SDK tells us about a disconnection from the Stargate service. */
 	handleDisconnect: (msg: string) => void;
 	/** Start a regular "ping" connection with the selected client. */
@@ -94,6 +94,19 @@ export const useShapeDiverStoreStargate =
 						false,
 						"handleDisconnect",
 					);
+				},
+
+				authWrapper: async <T>(
+					cb: (clientRef: IStargateClientRef) => Promise<T>,
+					redirect: boolean = true,
+				) => {
+					const {authenticate} = get();
+					const clientRef = await authenticate(redirect);
+					if (!clientRef) {
+						throw new Error("Authentication failed");
+					}
+
+					return await cb(clientRef);
 				},
 
 				authenticate: async (
@@ -196,8 +209,10 @@ export const useShapeDiverStoreStargate =
 				},
 
 				getClientStatus: async (_client?: ISdStargateClientModel) => {
-					const {sdkRef, selectedClient} = get();
+					const {authWrapper, selectedClient} = get();
 					const client = _client || selectedClient;
+
+					const sdkRef = await authWrapper(async (c) => c);
 					if (!sdkRef || !client) return undefined;
 					const {sdk} = sdkRef;
 
@@ -251,7 +266,8 @@ export const useShapeDiverStoreStargate =
 					modelId: string,
 					client?: ISdStargateClientModel,
 				) => {
-					const {sdkRef, selectedClient} = get();
+					const {authWrapper, selectedClient} = get();
+					const sdkRef = await authWrapper(async (c) => c);
 					if (!sdkRef) return;
 
 					const clientToUse = client || selectedClient;
@@ -378,8 +394,10 @@ export const useShapeDiverStoreStargate =
 				},
 
 				getSupportedData: async (flush?: boolean) => {
-					const {sdkRef, cachePromise, selectedClient} = get();
-					if (!sdkRef || !selectedClient) return undefined;
+					const {authWrapper, cachePromise, selectedClient} = get();
+					if (!selectedClient) return undefined;
+					const sdkRef = await authWrapper(async (c) => c);
+					if (!sdkRef) return undefined;
 					const {sdk} = sdkRef;
 					return cachePromise(
 						StargateCacheKeyEnum.SupportedData,
