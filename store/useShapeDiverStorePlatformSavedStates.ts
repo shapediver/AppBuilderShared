@@ -9,6 +9,7 @@ import {
 	TSavedStateEmbed,
 	TSavedStateQueryPropsExt,
 } from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
+import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	SdPlatformQueryResponse,
 	SdPlatformRequestSavedStatePatch,
@@ -43,9 +44,22 @@ export const useShapeDiverStorePlatformSavedStates =
 						update: async (
 							body: SdPlatformRequestSavedStatePatch,
 						) => {
-							const result = await authWrapper((c) =>
-								c.client.savedStates.patch(data.id, body),
-							);
+							const result = await authWrapper(async (c) => {
+								if (!c) {
+									Logger.warn(
+										`Updating saved state ${data.id} skipped because platform client is not available.`,
+									);
+									return;
+								}
+
+								return c.client.savedStates.patch(
+									data.id,
+									body,
+								);
+							});
+
+							if (!result) return;
+
 							set(
 								produce((state) => {
 									state.items[data.id].data = result.data;
@@ -64,9 +78,19 @@ export const useShapeDiverStorePlatformSavedStates =
 							}
 						},
 						delete: async () => {
-							await authWrapper((c) => {
+							const result = await authWrapper(async (c) => {
+								if (!c) {
+									Logger.warn(
+										`Deleting saved state ${data.id} skipped because platform client is not available.`,
+									);
+									return;
+								}
+
 								return c.client.savedStates.delete(data.id);
 							});
+
+							if (!result) return;
+
 							set(
 								produce((state) => {
 									delete state.items[data.id];
@@ -223,11 +247,15 @@ export const useShapeDiverStorePlatformSavedStates =
 						setLoading(true);
 						let response:
 							| SdPlatformQueryResponse<SdPlatformResponseSavedStatePublic>
-							| Error;
+							| Error
+							| undefined = undefined;
 						try {
-							response = await authWrapper((c) =>
-								c.client.savedStates.query(params),
-							);
+							response = await authWrapper(async (c) => {
+								if (!c) return;
+								return c.client.savedStates.query(params);
+							});
+							if (!response) return;
+
 							const {pagination, result: items} = response.data;
 							items.forEach((item) => addItem(item));
 							set(
