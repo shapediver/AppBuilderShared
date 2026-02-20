@@ -134,14 +134,12 @@ export const useShapeDiverStorePlatformModels =
 						TModelQueryPropsExt
 					>,
 				) {
-					const {authWrapper, clientRef, getUser} =
-						useShapeDiverStorePlatform(
-							useShallow((state) => ({
-								authWrapper: state.authWrapper,
-								clientRef: state.clientRef,
-								getUser: state.getUser,
-							})),
-						);
+					const {authWrapper, getUser} = useShapeDiverStorePlatform(
+						useShallow((state) => ({
+							authWrapper: state.authWrapper,
+							getUser: state.getUser,
+						})),
+					);
 					const {addItem, queryCache} = get();
 
 					const {
@@ -222,8 +220,6 @@ export const useShapeDiverStorePlatformModels =
 					);
 
 					const loadMore = useCallback(async () => {
-						if (!clientRef) return;
-
 						const {queryCache} = get();
 
 						const userFilter = defineFilter(
@@ -275,7 +271,6 @@ export const useShapeDiverStorePlatformModels =
 							setLoading(false);
 						}
 					}, [
-						clientRef,
 						authWrapper,
 						getUser,
 						queryParamsExt,

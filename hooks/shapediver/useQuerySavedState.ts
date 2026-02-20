@@ -21,16 +21,17 @@ export default function useQuerySavedState(savedStateId: string | null) {
 		})),
 	);
 
-	const {clientRef} = useShapeDiverStorePlatform(
+	const {authWrapper} = useShapeDiverStorePlatform(
 		useShallow((state) => ({
-			clientRef: state.clientRef,
+			authWrapper: state.authWrapper,
 		})),
 	);
-	const [clientInitialized, setClientInitialized] =
-		useState<boolean>(!!clientRef);
+	const [clientInitialized, setClientInitialized] = useState<boolean>(false);
 	useEffect(() => {
-		setClientInitialized(!!clientRef);
-	}, [clientRef]);
+		authWrapper(async (clientRef) => {
+			setClientInitialized(!!clientRef);
+		});
+	}, [authWrapper]);
 
 	const {
 		items: savedStateIds,
