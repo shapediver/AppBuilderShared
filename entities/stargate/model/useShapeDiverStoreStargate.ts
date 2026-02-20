@@ -212,19 +212,21 @@ export const useShapeDiverStoreStargate =
 					const {authWrapper, selectedClient} = get();
 					const client = _client || selectedClient;
 
-					const sdkRef = await authWrapper(async (c) => c);
-					if (!sdkRef || !client) return undefined;
-					const {sdk} = sdkRef;
+					return await authWrapper(async (sdkRef) => {
+						if (!sdkRef || !client) return undefined;
+						const {sdk} = sdkRef;
 
-					const {SdStargateStatusCommand} = await getStargateSDK();
+						const {SdStargateStatusCommand} =
+							await getStargateSDK();
 
-					const result = await exceptionWrapperAsync(async () => {
-						const command = new SdStargateStatusCommand(sdk);
-						return await command.send({}, [client]);
+						const result = await exceptionWrapperAsync(async () => {
+							const command = new SdStargateStatusCommand(sdk);
+							return await command.send({}, [client]);
+						});
+						return result.data && result.data.length > 0
+							? result.data[0]
+							: undefined;
 					});
-					return result.data && result.data.length > 0
-						? result.data[0]
-						: undefined;
 				},
 
 				getAvailableClients: async (flush?: boolean) => {
@@ -267,24 +269,25 @@ export const useShapeDiverStoreStargate =
 					client?: ISdStargateClientModel,
 				) => {
 					const {authWrapper, selectedClient} = get();
-					const sdkRef = await authWrapper(async (c) => c);
-					if (!sdkRef) return;
+					return await authWrapper(async (sdkRef) => {
+						if (!sdkRef) return;
 
-					const clientToUse = client || selectedClient;
-					if (!clientToUse) return;
+						const clientToUse = client || selectedClient;
+						if (!clientToUse) return;
 
-					const {SdStargatePrepareModelCommand} =
-						await getStargateSDK();
+						const {SdStargatePrepareModelCommand} =
+							await getStargateSDK();
 
-					const command = new SdStargatePrepareModelCommand(
-						sdkRef.sdk,
-					);
-					const response = await command.send(
-						{model: {id: modelId}},
-						[clientToUse],
-					);
-					if (!response || response.length === 0) return;
-					return response[0];
+						const command = new SdStargatePrepareModelCommand(
+							sdkRef.sdk,
+						);
+						const response = await command.send(
+							{model: {id: modelId}},
+							[clientToUse],
+						);
+						if (!response || response.length === 0) return;
+						return response[0];
+					});
 				},
 
 				selectClient: async (
@@ -396,24 +399,27 @@ export const useShapeDiverStoreStargate =
 				getSupportedData: async (flush?: boolean) => {
 					const {authWrapper, cachePromise, selectedClient} = get();
 					if (!selectedClient) return undefined;
-					const sdkRef = await authWrapper(async (c) => c);
-					if (!sdkRef) return undefined;
-					const {sdk} = sdkRef;
-					return cachePromise(
-						StargateCacheKeyEnum.SupportedData,
-						flush ?? false,
-						async () => {
-							const {SdStargateGetSupportedDataCommand} =
-								await getStargateSDK();
+					return await authWrapper(async (sdkRef) => {
+						if (!sdkRef) return undefined;
+						const {sdk} = sdkRef;
+						return cachePromise(
+							StargateCacheKeyEnum.SupportedData,
+							flush ?? false,
+							async () => {
+								const {SdStargateGetSupportedDataCommand} =
+									await getStargateSDK();
 
-							const command =
-								new SdStargateGetSupportedDataCommand(sdk);
-							const result = await command.send({}, [
-								selectedClient,
-							]);
-							return result.length > 0 ? result[0] : undefined;
-						},
-					);
+								const command =
+									new SdStargateGetSupportedDataCommand(sdk);
+								const result = await command.send({}, [
+									selectedClient,
+								]);
+								return result.length > 0
+									? result[0]
+									: undefined;
+							},
+						);
+					});
 				},
 
 				cachePromise: async <T>(

@@ -40,76 +40,78 @@ export const useStargateGetData = () => {
 
 			const {authWrapper, selectedClient} =
 				useShapeDiverStoreStargate.getState();
-			const sdkRef = await authWrapper(async (c) => c);
-			const sdk = sdkRef?.sdk;
+			return await authWrapper(async (sdkRef) => {
+				const sdk = sdkRef?.sdk;
 
-			// We can assume the Stargate SDK to be available, a client to be selected, and
-			// a current model to be available in the store.
-			// Calling this function without these conditions would be a developer error,
-			// and therefore we report it to Sentry.
-			if (!sdk) {
-				const error = new Error("Stargate SDK not available");
-				errorReporting.captureException(error);
-				throw error;
-			}
-
-			if (!selectedClient) {
-				const error = new Error("No client selected");
-				errorReporting.captureException(error);
-				throw error;
-			}
-
-			const {currentModel} = useShapeDiverStorePlatform.getState();
-
-			if (!currentModel) {
-				const error = new Error("Current model not available");
-				errorReporting.captureException(error);
-				throw error;
-			}
-
-			const {SdStargateGetDataCommand} = await getStargateSDK();
-
-			return new Promise((resolve, reject) => {
-				// Handler for rejecting the pending request
-				const rejectHandler = () => {
-					const err: Error & {type?: typeof ERROR_TYPE_INTERRUPTED} =
-						new Error("Request interrupted");
-					err.type = ERROR_TYPE_INTERRUPTED;
-					reject(err);
-				};
-				pendingRequestStack.push({reject: rejectHandler});
-
-				const removeRejectHandler = () => {
-					const index = pendingRequestStack.findIndex(
-						(p) => p.reject === rejectHandler,
-					);
-					if (index >= 0) {
-						pendingRequestStack.splice(index, 1);
-					}
-				};
-
-				try {
-					const command = new SdStargateGetDataCommand(sdk);
-					command
-						.send(
-							{
-								model: {id: currentModel.id},
-								parameter: {id: parameterId},
-							},
-							[selectedClient],
-						)
-						.then((res: ISdStargateGetDataReplyDto[]) => {
-							removeRejectHandler();
-							resolve(res);
-						})
-						.catch((e: unknown) => {
-							removeRejectHandler();
-							reject(e);
-						});
-				} catch (error) {
-					removeRejectHandler();
-					reject(error);
+				// We can assume the Stargate SDK to be available, a client to be selected, and
+				// a current model to be available in the store.
+				// Calling this function without these conditions would be a developer error,
+				// and therefore we report it to Sentry.
+				if (!sdk) {
+					const error = new Error("Stargate SDK not available");
+					errorReporting.captureException(error);
+					throw error;
 				}
+
+				if (!selectedClient) {
+					const error = new Error("No client selected");
+					errorReporting.captureException(error);
+					throw error;
+				}
+
+				const {currentModel} = useShapeDiverStorePlatform.getState();
+
+				if (!currentModel) {
+					const error = new Error("Current model not available");
+					errorReporting.captureException(error);
+					throw error;
+				}
+
+				const {SdStargateGetDataCommand} = await getStargateSDK();
+
+				return new Promise((resolve, reject) => {
+					// Handler for rejecting the pending request
+					const rejectHandler = () => {
+						const err: Error & {
+							type?: typeof ERROR_TYPE_INTERRUPTED;
+						} = new Error("Request interrupted");
+						err.type = ERROR_TYPE_INTERRUPTED;
+						reject(err);
+					};
+					pendingRequestStack.push({reject: rejectHandler});
+
+					const removeRejectHandler = () => {
+						const index = pendingRequestStack.findIndex(
+							(p) => p.reject === rejectHandler,
+						);
+						if (index >= 0) {
+							pendingRequestStack.splice(index, 1);
+						}
+					};
+
+					try {
+						const command = new SdStargateGetDataCommand(sdk);
+						command
+							.send(
+								{
+									model: {id: currentModel.id},
+									parameter: {id: parameterId},
+								},
+								[selectedClient],
+							)
+							.then((res: ISdStargateGetDataReplyDto[]) => {
+								removeRejectHandler();
+								resolve(res);
+							})
+							.catch((e: unknown) => {
+								removeRejectHandler();
+								reject(e);
+							});
+					} catch (error) {
+						removeRejectHandler();
+						reject(error);
+					}
+				});
 			});
 		},
 		[],
