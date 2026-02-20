@@ -1,5 +1,6 @@
 import {
 	IShapeDiverStoreStargateExtended,
+	IStargateClientRef,
 	NetworkStatus,
 	StargateCacheKeyEnum,
 } from "@AppBuilderLib/entities/stargate";
@@ -9,7 +10,11 @@ import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper"
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform";
 import {useShapeDiverStoreErrorReporting} from "@AppBuilderLib/store/useShapeDiverStoreErrorReporting";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/store/useShapeDiverStorePlatform";
-import type {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
+import {
+	SdStargateError,
+	SdStargateErrorTypes,
+	type ISdStargateClientModel,
+} from "@shapediver/sdk.stargate-sdk-v1";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 
@@ -19,6 +24,9 @@ const importStargateSDK = () => import("@shapediver/sdk.stargate-sdk-v1");
 let pingTimeout: NodeJS.Timeout | null = null;
 const PING_INTERVAL_MS = 1000 * 30; // 30 seconds
 let stargateSDKPromise: ReturnType<typeof importStargateSDK> | null = null;
+
+// Private SDK reference - not accessible from outside the module
+let sdkRef: IStargateClientRef | undefined = undefined;
 
 export const getStargateSDK = async () => {
 	if (!stargateSDKPromise) {
@@ -36,8 +44,7 @@ function pingConnectionClose() {
 	}
 }
 
-interface IShapeDiverStoreStargateInternal
-	extends IShapeDiverStoreStargateExtended {
+interface IShapeDiverStoreStargateInternal extends IShapeDiverStoreStargateExtended {
 	/** Handler used if the SDK tells us about a disconnection from the Stargate service. */
 	handleDisconnect: (msg: string) => void;
 	/** Start a regular "ping" connection with the selected client. */
@@ -53,8 +60,6 @@ export const useShapeDiverStoreStargate =
 		devtools(
 			(set, get) => ({
 				isStargateEnabled: shouldUsePlatform(),
-
-				sdkRef: undefined,
 
 				genericCache: {},
 
@@ -84,6 +89,7 @@ export const useShapeDiverStoreStargate =
 
 				handleDisconnect: (/* msg: string */) => {
 					pingConnectionClose();
+					sdkRef = undefined;
 					set(
 						{
 							networkStatus: NetworkStatus.none,
@@ -96,14 +102,52 @@ export const useShapeDiverStoreStargate =
 					);
 				},
 
+				authWrapper: async <T>(
+					cb: (clientRef: IStargateClientRef) => Promise<T>,
+					redirect: boolean = true,
+				) => {
+					const {authenticate} = get();
+					const clientRef = await authenticate(redirect);
+					if (!clientRef) {
+						throw new Error("Authentication failed");
+					}
+
+					try {
+						return await cb(clientRef);
+					} catch (error) {
+						if (
+							error instanceof SdStargateError &&
+							error.type === SdStargateErrorTypes.NotAuthenticated
+						) {
+							// This means that the client ID was not found. In this case we need to get a fresh
+							// JWT and run the `register` command again - that's it!
+							//
+							// Side note - some technical details:
+							//   The client/SDK never receives any client ID. This ID is the unique ID of the
+							//   websocket connection and handled exclusively on the backend side. That's why
+							//   you don't have to do anything but calling `register` to make it work again.
+							const newClientRef = await authenticate(
+								redirect,
+								true,
+							);
+							if (!newClientRef) {
+								console.error("Re-authentication failed");
+								throw error;
+							}
+							return await cb(newClientRef);
+						} else {
+							throw error;
+						}
+					}
+				},
+
 				authenticate: async (
 					redirect: boolean = true,
 					forceReconnect?: boolean,
 				) => {
 					if (!shouldUsePlatform()) return;
 
-					const {sdkRef, cachePromise, handleDisconnect} = get();
-
+					const {cachePromise, handleDisconnect} = get();
 					const {errorReporting} =
 						useShapeDiverStoreErrorReporting.getState();
 
@@ -114,10 +158,6 @@ export const useShapeDiverStoreStargate =
 						forceReconnect ?? false,
 						async () => {
 							const {createSdk} = await getStargateSDK();
-
-							// TODO clarify whether we should do some cleanup in case
-							// there is a previous clientRef (cleanup the websocket connection or similar)
-
 							const {authenticate, authWrapper} =
 								useShapeDiverStorePlatform.getState();
 							const platformClientRef = await authenticate(
@@ -135,7 +175,6 @@ export const useShapeDiverStoreStargate =
 							} = await authWrapper((c) =>
 								c.client.stargate.getConfig(),
 							);
-
 							const url =
 								typeof endpoint === "string"
 									? endpoint
@@ -172,44 +211,41 @@ export const useShapeDiverStoreStargate =
 									window.location.hostname,
 									"",
 								);
-
 								return sdk;
 							});
 
-							const newSdkRef = {
-								...sdkRef,
-								sdk,
-							};
-
+							sdkRef = {sdk};
 							set(
 								{
-									sdkRef: newSdkRef,
 									networkStatus: NetworkStatus.disconnected,
 								},
 								false,
 								"authenticate",
 							);
-
-							return newSdkRef;
+							return sdkRef;
 						},
 					);
 				},
 
 				getClientStatus: async (_client?: ISdStargateClientModel) => {
-					const {sdkRef, selectedClient} = get();
+					const {authWrapper, selectedClient} = get();
 					const client = _client || selectedClient;
-					if (!sdkRef || !client) return undefined;
-					const {sdk} = sdkRef;
 
-					const {SdStargateStatusCommand} = await getStargateSDK();
+					return await authWrapper(async (sdkRef) => {
+						if (!sdkRef || !client) return undefined;
+						const {sdk} = sdkRef;
 
-					const result = await exceptionWrapperAsync(async () => {
-						const command = new SdStargateStatusCommand(sdk);
-						return await command.send({}, [client]);
+						const {SdStargateStatusCommand} =
+							await getStargateSDK();
+
+						const result = await exceptionWrapperAsync(async () => {
+							const command = new SdStargateStatusCommand(sdk);
+							return await command.send({}, [client]);
+						});
+						return result.data && result.data.length > 0
+							? result.data[0]
+							: undefined;
 					});
-					return result.data && result.data.length > 0
-						? result.data[0]
-						: undefined;
 				},
 
 				getAvailableClients: async (flush?: boolean) => {
@@ -251,24 +287,26 @@ export const useShapeDiverStoreStargate =
 					modelId: string,
 					client?: ISdStargateClientModel,
 				) => {
-					const {sdkRef, selectedClient} = get();
-					if (!sdkRef) return;
+					const {authWrapper, selectedClient} = get();
+					return await authWrapper(async (sdkRef) => {
+						if (!sdkRef) return;
 
-					const clientToUse = client || selectedClient;
-					if (!clientToUse) return;
+						const clientToUse = client || selectedClient;
+						if (!clientToUse) return;
 
-					const {SdStargatePrepareModelCommand} =
-						await getStargateSDK();
+						const {SdStargatePrepareModelCommand} =
+							await getStargateSDK();
 
-					const command = new SdStargatePrepareModelCommand(
-						sdkRef.sdk,
-					);
-					const response = await command.send(
-						{model: {id: modelId}},
-						[clientToUse],
-					);
-					if (!response || response.length === 0) return;
-					return response[0];
+						const command = new SdStargatePrepareModelCommand(
+							sdkRef.sdk,
+						);
+						const response = await command.send(
+							{model: {id: modelId}},
+							[clientToUse],
+						);
+						if (!response || response.length === 0) return;
+						return response[0];
+					});
 				},
 
 				selectClient: async (
@@ -378,24 +416,29 @@ export const useShapeDiverStoreStargate =
 				},
 
 				getSupportedData: async (flush?: boolean) => {
-					const {sdkRef, cachePromise, selectedClient} = get();
-					if (!sdkRef || !selectedClient) return undefined;
-					const {sdk} = sdkRef;
-					return cachePromise(
-						StargateCacheKeyEnum.SupportedData,
-						flush ?? false,
-						async () => {
-							const {SdStargateGetSupportedDataCommand} =
-								await getStargateSDK();
+					const {authWrapper, cachePromise, selectedClient} = get();
+					if (!selectedClient) return undefined;
+					return await authWrapper(async (sdkRef) => {
+						if (!sdkRef) return undefined;
+						const {sdk} = sdkRef;
+						return cachePromise(
+							StargateCacheKeyEnum.SupportedData,
+							flush ?? false,
+							async () => {
+								const {SdStargateGetSupportedDataCommand} =
+									await getStargateSDK();
 
-							const command =
-								new SdStargateGetSupportedDataCommand(sdk);
-							const result = await command.send({}, [
-								selectedClient,
-							]);
-							return result.length > 0 ? result[0] : undefined;
-						},
-					);
+								const command =
+									new SdStargateGetSupportedDataCommand(sdk);
+								const result = await command.send({}, [
+									selectedClient,
+								]);
+								return result.length > 0
+									? result[0]
+									: undefined;
+							},
+						);
+					});
 				},
 
 				cachePromise: async <T>(

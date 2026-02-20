@@ -37,23 +37,29 @@ export const useShapeDiverStorePlatformSavedStates =
 				queryCache: {},
 
 				addItem(data: TSavedStateData) {
-					const {authWrapper, clientRef} =
-						useShapeDiverStorePlatform.getState();
+					const {authWrapper} = useShapeDiverStorePlatform.getState();
 					const {pruneCache} = get();
 
 					const actions = {
 						update: async (
 							body: SdPlatformRequestSavedStatePatch,
 						) => {
-							if (!clientRef) {
-								Logger.warn(
-									`Updating saved state ${data.id} skipped because platform client is not available.`,
+							const result = await authWrapper(async (c) => {
+								if (!c) {
+									Logger.warn(
+										`Updating saved state ${data.id} skipped because platform client is not available.`,
+									);
+									return;
+								}
+
+								return c.client.savedStates.patch(
+									data.id,
+									body,
 								);
-								return;
-							}
-							const result = await authWrapper((c) =>
-								c.client.savedStates.patch(data.id, body),
-							);
+							});
+
+							if (!result) return;
+
 							set(
 								produce((state) => {
 									state.items[data.id].data = result.data;
@@ -72,15 +78,19 @@ export const useShapeDiverStorePlatformSavedStates =
 							}
 						},
 						delete: async () => {
-							if (!clientRef) {
-								Logger.warn(
-									`Deleting saved state ${data.id} skipped because platform client is not available.`,
-								);
-								return;
-							}
-							await authWrapper((c) =>
-								c.client.savedStates.delete(data.id),
-							);
+							const result = await authWrapper(async (c) => {
+								if (!c) {
+									Logger.warn(
+										`Deleting saved state ${data.id} skipped because platform client is not available.`,
+									);
+									return;
+								}
+
+								return c.client.savedStates.delete(data.id);
+							});
+
+							if (!result) return;
+
 							set(
 								produce((state) => {
 									delete state.items[data.id];
@@ -113,10 +123,9 @@ export const useShapeDiverStorePlatformSavedStates =
 						TSavedStateQueryPropsExt
 					>,
 				) {
-					const {clientRef, authWrapper, getUser, currentModel} =
+					const {authWrapper, getUser, currentModel} =
 						useShapeDiverStorePlatform(
 							useShallow((state) => ({
-								clientRef: state.clientRef,
 								authWrapper: state.authWrapper,
 								getUser: state.getUser,
 								currentModel: state.currentModel,
@@ -202,8 +211,6 @@ export const useShapeDiverStorePlatformSavedStates =
 					);
 
 					const loadMore = useCallback(async () => {
-						if (!clientRef) return;
-
 						const {queryCache} = get();
 
 						// Note: We can't define the following filter criteria outside of loadMore,
@@ -240,11 +247,15 @@ export const useShapeDiverStorePlatformSavedStates =
 						setLoading(true);
 						let response:
 							| SdPlatformQueryResponse<SdPlatformResponseSavedStatePublic>
-							| Error;
+							| Error
+							| undefined = undefined;
 						try {
-							response = await authWrapper((c) =>
-								c.client.savedStates.query(params),
-							);
+							response = await authWrapper(async (c) => {
+								if (!c) return;
+								return c.client.savedStates.query(params);
+							});
+							if (!response) return;
+
 							const {pagination, result: items} = response.data;
 							items.forEach((item) => addItem(item));
 							set(
@@ -268,7 +279,6 @@ export const useShapeDiverStorePlatformSavedStates =
 
 						return response;
 					}, [
-						clientRef,
 						authWrapper,
 						getUser,
 						queryParamsExt,

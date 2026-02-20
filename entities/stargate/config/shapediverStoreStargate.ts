@@ -27,13 +27,6 @@ export interface IShapeDiverStoreStargate {
 	isStargateEnabled: boolean;
 
 	/**
-	 * Reference to the Stargate SDK.
-	 * This is undefined if the application is not running on the platform or if
-	 * authenticate has not been called or has not succeeded.
-	 */
-	sdkRef: IStargateClientRef | undefined;
-
-	/**
 	 * Create a Stargate SDK and register with the Stargate service.
 	 * In case the application is not running on the platform, this function returns undefined.
 	 * @param redirect Redirect for authentication in case using a refresh token did not work. Defaults to true.
@@ -44,6 +37,18 @@ export interface IShapeDiverStoreStargate {
 		redirect?: boolean,
 		forceReconnect?: boolean,
 	) => Promise<IStargateClientRef | undefined>;
+
+	/**
+	 * Wrapper for executing functions requiring an authenticated Stargate client.
+	 * Tries to re-authenticate in case the current authentication is invalid.
+	 * @param cb The callback to execute with an authenticated Stargate client.
+	 * @param redirect Redirect for authentication in case re-authentication is required. Defaults to true.
+	 * @returns The result of the callback.
+	 */
+	authWrapper: <T>(
+		cb: (clientRef: IStargateClientRef) => Promise<T>,
+		redirect?: boolean,
+	) => Promise<T>;
 
 	/**
 	 * Current network status of the Stargate connection.
@@ -120,8 +125,7 @@ export enum StargateCacheKeyEnum {
 /**
  * Extended store for Stargate interaction, including functionality used by the store implementation
  */
-export interface IShapeDiverStoreStargateExtended
-	extends IShapeDiverStoreStargate {
+export interface IShapeDiverStoreStargateExtended extends IShapeDiverStoreStargate {
 	/** Cache for diverse stuff */
 	genericCache: {[key: string]: any};
 
