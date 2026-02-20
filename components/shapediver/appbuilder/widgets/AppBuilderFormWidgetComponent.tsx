@@ -1,4 +1,5 @@
 import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";
 import {
@@ -37,13 +38,14 @@ import React, {
 } from "react";
 import {undefined} from "zod";
 import MarkdownWidgetComponent from "~/shared/components/shapediver/ui/MarkdownWidgetComponent";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {PropsExportWithForm} from "~/shared/types/components/shapediver/propsExport";
 import {IShapeDiverParameterActions} from "~/shared/types/shapediver/parameter";
 
 interface StyleProps {
 	stackProps?: StackProps;
+	formPaperProps?: PaperProps;
 	elementPaperProps?: PaperProps;
+	exportPaperProps?: PaperProps;
 	submitButtonPaperProps?: PaperProps;
 	messagePaperProps?: PaperProps;
 	submitButtonProps?: ButtonProps;
@@ -52,9 +54,27 @@ interface StyleProps {
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
-	stackProps: {},
+	stackProps: {
+		gap: 0,
+	},
+	formPaperProps: {
+		withBorder: true,
+		shadow: "none",
+		p: 0,
+	},
 	elementPaperProps: {
 		shadow: "none",
+		withBorder: false,
+		px: 0,
+		pt: 0,
+		pb: "sm",
+	},
+	exportPaperProps: {
+		shadow: "none",
+		withBorder: false,
+		px: 0,
+		py: 0,
+		mt: "xs",
 	},
 	submitButtonPaperProps: {
 		shadow: "none",
@@ -103,12 +123,19 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 
 	const componentContext = useContext(ComponentContext);
 
-	const {stackProps, elementPaperProps, messagePaperProps, resetButtonProps, resetMessage} =
-		useProps(
-			"AppBuilderFormWidgetComponent",
-			defaultStyleProps,
-			styleProps,
-		);
+	const {
+		stackProps,
+		formPaperProps,
+		elementPaperProps,
+		exportPaperProps,
+		messagePaperProps,
+		resetButtonProps,
+		resetMessage,
+	} = useProps(
+		"AppBuilderFormWidgetComponent",
+		defaultStyleProps,
+		styleProps,
+	);
 
 	const [showMessage, setShowMessage] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
@@ -206,16 +233,13 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 		form.reset();
 	}, [initialValues, form]);
 
-	const handleError = useCallback(
-		() => {
-			setIsSuccess(false);
-			if (submit === "message") {
-				setShowMessage(true);
-			}
-			console.error("Export request failed");
-		},
-		[submit],
-	);
+	const handleError = useCallback(() => {
+		setIsSuccess(false);
+		if (submit === "message") {
+			setShowMessage(true);
+		}
+		console.error("Export request failed");
+	}, [submit]);
 
 	// Handle form submission with Mantine form validation
 	const handleSubmit = useCallback(
@@ -309,18 +333,25 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 			exportData.definition,
 		);
 
+		const exportButtonLabel =
+			exportData.definition.displayname || exportData.definition.name;
+
 		return exportProps ? (
-			<ExportComponent
-				{...exportProps}
-				form={form}
-				onSuccess={() => handleSubmit(values)}
-				onError={handleError}
-			/>
+			<Paper {...exportPaperProps}>
+				<ExportComponent
+					{...exportProps}
+					form={form}
+					onSuccess={() => handleSubmit(values)}
+					onError={handleError}
+					buttonLabel={exportButtonLabel}
+				/>
+			</Paper>
 		) : null;
 	}, [
 		exportData,
 		exportProps,
 		componentContext,
+		exportPaperProps,
 		form,
 		handleError,
 		handleSubmit,
@@ -388,11 +419,16 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 
 	// Render form with form instance passed as prop to children
 	return (
-		<form onSubmit={form.onSubmit(handleSubmit)}>
-			<Stack {...stackProps}>
-				{isMounted && parameterComponents}
-				{isMounted && exportComponent}
-			</Stack>
+		<form
+			className="app-builder-form-widget"
+			onSubmit={form.onSubmit(handleSubmit)}
+		>
+			<Paper {...formPaperProps}>
+				<Stack {...stackProps}>
+					{isMounted && parameterComponents}
+					{isMounted && exportComponent}
+				</Stack>
+			</Paper>
 		</form>
 	);
 }

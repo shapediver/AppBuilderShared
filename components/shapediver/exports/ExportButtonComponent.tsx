@@ -76,6 +76,8 @@ interface StyleProps {
 	buttonProps?: Partial<ButtonProps>;
 	downloadTooltipProps: Partial<TooltipProps>;
 	downloadButtonProps?: Partial<ButtonProps>;
+	/** When provided, hides the label header and uses this text as the button label. */
+	buttonLabel?: string;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
@@ -117,6 +119,7 @@ export default function ExportButtonComponent(
 		buttonProps,
 		downloadTooltipProps,
 		downloadButtonProps,
+		buttonLabel,
 		parameterValues,
 		...rest
 	} = useProps("ExportButtonComponent", defaultStyleProps, props);
@@ -454,11 +457,13 @@ export default function ExportButtonComponent(
 
 	return (
 		<>
-			<ExportLabelComponent
-				{...props}
-				label={label}
-				rightSection={rightSection}
-			/>
+			{!buttonLabel && (
+				<ExportLabelComponent
+					{...props}
+					label={label}
+					rightSection={rightSection}
+				/>
+			)}
 			{definition &&
 				(isStargate ? (
 					<Group wrap="nowrap">
@@ -499,9 +504,10 @@ export default function ExportButtonComponent(
 						onClick={onClickIntercepted()}
 						loading={requestingExport}
 					>
-						{definition.type === EXPORT_TYPE.DOWNLOAD
-							? "Download File"
-							: "Send Email"}
+						{buttonLabel ||
+							(definition.type === EXPORT_TYPE.DOWNLOAD
+								? "Download File"
+								: "Send Email")}
 					</Button>
 				))}
 		</>
