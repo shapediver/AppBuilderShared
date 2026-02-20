@@ -25,6 +25,9 @@ let pingTimeout: NodeJS.Timeout | null = null;
 const PING_INTERVAL_MS = 1000 * 30; // 30 seconds
 let stargateSDKPromise: ReturnType<typeof importStargateSDK> | null = null;
 
+// Private SDK reference - not accessible from outside the module
+let sdkRef: IStargateClientRef | undefined = undefined;
+
 export const getStargateSDK = async () => {
 	if (!stargateSDKPromise) {
 		stargateSDKPromise = importStargateSDK();
@@ -58,8 +61,6 @@ export const useShapeDiverStoreStargate =
 			(set, get) => ({
 				isStargateEnabled: shouldUsePlatform(),
 
-				sdkRef: undefined,
-
 				genericCache: {},
 
 				networkStatus: NetworkStatus.none,
@@ -88,6 +89,7 @@ export const useShapeDiverStoreStargate =
 
 				handleDisconnect: (/* msg: string */) => {
 					pingConnectionClose();
+					sdkRef = undefined;
 					set(
 						{
 							networkStatus: NetworkStatus.none,
@@ -145,8 +147,7 @@ export const useShapeDiverStoreStargate =
 				) => {
 					if (!shouldUsePlatform()) return;
 
-					const {sdkRef, cachePromise, handleDisconnect} = get();
-
+					const {cachePromise, handleDisconnect} = get();
 					const {errorReporting} =
 						useShapeDiverStoreErrorReporting.getState();
 
@@ -157,10 +158,6 @@ export const useShapeDiverStoreStargate =
 						forceReconnect ?? false,
 						async () => {
 							const {createSdk} = await getStargateSDK();
-
-							// TODO clarify whether we should do some cleanup in case
-							// there is a previous clientRef (cleanup the websocket connection or similar)
-
 							const {authenticate, authWrapper} =
 								useShapeDiverStorePlatform.getState();
 							const platformClientRef = await authenticate(
@@ -178,7 +175,6 @@ export const useShapeDiverStoreStargate =
 							} = await authWrapper((c) =>
 								c.client.stargate.getConfig(),
 							);
-
 							const url =
 								typeof endpoint === "string"
 									? endpoint
@@ -215,25 +211,18 @@ export const useShapeDiverStoreStargate =
 									window.location.hostname,
 									"",
 								);
-
 								return sdk;
 							});
 
-							const newSdkRef = {
-								...sdkRef,
-								sdk,
-							};
-
+							sdkRef = {sdk};
 							set(
 								{
-									sdkRef: newSdkRef,
 									networkStatus: NetworkStatus.disconnected,
 								},
 								false,
 								"authenticate",
 							);
-
-							return newSdkRef;
+							return sdkRef;
 						},
 					);
 				},

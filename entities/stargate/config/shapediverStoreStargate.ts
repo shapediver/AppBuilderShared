@@ -27,13 +27,6 @@ export interface IShapeDiverStoreStargate {
 	isStargateEnabled: boolean;
 
 	/**
-	 * Reference to the Stargate SDK.
-	 * This is undefined if the application is not running on the platform or if
-	 * authenticate has not been called or has not succeeded.
-	 */
-	sdkRef: IStargateClientRef | undefined;
-
-	/**
 	 * Create a Stargate SDK and register with the Stargate service.
 	 * In case the application is not running on the platform, this function returns undefined.
 	 * @param redirect Redirect for authentication in case using a refresh token did not work. Defaults to true.
