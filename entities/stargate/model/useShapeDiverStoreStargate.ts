@@ -10,7 +10,11 @@ import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper"
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform";
 import {useShapeDiverStoreErrorReporting} from "@AppBuilderLib/store/useShapeDiverStoreErrorReporting";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/store/useShapeDiverStorePlatform";
-import type {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
+import {
+	SdStargateError,
+	SdStargateErrorTypes,
+	type ISdStargateClientModel,
+} from "@shapediver/sdk.stargate-sdk-v1";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 
@@ -106,7 +110,33 @@ export const useShapeDiverStoreStargate =
 						throw new Error("Authentication failed");
 					}
 
-					return await cb(clientRef);
+					try {
+						return await cb(clientRef);
+					} catch (error) {
+						if (
+							error instanceof SdStargateError &&
+							error.type === SdStargateErrorTypes.NotAuthenticated
+						) {
+							// This means that the client ID was not found. In this case we need to get a fresh
+							// JWT and run the `register` command again - that's it!
+							//
+							// Side note - some technical details:
+							//   The client/SDK never receives any client ID. This ID is the unique ID of the
+							//   websocket connection and handled exclusively on the backend side. That's why
+							//   you don't have to do anything but calling `register` to make it work again.
+							const newClientRef = await authenticate(
+								redirect,
+								true,
+							);
+							if (!newClientRef) {
+								console.error("Re-authentication failed");
+								throw error;
+							}
+							return await cb(newClientRef);
+						} else {
+							throw error;
+						}
+					}
 				},
 
 				authenticate: async (
