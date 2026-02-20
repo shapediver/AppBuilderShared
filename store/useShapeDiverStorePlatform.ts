@@ -24,6 +24,9 @@ import {devtools} from "zustand/middleware";
 
 const LOCAL_STORAGE_REFRESH_TOKEN = "refresh_token";
 
+// Private SDK reference - not accessible from outside the module
+let clientRef: IPlatformClientRef | undefined = undefined;
+
 /**
  * Store data related to the ShapeDiver Platform.
  * @see {@link IShapeDiverStorePlatform}
@@ -32,7 +35,6 @@ export const useShapeDiverStorePlatform =
 	create<IShapeDiverStorePlatformExtended>()(
 		devtools(
 			(set, get) => ({
-				clientRef: undefined,
 				user: undefined,
 				currentModel: undefined,
 				genericCache: {},
@@ -76,7 +78,7 @@ export const useShapeDiverStorePlatform =
 				) => {
 					if (!shouldUsePlatform()) return;
 
-					const {clientRef, cachePromise} = get();
+					const {cachePromise} = get();
 
 					if (!forceReAuthenticate && clientRef) return clientRef;
 
@@ -125,13 +127,7 @@ export const useShapeDiverStorePlatform =
 									client,
 								};
 
-								set(
-									() => ({
-										clientRef: sdkRef,
-									}),
-									false,
-									"authenticate",
-								);
+								clientRef = sdkRef;
 
 								return sdkRef;
 							} catch (error) {
@@ -149,13 +145,7 @@ export const useShapeDiverStorePlatform =
 											client,
 										};
 
-										set(
-											() => ({
-												clientRef: sdkRef,
-											}),
-											false,
-											"authenticate",
-										);
+										clientRef = sdkRef;
 
 										return sdkRef;
 									}

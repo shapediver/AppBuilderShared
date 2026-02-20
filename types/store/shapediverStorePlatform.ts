@@ -27,12 +27,6 @@ export interface IPlatformClientRef {
  */
 export interface IShapeDiverStorePlatform {
 	/**
-	 * Reference to the platform client.
-	 * The client may be authenticated or not, @see {@link IPlatformClientRef.jwtToken}.
-	 */
-	clientRef: IPlatformClientRef | undefined;
-
-	/**
 	 * Authenticate the platform client.
 	 * In case the application is not running on the platform, this function returns undefined.
 	 * @param redirect Redirect for authentication in case using a refresh token did not work. Defaults to true.
@@ -90,8 +84,7 @@ export enum PlatformCacheKeyEnum {
 /**
  * Extended store for basic platform interaction, including functionality used by the store implementation
  */
-export interface IShapeDiverStorePlatformExtended
-	extends IShapeDiverStorePlatform {
+export interface IShapeDiverStorePlatformExtended extends IShapeDiverStorePlatform {
 	/** Cache for diverse stuff */
 	genericCache: {[key: string]: any};
 
