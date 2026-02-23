@@ -57,6 +57,7 @@ export default function ParameterSelectionComponent(
 	props: PropsParameter & Partial<PropsParameterWrapper>,
 ) {
 	const {
+		actions,
 		definition,
 		handleChange,
 		setOnCancelCallback,
@@ -218,6 +219,8 @@ export default function ParameterSelectionComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the selection state changes.
 	 */
 	useEffect(() => {
+		actions.setDisableOtherParameters(selectionActive);
+
 		if (selectionActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
@@ -231,6 +234,7 @@ export default function ParameterSelectionComponent(
 		}
 
 		return () => {
+			actions.setDisableOtherParameters(false);
 			if (interactionRequestTokenRef.current) {
 				removeInteractionRequest(interactionRequestTokenRef.current);
 				interactionRequestTokenRef.current = undefined;
