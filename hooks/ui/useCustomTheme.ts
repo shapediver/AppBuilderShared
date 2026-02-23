@@ -577,10 +577,26 @@ export const useCustomTheme = (props: Props = {}) => {
 			AppBuilderFormWidgetComponent:
 				AppBuilderFormWidgetComponentThemeProps({
 					// stackProps: {
-					//   gap: "md",
+					//   gap: 0,
+					// },
+					// formPaperProps: {
+					//   withBorder: true,
+					//   shadow: "none",
+					//   p: 0,
 					// },
 					// elementPaperProps: {
+					//   withBorder: false,
 					//   shadow: "none",
+					//   px: 0,
+					//   pt: 0,
+					//   pb: "sm",
+					// },
+					// exportPaperProps: {
+					//   withBorder: false,
+					//   shadow: "none",
+					//   px: 0,
+					//   py: 0,
+					//   mt: "xs",
 					// },
 					// messagePaperProps: {
 					//   shadow: "sm",

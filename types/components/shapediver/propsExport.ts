@@ -45,6 +45,12 @@ export interface PropsExportFormIntegration {
 	 * Optional callback to be called when export fails.
 	 */
 	readonly onError?: (values?: IParameterValues) => void;
+
+	/**
+	 * When provided, the export label header is hidden and this text is used
+	 * as the button label instead of the default "Download File" / "Send Email".
+	 */
+	readonly buttonLabel?: string;
 }
 
 /**
