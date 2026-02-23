@@ -832,10 +832,11 @@ export const useShapeDiverStoreParameters =
 					changes.wait = new Promise((resolve, reject) => {
 						changes.accept = async (skipHistory, parameterIds) => {
 							// get currently queued parameter value changes
-							const {parameterChanges} = get();
+							const {parameterChanges, parameterStores} = get();
 							if (!(namespace in parameterChanges))
 								return Promise.resolve({});
 							const values = parameterChanges[namespace].values;
+							const store = parameterStores[namespace];
 							let allChangesAccepted = true;
 							try {
 								// filter changed values by optional parameterIds
@@ -922,6 +923,10 @@ export const useShapeDiverStoreParameters =
 								}
 								return amendedValues;
 							} catch (e: any) {
+								// reset the parameter values in case of an error
+								if (store)
+									store.getState().actions.resetToExecValue();
+
 								reject(e);
 							} finally {
 								if (allChangesAccepted)
