@@ -64,6 +64,19 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		}));
 	}, [parametersList]);
 
+	const {disabledByParameter} = useShapeDiverStoreParameters((state) => {
+		const sessionDependencies = state.sessionDependency[namespace];
+
+		return {
+			disabledByParameter: sessionDependencies.some((id) =>
+				Object.values(state.parameterStores[id]).some(
+					(paramStore) =>
+						paramStore?.getState().state.disableOtherParameters,
+				),
+			),
+		};
+	});
+
 	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
 			batchParameterValueUpdate: state.batchParameterValueUpdate,
@@ -260,7 +273,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 			icon={icon}
 			tooltip={tooltip}
 			onClick={onClick}
-			disabled={isDisabled || isResolving}
+			disabled={isDisabled || isResolving || disabledByParameter}
 		/>
 	);
 }
