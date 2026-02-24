@@ -1,5 +1,6 @@
 import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {ISelectionParameterProps} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
@@ -31,6 +32,10 @@ export function useAnchorSelection(
 	// get the interaction request management
 	const {addInteractionRequest, removeInteractionRequest} =
 		useShapeDiverStoreInteractionRequestManagement();
+
+	const processActive = useShapeDiverStoreProcessManager(
+		(state) => Object.values(state.processManagers).length > 0,
+	);
 	/**
 	 * Effect to manage the interaction request for the selection.
 	 * It adds an interaction request when the selection is active and removes it when the selection is inactive.
@@ -81,7 +86,7 @@ export function useAnchorSelection(
 		useSelection(
 			viewportId,
 			cleanSelectionProps,
-			selectionActive && selectionAllowed,
+			selectionActive && selectionAllowed && !processActive,
 		);
 
 	/**
