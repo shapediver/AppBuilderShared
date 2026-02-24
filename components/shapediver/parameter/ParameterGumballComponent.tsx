@@ -169,7 +169,7 @@ export default function ParameterGumballComponent(
 			setLastConfirmedValue(parsed);
 			setTransformedNodeNames(parsed);
 		}
-	}, [definition]);
+	}, [JSON.stringify(definition)]);
 
 	/**
 	 * Callback function to change the value of the parameter.

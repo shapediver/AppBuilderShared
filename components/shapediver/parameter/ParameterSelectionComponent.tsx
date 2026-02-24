@@ -151,7 +151,7 @@ export default function ParameterSelectionComponent(
 		const parsed = parseNames(value);
 		if (JSON.stringify(parsed) !== JSON.stringify(selectedNodeNames))
 			setSelectedNodeNames(parsed);
-	}, [definition]);
+	}, [JSON.stringify(definition)]);
 
 	/**
 	 * Callback function to change the value of the parameter.
