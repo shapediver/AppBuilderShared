@@ -60,8 +60,15 @@ const parsePointsData = (value?: string): PointsData => {
 export default function ParameterDrawingComponent(
 	props: PropsParameter & Partial<PropsParameterWrapper>,
 ) {
-	const {definition, handleChange, onCancel, disabled, state, value} =
-		useParameterComponentCommons<string>(props);
+	const {
+		actions,
+		definition,
+		handleChange,
+		onCancel,
+		disabled,
+		state,
+		value,
+	} = useParameterComponentCommons<string>(props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterDrawingComponent",
@@ -244,6 +251,8 @@ export default function ParameterDrawingComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the drawing state changes.
 	 */
 	useEffect(() => {
+		actions.setDisableOtherParameters(drawingActive);
+
 		if (drawingActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
@@ -257,6 +266,7 @@ export default function ParameterDrawingComponent(
 		}
 
 		return () => {
+			actions.setDisableOtherParameters(false);
 			if (interactionRequestTokenRef.current) {
 				removeInteractionRequest(interactionRequestTokenRef.current);
 				updateInteractionRequestToken(undefined);

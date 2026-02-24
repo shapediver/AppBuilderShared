@@ -40,11 +40,24 @@ export function useParameterComponentCommons<T>(
 	} = useParameter<T | string>(props);
 	const customActions = props.customActions || {};
 	const actions = {...paramActions, ...customActions};
-	const executing = useShapeDiverStoreParameters((state) => {
-		const ids = state.sessionDependency[namespace];
+	const {executing, sessionDependencies, disabledByParameter} =
+		useShapeDiverStoreParameters((state) => {
+			const sessionDependencies = state.sessionDependency[namespace];
 
-		return !ids.every((id) => !state.parameterChanges[id]?.executing);
-	});
+			return {
+				executing: !sessionDependencies.every(
+					(id) => !state.parameterChanges[id]?.executing,
+				),
+				sessionDependencies,
+				disabledByParameter: sessionDependencies.some((id) =>
+					Object.values(state.parameterStores[id]).some(
+						(paramStore) =>
+							paramStore?.getState().state
+								.disableOtherParameters && id !== definition.id,
+					),
+				),
+			};
+		});
 	const processesInSession = useShapeDiverStoreProcessManager((state) => {
 		// check if there are currently processes running in the session
 		return (
@@ -74,9 +87,6 @@ export function useParameterComponentCommons<T>(
 				return false;
 			}).length > 0
 		);
-	});
-	const sessionDependencies = useShapeDiverStoreParameters((state) => {
-		return state.sessionDependency[namespace];
 	});
 	const [value, setValue] = useState(initializer(state));
 
@@ -150,9 +160,13 @@ export function useParameterComponentCommons<T>(
 	 *   - the parameter state is dirty AND we should disable the component if so, OR
 	 *   - changes are currently executing
 	 *   - there are processes running
+	 *   - the parameter is disabled by another parameter (e.g. interaction parameters disable other parameters when active)
 	 */
 	const disabled =
-		(disableIfDirty && state.dirty) || executing || processesInSession;
+		(disableIfDirty && state.dirty) ||
+		executing ||
+		processesInSession ||
+		disabledByParameter;
 
 	const memoizedDefinition = useMemo(() => {
 		return {...definition, ...props.overrides};

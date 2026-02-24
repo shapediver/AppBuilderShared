@@ -1,5 +1,6 @@
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {IAppBuilderActionPropsCommon} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {
 	Button,
@@ -42,12 +43,16 @@ export function AppBuilderActionComponentThemeProps(
 export default function AppBuilderActionComponent(
 	props: Props & AppBuilderActionComponentThemePropsType,
 ) {
-	const {label, icon, tooltip, onClick, loading, ...rest} = props;
+	const {label, icon, tooltip, onClick, loading, disabled, ...rest} = props;
 
 	const buttonProps = useProps(
 		"AppBuilderActionComponent",
 		defaultStyleProps,
 		props,
+	);
+
+	const activeProcess = useShapeDiverStoreProcessManager(
+		(state) => Object.keys(state.processManagers).length > 0,
 	);
 
 	const iconOnly = !label && icon;
@@ -65,6 +70,7 @@ export default function AppBuilderActionComponent(
 			{...rest}
 			onClick={_onclick}
 			loading={loading}
+			disabled={(activeProcess && !loading) || disabled}
 		>
 			{iconOnly ? <Icon iconType={icon} /> : label}
 		</Button>

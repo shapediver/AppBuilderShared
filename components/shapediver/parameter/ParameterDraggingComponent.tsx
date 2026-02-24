@@ -51,6 +51,7 @@ export default function ParameterDraggingComponent(
 	props: PropsParameter & Partial<PropsParameterWrapper>,
 ) {
 	const {
+		actions,
 		definition,
 		handleChange,
 		setOnCancelCallback,
@@ -209,6 +210,8 @@ export default function ParameterDraggingComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the dragging state changes.
 	 */
 	useEffect(() => {
+		actions.setDisableOtherParameters(draggingActive);
+
 		if (draggingActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
@@ -222,6 +225,7 @@ export default function ParameterDraggingComponent(
 		}
 
 		return () => {
+			actions.setDisableOtherParameters(false);
 			if (interactionRequestTokenRef.current) {
 				removeInteractionRequest(interactionRequestTokenRef.current);
 				interactionRequestTokenRef.current = undefined;

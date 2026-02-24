@@ -65,6 +65,7 @@ export default function ParameterGumballComponent(
 	props: PropsParameter & Partial<PropsParameterWrapper>,
 ) {
 	const {
+		actions,
 		definition,
 		handleChange,
 		setOnCancelCallback,
@@ -234,6 +235,8 @@ export default function ParameterGumballComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the gumball state changes.
 	 */
 	useEffect(() => {
+		actions.setDisableOtherParameters(gumballActive);
+
 		if (gumballActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
@@ -247,6 +250,7 @@ export default function ParameterGumballComponent(
 		}
 
 		return () => {
+			actions.setDisableOtherParameters(false);
 			if (interactionRequestTokenRef.current) {
 				removeInteractionRequest(interactionRequestTokenRef.current);
 				interactionRequestTokenRef.current = undefined;

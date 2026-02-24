@@ -36,6 +36,12 @@ export interface IShapeDiverParameterState<T> {
 	readonly dirty: boolean;
 
 	/**
+	 * Disable other parameters of the same namespace.
+	 * This is useful for parameters like interaction parameters, where it is not possible to change multiple parameters at the same time.
+	 */
+	readonly disableOtherParameters: boolean;
+
+	/**
 	 * Get the string representation of the currently executed value.
 	 * This is useful for parameters of type "File", whose execValue is a file object.
 	 * The value returned by this function is the id assigned to the uploaded file, if available.
@@ -116,6 +122,13 @@ export interface IShapeDiverParameterActions<T> {
 	 * Note: Does not call execute.
 	 */
 	resetToExecValue(): void;
+
+	/**
+	 * Disable or enable other parameters of the same namespace.
+	 * This is useful for parameters like interaction parameters, where it is not possible to change multiple parameters at the same time.
+	 * @param disable true to disable other parameters, false to enable them
+	 */
+	setDisableOtherParameters(disable: boolean): void;
 }
 
 /**

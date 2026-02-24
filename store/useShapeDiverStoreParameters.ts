@@ -393,6 +393,7 @@ function createParameterStore<T>(
 		uiValue: defval,
 		execValue: defval,
 		dirty: false,
+		disableOtherParameters: false,
 		stringExecValue() {
 			return executor.stringify(undefined);
 		},
@@ -444,6 +445,20 @@ function createParameterStore<T>(
 						);
 
 						return true;
+					},
+					setDisableOtherParameters: function (
+						disable: boolean,
+					): void {
+						set(
+							(_state) => ({
+								state: {
+									..._state.state,
+									disableOtherParameters: disable,
+								},
+							}),
+							false,
+							"setDisableOtherParameters",
+						);
 					},
 					execute: async function (
 						forceImmediate?: boolean,
