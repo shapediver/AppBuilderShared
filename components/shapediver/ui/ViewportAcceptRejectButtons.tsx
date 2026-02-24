@@ -3,6 +3,7 @@ import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDive
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {IParameterChanges} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {
+	alpha,
 	Button,
 	ButtonProps,
 	Group,
@@ -22,6 +23,8 @@ interface IconProps {
 interface StyleProps {
 	groupProps?: Partial<GroupProps>;
 	buttonProps?: Partial<ButtonProps>;
+	acceptButtonProps?: Partial<ButtonProps>;
+	rejectButtonProps?: Partial<ButtonProps>;
 	iconProps?: IconProps;
 	textProps?: Partial<TextProps>;
 	/**
@@ -42,10 +45,21 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 	buttonProps: {
 		variant: "default",
+	},
+	acceptButtonProps: {
 		style: {
+			...ViewportTransparentBackgroundStyle,
 			boxShadow: "var(--mantine-shadow-md)",
 			border: "none",
+			backgroundColor: alpha("var(--mantine-primary-color-filled)", 0.5),
+		},
+	},
+	rejectButtonProps: {
+		style: {
 			...ViewportTransparentBackgroundStyle,
+			boxShadow: "var(--mantine-shadow-md)",
+			border: "none",
+			backgroundColor: alpha("var(--mantine-color-red-filled)", 0.5),
 		},
 	},
 	iconProps: {},
@@ -74,12 +88,15 @@ function ViewportAcceptRejectButtons(
 ) {
 	const {sessionIds, ...styleProps} = props;
 	// style properties
-	const {groupProps, buttonProps, iconProps, textProps, showButtons} =
-		useProps(
-			"ViewportAcceptRejectButtonsComponent",
-			defaultStyleProps,
-			styleProps,
-		);
+	const {
+		groupProps,
+		buttonProps,
+		acceptButtonProps,
+		rejectButtonProps,
+		iconProps,
+		textProps,
+		showButtons,
+	} = useProps("ViewportAcceptRejectButtons", defaultStyleProps, styleProps);
 
 	// Use a more selective selector that only re-renders when relevant changes occur
 	const parameterChanges = useShapeDiverStoreParameters(
@@ -134,6 +151,7 @@ function ViewportAcceptRejectButtons(
 				onClick={acceptChanges}
 				disabled={disableChangeControls}
 				{...buttonProps}
+				{...acceptButtonProps}
 			>
 				<Text {...textProps}>Accept</Text>
 			</Button>
@@ -142,6 +160,7 @@ function ViewportAcceptRejectButtons(
 				onClick={rejectChanges}
 				disabled={disableChangeControls}
 				{...buttonProps}
+				{...rejectButtonProps}
 			>
 				<Text {...textProps}>Reject</Text>
 			</Button>

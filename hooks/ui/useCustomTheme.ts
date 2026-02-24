@@ -1318,11 +1318,27 @@ export const useCustomTheme = (props: Props = {}) => {
 					// },
 					// buttonProps: {
 					// 	variant: "default",
+					// },
+					// acceptButtonProps: {
 					// 	style: {
+					// 		...ViewportTransparentBackgroundStyle,
 					// 		boxShadow: "var(--mantine-shadow-md)",
-					// 		backgroundColor: alpha("var(--mantine-color-body)", 0.5),
-					// 		backdropFilter: "blur(10px)",
 					// 		border: "none",
+					// 		backgroundColor: alpha(
+					// 			"var(--mantine-primary-color-filled)",
+					// 			0.5,
+					// 		),
+					// 	},
+					// },
+					// rejectButtonProps: {
+					// 	style: {
+					// 		...ViewportTransparentBackgroundStyle,
+					// 		boxShadow: "var(--mantine-shadow-md)",
+					// 		border: "none",
+					// 		backgroundColor: alpha(
+					// 			"var(--mantine-color-red-filled)",
+					// 			0.5,
+					// 		),
 					// 	},
 					// },
 					// iconProps: {},
