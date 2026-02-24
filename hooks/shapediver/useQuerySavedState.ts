@@ -1,10 +1,9 @@
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";
 import {
 	SdPlatformQueryResponse,
 	SdPlatformResponseSavedStatePublic,
 } from "@shapediver/sdk.platform-api-sdk-v1";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import useAsync from "~/shared/hooks/misc/useAsync";
 
@@ -20,18 +19,6 @@ export default function useQuerySavedState(savedStateId: string | null) {
 			items: state.items,
 		})),
 	);
-
-	const {authWrapper} = useShapeDiverStorePlatform(
-		useShallow((state) => ({
-			authWrapper: state.authWrapper,
-		})),
-	);
-	const [clientInitialized, setClientInitialized] = useState<boolean>(false);
-	useEffect(() => {
-		authWrapper(async (clientRef) => {
-			setClientInitialized(!!clientRef);
-		});
-	}, [authWrapper]);
 
 	const {
 		items: savedStateIds,
@@ -70,7 +57,7 @@ export default function useQuerySavedState(savedStateId: string | null) {
 				>;
 			}
 		},
-		[savedStateId, savedStateLoading, initialSavedState, clientInitialized],
+		[savedStateId, savedStateLoading, initialSavedState],
 		{
 			onSuccess: (
 				response:
