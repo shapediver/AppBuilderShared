@@ -135,7 +135,7 @@ export default function ParameterDraggingComponent(
 			setDraggedNodes([]);
 			lastConfirmedValueRef.current = [];
 		}
-	}, [definition]);
+	}, [JSON.stringify(definition)]);
 
 	useEffect(() => {
 		const parsed = parseDraggedNodes(state.uiValue);
