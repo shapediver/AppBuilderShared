@@ -459,6 +459,22 @@ function createParameterStore<T>(
 							false,
 							"setDisableOtherParameters",
 						);
+
+						// Update the main store's reactive flag
+						const mainStore =
+							useShapeDiverStoreParameters.getState();
+						const hasDisabling =
+							mainStore.isAnyParameterDisablingOthers();
+						if (
+							mainStore.hasParameterDisablingOthers !==
+							hasDisabling
+						) {
+							useShapeDiverStoreParameters.setState(
+								{hasParameterDisablingOthers: hasDisabling},
+								false,
+								"setDisableOtherParameters - update flag",
+							);
+						}
 					},
 					execute: async function (
 						forceImmediate?: boolean,
@@ -758,6 +774,7 @@ export const useShapeDiverStoreParameters =
 				preExecutionHooks: {},
 				history: [],
 				historyIndex: -1,
+				hasParameterDisablingOthers: false,
 
 				removeChanges: (namespace: string) => {
 					const {parameterChanges} = get();
@@ -1760,6 +1777,20 @@ export const useShapeDiverStoreParameters =
 							await restoreHistoryState(entry.state, true);
 						}
 					}
+				},
+
+				isAnyParameterDisablingOthers(excludeParameterId?: string) {
+					const {parameterStores} = get();
+					return Object.values(parameterStores).some((namespace) =>
+						Object.values(namespace).some((paramStore) => {
+							const state = paramStore.getState();
+							return (
+								state.state.disableOtherParameters &&
+								(!excludeParameterId ||
+									state.definition.id !== excludeParameterId)
+							);
+						}),
+					);
 				},
 			}),
 			{...devtoolsSettings, name: "ShapeDiver | Parameters"},

@@ -64,18 +64,9 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		}));
 	}, [parametersList]);
 
-	const {disabledByParameter} = useShapeDiverStoreParameters((state) => {
-		const sessionDependencies = state.sessionDependency[namespace];
-
-		return {
-			disabledByParameter: sessionDependencies.some((id) =>
-				Object.values(state.parameterStores[id]).some(
-					(paramStore) =>
-						paramStore?.getState().state.disableOtherParameters,
-				),
-			),
-		};
-	});
+	const disabledByParameter = useShapeDiverStoreParameters(
+		(state) => state.hasParameterDisablingOthers,
+	);
 
 	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
 		useShallow((state) => ({

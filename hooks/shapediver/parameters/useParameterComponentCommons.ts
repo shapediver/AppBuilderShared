@@ -40,8 +40,8 @@ export function useParameterComponentCommons<T>(
 	} = useParameter<T | string>(props);
 	const customActions = props.customActions || {};
 	const actions = {...paramActions, ...customActions};
-	const {executing, sessionDependencies, disabledByParameter} =
-		useShapeDiverStoreParameters((state) => {
+	const {executing, sessionDependencies} = useShapeDiverStoreParameters(
+		(state) => {
 			const sessionDependencies = state.sessionDependency[namespace];
 
 			return {
@@ -49,15 +49,14 @@ export function useParameterComponentCommons<T>(
 					(id) => !state.parameterChanges[id]?.executing,
 				),
 				sessionDependencies,
-				disabledByParameter: sessionDependencies.some((id) =>
-					Object.values(state.parameterStores[id]).some(
-						(paramStore) =>
-							paramStore?.getState().state
-								.disableOtherParameters && id !== definition.id,
-					),
-				),
 			};
-		});
+		},
+	);
+
+	const disabledByParameter = useShapeDiverStoreParameters((state) =>
+		state.isAnyParameterDisablingOthers(definition.id),
+	);
+
 	const processesInSession = useShapeDiverStoreProcessManager((state) => {
 		// check if there are currently processes running in the session
 		return (
