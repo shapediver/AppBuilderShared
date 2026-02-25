@@ -65,6 +65,10 @@ export interface ViewportAnchorProps {
 	width?: string | number;
 	/** Optional height of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
 	height?: string | number;
+	/** Optional maxWidth of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
+	maxWidth?: string | number;
+	/** Optional maxHeight of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
+	maxHeight?: string | number;
 	/** The unique identifier for the anchor */
 	id: string;
 	/** Option to use Paper component (default: true) */
@@ -162,6 +166,8 @@ export function useAnchorContainer({
 		previewIcon: inputPreviewIcon,
 		width: inputWidth = "var(--app-shell-navbar-width)",
 		height: inputHeight,
+		maxWidth: inputMaxWidth,
+		maxHeight: inputMaxHeight,
 		mobileFallback: inputMobileFallback,
 		useContainer = true,
 		closingStrategy,
@@ -361,12 +367,21 @@ export function useAnchorContainer({
 	const {width: canvasWidth, height: canvasHeight} = useCanvasSize(canvas);
 
 	// Calculate the width and height based on the input values, handling % as canvas-relative
-	const {width, height} = useMemo(() => {
+	const {width, height, maxWidth, maxHeight} = useMemo(() => {
 		return {
 			width: toCanvasPixels(cleanUnit(inputWidth), canvasWidth),
 			height: toCanvasPixels(cleanUnit(inputHeight), canvasHeight),
+			maxWidth: toCanvasPixels(cleanUnit(inputMaxWidth), canvasWidth),
+			maxHeight: toCanvasPixels(cleanUnit(inputMaxHeight), canvasHeight),
 		};
-	}, [inputWidth, inputHeight, canvasWidth, canvasHeight]);
+	}, [
+		inputWidth,
+		inputHeight,
+		inputMaxWidth,
+		inputMaxHeight,
+		canvasWidth,
+		canvasHeight,
+	]);
 
 	// Determine the pointer events style based on the global state and anchor properties
 	const pointerEvents = useMemo(() => {
@@ -538,6 +553,10 @@ export function useAnchorContainer({
 				<ScrollArea
 					h={"100%"}
 					w={"100%"}
+					style={{
+						maxWidth: aboveMobileBreakpoint ? maxWidth : "100%",
+						maxHeight: aboveMobileBreakpoint ? maxHeight : "100%",
+					}}
 					className={shellClasses.addShellWidgetsContainer}
 					type="auto"
 				>

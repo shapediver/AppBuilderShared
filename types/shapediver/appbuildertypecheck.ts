@@ -997,6 +997,8 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	previewIcon: z.string().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
+	maxWidth: z.union([z.string(), z.number()]).optional(),
+	maxHeight: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
 	useCloseButton: z.boolean().optional(),
 	hideable: z.boolean().optional(),
@@ -1031,6 +1033,8 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	draggable: z.boolean().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
+	maxWidth: z.union([z.string(), z.number()]).optional(),
+	maxHeight: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
 	selectionProperties:
 		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,

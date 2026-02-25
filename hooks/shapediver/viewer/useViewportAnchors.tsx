@@ -73,6 +73,8 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						previewIcon={container.props.previewIcon}
 						width={container.props.width}
 						height={container.props.height}
+						maxWidth={container.props.maxWidth}
+						maxHeight={container.props.maxHeight}
 						mobileFallback={container.props.mobileFallback}
 						useContainer={container.props.useContainer ?? true}
 						closingStrategy={"emptyClick"}
@@ -125,6 +127,8 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						draggable={container.props.draggable}
 						width={container.props.width}
 						height={container.props.height}
+						maxWidth={container.props.maxWidth}
+						maxHeight={container.props.maxHeight}
 						mobileFallback={container.props.mobileFallback}
 						useContainer={container.props.useContainer ?? true}
 						closingStrategy={"button"}
