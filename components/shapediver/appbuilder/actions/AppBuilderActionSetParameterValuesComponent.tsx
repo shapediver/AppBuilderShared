@@ -64,10 +64,6 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		}));
 	}, [parametersList]);
 
-	const disabledByParameter = useShapeDiverStoreParameters(
-		(state) => state.hasParameterDisablingOthers,
-	);
-
 	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
 			batchParameterValueUpdate: state.batchParameterValueUpdate,
@@ -264,7 +260,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 			icon={icon}
 			tooltip={tooltip}
 			onClick={onClick}
-			disabled={isDisabled || isResolving || disabledByParameter}
+			disabled={isDisabled || isResolving}
 		/>
 	);
 }

@@ -248,6 +248,7 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 			tooltip={tooltip}
 			onClick={onClick}
 			loading={loading}
+			canBeDisabledByParameter={false}
 		/>
 	);
 }

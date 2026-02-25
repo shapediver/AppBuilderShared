@@ -173,6 +173,7 @@ export default function AppBuilderActionSoundComponent(props: Props) {
 			tooltip={error ? `Error: ${error}` : tooltip}
 			onClick={onClick}
 			disabled={!loaded || !!error}
+			canBeDisabledByParameter={false}
 		/>
 	);
 }
