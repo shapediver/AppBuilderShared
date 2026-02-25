@@ -20,7 +20,7 @@ interface SelectComponentAsyncProps extends SelectComponentProps {
  * the actual card rendering to the base SelectFullWidthCardsComponent.
  */
 export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
-	const {type, scrollingApi, onChange, ...propsDefault} = props;
+	const {type, scrollingApi, disabled, onChange, ...propsDefault} = props;
 	const {debouncedOnSearch, items, itemsData, bottomSection, loading} =
 		useSelectAsync(scrollingApi);
 
@@ -81,7 +81,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				onSearch={(s) => debouncedOnSearch([...searchTerms, s])}
 				items={items}
 				itemData={itemsData}
-				disabled={loading}
+				disabled={loading || disabled}
 				multiselect={false}
 			/>
 		);
@@ -97,7 +97,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				onSearch={(s) => debouncedOnSearch([...searchTerms, s])}
 				items={items}
 				itemData={itemsData}
-				disabled={loading}
+				disabled={loading || disabled}
 				multiselect={false}
 			/>
 		);
