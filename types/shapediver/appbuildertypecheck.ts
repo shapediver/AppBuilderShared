@@ -389,6 +389,7 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 							target: z.array(z.number()).length(3),
 						}),
 					),
+					startFromCurrent: z.boolean().optional(),
 				})
 				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
 		})

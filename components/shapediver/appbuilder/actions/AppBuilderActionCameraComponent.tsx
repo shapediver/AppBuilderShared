@@ -178,7 +178,26 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 		}
 
 		if (isAnimateCameraAction(props)) {
-			const {path, options} = props.props;
+			const {path, startFromCurrent, options} = props.props;
+
+			if (startFromCurrent !== false) {
+				const currentCamera = viewportApi.camera;
+				if (currentCamera) {
+					path.unshift({
+						position: [
+							currentCamera.position[0],
+							currentCamera.position[1],
+							currentCamera.position[2],
+						],
+						target: [
+							currentCamera.target[0],
+							currentCamera.target[1],
+							currentCamera.target[2],
+						],
+					});
+				}
+			}
+
 			await viewportApi.camera.animate(
 				path.map((p) =>
 					cleanCameraPositionAndTarget(

@@ -560,6 +560,8 @@ export type IAppBuilderPropsAnimateCamera = {
 		/** The target the camera is looking at. */
 		target: [number, number, number];
 	}[];
+	/** Whether to start the animation from the current camera position and target. (default: true) */
+	startFromCurrent?: boolean;
 } & IAppBuilderPropsCameraCommon;
 
 /** Properties of an "assign" action, where the camera is defined by its properties. */
