@@ -975,6 +975,10 @@ export type AppBuilderAnchorContainerProperties = {
 	width?: string | number;
 	/** Optional height of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
 	height?: string | number;
+	/** Optional maxWidth of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
+	maxWidth?: string | number;
+	/** Optional maxHeight of the element. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
+	maxHeight?: string | number;
 	/** Option to use Paper component (default: true) */
 	useContainer?: boolean;
 	/** Options for the mobile fallback */
