@@ -253,6 +253,11 @@ export interface IShapeDiverStoreParameters {
 	readonly exportStores: IExportStoresPerSession;
 
 	/**
+	 * True if any parameter has disableOtherParameters set to true.
+	 */
+	readonly hasParameterDisablingOthers: boolean;
+
+	/**
 	 * Output stores.
 	 */
 	readonly outputStores: IOutputStoresPerSession;
@@ -546,4 +551,13 @@ export interface IShapeDiverStoreParameters {
 	readonly restoreHistoryStateFromEntry: (
 		entry: IHistoryEntry,
 	) => Promise<void>;
+
+	/**
+	 * Check if any parameter has disableOtherParameters set to true.
+	 * @param excludeParameterId Optional. Parameter ID to exclude from the check.
+	 * @returns
+	 */
+	readonly isAnyParameterDisablingOthers: (
+		excludeParameterId?: string,
+	) => boolean;
 }
