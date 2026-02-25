@@ -58,7 +58,9 @@ export function ViewportIconButtonThemeProps(
 	};
 }
 
-const iconRegex = new RegExp("^[a-z0-9-:]+$");
+// regex to check if the iconType only contain lowercase letters, numbers and dashes
+// or a single number (to allow using numbers as text icons)
+const iconRegex = new RegExp("^(?:[a-z0-9-:]|[a-z0-9-:]*[a-z-:][a-z0-9-:]*)$");
 
 export default function ViewportIconButton(
 	props: Props & ViewportIconButtonThemePropsType,
