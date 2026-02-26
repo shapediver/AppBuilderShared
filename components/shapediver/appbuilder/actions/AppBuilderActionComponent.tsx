@@ -59,7 +59,7 @@ export default function AppBuilderActionComponent(
 	const buttonProps = useProps(
 		"AppBuilderActionComponent",
 		defaultStyleProps,
-		props,
+		rest,
 	);
 
 	const activeProcess = useShapeDiverStoreProcessManager(
@@ -82,7 +82,6 @@ export default function AppBuilderActionComponent(
 			leftSection={
 				!iconOnly && icon ? <Icon iconType={icon} /> : undefined
 			}
-			{...rest}
 			onClick={_onclick}
 			loading={loading}
 			disabled={

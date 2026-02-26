@@ -180,26 +180,30 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 		if (isAnimateCameraAction(props)) {
 			const {path, startFromCurrent, options} = props.props;
 
-			if (startFromCurrent !== false) {
-				const currentCamera = viewportApi.camera;
-				if (currentCamera) {
-					path.unshift({
-						position: [
-							currentCamera.position[0],
-							currentCamera.position[1],
-							currentCamera.position[2],
-						],
-						target: [
-							currentCamera.target[0],
-							currentCamera.target[1],
-							currentCamera.target[2],
-						],
-					});
-				}
-			}
+			const cameraPath: {
+				position: [number, number, number];
+				target: [number, number, number];
+			}[] =
+				startFromCurrent !== false
+					? [
+							{
+								position: [
+									viewportApi.camera.position[0],
+									viewportApi.camera.position[1],
+									viewportApi.camera.position[2],
+								],
+								target: [
+									viewportApi.camera.target[0],
+									viewportApi.camera.target[1],
+									viewportApi.camera.target[2],
+								],
+							},
+							...path,
+						]
+					: path;
 
 			await viewportApi.camera.animate(
-				path.map((p) =>
+				cameraPath.map((p) =>
 					cleanCameraPositionAndTarget(
 						viewportApi.camera!,
 						p.position ? vec3.fromValues(...p.position) : undefined,
