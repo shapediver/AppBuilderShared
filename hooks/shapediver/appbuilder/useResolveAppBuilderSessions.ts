@@ -33,14 +33,12 @@ const ModelStorage = MODELS as unknown as Record<
 export default function useResolveAppBuilderSessions(
 	sessions: IAppBuilderSettingsJsonSession[] | undefined,
 ) {
-	const {authenticate, authWrapper, setCurrentModel} =
-		useShapeDiverStorePlatform(
-			useShallow((state) => ({
-				authenticate: state.authenticate,
-				authWrapper: state.authWrapper,
-				setCurrentModel: state.setCurrentModel,
-			})),
-		);
+	const {authenticate, setCurrentModel} = useShapeDiverStorePlatform(
+		useShallow((state) => ({
+			authenticate: state.authenticate,
+			setCurrentModel: state.setCurrentModel,
+		})),
+	);
 
 	const {addItem: addSavedState} = useShapeDiverStorePlatformSavedStates(
 		useShallow((state) => ({addItem: state.addItem})),
@@ -121,14 +119,15 @@ export default function useResolveAppBuilderSessions(
 					sdkRef!.platformUrl === platformUrl
 				) {
 					const getModel = async () => {
-						const result = await authWrapper((c) =>
-							c.client.models.get(session.slug!, [
+						const result = await sdkRef!.client.models.get(
+							session.slug!,
+							[
 								SdPlatformModelGetEmbeddableFields.BackendSystem,
 								SdPlatformModelGetEmbeddableFields.Tags,
 								SdPlatformModelGetEmbeddableFields.Ticket,
 								SdPlatformModelGetEmbeddableFields.TokenExportFallback,
 								SdPlatformModelGetEmbeddableFields.User,
-							]),
+							],
 						);
 
 						return result?.data;
@@ -205,7 +204,7 @@ export default function useResolveAppBuilderSessions(
 			}),
 		);
 		return resolvedSessions;
-	}, [sessions, sdkRef, authWrapper]);
+	}, [sessions, sdkRef]);
 
 	return {
 		sessions: resolvedSessions,
