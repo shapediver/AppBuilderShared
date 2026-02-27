@@ -32,13 +32,13 @@ export function AppBuilderActionFromType(
 
 	// first we loop through all registered components to see if we can find a match
 	// here some of the default actions could be overwritten by custom components
-	for (const key in componentContext.actions) {
-		const componentDefinition = componentContext.actions[key];
+	for (const actionKey in componentContext.actions) {
+		const componentDefinition = componentContext.actions[actionKey];
 		if (componentDefinition.isAction(actionRef.definition)) {
 			const Component = componentDefinition.component;
 			return (
 				<Component
-					key={key}
+					key={actionKey + key}
 					namespace={namespace}
 					{...actionPropsCommon}
 					{...actionRef.definition.props}
