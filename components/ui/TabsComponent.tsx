@@ -23,6 +23,8 @@ export interface ITabsComponentProps extends BoxProps {
 	tabs: PropsTab[];
 	/** Optional callback when active tab changes */
 	onActiveTabChange?: (tabIndex: number) => void;
+	/** When true, the tab list stays sticky at the top of the scrollable container */
+	stickyTabs?: boolean;
 }
 
 const getTabValue = (props: PropsTab, index: number) => {
@@ -33,6 +35,7 @@ export default function TabsComponent({
 	defaultValue,
 	tabs,
 	onActiveTabChange,
+	stickyTabs,
 	...rest
 }: ITabsComponentProps) {
 	const [activeTab, setActiveTab] = useState<string | null>(defaultValue);
@@ -67,7 +70,18 @@ export default function TabsComponent({
 		<></>
 	) : (
 		<Tabs {...rest} value={activeTab} onChange={handleActiveTabChange}>
-			<Tabs.List>
+			<Tabs.List
+				style={
+					stickyTabs
+						? {
+								position: "sticky",
+								top: 0,
+								zIndex: 1,
+								backgroundColor: "var(--mantine-color-body)",
+							}
+						: undefined
+				}
+			>
 				{tabs.map((tab, index) => {
 					const tabsTab = (
 						<Tabs.Tab
