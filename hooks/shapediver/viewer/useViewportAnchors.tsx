@@ -1,4 +1,4 @@
-import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
 import {
 	AppBuilderContainerNameType,

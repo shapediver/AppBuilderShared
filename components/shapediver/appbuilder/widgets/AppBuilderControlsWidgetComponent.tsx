@@ -1,15 +1,15 @@
-import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {AppBuilderActionFromType} from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionFromType";
-import {useExports} from "@AppBuilderShared/hooks/shapediver/parameters/useExports";
-import {useOutputs} from "@AppBuilderShared/hooks/shapediver/parameters/useOutputs";
-import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";
+import {useExports} from "@AppBuilderLib/entities/export/model/useExports";
+import {useOutputs} from "@AppBuilderLib/entities/output/model/useOutputs";
+import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParameters";
 import {
 	getExportComponent,
 	getParameterComponent,
-} from "@AppBuilderShared/types/components/shapediver/componentTypes";
-import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+} from "@AppBuilderLib/types/components/shapediver/componentTypes";
+import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
+import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {
 	IAppBuilderWidgetPropsControls,
 	isActionRefControl,
@@ -26,7 +26,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {ReactElement, useContext, useMemo} from "react";
-import OutputStargateComponent from "../../outputs/OutputStargateComponent";
+import OutputStargateComponent from "@AppBuilderLib/entities/output/ui/OutputStargateComponent";
 
 interface StyleProps {
 	stackProps?: StackProps;

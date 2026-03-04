@@ -2,7 +2,7 @@ import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppB
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {IAppBuilderParameterRef} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IShapeDiverParameter} from "@AppBuilderShared/types/shapediver/parameter";
+import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {IShapeDiverStoreParameters} from "@AppBuilderShared/types/store/shapediverStoreParameters";
 import {getParameterRefs} from "@AppBuilderShared/utils/appbuilder";
 import {Logger} from "@AppBuilderShared/utils/logger";
@@ -19,7 +19,7 @@ import {useCallback, useContext, useMemo, useState} from "react";
 import {z} from "zod";
 import {useShallow} from "zustand/react/shallow";
 import packagejson from "~/../package.json";
-import {useAllParametersStateless} from "../parameters/useAllParametersStateless";
+import {useAllParametersStateless} from "@AppBuilderLib/entities/parameter/model/useAllParametersStateless";
 
 export const DEFAULT_SYSTEM_PROMPT =
 	"You are a helpful assistant who can modify parameters of a 3D configurator and answer questions about the 3D configurator \

@@ -1,4 +1,4 @@
-import {useSessionPropsOutput} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsOutput";
+import {useSessionPropsOutput} from "@AppBuilderLib/entities/output/model/useSessionPropsOutput";
 import {IAppBuilderWidgetPropsDesktopClientOutputs} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React from "react";
 import ParametersAndExportsAccordionComponent from "../../ui/ParametersAndExportsAccordionComponent";

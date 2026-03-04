@@ -1,4 +1,4 @@
-import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
+import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
 
 /**
  * Build validation function for a parameter from its settings.

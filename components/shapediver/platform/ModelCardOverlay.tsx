@@ -1,4 +1,4 @@
-import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ModelCardOverlayWrapper, {
 	ModelCardOverlayWrapperThemePropsType,

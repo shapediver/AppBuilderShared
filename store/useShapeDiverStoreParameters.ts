@@ -16,7 +16,7 @@ import {
 	IShapeDiverParameterDefinition,
 	IShapeDiverParameterExecutor,
 	IShapeDiverParameterState,
-} from "@AppBuilderShared/types/shapediver/parameter";
+} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {
 	IAcceptRejectModeSelector,
 	IExportResponse,

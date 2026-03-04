@@ -4,8 +4,8 @@ import ParametersAndExportsAccordionComponent from "@AppBuilderShared/components
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderShared/components/ui/TabsComponent";
-import {useSessionPropsExport} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsExport";
-import {useSessionPropsParameter} from "@AppBuilderShared/hooks/shapediver/parameters/useSessionPropsParameter";
+import {useSessionPropsExport} from "@AppBuilderLib/entities/export/model/useSessionPropsExport";
+import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
 import {IUseSessionDto} from "@AppBuilderShared/hooks/shapediver/useSession";
 import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
 import {

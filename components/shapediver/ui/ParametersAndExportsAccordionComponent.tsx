@@ -1,17 +1,17 @@
-import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {
 	isExportDefinition,
 	isOutputDefinition,
 	isParamDefinition,
 	useSortedParametersAndExports,
-} from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
+} from "@AppBuilderLib/entities/parameter/model/useSortedParametersAndExports";
 import {
 	getExportComponent,
 	getParameterComponent,
-} from "@AppBuilderShared/types/components/shapediver/componentTypes";
-import {PropsExport} from "@AppBuilderShared/types/components/shapediver/propsExport";
-import {PropsOutput} from "@AppBuilderShared/types/components/shapediver/propsOutput";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+} from "@AppBuilderLib/types/components/shapediver/componentTypes";
+import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
+import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {
 	Accordion,
 	AccordionControlProps,
@@ -26,7 +26,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {ReactElement, useContext} from "react";
-import OutputStargateComponent from "../outputs/OutputStargateComponent";
+import OutputStargateComponent from "@AppBuilderLib/entities/output/ui/OutputStargateComponent";
 
 /**
  * Functional component that creates an accordion of parameter and export components.

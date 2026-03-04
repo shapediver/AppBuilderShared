@@ -14,9 +14,9 @@ import {
 	isStandardContainer,
 } from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useEffect, useMemo} from "react";
-import {useSessionPropsExport} from "../parameters/useSessionPropsExport";
-import {useSessionPropsOutput} from "../parameters/useSessionPropsOutput";
-import {useSessionPropsParameter} from "../parameters/useSessionPropsParameter";
+import {useSessionPropsExport} from "@AppBuilderLib/entities/export/model/useSessionPropsExport";
+import {useSessionPropsOutput} from "@AppBuilderLib/entities/output/model/useSessionPropsOutput";
+import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
 import {useViewportAnchors} from "../viewer/useViewportAnchors";
 
 interface Props {

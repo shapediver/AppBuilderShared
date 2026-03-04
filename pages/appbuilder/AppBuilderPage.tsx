@@ -1,5 +1,5 @@
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform";
 import NotificationModelStateCreated from "@AppBuilderShared/components/shapediver/notifications/NotificationModelStateCreated";
 import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
@@ -8,7 +8,7 @@ import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver
 import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
 import {useAppBuilderStandardContainers} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderStandardContainers";
 import {useSessionWithAppBuilder} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
-import {useParameterHistory} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
+import {useParameterHistory} from "@AppBuilderLib/entities/parameter/model/useParameterHistory";
 import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
 import {useECommerceApiConnectorActions} from "@AppBuilderShared/hooks/shapediver/useECommerceApiConnectorActions";
 import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";

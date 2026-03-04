@@ -1,8 +1,8 @@
 import {
 	ComponentContext,
 	DummyComponent,
-} from "@AppBuilderLib/shared/lib/ComponentContext";
-import {IComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext.types";
+} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+import {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {
 	DummyErrorReporting,
 	ErrorReportingContext,

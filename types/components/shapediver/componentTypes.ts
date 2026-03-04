@@ -1,17 +1,17 @@
 import {
 	IComponentContext,
 	ParameterComponentMapValueType,
-} from "@AppBuilderLib/shared/lib/ComponentContext.types";
-import ExportButtonComponent from "@AppBuilderShared/components/shapediver/exports/ExportButtonComponent";
-import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
-import ParameterBooleanComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterBooleanComponent";
-import ParameterColorComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterColorComponent";
-import ParameterFileInputComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterFileInputComponent";
-import ParameterLabelComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterLabelComponent";
-import ParameterSelectComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterSelectComponent";
-import ParameterSliderComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterSliderComponent";
-import ParameterStargateComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterStargateComponent";
-import ParameterStringComponent from "@AppBuilderShared/components/shapediver/parameter/ParameterStringComponent";
+} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
+import ExportButtonComponent from "@AppBuilderLib/entities/export/ui/ExportButtonComponent";
+import ExportLabelComponent from "@AppBuilderLib/entities/export/ui/ExportLabelComponent";
+import ParameterBooleanComponent from "@AppBuilderLib/entities/parameter/ui/ParameterBooleanComponent";
+import ParameterColorComponent from "@AppBuilderLib/entities/parameter/ui/ParameterColorComponent";
+import ParameterFileInputComponent from "@AppBuilderLib/entities/parameter/ui/ParameterFileInputComponent";
+import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
+import ParameterSelectComponent from "@AppBuilderLib/entities/parameter/ui/ParameterSelectComponent";
+import ParameterSliderComponent from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent";
+import ParameterStargateComponent from "@AppBuilderLib/entities/parameter/ui/ParameterStargateComponent";
+import ParameterStringComponent from "@AppBuilderLib/entities/parameter/ui/ParameterStringComponent";
 import {CommonButtonProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/types";
 import {IShapeDiverParamOrExportDefinition} from "@AppBuilderShared/types/shapediver/common";
 import {ViewportIconButtonEnum} from "@AppBuilderShared/types/shapediver/viewportIcons";

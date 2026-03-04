@@ -1,7 +1,7 @@
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import NotificationModelStateCreated from "@AppBuilderShared/components/shapediver/notifications/NotificationModelStateCreated";
 import ImportModelStateDialog from "@AppBuilderShared/components/shapediver/ui/ImportModelStateDialog";
-import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
+import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
 import React, {useCallback, useMemo, useState} from "react";

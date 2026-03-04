@@ -1,4 +1,4 @@
-import {useParameterImportExport} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterImportExport";
+import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
 import React from "react";
 import {CommonButtonProps} from "./types";
 import ViewportIconButton from "./ViewportIconButton";

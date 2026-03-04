@@ -1,15 +1,15 @@
-import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
-import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";
+import {useExport} from "@AppBuilderLib/entities/export/model/useExport";
+import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParameters";
 import {
 	getExportComponent,
 	getParameterComponent,
-} from "@AppBuilderShared/types/components/shapediver/componentTypes";
+} from "@AppBuilderLib/types/components/shapediver/componentTypes";
 import {
 	PropsParameter,
 	PropsParameterComponent,
-} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {
 	IAppBuilderWidgetPropsForm,
 	isParameterRefControl,

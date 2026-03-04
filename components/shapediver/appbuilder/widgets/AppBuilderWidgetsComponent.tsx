@@ -1,4 +1,4 @@
-import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import AppBuilderAccordionUiWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionUiWidgetComponent";
 import AppBuilderAccordionWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAccordionWidgetComponent";
 import AppBuilderActionsWidgetComponent from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderActionsWidgetComponent";

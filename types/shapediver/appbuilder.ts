@@ -6,7 +6,7 @@ import {
 	IAppBuilderWidgetPropsRoundChart,
 } from "@AppBuilderShared/types/shapediver/appbuildercharts";
 import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
-import {IShapeDiverParameterDefinition} from "@AppBuilderShared/types/shapediver/parameter";
+import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {SessionCreateDto} from "@AppBuilderShared/types/store/shapediverStoreSession";
 import {MantineColor, SliderProps} from "@mantine/core";
 import {

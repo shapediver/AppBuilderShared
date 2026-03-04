@@ -1,9 +1,9 @@
 import AppBuilderActionComponent from "@AppBuilderShared/components/shapediver/appbuilder/actions/AppBuilderActionComponent";
-import {useParameters} from "@AppBuilderShared/hooks/shapediver/parameters/useParameters";
+import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParameters";
 import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
-} from "@AppBuilderShared/hooks/shapediver/parameters/useResolveParameterValues";
+} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
 import {

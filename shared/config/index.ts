@@ -1,2 +1,1 @@
-export * from "./queryparams";
-export * from "./storeSettings";
+export * from "./propsCommon";

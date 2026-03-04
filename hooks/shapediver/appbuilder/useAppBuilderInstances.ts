@@ -26,7 +26,7 @@ import {useShallow} from "zustand/react/shallow";
 import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
-} from "../parameters/useResolveParameterValues";
+} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
 
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {useSessions} from "../useSessions";

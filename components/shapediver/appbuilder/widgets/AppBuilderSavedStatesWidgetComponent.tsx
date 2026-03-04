@@ -2,7 +2,7 @@ import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib
 import {QUERYPARAM_SAVEDSTATEID} from "@AppBuilderLib/shared/config/queryparams";
 import SelectComponent, {
 	SelectComponentPropsExt,
-} from "@AppBuilderShared/components/shapediver/parameter/select/SelectComponent";
+} from "@AppBuilderLib/entities/parameter/ui/select/SelectComponent";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";

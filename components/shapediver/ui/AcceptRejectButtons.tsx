@@ -1,10 +1,10 @@
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {useParameterChanges} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterChanges";
+import {useParameterChanges} from "@AppBuilderLib/entities/parameter/model/useParameterChanges";
 import {
 	isParamDefinition,
 	useSortedParametersAndExports,
-} from "@AppBuilderShared/hooks/shapediver/parameters/useSortedParametersAndExports";
-import {PropsParameter} from "@AppBuilderShared/types/components/shapediver/propsParameter";
+} from "@AppBuilderLib/entities/parameter/model/useSortedParametersAndExports";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {Button, Group, Text} from "@mantine/core";
 import React from "react";
 

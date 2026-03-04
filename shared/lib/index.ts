@@ -1,5 +1,5 @@
-export * from "./ComponentContext";
-export * from "./ComponentContext.types";
+export * from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+export * from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 export * from "./ErrorReportingContext";
 export * from "./ErrorReportingContext.types";
 export * from "./ExportInterceptorContext";

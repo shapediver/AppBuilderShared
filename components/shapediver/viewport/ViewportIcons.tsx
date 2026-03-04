@@ -1,4 +1,4 @@
-import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
 import {useViewportControls} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControls";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
@@ -8,7 +8,7 @@ import {useShapeDiverViewportIconsStore} from "@AppBuilderShared/store/useShapeD
 import {
 	ButtonRenderContext,
 	getViewportIconComponent,
-} from "@AppBuilderShared/types/components/shapediver/componentTypes";
+} from "@AppBuilderLib/types/components/shapediver/componentTypes";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
 import {
 	ViewportIconButtonEnum,

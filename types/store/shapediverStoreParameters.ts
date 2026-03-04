@@ -4,7 +4,7 @@ import {IShapeDiverOutput} from "@AppBuilderShared/types/shapediver/output";
 import {
 	IShapeDiverParameter,
 	IShapeDiverParameterDefinition,
-} from "@AppBuilderShared/types/shapediver/parameter";
+} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {ISessionApi} from "@shapediver/viewer.session";
 import {StoreApi, UseBoundStore} from "zustand";
