@@ -1,14 +1,14 @@
-import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
+import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {
 	IECommerceApiConnectorActions,
 	IUpdateParameterValuesData,
 	IUpdateParameterValuesReply,
-} from "@AppBuilderShared/modules/ecommerce/types/ecommerceapi";
-import {validateUpdateParameterValuesData} from "@AppBuilderShared/modules/ecommerce/types/ecommerceapitypecheck";
+} from "@AppBuilderLib/features/ecommerce/config/ecommerceapi";
+import {validateUpdateParameterValuesData} from "@AppBuilderLib/features/ecommerce/config/ecommerceapitypecheck";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
 import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
-import useAsync from "../misc/useAsync";
+import useAsync from "@AppBuilderLib/shared/lib/useAsync";
 
 /**
  * Hook to set the actions for the e-commerce API connector.

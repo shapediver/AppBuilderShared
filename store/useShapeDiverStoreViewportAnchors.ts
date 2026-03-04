@@ -1,5 +1,5 @@
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
-import {simplifyCalc} from "@AppBuilderShared/components/shapediver/viewport/anchors/shared/utils";
+import {simplifyCalc} from "@AppBuilderLib/entities/viewport-anchor/lib/utils";
 import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IShapeDiverStoreViewportAnchors} from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors";
 import {create} from "zustand";

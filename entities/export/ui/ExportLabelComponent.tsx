@@ -1,6 +1,6 @@
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
-import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {useExport} from "@AppBuilderLib/entities/export/model/useExport";
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {Group, MantineThemeComponent, useProps} from "@mantine/core";

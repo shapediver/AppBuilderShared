@@ -3,7 +3,7 @@ import {
 	getPlatformClientId,
 	shouldUsePlatform,
 } from "@AppBuilderLib/shared/lib/platform";
-import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
+import useAsync from "@AppBuilderLib/shared/lib/useAsync";
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {
 	IAppBuilderSettingsJsonSession,

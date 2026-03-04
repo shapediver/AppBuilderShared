@@ -1,11 +1,11 @@
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {isRunningInPlatform} from "@AppBuilderLib/shared/lib/platform";
-import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
+import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
 	validateScrollingApiItemTypeSelectArray,
-} from "@AppBuilderShared/modules/ecommerce/types/scrollingapi";
+} from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
 import {produce} from "immer";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

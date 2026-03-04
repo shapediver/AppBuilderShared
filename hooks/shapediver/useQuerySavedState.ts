@@ -5,7 +5,7 @@ import {
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import useAsync from "~/shared/hooks/misc/useAsync";
+import useAsync from "@AppBuilderLib/shared/lib/useAsync";
 
 export default function useQuerySavedState(savedStateId: string | null) {
 	const [initialSavedState, setInitialSavedState] = useState<{

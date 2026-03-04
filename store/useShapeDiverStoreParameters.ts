@@ -41,7 +41,7 @@ import {
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {Logger} from "@AppBuilderShared/utils/logger";
 import {removeStatesFromUrl} from "@AppBuilderShared/utils/modifyUrl";
-import {addValidator} from "@AppBuilderShared/utils/parameters/parameterValidation";
+import {addValidator} from "@AppBuilderLib/entities/parameter/lib/parameterValidation";
 import {ReqCustomization, ReqExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	addListener,

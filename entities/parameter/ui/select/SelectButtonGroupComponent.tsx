@@ -1,7 +1,7 @@
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {Button} from "@mantine/core";
 import React from "react";
-import {parameterMultiSelect} from "~/shared/utils/parameters/parameterMultiSelect";
+import {parameterMultiSelect} from "@AppBuilderLib/entities/parameter/lib/parameterMultiSelect";
 import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 
 /**

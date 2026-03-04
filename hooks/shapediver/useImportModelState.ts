@@ -8,8 +8,8 @@ import {applyModelStateToUrl} from "@AppBuilderShared/utils/modifyUrl";
 import {
 	filterAndValidateModelStateParameters,
 	generateParameterFeedback,
-} from "@AppBuilderShared/utils/parameters/parametersFilter";
-import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
+} from "@AppBuilderLib/entities/parameter/lib/parametersFilter";
+import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
 import {useCallback, useContext, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 

@@ -12,7 +12,7 @@ import ParameterSelectComponent from "@AppBuilderLib/entities/parameter/ui/Param
 import ParameterSliderComponent from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent";
 import ParameterStargateComponent from "@AppBuilderLib/entities/parameter/ui/ParameterStargateComponent";
 import ParameterStringComponent from "@AppBuilderLib/entities/parameter/ui/ParameterStringComponent";
-import {CommonButtonProps} from "@AppBuilderShared/components/shapediver/viewport/buttons/types";
+import {CommonButtonProps} from "@AppBuilderLib/entities/viewport/config/types";
 import {IShapeDiverParamOrExportDefinition} from "@AppBuilderShared/types/shapediver/common";
 import {ViewportIconButtonEnum} from "@AppBuilderShared/types/shapediver/viewportIcons";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";

@@ -12,7 +12,7 @@ import {
 	ColorFormatType,
 	convertFromSdColor,
 	convertToSdColor,
-} from "@AppBuilderShared/utils/misc/colors";
+} from "@AppBuilderLib/shared/lib/colors";
 import {
 	ActionIcon,
 	ColorInput,

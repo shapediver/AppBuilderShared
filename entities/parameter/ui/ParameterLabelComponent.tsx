@@ -1,6 +1,6 @@
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
-import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {useParameter} from "@AppBuilderLib/entities/parameter/model/useParameter";
 import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {

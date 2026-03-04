@@ -1,6 +1,10 @@
 export * from "./multiselect";
 export * from "./select";
 
+export {default as AcceptRejectButtons} from "./AcceptRejectButtons";
+
+export {default as DrawingOptionsComponent} from "./DrawingOptionsComponent";
+
 export {default as ParameterBooleanComponent} from "./ParameterBooleanComponent";
 
 export {default as ParameterColorComponent} from "./ParameterColorComponent";

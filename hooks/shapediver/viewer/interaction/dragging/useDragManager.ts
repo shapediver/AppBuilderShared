@@ -1,5 +1,5 @@
 import {useInteractionEngine} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useInteractionEngine";
-import {parseInteractionEffect} from "@AppBuilderShared/utils/misc/interactionEffects";
+import {parseInteractionEffect} from "@AppBuilderLib/shared/lib/interactionEffects";
 import {
 	DragManager,
 	InteractionEngine,

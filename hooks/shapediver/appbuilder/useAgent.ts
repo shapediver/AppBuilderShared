@@ -9,7 +9,7 @@ import {Logger} from "@AppBuilderShared/utils/logger";
 import {
 	composeSdColor,
 	decomposeSdColor,
-} from "@AppBuilderShared/utils/misc/colors";
+} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import Langfuse, {LangfuseWeb, observeOpenAI} from "langfuse";
 import OpenAI from "openai";

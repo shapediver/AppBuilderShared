@@ -1,9 +1,9 @@
 import ModelLibrary, {
 	IModelLibraryProps,
-} from "@AppBuilderShared/components/shapediver/platform/ModelLibrary";
+} from "@AppBuilderLib/entities/model-card/ui/ModelLibrary";
 import TabsComponent, {
 	ITabsComponentProps,
-} from "@AppBuilderShared/components/ui/TabsComponent";
+} from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
 import {BoxProps} from "@mantine/core";
 import React, {useMemo} from "react";
 import classes from "./LibraryPage.module.css";

@@ -1,8 +1,8 @@
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {INotificationModelStateCreatedProps} from "@AppBuilderShared/components/shapediver/notifications/NotificationModelStateCreated";
+import {INotificationModelStateCreatedProps} from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
 import {useKeyBinding} from "@AppBuilderShared/hooks/shapediver/useKeyBinding";
-import {ECommerceApiSingleton} from "@AppBuilderShared/modules/ecommerce/singleton";
+import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {useCallback} from "react";
 
 interface Props {

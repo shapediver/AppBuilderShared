@@ -1,5 +1,5 @@
-import AppBuilderContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderContainerComponent";
-import AppBuilderFallbackContainerComponent from "@AppBuilderShared/components/shapediver/appbuilder/AppBuilderFallbackContainerComponent";
+import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
+import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderShared/store/useShapeDiverStoreStandardContainers";
 import {
 	IAppBuilderTemplatePageContainerHints,

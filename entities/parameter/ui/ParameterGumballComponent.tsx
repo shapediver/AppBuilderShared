@@ -2,7 +2,7 @@ import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
-import TextWeighted from "@AppBuilderShared/components/ui/TextWeighted";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
 import {useGumball} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/gumball/useGumball";
 import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";

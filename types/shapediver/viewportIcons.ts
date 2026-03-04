@@ -1,4 +1,4 @@
-import {OverlayStyleProps} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
+import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {
 	DividerProps,
 	MantineStyleProp,

@@ -1,4 +1,4 @@
-import {IAttributeDefinition} from "@AppBuilderShared/components/shapediver/appbuilder/widgets/AppBuilderAttributeVisualizationWidgetComponent";
+import {IAttributeDefinition} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAttributeVisualizationWidgetComponent";
 import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";

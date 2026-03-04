@@ -10,7 +10,7 @@ import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper"
 import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
 import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
 import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
-import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
+import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
 import {
 	ITreeNode,
 	ShapeDiverResponseOutputChunk,

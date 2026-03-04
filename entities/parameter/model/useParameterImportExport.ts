@@ -10,8 +10,8 @@ import {
 	filterAndValidateParameters,
 	generateParameterFeedback,
 	isImportParameterArray,
-} from "@AppBuilderShared/utils/parameters/parametersFilter";
-import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
+} from "@AppBuilderLib/entities/parameter/lib/parametersFilter";
+import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
 import {useCallback, useContext} from "react";
 import {useShallow} from "zustand/react/shallow";
 

@@ -1,8 +1,8 @@
-import {TextWeightedProps} from "@AppBuilderShared/components/ui/TextWeighted";
+import {TextWeightedProps} from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
-} from "@AppBuilderShared/modules/ecommerce/types/scrollingapi";
+} from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
 import {useScrollingApiStore} from "@AppBuilderShared/store/useScrollingApiStore";
 import {
 	ISelectComponentItemDataType,

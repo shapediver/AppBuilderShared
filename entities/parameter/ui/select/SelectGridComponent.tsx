@@ -9,7 +9,7 @@ import {
 } from "@mantine/core";
 import React, {useMemo, useState} from "react";
 import {useCustomHeight} from "@AppBuilderLib/entities/parameter/model/useCustomHeight";
-import {parameterMultiSelect} from "~/shared/utils/parameters/parameterMultiSelect";
+import {parameterMultiSelect} from "@AppBuilderLib/entities/parameter/lib/parameterMultiSelect";
 import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 import ButtonImageCard from "./ButtonImageCard";
 import {

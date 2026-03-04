@@ -12,7 +12,7 @@ import {
 	QUERYPARAM_TICKET,
 } from "@AppBuilderLib/shared/config/queryparams";
 import {getDefaultPlatformUrl} from "@AppBuilderLib/shared/lib/platform";
-import useAsync from "@AppBuilderShared/hooks/misc/useAsync";
+import useAsync from "@AppBuilderLib/shared/lib/useAsync";
 import useResolveAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder//useResolveAppBuilderSettings";
 import useQuerySavedState from "@AppBuilderShared/hooks/shapediver/useQuerySavedState";
 import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
