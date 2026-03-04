@@ -8,7 +8,7 @@ import {
 	useNodesInteractionData,
 } from "./useNodeInteractionData";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {Mat4Array} from "../../config/common";
+import {Mat4Array} from "@AppBuilderLib/entities/parameter/config/common";
 import {getNodesByName} from "@shapediver/viewer.features.interaction";
 import {
 	DraggingParameterValue,

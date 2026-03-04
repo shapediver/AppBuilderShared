@@ -3,7 +3,7 @@ import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
 } from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
-import {useScrollingApiStore} from "../../model/useScrollingApiStore";
+import {useScrollingApiStore} from "@AppBuilderLib/entities/parameter/model/useScrollingApiStore";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
