@@ -1,7 +1,7 @@
 import ParametersAndExportsAccordionComponent from "./ParametersAndExportsAccordionComponent";
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {IAppBuilderWidgetPropsAccordion} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderWidgetPropsAccordion} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useMemo} from "react";
 import AcceptRejectButtons from "@AppBuilderLib/entities/parameter/ui/AcceptRejectButtons";

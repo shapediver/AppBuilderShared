@@ -1,5 +1,5 @@
-import {useShapeDiverViewportIconsStore} from "@AppBuilderShared/store/useShapeDiverViewportIconsStore";
-import {Logger} from "@AppBuilderShared/utils/logger";
+import {useShapeDiverViewportIconsStore} from "./useShapeDiverViewportIconsStore";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 

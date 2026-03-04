@@ -1,4 +1,4 @@
-import {IGenericParameterDefinition} from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import {IGenericParameterDefinition} from "../config/shapediverStoreParameters";
 import {
 	ResParameter,
 	ResParameterType,

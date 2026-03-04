@@ -15,15 +15,15 @@ import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	DEFAULT_SYSTEM_PROMPT,
 	useAgent,
-} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAgent";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
+} from "@AppBuilderLib/features/appbuilder/model/useAgent";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 import {
 	AppBuilderAgentWidgetComponentProps,
 	AppBuilderAgentWidgetThemePropsType,
-} from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
-import {IAppBuilderWidgetPropsAgent} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {Logger} from "@AppBuilderShared/utils/logger";
+} from "../config/appBuilderAgentWidget";
+import {IAppBuilderWidgetPropsAgent} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	ActionIcon,
 	Box,

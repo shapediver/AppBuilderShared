@@ -1,5 +1,5 @@
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {Attributes} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useConvertAttributeInputData";
+import {Attributes} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useConvertAttributeInputData";
 import {ActionIcon, Stack, Table} from "@mantine/core";
 import {ISDTFAttributeData} from "@shapediver/viewer.session";
 import React, {useMemo} from "react";

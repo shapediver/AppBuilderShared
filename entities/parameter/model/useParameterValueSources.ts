@@ -1,4 +1,4 @@
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {
 	IAppBuilderParameterValueSourceDefinition,
 	IAppBuilderParameterValueSourcePropsDataOutput,
@@ -11,8 +11,8 @@ import {
 	isModelStateSource,
 	isScreenshotSource,
 	isSdtfSource,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {Logger} from "@AppBuilderShared/utils/logger";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {IFileParameterApi, PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useExportSources} from "./valueSources/useExportSources";

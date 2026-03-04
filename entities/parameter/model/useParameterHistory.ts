@@ -1,5 +1,5 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {IHistoryEntry} from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
+import {IHistoryEntry} from "../config/shapediverStoreParameters";
 import {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
 

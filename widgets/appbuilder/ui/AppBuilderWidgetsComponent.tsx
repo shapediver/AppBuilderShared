@@ -28,7 +28,7 @@ import {
 	isSavedStatesWidget,
 	isStackUiWidget,
 	isTextWidget,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
 import AppBuilderSavedStatesWidgetComponent from "./AppBuilderSavedStatesWidgetComponent";

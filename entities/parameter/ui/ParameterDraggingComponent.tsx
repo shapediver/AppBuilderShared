@@ -4,15 +4,15 @@ import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/Parame
 import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
-import {useDragging} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/dragging/useDragging";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
+import {useDragging} from "../model/interaction/useDragging";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {Logger} from "@AppBuilderShared/utils/logger";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
 import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
 import {

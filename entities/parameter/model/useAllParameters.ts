@@ -1,4 +1,4 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 import {useShallow} from "zustand/react/shallow";
 
 /**

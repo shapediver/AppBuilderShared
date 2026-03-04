@@ -1,7 +1,7 @@
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
-import {IAppBuilderParameterValueSourcePropsModelState} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderParameterValueSourcePropsModelState} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {useEffect, useState} from "react";
-import {useCreateModelState} from "@AppBuilderLib/hooks/shapediver/useCreateModelState";
+import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 
 export function useModelStateSources(props: {
 	namespace: string;

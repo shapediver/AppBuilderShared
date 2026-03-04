@@ -13,7 +13,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useContext} from "react";
-import {IAppBuilderWidgetPropsStackUi} from "~/shared/types/shapediver/appbuilder";
+import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 
 export interface StyleProps {
 	/**

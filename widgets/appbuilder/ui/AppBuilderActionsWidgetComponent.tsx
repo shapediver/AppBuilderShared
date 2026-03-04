@@ -1,7 +1,7 @@
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import {IAppBuilderWidgetPropsActions} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderWidgetPropsActions} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	Group,
 	MantineThemeComponent,

@@ -1,6 +1,6 @@
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
-import {IAppBuilderLegacyActionPropsSound} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {Logger} from "@AppBuilderShared/utils/logger";
+import {IAppBuilderLegacyActionPropsSound} from "../config/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import React, {useCallback, useEffect, useRef, useState} from "react";
 
 type Props = IAppBuilderLegacyActionPropsSound;

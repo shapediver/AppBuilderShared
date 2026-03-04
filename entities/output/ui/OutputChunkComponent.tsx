@@ -16,7 +16,7 @@ import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportIntercep
 import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,
-} from "@AppBuilderShared/types/shapediver/output";
+} from "../config/output";
 import {useProps} from "@mantine/core";
 import React, {useContext, useMemo} from "react";
 import OutputChunkLabelComponent from "./OutputChunkLabelComponent";

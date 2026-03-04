@@ -8,8 +8,8 @@ import {getNotificationActions} from "@AppBuilderLib/features";
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform";
-import {useShapeDiverStoreErrorReporting} from "@AppBuilderLib/store/useShapeDiverStoreErrorReporting";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/store/useShapeDiverStorePlatform";
+import {useShapeDiverStoreErrorReporting} from "@AppBuilderLib/shared/model/useShapeDiverStoreErrorReporting";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
 	SdStargateError,
 	SdStargateErrorTypes,

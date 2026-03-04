@@ -8,7 +8,7 @@ import {
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {validateNumberParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
+import {validateNumberParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuildertypecheck";
 import {
 	Group,
 	MantineThemeComponent,

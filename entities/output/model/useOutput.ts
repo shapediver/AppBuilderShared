@@ -1,6 +1,6 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
-import {IShapeDiverOutput} from "@AppBuilderShared/types/shapediver/output";
+import {IShapeDiverOutput} from "../config/output";
 import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 

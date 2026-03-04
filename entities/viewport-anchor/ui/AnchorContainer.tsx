@@ -1,16 +1,16 @@
 import {Icon, IconType} from "@AppBuilderLib/shared/ui/icon";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import shellClasses from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage.module.css";
-import {useShapeDiverStoreStandardContainers} from "@AppBuilderShared/store/useShapeDiverStoreStandardContainers";
-import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import {useShapeDiverStoreViewportAnchors} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors";
-import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {ViewportIconsOptionalProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {AppBuilderStandardContainerNameType} from "@AppBuilderShared/types/store/shapediverStoreStandardContainers";
+import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
+import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {ViewportIconsOptionalProps} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
+import {AppBuilderStandardContainerNameType} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
 import {
 	IAnchor2d,
 	IAnchor3d,
-} from "@AppBuilderShared/types/store/shapediverStoreViewportAnchors";
+} from "../config/shapediverStoreViewportAnchors";
 import {
 	ActionIcon,
 	Box,

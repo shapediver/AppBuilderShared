@@ -5,14 +5,14 @@ import ParametersAndExportsAccordionComponent from "./ParametersAndExportsAccord
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
 import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {
 	AttributeVisualizationVisibility,
 	IAppBuilderSettingsSession,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import React, {useContext, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderSavedStatesWidgetComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderSavedStatesWidgetComponent";

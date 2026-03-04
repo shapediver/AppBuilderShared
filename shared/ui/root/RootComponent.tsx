@@ -13,7 +13,7 @@ import {
 	TrackerContext,
 } from "@AppBuilderLib/shared/lib/TrackerContext";
 import {ITrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext.types";
-import {useShapeDiverStoreErrorReporting} from "@AppBuilderShared/store/useShapeDiverStoreErrorReporting";
+import {useShapeDiverStoreErrorReporting} from "@AppBuilderLib/shared/model/useShapeDiverStoreErrorReporting";
 import React, {useEffect} from "react";
 
 interface Props {

@@ -9,10 +9,10 @@ import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/Parame
 import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
-import {useSelection} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/selection/useSelection";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderShared/store/useShapeDiverStoreInteractionRequestManagement";
-import {Logger} from "@AppBuilderShared/utils/logger";
+import {useSelection} from "../model/interaction/useSelection";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	ActionIcon,
 	Box,

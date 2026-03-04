@@ -8,7 +8,7 @@ import {
 } from "@AppBuilderLib/entities/stargate";
 import {useNotificationStore} from "@AppBuilderLib/features";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import type {ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useEffect, useState} from "react";

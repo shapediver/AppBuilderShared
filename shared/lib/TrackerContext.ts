@@ -1,4 +1,4 @@
-import {Logger} from "@AppBuilderShared/utils/logger";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {createContext} from "react";
 import {
 	IDelayedTrackerPropsAwaiter,

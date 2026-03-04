@@ -14,7 +14,7 @@ import {
 	isSetParameterValueAction,
 	isSetParameterValuesAction,
 	isSoundAction,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+} from "../config/appbuilder";
 import React from "react";
 import AppBuilderActionMessageToParentComponent from "./AppBuilderActionMessageToParentComponent";
 import AppBuilderActionSoundComponent from "./AppBuilderActionSoundComponent";

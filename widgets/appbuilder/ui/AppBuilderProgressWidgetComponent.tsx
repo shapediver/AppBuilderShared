@@ -1,7 +1,7 @@
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
-import {IAppBuilderWidgetPropsProgress} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IProgress} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import {IAppBuilderWidgetPropsProgress} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {IProgress} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
 import {
 	Group,
 	MantineStyleProp,

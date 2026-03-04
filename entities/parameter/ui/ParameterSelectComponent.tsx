@@ -11,9 +11,9 @@ import {
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {validateSelectParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
-import {Logger} from "@AppBuilderShared/utils/logger";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {validateSelectParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuildertypecheck";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
 import React, {useCallback, useMemo} from "react";

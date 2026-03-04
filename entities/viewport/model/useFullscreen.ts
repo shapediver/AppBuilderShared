@@ -1,4 +1,4 @@
-import {Logger} from "@AppBuilderShared/utils/logger";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useEffect, useRef} from "react";
 
 interface CrossBrowserDocument extends Document {

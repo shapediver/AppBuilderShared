@@ -6,14 +6,14 @@ import TabsComponent, {
 } from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
 import {useSessionPropsExport} from "@AppBuilderLib/entities/export/model/useSessionPropsExport";
 import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
-import {IUseSessionDto} from "@AppBuilderShared/hooks/shapediver/useSession";
-import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
+import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
+import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
 import {
 	ISelectedModel,
 	useModelSelectStore,
-} from "@AppBuilderShared/store/useModelSelectStore";
-import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IShapeDiverExampleModels} from "@AppBuilderShared/types/shapediver/examplemodel";
+} from "../model/useModelSelectStore";
+import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {IShapeDiverExampleModels} from "@AppBuilderLib/entities/session/config/examplemodel";
 import {MultiSelect, Notification} from "@mantine/core";
 import React, {useMemo} from "react";
 

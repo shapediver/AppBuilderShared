@@ -1,7 +1,7 @@
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import AppBuilderWidgetsComponent from "./AppBuilderWidgetsComponent";
-import {IAppBuilderWidgetPropsAccordionUi} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderWidgetPropsAccordionUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	Accordion,
 	AccordionControlProps,

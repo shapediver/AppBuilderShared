@@ -1,5 +1,5 @@
-import useIconMenu from "@AppBuilderShared/hooks/shapediver/viewer/icons/useIconMenu";
-import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
+import useIconMenu from "../model/useIconMenu";
+import {ViewportTransparentBackgroundStyle} from "../config/viewport";
 import {
 	MantineThemeComponent,
 	Menu,

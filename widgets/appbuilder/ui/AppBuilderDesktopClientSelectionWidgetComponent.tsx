@@ -1,5 +1,5 @@
 import DesktopClientPanel from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
-import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import React from "react";
 
 //type Props = IAppBuilderWidgetPropsDesktopClientSelection;

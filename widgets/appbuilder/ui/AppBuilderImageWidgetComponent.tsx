@@ -1,6 +1,6 @@
 import AppBuilderImage from "./AppBuilderImage";
 import AppBuilderImageExportWidgetComponent from "./AppBuilderImageExportWidgetComponent";
-import {IAppBuilderWidgetPropsImage} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderWidgetPropsImage} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import React from "react";
 
 interface Props extends IAppBuilderWidgetPropsImage {

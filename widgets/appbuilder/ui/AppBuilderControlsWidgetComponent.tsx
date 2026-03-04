@@ -6,7 +6,7 @@ import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParamete
 import {
 	getExportComponent,
 	getParameterComponent,
-} from "@AppBuilderLib/types/components/shapediver/componentTypes";
+} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
 import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
@@ -16,7 +16,7 @@ import {
 	isExportRefControl,
 	isOutputRefControl,
 	isParameterRefControl,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	MantineThemeComponent,
 	Paper,

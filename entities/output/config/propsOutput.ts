@@ -1,5 +1,5 @@
 import {PropsParameterOrExport} from "@AppBuilderLib/shared/config/propsCommon";
-import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
+import {IShapeDiverOutputDefinition} from "./output";
 
 /** Props of an output reference. */
 export interface PropsOutput extends PropsParameterOrExport {

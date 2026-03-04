@@ -8,8 +8,8 @@ import {
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {validateStringParameterSettings} from "@AppBuilderShared/types/shapediver/appbuildertypecheck";
-import {Logger} from "@AppBuilderShared/utils/logger";
+import {validateStringParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuildertypecheck";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {Textarea, TextInput, useProps} from "@mantine/core";
 import React, {useCallback, useEffect, useMemo} from "react";
 import SelectComponent from "./select/SelectComponent";

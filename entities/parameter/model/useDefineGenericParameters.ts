@@ -1,9 +1,9 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 import {
 	IAcceptRejectModeSelector,
 	IGenericParameterDefinition,
 	IGenericParameterExecutor,
-} from "@AppBuilderShared/types/store/shapediverStoreParameters";
+} from "../config/shapediverStoreParameters";
 import {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
 

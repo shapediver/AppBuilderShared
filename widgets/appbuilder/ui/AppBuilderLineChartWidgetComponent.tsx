@@ -1,7 +1,7 @@
 import {
 	convertChartData,
 	IAppBuilderWidgetPropsLineChart,
-} from "@AppBuilderShared/types/shapediver/appbuildercharts";
+} from "@AppBuilderLib/features/appbuilder/config/appbuildercharts";
 import {LineChart, LineChartProps} from "@mantine/charts";
 import {
 	MantineThemeComponent,

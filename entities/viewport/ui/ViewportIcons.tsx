@@ -1,20 +1,20 @@
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {OverlayPosition} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
-import {useViewportControls} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControls";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
-import {useShapeDiverViewportIconsStore} from "@AppBuilderShared/store/useShapeDiverViewportIconsStore";
+import {useViewportControls} from "../model/useViewportControls";
+import {useViewportId} from "../model/useViewportId";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {useShapeDiverStoreViewport} from "../model/useShapeDiverStoreViewport";
+import {useShapeDiverViewportIconsStore} from "../model/useShapeDiverViewportIconsStore";
 import {
 	ButtonRenderContext,
 	getViewportIconComponent,
-} from "@AppBuilderLib/types/components/shapediver/componentTypes";
-import {ViewportTransparentBackgroundStyle} from "@AppBuilderShared/types/shapediver/viewport";
+} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
+import {ViewportTransparentBackgroundStyle} from "../config/viewport";
 import {
 	ViewportIconButtonEnum,
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
-} from "@AppBuilderShared/types/shapediver/viewportIcons";
+} from "../config/viewportIcons";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";

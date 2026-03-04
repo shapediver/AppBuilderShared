@@ -4,7 +4,7 @@ import ModelCardOverlayWrapper, {
 	ModelCardOverlayWrapperThemePropsType,
 } from "./ModelCardOverlayWrapper";
 import ToggleIcon from "@AppBuilderLib/shared/ui/toggle-icon/ToggleIcon";
-import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
+import {TModelItem} from "../../config/shapediverStorePlatformModels";
 import {Avatar} from "@mantine/core";
 import React, {useContext, useMemo} from "react";
 

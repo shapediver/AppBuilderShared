@@ -1,5 +1,5 @@
 import {useSessionPropsOutput} from "@AppBuilderLib/entities/output/model/useSessionPropsOutput";
-import {IAppBuilderWidgetPropsDesktopClientOutputs} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderWidgetPropsDesktopClientOutputs} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import React from "react";
 import ParametersAndExportsAccordionComponent from "./ParametersAndExportsAccordionComponent";
 

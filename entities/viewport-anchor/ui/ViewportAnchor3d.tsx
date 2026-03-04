@@ -1,6 +1,6 @@
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreViewportAnchors} from "@AppBuilderShared/store/useShapeDiverStoreViewportAnchors";
-import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
+import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {MantineThemeComponent} from "@mantine/core";
 import {
 	HTMLElementAnchorCustomData,

@@ -1,11 +1,11 @@
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
-import {useCreateNameFilterPattern} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useCreateNameFilterPattern";
+import {useCreateNameFilterPattern} from "@AppBuilderLib/entities/parameter/model/interaction/useCreateNameFilterPattern";
 import {
 	IUseFindNodesByPatternProps,
 	useFindNodesByPatterns,
-} from "@AppBuilderShared/hooks/shapediver/viewer/interaction/useFindNodesByPattern";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+} from "@AppBuilderLib/entities/parameter/model/interaction/useFindNodesByPattern";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
 	IAppBuilderActionPropsCamera,
 	isAnimateCameraAction,
@@ -13,7 +13,7 @@ import {
 	isResetCameraAction,
 	isSetCameraAction,
 	isZoomToCameraAction,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+} from "../config/appbuilder";
 import {
 	Box,
 	CAMERA_TYPE,

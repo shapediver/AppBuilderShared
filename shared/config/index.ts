@@ -1,2 +1,7 @@
 export * from "./crosswindowapi";
+export * from "./eventTracking";
 export * from "./propsCommon";
+export * from "./shapediverStoreErrorReporting";
+export * from "./shapediverStorePlatform";
+export * from "./shapediverStorePlatformGeneric";
+export * from "./shapediverStoreProcessManager";

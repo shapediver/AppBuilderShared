@@ -3,7 +3,7 @@ import {
 	useShapeDiverStoreStargate,
 } from "@AppBuilderLib/entities/stargate";
 import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import type {ISdStargateExportFileReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useContext} from "react";
 import {ERROR_TYPE_INTERRUPTED} from "./useStargateGetData";

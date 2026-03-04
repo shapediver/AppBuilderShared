@@ -1,6 +1,6 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {IParameterChanges} from "@AppBuilderShared/types/store/shapediverStoreParameters";
+import {IParameterChanges} from "../config/shapediverStoreParameters";
 
 /**
  * Get parameter change objects for all sessions used by the given parameters.

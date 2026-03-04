@@ -2,7 +2,7 @@ import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
 } from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
-import {ISelectComponentItemDataType} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {ISelectComponentItemDataType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import React, {useCallback, useMemo, useRef} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import classes from "./useSelectAsync.module.css";

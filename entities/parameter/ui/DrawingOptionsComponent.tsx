@@ -1,8 +1,8 @@
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
-import {useDrawingOptionsStore} from "@AppBuilderShared/store/useDrawingOptionsStore";
-import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {useDrawingOptionsStore} from "../model/drawing/useDrawingOptionsStore";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
 	Button,
 	Checkbox,

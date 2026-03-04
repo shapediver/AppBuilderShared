@@ -1,18 +1,18 @@
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {useAttributeOverview} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeOverview";
-import {useAttributeVisualizationEngine} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeVisualizationEngine";
-import {useAttributeWidgetVisibilityTracker} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useAttributeWidgetVisibilityTracker";
+import {useAttributeOverview} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeOverview";
+import {useAttributeVisualizationEngine} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeVisualizationEngine";
+import {useAttributeWidgetVisibilityTracker} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeWidgetVisibilityTracker";
 import {
 	createAttributeId,
 	useConvertAttributeInputData,
-} from "@AppBuilderShared/hooks/shapediver/viewer/attributeVisualization/useConvertAttributeInputData";
-import {useSdTFData} from "@AppBuilderShared/hooks/shapediver/viewer/useSdTFData";
-import {useViewportId} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportId";
-import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useConvertAttributeInputData";
+import {useSdTFData} from "@AppBuilderLib/entities/output/model/useSdTFData";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
 	AttributeVisualizationVisibility,
 	IAppBuilderWidgetPropsAttributeVisualization,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	ActionIcon,
 	Group,
@@ -61,7 +61,7 @@ import NumberAttribute, {
 	INumberAttributeExtended,
 } from "./attributes/NumberAttribute";
 import StringAttribute from "./attributes/StringAttribute";
-import useAttributeSelection from "~/shared/hooks/shapediver/viewer/attributeVisualization/useAttributeSelection";
+import useAttributeSelection from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeSelection";
 import { TooltipWrapper } from "@AppBuilderShared/shared";
 
 export type IAttributeDefinition =

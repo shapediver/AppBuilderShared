@@ -1,4 +1,4 @@
-import {IShapeDiverParamOrExport} from "@AppBuilderLib/types/shapediver/common";
+import {IShapeDiverParamOrExport} from "./common";
 import {ShapeDiverResponseParameter} from "@shapediver/viewer.session";
 
 /**

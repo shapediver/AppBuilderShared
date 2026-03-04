@@ -4,8 +4,8 @@ import {
 	exceptionWrapper,
 	exceptionWrapperAsync,
 } from "@AppBuilderLib/shared/lib/exceptionWrapper";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
 	filterAndValidateParameters,
 	generateParameterFeedback,

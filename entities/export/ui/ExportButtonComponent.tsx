@@ -24,12 +24,12 @@ import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
 } from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {
 	IParameterValues,
 	PropsExportWithForm,
-} from "@AppBuilderLib/entities/export/config/propsExport";import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
+} from "@AppBuilderLib/entities/export/config/propsExport";import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
 import {
 	Button,
 	ButtonProps,

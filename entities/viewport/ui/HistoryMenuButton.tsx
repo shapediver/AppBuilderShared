@@ -2,7 +2,7 @@ import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import ImportModelStateDialog from "@AppBuilderLib/features/model-state/ui/ImportModelStateDialog";
 import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
-import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import React, {useCallback, useMemo, useState} from "react";
 import {CommonButtonProps} from "../config/types";

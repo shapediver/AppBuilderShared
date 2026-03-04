@@ -1,9 +1,9 @@
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
-import {useCreateModelState} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
-import {IAppBuilderLegacyActionPropsCreateModelState} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {IAppBuilderLegacyActionPropsCreateModelState} from "../config/appbuilder";
 import React, {useCallback, useState} from "react";
 
 type Props = IAppBuilderLegacyActionPropsCreateModelState & {

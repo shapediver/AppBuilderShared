@@ -1,11 +1,11 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
 import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {
 	IShapeDiverParamOrExportDefinition,
 	IShapeDiverParamOrExportOrOutputDefinition,
-} from "@AppBuilderShared/types/shapediver/common";
+} from "../config/common";
 import {useShallow} from "zustand/react/shallow";
 
 /**

@@ -1,0 +1,339 @@
+import {useGumballEvents} from "./useGumballEvents";
+import {useSelection} from "./useSelection";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {
+	Gumball,
+	updateGumballTransformation,
+} from "@shapediver/viewer.features.gumball";
+import {
+	getNodesByName,
+	matchNodesWithPatterns,
+	OutputNodeNameFilterPatterns,
+	RestrictionProperties,
+} from "@shapediver/viewer.features.interaction";
+import {
+	IGumballParameterProps,
+	ISelectionParameterProps,
+} from "@shapediver/viewer.session";
+import {mat4} from "gl-matrix";
+import {useCallback, useEffect, useMemo, useRef} from "react";
+import {useRestrictions} from "../drawing/useRestrictions";
+import {useConvertDraggingData} from "./useConvertDraggingData";
+
+// #region Functions (1)
+
+export interface IGumballState {
+	/**
+	 * The transformed node names.
+	 */
+	transformedNodeNames: {
+		name: string;
+		transformation: number[];
+		localTransformations?: number[];
+	}[];
+	/**
+	 * Set the transformed node names.
+	 *
+	 * @param nodes
+	 * @returns
+	 */
+	setTransformedNodeNames: (
+		nodes: {
+			name: string;
+			transformation: number[];
+			localTransformations?: number[];
+		}[],
+	) => void;
+	/**
+	 * The selected node names.
+	 */
+	selectedNodeNames: string[];
+	/**
+	 * Set the selected node names.
+	 *
+	 * @param selectedNodes
+	 * @returns
+	 */
+	setSelectedNodeNames: (selectedNodes: string[]) => void;
+	/**
+	 * Restore the transformed node names.
+	 *
+	 * @param newTransformedNodeNames
+	 * @param oldTransformedNodeNames
+	 * @returns
+	 */
+	restoreTransformedNodeNames: (
+		newTransformedNodeNames: {
+			name: string;
+			transformation: number[];
+			localTransformations?: number[];
+		}[],
+		oldTransformedNodeNames: {name: string}[],
+	) => void;
+}
+
+/**
+ * Hook providing stateful gumball interaction for a viewport and session.
+ * This wraps lower level hooks for the selection and gumball events.
+ *
+ * @param sessionIds IDs of the sessions which depend on the gumball parameter.
+ * @param viewportId ID of the viewport for which the gumball shall be created.
+ * @param gumballProps Parameter properties to be used. This includes name filters, and properties for the behavior of the gumball.
+ * @param activate Set this to true to activate the gumball. If false, preparations are made but no gumball is possible.
+ * @param initialTransformedNodeNames The initial transformed node names (used to initialize the selection state).
+ * 					Note that this initial state is not checked against the filter pattern.
+ */
+export function useGumball(
+	sessionIds: string[],
+	viewportId: string,
+	gumballProps: IGumballParameterProps,
+	activate: boolean,
+	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
+	strictNaming = true,
+): IGumballState {
+	// get the session API
+	const sessionApis = useShapeDiverStoreSession((state) => state.sessions);
+	// get the viewport API
+	const viewportApi = useShapeDiverStoreViewport((state) => {
+		return state.viewports[viewportId];
+	});
+
+	// create the selection settings from the interaction settings
+	const selectionSettings = useMemo(() => {
+		if (!gumballProps) return {};
+
+		const nameFilter: string[] = [];
+		nameFilter.push(...(gumballProps.nameFilter ?? []));
+		gumballProps.objects?.forEach((element) => {
+			nameFilter.push(element.nameFilter);
+		});
+
+		return {
+			nameFilter,
+			hover: gumballProps.hover,
+			minimumSelection: gumballProps.minimumSelection ?? 0,
+			maximumSelection: gumballProps.maximumSelection ?? Infinity,
+			deselectOnEmpty: gumballProps.deselectOnEmpty ?? false,
+		} as ISelectionParameterProps;
+	}, [gumballProps]);
+
+	// use the selection hook to get the selected node names
+	const {
+		selectedNodeNames,
+		setSelectedNodeNames,
+		availableNodeNames,
+		setSelectedNodeNamesAndRestoreSelection,
+	} = useSelection(viewportId, selectionSettings, activate);
+
+	// convert the dragging data
+	const {objects} = useConvertDraggingData(sessionIds, gumballProps);
+
+	// use the gumball events hook to get the transformed node names
+	const {transformedNodeNames, setTransformedNodeNames} = useGumballEvents(
+		selectedNodeNames,
+		initialTransformedNodeNames,
+	);
+
+	// use an effect to set the selected node names to the first available node name if only one is available
+	useEffect(() => {
+		const singleAvailableNodeName =
+			getSingleAvailableNodeName(availableNodeNames);
+		if (activate && singleAvailableNodeName) {
+			setSelectedNodeNamesAndRestoreSelection([singleAvailableNodeName]);
+		}
+	}, [availableNodeNames, setSelectedNodeNamesAndRestoreSelection]);
+
+	// create a reference for the gumball
+	const gumballRef = useRef<Gumball | undefined>(undefined);
+
+	// use the restrictions
+	const {restrictions} = useRestrictions(gumballProps.restrictions);
+
+	// use an effect to create the gumball whenever the selected node names change
+	useEffect(() => {
+		if (viewportApi && sessionApis && selectedNodeNames.length > 0) {
+			// whenever the selected node names change, create a new gumball
+			const nodes = getNodesByName(
+				Object.values(sessionApis),
+				selectedNodeNames,
+			);
+
+			// for the nodes, we search for the correct restrictions in the dragging objects
+			// this allows us to have different restrictions for different nodes
+			// if no restrictions are found, we use an empty object
+			// this allows the gumball to have no restrictions
+			// NOTE: We only do this if there is only one node selected
+			// if multiple nodes are selected, we use no restrictions
+			let restrictionsToUse: {[key: string]: RestrictionProperties} = {};
+			if (nodes.length === 1 && restrictions) {
+				const node = nodes[0];
+
+				const processPatterns = (
+					pattern: OutputNodeNameFilterPatterns,
+					index: number,
+				) => {
+					// check if there are any patterns that match the selected nodes
+					const matchedNodeNames = matchNodesWithPatterns(
+						pattern,
+						[node.node],
+						strictNaming,
+					);
+
+					if (matchedNodeNames.length > 0) {
+						if (
+							objects[index].restrictions &&
+							objects[index].restrictions.length > 0
+						) {
+							objects[index].restrictions.forEach(
+								(restrictionId) => {
+									const restriction =
+										restrictions[restrictionId];
+									if (!restriction) return;
+									restrictionsToUse[restrictionId] =
+										restriction;
+								},
+							);
+						}
+					}
+				};
+
+				for (let i = 0; i < objects.length; i++) {
+					if (objects[i].patterns.outputPatterns) {
+						Object.values(
+							objects[i].patterns.outputPatterns!,
+						).forEach((pattern) => {
+							processPatterns(pattern, i);
+						});
+					}
+
+					if (objects[i].patterns.instancePatterns) {
+						const patterns = objects[i].patterns.instancePatterns!;
+						if (!patterns) continue;
+						processPatterns(patterns, i);
+					}
+				}
+			}
+
+			const props = {
+				...gumballProps,
+				restrictions:
+					Object.values(restrictionsToUse).length === 0
+						? undefined
+						: restrictionsToUse,
+			};
+
+			const gumball = new Gumball(
+				viewportApi,
+				Object.values(nodes).map((n) => n.node),
+				props,
+			);
+			gumballRef.current = gumball;
+		}
+
+		return () => {
+			// clean up the select manager
+			if (gumballRef.current) {
+				gumballRef.current.close();
+				gumballRef.current = undefined;
+			}
+		};
+	}, [viewportApi, sessionApis, selectedNodeNames, objects, restrictions]);
+
+	/**
+	 * Restore the transformed node names.
+	 *
+	 * This function is used to restore the transformed nodes to their new transformation state.
+	 * This means that the transformation of the nodes is updated to the new transformation state.
+	 *
+	 * @param newTransformedNodeNames The new transformed node names.
+	 * @param oldTransformedNodeNames The old transformed node names.
+	 * @returns
+	 */
+	const restoreTransformedNodeNames = useCallback(
+		(
+			newTransformedNodeNames: {
+				name: string;
+				transformation: number[];
+				localTransformations?: number[];
+			}[],
+			oldTransformedNodeNames: {name: string}[],
+		) => {
+			const nodes = getNodesByName(
+				Object.values(sessionApis),
+				oldTransformedNodeNames.map((tn) => tn.name),
+			);
+
+			nodes.forEach((tn) => {
+				// get the new transformation matrix (if it exists)
+				const newTransformation = newTransformedNodeNames.find(
+					(nt) => nt.name === tn.name,
+				);
+
+				// if there is a local transformation present that we can reset to, use it
+				let transformationMatrix: mat4 | undefined;
+				if (newTransformation && newTransformation.localTransformations)
+					transformationMatrix = mat4.fromValues(
+						...(newTransformation.localTransformations as [
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+							number,
+						]),
+					);
+
+				// update the gumball transformation
+				// in case the transformation matrix is undefined, the transformation will be reset
+				updateGumballTransformation(tn.node, transformationMatrix);
+			});
+
+			setTransformedNodeNames(newTransformedNodeNames);
+		},
+		[sessionApis],
+	);
+
+	return {
+		transformedNodeNames,
+		setTransformedNodeNames,
+		selectedNodeNames,
+		setSelectedNodeNames,
+		restoreTransformedNodeNames,
+	};
+}
+
+/**
+ * Get a single available node name, if there is only one available.
+ *
+ * @param availableNodeNames
+ * @returns
+ */
+const getSingleAvailableNodeName = (availableNodeNames: {
+	[key: string]: {[key: string]: string[]};
+}): string | undefined => {
+	let availableNodeName: string | undefined = undefined;
+	let count = 0;
+
+	for (const outerObj of Object.values(availableNodeNames)) {
+		for (const arr of Object.values(outerObj)) {
+			count += arr.length;
+			if (count > 1) return;
+			if (arr.length === 1) availableNodeName = arr[0];
+		}
+	}
+
+	return availableNodeName;
+};
+
+// #endregion Functions (1)

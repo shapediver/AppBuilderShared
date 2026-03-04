@@ -35,7 +35,7 @@ import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderLib/entities/view
 import {HintProps} from "@AppBuilderLib/shared/ui/hint/Hint";
 import {ModalBaseThemeProps} from "@AppBuilderLib/shared/ui/modal/ModalBase";
 import {NotificationWrapperThemeProps} from "@AppBuilderLib/features/notifications/ui/NotificationWrapper";
-import {DefaultSessionThemeProps} from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
+import {DefaultSessionThemeProps} from "@AppBuilderLib/entities/session/model/useDefaultSessionDto";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
 import {AppBuilderAppShellTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
 import {AppBuilderContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderContainer";
@@ -44,16 +44,16 @@ import {AppBuilderGridTemplatePageThemeProps} from "@AppBuilderShared/pages/temp
 import {AppBuilderHorizontalContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderHorizontalContainer";
 import {AppBuilderTemplateSelectorThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
 import {AppBuilderVerticalContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
-import {useThemeOverrideStore} from "@AppBuilderShared/store/useThemeOverrideStore";
-import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderShared/types/components/shapediver/props/appBuilderAgentWidget";
-import {AppBuilderContainerNameType} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
+import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/config/appBuilderAgentWidget";
+import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	ViewportBrandingThemeProps,
 	ViewportComponentThemeProps,
-} from "@AppBuilderShared/types/shapediver/viewport";
-import {ViewportIconsThemeProps} from "@AppBuilderShared/types/shapediver/viewportIcons";
-import {ViewportOverlayWrapperThemeProps} from "@AppBuilderShared/types/shapediver/viewportOverlayWrapper";
-import {Logger} from "@AppBuilderShared/utils/logger";
+} from "@AppBuilderLib/entities/viewport/config/viewport";
+import {ViewportIconsThemeProps} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
+import {ViewportOverlayWrapperThemeProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	AreaChart,
 	BarChart,
@@ -92,7 +92,7 @@ import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types
 import {useContext} from "react";
 import {AppBuilderStackUiWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
 import {MultiSelectCheckboxesProps} from "@AppBuilderLib/entities/parameter/ui/multiselect/MultiSelectCheckboxesComponent";
-import {CreateModelStateHookThemeProps} from "@AppBuilderShared/hooks/shapediver/useCreateModelState";
+import {CreateModelStateHookThemeProps} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 
 /**
  * Helper function for defining CSS variables for the AppBuilderAppShellTemplate

@@ -1,4 +1,4 @@
-import {useViewportHistory} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportHistory";
+import {useViewportHistory} from "../model/useViewportHistory";
 import React from "react";
 import {CommonButtonProps} from "../config/types";
 import ViewportIconButton from "./ViewportIconButton";

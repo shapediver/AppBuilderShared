@@ -1,14 +1,14 @@
 import {useParameter} from "@AppBuilderLib/entities/parameter/model/useParameter";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {
 	PropsParameterComponent,
 	PropsParameterWithForm,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {IShapeDiverParameterState} from "@AppBuilderLib/entities/parameter/config/parameter";
-import {Logger} from "@AppBuilderShared/utils/logger";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/hooks/shapediver/appbuilder/useAppBuilderCustomParameters";
+import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
 
 /**
  * Hook providing functionality common to all parameter components like

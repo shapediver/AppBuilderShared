@@ -8,7 +8,7 @@ import {
 import {
 	getExportComponent,
 	getParameterComponent,
-} from "@AppBuilderLib/types/components/shapediver/componentTypes";
+} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
 import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";

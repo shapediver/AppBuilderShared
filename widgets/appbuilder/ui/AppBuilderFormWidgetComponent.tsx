@@ -5,7 +5,7 @@ import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParamete
 import {
 	getExportComponent,
 	getParameterComponent,
-} from "@AppBuilderLib/types/components/shapediver/componentTypes";
+} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {
 	PropsParameter,
 	PropsParameterComponent,
@@ -13,7 +13,7 @@ import {
 import {
 	IAppBuilderWidgetPropsForm,
 	isParameterRefControl,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {buildParameterValidator} from "@AppBuilderLib/entities/parameter/lib/parameterFormValidation";
 import {
 	ActionIcon,
@@ -38,8 +38,8 @@ import React, {
 } from "react";
 import {undefined} from "zod";
 import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
-import {PropsExportWithForm} from "~/shared/types/components/shapediver/propsExport";
-import {IShapeDiverParameterActions} from "~/shared/types/shapediver/parameter";
+import {PropsExportWithForm} from "@AppBuilderLib/entities/export/config/propsExport";
+import {IShapeDiverParameterActions} from "@AppBuilderLib/entities/parameter/config/parameter";
 
 interface StyleProps {
 	stackProps?: StackProps;

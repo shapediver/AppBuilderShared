@@ -4,15 +4,15 @@ import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
 } from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShapeDiverStoreProcessManager";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {
 	IAppBuilderActionPropsCommon,
 	IAppBuilderActionPropsSetParameterValues,
 	IAppBuilderLegacyActionPropsSetParameterValue,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
-import {Logger} from "@AppBuilderShared/utils/logger";
+} from "../config/appbuilder";
+import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 

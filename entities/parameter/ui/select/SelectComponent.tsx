@@ -3,11 +3,11 @@ import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
 } from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
-import {useScrollingApiStore} from "@AppBuilderShared/store/useScrollingApiStore";
+import {useScrollingApiStore} from "../../model/useScrollingApiStore";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {CarouselProps} from "@mantine/carousel";
 import {
 	ButtonGroupProps,

@@ -1,7 +1,7 @@
 import {Icon, IconType} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ToggleIcon from "@AppBuilderLib/shared/ui/toggle-icon/ToggleIcon";
-import {TModelItem} from "@AppBuilderShared/types/store/shapediverStorePlatformModels";
+import {TModelItem} from "../../config/shapediverStorePlatformModels";
 import {
 	SdPlatformModelVisibility,
 	SdPlatformResponseModelPublic,

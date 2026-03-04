@@ -3,20 +3,20 @@ import {QUERYPARAM_SAVEDSTATEID} from "@AppBuilderLib/shared/config/queryparams"
 import SelectComponent, {
 	SelectComponentPropsExt,
 } from "@AppBuilderLib/entities/parameter/ui/select/SelectComponent";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderShared/store/useShapeDiverStorePlatformSavedStates";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
+import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderLib/features/model-state/model/useShapeDiverStorePlatformSavedStates";
 import {
 	IAppBuilderWidgetPropsSavedStates,
 	ISelectComponentItemDataType,
 	SavedStatesVisualization,
 	SelectComponentType,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {TSavedStateQueryProps} from "@AppBuilderShared/types/store/shapediverStorePlatformSavedStates";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {TSavedStateQueryProps} from "@AppBuilderLib/features/model-state/config/shapediverStorePlatformSavedStates";
 import {
 	applySavedStateToUrl,
 	URL_CHANGED_EVENT,
-} from "@AppBuilderShared/utils/modifyUrl";
+} from "@AppBuilderLib/shared/lib/modifyUrl";
 import {
 	Alert,
 	Flex,
@@ -35,7 +35,7 @@ import {SdPlatformSortingOrder} from "@shapediver/sdk.platform-api-sdk-v1";
 import React, {useContext, useEffect, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
-import {Logger} from "~/shared/utils/logger";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 
 interface StyleProps {
 	selectProps?: Partial<SelectComponentPropsExt> & {

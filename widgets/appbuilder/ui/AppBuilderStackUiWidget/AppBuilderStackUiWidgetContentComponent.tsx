@@ -14,7 +14,7 @@ import {
 import React, {useContext} from "react";
 import AppBuilderWidgetsComponent from "../AppBuilderWidgetsComponent";
 import {useStackContext} from "@AppBuilderLib/features/appbuilder/model/useStackContext";
-import {IAppBuilderWidgetPropsStackUi} from "~/shared/types/shapediver/appbuilder";
+import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import AppBuilderStackUiWidgetComponent from "./AppBuilderStackUiWidgetComponent";
 
 export interface StyleProps {

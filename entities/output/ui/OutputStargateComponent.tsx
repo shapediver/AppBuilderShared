@@ -1,5 +1,5 @@
 import {useOutput} from "@AppBuilderLib/entities/output/model/useOutput";
-import {useSdTFData} from "@AppBuilderShared/hooks/shapediver/viewer/useSdTFData";
+import {useSdTFData} from "../model/useSdTFData";
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
 import {
 	Accordion,

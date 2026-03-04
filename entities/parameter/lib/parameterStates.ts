@@ -1,4 +1,4 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStoreParameters} from "../model/useShapeDiverStoreParameters";
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 
 /**

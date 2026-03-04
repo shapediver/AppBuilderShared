@@ -1,4 +1,4 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/store/useShapeDiverStoreParameters";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {ResExportDefinition} from "@shapediver/sdk.geometry-api-sdk-v2";
 

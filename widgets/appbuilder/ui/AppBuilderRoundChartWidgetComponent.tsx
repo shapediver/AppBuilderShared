@@ -1,4 +1,4 @@
-import {IAppBuilderWidgetPropsRoundChart} from "@AppBuilderShared/types/shapediver/appbuildercharts";
+import {IAppBuilderWidgetPropsRoundChart} from "@AppBuilderLib/features/appbuilder/config/appbuildercharts";
 import {
 	DonutChart,
 	DonutChartProps,

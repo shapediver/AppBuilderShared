@@ -1,5 +1,5 @@
 import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
-import {IAppBuilderTemplatePageProps} from "@AppBuilderShared/types/pages/appbuildertemplates";
+import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
 import {createGridLayout} from "@AppBuilderLib/shared/lib/layout";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useEffect, useRef, useState} from "react";

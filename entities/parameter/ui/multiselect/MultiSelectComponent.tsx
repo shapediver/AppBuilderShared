@@ -1,7 +1,7 @@
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
-} from "@AppBuilderShared/types/shapediver/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import React from "react";
 import {
 	SelectComponentProps,

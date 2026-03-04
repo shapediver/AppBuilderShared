@@ -1,5 +1,5 @@
-import {useViewportCanvas} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportCanvas";
-import {useShapeDiverStoreViewport} from "@AppBuilderShared/store/useShapeDiverStoreViewport";
+import {useViewportCanvas} from "@AppBuilderLib/entities/viewport/model/useViewportCanvas";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
 	addListener,
 	EventResponseMapping,

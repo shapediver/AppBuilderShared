@@ -1,12 +1,12 @@
 import {ViewportControlsVisibilityContext} from "@AppBuilderLib/shared/lib/ViewportControlsVisibilityContext";
-import {useViewport} from "@AppBuilderShared/hooks/shapediver/viewer/useViewport";
-import {useViewportControlsVisibility} from "@AppBuilderShared/hooks/shapediver/viewer/useViewportControlsVisibility";
+import {useViewport} from "../model/useViewport";
+import {useViewportControlsVisibility} from "../model/useViewportControlsVisibility";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
-import {useShapeDiverViewportIconsStore} from "@AppBuilderShared/store/useShapeDiverViewportIconsStore";
+import {useShapeDiverViewportIconsStore} from "../model/useShapeDiverViewportIconsStore";
 import {
 	ViewportBrandingProps,
 	ViewportComponentProps,
-} from "@AppBuilderShared/types/shapediver/viewport";
+} from "../config/viewport";
 import {useComputedColorScheme, useProps} from "@mantine/core";
 import {
 	SESSION_SETTINGS_MODE,

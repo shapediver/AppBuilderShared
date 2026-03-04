@@ -1,10 +1,10 @@
-import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/store/useShapeDiverStoreViewportAccessFunctions";
-import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderShared/types/shapediver/appbuilder";
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
+import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Converter} from "@shapediver/viewer.session";
 import {guessMissingMimeType} from "@shapediver/viewer.utils.mime-type";
 import {useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useViewportId} from "@AppBuilderLib/hooks/shapediver/viewer/useViewportId";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 
 export function useScreenshotSources(props: {
 	namespace: string;

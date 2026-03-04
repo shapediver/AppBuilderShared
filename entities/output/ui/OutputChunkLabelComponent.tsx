@@ -1,6 +1,6 @@
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
-import {IShapeDiverOutputDefinitionChunk} from "@AppBuilderShared/types/shapediver/output";
+import {IShapeDiverOutputDefinitionChunk} from "../../config/output";
 import {Group, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
 
