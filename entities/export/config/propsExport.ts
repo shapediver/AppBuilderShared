@@ -1,6 +1,6 @@
 import {PropsParameterOrExport} from "@AppBuilderLib/shared/config/propsCommon";
-import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
-import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
+import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export/config/export";
 import {UseFormReturnType} from "@mantine/form";
 
 /** Export parameters **/

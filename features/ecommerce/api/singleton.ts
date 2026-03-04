@@ -3,7 +3,7 @@ import {
 	DummyECommerceApi,
 	ECommerceApiFactory,
 } from "@AppBuilderLib/features/ecommerce/api/ecommerceapi";
-import {IECommerceApi} from "./types/ecommerceapi";
+import {IECommerceApi} from "../config/ecommerceapi";
 
 /** Number of key events for toggling configurator visibility. */
 const TOGGLE_CONFIGURATOR_VISIBILITY_NUM_EVENTS = 3;

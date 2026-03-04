@@ -5,7 +5,7 @@ import {AppBuilderStackUiWidgetAnimationWrapper} from "./AppBuilderStackUiWidget
 import AppBuilderStackUiWidgetContentComponent, {
 	StyleProps as StylePropsContent,
 } from "./AppBuilderStackUiWidgetContentComponent";
-import {IAppBuilderStackContextElement} from "~/shared/features";
+import {IAppBuilderStackContextElement} from "@AppBuilderLib/features/appbuilder/lib/StackContext.types";
 
 interface Props {
 	namespace: string;

@@ -1,6 +1,6 @@
-import {ModelCardOverlayPropsType} from "@AppBuilderLib/components/shapediver/platform/ModelCardOverlay";
-import {OverlayStyleProps} from "@AppBuilderLib/components/shapediver/ui/OverlayWrapper";
-import {ButtonRenderContext} from "@AppBuilderLib/types/components/shapediver/componentTypes";
+import {ModelCardOverlayPropsType} from "@AppBuilderLib/entities/model-card/ui/ModelCardOverlay";
+import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
+import {ButtonRenderContext} from "./componentTypes";
 import {PropsExportWithForm} from "@AppBuilderLib/entities/export/config/propsExport";
 import {
 	PropsParameter,
@@ -9,13 +9,13 @@ import {
 import {
 	IAppBuilderActionDefinition,
 	IAppBuilderWidget,
-} from "@AppBuilderLib/types/shapediver/appbuilder";
-import {ViewportComponentProps} from "@AppBuilderLib/types/shapediver/viewport";
+} from "./appbuilder";
+import {ViewportComponentProps} from "@AppBuilderLib/entities/viewport/config/viewport";
 import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
-} from "@AppBuilderLib/types/shapediver/viewportIcons";
-import {ViewportOverlayWrapperProps} from "@AppBuilderLib/types/shapediver/viewportOverlayWrapper";
+} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
+import {ViewportOverlayWrapperProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
 import {MantineThemeComponent} from "@mantine/core";
 import {ReactElement} from "react";
 
