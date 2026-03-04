@@ -32,6 +32,7 @@ export default function AppBuilderTabsComponent({
 	const tabProps: ITabsComponentProps = useMemo(() => {
 		return {
 			defaultValue: tabs[0].name,
+			stickyTabs: true,
 			tabs: tabs.map((tab) => {
 				return {
 					name: tab.name,
