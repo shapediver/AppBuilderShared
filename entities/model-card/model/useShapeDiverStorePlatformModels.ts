@@ -1,0 +1,316 @@
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {defineFilter} from "@AppBuilderLib/shared/lib/platform";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
+import {IPlatformPagedItemQueryProps} from "@AppBuilderLib/shared/config/shapediverStorePlatformGeneric";
+import {
+	IShapeDiverStorePlatformModelExtended,
+	ModelCacheKeyEnum,
+	TModelData,
+	TModelEmbed,
+	TModelQueryPropsExt,
+} from "@AppBuilderLib/entities/model-card/config/shapediverStorePlatformModels";
+import {
+	SdPlatformModelQueryEmbeddableFields,
+	SdPlatformModelQueryParameters,
+	SdPlatformSortingOrder,
+} from "@shapediver/sdk.platform-api-sdk-v1";
+import {produce} from "immer";
+import {useCallback, useEffect, useMemo, useState} from "react";
+import {create} from "zustand";
+import {devtools} from "zustand/middleware";
+import {useShallow} from "zustand/react/shallow";
+
+/**
+ * Store for ShapeDiver Platform models.
+ * @see {@link IShapeDiverStorePlatform}
+ */
+export const useShapeDiverStorePlatformModels =
+	create<IShapeDiverStorePlatformModelExtended>()(
+		devtools(
+			(set, get) => ({
+				items: {},
+
+				queryCache: {},
+
+				addItem(data: TModelData) {
+					const {authWrapper} = useShapeDiverStorePlatform.getState();
+					const pruneCache = get().pruneCache;
+
+					const actions = {
+						bookmark: async () => {
+							await authWrapper((c) =>
+								c.client.bookmarks.create({
+									model_id: data.id,
+								}),
+							);
+							set(
+								produce((state) => {
+									state.items[data.id].data.bookmark = {
+										bookmarked: true,
+									};
+								}),
+								false,
+								`bookmark ${data.id}`,
+							);
+							pruneCache(ModelCacheKeyEnum.BookmarkedModels);
+						},
+						unbookmark: async () => {
+							await authWrapper((c) =>
+								c.client.bookmarks.delete(data.id),
+							);
+							set(
+								produce((state) => {
+									state.items[data.id].data.bookmark = {
+										bookmarked: false,
+									};
+								}),
+								false,
+								`unbookmark ${data.id}`,
+							);
+							pruneCache(ModelCacheKeyEnum.BookmarkedModels);
+						},
+						confirmForOrganization: async () => {
+							await authWrapper((c) =>
+								c.client.models.patch(data.id, {
+									organization_settings: {confirmed: true},
+								}),
+							);
+							set(
+								produce((state) => {
+									state.items[
+										data.id
+									].data.organization_settings = {
+										confirmed: true,
+									};
+								}),
+								false,
+								`confirmForOrganization ${data.id}`,
+							);
+							pruneCache(
+								ModelCacheKeyEnum.OrganizationConfirmedModels,
+							);
+						},
+						revokeForOrganization: async () => {
+							await authWrapper((c) =>
+								c.client.models.patch(data.id, {
+									organization_settings: {confirmed: false},
+								}),
+							);
+							set(
+								produce((state) => {
+									state.items[
+										data.id
+									].data.organization_settings = {
+										confirmed: false,
+									};
+								}),
+								false,
+								`revokeForOrganization ${data.id}`,
+							);
+							pruneCache(
+								ModelCacheKeyEnum.OrganizationConfirmedModels,
+							);
+						},
+					};
+
+					set(
+						(state) => ({
+							items: {
+								...state.items,
+								[data.id]: {
+									data,
+									actions,
+								},
+							},
+						}),
+						false,
+						`addItem ${data.id}`,
+					);
+				},
+
+				useQuery(
+					params: IPlatformPagedItemQueryProps<
+						TModelEmbed,
+						TModelQueryPropsExt
+					>,
+				) {
+					const {authWrapper, getUser} = useShapeDiverStorePlatform(
+						useShallow((state) => ({
+							authWrapper: state.authWrapper,
+							getUser: state.getUser,
+						})),
+					);
+					const {addItem, queryCache} = get();
+
+					const {
+						queryParams,
+						filterByUser,
+						filterByOrganization,
+						cacheKey,
+					} = params;
+
+					// here we define default query parameters and overwrite them by the provided ones
+					const queryParamsExt = useMemo(
+						() => ({
+							filters: {deleted_at: null, status: "done"},
+							sorters: {created_at: SdPlatformSortingOrder.Desc},
+							embed: [
+								SdPlatformModelQueryEmbeddableFields.Bookmark,
+								SdPlatformModelQueryEmbeddableFields.Decoration,
+								SdPlatformModelQueryEmbeddableFields.Tags,
+								SdPlatformModelQueryEmbeddableFields.User,
+							],
+							strict_limit: true,
+							limit: 12,
+							...queryParams,
+						}),
+						[queryParams],
+					);
+
+					// define keys for cache pruning
+					const cacheKeys = useMemo(
+						() =>
+							Array.isArray(cacheKey)
+								? cacheKey
+								: cacheKey
+									? [cacheKey]
+									: [],
+						[cacheKey],
+					);
+
+					// define key for query cache
+					const key = useMemo(
+						() =>
+							`${JSON.stringify(cacheKeys)}-${JSON.stringify(queryParamsExt)}-${filterByUser}-${filterByOrganization}`,
+						[
+							cacheKeys,
+							queryParamsExt,
+							filterByUser,
+							filterByOrganization,
+						],
+					);
+
+					// get data from cache, or create it and update cache
+					const data = useMemo(
+						() =>
+							queryCache[key] ?? {
+								items: [],
+								cacheKeys: cacheKeys,
+							},
+						[queryCache[key], cacheKeys],
+					);
+					useEffect(() => {
+						if (!queryCache[key]) {
+							set(
+								(state) => ({
+									queryCache: {
+										...state.queryCache,
+										[key]: data,
+									},
+								}),
+								false,
+								`useQuery ${key}`,
+							);
+						}
+					}, [key, data, queryCache[key]]);
+
+					const [loading, setLoading] = useState<boolean>(false);
+					const [error, setError] = useState<Error | undefined>(
+						undefined,
+					);
+
+					const loadMore = useCallback(async () => {
+						const {queryCache} = get();
+
+						const userFilter = defineFilter(
+							"user_id[=]",
+							filterByUser,
+							(await getUser())?.id ?? "%",
+						);
+						const orgFilter = defineFilter(
+							"organization_id[=]",
+							filterByOrganization,
+							(await getUser())?.organization?.id ?? "%",
+						);
+
+						const params: SdPlatformModelQueryParameters = {
+							...queryParamsExt,
+							offset:
+								queryCache[key]?.pagination?.next_offset ??
+								undefined,
+							filters: {
+								...queryParamsExt.filters,
+								...(userFilter ?? {}),
+								...(orgFilter ?? {}),
+							},
+						};
+
+						setLoading(true);
+						try {
+							const {pagination, result: items} = (
+								await authWrapper((c) =>
+									c.client.models.query(params),
+								)
+							).data;
+							items.forEach((item) => addItem(item));
+							set(
+								produce((state) => {
+									state.queryCache[key].items.push(
+										...items.map((m) => m.id),
+									);
+									state.queryCache[key].pagination =
+										pagination;
+								}),
+								false,
+								`loadMore ${key}`,
+							);
+						} catch (error) {
+							// TODO central error handling
+							setError(error as Error);
+						} finally {
+							setLoading(false);
+						}
+					}, [
+						authWrapper,
+						getUser,
+						queryParamsExt,
+						filterByUser,
+						filterByOrganization,
+						key,
+					]);
+
+					return {
+						loadMore,
+						loading,
+						hasMore:
+							!data.pagination || !!data.pagination.next_offset,
+						items: data.items,
+						error,
+					};
+				},
+
+				pruneCache: (cacheType: ModelCacheKeyEnum) => {
+					const key = cacheType;
+
+					const {queryCache} = get();
+					const _prunedCache = {...queryCache};
+					for (const _key in queryCache) {
+						if (queryCache[_key].cacheKeys.includes(key)) {
+							delete _prunedCache[_key];
+						}
+					}
+
+					if (
+						Object.keys(_prunedCache).length !==
+						Object.keys(queryCache).length
+					)
+						set(
+							() => ({queryCache: _prunedCache}),
+							false,
+							`pruneCache ${key}`,
+						);
+				},
+			}),
+			{...devtoolsSettings, name: "ShapeDiver | Platform | Models"},
+		),
+	);

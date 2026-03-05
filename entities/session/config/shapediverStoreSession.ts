@@ -1,0 +1,159 @@
+import {IEventTracking} from "@AppBuilderLib/shared/config/eventTracking";
+import {
+	ISessionApi,
+	ITreeNode,
+	SessionCreationDefinition,
+} from "@shapediver/viewer.session";
+
+/**
+ * A callback that is executed whenever a node is to be replaced due to an update of the content.
+ * Provides the new scene tree node and the old one, so that data can be carried over.
+ * If the callback is a promise it will be awaited in the execution chain.
+ * @see https://viewer.shapediver.com/v3/latest/api/interfaces/ISessionApi.html#updateCallback
+ * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IOutputApi.html#updateCallback
+ */
+export type UpdateCallbackType = (
+	newNode?: ITreeNode,
+	oldNode?: ITreeNode,
+) => Promise<void> | void;
+
+/**
+ * Redeclaration of SessionCreationDefinition to always have an id.
+ */
+export interface SessionCreateDto extends SessionCreationDefinition {
+	id: string;
+}
+
+export interface IShapeDiverStoreSessions {
+	[sessionId: string]: ISessionApi;
+}
+
+/**
+ * Callbacks related to IShapeDiverStore.
+ */
+export type IShapeDiverStoreSessionCallbacks = Pick<IEventTracking, "onError">;
+
+/**
+ * Interface for the store of viewer-related data.
+ */
+export interface IShapeDiverStoreSession {
+	/**
+	 * Sessions currently known by the store.
+	 */
+	sessions: IShapeDiverStoreSessions;
+
+	/**
+	 * Sessions that are created on first use.
+	 * These sessions are not created right away, but only when first used.
+	 */
+	pendingSessions: {
+		[sessionId: string]: {
+			dto: SessionCreateDto;
+			callbacks?: IShapeDiverStoreSessionCallbacks;
+		};
+	};
+
+	/**
+	 * Create a session and add it to the store.
+	 * The load parameter allows to create the session without loading it right away.
+	 * It stores the received data in the pending sessions and only loads it when created via createPendingSession.
+	 *
+	 * @param dto
+	 * @param callbacks
+	 * @param load Whether to load the session right away or store it. (default: true)
+	 * @returns
+	 */
+	createSession: (
+		dto: SessionCreateDto,
+		callbacks?: IShapeDiverStoreSessionCallbacks,
+		load?: boolean,
+	) => Promise<ISessionApi | undefined>;
+
+	/**
+	 * Create a session that is only created when first used.
+	 * This is useful for instances where many sessions are created but not all are used right away.
+	 * @param dto
+	 * @param callbacks
+	 * @returns
+	 */
+	createPendingSession: (
+		sessionId: string,
+	) => Promise<ISessionApi | undefined>;
+
+	/**
+	 * Close a session and remove it from the store.
+	 */
+	closeSession: (
+		sessionId: string,
+		callbacks?: IShapeDiverStoreSessionCallbacks,
+	) => Promise<void>;
+
+	/**
+	 * The session update callbacks.
+	 * Stores the callbacks for each session id with the corresponding callback id to be able to remove them.
+	 *
+	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/ISessionApi.html#updateCallback
+	 */
+	sessionUpdateCallbacks: {
+		// session id
+		[key: string]: {
+			// callback id
+			[key: string]: UpdateCallbackType;
+		};
+	};
+
+	/**
+	 * Add a session update callback.
+	 *
+	 * The callback is executed whenever the session is updated.
+	 * It will also be executed when it is added or removed as well.
+	 *
+	 * In the special cases that a session update callback is added before the session is created,
+	 * the callback will be executed when the session is created.
+	 *
+	 * @param sessionId The id of the session to add the callback to.
+	 * @param updateCallback The callback to add.
+	 * @returns A function to remove the callback.
+	 */
+	addSessionUpdateCallback: (
+		sessionId: string,
+		updateCallback: UpdateCallbackType,
+	) => () => void;
+
+	/**
+	 * The output update callbacks.
+	 * Stores the callbacks for each session id and output id with the corresponding callback id to be able to remove them.
+	 *
+	 * @see https://viewer.shapediver.com/v3/latest/api/interfaces/IOutputApi.html#updateCallback
+	 */
+	outputUpdateCallbacks: {
+		// session id
+		[key: string]: {
+			// output id
+			[key: string]: {
+				// callback id
+				[key: string]: UpdateCallbackType;
+			};
+		};
+	};
+
+	/**
+	 * Add an output update callback.
+	 *
+	 * The callback is executed whenever the output is updated.
+	 * It will also be executed when it is added or removed as well.
+	 *
+	 * In the special cases that an output update callback is added before the output is created,
+	 * the callback will be executed when the output is created.
+	 *
+	 * @param sessionId The id of the session to add the callback to.
+	 * @param outputId The id of the output to add the callback to.
+	 * @param updateCallback The callback to add.
+	 * @returns A function to remove the callback.
+	 */
+	addOutputUpdateCallback: (
+		sessionId: string,
+		outputId: string,
+		updateCallback: UpdateCallbackType,
+	) => () => void;
+}

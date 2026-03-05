@@ -1,11 +1,11 @@
-import {useIsLandscape} from "@AppBuilderShared/hooks/ui/useIsLandscape";
+import {useIsLandscape} from "@AppBuilderLib/shared/lib/useIsLandscape";
 import {
 	ResponsiveValueType,
 	useResponsiveValueSelector,
-} from "@AppBuilderShared/hooks/ui/useResponsiveValueSelector";
+} from "@AppBuilderLib/shared/lib/useResponsiveValueSelector";
 import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
-import {IAppBuilderTemplatePageProps} from "@AppBuilderShared/types/pages/appbuildertemplates";
-import {createGridLayout} from "@AppBuilderShared/utils/misc/layout";
+import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
+import {createGridLayout} from "@AppBuilderLib/shared/lib/layout";
 import {
 	AppShell,
 	AppShellResponsiveSize,

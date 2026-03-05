@@ -7,10 +7,10 @@ import {
 } from "@AppBuilderLib/entities/stargate";
 import {useNotificationStore} from "@AppBuilderLib/features";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {useShapeDiverStoreSession} from "@AppBuilderShared/store/useShapeDiverStoreSession";
-import {IShapeDiverOutputDefinition} from "@AppBuilderShared/types/shapediver/output";
-import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {IShapeDiverOutputDefinition} from "@AppBuilderLib/entities/output/config/output";
+import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
 import {
 	ITreeNode,
 	ShapeDiverResponseOutputChunk,

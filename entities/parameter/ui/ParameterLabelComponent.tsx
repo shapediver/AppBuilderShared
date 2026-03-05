@@ -1,0 +1,92 @@
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
+import {useParameter} from "@AppBuilderLib/entities/parameter/model/useParameter";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {
+	Group,
+	MantineThemeComponent,
+	TooltipProps,
+	useProps,
+} from "@mantine/core";
+
+import React from "react";
+interface Props extends PropsParameter {
+	cancel?: () => void;
+	rightSection?: React.ReactNode;
+	/** Optional label overriding the default label */
+	label?: string;
+}
+
+interface StyleProps {
+	tooltipProps: Partial<TooltipProps>;
+	fontWeight: string;
+}
+
+const defaultStyleProps: Partial<StyleProps> = {
+	tooltipProps: {
+		position: "top",
+		label: "Cancel change",
+	},
+};
+
+type ParameterLabelComponentPropsType = Partial<StyleProps>;
+
+export function ParameterLabelComponentThemeProps(
+	props: ParameterLabelComponentPropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+/**
+ * Functional component that creates a label for a parameter or .
+ *
+ * @returns
+ */
+export default function ParameterLabelComponent(
+	props: Props & Partial<StyleProps>,
+) {
+	const {cancel, rightSection, label, ...rest} = props;
+	const {fontWeight, tooltipProps} = useProps(
+		"ParameterLabelComponent",
+		defaultStyleProps,
+		rest,
+	);
+	const {definition} = useParameter<any>(props);
+	const {displayname, name, tooltip} = definition;
+	const label_ = label || displayname || name;
+
+	const labelcomp = (
+		<TextWeighted pb={4} size="sm" fontWeight="medium" fw={fontWeight}>
+			{label_}
+			{cancel ? " *" : ""}
+		</TextWeighted>
+	);
+
+	return (
+		<Group justify="space-between" w="100%" wrap="nowrap">
+			{tooltip ? (
+				<TooltipWrapper label={tooltip} position="top">
+					{labelcomp}
+				</TooltipWrapper>
+			) : (
+				labelcomp
+			)}
+			{cancel && (
+				<TooltipWrapper
+					{...tooltipProps}
+					label={tooltipProps?.label || "Cancel change"}
+				>
+					<Icon
+						iconType={"tabler:x"}
+						color="var(--mantine-primary-color-filled)"
+						onClick={cancel}
+					/>
+				</TooltipWrapper>
+			)}
+			{rightSection}
+		</Group>
+	);
+}

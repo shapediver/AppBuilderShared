@@ -5,7 +5,7 @@ import {
 import {useNotificationStore} from "@AppBuilderLib/features";
 import {Icon, IconProps, IconType} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
-import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderLib/types/shapediver/appbuilder";
+import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	ActionIcon,
 	ActionIconProps,

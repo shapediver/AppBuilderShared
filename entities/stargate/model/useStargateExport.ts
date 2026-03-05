@@ -7,9 +7,9 @@ import {
 } from "@AppBuilderLib/entities/stargate";
 import {useNotificationStore} from "@AppBuilderLib/features";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {IShapeDiverExportDefinition} from "@AppBuilderShared/types/shapediver/export";
-import {getParameterStates} from "@AppBuilderShared/utils/parameters/parameterStates";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
+import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export/config/export";
+import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
 import {ShapeDiverResponseExportContent} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
