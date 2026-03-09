@@ -14,11 +14,11 @@ import {
 	StargateStyleProps,
 } from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
+import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import ExportLabelComponent from "@AppBuilderShared/components/shapediver/exports/ExportLabelComponent";
-import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
-import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {useExport} from "@AppBuilderShared/hooks/shapediver/parameters/useExport";
 import {
 	ParameterValueDefinition,
@@ -28,7 +28,8 @@ import {useShapeDiverStoreProcessManager} from "@AppBuilderShared/store/useShape
 import {
 	IParameterValues,
 	PropsExportWithForm,
-} from "@AppBuilderShared/types/components/shapediver/propsExport";import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
+} from "@AppBuilderShared/types/components/shapediver/propsExport";
+import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderShared/types/shapediver/appbuilder";
 import {IProcessDefinition} from "@AppBuilderShared/types/store/shapediverStoreProcessManager";
 import {
 	Button,
@@ -290,7 +291,14 @@ export default function ExportButtonComponent(
 			errorReporting.captureMessage(errorMessage);
 			return false;
 		},
-		[actions, definition.type, isStargate, isContentSupported, notifications, errorReporting],
+		[
+			actions,
+			definition.type,
+			isStargate,
+			isContentSupported,
+			notifications,
+			errorReporting,
+		],
 	);
 
 	const [requestingExport, setRequestingExport] = useState(false);
@@ -355,7 +363,13 @@ export default function ExportButtonComponent(
 					resolveMainPromiseRef.current = undefined;
 				}
 			});
-	}, [parameterValueSourcesResults, exportRequest, resolveMainPromiseRef, onSuccess, onError]);
+	}, [
+		parameterValueSourcesResults,
+		exportRequest,
+		resolveMainPromiseRef,
+		onSuccess,
+		onError,
+	]);
 
 	// callback for when the export button has been clicked
 	const onClick = useCallback(
@@ -442,15 +456,12 @@ export default function ExportButtonComponent(
 	);
 
 	const onClickIntercepted = useCallback(
-		(skipStargate?: boolean) => {
-			return (event: React.MouseEvent) => {
-				const cb = async (values?: IParameterValues) => {
-					return interceptClick
-						? interceptClick(() => onClick(skipStargate, values))
-						: onClick(skipStargate, values);
-				};
-				return form ? form.onSubmit(cb)(event as any) : cb();
-			};
+		(skipStargate?: boolean) => (event: React.MouseEvent) => {
+			const cb = (values?: IParameterValues) =>
+				interceptClick
+					? interceptClick(() => onClick(skipStargate, values))
+					: onClick(skipStargate, values);
+			return form ? form.onSubmit(cb)(event as any) : cb();
 		},
 		[onClick, interceptClick, form],
 	);
@@ -474,7 +485,7 @@ export default function ExportButtonComponent(
 							isWaiting={requestingExport || isWaiting}
 							waitingText="Waiting for export..."
 							disabled={statusData.disabled}
-							onClick={() => onClickIntercepted()}
+							onClick={onClickIntercepted()}
 						/>
 						<TooltipWrapper
 							{...downloadTooltipProps}
@@ -484,7 +495,7 @@ export default function ExportButtonComponent(
 						>
 							<Button
 								{...downloadButtonProps}
-								onClick={() => onClickIntercepted(true)}
+								onClick={onClickIntercepted(true)}
 								loading={requestingExport}
 							>
 								<Icon iconType={"tabler:download"} />
