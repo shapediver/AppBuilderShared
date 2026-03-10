@@ -31,23 +31,33 @@ interface Props {
 
 interface StyleProps {
 	buttonProps?: ButtonProps;
+	loadingButtonProps?: ButtonProps;
 	textProps?: TextProps;
 	loaderProps?: LoaderProps;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {
 	buttonProps: {
-		variant: "outline",
-		justify: "space-between",
+		variant: "filled",
 		fullWidth: true,
-		h: "60px",
-		pr: "md",
+		justify: "space-between",
+	},
+	loadingButtonProps: {
+		disabled: true,
+		fullWidth: true,
+		justify: "space-between",
+		style: {
+			backgroundColor: "transparent",
+		},
 	},
 	textProps: {
-		size: "xs",
+		size: "sm",
+		c: "dimmed",
+		fs: "italic",
 	},
 	loaderProps: {
-		size: "xs",
+		type: "dots",
+		size: "sm",
 	},
 };
 
@@ -63,35 +73,35 @@ export function StargateInputThemeProps(
  * StargateInput component
  */
 export default function StargateInput(props: Props & StyleProps) {
-	const {
-		buttonProps,
-		textProps,
-		loaderProps,
-		disabled,
-		message,
-		icon,
-		color,
-		onClick,
-		isWaiting,
-		waitingText,
-	} = useProps("StargateInput", defaultStyleProps, props);
-
-	const iconOrLoader = isWaiting ? (
-		<Loader {...loaderProps} />
-	) : (
-		<Icon iconType={icon} size="1.5rem" />
+	const {buttonProps, loadingButtonProps, textProps, loaderProps} = useProps(
+		"StargateInput",
+		defaultStyleProps,
+		props,
 	);
+
+	const {icon, color, message, onClick, isWaiting, waitingText, disabled} =
+		props;
+
+	if (isWaiting) {
+		return (
+			<Button
+				{...loadingButtonProps}
+				rightSection={<Loader {...loaderProps} />}
+			>
+				<Text {...textProps}>{waitingText}</Text>
+			</Button>
+		);
+	}
 
 	return (
 		<Button
 			{...buttonProps}
-			leftSection={
-				<Text {...textProps}>{isWaiting ? waitingText : message}</Text>
-			}
-			rightSection={iconOrLoader}
 			color={color}
 			disabled={disabled}
+			rightSection={<Icon iconType={icon} />}
 			onClick={onClick}
-		/>
+		>
+			{message}
+		</Button>
 	);
 }
