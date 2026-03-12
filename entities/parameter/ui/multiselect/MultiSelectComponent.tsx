@@ -1,13 +1,13 @@
 import {
-	ISelectComponentItemDataType,
-	SelectComponentType,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import React from "react";
-import {
 	SelectComponentProps,
 	SelectComponentSettings,
 } from "@AppBuilderLib/entities/parameter/ui/select/SelectComponent";
 import SelectDropDownComponent from "@AppBuilderLib/entities/parameter/ui/select/SelectDropDownComponent";
+import {
+	ISelectComponentItemDataType,
+	SelectComponentType,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import React from "react";
 import SelectButtonFlexComponent from "../select/SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "../select/SelectButtonGroupComponent";
 import SelectCarouselComponent from "../select/SelectCarouselComponent";

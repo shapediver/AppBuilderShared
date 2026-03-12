@@ -13,12 +13,12 @@ import {
 	StargateStyleProps,
 } from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
+import {useProps} from "@mantine/core";
+import React, {useContext, useMemo} from "react";
 import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,
 } from "../config/output";
-import {useProps} from "@mantine/core";
-import React, {useContext, useMemo} from "react";
 import OutputChunkLabelComponent from "./OutputChunkLabelComponent";
 
 interface Props {

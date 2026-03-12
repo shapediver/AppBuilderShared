@@ -1,18 +1,16 @@
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
-import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
-import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
-import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
-import {useGumball} from "../model/interaction/useGumball";
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
+import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {
 	Box,
 	Button,
@@ -29,6 +27,8 @@ import {
 	validateGumballParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useGumball} from "../model/interaction/useGumball";
+import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**

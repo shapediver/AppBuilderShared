@@ -1,1 +1,1 @@
-export { default as ToggleIcon, IconThemeProps } from "./ToggleIcon";
+export {IconThemeProps, default as ToggleIcon} from "./ToggleIcon";

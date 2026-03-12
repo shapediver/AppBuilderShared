@@ -1,6 +1,3 @@
-import ModalBase, {
-	ModalBaseProps,
-} from "./ModalBase";
 import {
 	NumberInput,
 	NumberInputProps,
@@ -10,6 +7,7 @@ import {
 	TextProps,
 } from "@mantine/core";
 import React from "react";
+import ModalBase, {ModalBaseProps} from "./ModalBase";
 
 interface Props {
 	/**

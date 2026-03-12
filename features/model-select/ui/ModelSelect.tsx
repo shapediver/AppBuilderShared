@@ -1,21 +1,21 @@
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {useSessionPropsExport} from "@AppBuilderLib/entities/export/model/useSessionPropsExport";
+import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
 import AcceptRejectButtons from "@AppBuilderLib/entities/parameter/ui/AcceptRejectButtons";
-import ParametersAndExportsAccordionComponent from "@AppBuilderLib/widgets/appbuilder/ui/ParametersAndExportsAccordionComponent";
+import {IShapeDiverExampleModels} from "@AppBuilderLib/entities/session/config/examplemodel";
+import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
+import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
+import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
-import {useSessionPropsExport} from "@AppBuilderLib/entities/export/model/useSessionPropsExport";
-import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
-import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
-import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
+import ParametersAndExportsAccordionComponent from "@AppBuilderLib/widgets/appbuilder/ui/ParametersAndExportsAccordionComponent";
+import {MultiSelect, Notification} from "@mantine/core";
+import React, {useMemo} from "react";
 import {
 	ISelectedModel,
 	useModelSelectStore,
 } from "../model/useModelSelectStore";
-import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {IShapeDiverExampleModels} from "@AppBuilderLib/entities/session/config/examplemodel";
-import {MultiSelect, Notification} from "@mantine/core";
-import React, {useMemo} from "react";
 
 interface Props {
 	exampleModels: IShapeDiverExampleModels;

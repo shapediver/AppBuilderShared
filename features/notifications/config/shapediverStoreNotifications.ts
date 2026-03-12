@@ -128,8 +128,7 @@ export interface INotificationStoreState {
  * Complete interface for the notification store.
  */
 export interface IShapeDiverStoreNotifications
-	extends INotificationStoreState,
-		INotificationStoreActions {}
+	extends INotificationStoreState, INotificationStoreActions {}
 
 /**
  * Type guard to check if notification is a custom notification.

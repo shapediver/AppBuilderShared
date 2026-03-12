@@ -1,4 +1,6 @@
+import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
+import {useStackContext} from "@AppBuilderLib/features/appbuilder/model/useStackContext";
 import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
 import {
 	Box,
@@ -13,8 +15,6 @@ import {
 } from "@mantine/core";
 import React, {useContext} from "react";
 import AppBuilderWidgetsComponent from "../AppBuilderWidgetsComponent";
-import {useStackContext} from "@AppBuilderLib/features/appbuilder/model/useStackContext";
-import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import AppBuilderStackUiWidgetComponent from "./AppBuilderStackUiWidgetComponent";
 
 export interface StyleProps {

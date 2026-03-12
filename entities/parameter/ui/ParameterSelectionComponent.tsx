@@ -1,18 +1,16 @@
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
 import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
-import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
-import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
-import {useSelection} from "../model/interaction/useSelection";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {
 	ActionIcon,
 	Box,
@@ -30,6 +28,8 @@ import {
 	validateSelectionParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useSelection} from "../model/interaction/useSelection";
+import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**

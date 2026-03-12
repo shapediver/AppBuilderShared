@@ -75,7 +75,7 @@ export function buildAppBuilderUrl(data: IAppBuilderUrlBuilderData): string {
 
 	const url = new URL(
 		baseUrl.startsWith("https://appbuilder.shapediver.com") &&
-		!baseUrl.endsWith("/")
+			!baseUrl.endsWith("/")
 			? baseUrl + "/"
 			: baseUrl,
 	);

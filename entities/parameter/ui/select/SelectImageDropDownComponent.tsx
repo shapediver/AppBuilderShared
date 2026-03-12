@@ -1,5 +1,5 @@
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	Combobox,
 	Group,

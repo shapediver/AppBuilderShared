@@ -1,3 +1,4 @@
+export * from "./attributeVisualization";
 export * from "./useAgent";
 export * from "./useAppBuilderCustomParameters";
 export * from "./useAppBuilderInstances";
@@ -12,4 +13,3 @@ export * from "./useShapeDiverStoreAttributeVisualization";
 export * from "./useShapeDiverStoreInstances";
 export * from "./useShapeDiverStoreStandardContainers";
 export * from "./useStackContext";
-export * from "./attributeVisualization";

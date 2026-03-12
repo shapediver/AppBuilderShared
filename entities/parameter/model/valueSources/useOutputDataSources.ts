@@ -1,9 +1,9 @@
-import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
-import {IAppBuilderParameterValueSourcePropsDataOutput} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {IShapeDiverOutput} from "@AppBuilderLib/entities/output/config/output";
+import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
+import {useOutputs} from "@AppBuilderLib/entities/output/model/useOutputs";
+import {IAppBuilderParameterValueSourcePropsDataOutput} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useEffect, useMemo, useState} from "react";
-import {useOutputs} from "@AppBuilderLib/entities/output/model/useOutputs";
 
 /**
  * Hook to load an array of output value sources and return their values mapped by source name.

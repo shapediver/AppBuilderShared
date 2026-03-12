@@ -1,5 +1,3 @@
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
-import {ViewportIconButtonEnum} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
 import {
 	IShapeDiverViewportIconsStore,
 	ViewportIconButton,
@@ -7,6 +5,8 @@ import {
 	ViewportIconLayoutItemEnum,
 	ViewportIconViewportState,
 } from "@AppBuilderLib/entities/viewport/config/shapediverStoreViewportIcons";
+import {ViewportIconButtonEnum} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

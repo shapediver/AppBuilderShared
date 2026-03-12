@@ -1,4 +1,3 @@
-import {useDrawingOptionsStore} from "./useDrawingOptionsStore";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
 	createDrawingTools,
@@ -11,6 +10,7 @@ import {
 	Settings,
 } from "@shapediver/viewer.features.drawing-tools";
 import {useEffect, useState} from "react";
+import {useDrawingOptionsStore} from "./useDrawingOptionsStore";
 
 // #region Variables (1)
 

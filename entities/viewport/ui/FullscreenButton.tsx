@@ -1,6 +1,6 @@
 import {useFullscreen} from "@AppBuilderLib/entities/viewport/model/useFullscreen";
-import React from "react";
 import {isIPhone} from "@AppBuilderLib/shared/lib/navigator";
+import React from "react";
 import {CommonButtonProps} from "../config/types";
 import ViewportIconButton from "./ViewportIconButton";
 

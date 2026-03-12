@@ -1,5 +1,3 @@
-import {useGumballEvents} from "./useGumballEvents";
-import {useSelection} from "./useSelection";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
@@ -20,6 +18,8 @@ import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useMemo, useRef} from "react";
 import {useRestrictions} from "../drawing/useRestrictions";
 import {useConvertDraggingData} from "./useConvertDraggingData";
+import {useGumballEvents} from "./useGumballEvents";
+import {useSelection} from "./useSelection";
 
 // #region Functions (1)
 

@@ -1,8 +1,8 @@
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
-import {IAppBuilderLegacyActionPropsMessageToParent} from "../config/appbuilder";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import React, {useCallback, useState} from "react";
+import {IAppBuilderLegacyActionPropsMessageToParent} from "../config/appbuilder";
+import AppBuilderActionComponent from "./AppBuilderActionComponent";
 
 /**
  * Functional component for an "messageToParent" action.

@@ -1,5 +1,5 @@
-import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**
  * Hook providing a shortcut to abstracted parameters managed by {@link useShapeDiverStoreParameters}.

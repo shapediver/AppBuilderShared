@@ -1,2 +1,2 @@
-export { default as OverlayWrapper, OverlayPosition } from "./OverlayWrapper";
-export type { OverlayStyleProps, OverlayPositionType } from "./OverlayWrapper";
+export {OverlayPosition, default as OverlayWrapper} from "./OverlayWrapper";
+export type {OverlayPositionType, OverlayStyleProps} from "./OverlayWrapper";

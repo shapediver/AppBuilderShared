@@ -36,8 +36,7 @@ export interface IPassiveInteractionRequest extends IInteractionRequest {
 	enable: () => void;
 }
 
-export interface IActiveInteractionRequestStored
-	extends IActiveInteractionRequest {
+export interface IActiveInteractionRequestStored extends IActiveInteractionRequest {
 	/**
 	 * A unique token for the interaction request.
 	 * This is used to identify the request when removing it from the store.
@@ -45,8 +44,7 @@ export interface IActiveInteractionRequestStored
 	token: string;
 }
 
-export interface IPassiveInteractionRequestStored
-	extends IPassiveInteractionRequest {
+export interface IPassiveInteractionRequestStored extends IPassiveInteractionRequest {
 	/**
 	 * A unique token for the interaction request.
 	 * This is used to identify the request when removing it from the store.

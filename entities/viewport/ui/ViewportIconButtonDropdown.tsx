@@ -1,5 +1,3 @@
-import useIconMenu from "../model/useIconMenu";
-import {ViewportTransparentBackgroundStyle} from "../config/viewport";
 import {
 	MantineThemeComponent,
 	Menu,
@@ -8,10 +6,15 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
+import {
+	CommonButtonProps,
+	ViewportIconButtonDropdownSections,
+} from "../config/types";
+import {ViewportTransparentBackgroundStyle} from "../config/viewport";
+import useIconMenu from "../model/useIconMenu";
 import ViewportIconButton, {
 	ViewportIconButtonProps,
 } from "./ViewportIconButton";
-import {CommonButtonProps, ViewportIconButtonDropdownSections} from "../config/types";
 
 interface ViewportIconButtonDropdownProps extends CommonButtonProps {
 	disabled?: boolean;

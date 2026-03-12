@@ -1,8 +1,3 @@
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
-import {
-	EventActionEnum,
-	IEventTracking,
-} from "@AppBuilderLib/shared/config/eventTracking";
 import {
 	IShapeDiverExport,
 	IShapeDiverExportDefinition,
@@ -38,10 +33,16 @@ import {
 	ISessionsHistoryState,
 	IShapeDiverStoreParameters,
 } from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {addValidator} from "@AppBuilderLib/entities/parameter/lib/parameterValidation";
+import {
+	EventActionEnum,
+	IEventTracking,
+} from "@AppBuilderLib/shared/config/eventTracking";
 import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {removeStatesFromUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
-import {addValidator} from "@AppBuilderLib/entities/parameter/lib/parameterValidation";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {ReqCustomization, ReqExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	addListener,
@@ -59,7 +60,6 @@ import {
 import {produce} from "immer";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter,

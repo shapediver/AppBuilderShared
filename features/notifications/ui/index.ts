@@ -1,3 +1,6 @@
-export {default as NotificationModelStateCreated} from "./NotificationModelStateCreated";
 export * from "./NotificationModelStateCreated";
-export {default as NotificationWrapper, NotificationWrapperThemeProps} from "./NotificationWrapper";
+export {default as NotificationModelStateCreated} from "./NotificationModelStateCreated";
+export {
+	default as NotificationWrapper,
+	NotificationWrapperThemeProps,
+} from "./NotificationWrapper";

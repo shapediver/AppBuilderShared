@@ -1,7 +1,7 @@
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
-import {IAppBuilderLegacyActionPropsSound} from "../config/appbuilder";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import React, {useCallback, useEffect, useRef, useState} from "react";
+import {IAppBuilderLegacyActionPropsSound} from "../config/appbuilder";
+import AppBuilderActionComponent from "./AppBuilderActionComponent";
 
 type Props = IAppBuilderLegacyActionPropsSound;
 

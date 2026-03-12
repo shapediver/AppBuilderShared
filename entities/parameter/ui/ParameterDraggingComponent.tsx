@@ -1,18 +1,16 @@
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
-import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
-import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
-import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
-import {useDragging} from "../model/interaction/useDragging";
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
+import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
 import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
 import {
@@ -21,6 +19,8 @@ import {
 	validateDraggingParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useDragging} from "../model/interaction/useDragging";
+import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**

@@ -1,5 +1,5 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {IShapeDiverOutputDefinition} from "../config/output";
 
 /**

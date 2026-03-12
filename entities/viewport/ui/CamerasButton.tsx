@@ -1,8 +1,8 @@
 import {firstLetterUppercase} from "@AppBuilderLib/shared/lib/strings";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React from "react";
-import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 import {CommonButtonProps} from "../config/types";
+import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 
 interface CamerasButtonProps extends CommonButtonProps {
 	viewport?: IViewportApi;

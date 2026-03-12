@@ -1,7 +1,7 @@
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {IParameterChanges} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderLib/entities/viewport/config/viewport";
-import {IParameterChanges} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {
 	alpha,
 	Button,

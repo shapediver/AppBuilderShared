@@ -1,5 +1,5 @@
-import {useShapeDiverStoreViewport} from "./useShapeDiverStoreViewport";
 import {useEffect, useState} from "react";
+import {useShapeDiverStoreViewport} from "./useShapeDiverStoreViewport";
 
 /**
  * Hook to get the viewport canvas

@@ -1,10 +1,10 @@
-import ModelCardOverlay from "./ModelCardOverlay";
-import ModelStatusIcon from "./ModelStatusIcon";
-import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {TModelItem} from "@AppBuilderLib/entities/model-card/config/shapediverStorePlatformModels";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {Anchor, Card, Group, Image, Pill, px, Text} from "@mantine/core";
 import React, {useMemo} from "react";
 import classes from "./ModelCard.module.css";
+import ModelCardOverlay from "./ModelCardOverlay";
+import ModelStatusIcon from "./ModelStatusIcon";
 
 export interface IModelCardProps {
 	/** If true, show information about the owner of the model. Defaults to true. */

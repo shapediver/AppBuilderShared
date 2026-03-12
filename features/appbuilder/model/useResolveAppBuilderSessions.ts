@@ -6,19 +6,19 @@ import {
 import useAsync from "@AppBuilderLib/shared/lib/useAsync";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
-	IAppBuilderSettingsJsonSession,
-	IAppBuilderSettingsSession,
-} from "../config/appbuilder";
-import {
 	SdPlatformModelGetEmbeddableFields,
 	SdPlatformResponseModelPublic,
 	create,
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {useShallow} from "zustand/react/shallow";
+import {
+	IAppBuilderSettingsJsonSession,
+	IAppBuilderSettingsSession,
+} from "../config/appbuilder";
 
+import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderLib/features/model-state/model/useShapeDiverStorePlatformSavedStates";
 import {QUERYPARAM_REDIRECT} from "@AppBuilderLib/shared/config/queryparams";
 import {MODELS} from "@modelstorage";
-import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderLib/features/model-state/model/useShapeDiverStorePlatformSavedStates";
 
 // Type assertion for MODELS
 const ModelStorage = MODELS as unknown as Record<

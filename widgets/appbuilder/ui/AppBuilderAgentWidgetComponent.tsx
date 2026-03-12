@@ -1,4 +1,11 @@
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {IAppBuilderWidgetPropsAgent} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {
+	DEFAULT_SYSTEM_PROMPT,
+	useAgent,
+} from "@AppBuilderLib/features/appbuilder/model/useAgent";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {
 	QUERYPARAM_DEBUG,
@@ -10,20 +17,10 @@ import {
 	QUERYPARAM_OPENAI_API_KEY,
 	QUERYPARAM_SLUG,
 } from "@AppBuilderLib/shared/config/queryparams";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
-import {
-	DEFAULT_SYSTEM_PROMPT,
-	useAgent,
-} from "@AppBuilderLib/features/appbuilder/model/useAgent";
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
-import {
-	AppBuilderAgentWidgetComponentProps,
-	AppBuilderAgentWidgetThemePropsType,
-} from "../config/appBuilderAgentWidget";
-import {IAppBuilderWidgetPropsAgent} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	ActionIcon,
 	Box,
@@ -49,7 +46,10 @@ import React, {
 	useState,
 } from "react";
 import {useShallow} from "zustand/react/shallow";
-import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
+import {
+	AppBuilderAgentWidgetComponentProps,
+	AppBuilderAgentWidgetThemePropsType,
+} from "../config/appBuilderAgentWidget";
 import AppBuilderImage from "./AppBuilderImage";
 
 /** Default values for component properties. */

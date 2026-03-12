@@ -1,8 +1,8 @@
-import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
-import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**
  * Hook providing a shortcut to multiple abstracted parameters managed by {@link useShapeDiverStoreParameters}.

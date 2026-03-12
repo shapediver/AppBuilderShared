@@ -1,10 +1,3 @@
-import {CrossWindowApiFactory} from "@AppBuilderLib/shared/lib/crosswindowapi/crosswindowapi";
-import {
-	ICrossWindowApi,
-	ICrossWindowApiOptions,
-	ICrossWindowFactory,
-	ICrossWindowPeerInfo,
-} from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import {
 	IAddItemToCartData,
 	IAddItemToCartReply,
@@ -26,6 +19,13 @@ import {
 	IUpdateSharingLinkData,
 	IUpdateSharingLinkReply,
 } from "@AppBuilderLib/features/ecommerce/config/ecommerceapi";
+import {
+	ICrossWindowApi,
+	ICrossWindowApiOptions,
+	ICrossWindowFactory,
+	ICrossWindowPeerInfo,
+} from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
+import {CrossWindowApiFactory} from "@AppBuilderLib/shared/lib/crosswindowapi/crosswindowapi";
 import {applyModelStateToUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
 
 // Message types for the API calls from application to connector.

@@ -1,14 +1,3 @@
-import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";
-import AppBuilderAccordionWidgetComponent from "./AppBuilderAccordionWidgetComponent";
-import AppBuilderActionsWidgetComponent from "./AppBuilderActionsWidgetComponent";
-import AppBuilderAreaChartWidgetComponent from "./AppBuilderAreaChartWidgetComponent";
-import AppBuilderBarChartWidgetComponent from "./AppBuilderBarChartWidgetComponent";
-import AppBuilderImageWidgetComponent from "./AppBuilderImageWidgetComponent";
-import AppBuilderLineChartWidgetComponent from "./AppBuilderLineChartWidgetComponent";
-import AppBuilderProgressWidgetComponent from "./AppBuilderProgressWidgetComponent";
-import AppBuilderRoundChartWidgetComponent from "./AppBuilderRoundChartWidgetComponent";
-import AppBuilderTextWidgetComponent from "./AppBuilderTextWidgetComponent";
 import {
 	IAppBuilderWidget,
 	isAccordionUiWidget,
@@ -29,14 +18,25 @@ import {
 	isStackUiWidget,
 	isTextWidget,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
-import AppBuilderSavedStatesWidgetComponent from "./AppBuilderSavedStatesWidgetComponent";
-import AppBuilderStackUiWidgetButtonComponent from "./AppBuilderStackUiWidget/AppBuilderStackUiWidgetButtonComponent";
+import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";
+import AppBuilderAccordionWidgetComponent from "./AppBuilderAccordionWidgetComponent";
+import AppBuilderActionsWidgetComponent from "./AppBuilderActionsWidgetComponent";
+import AppBuilderAreaChartWidgetComponent from "./AppBuilderAreaChartWidgetComponent";
+import AppBuilderBarChartWidgetComponent from "./AppBuilderBarChartWidgetComponent";
 import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetComponent";
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
 import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
 import AppBuilderFormWidgetComponent from "./AppBuilderFormWidgetComponent";
+import AppBuilderImageWidgetComponent from "./AppBuilderImageWidgetComponent";
+import AppBuilderLineChartWidgetComponent from "./AppBuilderLineChartWidgetComponent";
+import AppBuilderProgressWidgetComponent from "./AppBuilderProgressWidgetComponent";
+import AppBuilderRoundChartWidgetComponent from "./AppBuilderRoundChartWidgetComponent";
+import AppBuilderSavedStatesWidgetComponent from "./AppBuilderSavedStatesWidgetComponent";
+import AppBuilderStackUiWidgetButtonComponent from "./AppBuilderStackUiWidget/AppBuilderStackUiWidgetButtonComponent";
+import AppBuilderTextWidgetComponent from "./AppBuilderTextWidgetComponent";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(
 	() => import("./AppBuilderAgentWidgetComponent"),
 );

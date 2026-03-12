@@ -10,6 +10,6 @@ export * from "./useHoverManager";
 export * from "./useHoverManagerEvents";
 export * from "./useInteractionEngine";
 export * from "./useNodeInteractionData";
+export * from "./useSelection";
 export * from "./useSelectManager";
 export * from "./useSelectManagerEvents";
-export * from "./useSelection";

@@ -1,9 +1,9 @@
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {Attributes} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useConvertAttributeInputData";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {IAttributeDefinition} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAttributeVisualizationWidgetComponent";
 import {ActionIcon, Stack, Table} from "@mantine/core";
 import {ISDTFAttributeData} from "@shapediver/viewer.session";
 import React, {useMemo} from "react";
-import {IAttributeDefinition} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAttributeVisualizationWidgetComponent";
 import classes from "./SelectedAttributeComponent.module.css";
 
 type Props = {

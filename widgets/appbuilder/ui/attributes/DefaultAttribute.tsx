@@ -1,10 +1,10 @@
-import BaseAttribute from "./BaseAttribute";
-import {useShapeDiverStoreAttributeVisualization} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreAttributeVisualization";
 import {IDefaultAttributeCustomData} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreAttributeVisualization";
+import {useShapeDiverStoreAttributeVisualization} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreAttributeVisualization";
 import {ColorInput} from "@mantine/core";
 import {IDefaultAttribute} from "@shapediver/viewer.features.attribute-visualization";
 import React, {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import BaseAttribute from "./BaseAttribute";
 
 export type IDefaultAttributeExtended = Omit<IDefaultAttribute, "color"> &
 	Partial<Pick<IDefaultAttribute, "color">> &

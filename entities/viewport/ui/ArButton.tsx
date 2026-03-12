@@ -3,9 +3,9 @@ import {Loader, Modal, Text} from "@mantine/core";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React, {useState} from "react";
-import classes from "./ViewportIcons.module.css";
 import {CommonButtonProps, IconProps} from "../config/types";
 import ViewportIconButton from "./ViewportIconButton";
+import classes from "./ViewportIcons.module.css";
 
 interface ArButtonProps extends CommonButtonProps {
 	viewport?: IViewportApi;

@@ -1,9 +1,5 @@
-import AppBuilderActionAddToCartComponent from "./AppBuilderActionAddToCartComponent";
-import AppBuilderActionCloseConfiguratorComponent from "./AppBuilderActionCloseConfiguratorComponent";
-import AppBuilderActionCreateModelStateComponent from "./AppBuilderActionCreateModelStateComponent";
-import AppBuilderActionSetBrowserLocationComponent from "./AppBuilderActionSetBrowserLocationComponent";
-import AppBuilderActionSetParameterValuesComponent from "./AppBuilderActionSetParameterValuesComponent";
 import {IComponentContext} from "@AppBuilderShared/shared";
+import React from "react";
 import {
 	IAppBuilderControlActionRef,
 	isAddToCartAction,
@@ -15,8 +11,12 @@ import {
 	isSetParameterValuesAction,
 	isSoundAction,
 } from "../config/appbuilder";
-import React from "react";
+import AppBuilderActionAddToCartComponent from "./AppBuilderActionAddToCartComponent";
+import AppBuilderActionCloseConfiguratorComponent from "./AppBuilderActionCloseConfiguratorComponent";
+import AppBuilderActionCreateModelStateComponent from "./AppBuilderActionCreateModelStateComponent";
 import AppBuilderActionMessageToParentComponent from "./AppBuilderActionMessageToParentComponent";
+import AppBuilderActionSetBrowserLocationComponent from "./AppBuilderActionSetBrowserLocationComponent";
+import AppBuilderActionSetParameterValuesComponent from "./AppBuilderActionSetParameterValuesComponent";
 import AppBuilderActionSoundComponent from "./AppBuilderActionSoundComponent";
 
 export function AppBuilderActionFromType(

@@ -1,13 +1,7 @@
-import {IconType} from "@AppBuilderLib/shared/ui/icon";
-import {
-	IAppBuilderWidgetPropsAreaChart,
-	IAppBuilderWidgetPropsBarChart,
-	IAppBuilderWidgetPropsLineChart,
-	IAppBuilderWidgetPropsRoundChart,
-} from "./appbuildercharts";
 import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export/config/export";
 import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {SessionCreateDto} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
+import {IconType} from "@AppBuilderLib/shared/ui/icon";
 import {MantineColor, SliderProps} from "@mantine/core";
 import {
 	ISelectionParameterProps,
@@ -19,6 +13,12 @@ import {
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 } from "@shapediver/viewer.shared.types";
+import {
+	IAppBuilderWidgetPropsAreaChart,
+	IAppBuilderWidgetPropsBarChart,
+	IAppBuilderWidgetPropsLineChart,
+	IAppBuilderWidgetPropsRoundChart,
+} from "./appbuildercharts";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {

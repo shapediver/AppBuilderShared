@@ -1,11 +1,11 @@
+import {IAppBuilderStackContextElement} from "@AppBuilderLib/features/appbuilder/lib/StackContext.types";
 import {MantineThemeComponent} from "@mantine/core";
 import React from "react";
-import {StyleProps as StylePropsButton} from "./AppBuilderStackUiWidgetButtonComponent";
 import {AppBuilderStackUiWidgetAnimationWrapper} from "./AppBuilderStackUiWidgetAnimationWrapper";
+import {StyleProps as StylePropsButton} from "./AppBuilderStackUiWidgetButtonComponent";
 import AppBuilderStackUiWidgetContentComponent, {
 	StyleProps as StylePropsContent,
 } from "./AppBuilderStackUiWidgetContentComponent";
-import {IAppBuilderStackContextElement} from "@AppBuilderLib/features/appbuilder/lib/StackContext.types";
 
 interface Props {
 	namespace: string;

@@ -1,18 +1,18 @@
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
-import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
-import {useFocus} from "@AppBuilderLib/entities/parameter/model/useFocus";
-import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useFocus} from "@AppBuilderLib/entities/parameter/model/useFocus";
+import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
+import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
 import {
 	ColorFormatType,
 	convertFromSdColor,
 	convertToSdColor,
 } from "@AppBuilderLib/shared/lib/colors";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {
 	ActionIcon,
 	ColorInput,

@@ -1,12 +1,12 @@
-import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
 import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useShallow} from "zustand/react/shallow";
 import {
 	IShapeDiverParamOrExportDefinition,
 	IShapeDiverParamOrExportOrOutputDefinition,
 } from "../config/common";
-import {useShallow} from "zustand/react/shallow";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**
  * The definition of a parameter, export, or output, and the corresponding properties.

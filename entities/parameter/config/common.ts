@@ -20,8 +20,7 @@ export interface IShapeDiverParamOrExportOrOutputDefinition {
 	readonly hidden: boolean;
 }
 
-export interface IShapeDiverParamOrExportDefinition
-	extends IShapeDiverParamOrExportOrOutputDefinition {
+export interface IShapeDiverParamOrExportDefinition extends IShapeDiverParamOrExportOrOutputDefinition {
 	/** The type of parameter or export. */
 	readonly type: string;
 

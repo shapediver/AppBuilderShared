@@ -1,9 +1,9 @@
-import {IGenericParameterDefinition} from "../config/shapediverStoreParameters";
 import {
 	ResParameter,
 	ResParameterType,
 	ResVisualizationType,
 } from "@shapediver/sdk.geometry-api-sdk-v2";
+import {IGenericParameterDefinition} from "../config/shapediverStoreParameters";
 
 export function addValidator(
 	def: IGenericParameterDefinition,

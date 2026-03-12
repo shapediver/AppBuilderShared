@@ -1,7 +1,4 @@
-import {
-	AppBuilderContainerNameType,
-	IAppBuilderContainer,
-} from "./appbuilder";
+import {AppBuilderContainerNameType, IAppBuilderContainer} from "./appbuilder";
 
 /**
  * Type representing the standard container names in the app builder.

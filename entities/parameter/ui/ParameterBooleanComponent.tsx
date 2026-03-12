@@ -1,11 +1,11 @@
-import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
-import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
-import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
+import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
 import {Switch, useProps} from "@mantine/core";
 import React from "react";
 
