@@ -10,6 +10,7 @@ export {
 	ReloadButton,
 	UndoButton,
 	ViewportComponent,
+	ViewportIconButtonComponent,
 	ViewportIconButtonDropdown,
 	ViewportIconButtonDropdownThemeProps,
 	ViewportIconButtonThemeProps,

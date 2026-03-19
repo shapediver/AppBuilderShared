@@ -1,7 +1,7 @@
-import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
-import {QUERYPARAM_MODELSTATEID} from "@AppBuilderLib/shared/config/queryparams";
-import Hint from "@AppBuilderLib/shared/ui/hint/Hint";
-import ModalBase from "@AppBuilderLib/shared/ui/modal/ModalBase";
+import {useImportModelState} from "@AppBuilderLib/features/model-state";
+import {QUERYPARAM_MODELSTATEID} from "@AppBuilderLib/shared/config";
+import {Hint} from "@AppBuilderLib/shared/ui/hint";
+import {ModalBase} from "@AppBuilderLib/shared/ui/modal";
 import {Stack, TextInput} from "@mantine/core";
 import React, {useCallback, useState} from "react";
 

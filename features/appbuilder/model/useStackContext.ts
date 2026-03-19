@@ -1,4 +1,4 @@
-import {IAppBuilderStackContextElement} from "@AppBuilderLib/features/appbuilder/lib/StackContext.types";
+import {IAppBuilderStackContextElement} from "@AppBuilderLib/features/appbuilder";
 import {useCallback, useMemo, useState} from "react";
 
 export const useStackContext = (animationDurationMs: number = 300) => {

@@ -1,13 +1,13 @@
 import {
 	defaultPropsParameterWrapper,
+	ParameterLabelComponent,
+	ParameterWrapperComponent,
 	PropsParameterComponent,
 	PropsParameterWrapper,
-} from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {useFocus} from "@AppBuilderLib/entities/parameter/model/useFocus";
-import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
-import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
-import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
-import {validateNumberParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuildertypecheck";
+	useFocus,
+	useParameterComponentCommons,
+} from "@AppBuilderLib/entities/parameter";
+import {validateNumberParameterSettings} from "@AppBuilderLib/features/appbuilder";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	Group,

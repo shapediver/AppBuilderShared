@@ -1,6 +1,6 @@
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React from "react";
-import {CommonButtonProps} from "../config/types";
+import {CommonButtonProps} from "../config";
 import ViewportIconButton from "./ViewportIconButton";
 
 interface ZoomButtonProps extends CommonButtonProps {

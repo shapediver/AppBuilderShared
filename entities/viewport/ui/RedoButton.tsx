@@ -1,6 +1,6 @@
 import React from "react";
-import {CommonButtonProps} from "../config/types";
-import {useViewportHistory} from "../model/useViewportHistory";
+import {CommonButtonProps} from "../config";
+import {useViewportHistory} from "../model";
 import ViewportIconButton from "./ViewportIconButton";
 
 interface RedoButtonProps extends CommonButtonProps {

@@ -1,4 +1,4 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
 import {
 	checkNodeNameMatch,
 	InteractionData,

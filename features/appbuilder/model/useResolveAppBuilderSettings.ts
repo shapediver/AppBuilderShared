@@ -1,8 +1,5 @@
 import {useMemo} from "react";
-import {
-	IAppBuilderSettings,
-	IAppBuilderSettingsResolved,
-} from "../config/appbuilder";
+import {IAppBuilderSettings, IAppBuilderSettingsResolved} from "../config";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 
 /**

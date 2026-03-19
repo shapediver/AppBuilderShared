@@ -1,14 +1,16 @@
-import {useScrollingApiStore} from "@AppBuilderLib/entities/parameter/model/useScrollingApiStore";
-import SelectFullWidthCardsComponent from "@AppBuilderLib/entities/parameter/ui/select/SelectFullWidthCards";
+import {
+	SelectFullWidthCards as SelectFullWidthCardsComponent,
+	useScrollingApiStore,
+} from "@AppBuilderLib/entities/parameter";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+} from "@AppBuilderLib/features/appbuilder";
 import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
-} from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
-import {TextWeightedProps} from "@AppBuilderLib/shared/ui/text/TextWeighted";
+} from "@AppBuilderLib/features/ecommerce";
+import {TextWeightedProps} from "@AppBuilderLib/shared/ui/text";
 import {CarouselProps} from "@mantine/carousel";
 import {
 	ButtonGroupProps,

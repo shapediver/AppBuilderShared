@@ -1,4 +1,4 @@
-import {useCustomHeight} from "@AppBuilderLib/entities/parameter/model/useCustomHeight";
+import {useCustomHeight} from "@AppBuilderLib/entities/parameter";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	Checkbox,

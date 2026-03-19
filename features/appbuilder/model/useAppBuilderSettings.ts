@@ -1,5 +1,5 @@
-import useResolveAppBuilderSettings from "@AppBuilderLib/features/appbuilder/model/useResolveAppBuilderSettings";
-import useQuerySavedState from "@AppBuilderLib/features/model-state/model/useQuerySavedState";
+import {useResolveAppBuilderSettings} from "@AppBuilderLib/features/appbuilder";
+import {useQuerySavedState} from "@AppBuilderLib/features/model-state";
 import {
 	QUERYPARAM_CONTEXT,
 	QUERYPARAM_DISABLEFALLBACKUI,
@@ -12,11 +12,10 @@ import {
 	QUERYPARAM_SLUG,
 	QUERYPARAM_TEMPLATE,
 	QUERYPARAM_TICKET,
-} from "@AppBuilderLib/shared/config/queryparams";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import {getDefaultPlatformUrl} from "@AppBuilderLib/shared/lib/platform";
+} from "@AppBuilderLib/shared/config";
+import {getDefaultPlatformUrl, Logger} from "@AppBuilderLib/shared/lib";
 import useAsync from "@AppBuilderLib/shared/lib/useAsync";
-import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
+import {useThemeOverrideStore} from "@AppBuilderLib/shared/model";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useEffect, useMemo} from "react";
 import {
@@ -24,8 +23,8 @@ import {
 	IAppBuilderSettingsJson,
 	IAppBuilderSettingsJsonSession,
 	IAppBuilderSettingsSession,
-} from "../config/appbuilder";
-import {validateAppBuilderSettingsJson} from "../config/appbuildertypecheck";
+	validateAppBuilderSettingsJson,
+} from "../config";
 
 /**
  * Test a string value for being "true" or "1".

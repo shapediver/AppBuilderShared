@@ -1,6 +1,6 @@
 import {useEffect} from "react";
 
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
 import {AttributeVisualizationEngine} from "@shapediver/viewer.features.attribute-visualization";
 import {MaterialStandardData} from "@shapediver/viewer.session";
 import {useShallow} from "zustand/react/shallow";

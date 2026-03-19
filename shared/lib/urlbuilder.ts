@@ -5,7 +5,7 @@ import {
 	QUERYPARAM_SETTINGSURL,
 	QUERYPARAM_SLUG,
 	QUERYPARAM_TICKET,
-} from "@AppBuilderLib/shared/config/queryparams";
+} from "@AppBuilderLib/shared/config";
 
 /**
  * Data for building a ShapeDiver App Builder URL.

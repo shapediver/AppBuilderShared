@@ -1,6 +1,6 @@
-import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {PROCESS_STATUS} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder";
+import {PROCESS_STATUS} from "@AppBuilderLib/shared/config";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {
 	OrthographicCameraProperties,
@@ -8,7 +8,7 @@ import {
 } from "@shapediver/viewer.viewport";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {ViewportCreateDto} from "../config/viewport";
+import {ViewportCreateDto} from "../config";
 import {useShapeDiverStoreViewport} from "./useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAccessFunctions} from "./useShapeDiverStoreViewportAccessFunctions";
 import {useShapeDiverViewportIconsStore} from "./useShapeDiverViewportIconsStore";

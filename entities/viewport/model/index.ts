@@ -4,6 +4,7 @@ export {
 	useFullscreen as useFullscreen3States,
 } from "./useFullscreen3States";
 export * from "./useIconMenu";
+export {default as useIconMenu} from "./useIconMenu";
 export * from "./useShapeDiverStoreViewport";
 export * from "./useShapeDiverStoreViewportAccessFunctions";
 export * from "./useShapeDiverViewportIconsStore";

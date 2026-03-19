@@ -1,4 +1,4 @@
-import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter";
 import {ResParameter} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 

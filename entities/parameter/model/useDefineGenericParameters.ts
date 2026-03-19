@@ -4,7 +4,7 @@ import {
 	IAcceptRejectModeSelector,
 	IGenericParameterDefinition,
 	IGenericParameterExecutor,
-} from "../config/shapediverStoreParameters";
+} from "../config";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**

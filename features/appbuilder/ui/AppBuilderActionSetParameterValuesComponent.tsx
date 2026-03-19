@@ -1,19 +1,19 @@
-import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParameters";
 import {
 	ParameterValueDefinition,
+	useParameters,
 	useResolveParameterValues,
-} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+	useShapeDiverStoreParameters,
+} from "@AppBuilderLib/entities/parameter";
+import {IProcessDefinition} from "@AppBuilderLib/shared/config";
+import {Logger} from "@AppBuilderLib/shared/lib";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
 	IAppBuilderActionPropsCommon,
 	IAppBuilderActionPropsSetParameterValues,
 	IAppBuilderLegacyActionPropsSetParameterValue,
-} from "../config/appbuilder";
+} from "../config";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
 
 type Props = (

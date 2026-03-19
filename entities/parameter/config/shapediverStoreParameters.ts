@@ -1,10 +1,10 @@
-import {IShapeDiverExport} from "@AppBuilderLib/entities/export/config/export";
-import {IShapeDiverOutput} from "@AppBuilderLib/entities/output/config/output";
+import {IShapeDiverExport} from "@AppBuilderLib/entities/export";
+import {IShapeDiverOutput} from "@AppBuilderLib/entities/output";
 import {
 	IShapeDiverParameter,
 	IShapeDiverParameterDefinition,
-} from "@AppBuilderLib/entities/parameter/config/parameter";
-import {IEventTracking} from "@AppBuilderLib/shared/config/eventTracking";
+} from "@AppBuilderLib/entities/parameter";
+import {IEventTracking} from "@AppBuilderLib/shared/config";
 import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {ISessionApi} from "@shapediver/viewer.session";
 import {StoreApi, UseBoundStore} from "zustand";

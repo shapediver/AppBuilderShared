@@ -33,6 +33,10 @@ export * from "./AppBuilderSavedStatesWidgetComponent";
 export {default as AppBuilderSavedStatesWidgetComponent} from "./AppBuilderSavedStatesWidgetComponent";
 export * from "./AppBuilderSceneTreeExplorerWidgetComponent";
 export {default as AppBuilderSceneTreeExplorerWidgetComponent} from "./AppBuilderSceneTreeExplorerWidgetComponent";
+export {
+	AppBuilderStackUiWidgetComponent,
+	AppBuilderStackUiWidgetComponentThemeProps,
+} from "./AppBuilderStackUiWidget";
 export {default as AppBuilderTabsComponent} from "./AppBuilderTabsComponent";
 export * from "./AppBuilderTextWidgetComponent";
 export {default as AppBuilderTextWidgetComponent} from "./AppBuilderTextWidgetComponent";

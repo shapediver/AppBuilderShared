@@ -1,15 +1,19 @@
-import {ViewportIconsOptionalProps} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import ViewportIconButton, {
-	defaultStyleProps as ViewportIconButtonDefaultStyleProps,
+import {
+	ViewportIconButtonComponent as ViewportIconButton,
+	ViewportIconButtonDefaultStyleProps,
 	ViewportIconButtonProps,
-} from "@AppBuilderLib/entities/viewport/ui/ViewportIconButton";
-import {defaultStyleProps as ViewportIconsDefaultStyleProps} from "@AppBuilderLib/entities/viewport/ui/ViewportIcons";
+	ViewportIconsDefaultStyleProps,
+	ViewportIconsOptionalProps,
+	useShapeDiverStoreViewport,
+	useViewportId,
+} from "@AppBuilderLib/entities/viewport";
+// eslint-disable-next-line import/no-internal-modules
 import classes from "@AppBuilderLib/entities/viewport/ui/ViewportIcons.module.css";
-import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {AppBuilderStandardContainerNameType} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
-import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
+import {
+	AppBuilderContainerNameType,
+	AppBuilderStandardContainerNameType,
+	useShapeDiverStoreStandardContainers,
+} from "@AppBuilderLib/features/appbuilder";
 import {Icon, IconType} from "@AppBuilderLib/shared/ui/icon";
 import shellClasses from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage.module.css";
 import {
@@ -40,12 +44,14 @@ import {
 	useRef,
 	useState,
 } from "react";
-import {IAnchor2d, IAnchor3d} from "../config/shapediverStoreViewportAnchors";
-import {cleanUnit, toCanvasPixels} from "../lib/utils";
-import {useAnchorSelection} from "../model/useAnchorSelection";
-import {useCanvasPortalUtilities} from "../model/useCanvasPortalUtilities";
-import {useCanvasSize} from "../model/useCanvasSize";
-import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
+import {IAnchor2d, IAnchor3d} from "../config";
+import {cleanUnit, toCanvasPixels} from "../lib";
+import {
+	useAnchorSelection,
+	useCanvasPortalUtilities,
+	useCanvasSize,
+	useShapeDiverStoreViewportAnchors,
+} from "../model";
 import {ViewportAnchorProps2d} from "./ViewportAnchor2d";
 import {ViewportAnchorProps3d} from "./ViewportAnchor3d";
 

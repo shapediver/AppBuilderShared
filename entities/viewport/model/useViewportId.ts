@@ -1,4 +1,4 @@
-import {ViewportContext} from "@AppBuilderLib/shared/lib/ViewportContext";
+import {ViewportContext} from "@AppBuilderLib/shared/lib";
 import {useContext} from "react";
 
 /**

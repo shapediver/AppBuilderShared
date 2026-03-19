@@ -1,4 +1,4 @@
-import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
+import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter";
 import {useShallow} from "zustand/react/shallow";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 

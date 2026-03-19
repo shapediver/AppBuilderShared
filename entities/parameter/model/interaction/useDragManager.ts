@@ -1,4 +1,4 @@
-import {parseInteractionEffect} from "@AppBuilderLib/shared/lib/interactionEffects";
+import {parseInteractionEffect} from "@AppBuilderLib/shared/lib";
 import {
 	DragManager,
 	InteractionEngine,

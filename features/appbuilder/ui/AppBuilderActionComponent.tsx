@@ -1,5 +1,5 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
@@ -11,7 +11,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import {IAppBuilderActionPropsCommon} from "../config/appbuilder";
+import {IAppBuilderActionPropsCommon} from "../config";
 
 type ButtonComponentProps<C = "button"> = PolymorphicComponentProps<
 	C,

@@ -8,7 +8,7 @@ export {default as ReloadButton} from "./ReloadButton";
 export {default as UndoButton} from "./UndoButton";
 export {default as ViewportComponent} from "./ViewportComponent";
 export {
-	default as ViewportIconButton,
+	default as ViewportIconButtonComponent,
 	ViewportIconButtonThemeProps,
 } from "./ViewportIconButton";
 export type {

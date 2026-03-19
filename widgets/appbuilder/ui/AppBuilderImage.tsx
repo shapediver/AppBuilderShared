@@ -1,6 +1,8 @@
-import {IAppBuilderWidgetPropsAnchor} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import Svg from "@AppBuilderLib/shared/ui/svg/Svg";
+import {
+	AppBuilderContainerContext,
+	IAppBuilderWidgetPropsAnchor,
+} from "@AppBuilderLib/features/appbuilder";
+import {Svg} from "@AppBuilderLib/shared/ui/svg";
 import {
 	Anchor,
 	Image,

@@ -1,6 +1,6 @@
-import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export/config/export";
-import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
-import {SessionCreateDto} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
+import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export";
+import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter";
+import {SessionCreateDto} from "@AppBuilderLib/entities/session";
 import {IconType} from "@AppBuilderLib/shared/ui/icon";
 import {MantineColor, SliderProps} from "@mantine/core";
 import {

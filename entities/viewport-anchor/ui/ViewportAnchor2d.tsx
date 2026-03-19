@@ -1,10 +1,10 @@
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {useViewportId} from "@AppBuilderLib/entities/viewport";
+import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib";
 import {MantineThemeComponent} from "@mantine/core";
 import React, {useEffect, useRef, useState} from "react";
-import {cleanUnit, simplifyCalc, updatePosition} from "../lib/utils";
-import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
+import {cleanUnit, simplifyCalc, updatePosition} from "../lib";
+import {useShapeDiverStoreViewportAnchors} from "../model";
 import {
 	useAnchorContainer,
 	ViewportAnchorProps,

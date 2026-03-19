@@ -1,4 +1,4 @@
-import {IShapeDiverParamOrExportOrOutput} from "@AppBuilderLib/entities/parameter/config/common";
+import {IShapeDiverParamOrExportOrOutput} from "@AppBuilderLib/entities/parameter";
 import {
 	ResOutputContent,
 	ResOutputDefinition,

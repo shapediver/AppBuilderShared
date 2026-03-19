@@ -1,6 +1,6 @@
-import {IShapeDiverOutputDefinition} from "@AppBuilderLib/entities/output/config/output";
-import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {IShapeDiverOutputDefinition} from "@AppBuilderLib/entities/output";
+import {getParameterStates} from "@AppBuilderLib/entities/parameter";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
 import {
 	ERROR_TYPE_INTERRUPTED,
 	IBakeDataResultEnum,
@@ -9,8 +9,8 @@ import {
 	useStargateBakeData,
 } from "@AppBuilderLib/entities/stargate";
 import {useNotificationStore} from "@AppBuilderLib/features";
-import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
+import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
 import {
 	ITreeNode,
 	ShapeDiverResponseOutputChunk,

@@ -1,16 +1,16 @@
 import {
 	defaultPropsParameterWrapper,
+	ParameterLabelComponent,
+	ParameterWrapperComponent,
 	PropsParameter,
 	PropsParameterWrapper,
-} from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
-import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
-import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+	useParameterComponentCommons,
+} from "@AppBuilderLib/entities/parameter";
+import {useViewportId} from "@AppBuilderLib/entities/viewport";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {Logger} from "@AppBuilderLib/shared/lib";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
+import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
 import {
 	Box,
 	Button,
@@ -27,8 +27,10 @@ import {
 	validateGumballParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useGumball} from "../model/interaction/useGumball";
-import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
+import {
+	useGumball,
+	useShapeDiverStoreInteractionRequestManagement,
+} from "../model";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**

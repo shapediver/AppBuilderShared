@@ -1,7 +1,7 @@
 import {
 	AppBuilderContainerContext,
 	AppBuilderTemplateContext,
-} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+} from "@AppBuilderLib/features/appbuilder";
 import {IAppBuilderContainerWrapperStyleProps} from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
 import {useProps} from "@mantine/core";
 import {useContext} from "react";

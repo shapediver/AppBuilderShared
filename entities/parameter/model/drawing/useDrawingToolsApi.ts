@@ -1,4 +1,4 @@
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
 import {
 	createDrawingTools,
 	GeometryRestrictionApi,

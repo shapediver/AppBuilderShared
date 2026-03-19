@@ -1,8 +1,8 @@
-import {ISelectComponentItemDataType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {ISelectComponentItemDataType} from "@AppBuilderLib/features/appbuilder";
 import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
-} from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
+} from "@AppBuilderLib/features/ecommerce";
 import React, {useCallback, useMemo, useRef} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import classes from "./useSelectAsync.module.css";

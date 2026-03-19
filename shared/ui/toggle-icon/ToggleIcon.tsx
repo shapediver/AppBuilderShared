@@ -1,4 +1,4 @@
-import {preventDefault} from "@AppBuilderLib/shared/lib/events";
+import {preventDefault} from "@AppBuilderLib/shared/lib";
 import {Icon, IconType, useIconProps} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {Loader, MantineThemeComponent, useProps} from "@mantine/core";

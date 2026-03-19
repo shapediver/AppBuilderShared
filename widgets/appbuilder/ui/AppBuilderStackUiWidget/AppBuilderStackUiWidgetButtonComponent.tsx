@@ -1,5 +1,7 @@
-import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
+import {
+	AppBuilderStackContext,
+	IAppBuilderWidgetPropsStackUi,
+} from "@AppBuilderLib/features/appbuilder";
 import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {

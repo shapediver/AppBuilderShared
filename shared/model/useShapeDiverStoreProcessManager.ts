@@ -1,13 +1,13 @@
-import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport";
 import {
+	devtoolsSettings,
 	IProcess,
 	IProcessDefinition,
 	IProcessManager,
 	IProgress,
 	IShapeDiverStoreProcessManager,
 	PROCESS_STATUS,
-} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+} from "@AppBuilderLib/shared/config";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

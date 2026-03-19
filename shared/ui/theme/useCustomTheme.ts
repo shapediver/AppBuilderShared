@@ -1,54 +1,66 @@
-import {ExportButtonComponentThemeProps} from "@AppBuilderLib/entities/export/ui/ExportButtonComponent";
-import {ExportLabelComponentThemeProps} from "@AppBuilderLib/entities/export/ui/ExportLabelComponent";
-import {OutputChunkLabelComponentThemeProps} from "@AppBuilderLib/entities/output/ui/OutputChunkLabelComponent";
-import {OutputStargateComponentThemeProps} from "@AppBuilderLib/entities/output/ui/OutputStargateComponent";
-import {MultiSelectCheckboxesProps} from "@AppBuilderLib/entities/parameter/ui/multiselect/MultiSelectCheckboxesComponent";
-import {ParameterColorComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterColorComponent";
-import {ParameterLabelComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
-import {ParameterSelectComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterSelectComponent";
-import {ParameterSliderComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent";
-import {ParameterStargateComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterStargateComponent";
-import {SelectCarouselComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectCarouselComponent";
-import {SelectFullWidthCardsComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectFullWidthCards";
-import {SelectGridComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectGridComponent";
-import {DefaultSessionThemeProps} from "@AppBuilderLib/entities/session/model/useDefaultSessionDto";
-import {DesktopClientPanelThemeProps} from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
-import {StargateInputThemeProps} from "@AppBuilderLib/entities/stargate/ui/StargateInput";
-import {StargateSharedThemeProps} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {
+	ExportButtonComponentThemeProps,
+	ExportLabelComponentThemeProps,
+} from "@AppBuilderLib/entities/export";
+import {
+	OutputChunkLabelComponentThemeProps,
+	OutputStargateComponentThemeProps,
+} from "@AppBuilderLib/entities/output";
+import {
+	MultiSelectCheckboxesProps,
+	ParameterColorComponentThemeProps,
+	ParameterLabelComponentThemeProps,
+	ParameterSelectComponentThemeProps,
+	ParameterSliderComponentThemeProps,
+	ParameterStargateComponentThemeProps,
+	SelectCarouselComponentThemeProps,
+	SelectFullWidthCardsComponentThemeProps,
+	SelectGridComponentThemeProps,
+} from "@AppBuilderLib/entities/parameter";
+import {DefaultSessionThemeProps} from "@AppBuilderLib/entities/session";
+import {
+	DesktopClientPanelThemeProps,
+	StargateInputThemeProps,
+	StargateSharedThemeProps,
+} from "@AppBuilderLib/entities/stargate";
 import {
 	ViewportBrandingThemeProps,
 	ViewportComponentThemeProps,
-} from "@AppBuilderLib/entities/viewport/config/viewport";
-import {ViewportIconsThemeProps} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
-import {ViewportOverlayWrapperThemeProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
-import {ViewportIconButtonThemeProps} from "@AppBuilderLib/entities/viewport/ui/ViewportIconButton";
-import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderLib/entities/viewport/ui/ViewportIconButtonDropdown";
-import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import {AppBuilderActionComponentThemeProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionComponent";
-import {CreateModelStateHookThemeProps} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
-import {NotificationWrapperThemeProps} from "@AppBuilderLib/features/notifications/ui/NotificationWrapper";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
-import {HintProps} from "@AppBuilderLib/shared/ui/hint/Hint";
+	ViewportIconButtonDropdownThemeProps,
+	ViewportIconButtonThemeProps,
+	ViewportIconsThemeProps,
+	ViewportOverlayWrapperThemeProps,
+} from "@AppBuilderLib/entities/viewport";
+import {
+	AppBuilderActionComponentThemeProps,
+	AppBuilderContainerNameType,
+	ComponentContext,
+} from "@AppBuilderLib/features/appbuilder";
+import {CreateModelStateHookThemeProps} from "@AppBuilderLib/features/model-state";
+import {NotificationWrapperThemeProps} from "@AppBuilderLib/features/notifications";
+import {Logger} from "@AppBuilderLib/shared/lib";
+import {useThemeOverrideStore} from "@AppBuilderLib/shared/model";
+import {HintProps} from "@AppBuilderLib/shared/ui/hint";
 import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon";
-import {MarkdownWidgetComponentProps} from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
-import {ModalBaseThemeProps} from "@AppBuilderLib/shared/ui/modal/ModalBase";
+import {MarkdownWidgetComponentProps} from "@AppBuilderLib/shared/ui/markdown";
+import {ModalBaseThemeProps} from "@AppBuilderLib/shared/ui/modal";
 import {TooltipWrapperThemeProps} from "@AppBuilderLib/shared/ui/tooltip";
-import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/config/appBuilderAgentWidget";
-import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAccordionUiWidgetComponent";
-import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAccordionWidgetComponent";
-import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAreaChartWidgetComponent";
-import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderControlsWidgetComponent";
-import {AppBuilderFormWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFormWidgetComponent";
-import {AppBuilderImageThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderImage";
-import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderLineChartWidgetComponent";
-import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderRoundChartWidgetComponent";
-import {AppBuilderSavedStatesWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderSavedStatesWidgetComponent";
-import {AppBuilderStackUiWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
-import {AppBuilderTextWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderTextWidgetComponent";
-import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/ParametersAndExportsAccordionComponent";
-import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons";
+import {
+	AppBuilderAccordionUiWidgetComponentThemeProps,
+	AppBuilderAccordionWidgetComponentThemeProps,
+	AppBuilderAgentWidgetThemeProps,
+	AppBuilderAreaChartWidgetComponentThemeProps,
+	AppBuilderControlsWidgetComponentThemeProps,
+	AppBuilderFormWidgetComponentThemeProps,
+	AppBuilderImageThemeProps,
+	AppBuilderLineChartWidgetComponentThemeProps,
+	AppBuilderRoundChartWidgetComponentThemeProps,
+	AppBuilderSavedStatesWidgetComponentThemeProps,
+	AppBuilderStackUiWidgetComponentThemeProps,
+	AppBuilderTextWidgetThemeProps,
+	ParametersAndExportsAccordionComponentThemeProps,
+	ViewportAcceptRejectButtonsComponentThemeProps,
+} from "@AppBuilderLib/widgets/appbuilder";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
 import {AppBuilderAppShellTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
 import {AppBuilderContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderContainer";

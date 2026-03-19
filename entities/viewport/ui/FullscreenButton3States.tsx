@@ -1,10 +1,10 @@
 import {
 	Fullscreen3StatesState,
 	useFullscreen,
-} from "@AppBuilderLib/entities/viewport/model/useFullscreen3States";
-import {isIPhone} from "@AppBuilderLib/shared/lib/navigator";
+} from "@AppBuilderLib/entities/viewport";
+import {isIPhone} from "@AppBuilderLib/shared/lib";
 import React, {useMemo} from "react";
-import {CommonButtonProps} from "../config/types";
+import {CommonButtonProps} from "../config";
 import ViewportIconButton from "./ViewportIconButton";
 
 interface FullscreenButton3StatesProps extends CommonButtonProps {

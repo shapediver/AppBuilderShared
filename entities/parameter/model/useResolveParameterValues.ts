@@ -3,8 +3,8 @@ import {
 	IAppBuilderParameterValueSourceDefinition,
 	isExportSource,
 	isParameterSource,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
+} from "@AppBuilderLib/features/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib";
 import {useEffect, useMemo, useState} from "react";
 import {useParameterValueSources} from "./useParameterValueSources";
 

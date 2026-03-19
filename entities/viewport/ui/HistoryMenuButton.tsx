@@ -1,11 +1,15 @@
-import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
-import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
-import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
-import ImportModelStateDialog from "@AppBuilderLib/features/model-state/ui/ImportModelStateDialog";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
+import {useParameterImportExport} from "@AppBuilderLib/entities/parameter";
+import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce";
+import {
+	ImportModelStateDialog,
+	useCreateModelState,
+} from "@AppBuilderLib/features/model-state";
+import {
+	NotificationModelStateCreated,
+	useNotificationStore,
+} from "@AppBuilderLib/features/notifications";
 import React, {useCallback, useMemo, useState} from "react";
-import {CommonButtonProps} from "../config/types";
+import {CommonButtonProps} from "../config";
 import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 
 interface HistoryMenuButtonProps extends CommonButtonProps {

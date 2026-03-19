@@ -1,15 +1,15 @@
-import {QUERYPARAM_PROVIDER} from "@AppBuilderLib/shared/config/queryparams";
 import {
+	devtoolsSettings,
 	IPlatformClientRef,
 	IShapeDiverStorePlatformExtended,
 	PlatformCacheKeyEnum,
-} from "@AppBuilderLib/shared/config/shapediverStorePlatform";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+	QUERYPARAM_PROVIDER,
+} from "@AppBuilderLib/shared/config";
 import {
 	getDefaultPlatformUrl,
 	getPlatformClientId,
 	shouldUsePlatform,
-} from "@AppBuilderLib/shared/lib/platform";
+} from "@AppBuilderLib/shared/lib";
 import {
 	create as createSdk,
 	isPBInvalidGrantOAuthResponseError,

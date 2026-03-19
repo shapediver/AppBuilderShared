@@ -1,18 +1,21 @@
-import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
-import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
-import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
-import DesktopClientPanel from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
+import {PropsExport} from "@AppBuilderLib/entities/export";
+import {PropsOutput} from "@AppBuilderLib/entities/output";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
+import {
+	DesktopClientPanel,
+	useShapeDiverStoreStargate,
+} from "@AppBuilderLib/entities/stargate";
 import {
 	AttributeVisualizationVisibility,
+	ComponentContext,
 	IAppBuilderSettingsSession,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import TabsComponent, {
+} from "@AppBuilderLib/features/appbuilder";
+import {
 	ITabsComponentProps,
-} from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
-import AppBuilderSavedStatesWidgetComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderSavedStatesWidgetComponent";
+	TabsComponent,
+} from "@AppBuilderLib/shared/ui/tabs";
+import {AppBuilderSavedStatesWidgetComponent} from "@AppBuilderLib/widgets/appbuilder";
 import React, {useContext, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import ParametersAndExportsAccordionComponent from "./ParametersAndExportsAccordionComponent";

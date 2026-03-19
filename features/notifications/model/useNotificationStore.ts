@@ -8,11 +8,11 @@ import {
 	NotificationInput,
 	NotificationStyleProps,
 } from "@AppBuilderLib/features/notifications";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config";
 import {
 	getEnvironmentIdentifier,
 	isRunningInPlatform,
-} from "@AppBuilderLib/shared/lib/platform";
+} from "@AppBuilderLib/shared/lib";
 import {notifications} from "@mantine/notifications";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

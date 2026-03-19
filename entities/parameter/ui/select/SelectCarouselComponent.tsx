@@ -1,10 +1,10 @@
-import {parameterMultiSelect} from "@AppBuilderLib/entities/parameter/lib/parameterMultiSelect";
+import {parameterMultiSelect} from "@AppBuilderLib/entities/parameter";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {Carousel} from "@mantine/carousel";
 import "@mantine/carousel/styles.css";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useMemo} from "react";
-import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
+import {UniversalMultiSelectComponentProps} from "../multiselect";
 import ButtonImageCard from "./ButtonImageCard";
 import classes from "./SelectCarouselComponent.module.css";
 import {

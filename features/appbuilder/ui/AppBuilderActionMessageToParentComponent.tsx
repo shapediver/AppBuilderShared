@@ -1,7 +1,7 @@
-import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
+import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import React, {useCallback, useState} from "react";
-import {IAppBuilderLegacyActionPropsMessageToParent} from "../config/appbuilder";
+import {IAppBuilderLegacyActionPropsMessageToParent} from "../config";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
 
 /**

@@ -1,10 +1,12 @@
-import {useCreateNameFilterPattern} from "@AppBuilderLib/entities/parameter/model/interaction/useCreateNameFilterPattern";
 import {
 	IUseFindNodesByPatternProps,
+	useCreateNameFilterPattern,
 	useFindNodesByPatterns,
-} from "@AppBuilderLib/entities/parameter/model/interaction/useFindNodesByPattern";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+} from "@AppBuilderLib/entities/parameter";
+import {
+	useShapeDiverStoreViewport,
+	useViewportId,
+} from "@AppBuilderLib/entities/viewport";
 import {
 	Box,
 	CAMERA_TYPE,
@@ -22,7 +24,7 @@ import {
 	isResetCameraAction,
 	isSetCameraAction,
 	isZoomToCameraAction,
-} from "../config/appbuilder";
+} from "../config";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
 
 type Props = IAppBuilderActionPropsCamera & {

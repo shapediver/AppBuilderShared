@@ -1,8 +1,8 @@
-import {parameterMultiSelect} from "@AppBuilderLib/entities/parameter/lib/parameterMultiSelect";
+import {parameterMultiSelect} from "@AppBuilderLib/entities/parameter";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {Button} from "@mantine/core";
 import React from "react";
-import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
+import {UniversalMultiSelectComponentProps} from "../multiselect";
 
 /**
  * Functional button group select component.

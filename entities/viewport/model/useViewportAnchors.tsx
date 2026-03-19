@@ -1,12 +1,11 @@
 import {
 	AppBuilderContainerNameType,
+	ComponentContext,
 	IAppBuilderContainer,
 	isAnchor2dContainer,
 	isAnchor3dContainer,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
+} from "@AppBuilderLib/features/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib";
 import React, {useContext, useEffect, useState} from "react";
 
 interface Props {
@@ -28,6 +27,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 	const componentContext = useContext(ComponentContext);
 
 	useEffect(() => {
+		const ContainerComponent = componentContext.containerComponent;
 		const anchors: JSX.Element[] = [];
 
 		const existingIds = new Set<string>();
@@ -55,6 +55,13 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 					return;
 				}
 
+				if (!ContainerComponent) {
+					Logger.warn(
+						`No containerComponent registered in ComponentContext, cannot render 3D anchor with id: ${container.props.id}.`,
+					);
+					return;
+				}
+
 				anchors.push(
 					<ViewportAnchor3d.component
 						key={JSON.stringify(container)}
@@ -65,7 +72,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 							container.props.allowPointerEvents ?? true
 						}
 						element={
-							<AppBuilderContainerComponent
+							<ContainerComponent
 								namespace={namespace}
 								{...container}
 							/>
@@ -108,6 +115,13 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 					return;
 				}
 
+				if (!ContainerComponent) {
+					Logger.warn(
+						`No containerComponent registered in ComponentContext, cannot render 2D anchor with id: ${container.props.id}.`,
+					);
+					return;
+				}
+
 				anchors.push(
 					<ViewportAnchor2d.component
 						key={JSON.stringify(container)}
@@ -118,7 +132,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 							container.props.allowPointerEvents ?? true
 						}
 						element={
-							<AppBuilderContainerComponent
+							<ContainerComponent
 								namespace={namespace}
 								{...container}
 							/>

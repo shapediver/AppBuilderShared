@@ -1,4 +1,4 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 

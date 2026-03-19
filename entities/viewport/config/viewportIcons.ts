@@ -1,5 +1,9 @@
-import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {
+	OverlayPosition,
+	OverlayStyleProps,
+} from "@AppBuilderLib/shared/ui/overlay";
+import {
+	ActionIconProps,
 	DividerProps,
 	MantineStyleProp,
 	MantineThemeComponent,
@@ -7,6 +11,8 @@ import {
 	TransitionProps,
 } from "@mantine/core";
 import React from "react";
+import {IconProps as IconPropsConfig} from "./types";
+import {ViewportTransparentBackgroundStyle} from "./viewport";
 import {ViewportOverlayWrapperProps} from "./viewportOverlayWrapper";
 
 export enum ViewportIconButtonEnum {
@@ -138,3 +144,43 @@ export function ViewportIconsThemeProps(
 		defaultProps: props,
 	};
 }
+
+export const ViewportIconsDefaultStyleProps: ViewportIconsOptionalProps = {
+	style: {
+		display: "flex",
+		gap: "0.25rem",
+		alignItems: "center",
+		flexDirection: "row",
+		border: "none",
+		...ViewportTransparentBackgroundStyle,
+	},
+	fullscreenId: "viewer-fullscreen-area",
+	viewportOverlayProps: {
+		position: OverlayPosition.TOP_MIDDLE,
+		offset: "0.5em",
+	},
+	paperProps: {
+		py: 1,
+		px: 2,
+		shadow: "md",
+	} as PaperProps,
+};
+
+export type ViewportIconButtonStyleProps = {
+	actionIconProps?: ActionIconProps & {variantDisabled?: string};
+	iconProps?: {color?: string; colorDisabled?: string};
+};
+
+export const ViewportIconButtonDefaultStyleProps: ViewportIconButtonStyleProps =
+	{
+		actionIconProps: {
+			size: IconPropsConfig.size,
+			variant: IconPropsConfig.variant,
+			variantDisabled: IconPropsConfig.variantDisabled,
+			style: IconPropsConfig.style,
+		},
+		iconProps: {
+			color: IconPropsConfig.color,
+			colorDisabled: IconPropsConfig.colorDisabled,
+		},
+	};

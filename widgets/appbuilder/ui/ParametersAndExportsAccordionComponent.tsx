@@ -1,18 +1,20 @@
-import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
-import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
-import OutputStargateComponent from "@AppBuilderLib/entities/output/ui/OutputStargateComponent";
-import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {PropsExport} from "@AppBuilderLib/entities/export";
+import {
+	OutputStargateComponent,
+	PropsOutput,
+} from "@AppBuilderLib/entities/output";
 import {
 	isExportDefinition,
 	isOutputDefinition,
 	isParamDefinition,
+	PropsParameter,
 	useSortedParametersAndExports,
-} from "@AppBuilderLib/entities/parameter/model/useSortedParametersAndExports";
-import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+} from "@AppBuilderLib/entities/parameter";
 import {
+	ComponentContext,
 	getExportComponent,
 	getParameterComponent,
-} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
+} from "@AppBuilderLib/features/appbuilder";
 import {
 	Accordion,
 	AccordionControlProps,

@@ -1,4 +1,4 @@
-import {IAppBuilderWidgetPropsStackUi} from "../config/appbuilder";
+import {IAppBuilderWidgetPropsStackUi} from "../config";
 
 /** Type for the contents of a single stack widget */
 export type IAppBuilderStackContextElement = IAppBuilderWidgetPropsStackUi;

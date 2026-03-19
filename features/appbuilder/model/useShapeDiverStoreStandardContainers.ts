@@ -1,9 +1,9 @@
-import {IAppBuilderContainer} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	AppBuilderStandardContainerNames,
 	AppBuilderStandardContainerNameType,
+	IAppBuilderContainer,
 	IShapeDiverStoreStandardContainers,
-} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
+} from "@AppBuilderLib/features/appbuilder";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 

@@ -1,26 +1,24 @@
 import {
 	defaultPropsParameterWrapper,
+	ParameterLabelComponent,
+	ParameterWrapperComponent,
 	PropsParameterComponent,
 	PropsParameterWrapper,
-} from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {useFocus} from "@AppBuilderLib/entities/parameter/model/useFocus";
-import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
-import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
-import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
+	useFocus,
+	useParameterComponentCommons,
+} from "@AppBuilderLib/entities/parameter";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {validateSelectParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuildertypecheck";
+	validateSelectParameterSettings,
+} from "@AppBuilderLib/features/appbuilder";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {Logger} from "@AppBuilderLib/shared/lib";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
 import React, {useCallback, useMemo} from "react";
-import MultiSelectComponent from "./multiselect/MultiSelectComponent";
-import SelectComponent, {
-	SelectComponentSettings,
-} from "./select/SelectComponent";
+import {MultiSelectComponent} from "./multiselect";
+import {SelectComponent, SelectComponentSettings} from "./select";
 
 interface ISelectComponentOverrides {
 	/** Type of select component to use. */

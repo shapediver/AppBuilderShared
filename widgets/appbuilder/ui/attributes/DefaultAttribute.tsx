@@ -1,5 +1,7 @@
-import {IDefaultAttributeCustomData} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreAttributeVisualization";
-import {useShapeDiverStoreAttributeVisualization} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreAttributeVisualization";
+import {
+	IDefaultAttributeCustomData,
+	useShapeDiverStoreAttributeVisualization,
+} from "@AppBuilderLib/features/appbuilder";
 import {ColorInput} from "@mantine/core";
 import {IDefaultAttribute} from "@shapediver/viewer.features.attribute-visualization";
 import React, {useCallback, useEffect, useState} from "react";

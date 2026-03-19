@@ -1,14 +1,16 @@
-import {Mat4Array} from "@AppBuilderLib/entities/parameter/config/common";
-import {IParameterStore} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {
+	IParameterStore,
+	Mat4Array,
 	ParameterValueDefinition,
 	useResolveParameterValues,
-} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+	useShapeDiverStoreParameters,
+} from "@AppBuilderLib/entities/parameter";
+import {
+	IUseSessionDto,
+	useShapeDiverStoreSession,
+} from "@AppBuilderLib/entities/session";
+import {IProcessDefinition} from "@AppBuilderLib/shared/config";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
 import {ResOutput, ResOutputContent} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	ISessionApi,
@@ -25,11 +27,11 @@ import {
 	IAppBuilder,
 	IAppBuilderInstanceDefinition,
 	IAppBuilderSettingsSession,
-} from "../config/appbuilder";
+} from "../config";
 import {useShapeDiverStoreInstances} from "./useShapeDiverStoreInstances";
 
-import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {useSessions} from "@AppBuilderLib/entities/session";
+import {Logger} from "@AppBuilderLib/shared/lib";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 interface Props {
 	namespace: string;

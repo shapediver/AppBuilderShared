@@ -1,7 +1,9 @@
-import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import {IAppBuilderWidgetPropsActions} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
+import {
+	AppBuilderActionFromType,
+	AppBuilderContainerContext,
+	ComponentContext,
+	IAppBuilderWidgetPropsActions,
+} from "@AppBuilderLib/features/appbuilder";
 import {
 	Group,
 	MantineThemeComponent,
