@@ -1,1 +1,4 @@
-export { default as MarkdownWidgetComponent, MarkdownWidgetComponentProps } from "./MarkdownWidgetComponent";
+export {
+	default as MarkdownWidgetComponent,
+	MarkdownWidgetComponentProps,
+} from "./MarkdownWidgetComponent";

@@ -1,6 +1,6 @@
-import {useShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreInstances";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {UpdateCallbackType} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {useShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreInstances";
 import {
 	gatherNodesForPattern,
 	NodeNameFilterPattern,

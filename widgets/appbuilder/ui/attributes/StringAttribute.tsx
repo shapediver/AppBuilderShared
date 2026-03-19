@@ -1,4 +1,3 @@
-import BaseAttribute from "./BaseAttribute";
 import {
 	Badge,
 	BadgeProps,
@@ -13,6 +12,7 @@ import {
 } from "@shapediver/viewer.features.attribute-visualization";
 import {Converter, MaterialStandardData} from "@shapediver/viewer.session";
 import React, {useMemo} from "react";
+import BaseAttribute from "./BaseAttribute";
 
 type StyleProps = {
 	badgeProps?: Partial<BadgeProps>;

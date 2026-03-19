@@ -1,5 +1,5 @@
-import {useViewportCanvas} from "@AppBuilderLib/entities/viewport/model/useViewportCanvas";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useViewportCanvas} from "@AppBuilderLib/entities/viewport/model/useViewportCanvas";
 import {
 	addListener,
 	EventResponseMapping,

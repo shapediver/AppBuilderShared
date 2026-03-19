@@ -1,8 +1,8 @@
-import {isRunningInPlatform} from "@AppBuilderLib/shared/lib/platform";
 import {
 	DummyECommerceApi,
 	ECommerceApiFactory,
 } from "@AppBuilderLib/features/ecommerce/api/ecommerceapi";
+import {isRunningInPlatform} from "@AppBuilderLib/shared/lib/platform";
 import {IECommerceApi} from "../config/ecommerceapi";
 
 /** Number of key events for toggling configurator visibility. */

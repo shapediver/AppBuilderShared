@@ -1,12 +1,4 @@
 import {
-	IUseCreateNameFilterPatternProps,
-	useCreateNameFilterPatterns,
-} from "../interaction/useCreateNameFilterPattern";
-import {
-	IUseFindNodesByPatternProps,
-	useFindNodesByPatterns,
-} from "../interaction/useFindNodesByPattern";
-import {
 	CameraPlaneRestrictionProperties,
 	GeometryRestrictionProperties,
 	LineRestrictionProperties,
@@ -16,6 +8,14 @@ import {
 } from "@shapediver/viewer.features.drawing-tools";
 import {IDrawingParameterSettings, ITreeNode} from "@shapediver/viewer.session";
 import {useEffect, useMemo, useState} from "react";
+import {
+	IUseCreateNameFilterPatternProps,
+	useCreateNameFilterPatterns,
+} from "../interaction/useCreateNameFilterPattern";
+import {
+	IUseFindNodesByPatternProps,
+	useFindNodesByPatterns,
+} from "../interaction/useFindNodesByPattern";
 
 // #region Functions (1)
 

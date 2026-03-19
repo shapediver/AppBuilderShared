@@ -1,5 +1,5 @@
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {IShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/config/shapediverStoreInteractionRequestManagement";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 

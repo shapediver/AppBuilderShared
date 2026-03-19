@@ -1,10 +1,10 @@
 import {useEffect} from "react";
 
-import {useShapeDiverStoreAttributeVisualization} from "../useShapeDiverStoreAttributeVisualization";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {AttributeVisualizationEngine} from "@shapediver/viewer.features.attribute-visualization";
 import {MaterialStandardData} from "@shapediver/viewer.session";
 import {useShallow} from "zustand/react/shallow";
+import {useShapeDiverStoreAttributeVisualization} from "../useShapeDiverStoreAttributeVisualization";
 
 /**
  * Hook allowing to create an attribute visualization engine for a viewport.

@@ -1,11 +1,11 @@
-import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
-import {useEventTracking} from "@AppBuilderLib/shared/lib/useEventTracking";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {useShapeDiverStoreSession} from "./useShapeDiverStoreSession";
+import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useEventTracking} from "@AppBuilderLib/shared/lib/useEventTracking";
 import {ISessionApi} from "@shapediver/viewer.session";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {useShapeDiverStoreSession} from "./useShapeDiverStoreSession";
 
 /**
  * Hook for creating multiple sessions with ShapeDiver models using the ShapeDiver 3D Viewer.

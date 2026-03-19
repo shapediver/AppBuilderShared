@@ -1,6 +1,3 @@
-import {useDrawingToolsApi} from "./useDrawingToolsApi";
-import {useDrawingToolsEvents} from "./useDrawingToolsEvents";
-import {useRestrictions} from "./useRestrictions";
 import {
 	IDrawingToolsApi,
 	PointsData,
@@ -8,6 +5,9 @@ import {
 } from "@shapediver/viewer.features.drawing-tools";
 import {IDrawingParameterSettings} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef} from "react";
+import {useDrawingToolsApi} from "./useDrawingToolsApi";
+import {useDrawingToolsEvents} from "./useDrawingToolsEvents";
+import {useRestrictions} from "./useRestrictions";
 
 // #region Functions (1)
 

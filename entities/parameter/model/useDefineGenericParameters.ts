@@ -1,11 +1,11 @@
-import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
+import {useEffect} from "react";
+import {useShallow} from "zustand/react/shallow";
 import {
 	IAcceptRejectModeSelector,
 	IGenericParameterDefinition,
 	IGenericParameterExecutor,
 } from "../config/shapediverStoreParameters";
-import {useEffect} from "react";
-import {useShallow} from "zustand/react/shallow";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**
  * Hook for defining generic parameters to be displayed in the UI.

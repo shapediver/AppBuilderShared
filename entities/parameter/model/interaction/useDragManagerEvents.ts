@@ -1,4 +1,3 @@
-import {ConvertedDragObject} from "./useConvertDraggingData";
 import {RESTRICTION_TYPE} from "@shapediver/viewer.features.drawing-tools";
 import {
 	DragManager,
@@ -14,6 +13,7 @@ import {
 	removeListener,
 } from "@shapediver/viewer.session";
 import {useEffect, useRef, useState} from "react";
+import {ConvertedDragObject} from "./useConvertDraggingData";
 
 // #region Functions (1)
 

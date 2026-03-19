@@ -1,18 +1,18 @@
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
-import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
-import {useFocus} from "@AppBuilderLib/entities/parameter/model/useFocus";
-import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useFocus} from "@AppBuilderLib/entities/parameter/model/useFocus";
+import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
+import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {validateSelectParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuildertypecheck";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";

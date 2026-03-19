@@ -1,6 +1,8 @@
 export * from "./useFullscreen";
-export { Fullscreen3StatesState } from "./useFullscreen3States";
-export { useFullscreen as useFullscreen3States } from "./useFullscreen3States";
+export {
+	Fullscreen3StatesState,
+	useFullscreen as useFullscreen3States,
+} from "./useFullscreen3States";
 export * from "./useIconMenu";
 export * from "./useShapeDiverStoreViewport";
 export * from "./useShapeDiverStoreViewportAccessFunctions";

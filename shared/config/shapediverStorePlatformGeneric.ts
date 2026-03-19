@@ -112,12 +112,12 @@ export interface IShapeDiverStorePlatformGenericExtended<
 	TQueryPropsExt,
 	TCacheKey,
 > extends IShapeDiverStorePlatformGeneric<
-		TData,
-		TActions,
-		TEmbed,
-		TQueryItem,
-		TQueryPropsExt
-	> {
+	TData,
+	TActions,
+	TEmbed,
+	TQueryItem,
+	TQueryPropsExt
+> {
 	/** Add an item to the store. */
 	addItem: (data: TData) => void;
 

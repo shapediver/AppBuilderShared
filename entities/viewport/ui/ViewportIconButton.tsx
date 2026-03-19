@@ -10,8 +10,8 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import classes from "./ViewportIcons.module.css";
 import {IconProps as IconPropsType} from "../config/types";
+import classes from "./ViewportIcons.module.css";
 
 interface Props {
 	label: string;

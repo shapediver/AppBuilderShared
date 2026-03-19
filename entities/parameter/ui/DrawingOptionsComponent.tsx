@@ -1,8 +1,7 @@
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
-import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
-import {useDrawingOptionsStore} from "../model/drawing/useDrawingOptionsStore";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	Button,
 	Checkbox,
@@ -20,6 +19,7 @@ import {
 } from "@shapediver/viewer.features.drawing-tools";
 import {IDrawingParameterSettings} from "@shapediver/viewer.session";
 import React, {useEffect, useState} from "react";
+import {useDrawingOptionsStore} from "../model/drawing/useDrawingOptionsStore";
 import classes from "./DrawingOptionsComponent.module.css";
 
 /**

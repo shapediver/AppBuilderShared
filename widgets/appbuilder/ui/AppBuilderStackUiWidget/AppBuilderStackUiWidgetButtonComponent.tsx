@@ -1,3 +1,4 @@
+import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
 import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
@@ -13,7 +14,6 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useContext} from "react";
-import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 
 export interface StyleProps {
 	/**

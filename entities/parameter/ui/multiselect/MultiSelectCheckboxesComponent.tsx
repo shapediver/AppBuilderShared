@@ -1,5 +1,5 @@
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {useCustomHeight} from "@AppBuilderLib/entities/parameter/model/useCustomHeight";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	Checkbox,
 	CheckboxProps,

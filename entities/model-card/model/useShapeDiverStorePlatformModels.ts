@@ -1,7 +1,3 @@
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
-import {defineFilter} from "@AppBuilderLib/shared/lib/platform";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
-import {IPlatformPagedItemQueryProps} from "@AppBuilderLib/shared/config/shapediverStorePlatformGeneric";
 import {
 	IShapeDiverStorePlatformModelExtended,
 	ModelCacheKeyEnum,
@@ -9,6 +5,10 @@ import {
 	TModelEmbed,
 	TModelQueryPropsExt,
 } from "@AppBuilderLib/entities/model-card/config/shapediverStorePlatformModels";
+import {IPlatformPagedItemQueryProps} from "@AppBuilderLib/shared/config/shapediverStorePlatformGeneric";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {defineFilter} from "@AppBuilderLib/shared/lib/platform";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
 	SdPlatformModelQueryEmbeddableFields,
 	SdPlatformModelQueryParameters,

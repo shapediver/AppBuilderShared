@@ -1,9 +1,9 @@
-import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
+import {IAppBuilderTab} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
-import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
-import {IAppBuilderTab} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
 import React, {useMemo} from "react";
 
 interface Props {

@@ -1,12 +1,11 @@
+import {IShapeDiverStoreErrorReporting} from "@AppBuilderLib/shared/config/shapediverStoreErrorReporting";
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {DummyErrorReporting} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {IErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext.types";
-import {IShapeDiverStoreErrorReporting} from "@AppBuilderLib/shared/config/shapediverStoreErrorReporting";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 
-interface IShapeDiverStoreErrorReportingInternal
-	extends IShapeDiverStoreErrorReporting {
+interface IShapeDiverStoreErrorReportingInternal extends IShapeDiverStoreErrorReporting {
 	setErrorReporting: (errorReportingContext: IErrorReportingContext) => void;
 }
 

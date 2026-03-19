@@ -1,1 +1,1 @@
-export { cleanUnit, updatePosition, toCanvasPixels, simplifyCalc } from "./utils";
+export {cleanUnit, simplifyCalc, toCanvasPixels, updatePosition} from "./utils";

@@ -1,11 +1,6 @@
-import {useViewportId} from "./useViewportId";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
-import {useShapeDiverStoreViewport} from "./useShapeDiverStoreViewport";
-import {useShapeDiverStoreViewportAccessFunctions} from "./useShapeDiverStoreViewportAccessFunctions";
-import {useShapeDiverViewportIconsStore} from "./useShapeDiverViewportIconsStore";
 import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {ViewportCreateDto} from "../config/viewport";
 import {PROCESS_STATUS} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {
 	OrthographicCameraProperties,
@@ -13,6 +8,11 @@ import {
 } from "@shapediver/viewer.viewport";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {ViewportCreateDto} from "../config/viewport";
+import {useShapeDiverStoreViewport} from "./useShapeDiverStoreViewport";
+import {useShapeDiverStoreViewportAccessFunctions} from "./useShapeDiverStoreViewportAccessFunctions";
+import {useShapeDiverViewportIconsStore} from "./useShapeDiverViewportIconsStore";
+import {useViewportId} from "./useViewportId";
 
 /**
  * Hook for creating a viewport of the ShapeDiver 3D Viewer.
@@ -99,15 +99,16 @@ export function useViewport(props: ViewportCreateDto) {
 					) => {
 						const {contentType, quality, resolution, camera} =
 							props || {};
-						const screenshot = await viewportApi.getScreenshotAdvanced(
-							contentType,
-							quality,
-							resolution,
-							camera as
-								| OrthographicCameraProperties
-								| PerspectiveCameraProperties
-								| undefined,
-						);
+						const screenshot =
+							await viewportApi.getScreenshotAdvanced(
+								contentType,
+								quality,
+								resolution,
+								camera as
+									| OrthographicCameraProperties
+									| PerspectiveCameraProperties
+									| undefined,
+							);
 						// sometimes the screenshot is not ready immediately (even though it should be)
 						await new Promise((resolve) => setTimeout(resolve, 0));
 

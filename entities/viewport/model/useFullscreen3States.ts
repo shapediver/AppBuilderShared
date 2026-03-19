@@ -1,7 +1,7 @@
-import {useShapeDiverViewportIconsStore} from "./useShapeDiverViewportIconsStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {useShapeDiverViewportIconsStore} from "./useShapeDiverViewportIconsStore";
 
 interface CrossBrowserDocument extends Document {
 	webkitFullscreenElement?: Element;

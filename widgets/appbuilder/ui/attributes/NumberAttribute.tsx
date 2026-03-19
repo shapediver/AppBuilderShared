@@ -1,6 +1,5 @@
-import BaseAttribute from "./BaseAttribute";
-import {useShapeDiverStoreAttributeVisualization} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreAttributeVisualization";
 import {INumberAttributeCustomData} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreAttributeVisualization";
+import {useShapeDiverStoreAttributeVisualization} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreAttributeVisualization";
 import {
 	MantineThemeComponent,
 	RangeSlider,
@@ -20,6 +19,7 @@ import {
 import {Converter} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import BaseAttribute from "./BaseAttribute";
 
 type StyleProps = {
 	rangeSliderProps?: Partial<RangeSliderProps>;

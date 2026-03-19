@@ -66,15 +66,13 @@ export interface IAppBuilderWidgetPropsChartCommon {
 }
 
 /** Properties of line chart widget */
-export interface IAppBuilderWidgetPropsLineChart
-	extends IAppBuilderWidgetPropsChartCommon {
+export interface IAppBuilderWidgetPropsLineChart extends IAppBuilderWidgetPropsChartCommon {
 	/** Type of the curve, 'monotone' by default. */
 	style?: LineChartCurveType;
 }
 
 /** Properties of area chart widget */
-export interface IAppBuilderWidgetPropsAreaChart
-	extends IAppBuilderWidgetPropsChartCommon {
+export interface IAppBuilderWidgetPropsAreaChart extends IAppBuilderWidgetPropsChartCommon {
 	/** Style of the plotted curve, 'monotone' by default */
 	style?: AreaChartCurveType;
 	/** Controls how chart areas are positioned relative to each other, 'default' by default */
@@ -82,8 +80,7 @@ export interface IAppBuilderWidgetPropsAreaChart
 }
 
 /** Properties of bar chart widget */
-export interface IAppBuilderWidgetPropsBarChart
-	extends IAppBuilderWidgetPropsChartCommon {
+export interface IAppBuilderWidgetPropsBarChart extends IAppBuilderWidgetPropsChartCommon {
 	/** Controls how bars are positioned relative to each other, 'default' by default */
 	type?: BarChartType;
 }

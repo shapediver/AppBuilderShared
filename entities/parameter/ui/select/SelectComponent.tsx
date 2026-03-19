@@ -1,13 +1,14 @@
-import {TextWeightedProps} from "@AppBuilderLib/shared/ui/text/TextWeighted";
-import {
-	IScrollingApi,
-	IScrollingApiItemTypeSelect,
-} from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
 import {useScrollingApiStore} from "@AppBuilderLib/entities/parameter/model/useScrollingApiStore";
+import SelectFullWidthCardsComponent from "@AppBuilderLib/entities/parameter/ui/select/SelectFullWidthCards";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	IScrollingApi,
+	IScrollingApiItemTypeSelect,
+} from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
+import {TextWeightedProps} from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {CarouselProps} from "@mantine/carousel";
 import {
 	ButtonGroupProps,
@@ -21,7 +22,6 @@ import {
 } from "@mantine/core";
 import React, {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
-import SelectFullWidthCardsComponent from "@AppBuilderLib/entities/parameter/ui/select/SelectFullWidthCards";
 import SelectButtonFlexComponent from "./SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
 import SelectCarouselComponent from "./SelectCarouselComponent";

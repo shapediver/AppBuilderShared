@@ -1,6 +1,5 @@
-import {useOutput} from "@AppBuilderLib/entities/output/model/useOutput";
-import {useSdTFData} from "../model/useSdTFData";
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
+import {useOutput} from "@AppBuilderLib/entities/output/model/useOutput";
 import {
 	Accordion,
 	AccordionControlProps,
@@ -15,6 +14,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
+import {useSdTFData} from "../model/useSdTFData";
 import OutputChunkComponent from "./OutputChunkComponent";
 
 interface StyleProps {

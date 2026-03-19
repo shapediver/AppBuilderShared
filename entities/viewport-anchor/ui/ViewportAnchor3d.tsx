@@ -1,5 +1,4 @@
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {MantineThemeComponent} from "@mantine/core";
 import {
@@ -9,12 +8,13 @@ import {
 } from "@shapediver/viewer.session";
 import {vec3} from "gl-matrix";
 import {useCallback, useEffect, useRef} from "react";
+import {updatePosition} from "../lib/utils";
+import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
 import {
 	useAnchorContainer,
 	ViewportAnchorProps,
 	ViewportAnchorStyleProps,
 } from "./AnchorContainer";
-import {updatePosition} from "../lib/utils";
 
 export interface ViewportAnchorProps3d extends ViewportAnchorProps {
 	/** The 3D location of the anchor in the viewport. */

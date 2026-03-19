@@ -1,15 +1,15 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
-import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
-import {IAppBuilderParameterValueSourcePropsSdtf} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {IShapeDiverOutput} from "@AppBuilderLib/entities/output/config/output";
+import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
+import {useOutputs} from "@AppBuilderLib/entities/output/model/useOutputs";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {IAppBuilderParameterValueSourcePropsSdtf} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {
 	ResAssetDefinition,
 	ResStypeParameter,
 } from "@shapediver/sdk.geometry-api-sdk-v2";
 import {useEffect, useMemo, useState} from "react";
-import {useOutputs} from "@AppBuilderLib/entities/output/model/useOutputs";
 
 export function useSdtfSources(props: {
 	namespace: string;
@@ -129,12 +129,12 @@ export function useSdtfSources(props: {
 
 								return JSON.stringify(sdtfResponse, null, 2);
 							});
-					// Register this sdTF upload as a process
-					addProcess(processManagerId, {
-						id: `sdtf-${name}-${i}`,
-						name: `sdTF: ${name}`,
-						promise: assetDefinition,
-					});
+						// Register this sdTF upload as a process
+						addProcess(processManagerId, {
+							id: `sdtf-${name}-${i}`,
+							name: `sdTF: ${name}`,
+							promise: assetDefinition,
+						});
 						promises.push(assetDefinition);
 					} else {
 						promises.push(undefined);

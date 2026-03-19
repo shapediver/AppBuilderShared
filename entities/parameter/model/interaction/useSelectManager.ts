@@ -1,4 +1,3 @@
-import {useInteractionEngine} from "./useInteractionEngine";
 import {parseInteractionEffect} from "@AppBuilderLib/shared/lib/interactionEffects";
 import {
 	InteractionEngine,
@@ -17,6 +16,7 @@ import {
 	POST_PROCESSING_EFFECT_TYPE,
 } from "@shapediver/viewer.viewport";
 import {useEffect, useRef, useState} from "react";
+import {useInteractionEngine} from "./useInteractionEngine";
 
 // #region Functions (1)
 

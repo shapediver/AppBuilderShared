@@ -1,1 +1,1 @@
-export { default as ModelSelect } from "./ModelSelect";
+export {default as ModelSelect} from "./ModelSelect";

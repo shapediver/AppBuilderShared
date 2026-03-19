@@ -1,3 +1,4 @@
+import {UniversalMultiSelectComponentProps} from "@AppBuilderLib/entities/parameter/ui/multiselect/MultiSelectComponent";
 import {
 	ComboboxParsedItem,
 	MultiSelect,
@@ -5,7 +6,6 @@ import {
 	defaultOptionsFilter,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
-import {UniversalMultiSelectComponentProps} from "@AppBuilderLib/entities/parameter/ui/multiselect/MultiSelectComponent";
 
 /**
  * Functional dropdown select component.

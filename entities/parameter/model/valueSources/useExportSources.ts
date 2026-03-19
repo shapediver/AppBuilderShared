@@ -1,5 +1,5 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {
 	IAppBuilderParameterValueDefinition,
 	IAppBuilderParameterValueSourcePropsExport,

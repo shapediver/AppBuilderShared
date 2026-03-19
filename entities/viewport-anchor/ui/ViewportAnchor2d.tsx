@@ -1,15 +1,15 @@
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {MantineThemeComponent} from "@mantine/core";
 import React, {useEffect, useRef, useState} from "react";
+import {cleanUnit, simplifyCalc, updatePosition} from "../lib/utils";
+import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
 import {
 	useAnchorContainer,
 	ViewportAnchorProps,
 	ViewportAnchorStyleProps,
 } from "./AnchorContainer";
-import {cleanUnit, simplifyCalc, updatePosition} from "../lib/utils";
 
 export interface ViewportAnchorProps2d extends ViewportAnchorProps {
 	/** Optional draggable properties */

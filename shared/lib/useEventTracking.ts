@@ -1,12 +1,12 @@
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
-import {TrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext";
 import {
 	IEventTracking,
 	IEventTrackingProps,
 } from "@AppBuilderLib/shared/config/eventTracking";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {roundToBracket} from "@AppBuilderLib/shared/lib/numerics";
+import {TrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext";
 import {ResComputationStatus} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {isViewerCustomizationError} from "@shapediver/viewer.session";
 import {useContext, useMemo} from "react";

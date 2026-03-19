@@ -1,5 +1,5 @@
-import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 import {useShallow} from "zustand/react/shallow";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**
  * Hook providing a shortcut to abstracted parameters managed by {@link useShapeDiverStoreParameters}.

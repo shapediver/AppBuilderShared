@@ -1,10 +1,3 @@
-import {useHoverManager} from "./useHoverManager";
-import {useSelectManager} from "./useSelectManager";
-import {
-	ISelectionState,
-	useSelectManagerEvents,
-} from "./useSelectManagerEvents";
-import {useCreateNameFilterPattern} from "./useCreateNameFilterPattern";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {
 	checkNodeNameMatch,
@@ -21,10 +14,17 @@ import {
 } from "@shapediver/viewer.session";
 import {vec3} from "gl-matrix";
 import React, {useCallback, useEffect, useId, useMemo} from "react";
+import {useCreateNameFilterPattern} from "./useCreateNameFilterPattern";
+import {useHoverManager} from "./useHoverManager";
 import {
 	IUseNodeInteractionDataProps,
 	useNodesInteractionData,
 } from "./useNodeInteractionData";
+import {useSelectManager} from "./useSelectManager";
+import {
+	ISelectionState,
+	useSelectManagerEvents,
+} from "./useSelectManagerEvents";
 
 // #region Functions (1)
 

@@ -1,17 +1,14 @@
-import {useAppBuilderCustomParameters} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
 import {
 	IUseSessionDto,
 	useSession,
 } from "@AppBuilderLib/entities/session/model/useSession";
-import {
-	IAppBuilder,
-	IAppBuilderSettingsSession,
-} from "../config/appbuilder";
+import {useAppBuilderCustomParameters} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
+import {IAppBuilder, IAppBuilderSettingsSession} from "../config/appbuilder";
 import {validateAppBuilder} from "../config/appbuildertypecheck";
 
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {IOutputApi, ITreeNode, OutputApiData} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useAppBuilderInstances} from "./useAppBuilderInstances";

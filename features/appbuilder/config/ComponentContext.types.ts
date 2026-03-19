@@ -1,23 +1,20 @@
-import {ModelCardOverlayPropsType} from "@AppBuilderLib/entities/model-card/ui/ModelCardOverlay";
-import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
-import {ButtonRenderContext} from "./componentTypes";
 import {PropsExportWithForm} from "@AppBuilderLib/entities/export/config/propsExport";
+import {ModelCardOverlayPropsType} from "@AppBuilderLib/entities/model-card/ui/ModelCardOverlay";
 import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {
-	IAppBuilderActionDefinition,
-	IAppBuilderWidget,
-} from "./appbuilder";
 import {ViewportComponentProps} from "@AppBuilderLib/entities/viewport/config/viewport";
 import {
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
 } from "@AppBuilderLib/entities/viewport/config/viewportIcons";
 import {ViewportOverlayWrapperProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
+import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {MantineThemeComponent} from "@mantine/core";
 import {ReactElement} from "react";
+import {IAppBuilderActionDefinition, IAppBuilderWidget} from "./appbuilder";
+import {ButtonRenderContext} from "./componentTypes";
 
 // #region Interfaces (7)
 
@@ -176,8 +173,7 @@ export interface ViewportIconButtonComponentMapValueType extends ComponentType {
 /**
  * Type alias for the viewport overlay wrapper component map value type.
  */
-export interface ViewportOverlayWrapperComponentMapValueType
-	extends ComponentType {
+export interface ViewportOverlayWrapperComponentMapValueType extends ComponentType {
 	// #region Properties (1)
 
 	/** Viewport overlay wrapper component */

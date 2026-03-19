@@ -1,12 +1,12 @@
-import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
 import {
 	AppBuilderContainerNameType,
 	IAppBuilderContainer,
 	isAnchor2dContainer,
 	isAnchor3dContainer,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
 import React, {useContext, useEffect, useState} from "react";
 
 interface Props {

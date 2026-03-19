@@ -1,4 +1,12 @@
 import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
+import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
+import {
 	IStargateComponentStatusDefinition,
 	mapStargateComponentStatusDefinition,
 	StargateStatusColorTypeEnum,
@@ -14,14 +22,6 @@ import {
 } from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
-import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
-import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
-import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
-import {
-	defaultPropsParameterWrapper,
-	PropsParameter,
-	PropsParameterWrapper,
-} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {
 	ActionIcon,
 	ActionIconProps,

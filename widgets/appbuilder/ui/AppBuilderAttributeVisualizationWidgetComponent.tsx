@@ -1,18 +1,21 @@
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {useSdTFData} from "@AppBuilderLib/entities/output/model/useSdTFData";
+import ViewportAnchor3d from "@AppBuilderLib/entities/viewport-anchor/ui/ViewportAnchor3d";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {
+	AttributeVisualizationVisibility,
+	IAppBuilderWidgetPropsAttributeVisualization,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {useAttributeOverview} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeOverview";
+import useAttributeSelection from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeSelection";
 import {useAttributeVisualizationEngine} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeVisualizationEngine";
 import {useAttributeWidgetVisibilityTracker} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeWidgetVisibilityTracker";
 import {
 	createAttributeId,
 	useConvertAttributeInputData,
 } from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useConvertAttributeInputData";
-import {useSdTFData} from "@AppBuilderLib/entities/output/model/useSdTFData";
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
-import {
-	AttributeVisualizationVisibility,
-	IAppBuilderWidgetPropsAttributeVisualization,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderShared/shared";
 import {
 	ActionIcon,
 	Group,
@@ -51,8 +54,6 @@ import React, {
 	useRef,
 	useState,
 } from "react";
-import SelectedAttributeComponent from "./SelectedAttributeComponent";
-import ViewportAnchor3d from "@AppBuilderLib/entities/viewport-anchor/ui/ViewportAnchor3d";
 import ColorAttribute from "./attributes/ColorAttribute";
 import DefaultAttribute, {
 	IDefaultAttributeExtended,
@@ -61,8 +62,7 @@ import NumberAttribute, {
 	INumberAttributeExtended,
 } from "./attributes/NumberAttribute";
 import StringAttribute from "./attributes/StringAttribute";
-import useAttributeSelection from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeSelection";
-import { TooltipWrapper } from "@AppBuilderShared/shared";
+import SelectedAttributeComponent from "./SelectedAttributeComponent";
 
 export type IAttributeDefinition =
 	| IAttribute

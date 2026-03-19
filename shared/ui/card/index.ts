@@ -1,1 +1,1 @@
-export { default as ExampleModelCard } from "./ExampleModelCard";
+export {default as ExampleModelCard} from "./ExampleModelCard";

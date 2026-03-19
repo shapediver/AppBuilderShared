@@ -1,16 +1,14 @@
-import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
-import {useShapeDiverStoreInstances} from "./useShapeDiverStoreInstances";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {
-	IAppBuilder,
-	IAppBuilderInstanceDefinition,
-	IAppBuilderSettingsSession,
-} from "../config/appbuilder";
 import {Mat4Array} from "@AppBuilderLib/entities/parameter/config/common";
 import {IParameterStore} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {
+	ParameterValueDefinition,
+	useResolveParameterValues,
+} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {ResOutput, ResOutputContent} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	ISessionApi,
@@ -24,12 +22,14 @@ import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
-	ParameterValueDefinition,
-	useResolveParameterValues,
-} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
+	IAppBuilder,
+	IAppBuilderInstanceDefinition,
+	IAppBuilderSettingsSession,
+} from "../config/appbuilder";
+import {useShapeDiverStoreInstances} from "./useShapeDiverStoreInstances";
 
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 interface Props {
 	namespace: string;

@@ -1,7 +1,7 @@
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {IShapeDiverStoreViewportAnchors} from "@AppBuilderLib/entities/viewport-anchor/config/shapediverStoreViewportAnchors";
 import {simplifyCalc} from "@AppBuilderLib/entities/viewport-anchor/lib/utils";
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {IShapeDiverStoreViewportAnchors} from "@AppBuilderLib/entities/viewport-anchor/config/shapediverStoreViewportAnchors";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 

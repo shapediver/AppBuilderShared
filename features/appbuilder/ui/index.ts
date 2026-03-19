@@ -1,10 +1,10 @@
-export {default as AppBuilderActionComponent} from "./AppBuilderActionComponent";
-export * from "./AppBuilderActionComponent";
-export * from "./AppBuilderActionFromType";
 export {default as AppBuilderActionAddToCartComponent} from "./AppBuilderActionAddToCartComponent";
 export {default as AppBuilderActionCameraComponent} from "./AppBuilderActionCameraComponent";
 export {default as AppBuilderActionCloseConfiguratorComponent} from "./AppBuilderActionCloseConfiguratorComponent";
+export * from "./AppBuilderActionComponent";
+export {default as AppBuilderActionComponent} from "./AppBuilderActionComponent";
 export {default as AppBuilderActionCreateModelStateComponent} from "./AppBuilderActionCreateModelStateComponent";
+export * from "./AppBuilderActionFromType";
 export {default as AppBuilderActionMessageToParentComponent} from "./AppBuilderActionMessageToParentComponent";
 export {default as AppBuilderActionSetBrowserLocationComponent} from "./AppBuilderActionSetBrowserLocationComponent";
 export {default as AppBuilderActionSetParameterValuesComponent} from "./AppBuilderActionSetParameterValuesComponent";

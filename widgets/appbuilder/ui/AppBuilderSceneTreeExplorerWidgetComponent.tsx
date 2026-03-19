@@ -1,7 +1,7 @@
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {useShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreInstances";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {IAppBuilderWidgetPropsSceneTreeExplorer} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreInstances";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {
 	ActionIcon,
 	ActionIconProps,
