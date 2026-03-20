@@ -39,6 +39,7 @@ import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder
 import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAccordionUiWidgetComponent";
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAccordionWidgetComponent";
 import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAreaChartWidgetComponent";
+import {AppBuilderTableWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderTableWidgetComponent";
 import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderControlsWidgetComponent";
 import {AppBuilderFormWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFormWidgetComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderImage";
@@ -455,6 +456,24 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			AppBuilderBarChartWidgetComponent:
 				AppBuilderAreaChartWidgetComponentThemeProps({}),
+			/**
+			 * AppBuilderTableWidgetComponent
+			 *
+			 * Used for defining theme overrides for table widgets.
+			 *
+			 * Example:
+			 * AppBuilderTableWidgetComponent: AppBuilderTableWidgetComponentThemeProps({
+			 *   tableProps: {},
+			 *   searchBarProps: {
+			 *     style: { display: "flex", gap: 8, padding: "4px 0" },
+			 *   },
+			 *   searchTextInputProps: {
+			 *     size: "xs",
+			 *   },
+			 * }),
+			 */
+			AppBuilderTableWidgetComponent:
+				AppBuilderTableWidgetComponentThemeProps({}),
 			/**
 			 * AppBuilderContainerWrapper
 			 *
