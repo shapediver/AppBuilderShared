@@ -16,8 +16,10 @@ import {
 	isRoundChartWidget,
 	isSavedStatesWidget,
 	isStackUiWidget,
+	isTableWidget,
 	isTextWidget,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import AppBuilderTableWidgetComponent from "./AppBuilderTableWidgetComponent";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
@@ -213,6 +215,13 @@ export default function AppBuilderWidgetsComponent({
 						<AppBuilderSavedStatesWidgetComponent
 							key={i}
 							namespace={namespace}
+							{...w.props}
+						/>
+					);
+				else if (isTableWidget(w))
+					return (
+						<AppBuilderTableWidgetComponent
+							key={i}
 							{...w.props}
 						/>
 					);
