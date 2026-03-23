@@ -7,7 +7,6 @@ import {
 	useShapeDiverStoreViewport,
 	useViewportId,
 } from "@AppBuilderLib/entities/viewport";
-// eslint-disable-next-line import/no-internal-modules
 import classes from "@AppBuilderLib/entities/viewport/ui/ViewportIcons.module.css";
 import {
 	AppBuilderContainerNameType,
