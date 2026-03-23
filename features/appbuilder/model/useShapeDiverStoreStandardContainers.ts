@@ -42,7 +42,7 @@ const merge = (
 	}
 
 	// Create new tabs array with proper immutability
-	let newTabs = [...(baseContainer.tabs || [])];
+	const newTabs = [...(baseContainer.tabs || [])];
 	let newWidgets = [...(baseContainer.widgets || [])];
 
 	// If there is a tab present, we need to add the additional items to the current tab

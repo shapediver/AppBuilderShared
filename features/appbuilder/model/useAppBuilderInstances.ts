@@ -807,7 +807,7 @@ const processOutputActions = (
 		key: string,
 	) => IParameterStore | undefined,
 ) => {
-	let outputCallbackPromises: Promise<void>[] = [];
+	const outputCallbackPromises: Promise<void>[] = [];
 
 	// we gather all outputs to be set in one object
 	// to only call the batch update once

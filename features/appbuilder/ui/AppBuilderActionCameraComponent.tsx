@@ -115,7 +115,7 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 		if (props.props.camera) {
 			const camera = props.props.camera;
 
-			let skipKeys: string[] = [];
+			const skipKeys: string[] = [];
 
 			if (camera.name) {
 				const existingCamera = Object.entries(viewportApi.cameras).find(

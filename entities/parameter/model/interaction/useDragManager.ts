@@ -190,7 +190,7 @@ export function useDragManager(
 	// whenever the passive nodes change, we need to update the select manager
 	useEffect(() => {
 		if (!availableEffect) return;
-		let tokens: string[] = [];
+		const tokens: string[] = [];
 
 		if (availableNodes && dragManager) {
 			availableNodes.forEach((node) => {
