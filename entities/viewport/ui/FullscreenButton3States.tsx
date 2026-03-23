@@ -1,6 +1,6 @@
 import {
 	Fullscreen3StatesState,
-	useFullscreen,
+	useFullscreen3States,
 } from "@AppBuilderLib/entities/viewport";
 import {isIPhone} from "@AppBuilderLib/shared/lib";
 import React, {useMemo} from "react";
@@ -28,7 +28,7 @@ export default function FullscreenButton3States({
 }: FullscreenButton3StatesProps) {
 	const isFullscreenDisabled = isIPhone();
 	const {fullscreenState, handleFullscreenClick, isFullScreenAvailable} =
-		useFullscreen(fullscreenId);
+		useFullscreen3States(fullscreenId);
 	const disabled = isFullscreenDisabled || !isFullScreenAvailable.current;
 
 	const iconType = useMemo(
