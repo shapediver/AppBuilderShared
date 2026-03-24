@@ -1,5 +1,5 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
 import {
 	addListener,
 	EVENTTYPE_SESSION,

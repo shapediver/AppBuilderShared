@@ -1,8 +1,8 @@
 import {
 	IShapeDiverParameterActions,
 	IShapeDiverParameterDefinition,
-} from "@AppBuilderLib/entities/parameter/config/parameter";
-import {PropsParameterOrExport} from "@AppBuilderLib/shared/config/propsCommon";
+} from "@AppBuilderLib/entities/parameter";
+import {PropsParameterOrExport} from "@AppBuilderLib/shared/config";
 import {UseFormReturnType} from "@mantine/form";
 
 export interface PropsParameterWrapper {

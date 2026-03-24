@@ -1,5 +1,5 @@
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useViewportId} from "@AppBuilderLib/entities/viewport";
+import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder";
 import {MantineThemeComponent} from "@mantine/core";
 import {
 	HTMLElementAnchorCustomData,
@@ -8,8 +8,8 @@ import {
 } from "@shapediver/viewer.session";
 import {vec3} from "gl-matrix";
 import {useCallback, useEffect, useRef} from "react";
-import {updatePosition} from "../lib/utils";
-import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
+import {updatePosition} from "../lib";
+import {useShapeDiverStoreViewportAnchors} from "../model";
 import {
 	useAnchorContainer,
 	ViewportAnchorProps,

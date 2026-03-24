@@ -1,5 +1,5 @@
-import {Mat4Array} from "@AppBuilderLib/entities/parameter/config/common";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {Mat4Array} from "@AppBuilderLib/entities/parameter";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
 import {getNodesByName} from "@shapediver/viewer.features.interaction";
 import {
 	DraggingParameterValue,
@@ -7,7 +7,7 @@ import {
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useId, useMemo} from "react";
-import {useRestrictions} from "../drawing/useRestrictions";
+import {useRestrictions} from "../drawing";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useDragManager} from "./useDragManager";
 import {useDragManagerEvents} from "./useDragManagerEvents";

@@ -1,4 +1,4 @@
-import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
+import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {Card, Image, Stack, Text, UnstyledButton} from "@mantine/core";
 import React from "react";

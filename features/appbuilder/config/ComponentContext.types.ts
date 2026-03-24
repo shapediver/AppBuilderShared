@@ -1,16 +1,16 @@
-import {PropsExportWithForm} from "@AppBuilderLib/entities/export/config/propsExport";
-import {ModelCardOverlayPropsType} from "@AppBuilderLib/entities/model-card/ui/ModelCardOverlay";
+import {PropsExportWithForm} from "@AppBuilderLib/entities/export";
+import {ModelCardOverlayPropsType} from "@AppBuilderLib/entities/model-card";
 import {
 	PropsParameter,
 	PropsParameterWrapper,
-} from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {ViewportComponentProps} from "@AppBuilderLib/entities/viewport/config/viewport";
+} from "@AppBuilderLib/entities/parameter";
 import {
+	ViewportComponentProps,
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
-} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
-import {ViewportOverlayWrapperProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
-import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
+	ViewportOverlayWrapperProps,
+} from "@AppBuilderLib/entities/viewport";
+import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay";
 import {MantineThemeComponent} from "@mantine/core";
 import {ReactElement} from "react";
 import {IAppBuilderActionDefinition, IAppBuilderWidget} from "./appbuilder";
@@ -75,6 +75,10 @@ export interface IComponentContext {
 	widgets?: {[key: string]: WidgetComponentMapValueType};
 	actions?: {[key: string]: ActionComponentMapValueType};
 	modelCardOverlay?: ModelCardOverlayType;
+	/** Component for rendering app builder containers (e.g. anchors). Injected from widgets layer to avoid circular dependencies. */
+	containerComponent?: (props: any) => ReactElement | null;
+	/** Component for rendering the fallback container when no app builder output is available. Injected from widgets layer to avoid circular dependencies. */
+	fallbackContainerComponent?: (props: any) => ReactElement | null;
 
 	// #endregion Properties (6)
 }

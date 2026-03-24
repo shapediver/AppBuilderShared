@@ -1,7 +1,7 @@
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {Chip, Flex} from "@mantine/core";
 import React from "react";
-import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
+import {UniversalMultiSelectComponentProps} from "../multiselect";
 
 /**
  * Functional chip group select component.

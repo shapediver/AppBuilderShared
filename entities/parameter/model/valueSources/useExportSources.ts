@@ -1,10 +1,10 @@
-import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {PropsExport} from "@AppBuilderLib/entities/export";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
 import {
 	IAppBuilderParameterValueDefinition,
 	IAppBuilderParameterValueSourcePropsExport,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
+} from "@AppBuilderLib/features/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib";
 import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {EXPORT_TYPE, IExportApi} from "@shapediver/viewer.session";
 import {useEffect, useMemo, useState} from "react";

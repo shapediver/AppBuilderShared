@@ -1,4 +1,4 @@
-import {IEventTracking} from "@AppBuilderLib/shared/config/eventTracking";
+import {IEventTracking} from "@AppBuilderLib/shared/config";
 import {
 	ISessionApi,
 	ITreeNode,

@@ -1,23 +1,20 @@
-import {PropsExportWithForm} from "@AppBuilderLib/entities/export/config/propsExport";
-import {useExport} from "@AppBuilderLib/entities/export/model/useExport";
-import {IShapeDiverParameterActions} from "@AppBuilderLib/entities/parameter/config/parameter";
+import {PropsExportWithForm, useExport} from "@AppBuilderLib/entities/export";
 import {
+	buildParameterValidator,
+	IShapeDiverParameterActions,
 	PropsParameter,
 	PropsParameterComponent,
-} from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {buildParameterValidator} from "@AppBuilderLib/entities/parameter/lib/parameterFormValidation";
-import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParameters";
+	useParameters,
+} from "@AppBuilderLib/entities/parameter";
 import {
-	IAppBuilderWidgetPropsForm,
-	isParameterRefControl,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import {
+	ComponentContext,
 	getExportComponent,
 	getParameterComponent,
-} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
+	IAppBuilderWidgetPropsForm,
+	isParameterRefControl,
+} from "@AppBuilderLib/features/appbuilder";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
+import {MarkdownWidgetComponent} from "@AppBuilderLib/shared/ui/markdown";
 import {
 	ActionIcon,
 	ActionIconProps,

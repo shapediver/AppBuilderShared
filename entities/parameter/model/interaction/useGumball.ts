@@ -1,5 +1,5 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
 import {
 	Gumball,
 	updateGumballTransformation,
@@ -16,7 +16,7 @@ import {
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useMemo, useRef} from "react";
-import {useRestrictions} from "../drawing/useRestrictions";
+import {useRestrictions} from "../drawing";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useGumballEvents} from "./useGumballEvents";
 import {useSelection} from "./useSelection";
@@ -165,7 +165,8 @@ export function useGumball(
 			// this allows the gumball to have no restrictions
 			// NOTE: We only do this if there is only one node selected
 			// if multiple nodes are selected, we use no restrictions
-			let restrictionsToUse: {[key: string]: RestrictionProperties} = {};
+			const restrictionsToUse: {[key: string]: RestrictionProperties} =
+				{};
 			if (nodes.length === 1 && restrictions) {
 				const node = nodes[0];
 

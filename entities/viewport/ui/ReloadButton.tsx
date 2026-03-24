@@ -1,6 +1,6 @@
-import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
+import {useParameterImportExport} from "@AppBuilderLib/entities/parameter";
 import React from "react";
-import {CommonButtonProps} from "../config/types";
+import {CommonButtonProps} from "../config";
 import ViewportIconButton from "./ViewportIconButton";
 
 interface ReloadButtonProps extends CommonButtonProps {

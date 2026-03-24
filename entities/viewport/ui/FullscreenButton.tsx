@@ -1,7 +1,7 @@
-import {useFullscreen} from "@AppBuilderLib/entities/viewport/model/useFullscreen";
-import {isIPhone} from "@AppBuilderLib/shared/lib/navigator";
+import {useFullscreen} from "@AppBuilderLib/entities/viewport";
+import {isIPhone} from "@AppBuilderLib/shared/lib";
 import React from "react";
-import {CommonButtonProps} from "../config/types";
+import {CommonButtonProps} from "../config";
 import ViewportIconButton from "./ViewportIconButton";
 
 interface FullscreenButtonProps extends CommonButtonProps {

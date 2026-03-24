@@ -1,7 +1,9 @@
-import {parameterMultiSelect} from "@AppBuilderLib/entities/parameter/lib/parameterMultiSelect";
-import {useCustomHeight} from "@AppBuilderLib/entities/parameter/model/useCustomHeight";
+import {
+	parameterMultiSelect,
+	useCustomHeight,
+} from "@AppBuilderLib/entities/parameter";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
+import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	Card,
@@ -15,7 +17,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
-import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
+import {UniversalMultiSelectComponentProps} from "../multiselect";
 import {
 	SelectCardStyleProps,
 	SelectGroupStyleProps,

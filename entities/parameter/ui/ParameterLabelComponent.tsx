@@ -1,7 +1,6 @@
-import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {useParameter} from "@AppBuilderLib/entities/parameter/model/useParameter";
+import {PropsParameter, useParameter} from "@AppBuilderLib/entities/parameter";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
+import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	Group,

@@ -2,7 +2,7 @@ import {
 	IDefaultAttributeCustomData,
 	INumberAttributeCustomData,
 	IShapeDiverStoreAttributeVisualization,
-} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreAttributeVisualization";
+} from "@AppBuilderLib/features/appbuilder";
 import {AttributeVisualizationEngine} from "@shapediver/viewer.features.attribute-visualization";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

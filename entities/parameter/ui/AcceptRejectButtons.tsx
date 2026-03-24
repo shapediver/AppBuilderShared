@@ -1,9 +1,9 @@
-import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {useParameterChanges} from "@AppBuilderLib/entities/parameter/model/useParameterChanges";
 import {
 	isParamDefinition,
+	PropsParameter,
+	useParameterChanges,
 	useSortedParametersAndExports,
-} from "@AppBuilderLib/entities/parameter/model/useSortedParametersAndExports";
+} from "@AppBuilderLib/entities/parameter";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {Button, Group, Text} from "@mantine/core";
 import React from "react";

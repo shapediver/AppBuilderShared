@@ -1,4 +1,4 @@
-import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder";
 
 interface IAnchorGeneric {
 	/**

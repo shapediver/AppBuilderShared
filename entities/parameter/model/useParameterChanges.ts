@@ -1,5 +1,5 @@
-import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {IParameterChanges} from "../config/shapediverStoreParameters";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter";
+import {IParameterChanges} from "../config";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**

@@ -1,4 +1,5 @@
 import {
+	ComponentContext,
 	IAppBuilderWidget,
 	isAccordionUiWidget,
 	isAccordionWidget,
@@ -18,9 +19,7 @@ import {
 	isStackUiWidget,
 	isTableWidget,
 	isTextWidget,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import AppBuilderTableWidgetComponent from "./AppBuilderTableWidgetComponent";
-import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+} from "@AppBuilderLib/features/appbuilder";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
 import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";
@@ -37,7 +36,8 @@ import AppBuilderLineChartWidgetComponent from "./AppBuilderLineChartWidgetCompo
 import AppBuilderProgressWidgetComponent from "./AppBuilderProgressWidgetComponent";
 import AppBuilderRoundChartWidgetComponent from "./AppBuilderRoundChartWidgetComponent";
 import AppBuilderSavedStatesWidgetComponent from "./AppBuilderSavedStatesWidgetComponent";
-import AppBuilderStackUiWidgetButtonComponent from "./AppBuilderStackUiWidget/AppBuilderStackUiWidgetButtonComponent";
+import {AppBuilderStackUiWidgetButtonComponent} from "./AppBuilderStackUiWidget";
+import AppBuilderTableWidgetComponent from "./AppBuilderTableWidgetComponent";
 import AppBuilderTextWidgetComponent from "./AppBuilderTextWidgetComponent";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(
 	() => import("./AppBuilderAgentWidgetComponent"),
@@ -220,10 +220,7 @@ export default function AppBuilderWidgetsComponent({
 					);
 				else if (isTableWidget(w))
 					return (
-						<AppBuilderTableWidgetComponent
-							key={i}
-							{...w.props}
-						/>
+						<AppBuilderTableWidgetComponent key={i} {...w.props} />
 					);
 				else if (React.isValidElement(w)) {
 					// In this case, we can just return the element as is

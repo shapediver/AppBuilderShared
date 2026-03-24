@@ -1,9 +1,9 @@
 import {
 	DummyECommerceApi,
 	ECommerceApiFactory,
-} from "@AppBuilderLib/features/ecommerce/api/ecommerceapi";
-import {isRunningInPlatform} from "@AppBuilderLib/shared/lib/platform";
-import {IECommerceApi} from "../config/ecommerceapi";
+} from "@AppBuilderLib/features/ecommerce";
+import {isRunningInPlatform} from "@AppBuilderLib/shared/lib";
+import {IECommerceApi} from "../config";
 
 /** Number of key events for toggling configurator visibility. */
 const TOGGLE_CONFIGURATOR_VISIBILITY_NUM_EVENTS = 3;

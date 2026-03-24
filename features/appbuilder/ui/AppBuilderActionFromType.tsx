@@ -1,4 +1,4 @@
-import {IComponentContext} from "@AppBuilderShared/shared";
+import {IComponentContext} from "@AppBuilderLib/features/appbuilder";
 import React from "react";
 import {
 	IAppBuilderControlActionRef,
@@ -10,7 +10,7 @@ import {
 	isSetParameterValueAction,
 	isSetParameterValuesAction,
 	isSoundAction,
-} from "../config/appbuilder";
+} from "../config";
 import AppBuilderActionAddToCartComponent from "./AppBuilderActionAddToCartComponent";
 import AppBuilderActionCloseConfiguratorComponent from "./AppBuilderActionCloseConfiguratorComponent";
 import AppBuilderActionCreateModelStateComponent from "./AppBuilderActionCreateModelStateComponent";

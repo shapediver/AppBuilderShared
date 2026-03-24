@@ -1,4 +1,4 @@
-import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
+import {IUseSessionDto} from "@AppBuilderLib/entities/session";
 import {create} from "zustand";
 
 export interface ISelectedModel extends IUseSessionDto {

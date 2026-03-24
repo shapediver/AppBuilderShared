@@ -1,6 +1,6 @@
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
+import {MarkdownWidgetComponent} from "@AppBuilderLib/shared/ui/markdown";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	Button,
@@ -19,7 +19,7 @@ import {
 } from "@shapediver/viewer.features.drawing-tools";
 import {IDrawingParameterSettings} from "@shapediver/viewer.session";
 import React, {useEffect, useState} from "react";
-import {useDrawingOptionsStore} from "../model/drawing/useDrawingOptionsStore";
+import {useDrawingOptionsStore} from "../model";
 import classes from "./DrawingOptionsComponent.module.css";
 
 /**

@@ -1,44 +1,28 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter";
 import {
 	ButtonRenderContext,
+	ComponentContext,
 	getViewportIconComponent,
-} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
-import {OverlayPosition} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
+} from "@AppBuilderLib/features/appbuilder";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {ViewportTransparentBackgroundStyle} from "../config/viewport";
 import {
 	ViewportIconButtonEnum,
+	ViewportIconsDefaultStyleProps,
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
-} from "../config/viewportIcons";
-import {useShapeDiverStoreViewport} from "../model/useShapeDiverStoreViewport";
-import {useShapeDiverViewportIconsStore} from "../model/useShapeDiverViewportIconsStore";
-import {useViewportControls} from "../model/useViewportControls";
-import {useViewportId} from "../model/useViewportId";
+} from "../config";
+import {
+	useShapeDiverStoreViewport,
+	useShapeDiverViewportIconsStore,
+	useViewportControls,
+	useViewportId,
+} from "../model";
 import ViewportOverlayWrapper from "./ViewportOverlayWrapper";
 
 export const defaultStyleProps: ViewportIconsOptionalProps = {
-	style: {
-		display: "flex",
-		gap: "0.25rem",
-		alignItems: "center",
-		flexDirection: "row",
-		border: "none",
-		...ViewportTransparentBackgroundStyle,
-	},
-	fullscreenId: "viewer-fullscreen-area",
-	viewportOverlayProps: {
-		position: OverlayPosition.TOP_MIDDLE,
-		offset: "0.5em",
-	},
-	paperProps: {
-		py: 1,
-		px: 2,
-		shadow: "md",
-	},
+	...ViewportIconsDefaultStyleProps,
 	dividerProps: {
 		orientation: "vertical",
 		color: "var(--mantine-color-disabled-color)",

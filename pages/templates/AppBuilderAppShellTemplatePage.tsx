@@ -1,9 +1,9 @@
-import {createGridLayout} from "@AppBuilderLib/shared/lib/layout";
-import {useIsLandscape} from "@AppBuilderLib/shared/lib/useIsLandscape";
 import {
+	createGridLayout,
 	ResponsiveValueType,
+	useIsLandscape,
 	useResponsiveValueSelector,
-} from "@AppBuilderLib/shared/lib/useResponsiveValueSelector";
+} from "@AppBuilderLib/shared/lib";
 import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
 import {
 	AppShell,
@@ -18,7 +18,7 @@ import {
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
 import {useDisclosure, useMediaQuery} from "@mantine/hooks";
 import React, {useEffect, useState} from "react";
-import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
+import {IAppBuilderTemplatePageProps} from "../config";
 import classes from "./AppBuilderAppShellTemplatePage.module.css";
 
 interface StyleProps {

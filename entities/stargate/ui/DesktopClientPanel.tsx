@@ -3,7 +3,7 @@ import {
 	useShapeDiverStoreStargate,
 } from "@AppBuilderLib/entities/stargate";
 import {useNotificationStore} from "@AppBuilderLib/features";
-import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderLib/features/appbuilder";
 import {Icon, IconProps, IconType} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {

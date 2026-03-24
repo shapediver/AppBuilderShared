@@ -1,16 +1,16 @@
 import {
 	filterAndValidateParameters,
 	generateParameterFeedback,
+	getParameterStates,
 	isImportParameterArray,
-} from "@AppBuilderLib/entities/parameter/lib/parametersFilter";
-import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
+} from "@AppBuilderLib/entities/parameter";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {
+	ErrorReportingContext,
 	exceptionWrapper,
 	exceptionWrapperAsync,
-} from "@AppBuilderLib/shared/lib/exceptionWrapper";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
+} from "@AppBuilderLib/shared/lib";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
 import {useCallback, useContext} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";

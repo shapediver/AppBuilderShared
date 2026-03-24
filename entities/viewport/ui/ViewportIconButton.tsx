@@ -2,7 +2,6 @@ import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	ActionIcon,
-	ActionIconProps,
 	Box,
 	MantineStyleProp,
 	MantineThemeComponent,
@@ -10,7 +9,10 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import {IconProps as IconPropsType} from "../config/types";
+import {
+	ViewportIconButtonDefaultStyleProps,
+	ViewportIconButtonStyleProps,
+} from "../config";
 import classes from "./ViewportIcons.module.css";
 
 interface Props {
@@ -22,30 +24,16 @@ interface Props {
 	onMouseDown?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-type StyleProps = {
+type StyleProps = ViewportIconButtonStyleProps & {
 	tooltipWrapperProps?: Partial<TooltipProps>;
-	actionIconProps?: ActionIconProps & {
-		variantDisabled?: string;
-	};
-	iconProps?: Partial<IconProps> & {
-		colorDisabled?: string;
-	};
+	iconProps?: ViewportIconButtonStyleProps["iconProps"] & Partial<IconProps>;
 };
 
 export type ViewportIconButtonProps = Props & StyleProps;
 
 export const defaultStyleProps: StyleProps = {
 	tooltipWrapperProps: {},
-	actionIconProps: {
-		size: IconPropsType.size,
-		variant: IconPropsType.variant,
-		variantDisabled: IconPropsType.variantDisabled,
-		style: IconPropsType.style,
-	},
-	iconProps: {
-		color: IconPropsType.color,
-		colorDisabled: IconPropsType.colorDisabled,
-	},
+	...ViewportIconButtonDefaultStyleProps,
 };
 
 export type ViewportIconButtonThemePropsType = Partial<StyleProps>;

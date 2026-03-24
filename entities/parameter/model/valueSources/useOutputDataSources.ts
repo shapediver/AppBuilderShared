@@ -1,8 +1,10 @@
-import {IShapeDiverOutput} from "@AppBuilderLib/entities/output/config/output";
-import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
-import {useOutputs} from "@AppBuilderLib/entities/output/model/useOutputs";
-import {IAppBuilderParameterValueSourcePropsDataOutput} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {
+	IShapeDiverOutput,
+	PropsOutput,
+	useOutputs,
+} from "@AppBuilderLib/entities/output";
+import {IAppBuilderParameterValueSourcePropsDataOutput} from "@AppBuilderLib/features/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib";
 import {useEffect, useMemo, useState} from "react";
 
 /**

@@ -1,5 +1,7 @@
-import {parameterMultiSelect} from "@AppBuilderLib/entities/parameter/lib/parameterMultiSelect";
-import {useCustomHeight} from "@AppBuilderLib/entities/parameter/model/useCustomHeight";
+import {
+	parameterMultiSelect,
+	useCustomHeight,
+} from "@AppBuilderLib/entities/parameter";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {
 	MantineThemeComponent,
@@ -10,7 +12,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useMemo, useState} from "react";
-import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
+import {UniversalMultiSelectComponentProps} from "../multiselect";
 import ButtonImageCard from "./ButtonImageCard";
 import {
 	SelectCardStyleProps,

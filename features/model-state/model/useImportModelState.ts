@@ -1,15 +1,17 @@
 import {
 	filterAndValidateModelStateParameters,
 	generateParameterFeedback,
-} from "@AppBuilderLib/entities/parameter/lib/parametersFilter";
-import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+	getParameterStates,
+	useShapeDiverStoreParameters,
+} from "@AppBuilderLib/entities/parameter";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {QUERYPARAM_MODELSTATEID} from "@AppBuilderLib/shared/config/queryparams";
-import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
-import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
-import {applyModelStateToUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
+import {QUERYPARAM_MODELSTATEID} from "@AppBuilderLib/shared/config";
+import {
+	applyModelStateToUrl,
+	ErrorReportingContext,
+	exceptionWrapperAsync,
+} from "@AppBuilderLib/shared/lib";
 import {useCallback, useContext, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 

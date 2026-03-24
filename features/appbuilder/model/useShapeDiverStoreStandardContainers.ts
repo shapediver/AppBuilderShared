@@ -1,9 +1,9 @@
-import {IAppBuilderContainer} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	AppBuilderStandardContainerNames,
 	AppBuilderStandardContainerNameType,
+	IAppBuilderContainer,
 	IShapeDiverStoreStandardContainers,
-} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
+} from "@AppBuilderLib/features/appbuilder";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 
@@ -42,7 +42,7 @@ const merge = (
 	}
 
 	// Create new tabs array with proper immutability
-	let newTabs = [...(baseContainer.tabs || [])];
+	const newTabs = [...(baseContainer.tabs || [])];
 	let newWidgets = [...(baseContainer.widgets || [])];
 
 	// If there is a tab present, we need to add the additional items to the current tab

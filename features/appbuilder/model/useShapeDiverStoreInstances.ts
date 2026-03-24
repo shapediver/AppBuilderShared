@@ -1,5 +1,5 @@
-import {IShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreInstances";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {IShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 

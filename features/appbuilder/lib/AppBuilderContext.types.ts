@@ -1,4 +1,4 @@
-import {IAppBuilder} from "../config/appbuilder";
+import {IAppBuilder} from "../config";
 
 /** Types of containers */
 export type AppBuilderContainerOrientationType =

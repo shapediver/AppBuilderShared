@@ -1,22 +1,21 @@
-import {useSessionPropsExport} from "@AppBuilderLib/entities/export/model/useSessionPropsExport";
-import {useSessionPropsOutput} from "@AppBuilderLib/entities/output/model/useSessionPropsOutput";
-import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
-import {useViewportAnchors} from "@AppBuilderLib/entities/viewport/model/useViewportAnchors";
+import {useSessionPropsExport} from "@AppBuilderLib/entities/export";
+import {useSessionPropsOutput} from "@AppBuilderLib/entities/output";
+import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter";
+import {useViewportAnchors} from "@AppBuilderLib/entities/viewport";
 import {
 	IAppBuilderTemplatePageContainerHints,
 	IAppBuilderTemplatePageProps,
 } from "@AppBuilderLib/pages/config/appbuildertemplates";
-import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
-import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
-import React, {useEffect, useMemo} from "react";
+import React, {useContext, useEffect, useMemo} from "react";
 import {
 	AppBuilderContainerNameType,
+	ComponentContext,
 	IAppBuilder,
 	IAppBuilderContainer,
 	IAppBuilderSettingsResolved,
 	IAppBuilderSettingsSession,
 	isStandardContainer,
-} from "../config/appbuilder";
+} from "../config";
 import {useShapeDiverStoreStandardContainers} from "./useShapeDiverStoreStandardContainers";
 
 interface Props {
@@ -65,6 +64,11 @@ export function useAppBuilderStandardContainers(props: Props) {
 		settings,
 		hasAppBuilderOutput,
 	} = props;
+
+	const componentContext = useContext(ComponentContext);
+	const ContainerComponent = componentContext.containerComponent;
+	const FallbackContainerComponent =
+		componentContext.fallbackContainerComponent;
 
 	// get props for fallback parameters
 	const parameterProps = useSessionPropsParameter(namespace);
@@ -126,10 +130,15 @@ export function useAppBuilderStandardContainers(props: Props) {
 			exportProps.length > 0 ||
 			outputProps.length > 0;
 
-		if (!hasAppBuilderOutput && hasFallbackData && showFallbackContainers) {
+		if (
+			!hasAppBuilderOutput &&
+			hasFallbackData &&
+			showFallbackContainers &&
+			FallbackContainerComponent
+		) {
 			return {
 				node: (
-					<AppBuilderFallbackContainerComponent
+					<FallbackContainerComponent
 						parameters={parameterProps}
 						exports={exportProps}
 						outputs={outputProps}
@@ -148,6 +157,7 @@ export function useAppBuilderStandardContainers(props: Props) {
 		outputProps,
 		namespace,
 		sessionSettings,
+		FallbackContainerComponent,
 	]);
 
 	//create UI elements for containers
@@ -173,19 +183,19 @@ export function useAppBuilderStandardContainers(props: Props) {
 				// we just have to do them here for type safety
 				if (!container || !isStandardContainer(container)) return;
 				result[container.name] = {
-					node: (
-						<AppBuilderContainerComponent
+					node: ContainerComponent ? (
+						<ContainerComponent
 							namespace={namespace}
 							{...container}
 						/>
-					),
+					) : undefined,
 					hints: createContainerHints(container),
 				};
 			});
 		}
 
 		return result;
-	}, [mergedContainers, namespace, fallbackContainer]);
+	}, [mergedContainers, namespace, fallbackContainer, ContainerComponent]);
 
 	return {containers, anchors};
 }

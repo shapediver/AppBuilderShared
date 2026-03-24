@@ -4,11 +4,13 @@ import {
 	TModelData,
 	TModelEmbed,
 	TModelQueryPropsExt,
-} from "@AppBuilderLib/entities/model-card/config/shapediverStorePlatformModels";
-import {IPlatformPagedItemQueryProps} from "@AppBuilderLib/shared/config/shapediverStorePlatformGeneric";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
-import {defineFilter} from "@AppBuilderLib/shared/lib/platform";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
+} from "@AppBuilderLib/entities/model-card";
+import {
+	devtoolsSettings,
+	IPlatformPagedItemQueryProps,
+} from "@AppBuilderLib/shared/config";
+import {defineFilter} from "@AppBuilderLib/shared/lib";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
 import {
 	SdPlatformModelQueryEmbeddableFields,
 	SdPlatformModelQueryParameters,

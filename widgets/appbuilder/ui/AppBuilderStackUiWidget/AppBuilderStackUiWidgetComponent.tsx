@@ -1,4 +1,4 @@
-import {IAppBuilderStackContextElement} from "@AppBuilderLib/features/appbuilder/lib/StackContext.types";
+import {IAppBuilderStackContextElement} from "@AppBuilderLib/features/appbuilder";
 import {MantineThemeComponent} from "@mantine/core";
 import React from "react";
 import {AppBuilderStackUiWidgetAnimationWrapper} from "./AppBuilderStackUiWidgetAnimationWrapper";

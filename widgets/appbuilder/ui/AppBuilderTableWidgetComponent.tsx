@@ -40,7 +40,9 @@ function useElementHeight(ref: React.RefObject<HTMLElement | null>): number {
 		const el = ref.current;
 		if (!el) return;
 		const observer = new ResizeObserver(([entry]) => {
-			setHeight(entry.borderBoxSize[0]?.blockSize ?? entry.contentRect.height);
+			setHeight(
+				entry.borderBoxSize[0]?.blockSize ?? entry.contentRect.height,
+			);
 		});
 		observer.observe(el);
 		return () => observer.disconnect();
@@ -215,12 +217,9 @@ export default function AppBuilderTableWidgetComponent(
 		() => ({...scrollContainerStyle, height: height ?? "100%"}),
 		[height],
 	);
-	const handleQueryChange = useCallback(
-		(accessor: string, value: string) => {
-			setRawQueries((prev) => ({...prev, [accessor]: value}));
-		},
-		[],
-	);
+	const handleQueryChange = useCallback((accessor: string, value: string) => {
+		setRawQueries((prev) => ({...prev, [accessor]: value}));
+	}, []);
 	const colCount = columns.length;
 	const {style: searchBarStyleFromProps, ...searchBarRest} =
 		searchBarProps ?? {};
@@ -264,7 +263,11 @@ export default function AppBuilderTableWidgetComponent(
 			<Table
 				{...tableProps}
 				stickyHeader={stickyHeader}
-				stickyHeaderOffset={stickyHeader && searchBarHeight > 0 ? searchBarHeight : undefined}
+				stickyHeaderOffset={
+					stickyHeader && searchBarHeight > 0
+						? searchBarHeight
+						: undefined
+				}
 				striped={striped}
 				highlightOnHover={highlightOnHover}
 				withColumnBorders={withColumnBorders}
@@ -321,7 +324,10 @@ export default function AppBuilderTableWidgetComponent(
 						<Table.Tr>
 							<Table.Td
 								colSpan={colCount}
-								style={{...paddingCellStyle, height: paddingTop}}
+								style={{
+									...paddingCellStyle,
+									height: paddingTop,
+								}}
 							/>
 						</Table.Tr>
 					)}

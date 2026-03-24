@@ -1,6 +1,8 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {IAppBuilderWidgetPropsSceneTreeExplorer} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {useShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreInstances";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
+import {
+	IAppBuilderWidgetPropsSceneTreeExplorer,
+	useShapeDiverStoreInstances,
+} from "@AppBuilderLib/features/appbuilder";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {
 	ActionIcon,
@@ -154,12 +156,9 @@ export default function AppBuilderSceneTreeExplorerWidgetComponent(
 	useEffect(() => {
 		const removeSessionUpdateCallbacks = Object.keys(sessions).map(
 			(sessionId) =>
-				addSessionUpdateCallback(
-					sessionId,
-					(newNode?: ITreeNode, oldNode?: ITreeNode) => {
-						callback(sessionId, newNode);
-					},
-				),
+				addSessionUpdateCallback(sessionId, (newNode?: ITreeNode) => {
+					callback(sessionId, newNode);
+				}),
 		);
 		return () => {
 			removeSessionUpdateCallbacks.forEach(

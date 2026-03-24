@@ -1,7 +1,7 @@
-import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useMemo} from "react";
-import {IShapeDiverExampleModels} from "../config/examplemodel";
+import {IShapeDiverExampleModels} from "../config";
 
 interface Props extends IAppBuilderSettingsSession {
 	/** Name of example model */

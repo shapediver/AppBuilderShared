@@ -1,6 +1,8 @@
-import {IShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/config/shapediverStoreViewport";
-import {ViewportCreateDto} from "@AppBuilderLib/entities/viewport/config/viewport";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {
+	IShapeDiverStoreViewport,
+	ViewportCreateDto,
+} from "@AppBuilderLib/entities/viewport";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config";
 import {createViewport, IViewportApi} from "@shapediver/viewer.viewport";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

@@ -1,10 +1,12 @@
-import {IShapeDiverOutput} from "@AppBuilderLib/entities/output/config/output";
-import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
-import {useOutputs} from "@AppBuilderLib/entities/output/model/useOutputs";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {IAppBuilderParameterValueSourcePropsSdtf} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import {
+	IShapeDiverOutput,
+	PropsOutput,
+	useOutputs,
+} from "@AppBuilderLib/entities/output";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
+import {IAppBuilderParameterValueSourcePropsSdtf} from "@AppBuilderLib/features/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
 import {
 	ResAssetDefinition,
 	ResStypeParameter,

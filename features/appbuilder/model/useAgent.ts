@@ -1,15 +1,19 @@
-import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
-import {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
-import {useAllParametersStateless} from "@AppBuilderLib/entities/parameter/model/useAllParametersStateless";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {getParameterRefs} from "@AppBuilderLib/features/appbuilder/lib/appbuilder";
-import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {
+	IShapeDiverParameter,
+	IShapeDiverStoreParameters,
+	useAllParametersStateless,
+	useShapeDiverStoreParameters,
+} from "@AppBuilderLib/entities/parameter";
+import {
+	AppBuilderDataContext,
+	getParameterRefs,
+} from "@AppBuilderLib/features/appbuilder";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {
 	composeSdColor,
 	decomposeSdColor,
-} from "@AppBuilderLib/shared/lib/colors";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
+	Logger,
+} from "@AppBuilderLib/shared/lib";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import Langfuse, {LangfuseWeb, observeOpenAI} from "langfuse";
 import OpenAI from "openai";
@@ -19,7 +23,7 @@ import {useCallback, useContext, useMemo, useState} from "react";
 import {z} from "zod";
 import {useShallow} from "zustand/react/shallow";
 import packagejson from "~/../package.json";
-import {IAppBuilderParameterRef} from "../config/appbuilder";
+import {IAppBuilderParameterRef} from "../config";
 
 export const DEFAULT_SYSTEM_PROMPT =
 	"You are a helpful assistant who can modify parameters of a 3D configurator and answer questions about the 3D configurator \

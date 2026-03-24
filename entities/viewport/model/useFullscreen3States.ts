@@ -1,4 +1,4 @@
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {Logger} from "@AppBuilderLib/shared/lib";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useShapeDiverViewportIconsStore} from "./useShapeDiverViewportIconsStore";

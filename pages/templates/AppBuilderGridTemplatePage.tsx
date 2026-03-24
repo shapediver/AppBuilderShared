@@ -1,8 +1,8 @@
-import {createGridLayout} from "@AppBuilderLib/shared/lib/layout";
+import {createGridLayout} from "@AppBuilderLib/shared/lib";
 import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useEffect, useRef, useState} from "react";
-import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
+import {IAppBuilderTemplatePageProps} from "../config";
 import classes from "./AppBuilderGridTemplatePage.module.css";
 
 interface StyleProps {

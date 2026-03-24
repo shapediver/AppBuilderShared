@@ -2,7 +2,7 @@ import {
 	IAppBuilder,
 	IAppBuilderParameterRef,
 	isAccordionWidget,
-} from "../config/appbuilder";
+} from "../config";
 
 /**
  * Given an App Builder data object, return all parameter references

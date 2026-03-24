@@ -1,5 +1,5 @@
 import {getNotificationActions} from "@AppBuilderLib/features/notifications";
-import {QUERYPARAM_LOGGING_LEVEL} from "@AppBuilderLib/shared/config/queryparams";
+import {QUERYPARAM_LOGGING_LEVEL} from "@AppBuilderLib/shared/config";
 
 const urlSearchParams = new URLSearchParams(window.location.search);
 const loggingLevelInput = urlSearchParams.get(QUERYPARAM_LOGGING_LEVEL);

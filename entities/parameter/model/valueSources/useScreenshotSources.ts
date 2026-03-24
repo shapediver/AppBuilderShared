@@ -1,6 +1,8 @@
-import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	useShapeDiverStoreViewportAccessFunctions,
+	useViewportId,
+} from "@AppBuilderLib/entities/viewport";
+import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder";
 import {Converter} from "@shapediver/viewer.session";
 import {guessMissingMimeType} from "@shapediver/viewer.utils.mime-type";
 import {useEffect, useState} from "react";

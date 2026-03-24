@@ -1,4 +1,4 @@
-import {parseInteractionEffect} from "@AppBuilderLib/shared/lib/interactionEffects";
+import {parseInteractionEffect} from "@AppBuilderLib/shared/lib";
 import {
 	InteractionEngine,
 	MultiSelectManager,
@@ -219,7 +219,7 @@ export function useSelectManager(
 	// whenever the passive nodes change, we need to update the select manager
 	useEffect(() => {
 		if (!availableEffect) return;
-		let tokens: string[] = [];
+		const tokens: string[] = [];
 
 		if (availableNodes && selectManager) {
 			availableNodes.forEach((node) => {
