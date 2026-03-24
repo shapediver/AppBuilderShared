@@ -2,6 +2,7 @@ import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export";
 import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter";
 import {SessionCreateDto} from "@AppBuilderLib/entities/session";
 import {IconType} from "@AppBuilderLib/shared/ui/icon";
+import {IAppBuilderWidgetPropsTable} from "@AppBuilderLib/widgets/appbuilder/config/appbuildertable";
 import {MantineColor, SliderProps} from "@mantine/core";
 import {
 	ISelectionParameterProps,
@@ -19,9 +20,6 @@ import {
 	IAppBuilderWidgetPropsLineChart,
 	IAppBuilderWidgetPropsRoundChart,
 } from "./appbuildercharts";
-import {
-	IAppBuilderWidgetPropsTable,
-} from "@AppBuilderLib/widgets/appbuilder/config/appbuildertable";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {

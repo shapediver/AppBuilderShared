@@ -20,7 +20,6 @@ import {
 	isTableWidget,
 	isTextWidget,
 } from "@AppBuilderLib/features/appbuilder";
-import AppBuilderTableWidgetComponent from "./AppBuilderTableWidgetComponent";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
 import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";
@@ -38,6 +37,7 @@ import AppBuilderProgressWidgetComponent from "./AppBuilderProgressWidgetCompone
 import AppBuilderRoundChartWidgetComponent from "./AppBuilderRoundChartWidgetComponent";
 import AppBuilderSavedStatesWidgetComponent from "./AppBuilderSavedStatesWidgetComponent";
 import {AppBuilderStackUiWidgetButtonComponent} from "./AppBuilderStackUiWidget";
+import AppBuilderTableWidgetComponent from "./AppBuilderTableWidgetComponent";
 import AppBuilderTextWidgetComponent from "./AppBuilderTextWidgetComponent";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(
 	() => import("./AppBuilderAgentWidgetComponent"),
@@ -220,10 +220,7 @@ export default function AppBuilderWidgetsComponent({
 					);
 				else if (isTableWidget(w))
 					return (
-						<AppBuilderTableWidgetComponent
-							key={i}
-							{...w.props}
-						/>
+						<AppBuilderTableWidgetComponent key={i} {...w.props} />
 					);
 				else if (React.isValidElement(w)) {
 					// In this case, we can just return the element as is

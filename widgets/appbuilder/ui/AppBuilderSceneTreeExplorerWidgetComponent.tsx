@@ -156,12 +156,9 @@ export default function AppBuilderSceneTreeExplorerWidgetComponent(
 	useEffect(() => {
 		const removeSessionUpdateCallbacks = Object.keys(sessions).map(
 			(sessionId) =>
-				addSessionUpdateCallback(
-					sessionId,
-					(newNode?: ITreeNode, oldNode?: ITreeNode) => {
-						callback(sessionId, newNode);
-					},
-				),
+				addSessionUpdateCallback(sessionId, (newNode?: ITreeNode) => {
+					callback(sessionId, newNode);
+				}),
 		);
 		return () => {
 			removeSessionUpdateCallbacks.forEach(
