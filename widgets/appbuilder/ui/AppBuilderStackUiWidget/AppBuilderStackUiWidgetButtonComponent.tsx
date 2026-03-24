@@ -102,6 +102,7 @@ export default function AppBuilderStackUiWidgetButtonComponent(props: Props) {
 						/>
 					}
 					leftSection={icon ? <Icon iconType={icon} /> : undefined}
+					styles={icon ? {label: {flex: 1}} : undefined}
 					{...buttonForwardProps}
 				>
 					<Text {...itemTextProps}>

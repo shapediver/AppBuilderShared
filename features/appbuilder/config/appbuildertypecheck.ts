@@ -899,6 +899,31 @@ const IAppBuilderWidgetPropsSavedStatesSchema = z.object({
 	visualization: z.enum(savedStatesVisualizationValues).optional(),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsTableColumn
+const IAppBuilderWidgetPropsTableColumnSchema = z.object({
+	accessor: z.string(),
+	title: z.string().optional(),
+	sortable: z.boolean().optional(),
+	searchable: z.boolean().optional(),
+	width: z.union([z.number(), z.string()]).optional(),
+});
+
+// Zod type definition for IAppBuilderWidgetPropsTable
+const IAppBuilderWidgetPropsTableSchema = z.object({
+	caption: z.string().optional(),
+	columns: z.array(IAppBuilderWidgetPropsTableColumnSchema),
+	records: z.array(z.record(z.string(), z.unknown())),
+	highlightOnHover: z.boolean().optional(),
+	stickyHeader: z.boolean().optional(),
+	striped: z.boolean().optional(),
+	withColumnBorders: z.boolean().optional(),
+	withRowBorders: z.boolean().optional(),
+	withTableBorder: z.boolean().optional(),
+	height: z.number().optional(),
+	estimateRowHeight: z.number().optional(),
+	overscan: z.number().optional(),
+});
+
 // Zod type definition for IAppBuilderWidget
 const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -976,6 +1001,10 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	z.object({
 		type: z.literal("savedStates"),
 		props: IAppBuilderWidgetPropsSavedStatesSchema,
+	}),
+	z.object({
+		type: z.literal("table"),
+		props: IAppBuilderWidgetPropsTableSchema,
 	}),
 ]);
 

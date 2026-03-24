@@ -18,6 +18,7 @@ import {
 	IAppBuilderWidgetPropsBarChart,
 	IAppBuilderWidgetPropsLineChart,
 	IAppBuilderWidgetPropsRoundChart,
+	IAppBuilderWidgetPropsTable,
 } from "./appbuildercharts";
 
 /** Type used for parameter definitions */
@@ -671,7 +672,8 @@ export type AppBuilderWidgetType =
 	| "accordionUi"
 	| "savedStates"
 	| "sceneTreeExplorer"
-	| "stackUi";
+	| "stackUi"
+	| "table";
 
 /**
  * Properties of a parameter and export accordion widget.
@@ -936,7 +938,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsAccordionUi
 		| IAppBuilderWidgetPropsSavedStates
 		| IAppBuilderWidgetPropsSceneTreeExplorer
-		| IAppBuilderWidgetPropsStackUi;
+		| IAppBuilderWidgetPropsStackUi
+		| IAppBuilderWidgetPropsTable;
 }
 
 /**
@@ -1305,6 +1308,14 @@ export function isStackUiWidget(widget: IAppBuilderWidget): widget is {
 	props: IAppBuilderWidgetPropsStackUi;
 } {
 	return widget.type === "stackUi";
+}
+
+/** assert widget type "table" */
+export function isTableWidget(widget: IAppBuilderWidget): widget is {
+	type: "table";
+	props: IAppBuilderWidgetPropsTable;
+} {
+	return widget.type === "table";
 }
 
 /** assert action type "createModelState" */

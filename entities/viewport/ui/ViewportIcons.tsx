@@ -4,6 +4,7 @@ import {
 	ComponentContext,
 	getViewportIconComponent,
 } from "@AppBuilderLib/features/appbuilder";
+import {OverlayPosition} from "@AppBuilderLib/shared/ui/overlay";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";

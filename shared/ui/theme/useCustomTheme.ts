@@ -57,6 +57,7 @@ import {
 	AppBuilderRoundChartWidgetComponentThemeProps,
 	AppBuilderSavedStatesWidgetComponentThemeProps,
 	AppBuilderStackUiWidgetComponentThemeProps,
+	AppBuilderTableWidgetComponentThemeProps,
 	AppBuilderTextWidgetThemeProps,
 	ParametersAndExportsAccordionComponentThemeProps,
 	ViewportAcceptRejectButtonsComponentThemeProps,
@@ -467,6 +468,24 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			AppBuilderBarChartWidgetComponent:
 				AppBuilderAreaChartWidgetComponentThemeProps({}),
+			/**
+			 * AppBuilderTableWidgetComponent
+			 *
+			 * Used for defining theme overrides for table widgets.
+			 *
+			 * Example:
+			 * AppBuilderTableWidgetComponent: AppBuilderTableWidgetComponentThemeProps({
+			 *   tableProps: {},
+			 *   searchBarProps: {
+			 *     style: { display: "flex", gap: 8, padding: "4px 0" },
+			 *   },
+			 *   searchTextInputProps: {
+			 *     size: "xs",
+			 *   },
+			 * }),
+			 */
+			AppBuilderTableWidgetComponent:
+				AppBuilderTableWidgetComponentThemeProps({}),
 			/**
 			 * AppBuilderContainerWrapper
 			 *

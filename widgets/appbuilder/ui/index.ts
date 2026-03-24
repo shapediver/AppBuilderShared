@@ -39,6 +39,8 @@ export {
 } from "./AppBuilderStackUiWidget";
 export {default as AppBuilderTabsComponent} from "./AppBuilderTabsComponent";
 export * from "./AppBuilderTextWidgetComponent";
+export {default as AppBuilderTableWidgetComponent} from "./AppBuilderTableWidgetComponent";
+export * from "./AppBuilderTableWidgetComponent";
 export {default as AppBuilderTextWidgetComponent} from "./AppBuilderTextWidgetComponent";
 export {default as AppBuilderWidgetsComponent} from "./AppBuilderWidgetsComponent";
 export {
