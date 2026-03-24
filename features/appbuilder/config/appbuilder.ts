@@ -18,8 +18,10 @@ import {
 	IAppBuilderWidgetPropsBarChart,
 	IAppBuilderWidgetPropsLineChart,
 	IAppBuilderWidgetPropsRoundChart,
-	IAppBuilderWidgetPropsTable,
 } from "./appbuildercharts";
+import {
+	IAppBuilderWidgetPropsTable,
+} from "@AppBuilderLib/widgets/appbuilder/config/appbuildertable";
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
