@@ -42,15 +42,15 @@ export const ISelectComponentItemDataTypeSchema = z.object({
 	imageUrl: z.string().optional(),
 	color: z.string().optional(),
 	hidden: z.boolean().optional(),
-	data: z.record(z.any()).optional(),
+	data: z.record(z.string(), z.any()).optional(),
 });
 
 // Zod type definition for ISelectParameterSettings
 const ISelectParameterSettingsSchema = z.object({
 	type: SelectComponentTypeSchema.optional(),
-	itemData: z.record(ISelectComponentItemDataTypeSchema).optional(),
+	itemData: z.record(z.string(), ISelectComponentItemDataTypeSchema).optional(),
 	searchable: z.boolean().optional(),
-	limit: z.number().int().positive().optional(),
+	limit: z.int().positive().optional(),
 	height: z.string().optional(),
 });
 
@@ -69,7 +69,7 @@ const IStringParameterSelectSettingsSchema =
 
 // Zod type definition for IStringParameterSettings
 const IStringParameterSettingsSchema = z.object({
-	lines: z.number().int().positive().optional(),
+	lines: z.int().positive().optional(),
 	selectSettings: IStringParameterSelectSettingsSchema.optional(),
 });
 
@@ -96,7 +96,7 @@ export const validateNumberParameterSettings = (value: any) => {
 };
 
 // Zod type definition for IAppBuilderParameterDefinition
-const IAppBuilderParameterDefinitionSchema = z.object({
+const IAppBuilderParameterDefinitionSchema = z.strictObject({
 	id: z.string(),
 	choices: z.array(z.string()).optional(),
 	decimalplaces: z.number().optional(),
@@ -111,11 +111,11 @@ const IAppBuilderParameterDefinitionSchema = z.object({
 	vmax: z.number().optional(),
 	interval: z.number().optional(),
 	name: z.string(),
-	type: z.nativeEnum(PARAMETER_TYPE),
-	visualization: z.nativeEnum(PARAMETER_VISUALIZATION).optional(),
-	structure: z.nativeEnum(ResStructureType).optional(),
+	type: z.enum(PARAMETER_TYPE),
+	visualization: z.enum(PARAMETER_VISUALIZATION).optional(),
+	structure: z.enum(ResStructureType).optional(),
 	group: z
-		.object({
+		.strictObject({
 			id: z.string(),
 			name: z.string(),
 		})
@@ -143,7 +143,7 @@ const IAppBuilderParameterOverridesSchema =
 	});
 
 // Zod type definition for IAppBuilderParameterRef
-const IAppBuilderParameterRefSchema = z.object({
+const IAppBuilderParameterRefSchema = z.strictObject({
 	name: z.string(),
 	sessionId: z.string().optional(),
 	overrides: IAppBuilderParameterOverridesSchema.optional(),
@@ -155,14 +155,14 @@ const IAppBuilderParameterRefSchema = z.object({
 const IAppBuilderExportOverridesSchema = IAppBuilderParameterOverridesSchema;
 
 // Zod type definition for IAppBuilderExportRef
-const IAppBuilderExportRefSchema = z.object({
+const IAppBuilderExportRefSchema = z.strictObject({
 	name: z.string(),
 	sessionId: z.string().optional(),
 	overrides: IAppBuilderExportOverridesSchema.optional(),
 });
 
 // Zod type definition for IAppBuilderImageRef
-const IAppBuilderImageRefSchema = z.object({
+const IAppBuilderImageRefSchema = z.strictObject({
 	export: IAppBuilderExportRefSchema.pick({
 		name: true,
 		sessionId: true,
@@ -171,11 +171,11 @@ const IAppBuilderImageRefSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsScreenshot
-const IAppBuilderParameterValueSourcePropsScreenshotSchema = z.object({
+const IAppBuilderParameterValueSourcePropsScreenshotSchema = z.strictObject({
 	contentType: z.string().optional(),
 	quality: z.number().min(0).max(1).optional(),
 	resolution: z
-		.object({
+		.strictObject({
 			width: z.number().int().positive(),
 			height: z.number().int().positive(),
 		})
@@ -183,33 +183,29 @@ const IAppBuilderParameterValueSourcePropsScreenshotSchema = z.object({
 	// check if there is either a name or type present
 	camera: z
 		.union([
-			z
-				.object({
-					name: z.string(),
-				})
-				.passthrough(),
-			z
-				.object({
-					type: z.nativeEnum(CAMERA_TYPE),
-				})
-				.passthrough(),
+			z.looseObject({
+				name: z.string(),
+			}),
+			z.looseObject({
+				type: z.enum(CAMERA_TYPE),
+			}),
 		])
 		.optional(),
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsDataOutput
-const IAppBuilderParameterValueSourcePropsDataOutputSchema = z.object({
+const IAppBuilderParameterValueSourcePropsDataOutputSchema = z.strictObject({
 	sessionId: z.string().optional(),
 	name: z.string(),
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsExport
-const IAppBuilderParameterValueSourcePropsExportSchema = z.object({
+const IAppBuilderParameterValueSourcePropsExportSchema = z.strictObject({
 	sessionId: z.string().optional(),
 	name: z.string(),
 	parameterValues: z
 		.record(
-			z
+			z.string(), z
 				.string()
 				.or(z.number())
 				.or(z.boolean())
@@ -224,11 +220,11 @@ const IAppBuilderParameterValueSourcePropsExportSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsSdtf
-const IAppBuilderParameterValueSourcePropsSdtfSchema = z.object({
+const IAppBuilderParameterValueSourcePropsSdtfSchema = z.strictObject({
 	sessionId: z.string().optional(),
 	name: z.string(),
 	chunk: z
-		.object({
+		.strictObject({
 			id: z.string().optional(),
 			name: z.string().optional(),
 		})
@@ -236,7 +232,7 @@ const IAppBuilderParameterValueSourcePropsSdtfSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderActionPropsCreateModelState
-const IAppBuilderActionPropsCreateModelStateSchema = z.object({
+const IAppBuilderActionPropsCreateModelStateSchema = z.strictObject({
 	includeImage: z.boolean().optional(),
 	image: IAppBuilderImageRefSchema.optional(),
 	includeGltf: z.boolean().optional(),
@@ -254,23 +250,23 @@ const IAppBuilderParameterValueSourcePropsModelStateSchema =
 const IAppBuilderParameterValueSourceDefinitionSchema = z.discriminatedUnion(
 	"type",
 	[
-		z.object({
+		z.strictObject({
 			type: z.literal("dataOutput"),
 			props: IAppBuilderParameterValueSourcePropsDataOutputSchema,
 		}),
-		z.object({
+		z.strictObject({
 			type: z.literal("export"),
 			props: IAppBuilderParameterValueSourcePropsExportSchema,
 		}),
-		z.object({
+		z.strictObject({
 			type: z.literal("modelState"),
 			props: IAppBuilderParameterValueSourcePropsModelStateSchema,
 		}),
-		z.object({
+		z.strictObject({
 			type: z.literal("screenshot"),
 			props: IAppBuilderParameterValueSourcePropsScreenshotSchema,
 		}),
-		z.object({
+		z.strictObject({
 			type: z.literal("sdtf"),
 			props: IAppBuilderParameterValueSourcePropsSdtfSchema,
 		}),
@@ -278,7 +274,7 @@ const IAppBuilderParameterValueSourceDefinitionSchema = z.discriminatedUnion(
 );
 
 // Zod type definition for IAppBuilderActionPropsCommon
-const IAppBuilderActionPropsCommonSchema = z.object({
+const IAppBuilderActionPropsCommonSchema = z.strictObject({
 	label: z.string().optional(),
 	icon: z.string().optional(),
 	tooltip: z.string().optional(),
@@ -292,7 +288,7 @@ const IAppBuilderLegacyActionPropsCreateModelStateSchema =
 
 // Zod type definition for IAppBuilderActionPropsAddToCart
 const IAppBuilderActionPropsAddToCartSchema = z
-	.object({
+	.strictObject({
 		productId: z.string().optional(),
 		quantity: z.number().optional(),
 		price: z.number().optional(),
@@ -307,7 +303,7 @@ const IAppBuilderLegacyActionPropsAddToCartSchema =
 	);
 
 // Zod type definition for IAppBuilderActionPropsSetParameterValue
-const IAppBuilderActionPropsSetParameterValueSchema = z.object({
+const IAppBuilderActionPropsSetParameterValueSchema = z.strictObject({
 	parameter: IAppBuilderParameterRefSchema.pick({
 		name: true,
 		sessionId: true,
@@ -323,7 +319,7 @@ const IAppBuilderLegacyActionPropsSetParameterValueSchema =
 	);
 
 // Zod type definition for IAppBuilderActionPropsSetParameterValues
-const IAppBuilderActionPropsSetParameterValuesSchema = z.object({
+const IAppBuilderActionPropsSetParameterValuesSchema = z.strictObject({
 	parameterValues: z.array(
 		IAppBuilderLegacyActionPropsSetParameterValueSchema,
 	),
@@ -336,7 +332,7 @@ const IAppBuilderLegacyActionPropsSetParameterValuesSchema =
 	);
 
 // Zod type definition for IAppBuilderActionPropsSetBrowserLocation
-const IAppBuilderActionPropsSetBrowserLocationSchema = z.object({
+const IAppBuilderActionPropsSetBrowserLocationSchema = z.strictObject({
 	href: z.string().optional(),
 	pathname: z.string().optional(),
 	search: z.string().optional(),
@@ -350,7 +346,7 @@ const IAppBuilderLegacyActionPropsSetBrowserLocationSchema =
 	);
 
 // Zod type definition for IAppBuilderActionPropsCloseConfigurator
-const IAppBuilderActionPropsCloseConfigurator = z.object({});
+const IAppBuilderActionPropsCloseConfigurator = z.strictObject({});
 
 // Zod type definition for IAppBuilderLegacyActionPropsCloseConfigurator
 const IAppBuilderLegacyActionPropsCloseConfiguratorSchema =
@@ -358,19 +354,15 @@ const IAppBuilderLegacyActionPropsCloseConfiguratorSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
-const IAppBuilderActionPropsCameraCommonSchema = z.object({
+const IAppBuilderActionPropsCameraCommonSchema = z.strictObject({
 	camera: z
 		.union([
-			z
-				.object({
-					name: z.string(),
-				})
-				.passthrough(),
-			z
-				.object({
-					type: z.nativeEnum(CAMERA_TYPE),
-				})
-				.passthrough(),
+			z.looseObject({
+            					name: z.string(),
+            				}),
+			z.looseObject({
+            					type: z.enum(CAMERA_TYPE),
+            				}),
 		])
 		.optional(),
 	options: z.record(z.any()).optional(),
@@ -379,12 +371,12 @@ const IAppBuilderActionPropsCameraCommonSchema = z.object({
 // Zod type definition for IAppBuilderActionPropsCameraCommon
 const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 	z
-		.object({
+		.strictObject({
 			type: z.literal("animate"),
 			props: z
-				.object({
+				.strictObject({
 					path: z.array(
-						z.object({
+						z.strictObject({
 							position: z.array(z.number()).length(3),
 							target: z.array(z.number()).length(3),
 						}),
@@ -395,18 +387,18 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 		})
 		.extend(IAppBuilderActionPropsCommonSchema.shape),
 	z
-		.object({
+		.strictObject({
 			type: z.literal("assign"),
 			props: z
-				.object({})
+				.strictObject({})
 				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
 		})
 		.extend(IAppBuilderActionPropsCommonSchema.shape),
 	z
-		.object({
+		.strictObject({
 			type: z.literal("set"),
 			props: z
-				.object({
+				.strictObject({
 					position: z.array(z.number()).length(3),
 					target: z.array(z.number()).length(3),
 				})
@@ -414,18 +406,18 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 		})
 		.extend(IAppBuilderActionPropsCommonSchema.shape),
 	z
-		.object({
+		.strictObject({
 			type: z.literal("reset"),
 			props: z
-				.object({})
+				.strictObject({})
 				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
 		})
 		.extend(IAppBuilderActionPropsCommonSchema.shape),
 	z
-		.object({
+		.strictObject({
 			type: z.literal("zoomTo"),
 			props: z
-				.object({
+				.strictObject({
 					initialPosition: z.array(z.number()).length(3).optional(),
 					initialTarget: z.array(z.number()).length(3).optional(),
 					nameFilter: z.array(z.string()).optional(),
@@ -436,7 +428,7 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 ]);
 
 // Zod type definition for IAppBuilderActionPropsSound
-const IAppBuilderActionPropsSoundSchema = z.object({
+const IAppBuilderActionPropsSoundSchema = z.strictObject({
 	href: z.string(),
 	autoplay: z.boolean().optional(),
 	loop: z.boolean().optional(),
@@ -451,7 +443,7 @@ const IAppBuilderLegacyActionPropsSoundSchema =
 	);
 
 // Zod type definition for IAppBuilderActionPropsMessageToParent
-const IAppBuilderActionPropsMessageToParentSchema = z.object({
+const IAppBuilderActionPropsMessageToParentSchema = z.strictObject({
 	type: z.string(),
 	data: z.record(z.unknown()).optional(),
 });
@@ -464,39 +456,39 @@ const IAppBuilderLegacyActionPropsMessageToParentSchema =
 
 // Zod type definition for IAppBuilderLegacyActionDefinition
 const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
-	z.object({
+	z.strictObject({
 		type: z.literal("createModelState"),
 		props: IAppBuilderLegacyActionPropsCreateModelStateSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("addToCart"),
 		props: IAppBuilderLegacyActionPropsAddToCartSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("setParameterValue"),
 		props: IAppBuilderLegacyActionPropsSetParameterValueSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("setParameterValues"),
 		props: IAppBuilderLegacyActionPropsSetParameterValuesSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("setBrowserLocation"),
 		props: IAppBuilderLegacyActionPropsSetBrowserLocationSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("closeConfigurator"),
 		props: IAppBuilderLegacyActionPropsCloseConfiguratorSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("camera"),
 		props: IAppBuilderActionPropsCameraSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("sound"),
 		props: IAppBuilderLegacyActionPropsSoundSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("messageToParent"),
 		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
 	}),
@@ -529,7 +521,7 @@ const IAppBuilderControlOutputRefOverridesSchema =
 	});
 
 // Zod type definition for IAppBuilderControlParameterRef
-const IAppBuilderControlParameterRefSchema = z.object({
+const IAppBuilderControlParameterRefSchema = z.strictObject({
 	name: z.string(),
 	sessionId: z.string().optional(),
 	overrides: IAppBuilderControlParameterRefOverridesSchema.optional(),
@@ -538,7 +530,7 @@ const IAppBuilderControlParameterRefSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderControlExportRef
-const IAppBuilderControlExportRefSchema = z.object({
+const IAppBuilderControlExportRefSchema = z.strictObject({
 	name: z.string(),
 	sessionId: z.string().optional(),
 	overrides: IAppBuilderControlExportRefOverridesSchema.optional(),
@@ -549,39 +541,39 @@ const IAppBuilderControlExportRefSchema = z.object({
 
 // Zod type definition for IAppBuilderActionDefinition
 const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
-	z.object({
+	z.strictObject({
 		type: z.literal("createModelState"),
 		props: IAppBuilderActionPropsCreateModelStateSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("addToCart"),
 		props: IAppBuilderActionPropsAddToCartSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("setParameterValue"),
 		props: IAppBuilderActionPropsSetParameterValueSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("setParameterValues"),
 		props: IAppBuilderActionPropsSetParameterValuesSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("setBrowserLocation"),
 		props: IAppBuilderActionPropsSetBrowserLocationSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("closeConfigurator"),
 		props: IAppBuilderActionPropsCloseConfigurator,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("camera"),
 		props: IAppBuilderActionPropsCameraSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("sound"),
 		props: IAppBuilderActionPropsSoundSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("messageToParent"),
 		props: IAppBuilderActionPropsMessageToParentSchema,
 	}),
@@ -589,13 +581,13 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 
 // Zod type definition for IAppBuilderControlActionRef
 const IAppBuilderControlActionRefSchema = z
-	.object({
+	.strictObject({
 		definition: IAppBuilderActionDefinitionSchema,
 	})
 	.extend(IAppBuilderActionPropsCommonSchema.shape);
 
 // Zod type definition for IAppBuilderControlOutputRef
-const IAppBuilderControlOutputRefSchema = z.object({
+const IAppBuilderControlOutputRefSchema = z.strictObject({
 	name: z.string(),
 	sessionId: z.string().optional(),
 	overrides: IAppBuilderControlOutputRefOverridesSchema.optional(),
@@ -603,30 +595,30 @@ const IAppBuilderControlOutputRefSchema = z.object({
 
 // Zod type definition for IAppBuilderControl
 const IAppBuilderControlSchema = z.discriminatedUnion("type", [
-	z.object({
+	z.strictObject({
 		type: z.literal("parameter"),
 		props: IAppBuilderControlParameterRefSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("export"),
 		props: IAppBuilderControlExportRefSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("action"),
 		props: IAppBuilderControlActionRefSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("output"),
 		props: IAppBuilderControlOutputRefSchema,
 	}),
 ]);
 
 // Zod type definition for IAppBuilderWidgetPropsCommon
-const IAppBuilderWidgetPropsCommonSchema = z.object({});
+const IAppBuilderWidgetPropsCommonSchema = z.strictObject({});
 
 // Zod type definition for IAppBuilderWidgetPropsAccordion
 const IAppBuilderWidgetPropsAccordionSchema = z
-	.object({
+	.strictObject({
 		parameters: z.array(IAppBuilderParameterRefSchema).optional(),
 		exports: z.array(IAppBuilderExportRefSchema).optional(),
 		defaultGroupName: z.string().optional(),
@@ -635,7 +627,7 @@ const IAppBuilderWidgetPropsAccordionSchema = z
 
 // Zod type definition for IAppBuilderWidgetPropsText
 const IAppBuilderWidgetPropsTextSchema = z
-	.object({
+	.strictObject({
 		text: z.string().optional(),
 		markdown: z.string().optional(),
 	})
@@ -643,7 +635,7 @@ const IAppBuilderWidgetPropsTextSchema = z
 
 // Zod type definition for IAppBuilderWidgetPropsImage
 const IAppBuilderWidgetPropsImageSchema = z
-	.object({
+	.strictObject({
 		anchor: z.string().optional(),
 		alt: z.string().optional(),
 		target: z.string().default("_blank"),
@@ -654,19 +646,19 @@ const IAppBuilderWidgetPropsImageSchema = z
 
 // Zod type definition for IAppBuilderWidgetPropsRoundChart
 const IAppBuilderWidgetPropsRoundChartSchema = z
-	.object({
+	.strictObject({
 		name: z.string().optional(),
 		style: z.enum(["pie", "donut"]),
 		labels: z.boolean().optional(),
 		legend: z.boolean().optional(),
 		data: z.array(
-			z.object({name: z.string(), value: z.number(), color: z.string()}),
+			z.strictObject({name: z.string(), value: z.number(), color: z.string()}),
 		),
 	})
 	.extend(IAppBuilderWidgetPropsCommonSchema.shape);
 
 // Zod type definition for IAppBuilderWidgetPropsChartPlotSettings
-const IAppBuilderWidgetPropsChartPlotSettingsSchema = z.object({
+const IAppBuilderWidgetPropsChartPlotSettingsSchema = z.strictObject({
 	xaxis: z.boolean().optional(),
 	xlabel: z.string().optional(),
 	yaxis: z.boolean().optional(),
@@ -677,10 +669,10 @@ const IAppBuilderWidgetPropsChartPlotSettingsSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderWidgetPropsChartDataSet
-const IAppBuilderWidgetPropsChartDataSetSchema = z.object({
+const IAppBuilderWidgetPropsChartDataSetSchema = z.strictObject({
 	keys: z.array(z.string()),
 	series: z.array(
-		z.object({
+		z.strictObject({
 			name: z.string(),
 			color: z.string(),
 			values: z.array(z.number()),
@@ -690,7 +682,7 @@ const IAppBuilderWidgetPropsChartDataSetSchema = z.object({
 
 // Zod type definition for IAppBuilderWidgetPropsChartCommon
 const IAppBuilderWidgetPropsChartCommonSchema = z
-	.object({
+	.strictObject({
 		name: z.string().optional(),
 		plotSettings: IAppBuilderWidgetPropsChartPlotSettingsSchema,
 		data: IAppBuilderWidgetPropsChartDataSetSchema,
@@ -699,7 +691,7 @@ const IAppBuilderWidgetPropsChartCommonSchema = z
 
 // Zod type definition for IAppBuilderWidgetPropsLineChart
 const IAppBuilderWidgetPropsLineChartSchema = z
-	.object({
+	.strictObject({
 		style: z
 			.enum([
 				"bump",
@@ -716,7 +708,7 @@ const IAppBuilderWidgetPropsLineChartSchema = z
 
 // Zod type definition for IAppBuilderWidgetPropsAreaChart
 const IAppBuilderWidgetPropsAreaChartSchema = z
-	.object({
+	.strictObject({
 		style: z
 			.enum([
 				"bump",
@@ -734,7 +726,7 @@ const IAppBuilderWidgetPropsAreaChartSchema = z
 
 // Zod type definition for IAppBuilderWidgetPropsBarChart
 const IAppBuilderWidgetPropsBarChartSchema = z
-	.object({
+	.strictObject({
 		style: z
 			.enum(["default", "stacked", "percent", "waterfall"])
 			.optional(),
@@ -742,13 +734,13 @@ const IAppBuilderWidgetPropsBarChartSchema = z
 	.extend(IAppBuilderWidgetPropsChartCommonSchema.shape);
 
 const IAppBuilderWidgetPropsAttributeVisualizationNumberGradientSchema =
-	z.object({
+	z.strictObject({
 		type: z.literal("number"),
 		min: z.number().optional(),
 		max: z.number().optional(),
-		steps: z.nativeEnum(ATTRIBUTE_VISUALIZATION).or(
+		steps: z.enum(ATTRIBUTE_VISUALIZATION).or(
 			z.array(
-				z.object({
+				z.strictObject({
 					value: z.number(),
 					colorBefore: z.string(),
 					colorAfter: z.string(),
@@ -759,11 +751,11 @@ const IAppBuilderWidgetPropsAttributeVisualizationNumberGradientSchema =
 
 // Zod type definition for IAppBuilderWidgetPropsAttributeVisualizationStringGradient
 const IAppBuilderWidgetPropsAttributeVisualizationStringGradientSchema =
-	z.object({
+	z.strictObject({
 		type: z.literal("string"),
 		defaultColor: z.string().optional(),
 		labelColors: z.array(
-			z.object({
+			z.strictObject({
 				values: z.array(z.string()),
 				color: z.string(),
 			}),
@@ -776,17 +768,17 @@ const IAppBuilderWidgetPropsAttributeVisualizationGradientSchema = z.union([
 		IAppBuilderWidgetPropsAttributeVisualizationNumberGradientSchema,
 		IAppBuilderWidgetPropsAttributeVisualizationStringGradientSchema,
 	]),
-	z.nativeEnum(ATTRIBUTE_VISUALIZATION),
+	z.enum(ATTRIBUTE_VISUALIZATION),
 ]);
 
 // Zod type definition for IAppBuilderWidgetPropsAttributeVisualization
-const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.object({
+const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.strictObject({
 	title: z.string().optional(),
 	tooltip: z.string().optional(),
 	attributes: z
 		.array(
 			z
-				.object({
+				.strictObject({
 					attribute: z.string(),
 					gradient:
 						IAppBuilderWidgetPropsAttributeVisualizationGradientSchema.optional(),
@@ -795,14 +787,14 @@ const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.object({
 		)
 		.optional(),
 	visualizationMode: z
-		.nativeEnum(AttributeVisualizationVisibility)
+		.enum(AttributeVisualizationVisibility)
 		.optional(),
 	showLegend: z.boolean().optional(),
 	defaultGradient:
 		IAppBuilderWidgetPropsAttributeVisualizationGradientSchema.optional(),
 	initialAttribute: z.string().optional(),
 	passiveMaterial: z
-		.object({
+		.strictObject({
 			color: z.string().optional(),
 			opacity: z.number().optional(),
 		})
@@ -811,19 +803,19 @@ const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderWidgetPropsActions
-const IAppBuilderWidgetPropsActionsSchema = z.object({
+const IAppBuilderWidgetPropsActionsSchema = z.strictObject({
 	actions: z.array(IAppBuilderLegacyActionDefinitionSchema),
 });
 
 // Zod type definition for IAppBuilderWidgetPropsAgent
-const IAppBuilderWidgetPropsAgentSchema = z.object({
+const IAppBuilderWidgetPropsAgentSchema = z.strictObject({
 	context: z.string().optional(),
 	parameterNames: z.array(z.string()).optional(),
 	parameterNamesExclude: z.array(z.string()).optional(),
 });
 
 // Zod type definition for IAppBuilderWidgetPropsProgress
-const IAppBuilderWidgetPropsProgressSchema = z.object({
+const IAppBuilderWidgetPropsProgressSchema = z.strictObject({
 	showPercentage: z.boolean().optional(),
 	showOnComplete: z.boolean().optional(),
 	showMessages: z.boolean().optional(),
@@ -831,36 +823,36 @@ const IAppBuilderWidgetPropsProgressSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderWidgetPropsSceneTreeExplorer
-const IAppBuilderWidgetPropsSceneTreeExplorerSchema = z.object({});
+const IAppBuilderWidgetPropsSceneTreeExplorerSchema = z.strictObject({});
 
 // Zod type definition for IAppBuilderWidgetPropsDesktopClientSelection
-const IAppBuilderWidgetPropsDesktopClientSelectionSchema = z.object({
+const IAppBuilderWidgetPropsDesktopClientSelectionSchema = z.strictObject({
 	clientsFilter: z.array(z.string()).optional(),
 	autoConnect: z.boolean().optional(),
 });
 
 // Zod type definition for IAppBuilderWidgetPropsDesktopClientOutputs
-const IAppBuilderWidgetPropsDesktopClientOutputsSchema = z.object({});
+const IAppBuilderWidgetPropsDesktopClientOutputsSchema = z.strictObject({});
 
 // Zod type definition for IAppBuilderWidgetPropsControls
-const IAppBuilderWidgetPropsControlsSchema = z.object({
+const IAppBuilderWidgetPropsControlsSchema = z.strictObject({
 	controls: z.array(IAppBuilderControlSchema),
 });
 
 // Zod type definition for IAppBuilderWidgetPropsForm
-const IAppBuilderWidgetPropsFormSchema = z.object({
+const IAppBuilderWidgetPropsFormSchema = z.strictObject({
 	controls: z.array(IAppBuilderControlSchema).optional(),
 	parameters: z.array(IAppBuilderParameterRefSchema).optional(),
 	export: IAppBuilderExportRefSchema.optional(),
-	submit: z.nativeEnum(FormWidgetSubmitBehavior).optional(),
+	submit: z.enum(FormWidgetSubmitBehavior).optional(),
 	successMessage: z.string().optional(),
 	errorMessage: z.string().optional(),
 });
 
 // Zod type definition for IAppBuilderWidgetPropsAccordionUi
-const IAppBuilderWidgetPropsAccordionUiSchema = z.object({
+const IAppBuilderWidgetPropsAccordionUiSchema = z.strictObject({
 	items: z.array(
-		z.object({
+		z.strictObject({
 			value: z.string().optional(),
 			name: z.string(),
 			icon: z.string().optional(),
@@ -876,7 +868,7 @@ const IAppBuilderWidgetPropsAccordionUiSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderWidgetPropsStackUi
-const IAppBuilderWidgetPropsStackUiSchema = z.object({
+const IAppBuilderWidgetPropsStackUiSchema = z.strictObject({
 	name: z.string(),
 	icon: z.string().optional(),
 	tooltip: z.string().optional(),
@@ -895,12 +887,12 @@ const savedStatesVisualizationValues = [
 	"grid",
 ] as const satisfies readonly SavedStatesVisualization[];
 
-const IAppBuilderWidgetPropsSavedStatesSchema = z.object({
+const IAppBuilderWidgetPropsSavedStatesSchema = z.strictObject({
 	visualization: z.enum(savedStatesVisualizationValues).optional(),
 });
 
 // Zod type definition for IAppBuilderWidgetPropsTableColumn
-const IAppBuilderWidgetPropsTableColumnSchema = z.object({
+const IAppBuilderWidgetPropsTableColumnSchema = z.strictObject({
 	accessor: z.string(),
 	title: z.string().optional(),
 	sortable: z.boolean().optional(),
@@ -909,7 +901,7 @@ const IAppBuilderWidgetPropsTableColumnSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderWidgetPropsTable
-const IAppBuilderWidgetPropsTableSchema = z.object({
+const IAppBuilderWidgetPropsTableSchema = z.strictObject({
 	caption: z.string().optional(),
 	columns: z.array(IAppBuilderWidgetPropsTableColumnSchema),
 	records: z.array(z.record(z.string(), z.unknown())),
@@ -926,83 +918,83 @@ const IAppBuilderWidgetPropsTableSchema = z.object({
 
 // Zod type definition for IAppBuilderWidget
 const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
-	z.object({
+	z.strictObject({
 		type: z.literal("accordion"),
 		props: IAppBuilderWidgetPropsAccordionSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("text"),
 		props: IAppBuilderWidgetPropsTextSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("image"),
 		props: IAppBuilderWidgetPropsImageSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("roundChart"),
 		props: IAppBuilderWidgetPropsRoundChartSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("lineChart"),
 		props: IAppBuilderWidgetPropsLineChartSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("areaChart"),
 		props: IAppBuilderWidgetPropsAreaChartSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("barChart"),
 		props: IAppBuilderWidgetPropsBarChartSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("actions"),
 		props: IAppBuilderWidgetPropsActionsSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("attributeVisualization"),
 		props: IAppBuilderWidgetPropsAttributeVisualizationSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("agent"),
 		props: IAppBuilderWidgetPropsAgentSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("progress"),
 		props: IAppBuilderWidgetPropsProgressSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("desktopClientSelection"),
 		props: IAppBuilderWidgetPropsDesktopClientSelectionSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("desktopClientOutputs"),
 		props: IAppBuilderWidgetPropsDesktopClientOutputsSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("controls"),
 		props: IAppBuilderWidgetPropsControlsSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("form"),
 		props: IAppBuilderWidgetPropsFormSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("accordionUi"),
 		props: IAppBuilderWidgetPropsAccordionUiSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("sceneTreeExplorer"),
 		props: IAppBuilderWidgetPropsSceneTreeExplorerSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("stackUi"),
 		props: IAppBuilderWidgetPropsStackUiSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("savedStates"),
 		props: IAppBuilderWidgetPropsSavedStatesSchema,
 	}),
-	z.object({
+	z.strictObject({
 		type: z.literal("table"),
 		props: IAppBuilderWidgetPropsTableSchema,
 	}),
@@ -1010,7 +1002,7 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 
 // Zod type definition for IAppBuilderTab
 const IAppBuilderTabSchema = z
-	.object({
+	.strictObject({
 		name: z.string(),
 		icon: z.string().optional(),
 		tooltip: z.string().optional(),
@@ -1019,11 +1011,11 @@ const IAppBuilderTabSchema = z
 	.extend(IAppBuilderWidgetPropsCommonSchema.shape);
 
 // Zod type definition for IAppBuilderAnchor3dContainerProperties
-const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
+const IAppBuilderAnchor3dContainerPropertiesSchema = z.strictObject({
 	id: z.string(),
 	location: z.tuple([z.number(), z.number(), z.number()]),
 	allowPointerEvents: z.boolean().optional(),
-	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
+	justification: z.enum(TAG3D_JUSTIFICATION).optional(),
 	previewIcon: z.string().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
@@ -1035,7 +1027,7 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 	selectionProperties:
 		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
 	mobileFallback: z
-		.object({
+		.strictObject({
 			disabled: z.boolean().optional(),
 			previewIcon: z.string().optional(),
 			container: z
@@ -1051,14 +1043,14 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderAnchor2dContainerProperties
-const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
+const IAppBuilderAnchor2dContainerPropertiesSchema = z.strictObject({
 	id: z.string(),
 	location: z.union([
 		z.tuple([z.string(), z.string()]),
 		z.tuple([z.number(), z.number()]),
 	]),
 	allowPointerEvents: z.boolean().optional(),
-	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
+	justification: z.enum(TAG3D_JUSTIFICATION).optional(),
 	previewIcon: z.string().optional(),
 	draggable: z.boolean().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
@@ -1069,7 +1061,7 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	selectionProperties:
 		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
 	mobileFallback: z
-		.object({
+		.strictObject({
 			disabled: z.boolean().optional(),
 			previewIcon: z.string().optional(),
 			container: z
@@ -1087,7 +1079,7 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 // Zod type definition for IAppBuilderContainer
 const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 	z
-		.object({
+		.strictObject({
 			name: z.literal(AppBuilderContainerNameType.Anchor3d),
 			props: IAppBuilderAnchor3dContainerPropertiesSchema,
 			tabs: z.array(IAppBuilderTabSchema).optional(),
@@ -1095,7 +1087,7 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 		})
 		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
 	z
-		.object({
+		.strictObject({
 			name: z.literal(AppBuilderContainerNameType.Anchor2d),
 			props: IAppBuilderAnchor2dContainerPropertiesSchema,
 			tabs: z.array(IAppBuilderTabSchema).optional(),
@@ -1104,7 +1096,7 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
 	// all other container props should be empty or undefined
 	z
-		.object({
+		.strictObject({
 			name: z.enum([
 				AppBuilderContainerNameType.Left,
 				AppBuilderContainerNameType.Right,
@@ -1118,19 +1110,19 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
 ]);
 
-const IAppBuilderOutputActionsPropsSetParameterValueSchema = z.object({
+const IAppBuilderOutputActionsPropsSetParameterValueSchema = z.strictObject({
 	parameter: z.string(),
 	output: z.string(),
 });
 
 // Zod type definition for IAppBuilderInstances
-const IAppBuilderInstancesSchema = z.object({
+const IAppBuilderInstancesSchema = z.strictObject({
 	sessionId: z.string(),
 	slug: z.string().optional(),
 	name: z.string().optional(),
 	parameterValues: z
 		.record(
-			z
+			z.string(), z
 				.string()
 				.or(z.number())
 				.or(z.boolean())
@@ -1141,7 +1133,7 @@ const IAppBuilderInstancesSchema = z.object({
 	outputActions: z
 		.array(
 			z.discriminatedUnion("type", [
-				z.object({
+				z.strictObject({
 					type: z.literal("setParameterValue"),
 					props: IAppBuilderOutputActionsPropsSetParameterValueSchema,
 				}),
@@ -1151,7 +1143,7 @@ const IAppBuilderInstancesSchema = z.object({
 });
 
 // Zod type definition for IAppBuilder
-const IAppBuilderSchema = z.object({
+const IAppBuilderSchema = z.strictObject({
 	version: z.literal("1.0"),
 	parameters: z.array(IAppBuilderParameterDefinitionSchema).optional(),
 	sessionId: z.string().optional(),
@@ -1164,7 +1156,7 @@ export const validateAppBuilder = (value: any) => {
 };
 
 // Zod type definition for IAppBuilderSettingsSession
-const IAppBuilderSettingsSessionSchema = z.object({
+const IAppBuilderSettingsSessionSchema = z.strictObject({
 	ticket: z.string().optional(),
 	guid: z.string().optional(),
 	modelViewUrl: z.string().optional(),
@@ -1173,7 +1165,7 @@ const IAppBuilderSettingsSessionSchema = z.object({
 	waitForOutputs: z.boolean().optional(),
 	loadOutputs: z.boolean().optional(),
 	excludeViewports: z.array(z.string()).optional(),
-	initialParameterValues: z.record(z.string()).optional(),
+	initialParameterValues: z.record(z.string(), z.string()).optional(),
 	slug: z.string().optional(),
 	platformUrl: z.string().optional(),
 	acceptRejectMode: z.boolean().optional(),
@@ -1184,12 +1176,12 @@ const IAppBuilderSettingsSessionSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderSettingsSettings
-const IAppBuilderSettingsSettingsSchema = z.object({
+const IAppBuilderSettingsSettingsSchema = z.strictObject({
 	disableFallbackUi: z.boolean().optional(),
 });
 
 // Zod type definition for IAppBuilderSettingsJson
-const IAppBuilderSettingsJsonSchema = z.object({
+const IAppBuilderSettingsJsonSchema = z.strictObject({
 	version: z.literal("1.0"),
 	sessions: z.array(IAppBuilderSettingsSessionSchema).optional(),
 	settings: IAppBuilderSettingsSettingsSchema.optional(),
