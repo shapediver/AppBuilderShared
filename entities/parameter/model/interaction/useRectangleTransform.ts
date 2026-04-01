@@ -16,7 +16,7 @@ import {
 	ISelectionParameterProps,
 } from "@shapediver/viewer.session";
 import {mat4, vec3} from "gl-matrix";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useId, useMemo, useRef, useState} from "react";
 import {useRestrictions} from "../drawing/useRestrictions";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useRectangleTransformEvents} from "./useRectangleTransformEvents";
@@ -99,6 +99,8 @@ export function useRectangleTransform(
 	const viewportApi = useShapeDiverStoreViewport((state) => {
 		return state.viewports[viewportId];
 	});
+	// create a unique component ID
+	const componentId = useId();
 
 	// create the selection settings from the interaction settings
 	const selectionSettings = useMemo(() => {
@@ -147,6 +149,7 @@ export function useRectangleTransform(
 	const {transformedNodeNames, setTransformedNodeNames} =
 		useRectangleTransformEvents(
 			selectedNodeNames,
+			componentId,
 			initialTransformedNodeNames,
 		);
 
@@ -265,11 +268,11 @@ export function useRectangleTransform(
 						: restrictionsToUse,
 			};
 
-			console.log("Creating rectangle transform with props: ", nodes);
 			const rectangle = new RectangleTransform(
 				viewportApi,
 				Object.values(nodes).map((n) => n.node),
 				props,
+				componentId,
 			);
 			rectangleTransformRef.current = rectangle;
 		}
@@ -281,7 +284,14 @@ export function useRectangleTransform(
 				rectangleTransformRef.current = undefined;
 			}
 		};
-	}, [viewportApi, sessionApis, selectedNodeNames, objects, restrictions]);
+	}, [
+		viewportApi,
+		sessionApis,
+		selectedNodeNames,
+		objects,
+		restrictions,
+		componentId,
+	]);
 
 	/**
 	 * Restore the transformed node names.

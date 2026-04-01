@@ -12,17 +12,14 @@ import {useEffect, useRef, useState} from "react";
  * Hook allowing to create the rectangle transform events.
  * In this event handler, the transformed nodes are updated.
  *
- * // TODO: This event handler listens to ALL MATRIX_CHANGED events, not just
- * // rectangleTransform ones. If both GumballTransform and RectangleTransform
- * // are active simultaneously, both handlers would react to each other's events.
- * // Consider filtering by event.type === "rectangleTransform".
- *
  * @param selectedNodes The selected nodes.
+ * @param componentId The ID of the component.
  * @param initialTransformedNodeNames The initial transformed node names (used to initialize the selection state).
  * 					Note that this initial state is not checked against the filter pattern.
  */
 export function useRectangleTransformEvents(
 	selectedNodeNames: string[],
+	componentId: string,
 	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
 ): {
 	/**
@@ -70,6 +67,13 @@ export function useRectangleTransformEvents(
 			(e) => {
 				const rectangleTransformEvent =
 					e as EventResponseMapping[EVENTTYPE_TRANSFORMATION_TOOLS.MATRIX_CHANGED];
+
+				// We only want to listen to rectangle transform events, so we check the type of the event.
+				if (rectangleTransformEvent.type !== "rectangleTransform")
+					return;
+
+				// We ignore the event if it's not based on the component ID.
+				if (rectangleTransformEvent.id !== componentId) return;
 
 				// Create a new array to avoid mutating the state directly
 				const newTransformedNodeNames = [

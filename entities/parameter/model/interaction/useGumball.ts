@@ -15,7 +15,7 @@ import {
 	ISelectionParameterProps,
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
-import {useCallback, useEffect, useMemo, useRef} from "react";
+import {useCallback, useEffect, useId, useMemo, useRef} from "react";
 import {useRestrictions} from "../drawing";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useGumballEvents} from "./useGumballEvents";
@@ -98,6 +98,8 @@ export function useGumball(
 	const viewportApi = useShapeDiverStoreViewport((state) => {
 		return state.viewports[viewportId];
 	});
+	// create a unique component ID
+	const componentId = useId();
 
 	// create the selection settings from the interaction settings
 	const selectionSettings = useMemo(() => {
@@ -132,6 +134,7 @@ export function useGumball(
 	// use the gumball events hook to get the transformed node names
 	const {transformedNodeNames, setTransformedNodeNames} = useGumballEvents(
 		selectedNodeNames,
+		componentId,
 		initialTransformedNodeNames,
 	);
 
@@ -229,6 +232,7 @@ export function useGumball(
 				viewportApi,
 				Object.values(nodes).map((n) => n.node),
 				props,
+				componentId,
 			);
 			gumballRef.current = gumball;
 		}
@@ -240,7 +244,14 @@ export function useGumball(
 				gumballRef.current = undefined;
 			}
 		};
-	}, [viewportApi, sessionApis, selectedNodeNames, objects, restrictions]);
+	}, [
+		viewportApi,
+		sessionApis,
+		selectedNodeNames,
+		objects,
+		restrictions,
+		componentId,
+	]);
 
 	/**
 	 * Restore the transformed node names.

@@ -13,11 +13,13 @@ import {useEffect, useRef, useState} from "react";
  * In this event handler, the transformed nodes are updated.
  *
  * @param selectedNodes The selected nodes.
+ * @param componentId The ID of the component.
  * @param initialTransformedNodeNames The initial transformed node names (used to initialize the selection state).
  * 					Note that this initial state is not checked against the filter pattern.
  */
 export function useGumballEvents(
 	selectedNodeNames: string[],
+	componentId: string,
 	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
 ): {
 	/**
@@ -66,6 +68,12 @@ export function useGumballEvents(
 				const gumballEvent =
 					e as EventResponseMapping[EVENTTYPE_TRANSFORMATION_TOOLS.MATRIX_CHANGED];
 
+				// We only want to listen to gumball events, so we check the type of the event.
+				if (gumballEvent.type !== "gumball") return;
+
+				// We ignore the event if it's not based on the component ID.
+				if (gumballEvent.id !== componentId) return;
+
 				// Create a new array to avoid mutating the state directly
 				const newTransformedNodeNames = [
 					...transformedNodeNamesRef.current,
@@ -112,7 +120,7 @@ export function useGumballEvents(
 		return () => {
 			removeListener(token);
 		};
-	}, [selectedNodeNames]);
+	}, [selectedNodeNames, componentId]);
 
 	return {
 		transformedNodeNames,
