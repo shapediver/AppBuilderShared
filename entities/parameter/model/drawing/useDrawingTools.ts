@@ -58,12 +58,17 @@ export function useDrawingTools(
 	// set the drawing tools settings
 	const drawingToolsSettings: Partial<Settings> = useMemo(() => {
 		return {
+			// for the controls we currently don't do a strict type check
+			// as more controls might be added in the future and we want to allow passing them without needing to update the type definition here
+			controls: drawingParameterProps?.controls as Settings["controls"],
+			general: drawingParameterProps?.behavior,
 			geometry: {
 				points: initialPointsData || [],
 				...drawingParameterProps?.geometry,
 			},
+			keyBindings: drawingParameterProps?.keyBindings,
 			restrictions,
-			visualization: drawingParameterProps?.display,
+			visualization: drawingParameterProps?.visualization,
 		};
 	}, [drawingParameterProps, initialPointsData, restrictions]);
 
