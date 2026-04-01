@@ -22,9 +22,9 @@ import {
 	useProps,
 } from "@mantine/core";
 import {
-	GumballParameterValue,
-	IGumballParameterProps,
-	validateGumballParameterSettings,
+	GumballTransformParameterValue,
+	IGumballTransformParameterProps,
+	validateGumballTransformParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
@@ -93,9 +93,11 @@ export default function ParameterGumballComponent(
 
 	// settings validation
 	const gumballProps = useMemo(() => {
-		const result = validateGumballParameterSettings(definition.settings);
+		const result = validateGumballTransformParameterSettings(
+			definition.settings,
+		);
 		if (result.success) {
-			return result.data.props as IGumballParameterProps;
+			return result.data.props as IGumballTransformParameterProps;
 		} else {
 			notifications.error({
 				title: "Invalid Parameter Settings",
@@ -187,7 +189,7 @@ export default function ParameterGumballComponent(
 			}[],
 		) => {
 			setGumballActive(false);
-			const parameterValue: GumballParameterValue = {
+			const parameterValue: GumballTransformParameterValue = {
 				names: transformedNodeNames.map((node) => node.name),
 				transformations: transformedNodeNames.map(
 					(node) => node.transformation,
