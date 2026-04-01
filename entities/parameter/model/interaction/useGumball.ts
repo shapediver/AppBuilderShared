@@ -227,7 +227,6 @@ export function useGumball(
 						: restrictionsToUse,
 			};
 
-			console.log("Creating gumball with props: ", nodes);
 			const gumball = new GumballTransform(
 				viewportApi,
 				Object.values(nodes).map((n) => n.node),

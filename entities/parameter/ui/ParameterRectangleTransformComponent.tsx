@@ -95,7 +95,6 @@ export default function ParameterRectangleTransformComponent(
 			definition.settings,
 		);
 		if (result.success) {
-			console.log(result.data.props);
 			return result.data.props as IRectangleTransformParameterProps;
 		} else {
 			notifications.error({
