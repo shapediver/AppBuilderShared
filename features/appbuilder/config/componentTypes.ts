@@ -84,6 +84,10 @@ const defaultParameterComponentContext: IComponentContext["parameters"] = {
 			component: ParameterStringComponent,
 			extraBottomPadding: false,
 		},
+		rectangleTransform: {
+			component: ParameterStringComponent,
+			extraBottomPadding: true,
+		},
 	},
 	[PARAMETER_TYPE_STARGATE_DUMMY]: {
 		component: ParameterStargateComponent,
