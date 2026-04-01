@@ -132,16 +132,40 @@ export function useParameterComponentCommons<T>(
 		(() => void) | undefined
 	>(undefined);
 
+	// Track previous dirty/execValue to detect cancellation vs acceptance
+	const prevDirtyRef = useRef(state.dirty);
+	const prevExecValueRef = useRef(state.execValue);
+
+	useEffect(() => {
+		const wasDirty = prevDirtyRef.current;
+		const prevExecValue = prevExecValueRef.current;
+		prevDirtyRef.current = state.dirty;
+		prevExecValueRef.current = state.execValue;
+
+		// dirty true→false with execValue unchanged = cancelled (X-icon or global Reject)
+		// dirty true→false with execValue changed = accepted
+		if (
+			wasDirty &&
+			!state.dirty &&
+			acceptRejectMode &&
+			state.execValue === prevExecValue
+		) {
+			onCancelCallback?.();
+		}
+	}, [state.dirty, state.execValue, acceptRejectMode, onCancelCallback]);
+
 	/**
 	 * Provide a possibility to cancel if
 	 *   - the component is running in acceptRejectMode and the parameter state is dirty, AND
 	 *   - changes are not currently executing
+	 *
+	 * This cancellation is only done via the X icon in the parameter component,
+	 * global cancellation via the Reject button will trigger the onCancelCallback via the useEffect above.
 	 */
 	const onCancel = useMemo(
 		() =>
 			acceptRejectMode && state.dirty && !executing
 				? () => {
-						onCancelCallback?.();
 						handleChange(state.execValue, 0);
 					}
 				: undefined,
@@ -150,7 +174,7 @@ export function useParameterComponentCommons<T>(
 			state.dirty,
 			executing,
 			state.execValue,
-			onCancelCallback,
+			handleChange,
 		],
 	);
 
