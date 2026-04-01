@@ -1,16 +1,16 @@
 import {
 	defaultPropsParameterWrapper,
-	ParameterLabelComponent,
-	ParameterWrapperComponent,
 	PropsParameter,
 	PropsParameterWrapper,
-	useParameterComponentCommons,
-} from "@AppBuilderLib/entities/parameter";
-import {useViewportId} from "@AppBuilderLib/entities/viewport";
+} from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
+import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
+import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Logger} from "@AppBuilderLib/shared/lib";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {
 	Box,
 	Button,
@@ -22,19 +22,17 @@ import {
 	useProps,
 } from "@mantine/core";
 import {
-	GumballTransformParameterValue,
-	IGumballTransformParameterProps,
-	validateGumballTransformParameterSettings,
+	IRectangleTransformParameterProps,
+	RectangleTransformParameterValue,
+	validateRectangleTransformParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {
-	useGumball,
-	useShapeDiverStoreInteractionRequestManagement,
-} from "../model";
+import {useRectangleTransform} from "../model/interaction/useRectangleTransform";
+import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
 
 /**
- * Parse the value of a gumball parameter and extract the transformed node names.
+ * Parse the value of a rectangle transform parameter and extract the transformed node names.
  * @param value
  * @returns
  */
@@ -59,11 +57,11 @@ const parseTransformation = (
 };
 
 /**
- * Functional component that creates a switch component for a gumball parameter.
+ * Functional component that creates a rectangle transform component for a rectangle transform parameter.
  *
  * @returns
  */
-export default function ParameterGumballComponent(
+export default function ParameterRectangleTransformComponent(
 	props: PropsParameter & Partial<PropsParameterWrapper>,
 ) {
 	const {
@@ -79,7 +77,7 @@ export default function ParameterGumballComponent(
 	} = useParameterComponentCommons<string>(props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
-		"ParameterGumballComponent",
+		"ParameterRectangleTransformComponent",
 		defaultPropsParameterWrapper,
 		props,
 	);
@@ -92,28 +90,32 @@ export default function ParameterGumballComponent(
 	const notifications = useNotificationStore();
 
 	// settings validation
-	const gumballProps = useMemo(() => {
-		const result = validateGumballTransformParameterSettings(
+	const rectangleTransformProps = useMemo(() => {
+		const result = validateRectangleTransformParameterSettings(
 			definition.settings,
 		);
 		if (result.success) {
-			return result.data.props as IGumballTransformParameterProps;
+			console.log(result.data.props);
+			return result.data.props as IRectangleTransformParameterProps;
 		} else {
 			notifications.error({
 				title: "Invalid Parameter Settings",
-				message: `Invalid settings for Gumball parameter "${definition.name}", see console for details.`,
+				message: `Invalid settings for Rectangle Transform parameter "${definition.name}", see console for details.`,
 			});
 			Logger.warn(
-				`Invalid settings for Gumball parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
+				`Invalid settings for Rectangle Transform parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
-			return {};
+			return {} as IRectangleTransformParameterProps;
 		}
 	}, [definition.settings]);
 
-	// state for the gumball application
-	const [gumballActive, setGumballActive] = useState<boolean>(
-		gumballProps.activeMode === "activeOnStart" ? true : false,
-	);
+	// state for the rectangle transform application
+	const [rectangleTransformActive, setRectangleTransformActive] =
+		useState<boolean>(
+			rectangleTransformProps.activeMode === "activeOnStart"
+				? true
+				: false,
+		);
 	// store the last confirmed value in a state to reset the transformation
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
 		{
@@ -135,17 +137,17 @@ export default function ParameterGumballComponent(
 
 	const {viewportId} = useViewportId();
 
-	// get the transformed nodes and the selected nods
+	// get the transformed nodes and the selected nodes
 	const {
 		transformedNodeNames,
 		setTransformedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
-	} = useGumball(
+	} = useRectangleTransform(
 		sessionDependencies,
 		viewportId,
-		gumballProps,
-		gumballActive,
+		rectangleTransformProps,
+		rectangleTransformActive,
 		parseTransformation(value),
 	);
 
@@ -177,8 +179,8 @@ export default function ParameterGumballComponent(
 
 	/**
 	 * Callback function to change the value of the parameter.
-	 * This function is called when the gumball interaction is confirmed.
-	 * It also ends the gumball interaction process and resets the selected nodes.
+	 * This function is called when the rectangle transform interaction is confirmed.
+	 * It also ends the rectangle transform interaction process and resets the selected nodes.
 	 */
 	const changeValue = useCallback(
 		(
@@ -188,8 +190,8 @@ export default function ParameterGumballComponent(
 				localTransformations?: number[];
 			}[],
 		) => {
-			setGumballActive(false);
-			const parameterValue: GumballTransformParameterValue = {
+			setRectangleTransformActive(false);
+			const parameterValue: RectangleTransformParameterValue = {
 				names: transformedNodeNames.map((node) => node.name),
 				transformations: transformedNodeNames.map(
 					(node) => node.transformation,
@@ -211,20 +213,20 @@ export default function ParameterGumballComponent(
 
 	/**
 	 * Callback function to reset the transformed nodes.
-	 * This function is called when the gumball interaction is aborted by the user.
+	 * This function is called when the rectangle transform interaction is aborted by the user.
 	 * The transformed nodes are reset to the last confirmed value.
-	 * It also ends the gumball.
+	 * It also ends the rectangle transform.
 	 */
 	const resetTransformation = useCallback(() => {
 		restoreTransformedNodeNames(lastConfirmedValue, transformedNodeNames);
-		setGumballActive(false);
+		setRectangleTransformActive(false);
 		setSelectedNodeNames([]);
 	}, [lastConfirmedValue, transformedNodeNames]);
 
 	// extend the onCancel callback to reset the transformed nodes.
 	const _onCancelCallback = useCallback(() => {
 		restoreTransformedNodeNames(parsedExecValue, transformedNodeNames);
-		setGumballActive(false);
+		setRectangleTransformActive(false);
 		setSelectedNodeNames([]);
 		setLastConfirmedValue(parsedExecValue);
 	}, [parsedExecValue, transformedNodeNames]);
@@ -234,21 +236,24 @@ export default function ParameterGumballComponent(
 	}, [_onCancelCallback]);
 
 	/**
-	 * Effect to manage the interaction request for the gumball.
-	 * It adds an interaction request when the gumball is active and removes it when the gumball is inactive.
-	 * It also cleans up the interaction request when the component is unmounted or when the gumball state changes.
+	 * Effect to manage the interaction request for the rectangle transform.
+	 * It adds an interaction request when the rectangle transform is active and removes it when inactive.
+	 * It also cleans up the interaction request when the component is unmounted or when the state changes.
 	 */
 	useEffect(() => {
-		actions.setDisableOtherParameters(gumballActive);
+		actions.setDisableOtherParameters(rectangleTransformActive);
 
-		if (gumballActive && !interactionRequestTokenRef.current) {
+		if (rectangleTransformActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
 				viewportId,
 				disable: resetTransformation,
 			});
 			interactionRequestTokenRef.current = returnedToken;
-		} else if (!gumballActive && interactionRequestTokenRef.current) {
+		} else if (
+			!rectangleTransformActive &&
+			interactionRequestTokenRef.current
+		) {
 			removeInteractionRequest(interactionRequestTokenRef.current);
 			interactionRequestTokenRef.current = undefined;
 		}
@@ -260,12 +265,12 @@ export default function ParameterGumballComponent(
 				interactionRequestTokenRef.current = undefined;
 			}
 		};
-	}, [gumballActive, resetTransformation]);
+	}, [rectangleTransformActive, resetTransformation]);
 
 	/**
 	 * The content of the parameter when it is active.
 	 *
-	 * It contains a button to confirm the gumball interaction and a button to cancel the interaction.
+	 * It contains a button to confirm the rectangle transform interaction and a button to cancel the interaction.
 	 *
 	 * The confirm button sets the current parameter value to the transformed nodes.
 	 * The cancel button resets the transformed nodes to the last value.
@@ -282,7 +287,7 @@ export default function ParameterGumballComponent(
 							ta="left"
 							className={classes.interactionText}
 						>
-							{gumballProps.prompt?.activeTitle ??
+							{rectangleTransformProps.prompt?.activeTitle ??
 								`Currently transformed: ${transformedNodeNames.length}`}
 						</TextWeighted>
 					</Box>
@@ -295,7 +300,7 @@ export default function ParameterGumballComponent(
 							ta="left"
 							className={classes.interactionText}
 						>
-							{gumballProps.prompt?.activeText ??
+							{rectangleTransformProps.prompt?.activeText ??
 								"Select objects to transform"}
 						</Text>
 					</Box>
@@ -328,7 +333,7 @@ export default function ParameterGumballComponent(
 	/**
 	 * The content of the parameter when it is inactive.
 	 *
-	 * It contains a button to start the gumball.
+	 * It contains a button to start the rectangle transform.
 	 * Within the button, the number of transformed nodes is displayed.
 	 */
 	const contentInactive = (
@@ -339,10 +344,11 @@ export default function ParameterGumballComponent(
 			className={classes.interactionButton}
 			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={transformedNodeNames.length === 0 ? "light" : "filled"}
-			onClick={() => setGumballActive(true)}
+			onClick={() => setRectangleTransformActive(true)}
 		>
 			<Text size="sm" className={classes.interactionText}>
-				{gumballProps.prompt?.inactiveTitle ?? "Start gumball"}
+				{rectangleTransformProps.prompt?.inactiveTitle ??
+					"Start rectangle transform"}
 			</Text>
 		</Button>
 	);
@@ -354,7 +360,9 @@ export default function ParameterGumballComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && gumballActive ? contentActive : contentInactive}
+			{definition && rectangleTransformActive
+				? contentActive
+				: contentInactive}
 		</ParameterWrapperComponent>
 	);
 }

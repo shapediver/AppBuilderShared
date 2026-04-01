@@ -9,7 +9,7 @@ import {useEffect, useRef, useState} from "react";
 // #region Functions (1)
 
 /**
- * Hook allowing to create the gumball events.
+ * Hook allowing to create the rectangle transform events.
  * In this event handler, the transformed nodes are updated.
  *
  * @param selectedNodes The selected nodes.
@@ -17,7 +17,7 @@ import {useEffect, useRef, useState} from "react";
  * @param initialTransformedNodeNames The initial transformed node names (used to initialize the selection state).
  * 					Note that this initial state is not checked against the filter pattern.
  */
-export function useGumballEvents(
+export function useRectangleTransformEvents(
 	selectedNodeNames: string[],
 	componentId: string,
 	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
@@ -65,24 +65,26 @@ export function useGumballEvents(
 		const token = addListener(
 			EVENTTYPE_TRANSFORMATION_TOOLS.MATRIX_CHANGED,
 			(e) => {
-				const gumballEvent =
+				const rectangleTransformEvent =
 					e as EventResponseMapping[EVENTTYPE_TRANSFORMATION_TOOLS.MATRIX_CHANGED];
 
-				// We only want to listen to gumball events, so we check the type of the event.
-				if (gumballEvent.type !== "gumball") return;
+				// We only want to listen to rectangle transform events, so we check the type of the event.
+				if (rectangleTransformEvent.type !== "rectangleTransform")
+					return;
 
 				// We ignore the event if it's not based on the component ID.
-				if (gumballEvent.id !== componentId) return;
+				if (rectangleTransformEvent.id !== componentId) return;
 
 				// Create a new array to avoid mutating the state directly
 				const newTransformedNodeNames = [
 					...transformedNodeNamesRef.current,
 				];
 
-				for (let i = 0; i < gumballEvent.nodes.length; i++) {
-					const transformation = gumballEvent.transformations[i];
+				for (let i = 0; i < rectangleTransformEvent.nodes.length; i++) {
+					const transformation =
+						rectangleTransformEvent.transformations[i];
 					const localTransformation =
-						gumballEvent.localTransformations[i];
+						rectangleTransformEvent.localTransformations[i];
 
 					// search for the node in the selected nodes
 					selectedNodeNames.forEach((name) => {
@@ -120,7 +122,7 @@ export function useGumballEvents(
 		return () => {
 			removeListener(token);
 		};
-	}, [selectedNodeNames, componentId]);
+	}, [selectedNodeNames]);
 
 	return {
 		transformedNodeNames,

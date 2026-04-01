@@ -1,29 +1,30 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
 	getNodesByName,
 	matchNodesWithPatterns,
 	OutputNodeNameFilterPatterns,
+	RESTRICTION_TYPE,
 	RestrictionProperties,
 } from "@shapediver/viewer.features.interaction";
 import {
-	GumballTransform,
+	RectangleTransform,
 	updateTransformation,
 } from "@shapediver/viewer.features.transformation-tools";
 import {
-	IGumballTransformParameterProps,
+	IRectangleTransformParameterProps,
 	ISelectionParameterProps,
 } from "@shapediver/viewer.session";
-import {mat4} from "gl-matrix";
-import {useCallback, useEffect, useId, useMemo, useRef} from "react";
-import {useRestrictions} from "../drawing";
+import {mat4, vec3} from "gl-matrix";
+import {useCallback, useEffect, useId, useMemo, useRef, useState} from "react";
+import {useRestrictions} from "../drawing/useRestrictions";
 import {useConvertDraggingData} from "./useConvertDraggingData";
-import {useGumballEvents} from "./useGumballEvents";
+import {useRectangleTransformEvents} from "./useRectangleTransformEvents";
 import {useSelection} from "./useSelection";
 
 // #region Functions (1)
 
-export interface IGumballState {
+export interface IRectangleTransformState {
 	/**
 	 * The transformed node names.
 	 */
@@ -74,24 +75,24 @@ export interface IGumballState {
 }
 
 /**
- * Hook providing stateful gumball interaction for a viewport and session.
- * This wraps lower level hooks for the selection and gumball events.
+ * Hook providing stateful rectangle transform interaction for a viewport and session.
+ * This wraps lower level hooks for the selection and rectangle transform events.
  *
- * @param sessionIds IDs of the sessions which depend on the gumball parameter.
- * @param viewportId ID of the viewport for which the gumball shall be created.
- * @param gumballProps Parameter properties to be used. This includes name filters, and properties for the behavior of the gumball.
- * @param activate Set this to true to activate the gumball. If false, preparations are made but no gumball is possible.
+ * @param sessionIds IDs of the sessions which depend on the rectangle transform parameter.
+ * @param viewportId ID of the viewport for which the rectangle transform shall be created.
+ * @param rectangleTransformProps Parameter properties to be used. This includes name filters, and properties for the behavior of the rectangle transform.
+ * @param activate Set this to true to activate the rectangle transform. If false, preparations are made but no rectangle transform is possible.
  * @param initialTransformedNodeNames The initial transformed node names (used to initialize the selection state).
  * 					Note that this initial state is not checked against the filter pattern.
  */
-export function useGumball(
+export function useRectangleTransform(
 	sessionIds: string[],
 	viewportId: string,
-	gumballProps: IGumballTransformParameterProps,
+	rectangleTransformProps: IRectangleTransformParameterProps,
 	activate: boolean,
 	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
 	strictNaming = true,
-): IGumballState {
+): IRectangleTransformState {
 	// get the session API
 	const sessionApis = useShapeDiverStoreSession((state) => state.sessions);
 	// get the viewport API
@@ -103,22 +104,25 @@ export function useGumball(
 
 	// create the selection settings from the interaction settings
 	const selectionSettings = useMemo(() => {
-		if (!gumballProps) return {};
+		if (!rectangleTransformProps) return {};
 
 		const nameFilter: string[] = [];
-		nameFilter.push(...(gumballProps.nameFilter ?? []));
-		gumballProps.objects?.forEach((element) => {
+		nameFilter.push(...(rectangleTransformProps.nameFilter ?? []));
+		rectangleTransformProps.objects?.forEach((element) => {
 			nameFilter.push(element.nameFilter);
 		});
 
 		return {
 			nameFilter,
-			hover: gumballProps.hover,
-			minimumSelection: gumballProps.minimumSelection ?? 0,
-			maximumSelection: gumballProps.maximumSelection ?? Infinity,
-			deselectOnEmpty: gumballProps.deselectOnEmpty ?? false,
+			hover: rectangleTransformProps.hover,
+			minimumSelection: rectangleTransformProps.minimumSelection ?? 0,
+			maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
+			deselectOnEmpty: rectangleTransformProps.deselectOnEmpty ?? false,
 		} as ISelectionParameterProps;
-	}, [gumballProps]);
+	}, [rectangleTransformProps]);
+
+	// track whether the maximum number of selections has been reached
+	const [maxReached, setMaxReached] = useState(false);
 
 	// use the selection hook to get the selected node names
 	const {
@@ -126,17 +130,28 @@ export function useGumball(
 		setSelectedNodeNames,
 		availableNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
-	} = useSelection(viewportId, selectionSettings, activate);
+	} = useSelection(viewportId, selectionSettings, activate && !maxReached);
+
+	// disable selection once the maximum number of objects has been reached
+	useEffect(() => {
+		const max = selectionSettings.maximumSelection;
+		if (max === undefined || max === Infinity) return;
+		setMaxReached(selectedNodeNames.length >= max);
+	}, [selectedNodeNames.length, selectionSettings.maximumSelection]);
 
 	// convert the dragging data
-	const {objects} = useConvertDraggingData(sessionIds, gumballProps);
-
-	// use the gumball events hook to get the transformed node names
-	const {transformedNodeNames, setTransformedNodeNames} = useGumballEvents(
-		selectedNodeNames,
-		componentId,
-		initialTransformedNodeNames,
+	const {objects} = useConvertDraggingData(
+		sessionIds,
+		rectangleTransformProps,
 	);
+
+	// use the rectangle transform events hook to get the transformed node names
+	const {transformedNodeNames, setTransformedNodeNames} =
+		useRectangleTransformEvents(
+			selectedNodeNames,
+			componentId,
+			initialTransformedNodeNames,
+		);
 
 	// use an effect to set the selected node names to the first available node name if only one is available
 	useEffect(() => {
@@ -147,16 +162,20 @@ export function useGumball(
 		}
 	}, [availableNodeNames, setSelectedNodeNamesAndRestoreSelection]);
 
-	// create a reference for the gumball
-	const gumballRef = useRef<GumballTransform | undefined>(undefined);
+	// create a reference for the rectangle transform
+	const rectangleTransformRef = useRef<RectangleTransform | undefined>(
+		undefined,
+	);
 
 	// use the restrictions
-	const {restrictions} = useRestrictions(gumballProps.restrictions);
+	const {restrictions} = useRestrictions(
+		rectangleTransformProps.restrictions,
+	);
 
-	// use an effect to create the gumball whenever the selected node names change
+	// use an effect to create the rectangle transform whenever the selected node names change
 	useEffect(() => {
 		if (viewportApi && sessionApis && selectedNodeNames.length > 0) {
-			// whenever the selected node names change, create a new gumball
+			// whenever the selected node names change, create a new rectangle transform
 			const nodes = getNodesByName(
 				Object.values(sessionApis),
 				selectedNodeNames,
@@ -165,11 +184,9 @@ export function useGumball(
 			// for the nodes, we search for the correct restrictions in the dragging objects
 			// this allows us to have different restrictions for different nodes
 			// if no restrictions are found, we use an empty object
-			// this allows the gumball to have no restrictions
 			// NOTE: We only do this if there is only one node selected
 			// if multiple nodes are selected, we use no restrictions
-			const restrictionsToUse: {[key: string]: RestrictionProperties} =
-				{};
+			let restrictionsToUse: {[key: string]: RestrictionProperties} = {};
 			if (nodes.length === 1 && restrictions) {
 				const node = nodes[0];
 
@@ -220,28 +237,51 @@ export function useGumball(
 			}
 
 			const props = {
-				...gumballProps,
+				...rectangleTransformProps,
+				plane: {
+					type: RESTRICTION_TYPE.PLANE,
+					origin: rectangleTransformProps?.plane?.origin
+						? vec3.fromValues(
+								rectangleTransformProps.plane.origin[0],
+								rectangleTransformProps.plane.origin[1],
+								rectangleTransformProps.plane.origin[2],
+							)
+						: vec3.fromValues(0, 0, 0),
+					vector_u: rectangleTransformProps?.plane?.vector_u
+						? vec3.fromValues(
+								rectangleTransformProps.plane.vector_u[0],
+								rectangleTransformProps.plane.vector_u[1],
+								rectangleTransformProps.plane.vector_u[2],
+							)
+						: vec3.fromValues(1, 0, 0),
+					vector_v: rectangleTransformProps?.plane?.vector_v
+						? vec3.fromValues(
+								rectangleTransformProps.plane.vector_v[0],
+								rectangleTransformProps.plane.vector_v[1],
+								rectangleTransformProps.plane.vector_v[2],
+							)
+						: vec3.fromValues(0, 1, 0),
+				},
 				restrictions:
 					Object.values(restrictionsToUse).length === 0
 						? undefined
 						: restrictionsToUse,
 			};
 
-			console.log("Creating gumball with props: ", nodes);
-			const gumball = new GumballTransform(
+			const rectangle = new RectangleTransform(
 				viewportApi,
 				Object.values(nodes).map((n) => n.node),
 				props,
 				componentId,
 			);
-			gumballRef.current = gumball;
+			rectangleTransformRef.current = rectangle;
 		}
 
 		return () => {
-			// clean up the select manager
-			if (gumballRef.current) {
-				gumballRef.current.close();
-				gumballRef.current = undefined;
+			// clean up the rectangle transform
+			if (rectangleTransformRef.current) {
+				rectangleTransformRef.current.close();
+				rectangleTransformRef.current = undefined;
 			}
 		};
 	}, [
@@ -307,7 +347,7 @@ export function useGumball(
 						]),
 					);
 
-				// update the gumball transformation
+				// update the rectangle transform transformation
 				// in case the transformation matrix is undefined, the transformation will be reset
 				updateTransformation(tn.node, transformationMatrix);
 			});
