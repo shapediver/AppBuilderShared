@@ -114,8 +114,7 @@ export function useRectangleTransform(
 			nameFilter,
 			hover: rectangleTransformProps.hover,
 			minimumSelection: rectangleTransformProps.minimumSelection ?? 0,
-			maximumSelection:
-				rectangleTransformProps.maximumSelection ?? Infinity,
+			maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
 			deselectOnEmpty: rectangleTransformProps.deselectOnEmpty ?? false,
 		} as ISelectionParameterProps;
 	}, [rectangleTransformProps]);
