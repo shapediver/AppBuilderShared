@@ -161,7 +161,9 @@ export default function useAttributeSelection(
 			nameFilter: Object.values(nameFilter).flat(),
 			availableColor: null,
 			hover: true,
+			hoverColor: "#ffffff",
 			deselectOnEmpty: true,
+			selectionColor: "#0d44f0",
 		};
 	}, [nameFilter]);
 
