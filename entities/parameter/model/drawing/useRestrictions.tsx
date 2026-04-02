@@ -52,7 +52,7 @@ export function useRestrictions(
 				if (restrictionDefinition.type !== "geometry") return;
 				nameFilter[
 					restrictionDefinition.id
-						? restrictionDefinition.id.replaceAll("_", "-")
+						? restrictionDefinition.id
 						: `restriction-${index}`
 				] = {
 					nameFilter: restrictionDefinition.nameFilter || [],
@@ -74,7 +74,9 @@ export function useRestrictions(
 				if (patterns.instancePatterns) {
 					Object.entries(patterns.instancePatterns).forEach(
 						([instanceId, pattern]) => {
-							patternsByKeys[`${restrictionId}_${instanceId}`] = {
+							patternsByKeys[
+								JSON.stringify([restrictionId, instanceId])
+							] = {
 								instanceId,
 								patterns: pattern,
 							};
@@ -88,7 +90,11 @@ export function useRestrictions(
 							Object.entries(pattern).forEach(
 								([outputId, pattern]) => {
 									patternsByKeys[
-										`${restrictionId}_${sessionId}_${outputId}`
+										JSON.stringify([
+											restrictionId,
+											sessionId,
+											outputId,
+										])
 									] = {
 										sessionId,
 										outputId: outputId,
@@ -114,7 +120,9 @@ export function useRestrictions(
 			[key: string]: {[key: string]: {[key: string]: ITreeNode[]}};
 		} = {};
 		Object.entries(nodesByPatterns).forEach(([key, data]) => {
-			const [restrictionId, sessionId, outputId] = key.split("_");
+			const [restrictionId, sessionId, outputId] = JSON.parse(
+				key,
+			) as string[];
 			if (!gatheredNodes[restrictionId])
 				gatheredNodes[restrictionId] = {};
 			if (!gatheredNodes[restrictionId][sessionId])
@@ -137,12 +145,9 @@ export function useRestrictions(
 		if (restrictionProps && restrictionProps.length > 0) {
 			for (let i = 0; i < restrictionProps.length; i++) {
 				const r = restrictionProps![i];
-				let restrictionName = r.id ? r.id : `restriction-${i}`;
+				const restrictionName = r.id ? r.id : `restriction-${i}`;
 
 				if (r.type === "geometry") {
-					restrictionName = r.id
-						? r.id.replaceAll("_", "-")
-						: `restriction-${i}`;
 					const nodesPerRestriction = nodes[restrictionName];
 					if (
 						nodesPerRestriction &&

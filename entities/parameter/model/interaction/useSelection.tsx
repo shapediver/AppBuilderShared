@@ -110,7 +110,9 @@ export function useSelection(
 			Object.entries(patterns.outputPatterns).forEach(
 				([sessionId, pattern]) => {
 					Object.entries(pattern).forEach(([outputId, pattern]) => {
-						nodesInteractionInput[`${sessionId}_${outputId}`] = {
+						nodesInteractionInput[
+							JSON.stringify([sessionId, outputId])
+						] = {
 							sessionId,
 							componentId,
 							outputId,
@@ -229,7 +231,7 @@ export function useSelection(
 		} = {};
 
 		Object.entries(availableNodeNames).forEach(([key, value]) => {
-			const [sessionId, outputId] = key.split("_");
+			const [sessionId, outputId] = JSON.parse(key) as string[];
 			if (!availableNodeNamesPerOutput[sessionId])
 				availableNodeNamesPerOutput[sessionId] = {};
 			availableNodeNamesPerOutput[sessionId][outputId] = value.map(
