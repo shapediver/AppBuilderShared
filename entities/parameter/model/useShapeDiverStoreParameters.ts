@@ -1642,9 +1642,9 @@ export const useShapeDiverStoreParameters =
 							(acc, paramId) => {
 								const store = stores[paramId];
 								const {
-									definition: {defval},
+									state: {execValue},
 								} = store.getState();
-								acc[paramId] = defval!;
+								acc[paramId] = execValue!;
 
 								return acc;
 							},
