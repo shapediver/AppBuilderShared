@@ -88,7 +88,7 @@ export function useAnchorSelection(
 		useSelection(
 			viewportId,
 			cleanSelectionProps,
-			selectionActive && selectionAllowed && !processActive,
+			selectionActive && selectionAllowed,
 		);
 
 	/**
@@ -104,13 +104,21 @@ export function useAnchorSelection(
 	const updateShowContentCallback = useCallback(
 		(selectedNodeNames: string[]) => {
 			if (!selectionProperties) return;
+			if (processActive) return;
 			if (selectedNodeNames.length > 0 && !showContent) {
 				updateShowContent(viewportId, id, true);
 			} else if (selectedNodeNames.length === 0 && showContent) {
 				updateShowContent(viewportId, id, false);
 			}
 		},
-		[showContent, selectionProperties, viewportId, id, updateShowContent],
+		[
+			showContent,
+			selectionProperties,
+			viewportId,
+			id,
+			updateShowContent,
+			processActive,
+		],
 	);
 
 	const updateShowContentCallbackRef = useRef(updateShowContentCallback);

@@ -157,6 +157,19 @@ export function useSelectManager(
 		tokens: undefined,
 	});
 
+	// Tracks the currently applied available effects so we can diff incrementally
+	// instead of removing all effects and re-adding them whenever availableNodes changes.
+	// This prevents the brief flash where all outlines disappear then reappear.
+	const appliedAvailableEffectsRef = useRef<Map<ITreeNode, string>>(
+		new Map(),
+	);
+	const prevAvailableManagerRef = useRef<
+		SelectManager | MultiSelectManager | undefined
+	>(undefined);
+	const prevAvailableEffectRef = useRef<IInteractionEffect | undefined>(
+		undefined,
+	);
+
 	useEffect(() => {
 		const effect = parseInteractionEffect(settings?.selectionColor);
 
@@ -216,38 +229,75 @@ export function useSelectManager(
 		});
 	}, [settings?.availableColor]);
 
-	// whenever the passive nodes change, we need to update the select manager
+	// Whenever available nodes, the available effect, or the select manager change,
+	// incrementally update which nodes have the available effect applied.
+	// Using a diff (add/remove only what changed) prevents the brief flash that
+	// would occur if we removed all effects and re-applied them on every update.
 	useEffect(() => {
-		if (!availableEffect) return;
-		const tokens: string[] = [];
+		const prevManager = prevAvailableManagerRef.current;
+		const prevEffect = prevAvailableEffectRef.current;
+		const appliedMap = appliedAvailableEffectsRef.current;
 
-		if (availableNodes && selectManager) {
-			availableNodes.forEach((node) => {
+		// When the manager or effect instance changes, clear all previously applied
+		// effects using the old manager/effect before proceeding.
+		if (
+			(prevManager && prevManager !== selectManager) ||
+			(prevEffect && prevEffect !== availableEffect)
+		) {
+			if (prevManager) {
+				appliedMap.forEach((token, node) => {
+					prevManager.interactionEffectUtils.removeInteractionEffect(
+						node,
+						token,
+					);
+				});
+			}
+			appliedMap.clear();
+		}
+
+		prevAvailableManagerRef.current = selectManager;
+		prevAvailableEffectRef.current = availableEffect;
+
+		if (!availableEffect || !selectManager) {
+			availableNodeDataRef.current = {
+				nodes: undefined,
+				tokens: undefined,
+			};
+			return;
+		}
+
+		const newNodeSet = new Set(availableNodes ?? []);
+
+		// Remove effect from nodes that are no longer available
+		Array.from(appliedMap.entries()).forEach(([node, token]) => {
+			if (!newNodeSet.has(node)) {
+				selectManager.interactionEffectUtils.removeInteractionEffect(
+					node,
+					token,
+				);
+				appliedMap.delete(node);
+			}
+		});
+
+		// Apply effect to newly available nodes (skip nodes already tracked)
+		Array.from(newNodeSet).forEach((node) => {
+			if (!appliedMap.has(node)) {
 				const token =
 					selectManager.interactionEffectUtils.applyInteractionEffect(
 						node,
 						availableEffect,
 					);
-				tokens.push(token);
-			});
-
-			availableNodeDataRef.current = {
-				nodes: availableNodes,
-				tokens,
-			};
-		}
-
-		return () => {
-			if (availableNodes && selectManager) {
-				availableNodes.forEach((node, index) => {
-					selectManager.interactionEffectUtils.removeInteractionEffect(
-						node,
-						tokens[index],
-					);
-				});
+				appliedMap.set(node, token);
 			}
+		});
+
+		// Keep availableNodeDataRef in sync for cleanUpSelectManager
+		const entries = Array.from(appliedMap.entries());
+		availableNodeDataRef.current = {
+			nodes: entries.map(([node]) => node),
+			tokens: entries.map(([, token]) => token),
 		};
-	}, [availableEffect, availableNodes]);
+	}, [availableEffect, availableNodes, selectManager]);
 
 	// use an effect to create the select manager
 	useEffect(() => {
