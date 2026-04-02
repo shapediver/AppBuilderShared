@@ -75,7 +75,11 @@ export function useRestrictions(
 					Object.entries(patterns.instancePatterns).forEach(
 						([instanceId, pattern]) => {
 							patternsByKeys[
-								JSON.stringify([restrictionId, instanceId])
+								JSON.stringify([
+									restrictionId,
+									instanceId,
+									null,
+								])
 							] = {
 								instanceId,
 								patterns: pattern,
@@ -120,14 +124,16 @@ export function useRestrictions(
 			[key: string]: {[key: string]: {[key: string]: ITreeNode[]}};
 		} = {};
 		Object.entries(nodesByPatterns).forEach(([key, data]) => {
-			const [restrictionId, sessionId, outputId] = JSON.parse(
+			const [restrictionId, sessionOrInstanceId, outputId] = JSON.parse(
 				key,
-			) as string[];
+			) as [string, string, string | null];
 			if (!gatheredNodes[restrictionId])
 				gatheredNodes[restrictionId] = {};
-			if (!gatheredNodes[restrictionId][sessionId])
-				gatheredNodes[restrictionId][sessionId] = {};
-			gatheredNodes[restrictionId][sessionId][outputId] = data;
+			if (!gatheredNodes[restrictionId][sessionOrInstanceId])
+				gatheredNodes[restrictionId][sessionOrInstanceId] = {};
+			// outputId is null for instance patterns; use a stable sentinel key
+			const outputKey = outputId ?? "__instance__";
+			gatheredNodes[restrictionId][sessionOrInstanceId][outputKey] = data;
 		});
 		setNodes(gatheredNodes);
 	}, [nodesByPatterns]);

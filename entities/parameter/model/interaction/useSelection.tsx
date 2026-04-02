@@ -231,12 +231,20 @@ export function useSelection(
 		} = {};
 
 		Object.entries(availableNodeNames).forEach(([key, value]) => {
-			const [sessionId, outputId] = JSON.parse(key) as string[];
-			if (!availableNodeNamesPerOutput[sessionId])
-				availableNodeNamesPerOutput[sessionId] = {};
-			availableNodeNamesPerOutput[sessionId][outputId] = value.map(
-				(v) => v.name,
-			);
+			if (key.startsWith("[")) {
+				// Output pattern key: JSON.stringify([sessionId, outputId])
+				const [sessionId, outputId] = JSON.parse(key) as string[];
+				if (!availableNodeNamesPerOutput[sessionId])
+					availableNodeNamesPerOutput[sessionId] = {};
+				availableNodeNamesPerOutput[sessionId][outputId] = value.map(
+					(v) => v.name,
+				);
+			} else {
+				// Instance pattern key: plain instanceId string
+				if (!availableNodeNamesPerOutput[key])
+					availableNodeNamesPerOutput[key] = {};
+				availableNodeNamesPerOutput[key][""] = value.map((v) => v.name);
+			}
 		});
 
 		return availableNodeNamesPerOutput;
