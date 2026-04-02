@@ -455,6 +455,8 @@ export function useAppBuilderInstances(props: Props) {
 	useEffect(() => {
 		if (!sessionApi) return;
 
+		let cancelled = false;
+
 		// create a promise to wait for all instances to be created
 		// this is necessary to only resolve the process once all instances are created
 		// and added to the controller session node
@@ -504,6 +506,11 @@ export function useAppBuilderInstances(props: Props) {
 		// wait for all instance promises to resolve
 		// then look for output actions to be executed
 		Promise.all(promises).then(() => {
+			if (cancelled) {
+				resolveMainPromise!();
+				return;
+			}
+
 			const outputCallbackPromises = processOutputActions(
 				sessionApi,
 				newInstances,
@@ -517,6 +524,11 @@ export function useAppBuilderInstances(props: Props) {
 			// wait for all output callbacks to resolve
 			// before we add the instances to the session node
 			Promise.all(outputCallbackPromises).then(async () => {
+				if (cancelled) {
+					resolveMainPromise!();
+					return;
+				}
+
 				await addInstanceToSceneTree(
 					newInstances,
 					instanceNodesRef.current,
@@ -553,6 +565,8 @@ export function useAppBuilderInstances(props: Props) {
 		});
 
 		return () => {
+			cancelled = true;
+
 			if (sessionNodeRef.current) {
 				Object.values(instanceNodesRef.current).forEach((instance) => {
 					if (sessionNodeRef.current!.hasChild(instance)) {
