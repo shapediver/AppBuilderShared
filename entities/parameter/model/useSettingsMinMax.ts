@@ -24,16 +24,22 @@ export function useSettingsMinMax(definition: IShapeDiverParameterDefinition) {
 		? validatedSettings.data.max
 		: undefined;
 
-	const { effectiveMin, effectiveMax } = useMemo(() => {
-		let clampedMin = settingsMin !== undefined ? Math.max(defMin, settingsMin) : defMin;
-		let clampedMax = settingsMax !== undefined ? Math.min(defMax, settingsMax) : defMax;
+	const {effectiveMin, effectiveMax} = useMemo(() => {
+		let clampedMin =
+			settingsMin !== undefined
+				? Math.min(defMax, Math.max(defMin, settingsMin))
+				: defMin;
+		let clampedMax =
+			settingsMax !== undefined
+				? Math.max(defMin, Math.min(defMax, settingsMax))
+				: defMax;
 		if (clampedMin > clampedMax) {
 			[clampedMin, clampedMax] = [clampedMax, clampedMin];
 		}
 		return {
 			effectiveMin: clampedMin,
 			effectiveMax: clampedMax,
-		}
+		};
 	}, [defMin, defMax, settingsMin, settingsMax]);
 
 	useEffect(() => {
@@ -59,7 +65,14 @@ export function useSettingsMinMax(definition: IShapeDiverParameterDefinition) {
 				message: `Min override exceeds max override for "${definition.name}".`,
 			});
 		}
-	}, [settingsMin, settingsMax, defMin, defMax, definition.name, notifications]);
+	}, [
+		settingsMin,
+		settingsMax,
+		defMin,
+		defMax,
+		definition.name,
+		notifications,
+	]);
 
 	return {
 		validatedSettings,
