@@ -61,17 +61,23 @@ export function useSelection(
 	const componentId = useId();
 
 	// call the select manager hook
-	const {selectManager, setAvailableNodes} = useSelectManager(
-		viewportId,
-		componentId,
-		activate ? selectionProps : undefined,
-	);
+	const {selectManager, setAvailableNodes, removeAvailableEffectsForNodes} =
+		useSelectManager(
+			viewportId,
+			componentId,
+			activate ? selectionProps : undefined,
+		);
 
 	// store the select manager in a ref
 	const selectManagerRef = React.useRef<SelectManager | MultiSelectManager>();
 	useEffect(() => {
 		selectManagerRef.current = selectManager;
 	}, [selectManager]);
+
+	// store the removeAvailableEffectsForNodes callback in a ref
+	const removeAvailableEffectsRef = React.useRef<
+		((nodes: ITreeNode[]) => void) | undefined
+	>(removeAvailableEffectsForNodes);
 
 	// call the hover manager hook
 	const hoverSettings = useMemo(() => {
@@ -121,7 +127,8 @@ export function useSelection(
 								select: true,
 								hover: selectionProps.hover,
 							},
-							selectManager,
+							selectManagerRef,
+							removeAvailableEffectsRef,
 							strictNaming,
 						};
 					});
@@ -139,7 +146,7 @@ export function useSelection(
 							select: true,
 							hover: selectionProps.hover,
 						},
-						selectManager,
+						selectManagerRef,
 						strictNaming,
 					};
 				},
@@ -147,7 +154,7 @@ export function useSelection(
 		}
 
 		return nodesInteractionInput;
-	}, [patterns, selectionProps, selectManager]);
+	}, [patterns, selectionProps]);
 
 	const {availableNodeNames} = useNodesInteractionData(
 		activate ? nodesInteractionInput : {},

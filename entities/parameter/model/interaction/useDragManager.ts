@@ -14,7 +14,7 @@ import {
 	KernelSize,
 	POST_PROCESSING_EFFECT_TYPE,
 } from "@shapediver/viewer.viewport";
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {useInteractionEngine} from "./useInteractionEngine";
 
 // #region Functions (1)
@@ -39,24 +39,17 @@ const dragManagers: {
 const cleanUpDragManager = (
 	viewportId: string,
 	componentId: string,
-	availableNodeData?: {
-		nodes: ITreeNode[] | undefined;
-		tokens: string[] | undefined;
-	},
+	appliedEffects?: Map<ITreeNode, string>,
 	interactionEngine?: InteractionEngine,
 ) => {
 	if (dragManagers[viewportId][componentId]) {
-		if (
-			availableNodeData &&
-			availableNodeData.nodes &&
-			availableNodeData.tokens
-		) {
-			availableNodeData.nodes.forEach((node, index) => {
+		if (appliedEffects) {
+			appliedEffects.forEach((token, node) => {
 				dragManagers[viewportId][
 					componentId
 				].dragManager!.interactionEffectUtils.removeInteractionEffect(
 					node,
-					availableNodeData.tokens![index],
+					token,
 				);
 			});
 		}
@@ -96,6 +89,10 @@ export function useDragManager(
 	 * @param nodes - The nodes to be set as available.
 	 */
 	setAvailableNodes(nodes: ITreeNode[] | undefined): void;
+	/**
+	 * Synchronously remove the available interaction effect from the given nodes.
+	 */
+	removeAvailableEffectsForNodes(nodes: ITreeNode[]): void;
 } {
 	// call the interaction engine hook
 	const {interactionEngine} = useInteractionEngine(viewportId, componentId);
@@ -121,26 +118,45 @@ export function useDragManager(
 		IInteractionEffect | undefined
 	>();
 
-	const availableNodeDataRef = useRef<{
-		nodes: ITreeNode[] | undefined;
-		tokens: string[] | undefined;
-	}>({
-		nodes: undefined,
-		tokens: undefined,
-	});
+	// Tracks the currently applied available effects so we can diff incrementally
+	const appliedAvailableEffectsRef = useRef<Map<ITreeNode, string>>(
+		new Map(),
+	);
+	const prevAvailableManagerRef = useRef<DragManager | undefined>(undefined);
+	const prevAvailableEffectRef = useRef<
+		IInteractionEffect | MaterialStandardData | undefined
+	>(undefined);
 
 	useEffect(() => {
+		let cancelled = false;
 		const effect = parseInteractionEffect(settings?.draggingColor);
 
 		effect.then((e) => {
+			if (cancelled) return;
 			if (e) {
 				if (e instanceof Promise) {
-					e.then((e) => setDraggingEffect(e as MaterialStandardData));
+					e.then((resolved) => {
+						if (cancelled) return;
+						const newEffect = resolved as MaterialStandardData;
+						setDraggingEffect((prev) =>
+							JSON.stringify(prev) === JSON.stringify(newEffect)
+								? prev
+								: newEffect,
+						);
+					});
 				} else {
-					setDraggingEffect(e as IInteractionEffect);
+					const newEffect = e as IInteractionEffect;
+					setDraggingEffect((prev) =>
+						JSON.stringify(prev) === JSON.stringify(newEffect)
+							? prev
+							: newEffect,
+					);
 				}
-			} else if (settings?.draggingColor !== null) {
-				setDraggingEffect({
+			} else if (
+				settings !== undefined &&
+				settings.draggingColor !== null
+			) {
+				const defaultPurple: IInteractionEffect = {
 					properties: {
 						blendFunction: BlendFunction.ALPHA,
 						blur: true,
@@ -151,25 +167,44 @@ export function useDragManager(
 						xRay: true,
 					},
 					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
-				});
+				} as IInteractionEffect;
+				setDraggingEffect((prev) =>
+					JSON.stringify(prev) === JSON.stringify(defaultPurple)
+						? prev
+						: defaultPurple,
+				);
 			} else {
 				setDraggingEffect(undefined);
 			}
 		});
-	}, [settings?.draggingColor]);
+
+		return () => {
+			cancelled = true;
+		};
+	}, [settings?.draggingColor, settings !== undefined]);
 
 	useEffect(() => {
+		let cancelled = false;
 		const effect = parseInteractionEffect(settings?.availableColor);
 
 		effect.then((e) => {
+			if (cancelled) return;
 			if (e) {
 				if (e instanceof MaterialStandardData) {
-					setAvailableEffect(e);
+					setAvailableEffect((prev) => (prev === e ? prev : e));
 				} else {
-					setAvailableEffect(e as IInteractionEffect);
+					const newEffect = e as IInteractionEffect;
+					setAvailableEffect((prev) =>
+						JSON.stringify(prev) === JSON.stringify(newEffect)
+							? prev
+							: newEffect,
+					);
 				}
-			} else if (settings?.availableColor !== null) {
-				setAvailableEffect({
+			} else if (
+				settings !== undefined &&
+				settings.availableColor !== null
+			) {
+				const defaultWhite: IInteractionEffect = {
 					properties: {
 						blendFunction: BlendFunction.ALPHA,
 						blur: true,
@@ -180,45 +215,99 @@ export function useDragManager(
 						visibleEdgeColor: "#ffffff",
 					},
 					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
-				});
+				} as IInteractionEffect;
+				setAvailableEffect((prev) =>
+					JSON.stringify(prev) === JSON.stringify(defaultWhite)
+						? prev
+						: defaultWhite,
+				);
 			} else {
 				setAvailableEffect(undefined);
 			}
 		});
-	}, [settings?.availableColor]);
 
-	// whenever the passive nodes change, we need to update the select manager
+		return () => {
+			cancelled = true;
+		};
+	}, [settings?.availableColor, settings !== undefined]);
+
+	// Incremental diff effect for available nodes
 	useEffect(() => {
-		if (!availableEffect) return;
-		const tokens: string[] = [];
+		const appliedMap = appliedAvailableEffectsRef.current;
+		const prevManager = prevAvailableManagerRef.current;
+		const prevEffect = prevAvailableEffectRef.current;
 
-		if (availableNodes && dragManager) {
-			availableNodes.forEach((node) => {
+		prevAvailableManagerRef.current = dragManager;
+		prevAvailableEffectRef.current = availableEffect;
+
+		const managerChanged = prevManager !== dragManager;
+		const effectChanged = prevEffect !== availableEffect;
+
+		// When the manager or effect instance changes, clear all previously applied
+		// effects using the old manager/effect before proceeding.
+		if ((prevManager && managerChanged) || (prevEffect && effectChanged)) {
+			if (prevManager) {
+				appliedMap.forEach((token, node) => {
+					prevManager.interactionEffectUtils.removeInteractionEffect(
+						node,
+						token,
+					);
+				});
+			}
+			appliedMap.clear();
+		}
+
+		if (!availableEffect || !dragManager) {
+			return;
+		}
+
+		const newNodeSet = new Set(availableNodes ?? []);
+
+		// Remove effects for nodes no longer in the set
+		Array.from(appliedMap.entries()).forEach(([node, token]) => {
+			if (!newNodeSet.has(node)) {
+				dragManager.interactionEffectUtils.removeInteractionEffect(
+					node,
+					token,
+				);
+				appliedMap.delete(node);
+			}
+		});
+
+		// Add effects for newly added nodes
+		newNodeSet.forEach((node) => {
+			if (!appliedMap.has(node)) {
 				const token =
 					dragManager.interactionEffectUtils.applyInteractionEffect(
 						node,
 						availableEffect,
 					);
-				tokens.push(token);
-			});
-
-			availableNodeDataRef.current = {
-				nodes: availableNodes,
-				tokens,
-			};
-		}
-
-		return () => {
-			if (availableNodes && dragManager) {
-				availableNodes.forEach((node, index) => {
-					dragManager.interactionEffectUtils.removeInteractionEffect(
-						node,
-						tokens[index],
-					);
-				});
+				appliedMap.set(node, token);
 			}
-		};
-	}, [availableEffect, availableNodes]);
+		});
+	}, [availableEffect, availableNodes, dragManager]);
+
+	// A ref to the current drag manager
+	const dragManagerCurrentRef = useRef<DragManager | undefined>(undefined);
+	useEffect(() => {
+		dragManagerCurrentRef.current = dragManager;
+	}, [dragManager]);
+
+	// Stable callback that removes available outline effect from specific nodes synchronously
+	const removeAvailableEffectsForNodes = useCallback((nodes: ITreeNode[]) => {
+		const mgr = dragManagerCurrentRef.current;
+		const appliedMap = appliedAvailableEffectsRef.current;
+		if (!mgr) return;
+		nodes.forEach((node) => {
+			const token = appliedMap.get(node);
+			if (token !== undefined) {
+				mgr.interactionEffectUtils.removeInteractionEffect(node, token);
+				appliedMap.delete(node);
+			}
+		});
+	}, []);
+
+	const settingsDefined = settings !== undefined;
 
 	// use an effect to create the drag manager
 	useEffect(() => {
@@ -228,7 +317,6 @@ export function useDragManager(
 			interactionEngine.closed === false &&
 			!dragManagers[viewportId][componentId]
 		) {
-			// create the drag manager with the given settings
 			const dragManager = new DragManager(componentId, draggingEffect);
 			const token = interactionEngine.addInteractionManager(dragManager);
 			dragManagers[viewportId][componentId] = {dragManager, token};
@@ -236,22 +324,25 @@ export function useDragManager(
 		}
 
 		return () => {
-			// clean up the drag manager
 			if (dragManagers[viewportId][componentId]) {
 				cleanUpDragManager(
 					viewportId,
 					componentId,
-					availableNodeDataRef.current,
+					appliedAvailableEffectsRef.current,
 					interactionEngine,
 				);
+				appliedAvailableEffectsRef.current.clear();
+				prevAvailableManagerRef.current = undefined;
+				prevAvailableEffectRef.current = undefined;
 				setDragManager(undefined);
 			}
 		};
-	}, [interactionEngine, settings, draggingEffect]);
+	}, [interactionEngine, settingsDefined, draggingEffect]);
 
 	return {
 		dragManager,
 		setAvailableNodes,
+		removeAvailableEffectsForNodes,
 	};
 }
 

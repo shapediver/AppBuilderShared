@@ -4,9 +4,10 @@ import {getNodesByName} from "@shapediver/viewer.features.interaction";
 import {
 	DraggingParameterValue,
 	IDraggingParameterProps,
+	ITreeNode,
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
-import {useCallback, useEffect, useId, useMemo} from "react";
+import {useCallback, useEffect, useId, useMemo, useRef} from "react";
 import {useRestrictions} from "../drawing";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useDragManager} from "./useDragManager";
@@ -67,11 +68,16 @@ export function useDragging(
 	const {restrictions} = useRestrictions(draggingProps.restrictions);
 
 	// call the drag manager hook
-	const {setAvailableNodes} = useDragManager(
+	const {setAvailableNodes, removeAvailableEffectsForNodes} = useDragManager(
 		viewportId,
 		componentId,
 		activate ? draggingProps : undefined,
 	);
+
+	// store the removeAvailableEffectsForNodes callback in a ref
+	const removeAvailableEffectsRef = useRef<
+		((nodes: ITreeNode[]) => void) | undefined
+	>(removeAvailableEffectsForNodes);
 
 	// convert the dragging data
 	const {objects} = useConvertDraggingData(sessionIds, draggingProps);
@@ -127,6 +133,7 @@ export function useDragging(
 										dragOrigin: object.dragOrigin,
 										dragAnchors: object.dragAnchors,
 									},
+									removeAvailableEffectsRef,
 									strictNaming,
 								};
 							},

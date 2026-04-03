@@ -10,7 +10,7 @@ import {
 	IStringAttribute,
 	IStringGradient,
 } from "@shapediver/viewer.features.attribute-visualization";
-import {Converter, MaterialStandardData} from "@shapediver/viewer.session";
+import {Converter, MaterialUnlitData} from "@shapediver/viewer.session";
 import React, {useMemo} from "react";
 import BaseAttribute from "./BaseAttribute";
 
@@ -60,8 +60,8 @@ export default function StringAttribute(
 					item,
 					attribute.values,
 					attribute.visualization,
-					"standard",
-					new MaterialStandardData(),
+					"unlit",
+					new MaterialUnlitData(),
 				);
 				const c = Converter.instance.toHexColor(data?.material.color);
 				if (colorToValueDictionary[c] === undefined) {

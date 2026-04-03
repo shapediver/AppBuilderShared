@@ -8,6 +8,7 @@ import {getNodesByName} from "@shapediver/viewer.features.interaction";
 import {
 	ISDTFAttributeData,
 	ITreeNode,
+	MATERIAL_TYPE,
 	SDTFItemData,
 	SessionApiData,
 } from "@shapediver/viewer.session";
@@ -161,9 +162,15 @@ export default function useAttributeSelection(
 			nameFilter: Object.values(nameFilter).flat(),
 			availableColor: null,
 			hover: true,
-			hoverColor: "#ffffff",
+			hoverColor: {
+				type: MATERIAL_TYPE.UNLIT,
+				color: "#ffffff",
+			},
 			deselectOnEmpty: true,
-			selectionColor: "#0d44f0",
+			selectionColor: {
+				type: MATERIAL_TYPE.UNLIT,
+				color: "#0d44f0",
+			},
 		};
 	}, [nameFilter]);
 

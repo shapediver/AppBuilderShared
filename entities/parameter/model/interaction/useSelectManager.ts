@@ -15,7 +15,7 @@ import {
 	KernelSize,
 	POST_PROCESSING_EFFECT_TYPE,
 } from "@shapediver/viewer.viewport";
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useInteractionEngine} from "./useInteractionEngine";
 
 // #region Functions (1)
@@ -42,10 +42,7 @@ const selectManagers: {
 const cleanUpSelectManager = (
 	viewportId: string,
 	componentId: string,
-	availableNodeData?: {
-		nodes: ITreeNode[] | undefined;
-		tokens: string[] | undefined;
-	},
+	appliedEffects?: Map<ITreeNode, string>,
 	interactionEngine?: InteractionEngine,
 ) => {
 	if (selectManagers[viewportId][componentId]) {
@@ -67,17 +64,13 @@ const cleanUpSelectManager = (
 			).deselectAll();
 		}
 
-		if (
-			availableNodeData &&
-			availableNodeData.nodes &&
-			availableNodeData.tokens
-		) {
-			availableNodeData.nodes.forEach((node, index) => {
+		if (appliedEffects) {
+			appliedEffects.forEach((token, node) => {
 				selectManagers[viewportId][
 					componentId
 				].selectManager!.interactionEffectUtils.removeInteractionEffect(
 					node,
-					availableNodeData.tokens![index],
+					token,
 				);
 			});
 		}
@@ -123,6 +116,13 @@ export function useSelectManager(
 	 * @param nodes - The nodes to be set as available.
 	 */
 	setAvailableNodes(nodes: ITreeNode[] | undefined): void;
+	/**
+	 * Synchronously remove the available interaction effect from the given nodes.
+	 * Call this while the nodes are still live (before they are replaced after a
+	 * computation update) so that the post-processing reference count is properly
+	 * decremented.
+	 */
+	removeAvailableEffectsForNodes(nodes: ITreeNode[]): void;
 } {
 	// call the interaction engine hook
 	const {interactionEngine} = useInteractionEngine(viewportId, componentId);
@@ -149,14 +149,6 @@ export function useSelectManager(
 		IInteractionEffect | undefined
 	>();
 
-	const availableNodeDataRef = useRef<{
-		nodes: ITreeNode[] | undefined;
-		tokens: string[] | undefined;
-	}>({
-		nodes: undefined,
-		tokens: undefined,
-	});
-
 	// Tracks the currently applied available effects so we can diff incrementally
 	// instead of removing all effects and re-adding them whenever availableNodes changes.
 	// This prevents the brief flash where all outlines disappear then reappear.
@@ -171,19 +163,35 @@ export function useSelectManager(
 	);
 
 	useEffect(() => {
+		let cancelled = false;
 		const effect = parseInteractionEffect(settings?.selectionColor);
 
 		effect.then((e) => {
+			if (cancelled) return;
 			if (e) {
 				if (e instanceof Promise) {
-					e.then((e) =>
-						setSelectionEffect(e as MaterialStandardData),
-					);
+					e.then((resolved) => {
+						if (cancelled) return;
+						const newEffect = resolved as MaterialStandardData;
+						setSelectionEffect((prev) =>
+							JSON.stringify(prev) === JSON.stringify(newEffect)
+								? prev
+								: newEffect,
+						);
+					});
 				} else {
-					setSelectionEffect(e as IInteractionEffect);
+					const newEffect = e as IInteractionEffect;
+					setSelectionEffect((prev) =>
+						JSON.stringify(prev) === JSON.stringify(newEffect)
+							? prev
+							: newEffect,
+					);
 				}
-			} else if (settings?.selectionColor !== null) {
-				setSelectionEffect({
+			} else if (
+				settings !== undefined &&
+				settings.selectionColor !== null
+			) {
+				const defaultBlue: IInteractionEffect = {
 					properties: {
 						blendFunction: BlendFunction.ALPHA,
 						blur: true,
@@ -193,25 +201,44 @@ export function useSelectManager(
 						visibleEdgeColor: "#0d44f0",
 					},
 					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
-				});
+				} as IInteractionEffect;
+				setSelectionEffect((prev) =>
+					JSON.stringify(prev) === JSON.stringify(defaultBlue)
+						? prev
+						: defaultBlue,
+				);
 			} else {
 				setSelectionEffect(undefined);
 			}
 		});
-	}, [settings?.selectionColor]);
+
+		return () => {
+			cancelled = true;
+		};
+	}, [settings?.selectionColor, settings !== undefined]);
 
 	useEffect(() => {
+		let cancelled = false;
 		const effect = parseInteractionEffect(settings?.availableColor);
 
 		effect.then((e) => {
+			if (cancelled) return;
 			if (e) {
 				if (e instanceof MaterialStandardData) {
-					setAvailableEffect(e);
+					setAvailableEffect((prev) => (prev === e ? prev : e));
 				} else {
-					setAvailableEffect(e as IInteractionEffect);
+					const newEffect = e as IInteractionEffect;
+					setAvailableEffect((prev) =>
+						JSON.stringify(prev) === JSON.stringify(newEffect)
+							? prev
+							: newEffect,
+					);
 				}
-			} else if (settings?.availableColor !== null) {
-				setAvailableEffect({
+			} else if (
+				settings !== undefined &&
+				settings.availableColor !== null
+			) {
+				const defaultWhite: IInteractionEffect = {
 					properties: {
 						blendFunction: BlendFunction.ALPHA,
 						blur: true,
@@ -222,12 +249,21 @@ export function useSelectManager(
 						visibleEdgeColor: "#ffffff",
 					},
 					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
-				});
+				} as IInteractionEffect;
+				setAvailableEffect((prev) =>
+					JSON.stringify(prev) === JSON.stringify(defaultWhite)
+						? prev
+						: defaultWhite,
+				);
 			} else {
 				setAvailableEffect(undefined);
 			}
 		});
-	}, [settings?.availableColor]);
+
+		return () => {
+			cancelled = true;
+		};
+	}, [settings?.availableColor, settings !== undefined]);
 
 	// Whenever available nodes, the available effect, or the select manager change,
 	// incrementally update which nodes have the available effect applied.
@@ -238,12 +274,12 @@ export function useSelectManager(
 		const prevEffect = prevAvailableEffectRef.current;
 		const appliedMap = appliedAvailableEffectsRef.current;
 
+		const managerChanged = prevManager !== selectManager;
+		const effectChanged = prevEffect !== availableEffect;
+
 		// When the manager or effect instance changes, clear all previously applied
 		// effects using the old manager/effect before proceeding.
-		if (
-			(prevManager && prevManager !== selectManager) ||
-			(prevEffect && prevEffect !== availableEffect)
-		) {
+		if ((prevManager && managerChanged) || (prevEffect && effectChanged)) {
 			if (prevManager) {
 				appliedMap.forEach((token, node) => {
 					prevManager.interactionEffectUtils.removeInteractionEffect(
@@ -259,10 +295,6 @@ export function useSelectManager(
 		prevAvailableEffectRef.current = availableEffect;
 
 		if (!availableEffect || !selectManager) {
-			availableNodeDataRef.current = {
-				nodes: undefined,
-				tokens: undefined,
-			};
 			return;
 		}
 
@@ -290,27 +322,49 @@ export function useSelectManager(
 				appliedMap.set(node, token);
 			}
 		});
-
-		// Keep availableNodeDataRef in sync for cleanUpSelectManager
-		const entries = Array.from(appliedMap.entries());
-		availableNodeDataRef.current = {
-			nodes: entries.map(([node]) => node),
-			tokens: entries.map(([, token]) => token),
-		};
 	}, [availableEffect, availableNodes, selectManager]);
 
-	// use an effect to create the select manager
+	// A ref to the current select manager so the removeAvailableEffectsForNodes
+	// callback stays stable (no React deps) while always using the latest manager.
+	const selectManagerCurrentRef = useRef<
+		SelectManager | MultiSelectManager | undefined
+	>(undefined);
+	useEffect(() => {
+		selectManagerCurrentRef.current = selectManager;
+	}, [selectManager]);
+
+	// Stable callback (no deps — uses only refs) that removes the available outline
+	// effect from specific nodes synchronously. This must be called while the nodes
+	// are still live in the viewer scene, before they are replaced after computation.
+	const removeAvailableEffectsForNodes = useCallback((nodes: ITreeNode[]) => {
+		const mgr = selectManagerCurrentRef.current;
+		const appliedMap = appliedAvailableEffectsRef.current;
+		if (!mgr) return;
+		nodes.forEach((node) => {
+			const token = appliedMap.get(node);
+			if (token !== undefined) {
+				mgr.interactionEffectUtils.removeInteractionEffect(node, token);
+				appliedMap.delete(node);
+			}
+		});
+	}, []);
+
+	// Hoist selectMultiple so it can be used as a stable dep instead of the full settings object.
+	const selectMultiple = useMemo(() => {
+		if (!settings) return false;
+		return (
+			settings.minimumSelection !== undefined &&
+			settings.maximumSelection !== undefined &&
+			settings.minimumSelection <= settings.maximumSelection &&
+			settings.maximumSelection > 1
+		);
+	}, [settings?.minimumSelection, settings?.maximumSelection]);
+
+	const settingsDefined = settings !== undefined;
+	const deselectOnEmpty = settings?.deselectOnEmpty ?? false;
+
 	useEffect(() => {
 		if (settings) {
-			// whenever this output node changes, we want to create the interaction engine
-			const selectMultiple =
-				settings.minimumSelection !== undefined &&
-				settings.maximumSelection !== undefined &&
-				settings.minimumSelection <= settings.maximumSelection &&
-				settings.maximumSelection > 1;
-
-			// check if a select manager already exists for the viewport and component, but with different settings
-			// in this case we need to remove the old select manager and create a new one
 			if (
 				selectManagers[viewportId][componentId] &&
 				selectManagers[viewportId][componentId].selectMultiple !==
@@ -319,7 +373,7 @@ export function useSelectManager(
 				cleanUpSelectManager(
 					viewportId,
 					componentId,
-					availableNodeDataRef.current,
+					appliedAvailableEffectsRef.current,
 					interactionEngine,
 				);
 			}
@@ -329,17 +383,14 @@ export function useSelectManager(
 				interactionEngine &&
 				interactionEngine.closed === false
 			) {
-				// depending on the settings, create a select manager or a multi select manager
 				if (selectMultiple) {
-					// create a multi select manager with the given settings
 					const selectManager = new MultiSelectManager(
 						componentId,
 						selectionEffect,
 						settings.minimumSelection!,
 						settings.maximumSelection!,
 					);
-					selectManager.deselectOnEmpty =
-						settings.deselectOnEmpty ?? false;
+					selectManager.deselectOnEmpty = deselectOnEmpty;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);
@@ -350,13 +401,11 @@ export function useSelectManager(
 					};
 					setSelectManager(selectManager);
 				} else {
-					// create a select manager with the given settings
 					const selectManager = new SelectManager(
 						componentId,
 						selectionEffect,
 					);
-					selectManager.deselectOnEmpty =
-						settings.deselectOnEmpty ?? false;
+					selectManager.deselectOnEmpty = deselectOnEmpty;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);
@@ -375,22 +424,31 @@ export function useSelectManager(
 		}
 
 		return () => {
-			// clean up the select manager
 			if (selectManagers[viewportId][componentId]) {
 				cleanUpSelectManager(
 					viewportId,
 					componentId,
-					availableNodeDataRef.current,
+					appliedAvailableEffectsRef.current,
 					interactionEngine,
 				);
+				appliedAvailableEffectsRef.current.clear();
+				prevAvailableManagerRef.current = undefined;
+				prevAvailableEffectRef.current = undefined;
 				setSelectManager(undefined);
 			}
 		};
-	}, [interactionEngine, settings, selectionEffect]);
+	}, [
+		interactionEngine,
+		settingsDefined,
+		selectMultiple,
+		deselectOnEmpty,
+		selectionEffect,
+	]);
 
 	return {
 		selectManager,
 		setAvailableNodes,
+		removeAvailableEffectsForNodes,
 	};
 }
 

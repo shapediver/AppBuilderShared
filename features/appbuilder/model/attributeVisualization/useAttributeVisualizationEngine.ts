@@ -2,7 +2,7 @@ import {useEffect} from "react";
 
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
 import {AttributeVisualizationEngine} from "@shapediver/viewer.features.attribute-visualization";
-import {MaterialStandardData} from "@shapediver/viewer.session";
+import {MaterialUnlitData} from "@shapediver/viewer.session";
 import {useShallow} from "zustand/react/shallow";
 import {useShapeDiverStoreAttributeVisualization} from "../useShapeDiverStoreAttributeVisualization";
 
@@ -52,18 +52,16 @@ export function useAttributeVisualizationEngine(viewportId: string): {
 				) as AttributeVisualizationEngine;
 			if (!attributeVisualizationEngine) return;
 
-			attributeVisualizationEngine.updateLayerMaterialType("standard");
+			attributeVisualizationEngine.updateLayerMaterialType("unlit");
 			attributeVisualizationEngine.updateDefaultMaterial(
-				new MaterialStandardData({color: "#666"}),
+				new MaterialUnlitData({color: "#666666"}),
 			);
 			attributeVisualizationEngine.updateDefaultLayer({
-				color: "#666",
+				color: "#666666",
 				opacity: 1,
 				enabled: true,
 			});
-			attributeVisualizationEngine.updateVisualizedMaterialType(
-				"standard",
-			);
+			attributeVisualizationEngine.updateVisualizedMaterialType("unlit");
 		}
 
 		return () => {

@@ -14,7 +14,7 @@ import {
 	SessionApiData,
 } from "@shapediver/viewer.session";
 import {vec3} from "gl-matrix";
-import {useCallback, useEffect, useState} from "react";
+import {MutableRefObject, useCallback, useEffect, useState} from "react";
 
 export type IUseNodeInteractionDataProps = {
 	/**
@@ -63,10 +63,20 @@ export type IUseNodeInteractionDataProps = {
 		}[];
 	};
 	/**
-	 * The select manager to be used for selection.
+	 * A ref to the select manager to be used for selection.
 	 * If not provided, the selection will not be possible, but the interaction data will be added.
 	 */
-	selectManager?: SelectManager | MultiSelectManager;
+	selectManagerRef?: MutableRefObject<
+		SelectManager | MultiSelectManager | undefined
+	>;
+	/**
+	 * A ref to a callback that synchronously removes the available interaction
+	 * effect from specific nodes. Must be called while the nodes are still live
+	 * (before they are replaced after a computation update).
+	 */
+	removeAvailableEffectsRef?: MutableRefObject<
+		((nodes: ITreeNode[]) => void) | undefined
+	>;
 	/**
 	 * If the naming should be strict.
 	 */
@@ -98,12 +108,20 @@ const createOutputUpdateCallback = (
 	patterns: NodeNameFilterPattern[],
 	interactionSettings: IUseNodeInteractionDataProps["interactionSettings"],
 	componentId: string,
-	selectManager?: SelectManager | MultiSelectManager,
+	selectManagerRef?: MutableRefObject<
+		SelectManager | MultiSelectManager | undefined
+	>,
+	removeAvailableEffectsRef?: MutableRefObject<
+		((nodes: ITreeNode[]) => void) | undefined
+	>,
 	strictNaming?: boolean,
 ) => {
 	return (newNode?: ITreeNode, oldNode?: ITreeNode) => {
 		// remove interaction data on deregistration
 		if (oldNode) {
+			// Collect nodes whose available effects must be removed synchronously
+			// while they are still live in the scene.
+			const nodesToClean: ITreeNode[] = [];
 			oldNode.traverse((node) => {
 				for (const data of node.data) {
 					// remove existing interaction data if it is restricted to the current component
@@ -112,12 +130,17 @@ const createOutputUpdateCallback = (
 						data.restrictedManagers.includes(componentId)
 					) {
 						if (data.interactionStates.select === true)
-							selectManager?.deselect(node);
+							selectManagerRef?.current?.deselect(node);
+						nodesToClean.push(node);
 						node.removeData(data);
 						node.updateVersion();
 					}
 				}
 			});
+			// Remove available effects synchronously before the nodes become stale
+			if (nodesToClean.length > 0) {
+				removeAvailableEffectsRef?.current?.(nodesToClean);
+			}
 		}
 
 		if (newNode) {
@@ -294,7 +317,8 @@ export function useNodesInteractionData(props: {
 				prop.patterns,
 				prop.interactionSettings,
 				prop.componentId,
-				prop.selectManager,
+				prop.selectManagerRef,
+				prop.removeAvailableEffectsRef,
 				prop.strictNaming,
 			);
 
