@@ -16,6 +16,7 @@ export * from "./useParameterStateless";
 export * from "./useParameterValueSources";
 export * from "./useResolveParameterValues";
 export * from "./useScrollingApiStore";
+export * from "./useSettingsMinMax";
 export * from "./useSessionPropsParameter";
 export * from "./useShapeDiverStoreInteractionRequestManagement";
 export * from "./useShapeDiverStoreParameters";
