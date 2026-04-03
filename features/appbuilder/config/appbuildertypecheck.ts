@@ -89,6 +89,8 @@ const INumberParameterSettingsSchema = z.object({
 		)
 		.optional(),
 	restrictToMarks: z.boolean().optional(),
+	min: z.number().optional(),
+	max: z.number().optional(),
 });
 
 export const validateNumberParameterSettings = (value: any) => {
