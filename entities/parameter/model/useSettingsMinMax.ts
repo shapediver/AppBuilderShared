@@ -24,16 +24,10 @@ export function useSettingsMinMax(definition: IShapeDiverParameterDefinition) {
 		? validatedSettings.data.max
 		: undefined;
 
-	const {effectiveMin, effectiveMax} = useMemo(() => {
-		const clampedMin =
-			settingsMin !== undefined ? Math.max(defMin, settingsMin) : defMin;
-		const clampedMax =
-			settingsMax !== undefined ? Math.min(defMax, settingsMax) : defMax;
-		if (clampedMin > clampedMax) {
-			return {effectiveMin: defMin, effectiveMax: defMax};
-		}
-		return {effectiveMin: clampedMin, effectiveMax: clampedMax};
-	}, [defMin, defMax, settingsMin, settingsMax]);
+	const { effectiveMin, effectiveMax } = useMemo(() => ({
+		effectiveMin: settingsMin !== undefined ? Math.max(defMin, settingsMin) : defMin,
+		effectiveMax: settingsMax !== undefined ? Math.min(defMax, settingsMax) : defMax,
+	}), [defMin, defMax, settingsMin, settingsMax]);
 
 	useEffect(() => {
 		if (settingsMin !== undefined && settingsMin < defMin) {
