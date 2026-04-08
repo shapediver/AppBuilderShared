@@ -14,6 +14,7 @@ import {
 	useShapeDiverStoreStandardContainers,
 } from "@AppBuilderLib/features/appbuilder";
 import {Icon, IconType} from "@AppBuilderLib/shared/ui/icon";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/entities/parameter";
 import shellClasses from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage.module.css";
 import {
 	ActionIcon,
@@ -189,6 +190,10 @@ export function useAnchorContainer({
 			removeAdditionalContainerContent:
 				state.removeAdditionalContainerContent,
 		}));
+
+	const {disabled} = useShapeDiverStoreParameters((state) => ({
+		disabled: state.isAnyParameterDisablingOthers(),
+	}));
 
 	/**
 	 * Get the styling properties for the anchor container.
@@ -515,8 +520,11 @@ export function useAnchorContainer({
 		[aboveMobileBreakpoint, draggable],
 	);
 	const hasCloseIcon = useMemo(
-		() => canBeHidden && (closingStrategy === "button" || useCloseButton),
-		[canBeHidden, closingStrategy, useCloseButton],
+		() =>
+			canBeHidden &&
+			(closingStrategy === "button" || useCloseButton) &&
+			!disabled,
+		[canBeHidden, closingStrategy, useCloseButton, disabled],
 	);
 
 	/**
