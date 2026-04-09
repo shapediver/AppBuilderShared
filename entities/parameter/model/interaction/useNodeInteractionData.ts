@@ -267,6 +267,13 @@ const instanceCallback = (
 	);
 
 	return () => {
+		// clear the available node names so that callers (e.g. useSelection,
+		// useDragging) immediately see an empty set and call setAvailableNodes([]).
+		// This mirrors what the output-update-callback path does when it is
+		// unregistered (the session store calls the callback with (undefined, oldNode)
+		// which triggers setAvailableNodeNames([])).
+		setAvailableNodeNames([]);
+
 		// remove the interaction data on unmount
 		Object.values(availableNodes).forEach((availableNode) => {
 			availableNode.node.traverse((node) => {

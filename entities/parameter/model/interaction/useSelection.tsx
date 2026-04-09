@@ -78,6 +78,9 @@ export function useSelection(
 	const removeAvailableEffectsRef = React.useRef<
 		((nodes: ITreeNode[]) => void) | undefined
 	>(removeAvailableEffectsForNodes);
+	useEffect(() => {
+		removeAvailableEffectsRef.current = removeAvailableEffectsForNodes;
+	}, [removeAvailableEffectsForNodes]);
 
 	// call the hover manager hook
 	const hoverSettings = useMemo(() => {

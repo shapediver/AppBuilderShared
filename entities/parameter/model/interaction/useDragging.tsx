@@ -78,6 +78,9 @@ export function useDragging(
 	const removeAvailableEffectsRef = useRef<
 		((nodes: ITreeNode[]) => void) | undefined
 	>(removeAvailableEffectsForNodes);
+	useEffect(() => {
+		removeAvailableEffectsRef.current = removeAvailableEffectsForNodes;
+	}, [removeAvailableEffectsForNodes]);
 
 	// convert the dragging data
 	const {objects} = useConvertDraggingData(sessionIds, draggingProps);
