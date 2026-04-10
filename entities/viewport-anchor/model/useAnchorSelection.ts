@@ -69,12 +69,6 @@ export function useAnchorSelection(
 		};
 	}, [selectionProperties]);
 
-	const selectionActive = useMemo(() => {
-		if (!selectionProperties) return false;
-
-		return aboveMobileBreakpoint;
-	}, [selectionProperties]);
-
 	const cleanSelectionProps = useMemo(() => {
 		return {
 			...selectionProperties,
@@ -88,7 +82,7 @@ export function useAnchorSelection(
 		useSelection(
 			viewportId,
 			cleanSelectionProps,
-			selectionActive && selectionAllowed,
+			!!selectionProperties && selectionAllowed,
 		);
 
 	/**
