@@ -6,7 +6,7 @@ import {
 	ITabsComponentProps,
 	TabsComponent,
 } from "@AppBuilderLib/shared/ui/tabs";
-import {AppBuilderWidgetsComponent} from "@AppBuilderLib/widgets/appbuilder";
+import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
 import React, {useMemo} from "react";
 
 interface Props {

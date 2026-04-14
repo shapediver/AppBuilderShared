@@ -1,12 +1,8 @@
-import {
-	AppBuilderStackContext,
-	IAppBuilderContainer,
-	useStackContext,
-} from "@AppBuilderLib/features/appbuilder";
-import {
-	AppBuilderStackUiWidgetComponent,
-	AppBuilderWidgetsComponent,
-} from "@AppBuilderLib/widgets/appbuilder";
+import {IAppBuilderContainer} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
+import {useStackContext} from "@AppBuilderLib/features/appbuilder/model/useStackContext";
+import {AppBuilderStackUiWidgetComponent} from "./AppBuilderStackUiWidget";
+import AppBuilderWidgetsComponent from "./AppBuilderWidgetsComponent";
 import React from "react";
 import AppBuilderTabsComponent from "./AppBuilderTabsComponent";
 

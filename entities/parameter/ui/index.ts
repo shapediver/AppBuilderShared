@@ -3,8 +3,6 @@ export * from "./select";
 
 export {default as AcceptRejectButtons} from "./AcceptRejectButtons";
 
-export {default as DrawingOptionsComponent} from "./DrawingOptionsComponent";
-
 export {default as ParameterBooleanComponent} from "./ParameterBooleanComponent";
 
 export {
@@ -12,16 +10,10 @@ export {
 	ParameterColorComponentThemeProps,
 } from "./ParameterColorComponent";
 
-export {default as ParameterDraggingComponent} from "./ParameterDraggingComponent";
-export {default as ParameterDrawingComponent} from "./ParameterDrawingComponent";
-
 export {
 	default as ParameterFileInputComponent,
 	ParameterFileInputComponentThemeProps,
 } from "./ParameterFileInputComponent";
-
-export {default as ParameterGumballComponent} from "./ParameterGumballComponent";
-export {default as ParameterRectangleTransformComponent} from "./ParameterRectangleTransformComponent";
 
 export {
 	default as ParameterLabelComponent,
@@ -32,8 +24,6 @@ export {
 	default as ParameterSelectComponent,
 	ParameterSelectComponentThemeProps,
 } from "./ParameterSelectComponent";
-
-export {default as ParameterSelectionComponent} from "./ParameterSelectionComponent";
 
 export {
 	default as ParameterSliderComponent,

@@ -3,18 +3,18 @@ import {
 	OutputStargateComponent,
 	PropsOutput,
 } from "@AppBuilderLib/entities/output";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {
 	isExportDefinition,
 	isOutputDefinition,
 	isParamDefinition,
-	PropsParameter,
 	useSortedParametersAndExports,
-} from "@AppBuilderLib/entities/parameter";
+} from "@AppBuilderLib/entities/parameter/model/useSortedParametersAndExports";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {
-	ComponentContext,
 	getExportComponent,
 	getParameterComponent,
-} from "@AppBuilderLib/features/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {
 	Accordion,
 	AccordionControlProps,

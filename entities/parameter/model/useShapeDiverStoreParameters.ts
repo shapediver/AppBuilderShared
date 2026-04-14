@@ -7,7 +7,6 @@ import {
 	IShapeDiverOutputDefinition,
 } from "@AppBuilderLib/entities/output";
 import {
-	addValidator,
 	IAcceptRejectModeSelector,
 	IExportResponse,
 	IExportStore,
@@ -26,12 +25,15 @@ import {
 	IPreExecutionHook,
 	ISessionDependency,
 	ISessionsHistoryState,
+	IShapeDiverStoreParameters,
+} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {
 	IShapeDiverParameter,
 	IShapeDiverParameterDefinition,
 	IShapeDiverParameterExecutor,
 	IShapeDiverParameterState,
-	IShapeDiverStoreParameters,
-} from "@AppBuilderLib/entities/parameter";
+} from "@AppBuilderLib/entities/parameter/config/parameter";
+import {addValidator} from "@AppBuilderLib/entities/parameter/lib/parameterValidation";
 import {
 	devtoolsSettings,
 	EventActionEnum,

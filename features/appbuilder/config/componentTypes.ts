@@ -2,17 +2,15 @@ import {
 	ExportButtonComponent,
 	ExportLabelComponent,
 } from "@AppBuilderLib/entities/export";
-import {
-	IShapeDiverParamOrExportDefinition,
-	ParameterBooleanComponent,
-	ParameterColorComponent,
-	ParameterFileInputComponent,
-	ParameterLabelComponent,
-	ParameterSelectComponent,
-	ParameterSliderComponent,
-	ParameterStargateComponent,
-	ParameterStringComponent,
-} from "@AppBuilderLib/entities/parameter";
+import {IShapeDiverParamOrExportDefinition} from "@AppBuilderLib/entities/parameter/config/common";
+import ParameterBooleanComponent from "@AppBuilderLib/entities/parameter/ui/ParameterBooleanComponent";
+import ParameterColorComponent from "@AppBuilderLib/entities/parameter/ui/ParameterColorComponent";
+import ParameterFileInputComponent from "@AppBuilderLib/entities/parameter/ui/ParameterFileInputComponent";
+import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
+import ParameterSelectComponent from "@AppBuilderLib/entities/parameter/ui/ParameterSelectComponent";
+import ParameterSliderComponent from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent";
+import ParameterStargateComponent from "@AppBuilderLib/entities/parameter/ui/ParameterStargateComponent";
+import ParameterStringComponent from "@AppBuilderLib/entities/parameter/ui/ParameterStringComponent";
 import {
 	CommonButtonProps,
 	ViewportIconButtonEnum,
@@ -20,7 +18,7 @@ import {
 import {
 	IComponentContext,
 	ParameterComponentMapValueType,
-} from "@AppBuilderLib/features/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {EXPORT_TYPE, PARAMETER_TYPE} from "@shapediver/viewer.session";
 

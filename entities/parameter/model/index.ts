@@ -1,10 +1,11 @@
-export * from "./drawing";
-export * from "./interaction";
 export * from "./select";
 export * from "./useAllParameters";
 export * from "./useAllParametersStateless";
 export * from "./useCustomHeight";
 export * from "./useDefineGenericParameters";
+export {useCreateNameFilterPattern} from "./interaction/useCreateNameFilterPattern";
+export type {IUseFindNodesByPatternProps} from "./interaction/useFindNodesByPattern";
+export {useFindNodesByPatterns} from "./interaction/useFindNodesByPattern";
 export * from "./useFocus";
 export * from "./useParameter";
 export * from "./useParameterChanges";

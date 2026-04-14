@@ -19,7 +19,7 @@ import {
 } from "@shapediver/viewer.features.drawing-tools";
 import {IDrawingParameterSettings} from "@shapediver/viewer.session";
 import React, {useEffect, useState} from "react";
-import {useDrawingOptionsStore} from "../model";
+import {useDrawingOptionsStore} from "../model/drawing";
 import classes from "./DrawingOptionsComponent.module.css";
 
 /**

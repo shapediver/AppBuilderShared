@@ -1,6 +1,6 @@
 import {PropsExport} from "@AppBuilderLib/entities/export";
 import {PropsOutput} from "@AppBuilderLib/entities/output";
-import {PropsParameter} from "@AppBuilderLib/entities/parameter";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
 import {
 	DesktopClientPanel,
@@ -8,14 +8,14 @@ import {
 } from "@AppBuilderLib/entities/stargate";
 import {
 	AttributeVisualizationVisibility,
-	ComponentContext,
 	IAppBuilderSettingsSession,
-} from "@AppBuilderLib/features/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {
 	ITabsComponentProps,
 	TabsComponent,
 } from "@AppBuilderLib/shared/ui/tabs";
-import {AppBuilderSavedStatesWidgetComponent} from "@AppBuilderLib/widgets/appbuilder";
+import AppBuilderSavedStatesWidgetComponent from "./AppBuilderSavedStatesWidgetComponent";
 import React, {useContext, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import ParametersAndExportsAccordionComponent from "./ParametersAndExportsAccordionComponent";

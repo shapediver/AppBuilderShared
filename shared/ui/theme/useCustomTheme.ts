@@ -45,23 +45,21 @@ import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon";
 import {MarkdownWidgetComponentProps} from "@AppBuilderLib/shared/ui/markdown";
 import {ModalBaseThemeProps} from "@AppBuilderLib/shared/ui/modal";
 import {TooltipWrapperThemeProps} from "@AppBuilderLib/shared/ui/tooltip";
-import {
-	AppBuilderAccordionUiWidgetComponentThemeProps,
-	AppBuilderAccordionWidgetComponentThemeProps,
-	AppBuilderAgentWidgetThemeProps,
-	AppBuilderAreaChartWidgetComponentThemeProps,
-	AppBuilderControlsWidgetComponentThemeProps,
-	AppBuilderFormWidgetComponentThemeProps,
-	AppBuilderImageThemeProps,
-	AppBuilderLineChartWidgetComponentThemeProps,
-	AppBuilderRoundChartWidgetComponentThemeProps,
-	AppBuilderSavedStatesWidgetComponentThemeProps,
-	AppBuilderStackUiWidgetComponentThemeProps,
-	AppBuilderTableWidgetComponentThemeProps,
-	AppBuilderTextWidgetThemeProps,
-	ParametersAndExportsAccordionComponentThemeProps,
-	ViewportAcceptRejectButtonsComponentThemeProps,
-} from "@AppBuilderLib/widgets/appbuilder";
+import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/config/appBuilderAgentWidget";
+import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAccordionUiWidgetComponent";
+import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAccordionWidgetComponent";
+import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAreaChartWidgetComponent";
+import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderControlsWidgetComponent";
+import {AppBuilderFormWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFormWidgetComponent";
+import {AppBuilderImageThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderImage";
+import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderLineChartWidgetComponent";
+import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderRoundChartWidgetComponent";
+import {AppBuilderSavedStatesWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderSavedStatesWidgetComponent";
+import {AppBuilderStackUiWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
+import {AppBuilderTableWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderTableWidgetComponent";
+import {AppBuilderTextWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderTextWidgetComponent";
+import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/ParametersAndExportsAccordionComponent";
+import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
 import {AppBuilderAppShellTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
 import {AppBuilderContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderContainer";

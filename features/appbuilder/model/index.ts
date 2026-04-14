@@ -1,4 +1,3 @@
-export * from "./attributeVisualization";
 export * from "./useAgent";
 export * from "./useAppBuilderCustomParameters";
 export * from "./useAppBuilderInstances";

@@ -1,5 +1,5 @@
 import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export";
-import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter";
+import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {SessionCreateDto} from "@AppBuilderLib/entities/session";
 import {IconType} from "@AppBuilderLib/shared/ui/icon";
 import {IAppBuilderWidgetPropsTable} from "@AppBuilderLib/widgets/appbuilder/config/appbuildertable";

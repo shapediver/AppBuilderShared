@@ -19,7 +19,7 @@ import {shouldUsePlatform} from "@AppBuilderLib/shared/lib";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
 import {MarkdownWidgetComponent} from "@AppBuilderLib/shared/ui/markdown";
 import {OverlayPosition} from "@AppBuilderLib/shared/ui/overlay";
-import {ViewportAcceptRejectButtons} from "@AppBuilderLib/widgets/appbuilder";
+import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";

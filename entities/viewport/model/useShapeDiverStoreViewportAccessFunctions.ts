@@ -1,4 +1,4 @@
-import {IShapeDiverStoreViewportAccessFunctionsStore} from "@AppBuilderLib/entities/viewport";
+import type {IShapeDiverStoreViewportAccessFunctionsStore} from "@AppBuilderLib/entities/viewport/config/shapediverStoreViewportAccessFunctions";
 import {devtoolsSettings} from "@AppBuilderLib/shared/config";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

@@ -6,14 +6,16 @@ import {
 import {ViewportAnchor3d} from "@AppBuilderLib/entities/viewport-anchor";
 import {
 	AttributeVisualizationVisibility,
-	createAttributeId,
 	IAppBuilderWidgetPropsAttributeVisualization,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	createAttributeId,
 	useAttributeOverview,
 	useAttributeSelection,
 	useAttributeVisualizationEngine,
 	useAttributeWidgetVisibilityTracker,
 	useConvertAttributeInputData,
-} from "@AppBuilderLib/features/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderShared/shared";
 import {
@@ -32,7 +34,6 @@ import {
 import {
 	ATTRIBUTE_VISUALIZATION,
 	Gradient,
-	IAttribute,
 	IColorAttribute,
 	IDefaultAttribute,
 	isStringGradient,
@@ -62,13 +63,10 @@ import {
 	NumberAttribute,
 	StringAttribute,
 } from "./attributes";
+import type {IAttributeDefinition} from "../types/iAttributeDefinition";
 import SelectedAttributeComponent from "./SelectedAttributeComponent";
 
-export type IAttributeDefinition =
-	| IAttribute
-	| INumberAttributeExtended
-	| IStringAttribute
-	| IDefaultAttribute;
+export type {IAttributeDefinition} from "../types/iAttributeDefinition";
 
 type StyleProps = {
 	widgetProps?: Partial<PaperProps>;

@@ -14,7 +14,7 @@ import {
 	ITabsComponentProps,
 	TabsComponent,
 } from "@AppBuilderLib/shared/ui/tabs";
-import {ParametersAndExportsAccordionComponent} from "@AppBuilderLib/widgets/appbuilder";
+import ParametersAndExportsAccordionComponent from "@AppBuilderLib/widgets/appbuilder/ui/ParametersAndExportsAccordionComponent";
 import {MultiSelect, Notification} from "@mantine/core";
 import React, {useMemo} from "react";
 import {ISelectedModel, useModelSelectStore} from "../model";
