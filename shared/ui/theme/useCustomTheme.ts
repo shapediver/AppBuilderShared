@@ -62,6 +62,10 @@ import {
 	ParametersAndExportsAccordionComponentThemeProps,
 	ViewportAcceptRejectButtonsComponentThemeProps,
 } from "@AppBuilderLib/widgets/appbuilder";
+import {ParameterDraggingComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterDraggingComponent";
+import {ParameterGumballComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterGumballComponent";
+import {ParameterRectangleTransformComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterRectangleTransformComponent";
+import {ParameterSelectionComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterSelectionComponent";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
 import {AppBuilderAppShellTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
 import {AppBuilderContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderContainer";
@@ -1119,6 +1123,172 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			ParameterSelectComponent: ParameterSelectComponentThemeProps({
 				// componentSettings: { "Predefined positions": { type: "chipgroup" } },
+			}),
+
+			/**
+			 * ParameterDraggingComponent
+			 *
+			 * Defaults and settings for dragging components.
+			 */
+			ParameterDraggingComponent: ParameterDraggingComponentThemeProps({
+				// draggingColor: {
+				// 	properties: {
+				// 		blendFunction: BlendFunction.ALPHA,
+				// 		blur: true,
+				// 		edgeStrength: 10,
+				// 		hiddenEdgeColor: "#0d44f0",
+				// 		kernelSize: KernelSize.LARGE,
+				// 		visibleEdgeColor: "#0d44f0",
+				// 	},
+				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// } as IInteractionEffect,
+				// availableColor: {
+				// 	properties: {
+				// 		blendFunction: BlendFunction.ALPHA,
+				// 		blur: true,
+				// 		edgeStrength: 10,
+				// 		hiddenEdgeColor: "#ffffff",
+				// 		kernelSize: KernelSize.LARGE,
+				// 		pulseSpeed: 0.5,
+				// 		visibleEdgeColor: "#ffffff",
+				// 	},
+				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// } as IInteractionEffect,
+				// hoverColor: {
+				// 	properties: {
+				// 		blendFunction: BlendFunction.ALPHA,
+				// 		blur: true,
+				// 		edgeStrength: 10,
+				// 		hiddenEdgeColor: "#ffffff",
+				// 		kernelSize: KernelSize.LARGE,
+				// 		visibleEdgeColor: "#ffffff",
+				// 	},
+				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// } as IInteractionEffect,
+			}),
+			/**
+			 * ParameterGumballComponent
+			 *
+			 * Defaults and settings for gumball transform components.
+			 */
+			ParameterGumballComponent: ParameterGumballComponentThemeProps({
+				// selectionColor: {
+				// 	properties: {
+				// 		blendFunction: BlendFunction.ALPHA,
+				// 		blur: true,
+				// 		edgeStrength: 10,
+				// 		hiddenEdgeColor: "#0d44f0",
+				// 		kernelSize: KernelSize.LARGE,
+				// 		visibleEdgeColor: "#0d44f0",
+				// 	},
+				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// } as IInteractionEffect,
+				// availableColor: {
+				// 	properties: {
+				// 		blendFunction: BlendFunction.ALPHA,
+				// 		blur: true,
+				// 		edgeStrength: 10,
+				// 		hiddenEdgeColor: "#ffffff",
+				// 		kernelSize: KernelSize.LARGE,
+				// 		pulseSpeed: 0.5,
+				// 		visibleEdgeColor: "#ffffff",
+				// 	},
+				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// } as IInteractionEffect,
+				// hoverColor: {
+				// 	properties: {
+				// 		blendFunction: BlendFunction.ALPHA,
+				// 		blur: true,
+				// 		edgeStrength: 10,
+				// 		hiddenEdgeColor: "#ffffff",
+				// 		kernelSize: KernelSize.LARGE,
+				// 		visibleEdgeColor: "#ffffff",
+				// 	},
+				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// } as IInteractionEffect,
+			}),
+			/**
+			 * ParameterRectangleTransformComponent
+			 *
+			 * Defaults and settings for rectangle transform components.
+			 */
+			ParameterRectangleTransformComponent:
+				ParameterRectangleTransformComponentThemeProps({
+					// selectionColor: {
+					// 	properties: {
+					// 		blendFunction: BlendFunction.ALPHA,
+					// 		blur: true,
+					// 		edgeStrength: 10,
+					// 		hiddenEdgeColor: "#0d44f0",
+					// 		kernelSize: KernelSize.LARGE,
+					// 		visibleEdgeColor: "#0d44f0",
+					// 	},
+					// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+					// } as IInteractionEffect,
+					// availableColor: {
+					// 	properties: {
+					// 		blendFunction: BlendFunction.ALPHA,
+					// 		blur: true,
+					// 		edgeStrength: 10,
+					// 		hiddenEdgeColor: "#ffffff",
+					// 		kernelSize: KernelSize.LARGE,
+					// 		pulseSpeed: 0.5,
+					// 		visibleEdgeColor: "#ffffff",
+					// 	},
+					// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+					// } as IInteractionEffect,
+					// hoverColor: {
+					// 	properties: {
+					// 		blendFunction: BlendFunction.ALPHA,
+					// 		blur: true,
+					// 		edgeStrength: 10,
+					// 		hiddenEdgeColor: "#ffffff",
+					// 		kernelSize: KernelSize.LARGE,
+					// 		visibleEdgeColor: "#ffffff",
+					// 	},
+					// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+					// } as IInteractionEffect,
+				}),
+			/**
+			 * ParameterSelectionComponent
+			 *
+			 * Defaults and settings for selection components (e.g. dropdowns, chip groups).
+			 */
+			ParameterSelectionComponent: ParameterSelectionComponentThemeProps({
+				// selectionColor: {
+				// 	properties: {
+				// 		blendFunction: BlendFunction.ALPHA,
+				// 		blur: true,
+				// 		edgeStrength: 10,
+				// 		hiddenEdgeColor: "#0d44f0",
+				// 		kernelSize: KernelSize.LARGE,
+				// 		visibleEdgeColor: "#0d44f0",
+				// 	},
+				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// } as IInteractionEffect,
+				// availableColor: {
+				// 	properties: {
+				// 		blendFunction: BlendFunction.ALPHA,
+				// 		blur: true,
+				// 		edgeStrength: 10,
+				// 		hiddenEdgeColor: "#ffffff",
+				// 		kernelSize: KernelSize.LARGE,
+				// 		pulseSpeed: 0.5,
+				// 		visibleEdgeColor: "#ffffff",
+				// 	},
+				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// } as IInteractionEffect,
+				// hoverColor: {
+				// 	properties: {
+				// 		blendFunction: BlendFunction.ALPHA,
+				// 		blur: true,
+				// 		edgeStrength: 10,
+				// 		hiddenEdgeColor: "#ffffff",
+				// 		kernelSize: KernelSize.LARGE,
+				// 		visibleEdgeColor: "#ffffff",
+				// 	},
+				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// } as IInteractionEffect,
 			}),
 			/**
 			 * ParameterSliderComponent

@@ -17,15 +17,22 @@ import {
 	Flex,
 	Group,
 	Loader,
+	MantineThemeComponent,
 	Stack,
 	Text,
 	useProps,
 } from "@mantine/core";
+import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
 import {
 	IRectangleTransformParameterProps,
 	RectangleTransformParameterValue,
 	validateRectangleTransformParameterSettings,
 } from "@shapediver/viewer.session";
+import {
+	InteractionEffect,
+	POST_PROCESSING_EFFECT_TYPE,
+} from "@shapediver/viewer.shared.types";
+import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useRectangleTransform} from "../model/interaction/useRectangleTransform";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
@@ -56,13 +63,68 @@ const parseTransformation = (
 	}
 };
 
+interface StyleProps {
+	selectionColor?: InteractionEffect;
+	availableColor?: InteractionEffect;
+	hoverColor?: InteractionEffect;
+}
+
+const defaultStyleProps: StyleProps = {
+	selectionColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#0d44f0",
+			kernelSize: KernelSize.LARGE,
+			visibleEdgeColor: "#0d44f0",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+	availableColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#ffffff",
+			kernelSize: KernelSize.LARGE,
+			pulseSpeed: 0.5,
+			visibleEdgeColor: "#ffffff",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+	hoverColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#ffffff",
+			kernelSize: KernelSize.LARGE,
+			visibleEdgeColor: "#ffffff",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+};
+
+type ParameterRectangleTransformComponentPropsType = Partial<StyleProps>;
+
+export function ParameterRectangleTransformComponentThemeProps(
+	props: ParameterRectangleTransformComponentPropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
 /**
  * Functional component that creates a rectangle transform component for a rectangle transform parameter.
  *
  * @returns
  */
 export default function ParameterRectangleTransformComponent(
-	props: PropsParameter & Partial<PropsParameterWrapper>,
+	props: PropsParameter &
+		Partial<PropsParameterWrapper> &
+		Partial<IRectangleTransformParameterProps>,
 ) {
 	const {
 		actions,
@@ -75,6 +137,12 @@ export default function ParameterRectangleTransformComponent(
 		state,
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
+
+	const {selectionColor, availableColor, hoverColor} = useProps(
+		"ParameterRectangleTransformComponent",
+		defaultStyleProps,
+		props,
+	);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterRectangleTransformComponent",
@@ -95,7 +163,12 @@ export default function ParameterRectangleTransformComponent(
 			definition.settings,
 		);
 		if (result.success) {
-			return result.data.props as IRectangleTransformParameterProps;
+			const props = result.data
+				.props as IRectangleTransformParameterProps;
+			if (!props.selectionColor) props.selectionColor = selectionColor;
+			if (!props.availableColor) props.availableColor = availableColor;
+			if (!props.hoverColor) props.hoverColor = hoverColor;
+			return props;
 		} else {
 			notifications.error({
 				title: "Invalid Parameter Settings",
@@ -104,9 +177,13 @@ export default function ParameterRectangleTransformComponent(
 			Logger.warn(
 				`Invalid settings for Rectangle Transform parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
-			return {} as IRectangleTransformParameterProps;
+			return {
+				selectionColor,
+				availableColor,
+				hoverColor,
+			} as IRectangleTransformParameterProps;
 		}
-	}, [definition.settings]);
+	}, [definition.settings, selectionColor, availableColor]);
 
 	// state for the rectangle transform application
 	const [rectangleTransformActive, setRectangleTransformActive] =
