@@ -1,6 +1,5 @@
 import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
-	ISelectionParameterPropsJsonSchema,
 	PARAMETER_TYPE,
 	PARAMETER_VISUALIZATION,
 	TAG3D_JUSTIFICATION,
@@ -9,14 +8,150 @@ import {
 	ATTRIBUTE_VISUALIZATION,
 	CAMERA_TYPE,
 } from "@shapediver/viewer.shared.types";
+import type {MantineTheme, MantineThemeComponent} from "@mantine/core";
 import {z} from "zod";
+import {prettifyError} from "zod/v4";
 import {
 	AppBuilderContainerNameType,
 	AttributeVisualizationVisibility,
 	FormWidgetSubmitBehavior,
+	IAppBuilderParameterValueSourceDefinition,
+	IAppBuilderWidget,
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
+
+// Recursive JSON-serializable value type
+export type JsonValue =
+	| string
+	| number
+	| boolean
+	| null
+	| JsonValue[]
+	| { [key: string]: JsonValue };
+
+export const JsonValueSchema: z.ZodType<JsonValue> = z.union([
+	z.string(),
+	z.number(),
+	z.boolean(),
+	z.null(),
+	z.lazy(() => z.array(JsonValueSchema)),
+	z.lazy(() => z.record(z.string(), JsonValueSchema)),
+]);
+
+// Zod schema for MantineThemeComponent (classNames, styles, vars, defaultProps are opaque JSON values)
+const MantineThemeComponentSchema = z.strictObject({
+	classNames: JsonValueSchema.optional(),
+	styles: JsonValueSchema.optional(),
+	vars: JsonValueSchema.optional(),
+	defaultProps: JsonValueSchema.optional(),
+});
+
+// Compile-time assertion: MantineThemeComponentSchema keys must match MantineThemeComponent keys
+type _AssertComponentKeys = [
+	keyof z.infer<typeof MantineThemeComponentSchema> extends keyof MantineThemeComponent
+		? true
+		: false,
+	keyof MantineThemeComponent extends keyof z.infer<typeof MantineThemeComponentSchema>
+		? true
+		: false,
+];
+const _checkComponent: _AssertComponentKeys = [true, true];
+void _checkComponent;
+
+// Full (non-partial) Zod schema for MantineTheme — used only for compile-time key assertions.
+// variantColorResolver is a function and cannot appear in JSON config, so it is excluded here.
+// The assertion below verifies all remaining keys are covered.
+const MantineThemeFullSchema = z.strictObject({
+	focusRing: z.enum(["auto", "always", "never"]),
+	scale: z.number(),
+	fontSmoothing: z.boolean(),
+	white: z.string(),
+	black: z.string(),
+	primaryColor: z.string(),
+	autoContrast: z.boolean(),
+	luminanceThreshold: z.number(),
+	fontFamily: z.string(),
+	fontFamilyMonospace: z.string(),
+	defaultRadius: z.union([z.string(), z.number()]),
+	cursorType: z.enum(["default", "pointer"]),
+	respectReducedMotion: z.boolean(),
+	activeClassName: z.string(),
+	focusClassName: z.string(),
+	colors: z.record(z.string(), z.array(z.string()).min(10)),
+	primaryShade: z.union([
+		z.number().int().min(0).max(9),
+		z.strictObject({
+			light: z.number().int().min(0).max(9),
+			dark: z.number().int().min(0).max(9),
+		}),
+	]),
+	fontSizes: z.record(z.string(), z.string()),
+	lineHeights: z.record(z.string(), z.string()),
+	radius: z.record(z.string(), z.string()),
+	spacing: z.record(z.string(), z.string()),
+	breakpoints: z.record(z.string(), z.string()),
+	shadows: z.record(z.string(), z.string()),
+	headings: z.strictObject({
+		fontFamily: z.string(),
+		fontWeight: z.string(),
+		textWrap: z.enum(["wrap", "nowrap", "balance", "pretty", "stable"]),
+		sizes: z.strictObject({
+			h1: z.strictObject({
+				fontSize: z.string(),
+				fontWeight: z.string().optional(),
+				lineHeight: z.string(),
+			}),
+			h2: z.strictObject({
+				fontSize: z.string(),
+				fontWeight: z.string().optional(),
+				lineHeight: z.string(),
+			}),
+			h3: z.strictObject({
+				fontSize: z.string(),
+				fontWeight: z.string().optional(),
+				lineHeight: z.string(),
+			}),
+			h4: z.strictObject({
+				fontSize: z.string(),
+				fontWeight: z.string().optional(),
+				lineHeight: z.string(),
+			}),
+			h5: z.strictObject({
+				fontSize: z.string(),
+				fontWeight: z.string().optional(),
+				lineHeight: z.string(),
+			}),
+			h6: z.strictObject({
+				fontSize: z.string(),
+				fontWeight: z.string().optional(),
+				lineHeight: z.string(),
+			}),
+		}),
+	}),
+	defaultGradient: z.strictObject({
+		from: z.string(),
+		to: z.string(),
+		deg: z.number().optional(),
+	}),
+	components: z.record(z.string(), MantineThemeComponentSchema),
+	other: z.record(z.string(), JsonValueSchema),
+	// variantColorResolver is a function — excluded from JSON config schema
+});
+
+// Compile-time assertion: schema keys (minus variantColorResolver) must match MantineTheme keys.
+// If Mantine adds/removes fields, tsc will fail here.
+type _MantineThemeSchemaKeys = keyof z.infer<typeof MantineThemeFullSchema>;
+type _MantineThemeKeys = Exclude<keyof MantineTheme, "variantColorResolver">;
+type _AssertThemeKeys = [
+	_MantineThemeSchemaKeys extends _MantineThemeKeys ? true : false,
+	_MantineThemeKeys extends _MantineThemeSchemaKeys ? true : false,
+];
+const _checkTheme: _AssertThemeKeys = [true, true];
+void _checkTheme;
+
+// Partial version used for themeOverrides in config files (matches MantineThemeOverride = PartialDeep<MantineTheme>)
+export const MantineThemeOverrideSchema = MantineThemeFullSchema.partial();
 
 // Zod type definition for SelectComponentType
 const selectComponentTypes = [
@@ -92,6 +227,7 @@ const INumberParameterSettingsSchema = z.object({
 });
 
 export const validateNumberParameterSettings = (value: any) => {
+	if (value === undefined || value === null) return {success: false as const, error: undefined};
 	return INumberParameterSettingsSchema.safeParse(value);
 };
 
@@ -125,7 +261,7 @@ const IAppBuilderParameterDefinitionSchema = z.strictObject({
 	tooltip: z.string().optional(),
 	displayname: z.string().optional(),
 	hidden: z.boolean(),
-	settings: z.record(z.any()).optional(),
+	settings: z.record(z.string(), JsonValueSchema).optional(),
 	value: z.string().optional(),
 	step: z.number().positive().optional(),
 });
@@ -211,7 +347,7 @@ const IAppBuilderParameterValueSourcePropsExportSchema = z.strictObject({
 				.or(z.boolean())
 				.or(
 					z.lazy(
-						(): z.ZodTypeAny =>
+						(): z.ZodType<IAppBuilderParameterValueSourceDefinition> =>
 							IAppBuilderParameterValueSourceDefinitionSchema,
 					),
 				),
@@ -365,7 +501,7 @@ const IAppBuilderActionPropsCameraCommonSchema = z.strictObject({
             				}),
 		])
 		.optional(),
-	options: z.record(z.any()).optional(),
+	options: z.record(z.string(), JsonValueSchema).optional(),
 });
 
 // Zod type definition for IAppBuilderActionPropsCameraCommon
@@ -445,7 +581,7 @@ const IAppBuilderLegacyActionPropsSoundSchema =
 // Zod type definition for IAppBuilderActionPropsMessageToParent
 const IAppBuilderActionPropsMessageToParentSchema = z.strictObject({
 	type: z.string(),
-	data: z.record(z.unknown()).optional(),
+	data: z.record(z.string(), JsonValueSchema).optional(),
 });
 
 // Zod type definition for IAppBuilderLegacyActionPropsMessageToParent
@@ -858,7 +994,7 @@ const IAppBuilderWidgetPropsAccordionUiSchema = z.strictObject({
 			icon: z.string().optional(),
 			tooltip: z.string().optional(),
 			widgets: z.array(
-				z.lazy((): z.ZodTypeAny => IAppBuilderWidgetSchema),
+				z.lazy((): z.ZodType<IAppBuilderWidget> => IAppBuilderWidgetSchema),
 			),
 		}),
 	),
@@ -872,7 +1008,9 @@ const IAppBuilderWidgetPropsStackUiSchema = z.strictObject({
 	name: z.string(),
 	icon: z.string().optional(),
 	tooltip: z.string().optional(),
-	widgets: z.array(z.lazy((): z.ZodTypeAny => IAppBuilderWidgetSchema)),
+	widgets: z.array(
+		z.lazy((): z.ZodType<IAppBuilderWidget> => IAppBuilderWidgetSchema),
+	),
 });
 
 // Zod type definition for IAppBuilderWidgetPropsSavedStates
@@ -904,7 +1042,7 @@ const IAppBuilderWidgetPropsTableColumnSchema = z.strictObject({
 const IAppBuilderWidgetPropsTableSchema = z.strictObject({
 	caption: z.string().optional(),
 	columns: z.array(IAppBuilderWidgetPropsTableColumnSchema),
-	records: z.array(z.record(z.string(), z.unknown())),
+	records: z.array(z.record(z.string(), JsonValueSchema)),
 	highlightOnHover: z.boolean().optional(),
 	stickyHeader: z.boolean().optional(),
 	striped: z.boolean().optional(),
@@ -1010,6 +1148,32 @@ const IAppBuilderTabSchema = z
 	})
 	.extend(IAppBuilderWidgetPropsCommonSchema.shape);
 
+// Local strict schema mirroring ISelectionParameterProps from @shapediver/viewer.session.
+// The external JsonSchema uses "strip" mode, so we define our own strict version to reject unknown keys.
+// Fields match ISelectionParameterProps (no null variants — the TS type does not use null).
+const SelectionColorSchema = z.union([
+	z.string(),
+	z.record(z.string(), JsonValueSchema),
+]);
+const ISelectionParameterPropsSchema = z.strictObject({
+	maximumSelection: z.number().optional(),
+	minimumSelection: z.number().optional(),
+	nameFilter: z.array(z.string()).optional(),
+	selectionColor: SelectionColorSchema.optional(),
+	availableColor: SelectionColorSchema.optional(),
+	deselectOnEmpty: z.boolean().optional(),
+	hover: z.boolean().optional(),
+	hoverColor: SelectionColorSchema.optional(),
+	prompt: z
+		.strictObject({
+			inactiveTitle: z.string().optional(),
+			activeTitle: z.string().optional(),
+			activeText: z.string().optional(),
+		})
+		.optional(),
+	activeMode: z.enum(["default", "activeOnStart"]).optional(),
+});
+
 // Zod type definition for IAppBuilderAnchor3dContainerProperties
 const IAppBuilderAnchor3dContainerPropertiesSchema = z.strictObject({
 	id: z.string(),
@@ -1024,8 +1188,7 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.strictObject({
 	useContainer: z.boolean().optional(),
 	useCloseButton: z.boolean().optional(),
 	hideable: z.boolean().optional(),
-	selectionProperties:
-		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
+	selectionProperties: ISelectionParameterPropsSchema.optional(),
 	mobileFallback: z
 		.strictObject({
 			disabled: z.boolean().optional(),
@@ -1058,8 +1221,7 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.strictObject({
 	maxWidth: z.union([z.string(), z.number()]).optional(),
 	maxHeight: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
-	selectionProperties:
-		ISelectionParameterPropsJsonSchema.optional() as unknown as z.ZodObject<any>,
+	selectionProperties: ISelectionParameterPropsSchema.optional(),
 	mobileFallback: z
 		.strictObject({
 			disabled: z.boolean().optional(),
@@ -1185,10 +1347,17 @@ const IAppBuilderSettingsJsonSchema = z.strictObject({
 	version: z.literal("1.0"),
 	sessions: z.array(IAppBuilderSettingsSessionSchema).optional(),
 	settings: IAppBuilderSettingsSettingsSchema.optional(),
-	themeOverrides: z.record(z.string(), z.any()).optional(),
+	themeOverrides: MantineThemeOverrideSchema.optional(),
 	appBuilderOverride: IAppBuilderSchema.optional(),
 });
 
 export const validateAppBuilderSettingsJson = (value: any) => {
 	return IAppBuilderSettingsJsonSchema.safeParse(value);
 };
+
+/** Zod 4 — human-readable paths and messages for AppBuilder / settings JSON validation. */
+export function formatAppBuilderZodError(
+	error: Parameters<typeof prettifyError>[0],
+): string {
+	return prettifyError(error);
+}

@@ -1,6 +1,7 @@
 import {IUseSessionDto, useSession} from "@AppBuilderLib/entities/session";
 import {useAppBuilderCustomParameters} from "@AppBuilderLib/features/appbuilder";
 import {
+	formatAppBuilderZodError,
 	IAppBuilder,
 	IAppBuilderSettingsSession,
 	validateAppBuilder,
@@ -78,7 +79,7 @@ export function useSessionWithAppBuilder(
 			Logger.debug("Invalid AppBuilder data", data);
 
 			return new Error(
-				`Parsing AppBuilder data failed: ${result.error.message}`,
+				`Parsing AppBuilder data failed:\n${formatAppBuilderZodError(result.error)}`,
 			);
 		}
 	};

@@ -18,8 +18,8 @@ import useAsync from "@AppBuilderLib/shared/lib/useAsync";
 import {useThemeOverrideStore} from "@AppBuilderLib/shared/model";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useEffect, useMemo} from "react";
-import {z} from "zod";
 import {
+	formatAppBuilderZodError,
 	IAppBuilderSettings,
 	IAppBuilderSettingsJson,
 	IAppBuilderSettingsJsonSession,
@@ -79,7 +79,7 @@ export default function useAppBuilderSettings(
 			return result.data;
 		} else {
 			throw new Error(
-				`Parsing AppBuilder settings failed:\n${z.prettifyError(result.error)}`,
+				`Parsing AppBuilder settings failed:\n${formatAppBuilderZodError(result.error)}`,
 			);
 		}
 	};
