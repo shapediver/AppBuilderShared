@@ -6,6 +6,7 @@ import {
 	PropsParameterWrapper,
 	useParameterComponentCommons,
 } from "@AppBuilderLib/entities/parameter";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
 import {
 	DefaultStargateStyleProps,
 	IStargateComponentStatusDefinition,
@@ -184,6 +185,15 @@ export default function ParameterFileInputComponent(
 		);
 	}, [status, stargateColorProps]);
 
+	// Get getFilename from the session store (IFileParameterApi method)
+	const getFilename = useShapeDiverStoreSession((state) => {
+		const param =
+			state.sessions[props.namespace]?.parameters[definition.id];
+		return param && isFileParameterApi(param)
+			? param.getFilename.bind(param)
+			: undefined;
+	});
+
 	// create the file endings from all the formats that are specified in the parameter
 	const fileEndings = useMemo(() => {
 		const mimeTypes = extendMimeTypes(definition.format!);
@@ -193,19 +203,14 @@ export default function ParameterFileInputComponent(
 	// create a pseudo file in case the value is a file id and a filename for it exists
 	const [defaultFile, setDefaultFile] = React.useState<File | null>(null);
 	useEffect(() => {
-		if (
-			typeof value === "string" &&
-			value.length > 0 &&
-			isFileParameterApi(definition)
-		) {
-			definition
-				.getFilename(value)
-				.then((filename) =>
-					setDefaultFile(
+		if (typeof value === "string" && value.length > 0 && getFilename) {
+			getFilename(value)
+				.then((filename) => {
+					return setDefaultFile(
 						new File([], filename ?? "(Filename unknown)"),
-					),
-				)
-				.catch((error) =>
+					);
+				})
+				.catch((error: unknown) =>
 					Logger.error(
 						`Error getting filename for file with id ${value}`,
 						error,
