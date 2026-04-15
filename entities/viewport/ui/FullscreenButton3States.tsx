@@ -1,7 +1,7 @@
 import {
 	Fullscreen3StatesState,
-	useFullscreen3States,
-} from "@AppBuilderLib/entities/viewport";
+	useFullscreen as useFullscreen3States,
+} from "../model/useFullscreen3States";
 import {isIPhone} from "@AppBuilderLib/shared/lib";
 import React, {useMemo} from "react";
 import {CommonButtonProps} from "../config";
