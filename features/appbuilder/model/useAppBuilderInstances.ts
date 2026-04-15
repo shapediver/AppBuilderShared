@@ -1,10 +1,10 @@
+import type {Mat4Array} from "@AppBuilderLib/entities/parameter/config/common";
+import type {IParameterStore} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {
-	IParameterStore,
-	Mat4Array,
 	ParameterValueDefinition,
 	useResolveParameterValues,
-	useShapeDiverStoreParameters,
-} from "@AppBuilderLib/entities/parameter";
+} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {
 	IUseSessionDto,
 	useShapeDiverStoreSession,

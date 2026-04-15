@@ -1,4 +1,4 @@
-import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter";
+import {IShapeDiverParameterDefinition} from "../config/parameter";
 import {validateNumberParameterSettings} from "@AppBuilderLib/features/appbuilder";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {useEffect, useMemo} from "react";

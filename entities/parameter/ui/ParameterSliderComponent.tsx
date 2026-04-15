@@ -1,13 +1,13 @@
 import {
 	defaultPropsParameterWrapper,
-	ParameterLabelComponent,
-	ParameterWrapperComponent,
 	PropsParameterComponent,
 	PropsParameterWrapper,
-	useFocus,
-	useParameterComponentCommons,
-	useSettingsMinMax,
-} from "@AppBuilderLib/entities/parameter";
+} from "../config/propsParameter";
+import {useFocus} from "../model/useFocus";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
+import {useSettingsMinMax} from "../model/useSettingsMinMax";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	Group,

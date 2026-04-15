@@ -1,7 +1,5 @@
-import {
-	IParameterChanges,
-	useShapeDiverStoreParameters,
-} from "@AppBuilderLib/entities/parameter";
+import type {IParameterChanges} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderLib/entities/viewport";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {

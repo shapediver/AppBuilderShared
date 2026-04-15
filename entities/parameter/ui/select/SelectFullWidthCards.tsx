@@ -1,7 +1,5 @@
-import {
-	parameterMultiSelect,
-	useCustomHeight,
-} from "@AppBuilderLib/entities/parameter";
+import {parameterMultiSelect} from "../../lib/parameterMultiSelect";
+import {useCustomHeight} from "../../model/useCustomHeight";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";

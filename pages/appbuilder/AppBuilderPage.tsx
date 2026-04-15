@@ -1,4 +1,4 @@
-import {useParameterHistory} from "@AppBuilderLib/entities/parameter";
+import {useParameterHistory} from "@AppBuilderLib/entities/parameter/model/useParameterHistory";
 import {
 	IUseSessionDto,
 	useDefaultSessionDto,

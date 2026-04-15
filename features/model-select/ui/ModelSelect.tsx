@@ -1,8 +1,6 @@
 import {useSessionPropsExport} from "@AppBuilderLib/entities/export";
-import {
-	AcceptRejectButtons,
-	useSessionPropsParameter,
-} from "@AppBuilderLib/entities/parameter";
+import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
+import AcceptRejectButtons from "@AppBuilderLib/entities/parameter/ui/AcceptRejectButtons";
 import {
 	IShapeDiverExampleModels,
 	IUseSessionDto,

@@ -1,4 +1,4 @@
-import {useSelectAsync} from "@AppBuilderLib/entities/parameter";
+import {useSelectAsync} from "../../model/select/useSelectAsync";
 import {Anchor, Group, Loader} from "@mantine/core";
 import React, {useCallback, useEffect, useState} from "react";
 import {SelectComponentProps} from "./SelectComponent";

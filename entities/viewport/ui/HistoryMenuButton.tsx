@@ -1,4 +1,4 @@
-import {useParameterImportExport} from "@AppBuilderLib/entities/parameter";
+import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce";
 import {
 	ImportModelStateDialog,

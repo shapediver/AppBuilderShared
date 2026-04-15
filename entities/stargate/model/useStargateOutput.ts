@@ -1,5 +1,5 @@
 import {IShapeDiverOutputDefinition} from "@AppBuilderLib/entities/output";
-import {getParameterStates} from "@AppBuilderLib/entities/parameter";
+import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
 import {
 	ERROR_TYPE_INTERRUPTED,

@@ -1,10 +1,10 @@
 import {
 	IAcceptRejectModeSelector,
 	IGenericParameterExecutor,
-	useDefineGenericParameters,
-	useParameterStateless,
-	useShapeDiverStoreParameters,
-} from "@AppBuilderLib/entities/parameter";
+} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {useDefineGenericParameters} from "@AppBuilderLib/entities/parameter/model/useDefineGenericParameters";
+import {useParameterStateless} from "@AppBuilderLib/entities/parameter/model/useParameterStateless";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Logger} from "@AppBuilderLib/shared/lib";
 import {ISessionApi, PARAMETER_TYPE} from "@shapediver/viewer.session";

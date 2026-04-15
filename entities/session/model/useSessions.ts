@@ -1,4 +1,4 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder";
 import {useEventTracking} from "@AppBuilderLib/shared/lib";

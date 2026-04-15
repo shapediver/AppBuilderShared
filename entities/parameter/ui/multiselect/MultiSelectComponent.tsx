@@ -1,8 +1,8 @@
-import {
+import type {
 	SelectComponentProps,
 	SelectComponentSettings,
-	SelectDropDownComponent,
-} from "@AppBuilderLib/entities/parameter";
+} from "../select/SelectComponent";
+import SelectDropDownComponent from "../select/SelectDropDownComponent";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,

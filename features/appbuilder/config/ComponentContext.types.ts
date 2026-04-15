@@ -3,7 +3,7 @@ import {ModelCardOverlayPropsType} from "@AppBuilderLib/entities/model-card";
 import {
 	PropsParameter,
 	PropsParameterWrapper,
-} from "@AppBuilderLib/entities/parameter";
+} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {
 	ViewportComponentProps,
 	ViewportIconsOptionalProps,

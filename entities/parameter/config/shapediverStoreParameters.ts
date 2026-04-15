@@ -3,7 +3,7 @@ import {IShapeDiverOutput} from "@AppBuilderLib/entities/output";
 import {
 	IShapeDiverParameter,
 	IShapeDiverParameterDefinition,
-} from "@AppBuilderLib/entities/parameter";
+} from "./parameter";
 import {IEventTracking} from "@AppBuilderLib/shared/config";
 import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {ISessionApi} from "@shapediver/viewer.session";

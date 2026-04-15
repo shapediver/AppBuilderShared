@@ -1,11 +1,11 @@
 import {PropsExportWithForm, useExport} from "@AppBuilderLib/entities/export";
+import {IShapeDiverParameterActions} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {
-	buildParameterValidator,
-	IShapeDiverParameterActions,
 	PropsParameter,
 	PropsParameterComponent,
-	useParameters,
-} from "@AppBuilderLib/entities/parameter";
+} from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {buildParameterValidator} from "@AppBuilderLib/entities/parameter/lib/parameterFormValidation";
+import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParameters";
 import {
 	ComponentContext,
 	getExportComponent,

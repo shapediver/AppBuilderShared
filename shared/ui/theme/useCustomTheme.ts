@@ -6,17 +6,15 @@ import {
 	OutputChunkLabelComponentThemeProps,
 	OutputStargateComponentThemeProps,
 } from "@AppBuilderLib/entities/output";
-import {
-	MultiSelectCheckboxesProps,
-	ParameterColorComponentThemeProps,
-	ParameterLabelComponentThemeProps,
-	ParameterSelectComponentThemeProps,
-	ParameterSliderComponentThemeProps,
-	ParameterStargateComponentThemeProps,
-	SelectCarouselComponentThemeProps,
-	SelectFullWidthCardsComponentThemeProps,
-	SelectGridComponentThemeProps,
-} from "@AppBuilderLib/entities/parameter";
+import {MultiSelectCheckboxesProps} from "@AppBuilderLib/entities/parameter/ui/multiselect/MultiSelectCheckboxesComponent";
+import {ParameterColorComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterColorComponent";
+import {ParameterLabelComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
+import {ParameterSelectComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterSelectComponent";
+import {ParameterSliderComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent";
+import {ParameterStargateComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterStargateComponent";
+import {SelectCarouselComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectCarouselComponent";
+import {SelectFullWidthCardsComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectFullWidthCards";
+import {SelectGridComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectGridComponent";
 import {DefaultSessionThemeProps} from "@AppBuilderLib/entities/session";
 import {
 	DesktopClientPanelThemeProps,
