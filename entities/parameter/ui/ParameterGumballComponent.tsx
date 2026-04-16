@@ -1,11 +1,3 @@
-import {
-	defaultPropsParameterWrapper,
-	PropsParameter,
-	PropsParameterWrapper,
-} from "../config/propsParameter";
-import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
-import ParameterLabelComponent from "./ParameterLabelComponent";
-import ParameterWrapperComponent from "./ParameterWrapperComponent";
 import {useViewportId} from "@AppBuilderLib/entities/viewport";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Logger} from "@AppBuilderLib/shared/lib";
@@ -17,7 +9,6 @@ import {
 	Flex,
 	Group,
 	Loader,
-	MantineThemeComponent,
 	Stack,
 	Text,
 	useProps,
@@ -28,17 +19,23 @@ import {
 	IGumballTransformParameterProps,
 	validateGumballTransformParameterSettings,
 } from "@shapediver/viewer.session";
-import {
-	InteractionEffect,
-	POST_PROCESSING_EFFECT_TYPE,
-} from "@shapediver/viewer.shared.types";
+import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
 import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import type {ParameterGumballComponentStyleProps as StyleProps} from "../config/theme/parameterGumballComponentTheme";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "../config/propsParameter";
 import {
 	useGumball,
 	useShapeDiverStoreInteractionRequestManagement,
 } from "../model";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import classes from "./ParameterInteractionComponent.module.css";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 /**
  * Parse the value of a gumball parameter and extract the transformed node names.
@@ -64,12 +61,6 @@ const parseTransformation = (
 		return [];
 	}
 };
-
-interface StyleProps {
-	selectionColor?: InteractionEffect;
-	availableColor?: InteractionEffect;
-	hoverColor?: InteractionEffect;
-}
 
 const defaultStyleProps: StyleProps = {
 	selectionColor: {
@@ -107,16 +98,6 @@ const defaultStyleProps: StyleProps = {
 		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
 	} as IInteractionEffect,
 };
-
-type ParameterGumballComponentPropsType = Partial<StyleProps>;
-
-export function ParameterGumballComponentThemeProps(
-	props: ParameterGumballComponentPropsType,
-): MantineThemeComponent {
-	return {
-		defaultProps: props,
-	};
-}
 
 /**
  * Functional component that creates a switch component for a gumball parameter.

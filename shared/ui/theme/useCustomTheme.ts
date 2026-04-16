@@ -60,10 +60,10 @@ import {
 	ParametersAndExportsAccordionComponentThemeProps,
 	ViewportAcceptRejectButtonsComponentThemeProps,
 } from "@AppBuilderLib/widgets/appbuilder";
-import {ParameterDraggingComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterDraggingComponent";
-import {ParameterGumballComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterGumballComponent";
-import {ParameterRectangleTransformComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterRectangleTransformComponent";
-import {ParameterSelectionComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterSelectionComponent";
+import {ParameterDraggingComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterDraggingComponentTheme";
+import {ParameterGumballComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterGumballComponentTheme";
+import {ParameterRectangleTransformComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterRectangleTransformComponentTheme";
+import {ParameterSelectionComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterSelectionComponentTheme";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
 import {AppBuilderAppShellTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
 import {AppBuilderContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderContainer";

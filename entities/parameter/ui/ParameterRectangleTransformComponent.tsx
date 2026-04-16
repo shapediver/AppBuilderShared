@@ -17,7 +17,6 @@ import {
 	Flex,
 	Group,
 	Loader,
-	MantineThemeComponent,
 	Stack,
 	Text,
 	useProps,
@@ -28,12 +27,10 @@ import {
 	RectangleTransformParameterValue,
 	validateRectangleTransformParameterSettings,
 } from "@shapediver/viewer.session";
-import {
-	InteractionEffect,
-	POST_PROCESSING_EFFECT_TYPE,
-} from "@shapediver/viewer.shared.types";
+import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
 import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import type {ParameterRectangleTransformComponentStyleProps as StyleProps} from "../config/theme/parameterRectangleTransformComponentTheme";
 import {useRectangleTransform} from "../model/interaction/useRectangleTransform";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
@@ -62,12 +59,6 @@ const parseTransformation = (
 		return [];
 	}
 };
-
-interface StyleProps {
-	selectionColor?: InteractionEffect;
-	availableColor?: InteractionEffect;
-	hoverColor?: InteractionEffect;
-}
 
 const defaultStyleProps: StyleProps = {
 	selectionColor: {
@@ -105,16 +96,6 @@ const defaultStyleProps: StyleProps = {
 		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
 	} as IInteractionEffect,
 };
-
-type ParameterRectangleTransformComponentPropsType = Partial<StyleProps>;
-
-export function ParameterRectangleTransformComponentThemeProps(
-	props: ParameterRectangleTransformComponentPropsType,
-): MantineThemeComponent {
-	return {
-		defaultProps: props,
-	};
-}
 
 /**
  * Functional component that creates a rectangle transform component for a rectangle transform parameter.
