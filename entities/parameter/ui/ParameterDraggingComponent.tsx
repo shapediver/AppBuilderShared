@@ -11,13 +11,27 @@ import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Logger} from "@AppBuilderLib/shared/lib";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
-import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
+import {
+	Button,
+	Group,
+	Loader,
+	MantineThemeComponent,
+	Stack,
+	Text,
+	useProps,
+} from "@mantine/core";
 import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
+import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
 import {
 	DraggingParameterValue,
 	IDraggingParameterProps,
 	validateDraggingParameterSettings,
 } from "@shapediver/viewer.session";
+import {
+	InteractionEffect,
+	POST_PROCESSING_EFFECT_TYPE,
+} from "@shapediver/viewer.shared.types";
+import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useDragging} from "../model/interaction/useDragging";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
@@ -42,13 +56,68 @@ const parseDraggedNodes = (
 	}
 };
 
+interface StyleProps {
+	draggingColor?: InteractionEffect;
+	availableColor?: InteractionEffect;
+	hoverColor?: InteractionEffect;
+}
+
+const defaultStyleProps: StyleProps = {
+	draggingColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#0d44f0",
+			kernelSize: KernelSize.LARGE,
+			visibleEdgeColor: "#0d44f0",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+	availableColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#ffffff",
+			kernelSize: KernelSize.LARGE,
+			pulseSpeed: 0.5,
+			visibleEdgeColor: "#ffffff",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+	hoverColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#ffffff",
+			kernelSize: KernelSize.LARGE,
+			visibleEdgeColor: "#ffffff",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+};
+
+type ParameterDraggingComponentPropsType = Partial<StyleProps>;
+
+export function ParameterDraggingComponentThemeProps(
+	props: ParameterDraggingComponentPropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
 /**
  * Functional component that creates a switch component for a dragging parameter.
  *
  * @returns
  */
 export default function ParameterDraggingComponent(
-	props: PropsParameter & Partial<PropsParameterWrapper>,
+	props: PropsParameter &
+		Partial<PropsParameterWrapper> &
+		Partial<IDraggingParameterProps>,
 ) {
 	const {
 		actions,
@@ -61,6 +130,12 @@ export default function ParameterDraggingComponent(
 		state,
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
+
+	const {draggingColor, availableColor, hoverColor} = useProps(
+		"ParameterDraggingComponent",
+		defaultStyleProps,
+		props,
+	);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterDraggingComponent",
@@ -79,7 +154,11 @@ export default function ParameterDraggingComponent(
 	const draggingProps = useMemo(() => {
 		const result = validateDraggingParameterSettings(definition.settings);
 		if (result.success) {
-			return result.data.props as IDraggingParameterProps;
+			const props = result.data.props as IDraggingParameterProps;
+			if (!props.draggingColor) props.draggingColor = draggingColor;
+			if (!props.availableColor) props.availableColor = availableColor;
+			if (!props.hoverColor) props.hoverColor = hoverColor;
+			return props;
 		} else {
 			notifications.error({
 				title: "Invalid Parameter Settings",
@@ -88,9 +167,13 @@ export default function ParameterDraggingComponent(
 			Logger.warn(
 				`Invalid settings for Dragging parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
-			return {};
+			return {
+				draggingColor,
+				availableColor,
+				hoverColor,
+			} as IDraggingParameterProps;
 		}
-	}, [definition.settings]);
+	}, [definition.settings, draggingColor, availableColor]);
 
 	// is the dragging active or not?
 	const [draggingActive, setDraggingActive] = useState<boolean>(

@@ -17,15 +17,22 @@ import {
 	Flex,
 	Group,
 	Loader,
+	MantineThemeComponent,
 	Stack,
 	Text,
 	useProps,
 } from "@mantine/core";
+import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
 import {
 	GumballTransformParameterValue,
 	IGumballTransformParameterProps,
 	validateGumballTransformParameterSettings,
 } from "@shapediver/viewer.session";
+import {
+	InteractionEffect,
+	POST_PROCESSING_EFFECT_TYPE,
+} from "@shapediver/viewer.shared.types";
+import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
 	useGumball,
@@ -58,13 +65,68 @@ const parseTransformation = (
 	}
 };
 
+interface StyleProps {
+	selectionColor?: InteractionEffect;
+	availableColor?: InteractionEffect;
+	hoverColor?: InteractionEffect;
+}
+
+const defaultStyleProps: StyleProps = {
+	selectionColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#0d44f0",
+			kernelSize: KernelSize.LARGE,
+			visibleEdgeColor: "#0d44f0",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+	availableColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#ffffff",
+			kernelSize: KernelSize.LARGE,
+			pulseSpeed: 0.5,
+			visibleEdgeColor: "#ffffff",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+	hoverColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#ffffff",
+			kernelSize: KernelSize.LARGE,
+			visibleEdgeColor: "#ffffff",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+};
+
+type ParameterGumballComponentPropsType = Partial<StyleProps>;
+
+export function ParameterGumballComponentThemeProps(
+	props: ParameterGumballComponentPropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
 /**
  * Functional component that creates a switch component for a gumball parameter.
  *
  * @returns
  */
 export default function ParameterGumballComponent(
-	props: PropsParameter & Partial<PropsParameterWrapper>,
+	props: PropsParameter &
+		Partial<PropsParameterWrapper> &
+		Partial<IGumballTransformParameterProps>,
 ) {
 	const {
 		actions,
@@ -77,6 +139,12 @@ export default function ParameterGumballComponent(
 		state,
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
+
+	const {selectionColor, availableColor, hoverColor} = useProps(
+		"ParameterGumballComponent",
+		defaultStyleProps,
+		props,
+	);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterGumballComponent",
@@ -97,7 +165,11 @@ export default function ParameterGumballComponent(
 			definition.settings,
 		);
 		if (result.success) {
-			return result.data.props as IGumballTransformParameterProps;
+			const props = result.data.props as IGumballTransformParameterProps;
+			if (!props.selectionColor) props.selectionColor = selectionColor;
+			if (!props.availableColor) props.availableColor = availableColor;
+			if (!props.hoverColor) props.hoverColor = hoverColor;
+			return props;
 		} else {
 			notifications.error({
 				title: "Invalid Parameter Settings",
@@ -106,9 +178,13 @@ export default function ParameterGumballComponent(
 			Logger.warn(
 				`Invalid settings for Gumball parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
-			return {};
+			return {
+				selectionColor,
+				availableColor,
+				hoverColor,
+			} as IGumballTransformParameterProps;
 		}
-	}, [definition.settings]);
+	}, [definition.settings, selectionColor, availableColor]);
 
 	// state for the gumball application
 	const [gumballActive, setGumballActive] = useState<boolean>(

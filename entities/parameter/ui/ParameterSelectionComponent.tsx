@@ -18,15 +18,22 @@ import {
 	Flex,
 	Group,
 	Loader,
+	MantineThemeComponent,
 	Stack,
 	Text,
 	useProps,
 } from "@mantine/core";
+import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
 import {
 	ISelectionParameterProps,
 	SelectionParameterValue,
 	validateSelectionParameterSettings,
 } from "@shapediver/viewer.session";
+import {
+	InteractionEffect,
+	POST_PROCESSING_EFFECT_TYPE,
+} from "@shapediver/viewer.shared.types";
+import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
 	useSelection,
@@ -50,13 +57,68 @@ const parseNames = (value?: string): string[] => {
 	}
 };
 
+interface StyleProps {
+	selectionColor?: InteractionEffect;
+	availableColor?: InteractionEffect;
+	hoverColor?: InteractionEffect;
+}
+
+const defaultStyleProps: StyleProps = {
+	selectionColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#0d44f0",
+			kernelSize: KernelSize.LARGE,
+			visibleEdgeColor: "#0d44f0",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+	availableColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#ffffff",
+			kernelSize: KernelSize.LARGE,
+			pulseSpeed: 0.5,
+			visibleEdgeColor: "#ffffff",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+	hoverColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#ffffff",
+			kernelSize: KernelSize.LARGE,
+			visibleEdgeColor: "#ffffff",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+};
+
+type ParameterSelectionComponentPropsType = Partial<StyleProps>;
+
+export function ParameterSelectionComponentThemeProps(
+	props: ParameterSelectionComponentPropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
 /**
  * Functional component that creates a selection parameter, allowing selection of objects in the viewport.
  *
  * @returns
  */
 export default function ParameterSelectionComponent(
-	props: PropsParameter & Partial<PropsParameterWrapper>,
+	props: PropsParameter &
+		Partial<PropsParameterWrapper> &
+		Partial<ISelectionParameterProps>,
 ) {
 	const {
 		actions,
@@ -68,6 +130,12 @@ export default function ParameterSelectionComponent(
 		value,
 		state,
 	} = useParameterComponentCommons<string>(props);
+
+	const {selectionColor, availableColor, hoverColor} = useProps(
+		"ParameterSelectionComponent",
+		defaultStyleProps,
+		props,
+	);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterSelectionComponent",
@@ -86,7 +154,11 @@ export default function ParameterSelectionComponent(
 	const selectionProps = useMemo(() => {
 		const result = validateSelectionParameterSettings(definition.settings);
 		if (result.success) {
-			return result.data.props as ISelectionParameterProps;
+			const props = result.data.props as ISelectionParameterProps;
+			if (!props.selectionColor) props.selectionColor = selectionColor;
+			if (!props.availableColor) props.availableColor = availableColor;
+			if (!props.hoverColor) props.hoverColor = hoverColor;
+			return props;
 		} else {
 			notifications.error({
 				title: "Invalid Parameter Settings",
@@ -95,9 +167,13 @@ export default function ParameterSelectionComponent(
 			Logger.warn(
 				`Invalid settings for Selection parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
-			return {};
+			return {
+				selectionColor,
+				availableColor,
+				hoverColor,
+			} as ISelectionParameterProps;
 		}
-	}, [definition.settings]);
+	}, [definition.settings, selectionColor, availableColor]);
 
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
@@ -115,6 +191,7 @@ export default function ParameterSelectionComponent(
 	const {viewportId} = useViewportId();
 
 	const {
+		availableNodeNames,
 		selectedNodeNames,
 		setSelectedNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
@@ -302,7 +379,10 @@ export default function ParameterSelectionComponent(
 				</Flex>
 			</Group>
 
-			{minimumSelection !== maximumSelection && (
+			{!(
+				minimumSelection === maximumSelection &&
+				Object.values(availableNodeNames).length >= minimumSelection
+			) && (
 				<Group justify="space-between" w="100%" wrap="nowrap">
 					<Button
 						fullWidth={true}

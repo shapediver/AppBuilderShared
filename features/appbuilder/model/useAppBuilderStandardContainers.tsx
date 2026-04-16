@@ -17,6 +17,8 @@ import {
 	isStandardContainer,
 } from "../config";
 import {useShapeDiverStoreStandardContainers} from "./useShapeDiverStoreStandardContainers";
+import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
+import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
 
 interface Props {
 	namespace: string;
@@ -66,9 +68,11 @@ export function useAppBuilderStandardContainers(props: Props) {
 	} = props;
 
 	const componentContext = useContext(ComponentContext);
-	const ContainerComponent = componentContext.containerComponent;
+	const ContainerComponent =
+		componentContext.containerComponent || AppBuilderContainerComponent;
 	const FallbackContainerComponent =
-		componentContext.fallbackContainerComponent;
+		componentContext.fallbackContainerComponent ||
+		AppBuilderFallbackContainerComponent;
 
 	// get props for fallback parameters
 	const parameterProps = useSessionPropsParameter(namespace);
