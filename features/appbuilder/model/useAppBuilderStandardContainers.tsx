@@ -17,8 +17,8 @@ import {
 	isStandardContainer,
 } from "../config";
 import {useShapeDiverStoreStandardContainers} from "./useShapeDiverStoreStandardContainers";
-import AppBuilderFallbackContainerComponent from "../../../widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
-import AppBuilderContainerComponent from "../../../widgets/appbuilder/ui/AppBuilderContainerComponent";
+import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
+import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
 
 interface Props {
 	namespace: string;
