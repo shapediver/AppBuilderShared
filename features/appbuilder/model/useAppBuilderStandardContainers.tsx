@@ -1,6 +1,6 @@
 import {useSessionPropsExport} from "@AppBuilderLib/entities/export";
 import {useSessionPropsOutput} from "@AppBuilderLib/entities/output";
-import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter";
+import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
 import {useViewportAnchors} from "@AppBuilderLib/entities/viewport";
 import {
 	IAppBuilderTemplatePageContainerHints,

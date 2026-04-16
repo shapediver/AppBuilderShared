@@ -1,11 +1,3 @@
-import {
-	defaultPropsParameterWrapper,
-	ParameterLabelComponent,
-	ParameterWrapperComponent,
-	PropsParameter,
-	PropsParameterWrapper,
-	useParameterComponentCommons,
-} from "@AppBuilderLib/entities/parameter";
 import {useViewportId} from "@AppBuilderLib/entities/viewport";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Logger} from "@AppBuilderLib/shared/lib";
@@ -15,7 +7,6 @@ import {
 	Button,
 	Group,
 	Loader,
-	MantineThemeComponent,
 	Stack,
 	Text,
 	useProps,
@@ -27,17 +18,21 @@ import {
 	IDraggingParameterProps,
 	validateDraggingParameterSettings,
 } from "@shapediver/viewer.session";
-import {
-	InteractionEffect,
-	POST_PROCESSING_EFFECT_TYPE,
-} from "@shapediver/viewer.shared.types";
+import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
 import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import type {ParameterDraggingComponentStyleProps as StyleProps} from "../config/theme/parameterDraggingComponentTheme";
 import {
-	useDragging,
-	useShapeDiverStoreInteractionRequestManagement,
-} from "../model";
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "../config/propsParameter";
+import {useDragging} from "../model/interaction/useDragging";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
+import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 /**
  * Parse the value of a dragging parameter and extract the dragged objects
@@ -57,12 +52,6 @@ const parseDraggedNodes = (
 		return [];
 	}
 };
-
-interface StyleProps {
-	draggingColor?: InteractionEffect;
-	availableColor?: InteractionEffect;
-	hoverColor?: InteractionEffect;
-}
 
 const defaultStyleProps: StyleProps = {
 	draggingColor: {
@@ -100,16 +89,6 @@ const defaultStyleProps: StyleProps = {
 		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
 	} as IInteractionEffect,
 };
-
-type ParameterDraggingComponentPropsType = Partial<StyleProps>;
-
-export function ParameterDraggingComponentThemeProps(
-	props: ParameterDraggingComponentPropsType,
-): MantineThemeComponent {
-	return {
-		defaultProps: props,
-	};
-}
 
 /**
  * Functional component that creates a switch component for a dragging parameter.

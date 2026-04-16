@@ -1,4 +1,4 @@
-import {Mat4Array} from "@AppBuilderLib/entities/parameter";
+import type {Mat4Array} from "../../config/common";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
 import {getNodesByName} from "@shapediver/viewer.features.interaction";
 import {

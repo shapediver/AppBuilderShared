@@ -1,9 +1,11 @@
 import {
 	IShapeDiverParameterState,
+} from "../config/parameter";
+import {
 	PropsParameterComponent,
 	PropsParameterWithForm,
-	useParameter,
-} from "@AppBuilderLib/entities/parameter";
+} from "../config/propsParameter";
+import {useParameter} from "./useParameter";
 import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder";
 import {Logger} from "@AppBuilderLib/shared/lib";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";

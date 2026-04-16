@@ -14,7 +14,7 @@ import {
 	useShapeDiverStoreStandardContainers,
 } from "@AppBuilderLib/features/appbuilder";
 import {Icon, IconType} from "@AppBuilderLib/shared/ui/icon";
-import {useShapeDiverStoreParameters} from "@AppBuilderShared/entities/parameter";
+import {useShapeDiverStoreParameters} from "@AppBuilderShared/entities/parameter/model/useShapeDiverStoreParameters";
 import shellClasses from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage.module.css";
 import {
 	ActionIcon,

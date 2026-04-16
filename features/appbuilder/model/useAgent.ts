@@ -1,9 +1,7 @@
-import {
-	IShapeDiverParameter,
-	IShapeDiverStoreParameters,
-	useAllParametersStateless,
-	useShapeDiverStoreParameters,
-} from "@AppBuilderLib/entities/parameter";
+import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
+import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {useAllParametersStateless} from "@AppBuilderLib/entities/parameter/model/useAllParametersStateless";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {
 	AppBuilderDataContext,
 	getParameterRefs,

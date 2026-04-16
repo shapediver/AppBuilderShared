@@ -1,11 +1,11 @@
 import {
 	defaultPropsParameterWrapper,
-	ParameterLabelComponent,
-	ParameterWrapperComponent,
 	PropsParameter,
 	PropsParameterWrapper,
-	useParameterComponentCommons,
-} from "@AppBuilderLib/entities/parameter";
+} from "../config/propsParameter";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 import {
 	useShapeDiverStoreViewport,
 	useViewportId,
@@ -32,10 +32,8 @@ import {
 	validateDrawingParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {
-	useDrawingTools,
-	useShapeDiverStoreInteractionRequestManagement,
-} from "../model";
+import {useDrawingTools} from "../model/drawing/useDrawingTools";
+import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import DrawingOptionsComponent from "./DrawingOptionsComponent";
 import classes from "./ParameterInteractionComponent.module.css";
 

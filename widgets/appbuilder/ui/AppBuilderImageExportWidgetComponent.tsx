@@ -1,5 +1,5 @@
 import {useExport} from "@AppBuilderLib/entities/export";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useRef, useState} from "react";

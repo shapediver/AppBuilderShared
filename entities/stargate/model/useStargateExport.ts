@@ -1,5 +1,5 @@
 import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export";
-import {getParameterStates} from "@AppBuilderLib/entities/parameter";
+import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
 import {
 	ERROR_TYPE_INTERRUPTED,
 	IExportFileResultEnum,

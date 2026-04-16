@@ -1,5 +1,5 @@
 import {PropsExport} from "@AppBuilderLib/entities/export";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {IShapeDiverExport} from "../config";

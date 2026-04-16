@@ -1,4 +1,4 @@
-import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter";
+import {IShapeDiverParameter} from "../config/parameter";
 import {NotificationAction} from "@AppBuilderLib/features/notifications";
 import {z} from "zod";
 

@@ -1,7 +1,5 @@
-import {
-	IAcceptRejectModeSelector,
-	useShapeDiverStoreParameters,
-} from "@AppBuilderLib/entities/parameter";
+import {IAcceptRejectModeSelector} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder";
 import {useEventTracking} from "@AppBuilderLib/shared/lib";
 import {ISessionApi} from "@shapediver/viewer.session";

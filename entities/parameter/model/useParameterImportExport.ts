@@ -1,9 +1,9 @@
 import {
 	filterAndValidateParameters,
 	generateParameterFeedback,
-	getParameterStates,
 	isImportParameterArray,
-} from "@AppBuilderLib/entities/parameter";
+} from "../lib/parametersFilter";
+import {getParameterStates} from "../lib/parameterStates";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {
 	ErrorReportingContext,

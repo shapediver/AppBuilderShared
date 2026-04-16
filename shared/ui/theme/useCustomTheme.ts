@@ -6,17 +6,15 @@ import {
 	OutputChunkLabelComponentThemeProps,
 	OutputStargateComponentThemeProps,
 } from "@AppBuilderLib/entities/output";
-import {
-	MultiSelectCheckboxesProps,
-	ParameterColorComponentThemeProps,
-	ParameterLabelComponentThemeProps,
-	ParameterSelectComponentThemeProps,
-	ParameterSliderComponentThemeProps,
-	ParameterStargateComponentThemeProps,
-	SelectCarouselComponentThemeProps,
-	SelectFullWidthCardsComponentThemeProps,
-	SelectGridComponentThemeProps,
-} from "@AppBuilderLib/entities/parameter";
+import {MultiSelectCheckboxesProps} from "@AppBuilderLib/entities/parameter/ui/multiselect/MultiSelectCheckboxesComponent";
+import {ParameterColorComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterColorComponent";
+import {ParameterLabelComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
+import {ParameterSelectComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterSelectComponent";
+import {ParameterSliderComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent";
+import {ParameterStargateComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterStargateComponent";
+import {SelectCarouselComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectCarouselComponent";
+import {SelectFullWidthCardsComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectFullWidthCards";
+import {SelectGridComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectGridComponent";
 import {DefaultSessionThemeProps} from "@AppBuilderLib/entities/session";
 import {
 	DesktopClientPanelThemeProps,
@@ -62,10 +60,10 @@ import {
 	ParametersAndExportsAccordionComponentThemeProps,
 	ViewportAcceptRejectButtonsComponentThemeProps,
 } from "@AppBuilderLib/widgets/appbuilder";
-import {ParameterDraggingComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterDraggingComponent";
-import {ParameterGumballComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterGumballComponent";
-import {ParameterRectangleTransformComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterRectangleTransformComponent";
-import {ParameterSelectionComponentThemeProps} from "@AppBuilderShared/entities/parameter/ui/ParameterSelectionComponent";
+import {ParameterDraggingComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterDraggingComponentTheme";
+import {ParameterGumballComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterGumballComponentTheme";
+import {ParameterRectangleTransformComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterRectangleTransformComponentTheme";
+import {ParameterSelectionComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterSelectionComponentTheme";
 import {LoaderPageThemeProps} from "@AppBuilderShared/pages/misc/LoaderPage";
 import {AppBuilderAppShellTemplatePageThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
 import {AppBuilderContainerThemeProps} from "@AppBuilderShared/pages/templates/AppBuilderContainer";

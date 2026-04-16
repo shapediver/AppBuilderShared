@@ -1,11 +1,3 @@
-import {
-	defaultPropsParameterWrapper,
-	ParameterLabelComponent,
-	ParameterWrapperComponent,
-	PropsParameter,
-	PropsParameterWrapper,
-	useParameterComponentCommons,
-} from "@AppBuilderLib/entities/parameter";
 import {useViewportId} from "@AppBuilderLib/entities/viewport";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Logger} from "@AppBuilderLib/shared/lib";
@@ -18,7 +10,6 @@ import {
 	Flex,
 	Group,
 	Loader,
-	MantineThemeComponent,
 	Stack,
 	Text,
 	useProps,
@@ -29,17 +20,23 @@ import {
 	SelectionParameterValue,
 	validateSelectionParameterSettings,
 } from "@shapediver/viewer.session";
-import {
-	InteractionEffect,
-	POST_PROCESSING_EFFECT_TYPE,
-} from "@shapediver/viewer.shared.types";
+import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
 import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import type {ParameterSelectionComponentStyleProps as StyleProps} from "../config/theme/parameterSelectionComponentTheme";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "../config/propsParameter";
 import {
 	useSelection,
 	useShapeDiverStoreInteractionRequestManagement,
 } from "../model";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import classes from "./ParameterInteractionComponent.module.css";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 /**
  * Parse the value of a selection parameter and extract the selected node names.
@@ -56,12 +53,6 @@ const parseNames = (value?: string): string[] => {
 		return [];
 	}
 };
-
-interface StyleProps {
-	selectionColor?: InteractionEffect;
-	availableColor?: InteractionEffect;
-	hoverColor?: InteractionEffect;
-}
 
 const defaultStyleProps: StyleProps = {
 	selectionColor: {

@@ -1,7 +1,5 @@
-import {
-	SelectFullWidthCards as SelectFullWidthCardsComponent,
-	useScrollingApiStore,
-} from "@AppBuilderLib/entities/parameter";
+import {useScrollingApiStore} from "../../model/useScrollingApiStore";
+import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,

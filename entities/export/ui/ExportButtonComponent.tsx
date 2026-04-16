@@ -6,7 +6,7 @@ import {
 import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
-} from "@AppBuilderLib/entities/parameter";
+} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
 import {
 	DefaultStargateStyleProps,
 	ExportStatusEnum,
