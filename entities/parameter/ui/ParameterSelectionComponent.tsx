@@ -191,6 +191,7 @@ export default function ParameterSelectionComponent(
 	const {viewportId} = useViewportId();
 
 	const {
+		availableNodeNames,
 		selectedNodeNames,
 		setSelectedNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
@@ -378,7 +379,10 @@ export default function ParameterSelectionComponent(
 				</Flex>
 			</Group>
 
-			{minimumSelection !== maximumSelection && (
+			{!(
+				minimumSelection === maximumSelection &&
+				Object.values(availableNodeNames).length >= minimumSelection
+			) && (
 				<Group justify="space-between" w="100%" wrap="nowrap">
 					<Button
 						fullWidth={true}
