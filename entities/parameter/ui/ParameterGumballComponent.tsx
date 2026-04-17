@@ -22,12 +22,12 @@ import {
 import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
 import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import type {ParameterGumballComponentStyleProps as StyleProps} from "../config/theme/parameterGumballComponentTheme";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
+import type {ParameterGumballComponentStyleProps as StyleProps} from "../config/theme/parameterGumballComponentTheme";
 import {
 	useGumball,
 	useShapeDiverStoreInteractionRequestManagement,
@@ -37,14 +37,18 @@ import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
+type TransformedNode = {
+	name: string;
+	transformation: number[];
+	localTransformations?: number[];
+};
+
 /**
  * Parse the value of a gumball parameter and extract the transformed node names.
  * @param value
  * @returns
  */
-const parseTransformation = (
-	value?: string,
-): {name: string; transformation: number[]}[] => {
+const parseTransformation = (value?: string): TransformedNode[] => {
 	if (!value) return [];
 	try {
 		const parsed: {
@@ -173,20 +177,12 @@ export default function ParameterGumballComponent(
 	);
 	// store the last confirmed value in a state to reset the transformation
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
-		{
-			name: string;
-			transformation: number[];
-			localTransformations?: number[];
-		}[]
+		TransformedNode[]
 	>([]);
 	// store the parsed exec value in a state to react to changes
-	const [parsedExecValue, setParsedExecValue] = useState<
-		{
-			name: string;
-			transformation: number[];
-			localTransformations?: number[];
-		}[]
-	>([]);
+	const [parsedExecValue, setParsedExecValue] = useState<TransformedNode[]>(
+		[],
+	);
 	// reference to manage the interaction request token
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 
@@ -214,9 +210,9 @@ export default function ParameterGumballComponent(
 	// react to changes of the execValue and reset the last confirmed value
 	useEffect(() => {
 		const parsedExecValue = parseTransformation(state.execValue);
-		setParsedExecValue(parsedExecValue);
-		setLastConfirmedValue(parsedExecValue);
-		setTransformedNodeNames(parsedExecValue);
+		setParsedExecValue(structuredClone(parsedExecValue));
+		setLastConfirmedValue(structuredClone(parsedExecValue));
+		setTransformedNodeNames(structuredClone(parsedExecValue));
 	}, [state.execValue]);
 
 	// reset the transformed nodes when the definition changes
@@ -226,9 +222,9 @@ export default function ParameterGumballComponent(
 			JSON.stringify(parsed) !==
 			JSON.stringify(transformedNodeNamesRef.current)
 		) {
-			setParsedExecValue(parsed);
-			setLastConfirmedValue(parsed);
-			setTransformedNodeNames(parsed);
+			setParsedExecValue(structuredClone(parsed));
+			setLastConfirmedValue(structuredClone(parsed));
+			setTransformedNodeNames(structuredClone(parsed));
 		}
 	}, [JSON.stringify(definition)]);
 
@@ -238,13 +234,7 @@ export default function ParameterGumballComponent(
 	 * It also ends the gumball interaction process and resets the selected nodes.
 	 */
 	const changeValue = useCallback(
-		(
-			transformedNodeNames: {
-				name: string;
-				transformation: number[];
-				localTransformations?: number[];
-			}[],
-		) => {
+		(transformedNodeNames: TransformedNode[]) => {
 			setGumballActive(false);
 			const parameterValue: GumballTransformParameterValue = {
 				names: transformedNodeNames.map((node) => node.name),
@@ -254,10 +244,7 @@ export default function ParameterGumballComponent(
 			};
 
 			// create a deep copy of the transformed node names
-			const transformedNodeNamesCopy = JSON.parse(
-				JSON.stringify(transformedNodeNames),
-			);
-			setLastConfirmedValue(transformedNodeNamesCopy);
+			setLastConfirmedValue(structuredClone(transformedNodeNames));
 			// if the value is already the same, do not change it
 			if (value === JSON.stringify(parameterValue)) return;
 			handleChange(JSON.stringify(parameterValue), 0);
@@ -273,17 +260,23 @@ export default function ParameterGumballComponent(
 	 * It also ends the gumball.
 	 */
 	const resetTransformation = useCallback(() => {
-		restoreTransformedNodeNames(lastConfirmedValue, transformedNodeNames);
+		restoreTransformedNodeNames(
+			structuredClone(lastConfirmedValue),
+			structuredClone(transformedNodeNames),
+		);
 		setGumballActive(false);
 		setSelectedNodeNames([]);
 	}, [lastConfirmedValue, transformedNodeNames]);
 
 	// extend the onCancel callback to reset the transformed nodes.
 	const _onCancelCallback = useCallback(() => {
-		restoreTransformedNodeNames(parsedExecValue, transformedNodeNames);
+		restoreTransformedNodeNames(
+			structuredClone(parsedExecValue),
+			structuredClone(transformedNodeNames),
+		);
 		setGumballActive(false);
 		setSelectedNodeNames([]);
-		setLastConfirmedValue(parsedExecValue);
+		setLastConfirmedValue(structuredClone(parsedExecValue));
 	}, [parsedExecValue, transformedNodeNames]);
 
 	useEffect(() => {

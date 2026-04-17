@@ -3,14 +3,7 @@ import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Logger} from "@AppBuilderLib/shared/lib";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
-import {
-	Button,
-	Group,
-	Loader,
-	Stack,
-	Text,
-	useProps,
-} from "@mantine/core";
+import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
 import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
 import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
 import {
@@ -21,12 +14,12 @@ import {
 import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
 import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import type {ParameterDraggingComponentStyleProps as StyleProps} from "../config/theme/parameterDraggingComponentTheme";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
+import type {ParameterDraggingComponentStyleProps as StyleProps} from "../config/theme/parameterDraggingComponentTheme";
 import {useDragging} from "../model/interaction/useDragging";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
@@ -241,7 +234,7 @@ export default function ParameterDraggingComponent(
 			draggedNodes,
 		);
 		const parameterValue: DraggingParameterValue = {objects: objects};
-		lastConfirmedValueRef.current = [...draggedNodes];
+		lastConfirmedValueRef.current = structuredClone(draggedNodes);
 
 		// if the value is already the same, do not change it
 		if (value === JSON.stringify(parameterValue)) return;
@@ -255,7 +248,10 @@ export default function ParameterDraggingComponent(
 	 */
 	const resetValue = useCallback(
 		(resetValue?: DraggingParameterValue["objects"]) => {
-			restoreDraggedNodes(resetValue, draggedNodes);
+			restoreDraggedNodes(
+				structuredClone(resetValue),
+				structuredClone(draggedNodes),
+			);
 			setDraggingActive(false);
 			setDraggedNodes(resetValue ?? []);
 			lastConfirmedValueRef.current = [...(resetValue ?? [])];
