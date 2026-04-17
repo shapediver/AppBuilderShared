@@ -10,6 +10,7 @@ import {
 	Flex,
 	Group,
 	Loader,
+	MantineThemeComponent,
 	Stack,
 	Text,
 	useProps,
@@ -23,12 +24,12 @@ import {
 import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
 import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import type {ParameterSelectionComponentStyleProps as StyleProps} from "../config/theme/parameterSelectionComponentTheme";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
+import type {ParameterSelectionComponentStyleProps as StyleProps} from "../config/theme/parameterSelectionComponentTheme";
 import {
 	useSelection,
 	useShapeDiverStoreInteractionRequestManagement,
