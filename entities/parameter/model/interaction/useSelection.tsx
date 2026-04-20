@@ -1,6 +1,8 @@
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
+import {useShapeDiverStoreInstances} from "@AppBuilderShared/features";
 import {
 	checkNodeNameMatch,
+	getNodeName,
 	InteractionData,
 	MultiSelectManager,
 	SelectManager,
@@ -176,6 +178,8 @@ export function useSelection(
 		return outputs;
 	});
 
+	const instances = useShapeDiverStoreInstances((state) => state.instances);
+
 	// when the available node names change, we need to update the selected node names
 	// to ensure that the selected nodes are still available
 	useEffect(() => {
@@ -225,12 +229,13 @@ export function useSelection(
 
 		restoreSelection(
 			outputsPerSession,
+			instances,
 			componentId,
 			selectManager,
 			selectedNodeNames,
 			strictNaming,
 		);
-	}, [outputsPerSession, componentId, selectManager]);
+	}, [outputsPerSession, instances, componentId, selectManager]);
 
 	// we need to return the available node names in a dictionary for each output
 	// therefore we need to transform the availableNodeNames object into a dictionary
@@ -273,13 +278,20 @@ export function useSelection(
 			setSelectedNodeNames(names);
 			restoreSelection(
 				outputsPerSession,
+				instances,
 				componentId,
 				selectManagerRef.current,
 				names,
 				strictNaming,
 			);
 		},
-		[componentId],
+		[
+			outputsPerSession,
+			instances,
+			componentId,
+			setSelectedNodeNames,
+			restoreSelection,
+		],
 	);
 
 	return {
@@ -300,6 +312,7 @@ export function useSelection(
  */
 const restoreSelection = (
 	outputsPerSession: {[key: string]: {[key: string]: IOutputApi}},
+	instances: {[key: string]: ITreeNode},
 	componentId: string,
 	selectManager?: SelectManager | MultiSelectManager,
 	selectedNodeNames: string[] = [],
@@ -319,6 +332,19 @@ const restoreSelection = (
 				);
 		}
 	}
+
+	// also check instances for selection restoration
+	for (const instanceId in instances) {
+		const instanceNode = instances[instanceId];
+		if (instanceNode && selectManager)
+			restoreNodeSelection(
+				instanceNode,
+				componentId,
+				selectManager,
+				selectedNodeNames,
+				strictNaming,
+			);
+	}
 };
 
 /**
@@ -336,6 +362,13 @@ const restoreNodeSelection = (
 	selectedNodeNames: string[],
 	strictNaming: boolean,
 ) => {
+	// The identifier used to match the first part of selected node names.
+	// For regular output nodes this is the output name; for instance nodes it is the instance ID.
+	let nameIdentifier: string;
+	// Whether this is an instance node (vs. a session output node).
+	// This affects how checkNodeNameMatch is called (see PatternUtils.getNodesByName).
+	let isInstance = false;
+
 	// the node must have an OutputApiData object
 	let outputApi = node.data.find(
 		(data) => data instanceof OutputApiData,
@@ -348,7 +381,17 @@ const restoreNodeSelection = (
 		if (!sessionApi) return;
 
 		outputApi = sessionApi.outputs[node.name];
-		if (!outputApi) return;
+		if (outputApi) {
+			nameIdentifier = outputApi.name;
+		} else {
+			// Instance node: SessionApiData is in the parent but the node is not a session
+			// output. Use getNodeName (matching the logic in PatternUtils.getInstanceNodeData)
+			// as the identifier so it aligns with how selected node names are built.
+			nameIdentifier = getNodeName(node, strictNaming) ?? node.name;
+			isInstance = true;
+		}
+	} else {
+		nameIdentifier = outputApi.name;
 	}
 
 	// deselect all nodes restricted to the component id
@@ -368,10 +411,10 @@ const restoreNodeSelection = (
 	// select child nodes based on selectedNodeNames
 	selectedNodeNames.forEach((name) => {
 		const parts = name.split(".");
-		if (outputApi.name !== parts[0]) return;
+		if (nameIdentifier !== parts[0]) return;
 
 		if (parts.length === 1) {
-			// special case if only the output name is given
+			// special case if only the output/instance name is given
 			const interactionData = node.data.filter(
 				(d) => d instanceof InteractionData,
 			) as InteractionData[];
@@ -384,15 +427,15 @@ const restoreNodeSelection = (
 			)
 				mgr.select({distance: 1, point: vec3.create(), node: node});
 		} else {
+			// For output nodes: pass parts without the output name prefix (parts.slice(1)).
+			// For instance nodes: pass the full name (parts.join(".") === name) because
+			// the instance name is part of the node's path (it has an originalName set),
+			// matching the behaviour of PatternUtils.getNodesByName.
+			const matchName = isInstance ? name : parts.slice(1).join(".");
+
 			// if the node name matches the pattern, select the node
 			node.traverse((n) => {
-				if (
-					checkNodeNameMatch(
-						n,
-						parts.slice(1).join("."),
-						strictNaming,
-					)
-				) {
+				if (checkNodeNameMatch(n, matchName, strictNaming)) {
 					const interactionData = n.data.filter(
 						(d) => d instanceof InteractionData,
 					) as InteractionData[];

@@ -81,6 +81,7 @@ export function useAnchorSelection(
 			viewportId,
 			cleanSelectionProps,
 			!!selectionProperties && selectionAllowed,
+			selectedNodeNamesCache[`${viewportId}-${id}`] || [],
 		);
 
 	/**
@@ -88,10 +89,11 @@ export function useAnchorSelection(
 	 * This ensures that the selection is preserved when the hook reloads.
 	 */
 	useEffect(() => {
+		if (!selectionProperties || !selectionAllowed) return;
 		setSelectedNodeNamesAndRestoreSelection(
 			selectedNodeNamesCache[`${viewportId}-${id}`] || [],
 		);
-	}, [viewportId, id]);
+	}, [viewportId, id, selectionProperties, selectionAllowed]);
 
 	const updateShowContentCallback = useCallback(
 		(selectedNodeNames: string[]) => {
