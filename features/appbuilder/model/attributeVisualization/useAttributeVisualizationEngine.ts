@@ -1,0 +1,78 @@
+import {useEffect} from "react";
+
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
+import {AttributeVisualizationEngine} from "@shapediver/viewer.features.attribute-visualization";
+import {MaterialUnlitData} from "@shapediver/viewer.session";
+import {useShallow} from "zustand/react/shallow";
+import {useShapeDiverStoreAttributeVisualization} from "../useShapeDiverStoreAttributeVisualization";
+
+/**
+ * Hook allowing to create an attribute visualization engine for a viewport.
+ *
+ * @param viewportId
+ */
+export function useAttributeVisualizationEngine(viewportId: string): {
+	/**
+	 * The attribute visualization engine for the viewport.
+	 */
+	attributeVisualizationEngine: AttributeVisualizationEngine | undefined;
+} {
+	const {
+		createAttributeVisualizationEngine,
+		closeAttributeVisualizationEngine,
+	} = useShapeDiverStoreAttributeVisualization(
+		useShallow((state) => ({
+			createAttributeVisualizationEngine:
+				state.createAttributeVisualizationEngine,
+			closeAttributeVisualizationEngine:
+				state.closeAttributeVisualizationEngine,
+		})),
+	);
+
+	// get the viewport API
+	const viewportApi = useShapeDiverStoreViewport((state) => {
+		return state.viewports[viewportId];
+	});
+
+	const {attributeVisualizationEngines} =
+		useShapeDiverStoreAttributeVisualization(
+			useShallow((state) => ({
+				attributeVisualizationEngines:
+					state.attributeVisualizationEngines,
+			})),
+		);
+
+	// use an effect to create the attribute visualization engine
+	useEffect(() => {
+		if (viewportApi) {
+			// create the attribute visualization engine
+			const attributeVisualizationEngine =
+				createAttributeVisualizationEngine(
+					viewportApi,
+				) as AttributeVisualizationEngine;
+			if (!attributeVisualizationEngine) return;
+
+			attributeVisualizationEngine.updateLayerMaterialType("unlit");
+			attributeVisualizationEngine.updateDefaultMaterial(
+				new MaterialUnlitData({color: "#666666"}),
+			);
+			attributeVisualizationEngine.updateDefaultLayer({
+				color: "#666666",
+				opacity: 1,
+				enabled: true,
+			});
+			attributeVisualizationEngine.updateVisualizedMaterialType("unlit");
+		}
+
+		return () => {
+			// close the attribute visualization engine
+			closeAttributeVisualizationEngine(viewportId);
+		};
+	}, [viewportApi]);
+
+	return {
+		attributeVisualizationEngine: attributeVisualizationEngines[
+			viewportId
+		] as AttributeVisualizationEngine | undefined,
+	};
+}

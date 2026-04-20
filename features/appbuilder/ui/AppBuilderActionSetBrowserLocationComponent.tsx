@@ -1,0 +1,100 @@
+import {useCreateModelState} from "@AppBuilderLib/features/model-state";
+import {QUERYPARAM_MODELSTATEID} from "@AppBuilderLib/shared/config";
+import {applyModelStateToUrl} from "@AppBuilderLib/shared/lib";
+import React, {useCallback, useState} from "react";
+import {IAppBuilderLegacyActionPropsSetBrowserLocation} from "../config";
+import AppBuilderActionComponent from "./AppBuilderActionComponent";
+
+type Props = IAppBuilderLegacyActionPropsSetBrowserLocation & {
+	namespace: string;
+};
+
+function getLocation(
+	href?: string,
+	pathname?: string,
+	search?: string,
+	hash?: string,
+): string {
+	if (href) return href;
+
+	const currentLocation = window.location;
+
+	if (pathname)
+		return `${currentLocation.origin}${pathname.startsWith("/") ? pathname : "/" + pathname}`;
+
+	if (search)
+		return `${currentLocation.origin}${currentLocation.pathname}${search.startsWith("?") ? search : "?" + search}`;
+
+	if (hash)
+		return `${currentLocation.origin}${currentLocation.pathname}${currentLocation.search}${hash.startsWith("#") ? hash : "#" + hash}`;
+
+	return currentLocation.href;
+}
+
+/**
+ * Functional component for a "setBrowserLocation" action.
+ *
+ * @returns
+ */
+export default function AppBuilderActionSetBrowserLocationComponent(
+	props: Props,
+) {
+	const {
+		label = "Set location",
+		icon,
+		tooltip,
+		href,
+		pathname,
+		search,
+		hash,
+		namespace,
+		target,
+	} = props;
+
+	const {createModelState} = useCreateModelState({namespace});
+	const [loading, setLoading] = useState(false);
+
+	const onClick = useCallback(async () => {
+		let newLocation = getLocation(href, pathname, search, hash);
+
+		// check if newLocation contains a URL parameter called "modelStateId"
+		const newLocationUrl = new URL(newLocation);
+		if (newLocationUrl.searchParams.has(QUERYPARAM_MODELSTATEID)) {
+			setLoading(true);
+
+			const {modelStateId} = await createModelState(
+				undefined, // <-- parameterNamesToInclude: use default according to the theme
+				undefined, // <-- parameterNamesToExclude: use default according to the theme
+				true, // <-- includeImage,
+				undefined,
+				undefined, // <-- custom data
+				false, // <-- includeGltf,
+			);
+
+			// replace the value of the URL parameter "modelStateId" with the new value
+			newLocation = applyModelStateToUrl(
+				modelStateId,
+				false,
+				newLocationUrl,
+			).toString();
+
+			setLoading(false);
+		}
+
+		if (target && target !== "_self") {
+			window.open(newLocation, target);
+		} else if (newLocation !== window.location.href) {
+			window.location.href = newLocation;
+		}
+	}, [createModelState, href, pathname, search, hash, target]);
+
+	return (
+		<AppBuilderActionComponent
+			label={label}
+			icon={icon}
+			tooltip={tooltip}
+			loading={loading}
+			onClick={onClick}
+		/>
+	);
+}

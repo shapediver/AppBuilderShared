@@ -1,0 +1,107 @@
+import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce";
+import {useCreateModelState} from "@AppBuilderLib/features/model-state";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import React, {useCallback, useState} from "react";
+import {IAppBuilderLegacyActionPropsAddToCart} from "../config";
+import AppBuilderActionComponent from "./AppBuilderActionComponent";
+
+type Props = IAppBuilderLegacyActionPropsAddToCart & {
+	namespace: string;
+};
+
+/**
+ * Functional component for an "addToCart" action.
+ *
+ * @returns
+ */
+export default function AppBuilderActionAddToCartComponent(props: Props) {
+	const {
+		label = "Add to cart",
+		icon = "tabler:shopping-cart-plus",
+		tooltip,
+		namespace,
+		productId,
+		quantity,
+		price,
+		description,
+		includeImage,
+		image,
+		includeGltf,
+		parameterNamesToInclude,
+		parameterNamesToExclude,
+	} = props;
+
+	const {createModelState} = useCreateModelState({namespace});
+
+	const notifications = useNotificationStore();
+
+	const [loading, setLoading] = useState(false);
+
+	const onClick = useCallback(async () => {
+		setLoading(true);
+		// in case we are not running inside an iframe, the instance of
+		// IEcommerceApi will be a dummy for testing
+		const api = await ECommerceApiSingleton;
+		const {
+			modelStateId,
+			screenshot,
+			modelViewUrl,
+			modelStateImageUrl,
+			modelStateGltfUrl,
+			modelStateUsdzUrl,
+		} = await createModelState(
+			parameterNamesToInclude,
+			parameterNamesToExclude,
+			includeImage,
+			image,
+			undefined, // <-- custom data
+			includeGltf,
+		);
+		try {
+			const result = await api.addItemToCart({
+				modelStateId,
+				productId,
+				quantity,
+				price,
+				description,
+				imageUrl: screenshot,
+				modelViewUrl,
+				modelStateImageUrl,
+				modelStateGltfUrl,
+				modelStateUsdzUrl,
+			});
+			// TODO display modal instead of notification, offer possibility to hide configurator
+			notifications.success({
+				message: `An item for configuration ID ${modelStateId} has been added to the cart (cart item id ${result.id}).`,
+			});
+		} catch (e) {
+			notifications.error({
+				message: `An error happened while adding configuration ID ${modelStateId} to the cart.`,
+			});
+			// TODO report error to sentry
+			throw e;
+		} finally {
+			setLoading(false);
+		}
+	}, [
+		productId,
+		quantity,
+		price,
+		description,
+		parameterNamesToInclude,
+		parameterNamesToExclude,
+		image,
+		includeImage,
+		includeGltf,
+	]);
+
+	return (
+		<AppBuilderActionComponent
+			label={label}
+			icon={icon}
+			tooltip={tooltip}
+			onClick={onClick}
+			loading={loading}
+		/>
+	);
+}

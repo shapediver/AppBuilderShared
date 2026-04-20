@@ -1,0 +1,203 @@
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "../config/propsParameter";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
+import {
+	DefaultStargateStyleProps,
+	IStargateComponentStatusDefinition,
+	mapStargateComponentStatusDefinition,
+	ParameterStatusEnum,
+	StargateInput,
+	StargateStatusColorTypeEnum,
+	StargateStyleProps,
+	useStargateParameter,
+} from "@AppBuilderLib/entities/stargate";
+import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {
+	ActionIcon,
+	ActionIconProps,
+	MantineThemeComponent,
+	TooltipProps,
+	useProps,
+} from "@mantine/core";
+import React, {useMemo} from "react";
+
+/**
+ * Map from status enum to status data.
+ */
+const StatusDataMap: {
+	[key in ParameterStatusEnum]: IStargateComponentStatusDefinition;
+} = {
+	[ParameterStatusEnum.notActive]: {
+		colorType: StargateStatusColorTypeEnum.dimmed,
+		message: "No active client found",
+		disabled: true,
+	},
+	[ParameterStatusEnum.incompatible]: {
+		colorType: StargateStatusColorTypeEnum.dimmed,
+		message: "Incompatible input",
+		disabled: true,
+	},
+	[ParameterStatusEnum.noObjectSelected]: {
+		colorType: StargateStatusColorTypeEnum.focused,
+		message: "No $type_l selected",
+		disabled: false,
+	},
+	[ParameterStatusEnum.objectSelected]: {
+		colorType: StargateStatusColorTypeEnum.primary,
+		message: "$type_u selected $count",
+		disabled: false,
+	},
+	[ParameterStatusEnum.unsupported]: {
+		colorType: StargateStatusColorTypeEnum.dimmed,
+		message: "Unsupported input status",
+		disabled: true,
+	},
+};
+
+interface StyleProps {
+	tooltipProps: Partial<TooltipProps>;
+	actionIconProps: Partial<ActionIconProps>;
+	iconProps: IconProps;
+}
+
+const defaultStyleProps: StyleProps = {
+	tooltipProps: {
+		position: "top",
+		label: "Clear selection",
+	},
+	actionIconProps: {
+		size: "1.5rem",
+		variant: "transparent",
+		loaderProps: {
+			type: "dots",
+		},
+	},
+	iconProps: {
+		iconType: "tabler:x",
+		size: "1.2rem",
+		color: "var(--mantine-color-default-color)",
+	},
+};
+
+type ParameterStargateComponentThemePropsType = Partial<StyleProps>;
+
+export function ParameterStargateComponentThemeProps(
+	props: ParameterStargateComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+/**
+ * Functional component representing a Stargate parameter (input).
+ * @param props
+ * @returns
+ */
+export default function ParameterStargateComponent(
+	props: PropsParameter &
+		Partial<PropsParameterWrapper> &
+		Partial<StyleProps> &
+		Partial<StargateStyleProps>,
+) {
+	const {definition, value, handleChange, onCancel, disabled} =
+		useParameterComponentCommons<string>(props);
+
+	const {tooltipProps, actionIconProps, iconProps, ...rest} = useProps(
+		"ParameterStargateComponent",
+		defaultStyleProps,
+		props,
+	);
+
+	const {wrapperComponent, wrapperProps} = useProps(
+		"ParameterStargateComponent",
+		defaultPropsParameterWrapper,
+		rest,
+	);
+
+	const {stargateColorProps} = useProps(
+		"StargateShared",
+		DefaultStargateStyleProps,
+		rest,
+	);
+
+	const {status, count, onObjectAdd, onClearSelection, isWaiting} =
+		useStargateParameter({
+			parameterId: definition.id,
+			parameterType: definition.type,
+			hasValue: !!value,
+			parameterFormat: definition.format,
+			handleChange,
+			increaseReferenceCount: true,
+		});
+
+	const statusData = useMemo(() => {
+		return mapStargateComponentStatusDefinition(
+			StatusDataMap[status],
+			stargateColorProps,
+		);
+	}, [status, stargateColorProps]);
+
+	const parsedMessage = useMemo(() => {
+		const type_ = definition.type.substring(1);
+		const type = count !== undefined && count > 1 ? type_ + "s" : type_;
+		const msg = statusData.message.replace(
+			"$count",
+			count ? `(${count})` : "",
+		);
+		return msg
+			.replace("$type_u", type)
+			.replace("$type_l", type_.toLowerCase());
+	}, [count, statusData.message, definition.type]);
+
+	return (
+		<ParameterWrapperComponent
+			onCancel={onCancel}
+			component={wrapperComponent}
+			{...wrapperProps}
+		>
+			<ParameterLabelComponent
+				{...props}
+				cancel={onCancel}
+				rightSection={
+					onCancel ? undefined : (
+						<TooltipWrapper
+							{...tooltipProps}
+							label={tooltipProps.label || "Clear selection"}
+						>
+							<ActionIcon
+								style={{
+									visibility: value ? "visible" : "hidden",
+								}}
+								color={disabled ? "gray" : statusData.color}
+								loading={isWaiting}
+								disabled={isWaiting || disabled}
+								{...actionIconProps}
+								onClick={onClearSelection}
+							>
+								<Icon {...iconProps} />
+							</ActionIcon>
+						</TooltipWrapper>
+					)
+				}
+			/>
+			{definition && (
+				<StargateInput
+					message={parsedMessage}
+					color={statusData.color}
+					isWaiting={isWaiting}
+					waitingText="Waiting for selection..."
+					disabled={statusData.disabled || disabled}
+					onClick={onObjectAdd}
+					icon={"tabler:device-desktop-up"}
+				/>
+			)}
+		</ParameterWrapperComponent>
+	);
+}

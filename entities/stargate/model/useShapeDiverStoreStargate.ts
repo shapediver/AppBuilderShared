@@ -5,11 +5,15 @@ import {
 	StargateCacheKeyEnum,
 } from "@AppBuilderLib/entities/stargate";
 import {getNotificationActions} from "@AppBuilderLib/features";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
-import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
-import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform";
-import {useShapeDiverStoreErrorReporting} from "@AppBuilderLib/store/useShapeDiverStoreErrorReporting";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/store/useShapeDiverStorePlatform";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config";
+import {
+	exceptionWrapperAsync,
+	shouldUsePlatform,
+} from "@AppBuilderLib/shared/lib";
+import {
+	useShapeDiverStoreErrorReporting,
+	useShapeDiverStorePlatform,
+} from "@AppBuilderLib/shared/model";
 import {
 	SdStargateError,
 	SdStargateErrorTypes,

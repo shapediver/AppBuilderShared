@@ -1,0 +1,524 @@
+import {
+	IParameterValues,
+	PropsExportWithForm,
+	useExport,
+} from "@AppBuilderLib/entities/export";
+import {
+	ParameterValueDefinition,
+	useResolveParameterValues,
+} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
+import {
+	DefaultStargateStyleProps,
+	ExportStatusEnum,
+	IStargateComponentStatusDefinition,
+	mapStargateComponentStatusDefinition,
+	StargateFileParamPrefix,
+	StargateInput,
+	StargateStatusColorTypeEnum,
+	StargateStyleProps,
+	useStargateExport,
+} from "@AppBuilderLib/entities/stargate";
+import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderLib/features/appbuilder";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {IProcessDefinition} from "@AppBuilderLib/shared/config";
+import {
+	ErrorReportingContext,
+	ExportInterceptorContext,
+} from "@AppBuilderLib/shared/lib";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
+import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {
+	Button,
+	ButtonProps,
+	Group,
+	MantineThemeComponent,
+	TooltipProps,
+	useProps,
+} from "@mantine/core";
+import {EXPORT_TYPE} from "@shapediver/viewer.session";
+import {fetchFileWithToken} from "@shapediver/viewer.utils.mime-type";
+import React, {
+	useCallback,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import ExportLabelComponent from "./ExportLabelComponent";
+
+/**
+ * Map from status enum to status data.
+ */
+const StatusDataMap: {
+	[key in ExportStatusEnum]: IStargateComponentStatusDefinition;
+} = {
+	[ExportStatusEnum.notActive]: {
+		colorType: StargateStatusColorTypeEnum.dimmed,
+		message: "No active client found",
+		disabled: true,
+	},
+	[ExportStatusEnum.incompatible]: {
+		colorType: StargateStatusColorTypeEnum.dimmed,
+		message: "Export not supported",
+		disabled: true,
+	},
+	[ExportStatusEnum.active]: {
+		colorType: StargateStatusColorTypeEnum.primary,
+		message: "Export to client",
+		disabled: false,
+	},
+};
+
+interface StyleProps {
+	buttonProps?: Partial<ButtonProps>;
+	downloadTooltipProps: Partial<TooltipProps>;
+	downloadButtonProps?: Partial<ButtonProps>;
+	/** When provided, hides the label header and uses this text as the button label. */
+	buttonLabel?: string;
+}
+
+const defaultStyleProps: Partial<StyleProps> = {
+	buttonProps: {
+		variant: "filled",
+		fullWidth: true,
+	},
+	downloadTooltipProps: {
+		position: "top",
+		label: "Download file",
+	},
+	downloadButtonProps: {
+		variant: "default",
+	},
+};
+
+type ExportButtonComponentThemePropsType = Partial<StyleProps>;
+export function ExportButtonComponentThemeProps(
+	props: ExportButtonComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+/**
+ * Functional component that creates a button that triggers an export.
+ * If the export is downloadable, that file will be downloaded.
+ *
+ * @returns
+ */
+export default function ExportButtonComponent(
+	props: PropsExportWithForm &
+		ExportButtonComponentThemePropsType &
+		Partial<StargateStyleProps>,
+) {
+	const {form, onSuccess, onError} = props;
+	const {
+		buttonProps,
+		downloadTooltipProps,
+		downloadButtonProps,
+		buttonLabel,
+		parameterValues,
+		...rest
+	} = useProps("ExportButtonComponent", defaultStyleProps, props);
+
+	const {stargateColorProps} = useProps(
+		"StargateShared",
+		DefaultStargateStyleProps,
+		rest,
+	);
+
+	const {definition, actions} = useExport(props) ?? {};
+	const notifications = useNotificationStore();
+	const errorReporting = useContext(ErrorReportingContext);
+
+	const {addProcess, createProcessManager} =
+		useShapeDiverStoreProcessManager();
+
+	const resolveMainPromiseRef = useRef<(() => void) | undefined>(undefined);
+
+	if (!definition || !actions) {
+		notifications.error({
+			message: `Export ${props.exportId} not found`,
+		});
+		return <></>;
+	}
+
+	// get optional distribution-specific click interceptor and right section from context
+	const {interceptClick, rightSection} = useContext(ExportInterceptorContext);
+
+	// Criterion to determine if the export button shall use Stargate.
+	const {isStargate, label} = useMemo(() => {
+		const dn = definition.displayname || definition.name;
+		return dn.startsWith(StargateFileParamPrefix)
+			? {
+					isStargate: definition.type === EXPORT_TYPE.DOWNLOAD,
+					label: dn.substring(StargateFileParamPrefix.length),
+				}
+			: {
+					isStargate: false,
+					label: dn,
+				};
+	}, [definition]);
+
+	const {isWaiting, isContentSupported, status, onExportFile} =
+		useStargateExport({
+			exportId: definition.id,
+			contentIndex: 0,
+			sessionId: props.namespace,
+			increaseReferenceCount: isStargate,
+		});
+
+	const statusData = useMemo(() => {
+		return mapStargateComponentStatusDefinition(
+			StatusDataMap[status],
+			stargateColorProps,
+		);
+	}, [status, stargateColorProps]);
+
+	const exportRequest = useCallback(
+		async (
+			skipStargate?: boolean,
+			parameterValues?: {[key: string]: string},
+		): Promise<boolean> => {
+			// request the export
+			const response = await actions.request(parameterValues);
+
+			// if the export is a download export, download it
+			if (definition.type === EXPORT_TYPE.DOWNLOAD) {
+				if (
+					response.content &&
+					response.content[0] &&
+					response.content[0].href
+				) {
+					const content = response.content[0];
+					if (!skipStargate && isStargate) {
+						if (!(await isContentSupported(content))) {
+							notifications.error({
+								title: "Unsupported content type",
+								message: `Content type ${content.format} not supported by the selected client.`,
+							});
+							return false;
+						}
+						await onExportFile();
+						return true;
+					} else {
+						const url = content.href;
+						const filename = response.filename?.endsWith(
+							content.format,
+						)
+							? response.filename
+							: `${response.filename}.${content.format}`;
+						const sizemsg = content.size
+							? ` (${Math.ceil(content.size / 1000)}kB)`
+							: "";
+						notifications.success({
+							message: `Downloading file ${filename}${sizemsg}`,
+						});
+						const res = await actions.fetch(url);
+						await fetchFileWithToken(res, filename);
+						return true;
+					}
+				} else if (
+					response.content &&
+					response.content.length === 0 &&
+					response.msg
+				) {
+					notifications.success({
+						message: response.msg,
+					});
+					return true;
+				} else {
+					// Unexpected response for DOWNLOAD export type
+					const errorMessage = `Unexpected response for export of type download`;
+					notifications.error({
+						message: errorMessage,
+					});
+					errorReporting.captureException({
+						message: errorMessage,
+						exportResponse: response,
+						exportDefinition: {
+							id: definition.id,
+							name: definition.name,
+							type: definition.type,
+						},
+					});
+					return false;
+				}
+			} else if (definition.type === EXPORT_TYPE.EMAIL) {
+				// if the export is an email export, show the resulting message
+				if (response.result) {
+					const result = response.result;
+					if (result.err) {
+						notifications.error({
+							message: result.err,
+						});
+						return false;
+					}
+					if (result.msg) {
+						notifications.success({
+							message: result.msg,
+						});
+						return true;
+					}
+				}
+
+				// Unexpected response for EMAIL export
+				const errorMessage = `Unexpected response for export of type email`;
+				notifications.error({
+					message: errorMessage,
+				});
+				errorReporting.captureException({
+					message: errorMessage,
+					exportResponse: response,
+					exportDefinition: {
+						id: definition.id,
+						name: definition.name,
+						type: definition.type,
+					},
+				});
+				return false;
+			}
+
+			// Unexpected export type
+			const errorMessage = `Unexpected export type: ${definition.type}`;
+			notifications.error({
+				message: errorMessage,
+			});
+			errorReporting.captureMessage(errorMessage);
+			return false;
+		},
+		[
+			actions,
+			definition.type,
+			isStargate,
+			isContentSupported,
+			notifications,
+			errorReporting,
+		],
+	);
+
+	const [requestingExport, setRequestingExport] = useState(false);
+
+	const [parameterValueSourcesData, setParameterValueSourcesData] = useState<
+		| {
+				data: {
+					namespace: string;
+					parameterValues: ParameterValueDefinition[];
+				};
+				information: {
+					skipStargate?: boolean;
+					parameterValues: IAppBuilderActionPropsSetParameterValue[];
+				};
+		  }
+		| undefined
+	>(undefined);
+
+	const {values: parameterValueSourcesResults, isResolving} =
+		useResolveParameterValues(parameterValueSourcesData?.data);
+
+	useEffect(() => {
+		if (!parameterValueSourcesData || !parameterValueSourcesResults) return;
+
+		const parameterValues: {[key: string]: string} = {};
+		let sourceIndex = 0;
+		for (const p of parameterValueSourcesData.information.parameterValues) {
+			if (p.value) {
+				parameterValues[p.parameter.name] = p.value;
+			} else if (p.source) {
+				const sourceResult =
+					parameterValueSourcesResults[sourceIndex++];
+				if (sourceResult && typeof sourceResult === "string") {
+					parameterValues[p.parameter.name] = sourceResult;
+				}
+			}
+		}
+
+		// request the export
+		exportRequest(
+			parameterValueSourcesData.information.skipStargate,
+			parameterValues,
+		)
+			.then((result) => {
+				// Call onSuccess if provided
+				if (result && onSuccess) {
+					onSuccess(parameterValues);
+				}
+
+				if (!result && onError) {
+					onError(parameterValues);
+				}
+			})
+			.finally(() => {
+				// reset source data to avoid multiple calls
+				setParameterValueSourcesData(undefined);
+				// set the requestingExport false to remove the loading icon
+				setRequestingExport(false);
+				// resolve the main promise of the process manager to indicate that the process is finished
+				if (resolveMainPromiseRef.current) {
+					resolveMainPromiseRef.current();
+					resolveMainPromiseRef.current = undefined;
+				}
+			});
+	}, [
+		parameterValueSourcesResults,
+		exportRequest,
+		resolveMainPromiseRef,
+		onSuccess,
+		onError,
+	]);
+
+	// callback for when the export button has been clicked
+	const onClick = useCallback(
+		async (skipStargate?: boolean, customValues?: IParameterValues) => {
+			// set the requestingExport true to display a loading icon
+			setRequestingExport(true);
+
+			// load sources if necessary
+			const hasSources = parameterValues?.some((p) => p.source) ?? false;
+
+			if (hasSources) {
+				// we set the sources to be loaded asynchronously
+				// and afterwards we request the export
+
+				const information: {
+					skipStargate?: boolean;
+					parameterValues: IAppBuilderActionPropsSetParameterValue[];
+				} = {
+					skipStargate,
+					parameterValues: parameterValues!,
+				};
+
+				const sources = parameterValues!
+					.map((p) => {
+						if (p.source) {
+							// while we could let the useResolveParameterValues hook handle all parameters
+							// we only want to pass those with sources to it
+							// as otherwise we would have to filter the results again later
+							return {
+								value: p.source,
+								id: p.parameter.name,
+								namespace: p.parameter.sessionId,
+							};
+						}
+					})
+					.filter((p) => p !== undefined);
+
+				// create a promise to wait for all sources to be resolved before requesting the export
+				const mainPromise = new Promise<void>((resolve) => {
+					resolveMainPromiseRef.current = resolve;
+				});
+
+				const mainProcessDefinition: IProcessDefinition = {
+					name: "Export - Parameter Values Sources Process",
+					promise: mainPromise,
+				};
+
+				// we have to await the sources, therefore we create a processManager
+				const processManagerId = createProcessManager(props.namespace);
+				addProcess(processManagerId, mainProcessDefinition);
+
+				setParameterValueSourcesData({
+					data: {
+						namespace: props.namespace,
+						parameterValues: sources,
+					},
+					information,
+				});
+				return;
+			} else {
+				const pValues =
+					customValues ||
+					parameterValues?.reduce((acc, p) => {
+						if (p.value) acc[p.parameter.name] = p.value;
+						return acc;
+					}, {} as IParameterValues);
+				try {
+					const result = await exportRequest(skipStargate, pValues);
+					// Call onSuccess if provided
+					if (result && onSuccess) {
+						onSuccess(pValues);
+					}
+
+					if (!result && onError) {
+						onError(pValues);
+					}
+				} finally {
+					// set the requestingExport false to remove the loading icon
+					setRequestingExport(false);
+				}
+			}
+		},
+		[exportRequest, parameterValues, onSuccess, onError],
+	);
+
+	const onClickIntercepted = useCallback(
+		(skipStargate?: boolean) => (event: React.MouseEvent) => {
+			const cb = (values?: IParameterValues) =>
+				interceptClick
+					? interceptClick(() => onClick(skipStargate, values))
+					: onClick(skipStargate, values);
+			return form ? form.onSubmit(cb)(event as any) : cb();
+		},
+		[onClick, interceptClick, form],
+	);
+
+	return (
+		<>
+			{!buttonLabel && (
+				<ExportLabelComponent
+					{...props}
+					label={label}
+					rightSection={rightSection}
+				/>
+			)}
+			{definition &&
+				(isStargate ? (
+					<Group wrap="nowrap">
+						<StargateInput
+							icon={"tabler:device-desktop-down"}
+							message={statusData.message}
+							color={statusData.color}
+							isWaiting={requestingExport || isWaiting}
+							waitingText="Waiting for export..."
+							disabled={statusData.disabled}
+							onClick={onClickIntercepted()}
+						/>
+						<TooltipWrapper
+							{...downloadTooltipProps}
+							label={
+								downloadTooltipProps?.label || "Download file"
+							}
+						>
+							<Button
+								{...downloadButtonProps}
+								onClick={onClickIntercepted(true)}
+								loading={requestingExport}
+							>
+								<Icon iconType={"tabler:download"} />
+							</Button>
+						</TooltipWrapper>
+					</Group>
+				) : (
+					<Button
+						{...buttonProps}
+						leftSection={
+							definition.type === EXPORT_TYPE.DOWNLOAD ? (
+								<Icon iconType={"tabler:download"} />
+							) : (
+								<Icon iconType={"tabler:mail-forward"} />
+							)
+						}
+						onClick={onClickIntercepted()}
+						loading={requestingExport}
+					>
+						{buttonLabel ||
+							(definition.type === EXPORT_TYPE.DOWNLOAD
+								? "Download File"
+								: "Send Email")}
+					</Button>
+				))}
+		</>
+	);
+}

@@ -1,4 +1,4 @@
-import {Logger} from "@AppBuilderShared/utils/logger";
+import {Logger} from "@AppBuilderLib/shared/lib";
 import {createContext} from "react";
 import {
 	IDelayedTrackerPropsAwaiter,
@@ -69,9 +69,7 @@ export class DelayedTrackerPropsAwaiter implements IDelayedTrackerPropsAwaiter {
 	}
 }
 
-export class CombinedDelayedTrackerPropsAwaiter
-	implements IDelayedTrackerPropsAwaiter
-{
+export class CombinedDelayedTrackerPropsAwaiter implements IDelayedTrackerPropsAwaiter {
 	/**
 	 * Names of the properties that should be set after the tracker is initialized.
 	 * This is the union of all requiredDelayedProps from the individual awaiters.

@@ -1,4 +1,4 @@
-import {Logger} from "@AppBuilderShared/utils/logger";
+import {Logger} from "@AppBuilderLib/shared/lib";
 import {createContext} from "react";
 import {IErrorReportingContext} from "./ErrorReportingContext.types";
 

@@ -1,0 +1,154 @@
+import {
+	IShapeDiverOutput,
+	PropsOutput,
+	useOutputs,
+} from "@AppBuilderLib/entities/output";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
+import {IAppBuilderParameterValueSourcePropsSdtf} from "@AppBuilderLib/features/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
+import {
+	ResAssetDefinition,
+	ResStypeParameter,
+} from "@shapediver/sdk.geometry-api-sdk-v2";
+import {useEffect, useMemo, useState} from "react";
+
+export function useSdtfSources(props: {
+	namespace: string;
+	sources?: {
+		source: IAppBuilderParameterValueSourcePropsSdtf;
+	}[];
+}): {
+	sdtfValues: (string | undefined)[] | undefined;
+	resetSdtfValues: () => void;
+} {
+	const {namespace, sources} = props;
+
+	const {createProcessManager, addProcess} = useShapeDiverStoreProcessManager(
+		(state) => ({
+			createProcessManager: state.createProcessManager,
+			addProcess: state.addProcess,
+		}),
+	);
+
+	const [sdtfValues, setSdtfValues] = useState<
+		(string | undefined)[] | undefined
+	>(undefined);
+
+	const session = useShapeDiverStoreSession(
+		(state) => state.sessions[namespace],
+	);
+
+	// create output map from sources
+	const outputMap: PropsOutput[] = useMemo(() => {
+		if (!sources) return [];
+		return sources
+			.map(({source}) => {
+				const {sessionId, name} = source;
+				if (!namespace && !sessionId) return;
+
+				return {
+					namespace: sessionId || namespace,
+					outputId: name,
+				};
+			})
+			.filter((e): e is PropsOutput => !!e);
+	}, [namespace, sources]);
+
+	// get all outputs
+	const outputs: (IShapeDiverOutput | undefined)[] = useOutputs(outputMap);
+
+	// create a combined array of outputs and their types
+	const outputResults:
+		| {
+				output: IShapeDiverOutput | undefined;
+				source: IAppBuilderParameterValueSourcePropsSdtf | undefined;
+		  }[]
+		| undefined = useMemo(() => {
+		if (!outputs || !sources) return undefined;
+		return outputs.map((output, index) => ({
+			output,
+			source: sources[index]?.source,
+		}));
+	}, [outputs, sources]);
+
+	// load all outputs
+	// and only set the return values once all are loaded
+	// to avoid multiple re-renders
+	useEffect(() => {
+		if (!outputResults || outputResults.length === 0) return;
+
+		// Create a process manager for sdTF resolution
+		const processManagerId = createProcessManager(namespace);
+
+		const promises = [];
+
+		for (let i = 0; i < outputResults.length; i++) {
+			const {output, source} = outputResults[i];
+			if (!source) {
+				promises.push(Promise.resolve(undefined));
+				continue;
+			}
+
+			const {name, chunk} = source;
+
+			if (!output) {
+				Logger.warn(`sdTF output with name ${name} not found. `);
+				promises.push(Promise.resolve(undefined));
+			} else {
+				// we found the sdTF output, now we have to upload it
+				if (output.content === undefined) {
+					Logger.warn(
+						`sdTF output with name ${name} has no content.`,
+					);
+					promises.push(Promise.resolve(undefined));
+				} else {
+					if (
+						output.content &&
+						output.content[0] &&
+						output.content[0].href
+					) {
+						// download the href and create an arrayBuffer
+						const response = output.content[0];
+						const url = response.href!;
+						const assetDefinition = fetch(url)
+							.then((r) => r.arrayBuffer())
+							.then(async (ab) => {
+								const response: ResAssetDefinition[] =
+									await session.uploadSDTF([ab]);
+
+								// now create a ResStypeParameter object
+								// with the uploaded asset id and the chunk if provided
+								const sdtfResponse: ResStypeParameter = {
+									asset: {
+										id: response[0].id,
+									},
+								};
+
+								if (chunk !== undefined) {
+									sdtfResponse.asset!.chunk = chunk;
+								}
+
+								return JSON.stringify(sdtfResponse, null, 2);
+							});
+						// Register this sdTF upload as a process
+						addProcess(processManagerId, {
+							id: `sdtf-${name}-${i}`,
+							name: `sdTF: ${name}`,
+							promise: assetDefinition,
+						});
+						promises.push(assetDefinition);
+					} else {
+						promises.push(undefined);
+					}
+				}
+			}
+		}
+
+		Promise.all(promises).then((res) => {
+			setSdtfValues(res);
+		});
+	}, [outputResults, session, namespace, createProcessManager, addProcess]);
+
+	return {sdtfValues, resetSdtfValues: () => setSdtfValues(undefined)};
+}

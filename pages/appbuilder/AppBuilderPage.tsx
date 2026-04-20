@@ -1,24 +1,28 @@
-import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import {ComponentContext} from "@AppBuilderLib/shared/lib/ComponentContext";
-import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform";
-import NotificationModelStateCreated from "@AppBuilderShared/components/shapediver/notifications/NotificationModelStateCreated";
-import MarkdownWidgetComponent from "@AppBuilderShared/components/shapediver/ui/MarkdownWidgetComponent";
-import {OverlayPosition} from "@AppBuilderShared/components/shapediver/ui/OverlayWrapper";
-import ViewportAcceptRejectButtons from "@AppBuilderShared/components/shapediver/ui/ViewportAcceptRejectButtons";
-import useAppBuilderSettings from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderSettings";
-import {useAppBuilderStandardContainers} from "@AppBuilderShared/hooks/shapediver/appbuilder/useAppBuilderStandardContainers";
-import {useSessionWithAppBuilder} from "@AppBuilderShared/hooks/shapediver/appbuilder/useSessionWithAppBuilder";
-import {useParameterHistory} from "@AppBuilderShared/hooks/shapediver/parameters/useParameterHistory";
-import useDefaultSessionDto from "@AppBuilderShared/hooks/shapediver/useDefaultSessionDto";
-import {useECommerceApiConnectorActions} from "@AppBuilderShared/hooks/shapediver/useECommerceApiConnectorActions";
-import {useKeyBindings} from "@AppBuilderShared/hooks/shapediver/useKeyBindings";
-import {IUseSessionDto} from "@AppBuilderShared/hooks/shapediver/useSession";
-import {useSessions} from "@AppBuilderShared/hooks/shapediver/useSessions";
+import {useParameterHistory} from "@AppBuilderLib/entities/parameter/model/useParameterHistory";
+import {
+	IUseSessionDto,
+	useDefaultSessionDto,
+	useSessions,
+} from "@AppBuilderLib/entities/session";
+import {
+	AppBuilderDataContext,
+	ComponentContext,
+	IAppBuilderSettingsSession,
+	useAppBuilderSettings,
+	useAppBuilderStandardContainers,
+	useKeyBindings,
+	useSessionWithAppBuilder,
+} from "@AppBuilderLib/features/appbuilder";
+import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce";
+import {NotificationModelStateCreated} from "@AppBuilderLib/features/notifications";
+import {shouldUsePlatform} from "@AppBuilderLib/shared/lib";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
+import {MarkdownWidgetComponent} from "@AppBuilderLib/shared/ui/markdown";
+import {OverlayPosition} from "@AppBuilderLib/shared/ui/overlay";
+import {ViewportAcceptRejectButtons} from "@AppBuilderLib/widgets/appbuilder";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
-import {useShapeDiverStorePlatform} from "@AppBuilderShared/store/useShapeDiverStorePlatform";
-import {IAppBuilderSettingsSession} from "@AppBuilderShared/types/shapediver/appbuilder";
 import React, {useContext, useEffect, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 
