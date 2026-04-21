@@ -37,6 +37,7 @@ export const useShapeDiverStorePlatform =
 			(set, get) => ({
 				user: undefined,
 				currentModel: undefined,
+				models: {},
 				genericCache: {},
 
 				authWrapper: async <T>(
@@ -252,6 +253,30 @@ export const useShapeDiverStorePlatform =
 						false,
 						"setCurrentModel",
 					);
+				},
+
+				setModelForSession: (
+					sessionId: string,
+					model: SdPlatformResponseModelPublic | undefined,
+				) => {
+					set(
+						(state) => {
+							const models = {...state.models};
+							if (model === undefined) {
+								delete models[sessionId];
+							} else {
+								models[sessionId] = model;
+							}
+							return {models};
+						},
+						false,
+						"setModelForSession",
+					);
+				},
+
+				getModelForSession: (sessionId?: string) => {
+					const {models, currentModel} = get();
+					return (sessionId && models[sessionId]) || currentModel;
 				},
 			}),
 			{...devtoolsSettings, name: "ShapeDiver | Platform"},

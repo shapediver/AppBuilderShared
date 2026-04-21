@@ -73,6 +73,31 @@ export interface IShapeDiverStorePlatform {
 	 * @param model
 	 */
 	setCurrentModel: (model: SdPlatformResponseModelPublic | undefined) => void;
+
+	/**
+	 * Map of models indexed by session id, for all sessions for which a platform model is available.
+	 * This is populated when sessions are opened on the platform.
+	 */
+	models: {[sessionId: string]: SdPlatformResponseModelPublic};
+
+	/**
+	 * Store (or remove) the platform model associated with the given session id.
+	 * @param sessionId The session id.
+	 * @param model The model to store, or undefined to remove.
+	 */
+	setModelForSession: (
+		sessionId: string,
+		model: SdPlatformResponseModelPublic | undefined,
+	) => void;
+
+	/**
+	 * Get the platform model for the given session id.
+	 * Falls back to currentModel if no model is found for the session.
+	 * @param sessionId The session id to look up. If undefined, falls back to currentModel.
+	 */
+	getModelForSession: (
+		sessionId?: string,
+	) => SdPlatformResponseModelPublic | undefined;
 }
 
 /** Type of cache. */

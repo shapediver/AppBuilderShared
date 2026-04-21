@@ -25,6 +25,7 @@ export const useStargateExportFile = () => {
 			exportId: string,
 			contentIndex: number,
 			parameters: {[id: string]: string},
+			sessionId?: string,
 		): Promise<ISdStargateExportFileReplyDto[]> => {
 			// Reject any pending requests
 			// TODO This merely rejects the locally pending promises, but does not
@@ -58,10 +59,12 @@ export const useStargateExportFile = () => {
 					throw error;
 				}
 
-				const {currentModel} = useShapeDiverStorePlatform.getState();
+				const model = useShapeDiverStorePlatform
+					.getState()
+					.getModelForSession(sessionId);
 
-				if (!currentModel) {
-					const error = new Error("Current model not available");
+				if (!model) {
+					const error = new Error("Model not available");
 					errorReporting.captureException(error);
 					throw error;
 				}
@@ -93,7 +96,7 @@ export const useStargateExportFile = () => {
 						command
 							.send(
 								{
-									model: {id: currentModel.id},
+									model: {id: model.id},
 									parameters,
 									export: {
 										id: exportId,

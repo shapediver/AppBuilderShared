@@ -33,12 +33,14 @@ const ModelStorage = MODELS as unknown as Record<
 export default function useResolveAppBuilderSessions(
 	sessions: IAppBuilderSettingsJsonSession[] | undefined,
 ) {
-	const {authenticate, setCurrentModel} = useShapeDiverStorePlatform(
-		useShallow((state) => ({
-			authenticate: state.authenticate,
-			setCurrentModel: state.setCurrentModel,
-		})),
-	);
+	const {authenticate, setCurrentModel, setModelForSession} =
+		useShapeDiverStorePlatform(
+			useShallow((state) => ({
+				authenticate: state.authenticate,
+				setCurrentModel: state.setCurrentModel,
+				setModelForSession: state.setModelForSession,
+			})),
+		);
 
 	const {addItem: addSavedState} = useShapeDiverStorePlatformSavedStates(
 		useShallow((state) => ({addItem: state.addItem})),
@@ -95,6 +97,7 @@ export default function useResolveAppBuilderSessions(
 					const model = ModelStorage[session.slug];
 
 					if (sessionIdx === 0) setCurrentModel(model);
+					setModelForSession(session.id, model);
 
 					// we store exactly the same data as in the platform response,
 					// only leaving out the refresh token function
@@ -134,6 +137,7 @@ export default function useResolveAppBuilderSessions(
 					};
 					const model = await getModel();
 					if (sessionIdx === 0) setCurrentModel(model);
+					setModelForSession(session.id, model);
 
 					return {
 						// use the acceptRejectMode setting store on the platform

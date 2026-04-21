@@ -26,6 +26,7 @@ export const useStargateBakeData = () => {
 			chunkId: string,
 			chunkName: string,
 			parameters: {[id: string]: string},
+			sessionId?: string,
 		): Promise<ISdStargateBakeDataReplyDto[]> => {
 			// Reject any pending requests
 			// TODO This merely rejects the locally pending promises, but does not
@@ -60,10 +61,12 @@ export const useStargateBakeData = () => {
 					throw error;
 				}
 
-				const {currentModel} = useShapeDiverStorePlatform.getState();
+				const model = useShapeDiverStorePlatform
+					.getState()
+					.getModelForSession(sessionId);
 
-				if (!currentModel) {
-					const error = new Error("Current model not available");
+				if (!model) {
+					const error = new Error("Model not available");
 					errorReporting.captureException(error);
 					throw error;
 				}
@@ -95,7 +98,7 @@ export const useStargateBakeData = () => {
 						command
 							.send(
 								{
-									model: {id: currentModel.id},
+									model: {id: model.id},
 									parameters,
 									output: {
 										id: outputId,

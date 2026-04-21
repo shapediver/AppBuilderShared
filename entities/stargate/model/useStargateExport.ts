@@ -9,7 +9,6 @@ import {
 } from "@AppBuilderLib/entities/stargate";
 import {useNotificationStore} from "@AppBuilderLib/features";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
 import {ShapeDiverResponseExportContent} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -132,11 +131,6 @@ export const useStargateExport = ({
 	const onExportFile = useCallback(async () => {
 		setIsWaiting(true);
 
-		const {currentModel} = useShapeDiverStorePlatform.getState();
-		if (!currentModel) {
-			throw new Error("Current model not available");
-		}
-
 		const parameters = getParameterStates(sessionId).reduce(
 			(acc, p) => {
 				acc[p.definition.id] = p.state.stringExecValue();
@@ -146,7 +140,7 @@ export const useStargateExport = ({
 		);
 
 		const response = await exceptionWrapperAsync(
-			() => exportFile(exportId, contentIndex, parameters),
+			() => exportFile(exportId, contentIndex, parameters, sessionId),
 			() => setIsWaiting(false),
 		);
 
