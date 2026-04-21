@@ -8,7 +8,6 @@ import {
 } from "@AppBuilderLib/entities/stargate";
 import {useNotificationStore} from "@AppBuilderLib/features";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import type {ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useEffect, useState} from "react";
@@ -39,6 +38,11 @@ export interface IUseStargateParameterProps {
 	 * used to decide whether to show the desktop client connection widget)
 	 */
 	increaseReferenceCount: boolean;
+	/**
+	 * The session ID associated with this parameter.
+	 * Used to look up the correct platform model for the session.
+	 */
+	sessionId?: string;
 }
 
 /**
@@ -67,6 +71,7 @@ export const useStargateParameter = ({
 	parameterFormat,
 	handleChange,
 	increaseReferenceCount,
+	sessionId,
 }: IUseStargateParameterProps) => {
 	const [isWaiting, setIsWaiting] = useState(false);
 	/**
@@ -204,13 +209,8 @@ export const useStargateParameter = ({
 	const onObjectAdd = useCallback(async () => {
 		setIsWaiting(true);
 
-		const {currentModel} = useShapeDiverStorePlatform.getState();
-		if (!currentModel) {
-			throw new Error("Current model not available");
-		}
-
 		const response = await exceptionWrapperAsync(
-			() => getParameterData(parameterId),
+			() => getParameterData(parameterId, sessionId),
 			() => setIsWaiting(false),
 		);
 
@@ -274,7 +274,7 @@ export const useStargateParameter = ({
 			setStatus(ParameterStatusEnum.objectSelected, count);
 			handleChange(value, 0);
 		}
-	}, [parameterId]);
+	}, [parameterId, sessionId]);
 
 	const onClearSelection = useCallback(() => {
 		if (networkStatus === NetworkStatus.connected) {

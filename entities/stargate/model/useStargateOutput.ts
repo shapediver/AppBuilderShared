@@ -10,7 +10,6 @@ import {
 } from "@AppBuilderLib/entities/stargate";
 import {useNotificationStore} from "@AppBuilderLib/features";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
 import {
 	ITreeNode,
 	ShapeDiverResponseOutputChunk,
@@ -192,11 +191,6 @@ export const useStargateOutput = ({
 	const onBakeData = useCallback(async () => {
 		setIsWaiting(true);
 
-		const {currentModel} = useShapeDiverStorePlatform.getState();
-		if (!currentModel) {
-			throw new Error("Current model not available");
-		}
-
 		const parameters = getParameterStates(sessionId).reduce(
 			(acc, p) => {
 				acc[p.definition.id] = p.state.stringExecValue();
@@ -206,7 +200,7 @@ export const useStargateOutput = ({
 		);
 
 		const response = await exceptionWrapperAsync(
-			() => bakeData(outputId, chunkId, chunkName, parameters),
+			() => bakeData(outputId, chunkId, chunkName, parameters, sessionId),
 			() => setIsWaiting(false),
 		);
 
