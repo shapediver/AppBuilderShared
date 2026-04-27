@@ -16,6 +16,7 @@ import {
 } from "@shapediver/viewer.session";
 import {vec3} from "gl-matrix";
 import React, {useCallback, useEffect, useId, useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
 import {useCreateNameFilterPattern} from "./useCreateNameFilterPattern";
 import {useHoverManager} from "./useHoverManager";
 import {
@@ -165,18 +166,20 @@ export function useSelection(
 		activate ? nodesInteractionInput : {},
 	);
 
-	const outputsPerSession = useShapeDiverStoreSession((state) => {
-		const outputs: {
-			[key: string]: {
-				[key: string]: IOutputApi;
-			};
-		} = {};
-		for (const sessionId in state.sessions)
-			if (state.sessions[sessionId])
-				outputs[sessionId] = state.sessions[sessionId].outputs;
+	const outputsPerSession = useShapeDiverStoreSession(
+		useShallow((state) => {
+			const outputs: {
+				[key: string]: {
+					[key: string]: IOutputApi;
+				};
+			} = {};
+			for (const sessionId in state.sessions)
+				if (state.sessions[sessionId])
+					outputs[sessionId] = state.sessions[sessionId].outputs;
 
-		return outputs;
-	});
+			return outputs;
+		}),
+	);
 
 	const instances = useShapeDiverStoreInstances((state) => state.instances);
 
