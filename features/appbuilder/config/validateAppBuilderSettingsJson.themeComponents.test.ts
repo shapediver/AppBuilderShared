@@ -27,4 +27,22 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		expect(msg).toMatch(/Icon/i);
 		expect(msg).toMatch(/defaultProps/i);
 	});
+
+	it("does not deep-validate unknown component keys (policy: registry only)", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					NotRegisteredInAppBuilderRegistry123: {
+						defaultProps: {
+							anything: {nested: true},
+							size: false,
+						},
+					},
+				},
+			},
+		});
+
+		expect(result.success).toBe(true);
+	});
 });
