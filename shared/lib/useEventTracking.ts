@@ -51,9 +51,23 @@ export const useEventTracking = () => {
 							),
 						)
 						.find((s) => s && s !== ResComputationStatus.SUCCESS);
+
+					const messages = Object.values(e.errorObject.outputs)
+						.map((o) => o.msg)
+						.concat(
+							Object.values(e.errorObject.exports).map(
+								(o) => o.msg,
+							),
+						);
 					const title = status ? `${_title} (${status})` : _title;
 					Logger.warn(title, e);
-					notifications.error({title, message: e.message});
+
+					const message =
+						e.message +
+							"\n" +
+							messages.filter((m) => m).join("\n") || e.message;
+
+					notifications.error({title, message});
 					tracker.trackEvent(`${action}_error`, {
 						props: {
 							namespace,

@@ -1,11 +1,3 @@
-import {
-	defaultPropsParameterWrapper,
-	ParameterLabelComponent,
-	ParameterWrapperComponent,
-	PropsParameter,
-	PropsParameterWrapper,
-	useParameterComponentCommons,
-} from "@AppBuilderLib/entities/parameter";
 import {useViewportId} from "@AppBuilderLib/entities/viewport";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {Logger} from "@AppBuilderLib/shared/lib";
@@ -13,17 +5,27 @@ import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
 import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
 import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
+import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
 import {
 	DraggingParameterValue,
 	IDraggingParameterProps,
 	validateDraggingParameterSettings,
 } from "@shapediver/viewer.session";
+import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
+import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
-	useDragging,
-	useShapeDiverStoreInteractionRequestManagement,
-} from "../model";
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "../config/propsParameter";
+import type {ParameterDraggingComponentStyleProps as StyleProps} from "../config/theme/parameterDraggingComponentTheme";
+import {useDragging} from "../model/interaction/useDragging";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
+import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 /**
  * Parse the value of a dragging parameter and extract the dragged objects
@@ -44,13 +46,52 @@ const parseDraggedNodes = (
 	}
 };
 
+const defaultStyleProps: StyleProps = {
+	draggingColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#0d44f0",
+			kernelSize: KernelSize.LARGE,
+			visibleEdgeColor: "#0d44f0",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+	availableColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#ffffff",
+			kernelSize: KernelSize.LARGE,
+			pulseSpeed: 0.5,
+			visibleEdgeColor: "#ffffff",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+	hoverColor: {
+		properties: {
+			blendFunction: BlendFunction.ALPHA,
+			blur: true,
+			edgeStrength: 10,
+			hiddenEdgeColor: "#ffffff",
+			kernelSize: KernelSize.LARGE,
+			visibleEdgeColor: "#ffffff",
+		},
+		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+	} as IInteractionEffect,
+};
+
 /**
  * Functional component that creates a switch component for a dragging parameter.
  *
  * @returns
  */
 export default function ParameterDraggingComponent(
-	props: PropsParameter & Partial<PropsParameterWrapper>,
+	props: PropsParameter &
+		Partial<PropsParameterWrapper> &
+		Partial<IDraggingParameterProps>,
 ) {
 	const {
 		actions,
@@ -63,6 +104,12 @@ export default function ParameterDraggingComponent(
 		state,
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
+
+	const {draggingColor, availableColor, hoverColor} = useProps(
+		"ParameterDraggingComponent",
+		defaultStyleProps,
+		props,
+	);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterDraggingComponent",
@@ -81,7 +128,11 @@ export default function ParameterDraggingComponent(
 	const draggingProps = useMemo(() => {
 		const result = validateDraggingParameterSettings(definition.settings);
 		if (result.success) {
-			return result.data.props as IDraggingParameterProps;
+			const props = result.data.props as IDraggingParameterProps;
+			if (!props.draggingColor) props.draggingColor = draggingColor;
+			if (!props.availableColor) props.availableColor = availableColor;
+			if (!props.hoverColor) props.hoverColor = hoverColor;
+			return props;
 		} else {
 			notifications.error({
 				title: "Invalid Parameter Settings",
@@ -90,9 +141,13 @@ export default function ParameterDraggingComponent(
 			Logger.warn(
 				`Invalid settings for Dragging parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 			);
-			return {};
+			return {
+				draggingColor,
+				availableColor,
+				hoverColor,
+			} as IDraggingParameterProps;
 		}
-	}, [definition.settings]);
+	}, [definition.settings, draggingColor, availableColor]);
 
 	// is the dragging active or not?
 	const [draggingActive, setDraggingActive] = useState<boolean>(
@@ -179,7 +234,7 @@ export default function ParameterDraggingComponent(
 			draggedNodes,
 		);
 		const parameterValue: DraggingParameterValue = {objects: objects};
-		lastConfirmedValueRef.current = [...draggedNodes];
+		lastConfirmedValueRef.current = structuredClone(draggedNodes);
 
 		// if the value is already the same, do not change it
 		if (value === JSON.stringify(parameterValue)) return;
@@ -193,7 +248,10 @@ export default function ParameterDraggingComponent(
 	 */
 	const resetValue = useCallback(
 		(resetValue?: DraggingParameterValue["objects"]) => {
-			restoreDraggedNodes(resetValue, draggedNodes);
+			restoreDraggedNodes(
+				structuredClone(resetValue),
+				structuredClone(draggedNodes),
+			);
 			setDraggingActive(false);
 			setDraggedNodes(resetValue ?? []);
 			lastConfirmedValueRef.current = [...(resetValue ?? [])];

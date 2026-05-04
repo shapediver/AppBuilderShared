@@ -1,7 +1,5 @@
-import {
-	useSelection,
-	useShapeDiverStoreInteractionRequestManagement,
-} from "@AppBuilderLib/entities/parameter";
+import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
+import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
 import {ISelectionParameterProps} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
@@ -69,12 +67,6 @@ export function useAnchorSelection(
 		};
 	}, [selectionProperties]);
 
-	const selectionActive = useMemo(() => {
-		if (!selectionProperties) return false;
-
-		return aboveMobileBreakpoint;
-	}, [selectionProperties]);
-
 	const cleanSelectionProps = useMemo(() => {
 		return {
 			...selectionProperties,
@@ -88,7 +80,8 @@ export function useAnchorSelection(
 		useSelection(
 			viewportId,
 			cleanSelectionProps,
-			selectionActive && selectionAllowed && !processActive,
+			!!selectionProperties && selectionAllowed,
+			selectedNodeNamesCache[`${viewportId}-${id}`] || [],
 		);
 
 	/**
@@ -96,21 +89,30 @@ export function useAnchorSelection(
 	 * This ensures that the selection is preserved when the hook reloads.
 	 */
 	useEffect(() => {
+		if (!selectionProperties || !selectionAllowed) return;
 		setSelectedNodeNamesAndRestoreSelection(
 			selectedNodeNamesCache[`${viewportId}-${id}`] || [],
 		);
-	}, [viewportId, id]);
+	}, [viewportId, id, selectionProperties, selectionAllowed]);
 
 	const updateShowContentCallback = useCallback(
 		(selectedNodeNames: string[]) => {
 			if (!selectionProperties) return;
+			if (processActive) return;
 			if (selectedNodeNames.length > 0 && !showContent) {
 				updateShowContent(viewportId, id, true);
 			} else if (selectedNodeNames.length === 0 && showContent) {
 				updateShowContent(viewportId, id, false);
 			}
 		},
-		[showContent, selectionProperties, viewportId, id, updateShowContent],
+		[
+			showContent,
+			selectionProperties,
+			viewportId,
+			id,
+			updateShowContent,
+			processActive,
+		],
 	);
 
 	const updateShowContentCallbackRef = useRef(updateShowContentCallback);

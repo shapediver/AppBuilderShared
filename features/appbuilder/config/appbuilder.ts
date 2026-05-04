@@ -1,5 +1,5 @@
 import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export";
-import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter";
+import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {SessionCreateDto} from "@AppBuilderLib/entities/session";
 import {IconType} from "@AppBuilderLib/shared/ui/icon";
 import {IAppBuilderWidgetPropsTable} from "@AppBuilderLib/widgets/appbuilder/config/appbuildertable";
@@ -128,7 +128,12 @@ export interface IStringParameterSettings {
 export interface INumberParameterSettings extends Pick<
 	SliderProps,
 	"marks" | "restrictToMarks" | "step"
-> {}
+> {
+	/** Override the minimum value of the slider (can only increase the parameter's min). */
+	min?: number;
+	/** Override the maximum value of the slider (can only decrease the parameter's max). */
+	max?: number;
+}
 
 /** Reference to a parameter (custom or defined by the session) */
 export interface IAppBuilderParameterRef {

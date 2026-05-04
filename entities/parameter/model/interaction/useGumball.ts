@@ -1,21 +1,21 @@
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
 import {
-	Gumball,
-	updateGumballTransformation,
-} from "@shapediver/viewer.features.gumball";
-import {
 	getNodesByName,
 	matchNodesWithPatterns,
 	OutputNodeNameFilterPatterns,
 	RestrictionProperties,
 } from "@shapediver/viewer.features.interaction";
 import {
-	IGumballParameterProps,
+	GumballTransform,
+	updateTransformation,
+} from "@shapediver/viewer.features.transformation-tools";
+import {
+	IGumballTransformParameterProps,
 	ISelectionParameterProps,
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
-import {useCallback, useEffect, useMemo, useRef} from "react";
+import {useCallback, useEffect, useId, useMemo, useRef} from "react";
 import {useRestrictions} from "../drawing";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useGumballEvents} from "./useGumballEvents";
@@ -87,7 +87,7 @@ export interface IGumballState {
 export function useGumball(
 	sessionIds: string[],
 	viewportId: string,
-	gumballProps: IGumballParameterProps,
+	gumballProps: IGumballTransformParameterProps,
 	activate: boolean,
 	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
 	strictNaming = true,
@@ -98,6 +98,8 @@ export function useGumball(
 	const viewportApi = useShapeDiverStoreViewport((state) => {
 		return state.viewports[viewportId];
 	});
+	// create a unique component ID
+	const componentId = useId();
 
 	// create the selection settings from the interaction settings
 	const selectionSettings = useMemo(() => {
@@ -132,6 +134,7 @@ export function useGumball(
 	// use the gumball events hook to get the transformed node names
 	const {transformedNodeNames, setTransformedNodeNames} = useGumballEvents(
 		selectedNodeNames,
+		componentId,
 		initialTransformedNodeNames,
 	);
 
@@ -145,7 +148,7 @@ export function useGumball(
 	}, [availableNodeNames, setSelectedNodeNamesAndRestoreSelection]);
 
 	// create a reference for the gumball
-	const gumballRef = useRef<Gumball | undefined>(undefined);
+	const gumballRef = useRef<GumballTransform | undefined>(undefined);
 
 	// use the restrictions
 	const {restrictions} = useRestrictions(gumballProps.restrictions);
@@ -224,10 +227,11 @@ export function useGumball(
 						: restrictionsToUse,
 			};
 
-			const gumball = new Gumball(
+			const gumball = new GumballTransform(
 				viewportApi,
 				Object.values(nodes).map((n) => n.node),
 				props,
+				componentId,
 			);
 			gumballRef.current = gumball;
 		}
@@ -239,7 +243,14 @@ export function useGumball(
 				gumballRef.current = undefined;
 			}
 		};
-	}, [viewportApi, sessionApis, selectedNodeNames, objects, restrictions]);
+	}, [
+		viewportApi,
+		sessionApis,
+		selectedNodeNames,
+		objects,
+		restrictions,
+		componentId,
+	]);
 
 	/**
 	 * Restore the transformed node names.
@@ -297,7 +308,7 @@ export function useGumball(
 
 				// update the gumball transformation
 				// in case the transformation matrix is undefined, the transformation will be reset
-				updateGumballTransformation(tn.node, transformationMatrix);
+				updateTransformation(tn.node, transformationMatrix);
 			});
 
 			setTransformedNodeNames(newTransformedNodeNames);

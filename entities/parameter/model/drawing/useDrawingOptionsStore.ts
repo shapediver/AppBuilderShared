@@ -7,15 +7,6 @@ interface DrawingOptionsStore {
 	// state for the distance labels
 	showDistanceLabels: boolean;
 	setShowDistanceLabels: (show: boolean) => void;
-	// state for the snap to vertices
-	snapToVertices: boolean;
-	setSnapToVertices: (snap: boolean) => void;
-	// state for the snap to edges
-	snapToEdges: boolean;
-	setSnapToEdges: (snap: boolean) => void;
-	// state for the snap to faces
-	snapToFaces: boolean;
-	setSnapToFaces: (snap: boolean) => void;
 }
 
 /**
@@ -30,10 +21,4 @@ export const useDrawingOptionsStore = create<DrawingOptionsStore>((set) => ({
 	setShowPointLabels: (show: boolean) => set({showPointLabels: show}),
 	showDistanceLabels: true,
 	setShowDistanceLabels: (show: boolean) => set({showDistanceLabels: show}),
-	snapToVertices: true,
-	setSnapToVertices: (snap: boolean) => set({snapToVertices: snap}),
-	snapToEdges: true,
-	setSnapToEdges: (snap: boolean) => set({snapToEdges: snap}),
-	snapToFaces: true,
-	setSnapToFaces: (snap: boolean) => set({snapToFaces: snap}),
 }));

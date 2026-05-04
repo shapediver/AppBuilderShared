@@ -1,4 +1,4 @@
-import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport";
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 import {
 	devtoolsSettings,
 	IProcess,

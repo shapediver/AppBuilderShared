@@ -1,9 +1,10 @@
 import {
 	filterAndValidateParameters,
 	generateParameterFeedback,
-	getParameterStates,
 	isImportParameterArray,
-} from "@AppBuilderLib/entities/parameter";
+} from "../lib/parametersFilter";
+import {resolveParameterExportValue} from "../lib/resolveParameterExportValue";
+import {getParameterStates} from "../lib/parameterStates";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications";
 import {
 	ErrorReportingContext,
@@ -40,7 +41,11 @@ export function useParameterImportExport(namespace: string) {
 	const exportParameters = useCallback(async () => {
 		const parameterArray = getParameterStates(namespace).map((param) => ({
 			id: param.definition.id,
-			value: param.state.execValue,
+			value: resolveParameterExportValue({
+				definitionType: param.definition.type,
+				execValue: param.state.execValue,
+				stringExecValue: () => param.state.stringExecValue(),
+			}),
 			name: param.definition.name,
 		}));
 

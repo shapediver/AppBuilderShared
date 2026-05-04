@@ -1,4 +1,4 @@
-import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter";
+import {IShapeDiverParameterDefinition} from "../config/parameter";
 
 /**
  * Build validation function for a parameter from its settings.

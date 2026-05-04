@@ -1,12 +1,8 @@
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
 import {
 	createDrawingTools,
-	GeometryRestrictionApi,
-	GeometryRestrictionProperties,
 	IDrawingToolsApi,
 	PointsData,
-	RESTRICTION_TYPE,
-	RestrictionProperties,
 	Settings,
 } from "@shapediver/viewer.features.drawing-tools";
 import {useEffect, useState} from "react";
@@ -44,12 +40,6 @@ export function useDrawingToolsApi(
 		setShowPointLabels,
 		showDistanceLabels,
 		setShowDistanceLabels,
-		snapToVertices,
-		setSnapToVertices,
-		snapToEdges,
-		setSnapToEdges,
-		snapToFaces,
-		setSnapToFaces,
 	} = useDrawingOptionsStore();
 
 	// get the viewport API
@@ -99,51 +89,6 @@ export function useDrawingToolsApi(
 			} else {
 				// set the drawing tools options from the store
 				drawingToolsApi.showDistanceLabels = showDistanceLabels;
-			}
-
-			const restrictions: {
-				[key: string]: RestrictionProperties;
-			} =
-				drawingToolsSettings.restrictions !== undefined
-					? (drawingToolsSettings.restrictions as {
-							[key: string]: RestrictionProperties;
-						})
-					: {};
-
-			// find the first geometry restriction
-			const geometryRestriction = Object.values(restrictions).find(
-				(r: RestrictionProperties) =>
-					r.type === RESTRICTION_TYPE.GEOMETRY,
-			) as GeometryRestrictionProperties;
-
-			if (geometryRestriction?.snapToVertices !== undefined) {
-				// update the store with the drawing tools options (the drawing tools are already updated correctly)
-				setSnapToVertices(geometryRestriction?.snapToVertices);
-			} else {
-				// set the drawing tools options from the store
-				Object.values(drawingToolsApi.restrictions)
-					.filter((r) => r instanceof GeometryRestrictionApi)
-					.forEach((p) => (p.snapToVertices = snapToVertices));
-			}
-
-			if (geometryRestriction?.snapToEdges !== undefined) {
-				// update the store with the drawing tools options (the drawing tools are already updated correctly)
-				setSnapToEdges(geometryRestriction?.snapToEdges);
-			} else {
-				// set the drawing tools options from the store
-				Object.values(drawingToolsApi.restrictions)
-					.filter((r) => r instanceof GeometryRestrictionApi)
-					.forEach((p) => (p.snapToEdges = snapToEdges));
-			}
-
-			if (geometryRestriction?.snapToFaces !== undefined) {
-				// update the store with the drawing tools options (the drawing tools are already updated correctly)
-				setSnapToFaces(geometryRestriction?.snapToFaces);
-			} else {
-				// set the drawing tools options from the store
-				Object.values(drawingToolsApi.restrictions)
-					.filter((r) => r instanceof GeometryRestrictionApi)
-					.forEach((p) => (p.snapToFaces = snapToFaces));
 			}
 
 			drawingToolsApis[viewportId] = drawingToolsApi;

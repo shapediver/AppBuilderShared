@@ -4,7 +4,6 @@ import {MarkdownWidgetComponent} from "@AppBuilderLib/shared/ui/markdown";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	Button,
-	Checkbox,
 	Collapse,
 	Group,
 	MantineSize,
@@ -40,12 +39,6 @@ export default function DrawingOptionsComponent(props: {
 		setShowPointLabels,
 		showDistanceLabels,
 		setShowDistanceLabels,
-		snapToVertices,
-		setSnapToVertices,
-		snapToEdges,
-		setSnapToEdges,
-		snapToFaces,
-		setSnapToFaces,
 	} = useDrawingOptionsStore();
 
 	const {drawingToolsApi, drawingToolsSettings, viewportId} = props;
@@ -90,31 +83,6 @@ export default function DrawingOptionsComponent(props: {
 					drawingToolsSettings.general.options.showDistanceLabels,
 				);
 			}
-
-			if (
-				drawingToolsSettings.general.options.snapToVertices !==
-				undefined
-			) {
-				setSnapToVertices(
-					drawingToolsSettings.general.options.snapToVertices,
-				);
-			}
-
-			if (
-				drawingToolsSettings.general.options.snapToEdges !== undefined
-			) {
-				setSnapToEdges(
-					drawingToolsSettings.general.options.snapToEdges,
-				);
-			}
-
-			if (
-				drawingToolsSettings.general.options.snapToFaces !== undefined
-			) {
-				setSnapToFaces(
-					drawingToolsSettings.general.options.snapToFaces,
-				);
-			}
 		}
 	}, [drawingToolsSettings]);
 
@@ -131,19 +99,6 @@ export default function DrawingOptionsComponent(props: {
 			viewportApi.render();
 		}
 	}, [showDistanceLabels, drawingToolsApi]);
-
-	useEffect(() => {
-		if (drawingToolsApi) {
-			const geometryRestrictionApis = Object.values(
-				drawingToolsApi.restrictions,
-			).filter((r) => r instanceof GeometryRestrictionApi);
-			geometryRestrictionApis.forEach((r) => {
-				(r as GeometryRestrictionApi).snapToVertices = snapToVertices;
-				(r as GeometryRestrictionApi).snapToEdges = snapToEdges;
-				(r as GeometryRestrictionApi).snapToFaces = snapToFaces;
-			});
-		}
-	}, [snapToVertices, snapToEdges, snapToFaces, drawingToolsApi]);
 
 	useEffect(() => {
 		if (drawingToolsApi) {
@@ -241,33 +196,6 @@ export default function DrawingOptionsComponent(props: {
 						}
 						label="Show Distance Labels"
 					/>
-				)}
-				{drawingToolsApi && hasGeometryRestriction && (
-					<>
-						<Text size={size}> Snap to </Text>
-						<Group>
-							<Checkbox
-								size={size}
-								checked={snapToVertices}
-								onChange={() =>
-									setSnapToVertices(!snapToVertices)
-								}
-								label="Vertices"
-							/>
-							<Checkbox
-								size={size}
-								checked={snapToEdges}
-								onChange={() => setSnapToEdges(!snapToEdges)}
-								label="Edges"
-							/>
-							<Checkbox
-								size={size}
-								checked={snapToFaces}
-								onChange={() => setSnapToFaces(!snapToFaces)}
-								label="Faces"
-							/>
-						</Group>
-					</>
 				)}
 			</Stack>
 		</Collapse>

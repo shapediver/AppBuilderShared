@@ -1,4 +1,4 @@
-import {UniversalMultiSelectComponentProps} from "@AppBuilderLib/entities/parameter";
+import type {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 import {
 	ComboboxParsedItem,
 	MultiSelect,

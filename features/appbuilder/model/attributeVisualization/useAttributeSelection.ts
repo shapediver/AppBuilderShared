@@ -1,13 +1,12 @@
-import {
-	useSelection,
-	useShapeDiverStoreInteractionRequestManagement,
-} from "@AppBuilderLib/entities/parameter";
+import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
+import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
 import {IAttributeDefinition} from "@AppBuilderLib/widgets/appbuilder";
 import {getNodesByName} from "@shapediver/viewer.features.interaction";
 import {
 	ISDTFAttributeData,
 	ITreeNode,
+	MATERIAL_TYPE,
 	SDTFItemData,
 	SessionApiData,
 } from "@shapediver/viewer.session";
@@ -161,7 +160,15 @@ export default function useAttributeSelection(
 			nameFilter: Object.values(nameFilter).flat(),
 			availableColor: null,
 			hover: true,
+			hoverColor: {
+				type: MATERIAL_TYPE.UNLIT,
+				color: "#ffffff",
+			},
 			deselectOnEmpty: true,
+			selectionColor: {
+				type: MATERIAL_TYPE.UNLIT,
+				color: "#0d44f0",
+			},
 		};
 	}, [nameFilter]);
 

@@ -21,6 +21,7 @@ export {
 } from "./ParameterFileInputComponent";
 
 export {default as ParameterGumballComponent} from "./ParameterGumballComponent";
+export {default as ParameterRectangleTransformComponent} from "./ParameterRectangleTransformComponent";
 
 export {
 	default as ParameterLabelComponent,

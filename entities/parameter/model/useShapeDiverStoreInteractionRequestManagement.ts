@@ -1,4 +1,4 @@
-import {IShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter";
+import type {IShapeDiverStoreInteractionRequestManagement} from "../config/shapediverStoreInteractionRequestManagement";
 import {devtoolsSettings} from "@AppBuilderLib/shared/config";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

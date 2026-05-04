@@ -40,7 +40,7 @@ import {
 } from "@shapediver/viewer.features.attribute-visualization";
 import {
 	ISDTFOverview,
-	MaterialStandardData,
+	MaterialUnlitData,
 	RENDERER_TYPE,
 	SDTF_TYPEHINT,
 	SdtfPrimitiveTypeGuard,
@@ -379,9 +379,9 @@ export default function AppBuilderAttributeVisualizationWidgetComponent(
 		if (isEnabled === false) return;
 		if (attributeVisualizationEngine) {
 			attributeVisualizationEngine.updateDefaultMaterial(
-				new MaterialStandardData({
-					color: passiveMaterial?.color || "#000",
-					opacity: passiveMaterial?.opacity || 0.1,
+				new MaterialUnlitData({
+					color: passiveMaterial?.color || "#666666",
+					opacity: passiveMaterial?.opacity || 1,
 				}),
 			);
 		}

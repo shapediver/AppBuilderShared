@@ -26,7 +26,10 @@ export const useStargateGetData = () => {
 	const errorReporting = useContext(ErrorReportingContext);
 
 	const getParameterData = useCallback(
-		async (parameterId: string): Promise<ISdStargateGetDataReplyDto[]> => {
+		async (
+			parameterId: string,
+			sessionId?: string,
+		): Promise<ISdStargateGetDataReplyDto[]> => {
 			// Reject any pending requests
 			// TODO This merely rejects the locally pending promises, but does not
 			// cancel any actions pending on the client side. We might want to
@@ -59,10 +62,12 @@ export const useStargateGetData = () => {
 					throw error;
 				}
 
-				const {currentModel} = useShapeDiverStorePlatform.getState();
+				const model = useShapeDiverStorePlatform
+					.getState()
+					.getModelForSession(sessionId);
 
-				if (!currentModel) {
-					const error = new Error("Current model not available");
+				if (!model) {
+					const error = new Error("Model not available");
 					errorReporting.captureException(error);
 					throw error;
 				}
@@ -94,7 +99,7 @@ export const useStargateGetData = () => {
 						command
 							.send(
 								{
-									model: {id: currentModel.id},
+									model: {id: model.id},
 									parameter: {id: parameterId},
 								},
 								[selectedClient],

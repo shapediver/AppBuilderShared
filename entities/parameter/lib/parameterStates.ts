@@ -1,5 +1,5 @@
-import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter";
-import {useShapeDiverStoreParameters} from "../model";
+import {IShapeDiverParameter} from "../config/parameter";
+import {useShapeDiverStoreParameters} from "../model/useShapeDiverStoreParameters";
 
 /**
  * Get the current parameter states for a given namespace.

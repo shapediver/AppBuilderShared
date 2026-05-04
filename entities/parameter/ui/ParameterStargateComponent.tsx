@@ -1,11 +1,11 @@
 import {
 	defaultPropsParameterWrapper,
-	ParameterLabelComponent,
-	ParameterWrapperComponent,
 	PropsParameter,
 	PropsParameterWrapper,
-	useParameterComponentCommons,
-} from "@AppBuilderLib/entities/parameter";
+} from "../config/propsParameter";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 import {
 	DefaultStargateStyleProps,
 	IStargateComponentStatusDefinition,

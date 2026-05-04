@@ -1,13 +1,13 @@
 import {
 	defaultPropsParameterWrapper,
-	ParameterLabelComponent,
-	ParameterWrapperComponent,
 	PropsParameterComponent,
 	PropsParameterWrapper,
-	useFocus,
-	useParameterComponentCommons,
-} from "@AppBuilderLib/entities/parameter";
-import {validateNumberParameterSettings} from "@AppBuilderLib/features/appbuilder";
+} from "../config/propsParameter";
+import {useFocus} from "../model/useFocus";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
+import {useSettingsMinMax} from "../model/useSettingsMinMax";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
 import {
 	Group,
@@ -130,11 +130,8 @@ export default function ParameterSliderComponent(
 		props,
 	);
 
-	const validatedSettings = useMemo(
-		() => validateNumberParameterSettings(definition?.settings),
-		[definition],
-	);
-
+	const {validatedSettings, min, max} =
+		useSettingsMinMax(definition);
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
 	// calculate the step size which depends on the parameter type
@@ -171,16 +168,14 @@ export default function ParameterSliderComponent(
 				? settingsMarks
 				: undefined;
 		const fallbackMarks = [
-			{value: +definition.min!, label: definition.min + ""},
-			{value: +definition.max!, label: definition.max + ""},
+			{value: +min!, label: min + ""},
+			{value: +max!, label: max + ""},
 		];
 		// pick provided marks or fallback, then drop anything outside min/max
 		return (providedMarks ?? fallbackMarks).filter((mark) => {
-			return (
-				mark.value >= +definition.min! && mark.value <= +definition.max!
-			);
+			return mark.value >= +min! && mark.value <= +max!;
 		});
-	}, [settingsMarks, definition]);
+	}, [settingsMarks, definition, min, max]);
 
 	const restrictToMarks = useMemo(
 		() =>
@@ -350,8 +345,8 @@ export default function ParameterSliderComponent(
 							w={sliderWidth}
 							label={valueClamped}
 							value={valueClamped}
-							min={+definition.min!}
-							max={+definition.max!}
+							min={min}
+							max={max}
 							step={step}
 							onChange={(v) => setValue(roundAndClamp(v))}
 							onChangeEnd={(v) =>

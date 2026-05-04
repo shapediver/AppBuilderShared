@@ -1,9 +1,9 @@
 import {
 	ParameterValueDefinition,
-	useParameters,
 	useResolveParameterValues,
-	useShapeDiverStoreParameters,
-} from "@AppBuilderLib/entities/parameter";
+} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
+import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParameters";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {IProcessDefinition} from "@AppBuilderLib/shared/config";
 import {Logger} from "@AppBuilderLib/shared/lib";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";

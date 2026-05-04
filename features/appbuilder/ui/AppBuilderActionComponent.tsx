@@ -1,4 +1,4 @@
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";

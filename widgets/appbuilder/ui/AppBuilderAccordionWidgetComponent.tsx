@@ -1,8 +1,6 @@
 import {PropsExport} from "@AppBuilderLib/entities/export";
-import {
-	AcceptRejectButtons,
-	PropsParameter,
-} from "@AppBuilderLib/entities/parameter";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import AcceptRejectButtons from "@AppBuilderLib/entities/parameter/ui/AcceptRejectButtons";
 import {IAppBuilderWidgetPropsAccordion} from "@AppBuilderLib/features/appbuilder";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useMemo} from "react";

@@ -1,8 +1,8 @@
+import {useCreateNameFilterPattern} from "@AppBuilderLib/entities/parameter/model/interaction/useCreateNameFilterPattern";
 import {
 	IUseFindNodesByPatternProps,
-	useCreateNameFilterPattern,
 	useFindNodesByPatterns,
-} from "@AppBuilderLib/entities/parameter";
+} from "@AppBuilderLib/entities/parameter/model/interaction/useFindNodesByPattern";
 import {
 	useShapeDiverStoreViewport,
 	useViewportId,

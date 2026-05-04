@@ -87,17 +87,32 @@ export function useHoverManager(
 	>();
 
 	useEffect(() => {
+		let cancelled = false;
 		const effect = parseInteractionEffect(settings?.hoverColor);
 
 		effect.then((e) => {
+			if (cancelled) return;
 			if (e) {
 				if (e instanceof Promise) {
-					e.then((e) => setHoverEffect(e as MaterialStandardData));
+					e.then((resolved) => {
+						if (cancelled) return;
+						const newEffect = resolved as MaterialStandardData;
+						setHoverEffect((prev) =>
+							JSON.stringify(prev) === JSON.stringify(newEffect)
+								? prev
+								: newEffect,
+						);
+					});
 				} else {
-					setHoverEffect(e as IInteractionEffect);
+					const newEffect = e as IInteractionEffect;
+					setHoverEffect((prev) =>
+						JSON.stringify(prev) === JSON.stringify(newEffect)
+							? prev
+							: newEffect,
+					);
 				}
-			} else if (settings?.hoverColor !== null) {
-				setHoverEffect({
+			} else if (settings !== undefined && settings.hoverColor !== null) {
+				const defaultWhite: IInteractionEffect = {
 					properties: {
 						blendFunction: BlendFunction.ALPHA,
 						blur: true,
@@ -107,12 +122,23 @@ export function useHoverManager(
 						visibleEdgeColor: "#ffffff",
 					},
 					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
-				});
+				} as IInteractionEffect;
+				setHoverEffect((prev) =>
+					JSON.stringify(prev) === JSON.stringify(defaultWhite)
+						? prev
+						: defaultWhite,
+				);
 			} else {
 				setHoverEffect(undefined);
 			}
 		});
-	}, [settings?.hoverColor]);
+
+		return () => {
+			cancelled = true;
+		};
+	}, [settings?.hoverColor, settings !== undefined]);
+
+	const settingsDefined = settings !== undefined;
 
 	// use an effect to create the hover manager
 	useEffect(() => {
@@ -138,7 +164,7 @@ export function useHoverManager(
 				setHoverManager(undefined);
 			}
 		};
-	}, [interactionEngine, settings, hoverEffect]);
+	}, [interactionEngine, settingsDefined, hoverEffect]);
 
 	return {
 		hoverManager,

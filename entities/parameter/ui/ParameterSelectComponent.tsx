@@ -1,12 +1,12 @@
 import {
 	defaultPropsParameterWrapper,
-	ParameterLabelComponent,
-	ParameterWrapperComponent,
 	PropsParameterComponent,
 	PropsParameterWrapper,
-	useFocus,
-	useParameterComponentCommons,
-} from "@AppBuilderLib/entities/parameter";
+} from "../config/propsParameter";
+import {useFocus} from "../model/useFocus";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,

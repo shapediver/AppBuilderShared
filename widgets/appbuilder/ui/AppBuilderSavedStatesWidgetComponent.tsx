@@ -1,8 +1,7 @@
-import {
-	SelectComponent,
-	SelectComponentPropsExt,
-	useShapeDiverStoreParameters,
-} from "@AppBuilderLib/entities/parameter";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import SelectComponent, {
+	type SelectComponentPropsExt,
+} from "@AppBuilderLib/entities/parameter/ui/select/SelectComponent";
 import {
 	AppBuilderContainerContext,
 	IAppBuilderWidgetPropsSavedStates,

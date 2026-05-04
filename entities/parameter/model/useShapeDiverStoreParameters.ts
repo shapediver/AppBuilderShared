@@ -7,32 +7,6 @@ import {
 	IShapeDiverOutputDefinition,
 } from "@AppBuilderLib/entities/output";
 import {
-	addValidator,
-	IAcceptRejectModeSelector,
-	IExportResponse,
-	IExportStore,
-	IExportStores,
-	IExportStoresPerSession,
-	IGenericParameterDefinition,
-	IGenericParameterExecutor,
-	IHistoryEntry,
-	IOutputStore,
-	IOutputStores,
-	IParameterChanges,
-	IParameterChangesPerSession,
-	IParameterStore,
-	IParameterStores,
-	IParameterStoresPerSession,
-	IPreExecutionHook,
-	ISessionDependency,
-	ISessionsHistoryState,
-	IShapeDiverParameter,
-	IShapeDiverParameterDefinition,
-	IShapeDiverParameterExecutor,
-	IShapeDiverParameterState,
-	IShapeDiverStoreParameters,
-} from "@AppBuilderLib/entities/parameter";
-import {
 	devtoolsSettings,
 	EventActionEnum,
 	IEventTracking,
@@ -57,6 +31,34 @@ import {
 import {produce} from "immer";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {
+	IShapeDiverParameter,
+	IShapeDiverParameterDefinition,
+	IShapeDiverParameterExecutor,
+	IShapeDiverParameterState,
+} from "../config/parameter";
+import {
+	IAcceptRejectModeSelector,
+	IExportResponse,
+	IExportStore,
+	IExportStores,
+	IExportStoresPerSession,
+	IGenericParameterDefinition,
+	IGenericParameterExecutor,
+	IHistoryEntry,
+	IOutputStore,
+	IOutputStores,
+	IParameterChanges,
+	IParameterChangesPerSession,
+	IParameterStore,
+	IParameterStores,
+	IParameterStoresPerSession,
+	IPreExecutionHook,
+	ISessionDependency,
+	ISessionsHistoryState,
+	IShapeDiverStoreParameters,
+} from "../config/shapediverStoreParameters";
+import {addValidator} from "../lib/parameterValidation";
 
 /**
  * Create an IShapeDiverParameterExecutor for a single parameter,
@@ -953,9 +955,29 @@ export const useShapeDiverStoreParameters =
 								return amendedValues;
 							} catch (e: any) {
 								// reset the parameter values in case of an error
-								if (store)
-									store.getState().actions.resetToExecValue();
-
+								if (store) {
+									Object.values(store).forEach((paramStore) =>
+										paramStore
+											.getState()
+											.actions.resetToExecValue(),
+									);
+								}
+								// reset the executing flag to unblock the UI when not all changes were accepted
+								if (!allChangesAccepted) {
+									set(
+										produce((state) => {
+											if (
+												namespace in
+												state.parameterChanges
+											)
+												state.parameterChanges[
+													namespace
+												].executing = false;
+										}),
+										false,
+										"executeChanges - error reset",
+									);
+								}
 								reject(e);
 							} finally {
 								if (allChangesAccepted)
@@ -1642,9 +1664,9 @@ export const useShapeDiverStoreParameters =
 							(acc, paramId) => {
 								const store = stores[paramId];
 								const {
-									definition: {defval},
+									state: {execValue},
 								} = store.getState();
-								acc[paramId] = defval!;
+								acc[paramId] = execValue!;
 
 								return acc;
 							},

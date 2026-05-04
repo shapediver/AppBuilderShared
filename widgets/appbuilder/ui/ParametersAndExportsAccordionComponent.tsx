@@ -3,13 +3,13 @@ import {
 	OutputStargateComponent,
 	PropsOutput,
 } from "@AppBuilderLib/entities/output";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {
 	isExportDefinition,
 	isOutputDefinition,
 	isParamDefinition,
-	PropsParameter,
 	useSortedParametersAndExports,
-} from "@AppBuilderLib/entities/parameter";
+} from "@AppBuilderLib/entities/parameter/model/useSortedParametersAndExports";
 import {
 	ComponentContext,
 	getExportComponent,

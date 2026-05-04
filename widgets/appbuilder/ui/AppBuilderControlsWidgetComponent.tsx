@@ -4,7 +4,8 @@ import {
 	PropsOutput,
 	useOutputs,
 } from "@AppBuilderLib/entities/output";
-import {PropsParameter, useParameters} from "@AppBuilderLib/entities/parameter";
+import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParameters";
 import {
 	AppBuilderActionFromType,
 	ComponentContext,

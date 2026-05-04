@@ -1,4 +1,4 @@
-import {parameterMultiSelect} from "@AppBuilderLib/entities/parameter";
+import {parameterMultiSelect} from "../../lib/parameterMultiSelect";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {Carousel} from "@mantine/carousel";
 import "@mantine/carousel/styles.css";

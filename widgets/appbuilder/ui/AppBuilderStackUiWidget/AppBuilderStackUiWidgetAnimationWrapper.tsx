@@ -112,6 +112,7 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 						inset: 0,
 						transform: `translateX(${stackPosition})`,
 						transition: `transform ${stackContext.animationDuration}ms ease`,
+						zIndex: 5,
 					}}
 				>
 					{children}

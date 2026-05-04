@@ -1,6 +1,6 @@
 # AppBuilderShared
 
-React hooks and components shared by ShapeDiver App Builder and other projects. This might eventually become an npm package.
+React hooks and components shared by [ShapeDiver App Builder](https://github.com/shapediver/AppBuilderSdk) and other projects. This might eventually become an npm package.
 
 ## <a name="getting-started">🚀 Getting Started</a>
 
