@@ -20,6 +20,7 @@ import {
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
+import {themeComponentDefaultPropsRegistry} from "./themeComponentDefaultPropsRegistry";
 
 // Recursive JSON-serializable value type
 export type JsonValue =
@@ -1345,13 +1346,48 @@ const IAppBuilderSettingsSettingsSchema = z.strictObject({
 });
 
 // Zod type definition for IAppBuilderSettingsJson
-const IAppBuilderSettingsJsonSchema = z.strictObject({
+const IAppBuilderSettingsJsonSchemaBase = z.strictObject({
 	version: z.literal("1.0"),
 	sessions: z.array(IAppBuilderSettingsSessionSchema).optional(),
 	settings: IAppBuilderSettingsSettingsSchema.optional(),
 	themeOverrides: MantineThemeOverrideSchema.optional(),
 	appBuilderOverride: IAppBuilderSchema.optional(),
 });
+
+const IAppBuilderSettingsJsonSchema = IAppBuilderSettingsJsonSchemaBase.superRefine(
+	(data, ctx) => {
+		const components = data.themeOverrides?.components as
+			| Record<string, {defaultProps?: unknown}>
+			| undefined;
+		if (!components || typeof components !== "object") return;
+
+		for (const [componentName, entry] of Object.entries(components)) {
+			const schema =
+				themeComponentDefaultPropsRegistry[
+					componentName as keyof typeof themeComponentDefaultPropsRegistry
+				];
+			if (!schema) continue;
+
+			if (entry?.defaultProps === undefined) continue;
+
+			const parsed = schema.safeParse(entry.defaultProps);
+			if (parsed.success) continue;
+
+			const basePath: (string | number)[] = [
+				"themeOverrides",
+				"components",
+				componentName,
+				"defaultProps",
+			];
+			for (const issue of parsed.error.issues) {
+				ctx.addIssue({
+					...issue,
+					path: [...basePath, ...issue.path],
+				});
+			}
+		}
+	},
+);
 
 export const validateAppBuilderSettingsJson = (value: any) => {
 	return IAppBuilderSettingsJsonSchema.safeParse(value);
