@@ -18,10 +18,21 @@ const templateMap: TemplateMapType = {
 	grid: AppBuilderGridTemplatePage,
 };
 
-interface StyleProps {
-	/** template to use */
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderTemplateSelector.defaultProps
+ * @displayName AppBuilderTemplateSelector
+ */
+export interface StyleProps {
+	/**
+	 * Layout template key to render
+	 * @default "appshell"
+	 */
 	template: AppBuilderTemplateType;
-	/** Should buttons for showing/hiding the containers be shown? */
+	/**
+	 * Show UI buttons for toggling template containers (top/left/right/bottom)
+	 * @default false
+	 */
 	showContainerButtons: boolean;
 }
 

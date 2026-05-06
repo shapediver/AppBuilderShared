@@ -13,15 +13,22 @@ interface Props {
 	children?: React.ReactNode;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.LoaderPage.defaultProps
+ * @displayName LoaderPage
+ */
+export interface StyleProps {
 	/**
 	 * Type of the loader
 	 * @see https://mantine.dev/core/loader/?t=props
+	 * @default "oval"
 	 */
 	type: string;
 	/**
 	 * Size of the loader
 	 * @see https://mantine.dev/core/loader/?t=props
+	 * @default "md"
 	 */
 	size: number | MantineSize;
 }

@@ -12,8 +12,16 @@ interface Props {
 	style?: StyleProp<React.CSSProperties>;
 }
 
-interface StyleProps {
-	/** padding */
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderVerticalContainer.defaultProps
+ * @displayName AppBuilderVerticalContainer
+ */
+export interface StyleProps {
+	/**
+	 * Stack padding
+	 * @default "xs"
+	 */
 	p: StyleProp<MantineSpacing>;
 }
 

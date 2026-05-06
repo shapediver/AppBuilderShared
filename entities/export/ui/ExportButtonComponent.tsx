@@ -71,15 +71,23 @@ const StatusDataMap: {
 	},
 };
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.ExportButtonComponent.defaultProps
+ * @displayName ExportButtonComponent
+ */
+export interface ExportButtonComponentStyleProps {
+	/** Mantine Button props for the main export action */
 	buttonProps?: Partial<ButtonProps>;
+	/** Tooltip wrapping the download button when applicable */
 	downloadTooltipProps: Partial<TooltipProps>;
+	/** Mantine Button props for the download control */
 	downloadButtonProps?: Partial<ButtonProps>;
 	/** When provided, hides the label header and uses this text as the button label. */
 	buttonLabel?: string;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<ExportButtonComponentStyleProps> = {
 	buttonProps: {
 		variant: "filled",
 		fullWidth: true,
@@ -93,7 +101,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type ExportButtonComponentThemePropsType = Partial<StyleProps>;
+type ExportButtonComponentThemePropsType = Partial<ExportButtonComponentStyleProps>;
 export function ExportButtonComponentThemeProps(
 	props: ExportButtonComponentThemePropsType,
 ): MantineThemeComponent {

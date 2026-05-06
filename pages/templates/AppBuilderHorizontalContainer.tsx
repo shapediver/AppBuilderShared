@@ -12,11 +12,36 @@ interface Props {
 	style?: StyleProp<React.CSSProperties>;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderHorizontalContainer.defaultProps
+ * @displayName AppBuilderHorizontalContainer
+ */
+export interface StyleProps {
+	/**
+	 * Group width
+	 * @default "100%"
+	 */
 	w: StyleProp<React.CSSProperties["width"]>;
+	/**
+	 * Group height
+	 * @default "100%"
+	 */
 	h: StyleProp<React.CSSProperties["width"]>;
+	/**
+	 * Flex justify-content
+	 * @default "center"
+	 */
 	justify: React.CSSProperties["justifyContent"];
+	/**
+	 * Flex wrap
+	 * @default "nowrap"
+	 */
 	wrap: React.CSSProperties["flexWrap"];
+	/**
+	 * Padding (Mantine spacing)
+	 * @default "xs"
+	 */
 	p: StyleProp<MantineSpacing>;
 }
 

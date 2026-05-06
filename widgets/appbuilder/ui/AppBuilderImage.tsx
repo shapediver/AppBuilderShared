@@ -15,9 +15,23 @@ import classes from "./AppBuilderImage.module.css";
 
 type Props = IAppBuilderWidgetPropsAnchor;
 
-type ImageStyleProps = Pick<ImageProps, "radius" | "mah" | "maw"> & {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderImage.defaultProps
+ * @displayName AppBuilderImage
+ */
+export type ImageStyleProps = Pick<ImageProps, "radius" | "mah" | "maw"> & {
+	/**
+	 * Object-fit behavior (see MDN `object-fit`). `scale-down` never upscales past intrinsic size.
+	 * @default "contain"
+	 */
 	fit?: "contain" | "scale-down";
+	/**
+	 * When true, applies bordered image styling.
+	 * @default false
+	 */
 	withBorder?: boolean;
+	/** When true, render via `Svg` instead of Mantine `Image`. */
 	isSvg?: boolean;
 };
 
@@ -25,17 +39,6 @@ type ImageNonStyleProps = Pick<ImageProps, "src"> & {alt?: string};
 
 const defaultStyleProps: Partial<ImageStyleProps> = {
 	radius: "md",
-	/**
-	 * Object-fit behavior to use for image widgets. This roughly follows the
-	 * behavior defined by https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit
-	 *
-	 *   * contain: The image is scaled to maintain its aspect ratio and to fill 100%
-	 *              of the available width or height of the App Builder container
-	 *              (depending on the orientation of the container).
-	 *
-	 *   * scale-down: The image is sized as if the value were "contain", but the
-	 *                 image will not be grown to more than 100% of its original size.
-	 */
 	fit: "contain",
 	withBorder: false,
 };

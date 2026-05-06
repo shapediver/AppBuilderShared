@@ -12,13 +12,19 @@ interface Props extends PropsExport {
 	rightSection?: React.ReactNode;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.ExportLabelComponent.defaultProps
+ * @displayName ExportLabelComponent
+ */
+export interface ExportLabelComponentStyleProps {
+	/** Font weight for the export title text (Mantine `fw` prop). */
 	fontWeight: string;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {};
+const defaultStyleProps: Partial<ExportLabelComponentStyleProps> = {};
 
-type ExportLabelComponentPropsType = Partial<StyleProps>;
+type ExportLabelComponentPropsType = Partial<ExportLabelComponentStyleProps>;
 
 export function ExportLabelComponentThemeProps(
 	props: ExportLabelComponentPropsType,
@@ -34,7 +40,7 @@ export function ExportLabelComponentThemeProps(
  * @returns
  */
 export default function ExportLabelComponent(
-	props: Props & Partial<StyleProps>,
+	props: Props & Partial<ExportLabelComponentStyleProps>,
 ) {
 	const {label, rightSection, ...rest} = props;
 	const notifications = useNotificationStore();
