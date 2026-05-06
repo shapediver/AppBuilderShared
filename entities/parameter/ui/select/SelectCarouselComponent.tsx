@@ -16,7 +16,12 @@ import {
 	SelectTextWeightedStyleProps,
 } from "./SelectComponent";
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.SelectCarouselComponent.defaultProps
+ * @displayName SelectCarouselComponent
+ */
+export interface SelectCarouselComponentStyleProps {
 	carouselProps: SelectCarouselStyleProps;
 	cardProps: SelectCardStyleProps;
 	imageProps: SelectImageStyleProps;
@@ -26,7 +31,7 @@ interface StyleProps {
 	showLabel: boolean;
 }
 
-export const defaultStyleProps: Partial<StyleProps> = {
+export const defaultStyleProps: Partial<SelectCarouselComponentStyleProps> = {
 	carouselProps: {
 		emblaOptions: {
 			align: "start",
@@ -56,7 +61,8 @@ export const defaultStyleProps: Partial<StyleProps> = {
 	showLabel: true,
 };
 
-type SelectCarouselComponentThemePropsType = Partial<StyleProps>;
+type SelectCarouselComponentThemePropsType =
+	Partial<SelectCarouselComponentStyleProps>;
 
 export function SelectCarouselComponentThemeProps(
 	props: SelectCarouselComponentThemePropsType,

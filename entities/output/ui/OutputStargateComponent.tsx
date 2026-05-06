@@ -16,7 +16,12 @@ import React from "react";
 import {useSdTFData} from "../model";
 import OutputChunkComponent from "./OutputChunkComponent";
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.OutputStargateComponent.defaultProps
+ * @displayName OutputStargateComponent
+ */
+export interface OutputStargateComponentStyleProps {
 	stackProps?: StackProps;
 	paperProps?: PaperProps;
 	accordionProps?: AccordionProps;
@@ -25,12 +30,12 @@ interface StyleProps {
 	accordionPanelProps?: AccordionPanelProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<OutputStargateComponentStyleProps> = {
 	paperProps: {shadow: "none"},
 };
 
 export function OutputStargateComponentThemeProps(
-	props: Partial<StyleProps>,
+	props: Partial<OutputStargateComponentStyleProps>,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
@@ -43,7 +48,7 @@ export function OutputStargateComponentThemeProps(
  * @returns
  */
 export default function OutputStargateComponent(
-	props: PropsOutput & StyleProps,
+	props: PropsOutput & Partial<OutputStargateComponentStyleProps>,
 ) {
 	const {namespace} = props;
 	const {definition} = useOutput(props) ?? {};

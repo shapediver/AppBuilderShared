@@ -18,19 +18,25 @@ interface Props extends PropsParameter {
 	label?: string;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.ParameterLabelComponent.defaultProps
+ * @displayName ParameterLabelComponent
+ */
+export interface ParameterLabelComponentStyleProps {
 	tooltipProps: Partial<TooltipProps>;
 	fontWeight: string;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<ParameterLabelComponentStyleProps> = {
 	tooltipProps: {
 		position: "top",
 		label: "Cancel change",
 	},
 };
 
-type ParameterLabelComponentPropsType = Partial<StyleProps>;
+type ParameterLabelComponentPropsType =
+	Partial<ParameterLabelComponentStyleProps>;
 
 export function ParameterLabelComponentThemeProps(
 	props: ParameterLabelComponentPropsType,
@@ -46,7 +52,7 @@ export function ParameterLabelComponentThemeProps(
  * @returns
  */
 export default function ParameterLabelComponent(
-	props: Props & Partial<StyleProps>,
+	props: Props & Partial<ParameterLabelComponentStyleProps>,
 ) {
 	const {cancel, rightSection, label, ...rest} = props;
 	const {fontWeight, tooltipProps} = useProps(

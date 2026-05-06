@@ -11,7 +11,12 @@ import {
 import React, {useCallback, useMemo} from "react";
 import {MultiSelectComponentProps} from "./MultiSelectComponent";
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.MultiSelectCheckboxes.defaultProps
+ * @displayName MultiSelectCheckboxes
+ */
+export interface MultiSelectCheckboxesStyleProps {
 	stackProps?: Partial<StackProps>;
 	checkboxProps?: Partial<CheckboxProps>;
 	checkboxPropsSelectAll?: Partial<CheckboxProps>;
@@ -19,7 +24,7 @@ interface StyleProps {
 	height?: string;
 }
 
-export const defaultStyleProps: Partial<StyleProps> = {
+export const defaultStyleProps: Partial<MultiSelectCheckboxesStyleProps> = {
 	stackProps: {
 		gap: "xs",
 	},
@@ -31,7 +36,7 @@ export const defaultStyleProps: Partial<StyleProps> = {
 	},
 	height: undefined,
 };
-type MultiSelectCheckboxesPropsType = Partial<StyleProps>;
+type MultiSelectCheckboxesPropsType = Partial<MultiSelectCheckboxesStyleProps>;
 
 export function MultiSelectCheckboxesProps(
 	props: MultiSelectCheckboxesPropsType,

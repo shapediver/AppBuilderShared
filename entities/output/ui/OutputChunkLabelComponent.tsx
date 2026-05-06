@@ -10,13 +10,20 @@ interface Props {
 	rightSection?: React.ReactNode;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.OutputChunkLabelComponent.defaultProps
+ * @displayName OutputChunkLabelComponent
+ */
+export interface OutputChunkLabelComponentStyleProps {
+	/** Font weight for chunk title (`fw` on label text). */
 	fontWeight: string;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {};
+const defaultStyleProps: Partial<OutputChunkLabelComponentStyleProps> = {};
 
-type OutputChunkLabelComponentPropsType = Partial<StyleProps>;
+type OutputChunkLabelComponentPropsType =
+	Partial<OutputChunkLabelComponentStyleProps>;
 
 export function OutputChunkLabelComponentThemeProps(
 	props: OutputChunkLabelComponentPropsType,
@@ -32,7 +39,7 @@ export function OutputChunkLabelComponentThemeProps(
  * @returns
  */
 export default function OutputChunkLabelComponent(
-	props: Props & Partial<StyleProps>,
+	props: Props & Partial<OutputChunkLabelComponentStyleProps>,
 ) {
 	const {fontWeight, rightSection, ...rest} = useProps(
 		"OutputChunkLabelComponent",

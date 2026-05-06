@@ -20,7 +20,12 @@ import {
 	SelectTextWeightedStyleProps,
 } from "./SelectComponent";
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.SelectGridComponent.defaultProps
+ * @displayName SelectGridComponent
+ */
+export interface SelectGridComponentStyleProps {
 	gridProps: SimpleGridProps;
 	cardProps: SelectCardStyleProps;
 	imageProps: SelectImageStyleProps;
@@ -36,7 +41,7 @@ interface StyleProps {
 	onSearch: (search: string) => void;
 }
 
-export const defaultStyleProps: Partial<StyleProps> = {
+export const defaultStyleProps: Partial<SelectGridComponentStyleProps> = {
 	gridProps: {
 		cols: 2,
 		spacing: "xs",
@@ -53,7 +58,8 @@ export const defaultStyleProps: Partial<StyleProps> = {
 	searchable: false,
 };
 
-export type SelectGridComponentThemePropsType = Partial<StyleProps>;
+export type SelectGridComponentThemePropsType =
+	Partial<SelectGridComponentStyleProps>;
 
 export function SelectGridComponentThemeProps(
 	props: SelectGridComponentThemePropsType,

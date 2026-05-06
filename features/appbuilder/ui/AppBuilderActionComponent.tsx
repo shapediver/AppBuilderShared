@@ -24,11 +24,26 @@ type Props = IAppBuilderActionPropsCommon &
 		canBeDisabledByParameter?: boolean;
 	};
 
-const defaultStyleProps: Partial<Props> = {
+/**
+ * Theme-driven Mantine `Button` defaults for action buttons.
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderActionComponent.defaultProps
+ * @displayName AppBuilderActionComponent
+ */
+export type AppBuilderActionComponentStyleProps = Partial<
+	Pick<
+		ButtonProps,
+		"variant" | "size" | "color" | "radius" | "fullWidth" | "justify"
+	>
+>;
+
+const defaultStyleProps: AppBuilderActionComponentStyleProps = {
 	variant: "filled",
 };
 
-type AppBuilderActionComponentThemePropsType = Partial<Props>;
+type AppBuilderActionComponentThemePropsType =
+	AppBuilderActionComponentStyleProps;
 
 export function AppBuilderActionComponentThemeProps(
 	props: AppBuilderActionComponentThemePropsType,
