@@ -1,6 +1,11 @@
 import type {MantineThemeComponent} from "@mantine/core";
 import type {InteractionEffect} from "@shapediver/viewer.shared.types";
 
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.ParameterDraggingComponent.defaultProps
+ * @displayName ParameterDraggingComponent
+ */
 export interface ParameterDraggingComponentStyleProps {
 	draggingColor?: InteractionEffect;
 	availableColor?: InteractionEffect;

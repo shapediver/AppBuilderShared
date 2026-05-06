@@ -39,7 +39,12 @@ import React, {useContext, useEffect, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderSavedStatesWidgetComponent.defaultProps
+ * @displayName AppBuilderSavedStatesWidgetComponent
+ */
+export interface AppBuilderSavedStatesWidgetComponentStyleProps {
 	selectProps?: Partial<SelectComponentPropsExt> & {
 		type: SavedStatesVisualization;
 	};
@@ -49,7 +54,7 @@ interface StyleProps {
 	loaderProps?: LoaderProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<AppBuilderSavedStatesWidgetComponentStyleProps> = {
 	selectProps: {
 		type: "fullwidthcards",
 	},
@@ -65,7 +70,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type AppBuilderSavedStatesWidgetThemePropsType = Partial<StyleProps>;
+type AppBuilderSavedStatesWidgetThemePropsType = Partial<AppBuilderSavedStatesWidgetComponentStyleProps>;
 
 export function AppBuilderSavedStatesWidgetComponentThemeProps(
 	props: AppBuilderSavedStatesWidgetThemePropsType,

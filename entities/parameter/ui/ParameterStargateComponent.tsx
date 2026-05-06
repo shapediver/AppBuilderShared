@@ -60,13 +60,18 @@ const StatusDataMap: {
 	},
 };
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.ParameterStargateComponent.defaultProps
+ * @displayName ParameterStargateComponent
+ */
+export interface ParameterStargateComponentStyleProps {
 	tooltipProps: Partial<TooltipProps>;
 	actionIconProps: Partial<ActionIconProps>;
 	iconProps: IconProps;
 }
 
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps: ParameterStargateComponentStyleProps = {
 	tooltipProps: {
 		position: "top",
 		label: "Clear selection",
@@ -85,7 +90,8 @@ const defaultStyleProps: StyleProps = {
 	},
 };
 
-type ParameterStargateComponentThemePropsType = Partial<StyleProps>;
+type ParameterStargateComponentThemePropsType =
+	Partial<ParameterStargateComponentStyleProps>;
 
 export function ParameterStargateComponentThemeProps(
 	props: ParameterStargateComponentThemePropsType,
@@ -103,7 +109,7 @@ export function ParameterStargateComponentThemeProps(
 export default function ParameterStargateComponent(
 	props: PropsParameter &
 		Partial<PropsParameterWrapper> &
-		Partial<StyleProps> &
+		Partial<ParameterStargateComponentStyleProps> &
 		Partial<StargateStyleProps>,
 ) {
 	const {definition, value, handleChange, onCancel, disabled} =

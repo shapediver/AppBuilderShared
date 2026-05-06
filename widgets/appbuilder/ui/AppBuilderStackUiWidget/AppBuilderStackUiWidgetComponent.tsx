@@ -13,6 +13,17 @@ interface Props {
 	children: React.ReactNode;
 }
 
+/**
+ * Theme props for stack UI (merged content + button surfaces). Consumed via `useProps("AppBuilderStackUiWidgetComponent", …)` in child components.
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderStackUiWidgetComponent.defaultProps
+ * @displayName AppBuilderStackUiWidgetComponent
+ */
+export type AppBuilderStackUiWidgetComponentStyleProps = Partial<
+	StylePropsContent & StylePropsButton
+>;
+
 type AppBuilderStackUiWidgetComponentThemePropsType = Partial<
 	StylePropsContent & StylePropsButton
 >;

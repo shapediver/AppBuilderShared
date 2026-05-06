@@ -84,13 +84,18 @@ const coreRowModel = getCoreRowModel<RecordType>();
 const filteredRowModel = getFilteredRowModel<RecordType>();
 const sortedRowModel = getSortedRowModel<RecordType>();
 
-type StyleProps = {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderTableWidgetComponent.defaultProps
+ * @displayName AppBuilderTableWidgetComponent
+ */
+export interface AppBuilderTableWidgetComponentStyleProps {
 	tableProps?: Partial<TableProps>;
 	searchTextInputProps?: Partial<TextInputProps>;
 	searchBarProps?: Partial<BoxProps>;
-};
+}
 
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps: AppBuilderTableWidgetComponentStyleProps = {
 	tableProps: {},
 	searchTextInputProps: {size: "xs"},
 	searchBarProps: {
@@ -102,7 +107,7 @@ const defaultStyleProps: StyleProps = {
 	},
 };
 
-type AppBuilderTableWidgetComponentThemePropsType = Partial<StyleProps>;
+type AppBuilderTableWidgetComponentThemePropsType = Partial<AppBuilderTableWidgetComponentStyleProps>;
 
 export function AppBuilderTableWidgetComponentThemeProps(
 	props: AppBuilderTableWidgetComponentThemePropsType,

@@ -27,13 +27,18 @@ import {
 } from "@mantine/core";
 import React, {ReactElement, useContext, useMemo} from "react";
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderControlsWidgetComponent.defaultProps
+ * @displayName AppBuilderControlsWidgetComponent
+ */
+export interface AppBuilderControlsWidgetComponentStyleProps {
 	stackProps?: StackProps;
 	elementPaperProps?: PaperProps;
 	outputPaperProps?: PaperProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<AppBuilderControlsWidgetComponentStyleProps> = {
 	stackProps: {},
 	elementPaperProps: {
 		shadow: "none",
@@ -41,7 +46,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	outputPaperProps: {px: 0, py: 0, withBorder: false, shadow: "md"},
 };
 
-type AppBuilderControlsWidgetComponentThemePropsType = Partial<StyleProps>;
+type AppBuilderControlsWidgetComponentThemePropsType = Partial<AppBuilderControlsWidgetComponentStyleProps>;
 
 export function AppBuilderControlsWidgetComponentThemeProps(
 	props: AppBuilderControlsWidgetComponentThemePropsType,

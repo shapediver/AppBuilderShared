@@ -24,6 +24,11 @@ type ThemeOverridePerContainerType = {
 	[key: string]: {[key: string]: MantineThemeOverride};
 };
 
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderContainerWrapper.defaultProps
+ * @displayName AppBuilderContainerWrapper
+ */
 export interface IAppBuilderContainerWrapperStyleProps {
 	/** Theme overrides per container */
 	containerThemeOverrides: ThemeOverridePerContainerType;

@@ -17,15 +17,20 @@ import {
 } from "@mantine/core";
 import React from "react";
 
-type StyleProps = {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderRoundChartWidgetComponent.defaultProps
+ * @displayName AppBuilderRoundChartWidgetComponent
+ */
+export interface AppBuilderRoundChartWidgetComponentStyleProps {
 	widgetProps?: Partial<PaperProps>;
 	titleProps?: Partial<TitleProps>;
 	pieChartProps?: Partial<PieChartProps>;
 	donutChartProps?: Partial<DonutChartProps>;
 	badgeProps?: Partial<BadgeProps>;
-};
+}
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<AppBuilderRoundChartWidgetComponentStyleProps> = {
 	widgetProps: {},
 	titleProps: {},
 	pieChartProps: {
@@ -39,7 +44,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type AppBuilderRoundChartWidgetComponentThemePropsType = Partial<StyleProps>;
+type AppBuilderRoundChartWidgetComponentThemePropsType = Partial<AppBuilderRoundChartWidgetComponentStyleProps>;
 
 export function AppBuilderRoundChartWidgetComponentThemeProps(
 	props: AppBuilderRoundChartWidgetComponentThemePropsType,

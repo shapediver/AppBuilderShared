@@ -26,7 +26,12 @@ import {
 } from "./SelectComponent";
 import classes from "./SelectFullWidthCards.module.css";
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.SelectFullWidthCardsComponent.defaultProps
+ * @displayName SelectFullWidthCardsComponent
+ */
+export interface SelectFullWidthCardsComponentStyleProps {
 	cardProps: SelectCardStyleProps;
 	groupProps: SelectGroupStyleProps;
 	imageProps: SelectImageStyleProps;
@@ -42,7 +47,7 @@ interface StyleProps {
 	onSearch: (search: string) => void;
 }
 
-export const defaultStyleProps: Partial<StyleProps> = {
+export const defaultStyleProps: Partial<SelectFullWidthCardsComponentStyleProps> = {
 	cardProps: {},
 	groupProps: {wrap: "nowrap"},
 	imageProps: {
@@ -57,7 +62,7 @@ export const defaultStyleProps: Partial<StyleProps> = {
 	searchable: false,
 };
 
-export type SelectFullWidthCardsComponentThemePropsType = Partial<StyleProps>;
+export type SelectFullWidthCardsComponentThemePropsType = Partial<SelectFullWidthCardsComponentStyleProps>;
 
 export function SelectFullWidthCardsComponentThemeProps(
 	props: SelectFullWidthCardsComponentThemePropsType,

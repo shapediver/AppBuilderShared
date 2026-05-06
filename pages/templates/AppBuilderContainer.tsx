@@ -30,6 +30,15 @@ type AppBuilderContainerThemePropsType = Partial<StyleProps> &
 	AppBuilderVerticalContainerThemePropsType &
 	AppBuilderHorizontalContainerThemePropsType;
 
+/**
+ * Orientation plus forwarded horizontal / vertical container theme props for {@link AppBuilderContainer}.
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderContainer.defaultProps
+ * @displayName AppBuilderContainer
+ */
+export type AppBuilderContainerStyleProps = AppBuilderContainerThemePropsType;
+
 export function AppBuilderContainerThemeProps(
 	props: AppBuilderContainerThemePropsType,
 ): MantineThemeComponent {

@@ -70,19 +70,24 @@ export type IAttributeDefinition =
 	| IStringAttribute
 	| IDefaultAttribute;
 
-type StyleProps = {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderAttributeVisualizationWidgetComponent.defaultProps
+ * @displayName AppBuilderAttributeVisualizationWidgetComponent
+ */
+export interface AppBuilderAttributeVisualizationWidgetComponentStyleProps {
 	widgetProps?: Partial<PaperProps>;
 	widgetGroupProps?: Partial<GroupProps>;
 	titleProps?: Partial<TitleProps>;
-};
-const defaultStyleProps: Partial<StyleProps> = {
+}
+const defaultStyleProps: Partial<AppBuilderAttributeVisualizationWidgetComponentStyleProps> = {
 	widgetGroupProps: {
 		justify: "space-between",
 		mb: "xs",
 	},
 };
 
-type AppBuilderAttributeVisualizationWidgetThemePropsType = Partial<StyleProps>;
+type AppBuilderAttributeVisualizationWidgetThemePropsType = Partial<AppBuilderAttributeVisualizationWidgetComponentStyleProps>;
 
 const defaultGeneralGradient: Gradient = ATTRIBUTE_VISUALIZATION.TURBO;
 const defaultNumberGradient: Gradient = ATTRIBUTE_VISUALIZATION.VIRIDIS;

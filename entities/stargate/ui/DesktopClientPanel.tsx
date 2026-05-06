@@ -82,7 +82,12 @@ export const NetworkStatusIcons: Record<NetworkStatus, INetworkStatusIcon> = {
 
 type Props = IAppBuilderWidgetPropsDesktopClientSelection;
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.DesktopClientPanel.defaultProps
+ * @displayName DesktopClientPanel
+ */
+export interface DesktopClientPanelStyleProps {
 	iconStatusProps?: ActionIconProps;
 	alertProps?: AlertProps;
 	alertTextProps?: TextProps;
@@ -98,7 +103,7 @@ interface StyleProps {
 	statusIconProps?: Partial<IconProps>;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<DesktopClientPanelStyleProps> = {
 	iconStatusProps: {
 		variant: "subtle",
 		size: "2.25rem",
@@ -151,14 +156,14 @@ const defaultStyleProps: Partial<StyleProps> = {
 };
 
 export function DesktopClientPanelThemeProps(
-	props: Partial<Props> & Partial<StyleProps>,
+	props: Partial<Props> & Partial<DesktopClientPanelStyleProps>,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
 	};
 }
 
-export default function DesktopClientPanel(props: Props & StyleProps) {
+export default function DesktopClientPanel(props: Props & DesktopClientPanelStyleProps) {
 	const notifications = useNotificationStore();
 
 	const {

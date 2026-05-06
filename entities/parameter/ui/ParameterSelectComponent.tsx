@@ -29,14 +29,19 @@ interface ISelectComponentOverrides {
 	settings?: SelectComponentSettings;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.ParameterSelectComponent.defaultProps
+ * @displayName ParameterSelectComponent
+ */
+export interface ParameterSelectComponentStyleProps {
 	/** Defines settings for select components per parameter name. */
-	componentSettings: Record<string, ISelectComponentOverrides>;
+	componentSettings?: Record<string, ISelectComponentOverrides>;
 }
 
-export const defaultStyleProps: Partial<StyleProps> = {};
+export const defaultStyleProps: Partial<ParameterSelectComponentStyleProps> = {};
 
-type ParameterSelectComponentThemePropsType = Partial<StyleProps>;
+type ParameterSelectComponentThemePropsType = Partial<ParameterSelectComponentStyleProps>;
 
 export function ParameterSelectComponentThemeProps(
 	props: ParameterSelectComponentThemePropsType,

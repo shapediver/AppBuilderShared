@@ -60,7 +60,12 @@ interface Props {
 	namespace?: string;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.ParametersAndExportsAccordionComponent.defaultProps
+ * @displayName ParametersAndExportsAccordionComponent
+ */
+export interface ParametersAndExportsAccordionComponentStyleProps {
 	/**
 	 * Name of group to use for parameters and exports which are not assigned to a group.
 	 * Leave this empty to not display such parameters and exports inside of an accordion.
@@ -123,7 +128,7 @@ interface StyleProps {
 	panelStackProps?: StackProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<ParametersAndExportsAccordionComponentStyleProps> = {
 	avoidSingleComponentGroups: true,
 	mergeAccordions: false,
 	pbSlider: "md",
@@ -133,7 +138,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 };
 
 export function ParametersAndExportsAccordionComponentThemeProps(
-	props: Partial<StyleProps>,
+	props: Partial<ParametersAndExportsAccordionComponentStyleProps>,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
@@ -141,7 +146,7 @@ export function ParametersAndExportsAccordionComponentThemeProps(
 }
 
 export default function ParametersAndExportsAccordionComponent(
-	props: Props & StyleProps,
+	props: Props & ParametersAndExportsAccordionComponentStyleProps,
 ) {
 	const {parameters, exports, outputs, topSection, namespace, ...rest} =
 		props;

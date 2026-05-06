@@ -13,13 +13,18 @@ import {
 } from "@mantine/core";
 import React from "react";
 
-type StyleProps = {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderAreaChartWidgetComponent.defaultProps
+ * @displayName AppBuilderAreaChartWidgetComponent
+ */
+export interface AppBuilderAreaChartWidgetComponentStyleProps {
 	widgetProps?: Partial<PaperProps>;
 	titleProps?: Partial<TitleProps>;
 	areaChartProps?: Partial<AreaChartProps>;
-};
+}
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<AppBuilderAreaChartWidgetComponentStyleProps> = {
 	widgetProps: {},
 	titleProps: {
 		style: {marginBottom: "20px"},
@@ -29,7 +34,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type AppBuilderAreaChartWidgetComponentThemePropsType = Partial<StyleProps>;
+type AppBuilderAreaChartWidgetComponentThemePropsType = Partial<AppBuilderAreaChartWidgetComponentStyleProps>;
 
 export function AppBuilderAreaChartWidgetComponentThemeProps(
 	props: AppBuilderAreaChartWidgetComponentThemePropsType,

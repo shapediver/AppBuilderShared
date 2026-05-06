@@ -9,15 +9,22 @@ import {ISessionApi} from "@shapediver/viewer.session";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 
-interface ThemeProps {
+/**
+ * Theme defaults for {@link useCreateModelState} parameter filtering.
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.CreateModelStateHook.defaultProps
+ * @displayName CreateModelStateHook
+ */
+export interface CreateModelStateHookStyleProps {
 	parameterNamesToInclude?: string[];
 	parameterNamesToExclude?: string[];
 	parameterNamesToAlwaysExclude?: string[];
 }
 
-const defaultThemeProps: Partial<ThemeProps> = {};
+const defaultThemeProps: Partial<CreateModelStateHookStyleProps> = {};
 
-type CreateModelStateHookThemePropsType = Partial<ThemeProps>;
+type CreateModelStateHookThemePropsType = Partial<CreateModelStateHookStyleProps>;
 
 export function CreateModelStateHookThemeProps(
 	props: CreateModelStateHookThemePropsType,

@@ -38,7 +38,12 @@ import React, {
 } from "react";
 import {undefined} from "zod";
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderFormWidgetComponent.defaultProps
+ * @displayName AppBuilderFormWidgetComponent
+ */
+export interface AppBuilderFormWidgetComponentStyleProps {
 	stackProps?: StackProps;
 	formPaperProps?: PaperProps;
 	elementPaperProps?: PaperProps;
@@ -50,7 +55,7 @@ interface StyleProps {
 	resetMessage?: string;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<AppBuilderFormWidgetComponentStyleProps> = {
 	stackProps: {
 		gap: 0,
 	},
@@ -91,7 +96,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	resetMessage: "Reset form",
 };
 
-export type AppBuilderFormWidgetComponentThemePropsType = Partial<StyleProps>;
+export type AppBuilderFormWidgetComponentThemePropsType = Partial<AppBuilderFormWidgetComponentStyleProps>;
 
 export function AppBuilderFormWidgetComponentThemeProps(
 	props: AppBuilderFormWidgetComponentThemePropsType,

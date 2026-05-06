@@ -37,6 +37,7 @@ export {
 	AppBuilderStackUiWidgetComponent,
 	AppBuilderStackUiWidgetComponentThemeProps,
 } from "./AppBuilderStackUiWidget";
+export type {AppBuilderStackUiWidgetComponentStyleProps} from "./AppBuilderStackUiWidget";
 export * from "./AppBuilderTableWidgetComponent";
 export {default as AppBuilderTableWidgetComponent} from "./AppBuilderTableWidgetComponent";
 export {default as AppBuilderTabsComponent} from "./AppBuilderTabsComponent";

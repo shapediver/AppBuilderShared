@@ -75,17 +75,22 @@ const _roundAndClamp = (
 	return +n.toFixed(decimalplaces);
 };
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.ParameterSliderComponent.defaultProps
+ * @displayName ParameterSliderComponent
+ */
+export interface ParameterSliderComponentStyleProps {
 	sliderWidth: string | number | undefined;
 	numberWidth: string | number | undefined;
 }
 
-export const defaultStyleProps: Partial<StyleProps> = {
+export const defaultStyleProps: Partial<ParameterSliderComponentStyleProps> = {
 	sliderWidth: "60%",
 	numberWidth: "35%",
 };
 
-type ParameterSliderComponentThemePropsType = Partial<StyleProps>;
+type ParameterSliderComponentThemePropsType = Partial<ParameterSliderComponentStyleProps>;
 
 export function ParameterSliderComponentThemeProps(
 	props: ParameterSliderComponentThemePropsType,
@@ -104,7 +109,7 @@ export function ParameterSliderComponentThemeProps(
 export default function ParameterSliderComponent(
 	props: PropsParameterComponent &
 		Partial<PropsParameterWrapper> &
-		Partial<StyleProps>,
+		Partial<ParameterSliderComponentStyleProps>,
 ) {
 	const {
 		definition,

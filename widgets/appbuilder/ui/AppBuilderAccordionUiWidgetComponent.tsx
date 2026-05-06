@@ -17,7 +17,12 @@ import {
 import React, {useEffect, useState} from "react";
 import AppBuilderWidgetsComponent from "./AppBuilderWidgetsComponent";
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderAccordionUiWidgetComponent.defaultProps
+ * @displayName AppBuilderAccordionUiWidgetComponent
+ */
+export interface AppBuilderAccordionUiWidgetComponentStyleProps {
 	accordionProps?: AccordionProps;
 	/**
 	 * Props for the Paper component wrapping each accordion.
@@ -29,7 +34,7 @@ interface StyleProps {
 	stackProps?: StackProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<AppBuilderAccordionUiWidgetComponentStyleProps> = {
 	accordionProps: {},
 	accordionPaperProps: {px: 0, py: 0, withBorder: false, shadow: "md"},
 	accordionPanelProps: {},
@@ -38,7 +43,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	stackProps: {},
 };
 
-type AppBuilderAccordionUiWidgetComponentThemePropsType = Partial<StyleProps>;
+type AppBuilderAccordionUiWidgetComponentThemePropsType = Partial<AppBuilderAccordionUiWidgetComponentStyleProps>;
 
 export function AppBuilderAccordionUiWidgetComponentThemeProps(
 	props: AppBuilderAccordionUiWidgetComponentThemePropsType,

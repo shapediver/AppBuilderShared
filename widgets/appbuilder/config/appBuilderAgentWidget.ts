@@ -1,6 +1,12 @@
 import {MantineThemeComponent, PaperProps} from "@mantine/core";
 
-/** Style properties that can be controlled via the theme. */
+/**
+ * Style and configuration props for the agent widget (theme + `useProps("AppBuilderAgentWidgetComponent", …)`).
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderAgentWidgetComponent.defaultProps
+ * @displayName AppBuilderAgentWidgetComponent
+ */
 export type AppBuilderAgentWidgetComponentProps = PaperProps & {
 	/** The system prompt to use. */
 	systemPrompt: string;

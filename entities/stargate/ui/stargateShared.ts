@@ -1,6 +1,13 @@
 import {StargateStatusColorProps} from "@AppBuilderLib/entities/stargate";
 import {MantineThemeComponent} from "@mantine/core";
 
+/**
+ * Shared Stargate color defaults merged into Stargate-related components via `useProps("StargateShared", …)`.
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.StargateShared.defaultProps
+ * @displayName StargateShared
+ */
 export interface StargateStyleProps {
 	stargateColorProps: StargateStatusColorProps;
 }

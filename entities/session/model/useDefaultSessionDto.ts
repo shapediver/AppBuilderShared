@@ -3,6 +3,21 @@ import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useMemo} from "react";
 import {IShapeDiverExampleModels} from "../config";
 
+/**
+ * Theme-default session and example model settings (see `useDefaultSessionDto`).
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.DefaultSession.defaultProps
+ * @displayName DefaultSession
+ */
+export interface DefaultSessionStyleProps
+	extends Partial<IAppBuilderSettingsSession> {
+	/** Name of example model */
+	example?: string;
+	/** Available example models */
+	exampleModels?: IShapeDiverExampleModels;
+}
+
 interface Props extends IAppBuilderSettingsSession {
 	/** Name of example model */
 	example?: string;
