@@ -14,55 +14,22 @@ import {
 import React, {useContext} from "react";
 
 /**
- * Documented subset of Mantine `Paper` props for the text/markdown wrapper.
- * Theme and props still accept any Paper prop via {@link AppBuilderTextWidgetThemePropsInput}.
+ * Text / markdown widget wrapped in Mantine `Paper`. Theme `defaultProps` follow `PaperProps`.
  *
  * @docAttached
  * @configPath themeOverrides.components.AppBuilderTextWidgetComponent.defaultProps
  * @displayName AppBuilderTextWidgetComponent
+ * @docLink https://mantine.dev/core/paper/?t=props
  */
-export interface AppBuilderTextWidgetComponentStyleProps {
-	p?: PaperProps["p"];
-	px?: PaperProps["px"];
-	py?: PaperProps["py"];
-	pt?: PaperProps["pt"];
-	pb?: PaperProps["pb"];
-	pl?: PaperProps["pl"];
-	pr?: PaperProps["pr"];
-	m?: PaperProps["m"];
-	mx?: PaperProps["mx"];
-	my?: PaperProps["my"];
-	mt?: PaperProps["mt"];
-	mb?: PaperProps["mb"];
-	ml?: PaperProps["ml"];
-	mr?: PaperProps["mr"];
-	shadow?: PaperProps["shadow"];
-	radius?: PaperProps["radius"];
-	withBorder?: PaperProps["withBorder"];
-	styles?: PaperProps["styles"];
-	classNames?: PaperProps["classNames"];
-	style?: PaperProps["style"];
-	bg?: PaperProps["bg"];
-	bd?: PaperProps["bd"];
-	w?: PaperProps["w"];
-	h?: PaperProps["h"];
-	miw?: PaperProps["miw"];
-	mih?: PaperProps["mih"];
-	maw?: PaperProps["maw"];
-	mah?: PaperProps["mah"];
-	display?: PaperProps["display"];
-	hiddenFrom?: PaperProps["hiddenFrom"];
-	visibleFrom?: PaperProps["visibleFrom"];
-	opacity?: PaperProps["opacity"];
-}
+export type AppBuilderTextWidgetComponentStyleProps = PaperProps;
 
-/** Full Mantine Paper surface for theme defaults and widget props. */
-export type AppBuilderTextWidgetThemePropsInput = Partial<PaperProps>;
+const defaultStyleProps: Partial<AppBuilderTextWidgetComponentStyleProps> = {};
 
-const defaultStyleProps: AppBuilderTextWidgetThemePropsInput = {};
+type AppBuilderTextWidgetThemePropsType =
+	Partial<AppBuilderTextWidgetComponentStyleProps>;
 
 export function AppBuilderTextWidgetThemeProps(
-	props: AppBuilderTextWidgetThemePropsInput,
+	props: AppBuilderTextWidgetThemePropsType,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
@@ -70,7 +37,7 @@ export function AppBuilderTextWidgetThemeProps(
 }
 
 export default function AppBuilderTextWidgetComponent(
-	props: IAppBuilderWidgetPropsText & AppBuilderTextWidgetThemePropsInput,
+	props: IAppBuilderWidgetPropsText & AppBuilderTextWidgetThemePropsType,
 ) {
 	const {text, markdown, ...rest} = props;
 
