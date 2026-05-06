@@ -1,8 +1,5 @@
 import {NotificationData} from "@mantine/notifications";
 
-/**
- *
- */
 export type AppBuilderNotificationData = Pick<
 	NotificationData,
 	| "id"
@@ -18,6 +15,13 @@ export type AppBuilderNotificationData = Pick<
 	| "withCloseButton"
 >;
 
+/**
+ * Global notification styling driven by theme (`NotificationWrapper`).
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.NotificationWrapper.defaultProps
+ * @displayName NotificationWrapper
+ */
 export interface NotificationStyleProps {
 	/**
 	 * Optional color to use for success notifications.
@@ -25,16 +29,20 @@ export interface NotificationStyleProps {
 	successColor?: string;
 	/**
 	 * Optional color to use for warning notifications.
+	 * @default "yellow"
 	 */
 	warningColor?: string;
 	/**
 	 * Optional color to use for error notifications.
+	 * @default "red"
 	 */
 	errorColor?: string;
 	/**
 	 * Determines whether notification should be closed automatically,
 	 * number is auto close timeout in ms.
-	 * */
+	 *
+	 * @default 20000
+	 */
 	autoClose?: boolean | number;
 }
 

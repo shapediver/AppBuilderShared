@@ -19,7 +19,12 @@ interface Props {
 	docLink?: string;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.Hint.defaultProps
+ * @displayName Hint
+ */
+export interface HintStyleProps {
 	/** Container group props */
 	containerGroupProps: GroupProps;
 	/** Group props */
@@ -32,7 +37,7 @@ interface StyleProps {
 	buttonProps: ButtonProps & PolymorphicComponentProps<"a">;
 }
 
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps: HintStyleProps = {
 	buttonProps: {
 		variant: "light",
 		size: "xs",
@@ -64,7 +69,7 @@ const defaultStyleProps: StyleProps = {
 	},
 };
 
-type HintPropsType = Partial<StyleProps>;
+type HintPropsType = Partial<HintStyleProps>;
 
 export function HintProps(props: HintPropsType): MantineThemeComponent {
 	return {
@@ -76,7 +81,7 @@ export function HintProps(props: HintPropsType): MantineThemeComponent {
  * Hint component that displays information
  * with a link to documentation.
  */
-export default function Hint(props: Props & Partial<StyleProps> = {}) {
+export default function Hint(props: Props & Partial<HintStyleProps> = {}) {
 	const {title, docLink} = props;
 
 	const {containerGroupProps, iconProps, textProps, buttonProps, groupProps} =

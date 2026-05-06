@@ -31,7 +31,16 @@ interface Props {
 	children: string;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.MarkdownWidgetComponent.defaultProps
+ * @displayName MarkdownWidgetComponent
+ */
+export interface MarkdownWidgetComponentStyleProps {
+	/**
+	 * Target for markdown links.
+	 * @default "_blank"
+	 */
 	anchorTarget: React.HTMLAttributeAnchorTarget;
 	boldFontWeight: string;
 	strongFontWeight: string;
@@ -39,11 +48,12 @@ interface StyleProps {
 	themeOverride?: MantineThemeOverride;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<MarkdownWidgetComponentStyleProps> = {
 	anchorTarget: "_blank",
 };
 
-type MarkdownWidgetComponentPropsType = Partial<StyleProps>;
+type MarkdownWidgetComponentPropsType =
+	Partial<MarkdownWidgetComponentStyleProps>;
 
 export function MarkdownWidgetComponentProps(
 	props: MarkdownWidgetComponentPropsType,
@@ -142,7 +152,7 @@ const spanDirective = function () {
  * @returns
  */
 export default function MarkdownWidgetComponent(
-	props: Props & Partial<StyleProps>,
+	props: Props & Partial<MarkdownWidgetComponentStyleProps>,
 ) {
 	const {children, ...rest} = props;
 	const {

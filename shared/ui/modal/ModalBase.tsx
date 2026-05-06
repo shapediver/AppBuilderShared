@@ -74,7 +74,12 @@ interface Props {
 	onCancel?: () => void;
 }
 
-type StyleProps = ModalProps & {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.ModalBase.defaultProps
+ * @displayName ModalBase
+ */
+export type ModalBaseStyleProps = ModalProps & {
 	/**
 	 * Modal size
 	 */
@@ -108,12 +113,12 @@ type StyleProps = ModalProps & {
 	confirmButtonProps?: Record<string, any>;
 };
 
-export type ModalBaseProps = Props & Partial<StyleProps>;
+export type ModalBaseProps = Props & Partial<ModalBaseStyleProps>;
 
 /**
  * Default style properties for the modal.
  */
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<ModalBaseStyleProps> = {
 	size: "xl",
 	centered: true,
 	closeButtonProps: {
@@ -133,7 +138,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type ModalBaseThemePropsType = Partial<StyleProps>;
+type ModalBaseThemePropsType = Partial<ModalBaseStyleProps>;
 
 export function ModalBaseThemeProps(
 	props: ModalBaseThemePropsType,
@@ -147,7 +152,7 @@ export function ModalBaseThemeProps(
  * Modal base component that provides flexible content and button configuration.
  * Replicates the functionality of the Vue/Vuetify SdModal component.
  */
-export default function ModalBase(props: Props & Partial<StyleProps>) {
+export default function ModalBase(props: Props & Partial<ModalBaseStyleProps>) {
 	const {
 		opened,
 		title = "",
@@ -167,7 +172,7 @@ export default function ModalBase(props: Props & Partial<StyleProps>) {
 		...rest
 	} = props;
 
-	const styleProps = useProps("UniversalModal", defaultStyleProps, rest);
+	const styleProps = useProps("ModalBase", defaultStyleProps, rest);
 	const {
 		stackGap,
 		groupGap,

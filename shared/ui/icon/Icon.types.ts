@@ -11,9 +11,20 @@ export interface CustomCSSProperties extends CSSProperties {
 
 export type IconType = IconifyIconDefinition | string;
 
+/**
+ * AppBuilder icon props (Iconify + theme defaults via `useProps("Icon", …)`).
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.Icon.defaultProps
+ * @displayName Icon
+ */
 export interface IconProps extends Omit<IconifyIconProps, "icon"> {
 	iconType: IconType;
-	size?: MantineSize | number | string; // MantineSize or CSS size value
+	/**
+	 * Mantine size token or CSS length.
+	 * @default "1.5rem" (via theme defaultProps)
+	 */
+	size?: MantineSize | number | string;
 }
 
 export const sizeMap: Record<string, string> = {
