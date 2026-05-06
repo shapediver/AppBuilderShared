@@ -31,12 +31,15 @@ type Props = IAppBuilderActionPropsCommon &
  * @configPath themeOverrides.components.AppBuilderActionComponent.defaultProps
  * @displayName AppBuilderActionComponent
  */
-export type AppBuilderActionComponentStyleProps = Partial<
-	Pick<
-		ButtonProps,
-		"variant" | "size" | "color" | "radius" | "fullWidth" | "justify"
-	>
->;
+export interface AppBuilderActionComponentStyleProps {
+	/** @default filled */
+	variant?: ButtonProps["variant"];
+	size?: ButtonProps["size"];
+	color?: ButtonProps["color"];
+	radius?: ButtonProps["radius"];
+	fullWidth?: ButtonProps["fullWidth"];
+	justify?: ButtonProps["justify"];
+}
 
 const defaultStyleProps: AppBuilderActionComponentStyleProps = {
 	variant: "filled",
