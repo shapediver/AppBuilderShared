@@ -20,13 +20,12 @@ interface Props {
  * @configPath themeOverrides.components.AppBuilderStackUiWidgetComponent.defaultProps
  * @displayName AppBuilderStackUiWidgetComponent
  */
-export type AppBuilderStackUiWidgetComponentStyleProps = Partial<
-	StylePropsContent & StylePropsButton
->;
+export interface AppBuilderStackUiWidgetComponentStyleProps
+	extends Partial<StylePropsContent>,
+		Partial<StylePropsButton> {}
 
-type AppBuilderStackUiWidgetComponentThemePropsType = Partial<
-	StylePropsContent & StylePropsButton
->;
+type AppBuilderStackUiWidgetComponentThemePropsType =
+	AppBuilderStackUiWidgetComponentStyleProps;
 
 export function AppBuilderStackUiWidgetComponentThemeProps(
 	props: AppBuilderStackUiWidgetComponentThemePropsType,
