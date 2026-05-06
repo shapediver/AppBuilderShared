@@ -26,10 +26,6 @@ const defaultStyleProps: StyleProps = {
 	orientation: "unspecified",
 };
 
-type AppBuilderContainerThemePropsType = Partial<StyleProps> &
-	AppBuilderVerticalContainerThemePropsType &
-	AppBuilderHorizontalContainerThemePropsType;
-
 /**
  * Orientation plus forwarded horizontal / vertical container theme props for {@link AppBuilderContainer}.
  *
@@ -37,7 +33,13 @@ type AppBuilderContainerThemePropsType = Partial<StyleProps> &
  * @configPath themeOverrides.components.AppBuilderContainer.defaultProps
  * @displayName AppBuilderContainer
  */
-export type AppBuilderContainerStyleProps = AppBuilderContainerThemePropsType;
+export interface AppBuilderContainerStyleProps
+	extends AppBuilderHorizontalContainerThemePropsType,
+		AppBuilderVerticalContainerThemePropsType {
+	orientation?: AppBuilderContainerOrientationType;
+}
+
+type AppBuilderContainerThemePropsType = AppBuilderContainerStyleProps;
 
 export function AppBuilderContainerThemeProps(
 	props: AppBuilderContainerThemePropsType,
