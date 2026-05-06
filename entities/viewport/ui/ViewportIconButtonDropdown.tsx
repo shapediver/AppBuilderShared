@@ -23,17 +23,23 @@ interface ViewportIconButtonDropdownProps extends CommonButtonProps {
 	viewportIconButtonProps: ViewportIconButtonProps;
 }
 
-export type StyleProps = {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.ViewportIconButtonDropdown.defaultProps
+ * @displayName ViewportIconButtonDropdown
+ */
+export type ViewportIconButtonDropdownStyleProps = {
 	menuProps?: MenuProps;
 	menuDropdownProps?: MenuDropdownProps;
 };
 
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps: ViewportIconButtonDropdownStyleProps = {
 	menuProps: {shadow: "md", position: "bottom-end"},
 	menuDropdownProps: {style: ViewportTransparentBackgroundStyle},
 };
 
-type ViewportIconButtonDropdownThemePropsType = Partial<StyleProps>;
+type ViewportIconButtonDropdownThemePropsType =
+	Partial<ViewportIconButtonDropdownStyleProps>;
 export function ViewportIconButtonDropdownThemeProps(
 	props: ViewportIconButtonDropdownThemePropsType,
 ): MantineThemeComponent {
@@ -43,7 +49,8 @@ export function ViewportIconButtonDropdownThemeProps(
 }
 
 export default function ViewportIconButtonDropdown(
-	props: ViewportIconButtonDropdownProps & StyleProps,
+	props: ViewportIconButtonDropdownProps &
+		Partial<ViewportIconButtonDropdownStyleProps>,
 ) {
 	const {
 		viewportIconButtonProps,
@@ -54,7 +61,7 @@ export default function ViewportIconButtonDropdown(
 	} = props;
 
 	const {menuDropdownProps, menuProps} = useProps(
-		"ViewportIconButtonDropdowns",
+		"ViewportIconButtonDropdown",
 		defaultStyleProps,
 		rest,
 	);

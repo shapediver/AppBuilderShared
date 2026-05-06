@@ -12,6 +12,13 @@ export interface ViewportCreateDto extends ViewportCreationDefinition {
 	showStatistics?: boolean;
 }
 
+/**
+ * Props for the ShapeDiver viewport (`ViewportComponent`), including theme defaults via `useProps("ViewportComponent", …)`.
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.ViewportComponent.defaultProps
+ * @displayName ViewportComponent
+ */
 export interface ViewportComponentProps extends ViewportCreateDto {
 	children?: React.ReactNode;
 	className?: string;
@@ -46,6 +53,13 @@ interface ViewportBranding {
 	spinnerPositioning?: SPINNER_POSITIONING;
 }
 
+/**
+ * Light/dark branding for the viewport loading overlay (`useProps("ViewportBranding", …)`).
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.ViewportBranding.defaultProps
+ * @displayName ViewportBranding
+ */
 export interface ViewportBrandingProps {
 	/** Branding settings for dark scheme */
 	dark: ViewportBranding;

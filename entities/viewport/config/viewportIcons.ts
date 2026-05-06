@@ -42,6 +42,13 @@ export interface ViewportIconsProps {
 	hideJsonMenu?: boolean;
 }
 
+/**
+ * Optional styling and feature toggles for the viewport icon toolbar (`ViewportIcons`).
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.ViewportIcons.defaultProps
+ * @displayName ViewportIcons
+ */
 export interface ViewportIconsOptionalProps {
 	/**
 	 * Style properties for the container

@@ -13,11 +13,17 @@ import {
 } from "@mantine/core";
 import React, {useContext} from "react";
 
-type StylePros = PaperProps;
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.AppBuilderTextWidgetComponent.defaultProps
+ * @displayName AppBuilderTextWidgetComponent
+ */
+export type AppBuilderTextWidgetComponentStyleProps = PaperProps;
 
-const defaultStyleProps: Partial<StylePros> = {};
+const defaultStyleProps: Partial<AppBuilderTextWidgetComponentStyleProps> = {};
 
-type AppBuilderTextWidgetThemePropsType = Partial<StylePros>;
+type AppBuilderTextWidgetThemePropsType =
+	Partial<AppBuilderTextWidgetComponentStyleProps>;
 
 export function AppBuilderTextWidgetThemeProps(
 	props: AppBuilderTextWidgetThemePropsType,

@@ -24,19 +24,27 @@ interface Props {
 	onMouseDown?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-type StyleProps = ViewportIconButtonStyleProps & {
+/**
+ * Theme defaults for a single viewport toolbar icon button.
+ *
+ * @docAttached
+ * @configPath themeOverrides.components.ViewportIconButton.defaultProps
+ * @displayName ViewportIconButton
+ */
+export type ViewportIconButtonThemeStyleProps = ViewportIconButtonStyleProps & {
 	tooltipWrapperProps?: Partial<TooltipProps>;
 	iconProps?: ViewportIconButtonStyleProps["iconProps"] & Partial<IconProps>;
 };
 
-export type ViewportIconButtonProps = Props & StyleProps;
+export type ViewportIconButtonProps = Props & ViewportIconButtonThemeStyleProps;
 
-export const defaultStyleProps: StyleProps = {
+export const defaultStyleProps: ViewportIconButtonThemeStyleProps = {
 	tooltipWrapperProps: {},
 	...ViewportIconButtonDefaultStyleProps,
 };
 
-export type ViewportIconButtonThemePropsType = Partial<StyleProps>;
+export type ViewportIconButtonThemePropsType =
+	Partial<ViewportIconButtonThemeStyleProps>;
 
 export function ViewportIconButtonThemeProps(
 	props: ViewportIconButtonThemePropsType,

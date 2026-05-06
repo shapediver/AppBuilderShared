@@ -15,17 +15,22 @@ import {
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
 
-interface IconProps {
+interface ViewportAcceptRejectButtonsIconStyleProps {
 	size?: string | number;
 	color?: string;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.ViewportAcceptRejectButtons.defaultProps
+ * @displayName ViewportAcceptRejectButtons
+ */
+export interface ViewportAcceptRejectButtonsStyleProps {
 	groupProps?: Partial<GroupProps>;
 	buttonProps?: Partial<ButtonProps>;
 	acceptButtonProps?: Partial<ButtonProps>;
 	rejectButtonProps?: Partial<ButtonProps>;
-	iconProps?: IconProps;
+	iconProps?: ViewportAcceptRejectButtonsIconStyleProps;
 	textProps?: Partial<TextProps>;
 	/**
 	 * Whether to show the buttons or not.
@@ -36,7 +41,7 @@ interface StyleProps {
 	showButtons?: boolean;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<ViewportAcceptRejectButtonsStyleProps> = {
 	groupProps: {
 		justify: "center",
 		w: "auto",
@@ -68,7 +73,8 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type ViewportAcceptRejectButtonsComponentThemePropsType = Partial<StyleProps>;
+type ViewportAcceptRejectButtonsComponentThemePropsType =
+	Partial<ViewportAcceptRejectButtonsStyleProps>;
 
 export function ViewportAcceptRejectButtonsComponentThemeProps(
 	props: ViewportAcceptRejectButtonsComponentThemePropsType,

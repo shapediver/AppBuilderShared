@@ -29,14 +29,19 @@ interface Props {
 	onClick?: (event: React.MouseEvent) => void;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.StargateInput.defaultProps
+ * @displayName StargateInput
+ */
+export interface StargateInputStyleProps {
 	buttonProps?: ButtonProps;
 	loadingButtonProps?: ButtonProps;
 	textProps?: TextProps;
 	loaderProps?: LoaderProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<StargateInputStyleProps> = {
 	buttonProps: {
 		variant: "filled",
 		fullWidth: true,
@@ -62,7 +67,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 };
 
 export function StargateInputThemeProps(
-	props: Partial<Props> & Partial<StyleProps>,
+	props: Partial<Props> & Partial<StargateInputStyleProps>,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
@@ -72,7 +77,7 @@ export function StargateInputThemeProps(
 /**
  * StargateInput component
  */
-export default function StargateInput(props: Props & StyleProps) {
+export default function StargateInput(props: Props & Partial<StargateInputStyleProps>) {
 	const {buttonProps, loadingButtonProps, textProps, loaderProps} = useProps(
 		"StargateInput",
 		defaultStyleProps,
