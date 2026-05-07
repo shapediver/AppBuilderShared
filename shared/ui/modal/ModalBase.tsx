@@ -76,7 +76,7 @@ interface Props {
 
 /**
  * @docAttached
- * @configPath themeOverrides.components.UniversalModal.defaultProps
+ * @configPath themeOverrides.components.ModalBase.defaultProps
  * @displayName ModalBase
  */
 export type ModalBaseStyleProps = ModalProps & {
@@ -172,7 +172,7 @@ export default function ModalBase(props: Props & Partial<ModalBaseStyleProps>) {
 		...rest
 	} = props;
 
-	const styleProps = useProps("UniversalModal", defaultStyleProps, rest);
+	const styleProps = useProps("ModalBase", defaultStyleProps, rest);
 	const {
 		stackGap,
 		groupGap,

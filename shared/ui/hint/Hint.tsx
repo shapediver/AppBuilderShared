@@ -21,7 +21,7 @@ interface Props {
 
 /**
  * @docAttached
- * @configPath themeOverrides.components.Hint.defaultProps
+ * @configPath themeOverrides.components.HintComponent.defaultProps
  * @displayName Hint
  */
 export interface HintStyleProps {
@@ -85,7 +85,7 @@ export default function Hint(props: Props & Partial<HintStyleProps> = {}) {
 	const {title, docLink} = props;
 
 	const {containerGroupProps, iconProps, textProps, buttonProps, groupProps} =
-		useProps("Hint", defaultStyleProps, props);
+		useProps("HintComponent", defaultStyleProps, props);
 
 	return (
 		<Group {...containerGroupProps}>
