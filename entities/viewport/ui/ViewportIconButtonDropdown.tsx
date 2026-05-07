@@ -25,7 +25,7 @@ interface ViewportIconButtonDropdownProps extends CommonButtonProps {
 
 /**
  * @docAttached
- * @configPath themeOverrides.components.ViewportIconButtonDropdown.defaultProps
+ * @configPath themeOverrides.components.ViewportIconButtonDropdowns.defaultProps
  * @displayName ViewportIconButtonDropdown
  */
 export type ViewportIconButtonDropdownStyleProps = {
@@ -61,7 +61,7 @@ export default function ViewportIconButtonDropdown(
 	} = props;
 
 	const {menuDropdownProps, menuProps} = useProps(
-		"ViewportIconButtonDropdown",
+		"ViewportIconButtonDropdowns",
 		defaultStyleProps,
 		rest,
 	);
