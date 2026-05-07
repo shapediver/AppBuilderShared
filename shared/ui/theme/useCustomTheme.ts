@@ -946,7 +946,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Hint component that displays information
 			 * with a link to documentation.
 			 */
-			HintComponent: HintProps({
+			Hint: HintProps({
 				// buttonProps: {
 				// 	variant: "light",
 				// 	size: "xs",
