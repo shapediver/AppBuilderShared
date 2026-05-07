@@ -31,6 +31,7 @@ import {
 import {useShapeDiverStoreInstances} from "./useShapeDiverStoreInstances";
 
 import {useSessions} from "@AppBuilderLib/entities/session";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
 import {Logger} from "@AppBuilderLib/shared/lib";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 interface Props {
@@ -107,6 +108,7 @@ export function useAppBuilderInstances(props: Props) {
 	}>({});
 
 	const loadedRef = useRef(false);
+	const firstLoadDoneRef = useRef(false);
 	const customizationResultInStoreRef = useRef(customizationResults);
 	const instanceNodesRef = useRef<{
 		[key: string]: ITreeNode;
@@ -534,6 +536,30 @@ export function useAppBuilderInstances(props: Props) {
 					instanceNodesRef.current,
 					sessionNodeRef.current,
 				);
+
+				// After instances are loaded for the first time, check if initialAutoAdjust
+				// is set on any viewport camera or viewport creation definition. If so,
+				// trigger zoomTo because the controller session may have had no geometry
+				// when the session first loaded.
+				if (!firstLoadDoneRef.current) {
+					firstLoadDoneRef.current = true;
+					const {viewports, viewportDtos} =
+						useShapeDiverStoreViewport.getState();
+					for (const viewport of Object.values(viewports)) {
+						const cameraAutoAdjust =
+							viewport.camera?.initialAutoAdjust;
+						const dtoAutoAdjust =
+							viewportDtos[viewport.id]?.initialAutoAdjust;
+						if (
+							(cameraAutoAdjust || dtoAutoAdjust) &&
+							viewport.camera
+						) {
+							viewport.camera.zoomTo(undefined, {
+								duration: 0,
+							});
+						}
+					}
+				}
 
 				setInstanceNodes(
 					Object.entries(newInstances).reduce(

@@ -6,6 +6,10 @@ export interface IShapeDiverStoreViewports {
 	[viewportId: string]: IViewportApi;
 }
 
+export interface IShapeDiverStoreViewportDtos {
+	[viewportId: string]: ViewportCreateDto;
+}
+
 /**
  * Callbacks related to IShapeDiverStore.
  */
@@ -24,6 +28,11 @@ export interface IShapeDiverStoreViewport {
 	 * Viewports currently known by the store.
 	 */
 	viewports: IShapeDiverStoreViewports;
+
+	/**
+	 * The creation DTOs of the viewports, keyed by viewport id.
+	 */
+	viewportDtos: IShapeDiverStoreViewportDtos;
 
 	/**
 	 * Create a viewport and add it to the store.
