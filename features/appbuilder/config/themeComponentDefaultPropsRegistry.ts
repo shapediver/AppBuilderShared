@@ -1,4 +1,4 @@
-import {IconThemeDefaultPropsSchema} from "../../../shared/ui/icon/Icon.types";
+import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {z} from "zod";
 
 /**
