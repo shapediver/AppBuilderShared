@@ -31,6 +31,7 @@ import {
 import {useShapeDiverStoreInstances} from "./useShapeDiverStoreInstances";
 
 import {useSessions} from "@AppBuilderLib/entities/session";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
 import {Logger} from "@AppBuilderLib/shared/lib";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 interface Props {
@@ -107,6 +108,7 @@ export function useAppBuilderInstances(props: Props) {
 	}>({});
 
 	const loadedRef = useRef(false);
+	const firstLoadDoneRef = useRef(false);
 	const customizationResultInStoreRef = useRef(customizationResults);
 	const instanceNodesRef = useRef<{
 		[key: string]: ITreeNode;
@@ -549,6 +551,10 @@ export function useAppBuilderInstances(props: Props) {
 				// to signal that the process is finished
 				if (outputCallbackPromises.length === 0) resolveMainPromise!();
 
+				// after the instances are added to the scene tree, we can adjust the cameras to fit the new geometry
+				// we don't await this process, as it just waits for the next render loop
+				adjustCamerasToInstances(firstLoadDoneRef);
+
 				// clean up the session instances
 				// only instances that are currently in the scene are kept
 				// the others are removed from the store
@@ -633,6 +639,56 @@ const addInstanceToSceneTree = async (
 		});
 
 		await Promise.all(promises);
+	}
+};
+
+/**
+ * We adjust the cameras to fit the new geometry of the instances.
+ * This is necessary because the new instances may have geometry that is outside of the current camera view.
+ * Do this either when:
+ * - the instances are loaded for the first time and initialAutoAdjust is set on any viewport camera or viewport creation definition
+ * - or when the instances are loaded and autoAdjust is set on any viewport camera
+ *
+ * @param firstLoadDoneRef
+ */
+const adjustCamerasToInstances = async (
+	firstLoadDoneRef: React.MutableRefObject<boolean>,
+) => {
+	await new Promise((resolve) => setTimeout(resolve, 0));
+
+	// After instances are loaded for the first time, check if initialAutoAdjust
+	// is set on any viewport camera or viewport creation definition. If so,
+	// trigger zoomTo because the controller session may have had no geometry
+	// when the session first loaded.
+	if (!firstLoadDoneRef.current) {
+		firstLoadDoneRef.current = true;
+		const {viewports, viewportDtos} = useShapeDiverStoreViewport.getState();
+		for (const viewport of Object.values(viewports)) {
+			const cameraInitialAutoAdjust = viewport.camera?.initialAutoAdjust;
+			const dtoInitialAutoAdjust =
+				viewportDtos[viewport.id]?.initialAutoAdjust;
+			if (
+				(cameraInitialAutoAdjust || dtoInitialAutoAdjust) &&
+				viewport.camera
+			) {
+				viewport.camera.zoomTo(undefined, {
+					duration: 0,
+				});
+			}
+		}
+	}
+
+	// trigger a zoomTo on all viewports to adjust the camera to the new geometry
+	// this is necessary because the new instances may have geometry that is outside of the current camera view
+	// we do this after the instances are added to the session node to ensure that the geometry is in the scene when we trigger the zoomTo
+	const {viewports} = useShapeDiverStoreViewport.getState();
+	for (const viewport of Object.values(viewports)) {
+		const cameraAutoAdjust = viewport.camera?.autoAdjust;
+		if (cameraAutoAdjust && viewport.camera) {
+			viewport.camera.zoomTo(undefined, {
+				duration: 0,
+			});
+		}
 	}
 };
 

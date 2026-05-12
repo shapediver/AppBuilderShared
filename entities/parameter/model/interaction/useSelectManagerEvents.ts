@@ -41,6 +41,7 @@ const getNodeNames = (
 	strictNaming: boolean,
 ) => {
 	const nodeNames = [];
+
 	for (const sessionId in patterns.outputPatterns) {
 		const pattern = patterns.outputPatterns[sessionId];
 		nodeNames.push(
@@ -100,9 +101,8 @@ export function useSelectManagerEvents(
 				if (selectEvent.manager.id !== componentId) return;
 
 				const selected = [selectEvent.node];
-				setSelectedNodeNames(
-					getNodeNames(patterns, selected, strictNaming),
-				);
+				const names = getNodeNames(patterns, selected, strictNaming);
+				setSelectedNodeNames(names);
 			},
 		);
 
@@ -142,10 +142,10 @@ export function useSelectManagerEvents(
 				// We ignore the event if it's not based on the component ID.
 				if (multiSelectEvent.manager.id !== componentId) return;
 
-				const selected = multiSelectEvent.nodes;
-				setSelectedNodeNames(
-					getNodeNames(patterns, selected, strictNaming),
-				);
+				// Snapshot the nodes array immediately (it may be a live reference).
+				const selected = [...multiSelectEvent.nodes];
+				const names = getNodeNames(patterns, selected, strictNaming);
+				setSelectedNodeNames(names);
 			},
 		);
 
