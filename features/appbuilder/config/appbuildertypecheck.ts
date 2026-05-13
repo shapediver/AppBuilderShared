@@ -1116,7 +1116,7 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 				AppBuilderContainerNameType.Bottom,
 				AppBuilderContainerNameType.Top,
 			]),
-			props: z.undefined(),
+			props: z.undefined().optional(),
 			tabs: z.array(IAppBuilderTabSchema).optional(),
 			widgets: z.array(IAppBuilderWidgetSchema).optional(),
 		})

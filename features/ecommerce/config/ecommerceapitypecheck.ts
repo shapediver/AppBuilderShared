@@ -1,4 +1,4 @@
-import z from "zod";
+import {z} from "zod";
 
 // Zod type definition for IUpdateParameterValuesData
 export const IUpdateParameterValuesDataSchema = z.object({
