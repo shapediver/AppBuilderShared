@@ -1,8 +1,8 @@
-import {PropsExport} from "@AppBuilderLib/entities/export";
+import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {IShapeDiverExport} from "../config";
+import {IShapeDiverExport} from "../config/export";
 
 /**
  * Hook providing a shortcut to abstracted exports managed by {@link useShapeDiverStoreParameters}.

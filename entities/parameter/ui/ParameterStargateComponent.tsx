@@ -6,18 +6,13 @@ import {
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {
-	DefaultStargateStyleProps,
-	IStargateComponentStatusDefinition,
-	mapStargateComponentStatusDefinition,
-	ParameterStatusEnum,
-	StargateInput,
-	StargateStatusColorTypeEnum,
-	StargateStyleProps,
-	useStargateParameter,
-} from "@AppBuilderLib/entities/stargate";
-import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {DefaultStargateStyleProps, StargateStyleProps} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {IStargateComponentStatusDefinition, mapStargateComponentStatusDefinition, StargateStatusColorTypeEnum} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {ParameterStatusEnum, useStargateParameter} from "@AppBuilderLib/entities/stargate/model/useStargateParameter";
+import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
 	ActionIconProps,

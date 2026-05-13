@@ -1,30 +1,14 @@
-import {useResolveAppBuilderSettings} from "@AppBuilderLib/features/appbuilder";
-import {useQuerySavedState} from "@AppBuilderLib/features/model-state";
-import {
-	QUERYPARAM_CONTEXT,
-	QUERYPARAM_DISABLEFALLBACKUI,
-	QUERYPARAM_MODELSTATEID,
-	QUERYPARAM_MODELVIEWURL,
-	QUERYPARAM_PARAMVALUE_PREFIX,
-	QUERYPARAM_PLATFORMURL,
-	QUERYPARAM_SAVEDSTATEID,
-	QUERYPARAM_SETTINGSURL,
-	QUERYPARAM_SLUG,
-	QUERYPARAM_TEMPLATE,
-	QUERYPARAM_TICKET,
-} from "@AppBuilderLib/shared/config";
-import {getDefaultPlatformUrl, Logger} from "@AppBuilderLib/shared/lib";
+import useResolveAppBuilderSettings from "@AppBuilderLib/features/appbuilder/model/useResolveAppBuilderSettings";
+import useQuerySavedState from "@AppBuilderLib/features/model-state/model/useQuerySavedState";
+import {QUERYPARAM_CONTEXT, QUERYPARAM_DISABLEFALLBACKUI, QUERYPARAM_MODELSTATEID, QUERYPARAM_MODELVIEWURL, QUERYPARAM_PARAMVALUE_PREFIX, QUERYPARAM_PLATFORMURL, QUERYPARAM_SAVEDSTATEID, QUERYPARAM_SETTINGSURL, QUERYPARAM_SLUG, QUERYPARAM_TEMPLATE, QUERYPARAM_TICKET} from "@AppBuilderLib/shared/config/queryparams";
+import {getDefaultPlatformUrl} from "@AppBuilderLib/shared/lib/platform/environment";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import useAsync from "@AppBuilderLib/shared/lib/useAsync";
-import {useThemeOverrideStore} from "@AppBuilderLib/shared/model";
+import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
 import {MantineThemeComponent, MantineThemeOverride, useProps} from "@mantine/core";
 import {useCallback, useEffect, useMemo} from "react";
-import {
-	IAppBuilderSettings,
-	IAppBuilderSettingsJson,
-	IAppBuilderSettingsJsonSession,
-	IAppBuilderSettingsSession,
-	validateAppBuilderSettingsJson,
-} from "../config";
+import {IAppBuilderSettings, IAppBuilderSettingsJson, IAppBuilderSettingsJsonSession, IAppBuilderSettingsSession} from "../config/appbuilder";
+import {validateAppBuilderSettingsJson} from "../config/appbuildertypecheck";
 
 declare global {
 	interface Window {

@@ -1,22 +1,14 @@
-import {PropsExport, useExports} from "@AppBuilderLib/entities/export";
-import {
-	OutputStargateComponent,
-	PropsOutput,
-	useOutputs,
-} from "@AppBuilderLib/entities/output";
+import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
+import {useExports} from "@AppBuilderLib/entities/export/model/useExports";
+import OutputStargateComponent from "@AppBuilderLib/entities/output/ui/OutputStargateComponent";
+import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
+import {useOutputs} from "@AppBuilderLib/entities/output/model/useOutputs";
 import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParameters";
-import {
-	AppBuilderActionFromType,
-	ComponentContext,
-	getExportComponent,
-	getParameterComponent,
-	IAppBuilderWidgetPropsControls,
-	isActionRefControl,
-	isExportRefControl,
-	isOutputRefControl,
-	isParameterRefControl,
-} from "@AppBuilderLib/features/appbuilder";
+import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+import {getExportComponent, getParameterComponent} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
+import {IAppBuilderWidgetPropsControls, isActionRefControl, isExportRefControl, isOutputRefControl, isParameterRefControl} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	MantineThemeComponent,
 	Paper,

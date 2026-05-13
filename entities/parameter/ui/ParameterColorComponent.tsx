@@ -7,12 +7,8 @@ import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {
-	ColorFormatType,
-	convertFromSdColor,
-	convertToSdColor,
-} from "@AppBuilderLib/shared/lib";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import {ColorFormatType, convertFromSdColor, convertToSdColor} from "@AppBuilderLib/shared/lib/colors";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {
 	ActionIcon,
 	ColorInput,

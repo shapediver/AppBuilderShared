@@ -1,5 +1,5 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
 	getNodesByName,
 	matchNodesWithPatterns,
@@ -16,7 +16,7 @@ import {
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useId, useMemo, useRef} from "react";
-import {useRestrictions} from "../drawing";
+import {useRestrictions} from "../drawing/useRestrictions";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useGumballEvents} from "./useGumballEvents";
 import {useSelection} from "./useSelection";

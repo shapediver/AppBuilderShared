@@ -1,4 +1,4 @@
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {
 	ActionIcon,
 	Image,

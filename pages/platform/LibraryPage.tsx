@@ -1,11 +1,5 @@
-import {
-	IModelLibraryProps,
-	ModelLibrary,
-} from "@AppBuilderLib/entities/model-card";
-import {
-	ITabsComponentProps,
-	TabsComponent,
-} from "@AppBuilderLib/shared/ui/tabs";
+import ModelLibrary, {IModelLibraryProps} from "@AppBuilderLib/entities/model-card/ui/ModelLibrary";
+import TabsComponent, {ITabsComponentProps} from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
 import {BoxProps} from "@mantine/core";
 import React, {useMemo} from "react";
 import classes from "./LibraryPage.module.css";

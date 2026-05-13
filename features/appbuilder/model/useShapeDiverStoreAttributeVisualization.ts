@@ -1,8 +1,4 @@
-import {
-	IDefaultAttributeCustomData,
-	INumberAttributeCustomData,
-	IShapeDiverStoreAttributeVisualization,
-} from "@AppBuilderLib/features/appbuilder";
+import {IDefaultAttributeCustomData, INumberAttributeCustomData, IShapeDiverStoreAttributeVisualization} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreAttributeVisualization";
 import {AttributeVisualizationEngine} from "@shapediver/viewer.features.attribute-visualization";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

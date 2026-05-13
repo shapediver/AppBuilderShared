@@ -4,9 +4,9 @@ import {
 } from "@AppBuilderLib/entities/parameter/lib/parametersFilter";
 import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {QUERYPARAM_MODELSTATEID} from "@AppBuilderLib/shared/config";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {QUERYPARAM_MODELSTATEID} from "@AppBuilderLib/shared/config/queryparams";
 import {
 	applyModelStateToUrl,
 	ErrorReportingContext,

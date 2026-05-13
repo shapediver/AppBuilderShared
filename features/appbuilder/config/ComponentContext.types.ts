@@ -1,16 +1,13 @@
-import {PropsExportWithForm} from "@AppBuilderLib/entities/export";
-import {ModelCardOverlayPropsType} from "@AppBuilderLib/entities/model-card";
+import {PropsExportWithForm} from "@AppBuilderLib/entities/export/config/propsExport";
+import {ModelCardOverlayPropsType} from "@AppBuilderLib/entities/model-card/ui/ModelCardOverlay";
 import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
-import {
-	ViewportComponentProps,
-	ViewportIconsOptionalProps,
-	ViewportIconsProps,
-	ViewportOverlayWrapperProps,
-} from "@AppBuilderLib/entities/viewport";
-import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay";
+import {ViewportComponentProps} from "@AppBuilderLib/entities/viewport/config/viewport";
+import {ViewportIconsOptionalProps, ViewportIconsProps} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
+import {ViewportOverlayWrapperProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
+import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {MantineThemeComponent} from "@mantine/core";
 import {ReactElement} from "react";
 import {IAppBuilderActionDefinition, IAppBuilderWidget} from "./appbuilder";

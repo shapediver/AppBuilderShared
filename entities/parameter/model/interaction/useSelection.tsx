@@ -1,5 +1,5 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
-import {useShapeDiverStoreInstances} from "@AppBuilderShared/features";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {useShapeDiverStoreInstances} from "@AppBuilderShared/features/appbuilder/model/useShapeDiverStoreInstances";
 import {
 	checkNodeNameMatch,
 	getNodeName,

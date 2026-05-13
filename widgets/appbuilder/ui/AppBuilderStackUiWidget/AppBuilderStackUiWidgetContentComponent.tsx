@@ -1,9 +1,8 @@
-import {
-	AppBuilderStackContext,
-	IAppBuilderWidgetPropsStackUi,
-	useStackContext,
-} from "@AppBuilderLib/features/appbuilder";
-import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
+import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
+import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useStackContext} from "@AppBuilderLib/features/appbuilder/model/useStackContext";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {
 	Box,
 	BoxProps,

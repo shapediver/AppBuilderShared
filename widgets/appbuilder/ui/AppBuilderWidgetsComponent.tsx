@@ -1,25 +1,5 @@
-import {
-	ComponentContext,
-	IAppBuilderWidget,
-	isAccordionUiWidget,
-	isAccordionWidget,
-	isActionsWidget,
-	isAgentWidget,
-	isAreaChartWidget,
-	isBarChartWidget,
-	isControlsWidget,
-	isDesktopClientOutputsWidget,
-	isDesktopClientSelectionWidget,
-	isFormWidget,
-	isImageWidget,
-	isLineChartWidget,
-	isProgressWidget,
-	isRoundChartWidget,
-	isSavedStatesWidget,
-	isStackUiWidget,
-	isTableWidget,
-	isTextWidget,
-} from "@AppBuilderLib/features/appbuilder";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+import {IAppBuilderWidget, isAccordionUiWidget, isAccordionWidget, isActionsWidget, isAgentWidget, isAreaChartWidget, isBarChartWidget, isControlsWidget, isDesktopClientOutputsWidget, isDesktopClientSelectionWidget, isFormWidget, isImageWidget, isLineChartWidget, isProgressWidget, isRoundChartWidget, isSavedStatesWidget, isStackUiWidget, isTableWidget, isTextWidget} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
 import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";
@@ -36,7 +16,7 @@ import AppBuilderLineChartWidgetComponent from "./AppBuilderLineChartWidgetCompo
 import AppBuilderProgressWidgetComponent from "./AppBuilderProgressWidgetComponent";
 import AppBuilderRoundChartWidgetComponent from "./AppBuilderRoundChartWidgetComponent";
 import AppBuilderSavedStatesWidgetComponent from "./AppBuilderSavedStatesWidgetComponent";
-import {AppBuilderStackUiWidgetButtonComponent} from "./AppBuilderStackUiWidget";
+import AppBuilderStackUiWidgetButtonComponent from "./AppBuilderStackUiWidget/AppBuilderStackUiWidgetButtonComponent";
 import AppBuilderTableWidgetComponent from "./AppBuilderTableWidgetComponent";
 import AppBuilderTextWidgetComponent from "./AppBuilderTextWidgetComponent";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(

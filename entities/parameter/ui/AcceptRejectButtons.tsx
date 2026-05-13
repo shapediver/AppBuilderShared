@@ -4,7 +4,7 @@ import {
 	isParamDefinition,
 	useSortedParametersAndExports,
 } from "../model/useSortedParametersAndExports";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {Button, Group, Text} from "@mantine/core";
 import React from "react";
 

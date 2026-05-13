@@ -1,7 +1,4 @@
-import {
-	OverlayPosition,
-	OverlayStyleProps,
-} from "@AppBuilderLib/shared/ui/overlay";
+import {OverlayPosition, OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {
 	ActionIconProps,
 	DividerProps,

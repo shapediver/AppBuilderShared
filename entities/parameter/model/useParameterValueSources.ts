@@ -1,27 +1,13 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
-import {
-	IAppBuilderParameterValueSourceDefinition,
-	IAppBuilderParameterValueSourcePropsDataOutput,
-	IAppBuilderParameterValueSourcePropsExport,
-	IAppBuilderParameterValueSourcePropsModelState,
-	IAppBuilderParameterValueSourcePropsScreenshot,
-	IAppBuilderParameterValueSourcePropsSdtf,
-	isDataOutputSource,
-	isExportSource,
-	isModelStateSource,
-	isScreenshotSource,
-	isSdtfSource,
-} from "@AppBuilderLib/features/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {IAppBuilderParameterValueSourceDefinition, IAppBuilderParameterValueSourcePropsDataOutput, IAppBuilderParameterValueSourcePropsExport, IAppBuilderParameterValueSourcePropsModelState, IAppBuilderParameterValueSourcePropsScreenshot, IAppBuilderParameterValueSourcePropsSdtf, isDataOutputSource, isExportSource, isModelStateSource, isScreenshotSource, isSdtfSource} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {IFileParameterApi, PARAMETER_TYPE} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {
-	useExportSources,
-	useModelStateSources,
-	useOutputDataSources,
-	useScreenshotSources,
-	useSdtfSources,
-} from "./valueSources";
+import {useExportSources} from "./valueSources/useExportSources";
+import {useModelStateSources} from "./valueSources/useModelStateSources";
+import {useOutputDataSources} from "./valueSources/useOutputDataSources";
+import {useScreenshotSources} from "./valueSources/useScreenshotSources";
+import {useSdtfSources} from "./valueSources/useSdtfSources";
 
 type ParameterValueSourcesByType = {
 	outputData: {

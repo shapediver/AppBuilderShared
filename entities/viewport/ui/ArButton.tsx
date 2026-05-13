@@ -1,9 +1,9 @@
-import {Logger} from "@AppBuilderLib/shared/lib";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {Loader, Modal, Text} from "@mantine/core";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import React, {useState} from "react";
-import {CommonButtonProps, IconProps} from "../config";
+import {CommonButtonProps, IconProps} from "../config/types";
 import ViewportIconButton from "./ViewportIconButton";
 import classes from "./ViewportIcons.module.css";
 

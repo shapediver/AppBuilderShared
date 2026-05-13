@@ -3,10 +3,8 @@ import {
 	IUseFindNodesByPatternProps,
 	useFindNodesByPatterns,
 } from "@AppBuilderLib/entities/parameter/model/interaction/useFindNodesByPattern";
-import {
-	useShapeDiverStoreViewport,
-	useViewportId,
-} from "@AppBuilderLib/entities/viewport";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {
 	Box,
 	CAMERA_TYPE,
@@ -17,14 +15,7 @@ import {
 } from "@shapediver/viewer.viewport";
 import {vec3} from "gl-matrix";
 import React, {useCallback, useMemo, useState} from "react";
-import {
-	IAppBuilderActionPropsCamera,
-	isAnimateCameraAction,
-	isAssignCameraAction,
-	isResetCameraAction,
-	isSetCameraAction,
-	isZoomToCameraAction,
-} from "../config";
+import {IAppBuilderActionPropsCamera, isAnimateCameraAction, isAssignCameraAction, isResetCameraAction, isSetCameraAction, isZoomToCameraAction} from "../config/appbuilder";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
 
 type Props = IAppBuilderActionPropsCamera & {

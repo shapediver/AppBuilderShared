@@ -1,5 +1,5 @@
 import {IShapeDiverParameter} from "../config/parameter";
-import {NotificationAction} from "@AppBuilderLib/features/notifications";
+import {NotificationAction} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {z} from "zod";
 
 export interface ParameterValidationResult {

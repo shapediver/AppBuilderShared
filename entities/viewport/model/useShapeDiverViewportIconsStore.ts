@@ -6,7 +6,7 @@ import {
 	ViewportIconViewportState,
 } from "../config/shapediverStoreViewportIcons";
 import {ViewportIconButtonEnum} from "../config/viewportIcons";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {IViewportApi} from "@shapediver/viewer.viewport";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

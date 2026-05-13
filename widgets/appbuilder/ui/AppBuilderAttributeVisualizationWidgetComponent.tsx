@@ -1,21 +1,15 @@
-import {useSdTFData} from "@AppBuilderLib/entities/output";
-import {
-	useShapeDiverStoreViewport,
-	useViewportId,
-} from "@AppBuilderLib/entities/viewport";
-import {ViewportAnchor3d} from "@AppBuilderLib/entities/viewport-anchor";
-import {
-	AttributeVisualizationVisibility,
-	createAttributeId,
-	IAppBuilderWidgetPropsAttributeVisualization,
-	useAttributeOverview,
-	useAttributeSelection,
-	useAttributeVisualizationEngine,
-	useAttributeWidgetVisibilityTracker,
-	useConvertAttributeInputData,
-} from "@AppBuilderLib/features/appbuilder";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {TooltipWrapper} from "@AppBuilderShared/shared";
+import {useSdTFData} from "@AppBuilderLib/entities/output/model/useSdTFData";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import ViewportAnchor3d from "@AppBuilderLib/entities/viewport-anchor/ui/ViewportAnchor3d";
+import {AttributeVisualizationVisibility, IAppBuilderWidgetPropsAttributeVisualization} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {createAttributeId, useConvertAttributeInputData} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useConvertAttributeInputData";
+import {useAttributeOverview} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeOverview";
+import useAttributeSelection from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeSelection";
+import {useAttributeVisualizationEngine} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeVisualizationEngine";
+import {useAttributeWidgetVisibilityTracker} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeWidgetVisibilityTracker";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import TooltipWrapper from "@AppBuilderShared/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
 	Group,
@@ -54,14 +48,10 @@ import React, {
 	useRef,
 	useState,
 } from "react";
-import {
-	ColorAttribute,
-	DefaultAttribute,
-	IDefaultAttributeExtended,
-	INumberAttributeExtended,
-	NumberAttribute,
-	StringAttribute,
-} from "./attributes";
+import ColorAttribute from "./attributes/ColorAttribute";
+import DefaultAttribute, {IDefaultAttributeExtended} from "./attributes/DefaultAttribute";
+import NumberAttribute, {INumberAttributeExtended} from "./attributes/NumberAttribute";
+import StringAttribute from "./attributes/StringAttribute";
 import SelectedAttributeComponent from "./SelectedAttributeComponent";
 
 export type IAttributeDefinition =

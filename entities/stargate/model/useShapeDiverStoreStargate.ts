@@ -1,19 +1,11 @@
-import {
-	IShapeDiverStoreStargateExtended,
-	IStargateClientRef,
-	NetworkStatus,
-	StargateCacheKeyEnum,
-} from "@AppBuilderLib/entities/stargate";
-import {getNotificationActions} from "@AppBuilderLib/features";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config";
-import {
-	exceptionWrapperAsync,
-	shouldUsePlatform,
-} from "@AppBuilderLib/shared/lib";
-import {
-	useShapeDiverStoreErrorReporting,
-	useShapeDiverStorePlatform,
-} from "@AppBuilderLib/shared/model";
+import {IShapeDiverStoreStargateExtended, IStargateClientRef, StargateCacheKeyEnum} from "@AppBuilderLib/entities/stargate/config/shapediverStoreStargate";
+import {NetworkStatus} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {getNotificationActions} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
+import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
+import {useShapeDiverStoreErrorReporting} from "@AppBuilderLib/shared/model/useShapeDiverStoreErrorReporting";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
 	SdStargateError,
 	SdStargateErrorTypes,

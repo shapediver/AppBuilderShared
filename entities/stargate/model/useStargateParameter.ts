@@ -1,13 +1,8 @@
-import {
-	ERROR_TYPE_INTERRUPTED,
-	IBakeDataResultEnum,
-	IGetDataResultEnum,
-	NetworkStatus,
-	useShapeDiverStoreStargate,
-	useStargateGetData,
-} from "@AppBuilderLib/entities/stargate";
-import {useNotificationStore} from "@AppBuilderLib/features";
-import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib";
+import {ERROR_TYPE_INTERRUPTED, useStargateGetData} from "@AppBuilderLib/entities/stargate/api/useStargateGetData";
+import {IBakeDataResultEnum, IGetDataResultEnum, NetworkStatus} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import type {ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1";
 import {useCallback, useEffect, useState} from "react";

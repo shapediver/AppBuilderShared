@@ -2,24 +2,14 @@ import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/mo
 import SelectComponent, {
 	type SelectComponentPropsExt,
 } from "@AppBuilderLib/entities/parameter/ui/select/SelectComponent";
-import {
-	AppBuilderContainerContext,
-	IAppBuilderWidgetPropsSavedStates,
-	ISelectComponentItemDataType,
-	SavedStatesVisualization,
-	SelectComponentType,
-} from "@AppBuilderLib/features/appbuilder";
-import {
-	TSavedStateQueryProps,
-	useShapeDiverStorePlatformSavedStates,
-} from "@AppBuilderLib/features/model-state";
-import {QUERYPARAM_SAVEDSTATEID} from "@AppBuilderLib/shared/config";
-import {
-	applySavedStateToUrl,
-	Logger,
-	URL_CHANGED_EVENT,
-} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
+import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {IAppBuilderWidgetPropsSavedStates, ISelectComponentItemDataType, SavedStatesVisualization, SelectComponentType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {TSavedStateQueryProps} from "@AppBuilderLib/features/model-state/config/shapediverStorePlatformSavedStates";
+import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderLib/features/model-state/model/useShapeDiverStorePlatformSavedStates";
+import {QUERYPARAM_SAVEDSTATEID} from "@AppBuilderLib/shared/config/queryparams";
+import {applySavedStateToUrl, URL_CHANGED_EVENT} from "@AppBuilderLib/shared/lib/modifyUrl";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
 	Alert,
 	Flex,

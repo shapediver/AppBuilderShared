@@ -1,11 +1,11 @@
 import {IAcceptRejectModeSelector} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder";
-import {useEventTracking} from "@AppBuilderLib/shared/lib";
+import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useEventTracking} from "@AppBuilderLib/shared/lib/useEventTracking";
 import {ISessionApi} from "@shapediver/viewer.session";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {SessionCreateDto} from "../config";
+import {SessionCreateDto} from "../config/shapediverStoreSession";
 import {useShapeDiverStoreSession} from "./useShapeDiverStoreSession";
 
 /**

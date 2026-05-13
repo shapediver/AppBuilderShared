@@ -1,6 +1,6 @@
 import {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {IHistoryEntry} from "../config";
+import {IHistoryEntry} from "../config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 interface Props {

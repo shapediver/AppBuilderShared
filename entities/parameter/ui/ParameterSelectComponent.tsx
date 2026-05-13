@@ -7,18 +7,15 @@ import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {
-	ISelectComponentItemDataType,
-	SelectComponentType,
-	validateSelectParameterSettings,
-} from "@AppBuilderLib/features/appbuilder";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Logger} from "@AppBuilderLib/shared/lib";
+import {ISelectComponentItemDataType, SelectComponentType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {validateSelectParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuildertypecheck";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {PARAMETER_VISUALIZATION} from "@shapediver/viewer.session";
 import React, {useCallback, useMemo} from "react";
-import {MultiSelectComponent} from "./multiselect";
-import {SelectComponent, SelectComponentSettings} from "./select";
+import MultiSelectComponent from "./multiselect/MultiSelectComponent";
+import SelectComponent, {SelectComponentSettings} from "./select/SelectComponent";
 
 interface ISelectComponentOverrides {
 	/** Type of select component to use. */
