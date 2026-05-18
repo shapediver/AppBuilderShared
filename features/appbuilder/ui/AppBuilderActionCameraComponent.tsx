@@ -170,7 +170,6 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 						key !== "target" &&
 						!skipKeys.includes(key)
 					) {
-						// @ts-ignore
 						newCamera[key] = (camera as Record<string, any>)[key];
 					}
 				});
@@ -246,7 +245,7 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 				);
 
 			let bb: IBox | undefined = undefined;
-			Object.entries(nodes).forEach(([key, data]) => {
+			Object.entries(nodes).forEach(([_key, data]) => {
 				data.forEach((node) => {
 					if (!bb) bb = new Box();
 					bb.union(node.boundingBox);

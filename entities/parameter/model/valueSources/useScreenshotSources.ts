@@ -16,7 +16,7 @@ export function useScreenshotSources(props: {
 	screenshotValues: (string | undefined)[] | undefined;
 	resetScreenshotValues: () => void;
 } {
-	const {sources, namespace} = props;
+	const {sources} = props;
 
 	const [screenshotValues, setScreenshotValues] = useState<
 		(string | undefined)[] | undefined

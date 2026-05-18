@@ -147,7 +147,7 @@ export function useExportSources(props: {
 					}
 					return undefined;
 				})
-				.catch((error) => {
+				.catch(() => {
 					return undefined;
 				});
 

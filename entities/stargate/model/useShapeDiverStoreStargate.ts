@@ -123,9 +123,9 @@ export const useShapeDiverStoreStargate =
 							// JWT and run the `register` command again - that's it!
 							//
 							// Side note - some technical details:
-							//   The client/SDK never receives any client ID. This ID is the unique ID of the
-							//   websocket connection and handled exclusively on the backend side. That's why
-							//   you don't have to do anything but calling `register` to make it work again.
+							// The client/SDK never receives any client ID. This ID is the unique ID of the
+							// websocket connection and handled exclusively on the backend side. That's why
+							// you don't have to do anything but calling `register` to make it work again.
 							const newClientRef = await authenticate(
 								redirect,
 								true,

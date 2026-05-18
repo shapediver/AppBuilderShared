@@ -50,7 +50,8 @@ export default function DrawingOptionsComponent(props: {
 		return state.viewports[viewportId];
 	});
 	// state for the geometry restriction availability
-	const [hasGeometryRestriction, setHasGeometryRestriction] = useState(false);
+	const [_hasGeometryRestriction, setHasGeometryRestriction] =
+		useState(false);
 
 	/**
 	 * Various effects for the drawing tools API.

@@ -317,8 +317,9 @@ export default function ExportButtonComponent(
 		| undefined
 	>(undefined);
 
-	const {values: parameterValueSourcesResults, isResolving} =
-		useResolveParameterValues(parameterValueSourcesData?.data);
+	const {values: parameterValueSourcesResults} = useResolveParameterValues(
+		parameterValueSourcesData?.data,
+	);
 
 	useEffect(() => {
 		if (!parameterValueSourcesData || !parameterValueSourcesResults) return;

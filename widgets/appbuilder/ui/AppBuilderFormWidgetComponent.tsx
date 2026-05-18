@@ -241,27 +241,24 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 	}, [submit]);
 
 	// Handle form submission with Mantine form validation
-	const handleSubmit = useCallback(
-		async (values: Record<string, any>) => {
-			if (!exportData?.actions) {
-				console.error("Export actions not available");
-				return;
-			}
+	const handleSubmit = useCallback(async () => {
+		if (!exportData?.actions) {
+			console.error("Export actions not available");
+			return;
+		}
 
-			try {
-				// Handle success
-				setIsSuccess(true);
-				if (submit === "reset") {
-					resetParameters();
-				} else if (submit === "message") {
-					setShowMessage(true);
-				}
-			} catch (error) {
-				handleError();
+		try {
+			// Handle success
+			setIsSuccess(true);
+			if (submit === "reset") {
+				resetParameters();
+			} else if (submit === "message") {
+				setShowMessage(true);
 			}
-		},
-		[exportData, submit, resetParameters],
-	);
+		} catch (_error) {
+			handleError();
+		}
+	}, [exportData, submit, resetParameters]);
 
 	const getCustomActions = (
 		paramId: string,
@@ -340,7 +337,7 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 				<ExportComponent
 					{...exportProps}
 					form={form}
-					onSuccess={() => handleSubmit(values)}
+					onSuccess={() => handleSubmit()}
 					onError={handleError}
 					buttonLabel={exportButtonLabel}
 				/>

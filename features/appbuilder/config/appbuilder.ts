@@ -330,7 +330,8 @@ export interface IAppBuilderParameterValueSourcePropsCommon {
  * This parameter value source is compatible with parameters of type "String" and "File".
  * For "File" parameters, the content type "application/json" is used.
  */
-export interface IAppBuilderParameterValueSourcePropsDataOutput extends IAppBuilderParameterValueSourcePropsCommon {}
+export type IAppBuilderParameterValueSourcePropsDataOutput =
+	IAppBuilderParameterValueSourcePropsCommon;
 
 /**
  * Properties for the "export" parameter value source.

@@ -222,7 +222,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 				if (!parameterStore) return () => {};
 
 				// Subscribe to the parameter store's state changes
-				return parameterStore.subscribe((state) => {
+				return parameterStore.subscribe(() => {
 					// Check if any parameter is dirty
 					const anyDirty = parameterValues.some(
 						({parameter: {sessionId, name}}) => {
