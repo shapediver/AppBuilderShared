@@ -7,9 +7,9 @@ import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/mo
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderLib/shared/config/queryparams";
-import {applyModelStateToUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
 import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
+import {applyModelStateToUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
 import {useCallback, useContext, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
