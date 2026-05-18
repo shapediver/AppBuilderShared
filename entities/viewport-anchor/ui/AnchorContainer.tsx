@@ -5,10 +5,7 @@ import {
 } from "@AppBuilderLib/entities/viewport/config/viewportIcons";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {
-	ViewportIconButtonComponent as ViewportIconButton,
-	ViewportIconButtonProps,
-} from "@AppBuilderLib/entities/viewport/ui/index";
+import ViewportIconButton, {ViewportIconButtonProps} from "@AppBuilderLib/entities/viewport/ui/ViewportIconButton";
 import classes from "@AppBuilderLib/entities/viewport/ui/ViewportIcons.module.css";
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderStandardContainerNameType} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";

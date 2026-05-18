@@ -170,7 +170,7 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 						key !== "target" &&
 						!skipKeys.includes(key)
 					) {
-						newCamera[key] = (camera as Record<string, any>)[key];
+						(newCamera as unknown as Record<string, any>)[key] = (camera as Record<string, any>)[key];
 					}
 				});
 			}
