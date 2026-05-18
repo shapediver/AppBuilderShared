@@ -6,14 +6,12 @@ import {
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {
-	useShapeDiverStoreViewport,
-	useViewportId,
-} from "@AppBuilderLib/entities/viewport";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Logger} from "@AppBuilderLib/shared/lib";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {
 	ActionIcon,
 	Box,

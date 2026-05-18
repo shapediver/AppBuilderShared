@@ -1,6 +1,6 @@
 // #region Interfaces (3)
 
-import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder";
+import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 
 export interface IShapeDiverStoreViewportAccessFunctions {

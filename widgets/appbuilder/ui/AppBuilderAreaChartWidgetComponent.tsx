@@ -1,7 +1,4 @@
-import {
-	convertChartData,
-	IAppBuilderWidgetPropsAreaChart,
-} from "@AppBuilderLib/features/appbuilder";
+import {convertChartData, IAppBuilderWidgetPropsAreaChart} from "@AppBuilderLib/features/appbuilder/config/appbuildercharts";
 import {AreaChart, AreaChartProps} from "@mantine/charts";
 import {
 	MantineThemeComponent,

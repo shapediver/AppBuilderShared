@@ -1,18 +1,7 @@
-import {
-	ICustomNotificationData,
-	ICustomNotificationStored,
-	INotificationDataExtended,
-	isCustomNotification,
-	IShapeDiverStoreNotifications,
-	NotificationDisplayMode,
-	NotificationInput,
-	NotificationStyleProps,
-} from "@AppBuilderLib/features/notifications";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config";
-import {
-	getEnvironmentIdentifier,
-	isRunningInPlatform,
-} from "@AppBuilderLib/shared/lib";
+import {ICustomNotificationData, ICustomNotificationStored, INotificationDataExtended, isCustomNotification, IShapeDiverStoreNotifications, NotificationDisplayMode, NotificationInput} from "@AppBuilderLib/features/notifications/config/shapediverStoreNotifications";
+import {NotificationStyleProps} from "@AppBuilderLib/features/notifications/config/notificationcontext";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {getEnvironmentIdentifier, isRunningInPlatform} from "@AppBuilderLib/shared/lib/platform/environment";
 import {notifications} from "@mantine/notifications";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

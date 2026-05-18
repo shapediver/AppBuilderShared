@@ -1,4 +1,4 @@
-import {ViewportControlsVisibilityContext} from "@AppBuilderLib/shared/lib";
+import {ViewportControlsVisibilityContext} from "@AppBuilderLib/shared/lib/ViewportControlsVisibilityContext";
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import {useComputedColorScheme, useProps} from "@mantine/core";
 import {
@@ -7,12 +7,10 @@ import {
 } from "@shapediver/viewer.session";
 import React from "react";
 import {useShallow} from "zustand/react/shallow";
-import {ViewportBrandingProps, ViewportComponentProps} from "../config";
-import {
-	useShapeDiverViewportIconsStore,
-	useViewport,
-	useViewportControlsVisibility,
-} from "../model";
+import {ViewportBrandingProps, ViewportComponentProps} from "../config/viewport";
+import {useShapeDiverViewportIconsStore} from "../model/useShapeDiverViewportIconsStore";
+import {useViewport} from "../model/useViewport";
+import {useViewportControlsVisibility} from "../model/useViewportControlsVisibility";
 import classes from "./ViewportComponent.module.css";
 
 /**

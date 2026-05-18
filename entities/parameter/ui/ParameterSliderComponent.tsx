@@ -8,7 +8,7 @@ import {useParameterComponentCommons} from "../model/useParameterComponentCommon
 import {useSettingsMinMax} from "../model/useSettingsMinMax";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Group,
 	MantineThemeComponent,

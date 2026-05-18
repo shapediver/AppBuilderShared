@@ -1,16 +1,8 @@
-import {
-	IShapeDiverStorePlatformModelExtended,
-	ModelCacheKeyEnum,
-	TModelData,
-	TModelEmbed,
-	TModelQueryPropsExt,
-} from "@AppBuilderLib/entities/model-card";
-import {
-	devtoolsSettings,
-	IPlatformPagedItemQueryProps,
-} from "@AppBuilderLib/shared/config";
-import {defineFilter} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
+import {IShapeDiverStorePlatformModelExtended, ModelCacheKeyEnum, TModelData, TModelEmbed, TModelQueryPropsExt} from "@AppBuilderLib/entities/model-card/config/shapediverStorePlatformModels";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {IPlatformPagedItemQueryProps} from "@AppBuilderLib/shared/config/shapediverStorePlatformGeneric";
+import {defineFilter} from "@AppBuilderLib/shared/lib/platform/filter";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
 	SdPlatformModelQueryEmbeddableFields,
 	SdPlatformModelQueryParameters,

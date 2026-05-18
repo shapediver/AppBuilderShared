@@ -1,8 +1,8 @@
-import {useViewportId} from "@AppBuilderLib/entities/viewport";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Logger} from "@AppBuilderLib/shared/lib";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {
 	ActionIcon,
 	Box,
@@ -30,10 +30,8 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import type {ParameterSelectionComponentStyleProps as StyleProps} from "../config/theme/parameterSelectionComponentTheme";
-import {
-	useSelection,
-	useShapeDiverStoreInteractionRequestManagement,
-} from "../model";
+import {useSelection} from "../model/interaction/useSelection";
+import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";

@@ -1,11 +1,7 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {
-	IShapeDiverStoreSession,
-	SessionCreateDto,
-	UpdateCallbackType,
-} from "@AppBuilderLib/entities/session";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config";
-import {Logger} from "@AppBuilderLib/shared/lib";
+import {IShapeDiverStoreSession, SessionCreateDto, UpdateCallbackType} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {ResErrorType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	createSession,

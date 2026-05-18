@@ -1,6 +1,6 @@
 import {parameterMultiSelect} from "../../lib/parameterMultiSelect";
 import {useCustomHeight} from "../../model/useCustomHeight";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {
 	MantineThemeComponent,
 	SimpleGrid,
@@ -10,7 +10,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useMemo, useState} from "react";
-import {UniversalMultiSelectComponentProps} from "../multiselect";
+import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 import ButtonImageCard from "./ButtonImageCard";
 import {
 	SelectCardStyleProps,

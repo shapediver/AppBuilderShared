@@ -1,33 +1,21 @@
-import {
-	IParameterValues,
-	PropsExportWithForm,
-	useExport,
-} from "@AppBuilderLib/entities/export";
+import {IParameterValues, PropsExportWithForm} from "@AppBuilderLib/entities/export/config/propsExport";
+import {useExport} from "@AppBuilderLib/entities/export/model/useExport";
 import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
 } from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
-import {
-	DefaultStargateStyleProps,
-	ExportStatusEnum,
-	IStargateComponentStatusDefinition,
-	mapStargateComponentStatusDefinition,
-	StargateFileParamPrefix,
-	StargateInput,
-	StargateStatusColorTypeEnum,
-	StargateStyleProps,
-	useStargateExport,
-} from "@AppBuilderLib/entities/stargate";
-import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderLib/features/appbuilder";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {IProcessDefinition} from "@AppBuilderLib/shared/config";
-import {
-	ErrorReportingContext,
-	ExportInterceptorContext,
-} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {DefaultStargateStyleProps, StargateStyleProps} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {ExportStatusEnum, useStargateExport} from "@AppBuilderLib/entities/stargate/model/useStargateExport";
+import {IStargateComponentStatusDefinition, mapStargateComponentStatusDefinition, StargateFileParamPrefix, StargateStatusColorTypeEnum} from "@AppBuilderLib/entities/stargate/config/stargate";
+import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
+import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Button,
 	ButtonProps,

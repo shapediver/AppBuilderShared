@@ -1,16 +1,9 @@
-import {
-	IShapeDiverStorePlatformSavedStateExtended,
-	SavedStateCacheKeyEnum,
-	TSavedStateData,
-	TSavedStateEmbed,
-	TSavedStateQueryPropsExt,
-} from "@AppBuilderLib/features/model-state";
-import {
-	devtoolsSettings,
-	IPlatformPagedItemQueryProps,
-} from "@AppBuilderLib/shared/config";
-import {defineFilter, Logger} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
+import {IShapeDiverStorePlatformSavedStateExtended, SavedStateCacheKeyEnum, TSavedStateData, TSavedStateEmbed, TSavedStateQueryPropsExt} from "@AppBuilderLib/features/model-state/config/shapediverStorePlatformSavedStates";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {IPlatformPagedItemQueryProps} from "@AppBuilderLib/shared/config/shapediverStorePlatformGeneric";
+import {defineFilter} from "@AppBuilderLib/shared/lib/platform/filter";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
 	SdPlatformQueryResponse,
 	SdPlatformRequestSavedStatePatch,

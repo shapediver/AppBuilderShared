@@ -6,9 +6,9 @@ import {
 	PropsParameterWithForm,
 } from "../config/propsParameter";
 import {useParameter} from "./useParameter";
-import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
+import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 

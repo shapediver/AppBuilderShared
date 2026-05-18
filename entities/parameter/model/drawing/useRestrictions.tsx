@@ -8,12 +8,8 @@ import {
 } from "@shapediver/viewer.features.drawing-tools";
 import {IDrawingParameterSettings, ITreeNode} from "@shapediver/viewer.session";
 import {useEffect, useMemo, useState} from "react";
-import {
-	IUseCreateNameFilterPatternProps,
-	IUseFindNodesByPatternProps,
-	useCreateNameFilterPatterns,
-	useFindNodesByPatterns,
-} from "../interaction";
+import {IUseCreateNameFilterPatternProps, useCreateNameFilterPatterns} from "../interaction/useCreateNameFilterPattern";
+import {IUseFindNodesByPatternProps, useFindNodesByPatterns} from "../interaction/useFindNodesByPattern";
 
 // #region Functions (1)
 

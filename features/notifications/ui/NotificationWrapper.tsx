@@ -1,7 +1,5 @@
-import {
-	NotificationStyleProps,
-	useNotificationStore,
-} from "@AppBuilderLib/features/notifications";
+import {NotificationStyleProps} from "@AppBuilderLib/features/notifications/config/notificationcontext";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useEffect} from "react";
 

@@ -1,8 +1,8 @@
-import {useViewportId} from "@AppBuilderLib/entities/viewport";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Logger} from "@AppBuilderLib/shared/lib";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
 import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
 import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";

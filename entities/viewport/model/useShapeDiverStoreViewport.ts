@@ -1,4 +1,4 @@
-import {devtoolsSettings} from "@AppBuilderLib/shared/config";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {createViewport, IViewportApi} from "@shapediver/viewer.viewport";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

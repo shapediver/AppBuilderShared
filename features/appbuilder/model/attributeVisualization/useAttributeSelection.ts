@@ -1,7 +1,7 @@
 import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
-import {IAttributeDefinition} from "@AppBuilderLib/widgets/appbuilder";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {IAttributeDefinition} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAttributeVisualizationWidgetComponent";
 import {getNodesByName} from "@shapediver/viewer.features.interaction";
 import {
 	ISDTFAttributeData,

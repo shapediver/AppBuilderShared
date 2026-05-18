@@ -1,11 +1,7 @@
-import {
-	OverlayPosition,
-	OverlayStyleProps,
-	OverlayWrapper,
-} from "@AppBuilderLib/shared/ui/overlay";
+import OverlayWrapper, {OverlayPosition, OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {useProps} from "@mantine/core";
 import React from "react";
-import {ViewportOverlayWrapperProps} from "../config";
+import {ViewportOverlayWrapperProps} from "../config/viewportOverlayWrapper";
 
 const defaultStyleProps: OverlayStyleProps = {
 	position: {

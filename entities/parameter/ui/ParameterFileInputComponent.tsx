@@ -6,21 +6,15 @@ import {
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
-import {
-	DefaultStargateStyleProps,
-	IStargateComponentStatusDefinition,
-	mapStargateComponentStatusDefinition,
-	ParameterStatusEnum,
-	StargateFileParamPrefix,
-	StargateInput,
-	StargateStatusColorTypeEnum,
-	StargateStyleProps,
-	useStargateParameter,
-} from "@AppBuilderLib/entities/stargate";
-import {Logger} from "@AppBuilderLib/shared/lib";
-import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {DefaultStargateStyleProps, StargateStyleProps} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {IStargateComponentStatusDefinition, mapStargateComponentStatusDefinition, StargateFileParamPrefix, StargateStatusColorTypeEnum} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {ParameterStatusEnum, useStargateParameter} from "@AppBuilderLib/entities/stargate/model/useStargateParameter";
+import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
 	ActionIconProps,

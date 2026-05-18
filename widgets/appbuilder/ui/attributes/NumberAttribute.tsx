@@ -1,7 +1,5 @@
-import {
-	INumberAttributeCustomData,
-	useShapeDiverStoreAttributeVisualization,
-} from "@AppBuilderLib/features/appbuilder";
+import {INumberAttributeCustomData} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreAttributeVisualization";
+import {useShapeDiverStoreAttributeVisualization} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreAttributeVisualization";
 import {
 	MantineThemeComponent,
 	RangeSlider,
