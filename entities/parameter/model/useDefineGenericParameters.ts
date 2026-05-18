@@ -1,6 +1,10 @@
 import {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {IAcceptRejectModeSelector, IGenericParameterDefinition, IGenericParameterExecutor} from "../config/shapediverStoreParameters";
+import {
+	IAcceptRejectModeSelector,
+	IGenericParameterDefinition,
+	IGenericParameterExecutor,
+} from "../config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**

@@ -1,10 +1,13 @@
 import {IShapeDiverOutputDefinition} from "@AppBuilderLib/entities/output/config/output";
 import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {ERROR_TYPE_INTERRUPTED} from "@AppBuilderLib/entities/stargate/api/useStargateGetData";
-import {IBakeDataResultEnum, NetworkStatus} from "@AppBuilderLib/entities/stargate/config/stargate";
-import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
 import {useStargateBakeData} from "@AppBuilderLib/entities/stargate/api/useStargateBakeData";
+import {ERROR_TYPE_INTERRUPTED} from "@AppBuilderLib/entities/stargate/api/useStargateGetData";
+import {
+	IBakeDataResultEnum,
+	NetworkStatus,
+} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";
 import {

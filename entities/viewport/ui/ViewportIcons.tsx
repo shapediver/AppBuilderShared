@@ -1,10 +1,18 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {ButtonRenderContext, getViewportIconComponent} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+import {
+	ButtonRenderContext,
+	getViewportIconComponent,
+} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {ViewportIconButtonEnum, ViewportIconsDefaultStyleProps, ViewportIconsOptionalProps, ViewportIconsProps} from "../config/viewportIcons";
+import {
+	ViewportIconButtonEnum,
+	ViewportIconsDefaultStyleProps,
+	ViewportIconsOptionalProps,
+	ViewportIconsProps,
+} from "../config/viewportIcons";
 import {useShapeDiverStoreViewport} from "../model/useShapeDiverStoreViewport";
 import {useShapeDiverViewportIconsStore} from "../model/useShapeDiverViewportIconsStore";
 import {useViewportControls} from "../model/useViewportControls";

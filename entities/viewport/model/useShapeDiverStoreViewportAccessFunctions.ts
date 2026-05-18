@@ -1,7 +1,7 @@
-import {IShapeDiverStoreViewportAccessFunctionsStore} from "../config/shapediverStoreViewportAccessFunctions";
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
+import {IShapeDiverStoreViewportAccessFunctionsStore} from "../config/shapediverStoreViewportAccessFunctions";
 
 /**
  * Store for ShapeDiver viewport access functions.

@@ -1,14 +1,17 @@
-import type {
-	SelectComponentProps,
-	SelectComponentSettings,
-} from "../select/SelectComponent";
-import SelectDropDownComponent from "../select/SelectDropDownComponent";
-import {ISelectComponentItemDataType, SelectComponentType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	ISelectComponentItemDataType,
+	SelectComponentType,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import React from "react";
 import SelectButtonFlexComponent from "../select/SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "../select/SelectButtonGroupComponent";
 import SelectCarouselComponent from "../select/SelectCarouselComponent";
 import SelectChipGroupComponent from "../select/SelectChipGroupComponent";
+import type {
+	SelectComponentProps,
+	SelectComponentSettings,
+} from "../select/SelectComponent";
+import SelectDropDownComponent from "../select/SelectDropDownComponent";
 import SelectFullWidthCardsComponent from "../select/SelectFullWidthCards";
 import SelectGridComponent from "../select/SelectGridComponent";
 import MultiSelectCheckboxesComponent from "./MultiSelectCheckboxesComponent";

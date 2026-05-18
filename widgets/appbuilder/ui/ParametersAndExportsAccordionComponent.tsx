@@ -1,6 +1,6 @@
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
-import OutputStargateComponent from "@AppBuilderLib/entities/output/ui/OutputStargateComponent";
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
+import OutputStargateComponent from "@AppBuilderLib/entities/output/ui/OutputStargateComponent";
 import {PropsParameter} from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {
 	isExportDefinition,
@@ -9,7 +9,10 @@ import {
 	useSortedParametersAndExports,
 } from "@AppBuilderLib/entities/parameter/model/useSortedParametersAndExports";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import {getExportComponent, getParameterComponent} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
+import {
+	getExportComponent,
+	getParameterComponent,
+} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {
 	Accordion,
 	AccordionControlProps,

@@ -1,4 +1,9 @@
-import {IPlatformItem, IPlatformPagedItemQueryProps, IShapeDiverStorePlatformGeneric, IShapeDiverStorePlatformGenericExtended} from "@AppBuilderLib/shared/config/shapediverStorePlatformGeneric";
+import {
+	IPlatformItem,
+	IPlatformPagedItemQueryProps,
+	IShapeDiverStorePlatformGeneric,
+	IShapeDiverStorePlatformGenericExtended,
+} from "@AppBuilderLib/shared/config/shapediverStorePlatformGeneric";
 import {
 	SdPlatformRequestSavedStatePatch,
 	SdPlatformResponseSavedStatePublic,

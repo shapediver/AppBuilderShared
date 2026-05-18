@@ -1,4 +1,3 @@
-import type {Mat4Array} from "../../config/common";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {getNodesByName} from "@shapediver/viewer.features.interaction";
 import {
@@ -8,6 +7,7 @@ import {
 } from "@shapediver/viewer.session";
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useId, useMemo, useRef} from "react";
+import type {Mat4Array} from "../../config/common";
 import {useRestrictions} from "../drawing/useRestrictions";
 import {useConvertDraggingData} from "./useConvertDraggingData";
 import {useDragManager} from "./useDragManager";

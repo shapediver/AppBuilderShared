@@ -1,4 +1,7 @@
-import {getStargateSDK, useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
+import {
+	getStargateSDK,
+	useShapeDiverStoreStargate,
+} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
 import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import type {ISdStargateExportFileReplyDto} from "@shapediver/sdk.stargate-sdk-v1";

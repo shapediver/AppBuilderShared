@@ -1,6 +1,9 @@
 import {createGridLayout} from "@AppBuilderLib/shared/lib/layout";
-import {ResponsiveValueType, useResponsiveValueSelector} from "@AppBuilderLib/shared/lib/useResponsiveValueSelector";
 import {useIsLandscape} from "@AppBuilderLib/shared/lib/useIsLandscape";
+import {
+	ResponsiveValueType,
+	useResponsiveValueSelector,
+} from "@AppBuilderLib/shared/lib/useResponsiveValueSelector";
 import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
 import {
 	AppShell,

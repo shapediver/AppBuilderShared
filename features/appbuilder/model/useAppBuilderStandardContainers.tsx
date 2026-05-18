@@ -6,12 +6,19 @@ import {
 	IAppBuilderTemplatePageContainerHints,
 	IAppBuilderTemplatePageProps,
 } from "@AppBuilderLib/pages/config/appbuildertemplates";
+import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
+import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
 import React, {useContext, useEffect, useMemo} from "react";
-import {AppBuilderContainerNameType, IAppBuilder, IAppBuilderContainer, IAppBuilderSettingsResolved, IAppBuilderSettingsSession, isStandardContainer} from "../config/appbuilder";
+import {
+	AppBuilderContainerNameType,
+	IAppBuilder,
+	IAppBuilderContainer,
+	IAppBuilderSettingsResolved,
+	IAppBuilderSettingsSession,
+	isStandardContainer,
+} from "../config/appbuilder";
 import {ComponentContext} from "../config/ComponentContext";
 import {useShapeDiverStoreStandardContainers} from "./useShapeDiverStoreStandardContainers";
-import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
-import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
 
 interface Props {
 	namespace: string;

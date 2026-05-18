@@ -1,7 +1,7 @@
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
-import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import React, {useCallback, useState} from "react";
 import {IAppBuilderLegacyActionPropsCreateModelState} from "../config/appbuilder";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";

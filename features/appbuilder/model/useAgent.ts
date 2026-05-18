@@ -5,7 +5,10 @@ import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/mo
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {getParameterRefs} from "@AppBuilderLib/features/appbuilder/lib/appbuilder";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
-import {composeSdColor, decomposeSdColor} from "@AppBuilderLib/shared/lib/colors";
+import {
+	composeSdColor,
+	decomposeSdColor,
+} from "@AppBuilderLib/shared/lib/colors";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import Langfuse, {LangfuseWeb, observeOpenAI} from "langfuse";

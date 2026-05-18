@@ -1,7 +1,7 @@
 import {NetworkStatus} from "@AppBuilderLib/entities/stargate/config/stargate";
 import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps, IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";

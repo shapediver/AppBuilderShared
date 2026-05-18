@@ -1,4 +1,3 @@
-import {useCustomHeight} from "../../model/useCustomHeight";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Checkbox,
@@ -9,6 +8,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
+import {useCustomHeight} from "../../model/useCustomHeight";
 import {MultiSelectComponentProps} from "./MultiSelectComponent";
 
 interface StyleProps {

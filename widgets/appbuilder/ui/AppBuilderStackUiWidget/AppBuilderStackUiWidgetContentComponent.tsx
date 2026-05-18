@@ -1,5 +1,5 @@
-import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
 import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
 import {useStackContext} from "@AppBuilderLib/features/appbuilder/model/useStackContext";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";

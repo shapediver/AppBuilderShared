@@ -1,4 +1,7 @@
-import {DummyECommerceApi, ECommerceApiFactory} from "@AppBuilderLib/features/ecommerce/api/ecommerceapi";
+import {
+	DummyECommerceApi,
+	ECommerceApiFactory,
+} from "@AppBuilderLib/features/ecommerce/api/ecommerceapi";
 import {isRunningInPlatform} from "@AppBuilderLib/shared/lib/platform/environment";
 import {IECommerceApi} from "../config/ecommerceapi";
 

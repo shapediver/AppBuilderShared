@@ -1,4 +1,7 @@
-import {ResponsiveValueType, useResponsiveValueSelector} from "@AppBuilderLib/shared/lib/useResponsiveValueSelector";
+import {
+	ResponsiveValueType,
+	useResponsiveValueSelector,
+} from "@AppBuilderLib/shared/lib/useResponsiveValueSelector";
 import React, {useMemo} from "react";
 
 export const OverlayPosition = {

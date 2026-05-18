@@ -1,13 +1,13 @@
 import {IShapeDiverExport} from "@AppBuilderLib/entities/export/config/export";
 import {IShapeDiverOutput} from "@AppBuilderLib/entities/output/config/output";
-import {
-	IShapeDiverParameter,
-	IShapeDiverParameterDefinition,
-} from "./parameter";
 import {IEventTracking} from "@AppBuilderLib/shared/config/eventTracking";
 import {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {ISessionApi} from "@shapediver/viewer.session";
 import {StoreApi, UseBoundStore} from "zustand";
+import {
+	IShapeDiverParameter,
+	IShapeDiverParameterDefinition,
+} from "./parameter";
 
 /** A store for an individual parameter. */
 export type IParameterStore = UseBoundStore<

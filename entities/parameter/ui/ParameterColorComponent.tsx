@@ -1,13 +1,8 @@
 import {
-	defaultPropsParameterWrapper,
-	PropsParameterComponent,
-	PropsParameterWrapper,
-} from "../config/propsParameter";
-import {useFocus} from "../model/useFocus";
-import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
-import ParameterLabelComponent from "./ParameterLabelComponent";
-import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {ColorFormatType, convertFromSdColor, convertToSdColor} from "@AppBuilderLib/shared/lib/colors";
+	ColorFormatType,
+	convertFromSdColor,
+	convertToSdColor,
+} from "@AppBuilderLib/shared/lib/colors";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {
 	ActionIcon,
@@ -16,6 +11,15 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useEffect, useState} from "react";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameterComponent,
+	PropsParameterWrapper,
+} from "../config/propsParameter";
+import {useFocus} from "../model/useFocus";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 interface StyleProps {
 	colorFormat: ColorFormatType;

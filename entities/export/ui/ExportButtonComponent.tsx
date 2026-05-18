@@ -1,13 +1,27 @@
-import {IParameterValues, PropsExportWithForm} from "@AppBuilderLib/entities/export/config/propsExport";
+import {
+	IParameterValues,
+	PropsExportWithForm,
+} from "@AppBuilderLib/entities/export/config/propsExport";
 import {useExport} from "@AppBuilderLib/entities/export/model/useExport";
 import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
 } from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
-import {DefaultStargateStyleProps, StargateStyleProps} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
-import {ExportStatusEnum, useStargateExport} from "@AppBuilderLib/entities/stargate/model/useStargateExport";
-import {IStargateComponentStatusDefinition, mapStargateComponentStatusDefinition, StargateFileParamPrefix, StargateStatusColorTypeEnum} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {
+	IStargateComponentStatusDefinition,
+	mapStargateComponentStatusDefinition,
+	StargateFileParamPrefix,
+	StargateStatusColorTypeEnum,
+} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {
+	ExportStatusEnum,
+	useStargateExport,
+} from "@AppBuilderLib/entities/stargate/model/useStargateExport";
 import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import {
+	DefaultStargateStyleProps,
+	StargateStyleProps,
+} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";

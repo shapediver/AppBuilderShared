@@ -6,11 +6,16 @@ import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
-import TabsComponent, {ITabsComponentProps} from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
+import TabsComponent, {
+	ITabsComponentProps,
+} from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
 import ParametersAndExportsAccordionComponent from "@AppBuilderLib/widgets/appbuilder/ui/ParametersAndExportsAccordionComponent";
 import {MultiSelect, Notification} from "@mantine/core";
 import React, {useMemo} from "react";
-import {ISelectedModel, useModelSelectStore} from "../model/useModelSelectStore";
+import {
+	ISelectedModel,
+	useModelSelectStore,
+} from "../model/useModelSelectStore";
 
 interface Props {
 	exampleModels: IShapeDiverExampleModels;

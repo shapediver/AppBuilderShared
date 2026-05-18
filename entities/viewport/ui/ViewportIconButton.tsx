@@ -10,7 +10,10 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import {ViewportIconButtonDefaultStyleProps, ViewportIconButtonStyleProps} from "../config/viewportIcons";
+import {
+	ViewportIconButtonDefaultStyleProps,
+	ViewportIconButtonStyleProps,
+} from "../config/viewportIcons";
 import classes from "./ViewportIcons.module.css";
 
 interface Props {

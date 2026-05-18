@@ -6,7 +6,10 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import {CommonButtonProps, ViewportIconButtonDropdownSections} from "../config/types";
+import {
+	CommonButtonProps,
+	ViewportIconButtonDropdownSections,
+} from "../config/types";
 import {ViewportTransparentBackgroundStyle} from "../config/viewport";
 import useIconMenu from "../model/useIconMenu";
 import ViewportIconButton, {

@@ -1,13 +1,19 @@
 import {useSdTFData} from "@AppBuilderLib/entities/output/model/useSdTFData";
+import ViewportAnchor3d from "@AppBuilderLib/entities/viewport-anchor/ui/ViewportAnchor3d";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import ViewportAnchor3d from "@AppBuilderLib/entities/viewport-anchor/ui/ViewportAnchor3d";
-import {AttributeVisualizationVisibility, IAppBuilderWidgetPropsAttributeVisualization} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {createAttributeId, useConvertAttributeInputData} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useConvertAttributeInputData";
+import {
+	AttributeVisualizationVisibility,
+	IAppBuilderWidgetPropsAttributeVisualization,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {useAttributeOverview} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeOverview";
 import useAttributeSelection from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeSelection";
 import {useAttributeVisualizationEngine} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeVisualizationEngine";
 import {useAttributeWidgetVisibilityTracker} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeWidgetVisibilityTracker";
+import {
+	createAttributeId,
+	useConvertAttributeInputData,
+} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useConvertAttributeInputData";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderShared/shared/ui/tooltip/TooltipWrapper";
 import {
@@ -49,8 +55,12 @@ import React, {
 	useState,
 } from "react";
 import ColorAttribute from "./attributes/ColorAttribute";
-import DefaultAttribute, {IDefaultAttributeExtended} from "./attributes/DefaultAttribute";
-import NumberAttribute, {INumberAttributeExtended} from "./attributes/NumberAttribute";
+import DefaultAttribute, {
+	IDefaultAttributeExtended,
+} from "./attributes/DefaultAttribute";
+import NumberAttribute, {
+	INumberAttributeExtended,
+} from "./attributes/NumberAttribute";
 import StringAttribute from "./attributes/StringAttribute";
 import SelectedAttributeComponent from "./SelectedAttributeComponent";
 

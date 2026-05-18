@@ -1,4 +1,7 @@
-import {IUseSessionDto, useSession} from "@AppBuilderLib/entities/session/model/useSession";
+import {
+	IUseSessionDto,
+	useSession,
+} from "@AppBuilderLib/entities/session/model/useSession";
 import {useAppBuilderCustomParameters} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
 import {IAppBuilder, IAppBuilderSettingsSession} from "../config/appbuilder";
 import {validateAppBuilder} from "../config/appbuildertypecheck";

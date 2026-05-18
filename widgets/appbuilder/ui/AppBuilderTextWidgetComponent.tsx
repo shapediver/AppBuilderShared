@@ -1,5 +1,5 @@
-import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {IAppBuilderWidgetPropsText} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import {
 	MantineStyleProp,

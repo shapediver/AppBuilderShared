@@ -5,7 +5,10 @@ import {
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {ViewportComponentProps} from "@AppBuilderLib/entities/viewport/config/viewport";
-import {ViewportIconsOptionalProps, ViewportIconsProps} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
+import {
+	ViewportIconsOptionalProps,
+	ViewportIconsProps,
+} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
 import {ViewportOverlayWrapperProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
 import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {MantineThemeComponent} from "@mantine/core";

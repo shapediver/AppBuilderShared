@@ -11,7 +11,10 @@ import ParameterStargateComponent from "@AppBuilderLib/entities/parameter/ui/Par
 import ParameterStringComponent from "@AppBuilderLib/entities/parameter/ui/ParameterStringComponent";
 import {CommonButtonProps} from "@AppBuilderLib/entities/viewport/config/types";
 import {ViewportIconButtonEnum} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
-import {IComponentContext, ParameterComponentMapValueType} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
+import {
+	IComponentContext,
+	ParameterComponentMapValueType,
+} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {EXPORT_TYPE, PARAMETER_TYPE} from "@shapediver/viewer.session";
 

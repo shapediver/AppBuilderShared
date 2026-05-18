@@ -7,7 +7,10 @@ import {
 } from "@shapediver/viewer.session";
 import React from "react";
 import {useShallow} from "zustand/react/shallow";
-import {ViewportBrandingProps, ViewportComponentProps} from "../config/viewport";
+import {
+	ViewportBrandingProps,
+	ViewportComponentProps,
+} from "../config/viewport";
 import {useShapeDiverViewportIconsStore} from "../model/useShapeDiverViewportIconsStore";
 import {useViewport} from "../model/useViewport";
 import {useViewportControlsVisibility} from "../model/useViewportControlsVisibility";

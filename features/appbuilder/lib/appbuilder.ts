@@ -1,4 +1,8 @@
-import {IAppBuilder, IAppBuilderParameterRef, isAccordionWidget} from "../config/appbuilder";
+import {
+	IAppBuilder,
+	IAppBuilderParameterRef,
+	isAccordionWidget,
+} from "../config/appbuilder";
 
 /**
  * Given an App Builder data object, return all parameter references

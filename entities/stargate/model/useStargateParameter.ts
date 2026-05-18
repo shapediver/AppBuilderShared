@@ -1,5 +1,12 @@
-import {ERROR_TYPE_INTERRUPTED, useStargateGetData} from "@AppBuilderLib/entities/stargate/api/useStargateGetData";
-import {IBakeDataResultEnum, IGetDataResultEnum, NetworkStatus} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {
+	ERROR_TYPE_INTERRUPTED,
+	useStargateGetData,
+} from "@AppBuilderLib/entities/stargate/api/useStargateGetData";
+import {
+	IBakeDataResultEnum,
+	IGetDataResultEnum,
+	NetworkStatus,
+} from "@AppBuilderLib/entities/stargate/config/stargate";
 import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper";

@@ -1,5 +1,8 @@
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
-import {IEventTracking, IEventTrackingProps} from "@AppBuilderLib/shared/config/eventTracking";
+import {
+	IEventTracking,
+	IEventTrackingProps,
+} from "@AppBuilderLib/shared/config/eventTracking";
 import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {roundToBracket} from "@AppBuilderLib/shared/lib/numerics";

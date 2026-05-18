@@ -1,5 +1,25 @@
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import {IAppBuilderWidget, isAccordionUiWidget, isAccordionWidget, isActionsWidget, isAgentWidget, isAreaChartWidget, isBarChartWidget, isControlsWidget, isDesktopClientOutputsWidget, isDesktopClientSelectionWidget, isFormWidget, isImageWidget, isLineChartWidget, isProgressWidget, isRoundChartWidget, isSavedStatesWidget, isStackUiWidget, isTableWidget, isTextWidget} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	IAppBuilderWidget,
+	isAccordionUiWidget,
+	isAccordionWidget,
+	isActionsWidget,
+	isAgentWidget,
+	isAreaChartWidget,
+	isBarChartWidget,
+	isControlsWidget,
+	isDesktopClientOutputsWidget,
+	isDesktopClientSelectionWidget,
+	isFormWidget,
+	isImageWidget,
+	isLineChartWidget,
+	isProgressWidget,
+	isRoundChartWidget,
+	isSavedStatesWidget,
+	isStackUiWidget,
+	isTableWidget,
+	isTextWidget,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
 import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";

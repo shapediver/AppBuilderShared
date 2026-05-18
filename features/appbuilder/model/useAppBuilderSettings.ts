@@ -1,13 +1,34 @@
 import useResolveAppBuilderSettings from "@AppBuilderLib/features/appbuilder/model/useResolveAppBuilderSettings";
 import useQuerySavedState from "@AppBuilderLib/features/model-state/model/useQuerySavedState";
-import {QUERYPARAM_CONTEXT, QUERYPARAM_DISABLEFALLBACKUI, QUERYPARAM_MODELSTATEID, QUERYPARAM_MODELVIEWURL, QUERYPARAM_PARAMVALUE_PREFIX, QUERYPARAM_PLATFORMURL, QUERYPARAM_SAVEDSTATEID, QUERYPARAM_SETTINGSURL, QUERYPARAM_SLUG, QUERYPARAM_TEMPLATE, QUERYPARAM_TICKET} from "@AppBuilderLib/shared/config/queryparams";
-import {getDefaultPlatformUrl} from "@AppBuilderLib/shared/lib/platform/environment";
+import {
+	QUERYPARAM_CONTEXT,
+	QUERYPARAM_DISABLEFALLBACKUI,
+	QUERYPARAM_MODELSTATEID,
+	QUERYPARAM_MODELVIEWURL,
+	QUERYPARAM_PARAMVALUE_PREFIX,
+	QUERYPARAM_PLATFORMURL,
+	QUERYPARAM_SAVEDSTATEID,
+	QUERYPARAM_SETTINGSURL,
+	QUERYPARAM_SLUG,
+	QUERYPARAM_TEMPLATE,
+	QUERYPARAM_TICKET,
+} from "@AppBuilderLib/shared/config/queryparams";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {getDefaultPlatformUrl} from "@AppBuilderLib/shared/lib/platform/environment";
 import useAsync from "@AppBuilderLib/shared/lib/useAsync";
 import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
-import {MantineThemeComponent, MantineThemeOverride, useProps} from "@mantine/core";
+import {
+	MantineThemeComponent,
+	MantineThemeOverride,
+	useProps,
+} from "@mantine/core";
 import {useCallback, useEffect, useMemo} from "react";
-import {IAppBuilderSettings, IAppBuilderSettingsJson, IAppBuilderSettingsJsonSession, IAppBuilderSettingsSession} from "../config/appbuilder";
+import {
+	IAppBuilderSettings,
+	IAppBuilderSettingsJson,
+	IAppBuilderSettingsJsonSession,
+	IAppBuilderSettingsSession,
+} from "../config/appbuilder";
 import {validateAppBuilderSettingsJson} from "../config/appbuildertypecheck";
 
 declare global {
@@ -16,7 +37,9 @@ declare global {
 		 * Update the theme at runtime for testing purposes.
 		 * Accepts an app settings object with a `themeOverrides` property (i.e. the full JSON file).
 		 */
-		updateTheme: (settings: {themeOverrides?: MantineThemeOverride}) => void;
+		updateTheme: (settings: {
+			themeOverrides?: MantineThemeOverride;
+		}) => void;
 	}
 }
 
@@ -263,9 +286,12 @@ export default function useAppBuilderSettings(
 	}, [settings?.themeOverrides]);
 
 	// expose window.updateTheme for runtime testing
-	const updateTheme = useCallback((input: {themeOverrides?: MantineThemeOverride}) => {
-		setThemeOverride(input.themeOverrides ?? {});
-	}, [setThemeOverride]);
+	const updateTheme = useCallback(
+		(input: {themeOverrides?: MantineThemeOverride}) => {
+			setThemeOverride(input.themeOverrides ?? {});
+		},
+		[setThemeOverride],
+	);
 	useEffect(() => {
 		window.updateTheme = updateTheme;
 

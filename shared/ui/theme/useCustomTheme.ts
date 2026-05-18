@@ -15,14 +15,17 @@ import {DefaultSessionThemeProps} from "@AppBuilderLib/entities/session/model/us
 import {DesktopClientPanelThemeProps} from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
 import {StargateInputThemeProps} from "@AppBuilderLib/entities/stargate/ui/StargateInput";
 import {StargateSharedThemeProps} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
-import {ViewportBrandingThemeProps, ViewportComponentThemeProps} from "@AppBuilderLib/entities/viewport/config/viewport";
-import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderLib/entities/viewport/ui/ViewportIconButtonDropdown";
-import {ViewportIconButtonThemeProps} from "@AppBuilderLib/entities/viewport/ui/ViewportIconButton";
+import {
+	ViewportBrandingThemeProps,
+	ViewportComponentThemeProps,
+} from "@AppBuilderLib/entities/viewport/config/viewport";
 import {ViewportIconsThemeProps} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
 import {ViewportOverlayWrapperThemeProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
-import {AppBuilderActionComponentThemeProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionComponent";
+import {ViewportIconButtonThemeProps} from "@AppBuilderLib/entities/viewport/ui/ViewportIconButton";
+import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderLib/entities/viewport/ui/ViewportIconButtonDropdown";
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+import {AppBuilderActionComponentThemeProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionComponent";
 import {CreateModelStateHookThemeProps} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {NotificationWrapperThemeProps} from "@AppBuilderLib/features/notifications/ui/NotificationWrapper";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -32,9 +35,9 @@ import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon/Icon";
 import {MarkdownWidgetComponentProps} from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import {ModalBaseThemeProps} from "@AppBuilderLib/shared/ui/modal/ModalBase";
 import {TooltipWrapperThemeProps} from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
+import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/config/appBuilderAgentWidget";
 import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAccordionUiWidgetComponent";
 import {AppBuilderAccordionWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAccordionWidgetComponent";
-import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/config/appBuilderAgentWidget";
 import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAreaChartWidgetComponent";
 import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderControlsWidgetComponent";
 import {AppBuilderFormWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFormWidgetComponent";
