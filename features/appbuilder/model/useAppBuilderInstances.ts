@@ -7,7 +7,6 @@ import {
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {ResOutput, ResOutputContent} from "@shapediver/sdk.geometry-api-sdk-v2";
@@ -31,6 +30,7 @@ import {useShapeDiverStoreInstances} from "./useShapeDiverStoreInstances";
 
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 interface Props {
 	namespace: string;
@@ -660,18 +660,21 @@ const adjustCamerasToInstances = async (
 	// when the session first loaded.
 	if (!firstLoadDoneRef.current) {
 		firstLoadDoneRef.current = true;
-		const {viewports, viewportDtos} = useShapeDiverStoreViewport.getState();
-		for (const viewport of Object.values(viewports)) {
-			const cameraInitialAutoAdjust = viewport.camera?.initialAutoAdjust;
-			const dtoInitialAutoAdjust =
-				viewportDtos[viewport.id]?.initialAutoAdjust;
-			if (
-				(cameraInitialAutoAdjust || dtoInitialAutoAdjust) &&
-				viewport.camera
-			) {
-				viewport.camera.zoomTo(undefined, {
-					duration: 0,
-				});
+		const {viewportAccessFunctions} =
+			useShapeDiverStoreViewportAccessFunctions.getState();
+		for (const viewportAccessFunction of Object.values(
+			viewportAccessFunctions,
+		)) {
+			if (viewportAccessFunction.zoomTo) {
+				if (viewportAccessFunction.dto?.initialAutoAdjust) {
+					viewportAccessFunction.zoomTo(false, {
+						duration: 0,
+					});
+				} else {
+					viewportAccessFunction.zoomTo(true, {
+						duration: 0,
+					});
+				}
 			}
 		}
 	}
@@ -679,11 +682,13 @@ const adjustCamerasToInstances = async (
 	// trigger a zoomTo on all viewports to adjust the camera to the new geometry
 	// this is necessary because the new instances may have geometry that is outside of the current camera view
 	// we do this after the instances are added to the session node to ensure that the geometry is in the scene when we trigger the zoomTo
-	const {viewports} = useShapeDiverStoreViewport.getState();
-	for (const viewport of Object.values(viewports)) {
-		const cameraAutoAdjust = viewport.camera?.autoAdjust;
-		if (cameraAutoAdjust && viewport.camera) {
-			viewport.camera.zoomTo(undefined, {
+	const {viewportAccessFunctions} =
+		useShapeDiverStoreViewportAccessFunctions.getState();
+	for (const viewportAccessFunction of Object.values(
+		viewportAccessFunctions,
+	)) {
+		if (viewportAccessFunction.zoomTo) {
+			viewportAccessFunction.zoomTo(true, {
 				duration: 0,
 			});
 		}

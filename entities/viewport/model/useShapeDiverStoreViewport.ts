@@ -24,7 +24,6 @@ export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 	devtools(
 		(set, get) => ({
 			viewports: {},
-			viewportDtos: {},
 
 			createViewport: async (dto: ViewportCreateDto, callbacks) => {
 				// in case a viewport with the same identifier exists, skip creating a new one
@@ -57,10 +56,6 @@ export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 							viewports: {
 								...state.viewports,
 								...(viewport ? {[viewport.id]: viewport} : {}),
-							},
-							viewportDtos: {
-								...state.viewportDtos,
-								...(viewport ? {[viewport.id]: dto} : {}),
 							},
 						};
 					},
@@ -98,12 +93,8 @@ export const useShapeDiverStoreViewport = create<IShapeDiverStoreViewport>()(
 								newViewports[id] = state.viewports[id];
 						});
 
-						const newViewportDtos = {...state.viewportDtos};
-						delete newViewportDtos[viewportId];
-
 						return {
 							viewports: newViewports,
-							viewportDtos: newViewportDtos,
 						};
 					},
 					false,

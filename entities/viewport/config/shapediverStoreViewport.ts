@@ -30,11 +30,6 @@ export interface IShapeDiverStoreViewport {
 	viewports: IShapeDiverStoreViewports;
 
 	/**
-	 * The creation DTOs of the viewports, keyed by viewport id.
-	 */
-	viewportDtos: IShapeDiverStoreViewportDtos;
-
-	/**
 	 * Create a viewport and add it to the store.
 	 * @param dto
 	 * @returns

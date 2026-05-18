@@ -91,6 +91,7 @@ export function useViewport(props: ViewportCreateDto) {
 
 			if (viewportApi)
 				addViewportAccessFunctions(_props.id, {
+					dto: _props,
 					convertToGlTF: async () => {
 						return viewportApi.convertToGlTF(undefined, true);
 					},
@@ -119,6 +120,21 @@ export function useViewport(props: ViewportCreateDto) {
 					},
 					removeFlag: (token: string) =>
 						viewportApi.removeFlag(token),
+					zoomTo: (
+						useAutoAdjustSetting: boolean,
+						options?: {duration?: number},
+					) => {
+						if (!viewportApi.camera) return;
+
+						if (
+							useAutoAdjustSetting &&
+							viewportApi.camera?.autoAdjust
+						) {
+							viewportApi.camera.zoomTo(undefined, options);
+						} else if (!useAutoAdjustSetting) {
+							viewportApi.camera.zoomTo(undefined, options);
+						}
+					},
 				});
 		});
 
