@@ -1065,6 +1065,7 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	allowPointerEvents: z.boolean().optional(),
 	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
 	previewIcon: z.string().optional(),
+	useCloseButton: z.boolean().optional(),
 	draggable: z.boolean().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),

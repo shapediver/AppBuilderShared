@@ -982,6 +982,8 @@ export type AppBuilderAnchorContainerProperties = {
 	allowPointerEvents?: boolean;
 	/** Optional icon to be displayed to show the container. */
 	previewIcon?: IconType;
+	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
+	useCloseButton?: boolean;
 	/** Optional width of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
 	width?: string | number;
 	/** Optional height of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
@@ -1023,8 +1025,6 @@ export type AppBuilderAnchor2dContainerProperties = {
 export type AppBuilderAnchor3dContainerProperties = {
 	/** 3D location */
 	location: number[];
-	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
-	useCloseButton?: boolean;
 	/** Option to make the anchor hideable by geometry in the scene (default: false) */
 	hideable?: boolean;
 } & AppBuilderAnchorContainerProperties;

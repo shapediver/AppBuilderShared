@@ -520,7 +520,9 @@ export function useAnchorContainer({
 	const hasCloseIcon = useMemo(
 		() =>
 			canBeHidden &&
-			(closingStrategy === "button" || useCloseButton) &&
+			(closingStrategy === "button"
+				? useCloseButton !== false
+				: !!useCloseButton) &&
 			!disabled,
 		[canBeHidden, closingStrategy, useCloseButton, disabled],
 	);
