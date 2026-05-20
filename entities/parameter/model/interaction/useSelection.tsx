@@ -192,11 +192,32 @@ export function useSelection(
 		const newSelectedNodeNames: string[] = [];
 		if (selectedNodeNames.length > 0 && availableNodeNames) {
 			selectedNodeNames.forEach((name) => {
+				// Try exact match first
+				let found = false;
 				Object.values(availableNodeNames).forEach((availableNames) => {
 					if (availableNames.map((n) => n.name).includes(name)) {
 						newSelectedNodeNames.push(name);
+						found = true;
 					}
 				});
+
+				// If not found (e.g. geometry changed after computation), try fallback:
+				// find the first available node with the same output name prefix so that
+				// selection is preserved across geometry updates.
+				if (!found) {
+					const outputPrefix = name.split(".")[0];
+					for (const availableNames of Object.values(
+						availableNodeNames,
+					)) {
+						const fallback = availableNames.find(
+							(n) => n.name.split(".")[0] === outputPrefix,
+						);
+						if (fallback) {
+							newSelectedNodeNames.push(fallback.name);
+							break;
+						}
+					}
+				}
 			});
 		}
 
@@ -226,9 +247,20 @@ export function useSelection(
 		setAvailableNodes(nodes.map((n) => n.node));
 	}, [availableNodeNames, selectedNodeNames]);
 
-	// in case selection becomes active or the output node changes, restore the selection status
+	// in case selection becomes active or the output node changes, restore the selection status.
+	// availableNodeNames is included so this effect also fires after a computation update:
+	// the viewer replaces the output node in-place (outputsPerSession reference stays the same),
+	// but createOutputUpdateCallback updates availableNodeNames after adding InteractionData to
+	// the new nodes, so we re-apply the selection effect at that point.
+	// selectedNodeNames is included so this effect also fires when Effect 1 above maps a stale
+	// selected name to a fallback available name (e.g. after a geometry change where the exact
+	// child path no longer exists in the new output tree).
+	// Skip when selectedNodeNames is empty: there is nothing to restore, and calling
+	// restoreNodeSelection with an empty list would unconditionally deselect all nodes
+	// (undoing a selection that was just re-applied by a prior effect run).
 	useEffect(() => {
 		if (!selectManager) return;
+		if (selectedNodeNames.length === 0) return;
 
 		restoreSelection(
 			outputsPerSession,
@@ -238,7 +270,14 @@ export function useSelection(
 			selectedNodeNames,
 			strictNaming,
 		);
-	}, [outputsPerSession, instances, componentId, selectManager]);
+	}, [
+		outputsPerSession,
+		instances,
+		componentId,
+		selectManager,
+		availableNodeNames,
+		selectedNodeNames,
+	]);
 
 	// we need to return the available node names in a dictionary for each output
 	// therefore we need to transform the availableNodeNames object into a dictionary
@@ -421,13 +460,12 @@ const restoreNodeSelection = (
 			const interactionData = node.data.filter(
 				(d) => d instanceof InteractionData,
 			) as InteractionData[];
-			if (
-				interactionData.some(
-					(d) =>
-						d instanceof InteractionData &&
-						d.restrictedManagers.includes(componentId),
-				)
-			)
+			const hasInteractionData = interactionData.some(
+				(d) =>
+					d instanceof InteractionData &&
+					d.restrictedManagers.includes(componentId),
+			);
+			if (hasInteractionData)
 				mgr.select({distance: 1, point: vec3.create(), node: node});
 		} else {
 			// For output nodes: pass parts without the output name prefix (parts.slice(1)).
