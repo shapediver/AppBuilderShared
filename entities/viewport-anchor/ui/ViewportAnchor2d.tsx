@@ -76,6 +76,8 @@ export default function ViewportAnchor2d(
 		portalRef,
 		controlElementGroupRef,
 		canvas,
+		canvasWidth,
+		canvasHeight,
 		portalUpdate,
 		controlElementGroupUpdate,
 	} = useAnchorContainer({
@@ -92,6 +94,17 @@ export default function ViewportAnchor2d(
 		initializedRef.current = false;
 		setUpdatePositionCalculation((prev) => prev + 1);
 	}, [showContent]);
+
+	/**
+	 * This effect resets positioning when the canvas is resized.
+	 * This is necessary when width/height are specified as percentages, because
+	 * the initial canvas size is 0 and the first positioning run uses an incorrect
+	 * offsetWidth. When the canvas reaches its actual size the position must be recalculated.
+	 */
+	useEffect(() => {
+		initializedRef.current = false;
+		setUpdatePositionCalculation((prev) => prev + 1);
+	}, [canvasWidth, canvasHeight]);
 
 	/**
 	 * The main use effect for the anchor.
@@ -184,6 +197,7 @@ export default function ViewportAnchor2d(
 		inputLocation,
 		justification,
 		dragOffset,
+		showContent,
 	]);
 
 	/**

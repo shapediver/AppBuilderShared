@@ -675,6 +675,8 @@ export function useAnchorContainer({
 		showContent,
 		zIndex,
 		canvas,
+		canvasWidth,
+		canvasHeight,
 		portalRef,
 		portalUpdate,
 		controlElementGroupRef,
