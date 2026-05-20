@@ -126,9 +126,9 @@ export function useExportSources(props: {
 					) {
 						const content = response.content[0];
 						const url = content.href;
-						const res = await fetch(url);
+						const res = await e.fetch(url);
 						const fetched = await (typeof res === "string"
-							? fetch(res)
+							? e.fetch(res)
 							: Promise.resolve(res));
 						const blob = await fetched.blob();
 						const file = new File(
