@@ -48,7 +48,7 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 	const [loading, setLoading] = useState(false);
 
 	const label = useMemo(() => {
-		if (props.label) return props.label;
+		if (props.label !== undefined) return props.label;
 		if (isAnimateCameraAction(props)) return "Animate camera";
 		if (isAssignCameraAction(props)) return "Assign camera";
 		if (isSetCameraAction(props)) return "Set camera";

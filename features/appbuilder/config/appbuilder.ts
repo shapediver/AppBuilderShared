@@ -257,7 +257,7 @@ export interface IAppBuilderActionDefinition {
 
 /** Common properties of App Builder action controls and legacy actions. */
 export interface IAppBuilderActionPropsCommon {
-	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. */
+	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. Set to empty string to show only an icon. */
 	label?: string;
 	/** Optional icon (of the button etc). */
 	icon?: IconType;
