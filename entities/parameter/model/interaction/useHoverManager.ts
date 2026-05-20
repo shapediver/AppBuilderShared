@@ -62,7 +62,7 @@ const cleanUpHoverManager = (
 export function useHoverManager(
 	viewportId: string,
 	componentId: string,
-	settings?: Pick<IInteractionParameterProps, "hoverColor">,
+	settings?: Pick<IInteractionParameterProps, "hoverColor" | "occludeBySceneGeometry">,
 ): {
 	/**
 	 * The hover manager that was created for the viewport.
@@ -150,6 +150,7 @@ export function useHoverManager(
 		) {
 			// create the hover manager with the given settings
 			const hoverManager = new HoverManager(componentId, hoverEffect);
+			hoverManager.occludeBySceneGeometry = settings.occludeBySceneGeometry ?? false;
 			const token = interactionEngine.addInteractionManager(hoverManager);
 			hoverManagers[viewportId][componentId] = {hoverManager, token};
 			setHoverManager(
