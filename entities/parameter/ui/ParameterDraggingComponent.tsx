@@ -39,7 +39,7 @@ const parseDraggedNodes = (
 	try {
 		const parsed = JSON.parse(value);
 
-		return parsed.objects;
+		return parsed.objects ?? [];
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	} catch (e) {
 		return [];
