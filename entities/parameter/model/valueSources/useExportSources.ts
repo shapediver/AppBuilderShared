@@ -44,12 +44,15 @@ export function useExportSources(props: {
 
 	// get all export APIs from store
 	// we don't use the useExports hook here because instances are not registered as exports in the store
-	const exportApis: (IExportApi | undefined)[] = useShapeDiverStoreSession(
+	const exportApis: {
+		export: IExportApi | undefined;
+		jwtToken: string | undefined;
+	}[] = useShapeDiverStoreSession(
 		useShallow((state) => {
 			return exportMap.map(({namespace, exportId}) => {
-				if (!state) return;
+				if (!state) return {export: undefined, jwtToken: undefined};
 				const session = state.sessions[namespace];
-				if (!session) return;
+				if (!session) return {export: undefined, jwtToken: undefined};
 
 				const exportApi = Object.values(session.exports).find(
 					(e) =>
@@ -57,7 +60,7 @@ export function useExportSources(props: {
 						e.name === exportId ||
 						e.displayname === exportId,
 				);
-				return exportApi;
+				return {export: exportApi, jwtToken: session.jwtToken};
 			});
 		}),
 	);
@@ -66,6 +69,7 @@ export function useExportSources(props: {
 	const exportResults:
 		| {
 				export: IExportApi | undefined;
+				jwtToken: string | undefined;
 				parameterValues?: {
 					[key: string]: IAppBuilderParameterValueDefinition;
 				};
@@ -74,7 +78,8 @@ export function useExportSources(props: {
 		| undefined = useMemo(() => {
 		if (!exportApis || !sources) return undefined;
 		return exportApis.map((exportItem, index) => ({
-			export: exportItem,
+			export: exportItem.export,
+			jwtToken: exportItem.jwtToken,
 			parameterValues: sources[index].source.parameterValues,
 			upload: sources[index].upload,
 		}));
@@ -99,7 +104,12 @@ export function useExportSources(props: {
 		const promises = [];
 
 		for (let i = 0; i < exportResults.length; i++) {
-			const {export: e, upload, parameterValues} = exportResults[i];
+			const {
+				export: e,
+				jwtToken,
+				upload,
+				parameterValues,
+			} = exportResults[i];
 
 			if (!e) {
 				Logger.warn(`Export for parameter value source not found.`);
@@ -126,9 +136,12 @@ export function useExportSources(props: {
 					) {
 						const content = response.content[0];
 						const url = content.href;
-						const res = await e.fetch(url);
+						const authHeaders = jwtToken
+							? {Authorization: jwtToken}
+							: undefined;
+						const res = await fetch(url, {headers: authHeaders});
 						const fetched = await (typeof res === "string"
-							? e.fetch(res)
+							? fetch(res, {headers: authHeaders})
 							: Promise.resolve(res));
 						const blob = await fetched.blob();
 						const file = new File(
