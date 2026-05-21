@@ -1,6 +1,5 @@
 import {
 	AppBuilderContainerContext,
-	AppBuilderContainerOrientationType,
 	IAppBuilderContainerContext,
 	usePropsAppBuilder,
 } from "@AppBuilderLib/features/appbuilder";
@@ -12,21 +11,20 @@ import AppBuilderVerticalContainer, {
 } from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 import {MantineThemeComponent, StyleProp} from "@mantine/core";
 import React, {CSSProperties, useContext} from "react";
+import type {AppBuilderContainerThemeDefaultProps} from "./AppBuilderContainer.types";
 
 interface Props {
 	children?: React.ReactNode;
 	style?: StyleProp<CSSProperties>;
 }
 
-interface StyleProps {
-	orientation: AppBuilderContainerOrientationType;
-}
-
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps = {
 	orientation: "unspecified",
-};
+} as const satisfies Pick<AppBuilderContainerThemeDefaultProps, "orientation">;
 
-type AppBuilderContainerThemePropsType = Partial<StyleProps> &
+type AppBuilderContainerThemePropsType = Partial<
+	Pick<AppBuilderContainerThemeDefaultProps, "orientation">
+> &
 	AppBuilderVerticalContainerThemePropsType &
 	AppBuilderHorizontalContainerThemePropsType;
 

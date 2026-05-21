@@ -8,16 +8,11 @@ import {MantineThemeComponent, useProps} from "@mantine/core";
 import {ISessionApi} from "@shapediver/viewer.session";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
+import type {CreateModelStateHookThemeDefaultProps} from "./useCreateModelState.types";
 
-interface ThemeProps {
-	parameterNamesToInclude?: string[];
-	parameterNamesToExclude?: string[];
-	parameterNamesToAlwaysExclude?: string[];
-}
+type CreateModelStateHookThemePropsType = Partial<CreateModelStateHookThemeDefaultProps>;
 
-const defaultThemeProps: Partial<ThemeProps> = {};
-
-type CreateModelStateHookThemePropsType = Partial<ThemeProps>;
+const defaultThemeProps: CreateModelStateHookThemeDefaultProps = {};
 
 export function CreateModelStateHookThemeProps(
 	props: CreateModelStateHookThemePropsType,

@@ -34,7 +34,9 @@ export const IconThemeDefaultPropsSchema = z.strictObject({
 	stroke: z.string().optional(),
 });
 
-export type IconThemeDefaultProps = z.infer<typeof IconThemeDefaultPropsSchema>;
+/** TypeDoc surface for `useProps("Icon", …)` theme defaults (schema is JSON source of truth). */
+export interface IconThemeDefaultProps
+	extends z.infer<typeof IconThemeDefaultPropsSchema> {}
 
 /** Defaults passed to `useProps`; validated so drift vs schema fails in tests/runtime. */
 export const iconThemeDefaultStyleProps: IconThemeDefaultProps =

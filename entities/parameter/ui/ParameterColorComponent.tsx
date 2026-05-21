@@ -7,11 +7,7 @@ import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {
-	ColorFormatType,
-	convertFromSdColor,
-	convertToSdColor,
-} from "@AppBuilderLib/shared/lib";
+import {convertFromSdColor, convertToSdColor} from "@AppBuilderLib/shared/lib";
 import {Icon} from "@AppBuilderLib/shared/ui/icon";
 import {
 	ActionIcon,
@@ -20,16 +16,14 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useEffect, useState} from "react";
+import type {ParameterColorComponentThemeDefaultProps} from "./ParameterColorComponent.types";
 
-interface StyleProps {
-	colorFormat: ColorFormatType;
-}
-
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps = {
 	colorFormat: "rgba",
-};
+} as const satisfies ParameterColorComponentThemeDefaultProps;
 
-type ParameterColorComponentPropsType = Partial<StyleProps>;
+type ParameterColorComponentPropsType =
+	Partial<ParameterColorComponentThemeDefaultProps>;
 
 export function ParameterColorComponentThemeProps(
 	props: ParameterColorComponentPropsType,
@@ -45,12 +39,14 @@ export function ParameterColorComponentThemeProps(
  * @returns
  */
 export default function ParameterColorComponent(
-	props: PropsParameterComponent & Partial<PropsParameterWrapper>,
+	props: PropsParameterComponent &
+		Partial<PropsParameterWrapper> &
+		Partial<ParameterColorComponentThemeDefaultProps>,
 ) {
 	const {colorFormat} = useProps(
 		"ParameterColorComponent",
 		defaultStyleProps,
-		defaultStyleProps,
+		props,
 	);
 
 	const {wrapperComponent, wrapperProps} = useProps(

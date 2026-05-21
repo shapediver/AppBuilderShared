@@ -1,6 +1,5 @@
 import {
 	AppBuilderContainerContext,
-	AppBuilderContainerOrientationType,
 	AppBuilderTemplateContext,
 	IAppBuilderContainerContext,
 } from "@AppBuilderLib/features/appbuilder";
@@ -12,10 +11,11 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useContext} from "react";
+import type {AppBuilderContainerThemeDefaultProps} from "./AppBuilderContainer.types";
 
 interface Props {
 	name: string;
-	orientation?: AppBuilderContainerOrientationType;
+	orientation?: AppBuilderContainerThemeDefaultProps["orientation"];
 	children?: React.ReactNode;
 }
 

@@ -18,6 +18,7 @@ import {
 } from "@mantine/core";
 import {PARAMETER_TYPE} from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useState} from "react";
+import type {ParameterSliderComponentThemeDefaultProps} from "./ParameterSliderComponent.types";
 
 interface NumberFormatValues {
 	/** The value converted to a float, if valid. */
@@ -75,17 +76,13 @@ const _roundAndClamp = (
 	return +n.toFixed(decimalplaces);
 };
 
-interface StyleProps {
-	sliderWidth: string | number | undefined;
-	numberWidth: string | number | undefined;
-}
-
-export const defaultStyleProps: Partial<StyleProps> = {
+export const defaultStyleProps = {
 	sliderWidth: "60%",
 	numberWidth: "35%",
-};
+} as const satisfies ParameterSliderComponentThemeDefaultProps;
 
-type ParameterSliderComponentThemePropsType = Partial<StyleProps>;
+type ParameterSliderComponentThemePropsType =
+	Partial<ParameterSliderComponentThemeDefaultProps>;
 
 export function ParameterSliderComponentThemeProps(
 	props: ParameterSliderComponentThemePropsType,
@@ -104,7 +101,7 @@ export function ParameterSliderComponentThemeProps(
 export default function ParameterSliderComponent(
 	props: PropsParameterComponent &
 		Partial<PropsParameterWrapper> &
-		Partial<StyleProps>,
+		Partial<ParameterSliderComponentThemeDefaultProps>,
 ) {
 	const {
 		definition,

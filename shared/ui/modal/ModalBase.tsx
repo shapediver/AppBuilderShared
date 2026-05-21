@@ -167,7 +167,7 @@ export default function ModalBase(props: Props & Partial<StyleProps>) {
 		...rest
 	} = props;
 
-	const styleProps = useProps("UniversalModal", defaultStyleProps, rest);
+	const styleProps = useProps("ModalBase", defaultStyleProps, rest);
 	const {
 		stackGap,
 		groupGap,

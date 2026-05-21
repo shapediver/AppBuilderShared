@@ -1,5 +1,6 @@
 import type {MantineThemeComponent} from "@mantine/core";
 import type {InteractionEffect} from "@shapediver/viewer.shared.types";
+import type {ParameterSelectionComponentThemeDefaultProps} from "./parameterInteractionThemeDefaultProps";
 
 export interface ParameterSelectionComponentStyleProps {
 	selectionColor?: InteractionEffect;
@@ -8,7 +9,7 @@ export interface ParameterSelectionComponentStyleProps {
 }
 
 export type ParameterSelectionComponentThemePropsInput =
-	Partial<ParameterSelectionComponentStyleProps>;
+	Partial<ParameterSelectionComponentThemeDefaultProps>;
 
 export function ParameterSelectionComponentThemeProps(
 	props: ParameterSelectionComponentThemePropsInput,
