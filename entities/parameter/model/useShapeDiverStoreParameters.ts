@@ -1762,6 +1762,7 @@ export const useShapeDiverStoreParameters =
 					} catch {
 						// find history entry whose parameter values match the given entry
 						const index = history.findIndex((e) => {
+							if (!e.state || !entry.state) return false;
 							const namespaces = Object.keys(e.state);
 							if (
 								namespaces.length !==

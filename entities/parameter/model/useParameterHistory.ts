@@ -34,7 +34,7 @@ export function useParameterHistory(props: Props) {
 	/** Handler for history events */
 	useEffect(() => {
 		const handlePopState = async (event: any) => {
-			if (!event.state) return;
+			if (!event.state || !event.state.state) return;
 			const entry = event.state as IHistoryEntry;
 			await restoreHistoryStateFromEntry(entry);
 		};
