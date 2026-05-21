@@ -17,7 +17,7 @@ import {
 	isNumberGradient,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {Converter} from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import BaseAttribute from "./BaseAttribute";
 
@@ -81,6 +81,9 @@ export default function NumberAttribute(
 				customAttributeData: state.customAttributeData,
 			})),
 		);
+
+	const customAttributeDataRef = useRef(customAttributeData);
+	customAttributeDataRef.current = customAttributeData;
 
 	const [gradientColorStops, setGradientColorStops] =
 		useState<JSX.Element[]>();
@@ -241,7 +244,7 @@ export default function NumberAttribute(
 
 	useEffect(() => {
 		// Get the custom attribute data
-		const widgetData = customAttributeData[widgetId];
+		const widgetData = customAttributeDataRef.current[widgetId];
 		const customValues = widgetData?.[name + "_" + attribute.type] as
 			| INumberAttributeCustomData
 			| undefined;
@@ -318,7 +321,7 @@ export default function NumberAttribute(
 		} else {
 			setMultiplyingFactor(1);
 		}
-	}, [widgetId, attribute, customAttributeData]);
+	}, [widgetId, attribute]);
 
 	/**
 	 * Update the custom min and max values
