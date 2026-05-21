@@ -1,8 +1,8 @@
-import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {useMemo} from "react";
-import {useShallow} from "zustand/react/shallow";
-import {IShapeDiverOutput} from "../config/output";
+import { PropsOutput } from "@AppBuilderLib/entities/output/config/propsOutput";
+import { useShapeDiverStoreParameters } from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import { useMemo } from "react";
+import { useShallow } from "zustand/react/shallow";
+import { IShapeDiverOutput } from "../config/output";
 
 /**
  * Hook providing a shortcut to abstracted outputs managed by {@link useShapeDiverStoreParameters}.
@@ -14,23 +14,21 @@ import {IShapeDiverOutput} from "../config/output";
  * @returns
  */
 export function useOutput(props: PropsOutput) {
-	const {namespace, outputId} = props;
+	const { namespace, outputId } = props;
 	const output = useShapeDiverStoreParameters(
 		useShallow((state) => {
-			const output = state.getOutput(
-				namespace,
-				outputId,
-			)?.((state) => state as IShapeDiverOutput);
-			return output;
+			const _output = state.getOutput(namespace, outputId);
+			if (!_output) return undefined;
+			return _output.getState() as IShapeDiverOutput;
 		}),
 	);
 
 	const memoizedOutput = useMemo(() => {
 		return output
 			? {
-					...output,
-					definition: {...output.definition, ...props.overrides},
-				}
+				...output,
+				definition: { ...output.definition, ...props.overrides },
+			}
 			: undefined;
 	}, [output, props.overrides]);
 
