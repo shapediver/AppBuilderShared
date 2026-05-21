@@ -1,4 +1,31 @@
+import {ParameterColorComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/ui/ParameterColorComponent.types";
+import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import {formatAppBuilderZodError, validateAppBuilderSettingsJson} from "./appbuildertypecheck";
+
+/** `src/shared` root (this file: features/appbuilder/config). */
+const SHARED_SRC_ROOT = path.resolve(__dirname, "../../..");
+
+/** Modules allowed to import `themeComponentDefaultPropsRegistry` (settings JSON pipeline only). */
+const ALLOWED_THEME_REGISTRY_IMPORTERS = new Set([
+	"features/appbuilder/config/appbuildertypecheck.ts",
+	"features/appbuilder/config/themeComponentDefaultPropsRegistry.ts",
+	"features/appbuilder/config/typedoc-theme-default-props.entry.ts",
+]);
+
+function listTypeScriptFilesUnder(dir: string, acc: string[] = []): string[] {
+	for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+		if (entry.name === "node_modules" || entry.name === "dist") continue;
+		const fullPath = path.join(dir, entry.name);
+		if (entry.isDirectory()) {
+			listTypeScriptFilesUnder(fullPath, acc);
+		} else if (/\.(ts|tsx)$/.test(entry.name) && !/\.(test|spec)\.(ts|tsx)$/.test(entry.name)) {
+			acc.push(fullPath);
+		}
+	}
+	return acc;
+}
 
 const minimalValidSettings = {
 	version: "1.0" as const,
@@ -235,5 +262,102 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		const msg = formatAppBuilderZodError(result.error);
 		expect(msg).toMatch(/AppBuilderContainer/i);
 		expect(msg).toMatch(/defaultProps/i);
+	});
+});
+
+/**
+ * R3 — theme `defaultProps` for registered custom components are validated only when
+ * settings JSON is parsed (`validateAppBuilderSettingsJson`), not on Mantine `useProps`
+ * merges when instance/theme props change at runtime.
+ */
+describe("validateAppBuilderSettingsJson theme validation singularity (R3)", () => {
+	it("calls registry schema safeParse once per registered component per settings parse", () => {
+		const iconSpy = jest.spyOn(IconThemeDefaultPropsSchema, "safeParse");
+		const colorSpy = jest.spyOn(
+			ParameterColorComponentThemeDefaultPropsSchema,
+			"safeParse",
+		);
+
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			themeOverrides: {
+				components: {
+					Icon: {defaultProps: {size: "md"}},
+					ParameterColorComponent: {defaultProps: {colorFormat: "hexa"}},
+				},
+			},
+		});
+
+		expect(result.success).toBe(true);
+		expect(iconSpy).toHaveBeenCalledTimes(1);
+		expect(colorSpy).toHaveBeenCalledTimes(1);
+
+		iconSpy.mockRestore();
+		colorSpy.mockRestore();
+	});
+
+	it("does not call registry schema safeParse when settings have no themeOverrides.components", () => {
+		const iconSpy = jest.spyOn(IconThemeDefaultPropsSchema, "safeParse");
+
+		validateAppBuilderSettingsJson(minimalValidSettings);
+
+		expect(iconSpy).not.toHaveBeenCalled();
+		iconSpy.mockRestore();
+	});
+
+	it("imports themeComponentDefaultPropsRegistry only from the settings validation pipeline", () => {
+		const offenders: string[] = [];
+
+		for (const filePath of listTypeScriptFilesUnder(SHARED_SRC_ROOT)) {
+			const rel = path.relative(SHARED_SRC_ROOT, filePath).replace(/\\/g, "/");
+			const source = fs.readFileSync(filePath, "utf8");
+			if (
+				!/(?:import|from)\s+[\s\S]*themeComponentDefaultPropsRegistry/.test(
+					source,
+				)
+			) {
+				continue;
+			}
+			if (!ALLOWED_THEME_REGISTRY_IMPORTERS.has(rel)) {
+				offenders.push(rel);
+			}
+		}
+
+		expect(offenders).toEqual([]);
+	});
+
+	it("useAppBuilderSettings calls validateAppBuilderSettingsJson only in the JSON fetch path", () => {
+		const source = fs.readFileSync(
+			path.join(SHARED_SRC_ROOT, "features/appbuilder/model/useAppBuilderSettings.ts"),
+			"utf8",
+		);
+		expect(source.match(/validateAppBuilderSettingsJson\s*\(/g)).toHaveLength(1);
+		expect(source).toMatch(
+			/const validate = \(data: any\)[\s\S]*validateAppBuilderSettingsJson\(data\)/,
+		);
+		expect(source).not.toMatch(
+			/setThemeOverride[\s\S]*validateAppBuilderSettingsJson/,
+		);
+	});
+
+	it("custom component modules do not safeParse theme JSON at runtime (useProps merge only)", () => {
+		const runtimeComponentPaths = [
+			"entities/parameter/ui/ParameterColorComponent.tsx",
+			"entities/parameter/ui/ParameterSliderComponent.tsx",
+			"shared/ui/icon/Icon.tsx",
+			"pages/misc/LoaderPage.tsx",
+			"pages/templates/AppBuilderTemplateSelector.tsx",
+			"pages/templates/AppBuilderContainer.tsx",
+		];
+
+		for (const rel of runtimeComponentPaths) {
+			const source = fs.readFileSync(
+				path.join(SHARED_SRC_ROOT, rel),
+				"utf8",
+			);
+			expect(source).not.toMatch(/validateAppBuilderSettingsJson/);
+			expect(source).not.toMatch(/themeComponentDefaultPropsRegistry/);
+			expect(source).not.toMatch(/ThemeDefaultPropsSchema\.safeParse/);
+		}
 	});
 });
