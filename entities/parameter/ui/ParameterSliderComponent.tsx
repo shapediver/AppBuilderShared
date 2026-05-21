@@ -1,3 +1,13 @@
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
+import {
+	Group,
+	MantineThemeComponent,
+	NumberInput,
+	Slider,
+	useProps,
+} from "@mantine/core";
+import {PARAMETER_TYPE} from "@shapediver/viewer.session";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,
@@ -8,16 +18,6 @@ import {useParameterComponentCommons} from "../model/useParameterComponentCommon
 import {useSettingsMinMax} from "../model/useSettingsMinMax";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
-import {
-	Group,
-	MantineThemeComponent,
-	NumberInput,
-	Slider,
-	useProps,
-} from "@mantine/core";
-import {PARAMETER_TYPE} from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useMemo, useState} from "react";
 
 interface NumberFormatValues {
 	/** The value converted to a float, if valid. */
@@ -135,8 +135,7 @@ export default function ParameterSliderComponent(
 		props,
 	);
 
-	const {validatedSettings, min, max} =
-		useSettingsMinMax(definition);
+	const {validatedSettings, min, max} = useSettingsMinMax(definition);
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
 	// calculate the step size which depends on the parameter type

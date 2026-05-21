@@ -1,3 +1,5 @@
+import {Switch, useProps} from "@mantine/core";
+import React from "react";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,
@@ -6,8 +8,6 @@ import {
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {Switch, useProps} from "@mantine/core";
-import React from "react";
 
 /**
  * Functional component that creates a button for a boolean parameter.

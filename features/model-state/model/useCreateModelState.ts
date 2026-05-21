@@ -1,11 +1,8 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
-import {
-	useShapeDiverStoreViewportAccessFunctions,
-	useViewportId,
-} from "@AppBuilderLib/entities/viewport";
-import {IAppBuilderImageRef} from "@AppBuilderLib/features/appbuilder";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {IAppBuilderImageRef} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {MantineThemeComponent, useProps} from "@mantine/core";
-import {ISessionApi} from "@shapediver/viewer.session";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 

@@ -1,5 +1,6 @@
-import {Icon, IconType} from "@AppBuilderLib/shared/ui/icon";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {BoxProps, Stack, Tabs} from "@mantine/core";
 import React, {ReactElement, useEffect, useRef, useState} from "react";
 

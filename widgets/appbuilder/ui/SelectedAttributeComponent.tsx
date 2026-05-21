@@ -1,6 +1,6 @@
-import {Attributes} from "@AppBuilderLib/features/appbuilder";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {IAttributeDefinition} from "@AppBuilderLib/widgets/appbuilder";
+import {Attributes} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useConvertAttributeInputData";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import {IAttributeDefinition} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAttributeVisualizationWidgetComponent";
 import {ActionIcon, Stack, Table} from "@mantine/core";
 import {ISDTFAttributeData} from "@shapediver/viewer.session";
 import React, {useMemo} from "react";

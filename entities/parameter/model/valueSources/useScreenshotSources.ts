@@ -1,8 +1,6 @@
-import {
-	useShapeDiverStoreViewportAccessFunctions,
-	useViewportId,
-} from "@AppBuilderLib/entities/viewport";
-import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder";
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Converter} from "@shapediver/viewer.session";
 import {guessMissingMimeType} from "@shapediver/viewer.utils.mime-type";
 import {useEffect, useState} from "react";
@@ -18,7 +16,7 @@ export function useScreenshotSources(props: {
 	screenshotValues: (string | undefined)[] | undefined;
 	resetScreenshotValues: () => void;
 } {
-	const {sources, namespace} = props;
+	const {sources} = props;
 
 	const [screenshotValues, setScreenshotValues] = useState<
 		(string | undefined)[] | undefined

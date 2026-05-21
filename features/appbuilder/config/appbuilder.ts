@@ -1,7 +1,7 @@
-import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export";
+import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export/config/export";
 import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
-import {SessionCreateDto} from "@AppBuilderLib/entities/session";
-import {IconType} from "@AppBuilderLib/shared/ui/icon";
+import {SessionCreateDto} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
+import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {IAppBuilderWidgetPropsTable} from "@AppBuilderLib/widgets/appbuilder/config/appbuildertable";
 import {MantineColor, SliderProps} from "@mantine/core";
 import {
@@ -257,7 +257,7 @@ export interface IAppBuilderActionDefinition {
 
 /** Common properties of App Builder action controls and legacy actions. */
 export interface IAppBuilderActionPropsCommon {
-	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. */
+	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. Set to empty string to show only an icon. */
 	label?: string;
 	/** Optional icon (of the button etc). */
 	icon?: IconType;
@@ -330,7 +330,8 @@ export interface IAppBuilderParameterValueSourcePropsCommon {
  * This parameter value source is compatible with parameters of type "String" and "File".
  * For "File" parameters, the content type "application/json" is used.
  */
-export interface IAppBuilderParameterValueSourcePropsDataOutput extends IAppBuilderParameterValueSourcePropsCommon {}
+export type IAppBuilderParameterValueSourcePropsDataOutput =
+	IAppBuilderParameterValueSourcePropsCommon;
 
 /**
  * Properties for the "export" parameter value source.
@@ -981,6 +982,8 @@ export type AppBuilderAnchorContainerProperties = {
 	allowPointerEvents?: boolean;
 	/** Optional icon to be displayed to show the container. */
 	previewIcon?: IconType;
+	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
+	useCloseButton?: boolean;
 	/** Optional width of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
 	width?: string | number;
 	/** Optional height of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
@@ -1022,8 +1025,6 @@ export type AppBuilderAnchor2dContainerProperties = {
 export type AppBuilderAnchor3dContainerProperties = {
 	/** 3D location */
 	location: number[];
-	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
-	useCloseButton?: boolean;
 	/** Option to make the anchor hideable by geometry in the scene (default: false) */
 	hideable?: boolean;
 } & AppBuilderAnchorContainerProperties;

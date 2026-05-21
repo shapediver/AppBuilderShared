@@ -1,9 +1,9 @@
 import {
 	getStargateSDK,
 	useShapeDiverStoreStargate,
-} from "@AppBuilderLib/entities/stargate";
-import {ErrorReportingContext} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
+} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
+import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import type {ISdStargateGetDataReplyDto} from "@shapediver/sdk.stargate-sdk-v1/dist/dto/commands/getDataCommand";
 import {useCallback, useContext} from "react";
 

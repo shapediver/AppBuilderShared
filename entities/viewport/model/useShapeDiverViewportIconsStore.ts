@@ -1,3 +1,7 @@
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {IViewportApi} from "@shapediver/viewer.viewport";
+import {create} from "zustand";
+import {devtools} from "zustand/middleware";
 import {
 	IShapeDiverViewportIconsStore,
 	ViewportIconButton,
@@ -6,10 +10,6 @@ import {
 	ViewportIconViewportState,
 } from "../config/shapediverStoreViewportIcons";
 import {ViewportIconButtonEnum} from "../config/viewportIcons";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config";
-import {IViewportApi} from "@shapediver/viewer.viewport";
-import {create} from "zustand";
-import {devtools} from "zustand/middleware";
 
 const emptyViewport: ViewportIconViewportState = {layout: []};
 

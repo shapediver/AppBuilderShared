@@ -1,10 +1,12 @@
 import {
 	AppBuilderContainerContext,
-	AppBuilderContainerOrientationType,
 	AppBuilderTemplateContext,
+} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {
+	AppBuilderContainerOrientationType,
 	IAppBuilderContainerContext,
-} from "@AppBuilderLib/features/appbuilder";
-import {ThemeProvider} from "@AppBuilderLib/shared/ui/theme";
+} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
+import ThemeProvider from "@AppBuilderLib/shared/ui/theme/ThemeProvider";
 import AppBuilderContainer from "@AppBuilderShared/pages/templates/AppBuilderContainer";
 import {
 	MantineThemeComponent,

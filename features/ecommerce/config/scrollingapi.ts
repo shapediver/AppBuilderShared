@@ -74,7 +74,7 @@ export const IScrollingApiItemTypeSelectDataSchema = z.object({
 	imageUrl: z.string().optional(),
 	color: z.string().optional(),
 	hidden: z.boolean().optional(),
-	data: z.record(z.any()).optional(),
+	data: z.record(z.string(), z.any()).optional(),
 });
 
 // Zod type definition for IScrollingApiItemTypeSelect

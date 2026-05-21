@@ -1,7 +1,7 @@
-import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder";
+import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useMemo} from "react";
-import {IShapeDiverExampleModels} from "../config";
+import {IShapeDiverExampleModels} from "../config/examplemodel";
 
 /**
  * Theme-default session and example model settings (see `useDefaultSessionDto`).

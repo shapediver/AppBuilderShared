@@ -10,10 +10,12 @@ import {IDrawingParameterSettings, ITreeNode} from "@shapediver/viewer.session";
 import {useEffect, useMemo, useState} from "react";
 import {
 	IUseCreateNameFilterPatternProps,
-	IUseFindNodesByPatternProps,
 	useCreateNameFilterPatterns,
+} from "../interaction/useCreateNameFilterPattern";
+import {
+	IUseFindNodesByPatternProps,
 	useFindNodesByPatterns,
-} from "../interaction";
+} from "../interaction/useFindNodesByPattern";
 
 // #region Functions (1)
 

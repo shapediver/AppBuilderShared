@@ -1,6 +1,6 @@
-import {PropsOutput} from "@AppBuilderLib/entities/output";
+import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {IShapeDiverOutputDefinition} from "../config";
+import {IShapeDiverOutputDefinition} from "../config/output";
 
 /**
  * Hook providing a shortcut to create output props for UI components,

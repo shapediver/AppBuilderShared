@@ -5,12 +5,10 @@ import {
 	useResolveParameterValues,
 } from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {
-	IUseSessionDto,
-	useShapeDiverStoreSession,
-} from "@AppBuilderLib/entities/session";
-import {IProcessDefinition} from "@AppBuilderLib/shared/config";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
+import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {ResOutput, ResOutputContent} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	ISessionApi,
@@ -27,11 +25,12 @@ import {
 	IAppBuilder,
 	IAppBuilderInstanceDefinition,
 	IAppBuilderSettingsSession,
-} from "../config";
+} from "../config/appbuilder";
 import {useShapeDiverStoreInstances} from "./useShapeDiverStoreInstances";
 
-import {useSessions} from "@AppBuilderLib/entities/session";
-import {Logger} from "@AppBuilderLib/shared/lib";
+import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 interface Props {
 	namespace: string;
@@ -107,6 +106,7 @@ export function useAppBuilderInstances(props: Props) {
 	}>({});
 
 	const loadedRef = useRef(false);
+	const firstLoadDoneRef = useRef(false);
 	const customizationResultInStoreRef = useRef(customizationResults);
 	const instanceNodesRef = useRef<{
 		[key: string]: ITreeNode;
@@ -549,6 +549,10 @@ export function useAppBuilderInstances(props: Props) {
 				// to signal that the process is finished
 				if (outputCallbackPromises.length === 0) resolveMainPromise!();
 
+				// after the instances are added to the scene tree, we can adjust the cameras to fit the new geometry
+				// we don't await this process, as it just waits for the next render loop
+				adjustCamerasToInstances(firstLoadDoneRef);
+
 				// clean up the session instances
 				// only instances that are currently in the scene are kept
 				// the others are removed from the store
@@ -633,6 +637,61 @@ const addInstanceToSceneTree = async (
 		});
 
 		await Promise.all(promises);
+	}
+};
+
+/**
+ * We adjust the cameras to fit the new geometry of the instances.
+ * This is necessary because the new instances may have geometry that is outside of the current camera view.
+ * Do this either when:
+ * - the instances are loaded for the first time and initialAutoAdjust is set on any viewport camera or viewport creation definition
+ * - or when the instances are loaded and autoAdjust is set on any viewport camera
+ *
+ * @param firstLoadDoneRef
+ */
+const adjustCamerasToInstances = async (
+	firstLoadDoneRef: React.MutableRefObject<boolean>,
+) => {
+	await new Promise((resolve) => setTimeout(resolve, 0));
+
+	// After instances are loaded for the first time, check if initialAutoAdjust
+	// is set on any viewport camera or viewport creation definition. If so,
+	// trigger zoomTo because the controller session may have had no geometry
+	// when the session first loaded.
+	if (!firstLoadDoneRef.current) {
+		firstLoadDoneRef.current = true;
+		const {viewportAccessFunctions} =
+			useShapeDiverStoreViewportAccessFunctions.getState();
+		for (const viewportAccessFunction of Object.values(
+			viewportAccessFunctions,
+		)) {
+			if (viewportAccessFunction.zoomTo) {
+				if (viewportAccessFunction.dto?.initialAutoAdjust) {
+					viewportAccessFunction.zoomTo(false, {
+						duration: 0,
+					});
+				} else {
+					viewportAccessFunction.zoomTo(true, {
+						duration: 0,
+					});
+				}
+			}
+		}
+	}
+
+	// trigger a zoomTo on all viewports to adjust the camera to the new geometry
+	// this is necessary because the new instances may have geometry that is outside of the current camera view
+	// we do this after the instances are added to the session node to ensure that the geometry is in the scene when we trigger the zoomTo
+	const {viewportAccessFunctions} =
+		useShapeDiverStoreViewportAccessFunctions.getState();
+	for (const viewportAccessFunction of Object.values(
+		viewportAccessFunctions,
+	)) {
+		if (viewportAccessFunction.zoomTo) {
+			viewportAccessFunction.zoomTo(true, {
+				duration: 0,
+			});
+		}
 	}
 };
 

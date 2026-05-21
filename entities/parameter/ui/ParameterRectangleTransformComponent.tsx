@@ -7,9 +7,9 @@ import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/mo
 import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {
 	Box,

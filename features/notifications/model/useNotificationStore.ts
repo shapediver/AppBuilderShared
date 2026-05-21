@@ -1,3 +1,4 @@
+import {NotificationStyleProps} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {
 	ICustomNotificationData,
 	ICustomNotificationStored,
@@ -6,13 +7,12 @@ import {
 	IShapeDiverStoreNotifications,
 	NotificationDisplayMode,
 	NotificationInput,
-	NotificationStyleProps,
-} from "@AppBuilderLib/features/notifications";
-import {devtoolsSettings} from "@AppBuilderLib/shared/config";
+} from "@AppBuilderLib/features/notifications/config/shapediverStoreNotifications";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {
 	getEnvironmentIdentifier,
 	isRunningInPlatform,
-} from "@AppBuilderLib/shared/lib";
+} from "@AppBuilderLib/shared/lib/platform/environment";
 import {notifications} from "@mantine/notifications";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";

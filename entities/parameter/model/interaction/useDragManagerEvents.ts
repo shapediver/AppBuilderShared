@@ -192,7 +192,10 @@ export function useDragManagerEvents(
 				if (!dragEvent.event) return;
 				// We ignore the event if it's not based on the component ID.
 				if (dragEvent.manager.id !== componentId) return;
+				// We ignore the event if there is no restriction (can happen when drag ends without a valid state).
+				if (!dragEvent.restriction) return;
 
+				const restrictionId = dragEvent.restriction.id;
 				const dragged = [dragEvent.node];
 
 				const newDraggedNodes: DraggingParameterValue["objects"] = [
@@ -226,8 +229,7 @@ export function useDragManagerEvents(
 										dragAnchorId: dragEvent.dragAnchor
 											? dragEvent.dragAnchor.id
 											: undefined,
-										restrictionId:
-											dragEvent.restriction!.id,
+										restrictionId,
 									};
 
 									if (index > -1) {
@@ -262,7 +264,7 @@ export function useDragManagerEvents(
 									dragAnchorId: dragEvent.dragAnchor
 										? dragEvent.dragAnchor.id
 										: undefined,
-									restrictionId: dragEvent.restriction!.id,
+									restrictionId,
 								};
 
 								if (index > -1) {

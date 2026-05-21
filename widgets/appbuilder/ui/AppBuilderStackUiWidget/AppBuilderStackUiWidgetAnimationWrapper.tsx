@@ -1,4 +1,4 @@
-import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder";
+import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
 import {Box} from "@mantine/core";
 import React, {
 	useCallback,

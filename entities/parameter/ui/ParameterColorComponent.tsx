@@ -1,4 +1,17 @@
 import {
+	ColorFormatType,
+	convertFromSdColor,
+	convertToSdColor,
+} from "@AppBuilderLib/shared/lib/colors";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import {
+	ActionIcon,
+	ColorInput,
+	MantineThemeComponent,
+	useProps,
+} from "@mantine/core";
+import React, {useCallback, useEffect, useState} from "react";
+import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,
 	PropsParameterWrapper,
@@ -7,19 +20,6 @@ import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {
-	ColorFormatType,
-	convertFromSdColor,
-	convertToSdColor,
-} from "@AppBuilderLib/shared/lib";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {
-	ActionIcon,
-	ColorInput,
-	MantineThemeComponent,
-	useProps,
-} from "@mantine/core";
-import React, {useCallback, useEffect, useState} from "react";
 
 /**
  * @docAttached

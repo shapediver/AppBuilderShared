@@ -1,3 +1,8 @@
+import {validateStringParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuildertypecheck";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {Textarea, TextInput, useProps} from "@mantine/core";
+import React, {useCallback, useEffect, useMemo} from "react";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,
@@ -7,12 +12,7 @@ import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {validateStringParameterSettings} from "@AppBuilderLib/features/appbuilder";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Logger} from "@AppBuilderLib/shared/lib";
-import {Textarea, TextInput, useProps} from "@mantine/core";
-import React, {useCallback, useEffect, useMemo} from "react";
-import {SelectComponent} from "./select";
+import SelectComponent from "./select/SelectComponent";
 
 /**
  * Functional component that creates a string input component for a string parameter.

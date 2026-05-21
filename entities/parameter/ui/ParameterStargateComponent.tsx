@@ -1,23 +1,20 @@
 import {
-	defaultPropsParameterWrapper,
-	PropsParameter,
-	PropsParameterWrapper,
-} from "../config/propsParameter";
-import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
-import ParameterLabelComponent from "./ParameterLabelComponent";
-import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {
-	DefaultStargateStyleProps,
 	IStargateComponentStatusDefinition,
 	mapStargateComponentStatusDefinition,
-	ParameterStatusEnum,
-	StargateInput,
 	StargateStatusColorTypeEnum,
-	StargateStyleProps,
+} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {
+	ParameterStatusEnum,
 	useStargateParameter,
-} from "@AppBuilderLib/entities/stargate";
-import {Icon, IconProps} from "@AppBuilderLib/shared/ui/icon";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+} from "@AppBuilderLib/entities/stargate/model/useStargateParameter";
+import StargateInput from "@AppBuilderLib/entities/stargate/ui/StargateInput";
+import {
+	DefaultStargateStyleProps,
+	StargateStyleProps,
+} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
 	ActionIconProps,
@@ -26,6 +23,14 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useMemo} from "react";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "../config/propsParameter";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 /**
  * Map from status enum to status data.

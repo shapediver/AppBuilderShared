@@ -1,5 +1,5 @@
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {
-	ComponentContext,
 	IAppBuilderWidget,
 	isAccordionUiWidget,
 	isAccordionWidget,
@@ -19,7 +19,7 @@ import {
 	isStackUiWidget,
 	isTableWidget,
 	isTextWidget,
-} from "@AppBuilderLib/features/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
 import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";
@@ -36,7 +36,7 @@ import AppBuilderLineChartWidgetComponent from "./AppBuilderLineChartWidgetCompo
 import AppBuilderProgressWidgetComponent from "./AppBuilderProgressWidgetComponent";
 import AppBuilderRoundChartWidgetComponent from "./AppBuilderRoundChartWidgetComponent";
 import AppBuilderSavedStatesWidgetComponent from "./AppBuilderSavedStatesWidgetComponent";
-import {AppBuilderStackUiWidgetButtonComponent} from "./AppBuilderStackUiWidget";
+import AppBuilderStackUiWidgetButtonComponent from "./AppBuilderStackUiWidget/AppBuilderStackUiWidgetButtonComponent";
 import AppBuilderTableWidgetComponent from "./AppBuilderTableWidgetComponent";
 import AppBuilderTextWidgetComponent from "./AppBuilderTextWidgetComponent";
 const LazyAppBuilderAgentWidgetComponent = React.lazy(

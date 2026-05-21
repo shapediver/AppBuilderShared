@@ -1,6 +1,6 @@
-import {useSelectAsync} from "../../model/select/useSelectAsync";
 import {Anchor, Group, Loader} from "@mantine/core";
 import React, {useCallback, useEffect, useState} from "react";
+import {useSelectAsync} from "../../model/select/useSelectAsync";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import SelectGridComponent from "./SelectGridComponent";

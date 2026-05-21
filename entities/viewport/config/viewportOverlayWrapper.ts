@@ -1,4 +1,4 @@
-import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay";
+import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {MantineThemeComponent} from "@mantine/core";
 
 export interface ViewportOverlayWrapperProps {

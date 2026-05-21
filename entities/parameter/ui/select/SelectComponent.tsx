@@ -1,14 +1,12 @@
-import {useScrollingApiStore} from "../../model/useScrollingApiStore";
-import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import {
 	ISelectComponentItemDataType,
 	SelectComponentType,
-} from "@AppBuilderLib/features/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
-} from "@AppBuilderLib/features/ecommerce";
-import {TextWeightedProps} from "@AppBuilderLib/shared/ui/text";
+} from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
+import {TextWeightedProps} from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {CarouselProps} from "@mantine/carousel";
 import {
 	ButtonGroupProps,
@@ -22,6 +20,7 @@ import {
 } from "@mantine/core";
 import React, {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {useScrollingApiStore} from "../../model/useScrollingApiStore";
 import SelectButtonFlexComponent from "./SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
 import SelectCarouselComponent from "./SelectCarouselComponent";
@@ -29,6 +28,7 @@ import SelectChipGroupComponent from "./SelectChipGroupComponent";
 import SelectColorComponent from "./SelectColorComponent";
 import SelectComponentAsync from "./SelectComponentAsync";
 import SelectDropDownComponent from "./SelectDropDownComponent";
+import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import SelectGridComponent from "./SelectGridComponent";
 import SelectImageDropDownComponent from "./SelectImageDropDownComponent";
 

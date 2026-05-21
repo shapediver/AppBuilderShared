@@ -42,13 +42,15 @@ export const ISelectComponentItemDataTypeSchema = z.object({
 	imageUrl: z.string().optional(),
 	color: z.string().optional(),
 	hidden: z.boolean().optional(),
-	data: z.record(z.any()).optional(),
+	data: z.record(z.string(), z.any()).optional(),
 });
 
 // Zod type definition for ISelectParameterSettings
 const ISelectParameterSettingsSchema = z.object({
 	type: SelectComponentTypeSchema.optional(),
-	itemData: z.record(ISelectComponentItemDataTypeSchema).optional(),
+	itemData: z
+		.record(z.string(), ISelectComponentItemDataTypeSchema)
+		.optional(),
 	searchable: z.boolean().optional(),
 	limit: z.number().int().positive().optional(),
 	height: z.string().optional(),
@@ -127,7 +129,7 @@ const IAppBuilderParameterDefinitionSchema = z.object({
 	tooltip: z.string().optional(),
 	displayname: z.string().optional(),
 	hidden: z.boolean(),
-	settings: z.record(z.any()).optional(),
+	settings: z.record(z.string(), z.any()).optional(),
 	value: z.string().optional(),
 	step: z.number().positive().optional(),
 });
@@ -211,13 +213,14 @@ const IAppBuilderParameterValueSourcePropsExportSchema = z.object({
 	name: z.string(),
 	parameterValues: z
 		.record(
+			z.string(),
 			z
 				.string()
 				.or(z.number())
 				.or(z.boolean())
 				.or(
 					z.lazy(
-						(): z.ZodTypeAny =>
+						(): z.ZodType<any> =>
 							IAppBuilderParameterValueSourceDefinitionSchema,
 					),
 				),
@@ -375,7 +378,7 @@ const IAppBuilderActionPropsCameraCommonSchema = z.object({
 				.passthrough(),
 		])
 		.optional(),
-	options: z.record(z.any()).optional(),
+	options: z.record(z.string(), z.any()).optional(),
 });
 
 // Zod type definition for IAppBuilderActionPropsCameraCommon
@@ -455,7 +458,7 @@ const IAppBuilderLegacyActionPropsSoundSchema =
 // Zod type definition for IAppBuilderActionPropsMessageToParent
 const IAppBuilderActionPropsMessageToParentSchema = z.object({
 	type: z.string(),
-	data: z.record(z.unknown()).optional(),
+	data: z.record(z.string(), z.unknown()).optional(),
 });
 
 // Zod type definition for IAppBuilderLegacyActionPropsMessageToParent
@@ -868,7 +871,7 @@ const IAppBuilderWidgetPropsAccordionUiSchema = z.object({
 			icon: z.string().optional(),
 			tooltip: z.string().optional(),
 			widgets: z.array(
-				z.lazy((): z.ZodTypeAny => IAppBuilderWidgetSchema),
+				z.lazy((): z.ZodType<any> => IAppBuilderWidgetSchema),
 			),
 		}),
 	),
@@ -882,7 +885,7 @@ const IAppBuilderWidgetPropsStackUiSchema = z.object({
 	name: z.string(),
 	icon: z.string().optional(),
 	tooltip: z.string().optional(),
-	widgets: z.array(z.lazy((): z.ZodTypeAny => IAppBuilderWidgetSchema)),
+	widgets: z.array(z.lazy((): z.ZodType<any> => IAppBuilderWidgetSchema)),
 });
 
 // Zod type definition for IAppBuilderWidgetPropsSavedStates
@@ -1062,6 +1065,7 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.object({
 	allowPointerEvents: z.boolean().optional(),
 	justification: z.nativeEnum(TAG3D_JUSTIFICATION).optional(),
 	previewIcon: z.string().optional(),
+	useCloseButton: z.boolean().optional(),
 	draggable: z.boolean().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
@@ -1113,7 +1117,7 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 				AppBuilderContainerNameType.Bottom,
 				AppBuilderContainerNameType.Top,
 			]),
-			props: z.undefined(),
+			props: z.undefined().optional(),
 			tabs: z.array(IAppBuilderTabSchema).optional(),
 			widgets: z.array(IAppBuilderWidgetSchema).optional(),
 		})
@@ -1132,6 +1136,7 @@ const IAppBuilderInstancesSchema = z.object({
 	name: z.string().optional(),
 	parameterValues: z
 		.record(
+			z.string(),
 			z
 				.string()
 				.or(z.number())
@@ -1175,7 +1180,7 @@ const IAppBuilderSettingsSessionSchema = z.object({
 	waitForOutputs: z.boolean().optional(),
 	loadOutputs: z.boolean().optional(),
 	excludeViewports: z.array(z.string()).optional(),
-	initialParameterValues: z.record(z.string()).optional(),
+	initialParameterValues: z.record(z.string(), z.string()).optional(),
 	slug: z.string().optional(),
 	platformUrl: z.string().optional(),
 	acceptRejectMode: z.boolean().optional(),

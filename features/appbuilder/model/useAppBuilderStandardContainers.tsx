@@ -1,24 +1,24 @@
-import {useSessionPropsExport} from "@AppBuilderLib/entities/export";
-import {useSessionPropsOutput} from "@AppBuilderLib/entities/output";
+import {useSessionPropsExport} from "@AppBuilderLib/entities/export/model/useSessionPropsExport";
+import {useSessionPropsOutput} from "@AppBuilderLib/entities/output/model/useSessionPropsOutput";
 import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
-import {useViewportAnchors} from "@AppBuilderLib/entities/viewport";
+import {useViewportAnchors} from "@AppBuilderLib/entities/viewport/model/useViewportAnchors";
 import {
 	IAppBuilderTemplatePageContainerHints,
 	IAppBuilderTemplatePageProps,
 } from "@AppBuilderLib/pages/config/appbuildertemplates";
+import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
+import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
 import React, {useContext, useEffect, useMemo} from "react";
 import {
 	AppBuilderContainerNameType,
-	ComponentContext,
 	IAppBuilder,
 	IAppBuilderContainer,
 	IAppBuilderSettingsResolved,
 	IAppBuilderSettingsSession,
 	isStandardContainer,
-} from "../config";
+} from "../config/appbuilder";
+import {ComponentContext} from "../config/ComponentContext";
 import {useShapeDiverStoreStandardContainers} from "./useShapeDiverStoreStandardContainers";
-import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
-import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
 
 interface Props {
 	namespace: string;

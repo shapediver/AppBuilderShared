@@ -1,5 +1,5 @@
 import {PropsParameter} from "../config/propsParameter";
-import {IParameterChanges} from "../config";
+import {IParameterChanges} from "../config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**

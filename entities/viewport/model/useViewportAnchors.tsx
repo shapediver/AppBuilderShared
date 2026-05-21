@@ -1,11 +1,11 @@
 import {
 	AppBuilderContainerNameType,
-	ComponentContext,
 	IAppBuilderContainer,
 	isAnchor2dContainer,
 	isAnchor3dContainer,
-} from "@AppBuilderLib/features/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import React, {useContext, useEffect, useState} from "react";
 
 interface Props {
@@ -145,8 +145,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						maxHeight={container.props.maxHeight}
 						mobileFallback={container.props.mobileFallback}
 						useContainer={container.props.useContainer ?? true}
-						closingStrategy={"button"}
-						selectionProperties={
+						closingStrategy={"button"}					useCloseButton={container.props.useCloseButton}						selectionProperties={
 							container.props.selectionProperties
 						}
 					/>,

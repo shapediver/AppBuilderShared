@@ -1,5 +1,5 @@
-import {useResolveAppBuilderSettings} from "@AppBuilderLib/features/appbuilder";
-import {useQuerySavedState} from "@AppBuilderLib/features/model-state";
+import useResolveAppBuilderSettings from "@AppBuilderLib/features/appbuilder/model/useResolveAppBuilderSettings";
+import useQuerySavedState from "@AppBuilderLib/features/model-state/model/useQuerySavedState";
 import {
 	QUERYPARAM_CONTEXT,
 	QUERYPARAM_DISABLEFALLBACKUI,
@@ -12,19 +12,36 @@ import {
 	QUERYPARAM_SLUG,
 	QUERYPARAM_TEMPLATE,
 	QUERYPARAM_TICKET,
-} from "@AppBuilderLib/shared/config";
-import {getDefaultPlatformUrl, Logger} from "@AppBuilderLib/shared/lib";
+} from "@AppBuilderLib/shared/config/queryparams";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {getDefaultPlatformUrl} from "@AppBuilderLib/shared/lib/platform/environment";
 import useAsync from "@AppBuilderLib/shared/lib/useAsync";
-import {useThemeOverrideStore} from "@AppBuilderLib/shared/model";
-import {MantineThemeComponent, useProps} from "@mantine/core";
-import {useEffect, useMemo} from "react";
+import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
+import {
+	MantineThemeComponent,
+	MantineThemeOverride,
+	useProps,
+} from "@mantine/core";
+import {useCallback, useEffect, useMemo} from "react";
 import {
 	IAppBuilderSettings,
 	IAppBuilderSettingsJson,
 	IAppBuilderSettingsJsonSession,
 	IAppBuilderSettingsSession,
-	validateAppBuilderSettingsJson,
-} from "../config";
+} from "../config/appbuilder";
+import {validateAppBuilderSettingsJson} from "../config/appbuildertypecheck";
+
+declare global {
+	interface Window {
+		/**
+		 * Update the theme at runtime for testing purposes.
+		 * Accepts an app settings object with a `themeOverrides` property (i.e. the full JSON file).
+		 */
+		updateTheme: (settings: {
+			themeOverrides?: MantineThemeOverride;
+		}) => void;
+	}
+}
 
 /**
  * Test a string value for being "true" or "1".
@@ -267,6 +284,21 @@ export default function useAppBuilderSettings(
 		Logger.debug("Theme overrides", value);
 		setThemeOverride(settings?.themeOverrides);
 	}, [settings?.themeOverrides]);
+
+	// expose window.updateTheme for runtime testing
+	const updateTheme = useCallback(
+		(input: {themeOverrides?: MantineThemeOverride}) => {
+			setThemeOverride(input.themeOverrides ?? {});
+		},
+		[setThemeOverride],
+	);
+	useEffect(() => {
+		window.updateTheme = updateTheme;
+
+		return () => {
+			delete (window as Partial<Window>).updateTheme;
+		};
+	}, [updateTheme]);
 
 	const {
 		settings: resolvedSettings,

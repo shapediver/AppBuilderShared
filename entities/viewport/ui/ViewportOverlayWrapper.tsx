@@ -1,11 +1,10 @@
-import {
+import OverlayWrapper, {
 	OverlayPosition,
 	OverlayStyleProps,
-	OverlayWrapper,
-} from "@AppBuilderLib/shared/ui/overlay";
+} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {useProps} from "@mantine/core";
 import React from "react";
-import {ViewportOverlayWrapperProps} from "../config";
+import {ViewportOverlayWrapperProps} from "../config/viewportOverlayWrapper";
 
 /**
  * Theme defaults for viewport overlay positioning (`ViewportOverlayWrapper`).

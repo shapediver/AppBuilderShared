@@ -1,5 +1,5 @@
-import {getNotificationActions} from "@AppBuilderLib/features/notifications";
-import {ThemeProvider} from "@AppBuilderLib/shared/ui/theme";
+import {getNotificationActions} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import ThemeProvider from "@AppBuilderLib/shared/ui/theme/ThemeProvider";
 import {
 	Anchor,
 	Blockquote,

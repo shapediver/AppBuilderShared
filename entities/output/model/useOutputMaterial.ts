@@ -1,4 +1,4 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {
 	GeometryData,
 	IGeometryData,

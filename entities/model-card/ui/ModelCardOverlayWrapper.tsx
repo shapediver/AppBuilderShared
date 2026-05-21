@@ -1,8 +1,7 @@
-import {
+import OverlayWrapper, {
 	OverlayPosition,
 	OverlayStyleProps,
-	OverlayWrapper,
-} from "@AppBuilderLib/shared/ui/overlay";
+} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
 

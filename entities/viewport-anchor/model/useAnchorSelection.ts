@@ -1,6 +1,6 @@
 import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {ISelectionParameterProps} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
