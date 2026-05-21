@@ -1,4 +1,4 @@
-import {IAppBuilder} from "../config";
+import {IAppBuilder} from "../config/appbuilder";
 import type {AppBuilderContainerOrientationType} from "./AppBuilderContainerOrientation";
 import type {AppBuilderTemplateType} from "./AppBuilderTemplate";
 

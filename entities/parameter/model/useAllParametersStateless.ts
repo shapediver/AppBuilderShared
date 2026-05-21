@@ -1,5 +1,5 @@
-import {IShapeDiverParameter} from "../config/parameter";
 import {useShallow} from "zustand/react/shallow";
+import {IShapeDiverParameter} from "../config/parameter";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**

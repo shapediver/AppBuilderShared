@@ -184,7 +184,9 @@ export const ISelectComponentItemDataTypeSchema = z.object({
 // Zod type definition for ISelectParameterSettings
 const ISelectParameterSettingsSchema = z.object({
 	type: SelectComponentTypeSchema.optional(),
-	itemData: z.record(z.string(), ISelectComponentItemDataTypeSchema).optional(),
+  itemData: z
+    .record(z.string(), ISelectComponentItemDataTypeSchema)
+    .optional(),
 	searchable: z.boolean().optional(),
 	limit: z.int().positive().optional(),
 	height: z.string().optional(),
@@ -344,7 +346,8 @@ const IAppBuilderParameterValueSourcePropsExportSchema = z.strictObject({
 	name: z.string(),
 	parameterValues: z
 		.record(
-			z.string(), z
+			z.string(),
+			z
 				.string()
 				.or(z.number())
 				.or(z.boolean())
@@ -1218,6 +1221,7 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.strictObject({
 	allowPointerEvents: z.boolean().optional(),
 	justification: z.enum(TAG3D_JUSTIFICATION).optional(),
 	previewIcon: z.string().optional(),
+	useCloseButton: z.boolean().optional(),
 	draggable: z.boolean().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
@@ -1268,7 +1272,7 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 				AppBuilderContainerNameType.Bottom,
 				AppBuilderContainerNameType.Top,
 			]),
-			props: z.undefined(),
+			props: z.undefined().optional(),
 			tabs: z.array(IAppBuilderTabSchema).optional(),
 			widgets: z.array(IAppBuilderWidgetSchema).optional(),
 		})
@@ -1287,7 +1291,8 @@ const IAppBuilderInstancesSchema = z.strictObject({
 	name: z.string().optional(),
 	parameterValues: z
 		.record(
-			z.string(), z
+			z.string(),
+			z
 				.string()
 				.or(z.number())
 				.or(z.boolean())

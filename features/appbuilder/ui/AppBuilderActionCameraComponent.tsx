@@ -3,10 +3,8 @@ import {
 	IUseFindNodesByPatternProps,
 	useFindNodesByPatterns,
 } from "@AppBuilderLib/entities/parameter/model/interaction/useFindNodesByPattern";
-import {
-	useShapeDiverStoreViewport,
-	useViewportId,
-} from "@AppBuilderLib/entities/viewport";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {
 	Box,
 	CAMERA_TYPE,
@@ -24,7 +22,7 @@ import {
 	isResetCameraAction,
 	isSetCameraAction,
 	isZoomToCameraAction,
-} from "../config";
+} from "../config/appbuilder";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
 
 type Props = IAppBuilderActionPropsCamera & {
@@ -50,7 +48,7 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 	const [loading, setLoading] = useState(false);
 
 	const label = useMemo(() => {
-		if (props.label) return props.label;
+		if (props.label !== undefined) return props.label;
 		if (isAnimateCameraAction(props)) return "Animate camera";
 		if (isAssignCameraAction(props)) return "Assign camera";
 		if (isSetCameraAction(props)) return "Set camera";
@@ -172,8 +170,9 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 						key !== "target" &&
 						!skipKeys.includes(key)
 					) {
-						// @ts-ignore
-						newCamera[key] = (camera as Record<string, any>)[key];
+						(newCamera as unknown as Record<string, any>)[key] = (
+							camera as Record<string, any>
+						)[key];
 					}
 				});
 			}
@@ -248,7 +247,7 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 				);
 
 			let bb: IBox | undefined = undefined;
-			Object.entries(nodes).forEach(([key, data]) => {
+			Object.entries(nodes).forEach(([_key, data]) => {
 				data.forEach((node) => {
 					if (!bb) bb = new Box();
 					bb.union(node.boundingBox);

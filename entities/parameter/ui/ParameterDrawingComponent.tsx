@@ -1,19 +1,9 @@
-import {
-	defaultPropsParameterWrapper,
-	PropsParameter,
-	PropsParameterWrapper,
-} from "../config/propsParameter";
-import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
-import ParameterLabelComponent from "./ParameterLabelComponent";
-import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {
-	useShapeDiverStoreViewport,
-	useViewportId,
-} from "@AppBuilderLib/entities/viewport";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
-import {Logger} from "@AppBuilderLib/shared/lib";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {TextWeighted} from "@AppBuilderLib/shared/ui/text";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {
 	ActionIcon,
 	Box,
@@ -32,10 +22,18 @@ import {
 	validateDrawingParameterSettings,
 } from "@shapediver/viewer.session";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameter,
+	PropsParameterWrapper,
+} from "../config/propsParameter";
 import {useDrawingTools} from "../model/drawing/useDrawingTools";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import DrawingOptionsComponent from "./DrawingOptionsComponent";
 import classes from "./ParameterInteractionComponent.module.css";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 /**
  * Parse the value of a drawing parameter and extract the points data.

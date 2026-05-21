@@ -1,7 +1,7 @@
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {MarkdownWidgetComponent} from "@AppBuilderLib/shared/ui/markdown";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Button,
 	Collapse,
@@ -18,7 +18,7 @@ import {
 } from "@shapediver/viewer.features.drawing-tools";
 import {IDrawingParameterSettings} from "@shapediver/viewer.session";
 import React, {useEffect, useState} from "react";
-import {useDrawingOptionsStore} from "../model";
+import {useDrawingOptionsStore} from "../model/drawing/useDrawingOptionsStore";
 import classes from "./DrawingOptionsComponent.module.css";
 
 /**
@@ -50,7 +50,8 @@ export default function DrawingOptionsComponent(props: {
 		return state.viewports[viewportId];
 	});
 	// state for the geometry restriction availability
-	const [hasGeometryRestriction, setHasGeometryRestriction] = useState(false);
+	const [_hasGeometryRestriction, setHasGeometryRestriction] =
+		useState(false);
 
 	/**
 	 * Various effects for the drawing tools API.

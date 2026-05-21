@@ -1,21 +1,21 @@
-import {useSdTFData} from "@AppBuilderLib/entities/output";
-import {
-	useShapeDiverStoreViewport,
-	useViewportId,
-} from "@AppBuilderLib/entities/viewport";
-import {ViewportAnchor3d} from "@AppBuilderLib/entities/viewport-anchor";
+import {useSdTFData} from "@AppBuilderLib/entities/output/model/useSdTFData";
+import ViewportAnchor3d from "@AppBuilderLib/entities/viewport-anchor/ui/ViewportAnchor3d";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {
 	AttributeVisualizationVisibility,
-	createAttributeId,
 	IAppBuilderWidgetPropsAttributeVisualization,
-	useAttributeOverview,
-	useAttributeSelection,
-	useAttributeVisualizationEngine,
-	useAttributeWidgetVisibilityTracker,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useAttributeOverview} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeOverview";
+import useAttributeSelection from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeSelection";
+import {useAttributeVisualizationEngine} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeVisualizationEngine";
+import {useAttributeWidgetVisibilityTracker} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useAttributeWidgetVisibilityTracker";
+import {
+	createAttributeId,
 	useConvertAttributeInputData,
-} from "@AppBuilderLib/features/appbuilder";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {TooltipWrapper} from "@AppBuilderShared/shared";
+} from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useConvertAttributeInputData";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import TooltipWrapper from "@AppBuilderShared/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
 	Group,
@@ -54,14 +54,14 @@ import React, {
 	useRef,
 	useState,
 } from "react";
-import {
-	ColorAttribute,
-	DefaultAttribute,
+import ColorAttribute from "./attributes/ColorAttribute";
+import DefaultAttribute, {
 	IDefaultAttributeExtended,
+} from "./attributes/DefaultAttribute";
+import NumberAttribute, {
 	INumberAttributeExtended,
-	NumberAttribute,
-	StringAttribute,
-} from "./attributes";
+} from "./attributes/NumberAttribute";
+import StringAttribute from "./attributes/StringAttribute";
 import SelectedAttributeComponent from "./SelectedAttributeComponent";
 
 export type IAttributeDefinition =

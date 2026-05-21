@@ -1,8 +1,8 @@
-import {parameterMultiSelect} from "../../lib/parameterMultiSelect";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {Button, Flex} from "@mantine/core";
 import React from "react";
-import {UniversalMultiSelectComponentProps} from "../multiselect";
+import {parameterMultiSelect} from "../../lib/parameterMultiSelect";
+import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 
 /**
  * Functional button flex select component.

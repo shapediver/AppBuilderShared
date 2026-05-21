@@ -1,4 +1,4 @@
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {InteractionEngine} from "@shapediver/viewer.features.interaction";
 import {useEffect, useState} from "react";
 

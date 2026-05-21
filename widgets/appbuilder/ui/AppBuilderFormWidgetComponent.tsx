@@ -1,4 +1,5 @@
-import {PropsExportWithForm, useExport} from "@AppBuilderLib/entities/export";
+import {PropsExportWithForm} from "@AppBuilderLib/entities/export/config/propsExport";
+import {useExport} from "@AppBuilderLib/entities/export/model/useExport";
 import {IShapeDiverParameterActions} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {
 	PropsParameter,
@@ -7,14 +8,16 @@ import {
 import {buildParameterValidator} from "@AppBuilderLib/entities/parameter/lib/parameterFormValidation";
 import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParameters";
 import {
-	ComponentContext,
-	getExportComponent,
-	getParameterComponent,
 	IAppBuilderWidgetPropsForm,
 	isParameterRefControl,
-} from "@AppBuilderLib/features/appbuilder";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {MarkdownWidgetComponent} from "@AppBuilderLib/shared/ui/markdown";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+import {
+	getExportComponent,
+	getParameterComponent,
+} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import {
 	ActionIcon,
 	ActionIconProps,
@@ -36,7 +39,6 @@ import React, {
 	useMemo,
 	useState,
 } from "react";
-import {undefined} from "zod";
 
 interface StyleProps {
 	stackProps?: StackProps;
@@ -239,27 +241,24 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 	}, [submit]);
 
 	// Handle form submission with Mantine form validation
-	const handleSubmit = useCallback(
-		async (values: Record<string, any>) => {
-			if (!exportData?.actions) {
-				console.error("Export actions not available");
-				return;
-			}
+	const handleSubmit = useCallback(async () => {
+		if (!exportData?.actions) {
+			console.error("Export actions not available");
+			return;
+		}
 
-			try {
-				// Handle success
-				setIsSuccess(true);
-				if (submit === "reset") {
-					resetParameters();
-				} else if (submit === "message") {
-					setShowMessage(true);
-				}
-			} catch (error) {
-				handleError();
+		try {
+			// Handle success
+			setIsSuccess(true);
+			if (submit === "reset") {
+				resetParameters();
+			} else if (submit === "message") {
+				setShowMessage(true);
 			}
-		},
-		[exportData, submit, resetParameters],
-	);
+		} catch (_error) {
+			handleError();
+		}
+	}, [exportData, submit, resetParameters]);
 
 	const getCustomActions = (
 		paramId: string,
@@ -338,7 +337,7 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 				<ExportComponent
 					{...exportProps}
 					form={form}
-					onSuccess={() => handleSubmit(values)}
+					onSuccess={() => handleSubmit()}
 					onError={handleError}
 					buttonLabel={exportButtonLabel}
 				/>

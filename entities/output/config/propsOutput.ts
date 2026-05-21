@@ -1,4 +1,4 @@
-import {PropsParameterOrExport} from "@AppBuilderLib/shared/config";
+import {PropsParameterOrExport} from "@AppBuilderLib/shared/config/propsCommon";
 import {IShapeDiverOutputDefinition} from "./output";
 
 /** Props of an output reference. */

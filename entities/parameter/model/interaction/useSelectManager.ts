@@ -1,4 +1,4 @@
-import {parseInteractionEffect} from "@AppBuilderLib/shared/lib";
+import {parseInteractionEffect} from "@AppBuilderLib/shared/lib/interactionEffects";
 import {
 	InteractionEngine,
 	MultiSelectManager,
@@ -102,6 +102,7 @@ export function useSelectManager(
 		| "selectionColor"
 		| "availableColor"
 		| "deselectOnEmpty"
+		| "occludeBySceneGeometry"
 	>,
 ): {
 	/**
@@ -391,6 +392,7 @@ export function useSelectManager(
 						settings.maximumSelection!,
 					);
 					selectManager.deselectOnEmpty = deselectOnEmpty;
+					selectManager.occludeBySceneGeometry = settings.occludeBySceneGeometry ?? false;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);
@@ -406,6 +408,7 @@ export function useSelectManager(
 						selectionEffect,
 					);
 					selectManager.deselectOnEmpty = deselectOnEmpty;
+					selectManager.occludeBySceneGeometry = settings.occludeBySceneGeometry ?? false;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);

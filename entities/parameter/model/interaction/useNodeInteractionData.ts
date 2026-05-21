@@ -1,5 +1,5 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session";
-import {useShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder";
+import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {useShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreInstances";
 import {
 	addInteractionData,
 	gatherNodesForPattern,

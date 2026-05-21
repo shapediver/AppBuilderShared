@@ -1,9 +1,9 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {
 	ButtonRenderContext,
-	ComponentContext,
 	getViewportIconComponent,
-} from "@AppBuilderLib/features/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -12,13 +12,11 @@ import {
 	ViewportIconsDefaultStyleProps,
 	ViewportIconsOptionalProps,
 	ViewportIconsProps,
-} from "../config";
-import {
-	useShapeDiverStoreViewport,
-	useShapeDiverViewportIconsStore,
-	useViewportControls,
-	useViewportId,
-} from "../model";
+} from "../config/viewportIcons";
+import {useShapeDiverStoreViewport} from "../model/useShapeDiverStoreViewport";
+import {useShapeDiverViewportIconsStore} from "../model/useShapeDiverViewportIconsStore";
+import {useViewportControls} from "../model/useViewportControls";
+import {useViewportId} from "../model/useViewportId";
 import ViewportOverlayWrapper from "./ViewportOverlayWrapper";
 
 export const defaultStyleProps: ViewportIconsOptionalProps = {

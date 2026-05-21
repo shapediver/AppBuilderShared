@@ -1,15 +1,13 @@
-import {
-	IShapeDiverParameterState,
-} from "../config/parameter";
+import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {IShapeDiverParameterState} from "../config/parameter";
 import {
 	PropsParameterComponent,
 	PropsParameterWithForm,
 } from "../config/propsParameter";
 import {useParameter} from "./useParameter";
-import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**

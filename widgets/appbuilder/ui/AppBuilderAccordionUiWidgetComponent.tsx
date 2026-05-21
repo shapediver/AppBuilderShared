@@ -1,6 +1,6 @@
-import {IAppBuilderWidgetPropsAccordionUi} from "@AppBuilderLib/features/appbuilder";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {IAppBuilderWidgetPropsAccordionUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Accordion,
 	AccordionControlProps,

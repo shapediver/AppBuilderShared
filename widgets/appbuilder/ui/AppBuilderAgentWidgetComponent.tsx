@@ -1,14 +1,12 @@
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {IAppBuilderWidgetPropsAgent} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {
-	useShapeDiverStoreViewportAccessFunctions,
-	useViewportId,
-} from "@AppBuilderLib/entities/viewport";
-import {
-	AppBuilderContainerContext,
 	DEFAULT_SYSTEM_PROMPT,
-	IAppBuilderWidgetPropsAgent,
 	useAgent,
-} from "@AppBuilderLib/features/appbuilder";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications";
+} from "@AppBuilderLib/features/appbuilder/model/useAgent";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {
 	QUERYPARAM_DEBUG,
 	QUERYPARAM_LANGFUSE_BASE_URL,
@@ -18,11 +16,11 @@ import {
 	QUERYPARAM_MODEL,
 	QUERYPARAM_OPENAI_API_KEY,
 	QUERYPARAM_SLUG,
-} from "@AppBuilderLib/shared/config";
-import {Logger} from "@AppBuilderLib/shared/lib";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {MarkdownWidgetComponent} from "@AppBuilderLib/shared/ui/markdown";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+} from "@AppBuilderLib/shared/config/queryparams";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
 	Box,
@@ -51,7 +49,7 @@ import {useShallow} from "zustand/react/shallow";
 import {
 	AppBuilderAgentWidgetComponentProps,
 	AppBuilderAgentWidgetThemePropsType,
-} from "../config";
+} from "../config/appBuilderAgentWidget";
 import AppBuilderImage from "./AppBuilderImage";
 
 /** Default values for component properties. */

@@ -4,7 +4,7 @@ import {
 	ICrossWindowCancelable,
 	ICrossWindowFactory,
 	ICrossWindowPeerInfo,
-} from "@AppBuilderLib/shared/config";
+} from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import postRobot from "post-robot";
 
 type CrossDomainWindowType = Window | null;

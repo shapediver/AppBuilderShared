@@ -1,10 +1,10 @@
-import {useViewportId} from "@AppBuilderLib/entities/viewport";
-import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {MantineThemeComponent} from "@mantine/core";
 import React, {useEffect, useRef, useState} from "react";
-import {cleanUnit, simplifyCalc, updatePosition} from "../lib";
-import {useShapeDiverStoreViewportAnchors} from "../model";
+import {cleanUnit, simplifyCalc, updatePosition} from "../lib/utils";
+import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
 import {
 	useAnchorContainer,
 	ViewportAnchorProps,
@@ -14,6 +14,8 @@ import {
 export interface ViewportAnchorProps2d extends ViewportAnchorProps {
 	/** Optional draggable properties */
 	draggable?: boolean;
+	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: true for 2D anchors) */
+	useCloseButton?: boolean;
 	/** The location of the anchor in the viewport. Can be px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
 	location: (string | number)[];
 }
@@ -76,6 +78,8 @@ export default function ViewportAnchor2d(
 		portalRef,
 		controlElementGroupRef,
 		canvas,
+		canvasWidth,
+		canvasHeight,
 		portalUpdate,
 		controlElementGroupUpdate,
 	} = useAnchorContainer({
@@ -92,6 +96,17 @@ export default function ViewportAnchor2d(
 		initializedRef.current = false;
 		setUpdatePositionCalculation((prev) => prev + 1);
 	}, [showContent]);
+
+	/**
+	 * This effect resets positioning when the canvas is resized.
+	 * This is necessary when width/height are specified as percentages, because
+	 * the initial canvas size is 0 and the first positioning run uses an incorrect
+	 * offsetWidth. When the canvas reaches its actual size the position must be recalculated.
+	 */
+	useEffect(() => {
+		initializedRef.current = false;
+		setUpdatePositionCalculation((prev) => prev + 1);
+	}, [canvasWidth, canvasHeight]);
 
 	/**
 	 * The main use effect for the anchor.
@@ -184,6 +199,7 @@ export default function ViewportAnchor2d(
 		inputLocation,
 		justification,
 		dragOffset,
+		showContent,
 	]);
 
 	/**

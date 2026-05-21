@@ -1,21 +1,21 @@
-import {useSessionPropsExport} from "@AppBuilderLib/entities/export";
+import {useSessionPropsExport} from "@AppBuilderLib/entities/export/model/useSessionPropsExport";
 import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
 import AcceptRejectButtons from "@AppBuilderLib/entities/parameter/ui/AcceptRejectButtons";
-import {
-	IShapeDiverExampleModels,
-	IUseSessionDto,
-	useSessions,
-} from "@AppBuilderLib/entities/session";
-import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
-import {
+import {IShapeDiverExampleModels} from "@AppBuilderLib/entities/session/config/examplemodel";
+import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
+import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
+import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import TabsComponent, {
 	ITabsComponentProps,
-	TabsComponent,
-} from "@AppBuilderLib/shared/ui/tabs";
-import {ParametersAndExportsAccordionComponent} from "@AppBuilderLib/widgets/appbuilder";
+} from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
+import ParametersAndExportsAccordionComponent from "@AppBuilderLib/widgets/appbuilder/ui/ParametersAndExportsAccordionComponent";
 import {MultiSelect, Notification} from "@mantine/core";
 import React, {useMemo} from "react";
-import {ISelectedModel, useModelSelectStore} from "../model";
+import {
+	ISelectedModel,
+	useModelSelectStore,
+} from "../model/useModelSelectStore";
 
 interface Props {
 	exampleModels: IShapeDiverExampleModels;

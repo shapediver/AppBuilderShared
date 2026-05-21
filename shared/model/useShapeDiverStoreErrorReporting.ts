@@ -1,11 +1,7 @@
-import {
-	devtoolsSettings,
-	IShapeDiverStoreErrorReporting,
-} from "@AppBuilderLib/shared/config";
-import {
-	DummyErrorReporting,
-	IErrorReportingContext,
-} from "@AppBuilderLib/shared/lib";
+import {IShapeDiverStoreErrorReporting} from "@AppBuilderLib/shared/config/shapediverStoreErrorReporting";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {DummyErrorReporting} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
+import {IErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext.types";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 

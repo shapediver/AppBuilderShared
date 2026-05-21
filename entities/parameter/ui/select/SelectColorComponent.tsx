@@ -1,4 +1,4 @@
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {Button, Flex, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
 import classes from "./SelectColorComponent.module.css";

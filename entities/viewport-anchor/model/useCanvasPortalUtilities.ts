@@ -1,7 +1,5 @@
-import {
-	useShapeDiverStoreViewport,
-	useViewportCanvas,
-} from "@AppBuilderLib/entities/viewport";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useViewportCanvas} from "@AppBuilderLib/entities/viewport/model/useViewportCanvas";
 import {
 	addListener,
 	EventResponseMapping,
@@ -59,8 +57,22 @@ export function useCanvasPortalUtilities(
 			},
 		);
 
+		// Re-enable pointer events when the camera stops moving, including
+		// programmatic camera movements triggered after parameter customization
+		// which do not produce a pointerup event on the window.
+		const tokenEnd = addListener(
+			EVENTTYPE_CAMERA.CAMERA_END,
+			(e: IEvent) => {
+				const cameraEvent =
+					e as EventResponseMapping[EVENTTYPE_CAMERA.CAMERA_END];
+				if (cameraEvent.viewportId !== viewport.id) return;
+				setAllowPointerEventsGlobal(true);
+			},
+		);
+
 		return () => {
 			removeListener(tokenStart);
+			removeListener(tokenEnd);
 		};
 	}, [viewport]);
 

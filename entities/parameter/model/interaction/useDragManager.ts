@@ -1,4 +1,4 @@
-import {parseInteractionEffect} from "@AppBuilderLib/shared/lib";
+import {parseInteractionEffect} from "@AppBuilderLib/shared/lib/interactionEffects";
 import {
 	DragManager,
 	InteractionEngine,
@@ -75,7 +75,7 @@ export function useDragManager(
 	componentId: string,
 	settings?: Pick<
 		IDraggingParameterProps,
-		"draggingColor" | "availableColor"
+		"draggingColor" | "availableColor" | "occludeBySceneGeometry"
 	>,
 ): {
 	/**
@@ -318,6 +318,7 @@ export function useDragManager(
 			!dragManagers[viewportId][componentId]
 		) {
 			const dragManager = new DragManager(componentId, draggingEffect);
+			dragManager.occludeBySceneGeometry = settings.occludeBySceneGeometry ?? false;
 			const token = interactionEngine.addInteractionManager(dragManager);
 			dragManagers[viewportId][componentId] = {dragManager, token};
 			setDragManager(dragManagers[viewportId][componentId].dragManager);

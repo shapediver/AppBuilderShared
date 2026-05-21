@@ -1,6 +1,7 @@
-import {preventDefault} from "@AppBuilderLib/shared/lib";
-import {Icon, IconType, useIconProps} from "@AppBuilderLib/shared/ui/icon";
-import {TooltipWrapper} from "@AppBuilderLib/shared/ui/tooltip";
+import {preventDefault} from "@AppBuilderLib/shared/lib/events";
+import Icon, {useIconProps} from "@AppBuilderLib/shared/ui/icon/Icon";
+import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {Loader, MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useCallback, useMemo, useState} from "react";
 import classes from "./ToggleIcon.module.css";

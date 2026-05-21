@@ -1,5 +1,5 @@
-import {PropsParameter} from "../config/propsParameter";
 import {ResParameter} from "@shapediver/sdk.geometry-api-sdk-v2";
+import {PropsParameter} from "../config/propsParameter";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**

@@ -1,14 +1,9 @@
 import {
-	defaultPropsParameterWrapper,
-	PropsParameterComponent,
-	PropsParameterWrapper,
-} from "../config/propsParameter";
-import {useFocus} from "../model/useFocus";
-import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
-import ParameterLabelComponent from "./ParameterLabelComponent";
-import ParameterWrapperComponent from "./ParameterWrapperComponent";
-import {convertFromSdColor, convertToSdColor} from "@AppBuilderLib/shared/lib";
-import {Icon} from "@AppBuilderLib/shared/ui/icon";
+	ColorFormatType,
+	convertFromSdColor,
+	convertToSdColor,
+} from "@AppBuilderLib/shared/lib/colors";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {
 	ActionIcon,
 	ColorInput,
@@ -17,6 +12,15 @@ import {
 } from "@mantine/core";
 import React, {useCallback, useEffect, useState} from "react";
 import type {ParameterColorComponentThemeDefaultProps} from "./ParameterColorComponent.types";
+import {
+	defaultPropsParameterWrapper,
+	PropsParameterComponent,
+	PropsParameterWrapper,
+} from "../config/propsParameter";
+import {useFocus} from "../model/useFocus";
+import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
+import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 const defaultStyleProps = {
 	colorFormat: "rgba",

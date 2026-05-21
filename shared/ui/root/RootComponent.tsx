@@ -1,17 +1,19 @@
 import {
 	ComponentContext,
 	DummyComponent,
-	IComponentContext,
-} from "@AppBuilderLib/features/appbuilder";
+} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+import {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {
 	DummyErrorReporting,
-	DummyTracker,
 	ErrorReportingContext,
-	IErrorReportingContext,
-	ITrackerContext,
+} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
+import {IErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext.types";
+import {
+	DummyTracker,
 	TrackerContext,
-} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStoreErrorReporting} from "@AppBuilderLib/shared/model";
+} from "@AppBuilderLib/shared/lib/TrackerContext";
+import {ITrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext.types";
+import {useShapeDiverStoreErrorReporting} from "@AppBuilderLib/shared/model/useShapeDiverStoreErrorReporting";
 import React, {useEffect} from "react";
 
 interface Props {

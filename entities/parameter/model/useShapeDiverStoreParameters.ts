@@ -1,19 +1,20 @@
 import {
 	IShapeDiverExport,
 	IShapeDiverExportDefinition,
-} from "@AppBuilderLib/entities/export";
+} from "@AppBuilderLib/entities/export/config/export";
 import {
 	IShapeDiverOutput,
 	IShapeDiverOutputDefinition,
-} from "@AppBuilderLib/entities/output";
+} from "@AppBuilderLib/entities/output/config/output";
 import {
-	devtoolsSettings,
 	EventActionEnum,
 	IEventTracking,
-	IProcessDefinition,
-} from "@AppBuilderLib/shared/config";
-import {Logger, removeStatesFromUrl} from "@AppBuilderLib/shared/lib";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model";
+} from "@AppBuilderLib/shared/config/eventTracking";
+import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
+import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {removeStatesFromUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {ReqCustomization, ReqExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	addListener,
@@ -1761,6 +1762,7 @@ export const useShapeDiverStoreParameters =
 					} catch {
 						// find history entry whose parameter values match the given entry
 						const index = history.findIndex((e) => {
+							if (!e.state || !entry.state) return false;
 							const namespaces = Object.keys(e.state);
 							if (
 								namespaces.length !==

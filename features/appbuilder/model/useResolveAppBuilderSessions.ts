@@ -2,9 +2,9 @@ import {
 	getDefaultPlatformUrl,
 	getPlatformClientId,
 	shouldUsePlatform,
-} from "@AppBuilderLib/shared/lib";
+} from "@AppBuilderLib/shared/lib/platform/environment";
 import useAsync from "@AppBuilderLib/shared/lib/useAsync";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
 	SdPlatformModelGetEmbeddableFields,
 	SdPlatformResponseModelPublic,
@@ -14,10 +14,10 @@ import {useShallow} from "zustand/react/shallow";
 import {
 	IAppBuilderSettingsJsonSession,
 	IAppBuilderSettingsSession,
-} from "../config";
+} from "../config/appbuilder";
 
-import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderLib/features/model-state";
-import {QUERYPARAM_REDIRECT} from "@AppBuilderLib/shared/config";
+import {useShapeDiverStorePlatformSavedStates} from "@AppBuilderLib/features/model-state/model/useShapeDiverStorePlatformSavedStates";
+import {QUERYPARAM_REDIRECT} from "@AppBuilderLib/shared/config/queryparams";
 import {MODELS} from "@modelstorage";
 
 // Type assertion for MODELS

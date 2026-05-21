@@ -3,7 +3,7 @@ import {
 	IPlatformPagedItemQueryProps,
 	IShapeDiverStorePlatformGeneric,
 	IShapeDiverStorePlatformGenericExtended,
-} from "@AppBuilderLib/shared/config";
+} from "@AppBuilderLib/shared/config/shapediverStorePlatformGeneric";
 import {
 	SdPlatformRequestSavedStatePatch,
 	SdPlatformResponseSavedStatePublic,

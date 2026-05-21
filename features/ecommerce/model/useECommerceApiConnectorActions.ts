@@ -1,11 +1,11 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {
-	ECommerceApiSingleton,
 	IECommerceApiConnectorActions,
 	IUpdateParameterValuesData,
 	IUpdateParameterValuesReply,
-	validateUpdateParameterValuesData,
-} from "@AppBuilderLib/features/ecommerce";
+} from "@AppBuilderLib/features/ecommerce/config/ecommerceapi";
+import {validateUpdateParameterValuesData} from "@AppBuilderLib/features/ecommerce/config/ecommerceapitypecheck";
 import useAsync from "@AppBuilderLib/shared/lib/useAsync";
 import {useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";

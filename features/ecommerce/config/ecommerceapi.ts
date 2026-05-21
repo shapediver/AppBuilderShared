@@ -1,7 +1,7 @@
 import {
 	ICrossWindowApiOptions,
 	ICrossWindowPeerInfo,
-} from "@AppBuilderLib/shared/config";
+} from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 
 /**
  * An item to be added to the cart.
