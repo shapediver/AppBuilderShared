@@ -2,10 +2,7 @@ import {
 	AppBuilderContainerContext,
 	AppBuilderTemplateContext,
 } from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import {
-	AppBuilderContainerOrientationType,
-	IAppBuilderContainerContext,
-} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
+import {IAppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
 import ThemeProvider from "@AppBuilderLib/shared/ui/theme/ThemeProvider";
 import AppBuilderContainer from "@AppBuilderShared/pages/templates/AppBuilderContainer";
 import {

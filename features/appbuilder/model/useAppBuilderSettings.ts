@@ -24,13 +24,15 @@ import {
 } from "@mantine/core";
 import {useCallback, useEffect, useMemo} from "react";
 import {
-	formatAppBuilderZodError,
 	IAppBuilderSettings,
 	IAppBuilderSettingsJson,
 	IAppBuilderSettingsJsonSession,
 	IAppBuilderSettingsSession,
 } from "../config/appbuilder";
-import {validateAppBuilderSettingsJson} from "../config/appbuildertypecheck";
+import {
+	formatAppBuilderZodError,
+	validateAppBuilderSettingsJson,
+} from "../config/appbuildertypecheck";
 
 declare global {
 	interface Window {

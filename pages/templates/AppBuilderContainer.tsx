@@ -1,8 +1,5 @@
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import {
-	AppBuilderContainerOrientationType,
-	IAppBuilderContainerContext,
-} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
+import {IAppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
 import {usePropsAppBuilder} from "@AppBuilderLib/features/appbuilder/model/usePropsAppBuilder";
 import AppBuilderHorizontalContainer, {
 	AppBuilderHorizontalContainerThemePropsType,
