@@ -1,10 +1,5 @@
-import {ExportLabelComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/export/ui/ExportLabelComponent.types";
+import {ExportLabelComponentThemeDefaultPropsSchema} from "~/shared/entities/export/config/ExportLabelComponent.types";
 import {OutputChunkLabelComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/output/ui/OutputChunkLabelComponent.types";
-import {
-	ParameterDraggingComponentThemeDefaultPropsSchema,
-	ParameterGumballComponentThemeDefaultPropsSchema,
-	ParameterSelectionComponentThemeDefaultPropsSchema,
-} from "@AppBuilderLib/entities/parameter/config/theme/parameterInteractionThemeDefaultProps";
 import {ParameterColorComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/ui/ParameterColorComponent.types";
 import {ParameterSliderComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent.types";
 import {StargateSharedThemeDefaultPropsSchema} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
@@ -17,6 +12,10 @@ import {AppBuilderTemplateSelectorThemeDefaultPropsSchema} from "@AppBuilderLib/
 import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "@AppBuilderLib/pages/templates/AppBuilderVerticalContainer.types";
 import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {z} from "zod";
+import {
+	IDraggingParameterPropsJsonSchema,
+	IGumballTransformParameterPropsJsonSchema, ISelectionParameterPropsJsonSchema,
+} from "@shapediver/viewer.shared.types/dist/interfaces/parameter/IInteractionParameterSettings";
 
 /**
  * Zod schemas for theme `defaultProps` of components registered here.
@@ -26,18 +25,21 @@ import {z} from "zod";
  */
 export const themeComponentDefaultPropsRegistry = {
 	AppBuilderContainer: AppBuilderContainerThemeDefaultPropsSchema,
-	AppBuilderHorizontalContainer: AppBuilderHorizontalContainerThemeDefaultPropsSchema,
-	AppBuilderTemplateSelector: AppBuilderTemplateSelectorThemeDefaultPropsSchema,
-	AppBuilderVerticalContainer: AppBuilderVerticalContainerThemeDefaultPropsSchema,
+	AppBuilderHorizontalContainer:
+		AppBuilderHorizontalContainerThemeDefaultPropsSchema,
+	AppBuilderTemplateSelector:
+		AppBuilderTemplateSelectorThemeDefaultPropsSchema,
+	AppBuilderVerticalContainer:
+		AppBuilderVerticalContainerThemeDefaultPropsSchema,
 	CreateModelStateHook: CreateModelStateHookThemeDefaultPropsSchema,
 	ExportLabelComponent: ExportLabelComponentThemeDefaultPropsSchema,
 	Icon: IconThemeDefaultPropsSchema,
 	LoaderPage: LoaderPageThemeDefaultPropsSchema,
 	OutputChunkLabelComponent: OutputChunkLabelComponentThemeDefaultPropsSchema,
 	ParameterColorComponent: ParameterColorComponentThemeDefaultPropsSchema,
-	ParameterDraggingComponent: ParameterDraggingComponentThemeDefaultPropsSchema,
-	ParameterGumballComponent: ParameterGumballComponentThemeDefaultPropsSchema,
-	ParameterSelectionComponent: ParameterSelectionComponentThemeDefaultPropsSchema,
+	ParameterDraggingComponent: IDraggingParameterPropsJsonSchema,
+	ParameterGumballComponent: IGumballTransformParameterPropsJsonSchema,
+	ParameterSelectionComponent: ISelectionParameterPropsJsonSchema,
 	ParameterSliderComponent: ParameterSliderComponentThemeDefaultPropsSchema,
 	StargateShared: StargateSharedThemeDefaultPropsSchema,
 	NotificationWrapper: NotificationWrapperThemeDefaultPropsSchema,
