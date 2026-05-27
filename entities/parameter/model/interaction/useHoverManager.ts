@@ -41,11 +41,12 @@ const cleanUpHoverManager = (
 	interactionEngine?: InteractionEngine,
 ) => {
 	if (hoverManagers[viewportId][componentId]) {
-		hoverManagers[viewportId][componentId].hoverManager.deselectAll();
-		if (interactionEngine && interactionEngine.closed === false)
+		if (interactionEngine && interactionEngine.closed === false) {
+			hoverManagers[viewportId][componentId].hoverManager.deselectAll();
 			interactionEngine.removeInteractionManager(
 				hoverManagers[viewportId][componentId].token,
 			);
+		}
 		delete hoverManagers[viewportId][componentId];
 	}
 };

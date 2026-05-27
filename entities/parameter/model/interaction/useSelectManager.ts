@@ -46,39 +46,40 @@ const cleanUpSelectManager = (
 	interactionEngine?: InteractionEngine,
 ) => {
 	if (selectManagers[viewportId][componentId]) {
-		if (
-			selectManagers[viewportId][componentId].selectManager instanceof
-			SelectManager
-		) {
-			(
-				selectManagers[viewportId][componentId]
-					.selectManager as SelectManager
-			).deselect();
-		} else if (
-			selectManagers[viewportId][componentId].selectManager instanceof
-			MultiSelectManager
-		) {
-			(
-				selectManagers[viewportId][componentId]
-					.selectManager as MultiSelectManager
-			).deselectAll();
-		}
+		if (interactionEngine && interactionEngine.closed === false) {
+			if (
+				selectManagers[viewportId][componentId].selectManager instanceof
+				SelectManager
+			) {
+				(
+					selectManagers[viewportId][componentId]
+						.selectManager as SelectManager
+				).deselect();
+			} else if (
+				selectManagers[viewportId][componentId].selectManager instanceof
+				MultiSelectManager
+			) {
+				(
+					selectManagers[viewportId][componentId]
+						.selectManager as MultiSelectManager
+				).deselectAll();
+			}
 
-		if (appliedEffects) {
-			appliedEffects.forEach((token, node) => {
-				selectManagers[viewportId][
-					componentId
-				].selectManager!.interactionEffectUtils.removeInteractionEffect(
-					node,
-					token,
-				);
-			});
-		}
+			if (appliedEffects) {
+				appliedEffects.forEach((token, node) => {
+					selectManagers[viewportId][
+						componentId
+					].selectManager!.interactionEffectUtils.removeInteractionEffect(
+						node,
+						token,
+					);
+				});
+			}
 
-		if (interactionEngine && interactionEngine.closed === false)
 			interactionEngine.removeInteractionManager(
 				selectManagers[viewportId][componentId].token,
 			);
+		}
 		delete selectManagers[viewportId][componentId];
 	}
 };
