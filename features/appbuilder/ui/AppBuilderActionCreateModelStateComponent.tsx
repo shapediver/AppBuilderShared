@@ -38,14 +38,14 @@ export default function AppBuilderActionCreateModelStateComponent(
 	const onClick = useCallback(async () => {
 		setLoading(true);
 
-		const {modelStateId, screenshot} = await createModelState(
+		const {modelStateId, screenshot} = await createModelState({
 			parameterNamesToInclude,
 			parameterNamesToExclude,
 			includeImage,
 			image,
-			undefined, // <-- custom data
+			data: undefined, // <-- custom data
 			includeGltf,
-		);
+		});
 
 		// Save the modelStateId as a search parameter
 		if (modelStateId) {
