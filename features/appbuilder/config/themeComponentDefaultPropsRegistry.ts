@@ -14,6 +14,8 @@ import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper
 import {mantineTextPropsSchema} from "@AppBuilderLib/shared/mantine-props/text.zod";
 import {AppBuilderTemplateSelectorThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderTemplateSelector.types";
 import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderVerticalContainer.types";
+import {TooltipWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper.theme.types";
+import {AppBuilderStackUiWidgetThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderStackUiWidgetComponent.theme.types";
 import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {z} from "zod";
 import {
@@ -34,6 +36,8 @@ export const themeComponentDefaultPropsRegistry = {
 		AppBuilderTemplateSelectorThemeDefaultPropsSchema,
 	AppBuilderVerticalContainer:
 		AppBuilderVerticalContainerThemeDefaultPropsSchema,
+	AppBuilderStackUiWidgetComponent:
+		AppBuilderStackUiWidgetThemeDefaultPropsSchema,
 	Accordion: mantineAccordionPropsSchema,
 	Button: mantineButtonPropsSchema,
 	CreateModelStateHook: CreateModelStateHookThemeDefaultPropsSchema,
@@ -51,6 +55,7 @@ export const themeComponentDefaultPropsRegistry = {
 	StargateShared: StargateSharedThemeDefaultPropsSchema,
 	Text: mantineTextPropsSchema,
 	NotificationWrapper: NotificationWrapperThemeDefaultPropsSchema,
+	TooltipWrapper: TooltipWrapperThemeDefaultPropsSchema,
 } as const satisfies Record<string, z.ZodTypeAny>;
 
 export type ThemeComponentDefaultPropsRegistryKey = keyof typeof themeComponentDefaultPropsRegistry;

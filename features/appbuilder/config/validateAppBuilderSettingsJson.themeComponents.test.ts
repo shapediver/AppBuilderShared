@@ -371,6 +371,87 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts minimal valid AppBuilderStackUiWidgetComponent defaultProps", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					AppBuilderStackUiWidgetComponent: {
+						defaultProps: {
+							stackProps: {gap: "xs"},
+							stackPaperProps: {withBorder: false, shadow: "md"},
+							buttonForwardProps: {
+								justify: "space-between",
+								fullWidth: true,
+								variant: "default",
+							},
+							itemTextProps: {size: "md", c: "var(--mantine-color-text)"},
+						},
+					},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("fails when AppBuilderStackUiWidgetComponent nested buttonForwardProps variant is invalid type", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					AppBuilderStackUiWidgetComponent: {
+						defaultProps: {
+							buttonForwardProps: {variant: 42},
+						},
+					},
+				},
+			},
+		});
+		expect(result.success).toBe(false);
+		if (result.success) return;
+		const msg = formatAppBuilderZodError(result.error);
+		expect(msg).toMatch(/AppBuilderStackUiWidgetComponent/i);
+		expect(msg).toMatch(/buttonForwardProps/i);
+	});
+
+	it("accepts minimal valid TooltipWrapper defaultProps", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					TooltipWrapper: {
+						defaultProps: {
+							withArrow: true,
+							position: "top",
+							label: "Hint",
+						},
+					},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("fails when TooltipWrapper defaultProps have invalid label type", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					TooltipWrapper: {
+						defaultProps: {
+							label: {text: "not a string"},
+						},
+					},
+				},
+			},
+		});
+		expect(result.success).toBe(false);
+		if (result.success) return;
+		const msg = formatAppBuilderZodError(result.error);
+		expect(msg).toMatch(/TooltipWrapper/i);
+		expect(msg).toMatch(/label/i);
+	});
+
 	it("fails when registered AppBuilderContainer defaultProps violate schema", () => {
 		const result = validateAppBuilderSettingsJson({
 			...minimalValidSettings,
