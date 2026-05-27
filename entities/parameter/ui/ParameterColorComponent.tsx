@@ -11,7 +11,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useEffect, useState} from "react";
-import type {ParameterColorComponentThemeDefaultProps} from "./ParameterColorComponent.types";
+import type {ParameterColorComponentThemeDefaultProps} from "shared/entities/parameter/config/ParameterColorComponent.types";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,

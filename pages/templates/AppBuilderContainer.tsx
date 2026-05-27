@@ -9,7 +9,7 @@ import AppBuilderVerticalContainer, {
 } from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 import {MantineThemeComponent, StyleProp} from "@mantine/core";
 import React, {CSSProperties, useContext} from "react";
-import type {AppBuilderContainerThemeDefaultProps} from "./AppBuilderContainer.types";
+import type {AppBuilderContainerThemeDefaultProps} from "shared/pages/config/AppBuilderContainer.types";
 
 interface Props {
 	children?: React.ReactNode;

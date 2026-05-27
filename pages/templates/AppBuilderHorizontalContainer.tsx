@@ -5,7 +5,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React from "react";
-import type {AppBuilderHorizontalContainerThemeDefaultProps} from "./AppBuilderHorizontalContainer.types";
+import type {AppBuilderHorizontalContainerThemeDefaultProps} from "shared/pages/config/AppBuilderHorizontalContainer.types";
 
 interface Props {
 	children?: React.ReactNode;

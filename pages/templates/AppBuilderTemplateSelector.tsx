@@ -4,7 +4,7 @@ import AppBuilderAppShellTemplatePage from "@AppBuilderShared/pages/templates/Ap
 import AppBuilderGridTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderGridTemplatePage";
 import {Button, MantineThemeComponent, useProps} from "@mantine/core";
 import React, {ReactElement, useState} from "react";
-import type {AppBuilderTemplateSelectorThemeDefaultProps} from "./AppBuilderTemplateSelector.types";
+import type {AppBuilderTemplateSelectorThemeDefaultProps} from "shared/pages/config/AppBuilderTemplateSelector.types";
 import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
 import classes from "./AppBuilderTemplateSelector.module.css";
 

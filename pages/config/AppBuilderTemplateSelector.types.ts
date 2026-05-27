@@ -1,4 +1,4 @@
-import {appBuilderTemplateThemeIdSchema} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderTemplate";
+import {appBuilderTemplateThemeIdSchema} from "~/shared/features/appbuilder/lib/AppBuilderTemplate";
 import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("AppBuilderTemplateSelector", …)`. */

@@ -1,7 +1,7 @@
-import {appBuilderContainerOrientationSchema} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContainerOrientation";
+import {appBuilderContainerOrientationSchema} from "~/shared/features/appbuilder/lib/AppBuilderContainerOrientation";
 import {z} from "zod";
-import {AppBuilderHorizontalContainerThemeDefaultPropsSchema} from "./AppBuilderHorizontalContainer.types";
-import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "./AppBuilderVerticalContainer.types";
+import {AppBuilderHorizontalContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderHorizontalContainer.types";
+import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderVerticalContainer.types";
 
 /**
  * JSON validation for `usePropsAppBuilder("AppBuilderContainer", …)` merged `defaultProps`.

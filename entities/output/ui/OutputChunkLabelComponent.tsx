@@ -3,7 +3,7 @@ import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {Group, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
-import type {OutputChunkLabelComponentThemeDefaultProps} from "./OutputChunkLabelComponent.types";
+import type {OutputChunkLabelComponentThemeDefaultProps} from "shared/entities/output/config/OutputChunkLabelComponent.types";
 
 interface Props {
 	chunk: IShapeDiverOutputDefinitionChunk;

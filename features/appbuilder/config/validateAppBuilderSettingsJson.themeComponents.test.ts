@@ -1,4 +1,4 @@
-import {ParameterColorComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/ui/ParameterColorComponent.types";
+import {ParameterColorComponentThemeDefaultPropsSchema} from "~/shared/entities/parameter/config/ParameterColorComponent.types";
 import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import * as fs from "node:fs";
 import * as path from "node:path";

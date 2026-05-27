@@ -11,7 +11,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useContext} from "react";
-import type {AppBuilderContainerThemeDefaultProps} from "./AppBuilderContainer.types";
+import type {AppBuilderContainerThemeDefaultProps} from "shared/pages/config/AppBuilderContainer.types";
 
 interface Props {
 	name: string;

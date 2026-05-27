@@ -5,7 +5,7 @@ import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {Group, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
-import type {ExportLabelComponentThemeDefaultProps} from "./ExportLabelComponent.types";
+import type {ExportLabelComponentThemeDefaultProps} from "shared/entities/export/config/ExportLabelComponent.types";
 
 interface Props extends PropsExport {
 	/** Optional label overriding the default label */
