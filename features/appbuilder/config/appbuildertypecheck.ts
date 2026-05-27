@@ -20,7 +20,7 @@ import {
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
-import {themeComponentDefaultPropsRegistry} from "./themeComponentDefaultPropsRegistry";
+import {validateThemeComponentsRecord} from "./validateThemeComponentsRecord";
 
 import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
 export type {JsonValue} from "@AppBuilderLib/shared/lib/jsonValue";
@@ -1352,31 +1352,10 @@ const IAppBuilderSettingsJsonSchema = IAppBuilderSettingsJsonSchemaBase.superRef
 			| undefined;
 		if (!components || typeof components !== "object") return;
 
-		for (const [componentName, entry] of Object.entries(components)) {
-			const schema =
-				themeComponentDefaultPropsRegistry[
-					componentName as keyof typeof themeComponentDefaultPropsRegistry
-				];
-			if (!schema) continue;
-
-			if (entry?.defaultProps === undefined) continue;
-
-			const parsed = schema.safeParse(entry.defaultProps);
-			if (parsed.success) continue;
-
-			const basePath: (string | number)[] = [
-				"themeOverrides",
-				"components",
-				componentName,
-				"defaultProps",
-			];
-			for (const issue of parsed.error.issues) {
-				ctx.addIssue({
-					...issue,
-					path: [...basePath, ...issue.path],
-				});
-			}
-		}
+		validateThemeComponentsRecord(components, ctx, [
+			"themeOverrides",
+			"components",
+		]);
 	},
 );
 

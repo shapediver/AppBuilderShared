@@ -9,9 +9,9 @@ const SHARED_SRC_ROOT = path.resolve(__dirname, "../../..");
 
 /** Modules allowed to import `themeComponentDefaultPropsRegistry` (settings JSON pipeline only). */
 const ALLOWED_THEME_REGISTRY_IMPORTERS = new Set([
-	"features/appbuilder/config/appbuildertypecheck.ts",
 	"features/appbuilder/config/themeComponentDefaultPropsRegistry.ts",
 	"features/appbuilder/config/typedoc-theme-default-props.entry.ts",
+	"features/appbuilder/config/validateThemeComponentsRecord.ts",
 ]);
 
 function listTypeScriptFilesUnder(dir: string, acc: string[] = []): string[] {
@@ -257,7 +257,6 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		expect(result.success).toBe(true);
 	});
 
-	// nested containerThemeOverrides validated in Phase 4
 	it("accepts AppBuilderHorizontalContainer with pt, pb, styles from theme08", () => {
 		const result = validateAppBuilderSettingsJson({
 			...minimalValidSettings,
@@ -274,6 +273,76 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 			},
 		});
 		expect(result.success).toBe(true);
+	});
+
+	it("validates nested AppBuilderHorizontalContainer under containerThemeOverrides", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			themeOverrides: {
+				components: {
+					AppBuilderContainerWrapper: {
+						defaultProps: {
+							containerThemeOverrides: {
+								appshell: {
+									bottom: {
+										components: {
+											AppBuilderHorizontalContainer: {
+												defaultProps: {
+													pt: 0,
+													pb: 0,
+													styles: {
+														root: {
+															"grid-template-columns": "1fr auto auto",
+															display: "grid",
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		});
+		if (!result.success) {
+			// eslint-disable-next-line no-console -- test diagnostics
+			console.error(formatAppBuilderZodError(result.error));
+		}
+		expect(result.success).toBe(true);
+	});
+
+	it("fails when nested AppBuilderHorizontalContainer defaultProps have invalid wrap under containerThemeOverrides", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			themeOverrides: {
+				components: {
+					AppBuilderContainerWrapper: {
+						defaultProps: {
+							containerThemeOverrides: {
+								appshell: {
+									bottom: {
+										components: {
+											AppBuilderHorizontalContainer: {
+												defaultProps: {wrap: "invalid-wrap"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		});
+		expect(result.success).toBe(false);
+		if (result.success) return;
+		const msg = formatAppBuilderZodError(result.error);
+		expect(msg).toMatch(/containerThemeOverrides/i);
+		expect(msg).toMatch(/AppBuilderHorizontalContainer/i);
+		expect(msg).toMatch(/wrap/i);
 	});
 
 	it("fails when AppBuilderHorizontalContainer defaultProps have invalid wrap", () => {
