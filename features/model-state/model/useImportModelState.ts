@@ -12,12 +12,20 @@ import {exceptionWrapperAsync} from "@AppBuilderLib/shared/lib/exceptionWrapper"
 import {applyModelStateToUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
 import {useCallback, useContext, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {
+	IImportModelStateData,
+	IImportModelStateResult,
+} from "../config/importModelState";
+
+interface Props {
+	namespace: string;
+}
 
 /**
  * Hook for managing model state import functionality.
  * @param namespace - The session namespace
  */
-export function useImportModelState(namespace: string) {
+export function useImportModelState({namespace}: Props) {
 	const [isLoading, setIsLoading] = useState(false);
 
 	const sessionApi = useShapeDiverStoreSession(
@@ -37,7 +45,10 @@ export function useImportModelState(namespace: string) {
 	 * Import a model state by ID
 	 */
 	const importModelState = useCallback(
-		async (modelStateId: string): Promise<boolean> => {
+		async (
+			props: IImportModelStateData,
+		): Promise<IImportModelStateResult> => {
+			let {modelStateId} = props;
 			// sanitize input
 			modelStateId = modelStateId.trim();
 			if (modelStateId.startsWith("http")) {
@@ -49,7 +60,10 @@ export function useImportModelState(namespace: string) {
 				notifications.error({
 					message: `Please enter a valid model state ID or a URL including a '${QUERYPARAM_MODELSTATEID}' parameter`,
 				});
-				return false;
+				return {
+					success: false,
+					message: `Please provide a valid model state ID or a URL including a '${QUERYPARAM_MODELSTATEID}' parameter`,
+				};
 			}
 
 			setIsLoading(true);
@@ -65,7 +79,12 @@ export function useImportModelState(namespace: string) {
 					message:
 						response.error.message || "An unknown error occurred",
 				});
-				return false;
+				return {
+					success: false,
+					message: `Failed to fetch model state: ${
+						response.error.message || "An unknown error occurred"
+					}`,
+				};
 			}
 
 			const parameters = response.data.modelState?.parameters;
@@ -74,7 +93,10 @@ export function useImportModelState(namespace: string) {
 				notifications.error({
 					message: "Model state does not contain parameter data",
 				});
-				return false;
+				return {
+					success: false,
+					message: "Model state does not contain parameter data",
+				};
 			}
 
 			const validationResult = filterAndValidateModelStateParameters(
@@ -87,7 +109,10 @@ export function useImportModelState(namespace: string) {
 				notifications[feedback.type]({
 					message: feedback.message,
 				});
-				return false;
+				return {
+					success: false,
+					message: feedback.message,
+				};
 			}
 
 			await batchParameterValueUpdate({
@@ -107,7 +132,10 @@ export function useImportModelState(namespace: string) {
 				message: feedback.message,
 			});
 
-			return true;
+			return {
+				success: true,
+				data: response.data,
+			};
 		},
 		[sessionApi, namespace],
 	);
