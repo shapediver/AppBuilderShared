@@ -7,7 +7,7 @@ import {CreateModelStateHookThemeDefaultPropsSchema} from "@AppBuilderLib/featur
 import {NotificationWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {LoaderPageThemeDefaultPropsSchema} from "@AppBuilderLib/pages/misc/LoaderPage.types";
 import {AppBuilderContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderContainer.types";
-import {AppBuilderHorizontalContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderHorizontalContainer.types";
+import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
 import {AppBuilderTemplateSelectorThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderTemplateSelector.types";
 import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderVerticalContainer.types";
 import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
@@ -25,14 +25,14 @@ import {
  */
 export const themeComponentDefaultPropsRegistry = {
 	AppBuilderContainer: AppBuilderContainerThemeDefaultPropsSchema,
-	AppBuilderHorizontalContainer:
-		AppBuilderHorizontalContainerThemeDefaultPropsSchema,
+	AppBuilderHorizontalContainer: mantineGroupPropsSchema,
 	AppBuilderTemplateSelector:
 		AppBuilderTemplateSelectorThemeDefaultPropsSchema,
 	AppBuilderVerticalContainer:
 		AppBuilderVerticalContainerThemeDefaultPropsSchema,
 	CreateModelStateHook: CreateModelStateHookThemeDefaultPropsSchema,
 	ExportLabelComponent: ExportLabelComponentThemeDefaultPropsSchema,
+	Group: mantineGroupPropsSchema,
 	Icon: IconThemeDefaultPropsSchema,
 	LoaderPage: LoaderPageThemeDefaultPropsSchema,
 	OutputChunkLabelComponent: OutputChunkLabelComponentThemeDefaultPropsSchema,

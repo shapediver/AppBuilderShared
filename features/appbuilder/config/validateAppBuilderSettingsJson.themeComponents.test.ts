@@ -243,6 +243,34 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		expect(msg).toMatch(/defaultProps/i);
 	});
 
+	it("accepts registered AppBuilderHorizontalContainer defaultProps from mantineGroupPropsSchema", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					AppBuilderHorizontalContainer: {
+						defaultProps: {w: "100%", wrap: "nowrap", p: "xs"},
+					},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("fails when AppBuilderHorizontalContainer defaultProps have invalid wrap", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					AppBuilderHorizontalContainer: {
+						defaultProps: {wrap: "invalid-wrap"},
+					},
+				},
+			},
+		});
+		expect(result.success).toBe(false);
+	});
+
 	it("fails when registered AppBuilderContainer defaultProps violate schema", () => {
 		const result = validateAppBuilderSettingsJson({
 			...minimalValidSettings,
