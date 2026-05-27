@@ -211,9 +211,20 @@ export default function useAppBuilderSettings(
 		if (!value) {
 			// No JSON loaded, use query params or default session
 			const session = defaultSession || queryParamSession;
-			return session
-				? [session, ...(themeSessions ?? [])]
-				: themeSessions;
+
+			if (!session) return themeSessions;
+
+			const mergedSession: IAppBuilderSettingsJsonSession = {
+				...session,
+			};
+
+			if (modelStateId && !mergedSession.modelStateId)
+				mergedSession.modelStateId = modelStateId;
+
+			if (initialParameterValues && !mergedSession.initialParameterValues)
+				mergedSession.initialParameterValues = initialParameterValues;
+
+			return [mergedSession, ...(themeSessions ?? [])];
 		} else {
 			// JSON loaded, combine with query params/default session
 			const session = defaultSession || queryParamSession;
