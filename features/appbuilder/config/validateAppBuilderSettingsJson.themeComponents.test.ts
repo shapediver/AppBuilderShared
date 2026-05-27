@@ -290,6 +290,68 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts theme08-like Text defaultProps", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					Text: {defaultProps: {fw: "300", size: "sm"}},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts theme08-like Paper defaultProps", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					Paper: {defaultProps: {withBorder: false}},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts theme08-like Accordion defaultProps", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					Accordion: {
+						defaultProps: {
+							styles: {label: {fontWeight: "400"}},
+						},
+					},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("validates public/theme08.json top-level theme components", () => {
+		const theme08Path = path.join(
+			__dirname,
+			"../../../../../public/theme08.json",
+		);
+		expect(fs.existsSync(theme08Path)).toBe(true);
+		const theme08 = JSON.parse(fs.readFileSync(theme08Path, "utf8")) as {
+			themeOverrides?: {components?: Record<string, unknown>};
+		};
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: theme08.themeOverrides?.components ?? {},
+			},
+		});
+		if (!result.success) {
+			// eslint-disable-next-line no-console -- test diagnostics for fixture drift
+			console.error(formatAppBuilderZodError(result.error));
+		}
+		expect(result.success).toBe(true);
+	});
+
 	it("fails when registered AppBuilderContainer defaultProps violate schema", () => {
 		const result = validateAppBuilderSettingsJson({
 			...minimalValidSettings,

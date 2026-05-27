@@ -1,16 +1,3 @@
-export type {MantineCssLength, MantineFlexWrap, MantineSpacing} from "./group";
-
-export type MantineResponsive<T> =
-	| T
-	| {
-			base?: T;
-			xs?: T;
-			sm?: T;
-			md?: T;
-			lg?: T;
-			xl?: T;
-	  };
-
 export type MantineStylesApiValue = string | number | boolean | null;
 
 export type MantineStylesApi = {
@@ -23,3 +10,12 @@ export type MantineStylesApi = {
 		  }
 		| undefined;
 };
+
+/**
+ * Serializable subset of Mantine `Accordion` props for settings theme `defaultProps`.
+ * @see https://mantine.dev/core/accordion/
+ * @strict
+ */
+export interface MantineAccordionProps {
+	styles?: MantineStylesApi;
+}

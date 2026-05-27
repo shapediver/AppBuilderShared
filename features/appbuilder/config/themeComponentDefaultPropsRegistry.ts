@@ -7,8 +7,11 @@ import {CreateModelStateHookThemeDefaultPropsSchema} from "@AppBuilderLib/featur
 import {NotificationWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {LoaderPageThemeDefaultPropsSchema} from "@AppBuilderLib/pages/misc/LoaderPage.types";
 import {AppBuilderContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderContainer.types";
+import {mantineAccordionPropsSchema} from "@AppBuilderLib/shared/mantine-props/accordion.zod";
 import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
+import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";
+import {mantineTextPropsSchema} from "@AppBuilderLib/shared/mantine-props/text.zod";
 import {AppBuilderTemplateSelectorThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderTemplateSelector.types";
 import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderVerticalContainer.types";
 import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
@@ -31,6 +34,7 @@ export const themeComponentDefaultPropsRegistry = {
 		AppBuilderTemplateSelectorThemeDefaultPropsSchema,
 	AppBuilderVerticalContainer:
 		AppBuilderVerticalContainerThemeDefaultPropsSchema,
+	Accordion: mantineAccordionPropsSchema,
 	Button: mantineButtonPropsSchema,
 	CreateModelStateHook: CreateModelStateHookThemeDefaultPropsSchema,
 	ExportLabelComponent: ExportLabelComponentThemeDefaultPropsSchema,
@@ -38,12 +42,14 @@ export const themeComponentDefaultPropsRegistry = {
 	Icon: IconThemeDefaultPropsSchema,
 	LoaderPage: LoaderPageThemeDefaultPropsSchema,
 	OutputChunkLabelComponent: OutputChunkLabelComponentThemeDefaultPropsSchema,
+	Paper: mantinePaperPropsSchema,
 	ParameterColorComponent: ParameterColorComponentThemeDefaultPropsSchema,
 	ParameterDraggingComponent: IDraggingParameterPropsJsonSchema,
 	ParameterGumballComponent: IGumballTransformParameterPropsJsonSchema,
 	ParameterSelectionComponent: ISelectionParameterPropsJsonSchema,
 	ParameterSliderComponent: ParameterSliderComponentThemeDefaultPropsSchema,
 	StargateShared: StargateSharedThemeDefaultPropsSchema,
+	Text: mantineTextPropsSchema,
 	NotificationWrapper: NotificationWrapperThemeDefaultPropsSchema,
 } as const satisfies Record<string, z.ZodTypeAny>;
 
