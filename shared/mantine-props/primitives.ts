@@ -1,4 +1,4 @@
-export type MantineSpacing = "xs" | "sm" | "md" | "lg" | "xl" | (string & {}) | number;
+export type {MantineCssLength, MantineFlexWrap, MantineSpacing} from "./group";
 
 export type MantineResponsive<T> =
 	| T
@@ -10,7 +10,3 @@ export type MantineResponsive<T> =
 			lg?: T;
 			xl?: T;
 	  };
-
-export type MantineFlexWrap = "nowrap" | "wrap" | "wrap-reverse";
-
-export type MantineCssLength = string | number;
