@@ -3,10 +3,14 @@ import { z } from "zod";
 
 export const mantineSpacingSchema = z.union([z.literal("xs"), z.literal("sm"), z.literal("md"), z.literal("lg"), z.literal("xl"), z.string(), z.number()]);
 
-export const mantinePaperPropsSchema = z.strictObject({
-    withBorder: z.boolean().optional(),
-    shadow: z.string().optional(),
+export const mantineBoxPropsSchema = z.strictObject({
+    p: mantineSpacingSchema.optional(),
     px: mantineSpacingSchema.optional(),
     py: mantineSpacingSchema.optional(),
+    pb: mantineSpacingSchema.optional(),
+    pt: mantineSpacingSchema.optional(),
+    m: mantineSpacingSchema.optional(),
+    ml: mantineSpacingSchema.optional(),
+    mt: mantineSpacingSchema.optional(),
     style: z.record(z.string(), z.union([z.string(), z.number()])).optional()
 });

@@ -8,4 +8,5 @@ export type MantineSpacing = "xs" | "sm" | "md" | "lg" | "xl" | string | number;
 export interface MantineTextProps {
 	fw?: string | number;
 	size?: MantineSpacing;
+	c?: string;
 }

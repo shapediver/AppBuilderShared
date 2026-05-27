@@ -3,8 +3,9 @@ import { z } from "zod";
 
 export const mantineSpacingSchema = z.union([z.literal("xs"), z.literal("sm"), z.literal("md"), z.literal("lg"), z.literal("xl"), z.string(), z.number()]);
 
-export const mantineTextPropsSchema = z.strictObject({
-    fw: z.union([z.string(), z.number()]).optional(),
-    size: mantineSpacingSchema.optional(),
-    c: z.string().optional()
+export const mantineStackPropsSchema = z.strictObject({
+    gap: mantineSpacingSchema.optional(),
+    p: mantineSpacingSchema.optional(),
+    align: z.string().optional(),
+    justify: z.string().optional()
 });

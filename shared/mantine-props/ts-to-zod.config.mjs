@@ -45,4 +45,31 @@ export default [
 			return `${id}Schema`;
 		},
 	},
+	{
+		name: "mantine-props-stack",
+		input: "src/shared/shared/mantine-props/stack.ts",
+		output: "src/shared/shared/mantine-props/stack.zod.ts",
+		getSchemaName: (id) => {
+			if (id === "MantineStackProps") return "mantineStackPropsSchema";
+			return `${id}Schema`;
+		},
+	},
+	{
+		name: "mantine-props-box",
+		input: "src/shared/shared/mantine-props/box.ts",
+		output: "src/shared/shared/mantine-props/box.zod.ts",
+		getSchemaName: (id) => {
+			if (id === "MantineBoxProps") return "mantineBoxPropsSchema";
+			return `${id}Schema`;
+		},
+	},
+	{
+		name: "mantine-props-tooltip",
+		input: "src/shared/shared/mantine-props/tooltip.ts",
+		output: "src/shared/shared/mantine-props/tooltip.zod.ts",
+		getSchemaName: (id) => {
+			if (id === "MantineTooltipProps") return "mantineTooltipPropsSchema";
+			return `${id}Schema`;
+		},
+	},
 ];

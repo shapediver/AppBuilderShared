@@ -15,9 +15,12 @@ export const mantineResponsiveCssSizeSchema = z.union([z.string(), z.number(), z
 export const mantineButtonPropsSchema = z.strictObject({
     fw: z.union([z.string(), z.number()]).optional(),
     mt: mantineSpacingSchema.optional(),
+    ml: mantineSpacingSchema.optional(),
+    px: mantineSpacingSchema.optional(),
     fz: mantineResponsiveCssSizeSchema.optional(),
     h: mantineResponsiveCssSizeSchema.optional(),
     variant: z.string().optional(),
     size: mantineSpacingSchema.optional(),
-    fullWidth: z.boolean().optional()
+    fullWidth: z.boolean().optional(),
+    justify: z.string().optional()
 });

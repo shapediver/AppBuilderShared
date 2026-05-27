@@ -8,6 +8,12 @@ export type {MantinePaperProps} from "./paper";
 export {mantinePaperPropsSchema} from "./paper.zod";
 export type {MantineTextProps} from "./text";
 export {mantineTextPropsSchema} from "./text.zod";
+export type {MantineStackProps} from "./stack";
+export {mantineStackPropsSchema} from "./stack.zod";
+export type {MantineBoxProps} from "./box";
+export {mantineBoxPropsSchema} from "./box.zod";
+export type {MantineTooltipProps} from "./tooltip";
+export {mantineTooltipPropsSchema} from "./tooltip.zod";
 export type {
 	MantineSpacing,
 	MantineResponsive,

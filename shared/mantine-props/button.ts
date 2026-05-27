@@ -20,9 +20,12 @@ export type MantineResponsiveCssSize =
 export interface MantineButtonProps {
 	fw?: string | number;
 	mt?: MantineSpacing;
+	ml?: MantineSpacing;
+	px?: MantineSpacing;
 	fz?: MantineResponsiveCssSize;
 	h?: MantineResponsiveCssSize;
 	variant?: string;
 	size?: MantineSpacing;
 	fullWidth?: boolean;
+	justify?: string;
 }

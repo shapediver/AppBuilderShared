@@ -10,4 +10,5 @@ export interface MantinePaperProps {
 	shadow?: string;
 	px?: MantineSpacing;
 	py?: MantineSpacing;
+	style?: Record<string, string | number>;
 }
