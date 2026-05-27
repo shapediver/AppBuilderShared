@@ -257,6 +257,25 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		expect(result.success).toBe(true);
 	});
 
+	// nested containerThemeOverrides validated in Phase 4
+	it("accepts AppBuilderHorizontalContainer with pt, pb, styles from theme08", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					AppBuilderHorizontalContainer: {
+						defaultProps: {
+							pt: 0,
+							pb: 0,
+							styles: {root: {display: "grid"}},
+						},
+					},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
 	it("fails when AppBuilderHorizontalContainer defaultProps have invalid wrap", () => {
 		const result = validateAppBuilderSettingsJson({
 			...minimalValidSettings,

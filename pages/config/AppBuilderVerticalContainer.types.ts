@@ -1,21 +1,10 @@
-import {z} from "zod";
+import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
+import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
 
-/** JSON-safe Mantine spacing token (theme + numeric/string fallbacks). */
-const mantineSpacingJsonSchema = z.union([
-	z.literal("xs"),
-	z.literal("sm"),
-	z.literal("md"),
-	z.literal("lg"),
-	z.literal("xl"),
-	z.string(),
-	z.number(),
-]);
-
-/** Theme `defaultProps` for `useProps("AppBuilderVerticalContainer", …)`. */
-export const AppBuilderVerticalContainerThemeDefaultPropsSchema = z.strictObject({
-	p: mantineSpacingJsonSchema.optional(),
-});
+/** Theme `defaultProps` for `useProps("AppBuilderVerticalContainer", …)` — Stack spacing only. */
+export const AppBuilderVerticalContainerThemeDefaultPropsSchema =
+	mantineGroupPropsSchema.pick({p: true});
 
 /** TypeDoc surface for `useProps("AppBuilderVerticalContainer", …)` theme defaults. */
 export interface AppBuilderVerticalContainerThemeDefaultProps
-	extends z.infer<typeof AppBuilderVerticalContainerThemeDefaultPropsSchema> {}
+	extends Pick<MantineGroupProps, "p"> {}
