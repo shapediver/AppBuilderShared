@@ -392,7 +392,8 @@ export function useSelectManager(
 						settings.maximumSelection!,
 					);
 					selectManager.deselectOnEmpty = deselectOnEmpty;
-					selectManager.occludeBySceneGeometry = settings.occludeBySceneGeometry ?? false;
+					selectManager.occludeBySceneGeometry =
+						settings.occludeBySceneGeometry ?? false;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);
@@ -408,7 +409,8 @@ export function useSelectManager(
 						selectionEffect,
 					);
 					selectManager.deselectOnEmpty = deselectOnEmpty;
-					selectManager.occludeBySceneGeometry = settings.occludeBySceneGeometry ?? false;
+					selectManager.occludeBySceneGeometry =
+						settings.occludeBySceneGeometry ?? false;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);

@@ -24,9 +24,7 @@ import {useSettingsMinMax} from "../model/useSettingsMinMax";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
-type OnNumberInputValueChange = NonNullable<
-	NumberInputProps["onValueChange"]
->;
+type OnNumberInputValueChange = NonNullable<NumberInputProps["onValueChange"]>;
 
 interface NumberFormatValues {
 	/** The value converted to a float, if valid. */

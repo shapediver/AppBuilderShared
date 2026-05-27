@@ -318,7 +318,8 @@ export function useDragManager(
 			!dragManagers[viewportId][componentId]
 		) {
 			const dragManager = new DragManager(componentId, draggingEffect);
-			dragManager.occludeBySceneGeometry = settings.occludeBySceneGeometry ?? false;
+			dragManager.occludeBySceneGeometry =
+				settings.occludeBySceneGeometry ?? false;
 			const token = interactionEngine.addInteractionManager(dragManager);
 			dragManagers[viewportId][componentId] = {dragManager, token};
 			setDragManager(dragManagers[viewportId][componentId].dragManager);

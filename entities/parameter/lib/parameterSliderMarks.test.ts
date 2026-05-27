@@ -12,9 +12,7 @@ describe("parameterSliderMarks", () => {
 			expect(getValidMarkValuesFromLib(testMarks, 0, 10)).toEqual([
 				1.5, 4.5, 9,
 			]);
-			expect(getValidMarkValuesFromLib(testMarks, 2, 5)).toEqual([
-				4.5,
-			]);
+			expect(getValidMarkValuesFromLib(testMarks, 2, 5)).toEqual([4.5]);
 		});
 	});
 
@@ -46,9 +44,7 @@ describe("parameterSliderMarks", () => {
 		it("stays at the maximum mark when stepping up", () => {
 			expect(
 				getAdjacentMarkValueFromLib(9, testMarks, "up", 0, 10, 3),
-			).toBe(
-				9,
-			);
+			).toBe(9);
 		});
 	});
 

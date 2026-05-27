@@ -14,11 +14,7 @@ export function getValidMarkValues(
 	return Array.from(new Set(values)).sort((a, b) => a - b);
 }
 
-function markValuesEqual(
-	a: number,
-	b: number,
-	decimalplaces: number,
-): boolean {
+function markValuesEqual(a: number, b: number, decimalplaces: number): boolean {
 	const tolerance = Math.pow(10, -decimalplaces) / 2;
 	return Math.abs(a - b) <= tolerance;
 }
@@ -48,9 +44,9 @@ export function getAdjacentMarkValue(
 
 	if (direction === "up") {
 		if (exactIndex !== -1) {
-			return +sorted[
-				Math.min(exactIndex + 1, sorted.length - 1)
-			].toFixed(decimalplaces);
+			return +sorted[Math.min(exactIndex + 1, sorted.length - 1)].toFixed(
+				decimalplaces,
+			);
 		}
 		const above = sorted.find((v) => v > current);
 		return +(above ?? sorted[sorted.length - 1]).toFixed(decimalplaces);
