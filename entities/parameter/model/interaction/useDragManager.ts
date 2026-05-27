@@ -1,4 +1,3 @@
-import {setOccludeBySceneGeometry} from "@AppBuilderLib/entities/parameter/config/interactionParameterProps.augment";
 import {parseInteractionEffect} from "@AppBuilderLib/shared/lib/interactionEffects";
 import {
 	DragManager,
@@ -319,7 +318,8 @@ export function useDragManager(
 			!dragManagers[viewportId][componentId]
 		) {
 			const dragManager = new DragManager(componentId, draggingEffect);
-			setOccludeBySceneGeometry(dragManager, settings.occludeBySceneGeometry);
+			dragManager.occludeBySceneGeometry =
+				settings.occludeBySceneGeometry ?? false;
 			const token = interactionEngine.addInteractionManager(dragManager);
 			dragManagers[viewportId][componentId] = {dragManager, token};
 			setDragManager(dragManagers[viewportId][componentId].dragManager);

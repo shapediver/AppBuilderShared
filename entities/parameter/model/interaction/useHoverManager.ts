@@ -1,4 +1,3 @@
-import {setOccludeBySceneGeometry} from "@AppBuilderLib/entities/parameter/config/interactionParameterProps.augment";
 import {parseInteractionEffect} from "@AppBuilderLib/shared/lib/interactionEffects";
 import {
 	HoverManager,
@@ -151,7 +150,8 @@ export function useHoverManager(
 		) {
 			// create the hover manager with the given settings
 			const hoverManager = new HoverManager(componentId, hoverEffect);
-			setOccludeBySceneGeometry(hoverManager, settings.occludeBySceneGeometry);
+			hoverManager.occludeBySceneGeometry =
+				settings.occludeBySceneGeometry ?? false;
 			const token = interactionEngine.addInteractionManager(hoverManager);
 			hoverManagers[viewportId][componentId] = {hoverManager, token};
 			setHoverManager(
