@@ -22,23 +22,9 @@ import {
 } from "./appbuilder";
 import {themeComponentDefaultPropsRegistry} from "./themeComponentDefaultPropsRegistry";
 
-// Recursive JSON-serializable value type
-export type JsonValue =
-	| string
-	| number
-	| boolean
-	| null
-	| JsonValue[]
-	| { [key: string]: JsonValue };
-
-export const JsonValueSchema: z.ZodType<JsonValue> = z.union([
-	z.string(),
-	z.number(),
-	z.boolean(),
-	z.null(),
-	z.lazy(() => z.array(JsonValueSchema)),
-	z.lazy(() => z.record(z.string(), JsonValueSchema)),
-]);
+import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
+export type {JsonValue} from "@AppBuilderLib/shared/lib/jsonValue";
+export {JsonValueSchema};
 
 // Zod schema for MantineThemeComponent (classNames, styles, vars, defaultProps are opaque JSON values)
 const MantineThemeComponentSchema = z.strictObject({
