@@ -9,4 +9,13 @@ export default [
 			return `${id}Schema`;
 		},
 	},
+	{
+		name: "mantine-props-button",
+		input: "src/shared/shared/mantine-props/button.ts",
+		output: "src/shared/shared/mantine-props/button.zod.ts",
+		getSchemaName: (id) => {
+			if (id === "MantineButtonProps") return "mantineButtonPropsSchema";
+			return `${id}Schema`;
+		},
+	},
 ];

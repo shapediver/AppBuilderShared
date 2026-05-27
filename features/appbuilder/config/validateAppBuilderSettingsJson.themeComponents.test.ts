@@ -271,6 +271,25 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		expect(result.success).toBe(false);
 	});
 
+	it("accepts theme08-like Button defaultProps", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					Button: {
+						defaultProps: {
+							fw: "400",
+							mt: "10px",
+							fz: {base: "0px", md: "14px"},
+							h: {base: "25px", md: "36px"},
+						},
+					},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
 	it("fails when registered AppBuilderContainer defaultProps violate schema", () => {
 		const result = validateAppBuilderSettingsJson({
 			...minimalValidSettings,

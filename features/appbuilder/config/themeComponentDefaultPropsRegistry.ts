@@ -7,6 +7,7 @@ import {CreateModelStateHookThemeDefaultPropsSchema} from "@AppBuilderLib/featur
 import {NotificationWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {LoaderPageThemeDefaultPropsSchema} from "@AppBuilderLib/pages/misc/LoaderPage.types";
 import {AppBuilderContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderContainer.types";
+import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
 import {AppBuilderTemplateSelectorThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderTemplateSelector.types";
 import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderVerticalContainer.types";
@@ -30,6 +31,7 @@ export const themeComponentDefaultPropsRegistry = {
 		AppBuilderTemplateSelectorThemeDefaultPropsSchema,
 	AppBuilderVerticalContainer:
 		AppBuilderVerticalContainerThemeDefaultPropsSchema,
+	Button: mantineButtonPropsSchema,
 	CreateModelStateHook: CreateModelStateHookThemeDefaultPropsSchema,
 	ExportLabelComponent: ExportLabelComponentThemeDefaultPropsSchema,
 	Group: mantineGroupPropsSchema,
