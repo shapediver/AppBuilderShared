@@ -1,12 +1,5 @@
-export type MantineSpacing = "xs" | "sm" | "md" | "lg" | "xl" | string | number;
+import type {z} from "zod";
+import {mantineTextPropsSchema} from "./text.zod";
 
-/**
- * Serializable subset of Mantine `Text` props for settings theme `defaultProps`.
- * @see https://mantine.dev/core/text/
- * @strict
- */
-export interface MantineTextProps {
-	fw?: string | number;
-	size?: MantineSpacing;
-	c?: string;
-}
+export {mantineTextPropsSchema};
+export type MantineTextProps = z.infer<typeof mantineTextPropsSchema>;

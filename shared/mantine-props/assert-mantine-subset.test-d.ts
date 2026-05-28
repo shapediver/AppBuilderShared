@@ -1,3 +1,4 @@
+// Public Mantine*Props types are z.infer-derived from generated schemas (see *.ts facades).
 import type {
 	AccordionProps,
 	BoxProps,

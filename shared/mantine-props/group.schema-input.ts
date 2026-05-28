@@ -4,17 +4,6 @@ export type MantineFlexWrap = "nowrap" | "wrap" | "wrap-reverse";
 
 export type MantineSpacing = "xs" | "sm" | "md" | "lg" | "xl" | string | number;
 
-export type MantineResponsive<T> =
-	| T
-	| {
-			base?: T;
-			xs?: T;
-			sm?: T;
-			md?: T;
-			lg?: T;
-			xl?: T;
-	  };
-
 export type MantineStylesApiValue = string | number | boolean | null;
 
 export type MantineStylesApi = {
@@ -27,3 +16,19 @@ export type MantineStylesApi = {
 		  }
 		| undefined;
 };
+
+/**
+ * Serializable subset of Mantine `Group` props for settings theme `defaultProps`.
+ * @see https://mantine.dev/core/group/
+ * @strict
+ */
+export interface MantineGroupProps {
+	w?: MantineCssLength;
+	h?: MantineCssLength;
+	justify?: string;
+	wrap?: MantineFlexWrap;
+	p?: MantineSpacing;
+	pt?: MantineSpacing;
+	pb?: MantineSpacing;
+	styles?: MantineStylesApi;
+}

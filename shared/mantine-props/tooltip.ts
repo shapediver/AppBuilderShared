@@ -1,16 +1,5 @@
-/**
- * Serializable subset of Mantine `Tooltip` props for settings theme `defaultProps`.
- * `label` is string-only (no ReactNode) for JSON theme configs.
- * @see https://mantine.dev/core/tooltip/
- * @strict
- */
-export interface MantineTooltipProps {
-	label?: string;
-	withArrow?: boolean;
-	position?: string;
-	withinPortal?: boolean;
-	color?: string;
-	radius?: string | number;
-	multiline?: boolean;
-	zIndex?: number;
-}
+import type {z} from "zod";
+import {mantineTooltipPropsSchema} from "./tooltip.zod";
+
+export {mantineTooltipPropsSchema};
+export type MantineTooltipProps = z.infer<typeof mantineTooltipPropsSchema>;

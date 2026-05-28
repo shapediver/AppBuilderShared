@@ -2,7 +2,7 @@
 export default [
 	{
 		name: "mantine-props-group",
-		input: "src/shared/shared/mantine-props/group.ts",
+		input: "src/shared/shared/mantine-props/group.schema-input.ts",
 		output: "src/shared/shared/mantine-props/group.zod.ts",
 		getSchemaName: (id) => {
 			if (id === "MantineGroupProps") return "mantineGroupPropsSchema";
@@ -11,7 +11,7 @@ export default [
 	},
 	{
 		name: "mantine-props-button",
-		input: "src/shared/shared/mantine-props/button.ts",
+		input: "src/shared/shared/mantine-props/button.schema-input.ts",
 		output: "src/shared/shared/mantine-props/button.zod.ts",
 		getSchemaName: (id) => {
 			if (id === "MantineButtonProps") return "mantineButtonPropsSchema";
@@ -20,7 +20,7 @@ export default [
 	},
 	{
 		name: "mantine-props-text",
-		input: "src/shared/shared/mantine-props/text.ts",
+		input: "src/shared/shared/mantine-props/text.schema-input.ts",
 		output: "src/shared/shared/mantine-props/text.zod.ts",
 		getSchemaName: (id) => {
 			if (id === "MantineTextProps") return "mantineTextPropsSchema";
@@ -29,7 +29,7 @@ export default [
 	},
 	{
 		name: "mantine-props-paper",
-		input: "src/shared/shared/mantine-props/paper.ts",
+		input: "src/shared/shared/mantine-props/paper.schema-input.ts",
 		output: "src/shared/shared/mantine-props/paper.zod.ts",
 		getSchemaName: (id) => {
 			if (id === "MantinePaperProps") return "mantinePaperPropsSchema";
@@ -38,7 +38,7 @@ export default [
 	},
 	{
 		name: "mantine-props-accordion",
-		input: "src/shared/shared/mantine-props/accordion.ts",
+		input: "src/shared/shared/mantine-props/accordion.schema-input.ts",
 		output: "src/shared/shared/mantine-props/accordion.zod.ts",
 		getSchemaName: (id) => {
 			if (id === "MantineAccordionProps") return "mantineAccordionPropsSchema";
@@ -47,7 +47,7 @@ export default [
 	},
 	{
 		name: "mantine-props-stack",
-		input: "src/shared/shared/mantine-props/stack.ts",
+		input: "src/shared/shared/mantine-props/stack.schema-input.ts",
 		output: "src/shared/shared/mantine-props/stack.zod.ts",
 		getSchemaName: (id) => {
 			if (id === "MantineStackProps") return "mantineStackPropsSchema";
@@ -56,7 +56,7 @@ export default [
 	},
 	{
 		name: "mantine-props-box",
-		input: "src/shared/shared/mantine-props/box.ts",
+		input: "src/shared/shared/mantine-props/box.schema-input.ts",
 		output: "src/shared/shared/mantine-props/box.zod.ts",
 		getSchemaName: (id) => {
 			if (id === "MantineBoxProps") return "mantineBoxPropsSchema";
@@ -65,7 +65,7 @@ export default [
 	},
 	{
 		name: "mantine-props-tooltip",
-		input: "src/shared/shared/mantine-props/tooltip.ts",
+		input: "src/shared/shared/mantine-props/tooltip.schema-input.ts",
 		output: "src/shared/shared/mantine-props/tooltip.zod.ts",
 		getSchemaName: (id) => {
 			if (id === "MantineTooltipProps") return "mantineTooltipPropsSchema";
