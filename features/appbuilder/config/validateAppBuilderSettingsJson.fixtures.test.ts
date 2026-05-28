@@ -5,7 +5,7 @@ import {
 	validateAppBuilderSettingsJson,
 } from "./appbuildertypecheck";
 
-const PUBLIC_DIR = path.join(__dirname, "../../../../../public");
+const FIXTURES_DIR = path.join(__dirname, "__fixtures__");
 const ERROR_SUMMARY_MAX = 500;
 
 type FixtureResult = {
@@ -23,14 +23,14 @@ function isSettingsFixture(json: unknown): boolean {
 	return false;
 }
 
-function collectPublicJsonFiles(): string[] {
+function collectFixtureJsonFiles(): string[] {
 	return fs
-		.readdirSync(PUBLIC_DIR)
+		.readdirSync(FIXTURES_DIR)
 		.filter((name) => name.endsWith(".json"))
 		.sort((a, b) => a.localeCompare(b));
 }
 
-describe("validateAppBuilderSettingsJson public fixtures", () => {
+describe("validateAppBuilderSettingsJson co-located fixtures", () => {
 	const results: FixtureResult[] = [];
 
 	afterAll(() => {
@@ -39,7 +39,7 @@ describe("validateAppBuilderSettingsJson public fixtures", () => {
 		const skip = results.filter((r) => r.status === "SKIP");
 
 		// eslint-disable-next-line no-console
-		console.log("\n--- public/*.json validation summary ---");
+		console.log("\n--- __fixtures__/*.json validation summary ---");
 		for (const r of results) {
 			if (r.status === "SKIP") {
 				// eslint-disable-next-line no-console
@@ -59,18 +59,9 @@ describe("validateAppBuilderSettingsJson public fixtures", () => {
 		);
 	});
 
-	for (const fileName of collectPublicJsonFiles()) {
+	for (const fileName of collectFixtureJsonFiles()) {
 		it(fileName, () => {
-			if (fileName === "manifest.json") {
-				results.push({
-					file: fileName,
-					status: "SKIP",
-					skipReason: "manifest, not settings",
-				});
-				return;
-			}
-
-			const filePath = path.join(PUBLIC_DIR, fileName);
+			const filePath = path.join(FIXTURES_DIR, fileName);
 			const json = JSON.parse(fs.readFileSync(filePath, "utf8"));
 
 			if (!isSettingsFixture(json)) {

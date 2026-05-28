@@ -1,97 +1,234 @@
-import * as fs from "node:fs";
-import * as path from "node:path";
-import {
-	formatAppBuilderZodError,
-	validateAppBuilderSettingsJson,
-} from "./appbuildertypecheck";
+import {validateAppBuilderSettingsJson} from "./appbuildertypecheck";
 
-const minimalValidSettings = {version: "1.0" as const};
-
-describe("validateAppBuilderSettingsJson appBuilderOverride", () => {
-	it("validates public/SS-9065.json", () => {
-		const filePath = path.join(
-			__dirname,
-			"../../../../../public/SS-9065.json",
-		);
-		expect(fs.existsSync(filePath)).toBe(true);
-		const json = JSON.parse(fs.readFileSync(filePath, "utf8"));
-		const result = validateAppBuilderSettingsJson(json);
-		if (!result.success) {
-			console.error(formatAppBuilderZodError(result.error));
-		}
-		expect(result.success).toBe(true);
-	});
-
-	it("accepts container stickyTabs and action props used in SS-9065", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			appBuilderOverride: {
-				version: "1.0",
-				containers: [
+/** SS-9065-shaped appBuilderOverride + themeOverrides (no sessions / tickets). */
+const ss9065ShapeSettings = {
+	version: "1.0" as const,
+	appBuilderOverride: {
+		version: "1.0",
+		containers: [
+			{
+				name: "left",
+				tabs: [],
+				stickyTabs: true,
+				widgets: [
 					{
-						name: "left",
-						stickyTabs: true,
-						widgets: [
-							{
-								type: "actions",
-								props: {
-									actions: [
+						type: "stackUi",
+						props: {
+							name: "stackUi",
+							widgets: [
+								{
+									type: "stackUi",
+									props: {
+										name: "stackUi",
+										widgets: [
+											{
+												type: "controls",
+												props: {
+													controls: [
+														{
+															type: "parameter",
+															props: {
+																name: "Cubes",
+															},
+														},
+														{
+															type: "action",
+															props: {
+																definition: {
+																	type: "addToCart",
+																	props: {
+																		description:
+																			"Line item description",
+																		tooltip: "Add item to cart",
+																	},
+																},
+															},
+														},
+													],
+												},
+											},
+											{
+												type: "actions",
+												props: {
+													actions: [
+														{
+															type: "addToCart",
+															props: {
+																description:
+																	"Line item description",
+																tooltip: "Add item to cart",
+															},
+														},
+														{
+															type: "closeConfigurator",
+															props: {},
+														},
+														{
+															type: "setParameterValues",
+															props: {
+																message: "Test message",
+																parameterValues: [
+																	{
+																		parameter: {
+																			name: "Cubes",
+																		},
+																		value: "12",
+																	},
+																],
+															},
+														},
+													],
+												},
+											},
+										],
+									},
+								},
+								{
+									type: "controls",
+									props: {
+										controls: [
+											{
+												type: "parameter",
+												props: {
+													name: "Cubes",
+												},
+											},
+											{
+												type: "action",
+												props: {
+													definition: {
+														type: "addToCart",
+														props: {
+															description:
+																"Line item description",
+															tooltip: "Add item to cart",
+														},
+													},
+												},
+											},
+										],
+									},
+								},
+								{
+									type: "actions",
+									props: {
+										actions: [
+											{
+												type: "addToCart",
+												props: {
+													description: "Line item description",
+													tooltip: "Add item to cart",
+												},
+											},
+											{
+												type: "closeConfigurator",
+												props: {},
+											},
+											{
+												type: "setParameterValues",
+												props: {
+													message: "Test message",
+													parameterValues: [
+														{
+															parameter: {
+																name: "Cubes",
+															},
+															value: "12",
+														},
+													],
+												},
+											},
+										],
+									},
+								},
+							],
+						},
+					},
+					{
+						type: "accordionUi",
+						props: {
+							items: [
+								{
+									name: "accordionUi",
+									widgets: [
 										{
-											type: "setParameterValues",
+											type: "controls",
 											props: {
-												message: "Test",
-												parameterValues: [
+												controls: [
 													{
-														parameter: {name: "P"},
-														value: "1",
+														type: "parameter",
+														props: {
+															name: "Cubes",
+														},
+													},
+													{
+														type: "action",
+														props: {
+															definition: {
+																type: "addToCart",
+																props: {
+																	description:
+																		"Line item description",
+																	tooltip: "Add item to cart",
+																},
+															},
+														},
+													},
+												],
+											},
+										},
+										{
+											type: "actions",
+											props: {
+												actions: [
+													{
+														type: "addToCart",
+														props: {
+															description:
+																"Line item description",
+															tooltip: "Add item to cart",
+														},
+													},
+													{
+														type: "closeConfigurator",
+														props: {},
+													},
+													{
+														type: "setParameterValues",
+														props: {
+															message: "Test message",
+															parameterValues: [
+																{
+																	parameter: {
+																		name: "Cubes",
+																	},
+																	value: "12",
+																},
+															],
+														},
 													},
 												],
 											},
 										},
 									],
 								},
-							},
-						],
+							],
+						},
 					},
 				],
 			},
-		});
-		expect(result.success).toBe(true);
-	});
+		],
+	},
+	themeOverrides: {
+		other: {
+			forceColorScheme: "dark",
+		},
+	},
+};
 
-	it("accepts tooltip on addToCart inside control action definition.props", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			appBuilderOverride: {
-				version: "1.0",
-				containers: [
-					{
-						name: "left",
-						widgets: [
-							{
-								type: "controls",
-								props: {
-									controls: [
-										{
-											type: "action",
-											props: {
-												definition: {
-													type: "addToCart",
-													props: {
-														tooltip: "Add to cart",
-														description: "Item",
-													},
-												},
-											},
-										},
-									],
-								},
-							},
-						],
-					},
-				],
-			},
-		});
+describe("validateAppBuilderSettingsJson appBuilderOverride", () => {
+	it("validates appBuilderOverride fixture (SS-9065 shape, inline)", () => {
+		const result = validateAppBuilderSettingsJson(ss9065ShapeSettings);
 		expect(result.success).toBe(true);
 	});
 });
