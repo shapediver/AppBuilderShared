@@ -4,8 +4,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { formatAppBuilderZodError, validateAppBuilderSettingsJson } from "../appbuildertypecheck";
 
-/** `src/shared` root (this file: features/appbuilder/config). */
-const SHARED_SRC_ROOT = path.resolve(__dirname, "../../..");
+/** `src/shared` root (this file: features/appbuilder/config/__tests__). */
+const SHARED_SRC_ROOT = path.resolve(__dirname, "../../../..");
 
 /** Modules allowed to import `themeComponentDefaultPropsRegistry` (settings JSON pipeline only). */
 const ALLOWED_THEME_REGISTRY_IMPORTERS = new Set([
@@ -315,17 +315,37 @@ describe("validateAppBuilderSettingsJson theme validation singularity (R3)", () 
 		expect(offenders).toEqual([]);
 	});
 
-	it("useAppBuilderSettings calls validateAppBuilderSettingsJson only in the JSON fetch path", () => {
+	it("useAppBuilderSettings validates settings JSON only when env flag is enabled", () => {
 		const source = fs.readFileSync(
 			path.join(SHARED_SRC_ROOT, "features/appbuilder/model/useAppBuilderSettings.ts"),
 			"utf8",
 		);
 		expect(source.match(/validateAppBuilderSettingsJson\s*\(/g)).toHaveLength(1);
 		expect(source).toMatch(
-			/const validate = \(data: any\)[\s\S]*validateAppBuilderSettingsJson\(data\)/,
+			/isAppBuilderValidationEnabled\(import\.meta\.env\)/,
+		);
+		expect(source).toMatch(
+			/const validate = \(data: any\)[\s\S]*isAppBuilderValidationEnabled[\s\S]*validateAppBuilderSettingsJson\(data\)/,
 		);
 		expect(source).not.toMatch(
 			/setThemeOverride[\s\S]*validateAppBuilderSettingsJson/,
+		);
+	});
+
+	it("useSessionWithAppBuilder validates AppBuilder override only when env flag is enabled", () => {
+		const source = fs.readFileSync(
+			path.join(
+				SHARED_SRC_ROOT,
+				"features/appbuilder/model/useSessionWithAppBuilder.ts",
+			),
+			"utf8",
+		);
+		expect(source.match(/validateAppBuilder\s*\(/g)).toHaveLength(1);
+		expect(source).toMatch(
+			/isAppBuilderValidationEnabled\(import\.meta\.env\)/,
+		);
+		expect(source).toMatch(
+			/const validate = \(data: any\)[\s\S]*isAppBuilderValidationEnabled[\s\S]*validateAppBuilder\(data\)/,
 		);
 	});
 

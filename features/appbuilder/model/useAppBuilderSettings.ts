@@ -29,6 +29,7 @@ import {
 	IAppBuilderSettingsJsonSession,
 	IAppBuilderSettingsSession,
 } from "../config/appbuilder";
+import {isAppBuilderValidationEnabled} from "../config/appBuilderSettingsValidationEnv";
 import {
 	formatAppBuilderZodError,
 	validateAppBuilderSettingsJson,
@@ -93,14 +94,16 @@ export default function useAppBuilderSettings(
 	// try to load settings json
 	const url = parameters.get(queryParamName);
 	const validate = (data: any): IAppBuilderSettingsJson | undefined => {
+		if (!isAppBuilderValidationEnabled(import.meta.env)) {
+			return data as IAppBuilderSettingsJson;
+		}
 		const result = validateAppBuilderSettingsJson(data);
 		if (result.success) {
 			return result.data;
-		} else {
-			throw new Error(
-				`Parsing AppBuilder settings failed:\n${formatAppBuilderZodError(result.error)}`,
-			);
 		}
+		throw new Error(
+			`Parsing AppBuilder settings failed:\n${formatAppBuilderZodError(result.error)}`,
+		);
 	};
 	const {value, error, loading} = useAsync(async () => {
 		if (!url) return;

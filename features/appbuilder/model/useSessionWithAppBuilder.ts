@@ -4,6 +4,7 @@ import {
 } from "@AppBuilderLib/entities/session/model/useSession";
 import {useAppBuilderCustomParameters} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
 import {IAppBuilder, IAppBuilderSettingsSession} from "../config/appbuilder";
+import {isAppBuilderValidationEnabled} from "../config/appBuilderSettingsValidationEnv";
 import {formatAppBuilderZodError, validateAppBuilder} from "../config/appbuildertypecheck";
 
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
@@ -71,6 +72,9 @@ export function useSessionWithAppBuilder(
 	 * @returns
 	 */
 	const validate = (data: any): IAppBuilder | undefined | Error => {
+		if (!isAppBuilderValidationEnabled(import.meta.env)) {
+			return data as IAppBuilder;
+		}
 		const result = validateAppBuilder(data);
 		if (result.success) {
 			return result.data;
