@@ -1,18 +1,14 @@
 import {z} from "zod";
 
-export type JsonValue =
-	| string
-	| number
-	| boolean
-	| null
-	| JsonValue[]
-	| {[key: string]: JsonValue};
+export const JsonValueSchema: z.ZodTypeAny = z.lazy(() =>
+	z.union([
+		z.string(),
+		z.number(),
+		z.boolean(),
+		z.null(),
+		z.array(JsonValueSchema),
+		z.record(z.string(), JsonValueSchema),
+	]),
+);
 
-export const JsonValueSchema: z.ZodType<JsonValue> = z.union([
-	z.string(),
-	z.number(),
-	z.boolean(),
-	z.null(),
-	z.lazy(() => z.array(JsonValueSchema)),
-	z.lazy(() => z.record(z.string(), JsonValueSchema)),
-]);
+export type JsonValue = z.infer<typeof JsonValueSchema>;
