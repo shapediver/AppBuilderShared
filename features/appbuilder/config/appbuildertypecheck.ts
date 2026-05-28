@@ -451,6 +451,7 @@ const IAppBuilderActionPropsSetParameterValuesSchema = z.strictObject({
 	parameterValues: z.array(
 		IAppBuilderLegacyActionPropsSetParameterValueSchema,
 	),
+	message: z.string().optional(),
 });
 
 // Zod type definition for IAppBuilderLegacyActionPropsSetParameterValues
@@ -671,27 +672,27 @@ const IAppBuilderControlExportRefSchema = z.strictObject({
 const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
 		type: z.literal("createModelState"),
-		props: IAppBuilderActionPropsCreateModelStateSchema,
+		props: IAppBuilderLegacyActionPropsCreateModelStateSchema,
 	}),
 	z.strictObject({
 		type: z.literal("addToCart"),
-		props: IAppBuilderActionPropsAddToCartSchema,
+		props: IAppBuilderLegacyActionPropsAddToCartSchema,
 	}),
 	z.strictObject({
 		type: z.literal("setParameterValue"),
-		props: IAppBuilderActionPropsSetParameterValueSchema,
+		props: IAppBuilderLegacyActionPropsSetParameterValueSchema,
 	}),
 	z.strictObject({
 		type: z.literal("setParameterValues"),
-		props: IAppBuilderActionPropsSetParameterValuesSchema,
+		props: IAppBuilderLegacyActionPropsSetParameterValuesSchema,
 	}),
 	z.strictObject({
 		type: z.literal("setBrowserLocation"),
-		props: IAppBuilderActionPropsSetBrowserLocationSchema,
+		props: IAppBuilderLegacyActionPropsSetBrowserLocationSchema,
 	}),
 	z.strictObject({
 		type: z.literal("closeConfigurator"),
-		props: IAppBuilderActionPropsCloseConfigurator,
+		props: IAppBuilderLegacyActionPropsCloseConfiguratorSchema,
 	}),
 	z.strictObject({
 		type: z.literal("camera"),
@@ -699,11 +700,11 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	}),
 	z.strictObject({
 		type: z.literal("sound"),
-		props: IAppBuilderActionPropsSoundSchema,
+		props: IAppBuilderLegacyActionPropsSoundSchema,
 	}),
 	z.strictObject({
 		type: z.literal("messageToParent"),
-		props: IAppBuilderActionPropsMessageToParentSchema,
+		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
 	}),
 ]);
 
@@ -1259,6 +1260,7 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 				AppBuilderContainerNameType.Top,
 			]),
 			props: z.undefined().optional(),
+			stickyTabs: z.boolean().optional(),
 			tabs: z.array(IAppBuilderTabSchema).optional(),
 			widgets: z.array(IAppBuilderWidgetSchema).optional(),
 		})

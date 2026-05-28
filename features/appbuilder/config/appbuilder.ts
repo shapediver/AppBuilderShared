@@ -501,6 +501,8 @@ export type IAppBuilderLegacyActionPropsSetParameterValue =
 export interface IAppBuilderActionPropsSetParameterValues {
 	/** Parameter values to set. */
 	parameterValues: IAppBuilderActionPropsSetParameterValue[];
+	/** Optional user-facing message when the action runs. */
+	message?: string;
 }
 
 /** Properties of legacy a "setParameterValues" action. */
@@ -1041,6 +1043,8 @@ export interface IAppBuilderContainer {
 		| AppBuilderAnchor2dContainerProperties;
 	/** Tabs displayed in the container. */
 	tabs?: IAppBuilderTab[];
+	/** When true, tabs stick to the top when scrolling the container content. */
+	stickyTabs?: boolean;
 	/** Further widgets displayed in the container. */
 	widgets?: IAppBuilderWidget[];
 }
