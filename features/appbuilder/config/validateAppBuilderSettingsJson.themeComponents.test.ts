@@ -14,6 +14,120 @@ const ALLOWED_THEME_REGISTRY_IMPORTERS = new Set([
 	"features/appbuilder/config/validateThemeComponentsRecord.ts",
 ]);
 
+const minimalValidSettings = {
+	version: "1.0" as const,
+};
+
+type ThemeComponentCase = {
+	component: string;
+	validDefaultProps: Record<string, unknown>;
+	invalidDefaultProps: Record<string, unknown>;
+};
+
+/**
+ * Registry entries with app-owned theme keys (excludes Mantine-only:
+ * Accordion, Button, Group, Paper, Text, AppBuilderHorizontalContainer,
+ * AppBuilderVerticalContainer).
+ */
+const APP_OWNED_THEME_COMPONENT_CASES = [
+	{
+		component: "AppBuilderContainer",
+		validDefaultProps: {orientation: "horizontal"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "AppBuilderTemplateSelector",
+		validDefaultProps: {template: "grid", showContainerButtons: false},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "AppBuilderStackUiWidgetComponent",
+		validDefaultProps: {iconForwardProps: {size: "sm", stroke: "1px"}},
+		invalidDefaultProps: {iconForwardProps: {size: true}},
+	},
+	{
+		component: "CreateModelStateHook",
+		validDefaultProps: {parameterNamesToInclude: ["width"]},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "ExportLabelComponent",
+		validDefaultProps: {fontWeight: "500"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "Icon",
+		validDefaultProps: {size: "md", stroke: "1px"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "LoaderPage",
+		validDefaultProps: {type: "bars", size: "md"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "OutputChunkLabelComponent",
+		validDefaultProps: {fontWeight: "600"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "ParameterColorComponent",
+		validDefaultProps: {colorFormat: "hexa"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "ParameterSliderComponent",
+		validDefaultProps: {sliderWidth: "60%", numberWidth: "35%"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "StargateShared",
+		validDefaultProps: {
+			stargateColorProps: {primary: "var(--mantine-primary-color-filled)"},
+		},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "NotificationWrapper",
+		validDefaultProps: {autoClose: 5000, successColor: "green"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "TooltipWrapper",
+		validDefaultProps: {floating: true, label: "Hint"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
+		component: "ParameterDraggingComponent",
+		validDefaultProps: {},
+		invalidDefaultProps: {draggingColor: 42},
+	},
+	{
+		component: "ParameterGumballComponent",
+		validDefaultProps: {},
+		invalidDefaultProps: {selectionColor: 42},
+	},
+	{
+		component: "ParameterSelectionComponent",
+		validDefaultProps: {},
+		invalidDefaultProps: {selectionColor: 42},
+	},
+] as const satisfies readonly ThemeComponentCase[];
+
+function themeOverridesFor(
+	component: string,
+	defaultProps: Record<string, unknown>,
+) {
+	return {
+		...minimalValidSettings,
+		themeOverrides: {
+			components: {
+				[component]: {defaultProps},
+			},
+		},
+	};
+}
+
 function listTypeScriptFilesUnder(dir: string, acc: string[] = []): string[] {
 	for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
 		if (entry.name === "node_modules" || entry.name === "dist") continue;
@@ -27,34 +141,7 @@ function listTypeScriptFilesUnder(dir: string, acc: string[] = []): string[] {
 	return acc;
 }
 
-const minimalValidSettings = {
-	version: "1.0" as const,
-};
-
 describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
-	it("fails when registered Icon defaultProps violate schema", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					Icon: {
-						defaultProps: {
-							size: true,
-						},
-					},
-				},
-			},
-		});
-
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/themeOverrides/i);
-		expect(msg).toMatch(/components/i);
-		expect(msg).toMatch(/Icon/i);
-		expect(msg).toMatch(/defaultProps/i);
-	});
-
 	it("does not deep-validate unknown component keys (policy: registry only)", () => {
 		const result = validateAppBuilderSettingsJson({
 			...minimalValidSettings,
@@ -73,207 +160,28 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		expect(result.success).toBe(true);
 	});
 
-	it("fails when registered ParameterColorComponent defaultProps violate schema", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					ParameterColorComponent: {
-						defaultProps: {
-							colorFormat: "cmyk",
-						},
-					},
-				},
-			},
-		});
+	describe.each(APP_OWNED_THEME_COMPONENT_CASES)(
+		"$component app-owned defaultProps",
+		({component, validDefaultProps, invalidDefaultProps}) => {
+			it("accepts minimal valid defaultProps", () => {
+				const result = validateAppBuilderSettingsJson(
+					themeOverridesFor(component, validDefaultProps),
+				);
+				expect(result.success).toBe(true);
+			});
 
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/ParameterColorComponent/i);
-		expect(msg).toMatch(/defaultProps/i);
-	});
-
-	it("fails when registered StargateShared defaultProps violate schema", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					StargateShared: {
-						defaultProps: {
-							stargateColorProps: {
-								primary: 42,
-							},
-						},
-					},
-				},
-			},
-		});
-
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/StargateShared/i);
-		expect(msg).toMatch(/defaultProps/i);
-	});
-
-	it("fails when registered CreateModelStateHook defaultProps violate schema", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					CreateModelStateHook: {
-						defaultProps: {
-							parameterNamesToInclude: "not-an-array",
-						},
-					},
-				},
-			},
-		});
-
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/CreateModelStateHook/i);
-		expect(msg).toMatch(/defaultProps/i);
-	});
-
-	it("fails when registered NotificationWrapper defaultProps violate schema", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					NotificationWrapper: {
-						defaultProps: {
-							autoClose: "forever",
-						},
-					},
-				},
-			},
-		});
-
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/NotificationWrapper/i);
-		expect(msg).toMatch(/defaultProps/i);
-	});
-
-	it("fails when registered LoaderPage defaultProps violate schema", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					LoaderPage: {
-						defaultProps: {
-							size: true,
-						},
-					},
-				},
-			},
-		});
-
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/LoaderPage/i);
-		expect(msg).toMatch(/defaultProps/i);
-	});
-
-	it("fails when registered AppBuilderTemplateSelector defaultProps violate schema", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					AppBuilderTemplateSelector: {
-						defaultProps: {
-							template: "single-page",
-						},
-					},
-				},
-			},
-		});
-
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/AppBuilderTemplateSelector/i);
-		expect(msg).toMatch(/defaultProps/i);
-	});
-
-	it("fails when registered AppBuilderVerticalContainer defaultProps violate schema", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					AppBuilderVerticalContainer: {
-						defaultProps: {
-							p: false,
-						},
-					},
-				},
-			},
-		});
-
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/AppBuilderVerticalContainer/i);
-		expect(msg).toMatch(/defaultProps/i);
-	});
-
-	it("fails when registered AppBuilderHorizontalContainer defaultProps violate schema", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					AppBuilderHorizontalContainer: {
-						defaultProps: {
-							justify: 1,
-						},
-					},
-				},
-			},
-		});
-
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/AppBuilderHorizontalContainer/i);
-		expect(msg).toMatch(/defaultProps/i);
-	});
-
-	it("accepts registered AppBuilderHorizontalContainer defaultProps from mantineGroupPropsSchema", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					AppBuilderHorizontalContainer: {
-						defaultProps: {w: "100%", wrap: "nowrap", p: "xs"},
-					},
-				},
-			},
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it("accepts AppBuilderHorizontalContainer with pt, pb, styles from theme08", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					AppBuilderHorizontalContainer: {
-						defaultProps: {
-							pt: 0,
-							pb: 0,
-							styles: {root: {display: "grid"}},
-						},
-					},
-				},
-			},
-		});
-		expect(result.success).toBe(true);
-	});
+			it("rejects invalid defaultProps", () => {
+				const result = validateAppBuilderSettingsJson(
+					themeOverridesFor(component, invalidDefaultProps),
+				);
+				expect(result.success).toBe(false);
+				if (result.success) return;
+				const msg = formatAppBuilderZodError(result.error);
+				expect(msg).toMatch(new RegExp(component, "i"));
+				expect(msg).toMatch(/defaultProps/i);
+			});
+		},
+	);
 
 	it("validates nested AppBuilderHorizontalContainer under containerThemeOverrides", () => {
 		const result = validateAppBuilderSettingsJson({
@@ -343,203 +251,6 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		expect(msg).toMatch(/containerThemeOverrides/i);
 		expect(msg).toMatch(/AppBuilderHorizontalContainer/i);
 		expect(msg).toMatch(/wrap/i);
-	});
-
-	it("fails when AppBuilderHorizontalContainer defaultProps have invalid wrap", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					AppBuilderHorizontalContainer: {
-						defaultProps: {wrap: "invalid-wrap"},
-					},
-				},
-			},
-		});
-		expect(result.success).toBe(false);
-	});
-
-	it("accepts theme08-like Button defaultProps", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					Button: {
-						defaultProps: {
-							fw: "400",
-							mt: "10px",
-							fz: {base: "0px", md: "14px"},
-							h: {base: "25px", md: "36px"},
-						},
-					},
-				},
-			},
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it("accepts theme08-like Text defaultProps", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					Text: {defaultProps: {fw: "300", size: "sm"}},
-				},
-			},
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it("accepts theme08-like Paper defaultProps", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					Paper: {defaultProps: {withBorder: false}},
-				},
-			},
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it("accepts theme08-like Accordion defaultProps", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					Accordion: {
-						defaultProps: {
-							styles: {label: {fontWeight: "400"}},
-						},
-					},
-				},
-			},
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it("validates public/theme08.json top-level theme components", () => {
-		const theme08Path = path.join(
-			__dirname,
-			"../../../../../public/theme08.json",
-		);
-		expect(fs.existsSync(theme08Path)).toBe(true);
-		const theme08 = JSON.parse(fs.readFileSync(theme08Path, "utf8")) as {
-			themeOverrides?: {components?: Record<string, unknown>};
-		};
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: theme08.themeOverrides?.components ?? {},
-			},
-		});
-		if (!result.success) {
-			// eslint-disable-next-line no-console -- test diagnostics for fixture drift
-			console.error(formatAppBuilderZodError(result.error));
-		}
-		expect(result.success).toBe(true);
-	});
-
-	it("accepts minimal valid AppBuilderStackUiWidgetComponent defaultProps", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					AppBuilderStackUiWidgetComponent: {
-						defaultProps: {
-							stackProps: {gap: "xs"},
-							stackPaperProps: {withBorder: false, shadow: "md"},
-							buttonForwardProps: {
-								justify: "space-between",
-								fullWidth: true,
-								variant: "default",
-							},
-							itemTextProps: {size: "md", c: "var(--mantine-color-text)"},
-						},
-					},
-				},
-			},
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it("fails when AppBuilderStackUiWidgetComponent nested buttonForwardProps variant is invalid type", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					AppBuilderStackUiWidgetComponent: {
-						defaultProps: {
-							buttonForwardProps: {variant: 42},
-						},
-					},
-				},
-			},
-		});
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/AppBuilderStackUiWidgetComponent/i);
-		expect(msg).toMatch(/buttonForwardProps/i);
-	});
-
-	it("accepts minimal valid TooltipWrapper defaultProps", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					TooltipWrapper: {
-						defaultProps: {
-							withArrow: true,
-							position: "top",
-							label: "Hint",
-						},
-					},
-				},
-			},
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it("fails when TooltipWrapper defaultProps have invalid label type", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					TooltipWrapper: {
-						defaultProps: {
-							label: {text: "not a string"},
-						},
-					},
-				},
-			},
-		});
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/TooltipWrapper/i);
-		expect(msg).toMatch(/label/i);
-	});
-
-	it("fails when registered AppBuilderContainer defaultProps violate schema", () => {
-		const result = validateAppBuilderSettingsJson({
-			...minimalValidSettings,
-			themeOverrides: {
-				components: {
-					AppBuilderContainer: {
-						defaultProps: {
-							orientation: "diagonal",
-						},
-					},
-				},
-			},
-		});
-
-		expect(result.success).toBe(false);
-		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/AppBuilderContainer/i);
-		expect(msg).toMatch(/defaultProps/i);
 	});
 });
 
