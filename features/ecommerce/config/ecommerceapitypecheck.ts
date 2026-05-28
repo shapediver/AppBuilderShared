@@ -1,15 +1,5 @@
+import { IAppBuilderImageRefSchema } from "@AppBuilderShared/features/appbuilder/config/appbuildertypecheck";
 import {z} from "zod";
-
-// Zod type definition for IAppBuilderImageRef (inline, mirrors the shared interface)
-const IAppBuilderImageRefSchema = z.object({
-	export: z
-		.object({
-			name: z.string().optional(),
-			sessionId: z.string().optional(),
-		})
-		.optional(),
-	href: z.string().optional(),
-});
 
 // Zod type definition for ICreateModelStateData
 export const ICreateModelStateDataSchema = z.object({
