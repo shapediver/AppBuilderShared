@@ -315,24 +315,22 @@ describe("validateAppBuilderSettingsJson theme validation singularity (R3)", () 
 		expect(offenders).toEqual([]);
 	});
 
-	it("useAppBuilderSettings validates settings JSON only when env flag is enabled", () => {
+	it("useAppBuilderSettings parses settings JSON via parseAppBuilderSettingsJson facade", () => {
 		const source = fs.readFileSync(
 			path.join(SHARED_SRC_ROOT, "features/appbuilder/model/useAppBuilderSettings.ts"),
 			"utf8",
 		);
-		expect(source.match(/validateAppBuilderSettingsJson\s*\(/g)).toHaveLength(1);
-		expect(source).toMatch(
-			/isAppBuilderValidationEnabled\(import\.meta\.env\)/,
-		);
-		expect(source).toMatch(
-			/const validate = \(data: any\)[\s\S]*isAppBuilderValidationEnabled[\s\S]*validateAppBuilderSettingsJson\(data\)/,
-		);
+		expect(source).toMatch(/from\s+["'].*parseAppBuilderJson["']/);
+		expect(source.match(/parseAppBuilderSettingsJson\s*\(/g)).toHaveLength(1);
+		expect(source).not.toMatch(/validateAppBuilderSettingsJson/);
+		expect(source).not.toMatch(/isAppBuilderValidationEnabled/);
+		expect(source).not.toMatch(/formatAppBuilderZodError/);
 		expect(source).not.toMatch(
-			/setThemeOverride[\s\S]*validateAppBuilderSettingsJson/,
+			/setThemeOverride[\s\S]*parseAppBuilderSettingsJson/,
 		);
 	});
 
-	it("useSessionWithAppBuilder validates AppBuilder override only when env flag is enabled", () => {
+	it("useSessionWithAppBuilder parses model skeleton via facade; override is not re-validated", () => {
 		const source = fs.readFileSync(
 			path.join(
 				SHARED_SRC_ROOT,
@@ -340,12 +338,16 @@ describe("validateAppBuilderSettingsJson theme validation singularity (R3)", () 
 			),
 			"utf8",
 		);
-		expect(source.match(/validateAppBuilder\s*\(/g)).toHaveLength(1);
+		expect(source).toMatch(/from\s+["'].*parseAppBuilderJson["']/);
+		expect(source.match(/parseAppBuilderSkeleton\s*\(/g)).toHaveLength(2);
+		expect(source).not.toMatch(/validateAppBuilder/);
+		expect(source).not.toMatch(/isAppBuilderValidationEnabled/);
+		expect(source).not.toMatch(/formatAppBuilderZodError/);
 		expect(source).toMatch(
-			/isAppBuilderValidationEnabled\(import\.meta\.env\)/,
+			/appBuilderOverride\s*&&\s*sessionInitialized[\s\S]*return\s+appBuilderOverride/,
 		);
-		expect(source).toMatch(
-			/const validate = \(data: any\)[\s\S]*isAppBuilderValidationEnabled[\s\S]*validateAppBuilder\(data\)/,
+		expect(source).not.toMatch(
+			/parseAppBuilderSkeleton\s*\(\s*appBuilderOverride/,
 		);
 	});
 

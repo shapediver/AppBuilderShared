@@ -29,11 +29,7 @@ import {
 	IAppBuilderSettingsJsonSession,
 	IAppBuilderSettingsSession,
 } from "../config/appbuilder";
-import {isAppBuilderValidationEnabled} from "../config/appBuilderSettingsValidationEnv";
-import {
-	formatAppBuilderZodError,
-	validateAppBuilderSettingsJson,
-} from "../config/appbuildertypecheck";
+import {parseAppBuilderSettingsJson} from "../config/parseAppBuilderJson";
 
 declare global {
 	interface Window {
@@ -93,23 +89,11 @@ export default function useAppBuilderSettings(
 
 	// try to load settings json
 	const url = parameters.get(queryParamName);
-	const validate = (data: any): IAppBuilderSettingsJson | undefined => {
-		if (!isAppBuilderValidationEnabled(import.meta.env)) {
-			return data as IAppBuilderSettingsJson;
-		}
-		const result = validateAppBuilderSettingsJson(data);
-		if (result.success) {
-			return result.data;
-		}
-		throw new Error(
-			`Parsing AppBuilder settings failed:\n${formatAppBuilderZodError(result.error)}`,
-		);
-	};
 	const {value, error, loading} = useAsync(async () => {
 		if (!url) return;
 		const response = await fetch(url, {mode: "cors"});
 
-		return validate(await response.json());
+		return parseAppBuilderSettingsJson(await response.json());
 	}, [url]);
 
 	// check for ticket, modelViewUrl, slug and platformUrl

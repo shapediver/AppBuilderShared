@@ -4,8 +4,7 @@ import {
 } from "@AppBuilderLib/entities/session/model/useSession";
 import {useAppBuilderCustomParameters} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
 import {IAppBuilder, IAppBuilderSettingsSession} from "../config/appbuilder";
-import {isAppBuilderValidationEnabled} from "../config/appBuilderSettingsValidationEnv";
-import {formatAppBuilderZodError, validateAppBuilder} from "../config/appbuildertypecheck";
+import {parseAppBuilderSkeleton} from "../config/parseAppBuilderJson";
 
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -67,29 +66,8 @@ export function useSessionWithAppBuilder(
 	const processManagerIdRef = useRef<string | undefined>(undefined);
 
 	/**
-	 * Validate the AppBuilder data.
-	 * @param data
-	 * @returns
-	 */
-	const validate = (data: any): IAppBuilder | undefined | Error => {
-		if (!isAppBuilderValidationEnabled(import.meta.env)) {
-			return data as IAppBuilder;
-		}
-		const result = validateAppBuilder(data);
-		if (result.success) {
-			return result.data;
-		} else {
-			Logger.debug("Invalid AppBuilder data", data);
-
-			return new Error(
-				`Parsing AppBuilder data failed:\n${formatAppBuilderZodError(result.error)}`,
-			);
-		}
-	};
-
-	/**
-	 * Validate the AppBuilder data from the model or the override.
-	 * If the override is set, the data from the model is ignored.
+	 * Parse AppBuilder layout from the model output, or use settings override as-is.
+	 * Override is not re-validated here (validated in settings JSON when env is on).
 	 */
 	const validationResult = useCallback(
 		(data: IAppBuilder | string | undefined) => {
@@ -97,11 +75,11 @@ export function useSessionWithAppBuilder(
 				if (data)
 					Logger.debug("Overriding AppBuilder data from settings!");
 
-				return validate(appBuilderOverride);
+				return appBuilderOverride;
 			}
 			if (!data) return undefined;
 			if (typeof data === "string") {
-				let parsedJson: string;
+				let parsedJson: unknown;
 				try {
 					parsedJson = JSON.parse(data);
 				} catch (e: any) {
@@ -110,10 +88,10 @@ export function useSessionWithAppBuilder(
 					);
 				}
 
-				return validate(parsedJson);
+				return parseAppBuilderSkeleton(parsedJson);
 			}
 
-			return validate(data);
+			return parseAppBuilderSkeleton(data);
 		},
 		[appBuilderOverride, sessionInitialized],
 	);
