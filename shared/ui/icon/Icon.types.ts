@@ -2,6 +2,7 @@ import {
 	IconifyIcon as IconifyIconDefinition,
 	IconProps as IconifyIconProps,
 } from "@iconify/react";
+import {mantineSpacingSchema} from "@AppBuilderLib/shared/mantine-props/spacing";
 import {MantineSize} from "@mantine/core";
 import {CSSProperties} from "react";
 import {z} from "zod";
@@ -30,7 +31,7 @@ export const sizeMap: Record<string, string> = {
  * Keys must stay aligned with `useProps("Icon", …)`.
  */
 export const IconThemeDefaultPropsSchema = z.strictObject({
-	size: z.union([z.string(), z.number()]).optional(),
+	size: mantineSpacingSchema.optional(),
 	stroke: z.string().optional(),
 });
 
