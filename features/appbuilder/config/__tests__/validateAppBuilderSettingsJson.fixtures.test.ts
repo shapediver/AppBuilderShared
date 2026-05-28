@@ -3,7 +3,7 @@ import * as path from "node:path";
 import {
 	formatAppBuilderZodError,
 	validateAppBuilderSettingsJson,
-} from "./appbuildertypecheck";
+} from "../appbuildertypecheck";
 
 const FIXTURES_DIR = path.join(__dirname, "__fixtures__");
 const ERROR_SUMMARY_MAX = 500;
@@ -75,7 +75,7 @@ describe("validateAppBuilderSettingsJson co-located fixtures", () => {
 
 			const result = validateAppBuilderSettingsJson(json);
 			if (result.success) {
-				results.push({file: fileName, status: "PASS"});
+				results.push({ file: fileName, status: "PASS" });
 				return;
 			}
 

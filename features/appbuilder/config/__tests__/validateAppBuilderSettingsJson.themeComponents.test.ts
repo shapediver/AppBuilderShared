@@ -1,8 +1,8 @@
-import {ParameterColorComponentThemeDefaultPropsSchema} from "~/shared/entities/parameter/config/ParameterColorComponent.types";
-import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import { ParameterColorComponentThemeDefaultPropsSchema } from "~/shared/entities/parameter/config/ParameterColorComponent.types";
+import { IconThemeDefaultPropsSchema } from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import {formatAppBuilderZodError, validateAppBuilderSettingsJson} from "./appbuildertypecheck";
+import { formatAppBuilderZodError, validateAppBuilderSettingsJson } from "../appbuildertypecheck";
 
 /** `src/shared` root (this file: features/appbuilder/config). */
 const SHARED_SRC_ROOT = path.resolve(__dirname, "../../..");
@@ -32,85 +32,85 @@ type ThemeComponentCase = {
 const APP_OWNED_THEME_COMPONENT_CASES = [
 	{
 		component: "AppBuilderContainer",
-		validDefaultProps: {orientation: "horizontal"},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: { orientation: "horizontal" },
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "AppBuilderTemplateSelector",
-		validDefaultProps: {template: "grid", showContainerButtons: false},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: { template: "grid", showContainerButtons: false },
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "AppBuilderStackUiWidgetComponent",
-		validDefaultProps: {iconForwardProps: {size: "sm", stroke: "1px"}},
-		invalidDefaultProps: {iconForwardProps: {size: true}},
+		validDefaultProps: { iconForwardProps: { size: "sm", stroke: "1px" } },
+		invalidDefaultProps: { iconForwardProps: { size: true } },
 	},
 	{
 		component: "CreateModelStateHook",
-		validDefaultProps: {parameterNamesToInclude: ["width"]},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: { parameterNamesToInclude: ["width"] },
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "ExportLabelComponent",
-		validDefaultProps: {fontWeight: "500"},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: { fontWeight: "500" },
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "Icon",
-		validDefaultProps: {size: "md", stroke: "1px"},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: { size: "md", stroke: "1px" },
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "LoaderPage",
-		validDefaultProps: {type: "bars", size: "md"},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: { type: "bars", size: "md" },
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "OutputChunkLabelComponent",
-		validDefaultProps: {fontWeight: "600"},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: { fontWeight: "600" },
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "ParameterColorComponent",
-		validDefaultProps: {colorFormat: "hexa"},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: { colorFormat: "hexa" },
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "ParameterSliderComponent",
-		validDefaultProps: {sliderWidth: "60%", numberWidth: "35%"},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: { sliderWidth: "60%", numberWidth: "35%" },
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "StargateShared",
 		validDefaultProps: {
-			stargateColorProps: {primary: "var(--mantine-primary-color-filled)"},
+			stargateColorProps: { primary: "var(--mantine-primary-color-filled)" },
 		},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "NotificationWrapper",
-		validDefaultProps: {autoClose: 5000, successColor: "green"},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: { autoClose: 5000, successColor: "green" },
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "TooltipWrapper",
-		validDefaultProps: {floating: true, label: "Hint"},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: { floating: true, label: "Hint" },
+		invalidDefaultProps: { __unrecognizedThemeKey: true },
 	},
 	{
 		component: "ParameterDraggingComponent",
 		validDefaultProps: {},
-		invalidDefaultProps: {draggingColor: 42},
+		invalidDefaultProps: { draggingColor: 42 },
 	},
 	{
 		component: "ParameterGumballComponent",
 		validDefaultProps: {},
-		invalidDefaultProps: {selectionColor: 42},
+		invalidDefaultProps: { selectionColor: 42 },
 	},
 	{
 		component: "ParameterSelectionComponent",
 		validDefaultProps: {},
-		invalidDefaultProps: {selectionColor: 42},
+		invalidDefaultProps: { selectionColor: 42 },
 	},
 ] as const satisfies readonly ThemeComponentCase[];
 
@@ -122,14 +122,14 @@ function themeOverridesFor(
 		...minimalValidSettings,
 		themeOverrides: {
 			components: {
-				[component]: {defaultProps},
+				[component]: { defaultProps },
 			},
 		},
 	};
 }
 
 function listTypeScriptFilesUnder(dir: string, acc: string[] = []): string[] {
-	for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
 		if (entry.name === "node_modules" || entry.name === "dist") continue;
 		const fullPath = path.join(dir, entry.name);
 		if (entry.isDirectory()) {
@@ -149,7 +149,7 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 				components: {
 					NotRegisteredInAppBuilderRegistry123: {
 						defaultProps: {
-							anything: {nested: true},
+							anything: { nested: true },
 							size: false,
 						},
 					},
@@ -162,7 +162,7 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 
 	describe.each(APP_OWNED_THEME_COMPONENT_CASES)(
 		"$component app-owned defaultProps",
-		({component, validDefaultProps, invalidDefaultProps}) => {
+		({ component, validDefaultProps, invalidDefaultProps }) => {
 			it("accepts minimal valid defaultProps", () => {
 				const result = validateAppBuilderSettingsJson(
 					themeOverridesFor(component, validDefaultProps),
@@ -234,7 +234,7 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 									bottom: {
 										components: {
 											AppBuilderHorizontalContainer: {
-												defaultProps: {wrap: "invalid-wrap"},
+												defaultProps: { wrap: "invalid-wrap" },
 											},
 										},
 									},
@@ -271,8 +271,8 @@ describe("validateAppBuilderSettingsJson theme validation singularity (R3)", () 
 			version: "1.0",
 			themeOverrides: {
 				components: {
-					Icon: {defaultProps: {size: "md"}},
-					ParameterColorComponent: {defaultProps: {colorFormat: "hexa"}},
+					Icon: { defaultProps: { size: "md" } },
+					ParameterColorComponent: { defaultProps: { colorFormat: "hexa" } },
 				},
 			},
 		});

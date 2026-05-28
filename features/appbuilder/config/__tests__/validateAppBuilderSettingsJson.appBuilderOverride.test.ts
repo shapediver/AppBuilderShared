@@ -1,4 +1,4 @@
-import {validateAppBuilderSettingsJson} from "./appbuildertypecheck";
+import { validateAppBuilderSettingsJson } from "../appbuildertypecheck";
 
 /** SS-9065-shaped appBuilderOverride + themeOverrides (no sessions / tickets). */
 const ss9065ShapeSettings = {
