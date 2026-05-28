@@ -5,7 +5,11 @@ import {
 	IUpdateParameterValuesData,
 	IUpdateParameterValuesReply,
 } from "@AppBuilderLib/features/ecommerce/config/ecommerceapi";
-import {validateUpdateParameterValuesData} from "@AppBuilderLib/features/ecommerce/config/ecommerceapitypecheck";
+import {
+	validateCreateModelStateData,
+	validateImportModelStateData,
+	validateUpdateParameterValuesData,
+} from "@AppBuilderLib/features/ecommerce/config/ecommerceapitypecheck";
 import useAsync from "@AppBuilderLib/shared/lib/useAsync";
 import {useCreateModelState} from "@AppBuilderShared/features/model-state/model/useCreateModelState";
 import {useImportModelState} from "@AppBuilderShared/features/model-state/model/useImportModelState";
@@ -52,10 +56,34 @@ export function useECommerceApiConnectorActions({namespace}: Props) {
 			return {};
 		};
 
+		const wrappedCreateModelState: IECommerceApiConnectorActions["createModelState"] =
+			async (data) => {
+				const result = validateCreateModelStateData(data);
+				if (!result.success) {
+					throw new Error(
+						"Invalid data for createModelState",
+						result.error,
+					);
+				}
+				return createModelState(data);
+			};
+
+		const wrappedImportModelState: IECommerceApiConnectorActions["importModelState"] =
+			async (data) => {
+				const result = validateImportModelStateData(data);
+				if (!result.success) {
+					throw new Error(
+						"Invalid data for importModelState",
+						result.error,
+					);
+				}
+				return importModelState(data);
+			};
+
 		const actions: IECommerceApiConnectorActions = {
 			updateParameterValues,
-			createModelState,
-			importModelState,
+			createModelState: wrappedCreateModelState,
+			importModelState: wrappedImportModelState,
 		};
 
 		return actions;

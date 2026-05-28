@@ -1,7 +1,7 @@
 import {ResGetModelState} from "@shapediver/sdk.geometry-api-sdk-v2";
 
 /**
- * Data accepted by the useImportModelState hook to create a model state.
+ * Data accepted by the useImportModelState hook to import a model state.
  */
 export interface IImportModelStateData {
 	/** Id of the model state to import. */

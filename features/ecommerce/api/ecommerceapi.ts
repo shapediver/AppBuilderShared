@@ -373,7 +373,7 @@ export class DummyECommerceApiConnectorActions implements IECommerceApiConnector
 	createModelState(
 		data: ICreateModelStateData,
 	): Promise<ICreateModelStateResult> {
-		throw new Error("Method not implemented.");
+		return Promise.resolve({} as ICreateModelStateResult);
 	}
 	importModelState(
 		data: IImportModelStateData,

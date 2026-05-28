@@ -5,9 +5,9 @@ import {IAppBuilderImageRef} from "@AppBuilderShared/features/appbuilder/config/
  */
 export interface ICreateModelStateData {
 	/** Optional list of parameter ids/names to include. */
-	parameterNamesToInclude: string[] | undefined;
+	parameterNamesToInclude?: string[];
 	/** Optional list of parameter names to exclude. */
-	parameterNamesToExclude: string[] | undefined;
+	parameterNamesToExclude?: string[];
 	/** Whether to include an image. */
 	includeImage?: boolean;
 	/** Optional image definition. If undefined, a screenshot will be used. */
