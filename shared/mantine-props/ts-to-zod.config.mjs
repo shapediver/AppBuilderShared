@@ -1,6 +1,15 @@
 /** @type {import("ts-to-zod").TsToZodConfig} */
 export default [
 	{
+		name: "mantine-props-spacing",
+		input: "src/shared/shared/mantine-props/spacing.schema-input.ts",
+		output: "src/shared/shared/mantine-props/spacing.zod.ts",
+		getSchemaName: (id) => {
+			if (id === "MantineSpacing") return "mantineSpacingSchema";
+			return `${id}Schema`;
+		},
+	},
+	{
 		name: "mantine-props-group",
 		input: "src/shared/shared/mantine-props/group.schema-input.ts",
 		output: "src/shared/shared/mantine-props/group.zod.ts",

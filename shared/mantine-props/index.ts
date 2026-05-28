@@ -14,8 +14,9 @@ export type {MantineBoxProps} from "./box";
 export {mantineBoxPropsSchema} from "./box";
 export type {MantineTooltipProps} from "./tooltip";
 export {mantineTooltipPropsSchema} from "./tooltip";
+export {mantineSpacingSchema} from "./spacing";
+export type {MantineSpacing} from "./spacing";
 export type {
-	MantineSpacing,
 	MantineResponsive,
 	MantineFlexWrap,
 	MantineCssLength,
