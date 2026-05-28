@@ -62,7 +62,10 @@ const cleanUpHoverManager = (
 export function useHoverManager(
 	viewportId: string,
 	componentId: string,
-	settings?: Pick<IInteractionParameterProps, "hoverColor" | "occludeBySceneGeometry">,
+	settings?: Pick<
+		IInteractionParameterProps,
+		"hoverColor" | "occludeBySceneGeometry"
+	>,
 ): {
 	/**
 	 * The hover manager that was created for the viewport.
