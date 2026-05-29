@@ -2,6 +2,14 @@ import {
 	ICrossWindowApiOptions,
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
+import {
+	ICreateModelStateData,
+	ICreateModelStateResult,
+} from "@AppBuilderShared/features/model-state/config/createModelState";
+import {
+	IImportModelStateData,
+	IImportModelStateResult,
+} from "@AppBuilderShared/features/model-state/config/importModelState";
 
 /**
  * An item to be added to the cart.
@@ -283,13 +291,27 @@ export interface IUpdateParameterValuesReply {
 export interface IECommerceApiConnectorActions {
 	/**
 	 * Update parameter values of the application.
-	 * @param state
-	 * @param skipHistory
-	 * @param skipUrlUpdate
+	 * @param data
 	 */
 	updateParameterValues(
 		data: IUpdateParameterValuesData,
 	): Promise<IUpdateParameterValuesReply>;
+
+	/**
+	 * Create a model state.
+	 * @param data
+	 */
+	createModelState(
+		data: ICreateModelStateData,
+	): Promise<ICreateModelStateResult>;
+
+	/**
+	 * Import a model state.
+	 * @param data
+	 */
+	importModelState(
+		data: IImportModelStateData,
+	): Promise<IImportModelStateResult>;
 }
 
 /**

@@ -28,15 +28,15 @@ export default function ImportModelStateDialog({
 	const [error, setError] = useState<string | null>(null);
 
 	const {importModelState, isLoading: isLoadingModelState} =
-		useImportModelState(namespace);
+		useImportModelState({namespace});
 
 	const handleImport = useCallback(async (modelStateId: string) => {
 		setError(null);
 		setIsLoading(true);
-		const result = await importModelState(modelStateId);
+		const result = await importModelState({modelStateId});
 		setIsLoading(false);
-		if (!result) {
-			setError("Failed to import model state");
+		if (!result.success) {
+			setError(result.message || "Failed to import model state");
 			return;
 		}
 		handleClose();

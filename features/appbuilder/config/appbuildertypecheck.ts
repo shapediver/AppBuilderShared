@@ -166,7 +166,7 @@ const IAppBuilderExportRefSchema = z.object({
 });
 
 // Zod type definition for IAppBuilderImageRef
-const IAppBuilderImageRefSchema = z.object({
+export const IAppBuilderImageRefSchema = z.object({
 	export: IAppBuilderExportRefSchema.pick({
 		name: true,
 		sessionId: true,

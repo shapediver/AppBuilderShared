@@ -223,7 +223,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		}
 	}, [currentModel]);
 
-	useECommerceApiConnectorActions();
+	useECommerceApiConnectorActions({namespace});
 
 	const showMarkdown =
 		!(settings && hasSession) && // no settings or no session

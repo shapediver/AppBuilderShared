@@ -27,6 +27,14 @@ import {
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import {CrossWindowApiFactory} from "@AppBuilderLib/shared/lib/crosswindowapi/crosswindowapi";
 import {applyModelStateToUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
+import {
+	ICreateModelStateData,
+	ICreateModelStateResult,
+} from "@AppBuilderShared/features/model-state/config/createModelState";
+import {
+	IImportModelStateData,
+	IImportModelStateResult,
+} from "@AppBuilderShared/features/model-state/config/importModelState";
 
 // Message types for the API calls from application to connector.
 // CAUTION: When implementing new API calls and messages type, make sure to add
@@ -45,6 +53,10 @@ const MESSAGE_TYPE_HANDSHAKE = "HANDSHAKE";
 // Message types for the API calls from connector to application.
 const MESSAGE_TYPE_CONNECTOR_UPDATE_PARAMETER_VALUES =
 	"CONNECTOR_UPDATE_PARAMETER_VALUES";
+const MESSAGE_TYPE_CONNECTOR_CREATE_MODEL_STATE =
+	"CONNECTOR_CREATE_MODEL_STATE";
+const MESSAGE_TYPE_CONNECTOR_IMPORT_MODEL_STATE =
+	"CONNECTOR_IMPORT_MODEL_STATE";
 
 export class ECommerceApi implements IECommerceApi {
 	/**
@@ -81,6 +93,16 @@ export class ECommerceApi implements IECommerceApi {
 					MESSAGE_TYPE_CONNECTOR_UPDATE_PARAMETER_VALUES,
 					(data: IUpdateParameterValuesData) =>
 						this.connectorActions.updateParameterValues(data),
+				);
+				this.crossWindowApi.on(
+					MESSAGE_TYPE_CONNECTOR_CREATE_MODEL_STATE,
+					(data: ICreateModelStateData) =>
+						this.connectorActions.createModelState(data),
+				);
+				this.crossWindowApi.on(
+					MESSAGE_TYPE_CONNECTOR_IMPORT_MODEL_STATE,
+					(data: IImportModelStateData) =>
+						this.connectorActions.importModelState(data),
 				);
 				return peerInfo;
 			});
@@ -266,6 +288,30 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 			this.timeout,
 		);
 	}
+
+	async createModelState(
+		data: ICreateModelStateData,
+	): Promise<ICreateModelStateResult> {
+		await this.peerIsReady;
+
+		return this.crossWindowApi.send(
+			MESSAGE_TYPE_CONNECTOR_CREATE_MODEL_STATE,
+			data,
+			this.timeout,
+		);
+	}
+
+	async importModelState(
+		data: IImportModelStateData,
+	): Promise<IImportModelStateResult> {
+		await this.peerIsReady;
+
+		return this.crossWindowApi.send(
+			MESSAGE_TYPE_CONNECTOR_IMPORT_MODEL_STATE,
+			data,
+			this.timeout,
+		);
+	}
 }
 
 export class DummyECommerceApiActions implements IECommerceApiActions {
@@ -324,6 +370,16 @@ export class DummyECommerceApiActions implements IECommerceApiActions {
 }
 
 export class DummyECommerceApiConnectorActions implements IECommerceApiConnectorActions {
+	createModelState(
+		data: ICreateModelStateData,
+	): Promise<ICreateModelStateResult> {
+		return Promise.resolve({} as ICreateModelStateResult);
+	}
+	importModelState(
+		data: IImportModelStateData,
+	): Promise<IImportModelStateResult> {
+		return Promise.resolve({success: false, message: "Not implemented"});
+	}
 	updateParameterValues() /*data: IUpdateParameterValuesData,*/
 	: Promise<IUpdateParameterValuesReply> {
 		return Promise.resolve({});
