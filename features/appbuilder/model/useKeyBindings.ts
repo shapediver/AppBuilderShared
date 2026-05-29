@@ -46,7 +46,7 @@ interface Props {
 export function useKeyBindings(props: Props) {
 	const {namespace, getNotification} = props;
 	const {createModelState} = useCreateModelState({namespace});
-	const {importModelState} = useImportModelState(namespace);
+	const {importModelState} = useImportModelState({namespace});
 	const {exportParameters, importParameters} =
 		useParameterImportExport(namespace);
 	const notifications = useNotificationStore();
@@ -92,17 +92,16 @@ export function useKeyBindings(props: Props) {
 		window.importParameterValues = importParameters;
 		window.exportParameterValues = exportParameters;
 		window.createModelState = async () => {
-			const {modelStateId} = await createModelState(
-				undefined,
-				undefined,
-				true,
-				undefined,
-				undefined,
-				false,
-			);
+			const {modelStateId} = await createModelState({
+				includeImage: true,
+				includeGltf: false,
+			});
 			return modelStateId;
 		};
-		window.importModelState = importModelState;
+		window.importModelState = async (modelStateId: string) => {
+			const result = await importModelState({modelStateId});
+			return result.success;
+		};
 
 		return () => {
 			delete (window as Partial<Window>).importParameterValues;
