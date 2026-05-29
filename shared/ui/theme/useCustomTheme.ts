@@ -192,6 +192,12 @@ export const useCustomTheme = (props: Props = {}) => {
 		defaultRadius: "md",
 		other: {
 			//forceColorScheme: "light",
+			/** Single favicon URL (used when iconDarkUrl and iconLightUrl are not both set). */
+			iconUrl: "/favicon.ico",
+			/** Dark-scheme favicon; pair with iconLightUrl to switch via prefers-color-scheme. */
+			// iconDarkUrl: "/favicon-dark.svg",
+			/** Light-scheme favicon; pair with iconDarkUrl to switch via prefers-color-scheme. */
+			// iconLightUrl: "/favicon-light.svg",
 			defaultFontWeightThin: "100",
 			defaultFontWeightLight: "300",
 			defaultFontWeight: "400",

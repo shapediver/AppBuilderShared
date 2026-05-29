@@ -145,7 +145,9 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						maxHeight={container.props.maxHeight}
 						mobileFallback={container.props.mobileFallback}
 						useContainer={container.props.useContainer ?? true}
-						closingStrategy={"button"}					useCloseButton={container.props.useCloseButton}						selectionProperties={
+						closingStrategy={"button"}
+						useCloseButton={container.props.useCloseButton}
+						selectionProperties={
 							container.props.selectionProperties
 						}
 					/>,

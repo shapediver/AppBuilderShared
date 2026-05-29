@@ -37,14 +37,14 @@ export function useModelStateSources(props: {
 					parameterNamesToExclude,
 				} = source;
 
-				const promise = createModelState(
+				const promise = createModelState({
 					parameterNamesToInclude,
 					parameterNamesToExclude,
 					includeImage,
 					image,
-					undefined,
+					data: undefined,
 					includeGltf,
-				).then(async ({modelStateId}) => {
+				}).then(async ({modelStateId}) => {
 					if (!modelStateId) return;
 					// in case we are not running inside an iframe, the instance of
 					// IEcommerceApi is a dummy implementation

@@ -35,14 +35,14 @@ export default function HistoryMenuButton({
 
 	const onCreateModelState = useCallback(async () => {
 		setIsCreatingModelState(true);
-		const {modelStateId} = await createModelState(
-			undefined, // <-- parameterNamesToInclude: use default according to the theme
-			undefined, // <-- parameterNamesToExclude: use default according to the theme
-			true, // <-- includeImage,
-			undefined, // <-- image
-			undefined, // <-- custom data
-			false, // <-- includeGltf
-		);
+		const {modelStateId} = await createModelState({
+			parameterNamesToInclude: undefined, // <-- parameterNamesToInclude: use default according to the theme
+			parameterNamesToExclude: undefined, // <-- parameterNamesToExclude: use default according to the theme
+			includeImage: true, // <-- includeImage,
+			image: undefined, // <-- image
+			data: undefined, // <-- custom data
+			includeGltf: false, // <-- includeGltf
+		});
 
 		if (modelStateId) {
 			// in case we are not running inside an iframe, the instance of

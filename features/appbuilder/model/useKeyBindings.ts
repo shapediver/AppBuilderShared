@@ -52,14 +52,14 @@ export function useKeyBindings(props: Props) {
 	const notifications = useNotificationStore();
 
 	const callback = useCallback(async () => {
-		const {modelStateId, screenshot} = await createModelState(
-			undefined, // <-- parameterNamesToInclude: use default according to the theme
-			undefined, // <-- parameterNamesToExclude: use default according to the theme
-			true, // <-- includeImage,
-			undefined, // <-- image
-			undefined, // <-- custom data
-			false, // <-- includeGltf
-		);
+		const {modelStateId, screenshot} = await createModelState({
+			parameterNamesToInclude: undefined, // <-- parameterNamesToInclude: use default according to the theme
+			parameterNamesToExclude: undefined, // <-- parameterNamesToExclude: use default according to the theme
+			includeImage: true, // <-- includeImage,
+			image: undefined, // <-- image
+			data: undefined, // <-- custom data
+			includeGltf: false, // <-- includeGltf
+		});
 
 		// Save the modelStateId as a search parameter
 		if (modelStateId) {

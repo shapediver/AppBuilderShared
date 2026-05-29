@@ -457,7 +457,7 @@ export function useAgent(props: Props) {
 		parameterNamesToExclude,
 		authorContext,
 		maxHistory = 10,
-		model = "gpt-4o-mini",
+		model = "gpt-5-chat-latest",
 		openaiApiKey,
 		langfuseSecretKey,
 		langfusePublicKey,
