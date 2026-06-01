@@ -57,7 +57,8 @@ export function useECommerceApiConnectorActions({namespace}: Props) {
 		};
 
 		const wrappedCreateModelState: IECommerceApiConnectorActions["createModelState"] =
-			async (data) => {
+			async (data_) => {
+				const data = data_ || {};
 				const result = validateCreateModelStateData(data);
 				if (!result.success) {
 					throw new Error(
