@@ -751,8 +751,8 @@ export interface IAppBuilderWidgetPropsForm {
 	controls?: IAppBuilderControl[];
 	/** References to parameters which shall be displayed by the form. */
 	parameters?: IAppBuilderParameterRef[];
-	/** Export to trigger on form submission. */
-	export?: IAppBuilderExportRef;
+	/** Export to trigger on form submission (supports export-control fields such as parameterValues). */
+	export?: IAppBuilderControlExportRef;
 	/** What to do after successful form submission. */
 	submit?: FormWidgetSubmitBehavior;
 	/** Success message to display (when submit is "message"). */
