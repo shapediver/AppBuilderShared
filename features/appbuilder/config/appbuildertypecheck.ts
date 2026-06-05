@@ -856,7 +856,7 @@ const IAppBuilderWidgetPropsControlsSchema = z.object({
 const IAppBuilderWidgetPropsFormSchema = z.object({
 	controls: z.array(IAppBuilderControlSchema).optional(),
 	parameters: z.array(IAppBuilderParameterRefSchema).optional(),
-	export: IAppBuilderExportRefSchema.optional(),
+	export: IAppBuilderControlExportRefSchema.optional(),
 	submit: z.nativeEnum(FormWidgetSubmitBehavior).optional(),
 	successMessage: z.string().optional(),
 	errorMessage: z.string().optional(),
