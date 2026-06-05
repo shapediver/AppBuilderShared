@@ -489,7 +489,6 @@ export default function ExportButtonComponent(
 
 	const standardExportButtonWithTooltip =
 		standardExportButton &&
-		buttonLabel &&
 		definition?.tooltip ? (
 			<TooltipWrapper label={definition.tooltip} position="top">
 				{standardExportButton}
