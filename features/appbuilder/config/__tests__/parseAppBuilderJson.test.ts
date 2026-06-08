@@ -13,7 +13,7 @@ const minimalValidSettings = {
 
 const minimalValidSkeleton = {
 	version: "1.0" as const,
-	containers: [] as const[],
+	containers: [],
 };
 
 const envOff = {};

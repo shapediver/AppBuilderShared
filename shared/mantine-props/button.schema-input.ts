@@ -1,16 +1,5 @@
-export type MantineSpacing = "xs" | "sm" | "md" | "lg" | "xl" | string | number;
-
-export type MantineResponsiveCssSize =
-	| string
-	| number
-	| {
-			base?: string | number;
-			xs?: string | number;
-			sm?: string | number;
-			md?: string | number;
-			lg?: string | number;
-			xl?: string | number;
-	  };
+import type {MantineSizeToken, MantineSpacing} from "./spacing.schema-input";
+import type {MantineResponsiveCssSize} from "./primitives.schema-input";
 
 /**
  * Serializable subset of Mantine `Button` props for settings theme `defaultProps`.
@@ -25,7 +14,7 @@ export interface MantineButtonProps {
 	fz?: MantineResponsiveCssSize;
 	h?: MantineResponsiveCssSize;
 	variant?: string;
-	size?: MantineSpacing;
+	size?: MantineSizeToken;
 	fullWidth?: boolean;
 	justify?: string;
 }

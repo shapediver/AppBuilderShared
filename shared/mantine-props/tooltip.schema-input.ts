@@ -1,5 +1,4 @@
-/** Aligns with `MantineSpacing` in `./spacing.schema-input.ts` (inlined for per-file ts-to-zod). */
-export type MantineSpacing = "xs" | "sm" | "md" | "lg" | "xl" | string | number;
+import type {MantineSpacing} from "./spacing.schema-input";
 
 /**
  * Serializable subset of Mantine `Tooltip` props for settings theme `defaultProps`.

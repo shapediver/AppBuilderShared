@@ -1,21 +1,9 @@
-export type MantineCssLength = string | number;
-
-export type MantineFlexWrap = "nowrap" | "wrap" | "wrap-reverse";
-
-export type MantineSpacing = "xs" | "sm" | "md" | "lg" | "xl" | string | number;
-
-export type MantineStylesApiValue = string | number | boolean | null;
-
-export type MantineStylesApi = {
-	[selector: string]:
-		| {
-				[property: string]:
-					| MantineStylesApiValue
-					| MantineStylesApi
-					| MantineStylesApiValue[];
-		  }
-		| undefined;
-};
+import type {MantineSpacing} from "./spacing.schema-input";
+import type {
+	MantineCssLength,
+	MantineFlexWrap,
+	MantineStylesApi,
+} from "./primitives.schema-input";
 
 /**
  * Serializable subset of Mantine `Group` props for settings theme `defaultProps`.

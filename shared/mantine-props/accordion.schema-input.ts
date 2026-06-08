@@ -1,15 +1,4 @@
-export type MantineStylesApiValue = string | number | boolean | null;
-
-export type MantineStylesApi = {
-	[selector: string]:
-		| {
-				[property: string]:
-					| MantineStylesApiValue
-					| MantineStylesApi
-					| MantineStylesApiValue[];
-		  }
-		| undefined;
-};
+import type {MantineStylesApi} from "./primitives.schema-input";
 
 /**
  * Serializable subset of Mantine `Accordion` props for settings theme `defaultProps`.

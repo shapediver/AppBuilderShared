@@ -6,7 +6,23 @@ export default [
 		output: "src/shared/shared/mantine-props/spacing.zod.ts",
 		getSchemaName: (id) => {
 			if (id === "MantineSpacing") return "mantineSpacingSchema";
+			if (id === "MantineSizeToken") return "mantineSizeTokenSchema";
 			return `${id}Schema`;
+		},
+	},
+	{
+		name: "mantine-props-primitives",
+		input: "src/shared/shared/mantine-props/primitives.schema-input.ts",
+		output: "src/shared/shared/mantine-props/primitives.zod.ts",
+		getSchemaName: (id) => {
+			const names = {
+				MantineCssLength: "mantineCssLengthSchema",
+				MantineFlexWrap: "mantineFlexWrapSchema",
+				MantineStylesApiValue: "mantineStylesApiValueSchema",
+				MantineStylesApi: "mantineStylesApiSchema",
+				MantineResponsiveCssSize: "mantineResponsiveCssSizeSchema",
+			};
+			return names[id] ?? `${id}Schema`;
 		},
 	},
 	{

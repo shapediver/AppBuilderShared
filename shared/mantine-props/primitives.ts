@@ -1,8 +1,11 @@
-export type MantineCssLength = string | number;
-
-export type MantineFlexWrap = "nowrap" | "wrap" | "wrap-reverse";
-
-export type MantineSpacing = "xs" | "sm" | "md" | "lg" | "xl" | string | number;
+export type {MantineSizeToken, MantineSpacing} from "./spacing.schema-input";
+export type {
+	MantineCssLength,
+	MantineFlexWrap,
+	MantineStylesApiValue,
+	MantineStylesApi,
+	MantineResponsiveCssSize,
+} from "./primitives.schema-input";
 
 export type MantineResponsive<T> =
 	| T
@@ -14,16 +17,3 @@ export type MantineResponsive<T> =
 			lg?: T;
 			xl?: T;
 	  };
-
-export type MantineStylesApiValue = string | number | boolean | null;
-
-export type MantineStylesApi = {
-	[selector: string]:
-		| {
-				[property: string]:
-					| MantineStylesApiValue
-					| MantineStylesApi
-					| MantineStylesApiValue[];
-		  }
-		| undefined;
-};

@@ -1,4 +1,4 @@
-export type MantineSpacing = "xs" | "sm" | "md" | "lg" | "xl" | string | number;
+import type {MantineSpacing} from "./spacing.schema-input";
 
 /**
  * Serializable subset of Mantine `Stack` props for settings theme `defaultProps`.

@@ -1,4 +1,4 @@
-export type MantineSpacing = "xs" | "sm" | "md" | "lg" | "xl" | string | number;
+import type {MantineSizeToken} from "./spacing.schema-input";
 
 /**
  * Serializable subset of Mantine `Text` props for settings theme `defaultProps`.
@@ -7,6 +7,6 @@ export type MantineSpacing = "xs" | "sm" | "md" | "lg" | "xl" | string | number;
  */
 export interface MantineTextProps {
 	fw?: string | number;
-	size?: MantineSpacing;
+	size?: MantineSizeToken;
 	c?: string;
 }

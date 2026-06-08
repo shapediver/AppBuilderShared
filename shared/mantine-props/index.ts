@@ -16,6 +16,13 @@ export type {MantineTooltipProps} from "./tooltip";
 export {mantineTooltipPropsSchema} from "./tooltip";
 export {mantineSpacingSchema} from "./spacing";
 export type {MantineSpacing} from "./spacing";
+export {
+	mantineCssLengthSchema,
+	mantineFlexWrapSchema,
+	mantineResponsiveCssSizeSchema,
+	mantineStylesApiSchema,
+	mantineStylesApiValueSchema,
+} from "./primitives.zod";
 export type {
 	MantineResponsive,
 	MantineFlexWrap,

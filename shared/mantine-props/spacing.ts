@@ -1,5 +1,6 @@
 import type {z} from "zod";
-import {mantineSpacingSchema} from "./spacing.zod";
+import {mantineSizeTokenSchema, mantineSpacingSchema} from "./spacing.zod";
 
-export {mantineSpacingSchema};
+export {mantineSizeTokenSchema, mantineSpacingSchema};
+export type MantineSizeToken = z.infer<typeof mantineSizeTokenSchema>;
 export type MantineSpacing = z.infer<typeof mantineSpacingSchema>;
