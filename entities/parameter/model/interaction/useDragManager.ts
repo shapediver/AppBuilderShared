@@ -43,20 +43,21 @@ const cleanUpDragManager = (
 	interactionEngine?: InteractionEngine,
 ) => {
 	if (dragManagers[viewportId][componentId]) {
-		if (appliedEffects) {
-			appliedEffects.forEach((token, node) => {
-				dragManagers[viewportId][
-					componentId
-				].dragManager!.interactionEffectUtils.removeInteractionEffect(
-					node,
-					token,
-				);
-			});
-		}
-		if (interactionEngine && interactionEngine.closed === false)
+		if (interactionEngine && interactionEngine.closed === false) {
+			if (appliedEffects) {
+				appliedEffects.forEach((token, node) => {
+					dragManagers[viewportId][
+						componentId
+					].dragManager!.interactionEffectUtils.removeInteractionEffect(
+						node,
+						token,
+					);
+				});
+			}
 			interactionEngine.removeInteractionManager(
 				dragManagers[viewportId][componentId].token,
 			);
+		}
 		delete dragManagers[viewportId][componentId];
 	}
 };

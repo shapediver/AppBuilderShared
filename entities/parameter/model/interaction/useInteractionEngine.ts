@@ -61,12 +61,12 @@ export function useInteractionEngine(
 		return () => {
 			// clean up the interaction engine
 			if (interactionEngines[viewportId]) {
-				interactionEngines[viewportId].components.splice(
-					interactionEngines[viewportId].components.indexOf(
-						componentId,
-					),
-					1,
+				const idx = interactionEngines[viewportId].components.indexOf(
+					componentId,
 				);
+				if (idx !== -1) {
+					interactionEngines[viewportId].components.splice(idx, 1);
+				}
 
 				if (interactionEngines[viewportId].components.length === 0) {
 					interactionEngines[viewportId].engine.close();

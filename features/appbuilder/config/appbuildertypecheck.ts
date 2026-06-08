@@ -289,7 +289,7 @@ const IAppBuilderExportRefSchema = z.strictObject({
 });
 
 // Zod type definition for IAppBuilderImageRef
-const IAppBuilderImageRefSchema = z.strictObject({
+export const IAppBuilderImageRefSchema = z.strictObject({
 	export: IAppBuilderExportRefSchema.pick({
 		name: true,
 		sessionId: true,
@@ -972,7 +972,7 @@ const IAppBuilderWidgetPropsControlsSchema = z.strictObject({
 const IAppBuilderWidgetPropsFormSchema = z.strictObject({
 	controls: z.array(IAppBuilderControlSchema).optional(),
 	parameters: z.array(IAppBuilderParameterRefSchema).optional(),
-	export: IAppBuilderExportRefSchema.optional(),
+	export: IAppBuilderControlExportRefSchema.optional(),
 	submit: z.enum(FormWidgetSubmitBehavior).optional(),
 	successMessage: z.string().optional(),
 	errorMessage: z.string().optional(),

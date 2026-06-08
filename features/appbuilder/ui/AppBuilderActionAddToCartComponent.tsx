@@ -49,14 +49,14 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 			modelStateImageUrl,
 			modelStateGltfUrl,
 			modelStateUsdzUrl,
-		} = await createModelState(
+		} = await createModelState({
 			parameterNamesToInclude,
 			parameterNamesToExclude,
 			includeImage,
 			image,
-			undefined, // <-- custom data
+			data: undefined, // <-- custom data
 			includeGltf,
-		);
+		});
 		try {
 			const result = await api.addItemToCart({
 				modelStateId,

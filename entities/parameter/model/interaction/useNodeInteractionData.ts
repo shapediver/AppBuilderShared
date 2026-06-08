@@ -129,8 +129,11 @@ const createOutputUpdateCallback = (
 						data instanceof InteractionData &&
 						data.restrictedManagers.includes(componentId)
 					) {
-						if (data.interactionStates.select === true)
-							selectManagerRef?.current?.deselect(node);
+					if (
+						data.interactionStates.select === true &&
+						selectManagerRef?.current?.viewport
+					)
+						selectManagerRef.current.deselect(node);
 						nodesToClean.push(node);
 						node.removeData(data);
 						node.updateVersion();

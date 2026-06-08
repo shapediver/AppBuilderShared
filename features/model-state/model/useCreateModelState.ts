@@ -1,11 +1,14 @@
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {IAppBuilderImageRef} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 import type {CreateModelStateHookThemeDefaultProps} from "./useCreateModelState.types";
+import {
+	ICreateModelStateData,
+	ICreateModelStateResult,
+} from "../config/createModelState";
 
 type CreateModelStateHookThemePropsType = Partial<CreateModelStateHookThemeDefaultProps>;
 
@@ -61,26 +64,16 @@ export function useCreateModelState(props: Props) {
 
 	const createModelState = useCallback(
 		async (
-			parameterNamesToInclude = parameterNamesToIncludeDefault,
-			parameterNamesToExclude = parameterNamesToExcludeDefault,
-			includeImage?: boolean,
-			image?: IAppBuilderImageRef | undefined,
-			data?: Record<string, any>,
-			includeGltf?: boolean,
-		): Promise<{
-			/** Id of created model state. */
-			modelStateId?: string;
-			/** Data URL of the created screenshot or href to a specified image (either via export or directly) */
-			screenshot?: string;
-			/** Model view URL of the Geometry Backend system the model state was created on. */
-			modelViewUrl?: string;
-			/** URL of the image saved as part of the model state. */
-			modelStateImageUrl?: string;
-			/** URL of the glTF asset saved as part of the model state. */
-			modelStateGltfUrl?: string;
-			/** URL of the usdz asset saved as part of the model state. */
-			modelStateUsdzUrl?: string;
-		}> => {
+			props: ICreateModelStateData,
+		): Promise<ICreateModelStateResult> => {
+			const {
+				parameterNamesToInclude = parameterNamesToIncludeDefault,
+				parameterNamesToExclude = parameterNamesToExcludeDefault,
+				includeImage,
+				image,
+				data,
+				includeGltf,
+			} = props;
 			const sessionApi = sessions[sessionId];
 			if (!sessionApi) return {};
 			const parameterValues = Object.values(sessionApi.parameters)
