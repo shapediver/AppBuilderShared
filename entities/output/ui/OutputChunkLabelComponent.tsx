@@ -3,6 +3,7 @@ import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {Group, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
+import type {OutputChunkLabelComponentThemeDefaultProps} from "shared/entities/output/config/OutputChunkLabelComponent.types";
 
 interface Props {
 	chunk: IShapeDiverOutputDefinitionChunk;
@@ -10,13 +11,10 @@ interface Props {
 	rightSection?: React.ReactNode;
 }
 
-interface StyleProps {
-	fontWeight: string;
-}
+const defaultStyleProps: OutputChunkLabelComponentThemeDefaultProps = {};
 
-const defaultStyleProps: Partial<StyleProps> = {};
-
-type OutputChunkLabelComponentPropsType = Partial<StyleProps>;
+type OutputChunkLabelComponentPropsType =
+	Partial<OutputChunkLabelComponentThemeDefaultProps>;
 
 export function OutputChunkLabelComponentThemeProps(
 	props: OutputChunkLabelComponentPropsType,
@@ -32,7 +30,7 @@ export function OutputChunkLabelComponentThemeProps(
  * @returns
  */
 export default function OutputChunkLabelComponent(
-	props: Props & Partial<StyleProps>,
+	props: Props & Partial<OutputChunkLabelComponentThemeDefaultProps>,
 ) {
 	const {fontWeight, rightSection, ...rest} = useProps(
 		"OutputChunkLabelComponent",

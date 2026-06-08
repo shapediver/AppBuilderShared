@@ -1,19 +1,13 @@
 import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
 import {useStackContext} from "@AppBuilderLib/features/appbuilder/model/useStackContext";
+import type {MantineBoxProps} from "@AppBuilderLib/shared/mantine-props/box";
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
-import {
-	Box,
-	BoxProps,
-	Button,
-	ButtonProps,
-	Paper,
-	PaperProps,
-	Stack,
-	StackProps,
-	useProps,
-} from "@mantine/core";
+import {Box, Button, Paper, Stack, useProps} from "@mantine/core";
 import React, {useContext} from "react";
 import AppBuilderWidgetsComponent from "../AppBuilderWidgetsComponent";
 import AppBuilderStackUiWidgetComponent from "./AppBuilderStackUiWidgetComponent";
@@ -22,11 +16,11 @@ export interface StyleProps {
 	/**
 	 * Props for the Paper component wrapping the stack.
 	 */
-	stackPaperProps?: PaperProps;
+	stackPaperProps?: MantinePaperProps;
 	/**
 	 * Props for the back button.
 	 */
-	buttonBackProps?: ButtonProps;
+	buttonBackProps?: MantineButtonProps;
 	/**
 	 * Props for the icon on the left of the back button.
 	 */
@@ -34,11 +28,11 @@ export interface StyleProps {
 	/**
 	 * Props for the content Stack.
 	 */
-	contentStackProps?: StackProps;
+	contentStackProps?: MantineStackProps;
 	/**
 	 * Props for the content Box.
 	 */
-	stackContentProps?: BoxProps;
+	stackContentProps?: MantineBoxProps;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {

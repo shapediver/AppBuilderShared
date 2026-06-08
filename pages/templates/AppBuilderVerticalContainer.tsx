@@ -1,27 +1,23 @@
 import {
-	MantineSpacing,
 	MantineThemeComponent,
 	Stack,
 	StyleProp,
 	useProps,
 } from "@mantine/core";
 import React from "react";
+import type {AppBuilderVerticalContainerThemeDefaultProps} from "shared/pages/config/AppBuilderVerticalContainer.types";
 
 interface Props {
 	children?: React.ReactNode;
 	style?: StyleProp<React.CSSProperties>;
 }
 
-interface StyleProps {
-	/** padding */
-	p: StyleProp<MantineSpacing>;
-}
-
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps = {
 	p: "xs",
-};
+} as const satisfies AppBuilderVerticalContainerThemeDefaultProps;
 
-export type AppBuilderVerticalContainerThemePropsType = Partial<StyleProps>;
+export type AppBuilderVerticalContainerThemePropsType =
+	Partial<AppBuilderVerticalContainerThemeDefaultProps>;
 
 export function AppBuilderVerticalContainerThemeProps(
 	props: AppBuilderVerticalContainerThemePropsType,
@@ -37,7 +33,7 @@ export function AppBuilderVerticalContainerThemeProps(
  * @returns
  */
 export default function AppBuilderVerticalContainer(
-	props: Props & Partial<StyleProps>,
+	props: Props & Partial<AppBuilderVerticalContainerThemeDefaultProps>,
 ) {
 	const {children, ...rest} = useProps(
 		"AppBuilderVerticalContainer",

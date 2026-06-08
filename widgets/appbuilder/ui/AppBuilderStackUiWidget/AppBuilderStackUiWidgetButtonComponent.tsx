@@ -1,30 +1,24 @@
 import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
-import {
-	Button,
-	ButtonProps,
-	Paper,
-	PaperProps,
-	Stack,
-	StackProps,
-	Text,
-	TextProps,
-	useProps,
-} from "@mantine/core";
+import {Button, Paper, Stack, Text, useProps} from "@mantine/core";
 import React, {useContext} from "react";
 
 export interface StyleProps {
 	/**
 	 * Props for the Paper component wrapping the stack.
 	 */
-	stackPaperProps?: PaperProps;
+	stackPaperProps?: MantinePaperProps;
 	/**
 	 * Props for the Stack component containing buttons.
 	 */
-	stackProps?: StackProps;
+	stackProps?: MantineStackProps;
 	/**
 	 * Props for the icon on the right of the stack buttons.
 	 */
@@ -32,15 +26,15 @@ export interface StyleProps {
 	/**
 	 * Props for the text of the stack buttons.
 	 */
-	itemTextProps?: TextProps;
+	itemTextProps?: MantineTextProps;
 	/**
 	 * Props for stack buttons.
 	 */
-	buttonForwardProps?: ButtonProps;
+	buttonForwardProps?: MantineButtonProps;
 	/**
 	 * Props for the back button.
 	 */
-	buttonBackProps?: ButtonProps;
+	buttonBackProps?: MantineButtonProps;
 }
 
 const defaultStyleProps: Partial<StyleProps> = {

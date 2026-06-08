@@ -2,10 +2,7 @@ import {
 	AppBuilderContainerContext,
 	AppBuilderTemplateContext,
 } from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import {
-	AppBuilderContainerOrientationType,
-	IAppBuilderContainerContext,
-} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
+import {IAppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
 import ThemeProvider from "@AppBuilderLib/shared/ui/theme/ThemeProvider";
 import AppBuilderContainer from "@AppBuilderShared/pages/templates/AppBuilderContainer";
 import {
@@ -14,10 +11,11 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useContext} from "react";
+import type {AppBuilderContainerThemeDefaultProps} from "shared/pages/config/AppBuilderContainer.types";
 
 interface Props {
 	name: string;
-	orientation?: AppBuilderContainerOrientationType;
+	orientation?: AppBuilderContainerThemeDefaultProps["orientation"];
 	children?: React.ReactNode;
 }
 

@@ -1,34 +1,27 @@
 import {
 	Group,
-	MantineSpacing,
 	MantineThemeComponent,
 	StyleProp,
 	useProps,
 } from "@mantine/core";
 import React from "react";
+import type {AppBuilderHorizontalContainerThemeDefaultProps} from "shared/pages/config/AppBuilderHorizontalContainer.types";
 
 interface Props {
 	children?: React.ReactNode;
 	style?: StyleProp<React.CSSProperties>;
 }
 
-interface StyleProps {
-	w: StyleProp<React.CSSProperties["width"]>;
-	h: StyleProp<React.CSSProperties["width"]>;
-	justify: React.CSSProperties["justifyContent"];
-	wrap: React.CSSProperties["flexWrap"];
-	p: StyleProp<MantineSpacing>;
-}
-
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps = {
 	w: "100%",
 	h: "100%",
 	justify: "center",
 	wrap: "nowrap",
 	p: "xs",
-};
+} as const satisfies AppBuilderHorizontalContainerThemeDefaultProps;
 
-export type AppBuilderHorizontalContainerThemePropsType = Partial<StyleProps>;
+export type AppBuilderHorizontalContainerThemePropsType =
+	Partial<AppBuilderHorizontalContainerThemeDefaultProps>;
 
 export function AppBuilderHorizontalContainerThemeProps(
 	props: AppBuilderHorizontalContainerThemePropsType,
@@ -44,7 +37,7 @@ export function AppBuilderHorizontalContainerThemeProps(
  * @returns
  */
 export default function AppBuilderHorizontalContainer(
-	props: Props & Partial<StyleProps>,
+	props: Props & Partial<AppBuilderHorizontalContainerThemeDefaultProps>,
 ) {
 	const {children, ...rest} = useProps(
 		"AppBuilderHorizontalContainer",

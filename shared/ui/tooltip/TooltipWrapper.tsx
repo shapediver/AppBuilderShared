@@ -8,7 +8,7 @@ import {
 import React from "react";
 import {
 	TooltipWrapperComponentProps,
-	TooltipWrapperThemePropsType,
+	TooltipWrapperProps,
 } from "./TooltipWrapper.types";
 
 const defaultStyleProps: Partial<TooltipWrapperComponentProps> = {
@@ -17,7 +17,7 @@ const defaultStyleProps: Partial<TooltipWrapperComponentProps> = {
 };
 
 export function TooltipWrapperThemeProps(
-	props: TooltipWrapperThemePropsType,
+	props: TooltipWrapperProps,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,

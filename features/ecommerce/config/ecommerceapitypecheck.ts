@@ -1,5 +1,5 @@
 import { IAppBuilderImageRefSchema } from "@AppBuilderShared/features/appbuilder/config/appbuildertypecheck";
-import {z} from "zod";
+import z from "zod";
 
 // Zod type definition for ICreateModelStateData
 export const ICreateModelStateDataSchema = z.object({
@@ -28,7 +28,10 @@ export const validateImportModelStateData = (value: any) => {
 export const IUpdateParameterValuesDataSchema = z.object({
 	state: z.record(
 		z.string(),
-		z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
+		z.record(
+			z.string(),
+			z.union([z.string(), z.number(), z.boolean()]),
+		),
 	),
 	skipHistory: z.boolean().optional(),
 	skipUrlUpdate: z.boolean().optional(),

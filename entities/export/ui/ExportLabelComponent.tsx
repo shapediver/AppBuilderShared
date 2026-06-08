@@ -5,6 +5,7 @@ import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {Group, MantineThemeComponent, useProps} from "@mantine/core";
 import React from "react";
+import type {ExportLabelComponentThemeDefaultProps} from "shared/entities/export/config/ExportLabelComponent.types";
 
 interface Props extends PropsExport {
 	/** Optional label overriding the default label */
@@ -13,13 +14,9 @@ interface Props extends PropsExport {
 	rightSection?: React.ReactNode;
 }
 
-interface StyleProps {
-	fontWeight: string;
-}
+const defaultStyleProps: ExportLabelComponentThemeDefaultProps = {};
 
-const defaultStyleProps: Partial<StyleProps> = {};
-
-type ExportLabelComponentPropsType = Partial<StyleProps>;
+type ExportLabelComponentPropsType = Partial<ExportLabelComponentThemeDefaultProps>;
 
 export function ExportLabelComponentThemeProps(
 	props: ExportLabelComponentPropsType,
@@ -35,7 +32,7 @@ export function ExportLabelComponentThemeProps(
  * @returns
  */
 export default function ExportLabelComponent(
-	props: Props & Partial<StyleProps>,
+	props: Props & Partial<ExportLabelComponentThemeDefaultProps>,
 ) {
 	const {label, rightSection, ...rest} = props;
 	const notifications = useNotificationStore();

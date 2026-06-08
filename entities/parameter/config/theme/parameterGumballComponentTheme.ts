@@ -1,5 +1,6 @@
 import type {MantineThemeComponent} from "@mantine/core";
 import type {InteractionEffect} from "@shapediver/viewer.shared.types";
+import type {ParameterGumballComponentThemeDefaultProps} from "./parameterInteractionThemeDefaultProps";
 
 export interface ParameterGumballComponentStyleProps {
 	selectionColor?: InteractionEffect;
@@ -8,7 +9,7 @@ export interface ParameterGumballComponentStyleProps {
 }
 
 export type ParameterGumballComponentThemePropsInput =
-	Partial<ParameterGumballComponentStyleProps>;
+	Partial<ParameterGumballComponentThemeDefaultProps>;
 
 export function ParameterGumballComponentThemeProps(
 	props: ParameterGumballComponentThemePropsInput,
