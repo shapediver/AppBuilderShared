@@ -84,6 +84,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 		p: "md",
 	},
 	submitButtonProps: {
+		variant: "filled",
 		fullWidth: true,
 		mt: "md",
 	},
