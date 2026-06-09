@@ -9,9 +9,9 @@ import React, {forwardRef, useMemo} from "react";
 import classes from "./Icon.module.css";
 import {
 	CustomCSSProperties,
-	defaultStyleProps,
 	IconProps,
-	IconThemePropsType,
+	IconThemeDefaultProps,
+	iconThemeDefaultStyleProps,
 	sizeMap,
 } from "./Icon.types";
 
@@ -72,7 +72,7 @@ const PRELOAD_ICONS = [
 loadIcons(PRELOAD_ICONS);
 
 export function IconThemeProps(
-	props: IconThemePropsType,
+	props: IconThemeDefaultProps,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
@@ -80,7 +80,7 @@ export function IconThemeProps(
 }
 
 export function useIconProps(props: Partial<IconProps>): Partial<IconProps> {
-	return useProps("Icon", defaultStyleProps, props);
+	return useProps("Icon", iconThemeDefaultStyleProps, props);
 }
 
 // Helper function to convert icon name to proper import name

@@ -46,39 +46,40 @@ const cleanUpSelectManager = (
 	interactionEngine?: InteractionEngine,
 ) => {
 	if (selectManagers[viewportId][componentId]) {
-		if (
-			selectManagers[viewportId][componentId].selectManager instanceof
-			SelectManager
-		) {
-			(
-				selectManagers[viewportId][componentId]
-					.selectManager as SelectManager
-			).deselect();
-		} else if (
-			selectManagers[viewportId][componentId].selectManager instanceof
-			MultiSelectManager
-		) {
-			(
-				selectManagers[viewportId][componentId]
-					.selectManager as MultiSelectManager
-			).deselectAll();
-		}
+		if (interactionEngine && interactionEngine.closed === false) {
+			if (
+				selectManagers[viewportId][componentId].selectManager instanceof
+				SelectManager
+			) {
+				(
+					selectManagers[viewportId][componentId]
+						.selectManager as SelectManager
+				).deselect();
+			} else if (
+				selectManagers[viewportId][componentId].selectManager instanceof
+				MultiSelectManager
+			) {
+				(
+					selectManagers[viewportId][componentId]
+						.selectManager as MultiSelectManager
+				).deselectAll();
+			}
 
-		if (appliedEffects) {
-			appliedEffects.forEach((token, node) => {
-				selectManagers[viewportId][
-					componentId
-				].selectManager!.interactionEffectUtils.removeInteractionEffect(
-					node,
-					token,
-				);
-			});
-		}
+			if (appliedEffects) {
+				appliedEffects.forEach((token, node) => {
+					selectManagers[viewportId][
+						componentId
+					].selectManager!.interactionEffectUtils.removeInteractionEffect(
+						node,
+						token,
+					);
+				});
+			}
 
-		if (interactionEngine && interactionEngine.closed === false)
 			interactionEngine.removeInteractionManager(
 				selectManagers[viewportId][componentId].token,
 			);
+		}
 		delete selectManagers[viewportId][componentId];
 	}
 };
@@ -392,7 +393,8 @@ export function useSelectManager(
 						settings.maximumSelection!,
 					);
 					selectManager.deselectOnEmpty = deselectOnEmpty;
-					selectManager.occludeBySceneGeometry = settings.occludeBySceneGeometry ?? false;
+					selectManager.occludeBySceneGeometry =
+						settings.occludeBySceneGeometry ?? false;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);
@@ -408,7 +410,8 @@ export function useSelectManager(
 						selectionEffect,
 					);
 					selectManager.deselectOnEmpty = deselectOnEmpty;
-					selectManager.occludeBySceneGeometry = settings.occludeBySceneGeometry ?? false;
+					selectManager.occludeBySceneGeometry =
+						settings.occludeBySceneGeometry ?? false;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);

@@ -475,6 +475,36 @@ export default function ExportButtonComponent(
 		[onClick, interceptClick, form],
 	);
 
+	const standardExportButton = definition ? (
+		<Button
+			{...buttonProps}
+			leftSection={
+				definition.type === EXPORT_TYPE.DOWNLOAD ? (
+					<Icon iconType={"tabler:download"} />
+				) : (
+					<Icon iconType={"tabler:mail-forward"} />
+				)
+			}
+			onClick={onClickIntercepted()}
+			loading={requestingExport}
+		>
+			{buttonLabel ||
+				(definition.type === EXPORT_TYPE.DOWNLOAD
+					? "Download File"
+					: "Send Email")}
+		</Button>
+	) : null;
+
+	const standardExportButtonWithTooltip =
+		standardExportButton &&
+		definition?.tooltip ? (
+			<TooltipWrapper label={definition.tooltip} position="top">
+				{standardExportButton}
+			</TooltipWrapper>
+		) : (
+			standardExportButton
+		);
+
 	return (
 		<>
 			{!buttonLabel && (
@@ -512,23 +542,7 @@ export default function ExportButtonComponent(
 						</TooltipWrapper>
 					</Group>
 				) : (
-					<Button
-						{...buttonProps}
-						leftSection={
-							definition.type === EXPORT_TYPE.DOWNLOAD ? (
-								<Icon iconType={"tabler:download"} />
-							) : (
-								<Icon iconType={"tabler:mail-forward"} />
-							)
-						}
-						onClick={onClickIntercepted()}
-						loading={requestingExport}
-					>
-						{buttonLabel ||
-							(definition.type === EXPORT_TYPE.DOWNLOAD
-								? "Download File"
-								: "Send Email")}
-					</Button>
+					standardExportButtonWithTooltip
 				))}
 		</>
 	);

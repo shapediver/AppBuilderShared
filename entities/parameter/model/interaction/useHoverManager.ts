@@ -41,11 +41,12 @@ const cleanUpHoverManager = (
 	interactionEngine?: InteractionEngine,
 ) => {
 	if (hoverManagers[viewportId][componentId]) {
-		hoverManagers[viewportId][componentId].hoverManager.deselectAll();
-		if (interactionEngine && interactionEngine.closed === false)
+		if (interactionEngine && interactionEngine.closed === false) {
+			hoverManagers[viewportId][componentId].hoverManager.deselectAll();
 			interactionEngine.removeInteractionManager(
 				hoverManagers[viewportId][componentId].token,
 			);
+		}
 		delete hoverManagers[viewportId][componentId];
 	}
 };
@@ -62,7 +63,10 @@ const cleanUpHoverManager = (
 export function useHoverManager(
 	viewportId: string,
 	componentId: string,
-	settings?: Pick<IInteractionParameterProps, "hoverColor" | "occludeBySceneGeometry">,
+	settings?: Pick<
+		IInteractionParameterProps,
+		"hoverColor" | "occludeBySceneGeometry"
+	>,
 ): {
 	/**
 	 * The hover manager that was created for the viewport.
@@ -150,7 +154,8 @@ export function useHoverManager(
 		) {
 			// create the hover manager with the given settings
 			const hoverManager = new HoverManager(componentId, hoverEffect);
-			hoverManager.occludeBySceneGeometry = settings.occludeBySceneGeometry ?? false;
+			hoverManager.occludeBySceneGeometry =
+				settings.occludeBySceneGeometry ?? false;
 			const token = interactionEngine.addInteractionManager(hoverManager);
 			hoverManagers[viewportId][componentId] = {hoverManager, token};
 			setHoverManager(

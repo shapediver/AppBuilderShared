@@ -504,13 +504,42 @@ export function useAppBuilderInstances(props: Props) {
 		});
 
 		// wait for all instance promises to resolve
-		// then look for output actions to be executed
-		Promise.all(promises).then(() => {
+		// then add instances to the scene and look for output actions to be executed
+		Promise.all(promises).then(async () => {
 			if (cancelled) {
 				resolveMainPromise!();
 				return;
 			}
 
+			// Add instances to the scene tree BEFORE running output actions.
+			// This ensures the scene has geometry when PM flags are eventually
+			// removed, preventing a brief empty-scene "loading icon" flash.
+			await addInstanceToSceneTree(
+				newInstances,
+				instanceNodesRef.current,
+				sessionNodeRef.current,
+			);
+
+			// Update the instance nodes state so cleanup can properly remove
+			// them if this effect is cancelled after this point.
+			setInstanceNodes(
+				Object.entries(newInstances).reduce(
+					(acc, [key, cur]) => {
+						acc[key] = cur.node;
+						return acc;
+					},
+					{} as {[key: string]: ITreeNode},
+				),
+			);
+
+			if (cancelled) {
+				resolveMainPromise!();
+				return;
+			}
+
+			// Run output actions. Each batchParameterValueUpdate call synchronously
+			// creates a session PM and sets its SUSPEND flag before returning its
+			// promise, so scene protection is handed off without a gap.
 			const outputCallbackPromises = processOutputActions(
 				sessionApi,
 				newInstances,
@@ -521,51 +550,28 @@ export function useAppBuilderInstances(props: Props) {
 
 			loadedRef.current = true;
 
-			// wait for all output callbacks to resolve
-			// before we add the instances to the session node
-			Promise.all(outputCallbackPromises).then(async () => {
-				if (cancelled) {
-					resolveMainPromise!();
-					return;
-				}
+			// Resolve this PM now. Any session PMs created by processOutputActions
+			// have already set their SUSPEND flags, so there is no window where
+			// all flags are cleared while the scene is still empty.
+			resolveMainPromise!();
 
-				await addInstanceToSceneTree(
-					newInstances,
-					instanceNodesRef.current,
-					sessionNodeRef.current,
-				);
+			// after the instances are added to the scene tree, we can adjust the cameras to fit the new geometry
+			// we don't await this process, as it just waits for the next render loop
+			adjustCamerasToInstances(firstLoadDoneRef);
 
-				setInstanceNodes(
-					Object.entries(newInstances).reduce(
-						(acc, [key, cur]) => {
-							acc[key] = cur.node;
-							return acc;
-						},
-						{} as {[key: string]: ITreeNode},
-					),
-				);
+			// wait for output callbacks to complete before cleaning up
+			await Promise.all(outputCallbackPromises);
 
-				// resolve the main promise
-				// to signal that the process is finished
-				if (outputCallbackPromises.length === 0) resolveMainPromise!();
-
-				// after the instances are added to the scene tree, we can adjust the cameras to fit the new geometry
-				// we don't await this process, as it just waits for the next render loop
-				adjustCamerasToInstances(firstLoadDoneRef);
-
-				// clean up the session instances
-				// only instances that are currently in the scene are kept
-				// the others are removed from the store
-				Object.keys(customizationResultInStoreRef.current).forEach(
-					(instanceId) => {
-						if (
-							customizationResultPromise[instanceId] !== undefined
-						)
-							return;
-						removeCustomizationResult(instanceId);
-					},
-				);
-			});
+			// clean up the session instances
+			// only instances that are currently in the scene are kept
+			// the others are removed from the store
+			Object.keys(customizationResultInStoreRef.current).forEach(
+				(instanceId) => {
+					if (customizationResultPromise[instanceId] !== undefined)
+						return;
+					removeCustomizationResult(instanceId);
+				},
+			);
 		});
 
 		return () => {

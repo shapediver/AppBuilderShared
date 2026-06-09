@@ -1,8 +1,5 @@
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import {
-	AppBuilderContainerOrientationType,
-	IAppBuilderContainerContext,
-} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
+import {IAppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
 import {usePropsAppBuilder} from "@AppBuilderLib/features/appbuilder/model/usePropsAppBuilder";
 import AppBuilderHorizontalContainer, {
 	AppBuilderHorizontalContainerThemePropsType,
@@ -12,19 +9,16 @@ import AppBuilderVerticalContainer, {
 } from "@AppBuilderShared/pages/templates/AppBuilderVerticalContainer";
 import {MantineThemeComponent, StyleProp} from "@mantine/core";
 import React, {CSSProperties, useContext} from "react";
+import type {AppBuilderContainerThemeDefaultProps} from "shared/pages/config/AppBuilderContainer.types";
 
 interface Props {
 	children?: React.ReactNode;
 	style?: StyleProp<CSSProperties>;
 }
 
-interface StyleProps {
-	orientation: AppBuilderContainerOrientationType;
-}
-
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps = {
 	orientation: "unspecified",
-};
+} as const satisfies Pick<AppBuilderContainerThemeDefaultProps, "orientation">;
 
 /**
  * Orientation plus forwarded horizontal / vertical container theme props for {@link AppBuilderContainer}.
@@ -33,13 +27,11 @@ const defaultStyleProps: StyleProps = {
  * @configPath themeOverrides.components.AppBuilderContainer.defaultProps
  * @displayName AppBuilderContainer
  */
-export interface AppBuilderContainerStyleProps
-	extends AppBuilderHorizontalContainerThemePropsType,
-		AppBuilderVerticalContainerThemePropsType {
-	orientation?: AppBuilderContainerOrientationType;
-}
-
-type AppBuilderContainerThemePropsType = AppBuilderContainerStyleProps;
+type AppBuilderContainerThemePropsType = Partial<
+	Pick<AppBuilderContainerThemeDefaultProps, "orientation">
+> &
+	AppBuilderVerticalContainerThemePropsType &
+	AppBuilderHorizontalContainerThemePropsType;
 
 export function AppBuilderContainerThemeProps(
 	props: AppBuilderContainerThemePropsType,

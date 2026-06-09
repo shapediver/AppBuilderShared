@@ -1,10 +1,6 @@
 import {IAppBuilder} from "../config/appbuilder";
-
-/** Types of containers */
-export type AppBuilderContainerOrientationType =
-	| "unspecified"
-	| "horizontal"
-	| "vertical";
+import type {AppBuilderContainerOrientationType} from "./AppBuilderContainerOrientation";
+import type {AppBuilderTemplateType} from "./AppBuilderTemplate";
 
 /** Contextual information for App Builder containers. */
 export interface IAppBuilderContainerContext {
@@ -13,9 +9,6 @@ export interface IAppBuilderContainerContext {
 	/** Name of the container. */
 	name: string;
 }
-
-/** Types of templates */
-export type AppBuilderTemplateType = "appshell" | "grid" | "unspecified";
 
 /** Contextual information for App Builder template. */
 export interface IAppBuilderTemplateContext {

@@ -62,14 +62,14 @@ export default function AppBuilderActionSetBrowserLocationComponent(
 		if (newLocationUrl.searchParams.has(QUERYPARAM_MODELSTATEID)) {
 			setLoading(true);
 
-			const {modelStateId} = await createModelState(
-				undefined, // <-- parameterNamesToInclude: use default according to the theme
-				undefined, // <-- parameterNamesToExclude: use default according to the theme
-				true, // <-- includeImage,
-				undefined,
-				undefined, // <-- custom data
-				false, // <-- includeGltf,
-			);
+			const {modelStateId} = await createModelState({
+				parameterNamesToInclude: undefined, // <-- parameterNamesToInclude: use default according to the theme
+				parameterNamesToExclude: undefined, // <-- parameterNamesToExclude: use default according to the theme
+				includeImage: true, // <-- includeImage,
+				image: undefined,
+				data: undefined, // <-- custom data
+				includeGltf: false, // <-- includeGltf,
+			});
 
 			// replace the value of the URL parameter "modelStateId" with the new value
 			newLocation = applyModelStateToUrl(

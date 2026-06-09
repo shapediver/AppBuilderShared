@@ -1,15 +1,15 @@
 import {AppBuilderTemplateContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {AppBuilderTemplateThemeId} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderTemplate";
 import AppBuilderAppShellTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
 import AppBuilderGridTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderGridTemplatePage";
 import {Button, MantineThemeComponent, useProps} from "@mantine/core";
 import React, {ReactElement, useState} from "react";
+import type {AppBuilderTemplateSelectorThemeDefaultProps} from "shared/pages/config/AppBuilderTemplateSelector.types";
 import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
 import classes from "./AppBuilderTemplateSelector.module.css";
 
-export type AppBuilderTemplateType = "grid" | "appshell";
-
 type TemplateMapType = Record<
-	AppBuilderTemplateType,
+	AppBuilderTemplateThemeId,
 	(props: IAppBuilderTemplatePageProps) => ReactElement
 >;
 
@@ -18,30 +18,13 @@ const templateMap: TemplateMapType = {
 	grid: AppBuilderGridTemplatePage,
 };
 
-/**
- * @docAttached
- * @configPath themeOverrides.components.AppBuilderTemplateSelector.defaultProps
- * @displayName AppBuilderTemplateSelector
- */
-export interface StyleProps {
-	/**
-	 * Layout template key to render
-	 * @default "appshell"
-	 */
-	template: AppBuilderTemplateType;
-	/**
-	 * Show UI buttons for toggling template containers (top/left/right/bottom)
-	 * @default false
-	 */
-	showContainerButtons: boolean;
-}
-
-const defaultStyleProps: StyleProps = {
-	template: "appshell",
+const defaultStyleProps = {
+	template: "appshell" as const,
 	showContainerButtons: false,
-};
+} as const satisfies AppBuilderTemplateSelectorThemeDefaultProps;
 
-type AppBuilderTemplateSelectorThemePropsType = Partial<StyleProps>;
+type AppBuilderTemplateSelectorThemePropsType =
+	Partial<AppBuilderTemplateSelectorThemeDefaultProps>;
 
 export function AppBuilderTemplateSelectorThemeProps(
 	props: AppBuilderTemplateSelectorThemePropsType,
@@ -58,7 +41,8 @@ const buttonVariant = (toggleState: boolean | undefined) =>
 	toggleState === undefined ? "outline" : toggleState ? "filled" : "light";
 
 export default function AppBuilderTemplateSelector(
-	props: IAppBuilderTemplatePageProps & Partial<StyleProps>,
+	props: IAppBuilderTemplatePageProps &
+		Partial<AppBuilderTemplateSelectorThemeDefaultProps>,
 ) {
 	// style properties
 	const {template, showContainerButtons, ...nodes} = useProps(

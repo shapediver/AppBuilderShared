@@ -2,8 +2,10 @@ import {
 	IconifyIcon as IconifyIconDefinition,
 	IconProps as IconifyIconProps,
 } from "@iconify/react";
+import {mantineSpacingSchema} from "@AppBuilderLib/shared/mantine-props/spacing";
 import {MantineSize} from "@mantine/core";
 import {CSSProperties} from "react";
+import {z} from "zod";
 
 export interface CustomCSSProperties extends CSSProperties {
 	"--icon-stroke-width"?: string | number;
@@ -34,8 +36,23 @@ export const sizeMap: Record<string, string> = {
 	lg: "1.125rem",
 	xl: "1.25rem",
 };
-export const defaultStyleProps: Partial<IconProps> = {
-	size: "1.5rem",
-	stroke: "1px",
-};
-export type IconThemePropsType = Partial<IconProps>;
+
+/**
+ * Single source of truth for Icon theme `defaultProps` (Mantine theme + settings JSON validation).
+ * Keys must stay aligned with `useProps("Icon", …)`.
+ */
+export const IconThemeDefaultPropsSchema = z.strictObject({
+	size: mantineSpacingSchema.optional(),
+	stroke: z.string().optional(),
+});
+
+/** TypeDoc surface for `useProps("Icon", …)` theme defaults (schema is JSON source of truth). */
+export interface IconThemeDefaultProps
+	extends z.infer<typeof IconThemeDefaultPropsSchema> {}
+
+/** Defaults passed to `useProps`; validated so drift vs schema fails in tests/runtime. */
+export const iconThemeDefaultStyleProps: IconThemeDefaultProps =
+	IconThemeDefaultPropsSchema.parse({
+		size: "1.5rem",
+		stroke: "1px",
+	});

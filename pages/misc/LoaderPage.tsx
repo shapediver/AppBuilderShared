@@ -2,43 +2,23 @@ import {
 	Center,
 	Loader,
 	LoaderProps,
-	MantineSize,
 	MantineThemeComponent,
 	useProps,
 } from "@mantine/core";
 import React from "react";
+import type {LoaderPageThemeDefaultProps} from "./LoaderPage.types";
 
 interface Props {
 	/** error message */
 	children?: React.ReactNode;
 }
 
-/**
- * @docAttached
- * @configPath themeOverrides.components.LoaderPage.defaultProps
- * @displayName LoaderPage
- */
-export interface StyleProps {
-	/**
-	 * Type of the loader
-	 * @see https://mantine.dev/core/loader/?t=props
-	 * @default "oval"
-	 */
-	type: string;
-	/**
-	 * Size of the loader
-	 * @see https://mantine.dev/core/loader/?t=props
-	 * @default "md"
-	 */
-	size: number | MantineSize;
-}
-
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps = {
 	type: "oval",
 	size: "md",
-};
+} as const satisfies LoaderPageThemeDefaultProps;
 
-type LoaderPageThemePropsType = Partial<StyleProps>;
+type LoaderPageThemePropsType = Partial<LoaderPageThemeDefaultProps>;
 
 export function LoaderPageThemeProps(
 	props: LoaderPageThemePropsType,

@@ -501,6 +501,8 @@ export type IAppBuilderLegacyActionPropsSetParameterValue =
 export interface IAppBuilderActionPropsSetParameterValues {
 	/** Parameter values to set. */
 	parameterValues: IAppBuilderActionPropsSetParameterValue[];
+	/** Optional user-facing message when the action runs. */
+	message?: string;
 }
 
 /** Properties of legacy a "setParameterValues" action. */
@@ -751,8 +753,8 @@ export interface IAppBuilderWidgetPropsForm {
 	controls?: IAppBuilderControl[];
 	/** References to parameters which shall be displayed by the form. */
 	parameters?: IAppBuilderParameterRef[];
-	/** Export to trigger on form submission. */
-	export?: IAppBuilderExportRef;
+	/** Export to trigger on form submission (supports export-control fields such as parameterValues). */
+	export?: IAppBuilderControlExportRef;
 	/** What to do after successful form submission. */
 	submit?: FormWidgetSubmitBehavior;
 	/** Success message to display (when submit is "message"). */
@@ -1041,6 +1043,8 @@ export interface IAppBuilderContainer {
 		| AppBuilderAnchor2dContainerProperties;
 	/** Tabs displayed in the container. */
 	tabs?: IAppBuilderTab[];
+	/** When true, tabs stick to the top when scrolling the container content. */
+	stickyTabs?: boolean;
 	/** Further widgets displayed in the container. */
 	widgets?: IAppBuilderWidget[];
 }

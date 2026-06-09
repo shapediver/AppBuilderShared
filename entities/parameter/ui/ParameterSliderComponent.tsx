@@ -3,6 +3,7 @@ import {
 	Group,
 	MantineThemeComponent,
 	NumberInput,
+	type NumberInputProps,
 	Slider,
 	useProps,
 } from "@mantine/core";
@@ -13,11 +14,18 @@ import {
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
+import {
+	getAdjacentMarkValue,
+	roundAndClampParameterValue,
+} from "../lib/parameterSliderMarks";
 import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useSettingsMinMax} from "../model/useSettingsMinMax";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
+import type {ParameterSliderComponentThemeDefaultProps} from "./ParameterSliderComponent.types";
+
+type OnNumberInputValueChange = NonNullable<NumberInputProps["onValueChange"]>;
 
 interface NumberFormatValues {
 	/** The value converted to a float, if valid. */
@@ -26,71 +34,13 @@ interface NumberFormatValues {
 	value: string;
 }
 
-/**
- * Round and clamp the number to the given min, max and step.
- * @param min The minimum allowed value
- * @param max The maximum allowed value
- * @param decimalplaces Number of decimal places to round the value to
- * @param step The step size, starting from min, to which the value should be clamped
- * @param n The number to round and clamp
- * @param restrictToMarks Whether to restrict the value to the marks. Default is false.
- * @param marks Marks to restrict the value to. Default is undefined.
- * @returns The rounded and clamped value
- */
-const _roundAndClamp = (
-	min: number,
-	max: number,
-	decimalplaces: number,
-	step: number,
-	n: number,
-	restrictToMarks?: boolean,
-	marks?: {value: number; label?: string}[],
-) => {
-	// clamp the number to the min and max
-	n = Math.max(min, n);
-	n = Math.min(max, n);
-	// if we must stick to marks, find the nearest mark within range and return it
-	const validMarks =
-		restrictToMarks && marks?.length
-			? marks.filter((mark) => mark.value >= min && mark.value <= max)
-			: undefined;
-	if (restrictToMarks && validMarks?.length) {
-		const closest = validMarks.reduce(
-			(prev, current) =>
-				Math.abs(current.value - n) < Math.abs(prev - n)
-					? current.value
-					: prev,
-			validMarks[0].value,
-		);
-		return +closest.toFixed(decimalplaces);
-	}
-	// round the number to the nearest step
-	n = Math.round((n - min) / step) * step + min;
-	// rounding to the nearest step can result in a number larger than max, so we clamp again
-	n = n > max ? n - step : n;
-	// CAUTION: this last step converts to a fixed point number with the given decimal places,
-	// which can result in a number lower than min!!!
-	// This can happen if the given number of decimal places is lower than required
-	// to represent the min value correctly.
-	return +n.toFixed(decimalplaces);
-};
-
-/**
- * @docAttached
- * @configPath themeOverrides.components.ParameterSliderComponent.defaultProps
- * @displayName ParameterSliderComponent
- */
-export interface ParameterSliderComponentStyleProps {
-	sliderWidth: string | number | undefined;
-	numberWidth: string | number | undefined;
-}
-
-export const defaultStyleProps: Partial<ParameterSliderComponentStyleProps> = {
+export const defaultStyleProps = {
 	sliderWidth: "60%",
 	numberWidth: "35%",
-};
+} as const satisfies ParameterSliderComponentThemeDefaultProps;
 
-type ParameterSliderComponentThemePropsType = Partial<ParameterSliderComponentStyleProps>;
+type ParameterSliderComponentThemePropsType =
+	Partial<ParameterSliderComponentThemeDefaultProps>;
 
 export function ParameterSliderComponentThemeProps(
 	props: ParameterSliderComponentThemePropsType,
@@ -109,7 +59,7 @@ export function ParameterSliderComponentThemeProps(
 export default function ParameterSliderComponent(
 	props: PropsParameterComponent &
 		Partial<PropsParameterWrapper> &
-		Partial<ParameterSliderComponentStyleProps>,
+		Partial<ParameterSliderComponentThemeDefaultProps>,
 ) {
 	const {
 		definition,
@@ -193,7 +143,7 @@ export default function ParameterSliderComponent(
 
 	const roundAndClamp = useCallback(
 		(n: number) =>
-			_roundAndClamp(
+			roundAndClampParameterValue(
 				+definition.min!,
 				+definition.max!,
 				+definition.decimalplaces!,
@@ -225,20 +175,51 @@ export default function ParameterSliderComponent(
 	});
 
 	/** Handler for value changes of the NumberInput component */
-	const onNumberInputValueChange = useCallback((v: NumberFormatValues) => {
-		const clamped =
-			v.floatValue !== undefined
-				? roundAndClamp(v.floatValue)
-				: undefined;
-		setNiState((s) => ({
-			...s,
-			latest: v,
-			valid:
-				v.floatValue !== undefined && clamped === v.floatValue
-					? clamped
-					: undefined,
-		}));
-	}, []);
+	const onNumberInputValueChange: OnNumberInputValueChange = useCallback(
+		(v, sourceInfo) => {
+			// Mantine passes increment/decrement; react-number-format types only event/prop.
+			const source = sourceInfo.source as string;
+			if (
+				restrictToMarks &&
+				(source === "increment" || source === "decrement")
+			) {
+				const direction = source === "increment" ? "up" : "down";
+				setNiState((s) => {
+					const base = s.valid ?? s.previous;
+					const next = getAdjacentMarkValue(
+						base,
+						sliderMarks,
+						direction,
+						+definition.min!,
+						+definition.max!,
+						+definition.decimalplaces!,
+					);
+					return {
+						...s,
+						latest: {
+							value: "" + next,
+							floatValue: next,
+						},
+						valid: next,
+					};
+				});
+				return;
+			}
+			const clamped =
+				v.floatValue !== undefined
+					? roundAndClamp(v.floatValue)
+					: undefined;
+			setNiState((s) => ({
+				...s,
+				latest: v,
+				valid:
+					v.floatValue !== undefined && clamped === v.floatValue
+						? clamped
+						: undefined,
+			}));
+		},
+		[restrictToMarks, sliderMarks, definition, roundAndClamp],
+	);
 
 	/**
 	 * Commit changes for the NumberInput component, called if the

@@ -26,6 +26,11 @@ export function useParameterComponentCommons<T>(
 		state: IShapeDiverParameterState<T | string>,
 	) => T | string = (state) => state.uiValue,
 ) {
+	const formFromProps = (props as PropsParameterWithForm).form;
+	const debounceTimeoutForExecution = formFromProps
+		? 0
+		: debounceTimeoutForImmediateExecution;
+
 	const {
 		namespace,
 		disableIfDirty,
@@ -91,7 +96,7 @@ export function useParameterComponentCommons<T>(
 
 	const debounceTimeout = acceptRejectMode
 		? 0
-		: debounceTimeoutForImmediateExecution;
+		: debounceTimeoutForExecution;
 	const debounceRef = useRef<NodeJS.Timeout>();
 
 	const handleChange = useCallback(
@@ -196,13 +201,14 @@ export function useParameterComponentCommons<T>(
 	}, [definition, props.overrides]);
 
 	// Extract form from props if provided
-	const form = (props as PropsParameterWithForm).form;
+	const form = formFromProps;
+	const fieldError = form && definition ? form.errors[definition.id] : undefined;
 
 	// Get form input props once if form is available
 	const formInputProps = useMemo(() => {
 		if (!form || !definition) return null;
 		return form.getInputProps(definition.id);
-	}, [form, definition]);
+	}, [form, definition, fieldError]);
 
 	const formKey = useMemo(() => {
 		if (!form || !definition) return null;

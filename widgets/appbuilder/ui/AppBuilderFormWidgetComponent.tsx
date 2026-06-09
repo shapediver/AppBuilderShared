@@ -16,6 +16,7 @@ import {
 	getExportComponent,
 	getParameterComponent,
 } from "@AppBuilderLib/features/appbuilder/config/componentTypes";
+import {mergeFormExportParameterValues} from "../lib/mergeFormExportParameterValues";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import {
@@ -88,6 +89,7 @@ const defaultStyleProps: Partial<AppBuilderFormWidgetComponentStyleProps> = {
 		p: "md",
 	},
 	submitButtonProps: {
+		variant: "filled",
 		fullWidth: true,
 		mt: "md",
 	},
@@ -132,6 +134,7 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 		formPaperProps,
 		elementPaperProps,
 		exportPaperProps,
+		submitButtonProps,
 		messagePaperProps,
 		resetButtonProps,
 		resetMessage,
@@ -146,31 +149,6 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 	const [initialValues, setInitialValues] = useState<Record<string, any>>({});
 	const [values, setValues] = useState<Record<string, any>>({});
 	const [isMounted, setIsMounted] = useState<boolean>(false);
-
-	// Handle export reference
-	const exportProps: PropsExportWithForm | null = useMemo(() => {
-		if (!exportControl) {
-			console.warn(
-				"AppBuilderFormWidgetComponent: No export control provided",
-			);
-			return null;
-		}
-		// Treat export as IAppBuilderExportRef
-		return {
-			namespace: exportControl.sessionId ?? namespace,
-			exportId: exportControl.name,
-			overrides: exportControl.overrides,
-			parameterValues: Object.entries(values).map(([id, value]) => ({
-				parameter: {name: id},
-				value,
-			})),
-		};
-	}, [exportControl, values, namespace]);
-
-	// Get export definition and actions
-	const exportData = useExport(
-		exportProps ?? {namespace, exportId: "__no_export__"},
-	);
 
 	// Convert parameter references to component props
 	// Support both controls array and parameters array
@@ -218,9 +196,61 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 		});
 		return rules;
 	}, [parameters]);
+
+	const formParameterValuesForExport = useMemo(() => {
+		return parameters
+			.map((param, index) => {
+				if (!param?.definition || param.definition.hidden) {
+					return undefined;
+				}
+				const ref = parameterProps[index];
+				const sessionId =
+					ref.namespace !== namespace ? ref.namespace : undefined;
+
+				return {
+					name: param.definition.name,
+					sessionId,
+					value: String(values[param.definition.id] ?? ""),
+				};
+			})
+			.filter((entry) => entry !== undefined);
+	}, [parameters, parameterProps, values, namespace]);
+
+	const exportProps: PropsExportWithForm | null = useMemo(() => {
+		if (!exportControl) {
+			console.warn(
+				"AppBuilderFormWidgetComponent: No export control provided",
+			);
+			return null;
+		}
+		return {
+			namespace: exportControl.sessionId ?? namespace,
+			exportId: exportControl.name,
+			overrides: exportControl.overrides,
+			parameterValues: mergeFormExportParameterValues(
+				exportControl.parameterValues,
+				formParameterValuesForExport,
+			),
+		};
+	}, [exportControl, formParameterValuesForExport, namespace]);
+
+	const exportData = useExport(
+		exportProps ?? {namespace, exportId: "__no_export__"},
+	);
+
+	const canSubmitExport = useMemo(() => {
+		if (validationRules.length === 0) {
+			return true;
+		}
+		return validationRules.every((rule) => {
+			return rule.validator(values[rule.parameterId]) === null;
+		});
+	}, [validationRules, values]);
+
 	// Initialize Mantine form with validation rules from parameters
 	const form = useForm({
 		mode: "controlled",
+		validateInputOnBlur: true,
 		validate: useMemo(() => {
 			const validators: Record<string, (value: any) => string | null> =
 				{};
@@ -265,27 +295,31 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 		}
 	}, [exportData, submit, resetParameters]);
 
-	const getCustomActions = (
-		paramId: string,
-	): Partial<IShapeDiverParameterActions<any>> => ({
-		setUiValue: (v): boolean => {
-			setValues({
-				...values,
-				[paramId]: v,
-			});
-			form.setFieldValue(paramId, v);
-			return true;
-		},
-		execute: (): Promise<any> => new Promise((resolve) => resolve(true)),
-		setUiAndExecValue: (v): boolean => {
-			setValues({
-				...values,
-				[paramId]: v,
-			});
-			form.setFieldValue(paramId, v);
-			return true;
-		},
-	});
+	const getCustomActions = useCallback(
+		(
+			paramId: string,
+		): Partial<IShapeDiverParameterActions<any>> => ({
+			setUiValue: (v): boolean => {
+				setValues((prev) => ({
+					...prev,
+					[paramId]: v,
+				}));
+				form.setFieldValue(paramId, v);
+				return true;
+			},
+			execute: (): Promise<any> =>
+				new Promise((resolve) => resolve(true)),
+			setUiAndExecValue: (v): boolean => {
+				setValues((prev) => ({
+					...prev,
+					[paramId]: v,
+				}));
+				form.setFieldValue(paramId, v);
+				return true;
+			},
+		}),
+		[form],
+	);
 
 	// Create parameter components with form instance passed as prop
 	const parameterComponents = useMemo(() => {
@@ -325,7 +359,15 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 		});
 
 		return components;
-	}, [parameters, componentContext, elementPaperProps, parameterProps, form]);
+	}, [
+		parameters,
+		componentContext,
+		elementPaperProps,
+		parameterProps,
+		form,
+		values,
+		getCustomActions,
+	]);
 
 	const exportComponent = useMemo(() => {
 		if (!exportData) return null;
@@ -345,6 +387,11 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 					onSuccess={() => handleSubmit()}
 					onError={handleError}
 					buttonLabel={exportButtonLabel}
+					buttonProps={{
+						...submitButtonProps,
+						disabled:
+							!canSubmitExport || submitButtonProps?.disabled,
+					}}
 				/>
 			</Paper>
 		) : null;
@@ -358,6 +405,8 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 		handleSubmit,
 		submit,
 		values,
+		canSubmitExport,
+		submitButtonProps,
 	]);
 
 	// Handle reset from message view

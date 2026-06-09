@@ -11,6 +11,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useEffect, useState} from "react";
+import type {ParameterColorComponentThemeDefaultProps} from "shared/entities/parameter/config/ParameterColorComponent.types";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,
@@ -21,25 +22,12 @@ import {useParameterComponentCommons} from "../model/useParameterComponentCommon
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
-/**
- * @docAttached
- * @configPath themeOverrides.components.ParameterColorComponent.defaultProps
- * @displayName ParameterColorComponent
- */
-export interface ParameterColorComponentStyleProps {
-	/**
-	 * Color format for ShapeDiver ↔ Mantine conversion.
-	 * @default "rgba"
-	 */
-	colorFormat: ColorFormatType;
-}
-
-const defaultStyleProps: ParameterColorComponentStyleProps = {
+const defaultStyleProps = {
 	colorFormat: "rgba",
-};
+} as const satisfies ParameterColorComponentThemeDefaultProps;
 
 type ParameterColorComponentPropsType =
-	Partial<ParameterColorComponentStyleProps>;
+	Partial<ParameterColorComponentThemeDefaultProps>;
 
 export function ParameterColorComponentThemeProps(
 	props: ParameterColorComponentPropsType,
@@ -57,7 +45,7 @@ export function ParameterColorComponentThemeProps(
 export default function ParameterColorComponent(
 	props: PropsParameterComponent &
 		Partial<PropsParameterWrapper> &
-		ParameterColorComponentPropsType,
+		Partial<ParameterColorComponentThemeDefaultProps>,
 ) {
 	const {colorFormat} = useProps(
 		"ParameterColorComponent",

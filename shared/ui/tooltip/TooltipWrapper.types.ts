@@ -1,14 +1,8 @@
 import {MantineThemeOverride, TooltipProps} from "@mantine/core";
+import type {TooltipWrapperThemeDefaultProps} from "./TooltipWrapper.theme.types";
 
-/**
- * Custom tooltip wrapper props merged with Mantine `TooltipProps` via `useProps`.
- *
- * @docAttached
- * @configPath themeOverrides.components.TooltipWrapper.defaultProps
- * @displayName TooltipWrapper
- */
-export interface TooltipWrapperProps {
-	floating?: boolean;
+export interface TooltipWrapperProps extends TooltipWrapperThemeDefaultProps {
+	/** Runtime-only; excluded from theme JSON schema. */
 	themeOverride?: MantineThemeOverride;
 	/**
 	 * Show tooltip arrow (standard Mantine Tooltip).
@@ -17,8 +11,12 @@ export interface TooltipWrapperProps {
 	withArrow?: boolean;
 }
 
-export type TooltipWrapperThemePropsType = Partial<
-	TooltipWrapperProps & TooltipProps
->;
-
-export type TooltipWrapperComponentProps = TooltipWrapperProps & TooltipProps;
+/**
+ * Runtime component props — Mantine `TooltipProps` for tooltip fields;
+ * only app-specific keys from {@link TooltipWrapperProps} (not JSON mirror overlap).
+ */
+export type TooltipWrapperComponentProps = Pick<
+	TooltipWrapperProps,
+	"floating" | "themeOverride"
+> &
+	TooltipProps;

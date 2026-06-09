@@ -29,7 +29,7 @@ import {
 	IAppBuilderSettingsJsonSession,
 	IAppBuilderSettingsSession,
 } from "../config/appbuilder";
-import {validateAppBuilderSettingsJson} from "../config/appbuildertypecheck";
+import {parseAppBuilderSettingsJson} from "../config/parseAppBuilderJson";
 
 declare global {
 	interface Window {
@@ -89,21 +89,11 @@ export default function useAppBuilderSettings(
 
 	// try to load settings json
 	const url = parameters.get(queryParamName);
-	const validate = (data: any): IAppBuilderSettingsJson | undefined => {
-		const result = validateAppBuilderSettingsJson(data);
-		if (result.success) {
-			return result.data;
-		} else {
-			throw new Error(
-				`Parsing AppBuilder settings failed: ${result.error.message}`,
-			);
-		}
-	};
 	const {value, error, loading} = useAsync(async () => {
 		if (!url) return;
 		const response = await fetch(url, {mode: "cors"});
 
-		return validate(await response.json());
+		return parseAppBuilderSettingsJson(await response.json());
 	}, [url]);
 
 	// check for ticket, modelViewUrl, slug and platformUrl
@@ -211,9 +201,20 @@ export default function useAppBuilderSettings(
 		if (!value) {
 			// No JSON loaded, use query params or default session
 			const session = defaultSession || queryParamSession;
-			return session
-				? [session, ...(themeSessions ?? [])]
-				: themeSessions;
+
+			if (!session) return themeSessions;
+
+			const mergedSession: IAppBuilderSettingsJsonSession = {
+				...session,
+			};
+
+			if (modelStateId && !mergedSession.modelStateId)
+				mergedSession.modelStateId = modelStateId;
+
+			if (initialParameterValues && !mergedSession.initialParameterValues)
+				mergedSession.initialParameterValues = initialParameterValues;
+
+			return [mergedSession, ...(themeSessions ?? [])];
 		} else {
 			// JSON loaded, combine with query params/default session
 			const session = defaultSession || queryParamSession;

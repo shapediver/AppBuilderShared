@@ -1,9 +1,8 @@
 export interface ITrackerEventData {
-	/** The current device's width. Defaults to window.innerWidth */
-	deviceWidth?: Window["innerWidth"];
-	/** The referrer to bind the event to. Defaults to document.referrer */
-	referrer?: Document["referrer"] | null;
-	/** The URL to bind the event to. Defaults to location.href. */
+	/**
+	 * Overrides the URL of the page that the event is being tracked on.
+	 * If not provided, `location.href` will be used.
+	 */
 	url?: Location["href"];
 }
 
