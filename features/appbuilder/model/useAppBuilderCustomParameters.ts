@@ -2,15 +2,15 @@ import {
 	IAcceptRejectModeSelector,
 	IGenericParameterExecutor,
 } from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
-import {useDefineGenericParameters} from "@AppBuilderLib/entities/parameter/model/useDefineGenericParameters";
-import {useParameterStateless} from "@AppBuilderLib/entities/parameter/model/useParameterStateless";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import {ISessionApi, PARAMETER_TYPE} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useMemo, useRef} from "react";
-import {useShallow} from "zustand/react/shallow";
-import {IAppBuilder} from "../config/appbuilder";
+import { useDefineGenericParameters } from "@AppBuilderLib/entities/parameter/model/useDefineGenericParameters";
+import { useParameterStateless } from "@AppBuilderLib/entities/parameter/model/useParameterStateless";
+import { useShapeDiverStoreParameters } from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import { useNotificationStore } from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import { Logger } from "@AppBuilderLib/shared/lib/logger";
+import { ISessionApi, PARAMETER_TYPE } from "@shapediver/viewer.session";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useShallow } from "zustand/react/shallow";
+import { IAppBuilder } from "../config/appbuilder";
 
 /** Prefix used to register custom parameters */
 export const CUSTOM_SESSION_ID_POSTFIX = "_appbuilder";
@@ -34,7 +34,7 @@ interface Props {
  * @returns
  */
 export function useAppBuilderCustomParameters(props: Props) {
-	const {sessionApi, appBuilderData, acceptRejectMode} = props;
+	const { sessionApi, appBuilderData, acceptRejectMode } = props;
 	const namespace = sessionApi?.id ?? "";
 	const namespaceAppBuilder = namespace + CUSTOM_SESSION_ID_POSTFIX;
 
@@ -42,8 +42,8 @@ export function useAppBuilderCustomParameters(props: Props) {
 	const notifications = useNotificationStore();
 
 	// default values and current values of the custom parameters
-	const defaultCustomParameterValues = useRef<{[key: string]: any}>({});
-	const customParameterValues = useRef<{[key: string]: any}>({});
+	const defaultCustomParameterValues = useRef<{ [key: string]: any }>({});
+	const customParameterValues = useRef<{ [key: string]: any }>({});
 
 	// define a callback which returns the current state of custom parameter values
 	const getCustomParameterValues = useCallback(() => {
@@ -51,7 +51,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 		// of the current custom parameter values. Values for all currently
 		// defined custom parameters shall be included in the JSON string.
 		// Therefore we need to merge the default values with the current values.
-		const customValues = {...defaultCustomParameterValues.current};
+		const customValues = { ...defaultCustomParameterValues.current };
 		Object.keys(customValues).forEach((id) => {
 			if (id in customParameterValues.current)
 				customValues[id] = customParameterValues.current[id];
@@ -118,7 +118,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 
 	// executor function for changes of custom parameter values
 	const executor = useCallback<IGenericParameterExecutor>(
-		async (values: {[key: string]: any}, _, skipHistory) => {
+		async (values: { [key: string]: any }, _, skipHistory) => {
 			Object.keys(values).forEach(
 				(key) => (customParameterValues.current[key] = values[key]),
 			);
@@ -172,7 +172,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 			) {
 				if (
 					appBuilderFileParam.actions.setUiValue(
-						new Blob([json], {type: "application/json"}),
+						new Blob([json], { type: "application/json" }),
 					)
 				) {
 					if (appBuilderParam) {
@@ -217,7 +217,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 	useEffect(() => {
 		if (appBuilderParam || appBuilderFileParam) {
 			setPreExecutionHook(namespace, async (_values) => {
-				const values = {..._values};
+				const values = { ..._values };
 				const customValues = getCustomParameterValues();
 
 				// if within the values that should be set, there is a AppBuilder parameter defined
@@ -243,7 +243,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 				) {
 					values[appBuilderFileParam.definition.id] = new Blob(
 						[json],
-						{type: "application/json"},
+						{ type: "application/json" },
 					);
 				} else if (appBuilderParam) {
 					notifications.error({
@@ -258,7 +258,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 
 				return {
 					amendedValues: values,
-					historyState: {[namespaceAppBuilder]: JSON.parse(json)},
+					historyState: { [namespaceAppBuilder]: JSON.parse(json) },
 				};
 			});
 		}
@@ -270,17 +270,18 @@ export function useAppBuilderCustomParameters(props: Props) {
 	const parameterDefinitions = useMemo(
 		() =>
 			(appBuilderData?.parameters ?? []).map((p) => {
-				const {value, ...rest} = p;
+				const { value, ...rest } = p;
 
-				return {definition: rest, value};
+				return { definition: rest, value };
 			}),
 		[appBuilderData?.parameters],
 	);
 
 	// define custom parameters and an execution callback for them
-	const {loaded} = useDefineGenericParameters(
+	// fall back to the session's parametersCommit setting when no explicit acceptRejectMode is provided
+	const { loaded } = useDefineGenericParameters(
 		namespaceAppBuilder,
-		acceptRejectMode ?? false,
+		acceptRejectMode ?? sessionApi?.parametersCommit ?? false,
 		parameterDefinitions,
 		executor,
 		namespace,
@@ -288,8 +289,8 @@ export function useAppBuilderCustomParameters(props: Props) {
 
 	// Don't block parameters history initialization if there are no custom parameters
 	if (parameterDefinitions.length === 0) {
-		return {loaded: true};
+		return { loaded: true };
 	}
 
-	return {loaded};
+	return { loaded };
 }
