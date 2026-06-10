@@ -16,6 +16,7 @@ export interface ViewportCreateDto extends ViewportCreationDefinition {
  * Props for the ShapeDiver viewport (`ViewportComponent`), including theme defaults via `useProps("ViewportComponent", …)`.
  *
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ViewportComponent.defaultProps
  * @displayName ViewportComponent
  */
@@ -57,6 +58,7 @@ interface ViewportBranding {
  * Light/dark branding for the viewport loading overlay (`useProps("ViewportBranding", …)`).
  *
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ViewportBranding.defaultProps
  * @displayName ViewportBranding
  */

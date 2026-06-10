@@ -22,6 +22,7 @@ import {
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.SelectGridComponent.defaultProps
  * @displayName SelectGridComponent
  */

@@ -67,6 +67,7 @@ const StatusDataMap: {
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ParameterStargateComponent.defaultProps
  * @displayName ParameterStargateComponent
  */

@@ -75,6 +75,7 @@ const StatusDataMap: {
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ExportButtonComponent.defaultProps
  * @displayName ExportButtonComponent
  */

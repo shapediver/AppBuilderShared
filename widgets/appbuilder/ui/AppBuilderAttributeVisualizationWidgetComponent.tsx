@@ -72,6 +72,7 @@ export type IAttributeDefinition =
 
 /**
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.AppBuilderAttributeVisualizationWidgetComponent.defaultProps
  * @displayName AppBuilderAttributeVisualizationWidgetComponent
  */

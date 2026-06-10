@@ -83,6 +83,7 @@ type Props = IAppBuilderWidgetPropsDesktopClientSelection;
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.DesktopClientPanel.defaultProps
  * @displayName DesktopClientPanel
  */

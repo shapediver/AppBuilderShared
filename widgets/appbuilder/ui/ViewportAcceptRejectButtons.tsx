@@ -22,6 +22,7 @@ interface ViewportAcceptRejectButtonsIconStyleProps {
 
 /**
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.ViewportAcceptRejectButtons.defaultProps
  * @displayName ViewportAcceptRejectButtons
  */

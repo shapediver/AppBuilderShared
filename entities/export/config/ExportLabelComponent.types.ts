@@ -5,6 +5,14 @@ export const ExportLabelComponentThemeDefaultPropsSchema = z.strictObject({
 	fontWeight: z.string().optional(),
 });
 
-/** TypeDoc surface for theme `defaultProps` inferred from the Zod schema above. */
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ExportLabelComponent.defaultProps
+ * @displayName ExportLabelComponent
+ */
 export interface ExportLabelComponentThemeDefaultProps
-	extends z.infer<typeof ExportLabelComponentThemeDefaultPropsSchema> {}
+	extends z.infer<typeof ExportLabelComponentThemeDefaultPropsSchema> {
+	/** Font weight for the export title text (Mantine `fw` prop). */
+	fontWeight?: string;
+}

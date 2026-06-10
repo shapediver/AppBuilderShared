@@ -26,6 +26,7 @@ type ThemeOverridePerContainerType = {
 
 /**
  * @docAttached
+ * @category page
  * @configPath themeOverrides.components.AppBuilderContainerWrapper.defaultProps
  * @displayName AppBuilderContainerWrapper
  */

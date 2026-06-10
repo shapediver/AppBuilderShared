@@ -28,6 +28,7 @@ import classes from "./SelectFullWidthCards.module.css";
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.SelectFullWidthCardsComponent.defaultProps
  * @displayName SelectFullWidthCardsComponent
  */

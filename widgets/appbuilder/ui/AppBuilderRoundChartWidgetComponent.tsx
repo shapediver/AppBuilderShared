@@ -19,6 +19,7 @@ import React from "react";
 
 /**
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.AppBuilderRoundChartWidgetComponent.defaultProps
  * @displayName AppBuilderRoundChartWidgetComponent
  */

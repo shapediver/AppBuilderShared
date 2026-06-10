@@ -39,6 +39,7 @@ import {useShallow} from "zustand/react/shallow";
 
 /**
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.AppBuilderSavedStatesWidgetComponent.defaultProps
  * @displayName AppBuilderSavedStatesWidgetComponent
  */

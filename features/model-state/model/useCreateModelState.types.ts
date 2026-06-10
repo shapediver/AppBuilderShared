@@ -7,6 +7,30 @@ export const CreateModelStateHookThemeDefaultPropsSchema = z.strictObject({
 	parameterNamesToAlwaysExclude: z.array(z.string()).optional(),
 });
 
-/** TypeDoc surface for `useProps("CreateModelStateHook", …)` theme defaults. */
+/**
+ * Theme defaults for {@link useCreateModelState} parameter filtering.
+ *
+ * @docAttached
+ * @category feature
+ * @configPath themeOverrides.components.CreateModelStateHook.defaultProps
+ * @displayName CreateModelStateHook
+ */
 export interface CreateModelStateHookThemeDefaultProps
-	extends z.infer<typeof CreateModelStateHookThemeDefaultPropsSchema> {}
+	extends z.infer<typeof CreateModelStateHookThemeDefaultPropsSchema> {
+	/**
+	 * Default allow-list of parameter `name` or `displayname` values saved to a model state.
+	 * When omitted, all parameters pass the include filter (subject to exclude rules).
+	 */
+	parameterNamesToInclude?: string[];
+	/**
+	 * Default deny-list of parameter `name` or `displayname` values omitted from a model state.
+	 * When omitted, no parameters are excluded by this filter.
+	 */
+	parameterNamesToExclude?: string[];
+	/**
+	 * Parameter `name` or `displayname` values always omitted from a model state,
+	 * regardless of include/exclude lists.
+	 * @default []
+	 */
+	parameterNamesToAlwaysExclude?: string[];
+}

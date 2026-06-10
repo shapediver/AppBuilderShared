@@ -43,6 +43,7 @@ import React, {
 
 /**
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.AppBuilderFormWidgetComponent.defaultProps
  * @displayName AppBuilderFormWidgetComponent
  */

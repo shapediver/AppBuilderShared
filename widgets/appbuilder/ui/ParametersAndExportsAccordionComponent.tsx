@@ -60,6 +60,7 @@ interface Props {
 
 /**
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.ParametersAndExportsAccordionComponent.defaultProps
  * @displayName ParametersAndExportsAccordionComponent
  */

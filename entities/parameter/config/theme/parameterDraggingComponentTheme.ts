@@ -4,6 +4,7 @@ import type {ParameterDraggingComponentThemeDefaultProps} from "./parameterInter
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ParameterDraggingComponent.defaultProps
  * @displayName ParameterDraggingComponent
  */

@@ -23,6 +23,7 @@ import classes from "./AppBuilderAppShellTemplatePage.module.css";
 
 /**
  * @docAttached
+ * @category page
  * @configPath themeOverrides.components.AppBuilderAppShellTemplatePage.defaultProps
  * @displayName AppBuilderAppShellTemplatePage
  */

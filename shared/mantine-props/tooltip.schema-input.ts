@@ -8,6 +8,10 @@ import type {MantineSpacing} from "./spacing.schema-input";
  */
 export interface MantineTooltipProps {
 	label?: string;
+	/**
+	 * Show tooltip arrow (standard Mantine Tooltip).
+	 * @default true
+	 */
 	withArrow?: boolean;
 	position?: string;
 	withinPortal?: boolean;

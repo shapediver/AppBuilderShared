@@ -17,6 +17,7 @@ export type IconType = IconifyIconDefinition | string;
  * AppBuilder icon props (Iconify + theme defaults via `useProps("Icon", …)`).
  *
  * @docAttached
+ * @category shared
  * @configPath themeOverrides.components.Icon.defaultProps
  * @displayName Icon
  */

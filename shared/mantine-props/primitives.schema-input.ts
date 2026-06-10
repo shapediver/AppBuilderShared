@@ -5,6 +5,9 @@
 
 export type MantineCssLength = string | number;
 
+/** Serializable inline `style` object (CSS property name → string or number value). */
+export type MantineCssStyleRecord = Record<string, string | number>;
+
 export type MantineFlexWrap = "nowrap" | "wrap" | "wrap-reverse";
 
 export type MantineStylesApiValue = string | number | boolean | null;

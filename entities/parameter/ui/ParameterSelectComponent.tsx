@@ -33,6 +33,7 @@ interface ISelectComponentOverrides {
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ParameterSelectComponent.defaultProps
  * @displayName ParameterSelectComponent
  */

@@ -22,6 +22,7 @@ interface Props {
 
 /**
  * @docAttached
+ * @category shared
  * @configPath themeOverrides.components.Hint.defaultProps
  * @displayName Hint
  */

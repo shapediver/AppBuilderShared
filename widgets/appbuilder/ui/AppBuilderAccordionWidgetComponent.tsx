@@ -8,6 +8,7 @@ import ParametersAndExportsAccordionComponent from "./ParametersAndExportsAccord
 
 /**
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.AppBuilderAccordionWidgetComponent.defaultProps
  * @displayName AppBuilderAccordionWidgetComponent
  */

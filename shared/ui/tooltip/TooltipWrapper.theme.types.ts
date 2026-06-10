@@ -10,6 +10,24 @@ const tooltipWrapperAppThemePropsSchema = z.strictObject({
 export const TooltipWrapperThemeDefaultPropsSchema =
 	mantineTooltipPropsSchema.merge(tooltipWrapperAppThemePropsSchema);
 
-/** TypeDoc surface for `useProps("TooltipWrapper", …)` theme defaults. */
+/**
+ * Custom tooltip wrapper props merged with Mantine `TooltipProps` via `useProps`.
+ *
+ * @docAttached
+ * @category shared
+ * @configPath themeOverrides.components.TooltipWrapper.defaultProps
+ * @displayName TooltipWrapper
+ */
 export interface TooltipWrapperThemeDefaultProps
-	extends z.infer<typeof TooltipWrapperThemeDefaultPropsSchema> {}
+	extends z.infer<typeof TooltipWrapperThemeDefaultPropsSchema> {
+	/**
+	 * Use Mantine `Tooltip.Floating` (follows the pointer) instead of the standard `Tooltip`.
+	 * @default false
+	 */
+	floating?: boolean;
+	/**
+	 * Show tooltip arrow (standard Mantine Tooltip).
+	 * @default true
+	 */
+	withArrow?: boolean;
+}

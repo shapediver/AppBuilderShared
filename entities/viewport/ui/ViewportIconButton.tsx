@@ -29,6 +29,7 @@ interface Props {
  * Theme defaults for a single viewport toolbar icon button.
  *
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ViewportIconButton.defaultProps
  * @displayName ViewportIconButton
  */

@@ -13,6 +13,7 @@ import {MultiSelectComponentProps} from "./MultiSelectComponent";
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.MultiSelectCheckboxes.defaultProps
  * @displayName MultiSelectCheckboxes
  */

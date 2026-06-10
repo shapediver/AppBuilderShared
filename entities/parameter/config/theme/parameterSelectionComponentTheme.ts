@@ -4,6 +4,7 @@ import type {ParameterSelectionComponentThemeDefaultProps} from "./parameterInte
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ParameterSelectionComponent.defaultProps
  * @displayName ParameterSelectionComponent
  */

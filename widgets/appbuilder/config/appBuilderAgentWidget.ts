@@ -4,6 +4,7 @@ import {MantineThemeComponent, PaperProps} from "@mantine/core";
  * Style and configuration props for the agent widget (theme + `useProps("AppBuilderAgentWidgetComponent", …)`).
  *
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.AppBuilderAgentWidgetComponent.defaultProps
  * @displayName AppBuilderAgentWidgetComponent
  */

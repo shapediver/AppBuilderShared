@@ -86,6 +86,7 @@ const sortedRowModel = getSortedRowModel<RecordType>();
 
 /**
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.AppBuilderTableWidgetComponent.defaultProps
  * @displayName AppBuilderTableWidgetComponent
  */

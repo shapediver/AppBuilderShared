@@ -7,6 +7,7 @@ import {IShapeDiverExampleModels} from "../config/examplemodel";
  * Theme-default session and example model settings (see `useDefaultSessionDto`).
  *
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.DefaultSession.defaultProps
  * @displayName DefaultSession
  */

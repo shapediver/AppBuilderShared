@@ -46,6 +46,7 @@ export interface ViewportIconsProps {
  * Optional styling and feature toggles for the viewport icon toolbar (`ViewportIcons`).
  *
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ViewportIcons.defaultProps
  * @displayName ViewportIcons
  */

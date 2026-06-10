@@ -20,6 +20,7 @@ interface Props extends PropsParameter {
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ParameterLabelComponent.defaultProps
  * @displayName ParameterLabelComponent
  */

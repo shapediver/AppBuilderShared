@@ -76,6 +76,7 @@ interface Props {
 
 /**
  * @docAttached
+ * @category shared
  * @configPath themeOverrides.components.ModalBase.defaultProps
  * @displayName ModalBase
  */

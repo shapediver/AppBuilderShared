@@ -4,6 +4,7 @@ import type {ParameterGumballComponentThemeDefaultProps} from "./parameterIntera
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ParameterGumballComponent.defaultProps
  * @displayName ParameterGumballComponent
  */

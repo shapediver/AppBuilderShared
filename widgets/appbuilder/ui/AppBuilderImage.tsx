@@ -15,6 +15,7 @@ type Props = IAppBuilderWidgetPropsAnchor;
 
 /**
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.AppBuilderImage.defaultProps
  * @displayName AppBuilderImage
  */

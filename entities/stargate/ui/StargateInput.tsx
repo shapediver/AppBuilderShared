@@ -32,6 +32,7 @@ interface Props {
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.StargateInput.defaultProps
  * @displayName StargateInput
  */

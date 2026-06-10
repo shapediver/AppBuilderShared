@@ -7,6 +7,7 @@ import classes from "./AppBuilderGridTemplatePage.module.css";
 
 /**
  * @docAttached
+ * @category page
  * @configPath themeOverrides.components.AppBuilderGridTemplatePage.defaultProps
  * @displayName AppBuilderGridTemplatePage
  */

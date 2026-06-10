@@ -25,6 +25,7 @@ interface ViewportIconButtonDropdownProps extends CommonButtonProps {
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.ViewportIconButtonDropdowns.defaultProps
  * @displayName ViewportIconButtonDropdown
  */

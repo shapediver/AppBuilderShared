@@ -30,6 +30,7 @@ import React, {ReactElement, useContext, useMemo} from "react";
 
 /**
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.AppBuilderControlsWidgetComponent.defaultProps
  * @displayName AppBuilderControlsWidgetComponent
  */

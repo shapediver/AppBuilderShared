@@ -33,6 +33,7 @@ interface Props {
 
 /**
  * @docAttached
+ * @category shared
  * @configPath themeOverrides.components.MarkdownWidgetComponent.defaultProps
  * @displayName MarkdownWidgetComponent
  */

@@ -19,6 +19,7 @@ import AppBuilderWidgetsComponent from "./AppBuilderWidgetsComponent";
 
 /**
  * @docAttached
+ * @category widget
  * @configPath themeOverrides.components.AppBuilderAccordionUiWidgetComponent.defaultProps
  * @displayName AppBuilderAccordionUiWidgetComponent
  */

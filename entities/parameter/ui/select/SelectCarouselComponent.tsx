@@ -18,6 +18,7 @@ import {
 
 /**
  * @docAttached
+ * @category entity
  * @configPath themeOverrides.components.SelectCarouselComponent.defaultProps
  * @displayName SelectCarouselComponent
  */

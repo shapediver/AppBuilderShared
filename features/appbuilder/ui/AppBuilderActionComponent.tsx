@@ -28,6 +28,7 @@ type Props = IAppBuilderActionPropsCommon &
  * Theme-driven Mantine `Button` defaults for action buttons.
  *
  * @docAttached
+ * @category feature
  * @configPath themeOverrides.components.AppBuilderActionComponent.defaultProps
  * @displayName AppBuilderActionComponent
  */
