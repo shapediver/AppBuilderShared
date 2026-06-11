@@ -1,14 +1,14 @@
-import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {IShapeDiverParameterState} from "../config/parameter";
+import { CUSTOM_SESSION_ID_POSTFIX } from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
+import { Logger } from "@AppBuilderLib/shared/lib/logger";
+import { useShapeDiverStoreProcessManager } from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { IShapeDiverParameterState } from "../config/parameter";
 import {
 	PropsParameterComponent,
 	PropsParameterWithForm,
 } from "../config/propsParameter";
-import {useParameter} from "./useParameter";
-import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
+import { useParameter } from "./useParameter";
+import { useShapeDiverStoreParameters } from "./useShapeDiverStoreParameters";
 
 /**
  * Hook providing functionality common to all parameter components like
@@ -34,7 +34,7 @@ export function useParameterComponentCommons<T>(
 	const {
 		namespace,
 		disableIfDirty,
-		acceptRejectMode,
+		acceptRejectMode: propAcceptRejectMode,
 		reactive = true,
 		value: customValue,
 	} = props;
@@ -44,8 +44,22 @@ export function useParameterComponentCommons<T>(
 		state,
 	} = useParameter<T | string>(props);
 	const customActions = props.customActions || {};
-	const actions = {...paramActions, ...customActions};
-	const {executing, sessionDependencies} = useShapeDiverStoreParameters(
+	const actions = { ...paramActions, ...customActions };
+
+	// Read acceptRejectMode from the store as a fallback.
+	// The prop may be undefined if the component renders before the store is populated
+	// (accept-reject mode is stored per-parameter in the session's parameter store).
+	const storeAcceptRejectMode = useShapeDiverStoreParameters(
+		(state) => {
+			const paramStore = state.getParameter(namespace, definition?.id ?? props.parameterId);
+			if (!paramStore) return undefined;
+			return paramStore.getState().acceptRejectMode;
+		},
+	);
+
+	const acceptRejectMode = propAcceptRejectMode ?? storeAcceptRejectMode;
+
+	const { executing, sessionDependencies } = useShapeDiverStoreParameters(
 		(state) => {
 			const sessionDependencies = state.sessionDependency[namespace];
 
@@ -73,7 +87,7 @@ export function useParameterComponentCommons<T>(
 				if (
 					p.controllerSessionId.endsWith(CUSTOM_SESSION_ID_POSTFIX) &&
 					p.controllerSessionId ===
-						namespace + CUSTOM_SESSION_ID_POSTFIX
+					namespace + CUSTOM_SESSION_ID_POSTFIX
 				)
 					return true;
 
@@ -81,10 +95,10 @@ export function useParameterComponentCommons<T>(
 				if (
 					namespace.endsWith(CUSTOM_SESSION_ID_POSTFIX) &&
 					p.controllerSessionId ===
-						namespace.substring(
-							0,
-							namespace.length - CUSTOM_SESSION_ID_POSTFIX.length,
-						)
+					namespace.substring(
+						0,
+						namespace.length - CUSTOM_SESSION_ID_POSTFIX.length,
+					)
 				)
 					return true;
 
@@ -100,7 +114,7 @@ export function useParameterComponentCommons<T>(
 	const debounceRef = useRef<NodeJS.Timeout>();
 
 	const handleChange = useCallback(
-		(curval: T | string, timeout?: number, cb: () => void = () => {}) => {
+		(curval: T | string, timeout?: number, cb: () => void = () => { }) => {
 			clearTimeout(debounceRef.current);
 			setValue(curval);
 			debounceRef.current = setTimeout(
@@ -171,8 +185,8 @@ export function useParameterComponentCommons<T>(
 		() =>
 			acceptRejectMode && state.dirty && !executing
 				? () => {
-						handleChange(state.execValue, 0);
-					}
+					handleChange(state.execValue, 0);
+				}
 				: undefined,
 		[
 			acceptRejectMode,
@@ -197,7 +211,7 @@ export function useParameterComponentCommons<T>(
 		disabledByParameter;
 
 	const memoizedDefinition = useMemo(() => {
-		return {...definition, ...props.overrides};
+		return { ...definition, ...props.overrides };
 	}, [definition, props.overrides]);
 
 	// Extract form from props if provided
