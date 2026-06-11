@@ -2,6 +2,7 @@ import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/u
 import {useShapeDiverStoreInstances} from "@AppBuilderShared/features/appbuilder/model/useShapeDiverStoreInstances";
 import {
 	checkNodeNameMatch,
+	getInstanceNodeData,
 	getNodeName,
 	InteractionData,
 	MultiSelectManager,
@@ -153,6 +154,7 @@ export function useSelection(
 							hover: selectionProps.hover,
 						},
 						selectManagerRef,
+						removeAvailableEffectsRef,
 						strictNaming,
 					};
 				},
@@ -385,6 +387,7 @@ const restoreSelection = (
 				selectManager,
 				selectedNodeNames,
 				strictNaming,
+				true,
 			);
 	}
 };
@@ -403,13 +406,11 @@ const restoreNodeSelection = (
 	mgr: SelectManager | MultiSelectManager,
 	selectedNodeNames: string[],
 	strictNaming: boolean,
+	isInstance: boolean = false,
 ) => {
 	// The identifier used to match the first part of selected node names.
 	// For regular output nodes this is the output name; for instance nodes it is the instance ID.
 	let nameIdentifier: string;
-	// Whether this is an instance node (vs. a session output node).
-	// This affects how checkNodeNameMatch is called (see PatternUtils.getNodesByName).
-	let isInstance = false;
 
 	// the node must have an OutputApiData object
 	let outputApi = node.data.find(
@@ -423,7 +424,7 @@ const restoreNodeSelection = (
 		if (!sessionApi) return;
 
 		outputApi = sessionApi.outputs[node.name];
-		if (outputApi) {
+		if (outputApi && !isInstance) {
 			nameIdentifier = outputApi.name;
 		} else {
 			// Instance node: SessionApiData is in the parent but the node is not a session
@@ -467,6 +468,31 @@ const restoreNodeSelection = (
 			);
 			if (hasInteractionData)
 				mgr.select({distance: 1, point: vec3.create(), node: node});
+		} else if (isInstance) {
+			// For instance nodes: use getInstanceNodeData (same function
+			// used during the initial SELECT_ON event) so the path is
+			// built from the instance root, not from the scene root.
+			node.traverse((n) => {
+				const instanceData = getInstanceNodeData(n, strictNaming);
+				if (!instanceData) return;
+				const fullName = instanceData.outputId + "." + instanceData.nodeName;
+				if (fullName !== name) return;
+				const interactionData = n.data.filter(
+					(d) => d instanceof InteractionData,
+				) as InteractionData[];
+				if (
+					interactionData.some(
+						(d) =>
+							d instanceof InteractionData &&
+							d.restrictedManagers.includes(componentId),
+					)
+				)
+					mgr.select({
+						distance: 1,
+						point: vec3.create(),
+						node: n,
+					});
+			});
 		} else {
 			// For output nodes: pass parts without the output name prefix (parts.slice(1)).
 			// For instance nodes: pass the full name (parts.join(".") === name) because
