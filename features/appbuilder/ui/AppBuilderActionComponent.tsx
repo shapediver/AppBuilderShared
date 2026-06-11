@@ -3,6 +3,8 @@ import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useS
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
+	ActionIcon,
+	ActionIconProps,
 	Button,
 	ButtonProps,
 	CloseButton,
@@ -24,11 +26,20 @@ type Props = IAppBuilderActionPropsCommon &
 		canBeDisabledByParameter?: boolean;
 	};
 
-const defaultStyleProps: Partial<Props> = {
-	variant: "filled",
+type AppBuilderActionComponentStyleProps = {
+	actionIconProps?: ActionIconProps;
 };
 
-type AppBuilderActionComponentThemePropsType = Partial<Props>;
+const defaultStyleProps: Partial<Props> & AppBuilderActionComponentStyleProps = {
+	variant: "filled",
+	actionIconProps: {
+		size: "lg",
+		variant: "filled",
+	},
+};
+
+export type AppBuilderActionComponentThemePropsType = Partial<Props> &
+	Partial<AppBuilderActionComponentStyleProps>;
 
 export function AppBuilderActionComponentThemeProps(
 	props: AppBuilderActionComponentThemePropsType,
@@ -56,11 +67,13 @@ export default function AppBuilderActionComponent(
 		...rest
 	} = props;
 
-	const buttonProps = useProps(
+	const mergedProps = useProps(
 		"AppBuilderActionComponent",
 		defaultStyleProps,
 		rest,
 	);
+
+	const {actionIconProps, ...buttonProps} = mergedProps;
 
 	const activeProcess = useShapeDiverStoreProcessManager(
 		(state) => Object.keys(state.processManagers).length > 0,
@@ -76,12 +89,9 @@ export default function AppBuilderActionComponent(
 
 	const button = useCloseButton ? (
 		<CloseButton onClick={_onclick} />
-	) : (
-		<Button
-			{...buttonProps}
-			leftSection={
-				!iconOnly && icon ? <Icon iconType={icon} /> : undefined
-			}
+	) : iconOnly ? (
+		<ActionIcon
+			{...actionIconProps}
 			onClick={_onclick}
 			loading={loading}
 			disabled={
@@ -90,7 +100,21 @@ export default function AppBuilderActionComponent(
 				(disabledByParameter && canBeDisabledByParameter !== false)
 			}
 		>
-			{iconOnly ? <Icon iconType={icon} /> : label}
+			<Icon iconType={icon} />
+		</ActionIcon>
+	) : (
+		<Button
+			{...buttonProps}
+			leftSection={icon ? <Icon iconType={icon} /> : undefined}
+			onClick={_onclick}
+			loading={loading}
+			disabled={
+				(activeProcess && !loading) ||
+				disabled ||
+				(disabledByParameter && canBeDisabledByParameter !== false)
+			}
+		>
+			{label}
 		</Button>
 	);
 
