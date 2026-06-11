@@ -68,7 +68,7 @@ export function useSelection(
 		useSelectManager(
 			viewportId,
 			componentId,
-			activate ? selectionProps : undefined,
+			selectionProps,
 		);
 
 	// store the select manager in a ref
