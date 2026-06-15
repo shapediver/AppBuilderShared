@@ -66,7 +66,11 @@ export function useSelection(
 
 	// call the select manager hook
 	const {selectManager, setAvailableNodes, removeAvailableEffectsForNodes} =
-		useSelectManager(viewportId, componentId, selectionProps);
+		useSelectManager(
+			viewportId,
+			componentId,
+			activate ? selectionProps : undefined,
+		);
 
 	// store the select manager in a ref
 	const selectManagerRef = React.useRef<SelectManager | MultiSelectManager>();
