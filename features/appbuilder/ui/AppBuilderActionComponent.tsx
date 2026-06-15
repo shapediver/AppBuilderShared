@@ -4,6 +4,8 @@ import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/butto
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
+	ActionIcon,
+	ActionIconProps,
 	Button,
 	ButtonProps,
 	CloseButton,
@@ -35,12 +37,34 @@ type Props = IAppBuilderActionPropsCommon &
  */
 export interface AppBuilderActionComponentStyleProps extends MantineButtonProps {}
 
+// type AppBuilderActionComponentStyleProps = {
+// 	actionIconProps?: ActionIconProps;
+// };
+
+/**
+ * Theme-driven Mantine `Button` defaults for action buttons.
+ *
+ * @docAttached
+ * @category feature
+ * @configPath themeOverrides.components.AppBuilderActionComponent.defaultProps
+ * @displayName AppBuilderActionComponent
+ */
+export interface AppBuilderActionComponentStyleProps extends MantineButtonProps {}
+
 const defaultStyleProps: AppBuilderActionComponentStyleProps = {
 	variant: "filled",
+	actionIconProps: {
+		size: "lg",
+		variant: "filled",
+	},
 };
 
 type AppBuilderActionComponentThemePropsType =
 	AppBuilderActionComponentStyleProps;
+
+// export type AppBuilderActionComponentThemePropsType = Partial<Props> &
+// 	Partial<AppBuilderActionComponentStyleProps>;
+
 
 export function AppBuilderActionComponentThemeProps(
 	props: AppBuilderActionComponentThemePropsType,
@@ -68,11 +92,13 @@ export default function AppBuilderActionComponent(
 		...rest
 	} = props;
 
-	const buttonProps = useProps(
+	const mergedProps = useProps(
 		"AppBuilderActionComponent",
 		defaultStyleProps,
 		rest,
 	);
+
+	const {actionIconProps, ...buttonProps} = mergedProps;
 
 	const activeProcess = useShapeDiverStoreProcessManager(
 		(state) => Object.keys(state.processManagers).length > 0,
@@ -88,12 +114,9 @@ export default function AppBuilderActionComponent(
 
 	const button = useCloseButton ? (
 		<CloseButton onClick={_onclick} />
-	) : (
-		<Button
-			{...buttonProps}
-			leftSection={
-				!iconOnly && icon ? <Icon iconType={icon} /> : undefined
-			}
+	) : iconOnly ? (
+		<ActionIcon
+			{...actionIconProps}
 			onClick={_onclick}
 			loading={loading}
 			disabled={
@@ -102,7 +125,21 @@ export default function AppBuilderActionComponent(
 				(disabledByParameter && canBeDisabledByParameter !== false)
 			}
 		>
-			{iconOnly ? <Icon iconType={icon} /> : label}
+			<Icon iconType={icon} />
+		</ActionIcon>
+	) : (
+		<Button
+			{...buttonProps}
+			leftSection={icon ? <Icon iconType={icon} /> : undefined}
+			onClick={_onclick}
+			loading={loading}
+			disabled={
+				(activeProcess && !loading) ||
+				disabled ||
+				(disabledByParameter && canBeDisabledByParameter !== false)
+			}
+		>
+			{label}
 		</Button>
 	);
 
