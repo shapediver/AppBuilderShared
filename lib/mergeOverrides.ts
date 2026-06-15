@@ -1,6 +1,7 @@
 /**
  * Deep-merge `source` into `target`.
  * Objects are merged recursively. Arrays and primitives in `source` replace those in `target`.
+ * If a property in `source` is `null`, it is deleted from the result rather than set to `null`.
  * Does not mutate `target`.
  */
 export function deepMerge(
@@ -25,6 +26,8 @@ export function deepMerge(
                 tv as Record<string, unknown>,
                 sv as Record<string, unknown>,
             );
+        } else if (sv === null) {
+            delete result[k];
         } else {
             result[k] = sv;
         }
@@ -38,6 +41,8 @@ export function deepMerge(
  * Properties other than `settings` are shallow-merged.
  * The `settings` property is deep-merged so that individual properties from the override
  * are merged into the original settings rather than replacing the entire object.
+ * If a property in `overrides` is `null`, it is deleted from the result rather than set to `null`.
+ * If `settings` in `overrides` is `null`, the `settings` property is deleted from the result.
  *
  * @param definition The original definition object.
  * @param overrides The overrides to apply.
@@ -51,9 +56,14 @@ export function applyOverrides<T extends { settings?: unknown }>(
 
     const { settings: overriddenSettings, ...restOverrides } = overrides;
 
+    // Filter out null values from restOverrides to allow deletion of properties
+    const filteredRestOverrides = Object.fromEntries(
+        Object.entries(restOverrides).filter(([_, v]) => v !== null)
+    );
+
     const result = {
         ...definition,
-        ...restOverrides,
+        ...filteredRestOverrides,
     };
 
     if (overriddenSettings && definition.settings) {
@@ -61,8 +71,11 @@ export function applyOverrides<T extends { settings?: unknown }>(
             definition.settings as Record<string, unknown>,
             overriddenSettings as Record<string, unknown>,
         );
-    } else if (overriddenSettings) {
+    } else if (overriddenSettings !== null) {
         result.settings = overriddenSettings;
+    } else {
+        // If overriddenSettings is null, delete the settings property entirely
+        delete result.settings;
     }
 
     return result;
