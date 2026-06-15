@@ -2,9 +2,9 @@ import {
 	IAppBuilderWidgetPropsTable,
 	IAppBuilderWidgetPropsTableColumn,
 } from "@AppBuilderLib/widgets/appbuilder/config/appbuildertable";
+import type {MantineBoxProps} from "@AppBuilderLib/shared/mantine-props/box";
 import {
 	Box,
-	BoxProps,
 	MantineThemeComponent,
 	Table,
 	TableProps,
@@ -93,7 +93,7 @@ const sortedRowModel = getSortedRowModel<RecordType>();
 export interface AppBuilderTableWidgetComponentStyleProps {
 	tableProps?: Partial<TableProps>;
 	searchTextInputProps?: Partial<TextInputProps>;
-	searchBarProps?: Partial<BoxProps>;
+	searchBarProps?: MantineBoxProps;
 }
 
 const defaultStyleProps: AppBuilderTableWidgetComponentStyleProps = {

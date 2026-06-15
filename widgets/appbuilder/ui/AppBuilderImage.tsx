@@ -1,5 +1,6 @@
 import {IAppBuilderWidgetPropsAnchor} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import type {MantineImageProps} from "@AppBuilderLib/shared/mantine-props/image";
 import Svg from "@AppBuilderLib/shared/ui/svg/Svg";
 import {
 	Anchor,
@@ -19,7 +20,10 @@ type Props = IAppBuilderWidgetPropsAnchor;
  * @configPath themeOverrides.components.AppBuilderImage.defaultProps
  * @displayName AppBuilderImage
  */
-export type ImageStyleProps = Pick<ImageProps, "radius" | "mah" | "maw"> & {
+export type AppBuilderImageStyleProps = Pick<
+	MantineImageProps,
+	"radius" | "mah" | "maw"
+> & {
 	/**
 	 * Object-fit behavior (see MDN `object-fit`). `scale-down` never upscales past intrinsic size.
 	 * @default "contain"
@@ -36,7 +40,7 @@ export type ImageStyleProps = Pick<ImageProps, "radius" | "mah" | "maw"> & {
 
 type ImageNonStyleProps = Pick<ImageProps, "src"> & {alt?: string};
 
-const defaultStyleProps: Partial<ImageStyleProps> = {
+const defaultStyleProps: Partial<AppBuilderImageStyleProps> = {
 	/**
 	 * Object-fit behavior to use for image widgets. This roughly follows the
 	 * behavior defined by https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit
@@ -53,7 +57,7 @@ const defaultStyleProps: Partial<ImageStyleProps> = {
 	withBorder: false,
 };
 
-type AppBuilderImageThemePropsType = Partial<ImageStyleProps>;
+type AppBuilderImageThemePropsType = Partial<AppBuilderImageStyleProps>;
 
 export function AppBuilderImageThemeProps(
 	props: AppBuilderImageThemePropsType,
@@ -64,7 +68,7 @@ export function AppBuilderImageThemeProps(
 }
 
 export default function AppBuilderImage(
-	props: ImageNonStyleProps & ImageStyleProps & Props,
+	props: ImageNonStyleProps & AppBuilderImageStyleProps & Props,
 ) {
 	const {anchor, target, isSvg, ...rest} = props;
 	const {radius, fit, withBorder, mah, maw} = useProps(

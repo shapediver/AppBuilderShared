@@ -1,14 +1,14 @@
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantineLoaderProps} from "@AppBuilderLib/shared/mantine-props/loader";
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {
 	Button,
-	ButtonProps,
 	Loader,
-	LoaderProps,
 	MantineColor,
 	MantineThemeComponent,
 	Text,
-	TextProps,
 	useProps,
 } from "@mantine/core";
 import React from "react";
@@ -37,10 +37,10 @@ interface Props {
  * @displayName StargateInput
  */
 export interface StargateInputStyleProps {
-	buttonProps?: ButtonProps;
-	loadingButtonProps?: ButtonProps;
-	textProps?: TextProps;
-	loaderProps?: LoaderProps;
+	buttonProps?: MantineButtonProps;
+	loadingButtonProps?: MantineButtonProps;
+	textProps?: MantineTextProps;
+	loaderProps?: MantineLoaderProps;
 }
 
 const defaultStyleProps: Partial<StargateInputStyleProps> = {

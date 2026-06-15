@@ -12,6 +12,7 @@ import {
 	DefaultStargateStyleProps,
 	StargateStyleProps,
 } from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
@@ -19,7 +20,6 @@ import {
 	ActionIcon,
 	ActionIconProps,
 	MantineThemeComponent,
-	TooltipProps,
 	useProps,
 } from "@mantine/core";
 import React, {useMemo} from "react";
@@ -72,7 +72,7 @@ const StatusDataMap: {
  * @displayName ParameterStargateComponent
  */
 export interface ParameterStargateComponentStyleProps {
-	tooltipProps: Partial<TooltipProps>;
+	tooltipProps: MantineTooltipProps;
 	actionIconProps: Partial<ActionIconProps>;
 	iconProps: IconProps;
 }

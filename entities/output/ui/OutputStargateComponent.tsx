@@ -1,16 +1,16 @@
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
 import {useOutput} from "@AppBuilderLib/entities/output/model/useOutput";
+import type {MantineAccordionProps} from "@AppBuilderLib/shared/mantine-props/accordion";
+import type {MantineAccordionControlProps} from "@AppBuilderLib/shared/mantine-props/accordionControl";
+import type {MantineAccordionItemProps} from "@AppBuilderLib/shared/mantine-props/accordionItem";
+import type {MantineAccordionPanelProps} from "@AppBuilderLib/shared/mantine-props/accordionPanel";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {
 	Accordion,
-	AccordionControlProps,
-	AccordionItemProps,
-	AccordionPanelProps,
-	AccordionProps,
 	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	Stack,
-	StackProps,
 	useProps,
 } from "@mantine/core";
 import React from "react";
@@ -23,12 +23,12 @@ import OutputChunkComponent from "./OutputChunkComponent";
  * @displayName OutputStargateComponent
  */
 export interface OutputStargateComponentStyleProps {
-	stackProps?: StackProps;
-	paperProps?: PaperProps;
-	accordionProps?: AccordionProps;
-	accordionItemProps?: AccordionItemProps;
-	accordionControlProps?: AccordionControlProps;
-	accordionPanelProps?: AccordionPanelProps;
+	stackProps?: MantineStackProps;
+	paperProps?: MantinePaperProps;
+	accordionProps?: MantineAccordionProps;
+	accordionItemProps?: MantineAccordionItemProps;
+	accordionControlProps?: MantineAccordionControlProps;
+	accordionPanelProps?: MantineAccordionPanelProps;
 }
 
 const defaultStyleProps: Partial<OutputStargateComponentStyleProps> = {

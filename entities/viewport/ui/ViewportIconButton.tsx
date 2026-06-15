@@ -1,12 +1,12 @@
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
 	Box,
 	MantineStyleProp,
 	MantineThemeComponent,
-	TooltipProps,
 	useProps,
 } from "@mantine/core";
 import React from "react";
@@ -34,14 +34,13 @@ interface Props {
  * @displayName ViewportIconButton
  */
 export type ViewportIconButtonThemeStyleProps = ViewportIconButtonStyleProps & {
-	tooltipWrapperProps?: Partial<TooltipProps>;
+	tooltipWrapperProps?: MantineTooltipProps;
 	iconProps?: ViewportIconButtonStyleProps["iconProps"] & Partial<IconProps>;
 };
 
 export type ViewportIconButtonProps = Props & ViewportIconButtonThemeStyleProps;
 
 export const defaultStyleProps: ViewportIconButtonThemeStyleProps = {
-	tooltipWrapperProps: {},
 	...ViewportIconButtonDefaultStyleProps,
 };
 
@@ -93,7 +92,10 @@ export default function ViewportIconButton(
 	const isIcon = iconRegex.test(iconType);
 
 	return (
-		<TooltipWrapper label={label ?? ""} {...tooltipWrapperProps}>
+		<TooltipWrapper
+			{...tooltipWrapperProps}
+			label={label ?? ""}
+		>
 			<ActionIcon
 				onClick={onClick}
 				onMouseDown={onMouseDown}
@@ -102,7 +104,7 @@ export default function ViewportIconButton(
 				aria-label={label ?? undefined}
 				className={classes.ViewportIcon}
 				{...restActionIconProps}
-				styles={{...restActionIconProps.styles, ...styles}}
+				style={{...restActionIconProps.style, ...styles}}
 				w={isIcon ? undefined : "100%"}
 			>
 				{isIcon ? (

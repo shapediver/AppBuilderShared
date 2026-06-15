@@ -1,10 +1,10 @@
+import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Group,
 	MantineThemeComponent,
-	TooltipProps,
 	useProps,
 } from "@mantine/core";
 import {PropsParameter} from "../config/propsParameter";
@@ -25,7 +25,7 @@ interface Props extends PropsParameter {
  * @displayName ParameterLabelComponent
  */
 export interface ParameterLabelComponentStyleProps {
-	tooltipProps: Partial<TooltipProps>;
+	tooltipProps: MantineTooltipProps;
 	fontWeight: string;
 }
 

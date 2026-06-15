@@ -1,5 +1,8 @@
 import type {MantineSizeToken, MantineSpacing} from "./spacing.schema-input";
-import type {MantineResponsiveCssSize} from "./primitives.schema-input";
+import type {
+	MantineCssStyleRecord,
+	MantineResponsiveCssSize,
+} from "./primitives.schema-input";
 
 /**
  * Serializable subset of Mantine `Button` props for settings theme `defaultProps`.
@@ -17,4 +20,6 @@ export interface MantineButtonProps {
 	size?: MantineSizeToken;
 	fullWidth?: boolean;
 	justify?: string;
+	disabled?: boolean;
+	style?: MantineCssStyleRecord;
 }

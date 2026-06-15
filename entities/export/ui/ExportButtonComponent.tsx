@@ -28,14 +28,14 @@ import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStorePr
 import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Button,
-	ButtonProps,
 	Group,
 	MantineThemeComponent,
-	TooltipProps,
 	useProps,
 } from "@mantine/core";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
@@ -81,11 +81,11 @@ const StatusDataMap: {
  */
 export interface ExportButtonComponentStyleProps {
 	/** Mantine Button props for the main export action */
-	buttonProps?: Partial<ButtonProps>;
+	buttonProps?: MantineButtonProps;
 	/** Tooltip wrapping the download button when applicable */
-	downloadTooltipProps: Partial<TooltipProps>;
+	downloadTooltipProps?: MantineTooltipProps;
 	/** Mantine Button props for the download control */
-	downloadButtonProps?: Partial<ButtonProps>;
+	downloadButtonProps?: MantineButtonProps;
 	/** When provided, hides the label header and uses this text as the button label. */
 	buttonLabel?: string;
 }

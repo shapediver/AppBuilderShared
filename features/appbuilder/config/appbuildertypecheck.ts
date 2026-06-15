@@ -21,6 +21,7 @@ import {
 	SelectComponentType,
 } from "./appbuilder";
 import {validateThemeComponentsRecord} from "./validateThemeComponentsRecord";
+import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
 
 import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
 export type {JsonValue} from "@AppBuilderLib/shared/lib/jsonValue";
@@ -46,9 +47,10 @@ type _AssertComponentKeys = [
 const _checkComponent: _AssertComponentKeys = [true, true];
 void _checkComponent;
 
-// Full (non-partial) Zod schema for MantineTheme — used only for compile-time key assertions.
+// Hand-written strict schema for top-level `themeOverrides` in settings JSON.
+// Doc mirror / nested component prop: `MantineThemeOverrideProps` in
+// `shared/mantine-props/themeOverride.schema-input.ts` (generated `mantineThemeOverridePropsSchema` — looser `components` record).
 // variantColorResolver is a function and cannot appear in JSON config, so it is excluded here.
-// The assertion below verifies all remaining keys are covered.
 const MantineThemeFullSchema = z.strictObject({
 	focusRing: z.enum(["auto", "always", "never"]),
 	scale: z.number(),
@@ -136,6 +138,17 @@ type _AssertThemeKeys = [
 ];
 const _checkTheme: _AssertThemeKeys = [true, true];
 void _checkTheme;
+
+// Doc-mirror `MantineThemeOverrideProps` keys must match serializable settings theme keys.
+type _MantineThemeOverridePropsKeys = keyof z.infer<
+	typeof mantineThemeOverridePropsSchema
+>;
+type _AssertThemeOverrideMirrorKeys = [
+	_MantineThemeOverridePropsKeys extends _MantineThemeSchemaKeys ? true : false,
+	_MantineThemeSchemaKeys extends _MantineThemeOverridePropsKeys ? true : false,
+];
+const _checkThemeOverrideMirror: _AssertThemeOverrideMirrorKeys = [true, true];
+void _checkThemeOverrideMirror;
 
 // Partial version used for themeOverrides in config files (matches MantineThemeOverride = PartialDeep<MantineTheme>)
 export const MantineThemeOverrideSchema = MantineThemeFullSchema.partial();

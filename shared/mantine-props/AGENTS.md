@@ -123,6 +123,8 @@ Runs: generate → dedupe → `assertSingleSharedSchemaExports`.
 
 **Do not hand-edit `*.zod.ts`.**
 
+**Do not use JSDoc `@default` on mirror fields.** ts-to-zod emits `.optional().default(…)`, which makes `z.infer` output types require those fields and breaks partial theme `defaultProps` bags. Document Mantine defaults in prose only, e.g. `(Mantine default: true)`.
+
 ### 2. Never duplicate canonical types in component schema-input
 
 | Type | Canonical file |
@@ -264,6 +266,10 @@ Point nested prop types at `Mantine*Props` from public facades so theme JSON and
 | Change mirror without subset assert | Silent drift from Mantine | Update `assert-mantine-subset.test-d.ts` |
 | Register schema but skip tests | Regressions in production JSON | Add accept/reject Jest cases |
 | Add shared primitive without dedupe registry | Generate script throws | Update `SHARED_SCHEMAS` |
+| `@default` in schema-input JSDoc | `z.infer` requires fields; partial theme bags fail `tsc` | Prose-only defaults; runtime defaults in components |
+| Shrink mirror and rewrite `defaultStyleProps` / `useCustomTheme` | Changed product behavior | Extend mirror to cover existing defaults |
+| `Partial<Mantine*Props>` on `@docAttached` StyleProps | `Partial_Unknown` in doc-flat | Use `Mantine*Props` directly |
+| `as unknown as *Props` on Mantine spreads | Hides mirror gaps | Extend mirror or use `MantinePropsSubset` |
 
 ---
 

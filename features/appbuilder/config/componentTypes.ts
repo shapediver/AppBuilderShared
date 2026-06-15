@@ -151,7 +151,7 @@ export const getExportComponent = (
 		return context.exports[type].component;
 	} else {
 		return (
-			defaultExportComponentContext[type].component ||
+			defaultExportComponentContext[type]?.component ||
 			ExportLabelComponent
 		);
 	}

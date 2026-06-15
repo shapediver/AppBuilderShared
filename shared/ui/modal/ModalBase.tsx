@@ -1,3 +1,5 @@
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
 import {
 	Box,
 	Button,
@@ -5,7 +7,6 @@ import {
 	Group,
 	MantineThemeComponent,
 	Modal,
-	ModalProps,
 	Stack,
 	useProps,
 } from "@mantine/core";
@@ -80,15 +81,20 @@ interface Props {
  * @configPath themeOverrides.components.ModalBase.defaultProps
  * @displayName ModalBase
  */
-export type ModalBaseStyleProps = ModalProps & {
+export type ModalBaseStyleProps = {
 	/**
 	 * Modal size
 	 */
 	size?: "xs" | "sm" | "md" | "lg" | "xl";
 	/**
+	 * Center modal vertically
+	 * @default true
+	 */
+	centered?: boolean;
+	/**
 	 * Close button props for styling
 	 */
-	closeButtonProps?: Record<string, any>;
+	closeButtonProps?: MantineButtonProps;
 	/**
 	 * Gap for the main stack container
 	 */
@@ -100,18 +106,18 @@ export type ModalBaseStyleProps = ModalProps & {
 	/**
 	 * Props for the button container group
 	 */
-	buttonContainerProps?: {
-		justify?: string;
+	buttonContainerProps?: Pick<MantineGroupProps, "justify"> & {
+		/** Flex align-items for the button row */
 		align?: string;
 	};
 	/**
 	 * Props for the cancel button
 	 */
-	cancelButtonProps?: Record<string, any>;
+	cancelButtonProps?: MantineButtonProps;
 	/**
 	 * Props for the confirm button
 	 */
-	confirmButtonProps?: Record<string, any>;
+	confirmButtonProps?: MantineButtonProps;
 };
 
 export type ModalBaseProps = Props & Partial<ModalBaseStyleProps>;

@@ -2,15 +2,11 @@ import {
 	convertChartData,
 	IAppBuilderWidgetPropsAreaChart,
 } from "@AppBuilderLib/features/appbuilder/config/appbuildercharts";
-import {AreaChart, AreaChartProps} from "@mantine/charts";
-import {
-	MantineThemeComponent,
-	Paper,
-	PaperProps,
-	Title,
-	TitleProps,
-	useProps,
-} from "@mantine/core";
+import type {MantineAreaChartProps} from "@AppBuilderLib/shared/mantine-props/areaChart";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineTitleProps} from "@AppBuilderLib/shared/mantine-props/title";
+import {AreaChart} from "@mantine/charts";
+import {MantineThemeComponent, Paper, Title, useProps} from "@mantine/core";
 import React from "react";
 
 /**
@@ -20,9 +16,9 @@ import React from "react";
  * @displayName AppBuilderAreaChartWidgetComponent
  */
 export interface AppBuilderAreaChartWidgetComponentStyleProps {
-	widgetProps?: Partial<PaperProps>;
-	titleProps?: Partial<TitleProps>;
-	areaChartProps?: Partial<AreaChartProps>;
+	widgetProps?: MantinePaperProps;
+	titleProps?: MantineTitleProps;
+	areaChartProps?: MantineAreaChartProps;
 }
 
 const defaultStyleProps: Partial<AppBuilderAreaChartWidgetComponentStyleProps> = {

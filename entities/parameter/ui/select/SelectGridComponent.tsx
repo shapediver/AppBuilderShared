@@ -1,3 +1,4 @@
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {
 	MantineThemeComponent,
@@ -16,7 +17,6 @@ import {
 	SelectCardStyleProps,
 	SelectImageStyleProps,
 	SelectStackStyleProps,
-	SelectTextStyleProps,
 	SelectTextWeightedStyleProps,
 } from "./SelectComponent";
 
@@ -32,7 +32,7 @@ export interface SelectGridComponentStyleProps {
 	imageProps: SelectImageStyleProps;
 	stackProps: SelectStackStyleProps;
 	labelProps: SelectTextWeightedStyleProps;
-	descriptionProps: SelectTextStyleProps;
+	descriptionProps: MantineTextProps;
 	showLabel: boolean;
 	searchable: boolean;
 	limit: number;

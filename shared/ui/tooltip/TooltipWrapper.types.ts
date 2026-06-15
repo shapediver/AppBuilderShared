@@ -3,7 +3,7 @@ import type {TooltipWrapperThemeDefaultProps} from "./TooltipWrapper.theme.types
 
 /** Runtime component props (theme JSON props + runtime-only fields). */
 export type TooltipWrapperProps = TooltipWrapperThemeDefaultProps & {
-	/** Runtime-only; excluded from theme JSON schema. */
+	/** Nested Mantine theme for label content (also valid in theme JSON `defaultProps`). */
 	themeOverride?: MantineThemeOverride;
 	/**
 	 * Show tooltip arrow (standard Mantine Tooltip).

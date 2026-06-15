@@ -6,12 +6,12 @@ import {
 	IScrollingApi,
 	IScrollingApiItemTypeSelect,
 } from "@AppBuilderLib/features/ecommerce/config/scrollingapi";
+import type {MantineCardProps} from "@AppBuilderLib/shared/mantine-props/card";
 import {TextWeightedProps} from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {CarouselProps} from "@mantine/carousel";
 import {
 	ButtonGroupProps,
 	ButtonProps,
-	CardProps,
 	FlexProps,
 	GroupProps,
 	ImageProps,
@@ -49,7 +49,7 @@ export type SelectCarouselStyleProps = Pick<
 	| "withIndicators"
 	| "withKeyboardEvents"
 >;
-export type SelectCardStyleProps = Omit<CardProps, "children">;
+export type SelectCardStyleProps = MantineCardProps;
 export type SelectFlexStyleProps = Omit<FlexProps, "children">;
 export type SelectGroupStyleProps = Omit<GroupProps, "children">;
 export type SelectImageStyleProps = Omit<ImageProps, "src" | "alt" | "onError">;

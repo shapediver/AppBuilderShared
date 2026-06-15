@@ -2,27 +2,27 @@ import {NetworkStatus} from "@AppBuilderLib/entities/stargate/config/stargate";
 import {useShapeDiverStoreStargate} from "@AppBuilderLib/entities/stargate/model/useShapeDiverStoreStargate";
 import {IAppBuilderWidgetPropsDesktopClientSelection} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import type {MantineActionIconProps} from "@AppBuilderLib/shared/mantine-props/actionIcon";
+import type {MantineAlertProps} from "@AppBuilderLib/shared/mantine-props/alert";
+import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
+import type {MantineLoaderProps} from "@AppBuilderLib/shared/mantine-props/loader";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineSelectProps} from "@AppBuilderLib/shared/mantine-props/select";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps, IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
-	ActionIconProps,
 	Alert,
-	AlertProps,
 	Group,
-	GroupProps,
 	Loader,
-	LoaderProps,
 	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	Select,
-	SelectProps,
 	Stack,
-	StackProps,
 	Text,
-	TextProps,
 	useProps,
 } from "@mantine/core";
 import {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
@@ -88,18 +88,18 @@ type Props = IAppBuilderWidgetPropsDesktopClientSelection;
  * @displayName DesktopClientPanel
  */
 export interface DesktopClientPanelStyleProps {
-	iconStatusProps?: ActionIconProps;
-	alertProps?: AlertProps;
-	alertTextProps?: TextProps;
-	paperProps?: PaperProps;
-	stackProps?: StackProps;
-	groupTopProps?: GroupProps;
-	textProps?: TextProps;
-	selectProps?: SelectProps;
-	actionIconRefreshProps?: ActionIconProps;
+	iconStatusProps?: MantineActionIconProps;
+	alertProps?: MantineAlertProps;
+	alertTextProps?: MantineTextProps;
+	paperProps?: MantinePaperProps;
+	stackProps?: MantineStackProps;
+	groupTopProps?: MantineGroupProps;
+	textProps?: MantineTextProps;
+	selectProps?: MantineSelectProps;
+	actionIconRefreshProps?: MantineActionIconProps;
 	iconRefreshProps?: IconProps;
-	groupBottomProps?: GroupProps;
-	loaderProps?: LoaderProps;
+	groupBottomProps?: MantineGroupProps;
+	loaderProps?: MantineLoaderProps;
 	statusIconProps?: Partial<IconProps>;
 }
 

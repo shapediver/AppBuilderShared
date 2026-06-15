@@ -5,6 +5,9 @@ export type {
 	MantineStylesApiValue,
 	MantineStylesApi,
 	MantineResponsiveCssSize,
+	MantineBreakpoint,
+	MantineResponsiveNumber,
+	MantineResponsiveBoolean,
 } from "./primitives.schema-input";
 
 export type MantineResponsive<T> =

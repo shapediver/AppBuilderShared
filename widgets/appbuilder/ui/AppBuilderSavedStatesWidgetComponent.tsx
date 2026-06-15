@@ -18,6 +18,8 @@ import {
 	URL_CHANGED_EVENT,
 } from "@AppBuilderLib/shared/lib/modifyUrl";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {
 	Alert,
 	Flex,
@@ -27,9 +29,7 @@ import {
 	MantineStyleProp,
 	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	Stack,
-	StackProps,
 	useProps,
 } from "@mantine/core";
 import {SdPlatformSortingOrder} from "@shapediver/sdk.platform-api-sdk-v1";
@@ -47,8 +47,8 @@ export interface AppBuilderSavedStatesWidgetComponentStyleProps {
 	selectProps?: Partial<SelectComponentPropsExt> & {
 		type: SavedStatesVisualization;
 	};
-	paperProps?: PaperProps;
-	stackProps?: StackProps;
+	paperProps?: MantinePaperProps;
+	stackProps?: MantineStackProps;
 	loaderFlexProps?: FlexProps;
 	loaderProps?: LoaderProps;
 }

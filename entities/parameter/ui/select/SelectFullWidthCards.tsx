@@ -1,3 +1,5 @@
+import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
@@ -18,10 +20,8 @@ import {useCustomHeight} from "../../model/useCustomHeight";
 import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 import {
 	SelectCardStyleProps,
-	SelectGroupStyleProps,
 	SelectImageStyleProps,
 	SelectStackStyleProps,
-	SelectTextStyleProps,
 	SelectTextWeightedStyleProps,
 } from "./SelectComponent";
 import classes from "./SelectFullWidthCards.module.css";
@@ -34,11 +34,11 @@ import classes from "./SelectFullWidthCards.module.css";
  */
 export interface SelectFullWidthCardsComponentStyleProps {
 	cardProps: SelectCardStyleProps;
-	groupProps: SelectGroupStyleProps;
+	groupProps: MantineGroupProps;
 	imageProps: SelectImageStyleProps;
 	stackProps: SelectStackStyleProps;
 	labelProps: SelectTextWeightedStyleProps;
-	descriptionProps: SelectTextStyleProps;
+	descriptionProps: MantineTextProps;
 	searchable: boolean;
 	limit: number;
 	height: string;
@@ -48,22 +48,24 @@ export interface SelectFullWidthCardsComponentStyleProps {
 	onSearch: (search: string) => void;
 }
 
-export const defaultStyleProps: Partial<SelectFullWidthCardsComponentStyleProps> = {
-	cardProps: {},
-	groupProps: {wrap: "nowrap"},
-	imageProps: {
-		fit: "contain",
-		h: "auto",
-		w: "100px",
-		fallbackSrc: "not-found.svg",
-	},
-	stackProps: {},
-	labelProps: {size: "sm", fontWeight: "medium"},
-	descriptionProps: {size: "xs", c: "dimmed"},
-	searchable: false,
-};
+export const defaultStyleProps: Partial<SelectFullWidthCardsComponentStyleProps> =
+	{
+		cardProps: {},
+		groupProps: {wrap: "nowrap"},
+		imageProps: {
+			fit: "contain",
+			h: "auto",
+			w: "100px",
+			fallbackSrc: "not-found.svg",
+		},
+		stackProps: {},
+		labelProps: {size: "sm", fontWeight: "medium"},
+		descriptionProps: {size: "xs", c: "dimmed"},
+		searchable: false,
+	};
 
-export type SelectFullWidthCardsComponentThemePropsType = Partial<SelectFullWidthCardsComponentStyleProps>;
+export type SelectFullWidthCardsComponentThemePropsType =
+	Partial<SelectFullWidthCardsComponentStyleProps>;
 
 export function SelectFullWidthCardsComponentThemeProps(
 	props: SelectFullWidthCardsComponentThemePropsType,

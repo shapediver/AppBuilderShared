@@ -1,16 +1,16 @@
 import type {IParameterChanges} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderLib/entities/viewport/config/viewport";
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {
 	alpha,
 	Button,
-	ButtonProps,
 	Group,
-	GroupProps,
 	MantineThemeComponent,
 	Text,
-	TextProps,
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
@@ -27,12 +27,12 @@ interface ViewportAcceptRejectButtonsIconStyleProps {
  * @displayName ViewportAcceptRejectButtons
  */
 export interface ViewportAcceptRejectButtonsStyleProps {
-	groupProps?: Partial<GroupProps>;
-	buttonProps?: Partial<ButtonProps>;
-	acceptButtonProps?: Partial<ButtonProps>;
-	rejectButtonProps?: Partial<ButtonProps>;
+	groupProps?: MantineGroupProps;
+	buttonProps?: MantineButtonProps;
+	acceptButtonProps?: MantineButtonProps;
+	rejectButtonProps?: MantineButtonProps;
 	iconProps?: ViewportAcceptRejectButtonsIconStyleProps;
-	textProps?: Partial<TextProps>;
+	textProps?: MantineTextProps;
 	/**
 	 * Whether to show the buttons or not.
 	 * If false, the buttons will never be rendered.

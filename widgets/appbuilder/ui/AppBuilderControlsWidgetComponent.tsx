@@ -18,12 +18,12 @@ import {
 	getParameterComponent,
 } from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {
 	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	Stack,
-	StackProps,
 	useProps,
 } from "@mantine/core";
 import React, {ReactElement, useContext, useMemo} from "react";
@@ -35,9 +35,9 @@ import React, {ReactElement, useContext, useMemo} from "react";
  * @displayName AppBuilderControlsWidgetComponent
  */
 export interface AppBuilderControlsWidgetComponentStyleProps {
-	stackProps?: StackProps;
-	elementPaperProps?: PaperProps;
-	outputPaperProps?: PaperProps;
+	stackProps?: MantineStackProps;
+	elementPaperProps?: MantinePaperProps;
+	outputPaperProps?: MantinePaperProps;
 }
 
 const defaultStyleProps: Partial<AppBuilderControlsWidgetComponentStyleProps> = {

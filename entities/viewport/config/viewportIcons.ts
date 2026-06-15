@@ -1,15 +1,12 @@
+import type {MantineActionIconProps} from "@AppBuilderLib/shared/mantine-props/actionIcon";
+import type {MantineDividerProps} from "@AppBuilderLib/shared/mantine-props/divider";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineTransitionProps} from "@AppBuilderLib/shared/mantine-props/transition";
 import {
 	OverlayPosition,
 	OverlayStyleProps,
 } from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
-import {
-	ActionIconProps,
-	DividerProps,
-	MantineStyleProp,
-	MantineThemeComponent,
-	PaperProps,
-	TransitionProps,
-} from "@mantine/core";
+import {MantineStyleProp, MantineThemeComponent} from "@mantine/core";
 import React from "react";
 import {IconProps as IconPropsConfig} from "./types";
 import {ViewportTransparentBackgroundStyle} from "./viewport";
@@ -132,15 +129,15 @@ export interface ViewportIconsOptionalProps {
 	/**
 	 * paper props
 	 */
-	paperProps?: PaperProps;
+	paperProps?: MantinePaperProps;
 	/**
 	 * divider props
 	 */
-	dividerProps?: DividerProps;
+	dividerProps?: MantineDividerProps;
 	/**
 	 * transition props
 	 */
-	transitionProps?: Partial<TransitionProps>;
+	transitionProps?: MantineTransitionProps;
 }
 
 type ViewportIconsThemePropsType = Partial<ViewportIconsOptionalProps>;
@@ -171,11 +168,11 @@ export const ViewportIconsDefaultStyleProps: ViewportIconsOptionalProps = {
 		py: 1,
 		px: 2,
 		shadow: "md",
-	} as PaperProps,
+	},
 };
 
 export type ViewportIconButtonStyleProps = {
-	actionIconProps?: ActionIconProps & {variantDisabled?: string};
+	actionIconProps?: MantineActionIconProps & {variantDisabled?: string};
 	iconProps?: {color?: string; colorDisabled?: string};
 };
 

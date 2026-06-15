@@ -1,6 +1,8 @@
 /**
  * Serializable Mantine theme override keys (partial `MantineTheme`).
- * Aligns with `MantineThemeOverrideSchema` in appbuildertypecheck.
+ * Doc mirror / nested component prop shape (`MantineThemeOverrideProps`); looser than settings validation.
+ * Canonical strict settings schema: `MantineThemeFullSchema` / `MantineThemeOverrideSchema` in
+ * `features/appbuilder/config/appbuildertypecheck.ts` (top-level `themeOverrides` in settings JSON).
  * @see https://mantine.dev/theming/theme-object/
  */
 export interface MantineThemeOverrideProps {

@@ -1,17 +1,17 @@
 import {IAppBuilderWidgetPropsAccordionUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
+import type {MantineAccordionProps} from "@AppBuilderLib/shared/mantine-props/accordion";
+import type {MantineAccordionControlProps} from "@AppBuilderLib/shared/mantine-props/accordionControl";
+import type {MantineAccordionItemProps} from "@AppBuilderLib/shared/mantine-props/accordionItem";
+import type {MantineAccordionPanelProps} from "@AppBuilderLib/shared/mantine-props/accordionPanel";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {
 	Accordion,
-	AccordionControlProps,
-	AccordionItemProps,
-	AccordionPanelProps,
-	AccordionProps,
 	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	Stack,
-	StackProps,
 	useProps,
 } from "@mantine/core";
 import React, {useEffect, useState} from "react";
@@ -24,15 +24,15 @@ import AppBuilderWidgetsComponent from "./AppBuilderWidgetsComponent";
  * @displayName AppBuilderAccordionUiWidgetComponent
  */
 export interface AppBuilderAccordionUiWidgetComponentStyleProps {
-	accordionProps?: AccordionProps;
+	accordionProps?: MantineAccordionProps;
 	/**
 	 * Props for the Paper component wrapping each accordion.
 	 */
-	accordionPaperProps?: PaperProps;
-	accordionItemProps?: Partial<AccordionItemProps>;
-	accordionControlProps?: AccordionControlProps;
-	accordionPanelProps?: AccordionPanelProps;
-	stackProps?: StackProps;
+	accordionPaperProps?: MantinePaperProps;
+	accordionItemProps?: MantineAccordionItemProps;
+	accordionControlProps?: MantineAccordionControlProps;
+	accordionPanelProps?: MantineAccordionPanelProps;
+	stackProps?: MantineStackProps;
 }
 
 const defaultStyleProps: Partial<AppBuilderAccordionUiWidgetComponentStyleProps> = {

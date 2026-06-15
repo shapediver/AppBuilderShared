@@ -1,3 +1,5 @@
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {Carousel} from "@mantine/carousel";
 import "@mantine/carousel/styles.css";
@@ -11,8 +13,6 @@ import {
 	SelectCardStyleProps,
 	SelectCarouselStyleProps,
 	SelectImageStyleProps,
-	SelectStackStyleProps,
-	SelectTextStyleProps,
 	SelectTextWeightedStyleProps,
 } from "./SelectComponent";
 
@@ -26,9 +26,9 @@ export interface SelectCarouselComponentStyleProps {
 	carouselProps: SelectCarouselStyleProps;
 	cardProps: SelectCardStyleProps;
 	imageProps: SelectImageStyleProps;
-	stackProps: SelectStackStyleProps;
+	stackProps: MantineStackProps;
 	labelProps: SelectTextWeightedStyleProps;
-	descriptionProps: SelectTextStyleProps;
+	descriptionProps: MantineTextProps;
 	showLabel: boolean;
 }
 

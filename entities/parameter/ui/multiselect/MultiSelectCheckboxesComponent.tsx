@@ -1,10 +1,10 @@
+import type {MantineCheckboxProps} from "@AppBuilderLib/shared/mantine-props/checkbox";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Checkbox,
-	CheckboxProps,
 	MantineThemeComponent,
 	Stack,
-	StackProps,
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
@@ -18,9 +18,9 @@ import {MultiSelectComponentProps} from "./MultiSelectComponent";
  * @displayName MultiSelectCheckboxes
  */
 export interface MultiSelectCheckboxesStyleProps {
-	stackProps?: Partial<StackProps>;
-	checkboxProps?: Partial<CheckboxProps>;
-	checkboxPropsSelectAll?: Partial<CheckboxProps>;
+	stackProps?: MantineStackProps;
+	checkboxProps?: MantineCheckboxProps;
+	checkboxPropsSelectAll?: MantineCheckboxProps;
 	labelSelectAll?: string;
 	height?: string;
 }

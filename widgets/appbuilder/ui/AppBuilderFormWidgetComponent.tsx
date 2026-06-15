@@ -19,16 +19,16 @@ import {
 import {mergeFormExportParameterValues} from "../lib/mergeFormExportParameterValues";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
+import type {MantineActionIconProps} from "@AppBuilderLib/shared/mantine-props/actionIcon";
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {
 	ActionIcon,
-	ActionIconProps,
-	ButtonProps,
 	Group,
 	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	Stack,
-	StackProps,
 	useProps,
 } from "@mantine/core";
 import {useForm} from "@mantine/form";
@@ -48,18 +48,18 @@ import React, {
  * @displayName AppBuilderFormWidgetComponent
  */
 export interface AppBuilderFormWidgetComponentStyleProps {
-	stackProps?: StackProps;
-	formPaperProps?: PaperProps;
-	elementPaperProps?: PaperProps;
-	exportPaperProps?: PaperProps;
-	submitButtonPaperProps?: PaperProps;
-	messagePaperProps?: PaperProps;
-	submitButtonProps?: ButtonProps;
-	resetButtonProps?: ActionIconProps;
+	stackProps?: MantineStackProps;
+	formPaperProps?: MantinePaperProps;
+	elementPaperProps?: MantinePaperProps;
+	exportPaperProps?: MantinePaperProps;
+	submitButtonPaperProps?: MantinePaperProps;
+	messagePaperProps?: MantinePaperProps;
+	submitButtonProps?: MantineButtonProps;
+	resetButtonProps?: MantineActionIconProps;
 	resetMessage?: string;
 }
 
-const defaultStyleProps: Partial<AppBuilderFormWidgetComponentStyleProps> = {
+const defaultStyleProps = {
 	stackProps: {
 		gap: 0,
 	},

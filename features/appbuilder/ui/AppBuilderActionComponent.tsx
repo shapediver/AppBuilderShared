@@ -1,5 +1,6 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
@@ -32,15 +33,7 @@ type Props = IAppBuilderActionPropsCommon &
  * @configPath themeOverrides.components.AppBuilderActionComponent.defaultProps
  * @displayName AppBuilderActionComponent
  */
-export interface AppBuilderActionComponentStyleProps {
-	/** @default filled */
-	variant?: ButtonProps["variant"];
-	size?: ButtonProps["size"];
-	color?: ButtonProps["color"];
-	radius?: ButtonProps["radius"];
-	fullWidth?: ButtonProps["fullWidth"];
-	justify?: ButtonProps["justify"];
-}
+export interface AppBuilderActionComponentStyleProps extends MantineButtonProps {}
 
 const defaultStyleProps: AppBuilderActionComponentStyleProps = {
 	variant: "filled",
