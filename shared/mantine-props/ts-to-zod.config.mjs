@@ -18,6 +18,7 @@ export default [
 			const names = {
 				MantineCssLength: "mantineCssLengthSchema",
 				MantineFlexWrap: "mantineFlexWrapSchema",
+				MantineFloatingPosition: "mantineFloatingPositionSchema",
 				MantineStylesApiValue: "mantineStylesApiValueSchema",
 				MantineStylesApi: "mantineStylesApiSchema",
 				MantineResponsiveCssSize: "mantineResponsiveCssSizeSchema",

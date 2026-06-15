@@ -5,9 +5,7 @@ import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
-	ActionIconProps,
 	Button,
-	ButtonProps,
 	CloseButton,
 	MantineThemeComponent,
 	PolymorphicComponentProps,
@@ -15,10 +13,11 @@ import {
 } from "@mantine/core";
 import React from "react";
 import {IAppBuilderActionPropsCommon} from "../config/appbuilder";
+import {MantineActionIconProps} from "~/shared/shared/mantine-props";
 
 type ButtonComponentProps<C = "button"> = PolymorphicComponentProps<
 	C,
-	ButtonProps
+	MantineButtonProps
 >;
 
 type Props = IAppBuilderActionPropsCommon &
@@ -35,21 +34,9 @@ type Props = IAppBuilderActionPropsCommon &
  * @configPath themeOverrides.components.AppBuilderActionComponent.defaultProps
  * @displayName AppBuilderActionComponent
  */
-export interface AppBuilderActionComponentStyleProps extends MantineButtonProps {}
-
-// type AppBuilderActionComponentStyleProps = {
-// 	actionIconProps?: ActionIconProps;
-// };
-
-/**
- * Theme-driven Mantine `Button` defaults for action buttons.
- *
- * @docAttached
- * @category feature
- * @configPath themeOverrides.components.AppBuilderActionComponent.defaultProps
- * @displayName AppBuilderActionComponent
- */
-export interface AppBuilderActionComponentStyleProps extends MantineButtonProps {}
+export interface AppBuilderActionComponentStyleProps extends MantineButtonProps {
+	actionIconProps?: MantineActionIconProps;
+}
 
 const defaultStyleProps: AppBuilderActionComponentStyleProps = {
 	variant: "filled",
@@ -61,10 +48,6 @@ const defaultStyleProps: AppBuilderActionComponentStyleProps = {
 
 type AppBuilderActionComponentThemePropsType =
 	AppBuilderActionComponentStyleProps;
-
-// export type AppBuilderActionComponentThemePropsType = Partial<Props> &
-// 	Partial<AppBuilderActionComponentStyleProps>;
-
 
 export function AppBuilderActionComponentThemeProps(
 	props: AppBuilderActionComponentThemePropsType,
