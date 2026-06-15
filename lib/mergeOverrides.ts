@@ -71,11 +71,10 @@ export function applyOverrides<T extends { settings?: unknown }>(
             definition.settings as Record<string, unknown>,
             overriddenSettings as Record<string, unknown>,
         );
-    } else if (overriddenSettings !== null) {
-        result.settings = overriddenSettings;
-    } else {
-        // If overriddenSettings is null, delete the settings property entirely
+    } else if (overriddenSettings === null) {
         delete result.settings;
+    } else if (overriddenSettings !== undefined) {
+        result.settings = overriddenSettings;
     }
 
     return result;
