@@ -66,11 +66,7 @@ export function useSelection(
 
 	// call the select manager hook
 	const {selectManager, setAvailableNodes, removeAvailableEffectsForNodes} =
-		useSelectManager(
-			viewportId,
-			componentId,
-			selectionProps,
-		);
+		useSelectManager(viewportId, componentId, selectionProps);
 
 	// store the select manager in a ref
 	const selectManagerRef = React.useRef<SelectManager | MultiSelectManager>();
@@ -164,9 +160,7 @@ export function useSelection(
 		return nodesInteractionInput;
 	}, [patterns, selectionProps]);
 
-	const {availableNodeNames} = useNodesInteractionData(
-		activate ? nodesInteractionInput : {},
-	);
+	const {availableNodeNames} = useNodesInteractionData(nodesInteractionInput);
 
 	const outputsPerSession = useShapeDiverStoreSession(
 		useShallow((state) => {
@@ -239,6 +233,10 @@ export function useSelection(
 	 * The available nodes are all nodes that match the filter pattern and are not currently selected.
 	 */
 	useEffect(() => {
+		if (!activate) {
+			setAvailableNodes([]);
+			return;
+		}
 		const nodes = Object.values(availableNodeNames).flatMap(
 			(availableNames) => {
 				return availableNames.filter(
@@ -247,7 +245,7 @@ export function useSelection(
 			},
 		);
 		setAvailableNodes(nodes.map((n) => n.node));
-	}, [availableNodeNames, selectedNodeNames]);
+	}, [availableNodeNames, selectedNodeNames, activate]);
 
 	// in case selection becomes active or the output node changes, restore the selection status.
 	// availableNodeNames is included so this effect also fires after a computation update:
@@ -475,7 +473,8 @@ const restoreNodeSelection = (
 			node.traverse((n) => {
 				const instanceData = getInstanceNodeData(n, strictNaming);
 				if (!instanceData) return;
-				const fullName = instanceData.outputId + "." + instanceData.nodeName;
+				const fullName =
+					instanceData.outputId + "." + instanceData.nodeName;
 				if (fullName !== name) return;
 				const interactionData = n.data.filter(
 					(d) => d instanceof InteractionData,
