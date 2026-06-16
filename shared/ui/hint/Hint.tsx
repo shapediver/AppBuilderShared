@@ -1,14 +1,14 @@
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {
 	Button,
-	ButtonProps,
 	Group,
-	GroupProps,
 	MantineThemeComponent,
 	PolymorphicComponentProps,
 	Text,
-	TextProps,
 	useProps,
 } from "@mantine/core";
 import React from "react";
@@ -20,20 +20,32 @@ interface Props {
 	docLink?: string;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @category shared
+ * @configPath themeOverrides.components.Hint.defaultProps
+ * @displayName Hint
+ */
+export interface HintStyleProps {
 	/** Container group props */
-	containerGroupProps: GroupProps;
+	containerGroupProps?: MantineGroupProps;
 	/** Group props */
-	groupProps: GroupProps;
-	/** Icon color */
+	groupProps?: MantineGroupProps;
+	/** Icon props */
 	iconProps: IconProps;
 	/** Text props */
-	textProps: TextProps;
-	/** Button props */
-	buttonProps: ButtonProps & PolymorphicComponentProps<"a">;
+	textProps?: MantineTextProps;
+	/** Button props (anchor link); `component`/`target`/`rel` are runtime-only, not JSON theme */
+	buttonProps?: MantineButtonProps &
+		Pick<PolymorphicComponentProps<"a">, "component" | "target" | "rel">;
 }
 
-const defaultStyleProps: StyleProps = {
+const defaultIconProps: IconProps = {
+	iconType: "tabler:info-circle-filled",
+	color: "var(--mantine-primary-color-filled)",
+};
+
+const defaultStyleProps: Partial<HintStyleProps> = {
 	buttonProps: {
 		variant: "light",
 		size: "xs",
@@ -54,10 +66,7 @@ const defaultStyleProps: StyleProps = {
 	groupProps: {
 		gap: "sm",
 	},
-	iconProps: {
-		iconType: "tabler:info-circle-filled",
-		color: "var(--mantine-primary-color-filled)",
-	},
+	iconProps: defaultIconProps,
 	textProps: {
 		size: "sm",
 		fw: 500,
@@ -65,7 +74,7 @@ const defaultStyleProps: StyleProps = {
 	},
 };
 
-type HintPropsType = Partial<StyleProps>;
+type HintPropsType = Partial<HintStyleProps>;
 
 export function HintProps(props: HintPropsType): MantineThemeComponent {
 	return {
@@ -77,7 +86,7 @@ export function HintProps(props: HintPropsType): MantineThemeComponent {
  * Hint component that displays information
  * with a link to documentation.
  */
-export default function Hint(props: Props & Partial<StyleProps> = {}) {
+export default function Hint(props: Props & Partial<HintStyleProps> = {}) {
 	const {title, docLink} = props;
 
 	const {containerGroupProps, iconProps, textProps, buttonProps, groupProps} =
@@ -86,7 +95,7 @@ export default function Hint(props: Props & Partial<StyleProps> = {}) {
 	return (
 		<Group {...containerGroupProps}>
 			<Group {...groupProps}>
-				<Icon {...iconProps} />
+				<Icon {...(iconProps ?? defaultIconProps)} />
 				<Text {...textProps}>{title}</Text>
 			</Group>
 			<Button {...buttonProps} href={docLink}>

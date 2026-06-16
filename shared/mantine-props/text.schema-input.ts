@@ -9,4 +9,5 @@ export interface MantineTextProps {
 	fw?: string | number;
 	size?: MantineSizeToken;
 	c?: string;
+	fs?: string;
 }

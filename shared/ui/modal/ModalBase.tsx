@@ -1,3 +1,5 @@
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
 import {
 	Box,
 	Button,
@@ -5,7 +7,6 @@ import {
 	Group,
 	MantineThemeComponent,
 	Modal,
-	ModalProps,
 	Stack,
 	useProps,
 } from "@mantine/core";
@@ -74,15 +75,26 @@ interface Props {
 	onCancel?: () => void;
 }
 
-type StyleProps = ModalProps & {
+/**
+ * @docAttached
+ * @category shared
+ * @configPath themeOverrides.components.ModalBase.defaultProps
+ * @displayName ModalBase
+ */
+export type ModalBaseStyleProps = {
 	/**
 	 * Modal size
 	 */
 	size?: "xs" | "sm" | "md" | "lg" | "xl";
 	/**
+	 * Center modal vertically
+	 * @default true
+	 */
+	centered?: boolean;
+	/**
 	 * Close button props for styling
 	 */
-	closeButtonProps?: Record<string, any>;
+	closeButtonProps?: MantineButtonProps;
 	/**
 	 * Gap for the main stack container
 	 */
@@ -94,26 +106,26 @@ type StyleProps = ModalProps & {
 	/**
 	 * Props for the button container group
 	 */
-	buttonContainerProps?: {
-		justify?: string;
+	buttonContainerProps?: Pick<MantineGroupProps, "justify"> & {
+		/** Flex align-items for the button row */
 		align?: string;
 	};
 	/**
 	 * Props for the cancel button
 	 */
-	cancelButtonProps?: Record<string, any>;
+	cancelButtonProps?: MantineButtonProps;
 	/**
 	 * Props for the confirm button
 	 */
-	confirmButtonProps?: Record<string, any>;
+	confirmButtonProps?: MantineButtonProps;
 };
 
-export type ModalBaseProps = Props & Partial<StyleProps>;
+export type ModalBaseProps = Props & Partial<ModalBaseStyleProps>;
 
 /**
  * Default style properties for the modal.
  */
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<ModalBaseStyleProps> = {
 	size: "xl",
 	centered: true,
 	closeButtonProps: {
@@ -133,7 +145,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type ModalBaseThemePropsType = Partial<StyleProps>;
+type ModalBaseThemePropsType = Partial<ModalBaseStyleProps>;
 
 export function ModalBaseThemeProps(
 	props: ModalBaseThemePropsType,
@@ -147,7 +159,7 @@ export function ModalBaseThemeProps(
  * Modal base component that provides flexible content and button configuration.
  * Replicates the functionality of the Vue/Vuetify SdModal component.
  */
-export default function ModalBase(props: Props & Partial<StyleProps>) {
+export default function ModalBase(props: Props & Partial<ModalBaseStyleProps>) {
 	const {
 		opened,
 		title = "",

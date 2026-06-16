@@ -1,12 +1,11 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
-	ActionIconProps,
 	Button,
-	ButtonProps,
 	CloseButton,
 	MantineThemeComponent,
 	PolymorphicComponentProps,
@@ -14,10 +13,11 @@ import {
 } from "@mantine/core";
 import React from "react";
 import {IAppBuilderActionPropsCommon} from "../config/appbuilder";
+import {MantineActionIconProps} from "~/shared/shared/mantine-props";
 
 type ButtonComponentProps<C = "button"> = PolymorphicComponentProps<
 	C,
-	ButtonProps
+	MantineButtonProps
 >;
 
 type Props = IAppBuilderActionPropsCommon &
@@ -26,11 +26,19 @@ type Props = IAppBuilderActionPropsCommon &
 		canBeDisabledByParameter?: boolean;
 	};
 
-type AppBuilderActionComponentStyleProps = {
-	actionIconProps?: ActionIconProps;
-};
+/**
+ * Theme-driven Mantine `Button` defaults for action buttons.
+ *
+ * @docAttached
+ * @category feature
+ * @configPath themeOverrides.components.AppBuilderActionComponent.defaultProps
+ * @displayName AppBuilderActionComponent
+ */
+export interface AppBuilderActionComponentStyleProps extends MantineButtonProps {
+	actionIconProps?: MantineActionIconProps;
+}
 
-const defaultStyleProps: Partial<Props> & AppBuilderActionComponentStyleProps = {
+const defaultStyleProps: AppBuilderActionComponentStyleProps = {
 	variant: "filled",
 	actionIconProps: {
 		size: "lg",
@@ -38,8 +46,8 @@ const defaultStyleProps: Partial<Props> & AppBuilderActionComponentStyleProps = 
 	},
 };
 
-export type AppBuilderActionComponentThemePropsType = Partial<Props> &
-	Partial<AppBuilderActionComponentStyleProps>;
+type AppBuilderActionComponentThemePropsType =
+	AppBuilderActionComponentStyleProps;
 
 export function AppBuilderActionComponentThemeProps(
 	props: AppBuilderActionComponentThemePropsType,

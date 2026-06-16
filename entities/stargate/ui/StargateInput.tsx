@@ -1,14 +1,14 @@
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantineLoaderProps} from "@AppBuilderLib/shared/mantine-props/loader";
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {
 	Button,
-	ButtonProps,
 	Loader,
-	LoaderProps,
 	MantineColor,
 	MantineThemeComponent,
 	Text,
-	TextProps,
 	useProps,
 } from "@mantine/core";
 import React from "react";
@@ -30,14 +30,20 @@ interface Props {
 	onClick?: (event: React.MouseEvent) => void;
 }
 
-interface StyleProps {
-	buttonProps?: ButtonProps;
-	loadingButtonProps?: ButtonProps;
-	textProps?: TextProps;
-	loaderProps?: LoaderProps;
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.StargateInput.defaultProps
+ * @displayName StargateInput
+ */
+export interface StargateInputStyleProps {
+	buttonProps?: MantineButtonProps;
+	loadingButtonProps?: MantineButtonProps;
+	textProps?: MantineTextProps;
+	loaderProps?: MantineLoaderProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<StargateInputStyleProps> = {
 	buttonProps: {
 		variant: "filled",
 		fullWidth: true,
@@ -63,7 +69,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 };
 
 export function StargateInputThemeProps(
-	props: Partial<Props> & Partial<StyleProps>,
+	props: Partial<Props> & Partial<StargateInputStyleProps>,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
@@ -73,7 +79,7 @@ export function StargateInputThemeProps(
 /**
  * StargateInput component
  */
-export default function StargateInput(props: Props & StyleProps) {
+export default function StargateInput(props: Props & Partial<StargateInputStyleProps>) {
 	const {buttonProps, loadingButtonProps, textProps, loaderProps} = useProps(
 		"StargateInput",
 		defaultStyleProps,

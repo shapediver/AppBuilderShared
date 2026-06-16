@@ -1,3 +1,7 @@
+import type {
+	MantineCssStyleRecord,
+	MantineStylesApi,
+} from "./primitives.schema-input";
 import type {MantineSpacing} from "./spacing.schema-input";
 
 /**
@@ -8,7 +12,10 @@ import type {MantineSpacing} from "./spacing.schema-input";
 export interface MantinePaperProps {
 	withBorder?: boolean;
 	shadow?: string;
+	/** Padding on all sides (Mantine spacing) */
+	p?: MantineSpacing;
 	px?: MantineSpacing;
 	py?: MantineSpacing;
-	style?: Record<string, string | number>;
+	style?: MantineCssStyleRecord;
+	styles?: MantineStylesApi;
 }

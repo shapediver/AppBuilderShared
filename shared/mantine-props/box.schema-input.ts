@@ -1,3 +1,4 @@
+import type {MantineCssStyleRecord} from "./primitives.schema-input";
 import type {MantineSpacing} from "./spacing.schema-input";
 
 /**
@@ -14,5 +15,5 @@ export interface MantineBoxProps {
 	m?: MantineSpacing;
 	ml?: MantineSpacing;
 	mt?: MantineSpacing;
-	style?: Record<string, string | number>;
+	style?: MantineCssStyleRecord;
 }

@@ -13,9 +13,10 @@ export interface CustomCSSProperties extends CSSProperties {
 
 export type IconType = IconifyIconDefinition | string;
 
+/** AppBuilder icon props (Iconify + theme defaults via `useProps("Icon", …)`). */
 export interface IconProps extends Omit<IconifyIconProps, "icon"> {
 	iconType: IconType;
-	size?: MantineSize | number | string; // MantineSize or CSS size value
+	size?: MantineSize | number | string;
 }
 
 export const sizeMap: Record<string, string> = {
@@ -35,9 +36,28 @@ export const IconThemeDefaultPropsSchema = z.strictObject({
 	stroke: z.string().optional(),
 });
 
-/** TypeDoc surface for `useProps("Icon", …)` theme defaults (schema is JSON source of truth). */
+/**
+ * Theme `defaultProps` for `useProps("Icon", …)`.
+ * Doc surface matches `MantineIconProps` mirror; Zod validates `size` and `stroke` only.
+ *
+ * @docAttached
+ * @category shared
+ * @configPath themeOverrides.components.Icon.defaultProps
+ * @displayName Icon
+ */
 export interface IconThemeDefaultProps
-	extends z.infer<typeof IconThemeDefaultPropsSchema> {}
+	extends z.infer<typeof IconThemeDefaultPropsSchema> {
+	/**
+	 * Mantine size token or CSS length.
+	 * @default "1.5rem"
+	 */
+	size?: MantineSize | number | string;
+	/**
+	 * Icon stroke width (CSS length).
+	 * @default "1px"
+	 */
+	stroke?: string;
+}
 
 /** Defaults passed to `useProps`; validated so drift vs schema fails in tests/runtime. */
 export const iconThemeDefaultStyleProps: IconThemeDefaultProps =

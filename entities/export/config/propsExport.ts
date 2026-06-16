@@ -1,7 +1,7 @@
 import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export/config/export";
 import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {PropsParameterOrExport} from "@AppBuilderLib/shared/config/propsCommon";
-import {ButtonProps} from "@mantine/core";
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
 import {UseFormReturnType} from "@mantine/form";
 
 /** Export parameters **/
@@ -54,7 +54,7 @@ export interface PropsExportFormIntegration {
 	readonly buttonLabel?: string;
 
 	/** Optional props for the export trigger button (e.g. disabled from form validation). */
-	readonly buttonProps?: Partial<ButtonProps>;
+	readonly buttonProps?: MantineButtonProps;
 }
 
 /**

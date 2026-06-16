@@ -5,30 +5,72 @@ import React, {useEffect, useRef, useState} from "react";
 import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
 import classes from "./AppBuilderGridTemplatePage.module.css";
 
-interface StyleProps {
-	/** top background color */
+/**
+ * @docAttached
+ * @category page
+ * @configPath themeOverrides.components.AppBuilderGridTemplatePage.defaultProps
+ * @displayName AppBuilderGridTemplatePage
+ */
+export interface StyleProps {
+	/**
+	 * Top background color
+	 * @default "transparent"
+	 */
 	bgTop: string;
-	/** left background color */
+	/**
+	 * Left background color
+	 * @default "transparent"
+	 */
 	bgLeft: string;
-	/** right background color */
+	/**
+	 * Right background color
+	 * @default "transparent"
+	 */
 	bgRight: string;
-	/** bottom background color */
+	/**
+	 * Bottom background color
+	 * @default "transparent"
+	 */
 	bgBottom: string;
-	/** Number of grid columns */
+	/**
+	 * Number of grid columns
+	 * @default 4
+	 */
 	columns: number;
-	/** Number of grid rows */
+	/**
+	 * Number of grid rows
+	 * @default 4
+	 */
 	rows: number;
-	/** Number of columns for left container */
+	/**
+	 * Number of columns for left container
+	 * @default 1
+	 */
 	leftColumns: number;
-	/** Number of columns for right container */
+	/**
+	 * Number of columns for right container
+	 * @default 1
+	 */
 	rightColumns: number;
-	/** Number of rows for top container */
+	/**
+	 * Number of rows for top container
+	 * @default 1
+	 */
 	topRows: number;
-	/** Number of rows for bottom container */
+	/**
+	 * Number of rows for bottom container
+	 * @default 1
+	 */
 	bottomRows: number;
-	/** Shall the top container use the full width? */
+	/**
+	 * Shall the top container use the full width?
+	 * @default false
+	 */
 	topFullWidth: boolean;
-	/** Shall the bottom container use the full width? */
+	/**
+	 * Shall the bottom container use the full width?
+	 * @default false
+	 */
 	bottomFullWidth: boolean;
 }
 

@@ -15,9 +15,38 @@ export const StargateSharedThemeDefaultPropsSchema = z.strictObject({
 		.optional(),
 });
 
-/** TypeDoc surface for `useProps("StargateShared", …)` theme defaults. */
+/**
+ * Shared Stargate color defaults merged into Stargate-related components via `useProps("StargateShared", …)`.
+ *
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.StargateShared.defaultProps
+ * @displayName StargateShared
+ */
 export interface StargateSharedThemeDefaultProps
-	extends z.infer<typeof StargateSharedThemeDefaultPropsSchema> {}
+	extends z.infer<typeof StargateSharedThemeDefaultPropsSchema> {
+	/**
+	 * Mantine color tokens for Stargate status UI (`mapStargateComponentStatusDefinition`).
+	 * Merged into Stargate-related components via `useProps("StargateShared", …)`.
+	 */
+	stargateColorProps?: {
+		/**
+		 * Color for active/selected Stargate states (e.g. object selected).
+		 * @default "var(--mantine-primary-color-filled)"
+		 */
+		primary?: string;
+		/**
+		 * Color for interactive states awaiting user action (e.g. no selection yet).
+		 * @default "var(--mantine-color-orange-7)"
+		 */
+		focused?: string;
+		/**
+		 * Color for disabled, inactive, or incompatible Stargate states.
+		 * @default "var(--mantine-color-gray-2)"
+		 */
+		dimmed?: string;
+	};
+}
 
 /**
  * Runtime props for Stargate color merge (`useProps` + `mapStargateComponentStatusDefinition`).

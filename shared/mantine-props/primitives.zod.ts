@@ -4,7 +4,11 @@ import { type MantineStylesApi } from "./primitives.schema-input";
 
 export const mantineCssLengthSchema = z.union([z.string(), z.number()]);
 
+export const mantineCssStyleRecordSchema = z.record(z.string(), z.union([z.string(), z.number()]));
+
 export const mantineFlexWrapSchema = z.union([z.literal("nowrap"), z.literal("wrap"), z.literal("wrap-reverse")]);
+
+export const mantineFloatingPositionSchema = z.union([z.literal("top"), z.literal("right"), z.literal("bottom"), z.literal("left"), z.literal("top-start"), z.literal("top-end"), z.literal("bottom-start"), z.literal("bottom-end"), z.literal("left-start"), z.literal("left-end"), z.literal("right-start"), z.literal("right-end")]);
 
 export const mantineStylesApiValueSchema = z.union([z.string(), z.number(), z.boolean()]).nullable();
 
@@ -17,4 +21,24 @@ export const mantineResponsiveCssSizeSchema = z.union([z.string(), z.number(), z
         md: z.union([z.string(), z.number()]).optional(),
         lg: z.union([z.string(), z.number()]).optional(),
         xl: z.union([z.string(), z.number()]).optional()
+    })]);
+
+export const mantineBreakpointSchema = z.union([z.literal("xs"), z.literal("sm"), z.literal("md"), z.literal("lg"), z.literal("xl")]);
+
+export const mantineResponsiveNumberSchema = z.union([z.number(), z.object({
+        base: z.number().optional(),
+        xs: z.number().optional(),
+        sm: z.number().optional(),
+        md: z.number().optional(),
+        lg: z.number().optional(),
+        xl: z.number().optional()
+    })]);
+
+export const mantineResponsiveBooleanSchema = z.union([z.boolean(), z.object({
+        base: z.boolean().optional(),
+        xs: z.boolean().optional(),
+        sm: z.boolean().optional(),
+        md: z.boolean().optional(),
+        lg: z.boolean().optional(),
+        xl: z.boolean().optional()
     })]);

@@ -1,25 +1,31 @@
+import type {MantineCheckboxProps} from "@AppBuilderLib/shared/mantine-props/checkbox";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Checkbox,
-	CheckboxProps,
 	MantineThemeComponent,
 	Stack,
-	StackProps,
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
 import {useCustomHeight} from "../../model/useCustomHeight";
 import {MultiSelectComponentProps} from "./MultiSelectComponent";
 
-interface StyleProps {
-	stackProps?: Partial<StackProps>;
-	checkboxProps?: Partial<CheckboxProps>;
-	checkboxPropsSelectAll?: Partial<CheckboxProps>;
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.MultiSelectCheckboxes.defaultProps
+ * @displayName MultiSelectCheckboxes
+ */
+export interface MultiSelectCheckboxesStyleProps {
+	stackProps?: MantineStackProps;
+	checkboxProps?: MantineCheckboxProps;
+	checkboxPropsSelectAll?: MantineCheckboxProps;
 	labelSelectAll?: string;
 	height?: string;
 }
 
-export const defaultStyleProps: Partial<StyleProps> = {
+export const defaultStyleProps: Partial<MultiSelectCheckboxesStyleProps> = {
 	stackProps: {
 		gap: "xs",
 	},
@@ -31,7 +37,7 @@ export const defaultStyleProps: Partial<StyleProps> = {
 	},
 	height: undefined,
 };
-type MultiSelectCheckboxesPropsType = Partial<StyleProps>;
+type MultiSelectCheckboxesPropsType = Partial<MultiSelectCheckboxesStyleProps>;
 
 export function MultiSelectCheckboxesProps(
 	props: MultiSelectCheckboxesPropsType,

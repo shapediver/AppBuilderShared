@@ -1,37 +1,42 @@
 import {PropsOutput} from "@AppBuilderLib/entities/output/config/propsOutput";
 import {useOutput} from "@AppBuilderLib/entities/output/model/useOutput";
+import type {MantineAccordionProps} from "@AppBuilderLib/shared/mantine-props/accordion";
+import type {MantineAccordionControlProps} from "@AppBuilderLib/shared/mantine-props/accordionControl";
+import type {MantineAccordionItemProps} from "@AppBuilderLib/shared/mantine-props/accordionItem";
+import type {MantineAccordionPanelProps} from "@AppBuilderLib/shared/mantine-props/accordionPanel";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {
 	Accordion,
-	AccordionControlProps,
-	AccordionItemProps,
-	AccordionPanelProps,
-	AccordionProps,
 	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	Stack,
-	StackProps,
 	useProps,
 } from "@mantine/core";
 import React from "react";
 import {useSdTFData} from "../model/useSdTFData";
 import OutputChunkComponent from "./OutputChunkComponent";
 
-interface StyleProps {
-	stackProps?: StackProps;
-	paperProps?: PaperProps;
-	accordionProps?: AccordionProps;
-	accordionItemProps?: AccordionItemProps;
-	accordionControlProps?: AccordionControlProps;
-	accordionPanelProps?: AccordionPanelProps;
+/**
+ * @docAttached
+ * @configPath themeOverrides.components.OutputStargateComponent.defaultProps
+ * @displayName OutputStargateComponent
+ */
+export interface OutputStargateComponentStyleProps {
+	stackProps?: MantineStackProps;
+	paperProps?: MantinePaperProps;
+	accordionProps?: MantineAccordionProps;
+	accordionItemProps?: MantineAccordionItemProps;
+	accordionControlProps?: MantineAccordionControlProps;
+	accordionPanelProps?: MantineAccordionPanelProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<OutputStargateComponentStyleProps> = {
 	paperProps: {shadow: "none"},
 };
 
 export function OutputStargateComponentThemeProps(
-	props: Partial<StyleProps>,
+	props: Partial<OutputStargateComponentStyleProps>,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
@@ -44,7 +49,7 @@ export function OutputStargateComponentThemeProps(
  * @returns
  */
 export default function OutputStargateComponent(
-	props: PropsOutput & StyleProps,
+	props: PropsOutput & Partial<OutputStargateComponentStyleProps>,
 ) {
 	const {namespace} = props;
 	const {definition} = useOutput(props) ?? {};

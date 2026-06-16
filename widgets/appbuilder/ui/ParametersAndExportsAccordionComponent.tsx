@@ -13,17 +13,17 @@ import {
 	getExportComponent,
 	getParameterComponent,
 } from "@AppBuilderLib/features/appbuilder/config/componentTypes";
+import type {MantineAccordionProps} from "@AppBuilderLib/shared/mantine-props/accordion";
+import type {MantineAccordionControlProps} from "@AppBuilderLib/shared/mantine-props/accordionControl";
+import type {MantineAccordionItemProps} from "@AppBuilderLib/shared/mantine-props/accordionItem";
+import type {MantineAccordionPanelProps} from "@AppBuilderLib/shared/mantine-props/accordionPanel";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {
 	Accordion,
-	AccordionControlProps,
-	AccordionItemProps,
-	AccordionPanelProps,
-	AccordionProps,
 	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	Stack,
-	StackProps,
 	useProps,
 } from "@mantine/core";
 import React, {ReactElement, useContext} from "react";
@@ -58,7 +58,13 @@ interface Props {
 	namespace?: string;
 }
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.ParametersAndExportsAccordionComponent.defaultProps
+ * @displayName ParametersAndExportsAccordionComponent
+ */
+export interface ParametersAndExportsAccordionComponentStyleProps {
 	/**
 	 * Name of group to use for parameters and exports which are not assigned to a group.
 	 * Leave this empty to not display such parameters and exports inside of an accordion.
@@ -86,42 +92,42 @@ interface StyleProps {
 	/**
 	 * Props for the Paper component wrapping each accordion.
 	 */
-	accordionPaperProps?: PaperProps;
+	accordionPaperProps?: MantinePaperProps;
 	/**
 	 * Props for the Paper component wrapping each element inside the accordion.
 	 */
-	elementPaperProps?: PaperProps;
+	elementPaperProps?: MantinePaperProps;
 	/**
 	 * Props for the Accordion component.
 	 */
-	accordionProps?: AccordionProps;
+	accordionProps?: MantineAccordionProps;
 	/**
 	 * Props for the c.Item component.
 	 */
-	accordionItemProps?: AccordionItemProps;
+	accordionItemProps?: MantineAccordionItemProps;
 	/**
 	 * Props for the Accordion.Control component.
 	 */
-	accordionControlProps?: AccordionControlProps;
+	accordionControlProps?: MantineAccordionControlProps;
 	/**
 	 * Props for the Accordion.Panel component.
 	 */
-	accordionPanelProps?: AccordionPanelProps;
+	accordionPanelProps?: MantineAccordionPanelProps;
 	/**
 	 * Props for the Stack component wrapping everything.
 	 */
-	wrapperStackProps?: StackProps;
+	wrapperStackProps?: MantineStackProps;
 	/**
 	 * Props for the Stack component wrapping the elements except the topSection.
 	 */
-	elementStackProps?: StackProps;
+	elementStackProps?: MantineStackProps;
 	/**
 	 * Props for the Stack component wrapping the elements inside accordion panels.
 	 */
-	panelStackProps?: StackProps;
+	panelStackProps?: MantineStackProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<ParametersAndExportsAccordionComponentStyleProps> = {
 	avoidSingleComponentGroups: true,
 	mergeAccordions: false,
 	pbSlider: "md",
@@ -131,7 +137,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 };
 
 export function ParametersAndExportsAccordionComponentThemeProps(
-	props: Partial<StyleProps>,
+	props: Partial<ParametersAndExportsAccordionComponentStyleProps>,
 ): MantineThemeComponent {
 	return {
 		defaultProps: props,
@@ -139,7 +145,7 @@ export function ParametersAndExportsAccordionComponentThemeProps(
 }
 
 export default function ParametersAndExportsAccordionComponent(
-	props: Props & StyleProps,
+	props: Props & ParametersAndExportsAccordionComponentStyleProps,
 ) {
 	const {parameters, exports, outputs, topSection, namespace, ...rest} =
 		props;
