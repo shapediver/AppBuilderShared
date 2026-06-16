@@ -1,15 +1,15 @@
-import type {Mat4Array} from "@AppBuilderLib/entities/parameter/config/common";
-import type {IParameterStore} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import type { Mat4Array } from "@AppBuilderLib/entities/parameter/config/common";
+import type { IParameterStore } from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
 } from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
-import {ResOutput, ResOutputContent} from "@shapediver/sdk.geometry-api-sdk-v2";
+import { useShapeDiverStoreParameters } from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import { IUseSessionDto } from "@AppBuilderLib/entities/session/model/useSession";
+import { useShapeDiverStoreSession } from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import { IProcessDefinition } from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
+import { useShapeDiverStoreProcessManager } from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import { ResOutput, ResOutputContent } from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	ISessionApi,
 	ITreeNode,
@@ -17,20 +17,20 @@ import {
 	SessionOutputData,
 	TreeNode,
 } from "@shapediver/viewer.session";
-import {GlobalAccessObjects} from "@shapediver/viewer.shared.global-access-objects";
-import {mat4} from "gl-matrix";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useShallow} from "zustand/react/shallow";
+import { GlobalAccessObjects } from "@shapediver/viewer.shared.global-access-objects";
+import { mat4 } from "gl-matrix";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import {
 	IAppBuilder,
 	IAppBuilderInstanceDefinition,
 	IAppBuilderSettingsSession,
 } from "../config/appbuilder";
-import {useShapeDiverStoreInstances} from "./useShapeDiverStoreInstances";
+import { useShapeDiverStoreInstances } from "./useShapeDiverStoreInstances";
 
-import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderShared/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
+import { useSessions } from "@AppBuilderLib/entities/session/model/useSessions";
+import { Logger } from "@AppBuilderLib/shared/lib/logger";
+import { useShapeDiverStoreViewportAccessFunctions } from "@AppBuilderShared/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 interface Props {
 	namespace: string;
@@ -51,7 +51,7 @@ interface Props {
 
 type IParsedInstanceDefinition = {
 	session: ISessionApi;
-	parameterValues: {[key: string]: string};
+	parameterValues: { [key: string]: string };
 	transformations?: number[][];
 	originalIndex: number;
 	name?: string;
@@ -93,7 +93,7 @@ export function useAppBuilderInstances(props: Props) {
 		removeInstance,
 	} = useShapeDiverStoreInstances();
 
-	const {batchParameterValueUpdate, getParameter} =
+	const { batchParameterValueUpdate, getParameter } =
 		useShapeDiverStoreParameters(
 			useShallow((state) => ({
 				batchParameterValueUpdate: state.batchParameterValueUpdate,
@@ -104,6 +104,8 @@ export function useAppBuilderInstances(props: Props) {
 	const [instanceNodes, setInstanceNodes] = useState<{
 		[key: string]: ITreeNode;
 	}>({});
+
+	const [sessionNodeVersion, setSessionNodeVersion] = useState(0);
 
 	const loadedRef = useRef(false);
 	const firstLoadDoneRef = useRef(false);
@@ -154,7 +156,7 @@ export function useAppBuilderInstances(props: Props) {
 		};
 	}>();
 
-	const {instances, embeddedSessions} = useMemo(() => {
+	const { instances, embeddedSessions } = useMemo(() => {
 		if (!appBuilderData) {
 			setParsedAppBuilderInstances([]);
 			return {
@@ -163,7 +165,7 @@ export function useAppBuilderInstances(props: Props) {
 			};
 		}
 
-		const sessionsDescriptions: {slug: string; id: string}[] = [];
+		const sessionsDescriptions: { slug: string; id: string }[] = [];
 		appBuilderData.instances?.forEach((instance) => {
 			// check if the session is already added
 			// either in the currently loaded sessions, or in the pending sessions
@@ -206,7 +208,7 @@ export function useAppBuilderInstances(props: Props) {
 	}, [appBuilderData]);
 
 	// from the incoming slugs, retrieve the session data from the platform
-	const {sessions: sessionData, error: platformError} =
+	const { sessions: sessionData, error: platformError } =
 		useResolveAppBuilderSessions(embeddedSessions);
 
 	// add some necessary flags to the resolved sessions
@@ -223,7 +225,7 @@ export function useAppBuilderInstances(props: Props) {
 	}, [sessionData]);
 
 	// create the sessions
-	const {errors: sessionErrors} = useSessions(resolvedSessions ?? []);
+	const { errors: sessionErrors } = useSessions(resolvedSessions ?? []);
 
 	useEffect(() => {
 		if (platformError)
@@ -241,7 +243,7 @@ export function useAppBuilderInstances(props: Props) {
 				const session = sessionsRef.current[instance.sessionId];
 				if (!session) return;
 
-				const parameterValuesWithIds: {[key: string]: string} = {};
+				const parameterValuesWithIds: { [key: string]: string } = {};
 
 				Object.entries(instance.parameterValues ?? {}).map(
 					([key, value]) => {
@@ -278,7 +280,7 @@ export function useAppBuilderInstances(props: Props) {
 	);
 
 	// Use useResolvedParameters to resolve the parameter values
-	const {values: resolvedParameterValuesArray} = useResolveParameterValues({
+	const { values: resolvedParameterValuesArray } = useResolveParameterValues({
 		namespace,
 		parameterValues: parameterValuesData?.parameterValues,
 	});
@@ -286,7 +288,7 @@ export function useAppBuilderInstances(props: Props) {
 	// once the pending sources are loaded, we can create the instances
 	useEffect(() => {
 		if (!parameterValuesData || !resolvedParameterValuesArray) return;
-		const {parameterValuesMap, instances} = parameterValuesData.information;
+		const { parameterValuesMap, instances } = parameterValuesData.information;
 		if (!instances) return;
 
 		const instancesCopy = JSON.parse(
@@ -355,7 +357,7 @@ export function useAppBuilderInstances(props: Props) {
 		) {
 			const processManagerId =
 				sessionProcessManagerIdRef.current &&
-				processManagersRef.current[sessionProcessManagerIdRef.current]
+					processManagersRef.current[sessionProcessManagerIdRef.current]
 					? sessionProcessManagerIdRef.current
 					: undefined;
 			if (processManagerId && loadedRef.current) {
@@ -371,7 +373,7 @@ export function useAppBuilderInstances(props: Props) {
 
 		const existingNames = new Set<string>();
 		const parameterValuesMap: {
-			[key: string]: {[key: string]: number};
+			[key: string]: { [key: string]: number };
 		} = {};
 		const parameterValuesToLoad: ParameterValueDefinition[] = [];
 
@@ -413,8 +415,15 @@ export function useAppBuilderInstances(props: Props) {
 		});
 	}, [instances, sessions]);
 
-	const sessionUpdateCallback = useCallback((newNode?: ITreeNode) => {
+	const sessionUpdateCallback = useCallback((newNode?: ITreeNode, oldNode?: ITreeNode) => {
 		sessionNodeRef.current = newNode;
+		// If the session node was replaced (old → new), bump the version
+		// to force a re-run that rebuilds instances with current parameter
+		// values. Only fire when oldNode exists (node was replaced, not created)
+		// and newNode differs (avoid no-op callbacks).
+		if (oldNode && newNode && oldNode !== newNode) {
+			setSessionNodeVersion(v => v + 1);
+		}
 		if (!newNode) return;
 
 		Object.values(instanceNodesRef.current).forEach((instance) => {
@@ -474,7 +483,7 @@ export function useAppBuilderInstances(props: Props) {
 		// and if it is still valid
 		const processManagerId =
 			sessionProcessManagerIdRef.current &&
-			processManagersRef.current[sessionProcessManagerIdRef.current]
+				processManagersRef.current[sessionProcessManagerIdRef.current]
 				? sessionProcessManagerIdRef.current
 				: createProcessManager(sessionApi.id);
 		addProcess(processManagerId, mainProcessDefinition);
@@ -504,42 +513,28 @@ export function useAppBuilderInstances(props: Props) {
 		});
 
 		// wait for all instance promises to resolve
-		// then add instances to the scene and look for output actions to be executed
-		Promise.all(promises).then(async () => {
+		// then look for output actions to be executed
+		Promise.all(promises).then(() => {
 			if (cancelled) {
 				resolveMainPromise!();
 				return;
 			}
 
-			// Add instances to the scene tree BEFORE running output actions.
-			// This ensures the scene has geometry when PM flags are eventually
-			// removed, preventing a brief empty-scene "loading icon" flash.
-			await addInstanceToSceneTree(
-				newInstances,
-				instanceNodesRef.current,
-				sessionNodeRef.current,
-			);
+			// Create a dedicated process manager for the scene tree update BEFORE
+			// running processOutputActions. The controller session's customization
+			// (triggered by batchParameterValueUpdate) creates its own process manager
+			// which will remove SUSPEND_SCENE_UPDATES when it finishes. This PM
+			// ensures flag protection spans the entire remaining pipeline.
+			let resolveSceneTreePromise: () => void;
+			const sceneTreePromise = new Promise<void>((resolve) => {
+				resolveSceneTreePromise = resolve;
+			});
+			const sceneTreeProcessManagerId = createProcessManager(sessionApi.id);
+			addProcess(sceneTreeProcessManagerId, {
+				name: "Scene Tree Update",
+				promise: sceneTreePromise,
+			});
 
-			// Update the instance nodes state so cleanup can properly remove
-			// them if this effect is cancelled after this point.
-			setInstanceNodes(
-				Object.entries(newInstances).reduce(
-					(acc, [key, cur]) => {
-						acc[key] = cur.node;
-						return acc;
-					},
-					{} as {[key: string]: ITreeNode},
-				),
-			);
-
-			if (cancelled) {
-				resolveMainPromise!();
-				return;
-			}
-
-			// Run output actions. Each batchParameterValueUpdate call synchronously
-			// creates a session PM and sets its SUSPEND flag before returning its
-			// promise, so scene protection is handed off without a gap.
 			const outputCallbackPromises = processOutputActions(
 				sessionApi,
 				newInstances,
@@ -550,28 +545,81 @@ export function useAppBuilderInstances(props: Props) {
 
 			loadedRef.current = true;
 
-			// Resolve this PM now. Any session PMs created by processOutputActions
-			// have already set their SUSPEND flags, so there is no window where
-			// all flags are cleared while the scene is still empty.
-			resolveMainPromise!();
+			// wait for all instance promises to resolve
+			// before we add the instances to the session node
+			Promise.all(outputCallbackPromises).then(async () => {
+				if (cancelled) {
+					resolveMainPromise!();
+					resolveSceneTreePromise!();
+					return;
+				}
 
-			// after the instances are added to the scene tree, we can adjust the cameras to fit the new geometry
-			// we don't await this process, as it just waits for the next render loop
-			adjustCamerasToInstances(firstLoadDoneRef);
+				await addInstanceToSceneTree(
+					newInstances,
+					instanceNodesRef.current,
+					sessionNodeRef.current,
+				);
 
-			// wait for output callbacks to complete before cleaning up
-			await Promise.all(outputCallbackPromises);
+				// Register instances in the store synchronously before resolving
+				// any promises. This ensures instances are present in the store
+				// when SUSPEND_SCENE_UPDATES is removed and the scene update fires.
+				const newInstanceNodes = Object.entries(newInstances).reduce(
+					(acc, [key, cur]) => {
+						acc[key] = cur.node;
+						return acc;
+					},
+					{} as { [key: string]: ITreeNode },
+				);
 
-			// clean up the session instances
-			// only instances that are currently in the scene are kept
-			// the others are removed from the store
-			Object.keys(customizationResultInStoreRef.current).forEach(
-				(instanceId) => {
-					if (customizationResultPromise[instanceId] !== undefined)
-						return;
-					removeCustomizationResult(instanceId);
-				},
-			);
+				// Remove old instances from the store
+				for (const instanceId in instanceNodesRef.current) {
+					removeInstance(instanceId);
+				}
+				// Add new instances to the store
+				for (const instanceId in newInstanceNodes) {
+					addInstance(instanceId, newInstanceNodes[instanceId]);
+				}
+				instanceNodesRef.current = newInstanceNodes;
+
+				// If the session node was replaced during processOutputActions
+				// (controller customization), sessionNodeRef.current points to
+				// the new node while addInstanceToSceneTree targeted the old one.
+				// Reparent instances to the current session node.
+				const currentSessionNode = sessionNodeRef.current;
+				if (currentSessionNode) {
+					Object.values(newInstanceNodes).forEach((instance) => {
+						if (!currentSessionNode.hasChild(instance)) {
+							currentSessionNode.addChild(instance);
+							currentSessionNode.updateVersion();
+						}
+					});
+				}
+
+				// Update React state (for downstream consumers)
+				setInstanceNodes(newInstanceNodes);
+
+				// Both stores are updated synchronously above.
+				// Now safe to resolve promises — flags can be removed.
+				resolveMainPromise!();
+				resolveSceneTreePromise!();
+
+				// after the instances are added to the scene tree, we can adjust the cameras to fit the new geometry
+				// we don't await this process, as it just waits for the next render loop
+				adjustCamerasToInstances(firstLoadDoneRef);
+
+				// clean up the session instances
+				// only instances that are currently in the scene are kept
+				// the others are removed from the store
+				Object.keys(customizationResultInStoreRef.current).forEach(
+					(instanceId) => {
+						if (
+							customizationResultPromise[instanceId] !== undefined
+						)
+							return;
+						removeCustomizationResult(instanceId);
+					},
+				);
+			});
 		});
 
 		return () => {
@@ -586,7 +634,7 @@ export function useAppBuilderInstances(props: Props) {
 			}
 			setInstanceNodes({});
 		};
-	}, [parsedAppBuilderInstances, namespace]);
+	}, [parsedAppBuilderInstances, namespace, sessionNodeVersion]);
 }
 
 /**
@@ -605,7 +653,7 @@ const addInstanceToSceneTree = async (
 			definition: IParsedInstanceDefinition;
 		};
 	},
-	instances: {[key: string]: ITreeNode},
+	instances: { [key: string]: ITreeNode },
 	sessionNode?: ITreeNode,
 ) => {
 	// we add the instances to the controller session node
@@ -666,7 +714,7 @@ const adjustCamerasToInstances = async (
 	// when the session first loaded.
 	if (!firstLoadDoneRef.current) {
 		firstLoadDoneRef.current = true;
-		const {viewportAccessFunctions} =
+		const { viewportAccessFunctions } =
 			useShapeDiverStoreViewportAccessFunctions.getState();
 		for (const viewportAccessFunction of Object.values(
 			viewportAccessFunctions,
@@ -688,7 +736,7 @@ const adjustCamerasToInstances = async (
 	// trigger a zoomTo on all viewports to adjust the camera to the new geometry
 	// this is necessary because the new instances may have geometry that is outside of the current camera view
 	// we do this after the instances are added to the session node to ensure that the geometry is in the scene when we trigger the zoomTo
-	const {viewportAccessFunctions} =
+	const { viewportAccessFunctions } =
 		useShapeDiverStoreViewportAccessFunctions.getState();
 	for (const viewportAccessFunction of Object.values(
 		viewportAccessFunctions,
@@ -717,7 +765,7 @@ const adjustCamerasToInstances = async (
  */
 const createInstance = (
 	instance: IParsedInstanceDefinition,
-	customizationResultPromise: {[key: string]: Promise<ITreeNode>},
+	customizationResultPromise: { [key: string]: Promise<ITreeNode> },
 	newInstances: {
 		[key: string]: {
 			node: ITreeNode;
@@ -725,7 +773,7 @@ const createInstance = (
 		};
 	},
 	processManagerId: string,
-	customizationResultInStore: {[key: string]: ITreeNode},
+	customizationResultInStore: { [key: string]: ITreeNode },
 	addCustomizationResult: (instanceId: string, instance: ITreeNode) => void,
 	addProcess: (processManagerId: string, process: IProcessDefinition) => void,
 ) => {
@@ -737,7 +785,7 @@ const createInstance = (
 
 	// create a function to register the progress callback
 	const onProgressCallback = (
-		callback: (progress: {percentage: number; msg?: string}) => void,
+		callback: (progress: { percentage: number; msg?: string }) => void,
 	) => {
 		progressCallback = callback;
 	};
@@ -952,18 +1000,18 @@ const processOutputActions = (
 					if (outputReturns[parameterId] !== undefined) {
 						if (
 							outputReturns[parameterId][
-								instance.definition.name ??
-									`instances[${instance.definition.originalIndex}]`
+							instance.definition.name ??
+							`instances[${instance.definition.originalIndex}]`
 							] !== undefined
 						) {
 							outputReturns[parameterId][
 								instance.definition.name ??
-									`instances[${instance.definition.originalIndex}]`
+								`instances[${instance.definition.originalIndex}]`
 							][outputIdentifier] = outputData.content;
 						} else {
 							outputReturns[parameterId][
 								instance.definition.name ??
-									`instances[${instance.definition.originalIndex}]`
+								`instances[${instance.definition.originalIndex}]`
 							] = {
 								[outputIdentifier]: outputData.content,
 							};
@@ -971,10 +1019,10 @@ const processOutputActions = (
 					} else {
 						outputReturns[parameterId] = {
 							[instance.definition.name ??
-							`instances[${instance.definition.originalIndex}]`]:
-								{
-									[outputIdentifier]: outputData.content,
-								},
+								`instances[${instance.definition.originalIndex}]`]:
+							{
+								[outputIdentifier]: outputData.content,
+							},
 						};
 					}
 				}

@@ -1,5 +1,5 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import { useShapeDiverStoreSession } from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import { useShapeDiverStoreViewport } from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
 	getNodesByName,
 	matchNodesWithPatterns,
@@ -15,12 +15,12 @@ import {
 	IRectangleTransformParameterProps,
 	ISelectionParameterProps,
 } from "@shapediver/viewer.session";
-import {mat4, vec3} from "gl-matrix";
-import {useCallback, useEffect, useId, useMemo, useRef, useState} from "react";
-import {useRestrictions} from "../drawing/useRestrictions";
-import {useConvertDraggingData} from "./useConvertDraggingData";
-import {useRectangleTransformEvents} from "./useRectangleTransformEvents";
-import {useSelection} from "./useSelection";
+import { mat4, vec3 } from "gl-matrix";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useRestrictions } from "../drawing/useRestrictions";
+import { useConvertDraggingData } from "./useConvertDraggingData";
+import { useRectangleTransformEvents } from "./useRectangleTransformEvents";
+import { useSelection } from "./useSelection";
 
 // #region Functions (1)
 
@@ -70,7 +70,7 @@ export interface IRectangleTransformState {
 			transformation: number[];
 			localTransformations?: number[];
 		}[],
-		oldTransformedNodeNames: {name: string}[],
+		oldTransformedNodeNames: { name: string }[],
 	) => void;
 }
 
@@ -90,7 +90,7 @@ export function useRectangleTransform(
 	viewportId: string,
 	rectangleTransformProps: IRectangleTransformParameterProps,
 	activate: boolean,
-	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
+	initialTransformedNodeNames?: { name: string; transformation: number[] }[],
 	strictNaming = true,
 ): IRectangleTransformState {
 	// get the session API
@@ -140,13 +140,13 @@ export function useRectangleTransform(
 	}, [selectedNodeNames.length, selectionSettings.maximumSelection]);
 
 	// convert the dragging data
-	const {objects} = useConvertDraggingData(
+	const { objects } = useConvertDraggingData(
 		sessionIds,
 		rectangleTransformProps,
 	);
 
 	// use the rectangle transform events hook to get the transformed node names
-	const {transformedNodeNames, setTransformedNodeNames} =
+	const { transformedNodeNames, setTransformedNodeNames } =
 		useRectangleTransformEvents(
 			selectedNodeNames,
 			componentId,
@@ -160,7 +160,7 @@ export function useRectangleTransform(
 		if (activate && singleAvailableNodeName) {
 			setSelectedNodeNamesAndRestoreSelection([singleAvailableNodeName]);
 		}
-	}, [availableNodeNames, setSelectedNodeNamesAndRestoreSelection]);
+	}, [activate, availableNodeNames, setSelectedNodeNamesAndRestoreSelection]);
 
 	// create a reference for the rectangle transform
 	const rectangleTransformRef = useRef<RectangleTransform | undefined>(
@@ -168,7 +168,7 @@ export function useRectangleTransform(
 	);
 
 	// use the restrictions
-	const {restrictions} = useRestrictions(
+	const { restrictions } = useRestrictions(
 		rectangleTransformProps.restrictions,
 	);
 
@@ -186,7 +186,7 @@ export function useRectangleTransform(
 			// if no restrictions are found, we use an empty object
 			// NOTE: We only do this if there is only one node selected
 			// if multiple nodes are selected, we use no restrictions
-			const restrictionsToUse: {[key: string]: RestrictionProperties} =
+			const restrictionsToUse: { [key: string]: RestrictionProperties } =
 				{};
 			if (nodes.length === 1 && restrictions) {
 				const node = nodes[0];
@@ -243,24 +243,24 @@ export function useRectangleTransform(
 					type: RESTRICTION_TYPE.PLANE,
 					origin: rectangleTransformProps?.plane?.origin
 						? vec3.fromValues(
-								rectangleTransformProps.plane.origin[0],
-								rectangleTransformProps.plane.origin[1],
-								rectangleTransformProps.plane.origin[2],
-							)
+							rectangleTransformProps.plane.origin[0],
+							rectangleTransformProps.plane.origin[1],
+							rectangleTransformProps.plane.origin[2],
+						)
 						: vec3.fromValues(0, 0, 0),
 					vector_u: rectangleTransformProps?.plane?.vector_u
 						? vec3.fromValues(
-								rectangleTransformProps.plane.vector_u[0],
-								rectangleTransformProps.plane.vector_u[1],
-								rectangleTransformProps.plane.vector_u[2],
-							)
+							rectangleTransformProps.plane.vector_u[0],
+							rectangleTransformProps.plane.vector_u[1],
+							rectangleTransformProps.plane.vector_u[2],
+						)
 						: vec3.fromValues(1, 0, 0),
 					vector_v: rectangleTransformProps?.plane?.vector_v
 						? vec3.fromValues(
-								rectangleTransformProps.plane.vector_v[0],
-								rectangleTransformProps.plane.vector_v[1],
-								rectangleTransformProps.plane.vector_v[2],
-							)
+							rectangleTransformProps.plane.vector_v[0],
+							rectangleTransformProps.plane.vector_v[1],
+							rectangleTransformProps.plane.vector_v[2],
+						)
 						: vec3.fromValues(0, 1, 0),
 				},
 				restrictions:
@@ -311,7 +311,7 @@ export function useRectangleTransform(
 				transformation: number[];
 				localTransformations?: number[];
 			}[],
-			oldTransformedNodeNames: {name: string}[],
+			oldTransformedNodeNames: { name: string }[],
 		) => {
 			const nodes = getNodesByName(
 				Object.values(sessionApis),
@@ -374,7 +374,7 @@ export function useRectangleTransform(
  * @returns
  */
 const getSingleAvailableNodeName = (availableNodeNames: {
-	[key: string]: {[key: string]: string[]};
+	[key: string]: { [key: string]: string[] };
 }): string | undefined => {
 	let availableNodeName: string | undefined = undefined;
 	let count = 0;

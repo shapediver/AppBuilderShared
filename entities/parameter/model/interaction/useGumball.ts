@@ -1,5 +1,5 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import { useShapeDiverStoreSession } from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import { useShapeDiverStoreViewport } from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {
 	getNodesByName,
 	matchNodesWithPatterns,
@@ -14,12 +14,12 @@ import {
 	IGumballTransformParameterProps,
 	ISelectionParameterProps,
 } from "@shapediver/viewer.session";
-import {mat4} from "gl-matrix";
-import {useCallback, useEffect, useId, useMemo, useRef} from "react";
-import {useRestrictions} from "../drawing/useRestrictions";
-import {useConvertDraggingData} from "./useConvertDraggingData";
-import {useGumballEvents} from "./useGumballEvents";
-import {useSelection} from "./useSelection";
+import { mat4 } from "gl-matrix";
+import { useCallback, useEffect, useId, useMemo, useRef } from "react";
+import { useRestrictions } from "../drawing/useRestrictions";
+import { useConvertDraggingData } from "./useConvertDraggingData";
+import { useGumballEvents } from "./useGumballEvents";
+import { useSelection } from "./useSelection";
 
 // #region Functions (1)
 
@@ -69,7 +69,7 @@ export interface IGumballState {
 			transformation: number[];
 			localTransformations?: number[];
 		}[],
-		oldTransformedNodeNames: {name: string}[],
+		oldTransformedNodeNames: { name: string }[],
 	) => void;
 }
 
@@ -89,7 +89,7 @@ export function useGumball(
 	viewportId: string,
 	gumballProps: IGumballTransformParameterProps,
 	activate: boolean,
-	initialTransformedNodeNames?: {name: string; transformation: number[]}[],
+	initialTransformedNodeNames?: { name: string; transformation: number[] }[],
 	strictNaming = true,
 ): IGumballState {
 	// get the session API
@@ -129,10 +129,10 @@ export function useGumball(
 	} = useSelection(viewportId, selectionSettings, activate);
 
 	// convert the dragging data
-	const {objects} = useConvertDraggingData(sessionIds, gumballProps);
+	const { objects } = useConvertDraggingData(sessionIds, gumballProps);
 
 	// use the gumball events hook to get the transformed node names
-	const {transformedNodeNames, setTransformedNodeNames} = useGumballEvents(
+	const { transformedNodeNames, setTransformedNodeNames } = useGumballEvents(
 		selectedNodeNames,
 		componentId,
 		initialTransformedNodeNames,
@@ -145,13 +145,13 @@ export function useGumball(
 		if (activate && singleAvailableNodeName) {
 			setSelectedNodeNamesAndRestoreSelection([singleAvailableNodeName]);
 		}
-	}, [availableNodeNames, setSelectedNodeNamesAndRestoreSelection]);
+	}, [activate, availableNodeNames, setSelectedNodeNamesAndRestoreSelection]);
 
 	// create a reference for the gumball
 	const gumballRef = useRef<GumballTransform | undefined>(undefined);
 
 	// use the restrictions
-	const {restrictions} = useRestrictions(gumballProps.restrictions);
+	const { restrictions } = useRestrictions(gumballProps.restrictions);
 
 	// use an effect to create the gumball whenever the selected node names change
 	useEffect(() => {
@@ -168,7 +168,7 @@ export function useGumball(
 			// this allows the gumball to have no restrictions
 			// NOTE: We only do this if there is only one node selected
 			// if multiple nodes are selected, we use no restrictions
-			const restrictionsToUse: {[key: string]: RestrictionProperties} =
+			const restrictionsToUse: { [key: string]: RestrictionProperties } =
 				{};
 			if (nodes.length === 1 && restrictions) {
 				const node = nodes[0];
@@ -269,7 +269,7 @@ export function useGumball(
 				transformation: number[];
 				localTransformations?: number[];
 			}[],
-			oldTransformedNodeNames: {name: string}[],
+			oldTransformedNodeNames: { name: string }[],
 		) => {
 			const nodes = getNodesByName(
 				Object.values(sessionApis),
@@ -332,7 +332,7 @@ export function useGumball(
  * @returns
  */
 const getSingleAvailableNodeName = (availableNodeNames: {
-	[key: string]: {[key: string]: string[]};
+	[key: string]: { [key: string]: string[] };
 }): string | undefined => {
 	let availableNodeName: string | undefined = undefined;
 	let count = 0;

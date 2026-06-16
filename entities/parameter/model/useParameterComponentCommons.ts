@@ -10,6 +10,8 @@ import {
 import { useParameter } from "./useParameter";
 import { useShapeDiverStoreParameters } from "./useShapeDiverStoreParameters";
 
+import { applyOverrides } from "@AppBuilderLib/lib/mergeOverrides";
+
 /**
  * Hook providing functionality common to all parameter components like
  * {@link ParameterSliderComponent}, {@link ParameterStringComponent}, etc.
@@ -211,7 +213,7 @@ export function useParameterComponentCommons<T>(
 		disabledByParameter;
 
 	const memoizedDefinition = useMemo(() => {
-		return { ...definition, ...props.overrides };
+		return applyOverrides(definition, props.overrides);
 	}, [definition, props.overrides]);
 
 	// Extract form from props if provided
