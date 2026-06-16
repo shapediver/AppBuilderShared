@@ -2,9 +2,9 @@ import {
 	IAppBuilderWidgetPropsTable,
 	IAppBuilderWidgetPropsTableColumn,
 } from "@AppBuilderLib/widgets/appbuilder/config/appbuildertable";
+import type {MantineBoxProps} from "@AppBuilderLib/shared/mantine-props/box";
 import {
 	Box,
-	BoxProps,
 	MantineThemeComponent,
 	Table,
 	TableProps,
@@ -84,13 +84,19 @@ const coreRowModel = getCoreRowModel<RecordType>();
 const filteredRowModel = getFilteredRowModel<RecordType>();
 const sortedRowModel = getSortedRowModel<RecordType>();
 
-type StyleProps = {
+/**
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.AppBuilderTableWidgetComponent.defaultProps
+ * @displayName AppBuilderTableWidgetComponent
+ */
+export interface AppBuilderTableWidgetComponentStyleProps {
 	tableProps?: Partial<TableProps>;
 	searchTextInputProps?: Partial<TextInputProps>;
-	searchBarProps?: Partial<BoxProps>;
-};
+	searchBarProps?: MantineBoxProps;
+}
 
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps: AppBuilderTableWidgetComponentStyleProps = {
 	tableProps: {},
 	searchTextInputProps: {size: "xs"},
 	searchBarProps: {
@@ -102,7 +108,7 @@ const defaultStyleProps: StyleProps = {
 	},
 };
 
-type AppBuilderTableWidgetComponentThemePropsType = Partial<StyleProps>;
+type AppBuilderTableWidgetComponentThemePropsType = Partial<AppBuilderTableWidgetComponentStyleProps>;
 
 export function AppBuilderTableWidgetComponentThemeProps(
 	props: AppBuilderTableWidgetComponentThemePropsType,

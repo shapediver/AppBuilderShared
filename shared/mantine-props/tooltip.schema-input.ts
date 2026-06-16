@@ -1,3 +1,4 @@
+import type {MantineFloatingPosition} from "./primitives.schema-input";
 import type {MantineSpacing} from "./spacing.schema-input";
 
 /**
@@ -8,8 +9,9 @@ import type {MantineSpacing} from "./spacing.schema-input";
  */
 export interface MantineTooltipProps {
 	label?: string;
+	/** Show tooltip arrow (standard Mantine Tooltip) (Mantine default: `true`) */
 	withArrow?: boolean;
-	position?: string;
+	position?: MantineFloatingPosition;
 	withinPortal?: boolean;
 	color?: string;
 	radius?: MantineSpacing;

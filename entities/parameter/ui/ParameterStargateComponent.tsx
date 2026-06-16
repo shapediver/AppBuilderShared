@@ -12,6 +12,7 @@ import {
 	DefaultStargateStyleProps,
 	StargateStyleProps,
 } from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
@@ -19,7 +20,6 @@ import {
 	ActionIcon,
 	ActionIconProps,
 	MantineThemeComponent,
-	TooltipProps,
 	useProps,
 } from "@mantine/core";
 import React, {useMemo} from "react";
@@ -65,13 +65,19 @@ const StatusDataMap: {
 	},
 };
 
-interface StyleProps {
-	tooltipProps: Partial<TooltipProps>;
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ParameterStargateComponent.defaultProps
+ * @displayName ParameterStargateComponent
+ */
+export interface ParameterStargateComponentStyleProps {
+	tooltipProps: MantineTooltipProps;
 	actionIconProps: Partial<ActionIconProps>;
 	iconProps: IconProps;
 }
 
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps: ParameterStargateComponentStyleProps = {
 	tooltipProps: {
 		position: "top",
 		label: "Clear selection",
@@ -90,7 +96,8 @@ const defaultStyleProps: StyleProps = {
 	},
 };
 
-type ParameterStargateComponentThemePropsType = Partial<StyleProps>;
+type ParameterStargateComponentThemePropsType =
+	Partial<ParameterStargateComponentStyleProps>;
 
 export function ParameterStargateComponentThemeProps(
 	props: ParameterStargateComponentThemePropsType,
@@ -108,7 +115,7 @@ export function ParameterStargateComponentThemeProps(
 export default function ParameterStargateComponent(
 	props: PropsParameter &
 		Partial<PropsParameterWrapper> &
-		Partial<StyleProps> &
+		Partial<ParameterStargateComponentStyleProps> &
 		Partial<StargateStyleProps>,
 ) {
 	const {definition, value, handleChange, onCancel, disabled} =

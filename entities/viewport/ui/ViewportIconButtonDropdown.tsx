@@ -1,10 +1,6 @@
-import {
-	MantineThemeComponent,
-	Menu,
-	MenuDropdownProps,
-	MenuProps,
-	useProps,
-} from "@mantine/core";
+import type {MantineMenuProps} from "@AppBuilderLib/shared/mantine-props/menu";
+import type {MantineMenuDropdownProps} from "@AppBuilderLib/shared/mantine-props/menuDropdown";
+import {MantineThemeComponent, Menu, useProps} from "@mantine/core";
 import React from "react";
 import {
 	CommonButtonProps,
@@ -23,17 +19,26 @@ interface ViewportIconButtonDropdownProps extends CommonButtonProps {
 	viewportIconButtonProps: ViewportIconButtonProps;
 }
 
-export type StyleProps = {
-	menuProps?: MenuProps;
-	menuDropdownProps?: MenuDropdownProps;
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ViewportIconButtonDropdowns.defaultProps
+ * @displayName ViewportIconButtonDropdown
+ */
+export type ViewportIconButtonDropdownStyleProps = {
+	menuProps?: MantineMenuProps;
+	menuDropdownProps?: MantineMenuDropdownProps;
 };
 
-const defaultStyleProps: StyleProps = {
+const defaultStyleProps: Partial<ViewportIconButtonDropdownStyleProps> = {
 	menuProps: {shadow: "md", position: "bottom-end"},
-	menuDropdownProps: {style: ViewportTransparentBackgroundStyle},
+	menuDropdownProps: {
+		style: ViewportTransparentBackgroundStyle,
+	} satisfies MantineMenuDropdownProps,
 };
 
-type ViewportIconButtonDropdownThemePropsType = Partial<StyleProps>;
+type ViewportIconButtonDropdownThemePropsType =
+	Partial<ViewportIconButtonDropdownStyleProps>;
 export function ViewportIconButtonDropdownThemeProps(
 	props: ViewportIconButtonDropdownThemePropsType,
 ): MantineThemeComponent {
@@ -43,7 +48,8 @@ export function ViewportIconButtonDropdownThemeProps(
 }
 
 export default function ViewportIconButtonDropdown(
-	props: ViewportIconButtonDropdownProps & StyleProps,
+	props: ViewportIconButtonDropdownProps &
+		Partial<ViewportIconButtonDropdownStyleProps>,
 ) {
 	const {
 		viewportIconButtonProps,

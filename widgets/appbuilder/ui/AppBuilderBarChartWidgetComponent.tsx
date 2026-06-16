@@ -2,24 +2,26 @@ import {
 	convertChartData,
 	IAppBuilderWidgetPropsBarChart,
 } from "@AppBuilderLib/features/appbuilder/config/appbuildercharts";
-import {BarChart, BarChartProps} from "@mantine/charts";
-import {
-	MantineThemeComponent,
-	Paper,
-	PaperProps,
-	Title,
-	TitleProps,
-	useProps,
-} from "@mantine/core";
+import type {MantineBarChartProps} from "@AppBuilderLib/shared/mantine-props/barChart";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineTitleProps} from "@AppBuilderLib/shared/mantine-props/title";
+import {BarChart} from "@mantine/charts";
+import {MantineThemeComponent, Paper, Title, useProps} from "@mantine/core";
 import React from "react";
 
-type StyleProps = {
-	widgetProps?: Partial<PaperProps>;
-	titleProps?: Partial<TitleProps>;
-	barChartProps?: Partial<BarChartProps>;
-};
+/**
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.AppBuilderBarChartWidgetComponent.defaultProps
+ * @displayName AppBuilderBarChartWidgetComponent
+ */
+export interface AppBuilderBarChartWidgetComponentStyleProps {
+	widgetProps?: MantinePaperProps;
+	titleProps?: MantineTitleProps;
+	barChartProps?: MantineBarChartProps;
+}
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<AppBuilderBarChartWidgetComponentStyleProps> = {
 	widgetProps: {},
 	titleProps: {
 		style: {marginBottom: "20px"},
@@ -29,7 +31,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type AppBuilderBarChartWidgetComponentThemePropsType = Partial<StyleProps>;
+type AppBuilderBarChartWidgetComponentThemePropsType = Partial<AppBuilderBarChartWidgetComponentStyleProps>;
 
 export function AppBuilderBarChartWidgetComponentThemeProps(
 	props: AppBuilderBarChartWidgetComponentThemePropsType,

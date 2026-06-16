@@ -6,6 +6,16 @@ import {useProps} from "@mantine/core";
 import React from "react";
 import {ViewportOverlayWrapperProps} from "../config/viewportOverlayWrapper";
 
+/**
+ * Theme defaults for viewport overlay positioning (`ViewportOverlayWrapper`).
+ *
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ViewportOverlayWrapper.defaultProps
+ * @displayName ViewportOverlayWrapper
+ */
+export type ViewportOverlayWrapperThemeStyleProps = OverlayStyleProps;
+
 const defaultStyleProps: OverlayStyleProps = {
 	position: {
 		base: OverlayPosition.TOP_MIDDLE,

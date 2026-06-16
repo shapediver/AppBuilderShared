@@ -16,17 +16,17 @@ import {
 } from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useConvertAttributeInputData";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderShared/shared/ui/tooltip/TooltipWrapper";
+import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineTitleProps} from "@AppBuilderLib/shared/mantine-props/title";
 import {
 	ActionIcon,
 	Group,
-	GroupProps,
 	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	Select,
 	Stack,
 	Title,
-	TitleProps,
 	useProps,
 } from "@mantine/core";
 import {
@@ -70,19 +70,26 @@ export type IAttributeDefinition =
 	| IStringAttribute
 	| IDefaultAttribute;
 
-type StyleProps = {
-	widgetProps?: Partial<PaperProps>;
-	widgetGroupProps?: Partial<GroupProps>;
-	titleProps?: Partial<TitleProps>;
-};
-const defaultStyleProps: Partial<StyleProps> = {
-	widgetGroupProps: {
-		justify: "space-between",
-		mb: "xs",
-	},
-};
+/**
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.AppBuilderAttributeVisualizationWidgetComponent.defaultProps
+ * @displayName AppBuilderAttributeVisualizationWidgetComponent
+ */
+export interface AppBuilderAttributeVisualizationWidgetComponentStyleProps {
+	widgetProps?: MantinePaperProps;
+	widgetGroupProps?: MantineGroupProps;
+	titleProps?: MantineTitleProps;
+}
+const defaultStyleProps: Partial<AppBuilderAttributeVisualizationWidgetComponentStyleProps> =
+	{
+		widgetGroupProps: {
+			justify: "space-between",
+			mb: "xs",
+		},
+	};
 
-type AppBuilderAttributeVisualizationWidgetThemePropsType = Partial<StyleProps>;
+type AppBuilderAttributeVisualizationWidgetThemePropsType = Partial<AppBuilderAttributeVisualizationWidgetComponentStyleProps>;
 
 const defaultGeneralGradient: Gradient = ATTRIBUTE_VISUALIZATION.TURBO;
 const defaultNumberGradient: Gradient = ATTRIBUTE_VISUALIZATION.VIRIDIS;

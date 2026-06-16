@@ -28,14 +28,14 @@ import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStorePr
 import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Button,
-	ButtonProps,
 	Group,
 	MantineThemeComponent,
-	TooltipProps,
 	useProps,
 } from "@mantine/core";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
@@ -73,15 +73,24 @@ const StatusDataMap: {
 	},
 };
 
-interface StyleProps {
-	buttonProps?: Partial<ButtonProps>;
-	downloadTooltipProps: Partial<TooltipProps>;
-	downloadButtonProps?: Partial<ButtonProps>;
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ExportButtonComponent.defaultProps
+ * @displayName ExportButtonComponent
+ */
+export interface ExportButtonComponentStyleProps {
+	/** Mantine Button props for the main export action */
+	buttonProps?: MantineButtonProps;
+	/** Tooltip wrapping the download button when applicable */
+	downloadTooltipProps?: MantineTooltipProps;
+	/** Mantine Button props for the download control */
+	downloadButtonProps?: MantineButtonProps;
 	/** When provided, hides the label header and uses this text as the button label. */
 	buttonLabel?: string;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<ExportButtonComponentStyleProps> = {
 	buttonProps: {
 		variant: "filled",
 		fullWidth: true,
@@ -95,7 +104,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type ExportButtonComponentThemePropsType = Partial<StyleProps>;
+type ExportButtonComponentThemePropsType = Partial<ExportButtonComponentStyleProps>;
 export function ExportButtonComponentThemeProps(
 	props: ExportButtonComponentThemePropsType,
 ): MantineThemeComponent {

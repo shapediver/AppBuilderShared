@@ -6,15 +6,21 @@ import {MantineThemeComponent, useProps} from "@mantine/core";
 import React, {useMemo} from "react";
 import ParametersAndExportsAccordionComponent from "./ParametersAndExportsAccordionComponent";
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.AppBuilderAccordionWidgetComponent.defaultProps
+ * @displayName AppBuilderAccordionWidgetComponent
+ */
+export interface AppBuilderAccordionWidgetComponentStyleProps {
 	showAcceptRejectButtons: boolean;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<AppBuilderAccordionWidgetComponentStyleProps> = {
 	showAcceptRejectButtons: false,
 };
 
-type AppBuilderAccordionWidgetComponentThemePropsType = Partial<StyleProps>;
+type AppBuilderAccordionWidgetComponentThemePropsType = Partial<AppBuilderAccordionWidgetComponentStyleProps>;
 
 export function AppBuilderAccordionWidgetComponentThemeProps(
 	props: AppBuilderAccordionWidgetComponentThemePropsType,

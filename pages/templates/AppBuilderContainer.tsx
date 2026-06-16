@@ -20,6 +20,14 @@ const defaultStyleProps = {
 	orientation: "unspecified",
 } as const satisfies Pick<AppBuilderContainerThemeDefaultProps, "orientation">;
 
+/**
+ * Orientation plus forwarded horizontal / vertical container theme props for {@link AppBuilderContainer}.
+ *
+ * @docAttached
+ * @category page
+ * @configPath themeOverrides.components.AppBuilderContainer.defaultProps
+ * @displayName AppBuilderContainer
+ */
 type AppBuilderContainerThemePropsType = Partial<
 	Pick<AppBuilderContainerThemeDefaultProps, "orientation">
 > &

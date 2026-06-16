@@ -1,3 +1,4 @@
+import type {MantineCssStyleRecord} from "@AppBuilderLib/shared/mantine-props/primitives.schema-input";
 import {alpha, MantineThemeComponent} from "@mantine/core";
 import {
 	BUSY_MODE_DISPLAY,
@@ -12,6 +13,14 @@ export interface ViewportCreateDto extends ViewportCreationDefinition {
 	showStatistics?: boolean;
 }
 
+/**
+ * Props for the ShapeDiver viewport (`ViewportComponent`), including theme defaults via `useProps("ViewportComponent", …)`.
+ *
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ViewportComponent.defaultProps
+ * @displayName ViewportComponent
+ */
 export interface ViewportComponentProps extends ViewportCreateDto {
 	children?: React.ReactNode;
 	className?: string;
@@ -46,6 +55,14 @@ interface ViewportBranding {
 	spinnerPositioning?: SPINNER_POSITIONING;
 }
 
+/**
+ * Light/dark branding for the viewport loading overlay (`useProps("ViewportBranding", …)`).
+ *
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ViewportBranding.defaultProps
+ * @displayName ViewportBranding
+ */
 export interface ViewportBrandingProps {
 	/** Branding settings for dark scheme */
 	dark: ViewportBranding;
@@ -75,7 +92,7 @@ export function ViewportBrandingThemeProps(
 	};
 }
 
-export const ViewportTransparentBackgroundStyle: React.CSSProperties = {
+export const ViewportTransparentBackgroundStyle = {
 	backgroundColor: alpha("var(--mantine-color-body)", 0.5),
 	backdropFilter: "blur(10px)",
-};
+} satisfies MantineCssStyleRecord;

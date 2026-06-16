@@ -1,21 +1,31 @@
 import {IAppBuilderWidgetPropsText} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
 import {
 	MantineStyleProp,
 	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	Text,
 	useProps,
 } from "@mantine/core";
 import React, {useContext} from "react";
 
-type StylePros = PaperProps;
+/**
+ * Text / markdown widget wrapped in Mantine `Paper`. Theme `defaultProps` follow {@link MantinePaperProps}.
+ *
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.AppBuilderTextWidgetComponent.defaultProps
+ * @displayName AppBuilderTextWidgetComponent
+ */
+export interface AppBuilderTextWidgetComponentStyleProps
+	extends MantinePaperProps {}
 
-const defaultStyleProps: Partial<StylePros> = {};
+const defaultStyleProps: Partial<AppBuilderTextWidgetComponentStyleProps> = {};
 
-type AppBuilderTextWidgetThemePropsType = Partial<StylePros>;
+type AppBuilderTextWidgetThemePropsType =
+	Partial<AppBuilderTextWidgetComponentStyleProps>;
 
 export function AppBuilderTextWidgetThemeProps(
 	props: AppBuilderTextWidgetThemePropsType,

@@ -1,9 +1,6 @@
 import {NotificationData} from "@mantine/notifications";
 import {z} from "zod";
 
-/**
- *
- */
 export type AppBuilderNotificationData = Pick<
 	NotificationData,
 	| "id"
@@ -27,9 +24,36 @@ export const NotificationWrapperThemeDefaultPropsSchema = z.strictObject({
 	autoClose: z.union([z.boolean(), z.number()]).optional(),
 });
 
-/** TypeDoc surface for `useProps("NotificationWrapper", …)` — same shape as the schema. */
+/**
+ * Global notification styling driven by theme (`NotificationWrapper`).
+ *
+ * @docAttached
+ * @category feature
+ * @configPath themeOverrides.components.NotificationWrapper.defaultProps
+ * @displayName NotificationWrapper
+ */
 export interface NotificationStyleProps
-	extends z.infer<typeof NotificationWrapperThemeDefaultPropsSchema> {}
+	extends z.infer<typeof NotificationWrapperThemeDefaultPropsSchema> {
+	/** Optional color to use for success notifications. */
+	successColor?: string;
+	/**
+	 * Optional color to use for warning notifications.
+	 * @default "yellow"
+	 */
+	warningColor?: string;
+	/**
+	 * Optional color to use for error notifications.
+	 * @default "red"
+	 */
+	errorColor?: string;
+	/**
+	 * Determines whether notification should be closed automatically,
+	 * number is auto close timeout in ms.
+	 *
+	 * @default 20000
+	 */
+	autoClose?: boolean | number;
+}
 
 export enum NotificationAction {
 	SUCCESS = "success",

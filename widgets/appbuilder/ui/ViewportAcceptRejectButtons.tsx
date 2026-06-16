@@ -1,32 +1,38 @@
 import type {IParameterChanges} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderLib/entities/viewport/config/viewport";
+import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
+import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {
 	alpha,
 	Button,
-	ButtonProps,
 	Group,
-	GroupProps,
 	MantineThemeComponent,
 	Text,
-	TextProps,
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useMemo} from "react";
 
-interface IconProps {
+interface ViewportAcceptRejectButtonsIconStyleProps {
 	size?: string | number;
 	color?: string;
 }
 
-interface StyleProps {
-	groupProps?: Partial<GroupProps>;
-	buttonProps?: Partial<ButtonProps>;
-	acceptButtonProps?: Partial<ButtonProps>;
-	rejectButtonProps?: Partial<ButtonProps>;
-	iconProps?: IconProps;
-	textProps?: Partial<TextProps>;
+/**
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.ViewportAcceptRejectButtons.defaultProps
+ * @displayName ViewportAcceptRejectButtons
+ */
+export interface ViewportAcceptRejectButtonsStyleProps {
+	groupProps?: MantineGroupProps;
+	buttonProps?: MantineButtonProps;
+	acceptButtonProps?: MantineButtonProps;
+	rejectButtonProps?: MantineButtonProps;
+	iconProps?: ViewportAcceptRejectButtonsIconStyleProps;
+	textProps?: MantineTextProps;
 	/**
 	 * Whether to show the buttons or not.
 	 * If false, the buttons will never be rendered.
@@ -36,7 +42,7 @@ interface StyleProps {
 	showButtons?: boolean;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<ViewportAcceptRejectButtonsStyleProps> = {
 	groupProps: {
 		justify: "center",
 		w: "auto",
@@ -68,7 +74,8 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type ViewportAcceptRejectButtonsComponentThemePropsType = Partial<StyleProps>;
+type ViewportAcceptRejectButtonsComponentThemePropsType =
+	Partial<ViewportAcceptRejectButtonsStyleProps>;
 
 export function ViewportAcceptRejectButtonsComponentThemeProps(
 	props: ViewportAcceptRejectButtonsComponentThemePropsType,

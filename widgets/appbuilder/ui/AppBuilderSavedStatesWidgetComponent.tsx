@@ -18,6 +18,8 @@ import {
 	URL_CHANGED_EVENT,
 } from "@AppBuilderLib/shared/lib/modifyUrl";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {
 	Alert,
 	Flex,
@@ -27,9 +29,7 @@ import {
 	MantineStyleProp,
 	MantineThemeComponent,
 	Paper,
-	PaperProps,
 	Stack,
-	StackProps,
 	useProps,
 } from "@mantine/core";
 import {SdPlatformSortingOrder} from "@shapediver/sdk.platform-api-sdk-v1";
@@ -37,17 +37,23 @@ import React, {useContext, useEffect, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
 
-interface StyleProps {
+/**
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.AppBuilderSavedStatesWidgetComponent.defaultProps
+ * @displayName AppBuilderSavedStatesWidgetComponent
+ */
+export interface AppBuilderSavedStatesWidgetComponentStyleProps {
 	selectProps?: Partial<SelectComponentPropsExt> & {
 		type: SavedStatesVisualization;
 	};
-	paperProps?: PaperProps;
-	stackProps?: StackProps;
+	paperProps?: MantinePaperProps;
+	stackProps?: MantineStackProps;
 	loaderFlexProps?: FlexProps;
 	loaderProps?: LoaderProps;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<AppBuilderSavedStatesWidgetComponentStyleProps> = {
 	selectProps: {
 		type: "fullwidthcards",
 	},
@@ -63,7 +69,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type AppBuilderSavedStatesWidgetThemePropsType = Partial<StyleProps>;
+type AppBuilderSavedStatesWidgetThemePropsType = Partial<AppBuilderSavedStatesWidgetComponentStyleProps>;
 
 export function AppBuilderSavedStatesWidgetComponentThemeProps(
 	props: AppBuilderSavedStatesWidgetThemePropsType,

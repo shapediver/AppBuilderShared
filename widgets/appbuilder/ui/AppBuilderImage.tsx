@@ -1,5 +1,6 @@
 import {IAppBuilderWidgetPropsAnchor} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import type {MantineImageProps} from "@AppBuilderLib/shared/mantine-props/image";
 import Svg from "@AppBuilderLib/shared/ui/svg/Svg";
 import {
 	Anchor,
@@ -13,16 +14,33 @@ import classes from "./AppBuilderImage.module.css";
 
 type Props = IAppBuilderWidgetPropsAnchor;
 
-type ImageStyleProps = Pick<ImageProps, "radius" | "mah" | "maw"> & {
+/**
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.AppBuilderImage.defaultProps
+ * @displayName AppBuilderImage
+ */
+export type AppBuilderImageStyleProps = Pick<
+	MantineImageProps,
+	"radius" | "mah" | "maw"
+> & {
+	/**
+	 * Object-fit behavior (see MDN `object-fit`). `scale-down` never upscales past intrinsic size.
+	 * @default "contain"
+	 */
 	fit?: "contain" | "scale-down";
+	/**
+	 * When true, applies bordered image styling.
+	 * @default false
+	 */
 	withBorder?: boolean;
+	/** When true, render via `Svg` instead of Mantine `Image`. */
 	isSvg?: boolean;
 };
 
 type ImageNonStyleProps = Pick<ImageProps, "src"> & {alt?: string};
 
-const defaultStyleProps: Partial<ImageStyleProps> = {
-	radius: "md",
+const defaultStyleProps: Partial<AppBuilderImageStyleProps> = {
 	/**
 	 * Object-fit behavior to use for image widgets. This roughly follows the
 	 * behavior defined by https://developer.mozilla.org/en-US/docs/Web/CSS/object-fit
@@ -34,11 +52,12 @@ const defaultStyleProps: Partial<ImageStyleProps> = {
 	 *   * scale-down: The image is sized as if the value were "contain", but the
 	 *                 image will not be grown to more than 100% of its original size.
 	 */
+	radius: "md",
 	fit: "contain",
 	withBorder: false,
 };
 
-type AppBuilderImageThemePropsType = Partial<ImageStyleProps>;
+type AppBuilderImageThemePropsType = Partial<AppBuilderImageStyleProps>;
 
 export function AppBuilderImageThemeProps(
 	props: AppBuilderImageThemePropsType,
@@ -49,7 +68,7 @@ export function AppBuilderImageThemeProps(
 }
 
 export default function AppBuilderImage(
-	props: ImageNonStyleProps & ImageStyleProps & Props,
+	props: ImageNonStyleProps & AppBuilderImageStyleProps & Props,
 ) {
 	const {anchor, target, isSvg, ...rest} = props;
 	const {radius, fit, withBorder, mah, maw} = useProps(

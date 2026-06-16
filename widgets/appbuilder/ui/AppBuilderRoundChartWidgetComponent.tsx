@@ -1,31 +1,28 @@
 import {IAppBuilderWidgetPropsRoundChart} from "@AppBuilderLib/features/appbuilder/config/appbuildercharts";
-import {
-	DonutChart,
-	DonutChartProps,
-	PieChart,
-	PieChartProps,
-} from "@mantine/charts";
-import {
-	Badge,
-	BadgeProps,
-	MantineThemeComponent,
-	Paper,
-	PaperProps,
-	Title,
-	TitleProps,
-	useProps,
-} from "@mantine/core";
+import type {MantineBadgeProps} from "@AppBuilderLib/shared/mantine-props/badge";
+import type {MantineDonutChartProps} from "@AppBuilderLib/shared/mantine-props/donutChart";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import type {MantinePieChartProps} from "@AppBuilderLib/shared/mantine-props/pieChart";
+import type {MantineTitleProps} from "@AppBuilderLib/shared/mantine-props/title";
+import {DonutChart, PieChart} from "@mantine/charts";
+import {Badge, MantineThemeComponent, Paper, Title, useProps} from "@mantine/core";
 import React from "react";
 
-type StyleProps = {
-	widgetProps?: Partial<PaperProps>;
-	titleProps?: Partial<TitleProps>;
-	pieChartProps?: Partial<PieChartProps>;
-	donutChartProps?: Partial<DonutChartProps>;
-	badgeProps?: Partial<BadgeProps>;
-};
+/**
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.AppBuilderRoundChartWidgetComponent.defaultProps
+ * @displayName AppBuilderRoundChartWidgetComponent
+ */
+export interface AppBuilderRoundChartWidgetComponentStyleProps {
+	widgetProps?: MantinePaperProps;
+	titleProps?: MantineTitleProps;
+	pieChartProps?: MantinePieChartProps;
+	donutChartProps?: MantineDonutChartProps;
+	badgeProps?: MantineBadgeProps;
+}
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<AppBuilderRoundChartWidgetComponentStyleProps> = {
 	widgetProps: {},
 	titleProps: {},
 	pieChartProps: {
@@ -39,7 +36,7 @@ const defaultStyleProps: Partial<StyleProps> = {
 	},
 };
 
-type AppBuilderRoundChartWidgetComponentThemePropsType = Partial<StyleProps>;
+type AppBuilderRoundChartWidgetComponentThemePropsType = Partial<AppBuilderRoundChartWidgetComponentStyleProps>;
 
 export function AppBuilderRoundChartWidgetComponentThemeProps(
 	props: AppBuilderRoundChartWidgetComponentThemePropsType,

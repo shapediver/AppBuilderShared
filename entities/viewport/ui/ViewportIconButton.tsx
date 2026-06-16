@@ -1,12 +1,12 @@
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
 	Box,
 	MantineStyleProp,
 	MantineThemeComponent,
-	TooltipProps,
 	useProps,
 } from "@mantine/core";
 import React from "react";
@@ -25,19 +25,27 @@ interface Props {
 	onMouseDown?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-type StyleProps = ViewportIconButtonStyleProps & {
-	tooltipWrapperProps?: Partial<TooltipProps>;
+/**
+ * Theme defaults for a single viewport toolbar icon button.
+ *
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ViewportIconButton.defaultProps
+ * @displayName ViewportIconButton
+ */
+export type ViewportIconButtonThemeStyleProps = ViewportIconButtonStyleProps & {
+	tooltipWrapperProps?: MantineTooltipProps;
 	iconProps?: ViewportIconButtonStyleProps["iconProps"] & Partial<IconProps>;
 };
 
-export type ViewportIconButtonProps = Props & StyleProps;
+export type ViewportIconButtonProps = Props & ViewportIconButtonThemeStyleProps;
 
-export const defaultStyleProps: StyleProps = {
-	tooltipWrapperProps: {},
+export const defaultStyleProps: ViewportIconButtonThemeStyleProps = {
 	...ViewportIconButtonDefaultStyleProps,
 };
 
-export type ViewportIconButtonThemePropsType = Partial<StyleProps>;
+export type ViewportIconButtonThemePropsType =
+	Partial<ViewportIconButtonThemeStyleProps>;
 
 export function ViewportIconButtonThemeProps(
 	props: ViewportIconButtonThemePropsType,
@@ -84,7 +92,10 @@ export default function ViewportIconButton(
 	const isIcon = iconRegex.test(iconType);
 
 	return (
-		<TooltipWrapper label={label ?? ""} {...tooltipWrapperProps}>
+		<TooltipWrapper
+			{...tooltipWrapperProps}
+			label={label ?? ""}
+		>
 			<ActionIcon
 				onClick={onClick}
 				onMouseDown={onMouseDown}
@@ -93,7 +104,7 @@ export default function ViewportIconButton(
 				aria-label={label ?? undefined}
 				className={classes.ViewportIcon}
 				{...restActionIconProps}
-				styles={{...restActionIconProps.styles, ...styles}}
+				style={{...restActionIconProps.style, ...styles}}
 				w={isIcon ? undefined : "100%"}
 			>
 				{isIcon ? (

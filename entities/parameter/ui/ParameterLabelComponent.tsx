@@ -1,10 +1,10 @@
+import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Group,
 	MantineThemeComponent,
-	TooltipProps,
 	useProps,
 } from "@mantine/core";
 import {PropsParameter} from "../config/propsParameter";
@@ -18,19 +18,26 @@ interface Props extends PropsParameter {
 	label?: string;
 }
 
-interface StyleProps {
-	tooltipProps: Partial<TooltipProps>;
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ParameterLabelComponent.defaultProps
+ * @displayName ParameterLabelComponent
+ */
+export interface ParameterLabelComponentStyleProps {
+	tooltipProps: MantineTooltipProps;
 	fontWeight: string;
 }
 
-const defaultStyleProps: Partial<StyleProps> = {
+const defaultStyleProps: Partial<ParameterLabelComponentStyleProps> = {
 	tooltipProps: {
 		position: "top",
 		label: "Cancel change",
 	},
 };
 
-type ParameterLabelComponentPropsType = Partial<StyleProps>;
+type ParameterLabelComponentPropsType =
+	Partial<ParameterLabelComponentStyleProps>;
 
 export function ParameterLabelComponentThemeProps(
 	props: ParameterLabelComponentPropsType,
@@ -46,7 +53,7 @@ export function ParameterLabelComponentThemeProps(
  * @returns
  */
 export default function ParameterLabelComponent(
-	props: Props & Partial<StyleProps>,
+	props: Props & Partial<ParameterLabelComponentStyleProps>,
 ) {
 	const {cancel, rightSection, label, ...rest} = props;
 	const {fontWeight, tooltipProps} = useProps(

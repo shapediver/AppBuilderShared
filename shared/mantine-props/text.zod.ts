@@ -5,5 +5,6 @@ import { mantineSizeTokenSchema } from "./spacing.zod";
 export const mantineTextPropsSchema = z.strictObject({
     fw: z.union([z.string(), z.number()]).optional(),
     size: mantineSizeTokenSchema.optional(),
-    c: z.string().optional()
+    c: z.string().optional(),
+    fs: z.string().optional()
 });

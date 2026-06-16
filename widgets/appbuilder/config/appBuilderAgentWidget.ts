@@ -1,7 +1,19 @@
-import {MantineThemeComponent, PaperProps} from "@mantine/core";
+import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import {MantineThemeComponent} from "@mantine/core";
 
-/** Style properties that can be controlled via the theme. */
-export type AppBuilderAgentWidgetComponentProps = PaperProps & {
+/**
+ * Theme-driven Mantine `Paper` defaults for the agent widget wrapper.
+ *
+ * @docAttached
+ * @category widget
+ * @configPath themeOverrides.components.AppBuilderAgentWidgetComponent.defaultProps
+ * @displayName AppBuilderAgentWidgetComponent
+ */
+export interface AppBuilderAgentWidgetComponentStyleProps
+	extends MantinePaperProps {}
+
+/** Agent configuration passed via theme `defaultProps` or widget props. */
+export interface AppBuilderAgentWidgetComponentConfigProps {
 	/** The system prompt to use. */
 	systemPrompt: string;
 	/** If provided, only parameters with these names are included. */
@@ -24,7 +36,11 @@ export type AppBuilderAgentWidgetComponentProps = PaperProps & {
 	langfusePublicKey: string;
 	/** Langfuse base URL. */
 	langfuseBaseUrl: string;
-};
+}
+
+export type AppBuilderAgentWidgetComponentProps =
+	AppBuilderAgentWidgetComponentStyleProps &
+		AppBuilderAgentWidgetComponentConfigProps;
 
 export type AppBuilderAgentWidgetThemePropsType =
 	Partial<AppBuilderAgentWidgetComponentProps>;

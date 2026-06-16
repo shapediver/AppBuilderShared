@@ -8,6 +8,22 @@ export const ParameterSliderComponentThemeDefaultPropsSchema = z.strictObject({
 	numberWidth: widthJsonSchema,
 });
 
-/** TypeDoc surface for `useProps("ParameterSliderComponent", …)` theme defaults. */
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ParameterSliderComponent.defaultProps
+ * @displayName ParameterSliderComponent
+ */
 export interface ParameterSliderComponentThemeDefaultProps
-	extends z.infer<typeof ParameterSliderComponentThemeDefaultPropsSchema> {}
+	extends z.infer<typeof ParameterSliderComponentThemeDefaultPropsSchema> {
+	/**
+	 * Width of the slider track (`w` on Mantine `Slider`).
+	 * @default "60%"
+	 */
+	sliderWidth?: string | number;
+	/**
+	 * Width of the numeric input beside the slider (`w` on Mantine `NumberInput`).
+	 * @default "35%"
+	 */
+	numberWidth?: string | number;
+}

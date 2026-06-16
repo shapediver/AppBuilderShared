@@ -1,9 +1,15 @@
 import {MantineThemeOverride, TooltipProps} from "@mantine/core";
 import type {TooltipWrapperThemeDefaultProps} from "./TooltipWrapper.theme.types";
 
-export interface TooltipWrapperProps extends TooltipWrapperThemeDefaultProps {
-	/** Runtime-only; excluded from theme JSON schema. */
+/** Runtime component props (theme JSON props + runtime-only fields). */
+export type TooltipWrapperProps = TooltipWrapperThemeDefaultProps & {
+	/** Nested Mantine theme for label content (also valid in theme JSON `defaultProps`). */
 	themeOverride?: MantineThemeOverride;
+	/**
+	 * Show tooltip arrow (standard Mantine Tooltip).
+	 * @default true
+	 */
+	withArrow?: boolean;
 }
 
 /**

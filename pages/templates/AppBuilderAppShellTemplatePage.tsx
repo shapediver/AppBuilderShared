@@ -21,33 +21,79 @@ import React, {useEffect, useState} from "react";
 import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
 import classes from "./AppBuilderAppShellTemplatePage.module.css";
 
-interface StyleProps {
-	/** Height of the header (responsive) */
+/**
+ * @docAttached
+ * @category page
+ * @configPath themeOverrides.components.AppBuilderAppShellTemplatePage.defaultProps
+ * @displayName AppBuilderAppShellTemplatePage
+ */
+export interface StyleProps {
+	/**
+	 * Height of the header (responsive)
+	 * @default {base: "4em", md: "4em"}
+	 * @example {base: "4em", md: "4em"}
+	 */
 	headerHeight: AppShellResponsiveSize | AppShellSize;
-	/** Breakpoint below which to hide the navigation bar */
+	/**
+	 * Breakpoint below which to hide the navigation bar
+	 * @default "md"
+	 */
 	navbarBreakpoint: MantineBreakpoint;
-	/** Width of the navigation bar */
+	/**
+	 * Width of the navigation bar
+	 * @default {md: 250, lg: 300}
+	 * @example {md: 250, lg: 300}
+	 */
 	navbarWidth: AppShellResponsiveSize | AppShellSize;
-	/** Main area (viewport, bottom, and right container): Number of grid columns */
+	/**
+	 * Main area (viewport, bottom, and right container): Number of grid columns
+	 * @default 3
+	 * @minimum 1
+	 */
 	columns: ResponsiveValueType<number>;
-	/** Main area (viewport, bottom, and right container): Number of grid rows */
+	/**
+	 * Main area (viewport, bottom, and right container): Number of grid rows
+	 * @default 3
+	 * @minimum 1
+	 */
 	rows: ResponsiveValueType<number>;
-	/** Main area (viewport, bottom, and right container): Number of columns for right container */
+	/**
+	 * Main area (viewport, bottom, and right container): Number of columns for right container
+	 * @default 1
+	 * @minimum 1
+	 */
 	rightColumns: ResponsiveValueType<number>;
-	/** Main area (viewport, bottom, and right container): Number of rows for bottom container */
+	/**
+	 * Main area (viewport, bottom, and right container): Number of rows for bottom container
+	 * @default 1
+	 * @minimum 1
+	 */
 	bottomRows: ResponsiveValueType<number>;
-	/** Main area (viewport, bottom, and right container): Shall the bottom container use the full width? */
+	/**
+	 * Main area (viewport, bottom, and right container): Shall the bottom container use the full width?
+	 * @default false
+	 */
 	bottomFullWidth: ResponsiveValueType<boolean>;
-	/** Should the navbar have a border */
+	/**
+	 * Should the navbar have a border
+	 * @default true
+	 */
 	navbarBorder: boolean;
-	/** Should the header have a border */
+	/**
+	 * Should the header have a border
+	 * @default true
+	 */
 	headerBorder: boolean;
-	/** Should the right container area have a border */
+	/**
+	 * Should the right container area have a border
+	 * @default true
+	 */
 	rightBorder: boolean;
 	/**
 	 * Should the bottom container be shown at the bottom of the grid even below the navbarBreakpoint?
 	 * If false, the bottom container is shown as part of the navigation bar area below the navbarBreakpoint.
 	 * In that case, the right container moves to the bottom of the grid layout in portrait mode.
+	 * @default false
 	 */
 	keepBottomInGrid: boolean;
 }
