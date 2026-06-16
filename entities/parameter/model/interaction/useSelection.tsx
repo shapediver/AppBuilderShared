@@ -191,6 +191,13 @@ export function useSelection(
 
 		const newSelectedNodeNames: string[] = [];
 		if (selectedNodeNames.length > 0 && availableNodeNames) {
+			// If there are no available nodes at all (e.g. after a computation clear),
+			// don't clear the selection — nodes will be repopulated shortly.
+			const allAvailableNames = Object.values(availableNodeNames).flat();
+			if (allAvailableNames.length === 0) {
+				return;
+			}
+
 			selectedNodeNames.forEach((name) => {
 				// Try exact match first
 				let found = false;

@@ -1,20 +1,20 @@
-import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
-import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
-import {ISelectionParameterProps} from "@shapediver/viewer.session";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import { useSelection } from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
+import { useShapeDiverStoreInteractionRequestManagement } from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
+import { useShapeDiverStoreProcessManager } from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
+import { ISelectionParameterProps } from "@shapediver/viewer.session";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const selectedNodeNamesCache: {[key: string]: string[]} = {};
+const selectedNodeNamesCache: { [key: string]: string[] } = {};
 
 export function useAnchorSelection(
 	selectionProperties:
 		| Omit<
-				ISelectionParameterProps,
-				| "minimumSelection"
-				| "maximumSelection"
-				| "deselectOnEmpty"
-				| "prompt"
-		  >
+			ISelectionParameterProps,
+			| "minimumSelection"
+			| "maximumSelection"
+			| "deselectOnEmpty"
+			| "prompt"
+		>
 		| undefined,
 	viewportId: string,
 	showContent: boolean,
@@ -30,7 +30,7 @@ export function useAnchorSelection(
 	// reference to manage the interaction request token
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 	// get the interaction request management
-	const {addInteractionRequest, removeInteractionRequest} =
+	const { addInteractionRequest, removeInteractionRequest } =
 		useShapeDiverStoreInteractionRequestManagement();
 
 	const processActive = useShapeDiverStoreProcessManager(
@@ -76,7 +76,7 @@ export function useAnchorSelection(
 		};
 	}, [selectionProperties]);
 
-	const {selectedNodeNames, setSelectedNodeNamesAndRestoreSelection} =
+	const { selectedNodeNames, setSelectedNodeNamesAndRestoreSelection } =
 		useSelection(
 			viewportId,
 			cleanSelectionProps,
@@ -125,4 +125,28 @@ export function useAnchorSelection(
 		selectedNodeNamesCache[`${viewportId}-${id}`] = selectedNodeNames;
 		updateShowContentCallbackRef.current(selectedNodeNames);
 	}, [selectedNodeNames]);
+
+	/**
+	 * Effect to re-select cached nodes and flush visibility when a computation
+	 * finishes (processActive transitions from true to false).
+	 * During computation, updateShowContentCallback is gated by processActive,
+	 * so the visibility update and selection restoration are deferred.
+	 * This effect catches the transition and re-applies them.
+	 */
+	const prevProcessActiveRef = useRef(processActive);
+	useEffect(() => {
+		const wasActive = prevProcessActiveRef.current;
+		prevProcessActiveRef.current = processActive;
+
+		if (!selectionProperties) return;
+		if (wasActive && !processActive) {
+			// Computation just finished — re-select cached nodes and flush visibility
+			const cachedNames = selectedNodeNamesCache[`${viewportId}-${id}`];
+			if (cachedNames && cachedNames.length > 0) {
+				setSelectedNodeNamesAndRestoreSelection(cachedNames);
+			}
+			// Flush the visibility update
+			updateShowContentCallbackRef.current(selectedNodeNames);
+		}
+	}, [processActive, selectionProperties]);
 }
