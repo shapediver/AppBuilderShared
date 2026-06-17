@@ -11,6 +11,11 @@ import {Box, Button, Paper, Stack, useProps} from "@mantine/core";
 import React, {useContext} from "react";
 import AppBuilderWidgetsComponent from "../AppBuilderWidgetsComponent";
 import AppBuilderStackUiWidgetComponent from "./AppBuilderStackUiWidgetComponent";
+import {
+	stackBodySlotStyle,
+	stackColumnStyle,
+	stackPaperStyle,
+} from "@AppBuilderLib/features/appbuilder/lib/stackLayout";
 
 export interface StyleProps {
 	/**
@@ -74,27 +79,18 @@ export default function AppBuilderStackUiWidgetContentComponent(props: Props) {
 		);
 
 	const parentStackContext = useContext(AppBuilderStackContext);
-
-	const {
-		push: nestedPush,
-		pop: nestedPop,
-		animationDuration,
-		isTransitioning: isNestedTransitioning,
-		setIsTransitioning: setIsNestedTransitioning,
-		currentStackElement: currentNestedStackElement,
-	} = useStackContext(parentStackContext.animationDuration);
+	const nestedStack = useStackContext(parentStackContext.animationDuration);
 
 	return (
 		<Paper
 			{...stackPaperProps}
 			style={{
 				...stackPaperProps?.style,
-				height: "100%",
-				width: "100%",
+				...stackPaperStyle,
 			}}
 		>
-			<Stack>
-				<Box>
+			<Stack style={stackColumnStyle}>
+				<Box style={{flexShrink: 0}}>
 					<Button
 						onClick={() => parentStackContext.pop()}
 						leftSection={
@@ -111,19 +107,15 @@ export default function AppBuilderStackUiWidgetContentComponent(props: Props) {
 						Back
 					</Button>
 				</Box>
-				<Box style={{height: "100%"}}>
+				<Box style={stackBodySlotStyle}>
 					<AppBuilderStackContext.Provider
-						value={{
-							push: nestedPush,
-							pop: nestedPop,
-							animationDuration,
-							isTransitioning: isNestedTransitioning,
-							setIsTransitioning: setIsNestedTransitioning,
-						}}
+						value={nestedStack.context}
 					>
 						<AppBuilderStackUiWidgetComponent
 							namespace={namespace}
-							stackElement={currentNestedStackElement}
+							stackPath={nestedStack.stackPath}
+							liveWidgets={widgets}
+							fallbackScrolls
 						>
 							<Stack
 								{...stackContentProps}
