@@ -14,7 +14,7 @@ import {
 	Stack,
 	useProps,
 } from "@mantine/core";
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import AppBuilderWidgetsComponent from "./AppBuilderWidgetsComponent";
 
 /**

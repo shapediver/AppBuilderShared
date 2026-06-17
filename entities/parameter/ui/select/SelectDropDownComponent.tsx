@@ -4,7 +4,7 @@ import {
 	Select,
 	defaultOptionsFilter,
 } from "@mantine/core";
-import React, {useCallback, useMemo} from "react";
+import {useCallback, useMemo} from "react";
 import type {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
 
 /**

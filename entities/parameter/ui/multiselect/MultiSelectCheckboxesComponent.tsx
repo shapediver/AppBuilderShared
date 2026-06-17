@@ -2,7 +2,7 @@ import type {MantineCheckboxProps} from "@AppBuilderLib/shared/mantine-props/che
 import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {Checkbox, MantineThemeComponent, Stack, useProps} from "@mantine/core";
-import React, {useCallback, useMemo} from "react";
+import {useCallback, useMemo} from "react";
 import {useCustomHeight} from "../../model/useCustomHeight";
 import {MultiSelectComponentProps} from "./MultiSelectComponent";
 

@@ -1,7 +1,7 @@
 import {TModelItem} from "@AppBuilderLib/entities/model-card/config/shapediverStorePlatformModels";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {Anchor, Card, Group, Image, Pill, px, Text} from "@mantine/core";
-import React, {useMemo} from "react";
+import {useMemo} from "react";
 import classes from "./ModelCard.module.css";
 import ModelCardOverlay from "./ModelCardOverlay";
 import ModelStatusIcon from "./ModelStatusIcon";

@@ -19,7 +19,7 @@ import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/Vi
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
-import React, {useContext, useEffect, useMemo} from "react";
+import {useContext, useEffect, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;

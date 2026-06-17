@@ -33,7 +33,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import {SdPlatformSortingOrder} from "@shapediver/sdk.platform-api-sdk-v1";
-import React, {useContext, useEffect, useMemo, useState} from "react";
+import {useContext, useEffect, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
 

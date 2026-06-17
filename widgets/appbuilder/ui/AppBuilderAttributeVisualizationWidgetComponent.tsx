@@ -46,14 +46,7 @@ import {
 	SdtfPrimitiveTypeGuard,
 } from "@shapediver/viewer.session";
 import {IViewportApi} from "@shapediver/viewer.viewport";
-import React, {
-	useCallback,
-	useEffect,
-	useId,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import {useCallback, useEffect, useId, useMemo, useRef, useState} from "react";
 import ColorAttribute from "./attributes/ColorAttribute";
 import DefaultAttribute, {
 	IDefaultAttributeExtended,

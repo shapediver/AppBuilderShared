@@ -3,7 +3,6 @@ import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/Sta
 import {useStackContext} from "@AppBuilderLib/features/appbuilder/model/useStackContext";
 import AppBuilderStackUiWidgetComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
 import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
-import React from "react";
 import AppBuilderTabsComponent from "./AppBuilderTabsComponent";
 
 interface Props extends IAppBuilderContainer {

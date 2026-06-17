@@ -9,7 +9,7 @@ import {
 	Text,
 	useProps,
 } from "@mantine/core";
-import React, {useContext} from "react";
+import {useContext} from "react";
 
 /**
  * Text / markdown widget wrapped in Mantine `Paper`. Theme `defaultProps` follow {@link MantinePaperProps}.
@@ -19,7 +19,7 @@ import React, {useContext} from "react";
  * @configPath themeOverrides.components.AppBuilderTextWidgetComponent.defaultProps
  * @displayName AppBuilderTextWidgetComponent
  */
-export interface AppBuilderTextWidgetComponentStyleProps extends MantinePaperProps {}
+export type AppBuilderTextWidgetComponentStyleProps = MantinePaperProps;
 
 const defaultStyleProps: Partial<AppBuilderTextWidgetComponentStyleProps> = {};
 

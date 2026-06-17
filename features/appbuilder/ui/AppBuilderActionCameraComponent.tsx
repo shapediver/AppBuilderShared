@@ -14,7 +14,7 @@ import {
 	ORTHOGRAPHIC_CAMERA_DIRECTION,
 } from "@shapediver/viewer.viewport";
 import {vec3} from "gl-matrix";
-import React, {useCallback, useMemo, useState} from "react";
+import {useCallback, useMemo, useState} from "react";
 import {
 	IAppBuilderActionPropsCamera,
 	isAnimateCameraAction,

@@ -21,7 +21,7 @@ import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/Ap
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
 import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {MantineThemeComponent, Paper, Stack, useProps} from "@mantine/core";
-import React, {ReactElement, useContext, useMemo} from "react";
+import {ReactElement, useContext, useMemo} from "react";
 
 /**
  * @docAttached

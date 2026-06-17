@@ -13,13 +13,7 @@ import {
 	Text,
 	useProps,
 } from "@mantine/core";
-import React, {
-	useCallback,
-	useContext,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import {useCallback, useContext, useEffect, useRef, useState} from "react";
 
 type StyleProps = PaperProps & {
 	barwidth: string | number | undefined;

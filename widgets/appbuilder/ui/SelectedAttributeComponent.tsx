@@ -3,7 +3,7 @@ import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IAttributeDefinition} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAttributeVisualizationWidgetComponent";
 import {ActionIcon, Stack, Table} from "@mantine/core";
 import {ISDTFAttributeData} from "@shapediver/viewer.session";
-import React, {useMemo} from "react";
+import {useMemo} from "react";
 import classes from "./SelectedAttributeComponent.module.css";
 
 type Props = {

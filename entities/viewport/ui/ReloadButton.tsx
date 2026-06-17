@@ -1,5 +1,4 @@
 import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
-import React from "react";
 import {CommonButtonProps} from "../config/types";
 import ViewportIconButton from "./ViewportIconButton";
 

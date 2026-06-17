@@ -13,7 +13,7 @@ import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
 import AppBuilderSavedStatesWidgetComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderSavedStatesWidgetComponent";
-import React, {useContext, useMemo} from "react";
+import {useContext, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import ParametersAndExportsAccordionComponent from "./ParametersAndExportsAccordionComponent";
 

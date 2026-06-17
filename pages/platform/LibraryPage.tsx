@@ -5,7 +5,7 @@ import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
 import {BoxProps} from "@mantine/core";
-import React, {useMemo} from "react";
+import {useMemo} from "react";
 import classes from "./LibraryPage.module.css";
 
 export interface IModelLibraryTabProps extends IModelLibraryProps {

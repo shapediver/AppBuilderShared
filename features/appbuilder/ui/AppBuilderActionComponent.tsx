@@ -11,7 +11,6 @@ import {
 	PolymorphicComponentProps,
 	useProps,
 } from "@mantine/core";
-import React from "react";
 import {MantineActionIconProps} from "~/shared/shared/mantine-props";
 import {IAppBuilderActionPropsCommon} from "../config/appbuilder";
 

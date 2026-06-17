@@ -1,5 +1,4 @@
 import {CSSProperties, MantineTheme, MantineThemeProvider} from "@mantine/core";
-import React from "react";
 import {ThemeProviderProps} from "./ThemeProvider.types";
 
 /**

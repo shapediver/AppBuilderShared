@@ -1,7 +1,7 @@
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
-import React, {useCallback, useState} from "react";
+import {useCallback, useState} from "react";
 import {IAppBuilderLegacyActionPropsAddToCart} from "../config/appbuilder";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
 

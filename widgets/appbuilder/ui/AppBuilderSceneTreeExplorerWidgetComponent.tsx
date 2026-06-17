@@ -27,7 +27,7 @@ import {
 	isOnBlacklist,
 } from "@shapediver/viewer.features.interaction";
 import {ITreeNode} from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 
 type StyleProps = {
 	paperProps?: Partial<PaperProps>;

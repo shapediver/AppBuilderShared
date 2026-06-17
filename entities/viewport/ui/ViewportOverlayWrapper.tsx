@@ -3,7 +3,6 @@ import OverlayWrapper, {
 	OverlayStyleProps,
 } from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {useProps} from "@mantine/core";
-import React from "react";
 import {ViewportOverlayWrapperProps} from "../config/viewportOverlayWrapper";
 
 /**

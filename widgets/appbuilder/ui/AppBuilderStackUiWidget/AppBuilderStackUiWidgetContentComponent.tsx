@@ -8,7 +8,7 @@ import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack"
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {Box, Button, Paper, Stack, useProps} from "@mantine/core";
-import React, {useContext} from "react";
+import {useContext} from "react";
 import AppBuilderWidgetsComponent from "../AppBuilderWidgetsComponent";
 import AppBuilderStackUiWidgetComponent from "./AppBuilderStackUiWidgetComponent";
 

@@ -1,5 +1,4 @@
 import {Switch, useProps} from "@mantine/core";
-import React from "react";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,

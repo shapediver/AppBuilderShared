@@ -1,5 +1,5 @@
 import {PolymorphicComponentProps, Text, TextProps} from "@mantine/core";
-import React, {forwardRef, useMemo} from "react";
+import {forwardRef, useMemo} from "react";
 import classes from "./TextWeighted.module.css";
 
 type FontWeight = "thin" | "light" | "normal" | "medium" | "bold";

@@ -11,7 +11,6 @@ import {
 	Text,
 	useProps,
 } from "@mantine/core";
-import React from "react";
 
 interface Props {
 	/** Title text to display */

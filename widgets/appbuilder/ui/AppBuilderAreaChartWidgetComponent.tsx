@@ -7,7 +7,6 @@ import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper"
 import type {MantineTitleProps} from "@AppBuilderLib/shared/mantine-props/title";
 import {AreaChart} from "@mantine/charts";
 import {MantineThemeComponent, Paper, Title, useProps} from "@mantine/core";
-import React from "react";
 
 /**
  * @docAttached

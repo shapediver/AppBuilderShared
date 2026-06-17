@@ -9,7 +9,7 @@ import {
 	MantineThemeComponent,
 	useProps,
 } from "@mantine/core";
-import React, {useContext} from "react";
+import {useContext} from "react";
 import classes from "./AppBuilderImage.module.css";
 
 type Props = IAppBuilderWidgetPropsAnchor;

@@ -1,5 +1,4 @@
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
-import React from "react";
 
 /**
  * 404 - Page

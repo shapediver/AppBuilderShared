@@ -7,7 +7,7 @@ import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/mo
 import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
 	IAppBuilderActionPropsCommon,

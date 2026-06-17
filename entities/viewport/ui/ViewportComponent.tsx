@@ -5,7 +5,6 @@ import {
 	SESSION_SETTINGS_MODE,
 	VISIBILITY_MODE,
 } from "@shapediver/viewer.session";
-import React from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
 	ViewportBrandingProps,

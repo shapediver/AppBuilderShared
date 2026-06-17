@@ -12,7 +12,6 @@ import {
 	Title,
 	useProps,
 } from "@mantine/core";
-import React from "react";
 
 /**
  * @docAttached

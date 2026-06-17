@@ -14,7 +14,7 @@ import {
 } from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
 import {useProps} from "@mantine/core";
-import React, {useContext, useMemo} from "react";
+import {useContext, useMemo} from "react";
 import {
 	IShapeDiverOutputDefinition,
 	IShapeDiverOutputDefinitionChunk,

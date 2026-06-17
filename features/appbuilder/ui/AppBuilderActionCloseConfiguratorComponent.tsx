@@ -1,6 +1,6 @@
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
-import React, {useCallback} from "react";
+import {useCallback} from "react";
 import {IAppBuilderLegacyActionPropsCloseConfigurator} from "../config/appbuilder";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
 

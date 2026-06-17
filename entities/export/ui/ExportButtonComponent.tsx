@@ -238,7 +238,8 @@ export default function ExportButtonComponent(
 					return true;
 				} else {
 					// Unexpected response for DOWNLOAD export type
-					const errorMessage = `Unexpected response for export of type download`;
+					const errorMessage =
+						"Unexpected response for export of type download";
 					notifications.error({
 						message: errorMessage,
 					});
@@ -272,7 +273,8 @@ export default function ExportButtonComponent(
 				}
 
 				// Unexpected response for EMAIL export
-				const errorMessage = `Unexpected response for export of type email`;
+				const errorMessage =
+					"Unexpected response for export of type email";
 				notifications.error({
 					message: errorMessage,
 				});
