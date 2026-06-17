@@ -61,8 +61,9 @@ export default function AppBuilderActionSetParameterValuesComponent(
 			parameter,
 			value: parameterValues[index].value,
 			source: parameterValues[index].source,
+			namespace: parameterValues[index].parameter.sessionId ?? namespace,
 		}));
-	}, [parametersList]);
+	}, [parametersList, parameterValues]);
 
 	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
@@ -88,10 +89,16 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		(sourceResults?: any[]) => {
 			let hasChanges = false;
 			let sourceIndex = 0;
-			const validParameters: {[key: string]: any} = {};
+			const validParameters: {[namespace: string]: {[key: string]: any}} =
+				{};
 
 			// First, check if any parameters have changes and validate all values
-			for (const {parameter, value, source} of parameters) {
+			for (const {
+				parameter,
+				value,
+				source,
+				namespace: paramNamespace,
+			} of parameters) {
 				if (!parameter) {
 					Logger.warn("Parameter not found for value:", value);
 					continue;
@@ -111,7 +118,12 @@ export default function AppBuilderActionSetParameterValuesComponent(
 
 						// Pre-validate the value
 						if (parameter.actions.setUiValue(value)) {
-							validParameters[parameter.definition.id] = value;
+							if (!validParameters[paramNamespace])
+								validParameters[paramNamespace] = {};
+
+							validParameters[paramNamespace][
+								parameter.definition.id
+							] = value;
 						} else {
 							Logger.warn(
 								`setUiValue failed for parameter ${parameter.definition.id}, the value is not valid.`,
@@ -131,9 +143,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 				return;
 
 			// Use batch parameter update
-			batchParameterValueUpdate({
-				[namespace]: validParameters,
-			});
+			batchParameterValueUpdate(validParameters);
 		},
 		[parameters, namespace, batchParameterValueUpdate],
 	);
