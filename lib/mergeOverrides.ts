@@ -5,34 +5,34 @@
  * Does not mutate `target`.
  */
 export function deepMerge(
-    target: Record<string, unknown>,
-    source: Record<string, unknown>,
+	target: Record<string, unknown>,
+	source: Record<string, unknown>,
 ): Record<string, unknown> {
-    const result = { ...target };
-    const keys = Object.keys(source);
-    for (let i = 0; i < keys.length; i++) {
-        const k = keys[i];
-        const sv = source[k];
-        const tv = target[k];
-        if (
-            sv !== null &&
-            typeof sv === "object" &&
-            !Array.isArray(sv) &&
-            tv !== null &&
-            typeof tv === "object" &&
-            !Array.isArray(tv)
-        ) {
-            result[k] = deepMerge(
-                tv as Record<string, unknown>,
-                sv as Record<string, unknown>,
-            );
-        } else if (sv === null) {
-            delete result[k];
-        } else {
-            result[k] = sv;
-        }
-    }
-    return result;
+	const result = {...target};
+	const keys = Object.keys(source);
+	for (let i = 0; i < keys.length; i++) {
+		const k = keys[i];
+		const sv = source[k];
+		const tv = target[k];
+		if (
+			sv !== null &&
+			typeof sv === "object" &&
+			!Array.isArray(sv) &&
+			tv !== null &&
+			typeof tv === "object" &&
+			!Array.isArray(tv)
+		) {
+			result[k] = deepMerge(
+				tv as Record<string, unknown>,
+				sv as Record<string, unknown>,
+			);
+		} else if (sv === null) {
+			delete result[k];
+		} else {
+			result[k] = sv;
+		}
+	}
+	return result;
 }
 
 /**
@@ -48,34 +48,34 @@ export function deepMerge(
  * @param overrides The overrides to apply.
  * @returns A new definition object with overrides applied.
  */
-export function applyOverrides<T extends { settings?: unknown }>(
-    definition: T,
-    overrides: Partial<T> | undefined,
+export function applyOverrides<T extends {settings?: unknown}>(
+	definition: T,
+	overrides: Partial<T> | undefined,
 ): T {
-    if (!overrides) return definition;
+	if (!overrides) return definition;
 
-    const { settings: overriddenSettings, ...restOverrides } = overrides;
+	const {settings: overriddenSettings, ...restOverrides} = overrides;
 
-    // Filter out null values from restOverrides to allow deletion of properties
-    const filteredRestOverrides = Object.fromEntries(
-        Object.entries(restOverrides).filter(([_, v]) => v !== null)
-    );
+	// Filter out null values from restOverrides to allow deletion of properties
+	const filteredRestOverrides = Object.fromEntries(
+		Object.entries(restOverrides).filter(([_, v]) => v !== null),
+	);
 
-    const result = {
-        ...definition,
-        ...filteredRestOverrides,
-    };
+	const result = {
+		...definition,
+		...filteredRestOverrides,
+	};
 
-    if (overriddenSettings && definition.settings) {
-        result.settings = deepMerge(
-            definition.settings as Record<string, unknown>,
-            overriddenSettings as Record<string, unknown>,
-        );
-    } else if (overriddenSettings === null) {
-        delete result.settings;
-    } else if (overriddenSettings !== undefined) {
-        result.settings = overriddenSettings;
-    }
+	if (overriddenSettings && definition.settings) {
+		result.settings = deepMerge(
+			definition.settings as Record<string, unknown>,
+			overriddenSettings as Record<string, unknown>,
+		);
+	} else if (overriddenSettings === null) {
+		delete result.settings;
+	} else if (overriddenSettings !== undefined) {
+		result.settings = overriddenSettings;
+	}
 
-    return result;
+	return result;
 }

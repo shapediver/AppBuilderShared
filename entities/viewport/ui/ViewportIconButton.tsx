@@ -1,6 +1,6 @@
+import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
-import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
@@ -92,10 +92,7 @@ export default function ViewportIconButton(
 	const isIcon = iconRegex.test(iconType);
 
 	return (
-		<TooltipWrapper
-			{...tooltipWrapperProps}
-			label={label ?? ""}
-		>
+		<TooltipWrapper {...tooltipWrapperProps} label={label ?? ""}>
 			<ActionIcon
 				onClick={onClick}
 				onMouseDown={onMouseDown}

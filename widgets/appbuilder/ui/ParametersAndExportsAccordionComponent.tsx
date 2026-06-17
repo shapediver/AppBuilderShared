@@ -127,14 +127,15 @@ export interface ParametersAndExportsAccordionComponentStyleProps {
 	panelStackProps?: MantineStackProps;
 }
 
-const defaultStyleProps: Partial<ParametersAndExportsAccordionComponentStyleProps> = {
-	avoidSingleComponentGroups: true,
-	mergeAccordions: false,
-	pbSlider: "md",
-	identifyGroupsById: false,
-	accordionPaperProps: {px: 0, py: 0, withBorder: false, shadow: "md"},
-	elementPaperProps: {shadow: "none" /*, withBorder: true*/},
-};
+const defaultStyleProps: Partial<ParametersAndExportsAccordionComponentStyleProps> =
+	{
+		avoidSingleComponentGroups: true,
+		mergeAccordions: false,
+		pbSlider: "md",
+		identifyGroupsById: false,
+		accordionPaperProps: {px: 0, py: 0, withBorder: false, shadow: "md"},
+		elementPaperProps: {shadow: "none" /*, withBorder: true*/},
+	};
 
 export function ParametersAndExportsAccordionComponentThemeProps(
 	props: Partial<ParametersAndExportsAccordionComponentStyleProps>,

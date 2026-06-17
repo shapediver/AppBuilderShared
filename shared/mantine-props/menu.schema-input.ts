@@ -1,4 +1,4 @@
-import type { MantineFloatingPosition } from "./primitives.schema-input";
+import type {MantineFloatingPosition} from "./primitives.schema-input";
 
 /**
  * Serializable subset of Mantine `Menu` props for theme `defaultProps`.

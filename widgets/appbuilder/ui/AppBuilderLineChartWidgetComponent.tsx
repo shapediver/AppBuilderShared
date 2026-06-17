@@ -21,17 +21,19 @@ export interface AppBuilderLineChartWidgetComponentStyleProps {
 	lineChartProps?: MantineLineChartProps;
 }
 
-const defaultStyleProps: Partial<AppBuilderLineChartWidgetComponentStyleProps> = {
-	widgetProps: {},
-	titleProps: {
-		style: {marginBottom: "20px"},
-	},
-	lineChartProps: {
-		h: 250,
-	},
-};
+const defaultStyleProps: Partial<AppBuilderLineChartWidgetComponentStyleProps> =
+	{
+		widgetProps: {},
+		titleProps: {
+			style: {marginBottom: "20px"},
+		},
+		lineChartProps: {
+			h: 250,
+		},
+	};
 
-type AppBuilderLineChartWidgetComponentThemePropsType = Partial<AppBuilderLineChartWidgetComponentStyleProps>;
+type AppBuilderLineChartWidgetComponentThemePropsType =
+	Partial<AppBuilderLineChartWidgetComponentStyleProps>;
 
 export function AppBuilderLineChartWidgetComponentThemeProps(
 	props: AppBuilderLineChartWidgetComponentThemePropsType,

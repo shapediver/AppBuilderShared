@@ -5,7 +5,13 @@ import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper"
 import type {MantinePieChartProps} from "@AppBuilderLib/shared/mantine-props/pieChart";
 import type {MantineTitleProps} from "@AppBuilderLib/shared/mantine-props/title";
 import {DonutChart, PieChart} from "@mantine/charts";
-import {Badge, MantineThemeComponent, Paper, Title, useProps} from "@mantine/core";
+import {
+	Badge,
+	MantineThemeComponent,
+	Paper,
+	Title,
+	useProps,
+} from "@mantine/core";
 import React from "react";
 
 /**
@@ -22,21 +28,23 @@ export interface AppBuilderRoundChartWidgetComponentStyleProps {
 	badgeProps?: MantineBadgeProps;
 }
 
-const defaultStyleProps: Partial<AppBuilderRoundChartWidgetComponentStyleProps> = {
-	widgetProps: {},
-	titleProps: {},
-	pieChartProps: {
-		h: 250,
-	},
-	donutChartProps: {
-		h: 250,
-	},
-	badgeProps: {
-		style: {marginRight: "10px"},
-	},
-};
+const defaultStyleProps: Partial<AppBuilderRoundChartWidgetComponentStyleProps> =
+	{
+		widgetProps: {},
+		titleProps: {},
+		pieChartProps: {
+			h: 250,
+		},
+		donutChartProps: {
+			h: 250,
+		},
+		badgeProps: {
+			style: {marginRight: "10px"},
+		},
+	};
 
-type AppBuilderRoundChartWidgetComponentThemePropsType = Partial<AppBuilderRoundChartWidgetComponentStyleProps>;
+type AppBuilderRoundChartWidgetComponentThemePropsType =
+	Partial<AppBuilderRoundChartWidgetComponentStyleProps>;
 
 export function AppBuilderRoundChartWidgetComponentThemeProps(
 	props: AppBuilderRoundChartWidgetComponentThemePropsType,

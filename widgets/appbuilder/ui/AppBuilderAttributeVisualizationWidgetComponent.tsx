@@ -14,11 +14,11 @@ import {
 	createAttributeId,
 	useConvertAttributeInputData,
 } from "@AppBuilderLib/features/appbuilder/model/attributeVisualization/useConvertAttributeInputData";
-import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
-import TooltipWrapper from "@AppBuilderShared/shared/ui/tooltip/TooltipWrapper";
 import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
 import type {MantineTitleProps} from "@AppBuilderLib/shared/mantine-props/title";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import TooltipWrapper from "@AppBuilderShared/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
 	Group,
@@ -89,7 +89,8 @@ const defaultStyleProps: Partial<AppBuilderAttributeVisualizationWidgetComponent
 		},
 	};
 
-type AppBuilderAttributeVisualizationWidgetThemePropsType = Partial<AppBuilderAttributeVisualizationWidgetComponentStyleProps>;
+type AppBuilderAttributeVisualizationWidgetThemePropsType =
+	Partial<AppBuilderAttributeVisualizationWidgetComponentStyleProps>;
 
 const defaultGeneralGradient: Gradient = ATTRIBUTE_VISUALIZATION.TURBO;
 const defaultNumberGradient: Gradient = ATTRIBUTE_VISUALIZATION.VIRIDIS;

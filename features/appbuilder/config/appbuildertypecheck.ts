@@ -1,3 +1,5 @@
+import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
+import type {MantineTheme, MantineThemeComponent} from "@mantine/core";
 import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	PARAMETER_TYPE,
@@ -8,7 +10,6 @@ import {
 	ATTRIBUTE_VISUALIZATION,
 	CAMERA_TYPE,
 } from "@shapediver/viewer.shared.types";
-import type {MantineTheme, MantineThemeComponent} from "@mantine/core";
 import {z} from "zod";
 import {prettifyError} from "zod/v4";
 import {
@@ -21,7 +22,6 @@ import {
 	SelectComponentType,
 } from "./appbuilder";
 import {validateThemeComponentsRecord} from "./validateThemeComponentsRecord";
-import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
 
 import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
 export type {JsonValue} from "@AppBuilderLib/shared/lib/jsonValue";
@@ -37,10 +37,14 @@ const MantineThemeComponentSchema = z.strictObject({
 
 // Compile-time assertion: MantineThemeComponentSchema keys must match MantineThemeComponent keys
 type _AssertComponentKeys = [
-	keyof z.infer<typeof MantineThemeComponentSchema> extends keyof MantineThemeComponent
+	keyof z.infer<
+		typeof MantineThemeComponentSchema
+	> extends keyof MantineThemeComponent
 		? true
 		: false,
-	keyof MantineThemeComponent extends keyof z.infer<typeof MantineThemeComponentSchema>
+	keyof MantineThemeComponent extends keyof z.infer<
+		typeof MantineThemeComponentSchema
+	>
 		? true
 		: false,
 ];
@@ -144,8 +148,12 @@ type _MantineThemeOverridePropsKeys = keyof z.infer<
 	typeof mantineThemeOverridePropsSchema
 >;
 type _AssertThemeOverrideMirrorKeys = [
-	_MantineThemeOverridePropsKeys extends _MantineThemeSchemaKeys ? true : false,
-	_MantineThemeSchemaKeys extends _MantineThemeOverridePropsKeys ? true : false,
+	_MantineThemeOverridePropsKeys extends _MantineThemeSchemaKeys
+		? true
+		: false,
+	_MantineThemeSchemaKeys extends _MantineThemeOverridePropsKeys
+		? true
+		: false,
 ];
 const _checkThemeOverrideMirror: _AssertThemeOverrideMirrorKeys = [true, true];
 void _checkThemeOverrideMirror;
@@ -183,9 +191,9 @@ export const ISelectComponentItemDataTypeSchema = z.object({
 // Zod type definition for ISelectParameterSettings
 const ISelectParameterSettingsSchema = z.object({
 	type: SelectComponentTypeSchema.optional(),
-  itemData: z
-    .record(z.string(), ISelectComponentItemDataTypeSchema)
-    .optional(),
+	itemData: z
+		.record(z.string(), ISelectComponentItemDataTypeSchema)
+		.optional(),
 	searchable: z.boolean().optional(),
 	limit: z.int().positive().optional(),
 	height: z.string().optional(),
@@ -231,7 +239,8 @@ const INumberParameterSettingsSchema = z.object({
 });
 
 export const validateNumberParameterSettings = (value: any) => {
-	if (value === undefined || value === null) return {success: false as const, error: undefined};
+	if (value === undefined || value === null)
+		return {success: false as const, error: undefined};
 	return INumberParameterSettingsSchema.safeParse(value);
 };
 
@@ -500,11 +509,11 @@ const IAppBuilderActionPropsCameraCommonSchema = z.strictObject({
 	camera: z
 		.union([
 			z.looseObject({
-            					name: z.string(),
-            				}),
+				name: z.string(),
+			}),
 			z.looseObject({
-            					type: z.enum(CAMERA_TYPE),
-            				}),
+				type: z.enum(CAMERA_TYPE),
+			}),
 		])
 		.optional(),
 	options: z.record(z.string(), JsonValueSchema).optional(),
@@ -794,7 +803,11 @@ const IAppBuilderWidgetPropsRoundChartSchema = z
 		labels: z.boolean().optional(),
 		legend: z.boolean().optional(),
 		data: z.array(
-			z.strictObject({name: z.string(), value: z.number(), color: z.string()}),
+			z.strictObject({
+				name: z.string(),
+				value: z.number(),
+				color: z.string(),
+			}),
 		),
 	})
 	.extend(IAppBuilderWidgetPropsCommonSchema.shape);
@@ -928,9 +941,7 @@ const IAppBuilderWidgetPropsAttributeVisualizationSchema = z.strictObject({
 				.or(z.string()),
 		)
 		.optional(),
-	visualizationMode: z
-		.enum(AttributeVisualizationVisibility)
-		.optional(),
+	visualizationMode: z.enum(AttributeVisualizationVisibility).optional(),
 	showLegend: z.boolean().optional(),
 	defaultGradient:
 		IAppBuilderWidgetPropsAttributeVisualizationGradientSchema.optional(),
@@ -1000,7 +1011,9 @@ const IAppBuilderWidgetPropsAccordionUiSchema = z.strictObject({
 			icon: z.string().optional(),
 			tooltip: z.string().optional(),
 			widgets: z.array(
-				z.lazy((): z.ZodType<IAppBuilderWidget> => IAppBuilderWidgetSchema),
+				z.lazy(
+					(): z.ZodType<IAppBuilderWidget> => IAppBuilderWidgetSchema,
+				),
 			),
 		}),
 	),
@@ -1360,8 +1373,8 @@ const IAppBuilderSettingsJsonSchemaBase = z.strictObject({
 	appBuilderOverride: IAppBuilderSchema.optional(),
 });
 
-const IAppBuilderSettingsJsonSchema = IAppBuilderSettingsJsonSchemaBase.superRefine(
-	(data, ctx) => {
+const IAppBuilderSettingsJsonSchema =
+	IAppBuilderSettingsJsonSchemaBase.superRefine((data, ctx) => {
 		const components = data.themeOverrides?.components as
 			| Record<string, {defaultProps?: unknown}>
 			| undefined;
@@ -1371,8 +1384,7 @@ const IAppBuilderSettingsJsonSchema = IAppBuilderSettingsJsonSchemaBase.superRef
 			"themeOverrides",
 			"components",
 		]);
-	},
-);
+	});
 
 export const validateAppBuilderSettingsJson = (value: any) => {
 	return IAppBuilderSettingsJsonSchema.safeParse(value);

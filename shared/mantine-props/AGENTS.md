@@ -20,14 +20,14 @@ validateAppBuilderSettingsJson  (appbuildertypecheck.ts)
 
 **Related code outside this folder:**
 
-| Location | Role |
-|----------|------|
-| `features/appbuilder/config/themeComponentDefaultPropsRegistry.ts` | Maps theme component keys → Zod schema |
-| `features/appbuilder/config/validateThemeComponentsRecord.ts` | Deep validation of nested `containerThemeOverrides` |
-| `features/appbuilder/config/appbuildertypecheck.ts` | Top-level settings schema + `superRefine` |
-| `shared/lib/jsonValue.ts` | `JsonValue` / `JsonValueSchema` — FSD home for opaque JSON (not in mantine-props) |
-| `pages/config/*Container.types.ts`, widget `*.theme.types.ts` | Re-export or extend `Mantine*Props` / compose schemas |
-| `shared/mantine-props/assert-mantine-subset.test-d.ts` | Compile-time `MantinePropsSubset` vs `@mantine/core` |
+| Location                                                           | Role                                                                              |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `features/appbuilder/config/themeComponentDefaultPropsRegistry.ts` | Maps theme component keys → Zod schema                                            |
+| `features/appbuilder/config/validateThemeComponentsRecord.ts`      | Deep validation of nested `containerThemeOverrides`                               |
+| `features/appbuilder/config/appbuildertypecheck.ts`                | Top-level settings schema + `superRefine`                                         |
+| `shared/lib/jsonValue.ts`                                          | `JsonValue` / `JsonValueSchema` — FSD home for opaque JSON (not in mantine-props) |
+| `pages/config/*Container.types.ts`, widget `*.theme.types.ts`      | Re-export or extend `Mantine*Props` / compose schemas                             |
+| `shared/mantine-props/assert-mantine-subset.test-d.ts`             | Compile-time `MantinePropsSubset` vs `@mantine/core`                              |
 
 **Repo split:** code here lives in **`src/shared` submodule**; `generate:mantine-props-zod` script and `ts-to-zod` devDependency live in the **parent repo** `package.json`.
 
@@ -49,14 +49,14 @@ validateAppBuilderSettingsJson  (appbuildertypecheck.ts)
 
 Summary:
 
-| Phase | mantine-props work | Downstream |
-|-------|-------------------|------------|
-| **0** | Infra: primitives, group mirror, ts-to-zod, generate script | Pilot: `AppBuilderHorizontalContainer` → `mantineGroupPropsSchema` |
-| **1** | Button, Text, Paper, Accordion mirrors | Registry keys: `Button`, `Text`, `Paper`, `Accordion` |
-| **2** | Extend `MantineGroupProps` (`pt`, `pb`, `styles`) | Vertical/horizontal container types migrate off manual Zod |
-| **3** | Stack, Box, Tooltip + composed widget schemas | e.g. `AppBuilderStackUiWidgetComponent`, `TooltipWrapper` |
-| **4** | (schemas already exist) | `validateThemeComponentsRecord` recurses nested overrides |
-| **5** | — | `appBuilderOverride` validation tests (separate from mantine-props) |
+| Phase | mantine-props work                                          | Downstream                                                          |
+| ----- | ----------------------------------------------------------- | ------------------------------------------------------------------- |
+| **0** | Infra: primitives, group mirror, ts-to-zod, generate script | Pilot: `AppBuilderHorizontalContainer` → `mantineGroupPropsSchema`  |
+| **1** | Button, Text, Paper, Accordion mirrors                      | Registry keys: `Button`, `Text`, `Paper`, `Accordion`               |
+| **2** | Extend `MantineGroupProps` (`pt`, `pb`, `styles`)           | Vertical/horizontal container types migrate off manual Zod          |
+| **3** | Stack, Box, Tooltip + composed widget schemas               | e.g. `AppBuilderStackUiWidgetComponent`, `TooltipWrapper`           |
+| **4** | (schemas already exist)                                     | `validateThemeComponentsRecord` recurses nested overrides           |
+| **5** | —                                                           | `appBuilderOverride` validation tests (separate from mantine-props) |
 
 When extending a mirror, check which phase/consumers depend on it before narrowing types.
 
@@ -64,18 +64,18 @@ When extending a mirror, check which phase/consumers depend on it before narrowi
 
 ## File roles
 
-| Pattern | Role | Edited by agents? | Imported by app code? |
-|---------|------|-------------------|------------------------|
-| `{name}.schema-input.ts` | ts-to-zod **codegen input** — `interface Mantine{Name}Props` | **Yes** (primary edit surface) | **Never** |
-| `{name}.zod.ts` | Generated — `mantine{Name}PropsSchema` | Regenerate only | Yes (registry, validators) |
-| `{name}.ts` | Public facade — schema + `type Mantine{Name}Props = z.infer<…>` | Rarely (boilerplate) | Yes |
-| `spacing.schema-input.ts` | Canonical **`MantineSpacing`** | Yes | Never |
-| `primitives.schema-input.ts` | Canonical shared primitives | Yes | Never |
-| `primitives.ts` | Re-exports from schema-input + `MantineResponsive<T>` | Rarely | Yes |
-| `spacing.ts` | Public facade for `mantineSpacingSchema` | Rarely | Yes |
-| `mantine-props-subset.ts` | `MantinePropsSubset<Mantine, Mirror>` helper | Rarely | Yes (assert file only) |
-| `index.ts` | Barrel of **public facades** | When adding a component | Yes |
-| `ts-to-zod.config.mjs` | schema-input → zod mapping + `getSchemaName` | When adding a component | N/A |
+| Pattern                      | Role                                                            | Edited by agents?              | Imported by app code?      |
+| ---------------------------- | --------------------------------------------------------------- | ------------------------------ | -------------------------- |
+| `{name}.schema-input.ts`     | ts-to-zod **codegen input** — `interface Mantine{Name}Props`    | **Yes** (primary edit surface) | **Never**                  |
+| `{name}.zod.ts`              | Generated — `mantine{Name}PropsSchema`                          | Regenerate only                | Yes (registry, validators) |
+| `{name}.ts`                  | Public facade — schema + `type Mantine{Name}Props = z.infer<…>` | Rarely (boilerplate)           | Yes                        |
+| `spacing.schema-input.ts`    | Canonical **`MantineSpacing`**                                  | Yes                            | Never                      |
+| `primitives.schema-input.ts` | Canonical shared primitives                                     | Yes                            | Never                      |
+| `primitives.ts`              | Re-exports from schema-input + `MantineResponsive<T>`           | Rarely                         | Yes                        |
+| `spacing.ts`                 | Public facade for `mantineSpacingSchema`                        | Rarely                         | Yes                        |
+| `mantine-props-subset.ts`    | `MantinePropsSubset<Mantine, Mirror>` helper                    | Rarely                         | Yes (assert file only)     |
+| `index.ts`                   | Barrel of **public facades**                                    | When adding a component        | Yes                        |
+| `ts-to-zod.config.mjs`       | schema-input → zod mapping + `getSchemaName`                    | When adding a component        | N/A                        |
 
 **Import alias:** `@AppBuilderLib/shared/mantine-props/{component}` (types) or `…/{component}.zod` (schema).
 
@@ -127,9 +127,9 @@ Runs: generate → dedupe → `assertSingleSharedSchemaExports`.
 
 ### 2. Never duplicate canonical types in component schema-input
 
-| Type | Canonical file |
-|------|----------------|
-| `MantineSpacing` | `spacing.schema-input.ts` |
+| Type                                                                                     | Canonical file               |
+| ---------------------------------------------------------------------------------------- | ---------------------------- |
+| `MantineSpacing`                                                                         | `spacing.schema-input.ts`    |
 | `MantineCssLength`, `MantineFlexWrap`, `MantineStylesApi`, `MantineResponsiveCssSize`, … | `primitives.schema-input.ts` |
 
 ```typescript
@@ -146,12 +146,12 @@ The inline preprocessor expands these for ts-to-zod. Copy-pasting unions causes 
 
 ### 4. Serializable subset + `@strict`
 
-| Include | Exclude |
-|---------|---------|
-| strings, numbers, booleans, null | callbacks, refs |
-| JSON objects/arrays | `children`, render props |
-| `styles` via `MantineStylesApi` | `ReactNode` (Tooltip `label` → `string` only) |
-| responsive `{ base, xs, sm, md, lg, xl }` | |
+| Include                                   | Exclude                                       |
+| ----------------------------------------- | --------------------------------------------- |
+| strings, numbers, booleans, null          | callbacks, refs                               |
+| JSON objects/arrays                       | `children`, render props                      |
+| `styles` via `MantineStylesApi`           | `ReactNode` (Tooltip `label` → `string` only) |
+| responsive `{ base, xs, sm, md, lg, xl }` |                                               |
 
 Use `/** @strict */` on the props interface → `z.strictObject()`.
 
@@ -159,9 +159,9 @@ For deep `styles`, prefer generated `mantineStylesApiSchema` from `MantineStyles
 
 ### 5. Shared Zod schemas — single canonical export
 
-| Schema | Canonical file |
-|--------|----------------|
-| `mantineSpacingSchema` | `spacing.zod.ts` |
+| Schema                                                                                                                                       | Canonical file      |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| `mantineSpacingSchema`                                                                                                                       | `spacing.zod.ts`    |
 | `mantineCssLengthSchema`, `mantineFlexWrapSchema`, `mantineStylesApiSchema`, `mantineStylesApiValueSchema`, `mantineResponsiveCssSizeSchema` | `primitives.zod.ts` |
 
 When adding a shared primitive: update schema-input → `ts-to-zod.config.mjs` → `SHARED_SCHEMAS` in `scripts/dedupe-mantine-props-zod.mjs` → re-export from `index.ts` / `primitives.ts`.
@@ -218,7 +218,8 @@ Only **registered** keys get strict validation. Unknown keys remain opaque `Json
 import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
 import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
 
-export const AppBuilderHorizontalContainerThemeDefaultPropsSchema = mantineGroupPropsSchema;
+export const AppBuilderHorizontalContainerThemeDefaultPropsSchema =
+	mantineGroupPropsSchema;
 export interface AppBuilderHorizontalContainerThemeDefaultProps extends MantineGroupProps {}
 ```
 
@@ -257,19 +258,19 @@ Point nested prop types at `Mantine*Props` from public facades so theme JSON and
 
 ## Common mistakes
 
-| Mistake | Consequence | Fix |
-|---------|-------------|-----|
-| Duplicate `export type MantineSpacing` in every schema-input | Drift | `import type` from canonical files |
-| Import `@mantine/core` in schema-input | `z.any()` | Mirror serializable shape manually |
-| Hand-edit `*.zod.ts` | Lost on regenerate | Edit schema-input + regenerate |
-| Import `*.schema-input.ts` from app | Leaks codegen surface | Use public facade or `.zod` |
-| Change mirror without subset assert | Silent drift from Mantine | Update `assert-mantine-subset.test-d.ts` |
-| Register schema but skip tests | Regressions in production JSON | Add accept/reject Jest cases |
-| Add shared primitive without dedupe registry | Generate script throws | Update `SHARED_SCHEMAS` |
-| `@default` in schema-input JSDoc | `z.infer` requires fields; partial theme bags fail `tsc` | Prose-only defaults; runtime defaults in components |
-| Shrink mirror and rewrite `defaultStyleProps` / `useCustomTheme` | Changed product behavior | Extend mirror to cover existing defaults |
-| `Partial<Mantine*Props>` on `@docAttached` StyleProps | `Partial_Unknown` in doc-flat | Use `Mantine*Props` directly |
-| `as unknown as *Props` on Mantine spreads | Hides mirror gaps | Extend mirror or use `MantinePropsSubset` |
+| Mistake                                                          | Consequence                                              | Fix                                                 |
+| ---------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------- |
+| Duplicate `export type MantineSpacing` in every schema-input     | Drift                                                    | `import type` from canonical files                  |
+| Import `@mantine/core` in schema-input                           | `z.any()`                                                | Mirror serializable shape manually                  |
+| Hand-edit `*.zod.ts`                                             | Lost on regenerate                                       | Edit schema-input + regenerate                      |
+| Import `*.schema-input.ts` from app                              | Leaks codegen surface                                    | Use public facade or `.zod`                         |
+| Change mirror without subset assert                              | Silent drift from Mantine                                | Update `assert-mantine-subset.test-d.ts`            |
+| Register schema but skip tests                                   | Regressions in production JSON                           | Add accept/reject Jest cases                        |
+| Add shared primitive without dedupe registry                     | Generate script throws                                   | Update `SHARED_SCHEMAS`                             |
+| `@default` in schema-input JSDoc                                 | `z.infer` requires fields; partial theme bags fail `tsc` | Prose-only defaults; runtime defaults in components |
+| Shrink mirror and rewrite `defaultStyleProps` / `useCustomTheme` | Changed product behavior                                 | Extend mirror to cover existing defaults            |
+| `Partial<Mantine*Props>` on `@docAttached` StyleProps            | `Partial_Unknown` in doc-flat                            | Use `Mantine*Props` directly                        |
+| `as unknown as *Props` on Mantine spreads                        | Hides mirror gaps                                        | Extend mirror or use `MantinePropsSubset`           |
 
 ---
 
@@ -310,17 +311,17 @@ Bump submodule pointer in parent repo when integrating. Parent repo commits `pac
 
 ## Quick reference — current mirrors
 
-| schema-input | Public facade | Registry keys (typical) |
-|--------------|---------------|-------------------------|
-| `group` | `group.ts` | `Group`, `AppBuilderHorizontalContainer`, containers |
-| `button` | `button.ts` | `Button` |
-| `text` | `text.ts` | `Text` |
-| `paper` | `paper.ts` | `Paper` |
-| `accordion` | `accordion.ts` | `Accordion` |
-| `stack` | `stack.ts` | nested in widgets |
-| `box` | `box.ts` | nested in widgets |
-| `tooltip` | `tooltip.ts` | `TooltipWrapper` |
-| `spacing` | `spacing.ts` | (primitive, composed) |
-| `primitives` | `primitives.ts` | (shared types/schemas) |
+| schema-input | Public facade   | Registry keys (typical)                              |
+| ------------ | --------------- | ---------------------------------------------------- |
+| `group`      | `group.ts`      | `Group`, `AppBuilderHorizontalContainer`, containers |
+| `button`     | `button.ts`     | `Button`                                             |
+| `text`       | `text.ts`       | `Text`                                               |
+| `paper`      | `paper.ts`      | `Paper`                                              |
+| `accordion`  | `accordion.ts`  | `Accordion`                                          |
+| `stack`      | `stack.ts`      | nested in widgets                                    |
+| `box`        | `box.ts`        | nested in widgets                                    |
+| `tooltip`    | `tooltip.ts`    | `TooltipWrapper`                                     |
+| `spacing`    | `spacing.ts`    | (primitive, composed)                                |
+| `primitives` | `primitives.ts` | (shared types/schemas)                               |
 
 When in doubt, grep `themeComponentDefaultPropsRegistry` and `@AppBuilderLib/shared/mantine-props` for live consumers.

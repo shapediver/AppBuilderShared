@@ -12,8 +12,9 @@ export const ParameterColorComponentThemeDefaultPropsSchema = z.strictObject({
  * @configPath themeOverrides.components.ParameterColorComponent.defaultProps
  * @displayName ParameterColorComponent
  */
-export interface ParameterColorComponentThemeDefaultProps
-	extends z.infer<typeof ParameterColorComponentThemeDefaultPropsSchema> {
+export interface ParameterColorComponentThemeDefaultProps extends z.infer<
+	typeof ParameterColorComponentThemeDefaultPropsSchema
+> {
 	/**
 	 * Color format for ShapeDiver ↔ Mantine conversion.
 	 * @default "rgba"

@@ -1,8 +1,11 @@
-import { ParameterColorComponentThemeDefaultPropsSchema } from "~/shared/entities/parameter/config/ParameterColorComponent.types";
-import { IconThemeDefaultPropsSchema } from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { formatAppBuilderZodError, validateAppBuilderSettingsJson } from "../appbuildertypecheck";
+import {ParameterColorComponentThemeDefaultPropsSchema} from "~/shared/entities/parameter/config/ParameterColorComponent.types";
+import {
+	formatAppBuilderZodError,
+	validateAppBuilderSettingsJson,
+} from "../appbuildertypecheck";
 
 /** `src/shared` root (this file: features/appbuilder/config/__tests__). */
 const SHARED_SRC_ROOT = path.resolve(__dirname, "../../../..");
@@ -31,103 +34,103 @@ type ThemeComponentCase = {
 const APP_OWNED_THEME_COMPONENT_CASES = [
 	{
 		component: "AppBuilderContainer",
-		validDefaultProps: { orientation: "horizontal" },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {orientation: "horizontal"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "AppBuilderTemplateSelector",
-		validDefaultProps: { template: "grid", showContainerButtons: false },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {template: "grid", showContainerButtons: false},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "AppBuilderImage",
-		validDefaultProps: { radius: "md", fit: "contain", withBorder: false },
-		invalidDefaultProps: { fit: "cover" },
+		validDefaultProps: {radius: "md", fit: "contain", withBorder: false},
+		invalidDefaultProps: {fit: "cover"},
 	},
 	{
 		component: "AppBuilderStackUiWidgetComponent",
-		validDefaultProps: { iconForwardProps: { size: "sm", stroke: "1px" } },
-		invalidDefaultProps: { iconForwardProps: { size: true } },
+		validDefaultProps: {iconForwardProps: {size: "sm", stroke: "1px"}},
+		invalidDefaultProps: {iconForwardProps: {size: true}},
 	},
 	{
 		component: "DesktopClientPanel",
-		validDefaultProps: { statusIconProps: { size: "sm", stroke: "1px" } },
-		invalidDefaultProps: { selectProps: { label: 42 } },
+		validDefaultProps: {statusIconProps: {size: "sm", stroke: "1px"}},
+		invalidDefaultProps: {selectProps: {label: 42}},
 	},
 	{
 		component: "AppBuilderFormWidgetComponent",
-		validDefaultProps: { resetMessage: "Reset form", stackProps: { gap: 0 } },
-		invalidDefaultProps: { resetMessage: true },
+		validDefaultProps: {resetMessage: "Reset form", stackProps: {gap: 0}},
+		invalidDefaultProps: {resetMessage: true},
 	},
 	{
 		component: "AppBuilderControlsWidgetComponent",
-		validDefaultProps: { elementPaperProps: { shadow: "none" } },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {elementPaperProps: {shadow: "none"}},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "AppBuilderAccordionUiWidgetComponent",
-		validDefaultProps: { accordionPaperProps: { px: 0, py: 0 } },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {accordionPaperProps: {px: 0, py: 0}},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "ParametersAndExportsAccordionComponent",
-		validDefaultProps: { avoidSingleComponentGroups: true, pbSlider: "md" },
-		invalidDefaultProps: { pbSlider: true },
+		validDefaultProps: {avoidSingleComponentGroups: true, pbSlider: "md"},
+		invalidDefaultProps: {pbSlider: true},
 	},
 	{
 		component: "AppBuilderTextWidgetComponent",
-		validDefaultProps: { shadow: "sm", withBorder: true },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {shadow: "sm", withBorder: true},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "AppBuilderActionComponent",
-		validDefaultProps: { variant: "filled", fullWidth: true },
-		invalidDefaultProps: { variant: 123 },
+		validDefaultProps: {variant: "filled", fullWidth: true},
+		invalidDefaultProps: {variant: 123},
 	},
 	{
 		component: "AppBuilderAttributeVisualizationWidgetComponent",
 		validDefaultProps: {
-			widgetGroupProps: { justify: "space-between" },
-			titleProps: { style: { fontWeight: 600 } },
+			widgetGroupProps: {justify: "space-between"},
+			titleProps: {style: {fontWeight: 600}},
 		},
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "AppBuilderSavedStatesWidgetComponent",
-		validDefaultProps: { paperProps: { p: "md" }, stackProps: { gap: "md" } },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {paperProps: {p: "md"}, stackProps: {gap: "md"}},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "AppBuilderLineChartWidgetComponent",
 		validDefaultProps: {
-			widgetProps: { shadow: "sm" },
-			lineChartProps: { h: 250 },
+			widgetProps: {shadow: "sm"},
+			lineChartProps: {h: 250},
 		},
-		invalidDefaultProps: { lineChartProps: { h: "tall" } },
+		invalidDefaultProps: {lineChartProps: {h: "tall"}},
 	},
 	{
 		component: "AppBuilderBarChartWidgetComponent",
 		validDefaultProps: {
-			titleProps: { style: { marginBottom: "20px" } },
-			barChartProps: { h: 200 },
+			titleProps: {style: {marginBottom: "20px"}},
+			barChartProps: {h: 200},
 		},
-		invalidDefaultProps: { barChartProps: { h: true } },
+		invalidDefaultProps: {barChartProps: {h: true}},
 	},
 	{
 		component: "AppBuilderAreaChartWidgetComponent",
 		validDefaultProps: {
-			widgetProps: { withBorder: true },
-			areaChartProps: { h: 300 },
+			widgetProps: {withBorder: true},
+			areaChartProps: {h: 300},
 		},
-		invalidDefaultProps: { areaChartProps: { h: "300" } },
+		invalidDefaultProps: {areaChartProps: {h: "300"}},
 	},
 	{
 		component: "AppBuilderRoundChartWidgetComponent",
 		validDefaultProps: {
-			pieChartProps: { h: 250 },
-			badgeProps: { style: { marginRight: "10px" } },
+			pieChartProps: {h: 250},
+			badgeProps: {style: {marginRight: "10px"}},
 		},
-		invalidDefaultProps: { badgeProps: { style: "invalid" } },
+		invalidDefaultProps: {badgeProps: {style: "invalid"}},
 	},
 	{
 		component: "AppBuilderAgentWidgetComponent",
@@ -136,39 +139,39 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 			model: "gpt-4o-mini",
 			maxHistory: 10,
 		},
-		invalidDefaultProps: { maxHistory: "ten" },
+		invalidDefaultProps: {maxHistory: "ten"},
 	},
 	{
 		component: "AppBuilderTableWidgetComponent",
 		validDefaultProps: {
-			searchTextInputProps: { size: "xs" },
-			searchBarProps: { py: "xs" },
+			searchTextInputProps: {size: "xs"},
+			searchBarProps: {py: "xs"},
 		},
-		invalidDefaultProps: { searchTextInputProps: { size: true } },
+		invalidDefaultProps: {searchTextInputProps: {size: true}},
 	},
 	{
 		component: "AppBuilderAccordionWidgetComponent",
-		validDefaultProps: { showAcceptRejectButtons: true },
-		invalidDefaultProps: { showAcceptRejectButtons: "yes" },
+		validDefaultProps: {showAcceptRejectButtons: true},
+		invalidDefaultProps: {showAcceptRejectButtons: "yes"},
 	},
 	{
 		component: "AppBuilderContainerWrapper",
-		validDefaultProps: { containerThemeOverrides: {} },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {containerThemeOverrides: {}},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "AppBuilderAppShellTemplatePage",
 		validDefaultProps: {
-			headerHeight: { base: "4em", md: "4em" },
+			headerHeight: {base: "4em", md: "4em"},
 			columns: 3,
 			navbarBorder: true,
 		},
-		invalidDefaultProps: { columns: "three" },
+		invalidDefaultProps: {columns: "three"},
 	},
 	{
 		component: "AppBuilderGridTemplatePage",
-		validDefaultProps: { columns: 4, rows: 4, bgTop: "transparent" },
-		invalidDefaultProps: { columns: "four" },
+		validDefaultProps: {columns: 4, rows: 4, bgTop: "transparent"},
+		invalidDefaultProps: {columns: "four"},
 	},
 	{
 		component: "DefaultSession",
@@ -177,95 +180,95 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 			slug: "demo",
 			platformUrl: "https://example.com",
 		},
-		invalidDefaultProps: { acceptRejectMode: "no" },
+		invalidDefaultProps: {acceptRejectMode: "no"},
 	},
 	{
 		component: "MarkdownWidgetComponent",
 		validDefaultProps: {
 			anchorTarget: "_blank",
-			themeOverride: { primaryColor: "blue" },
+			themeOverride: {primaryColor: "blue"},
 		},
-		invalidDefaultProps: { setHeadingFontSize: "yes" },
+		invalidDefaultProps: {setHeadingFontSize: "yes"},
 	},
 	{
 		component: "CreateModelStateHook",
-		validDefaultProps: { parameterNamesToInclude: ["width"] },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {parameterNamesToInclude: ["width"]},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "ExportButtonComponent",
 		validDefaultProps: {
-			buttonProps: { variant: "filled" },
-			downloadTooltipProps: { label: "Download" },
+			buttonProps: {variant: "filled"},
+			downloadTooltipProps: {label: "Download"},
 		},
-		invalidDefaultProps: { buttonProps: { variant: 123 } },
+		invalidDefaultProps: {buttonProps: {variant: 123}},
 	},
 	{
 		component: "ExportLabelComponent",
-		validDefaultProps: { fontWeight: "500" },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {fontWeight: "500"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "Hint",
-		validDefaultProps: { iconProps: { size: "sm", stroke: "1px" } },
-		invalidDefaultProps: { iconProps: { size: true } },
+		validDefaultProps: {iconProps: {size: "sm", stroke: "1px"}},
+		invalidDefaultProps: {iconProps: {size: true}},
 	},
 	{
 		component: "Icon",
-		validDefaultProps: { size: "md", stroke: "1px" },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {size: "md", stroke: "1px"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "LoaderPage",
-		validDefaultProps: { type: "bars", size: "md" },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {type: "bars", size: "md"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "ModalBase",
-		validDefaultProps: { size: "md", centered: true },
-		invalidDefaultProps: { size: true },
+		validDefaultProps: {size: "md", centered: true},
+		invalidDefaultProps: {size: true},
 	},
 	{
 		component: "MultiSelectCheckboxes",
-		validDefaultProps: { stackProps: { gap: "xs" } },
-		invalidDefaultProps: { checkboxProps: { ml: true } },
+		validDefaultProps: {stackProps: {gap: "xs"}},
+		invalidDefaultProps: {checkboxProps: {ml: true}},
 	},
 	{
 		component: "OutputChunkLabelComponent",
-		validDefaultProps: { fontWeight: "600" },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {fontWeight: "600"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "OutputStargateComponent",
-		validDefaultProps: { paperProps: { shadow: "none" } },
-		invalidDefaultProps: { paperProps: { shadow: 123 } },
+		validDefaultProps: {paperProps: {shadow: "none"}},
+		invalidDefaultProps: {paperProps: {shadow: 123}},
 	},
 	{
 		component: "ParameterColorComponent",
-		validDefaultProps: { colorFormat: "hexa" },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {colorFormat: "hexa"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "ParameterSliderComponent",
-		validDefaultProps: { sliderWidth: "60%", numberWidth: "35%" },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {sliderWidth: "60%", numberWidth: "35%"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "ParameterLabelComponent",
 		validDefaultProps: {
 			fontWeight: "500",
-			tooltipProps: { label: "Cancel change", position: "top" },
+			tooltipProps: {label: "Cancel change", position: "top"},
 		},
-		invalidDefaultProps: { fontWeight: true },
+		invalidDefaultProps: {fontWeight: true},
 	},
 	{
 		component: "ParameterStargateComponent",
 		validDefaultProps: {
-			tooltipProps: { label: "Clear selection" },
-			actionIconProps: { variant: "transparent" },
-			iconProps: { size: "1.2rem" },
+			tooltipProps: {label: "Clear selection"},
+			actionIconProps: {variant: "transparent"},
+			iconProps: {size: "1.2rem"},
 		},
-		invalidDefaultProps: { actionIconProps: { variant: 123 } },
+		invalidDefaultProps: {actionIconProps: {variant: 123}},
 	},
 	{
 		component: "ParameterRectangleTransformComponent",
@@ -274,7 +277,7 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 			enableScaling: true,
 			enableTranslation: true,
 		},
-		invalidDefaultProps: { enableRotation: "yes" },
+		invalidDefaultProps: {enableRotation: "yes"},
 	},
 	{
 		component: "ParameterSelectComponent",
@@ -282,56 +285,58 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 			componentSettings: {
 				Width: {
 					type: "grid",
-					settings: { gridProps: { cols: { base: 2 }, spacing: "xs" } },
+					settings: {gridProps: {cols: {base: 2}, spacing: "xs"}},
 				},
 			},
 		},
 		invalidDefaultProps: {
-			componentSettings: { Width: { type: "not-a-select-type" } },
+			componentSettings: {Width: {type: "not-a-select-type"}},
 		},
 	},
 	{
 		component: "SelectGridComponent",
 		validDefaultProps: {
-			gridProps: { cols: 2, spacing: "xs" },
+			gridProps: {cols: 2, spacing: "xs"},
 			showLabel: true,
-			imageProps: { fit: "contain" },
+			imageProps: {fit: "contain"},
 		},
-		invalidDefaultProps: { gridProps: { cols: "two" } },
+		invalidDefaultProps: {gridProps: {cols: "two"}},
 	},
 	{
 		component: "SelectCarouselComponent",
 		validDefaultProps: {
-			carouselProps: { withIndicators: false, type: "container" },
+			carouselProps: {withIndicators: false, type: "container"},
 			showLabel: true,
 		},
-		invalidDefaultProps: { carouselProps: { type: "invalid" } },
+		invalidDefaultProps: {carouselProps: {type: "invalid"}},
 	},
 	{
 		component: "SelectFullWidthCardsComponent",
 		validDefaultProps: {
-			groupProps: { wrap: "nowrap" },
-			imageProps: { w: "100px", fit: "contain" },
+			groupProps: {wrap: "nowrap"},
+			imageProps: {w: "100px", fit: "contain"},
 			searchable: false,
 		},
-		invalidDefaultProps: { searchable: "no" },
+		invalidDefaultProps: {searchable: "no"},
 	},
 	{
 		component: "StargateInput",
-		validDefaultProps: { loaderProps: { type: "dots", size: "sm" } },
-		invalidDefaultProps: { loaderProps: { type: 42 } },
+		validDefaultProps: {loaderProps: {type: "dots", size: "sm"}},
+		invalidDefaultProps: {loaderProps: {type: 42}},
 	},
 	{
 		component: "StargateShared",
 		validDefaultProps: {
-			stargateColorProps: { primary: "var(--mantine-primary-color-filled)" },
+			stargateColorProps: {
+				primary: "var(--mantine-primary-color-filled)",
+			},
 		},
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "NotificationWrapper",
-		validDefaultProps: { autoClose: 5000, successColor: "green" },
-		invalidDefaultProps: { __unrecognizedThemeKey: true },
+		validDefaultProps: {autoClose: 5000, successColor: "green"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{
 		component: "TooltipWrapper",
@@ -344,16 +349,16 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 	},
 	{
 		component: "ViewportAcceptRejectButtons",
-		validDefaultProps: { showButtons: true, iconProps: { size: "sm" } },
-		invalidDefaultProps: { showButtons: "yes" },
+		validDefaultProps: {showButtons: true, iconProps: {size: "sm"}},
+		invalidDefaultProps: {showButtons: "yes"},
 	},
 	{
 		component: "ViewportBranding",
 		validDefaultProps: {
-			dark: { logo: null, backgroundColor: "#000" },
-			light: { busyModeDisplay: "spinner" },
+			dark: {logo: null, backgroundColor: "#000"},
+			light: {busyModeDisplay: "spinner"},
 		},
-		invalidDefaultProps: { dark: { logo: 42 } },
+		invalidDefaultProps: {dark: {logo: 42}},
 	},
 	{
 		component: "ViewportComponent",
@@ -362,54 +367,54 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 			initialAutoAdjust: false,
 			className: "viewer",
 		},
-		invalidDefaultProps: { showStatistics: "yes" },
+		invalidDefaultProps: {showStatistics: "yes"},
 	},
 	{
 		component: "ViewportIconButton",
 		validDefaultProps: {
-			actionIconProps: { variant: "subtle", size: "sm" },
-			iconProps: { color: "white" },
+			actionIconProps: {variant: "subtle", size: "sm"},
+			iconProps: {color: "white"},
 		},
-		invalidDefaultProps: { actionIconProps: { variant: 123 } },
+		invalidDefaultProps: {actionIconProps: {variant: 123}},
 	},
 	{
 		component: "ViewportIconButtonDropdowns",
 		validDefaultProps: {
-			menuProps: { shadow: "md", position: "bottom-end" },
+			menuProps: {shadow: "md", position: "bottom-end"},
 		},
-		invalidDefaultProps: { menuProps: { shadow: 123 } },
+		invalidDefaultProps: {menuProps: {shadow: 123}},
 	},
 	{
 		component: "ViewportIcons",
 		validDefaultProps: {
 			enableZoomBtn: true,
 			size: 24,
-			paperProps: { shadow: "md" },
+			paperProps: {shadow: "md"},
 		},
-		invalidDefaultProps: { size: "large" },
+		invalidDefaultProps: {size: "large"},
 	},
 	{
 		component: "ViewportOverlayWrapper",
 		validDefaultProps: {
-			position: { base: "top-middle", md: "top-right" },
+			position: {base: "top-middle", md: "top-right"},
 			offset: "0.5em",
 		},
-		invalidDefaultProps: { position: "center" },
+		invalidDefaultProps: {position: "center"},
 	},
 	{
 		component: "ParameterDraggingComponent",
 		validDefaultProps: {},
-		invalidDefaultProps: { draggingColor: 42 },
+		invalidDefaultProps: {draggingColor: 42},
 	},
 	{
 		component: "ParameterGumballComponent",
 		validDefaultProps: {},
-		invalidDefaultProps: { selectionColor: 42 },
+		invalidDefaultProps: {selectionColor: 42},
 	},
 	{
 		component: "ParameterSelectionComponent",
 		validDefaultProps: {},
-		invalidDefaultProps: { selectionColor: 42 },
+		invalidDefaultProps: {selectionColor: 42},
 	},
 ] as const satisfies readonly ThemeComponentCase[];
 
@@ -421,19 +426,22 @@ function themeOverridesFor(
 		...minimalValidSettings,
 		themeOverrides: {
 			components: {
-				[component]: { defaultProps },
+				[component]: {defaultProps},
 			},
 		},
 	};
 }
 
 function listTypeScriptFilesUnder(dir: string, acc: string[] = []): string[] {
-	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+	for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
 		if (entry.name === "node_modules" || entry.name === "dist") continue;
 		const fullPath = path.join(dir, entry.name);
 		if (entry.isDirectory()) {
 			listTypeScriptFilesUnder(fullPath, acc);
-		} else if (/\.(ts|tsx)$/.test(entry.name) && !/\.(test|spec)\.(ts|tsx)$/.test(entry.name)) {
+		} else if (
+			/\.(ts|tsx)$/.test(entry.name) &&
+			!/\.(test|spec)\.(ts|tsx)$/.test(entry.name)
+		) {
 			acc.push(fullPath);
 		}
 	}
@@ -448,7 +456,7 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 				components: {
 					NotRegisteredInAppBuilderRegistry123: {
 						defaultProps: {
-							anything: { nested: true },
+							anything: {nested: true},
 							size: false,
 						},
 					},
@@ -461,7 +469,7 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 
 	describe.each(APP_OWNED_THEME_COMPONENT_CASES)(
 		"$component app-owned defaultProps",
-		({ component, validDefaultProps, invalidDefaultProps }) => {
+		({component, validDefaultProps, invalidDefaultProps}) => {
 			it("accepts minimal valid defaultProps", () => {
 				const result = validateAppBuilderSettingsJson(
 					themeOverridesFor(component, validDefaultProps),
@@ -499,7 +507,8 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 													pb: 0,
 													styles: {
 														root: {
-															"grid-template-columns": "1fr auto auto",
+															"grid-template-columns":
+																"1fr auto auto",
 															display: "grid",
 														},
 													},
@@ -533,7 +542,9 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 									bottom: {
 										components: {
 											AppBuilderHorizontalContainer: {
-												defaultProps: { wrap: "invalid-wrap" },
+												defaultProps: {
+													wrap: "invalid-wrap",
+												},
 											},
 										},
 									},
@@ -570,8 +581,10 @@ describe("validateAppBuilderSettingsJson theme validation singularity (R3)", () 
 			version: "1.0",
 			themeOverrides: {
 				components: {
-					Icon: { defaultProps: { size: "md" } },
-					ParameterColorComponent: { defaultProps: { colorFormat: "hexa" } },
+					Icon: {defaultProps: {size: "md"}},
+					ParameterColorComponent: {
+						defaultProps: {colorFormat: "hexa"},
+					},
 				},
 			},
 		});
@@ -597,7 +610,9 @@ describe("validateAppBuilderSettingsJson theme validation singularity (R3)", () 
 		const offenders: string[] = [];
 
 		for (const filePath of listTypeScriptFilesUnder(SHARED_SRC_ROOT)) {
-			const rel = path.relative(SHARED_SRC_ROOT, filePath).replace(/\\/g, "/");
+			const rel = path
+				.relative(SHARED_SRC_ROOT, filePath)
+				.replace(/\\/g, "/");
 			if (rel.includes("/__tests__/")) {
 				continue;
 			}
@@ -619,11 +634,16 @@ describe("validateAppBuilderSettingsJson theme validation singularity (R3)", () 
 
 	it("useAppBuilderSettings parses settings JSON via parseAppBuilderSettingsJson facade", () => {
 		const source = fs.readFileSync(
-			path.join(SHARED_SRC_ROOT, "features/appbuilder/model/useAppBuilderSettings.ts"),
+			path.join(
+				SHARED_SRC_ROOT,
+				"features/appbuilder/model/useAppBuilderSettings.ts",
+			),
 			"utf8",
 		);
 		expect(source).toMatch(/from\s+["'].*parseAppBuilderJson["']/);
-		expect(source.match(/parseAppBuilderSettingsJson\s*\(/g)).toHaveLength(1);
+		expect(source.match(/parseAppBuilderSettingsJson\s*\(/g)).toHaveLength(
+			1,
+		);
 		expect(source).not.toMatch(/validateAppBuilderSettingsJson/);
 		expect(source).not.toMatch(/isAppBuilderValidationEnabled/);
 		expect(source).not.toMatch(/formatAppBuilderZodError/);

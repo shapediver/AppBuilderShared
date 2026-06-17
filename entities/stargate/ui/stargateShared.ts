@@ -23,8 +23,9 @@ export const StargateSharedThemeDefaultPropsSchema = z.strictObject({
  * @configPath themeOverrides.components.StargateShared.defaultProps
  * @displayName StargateShared
  */
-export interface StargateSharedThemeDefaultProps
-	extends z.infer<typeof StargateSharedThemeDefaultPropsSchema> {
+export interface StargateSharedThemeDefaultProps extends z.infer<
+	typeof StargateSharedThemeDefaultPropsSchema
+> {
 	/**
 	 * Mantine color tokens for Stargate status UI (`mapStargateComponentStatusDefinition`).
 	 * Merged into Stargate-related components via `useProps("StargateShared", …)`.

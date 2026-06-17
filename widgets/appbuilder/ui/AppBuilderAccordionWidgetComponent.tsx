@@ -16,11 +16,13 @@ export interface AppBuilderAccordionWidgetComponentStyleProps {
 	showAcceptRejectButtons: boolean;
 }
 
-const defaultStyleProps: Partial<AppBuilderAccordionWidgetComponentStyleProps> = {
-	showAcceptRejectButtons: false,
-};
+const defaultStyleProps: Partial<AppBuilderAccordionWidgetComponentStyleProps> =
+	{
+		showAcceptRejectButtons: false,
+	};
 
-type AppBuilderAccordionWidgetComponentThemePropsType = Partial<AppBuilderAccordionWidgetComponentStyleProps>;
+type AppBuilderAccordionWidgetComponentThemePropsType =
+	Partial<AppBuilderAccordionWidgetComponentStyleProps>;
 
 export function AppBuilderAccordionWidgetComponentThemeProps(
 	props: AppBuilderAccordionWidgetComponentThemePropsType,

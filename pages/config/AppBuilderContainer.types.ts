@@ -1,5 +1,5 @@
-import {appBuilderContainerOrientationSchema} from "~/shared/features/appbuilder/lib/AppBuilderContainerOrientation";
 import {z} from "zod";
+import {appBuilderContainerOrientationSchema} from "~/shared/features/appbuilder/lib/AppBuilderContainerOrientation";
 import {AppBuilderHorizontalContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderHorizontalContainer.types";
 import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderVerticalContainer.types";
 
@@ -19,5 +19,6 @@ export const AppBuilderContainerThemeDefaultPropsSchema =
 	);
 
 /** TypeDoc surface for merged `usePropsAppBuilder("AppBuilderContainer", …)` defaults. */
-export interface AppBuilderContainerThemeDefaultProps
-	extends z.infer<typeof AppBuilderContainerThemeDefaultPropsSchema> {}
+export interface AppBuilderContainerThemeDefaultProps extends z.infer<
+	typeof AppBuilderContainerThemeDefaultPropsSchema
+> {}

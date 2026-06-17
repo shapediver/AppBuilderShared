@@ -1,12 +1,12 @@
 import {IAppBuilderWidgetPropsAccordionUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
-import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import type {MantineAccordionProps} from "@AppBuilderLib/shared/mantine-props/accordion";
 import type {MantineAccordionControlProps} from "@AppBuilderLib/shared/mantine-props/accordionControl";
 import type {MantineAccordionItemProps} from "@AppBuilderLib/shared/mantine-props/accordionItem";
 import type {MantineAccordionPanelProps} from "@AppBuilderLib/shared/mantine-props/accordionPanel";
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
 import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	Accordion,
 	MantineThemeComponent,
@@ -35,16 +35,18 @@ export interface AppBuilderAccordionUiWidgetComponentStyleProps {
 	stackProps?: MantineStackProps;
 }
 
-const defaultStyleProps: Partial<AppBuilderAccordionUiWidgetComponentStyleProps> = {
-	accordionProps: {},
-	accordionPaperProps: {px: 0, py: 0, withBorder: false, shadow: "md"},
-	accordionPanelProps: {},
-	accordionItemProps: {},
-	accordionControlProps: {},
-	stackProps: {},
-};
+const defaultStyleProps: Partial<AppBuilderAccordionUiWidgetComponentStyleProps> =
+	{
+		accordionProps: {},
+		accordionPaperProps: {px: 0, py: 0, withBorder: false, shadow: "md"},
+		accordionPanelProps: {},
+		accordionItemProps: {},
+		accordionControlProps: {},
+		stackProps: {},
+	};
 
-type AppBuilderAccordionUiWidgetComponentThemePropsType = Partial<AppBuilderAccordionUiWidgetComponentStyleProps>;
+type AppBuilderAccordionUiWidgetComponentThemePropsType =
+	Partial<AppBuilderAccordionUiWidgetComponentStyleProps>;
 
 export function AppBuilderAccordionUiWidgetComponentThemeProps(
 	props: AppBuilderAccordionUiWidgetComponentThemePropsType,

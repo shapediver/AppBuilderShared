@@ -1,8 +1,8 @@
+import {mantineSpacingSchema} from "@AppBuilderLib/shared/mantine-props/spacing";
 import {
 	IconifyIcon as IconifyIconDefinition,
 	IconProps as IconifyIconProps,
 } from "@iconify/react";
-import {mantineSpacingSchema} from "@AppBuilderLib/shared/mantine-props/spacing";
 import {MantineSize} from "@mantine/core";
 import {CSSProperties} from "react";
 import {z} from "zod";
@@ -45,8 +45,9 @@ export const IconThemeDefaultPropsSchema = z.strictObject({
  * @configPath themeOverrides.components.Icon.defaultProps
  * @displayName Icon
  */
-export interface IconThemeDefaultProps
-	extends z.infer<typeof IconThemeDefaultPropsSchema> {
+export interface IconThemeDefaultProps extends z.infer<
+	typeof IconThemeDefaultPropsSchema
+> {
 	/**
 	 * Mantine size token or CSS length.
 	 * @default "1.5rem"

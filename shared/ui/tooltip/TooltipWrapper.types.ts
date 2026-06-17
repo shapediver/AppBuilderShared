@@ -10,7 +10,7 @@ export type TooltipWrapperProps = TooltipWrapperThemeDefaultProps & {
 	 * @default true
 	 */
 	withArrow?: boolean;
-}
+};
 
 /**
  * Runtime component props — Mantine `TooltipProps` for tooltip fields;

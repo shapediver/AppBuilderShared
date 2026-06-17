@@ -14,8 +14,9 @@ export const ParameterSliderComponentThemeDefaultPropsSchema = z.strictObject({
  * @configPath themeOverrides.components.ParameterSliderComponent.defaultProps
  * @displayName ParameterSliderComponent
  */
-export interface ParameterSliderComponentThemeDefaultProps
-	extends z.infer<typeof ParameterSliderComponentThemeDefaultPropsSchema> {
+export interface ParameterSliderComponentThemeDefaultProps extends z.infer<
+	typeof ParameterSliderComponentThemeDefaultPropsSchema
+> {
 	/**
 	 * Width of the slider track (`w` on Mantine `Slider`).
 	 * @default "60%"

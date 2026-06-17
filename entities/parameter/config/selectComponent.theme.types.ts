@@ -4,9 +4,7 @@ import {mantineCardPropsSchema} from "@AppBuilderLib/shared/mantine-props/card.z
 import {mantineFlexPropsSchema} from "@AppBuilderLib/shared/mantine-props/flex.zod";
 import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
 import {mantineImagePropsSchema} from "@AppBuilderLib/shared/mantine-props/image.zod";
-import {
-	mantineCssLengthSchema,
-} from "@AppBuilderLib/shared/mantine-props/primitives.zod";
+import {mantineCssLengthSchema} from "@AppBuilderLib/shared/mantine-props/primitives.zod";
 import {mantineSpacingSchema} from "@AppBuilderLib/shared/mantine-props/spacing.zod";
 import {mantineStackPropsSchema} from "@AppBuilderLib/shared/mantine-props/stack.zod";
 import {mantineTextPropsSchema} from "@AppBuilderLib/shared/mantine-props/text.zod";
@@ -36,7 +34,10 @@ export const selectCarouselStylePropsSchema = z.strictObject({
 	includeGapInSize: z.boolean().optional(),
 	orientation: z.enum(["horizontal", "vertical"]).optional(),
 	slideGap: z
-		.union([mantineSpacingSchema, z.record(z.string(), mantineSpacingSchema)])
+		.union([
+			mantineSpacingSchema,
+			z.record(z.string(), mantineSpacingSchema),
+		])
 		.optional(),
 	slideSize: z
 		.union([z.string(), z.record(z.string(), z.string())])

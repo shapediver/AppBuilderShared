@@ -1,8 +1,8 @@
+import type {MantineBoxProps} from "@AppBuilderLib/shared/mantine-props/box";
 import {
 	IAppBuilderWidgetPropsTable,
 	IAppBuilderWidgetPropsTableColumn,
 } from "@AppBuilderLib/widgets/appbuilder/config/appbuildertable";
-import type {MantineBoxProps} from "@AppBuilderLib/shared/mantine-props/box";
 import {
 	Box,
 	MantineThemeComponent,
@@ -108,7 +108,8 @@ const defaultStyleProps: AppBuilderTableWidgetComponentStyleProps = {
 	},
 };
 
-type AppBuilderTableWidgetComponentThemePropsType = Partial<AppBuilderTableWidgetComponentStyleProps>;
+type AppBuilderTableWidgetComponentThemePropsType =
+	Partial<AppBuilderTableWidgetComponentStyleProps>;
 
 export function AppBuilderTableWidgetComponentThemeProps(
 	props: AppBuilderTableWidgetComponentThemePropsType,

@@ -11,8 +11,9 @@ export const OutputChunkLabelComponentThemeDefaultPropsSchema = z.strictObject({
  * @configPath themeOverrides.components.OutputChunkLabelComponent.defaultProps
  * @displayName OutputChunkLabelComponent
  */
-export interface OutputChunkLabelComponentThemeDefaultProps
-	extends z.infer<typeof OutputChunkLabelComponentThemeDefaultPropsSchema> {
+export interface OutputChunkLabelComponentThemeDefaultProps extends z.infer<
+	typeof OutputChunkLabelComponentThemeDefaultPropsSchema
+> {
 	/** Font weight for chunk title (`fw` on label text). */
 	fontWeight?: string;
 }

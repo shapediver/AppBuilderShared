@@ -1,9 +1,9 @@
-import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {mantineBoxPropsSchema} from "@AppBuilderLib/shared/mantine-props/box.zod";
 import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";
 import {mantineStackPropsSchema} from "@AppBuilderLib/shared/mantine-props/stack.zod";
 import {mantineTextPropsSchema} from "@AppBuilderLib/shared/mantine-props/text.zod";
+import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {z} from "zod";
 
 export const AppBuilderStackUiWidgetThemeDefaultPropsSchema = z.strictObject({

@@ -21,17 +21,19 @@ export interface AppBuilderBarChartWidgetComponentStyleProps {
 	barChartProps?: MantineBarChartProps;
 }
 
-const defaultStyleProps: Partial<AppBuilderBarChartWidgetComponentStyleProps> = {
-	widgetProps: {},
-	titleProps: {
-		style: {marginBottom: "20px"},
-	},
-	barChartProps: {
-		h: 250,
-	},
-};
+const defaultStyleProps: Partial<AppBuilderBarChartWidgetComponentStyleProps> =
+	{
+		widgetProps: {},
+		titleProps: {
+			style: {marginBottom: "20px"},
+		},
+		barChartProps: {
+			h: 250,
+		},
+	};
 
-type AppBuilderBarChartWidgetComponentThemePropsType = Partial<AppBuilderBarChartWidgetComponentStyleProps>;
+type AppBuilderBarChartWidgetComponentThemePropsType =
+	Partial<AppBuilderBarChartWidgetComponentStyleProps>;
 
 export function AppBuilderBarChartWidgetComponentThemeProps(
 	props: AppBuilderBarChartWidgetComponentThemePropsType,

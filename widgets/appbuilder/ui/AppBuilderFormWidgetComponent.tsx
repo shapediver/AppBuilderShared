@@ -16,13 +16,12 @@ import {
 	getExportComponent,
 	getParameterComponent,
 } from "@AppBuilderLib/features/appbuilder/config/componentTypes";
-import {mergeFormExportParameterValues} from "../lib/mergeFormExportParameterValues";
-import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
-import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import type {MantineActionIconProps} from "@AppBuilderLib/shared/mantine-props/actionIcon";
 import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
 import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
+import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
+import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import {
 	ActionIcon,
 	Group,
@@ -40,6 +39,7 @@ import React, {
 	useMemo,
 	useState,
 } from "react";
+import {mergeFormExportParameterValues} from "../lib/mergeFormExportParameterValues";
 
 /**
  * @docAttached
@@ -101,7 +101,8 @@ const defaultStyleProps = {
 	resetMessage: "Reset form",
 };
 
-export type AppBuilderFormWidgetComponentThemePropsType = Partial<AppBuilderFormWidgetComponentStyleProps>;
+export type AppBuilderFormWidgetComponentThemePropsType =
+	Partial<AppBuilderFormWidgetComponentStyleProps>;
 
 export function AppBuilderFormWidgetComponentThemeProps(
 	props: AppBuilderFormWidgetComponentThemePropsType,
@@ -297,9 +298,7 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 	}, [exportData, submit, resetParameters]);
 
 	const getCustomActions = useCallback(
-		(
-			paramId: string,
-		): Partial<IShapeDiverParameterActions<any>> => ({
+		(paramId: string): Partial<IShapeDiverParameterActions<any>> => ({
 			setUiValue: (v): boolean => {
 				setValues((prev) => ({
 					...prev,

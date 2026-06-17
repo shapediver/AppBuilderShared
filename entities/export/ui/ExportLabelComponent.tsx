@@ -16,7 +16,8 @@ interface Props extends PropsExport {
 
 const defaultStyleProps: ExportLabelComponentThemeDefaultProps = {};
 
-type ExportLabelComponentPropsType = Partial<ExportLabelComponentThemeDefaultProps>;
+type ExportLabelComponentPropsType =
+	Partial<ExportLabelComponentThemeDefaultProps>;
 
 export function ExportLabelComponentThemeProps(
 	props: ExportLabelComponentPropsType,

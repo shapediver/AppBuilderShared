@@ -22,8 +22,7 @@ interface Props {
  * @displayName AppBuilderStackUiWidgetComponent
  */
 export interface AppBuilderStackUiWidgetComponentStyleProps
-	extends Partial<StylePropsContent>,
-		Partial<StylePropsButton> {}
+	extends Partial<StylePropsContent>, Partial<StylePropsButton> {}
 
 type AppBuilderStackUiWidgetComponentThemePropsType =
 	AppBuilderStackUiWidgetComponentStyleProps;

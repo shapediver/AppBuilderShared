@@ -1,5 +1,4 @@
 import {
-	ColorFormatType,
 	convertFromSdColor,
 	convertToSdColor,
 } from "@AppBuilderLib/shared/lib/colors";

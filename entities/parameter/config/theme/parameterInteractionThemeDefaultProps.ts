@@ -1,8 +1,9 @@
-import {z} from "zod";
 import {
 	IDraggingParameterPropsJsonSchema,
-	IGumballTransformParameterPropsJsonSchema, ISelectionParameterPropsJsonSchema,
+	IGumballTransformParameterPropsJsonSchema,
+	ISelectionParameterPropsJsonSchema,
 } from "@shapediver/viewer.shared.types/dist/interfaces/parameter/IInteractionParameterSettings";
+import {z} from "zod";
 
 /** TypeDoc surface for `useProps("ParameterDraggingComponent", …)` theme defaults. */
 export interface ParameterDraggingComponentThemeDefaultProps extends z.infer<

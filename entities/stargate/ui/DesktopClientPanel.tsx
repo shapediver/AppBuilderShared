@@ -163,7 +163,9 @@ export function DesktopClientPanelThemeProps(
 	};
 }
 
-export default function DesktopClientPanel(props: Props & DesktopClientPanelStyleProps) {
+export default function DesktopClientPanel(
+	props: Props & DesktopClientPanelStyleProps,
+) {
 	const notifications = useNotificationStore();
 
 	const {

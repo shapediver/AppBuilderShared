@@ -1,4 +1,4 @@
-import { validateAppBuilderSettingsJson } from "../appbuildertypecheck";
+import {validateAppBuilderSettingsJson} from "../appbuildertypecheck";
 
 /** SS-9065-shaped appBuilderOverride + themeOverrides (no sessions / tickets). */
 const ss9065ShapeSettings = {
@@ -39,7 +39,8 @@ const ss9065ShapeSettings = {
 																	props: {
 																		description:
 																			"Line item description",
-																		tooltip: "Add item to cart",
+																		tooltip:
+																			"Add item to cart",
 																	},
 																},
 															},
@@ -56,7 +57,8 @@ const ss9065ShapeSettings = {
 															props: {
 																description:
 																	"Line item description",
-																tooltip: "Add item to cart",
+																tooltip:
+																	"Add item to cart",
 															},
 														},
 														{
@@ -66,15 +68,18 @@ const ss9065ShapeSettings = {
 														{
 															type: "setParameterValues",
 															props: {
-																message: "Test message",
-																parameterValues: [
-																	{
-																		parameter: {
-																			name: "Cubes",
+																message:
+																	"Test message",
+																parameterValues:
+																	[
+																		{
+																			parameter:
+																				{
+																					name: "Cubes",
+																				},
+																			value: "12",
 																		},
-																		value: "12",
-																	},
-																],
+																	],
 															},
 														},
 													],
@@ -101,7 +106,8 @@ const ss9065ShapeSettings = {
 														props: {
 															description:
 																"Line item description",
-															tooltip: "Add item to cart",
+															tooltip:
+																"Add item to cart",
 														},
 													},
 												},
@@ -116,7 +122,8 @@ const ss9065ShapeSettings = {
 											{
 												type: "addToCart",
 												props: {
-													description: "Line item description",
+													description:
+														"Line item description",
 													tooltip: "Add item to cart",
 												},
 											},
@@ -169,7 +176,8 @@ const ss9065ShapeSettings = {
 																props: {
 																	description:
 																		"Line item description",
-																	tooltip: "Add item to cart",
+																	tooltip:
+																		"Add item to cart",
 																},
 															},
 														},
@@ -186,7 +194,8 @@ const ss9065ShapeSettings = {
 														props: {
 															description:
 																"Line item description",
-															tooltip: "Add item to cart",
+															tooltip:
+																"Add item to cart",
 														},
 													},
 													{
@@ -196,7 +205,8 @@ const ss9065ShapeSettings = {
 													{
 														type: "setParameterValues",
 														props: {
-															message: "Test message",
+															message:
+																"Test message",
 															parameterValues: [
 																{
 																	parameter: {

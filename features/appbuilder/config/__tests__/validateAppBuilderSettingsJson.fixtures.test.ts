@@ -75,7 +75,7 @@ describe("validateAppBuilderSettingsJson co-located fixtures", () => {
 
 			const result = validateAppBuilderSettingsJson(json);
 			if (result.success) {
-				results.push({ file: fileName, status: "PASS" });
+				results.push({file: fileName, status: "PASS"});
 				return;
 			}
 

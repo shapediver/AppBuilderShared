@@ -1,10 +1,10 @@
-import type {MantineSpacing} from "./spacing.schema-input";
 import type {
 	MantineCssLength,
 	MantineCssStyleRecord,
 	MantineFlexWrap,
 	MantineStylesApi,
 } from "./primitives.schema-input";
+import type {MantineSpacing} from "./spacing.schema-input";
 
 /**
  * Serializable subset of Mantine `Group` props for settings theme `defaultProps`.

@@ -11,8 +11,9 @@ export const ExportLabelComponentThemeDefaultPropsSchema = z.strictObject({
  * @configPath themeOverrides.components.ExportLabelComponent.defaultProps
  * @displayName ExportLabelComponent
  */
-export interface ExportLabelComponentThemeDefaultProps
-	extends z.infer<typeof ExportLabelComponentThemeDefaultPropsSchema> {
+export interface ExportLabelComponentThemeDefaultProps extends z.infer<
+	typeof ExportLabelComponentThemeDefaultPropsSchema
+> {
 	/** Font weight for the export title text (Mantine `fw` prop). */
 	fontWeight?: string;
 }

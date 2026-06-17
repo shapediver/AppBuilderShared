@@ -32,8 +32,9 @@ export const NotificationWrapperThemeDefaultPropsSchema = z.strictObject({
  * @configPath themeOverrides.components.NotificationWrapper.defaultProps
  * @displayName NotificationWrapper
  */
-export interface NotificationStyleProps
-	extends z.infer<typeof NotificationWrapperThemeDefaultPropsSchema> {
+export interface NotificationStyleProps extends z.infer<
+	typeof NotificationWrapperThemeDefaultPropsSchema
+> {
 	/** Optional color to use for success notifications. */
 	successColor?: string;
 	/**

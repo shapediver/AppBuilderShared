@@ -1,9 +1,9 @@
-import { useMemo } from "react";
-import { useShallow } from "zustand/react/shallow";
-import { IShapeDiverParameter } from "../config/parameter";
-import { PropsParameter } from "../config/propsParameter";
-import { useShapeDiverStoreParameters } from "./useShapeDiverStoreParameters";
-import { applyOverrides } from "@AppBuilderLib/lib/mergeOverrides";
+import {applyOverrides} from "@AppBuilderLib/lib/mergeOverrides";
+import {useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
+import {IShapeDiverParameter} from "../config/parameter";
+import {PropsParameter} from "../config/propsParameter";
+import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**
  * Hook providing a shortcut to multiple abstracted parameters managed by {@link useShapeDiverStoreParameters}.
@@ -16,13 +16,13 @@ import { applyOverrides } from "@AppBuilderLib/lib/mergeOverrides";
 export function useParameters<T>(props: PropsParameter[]) {
 	const parameters = useShapeDiverStoreParameters(
 		useShallow((state) => {
-			return props.map(({ parameterId, namespace, overrides }) => {
+			return props.map(({parameterId, namespace, overrides}) => {
 				if (!state) return;
 				const _parameter = state.getParameter(namespace, parameterId);
 				if (!_parameter) return;
 				const parameter =
 					_parameter.getState() as IShapeDiverParameter<T>;
-				return { parameter, overrides: overrides };
+				return {parameter, overrides: overrides};
 			});
 		}),
 	);

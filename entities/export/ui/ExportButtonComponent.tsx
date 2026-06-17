@@ -27,17 +27,12 @@ import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/
 import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
 import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
-import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
 import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
+import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
-import {
-	Button,
-	Group,
-	MantineThemeComponent,
-	useProps,
-} from "@mantine/core";
+import {Button, Group, MantineThemeComponent, useProps} from "@mantine/core";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import {fetchFileWithToken} from "@shapediver/viewer.utils.mime-type";
 import React, {
@@ -104,7 +99,8 @@ const defaultStyleProps: Partial<ExportButtonComponentStyleProps> = {
 	},
 };
 
-type ExportButtonComponentThemePropsType = Partial<ExportButtonComponentStyleProps>;
+type ExportButtonComponentThemePropsType =
+	Partial<ExportButtonComponentStyleProps>;
 export function ExportButtonComponentThemeProps(
 	props: ExportButtonComponentThemePropsType,
 ): MantineThemeComponent {
@@ -497,8 +493,7 @@ export default function ExportButtonComponent(
 	) : null;
 
 	const standardExportButtonWithTooltip =
-		standardExportButton &&
-		definition?.tooltip ? (
+		standardExportButton && definition?.tooltip ? (
 			<TooltipWrapper label={definition.tooltip} position="top">
 				{standardExportButton}
 			</TooltipWrapper>
