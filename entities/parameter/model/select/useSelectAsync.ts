@@ -10,7 +10,7 @@ import classes from "./useSelectAsync.module.css";
 export const useSelectAsync = (
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>,
 ) => {
-	const debounceRef = useRef<NodeJS.Timeout>();
+	const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 	const handleLoadMore = useCallback(() => {
 		return scrollingApi?.loadMore?.();
 	}, [scrollingApi]);

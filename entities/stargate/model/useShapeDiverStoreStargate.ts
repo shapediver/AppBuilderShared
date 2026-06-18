@@ -21,7 +21,7 @@ import {devtools} from "zustand/middleware";
 // Dynamic import function for stargate SDK
 const importStargateSDK = () => import("@shapediver/sdk.stargate-sdk-v1");
 
-let pingTimeout: NodeJS.Timeout | null = null;
+let pingTimeout: ReturnType<typeof setTimeout> | null = null;
 const PING_INTERVAL_MS = 1000 * 30; // 30 seconds
 let stargateSDKPromise: ReturnType<typeof importStargateSDK> | null = null;
 

@@ -112,7 +112,7 @@ export function useParameterComponentCommons<T>(
 	const [value, setValue] = useState(initializer(state));
 
 	const debounceTimeout = acceptRejectMode ? 0 : debounceTimeoutForExecution;
-	const debounceRef = useRef<NodeJS.Timeout>();
+	const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
 	const handleChange = useCallback(
 		(curval: T | string, timeout?: number, cb: () => void = () => {}) => {
