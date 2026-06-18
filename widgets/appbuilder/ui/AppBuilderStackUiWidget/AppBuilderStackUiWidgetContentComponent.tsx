@@ -1,5 +1,10 @@
 import {IAppBuilderWidgetPropsStackUi} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
+import {
+	stackBodySlotStyle,
+	stackColumnStyle,
+	stackPaperStyle,
+} from "@AppBuilderLib/features/appbuilder/lib/stackLayout";
 import {useStackContext} from "@AppBuilderLib/features/appbuilder/model/useStackContext";
 import type {MantineBoxProps} from "@AppBuilderLib/shared/mantine-props/box";
 import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
@@ -11,11 +16,6 @@ import {Box, Button, Paper, Stack, useProps} from "@mantine/core";
 import {useContext} from "react";
 import AppBuilderWidgetsComponent from "../AppBuilderWidgetsComponent";
 import AppBuilderStackUiWidgetComponent from "./AppBuilderStackUiWidgetComponent";
-import {
-	stackBodySlotStyle,
-	stackColumnStyle,
-	stackPaperStyle,
-} from "@AppBuilderLib/features/appbuilder/lib/stackLayout";
 
 export interface StyleProps {
 	/**

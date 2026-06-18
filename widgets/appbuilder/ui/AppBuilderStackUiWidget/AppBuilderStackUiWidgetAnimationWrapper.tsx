@@ -1,4 +1,5 @@
 import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
+import {stackFallbackScrollStyle} from "@AppBuilderLib/features/appbuilder/lib/stackLayout";
 import {Box} from "@mantine/core";
 import React, {
 	useCallback,
@@ -8,7 +9,6 @@ import React, {
 	useState,
 } from "react";
 import AppBuilderContainer from "~/shared/pages/templates/AppBuilderContainer";
-import {stackFallbackScrollStyle} from "@AppBuilderLib/features/appbuilder/lib/stackLayout";
 
 interface Props {
 	isOpen: boolean;
