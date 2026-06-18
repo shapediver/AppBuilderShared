@@ -20,41 +20,25 @@ export default function AppBuilderContainerComponent({
 	tabs,
 	name,
 }: Props) {
-	const {
-		push,
-		pop,
-		animationDuration,
-		isTransitioning,
-		setIsTransitioning,
-		currentStackElement,
-	} = useStackContext(300);
+	const {stackPath, context} = useStackContext(300);
 
 	return (
-		<>
-			<AppBuilderStackContext.Provider
-				value={{
-					push,
-					pop,
-					animationDuration,
-					isTransitioning,
-					setIsTransitioning,
-				}}
+		<AppBuilderStackContext.Provider value={context}>
+			<AppBuilderTabsComponent
+				namespace={namespace}
+				tabs={tabs}
+				containerName={name}
+			/>
+			<AppBuilderStackUiWidgetComponent
+				namespace={namespace}
+				stackPath={stackPath}
+				liveWidgets={widgets}
 			>
-				<AppBuilderTabsComponent
+				<AppBuilderWidgetsComponent
 					namespace={namespace}
-					tabs={tabs}
-					containerName={name}
+					widgets={widgets}
 				/>
-				<AppBuilderStackUiWidgetComponent
-					namespace={namespace}
-					stackElement={currentStackElement}
-				>
-					<AppBuilderWidgetsComponent
-						namespace={namespace}
-						widgets={widgets}
-					/>
-				</AppBuilderStackUiWidgetComponent>
-			</AppBuilderStackContext.Provider>
-		</>
+			</AppBuilderStackUiWidgetComponent>
+		</AppBuilderStackContext.Provider>
 	);
 }

@@ -84,7 +84,7 @@ export default function AppBuilderStackUiWidgetButtonComponent(props: Props) {
 		<Paper {...stackPaperProps}>
 			<Stack {...stackProps}>
 				<Button
-					onClick={() => stackContext.push(props)}
+					onClick={() => stackContext.push(name)}
 					rightSection={
 						<Icon
 							{...iconForwardProps}
@@ -95,8 +95,15 @@ export default function AppBuilderStackUiWidgetButtonComponent(props: Props) {
 						/>
 					}
 					leftSection={icon ? <Icon iconType={icon} /> : undefined}
-					styles={icon ? {label: {flex: 1}} : undefined}
 					{...buttonForwardProps}
+					styles={{
+						...(icon ? {label: {flex: 1}} : undefined),
+						root: {
+							// Prevents 1px press translateY from flashing a scrollbar in tight containers.
+							"&:active": {transform: "none"},
+							"&[data-active]": {transform: "none"},
+						},
+					}}
 				>
 					<Text {...itemTextProps}>
 						{tooltip ? (
