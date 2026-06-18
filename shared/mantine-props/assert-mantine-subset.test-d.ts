@@ -37,6 +37,7 @@ import type {MantineDividerProps} from "./divider";
 import type {MantineFlexProps} from "./flex";
 import type {MantineGroupProps} from "./group";
 import type {MantineImageProps} from "./image";
+import type {MantinePropsSubset} from "./mantine-props-subset";
 import type {MantineMenuProps} from "./menu";
 import type {MantineMenuDropdownProps} from "./menuDropdown";
 import type {MantinePaperProps} from "./paper";
@@ -45,12 +46,20 @@ import type {MantineTextProps} from "./text";
 import type {MantineTitleProps} from "./title";
 import type {MantineTooltipProps} from "./tooltip";
 import type {MantineTransitionProps} from "./transition";
-import type {MantinePropsSubset} from "./mantine-props-subset";
 
-type _MantineGroupPropsSubset = MantinePropsSubset<GroupProps, MantineGroupProps>;
-type _MantineButtonPropsSubset = MantinePropsSubset<ButtonProps, MantineButtonProps>;
+type _MantineGroupPropsSubset = MantinePropsSubset<
+	GroupProps,
+	MantineGroupProps
+>;
+type _MantineButtonPropsSubset = MantinePropsSubset<
+	ButtonProps,
+	MantineButtonProps
+>;
 type _MantineTextPropsSubset = MantinePropsSubset<TextProps, MantineTextProps>;
-type _MantinePaperPropsSubset = MantinePropsSubset<PaperProps, MantinePaperProps>;
+type _MantinePaperPropsSubset = MantinePropsSubset<
+	PaperProps,
+	MantinePaperProps
+>;
 type _MantineAccordionPropsSubset = MantinePropsSubset<
 	AccordionProps,
 	MantineAccordionProps
@@ -75,7 +84,10 @@ type _MantineMenuDropdownPropsSubset = MantinePropsSubset<
 	Pick<MenuDropdownProps, keyof MantineMenuDropdownProps>,
 	MantineMenuDropdownProps
 >;
-type _MantineStackPropsSubset = MantinePropsSubset<StackProps, MantineStackProps>;
+type _MantineStackPropsSubset = MantinePropsSubset<
+	StackProps,
+	MantineStackProps
+>;
 type _MantineBoxPropsSubset = MantinePropsSubset<BoxProps, MantineBoxProps>;
 type _MantineTooltipPropsSubset = MantinePropsSubset<
 	Pick<TooltipProps, keyof MantineTooltipProps>,
@@ -89,8 +101,14 @@ type _MantineCheckboxPropsSubset = MantinePropsSubset<
 	CheckboxProps,
 	MantineCheckboxProps
 >;
-type _MantineTitlePropsSubset = MantinePropsSubset<TitleProps, MantineTitleProps>;
-type _MantineBadgePropsSubset = MantinePropsSubset<BadgeProps, MantineBadgeProps>;
+type _MantineTitlePropsSubset = MantinePropsSubset<
+	TitleProps,
+	MantineTitleProps
+>;
+type _MantineBadgePropsSubset = MantinePropsSubset<
+	BadgeProps,
+	MantineBadgeProps
+>;
 type _MantineDividerPropsSubset = MantinePropsSubset<
 	DividerProps,
 	MantineDividerProps
@@ -100,7 +118,10 @@ type _MantineTransitionPropsSubset = MantinePropsSubset<
 	MantineTransitionProps
 >;
 type _MantineCardPropsSubset = MantinePropsSubset<CardProps, MantineCardProps>;
-type _MantineImagePropsSubset = MantinePropsSubset<ImageProps, MantineImageProps>;
+type _MantineImagePropsSubset = MantinePropsSubset<
+	ImageProps,
+	MantineImageProps
+>;
 type _MantineFlexPropsSubset = MantinePropsSubset<FlexProps, MantineFlexProps>;
 
 declare const assertGroup: _MantineGroupPropsSubset;

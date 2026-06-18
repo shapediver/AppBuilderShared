@@ -14,8 +14,9 @@ export const LoaderPageThemeDefaultPropsSchema = z.strictObject({
  * @configPath themeOverrides.components.LoaderPage.defaultProps
  * @displayName LoaderPage
  */
-export interface LoaderPageThemeDefaultProps
-	extends z.infer<typeof LoaderPageThemeDefaultPropsSchema> {
+export interface LoaderPageThemeDefaultProps extends z.infer<
+	typeof LoaderPageThemeDefaultPropsSchema
+> {
 	/**
 	 * Type of the loader
 	 * @see https://mantine.dev/core/loader/?t=props

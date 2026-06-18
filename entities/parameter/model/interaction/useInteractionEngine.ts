@@ -61,9 +61,10 @@ export function useInteractionEngine(
 		return () => {
 			// clean up the interaction engine
 			if (interactionEngines[viewportId]) {
-				const idx = interactionEngines[viewportId].components.indexOf(
-					componentId,
-				);
+				const idx =
+					interactionEngines[viewportId].components.indexOf(
+						componentId,
+					);
 				if (idx !== -1) {
 					interactionEngines[viewportId].components.splice(idx, 1);
 				}

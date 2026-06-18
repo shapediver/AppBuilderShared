@@ -5,7 +5,6 @@ import {
 	useComputedColorScheme,
 	useMantineColorScheme,
 } from "@mantine/core";
-import React from "react";
 import {useLinkClickHandler} from "react-router-dom";
 import classes from "./HeaderBar.module.css";
 

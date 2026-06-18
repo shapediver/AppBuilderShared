@@ -6,14 +6,15 @@ import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper
 import {mantineStackPropsSchema} from "@AppBuilderLib/shared/mantine-props/stack.zod";
 import {z} from "zod";
 
-export const AppBuilderAccordionUiWidgetComponentThemeDefaultPropsSchema = z.strictObject({
-	accordionProps: mantineAccordionPropsSchema.optional(),
-	accordionPaperProps: mantinePaperPropsSchema.optional(),
-	accordionItemProps: mantineAccordionItemPropsSchema.optional(),
-	accordionControlProps: mantineAccordionControlPropsSchema.optional(),
-	accordionPanelProps: mantineAccordionPanelPropsSchema.optional(),
-	stackProps: mantineStackPropsSchema.optional(),
-});
+export const AppBuilderAccordionUiWidgetComponentThemeDefaultPropsSchema =
+	z.strictObject({
+		accordionProps: mantineAccordionPropsSchema.optional(),
+		accordionPaperProps: mantinePaperPropsSchema.optional(),
+		accordionItemProps: mantineAccordionItemPropsSchema.optional(),
+		accordionControlProps: mantineAccordionControlPropsSchema.optional(),
+		accordionPanelProps: mantineAccordionPanelPropsSchema.optional(),
+		stackProps: mantineStackPropsSchema.optional(),
+	});
 
 export type AppBuilderAccordionUiWidgetComponentThemeDefaultProps = z.infer<
 	typeof AppBuilderAccordionUiWidgetComponentThemeDefaultPropsSchema

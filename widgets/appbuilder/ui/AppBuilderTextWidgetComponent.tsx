@@ -1,7 +1,7 @@
 import {IAppBuilderWidgetPropsText} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
+import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import {
 	MantineStyleProp,
 	MantineThemeComponent,
@@ -9,7 +9,7 @@ import {
 	Text,
 	useProps,
 } from "@mantine/core";
-import React, {useContext} from "react";
+import {useContext} from "react";
 
 /**
  * Text / markdown widget wrapped in Mantine `Paper`. Theme `defaultProps` follow {@link MantinePaperProps}.
@@ -19,8 +19,7 @@ import React, {useContext} from "react";
  * @configPath themeOverrides.components.AppBuilderTextWidgetComponent.defaultProps
  * @displayName AppBuilderTextWidgetComponent
  */
-export interface AppBuilderTextWidgetComponentStyleProps
-	extends MantinePaperProps {}
+export type AppBuilderTextWidgetComponentStyleProps = MantinePaperProps;
 
 const defaultStyleProps: Partial<AppBuilderTextWidgetComponentStyleProps> = {};
 

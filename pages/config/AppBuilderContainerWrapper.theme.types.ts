@@ -7,9 +7,11 @@ const containerThemeOverridesSchema = z.record(
 );
 
 /** Theme `defaultProps` for `useProps("AppBuilderContainerWrapper", …)`. */
-export const AppBuilderContainerWrapperThemeDefaultPropsSchema = z.strictObject({
-	containerThemeOverrides: containerThemeOverridesSchema.optional(),
-});
+export const AppBuilderContainerWrapperThemeDefaultPropsSchema = z.strictObject(
+	{
+		containerThemeOverrides: containerThemeOverridesSchema.optional(),
+	},
+);
 
 export type AppBuilderContainerWrapperThemeDefaultProps = z.infer<
 	typeof AppBuilderContainerWrapperThemeDefaultPropsSchema

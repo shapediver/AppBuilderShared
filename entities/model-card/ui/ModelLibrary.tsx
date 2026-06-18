@@ -1,7 +1,6 @@
 import {TModelQueryProps} from "@AppBuilderLib/entities/model-card/config/shapediverStorePlatformModels";
 import {useShapeDiverStorePlatformModels} from "@AppBuilderLib/entities/model-card/model/useShapeDiverStorePlatformModels";
 import {Alert, Loader, SimpleGrid} from "@mantine/core";
-import React from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
 import ModelCard, {IModelCardProps} from "./ModelCard";

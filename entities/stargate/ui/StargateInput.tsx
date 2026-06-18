@@ -79,7 +79,9 @@ export function StargateInputThemeProps(
 /**
  * StargateInput component
  */
-export default function StargateInput(props: Props & Partial<StargateInputStyleProps>) {
+export default function StargateInput(
+	props: Props & Partial<StargateInputStyleProps>,
+) {
 	const {buttonProps, loadingButtonProps, textProps, loaderProps} = useProps(
 		"StargateInput",
 		defaultStyleProps,

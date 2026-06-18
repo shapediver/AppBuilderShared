@@ -11,8 +11,7 @@ import {IShapeDiverExampleModels} from "../config/examplemodel";
  * @configPath themeOverrides.components.DefaultSession.defaultProps
  * @displayName DefaultSession
  */
-export interface DefaultSessionStyleProps
-	extends Partial<IAppBuilderSettingsSession> {
+export interface DefaultSessionStyleProps extends Partial<IAppBuilderSettingsSession> {
 	/** Name of example model */
 	example?: string;
 	/** Available example models */

@@ -23,7 +23,7 @@ import {
 } from "@shapediver/viewer.session";
 import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
 import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,

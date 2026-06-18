@@ -1,9 +1,9 @@
+import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
 import type {
 	MantineCssLength,
 	MantineFlexWrap,
 } from "@AppBuilderLib/shared/mantine-props/primitives";
 import type {MantineSpacing} from "@AppBuilderLib/shared/mantine-props/spacing";
-import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
 import {z} from "zod";
 
 export const AppBuilderHorizontalContainerThemeDefaultPropsSchema =
@@ -15,8 +15,9 @@ export const AppBuilderHorizontalContainerThemeDefaultPropsSchema =
  * @configPath themeOverrides.components.AppBuilderHorizontalContainer.defaultProps
  * @displayName AppBuilderHorizontalContainer
  */
-export interface AppBuilderHorizontalContainerThemeDefaultProps
-	extends z.infer<typeof AppBuilderHorizontalContainerThemeDefaultPropsSchema> {
+export interface AppBuilderHorizontalContainerThemeDefaultProps extends z.infer<
+	typeof AppBuilderHorizontalContainerThemeDefaultPropsSchema
+> {
 	/**
 	 * Group width
 	 * @default "100%"

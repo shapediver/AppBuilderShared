@@ -371,12 +371,12 @@ export class DummyECommerceApiActions implements IECommerceApiActions {
 
 export class DummyECommerceApiConnectorActions implements IECommerceApiConnectorActions {
 	createModelState(
-		data: ICreateModelStateData,
+		_data: ICreateModelStateData,
 	): Promise<ICreateModelStateResult> {
 		return Promise.resolve({} as ICreateModelStateResult);
 	}
 	importModelState(
-		data: IImportModelStateData,
+		_data: IImportModelStateData,
 	): Promise<IImportModelStateResult> {
 		return Promise.resolve({success: false, message: "Not implemented"});
 	}

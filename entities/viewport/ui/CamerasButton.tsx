@@ -1,6 +1,5 @@
 import {firstLetterUppercase} from "@AppBuilderLib/shared/lib/strings";
 import {IViewportApi} from "@shapediver/viewer.viewport";
-import React from "react";
 import {CommonButtonProps} from "../config/types";
 import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 

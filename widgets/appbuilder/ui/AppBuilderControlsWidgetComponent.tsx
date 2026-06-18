@@ -20,13 +20,8 @@ import {
 import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
 import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
-import {
-	MantineThemeComponent,
-	Paper,
-	Stack,
-	useProps,
-} from "@mantine/core";
-import React, {ReactElement, useContext, useMemo} from "react";
+import {MantineThemeComponent, Paper, Stack, useProps} from "@mantine/core";
+import {ReactElement, useContext, useMemo} from "react";
 
 /**
  * @docAttached
@@ -40,15 +35,17 @@ export interface AppBuilderControlsWidgetComponentStyleProps {
 	outputPaperProps?: MantinePaperProps;
 }
 
-const defaultStyleProps: Partial<AppBuilderControlsWidgetComponentStyleProps> = {
-	stackProps: {},
-	elementPaperProps: {
-		shadow: "none",
-	},
-	outputPaperProps: {px: 0, py: 0, withBorder: false, shadow: "md"},
-};
+const defaultStyleProps: Partial<AppBuilderControlsWidgetComponentStyleProps> =
+	{
+		stackProps: {},
+		elementPaperProps: {
+			shadow: "none",
+		},
+		outputPaperProps: {px: 0, py: 0, withBorder: false, shadow: "md"},
+	};
 
-type AppBuilderControlsWidgetComponentThemePropsType = Partial<AppBuilderControlsWidgetComponentStyleProps>;
+type AppBuilderControlsWidgetComponentThemePropsType =
+	Partial<AppBuilderControlsWidgetComponentStyleProps>;
 
 export function AppBuilderControlsWidgetComponentThemeProps(
 	props: AppBuilderControlsWidgetComponentThemePropsType,

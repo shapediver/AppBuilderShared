@@ -21,7 +21,7 @@ import {
 	RENDERER_TYPE,
 	validateDrawingParameterSettings,
 } from "@shapediver/viewer.session";
-import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,

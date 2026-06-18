@@ -4,13 +4,14 @@ import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportI
 import {MantineThemeComponent, useProps} from "@mantine/core";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
-import type {CreateModelStateHookThemeDefaultProps} from "./useCreateModelState.types";
 import {
 	ICreateModelStateData,
 	ICreateModelStateResult,
 } from "../config/createModelState";
+import type {CreateModelStateHookThemeDefaultProps} from "./useCreateModelState.types";
 
-type CreateModelStateHookThemePropsType = Partial<CreateModelStateHookThemeDefaultProps>;
+type CreateModelStateHookThemePropsType =
+	Partial<CreateModelStateHookThemeDefaultProps>;
 
 const defaultThemeProps: CreateModelStateHookThemeDefaultProps = {};
 

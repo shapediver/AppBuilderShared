@@ -3,7 +3,7 @@ import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/Compon
 import ToggleIcon from "@AppBuilderLib/shared/ui/toggle-icon/ToggleIcon";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {Avatar} from "@mantine/core";
-import React, {useContext, useMemo} from "react";
+import {useContext, useMemo} from "react";
 import ModelCardOverlayWrapper, {
 	ModelCardOverlayWrapperThemePropsType,
 } from "./ModelCardOverlayWrapper";

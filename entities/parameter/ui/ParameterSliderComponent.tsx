@@ -22,8 +22,8 @@ import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useSettingsMinMax} from "../model/useSettingsMinMax";
 import ParameterLabelComponent from "./ParameterLabelComponent";
-import ParameterWrapperComponent from "./ParameterWrapperComponent";
 import type {ParameterSliderComponentThemeDefaultProps} from "./ParameterSliderComponent.types";
+import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 type OnNumberInputValueChange = NonNullable<NumberInputProps["onValueChange"]>;
 

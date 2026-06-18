@@ -1,12 +1,14 @@
-import {appBuilderTemplateThemeIdSchema} from "~/shared/features/appbuilder/lib/AppBuilderTemplate";
-import type {AppBuilderTemplateThemeId} from "~/shared/features/appbuilder/lib/AppBuilderTemplate";
 import {z} from "zod";
+import type {AppBuilderTemplateThemeId} from "~/shared/features/appbuilder/lib/AppBuilderTemplate";
+import {appBuilderTemplateThemeIdSchema} from "~/shared/features/appbuilder/lib/AppBuilderTemplate";
 
 /** Theme `defaultProps` for `useProps("AppBuilderTemplateSelector", …)`. */
-export const AppBuilderTemplateSelectorThemeDefaultPropsSchema = z.strictObject({
-	template: appBuilderTemplateThemeIdSchema.optional(),
-	showContainerButtons: z.boolean().optional(),
-});
+export const AppBuilderTemplateSelectorThemeDefaultPropsSchema = z.strictObject(
+	{
+		template: appBuilderTemplateThemeIdSchema.optional(),
+		showContainerButtons: z.boolean().optional(),
+	},
+);
 
 /**
  * @docAttached
@@ -14,8 +16,9 @@ export const AppBuilderTemplateSelectorThemeDefaultPropsSchema = z.strictObject(
  * @configPath themeOverrides.components.AppBuilderTemplateSelector.defaultProps
  * @displayName AppBuilderTemplateSelector
  */
-export interface AppBuilderTemplateSelectorThemeDefaultProps
-	extends z.infer<typeof AppBuilderTemplateSelectorThemeDefaultPropsSchema> {
+export interface AppBuilderTemplateSelectorThemeDefaultProps extends z.infer<
+	typeof AppBuilderTemplateSelectorThemeDefaultPropsSchema
+> {
 	/**
 	 * Layout template key to render
 	 * @default "appshell"

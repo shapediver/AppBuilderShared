@@ -25,7 +25,6 @@ import {
 import {useCallback, useEffect, useMemo} from "react";
 import {
 	IAppBuilderSettings,
-	IAppBuilderSettingsJson,
 	IAppBuilderSettingsJsonSession,
 	IAppBuilderSettingsSession,
 } from "../config/appbuilder";

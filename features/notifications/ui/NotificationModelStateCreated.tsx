@@ -1,7 +1,7 @@
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {Anchor} from "@mantine/core";
-import React, {useCallback} from "react";
+import {useCallback} from "react";
 
 /**
  * Props for the NotificationModelStateCreated component.

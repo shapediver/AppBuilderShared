@@ -26,9 +26,9 @@ describe("parseAppBuilderSettingsJson", () => {
 	});
 
 	it("returns parsed data when validation env is on and input is valid", () => {
-		expect(parseAppBuilderSettingsJson(minimalValidSettings, envOn)).toEqual(
-			minimalValidSettings,
-		);
+		expect(
+			parseAppBuilderSettingsJson(minimalValidSettings, envOn),
+		).toEqual(minimalValidSettings);
 	});
 
 	it("throws with settings prefix when validation env is on and input is invalid", () => {

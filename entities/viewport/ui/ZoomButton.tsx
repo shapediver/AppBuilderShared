@@ -1,5 +1,4 @@
 import {IViewportApi} from "@shapediver/viewer.viewport";
-import React from "react";
 import {CommonButtonProps} from "../config/types";
 import ViewportIconButton from "./ViewportIconButton";
 

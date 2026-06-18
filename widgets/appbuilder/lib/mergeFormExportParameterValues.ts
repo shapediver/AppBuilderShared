@@ -11,7 +11,9 @@ export interface FormWidgetParameterValue {
  * Export values are applied first; form values add missing parameters or override by name.
  */
 export function mergeFormExportParameterValues(
-	exportParameterValues: IAppBuilderActionPropsSetParameterValue[] | undefined,
+	exportParameterValues:
+		| IAppBuilderActionPropsSetParameterValue[]
+		| undefined,
 	formParameterValues: FormWidgetParameterValue[],
 ): IAppBuilderActionPropsSetParameterValue[] {
 	const merged: IAppBuilderActionPropsSetParameterValue[] = [

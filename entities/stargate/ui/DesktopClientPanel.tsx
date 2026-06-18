@@ -26,7 +26,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import {ISdStargateClientModel} from "@shapediver/sdk.stargate-sdk-v1";
-import React, {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /**
@@ -163,7 +163,9 @@ export function DesktopClientPanelThemeProps(
 	};
 }
 
-export default function DesktopClientPanel(props: Props & DesktopClientPanelStyleProps) {
+export default function DesktopClientPanel(
+	props: Props & DesktopClientPanelStyleProps,
+) {
 	const notifications = useNotificationStore();
 
 	const {

@@ -13,7 +13,9 @@ export const THEME_COMPONENT_DEFAULT_PROPS_REGISTRY_KEYS: readonly ThemeComponen
 		) as ThemeComponentDefaultPropsRegistryKey[],
 	);
 
-const registryKeySet = new Set<string>(THEME_COMPONENT_DEFAULT_PROPS_REGISTRY_KEYS);
+const registryKeySet = new Set<string>(
+	THEME_COMPONENT_DEFAULT_PROPS_REGISTRY_KEYS,
+);
 
 export function isRegisteredThemeComponentKey(name: string): boolean {
 	return registryKeySet.has(name);

@@ -13,7 +13,6 @@ import {
 	Stack,
 	useProps,
 } from "@mantine/core";
-import React from "react";
 import {useSdTFData} from "../model/useSdTFData";
 import OutputChunkComponent from "./OutputChunkComponent";
 

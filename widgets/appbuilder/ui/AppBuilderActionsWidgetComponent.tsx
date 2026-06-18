@@ -9,7 +9,7 @@ import {
 	PaperProps,
 	Stack,
 } from "@mantine/core";
-import React, {useContext} from "react";
+import {useContext} from "react";
 
 type StylePros = PaperProps;
 

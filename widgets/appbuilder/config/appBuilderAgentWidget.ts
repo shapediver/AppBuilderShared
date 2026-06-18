@@ -9,8 +9,7 @@ import {MantineThemeComponent} from "@mantine/core";
  * @configPath themeOverrides.components.AppBuilderAgentWidgetComponent.defaultProps
  * @displayName AppBuilderAgentWidgetComponent
  */
-export interface AppBuilderAgentWidgetComponentStyleProps
-	extends MantinePaperProps {}
+export interface AppBuilderAgentWidgetComponentStyleProps extends MantinePaperProps {}
 
 /** Agent configuration passed via theme `defaultProps` or widget props. */
 export interface AppBuilderAgentWidgetComponentConfigProps {

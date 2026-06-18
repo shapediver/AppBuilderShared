@@ -5,7 +5,6 @@ import {
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
-import React from "react";
 import {
 	TooltipWrapperComponentProps,
 	TooltipWrapperProps,

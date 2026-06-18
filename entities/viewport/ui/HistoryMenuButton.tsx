@@ -4,7 +4,7 @@ import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/use
 import ImportModelStateDialog from "@AppBuilderLib/features/model-state/ui/ImportModelStateDialog";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
-import React, {useCallback, useMemo, useState} from "react";
+import {useCallback, useMemo, useState} from "react";
 import {CommonButtonProps} from "../config/types";
 import ViewportIconButtonDropdown from "./ViewportIconButtonDropdown";
 

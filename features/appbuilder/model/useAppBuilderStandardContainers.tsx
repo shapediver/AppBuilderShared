@@ -8,7 +8,7 @@ import {
 } from "@AppBuilderLib/pages/config/appbuildertemplates";
 import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
-import React, {useContext, useEffect, useMemo} from "react";
+import {useContext, useEffect, useMemo} from "react";
 import {
 	AppBuilderContainerNameType,
 	IAppBuilder,

@@ -7,7 +7,6 @@ import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper"
 import type {MantineTitleProps} from "@AppBuilderLib/shared/mantine-props/title";
 import {LineChart} from "@mantine/charts";
 import {MantineThemeComponent, Paper, Title, useProps} from "@mantine/core";
-import React from "react";
 
 /**
  * @docAttached
@@ -21,17 +20,19 @@ export interface AppBuilderLineChartWidgetComponentStyleProps {
 	lineChartProps?: MantineLineChartProps;
 }
 
-const defaultStyleProps: Partial<AppBuilderLineChartWidgetComponentStyleProps> = {
-	widgetProps: {},
-	titleProps: {
-		style: {marginBottom: "20px"},
-	},
-	lineChartProps: {
-		h: 250,
-	},
-};
+const defaultStyleProps: Partial<AppBuilderLineChartWidgetComponentStyleProps> =
+	{
+		widgetProps: {},
+		titleProps: {
+			style: {marginBottom: "20px"},
+		},
+		lineChartProps: {
+			h: 250,
+		},
+	};
 
-type AppBuilderLineChartWidgetComponentThemePropsType = Partial<AppBuilderLineChartWidgetComponentStyleProps>;
+type AppBuilderLineChartWidgetComponentThemePropsType =
+	Partial<AppBuilderLineChartWidgetComponentStyleProps>;
 
 export function AppBuilderLineChartWidgetComponentThemeProps(
 	props: AppBuilderLineChartWidgetComponentThemePropsType,

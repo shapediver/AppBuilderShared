@@ -2,9 +2,7 @@ import {isAppBuilderValidationEnabled} from "../appBuilderSettingsValidationEnv"
 
 describe("isAppBuilderValidationEnabled", () => {
 	it("is false when env var is unset", () => {
-		expect(isAppBuilderValidationEnabled({})).toBe(
-			false,
-		);
+		expect(isAppBuilderValidationEnabled({})).toBe(false);
 	});
 
 	it("is true for true or 1", () => {

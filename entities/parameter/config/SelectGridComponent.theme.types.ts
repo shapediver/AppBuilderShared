@@ -1,6 +1,4 @@
-import {
-	selectSimpleGridPropsSchema,
-} from "@AppBuilderLib/entities/parameter/config/selectComponent.theme.types";
+import {selectSimpleGridPropsSchema} from "@AppBuilderLib/entities/parameter/config/selectComponent.theme.types";
 import {mantineCardPropsSchema} from "@AppBuilderLib/shared/mantine-props/card.zod";
 import {mantineImagePropsSchema} from "@AppBuilderLib/shared/mantine-props/image.zod";
 import {mantineStackPropsSchema} from "@AppBuilderLib/shared/mantine-props/stack.zod";

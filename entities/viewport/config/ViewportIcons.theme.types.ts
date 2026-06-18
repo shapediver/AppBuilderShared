@@ -1,9 +1,9 @@
 import {ViewportOverlayWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportOverlayWrapper.theme.types";
-import {mantineCssStyleRecordSchema} from "@AppBuilderLib/shared/mantine-props/primitives.zod";
+import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
 import {mantineDividerPropsSchema} from "@AppBuilderLib/shared/mantine-props/divider.zod";
 import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";
+import {mantineCssStyleRecordSchema} from "@AppBuilderLib/shared/mantine-props/primitives.zod";
 import {mantineTransitionPropsSchema} from "@AppBuilderLib/shared/mantine-props/transition.zod";
-import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
 import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("ViewportIcons", …)`. */

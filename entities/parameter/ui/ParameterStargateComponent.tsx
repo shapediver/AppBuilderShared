@@ -22,7 +22,7 @@ import {
 	MantineThemeComponent,
 	useProps,
 } from "@mantine/core";
-import React, {useMemo} from "react";
+import {useMemo} from "react";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,

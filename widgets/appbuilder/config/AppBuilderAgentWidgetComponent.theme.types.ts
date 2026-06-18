@@ -18,7 +18,9 @@ const AppBuilderAgentWidgetComponentConfigPropsSchema = z.strictObject({
 
 /** Theme `defaultProps` for `useProps("AppBuilderAgentWidgetComponent", …)`. */
 export const AppBuilderAgentWidgetComponentThemeDefaultPropsSchema =
-	mantinePaperPropsSchema.merge(AppBuilderAgentWidgetComponentConfigPropsSchema);
+	mantinePaperPropsSchema.merge(
+		AppBuilderAgentWidgetComponentConfigPropsSchema,
+	);
 
 export type AppBuilderAgentWidgetComponentThemeDefaultProps = z.infer<
 	typeof AppBuilderAgentWidgetComponentThemeDefaultPropsSchema

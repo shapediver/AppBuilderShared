@@ -70,7 +70,8 @@ export default [
 		input: "src/shared/shared/mantine-props/accordion.schema-input.ts",
 		output: "src/shared/shared/mantine-props/accordion.zod.ts",
 		getSchemaName: (id) => {
-			if (id === "MantineAccordionProps") return "mantineAccordionPropsSchema";
+			if (id === "MantineAccordionProps")
+				return "mantineAccordionPropsSchema";
 			return `${id}Schema`;
 		},
 	},
@@ -146,7 +147,8 @@ export default [
 		input: "src/shared/shared/mantine-props/tooltip.schema-input.ts",
 		output: "src/shared/shared/mantine-props/tooltip.zod.ts",
 		getSchemaName: (id) => {
-			if (id === "MantineTooltipProps") return "mantineTooltipPropsSchema";
+			if (id === "MantineTooltipProps")
+				return "mantineTooltipPropsSchema";
 			return `${id}Schema`;
 		},
 	},
@@ -229,7 +231,8 @@ export default [
 		input: "src/shared/shared/mantine-props/checkbox.schema-input.ts",
 		output: "src/shared/shared/mantine-props/checkbox.zod.ts",
 		getSchemaName: (id) => {
-			if (id === "MantineCheckboxProps") return "mantineCheckboxPropsSchema";
+			if (id === "MantineCheckboxProps")
+				return "mantineCheckboxPropsSchema";
 			return `${id}Schema`;
 		},
 	},
@@ -256,7 +259,8 @@ export default [
 		input: "src/shared/shared/mantine-props/divider.schema-input.ts",
 		output: "src/shared/shared/mantine-props/divider.zod.ts",
 		getSchemaName: (id) => {
-			if (id === "MantineDividerProps") return "mantineDividerPropsSchema";
+			if (id === "MantineDividerProps")
+				return "mantineDividerPropsSchema";
 			return `${id}Schema`;
 		},
 	},
@@ -285,7 +289,8 @@ export default [
 		input: "src/shared/shared/mantine-props/barChart.schema-input.ts",
 		output: "src/shared/shared/mantine-props/barChart.zod.ts",
 		getSchemaName: (id) => {
-			if (id === "MantineBarChartProps") return "mantineBarChartPropsSchema";
+			if (id === "MantineBarChartProps")
+				return "mantineBarChartPropsSchema";
 			return `${id}Schema`;
 		},
 	},
@@ -304,7 +309,8 @@ export default [
 		input: "src/shared/shared/mantine-props/pieChart.schema-input.ts",
 		output: "src/shared/shared/mantine-props/pieChart.zod.ts",
 		getSchemaName: (id) => {
-			if (id === "MantinePieChartProps") return "mantinePieChartPropsSchema";
+			if (id === "MantinePieChartProps")
+				return "mantinePieChartPropsSchema";
 			return `${id}Schema`;
 		},
 	},

@@ -8,7 +8,7 @@ import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {Button, Paper, Stack, Text, useProps} from "@mantine/core";
-import React, {useContext} from "react";
+import {useContext} from "react";
 
 export interface StyleProps {
 	/**

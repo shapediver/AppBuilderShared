@@ -1,7 +1,7 @@
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {QUERYPARAM_MODELSTATEID} from "@AppBuilderLib/shared/config/queryparams";
 import {applyModelStateToUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
-import React, {useCallback, useState} from "react";
+import {useCallback, useState} from "react";
 import {IAppBuilderLegacyActionPropsSetBrowserLocation} from "../config/appbuilder";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
 

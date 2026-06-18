@@ -5,7 +5,7 @@ import {
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
-import React, {forwardRef, useMemo} from "react";
+import {forwardRef, useMemo} from "react";
 import classes from "./Icon.module.css";
 import {
 	CustomCSSProperties,

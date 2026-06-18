@@ -188,7 +188,7 @@ export const useShapeDiverStoreStandardContainers =
 							};
 						},
 						false,
-						`setDefaultContainers`,
+						"setDefaultContainers",
 					),
 
 				resetDefaultContainers: () =>

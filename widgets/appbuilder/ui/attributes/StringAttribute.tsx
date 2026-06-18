@@ -11,7 +11,7 @@ import {
 	IStringGradient,
 } from "@shapediver/viewer.features.attribute-visualization";
 import {Converter, MaterialUnlitData} from "@shapediver/viewer.session";
-import React, {useMemo} from "react";
+import {useMemo} from "react";
 import BaseAttribute from "./BaseAttribute";
 
 type StyleProps = {

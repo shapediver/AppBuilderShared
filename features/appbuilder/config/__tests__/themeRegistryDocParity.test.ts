@@ -49,7 +49,9 @@ function readDocFlatThemeComponentNames(): string[] {
 	}
 
 	return docFlat.entries
-		.map((entry) => parseThemeComponentNameFromConfigPath(entry.configPath ?? ""))
+		.map((entry) =>
+			parseThemeComponentNameFromConfigPath(entry.configPath ?? ""),
+		)
 		.filter((name): name is string => name !== null)
 		.sort();
 }
@@ -65,7 +67,9 @@ describe("theme registry vs doc-flat parity (C3)", () => {
 		registryKeys = [...THEME_COMPONENT_DEFAULT_PROPS_REGISTRY_KEYS].sort();
 		docFlatKeys = readDocFlatThemeComponentNames();
 		registryInDoc = registryKeys.filter((k) => docFlatKeys.includes(k));
-		registryMissingDoc = registryKeys.filter((k) => !docFlatKeys.includes(k));
+		registryMissingDoc = registryKeys.filter(
+			(k) => !docFlatKeys.includes(k),
+		);
 		docMissingRegistry = docFlatKeys.filter(
 			(k) => !isRegisteredThemeComponentKey(k),
 		);
@@ -90,9 +94,13 @@ describe("theme registry vs doc-flat parity (C3)", () => {
 	});
 
 	it("exports registry keys and isRegisteredThemeComponentKey", () => {
-		expect(THEME_COMPONENT_DEFAULT_PROPS_REGISTRY_KEYS.length).toBeGreaterThan(0);
+		expect(
+			THEME_COMPONENT_DEFAULT_PROPS_REGISTRY_KEYS.length,
+		).toBeGreaterThan(0);
 		expect(isRegisteredThemeComponentKey("Icon")).toBe(true);
-		expect(isRegisteredThemeComponentKey("NotARealComponentKey")).toBe(false);
+		expect(isRegisteredThemeComponentKey("NotARealComponentKey")).toBe(
+			false,
+		);
 		expect(
 			THEME_COMPONENT_DEFAULT_PROPS_REGISTRY_KEYS.every((k) =>
 				isRegisteredThemeComponentKey(k),
@@ -126,7 +134,10 @@ describe("theme registry vs doc-flat parity (C3)", () => {
 		};
 
 		// eslint-disable-next-line no-console -- intentional parity report for CI logs
-		console.log("theme registry ↔ doc-flat parity:", JSON.stringify(stats, null, 2));
+		console.log(
+			"theme registry ↔ doc-flat parity:",
+			JSON.stringify(stats, null, 2),
+		);
 
 		expect(stats.overlap + stats.registryOnly).toBe(stats.registryKeys);
 		expect(stats.overlap + stats.docOnly).toBe(stats.docFlatThemeKeys);

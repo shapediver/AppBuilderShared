@@ -8,7 +8,8 @@ function walkContainerThemeOverrides(
 	ctx: RefinementCtx,
 	basePath: (string | number)[],
 ): void {
-	if (!containerThemeOverrides || typeof containerThemeOverrides !== "object") return;
+	if (!containerThemeOverrides || typeof containerThemeOverrides !== "object")
+		return;
 
 	for (const [template, containers] of Object.entries(
 		containerThemeOverrides as Record<string, unknown>,
@@ -18,7 +19,8 @@ function walkContainerThemeOverrides(
 			containers as Record<string, unknown>,
 		)) {
 			if (!containerEntry || typeof containerEntry !== "object") continue;
-			const components = (containerEntry as {components?: unknown}).components;
+			const components = (containerEntry as {components?: unknown})
+				.components;
 			if (!components || typeof components !== "object") continue;
 			validateThemeComponentsRecord(
 				components as Record<string, ThemeComponentEntry>,
@@ -43,7 +45,11 @@ export function validateThemeComponentsRecord(
 		if (entry?.defaultProps !== undefined && schema) {
 			const parsed = schema.safeParse(entry.defaultProps);
 			if (!parsed.success) {
-				const defaultPropsPath = [...basePath, componentName, "defaultProps"];
+				const defaultPropsPath = [
+					...basePath,
+					componentName,
+					"defaultProps",
+				];
 				for (const issue of parsed.error.issues) {
 					ctx.addIssue({
 						...issue,
@@ -53,7 +59,10 @@ export function validateThemeComponentsRecord(
 			}
 		}
 
-		if (entry?.defaultProps !== undefined && typeof entry.defaultProps === "object") {
+		if (
+			entry?.defaultProps !== undefined &&
+			typeof entry.defaultProps === "object"
+		) {
 			const dp = entry.defaultProps as Record<string, unknown>;
 			const nested = dp.containerThemeOverrides;
 			if (nested !== undefined) {

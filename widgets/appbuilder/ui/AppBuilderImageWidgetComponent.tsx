@@ -1,5 +1,4 @@
 import {IAppBuilderWidgetPropsImage} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import React from "react";
 import AppBuilderImage from "./AppBuilderImage";
 import AppBuilderImageExportWidgetComponent from "./AppBuilderImageExportWidgetComponent";
 

@@ -42,9 +42,11 @@ export interface ParameterSelectComponentStyleProps {
 	componentSettings?: Record<string, ISelectComponentOverrides>;
 }
 
-export const defaultStyleProps: Partial<ParameterSelectComponentStyleProps> = {};
+export const defaultStyleProps: Partial<ParameterSelectComponentStyleProps> =
+	{};
 
-type ParameterSelectComponentThemePropsType = Partial<ParameterSelectComponentStyleProps>;
+type ParameterSelectComponentThemePropsType =
+	Partial<ParameterSelectComponentStyleProps>;
 
 export function ParameterSelectComponentThemeProps(
 	props: ParameterSelectComponentThemePropsType,

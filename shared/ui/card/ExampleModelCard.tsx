@@ -1,5 +1,4 @@
 import {Button, Card, Group, Image, Text} from "@mantine/core";
-import React from "react";
 import {Link} from "react-router-dom";
 import classes from "./ExampleModelCard.module.css";
 

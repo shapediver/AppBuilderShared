@@ -17,9 +17,9 @@ import {
 	applySavedStateToUrl,
 	URL_CHANGED_EVENT,
 } from "@AppBuilderLib/shared/lib/modifyUrl";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
 import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
 	Alert,
 	Flex,
@@ -33,7 +33,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import {SdPlatformSortingOrder} from "@shapediver/sdk.platform-api-sdk-v1";
-import React, {useContext, useEffect, useMemo, useState} from "react";
+import {useContext, useEffect, useMemo, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
 
@@ -53,23 +53,25 @@ export interface AppBuilderSavedStatesWidgetComponentStyleProps {
 	loaderProps?: LoaderProps;
 }
 
-const defaultStyleProps: Partial<AppBuilderSavedStatesWidgetComponentStyleProps> = {
-	selectProps: {
-		type: "fullwidthcards",
-	},
-	paperProps: {
-		p: "md",
-	},
-	stackProps: {
-		gap: "md",
-	},
-	loaderFlexProps: {
-		justify: "center",
-		align: "center",
-	},
-};
+const defaultStyleProps: Partial<AppBuilderSavedStatesWidgetComponentStyleProps> =
+	{
+		selectProps: {
+			type: "fullwidthcards",
+		},
+		paperProps: {
+			p: "md",
+		},
+		stackProps: {
+			gap: "md",
+		},
+		loaderFlexProps: {
+			justify: "center",
+			align: "center",
+		},
+	};
 
-type AppBuilderSavedStatesWidgetThemePropsType = Partial<AppBuilderSavedStatesWidgetComponentStyleProps>;
+type AppBuilderSavedStatesWidgetThemePropsType =
+	Partial<AppBuilderSavedStatesWidgetComponentStyleProps>;
 
 export function AppBuilderSavedStatesWidgetComponentThemeProps(
 	props: AppBuilderSavedStatesWidgetThemePropsType,

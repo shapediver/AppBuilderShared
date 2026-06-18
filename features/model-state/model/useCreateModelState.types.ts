@@ -15,8 +15,9 @@ export const CreateModelStateHookThemeDefaultPropsSchema = z.strictObject({
  * @configPath themeOverrides.components.CreateModelStateHook.defaultProps
  * @displayName CreateModelStateHook
  */
-export interface CreateModelStateHookThemeDefaultProps
-	extends z.infer<typeof CreateModelStateHookThemeDefaultPropsSchema> {
+export interface CreateModelStateHookThemeDefaultProps extends z.infer<
+	typeof CreateModelStateHookThemeDefaultPropsSchema
+> {
 	/**
 	 * Default allow-list of parameter `name` or `displayname` values saved to a model state.
 	 * When omitted, all parameters pass the include filter (subject to exclude rules).

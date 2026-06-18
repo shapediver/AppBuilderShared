@@ -1,5 +1,5 @@
 import {isIPhone} from "@AppBuilderLib/shared/lib/navigator";
-import React, {useMemo} from "react";
+import {useMemo} from "react";
 import {CommonButtonProps} from "../config/types";
 import {
 	Fullscreen3StatesState,

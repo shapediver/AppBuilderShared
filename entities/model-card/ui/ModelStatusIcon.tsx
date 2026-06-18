@@ -7,7 +7,7 @@ import {
 	SdPlatformModelVisibility,
 	SdPlatformResponseModelPublic,
 } from "@shapediver/sdk.platform-api-sdk-v1";
-import React, {useMemo} from "react";
+import {useMemo} from "react";
 
 interface Props {
 	/** Model to be displayed */

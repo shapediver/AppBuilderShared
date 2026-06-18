@@ -38,13 +38,7 @@ import {
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
-import React, {
-	useCallback,
-	useContext,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
+import {useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
 	AppBuilderAgentWidgetComponentProps,

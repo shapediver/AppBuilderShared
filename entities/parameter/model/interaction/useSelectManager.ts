@@ -1,10 +1,10 @@
-import { parseInteractionEffect } from "@AppBuilderLib/shared/lib/interactionEffects";
+import {parseInteractionEffect} from "@AppBuilderLib/shared/lib/interactionEffects";
 import {
 	InteractionEngine,
 	MultiSelectManager,
 	SelectManager,
 } from "@shapediver/viewer.features.interaction";
-import { IInteractionEffect } from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
+import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
 import {
 	ISelectionParameterProps,
 	ITreeNode,
@@ -15,8 +15,8 @@ import {
 	KernelSize,
 	POST_PROCESSING_EFFECT_TYPE,
 } from "@shapediver/viewer.viewport";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useInteractionEngine } from "./useInteractionEngine";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useInteractionEngine} from "./useInteractionEngine";
 
 // #region Functions (1)
 
@@ -127,7 +127,7 @@ export function useSelectManager(
 	removeAvailableEffectsForNodes(nodes: ITreeNode[]): void;
 } {
 	// call the interaction engine hook
-	const { interactionEngine } = useInteractionEngine(viewportId, componentId);
+	const {interactionEngine} = useInteractionEngine(viewportId, componentId);
 
 	// create an empty object for the select managers of the viewport
 	if (!selectManagers[viewportId]) {
@@ -370,7 +370,7 @@ export function useSelectManager(
 			if (
 				selectManagers[viewportId][componentId] &&
 				selectManagers[viewportId][componentId].selectMultiple !==
-				selectMultiple
+					selectMultiple
 			) {
 				cleanUpSelectManager(
 					viewportId,
