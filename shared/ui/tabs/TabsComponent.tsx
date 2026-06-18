@@ -77,7 +77,7 @@ export default function TabsComponent({
 						? {
 								position: "sticky",
 								top: 0,
-								zIndex: 1,
+								zIndex: 5,
 								backgroundColor: "var(--mantine-color-body)",
 							}
 						: undefined
