@@ -13,13 +13,15 @@ import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import Langfuse, {LangfuseWeb, observeOpenAI} from "langfuse";
 import OpenAI from "openai";
-import {zodResponseFormat} from "openai/helpers/zod";
 import {ChatCompletionMessageParam} from "openai/resources";
 import {useCallback, useContext, useMemo, useState} from "react";
-import {z} from "zod";
 import {useShallow} from "zustand/react/shallow";
 import packagejson from "~/../package.json";
 import {IAppBuilderParameterRef} from "../config/appbuilder";
+import {
+	type AgentResponseType,
+	createAgentResponseFormat,
+} from "./agentResponseSchema";
 
 export const DEFAULT_SYSTEM_PROMPT =
 	"You are a helpful assistant who can modify parameters of a 3D configurator and answer questions about the 3D configurator \
@@ -202,142 +204,6 @@ type ChatHistoryType =
 			role: "assistant";
 			traceId: string;
 	  };
-
-/**
- * Schema for responses from the LLM
- * TODO: Clarify how complex can we type the response.
- * As an example, is it possible to use discriminated unions to
- * more strictly type the values depending on parameter type?
- * https://zod.dev/?id=discriminated-unions
- *
- * Yes, it is possible to use discriminated unions to more strictly type the
- * values depending on parameter type, see this documentation for more information:
- * https://platform.openai.com/docs/guides/structured-outputs#supported-schemas
- */
-const AGENT_RESPONSE_SCHEMA = z.object({
-	parameterUpdates: z
-		.array(
-			z.discriminatedUnion("type", [
-				z.object({
-					type: z
-						.enum([
-							ResParameterType.BOOL,
-							ResParameterType.EVEN,
-							ResParameterType.FLOAT,
-							ResParameterType.INT,
-							ResParameterType.ODD,
-							ResParameterType.STRING,
-						])
-						.describe("The type of the parameter to be updated"),
-					id: z
-						.string()
-						.describe("The id of the parameter to be updated"),
-					name: z
-						.string()
-						.describe("The name of the parameter to be updated"),
-					newValue: z
-						.string()
-						.describe("The new value for the parameter"),
-					oldValue: z
-						.string()
-						.describe("The old value for the parameter"),
-				}),
-				z.object({
-					type: z
-						.literal(ResParameterType.STRINGLIST)
-						.describe("The StringList parameter type"),
-					id: z
-						.string()
-						.describe(
-							"The id of the StringList parameter to be updated",
-						),
-					name: z
-						.string()
-						.describe(
-							"The name of the StringList parameter to be updated",
-						),
-					newIndex: z
-						.string()
-						.describe(
-							"The new 0-based index into the list of options",
-						),
-					oldIndex: z
-						.string()
-						.describe("The old index into the list of options"),
-				}),
-				z.object({
-					type: z
-						.literal(ResParameterType.COLOR)
-						.describe("The Color parameter type"),
-					id: z
-						.string()
-						.describe(
-							"The id of the Color parameter to be updated",
-						),
-					name: z
-						.string()
-						.describe(
-							"The name of the Color parameter to be updated",
-						),
-					newValue: z
-						.object({
-							red: z
-								.number()
-								.describe(
-									"The new red channel value between 0 and 255",
-								),
-							green: z
-								.number()
-								.describe(
-									"The new green channel value between 0 and 255",
-								),
-							blue: z
-								.number()
-								.describe(
-									"The new blue channel value between 0 and 255",
-								),
-							alpha: z
-								.number()
-								.describe(
-									"The new alpha channel value between 0 and 255",
-								),
-						})
-						.describe("The new color value"),
-					oldValue: z
-						.object({
-							red: z
-								.number()
-								.describe(
-									"The new red channel value between 0 and 255",
-								),
-							green: z
-								.number()
-								.describe(
-									"The new green channel value between 0 and 255",
-								),
-							blue: z
-								.number()
-								.describe(
-									"The new blue channel value between 0 and 255",
-								),
-							alpha: z
-								.number()
-								.describe(
-									"The new alpha channel value between 0 and 255",
-								),
-						})
-						.describe("The old color value"),
-				}),
-			]),
-		)
-		.describe("Array of parameters to update"),
-	summaryAndReasoning: z
-		.string()
-		.describe(
-			"A summary of the parameter updates and the reasoning behind the parameter updates, and answers to the user's questions.",
-		),
-});
-type AgentResponseType = z.infer<typeof AGENT_RESPONSE_SCHEMA>;
 
 /**
  * Helper function for updating parameter values based on the LLM response.
@@ -679,10 +545,7 @@ I have provided a screenshot of the 3D view for context.`
 				messages.push({role: "user", content: userPrompt});
 			}
 
-			const responseFormat = zodResponseFormat(
-				AGENT_RESPONSE_SCHEMA,
-				"parameters_update",
-			);
+			const responseFormat = createAgentResponseFormat();
 
 			// Create a span for the LLM interaction
 			const llmSpan = trace?.span({
@@ -695,7 +558,7 @@ I have provided a screenshot of the 3D view for context.`
 							generationName: "OpenAI-Generation",
 						})
 					: OPENAI
-			).beta.chat.completions.parse({
+			).chat.completions.parse({
 				model: model,
 				messages: messages as any,
 				response_format: responseFormat,
