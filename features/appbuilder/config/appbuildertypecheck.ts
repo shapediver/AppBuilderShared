@@ -203,13 +203,62 @@ export const validateSelectParameterSettings = (value: any) => {
 	return ISelectParameterSettingsSchema.safeParse(value);
 };
 
+const IFilterableDatabaseDataSourceSchema = z
+	.object({
+		export: z
+			.object({
+				name: z.string(),
+				sessionId: z.string(),
+			})
+			.optional(),
+		href: z.string().url().optional(),
+	})
+	.refine((ds) => !!ds.href, {
+		message: "database.dataSource.href is required in v1",
+	});
+
+const IFilterableDatabaseFilterSchema = z.object({
+	column: z.number().int().nonnegative(),
+	multivalued: z.boolean().optional(),
+	multiple: z.boolean().optional(),
+	type: z.literal("color").optional(),
+	filterValues: z.array(z.string()).optional(),
+});
+
+const IFilterableDatabaseSettingsSchema = z.object({
+	dataSource: IFilterableDatabaseDataSourceSchema,
+	itemDataDefinition: z.object({
+		value: z.number().int().nonnegative(),
+		displayname: z.number().int().nonnegative().optional(),
+		tooltip: z.number().int().nonnegative().optional(),
+		description: z.number().int().nonnegative().optional(),
+		imageUrl: z.number().int().nonnegative().optional(),
+		color: z.number().int().nonnegative().optional(),
+		data: z.record(z.string(), z.number().int().nonnegative()).optional(),
+	}),
+	filters: z.array(IFilterableDatabaseFilterSchema).min(1),
+});
+
 // Zod type definition for IStringParameterSelectSettings
 const IStringParameterSelectSettingsSchema =
 	ISelectParameterSettingsSchema.extend(
-		z.object({
-			items: z.array(z.string()).optional(),
-			source: z.string().optional(),
-		}).shape,
+		z
+			.object({
+				items: z.array(z.string()).optional(),
+				source: z.string().optional(),
+				database: IFilterableDatabaseSettingsSchema.optional(),
+			})
+			.shape,
+	)
+	.refine(
+		(s) =>
+			!s.database ||
+			s.type === "fullwidthcards" ||
+			s.type === "grid",
+		{
+			message:
+				'database requires selectSettings.type "fullwidthcards" or "grid"',
+		},
 	);
 
 // Zod type definition for IStringParameterSettings
