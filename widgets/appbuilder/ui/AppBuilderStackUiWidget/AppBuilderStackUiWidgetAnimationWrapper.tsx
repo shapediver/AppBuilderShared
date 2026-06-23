@@ -18,13 +18,9 @@ interface Props {
 	fallbackScrolls?: boolean;
 }
 
-const layerStyleBase = {
+const layerStyleFill = {
 	gridArea: "1 / 1",
 	overflow: "hidden",
-} as const;
-
-const layerStyleFill = {
-	...layerStyleBase,
 	minHeight: 0,
 	maxHeight: "100%",
 	height: "100%",
@@ -34,20 +30,23 @@ const layerStyleFill = {
  * Grid overlay wrapper: layers stay in document flow (fixes floating-container height collapse).
  * `overflow: hidden` on both axes — `overflowX: hidden` alone computes to `overflow-y: auto`
  * and flashes a scrollbar when a child button is pressed (`:active` translateY).
+ *
+ * In the closed top-level case we intentionally keep the wrapper layout-transparent
+ * so ordinary container content is not reflowed by an extra grid box.
  */
-const wrapperStyleBase = {
+const wrapperStyleFill = {
 	display: "grid",
 	gridTemplateColumns: "1fr",
 	width: "100%",
 	overflow: "hidden",
-} as const;
-
-const wrapperStyleFill = {
-	...wrapperStyleBase,
 	height: "100%",
 	minHeight: 0,
 	maxHeight: "100%",
 	alignSelf: "stretch",
+} as const;
+
+const wrapperStyleClosed = {
+	display: "contents",
 } as const;
 
 /**
@@ -165,22 +164,28 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 	]);
 
 	const transition = `transform ${animationDuration}ms ease`;
-	/** Closed/top-level: content-sized so the parent Group can center sibling widgets vertically.
-	 *  Fill mode is only needed when open (stack overlays parent) or in a constrained body slot. */
+	/** Closed/top-level: do not introduce an extra wrapper box.
+	 * Fill mode is only needed when open (stack overlays parent) or in a constrained body slot. */
 	const fillParent = isOpen || fallbackScrolls;
-	const wrapperStyle = fillParent ? wrapperStyleFill : wrapperStyleBase;
-	const layerStyle = fillParent ? layerStyleFill : layerStyleBase;
+	const wrapperStyle = fillParent ? wrapperStyleFill : wrapperStyleClosed;
 
 	return (
 		<Box component="section" style={wrapperStyle}>
 			{showFallback && (
 				<AppBuilderContainer
 					p={0}
-					style={{
-						...layerStyle,
-						transform: `translateX(${fallbackPosition})`,
-						transition,
-					}}
+					style={
+						fillParent
+							? {
+									...layerStyleFill,
+									transform: `translateX(${fallbackPosition})`,
+									transition,
+								}
+							: {
+									transform: `translateX(${fallbackPosition})`,
+									transition,
+								}
+					}
 				>
 					{fallbackScrolls ? (
 						<Box style={stackFallbackScrollStyle}>
@@ -194,7 +199,7 @@ export function AppBuilderStackUiWidgetAnimationWrapper({
 			{showStack && (
 				<Box
 					style={{
-						...layerStyle,
+						...layerStyleFill,
 						transform: `translateX(${stackPosition})`,
 						transition,
 						zIndex: 5,
