@@ -109,6 +109,23 @@ export default function ViewportAnchor2d(
 	}, [canvasWidth, canvasHeight]);
 
 	/**
+	 * Recalculate anchor position when portal content size changes
+	 * (e.g. stack navigation, parameter-driven widget updates).
+	 */
+	useEffect(() => {
+		const el = portalRef.current;
+		if (!el || !showContent) return;
+
+		const observer = new ResizeObserver(() => {
+			initializedRef.current = false;
+			setUpdatePositionCalculation((prev) => prev + 1);
+		});
+		observer.observe(el);
+
+		return () => observer.disconnect();
+	}, [showContent, portalUpdate]);
+
+	/**
 	 * The main use effect for the anchor.
 	 * It creates a new HTMLElementAnchorCustomData instance
 	 * and adds it to the scene tree.
