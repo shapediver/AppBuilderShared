@@ -55,6 +55,10 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 		let cancelled = false;
 
 		async function load() {
+			if (!href) {
+				return;
+			}
+
 			setLoading(true);
 			setError(undefined);
 

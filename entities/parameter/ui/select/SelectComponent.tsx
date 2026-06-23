@@ -1,4 +1,5 @@
 import {
+	IFilterableDatabaseSettings,
 	ISelectComponentItemDataType,
 	SelectComponentType,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
@@ -27,6 +28,7 @@ import SelectCarouselComponent from "./SelectCarouselComponent";
 import SelectChipGroupComponent from "./SelectChipGroupComponent";
 import SelectColorComponent from "./SelectColorComponent";
 import SelectComponentAsync from "./SelectComponentAsync";
+import FilterableSelectComponent from "./FilterableSelectComponent";
 import SelectDropDownComponent from "./SelectDropDownComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import SelectGridComponent from "./SelectGridComponent";
@@ -125,6 +127,7 @@ type SelectComponentPropsBase = Omit<SelectComponentProps, "scrollingApi"> & {
 	 * This is used for connecting to data sources via the e-commerce API.
 	 */
 	source?: string;
+	database?: IFilterableDatabaseSettings;
 };
 
 /** Type-specific props for each select component type */
@@ -153,7 +156,7 @@ export type SelectComponentPropsExt = SelectComponentPropsBase &
  * At most one item can be selected at a time.
  */
 export default function SelectComponent(props: SelectComponentPropsExt) {
-	const {type, source, ...rest} = props;
+	const {type, source, database, ...rest} = props;
 
 	// scrolling API
 	const {scrollingApi, addScrollingApiSelect, removeScrollingApiSelect} =
@@ -174,6 +177,17 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 			removeScrollingApiSelect(source ?? "");
 		};
 	}, [source]);
+
+	if (database && (type === "fullwidthcards" || type === "grid")) {
+		return (
+			<FilterableSelectComponent
+				{...rest}
+				type={type}
+				database={database}
+				multiselect={false}
+			/>
+		);
+	}
 
 	if (scrollingApi && (type === "fullwidthcards" || type === "grid"))
 		return (
