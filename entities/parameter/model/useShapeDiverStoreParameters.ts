@@ -6,6 +6,7 @@ import {
 	IShapeDiverOutput,
 	IShapeDiverOutputDefinition,
 } from "@AppBuilderLib/entities/output/config/output";
+import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
 import {
 	EventActionEnum,
 	IEventTracking,
@@ -1712,7 +1713,20 @@ export const useShapeDiverStoreParameters =
 					skipHistory?: boolean,
 				) {
 					const {batchParameterValueUpdate} = get();
-					await batchParameterValueUpdate(state, skipHistory);
+					const primaryState: ISessionsHistoryState = {};
+					const namespaces = Object.keys(state);
+
+					for (const namespace of namespaces) {
+						if (!namespace.endsWith(CUSTOM_SESSION_ID_POSTFIX))
+							primaryState[namespace] = state[namespace];
+					}
+
+					// Normal parameter updates only customize the primary/model
+					// namespaces. Dependent generic namespaces (like *_appbuilder)
+					// are derived from those updates and should resync from the
+					// restored model/AppBuilder input instead of being restored as an
+					// additional parallel state source.
+					await batchParameterValueUpdate(primaryState, skipHistory);
 				},
 
 				async restoreHistoryStateFromIndex(index: number) {
