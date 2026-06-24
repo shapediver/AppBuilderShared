@@ -36,6 +36,9 @@ function parseCsv(raw: string): DatabaseTable {
 		.map((l) => l.trimEnd())
 		.filter((l) => l.length > 0)
 		.map(parseCsvLine);
+	if (rows.length > 0) {
+		rows.shift();
+	}
 	return {rows};
 }
 

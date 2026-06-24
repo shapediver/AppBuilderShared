@@ -175,7 +175,7 @@ export default function ParameterStringComponent(
 					selectSettings.database) ? (
 					<SelectComponent
 						key={formKey}
-						value={undefined}
+						value={value || undefined}
 						{...(formInputProps || {})}
 						onChange={(v) => {
 							const val = v ?? "";

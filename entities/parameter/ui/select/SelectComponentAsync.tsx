@@ -1,11 +1,52 @@
+import {ISelectComponentItemDataType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Anchor, Group, Loader} from "@mantine/core";
-import {useCallback, useEffect, useState, type ReactNode} from "react";
+import {useCallback, useEffect, useMemo, useState, type ReactNode} from "react";
 import {useSelectAsync} from "../../model/select/useSelectAsync";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import SelectGridComponent from "./SelectGridComponent";
 
 const SEARCH_PREFIX = "search:";
+
+function isValueInAvailableItems(
+	value: string,
+	items: string[],
+	itemsData?: Record<string, ISelectComponentItemDataType>,
+): boolean {
+	if (items.includes(value)) {
+		return true;
+	}
+
+	if (!itemsData) {
+		return false;
+	}
+
+	return items.some((key) => {
+		const data = itemsData[key]?.data;
+		return data !== undefined && JSON.stringify(data) === value;
+	});
+}
+
+function resolveItemKeyForValue(
+	value: string,
+	items: string[],
+	itemsData?: Record<string, ISelectComponentItemDataType>,
+): string {
+	if (items.includes(value)) {
+		return value;
+	}
+
+	if (!itemsData) {
+		return value;
+	}
+
+	const match = items.find((key) => {
+		const data = itemsData[key]?.data;
+		return data !== undefined && JSON.stringify(data) === value;
+	});
+
+	return match ?? value;
+}
 
 type SelectComponentAsyncType = "grid" | "fullwidthcards";
 
@@ -29,6 +70,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		scrollingApi,
 		disabled,
 		onChange,
+		value,
 		prependTopSection,
 		onSyncScrollingApiState,
 		...propsDefault
@@ -36,6 +78,11 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 
 	const {debouncedOnSearch, items, itemsData, bottomSection, loading} =
 		useSelectAsync(scrollingApi, onSyncScrollingApiState);
+
+	const displayValue = useMemo(
+		() => (value ? resolveItemKeyForValue(value, items, itemsData) : value),
+		[value, items, itemsData],
+	);
 
 	// stack of search terms
 	const [searchTerms, setSearchTerms] = useState<string[]>([]);
@@ -56,13 +103,16 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		[onChange, itemsData, debouncedOnSearch, searchTerms],
 	);
 
-	// in case no items are available, reset the value
+	// Clear selection only when the current value is absent from filtered items.
 	useEffect(() => {
-		if (scrollingApi?.resetState) {
-			onChange(null);
-			setSearchTerms([]);
+		if (!scrollingApi?.resetState || !value) {
+			return;
 		}
-	}, [scrollingApi?.resetState]);
+		if (isValueInAvailableItems(value, items, itemsData)) {
+			return;
+		}
+		onChange(null);
+	}, [scrollingApi?.resetState, value, items, itemsData, onChange]);
 
 	// show stack of search terms and allow to remove them
 	const topSection = (
@@ -91,6 +141,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		return (
 			<SelectFullWidthCardsComponent
 				{...propsDefault}
+				value={displayValue}
 				onChange={_onChange}
 				bottomSection={
 					loading && items.length === 0 ? <Loader /> : bottomSection
@@ -107,6 +158,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		return (
 			<SelectGridComponent
 				{...propsDefault}
+				value={displayValue}
 				onChange={_onChange}
 				bottomSection={
 					loading && items.length === 0 ? <Loader /> : bottomSection

@@ -70,7 +70,6 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 				}
 
 				setTable(parsed);
-				setSelection({});
 
 				const api = createFilterableDatabaseScrollingApi({
 					table: parsed,

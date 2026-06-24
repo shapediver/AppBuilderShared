@@ -83,6 +83,20 @@ describe("createFilterableDatabaseScrollingApi", () => {
 		expect(api.hasNextPage).toBe(false);
 	});
 
+	it("updateSelection with unchanged selection does not bump resetState", () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {0: ["Red"]},
+			pageSize: 10,
+		});
+		const resetStateBefore = api.resetState;
+
+		api.updateSelection({0: ["Red"]});
+
+		expect(api.resetState).toBe(resetStateBefore);
+	});
+
 	it("reset clears back to the first page", async () => {
 		const api = createFilterableDatabaseScrollingApi({
 			table,

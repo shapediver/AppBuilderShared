@@ -1,3 +1,18 @@
+jest.mock("@shapediver/viewer.session", () => ({
+	PARAMETER_TYPE: {
+		Bool: "Bool",
+		Float: "Float",
+		String: "String",
+	},
+	PARAMETER_VISUALIZATION: {},
+	TAG3D_JUSTIFICATION: {},
+}));
+
+jest.mock("@shapediver/viewer.shared.types", () => ({
+	ATTRIBUTE_VISUALIZATION: {},
+	CAMERA_TYPE: {},
+}));
+
 import {validateStringParameterSettings} from "../appbuildertypecheck";
 
 const validDatabase = {

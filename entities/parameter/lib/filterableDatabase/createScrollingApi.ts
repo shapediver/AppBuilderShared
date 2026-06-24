@@ -7,6 +7,36 @@ import {applyFilters} from "./filterLogic";
 import {mapRowsToSelectItems} from "./itemMapping";
 import type {DatabaseTable, FilterSelection} from "./types";
 
+function isSelectionEqual(
+	a: FilterSelection,
+	b: FilterSelection,
+): boolean {
+	const keysA = Object.keys(a);
+	const keysB = Object.keys(b);
+
+	if (keysA.length !== keysB.length) {
+		return false;
+	}
+
+	for (const key of keysA) {
+		const index = Number(key);
+		const valuesA = a[index] ?? [];
+		const valuesB = b[index] ?? [];
+
+		if (valuesA.length !== valuesB.length) {
+			return false;
+		}
+
+		for (let i = 0; i < valuesA.length; i++) {
+			if (valuesA[i] !== valuesB[i]) {
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 function matchesSearchTerms(
 	entry: IScrollingApiItemTypeSelect,
 	terms: string[],
@@ -105,6 +135,10 @@ export function createFilterableDatabaseScrollingApi(options: {
 			bumpResetState();
 		},
 		updateSelection(nextSelection: FilterSelection) {
+			if (isSelectionEqual(selection, nextSelection)) {
+				return;
+			}
+
 			selection = nextSelection;
 			applyPaging();
 			bumpResetState();
