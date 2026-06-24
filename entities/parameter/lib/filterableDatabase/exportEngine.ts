@@ -1,13 +1,15 @@
-import type {IAppBuilderExportRef} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import type {IAppBuilderExportRef} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {ResExport} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {fetchText} from "./fetchDataSource";
 
+/** Minimal export reference stored in settings JSON (resolved against the parameter store at runtime). */
 export type FilterableDatabaseExportRef = Pick<
 	IAppBuilderExportRef,
 	"name" | "sessionId"
 >;
 
+/** ShapeDiver export responses expose the download URL on the first content entry. */
 function resolveExportDownloadUrl(
 	exportRef: FilterableDatabaseExportRef,
 	result: ResExport,
@@ -21,6 +23,10 @@ function resolveExportDownloadUrl(
 	return href;
 }
 
+/**
+ * Loads raw database text from a ShapeDiver session export.
+ * Uses JWT-aware {@link exportApi.actions.fetch} when available; falls back to plain fetch.
+ */
 export async function fetchExportText(
 	exportRef: FilterableDatabaseExportRef,
 ): Promise<string> {
@@ -52,6 +58,7 @@ export async function fetchExportText(
 		}
 		return response.text();
 	} catch {
+		// Unauthenticated or CORS-friendly URLs (e.g. public CDN) may work without session JWT.
 		return fetchText(url, `export "${name}"`);
 	}
 }

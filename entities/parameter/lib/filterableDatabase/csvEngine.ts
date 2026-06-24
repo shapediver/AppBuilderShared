@@ -1,6 +1,7 @@
 import {fetchText} from "./fetchDataSource";
 import type {DatabaseTable, FilterableDatabaseEngine} from "./types";
 
+/** RFC-style CSV line parser (quoted fields, escaped quotes, comma delimiter). */
 function parseCsvLine(line: string): string[] {
 	const cells: string[] = [];
 	let current = "";
@@ -31,6 +32,10 @@ function parseCsvLine(line: string): string[] {
 	return cells;
 }
 
+/**
+ * Parses CSV text into a {@link DatabaseTable}.
+ * v1: the first non-empty row is always treated as a header and dropped.
+ */
 function parseCsv(raw: string): DatabaseTable {
 	const rows = raw
 		.split(/\r?\n/)
@@ -43,6 +48,7 @@ function parseCsv(raw: string): DatabaseTable {
 	return {rows};
 }
 
+/** {@link FilterableDatabaseEngine} for comma-separated database files fetched via public href. */
 export const csvEngine: FilterableDatabaseEngine = {
 	async fetch(href: string): Promise<string> {
 		return fetchText(href, "CSV");

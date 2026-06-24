@@ -4,10 +4,13 @@ import type {FilterSelection} from "./types";
 export interface ActiveFilterTag {
 	filterIndex: number;
 	value: string;
+	/** Shown on the pill (usually the filter value). */
 	label: string;
+	/** Accordion group title for context when removing a tag. */
 	groupLabel: string;
 }
 
+/** Builds removable pill labels from the current filter selection and accordion group metadata. */
 export function buildActiveFilterTags(
 	selection: FilterSelection,
 	filterGroups: FilterTreeGroup[],

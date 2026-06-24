@@ -7,10 +7,8 @@ import {applyFilters} from "./filterLogic";
 import {mapRowsToSelectItems} from "./itemMapping";
 import type {DatabaseTable, FilterSelection} from "./types";
 
-function isSelectionEqual(
-	a: FilterSelection,
-	b: FilterSelection,
-): boolean {
+/** Deep-equal for filter maps so no-op updates skip resetState (avoids clearing the parameter value). */
+function isSelectionEqual(a: FilterSelection, b: FilterSelection): boolean {
 	const keysA = Object.keys(a);
 	const keysB = Object.keys(b);
 
@@ -37,6 +35,10 @@ function isSelectionEqual(
 	return true;
 }
 
+/**
+ * Client-side search within the current filtered item list.
+ * All terms must match (AND); only item key and displayname are searched (v1).
+ */
 function matchesSearchTerms(
 	entry: IScrollingApiItemTypeSelect,
 	terms: string[],
@@ -52,6 +54,10 @@ function matchesSearchTerms(
 	return terms.every((term) => haystack.includes(term.toLowerCase()));
 }
 
+/**
+ * In-memory adapter implementing {@link IScrollingApi} for filterable database rows.
+ * Mutates `api.items` in place; consumers must watch `resetState` to re-render.
+ */
 export function createFilterableDatabaseScrollingApi(options: {
 	table: DatabaseTable;
 	settings: IFilterableDatabaseSettings;
@@ -70,6 +76,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 	let loadedCount = 0;
 	let resetStateCounter = 0;
 
+	/** Filter rows → map to select items → optionally narrow by search terms. */
 	function buildAllItems(): IScrollingApiItemTypeSelect[] {
 		const filteredRows = applyFilters(table, settings.filters, selection);
 		const {items, itemData} = mapRowsToSelectItems(
@@ -89,6 +96,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 		return mapped.filter((entry) => matchesSearchTerms(entry, searchTerms));
 	}
 
+	/** Rebuilds the full list and exposes only the first page via `api.items`. */
 	function applyPaging() {
 		allItems = buildAllItems();
 		loadedCount = Math.min(pageSize, allItems.length);
@@ -96,6 +104,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 		api.hasNextPage = loadedCount < allItems.length;
 	}
 
+	/** Signals React hooks that in-place item data changed (filter, search, or reload). */
 	function bumpResetState() {
 		resetStateCounter += 1;
 		api.resetState = resetStateCounter;
@@ -110,6 +119,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 		hasNextPage: false,
 		items: [],
 		resetState: 0,
+		/** Appends the next page slice without rebuilding the filtered list. */
 		loadMore: async () => {
 			if (!api.hasNextPage) {
 				return;

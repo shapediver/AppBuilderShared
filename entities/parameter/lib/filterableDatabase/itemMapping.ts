@@ -3,6 +3,10 @@ import type {
 	ISelectComponentItemDataType,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 
+/**
+ * Maps filtered table rows to {@link SelectComponent} `items` + `itemData`.
+ * Rows with an empty value column are skipped; duplicate values keep first list order, last row wins in itemData.
+ */
 export function mapRowsToSelectItems(
 	rows: string[][],
 	itemDataDefinition: IFilterableDatabaseSettings["itemDataDefinition"],
@@ -29,7 +33,9 @@ export function mapRowsToSelectItems(
 			entry.imageUrl = row[itemDataDefinition.imageUrl]?.trim();
 		}
 		if (itemDataDefinition.color !== undefined) {
-			entry.color = row[itemDataDefinition.color]?.trim() as ISelectComponentItemDataType["color"];
+			entry.color = row[
+				itemDataDefinition.color
+			]?.trim() as ISelectComponentItemDataType["color"];
 		}
 		if (itemDataDefinition.data) {
 			entry.data = {};
@@ -39,6 +45,7 @@ export function mapRowsToSelectItems(
 		}
 
 		itemData[value] = entry;
+		// First occurrence defines dropdown order; later rows overwrite metadata for the same value.
 		if (!seen.has(value)) {
 			seen.add(value);
 			items.push(value);

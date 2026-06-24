@@ -3,6 +3,7 @@ import {csvEngine} from "./csvEngine";
 import {jsonEngine} from "./jsonEngine";
 import type {FilterableDatabaseEngine} from "./types";
 
+/** Guesses csv vs json from the path suffix when `dataSource.format` is omitted. */
 function inferFormatFromHref(href: string | undefined): "csv" | "json" {
 	if (!href) {
 		return "csv";
@@ -15,6 +16,10 @@ function inferFormatFromHref(href: string | undefined): "csv" | "json" {
 	return "csv";
 }
 
+/**
+ * Picks the parse/fetch engine for the configured data source.
+ * Export-only sources without href default to CSV unless `format: "json"` is set explicitly.
+ */
 export function resolveFilterableDatabaseEngine(
 	settings: IFilterableDatabaseSettings,
 ): FilterableDatabaseEngine {
