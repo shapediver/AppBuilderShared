@@ -5,6 +5,10 @@ import {
 	type ActiveFilterTag,
 } from "../../lib/filterableDatabase/buildActiveFilterTags";
 import {createFilterableDatabaseScrollingApi} from "../../lib/filterableDatabase/createScrollingApi";
+import {
+	fetchRawText,
+	hasDataSource,
+} from "../../lib/filterableDatabase/resolveDataSource";
 import {resolveFilterableDatabaseEngine} from "../../lib/filterableDatabase/resolveEngine";
 import {extractFilterValues} from "../../lib/filterableDatabase/filterLogic";
 import type {
@@ -42,29 +46,24 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 		FilterableDatabaseScrollingApi | undefined
 	>(undefined);
 
-	const href = settings.dataSource.href;
+	const {href, export: exportRef, format} = settings.dataSource;
 
 	useEffect(() => {
-		if (!href) {
+		if (!hasDataSource(settings)) {
 			setLoading(false);
-			setError(new Error("Missing database dataSource href"));
+			setError(new Error("database.dataSource requires href or export"));
 			return;
 		}
 
 		let cancelled = false;
 
 		async function load() {
-			if (!href) {
-				return;
-			}
-
 			setLoading(true);
 			setError(undefined);
 
 			try {
-				const engine = resolveFilterableDatabaseEngine(settings);
-				const raw = await engine.fetch(href);
-				const parsed = engine.parse(raw);
+				const raw = await fetchRawText(settings);
+				const parsed = resolveFilterableDatabaseEngine(settings).parse(raw);
 
 				if (cancelled) {
 					return;
@@ -100,7 +99,7 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 		return () => {
 			cancelled = true;
 		};
-	}, [href, settings]);
+	}, [href, exportRef?.name, exportRef?.sessionId, format, settings]);
 
 	useEffect(() => {
 		const api = scrollingApiRef.current;

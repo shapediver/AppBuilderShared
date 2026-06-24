@@ -28,8 +28,8 @@ const filterableDatabaseDataSourceSchema = z
 			.optional(),
 		format: z.enum(["csv", "json"]).optional(),
 	})
-	.refine((ds) => !!ds.href, {
-		message: "database.dataSource.href is required in v1",
+	.refine((ds) => !!ds.href || !!ds.export, {
+		message: "database.dataSource requires href or export",
 	});
 
 const filterableDatabaseFilterSchema = z.object({

@@ -61,13 +61,26 @@ describe("filterable database settings", () => {
 		expect(result.success).toBe(true);
 	});
 
-	it("rejects database without href", () => {
+	it("accepts database with export only", () => {
 		const result = validateStringParameterSettings({
 			selectSettings: {
 				...validDatabase,
 				database: {
 					...validDatabase.database,
-					dataSource: {export: {name: "csv", sessionId: "s1"}},
+					dataSource: {export: {name: "csv", sessionId: "default"}},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects database without href or export", () => {
+		const result = validateStringParameterSettings({
+			selectSettings: {
+				...validDatabase,
+				database: {
+					...validDatabase.database,
+					dataSource: {},
 				},
 			},
 		});
