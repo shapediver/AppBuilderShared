@@ -5,7 +5,7 @@ export type FilterDef = {
 	column: number;
 	multivalued?: boolean;
 	multiple?: boolean;
-	type?: "color";
+	type?: "color" | "text";
 	filterValues?: string[];
 };
 
@@ -53,7 +53,7 @@ export function extractFilterValues(
 
 /**
  * Whether a row matches one filter group.
- * Empty selection passes; otherwise OR within the group (any selected value matches any cell token).
+ * Empty selection passes; tag filters OR within group; text filters use substring match.
  */
 export function rowMatchesFilter(
 	row: string[],
@@ -64,8 +64,45 @@ export function rowMatchesFilter(
 		return true;
 	}
 
+	if (filter.type === "text") {
+		const query = selected[0]?.trim().toLowerCase() ?? "";
+		if (!query) {
+			return true;
+		}
+		return getCellValues(row, filter.column, filter.multivalued).some(
+			(cell) => cell.toLowerCase().includes(query),
+		);
+	}
+
 	const cellValues = getCellValues(row, filter.column, filter.multivalued);
 	return selected.some((value) => cellValues.includes(value));
+}
+
+/** Narrows tag filter options while the user types in the combobox field. */
+export function filterNodesBySearch<T extends {label: string; value: string}>(
+	nodes: T[],
+	searchTerm: string,
+): T[] {
+	const query = searchTerm.trim().toLowerCase();
+	if (!query) {
+		return nodes;
+	}
+	return nodes.filter((node) => node.label.toLowerCase().includes(query));
+}
+
+/** Computes the next selected values for one filter group after a user toggle. */
+export function toggleFilterSelection(
+	current: string[],
+	value: string,
+	multiple?: boolean,
+): string[] {
+	if (multiple !== false) {
+		return current.includes(value)
+			? current.filter((entry) => entry !== value)
+			: [...current, value];
+	}
+
+	return current.length === 1 && current[0] === value ? [] : [value];
 }
 
 /** Keeps rows that pass every active filter group (AND across groups). */

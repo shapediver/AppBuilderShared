@@ -171,8 +171,9 @@ export interface IFilterableDatabaseSettings {
 		multiple?: boolean;
 		/**
 		 * Optional type of the filter, defining how the filter values are shown to the user.
+		 * `color` — swatch + tag list; `text` — free-text substring match on the column.
 		 */
-		type?: "color";
+		type?: "color" | "text";
 		/**
 		 * Optional array of filter values to show to the user. If this is not provided, the
 		 * filter values are automatically extracted from the data source. Note that this

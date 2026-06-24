@@ -8,7 +8,9 @@ import {
 	type CheckboxProps,
 	type ColorSwatchProps,
 	type GroupProps,
+	type RadioProps,
 	type StackProps,
+	type TextInputProps,
 	type TextProps,
 } from "@mantine/core";
 import {FilterableDatabaseFilterGroup} from "./FilterableDatabaseFilterGroup";
@@ -18,6 +20,8 @@ export interface FilterableDatabaseFiltersStyleProps {
 	accordionProps?: AccordionProps;
 	stackProps?: StackProps;
 	checkboxProps?: CheckboxProps;
+	radioProps?: RadioProps;
+	textInputProps?: TextInputProps;
 	filterGroupStackProps?: StackProps;
 	filterGroupLabelTextProps?: Omit<TextProps, "children">;
 	filterOptionGroupProps?: Omit<GroupProps, "children">;
@@ -29,7 +33,9 @@ export interface FilterableDatabaseFiltersProps extends FilterableDatabaseFilter
 	filterGroups: FilterTreeGroup[];
 	selection: FilterSelection;
 	filters: IFilterableDatabaseSettings["filters"];
+	searchTerm?: string;
 	onToggle: (filterIndex: number, value: string) => void;
+	onSetFilterText: (filterIndex: number, text: string) => void;
 }
 
 export function FilterableDatabaseFilters(
@@ -40,9 +46,13 @@ export function FilterableDatabaseFilters(
 		selection,
 		filters,
 		onToggle,
+		onSetFilterText,
+		searchTerm,
 		accordionProps,
 		stackProps,
 		checkboxProps,
+		radioProps,
+		textInputProps,
 		filterGroupStackProps,
 		filterGroupLabelTextProps,
 		filterOptionGroupProps,
@@ -77,8 +87,12 @@ export function FilterableDatabaseFilters(
 						selectedValues={selection[group.filterIndex] ?? []}
 						multiple={filters[group.filterIndex]?.multiple ?? true}
 						onToggle={onToggle}
+						onSetFilterText={onSetFilterText}
+						searchTerm={searchTerm}
 						stackProps={filterGroupStackProps}
 						checkboxProps={checkboxProps}
+						radioProps={radioProps}
+						textInputProps={textInputProps}
 						labelTextProps={filterGroupLabelTextProps}
 						optionGroupProps={filterOptionGroupProps}
 						optionLabelTextProps={filterOptionLabelTextProps}

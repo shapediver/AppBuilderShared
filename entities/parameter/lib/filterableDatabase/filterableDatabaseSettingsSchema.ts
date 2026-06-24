@@ -44,7 +44,7 @@ const filterableDatabaseFilterSchema = z.object({
 	label: z.string().min(1).optional(),
 	multivalued: z.boolean().optional(),
 	multiple: z.boolean().optional(),
-	type: z.literal("color").optional(),
+	type: z.enum(["color", "text"]).optional(),
 	filterValues: z.array(z.string()).optional(),
 });
 

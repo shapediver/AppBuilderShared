@@ -1,100 +1,116 @@
-import type {DatabaseTable} from "../types";
 import {
 	applyFilters,
-	extractFilterValues,
-	getCellValues,
+	filterNodesBySearch,
 	rowMatchesFilter,
+	toggleFilterSelection,
 } from "../filterLogic";
-
-type FilterDef = {
-	column: number;
-	multivalued?: boolean;
-	multiple?: boolean;
-	type?: "color";
-	filterValues?: string[];
-};
+import type {DatabaseTable, FilterSelection} from "../types";
 
 const table: DatabaseTable = {
 	rows: [
-		["id1", "Red", "Cotton;Linen"],
-		["id2", "Blue", "Wool"],
-		["id3", "Red", "Silk"],
+		["id1", "Fabric A", "", "Fabric", "Red", "Cotton"],
+		["id2", "Fabric B", "", "Leather", "Blue", "Polyester"],
 	],
 };
 
-const filters: FilterDef[] = [
-	{column: 1, multiple: true},
-	{column: 2, multivalued: true, multiple: true},
-];
+describe("toggleFilterSelection", () => {
+	describe("multiple !== false (default multi-select)", () => {
+		it("adds a value when not selected", () => {
+			expect(toggleFilterSelection([], "Red", undefined)).toEqual([
+				"Red",
+			]);
+		});
 
-describe("extractFilterValues", () => {
-	it("returns unique values from column sorted alphabetically", () => {
-		expect(extractFilterValues(table, filters[0])).toEqual(["Blue", "Red"]);
+		it("removes a value when already selected", () => {
+			expect(toggleFilterSelection(["Red", "Blue"], "Red", true)).toEqual(
+				["Blue"],
+			);
+		});
+
+		it("treats omitted multiple as multi-select", () => {
+			expect(toggleFilterSelection(["Red"], "Blue")).toEqual([
+				"Red",
+				"Blue",
+			]);
+		});
 	});
 
-	it("returns filterValues when provided instead of deriving from table", () => {
-		const filter: FilterDef = {
-			column: 1,
-			filterValues: ["Green", "Yellow"],
-		};
-		expect(extractFilterValues(table, filter)).toEqual(["Green", "Yellow"]);
-	});
+	describe("multiple: false (single-select)", () => {
+		it("selects one value", () => {
+			expect(toggleFilterSelection([], "Red", false)).toEqual(["Red"]);
+		});
 
-	it("splits multivalued cells by semicolon for unique values", () => {
-		expect(extractFilterValues(table, filters[1])).toEqual([
-			"Cotton",
-			"Linen",
-			"Silk",
-			"Wool",
-		]);
-	});
-});
+		it("replaces the previous value", () => {
+			expect(toggleFilterSelection(["Red"], "Blue", false)).toEqual([
+				"Blue",
+			]);
+		});
 
-describe("getCellValues", () => {
-	it("returns a single trimmed cell value when not multivalued", () => {
-		expect(getCellValues(table.rows[0], 1)).toEqual(["Red"]);
-	});
-
-	it("splits multivalued cells by semicolon and trims segments", () => {
-		expect(getCellValues(table.rows[0], 2, true)).toEqual(["Cotton", "Linen"]);
-	});
-});
-
-describe("applyFilters", () => {
-	it("filters rows by a single filter selection", () => {
-		const result = applyFilters(table, filters, {0: ["Red"]});
-		expect(result).toEqual([
-			["id1", "Red", "Cotton;Linen"],
-			["id3", "Red", "Silk"],
-		]);
-	});
-
-	it("ANDs selections across two filter groups", () => {
-		const result = applyFilters(table, filters, {0: ["Red"], 1: ["Silk"]});
-		expect(result).toEqual([["id3", "Red", "Silk"]]);
-	});
-
-	it("passes all rows when a filter group has an empty selection", () => {
-		const result = applyFilters(table, filters, {0: ["Red"], 1: []});
-		expect(result).toEqual([
-			["id1", "Red", "Cotton;Linen"],
-			["id3", "Red", "Silk"],
-		]);
-	});
-
-	it("matches multivalued rows when any segment matches a selected value", () => {
-		const result = applyFilters(table, filters, {1: ["Cotton"]});
-		expect(result).toEqual([["id1", "Red", "Cotton;Linen"]]);
+		it("clears when the same value is toggled again", () => {
+			expect(toggleFilterSelection(["Red"], "Red", false)).toEqual([]);
+		});
 	});
 });
 
 describe("rowMatchesFilter", () => {
-	it("returns true when no values are selected", () => {
-		expect(rowMatchesFilter(table.rows[0], filters[0], [])).toBe(true);
+	it("passes when nothing is selected in the group", () => {
+		expect(rowMatchesFilter(table.rows[0], {column: 4}, [])).toBe(true);
 	});
 
-	it("returns true when any selected value matches a cell segment", () => {
-		expect(rowMatchesFilter(table.rows[0], filters[1], ["Linen"])).toBe(true);
-		expect(rowMatchesFilter(table.rows[0], filters[1], ["Wool"])).toBe(false);
+	it("matches OR within a tag group", () => {
+		expect(rowMatchesFilter(table.rows[0], {column: 4}, ["Red"])).toBe(
+			true,
+		);
+		expect(rowMatchesFilter(table.rows[1], {column: 4}, ["Red"])).toBe(
+			false,
+		);
+	});
+
+	it("matches text filters by substring (case-insensitive)", () => {
+		expect(
+			rowMatchesFilter(table.rows[0], {type: "text", column: 1}, [
+				"fabric a",
+			]),
+		).toBe(true);
+		expect(
+			rowMatchesFilter(table.rows[1], {type: "text", column: 1}, [
+				"fabric a",
+			]),
+		).toBe(false);
+	});
+});
+
+describe("filterNodesBySearch", () => {
+	const nodes = [
+		{value: "Red", label: "Red"},
+		{value: "Blue", label: "Blue"},
+	];
+
+	it("returns all nodes when search is empty", () => {
+		expect(filterNodesBySearch(nodes, "")).toEqual(nodes);
+	});
+
+	it("filters nodes by label", () => {
+		expect(filterNodesBySearch(nodes, "bl")).toEqual([
+			{value: "Blue", label: "Blue"},
+		]);
+	});
+});
+
+describe("applyFilters", () => {
+	const filters = [
+		{column: 3, multiple: true},
+		{column: 4, multiple: false},
+	];
+
+	it("ANDs selections across groups", () => {
+		const selection: FilterSelection = {
+			0: ["Fabric"],
+			1: ["Red"],
+		};
+
+		expect(applyFilters(table, filters, selection)).toEqual([
+			table.rows[0],
+		]);
 	});
 });

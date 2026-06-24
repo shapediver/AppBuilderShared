@@ -93,4 +93,17 @@ describe("filterable database settings", () => {
 		});
 		expect(result.success).toBe(false);
 	});
+
+	it("accepts text filter type", () => {
+		const result = validateStringParameterSettings({
+			selectSettings: {
+				...validDatabase,
+				database: {
+					...validDatabase.database,
+					filters: [{column: 1, type: "text"}],
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
 });

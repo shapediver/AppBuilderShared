@@ -3,17 +3,20 @@ import {
 	Checkbox,
 	ColorSwatch,
 	Group,
+	Radio,
 	Text,
 	useMantineTheme,
 	type CheckboxProps,
 	type ColorSwatchProps,
 	type GroupProps,
+	type RadioProps,
 	type TextProps,
 } from "@mantine/core";
 import classes from "./FilterableDatabaseFilters.module.css";
 
 export interface FilterableDatabaseFilterOptionStyleProps {
 	checkboxProps?: CheckboxProps;
+	radioProps?: RadioProps;
 	groupProps?: Omit<GroupProps, "children">;
 	labelTextProps?: Omit<TextProps, "children">;
 	colorSwatchProps?: Omit<ColorSwatchProps, "color">;
@@ -24,6 +27,7 @@ export interface FilterableDatabaseFilterOptionProps extends FilterableDatabaseF
 	value: string;
 	label: string;
 	checked: boolean;
+	multiple: boolean;
 	groupType?: "color";
 	color?: string;
 	onToggle: (filterIndex: number, value: string) => void;
@@ -37,10 +41,12 @@ export function FilterableDatabaseFilterOption(
 		value,
 		label,
 		checked,
+		multiple,
 		groupType,
 		color,
 		onToggle,
 		checkboxProps,
+		radioProps,
 		groupProps,
 		labelTextProps,
 		colorSwatchProps,
@@ -52,24 +58,27 @@ export function FilterableDatabaseFilterOption(
 			? resolveFilterColor(color ?? value, theme)
 			: undefined;
 
+	const optionLabel = (
+		<Group {...groupProps}>
+			{swatchColor && (
+				<ColorSwatch color={swatchColor} {...colorSwatchProps} />
+			)}
+			<Text {...labelTextProps}>{label}</Text>
+		</Group>
+	);
+
 	return (
 		<div className={classes.filterOption}>
-			<Checkbox
-				checked={checked}
-				onChange={() => onToggle(filterIndex, value)}
-				label={
-					<Group {...groupProps}>
-						{swatchColor && (
-							<ColorSwatch
-								color={swatchColor}
-								{...colorSwatchProps}
-							/>
-						)}
-						<Text {...labelTextProps}>{label}</Text>
-					</Group>
-				}
-				{...checkboxProps}
-			/>
+			{multiple ? (
+				<Checkbox
+					checked={checked}
+					onChange={() => onToggle(filterIndex, value)}
+					label={optionLabel}
+					{...checkboxProps}
+				/>
+			) : (
+				<Radio value={value} label={optionLabel} {...radioProps} />
+			)}
 		</div>
 	);
 }

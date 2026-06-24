@@ -9,23 +9,34 @@ import {
 	type AccordionProps,
 	type CheckboxProps,
 	type ColorSwatchProps,
+	type ComboboxProps,
 	type GroupProps,
 	type PillGroupProps,
 	type PillProps,
+	type PillsInputFieldProps,
+	type PillsInputProps,
+	type RadioProps,
 	type StackProps,
+	type TextInputProps,
 	type TextProps,
 } from "@mantine/core";
 import {useFilterableDatabase} from "../../model/filterableDatabase/useFilterableDatabase";
-import {FilterableDatabaseActiveFilterTags} from "../filterableDatabase/FilterableDatabaseActiveFilterTags";
-import {FilterableDatabaseFilters} from "../filterableDatabase/FilterableDatabaseFilters";
+import {FilterableDatabaseFilterSelect} from "../filterableDatabase/FilterableDatabaseFilterSelect";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectComponentAsync from "./SelectComponentAsync";
 
 const defaultStyleProps = {
+	filterSelectProps: {
+		comboboxProps: {},
+		inputProps: {pointer: true},
+		searchFieldProps: {},
+	},
 	filtersProps: {
 		accordionProps: {variant: "separated" as const},
 		stackProps: {gap: "md" as const},
 		checkboxProps: {},
+		radioProps: {},
+		textInputProps: {},
 		filterGroupStackProps: {gap: "sm" as const},
 		filterGroupLabelTextProps: {fw: 500, size: "sm" as const},
 		filterOptionGroupProps: {gap: "xs" as const, wrap: "nowrap" as const},
@@ -39,10 +50,17 @@ const defaultStyleProps = {
 };
 
 export interface FilterableSelectComponentStyleProps {
+	filterSelectProps?: {
+		comboboxProps?: Omit<ComboboxProps, "store" | "children">;
+		inputProps?: PillsInputProps;
+		searchFieldProps?: PillsInputFieldProps;
+	};
 	filtersProps?: {
 		accordionProps?: AccordionProps;
 		stackProps?: StackProps;
 		checkboxProps?: CheckboxProps;
+		radioProps?: RadioProps;
+		textInputProps?: TextInputProps;
 		filterGroupStackProps?: StackProps;
 		filterGroupLabelTextProps?: Omit<TextProps, "children">;
 		filterOptionGroupProps?: Omit<GroupProps, "children">;
@@ -75,11 +93,8 @@ interface FilterableSelectComponentProps
 export default function FilterableSelectComponent(
 	props: FilterableSelectComponentProps,
 ) {
-	const {filtersProps, activeFilterTagsProps, ...rest} = useProps(
-		"FilterableSelectComponent",
-		defaultStyleProps,
-		props,
-	);
+	const {filterSelectProps, filtersProps, activeFilterTagsProps, ...rest} =
+		useProps("FilterableSelectComponent", defaultStyleProps, props);
 
 	const {database, type, ...selectProps} = rest;
 
@@ -88,6 +103,7 @@ export default function FilterableSelectComponent(
 		error,
 		selection,
 		toggleFilterValue,
+		setFilterText,
 		removeFilterValue,
 		activeFilterTags,
 		filterGroups,
@@ -113,12 +129,17 @@ export default function FilterableSelectComponent(
 
 	return (
 		<Stack gap="md">
-			<FilterableDatabaseFilters
-				{...filtersProps}
+			<FilterableDatabaseFilterSelect
+				{...filterSelectProps}
+				filtersProps={filtersProps}
+				activeFilterTagsProps={activeFilterTagsProps}
 				filterGroups={filterGroups}
 				selection={selection}
 				filters={database.filters}
 				onToggle={toggleFilterValue}
+				onSetFilterText={setFilterText}
+				tags={activeFilterTags}
+				onRemove={removeFilterValue}
 			/>
 			{scrollingApi && (
 				<SelectComponentAsync
@@ -126,13 +147,6 @@ export default function FilterableSelectComponent(
 					type={type}
 					scrollingApi={scrollingApi}
 					onSyncScrollingApiState={syncScrollingApiState}
-					prependTopSection={
-						<FilterableDatabaseActiveFilterTags
-							{...activeFilterTagsProps}
-							tags={activeFilterTags}
-							onRemove={removeFilterValue}
-						/>
-					}
 				/>
 			)}
 		</Stack>

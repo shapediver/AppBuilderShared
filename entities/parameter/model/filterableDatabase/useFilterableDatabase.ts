@@ -6,11 +6,14 @@ import {
 } from "../../lib/filterableDatabase/buildActiveFilterTags";
 import {createFilterableDatabaseScrollingApi} from "../../lib/filterableDatabase/createScrollingApi";
 import {
+	extractFilterValues,
+	toggleFilterSelection,
+} from "../../lib/filterableDatabase/filterLogic";
+import {
 	fetchRawText,
 	hasDataSource,
 } from "../../lib/filterableDatabase/resolveDataSource";
 import {resolveFilterableDatabaseEngine} from "../../lib/filterableDatabase/resolveEngine";
-import {extractFilterValues} from "../../lib/filterableDatabase/filterLogic";
 import type {
 	DatabaseTable,
 	FilterSelection,
@@ -26,7 +29,7 @@ export interface FilterTreeGroup {
 	filterIndex: number;
 	label: string;
 	nodes: FilterTreeNode[];
-	type?: "color";
+	type?: "color" | "text";
 }
 
 export type {ActiveFilterTag};
@@ -63,7 +66,8 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 
 			try {
 				const raw = await fetchRawText(settings);
-				const parsed = resolveFilterableDatabaseEngine(settings).parse(raw);
+				const parsed =
+					resolveFilterableDatabaseEngine(settings).parse(raw);
 
 				if (cancelled) {
 					return;
@@ -120,11 +124,14 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 			filterIndex,
 			label: filter.label?.trim() || `Filter ${filterIndex + 1}`,
 			type: filter.type,
-			nodes: extractFilterValues(table, filter).map((value) => ({
-				value,
-				label: value,
-				...(filter.type === "color" ? {color: value} : {}),
-			})),
+			nodes:
+				filter.type === "text"
+					? []
+					: extractFilterValues(table, filter).map((value) => ({
+							value,
+							label: value,
+							...(filter.type === "color" ? {color: value} : {}),
+						})),
 		}));
 	}, [table, settings.filters]);
 
@@ -147,20 +154,23 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 
 			setSelection((prev) => {
 				const current = prev[filterIndex] ?? [];
-
-				if (filter.multiple) {
-					const next = current.includes(value)
-						? current.filter((entry) => entry !== value)
-						: [...current, value];
-					return {...prev, [filterIndex]: next};
-				}
-
-				const next =
-					current.length === 1 && current[0] === value ? [] : [value];
+				const next = toggleFilterSelection(
+					current,
+					value,
+					filter.multiple,
+				);
 				return {...prev, [filterIndex]: next};
 			});
 		},
 		[settings.filters],
+	);
+
+	const setFilterText = useCallback(
+		(filterIndex: number, text: string) => {
+			const trimmed = text.trim();
+			setFilterValue(filterIndex, trimmed ? [trimmed] : []);
+		},
+		[setFilterValue],
 	);
 
 	const removeFilterValue = useCallback(
@@ -191,6 +201,7 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 		error,
 		selection,
 		setFilterValue,
+		setFilterText,
 		toggleFilterValue,
 		removeFilterValue,
 		activeFilterTags,
