@@ -26,9 +26,9 @@ describe("jsonEngine.parse", () => {
 	});
 
 	it("rejects missing rows", () => {
-		expect(() => jsonEngine.parse(JSON.stringify({columns: ["a"]}))).toThrow(
-			/missing "rows"/i,
-		);
+		expect(() =>
+			jsonEngine.parse(JSON.stringify({columns: ["a"]})),
+		).toThrow(/missing "rows"/i);
 	});
 
 	it("rejects invalid rows (not an array)", () => {

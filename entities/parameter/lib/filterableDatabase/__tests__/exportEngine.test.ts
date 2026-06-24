@@ -52,7 +52,9 @@ describe("fetchExportText", () => {
 			name: "database-csv",
 			content: [{href: "https://example.com/export.csv", format: "csv"}],
 		});
-		const fetch = jest.fn().mockRejectedValue(new Error("jwt fetch failed"));
+		const fetch = jest
+			.fn()
+			.mockRejectedValue(new Error("jwt fetch failed"));
 		const exportStore = {
 			getState: jest.fn().mockReturnValue({
 				actions: {request, fetch},
@@ -63,12 +65,10 @@ describe("fetchExportText", () => {
 			getExport: jest.fn().mockReturnValue(exportStore),
 		});
 
-		const globalFetch = jest
-			.spyOn(global, "fetch")
-			.mockResolvedValue({
-				ok: true,
-				text: async () => "fallback,text\n",
-			} as Response);
+		const globalFetch = jest.spyOn(global, "fetch").mockResolvedValue({
+			ok: true,
+			text: async () => "fallback,text\n",
+		} as Response);
 
 		await expect(fetchExportText(exportRef)).resolves.toBe(
 			"fallback,text\n",

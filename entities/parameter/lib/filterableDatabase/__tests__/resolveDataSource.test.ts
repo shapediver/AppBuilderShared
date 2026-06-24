@@ -8,8 +8,8 @@ jest.mock("../resolveEngine", () => ({
 
 import type {IFilterableDatabaseSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {fetchExportText} from "../exportEngine";
-import {resolveFilterableDatabaseEngine} from "../resolveEngine";
 import {fetchRawText, hasDataSource} from "../resolveDataSource";
+import {resolveFilterableDatabaseEngine} from "../resolveEngine";
 
 const mockFetchExportText = fetchExportText as jest.Mock;
 const mockResolveEngine = resolveFilterableDatabaseEngine as jest.Mock;

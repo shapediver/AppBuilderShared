@@ -1,11 +1,14 @@
-import type {IFilterableDatabaseSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {csvEngine} from "../csvEngine";
 import {jsonEngine} from "../jsonEngine";
 import {resolveFilterableDatabaseEngine} from "../resolveEngine";
 
+type FilterableDatabaseSettings = Parameters<
+	typeof resolveFilterableDatabaseEngine
+>[0];
+
 const baseSettings = (
-	dataSource: IFilterableDatabaseSettings["dataSource"],
-): IFilterableDatabaseSettings => ({
+	dataSource: FilterableDatabaseSettings["dataSource"],
+): FilterableDatabaseSettings => ({
 	dataSource,
 	itemDataDefinition: {value: 0},
 	filters: [{column: 1}],
