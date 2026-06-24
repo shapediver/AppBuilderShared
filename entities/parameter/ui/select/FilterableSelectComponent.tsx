@@ -8,9 +8,12 @@ import {
 	useProps,
 	type AccordionProps,
 	type CheckboxProps,
+	type ColorSwatchProps,
+	type GroupProps,
 	type PillGroupProps,
 	type PillProps,
 	type StackProps,
+	type TextProps,
 } from "@mantine/core";
 import {useFilterableDatabase} from "../../model/filterableDatabase/useFilterableDatabase";
 import {FilterableDatabaseActiveFilterTags} from "../filterableDatabase/FilterableDatabaseActiveFilterTags";
@@ -24,6 +27,10 @@ const defaultStyleProps = {
 		stackProps: {gap: "md" as const},
 		checkboxProps: {},
 		filterGroupStackProps: {gap: "sm" as const},
+		filterGroupLabelTextProps: {fw: 500, size: "sm" as const},
+		filterOptionGroupProps: {gap: "xs" as const, wrap: "nowrap" as const},
+		filterOptionLabelTextProps: {size: "sm" as const},
+		filterOptionColorSwatchProps: {size: 16},
 	},
 	activeFilterTagsProps: {
 		pillGroupProps: {gap: "xs" as const},
@@ -37,6 +44,10 @@ export interface FilterableSelectComponentStyleProps {
 		stackProps?: StackProps;
 		checkboxProps?: CheckboxProps;
 		filterGroupStackProps?: StackProps;
+		filterGroupLabelTextProps?: Omit<TextProps, "children">;
+		filterOptionGroupProps?: Omit<GroupProps, "children">;
+		filterOptionLabelTextProps?: Omit<TextProps, "children">;
+		filterOptionColorSwatchProps?: Omit<ColorSwatchProps, "color">;
 	};
 	activeFilterTagsProps?: {
 		pillGroupProps?: PillGroupProps;

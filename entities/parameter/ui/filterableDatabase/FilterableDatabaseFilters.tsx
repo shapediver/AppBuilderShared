@@ -6,7 +6,10 @@ import {
 	Stack,
 	type AccordionProps,
 	type CheckboxProps,
+	type ColorSwatchProps,
+	type GroupProps,
 	type StackProps,
+	type TextProps,
 } from "@mantine/core";
 import {FilterableDatabaseFilterGroup} from "./FilterableDatabaseFilterGroup";
 import classes from "./FilterableDatabaseFilters.module.css";
@@ -16,6 +19,10 @@ export interface FilterableDatabaseFiltersStyleProps {
 	stackProps?: StackProps;
 	checkboxProps?: CheckboxProps;
 	filterGroupStackProps?: StackProps;
+	filterGroupLabelTextProps?: Omit<TextProps, "children">;
+	filterOptionGroupProps?: Omit<GroupProps, "children">;
+	filterOptionLabelTextProps?: Omit<TextProps, "children">;
+	filterOptionColorSwatchProps?: Omit<ColorSwatchProps, "color">;
 }
 
 export interface FilterableDatabaseFiltersProps extends FilterableDatabaseFiltersStyleProps {
@@ -37,6 +44,10 @@ export function FilterableDatabaseFilters(
 		stackProps,
 		checkboxProps,
 		filterGroupStackProps,
+		filterGroupLabelTextProps,
+		filterOptionGroupProps,
+		filterOptionLabelTextProps,
+		filterOptionColorSwatchProps,
 	} = props;
 
 	const {
@@ -49,7 +60,7 @@ export function FilterableDatabaseFilters(
 	} = accordionProps ?? {};
 
 	return (
-		<Stack gap="md" {...stackProps}>
+		<Stack {...stackProps}>
 			<Accordion
 				className={[classes.accordion, className]
 					.filter(Boolean)
@@ -68,6 +79,10 @@ export function FilterableDatabaseFilters(
 						onToggle={onToggle}
 						stackProps={filterGroupStackProps}
 						checkboxProps={checkboxProps}
+						labelTextProps={filterGroupLabelTextProps}
+						optionGroupProps={filterOptionGroupProps}
+						optionLabelTextProps={filterOptionLabelTextProps}
+						optionColorSwatchProps={filterOptionColorSwatchProps}
 					/>
 				))}
 			</Accordion>

@@ -6,15 +6,20 @@ import {
 	Text,
 	useMantineTheme,
 	type CheckboxProps,
+	type ColorSwatchProps,
+	type GroupProps,
+	type TextProps,
 } from "@mantine/core";
 import classes from "./FilterableDatabaseFilters.module.css";
 
 export interface FilterableDatabaseFilterOptionStyleProps {
 	checkboxProps?: CheckboxProps;
+	groupProps?: Omit<GroupProps, "children">;
+	labelTextProps?: Omit<TextProps, "children">;
+	colorSwatchProps?: Omit<ColorSwatchProps, "color">;
 }
 
-export interface FilterableDatabaseFilterOptionProps
-	extends FilterableDatabaseFilterOptionStyleProps {
+export interface FilterableDatabaseFilterOptionProps extends FilterableDatabaseFilterOptionStyleProps {
 	filterIndex: number;
 	value: string;
 	label: string;
@@ -36,6 +41,9 @@ export function FilterableDatabaseFilterOption(
 		color,
 		onToggle,
 		checkboxProps,
+		groupProps,
+		labelTextProps,
+		colorSwatchProps,
 	} = props;
 
 	const theme = useMantineTheme();
@@ -50,11 +58,14 @@ export function FilterableDatabaseFilterOption(
 				checked={checked}
 				onChange={() => onToggle(filterIndex, value)}
 				label={
-					<Group gap="xs" wrap="nowrap">
+					<Group {...groupProps}>
 						{swatchColor && (
-							<ColorSwatch color={swatchColor} size={16} />
+							<ColorSwatch
+								color={swatchColor}
+								{...colorSwatchProps}
+							/>
 						)}
-						<Text size="sm">{label}</Text>
+						<Text {...labelTextProps}>{label}</Text>
 					</Group>
 				}
 				{...checkboxProps}

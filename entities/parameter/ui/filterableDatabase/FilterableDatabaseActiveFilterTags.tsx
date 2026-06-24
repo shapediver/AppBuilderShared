@@ -21,7 +21,7 @@ export function FilterableDatabaseActiveFilterTags(
 	}
 
 	return (
-		<Pill.Group gap="xs" {...pillGroupProps}>
+		<Pill.Group {...pillGroupProps}>
 			{tags.map((tag) => (
 				<Pill
 					key={`${tag.filterIndex}-${tag.value}`}

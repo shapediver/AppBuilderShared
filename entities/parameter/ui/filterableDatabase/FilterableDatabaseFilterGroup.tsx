@@ -4,13 +4,20 @@ import {
 	Stack,
 	Text,
 	type CheckboxProps,
+	type ColorSwatchProps,
+	type GroupProps,
 	type StackProps,
+	type TextProps,
 } from "@mantine/core";
 import {FilterableDatabaseFilterOption} from "./FilterableDatabaseFilterOption";
 
 export interface FilterableDatabaseFilterGroupStyleProps {
 	stackProps?: StackProps;
 	checkboxProps?: CheckboxProps;
+	labelTextProps?: Omit<TextProps, "children">;
+	optionGroupProps?: Omit<GroupProps, "children">;
+	optionLabelTextProps?: Omit<TextProps, "children">;
+	optionColorSwatchProps?: Omit<ColorSwatchProps, "color">;
 }
 
 export interface FilterableDatabaseFilterGroupProps extends FilterableDatabaseFilterGroupStyleProps {
@@ -23,17 +30,25 @@ export interface FilterableDatabaseFilterGroupProps extends FilterableDatabaseFi
 export function FilterableDatabaseFilterGroup(
 	props: FilterableDatabaseFilterGroupProps,
 ) {
-	const {group, selectedValues, onToggle, stackProps, checkboxProps} = props;
+	const {
+		group,
+		selectedValues,
+		onToggle,
+		stackProps,
+		checkboxProps,
+		labelTextProps,
+		optionGroupProps,
+		optionLabelTextProps,
+		optionColorSwatchProps,
+	} = props;
 
 	return (
 		<Accordion.Item value={String(group.filterIndex)}>
 			<Accordion.Control>
-				<Text fw={500} size="sm">
-					{group.label}
-				</Text>
+				<Text {...labelTextProps}>{group.label}</Text>
 			</Accordion.Control>
 			<Accordion.Panel>
-				<Stack gap="sm" {...stackProps}>
+				<Stack {...stackProps}>
 					{group.nodes.map((node) => (
 						<FilterableDatabaseFilterOption
 							key={node.value}
@@ -45,6 +60,9 @@ export function FilterableDatabaseFilterGroup(
 							color={node.color}
 							onToggle={onToggle}
 							checkboxProps={checkboxProps}
+							groupProps={optionGroupProps}
+							labelTextProps={optionLabelTextProps}
+							colorSwatchProps={optionColorSwatchProps}
 						/>
 					))}
 				</Stack>
