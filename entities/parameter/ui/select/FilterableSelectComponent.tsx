@@ -39,6 +39,7 @@ const defaultStyleProps = {
 		textInputProps: {},
 		filterGroupStackProps: {gap: "sm" as const},
 		filterGroupLabelTextProps: {fw: 500, size: "sm" as const},
+		filterGroupSelectAllCheckboxProps: {},
 		filterOptionGroupProps: {gap: "xs" as const, wrap: "nowrap" as const},
 		filterOptionLabelTextProps: {size: "sm" as const},
 		filterOptionColorSwatchProps: {size: 16},
@@ -63,6 +64,7 @@ export interface FilterableSelectComponentStyleProps {
 		textInputProps?: TextInputProps;
 		filterGroupStackProps?: StackProps;
 		filterGroupLabelTextProps?: Omit<TextProps, "children">;
+		filterGroupSelectAllCheckboxProps?: CheckboxProps;
 		filterOptionGroupProps?: Omit<GroupProps, "children">;
 		filterOptionLabelTextProps?: Omit<TextProps, "children">;
 		filterOptionColorSwatchProps?: Omit<ColorSwatchProps, "color">;
@@ -103,6 +105,7 @@ export default function FilterableSelectComponent(
 		error,
 		selection,
 		toggleFilterValue,
+		toggleSelectAll,
 		setFilterText,
 		removeFilterValue,
 		activeFilterTags,
@@ -137,6 +140,7 @@ export default function FilterableSelectComponent(
 				selection={selection}
 				filters={database.filters}
 				onToggle={toggleFilterValue}
+				onToggleSelectAll={toggleSelectAll}
 				onSetFilterText={setFilterText}
 				tags={activeFilterTags}
 				onRemove={removeFilterValue}

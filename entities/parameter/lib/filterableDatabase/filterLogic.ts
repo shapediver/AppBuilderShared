@@ -90,6 +90,34 @@ export function filterNodesBySearch<T extends {label: string; value: string}>(
 	return nodes.filter((node) => node.label.toLowerCase().includes(query));
 }
 
+/** Master-checkbox state for a multi-select filter group. */
+export function getSelectAllState(
+	selected: string[],
+	allValues: string[],
+): "checked" | "unchecked" | "indeterminate" {
+	if (allValues.length === 0) {
+		return "unchecked";
+	}
+
+	const selectedSet = new Set(selected);
+	const matchCount = allValues.filter((value) =>
+		selectedSet.has(value),
+	).length;
+
+	if (matchCount === 0) {
+		return "unchecked";
+	}
+	if (matchCount === allValues.length) {
+		return "checked";
+	}
+	return "indeterminate";
+}
+
+/** Selects every option value or clears the group when `select` is false. */
+export function applySelectAll(allValues: string[], select: boolean): string[] {
+	return select ? [...allValues] : [];
+}
+
 /** Computes the next selected values for one filter group after a user toggle. */
 export function toggleFilterSelection(
 	current: string[],

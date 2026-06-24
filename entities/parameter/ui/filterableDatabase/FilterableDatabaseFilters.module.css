@@ -3,6 +3,29 @@
 	transition: background-color 120ms ease;
 }
 
+.accordionControl {
+	display: flex;
+	align-items: center;
+	gap: var(--mantine-spacing-sm);
+	width: 100%;
+}
+
+.selectAllCheckbox {
+	flex-shrink: 0;
+}
+
+.accordionControlLabel {
+	flex: 1;
+	min-width: 0;
+}
+
+.filterOptionChildren {
+	/* Indent under header select-all checkbox; keep Stack gap between rows */
+	padding-left: calc(
+		var(--mantine-spacing-sm) + var(--checkbox-size, 16px)
+	);
+}
+
 /* Mantine `variant="separated"`: item gap is margin-top on siblings (default md ≈ 16px) */
 .accordion :global(.mantine-Accordion-item + .mantine-Accordion-item) {
 	margin-top: var(--mantine-spacing-xs);

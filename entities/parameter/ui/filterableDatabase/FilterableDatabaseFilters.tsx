@@ -24,6 +24,7 @@ export interface FilterableDatabaseFiltersStyleProps {
 	textInputProps?: TextInputProps;
 	filterGroupStackProps?: StackProps;
 	filterGroupLabelTextProps?: Omit<TextProps, "children">;
+	filterGroupSelectAllCheckboxProps?: CheckboxProps;
 	filterOptionGroupProps?: Omit<GroupProps, "children">;
 	filterOptionLabelTextProps?: Omit<TextProps, "children">;
 	filterOptionColorSwatchProps?: Omit<ColorSwatchProps, "color">;
@@ -35,6 +36,7 @@ export interface FilterableDatabaseFiltersProps extends FilterableDatabaseFilter
 	filters: IFilterableDatabaseSettings["filters"];
 	searchTerm?: string;
 	onToggle: (filterIndex: number, value: string) => void;
+	onToggleSelectAll: (filterIndex: number) => void;
 	onSetFilterText: (filterIndex: number, text: string) => void;
 }
 
@@ -46,6 +48,7 @@ export function FilterableDatabaseFilters(
 		selection,
 		filters,
 		onToggle,
+		onToggleSelectAll,
 		onSetFilterText,
 		searchTerm,
 		accordionProps,
@@ -55,6 +58,7 @@ export function FilterableDatabaseFilters(
 		textInputProps,
 		filterGroupStackProps,
 		filterGroupLabelTextProps,
+		filterGroupSelectAllCheckboxProps,
 		filterOptionGroupProps,
 		filterOptionLabelTextProps,
 		filterOptionColorSwatchProps,
@@ -87,10 +91,14 @@ export function FilterableDatabaseFilters(
 						selectedValues={selection[group.filterIndex] ?? []}
 						multiple={filters[group.filterIndex]?.multiple ?? true}
 						onToggle={onToggle}
+						onToggleSelectAll={onToggleSelectAll}
 						onSetFilterText={onSetFilterText}
 						searchTerm={searchTerm}
 						stackProps={filterGroupStackProps}
 						checkboxProps={checkboxProps}
+						selectAllCheckboxProps={
+							filterGroupSelectAllCheckboxProps
+						}
 						radioProps={radioProps}
 						textInputProps={textInputProps}
 						labelTextProps={filterGroupLabelTextProps}

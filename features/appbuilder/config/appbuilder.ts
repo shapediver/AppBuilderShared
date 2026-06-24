@@ -172,6 +172,8 @@ export interface IFilterableDatabaseSettings {
 		/**
 		 * Optional type of the filter, defining how the filter values are shown to the user.
 		 * `color` — swatch + tag list; `text` — free-text substring match on the column.
+		 * Multi-select tag groups (`multiple !== false`, not `text`) show a master "All"
+		 * checkbox that selects or clears every option in the group.
 		 */
 		type?: "color" | "text";
 		/**

@@ -1,6 +1,8 @@
 import {
 	applyFilters,
+	applySelectAll,
 	filterNodesBySearch,
+	getSelectAllState,
 	rowMatchesFilter,
 	toggleFilterSelection,
 } from "../filterLogic";
@@ -112,5 +114,39 @@ describe("applyFilters", () => {
 		expect(applyFilters(table, filters, selection)).toEqual([
 			table.rows[0],
 		]);
+	});
+});
+
+describe("getSelectAllState", () => {
+	const allValues = ["Fabric", "Blend", "Synthetic"];
+
+	it("returns unchecked when nothing is selected", () => {
+		expect(getSelectAllState([], allValues)).toBe("unchecked");
+	});
+
+	it("returns checked when every value is selected", () => {
+		expect(getSelectAllState(allValues, allValues)).toBe("checked");
+	});
+
+	it("returns indeterminate when some values are selected", () => {
+		expect(getSelectAllState(["Fabric", "Blend"], allValues)).toBe(
+			"indeterminate",
+		);
+	});
+
+	it("returns unchecked when allValues is empty", () => {
+		expect(getSelectAllState(["Fabric"], [])).toBe("unchecked");
+	});
+});
+
+describe("applySelectAll", () => {
+	const allValues = ["Fabric", "Blend", "Synthetic"];
+
+	it("selects all values when select is true", () => {
+		expect(applySelectAll(allValues, true)).toEqual(allValues);
+	});
+
+	it("clears selection when select is false", () => {
+		expect(applySelectAll(allValues, false)).toEqual([]);
 	});
 });

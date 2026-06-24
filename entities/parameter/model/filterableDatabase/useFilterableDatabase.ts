@@ -6,7 +6,9 @@ import {
 } from "../../lib/filterableDatabase/buildActiveFilterTags";
 import {createFilterableDatabaseScrollingApi} from "../../lib/filterableDatabase/createScrollingApi";
 import {
+	applySelectAll,
 	extractFilterValues,
+	getSelectAllState,
 	toggleFilterSelection,
 } from "../../lib/filterableDatabase/filterLogic";
 import {
@@ -184,6 +186,35 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 		[],
 	);
 
+	const toggleSelectAll = useCallback(
+		(filterIndex: number) => {
+			const filter = settings.filters[filterIndex];
+			if (
+				!filter ||
+				filter.type === "text" ||
+				filter.multiple === false
+			) {
+				return;
+			}
+
+			const group = filterGroups.find(
+				(entry) => entry.filterIndex === filterIndex,
+			);
+			if (!group) {
+				return;
+			}
+
+			const allValues = group.nodes.map((node) => node.value);
+			setSelection((prev) => {
+				const current = prev[filterIndex] ?? [];
+				const state = getSelectAllState(current, allValues);
+				const next = applySelectAll(allValues, state !== "checked");
+				return {...prev, [filterIndex]: next};
+			});
+		},
+		[filterGroups, settings.filters],
+	);
+
 	const activeFilterTags = useMemo(
 		() => buildActiveFilterTags(selection, filterGroups),
 		[selection, filterGroups],
@@ -203,6 +234,7 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 		setFilterValue,
 		setFilterText,
 		toggleFilterValue,
+		toggleSelectAll,
 		removeFilterValue,
 		activeFilterTags,
 		filterGroups,

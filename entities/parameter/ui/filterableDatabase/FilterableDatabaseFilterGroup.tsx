@@ -1,7 +1,11 @@
-import {filterNodesBySearch} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterLogic";
+import {
+	filterNodesBySearch,
+	getSelectAllState,
+} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterLogic";
 import type {FilterTreeGroup} from "@AppBuilderLib/entities/parameter/model/filterableDatabase/useFilterableDatabase";
 import {
 	Accordion,
+	Checkbox,
 	Radio,
 	Stack,
 	Text,
@@ -14,11 +18,14 @@ import {
 	type TextInputProps,
 	type TextProps,
 } from "@mantine/core";
+import {useCallback, type MouseEvent} from "react";
 import {FilterableDatabaseFilterOption} from "./FilterableDatabaseFilterOption";
+import classes from "./FilterableDatabaseFilters.module.css";
 
 export interface FilterableDatabaseFilterGroupStyleProps {
 	stackProps?: StackProps;
 	checkboxProps?: CheckboxProps;
+	selectAllCheckboxProps?: CheckboxProps;
 	radioProps?: RadioProps;
 	textInputProps?: TextInputProps;
 	labelTextProps?: Omit<TextProps, "children">;
@@ -33,6 +40,7 @@ export interface FilterableDatabaseFilterGroupProps extends FilterableDatabaseFi
 	multiple: boolean;
 	searchTerm?: string;
 	onToggle: (filterIndex: number, value: string) => void;
+	onToggleSelectAll: (filterIndex: number) => void;
 	onSetFilterText: (filterIndex: number, text: string) => void;
 }
 
@@ -45,9 +53,11 @@ export function FilterableDatabaseFilterGroup(
 		multiple,
 		searchTerm = "",
 		onToggle,
+		onToggleSelectAll,
 		onSetFilterText,
 		stackProps,
 		checkboxProps,
+		selectAllCheckboxProps,
 		radioProps,
 		textInputProps,
 		labelTextProps,
@@ -56,10 +66,18 @@ export function FilterableDatabaseFilterGroup(
 		optionColorSwatchProps,
 	} = props;
 
+	const stopAccordionToggle = useCallback((event: MouseEvent) => {
+		event.stopPropagation();
+	}, []);
+
 	const visibleNodes =
 		group.type === "text"
 			? []
 			: filterNodesBySearch(group.nodes, searchTerm);
+
+	const allValues = group.nodes.map((node) => node.value);
+	const selectAllState = getSelectAllState(selectedValues, allValues);
+	const showSelectAll = multiple && group.type !== "text";
 
 	const options = visibleNodes.map((node) => (
 		<FilterableDatabaseFilterOption
@@ -83,11 +101,37 @@ export function FilterableDatabaseFilterGroup(
 	return (
 		<Accordion.Item value={String(group.filterIndex)}>
 			<Accordion.Control>
-				<Text {...labelTextProps}>{group.label}</Text>
+				<div className={classes.accordionControl}>
+					{showSelectAll && (
+						<div
+							className={classes.selectAllCheckbox}
+							onClick={stopAccordionToggle}
+							onMouseDown={stopAccordionToggle}
+						>
+							<Checkbox
+								aria-label={`Select all ${group.label}`}
+								checked={selectAllState === "checked"}
+								indeterminate={
+									selectAllState === "indeterminate"
+								}
+								onChange={() =>
+									onToggleSelectAll(group.filterIndex)
+								}
+								{...selectAllCheckboxProps}
+							/>
+						</div>
+					)}
+					<Text
+						className={classes.accordionControlLabel}
+						{...labelTextProps}
+					>
+						{group.label}
+					</Text>
+				</div>
 			</Accordion.Control>
 			<Accordion.Panel>
-				<Stack {...stackProps}>
-					{group.type === "text" ? (
+				{group.type === "text" ? (
+					<Stack {...stackProps}>
 						<TextInput
 							value={selectedValues[0] ?? ""}
 							onChange={(event) =>
@@ -98,19 +142,28 @@ export function FilterableDatabaseFilterGroup(
 							}
 							{...textInputProps}
 						/>
-					) : multiple ? (
-						options
-					) : (
-						<Radio.Group
-							value={selectedValues[0] ?? ""}
-							onChange={(nextValue) =>
-								onToggle(group.filterIndex, nextValue)
-							}
-						>
-							{options}
-						</Radio.Group>
-					)}
-				</Stack>
+					</Stack>
+				) : multiple ? (
+					<Stack
+						className={
+							showSelectAll
+								? classes.filterOptionChildren
+								: undefined
+						}
+						{...stackProps}
+					>
+						{options}
+					</Stack>
+				) : (
+					<Radio.Group
+						value={selectedValues[0] ?? ""}
+						onChange={(nextValue) =>
+							onToggle(group.filterIndex, nextValue)
+						}
+					>
+						{options}
+					</Radio.Group>
+				)}
 			</Accordion.Panel>
 		</Accordion.Item>
 	);
