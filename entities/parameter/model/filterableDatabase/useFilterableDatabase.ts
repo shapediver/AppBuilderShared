@@ -5,7 +5,7 @@ import {
 	type ActiveFilterTag,
 } from "../../lib/filterableDatabase/buildActiveFilterTags";
 import {createFilterableDatabaseScrollingApi} from "../../lib/filterableDatabase/createScrollingApi";
-import {csvEngine} from "../../lib/filterableDatabase/csvEngine";
+import {resolveFilterableDatabaseEngine} from "../../lib/filterableDatabase/resolveEngine";
 import {extractFilterValues} from "../../lib/filterableDatabase/filterLogic";
 import type {
 	DatabaseTable,
@@ -62,8 +62,9 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 			setError(undefined);
 
 			try {
-				const raw = await csvEngine.fetch(href);
-				const parsed = csvEngine.parse(raw);
+				const engine = resolveFilterableDatabaseEngine(settings);
+				const raw = await engine.fetch(href);
+				const parsed = engine.parse(raw);
 
 				if (cancelled) {
 					return;

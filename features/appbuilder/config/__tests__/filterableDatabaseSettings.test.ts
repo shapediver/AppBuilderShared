@@ -45,6 +45,22 @@ describe("filterable database settings", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts format json with href", () => {
+		const result = validateStringParameterSettings({
+			selectSettings: {
+				...validDatabase,
+				database: {
+					...validDatabase.database,
+					dataSource: {
+						href: "https://example.com/data.json",
+						format: "json",
+					},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
 	it("rejects database without href", () => {
 		const result = validateStringParameterSettings({
 			selectSettings: {

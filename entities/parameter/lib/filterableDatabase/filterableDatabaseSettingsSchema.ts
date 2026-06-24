@@ -26,6 +26,7 @@ const filterableDatabaseDataSourceSchema = z
 				{message: "href must be an absolute URL or root-relative path"},
 			)
 			.optional(),
+		format: z.enum(["csv", "json"]).optional(),
 	})
 	.refine((ds) => !!ds.href, {
 		message: "database.dataSource.href is required in v1",

@@ -113,6 +113,8 @@ export interface IFilterableDatabaseSettings {
 		export?: Pick<IAppBuilderExportRef, "name" | "sessionId">;
 		/** URL to fetch CSV file from. Takes precedence over export reference. */
 		href?: string;
+		/** Data file format. Inferred from href suffix when omitted. */
+		format?: "csv" | "json";
 	};
 	/**
 	 * Definition of how the itemData shall be extracted from the data source.

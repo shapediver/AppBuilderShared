@@ -1,3 +1,4 @@
+import {fetchText} from "./fetchDataSource";
 import type {DatabaseTable, FilterableDatabaseEngine} from "./types";
 
 function parseCsvLine(line: string): string[] {
@@ -44,11 +45,7 @@ function parseCsv(raw: string): DatabaseTable {
 
 export const csvEngine: FilterableDatabaseEngine = {
 	async fetch(href: string): Promise<string> {
-		const res = await fetch(href);
-		if (!res.ok) {
-			throw new Error(`Failed to fetch CSV: ${res.status} ${res.statusText}`);
-		}
-		return res.text();
+		return fetchText(href, "CSV");
 	},
 	parse: parseCsv,
 };
