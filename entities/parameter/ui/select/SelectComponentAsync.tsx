@@ -1,5 +1,5 @@
 import {Anchor, Group, Loader} from "@mantine/core";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useState, type ReactNode} from "react";
 import {useSelectAsync} from "../../model/select/useSelectAsync";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
@@ -12,6 +12,10 @@ type SelectComponentAsyncType = "grid" | "fullwidthcards";
 interface SelectComponentAsyncProps extends SelectComponentProps {
 	/** Type of select component to use. */
 	type: SelectComponentAsyncType;
+	/** Optional content rendered above search-term anchors in the top section. */
+	prependTopSection?: ReactNode;
+	/** Called after in-place scrolling API mutation so parent can sync React state. */
+	onSyncScrollingApiState?: () => void;
 }
 
 /**
@@ -20,9 +24,18 @@ interface SelectComponentAsyncProps extends SelectComponentProps {
  * the actual card rendering to the base SelectFullWidthCardsComponent.
  */
 export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
-	const {type, scrollingApi, disabled, onChange, ...propsDefault} = props;
+	const {
+		type,
+		scrollingApi,
+		disabled,
+		onChange,
+		prependTopSection,
+		onSyncScrollingApiState,
+		...propsDefault
+	} = props;
+
 	const {debouncedOnSearch, items, itemsData, bottomSection, loading} =
-		useSelectAsync(scrollingApi);
+		useSelectAsync(scrollingApi, onSyncScrollingApiState);
 
 	// stack of search terms
 	const [searchTerms, setSearchTerms] = useState<string[]>([]);
@@ -53,20 +66,25 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 
 	// show stack of search terms and allow to remove them
 	const topSection = (
-		<Group>
-			{searchTerms.map((term, index) => (
-				<Anchor
-					key={index}
-					onClick={() => {
-						const terms = searchTerms.slice(0, index);
-						setSearchTerms(terms);
-						debouncedOnSearch(terms, 0);
-					}}
-				>
-					{term}
-				</Anchor>
-			))}
-		</Group>
+		<>
+			{prependTopSection}
+			{searchTerms.length > 0 && (
+				<Group>
+					{searchTerms.map((term, index) => (
+						<Anchor
+							key={index}
+							onClick={() => {
+								const terms = searchTerms.slice(0, index);
+								setSearchTerms(terms);
+								debouncedOnSearch(terms, 0);
+							}}
+						>
+							{term}
+						</Anchor>
+					))}
+				</Group>
+			)}
+		</>
 	);
 
 	if (type === "fullwidthcards") {

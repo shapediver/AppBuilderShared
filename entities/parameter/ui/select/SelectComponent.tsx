@@ -22,13 +22,13 @@ import {
 import React, {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useScrollingApiStore} from "../../model/useScrollingApiStore";
+import FilterableSelectComponent from "./FilterableSelectComponent";
 import SelectButtonFlexComponent from "./SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
 import SelectCarouselComponent from "./SelectCarouselComponent";
 import SelectChipGroupComponent from "./SelectChipGroupComponent";
 import SelectColorComponent from "./SelectColorComponent";
 import SelectComponentAsync from "./SelectComponentAsync";
-import FilterableSelectComponent from "./FilterableSelectComponent";
 import SelectDropDownComponent from "./SelectDropDownComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import SelectGridComponent from "./SelectGridComponent";

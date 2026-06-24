@@ -1,4 +1,9 @@
 import type {IFilterableDatabaseSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {
+	buildActiveFilterTags,
+	type ActiveFilterTag,
+} from "../../lib/filterableDatabase/buildActiveFilterTags";
 import {createFilterableDatabaseScrollingApi} from "../../lib/filterableDatabase/createScrollingApi";
 import {csvEngine} from "../../lib/filterableDatabase/csvEngine";
 import {extractFilterValues} from "../../lib/filterableDatabase/filterLogic";
@@ -6,13 +11,6 @@ import type {
 	DatabaseTable,
 	FilterSelection,
 } from "../../lib/filterableDatabase/types";
-import {
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
 
 export interface FilterTreeNode {
 	value: string;
@@ -27,6 +25,7 @@ export interface FilterTreeGroup {
 	type?: "color";
 }
 
+export type {ActiveFilterTag};
 type FilterableDatabaseScrollingApi = ReturnType<
 	typeof createFilterableDatabaseScrollingApi
 >;
@@ -104,7 +103,13 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 	}, [href, settings]);
 
 	useEffect(() => {
-		scrollingApiRef.current?.updateSelection(selection);
+		const api = scrollingApiRef.current;
+		if (!api) {
+			return;
+		}
+
+		api.updateSelection(selection);
+		setScrollingApi({...api});
 	}, [selection]);
 
 	const filterGroups = useMemo((): FilterTreeGroup[] => {
@@ -114,7 +119,7 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 
 		return settings.filters.map((filter, filterIndex) => ({
 			filterIndex,
-			label: `Filter ${filterIndex + 1}`,
+			label: filter.label?.trim() || `Filter ${filterIndex + 1}`,
 			type: filter.type,
 			nodes: extractFilterValues(table, filter).map((value) => ({
 				value,
@@ -159,13 +164,39 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 		[settings.filters],
 	);
 
+	const removeFilterValue = useCallback(
+		(filterIndex: number, value: string) => {
+			setSelection((prev) => {
+				const current = prev[filterIndex] ?? [];
+				const next = current.filter((entry) => entry !== value);
+				return {...prev, [filterIndex]: next};
+			});
+		},
+		[],
+	);
+
+	const activeFilterTags = useMemo(
+		() => buildActiveFilterTags(selection, filterGroups),
+		[selection, filterGroups],
+	);
+
+	const syncScrollingApiState = useCallback(() => {
+		const api = scrollingApiRef.current;
+		if (api) {
+			setScrollingApi({...api});
+		}
+	}, []);
+
 	return {
 		loading,
 		error,
 		selection,
 		setFilterValue,
 		toggleFilterValue,
+		removeFilterValue,
+		activeFilterTags,
 		filterGroups,
 		scrollingApi,
+		syncScrollingApiState,
 	};
 }

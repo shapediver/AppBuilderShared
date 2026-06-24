@@ -41,11 +41,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 	let resetStateCounter = 0;
 
 	function buildAllItems(): IScrollingApiItemTypeSelect[] {
-		const filteredRows = applyFilters(
-			table,
-			settings.filters,
-			selection,
-		);
+		const filteredRows = applyFilters(table, settings.filters, selection);
 		const {items, itemData} = mapRowsToSelectItems(
 			filteredRows,
 			settings.itemDataDefinition,
@@ -96,6 +92,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 		setSearchTerms: async (terms: string[]) => {
 			searchTerms = terms;
 			applyPaging();
+			bumpResetState();
 		},
 		setPageSize: async (size: number) => {
 			pageSize = size;

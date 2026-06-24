@@ -1,7 +1,4 @@
-import {
-	ISelectComponentItemDataType,
-	SelectComponentType,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {ISelectParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {validateSelectParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuildertypecheck";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -22,11 +19,7 @@ import SelectComponent, {
 	SelectComponentSettings,
 } from "./select/SelectComponent";
 
-interface ISelectComponentOverrides {
-	/** Type of select component to use. */
-	type?: SelectComponentType;
-	/** Record containing optional further item data per item name. */
-	itemData?: Record<string, ISelectComponentItemDataType>;
+interface ISelectComponentOverrides extends ISelectParameterSettings {
 	/** Optional further settings, like image width etc. */
 	settings?: SelectComponentSettings;
 }
@@ -261,6 +254,7 @@ export default function ParameterSelectComponent(
 				searchable={settings.searchable}
 				limit={settings.limit}
 				height={settings.height}
+				database={settings.database}
 			/>
 		);
 

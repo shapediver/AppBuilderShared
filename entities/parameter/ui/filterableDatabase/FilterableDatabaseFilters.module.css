@@ -1,0 +1,17 @@
+.filterOption {
+	border-radius: var(--mantine-radius-sm);
+	transition: background-color 120ms ease;
+}
+
+/* Mantine `variant="separated"`: item gap is margin-top on siblings (default md ≈ 16px) */
+.accordion :global(.mantine-Accordion-item + .mantine-Accordion-item) {
+	margin-top: var(--mantine-spacing-xs);
+}
+
+.filterOption:hover {
+	background-color: var(--mantine-color-gray-0);
+}
+
+[data-mantine-color-scheme="dark"] .filterOption:hover {
+	background-color: var(--mantine-color-dark-6);
+}

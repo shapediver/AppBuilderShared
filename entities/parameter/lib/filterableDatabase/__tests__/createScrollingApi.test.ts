@@ -1,6 +1,9 @@
-import type {IFilterableDatabaseSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {createFilterableDatabaseScrollingApi} from "../createScrollingApi";
 import type {DatabaseTable} from "../types";
+
+type FilterableDatabaseSettings = Parameters<
+	typeof createFilterableDatabaseScrollingApi
+>[0]["settings"];
 
 const table: DatabaseTable = {
 	rows: [
@@ -12,7 +15,7 @@ const table: DatabaseTable = {
 	],
 };
 
-const settings: IFilterableDatabaseSettings = {
+const settings: FilterableDatabaseSettings = {
 	dataSource: {href: "https://example.com/data.csv"},
 	itemDataDefinition: {value: 0, displayname: 1},
 	filters: [{column: 2, multiple: true}],
@@ -113,5 +116,19 @@ describe("createFilterableDatabaseScrollingApi", () => {
 
 		expect(api.items.map((entry) => entry.item)).toEqual(["id2"]);
 		expect(api.hasNextPage).toBe(false);
+	});
+
+	it("setSearchTerms bumps resetState so consumers can re-render", async () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 10,
+		});
+		const resetStateBefore = api.resetState;
+
+		await api.setSearchTerms(["red"]);
+
+		expect(api.resetState).toBe(resetStateBefore + 1);
 	});
 });

@@ -17,6 +17,19 @@ describe("filterable database settings", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts root-relative database href", () => {
+		const result = validateStringParameterSettings({
+			selectSettings: {
+				...validDatabase,
+				database: {
+					...validDatabase.database,
+					dataSource: {href: "/textile-database-sample.csv"},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
 	it("rejects database without href", () => {
 		const result = validateStringParameterSettings({
 			selectSettings: {

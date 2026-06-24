@@ -87,12 +87,16 @@ export interface ISelectParameterSettings {
 	searchable?: boolean;
 	/** Max number of options rendered at the same time (only for type=="dropdown"). Default: 5 if searchable is enabled */
 	limit?: number;
-	/**
-	 * Optional CSS controlling the absolute height of the widget.
+	/** Optional CSS controlling the absolute height of the widget.
 	 * In case this is not specified, the default behavior of the widget
 	 * is to adapt its height according to the items.
 	 */
 	height?: string;
+	/**
+	 * Settings of the optional filterable database to fetch items from.
+	 * Currently supported for type "fullwidthcards" and "grid".
+	 */
+	database?: IFilterableDatabaseSettings;
 }
 
 /** Settings of a filterable database component. */
@@ -147,6 +151,11 @@ export interface IFilterableDatabaseSettings {
 	filters: {
 		/** Index of the column to filter. */
 		column: number;
+		/**
+		 * Optional display name for the filter group in the UI (accordion title, active tags).
+		 * Defaults to `Filter ${index + 1}` when omitted.
+		 */
+		label?: string;
 		/**
 		 * Set this to true if the column contains multiple values separated by semicolons,
 		 * and the filter should check if any of the values matches the selected filter value(s).

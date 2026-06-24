@@ -1,3 +1,4 @@
+import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
 import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
 import type {MantineTheme, MantineThemeComponent} from "@mantine/core";
 import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
@@ -189,67 +190,17 @@ export const ISelectComponentItemDataTypeSchema = z.object({
 });
 
 // Zod type definition for ISelectParameterSettings
-const ISelectParameterSettingsSchema = z.object({
-	type: SelectComponentTypeSchema.optional(),
-	itemData: z
-		.record(z.string(), ISelectComponentItemDataTypeSchema)
-		.optional(),
-	searchable: z.boolean().optional(),
-	limit: z.int().positive().optional(),
-	height: z.string().optional(),
-});
-
-export const validateSelectParameterSettings = (value: any) => {
-	return ISelectParameterSettingsSchema.safeParse(value);
-};
-
-const IFilterableDatabaseDataSourceSchema = z
+const ISelectParameterSettingsSchema = z
 	.object({
-		export: z
-			.object({
-				name: z.string(),
-				sessionId: z.string(),
-			})
+		type: SelectComponentTypeSchema.optional(),
+		itemData: z
+			.record(z.string(), ISelectComponentItemDataTypeSchema)
 			.optional(),
-		href: z.string().url().optional(),
+		searchable: z.boolean().optional(),
+		limit: z.int().positive().optional(),
+		height: z.string().optional(),
+		database: filterableDatabaseSettingsSchema.optional(),
 	})
-	.refine((ds) => !!ds.href, {
-		message: "database.dataSource.href is required in v1",
-	});
-
-const IFilterableDatabaseFilterSchema = z.object({
-	column: z.number().int().nonnegative(),
-	multivalued: z.boolean().optional(),
-	multiple: z.boolean().optional(),
-	type: z.literal("color").optional(),
-	filterValues: z.array(z.string()).optional(),
-});
-
-const IFilterableDatabaseSettingsSchema = z.object({
-	dataSource: IFilterableDatabaseDataSourceSchema,
-	itemDataDefinition: z.object({
-		value: z.number().int().nonnegative(),
-		displayname: z.number().int().nonnegative().optional(),
-		tooltip: z.number().int().nonnegative().optional(),
-		description: z.number().int().nonnegative().optional(),
-		imageUrl: z.number().int().nonnegative().optional(),
-		color: z.number().int().nonnegative().optional(),
-		data: z.record(z.string(), z.number().int().nonnegative()).optional(),
-	}),
-	filters: z.array(IFilterableDatabaseFilterSchema).min(1),
-});
-
-// Zod type definition for IStringParameterSelectSettings
-const IStringParameterSelectSettingsSchema =
-	ISelectParameterSettingsSchema.extend(
-		z
-			.object({
-				items: z.array(z.string()).optional(),
-				source: z.string().optional(),
-				database: IFilterableDatabaseSettingsSchema.optional(),
-			})
-			.shape,
-	)
 	.refine(
 		(s) =>
 			!s.database ||
@@ -260,6 +211,17 @@ const IStringParameterSelectSettingsSchema =
 				'database requires selectSettings.type "fullwidthcards" or "grid"',
 		},
 	);
+
+export const validateSelectParameterSettings = (value: any) => {
+	return ISelectParameterSettingsSchema.safeParse(value);
+};
+
+// Zod type definition for IStringParameterSelectSettings
+const IStringParameterSelectSettingsSchema =
+	ISelectParameterSettingsSchema.safeExtend({
+		items: z.array(z.string()).optional(),
+		source: z.string().optional(),
+	});
 
 // Zod type definition for IStringParameterSettings
 const IStringParameterSettingsSchema = z.object({

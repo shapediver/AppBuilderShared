@@ -1,110 +1,88 @@
+import {IFilterableDatabaseSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
-	Checkbox,
-	ColorSwatch,
 	Group,
 	Loader,
-	RenderTreeNodePayload,
+	MantineThemeComponent,
 	Stack,
 	Text,
-	Tree,
-	TreeNodeData,
-	useTree,
+	useProps,
+	type AccordionProps,
+	type CheckboxProps,
+	type PillGroupProps,
+	type PillProps,
+	type StackProps,
 } from "@mantine/core";
-import React, {useEffect, useMemo} from "react";
-import {IFilterableDatabaseSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {useFilterableDatabase} from "../../model/filterableDatabase/useFilterableDatabase";
+import {FilterableDatabaseActiveFilterTags} from "../filterableDatabase/FilterableDatabaseActiveFilterTags";
+import {FilterableDatabaseFilters} from "../filterableDatabase/FilterableDatabaseFilters";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectComponentAsync from "./SelectComponentAsync";
 
-interface FilterableSelectComponentProps extends SelectComponentProps {
+const defaultStyleProps = {
+	filtersProps: {
+		accordionProps: {variant: "separated" as const},
+		stackProps: {gap: "md" as const},
+		checkboxProps: {},
+		filterGroupStackProps: {gap: "sm" as const},
+	},
+	activeFilterTagsProps: {
+		pillGroupProps: {gap: "xs" as const},
+		pillProps: {},
+	},
+};
+
+export interface FilterableSelectComponentStyleProps {
+	filtersProps?: {
+		accordionProps?: AccordionProps;
+		stackProps?: StackProps;
+		checkboxProps?: CheckboxProps;
+		filterGroupStackProps?: StackProps;
+	};
+	activeFilterTagsProps?: {
+		pillGroupProps?: PillGroupProps;
+		pillProps?: PillProps;
+	};
+}
+
+export type FilterableSelectComponentThemePropsType =
+	Partial<FilterableSelectComponentStyleProps>;
+
+export function FilterableSelectComponentThemeProps(
+	props: FilterableSelectComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+interface FilterableSelectComponentProps
+	extends SelectComponentProps, FilterableSelectComponentThemePropsType {
 	database: IFilterableDatabaseSettings;
 	type: "fullwidthcards" | "grid";
 }
 
-/**
- * Component that allows to filter a database and select an item from the filtered results.
- * It uses a Mantine Tree with checkboxes for filtering.
- */
 export default function FilterableSelectComponent(
 	props: FilterableSelectComponentProps,
 ) {
-	const {database, type, ...rest} = props;
+	const {filtersProps, activeFilterTagsProps, ...rest} = useProps(
+		"FilterableSelectComponent",
+		defaultStyleProps,
+		props,
+	);
+
+	const {database, type, ...selectProps} = rest;
 
 	const {
 		loading,
 		error,
 		selection,
 		toggleFilterValue,
+		removeFilterValue,
+		activeFilterTags,
 		filterGroups,
 		scrollingApi,
+		syncScrollingApiState,
 	} = useFilterableDatabase(database);
-
-	const tree = useTree({multiple: true});
-
-	// Build treeData from filterGroups
-	const treeData = useMemo((): TreeNodeData[] => {
-		return filterGroups.map((group, groupIndex) => ({
-			label: group.label,
-			value: `group-${groupIndex}`,
-			children: group.nodes.map((node) => ({
-				label: node.label,
-				value: `${groupIndex}::${node.value}`,
-				// Add color and group type to nodeProps for rendering
-				nodeProps: {
-					color: node.color,
-					groupType: group.type,
-				},
-			})),
-		}));
-	}, [filterGroups]);
-
-	// Sync checked state from selection to Tree
-	useEffect(() => {
-		const checkedState: string[] = [];
-		Object.entries(selection).forEach(([groupIndex, values]) => {
-			values.forEach((value) => {
-				checkedState.push(`${groupIndex}::${value}`);
-			});
-		});
-		tree.setCheckedState(checkedState);
-	}, [selection, tree]);
-
-	const renderNode = ({
-		node,
-		hasChildren,
-		elementProps,
-		tree: treeInstance,
-	}: RenderTreeNodePayload) => {
-		const isLeaf = !hasChildren;
-		const nodeProps = node.nodeProps as
-			| {color?: string; groupType?: string}
-			| undefined;
-
-		return (
-			<Group gap="xs" {...elementProps}>
-				{isLeaf && (
-					<Checkbox.Indicator
-						checked={treeInstance.isNodeChecked(node.value)}
-						onClick={(e) => {
-							e.stopPropagation();
-							const [groupIndexStr, value] = node.value.split("::");
-							toggleFilterValue(parseInt(groupIndexStr), value);
-						}}
-					/>
-				)}
-				<Group
-					gap={5}
-					onClick={() => !isLeaf && treeInstance.toggleExpanded(node.value)}
-					style={{cursor: isLeaf ? "default" : "pointer"}}
-				>
-					{nodeProps?.groupType === "color" && nodeProps.color && (
-						<ColorSwatch color={nodeProps.color} size={16} />
-					)}
-					<Text size="sm">{node.label}</Text>
-				</Group>
-			</Group>
-		);
-	};
 
 	if (loading) {
 		return (
@@ -124,18 +102,26 @@ export default function FilterableSelectComponent(
 
 	return (
 		<Stack gap="md">
-			<Tree
-				data={treeData}
-				tree={tree}
-				renderNode={renderNode}
-				levelOffset={23}
-				expandOnClick={false}
+			<FilterableDatabaseFilters
+				{...filtersProps}
+				filterGroups={filterGroups}
+				selection={selection}
+				filters={database.filters}
+				onToggle={toggleFilterValue}
 			/>
 			{scrollingApi && (
 				<SelectComponentAsync
-					{...rest}
+					{...selectProps}
 					type={type}
 					scrollingApi={scrollingApi}
+					onSyncScrollingApiState={syncScrollingApiState}
+					prependTopSection={
+						<FilterableDatabaseActiveFilterTags
+							{...activeFilterTagsProps}
+							tags={activeFilterTags}
+							onRemove={removeFilterValue}
+						/>
+					}
 				/>
 			)}
 		</Stack>

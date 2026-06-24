@@ -1,7 +1,13 @@
+import {IStringParameterSelectSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {validateStringParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuildertypecheck";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import {Textarea, TextInput, useProps} from "@mantine/core";
+import {
+	MantineThemeComponent,
+	Textarea,
+	TextInput,
+	useProps,
+} from "@mantine/core";
 import React, {useCallback, useEffect, useMemo} from "react";
 import {
 	defaultPropsParameterWrapper,
@@ -15,12 +21,39 @@ import ParameterWrapperComponent from "./ParameterWrapperComponent";
 import SelectComponent from "./select/SelectComponent";
 
 /**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ParameterStringComponent.defaultProps
+ * @displayName ParameterStringComponent
+ */
+export interface ParameterStringComponentStyleProps {
+	/** Select settings per parameter name, displayname, or id (see ParameterSelectComponent). */
+	componentSettings?: Record<string, IStringParameterSelectSettings>;
+}
+
+export const defaultStyleProps: Partial<ParameterStringComponentStyleProps> =
+	{};
+
+export type ParameterStringComponentThemePropsType =
+	Partial<ParameterStringComponentStyleProps>;
+
+export function ParameterStringComponentThemeProps(
+	props: ParameterStringComponentThemePropsType,
+): MantineThemeComponent {
+	return {
+		defaultProps: props,
+	};
+}
+
+/**
  * Functional component that creates a string input component for a string parameter.
  *
  * @returns
  */
 export default function ParameterStringComponent(
-	props: PropsParameterComponent & Partial<PropsParameterWrapper>,
+	props: PropsParameterComponent &
+		ParameterStringComponentThemePropsType &
+		Partial<PropsParameterWrapper>,
 ) {
 	const {
 		definition,
@@ -32,6 +65,12 @@ export default function ParameterStringComponent(
 		formKey,
 	} = useParameterComponentCommons<string>(props);
 
+	const {componentSettings} = useProps(
+		"ParameterStringComponent",
+		defaultStyleProps,
+		props,
+	);
+
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterStringComponent",
 		defaultPropsParameterWrapper,
@@ -41,21 +80,53 @@ export default function ParameterStringComponent(
 	const notifications = useNotificationStore();
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
+	const themeSelectSettings = useMemo(() => {
+		if (!definition) {
+			return undefined;
+		}
+		return componentSettings?.[
+			definition.displayname || definition.name || definition.id
+		];
+	}, [
+		componentSettings,
+		definition?.displayname,
+		definition?.name,
+		definition?.id,
+	]);
+
 	const {lines, selectSettings} = useMemo(() => {
+		let definitionLines: number | undefined;
+		let definitionSelectSettings:
+			| IStringParameterSelectSettings
+			| undefined;
+
 		if (definition?.settings) {
 			const result = validateStringParameterSettings(definition.settings);
 			if (result.success) {
-				const selectSettings = result.data.selectSettings;
-				return {lines: result.data.lines, selectSettings};
+				definitionLines = result.data.lines;
+				definitionSelectSettings = result.data.selectSettings;
 			} else {
 				Logger.warn(
 					`Invalid settings for parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
 				);
-				return {lines: undefined}; // Return undefined when validation fails
 			}
 		}
-		return {lines: undefined};
-	}, [definition?.settings, definition?.id, definition?.name]);
+
+		const mergedSelectSettings =
+			themeSelectSettings || definitionSelectSettings
+				? {
+						...themeSelectSettings,
+						...definitionSelectSettings,
+					}
+				: undefined;
+
+		return {lines: definitionLines, selectSettings: mergedSelectSettings};
+	}, [
+		definition?.settings,
+		definition?.id,
+		definition?.name,
+		themeSelectSettings,
+	]);
 
 	// Show error notification in useEffect to avoid setState during render
 	useEffect(() => {
@@ -99,7 +170,9 @@ export default function ParameterStringComponent(
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition &&
 				(selectSettings &&
-				(selectSettings.items || selectSettings.source) ? (
+				(selectSettings.items ||
+					selectSettings.source ||
+					selectSettings.database) ? (
 					<SelectComponent
 						key={formKey}
 						value={undefined}
@@ -112,8 +185,6 @@ export default function ParameterStringComponent(
 							}
 						}}
 						disabled={disabled}
-						// TODO add these settings as an optional theme property to the ParameterStringComponent
-						//settings={settings.settings}
 						inputContainer={inputContainer}
 						onFocus={(e) => {
 							onFocusHandler(e);
