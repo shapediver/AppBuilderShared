@@ -83,10 +83,6 @@ export function FilterableDatabaseFilterSelect(
 		[combobox],
 	);
 
-	const handleDropdownMouseDown = useCallback((event: MouseEvent) => {
-		event.preventDefault();
-	}, []);
-
 	return (
 		<Combobox store={combobox} {...comboboxProps}>
 			<Combobox.DropdownTarget>
@@ -114,10 +110,7 @@ export function FilterableDatabaseFilterSelect(
 				</PillsInput>
 			</Combobox.DropdownTarget>
 
-			<Combobox.Dropdown
-				className={classes.dropdown}
-				onMouseDown={handleDropdownMouseDown}
-			>
+			<Combobox.Dropdown className={classes.dropdown}>
 				<FilterableDatabaseFilters
 					{...filtersProps}
 					filterGroups={filterGroups}
