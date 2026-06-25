@@ -22,7 +22,7 @@
 .filterOptionChildren {
 	/* Indent under header select-all checkbox; keep Stack gap between rows */
 	padding-left: calc(
-		var(--mantine-spacing-sm) + var(--checkbox-size, 16px)
+		var(--mantine-spacing-sm) + var(--checkbox-size, 1rem)
 	);
 }
 
@@ -33,8 +33,4 @@
 
 .filterOption:hover {
 	background-color: var(--mantine-color-gray-0);
-}
-
-[data-mantine-color-scheme="dark"] .filterOption:hover {
-	background-color: var(--mantine-color-dark-6);
 }
