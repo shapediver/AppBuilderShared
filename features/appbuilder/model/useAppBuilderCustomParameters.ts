@@ -82,11 +82,19 @@ export function useAppBuilderCustomParameters(props: Props) {
 		setPreExecutionHook,
 		removePreExecutionHook,
 		batchParameterValueUpdate,
+		pendingHistoryDerivedState,
+		clearPendingHistoryDerivedState,
+		parameterStores,
 	} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
 			setPreExecutionHook: state.setPreExecutionHook,
 			removePreExecutionHook: state.removePreExecutionHook,
 			batchParameterValueUpdate: state.batchParameterValueUpdate,
+			pendingHistoryDerivedState:
+				state.pendingHistoryDerivedState[namespaceAppBuilder],
+			clearPendingHistoryDerivedState:
+				state.clearPendingHistoryDerivedState,
+			parameterStores: state.parameterStores[namespaceAppBuilder],
 		})),
 	);
 
@@ -286,6 +294,42 @@ export function useAppBuilderCustomParameters(props: Props) {
 		executor,
 		namespace,
 	);
+
+	useEffect(() => {
+		if (
+			!loaded ||
+			!appBuilderData?.parameters ||
+			!pendingHistoryDerivedState ||
+			Object.keys(pendingHistoryDerivedState).length === 0
+		)
+			return;
+
+		appBuilderData.parameters.forEach((p) => {
+			const hasRestoredValue = Object.prototype.hasOwnProperty.call(
+				pendingHistoryDerivedState,
+				p.id,
+			);
+			if (!hasRestoredValue) return;
+
+			defaultCustomParameterValues.current[p.id] =
+				pendingHistoryDerivedState[p.id];
+			if (p.id in customParameterValues.current)
+				delete customParameterValues.current[p.id];
+
+			const store = parameterStores?.[p.id];
+			const {actions} = store?.getState() ?? {};
+			actions?.setUiAndExecValue(pendingHistoryDerivedState[p.id]);
+		});
+
+		clearPendingHistoryDerivedState(namespaceAppBuilder);
+	}, [
+		appBuilderData,
+		clearPendingHistoryDerivedState,
+		loaded,
+		namespaceAppBuilder,
+		parameterStores,
+		pendingHistoryDerivedState,
+	]);
 
 	// Don't block parameters history initialization if there are no custom parameters
 	if (parameterDefinitions.length === 0) {
