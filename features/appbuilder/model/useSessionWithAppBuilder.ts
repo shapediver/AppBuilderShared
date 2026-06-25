@@ -38,8 +38,12 @@ export function useSessionWithAppBuilder(
 	const sessionInitialized = !!sessionApi;
 
 	const {addOutputUpdateCallback} = useShapeDiverStoreSession();
-	const {createProcessManager, removeProcessManager, processManagers} =
-		useShapeDiverStoreProcessManager();
+	const {
+		addProcess,
+		createProcessManager,
+		removeProcessManager,
+		processManagers,
+	} = useShapeDiverStoreProcessManager();
 	const [parsedData, setParsedData] = useState<
 		IAppBuilder | Error | undefined
 	>(undefined);
@@ -64,6 +68,9 @@ export function useSessionWithAppBuilder(
 	}, [namespace]);
 
 	const processManagerIdRef = useRef<string | undefined>(undefined);
+	const resolveProcessManagerBridgeRef = useRef<(() => void) | undefined>(
+		undefined,
+	);
 
 	/**
 	 * Parse AppBuilder layout from the model output, or use settings override as-is.
@@ -174,8 +181,17 @@ export function useSessionWithAppBuilder(
 
 			// if there are instances defined in the app builder data, we need a process manager
 			let newProcessManagerId: string | undefined = undefined;
-			if (instancedSessions)
-				newProcessManagerId = createProcessManager(sessionApi!.id);
+			let resolveBridge: (() => void) | undefined = undefined;
+			if (instancedSessions && sessionApi) {
+				newProcessManagerId = createProcessManager(sessionApi.id);
+				const bridgePromise = new Promise<void>((resolve) => {
+					resolveBridge = resolve;
+				});
+				addProcess(newProcessManagerId, {
+					name: "AppBuilder Instance Bridge",
+					promise: bridgePromise,
+				});
+			}
 
 			// if there is still a processManager active, we remove it
 			// and assign the id of the new one
@@ -186,10 +202,18 @@ export function useSessionWithAppBuilder(
 
 			// assign the new process manager id (or undefined) to the ref
 			processManagerIdRef.current = newProcessManagerId;
+			resolveProcessManagerBridgeRef.current = resolveBridge;
 
 			setParsedData(parsedData);
 		},
-		[namespace, validationResult],
+		[
+			addProcess,
+			createProcessManager,
+			namespace,
+			removeProcessManager,
+			sessionApi,
+			validationResult,
+		],
 	);
 
 	// if the process manager id is not valid anymore, reset it
@@ -234,12 +258,30 @@ export function useSessionWithAppBuilder(
 		acceptRejectMode: props?.acceptRejectMode,
 	});
 
+	const handleProcessManagerAttached = useCallback(() => {
+		resolveProcessManagerBridgeRef.current?.();
+		resolveProcessManagerBridgeRef.current = undefined;
+	}, []);
+
+	// resolve any orphaned bridge on unmount
+	useEffect(() => {
+		return () => {
+			resolveProcessManagerBridgeRef.current?.();
+			resolveProcessManagerBridgeRef.current = undefined;
+			if (processManagerIdRef.current)
+				removeProcessManager(processManagerIdRef.current);
+			if (initialProcessManagerIdRef.current)
+				removeProcessManager(initialProcessManagerIdRef.current);
+		};
+	}, [removeProcessManager]);
+
 	// create the instances defined in the AppBuilder data
 	useAppBuilderInstances({
 		namespace,
 		sessionApi,
 		appBuilderData,
 		processManagerId: processManagerIdRef.current,
+		onProcessManagerAttached: handleProcessManagerAttached,
 	});
 
 	return {

@@ -47,6 +47,11 @@ interface Props {
 	 * The process ID to add the promises to.
 	 */
 	processManagerId: string | undefined;
+	/**
+	 * Called once the instance pipeline has attached its own tracked work
+	 * to the handed-off process manager.
+	 */
+	onProcessManagerAttached?: () => void;
 }
 
 type IParsedInstanceDefinition = {
@@ -71,6 +76,7 @@ export function useAppBuilderInstances(props: Props) {
 		sessionApi,
 		appBuilderData,
 		processManagerId: sessionProcessManagerId,
+		onProcessManagerAttached,
 	} = props;
 
 	const {
@@ -484,12 +490,15 @@ export function useAppBuilderInstances(props: Props) {
 
 		// we check if a process manager id is given
 		// and if it is still valid
-		const processManagerId =
+		const reusedProcessManagerId =
 			sessionProcessManagerIdRef.current &&
 			processManagersRef.current[sessionProcessManagerIdRef.current]
 				? sessionProcessManagerIdRef.current
-				: createProcessManager(sessionApi.id);
+				: undefined;
+		const processManagerId =
+			reusedProcessManagerId ?? createProcessManager(sessionApi.id);
 		addProcess(processManagerId, mainProcessDefinition);
+		if (reusedProcessManagerId) onProcessManagerAttached?.();
 
 		const newInstances: {
 			[key: string]: {
@@ -639,7 +648,12 @@ export function useAppBuilderInstances(props: Props) {
 			}
 			setInstanceNodes({});
 		};
-	}, [parsedAppBuilderInstances, namespace, sessionNodeVersion]);
+	}, [
+		parsedAppBuilderInstances,
+		namespace,
+		onProcessManagerAttached,
+		sessionNodeVersion,
+	]);
 }
 
 /**
