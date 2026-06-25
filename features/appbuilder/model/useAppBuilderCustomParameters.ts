@@ -24,19 +24,6 @@ interface Props {
 	acceptRejectMode: IAcceptRejectModeSelector | boolean | undefined;
 }
 
-const parseCustomParameterValues = (value: unknown) => {
-	if (typeof value !== "string" || value.length === 0) return {};
-
-	try {
-		const parsed = JSON.parse(value);
-		return parsed && typeof parsed === "object"
-			? (parsed as {[key: string]: any})
-			: {};
-	} catch {
-		return {};
-	}
-};
-
 /**
  * This hook registers custom parameters and UI elements defined by a data output component
  * of the model named "AppBuilder". Updates of the custom parameter values are fed back to the model as JSON into
@@ -103,41 +90,21 @@ export function useAppBuilderCustomParameters(props: Props) {
 		})),
 	);
 
-	const restoredCustomParameterValues = useMemo(
-		() =>
-			parseCustomParameterValues(
-				appBuilderParam?.state.execValue ??
-					appBuilderParam?.state.uiValue,
-			),
-		[appBuilderParam?.state.execValue, appBuilderParam?.state.uiValue],
-	);
-
 	// set the default values of the custom parameters whenever the
 	// custom parameter definitions change
 	useEffect(() => {
 		if (appBuilderData?.parameters) {
 			appBuilderData.parameters.forEach((p) => {
-				const hasRestoredValue = Object.prototype.hasOwnProperty.call(
-					restoredCustomParameterValues,
-					p.id,
-				);
-
-				// Prefer the value currently stored in the AppBuilder input parameter.
-				// This is important during undo/redo: history restores the AppBuilder
-				// input before the AppBuilder output recreates dynamic custom
-				// parameters. Without this, newly recreated custom parameters fall
-				// back to the fresh output defaults and overwrite the restored state.
-				defaultCustomParameterValues.current[p.id] = hasRestoredValue
-					? restoredCustomParameterValues[p.id]
-					: (p.value ?? p.defval);
-
 				// If a "value" is given as part of the custom parameter definition,
-				// or a value was restored through the AppBuilder input parameter,
+				// we use it to define the default value of the custom parameter.
+				defaultCustomParameterValues.current[p.id] =
+					p.value ?? p.defval;
+				// If a "value" is given as part of the custom parameter definition,
 				// AND if a value has already been set for the custom parameter,
 				// we remove this current value of the custom parameter
 				// (thereby overriding the current value with the given one).
 				if (
-					(hasRestoredValue || p.value !== undefined) &&
+					p.value !== undefined &&
 					p.id in customParameterValues.current
 				)
 					delete customParameterValues.current[p.id];
@@ -147,7 +114,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 		return () => {
 			defaultCustomParameterValues.current = {};
 		};
-	}, [appBuilderData, restoredCustomParameterValues]);
+	}, [appBuilderData]);
 
 	// executor function for changes of custom parameter values
 	const executor = useCallback<IGenericParameterExecutor>(
@@ -304,19 +271,10 @@ export function useAppBuilderCustomParameters(props: Props) {
 		() =>
 			(appBuilderData?.parameters ?? []).map((p) => {
 				const {value, ...rest} = p;
-				const hasRestoredValue = Object.prototype.hasOwnProperty.call(
-					restoredCustomParameterValues,
-					p.id,
-				);
 
-				return {
-					definition: rest,
-					value: hasRestoredValue
-						? restoredCustomParameterValues[p.id]
-						: value,
-				};
+				return {definition: rest, value};
 			}),
-		[appBuilderData?.parameters, restoredCustomParameterValues],
+		[appBuilderData?.parameters],
 	);
 
 	// define custom parameters and an execution callback for them
