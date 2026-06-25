@@ -299,6 +299,13 @@ export interface IShapeDiverStoreParameters {
 	readonly historyIndex: number;
 
 	/**
+	 * Transient derived namespace state captured during history restore.
+	 * This is used to rehydrate derived UI-only namespaces without replaying
+	 * them as executable history entries.
+	 */
+	readonly pendingHistoryDerivedState: ISessionsHistoryState;
+
+	/**
 	 * Add parameter and export stores for all parameters and exports of the session.
 	 * CAUTION: Repeated calls will be ignored. Use removeSession to remove a session first before
 	 * calling addSession again for the same session.
@@ -512,6 +519,18 @@ export interface IShapeDiverStoreParameters {
 	 * all history entries after the current index are removed.
 	 */
 	readonly pushHistoryState: (state: ISessionsHistoryState) => IHistoryEntry;
+
+	/**
+	 * Replace the transient derived namespace state used during history restore.
+	 */
+	readonly setPendingHistoryDerivedState: (
+		state: ISessionsHistoryState,
+	) => void;
+
+	/**
+	 * Clear transient derived namespace state for one namespace or all namespaces.
+	 */
+	readonly clearPendingHistoryDerivedState: (namespace?: string) => void;
 
 	/**
 	 * Restore the state of parameter values from the given history state.
