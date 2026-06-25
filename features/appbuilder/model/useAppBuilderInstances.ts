@@ -990,7 +990,7 @@ const processOutputActions = (
 					const responseOutput = child.data.find(
 						(d) => d instanceof SessionOutputData,
 					)?.responseOutput;
-					if (!responseOutput) return;
+					if (!responseOutput) continue;
 					if (
 						responseOutput.displayname === outputIdentifier ||
 						responseOutput.name === outputIdentifier ||
@@ -1042,11 +1042,7 @@ const processOutputActions = (
 				const parameter = getParameter(namespace, key);
 				if (!parameter) return acc;
 
-				const v = JSON.stringify(value);
-				// check if the parameter already has the correct value
-				if (parameter.getState().actions.isUiValueDifferent(v))
-					acc[key] = v;
-
+				acc[key] = JSON.stringify(value);
 				return acc;
 			},
 			{} as Record<string, any>,
