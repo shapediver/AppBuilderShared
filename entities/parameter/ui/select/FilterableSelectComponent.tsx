@@ -11,6 +11,7 @@ import {
 	type ColorSwatchProps,
 	type ComboboxProps,
 	type GroupProps,
+	type LoaderProps,
 	type PillGroupProps,
 	type PillProps,
 	type PillsInputFieldProps,
@@ -26,6 +27,10 @@ import {SelectComponentProps} from "./SelectComponent";
 import SelectComponentAsync from "./SelectComponentAsync";
 
 const defaultStyleProps = {
+	rootStackProps: {gap: "md" as const},
+	loadingGroupProps: {justify: "center" as const, p: "md" as const},
+	loaderProps: {},
+	errorTextProps: {c: "red" as const, p: "md" as const},
 	filterSelectProps: {
 		comboboxProps: {},
 		inputProps: {pointer: true},
@@ -51,6 +56,10 @@ const defaultStyleProps = {
 };
 
 export interface FilterableSelectComponentStyleProps {
+	rootStackProps?: StackProps;
+	loadingGroupProps?: GroupProps;
+	loaderProps?: LoaderProps;
+	errorTextProps?: Omit<TextProps, "children">;
 	filterSelectProps?: {
 		comboboxProps?: Omit<ComboboxProps, "store" | "children">;
 		inputProps?: PillsInputProps;
@@ -95,8 +104,16 @@ interface FilterableSelectComponentProps
 export default function FilterableSelectComponent(
 	props: FilterableSelectComponentProps,
 ) {
-	const {filterSelectProps, filtersProps, activeFilterTagsProps, ...rest} =
-		useProps("FilterableSelectComponent", defaultStyleProps, props);
+	const {
+		rootStackProps,
+		loadingGroupProps,
+		loaderProps,
+		errorTextProps,
+		filterSelectProps,
+		filtersProps,
+		activeFilterTagsProps,
+		...rest
+	} = useProps("FilterableSelectComponent", defaultStyleProps, props);
 
 	const {database, type, ...selectProps} = rest;
 
@@ -116,22 +133,18 @@ export default function FilterableSelectComponent(
 
 	if (loading) {
 		return (
-			<Group justify="center" p="md">
-				<Loader />
+			<Group {...loadingGroupProps}>
+				<Loader {...loaderProps} />
 			</Group>
 		);
 	}
 
 	if (error) {
-		return (
-			<Text c="red" p="md">
-				{error.message}
-			</Text>
-		);
+		return <Text {...errorTextProps}>{error.message}</Text>;
 	}
 
 	return (
-		<Stack gap="md">
+		<Stack {...rootStackProps}>
 			<FilterableDatabaseFilterSelect
 				{...filterSelectProps}
 				filtersProps={filtersProps}
