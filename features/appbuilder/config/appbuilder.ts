@@ -177,6 +177,11 @@ export interface IFilterableDatabaseSettings {
 		 */
 		type?: "color" | "text";
 		/**
+		 * When `true`, render the filter directly in the dropdown without an accordion
+		 * section. Defaults to `false` (accordion Control/Panel). Works for all filter types.
+		 */
+		inline?: boolean;
+		/**
 		 * Optional array of filter values to show to the user. If this is not provided, the
 		 * filter values are automatically extracted from the data source. Note that this
 		 * might have performance implications for large data sources.

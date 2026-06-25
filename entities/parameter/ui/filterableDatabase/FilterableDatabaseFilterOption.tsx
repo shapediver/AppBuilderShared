@@ -12,8 +12,8 @@ import {
 	type RadioProps,
 	type TextProps,
 } from "@mantine/core";
+import {useCallback, type MouseEvent} from "react";
 import classes from "./FilterableDatabaseFilters.module.css";
-
 export interface FilterableDatabaseFilterOptionStyleProps {
 	checkboxProps?: CheckboxProps;
 	radioProps?: RadioProps;
@@ -58,6 +58,10 @@ export function FilterableDatabaseFilterOption(
 			? resolveFilterColor(color ?? value, theme)
 			: undefined;
 
+	const keepComboboxOpen = useCallback((event: MouseEvent) => {
+		event.preventDefault();
+	}, []);
+
 	const optionLabel = (
 		<Group {...groupProps}>
 			{swatchColor && (
@@ -68,7 +72,7 @@ export function FilterableDatabaseFilterOption(
 	);
 
 	return (
-		<div className={classes.filterOption}>
+		<div className={classes.filterOption} onMouseDown={keepComboboxOpen}>
 			{multiple ? (
 				<Checkbox
 					checked={checked}

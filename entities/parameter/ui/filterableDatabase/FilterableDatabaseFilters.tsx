@@ -1,3 +1,4 @@
+import {buildFilterRenderSegments} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/buildFilterRenderSegments";
 import type {FilterSelection} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/types";
 import type {FilterTreeGroup} from "@AppBuilderLib/entities/parameter/model/filterableDatabase/useFilterableDatabase";
 import type {IFilterableDatabaseSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
@@ -13,7 +14,11 @@ import {
 	type TextInputProps,
 	type TextProps,
 } from "@mantine/core";
-import {FilterableDatabaseFilterGroup} from "./FilterableDatabaseFilterGroup";
+import {useMemo} from "react";
+import {
+	FilterableDatabaseFilterGroup,
+	FilterableDatabaseInlineFilter,
+} from "./FilterableDatabaseFilterGroup";
 import classes from "./FilterableDatabaseFilters.module.css";
 
 export interface FilterableDatabaseFiltersStyleProps {
@@ -40,29 +45,57 @@ export interface FilterableDatabaseFiltersProps extends FilterableDatabaseFilter
 	onSetFilterText: (filterIndex: number, text: string) => void;
 }
 
-export function FilterableDatabaseFilters(
+function renderFilterGroup(
+	group: FilterTreeGroup,
 	props: FilterableDatabaseFiltersProps,
 ) {
 	const {
-		filterGroups,
 		selection,
 		filters,
+		searchTerm,
 		onToggle,
 		onToggleSelectAll,
 		onSetFilterText,
-		searchTerm,
-		accordionProps,
-		stackProps,
+		filterGroupStackProps,
 		checkboxProps,
 		radioProps,
 		textInputProps,
-		filterGroupStackProps,
 		filterGroupLabelTextProps,
 		filterGroupSelectAllCheckboxProps,
 		filterOptionGroupProps,
 		filterOptionLabelTextProps,
 		filterOptionColorSwatchProps,
 	} = props;
+
+	return {
+		group,
+		selectedValues: selection[group.filterIndex] ?? [],
+		multiple: filters[group.filterIndex]?.multiple ?? true,
+		onToggle,
+		onToggleSelectAll,
+		onSetFilterText,
+		searchTerm,
+		stackProps: filterGroupStackProps,
+		checkboxProps,
+		selectAllCheckboxProps: filterGroupSelectAllCheckboxProps,
+		radioProps,
+		textInputProps,
+		labelTextProps: filterGroupLabelTextProps,
+		optionGroupProps: filterOptionGroupProps,
+		optionLabelTextProps: filterOptionLabelTextProps,
+		optionColorSwatchProps: filterOptionColorSwatchProps,
+	};
+}
+
+export function FilterableDatabaseFilters(
+	props: FilterableDatabaseFiltersProps,
+) {
+	const {filterGroups, filters, accordionProps, stackProps} = props;
+
+	const segments = useMemo(
+		() => buildFilterRenderSegments(filterGroups, filters),
+		[filterGroups, filters],
+	);
 
 	const {
 		variant,
@@ -75,39 +108,40 @@ export function FilterableDatabaseFilters(
 
 	return (
 		<Stack {...stackProps}>
-			<Accordion
-				className={[classes.accordion, className]
-					.filter(Boolean)
-					.join(" ")}
-				variant={variant ?? "separated"}
-				defaultValue={(defaultValue as string[] | undefined) ?? []}
-				{...restAccordionProps}
-				multiple
-			>
-				{filterGroups.map((group) => (
-					<FilterableDatabaseFilterGroup
-						key={group.filterIndex}
-						group={group}
-						selectedValues={selection[group.filterIndex] ?? []}
-						multiple={filters[group.filterIndex]?.multiple ?? true}
-						onToggle={onToggle}
-						onToggleSelectAll={onToggleSelectAll}
-						onSetFilterText={onSetFilterText}
-						searchTerm={searchTerm}
-						stackProps={filterGroupStackProps}
-						checkboxProps={checkboxProps}
-						selectAllCheckboxProps={
-							filterGroupSelectAllCheckboxProps
+			{segments.map((segment) => {
+				if (segment.kind === "inline") {
+					return (
+						<FilterableDatabaseInlineFilter
+							key={segment.group.filterIndex}
+							{...renderFilterGroup(segment.group, props)}
+						/>
+					);
+				}
+
+				return (
+					<Accordion
+						key={segment.groups
+							.map((group) => group.filterIndex)
+							.join("-")}
+						className={[classes.accordion, className]
+							.filter(Boolean)
+							.join(" ")}
+						variant={variant ?? "separated"}
+						defaultValue={
+							(defaultValue as string[] | undefined) ?? []
 						}
-						radioProps={radioProps}
-						textInputProps={textInputProps}
-						labelTextProps={filterGroupLabelTextProps}
-						optionGroupProps={filterOptionGroupProps}
-						optionLabelTextProps={filterOptionLabelTextProps}
-						optionColorSwatchProps={filterOptionColorSwatchProps}
-					/>
-				))}
-			</Accordion>
+						{...restAccordionProps}
+						multiple
+					>
+						{segment.groups.map((group) => (
+							<FilterableDatabaseFilterGroup
+								key={group.filterIndex}
+								{...renderFilterGroup(group, props)}
+							/>
+						))}
+					</Accordion>
+				);
+			})}
 		</Stack>
 	);
 }

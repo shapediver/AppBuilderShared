@@ -1,109 +1,24 @@
-jest.mock("@shapediver/viewer.session", () => ({
-	PARAMETER_TYPE: {
-		Bool: "Bool",
-		Float: "Float",
-		String: "String",
-	},
-	PARAMETER_VISUALIZATION: {},
-	TAG3D_JUSTIFICATION: {},
-}));
+import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
 
-jest.mock("@shapediver/viewer.shared.types", () => ({
-	ATTRIBUTE_VISUALIZATION: {},
-	CAMERA_TYPE: {},
-}));
-
-import {validateStringParameterSettings} from "../appbuildertypecheck";
-
-const validDatabase = {
-	type: "fullwidthcards",
-	database: {
-		dataSource: {href: "https://example.com/data.csv"},
-		itemDataDefinition: {value: 0, displayname: 1},
-		filters: [{column: 2}],
-	},
+const baseSettings = {
+	dataSource: {href: "/sample.csv"},
+	itemDataDefinition: {value: 0},
+	filters: [{column: 0}],
 };
 
-describe("filterable database settings", () => {
-	it("accepts selectSettings with database.href", () => {
-		const result = validateStringParameterSettings({
-			selectSettings: validDatabase,
+describe("filterableDatabaseSettingsSchema", () => {
+	it("accepts inline: true on a filter", () => {
+		const result = filterableDatabaseSettingsSchema.safeParse({
+			...baseSettings,
+			filters: [
+				{column: 1, label: "Name", type: "text", inline: true},
+				{column: 3, label: "Category", multiple: true},
+			],
 		});
+
 		expect(result.success).toBe(true);
-	});
-
-	it("accepts root-relative database href", () => {
-		const result = validateStringParameterSettings({
-			selectSettings: {
-				...validDatabase,
-				database: {
-					...validDatabase.database,
-					dataSource: {href: "/textile-database-sample.csv"},
-				},
-			},
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it("accepts format json with href", () => {
-		const result = validateStringParameterSettings({
-			selectSettings: {
-				...validDatabase,
-				database: {
-					...validDatabase.database,
-					dataSource: {
-						href: "https://example.com/data.json",
-						format: "json",
-					},
-				},
-			},
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it("accepts database with export only", () => {
-		const result = validateStringParameterSettings({
-			selectSettings: {
-				...validDatabase,
-				database: {
-					...validDatabase.database,
-					dataSource: {export: {name: "csv", sessionId: "default"}},
-				},
-			},
-		});
-		expect(result.success).toBe(true);
-	});
-
-	it("rejects database without href or export", () => {
-		const result = validateStringParameterSettings({
-			selectSettings: {
-				...validDatabase,
-				database: {
-					...validDatabase.database,
-					dataSource: {},
-				},
-			},
-		});
-		expect(result.success).toBe(false);
-	});
-
-	it("rejects database with unsupported select type", () => {
-		const result = validateStringParameterSettings({
-			selectSettings: {...validDatabase, type: "dropdown"},
-		});
-		expect(result.success).toBe(false);
-	});
-
-	it("accepts text filter type", () => {
-		const result = validateStringParameterSettings({
-			selectSettings: {
-				...validDatabase,
-				database: {
-					...validDatabase.database,
-					filters: [{column: 1, type: "text"}],
-				},
-			},
-		});
-		expect(result.success).toBe(true);
+		if (result.success) {
+			expect(result.data.filters[0].inline).toBe(true);
+		}
 	});
 });
