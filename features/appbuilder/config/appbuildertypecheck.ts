@@ -149,8 +149,12 @@ type _MantineThemeOverridePropsKeys = keyof z.infer<
 	typeof mantineThemeOverridePropsSchema
 >;
 type _AssertThemeOverrideMirrorKeys = [
-	_MantineThemeOverridePropsKeys extends _MantineThemeSchemaKeys ? true : false,
-	_MantineThemeSchemaKeys extends _MantineThemeOverridePropsKeys ? true : false,
+	_MantineThemeOverridePropsKeys extends _MantineThemeSchemaKeys
+		? true
+		: false,
+	_MantineThemeSchemaKeys extends _MantineThemeOverridePropsKeys
+		? true
+		: false,
 ];
 const _checkThemeOverrideMirror: _AssertThemeOverrideMirrorKeys = [true, true];
 void _checkThemeOverrideMirror;

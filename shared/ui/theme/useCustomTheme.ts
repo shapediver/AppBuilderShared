@@ -30,11 +30,11 @@ import {CreateModelStateHookThemeProps} from "@AppBuilderLib/features/model-stat
 import {NotificationWrapperThemeProps} from "@AppBuilderLib/features/notifications/ui/NotificationWrapper";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
-import {mergeCssVariablesResolvers} from "@AppBuilderLib/shared/ui/theme/mergeCssVariablesResolvers";
 import {HintProps} from "@AppBuilderLib/shared/ui/hint/Hint";
 import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon/Icon";
 import {MarkdownWidgetComponentProps} from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import {ModalBaseThemeProps} from "@AppBuilderLib/shared/ui/modal/ModalBase";
+import {mergeCssVariablesResolvers} from "@AppBuilderLib/shared/ui/theme/mergeCssVariablesResolvers";
 import {TooltipWrapperThemeProps} from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/config/appBuilderAgentWidget";
 import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAccordionUiWidgetComponent";
