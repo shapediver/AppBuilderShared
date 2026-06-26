@@ -175,9 +175,8 @@ export default function MarkdownWidgetComponent(
 		remarkPlugins: [remarkDirective, remarkGfm, spanDirective],
 		components: {
 			b(props) {
-				const {...rest} = props;
+				const {ref: _ref, ...rest} = props;
 
-				// @ts-expect-error ignore
 				return <Text fw={boldFontWeight} {...rest} />;
 			},
 			blockquote(props) {
@@ -198,7 +197,6 @@ export default function MarkdownWidgetComponent(
 			img(props) {
 				const {...rest} = props;
 
-				// @ts-expect-error ignore
 				return <Image {...rest} />;
 			},
 			h1(props) {
@@ -305,7 +303,6 @@ export default function MarkdownWidgetComponent(
 			p(props) {
 				const {...rest} = props;
 
-				// @ts-expect-error ignore
 				return <Text {...rest} {...styleProps} />;
 			},
 			strong(props) {
@@ -318,16 +315,15 @@ export default function MarkdownWidgetComponent(
 			a(props) {
 				const {...rest} = props;
 
-				// @ts-expect-error ignore
 				return <Anchor target={anchorTarget} {...rest} />;
 			},
 			ul(props) {
-				const {...rest} = props;
+				const {ref: _ref, ...rest} = props;
 
 				return <List {...rest} {...styleProps} />;
 			},
 			ol(props) {
-				const {...rest} = props;
+				const {ref: _ref, ...rest} = props;
 
 				return <List {...rest} {...styleProps} type="ordered" />;
 			},

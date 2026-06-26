@@ -3,6 +3,7 @@ import {
 	MultiSelect,
 	Select,
 	defaultOptionsFilter,
+	type OptionsFilter,
 } from "@mantine/core";
 import {useCallback, useMemo} from "react";
 import type {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
@@ -45,17 +46,13 @@ export default function SelectDropDownComponent(
 
 	const {value, onChange} = props;
 
-	const onSearch = useCallback(
-		({
-			options,
-			search,
-			limit,
-		}: {
-			options: ComboboxParsedItem[];
-			search: string;
-			limit: number;
-		}) => {
-			const list = defaultOptionsFilter({options, search, limit});
+	const onSearch = useCallback<OptionsFilter<string>>(
+		({options, search, limit}) => {
+			const list = defaultOptionsFilter({
+				options,
+				search,
+				limit,
+			}) as ComboboxParsedItem<string>[];
 			if (!value) return list;
 
 			const foundIndex = list.findIndex((it: any) => {

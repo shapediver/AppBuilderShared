@@ -81,6 +81,7 @@ const MantineThemeFullSchema = z.strictObject({
 	]),
 	fontSizes: z.record(z.string(), z.string()),
 	lineHeights: z.record(z.string(), z.string()),
+	fontWeights: z.record(z.string(), z.string()),
 	radius: z.record(z.string(), z.string()),
 	spacing: z.record(z.string(), z.string()),
 	breakpoints: z.record(z.string(), z.string()),
@@ -144,14 +145,19 @@ const _checkTheme: _AssertThemeKeys = [true, true];
 void _checkTheme;
 
 // Doc-mirror `MantineThemeOverrideProps` keys must match serializable settings theme keys.
+// `fontWeights` is validated here but added to the doc mirror in Task 4 (mantine-props).
+type _MantineThemeSchemaKeysForMirror = Exclude<
+	_MantineThemeSchemaKeys,
+	"fontWeights"
+>;
 type _MantineThemeOverridePropsKeys = keyof z.infer<
 	typeof mantineThemeOverridePropsSchema
 >;
 type _AssertThemeOverrideMirrorKeys = [
-	_MantineThemeOverridePropsKeys extends _MantineThemeSchemaKeys
+	_MantineThemeOverridePropsKeys extends _MantineThemeSchemaKeysForMirror
 		? true
 		: false,
-	_MantineThemeSchemaKeys extends _MantineThemeOverridePropsKeys
+	_MantineThemeSchemaKeysForMirror extends _MantineThemeOverridePropsKeys
 		? true
 		: false,
 ];
