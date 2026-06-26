@@ -30,6 +30,7 @@ export interface MantineThemeOverrideProps {
 		  };
 	fontSizes?: Record<string, string>;
 	lineHeights?: Record<string, string>;
+	fontWeights?: Record<string, string>;
 	radius?: Record<string, string>;
 	spacing?: Record<string, string>;
 	breakpoints?: Record<string, string>;

@@ -145,21 +145,12 @@ const _checkTheme: _AssertThemeKeys = [true, true];
 void _checkTheme;
 
 // Doc-mirror `MantineThemeOverrideProps` keys must match serializable settings theme keys.
-// `fontWeights` is validated here but added to the doc mirror in Task 4 (mantine-props).
-type _MantineThemeSchemaKeysForMirror = Exclude<
-	_MantineThemeSchemaKeys,
-	"fontWeights"
->;
 type _MantineThemeOverridePropsKeys = keyof z.infer<
 	typeof mantineThemeOverridePropsSchema
 >;
 type _AssertThemeOverrideMirrorKeys = [
-	_MantineThemeOverridePropsKeys extends _MantineThemeSchemaKeysForMirror
-		? true
-		: false,
-	_MantineThemeSchemaKeysForMirror extends _MantineThemeOverridePropsKeys
-		? true
-		: false,
+	_MantineThemeOverridePropsKeys extends _MantineThemeSchemaKeys ? true : false,
+	_MantineThemeSchemaKeys extends _MantineThemeOverridePropsKeys ? true : false,
 ];
 const _checkThemeOverrideMirror: _AssertThemeOverrideMirrorKeys = [true, true];
 void _checkThemeOverrideMirror;
