@@ -2,10 +2,6 @@ jest.mock("../readAppBuilderValidationEnv", () => ({
 	readAppBuilderValidationEnv: () => ({}),
 }));
 
-jest.mock("../reportAppBuilderValidationError", () => ({
-	reportAppBuilderValidationError: () => {},
-}));
-
 import {
 	parseAppBuilderSettingsJson,
 	parseAppBuilderSkeleton,
