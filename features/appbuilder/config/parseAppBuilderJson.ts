@@ -8,6 +8,7 @@ import {
 	validateAppBuilder,
 	validateAppBuilderSettingsJson,
 } from "./appbuildertypecheck";
+import {reportAppBuilderValidationError} from "./reportAppBuilderValidationError";
 import {readAppBuilderValidationEnv} from "./readAppBuilderValidationEnv";
 
 export {
@@ -25,9 +26,9 @@ export function parseAppBuilderSettingsJson(
 	}
 	const result = validateAppBuilderSettingsJson(raw);
 	if (!result.success) {
-		throw new Error(
-			`App Builder settings invalid:\n${formatAppBuilderZodError(result.error)}`,
-		);
+		const message = `App Builder settings invalid:\n${formatAppBuilderZodError(result.error)}`;
+		reportAppBuilderValidationError(message, "settings");
+		throw new Error(message);
 	}
 	return result.data;
 }
@@ -42,9 +43,9 @@ export function parseAppBuilderSkeleton(
 	}
 	const result = validateAppBuilder(raw);
 	if (!result.success) {
-		return new Error(
-			`App Builder layout invalid:\n${formatAppBuilderZodError(result.error)}`,
-		);
+		const message = `App Builder layout invalid:\n${formatAppBuilderZodError(result.error)}`;
+		reportAppBuilderValidationError(message, "layout");
+		return new Error(message);
 	}
 	return result.data;
 }
