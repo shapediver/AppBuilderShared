@@ -1,4 +1,4 @@
-import {IRectangleTransformParameterPropsJsonSchema} from "@shapediver/viewer.shared.types/dist/interfaces/parameter/IInteractionParameterSettings";
+import {IRectangleTransformParameterPropsJsonSchema} from "@shapediver/viewer.shared.types";
 import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("ParameterRectangleTransformComponent", …)`. */

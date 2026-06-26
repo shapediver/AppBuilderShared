@@ -15,7 +15,7 @@ import {
 	Text,
 	useProps,
 } from "@mantine/core";
-import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
+import {IInteractionEffect} from "@shapediver/viewer.features.interaction";
 import {
 	ISelectionParameterProps,
 	SelectionParameterValue,

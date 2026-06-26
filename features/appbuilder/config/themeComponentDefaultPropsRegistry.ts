@@ -57,7 +57,7 @@ import {
 	IDraggingParameterPropsJsonSchema,
 	IGumballTransformParameterPropsJsonSchema,
 	ISelectionParameterPropsJsonSchema,
-} from "@shapediver/viewer.shared.types/dist/interfaces/parameter/IInteractionParameterSettings";
+} from "@shapediver/viewer.shared.types";
 import {z} from "zod";
 import {ExportLabelComponentThemeDefaultPropsSchema} from "~/shared/entities/export/config/ExportLabelComponent.types";
 import {OutputChunkLabelComponentThemeDefaultPropsSchema} from "~/shared/entities/output/config/OutputChunkLabelComponent.types";

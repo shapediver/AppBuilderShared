@@ -6,6 +6,7 @@ import {
 	IShapeDiverOutput,
 	IShapeDiverOutputDefinition,
 } from "@AppBuilderLib/entities/output/config/output";
+import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
 import {
 	EventActionEnum,
 	IEventTracking,
@@ -774,6 +775,7 @@ export const useShapeDiverStoreParameters =
 				preExecutionHooks: {},
 				history: [],
 				historyIndex: -1,
+				pendingHistoryDerivedState: {},
 				hasParameterDisablingOthers: false,
 
 				removeChanges: (namespace: string) => {
@@ -1707,12 +1709,70 @@ export const useShapeDiverStoreParameters =
 					return entry;
 				},
 
+				setPendingHistoryDerivedState(state: ISessionsHistoryState) {
+					set(
+						() => ({
+							pendingHistoryDerivedState: state,
+						}),
+						false,
+						"setPendingHistoryDerivedState",
+					);
+				},
+
+				clearPendingHistoryDerivedState(namespace?: string) {
+					const {pendingHistoryDerivedState} = get();
+					if (!namespace) {
+						set(
+							() => ({
+								pendingHistoryDerivedState: {},
+							}),
+							false,
+							"clearPendingHistoryDerivedState",
+						);
+						return;
+					}
+
+					if (!(namespace in pendingHistoryDerivedState)) return;
+
+					const remainingState: ISessionsHistoryState = {};
+					Object.keys(pendingHistoryDerivedState).forEach((id) => {
+						if (id !== namespace)
+							remainingState[id] = pendingHistoryDerivedState[id];
+					});
+
+					set(
+						() => ({
+							pendingHistoryDerivedState: remainingState,
+						}),
+						false,
+						"clearPendingHistoryDerivedState",
+					);
+				},
+
 				async restoreHistoryState(
 					state: ISessionsHistoryState,
 					skipHistory?: boolean,
 				) {
-					const {batchParameterValueUpdate} = get();
-					await batchParameterValueUpdate(state, skipHistory);
+					const {
+						batchParameterValueUpdate,
+						setPendingHistoryDerivedState,
+					} = get();
+					const primaryState: ISessionsHistoryState = {};
+					const derivedState: ISessionsHistoryState = {};
+
+					for (const namespace of Object.keys(state)) {
+						if (namespace.endsWith(CUSTOM_SESSION_ID_POSTFIX))
+							derivedState[namespace] = state[namespace];
+						else primaryState[namespace] = state[namespace];
+					}
+
+					// Derived AppBuilder custom-parameter namespaces are stored in
+					// history for rehydration, but should not be replayed as
+					// executable namespaces during undo/redo. Stash them temporarily
+					// so the AppBuilder custom-parameter hook can rehydrate its local
+					// stores once after the controller/session restore completes.
+					setPendingHistoryDerivedState(derivedState);
+					await batchParameterValueUpdate(primaryState, skipHistory);
 				},
 
 				async restoreHistoryStateFromIndex(index: number) {
