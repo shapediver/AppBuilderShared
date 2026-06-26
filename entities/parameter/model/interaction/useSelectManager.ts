@@ -1,10 +1,10 @@
 import {parseInteractionEffect} from "@AppBuilderLib/shared/lib/interactionEffects";
 import {
+	IInteractionEffect,
 	InteractionEngine,
 	MultiSelectManager,
 	SelectManager,
 } from "@shapediver/viewer.features.interaction";
-import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
 import {
 	ISelectionParameterProps,
 	ITreeNode,
