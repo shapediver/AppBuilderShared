@@ -150,7 +150,7 @@ export default function DrawingOptionsComponent(props: {
 	 */
 	const options = (
 		<Collapse
-			in={optionsOpened}
+			expanded={optionsOpened}
 			transitionDuration={250}
 			transitionTimingFunction="linear"
 			w={"100%"}
