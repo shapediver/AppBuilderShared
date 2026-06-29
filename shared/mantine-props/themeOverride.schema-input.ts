@@ -5,6 +5,8 @@
  * `features/appbuilder/config/appbuildertypecheck.ts` (top-level `themeOverrides` in settings JSON).
  * @see https://mantine.dev/theming/theme-object/
  */
+import type {AppBuilderThemeOtherProps} from "./appBuilderThemeOther.schema-input";
+
 export interface MantineThemeOverrideProps {
 	focusRing?: "auto" | "always" | "never";
 	scale?: number;
@@ -42,5 +44,5 @@ export interface MantineThemeOverrideProps {
 		deg?: number;
 	};
 	components?: Record<string, unknown>;
-	other?: Record<string, unknown>;
+	other?: AppBuilderThemeOtherProps;
 }
