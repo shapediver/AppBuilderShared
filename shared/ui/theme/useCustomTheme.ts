@@ -34,7 +34,6 @@ import {HintProps} from "@AppBuilderLib/shared/ui/hint/Hint";
 import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon/Icon";
 import {MarkdownWidgetComponentProps} from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import {ModalBaseThemeProps} from "@AppBuilderLib/shared/ui/modal/ModalBase";
-import {mergeCssVariablesResolvers} from "@AppBuilderLib/shared/ui/theme/mergeCssVariablesResolvers";
 import {TooltipWrapperThemeProps} from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/config/appBuilderAgentWidget";
 import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAccordionUiWidgetComponent";
@@ -96,7 +95,6 @@ import {
 	Tooltip,
 	createTheme,
 	mergeThemeOverrides,
-	v8CssVariablesResolver,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
 import {useContext} from "react";
@@ -1641,7 +1639,7 @@ export const useCustomTheme = (props: Props = {}) => {
 	/**
 	 * @see https://mantine.dev/styles/css-variables/#css-variables-resolver
 	 */
-	const appBuilderResolver: CSSVariablesResolver = (theme) => ({
+	const resolver: CSSVariablesResolver = (theme) => ({
 		variables: {
 			/** CSS variables used by the AppBuilderAppShellTemplate */
 			"--appbuilder-appshelltemplate-headerheight-base": getAppShellSize(
@@ -1697,11 +1695,6 @@ export const useCustomTheme = (props: Props = {}) => {
 			// variables for dark theme
 		},
 	});
-
-	const resolver = mergeCssVariablesResolvers(
-		v8CssVariablesResolver,
-		appBuilderResolver,
-	);
 
 	return {
 		theme,
