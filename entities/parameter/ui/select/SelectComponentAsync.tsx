@@ -71,6 +71,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		disabled,
 		onChange,
 		value,
+		emitValue = "itemData",
 		prependTopSection,
 		onSyncScrollingApiState,
 		...propsDefault
@@ -96,11 +97,13 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				const term = v.substring(SEARCH_PREFIX.length);
 				setSearchTerms((prev) => [...prev, term]);
 				debouncedOnSearch([...searchTerms, term], 0);
-			} else if (v && itemsData?.[v].data)
+			} else if (emitValue === "itemData" && v && itemsData?.[v].data) {
 				onChange(JSON.stringify(itemsData[v].data));
-			else onChange(v);
+			} else {
+				onChange(v);
+			}
 		},
-		[onChange, itemsData, debouncedOnSearch, searchTerms],
+		[onChange, itemsData, debouncedOnSearch, searchTerms, emitValue],
 	);
 
 	// Clear selection only when the current value is absent from filtered items.

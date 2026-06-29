@@ -224,11 +224,15 @@ export default function ParameterSelectComponent(
 					filteredValue ? uniqueChoices[+filteredValue] : undefined
 				}
 				onChange={(v) => {
-					handleChange(
-						uniqueChoicesIncludingHidden.indexOf(v!) + "",
-						undefined,
-						restoreFocus,
-					);
+					if (!v) {
+						handleChange("", undefined, restoreFocus);
+						return;
+					}
+					const index = uniqueChoicesIncludingHidden.indexOf(v);
+					if (index < 0) {
+						return;
+					}
+					handleChange(String(index), undefined, restoreFocus);
 					if (formInputProps?.onChange) {
 						formInputProps.onChange(v);
 					}
@@ -255,6 +259,7 @@ export default function ParameterSelectComponent(
 				limit={settings.limit}
 				height={settings.height}
 				database={settings.database}
+				emitValue="itemKey"
 			/>
 		);
 

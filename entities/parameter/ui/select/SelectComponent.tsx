@@ -118,6 +118,11 @@ export interface SelectComponentProps {
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>;
 	/** Whether the component shall be a multiselect component. */
 	multiselect?: boolean;
+	/**
+	 * What {@link SelectComponentAsync} passes to `onChange` when an item is selected.
+	 * `itemKey` — item id (string-list parameters); `itemData` — JSON of `itemData.data` (string parameters).
+	 */
+	emitValue?: "itemKey" | "itemData";
 }
 
 /** Base props shared by all select component types */

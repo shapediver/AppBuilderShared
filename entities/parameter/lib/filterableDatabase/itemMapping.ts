@@ -5,6 +5,7 @@ import type {
 
 /**
  * Maps filtered table rows to {@link SelectComponent} `items` + `itemData`.
+ * The value column (typically index 0) is the item key passed to the parameter.
  * Rows with an empty value column are skipped; duplicate values keep first list order, last row wins in itemData.
  */
 export function mapRowsToSelectItems(
