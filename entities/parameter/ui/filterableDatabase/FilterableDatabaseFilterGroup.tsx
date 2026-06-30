@@ -18,7 +18,7 @@ import {
 	type TextInputProps,
 	type TextProps,
 } from "@mantine/core";
-import {useCallback, type MouseEvent} from "react";
+import {useCallback, useEffect, useState, type MouseEvent} from "react";
 import {FilterableDatabaseFilterOption} from "./FilterableDatabaseFilterOption";
 import classes from "./FilterableDatabaseFilters.module.css";
 
@@ -53,6 +53,41 @@ interface FilterableDatabaseFilterGroupBodyProps extends FilterableDatabaseFilte
 	onSetFilterText: (filterIndex: number, text: string) => void;
 	keepComboboxOpen: (event: MouseEvent) => void;
 	showSelectAllIndent?: boolean;
+}
+
+function FilterableDatabaseTextFilterField(props: {
+	filterIndex: number;
+	committedValue: string;
+	onSetFilterText: (filterIndex: number, text: string) => void;
+	stackProps?: StackProps;
+	textInputProps?: TextInputProps;
+}) {
+	const {
+		filterIndex,
+		committedValue,
+		onSetFilterText,
+		stackProps,
+		textInputProps,
+	} = props;
+	const [draft, setDraft] = useState(committedValue);
+
+	useEffect(() => {
+		setDraft(committedValue);
+	}, [committedValue]);
+
+	return (
+		<Stack {...stackProps}>
+			<TextInput
+				value={draft}
+				onChange={(event) => {
+					const next = event.currentTarget.value;
+					setDraft(next);
+					onSetFilterText(filterIndex, next);
+				}}
+				{...textInputProps}
+			/>
+		</Stack>
+	);
 }
 
 function FilterableDatabaseFilterGroupBody(
@@ -102,18 +137,13 @@ function FilterableDatabaseFilterGroupBody(
 
 	if (group.type === "text") {
 		return (
-			<Stack {...stackProps}>
-				<TextInput
-					value={selectedValues[0] ?? ""}
-					onChange={(event) =>
-						onSetFilterText(
-							group.filterIndex,
-							event.currentTarget.value,
-						)
-					}
-					{...textInputProps}
-				/>
-			</Stack>
+			<FilterableDatabaseTextFilterField
+				filterIndex={group.filterIndex}
+				committedValue={selectedValues[0] ?? ""}
+				onSetFilterText={onSetFilterText}
+				stackProps={stackProps}
+				textInputProps={textInputProps}
+			/>
 		);
 	}
 

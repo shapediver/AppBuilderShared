@@ -105,9 +105,11 @@ export interface IFilterableDatabaseSettings {
 	 * Source of the data to be displayed in the filterable database component.
 	 * This is expected to be a CSV or JSON file, fetched either from a public URL
 	 * or from an export defined in a session.
-	 * CSV columns are indexed starting from 0.
-	 * JSON rows are objects with named fields (`value`, `title`, …).
-	 * Values of multi-valued columns must be separated by semicolons.
+	 * CSV rows are tabular (column index 0, 1, 2, …).
+	 * JSON rows are objects: top-level keys match `itemDataDefinition`
+	 * (`value`, `displayname`, `imageUrl`, …); custom fields live under `"data"`
+	 * (same keys as `itemDataDefinition.data`).
+	 * Values of multi-valued columns must be separated by semicolons (or JSON arrays).
 	 */
 	dataSource: {
 		/** Optional reference to export which provides the CSV file. */
@@ -123,12 +125,9 @@ export interface IFilterableDatabaseSettings {
 	 */
 	itemDataDefinition: {
 		/**
-		 * Index of the column that holds the value committed to the parameter.
-		 * For CSV this is typically column 0 (first column).
-		 * For JSON, each row object uses a `"value"` field (normalized to column 0
-		 * when `columns` starts with `"value"`). Use `"title"` for the display label
-		 * column (maps to `displayname` via column index).
-		 * Must match StringList choices or the String value you intend to store.
+		 * Index of the column that holds the value committed to the parameter
+		 * (typically column 0). Must match StringList choices or the String value
+		 * you intend to store.
 		 */
 		value: number;
 		/** Optional index of the column to use for "displayname". */

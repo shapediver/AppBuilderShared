@@ -4,8 +4,10 @@ import type {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 
 /**
- * Maps filtered table rows to {@link SelectComponent} `items` + `itemData`.
+ * Maps filtered table rows to {@link SelectComponent} `items` + `itemData`
+ * using column indices from `itemDataDefinition`.
  * The value column (typically index 0) is the item key passed to the parameter.
+ * Custom fields are mapped via `itemDataDefinition.data` (any keys allowed).
  * Rows with an empty value column are skipped; duplicate values keep first list order, last row wins in itemData.
  */
 export function mapRowsToSelectItems(

@@ -14,6 +14,7 @@ import {
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
+import {resolveStringSelectEmitValue} from "../lib/select/resolveStringSelectEmitValue";
 import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
@@ -185,6 +186,7 @@ export default function ParameterStringComponent(
 							}
 						}}
 						disabled={disabled}
+						emitValue={resolveStringSelectEmitValue(selectSettings)}
 						inputContainer={inputContainer}
 						onFocus={(e) => {
 							onFocusHandler(e);

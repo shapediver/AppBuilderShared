@@ -20,6 +20,8 @@ import SelectComponent, {
 } from "./select/SelectComponent";
 
 interface ISelectComponentOverrides extends ISelectParameterSettings {
+	/** E-commerce data source for grid / fullwidthcards (when database is absent). */
+	source?: string;
 	/** Optional further settings, like image width etc. */
 	settings?: SelectComponentSettings;
 }
@@ -259,6 +261,7 @@ export default function ParameterSelectComponent(
 				limit={settings.limit}
 				height={settings.height}
 				database={settings.database}
+				source={settings.source}
 				emitValue="itemKey"
 			/>
 		);

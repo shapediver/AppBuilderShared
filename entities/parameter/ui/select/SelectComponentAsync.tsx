@@ -55,8 +55,6 @@ interface SelectComponentAsyncProps extends SelectComponentProps {
 	type: SelectComponentAsyncType;
 	/** Optional content rendered above search-term anchors in the top section. */
 	prependTopSection?: ReactNode;
-	/** Called after in-place scrolling API mutation so parent can sync React state. */
-	onSyncScrollingApiState?: () => void;
 }
 
 /**
@@ -73,12 +71,11 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		value,
 		emitValue = "itemData",
 		prependTopSection,
-		onSyncScrollingApiState,
 		...propsDefault
 	} = props;
 
 	const {debouncedOnSearch, items, itemsData, bottomSection, loading} =
-		useSelectAsync(scrollingApi, onSyncScrollingApiState);
+		useSelectAsync(scrollingApi);
 
 	const displayValue = useMemo(
 		() => (value ? resolveItemKeyForValue(value, items, itemsData) : value),

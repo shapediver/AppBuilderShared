@@ -13,8 +13,6 @@ import classes from "./useSelectAsync.module.css";
  */
 export const useSelectAsync = (
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>,
-	/** Optional callback after search; parent syncs React state when API reference is stable. */
-	onSyncScrollingApiState?: () => void,
 ) => {
 	const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 	// Bumped after setSearchTerms so useMemo re-reads scrollingApi.items (API mutates in place).
@@ -29,11 +27,9 @@ export const useSelectAsync = (
 			debounceRef.current = setTimeout(async () => {
 				await scrollingApi?.setSearchTerms?.(searchTerms);
 				setSearchRevision((revision) => revision + 1);
-				// Parent may call setState to re-render when scrollingApi reference is unchanged.
-				onSyncScrollingApiState?.();
 			}, timeout);
 		},
-		[scrollingApi, onSyncScrollingApiState],
+		[scrollingApi],
 	);
 
 	const [infiniteRef] = useInfiniteScroll({

@@ -35,6 +35,26 @@ describe("createFilterableDatabaseScrollingApi", () => {
 		expect(api.hasNextPage).toBe(true);
 	});
 
+	it("returns pageSize items when the table has more rows", () => {
+		const largeTable: DatabaseTable = {
+			rows: Array.from({length: 12}, (_, index) => [
+				`id${index + 1}`,
+				`Item ${index + 1}`,
+				"Red",
+			]),
+		};
+
+		const api = createFilterableDatabaseScrollingApi({
+			table: largeTable,
+			settings,
+			selection: {},
+			pageSize: 5,
+		});
+
+		expect(api.items).toHaveLength(5);
+		expect(api.hasNextPage).toBe(true);
+	});
+
 	it("loadMore appends the next page of items", async () => {
 		const api = createFilterableDatabaseScrollingApi({
 			table,

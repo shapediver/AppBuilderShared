@@ -39,7 +39,13 @@ type FilterableDatabaseScrollingApi = ReturnType<
 	typeof createFilterableDatabaseScrollingApi
 >;
 
-export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
+const FILTER_TEXT_DEBOUNCE_MS = 300;
+
+export function useFilterableDatabase(
+	settings: IFilterableDatabaseSettings,
+	options?: {pageSize?: number},
+) {
+	const pageSize = options?.pageSize ?? 20;
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<Error | undefined>();
 	const [table, setTable] = useState<DatabaseTable | undefined>();
@@ -47,14 +53,25 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 	const scrollingApiRef = useRef<FilterableDatabaseScrollingApi | undefined>(
 		undefined,
 	);
+	const filterTextTimerRef = useRef<
+		ReturnType<typeof setTimeout> | undefined
+	>(undefined);
 	const [scrollingApi, setScrollingApi] = useState<
 		FilterableDatabaseScrollingApi | undefined
 	>(undefined);
 
 	const {href, export: exportRef, format} = settings.dataSource;
+	const filtersKey = JSON.stringify(settings.filters);
+	const itemDataDefinitionKey = JSON.stringify(settings.itemDataDefinition);
+	const settingsRef = useRef(settings);
+	settingsRef.current = settings;
+	const selectionRef = useRef(selection);
+	selectionRef.current = selection;
 
 	useEffect(() => {
-		if (!hasDataSource(settings)) {
+		const currentSettings = settingsRef.current;
+
+		if (!hasDataSource(currentSettings)) {
 			setLoading(false);
 			setError(new Error("database.dataSource requires href or export"));
 			return;
@@ -67,9 +84,9 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 			setError(undefined);
 
 			try {
-				const raw = await fetchRawText(settings);
+				const raw = await fetchRawText(currentSettings);
 				const parsed =
-					resolveFilterableDatabaseEngine(settings).parse(raw);
+					resolveFilterableDatabaseEngine(currentSettings).parse(raw);
 
 				if (cancelled) {
 					return;
@@ -79,8 +96,9 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 
 				const api = createFilterableDatabaseScrollingApi({
 					table: parsed,
-					settings,
-					selection: {},
+					settings: currentSettings,
+					selection: selectionRef.current,
+					pageSize,
 				});
 				scrollingApiRef.current = api;
 				setScrollingApi(api);
@@ -105,17 +123,34 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 		return () => {
 			cancelled = true;
 		};
-	}, [href, exportRef?.name, exportRef?.sessionId, format, settings]);
+	}, [
+		href,
+		exportRef?.name,
+		exportRef?.sessionId,
+		format,
+		filtersKey,
+		itemDataDefinitionKey,
+		pageSize,
+	]);
 
 	useEffect(() => {
-		const api = scrollingApiRef.current;
-		if (!api) {
-			return;
-		}
+		return () => {
+			if (filterTextTimerRef.current) {
+				clearTimeout(filterTextTimerRef.current);
+			}
+		};
+	}, []);
 
-		api.updateSelection(selection);
-		setScrollingApi({...api});
-	}, [selection]);
+	const applySelection = useCallback(
+		(updater: (prev: FilterSelection) => FilterSelection) => {
+			setSelection((prev) => {
+				const next = updater(prev);
+				scrollingApiRef.current?.updateSelection(next);
+				return next;
+			});
+		},
+		[],
+	);
 
 	const filterGroups = useMemo((): FilterTreeGroup[] => {
 		if (!table) {
@@ -139,12 +174,12 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 
 	const setFilterValue = useCallback(
 		(filterIndex: number, values: string[]) => {
-			setSelection((prev) => ({
+			applySelection((prev) => ({
 				...prev,
 				[filterIndex]: values,
 			}));
 		},
-		[],
+		[applySelection],
 	);
 
 	const toggleFilterValue = useCallback(
@@ -154,7 +189,7 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 				return;
 			}
 
-			setSelection((prev) => {
+			applySelection((prev) => {
 				const current = prev[filterIndex] ?? [];
 				const next = toggleFilterSelection(
 					current,
@@ -164,26 +199,41 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 				return {...prev, [filterIndex]: next};
 			});
 		},
-		[settings.filters],
+		[applySelection, settings.filters],
 	);
 
 	const setFilterText = useCallback(
 		(filterIndex: number, text: string) => {
-			const trimmed = text.trim();
-			setFilterValue(filterIndex, trimmed ? [trimmed] : []);
+			if (filterTextTimerRef.current) {
+				clearTimeout(filterTextTimerRef.current);
+			}
+
+			filterTextTimerRef.current = setTimeout(() => {
+				const trimmed = text.trim();
+				setFilterValue(filterIndex, trimmed ? [trimmed] : []);
+				filterTextTimerRef.current = undefined;
+			}, FILTER_TEXT_DEBOUNCE_MS);
 		},
 		[setFilterValue],
 	);
 
 	const removeFilterValue = useCallback(
 		(filterIndex: number, value: string) => {
-			setSelection((prev) => {
+			const filter = settings.filters[filterIndex];
+			if (filter?.type === "text") {
+				if (filterTextTimerRef.current) {
+					clearTimeout(filterTextTimerRef.current);
+					filterTextTimerRef.current = undefined;
+				}
+			}
+
+			applySelection((prev) => {
 				const current = prev[filterIndex] ?? [];
 				const next = current.filter((entry) => entry !== value);
 				return {...prev, [filterIndex]: next};
 			});
 		},
-		[],
+		[applySelection, settings.filters],
 	);
 
 	const toggleSelectAll = useCallback(
@@ -205,27 +255,20 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 			}
 
 			const allValues = group.nodes.map((node) => node.value);
-			setSelection((prev) => {
+			applySelection((prev) => {
 				const current = prev[filterIndex] ?? [];
 				const state = getSelectAllState(current, allValues);
 				const next = applySelectAll(allValues, state !== "checked");
 				return {...prev, [filterIndex]: next};
 			});
 		},
-		[filterGroups, settings.filters],
+		[applySelection, filterGroups, settings.filters],
 	);
 
 	const activeFilterTags = useMemo(
 		() => buildActiveFilterTags(selection, filterGroups),
 		[selection, filterGroups],
 	);
-
-	const syncScrollingApiState = useCallback(() => {
-		const api = scrollingApiRef.current;
-		if (api) {
-			setScrollingApi({...api});
-		}
-	}, []);
 
 	return {
 		loading,
@@ -239,6 +282,5 @@ export function useFilterableDatabase(settings: IFilterableDatabaseSettings) {
 		activeFilterTags,
 		filterGroups,
 		scrollingApi,
-		syncScrollingApiState,
 	};
 }

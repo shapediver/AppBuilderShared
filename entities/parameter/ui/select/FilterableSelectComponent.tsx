@@ -115,7 +115,7 @@ export default function FilterableSelectComponent(
 		...rest
 	} = useProps("FilterableSelectComponent", defaultStyleProps, props);
 
-	const {database, type, ...selectProps} = rest;
+	const {database, type, limit, ...selectProps} = rest;
 
 	const {
 		loading,
@@ -128,8 +128,7 @@ export default function FilterableSelectComponent(
 		activeFilterTags,
 		filterGroups,
 		scrollingApi,
-		syncScrollingApiState,
-	} = useFilterableDatabase(database);
+	} = useFilterableDatabase(database, {pageSize: limit});
 
 	if (loading) {
 		return (
@@ -163,7 +162,6 @@ export default function FilterableSelectComponent(
 					{...selectProps}
 					type={type}
 					scrollingApi={scrollingApi}
-					onSyncScrollingApiState={syncScrollingApiState}
 				/>
 			)}
 		</Stack>

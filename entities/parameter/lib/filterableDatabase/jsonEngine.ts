@@ -1,24 +1,11 @@
 import {fetchText} from "./fetchDataSource";
 import type {DatabaseTable, FilterableDatabaseEngine} from "./types";
 
-/**
- * Standard row fields with a fixed infer order. Any other keys (e.g. `category`, `tags`)
- * are appended alphabetically after these.
- */
-const JSON_STANDARD_FIELD_ORDER = [
-	"value",
-	"title",
-	"imageUrl",
-	"tooltip",
-	"description",
-	"color",
-] as const;
-
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** Multivalued JSON arrays (e.g. `tags`) join with `;` to match CSV / filterLogic. */
+/** Multivalued JSON arrays (e.g. `materials`) join with `;` to match CSV / filterLogic. */
 export function jsonCellToString(cell: unknown): string {
 	if (cell === undefined) {
 		return "";
@@ -32,30 +19,47 @@ export function jsonCellToString(cell: unknown): string {
 	return String(cell);
 }
 
+function getRowCell(record: Record<string, unknown>, column: string): unknown {
+	if (column !== "data" && column in record) {
+		return record[column];
+	}
+	const nested = record["data"];
+	if (isRecord(nested) && column in nested) {
+		return nested[column];
+	}
+	return undefined;
+}
+
 function inferColumns(records: Record<string, unknown>[]): string[] {
-	const allKeys = new Set<string>();
+	const topLevel: string[] = [];
+	const dataKeys: string[] = [];
+
 	for (const record of records) {
 		for (const key of Object.keys(record)) {
-			allKeys.add(key);
+			if (key !== "data" && !topLevel.includes(key)) {
+				topLevel.push(key);
+			}
+		}
+		const nestedData = record["data"];
+		if (isRecord(nestedData)) {
+			for (const key of Object.keys(nestedData)) {
+				if (!dataKeys.includes(key)) {
+					dataKeys.push(key);
+				}
+			}
 		}
 	}
 
-	const standardSet = new Set<string>(JSON_STANDARD_FIELD_ORDER);
+	// "value" is required on object rows — surface it first when present.
 	const ordered: string[] = [];
-	for (const field of JSON_STANDARD_FIELD_ORDER) {
-		if (allKeys.has(field)) {
-			ordered.push(field);
-		}
+	const valueIndex = topLevel.indexOf("value");
+	if (valueIndex !== -1) {
+		ordered.push("value");
+		topLevel.splice(valueIndex, 1);
 	}
+	ordered.push(...topLevel);
 
-	const rest: string[] = [];
-	for (const key of allKeys) {
-		if (!standardSet.has(key)) {
-			rest.push(key);
-		}
-	}
-	rest.sort();
-
+	const rest = [...dataKeys].sort();
 	return [...ordered, ...rest];
 }
 
@@ -63,43 +67,65 @@ function recordToRow(
 	record: Record<string, unknown>,
 	columns: string[],
 ): string[] {
-	return columns.map((column) => jsonCellToString(record[column]));
+	return columns.map((column) =>
+		jsonCellToString(getRowCell(record, column)),
+	);
+}
+
+function normalizeArrayRow(row: unknown[], index: number): string[] {
+	if (!Array.isArray(row)) {
+		throw new Error(`JSON database row at index ${index} must be an array`);
+	}
+	return row.map((cell) => String(cell));
 }
 
 /**
- * Parses JSON database files where each row is an object with named fields.
+ * Parses JSON database files into {@link DatabaseTable} (`string[][]` rows).
+ *
+ * Row objects mirror settings `itemDataDefinition`: top-level `value`, `displayname`,
+ * `imageUrl`, … (any keys, not a fixed whitelist) and custom fields under `"data"`
+ * (same keys as `itemDataDefinition.data`).
  *
  * @example
  * {
- *   "columns": ["value", "title", "imageUrl", "category", "color", "tags"],
+ *   "columns": ["value", "displayname", "imageUrl", "category", "color", "materials"],
  *   "rows": [
  *     {
  *       "value": "Option 1",
- *       "title": "Red Cotton",
- *       "tags": ["Cotton", "Linen"]
+ *       "displayname": "Red Cotton",
+ *       "imageUrl": "https://…",
+ *       "data": {
+ *         "category": "Fabric",
+ *         "color": "Red",
+ *         "materials": ["Cotton", "Linen"]
+ *       }
  *     }
  *   ]
  * }
  *
- * `columns` is optional; when omitted, field order is inferred (`value`, `title`, then known fields).
- * Array values (e.g. `tags`) are stored as semicolon-separated strings for multivalued filters.
- * A top-level array of row objects is also accepted.
+ * `columns` lists top-level fields (any keys, first-seen order with `value` first)
+ * then custom `data` keys. Array rows (`string[][]`) are also accepted.
  */
-function parseJsonRecordRows(
-	rows: unknown[],
-	columnOrder?: string[],
-): DatabaseTable {
+function parseJsonRows(rows: unknown[], columnOrder?: string[]): DatabaseTable {
 	if (rows.length === 0) {
 		throw new Error('JSON database "rows" must not be empty');
+	}
+
+	if (Array.isArray(rows[0])) {
+		return {
+			rows: rows.map((row, index) =>
+				normalizeArrayRow(row as unknown[], index),
+			),
+		};
 	}
 
 	const records = rows.map((row, index) => {
 		if (!isRecord(row)) {
 			throw new Error(
-				`JSON database row at index ${index} must be an object`,
+				`JSON database row at index ${index} must be an object or array`,
 			);
 		}
-		if (!("value" in row)) {
+		if (row.value === undefined) {
 			throw new Error(
 				`JSON database row at index ${index} is missing "value"`,
 			);
@@ -128,12 +154,8 @@ function parseJson(raw: string): DatabaseTable {
 		throw new Error("Invalid JSON database file");
 	}
 
-	if (Array.isArray(parsed)) {
-		return parseJsonRecordRows(parsed);
-	}
-
 	if (!isRecord(parsed)) {
-		throw new Error("JSON database must be an object or an array of rows");
+		throw new Error("JSON database must be an object with a rows array");
 	}
 
 	const {rows, columns: columnNames} = parsed;
@@ -148,7 +170,7 @@ function parseJson(raw: string): DatabaseTable {
 		? columnNames.map((column) => String(column))
 		: undefined;
 
-	return parseJsonRecordRows(rows, columnOrder);
+	return parseJsonRows(rows, columnOrder);
 }
 
 /** {@link FilterableDatabaseEngine} for JSON database files fetched via public href. */
