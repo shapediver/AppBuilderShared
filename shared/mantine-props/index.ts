@@ -10,6 +10,8 @@ export {mantineActionIconPropsSchema} from "./actionIcon";
 export type {MantineActionIconProps} from "./actionIcon";
 export {mantineAlertPropsSchema} from "./alert";
 export type {MantineAlertProps} from "./alert";
+export {appBuilderThemeOtherPropsSchema} from "./appBuilderThemeOther";
+export type {AppBuilderThemeOtherProps} from "./appBuilderThemeOther";
 export {mantineAreaChartPropsSchema} from "./areaChart";
 export type {MantineAreaChartProps} from "./areaChart";
 export {mantineBadgePropsSchema} from "./badge";

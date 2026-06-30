@@ -1,3 +1,4 @@
+import {appBuilderThemeOtherPropsSchema} from "@AppBuilderLib/shared/mantine-props/appBuilderThemeOther.zod";
 import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
 import type {MantineTheme, MantineThemeComponent} from "@mantine/core";
 import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
@@ -81,6 +82,7 @@ const MantineThemeFullSchema = z.strictObject({
 	]),
 	fontSizes: z.record(z.string(), z.string()),
 	lineHeights: z.record(z.string(), z.string()),
+	fontWeights: z.record(z.string(), z.string()),
 	radius: z.record(z.string(), z.string()),
 	spacing: z.record(z.string(), z.string()),
 	breakpoints: z.record(z.string(), z.string()),
@@ -128,7 +130,7 @@ const MantineThemeFullSchema = z.strictObject({
 		deg: z.number().optional(),
 	}),
 	components: z.record(z.string(), MantineThemeComponentSchema),
-	other: z.record(z.string(), JsonValueSchema),
+	other: appBuilderThemeOtherPropsSchema,
 	// variantColorResolver is a function — excluded from JSON config schema
 });
 

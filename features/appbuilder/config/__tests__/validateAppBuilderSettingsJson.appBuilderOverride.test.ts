@@ -242,3 +242,21 @@ describe("validateAppBuilderSettingsJson appBuilderOverride", () => {
 		expect(result.success).toBe(true);
 	});
 });
+
+describe("validateAppBuilderSettingsJson themeOverrides.other", () => {
+	it("accepts v8ThemeSupport boolean", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			themeOverrides: {other: {v8ThemeSupport: true}},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects unknown keys under themeOverrides.other", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			themeOverrides: {other: {v8ThemeSupport: true, notARealKey: true}},
+		});
+		expect(result.success).toBe(false);
+	});
+});
