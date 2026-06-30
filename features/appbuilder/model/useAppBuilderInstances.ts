@@ -88,7 +88,6 @@ export function useAppBuilderInstances(props: Props) {
 	const {
 		addProcess,
 		createProcessManager,
-		removeProcessManager,
 		processManagers,
 	} = useShapeDiverStoreProcessManager();
 	const {
@@ -113,7 +112,6 @@ export function useAppBuilderInstances(props: Props) {
 
 	const [sessionNodeVersion, setSessionNodeVersion] = useState(0);
 
-	const loadedRef = useRef(false);
 	const firstLoadDoneRef = useRef(false);
 	const customizationResultInStoreRef = useRef(customizationResults);
 	const instanceNodesRef = useRef<{
@@ -361,21 +359,18 @@ export function useAppBuilderInstances(props: Props) {
 		if (
 			JSON.stringify(instances) === JSON.stringify(instancesRef.current)
 		) {
-			const processManagerId =
-				sessionProcessManagerIdRef.current &&
-				processManagersRef.current[sessionProcessManagerIdRef.current]
-					? sessionProcessManagerIdRef.current
-					: undefined;
-			if (processManagerId && loadedRef.current) {
-				removeProcessManager(processManagerId);
-				sessionProcessManagerIdRef.current = undefined;
-			}
+			// Instances haven't changed. If a bridge PM was just created by
+			// useSessionWithAppBuilder's cb callback, resolve its bridge promise
+			// so the PM can finish naturally (no new processes to add). If the
+			// main instances effect is about to re-use this PM (e.g. due to a
+			// session node replacement), it will call addProcess synchronously
+			// before the bridge promise's .then() fires, keeping the PM alive.
+			onProcessManagerAttached?.();
 			return;
 		}
 
 		// set the instances ref to the current instances
 		instancesRef.current = JSON.parse(JSON.stringify(instances));
-		loadedRef.current = false;
 
 		const existingNames = new Set<string>();
 		const parameterValuesMap: {
@@ -424,12 +419,19 @@ export function useAppBuilderInstances(props: Props) {
 	const sessionUpdateCallback = useCallback(
 		(newNode?: ITreeNode, oldNode?: ITreeNode) => {
 			sessionNodeRef.current = newNode;
+			const replaced = !!(oldNode && newNode && oldNode !== newNode);
 			// If the session node was replaced (old → new), bump the version
 			// to force a re-run that rebuilds instances with current parameter
 			// values. Only fire when oldNode exists (node was replaced, not created)
 			// and newNode differs (avoid no-op callbacks).
-			if (oldNode && newNode && oldNode !== newNode) {
+			if (replaced) {
 				setSessionNodeVersion((v) => v + 1);
+				// Don't re-add old instances to the replaced node — they have
+				// stale geometry from the previous parameter set. A new cycle
+				// is starting that will build fresh instances via
+				// addInstanceToSceneTree. Re-adding old instances here would
+				// make their stale geometry visible as intermediate results.
+				return;
 			}
 			if (!newNode) return;
 
@@ -450,7 +452,14 @@ export function useAppBuilderInstances(props: Props) {
 			addInstance(instanceId, instanceNodes[instanceId]);
 		}
 
-		instanceNodesRef.current = instanceNodes;
+		// Only update the ref when we have actual instances.
+		// When instanceNodes is cleared to {} (during effect cleanup for a
+		// new cycle), keep the ref pointing to the last successfully built
+		// instances so addInstanceToSceneTree can remove them from the node,
+		// and sessionUpdateCallback can re-add them on non-replacement updates.
+		if (Object.keys(instanceNodes).length > 0) {
+			instanceNodesRef.current = instanceNodes;
+		}
 
 		return () => {
 			for (const instanceId in instanceNodes) {
@@ -458,6 +467,22 @@ export function useAppBuilderInstances(props: Props) {
 			}
 		};
 	}, [instanceNodes]);
+
+	// Unmount-only cleanup: remove instances from the session node.
+	// The main instances effect cleanup deliberately keeps instances on the
+	// node during cycle transitions (to avoid showing an empty scene), so
+	// this separate effect (empty deps) handles actual unmount.
+	useEffect(() => {
+		return () => {
+			if (sessionNodeRef.current) {
+				Object.values(instanceNodesRef.current).forEach((instance) => {
+					if (sessionNodeRef.current!.hasChild(instance)) {
+						sessionNodeRef.current!.removeChild(instance);
+					}
+				});
+			}
+		};
+	}, []);
 
 	useEffect(() => {
 		const removeSessionUpdateCallback = addSessionUpdateCallback(
@@ -502,11 +527,11 @@ export function useAppBuilderInstances(props: Props) {
 
 		// we check if a process manager id is given
 		// and if it is still valid
-		const reusedProcessManagerId =
-			sessionProcessManagerIdRef.current &&
-			processManagersRef.current[sessionProcessManagerIdRef.current]
-				? sessionProcessManagerIdRef.current
-				: undefined;
+		const sessionPMId = sessionProcessManagerIdRef.current;
+		const sessionPMExists = !!(sessionPMId && processManagersRef.current[sessionPMId]);
+		const reusedProcessManagerId = sessionPMId && sessionPMExists
+			? sessionPMId
+			: undefined;
 		const processManagerId =
 			reusedProcessManagerId ?? createProcessManager(sessionApi.id);
 		addProcess(processManagerId, mainProcessDefinition);
@@ -568,8 +593,6 @@ export function useAppBuilderInstances(props: Props) {
 					batchParameterValueUpdate,
 					getParameter,
 				);
-
-				loadedRef.current = true;
 
 				// wait for all instance promises to resolve
 				// before we add the instances to the session node
@@ -692,13 +715,13 @@ export function useAppBuilderInstances(props: Props) {
 			// so the PM will stay alive if there is new work.
 			safeResolveMain();
 
-			if (sessionNodeRef.current) {
-				Object.values(instanceNodesRef.current).forEach((instance) => {
-					if (sessionNodeRef.current!.hasChild(instance)) {
-						sessionNodeRef.current!.removeChild(instance);
-					}
-				});
-			}
+			// Do not remove instances from the session node or clear the ref
+			// here. When a new cycle is starting (not unmount), the old
+			// instances should stay on the node so the viewer doesn't show
+			// an empty scene between cycles. The next cycle's
+			// addInstanceToSceneTree will replace them, and
+			// sessionUpdateCallback will re-add them to a replaced node.
+			// The ref is only updated when new instances are built.
 			setInstanceNodes({});
 		};
 	}, [
