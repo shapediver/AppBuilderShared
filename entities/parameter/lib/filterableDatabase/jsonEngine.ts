@@ -19,6 +19,7 @@ export function jsonCellToString(cell: unknown): string {
 	return String(cell);
 }
 
+/** Reads a column from a JSON row: top-level key first, then `record.data[column]`. */
 function getRowCell(record: Record<string, unknown>, column: string): unknown {
 	if (column !== "data" && column in record) {
 		return record[column];
@@ -30,6 +31,10 @@ function getRowCell(record: Record<string, unknown>, column: string): unknown {
 	return undefined;
 }
 
+/**
+ * Builds column order when the JSON file omits `columns`.
+ * Top-level keys (except `data`) in first-seen order, `value` first; then sorted `data` keys.
+ */
 function inferColumns(records: Record<string, unknown>[]): string[] {
 	const topLevel: string[] = [];
 	const dataKeys: string[] = [];

@@ -8,6 +8,11 @@ import SelectGridComponent from "./SelectGridComponent";
 
 const SEARCH_PREFIX = "search:";
 
+/**
+ * Whether the parameter value still matches a visible card after filters/search reload.
+ * Cards use item keys; String+database parameters store `JSON.stringify(itemData.data)` —
+ * both shapes must be recognized before clearing selection on `resetState`.
+ */
 function isValueInAvailableItems(
 	value: string,
 	items: string[],
@@ -27,6 +32,11 @@ function isValueInAvailableItems(
 	});
 }
 
+/**
+ * Maps the stored parameter value back to an item key for card highlighting.
+ * Grid/fullwidthcards compare `value === itemKey`; when `emitValue` is `itemData`
+ * the model holds serialized `data`, not the key.
+ */
 function resolveItemKeyForValue(
 	value: string,
 	items: string[],
@@ -77,6 +87,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 	const {debouncedOnSearch, items, itemsData, bottomSection, loading} =
 		useSelectAsync(scrollingApi);
 
+	// Item key for `isSelected` in card components (see resolveItemKeyForValue).
 	const displayValue = useMemo(
 		() => (value ? resolveItemKeyForValue(value, items, itemsData) : value),
 		[value, items, itemsData],
@@ -95,6 +106,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				setSearchTerms((prev) => [...prev, term]);
 				debouncedOnSearch([...searchTerms, term], 0);
 			} else if (emitValue === "itemData" && v && itemsData?.[v].data) {
+				// Card click passes item key `v`; commit JSON for String+database params.
 				onChange(JSON.stringify(itemsData[v].data));
 			} else {
 				onChange(v);
