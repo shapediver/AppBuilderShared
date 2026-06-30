@@ -88,7 +88,6 @@ export function useAppBuilderInstances(props: Props) {
 	const {
 		addProcess,
 		createProcessManager,
-		removeProcessManager,
 		processManagers,
 	} = useShapeDiverStoreProcessManager();
 	const {
@@ -113,7 +112,6 @@ export function useAppBuilderInstances(props: Props) {
 
 	const [sessionNodeVersion, setSessionNodeVersion] = useState(0);
 
-	const loadedRef = useRef(false);
 	const firstLoadDoneRef = useRef(false);
 	const customizationResultInStoreRef = useRef(customizationResults);
 	const instanceNodesRef = useRef<{
@@ -361,21 +359,18 @@ export function useAppBuilderInstances(props: Props) {
 		if (
 			JSON.stringify(instances) === JSON.stringify(instancesRef.current)
 		) {
-			const processManagerId =
-				sessionProcessManagerIdRef.current &&
-				processManagersRef.current[sessionProcessManagerIdRef.current]
-					? sessionProcessManagerIdRef.current
-					: undefined;
-			if (processManagerId && loadedRef.current) {
-				removeProcessManager(processManagerId);
-				sessionProcessManagerIdRef.current = undefined;
-			}
+			// Instances haven't changed. If a bridge PM was just created by
+			// useSessionWithAppBuilder's cb callback, resolve its bridge promise
+			// so the PM can finish naturally (no new processes to add). If the
+			// main instances effect is about to re-use this PM (e.g. due to a
+			// session node replacement), it will call addProcess synchronously
+			// before the bridge promise's .then() fires, keeping the PM alive.
+			onProcessManagerAttached?.();
 			return;
 		}
 
 		// set the instances ref to the current instances
 		instancesRef.current = JSON.parse(JSON.stringify(instances));
-		loadedRef.current = false;
 
 		const existingNames = new Set<string>();
 		const parameterValuesMap: {
@@ -424,12 +419,19 @@ export function useAppBuilderInstances(props: Props) {
 	const sessionUpdateCallback = useCallback(
 		(newNode?: ITreeNode, oldNode?: ITreeNode) => {
 			sessionNodeRef.current = newNode;
+			const replaced = !!(oldNode && newNode && oldNode !== newNode);
 			// If the session node was replaced (old → new), bump the version
 			// to force a re-run that rebuilds instances with current parameter
 			// values. Only fire when oldNode exists (node was replaced, not created)
 			// and newNode differs (avoid no-op callbacks).
-			if (oldNode && newNode && oldNode !== newNode) {
+			if (replaced) {
 				setSessionNodeVersion((v) => v + 1);
+				// Don't re-add old instances to the replaced node — they have
+				// stale geometry from the previous parameter set. A new cycle
+				// is starting that will build fresh instances via
+				// addInstanceToSceneTree. Re-adding old instances here would
+				// make their stale geometry visible as intermediate results.
+				return;
 			}
 			if (!newNode) return;
 
@@ -450,7 +452,14 @@ export function useAppBuilderInstances(props: Props) {
 			addInstance(instanceId, instanceNodes[instanceId]);
 		}
 
-		instanceNodesRef.current = instanceNodes;
+		// Only update the ref when we have actual instances.
+		// When instanceNodes is cleared to {} (during effect cleanup for a
+		// new cycle), keep the ref pointing to the last successfully built
+		// instances so addInstanceToSceneTree can remove them from the node,
+		// and sessionUpdateCallback can re-add them on non-replacement updates.
+		if (Object.keys(instanceNodes).length > 0) {
+			instanceNodesRef.current = instanceNodes;
+		}
 
 		return () => {
 			for (const instanceId in instanceNodes) {
@@ -458,6 +467,22 @@ export function useAppBuilderInstances(props: Props) {
 			}
 		};
 	}, [instanceNodes]);
+
+	// Unmount-only cleanup: remove instances from the session node.
+	// The main instances effect cleanup deliberately keeps instances on the
+	// node during cycle transitions (to avoid showing an empty scene), so
+	// this separate effect (empty deps) handles actual unmount.
+	useEffect(() => {
+		return () => {
+			if (sessionNodeRef.current) {
+				Object.values(instanceNodesRef.current).forEach((instance) => {
+					if (sessionNodeRef.current!.hasChild(instance)) {
+						sessionNodeRef.current!.removeChild(instance);
+					}
+				});
+			}
+		};
+	}, []);
 
 	useEffect(() => {
 		const removeSessionUpdateCallback = addSessionUpdateCallback(
@@ -474,6 +499,7 @@ export function useAppBuilderInstances(props: Props) {
 		if (!sessionApi) return;
 
 		let cancelled = false;
+		let mainPromiseResolved = false;
 
 		// create a promise to wait for all instances to be created
 		// this is necessary to only resolve the process once all instances are created
@@ -483,6 +509,17 @@ export function useAppBuilderInstances(props: Props) {
 			resolveMainPromise = resolve;
 		});
 
+		/**
+		 * Safely resolve the main promise, ensuring it is only resolved once.
+		 * This is called from the success path (deferred via setTimeout),
+		 * the cancel paths, and the effect cleanup.
+		 */
+		const safeResolveMain = () => {
+			if (mainPromiseResolved) return;
+			mainPromiseResolved = true;
+			resolveMainPromise!();
+		};
+
 		const mainProcessDefinition: IProcessDefinition = {
 			name: "Instance Process",
 			promise: mainPromise,
@@ -490,11 +527,11 @@ export function useAppBuilderInstances(props: Props) {
 
 		// we check if a process manager id is given
 		// and if it is still valid
-		const reusedProcessManagerId =
-			sessionProcessManagerIdRef.current &&
-			processManagersRef.current[sessionProcessManagerIdRef.current]
-				? sessionProcessManagerIdRef.current
-				: undefined;
+		const sessionPMId = sessionProcessManagerIdRef.current;
+		const sessionPMExists = !!(sessionPMId && processManagersRef.current[sessionPMId]);
+		const reusedProcessManagerId = sessionPMId && sessionPMExists
+			? sessionPMId
+			: undefined;
 		const processManagerId =
 			reusedProcessManagerId ?? createProcessManager(sessionApi.id);
 		addProcess(processManagerId, mainProcessDefinition);
@@ -526,126 +563,165 @@ export function useAppBuilderInstances(props: Props) {
 
 		// wait for all instance promises to resolve
 		// then look for output actions to be executed
-		Promise.all(promises).then(() => {
-			if (cancelled) {
-				resolveMainPromise!();
-				return;
-			}
-
-			// Create a dedicated process manager for the scene tree update BEFORE
-			// running processOutputActions. The controller session's customization
-			// (triggered by batchParameterValueUpdate) creates its own process manager
-			// which will remove SUSPEND_SCENE_UPDATES when it finishes. This PM
-			// ensures flag protection spans the entire remaining pipeline.
-			let resolveSceneTreePromise: () => void;
-			const sceneTreePromise = new Promise<void>((resolve) => {
-				resolveSceneTreePromise = resolve;
-			});
-			const sceneTreeProcessManagerId = createProcessManager(
-				sessionApi.id,
-			);
-			addProcess(sceneTreeProcessManagerId, {
-				name: "Scene Tree Update",
-				promise: sceneTreePromise,
-			});
-
-			const outputCallbackPromises = processOutputActions(
-				sessionApi,
-				newInstances,
-				namespace,
-				batchParameterValueUpdate,
-				getParameter,
-			);
-
-			loadedRef.current = true;
-
-			// wait for all instance promises to resolve
-			// before we add the instances to the session node
-			Promise.all(outputCallbackPromises).then(async () => {
+		Promise.all(promises)
+			.then(() => {
 				if (cancelled) {
-					resolveMainPromise!();
-					resolveSceneTreePromise!();
+					safeResolveMain();
 					return;
 				}
+				// Create a dedicated process manager for the scene tree update BEFORE
+				// running processOutputActions. The controller session's customization
+				// (triggered by batchParameterValueUpdate) creates its own process manager
+				// which will remove SUSPEND_SCENE_UPDATES when it finishes. This PM
+				// ensures flag protection spans the entire remaining pipeline.
+				let resolveSceneTreePromise: () => void;
+				const sceneTreePromise = new Promise<void>((resolve) => {
+					resolveSceneTreePromise = resolve;
+				});
+				const sceneTreeProcessManagerId = createProcessManager(
+					sessionApi.id,
+				);
+				addProcess(sceneTreeProcessManagerId, {
+					name: "Scene Tree Update",
+					promise: sceneTreePromise,
+				});
 
-				await addInstanceToSceneTree(
+				const outputCallbackPromises = processOutputActions(
+					sessionApi,
 					newInstances,
-					instanceNodesRef.current,
-					sessionNodeRef.current,
+					namespace,
+					batchParameterValueUpdate,
+					getParameter,
 				);
 
-				// Register instances in the store synchronously before resolving
-				// any promises. This ensures instances are present in the store
-				// when SUSPEND_SCENE_UPDATES is removed and the scene update fires.
-				const newInstanceNodes = Object.entries(newInstances).reduce(
-					(acc, [key, cur]) => {
-						acc[key] = cur.node;
-						return acc;
-					},
-					{} as {[key: string]: ITreeNode},
-				);
-
-				// Remove old instances from the store
-				for (const instanceId in instanceNodesRef.current) {
-					removeInstance(instanceId);
-				}
-				// Add new instances to the store
-				for (const instanceId in newInstanceNodes) {
-					addInstance(instanceId, newInstanceNodes[instanceId]);
-				}
-				instanceNodesRef.current = newInstanceNodes;
-
-				// If the session node was replaced during processOutputActions
-				// (controller customization), sessionNodeRef.current points to
-				// the new node while addInstanceToSceneTree targeted the old one.
-				// Reparent instances to the current session node.
-				const currentSessionNode = sessionNodeRef.current;
-				if (currentSessionNode) {
-					Object.values(newInstanceNodes).forEach((instance) => {
-						if (!currentSessionNode.hasChild(instance)) {
-							currentSessionNode.addChild(instance);
-							currentSessionNode.updateVersion();
-						}
-					});
-				}
-
-				// Update React state (for downstream consumers)
-				setInstanceNodes(newInstanceNodes);
-
-				// Both stores are updated synchronously above.
-				// Now safe to resolve promises — flags can be removed.
-				resolveMainPromise!();
-				resolveSceneTreePromise!();
-
-				// after the instances are added to the scene tree, we can adjust the cameras to fit the new geometry
-				// we don't await this process, as it just waits for the next render loop
-				adjustCamerasToInstances(firstLoadDoneRef);
-
-				// clean up the session instances
-				// only instances that are currently in the scene are kept
-				// the others are removed from the store
-				Object.keys(customizationResultInStoreRef.current).forEach(
-					(instanceId) => {
-						if (
-							customizationResultPromise[instanceId] !== undefined
-						)
+				// wait for all instance promises to resolve
+				// before we add the instances to the session node
+				Promise.all(outputCallbackPromises)
+					.then(async () => {
+						if (cancelled) {
+							safeResolveMain();
+							resolveSceneTreePromise!();
 							return;
-						removeCustomizationResult(instanceId);
-					},
-				);
+						}
+						await addInstanceToSceneTree(
+							newInstances,
+							instanceNodesRef.current,
+							sessionNodeRef.current,
+						);
+
+						// Register instances in the store synchronously before resolving
+						// any promises. This ensures instances are present in the store
+						// when SUSPEND_SCENE_UPDATES is removed and the scene update fires.
+						const newInstanceNodes = Object.entries(
+							newInstances,
+						).reduce(
+							(acc, [key, cur]) => {
+								acc[key] = cur.node;
+								return acc;
+							},
+							{} as {[key: string]: ITreeNode},
+						);
+
+						// Remove old instances from the store
+						for (const instanceId in instanceNodesRef.current) {
+							removeInstance(instanceId);
+						}
+						// Add new instances to the store
+						for (const instanceId in newInstanceNodes) {
+							addInstance(
+								instanceId,
+								newInstanceNodes[instanceId],
+							);
+						}
+						instanceNodesRef.current = newInstanceNodes;
+
+						// If the session node was replaced during processOutputActions
+						// (controller customization), sessionNodeRef.current points to
+						// the new node while addInstanceToSceneTree targeted the old one.
+						// Reparent instances to the current session node.
+						const currentSessionNode = sessionNodeRef.current;
+						if (currentSessionNode) {
+							Object.values(newInstanceNodes).forEach(
+								(instance) => {
+									if (
+										!currentSessionNode.hasChild(instance)
+									) {
+										currentSessionNode.addChild(instance);
+										currentSessionNode.updateVersion();
+									}
+								},
+							);
+						}
+
+						// Update React state (for downstream consumers)
+						setInstanceNodes(newInstanceNodes);
+
+						// Both stores are updated synchronously above.
+						// Defer resolving the main promise to allow the viewer to fire
+						// sessionUpdateCallback (triggered by the controller customization
+						// in outputActions) and start a new cycle before the PM can finish.
+						// Without this deferral, the PM could finish and remove itself
+						// before the next cycle starts, splitting the logical process.
+						// The scene-tree promise is resolved immediately since it only
+						// needs to span the scene tree update itself.
+						resolveSceneTreePromise!();
+
+						// Use setTimeout(0) so the deferred resolution fires as a macrotask,
+						// allowing the viewer's sessionUpdateCallback (triggered by the
+						// controller customization in outputActions) and the resulting
+						// React state update and effect re-run (cleanup + new effect with
+						// new processes) to land before the PM can auto-finish.
+						setTimeout(() => {
+							safeResolveMain();
+						}, 0);
+
+						// after the instances are added to the scene tree, we can adjust the cameras to fit the new geometry
+						// we don't await this process, as it just waits for the next render loop
+						adjustCamerasToInstances(firstLoadDoneRef);
+
+						// clean up the session instances
+						// only instances that are currently in the scene are kept
+						// the others are removed from the store
+						Object.keys(
+							customizationResultInStoreRef.current,
+						).forEach((instanceId) => {
+							if (
+								customizationResultPromise[instanceId] !==
+								undefined
+							)
+								return;
+							removeCustomizationResult(instanceId);
+						});
+					})
+					.catch((error) => {
+						Logger.error(
+							"Failed to process output actions:",
+							error,
+						);
+						safeResolveMain();
+						resolveSceneTreePromise!();
+					});
+			})
+			.catch((error) => {
+				Logger.error("Failed to create instances:", error);
+				safeResolveMain();
 			});
-		});
 
 		return () => {
 			cancelled = true;
+			// Resolve the main promise immediately — a new cycle is starting
+			// (or the component is unmounting). The new cycle will add its
+			// own processes synchronously before the promise's .then() fires,
+			// so the PM will stay alive if there is new work.
+			safeResolveMain();
 
-			if (sessionNodeRef.current) {
-				Object.values(instanceNodesRef.current).forEach((instance) => {
-					if (sessionNodeRef.current!.hasChild(instance)) {
-						sessionNodeRef.current!.removeChild(instance);
-					}
-				});
-			}
+			// Do not remove instances from the session node or clear the ref
+			// here. When a new cycle is starting (not unmount), the old
+			// instances should stay on the node so the viewer doesn't show
+			// an empty scene between cycles. The next cycle's
+			// addInstanceToSceneTree will replace them, and
+			// sessionUpdateCallback will re-add them to a replaced node.
+			// The ref is only updated when new instances are built.
 			setInstanceNodes({});
 		};
 	}, [
