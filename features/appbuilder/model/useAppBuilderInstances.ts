@@ -359,13 +359,12 @@ export function useAppBuilderInstances(props: Props) {
 		if (
 			JSON.stringify(instances) === JSON.stringify(instancesRef.current)
 		) {
-			// Instances haven't changed. If a bridge PM was just created by
-			// useSessionWithAppBuilder's cb callback, resolve its bridge promise
-			// so the PM can finish naturally (no new processes to add). If the
-			// main instances effect is about to re-use this PM (e.g. due to a
-			// session node replacement), it will call addProcess synchronously
-			// before the bridge promise's .then() fires, keeping the PM alive.
-			onProcessManagerAttached?.();
+			// Instances haven't changed — don't touch the process manager here.
+			// The PM may be a bridge PM just created by useSessionWithAppBuilder's
+			// cb callback for a new customization cycle. Resolving or removing it
+			// here would kill the bridge before the main instances effect can
+			// reuse it. The PM is cleaned up by the main effect's lifecycle, the
+			// cb callback (when a new PM is created), or the unmount cleanup.
 			return;
 		}
 
