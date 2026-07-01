@@ -40,6 +40,8 @@ export function useCreateModelState(props: Props) {
 		parameterNamesToInclude: parameterNamesToIncludeDefault,
 		parameterNamesToExclude: parameterNamesToExcludeDefault,
 		parameterNamesToAlwaysExclude = [],
+		successMessage,
+		errorMessage,
 	} = useProps(
 		"CreateModelStateHook",
 		defaultThemeProps,
@@ -192,5 +194,7 @@ export function useCreateModelState(props: Props) {
 
 	return {
 		createModelState,
+		successMessage,
+		errorMessage,
 	};
 }

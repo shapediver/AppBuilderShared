@@ -5,10 +5,12 @@ export const CreateModelStateHookThemeDefaultPropsSchema = z.strictObject({
 	parameterNamesToInclude: z.array(z.string()).optional(),
 	parameterNamesToExclude: z.array(z.string()).optional(),
 	parameterNamesToAlwaysExclude: z.array(z.string()).optional(),
+	successMessage: z.string().optional(),
+	errorMessage: z.string().optional(),
 });
 
 /**
- * Theme defaults for {@link useCreateModelState} parameter filtering.
+ * Theme defaults for {@link useCreateModelState} parameter filtering and notifications.
  *
  * @docAttached
  * @category feature
@@ -34,4 +36,14 @@ export interface CreateModelStateHookThemeDefaultProps extends z.infer<
 	 * @default []
 	 */
 	parameterNamesToAlwaysExclude?: string[];
+	/**
+	 * Default success message shown after a model state has been created.
+	 * Supports the optional placeholder `{modelStateId}`.
+	 */
+	successMessage?: string;
+	/**
+	 * Default error message shown when creating a model state fails.
+	 * Supports the optional placeholder `{modelStateId}` when available.
+	 */
+	errorMessage?: string;
 }

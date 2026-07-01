@@ -1,4 +1,5 @@
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
+import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
@@ -28,46 +29,73 @@ export default function AppBuilderActionCreateModelStateComponent(
 		includeGltf,
 		parameterNamesToInclude,
 		parameterNamesToExclude,
+		successMessage,
+		errorMessage,
 	} = props;
-	const {success} = useNotificationStore();
+	const {success, error} = useNotificationStore();
 
-	const {createModelState} = useCreateModelState({namespace});
+	const {
+		createModelState,
+		successMessage: themeSuccessMessage,
+		errorMessage: themeErrorMessage,
+	} = useCreateModelState({namespace});
 
 	const [loading, setLoading] = useState(false);
 
 	const onClick = useCallback(async () => {
 		setLoading(true);
 
-		const {modelStateId, screenshot} = await createModelState({
-			parameterNamesToInclude,
-			parameterNamesToExclude,
-			includeImage,
-			image,
-			data: undefined, // <-- custom data
-			includeGltf,
-		});
+		try {
+			const {modelStateId, screenshot} = await createModelState({
+				parameterNamesToInclude,
+				parameterNamesToExclude,
+				includeImage,
+				image,
+				data: undefined, // <-- custom data
+				includeGltf,
+			});
 
-		// Save the modelStateId as a search parameter
-		if (modelStateId) {
-			// in case we are not running inside an iframe, the instance of
-			// IEcommerceApi is a dummy implementation
-			const api = await ECommerceApiSingleton;
-			const {href} = await api.updateSharingLink({
-				modelStateId,
-				updateUrl: true,
-				imageUrl: screenshot,
+			// Save the modelStateId as a search parameter
+			if (modelStateId) {
+				// in case we are not running inside an iframe, the instance of
+				// IEcommerceApi is a dummy implementation
+				const api = await ECommerceApiSingleton;
+				const {href} = await api.updateSharingLink({
+					modelStateId,
+					updateUrl: true,
+					imageUrl: screenshot,
+				});
+				const resolvedSuccessMessage = resolveModelStateMessage(
+					successMessage ?? themeSuccessMessage,
+					modelStateId,
+				);
+
+				if (resolvedSuccessMessage) {
+					success({
+						message: resolvedSuccessMessage,
+					});
+				} else {
+					success({
+						message: (
+							<NotificationModelStateCreated
+								modelStateId={modelStateId}
+								link={href}
+							/>
+						),
+					});
+				}
+			}
+		} catch (e) {
+			error({
+				message:
+					resolveModelStateMessage(
+						errorMessage ?? themeErrorMessage,
+					) ?? "An error happened while saving the model state.",
 			});
-			success({
-				message: (
-					<NotificationModelStateCreated
-						modelStateId={modelStateId}
-						link={href}
-					/>
-				),
-			});
+			throw e;
+		} finally {
+			setLoading(false);
 		}
-
-		setLoading(false);
 	}, [
 		createModelState,
 		parameterNamesToInclude,
@@ -75,6 +103,12 @@ export default function AppBuilderActionCreateModelStateComponent(
 		image,
 		includeImage,
 		includeGltf,
+		successMessage,
+		errorMessage,
+		themeSuccessMessage,
+		themeErrorMessage,
+		success,
+		error,
 	]);
 
 	return (
