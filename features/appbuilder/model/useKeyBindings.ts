@@ -1,5 +1,6 @@
 import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
+import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
@@ -45,40 +46,62 @@ interface Props {
  */
 export function useKeyBindings(props: Props) {
 	const {namespace, getNotification} = props;
-	const {createModelState} = useCreateModelState({namespace});
+	const {createModelState, successMessage, errorMessage} =
+		useCreateModelState({namespace});
 	const {importModelState} = useImportModelState({namespace});
 	const {exportParameters, importParameters} =
 		useParameterImportExport(namespace);
 	const notifications = useNotificationStore();
 
 	const callback = useCallback(async () => {
-		const {modelStateId, screenshot} = await createModelState({
-			parameterNamesToInclude: undefined, // <-- parameterNamesToInclude: use default according to the theme
-			parameterNamesToExclude: undefined, // <-- parameterNamesToExclude: use default according to the theme
-			includeImage: true, // <-- includeImage,
-			image: undefined, // <-- image
-			data: undefined, // <-- custom data
-			includeGltf: false, // <-- includeGltf
-		});
+		try {
+			const {modelStateId, screenshot} = await createModelState({
+				parameterNamesToInclude: undefined, // <-- parameterNamesToInclude: use default according to the theme
+				parameterNamesToExclude: undefined, // <-- parameterNamesToExclude: use default according to the theme
+				includeImage: true, // <-- includeImage,
+				image: undefined, // <-- image
+				data: undefined, // <-- custom data
+				includeGltf: false, // <-- includeGltf
+			});
 
-		// Save the modelStateId as a search parameter
-		if (modelStateId) {
-			// in case we are not running inside an iframe, the instance of
-			// IEcommerceApi is a dummy implementation
-			const api = await ECommerceApiSingleton;
-			const {href} = await api.updateSharingLink({
-				modelStateId,
-				updateUrl: true,
-				imageUrl: screenshot,
-			});
-			notifications.success({
-				message: getNotification({
+			// Save the modelStateId as a search parameter
+			if (modelStateId) {
+				// in case we are not running inside an iframe, the instance of
+				// IEcommerceApi is a dummy implementation
+				const api = await ECommerceApiSingleton;
+				const {href} = await api.updateSharingLink({
 					modelStateId,
-					link: href.toString(),
-				}),
+					updateUrl: true,
+					imageUrl: screenshot,
+				});
+				const resolvedSuccessMessage = resolveModelStateMessage(
+					successMessage,
+					modelStateId,
+				);
+				notifications.success({
+					message:
+						resolvedSuccessMessage ??
+						getNotification({
+							modelStateId,
+							link: href.toString(),
+						}),
+				});
+			}
+		} catch (e) {
+			notifications.error({
+				message:
+					resolveModelStateMessage(errorMessage) ??
+					"An error happened while saving the model state.",
 			});
+			throw e;
 		}
-	}, [createModelState]);
+	}, [
+		createModelState,
+		errorMessage,
+		getNotification,
+		notifications,
+		successMessage,
+	]);
 
 	useKeyBinding({
 		key: "s",

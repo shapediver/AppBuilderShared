@@ -19,6 +19,7 @@ import {ViewportIconButtonThemeDefaultPropsSchema} from "@AppBuilderLib/entities
 import {ViewportIconButtonDropdownThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportIconButtonDropdown.theme.types";
 import {ViewportIconsThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportIcons.theme.types";
 import {ViewportOverlayWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportOverlayWrapper.theme.types";
+import {AddToCartActionThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AddToCartAction.theme.types";
 import {AppBuilderActionComponentThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderActionComponent.theme.types";
 import {CreateModelStateHookThemeDefaultPropsSchema} from "@AppBuilderLib/features/model-state/model/useCreateModelState.types";
 import {NotificationWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/features/notifications/config/notificationcontext";
@@ -74,6 +75,7 @@ import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "~/shared/pages
  */
 export const themeComponentDefaultPropsRegistry = {
 	Accordion: mantineAccordionPropsSchema,
+	AddToCartAction: AddToCartActionThemeDefaultPropsSchema,
 	AppBuilderAccordionUiWidgetComponent:
 		AppBuilderAccordionUiWidgetComponentThemeDefaultPropsSchema,
 	AppBuilderAccordionWidgetComponent:
