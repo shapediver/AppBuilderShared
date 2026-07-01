@@ -665,14 +665,14 @@ export function useAppBuilderInstances(props: Props) {
 						// needs to span the scene tree update itself.
 						resolveSceneTreePromise!();
 
-						// Use setTimeout(0) so the deferred resolution fires as a macrotask,
-						// allowing the viewer's sessionUpdateCallback (triggered by the
-						// controller customization in outputActions) and the resulting
-						// React state update and effect re-run (cleanup + new effect with
-						// new processes) to land before the PM can auto-finish.
-						setTimeout(() => {
+						// Use requestAnimationFrame so the deferred resolution fires
+						// after React has processed the sessionUpdateCallback's
+						// setSessionNodeVersion state update (which triggers the next
+						// cycle's effect cleanup + addProcess). This guarantees the PM
+						// sees the new cycle's processes before it can auto-finish.
+						requestAnimationFrame(() => {
 							safeResolveMain();
-						}, 0);
+						});
 
 						// after the instances are added to the scene tree, we can adjust the cameras to fit the new geometry
 						// we don't await this process, as it just waits for the next render loop
