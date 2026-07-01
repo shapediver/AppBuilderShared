@@ -390,6 +390,8 @@ const IAppBuilderActionPropsCreateModelStateSchema = z.strictObject({
 	includeGltf: z.boolean().optional(),
 	parameterNamesToInclude: z.array(z.string()).optional(),
 	parameterNamesToExclude: z.array(z.string()).optional(),
+	successMessage: z.string().optional(),
+	errorMessage: z.string().optional(),
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsModelState
