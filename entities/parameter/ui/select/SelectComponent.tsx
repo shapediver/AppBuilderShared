@@ -116,6 +116,11 @@ export interface SelectComponentProps {
 	 * scrollingApi.items instead of items!!!
 	 */
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>;
+	/**
+	 * Scroll container ref for infinite scroll (`rootRef` from `useInfiniteScroll`).
+	 * Passed to grid / fullwidthcards when `height` enables an internal scroll area.
+	 */
+	scrollRootRef?: React.Ref<HTMLDivElement>;
 	/** Whether the component shall be a multiselect component. */
 	multiselect?: boolean;
 	/**

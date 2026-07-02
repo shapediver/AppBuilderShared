@@ -124,11 +124,11 @@ describe("createFilterableDatabaseScrollingApi", () => {
 			selection: {},
 			pageSize: 2,
 		});
-		const resetStateBefore = api.resetState;
 
 		await api.loadMore();
 		await api.loadMore();
 		expect(api.items).toHaveLength(5);
+		const resetStateBefore = api.resetState;
 
 		api.reset();
 
@@ -150,6 +150,20 @@ describe("createFilterableDatabaseScrollingApi", () => {
 
 		expect(api.items.map((entry) => entry.item)).toEqual(["id2"]);
 		expect(api.hasNextPage).toBe(false);
+	});
+
+	it("loadMore bumps resetState so consumers can re-render", async () => {
+		const api = createFilterableDatabaseScrollingApi({
+			table,
+			settings,
+			selection: {},
+			pageSize: 2,
+		});
+		const resetStateBefore = api.resetState;
+
+		await api.loadMore();
+
+		expect(api.resetState).toBe(resetStateBefore + 1);
 	});
 
 	it("setSearchTerms bumps resetState so consumers can re-render", async () => {

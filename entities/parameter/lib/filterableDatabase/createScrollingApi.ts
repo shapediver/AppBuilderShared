@@ -121,13 +121,16 @@ export function createFilterableDatabaseScrollingApi(options: {
 		resetState: 0,
 		/** Appends the next page slice without rebuilding the filtered list. */
 		loadMore: async () => {
-			if (!api.hasNextPage) {
+			if (!api.hasNextPage || api.loading) {
 				return;
 			}
 
+			api.loading = true;
 			loadedCount = Math.min(loadedCount + pageSize, allItems.length);
 			api.items = allItems.slice(0, loadedCount);
 			api.hasNextPage = loadedCount < allItems.length;
+			api.loading = false;
+			bumpResetState();
 		},
 		setSearchTerms: async (terms: string[]) => {
 			searchTerms = terms;

@@ -1,62 +1,12 @@
-import {ISelectComponentItemDataType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Anchor, Group, Loader} from "@mantine/core";
-import {useCallback, useEffect, useMemo, useState, type ReactNode} from "react";
+import {useCallback, useMemo, useState, type ReactNode} from "react";
+import {resolveDisplayValueForCards} from "../../lib/select/selectComponentAsyncValue";
 import {useSelectAsync} from "../../model/select/useSelectAsync";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
 import SelectGridComponent from "./SelectGridComponent";
 
 const SEARCH_PREFIX = "search:";
-
-/**
- * Whether the parameter value still matches a visible card after filters/search reload.
- * Cards use item keys; String+database parameters store `JSON.stringify(itemData.data)` —
- * both shapes must be recognized before clearing selection on `resetState`.
- */
-function isValueInAvailableItems(
-	value: string,
-	items: string[],
-	itemsData?: Record<string, ISelectComponentItemDataType>,
-): boolean {
-	if (items.includes(value)) {
-		return true;
-	}
-
-	if (!itemsData) {
-		return false;
-	}
-
-	return items.some((key) => {
-		const data = itemsData[key]?.data;
-		return data !== undefined && JSON.stringify(data) === value;
-	});
-}
-
-/**
- * Maps the stored parameter value back to an item key for card highlighting.
- * Grid/fullwidthcards compare `value === itemKey`; when `emitValue` is `itemData`
- * the model holds serialized `data`, not the key.
- */
-function resolveItemKeyForValue(
-	value: string,
-	items: string[],
-	itemsData?: Record<string, ISelectComponentItemDataType>,
-): string {
-	if (items.includes(value)) {
-		return value;
-	}
-
-	if (!itemsData) {
-		return value;
-	}
-
-	const match = items.find((key) => {
-		const data = itemsData[key]?.data;
-		return data !== undefined && JSON.stringify(data) === value;
-	});
-
-	return match ?? value;
-}
 
 type SelectComponentAsyncType = "grid" | "fullwidthcards";
 
@@ -84,12 +34,18 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		...propsDefault
 	} = props;
 
-	const {debouncedOnSearch, items, itemsData, bottomSection, loading} =
-		useSelectAsync(scrollingApi);
+	const {
+		debouncedOnSearch,
+		items,
+		itemsData,
+		bottomSection,
+		scrollRootRef,
+		loading,
+	} = useSelectAsync(scrollingApi);
 
-	// Item key for `isSelected` in card components (see resolveItemKeyForValue).
+	// Item key for `isSelected`; undefined when filtered out — parameter value unchanged.
 	const displayValue = useMemo(
-		() => (value ? resolveItemKeyForValue(value, items, itemsData) : value),
+		() => resolveDisplayValueForCards(value, items, itemsData),
 		[value, items, itemsData],
 	);
 
@@ -114,17 +70,6 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 		},
 		[onChange, itemsData, debouncedOnSearch, searchTerms, emitValue],
 	);
-
-	// Clear selection only when the current value is absent from filtered items.
-	useEffect(() => {
-		if (!scrollingApi?.resetState || !value) {
-			return;
-		}
-		if (isValueInAvailableItems(value, items, itemsData)) {
-			return;
-		}
-		onChange(null);
-	}, [scrollingApi?.resetState, value, items, itemsData, onChange]);
 
 	// show stack of search terms and allow to remove them
 	const topSection = (
@@ -164,6 +109,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				itemData={itemsData}
 				disabled={loading || disabled}
 				multiselect={false}
+				scrollRootRef={scrollRootRef}
 			/>
 		);
 	} else if (type === "grid") {
@@ -181,6 +127,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				itemData={itemsData}
 				disabled={loading || disabled}
 				multiselect={false}
+				scrollRootRef={scrollRootRef}
 			/>
 		);
 	} else return <></>;

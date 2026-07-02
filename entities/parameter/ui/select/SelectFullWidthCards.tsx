@@ -48,6 +48,12 @@ export interface SelectFullWidthCardsComponentStyleProps {
 	onSearch: (search: string) => void;
 }
 
+export type SelectFullWidthCardsComponentProps =
+	UniversalMultiSelectComponentProps &
+		Partial<SelectFullWidthCardsComponentStyleProps> & {
+			scrollRootRef?: React.Ref<HTMLDivElement>;
+		};
+
 export const defaultStyleProps: Partial<SelectFullWidthCardsComponentStyleProps> =
 	{
 		cardProps: {},
@@ -82,8 +88,7 @@ export function SelectFullWidthCardsComponentThemeProps(
  * @see https://mantine.dev/core/card/
  */
 export default function SelectFullWidthCardsComponent(
-	props: UniversalMultiSelectComponentProps &
-		SelectFullWidthCardsComponentThemePropsType,
+	props: SelectFullWidthCardsComponentProps,
 ) {
 	const {
 		value,
@@ -96,13 +101,14 @@ export default function SelectFullWidthCardsComponent(
 		bottomSection = <></>,
 		topSection = <></>,
 		onSearch,
+		scrollRootRef,
 		...styleProps
 	} = props;
 
 	const {handleClick, isSelected} = parameterMultiSelect(
 		value,
 		onChange,
-		multiselect,
+		multiselect ?? false,
 	);
 
 	// style properties
@@ -230,7 +236,7 @@ export default function SelectFullWidthCardsComponent(
 	);
 
 	const {containerStyle: heightContainerStyle, element: heightWrapper} =
-		useCustomHeight(cardsContent, height);
+		useCustomHeight(cardsContent, height, scrollRootRef);
 
 	return (
 		<Stack
