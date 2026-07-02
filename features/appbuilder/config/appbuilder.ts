@@ -95,6 +95,84 @@ export interface ISelectParameterSettings {
 	height?: string;
 }
 
+/** Settings of a filterable database component. */
+export interface IFilterableDatabaseSettings {
+	/**
+	 * Source of the data to be displayed in the filterable database component.
+	 * This is expected to be a CSV file, fetched either from a public URL
+	 * or from an export defined in a session.
+	 * The columns are indexed starting from 0.
+	 * Values of multi-valued columns must be separated by semicolons.
+	 */
+	dataSource: {
+		/** Optional reference to export which provides the CSV file. */
+		export?: Pick<IAppBuilderExportRef, "name" | "sessionId">;
+		/** URL to fetch CSV file from. Takes precedence over export reference. */
+		href?: string;
+	};
+	/**
+	 * Definition of how the itemData shall be extracted from the data source.
+	 * Indices are 0-based.
+	 */
+	itemDataDefinition: {
+		/**
+		 * Index of the column to use for the value of the item.
+		 */
+		value: number;
+		/** Optional index of the column to use for "displayname". */
+		displayname?: number;
+		/** Optional index of the column to use for "tooltip". */
+		tooltip?: number;
+		/** Optional index of the column to use for "description". */
+		description?: number;
+		/** Optional index of the column to use for "imageUrl". */
+		imageUrl?: number;
+		/**
+		 * Optional index of the column to use for "color".
+		 * The color must be given in a format compatible with MantineColor.
+		 */
+		color?: number;
+		/**
+		 * Optional record of column indices to use for composing the additional
+		 * "data" property, that is sent to the String parameter represented by the
+		 * selection component, instead of the selected item value.
+		 */
+		data?: Record<string, number>;
+	};
+	/**
+	 * Array of filter definitions, defining which filters are shown and how
+	 * they are applied to the data source, resulting in updates to the "items"
+	 * and "itemData" properties.
+	 */
+	filters: {
+		/** Index of the column to filter. */
+		column: number;
+		/**
+		 * Set this to true if the column contains multiple values separated by semicolons,
+		 * and the filter should check if any of the values matches the selected filter value(s).
+		 */
+		multivalued?: boolean;
+		/**
+		 * Set this to true if the user should be allowed to pick multiple filter values at
+		 * the same time, and the filter should check if any of the values matches any of
+		 * the selected filter values.
+		 */
+		multiple?: boolean;
+		/**
+		 * Optional type of the filter, defining how the filter values are shown to the user.
+		 */
+		type?: "color";
+		/**
+		 * Optional array of filter values to show to the user. If this is not provided, the
+		 * filter values are automatically extracted from the data source. Note that this
+		 * might have performance implications for large data sources.
+		 * For multivalued columns, the filter values are extracted from splitting the column
+		 * values by semicolons.
+		 */
+		filterValues?: string[];
+	}[];
+}
+
 /**
  * Settings for string parameters visualized as selection parameters.
  * In this case, the selected item is set as the string value of the parameter.
@@ -102,14 +180,22 @@ export interface ISelectParameterSettings {
 export interface IStringParameterSelectSettings extends ISelectParameterSettings {
 	/**
 	 * The items to select from.
-	 * In case this is not specified, "source" must be given.
+	 * In case this is not specified, "source" or "database" must be given.
 	 */
 	items?: string[];
 	/**
-	 * Name of the "data source" to fetch items and item data from.
+	 * Name of the optional "data source" to fetch "items" and "itemData" from.
 	 * This is used for connecting to data sources via the e-commerce API.
+	 * Currently, this is only supported for type "fullwidthcards" and "grid".
 	 */
 	source?: string;
+	/**
+	 * Settings of the optional "database" to fetch "items" and "itemData" from.
+	 * A filterable database component will be used to show the items and allow
+	 * the user to filter them.
+	 * Currently, this is only supported for type "fullwidthcards" and "grid".
+	 */
+	database?: IFilterableDatabaseSettings;
 }
 
 /** Settings for parameters of type "String" */
