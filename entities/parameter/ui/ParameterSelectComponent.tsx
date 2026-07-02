@@ -1,7 +1,4 @@
-import {
-	ISelectComponentItemDataType,
-	SelectComponentType,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {ISelectParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {validateSelectParameterSettings} from "@AppBuilderLib/features/appbuilder/config/appbuildertypecheck";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -22,11 +19,9 @@ import SelectComponent, {
 	SelectComponentSettings,
 } from "./select/SelectComponent";
 
-interface ISelectComponentOverrides {
-	/** Type of select component to use. */
-	type?: SelectComponentType;
-	/** Record containing optional further item data per item name. */
-	itemData?: Record<string, ISelectComponentItemDataType>;
+interface ISelectComponentOverrides extends ISelectParameterSettings {
+	/** E-commerce data source for grid / fullwidthcards (when database is absent). */
+	source?: string;
 	/** Optional further settings, like image width etc. */
 	settings?: SelectComponentSettings;
 }
@@ -231,11 +226,15 @@ export default function ParameterSelectComponent(
 					filteredValue ? uniqueChoices[+filteredValue] : undefined
 				}
 				onChange={(v) => {
-					handleChange(
-						uniqueChoicesIncludingHidden.indexOf(v!) + "",
-						undefined,
-						restoreFocus,
-					);
+					if (!v) {
+						handleChange("", undefined, restoreFocus);
+						return;
+					}
+					const index = uniqueChoicesIncludingHidden.indexOf(v);
+					if (index < 0) {
+						return;
+					}
+					handleChange(String(index), undefined, restoreFocus);
 					if (formInputProps?.onChange) {
 						formInputProps.onChange(v);
 					}
@@ -261,6 +260,9 @@ export default function ParameterSelectComponent(
 				searchable={settings.searchable}
 				limit={settings.limit}
 				height={settings.height}
+				database={settings.database}
+				source={settings.source}
+				emitValue="itemKey"
 			/>
 		);
 

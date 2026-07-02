@@ -1,3 +1,4 @@
+import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
 import {appBuilderThemeOtherPropsSchema} from "@AppBuilderLib/shared/mantine-props/appBuilderThemeOther.zod";
 import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
 import type {MantineTheme, MantineThemeComponent} from "@mantine/core";
@@ -191,15 +192,27 @@ export const ISelectComponentItemDataTypeSchema = z.object({
 });
 
 // Zod type definition for ISelectParameterSettings
-const ISelectParameterSettingsSchema = z.object({
-	type: SelectComponentTypeSchema.optional(),
-	itemData: z
-		.record(z.string(), ISelectComponentItemDataTypeSchema)
-		.optional(),
-	searchable: z.boolean().optional(),
-	limit: z.int().positive().optional(),
-	height: z.string().optional(),
-});
+const ISelectParameterSettingsSchema = z
+	.object({
+		type: SelectComponentTypeSchema.optional(),
+		itemData: z
+			.record(z.string(), ISelectComponentItemDataTypeSchema)
+			.optional(),
+		searchable: z.boolean().optional(),
+		limit: z.int().positive().optional(),
+		height: z.string().optional(),
+		database: filterableDatabaseSettingsSchema.optional(),
+	})
+	.refine(
+		(s) =>
+			!s.database ||
+			s.type === "fullwidthcards" ||
+			s.type === "grid",
+		{
+			message:
+				'database requires selectSettings.type "fullwidthcards" or "grid"',
+		},
+	);
 
 export const validateSelectParameterSettings = (value: any) => {
 	return ISelectParameterSettingsSchema.safeParse(value);
@@ -207,12 +220,10 @@ export const validateSelectParameterSettings = (value: any) => {
 
 // Zod type definition for IStringParameterSelectSettings
 const IStringParameterSelectSettingsSchema =
-	ISelectParameterSettingsSchema.extend(
-		z.object({
-			items: z.array(z.string()).optional(),
-			source: z.string().optional(),
-		}).shape,
-	);
+	ISelectParameterSettingsSchema.safeExtend({
+		items: z.array(z.string()).optional(),
+		source: z.string().optional(),
+	});
 
 // Zod type definition for IStringParameterSettings
 const IStringParameterSettingsSchema = z.object({

@@ -1,3 +1,4 @@
+import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
 import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
 import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantineCardPropsSchema} from "@AppBuilderLib/shared/mantine-props/card.zod";
@@ -82,4 +83,9 @@ export const selectComponentOverridesSchema = z.strictObject({
 	type: selectComponentTypeSchema.optional(),
 	itemData: z.record(z.string(), JsonValueSchema).optional(),
 	settings: selectComponentSettingsSchema.optional(),
+	height: z.string().optional(),
+	searchable: z.boolean().optional(),
+	limit: z.int().positive().optional(),
+	source: z.string().optional(),
+	database: filterableDatabaseSettingsSchema.optional(),
 });

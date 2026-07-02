@@ -1,4 +1,5 @@
 import {
+	IFilterableDatabaseSettings,
 	ISelectComponentItemDataType,
 	SelectComponentType,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
@@ -21,6 +22,7 @@ import {
 import React, {useEffect} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useScrollingApiStore} from "../../model/useScrollingApiStore";
+import FilterableSelectComponent from "./FilterableSelectComponent";
 import SelectButtonFlexComponent from "./SelectButtonFlexComponent";
 import SelectButtonGroupComponent from "./SelectButtonGroupComponent";
 import SelectCarouselComponent from "./SelectCarouselComponent";
@@ -114,8 +116,18 @@ export interface SelectComponentProps {
 	 * scrollingApi.items instead of items!!!
 	 */
 	scrollingApi?: IScrollingApi<IScrollingApiItemTypeSelect>;
+	/**
+	 * Scroll container ref for infinite scroll (`rootRef` from `useInfiniteScroll`).
+	 * Passed to grid / fullwidthcards when `height` enables an internal scroll area.
+	 */
+	scrollRootRef?: React.Ref<HTMLDivElement>;
 	/** Whether the component shall be a multiselect component. */
 	multiselect?: boolean;
+	/**
+	 * What {@link SelectComponentAsync} passes to `onChange` when an item is selected.
+	 * `itemKey` — item id (string-list parameters); `itemData` — JSON of `itemData.data` (string parameters).
+	 */
+	emitValue?: "itemKey" | "itemData";
 }
 
 /** Base props shared by all select component types */
@@ -125,6 +137,7 @@ type SelectComponentPropsBase = Omit<SelectComponentProps, "scrollingApi"> & {
 	 * This is used for connecting to data sources via the e-commerce API.
 	 */
 	source?: string;
+	database?: IFilterableDatabaseSettings;
 };
 
 /** Type-specific props for each select component type */
@@ -153,7 +166,7 @@ export type SelectComponentPropsExt = SelectComponentPropsBase &
  * At most one item can be selected at a time.
  */
 export default function SelectComponent(props: SelectComponentPropsExt) {
-	const {type, source, ...rest} = props;
+	const {type, source, database, ...rest} = props;
 
 	// scrolling API
 	const {scrollingApi, addScrollingApiSelect, removeScrollingApiSelect} =
@@ -174,6 +187,17 @@ export default function SelectComponent(props: SelectComponentPropsExt) {
 			removeScrollingApiSelect(source ?? "");
 		};
 	}, [source]);
+
+	if (database && (type === "fullwidthcards" || type === "grid")) {
+		return (
+			<FilterableSelectComponent
+				{...rest}
+				type={type}
+				database={database}
+				multiselect={false}
+			/>
+		);
+	}
 
 	if (scrollingApi && (type === "fullwidthcards" || type === "grid"))
 		return (

@@ -1,0 +1,4 @@
+.dropdown {
+	max-height: min(400px, 60vh);
+	overflow: auto;
+}

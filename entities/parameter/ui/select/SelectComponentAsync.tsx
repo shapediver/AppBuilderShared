@@ -1,5 +1,6 @@
 import {Anchor, Group, Loader} from "@mantine/core";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useMemo, useState, type ReactNode} from "react";
+import {resolveDisplayValueForCards} from "../../lib/select/selectComponentAsyncValue";
 import {useSelectAsync} from "../../model/select/useSelectAsync";
 import {SelectComponentProps} from "./SelectComponent";
 import SelectFullWidthCardsComponent from "./SelectFullWidthCards";
@@ -12,6 +13,8 @@ type SelectComponentAsyncType = "grid" | "fullwidthcards";
 interface SelectComponentAsyncProps extends SelectComponentProps {
 	/** Type of select component to use. */
 	type: SelectComponentAsyncType;
+	/** Optional content rendered above search-term anchors in the top section. */
+	prependTopSection?: ReactNode;
 }
 
 /**
@@ -20,9 +23,31 @@ interface SelectComponentAsyncProps extends SelectComponentProps {
  * the actual card rendering to the base SelectFullWidthCardsComponent.
  */
 export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
-	const {type, scrollingApi, disabled, onChange, ...propsDefault} = props;
-	const {debouncedOnSearch, items, itemsData, bottomSection, loading} =
-		useSelectAsync(scrollingApi);
+	const {
+		type,
+		scrollingApi,
+		disabled,
+		onChange,
+		value,
+		emitValue = "itemData",
+		prependTopSection,
+		...propsDefault
+	} = props;
+
+	const {
+		debouncedOnSearch,
+		items,
+		itemsData,
+		bottomSection,
+		scrollRootRef,
+		loading,
+	} = useSelectAsync(scrollingApi);
+
+	// Item key for `isSelected`; undefined when filtered out — parameter value unchanged.
+	const displayValue = useMemo(
+		() => resolveDisplayValueForCards(value, items, itemsData),
+		[value, items, itemsData],
+	);
 
 	// stack of search terms
 	const [searchTerms, setSearchTerms] = useState<string[]>([]);
@@ -36,43 +61,44 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				const term = v.substring(SEARCH_PREFIX.length);
 				setSearchTerms((prev) => [...prev, term]);
 				debouncedOnSearch([...searchTerms, term], 0);
-			} else if (v && itemsData?.[v].data)
+			} else if (emitValue === "itemData" && v && itemsData?.[v].data) {
+				// Card click passes item key `v`; commit JSON for String+database params.
 				onChange(JSON.stringify(itemsData[v].data));
-			else onChange(v);
+			} else {
+				onChange(v);
+			}
 		},
-		[onChange, itemsData, debouncedOnSearch, searchTerms],
+		[onChange, itemsData, debouncedOnSearch, searchTerms, emitValue],
 	);
-
-	// in case no items are available, reset the value
-	useEffect(() => {
-		if (scrollingApi?.resetState) {
-			onChange(null);
-			setSearchTerms([]);
-		}
-	}, [scrollingApi?.resetState]);
 
 	// show stack of search terms and allow to remove them
 	const topSection = (
-		<Group>
-			{searchTerms.map((term, index) => (
-				<Anchor
-					key={index}
-					onClick={() => {
-						const terms = searchTerms.slice(0, index);
-						setSearchTerms(terms);
-						debouncedOnSearch(terms, 0);
-					}}
-				>
-					{term}
-				</Anchor>
-			))}
-		</Group>
+		<>
+			{prependTopSection}
+			{searchTerms.length > 0 && (
+				<Group>
+					{searchTerms.map((term, index) => (
+						<Anchor
+							key={index}
+							onClick={() => {
+								const terms = searchTerms.slice(0, index);
+								setSearchTerms(terms);
+								debouncedOnSearch(terms, 0);
+							}}
+						>
+							{term}
+						</Anchor>
+					))}
+				</Group>
+			)}
+		</>
 	);
 
 	if (type === "fullwidthcards") {
 		return (
 			<SelectFullWidthCardsComponent
 				{...propsDefault}
+				value={displayValue}
 				onChange={_onChange}
 				bottomSection={
 					loading && items.length === 0 ? <Loader /> : bottomSection
@@ -83,12 +109,14 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				itemData={itemsData}
 				disabled={loading || disabled}
 				multiselect={false}
+				scrollRootRef={scrollRootRef}
 			/>
 		);
 	} else if (type === "grid") {
 		return (
 			<SelectGridComponent
 				{...propsDefault}
+				value={displayValue}
 				onChange={_onChange}
 				bottomSection={
 					loading && items.length === 0 ? <Loader /> : bottomSection
@@ -99,6 +127,7 @@ export default function SelectComponentAsync(props: SelectComponentAsyncProps) {
 				itemData={itemsData}
 				disabled={loading || disabled}
 				multiselect={false}
+				scrollRootRef={scrollRootRef}
 			/>
 		);
 	} else return <></>;

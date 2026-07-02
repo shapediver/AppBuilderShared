@@ -42,6 +42,11 @@ export interface SelectGridComponentStyleProps {
 	onSearch: (search: string) => void;
 }
 
+export type SelectGridComponentProps = UniversalMultiSelectComponentProps &
+	Partial<SelectGridComponentStyleProps> & {
+		scrollRootRef?: React.Ref<HTMLDivElement>;
+	};
+
 export const defaultStyleProps: Partial<SelectGridComponentStyleProps> = {
 	gridProps: {
 		cols: 2,
@@ -75,10 +80,7 @@ export function SelectGridComponentThemeProps(
  * Images can be displayed with or without title/description.
  * The grid is responsive based on container width.
  */
-export default function SelectGridComponent(
-	props: UniversalMultiSelectComponentProps &
-		SelectGridComponentThemePropsType,
-) {
+export default function SelectGridComponent(props: SelectGridComponentProps) {
 	const {
 		value,
 		onChange,
@@ -90,13 +92,14 @@ export default function SelectGridComponent(
 		bottomSection = <></>,
 		topSection = <></>,
 		onSearch,
+		scrollRootRef,
 		...styleProps
 	} = props;
 
 	const {handleClick, isSelected} = parameterMultiSelect(
 		value,
 		onChange,
-		multiselect,
+		multiselect ?? false,
 	);
 
 	// style properties
@@ -205,7 +208,7 @@ export default function SelectGridComponent(
 	);
 
 	const {containerStyle: heightContainerStyle, element: heightWrapper} =
-		useCustomHeight(cardsContent, height);
+		useCustomHeight(cardsContent, height, scrollRootRef);
 
 	return (
 		<Stack
