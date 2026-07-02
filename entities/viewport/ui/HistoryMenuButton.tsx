@@ -1,5 +1,6 @@
 import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
+import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import ImportModelStateDialog from "@AppBuilderLib/features/model-state/ui/ImportModelStateDialog";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
@@ -31,39 +32,60 @@ export default function HistoryMenuButton({
 	const {exportParameters, importParameters} =
 		useParameterImportExport(namespace);
 
-	const {createModelState} = useCreateModelState({namespace});
+	const {createModelState, successMessage, errorMessage} =
+		useCreateModelState({namespace});
 
 	const onCreateModelState = useCallback(async () => {
 		setIsCreatingModelState(true);
-		const {modelStateId} = await createModelState({
-			parameterNamesToInclude: undefined, // <-- parameterNamesToInclude: use default according to the theme
-			parameterNamesToExclude: undefined, // <-- parameterNamesToExclude: use default according to the theme
-			includeImage: true, // <-- includeImage,
-			image: undefined, // <-- image
-			data: undefined, // <-- custom data
-			includeGltf: false, // <-- includeGltf
-		});
+		try {
+			const {modelStateId} = await createModelState({
+				parameterNamesToInclude: undefined, // <-- parameterNamesToInclude: use default according to the theme
+				parameterNamesToExclude: undefined, // <-- parameterNamesToExclude: use default according to the theme
+				includeImage: true, // <-- includeImage,
+				image: undefined, // <-- image
+				data: undefined, // <-- custom data
+				includeGltf: false, // <-- includeGltf
+			});
 
-		if (modelStateId) {
-			// in case we are not running inside an iframe, the instance of
-			// IEcommerceApi is a dummy implementation
-			const api = await ECommerceApiSingleton;
-			const {href} = await api.updateSharingLink({
-				modelStateId,
-				updateUrl: true,
+			if (modelStateId) {
+				// in case we are not running inside an iframe, the instance of
+				// IEcommerceApi is a dummy implementation
+				const api = await ECommerceApiSingleton;
+				const {href} = await api.updateSharingLink({
+					modelStateId,
+					updateUrl: true,
+				});
+				const resolvedSuccessMessage = resolveModelStateMessage(
+					successMessage,
+					modelStateId,
+				);
+
+				if (resolvedSuccessMessage) {
+					notifications.success({
+						message: resolvedSuccessMessage,
+					});
+				} else {
+					notifications.success({
+						message: (
+							<NotificationModelStateCreated
+								modelStateId={modelStateId}
+								link={href}
+							/>
+						),
+					});
+				}
+			}
+		} catch (e) {
+			notifications.error({
+				message:
+					resolveModelStateMessage(errorMessage) ??
+					"An error happened while saving the model state.",
 			});
-			notifications.success({
-				message: (
-					<NotificationModelStateCreated
-						modelStateId={modelStateId}
-						link={href}
-					/>
-				),
-			});
+			throw e;
+		} finally {
+			setIsCreatingModelState(false);
 		}
-
-		setIsCreatingModelState(false);
-	}, []);
+	}, [createModelState, errorMessage, notifications, successMessage]);
 
 	const sections: {
 		name: string;

@@ -6,6 +6,23 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
 const selectedNodeNamesCache: {[key: string]: string[]} = {};
 
+const getAllAvailableNames = (availableNodeNames: {
+	[key: string]: {[key: string]: string[]};
+}) =>
+	Object.values(availableNodeNames).flatMap((perOutput) =>
+		Object.values(perOutput).flat(),
+	);
+
+const getValidCachedNames = (
+	cachedNames: string[] | undefined,
+	availableNodeNames: {[key: string]: {[key: string]: string[]}},
+) => {
+	if (!cachedNames || cachedNames.length === 0) return [];
+	const availableNames = getAllAvailableNames(availableNodeNames);
+	if (availableNames.length === 0) return cachedNames;
+	return cachedNames.filter((name) => availableNames.includes(name));
+};
+
 export function useAnchorSelection(
 	selectionProperties:
 		| Omit<
@@ -27,6 +44,7 @@ export function useAnchorSelection(
 	) => void,
 ) {
 	const [selectionAllowed, setSelectionAllowed] = useState<boolean>(true);
+	const cacheKey = `${viewportId}-${id}`;
 	// reference to manage the interaction request token
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 	// get the interaction request management
@@ -76,24 +94,39 @@ export function useAnchorSelection(
 		};
 	}, [selectionProperties]);
 
-	const {selectedNodeNames, setSelectedNodeNamesAndRestoreSelection} =
-		useSelection(
-			viewportId,
-			cleanSelectionProps,
-			!!selectionProperties && selectionAllowed,
-			selectedNodeNamesCache[`${viewportId}-${id}`] || [],
-		);
+	const {
+		selectedNodeNames,
+		setSelectedNodeNamesAndRestoreSelection,
+		availableNodeNames,
+	} = useSelection(
+		viewportId,
+		cleanSelectionProps,
+		!!selectionProperties && selectionAllowed,
+		selectedNodeNamesCache[cacheKey] || [],
+	);
 
 	/**
 	 * Effect to restore the selected node names from the cache when the viewportId or id changes.
 	 * This ensures that the selection is preserved when the hook reloads.
 	 */
 	useEffect(() => {
-		if (!selectionProperties || !selectionAllowed) return;
-		setSelectedNodeNamesAndRestoreSelection(
-			selectedNodeNamesCache[`${viewportId}-${id}`] || [],
+		const cachedNames = selectedNodeNamesCache[cacheKey] || [];
+		const validCachedNames = getValidCachedNames(
+			cachedNames,
+			availableNodeNames,
 		);
-	}, [viewportId, id, selectionProperties, selectionAllowed]);
+		if (!selectionProperties || !selectionAllowed) return;
+		if (validCachedNames.length !== cachedNames.length)
+			selectedNodeNamesCache[cacheKey] = validCachedNames;
+		setSelectedNodeNamesAndRestoreSelection(validCachedNames);
+	}, [
+		viewportId,
+		id,
+		selectionProperties,
+		selectionAllowed,
+		cacheKey,
+		availableNodeNames,
+	]);
 
 	const updateShowContentCallback = useCallback(
 		(selectedNodeNames: string[]) => {
@@ -122,9 +155,17 @@ export function useAnchorSelection(
 	}, [updateShowContentCallback]);
 
 	useEffect(() => {
-		selectedNodeNamesCache[`${viewportId}-${id}`] = selectedNodeNames;
+		if (selectedNodeNames.length > 0) {
+			selectedNodeNamesCache[cacheKey] = selectedNodeNames;
+		} else {
+			const hasAvailableNames =
+				getAllAvailableNames(availableNodeNames).length > 0;
+			if (!processActive && hasAvailableNames) {
+				selectedNodeNamesCache[cacheKey] = [];
+			}
+		}
 		updateShowContentCallbackRef.current(selectedNodeNames);
-	}, [selectedNodeNames]);
+	}, [selectedNodeNames, cacheKey, availableNodeNames, processActive]);
 
 	/**
 	 * Effect to re-select cached nodes and flush visibility when a computation
@@ -140,13 +181,28 @@ export function useAnchorSelection(
 
 		if (!selectionProperties) return;
 		if (wasActive && !processActive) {
-			// Computation just finished — re-select cached nodes and flush visibility
-			const cachedNames = selectedNodeNamesCache[`${viewportId}-${id}`];
-			if (cachedNames && cachedNames.length > 0) {
-				setSelectedNodeNamesAndRestoreSelection(cachedNames);
+			const cachedNames = selectedNodeNamesCache[cacheKey];
+			const validCachedNames = getValidCachedNames(
+				cachedNames,
+				availableNodeNames,
+			);
+			selectedNodeNamesCache[cacheKey] = validCachedNames;
+			if (validCachedNames.length > 0) {
+				setSelectedNodeNamesAndRestoreSelection(validCachedNames);
 			}
-			// Flush the visibility update
 			updateShowContentCallbackRef.current(selectedNodeNames);
 		}
-	}, [processActive, selectionProperties]);
+	}, [
+		processActive,
+		selectionProperties,
+		cacheKey,
+		selectedNodeNames,
+		availableNodeNames,
+	]);
+
+	useEffect(() => {
+		return () => {
+			delete selectedNodeNamesCache[cacheKey];
+		};
+	}, [cacheKey]);
 }

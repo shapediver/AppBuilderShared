@@ -554,6 +554,16 @@ export interface IAppBuilderActionPropsCreateModelState {
 	parameterNamesToInclude?: string[];
 	/** Names of parameters to exclude from the model state. */
 	parameterNamesToExclude?: string[];
+	/**
+	 * Optional success message shown after a model state has been created.
+	 * Supports the optional placeholder `{modelStateId}`.
+	 */
+	successMessage?: string;
+	/**
+	 * Optional error message shown when creating a model state fails.
+	 * Supports the optional placeholder `{modelStateId}` when available.
+	 */
+	errorMessage?: string;
 }
 
 /** Properties of a legacy "createModelState" action. */

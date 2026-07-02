@@ -64,7 +64,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 
 				anchors.push(
 					<ViewportAnchor3d.component
-						key={JSON.stringify(container)}
+						key={container.props.id}
 						id={container.props.id}
 						location={container.props.location}
 						justification={container.props.justification}
@@ -124,7 +124,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 
 				anchors.push(
 					<ViewportAnchor2d.component
-						key={JSON.stringify(container)}
+						key={container.props.id}
 						id={container.props.id}
 						location={container.props.location}
 						justification={container.props.justification}

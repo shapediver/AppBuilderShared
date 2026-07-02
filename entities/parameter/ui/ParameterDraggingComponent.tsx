@@ -4,8 +4,10 @@ import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {Button, Group, Loader, Stack, Text, useProps} from "@mantine/core";
-import {calculateCombinedDraggedNodes} from "@shapediver/viewer.features.interaction";
-import {IInteractionEffect} from "@shapediver/viewer.features.interaction/dist/interfaces/utils/IInteractionEffectUtils";
+import {
+	calculateCombinedDraggedNodes,
+	IInteractionEffect,
+} from "@shapediver/viewer.features.interaction";
 import {
 	DraggingParameterValue,
 	IDraggingParameterProps,

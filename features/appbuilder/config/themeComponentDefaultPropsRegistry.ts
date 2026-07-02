@@ -19,6 +19,7 @@ import {ViewportIconButtonThemeDefaultPropsSchema} from "@AppBuilderLib/entities
 import {ViewportIconButtonDropdownThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportIconButtonDropdown.theme.types";
 import {ViewportIconsThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportIcons.theme.types";
 import {ViewportOverlayWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportOverlayWrapper.theme.types";
+import {AddToCartActionThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AddToCartAction.theme.types";
 import {AppBuilderActionComponentThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderActionComponent.theme.types";
 import {CreateModelStateHookThemeDefaultPropsSchema} from "@AppBuilderLib/features/model-state/model/useCreateModelState.types";
 import {NotificationWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/features/notifications/config/notificationcontext";
@@ -57,7 +58,7 @@ import {
 	IDraggingParameterPropsJsonSchema,
 	IGumballTransformParameterPropsJsonSchema,
 	ISelectionParameterPropsJsonSchema,
-} from "@shapediver/viewer.shared.types/dist/interfaces/parameter/IInteractionParameterSettings";
+} from "@shapediver/viewer.shared.types";
 import {z} from "zod";
 import {ExportLabelComponentThemeDefaultPropsSchema} from "~/shared/entities/export/config/ExportLabelComponent.types";
 import {OutputChunkLabelComponentThemeDefaultPropsSchema} from "~/shared/entities/output/config/OutputChunkLabelComponent.types";
@@ -74,6 +75,7 @@ import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "~/shared/pages
  */
 export const themeComponentDefaultPropsRegistry = {
 	Accordion: mantineAccordionPropsSchema,
+	AddToCartAction: AddToCartActionThemeDefaultPropsSchema,
 	AppBuilderAccordionUiWidgetComponent:
 		AppBuilderAccordionUiWidgetComponentThemeDefaultPropsSchema,
 	AppBuilderAccordionWidgetComponent:

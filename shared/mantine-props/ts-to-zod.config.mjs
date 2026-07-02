@@ -190,6 +190,16 @@ export default [
 		},
 	},
 	{
+		name: "mantine-props-appBuilderThemeOther",
+		input: "src/shared/shared/mantine-props/appBuilderThemeOther.schema-input.ts",
+		output: "src/shared/shared/mantine-props/appBuilderThemeOther.zod.ts",
+		getSchemaName: (id) => {
+			if (id === "AppBuilderThemeOtherProps")
+				return "appBuilderThemeOtherSchema";
+			return `${id}Schema`;
+		},
+	},
+	{
 		name: "mantine-props-themeOverride",
 		input: "src/shared/shared/mantine-props/themeOverride.schema-input.ts",
 		output: "src/shared/shared/mantine-props/themeOverride.zod.ts",

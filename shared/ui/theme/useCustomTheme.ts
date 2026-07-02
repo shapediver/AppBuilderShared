@@ -34,6 +34,7 @@ import {HintProps} from "@AppBuilderLib/shared/ui/hint/Hint";
 import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon/Icon";
 import {MarkdownWidgetComponentProps} from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import {ModalBaseThemeProps} from "@AppBuilderLib/shared/ui/modal/ModalBase";
+import {mergeCssVariablesResolvers} from "@AppBuilderLib/shared/ui/theme/mergeCssVariablesResolvers";
 import {TooltipWrapperThemeProps} from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/config/appBuilderAgentWidget";
 import {AppBuilderAccordionUiWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAccordionUiWidgetComponent";
@@ -95,6 +96,7 @@ import {
 	Tooltip,
 	createTheme,
 	mergeThemeOverrides,
+	v8CssVariablesResolver,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
 import {useContext} from "react";
@@ -192,6 +194,11 @@ export const useCustomTheme = (props: Props = {}) => {
 		defaultRadius: "md",
 		other: {
 			//forceColorScheme: "light",
+			/**
+			 * Mantine 8 CSS variable semantics (`v8CssVariablesResolver`), including v8
+			 * `light` variant colors. Off by default — enable via `themeOverrides.other`.
+			 */
+			v8ThemeSupport: false,
 			/** Single favicon URL (used when iconDarkUrl and iconLightUrl are not both set). */
 			iconUrl: "/favicon.ico",
 			/** Dark-scheme favicon; pair with iconLightUrl to switch via prefers-color-scheme. */
@@ -1639,7 +1646,7 @@ export const useCustomTheme = (props: Props = {}) => {
 	/**
 	 * @see https://mantine.dev/styles/css-variables/#css-variables-resolver
 	 */
-	const resolver: CSSVariablesResolver = (theme) => ({
+	const appBuilderResolver: CSSVariablesResolver = (theme) => ({
 		variables: {
 			/** CSS variables used by the AppBuilderAppShellTemplate */
 			"--appbuilder-appshelltemplate-headerheight-base": getAppShellSize(
@@ -1679,14 +1686,15 @@ export const useCustomTheme = (props: Props = {}) => {
 				"4em",
 			),
 			"--appbuilder-default-font-weight-thin":
-				theme.other.defaultFontWeightThin,
+				theme.other?.defaultFontWeightThin ?? "100",
 			"--appbuilder-default-font-weight-light":
-				theme.other.defaultFontWeightLight,
-			"--appbuilder-default-font-weight": theme.other.defaultFontWeight,
+				theme.other?.defaultFontWeightLight ?? "300",
+			"--appbuilder-default-font-weight":
+				theme.other?.defaultFontWeight ?? "400",
 			"--appbuilder-default-font-weight-medium":
-				theme.other.defaultFontWeightMedium,
+				theme.other?.defaultFontWeightMedium ?? "500",
 			"--appbuilder-default-font-weight-bold":
-				theme.other.defaultFontWeightBold,
+				theme.other?.defaultFontWeightBold ?? "700",
 		},
 		light: {
 			// variables for light theme
@@ -1695,6 +1703,14 @@ export const useCustomTheme = (props: Props = {}) => {
 			// variables for dark theme
 		},
 	});
+
+	const resolver: CSSVariablesResolver =
+		theme.other?.v8ThemeSupport === true
+			? mergeCssVariablesResolvers(
+					v8CssVariablesResolver,
+					appBuilderResolver,
+				)
+			: appBuilderResolver;
 
 	return {
 		theme,
