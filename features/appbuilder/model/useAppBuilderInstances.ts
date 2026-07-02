@@ -19,7 +19,14 @@ import {
 } from "@shapediver/viewer.session";
 import {GlobalAccessObjects} from "@shapediver/viewer.shared.global-access-objects";
 import {mat4} from "gl-matrix";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {
+	MutableRefObject,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
 	IAppBuilder,
@@ -123,6 +130,9 @@ export function useAppBuilderInstances(props: Props) {
 	const sessionNodeRef = useRef<ITreeNode | undefined>(undefined);
 	const sessionProcessManagerIdRef = useRef(sessionProcessManagerId);
 	const processManagersRef = useRef(processManagers);
+	const pendingOutputActionRequestKeyRef = useRef<string | undefined>(
+		undefined,
+	);
 
 	useEffect(() => {
 		processManagersRef.current = processManagers;
@@ -591,6 +601,7 @@ export function useAppBuilderInstances(props: Props) {
 					namespace,
 					batchParameterValueUpdate,
 					getParameter,
+					pendingOutputActionRequestKeyRef,
 				);
 
 				// wait for all instance promises to resolve
@@ -1027,6 +1038,7 @@ const processOutputActions = (
 		namespace: string,
 		key: string,
 	) => IParameterStore | undefined,
+	pendingOutputActionRequestKeyRef: MutableRefObject<string | undefined>,
 ) => {
 	const outputCallbackPromises: Promise<void>[] = [];
 
@@ -1131,17 +1143,28 @@ const processOutputActions = (
 				const parameter = getParameter(namespace, key);
 				if (!parameter) return acc;
 
-				acc[key] = JSON.stringify(value);
+				const nextValue = JSON.stringify(value);
+				const currentValue = parameter.getState().state.execValue;
+				if (currentValue === nextValue) {
+					return acc;
+				}
+
+				acc[key] = nextValue;
 				return acc;
 			},
 			{} as Record<string, any>,
 		);
 
+		const requestKey = JSON.stringify(param);
+
 		// if there are no parameters to set, we skip the update call
 		// this can happen if the output action wants to set a value
 		// that is already set in the parameter
 		if (Object.keys(param).length === 0) return outputCallbackPromises;
+		if (pendingOutputActionRequestKeyRef.current === requestKey)
+			return outputCallbackPromises;
 
+		pendingOutputActionRequestKeyRef.current = requestKey;
 		outputCallbackPromises.push(
 			batchParameterValueUpdate(
 				{
@@ -1149,7 +1172,10 @@ const processOutputActions = (
 				},
 				true,
 				true,
-			),
+			).finally(() => {
+				if (pendingOutputActionRequestKeyRef.current === requestKey)
+					pendingOutputActionRequestKeyRef.current = undefined;
+			}),
 		);
 	}
 
