@@ -133,6 +133,9 @@ export function useAppBuilderInstances(props: Props) {
 	const pendingOutputActionRequestKeyRef = useRef<string | undefined>(
 		undefined,
 	);
+	const pendingOutputActionPromiseRef = useRef<Promise<void> | undefined>(
+		undefined,
+	);
 
 	useEffect(() => {
 		processManagersRef.current = processManagers;
@@ -602,6 +605,7 @@ export function useAppBuilderInstances(props: Props) {
 					batchParameterValueUpdate,
 					getParameter,
 					pendingOutputActionRequestKeyRef,
+					pendingOutputActionPromiseRef,
 				);
 
 				// wait for all instance promises to resolve
@@ -1039,6 +1043,7 @@ const processOutputActions = (
 		key: string,
 	) => IParameterStore | undefined,
 	pendingOutputActionRequestKeyRef: MutableRefObject<string | undefined>,
+	pendingOutputActionPromiseRef: MutableRefObject<Promise<void> | undefined>,
 ) => {
 	const outputCallbackPromises: Promise<void>[] = [];
 
@@ -1161,22 +1166,34 @@ const processOutputActions = (
 		// this can happen if the output action wants to set a value
 		// that is already set in the parameter
 		if (Object.keys(param).length === 0) return outputCallbackPromises;
-		if (pendingOutputActionRequestKeyRef.current === requestKey)
+
+		if (pendingOutputActionRequestKeyRef.current === requestKey) {
+			// The same request is already in flight from a previous cycle.
+			// Don't start a duplicate batchParameterValueUpdate, but DO wait
+			// for the pending one to complete. This keeps the process manager
+			// alive until the customization actually finishes, preventing
+			// premature flag removal and intermediate viewer results.
+			if (pendingOutputActionPromiseRef.current) {
+				outputCallbackPromises.push(pendingOutputActionPromiseRef.current);
+			}
 			return outputCallbackPromises;
+		}
 
 		pendingOutputActionRequestKeyRef.current = requestKey;
-		outputCallbackPromises.push(
-			batchParameterValueUpdate(
-				{
-					[namespace]: param,
-				},
-				true,
-				true,
-			).finally(() => {
-				if (pendingOutputActionRequestKeyRef.current === requestKey)
-					pendingOutputActionRequestKeyRef.current = undefined;
-			}),
-		);
+		const updatePromise = batchParameterValueUpdate(
+			{
+				[namespace]: param,
+			},
+			true,
+			true,
+		).finally(() => {
+			if (pendingOutputActionRequestKeyRef.current === requestKey) {
+				pendingOutputActionRequestKeyRef.current = undefined;
+				pendingOutputActionPromiseRef.current = undefined;
+			}
+		});
+		pendingOutputActionPromiseRef.current = updatePromise;
+		outputCallbackPromises.push(updatePromise);
 	}
 
 	return outputCallbackPromises;
