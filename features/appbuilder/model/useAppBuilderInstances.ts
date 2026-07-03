@@ -987,15 +987,109 @@ const adjustCamerasToInstances = async (
 	}
 };
 
+const stringifySessionParameterValue = (
+	session: ISessionApi,
+	parameterId: string,
+	value: unknown,
+) => {
+	const parameter = session.parameters[parameterId];
+	if (!parameter) return value + "";
+
+	try {
+		return parameter.stringify(value as never);
+	} catch {
+		return value + "";
+	}
+};
+
+const parseFiniteNumber = (value: string) => {
+	if (value.trim() === "") return undefined;
+	const parsed = Number(value);
+	return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const parameterValueMatchesCurrentSession = (
+	session: ISessionApi,
+	parameterId: string,
+	value: string,
+) => {
+	const parameter = session.parameters[parameterId];
+	const sessionValue =
+		session.parameterValues[parameterId] ?? parameter?.value;
+
+	if (sessionValue === undefined) return false;
+
+	const requested = stringifySessionParameterValue(
+		session,
+		parameterId,
+		value,
+	);
+	const current = stringifySessionParameterValue(
+		session,
+		parameterId,
+		sessionValue,
+	);
+
+	if (requested === current) return true;
+
+	if (requested.toLowerCase() === current.toLowerCase()) return true;
+
+	const requestedNumber = parseFiniteNumber(requested);
+	const currentNumber = parseFiniteNumber(current);
+	if (requestedNumber !== undefined && currentNumber !== undefined) {
+		return Math.abs(requestedNumber - currentNumber) < 1e-9;
+	}
+
+	return false;
+};
+
+const createEffectiveParameterValues = (
+	session: ISessionApi,
+	parameterValues: {[key: string]: string},
+) => {
+	const effectiveParameterValues: {[key: string]: string} = {};
+
+	Object.keys(session.parameters).forEach((parameterId) => {
+		const value =
+			parameterValues[parameterId] ??
+			session.parameterValues[parameterId] ??
+			session.parameters[parameterId]?.value;
+
+		if (value === undefined) return;
+
+		effectiveParameterValues[parameterId] = stringifySessionParameterValue(
+			session,
+			parameterId,
+			value,
+		);
+	});
+
+	return effectiveParameterValues;
+};
+
 const createInstanceCustomizationId = (
-	sessionId: string,
+	session: ISessionApi,
+	parameterValues: {[key: string]: string},
+) => {
+	const effectiveParameterValues = createEffectiveParameterValues(
+		session,
+		parameterValues,
+	);
+
+	return `${session.id}_${JSON.stringify(
+		Object.keys(effectiveParameterValues)
+			.sort()
+			.map((key) => [key, effectiveParameterValues[key]]),
+	)}`;
+};
+
+const parameterValuesMatchCurrentSession = (
+	session: ISessionApi,
 	parameterValues: {[key: string]: string},
 ) =>
-	`${sessionId}_${JSON.stringify(
-		Object.keys(parameterValues)
-			.sort()
-			.map((key) => [key, parameterValues[key]]),
-	)}`;
+	Object.entries(parameterValues).every(([parameterId, value]) =>
+		parameterValueMatchesCurrentSession(session, parameterId, value),
+	);
 
 /**
  * Creates an instance in the viewer.
@@ -1039,18 +1133,21 @@ const createInstance = (
 	};
 
 	// The instance customization id is a combination of the session id and
-	// a canonical representation of the parameter values. The parameter object
-	// can be assembled in different insertion orders for the exact same values,
-	// therefore JSON.stringify(instance.parameterValues) is not stable enough
-	// for cache lookup.
+	// a canonical representation of the effective parameter values (sparse
+	// overrides merged with session defaults), resolved through the session
+	// parameter API for consistent stringification.
 	const instanceCustomizationId = createInstanceCustomizationId(
-		instance.session.id,
+		instance.session,
 		instance.parameterValues,
 	);
 
 	// the instance name is the name of the instance (if it exists, otherwise the original index)
 	const instanceName =
 		instance.name ?? `instances[${instance.originalIndex}]`;
+	const currentSessionMatches = parameterValuesMatchCurrentSession(
+		instance.session,
+		instance.parameterValues,
+	);
 
 	// first we need to check if the session instance already exists
 	// there are two cases:
@@ -1066,6 +1163,14 @@ const createInstance = (
 		customizationResultPromise[instanceCustomizationId] !== undefined
 	) {
 		creationPromise = customizationResultPromise[instanceCustomizationId];
+	} else if (currentSessionMatches) {
+		creationPromise = Promise.resolve(instance.session.node).then(
+			(node) => {
+				addCustomizationResult(instanceCustomizationId, node);
+				return node;
+			},
+		);
+		customizationResultPromise[instanceCustomizationId] = creationPromise;
 	} else {
 		creationPromise = instance.session
 			.customizeParallel(instance.parameterValues)
