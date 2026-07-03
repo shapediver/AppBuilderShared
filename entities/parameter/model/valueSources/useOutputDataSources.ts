@@ -89,16 +89,32 @@ export function useOutputDataSources(props: {
 							type: blob.type,
 						},
 					);
-					promises.push(upload(file));
+					promises.push(
+						upload(file).catch((error) => {
+							Logger.warn(
+								"Could not upload output data parameter value source.",
+								error,
+							);
+							return undefined;
+						}),
+					);
 				} else {
 					promises.push(JSON.stringify({content: output.content}));
 				}
 			}
 		}
 
-		Promise.all(promises).then((values) => {
-			setOutputDataValues(values);
-		});
+		Promise.all(promises)
+			.then((values) => {
+				setOutputDataValues(values);
+			})
+			.catch((error) => {
+				Logger.warn(
+					"Could not resolve output data parameter value source.",
+					error,
+				);
+				setOutputDataValues(outputResults.map(() => undefined));
+			});
 	}, [outputResults]);
 
 	return {

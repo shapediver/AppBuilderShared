@@ -68,6 +68,8 @@ export function useSessionWithAppBuilder(
 	}, [namespace]);
 
 	const processManagerIdRef = useRef<string | undefined>(undefined);
+	const [appBuilderProcessManagerId, setAppBuilderProcessManagerId] =
+		useState<string | undefined>(undefined);
 	const resolveProcessManagerBridgeRef = useRef<(() => void) | undefined>(
 		undefined,
 	);
@@ -197,12 +199,14 @@ export function useSessionWithAppBuilder(
 			// and assign the id of the new one
 			// we have to do this after creating the new one, as otherwise
 			// the viewer would already update the scene before the instances are processed
-			if (processManagerIdRef.current)
+			if (processManagerIdRef.current) {
 				removeProcessManager(processManagerIdRef.current);
+			}
 
 			// assign the new process manager id (or undefined) to the ref
 			processManagerIdRef.current = newProcessManagerId;
 			resolveProcessManagerBridgeRef.current = resolveBridge;
+			setAppBuilderProcessManagerId(newProcessManagerId);
 
 			setParsedData(parsedData);
 		},
@@ -220,8 +224,14 @@ export function useSessionWithAppBuilder(
 	useEffect(() => {
 		if (!processManagerIdRef.current) return;
 
-		if (!processManagers[processManagerIdRef.current])
+		if (!processManagers[processManagerIdRef.current]) {
+			const removedProcessManagerId = processManagerIdRef.current;
 			processManagerIdRef.current = undefined;
+			resolveProcessManagerBridgeRef.current = undefined;
+			setAppBuilderProcessManagerId((current) =>
+				current === removedProcessManagerId ? undefined : current,
+			);
+		}
 	}, [processManagers]);
 
 	useEffect(() => {
@@ -258,18 +268,29 @@ export function useSessionWithAppBuilder(
 		acceptRejectMode: props?.acceptRejectMode,
 	});
 
-	const handleProcessManagerAttached = useCallback(() => {
-		resolveProcessManagerBridgeRef.current?.();
-		resolveProcessManagerBridgeRef.current = undefined;
-	}, []);
+	const handleProcessManagerAttached = useCallback(
+		(processManagerId: string | undefined) => {
+			if (!processManagerId) return;
+			if (processManagerIdRef.current !== processManagerId) return;
+
+			resolveProcessManagerBridgeRef.current?.();
+			resolveProcessManagerBridgeRef.current = undefined;
+			processManagerIdRef.current = undefined;
+			setAppBuilderProcessManagerId((current) =>
+				current === processManagerId ? undefined : current,
+			);
+		},
+		[],
+	);
 
 	// resolve any orphaned bridge on unmount
 	useEffect(() => {
 		return () => {
 			resolveProcessManagerBridgeRef.current?.();
 			resolveProcessManagerBridgeRef.current = undefined;
-			if (processManagerIdRef.current)
+			if (processManagerIdRef.current) {
 				removeProcessManager(processManagerIdRef.current);
+			}
 			if (initialProcessManagerIdRef.current)
 				removeProcessManager(initialProcessManagerIdRef.current);
 		};
@@ -280,7 +301,7 @@ export function useSessionWithAppBuilder(
 		namespace,
 		sessionApi,
 		appBuilderData,
-		processManagerId: processManagerIdRef.current,
+		processManagerId: appBuilderProcessManagerId,
 		onProcessManagerAttached: handleProcessManagerAttached,
 	});
 

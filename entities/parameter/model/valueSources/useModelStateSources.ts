@@ -1,6 +1,7 @@
 import {IAppBuilderParameterValueSourcePropsModelState} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useEffect, useState} from "react";
 
 export function useModelStateSources(props: {
@@ -44,17 +45,25 @@ export function useModelStateSources(props: {
 					image,
 					data: undefined,
 					includeGltf,
-				}).then(async ({modelStateId}) => {
-					if (!modelStateId) return;
-					// in case we are not running inside an iframe, the instance of
-					// IEcommerceApi is a dummy implementation
-					const api = await ECommerceApiSingleton;
-					const {href} = await api.updateSharingLink({
-						modelStateId,
-						updateUrl,
+				})
+					.then(async ({modelStateId}) => {
+						if (!modelStateId) return;
+						// in case we are not running inside an iframe, the instance of
+						// IEcommerceApi is a dummy implementation
+						const api = await ECommerceApiSingleton;
+						const {href} = await api.updateSharingLink({
+							modelStateId,
+							updateUrl,
+						});
+						return href.toString();
+					})
+					.catch((error) => {
+						Logger.warn(
+							"Could not resolve model state parameter value source.",
+							error,
+						);
+						return undefined;
 					});
-					return href.toString();
-				});
 				promises.push(promise);
 			}
 			Promise.all(promises).then((results) => {

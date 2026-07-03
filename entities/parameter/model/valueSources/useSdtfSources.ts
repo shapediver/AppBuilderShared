@@ -128,6 +128,13 @@ export function useSdtfSources(props: {
 								}
 
 								return JSON.stringify(sdtfResponse, null, 2);
+							})
+							.catch((error) => {
+								Logger.warn(
+									"Could not resolve sdTF parameter value source.",
+									error,
+								);
+								return undefined;
 							});
 						// Register this sdTF upload as a process
 						addProcess(processManagerId, {
@@ -143,9 +150,17 @@ export function useSdtfSources(props: {
 			}
 		}
 
-		Promise.all(promises).then((res) => {
-			setSdtfValues(res);
-		});
+		Promise.all(promises)
+			.then((res) => {
+				setSdtfValues(res);
+			})
+			.catch((error) => {
+				Logger.warn(
+					"Could not resolve sdTF parameter value source.",
+					error,
+				);
+				setSdtfValues(outputResults.map(() => undefined));
+			});
 	}, [outputResults, session, namespace, createProcessManager, addProcess]);
 
 	return {sdtfValues, resetSdtfValues: () => setSdtfValues(undefined)};
