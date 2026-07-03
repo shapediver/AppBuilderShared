@@ -56,9 +56,10 @@ interface Props {
 	processManagerId: string | undefined;
 	/**
 	 * Called once the instance pipeline has attached its own tracked work
-	 * to the handed-off process manager.
+	 * to the handed-off process manager, or once it is clear that no
+	 * instance process will be spawned for that manager.
 	 */
-	onProcessManagerAttached?: () => void;
+	onProcessManagerAttached?: (processManagerId: string | undefined) => void;
 }
 
 type IParsedInstanceDefinition = {
@@ -92,11 +93,8 @@ export function useAppBuilderInstances(props: Props) {
 		addSessionUpdateCallback,
 		createPendingSession,
 	} = useShapeDiverStoreSession();
-	const {
-		addProcess,
-		createProcessManager,
-		processManagers,
-	} = useShapeDiverStoreProcessManager();
+	const {addProcess, createProcessManager} =
+		useShapeDiverStoreProcessManager();
 	const {
 		addCustomizationResult,
 		removeCustomizationResult,
@@ -129,17 +127,25 @@ export function useAppBuilderInstances(props: Props) {
 	const pendingSessionsRef = useRef(pendingSessions);
 	const sessionNodeRef = useRef<ITreeNode | undefined>(undefined);
 	const sessionProcessManagerIdRef = useRef(sessionProcessManagerId);
-	const processManagersRef = useRef(processManagers);
 	const pendingOutputActionRequestKeyRef = useRef<string | undefined>(
 		undefined,
 	);
 	const pendingOutputActionPromiseRef = useRef<Promise<void> | undefined>(
 		undefined,
 	);
-
-	useEffect(() => {
-		processManagersRef.current = processManagers;
-	}, [processManagers]);
+	const speculativeProcessCounterRef = useRef(0);
+	const speculativeProcessResolversRef = useRef<{
+		[key: number]: () => void;
+	}>({});
+	const pendingParsingProcessTokenRef = useRef<number | undefined>(undefined);
+	const parsingProcessTokensByParsedRevisionRef = useRef<{
+		[key: number]: number;
+	}>({});
+	const sessionUpdateProcessTokensByVersionRef = useRef<{
+		[key: number]: number;
+	}>({});
+	const parsedAppBuilderInstancesKeyRef = useRef("");
+	const parsedAppBuilderInstancesRevisionRef = useRef(0);
 
 	useEffect(() => {
 		sessionProcessManagerIdRef.current = sessionProcessManagerId;
@@ -157,10 +163,61 @@ export function useAppBuilderInstances(props: Props) {
 		pendingSessionsRef.current = pendingSessions;
 	}, [pendingSessions]);
 
+	const resolveSpeculativeProcess = useCallback((token?: number) => {
+		if (token === undefined) return;
+
+		const resolve = speculativeProcessResolversRef.current[token];
+		if (!resolve) return;
+
+		delete speculativeProcessResolversRef.current[token];
+		resolve();
+	}, []);
+
+	const createSpeculativeProcessManager = useCallback(
+		(name: string) => {
+			if (!sessionApi) return undefined;
+
+			const token = ++speculativeProcessCounterRef.current;
+			let resolvePromise: () => void;
+			const promise = new Promise<void>((resolve) => {
+				resolvePromise = resolve;
+			});
+			const processManagerId = createProcessManager(sessionApi.id);
+			addProcess(processManagerId, {
+				name,
+				promise,
+			});
+
+			speculativeProcessResolversRef.current[token] = resolvePromise!;
+
+			return token;
+		},
+		[addProcess, createProcessManager, sessionApi],
+	);
+
+	const parsedInstancesToKey = useCallback(
+		(parsedInstances: IParsedInstanceDefinition[]) =>
+			JSON.stringify(
+				parsedInstances.map((instance) => ({
+					sessionId: instance.session.id,
+					parameterValues: instance.parameterValues,
+					transformations: instance.transformations,
+					originalIndex: instance.originalIndex,
+					name: instance.name,
+					outputActions: instance.outputActions,
+				})),
+			),
+		[],
+	);
+
 	// store for the parsed app builder instances
 	const [parsedAppBuilderInstances, setParsedAppBuilderInstances] = useState<
 		IParsedInstanceDefinition[]
 	>([]);
+	const [
+		parsedAppBuilderInstancesRevision,
+		setParsedAppBuilderInstancesRevision,
+	] = useState(0);
 	const [parameterValuesData, setParameterValuesData] = useState<{
 		parameterValues: ParameterValueDefinition[];
 		information: {
@@ -170,6 +227,7 @@ export function useAppBuilderInstances(props: Props) {
 				};
 			};
 			instances?: IAppBuilderInstanceDefinition[];
+			parseProcessToken?: number;
 		};
 	}>();
 
@@ -253,7 +311,10 @@ export function useAppBuilderInstances(props: Props) {
 	}, [platformError, sessionErrors]);
 
 	const createParsedInstances = useCallback(
-		(instances: IAppBuilderInstanceDefinition[]) => {
+		(
+			instances: IAppBuilderInstanceDefinition[],
+			parseProcessToken?: number,
+		) => {
 			const parsedInstances: IParsedInstanceDefinition[] = [];
 
 			instances.forEach((instance, index) => {
@@ -291,9 +352,33 @@ export function useAppBuilderInstances(props: Props) {
 					outputActions: instance.outputActions,
 				});
 			});
+			const nextKey = parsedInstancesToKey(parsedInstances);
+			if (nextKey === parsedAppBuilderInstancesKeyRef.current) {
+				if (pendingParsingProcessTokenRef.current === parseProcessToken)
+					pendingParsingProcessTokenRef.current = undefined;
+				resolveSpeculativeProcess(parseProcessToken);
+				onProcessManagerAttached?.(sessionProcessManagerIdRef.current);
+				return;
+			}
+
+			parsedAppBuilderInstancesKeyRef.current = nextKey;
+			const nextRevision =
+				parsedAppBuilderInstancesRevisionRef.current + 1;
+			parsedAppBuilderInstancesRevisionRef.current = nextRevision;
+			if (parseProcessToken !== undefined) {
+				parsingProcessTokensByParsedRevisionRef.current[nextRevision] =
+					parseProcessToken;
+			}
+			if (pendingParsingProcessTokenRef.current === parseProcessToken)
+				pendingParsingProcessTokenRef.current = undefined;
 			setParsedAppBuilderInstances(parsedInstances);
+			setParsedAppBuilderInstancesRevision(nextRevision);
 		},
-		[],
+		[
+			onProcessManagerAttached,
+			parsedInstancesToKey,
+			resolveSpeculativeProcess,
+		],
 	);
 
 	// Use useResolvedParameters to resolve the parameter values
@@ -305,8 +390,12 @@ export function useAppBuilderInstances(props: Props) {
 	// once the pending sources are loaded, we can create the instances
 	useEffect(() => {
 		if (!parameterValuesData || !resolvedParameterValuesArray) return;
-		const {parameterValuesMap, instances} = parameterValuesData.information;
-		if (!instances) return;
+		const {parameterValuesMap, instances, parseProcessToken} =
+			parameterValuesData.information;
+		if (!instances) {
+			resolveSpeculativeProcess(parseProcessToken);
+			return;
+		}
 
 		const instancesCopy = JSON.parse(
 			JSON.stringify(instances),
@@ -339,9 +428,14 @@ export function useAppBuilderInstances(props: Props) {
 			},
 		);
 
-		createParsedInstances(instancesCopy);
+		createParsedInstances(instancesCopy, parseProcessToken);
 		setParameterValuesData(undefined);
-	}, [resolvedParameterValuesArray, parameterValuesData]);
+	}, [
+		createParsedInstances,
+		resolvedParameterValuesArray,
+		parameterValuesData,
+		resolveSpeculativeProcess,
+	]);
 
 	useEffect(() => {
 		if (!instances) return;
@@ -360,9 +454,14 @@ export function useAppBuilderInstances(props: Props) {
 	 * Gather all the necessary information to create the instances.
 	 */
 	useEffect(() => {
-		if (!instances) return;
+		if (!instances) {
+			onProcessManagerAttached?.(sessionProcessManagerIdRef.current);
+			return;
+		}
 
-		// don't do anything if one of the sessions is not available yet
+		// don't do anything if one of the sessions is not available yet.
+		// If this render came from an AppBuilder output callback, keep that
+		// bridge PM alive until the sessions arrive and parsing can continue.
 		const missingSession = instances.some(
 			(instance) => !sessions[instance.sessionId],
 		);
@@ -372,14 +471,17 @@ export function useAppBuilderInstances(props: Props) {
 		if (
 			JSON.stringify(instances) === JSON.stringify(instancesRef.current)
 		) {
-			// Instances haven't changed — don't touch the process manager here.
-			// The PM may be a bridge PM just created by useSessionWithAppBuilder's
-			// cb callback for a new customization cycle. Resolving or removing it
-			// here would kill the bridge before the main instances effect can
-			// reuse it. The PM is cleaned up by the main effect's lifecycle, the
-			// cb callback (when a new PM is created), or the unmount cleanup.
+			// Nothing downstream will be spawned for the current AppBuilder PM.
+			onProcessManagerAttached?.(sessionProcessManagerIdRef.current);
 			return;
 		}
+
+		const parseProcessToken = createSpeculativeProcessManager(
+			"AppBuilder Instance Parse Bridge",
+		);
+		const previousParseProcessToken = pendingParsingProcessTokenRef.current;
+		pendingParsingProcessTokenRef.current = parseProcessToken;
+		resolveSpeculativeProcess(previousParseProcessToken);
 
 		// set the instances ref to the current instances
 		instancesRef.current = JSON.parse(JSON.stringify(instances));
@@ -424,9 +526,16 @@ export function useAppBuilderInstances(props: Props) {
 			information: {
 				parameterValuesMap,
 				instances,
+				parseProcessToken,
 			},
 		});
-	}, [instances, sessions]);
+	}, [
+		createSpeculativeProcessManager,
+		instances,
+		onProcessManagerAttached,
+		resolveSpeculativeProcess,
+		sessions,
+	]);
 
 	const sessionUpdateCallback = useCallback(
 		(newNode?: ITreeNode, oldNode?: ITreeNode) => {
@@ -437,7 +546,19 @@ export function useAppBuilderInstances(props: Props) {
 			// values. Only fire when oldNode exists (node was replaced, not created)
 			// and newNode differs (avoid no-op callbacks).
 			if (replaced) {
-				setSessionNodeVersion((v) => v + 1);
+				const sessionUpdateProcessToken =
+					createSpeculativeProcessManager(
+						"AppBuilder Session Update Bridge",
+					);
+				setSessionNodeVersion((v) => {
+					const nextVersion = v + 1;
+					if (sessionUpdateProcessToken !== undefined) {
+						sessionUpdateProcessTokensByVersionRef.current[
+							nextVersion
+						] = sessionUpdateProcessToken;
+					}
+					return nextVersion;
+				});
 				// Don't re-add old instances to the replaced node — they have
 				// stale geometry from the previous parameter set. A new cycle
 				// is starting that will build fresh instances via
@@ -456,7 +577,7 @@ export function useAppBuilderInstances(props: Props) {
 				newNode.updateVersion();
 			});
 		},
-		[],
+		[createSpeculativeProcessManager],
 	);
 
 	useEffect(() => {
@@ -486,6 +607,9 @@ export function useAppBuilderInstances(props: Props) {
 	// this separate effect (empty deps) handles actual unmount.
 	useEffect(() => {
 		return () => {
+			Object.keys(speculativeProcessResolversRef.current).forEach(
+				(token) => resolveSpeculativeProcess(Number(token)),
+			);
 			if (sessionNodeRef.current) {
 				Object.values(instanceNodesRef.current).forEach((instance) => {
 					if (sessionNodeRef.current!.hasChild(instance)) {
@@ -494,7 +618,7 @@ export function useAppBuilderInstances(props: Props) {
 				});
 			}
 		};
-	}, []);
+	}, [resolveSpeculativeProcess]);
 
 	useEffect(() => {
 		const removeSessionUpdateCallback = addSessionUpdateCallback(
@@ -523,8 +647,8 @@ export function useAppBuilderInstances(props: Props) {
 
 		/**
 		 * Safely resolve the main promise, ensuring it is only resolved once.
-		 * This is called from the success path (deferred via setTimeout),
-		 * the cancel paths, and the effect cleanup.
+		 * This is called from the success path, the cancel paths, and the
+		 * effect cleanup.
 		 */
 		const safeResolveMain = () => {
 			if (mainPromiseResolved) return;
@@ -537,17 +661,31 @@ export function useAppBuilderInstances(props: Props) {
 			promise: mainPromise,
 		};
 
-		// we check if a process manager id is given
-		// and if it is still valid
-		const sessionPMId = sessionProcessManagerIdRef.current;
-		const sessionPMExists = !!(sessionPMId && processManagersRef.current[sessionPMId]);
-		const reusedProcessManagerId = sessionPMId && sessionPMExists
-			? sessionPMId
-			: undefined;
-		const processManagerId =
-			reusedProcessManagerId ?? createProcessManager(sessionApi.id);
+		// Always create a new instances PM — do NOT reuse bridge PMs.
+		// Bridge PMs stay alive until this PM has attached its own tracked work.
+		const processManagerId = createProcessManager(sessionApi.id);
 		addProcess(processManagerId, mainProcessDefinition);
-		if (reusedProcessManagerId) onProcessManagerAttached?.();
+
+		// Resolve only the bridge PMs that semantically belong to this effect
+		// run. The new instances PM is already active, so flag coverage overlaps.
+		onProcessManagerAttached?.(sessionProcessManagerId);
+		const parsingProcessToken =
+			parsingProcessTokensByParsedRevisionRef.current[
+				parsedAppBuilderInstancesRevision
+			];
+		delete parsingProcessTokensByParsedRevisionRef.current[
+			parsedAppBuilderInstancesRevision
+		];
+		resolveSpeculativeProcess(parsingProcessToken);
+		Object.entries(sessionUpdateProcessTokensByVersionRef.current).forEach(
+			([version, token]) => {
+				if (Number(version) > sessionNodeVersion) return;
+				delete sessionUpdateProcessTokensByVersionRef.current[
+					Number(version)
+				];
+				resolveSpeculativeProcess(token);
+			},
+		);
 
 		const newInstances: {
 			[key: string]: {
@@ -617,6 +755,7 @@ export function useAppBuilderInstances(props: Props) {
 							resolveSceneTreePromise!();
 							return;
 						}
+
 						await addInstanceToSceneTree(
 							newInstances,
 							instanceNodesRef.current,
@@ -670,24 +809,13 @@ export function useAppBuilderInstances(props: Props) {
 						// Update React state (for downstream consumers)
 						setInstanceNodes(newInstanceNodes);
 
-						// Both stores are updated synchronously above.
-						// Defer resolving the main promise to allow the viewer to fire
-						// sessionUpdateCallback (triggered by the controller customization
-						// in outputActions) and start a new cycle before the PM can finish.
-						// Without this deferral, the PM could finish and remove itself
-						// before the next cycle starts, splitting the logical process.
 						// The scene-tree promise is resolved immediately since it only
 						// needs to span the scene tree update itself.
 						resolveSceneTreePromise!();
 
-						// Use requestAnimationFrame so the deferred resolution fires
-						// after React has processed the sessionUpdateCallback's
-						// setSessionNodeVersion state update (which triggers the next
-						// cycle's effect cleanup + addProcess). This guarantees the PM
-						// sees the new cycle's processes before it can auto-finish.
-						requestAnimationFrame(() => {
-							safeResolveMain();
-						});
+						// Resolve the main promise. Any follow-up work is covered by
+						// its own semantic PM (output action/session update/cb/parse).
+						safeResolveMain();
 
 						// after the instances are added to the scene tree, we can adjust the cameras to fit the new geometry
 						// we don't await this process, as it just waits for the next render loop
@@ -723,10 +851,9 @@ export function useAppBuilderInstances(props: Props) {
 
 		return () => {
 			cancelled = true;
-			// Resolve the main promise immediately — a new cycle is starting
-			// (or the component is unmounting). The new cycle will add its
-			// own processes synchronously before the promise's .then() fires,
-			// so the PM will stay alive if there is new work.
+			// Resolve the main promise so this cycle's work is marked done.
+			// Any next cycle has already created a semantic bridge PM before
+			// this cleanup runs.
 			safeResolveMain();
 
 			// Do not remove instances from the session node or clear the ref
@@ -740,8 +867,10 @@ export function useAppBuilderInstances(props: Props) {
 		};
 	}, [
 		parsedAppBuilderInstances,
+		parsedAppBuilderInstancesRevision,
 		namespace,
 		onProcessManagerAttached,
+		resolveSpeculativeProcess,
 		sessionNodeVersion,
 	]);
 }
@@ -1174,7 +1303,9 @@ const processOutputActions = (
 			// alive until the customization actually finishes, preventing
 			// premature flag removal and intermediate viewer results.
 			if (pendingOutputActionPromiseRef.current) {
-				outputCallbackPromises.push(pendingOutputActionPromiseRef.current);
+				outputCallbackPromises.push(
+					pendingOutputActionPromiseRef.current,
+				);
 			}
 			return outputCallbackPromises;
 		}

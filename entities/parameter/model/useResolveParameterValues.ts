@@ -390,6 +390,31 @@ export function useResolveParameterValues(props?: {
 			: undefined,
 	);
 
+	// If the no-progress branch above is reached while sources are still
+	// pending, complete the remaining sources as undefined instead of leaving
+	// resolution pending forever. This keeps bridge process managers from
+	// staying alive forever on terminal source-resolution failures.
+	useEffect(() => {
+		if (!sourceData || !resolutionState) return;
+		if (resolutionState.pendingSources.length === 0) return;
+		if (currentPassSources !== undefined) return;
+
+		const flatArray = Array.from(sourceData.flat.values());
+		const newResolvedMap = new Map(resolutionState.resolvedMap);
+
+		for (const pending of resolutionState.pendingSources) {
+			const entry = flatArray[pending.entryIndex];
+			const key = createSourceKey(entry.source);
+			newResolvedMap.set(key, undefined);
+		}
+
+		setResolutionState({
+			currentPass: resolutionState.currentPass + 1,
+			resolvedMap: newResolvedMap,
+			pendingSources: [],
+		});
+	}, [sourceData, resolutionState, currentPassSources]);
+
 	// Update resolution state with newly resolved values
 	useEffect(() => {
 		if (
