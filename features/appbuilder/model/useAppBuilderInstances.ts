@@ -987,6 +987,16 @@ const adjustCamerasToInstances = async (
 	}
 };
 
+const createInstanceCustomizationId = (
+	sessionId: string,
+	parameterValues: {[key: string]: string},
+) =>
+	`${sessionId}_${JSON.stringify(
+		Object.keys(parameterValues)
+			.sort()
+			.map((key) => [key, parameterValues[key]]),
+	)}`;
+
 /**
  * Creates an instance in the viewer.
  * The instance is created with the correct parameter set and transformations.
@@ -1028,12 +1038,15 @@ const createInstance = (
 		progressCallback = callback;
 	};
 
-	// convert the parameter values to a JSON string
-	const parameterValuesJson = JSON.stringify(instance.parameterValues);
-
-	// the instance customization id is a combination of the session id and the parameter values
-	const instanceCustomizationId =
-		instance.session.id + "_" + parameterValuesJson;
+	// The instance customization id is a combination of the session id and
+	// a canonical representation of the parameter values. The parameter object
+	// can be assembled in different insertion orders for the exact same values,
+	// therefore JSON.stringify(instance.parameterValues) is not stable enough
+	// for cache lookup.
+	const instanceCustomizationId = createInstanceCustomizationId(
+		instance.session.id,
+		instance.parameterValues,
+	);
 
 	// the instance name is the name of the instance (if it exists, otherwise the original index)
 	const instanceName =
