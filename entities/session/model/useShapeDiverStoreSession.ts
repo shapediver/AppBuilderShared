@@ -186,7 +186,11 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 					for (const outputId in session.outputs) {
 						const output = session.outputs[outputId];
 						if (output.updateCallback)
-							await output.updateCallback(undefined, output.node);
+							await output.updateCallback(
+								undefined,
+								getLatestOutputNode(sessionId, outputId) ??
+									output.node,
+							);
 					}
 
 					await session.close();
