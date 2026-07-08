@@ -12,6 +12,7 @@ import {
 	IOutputApi,
 	ISessionApi,
 	isViewerGeometryBackendResponseError,
+	ITreeNode,
 } from "@shapediver/viewer.session";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
@@ -26,6 +27,42 @@ const createSessionIdentifier = function (
 		id: parameters.id,
 	});
 };
+
+const latestSessionNodes: {[sessionId: string]: ITreeNode | undefined} = {};
+
+const setLatestSessionNode = (sessionId: string, node?: ITreeNode) => {
+	if (node) {
+		latestSessionNodes[sessionId] = node;
+	} else {
+		delete latestSessionNodes[sessionId];
+	}
+};
+
+const getLatestSessionNode = (sessionId: string) =>
+	latestSessionNodes[sessionId];
+
+const latestOutputNodes: {
+	[sessionId: string]: {
+		[outputId: string]: ITreeNode | undefined;
+	};
+} = {};
+
+const setLatestOutputNode = (
+	sessionId: string,
+	outputId: string,
+	node?: ITreeNode,
+) => {
+	if (!latestOutputNodes[sessionId]) latestOutputNodes[sessionId] = {};
+
+	if (node) {
+		latestOutputNodes[sessionId][outputId] = node;
+	} else {
+		delete latestOutputNodes[sessionId][outputId];
+	}
+};
+
+const getLatestOutputNode = (sessionId: string, outputId: string) =>
+	latestOutputNodes[sessionId]?.[outputId];
 
 /**
  * Store data related to the ShapeDiver 3D Viewer Session.
@@ -140,13 +177,20 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				try {
 					// if there was a session update callback registered, call it once with the old node
 					if (session.updateCallback)
-						await session.updateCallback(undefined, session.node);
+						await session.updateCallback(
+							undefined,
+							getLatestSessionNode(sessionId) ?? session.node,
+						);
 
 					// for all outputs, call the output update callback once with the old node
 					for (const outputId in session.outputs) {
 						const output = session.outputs[outputId];
 						if (output.updateCallback)
-							await output.updateCallback(undefined, output.node);
+							await output.updateCallback(
+								undefined,
+								getLatestOutputNode(sessionId, outputId) ??
+									output.node,
+							);
 					}
 
 					await session.close();
@@ -155,6 +199,9 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 
 					return;
 				}
+
+				delete latestSessionNodes[sessionId];
+				delete latestOutputNodes[sessionId];
 
 				return set(
 					(state) => {
@@ -183,8 +230,13 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				// get the session
 				const session = sessions[sessionId];
 				if (session) {
-					// call the callback once
-					updateCallback(session.node, undefined);
+					// call the callback once using the latest node seen by the
+					// session update callback. session.node can lag behind newNode
+					// during AppBuilder/custom parameter remounts.
+					updateCallback(
+						getLatestSessionNode(sessionId) ?? session.node,
+						undefined,
+					);
 					// we don't abort here as the callback might be registered before any session is loaded
 				}
 
@@ -227,7 +279,7 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 						// like this, cleanup can be done in the callback
 						sessionUpdateCallbacksForSession(
 							undefined,
-							session.node,
+							getLatestSessionNode(sessionId) ?? session.node,
 						);
 					}
 
@@ -276,8 +328,13 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				// get the output
 				const output = session?.outputs[outputId];
 				if (output) {
-					// call the callback once
-					updateCallback(output.node, undefined);
+					// call the callback once using the latest node seen by the
+					// output update callback. output.node can lag behind newNode
+					// during AppBuilder/custom parameter remounts.
+					updateCallback(
+						getLatestOutputNode(sessionId, outputId) ?? output.node,
+						undefined,
+					);
 					// we don't abort here as the callback might be registered before any session is loaded
 				}
 
@@ -323,7 +380,11 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 					if (output && outputUpdateCallbacksForOutput) {
 						// call the callback once with the old node
 						// like this, cleanup can be done in the callback
-						outputUpdateCallbacksForOutput(undefined, output.node);
+						outputUpdateCallbacksForOutput(
+							undefined,
+							getLatestOutputNode(sessionId, outputId) ??
+								output.node,
+						);
 					}
 
 					set((state) => {
@@ -397,6 +458,12 @@ const assignSessionUpdateCallback = (
 	},
 ) => {
 	sessionApi.updateCallback = async (newNode, oldNode) => {
+		if (newNode) {
+			setLatestSessionNode(sessionApi.id, newNode);
+		} else if (oldNode) {
+			setLatestSessionNode(sessionApi.id, undefined);
+		}
+
 		await Promise.all(
 			Object.values(callbacks).map((cb) => cb(newNode, oldNode)),
 		);
@@ -418,6 +485,12 @@ const assignOutputUpdateCallback = (
 	},
 ) => {
 	outputApi.updateCallback = async (newNode, oldNode) => {
+		if (newNode) {
+			setLatestOutputNode(sessionApi.id, outputApi.id, newNode);
+		} else if (oldNode) {
+			setLatestOutputNode(sessionApi.id, outputApi.id, undefined);
+		}
+
 		await Promise.all(
 			Object.values(outputUpdateCallbacks).map((cb) =>
 				cb(newNode, oldNode),
@@ -643,6 +716,8 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 	);
 
 	newSessions.forEach((session) => {
+		setLatestSessionNode(session.id, session.node);
+
 		if (!session.updateCallback) return;
 
 		// call the callback once
@@ -653,6 +728,8 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 			const output = session.outputs[outputId];
 			const callbacks =
 				state.outputUpdateCallbacks[session.id]?.[outputId] || {};
+
+			setLatestOutputNode(session.id, outputId, output.node);
 
 			// Always assign callback for parameter store sync
 			assignOutputUpdateCallback(session, output, callbacks);
