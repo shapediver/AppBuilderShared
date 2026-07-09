@@ -11,6 +11,8 @@ import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBin
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
+import {isWebMcpAvailable} from "@AppBuilderLib/features/webmcp/lib/webmcpAvailability";
+import {useWebMcpTools} from "@AppBuilderLib/features/webmcp/model/useWebMcpTools";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
@@ -224,6 +226,11 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	}, [currentModel]);
 
 	useECommerceApiConnectorActions({namespace});
+
+	useWebMcpTools({
+		namespace,
+		enabled: isWebMcpAvailable(),
+	});
 
 	const showMarkdown =
 		!(settings && hasSession) && // no settings or no session

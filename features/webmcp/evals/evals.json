@@ -1,0 +1,258 @@
+[
+	{
+		"id": "list_all",
+		"tool": "list_parameter_definitions",
+		"description": "List all supported parameters",
+		"input": {"filter": "all"},
+		"expect": {"parametersCount": 6}
+	},
+	{
+		"id": "list_visible",
+		"tool": "list_parameter_definitions",
+		"description": "List only UI-visible parameters",
+		"input": {"filter": "visible"},
+		"expect": {"parametersCount": 2, "parameterIds": ["width-int", "paint-color"]}
+	},
+	{
+		"id": "list_reject_visible_only",
+		"tool": "list_parameter_definitions",
+		"description": "Reject weak-model alias visibleOnly (use filter instead)",
+		"input": {"visibleOnly": true},
+		"expect": {"inputSchemaReject": true}
+	},
+	{
+		"id": "set_valid_int",
+		"tool": "set_parameter_values",
+		"description": "Set INT within valid range",
+		"input": {
+			"updates": [{"name": "Width", "value": 7}]
+		},
+		"expect": {"applied": ["width-int"], "errors": []}
+	},
+	{
+		"id": "set_out_of_range",
+		"tool": "set_parameter_values",
+		"description": "Reject INT beyond max",
+		"input": {
+			"updates": [{"name": "Width", "value": 99}]
+		},
+		"expect": {"applied": [], "errorsNonEmpty": true, "appliedExcludes": ["width-int"]}
+	},
+	{
+		"id": "set_unknown_id",
+		"tool": "set_parameter_values",
+		"description": "Reject unknown parameter name",
+		"input": {
+			"updates": [{"name": "DoesNotExist", "value": 1}]
+		},
+		"expect": {
+			"applied": [],
+			"errorsNonEmpty": true,
+			"errorMessageIncludes": "does not exist"
+		}
+	},
+	{
+		"id": "set_wrong_type",
+		"tool": "set_parameter_values",
+		"description": "Reject string value for INT parameter",
+		"input": {
+			"updates": [{"name": "Width", "value": "not-a-number"}]
+		},
+		"expect": {
+			"applied": [],
+			"errorsNonEmpty": true,
+			"errorMessageIncludes": "does not match parameter type"
+		}
+	},
+	{
+		"id": "set_duplicate",
+		"tool": "set_parameter_values",
+		"description": "Reject duplicate updates for same parameter",
+		"input": {
+			"updates": [
+				{"name": "Width", "value": 3},
+				{"name": "width-int", "value": 4}
+			]
+		},
+		"expect": {
+			"applied": ["width-int"],
+			"errorsNonEmpty": true,
+			"errorMessageIncludes": "twice"
+		}
+	},
+	{
+		"id": "set_reject_parameters_key",
+		"tool": "set_parameter_values",
+		"description": "Reject MCP-style parameters array (use updates)",
+		"input": {
+			"parameters": [{"id": "width-int", "value": 7}]
+		},
+		"expect": {"inputSchemaReject": true}
+	},
+	{
+		"id": "set_reject_id_in_update",
+		"tool": "set_parameter_values",
+		"description": "Reject id field inside update item (use name)",
+		"input": {
+			"updates": [{"id": "width-int", "value": 7}]
+		},
+		"expect": {"inputSchemaReject": true}
+	},
+	{
+		"id": "set_partial_apply",
+		"tool": "set_parameter_values",
+		"description": "Apply valid updates even when others fail",
+		"input": {
+			"updates": [
+				{"name": "Width", "value": 7},
+				{"name": "DoesNotExist", "value": 1}
+			]
+		},
+		"expect": {
+			"applied": ["width-int"],
+			"errorsNonEmpty": true,
+			"errorMessageIncludes": "does not exist"
+		}
+	},
+	{
+		"id": "set_color_valid",
+		"tool": "set_parameter_values",
+		"description": "Set COLOR with decomposed channels",
+		"input": {
+			"updates": [
+				{
+					"name": "Paint",
+					"value": {"red": 10, "green": 20, "blue": 30, "alpha": 255}
+				}
+			]
+		},
+		"expect": {"applied": ["paint-color"], "errors": []}
+	},
+	{
+		"id": "set_stringlist_valid",
+		"tool": "set_parameter_values",
+		"description": "Set StringList with numeric index",
+		"input": {
+			"updates": [{"name": "Material", "value": 1}]
+		},
+		"expect": {"applied": ["material-list"], "errors": []}
+	},
+	{
+		"id": "set_stringlist_label",
+		"tool": "set_parameter_values",
+		"description": "Reject StringList choice label (weak models send Metal not 1)",
+		"input": {
+			"updates": [{"name": "Material", "value": "Metal"}]
+		},
+		"expect": {
+			"applied": [],
+			"errorsNonEmpty": true,
+			"errorMessageIncludes": "0-based integer index"
+		}
+	},
+	{
+		"id": "set_stringlist_out_of_range",
+		"tool": "set_parameter_values",
+		"description": "Reject StringList index beyond choices",
+		"input": {
+			"updates": [{"name": "Material", "value": 99}]
+		},
+		"expect": {
+			"applied": [],
+			"errorsNonEmpty": true,
+			"errorMessageIncludes": "not valid"
+		}
+	},
+	{
+		"id": "set_stringlist_object_index",
+		"tool": "set_parameter_values",
+		"description": "Reject StringList {index:N} object (use plain integer)",
+		"input": {
+			"updates": [{"name": "Material", "value": {"index": 1}}]
+		},
+		"expect": {"inputSchemaReject": true}
+	},
+	{
+		"id": "set_batch_all_invalid",
+		"tool": "set_parameter_values",
+		"description": "Batch with label + out-of-range — nothing applied",
+		"input": {
+			"updates": [
+				{"name": "Material", "value": "Metal"},
+				{"name": "Width", "value": 99}
+			]
+		},
+		"expect": {
+			"applied": [],
+			"errorCount": 2,
+			"errorMessageIncludesAll": ["0-based integer index", "out of range"]
+		}
+	},
+	{
+		"id": "set_color_named_stringlist_label",
+		"tool": "set_parameter_values",
+		"description": "Color param is StringList — reject label Red",
+		"input": {
+			"updates": [{"name": "Color", "value": "Red"}]
+		},
+		"expect": {
+			"applied": [],
+			"errorsNonEmpty": true,
+			"errorMessageIncludes": "0-based integer index"
+		}
+	},
+	{
+		"id": "set_color_named_stringlist_index",
+		"tool": "set_parameter_values",
+		"description": "Color param is StringList — accept index 0 for Red",
+		"input": {
+			"updates": [{"name": "Color", "value": 0}]
+		},
+		"expect": {"applied": ["color-list"], "errors": []}
+	},
+	{
+		"id": "create_model_state",
+		"tool": "create_model_state",
+		"description": "Validate create_model_state input schema (execution mocked)",
+		"input": {
+			"parameterNamesToInclude": ["Width"],
+			"includeImage": true
+		},
+		"expect": {"success": true}
+	},
+	{
+		"id": "create_include_image_false",
+		"tool": "create_model_state",
+		"description": "Accept includeImage:false (common demo save path)",
+		"input": {"includeImage": false},
+		"expect": {"success": true}
+	},
+	{
+		"id": "create_reject_unknown_key",
+		"tool": "create_model_state",
+		"description": "Reject unknown create_model_state keys",
+		"input": {"includeImage": false, "saveSnapshot": true},
+		"expect": {"success": false}
+	},
+	{
+		"id": "import_valid",
+		"tool": "import_model_state",
+		"description": "Validate import_model_state input schema (execution mocked)",
+		"input": {"modelStateId": "ms-abc-123"},
+		"expect": {"success": true}
+	},
+	{
+		"id": "import_invalid",
+		"tool": "import_model_state",
+		"description": "Reject invalid import_model_state input type",
+		"input": {"modelStateId": 12345},
+		"expect": {"success": false}
+	},
+	{
+		"id": "import_reject_unknown_key",
+		"tool": "import_model_state",
+		"description": "Reject unknown import_model_state keys",
+		"input": {"modelStateId": "ms-abc-123", "applied": true},
+		"expect": {"success": false}
+	}
+]
