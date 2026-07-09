@@ -16,6 +16,9 @@ export const importModelStateInvalidParameterSchema = z.object({
 export const importModelStateSuccessOutputSchema = z.object({
 	success: z.literal(true),
 	appliedParameterIds: z.array(z.string()),
+	invalidParameters: z
+		.array(importModelStateInvalidParameterSchema)
+		.optional(),
 });
 
 export const importModelStateFailureOutputSchema = z.object({

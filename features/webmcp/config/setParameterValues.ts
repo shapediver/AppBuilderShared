@@ -10,7 +10,7 @@ import {
 	parseStringListIndex,
 	toStringListStoreValue,
 } from "../lib/stringListValue";
-import {parameterValueSchema} from "./listParameterDefinitions";
+import {parameterValueSchema, SUPPORTED_PARAMETER_TYPES} from "./listParameterDefinitions";
 
 export const setParameterValuesInputSchema = z.strictObject({
 	updates: z
@@ -147,8 +147,8 @@ function getValidationErrorMessage(
  * Pure validation and batch-update logic for set_parameter_values.
  */
 export async function resolveAndUpdate(
-	namespace: string,
-	parameters: IShapeDiverParameter<any>[],
+	defaultNamespace: string,
+	getParameters: (namespace: string) => IShapeDiverParameter<any>[],
 	updates: ParameterUpdateInput[],
 	batchUpdate: IShapeDiverStoreParameters["batchParameterValueUpdate"],
 ): Promise<SetParameterValuesOutput> {
@@ -157,6 +157,8 @@ export async function resolveAndUpdate(
 	const processedIds = new Set<string>();
 
 	for (const update of updates) {
+		const targetNamespace = update.sessionId ?? defaultNamespace;
+		const parameters = getParameters(targetNamespace);
 		const parameter = findParameter(parameters, update.name);
 		if (!parameter) {
 			errors.push({
@@ -178,6 +180,14 @@ export async function resolveAndUpdate(
 
 		const def = parameter.definition;
 		const {value} = update;
+
+		if (!SUPPORTED_PARAMETER_TYPES.includes(def.type)) {
+			errors.push({
+				name: update.name,
+				message: `Parameter type "${def.type}" is not supported for setting via WebMCP.`,
+			});
+			continue;
+		}
 
 		if (isColorObject(value) && def.type !== ResParameterType.COLOR) {
 			errors.push({
@@ -241,7 +251,6 @@ export async function resolveAndUpdate(
 			preparedValue = value;
 		}
 
-		const targetNamespace = update.sessionId ?? namespace;
 		if (!valuesByNamespace[targetNamespace]) {
 			valuesByNamespace[targetNamespace] = {};
 		}

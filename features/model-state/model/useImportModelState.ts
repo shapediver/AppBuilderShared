@@ -136,6 +136,12 @@ export function useImportModelState({namespace}: Props) {
 			return {
 				success: true,
 				data: response.data,
+				...(validationResult.skippedParameters.length > 0
+					? {
+							invalidParameters:
+								validationResult.invalidParameters,
+						}
+					: {}),
 			};
 		},
 		[sessionApi, namespace],

@@ -7,13 +7,14 @@ import {createModelStateInputSchema} from "../config/createModelState";
 import {importModelStateInputSchema} from "../config/importModelState";
 import {
 	listParameterDefinitionsInputSchema,
-	SUPPORTED_PARAMETER_TYPES,
+	listParameterDefinitionsOutputSchema,
 } from "../config/listParameterDefinitions";
 import {
 	resolveAndUpdate,
 	setParameterValuesInputSchema,
 } from "../config/setParameterValues";
 import {filterVisibleParameters} from "../lib/filterVisibleParameters";
+import {formatToolInputError} from "../lib/formatToolInputError";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
 import {
 	allParameters,
@@ -63,19 +64,26 @@ function findParameterRef(param: (typeof allParameters)[number]) {
 }
 
 function runListScenario(input: Record<string, unknown>) {
-	const parsed = listParameterDefinitionsInputSchema.parse(input);
-	const filter = parsed.filter ?? "all";
-	let parameters = allParameters.filter((p) =>
-		SUPPORTED_PARAMETER_TYPES.includes(p.definition.type),
-	);
+	try {
+		const parsed = listParameterDefinitionsInputSchema.parse(input);
+		const filter = parsed.filter ?? "all";
+		let parameters = allParameters;
 
-	if (filter === "visible") {
-		parameters = filterVisibleParameters(parameters, parameterRefs);
+		if (filter === "visible") {
+			parameters = filterVisibleParameters(parameters, parameterRefs);
+		}
+
+		return {
+			parameters: parameters.map((param) =>
+				mapParameterDefinition(param, findParameterRef(param)),
+			),
+		};
+	} catch (e) {
+		return {
+			parameters: [],
+			...formatToolInputError(e),
+		};
 	}
-
-	return parameters.map((param) =>
-		mapParameterDefinition(param, findParameterRef(param)),
-	);
 }
 
 function assertInputSchemaReject(
@@ -156,13 +164,22 @@ function assertSetErrorExpectations(
 
 function assertListScenario(scenario: EvalScenario): string | null {
 	if (scenario.expect.inputSchemaReject) {
-		return assertInputSchemaReject(
-			listParameterDefinitionsInputSchema,
-			scenario.input,
-		);
+		const result = runListScenario(scenario.input);
+		const parsed = listParameterDefinitionsOutputSchema.safeParse(result);
+
+		if (!parsed.success) {
+			return "list output did not match schema after input rejection";
+		}
+
+		if (!parsed.data.errors?.length) {
+			return "expected non-empty errors array for invalid input";
+		}
+
+		return null;
 	}
 
-	const parameters = runListScenario(scenario.input);
+	const result = runListScenario(scenario.input);
+	const parameters = result.parameters;
 	const {expect} = scenario;
 
 	if (
@@ -198,7 +215,7 @@ async function assertSetScenario(
 
 	const result = await resolveAndUpdate(
 		EVAL_NAMESPACE,
-		allParameters,
+		(ns) => (ns === EVAL_NAMESPACE ? allParameters : []),
 		parsed.updates,
 		async () => undefined,
 	);

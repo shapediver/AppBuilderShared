@@ -46,6 +46,7 @@ describe("mapParameterDefinition", () => {
 			id: "list-1",
 			name: "Material",
 			type: ResParameterType.STRINGLIST,
+			settable: true,
 			choices: ["Wood", "Metal"],
 			currentValue: 0,
 			defaultValue: 1,
@@ -69,6 +70,7 @@ describe("mapParameterDefinition", () => {
 			id: "color-1",
 			name: "Paint",
 			type: ResParameterType.COLOR,
+			settable: true,
 			currentValue: {red: 0, green: 255, blue: 0, alpha: 255},
 			defaultValue: {red: 255, green: 0, blue: 0, alpha: 255},
 		});
@@ -92,6 +94,7 @@ describe("mapParameterDefinition", () => {
 			id: "float-1",
 			name: "Width",
 			type: ResParameterType.FLOAT,
+			settable: true,
 			min: 0,
 			max: 100,
 			decimalplaces: 2,
@@ -115,6 +118,7 @@ describe("mapParameterDefinition", () => {
 			id: "bool-1",
 			name: "Enabled",
 			type: ResParameterType.BOOL,
+			settable: true,
 			currentValue: true,
 			defaultValue: false,
 		});
@@ -150,12 +154,30 @@ describe("mapParameterDefinition", () => {
 			name: "Width",
 			displayname: "Custom Width",
 			type: ResParameterType.INT,
+			settable: true,
 			group: "Sizing",
 			tooltip: "Override tooltip",
 			min: 0,
 			max: 10,
 			currentValue: 7,
 			defaultValue: 5,
+		});
+	});
+
+	it("marks unsupported types as not settable", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "file-1",
+				name: "Upload",
+				type: ResParameterType.FILE,
+			} as IShapeDiverParameter<any>["definition"],
+		});
+
+		expect(mapParameterDefinition(param)).toEqual({
+			id: "file-1",
+			name: "Upload",
+			type: ResParameterType.FILE,
+			settable: false,
 		});
 	});
 });

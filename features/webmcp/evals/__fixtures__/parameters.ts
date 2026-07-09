@@ -163,6 +163,15 @@ export const colorNamedStringListParameter = createMockParameter({
 	state: {uiValue: 7} as IShapeDiverParameter<any>["state"],
 });
 
+export const fileParameter = createMockParameter({
+	definition: {
+		id: "upload-file",
+		name: "Upload",
+		type: ResParameterType.FILE,
+	} as unknown as IShapeDiverParameter<any>["definition"],
+	state: {uiValue: ""} as IShapeDiverParameter<any>["state"],
+});
+
 export const allParameters: IShapeDiverParameter<any>[] = [
 	intParameter,
 	stringListParameter,
@@ -170,6 +179,7 @@ export const allParameters: IShapeDiverParameter<any>[] = [
 	floatParameter,
 	boolParameter,
 	colorNamedStringListParameter,
+	fileParameter,
 ];
 
 /** Refs for the "visible" list filter — width + paint only. */

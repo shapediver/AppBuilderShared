@@ -13,10 +13,10 @@ function mockParam(id: string, name: string): IShapeDiverParameter<any> {
 }
 
 describe("filterVisibleParameters", () => {
-	it("returns all parameters when accordion refs are empty", () => {
+	it("returns empty array when layout refs are empty", () => {
 		const params = [mockParam("a", "Slider1"), mockParam("b", "Slider2")];
 
-		expect(filterVisibleParameters(params, [])).toHaveLength(2);
+		expect(filterVisibleParameters(params, [])).toEqual([]);
 	});
 
 	it("filters by ref name, id, or displayname", () => {

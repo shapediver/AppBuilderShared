@@ -16,15 +16,15 @@ function parameterMatchesRef(
 }
 
 /**
- * Parameters shown in accordion widgets. When layout has no accordion refs,
- * returns all parameters (no custom UI layout to filter against).
+ * Parameters placed in the configurator UI (accordion, form, controls widgets).
+ * When layout has no parameter refs, returns empty — visible means UI-placed only.
  */
 export function filterVisibleParameters(
 	parameters: IShapeDiverParameter<any>[],
 	refs: IAppBuilderParameterRef[],
 ): IShapeDiverParameter<any>[] {
 	if (refs.length === 0) {
-		return parameters;
+		return [];
 	}
 
 	return parameters.filter((param) => parameterMatchesRef(param, refs));

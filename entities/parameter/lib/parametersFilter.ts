@@ -144,9 +144,14 @@ export function generateParameterFeedback(
 	}
 
 	if (result.skippedParameters.length > 0) {
+		const message =
+			result.invalidParameters.length > 0
+				? result.invalidParameters.map((p) => p.message).join(" ")
+				: `The following parameters could not be matched or ar invalid: ${result.skippedParameters.join(", ")}`;
+
 		return {
 			type: NotificationAction.WARNING,
-			message: `The following parameters could not be matched or ar invalid: ${result.skippedParameters.join(", ")}`,
+			message,
 		};
 	}
 

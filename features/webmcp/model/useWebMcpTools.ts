@@ -9,10 +9,7 @@ import {useContext, useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {createModelStateInputSchema} from "../config/createModelState";
 import {importModelStateInputSchema} from "../config/importModelState";
-import {
-	listParameterDefinitionsInputSchema,
-	SUPPORTED_PARAMETER_TYPES,
-} from "../config/listParameterDefinitions";
+import {listParameterDefinitionsInputSchema} from "../config/listParameterDefinitions";
 import {
 	resolveAndUpdate,
 	setParameterValuesInputSchema,
@@ -27,9 +24,15 @@ import {
 	SET_PARAMETER_VALUES_TOOL_DESCRIPTION,
 	SET_PARAMETER_VALUES_TOOL_NAME,
 } from "../config/tools";
+import {computeAppliedParameterIds} from "../lib/computeAppliedParameterIds";
 import {filterVisibleParameters} from "../lib/filterVisibleParameters";
+import {formatToolInputError} from "../lib/formatToolInputError";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
-import {getModelContext, isWebMcpAvailable} from "../lib/webmcpAvailability";
+import {
+	getModelContext,
+	getWebMcpEnvironment,
+	isWebMcpAvailable,
+} from "../lib/webmcpAvailability";
 import {zodToJsonSchema} from "../lib/zodToJsonSchema";
 import type {
 	UseWebMcpToolsProps,
@@ -41,6 +44,8 @@ export function useWebMcpTools(
 ): UseWebMcpToolsResult {
 	const {namespace, enabled = isWebMcpAvailable()} = props;
 	const [registered, setRegistered] = useState(false);
+	const environment = getWebMcpEnvironment();
+	const ready = registered && environment.ready;
 
 	const {sessions} = useShapeDiverStoreSession(
 		useShallow((state) => ({
@@ -148,13 +153,8 @@ export function useWebMcpTools(
 								const filter = parsed.filter ?? "all";
 								const targetNamespace =
 									parsed.sessionId ?? namespaceRef.current;
-								let parameters = getLiveParameters(
-									targetNamespace,
-								).filter((p) =>
-									SUPPORTED_PARAMETER_TYPES.includes(
-										p.definition.type,
-									),
-								);
+								let parameters =
+									getLiveParameters(targetNamespace);
 
 								if (filter === "visible") {
 									const refs = appBuilderDataRef.current
@@ -184,9 +184,10 @@ export function useWebMcpTools(
 									}),
 								};
 							} catch (e) {
-								throw e instanceof Error
-									? e
-									: new Error(String(e));
+								return {
+									parameters: [],
+									...formatToolInputError(e),
+								};
 							}
 						},
 					},
@@ -209,27 +210,17 @@ export function useWebMcpTools(
 								const parsed =
 									setParameterValuesInputSchema.parse(input);
 								const targetNamespace = namespaceRef.current;
-								const parameters =
-									getLiveParameters(targetNamespace);
 
 								return await resolveAndUpdate(
 									targetNamespace,
-									parameters,
+									getLiveParameters,
 									parsed.updates,
 									batchParameterValueUpdateRef.current,
 								);
 							} catch (e) {
 								return {
 									applied: [],
-									errors: [
-										{
-											name: "*",
-											message:
-												e instanceof Error
-													? e.message
-													: String(e),
-										},
-									],
+									...formatToolInputError(e),
 								};
 							}
 						},
@@ -323,27 +314,21 @@ export function useWebMcpTools(
 
 								const afterParams =
 									getParameterStates(targetNamespace);
-								const appliedParameterIds = afterParams
-									.filter(
-										(p) =>
-											beforeValues.get(
-												p.definition.id,
-											) !== p.state.uiValue,
-									)
-									.map((p) => p.definition.id);
-
-								if (appliedParameterIds.length === 0) {
-									return {
-										success: true as const,
-										appliedParameterIds: afterParams.map(
-											(p) => p.definition.id,
-										),
-									};
-								}
+								const appliedParameterIds =
+									computeAppliedParameterIds(
+										beforeValues,
+										afterParams,
+									);
 
 								return {
 									success: true as const,
 									appliedParameterIds,
+									...(result.invalidParameters
+										? {
+												invalidParameters:
+													result.invalidParameters,
+											}
+										: {}),
 								};
 							} catch (e) {
 								return {
@@ -379,9 +364,22 @@ export function useWebMcpTools(
 		};
 	}, [enabled, namespace, sessionReady, paramsPopulated]);
 
+	const environmentSnapshot = {
+		modelContextAvailable: environment.modelContextAvailable,
+		crossOriginIsolated: environment.crossOriginIsolated,
+	};
+
 	if (enabled === false || !isWebMcpAvailable()) {
-		return {registered: false};
+		return {
+			registered: false,
+			ready: false,
+			environment: environmentSnapshot,
+		};
 	}
 
-	return {registered};
+	return {
+		registered,
+		ready,
+		environment: environmentSnapshot,
+	};
 }

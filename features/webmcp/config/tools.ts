@@ -10,7 +10,9 @@ export const IMPORT_MODEL_STATE_TOOL_NAME = "import_model_state";
 export const LIST_PARAMETER_DEFINITIONS_TOOL_DESCRIPTION =
 	"Read configurator parameters before changing anything. " +
 	"Input: { filter?: 'all' | 'visible' } — field name is filter, not visibleOnly. " +
-	"Returns { parameters: [...] } with id, name, type, choices/min/max, currentValue. " +
+	"Returns { parameters: [...], errors?: [{ name, message }] } with id, name, type, settable, choices/min/max, currentValue. " +
+	"settable=false means read-only via set_parameter_values (unsupported type). " +
+	"On invalid input, returns { parameters: [], errors: [{ name: '*', message }] }. " +
 	"Trust type over display name (e.g. name Color may still be StringList). " +
 	"Call with filter=all first when you do not know parameter names or value rules.";
 
@@ -34,7 +36,7 @@ export const IMPORT_MODEL_STATE_TOOL_DESCRIPTION =
 	"Restore a saved configuration. " +
 	"Input: { modelStateId } from create_model_state (or URL containing modelStateId). " +
 	"Waits for session update before returning. " +
-	"Success: { success: true, appliedParameterIds: string[] } — parameter ids that changed during import (not a field named applied). " +
-	"If no diff is detected, all parameter ids may be listed. " +
+	"Success: { success: true, appliedParameterIds: string[], invalidParameters?: [{ name, message }] } — appliedParameterIds lists parameter ids whose values changed during import (empty array when none changed). " +
+	"invalidParameters appears on partial success when some saved parameters could not be applied. " +
 	"Failure: { success: false, message: string, invalidParameters?: [{ name, message }] } — per-parameter reasons when saved state does not match current model. " +
 	"Use list_parameter_definitions after import to verify currentValue.";

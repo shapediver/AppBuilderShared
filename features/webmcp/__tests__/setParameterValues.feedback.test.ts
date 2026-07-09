@@ -36,6 +36,11 @@ describe("resolveAndUpdate", () => {
 		.fn()
 		.mockResolvedValue(undefined);
 
+	const getParametersFor =
+		(paramsByNamespace: Record<string, IShapeDiverParameter<any>[]>) =>
+		(ns: string) =>
+			paramsByNamespace[ns] ?? [];
+
 	beforeEach(() => {
 		batchParameterValueUpdate.mockClear();
 	});
@@ -43,7 +48,7 @@ describe("resolveAndUpdate", () => {
 	it("returns error for unknown parameter", async () => {
 		const result = await resolveAndUpdate(
 			namespace,
-			[],
+			getParametersFor({[namespace]: []}),
 			[{name: "Missing", value: 1}],
 			batchParameterValueUpdate,
 		);
@@ -76,7 +81,7 @@ describe("resolveAndUpdate", () => {
 
 		const result = await resolveAndUpdate(
 			namespace,
-			[param],
+			getParametersFor({[namespace]: [param]}),
 			[{name: "Width", value: 42}],
 			batchParameterValueUpdate,
 		);
@@ -105,7 +110,7 @@ describe("resolveAndUpdate", () => {
 
 		const result = await resolveAndUpdate(
 			namespace,
-			[param],
+			getParametersFor({[namespace]: [param]}),
 			[{name: "Width", value: 200}],
 			batchParameterValueUpdate,
 		);
@@ -137,7 +142,7 @@ describe("resolveAndUpdate", () => {
 
 		const result = await resolveAndUpdate(
 			namespace,
-			[param],
+			getParametersFor({[namespace]: [param]}),
 			[
 				{name: "Width", value: 20},
 				{name: "width", value: 30},
@@ -180,7 +185,7 @@ describe("resolveAndUpdate", () => {
 
 		const result = await resolveAndUpdate(
 			namespace,
-			[param],
+			getParametersFor({[namespace]: [param]}),
 			[{name: "Paint", value: colorValue}],
 			batchParameterValueUpdate,
 		);
@@ -209,7 +214,7 @@ describe("resolveAndUpdate", () => {
 
 		const result = await resolveAndUpdate(
 			namespace,
-			[param],
+			getParametersFor({[namespace]: [param]}),
 			[
 				{
 					name: "Width",
@@ -247,7 +252,7 @@ describe("resolveAndUpdate", () => {
 
 		const result = await resolveAndUpdate(
 			namespace,
-			[param],
+			getParametersFor({[namespace]: [param]}),
 			[{name: "Material", value: 1}],
 			batchParameterValueUpdate,
 		);
@@ -257,5 +262,92 @@ describe("resolveAndUpdate", () => {
 		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
 			[namespace]: {material: "1"},
 		});
+	});
+
+	it("looks up parameters in update sessionId namespace", async () => {
+		const childNamespace = "child-session";
+		const mainParam = createMockParameter({
+			definition: {
+				id: "width",
+				name: "Width",
+				type: ResParameterType.FLOAT,
+				min: 0,
+				max: 100,
+				defval: 10,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 10} as IShapeDiverParameter<any>["state"],
+		});
+		const childParam = createMockParameter({
+			definition: {
+				id: "height",
+				name: "Height",
+				type: ResParameterType.FLOAT,
+				min: 0,
+				max: 100,
+				defval: 20,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 20} as IShapeDiverParameter<any>["state"],
+		});
+		const getParameters = jest.fn((ns: string) => {
+			if (ns === namespace) {
+				return [mainParam];
+			}
+			if (ns === childNamespace) {
+				return [childParam];
+			}
+
+			return [];
+		});
+
+		const result = await resolveAndUpdate(
+			namespace,
+			getParameters,
+			[{name: "Height", sessionId: childNamespace, value: 55}],
+			batchParameterValueUpdate,
+		);
+
+		expect(getParameters).toHaveBeenCalledWith(childNamespace);
+		expect(result).toEqual({applied: ["height"], errors: []});
+		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
+			[childNamespace]: {height: 55},
+		});
+	});
+
+	it("reports missing parameter in target sessionId namespace", async () => {
+		const childNamespace = "child-session";
+		const mainParam = createMockParameter({
+			definition: {
+				id: "width",
+				name: "Width",
+				type: ResParameterType.FLOAT,
+				min: 0,
+				max: 100,
+				defval: 10,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 10} as IShapeDiverParameter<any>["state"],
+		});
+		const getParameters = jest.fn((ns: string) =>
+			ns === namespace ? [mainParam] : [],
+		);
+
+		const result = await resolveAndUpdate(
+			namespace,
+			getParameters,
+			[{name: "Width", sessionId: childNamespace, value: 42}],
+			batchParameterValueUpdate,
+		);
+
+		expect(getParameters).toHaveBeenCalledWith(childNamespace);
+		expect(result).toEqual({
+			applied: [],
+			errors: [
+				{
+					name: "Width",
+					message:
+						'Parameter with id/name/displayname "Width" does not exist.',
+				},
+			],
+		});
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
 	});
 });

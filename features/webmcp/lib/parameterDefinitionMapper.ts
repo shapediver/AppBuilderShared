@@ -2,7 +2,10 @@ import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/par
 import {IAppBuilderParameterRef} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {decomposeSdColor} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import type {ListParameterDefinitionItem} from "../config/listParameterDefinitions";
+import {
+	SUPPORTED_PARAMETER_TYPES,
+	type ListParameterDefinitionItem,
+} from "../config/listParameterDefinitions";
 import {parseStringListIndex} from "./stringListValue";
 
 export type {ListParameterDefinitionItem};
@@ -19,6 +22,7 @@ export function mapParameterDefinition(
 		id: def.id,
 		name,
 		type: def.type,
+		settable: SUPPORTED_PARAMETER_TYPES.includes(def.type),
 	};
 
 	if (def.hidden !== undefined) {

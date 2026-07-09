@@ -4,7 +4,7 @@
 		"tool": "list_parameter_definitions",
 		"description": "List all supported parameters",
 		"input": {"filter": "all"},
-		"expect": {"parametersCount": 6}
+		"expect": {"parametersCount": 7}
 	},
 	{
 		"id": "list_visible",

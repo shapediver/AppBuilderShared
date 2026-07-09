@@ -1,7 +1,14 @@
 import {createModelStateInputSchema} from "../config/createModelState";
-import {importModelStateInputSchema} from "../config/importModelState";
-import {listParameterDefinitionsInputSchema} from "../config/listParameterDefinitions";
+import {
+	importModelStateInputSchema,
+	importModelStateSuccessOutputSchema,
+} from "../config/importModelState";
+import {
+	listParameterDefinitionsInputSchema,
+	listParameterDefinitionsOutputSchema,
+} from "../config/listParameterDefinitions";
 import {setParameterValuesInputSchema} from "../config/setParameterValues";
+import {formatToolInputError} from "../lib/formatToolInputError";
 
 describe("webmcp input schemas", () => {
 	describe("listParameterDefinitionsInputSchema", () => {
@@ -31,6 +38,58 @@ describe("webmcp input schemas", () => {
 			expect(() =>
 				listParameterDefinitionsInputSchema.parse({visibleOnly: true}),
 			).toThrow();
+		});
+	});
+
+	describe("listParameterDefinitionsOutputSchema", () => {
+		it("accepts parameters-only output", () => {
+			expect(
+				listParameterDefinitionsOutputSchema.parse({
+					parameters: [
+						{
+							id: "width",
+							name: "Width",
+							type: "Int",
+							settable: true,
+						},
+					],
+				}),
+			).toEqual({
+				parameters: [
+					{
+						id: "width",
+						name: "Width",
+						type: "Int",
+						settable: true,
+					},
+				],
+			});
+		});
+
+		it("accepts optional errors array", () => {
+			expect(
+				listParameterDefinitionsOutputSchema.parse({
+					parameters: [],
+					errors: [{name: "*", message: "Invalid input"}],
+				}),
+			).toEqual({
+				parameters: [],
+				errors: [{name: "*", message: "Invalid input"}],
+			});
+		});
+	});
+
+	describe("formatToolInputError", () => {
+		it("formats Error instances", () => {
+			expect(formatToolInputError(new Error("bad input"))).toEqual({
+				errors: [{name: "*", message: "bad input"}],
+			});
+		});
+
+		it("formats non-Error values", () => {
+			expect(formatToolInputError("bad input")).toEqual({
+				errors: [{name: "*", message: "bad input"}],
+			});
 		});
 	});
 
@@ -93,6 +152,46 @@ describe("webmcp input schemas", () => {
 
 		it("rejects missing modelStateId", () => {
 			expect(() => importModelStateInputSchema.parse({})).toThrow();
+		});
+	});
+
+	describe("importModelStateSuccessOutputSchema", () => {
+		it("accepts success output with optional invalidParameters", () => {
+			expect(
+				importModelStateSuccessOutputSchema.parse({
+					success: true,
+					appliedParameterIds: ["width"],
+					invalidParameters: [
+						{
+							name: "unknown",
+							message:
+								'Parameter "unknown" does not exist in the current model session.',
+						},
+					],
+				}),
+			).toEqual({
+				success: true,
+				appliedParameterIds: ["width"],
+				invalidParameters: [
+					{
+						name: "unknown",
+						message:
+							'Parameter "unknown" does not exist in the current model session.',
+					},
+				],
+			});
+		});
+
+		it("accepts empty appliedParameterIds", () => {
+			expect(
+				importModelStateSuccessOutputSchema.parse({
+					success: true,
+					appliedParameterIds: [],
+				}),
+			).toEqual({
+				success: true,
+				appliedParameterIds: [],
+			});
 		});
 	});
 });

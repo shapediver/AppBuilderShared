@@ -29,6 +29,7 @@ export const ListParameterDefinitionItemSchema = z.object({
 	currentValue: parameterValueSchema.optional(),
 	defaultValue: parameterValueSchema.optional(),
 	hidden: z.boolean().optional(),
+	settable: z.boolean(),
 });
 
 export const listParameterDefinitionsInputSchema = z.strictObject({
@@ -44,8 +45,14 @@ export const listParameterDefinitionsInputSchema = z.strictObject({
 		.describe("Optional session namespace. Omit for the main model."),
 });
 
+export const listParameterDefinitionsErrorSchema = z.object({
+	name: z.string(),
+	message: z.string(),
+});
+
 export const listParameterDefinitionsOutputSchema = z.object({
 	parameters: z.array(ListParameterDefinitionItemSchema),
+	errors: z.array(listParameterDefinitionsErrorSchema).optional(),
 });
 
 export type ListParameterDefinitionItem = z.infer<
@@ -56,6 +63,9 @@ export type ListParameterDefinitionsInput = z.infer<
 >;
 export type ListParameterDefinitionsOutput = z.infer<
 	typeof listParameterDefinitionsOutputSchema
+>;
+export type ListParameterDefinitionsError = z.infer<
+	typeof listParameterDefinitionsErrorSchema
 >;
 
 /** Supported types of parameters (for now). */

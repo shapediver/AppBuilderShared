@@ -1,7 +1,10 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
+import {NotificationAction} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {filterAndValidateParameters} from "../parametersFilter";
-
+import {
+	filterAndValidateParameters,
+	generateParameterFeedback,
+} from "../parametersFilter";
 function createMockParameter(
 	overrides: Partial<IShapeDiverParameter<any>> & {
 		definition: IShapeDiverParameter<any>["definition"];
@@ -97,5 +100,41 @@ describe("filterAndValidateParameters", () => {
 					'Parameter "unknown" does not exist in the current model session.',
 			},
 		]);
+	});
+});
+
+describe("generateParameterFeedback", () => {
+	it("uses invalidParameters messages for partial success warnings", () => {
+		const feedback = generateParameterFeedback({
+			validParameters: {width: 42},
+			skippedParameters: ["unknown"],
+			invalidParameters: [
+				{
+					name: "unknown",
+					message:
+						'Parameter "unknown" does not exist in the current model session.',
+				},
+			],
+			hasValidParameters: true,
+		});
+
+		expect(feedback.type).toBe(NotificationAction.WARNING);
+		expect(feedback.message).toBe(
+			'Parameter "unknown" does not exist in the current model session.',
+		);
+	});
+
+	it("falls back to skipped parameter names when invalidParameters is empty", () => {
+		const feedback = generateParameterFeedback({
+			validParameters: {width: 42},
+			skippedParameters: ["foo", "bar"],
+			invalidParameters: [],
+			hasValidParameters: true,
+		});
+
+		expect(feedback.type).toBe(NotificationAction.WARNING);
+		expect(feedback.message).toBe(
+			"The following parameters could not be matched or ar invalid: foo, bar",
+		);
 	});
 });

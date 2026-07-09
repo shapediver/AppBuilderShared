@@ -43,6 +43,25 @@ export function isWebMcpAvailable(): boolean {
 	return getModelContextHost() !== undefined;
 }
 
+export function isCrossOriginIsolated(): boolean {
+	return typeof crossOriginIsolated !== "undefined" && crossOriginIsolated;
+}
+
+export function getWebMcpEnvironment(): {
+	modelContextAvailable: boolean;
+	crossOriginIsolated: boolean;
+	ready: boolean;
+} {
+	const modelContextAvailable = isWebMcpAvailable();
+	const coi = isCrossOriginIsolated();
+
+	return {
+		modelContextAvailable,
+		crossOriginIsolated: coi,
+		ready: modelContextAvailable && coi,
+	};
+}
+
 export function getModelContext(): ModelContext {
 	const host = getModelContextHost();
 	if (!host) {
