@@ -316,8 +316,8 @@ export function useWebMcpTools(
 									return {
 										success: false as const,
 										message: result.message,
-										// TODO SS-9745: enrich with per-parameter invalid detail from hook.
-										invalidParameters: [],
+										invalidParameters:
+											result.invalidParameters ?? [],
 									};
 								}
 

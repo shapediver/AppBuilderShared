@@ -112,6 +112,7 @@ export function useImportModelState({namespace}: Props) {
 				return {
 					success: false,
 					message: feedback.message,
+					invalidParameters: validationResult.invalidParameters,
 				};
 			}
 

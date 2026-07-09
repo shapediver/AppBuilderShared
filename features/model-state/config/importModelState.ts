@@ -15,6 +15,7 @@ export type IImportModelStateResult =
 	| {
 			success: false;
 			message: string;
+			invalidParameters?: Array<{name: string; message: string}>;
 	  }
 	| {
 			success: true;

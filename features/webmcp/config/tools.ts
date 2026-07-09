@@ -36,5 +36,5 @@ export const IMPORT_MODEL_STATE_TOOL_DESCRIPTION =
 	"Waits for session update before returning. " +
 	"Success: { success: true, appliedParameterIds: string[] } — parameter ids that changed during import (not a field named applied). " +
 	"If no diff is detected, all parameter ids may be listed. " +
-	"Failure: { success: false, message: string }. " +
+	"Failure: { success: false, message: string, invalidParameters?: [{ name, message }] } — per-parameter reasons when saved state does not match current model. " +
 	"Use list_parameter_definitions after import to verify currentValue.";
