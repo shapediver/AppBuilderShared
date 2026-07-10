@@ -1041,7 +1041,10 @@ export interface IAppBuilderWidgetPropsStackUi {
  *
  *   * add the identifier for the new type to AppBuilderWidgetType, and
  *   * define a new interface for the properties of the widget type and
- *     add it to the union type of "props".
+ *     add it to the union type of "props", and
+ *   * add a matching `case` in
+ *     {@link getParameterRefs @AppBuilderLib/features/appbuilder/lib/appbuilder}
+ *     (exhaustive `switch` — TypeScript errors if a type is missing).
  */
 export interface IAppBuilderWidget {
 	/** Type of the widget. */

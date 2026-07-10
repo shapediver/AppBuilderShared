@@ -131,4 +131,67 @@ describe("getParameterRefs", () => {
 			{name: "width", sessionId: "other-session"},
 		]);
 	});
+
+	it("collects refs from widgets nested in stackUi", () => {
+		const data = minimalAppBuilder([
+			{
+				name: AppBuilderContainerNameType.Left,
+				widgets: [
+					{
+						type: "stackUi",
+						props: {
+							name: "Options",
+							widgets: [
+								{
+									type: "controls",
+									props: {
+										controls: [
+											{
+												type: "parameter",
+												props: {name: "nested-slider"},
+											},
+										],
+									},
+								},
+							],
+						},
+					},
+				],
+			},
+		]);
+
+		expect(getParameterRefs(data).map((ref) => ref.name)).toEqual([
+			"nested-slider",
+		]);
+	});
+
+	it("collects refs from widgets nested in accordionUi", () => {
+		const data = minimalAppBuilder([
+			{
+				name: AppBuilderContainerNameType.Left,
+				widgets: [
+					{
+						type: "accordionUi",
+						props: {
+							items: [
+								{
+									name: "Section",
+									widgets: [
+										{
+											type: "accordion",
+											props: {
+												parameters: [{name: "depth"}],
+											},
+										},
+									],
+								},
+							],
+						},
+					},
+				],
+			},
+		]);
+
+		expect(getParameterRefs(data).map((ref) => ref.name)).toEqual(["depth"]);
+	});
 });
