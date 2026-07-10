@@ -1,5 +1,6 @@
 import {z} from "zod";
 
+/** JSON Schema subset accepted by WebMCP `registerTool({ inputSchema })`. */
 export type JsonSchema = {
 	type?: string;
 	description?: string;
@@ -12,6 +13,7 @@ export type JsonSchema = {
 	const?: string | number | boolean;
 };
 
+/** Zod 4 internal definition shape (not public API). */
 type ZodDef = {
 	type: string;
 	shape?: Record<string, z.ZodType>;
@@ -20,14 +22,16 @@ type ZodDef = {
 	element?: z.ZodType;
 	entries?: Record<string, string>;
 	values?: (string | number | boolean)[];
-	keyType?: z.ZodType;
 	valueType?: z.ZodType;
 };
+
+const PRIMITIVE_TYPES = new Set(["string", "number", "boolean"]);
 
 function getDef(schema: z.ZodType): ZodDef {
 	return (schema as z.ZodType & {_zod: {def: ZodDef}})._zod.def;
 }
 
+/** Peel `.optional()` so required[] on parent object stays correct. */
 function unwrapOptional(schema: z.ZodType): {
 	schema: z.ZodType;
 	optional: boolean;
@@ -51,16 +55,64 @@ function withDescription(
 	return jsonSchema;
 }
 
-function zodToJsonSchemaInner(schema: z.ZodType): JsonSchema {
+function literalSchema(value: unknown): JsonSchema {
+	if (typeof value === "string") {
+		return {type: "string", const: value};
+	}
+	if (typeof value === "number") {
+		return {type: "number", const: value};
+	}
+	if (typeof value === "boolean") {
+		return {type: "boolean", const: value};
+	}
+
+	return {const: value as string | number | boolean};
+}
+
+/** Builds strict object schema; nested objects also get additionalProperties: false. */
+function objectSchema(
+	shape: Record<string, z.ZodType>,
+	schema?: z.ZodType,
+): JsonSchema {
+	const properties: Record<string, JsonSchema> = {};
+	const required: string[] = [];
+
+	for (const [key, fieldSchema] of Object.entries(shape)) {
+		const {schema: inner, optional} = unwrapOptional(fieldSchema);
+		properties[key] = zodToJsonSchema(inner);
+		if (!optional) {
+			required.push(key);
+		}
+	}
+
+	const result: JsonSchema = {
+		type: "object",
+		properties,
+		additionalProperties: false,
+	};
+	if (required.length > 0) {
+		result.required = required;
+	}
+
+	return schema ? withDescription(schema, result) : result;
+}
+
+/**
+ * Converts a Zod schema to JSON Schema for WebMCP tool registration.
+ *
+ * Intentionally small: only handles Zod types used by `features/webmcp/config`
+ * (`strictObject`, primitives, enum, union, array, record, literal).
+ * Every object node sets `additionalProperties: false` so weak models cannot
+ * invent extra keys (`parameters`, `visibleOnly`, etc.).
+ */
+export function zodToJsonSchema(schema: z.ZodType): JsonSchema {
 	const def = getDef(schema);
 
+	if (PRIMITIVE_TYPES.has(def.type)) {
+		return withDescription(schema, {type: def.type});
+	}
+
 	switch (def.type) {
-		case "string":
-			return withDescription(schema, {type: "string"});
-		case "number":
-			return withDescription(schema, {type: "number"});
-		case "boolean":
-			return withDescription(schema, {type: "boolean"});
 		case "any":
 			return {};
 		case "enum":
@@ -68,68 +120,29 @@ function zodToJsonSchemaInner(schema: z.ZodType): JsonSchema {
 				type: "string",
 				enum: Object.values(def.entries ?? {}),
 			});
-		case "literal": {
-			const value = def.values?.[0];
-			if (typeof value === "string") {
-				return {type: "string", const: value};
-			}
-			if (typeof value === "number") {
-				return {type: "number", const: value};
-			}
-			if (typeof value === "boolean") {
-				return {type: "boolean", const: value};
-			}
-
-			return {const: value};
-		}
+		case "literal":
+			return literalSchema(def.values?.[0]);
 		case "array":
 			return {
 				type: "array",
-				items: def.element ? zodToJsonSchemaInner(def.element) : {},
+				items: def.element ? zodToJsonSchema(def.element) : {},
 			};
-		case "object": {
-			const properties: Record<string, JsonSchema> = {};
-			const required: string[] = [];
-
-			for (const [key, value] of Object.entries(def.shape ?? {})) {
-				const {schema: inner, optional} = unwrapOptional(value);
-				properties[key] = zodToJsonSchemaInner(inner);
-				if (!optional) {
-					required.push(key);
-				}
-			}
-
-			const result: JsonSchema = {
-				type: "object",
-				properties,
-				additionalProperties: false,
-			};
-			if (required.length > 0) {
-				result.required = required;
-			}
-
-			return withDescription(schema, result);
-		}
+		case "object":
+			return objectSchema(def.shape ?? {}, schema);
 		case "union":
 			return {
-				anyOf: (def.options ?? []).map((option) =>
-					zodToJsonSchemaInner(option),
-				),
+				anyOf: (def.options ?? []).map(zodToJsonSchema),
 			};
 		case "record":
 			return {
 				type: "object",
 				additionalProperties: def.valueType
-					? zodToJsonSchemaInner(def.valueType)
+					? zodToJsonSchema(def.valueType)
 					: true,
 			};
 		case "optional":
-			return def.innerType ? zodToJsonSchemaInner(def.innerType) : {};
+			return def.innerType ? zodToJsonSchema(def.innerType) : {};
 		default:
 			throw new Error(`Unsupported Zod type: ${def.type}`);
 	}
-}
-
-export function zodToJsonSchema(schema: z.ZodType): JsonSchema {
-	return zodToJsonSchemaInner(schema);
 }
