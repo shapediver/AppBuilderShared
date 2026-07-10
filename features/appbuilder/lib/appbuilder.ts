@@ -1,4 +1,5 @@
 import {
+	AppBuilderWidgetType,
 	IAppBuilder,
 	IAppBuilderControl,
 	IAppBuilderParameterRef,
@@ -87,11 +88,11 @@ function parameterRefsFromWidget(
 	widget: IAppBuilderWidget,
 ): IAppBuilderParameterRef[] {
 	switch (widget.type) {
-		case "accordion":
+		case AppBuilderWidgetType.Accordion:
 			return isAccordionWidget(widget) && widget.props.parameters
 				? [...widget.props.parameters]
 				: [];
-		case "form": {
+		case AppBuilderWidgetType.Form: {
 			if (!isFormWidget(widget)) {
 				return [];
 			}
@@ -102,35 +103,35 @@ function parameterRefsFromWidget(
 			refs.push(...parameterRefsFromControls(widget.props.controls));
 			return refs;
 		}
-		case "controls":
+		case AppBuilderWidgetType.Controls:
 			return isControlsWidget(widget)
 				? parameterRefsFromControls(widget.props.controls)
 				: [];
-		case "accordionUi":
+		case AppBuilderWidgetType.AccordionUi:
 			return isAccordionUiWidget(widget)
 				? widget.props.items.flatMap((item) =>
 						item.widgets.flatMap(parameterRefsFromWidget),
 					)
 				: [];
-		case "stackUi":
+		case AppBuilderWidgetType.StackUi:
 			return isStackUiWidget(widget)
 				? widget.props.widgets.flatMap(parameterRefsFromWidget)
 				: [];
-		case "text":
-		case "image":
-		case "roundChart":
-		case "lineChart":
-		case "areaChart":
-		case "barChart":
-		case "actions":
-		case "attributeVisualization":
-		case "agent":
-		case "progress":
-		case "desktopClientSelection":
-		case "desktopClientOutputs":
-		case "savedStates":
-		case "sceneTreeExplorer":
-		case "table":
+		case AppBuilderWidgetType.Text:
+		case AppBuilderWidgetType.Image:
+		case AppBuilderWidgetType.RoundChart:
+		case AppBuilderWidgetType.LineChart:
+		case AppBuilderWidgetType.AreaChart:
+		case AppBuilderWidgetType.BarChart:
+		case AppBuilderWidgetType.Actions:
+		case AppBuilderWidgetType.AttributeVisualization:
+		case AppBuilderWidgetType.Agent:
+		case AppBuilderWidgetType.Progress:
+		case AppBuilderWidgetType.DesktopClientSelection:
+		case AppBuilderWidgetType.DesktopClientOutputs:
+		case AppBuilderWidgetType.SavedStates:
+		case AppBuilderWidgetType.SceneTreeExplorer:
+		case AppBuilderWidgetType.Table:
 			return [];
 		default: {
 			const unhandledType: never = widget.type;
@@ -143,7 +144,7 @@ function parameterRefsFromWidget(
  * Returns all parameter references placed in the App Builder UI layout.
  *
  * Walks every container and tab, collecting refs from accordion, form, controls,
- * and nested stack/accordion-ui widgets. Used to determine which session parameters
+ * and nested stack/accordion-ui widgets. Used to determine which session parameters are shown in
  * the configurator (e.g. WebMCP `filter: "visible"`, in-app agent context).
  *
  * @param data - Parsed App Builder settings / layout tree.
