@@ -1,7 +1,7 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {composeSdColor} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {resolveAndUpdate} from "../config/setParameterValues";
+import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
 
 function createMockParameter(
 	overrides: Partial<IShapeDiverParameter<any>> & {
@@ -32,9 +32,7 @@ function createMockParameter(
 
 describe("resolveAndUpdate", () => {
 	const namespace = "session-1";
-	const batchParameterValueUpdate = jest
-		.fn()
-		.mockResolvedValue(undefined);
+	const batchParameterValueUpdate = jest.fn().mockResolvedValue(undefined);
 
 	const getParametersFor =
 		(paramsByNamespace: Record<string, IShapeDiverParameter<any>[]>) =>
@@ -177,7 +175,9 @@ describe("resolveAndUpdate", () => {
 				type: ResParameterType.COLOR,
 				defval: "0x000000ff",
 			} as IShapeDiverParameter<any>["definition"],
-			state: {uiValue: "0x000000ff"} as IShapeDiverParameter<any>["state"],
+			state: {
+				uiValue: "0x000000ff",
+			} as IShapeDiverParameter<any>["state"],
 			actions: {
 				isValid: (value: unknown) => value === composed,
 			} as IShapeDiverParameter<any>["actions"],

@@ -10,10 +10,7 @@ import {useShallow} from "zustand/react/shallow";
 import {createModelStateInputSchema} from "../config/createModelState";
 import {importModelStateInputSchema} from "../config/importModelState";
 import {listParameterDefinitionsInputSchema} from "../config/listParameterDefinitions";
-import {
-	resolveAndUpdate,
-	setParameterValuesInputSchema,
-} from "../config/setParameterValues";
+import {setParameterValuesInputSchema} from "../config/setParameterValues";
 import {
 	CREATE_MODEL_STATE_TOOL_DESCRIPTION,
 	CREATE_MODEL_STATE_TOOL_NAME,
@@ -28,6 +25,7 @@ import {computeAppliedParameterIds} from "../lib/computeAppliedParameterIds";
 import {filterVisibleParameters} from "../lib/filterVisibleParameters";
 import {formatToolInputError} from "../lib/formatToolInputError";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
+import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
 import {
 	getModelContext,
 	getWebMcpEnvironment,

@@ -9,13 +9,11 @@ import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
 } from "../config/listParameterDefinitions";
-import {
-	resolveAndUpdate,
-	setParameterValuesInputSchema,
-} from "../config/setParameterValues";
+import {setParameterValuesInputSchema} from "../config/setParameterValues";
 import {filterVisibleParameters} from "../lib/filterVisibleParameters";
 import {formatToolInputError} from "../lib/formatToolInputError";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
+import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
 import {
 	allParameters,
 	EVAL_NAMESPACE,
