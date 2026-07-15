@@ -2,18 +2,16 @@ import {
 	AppBuilderContainerNameType,
 	IAppBuilder,
 } from "../../config/appbuilder";
-import {getParameterRefs} from "../appbuilder";
+import {getUiParameterRefs} from "../appbuilder";
 
-function minimalAppBuilder(
-	containers: IAppBuilder["containers"],
-): IAppBuilder {
+function minimalAppBuilder(containers: IAppBuilder["containers"]): IAppBuilder {
 	return {
 		version: "1.0",
 		containers,
 	};
 }
 
-describe("getParameterRefs", () => {
+describe("getUiParameterRefs", () => {
 	it("collects refs from accordion widgets in containers and tabs", () => {
 		const data = minimalAppBuilder([
 			{
@@ -38,7 +36,7 @@ describe("getParameterRefs", () => {
 			},
 		]);
 
-		expect(getParameterRefs(data).map((ref) => ref.name)).toEqual([
+		expect(getUiParameterRefs(data).map((ref) => ref.name)).toEqual([
 			"width",
 			"height",
 		]);
@@ -54,7 +52,10 @@ describe("getParameterRefs", () => {
 						props: {
 							parameters: [{name: "form-param"}],
 							controls: [
-								{type: "parameter", props: {name: "control-param"}},
+								{
+									type: "parameter",
+									props: {name: "control-param"},
+								},
 								{type: "export", props: {name: "some-export"}},
 							],
 						},
@@ -63,7 +64,7 @@ describe("getParameterRefs", () => {
 			},
 		]);
 
-		expect(getParameterRefs(data).map((ref) => ref.name)).toEqual([
+		expect(getUiParameterRefs(data).map((ref) => ref.name)).toEqual([
 			"form-param",
 			"control-param",
 		]);
@@ -92,7 +93,7 @@ describe("getParameterRefs", () => {
 			},
 		]);
 
-		expect(getParameterRefs(data)).toEqual([
+		expect(getUiParameterRefs(data)).toEqual([
 			{name: "slider", sessionId: "session-a"},
 		]);
 	});
@@ -126,7 +127,7 @@ describe("getParameterRefs", () => {
 			},
 		]);
 
-		expect(getParameterRefs(data)).toEqual([
+		expect(getUiParameterRefs(data)).toEqual([
 			{name: "width"},
 			{name: "width", sessionId: "other-session"},
 		]);
@@ -160,7 +161,7 @@ describe("getParameterRefs", () => {
 			},
 		]);
 
-		expect(getParameterRefs(data).map((ref) => ref.name)).toEqual([
+		expect(getUiParameterRefs(data).map((ref) => ref.name)).toEqual([
 			"nested-slider",
 		]);
 	});
@@ -192,6 +193,8 @@ describe("getParameterRefs", () => {
 			},
 		]);
 
-		expect(getParameterRefs(data).map((ref) => ref.name)).toEqual(["depth"]);
+		expect(getUiParameterRefs(data).map((ref) => ref.name)).toEqual([
+			"depth",
+		]);
 	});
 });

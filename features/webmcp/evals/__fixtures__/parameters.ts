@@ -5,69 +5,11 @@ import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 
 export const EVAL_NAMESPACE = "eval-session";
 
-function createIsValid(
-	def: IShapeDiverParameter<any>["definition"],
-): IShapeDiverParameter<any>["actions"]["isValid"] {
-	return (value: unknown) => {
-		const type = def.type;
-
-		if (
-			type === ResParameterType.INT ||
-			type === ResParameterType.FLOAT ||
-			type === ResParameterType.EVEN ||
-			type === ResParameterType.ODD
-		) {
-			if (typeof value !== "number") {
-				return false;
-			}
-			const min = def.min ?? Number.NEGATIVE_INFINITY;
-			const max = def.max ?? Number.POSITIVE_INFINITY;
-
-			return value >= min && value <= max;
-		}
-
-		if (type === ResParameterType.STRINGLIST) {
-			if (typeof value !== "string" && typeof value !== "number") {
-				return false;
-			}
-			const index = typeof value === "number" ? value : Number(value);
-			const choices = def.choices ?? [];
-
-			return (
-				Number.isInteger(index) && index >= 0 && index < choices.length
-			);
-		}
-
-		if (type === ResParameterType.COLOR) {
-			return typeof value === "string" && value.length > 0;
-		}
-
-		if (type === ResParameterType.STRING) {
-			if (typeof value !== "string") {
-				return false;
-			}
-			if (def.max !== undefined) {
-				return value.length <= def.max;
-			}
-
-			return true;
-		}
-
-		if (type === ResParameterType.BOOL) {
-			return typeof value === "boolean";
-		}
-
-		return true;
-	};
-}
-
 function createMockParameter(
 	overrides: Partial<IShapeDiverParameter<any>> & {
 		definition: IShapeDiverParameter<any>["definition"];
 	},
 ): IShapeDiverParameter<any> {
-	const isValid = createIsValid(overrides.definition);
-
 	return {
 		state: {
 			uiValue: overrides.state?.uiValue,
@@ -80,7 +22,7 @@ function createMockParameter(
 			setUiValue: () => true,
 			setUiAndExecValue: () => true,
 			execute: async () => "",
-			isValid,
+			isValid: overrides.actions?.isValid ?? (() => true),
 			isUiValueDifferent: () => false,
 			resetToDefaultValue: () => undefined,
 			resetToExecValue: () => undefined,
@@ -103,6 +45,10 @@ export const intParameter = createMockParameter({
 		tooltip: "Model width",
 	} as unknown as IShapeDiverParameter<any>["definition"],
 	state: {uiValue: 5} as IShapeDiverParameter<any>["state"],
+	actions: {
+		isValid: (value) =>
+			typeof value === "number" && value >= 0 && value <= 10,
+	} as IShapeDiverParameter<any>["actions"],
 });
 
 export const stringListParameter = createMockParameter({
@@ -114,6 +60,15 @@ export const stringListParameter = createMockParameter({
 		defval: 0,
 	} as unknown as IShapeDiverParameter<any>["definition"],
 	state: {uiValue: 1} as IShapeDiverParameter<any>["state"],
+	actions: {
+		isValid: (value) => {
+			const index = typeof value === "number" ? value : Number(value);
+
+			return (
+				Number.isInteger(index) && index >= 0 && index < 3
+			);
+		},
+	} as IShapeDiverParameter<any>["actions"],
 });
 
 export const colorParameter = createMockParameter({

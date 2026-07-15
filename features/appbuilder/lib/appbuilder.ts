@@ -18,14 +18,14 @@ import {
  * TypeScript reports an error on the `never` assignment in the default branch.
  */
 function assertNever(value: never): never {
-	throw new Error(`Unhandled widget type: ${String(value)}`);
+	throw new Error(`Unhandled case: ${String(value)}`);
 }
 
 /**
  * Stable deduplication key for a parameter reference.
  * Combines optional `sessionId` and `name` so the same parameter in different sessions stays distinct.
  */
-function refKey(
+function parameterRefDedupeKey(
 	ref: Pick<IAppBuilderParameterRef, "name" | "sessionId">,
 ): string {
 	return `${ref.sessionId ?? ""}\0${ref.name}`;
@@ -42,7 +42,7 @@ function dedupeParameterRefs(
 	const result: IAppBuilderParameterRef[] = [];
 
 	for (const ref of refs) {
-		const key = refKey(ref);
+		const key = parameterRefDedupeKey(ref);
 		if (seen.has(key)) {
 			continue;
 		}
@@ -150,7 +150,7 @@ function parameterRefsFromWidget(
  * @param data - Parsed App Builder settings / layout tree.
  * @returns Deduplicated refs ordered by first appearance in the layout.
  */
-export function getParameterRefs(data: IAppBuilder): IAppBuilderParameterRef[] {
+export function getUiParameterRefs(data: IAppBuilder): IAppBuilderParameterRef[] {
 	const refs: IAppBuilderParameterRef[] = [];
 
 	for (const container of data.containers) {

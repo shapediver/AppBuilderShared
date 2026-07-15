@@ -1,4 +1,4 @@
-import {getParameterRefs} from "@AppBuilderLib/features/appbuilder/lib/appbuilder";
+import {getUiParameterRefs} from "@AppBuilderLib/features/appbuilder/lib/appbuilder";
 import {listParameterDefinitionsInputSchema} from "../../config/listParameterDefinitions";
 import {
 	LIST_PARAMETER_DEFINITIONS_TOOL_DESCRIPTION,
@@ -18,7 +18,7 @@ function findParameterRef(
 	displayname?: string,
 ) {
 	const refs = deps.appBuilderDataRef.current
-		? getParameterRefs(deps.appBuilderDataRef.current)
+		? getUiParameterRefs(deps.appBuilderDataRef.current)
 		: [];
 
 	return refs.find(
@@ -54,7 +54,7 @@ export async function registerListParameterDefinitionsTool(
 
 					if (filter === "visible") {
 						const refs = deps.appBuilderDataRef.current
-							? getParameterRefs(deps.appBuilderDataRef.current)
+							? getUiParameterRefs(deps.appBuilderDataRef.current)
 							: [];
 						parameters = filterVisibleParameters(parameters, refs);
 					}

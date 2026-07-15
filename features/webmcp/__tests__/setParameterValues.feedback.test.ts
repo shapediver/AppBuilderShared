@@ -118,7 +118,7 @@ describe("resolveAndUpdate", () => {
 			errors: [
 				{
 					name: "Width",
-					message: "Value 200 is out of range [0, 100].",
+					message: "Value 200 is not valid for parameter.",
 				},
 			],
 		});

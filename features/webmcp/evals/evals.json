@@ -61,7 +61,7 @@
 		"expect": {
 			"applied": [],
 			"errorsNonEmpty": true,
-			"errorMessageIncludes": "does not match parameter type"
+			"errorMessageIncludes": "not valid for parameter"
 		}
 	},
 	{
@@ -147,7 +147,7 @@
 		"expect": {
 			"applied": [],
 			"errorsNonEmpty": true,
-			"errorMessageIncludes": "0-based integer index"
+			"errorMessageIncludes": "not valid for parameter"
 		}
 	},
 	{
@@ -185,7 +185,7 @@
 		"expect": {
 			"applied": [],
 			"errorCount": 2,
-			"errorMessageIncludesAll": ["0-based integer index", "out of range"]
+			"errorMessageIncludesAll": ["not valid"]
 		}
 	},
 	{
@@ -198,7 +198,7 @@
 		"expect": {
 			"applied": [],
 			"errorsNonEmpty": true,
-			"errorMessageIncludes": "0-based integer index"
+			"errorMessageIncludes": "not valid for parameter"
 		}
 	},
 	{

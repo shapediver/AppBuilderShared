@@ -3,7 +3,7 @@ import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter
 import {useAllParametersStateless} from "@AppBuilderLib/entities/parameter/model/useAllParametersStateless";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import {getParameterRefs} from "@AppBuilderLib/features/appbuilder/lib/appbuilder";
+import {getUiParameterRefs} from "@AppBuilderLib/features/appbuilder/lib/appbuilder";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {
 	composeSdColor,
@@ -415,7 +415,7 @@ export function useAgent(props: Props) {
 	// get App Builder data, we need it to extract parameter tooltips
 	const {data: appBuilderData} = useContext(AppBuilderDataContext);
 	const parameterRefs = useMemo(
-		() => (appBuilderData ? getParameterRefs(appBuilderData) : []),
+		() => (appBuilderData ? getUiParameterRefs(appBuilderData) : []),
 		[appBuilderData],
 	);
 

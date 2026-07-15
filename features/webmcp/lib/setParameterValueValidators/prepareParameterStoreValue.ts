@@ -1,27 +1,27 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
+import type {DecomposedColorFormat} from "@AppBuilderLib/shared/lib/colors";
+import {composeSdColor} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {
-	isBoolParameterType,
-	prepareBoolParameterValue,
-} from "./boolParameterValueValidator";
-import {
-	isColorParameterType,
-	prepareColorParameterValue,
-} from "./colorParameterValueValidator";
-import {isColorObject} from "./isColorObject";
-import {
-	isNumericParameterType,
-	prepareNumericParameterValue,
-} from "./numericParameterValueValidator";
-import {prepareStringListParameterValue} from "./stringListParameterValueValidator";
-import {
-	isStringParameterType,
-	prepareStringParameterValue,
-} from "./stringParameterValueValidator";
+import {toStringListStoreValue} from "../stringListValue";
 import type {ParameterValueInput, ParameterValuePrepareResult} from "./types";
 
 const COLOR_ON_NON_COLOR_MESSAGE =
 	"Color object value is only valid for Color parameters.";
+
+function isColorObject(value: unknown): value is DecomposedColorFormat {
+	return (
+		typeof value === "object" &&
+		value !== null &&
+		"red" in value &&
+		"green" in value &&
+		"blue" in value &&
+		"alpha" in value
+	);
+}
+
+function invalidValueMessage(value: ParameterValueInput): string {
+	return `Value ${JSON.stringify(value)} is not valid for parameter.`;
+}
 
 /**
  * Validates agent input and returns the store value ShapeDiver expects.
@@ -32,36 +32,26 @@ export function prepareParameterStoreValue(
 ): ParameterValuePrepareResult {
 	const type = parameter.definition.type;
 
-	if (isColorObject(value) && !isColorParameterType(type)) {
+	if (isColorObject(value) && type !== ResParameterType.COLOR) {
 		return {success: false, message: COLOR_ON_NON_COLOR_MESSAGE};
 	}
 
-	if (isColorParameterType(type)) {
-		return prepareColorParameterValue(parameter, value);
+	let storeValue: unknown;
+
+	if (type === ResParameterType.COLOR && isColorObject(value)) {
+		storeValue = composeSdColor(value);
+	} else if (type === ResParameterType.STRINGLIST) {
+		storeValue = toStringListStoreValue(value);
+		if (storeValue === undefined) {
+			return {success: false, message: invalidValueMessage(value)};
+		}
+	} else {
+		storeValue = value;
 	}
 
-	if (type === ResParameterType.STRINGLIST) {
-		return prepareStringListParameterValue(parameter, value);
+	if (!parameter.actions.isValid(storeValue, false)) {
+		return {success: false, message: invalidValueMessage(value)};
 	}
 
-	if (isBoolParameterType(type)) {
-		return prepareBoolParameterValue(parameter, value);
-	}
-
-	if (isStringParameterType(type)) {
-		return prepareStringParameterValue(parameter, value);
-	}
-
-	if (isNumericParameterType(type)) {
-		return prepareNumericParameterValue(parameter, value);
-	}
-
-	if (!parameter.actions.isValid(value, false)) {
-		return {
-			success: false,
-			message: `Value ${value} is not valid for parameter.`,
-		};
-	}
-
-	return {success: true, storeValue: value};
+	return {success: true, storeValue};
 }
