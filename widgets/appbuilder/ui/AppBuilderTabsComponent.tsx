@@ -3,7 +3,7 @@ import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appb
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
-import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
+import AppBuilderWidgetsWithStackShell from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsWithStackShell";
 import {useMemo} from "react";
 
 interface Props {
@@ -39,7 +39,7 @@ export default function AppBuilderTabsComponent({
 					icon: tab.icon,
 					tooltip: tab.tooltip,
 					children: [
-						<AppBuilderWidgetsComponent
+						<AppBuilderWidgetsWithStackShell
 							key={0}
 							namespace={namespace}
 							widgets={tab.widgets}

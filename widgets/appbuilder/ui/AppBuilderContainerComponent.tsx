@@ -1,8 +1,5 @@
 import {IAppBuilderContainer} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
-import {useStackContext} from "@AppBuilderLib/features/appbuilder/model/useStackContext";
-import AppBuilderStackUiWidgetComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
-import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
+import AppBuilderWidgetsWithStackShell from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsWithStackShell";
 import AppBuilderTabsComponent from "./AppBuilderTabsComponent";
 
 interface Props extends IAppBuilderContainer {
@@ -19,25 +16,27 @@ export default function AppBuilderContainerComponent({
 	tabs,
 	name,
 }: Props) {
-	const {stackPath, context} = useStackContext(300);
+	const hasTabs = Boolean(tabs?.length);
 
 	return (
-		<AppBuilderStackContext.Provider value={context}>
+		<>
 			<AppBuilderTabsComponent
 				namespace={namespace}
 				tabs={tabs}
 				containerName={name}
 			/>
-			<AppBuilderStackUiWidgetComponent
-				namespace={namespace}
-				stackPath={stackPath}
-				liveWidgets={widgets}
-			>
-				<AppBuilderWidgetsComponent
+			{!hasTabs && (
+				<AppBuilderWidgetsWithStackShell
 					namespace={namespace}
 					widgets={widgets}
 				/>
-			</AppBuilderStackUiWidgetComponent>
-		</AppBuilderStackContext.Provider>
+			)}
+			{hasTabs && Boolean(widgets?.length) && (
+				<AppBuilderWidgetsWithStackShell
+					namespace={namespace}
+					widgets={widgets}
+				/>
+			)}
+		</>
 	);
 }
