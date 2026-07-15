@@ -13,15 +13,6 @@ import {
 } from "../config/appbuilder";
 
 /**
- * Compile-time exhaustiveness guard for {@link parameterRefsFromWidget}.
- * If `AppBuilderWidgetType` gains a new member without a matching `switch` case,
- * TypeScript reports an error on the `never` assignment in the default branch.
- */
-function assertNever(value: never): never {
-	throw new Error(`Unhandled case: ${String(value)}`);
-}
-
-/**
  * Maps parameter-type controls to {@link IAppBuilderParameterRef} entries.
  * Export, action, and output controls are ignored.
  *
@@ -103,7 +94,7 @@ function parameterRefsFromWidget(
 			return [];
 		default: {
 			const unhandledType: never = widget.type;
-			return assertNever(unhandledType);
+			throw new Error(`Unhandled widget type: ${String(unhandledType)}`);
 		}
 	}
 }
@@ -118,7 +109,9 @@ function parameterRefsFromWidget(
  * @param data - Parsed App Builder settings / layout tree.
  * @returns Refs ordered by first appearance in the layout (duplicates preserved if a parameter is placed in multiple widgets).
  */
-export function getUiParameterRefs(data: IAppBuilder): IAppBuilderParameterRef[] {
+export function getUiParameterRefs(
+	data: IAppBuilder,
+): IAppBuilderParameterRef[] {
 	const refs: IAppBuilderParameterRef[] = [];
 
 	for (const container of data.containers) {
