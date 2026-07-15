@@ -37,7 +37,7 @@ export const listParameterDefinitionsInputSchema = z.strictObject({
 		.enum(["all", "visible"])
 		.optional()
 		.describe(
-			"all = every changeable parameter; visible = parameters shown in the configurator panel. Defaults to all.",
+			"all = every parameter; visible = parameters not hidden by the model (definition.hidden === false). Defaults to all.",
 		),
 	sessionId: z
 		.string()

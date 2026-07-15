@@ -10,15 +10,10 @@ import {
 	listParameterDefinitionsOutputSchema,
 } from "../config/listParameterDefinitions";
 import {setParameterValuesInputSchema} from "../config/setParameterValues";
-import {filterVisibleParameters} from "../lib/filterVisibleParameters";
 import {formatToolInputError} from "../lib/formatToolInputError";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
 import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
-import {
-	allParameters,
-	EVAL_NAMESPACE,
-	parameterRefs,
-} from "./__fixtures__/parameters";
+import {allParameters, EVAL_NAMESPACE} from "./__fixtures__/parameters";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -50,17 +45,6 @@ function loadScenarios(): EvalScenario[] {
 	return JSON.parse(raw) as EvalScenario[];
 }
 
-function findParameterRef(param: (typeof allParameters)[number]) {
-	const def = param.definition;
-
-	return parameterRefs.find(
-		(ref) =>
-			ref.name === def.id ||
-			ref.name === def.name ||
-			(!!def.displayname && ref.name === def.displayname),
-	);
-}
-
 function runListScenario(input: Record<string, unknown>) {
 	try {
 		const parsed = listParameterDefinitionsInputSchema.parse(input);
@@ -68,12 +52,12 @@ function runListScenario(input: Record<string, unknown>) {
 		let parameters = allParameters;
 
 		if (filter === "visible") {
-			parameters = filterVisibleParameters(parameters, parameterRefs);
+			parameters = parameters.filter((p) => !p.definition.hidden);
 		}
 
 		return {
 			parameters: parameters.map((param) =>
-				mapParameterDefinition(param, findParameterRef(param)),
+				mapParameterDefinition(param),
 			),
 		};
 	} catch (e) {

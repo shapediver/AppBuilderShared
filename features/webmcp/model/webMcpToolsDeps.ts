@@ -1,6 +1,5 @@
 import type {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
-import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {
 	ICreateModelStateData,
 	ICreateModelStateResult,
@@ -13,7 +12,6 @@ import type {MutableRefObject} from "react";
 
 export interface WebMcpToolsDeps {
 	namespaceRef: MutableRefObject<string>;
-	appBuilderDataRef: MutableRefObject<IAppBuilder | undefined>;
 	getLiveParameters: (namespace: string) => IShapeDiverParameter<any>[];
 	batchParameterValueUpdateRef: MutableRefObject<
 		IShapeDiverStoreParameters["batchParameterValueUpdate"]

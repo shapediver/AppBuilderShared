@@ -1,9 +1,8 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
-import {useContext, useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
 	getModelContext,
@@ -48,8 +47,6 @@ export function useWebMcpTools(
 	const {importModelState} = useImportModelState({
 		namespace: namespace ?? "",
 	});
-	const {data: appBuilderData} = useContext(AppBuilderDataContext);
-
 	const namespaceRef = useRef<string>(namespace ?? "");
 	namespaceRef.current = namespace ?? "";
 
@@ -64,9 +61,6 @@ export function useWebMcpTools(
 
 	const importModelStateRef = useRef(importModelState);
 	importModelStateRef.current = importModelState;
-
-	const appBuilderDataRef = useRef(appBuilderData);
-	appBuilderDataRef.current = appBuilderData;
 
 	const sessionReady = !!namespace && !!sessions[namespace];
 	const paramsPopulated =
@@ -88,7 +82,6 @@ export function useWebMcpTools(
 
 		const deps: WebMcpToolsDeps = {
 			namespaceRef,
-			appBuilderDataRef,
 			getLiveParameters: (targetNamespace) =>
 				Object.values(getParametersRef.current(targetNamespace)).map(
 					(store) => store.getState(),

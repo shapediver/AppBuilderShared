@@ -118,7 +118,8 @@ describe("resolveAndUpdate", () => {
 			errors: [
 				{
 					name: "Width",
-					message: "Value 200 is not valid for parameter.",
+					message:
+						'Value 200 is not valid for parameter "Width" (Float). Use a number in range [0, 100].',
 				},
 			],
 		});

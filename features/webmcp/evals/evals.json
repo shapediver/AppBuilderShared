@@ -9,9 +9,19 @@
 	{
 		"id": "list_visible",
 		"tool": "list_parameter_definitions",
-		"description": "List only UI-visible parameters",
+		"description": "List only non-hidden parameters",
 		"input": {"filter": "visible"},
-		"expect": {"parametersCount": 2, "parameterIds": ["width-int", "paint-color"]}
+		"expect": {
+			"parametersCount": 6,
+			"parameterIds": [
+				"width-int",
+				"material-list",
+				"paint-color",
+				"height-float",
+				"enabled-bool",
+				"color-list"
+			]
+		}
 	},
 	{
 		"id": "list_reject_visible_only",
@@ -36,7 +46,7 @@
 		"input": {
 			"updates": [{"name": "Width", "value": 99}]
 		},
-		"expect": {"applied": [], "errorsNonEmpty": true, "appliedExcludes": ["width-int"]}
+		"expect": {"applied": [], "errorsNonEmpty": true, "appliedExcludes": ["width-int"], "errorMessageIncludes": "range"}
 	},
 	{
 		"id": "set_unknown_id",
@@ -147,7 +157,7 @@
 		"expect": {
 			"applied": [],
 			"errorsNonEmpty": true,
-			"errorMessageIncludes": "not valid for parameter"
+			"errorMessageIncludes": "0-based integer index"
 		}
 	},
 	{
@@ -185,7 +195,7 @@
 		"expect": {
 			"applied": [],
 			"errorCount": 2,
-			"errorMessageIncludesAll": ["not valid"]
+			"errorMessageIncludesAll": ["0-based integer index", "range"]
 		}
 	},
 	{
@@ -198,7 +208,7 @@
 		"expect": {
 			"applied": [],
 			"errorsNonEmpty": true,
-			"errorMessageIncludes": "not valid for parameter"
+			"errorMessageIncludes": "0-based integer index"
 		}
 	},
 	{

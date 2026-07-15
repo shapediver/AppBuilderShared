@@ -124,7 +124,7 @@ describe("mapParameterDefinition", () => {
 		});
 	});
 
-	it("applies ref overrides for displayname/group/tooltip", () => {
+	it("includes group and tooltip from definition", () => {
 		const param = createMockParameter({
 			definition: {
 				id: "p1",
@@ -140,23 +140,13 @@ describe("mapParameterDefinition", () => {
 			state: {uiValue: 7} as IShapeDiverParameter<any>["state"],
 		});
 
-		expect(
-			mapParameterDefinition(param, {
-				name: "width",
-				overrides: {
-					displayname: "Custom Width",
-					group: {name: "Sizing"},
-					tooltip: "Override tooltip",
-				},
-			}),
-		).toEqual({
+		expect(mapParameterDefinition(param)).toEqual({
 			id: "p1",
 			name: "Width",
-			displayname: "Custom Width",
 			type: ResParameterType.INT,
 			settable: true,
-			group: "Sizing",
-			tooltip: "Override tooltip",
+			group: "Dimensions",
+			tooltip: "Model width",
 			min: 0,
 			max: 10,
 			currentValue: 7,

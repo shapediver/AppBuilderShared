@@ -1,5 +1,4 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
-import {IAppBuilderParameterRef} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {decomposeSdColor} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
@@ -12,7 +11,6 @@ export type {ListParameterDefinitionItem};
 
 export function mapParameterDefinition(
 	param: IShapeDiverParameter<any>,
-	ref?: IAppBuilderParameterRef,
 ): ListParameterDefinitionItem {
 	const def = param.definition;
 	const currentValue = param.state.uiValue;
@@ -29,19 +27,16 @@ export function mapParameterDefinition(
 		item.hidden = def.hidden;
 	}
 
-	const displayname = ref?.overrides?.displayname;
-	if (displayname && displayname !== name) {
-		item.displayname = displayname;
+	if (def.displayname && def.displayname !== name) {
+		item.displayname = def.displayname;
 	}
 
-	const groupName = ref?.overrides?.group?.name || def.group?.name;
-	if (groupName) {
-		item.group = groupName;
+	if (def.group?.name) {
+		item.group = def.group.name;
 	}
 
-	const tooltip = ref?.overrides?.tooltip || def.tooltip;
-	if (tooltip) {
-		item.tooltip = tooltip;
+	if (def.tooltip) {
+		item.tooltip = def.tooltip;
 	}
 
 	if (def.type === ResParameterType.STRINGLIST) {

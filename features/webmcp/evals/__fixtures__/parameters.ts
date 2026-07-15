@@ -1,5 +1,4 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
-import {IAppBuilderParameterRef} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {composeSdColor} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 
@@ -123,6 +122,7 @@ export const fileParameter = createMockParameter({
 		id: "upload-file",
 		name: "Upload",
 		type: ResParameterType.FILE,
+		hidden: true,
 	} as unknown as IShapeDiverParameter<any>["definition"],
 	state: {uiValue: ""} as IShapeDiverParameter<any>["state"],
 });
@@ -135,10 +135,4 @@ export const allParameters: IShapeDiverParameter<any>[] = [
 	boolParameter,
 	colorNamedStringListParameter,
 	fileParameter,
-];
-
-/** Refs for the "visible" list filter — width + paint only. */
-export const parameterRefs: IAppBuilderParameterRef[] = [
-	{name: "width-int"},
-	{name: "Paint"},
 ];
