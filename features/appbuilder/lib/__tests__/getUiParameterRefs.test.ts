@@ -98,41 +98,6 @@ describe("getUiParameterRefs", () => {
 		]);
 	});
 
-	it("deduplicates refs by name and sessionId", () => {
-		const data = minimalAppBuilder([
-			{
-				name: AppBuilderContainerNameType.Left,
-				widgets: [
-					{
-						type: "accordion",
-						props: {parameters: [{name: "width"}]},
-					},
-					{
-						type: "form",
-						props: {
-							parameters: [{name: "width"}],
-							controls: [
-								{type: "parameter", props: {name: "width"}},
-								{
-									type: "parameter",
-									props: {
-										name: "width",
-										sessionId: "other-session",
-									},
-								},
-							],
-						},
-					},
-				],
-			},
-		]);
-
-		expect(getUiParameterRefs(data)).toEqual([
-			{name: "width"},
-			{name: "width", sessionId: "other-session"},
-		]);
-	});
-
 	it("collects refs from widgets nested in stackUi", () => {
 		const data = minimalAppBuilder([
 			{

@@ -22,38 +22,6 @@ function assertNever(value: never): never {
 }
 
 /**
- * Stable deduplication key for a parameter reference.
- * Combines optional `sessionId` and `name` so the same parameter in different sessions stays distinct.
- */
-function parameterRefDedupeKey(
-	ref: Pick<IAppBuilderParameterRef, "name" | "sessionId">,
-): string {
-	return `${ref.sessionId ?? ""}\0${ref.name}`;
-}
-
-/**
- * Removes duplicate parameter references while preserving first-seen order.
- * Two refs are equal when both `name` and `sessionId` match.
- */
-function dedupeParameterRefs(
-	refs: IAppBuilderParameterRef[],
-): IAppBuilderParameterRef[] {
-	const seen = new Set<string>();
-	const result: IAppBuilderParameterRef[] = [];
-
-	for (const ref of refs) {
-		const key = parameterRefDedupeKey(ref);
-		if (seen.has(key)) {
-			continue;
-		}
-		seen.add(key);
-		result.push(ref);
-	}
-
-	return result;
-}
-
-/**
  * Maps parameter-type controls to {@link IAppBuilderParameterRef} entries.
  * Export, action, and output controls are ignored.
  *
@@ -145,10 +113,10 @@ function parameterRefsFromWidget(
  *
  * Walks every container and tab, collecting refs from accordion, form, controls,
  * and nested stack/accordion-ui widgets. Used to determine which session parameters are shown in
- * the configurator (e.g. WebMCP `filter: "visible"`, in-app agent context).
+ * the configurator (e.g. in-app agent context).
  *
  * @param data - Parsed App Builder settings / layout tree.
- * @returns Deduplicated refs ordered by first appearance in the layout.
+ * @returns Refs ordered by first appearance in the layout (duplicates preserved if a parameter is placed in multiple widgets).
  */
 export function getUiParameterRefs(data: IAppBuilder): IAppBuilderParameterRef[] {
 	const refs: IAppBuilderParameterRef[] = [];
@@ -168,5 +136,5 @@ export function getUiParameterRefs(data: IAppBuilder): IAppBuilderParameterRef[]
 		}
 	}
 
-	return dedupeParameterRefs(refs);
+	return refs;
 }
