@@ -61,6 +61,12 @@ export interface IAddItemToCartData {
 
 	/** URL of the usdz asset saved as part of the model state. */
 	modelStateUsdzUrl?: string;
+
+	/**
+	 * Optional title to be used for overriding the product's default title
+	 * for the added line item.
+	 */
+	title?: string;
 }
 
 export interface IAddItemToCartReply {

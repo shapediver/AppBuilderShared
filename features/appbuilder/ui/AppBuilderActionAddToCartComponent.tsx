@@ -34,6 +34,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		parameterNamesToExclude,
 		successMessage,
 		errorMessage,
+		title,
 	} = props;
 
 	const {
@@ -73,6 +74,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 				quantity,
 				price,
 				description,
+				title,
 				imageUrl: resultModelState.screenshot,
 				modelViewUrl: resultModelState.modelViewUrl,
 				modelStateImageUrl: resultModelState.modelStateImageUrl,

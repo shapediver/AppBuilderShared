@@ -480,6 +480,11 @@ export interface IAppBuilderActionPropsAddToCart extends IAppBuilderActionPropsC
 	price?: number;
 	/** Description to be used for the line item. */
 	description?: string;
+	/**
+	 * Optional title to be used for overriding the product's default title
+	 * for the added line item.
+	 */
+	title?: string;
 }
 
 /**
