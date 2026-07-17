@@ -1,6 +1,5 @@
 import {nameMessageSchema} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
 import {z} from "zod";
-import type {ParameterValueInput} from "../lib/setParameterValueValidators/types";
 import {parameterValueSchema} from "./listParameterDefinitions";
 
 const setParameterUpdateSchema = z.strictObject({
@@ -18,8 +17,6 @@ const setParameterUpdateSchema = z.strictObject({
 	),
 });
 
-export const setParameterValuesErrorSchema = nameMessageSchema;
-
 export const setParameterValuesInputSchema = z.strictObject({
 	updates: z
 		.array(setParameterUpdateSchema)
@@ -28,19 +25,9 @@ export const setParameterValuesInputSchema = z.strictObject({
 		),
 });
 
-export const setParameterValuesOutputSchema = z.object({
-	applied: z.array(z.string()),
-	errors: z.array(setParameterValuesErrorSchema),
-});
-
-export type SetParameterValuesInput = z.infer<
-	typeof setParameterValuesInputSchema
->;
-export type SetParameterValuesOutput = z.infer<
-	typeof setParameterValuesOutputSchema
->;
-export type SetParameterValuesError = z.infer<
-	typeof setParameterValuesErrorSchema
->;
-export type ParameterUpdateInput = SetParameterValuesInput["updates"][number];
-export type {ParameterValueInput};
+export type ParameterUpdateInput = z.infer<typeof setParameterUpdateSchema>;
+export type SetParameterValuesError = z.infer<typeof nameMessageSchema>;
+export type SetParameterValuesOutput = {
+	applied: string[];
+	errors: SetParameterValuesError[];
+};

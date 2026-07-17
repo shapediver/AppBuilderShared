@@ -7,8 +7,6 @@ import {
 } from "../config/listParameterDefinitions";
 import {parseStringListIndex} from "./stringListValue";
 
-export type {ListParameterDefinitionItem};
-
 export function mapParameterDefinition(
 	param: IShapeDiverParameter<any>,
 ): ListParameterDefinitionItem {

@@ -2,7 +2,7 @@ import {ResGetModelState} from "@shapediver/sdk.geometry-api-sdk-v2";
 import type {z} from "zod";
 import {
 	importModelStateDataSchema,
-	importModelStateInvalidParameterSchema,
+	nameMessageSchema,
 } from "./importModelState.zod";
 
 /**
@@ -10,9 +10,7 @@ import {
  */
 export type IImportModelStateData = z.infer<typeof importModelStateDataSchema>;
 
-export type IImportModelStateInvalidParameter = z.infer<
-	typeof importModelStateInvalidParameterSchema
->;
+type NameMessage = z.infer<typeof nameMessageSchema>;
 
 /**
  * Data returned from the useImportModelState hook.
@@ -21,10 +19,10 @@ export type IImportModelStateResult =
 	| {
 			success: false;
 			message: string;
-			invalidParameters?: IImportModelStateInvalidParameter[];
+			invalidParameters?: NameMessage[];
 	  }
 	| {
 			success: true;
 			data: ResGetModelState;
-			invalidParameters?: IImportModelStateInvalidParameter[];
+			invalidParameters?: NameMessage[];
 	  };

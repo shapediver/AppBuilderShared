@@ -13,5 +13,3 @@ export const importModelStateDataSchema = z.strictObject({
 			"modelStateId from create_model_state, or a full model view URL containing modelStateId.",
 		),
 });
-
-export const importModelStateInvalidParameterSchema = nameMessageSchema;

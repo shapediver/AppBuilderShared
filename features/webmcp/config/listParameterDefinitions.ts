@@ -2,7 +2,7 @@ import {nameMessageSchema} from "@AppBuilderLib/features/model-state/config/impo
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {z} from "zod";
 
-export const colorValueSchema = z.object({
+const colorValueSchema = z.object({
 	red: z.number(),
 	green: z.number(),
 	blue: z.number(),
@@ -16,7 +16,7 @@ export const parameterValueSchema = z.union([
 	colorValueSchema,
 ]);
 
-export const ListParameterDefinitionItemSchema = z.object({
+const ListParameterDefinitionItemSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	displayname: z.string().optional(),
@@ -46,24 +46,13 @@ export const listParameterDefinitionsInputSchema = z.strictObject({
 		.describe("Optional session namespace. Omit for the main model."),
 });
 
-export const listParameterDefinitionsErrorSchema = nameMessageSchema;
-
 export const listParameterDefinitionsOutputSchema = z.object({
 	parameters: z.array(ListParameterDefinitionItemSchema),
-	errors: z.array(listParameterDefinitionsErrorSchema).optional(),
+	errors: z.array(nameMessageSchema).optional(),
 });
 
 export type ListParameterDefinitionItem = z.infer<
 	typeof ListParameterDefinitionItemSchema
->;
-export type ListParameterDefinitionsInput = z.infer<
-	typeof listParameterDefinitionsInputSchema
->;
-export type ListParameterDefinitionsOutput = z.infer<
-	typeof listParameterDefinitionsOutputSchema
->;
-export type ListParameterDefinitionsError = z.infer<
-	typeof listParameterDefinitionsErrorSchema
 >;
 
 /** Supported types of parameters (for now). */
