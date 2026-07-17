@@ -780,33 +780,28 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsMessageToParent;
 }
 
-/** Literal identifiers for {@link IAppBuilderWidget} `type` values. */
-export const AppBuilderWidgetType = {
-	Accordion: "accordion",
-	Text: "text",
-	Image: "image",
-	RoundChart: "roundChart",
-	LineChart: "lineChart",
-	AreaChart: "areaChart",
-	BarChart: "barChart",
-	Actions: "actions",
-	AttributeVisualization: "attributeVisualization",
-	Agent: "agent",
-	Progress: "progress",
-	DesktopClientSelection: "desktopClientSelection",
-	DesktopClientOutputs: "desktopClientOutputs",
-	Controls: "controls",
-	Form: "form",
-	AccordionUi: "accordionUi",
-	SavedStates: "savedStates",
-	SceneTreeExplorer: "sceneTreeExplorer",
-	StackUi: "stackUi",
-	Table: "table",
-} as const;
-
 /** Types of widgets */
 export type AppBuilderWidgetType =
-	(typeof AppBuilderWidgetType)[keyof typeof AppBuilderWidgetType];
+	| "accordion"
+	| "text"
+	| "image"
+	| "roundChart"
+	| "lineChart"
+	| "areaChart"
+	| "barChart"
+	| "actions"
+	| "attributeVisualization"
+	| "agent"
+	| "progress"
+	| "desktopClientSelection"
+	| "desktopClientOutputs"
+	| "controls"
+	| "form"
+	| "accordionUi"
+	| "savedStates"
+	| "sceneTreeExplorer"
+	| "stackUi"
+	| "table";
 
 /**
  * Properties of a parameter and export accordion widget.
@@ -1044,12 +1039,9 @@ export interface IAppBuilderWidgetPropsStackUi {
  *
  * When implementing a new widget type, extend this interface and
  *
- *   * add the identifier for the new type to {@link AppBuilderWidgetType}, and
+ *   * add the identifier for the new type to AppBuilderWidgetType, and
  *   * define a new interface for the properties of the widget type and
- *     add it to the union type of "props", and
- *   * add a matching `case` in
- *     {@link getUiParameterRefs @AppBuilderLib/features/appbuilder/lib/appbuilder}
- *     (exhaustive `switch` — TypeScript errors if a type is missing).
+ *     add it to the union type of "props".
  */
 export interface IAppBuilderWidget {
 	/** Type of the widget. */
