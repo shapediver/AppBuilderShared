@@ -1,3 +1,4 @@
+import {nameMessageSchema} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {z} from "zod";
 
@@ -45,10 +46,7 @@ export const listParameterDefinitionsInputSchema = z.strictObject({
 		.describe("Optional session namespace. Omit for the main model."),
 });
 
-export const listParameterDefinitionsErrorSchema = z.object({
-	name: z.string(),
-	message: z.string(),
-});
+export const listParameterDefinitionsErrorSchema = nameMessageSchema;
 
 export const listParameterDefinitionsOutputSchema = z.object({
 	parameters: z.array(ListParameterDefinitionItemSchema),

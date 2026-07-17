@@ -1,3 +1,4 @@
+import {nameMessageSchema} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
 import {z} from "zod";
 import type {ParameterValueInput} from "../lib/setParameterValueValidators/types";
 import {parameterValueSchema} from "./listParameterDefinitions";
@@ -17,10 +18,7 @@ const setParameterUpdateSchema = z.strictObject({
 	),
 });
 
-export const setParameterValuesErrorSchema = z.object({
-	name: z.string(),
-	message: z.string(),
-});
+export const setParameterValuesErrorSchema = nameMessageSchema;
 
 export const setParameterValuesInputSchema = z.strictObject({
 	updates: z

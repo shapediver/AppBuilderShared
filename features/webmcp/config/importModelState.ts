@@ -1,17 +1,10 @@
+import {
+	importModelStateDataSchema,
+	importModelStateInvalidParameterSchema,
+} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
 import {z} from "zod";
 
-export const importModelStateInputSchema = z.strictObject({
-	modelStateId: z
-		.string()
-		.describe(
-			"modelStateId from create_model_state, or a full model view URL containing modelStateId.",
-		),
-});
-
-export const importModelStateInvalidParameterSchema = z.object({
-	name: z.string(),
-	message: z.string(),
-});
+export const importModelStateInputSchema = importModelStateDataSchema;
 
 export const importModelStateSuccessOutputSchema = z.object({
 	success: z.literal(true),

@@ -1,4 +1,5 @@
 import {createModelStateDataSchema} from "@AppBuilderLib/features/model-state/config/createModelState.zod";
+import {importModelStateDataSchema} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
 import z from "zod";
 
 // Zod type definition for ICreateModelStateData
@@ -9,9 +10,7 @@ export const validateCreateModelStateData = (value: any) => {
 };
 
 // Zod type definition for IImportModelStateData
-export const IImportModelStateDataSchema = z.object({
-	modelStateId: z.string(),
-});
+export const IImportModelStateDataSchema = importModelStateDataSchema;
 
 export const validateImportModelStateData = (value: any) => {
 	return IImportModelStateDataSchema.safeParse(value);
