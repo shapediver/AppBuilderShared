@@ -25,11 +25,11 @@ export default function AppBuilderTabsComponent({
 }: Props) {
 	const {setActiveTab} = useShapeDiverStoreStandardContainers();
 
-	if (!tabs || tabs.length === 0) {
-		return <></>;
-	}
+	const tabProps: ITabsComponentProps | null = useMemo(() => {
+		if (!tabs || tabs.length === 0) {
+			return null;
+		}
 
-	const tabProps: ITabsComponentProps = useMemo(() => {
 		return {
 			defaultValue: tabs[0].name,
 			stickyTabs: true,
@@ -51,7 +51,11 @@ export default function AppBuilderTabsComponent({
 				? (tabIndex: number) => setActiveTab(containerName, tabIndex)
 				: undefined,
 		};
-	}, [namespace, tabs]);
+	}, [namespace, tabs, containerName, setActiveTab]);
+
+	if (!tabProps) {
+		return <></>;
+	}
 
 	return <TabsComponent {...tabProps} />;
 }

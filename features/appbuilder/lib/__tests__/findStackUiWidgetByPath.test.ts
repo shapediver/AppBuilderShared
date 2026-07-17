@@ -62,4 +62,29 @@ describe("findStackUiWidgetByPath", () => {
 
 		expect(result?.widgets[0]).toEqual(textWidget("first"));
 	});
+
+	// SS-9879: stack buttons live in tab.widgets; shell must resolve that list, not [].
+	it("resolves stackUi from tab widget list (liveWidgets for a tab panel)", () => {
+		const tabWidgets: IAppBuilderWidget[] = [
+			textWidget("tab intro"),
+			stackWidget("Settings", [
+				textWidget("inside"),
+				stackWidget("Nested", [textWidget("nested")]),
+			]),
+		];
+
+		expect(findStackUiWidgetByPath(tabWidgets, ["Settings"])?.name).toBe(
+			"Settings",
+		);
+		expect(
+			findStackUiWidgetByPath(tabWidgets, ["Settings", "Nested"])?.name,
+		).toBe("Nested");
+	});
+
+	it("fails to resolve when liveWidgets is empty container.widgets (pre-fix bug)", () => {
+		expect(findStackUiWidgetByPath([], ["Settings"])).toBeUndefined();
+		expect(
+			findStackUiWidgetByPath(undefined, ["Settings"]),
+		).toBeUndefined();
+	});
 });

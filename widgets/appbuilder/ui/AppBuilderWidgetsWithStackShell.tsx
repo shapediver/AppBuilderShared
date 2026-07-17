@@ -10,12 +10,16 @@ interface Props {
 	fallbackScrolls?: boolean;
 }
 
+/**
+ * Per-scope stack shell: own `useStackContext` + Provider + slide shell around a widget list.
+ * Used for container-level widgets and for each tab panel so stackUi resolves the correct `liveWidgets` (SS-9879).
+ */
 export default function AppBuilderWidgetsWithStackShell({
 	namespace,
 	widgets,
 	fallbackScrolls = false,
 }: Props) {
-	const {stackPath, context} = useStackContext(300);
+	const {stackPath, context} = useStackContext();
 
 	return (
 		<AppBuilderStackContext.Provider value={context}>

@@ -17,6 +17,9 @@ export default function AppBuilderContainerComponent({
 	name,
 }: Props) {
 	const hasTabs = Boolean(tabs?.length);
+	// No tabs: always mount (legacy). With tabs: only if container.widgets non-empty
+	// (tab widgets get their own shell in AppBuilderTabsComponent — SS-9879).
+	const showContainerWidgets = !hasTabs || Boolean(widgets?.length);
 
 	return (
 		<>
@@ -25,13 +28,7 @@ export default function AppBuilderContainerComponent({
 				tabs={tabs}
 				containerName={name}
 			/>
-			{!hasTabs && (
-				<AppBuilderWidgetsWithStackShell
-					namespace={namespace}
-					widgets={widgets}
-				/>
-			)}
-			{hasTabs && Boolean(widgets?.length) && (
+			{showContainerWidgets && (
 				<AppBuilderWidgetsWithStackShell
 					namespace={namespace}
 					widgets={widgets}
