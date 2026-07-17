@@ -2,32 +2,9 @@ import {createModelStateDataSchema} from "@AppBuilderLib/features/model-state/co
 import {z} from "zod";
 
 /** WebMCP input = hook data without `image` (agents don't set export screenshot refs). */
-export const createModelStateInputSchema = createModelStateDataSchema
-	.omit({image: true})
-	.extend({
-		parameterNamesToInclude: z
-			.array(z.string())
-			.optional()
-			.describe("Only include these parameters in the saved state."),
-		parameterNamesToExclude: z
-			.array(z.string())
-			.optional()
-			.describe("Exclude these parameters from the saved state."),
-		includeImage: z
-			.boolean()
-			.optional()
-			.describe(
-				"Whether to include a preview image. Use false when not needed.",
-			),
-		includeGltf: z
-			.boolean()
-			.optional()
-			.describe("Whether to include an exported GLTF asset."),
-		data: z
-			.record(z.string(), z.any())
-			.optional()
-			.describe("Optional custom metadata to store with the state."),
-	});
+export const createModelStateInputSchema = createModelStateDataSchema.omit({
+	image: true,
+});
 
 export const createModelStateSuccessOutputSchema = z.object({
 	success: z.literal(true),
