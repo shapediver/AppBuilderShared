@@ -39,6 +39,23 @@ describe("useToolbarVisibility", () => {
 		expect(result.current.visible).toBe(true);
 	});
 
+	it("pointer focus does not keep onMouseActivity visible after hover ends", () => {
+		const {result} = renderHook(() =>
+			useToolbarVisibility({mode: "onMouseActivity"}),
+		);
+		expect(result.current.visible).toBe(false);
+		act(() => {
+			result.current.containerProps.onMouseEnter();
+			result.current.containerProps.onPointerDown();
+			result.current.containerProps.onFocus();
+		});
+		expect(result.current.visible).toBe(false);
+		act(() => {
+			result.current.containerProps.onMouseLeave();
+		});
+		expect(result.current.visible).toBe(false);
+	});
+
 	it("stays visible while a toolbar menu is open", () => {
 		const {result} = renderHook(() =>
 			useToolbarVisibility({mode: "onMouseActivity"}),

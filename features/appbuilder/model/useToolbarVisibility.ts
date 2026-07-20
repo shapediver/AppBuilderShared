@@ -1,6 +1,6 @@
 import {useViewportControls} from "@AppBuilderLib/entities/viewport/model/useViewportControls";
 import {SystemInfo} from "@shapediver/viewer.session";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {AppBuilderToolbarVisibility} from "../config/appbuilder";
 
 interface UseToolbarVisibilityOptions {
@@ -13,11 +13,14 @@ export function useToolbarVisibility(options: UseToolbarVisibilityOptions) {
 	const {showControls, setIsHoveringControls} = useViewportControls();
 	const [isFocusedWithin, setIsFocusedWithin] = useState(false);
 	const [isMenuOpen, setMenuOpen] = useState(false);
+	const pointerFocusRef = useRef(false);
 	const [reducedMotion, setReducedMotion] = useState(false);
 
 	useEffect(() => {
 		if (typeof window === "undefined" || !window.matchMedia) return;
-		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const mediaQuery = window.matchMedia(
+			"(prefers-reduced-motion: reduce)",
+		);
 		const update = () => setReducedMotion(mediaQuery.matches);
 		update();
 		mediaQuery.addEventListener?.("change", update);
@@ -39,11 +42,19 @@ export function useToolbarVisibility(options: UseToolbarVisibilityOptions) {
 		containerProps: {
 			onMouseEnter: () => setIsHoveringControls(true),
 			onMouseLeave: () => setIsHoveringControls(false),
+			onPointerDown: () => {
+				pointerFocusRef.current = true;
+				setIsFocusedWithin(false);
+			},
+			onKeyDown: () => {
+				pointerFocusRef.current = false;
+			},
 			onFocus: () => {
-				setIsFocusedWithin(true);
+				setIsFocusedWithin(!pointerFocusRef.current);
 				setIsHoveringControls(true);
 			},
 			onBlur: () => {
+				pointerFocusRef.current = false;
 				setIsFocusedWithin(false);
 				setIsHoveringControls(false);
 			},
