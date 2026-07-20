@@ -1251,7 +1251,20 @@ export type AppBuilderAnchor3dContainerProperties = {
 	hideable?: boolean;
 } & AppBuilderAnchorContainerProperties;
 
-export interface IAppBuilderToolbarItemBase {
+export type AppBuilderToolbarItemType =
+	| AppBuilderControlType
+	| "menu"
+	| "widgets"
+	| "tabs";
+
+export interface IAppBuilderToolbarItemBase<
+	TType extends AppBuilderToolbarItemType,
+	TProps extends object,
+> {
+	/** Discriminator for toolbar item rendering and validation. */
+	type: TType;
+	/** Item-specific payload. */
+	props: TProps;
 	/** Optional stable id for runtime APIs, accessibility and diagnostics. */
 	id?: string;
 	/** Toolbar-specific presentation override. */
@@ -1264,30 +1277,57 @@ export interface IAppBuilderToolbarItemBase {
 	presentation?: "button" | "item";
 }
 
-export type IAppBuilderToolbarControlItem = IAppBuilderToolbarItemBase &
-	IAppBuilderControl;
+export type IAppBuilderToolbarParameterItem = IAppBuilderToolbarItemBase<
+	"parameter",
+	IAppBuilderControlParameterRef
+>;
 
-export type IAppBuilderToolbarActionItem = IAppBuilderToolbarItemBase & {
-	type: "action";
-	props: IAppBuilderControlActionRef;
-};
+export type IAppBuilderToolbarExportItem = IAppBuilderToolbarItemBase<
+	"export",
+	IAppBuilderControlExportRef
+>;
 
-export type IAppBuilderToolbarMenuItem = IAppBuilderToolbarItemBase & {
-	/** Additional toolbar actions shown when this item is opened. */
-	items: IAppBuilderToolbarActionItem[] | IAppBuilderToolbarActionItem[][];
-};
+export type IAppBuilderToolbarOutputItem = IAppBuilderToolbarItemBase<
+	"output",
+	IAppBuilderControlOutputRef
+>;
 
-export type IAppBuilderToolbarWidgetPanelItem = IAppBuilderToolbarItemBase & {
-	/** Widgets rendered when this item is opened. */
-	widgets: IAppBuilderWidget[];
-};
+export type IAppBuilderToolbarActionItem = IAppBuilderToolbarItemBase<
+	"action",
+	IAppBuilderControlActionRef
+>;
 
-export type IAppBuilderToolbarTabbedPanelItem = IAppBuilderToolbarItemBase & {
-	/** Tabs rendered when this item is opened. */
-	tabs: IAppBuilderTab[];
-	/** When true, tabs stick to the top when scrolling the opened item content. */
-	stickyTabs?: boolean;
-};
+export type IAppBuilderToolbarControlItem =
+	| IAppBuilderToolbarParameterItem
+	| IAppBuilderToolbarExportItem
+	| IAppBuilderToolbarOutputItem
+	| IAppBuilderToolbarActionItem;
+
+export type IAppBuilderToolbarMenuItem = IAppBuilderToolbarItemBase<
+	"menu",
+	{
+		/** Menu sections rendered when this item is opened. */
+		items: IAppBuilderToolbarActionItem[][];
+	}
+>;
+
+export type IAppBuilderToolbarWidgetPanelItem = IAppBuilderToolbarItemBase<
+	"widgets",
+	{
+		/** Widgets rendered when this item is opened. */
+		widgets: IAppBuilderWidget[];
+	}
+>;
+
+export type IAppBuilderToolbarTabbedPanelItem = IAppBuilderToolbarItemBase<
+	"tabs",
+	{
+		/** Tabs rendered when this item is opened. */
+		tabs: IAppBuilderTab[];
+		/** When true, tabs stick to the top when scrolling the opened item content. */
+		stickyTabs?: boolean;
+	}
+>;
 
 export type IAppBuilderToolbarItem =
 	| IAppBuilderToolbarControlItem
@@ -1846,36 +1886,67 @@ export function isMessageToParentAction(
 	return action.type === "messageToParent";
 }
 
-/** assert control type "parameter" */
-export function isParameterRefControl(control: IAppBuilderControl): control is {
+type AppBuilderControlLike = IAppBuilderControl | IAppBuilderToolbarItem;
+
+/** assert control / toolbar item type "parameter" */
+export function isParameterRefControl<T extends AppBuilderControlLike>(
+	control: T,
+): control is T & {
 	type: "parameter";
 	props: IAppBuilderControlParameterRef;
 } {
 	return control.type === "parameter";
 }
 
-/** assert control type "export" */
-export function isExportRefControl(control: IAppBuilderControl): control is {
+/** assert control / toolbar item type "export" */
+export function isExportRefControl<T extends AppBuilderControlLike>(
+	control: T,
+): control is T & {
 	type: "export";
 	props: IAppBuilderControlExportRef;
 } {
 	return control.type === "export";
 }
 
-/** assert control type "action" */
-export function isActionRefControl(control: IAppBuilderControl): control is {
+/** assert control / toolbar item type "action" */
+export function isActionRefControl<T extends AppBuilderControlLike>(
+	control: T,
+): control is T & {
 	type: "action";
 	props: IAppBuilderControlActionRef;
 } {
 	return control.type === "action";
 }
 
-/** assert control type "output" */
-export function isOutputRefControl(control: IAppBuilderControl): control is {
+/** assert control / toolbar item type "output" */
+export function isOutputRefControl<T extends AppBuilderControlLike>(
+	control: T,
+): control is T & {
 	type: "output";
 	props: IAppBuilderControlOutputRef;
 } {
 	return control.type === "output";
+}
+
+/** assert toolbar item type "menu" */
+export function isToolbarMenuItem(
+	item: IAppBuilderToolbarItem,
+): item is IAppBuilderToolbarMenuItem {
+	return item.type === "menu";
+}
+
+/** assert toolbar item type "widgets" */
+export function isToolbarWidgetPanelItem(
+	item: IAppBuilderToolbarItem,
+): item is IAppBuilderToolbarWidgetPanelItem {
+	return item.type === "widgets";
+}
+
+/** assert toolbar item type "tabs" */
+export function isToolbarTabbedPanelItem(
+	item: IAppBuilderToolbarItem,
+): item is IAppBuilderToolbarTabbedPanelItem {
+	return item.type === "tabs";
 }
 
 /** assert parameter source */

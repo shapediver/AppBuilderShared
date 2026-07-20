@@ -1454,23 +1454,29 @@ const IAppBuilderToolbarActionItemSchema = z.strictObject({
 	props: IAppBuilderControlActionRefSchema,
 });
 
-const IAppBuilderToolbarItemSchema = z.union([
-	IAppBuilderToolbarControlItemSchema,
+const IAppBuilderToolbarItemSchema = z.discriminatedUnion("type", [
+	...IAppBuilderToolbarControlItemSchema.options,
 	z.strictObject({
 		...IAppBuilderToolbarItemBaseShape,
-		items: z.union([
-			z.array(IAppBuilderToolbarActionItemSchema),
-			z.array(z.array(IAppBuilderToolbarActionItemSchema)),
-		]),
+		type: z.literal("menu"),
+		props: z.strictObject({
+			items: z.array(z.array(IAppBuilderToolbarActionItemSchema)),
+		}),
 	}),
 	z.strictObject({
 		...IAppBuilderToolbarItemBaseShape,
-		widgets: z.array(IAppBuilderWidgetSchema),
+		type: z.literal("widgets"),
+		props: z.strictObject({
+			widgets: z.array(IAppBuilderWidgetSchema),
+		}),
 	}),
 	z.strictObject({
 		...IAppBuilderToolbarItemBaseShape,
-		tabs: z.array(IAppBuilderTabSchema),
-		stickyTabs: z.boolean().optional(),
+		type: z.literal("tabs"),
+		props: z.strictObject({
+			tabs: z.array(IAppBuilderTabSchema),
+			stickyTabs: z.boolean().optional(),
+		}),
 	}),
 ]);
 

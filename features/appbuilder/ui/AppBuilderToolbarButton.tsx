@@ -9,6 +9,9 @@ import {
 	isExportRefControl,
 	isOutputRefControl,
 	isParameterRefControl,
+	isToolbarMenuItem,
+	isToolbarTabbedPanelItem,
+	isToolbarWidgetPanelItem,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderToolbarButtonThemeDefaultProps} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarButton.theme.types";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
@@ -100,25 +103,21 @@ export default function AppBuilderToolbarButton({
 
 	const label = useMemo(() => {
 		if (toolbarItem.label) return toolbarItem.label;
-		if ("type" in toolbarItem) {
-			if (isParameterRefControl(toolbarItem))
-				return toolbarItem.props.name;
-			if (isExportRefControl(toolbarItem)) return toolbarItem.props.name;
-			if (isOutputRefControl(toolbarItem)) return toolbarItem.props.name;
-			if (isActionRefControl(toolbarItem)) {
-				return (
-					toolbarItem.props.label ||
-					toolbarItem.props.tooltip ||
-					toolbarItem.props.definition.type
-				);
-			}
+		if (isParameterRefControl(toolbarItem)) return toolbarItem.props.name;
+		if (isExportRefControl(toolbarItem)) return toolbarItem.props.name;
+		if (isOutputRefControl(toolbarItem)) return toolbarItem.props.name;
+		if (isActionRefControl(toolbarItem)) {
+			return (
+				toolbarItem.props.label ||
+				toolbarItem.props.tooltip ||
+				toolbarItem.props.definition.type
+			);
 		}
 		return "Toolbar item";
 	}, [toolbarItem]);
 	const tooltip = toolbarItem.tooltip ?? label;
 	const parameterProps = useMemo<PropsParameter[]>(() => {
-		if (!("type" in toolbarItem) || !isParameterRefControl(toolbarItem))
-			return [];
+		if (!isParameterRefControl(toolbarItem)) return [];
 		const p = toolbarItem.props;
 		return [
 			{
@@ -131,8 +130,7 @@ export default function AppBuilderToolbarButton({
 		];
 	}, [buttonRenderContext.namespace, toolbarItem]);
 	const exportProps = useMemo<PropsExport[]>(() => {
-		if (!("type" in toolbarItem) || !isExportRefControl(toolbarItem))
-			return [];
+		if (!isExportRefControl(toolbarItem)) return [];
 		const p = toolbarItem.props;
 		return [
 			{
@@ -144,8 +142,7 @@ export default function AppBuilderToolbarButton({
 		];
 	}, [buttonRenderContext.namespace, toolbarItem]);
 	const outputProps = useMemo<PropsOutput[]>(() => {
-		if (!("type" in toolbarItem) || !isOutputRefControl(toolbarItem))
-			return [];
+		if (!isOutputRefControl(toolbarItem)) return [];
 		const p = toolbarItem.props;
 		return [
 			{
@@ -163,7 +160,7 @@ export default function AppBuilderToolbarButton({
 		buttonRenderContext.hasPendingChanges;
 	const triggerIconType = getTriggerIconType(
 		toolbarItem.icon ??
-			("type" in toolbarItem && isActionRefControl(toolbarItem)
+			(isActionRefControl(toolbarItem)
 				? toolbarItem.props.icon
 				: undefined) ??
 			defaultIcon,
@@ -204,7 +201,7 @@ export default function AppBuilderToolbarButton({
 		[buttonThemeProps, label, tooltip, triggerIconType],
 	);
 
-	if ("type" in toolbarItem && isActionRefControl(toolbarItem)) {
+	if (isActionRefControl(toolbarItem)) {
 		const actionKey = String(
 			("id" in toolbarItem ? toolbarItem.id : undefined) ??
 				`toolbar-action-${toolbarItem.props.definition.type}`,
@@ -224,7 +221,7 @@ export default function AppBuilderToolbarButton({
 		);
 	}
 
-	if ("type" in toolbarItem && isExportRefControl(toolbarItem)) {
+	if (isExportRefControl(toolbarItem)) {
 		return (
 			<AppBuilderExportToolbarButton
 				exportData={exports[0]}
@@ -238,13 +235,14 @@ export default function AppBuilderToolbarButton({
 	}
 
 	const hasPopoverContent =
-		("items" in toolbarItem && toolbarItem.items.length > 0) ||
-		("widgets" in toolbarItem && toolbarItem.widgets.length > 0) ||
-		("tabs" in toolbarItem && toolbarItem.tabs.length > 0) ||
-		("type" in toolbarItem &&
-			((isParameterRefControl(toolbarItem) &&
-				parameterProps.length > 0) ||
-				isOutputRefControl(toolbarItem)));
+		(isToolbarMenuItem(toolbarItem) &&
+			toolbarItem.props.items.length > 0) ||
+		(isToolbarWidgetPanelItem(toolbarItem) &&
+			toolbarItem.props.widgets.length > 0) ||
+		(isToolbarTabbedPanelItem(toolbarItem) &&
+			toolbarItem.props.tabs.length > 0) ||
+		(isParameterRefControl(toolbarItem) && parameterProps.length > 0) ||
+		isOutputRefControl(toolbarItem);
 
 	if (!hasPopoverContent) {
 		return renderTriggerButton();

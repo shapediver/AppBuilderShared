@@ -129,9 +129,10 @@ const createHistoryMenuItem = (
 	if (sections.length === 0) return undefined;
 
 	return {
+		type: "menu",
 		icon: "tabler:dots-vertical",
 		label: "More options",
-		items: sections,
+		props: {items: sections},
 	};
 };
 
@@ -146,27 +147,32 @@ const createCamerasMenuItem = (
 	if (!viewportId || cameras.length === 0) return undefined;
 
 	return {
+		type: "menu",
 		icon: "tabler:video",
 		label: "Cameras",
-		items: [
-			cameras.map((camera) =>
-				toActionItem(
-					{
-						type: "camera",
-						props: {
-							type: "assign",
-							viewportId,
+		props: {
+			items: [
+				cameras.map((camera) =>
+					toActionItem(
+						{
+							type: "camera",
 							props: {
-								camera: {name: camera.name || camera.id},
+								type: "assign",
+								viewportId,
+								props: {
+									camera: {name: camera.name || camera.id},
+								},
 							},
 						},
-					},
-					{
-						label: firstLetterUppercase(camera.name || camera.id),
-					},
+						{
+							label: firstLetterUppercase(
+								camera.name || camera.id,
+							),
+						},
+					),
 				),
-			),
-		],
+			],
+		},
 	};
 };
 

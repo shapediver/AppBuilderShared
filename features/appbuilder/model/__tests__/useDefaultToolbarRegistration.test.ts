@@ -4,8 +4,8 @@
 import {useShapeDiverDefaultViewportToolbarStore} from "@AppBuilderLib/entities/viewport/model/useShapeDiverDefaultViewportToolbarStore";
 import type {IViewportApi} from "@shapediver/viewer.viewport";
 import {renderHook} from "@testing-library/react";
-import {useShapeDiverStoreToolbars} from "../useShapeDiverStoreToolbars";
 import {useDefaultToolbarRegistration} from "../useDefaultToolbarRegistration";
+import {useShapeDiverStoreToolbars} from "../useShapeDiverStoreToolbars";
 
 describe("useDefaultToolbarRegistration", () => {
 	beforeEach(() => {
@@ -65,9 +65,10 @@ describe("useDefaultToolbarRegistration", () => {
 			},
 		});
 		expect(defaultToolbar?.groups[0][1]).toMatchObject({
+			type: "menu",
 			label: "More options",
+			props: {items: expect.any(Array)},
 		});
-		expect("items" in defaultToolbar!.groups[0][1]).toBe(true);
 	});
 
 	it("filters historyMenu when hideJsonMenu is true", () => {
@@ -122,27 +123,31 @@ describe("useDefaultToolbarRegistration", () => {
 		);
 
 		expect(
-			useShapeDiverStoreToolbars.getState().defaultToolbars[0]?.groups[0][0],
+			useShapeDiverStoreToolbars.getState().defaultToolbars[0]
+				?.groups[0][0],
 		).toMatchObject({
+			type: "menu",
 			label: "Cameras",
-			items: [
-				[
-					{
-						label: "UnnamedCamera",
-						props: {
-							definition: {
-								type: "camera",
-								props: {
-									type: "assign",
+			props: {
+				items: [
+					[
+						{
+							label: "UnnamedCamera",
+							props: {
+								definition: {
+									type: "camera",
 									props: {
-										camera: {name: "unnamedCamera"},
+										type: "assign",
+										props: {
+											camera: {name: "unnamedCamera"},
+										},
 									},
 								},
 							},
 						},
-					},
+					],
 				],
-			],
+			},
 		});
 	});
 
@@ -176,9 +181,9 @@ describe("useDefaultToolbarRegistration", () => {
 		).toEqual(["defaultViewportToolbar-vp2"]);
 
 		second.unmount();
-		expect(
-			useShapeDiverStoreToolbars.getState().defaultToolbars,
-		).toEqual([]);
+		expect(useShapeDiverStoreToolbars.getState().defaultToolbars).toEqual(
+			[],
+		);
 	});
 
 	it("does not register the default toolbar when showDefaultToolbar is false", () => {
@@ -189,8 +194,8 @@ describe("useDefaultToolbarRegistration", () => {
 			}),
 		);
 
-		expect(
-			useShapeDiverStoreToolbars.getState().defaultToolbars,
-		).toEqual([]);
+		expect(useShapeDiverStoreToolbars.getState().defaultToolbars).toEqual(
+			[],
+		);
 	});
 });

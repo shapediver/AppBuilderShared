@@ -7,6 +7,9 @@ import {
 	IAppBuilderToolbarItem,
 	isOutputRefControl,
 	isParameterRefControl,
+	isToolbarMenuItem,
+	isToolbarTabbedPanelItem,
+	isToolbarWidgetPanelItem,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {getParameterComponent} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
@@ -15,10 +18,7 @@ import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/App
 import {Divider, Paper, Stack} from "@mantine/core";
 import React, {useMemo} from "react";
 import {AppBuilderActionFromType} from "./AppBuilderActionFromType";
-import {
-	getToolbarActionRef,
-	normalizeMenuItemGroups,
-} from "./appBuilderToolbarButtonShared";
+import {getToolbarActionRef} from "./appBuilderToolbarButtonShared";
 
 type Props = {
 	toolbarItem: IAppBuilderToolbarItem;
@@ -53,11 +53,13 @@ export default function AppBuilderToolbarPopoverContent({
 }: Props) {
 	const parameters = useParameters(parameterProps);
 	const outputs = useOutputs(outputProps);
-	const menuItems = "items" in toolbarItem ? toolbarItem.items : undefined;
+	const menuItems = isToolbarMenuItem(toolbarItem)
+		? toolbarItem.props.items
+		: undefined;
 
 	return useMemo(() => {
 		if (menuItems && menuItems.length > 0) {
-			const groups = normalizeMenuItemGroups(menuItems)
+			const groups = menuItems
 				.map((group, groupIndex) => ({
 					useItemSpacing: group.every(
 						(item) => item.presentation === "item",
@@ -123,26 +125,24 @@ export default function AppBuilderToolbarPopoverContent({
 			);
 		}
 
-		if ("widgets" in toolbarItem) {
+		if (isToolbarWidgetPanelItem(toolbarItem)) {
 			return (
 				<AppBuilderWidgetsComponent
 					namespace={namespace}
-					widgets={toolbarItem.widgets}
+					widgets={toolbarItem.props.widgets}
 				/>
 			);
 		}
 
-		if ("tabs" in toolbarItem) {
+		if (isToolbarTabbedPanelItem(toolbarItem)) {
 			return (
 				<AppBuilderTabsComponent
 					namespace={namespace}
-					tabs={toolbarItem.tabs}
-					stickyTabs={toolbarItem.stickyTabs}
+					tabs={toolbarItem.props.tabs}
+					stickyTabs={toolbarItem.props.stickyTabs}
 				/>
 			);
 		}
-
-		if (!("type" in toolbarItem)) return null;
 
 		if (isParameterRefControl(toolbarItem)) {
 			const parameter = parameters[0];

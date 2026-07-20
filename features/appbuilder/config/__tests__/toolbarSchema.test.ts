@@ -46,6 +46,15 @@ const makeToolbarControl = (type: string, props: Record<string, unknown>) => ({
 const makeSemanticAction = (definition: Record<string, unknown>) =>
 	makeToolbarControl("action", {definition});
 
+const makeToolbarMenu = (
+	items: ReturnType<typeof makeSemanticAction>[][],
+	overrides: Record<string, unknown> = {},
+) => ({
+	...overrides,
+	type: "menu",
+	props: {items},
+});
+
 const makeLegacyViewportAction = (type: string) =>
 	makeToolbarControl("action", {
 		definition: {
@@ -87,22 +96,29 @@ describe("toolbar container schema", () => {
 								}),
 							],
 							[
-								{
-									id: "action-menu",
-									label: "Actions",
-									items: [
-										makeSemanticAction({
-											type: "undo",
-											props: {},
-										}),
+								makeToolbarMenu(
+									[
+										[
+											makeSemanticAction({
+												type: "undo",
+												props: {},
+											}),
+										],
 									],
-								},
+									{id: "action-menu", label: "Actions"},
+								),
 								{
 									id: "widget-panel",
+									type: "widgets",
 									label: "Info",
-									widgets: [
-										{type: "text", props: {text: "Hello"}},
-									],
+									props: {
+										widgets: [
+											{
+												type: "text",
+												props: {text: "Hello"},
+											},
+										],
+									},
 								},
 							],
 						],
@@ -175,15 +191,17 @@ describe("toolbar container schema", () => {
 						id: "viewportToolbar",
 						groups: [
 							[
-								{
-									label: "More options",
-									items: [
-										makeSemanticAction({
-											type: "importParameterValues",
-											props: {},
-										}),
+								makeToolbarMenu(
+									[
+										[
+											makeSemanticAction({
+												type: "importParameterValues",
+												props: {},
+											}),
+										],
 									],
-								},
+									{label: "More options"},
+								),
 							],
 						],
 					},
@@ -232,9 +250,8 @@ describe("toolbar container schema", () => {
 										},
 									},
 								}),
-								{
-									label: "Grouped camera actions",
-									items: [
+								makeToolbarMenu(
+									[
 										[
 											makeToolbarControl("action", {
 												definition: {
@@ -258,7 +275,8 @@ describe("toolbar container schema", () => {
 											}),
 										],
 									],
-								},
+									{label: "Grouped camera actions"},
+								),
 							],
 						],
 					},

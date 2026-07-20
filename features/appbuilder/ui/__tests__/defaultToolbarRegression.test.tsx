@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 import {useShapeDiverDefaultViewportToolbarStore} from "@AppBuilderLib/entities/viewport/model/useShapeDiverDefaultViewportToolbarStore";
-import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import {useDefaultToolbarRegistration} from "@AppBuilderLib/features/appbuilder/model/useDefaultToolbarRegistration";
+import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import {renderHook} from "@testing-library/react";
 
 describe("default toolbar regression", () => {
@@ -41,9 +41,9 @@ describe("default toolbar regression", () => {
 				showDefaultToolbar: false,
 			}),
 		);
-		expect(
-			useShapeDiverStoreToolbars.getState().defaultToolbars,
-		).toEqual([]);
+		expect(useShapeDiverStoreToolbars.getState().defaultToolbars).toEqual(
+			[],
+		);
 	});
 
 	it("maps viewport icon buttons to semantic actions and non-action menu triggers", () => {
@@ -54,9 +54,9 @@ describe("default toolbar regression", () => {
 			}),
 		);
 		const items =
-			useShapeDiverStoreToolbars.getState().defaultToolbars[0]?.groups[0] ??
-			[];
-		expect(items.map((item) => item.type)).toEqual(["action", undefined]);
+			useShapeDiverStoreToolbars.getState().defaultToolbars[0]
+				?.groups[0] ?? [];
+		expect(items.map((item) => item.type)).toEqual(["action", "menu"]);
 		expect(items[0]).toMatchObject({
 			type: "action",
 			props: {
@@ -66,7 +66,10 @@ describe("default toolbar regression", () => {
 				},
 			},
 		});
-		expect(items[1]).toMatchObject({label: "More options"});
-		expect("items" in items[1]).toBe(true);
+		expect(items[1]).toMatchObject({
+			type: "menu",
+			label: "More options",
+			props: {items: expect.any(Array)},
+		});
 	});
 });
