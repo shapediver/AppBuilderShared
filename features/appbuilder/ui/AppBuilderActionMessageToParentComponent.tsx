@@ -2,22 +2,28 @@ import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singl
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {useCallback, useState} from "react";
 import {IAppBuilderLegacyActionPropsMessageToParent} from "../config/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
+import AppBuilderActionBase, {
+	AppBuilderActionRenderProps,
+} from "./AppBuilderActionBase";
 
 /**
  * Functional component for an "messageToParent" action.
  *
  * @returns
  */
-export default function AppBuilderActionMessageToParentComponent(
-	props: IAppBuilderLegacyActionPropsMessageToParent,
-) {
+type Props = IAppBuilderLegacyActionPropsMessageToParent &
+	AppBuilderActionRenderProps & {};
+
+export default function AppBuilderActionMessageToParentComponent(props: Props) {
 	const {
 		label = "Message to parent",
 		icon = "tabler:message-2-code",
 		tooltip,
 		type,
 		data,
+		presentation,
+		toolbarButtonProps,
+		disabled,
 	} = props;
 
 	const notifications = useNotificationStore();
@@ -58,12 +64,15 @@ export default function AppBuilderActionMessageToParentComponent(
 	}, [type, data]);
 
 	return (
-		<AppBuilderActionComponent
+		<AppBuilderActionBase
+			presentation={presentation}
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
 			onClick={onClick}
 			loading={loading}
+			disabled={disabled}
+			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);
 }

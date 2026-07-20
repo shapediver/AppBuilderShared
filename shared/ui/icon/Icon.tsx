@@ -22,6 +22,8 @@ const PRELOAD_ICONS = [
 	"tabler:alert-circle",
 	"tabler:arrow-back-up",
 	"tabler:arrow-forward-up",
+	"tabler:arrows-maximize",
+	"tabler:arrows-minimize",
 	"tabler:augmented-reality",
 	"tabler:bookmark",
 	"tabler:bookmark-off",

@@ -1,17 +1,14 @@
-import {
-	ViewportIconButtonDefaultStyleProps,
-	ViewportIconsDefaultStyleProps,
-	ViewportIconsOptionalProps,
-} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
+import {ViewportTransparentBackgroundStyle} from "@AppBuilderLib/entities/viewport/config/viewport";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import ViewportIconButton, {
-	ViewportIconButtonProps,
-} from "@AppBuilderLib/entities/viewport/ui/ViewportIconButton";
-import classes from "@AppBuilderLib/entities/viewport/ui/ViewportIcons.module.css";
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderStandardContainerNameType} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
+import AppBuilderToolbarIconButton, {
+	AppBuilderToolbarIconButtonDefaultStyleProps,
+	AppBuilderToolbarIconButtonProps,
+} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
+import classes from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton.module.css";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {useShapeDiverStoreParameters} from "@AppBuilderShared/entities/parameter/model/useShapeDiverStoreParameters";
@@ -99,19 +96,34 @@ export type ViewportAnchorStyleProps = {
 	anchorPaperProps?: Partial<PaperProps>;
 	anchorStackProps?: Partial<StackProps>;
 	previewIconProps?: {
-		paperStyleProps?: ViewportIconsOptionalProps["style"];
-		paperProps?: ViewportIconsOptionalProps["paperProps"];
-		iconProps?: ViewportIconButtonProps["iconProps"];
-		actionIconProps?: ViewportIconButtonProps["actionIconProps"];
+		paperStyleProps?: React.CSSProperties;
+		paperProps?: Partial<PaperProps>;
+		iconProps?: AppBuilderToolbarIconButtonProps["iconProps"];
+		actionIconProps?: AppBuilderToolbarIconButtonProps["actionIconProps"];
 	};
 	/** Breakpoint below which to to switch to the mobile behavior */
 	mobileBreakpoint: MantineBreakpoint;
 };
 
+const viewportAnchorPreviewPaperStyle: React.CSSProperties = {
+	display: "flex",
+	gap: "0.25rem",
+	alignItems: "center",
+	flexDirection: "row",
+	border: "none",
+	...ViewportTransparentBackgroundStyle,
+};
+
+const viewportAnchorPreviewPaperProps: Partial<PaperProps> = {
+	py: 1,
+	px: 2,
+	shadow: "md",
+};
+
 export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
 	anchorPaperProps: {
 		style: {
-			...ViewportIconsDefaultStyleProps.style,
+			...viewportAnchorPreviewPaperStyle,
 		},
 		pt: 0,
 		shadow: "md",
@@ -125,10 +137,11 @@ export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
 	},
 	mobileBreakpoint: "sm",
 	previewIconProps: {
-		paperStyleProps: ViewportIconsDefaultStyleProps.style,
-		paperProps: ViewportIconsDefaultStyleProps.paperProps,
-		iconProps: ViewportIconButtonDefaultStyleProps.iconProps,
-		actionIconProps: ViewportIconButtonDefaultStyleProps.actionIconProps,
+		paperStyleProps: viewportAnchorPreviewPaperStyle,
+		paperProps: viewportAnchorPreviewPaperProps,
+		iconProps: AppBuilderToolbarIconButtonDefaultStyleProps.iconProps,
+		actionIconProps:
+			AppBuilderToolbarIconButtonDefaultStyleProps.actionIconProps,
 	},
 };
 
@@ -442,7 +455,7 @@ export function useAnchorContainer({
 			style={{...previewIconProps?.paperStyleProps}}
 			{...previewIconProps?.paperProps}
 		>
-			<ViewportIconButton
+			<AppBuilderToolbarIconButton
 				actionIconProps={{
 					...previewIconProps?.actionIconProps,
 				}}
@@ -463,7 +476,7 @@ export function useAnchorContainer({
 	 * when clicked. The iconProps are applied to the ActionIcon.
 	 */
 	const closeIconElement = (
-		<ViewportIconButton
+		<AppBuilderToolbarIconButton
 			styles={{
 				root: {
 					backgroundColor:
@@ -486,7 +499,7 @@ export function useAnchorContainer({
 	const dragIconElement = (
 		<ActionIcon
 			onMouseDown={handleMouseDown}
-			className={classes.ViewportIcon}
+			className={classes.toolbarIcon}
 			w={"4.5rem"} // icon size is 1.5rem, so we multiply by 3
 			variant="subtle"
 			styles={{

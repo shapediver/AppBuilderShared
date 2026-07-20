@@ -12,14 +12,14 @@ import {
  */
 export function getParameterRefs(data: IAppBuilder): IAppBuilderParameterRef[] {
 	return data.containers.reduce((acc, container) => {
-		if (container.widgets) {
+		if ("widgets" in container && container.widgets) {
 			container.widgets.forEach((widget) => {
 				if (isAccordionWidget(widget) && widget.props.parameters) {
 					acc.push(...widget.props.parameters);
 				}
 			});
 		}
-		if (container.tabs) {
+		if ("tabs" in container && container.tabs) {
 			container.tabs.forEach((tab) => {
 				tab.widgets.forEach((widget) => {
 					if (isAccordionWidget(widget) && widget.props.parameters) {

@@ -1,4 +1,7 @@
-import {IAppBuilderContainer} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	AppBuilderContainerNameType,
+	IAppBuilderStandardContainer,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	AppBuilderStandardContainerNames,
 	AppBuilderStandardContainerNameType,
@@ -17,10 +20,10 @@ import {devtools} from "zustand/middleware";
  */
 const merge = (
 	name: AppBuilderStandardContainerNameType,
-	defaultContainer: IAppBuilderContainer | undefined,
+	defaultContainer: IAppBuilderStandardContainer | undefined,
 	additionalContainers: Record<string, JSX.Element>,
 	activeTabIndex: number,
-): IAppBuilderContainer | undefined => {
+): IAppBuilderStandardContainer | undefined => {
 	// Return undefined if no default container and no additional containers
 	if (!defaultContainer && Object.keys(additionalContainers).length === 0) {
 		return undefined;
@@ -73,10 +76,12 @@ const merge = (
  * @param additionalContainerContent The current additional container content.
  * @returns The updated merged container definitions.
  */
+const generateToken = () => Math.random().toString(36).slice(2);
+
 const updateMergedContainers = (
 	defaultContainers: Record<
 		AppBuilderStandardContainerNameType,
-		IAppBuilderContainer | undefined
+		IAppBuilderStandardContainer | undefined
 	>,
 	additionalContainerContent: Record<
 		AppBuilderStandardContainerNameType,
@@ -85,12 +90,17 @@ const updateMergedContainers = (
 	activeTabIndices: Record<AppBuilderStandardContainerNameType, number>,
 ): Record<
 	AppBuilderStandardContainerNameType,
-	IAppBuilderContainer | undefined
+	IAppBuilderStandardContainer | undefined
 > => {
 	const result: Record<
 		AppBuilderStandardContainerNameType,
-		IAppBuilderContainer | undefined
-	> = {} as any;
+		IAppBuilderStandardContainer | undefined
+	> = {
+		[AppBuilderContainerNameType.Left]: undefined,
+		[AppBuilderContainerNameType.Right]: undefined,
+		[AppBuilderContainerNameType.Top]: undefined,
+		[AppBuilderContainerNameType.Bottom]: undefined,
+	};
 	for (const name of AppBuilderStandardContainerNames) {
 		result[name] = merge(
 			name,
@@ -215,7 +225,7 @@ export const useShapeDiverStoreStandardContainers =
 
 				// Additional container actions
 				addAdditionalContainerContent: (name, content) => {
-					const token = Math.random().toString(36).substring(7);
+					const token = generateToken();
 
 					set(
 						(state) => {

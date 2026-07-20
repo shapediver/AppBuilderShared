@@ -12,12 +12,13 @@ import {useContext, useEffect, useMemo} from "react";
 import {
 	AppBuilderContainerNameType,
 	IAppBuilder,
-	IAppBuilderContainer,
+	IAppBuilderStandardContainer,
 	IAppBuilderSettingsResolved,
 	IAppBuilderSettingsSession,
 	isStandardContainer,
 } from "../config/appbuilder";
 import {ComponentContext} from "../config/ComponentContext";
+import {AppBuilderStandardContainerNameType} from "../config/shapediverStoreStandardContainers";
 import {useShapeDiverStoreStandardContainers} from "./useShapeDiverStoreStandardContainers";
 
 interface Props {
@@ -34,7 +35,7 @@ interface Props {
  * @returns
  */
 const createContainerHints = (
-	container: IAppBuilderContainer,
+	container: IAppBuilderStandardContainer,
 ): IAppBuilderTemplatePageContainerHints | undefined => {
 	// if the bottom container contains tabs, prefer vertical layout
 	if (
@@ -114,8 +115,8 @@ export function useAppBuilderStandardContainers(props: Props) {
 						[container.name]: container,
 					}),
 					{} as Record<
-						AppBuilderContainerNameType,
-						IAppBuilderContainer | undefined
+						AppBuilderStandardContainerNameType,
+						IAppBuilderStandardContainer | undefined
 					>,
 				);
 			setDefaultContainers(standardContainers);
@@ -174,7 +175,7 @@ export function useAppBuilderStandardContainers(props: Props) {
 		};
 
 		const mergedContainerArray = Object.values(mergedContainers).filter(
-			(container): container is IAppBuilderContainer => !!container,
+			(container): container is IAppBuilderStandardContainer => !!container,
 		);
 
 		if (mergedContainerArray.length === 0) {

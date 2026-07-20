@@ -362,7 +362,15 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsCloseConfigurator
 		| IAppBuilderActionPropsCamera
 		| IAppBuilderActionPropsSound
-		| IAppBuilderActionPropsMessageToParent;
+		| IAppBuilderActionPropsMessageToParent
+		| IAppBuilderActionPropsFullscreen
+		| IAppBuilderActionPropsUndo
+		| IAppBuilderActionPropsRedo
+		| IAppBuilderActionPropsResetParameterValues
+		| IAppBuilderActionPropsImportParameterValues
+		| IAppBuilderActionPropsExportParameterValues
+		| IAppBuilderActionPropsImportModelState
+		| IAppBuilderActionPropsAr;
 }
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -528,6 +536,14 @@ export type AppBuilderActionType =
 	| "setParameterValues"
 	| "setBrowserLocation"
 	| "closeConfigurator"
+	| "ar"
+	| "fullscreen"
+	| "undo"
+	| "redo"
+	| "resetParameterValues"
+	| "importParameterValues"
+	| "exportParameterValues"
+	| "importModelState"
 	| "camera"
 	| "sound"
 	| "messageToParent";
@@ -672,6 +688,70 @@ export type IAppBuilderActionPropsCloseConfigurator = object;
 export type IAppBuilderLegacyActionPropsCloseConfigurator =
 	IAppBuilderActionPropsCloseConfigurator & IAppBuilderActionPropsCommon;
 
+/** Properties of an "ar" action. */
+export interface IAppBuilderActionPropsAr {
+	/** Optional viewport id. Defaults to the containing viewport. */
+	viewportId?: string;
+}
+
+/** Properties of legacy an "ar" action. */
+export type IAppBuilderLegacyActionPropsAr = IAppBuilderActionPropsAr &
+	IAppBuilderActionPropsCommon;
+
+/** Properties of a "fullscreen" action. */
+export interface IAppBuilderActionPropsFullscreen {
+	/** Fullscreen mode. */
+	type?: "fullscreen" | "fullscreen3States";
+	/** Optional fullscreen element id. */
+	fullscreenId?: string;
+}
+
+/** Properties of legacy a "fullscreen" action. */
+export type IAppBuilderLegacyActionPropsFullscreen =
+	IAppBuilderActionPropsFullscreen & IAppBuilderActionPropsCommon;
+
+/** Properties of an "undo" action. */
+export type IAppBuilderActionPropsUndo = object;
+
+/** Properties of a "redo" action. */
+export type IAppBuilderActionPropsRedo = object;
+
+/** Properties of legacy an "undo" action. */
+export type IAppBuilderLegacyActionPropsUndo = IAppBuilderActionPropsUndo &
+	IAppBuilderActionPropsCommon;
+
+/** Properties of legacy a "redo" action. */
+export type IAppBuilderLegacyActionPropsRedo = IAppBuilderActionPropsRedo &
+	IAppBuilderActionPropsCommon;
+
+/** Properties of a "resetParameterValues" action. */
+export type IAppBuilderActionPropsResetParameterValues = object;
+
+/** Properties of legacy a "resetParameterValues" action. */
+export type IAppBuilderLegacyActionPropsResetParameterValues =
+	IAppBuilderActionPropsResetParameterValues & IAppBuilderActionPropsCommon;
+
+/** Properties of an "importParameterValues" action. */
+export type IAppBuilderActionPropsImportParameterValues = object;
+
+/** Properties of legacy an "importParameterValues" action. */
+export type IAppBuilderLegacyActionPropsImportParameterValues =
+	IAppBuilderActionPropsImportParameterValues & IAppBuilderActionPropsCommon;
+
+/** Properties of an "exportParameterValues" action. */
+export type IAppBuilderActionPropsExportParameterValues = object;
+
+/** Properties of legacy an "exportParameterValues" action. */
+export type IAppBuilderLegacyActionPropsExportParameterValues =
+	IAppBuilderActionPropsExportParameterValues & IAppBuilderActionPropsCommon;
+
+/** Properties of an "importModelState" action. */
+export type IAppBuilderActionPropsImportModelState = object;
+
+/** Properties of legacy an "importModelState" action. */
+export type IAppBuilderLegacyActionPropsImportModelState =
+	IAppBuilderActionPropsImportModelState & IAppBuilderActionPropsCommon;
+
 type IAppBuilderPropsCameraCommon = {
 	/** Optional camera settings to be used. Defaults to the initial camera of the viewport. */
 	camera?:
@@ -721,6 +801,8 @@ export type IAppBuilderPropsZoomToCamera = {
 export type IAppBuilderActionPropsCamera = {
 	/** Type of camera action. */
 	type: "animate" | "assign" | "set" | "reset" | "zoomTo";
+	/** Optional viewport id. Defaults to the containing viewport. */
+	viewportId?: string;
 	/** Properties of the camera action. */
 	props:
 		| IAppBuilderPropsAnimateCamera
@@ -729,6 +811,9 @@ export type IAppBuilderActionPropsCamera = {
 		| IAppBuilderPropsResetCamera
 		| IAppBuilderPropsZoomToCamera;
 } & IAppBuilderActionPropsCommon;
+
+export type IAppBuilderLegacyActionPropsCamera = IAppBuilderActionPropsCamera &
+	IAppBuilderActionPropsCommon;
 
 /** Properties of a "sound" action. */
 export type IAppBuilderActionPropsSound = {
@@ -775,7 +860,15 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsSetParameterValues
 		| IAppBuilderLegacyActionPropsSetBrowserLocation
 		| IAppBuilderLegacyActionPropsCloseConfigurator
-		| IAppBuilderActionPropsCamera
+		| IAppBuilderLegacyActionPropsAr
+		| IAppBuilderLegacyActionPropsFullscreen
+		| IAppBuilderLegacyActionPropsUndo
+		| IAppBuilderLegacyActionPropsRedo
+		| IAppBuilderLegacyActionPropsResetParameterValues
+		| IAppBuilderLegacyActionPropsImportParameterValues
+		| IAppBuilderLegacyActionPropsExportParameterValues
+		| IAppBuilderLegacyActionPropsImportModelState
+		| IAppBuilderLegacyActionPropsCamera
 		| IAppBuilderLegacyActionPropsSound
 		| IAppBuilderLegacyActionPropsMessageToParent;
 }
@@ -1092,7 +1185,14 @@ export enum AppBuilderContainerNameType {
 	Bottom = "bottom",
 	Anchor3d = "anchor3d",
 	Anchor2d = "anchor2d",
+	Toolbar = "toolbar",
 }
+
+export type AppBuilderToolbarSide = "top" | "bottom" | "left" | "right";
+
+export type AppBuilderToolbarAlign = "start" | "center" | "end";
+
+export type AppBuilderToolbarVisibility = "always" | "onMouseActivity";
 
 /** Type for the anchor containers */
 export type AppBuilderAnchorContainerProperties = {
@@ -1151,16 +1251,76 @@ export type AppBuilderAnchor3dContainerProperties = {
 	hideable?: boolean;
 } & AppBuilderAnchorContainerProperties;
 
-/**
- * A container for UI elements
- */
-export interface IAppBuilderContainer {
+export interface IAppBuilderToolbarItemBase {
+	/** Optional stable id for runtime APIs, accessibility and diagnostics. */
+	id?: string;
+	/** Toolbar-specific presentation override. */
+	icon?: IconType;
+	label?: string;
+	tooltip?: string;
+	/** Optional item order for runtime-merged groups. */
+	order?: number;
+	/** Optional presentation mode when this item is rendered inside a popover. */
+	presentation?: "button" | "item";
+}
+
+export type IAppBuilderToolbarControlItem = IAppBuilderToolbarItemBase &
+	IAppBuilderControl;
+
+export type IAppBuilderToolbarActionItem = IAppBuilderToolbarItemBase & {
+	type: "action";
+	props: IAppBuilderControlActionRef;
+};
+
+export type IAppBuilderToolbarMenuItem = IAppBuilderToolbarItemBase & {
+	/** Additional toolbar actions shown when this item is opened. */
+	items: IAppBuilderToolbarActionItem[] | IAppBuilderToolbarActionItem[][];
+};
+
+export type IAppBuilderToolbarWidgetPanelItem = IAppBuilderToolbarItemBase & {
+	/** Widgets rendered when this item is opened. */
+	widgets: IAppBuilderWidget[];
+};
+
+export type IAppBuilderToolbarTabbedPanelItem = IAppBuilderToolbarItemBase & {
+	/** Tabs rendered when this item is opened. */
+	tabs: IAppBuilderTab[];
+	/** When true, tabs stick to the top when scrolling the opened item content. */
+	stickyTabs?: boolean;
+};
+
+export type IAppBuilderToolbarItem =
+	| IAppBuilderToolbarControlItem
+	| IAppBuilderToolbarMenuItem
+	| IAppBuilderToolbarWidgetPanelItem
+	| IAppBuilderToolbarTabbedPanelItem;
+
+export type IAppBuilderToolbarGroups = IAppBuilderToolbarItem[][];
+
+export interface IAppBuilderToolbarContainerProperties {
+	/** Stable id used by runtime APIs and accessibility. */
+	id: string;
+	/** Screen edge. */
+	side?: AppBuilderToolbarSide;
+	/** Alignment along the selected edge. */
+	align?: AppBuilderToolbarAlign;
+	/** Lower values render first / closer to the edge. */
+	order?: number;
+	/** Visibility behavior. */
+	visibility?: AppBuilderToolbarVisibility;
+	/** Branch/group-preserving toolbar content. Outer array = groups, inner array = items within a group. */
+	groups?: IAppBuilderToolbarGroups;
+}
+
+export interface IAppBuilderStandardContainer {
 	/** Name of the container. */
-	name: AppBuilderContainerNameType;
-	/** Optional props, depending on the container type */
-	props?:
-		| AppBuilderAnchor3dContainerProperties
-		| AppBuilderAnchor2dContainerProperties;
+	name:
+		| AppBuilderContainerNameType.Left
+		| AppBuilderContainerNameType.Right
+		| AppBuilderContainerNameType.Top
+		| AppBuilderContainerNameType.Bottom;
+	/** Standard containers do not use custom props. */
+	props?: undefined;
 	/** Tabs displayed in the container. */
 	tabs?: IAppBuilderTab[];
 	/** When true, tabs stick to the top when scrolling the container content. */
@@ -1168,6 +1328,51 @@ export interface IAppBuilderContainer {
 	/** Further widgets displayed in the container. */
 	widgets?: IAppBuilderWidget[];
 }
+
+export interface IAppBuilderAnchor2dContainer {
+	/** Name of the container. */
+	name: AppBuilderContainerNameType.Anchor2d;
+	/** Anchor-specific props. */
+	props: AppBuilderAnchor2dContainerProperties;
+	/** Tabs displayed in the container. */
+	tabs?: IAppBuilderTab[];
+	/** When true, tabs stick to the top when scrolling the container content. */
+	stickyTabs?: boolean;
+	/** Further widgets displayed in the container. */
+	widgets?: IAppBuilderWidget[];
+}
+
+export interface IAppBuilderAnchor3dContainer {
+	/** Name of the container. */
+	name: AppBuilderContainerNameType.Anchor3d;
+	/** Anchor-specific props. */
+	props: AppBuilderAnchor3dContainerProperties;
+	/** Tabs displayed in the container. */
+	tabs?: IAppBuilderTab[];
+	/** When true, tabs stick to the top when scrolling the container content. */
+	stickyTabs?: boolean;
+	/** Further widgets displayed in the container. */
+	widgets?: IAppBuilderWidget[];
+}
+
+export interface IAppBuilderToolbarContainer {
+	/** Name of the container. */
+	name: AppBuilderContainerNameType.Toolbar;
+	/** Toolbar-specific props. */
+	props: IAppBuilderToolbarContainerProperties;
+}
+
+/**
+ * A container for UI elements.
+ *
+ * The container type is discriminated by `name`, while the specific fields are
+ * split per container kind.
+ */
+export type IAppBuilderContainer =
+	| IAppBuilderStandardContainer
+	| IAppBuilderAnchor2dContainer
+	| IAppBuilderAnchor3dContainer
+	| IAppBuilderToolbarContainer;
 
 /** Types of actions to be executed after updating outputs. */
 export type AppBuilderOutputActionsType = "setParameterValue";
@@ -1254,14 +1459,7 @@ export interface IAppBuilder {
 /** assert default containers */
 export function isStandardContainer(
 	container: IAppBuilderContainer,
-): container is {
-	name:
-		| AppBuilderContainerNameType.Left
-		| AppBuilderContainerNameType.Right
-		| AppBuilderContainerNameType.Top
-		| AppBuilderContainerNameType.Bottom;
-	props?: undefined;
-} {
+): container is IAppBuilderStandardContainer {
 	return (
 		container.name === AppBuilderContainerNameType.Left ||
 		container.name === AppBuilderContainerNameType.Right ||
@@ -1273,21 +1471,22 @@ export function isStandardContainer(
 /** assert anchor 2d container */
 export function isAnchor2dContainer(
 	container: IAppBuilderContainer,
-): container is {
-	name: AppBuilderContainerNameType.Anchor2d;
-	props: AppBuilderAnchor2dContainerProperties;
-} {
+): container is IAppBuilderAnchor2dContainer {
 	return container.name === AppBuilderContainerNameType.Anchor2d;
 }
 
 /** assert anchor 3d container */
 export function isAnchor3dContainer(
 	container: IAppBuilderContainer,
-): container is {
-	name: AppBuilderContainerNameType.Anchor3d;
-	props: AppBuilderAnchor3dContainerProperties;
-} {
+): container is IAppBuilderAnchor3dContainer {
 	return container.name === AppBuilderContainerNameType.Anchor3d;
+}
+
+/** assert toolbar container */
+export function isToolbarContainer(
+	container: IAppBuilderContainer,
+): container is IAppBuilderToolbarContainer {
+	return container.name === AppBuilderContainerNameType.Toolbar;
 }
 
 /** assert widget type "accordion" */
@@ -1505,6 +1704,74 @@ export function isCloseConfiguratorAction(
 	return action.type === "closeConfigurator";
 }
 
+/** assert action type "ar" */
+export function isArAction(
+	action: IAppBuilderActionDefinition,
+): action is {type: "ar"; props: IAppBuilderActionPropsAr} {
+	return action.type === "ar";
+}
+
+/** assert action type "fullscreen" */
+export function isFullscreenAction(
+	action: IAppBuilderActionDefinition,
+): action is {type: "fullscreen"; props: IAppBuilderActionPropsFullscreen} {
+	return action.type === "fullscreen";
+}
+
+/** assert action type "undo" */
+export function isUndoAction(
+	action: IAppBuilderActionDefinition,
+): action is {type: "undo"; props: IAppBuilderActionPropsUndo} {
+	return action.type === "undo";
+}
+
+/** assert action type "redo" */
+export function isRedoAction(
+	action: IAppBuilderActionDefinition,
+): action is {type: "redo"; props: IAppBuilderActionPropsRedo} {
+	return action.type === "redo";
+}
+
+/** assert action type "resetParameterValues" */
+export function isResetParameterValuesAction(
+	action: IAppBuilderActionDefinition,
+): action is {
+	type: "resetParameterValues";
+	props: IAppBuilderActionPropsResetParameterValues;
+} {
+	return action.type === "resetParameterValues";
+}
+
+/** assert action type "importParameterValues" */
+export function isImportParameterValuesAction(
+	action: IAppBuilderActionDefinition,
+): action is {
+	type: "importParameterValues";
+	props: IAppBuilderActionPropsImportParameterValues;
+} {
+	return action.type === "importParameterValues";
+}
+
+/** assert action type "exportParameterValues" */
+export function isExportParameterValuesAction(
+	action: IAppBuilderActionDefinition,
+): action is {
+	type: "exportParameterValues";
+	props: IAppBuilderActionPropsExportParameterValues;
+} {
+	return action.type === "exportParameterValues";
+}
+
+/** assert action type "importModelState" */
+export function isImportModelStateAction(
+	action: IAppBuilderActionDefinition,
+): action is {
+	type: "importModelState";
+	props: IAppBuilderActionPropsImportModelState;
+} {
+	return action.type === "importModelState";
+}
+
 /** assert action type "camera" */
 export function isCameraAction(
 	action: IAppBuilderActionDefinition,
@@ -1710,6 +1977,10 @@ export interface IAppBuilderSettingsSession extends SessionCreateDto {
 	 * If the exports should be hidden by default.
 	 */
 	hideExports?: boolean;
+	/**
+	 * Whether to hide the default viewport toolbar. Defaults to false.
+	 */
+	hideDefaultToolbar?: boolean;
 	/**
 	 * In case we cannot connect to the platform, load settings from the viewer, if they were stored there. (default: undefined)
 	 */

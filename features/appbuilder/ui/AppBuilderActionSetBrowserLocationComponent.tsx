@@ -3,11 +3,14 @@ import {QUERYPARAM_MODELSTATEID} from "@AppBuilderLib/shared/config/queryparams"
 import {applyModelStateToUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
 import {useCallback, useState} from "react";
 import {IAppBuilderLegacyActionPropsSetBrowserLocation} from "../config/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
+import AppBuilderActionBase, {
+	AppBuilderActionRenderProps,
+} from "./AppBuilderActionBase";
 
-type Props = IAppBuilderLegacyActionPropsSetBrowserLocation & {
-	namespace: string;
-};
+type Props = IAppBuilderLegacyActionPropsSetBrowserLocation &
+	AppBuilderActionRenderProps & {
+		namespace: string;
+	};
 
 function getLocation(
 	href?: string,
@@ -49,6 +52,9 @@ export default function AppBuilderActionSetBrowserLocationComponent(
 		hash,
 		namespace,
 		target,
+		presentation,
+		toolbarButtonProps,
+		disabled,
 	} = props;
 
 	const {createModelState} = useCreateModelState({namespace});
@@ -89,12 +95,15 @@ export default function AppBuilderActionSetBrowserLocationComponent(
 	}, [createModelState, href, pathname, search, hash, target]);
 
 	return (
-		<AppBuilderActionComponent
+		<AppBuilderActionBase
+			presentation={presentation}
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
 			loading={loading}
 			onClick={onClick}
+			disabled={disabled}
+			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);
 }

@@ -16,23 +16,25 @@ interface Props {
 	tabs: IAppBuilderTab[] | undefined;
 	/** Optional name of the container. */
 	containerName?: string;
+	stickyTabs?: boolean;
 }
 
 export default function AppBuilderTabsComponent({
 	namespace,
 	tabs,
 	containerName,
+	stickyTabs = true,
 }: Props) {
 	const {setActiveTab} = useShapeDiverStoreStandardContainers();
 
 	if (!tabs || tabs.length === 0) {
-		return <></>;
+		return null;
 	}
 
 	const tabProps: ITabsComponentProps = useMemo(() => {
 		return {
 			defaultValue: tabs[0].name,
-			stickyTabs: true,
+			stickyTabs,
 			tabs: tabs.map((tab) => {
 				return {
 					name: tab.name,
@@ -51,7 +53,7 @@ export default function AppBuilderTabsComponent({
 				? (tabIndex: number) => setActiveTab(containerName, tabIndex)
 				: undefined,
 		};
-	}, [namespace, tabs]);
+	}, [namespace, stickyTabs, tabs]);
 
 	return <TabsComponent {...tabProps} />;
 }

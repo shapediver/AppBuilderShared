@@ -6,11 +6,14 @@ import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/
 import {useProps} from "@mantine/core";
 import {useCallback, useState} from "react";
 import {IAppBuilderLegacyActionPropsAddToCart} from "../config/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
+import AppBuilderActionBase, {
+	AppBuilderActionRenderProps,
+} from "./AppBuilderActionBase";
 
-type Props = IAppBuilderLegacyActionPropsAddToCart & {
-	namespace: string;
-};
+type Props = IAppBuilderLegacyActionPropsAddToCart &
+	AppBuilderActionRenderProps & {
+		namespace: string;
+	};
 
 /**
  * Functional component for an "addToCart" action.
@@ -34,6 +37,9 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		parameterNamesToExclude,
 		successMessage,
 		errorMessage,
+		presentation,
+		toolbarButtonProps,
+		disabled,
 	} = props;
 
 	const {
@@ -119,12 +125,15 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 	]);
 
 	return (
-		<AppBuilderActionComponent
+		<AppBuilderActionBase
+			presentation={presentation}
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
 			onClick={onClick}
 			loading={loading}
+			disabled={disabled}
+			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);
 }

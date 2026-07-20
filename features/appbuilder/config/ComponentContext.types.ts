@@ -5,16 +5,16 @@ import {
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
 import {ViewportComponentProps} from "@AppBuilderLib/entities/viewport/config/viewport";
-import {
-	ViewportIconsOptionalProps,
-	ViewportIconsProps,
-} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
 import {ViewportOverlayWrapperProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
 import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {MantineThemeComponent} from "@mantine/core";
 import {ReactElement} from "react";
-import {IAppBuilderActionDefinition, IAppBuilderWidget} from "./appbuilder";
-import {ButtonRenderContext} from "./componentTypes";
+import {
+	IAppBuilder,
+	IAppBuilderActionDefinition,
+	IAppBuilderSettingsSession,
+	IAppBuilderWidget,
+} from "./appbuilder";
 
 // #region Interfaces (7)
 
@@ -39,7 +39,7 @@ interface ComponentType {
 export interface ExportComponentMapValueType extends ComponentType {
 	// #region Properties (1)
 
-	component: (props: PropsExportWithForm) => ReactElement;
+	component: (props: PropsExportWithForm) => ReactElement | null;
 
 	// #endregion Properties (1)
 }
@@ -67,10 +67,7 @@ export interface IComponentContext {
 	};
 	viewportAnchors?: {[key: string]: ViewportAnchorComponentMapValueType};
 	viewportComponent?: ViewportComponentMapValueType;
-	viewportIcons?: ViewportIconsComponentMapValueType;
-	viewportIconButtons?: {
-		[key: string]: ViewportIconButtonComponentMapValueType;
-	};
+	appBuilderToolbarLayer?: AppBuilderToolbarLayerComponentMapValueType;
 	viewportOverlayWrapper?: ViewportOverlayWrapperComponentMapValueType;
 	widgets?: {[key: string]: WidgetComponentMapValueType};
 	actions?: {[key: string]: ActionComponentMapValueType};
@@ -146,30 +143,17 @@ export interface ViewportComponentMapValueType extends ComponentType {
 	// #endregion Properties (1)
 }
 
-/**
- * Type alias for the viewport icons component map value type.
- */
-export interface ViewportIconsComponentMapValueType extends ComponentType {
+export interface AppBuilderToolbarLayerComponentMapValueType
+	extends ComponentType {
 	// #region Properties (1)
 
-	/** Viewport icons component */
-	component: (
-		props: ViewportIconsProps & ViewportIconsOptionalProps,
-	) => ReactElement;
-
-	// #endregion Properties (1)
-}
-
-/**
- * Type alias for the viewport icon button component map value type.
- */
-export interface ViewportIconButtonComponentMapValueType extends ComponentType {
-	// #region Properties (1)
-
-	/** Viewport icon button component */
-	component: (
-		props: ButtonRenderContext & Partial<ViewportIconsOptionalProps>,
-	) => ReactElement;
+	/** Optional viewport toolbar layer. Apps can omit it to avoid viewport toolbar dependencies. */
+	component: (props: {
+		namespace: string;
+		appBuilderData?: IAppBuilder;
+		sessionSettings?: IAppBuilderSettingsSession;
+		viewportId?: string;
+	}) => ReactElement | null;
 
 	// #endregion Properties (1)
 }

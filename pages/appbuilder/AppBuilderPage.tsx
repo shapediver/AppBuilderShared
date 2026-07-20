@@ -139,7 +139,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	const {
 		viewportComponent: {component: ViewportComponent} = {},
 		viewportOverlayWrapper: {component: ViewportOverlayWrapper} = {},
-		viewportIcons: {component: ViewportIcons} = {},
+		appBuilderToolbarLayer: {component: AppBuilderToolbarLayer} = {},
 	} = componentContext;
 
 	// get settings for app builder from query string
@@ -264,12 +264,11 @@ export default function AppBuilderPage(props: Partial<Props>) {
 					>
 						{ViewportOverlayWrapper && (
 							<>
-								{ViewportIcons && (
-									<ViewportIcons
+								{AppBuilderToolbarLayer && (
+									<AppBuilderToolbarLayer
 										namespace={namespace}
-										hideJsonMenu={
-											sessionSettings?.hideJsonMenu
-										}
+										appBuilderData={appBuilderData}
+										sessionSettings={sessionSettings}
 									/>
 								)}
 								<ViewportOverlayWrapper

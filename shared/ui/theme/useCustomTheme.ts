@@ -15,17 +15,16 @@ import {DefaultSessionThemeProps} from "@AppBuilderLib/entities/session/model/us
 import {DesktopClientPanelThemeProps} from "@AppBuilderLib/entities/stargate/ui/DesktopClientPanel";
 import {StargateInputThemeProps} from "@AppBuilderLib/entities/stargate/ui/StargateInput";
 import {StargateSharedThemeProps} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {LegacyViewportIconsThemeProps} from "@AppBuilderLib/entities/viewport/config/legacyViewportIconsTheme";
 import {
 	ViewportBrandingThemeProps,
 	ViewportComponentThemeProps,
 } from "@AppBuilderLib/entities/viewport/config/viewport";
-import {ViewportIconsThemeProps} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
 import {ViewportOverlayWrapperThemeProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
-import {ViewportIconButtonThemeProps} from "@AppBuilderLib/entities/viewport/ui/ViewportIconButton";
-import {ViewportIconButtonDropdownThemeProps} from "@AppBuilderLib/entities/viewport/ui/ViewportIconButtonDropdown";
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {AppBuilderActionComponentThemeProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionComponent";
+import {AppBuilderToolbarIconButtonThemeProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {CreateModelStateHookThemeProps} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {NotificationWrapperThemeProps} from "@AppBuilderLib/features/notifications/ui/NotificationWrapper";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -1451,11 +1450,11 @@ export const useCustomTheme = (props: Props = {}) => {
 				// },
 				// mobileBreakpoint: "sm",
 				// previewIconProps: {
-				// 	paperStyleProps: ViewportIconsDefaultStyleProps.style,
-				// 	paperProps: ViewportIconsDefaultStyleProps.paperProps,
-				// 	iconProps: ViewportIconButtonDefaultStyleProps.iconProps,
+				// 	paperStyleProps: legacyViewportIconsDefaultStyleProps.style,
+				// 	paperProps: legacyViewportIconsDefaultStyleProps.paperProps,
+				// 	iconProps: AppBuilderToolbarIconButtonDefaultStyleProps.iconProps,
 				// 	actionIconProps:
-				// 		ViewportIconButtonDefaultStyleProps.actionIconProps,
+				// 		AppBuilderToolbarIconButtonDefaultStyleProps.actionIconProps,
 				// },
 			}),
 
@@ -1483,11 +1482,11 @@ export const useCustomTheme = (props: Props = {}) => {
 				// },
 				// mobileBreakpoint: "sm",
 				// previewIconProps: {
-				// 	paperStyleProps: ViewportIconsDefaultStyleProps.style,
-				// 	paperProps: ViewportIconsDefaultStyleProps.paperProps,
-				// 	iconProps: ViewportIconButtonDefaultStyleProps.iconProps,
+				// 	paperStyleProps: legacyViewportIconsDefaultStyleProps.style,
+				// 	paperProps: legacyViewportIconsDefaultStyleProps.paperProps,
+				// 	iconProps: AppBuilderToolbarIconButtonDefaultStyleProps.iconProps,
 				// 	actionIconProps:
-				// 		ViewportIconButtonDefaultStyleProps.actionIconProps,
+				// 		AppBuilderToolbarIconButtonDefaultStyleProps.actionIconProps,
 				// },
 			}),
 			/**
@@ -1559,9 +1558,9 @@ export const useCustomTheme = (props: Props = {}) => {
 			/**
 			 * ViewportIcons
 			 *
-			 * Which viewport icons to display.
+			 * Legacy theme bucket for default viewport toolbar visuals.
 			 */
-			ViewportIcons: ViewportIconsThemeProps({
+			ViewportIcons: LegacyViewportIconsThemeProps({
 				// style: {
 				//  border: "none",
 				// 	display: "flex",
@@ -1570,20 +1569,11 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	flexDirection: "row",
 				// },
 				// fullscreenId: "viewer-fullscreen-area",
-				// enableHistoryButtons: true,
-				// enableModelStateButtons: true,
-				// enableImportExportButtons: true,
-				// enableResetButton: true,
-				// enableArBtn: true,
-				// enableCamerasBtn: true,
-				// enableFullscreenBtn: true,
-				// enableFullscreenBtn3States: false,
-				// enableZoomBtn: true,
-				// enableHistoryMenuButton: true,
-				// viewportOverlayProps: {
-				// 	position: OverlayPosition.TOP_MIDDLE,
-				// 	offset: "0.5em",
-				// },
+				// color: "var(--mantine-color-default-color)",
+				// colorDisabled: "var(--mantine-color-disabled-color)",
+				// variant: "subtle",
+				// variantDisabled: "transparent",
+				// size: 32,
 				// paperProps: {
 				// 	py: 1,
 				// 	px: 0,
@@ -1600,7 +1590,9 @@ export const useCustomTheme = (props: Props = {}) => {
 				//	keepMounted: true,
 				// },
 			}),
-			ViewportIconButton: ViewportIconButtonThemeProps({
+			// Current toolbar icon-button theme key. Legacy `ViewportIconButton`
+			// overrides are still accepted as a fallback by the component itself.
+			AppBuilderToolbarIconButton: AppBuilderToolbarIconButtonThemeProps({
 				// actionIconProps: {
 				// 	size: 32,
 				// 	variant: "subtle",
@@ -1612,16 +1604,6 @@ export const useCustomTheme = (props: Props = {}) => {
 				// iconProps: {
 				// 	color: "var(--mantine-color-default-color)",
 				// 	colorDisabled: "var(--mantine-color-disabled-color)",
-				// },
-			}),
-			ViewportIconButtonDropdown: ViewportIconButtonDropdownThemeProps({
-				// menuProps: {shadow: "md", position: "bottom-end"},
-				// menuDropdownProps: {
-				// 	style: {
-				// 		backgroundColor:
-				// 			"alpha(\"var(--mantine-color-body)\", 0.5)",
-				// 		backdropFilter: "blur(10px)",
-				// 	},
 				// },
 			}),
 			/**

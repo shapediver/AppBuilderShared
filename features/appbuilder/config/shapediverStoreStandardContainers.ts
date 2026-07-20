@@ -1,4 +1,4 @@
-import {AppBuilderContainerNameType, IAppBuilderContainer} from "./appbuilder";
+import {AppBuilderContainerNameType, IAppBuilderStandardContainer} from "./appbuilder";
 
 /**
  * Type representing the standard container names in the app builder.
@@ -38,7 +38,7 @@ export interface IShapeDiverStoreStandardContainers {
 	 */
 	defaultContainers: Record<
 		AppBuilderStandardContainerNameType,
-		IAppBuilderContainer | undefined
+		IAppBuilderStandardContainer | undefined
 	>;
 
 	/**
@@ -59,7 +59,7 @@ export interface IShapeDiverStoreStandardContainers {
 	 */
 	mergedContainers: Record<
 		AppBuilderStandardContainerNameType,
-		IAppBuilderContainer | undefined
+		IAppBuilderStandardContainer | undefined
 	>;
 
 	/**
@@ -79,7 +79,7 @@ export interface IShapeDiverStoreStandardContainers {
 	 */
 	setDefaultContainer: (
 		name: AppBuilderStandardContainerNameType,
-		container: IAppBuilderContainer | undefined,
+		container: IAppBuilderStandardContainer | undefined,
 	) => void;
 
 	/**
@@ -91,7 +91,7 @@ export interface IShapeDiverStoreStandardContainers {
 	setDefaultContainers: (
 		containers: Record<
 			AppBuilderStandardContainerNameType,
-			IAppBuilderContainer | undefined
+			IAppBuilderStandardContainer | undefined
 		>,
 	) => void;
 
