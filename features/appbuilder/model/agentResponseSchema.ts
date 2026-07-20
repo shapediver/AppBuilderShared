@@ -1,6 +1,6 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {zodResponseFormat} from "openai/helpers/zod";
-import {z} from "zod";
 
 export const AGENT_RESPONSE_FORMAT_NAME = "parameters_update";
 

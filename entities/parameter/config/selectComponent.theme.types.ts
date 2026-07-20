@@ -1,5 +1,6 @@
 import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
 import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantineCardPropsSchema} from "@AppBuilderLib/shared/mantine-props/card.zod";
 import {mantineFlexPropsSchema} from "@AppBuilderLib/shared/mantine-props/flex.zod";
@@ -9,7 +10,6 @@ import {mantineCssLengthSchema} from "@AppBuilderLib/shared/mantine-props/primit
 import {mantineSpacingSchema} from "@AppBuilderLib/shared/mantine-props/spacing.zod";
 import {mantineStackPropsSchema} from "@AppBuilderLib/shared/mantine-props/stack.zod";
 import {mantineTextPropsSchema} from "@AppBuilderLib/shared/mantine-props/text.zod";
-import {z} from "zod";
 
 /** Select component visualization type (matches `SelectComponentType`). */
 export const selectComponentTypeSchema = z.enum([

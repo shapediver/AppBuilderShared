@@ -1,5 +1,5 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {zodResponseFormat} from "openai/helpers/zod";
-import {z} from "zod";
 import {
 	AGENT_RESPONSE_FORMAT_NAME,
 	AGENT_RESPONSE_SCHEMA,

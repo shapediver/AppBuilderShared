@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 const mantineBreakpointObjectShape = <T extends z.ZodTypeAny>(valueSchema: T) =>
 	({

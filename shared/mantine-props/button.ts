@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineButtonPropsSchema} from "./button.zod";
 
 export {mantineButtonPropsSchema};

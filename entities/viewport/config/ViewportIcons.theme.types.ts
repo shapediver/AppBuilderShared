@@ -1,10 +1,10 @@
 import {ViewportOverlayWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportOverlayWrapper.theme.types";
 import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineDividerPropsSchema} from "@AppBuilderLib/shared/mantine-props/divider.zod";
 import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";
 import {mantineCssStyleRecordSchema} from "@AppBuilderLib/shared/mantine-props/primitives.zod";
 import {mantineTransitionPropsSchema} from "@AppBuilderLib/shared/mantine-props/transition.zod";
-import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("ViewportIcons", …)`. */
 export const ViewportIconsThemeDefaultPropsSchema = z.strictObject({

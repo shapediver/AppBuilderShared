@@ -1,5 +1,5 @@
 import {viewportBrandingSettingsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportBranding.theme.types";
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /** Theme `defaultProps` for `useProps("ViewportComponent", …)`. */
 export const ViewportComponentThemeDefaultPropsSchema = z.strictObject({

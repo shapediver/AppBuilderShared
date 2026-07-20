@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /** Theme `defaultProps` for `useProps("ExportLabelComponent", …)`. */
 export const ExportLabelComponentThemeDefaultPropsSchema = z.strictObject({

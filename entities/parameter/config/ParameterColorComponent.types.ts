@@ -1,5 +1,5 @@
 import type {ColorFormatType} from "@AppBuilderLib/shared/lib/colors";
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /** Theme `defaultProps` for `useProps("ParameterColorComponent", …)` (color format only). */
 export const ParameterColorComponentThemeDefaultPropsSchema = z.strictObject({

@@ -1,8 +1,8 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineActionIconPropsSchema} from "@AppBuilderLib/shared/mantine-props/actionIcon.zod";
 import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";
 import {mantineStackPropsSchema} from "@AppBuilderLib/shared/mantine-props/stack.zod";
-import {z} from "zod";
 
 export const AppBuilderFormWidgetComponentThemeDefaultPropsSchema =
 	z.strictObject({

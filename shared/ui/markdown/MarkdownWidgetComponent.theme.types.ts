@@ -1,5 +1,5 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
-import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("MarkdownWidgetComponent", …)`. */
 export const MarkdownWidgetComponentThemeDefaultPropsSchema = z.strictObject({

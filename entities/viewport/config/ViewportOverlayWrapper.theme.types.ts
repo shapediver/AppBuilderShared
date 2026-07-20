@@ -1,6 +1,6 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineResponsiveSchema} from "@AppBuilderLib/shared/mantine-props/mantineResponsive.zod";
 import {mantineCssLengthSchema} from "@AppBuilderLib/shared/mantine-props/primitives.zod";
-import {z} from "zod";
 
 const overlayPositionValueSchema = z.enum([
 	"top-left",

@@ -1,4 +1,5 @@
 import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
+import {prettifyError, z} from "@AppBuilderLib/shared/lib/zod";
 import {appBuilderThemeOtherPropsSchema} from "@AppBuilderLib/shared/mantine-props/appBuilderThemeOther.zod";
 import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
 import type {MantineTheme, MantineThemeComponent} from "@mantine/core";
@@ -12,8 +13,6 @@ import {
 	ATTRIBUTE_VISUALIZATION,
 	CAMERA_TYPE,
 } from "@shapediver/viewer.shared.types";
-import {z} from "zod";
-import {prettifyError} from "zod/v4";
 import {
 	AppBuilderContainerNameType,
 	AttributeVisualizationVisibility,
@@ -204,10 +203,7 @@ const ISelectParameterSettingsSchema = z
 		database: filterableDatabaseSettingsSchema.optional(),
 	})
 	.refine(
-		(s) =>
-			!s.database ||
-			s.type === "fullwidthcards" ||
-			s.type === "grid",
+		(s) => !s.database || s.type === "fullwidthcards" || s.type === "grid",
 		{
 			message:
 				'database requires selectSettings.type "fullwidthcards" or "grid"',

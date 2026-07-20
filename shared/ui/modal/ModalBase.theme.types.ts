@@ -1,10 +1,10 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
 import {
 	mantineSizeTokenSchema,
 	mantineSpacingSchema,
 } from "@AppBuilderLib/shared/mantine-props/spacing.zod";
-import {z} from "zod";
 
 const modalBaseButtonContainerPropsSchema = mantineGroupPropsSchema.pick({
 	justify: true,

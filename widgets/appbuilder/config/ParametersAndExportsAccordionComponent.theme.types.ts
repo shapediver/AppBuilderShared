@@ -1,10 +1,10 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineAccordionPropsSchema} from "@AppBuilderLib/shared/mantine-props/accordion.zod";
 import {mantineAccordionControlPropsSchema} from "@AppBuilderLib/shared/mantine-props/accordionControl.zod";
 import {mantineAccordionItemPropsSchema} from "@AppBuilderLib/shared/mantine-props/accordionItem.zod";
 import {mantineAccordionPanelPropsSchema} from "@AppBuilderLib/shared/mantine-props/accordionPanel.zod";
 import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";
 import {mantineStackPropsSchema} from "@AppBuilderLib/shared/mantine-props/stack.zod";
-import {z} from "zod";
 
 export const ParametersAndExportsAccordionComponentThemeDefaultPropsSchema =
 	z.strictObject({

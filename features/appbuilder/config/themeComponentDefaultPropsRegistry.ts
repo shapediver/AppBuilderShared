@@ -27,6 +27,7 @@ import {AppBuilderContainerWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/
 import {LoaderPageThemeDefaultPropsSchema} from "@AppBuilderLib/pages/misc/LoaderPage.types";
 import {AppBuilderAppShellTemplatePageThemeDefaultPropsSchema} from "@AppBuilderLib/pages/templates/AppBuilderAppShellTemplatePage.theme.types";
 import {AppBuilderGridTemplatePageThemeDefaultPropsSchema} from "@AppBuilderLib/pages/templates/AppBuilderGridTemplatePage.theme.types";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineAccordionPropsSchema} from "@AppBuilderLib/shared/mantine-props/accordion.zod";
 import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
@@ -59,7 +60,6 @@ import {
 	IGumballTransformParameterPropsJsonSchema,
 	ISelectionParameterPropsJsonSchema,
 } from "@shapediver/viewer.shared.types";
-import {z} from "zod";
 import {ExportLabelComponentThemeDefaultPropsSchema} from "~/shared/entities/export/config/ExportLabelComponent.types";
 import {OutputChunkLabelComponentThemeDefaultPropsSchema} from "~/shared/entities/output/config/OutputChunkLabelComponent.types";
 import {ParameterColorComponentThemeDefaultPropsSchema} from "~/shared/entities/parameter/config/ParameterColorComponent.types";

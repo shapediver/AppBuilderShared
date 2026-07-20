@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import type {AppBuilderTemplateThemeId} from "~/shared/features/appbuilder/lib/AppBuilderTemplate";
 import {appBuilderTemplateThemeIdSchema} from "~/shared/features/appbuilder/lib/AppBuilderTemplate";
 

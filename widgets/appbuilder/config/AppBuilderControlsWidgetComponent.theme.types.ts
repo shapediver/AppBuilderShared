@@ -1,6 +1,6 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";
 import {mantineStackPropsSchema} from "@AppBuilderLib/shared/mantine-props/stack.zod";
-import {z} from "zod";
 
 export const AppBuilderControlsWidgetComponentThemeDefaultPropsSchema =
 	z.strictObject({

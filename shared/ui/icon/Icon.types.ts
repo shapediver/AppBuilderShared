@@ -1,3 +1,4 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineSpacingSchema} from "@AppBuilderLib/shared/mantine-props/spacing";
 import {
 	IconifyIcon as IconifyIconDefinition,
@@ -5,7 +6,6 @@ import {
 } from "@iconify/react";
 import {MantineSize} from "@mantine/core";
 import {CSSProperties} from "react";
-import {z} from "zod";
 
 export interface CustomCSSProperties extends CSSProperties {
 	"--icon-stroke-width"?: string | number;
