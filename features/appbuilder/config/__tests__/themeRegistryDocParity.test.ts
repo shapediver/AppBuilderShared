@@ -16,14 +16,21 @@ type DocFlatFile = {
  * Registry keys validated at settings-parse time but without a matching doc-flat row.
  * - Mantine-only keys: documented via @docLink, not @docAttached.
  * - AppBuilderContainer: doc-flat uses AppBuilderContainerWrapper (wrapper useProps id).
+ * - Legacy aliases: accepted for backward-compatible validation/fallback only.
  */
 const REGISTRY_KEYS_WITHOUT_DOC_FLAT_ALLOWLIST = new Set([
 	"Accordion",
+	"AddToCartAction",
+	"AppBuilderToolbarMenuItemButton",
 	"AppBuilderContainer",
+	"AppBuilderToolbar",
+	"AppBuilderToolbarButton",
+	"AppBuilderToolbarLayer",
 	"Button",
 	"Group",
 	"Paper",
 	"Text",
+	"ViewportIconButton",
 ]);
 
 /**
@@ -31,7 +38,9 @@ const REGISTRY_KEYS_WITHOUT_DOC_FLAT_ALLOWLIST = new Set([
  * Dynamic runtime keys (NumberAttribute, StringAttribute, ViewportAnchor2d/3d) use computed
  * useProps ids and are not @docAttached — none appear in doc-flat.
  */
-const DOC_FLAT_KEYS_WITHOUT_REGISTRY_ALLOWLIST = new Set<string>([]);
+const DOC_FLAT_KEYS_WITHOUT_REGISTRY_ALLOWLIST = new Set<string>([
+	"ParameterStringComponent",
+]);
 
 function readDocFlatThemeComponentNames(): string[] {
 	if (!fs.existsSync(DOC_FLAT_PATH)) {

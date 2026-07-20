@@ -516,11 +516,89 @@ const IAppBuilderLegacyActionPropsCloseConfiguratorSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
+// Zod type definition for IAppBuilderActionPropsAr
+const IAppBuilderActionPropsArSchema = z.strictObject({
+	viewportId: z.string().optional(),
+});
+
+// Zod type definition for IAppBuilderLegacyActionPropsAr
+const IAppBuilderLegacyActionPropsArSchema =
+	IAppBuilderActionPropsArSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderActionPropsFullscreen
+const IAppBuilderActionPropsFullscreenSchema = z.strictObject({
+	type: z.enum(["fullscreen", "fullscreen3States"]).optional(),
+	fullscreenId: z.string().optional(),
+});
+
+// Zod type definition for IAppBuilderLegacyActionPropsFullscreen
+const IAppBuilderLegacyActionPropsFullscreenSchema =
+	IAppBuilderActionPropsFullscreenSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderActionPropsUndo
+const IAppBuilderActionPropsUndoSchema = z.strictObject({});
+
+// Zod type definition for IAppBuilderLegacyActionPropsUndo
+const IAppBuilderLegacyActionPropsUndoSchema =
+	IAppBuilderActionPropsUndoSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderActionPropsRedo
+const IAppBuilderActionPropsRedoSchema = z.strictObject({});
+
+// Zod type definition for IAppBuilderLegacyActionPropsRedo
+const IAppBuilderLegacyActionPropsRedoSchema =
+	IAppBuilderActionPropsRedoSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderActionPropsResetParameterValues
+const IAppBuilderActionPropsResetParameterValuesSchema = z.strictObject({});
+
+// Zod type definition for IAppBuilderLegacyActionPropsResetParameterValues
+const IAppBuilderLegacyActionPropsResetParameterValuesSchema =
+	IAppBuilderActionPropsResetParameterValuesSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderActionPropsImportParameterValues
+const IAppBuilderActionPropsImportParameterValuesSchema = z.strictObject({});
+
+// Zod type definition for IAppBuilderLegacyActionPropsImportParameterValues
+const IAppBuilderLegacyActionPropsImportParameterValuesSchema =
+	IAppBuilderActionPropsImportParameterValuesSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderActionPropsExportParameterValues
+const IAppBuilderActionPropsExportParameterValuesSchema = z.strictObject({});
+
+// Zod type definition for IAppBuilderLegacyActionPropsExportParameterValues
+const IAppBuilderLegacyActionPropsExportParameterValuesSchema =
+	IAppBuilderActionPropsExportParameterValuesSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
+// Zod type definition for IAppBuilderActionPropsImportModelState
+const IAppBuilderActionPropsImportModelStateSchema = z.strictObject({});
+
+// Zod type definition for IAppBuilderLegacyActionPropsImportModelState
+const IAppBuilderLegacyActionPropsImportModelStateSchema =
+	IAppBuilderActionPropsImportModelStateSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
 const IAppBuilderActionPropsCameraCommonSchema = z.strictObject({
 	camera: z
 		.union([
 			z.looseObject({
-				name: z.string(),
+				id: z.string().optional(),
+				name: z.string().optional(),
 			}),
 			z.looseObject({
 				type: z.enum(CAMERA_TYPE),
@@ -535,6 +613,7 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 	z
 		.strictObject({
 			type: z.literal("animate"),
+			viewportId: z.string().optional(),
 			props: z
 				.strictObject({
 					path: z.array(
@@ -551,6 +630,7 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 	z
 		.strictObject({
 			type: z.literal("assign"),
+			viewportId: z.string().optional(),
 			props: z
 				.strictObject({})
 				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
@@ -559,6 +639,7 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 	z
 		.strictObject({
 			type: z.literal("set"),
+			viewportId: z.string().optional(),
 			props: z
 				.strictObject({
 					position: z.array(z.number()).length(3),
@@ -570,6 +651,7 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 	z
 		.strictObject({
 			type: z.literal("reset"),
+			viewportId: z.string().optional(),
 			props: z
 				.strictObject({})
 				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
@@ -578,6 +660,7 @@ const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
 	z
 		.strictObject({
 			type: z.literal("zoomTo"),
+			viewportId: z.string().optional(),
 			props: z
 				.strictObject({
 					initialPosition: z.array(z.number()).length(3).optional(),
@@ -641,6 +724,38 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
 		type: z.literal("closeConfigurator"),
 		props: IAppBuilderLegacyActionPropsCloseConfiguratorSchema,
+	}),
+	z.strictObject({
+		type: z.literal("ar"),
+		props: IAppBuilderLegacyActionPropsArSchema,
+	}),
+	z.strictObject({
+		type: z.literal("fullscreen"),
+		props: IAppBuilderLegacyActionPropsFullscreenSchema,
+	}),
+	z.strictObject({
+		type: z.literal("undo"),
+		props: IAppBuilderLegacyActionPropsUndoSchema,
+	}),
+	z.strictObject({
+		type: z.literal("redo"),
+		props: IAppBuilderLegacyActionPropsRedoSchema,
+	}),
+	z.strictObject({
+		type: z.literal("resetParameterValues"),
+		props: IAppBuilderLegacyActionPropsResetParameterValuesSchema,
+	}),
+	z.strictObject({
+		type: z.literal("importParameterValues"),
+		props: IAppBuilderLegacyActionPropsImportParameterValuesSchema,
+	}),
+	z.strictObject({
+		type: z.literal("exportParameterValues"),
+		props: IAppBuilderLegacyActionPropsExportParameterValuesSchema,
+	}),
+	z.strictObject({
+		type: z.literal("importModelState"),
+		props: IAppBuilderLegacyActionPropsImportModelStateSchema,
 	}),
 	z.strictObject({
 		type: z.literal("camera"),
@@ -726,6 +841,38 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
 		type: z.literal("closeConfigurator"),
 		props: IAppBuilderLegacyActionPropsCloseConfiguratorSchema,
+	}),
+	z.strictObject({
+		type: z.literal("ar"),
+		props: IAppBuilderLegacyActionPropsArSchema,
+	}),
+	z.strictObject({
+		type: z.literal("fullscreen"),
+		props: IAppBuilderLegacyActionPropsFullscreenSchema,
+	}),
+	z.strictObject({
+		type: z.literal("undo"),
+		props: IAppBuilderLegacyActionPropsUndoSchema,
+	}),
+	z.strictObject({
+		type: z.literal("redo"),
+		props: IAppBuilderLegacyActionPropsRedoSchema,
+	}),
+	z.strictObject({
+		type: z.literal("resetParameterValues"),
+		props: IAppBuilderLegacyActionPropsResetParameterValuesSchema,
+	}),
+	z.strictObject({
+		type: z.literal("importParameterValues"),
+		props: IAppBuilderLegacyActionPropsImportParameterValuesSchema,
+	}),
+	z.strictObject({
+		type: z.literal("exportParameterValues"),
+		props: IAppBuilderLegacyActionPropsExportParameterValuesSchema,
+	}),
+	z.strictObject({
+		type: z.literal("importModelState"),
+		props: IAppBuilderLegacyActionPropsImportModelStateSchema,
 	}),
 	z.strictObject({
 		type: z.literal("camera"),
@@ -1269,12 +1416,86 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.strictObject({
 		.optional(),
 });
 
+const IAppBuilderToolbarItemBaseShape = {
+	id: z.string().optional(),
+	icon: z.string().optional(),
+	label: z.string().optional(),
+	tooltip: z.string().optional(),
+	order: z.number().optional(),
+	presentation: z.enum(["button", "item"]).optional(),
+};
+
+const IAppBuilderToolbarControlItemSchema = z.discriminatedUnion("type", [
+	z.strictObject({
+		...IAppBuilderToolbarItemBaseShape,
+		type: z.literal("parameter"),
+		props: IAppBuilderControlParameterRefSchema,
+	}),
+	z.strictObject({
+		...IAppBuilderToolbarItemBaseShape,
+		type: z.literal("export"),
+		props: IAppBuilderControlExportRefSchema,
+	}),
+	z.strictObject({
+		...IAppBuilderToolbarItemBaseShape,
+		type: z.literal("action"),
+		props: IAppBuilderControlActionRefSchema,
+	}),
+	z.strictObject({
+		...IAppBuilderToolbarItemBaseShape,
+		type: z.literal("output"),
+		props: IAppBuilderControlOutputRefSchema,
+	}),
+]);
+
+const IAppBuilderToolbarActionItemSchema = z.strictObject({
+	...IAppBuilderToolbarItemBaseShape,
+	type: z.literal("action"),
+	props: IAppBuilderControlActionRefSchema,
+});
+
+const IAppBuilderToolbarItemSchema = z.discriminatedUnion("type", [
+	...IAppBuilderToolbarControlItemSchema.options,
+	z.strictObject({
+		...IAppBuilderToolbarItemBaseShape,
+		type: z.literal("menu"),
+		props: z.strictObject({
+			items: z.array(z.array(IAppBuilderToolbarActionItemSchema)),
+		}),
+	}),
+	z.strictObject({
+		...IAppBuilderToolbarItemBaseShape,
+		type: z.literal("widgets"),
+		props: z.strictObject({
+			widgets: z.array(IAppBuilderWidgetSchema),
+		}),
+	}),
+	z.strictObject({
+		...IAppBuilderToolbarItemBaseShape,
+		type: z.literal("tabs"),
+		props: z.strictObject({
+			tabs: z.array(IAppBuilderTabSchema),
+			stickyTabs: z.boolean().optional(),
+		}),
+	}),
+]);
+
+const IAppBuilderToolbarContainerPropertiesSchema = z.strictObject({
+	id: z.string(),
+	side: z.enum(["top", "bottom", "left", "right"]).optional(),
+	align: z.enum(["start", "center", "end"]).optional(),
+	order: z.number().optional(),
+	visibility: z.enum(["always", "onMouseActivity"]).optional(),
+	groups: z.array(z.array(IAppBuilderToolbarItemSchema)).optional(),
+});
+
 // Zod type definition for IAppBuilderContainer
 const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 	z
 		.strictObject({
 			name: z.literal(AppBuilderContainerNameType.Anchor3d),
 			props: IAppBuilderAnchor3dContainerPropertiesSchema,
+			stickyTabs: z.boolean().optional(),
 			tabs: z.array(IAppBuilderTabSchema).optional(),
 			widgets: z.array(IAppBuilderWidgetSchema).optional(),
 		})
@@ -1283,8 +1504,15 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 		.strictObject({
 			name: z.literal(AppBuilderContainerNameType.Anchor2d),
 			props: IAppBuilderAnchor2dContainerPropertiesSchema,
+			stickyTabs: z.boolean().optional(),
 			tabs: z.array(IAppBuilderTabSchema).optional(),
 			widgets: z.array(IAppBuilderWidgetSchema).optional(),
+		})
+		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
+	z
+		.strictObject({
+			name: z.literal(AppBuilderContainerNameType.Toolbar),
+			props: IAppBuilderToolbarContainerPropertiesSchema,
 		})
 		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
 	// all other container props should be empty or undefined
@@ -1368,6 +1596,7 @@ const IAppBuilderSettingsSessionSchema = z.strictObject({
 	instance: z.boolean().optional(),
 	loadOnFirstUse: z.boolean().optional(),
 	keepInStore: z.boolean().optional(),
+	hideDefaultToolbar: z.boolean().optional(),
 });
 
 // Zod type definition for IAppBuilderSettingsSettings

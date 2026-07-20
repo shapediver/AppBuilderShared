@@ -11,7 +11,7 @@ import {useShallow} from "zustand/react/shallow";
 import {ViewportCreateDto} from "../config/viewport";
 import {useShapeDiverStoreViewport} from "./useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAccessFunctions} from "./useShapeDiverStoreViewportAccessFunctions";
-import {useShapeDiverViewportIconsStore} from "./useShapeDiverViewportIconsStore";
+import {useShapeDiverDefaultViewportToolbarStore} from "./useShapeDiverDefaultViewportToolbarStore";
 import {useViewportId} from "./useViewportId";
 
 /**
@@ -79,9 +79,9 @@ export function useViewport(props: ViewportCreateDto) {
 				},
 				{
 					onCreated: (viewport) => {
-						const iconStore =
-							useShapeDiverViewportIconsStore.getState();
-						iconStore.initialize(viewport);
+						const defaultToolbarStore =
+							useShapeDiverDefaultViewportToolbarStore.getState();
+						defaultToolbarStore.initialize(viewport);
 					},
 					onError: setError,
 				},
@@ -143,9 +143,9 @@ export function useViewport(props: ViewportCreateDto) {
 				.then(() =>
 					closeViewport(_props.id, {
 						onClosed: (viewportId) => {
-							const iconStore =
-								useShapeDiverViewportIconsStore.getState();
-							iconStore.clear(viewportId);
+							const defaultToolbarStore =
+								useShapeDiverDefaultViewportToolbarStore.getState();
+							defaultToolbarStore.clear(viewportId);
 						},
 					}),
 				)

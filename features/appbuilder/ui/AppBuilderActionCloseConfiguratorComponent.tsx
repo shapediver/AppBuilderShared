@@ -2,9 +2,12 @@ import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singl
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {useCallback} from "react";
 import {IAppBuilderLegacyActionPropsCloseConfigurator} from "../config/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
+import AppBuilderActionBase, {
+	AppBuilderActionRenderProps,
+} from "./AppBuilderActionBase";
 
-type Props = IAppBuilderLegacyActionPropsCloseConfigurator & {};
+type Props = IAppBuilderLegacyActionPropsCloseConfigurator &
+	AppBuilderActionRenderProps & {};
 
 /**
  * Functional component for an "closeConfigurator" action.
@@ -14,7 +17,14 @@ type Props = IAppBuilderLegacyActionPropsCloseConfigurator & {};
 export default function AppBuilderActionCloseConfiguratorComponent(
 	props: Props,
 ) {
-	const {label = "Close configurator", icon = "tabler:x", tooltip} = props;
+	const {
+		label = "Close configurator",
+		icon = "tabler:x",
+		tooltip,
+		presentation,
+		toolbarButtonProps,
+		disabled,
+	} = props;
 	const notifications = useNotificationStore();
 
 	const onClick = useCallback(async () => {
@@ -27,11 +37,14 @@ export default function AppBuilderActionCloseConfiguratorComponent(
 	}, []);
 
 	return (
-		<AppBuilderActionComponent
+		<AppBuilderActionBase
+			presentation={presentation}
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
 			onClick={onClick}
+			disabled={disabled}
+			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);
 }

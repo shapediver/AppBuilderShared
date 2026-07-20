@@ -1,3 +1,54 @@
+jest.mock("@shapediver/viewer.session", () => ({
+	PARAMETER_TYPE: {
+		Bool: "Bool",
+		Float: "Float",
+		String: "String",
+		StringList: "StringList",
+		File: "File",
+		Color: "Color",
+		Int: "Int",
+		Even: "Even",
+		Odd: "Odd",
+		Drawing: "Drawing",
+		Interaction: "Interaction",
+	},
+	PARAMETER_VISUALIZATION: {
+		SLIDER: "slider",
+	},
+	TAG3D_JUSTIFICATION: {
+		LEFT: "left",
+		CENTER: "center",
+		RIGHT: "right",
+	},
+}));
+
+jest.mock("@shapediver/viewer.shared.types", () => {
+	const {z} = require("zod");
+	return {
+		ATTRIBUTE_VISUALIZATION: {
+			LINEAR: "linear",
+		},
+		CAMERA_TYPE: {
+			PERSPECTIVE: "perspective",
+			ORTHOGRAPHIC: "orthographic",
+		},
+		IRectangleTransformParameterPropsJsonSchema: z.strictObject({
+			enableRotation: z.boolean().optional(),
+			enableScaling: z.boolean().optional(),
+			enableTranslation: z.boolean().optional(),
+		}),
+		IDraggingParameterPropsJsonSchema: z.strictObject({
+			draggingColor: z.string().optional(),
+		}),
+		IGumballTransformParameterPropsJsonSchema: z.strictObject({
+			selectionColor: z.string().optional(),
+		}),
+		ISelectionParameterPropsJsonSchema: z.strictObject({
+			selectionColor: z.string().optional(),
+		}),
+	};
+});
+
 import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import * as fs from "node:fs";
 import * as path from "node:path";
@@ -370,6 +421,14 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 		invalidDefaultProps: {showStatistics: "yes"},
 	},
 	{
+		component: "AppBuilderToolbarIconButton",
+		validDefaultProps: {
+			actionIconProps: {variant: "subtle", size: "sm"},
+			iconProps: {color: "white"},
+		},
+		invalidDefaultProps: {actionIconProps: {variant: 123}},
+	},
+	{
 		component: "ViewportIconButton",
 		validDefaultProps: {
 			actionIconProps: {variant: "subtle", size: "sm"},
@@ -378,17 +437,11 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 		invalidDefaultProps: {actionIconProps: {variant: 123}},
 	},
 	{
-		component: "ViewportIconButtonDropdowns",
-		validDefaultProps: {
-			menuProps: {shadow: "md", position: "bottom-end"},
-		},
-		invalidDefaultProps: {menuProps: {shadow: 123}},
-	},
-	{
 		component: "ViewportIcons",
 		validDefaultProps: {
-			enableZoomBtn: true,
+			color: "#ffffff",
 			size: 24,
+			enableZoomBtn: true,
 			paperProps: {shadow: "md"},
 		},
 		invalidDefaultProps: {size: "large"},

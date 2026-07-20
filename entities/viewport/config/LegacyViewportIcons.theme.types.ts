@@ -1,4 +1,3 @@
-import {ViewportOverlayWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportOverlayWrapper.theme.types";
 import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineDividerPropsSchema} from "@AppBuilderLib/shared/mantine-props/divider.zod";
@@ -7,9 +6,16 @@ import {mantineCssStyleRecordSchema} from "@AppBuilderLib/shared/mantine-props/p
 import {mantineTransitionPropsSchema} from "@AppBuilderLib/shared/mantine-props/transition.zod";
 
 /** Theme `defaultProps` for `useProps("ViewportIcons", …)`. */
-export const ViewportIconsThemeDefaultPropsSchema = z.strictObject({
+export const LegacyViewportIconsThemeDefaultPropsSchema = z.strictObject({
 	style: mantineCssStyleRecordSchema.optional(),
 	fullscreenId: z.string().optional(),
+	color: z.string().optional(),
+	colorDisabled: z.string().optional(),
+	variant: z.string().optional(),
+	variantDisabled: z.string().optional(),
+	iconStyle: JsonValueSchema.optional(),
+	size: z.number().optional(),
+	// Legacy visibility flags mapped to default toolbar options.
 	enableHistoryButtons: z.boolean().optional(),
 	enableModelStateButtons: z.boolean().optional(),
 	enableImportExportButtons: z.boolean().optional(),
@@ -20,19 +26,12 @@ export const ViewportIconsThemeDefaultPropsSchema = z.strictObject({
 	enableFullscreenBtn3States: z.boolean().optional(),
 	enableZoomBtn: z.boolean().optional(),
 	enableHistoryMenuButton: z.boolean().optional(),
-	color: z.string().optional(),
-	colorDisabled: z.string().optional(),
-	variant: z.string().optional(),
-	variantDisabled: z.string().optional(),
-	iconStyle: JsonValueSchema.optional(),
-	size: z.number().optional(),
-	viewportOverlayProps:
-		ViewportOverlayWrapperThemeDefaultPropsSchema.optional(),
+	viewportOverlayProps: z.unknown().optional(),
 	paperProps: mantinePaperPropsSchema.optional(),
 	dividerProps: mantineDividerPropsSchema.optional(),
 	transitionProps: mantineTransitionPropsSchema.optional(),
 });
 
-export type ViewportIconsThemeDefaultProps = z.infer<
-	typeof ViewportIconsThemeDefaultPropsSchema
+export type LegacyViewportIconsThemeDefaultProps = z.infer<
+	typeof LegacyViewportIconsThemeDefaultPropsSchema
 >;

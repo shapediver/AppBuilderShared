@@ -1,3 +1,4 @@
+import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {MantineStyleProp} from "@mantine/core";
 
 export interface CommonButtonProps {
@@ -7,6 +8,9 @@ export interface CommonButtonProps {
 	variant?: string;
 	variantDisabled?: string;
 	iconStyle?: MantineStyleProp;
+	label?: string;
+	tooltip?: string;
+	iconType?: IconType;
 }
 
 export const IconProps = {
@@ -16,19 +20,6 @@ export const IconProps = {
 	variantDisabled: "transparent",
 	size: 32,
 	style: {
-		m: "0.188rem",
+		margin: "0",
 	},
 };
-
-/**
- * Dropdown item and sections model for unified viewport icon menus.
- */
-export interface ViewportIconButtonDropdownItem {
-	name: string;
-	onClick: () => void;
-	iconType?: string;
-	disabled?: boolean;
-}
-
-export type ViewportIconButtonDropdownSections =
-	ViewportIconButtonDropdownItem[][];

@@ -1,7 +1,7 @@
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {useShapeDiverViewportIconsStore} from "./useShapeDiverViewportIconsStore";
+import {useShapeDiverDefaultViewportToolbarStore} from "./useShapeDiverDefaultViewportToolbarStore";
 
 interface CrossBrowserDocument extends Document {
 	webkitFullscreenElement?: Element;
@@ -105,7 +105,7 @@ export const useFullscreen = (fullscreenId: string) => {
 
 	// Get viewerFullscreen state and setter from store
 	const {viewerFullscreen3States, setViewerFullscreen3States} =
-		useShapeDiverViewportIconsStore(
+		useShapeDiverDefaultViewportToolbarStore(
 			useShallow((state) => ({
 				viewerFullscreen3States: state.viewerFullscreen3States,
 				setViewerFullscreen3States: state.setViewerFullscreen3States,

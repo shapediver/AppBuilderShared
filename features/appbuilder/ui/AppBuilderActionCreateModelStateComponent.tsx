@@ -5,11 +5,14 @@ import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {useCallback, useState} from "react";
 import {IAppBuilderLegacyActionPropsCreateModelState} from "../config/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
+import AppBuilderActionBase, {
+	AppBuilderActionRenderProps,
+} from "./AppBuilderActionBase";
 
-type Props = IAppBuilderLegacyActionPropsCreateModelState & {
-	namespace: string;
-};
+type Props = IAppBuilderLegacyActionPropsCreateModelState &
+	AppBuilderActionRenderProps & {
+		namespace: string;
+	};
 
 /**
  * Functional component for a "createModelState" action.
@@ -24,6 +27,9 @@ export default function AppBuilderActionCreateModelStateComponent(
 		icon = "tabler:device-floppy",
 		tooltip,
 		namespace,
+		presentation,
+		toolbarButtonProps,
+		disabled,
 		includeImage,
 		image,
 		includeGltf,
@@ -43,6 +49,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 	const [loading, setLoading] = useState(false);
 
 	const onClick = useCallback(async () => {
+		if (disabled) return;
 		setLoading(true);
 
 		try {
@@ -109,15 +116,19 @@ export default function AppBuilderActionCreateModelStateComponent(
 		themeErrorMessage,
 		success,
 		error,
+		disabled,
 	]);
 
 	return (
-		<AppBuilderActionComponent
+		<AppBuilderActionBase
+			presentation={presentation}
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={onClick}
+			onClick={() => void onClick()}
 			loading={loading}
+			disabled={disabled}
+			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);
 }

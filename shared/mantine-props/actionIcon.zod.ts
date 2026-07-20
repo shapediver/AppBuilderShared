@@ -7,6 +7,7 @@ import {
 import {mantineSizeTokenSchema} from "./spacing.zod";
 
 export const mantineActionIconPropsSchema = z.object({
+	color: z.string().optional(),
 	variant: z.string().optional(),
 	size: z.union([mantineSizeTokenSchema, z.number()]).optional(),
 	style: mantineCssStyleRecordSchema.optional(),

@@ -2,6 +2,7 @@ import {
 	IParameterValues,
 	PropsExportWithForm,
 } from "@AppBuilderLib/entities/export/config/propsExport";
+import {useExecuteExport} from "@AppBuilderLib/entities/export/model/useExecuteExport";
 import {useExport} from "@AppBuilderLib/entities/export/model/useExport";
 import {
 	ParameterValueDefinition,
@@ -25,7 +26,6 @@ import {
 import {IAppBuilderActionPropsSetParameterValue} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {IProcessDefinition} from "@AppBuilderLib/shared/config/shapediverStoreProcessManager";
-import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {ExportInterceptorContext} from "@AppBuilderLib/shared/lib/ExportInterceptorContext";
 import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
 import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
@@ -34,8 +34,7 @@ import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {Button, Group, MantineThemeComponent, useProps} from "@mantine/core";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
-import {fetchFileWithToken} from "@shapediver/viewer.utils.mime-type";
-import React, {
+import {
 	useCallback,
 	useContext,
 	useEffect,
@@ -136,9 +135,9 @@ export default function ExportButtonComponent(
 		rest,
 	);
 
-	const {definition, actions} = useExport(props) ?? {};
+	const exportData = useExport(props);
+	const {definition, actions} = exportData ?? {};
 	const notifications = useNotificationStore();
-	const errorReporting = useContext(ErrorReportingContext);
 
 	const {addProcess, createProcessManager} =
 		useShapeDiverStoreProcessManager();
@@ -149,7 +148,7 @@ export default function ExportButtonComponent(
 		notifications.error({
 			message: `Export ${props.exportId} not found`,
 		});
-		return <></>;
+		return null;
 	}
 
 	// get optional distribution-specific click interceptor and right section from context
@@ -184,129 +183,11 @@ export default function ExportButtonComponent(
 		);
 	}, [status, stargateColorProps]);
 
-	const exportRequest = useCallback(
-		async (
-			skipStargate?: boolean,
-			parameterValues?: {[key: string]: string},
-		): Promise<boolean> => {
-			// request the export
-			const response = await actions.request(parameterValues);
-
-			// if the export is a download export, download it
-			if (definition.type === EXPORT_TYPE.DOWNLOAD) {
-				if (
-					response.content &&
-					response.content[0] &&
-					response.content[0].href
-				) {
-					const content = response.content[0];
-					if (!skipStargate && isStargate) {
-						if (!(await isContentSupported(content))) {
-							notifications.error({
-								title: "Unsupported content type",
-								message: `Content type ${content.format} not supported by the selected client.`,
-							});
-							return false;
-						}
-						await onExportFile();
-						return true;
-					} else {
-						const url = content.href;
-						const filename = response.filename?.endsWith(
-							content.format,
-						)
-							? response.filename
-							: `${response.filename}.${content.format}`;
-						const sizemsg = content.size
-							? ` (${Math.ceil(content.size / 1000)}kB)`
-							: "";
-						notifications.success({
-							message: `Downloading file ${filename}${sizemsg}`,
-						});
-						const res = await actions.fetch(url);
-						await fetchFileWithToken(res, filename);
-						return true;
-					}
-				} else if (
-					response.content &&
-					response.content.length === 0 &&
-					response.msg
-				) {
-					notifications.success({
-						message: response.msg,
-					});
-					return true;
-				} else {
-					// Unexpected response for DOWNLOAD export type
-					const errorMessage =
-						"Unexpected response for export of type download";
-					notifications.error({
-						message: errorMessage,
-					});
-					errorReporting.captureException({
-						message: errorMessage,
-						exportResponse: response,
-						exportDefinition: {
-							id: definition.id,
-							name: definition.name,
-							type: definition.type,
-						},
-					});
-					return false;
-				}
-			} else if (definition.type === EXPORT_TYPE.EMAIL) {
-				// if the export is an email export, show the resulting message
-				if (response.result) {
-					const result = response.result;
-					if (result.err) {
-						notifications.error({
-							message: result.err,
-						});
-						return false;
-					}
-					if (result.msg) {
-						notifications.success({
-							message: result.msg,
-						});
-						return true;
-					}
-				}
-
-				// Unexpected response for EMAIL export
-				const errorMessage =
-					"Unexpected response for export of type email";
-				notifications.error({
-					message: errorMessage,
-				});
-				errorReporting.captureException({
-					message: errorMessage,
-					exportResponse: response,
-					exportDefinition: {
-						id: definition.id,
-						name: definition.name,
-						type: definition.type,
-					},
-				});
-				return false;
-			}
-
-			// Unexpected export type
-			const errorMessage = `Unexpected export type: ${definition.type}`;
-			notifications.error({
-				message: errorMessage,
-			});
-			errorReporting.captureMessage(errorMessage);
-			return false;
-		},
-		[
-			actions,
-			definition.type,
-			isStargate,
-			isContentSupported,
-			notifications,
-			errorReporting,
-		],
-	);
+	const exportRequest = useExecuteExport(exportData, {
+		isStargate,
+		isContentSupported,
+		onExportFile,
+	});
 
 	const [requestingExport, setRequestingExport] = useState(false);
 
@@ -346,10 +227,10 @@ export default function ExportButtonComponent(
 		}
 
 		// request the export
-		exportRequest(
-			parameterValueSourcesData.information.skipStargate,
+		exportRequest({
+			skipStargate: parameterValueSourcesData.information.skipStargate,
 			parameterValues,
-		)
+		})
 			.then((result) => {
 				// Call onSuccess if provided
 				if (result && onSuccess) {
@@ -445,7 +326,10 @@ export default function ExportButtonComponent(
 						return acc;
 					}, {} as IParameterValues);
 				try {
-					const result = await exportRequest(skipStargate, pValues);
+					const result = await exportRequest({
+						skipStargate,
+						parameterValues: pValues,
+					});
 					// Call onSuccess if provided
 					if (result && onSuccess) {
 						onSuccess(pValues);
@@ -464,12 +348,12 @@ export default function ExportButtonComponent(
 	);
 
 	const onClickIntercepted = useCallback(
-		(skipStargate?: boolean) => (event: React.MouseEvent) => {
+		(skipStargate?: boolean) => () => {
 			const cb = (values?: IParameterValues) =>
 				interceptClick
 					? interceptClick(() => onClick(skipStargate, values))
 					: onClick(skipStargate, values);
-			return form ? form.onSubmit(cb)(event as any) : cb();
+			return form ? form.onSubmit(cb)() : cb();
 		},
 		[onClick, interceptClick, form],
 	);
