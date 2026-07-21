@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /**
  * Concrete App Builder templates (theme `template` + map keys).

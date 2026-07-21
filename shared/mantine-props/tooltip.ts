@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineTooltipPropsSchema} from "./tooltip.zod";
 
 export {mantineTooltipPropsSchema};

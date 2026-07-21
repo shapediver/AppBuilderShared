@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineSelectPropsSchema} from "./select.zod";
 
 export {mantineSelectPropsSchema};

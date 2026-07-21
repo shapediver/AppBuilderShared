@@ -1,0 +1,58 @@
+.item {
+	font-size: var(--mantine-font-size-sm);
+	width: 100%;
+	padding: calc(var(--mantine-spacing-xs) / 1.5) var(--mantine-spacing-sm);
+	border-radius: var(--popover-radius, var(--mantine-radius-default));
+	color: var(--menu-item-color, var(--mantine-color-text));
+	display: flex;
+	align-items: center;
+	user-select: none;
+	text-align: left;
+
+	background-color: transparent;
+	border: none;
+	cursor: pointer;
+	appearance: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.item:where([data-disabled], :disabled) {
+	color: var(--mantine-color-disabled-color);
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+:global([data-mantine-color-scheme="light"])
+	.item:where(:hover, :focus, [data-menu-active]):where(
+		:not(:disabled, [data-disabled])
+	) {
+	background-color: var(--menu-item-hover, var(--mantine-color-gray-1));
+}
+
+:global([data-mantine-color-scheme="dark"])
+	.item:where(:hover, :focus, [data-menu-active]):where(
+		:not(:disabled, [data-disabled])
+	) {
+	background-color: var(--menu-item-hover, var(--mantine-color-dark-4));
+}
+
+.itemLabel {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.itemSection {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.itemSection:where([data-position="left"]) {
+	margin-inline-end: var(--mantine-spacing-xs);
+}
+
+.itemSection:where([data-position="right"]) {
+	margin-inline-start: var(--mantine-spacing-xs);
+}

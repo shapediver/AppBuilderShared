@@ -1,6 +1,6 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineCssLengthSchema} from "@AppBuilderLib/shared/mantine-props/primitives.zod";
 import {mantineSpacingSchema} from "@AppBuilderLib/shared/mantine-props/spacing.zod";
-import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("AppBuilderImage", …)`. */
 export const AppBuilderImageThemeDefaultPropsSchema = z.strictObject({

@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 const widthJsonSchema = z.union([z.string(), z.number()]).optional();
 

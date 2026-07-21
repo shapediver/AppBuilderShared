@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 const shapeDiverExampleModelSchema = z.strictObject({
 	slug: z.string(),

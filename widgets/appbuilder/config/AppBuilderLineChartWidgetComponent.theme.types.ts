@@ -1,7 +1,7 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineLineChartPropsSchema} from "@AppBuilderLib/shared/mantine-props/lineChart.zod";
 import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";
 import {mantineTitlePropsSchema} from "@AppBuilderLib/shared/mantine-props/title.zod";
-import {z} from "zod";
 
 export const AppBuilderLineChartWidgetComponentThemeDefaultPropsSchema =
 	z.strictObject({

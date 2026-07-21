@@ -1,14 +1,22 @@
-import {IAppBuilderContainer} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	IAppBuilderAnchor2dContainer,
+	IAppBuilderAnchor3dContainer,
+	IAppBuilderStandardContainer,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import AppBuilderWidgetsWithStackShell from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsWithStackShell";
 import AppBuilderTabsComponent from "./AppBuilderTabsComponent";
 
-interface Props extends IAppBuilderContainer {
+type Props = (
+	| IAppBuilderStandardContainer
+	| IAppBuilderAnchor2dContainer
+	| IAppBuilderAnchor3dContainer
+) & {
 	/**
 	 * Default session namespace to use for parameter and export references that do
 	 * not specify a session namespace.
 	 */
 	namespace: string;
-}
+};
 
 export default function AppBuilderContainerComponent({
 	namespace,

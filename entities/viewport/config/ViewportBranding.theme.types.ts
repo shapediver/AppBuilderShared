@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /** Single-scheme viewport branding settings (logo, spinner, busy mode). */
 export const viewportBrandingSettingsSchema = z.strictObject({

@@ -1,9 +1,9 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineBadgePropsSchema} from "@AppBuilderLib/shared/mantine-props/badge.zod";
 import {mantineDonutChartPropsSchema} from "@AppBuilderLib/shared/mantine-props/donutChart.zod";
 import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";
 import {mantinePieChartPropsSchema} from "@AppBuilderLib/shared/mantine-props/pieChart.zod";
 import {mantineTitlePropsSchema} from "@AppBuilderLib/shared/mantine-props/title.zod";
-import {z} from "zod";
 
 export const AppBuilderRoundChartWidgetComponentThemeDefaultPropsSchema =
 	z.strictObject({

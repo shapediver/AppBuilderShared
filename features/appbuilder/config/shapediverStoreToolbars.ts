@@ -1,0 +1,59 @@
+import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import {
+	AppBuilderToolbarAlign,
+	AppBuilderToolbarSide,
+	AppBuilderToolbarVisibility,
+	IAppBuilderToolbarControlItem,
+	IAppBuilderToolbarGroups,
+} from "./appbuilder";
+
+export type ToolbarSource = "definition" | "default" | "runtime";
+
+export interface ToolbarRegistration {
+	id: string;
+	source: ToolbarSource;
+	viewportId?: string;
+	side: AppBuilderToolbarSide;
+	align: AppBuilderToolbarAlign;
+	order: number;
+	definitionIndex?: number;
+	visibility: AppBuilderToolbarVisibility;
+	ariaLabel?: string;
+	defaultIcon?: IconType;
+	groups: IAppBuilderToolbarGroups;
+}
+
+export interface ToolbarRuntimeTarget {
+	toolbarId?: string;
+	fallbackSide: AppBuilderToolbarSide;
+	fallbackAlign: AppBuilderToolbarAlign;
+	createIfMissing?: boolean;
+	groupIndex?: number;
+	order?: number;
+}
+
+export interface ToolbarRuntimeTokenEntry {
+	toolbarId: string;
+	groupIndex: number;
+	items: IAppBuilderToolbarControlItem[];
+}
+
+export interface IShapeDiverStoreToolbars {
+	definitionToolbars: ToolbarRegistration[];
+	defaultToolbars: ToolbarRegistration[];
+	runtimeToolbars: ToolbarRegistration[];
+	runtimeTokens: Record<string, ToolbarRuntimeTokenEntry>;
+
+	setDefinitionToolbars: (toolbars: ToolbarRegistration[]) => void;
+	resetDefinitionToolbars: () => void;
+	setDefaultToolbar: (toolbar: ToolbarRegistration) => void;
+	removeDefaultToolbar: (toolbarId: string) => void;
+
+	addRuntimeToolbarControls: (
+		target: ToolbarRuntimeTarget,
+		items: IAppBuilderToolbarControlItem[],
+	) => string | undefined;
+	removeRuntimeToolbarToken: (token: string) => boolean;
+
+	selectMergedToolbars: (viewportId?: string) => ToolbarRegistration[];
+}

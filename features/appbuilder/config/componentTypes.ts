@@ -9,8 +9,6 @@ import ParameterSelectComponent from "@AppBuilderLib/entities/parameter/ui/Param
 import ParameterSliderComponent from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent";
 import ParameterStargateComponent from "@AppBuilderLib/entities/parameter/ui/ParameterStargateComponent";
 import ParameterStringComponent from "@AppBuilderLib/entities/parameter/ui/ParameterStringComponent";
-import {CommonButtonProps} from "@AppBuilderLib/entities/viewport/config/types";
-import {ViewportIconButtonEnum} from "@AppBuilderLib/entities/viewport/config/viewportIcons";
 import {
 	IComponentContext,
 	ParameterComponentMapValueType,
@@ -157,21 +155,12 @@ export const getExportComponent = (
 	}
 };
 
-export const getViewportIconComponent = (
-	context: IComponentContext,
-	type: ViewportIconButtonEnum,
-) => {
-	const component = context.viewportIconButtons?.[type];
-	return component?.component;
-};
-
-export interface ButtonRenderContext extends CommonButtonProps {
-	viewport?: any;
+export interface ButtonRenderContext {
+	viewportId?: string;
 	namespace: string;
 	buttonsDisabled: boolean;
 	executing: boolean;
 	hasPendingChanges: boolean;
-	iconsVisible: boolean;
+	iconsVisible?: boolean;
 	fullscreenId: string;
-	disabled?: boolean;
 }

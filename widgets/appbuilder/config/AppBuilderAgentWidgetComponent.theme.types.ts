@@ -1,5 +1,5 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";
-import {z} from "zod";
 
 /** Agent configuration keys from `AppBuilderAgentWidgetComponentConfigProps`. */
 const AppBuilderAgentWidgetComponentConfigPropsSchema = z.strictObject({

@@ -1,6 +1,6 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import type {MantineSpacing} from "@AppBuilderLib/shared/mantine-props/spacing";
 import {mantineSpacingSchema} from "@AppBuilderLib/shared/mantine-props/spacing";
-import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("LoaderPage", …)`. */
 export const LoaderPageThemeDefaultPropsSchema = z.strictObject({

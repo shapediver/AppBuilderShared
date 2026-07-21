@@ -1,5 +1,5 @@
+import z from "@AppBuilderLib/shared/lib/zod";
 import {IAppBuilderImageRefSchema} from "@AppBuilderShared/features/appbuilder/config/appbuildertypecheck";
-import z from "zod";
 
 // Zod type definition for ICreateModelStateData
 export const ICreateModelStateDataSchema = z.object({

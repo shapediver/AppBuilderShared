@@ -1,10 +1,10 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {
 	mantineBreakpointSchema,
 	mantineResponsiveBooleanSchema,
 	mantineResponsiveCssSizeSchema,
 	mantineResponsiveNumberSchema,
 } from "@AppBuilderLib/shared/mantine-props/primitives.zod";
-import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("AppBuilderAppShellTemplatePage", …)`. */
 export const AppBuilderAppShellTemplatePageThemeDefaultPropsSchema =

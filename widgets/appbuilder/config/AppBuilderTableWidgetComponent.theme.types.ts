@@ -1,7 +1,7 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineBoxPropsSchema} from "@AppBuilderLib/shared/mantine-props/box.zod";
 import {mantineStylesApiSchema} from "@AppBuilderLib/shared/mantine-props/primitives.zod";
 import {mantineSizeTokenSchema} from "@AppBuilderLib/shared/mantine-props/spacing.zod";
-import {z} from "zod";
 
 const mantineTablePropsSchema = z.strictObject({
 	styles: mantineStylesApiSchema.optional(),

@@ -1,7 +1,7 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantineLoaderPropsSchema} from "@AppBuilderLib/shared/mantine-props/loader.zod";
 import {mantineTextPropsSchema} from "@AppBuilderLib/shared/mantine-props/text.zod";
-import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("StargateInput", …)`. */
 export const StargateInputThemeDefaultPropsSchema = z.strictObject({

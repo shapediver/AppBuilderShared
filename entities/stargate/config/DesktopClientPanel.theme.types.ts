@@ -1,3 +1,4 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineActionIconPropsSchema} from "@AppBuilderLib/shared/mantine-props/actionIcon.zod";
 import {mantineAlertPropsSchema} from "@AppBuilderLib/shared/mantine-props/alert.zod";
 import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
@@ -7,7 +8,6 @@ import {mantineSelectPropsSchema} from "@AppBuilderLib/shared/mantine-props/sele
 import {mantineStackPropsSchema} from "@AppBuilderLib/shared/mantine-props/stack.zod";
 import {mantineTextPropsSchema} from "@AppBuilderLib/shared/mantine-props/text.zod";
 import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
-import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("DesktopClientPanel", …)`. */
 export const DesktopClientPanelThemeDefaultPropsSchema = z.strictObject({

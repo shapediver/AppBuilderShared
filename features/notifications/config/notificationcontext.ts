@@ -1,5 +1,5 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {NotificationData} from "@mantine/notifications";
-import {z} from "zod";
 
 export type AppBuilderNotificationData = Pick<
 	NotificationData,
