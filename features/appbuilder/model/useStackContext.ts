@@ -1,7 +1,12 @@
+import {STACK_ANIMATION_DURATION_MS} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
 import {IAppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext.types";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
-export const useStackContext = (animationDuration = 300) => {
+export {STACK_ANIMATION_DURATION_MS};
+
+export const useStackContext = (
+	animationDuration = STACK_ANIMATION_DURATION_MS,
+) => {
 	const [stackPath, setStackPath] = useState<string[]>([]);
 	const [isTransitioning, setIsTransitioning] = useState(false);
 	const popTimeoutRef = useRef<ReturnType<typeof setTimeout>>();

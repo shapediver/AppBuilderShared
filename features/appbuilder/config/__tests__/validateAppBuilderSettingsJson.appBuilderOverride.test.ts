@@ -275,6 +275,40 @@ describe("validateAppBuilderSettingsJson appBuilderOverride", () => {
 		const result = validateAppBuilderSettingsJson(ss9065ShapeSettings);
 		expect(result.success).toBe(true);
 	});
+
+	it("accepts stackUi inside container tabs", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			appBuilderOverride: {
+				version: "1.0",
+				containers: [
+					{
+						name: "right",
+						tabs: [
+							{
+								name: "Tab 01",
+								widgets: [
+									{
+										type: "stackUi",
+										props: {
+											name: "Settings",
+											widgets: [
+												{
+													type: "text",
+													props: {text: "Inside stack"},
+												},
+											],
+										},
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+		});
+		expect(result.success).toBe(true);
+	});
 });
 
 describe("validateAppBuilderSettingsJson themeOverrides.other", () => {

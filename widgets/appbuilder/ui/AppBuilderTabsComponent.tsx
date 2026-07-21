@@ -3,7 +3,7 @@ import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appb
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
-import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
+import AppBuilderWidgetsWithStackShell from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsWithStackShell";
 import {useMemo} from "react";
 
 interface Props {
@@ -27,11 +27,11 @@ export default function AppBuilderTabsComponent({
 }: Props) {
 	const {setActiveTab} = useShapeDiverStoreStandardContainers();
 
-	if (!tabs || tabs.length === 0) {
-		return null;
-	}
+	const tabProps: ITabsComponentProps | null = useMemo(() => {
+		if (!tabs || tabs.length === 0) {
+			return null;
+		}
 
-	const tabProps: ITabsComponentProps = useMemo(() => {
 		return {
 			defaultValue: tabs[0].name,
 			stickyTabs,
@@ -41,7 +41,7 @@ export default function AppBuilderTabsComponent({
 					icon: tab.icon,
 					tooltip: tab.tooltip,
 					children: [
-						<AppBuilderWidgetsComponent
+						<AppBuilderWidgetsWithStackShell
 							key={0}
 							namespace={namespace}
 							widgets={tab.widgets}
@@ -53,7 +53,11 @@ export default function AppBuilderTabsComponent({
 				? (tabIndex: number) => setActiveTab(containerName, tabIndex)
 				: undefined,
 		};
-	}, [namespace, stickyTabs, tabs]);
+	}, [namespace, tabs, containerName, setActiveTab, stickyTabs]);
+
+	if (!tabProps) {
+		return <></>;
+	}
 
 	return <TabsComponent {...tabProps} />;
 }

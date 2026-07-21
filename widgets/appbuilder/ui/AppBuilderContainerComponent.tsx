@@ -3,10 +3,7 @@ import {
 	IAppBuilderAnchor3dContainer,
 	IAppBuilderStandardContainer,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {AppBuilderStackContext} from "@AppBuilderLib/features/appbuilder/lib/StackContext";
-import {useStackContext} from "@AppBuilderLib/features/appbuilder/model/useStackContext";
-import AppBuilderStackUiWidgetComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
-import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
+import AppBuilderWidgetsWithStackShell from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsWithStackShell";
 import AppBuilderTabsComponent from "./AppBuilderTabsComponent";
 
 type Props = (
@@ -27,25 +24,24 @@ export default function AppBuilderContainerComponent({
 	tabs,
 	name,
 }: Props) {
-	const {stackPath, context} = useStackContext(300);
+	const hasTabs = Boolean(tabs?.length);
+	// No tabs: always mount (legacy). With tabs: only if container.widgets non-empty
+	// (tab widgets get their own shell in AppBuilderTabsComponent — SS-9879).
+	const showContainerWidgets = !hasTabs || Boolean(widgets?.length);
 
 	return (
-		<AppBuilderStackContext.Provider value={context}>
+		<>
 			<AppBuilderTabsComponent
 				namespace={namespace}
 				tabs={tabs}
 				containerName={name}
 			/>
-			<AppBuilderStackUiWidgetComponent
-				namespace={namespace}
-				stackPath={stackPath}
-				liveWidgets={widgets}
-			>
-				<AppBuilderWidgetsComponent
+			{showContainerWidgets && (
+				<AppBuilderWidgetsWithStackShell
 					namespace={namespace}
 					widgets={widgets}
 				/>
-			</AppBuilderStackUiWidgetComponent>
-		</AppBuilderStackContext.Provider>
+			)}
+		</>
 	);
 }
