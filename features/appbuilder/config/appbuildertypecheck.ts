@@ -1486,7 +1486,6 @@ const IAppBuilderToolbarContainerPropertiesSchema = z.strictObject({
 	align: z.enum(["start", "center", "end"]).optional(),
 	order: z.number().optional(),
 	visibility: z.enum(["always", "onMouseActivity"]).optional(),
-	groups: z.array(z.array(IAppBuilderToolbarItemSchema)).optional(),
 });
 
 // Zod type definition for IAppBuilderContainer
@@ -1513,6 +1512,7 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 		.strictObject({
 			name: z.literal(AppBuilderContainerNameType.Toolbar),
 			props: IAppBuilderToolbarContainerPropertiesSchema,
+			groups: z.array(z.array(IAppBuilderToolbarItemSchema)).optional(),
 		})
 		.extend(IAppBuilderWidgetPropsCommonSchema.shape),
 	// all other container props should be empty or undefined

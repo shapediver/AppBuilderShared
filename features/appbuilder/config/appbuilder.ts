@@ -1348,8 +1348,6 @@ export interface IAppBuilderToolbarContainerProperties {
 	order?: number;
 	/** Visibility behavior. */
 	visibility?: AppBuilderToolbarVisibility;
-	/** Branch/group-preserving toolbar content. Outer array = groups, inner array = items within a group. */
-	groups?: IAppBuilderToolbarGroups;
 }
 
 export interface IAppBuilderStandardContainer {
@@ -1400,6 +1398,8 @@ export interface IAppBuilderToolbarContainer {
 	name: AppBuilderContainerNameType.Toolbar;
 	/** Toolbar-specific props. */
 	props: IAppBuilderToolbarContainerProperties;
+	/** Branch/group-preserving toolbar content. Outer array = groups, inner array = items within a group. */
+	groups?: IAppBuilderToolbarGroups;
 }
 
 /**

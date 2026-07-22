@@ -75,54 +75,54 @@ describe("toolbar container schema", () => {
 						side: "top",
 						align: "center",
 						visibility: "always",
-						groups: [
-							[
-								makeToolbarControl("parameter", {
-									name: "Length",
-								}),
-								makeToolbarControl("export", {
-									name: "Download",
-								}),
-								makeToolbarControl("action", {
-									definition: {
-										type: "closeConfigurator",
-										props: {},
-									},
-								}),
-								makeToolbarControl("output", {name: "Summary"}),
-								makeSemanticAction({
-									type: "camera",
-									props: {type: "zoomTo", props: {}},
-								}),
-							],
-							[
-								makeToolbarActionMenu(
-									[
-										[
-											makeSemanticAction({
-												type: "undo",
-												props: {},
-											}),
-										],
-									],
-									{id: "action-menu", label: "Actions"},
-								),
-								{
-									id: "widget-panel",
-									type: "widgets",
-									label: "Info",
-									props: {
-										widgets: [
-											{
-												type: "text",
-												props: {text: "Hello"},
-											},
-										],
-									},
-								},
-							],
-						],
 					},
+					groups: [
+						[
+							makeToolbarControl("parameter", {
+								name: "Length",
+							}),
+							makeToolbarControl("export", {
+								name: "Download",
+							}),
+							makeToolbarControl("action", {
+								definition: {
+									type: "closeConfigurator",
+									props: {},
+								},
+							}),
+							makeToolbarControl("output", {name: "Summary"}),
+							makeSemanticAction({
+								type: "camera",
+								props: {type: "zoomTo", props: {}},
+							}),
+						],
+						[
+							makeToolbarActionMenu(
+								[
+									[
+										makeSemanticAction({
+											type: "undo",
+											props: {},
+										}),
+									],
+								],
+								{id: "action-menu", label: "Actions"},
+							),
+							{
+								id: "widget-panel",
+								type: "widgets",
+								label: "Info",
+								props: {
+									widgets: [
+										{
+											type: "text",
+											props: {text: "Hello"},
+										},
+									],
+								},
+							},
+						],
+					],
 				},
 			],
 		});
@@ -189,22 +189,22 @@ describe("toolbar container schema", () => {
 					name: "toolbar",
 					props: {
 						id: "viewportToolbar",
-						groups: [
-							[
-								makeToolbarActionMenu(
-									[
-										[
-											makeSemanticAction({
-												type: "importParameterValues",
-												props: {},
-											}),
-										],
-									],
-									{label: "More options"},
-								),
-							],
-						],
 					},
+					groups: [
+						[
+							makeToolbarActionMenu(
+								[
+									[
+										makeSemanticAction({
+											type: "importParameterValues",
+											props: {},
+										}),
+									],
+								],
+								{label: "More options"},
+							),
+						],
+					],
 				},
 			],
 		});
@@ -220,66 +220,66 @@ describe("toolbar container schema", () => {
 					name: "toolbar",
 					props: {
 						id: "utilityActionsToolbar",
-						groups: [
-							[
-								makeToolbarControl("action", {
-									definition: {
-										type: "importParameterValues",
-										props: {},
-									},
-								}),
-								makeToolbarControl("action", {
-									definition: {
-										type: "exportParameterValues",
-										props: {},
-									},
-								}),
-								makeToolbarControl("action", {
-									definition: {
-										type: "importModelState",
-										props: {},
-									},
-								}),
-								makeToolbarControl("action", {
-									definition: {
-										type: "camera",
-										props: {
-											type: "assign",
-											viewportId: "vp1",
-											props: {camera: {name: "cam1"}},
-										},
-									},
-								}),
-								makeToolbarActionMenu(
-									[
-										[
-											makeToolbarControl("action", {
-												definition: {
-													type: "camera",
-													props: {
-														type: "reset",
-														props: {},
-													},
-												},
-											}),
-										],
-										[
-											makeToolbarControl("action", {
-												definition: {
-													type: "camera",
-													props: {
-														type: "zoomTo",
-														props: {},
-													},
-												},
-											}),
-										],
-									],
-									{label: "Grouped camera actions"},
-								),
-							],
-						],
 					},
+					groups: [
+						[
+							makeToolbarControl("action", {
+								definition: {
+									type: "importParameterValues",
+									props: {},
+								},
+							}),
+							makeToolbarControl("action", {
+								definition: {
+									type: "exportParameterValues",
+									props: {},
+								},
+							}),
+							makeToolbarControl("action", {
+								definition: {
+									type: "importModelState",
+									props: {},
+								},
+							}),
+							makeToolbarControl("action", {
+								definition: {
+									type: "camera",
+									props: {
+										type: "assign",
+										viewportId: "vp1",
+										props: {camera: {name: "cam1"}},
+									},
+								},
+							}),
+							makeToolbarActionMenu(
+								[
+									[
+										makeToolbarControl("action", {
+											definition: {
+												type: "camera",
+												props: {
+													type: "reset",
+													props: {},
+												},
+											},
+										}),
+									],
+									[
+										makeToolbarControl("action", {
+											definition: {
+												type: "camera",
+												props: {
+													type: "zoomTo",
+													props: {},
+												},
+											},
+										}),
+									],
+								],
+								{label: "Grouped camera actions"},
+							),
+						],
+					],
 				},
 			],
 		});
@@ -295,8 +295,8 @@ describe("toolbar container schema", () => {
 					name: "toolbar",
 					props: {
 						id: "viewportToolbar",
-						groups: [[makeLegacyViewportAction("pan")]],
 					},
+					groups: [[makeLegacyViewportAction("pan")]],
 				},
 			],
 		});
@@ -307,8 +307,8 @@ describe("toolbar container schema", () => {
 					name: "toolbar",
 					props: {
 						id: "viewportToolbar",
-						groups: [[makeLegacyViewportAction("historyMenu")]],
 					},
+					groups: [[makeLegacyViewportAction("historyMenu")]],
 				},
 			],
 		});
@@ -325,14 +325,14 @@ describe("toolbar container schema", () => {
 					name: "toolbar",
 					props: {
 						id: "viewportToolbar",
-						groups: [
-							[
-								makeToolbarControl("viewportOperation", {
-									type: "zoom",
-								}),
-							],
-						],
 					},
+					groups: [
+						[
+							makeToolbarControl("viewportOperation", {
+								type: "zoom",
+							}),
+						],
+					],
 				},
 			],
 		});

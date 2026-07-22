@@ -42,7 +42,7 @@ export function useAppBuilderToolbars(props: UseAppBuilderToolbarsProps) {
 					order: container.props.order ?? 0,
 					definitionIndex,
 					visibility: container.props.visibility ?? "always",
-					groups: container.props.groups ?? [],
+					groups: container.groups ?? [],
 				})) ?? [];
 
 		setDefinitionToolbars(definitionToolbars);
@@ -50,7 +50,12 @@ export function useAppBuilderToolbars(props: UseAppBuilderToolbarsProps) {
 		return () => {
 			resetDefinitionToolbars();
 		};
-	}, [appBuilderData?.containers, resetDefinitionToolbars, setDefinitionToolbars, viewportId]);
+	}, [
+		appBuilderData?.containers,
+		resetDefinitionToolbars,
+		setDefinitionToolbars,
+		viewportId,
+	]);
 
 	return {toolbars};
 }
