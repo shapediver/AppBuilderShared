@@ -15,7 +15,7 @@ import {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/Compo
 import {getParameterComponent} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import AppBuilderTabsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderTabsComponent";
 import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
-import {Divider, Paper, Stack} from "@mantine/core";
+import {Divider, Paper, Stack, Text} from "@mantine/core";
 import React, {useMemo} from "react";
 import {AppBuilderActionFromType} from "./AppBuilderActionFromType";
 import {getToolbarActionRef} from "./appBuilderToolbarButtonShared";
@@ -126,11 +126,22 @@ export default function AppBuilderToolbarPopoverContent({
 		}
 
 		if (isToolbarWidgetPanelItem(toolbarItem)) {
-			return (
+			const widgets = (
 				<AppBuilderWidgetsComponent
 					namespace={namespace}
 					widgets={toolbarItem.props.widgets}
 				/>
+			);
+
+			if (!toolbarItem.label) return widgets;
+
+			return (
+				<Stack gap="xs">
+					<Text size="sm" fw={600}>
+						{toolbarItem.label}
+					</Text>
+					{widgets}
+				</Stack>
 			);
 		}
 
