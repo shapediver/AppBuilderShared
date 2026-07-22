@@ -1,9 +1,9 @@
 import {selectSimpleGridPropsSchema} from "@AppBuilderLib/entities/parameter/config/selectComponent.theme.types";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineCardPropsSchema} from "@AppBuilderLib/shared/mantine-props/card.zod";
 import {mantineImagePropsSchema} from "@AppBuilderLib/shared/mantine-props/image.zod";
 import {mantineStackPropsSchema} from "@AppBuilderLib/shared/mantine-props/stack.zod";
 import {mantineTextPropsSchema} from "@AppBuilderLib/shared/mantine-props/text.zod";
-import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("SelectGridComponent", …)`. */
 export const SelectGridComponentThemeDefaultPropsSchema = z.strictObject({

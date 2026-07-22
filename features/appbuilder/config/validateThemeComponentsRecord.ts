@@ -1,4 +1,4 @@
-import type {RefinementCtx} from "zod";
+import type {RefinementCtx} from "@AppBuilderLib/shared/lib/zod";
 import {themeComponentDefaultPropsRegistry} from "./themeComponentDefaultPropsRegistry";
 
 type ThemeComponentEntry = {defaultProps?: unknown};

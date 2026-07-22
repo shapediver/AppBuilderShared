@@ -14,13 +14,16 @@ import {
 	IAppBuilderActionPropsSetParameterValues,
 	IAppBuilderLegacyActionPropsSetParameterValue,
 } from "../config/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
+import AppBuilderActionBase, {
+	AppBuilderActionRenderProps,
+} from "./AppBuilderActionBase";
 
 type Props = (
 	| IAppBuilderActionPropsSetParameterValues
 	| IAppBuilderLegacyActionPropsSetParameterValue
 ) &
-	IAppBuilderActionPropsCommon & {
+	IAppBuilderActionPropsCommon &
+	AppBuilderActionRenderProps & {
 		namespace: string;
 	};
 
@@ -32,7 +35,15 @@ type Props = (
 export default function AppBuilderActionSetParameterValuesComponent(
 	props: Props,
 ) {
-	const {label = "Set parameters", icon, tooltip, namespace} = props;
+	const {
+		label = "Set parameters",
+		icon,
+		tooltip,
+		namespace,
+		presentation,
+		toolbarButtonProps,
+		disabled,
+	} = props;
 
 	const parameterValues = useMemo(() => {
 		if ("parameterValues" in props) {
@@ -132,7 +143,10 @@ export default function AppBuilderActionSetParameterValuesComponent(
 						}
 					}
 				} else if (source !== undefined) {
-					validParameters[parameter.definition.id] =
+					if (!validParameters[paramNamespace])
+						validParameters[paramNamespace] = {};
+
+					validParameters[paramNamespace][parameter.definition.id] =
 						sourceResults?.[sourceIndex++];
 					hasChanges = true;
 				}
@@ -265,12 +279,14 @@ export default function AppBuilderActionSetParameterValuesComponent(
 	}, [parameterValues, namespace]);
 
 	return (
-		<AppBuilderActionComponent
+		<AppBuilderActionBase
+			presentation={presentation}
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
 			onClick={onClick}
-			disabled={isDisabled || isResolving}
+			disabled={disabled || isDisabled || isResolving}
+			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);
 }

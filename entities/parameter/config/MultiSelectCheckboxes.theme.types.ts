@@ -1,6 +1,6 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineCheckboxPropsSchema} from "@AppBuilderLib/shared/mantine-props/checkbox.zod";
 import {mantineStackPropsSchema} from "@AppBuilderLib/shared/mantine-props/stack.zod";
-import {z} from "zod";
 
 /** Theme `defaultProps` for `useProps("MultiSelectCheckboxes", …)`. */
 export const MultiSelectCheckboxesThemeDefaultPropsSchema = z.strictObject({

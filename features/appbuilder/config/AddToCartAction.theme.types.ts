@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /** Theme `defaultProps` for `useProps("AddToCartAction", …)`. */
 export const AddToCartActionThemeDefaultPropsSchema = z.strictObject({

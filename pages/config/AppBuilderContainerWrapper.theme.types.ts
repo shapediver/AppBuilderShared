@@ -1,5 +1,5 @@
 import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 const containerThemeOverridesSchema = z.record(
 	z.string(),

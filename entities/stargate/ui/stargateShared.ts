@@ -1,6 +1,6 @@
 import {StargateStatusColorProps} from "@AppBuilderLib/entities/stargate/config/stargate";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {MantineThemeComponent} from "@mantine/core";
-import {z} from "zod";
 
 const mantineColorJsonSchema = z.string();
 

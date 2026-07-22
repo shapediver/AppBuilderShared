@@ -1,9 +1,12 @@
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {IAppBuilderLegacyActionPropsSound} from "../config/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
+import AppBuilderActionBase, {
+	AppBuilderActionRenderProps,
+} from "./AppBuilderActionBase";
 
-type Props = IAppBuilderLegacyActionPropsSound;
+type Props = IAppBuilderLegacyActionPropsSound &
+	AppBuilderActionRenderProps & {};
 
 /**
  * Functional component for a "sound" action.
@@ -20,6 +23,9 @@ export default function AppBuilderActionSoundComponent(props: Props) {
 		href,
 		autoplay = false,
 		loop = false,
+		presentation,
+		toolbarButtonProps,
+		disabled,
 	} = props;
 
 	const [loaded, setLoaded] = useState(false);
@@ -167,13 +173,15 @@ export default function AppBuilderActionSoundComponent(props: Props) {
 	}, [error]);
 
 	return (
-		<AppBuilderActionComponent
+		<AppBuilderActionBase
+			presentation={presentation}
 			label={playing ? labelPlaying : label}
 			icon={playing ? iconPlaying : icon}
 			tooltip={error ? `Error: ${error}` : tooltip}
 			onClick={onClick}
-			disabled={!loaded || !!error}
+			disabled={disabled || !loaded || !!error}
 			canBeDisabledByParameter={false}
+			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);
 }

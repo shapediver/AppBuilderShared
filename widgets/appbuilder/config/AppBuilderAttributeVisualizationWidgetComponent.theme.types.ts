@@ -1,7 +1,7 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
 import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";
 import {mantineTitlePropsSchema} from "@AppBuilderLib/shared/mantine-props/title.zod";
-import {z} from "zod";
 
 export const AppBuilderAttributeVisualizationWidgetComponentThemeDefaultPropsSchema =
 	z.strictObject({

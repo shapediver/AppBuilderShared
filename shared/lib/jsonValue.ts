@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 export const JsonValueSchema: z.ZodTypeAny = z.lazy(() =>
 	z.union([

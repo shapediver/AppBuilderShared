@@ -1,10 +1,10 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
 import type {
 	MantineCssLength,
 	MantineFlexWrap,
 } from "@AppBuilderLib/shared/mantine-props/primitives";
 import type {MantineSpacing} from "@AppBuilderLib/shared/mantine-props/spacing";
-import {z} from "zod";
 
 export const AppBuilderHorizontalContainerThemeDefaultPropsSchema =
 	mantineGroupPropsSchema;

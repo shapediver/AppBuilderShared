@@ -15,18 +15,22 @@ import {StargateInputThemeDefaultPropsSchema} from "@AppBuilderLib/entities/star
 import {StargateSharedThemeDefaultPropsSchema} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
 import {ViewportBrandingThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportBranding.theme.types";
 import {ViewportComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportComponent.theme.types";
-import {ViewportIconButtonThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportIconButton.theme.types";
-import {ViewportIconButtonDropdownThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportIconButtonDropdown.theme.types";
-import {ViewportIconsThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportIcons.theme.types";
+import {LegacyViewportIconsThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/LegacyViewportIcons.theme.types";
 import {ViewportOverlayWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportOverlayWrapper.theme.types";
 import {AddToCartActionThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AddToCartAction.theme.types";
 import {AppBuilderActionComponentThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderActionComponent.theme.types";
+import {AppBuilderToolbarMenuItemButtonThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarMenuItemButton.theme.types";
+import {AppBuilderToolbarThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbar.theme.types";
+import {AppBuilderToolbarButtonThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarButton.theme.types";
+import {AppBuilderToolbarIconButtonThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarIconButton.theme.types";
+import {AppBuilderToolbarLayerThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarLayer.theme.types";
 import {CreateModelStateHookThemeDefaultPropsSchema} from "@AppBuilderLib/features/model-state/model/useCreateModelState.types";
 import {NotificationWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {AppBuilderContainerWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/pages/config/AppBuilderContainerWrapper.theme.types";
 import {LoaderPageThemeDefaultPropsSchema} from "@AppBuilderLib/pages/misc/LoaderPage.types";
 import {AppBuilderAppShellTemplatePageThemeDefaultPropsSchema} from "@AppBuilderLib/pages/templates/AppBuilderAppShellTemplatePage.theme.types";
 import {AppBuilderGridTemplatePageThemeDefaultPropsSchema} from "@AppBuilderLib/pages/templates/AppBuilderGridTemplatePage.theme.types";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineAccordionPropsSchema} from "@AppBuilderLib/shared/mantine-props/accordion.zod";
 import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
@@ -59,7 +63,6 @@ import {
 	IGumballTransformParameterPropsJsonSchema,
 	ISelectionParameterPropsJsonSchema,
 } from "@shapediver/viewer.shared.types";
-import {z} from "zod";
 import {ExportLabelComponentThemeDefaultPropsSchema} from "~/shared/entities/export/config/ExportLabelComponent.types";
 import {OutputChunkLabelComponentThemeDefaultPropsSchema} from "~/shared/entities/output/config/OutputChunkLabelComponent.types";
 import {ParameterColorComponentThemeDefaultPropsSchema} from "~/shared/entities/parameter/config/ParameterColorComponent.types";
@@ -81,6 +84,8 @@ export const themeComponentDefaultPropsRegistry = {
 	AppBuilderAccordionWidgetComponent:
 		AppBuilderAccordionWidgetComponentThemeDefaultPropsSchema,
 	AppBuilderActionComponent: AppBuilderActionComponentThemeDefaultPropsSchema,
+	AppBuilderToolbarMenuItemButton:
+		AppBuilderToolbarMenuItemButtonThemeDefaultPropsSchema,
 	AppBuilderAgentWidgetComponent:
 		AppBuilderAgentWidgetComponentThemeDefaultPropsSchema,
 	AppBuilderAppShellTemplatePage:
@@ -112,6 +117,11 @@ export const themeComponentDefaultPropsRegistry = {
 		AppBuilderStackUiWidgetThemeDefaultPropsSchema,
 	AppBuilderTableWidgetComponent:
 		AppBuilderTableWidgetComponentThemeDefaultPropsSchema,
+	AppBuilderToolbar: AppBuilderToolbarThemeDefaultPropsSchema,
+	AppBuilderToolbarButton: AppBuilderToolbarButtonThemeDefaultPropsSchema,
+	AppBuilderToolbarIconButton:
+		AppBuilderToolbarIconButtonThemeDefaultPropsSchema,
+	AppBuilderToolbarLayer: AppBuilderToolbarLayerThemeDefaultPropsSchema,
 	AppBuilderTemplateSelector:
 		AppBuilderTemplateSelectorThemeDefaultPropsSchema,
 	AppBuilderTextWidgetComponent:
@@ -160,10 +170,10 @@ export const themeComponentDefaultPropsRegistry = {
 		ViewportAcceptRejectButtonsThemeDefaultPropsSchema,
 	ViewportBranding: ViewportBrandingThemeDefaultPropsSchema,
 	ViewportComponent: ViewportComponentThemeDefaultPropsSchema,
-	ViewportIconButton: ViewportIconButtonThemeDefaultPropsSchema,
-	ViewportIconButtonDropdowns:
-		ViewportIconButtonDropdownThemeDefaultPropsSchema,
-	ViewportIcons: ViewportIconsThemeDefaultPropsSchema,
+	// Legacy theme key: accepted as a fallback by AppBuilderToolbarIconButton.
+	ViewportIconButton: AppBuilderToolbarIconButtonThemeDefaultPropsSchema,
+	// Legacy theme key: accepted as a visual fallback for default viewport toolbar styling.
+	ViewportIcons: LegacyViewportIconsThemeDefaultPropsSchema,
 	ViewportOverlayWrapper: ViewportOverlayWrapperThemeDefaultPropsSchema,
 } as const satisfies Record<string, z.ZodTypeAny>;
 

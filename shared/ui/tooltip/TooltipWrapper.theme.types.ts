@@ -1,8 +1,8 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import type {MantineThemeOverrideProps} from "@AppBuilderLib/shared/mantine-props/themeOverride";
 import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
 import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import {mantineTooltipPropsSchema} from "@AppBuilderLib/shared/mantine-props/tooltip";
-import {z} from "zod";
 
 /** App-only theme keys (not Mantine `Tooltip` JSON props). */
 const tooltipWrapperAppThemePropsSchema = z.strictObject({

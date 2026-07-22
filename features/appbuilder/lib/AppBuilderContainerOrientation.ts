@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /** Single source for container orientation literals (theme JSON + context). */
 export const APP_BUILDER_CONTAINER_ORIENTATIONS = [

@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {appBuilderContainerOrientationSchema} from "~/shared/features/appbuilder/lib/AppBuilderContainerOrientation";
 import {AppBuilderHorizontalContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderHorizontalContainer.types";
 import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "~/shared/pages/config/AppBuilderVerticalContainer.types";

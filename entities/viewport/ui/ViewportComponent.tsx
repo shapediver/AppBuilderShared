@@ -10,7 +10,7 @@ import {
 	ViewportBrandingProps,
 	ViewportComponentProps,
 } from "../config/viewport";
-import {useShapeDiverViewportIconsStore} from "../model/useShapeDiverViewportIconsStore";
+import {useShapeDiverDefaultViewportToolbarStore} from "../model/useShapeDiverDefaultViewportToolbarStore";
 import {useViewport} from "../model/useViewport";
 import {useViewportControlsVisibility} from "../model/useViewportControlsVisibility";
 import classes from "./ViewportComponent.module.css";
@@ -34,7 +34,7 @@ export default function ViewportComponent(props: ViewportComponentProps) {
 		useViewportControlsVisibility();
 
 	// Get viewer fullscreen state from store
-	const viewerFullscreen3States = useShapeDiverViewportIconsStore(
+	const viewerFullscreen3States = useShapeDiverDefaultViewportToolbarStore(
 		useShallow((state) => state.viewerFullscreen3States),
 	);
 	if (!_props.branding) _props.branding = brandingProps[scheme];

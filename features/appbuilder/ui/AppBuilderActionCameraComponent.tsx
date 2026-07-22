@@ -23,11 +23,15 @@ import {
 	isSetCameraAction,
 	isZoomToCameraAction,
 } from "../config/appbuilder";
-import AppBuilderActionComponent from "./AppBuilderActionComponent";
+import AppBuilderActionBase, {
+	AppBuilderActionRenderProps,
+} from "./AppBuilderActionBase";
 
-type Props = IAppBuilderActionPropsCamera & {
-	namespace: string;
-};
+type Props = IAppBuilderActionPropsCamera &
+	AppBuilderActionRenderProps & {
+		namespace: string;
+		viewportId?: string;
+	};
 
 /**
  * Functional component for a "camera" action.
@@ -35,13 +39,21 @@ type Props = IAppBuilderActionPropsCamera & {
  * @returns
  */
 export default function AppBuilderActionCameraComponent(props: Props) {
-	const {icon = "tabler:video", tooltip} = props;
+	const {
+		icon = "tabler:video",
+		tooltip,
+		presentation,
+		viewportId,
+		toolbarButtonProps,
+		disabled,
+	} = props;
 
-	const {viewportId} = useViewportId();
+	const {viewportId: defaultViewportId} = useViewportId();
+	const resolvedViewportId = viewportId ?? defaultViewportId;
 
 	const {viewportApi} = useShapeDiverStoreViewport((state) => {
 		return {
-			viewportApi: state.viewports[viewportId],
+			viewportApi: state.viewports[resolvedViewportId],
 		};
 	});
 
@@ -106,12 +118,12 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 	const {nodes} = useFindNodesByPatterns(patternsByKeys);
 
 	const onClick = useCallback(async () => {
-		if (!viewportApi || !viewportApi.camera) return;
+		if (disabled || !viewportApi || !viewportApi.camera) return;
 		setLoading(true);
 
 		let newCamera: ICameraApi | undefined = undefined;
 		if (props.props.camera) {
-			const camera = props.props.camera;
+			const camera = props.props.camera as Record<string, any>;
 
 			const skipKeys: string[] = [];
 
@@ -207,8 +219,8 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 				cameraPath.map((p) =>
 					cleanCameraPositionAndTarget(
 						viewportApi.camera!,
-						p.position ? vec3.fromValues(...p.position) : undefined,
-						p.target ? vec3.fromValues(...p.target) : undefined,
+						toVec3(p.position),
+						toVec3(p.target),
 					),
 				),
 				options,
@@ -222,8 +234,8 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 
 			const {position, target} = cleanCameraPositionAndTarget(
 				viewportApi.camera,
-				inputPosition ? vec3.fromValues(...inputPosition) : undefined,
-				inputTarget ? vec3.fromValues(...inputTarget) : undefined,
+				toVec3(inputPosition),
+				toVec3(inputTarget),
 			);
 			await viewportApi.camera.set(position, target, options);
 		} else if (isResetCameraAction(props)) {
@@ -238,12 +250,8 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 			const {position: initialPosition, target: initialTarget} =
 				cleanCameraPositionAndTarget(
 					viewportApi.camera,
-					inputInitialPosition
-						? vec3.fromValues(...inputInitialPosition)
-						: undefined,
-					inputInitialTarget
-						? vec3.fromValues(...inputInitialTarget)
-						: undefined,
+					toVec3(inputInitialPosition),
+					toVec3(inputInitialTarget),
 				);
 
 			let bb: IBox | undefined = undefined;
@@ -263,19 +271,25 @@ export default function AppBuilderActionCameraComponent(props: Props) {
 		}
 
 		setLoading(false);
-	}, [viewportApi, nodes, props]);
+	}, [disabled, viewportApi, nodes, props]);
 
 	return (
-		<AppBuilderActionComponent
+		<AppBuilderActionBase
+			presentation={presentation}
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={onClick}
+			onClick={() => void onClick()}
 			loading={loading}
+			disabled={disabled || !viewportApi}
 			canBeDisabledByParameter={false}
+			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);
 }
+
+const toVec3 = (value?: [number, number, number]) =>
+	value ? vec3.fromValues(value[0], value[1], value[2]) : undefined;
 
 const cleanCameraPositionAndTarget = (
 	camera: ICameraApi,

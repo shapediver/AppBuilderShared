@@ -6,6 +6,8 @@ import type {MantineSizeToken} from "./spacing.schema-input";
 
 /** Serializable subset of Mantine `ActionIcon` props for theme `defaultProps`. */
 export interface MantineActionIconProps {
+	/** ActionIcon color. Use "default" for neutral hover (Mantine v8 parity). */
+	color?: string;
 	variant?: string;
 	size?: MantineSizeToken | number;
 	style?: MantineCssStyleRecord;
