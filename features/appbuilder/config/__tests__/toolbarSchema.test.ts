@@ -46,13 +46,13 @@ const makeToolbarControl = (type: string, props: Record<string, unknown>) => ({
 const makeSemanticAction = (definition: Record<string, unknown>) =>
 	makeToolbarControl("action", {definition});
 
-const makeToolbarMenu = (
-	items: ReturnType<typeof makeSemanticAction>[][],
+const makeToolbarActionMenu = (
+	sections: ReturnType<typeof makeSemanticAction>[][],
 	overrides: Record<string, unknown> = {},
 ) => ({
 	...overrides,
-	type: "menu",
-	props: {items},
+	type: "actionMenu",
+	props: {sections},
 });
 
 const makeLegacyViewportAction = (type: string) =>
@@ -96,7 +96,7 @@ describe("toolbar container schema", () => {
 								}),
 							],
 							[
-								makeToolbarMenu(
+								makeToolbarActionMenu(
 									[
 										[
 											makeSemanticAction({
@@ -181,7 +181,7 @@ describe("toolbar container schema", () => {
 		expect(result.success).toBe(false);
 	});
 
-	it("accepts viewport menu triggers as regular action item menus", () => {
+	it("accepts viewport command triggers as action menus", () => {
 		const result = validateAppBuilder({
 			version: "1.0",
 			containers: [
@@ -191,7 +191,7 @@ describe("toolbar container schema", () => {
 						id: "viewportToolbar",
 						groups: [
 							[
-								makeToolbarMenu(
+								makeToolbarActionMenu(
 									[
 										[
 											makeSemanticAction({
@@ -250,7 +250,7 @@ describe("toolbar container schema", () => {
 										},
 									},
 								}),
-								makeToolbarMenu(
+								makeToolbarActionMenu(
 									[
 										[
 											makeToolbarControl("action", {

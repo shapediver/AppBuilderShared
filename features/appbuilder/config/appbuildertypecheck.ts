@@ -1458,9 +1458,9 @@ const IAppBuilderToolbarItemSchema = z.discriminatedUnion("type", [
 	...IAppBuilderToolbarControlItemSchema.options,
 	z.strictObject({
 		...IAppBuilderToolbarItemBaseShape,
-		type: z.literal("menu"),
+		type: z.literal("actionMenu"),
 		props: z.strictObject({
-			items: z.array(z.array(IAppBuilderToolbarActionItemSchema)),
+			sections: z.array(z.array(IAppBuilderToolbarActionItemSchema)),
 		}),
 	}),
 	z.strictObject({

@@ -7,7 +7,7 @@ import {
 	IAppBuilderToolbarItem,
 	isOutputRefControl,
 	isParameterRefControl,
-	isToolbarMenuItem,
+	isToolbarActionMenuItem,
 	isToolbarTabbedPanelItem,
 	isToolbarWidgetPanelItem,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
@@ -53,13 +53,13 @@ export default function AppBuilderToolbarPopoverContent({
 }: Props) {
 	const parameters = useParameters(parameterProps);
 	const outputs = useOutputs(outputProps);
-	const menuItems = isToolbarMenuItem(toolbarItem)
-		? toolbarItem.props.items
+	const actionMenuSections = isToolbarActionMenuItem(toolbarItem)
+		? toolbarItem.props.sections
 		: undefined;
 
 	return useMemo(() => {
-		if (menuItems && menuItems.length > 0) {
-			const groups = menuItems
+		if (actionMenuSections && actionMenuSections.length > 0) {
+			const groups = actionMenuSections
 				.map((group, groupIndex) => ({
 					useItemSpacing: group.every(
 						(item) => item.presentation === "item",
@@ -186,7 +186,7 @@ export default function AppBuilderToolbarPopoverContent({
 		componentContext,
 		fullscreenId,
 		menuDividerProps,
-		menuItems,
+		actionMenuSections,
 		menuSectionStackProps,
 		menuStackProps,
 		namespace,

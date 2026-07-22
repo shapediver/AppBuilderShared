@@ -5,9 +5,9 @@ import {
 import {
 	IAppBuilderActionDefinition,
 	IAppBuilderToolbarActionItem,
+	IAppBuilderToolbarActionMenuItem,
 	IAppBuilderToolbarControlItem,
 	IAppBuilderToolbarItem,
-	IAppBuilderToolbarMenuItem,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	ToolbarRegistration,
@@ -66,9 +66,9 @@ const toActionControl = (
 	props: {definition},
 });
 
-// Menu entries are still semantic actions, but they render with Mantine
-// Menu.Item-like styling. The menu trigger itself is intentionally not an
-// action; only the atomic operations inside the menu are actions.
+// Action menu entries are still semantic actions, but they render with Mantine
+// Menu.Item-like styling. The action menu trigger itself is intentionally not
+// an action; only the atomic operations inside the menu are actions.
 const toActionItem = (
 	definition: IAppBuilderActionDefinition,
 	presentation: Pick<
@@ -87,12 +87,12 @@ const toActionItem = (
 	},
 });
 
-// Recreate the old history/dropdown viewport icon as a plain toolbar menu.
+// Recreate the old history/dropdown viewport icon as a toolbar action menu.
 // Import/export and model-state options are grouped separately so the toolbar
 // renderer can show dividers between the same sections the old menu exposed.
 const createHistoryMenuItem = (
 	options: BuildViewportToolbarRegistrationOptions,
-): IAppBuilderToolbarMenuItem | undefined => {
+): IAppBuilderToolbarActionMenuItem | undefined => {
 	const importExportEnabled = options.enableImportExportButtons !== false;
 	const modelStateEnabled = options.enableModelStateButtons !== false;
 	const sections: IAppBuilderToolbarActionItem[][] = [];
@@ -129,29 +129,29 @@ const createHistoryMenuItem = (
 	if (sections.length === 0) return undefined;
 
 	return {
-		type: "menu",
+		type: "actionMenu",
 		icon: "tabler:dots-vertical",
 		label: "More options",
-		props: {items: sections},
+		props: {sections},
 	};
 };
 
-// Recreate the old cameras dropdown as a toolbar menu. Camera ids are not part
+// Recreate the old cameras dropdown as a toolbar action menu. Camera ids are not part
 // of the authored action schema; the action supports camera selection via the
 // existing camera.name matcher, with unnamed cameras using their id as name.
 const createCamerasMenuItem = (
 	viewport: IViewportApi | undefined,
-): IAppBuilderToolbarMenuItem | undefined => {
+): IAppBuilderToolbarActionMenuItem | undefined => {
 	const viewportId = viewport?.id;
 	const cameras = viewport ? Object.values(viewport.cameras) : [];
 	if (!viewportId || cameras.length === 0) return undefined;
 
 	return {
-		type: "menu",
+		type: "actionMenu",
 		icon: "tabler:video",
 		label: "Cameras",
 		props: {
-			items: [
+			sections: [
 				cameras.map((camera) =>
 					toActionItem(
 						{
@@ -176,9 +176,9 @@ const createCamerasMenuItem = (
 	};
 };
 
-// Map each legacy viewport icon kind to either a semantic action control or a
-// non-action menu trigger. `cameras` and `historyMenu` deliberately stay menu
-// triggers while their inner rows are regular semantic actions.
+// Map each legacy viewport icon kind to either a semantic action control or an
+// action menu trigger. `cameras` and `historyMenu` deliberately stay grouped
+// command menus while their inner rows are regular semantic actions.
 const toViewportToolbarItem = (
 	kind: DefaultViewportToolbarButtonEnum,
 	options: BuildViewportToolbarRegistrationOptions,

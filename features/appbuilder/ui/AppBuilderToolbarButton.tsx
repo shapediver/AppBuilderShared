@@ -9,7 +9,7 @@ import {
 	isExportRefControl,
 	isOutputRefControl,
 	isParameterRefControl,
-	isToolbarMenuItem,
+	isToolbarActionMenuItem,
 	isToolbarTabbedPanelItem,
 	isToolbarWidgetPanelItem,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
@@ -235,8 +235,8 @@ export default function AppBuilderToolbarButton({
 	}
 
 	const hasPopoverContent =
-		(isToolbarMenuItem(toolbarItem) &&
-			toolbarItem.props.items.length > 0) ||
+		(isToolbarActionMenuItem(toolbarItem) &&
+			toolbarItem.props.sections.length > 0) ||
 		(isToolbarWidgetPanelItem(toolbarItem) &&
 			toolbarItem.props.widgets.length > 0) ||
 		(isToolbarTabbedPanelItem(toolbarItem) &&
