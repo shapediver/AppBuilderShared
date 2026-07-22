@@ -25,10 +25,6 @@ export function mapParameterDefinition(
 		item.hidden = def.hidden;
 	}
 
-	if (def.displayname && def.displayname !== name) {
-		item.displayname = def.displayname;
-	}
-
 	if (def.group?.name) {
 		item.group = def.group.name;
 	}
