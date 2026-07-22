@@ -6,16 +6,24 @@ Weak-model stress tests. Run against `http://localhost:3000/?g=SS-8076.json` via
 
 1. Navigate to the URL, wait for model + parameters loaded.
 2. In the page console, `mc` is the WebMCP client (`document.modelContext` / `navigator.modelContext`).
-3. Call tools: `const r = await mc.executeTool("tool_name", JSON.stringify(input));`
+3. Resolve tools once: `const tools = await mc.getTools(); const tool = (name) => tools.find((t) => t.name === name);`
+4. Call tools: `const r = await mc.executeTool(tool("list_parameter_definitions"), JSON.stringify(input));`
+   - First arg is the **RegisteredTool** from `getTools()` (not a string name).
    - Second arg MUST be a JSON string.
-4. `await mc.getTools()` lists registered tools (4 expected).
+5. `await mc.getTools()` lists registered tools (4 expected, snake_case names).
+
+**Schema reject:** invalid input returns `{ errors: [{ name: "*", message }] }` or `{ success: false, message }` — does **not** throw.
 
 Record per scenario: tool called, input sent, raw result, pass/fail vs expectation.
+
+## Model note (SS-8076.json)
+
+This JSON exposes **StringList UI widgets only** (ButtonChipGroup, DropDown, Checklist, **Color** trap, …). There is **no** Width / Material / Paint / Enabled — scenarios 4–6, 8–12, 15–16, 25 are **N/A** on this model. Use headless `evals.json` fixtures or another slug for INT/COLOR/BOOL coverage.
 
 ## Conventions
 
 - Discover params first with `list_parameter_definitions` `{filter:"all"}` to learn real names/ids/types.
-- "Width" = the INT/float width param; "Material" = StringList; "Paint" = Color; "Color" = a StringList named Color (trap).
+- On SS-8076, **Color** = StringList trap (label vs index). Width/Material/Paint apply only on other models.
 - Indices are 0-based integers.
 
 ## Scenarios
@@ -153,3 +161,14 @@ For each scenario return:
 - failure cause (if any): schema reject missed, wrong field, label-vs-index, type confusion, etc.
 
 End with: aggregate pass rate, list of weak-model failure patterns observed, suggestions.
+
+## Weak-model patterns (Haiku 4.5, observed)
+
+| Pattern | Example | Mitigation |
+|---------|---------|------------|
+| camelCase tool names | `listParameterDefinitions` | `getTools()` — only snake_case registered |
+| Wrong input keys | `visibleOnly`, `parameters`, `id`, `visible` | `strictObject` + `unrecognized_keys` in errors |
+| `updates` as object | `{"Width": 7}` | Schema requires `updates: [{ name, value }]` |
+| StringList label | `Color: "Red"` | Error hints with choices + index range |
+| Color shape | `{r,g,b}` | Schema/docs: `{red,green,blue,alpha}` |
+| Import key | `id` not `modelStateId` | `strictObject` on import input |
