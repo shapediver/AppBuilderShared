@@ -39,7 +39,10 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import {mergeFormExportParameterValues} from "../lib/mergeFormExportParameterValues";
+import {
+	createFormExportParameterValue,
+	mergeFormExportParameterValues,
+} from "../lib/mergeFormExportParameterValues";
 
 /**
  * @docAttached
@@ -206,14 +209,13 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 					return undefined;
 				}
 				const ref = parameterProps[index];
-				const sessionId =
-					ref.namespace !== namespace ? ref.namespace : undefined;
 
-				return {
-					name: param.definition.name,
-					sessionId,
-					value: String(values[param.definition.id] ?? ""),
-				};
+				return createFormExportParameterValue(
+					param.definition.id,
+					ref.namespace,
+					namespace,
+					String(values[param.definition.id] ?? ""),
+				);
 			})
 			.filter((entry) => entry !== undefined);
 	}, [parameters, parameterProps, values, namespace]);
