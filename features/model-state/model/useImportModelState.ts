@@ -35,11 +35,13 @@ export function useImportModelState({namespace}: Props) {
 	const notifications = useNotificationStore();
 	const errorReporting = useContext(ErrorReportingContext);
 
-	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
-		useShallow((state) => ({
-			batchParameterValueUpdate: state.batchParameterValueUpdate,
-		})),
-	);
+	const {batchParameterValueUpdate, clearUnsavedChanges} =
+		useShapeDiverStoreParameters(
+			useShallow((state) => ({
+				batchParameterValueUpdate: state.batchParameterValueUpdate,
+				clearUnsavedChanges: state.clearUnsavedChanges,
+			})),
+		);
 
 	/**
 	 * Import a model state by ID
@@ -119,6 +121,9 @@ export function useImportModelState({namespace}: Props) {
 				[namespace]: validationResult.validParameters,
 			});
 
+			// importing a model state reverts the unsaved changes flag
+			clearUnsavedChanges();
+
 			// set as modelStateId in the URL
 			applyModelStateToUrl(modelStateId, true);
 
@@ -137,7 +142,7 @@ export function useImportModelState({namespace}: Props) {
 				data: response.data,
 			};
 		},
-		[sessionApi, namespace],
+		[sessionApi, namespace, clearUnsavedChanges],
 	);
 
 	return {

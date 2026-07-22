@@ -20,11 +20,13 @@ import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
  * Hook for managing parameter import/export and reset functionality.
  */
 export function useParameterImportExport(namespace: string) {
-	const {batchParameterValueUpdate} = useShapeDiverStoreParameters(
-		useShallow((state) => ({
-			batchParameterValueUpdate: state.batchParameterValueUpdate,
-		})),
-	);
+	const {batchParameterValueUpdate, clearUnsavedChanges} =
+		useShapeDiverStoreParameters(
+			useShallow((state) => ({
+				batchParameterValueUpdate: state.batchParameterValueUpdate,
+				clearUnsavedChanges: state.clearUnsavedChanges,
+			})),
+		);
 
 	const {currentModel} = useShapeDiverStorePlatform(
 		useShallow((state) => ({
@@ -67,7 +69,10 @@ export function useParameterImportExport(namespace: string) {
 		notifications.success({
 			message: "Parameter values exported successfully",
 		});
-	}, [namespace, currentModel]);
+
+		// creating a parameter JSON file persists the current configuration
+		clearUnsavedChanges();
+	}, [namespace, currentModel, clearUnsavedChanges]);
 
 	/**
 	 * Import parameters from JSON file
@@ -161,6 +166,9 @@ export function useParameterImportExport(namespace: string) {
 					[namespace]: validationResult.validParameters,
 				});
 
+				// importing a parameter JSON file reverts the unsaved changes flag
+				clearUnsavedChanges();
+
 				// Provide user feedback
 				const feedback = generateParameterFeedback(
 					validationResult,
@@ -176,7 +184,7 @@ export function useParameterImportExport(namespace: string) {
 
 			fileInput.click();
 		});
-	}, [namespace, notifications]);
+	}, [namespace, notifications, clearUnsavedChanges]);
 
 	/**
 	 * Reset parameters to default values

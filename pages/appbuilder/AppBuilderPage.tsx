@@ -1,4 +1,5 @@
 import {useParameterHistory} from "@AppBuilderLib/entities/parameter/model/useParameterHistory";
+import {useUnsavedChangesProtection} from "@AppBuilderLib/entities/parameter/model/useUnsavedChangesProtection";
 import useDefaultSessionDto from "@AppBuilderLib/entities/session/model/useDefaultSessionDto";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
@@ -202,6 +203,9 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	// use parameter history
 	useParameterHistory({loaded: show && customParametersLoaded});
+
+	// protect unsaved parameter changes against accidental tab close / navigation
+	useUnsavedChangesProtection();
 
 	// key bindings
 	useKeyBindings({

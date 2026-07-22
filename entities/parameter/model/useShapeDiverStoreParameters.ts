@@ -1691,9 +1691,16 @@ export const useShapeDiverStoreParameters =
 					);
 				},
 
-				pushHistoryState(state: ISessionsHistoryState) {
+				pushHistoryState(
+					state: ISessionsHistoryState,
+					unsavedChanges = true,
+				) {
 					const {history, historyIndex} = get();
-					const entry: IHistoryEntry = {state, time: Date.now()};
+					const entry: IHistoryEntry = {
+						state,
+						time: Date.now(),
+						unsavedChanges,
+					};
 					const newHistory = history
 						.slice(0, historyIndex + 1)
 						.concat(entry);
@@ -1707,6 +1714,24 @@ export const useShapeDiverStoreParameters =
 					);
 
 					return entry;
+				},
+
+				clearUnsavedChanges() {
+					const {history, historyIndex} = get();
+					if (historyIndex < 0 || historyIndex >= history.length)
+						return;
+					const current = history[historyIndex];
+					if (!current.unsavedChanges) return;
+					const newHistory = history.slice();
+					newHistory[historyIndex] = {
+						...current,
+						unsavedChanges: false,
+					};
+					set(
+						() => ({history: newHistory}),
+						false,
+						"clearUnsavedChanges",
+					);
 				},
 
 				setPendingHistoryDerivedState(state: ISessionsHistoryState) {

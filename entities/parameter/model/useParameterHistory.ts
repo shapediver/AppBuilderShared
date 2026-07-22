@@ -51,7 +51,7 @@ export function useParameterHistory(props: Props) {
 		if (!loaded) return;
 
 		const defaultState = getDefaultState();
-		const entry = pushHistoryState(defaultState);
+		const entry = pushHistoryState(defaultState, false);
 		history.replaceState(entry, "", "");
 
 		return () => {
