@@ -2,9 +2,11 @@ import {useExport} from "@AppBuilderLib/entities/export/model/useExport";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
+import {isPdfSrc} from "@AppBuilderLib/widgets/appbuilder/lib/isPdfSrc";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderImage from "./AppBuilderImage";
+import AppBuilderPdfEmbed from "./AppBuilderPdfEmbed";
 
 interface Props {
 	/**
@@ -14,10 +16,13 @@ interface Props {
 	namespace: string;
 	/** Id or name or displayname of the export to get the image from. */
 	exportId: string;
+	anchor?: string;
+	alt?: string;
+	target?: string;
 }
 
 export default function AppBuilderImageExportWidgetComponent(props: Props) {
-	const {namespace, exportId, ...rest} = props;
+	const {namespace, exportId, anchor, target, alt} = props;
 	const {definition, actions} = useExport({namespace, exportId}) ?? {};
 	const notifications = useNotificationStore();
 
@@ -116,13 +121,19 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 		}
 	}, [responses, definition]);
 
-	if (imageSrc)
+	if (imageSrc) {
+		if (isPdfSrc(imageSrc, contentType)) {
+			return <AppBuilderPdfEmbed src={imageSrc} alt={alt} />;
+		}
 		return (
 			<AppBuilderImage
 				src={imageSrc}
 				isSvg={contentType === "image/svg+xml"}
-				{...rest}
+				anchor={anchor}
+				target={target}
+				alt={alt}
 			/>
 		);
-	else return <></>;
+	}
+	return <></>;
 }
