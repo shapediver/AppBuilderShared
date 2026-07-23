@@ -1691,9 +1691,16 @@ export const useShapeDiverStoreParameters =
 					);
 				},
 
-				pushHistoryState(state: ISessionsHistoryState) {
+				pushHistoryState(
+					state: ISessionsHistoryState,
+					unsavedChanges = true,
+				) {
 					const {history, historyIndex} = get();
-					const entry: IHistoryEntry = {state, time: Date.now()};
+					const entry: IHistoryEntry = {
+						state,
+						time: Date.now(),
+						unsavedChanges,
+					};
 					const newHistory = history
 						.slice(0, historyIndex + 1)
 						.concat(entry);
@@ -1707,6 +1714,42 @@ export const useShapeDiverStoreParameters =
 					);
 
 					return entry;
+				},
+
+				clearUnsavedChanges() {
+					const {history, historyIndex} = get();
+					if (historyIndex < 0 || historyIndex >= history.length)
+						return;
+					const current = history[historyIndex];
+					if (!current.unsavedChanges) return;
+					const updated: IHistoryEntry = {
+						...current,
+						unsavedChanges: false,
+					};
+					const newHistory = history.slice();
+					newHistory[historyIndex] = updated;
+					set(
+						() => ({history: newHistory}),
+						false,
+						"clearUnsavedChanges",
+					);
+
+					// Keep window.history.state in sync so popstate / URL helpers
+					// (e.g. modifyUrl replaceState) do not keep a stale flag.
+					if (typeof window !== "undefined") {
+						const browserState = window.history
+							.state as IHistoryEntry | null;
+						if (
+							browserState &&
+							typeof browserState === "object" &&
+							browserState.time === updated.time
+						) {
+							window.history.replaceState(
+								{...browserState, unsavedChanges: false},
+								"",
+							);
+						}
+					}
 				},
 
 				setPendingHistoryDerivedState(state: ISessionsHistoryState) {

@@ -63,6 +63,12 @@ export interface IHistoryEntry {
 	state: ISessionsHistoryState;
 	/** The time of the history entry (return value of Date.now()). */
 	time: number;
+	/**
+	 * Whether the parameter values in this history entry have been changed
+	 * since the last time a model state or parameter JSON file was created or
+	 * imported. Used to drive the `beforeunload` protection prompt.
+	 */
+	unsavedChanges: boolean;
 }
 
 /**
@@ -517,8 +523,24 @@ export interface IShapeDiverStoreParameters {
 	 * Push a state of parameter values to the history at the current index.
 	 * In case the history index is not at the end of the history,
 	 * all history entries after the current index are removed.
+	 *
+	 * @param state
+	 * @param unsavedChanges Whether the new entry represents unsaved parameter
+	 * changes. Defaults to `true` (parameter change). Pass `false` for the
+	 * initial default state entry.
 	 */
-	readonly pushHistoryState: (state: ISessionsHistoryState) => IHistoryEntry;
+	readonly pushHistoryState: (
+		state: ISessionsHistoryState,
+		unsavedChanges?: boolean,
+	) => IHistoryEntry;
+
+	/**
+	 * Clear the `unsavedChanges` flag of the current history entry and sync
+	 * `window.history.state` when it matches that entry (by `time`).
+	 * Called after creating or importing a model state, and after creating or
+	 * importing a parameter JSON file.
+	 */
+	readonly clearUnsavedChanges: () => void;
 
 	/**
 	 * Replace the transient derived namespace state used during history restore.
