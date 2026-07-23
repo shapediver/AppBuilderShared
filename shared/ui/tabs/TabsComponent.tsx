@@ -39,10 +39,15 @@ export default function TabsComponent({
 	stickyTabs,
 	...rest
 }: ITabsComponentProps) {
-	const [activeTab, setActiveTab] = useState<string | null>(defaultValue);
-	// keepMounted=false prop unmount the tab when it is not active
-	const activeTabsHistory = useRef(new Set<string>([defaultValue]));
 	const tabValues = tabs.map((tab, index) => getTabValue(tab, index));
+	const initialActiveTab = tabValues.includes(defaultValue)
+		? defaultValue
+		: (tabValues[0] ?? null);
+	const [activeTab, setActiveTab] = useState<string | null>(initialActiveTab);
+	// keepMounted=false prop unmount the tab when it is not active
+	const activeTabsHistory = useRef(
+		new Set<string>(initialActiveTab ? [initialActiveTab] : []),
+	);
 	const handleActiveTabChange = (value: string | null) => {
 		setActiveTab(value);
 		if (value) {
@@ -59,13 +64,14 @@ export default function TabsComponent({
 
 	useEffect(() => {
 		if (!activeTab || !tabValues.includes(activeTab)) {
-			if (tabValues.includes(defaultValue)) {
-				setActiveTab(defaultValue);
-			} else {
-				setActiveTab(tabValues[0]);
-			}
+			const nextActiveTab = tabValues.includes(defaultValue)
+				? defaultValue
+				: (tabValues[0] ?? null);
+
+			setActiveTab(nextActiveTab);
+			if (nextActiveTab) activeTabsHistory.current.add(nextActiveTab);
 		}
-	}, [tabValues.join(""), defaultValue]);
+	}, [activeTab, tabValues.join("\u0000"), defaultValue]);
 
 	return tabs.length === 0 ? (
 		<></>
