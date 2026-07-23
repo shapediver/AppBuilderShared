@@ -1,3 +1,4 @@
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
@@ -9,7 +10,6 @@ import {
 	ICreateModelStateResult,
 } from "../config/createModelState";
 import type {CreateModelStateHookThemeDefaultProps} from "./useCreateModelState.types";
-
 type CreateModelStateHookThemePropsType =
 	Partial<CreateModelStateHookThemeDefaultProps>;
 
@@ -65,10 +65,27 @@ export function useCreateModelState(props: Props) {
 			})),
 		);
 
+	const {clearUnsavedChanges} = useShapeDiverStoreParameters(
+		useShallow((state) => ({
+			clearUnsavedChanges: state.clearUnsavedChanges,
+		})),
+	);
+
 	const createModelState = useCallback(
 		async (
 			props: ICreateModelStateData,
+			options?: {
+				/**
+				 * Whether creating this model state marks the current
+				 * configuration as saved (clears the `unsavedChanges` flag).
+				 * Defaults to `true`. Pass `false` for internal model state
+				 * creations that are not user-initiated saves (e.g. parameter
+				 * value sources).
+				 */
+				markSaved?: boolean;
+			},
 		): Promise<ICreateModelStateResult> => {
+			const {markSaved = true} = options ?? {};
 			const {
 				parameterNamesToInclude = parameterNamesToIncludeDefault,
 				parameterNamesToExclude = parameterNamesToExcludeDefault,
@@ -155,6 +172,10 @@ export function useCreateModelState(props: Props) {
 					)
 				: undefined;
 
+			// creating a model state persists the current configuration,
+			// so there are no unsaved changes anymore (unless the caller opted out)
+			if (modelStateId && markSaved) clearUnsavedChanges();
+
 			const modelViewUrl = sessionApi.modelViewUrl.endsWith("/")
 				? sessionApi.modelViewUrl.substring(
 						0,
@@ -189,6 +210,7 @@ export function useCreateModelState(props: Props) {
 			parameterNamesToIncludeDefault,
 			parameterNamesToExcludeDefault,
 			parameterNamesToAlwaysExclude,
+			clearUnsavedChanges,
 		],
 	);
 
