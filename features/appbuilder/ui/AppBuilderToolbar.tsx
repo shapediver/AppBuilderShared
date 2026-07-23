@@ -1,3 +1,4 @@
+import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
 import {
 	legacyViewportIconsDefaultDividerProps,
 	legacyViewportIconsDefaultStyleProps,
@@ -6,7 +7,7 @@ import {
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {ToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreToolbars";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useToolbarVisibility} from "../model/useToolbarVisibility";
 import AppBuilderToolbarButton from "./AppBuilderToolbarButton";
 
@@ -21,6 +22,28 @@ const defaultStyleProps = {
 	paperProps: legacyViewportIconsDefaultStyleProps.paperProps,
 	dividerProps: legacyViewportIconsDefaultDividerProps,
 	transitionProps: legacyViewportIconsDefaultTransitionProps,
+};
+
+const toolbarPopoverSafeTargetSelector = [
+	"[data-appbuilder-toolbar-popover]",
+	"[data-appbuilder-toolbar-trigger]",
+	"[data-floating-height]",
+	"[data-mantine-stop-propagation='true']",
+	// Mantine ColorInput's picker popover uses `withRoles: false`, so the
+	// dropdown has `data-position` but no role attribute.
+	"[data-position]",
+	"[data-position][role='dialog']",
+	"[data-position][role='presentation']",
+].join(",");
+
+const isToolbarPopoverSafeTarget = (
+	target: EventTarget | null,
+	toolbarElement: HTMLElement | null,
+) => {
+	if (!(target instanceof Element)) return false;
+	if (toolbarElement?.contains(target)) return true;
+
+	return !!target.closest(toolbarPopoverSafeTargetSelector);
 };
 
 interface Props {
@@ -54,7 +77,21 @@ export default function AppBuilderToolbar(props: Props) {
 		useToolbarVisibility({
 			mode: toolbar.visibility,
 		});
+	const toolbarRef = useRef<HTMLDivElement | null>(null);
 	const [openedPopoverId, setOpenedPopoverId] = useState<string>();
+	const hasActiveInteractionRequest =
+		useShapeDiverStoreInteractionRequestManagement((state) => {
+			const viewportId = buttonRenderContext.viewportId;
+
+			if (viewportId) {
+				return !!state.interactionRequests[viewportId]?.activeRequest;
+			}
+
+			return Object.values(state.interactionRequests).some(
+				({activeRequest}) => !!activeRequest,
+			);
+		});
+
 	useEffect(() => {
 		setMenuOpen(!!openedPopoverId);
 	}, [openedPopoverId, setMenuOpen]);
@@ -62,48 +99,51 @@ export default function AppBuilderToolbar(props: Props) {
 	useEffect(() => {
 		if (!openedPopoverId) return;
 
-		const closeOnViewportPointerDown = (
+		const closeOnOutsidePointerDown = (
 			event: PointerEvent | MouseEvent | TouchEvent,
 		) => {
+			if (hasActiveInteractionRequest) return;
 			if (event.target instanceof HTMLCanvasElement) {
 				setOpenedPopoverId(undefined);
+				return;
 			}
+			if (isToolbarPopoverSafeTarget(event.target, toolbarRef.current)) {
+				return;
+			}
+
+			setOpenedPopoverId(undefined);
 		};
 
 		document.addEventListener(
 			"pointerdown",
-			closeOnViewportPointerDown,
+			closeOnOutsidePointerDown,
 			true,
 		);
-		document.addEventListener(
-			"mousedown",
-			closeOnViewportPointerDown,
-			true,
-		);
+		document.addEventListener("mousedown", closeOnOutsidePointerDown, true);
 		document.addEventListener(
 			"touchstart",
-			closeOnViewportPointerDown,
+			closeOnOutsidePointerDown,
 			true,
 		);
 
 		return () => {
 			document.removeEventListener(
 				"pointerdown",
-				closeOnViewportPointerDown,
+				closeOnOutsidePointerDown,
 				true,
 			);
 			document.removeEventListener(
 				"mousedown",
-				closeOnViewportPointerDown,
+				closeOnOutsidePointerDown,
 				true,
 			);
 			document.removeEventListener(
 				"touchstart",
-				closeOnViewportPointerDown,
+				closeOnOutsidePointerDown,
 				true,
 			);
 		};
-	}, [openedPopoverId]);
+	}, [hasActiveInteractionRequest, openedPopoverId]);
 
 	const handlePopoverOpenChange = useCallback(
 		(popoverId: string, open: boolean) => {
@@ -163,6 +203,9 @@ export default function AppBuilderToolbar(props: Props) {
 									onPopoverOpenChange={
 										handlePopoverOpenChange
 									}
+									hasActiveInteractionRequest={
+										hasActiveInteractionRequest
+									}
 								/>
 							);
 						})}
@@ -200,6 +243,7 @@ export default function AppBuilderToolbar(props: Props) {
 		>
 			{(transitionStyle) => (
 				<Paper
+					ref={toolbarRef}
 					role="toolbar"
 					aria-label={toolbar.ariaLabel || toolbar.id}
 					aria-orientation={orientation}

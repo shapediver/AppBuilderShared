@@ -9,7 +9,7 @@ import {
 	isExportRefControl,
 	isOutputRefControl,
 	isParameterRefControl,
-	isToolbarMenuItem,
+	isToolbarActionMenuItem,
 	isToolbarTabbedPanelItem,
 	isToolbarWidgetPanelItem,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
@@ -62,6 +62,7 @@ interface Props {
 	popoverId?: string;
 	openedPopoverId?: string;
 	onPopoverOpenChange?: (popoverId: string, open: boolean) => void;
+	hasActiveInteractionRequest?: boolean;
 }
 
 const getPopoverPosition = (toolbarSide?: ToolbarRegistration["side"]) => {
@@ -85,6 +86,7 @@ export default function AppBuilderToolbarButton({
 	popoverId,
 	openedPopoverId,
 	onPopoverOpenChange,
+	hasActiveInteractionRequest = false,
 }: Props) {
 	const componentContext = useContext(ComponentContext);
 	const [localOpened, setLocalOpened] = useState(false);
@@ -171,6 +173,8 @@ export default function AppBuilderToolbarButton({
 		(next: boolean | ((current: boolean) => boolean)) => {
 			const value = typeof next === "function" ? next(opened) : next;
 
+			if (!value && hasActiveInteractionRequest) return;
+
 			if (popoverId && onPopoverOpenChange) {
 				onPopoverOpenChange(popoverId, value);
 				return;
@@ -178,7 +182,7 @@ export default function AppBuilderToolbarButton({
 
 			setLocalOpened(value);
 		},
-		[onPopoverOpenChange, opened, popoverId],
+		[hasActiveInteractionRequest, onPopoverOpenChange, opened, popoverId],
 	);
 
 	const renderTriggerButton = useCallback(
@@ -235,8 +239,8 @@ export default function AppBuilderToolbarButton({
 	}
 
 	const hasPopoverContent =
-		(isToolbarMenuItem(toolbarItem) &&
-			toolbarItem.props.items.length > 0) ||
+		(isToolbarActionMenuItem(toolbarItem) &&
+			toolbarItem.props.sections.length > 0) ||
 		(isToolbarWidgetPanelItem(toolbarItem) &&
 			toolbarItem.props.widgets.length > 0) ||
 		(isToolbarTabbedPanelItem(toolbarItem) &&
@@ -253,6 +257,7 @@ export default function AppBuilderToolbarButton({
 			{...popoverProps}
 			opened={opened}
 			onChange={setOpened}
+			closeOnClickOutside={false}
 			position={
 				("position" in popoverProps
 					? popoverProps.position
@@ -260,7 +265,10 @@ export default function AppBuilderToolbarButton({
 			}
 		>
 			<Popover.Target>
-				<span style={{display: "inline-flex"}}>
+				<span
+					data-appbuilder-toolbar-trigger="true"
+					style={{display: "inline-flex"}}
+				>
 					{opened
 						? renderTriggerButton(
 								() => setOpened((current) => !current),
@@ -274,6 +282,7 @@ export default function AppBuilderToolbarButton({
 			</Popover.Target>
 			<Popover.Dropdown
 				{...popoverDropdownProps}
+				data-appbuilder-toolbar-popover="true"
 				style={{
 					...defaultStyleProps.popoverDropdownProps.style,
 					...popoverDropdownProps?.style,

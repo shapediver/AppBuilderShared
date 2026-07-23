@@ -2,11 +2,18 @@ import {NotificationAction} from "@AppBuilderLib/features/notifications/config/n
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {IShapeDiverParameter} from "../config/parameter";
 
+export interface ParameterInvalidParameter {
+	name: string;
+	message: string;
+}
+
 export interface ParameterValidationResult {
 	/** Validated (id,value) pairs of parameters */
 	validParameters: {[key: string]: any};
 	/** Names or IDs of parameters present in the input that could not be matched  */
 	skippedParameters: string[];
+	/** Per-parameter validation failures with user-facing messages */
+	invalidParameters: ParameterInvalidParameter[];
 	/** Whether any valid parameters were found */
 	hasValidParameters: boolean;
 }
@@ -44,6 +51,7 @@ export function filterAndValidateParameters(
 ): ParameterValidationResult {
 	const validParameters: {[key: string]: any} = {};
 	const skippedParameters: string[] = [];
+	const invalidParameters: ParameterInvalidParameter[] = [];
 
 	for (const param of parameterArray) {
 		// Skip parameters without id or value
@@ -62,13 +70,23 @@ export function filterAndValidateParameters(
 		}
 
 		if (!paramState) {
-			skippedParameters.push(param.name || param.id);
+			const name = param.name || param.id;
+			skippedParameters.push(name);
+			invalidParameters.push({
+				name,
+				message: `Parameter "${name}" does not exist in the current model session.`,
+			});
 			continue;
 		}
 
 		// Validate parameter value
 		if (!paramState.actions.isValid(param.value)) {
-			skippedParameters.push(param.name || param.id);
+			const name = param.name || param.id;
+			skippedParameters.push(name);
+			invalidParameters.push({
+				name,
+				message: `Value is not valid for parameter "${name}"`,
+			});
 			continue;
 		}
 
@@ -78,6 +96,7 @@ export function filterAndValidateParameters(
 	return {
 		validParameters,
 		skippedParameters: skippedParameters,
+		invalidParameters,
 		hasValidParameters: Object.keys(validParameters).length > 0,
 	};
 }
@@ -125,9 +144,14 @@ export function generateParameterFeedback(
 	}
 
 	if (result.skippedParameters.length > 0) {
+		const message =
+			result.invalidParameters.length > 0
+				? result.invalidParameters.map((p) => p.message).join(" ")
+				: `The following parameters could not be matched or ar invalid: ${result.skippedParameters.join(", ")}`;
+
 		return {
 			type: NotificationAction.WARNING,
-			message: `The following parameters could not be matched or ar invalid: ${result.skippedParameters.join(", ")}`,
+			message,
 		};
 	}
 

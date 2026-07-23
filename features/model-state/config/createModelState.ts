@@ -1,49 +1,10 @@
-import {ResExportDefinition} from "@shapediver/sdk.geometry-api-sdk-v2";
-
-/**
- * Reference to an export (defined by the session)
- * (duplicate of IAppBuilderExportRef to avoid importing mantine from here)
- */
-interface IExportRef {
-	/** Id or name or displayname of the referenced export (in that order). */
-	name: string;
-	/** Optional id of the session the referenced parameter belongs to. */
-	sessionId?: string;
-	/** Properties of the export to be overridden. */
-	overrides?: Pick<
-		Partial<ResExportDefinition>,
-		"displayname" | "group" | "order" | "tooltip" | "hidden"
-	>;
-}
-
-/**
- * Reference to an image
- * (duplicate of IAppBuilderImageRef to avoid importing mantine from here)
- */
-interface IImageRef {
-	/** Optional reference to export which provides the image. */
-	export?: Pick<IExportRef, "name" | "sessionId">;
-	/** URL to image. Can be a data URL including a base 64 encoded image. Takes precedence over export reference. */
-	href?: string;
-}
+import type {z} from "zod";
+import {createModelStateDataSchema} from "./createModelState.zod";
 
 /**
  * Data accepted by the useCreateModelState hook to create a model state.
  */
-export interface ICreateModelStateData {
-	/** Optional list of parameter ids/names to include. */
-	parameterNamesToInclude?: string[];
-	/** Optional list of parameter names to exclude. */
-	parameterNamesToExclude?: string[];
-	/** Whether to include an image. */
-	includeImage?: boolean;
-	/** Optional image definition. If undefined, a screenshot will be used. */
-	image?: IImageRef | undefined;
-	/** Optional data to include with the saved model state. */
-	data?: Record<string, any>;
-	/** Whether to save a glTF of the scene. */
-	includeGltf?: boolean;
-}
+export type ICreateModelStateData = z.infer<typeof createModelStateDataSchema>;
 
 /**
  * Data returned from the useCreateModelState hook.

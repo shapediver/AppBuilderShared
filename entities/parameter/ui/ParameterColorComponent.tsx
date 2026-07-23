@@ -103,6 +103,14 @@ export default function ParameterColorComponent(
 				<ColorInput
 					key={formKey}
 					{...(formInputProps || {})}
+					popoverProps={{
+						...((
+							formInputProps as
+								| {popoverProps?: object}
+								| undefined
+						)?.popoverProps ?? {}),
+						withinPortal: false,
+					}}
 					placeholder="Pick color"
 					value={value}
 					rightSection={

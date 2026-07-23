@@ -56,7 +56,10 @@ describe("default toolbar regression", () => {
 		const items =
 			useShapeDiverStoreToolbars.getState().defaultToolbars[0]
 				?.groups[0] ?? [];
-		expect(items.map((item) => item.type)).toEqual(["action", "menu"]);
+		expect(items.map((item) => item.type)).toEqual([
+			"action",
+			"actionMenu",
+		]);
 		expect(items[0]).toMatchObject({
 			type: "action",
 			props: {
@@ -67,9 +70,9 @@ describe("default toolbar regression", () => {
 			},
 		});
 		expect(items[1]).toMatchObject({
-			type: "menu",
+			type: "actionMenu",
 			label: "More options",
-			props: {items: expect.any(Array)},
+			props: {sections: expect.any(Array)},
 		});
 	});
 });

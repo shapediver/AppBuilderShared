@@ -65,9 +65,9 @@ describe("useDefaultToolbarRegistration", () => {
 			},
 		});
 		expect(defaultToolbar?.groups[0][1]).toMatchObject({
-			type: "menu",
+			type: "actionMenu",
 			label: "More options",
-			props: {items: expect.any(Array)},
+			props: {sections: expect.any(Array)},
 		});
 	});
 
@@ -126,10 +126,10 @@ describe("useDefaultToolbarRegistration", () => {
 			useShapeDiverStoreToolbars.getState().defaultToolbars[0]
 				?.groups[0][0],
 		).toMatchObject({
-			type: "menu",
+			type: "actionMenu",
 			label: "Cameras",
 			props: {
-				items: [
+				sections: [
 					[
 						{
 							label: "UnnamedCamera",

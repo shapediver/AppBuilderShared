@@ -7,7 +7,7 @@ import {
 	IAppBuilderToolbarItem,
 	isOutputRefControl,
 	isParameterRefControl,
-	isToolbarMenuItem,
+	isToolbarActionMenuItem,
 	isToolbarTabbedPanelItem,
 	isToolbarWidgetPanelItem,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
@@ -15,7 +15,7 @@ import {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/Compo
 import {getParameterComponent} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import AppBuilderTabsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderTabsComponent";
 import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
-import {Divider, Paper, Stack} from "@mantine/core";
+import {Divider, Paper, Stack, Text} from "@mantine/core";
 import React, {useMemo} from "react";
 import {AppBuilderActionFromType} from "./AppBuilderActionFromType";
 import {getToolbarActionRef} from "./appBuilderToolbarButtonShared";
@@ -53,13 +53,13 @@ export default function AppBuilderToolbarPopoverContent({
 }: Props) {
 	const parameters = useParameters(parameterProps);
 	const outputs = useOutputs(outputProps);
-	const menuItems = isToolbarMenuItem(toolbarItem)
-		? toolbarItem.props.items
+	const actionMenuSections = isToolbarActionMenuItem(toolbarItem)
+		? toolbarItem.props.sections
 		: undefined;
 
 	return useMemo(() => {
-		if (menuItems && menuItems.length > 0) {
-			const groups = menuItems
+		if (actionMenuSections && actionMenuSections.length > 0) {
+			const groups = actionMenuSections
 				.map((group, groupIndex) => ({
 					useItemSpacing: group.every(
 						(item) => item.presentation === "item",
@@ -126,11 +126,22 @@ export default function AppBuilderToolbarPopoverContent({
 		}
 
 		if (isToolbarWidgetPanelItem(toolbarItem)) {
-			return (
+			const widgets = (
 				<AppBuilderWidgetsComponent
 					namespace={namespace}
 					widgets={toolbarItem.props.widgets}
 				/>
+			);
+
+			if (!toolbarItem.label) return widgets;
+
+			return (
+				<Stack gap="xs">
+					<Text size="sm" fw={600}>
+						{toolbarItem.label}
+					</Text>
+					{widgets}
+				</Stack>
 			);
 		}
 
@@ -186,7 +197,7 @@ export default function AppBuilderToolbarPopoverContent({
 		componentContext,
 		fullscreenId,
 		menuDividerProps,
-		menuItems,
+		actionMenuSections,
 		menuSectionStackProps,
 		menuStackProps,
 		namespace,

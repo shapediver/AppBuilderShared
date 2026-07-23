@@ -1253,7 +1253,7 @@ export type AppBuilderAnchor3dContainerProperties = {
 
 export type AppBuilderToolbarItemType =
 	| AppBuilderControlType
-	| "menu"
+	| "actionMenu"
 	| "widgets"
 	| "tabs";
 
@@ -1303,11 +1303,11 @@ export type IAppBuilderToolbarControlItem =
 	| IAppBuilderToolbarOutputItem
 	| IAppBuilderToolbarActionItem;
 
-export type IAppBuilderToolbarMenuItem = IAppBuilderToolbarItemBase<
-	"menu",
+export type IAppBuilderToolbarActionMenuItem = IAppBuilderToolbarItemBase<
+	"actionMenu",
 	{
-		/** Menu sections rendered when this item is opened. */
-		items: IAppBuilderToolbarActionItem[][];
+		/** Action sections rendered when this item is opened. */
+		sections: IAppBuilderToolbarActionItem[][];
 	}
 >;
 
@@ -1331,7 +1331,7 @@ export type IAppBuilderToolbarTabbedPanelItem = IAppBuilderToolbarItemBase<
 
 export type IAppBuilderToolbarItem =
 	| IAppBuilderToolbarControlItem
-	| IAppBuilderToolbarMenuItem
+	| IAppBuilderToolbarActionMenuItem
 	| IAppBuilderToolbarWidgetPanelItem
 	| IAppBuilderToolbarTabbedPanelItem;
 
@@ -1348,8 +1348,6 @@ export interface IAppBuilderToolbarContainerProperties {
 	order?: number;
 	/** Visibility behavior. */
 	visibility?: AppBuilderToolbarVisibility;
-	/** Branch/group-preserving toolbar content. Outer array = groups, inner array = items within a group. */
-	groups?: IAppBuilderToolbarGroups;
 }
 
 export interface IAppBuilderStandardContainer {
@@ -1400,6 +1398,8 @@ export interface IAppBuilderToolbarContainer {
 	name: AppBuilderContainerNameType.Toolbar;
 	/** Toolbar-specific props. */
 	props: IAppBuilderToolbarContainerProperties;
+	/** Branch/group-preserving toolbar content. Outer array = groups, inner array = items within a group. */
+	groups?: IAppBuilderToolbarGroups;
 }
 
 /**
@@ -1928,11 +1928,11 @@ export function isOutputRefControl<T extends AppBuilderControlLike>(
 	return control.type === "output";
 }
 
-/** assert toolbar item type "menu" */
-export function isToolbarMenuItem(
+/** assert toolbar item type "actionMenu" */
+export function isToolbarActionMenuItem(
 	item: IAppBuilderToolbarItem,
-): item is IAppBuilderToolbarMenuItem {
-	return item.type === "menu";
+): item is IAppBuilderToolbarActionMenuItem {
+	return item.type === "actionMenu";
 }
 
 /** assert toolbar item type "widgets" */
