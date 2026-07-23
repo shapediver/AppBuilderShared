@@ -452,6 +452,7 @@ const IAppBuilderActionPropsAddToCartSchema = z
 		quantity: z.number().optional(),
 		price: z.number().optional(),
 		description: z.string().optional(),
+		title: z.string().optional(),
 	})
 	.extend(IAppBuilderActionPropsCreateModelStateSchema.shape);
 
