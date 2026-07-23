@@ -1,8 +1,8 @@
+/// <reference types="node" />
 import {
 	loadWebmcpEvalScenarios,
 	runWebmcpEvalScenario,
 } from "./runWebmcpEvalScenarios";
-
 async function main() {
 	const scenarios = loadWebmcpEvalScenarios();
 	let failed = 0;
