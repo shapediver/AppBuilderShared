@@ -101,6 +101,7 @@ export default function AppBuilderPdfEmbed(
 					className={classes.embed}
 					src={src}
 					title={title}
+					aria-label={title}
 					style={{border: "none", height: "100%", width: "100%"}}
 				>
 					<p>

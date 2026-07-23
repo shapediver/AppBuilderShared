@@ -3,8 +3,11 @@
  * Prefers MIME type, then data URLs, then .pdf path (query/hash stripped).
  */
 export function isPdfSrc(href?: string, contentType?: string): boolean {
-	if (contentType === "application/pdf") {
-		return true;
+	if (contentType) {
+		const mime = contentType.split(";", 1)[0]?.trim();
+		if (mime === "application/pdf") {
+			return true;
+		}
 	}
 	if (!href) {
 		return false;
