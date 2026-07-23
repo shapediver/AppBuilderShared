@@ -50,6 +50,7 @@ import {AppBuilderBarChartWidgetComponentThemeDefaultPropsSchema} from "@AppBuil
 import {AppBuilderControlsWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderControlsWidgetComponent.theme.types";
 import {AppBuilderFormWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderFormWidgetComponent.theme.types";
 import {AppBuilderImageThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderImage.theme.types";
+import {AppBuilderPdfEmbedThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderPdfEmbed.theme.types";
 import {AppBuilderLineChartWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderLineChartWidgetComponent.theme.types";
 import {AppBuilderRoundChartWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderRoundChartWidgetComponent.theme.types";
 import {AppBuilderSavedStatesWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderSavedStatesWidgetComponent.theme.types";
@@ -107,6 +108,7 @@ export const themeComponentDefaultPropsRegistry = {
 		AppBuilderGridTemplatePageThemeDefaultPropsSchema,
 	AppBuilderHorizontalContainer: mantineGroupPropsSchema,
 	AppBuilderImage: AppBuilderImageThemeDefaultPropsSchema,
+	AppBuilderPdfEmbed: AppBuilderPdfEmbedThemeDefaultPropsSchema,
 	AppBuilderLineChartWidgetComponent:
 		AppBuilderLineChartWidgetComponentThemeDefaultPropsSchema,
 	AppBuilderRoundChartWidgetComponent:
