@@ -1722,16 +1722,34 @@ export const useShapeDiverStoreParameters =
 						return;
 					const current = history[historyIndex];
 					if (!current.unsavedChanges) return;
-					const newHistory = history.slice();
-					newHistory[historyIndex] = {
+					const updated: IHistoryEntry = {
 						...current,
 						unsavedChanges: false,
 					};
+					const newHistory = history.slice();
+					newHistory[historyIndex] = updated;
 					set(
 						() => ({history: newHistory}),
 						false,
 						"clearUnsavedChanges",
 					);
+
+					// Keep window.history.state in sync so popstate / URL helpers
+					// (e.g. modifyUrl replaceState) do not keep a stale flag.
+					if (typeof window !== "undefined") {
+						const browserState = window.history
+							.state as IHistoryEntry | null;
+						if (
+							browserState &&
+							typeof browserState === "object" &&
+							browserState.time === updated.time
+						) {
+							window.history.replaceState(
+								{...browserState, unsavedChanges: false},
+								"",
+							);
+						}
+					}
 				},
 
 				setPendingHistoryDerivedState(state: ISessionsHistoryState) {

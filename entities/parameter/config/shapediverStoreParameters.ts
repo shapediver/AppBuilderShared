@@ -535,7 +535,8 @@ export interface IShapeDiverStoreParameters {
 	) => IHistoryEntry;
 
 	/**
-	 * Clear the `unsavedChanges` flag of the current history entry.
+	 * Clear the `unsavedChanges` flag of the current history entry and sync
+	 * `window.history.state` when it matches that entry (by `time`).
 	 * Called after creating or importing a model state, and after creating or
 	 * importing a parameter JSON file.
 	 */

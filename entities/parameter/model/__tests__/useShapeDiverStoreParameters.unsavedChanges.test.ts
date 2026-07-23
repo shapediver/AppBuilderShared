@@ -28,8 +28,10 @@ describe("useShapeDiverStoreParameters unsavedChanges", () => {
 		store.getState().pushHistoryState({}, false);
 		const entry = store.getState().pushHistoryState({ns: {p: "v"}});
 		expect(entry.unsavedChanges).toBe(true);
-		expect(store.getState().history[store.getState().historyIndex]
-			.unsavedChanges).toBe(true);
+		expect(
+			store.getState().history[store.getState().historyIndex]
+				.unsavedChanges,
+		).toBe(true);
 	});
 
 	it("clearUnsavedChanges clears the flag on the current entry", () => {
@@ -42,6 +44,39 @@ describe("useShapeDiverStoreParameters unsavedChanges", () => {
 
 		store.getState().clearUnsavedChanges();
 
+		expect(
+			store.getState().history[store.getState().historyIndex]
+				.unsavedChanges,
+		).toBe(false);
+	});
+
+	it("clearUnsavedChanges syncs window.history.state when it matches the current entry", () => {
+		store.getState().pushHistoryState({}, false);
+		const entry = store.getState().pushHistoryState({ns: {p: "v"}});
+		// Mimic historyPusher / useParameterHistory writing the entry into the
+		// browser history stack.
+		window.history.replaceState(entry, "");
+		expect(
+			(window.history.state as {unsavedChanges?: boolean}).unsavedChanges,
+		).toBe(true);
+
+		store.getState().clearUnsavedChanges();
+
+		expect(
+			(window.history.state as {unsavedChanges?: boolean}).unsavedChanges,
+		).toBe(false);
+		expect((window.history.state as {time?: number}).time).toBe(entry.time);
+	});
+
+	it("clearUnsavedChanges does not overwrite unrelated window.history.state", () => {
+		store.getState().pushHistoryState({}, false);
+		store.getState().pushHistoryState({ns: {p: "v"}});
+		const unrelated = {foo: "bar"};
+		window.history.replaceState(unrelated, "");
+
+		store.getState().clearUnsavedChanges();
+
+		expect(window.history.state).toEqual(unrelated);
 		expect(
 			store.getState().history[store.getState().historyIndex]
 				.unsavedChanges,
