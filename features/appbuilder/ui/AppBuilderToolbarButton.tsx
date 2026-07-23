@@ -42,6 +42,7 @@ const defaultStyleProps = {
 	popoverProps: {
 		shadow: "md",
 		withinPortal: true,
+		width: 320,
 	},
 	popoverDropdownProps: {
 		style: {
