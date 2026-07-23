@@ -42,11 +42,11 @@ const defaultStyleProps = {
 	popoverProps: {
 		shadow: "md",
 		withinPortal: true,
-		width: 320,
 	},
 	popoverDropdownProps: {
 		style: {
 			padding: 4,
+			maxWidth: 320,
 			...ViewportTransparentBackgroundStyle,
 		},
 	},
