@@ -1,4 +1,5 @@
 import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
+import {createModelStateCoreSchema} from "@AppBuilderLib/features/model-state/config/createModelState.zod";
 import {prettifyError, z} from "@AppBuilderLib/shared/lib/zod";
 import {appBuilderThemeOtherPropsSchema} from "@AppBuilderLib/shared/mantine-props/appBuilderThemeOther.zod";
 import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
@@ -391,15 +392,12 @@ const IAppBuilderParameterValueSourcePropsSdtfSchema = z.strictObject({
 });
 
 // Zod type definition for IAppBuilderActionPropsCreateModelState
-const IAppBuilderActionPropsCreateModelStateSchema = z.strictObject({
-	includeImage: z.boolean().optional(),
-	image: IAppBuilderImageRefSchema.optional(),
-	includeGltf: z.boolean().optional(),
-	parameterNamesToInclude: z.array(z.string()).optional(),
-	parameterNamesToExclude: z.array(z.string()).optional(),
-	successMessage: z.string().optional(),
-	errorMessage: z.string().optional(),
-});
+const IAppBuilderActionPropsCreateModelStateSchema =
+	createModelStateCoreSchema.extend({
+		image: IAppBuilderImageRefSchema.optional(),
+		successMessage: z.string().optional(),
+		errorMessage: z.string().optional(),
+	});
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsModelState
 const IAppBuilderParameterValueSourcePropsModelStateSchema =
