@@ -78,6 +78,8 @@ describe("useImportModelState unsavedChanges wiring", () => {
 		filterAndValidateModelStateParameters.mockReturnValue({
 			hasValidParameters: true,
 			validParameters: {paramA: 1},
+			skippedParameters: [],
+			invalidParameters: [],
 		});
 		generateParameterFeedback.mockReturnValue({
 			type: "success",
@@ -130,6 +132,8 @@ describe("useImportModelState unsavedChanges wiring", () => {
 		filterAndValidateModelStateParameters.mockReturnValue({
 			hasValidParameters: false,
 			validParameters: {},
+			skippedParameters: [],
+			invalidParameters: [],
 		});
 		generateParameterFeedback.mockReturnValue({
 			type: "error",
