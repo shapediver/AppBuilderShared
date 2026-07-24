@@ -42,7 +42,7 @@ const defaultStyleProps = {
 	popoverProps: {
 		shadow: "md",
 		withinPortal: true,
-	},
+	} as ToolbarPopoverProps,
 	popoverDropdownProps: {
 		style: {
 			padding: 4,
@@ -248,6 +248,9 @@ export default function AppBuilderToolbarButton({
 			toolbarItem.props.tabs.length > 0) ||
 		(isParameterRefControl(toolbarItem) && parameterProps.length > 0) ||
 		isOutputRefControl(toolbarItem);
+	const fixedWidthPopover =
+		isToolbarWidgetPanelItem(toolbarItem) ||
+		isToolbarTabbedPanelItem(toolbarItem);
 
 	if (!hasPopoverContent) {
 		return renderTriggerButton();
@@ -256,6 +259,11 @@ export default function AppBuilderToolbarButton({
 	return (
 		<Popover
 			{...popoverProps}
+			width={
+				fixedWidthPopover
+					? (popoverProps.width ?? 320)
+					: popoverProps.width
+			}
 			opened={opened}
 			onChange={setOpened}
 			closeOnClickOutside={false}
