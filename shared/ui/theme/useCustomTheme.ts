@@ -8,6 +8,7 @@ import {ParameterLabelComponentThemeProps} from "@AppBuilderLib/entities/paramet
 import {ParameterSelectComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterSelectComponent";
 import {ParameterSliderComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent";
 import {ParameterStargateComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterStargateComponent";
+import {SelectButtonFlexComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectButtonFlexComponent";
 import {SelectCarouselComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectCarouselComponent";
 import {SelectFullWidthCardsComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectFullWidthCards";
 import {SelectGridComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectGridComponent";
@@ -1317,6 +1318,27 @@ export const useCustomTheme = (props: Props = {}) => {
 				//	size: "1.2rem",
 				//  color: "var(--mantine-color-default-color)",
 				//},
+			}),
+			/**
+			 * SelectButtonFlexComponent
+			 *
+			 * Defaults for button-based flex selection.
+			 *
+			 * Example:
+			 * SelectButtonFlexComponent: SelectButtonFlexComponentThemeProps({
+			 *   flexProps: {
+			 *     gap: "sm",
+			 *     direction: {base: "column", md: "row"},
+			 *   },
+			 *   buttonProps: {
+			 *     size: "sm",
+			 *     fullWidth: false,
+			 *   },
+			 * }),
+			 */
+			SelectButtonFlexComponent: SelectButtonFlexComponentThemeProps({
+				// flexProps: {gap: "sm", direction: {base: "column", md: "row"}},
+				// buttonProps: {size: "sm", fullWidth: false},
 			}),
 			/**
 			 * SelectCarouselComponent

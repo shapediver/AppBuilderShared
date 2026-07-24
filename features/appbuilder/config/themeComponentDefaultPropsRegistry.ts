@@ -5,6 +5,7 @@ import {ParameterLabelComponentThemeDefaultPropsSchema} from "@AppBuilderLib/ent
 import {ParameterRectangleTransformComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/parameterRectangleTransformComponent.theme.types";
 import {ParameterSelectComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/ParameterSelectComponent.theme.types";
 import {ParameterStargateComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/ParameterStargateComponent.theme.types";
+import {SelectButtonFlexComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/SelectButtonFlexComponent.theme.types";
 import {SelectCarouselComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/SelectCarouselComponent.theme.types";
 import {SelectFullWidthCardsComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/SelectFullWidthCardsComponent.theme.types";
 import {SelectGridComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/SelectGridComponent.theme.types";
@@ -158,6 +159,7 @@ export const themeComponentDefaultPropsRegistry = {
 	Paper: mantinePaperPropsSchema,
 	ParametersAndExportsAccordionComponent:
 		ParametersAndExportsAccordionComponentThemeDefaultPropsSchema,
+	SelectButtonFlexComponent: SelectButtonFlexComponentThemeDefaultPropsSchema,
 	SelectCarouselComponent: SelectCarouselComponentThemeDefaultPropsSchema,
 	SelectFullWidthCardsComponent:
 		SelectFullWidthCardsComponentThemeDefaultPropsSchema,

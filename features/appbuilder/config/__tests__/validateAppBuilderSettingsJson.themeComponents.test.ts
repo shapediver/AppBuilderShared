@@ -354,6 +354,14 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 		invalidDefaultProps: {gridProps: {cols: "two"}},
 	},
 	{
+		component: "SelectButtonFlexComponent",
+		validDefaultProps: {
+			flexProps: {gap: "sm", direction: {base: "column", md: "row"}},
+			buttonProps: {size: "md", fullWidth: true},
+		},
+		invalidDefaultProps: {buttonProps: {variant: "outline"}},
+	},
+	{
 		component: "SelectCarouselComponent",
 		validDefaultProps: {
 			carouselProps: {withIndicators: false, type: "container"},
