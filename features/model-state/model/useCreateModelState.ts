@@ -85,6 +85,16 @@ export function useCreateModelState(props: Props) {
 				markSaved?: boolean;
 			},
 		): Promise<ICreateModelStateResult> => {
+			// Viewport access functions are registered in an effect after the
+			// viewport is created. Read the store again at invocation time so a
+			// callback retained before that effect ran can still capture an image.
+			const viewportAccessFunctions =
+				useShapeDiverStoreViewportAccessFunctions.getState()
+					.viewportAccessFunctions[viewportId];
+			const currentGetScreenshot =
+				viewportAccessFunctions?.getScreenshot ?? getScreenshot;
+			const currentConvertToGlTF =
+				viewportAccessFunctions?.convertToGlTF ?? convertToGlTF;
 			const {markSaved = true} = options ?? {};
 			const {
 				parameterNamesToInclude = parameterNamesToIncludeDefault,
@@ -156,8 +166,8 @@ export function useCreateModelState(props: Props) {
 						}
 					}
 				}
-			} else if (includeImage && getScreenshot) {
-				modelStateImage = await getScreenshot();
+			} else if (includeImage && currentGetScreenshot) {
+				modelStateImage = await currentGetScreenshot();
 			}
 
 			const modelStateId = sessionApi
@@ -166,8 +176,8 @@ export function useCreateModelState(props: Props) {
 						true, // <-- omitSessionParameterValues
 						modelStateImage, // <-- screenshot or provided image
 						data, // <-- custom data
-						includeGltf && convertToGlTF
-							? async () => convertToGlTF()
+						includeGltf && currentConvertToGlTF
+							? async () => currentConvertToGlTF()
 							: undefined,
 					)
 				: undefined;

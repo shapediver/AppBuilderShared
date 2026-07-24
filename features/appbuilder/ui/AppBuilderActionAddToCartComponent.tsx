@@ -111,6 +111,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 			setLoading(false);
 		}
 	}, [
+		createModelState,
 		productId,
 		quantity,
 		price,

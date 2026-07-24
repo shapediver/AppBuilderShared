@@ -22,9 +22,11 @@ jest.mock("@mantine/core", () => {
 // Real stores — assertions and session state go directly against them.
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
+import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 
 const paramStore = useShapeDiverStoreParameters;
 const sessionStore = useShapeDiverStoreSession;
+const viewportAccessFunctionsStore = useShapeDiverStoreViewportAccessFunctions;
 
 const sessionApiMock: any = {};
 
@@ -60,6 +62,7 @@ function currentUnsaved() {
 describe("useCreateModelState unsavedChanges wiring", () => {
 	beforeEach(() => {
 		setSessionApi();
+		viewportAccessFunctionsStore.setState({viewportAccessFunctions: {}});
 	});
 
 	it("clears unsavedChanges after a successful user-initiated model state creation", async () => {
@@ -76,6 +79,38 @@ describe("useCreateModelState unsavedChanges wiring", () => {
 
 		expect(sessionApiMock.createModelState).toHaveBeenCalled();
 		expect(currentUnsaved()).toBe(false);
+	});
+
+	it("uses a screenshot function registered after the callback was created", async () => {
+		const {result} = renderHook(() =>
+			useCreateModelState({namespace: "ns"}),
+		);
+		const createModelState = result.current.createModelState;
+		const getScreenshot = jest
+			.fn()
+			.mockResolvedValue("data:image/png;base64,test");
+
+		act(() => {
+			viewportAccessFunctionsStore.setState({
+				viewportAccessFunctions: {
+					vp1: {getScreenshot},
+				},
+			});
+		});
+
+		await act(async () => {
+			const modelState = await createModelState({includeImage: true});
+			expect(modelState.screenshot).toBe("data:image/png;base64,test");
+		});
+
+		expect(getScreenshot).toHaveBeenCalledTimes(1);
+		expect(sessionApiMock.createModelState).toHaveBeenCalledWith(
+			expect.any(Object),
+			true,
+			"data:image/png;base64,test",
+			undefined,
+			undefined,
+		);
 	});
 
 	it("does not clear unsavedChanges when markSaved is false (value-source usage)", async () => {
