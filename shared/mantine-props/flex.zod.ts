@@ -8,4 +8,62 @@ export const mantineFlexPropsSchema = z.strictObject({
 	align: z.string().optional(),
 	gap: mantineSpacingSchema.optional(),
 	wrap: mantineFlexWrapSchema.optional(),
+	direction: z
+		.union([
+			z.literal("row"),
+			z.literal("column"),
+			z.literal("row-reverse"),
+			z.literal("column-reverse"),
+			z.object({
+				base: z
+					.union([
+						z.literal("row"),
+						z.literal("column"),
+						z.literal("row-reverse"),
+						z.literal("column-reverse"),
+					])
+					.optional(),
+				xs: z
+					.union([
+						z.literal("row"),
+						z.literal("column"),
+						z.literal("row-reverse"),
+						z.literal("column-reverse"),
+					])
+					.optional(),
+				sm: z
+					.union([
+						z.literal("row"),
+						z.literal("column"),
+						z.literal("row-reverse"),
+						z.literal("column-reverse"),
+					])
+					.optional(),
+				md: z
+					.union([
+						z.literal("row"),
+						z.literal("column"),
+						z.literal("row-reverse"),
+						z.literal("column-reverse"),
+					])
+					.optional(),
+				lg: z
+					.union([
+						z.literal("row"),
+						z.literal("column"),
+						z.literal("row-reverse"),
+						z.literal("column-reverse"),
+					])
+					.optional(),
+				xl: z
+					.union([
+						z.literal("row"),
+						z.literal("column"),
+						z.literal("row-reverse"),
+						z.literal("column-reverse"),
+					])
+					.optional(),
+			}),
+		])
+		.optional(),
 });

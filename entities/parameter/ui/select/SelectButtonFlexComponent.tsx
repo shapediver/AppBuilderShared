@@ -1,7 +1,43 @@
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
-import {Button, Flex} from "@mantine/core";
+import {Button, Flex, MantineThemeComponent, useProps} from "@mantine/core";
 import {parameterMultiSelect} from "../../lib/parameterMultiSelect";
 import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComponent";
+import type {
+	SelectButtonStyleProps,
+	SelectFlexStyleProps,
+} from "./SelectComponent";
+
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.SelectButtonFlexComponent.defaultProps
+ * @displayName SelectButtonFlexComponent
+ */
+export interface SelectButtonFlexComponentStyleProps {
+	flexProps: SelectFlexStyleProps;
+	buttonProps: Omit<
+		SelectButtonStyleProps,
+		"color" | "disabled" | "onClick" | "variant"
+	>;
+}
+
+export type SelectButtonFlexComponentProps =
+	UniversalMultiSelectComponentProps &
+		Partial<SelectButtonFlexComponentStyleProps>;
+
+export const defaultStyleProps = {
+	flexProps: {gap: "xs", wrap: "wrap"},
+	buttonProps: {},
+} satisfies Partial<SelectButtonFlexComponentStyleProps>;
+
+export type SelectButtonFlexComponentThemePropsType =
+	Partial<SelectButtonFlexComponentStyleProps>;
+
+export function SelectButtonFlexComponentThemeProps(
+	props: SelectButtonFlexComponentThemePropsType,
+): MantineThemeComponent {
+	return {defaultProps: props};
+}
 
 /**
  * Functional button flex select component.
@@ -10,17 +46,31 @@ import {UniversalMultiSelectComponentProps} from "../multiselect/MultiSelectComp
  * @see https://mantine.dev/core/flex/
  */
 export default function SelectButtonFlexComponent(
-	props: UniversalMultiSelectComponentProps,
+	props: SelectButtonFlexComponentProps,
 ) {
-	const {value, onChange, items, disabled, itemData, multiselect} = props;
+	const {
+		value,
+		onChange,
+		items,
+		disabled,
+		itemData,
+		multiselect,
+		flexProps: flexPropsProp,
+		buttonProps: buttonPropsProp,
+	} = props;
 	const {handleClick, isSelected} = parameterMultiSelect(
 		value,
 		onChange,
 		multiselect,
 	);
+	const {flexProps, buttonProps} = useProps(
+		"SelectButtonFlexComponent",
+		defaultStyleProps,
+		{flexProps: flexPropsProp, buttonProps: buttonPropsProp},
+	);
 
 	return (
-		<Flex gap="xs" wrap="wrap">
+		<Flex {...flexProps}>
 			{items.map((item) => {
 				const data = itemData?.[item];
 				const displayName = data?.displayname || item;
@@ -28,6 +78,7 @@ export default function SelectButtonFlexComponent(
 
 				const button = (
 					<Button
+						{...buttonProps}
 						key={item}
 						variant={isSelected(item) ? "filled" : "default"}
 						color={data?.color}

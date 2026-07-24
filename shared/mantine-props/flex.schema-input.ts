@@ -11,4 +11,17 @@ export interface MantineFlexProps {
 	align?: string;
 	gap?: MantineSpacing;
 	wrap?: MantineFlexWrap;
+	direction?:
+		| "row"
+		| "column"
+		| "row-reverse"
+		| "column-reverse"
+		| {
+				base?: "row" | "column" | "row-reverse" | "column-reverse";
+				xs?: "row" | "column" | "row-reverse" | "column-reverse";
+				sm?: "row" | "column" | "row-reverse" | "column-reverse";
+				md?: "row" | "column" | "row-reverse" | "column-reverse";
+				lg?: "row" | "column" | "row-reverse" | "column-reverse";
+				xl?: "row" | "column" | "row-reverse" | "column-reverse";
+		  };
 }
