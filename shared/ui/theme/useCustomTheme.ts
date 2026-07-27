@@ -668,6 +668,9 @@ export const useCustomTheme = (props: Props = {}) => {
 				// radius: "md",
 				// fit: "contain",
 				// withBorder: false,
+				// mih: "50vh",
+				// mah: "100%",
+				// maw: "100%",
 			}),
 			/**
 			 * AppBuilderAppShellTemplatePage

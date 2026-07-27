@@ -21,6 +21,11 @@ export type AppBuilderPdfEmbedStyleProps = {
 	 */
 	withBorder?: boolean;
 	radius?: string | number;
+	/**
+	 * Minimum height of the PDF embed box (PDF has no intrinsic size).
+	 * @default "50vh"
+	 */
+	mih?: string | number;
 	mah?: string | number;
 	maw?: string | number;
 };
@@ -34,6 +39,7 @@ const defaultStyleProps: Partial<AppBuilderPdfEmbedStyleProps> = {
 	radius: "md",
 	fit: "contain",
 	withBorder: false,
+	mih: "50vh",
 };
 
 type AppBuilderPdfEmbedThemePropsType = Partial<AppBuilderPdfEmbedStyleProps>;
@@ -46,11 +52,17 @@ export function AppBuilderPdfEmbedThemeProps(
 	};
 }
 
+function radiusToCssVar(radius: string | number | undefined): string | undefined {
+	if (radius === undefined) return undefined;
+	if (typeof radius === "number") return `${radius}px`;
+	return `var(--mantine-radius-${radius})`;
+}
+
 export default function AppBuilderPdfEmbed(
 	props: PdfEmbedNonStyleProps & AppBuilderPdfEmbedStyleProps,
 ) {
 	const {src, alt, ...rest} = props;
-	const {radius, fit, withBorder, mah, maw} = useProps(
+	const {radius, fit, withBorder, mih, mah, maw} = useProps(
 		"AppBuilderPdfEmbed",
 		defaultStyleProps,
 		rest,
@@ -59,50 +71,60 @@ export default function AppBuilderPdfEmbed(
 	const context = useContext(AppBuilderContainerContext);
 	const orientation = context.orientation;
 	const contain = fit === "contain";
-	const sizeStyle: CSSProperties = {
-		borderRadius:
-			typeof radius === "number" ? radius : undefined,
-		height: contain && orientation === "horizontal" ? "100%" : undefined,
-		width: contain && orientation === "vertical" ? "100%" : undefined,
-		maxHeight:
-			!contain && orientation === "horizontal"
-				? (mah ?? "100%")
-				: undefined,
-		maxWidth:
-			!contain && orientation === "vertical"
-				? (maw ?? "100%")
-				: undefined,
-	};
-
-	if (typeof radius === "string") {
-		sizeStyle.borderRadius = `var(--mantine-radius-${radius})`;
-	}
 
 	const className = [
 		classes.root,
 		withBorder ? classes.withBorder : undefined,
+		contain && orientation === "horizontal"
+			? classes.containHorizontal
+			: undefined,
+		contain && orientation === "vertical"
+			? classes.containVertical
+			: undefined,
+		!contain && orientation === "horizontal"
+			? classes.scaleDownHorizontal
+			: undefined,
+		!contain && orientation === "vertical"
+			? classes.scaleDownVertical
+			: undefined,
 	]
 		.filter(Boolean)
 		.join(" ");
 
+	// Theme/style props only as CSS variables — no hardcoded visual CSS in JSX.
+	const style = {
+		...(radius !== undefined
+			? {
+					"--appbuilder-pdf-embed-radius": radiusToCssVar(radius),
+				}
+			: {}),
+		...(mih !== undefined
+			? {"--appbuilder-pdf-embed-mih": String(mih)}
+			: {}),
+		...(mah !== undefined
+			? {"--appbuilder-pdf-embed-mah": String(mah)}
+			: {}),
+		...(maw !== undefined
+			? {"--appbuilder-pdf-embed-maw": String(maw)}
+			: {}),
+	} as CSSProperties;
+
 	const title = alt;
 
 	return (
-		<div className={className} style={sizeStyle}>
+		<div className={className} style={style}>
 			<object
 				className={classes.embed}
 				data={src}
 				type="application/pdf"
 				title={title}
 				aria-label={title}
-				style={{height: "100%", width: "100%"}}
 			>
 				<iframe
 					className={classes.embed}
 					src={src}
 					title={title}
 					aria-label={title}
-					style={{border: "none", height: "100%", width: "100%"}}
 				>
 					<p>
 						Your browser does not support PDF viewing.{" "}

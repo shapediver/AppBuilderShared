@@ -5,6 +5,7 @@ import {mantineSpacingSchema} from "@AppBuilderLib/shared/mantine-props/spacing.
 /** Theme `defaultProps` for `useProps("AppBuilderPdfEmbed", …)`. */
 export const AppBuilderPdfEmbedThemeDefaultPropsSchema = z.strictObject({
 	radius: mantineSpacingSchema.optional(),
+	mih: mantineCssLengthSchema.optional(),
 	mah: mantineCssLengthSchema.optional(),
 	maw: mantineCssLengthSchema.optional(),
 	fit: z.enum(["contain", "scale-down"]).optional(),

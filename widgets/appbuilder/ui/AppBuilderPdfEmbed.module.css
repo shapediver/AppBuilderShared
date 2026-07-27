@@ -2,6 +2,9 @@
 	display: block;
 	border: 0;
 	overflow: hidden;
+	border-radius: var(--appbuilder-pdf-embed-radius, var(--mantine-radius-md));
+	/* PDF has no intrinsic size; default comes from theme prop `mih` (50vh). */
+	min-height: var(--appbuilder-pdf-embed-mih, 50vh);
 }
 
 .withBorder {
@@ -9,9 +12,29 @@
 		var(--mantine-color-default-border);
 }
 
+.containHorizontal {
+	height: 100%;
+	min-height: 0;
+}
+
+.containVertical {
+	width: 100%;
+	min-height: var(--appbuilder-pdf-embed-mih, 50vh);
+}
+
+.scaleDownHorizontal {
+	max-height: var(--appbuilder-pdf-embed-mah, 100%);
+}
+
+.scaleDownVertical {
+	max-width: var(--appbuilder-pdf-embed-maw, 100%);
+	min-height: var(--appbuilder-pdf-embed-mih, 50vh);
+}
+
 .embed {
 	display: block;
 	width: 100%;
 	height: 100%;
+	min-height: inherit;
 	border: 0;
 }

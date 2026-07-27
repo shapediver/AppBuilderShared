@@ -1,8 +1,8 @@
 import {useExport} from "@AppBuilderLib/entities/export/model/useExport";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
-import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import {isPdfSrc} from "@AppBuilderLib/widgets/appbuilder/lib/isPdfSrc";
+import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderImage from "./AppBuilderImage";
