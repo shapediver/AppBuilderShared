@@ -43,6 +43,7 @@ import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderLib/widge
 import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderControlsWidgetComponent";
 import {AppBuilderFormWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFormWidgetComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderImage";
+import {AppBuilderPdfEmbedThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderPdfEmbed";
 import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderLineChartWidgetComponent";
 import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderRoundChartWidgetComponent";
 import {AppBuilderSavedStatesWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderSavedStatesWidgetComponent";
@@ -656,6 +657,19 @@ export const useCustomTheme = (props: Props = {}) => {
 				// radius: "md",
 				// fit: "contain",
 				withBorder: true,
+				// mah: "100%",
+				// maw: "100%",
+			}),
+			/**
+			 * AppBuilderPdfEmbed
+			 *
+			 * Native PDF embed for AppBuilder image widgets (object + iframe fallback).
+			 */
+			AppBuilderPdfEmbed: AppBuilderPdfEmbedThemeProps({
+				// radius: "md",
+				// fit: "contain",
+				// withBorder: false,
+				// mih: "50vh",
 				// mah: "100%",
 				// maw: "100%",
 			}),

@@ -1,10 +1,12 @@
 import {useExport} from "@AppBuilderLib/entities/export/model/useExport";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {isPdfSrc} from "@AppBuilderLib/widgets/appbuilder/lib/isPdfSrc";
 import {EXPORT_TYPE} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderImage from "./AppBuilderImage";
+import AppBuilderPdfEmbed from "./AppBuilderPdfEmbed";
 
 interface Props {
 	/**
@@ -14,19 +16,17 @@ interface Props {
 	namespace: string;
 	/** Id or name or displayname of the export to get the image from. */
 	exportId: string;
+	anchor?: string;
+	alt?: string;
+	target?: string;
 }
 
 export default function AppBuilderImageExportWidgetComponent(props: Props) {
-	const {namespace, exportId, ...rest} = props;
-	const {definition, actions} = useExport({namespace, exportId}) ?? {};
+	const {namespace, exportId, anchor, target, alt} = props;
+	const exportData = useExport({namespace, exportId});
+	const definition = exportData?.definition;
+	const actions = exportData?.actions;
 	const notifications = useNotificationStore();
-
-	if (!definition || !actions) {
-		notifications.error({
-			message: `Export ${exportId} not found`,
-		});
-		return <></>;
-	}
 
 	const promiseChain = useRef(Promise.resolve());
 	const objectUrl = useRef<string | undefined>(undefined);
@@ -39,7 +39,8 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 	 * Create an object URL for the given href and set it as the image source.
 	 */
 	const setImageSrcCb = useCallback(
-		(href: string) => {
+		(href: string, responseContentType?: string) => {
+			if (!actions) return;
 			promiseChain.current = promiseChain.current.then(async () => {
 				if (objectUrl.current) {
 					URL.revokeObjectURL(objectUrl.current);
@@ -48,12 +49,14 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 				if (href) {
 					const res = await actions.fetch(href);
 					const blob = await res.blob();
+					// blob: URLs have no .pdf suffix — need MIME for isPdfSrc
+					setContentType(responseContentType || blob.type || undefined);
 					objectUrl.current = URL.createObjectURL(blob);
 				}
 				setImageSrc(objectUrl.current);
 			});
 		},
-		[setImageSrc],
+		[actions],
 	);
 
 	// Register the export to be requested on every parameter change.
@@ -64,11 +67,18 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 				deregisterDefaultExport: state.deregisterDefaultExport,
 			})),
 		);
+
 	useEffect(() => {
+		if (!definition || !actions) {
+			notifications.error({
+				message: `Export ${exportId} not found`,
+			});
+			return;
+		}
 		registerDefaultExport(namespace, definition.id);
 
 		return () => deregisterDefaultExport(namespace, definition.id);
-	}, [namespace, definition]);
+	}, [namespace, definition, actions, exportId, notifications]);
 
 	// Get responses to exports which were requested by default.
 	const responses = useShapeDiverStoreParameters(
@@ -76,6 +86,8 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 	);
 
 	useEffect(() => {
+		if (!definition || !actions) return;
+
 		if (responses && responses[definition.id]) {
 			const response = responses[definition.id];
 			if (
@@ -85,8 +97,7 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 			) {
 				const contentType = response.content[0].contentType;
 				const href = response.content[0].href;
-				setImageSrcCb(href);
-				setContentType(contentType);
+				setImageSrcCb(href, contentType);
 			} else {
 				setImageSrc(undefined);
 				setContentType(undefined);
@@ -106,23 +117,32 @@ export default function AppBuilderImageExportWidgetComponent(props: Props) {
 					const href = response.content[0].href;
 					const contentType = response.content[0].contentType;
 
-					setImageSrcCb(href);
-					setContentType(contentType);
+					setImageSrcCb(href, contentType);
 				} else {
 					setImageSrc(undefined);
 					setContentType(undefined);
 				}
 			});
 		}
-	}, [responses, definition]);
+	}, [responses, definition, actions, setImageSrcCb]);
 
-	if (imageSrc)
+	if (!definition || !actions) {
+		return <></>;
+	}
+
+	if (imageSrc) {
+		if (isPdfSrc(imageSrc, contentType)) {
+			return <AppBuilderPdfEmbed src={imageSrc} alt={alt} />;
+		}
 		return (
 			<AppBuilderImage
 				src={imageSrc}
 				isSvg={contentType === "image/svg+xml"}
-				{...rest}
+				anchor={anchor}
+				target={target}
+				alt={alt}
 			/>
 		);
-	else return <></>;
+	}
+	return <></>;
 }

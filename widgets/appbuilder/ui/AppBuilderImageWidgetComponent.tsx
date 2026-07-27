@@ -1,6 +1,8 @@
 import {IAppBuilderWidgetPropsImage} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {isPdfSrc} from "@AppBuilderLib/widgets/appbuilder/lib/isPdfSrc";
 import AppBuilderImage from "./AppBuilderImage";
 import AppBuilderImageExportWidgetComponent from "./AppBuilderImageExportWidgetComponent";
+import AppBuilderPdfEmbed from "./AppBuilderPdfEmbed";
 
 interface Props extends IAppBuilderWidgetPropsImage {
 	/**
@@ -31,6 +33,9 @@ export default function AppBuilderImageWidgetComponent(props: Props) {
 	};
 
 	if (href) {
+		if (isPdfSrc(href)) {
+			return <AppBuilderPdfEmbed src={href} alt={alt} />;
+		}
 		return (
 			<AppBuilderImage
 				src={href}
