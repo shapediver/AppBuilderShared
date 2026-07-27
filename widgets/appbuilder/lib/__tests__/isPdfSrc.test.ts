@@ -20,6 +20,16 @@ describe("isPdfSrc", () => {
 		expect(isPdfSrc("/relative/doc.PDF")).toBe(true);
 	});
 
+	it("returns true for blob URL with application/pdf contentType", () => {
+		expect(
+			isPdfSrc("blob:http://localhost/abc", "application/pdf"),
+		).toBe(true);
+	});
+
+	it("returns false for blob URL without contentType", () => {
+		expect(isPdfSrc("blob:http://localhost/abc")).toBe(false);
+	});
+
 	it("returns false for images and unrelated types", () => {
 		expect(isPdfSrc("https://cdn.example.com/file.png")).toBe(false);
 		expect(isPdfSrc("data:image/png;base64,AAA")).toBe(false);

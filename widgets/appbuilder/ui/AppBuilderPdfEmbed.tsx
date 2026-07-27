@@ -74,22 +74,18 @@ export default function AppBuilderPdfEmbed(
 
 	const className = [
 		classes.root,
-		withBorder ? classes.withBorder : undefined,
+		withBorder ? classes.withBorder : "",
 		contain && orientation === "horizontal"
 			? classes.containHorizontal
-			: undefined,
-		contain && orientation === "vertical"
-			? classes.containVertical
-			: undefined,
+			: "",
+		contain && orientation === "vertical" ? classes.containVertical : "",
 		!contain && orientation === "horizontal"
 			? classes.scaleDownHorizontal
-			: undefined,
-		!contain && orientation === "vertical"
-			? classes.scaleDownVertical
-			: undefined,
+			: "",
+		!contain && orientation === "vertical" ? classes.scaleDownVertical : "",
 	]
-		.filter(Boolean)
-		.join(" ");
+		.join(" ")
+		.trim();
 
 	// Theme/style props only as CSS variables — no hardcoded visual CSS in JSX.
 	const style = {
@@ -113,6 +109,7 @@ export default function AppBuilderPdfEmbed(
 
 	return (
 		<div className={className} style={style}>
+			{/* Avoid nested iframe — double-fetch same PDF */}
 			<object
 				className={classes.embed}
 				data={src}
@@ -120,17 +117,10 @@ export default function AppBuilderPdfEmbed(
 				title={title}
 				aria-label={title}
 			>
-				<iframe
-					className={classes.embed}
-					src={src}
-					title={title}
-					aria-label={title}
-				>
-					<p>
-						Your browser does not support PDF viewing.{" "}
-						<a href={src}>Download the PDF</a>.
-					</p>
-				</iframe>
+				<p>
+					Your browser does not support PDF viewing.{" "}
+					<a href={src}>Download the PDF</a>.
+				</p>
 			</object>
 		</div>
 	);
