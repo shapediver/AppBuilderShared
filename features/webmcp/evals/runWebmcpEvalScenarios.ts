@@ -1,9 +1,9 @@
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {createModelStateInputSchema} from "../config/createModelState";
 import {importModelStateInputSchema} from "../config/importModelState";
-import {setParameterValuesInputSchema} from "../config/setParameterValues";
 import {listParameterDefinitionsInputSchema} from "../core/listParameterDefinitions";
 import {listSessionsInputSchema} from "../core/listSessions";
+import {setParameterValuesInputSchema} from "../core/setParameterValues";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
 import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
 import {

@@ -4,7 +4,6 @@ import {
 	importModelStateInputSchema,
 	importModelStateSuccessOutputSchema,
 } from "../config/importModelState";
-import {setParameterValuesInputSchema} from "../config/setParameterValues";
 import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
@@ -13,6 +12,7 @@ import {
 	listSessionsInputSchema,
 	listSessionsOutputSchema,
 } from "../core/listSessions";
+import {setParameterValuesInputSchema} from "../core/setParameterValues";
 import {
 	runTool,
 	toolError,

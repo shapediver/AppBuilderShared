@@ -1,11 +1,11 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {SUPPORTED_PARAMETER_TYPES} from "../core/listParameterDefinitions";
 import type {
 	ParameterUpdateInput,
 	SetParameterValuesError,
 	SetParameterValuesOutput,
-} from "../config/setParameterValues";
-import {SUPPORTED_PARAMETER_TYPES} from "../core/listParameterDefinitions";
+} from "../core/setParameterValues";
 import {findParameterByName} from "./findParameterByName";
 import {prepareParameterStoreValue} from "./setParameterValueValidators/prepareParameterStoreValue";
 
