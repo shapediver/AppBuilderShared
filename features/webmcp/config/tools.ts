@@ -15,6 +15,7 @@ export const LIST_SESSIONS_TOOL_DESCRIPTION =
 export const LIST_PARAMETER_DEFINITIONS_TOOL_DESCRIPTION =
 	"Get definitions of parameters whose values can be updated to change the state of the 3D configurator. " +
 	"Optional filter (all | visible), search (case-insensitive substring over id/name/displayname), limit (default 20, max 100), offset (default 0, for pagination), and sessionId; omit sessionId to list all sessions. " +
+	"Only filter, sessionId, search, limit, offset are accepted as input — do NOT send group, sort, or any other key; the schema rejects unknown keys. " +
 	'Prefer narrow `search` and a small `limit` over fetching all parameters — use search whenever you know a parameter name fragment or a target keyword (e.g. search="prong", search="metal", search="stone"). ' +
 	"Only call with filter=all and no search when you must enumerate every parameter (e.g. reset, audit, or unknown target); paginate with offset+limit if needed. " +
 	"When results are truncated (structuredContent.truncated=true), fetch the next page with offset=offset+limit, or refine search to narrow. " +
