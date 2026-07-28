@@ -1,4 +1,4 @@
-import {z} from "@AppBuilderLib/shared/lib/zod";
+import {z, ZodError, type ZodType} from "@AppBuilderLib/shared/lib/zod";
 import {createModelStateInputSchema} from "../core/createModelState";
 import {importModelStateInputSchema} from "../core/importModelState";
 import {listParameterDefinitionsInputSchema} from "../core/listParameterDefinitions";
@@ -6,14 +6,76 @@ import {listSessionsInputSchema} from "../core/listSessions";
 import {setParameterValuesInputSchema} from "../core/setParameterValues";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
 import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
-import {
-	runTool,
-	toolError,
-	toolSuccess,
-	type ToolResponse,
-} from "../lib/toolResponse";
 import {allParameters, EVAL_NAMESPACE} from "./__fixtures__/parameters";
 import evalScenariosJson from "./evals.json";
+
+// Local envelope helpers for eval runner until Task 10/11 migrate evals
+// onto the adapter path (lib/toolResponse.ts deleted in Task 9 cutover).
+type ToolContentItem = {type: "text"; text: string};
+type ToolResponse = {
+	content: ToolContentItem[];
+	structuredContent?: Record<string, unknown>;
+	isError?: true;
+};
+
+function toolSuccess(
+	text: string,
+	structuredContent?: Record<string, unknown>,
+): ToolResponse {
+	return {
+		content: [{type: "text", text}],
+		...(structuredContent !== undefined ? {structuredContent} : {}),
+	};
+}
+
+function toolError(
+	text: string,
+	structuredContent?: Record<string, unknown>,
+): ToolResponse {
+	return {
+		content: [{type: "text", text}],
+		...(structuredContent !== undefined ? {structuredContent} : {}),
+		isError: true,
+	};
+}
+
+function toolZodError(zodError: ZodError): ToolResponse {
+	const path = zodError.issues[0]?.path.join(".") || "input";
+	return toolError(
+		`Error: Invalid input data.\nRecovery: Fix ${path} and try again.`,
+		{error: zodError.issues},
+	);
+}
+
+async function runTool<T>(
+	schema: ZodType<T>,
+	input: unknown,
+	executor: (parsed: T) => Promise<ToolResponse> | ToolResponse,
+): Promise<ToolResponse> {
+	const inputObj = input ?? {};
+	let parsed: T;
+	try {
+		parsed = schema.parse(inputObj);
+	} catch (e) {
+		if (e instanceof ZodError) {
+			return toolZodError(e);
+		}
+		return toolError(
+			`Error: Invalid input data.\nRecovery: Fix input and try again.`,
+			{error: e instanceof Error ? e.message : String(e)},
+		);
+	}
+
+	try {
+		return await executor(parsed);
+	} catch (e) {
+		const message = e instanceof Error ? e.message : String(e);
+		return toolError(
+			`Error: ${message}\nRecovery: Check the input and try again.`,
+			{error: message},
+		);
+	}
+}
 
 export interface EvalExpect {
 	applied?: string[];

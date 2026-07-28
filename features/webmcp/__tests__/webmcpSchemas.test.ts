@@ -1,5 +1,3 @@
-import {ZodError} from "@AppBuilderLib/shared/lib/zod";
-
 jest.mock("@AppBuilderLib/entities/parameter/lib/parameterStates", () => ({
 	getParameterStates: jest.fn(),
 }));
@@ -18,12 +16,6 @@ import {
 	listSessionsOutputSchema,
 } from "../core/listSessions";
 import {setParameterValuesInputSchema} from "../core/setParameterValues";
-import {
-	runTool,
-	toolError,
-	toolSuccess,
-	toolZodError,
-} from "../lib/toolResponse";
 
 describe("webmcp input schemas", () => {
 	describe("listSessionsInputSchema", () => {
@@ -200,62 +192,6 @@ describe("webmcp input schemas", () => {
 				remaining: 3,
 				nextOffset: 1,
 			});
-		});
-	});
-
-	describe("toolResponse helpers", () => {
-		it("toolSuccess builds content + structuredContent", () => {
-			expect(toolSuccess("ok", {foo: 1})).toEqual({
-				content: [{type: "text", text: "ok"}],
-				structuredContent: {foo: 1},
-			});
-		});
-
-		it("toolError sets isError", () => {
-			expect(toolError("Error: boom\nRecovery: retry")).toEqual({
-				content: [{type: "text", text: "Error: boom\nRecovery: retry"}],
-				isError: true,
-			});
-		});
-
-		it("toolZodError keeps issues as object, not stringified", () => {
-			let zodError: ZodError;
-			try {
-				listParameterDefinitionsInputSchema.parse({filter: "hidden"});
-				throw new Error("expected parse to throw");
-			} catch (e) {
-				zodError = e as ZodError;
-			}
-
-			const result = toolZodError(zodError);
-			expect(result.isError).toBe(true);
-			expect(result.content[0].text).toContain("Invalid input data");
-			expect(result.content[0].text).toContain("Recovery: Fix filter");
-			expect(Array.isArray(result.structuredContent?.error)).toBe(true);
-			expect(typeof result.structuredContent?.error === "string").toBe(
-				false,
-			);
-		});
-
-		it("runTool separates zod parse errors from execution errors", async () => {
-			const zodResult = await runTool(
-				listParameterDefinitionsInputSchema,
-				{visibleOnly: true},
-				() => toolSuccess("should not run"),
-			);
-			expect(zodResult.isError).toBe(true);
-			expect(zodResult.content[0].text).toContain("Invalid input data");
-
-			const execResult = await runTool(
-				listParameterDefinitionsInputSchema,
-				{},
-				() => {
-					throw new Error("runtime failed");
-				},
-			);
-			expect(execResult.isError).toBe(true);
-			expect(execResult.content[0].text).toContain("runtime failed");
-			expect(execResult.content[0].text).toContain("Recovery:");
 		});
 	});
 
