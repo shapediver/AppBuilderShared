@@ -35,6 +35,7 @@ export interface EvalExpect {
 	sessionIds?: string[];
 	howtoPresent?: boolean;
 	contentIncludes?: string;
+	truncated?: boolean;
 }
 
 export interface EvalScenario {
@@ -50,6 +51,19 @@ export function loadWebmcpEvalScenarios(): EvalScenario[] {
 }
 
 const EVAL_NAMESPACES = [EVAL_NAMESPACE];
+const DEFAULT_LIMIT = 20;
+
+function matchesSearch(
+	definition: {id: string; name: string; displayname?: string},
+	search: string,
+): boolean {
+	const needle = search.toLowerCase();
+	return (
+		definition.id.toLowerCase().includes(needle) ||
+		definition.name.toLowerCase().includes(needle) ||
+		(definition.displayname?.toLowerCase().includes(needle) ?? false)
+	);
+}
 
 function runListScenario(
 	input: Record<string, unknown>,
@@ -70,19 +84,37 @@ function runListScenario(
 		const targetNamespaces =
 			parsed.sessionId !== undefined ? [parsed.sessionId] : namespaces;
 
+		const search = parsed.search?.trim();
 		const parameters = targetNamespaces.flatMap((sessionId) => {
 			let params = sessionId === EVAL_NAMESPACE ? allParameters : [];
 			if (filter === "visible") {
 				params = params.filter((p) => !p.definition.hidden);
+			}
+			if (search) {
+				params = params.filter((p) =>
+					matchesSearch(p.definition, search),
+				);
 			}
 			return params.map((param) =>
 				mapParameterDefinition(param, sessionId),
 			);
 		});
 
+		const limit = parsed.limit ?? DEFAULT_LIMIT;
+		const offset = parsed.offset ?? 0;
+		const total = parameters.length;
+		const page = parameters.slice(offset, offset + limit);
+		const truncated = offset + limit < total;
+
+		const text = truncated
+			? `Found ${page.length} parameter definitions for ${targetNamespaces.length} sessions (page starting at offset ${offset}; ${total - offset - page.length} more remain). Use set_parameter_values to update the state of parameters. More parameters match beyond this page. Raise offset (e.g. offset=${offset + limit}) or narrow your search.`
+			: `Found ${page.length} parameter definitions for ${targetNamespaces.length} sessions. Use set_parameter_values to update the state of parameters.`;
+
 		return toolSuccess(
-			`Found ${parameters.length} parameter definitions for ${targetNamespaces.length} sessions. Use set_parameter_values to update the state of parameters.`,
-			{parameters},
+			text,
+			truncated
+				? {parameters: page, truncated: true}
+				: {parameters: page},
 		);
 	});
 }
@@ -280,6 +312,17 @@ async function assertListScenario(
 		const text = result.content.map((c) => c.text).join("\n");
 		if (!text.includes(expect.contentIncludes)) {
 			return `expected content to include "${expect.contentIncludes}"`;
+		}
+	}
+
+	if (expect.truncated === true) {
+		if (result.structuredContent?.truncated !== true) {
+			return "expected structuredContent.truncated true";
+		}
+	}
+	if (expect.truncated === false) {
+		if (result.structuredContent?.truncated === true) {
+			return "expected structuredContent.truncated not set";
 		}
 	}
 
