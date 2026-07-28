@@ -1,16 +1,47 @@
-import {createModelStateInputSchema} from "../config/createModelState";
+jest.mock("@AppBuilderLib/entities/parameter/lib/parameterStates", () => ({
+	getParameterStates: jest.fn(),
+}));
+
+import {createModelStateInputSchema} from "../core/createModelState";
 import {
 	importModelStateInputSchema,
-	importModelStateSuccessOutputSchema,
-} from "../config/importModelState";
+	importModelStateOutputSchema,
+} from "../core/importModelState";
 import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
-} from "../config/listParameterDefinitions";
-import {setParameterValuesInputSchema} from "../config/setParameterValues";
-import {formatToolInputError} from "../lib/formatToolInputError";
+} from "../core/listParameterDefinitions";
+import {
+	listSessionsInputSchema,
+	listSessionsOutputSchema,
+} from "../core/listSessions";
+import {setParameterValuesInputSchema} from "../core/setParameterValues";
 
 describe("webmcp input schemas", () => {
+	describe("listSessionsInputSchema", () => {
+		it("accepts empty object", () => {
+			expect(listSessionsInputSchema.parse({})).toEqual({});
+		});
+
+		it("rejects unknown keys", () => {
+			expect(() =>
+				listSessionsInputSchema.parse({sessionId: "x"}),
+			).toThrow();
+		});
+	});
+
+	describe("listSessionsOutputSchema", () => {
+		it("accepts structured sessions output", () => {
+			expect(
+				listSessionsOutputSchema.parse({
+					sessions: [{sessionId: "session-1"}],
+				}),
+			).toEqual({
+				sessions: [{sessionId: "session-1"}],
+			});
+		});
+	});
+
 	describe("listParameterDefinitionsInputSchema", () => {
 		it("accepts valid input", () => {
 			expect(
@@ -39,56 +70,127 @@ describe("webmcp input schemas", () => {
 				listParameterDefinitionsInputSchema.parse({visibleOnly: true}),
 			).toThrow();
 		});
+
+		it("accepts search and limit", () => {
+			expect(
+				listParameterDefinitionsInputSchema.parse({
+					search: "width",
+					limit: 5,
+				}),
+			).toEqual({
+				search: "width",
+				limit: 5,
+			});
+		});
+
+		it("rejects non-positive limit", () => {
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({limit: 0}),
+			).toThrow();
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({limit: -1}),
+			).toThrow();
+		});
+
+		it("rejects non-integer limit", () => {
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({limit: 1.5}),
+			).toThrow();
+		});
+
+		it("rejects limit > 100", () => {
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({limit: 101}),
+			).toThrow();
+		});
+
+		it("accepts offset 0 and positive offset", () => {
+			expect(
+				listParameterDefinitionsInputSchema.parse({offset: 0}),
+			).toEqual({offset: 0});
+			expect(
+				listParameterDefinitionsInputSchema.parse({offset: 40}),
+			).toEqual({offset: 40});
+		});
+
+		it("accepts offset with limit for pagination", () => {
+			expect(
+				listParameterDefinitionsInputSchema.parse({
+					limit: 20,
+					offset: 20,
+				}),
+			).toEqual({limit: 20, offset: 20});
+		});
+
+		it("rejects negative offset", () => {
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({offset: -1}),
+			).toThrow();
+		});
+
+		it("rejects non-integer offset", () => {
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({offset: 1.5}),
+			).toThrow();
+		});
 	});
 
 	describe("listParameterDefinitionsOutputSchema", () => {
-		it("accepts parameters-only output", () => {
+		it("accepts structured parameters output with sessionCount and offset", () => {
 			expect(
 				listParameterDefinitionsOutputSchema.parse({
 					parameters: [
 						{
 							id: "width",
+							sessionId: "session-1",
 							name: "Width",
 							type: "Int",
+							howto: "Use a number in range [0, 10].",
 							settable: true,
 						},
 					],
+					sessionCount: 1,
+					offset: 0,
 				}),
 			).toEqual({
 				parameters: [
 					{
 						id: "width",
+						sessionId: "session-1",
 						name: "Width",
 						type: "Int",
+						howto: "Use a number in range [0, 10].",
 						settable: true,
 					},
 				],
+				sessionCount: 1,
+				offset: 0,
 			});
 		});
 
-		it("accepts optional errors array", () => {
+		it("accepts truncated page with remaining and nextOffset", () => {
 			expect(
 				listParameterDefinitionsOutputSchema.parse({
-					parameters: [],
-					errors: [{name: "*", message: "Invalid input"}],
+					parameters: [
+						{
+							id: "width",
+							sessionId: "session-1",
+							name: "Width",
+							type: "Int",
+							howto: "Use a number in range [0, 10].",
+							settable: true,
+						},
+					],
+					truncated: true,
+					sessionCount: 1,
+					offset: 0,
+					remaining: 3,
+					nextOffset: 1,
 				}),
-			).toEqual({
-				parameters: [],
-				errors: [{name: "*", message: "Invalid input"}],
-			});
-		});
-	});
-
-	describe("formatToolInputError", () => {
-		it("formats Error instances", () => {
-			expect(formatToolInputError(new Error("bad input"))).toEqual({
-				errors: [{name: "*", message: "bad input"}],
-			});
-		});
-
-		it("formats non-Error values", () => {
-			expect(formatToolInputError("bad input")).toEqual({
-				errors: [{name: "*", message: "bad input"}],
+			).toMatchObject({
+				truncated: true,
+				remaining: 3,
+				nextOffset: 1,
 			});
 		});
 	});
@@ -155,10 +257,10 @@ describe("webmcp input schemas", () => {
 		});
 	});
 
-	describe("importModelStateSuccessOutputSchema", () => {
+	describe("importModelStateOutputSchema", () => {
 		it("accepts success output with optional invalidParameters", () => {
 			expect(
-				importModelStateSuccessOutputSchema.parse({
+				importModelStateOutputSchema.parse({
 					success: true,
 					appliedParameterIds: ["width"],
 					invalidParameters: [
@@ -184,7 +286,7 @@ describe("webmcp input schemas", () => {
 
 		it("accepts empty appliedParameterIds", () => {
 			expect(
-				importModelStateSuccessOutputSchema.parse({
+				importModelStateOutputSchema.parse({
 					success: true,
 					appliedParameterIds: [],
 				}),

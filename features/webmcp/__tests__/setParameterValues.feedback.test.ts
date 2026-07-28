@@ -119,7 +119,7 @@ describe("resolveAndUpdate", () => {
 				{
 					name: "Width",
 					message:
-						'Value 200 is not valid for parameter "Width" (Float). Use a number in range [0, 100].',
+						'Value 200 is not valid for parameter "Width" (Float). Use a number in range [0, 100]. Tool validates min/max; out-of-range values are rejected.',
 				},
 			],
 		});
@@ -263,6 +263,41 @@ describe("resolveAndUpdate", () => {
 		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
 			[namespace]: {material: "1"},
 		});
+	});
+
+	it("rejects out-of-range StringList index even when isValid does not range-check", async () => {
+		// Real ShapeDiver isValid accepts any numeric string for StringList
+		// without checking choices bounds — reproduce that here.
+		const isValid = jest.fn(() => true);
+		const param = createMockParameter({
+			definition: {
+				id: "stone",
+				name: "Stone",
+				type: ResParameterType.STRINGLIST,
+				choices: [
+					"No Secret Stone",
+					"12 O'Clock",
+					"6 O'Clock",
+					"Offset",
+				],
+				defval: 0,
+			} as unknown as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: "0"} as IShapeDiverParameter<any>["state"],
+			actions: {isValid} as IShapeDiverParameter<any>["actions"],
+		});
+
+		const result = await resolveAndUpdate(
+			namespace,
+			getParametersFor({[namespace]: [param]}),
+			[{name: "Stone", value: 12}],
+			batchParameterValueUpdate,
+		);
+
+		expect(result.applied).toEqual([]);
+		expect(result.errors).toHaveLength(1);
+		expect(result.errors[0].name).toBe("Stone");
+		expect(result.errors[0].message).toMatch(/0-based integer index/);
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
 	});
 
 	it("looks up parameters in update sessionId namespace", async () => {

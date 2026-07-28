@@ -1,3 +1,7 @@
+jest.mock("@AppBuilderLib/entities/parameter/lib/parameterStates", () => ({
+	getParameterStates: jest.fn(),
+}));
+
 import {
 	loadWebmcpEvalScenarios,
 	runWebmcpEvalScenario,

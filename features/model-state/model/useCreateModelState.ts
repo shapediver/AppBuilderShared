@@ -9,6 +9,7 @@ import {
 	ICreateModelStateData,
 	ICreateModelStateResult,
 } from "../config/createModelState";
+import {createModelStateCore} from "../lib/createModelStateCore";
 import type {CreateModelStateHookThemeDefaultProps} from "./useCreateModelState.types";
 type CreateModelStateHookThemePropsType =
 	Partial<CreateModelStateHookThemeDefaultProps>;
@@ -95,122 +96,30 @@ export function useCreateModelState(props: Props) {
 				viewportAccessFunctions?.getScreenshot ?? getScreenshot;
 			const currentConvertToGlTF =
 				viewportAccessFunctions?.convertToGlTF ?? convertToGlTF;
-			const {markSaved = true} = options ?? {};
+
 			const {
 				parameterNamesToInclude = parameterNamesToIncludeDefault,
 				parameterNamesToExclude = parameterNamesToExcludeDefault,
-				includeImage,
-				image,
-				data,
-				includeGltf,
+				...restProps
 			} = props;
-			const sessionApi = sessions[sessionId];
-			if (!sessionApi) return {};
-			const parameterValues = Object.values(sessionApi.parameters)
-				.filter(
-					(p) =>
-						(!parameterNamesToInclude ||
-							parameterNamesToInclude.includes(p.name) ||
-							(p.displayname &&
-								parameterNamesToInclude.includes(
-									p.displayname,
-								))) &&
-						(!parameterNamesToExclude ||
-							!parameterNamesToExclude.includes(p.name) ||
-							(p.displayname &&
-								!parameterNamesToExclude.includes(
-									p.displayname,
-								))) &&
-						(!parameterNamesToAlwaysExclude.includes(p.name) ||
-							(p.displayname &&
-								!parameterNamesToAlwaysExclude.includes(
-									p.displayname,
-								))),
-				)
-				.reduce(
-					(params, p) => {
-						params[p.id] = p.value;
-						return params;
-					},
-					{} as {[key: string]: unknown},
-				);
 
-			// create the image for the model state (if includeImage is true)
-			// if an image ref is provided, use that (unless includeImage is false)
-			// if the image ref points to an export, try to get the export from the session and request it
-			// otherwise, if no image ref is provided, use getScreenshot (if available)
-			// if includeImage is false or undefined, do not create an image
-			let modelStateImage: string | undefined = undefined;
-			if (includeImage !== false && image) {
-				if (image.href) {
-					modelStateImage = image.href;
-				} else if (image.export) {
-					const exportSession =
-						sessions[image.export.sessionId || sessionId];
-					if (exportSession) {
-						const exp = Object.values(exportSession.exports).find(
-							(e) =>
-								e.id === image.export?.name ||
-								e.name === image.export?.name ||
-								e.displayname === image.export?.name,
-						);
-						if (exp) {
-							const exportResult = await exp.request();
-							if (
-								exportResult.content &&
-								exportResult.content[0] &&
-								exportResult.content[0].href
-							) {
-								modelStateImage = exportResult.content[0].href;
-							}
-						}
-					}
-				}
-			} else if (includeImage && currentGetScreenshot) {
-				modelStateImage = await currentGetScreenshot();
-			}
-
-			const modelStateId = sessionApi
-				? await sessionApi.createModelState(
-						parameterValues,
-						true, // <-- omitSessionParameterValues
-						modelStateImage, // <-- screenshot or provided image
-						data, // <-- custom data
-						includeGltf && currentConvertToGlTF
-							? async () => currentConvertToGlTF()
-							: undefined,
-					)
-				: undefined;
-
-			// creating a model state persists the current configuration,
-			// so there are no unsaved changes anymore (unless the caller opted out)
-			if (modelStateId && markSaved) clearUnsavedChanges();
-
-			const modelViewUrl = sessionApi.modelViewUrl.endsWith("/")
-				? sessionApi.modelViewUrl.substring(
-						0,
-						sessionApi.modelViewUrl.length - 1,
-					)
-				: sessionApi.modelViewUrl;
-
-			return {
-				modelStateId,
-				screenshot: modelStateImage,
-				modelViewUrl,
-				modelStateImageUrl:
-					modelStateImage && modelStateId
-						? modelViewUrl +
-							`/api/v2/model-state/${modelStateId}/image`
-						: undefined,
-				modelStateGltfUrl:
-					includeGltf && modelStateId
-						? modelViewUrl + `/api/v2/ar-scene/${modelStateId}/gltf`
-						: undefined,
-				modelStateUsdzUrl:
-					includeGltf && modelStateId
-						? modelViewUrl + `/api/v2/ar-scene/${modelStateId}/usdz`
-						: undefined,
-			};
+			return createModelStateCore({
+				sessionApi: sessions[sessionId],
+				sessions,
+				sessionId,
+				viewportAccessFunctions: {
+					getScreenshot: currentGetScreenshot,
+					convertToGlTF: currentConvertToGlTF,
+				},
+				clearUnsavedChanges,
+				parameterNamesToAlwaysExclude,
+				props: {
+					...restProps,
+					parameterNamesToInclude,
+					parameterNamesToExclude,
+				},
+				markSaved: options?.markSaved ?? true,
+			});
 		},
 		[
 			sessions,
