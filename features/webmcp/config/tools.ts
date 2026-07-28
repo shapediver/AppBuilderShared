@@ -14,11 +14,13 @@ export const LIST_SESSIONS_TOOL_DESCRIPTION =
 
 export const LIST_PARAMETER_DEFINITIONS_TOOL_DESCRIPTION =
 	"Get definitions of parameters whose values can be updated to change the state of the 3D configurator. " +
-	"Optional filter (all | visible) and sessionId; omit sessionId to list all sessions. " +
+	"Optional filter (all | visible), search (case-insensitive substring over id/name/displayname), limit (default 20, max 100), offset (default 0, for pagination), and sessionId; omit sessionId to list all sessions. " +
+	'Prefer narrow `search` and a small `limit` over fetching all parameters — use search whenever you know a parameter name fragment or a target keyword (e.g. search="prong", search="metal", search="stone"). ' +
+	"Only call with filter=all and no search when you must enumerate every parameter (e.g. reset, audit, or unknown target); paginate with offset+limit if needed. " +
+	"When results are truncated (structuredContent.truncated=true), fetch the next page with offset=offset+limit, or refine search to narrow. " +
 	"Each parameter has a `howto` field stating the exact value format set_parameter_values expects. " +
 	"Trust `type` over the display name (e.g. a parameter named Color may still be StringList). " +
-	"`settable=false` means read-only via set_parameter_values (unsupported type). " +
-	"Call with filter=all first when you do not know parameter names or value rules.";
+	"`settable=false` means read-only via set_parameter_values (unsupported type).";
 
 export const SET_PARAMETER_VALUES_TOOL_DESCRIPTION =
 	"Set values of parameters, trigger execution, and wait for the 3D configurator to update. " +

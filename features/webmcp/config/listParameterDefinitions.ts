@@ -47,6 +47,29 @@ export const listParameterDefinitionsInputSchema = z.strictObject({
 		.describe(
 			"Optional session namespace. Omit to list parameter definitions for all sessions.",
 		),
+	search: z
+		.string()
+		.optional()
+		.describe(
+			"Case-insensitive substring filter over parameter id, name, and displayname. Omit to return all.",
+		),
+	limit: z
+		.number()
+		.int()
+		.positive()
+		.max(100)
+		.optional()
+		.describe(
+			"Cap on number of parameters returned per page. Default 20. If more match beyond this page, structuredContent.truncated is true.",
+		),
+	offset: z
+		.number()
+		.int()
+		.min(0)
+		.optional()
+		.describe(
+			"Number of matching parameters to skip before the returned page (0-based). Default 0. Use with limit to paginate truncated results.",
+		),
 });
 
 export const listParameterDefinitionsOutputSchema = z.object({
@@ -59,6 +82,7 @@ export const listParameterDefinitionsOutputSchema = z.object({
 	structuredContent: z
 		.object({
 			parameters: z.array(ListParameterDefinitionItemSchema).optional(),
+			truncated: z.boolean().optional(),
 			error: z.unknown().optional(),
 		})
 		.optional(),

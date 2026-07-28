@@ -83,6 +83,69 @@ describe("webmcp input schemas", () => {
 				listParameterDefinitionsInputSchema.parse({visibleOnly: true}),
 			).toThrow();
 		});
+
+		it("accepts search and limit", () => {
+			expect(
+				listParameterDefinitionsInputSchema.parse({
+					search: "width",
+					limit: 5,
+				}),
+			).toEqual({
+				search: "width",
+				limit: 5,
+			});
+		});
+
+		it("rejects non-positive limit", () => {
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({limit: 0}),
+			).toThrow();
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({limit: -1}),
+			).toThrow();
+		});
+
+		it("rejects non-integer limit", () => {
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({limit: 1.5}),
+			).toThrow();
+		});
+
+		it("rejects limit > 100", () => {
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({limit: 101}),
+			).toThrow();
+		});
+
+		it("accepts offset 0 and positive offset", () => {
+			expect(
+				listParameterDefinitionsInputSchema.parse({offset: 0}),
+			).toEqual({offset: 0});
+			expect(
+				listParameterDefinitionsInputSchema.parse({offset: 40}),
+			).toEqual({offset: 40});
+		});
+
+		it("accepts offset with limit for pagination", () => {
+			expect(
+				listParameterDefinitionsInputSchema.parse({
+					limit: 20,
+					offset: 20,
+				}),
+			).toEqual({limit: 20, offset: 20});
+		});
+
+		it("rejects negative offset", () => {
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({offset: -1}),
+			).toThrow();
+		});
+
+		it("rejects non-integer offset", () => {
+			expect(() =>
+				listParameterDefinitionsInputSchema.parse({offset: 1.5}),
+			).toThrow();
+		});
 	});
 
 	describe("listParameterDefinitionsOutputSchema", () => {

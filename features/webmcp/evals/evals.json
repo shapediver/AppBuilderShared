@@ -77,8 +77,96 @@
 		"expect": {"inputSchemaReject": true}
 	},
 	{
-		"id": "set_valid_int",
-		"tool": "set_parameter_values",
+		"id": "list_search_match",
+		"tool": "list_parameter_definitions",
+		"description": "Search substring matches width-int",
+		"input": {"search": "width"},
+		"expect": {
+			"parametersCount": 1,
+			"parameterIds": ["width-int"]
+		}
+	},
+	{
+		"id": "list_search_no_match",
+		"tool": "list_parameter_definitions",
+		"description": "Search with no matches returns empty",
+		"input": {"search": "zzzznotfound"},
+		"expect": {"parametersCount": 0}
+	},
+	{
+		"id": "list_search_case_insensitive",
+		"tool": "list_parameter_definitions",
+		"description": "Search is case-insensitive against Width displayname",
+		"input": {"search": "WIDTH"},
+		"expect": {
+			"parametersCount": 1,
+			"parameterIds": ["width-int"]
+		}
+	},
+	{
+		"id": "list_search_displayname",
+		"tool": "list_parameter_definitions",
+		"description": "Search matches paint-color via Paint name/displayname",
+		"input": {"search": "paint"},
+		"expect": {
+			"parametersCount": 1,
+			"parameterIds": ["paint-color"]
+		}
+	},
+	{
+		"id": "list_limit_truncates",
+		"tool": "list_parameter_definitions",
+		"description": "Limit 2 truncates when more match",
+		"input": {"limit": 2},
+		"expect": {
+			"parametersCount": 2,
+			"contentIncludes": "More parameters match",
+			"truncated": true
+		}
+	},
+	{
+		"id": "list_limit_no_truncate",
+		"tool": "list_parameter_definitions",
+		"description": "Limit above total does not truncate",
+		"input": {"limit": 10},
+		"expect": {
+			"parametersCount": 7,
+			"truncated": false
+		}
+	},
+	{
+		"id": "list_offset_paginates",
+		"tool": "list_parameter_definitions",
+		"description": "offset+limit returns second page and stays truncated when more remain",
+		"input": {"limit": 2, "offset": 2},
+		"expect": {
+			"parametersCount": 2,
+			"contentIncludes": "More parameters match",
+			"truncated": true
+		}
+	},
+	{
+		"id": "list_offset_last_page",
+		"tool": "list_parameter_definitions",
+		"description": "offset reaching the tail returns remaining params without truncation",
+		"input": {"limit": 5, "offset": 5},
+		"expect": {
+			"parametersCount": 2,
+			"truncated": false
+		}
+	},
+	{
+		"id": "list_offset_beyond_end",
+		"tool": "list_parameter_definitions",
+		"description": "offset beyond total returns empty page, no truncation",
+		"input": {"limit": 5, "offset": 50},
+		"expect": {
+			"parametersCount": 0,
+			"truncated": false
+		}
+	},
+	{
+		"id": "set_valid_int",		"tool": "set_parameter_values",
 		"description": "Set INT within valid range",
 		"input": {
 			"updates": [{"name": "Width", "value": 7}]
