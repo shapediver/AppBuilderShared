@@ -1,5 +1,5 @@
 import {z} from "@AppBuilderLib/shared/lib/zod";
-import {zodToJsonSchema} from "../lib/zodToJsonSchema";
+import {zodToJsonSchema} from "../adapters/webmcp/zodToJsonSchema";
 
 describe("zodToJsonSchema", () => {
 	it("converts object schema with optional fields, arrays, enums, unions, and records", () => {
@@ -56,7 +56,14 @@ describe("zodToJsonSchema", () => {
 					additionalProperties: {},
 				},
 			},
-			required: ["name", "enabled", "filter", "value", "tags", "metadata"],
+			required: [
+				"name",
+				"enabled",
+				"filter",
+				"value",
+				"tags",
+				"metadata",
+			],
 			additionalProperties: false,
 		});
 	});
