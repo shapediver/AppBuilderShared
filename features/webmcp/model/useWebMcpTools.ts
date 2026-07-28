@@ -4,21 +4,17 @@ import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/use
 import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {registerWebMcpTools} from "../adapters/webmcp/registerWebMcpTools";
+import {buildWebMcpDeps} from "../adapters/webmcp/webmcpDeps";
 import {
 	getModelContext,
 	getWebMcpEnvironment,
 	isWebMcpAvailable,
 } from "../lib/webmcpAvailability";
-import {registerCreateModelStateTool} from "./tools/registerCreateModelStateTool";
-import {registerImportModelStateTool} from "./tools/registerImportModelStateTool";
-import {registerListParameterDefinitionsTool} from "./tools/registerListParameterDefinitionsTool";
-import {registerListSessionsTool} from "./tools/registerListSessionsTool";
-import {registerSetParameterValuesTool} from "./tools/registerSetParameterValuesTool";
 import type {
 	UseWebMcpToolsProps,
 	UseWebMcpToolsResult,
 } from "./useWebMcpTools.types";
-import type {WebMcpToolsDeps} from "./webMcpToolsDeps";
 
 export function useWebMcpTools(
 	props: UseWebMcpToolsProps,
@@ -81,48 +77,25 @@ export function useWebMcpTools(
 		const controller = new AbortController();
 		let cancelled = false;
 
-		const deps: WebMcpToolsDeps = {
+		const refs = {
 			namespaceRef,
-			getLiveParameters: (targetNamespace) =>
-				Object.values(getParametersRef.current(targetNamespace)).map(
-					(store) => store.getState(),
-				),
+			getParametersRef,
+			batchParameterValueUpdateRef,
+			createModelStateRef,
+			importModelStateRef,
 			listParameterNamespaces: () =>
 				Object.keys(
 					useShapeDiverStoreParameters.getState().parameterStores,
 				),
-			batchParameterValueUpdateRef,
-			createModelStateRef,
-			importModelStateRef,
 		};
 
 		const registerTools = async () => {
 			const modelContext = getModelContext();
 
 			try {
-				await registerListSessionsTool(
+				await registerWebMcpTools(
 					modelContext,
-					deps,
-					controller.signal,
-				);
-				await registerListParameterDefinitionsTool(
-					modelContext,
-					deps,
-					controller.signal,
-				);
-				await registerSetParameterValuesTool(
-					modelContext,
-					deps,
-					controller.signal,
-				);
-				await registerCreateModelStateTool(
-					modelContext,
-					deps,
-					controller.signal,
-				);
-				await registerImportModelStateTool(
-					modelContext,
-					deps,
+					() => buildWebMcpDeps(refs),
 					controller.signal,
 				);
 
