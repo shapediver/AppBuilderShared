@@ -23,7 +23,7 @@ function toolError(
 	};
 }
 
-function toWebMcpError(tool: AnyToolDef, e: unknown): ToolResponse {
+function toWebMcpError(_tool: AnyToolDef, e: unknown): ToolResponse {
 	if (e instanceof ZodError) {
 		const path = e.issues[0]?.path.join(".") || "input";
 		return toolError(
@@ -32,20 +32,10 @@ function toWebMcpError(tool: AnyToolDef, e: unknown): ToolResponse {
 		);
 	}
 	if (e instanceof ToolExecutionError) {
-		return toolError(
-			e.message.startsWith("Error:")
-				? e.message
-				: `Error: ${e.message}\nRecovery: Check the input and try again.`,
-			e.structuredContent ?? {error: e.message},
-		);
+		return toolError(e.message, e.structuredContent ?? {error: e.message});
 	}
 	const message = e instanceof Error ? e.message : String(e);
-	return toolError(
-		message.startsWith("Error:")
-			? message
-			: `Error: ${message}\nRecovery: Check the input and try again.`,
-		{error: message},
-	);
+	return toolError(message, {error: message});
 }
 
 export async function registerWebMcpTools(

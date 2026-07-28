@@ -6,10 +6,17 @@ import type {
 	ICreateModelStateResult,
 } from "@AppBuilderLib/features/model-state/config/createModelState";
 
+/**
+ * Store-backed createModelState for Mastra (non-React).
+ * Live WebMCP gets `parameterNamesToAlwaysExclude` from the theme via
+ * `useProps("CreateModelStateHook", …)`. Mastra hosts must pass the same
+ * list (e.g. `["context"]` from themeOverrides) — it is not read from Mantine here.
+ */
 export async function createModelStateFromStores(
 	namespace: string,
 	props: ICreateModelStateData,
 	viewportId = "viewport_1",
+	parameterNamesToAlwaysExclude: string[] = [],
 ): Promise<ICreateModelStateResult> {
 	const sessions = useShapeDiverStoreSession.getState().sessions;
 	const sessionApi = sessions[namespace];
@@ -31,7 +38,6 @@ export async function createModelStateFromStores(
 		data,
 		includeGltf,
 	} = props;
-	const parameterNamesToAlwaysExclude: string[] = [];
 
 	const parameterValues = Object.values(sessionApi.parameters)
 		.filter(
