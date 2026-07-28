@@ -1,3 +1,10 @@
+import {createModelStateTool} from "./createModelState";
+import {importModelStateTool} from "./importModelState";
+import {listParameterDefinitionsTool} from "./listParameterDefinitions";
+import {listSessionsTool} from "./listSessions";
+import {setParameterValuesTool} from "./setParameterValues";
+import type {AnyToolDef} from "./toolDefinition";
+
 export const LIST_SESSIONS_TOOL_NAME = "list_sessions";
 
 export const LIST_PARAMETER_DEFINITIONS_TOOL_NAME =
@@ -42,3 +49,11 @@ export const IMPORT_MODEL_STATE_TOOL_DESCRIPTION =
 	"Load configurator state from a modelStateId and wait for the update to complete. " +
 	"Input: { modelStateId } from create_model_state (or URL containing modelStateId). " +
 	"Use list_parameter_definitions after import to verify currentValue.";
+
+export const ALL_TOOLS: readonly AnyToolDef[] = [
+	listSessionsTool,
+	listParameterDefinitionsTool,
+	setParameterValuesTool,
+	createModelStateTool,
+	importModelStateTool,
+];
