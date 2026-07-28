@@ -40,12 +40,12 @@ export function howtoForParameterType(
 					? "odd "
 					: "";
 		const article = parity ? "a" : "an";
-		return `Use ${article} ${parity}integer in range [${min}, ${max}].`;
+		return `Use ${article} ${parity}integer in range [${min}, ${max}]. Tool validates min/max and integer-ness; out-of-range or non-integer values are rejected.`;
 	}
 	if (type === ResParameterType.FLOAT) {
 		const min = def.min ?? Number.NEGATIVE_INFINITY;
 		const max = def.max ?? Number.POSITIVE_INFINITY;
-		return `Use a number in range [${min}, ${max}].`;
+		return `Use a number in range [${min}, ${max}]. Tool validates min/max; out-of-range values are rejected.`;
 	}
 	if (type === ResParameterType.COLOR) {
 		return "Use a color object {red, green, blue, alpha} (0-255). Never send a hex string or color name.";
