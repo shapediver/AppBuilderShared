@@ -48,14 +48,23 @@ describe("core tool scaffolding", () => {
 	});
 
 	it("ToolDeps keys match plain deps contract", () => {
-		const keys: Array<keyof ToolDeps> = [
-			"namespace",
-			"getLiveParameters",
-			"listParameterNamespaces",
-			"batchParameterValueUpdate",
-			"createModelState",
-			"importModelState",
-		];
-		expect(keys).toHaveLength(6);
+		const fixture: ToolDeps = {
+			namespace: "main",
+			getLiveParameters: () => [],
+			listParameterNamespaces: () => ["main"],
+			batchParameterValueUpdate: jest.fn(),
+			createModelState: jest.fn(),
+			importModelState: jest.fn(),
+		};
+		expect(Object.keys(fixture).sort()).toEqual(
+			[
+				"namespace",
+				"getLiveParameters",
+				"listParameterNamespaces",
+				"batchParameterValueUpdate",
+				"createModelState",
+				"importModelState",
+			].sort(),
+		);
 	});
 });
