@@ -3,12 +3,9 @@ import React from "react";
 import {
 	IAppBuilderControlActionRef,
 	isAddToCartAction,
-	isArAction,
-	isCameraAction,
 	isCloseConfiguratorAction,
 	isCreateModelStateAction,
 	isExportParameterValuesAction,
-	isFullscreenAction,
 	isImportModelStateAction,
 	isImportParameterValuesAction,
 	isMessageToParentAction,
@@ -21,13 +18,10 @@ import {
 	isUndoAction,
 } from "../config/appbuilder";
 import AppBuilderActionAddToCartComponent from "./AppBuilderActionAddToCartComponent";
-import AppBuilderActionArComponent from "./AppBuilderActionArComponent";
 import {AppBuilderActionRenderProps} from "./AppBuilderActionBase";
-import AppBuilderActionCameraComponent from "./AppBuilderActionCameraComponent";
 import AppBuilderActionCloseConfiguratorComponent from "./AppBuilderActionCloseConfiguratorComponent";
 import AppBuilderActionCreateModelStateComponent from "./AppBuilderActionCreateModelStateComponent";
 import AppBuilderActionExportParameterValuesComponent from "./AppBuilderActionExportParameterValuesComponent";
-import AppBuilderActionFullscreenComponent from "./AppBuilderActionFullscreenComponent";
 import AppBuilderActionImportModelStateComponent from "./AppBuilderActionImportModelStateComponent";
 import AppBuilderActionImportParameterValuesComponent from "./AppBuilderActionImportParameterValuesComponent";
 import AppBuilderActionMessageToParentComponent from "./AppBuilderActionMessageToParentComponent";
@@ -188,45 +182,6 @@ export function AppBuilderActionFromType(
 				key={key}
 				namespace={namespace}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isCameraAction(actionRef.definition))
-		return (
-			<AppBuilderActionCameraComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				viewportId={viewportId}
-				toolbarButtonProps={toolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isArAction(actionRef.definition))
-		return (
-			<AppBuilderActionArComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				viewportId={viewportId}
-				toolbarButtonProps={toolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isFullscreenAction(actionRef.definition))
-		return (
-			<AppBuilderActionFullscreenComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				fullscreenId={fullscreenId}
 				toolbarButtonProps={toolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}

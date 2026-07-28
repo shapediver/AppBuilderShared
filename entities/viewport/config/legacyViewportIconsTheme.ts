@@ -1,10 +1,20 @@
-import type {ViewportToolbarVisibilityOptions} from "@AppBuilderLib/entities/viewport/lib/buildViewportToolbarRegistration";
 import type {MantineDividerProps} from "@AppBuilderLib/shared/mantine-props/divider";
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
 import type {MantineTransitionProps} from "@AppBuilderLib/shared/mantine-props/transition";
 import {MantineStyleProp, MantineThemeComponent} from "@mantine/core";
 import React from "react";
 import {ViewportTransparentBackgroundStyle} from "./viewport";
+
+type ViewportToolbarVisibilityOptions = {
+	history?: boolean;
+	reset?: boolean;
+	ar?: boolean;
+	cameras?: boolean;
+	fullscreen?: boolean;
+	fullscreen3States?: boolean;
+	zoom?: boolean;
+	historyMenu?: boolean;
+};
 
 /**
  * Optional styling and feature toggles for the viewport icon toolbar (`ViewportIcons`).

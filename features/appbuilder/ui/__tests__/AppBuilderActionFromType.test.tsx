@@ -141,7 +141,7 @@ describe("AppBuilderActionFromType", () => {
 		expect(element).toBeNull();
 	});
 
-	it("forwards toolbar render options to built-in action components", () => {
+	it("returns null for an unregistered Viewer-only action", () => {
 		const actionRef: IAppBuilderControlActionRef = {
 			label: "Zoom extents",
 			definition: {
@@ -158,20 +158,8 @@ describe("AppBuilderActionFromType", () => {
 			"namespace",
 			"key",
 			{},
-			{
-				presentation: "toolbarIcon",
-				viewportId: "viewport-1",
-				fullscreenId: "fullscreen-area",
-				disabled: true,
-				toolbarButtonProps: {actionIconProps: {size: 24}},
-			},
 		);
 
-		expect(element?.props).toMatchObject({
-			presentation: "toolbarIcon",
-			viewportId: "viewport-1",
-			disabled: true,
-			toolbarButtonProps: {actionIconProps: {size: 24}},
-		});
+		expect(element).toBeNull();
 	});
 });

@@ -25,7 +25,6 @@ import {ViewportOverlayWrapperThemeProps} from "@AppBuilderLib/entities/viewport
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {AppBuilderActionComponentThemeProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionComponent";
-import {AppBuilderToolbarIconButtonThemeProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {CreateModelStateHookThemeProps} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {NotificationWrapperThemeProps} from "@AppBuilderLib/features/notifications/ui/NotificationWrapper";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -1624,22 +1623,6 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	duration: 400,
 				// 	timingFunction: "ease",
 				//	keepMounted: true,
-				// },
-			}),
-			// Current toolbar icon-button theme key. Legacy `ViewportIconButton`
-			// overrides are still accepted as a fallback by the component itself.
-			AppBuilderToolbarIconButton: AppBuilderToolbarIconButtonThemeProps({
-				// actionIconProps: {
-				// 	size: 32,
-				// 	variant: "subtle",
-				// 	variantDisabled: "transparent",
-				// 	style: {
-				// 		m: "0.188rem",
-				// 	},
-				// },
-				// iconProps: {
-				// 	color: "var(--mantine-color-default-color)",
-				// 	colorDisabled: "var(--mantine-color-disabled-color)",
 				// },
 			}),
 			/**
