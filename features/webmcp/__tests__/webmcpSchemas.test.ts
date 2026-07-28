@@ -8,11 +8,11 @@ import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
 } from "../config/listParameterDefinitions";
+import {setParameterValuesInputSchema} from "../config/setParameterValues";
 import {
 	listSessionsInputSchema,
 	listSessionsOutputSchema,
-} from "../config/listSessions";
-import {setParameterValuesInputSchema} from "../config/setParameterValues";
+} from "../core/listSessions";
 import {
 	runTool,
 	toolError,
@@ -34,23 +34,13 @@ describe("webmcp input schemas", () => {
 	});
 
 	describe("listSessionsOutputSchema", () => {
-		it("accepts envelope with sessions", () => {
+		it("accepts structured sessions output", () => {
 			expect(
 				listSessionsOutputSchema.parse({
-					content: [
-						{
-							type: "text",
-							text: "Found 1 sessions. Next you can use one of the sessionIds with list_parameter_definitions.",
-						},
-					],
-					structuredContent: {
-						sessions: [{sessionId: "session-1"}],
-					},
-				}),
-			).toMatchObject({
-				structuredContent: {
 					sessions: [{sessionId: "session-1"}],
-				},
+				}),
+			).toEqual({
+				sessions: [{sessionId: "session-1"}],
 			});
 		});
 	});
