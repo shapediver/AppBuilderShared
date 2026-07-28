@@ -28,7 +28,7 @@ export function howtoForParameterType(
 	const type = def.type as ResParameterType;
 	if (type === ResParameterType.STRINGLIST) {
 		const choices = def.choices ?? [];
-		return `Use a 0-based integer index (0..${Math.max(choices.length - 1, 0)}). Choices: ${JSON.stringify(choices)}. Never send the label text. Never wrap in {index:N}. If choices look like numbers (e.g. ['4','6','8'] or ['3','3 1/4',...]) the value is still the INDEX, not the label — '6 prongs' = index 1, not value 6; finger size '7' = index 16, not value 7.`;
+		return `Use a 0-based integer index (0..${Math.max(choices.length - 1, 0)}). Choices: ${JSON.stringify(choices)}. Never send the label text. Never wrap in {index:N}. If choices look like numbers (e.g. ['4','6','8'] or ['3','3 1/4',...]) the value is still the INDEX, not the label — '6 prongs' = index 1, not value 6; finger size '7' = index 16, not value 7. Match choice labels case-insensitively to find the index (e.g. 'Button' matches 'button' = index 0), then send the index.`;
 	}
 	if (INTEGER_TYPES.includes(type)) {
 		const min = def.min ?? Number.NEGATIVE_INFINITY;
