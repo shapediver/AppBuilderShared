@@ -4,11 +4,11 @@ import {
 	importModelStateInputSchema,
 	importModelStateSuccessOutputSchema,
 } from "../config/importModelState";
+import {setParameterValuesInputSchema} from "../config/setParameterValues";
 import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
-} from "../config/listParameterDefinitions";
-import {setParameterValuesInputSchema} from "../config/setParameterValues";
+} from "../core/listParameterDefinitions";
 import {
 	listSessionsInputSchema,
 	listSessionsOutputSchema,
@@ -139,63 +139,61 @@ describe("webmcp input schemas", () => {
 	});
 
 	describe("listParameterDefinitionsOutputSchema", () => {
-		it("accepts success envelope with sessionId and howto", () => {
+		it("accepts structured parameters output with sessionCount and offset", () => {
 			expect(
 				listParameterDefinitionsOutputSchema.parse({
-					content: [
-						{
-							type: "text",
-							text: "Found 1 parameter definitions for 1 sessions. Use set_parameter_values to update the state of parameters.",
-						},
-					],
-					structuredContent: {
-						parameters: [
-							{
-								id: "width",
-								sessionId: "session-1",
-								name: "Width",
-								type: "Int",
-								howto: "Use a number in range [0, 10].",
-								settable: true,
-							},
-						],
-					},
-				}),
-			).toMatchObject({
-				structuredContent: {
 					parameters: [
 						{
 							id: "width",
 							sessionId: "session-1",
+							name: "Width",
+							type: "Int",
 							howto: "Use a number in range [0, 10].",
+							settable: true,
 						},
 					],
-				},
+					sessionCount: 1,
+					offset: 0,
+				}),
+			).toEqual({
+				parameters: [
+					{
+						id: "width",
+						sessionId: "session-1",
+						name: "Width",
+						type: "Int",
+						howto: "Use a number in range [0, 10].",
+						settable: true,
+					},
+				],
+				sessionCount: 1,
+				offset: 0,
 			});
 		});
 
-		it("accepts error envelope with zod issues object", () => {
+		it("accepts truncated page with remaining and nextOffset", () => {
 			expect(
 				listParameterDefinitionsOutputSchema.parse({
-					content: [
+					parameters: [
 						{
-							type: "text",
-							text: "Error: Invalid input data.\nRecovery: Fix filter and try again.",
+							id: "width",
+							sessionId: "session-1",
+							name: "Width",
+							type: "Int",
+							howto: "Use a number in range [0, 10].",
+							settable: true,
 						},
 					],
-					structuredContent: {
-						error: [
-							{
-								code: "invalid_value",
-								path: ["filter"],
-								message: "Invalid option",
-							},
-						],
-					},
-					isError: true,
+					truncated: true,
+					sessionCount: 1,
+					offset: 0,
+					remaining: 3,
+					nextOffset: 1,
 				}),
 			).toMatchObject({
-				isError: true,
+				truncated: true,
+				remaining: 3,
+				nextOffset: 1,
 			});
 		});
 	});

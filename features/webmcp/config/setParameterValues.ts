@@ -1,6 +1,6 @@
 import {nameMessageSchema} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
 import {z} from "@AppBuilderLib/shared/lib/zod";
-import {parameterValueSchema} from "./listParameterDefinitions";
+import {parameterValueSchema} from "../core/listParameterDefinitions";
 
 const setParameterUpdateSchema = z.strictObject({
 	name: z

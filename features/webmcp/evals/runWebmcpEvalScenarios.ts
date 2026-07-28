@@ -1,11 +1,8 @@
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {createModelStateInputSchema} from "../config/createModelState";
 import {importModelStateInputSchema} from "../config/importModelState";
-import {
-	listParameterDefinitionsInputSchema,
-	listParameterDefinitionsOutputSchema,
-} from "../config/listParameterDefinitions";
 import {setParameterValuesInputSchema} from "../config/setParameterValues";
+import {listParameterDefinitionsInputSchema} from "../core/listParameterDefinitions";
 import {listSessionsInputSchema} from "../core/listSessions";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
 import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
@@ -245,12 +242,6 @@ async function assertListScenario(
 	const {expect} = scenario;
 
 	if (expect.inputSchemaReject) {
-		const parsed = listParameterDefinitionsOutputSchema.safeParse(result);
-
-		if (!parsed.success) {
-			return "list output did not match envelope schema after input rejection";
-		}
-
 		if (result.isError !== true) {
 			return "expected isError true for invalid input";
 		}

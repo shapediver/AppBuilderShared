@@ -1,8 +1,8 @@
-import {listParameterDefinitionsInputSchema} from "../../config/listParameterDefinitions";
 import {
 	LIST_PARAMETER_DEFINITIONS_TOOL_DESCRIPTION,
 	LIST_PARAMETER_DEFINITIONS_TOOL_NAME,
 } from "../../config/tools";
+import {listParameterDefinitionsInputSchema} from "../../core/listParameterDefinitions";
 import {mapParameterDefinition} from "../../lib/parameterDefinitionMapper";
 import {runTool, toolError, toolSuccess} from "../../lib/toolResponse";
 import type {ModelContext} from "../../lib/webmcpAvailability";
