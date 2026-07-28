@@ -28,7 +28,8 @@ export const SET_PARAMETER_VALUES_TOOL_DESCRIPTION =
 	"Input uses updates [{ name, value, sessionId? }] — use the field `updates` and `name`, not `parameters` or `id`. " +
 	"Read each parameter's `howto` from list_parameter_definitions for the exact value format per type (index vs label vs number vs color object). " +
 	"Valid updates still apply when others fail. " +
-	"If a user request is ambiguous (e.g. 'gold' when multiple gold variants exist, or a stone name that appears in multiple parameters), ask the user to clarify which parameter and which choice before calling set_parameter_values.";
+	"If a user request is ambiguous (e.g. 'gold' when multiple gold variants exist, or a stone name that appears in multiple parameters), ask the user to clarify which parameter and which choice before calling set_parameter_values. " +
+	"For relative changes ('wider', 'larger', 'smaller'), read currentValue from list_parameter_definitions first and pick a moderate change; do not jump to min or max.";
 
 export const CREATE_MODEL_STATE_TOOL_DESCRIPTION =
 	"Create a unique identifier for the current state of the 3D configurator. " +
