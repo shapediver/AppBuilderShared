@@ -1,8 +1,8 @@
-import {createModelStateInputSchema} from "../../config/createModelState";
 import {
 	CREATE_MODEL_STATE_TOOL_DESCRIPTION,
 	CREATE_MODEL_STATE_TOOL_NAME,
 } from "../../config/tools";
+import {createModelStateInputSchema} from "../../core/createModelState";
 import {runTool, toolError, toolSuccess} from "../../lib/toolResponse";
 import type {ModelContext} from "../../lib/webmcpAvailability";
 import {zodToJsonSchema} from "../../lib/zodToJsonSchema";
