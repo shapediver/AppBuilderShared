@@ -1,9 +1,9 @@
 import {getParameterStates} from "@AppBuilderLib/entities/parameter/lib/parameterStates";
-import {importModelStateInputSchema} from "../../config/importModelState";
 import {
 	IMPORT_MODEL_STATE_TOOL_DESCRIPTION,
 	IMPORT_MODEL_STATE_TOOL_NAME,
 } from "../../config/tools";
+import {importModelStateInputSchema} from "../../core/importModelState";
 import {computeAppliedParameterIds} from "../../lib/computeAppliedParameterIds";
 import {runTool, toolError, toolSuccess} from "../../lib/toolResponse";
 import type {ModelContext} from "../../lib/webmcpAvailability";

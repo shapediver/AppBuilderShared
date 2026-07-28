@@ -1,9 +1,14 @@
 import {ZodError} from "@AppBuilderLib/shared/lib/zod";
+
+jest.mock("@AppBuilderLib/entities/parameter/lib/parameterStates", () => ({
+	getParameterStates: jest.fn(),
+}));
+
+import {createModelStateInputSchema} from "../core/createModelState";
 import {
 	importModelStateInputSchema,
 	importModelStateSuccessOutputSchema,
-} from "../config/importModelState";
-import {createModelStateInputSchema} from "../core/createModelState";
+} from "../core/importModelState";
 import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
