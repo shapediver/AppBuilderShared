@@ -1,8 +1,8 @@
-import {listSessionsInputSchema} from "../../config/listSessions";
 import {
 	LIST_SESSIONS_TOOL_DESCRIPTION,
 	LIST_SESSIONS_TOOL_NAME,
 } from "../../config/tools";
+import {listSessionsInputSchema} from "../../core/listSessions";
 import {runTool, toolSuccess} from "../../lib/toolResponse";
 import type {ModelContext} from "../../lib/webmcpAvailability";
 import {zodToJsonSchema} from "../../lib/zodToJsonSchema";

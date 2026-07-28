@@ -5,8 +5,8 @@ import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
 } from "../config/listParameterDefinitions";
-import {listSessionsInputSchema} from "../config/listSessions";
 import {setParameterValuesInputSchema} from "../config/setParameterValues";
+import {listSessionsInputSchema} from "../core/listSessions";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
 import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
 import {
