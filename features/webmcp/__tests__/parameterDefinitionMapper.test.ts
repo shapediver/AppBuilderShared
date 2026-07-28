@@ -49,7 +49,7 @@ describe("mapParameterDefinition", () => {
 			sessionId: SESSION_ID,
 			name: "Material",
 			type: ResParameterType.STRINGLIST,
-			howto: 'Use a 0-based integer index (0..1). Choices: ["Wood","Metal"]. Never send the label text. Never wrap in {index:N}. If choices look like numbers (e.g. [\'4\',\'6\',\'8\'] or [\'3\',\'3 1/4\',...]) the value is still the INDEX, not the label — \'6 prongs\' = index 1, not value 6; finger size \'7\' = index 16, not value 7.',
+			howto: "Use a 0-based integer index (0..1). Choices: [\"Wood\",\"Metal\"]. Never send the label text. Never wrap in {index:N}. If choices look like numbers (e.g. ['4','6','8'] or ['3','3 1/4',...]) the value is still the INDEX, not the label — '6 prongs' = index 1, not value 6; finger size '7' = index 16, not value 7. Match choice labels case-insensitively to find the index (e.g. 'Button' matches 'button' = index 0), then send the index.",
 			settable: true,
 			choices: ["Wood", "Metal"],
 			currentValue: 0,
