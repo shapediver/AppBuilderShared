@@ -4,7 +4,7 @@ import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	SUPPORTED_PARAMETER_TYPES,
 	type ListParameterDefinitionItem,
-} from "../config/listParameterDefinitions";
+} from "../core/listParameterDefinitions";
 import {howtoForParameterType} from "./parameterHowto";
 import {parseStringListIndex} from "./stringListValue";
 
