@@ -1,81 +1,9 @@
-import {z, ZodError, type ZodType} from "@AppBuilderLib/shared/lib/zod";
-import {createModelStateInputSchema} from "../core/createModelState";
-import {importModelStateInputSchema} from "../core/importModelState";
-import {listParameterDefinitionsInputSchema} from "../core/listParameterDefinitions";
-import {listSessionsInputSchema} from "../core/listSessions";
-import {setParameterValuesInputSchema} from "../core/setParameterValues";
-import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
-import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
+import {ZodError} from "@AppBuilderLib/shared/lib/zod";
+import type {ToolDeps} from "../core/deps";
+import {ToolExecutionError, type AnyToolDef} from "../core/toolDefinition";
+import {ALL_TOOLS} from "../core/tools";
 import {allParameters, EVAL_NAMESPACE} from "./__fixtures__/parameters";
 import evalScenariosJson from "./evals.json";
-
-// Local envelope helpers for eval runner until Task 10/11 migrate evals
-// onto the adapter path (lib/toolResponse.ts deleted in Task 9 cutover).
-type ToolContentItem = {type: "text"; text: string};
-type ToolResponse = {
-	content: ToolContentItem[];
-	structuredContent?: Record<string, unknown>;
-	isError?: true;
-};
-
-function toolSuccess(
-	text: string,
-	structuredContent?: Record<string, unknown>,
-): ToolResponse {
-	return {
-		content: [{type: "text", text}],
-		...(structuredContent !== undefined ? {structuredContent} : {}),
-	};
-}
-
-function toolError(
-	text: string,
-	structuredContent?: Record<string, unknown>,
-): ToolResponse {
-	return {
-		content: [{type: "text", text}],
-		...(structuredContent !== undefined ? {structuredContent} : {}),
-		isError: true,
-	};
-}
-
-function toolZodError(zodError: ZodError): ToolResponse {
-	const path = zodError.issues[0]?.path.join(".") || "input";
-	return toolError(
-		`Error: Invalid input data.\nRecovery: Fix ${path} and try again.`,
-		{error: zodError.issues},
-	);
-}
-
-async function runTool<T>(
-	schema: ZodType<T>,
-	input: unknown,
-	executor: (parsed: T) => Promise<ToolResponse> | ToolResponse,
-): Promise<ToolResponse> {
-	const inputObj = input ?? {};
-	let parsed: T;
-	try {
-		parsed = schema.parse(inputObj);
-	} catch (e) {
-		if (e instanceof ZodError) {
-			return toolZodError(e);
-		}
-		return toolError(
-			`Error: Invalid input data.\nRecovery: Fix input and try again.`,
-			{error: e instanceof Error ? e.message : String(e)},
-		);
-	}
-
-	try {
-		return await executor(parsed);
-	} catch (e) {
-		const message = e instanceof Error ? e.message : String(e);
-		return toolError(
-			`Error: ${message}\nRecovery: Check the input and try again.`,
-			{error: message},
-		);
-	}
-}
 
 export interface EvalExpect {
 	applied?: string[];
@@ -110,124 +38,117 @@ export function loadWebmcpEvalScenarios(): EvalScenario[] {
 }
 
 const EVAL_NAMESPACES = [EVAL_NAMESPACE];
-const DEFAULT_LIMIT = 20;
 
-function matchesSearch(
-	definition: {id: string; name: string; displayname?: string},
-	search: string,
-): boolean {
-	const needle = search.toLowerCase();
-	return (
-		definition.id.toLowerCase().includes(needle) ||
-		definition.name.toLowerCase().includes(needle) ||
-		(definition.displayname?.toLowerCase().includes(needle) ?? false)
-	);
-}
+const evalDeps: ToolDeps = {
+	namespace: EVAL_NAMESPACE,
+	getLiveParameters: (ns) => (ns === EVAL_NAMESPACE ? allParameters : []),
+	listParameterNamespaces: () => EVAL_NAMESPACES,
+	batchParameterValueUpdate: async () => undefined,
+	createModelState: async () => ({}),
+	importModelState: async () => ({
+		success: false,
+		message: "not implemented in evals",
+	}),
+};
 
-function runListScenario(
+type CoreToolResult =
+	| {ok: true; structured: unknown; text: string}
+	| {
+			ok: false;
+			message: string;
+			structured?: Record<string, unknown>;
+			zodIssues?: unknown;
+	  };
+
+async function runCoreTool(
+	tool: AnyToolDef,
+	deps: ToolDeps,
 	input: Record<string, unknown>,
-): Promise<ToolResponse> {
-	return runTool(listParameterDefinitionsInputSchema, input, (parsed) => {
-		const filter = parsed.filter ?? "all";
-		const namespaces = EVAL_NAMESPACES;
-
-		if (
-			parsed.sessionId !== undefined &&
-			!namespaces.includes(parsed.sessionId)
-		) {
-			return toolError(
-				`Error: Session "${parsed.sessionId}" does not exist.\nRecovery: Use list_sessions or avoid specifying sessionId to list parameter definitions for all sessions.`,
-			);
-		}
-
-		const targetNamespaces =
-			parsed.sessionId !== undefined ? [parsed.sessionId] : namespaces;
-
-		const search = parsed.search?.trim();
-		const parameters = targetNamespaces.flatMap((sessionId) => {
-			let params = sessionId === EVAL_NAMESPACE ? allParameters : [];
-			if (filter === "visible") {
-				params = params.filter((p) => !p.definition.hidden);
-			}
-			if (search) {
-				params = params.filter((p) =>
-					matchesSearch(p.definition, search),
-				);
-			}
-			return params.map((param) =>
-				mapParameterDefinition(param, sessionId),
-			);
-		});
-
-		const limit = parsed.limit ?? DEFAULT_LIMIT;
-		const offset = parsed.offset ?? 0;
-		const total = parameters.length;
-		const page = parameters.slice(offset, offset + limit);
-		const truncated = offset + limit < total;
-
-		const text = truncated
-			? `Found ${page.length} parameter definitions for ${targetNamespaces.length} sessions (page starting at offset ${offset}; ${total - offset - page.length} more remain). Use set_parameter_values to update the state of parameters. More parameters match beyond this page. Raise offset (e.g. offset=${offset + limit}) or narrow your search.`
-			: `Found ${page.length} parameter definitions for ${targetNamespaces.length} sessions. Use set_parameter_values to update the state of parameters.`;
-
-		return toolSuccess(
-			text,
-			truncated
-				? {parameters: page, truncated: true}
-				: {parameters: page},
-		);
-	});
-}
-
-function runListSessionsScenario(
-	input: Record<string, unknown>,
-): Promise<ToolResponse> {
-	return runTool(listSessionsInputSchema, input, () => {
-		const sessions = EVAL_NAMESPACES.map((sessionId) => ({sessionId}));
-		return toolSuccess(
-			`Found ${sessions.length} sessions. Next you can use one of the sessionIds with list_parameter_definitions.`,
-			{sessions},
-		);
-	});
-}
-
-function assertInputSchemaReject(
-	schema: z.ZodType,
-	input: Record<string, unknown>,
-): string | null {
+): Promise<CoreToolResult> {
 	try {
-		schema.parse(input);
-
-		return "expected input schema validation to fail";
-	} catch {
-		return null;
+		const parsed = tool.inputSchema.parse(input ?? {});
+		try {
+			const structured = await tool.execute(
+				deps,
+				parsed,
+				new AbortController().signal,
+			);
+			return {ok: true, structured, text: tool.format(structured)};
+		} catch (e) {
+			if (e instanceof ToolExecutionError) {
+				return {
+					ok: false,
+					message: e.message,
+					structured: e.structuredContent,
+				};
+			}
+			return {
+				ok: false,
+				message: e instanceof Error ? e.message : String(e),
+			};
+		}
+	} catch (e) {
+		if (e instanceof ZodError) {
+			return {
+				ok: false,
+				message: "Invalid input data",
+				zodIssues: e.issues,
+			};
+		}
+		return {ok: false, message: e instanceof Error ? e.message : String(e)};
 	}
 }
 
+function getTool(name: string): AnyToolDef | undefined {
+	return ALL_TOOLS.find((t) => t.name === name);
+}
+
+function resultText(result: CoreToolResult): string {
+	return result.ok ? result.text : result.message;
+}
+
 function getStructuredErrors(
-	result: ToolResponse,
+	result: CoreToolResult,
 ): Array<{name: string; message: string}> {
-	const errors = result.structuredContent?.errors;
+	const structured = result.ok
+		? (result.structured as Record<string, unknown> | undefined)
+		: result.structured;
+	const errors = structured?.errors;
 	return Array.isArray(errors)
 		? (errors as Array<{name: string; message: string}>)
 		: [];
 }
 
-function getStructuredApplied(result: ToolResponse): string[] {
-	const applied = result.structuredContent?.applied;
+function getStructuredApplied(result: CoreToolResult): string[] {
+	const structured = result.ok
+		? (result.structured as Record<string, unknown> | undefined)
+		: result.structured;
+	const applied = structured?.applied;
 	return Array.isArray(applied) ? (applied as string[]) : [];
 }
 
+function assertContentIncludes(
+	result: CoreToolResult,
+	contentIncludes: string,
+): string | null {
+	const text = resultText(result);
+	if (!text.includes(contentIncludes)) {
+		return `expected content to include "${contentIncludes}"`;
+	}
+	return null;
+}
+
 function assertSetErrorExpectations(
-	result: ToolResponse,
+	result: CoreToolResult,
 	expect: EvalExpect,
 ): string | null {
 	const applied = getStructuredApplied(result);
 	const errors = getStructuredErrors(result);
 
-	if (expect.isError === true && result.isError !== true) {
+	if (expect.isError === true && result.ok !== false) {
 		return "expected isError true";
 	}
-	if (expect.isError === false && result.isError === true) {
+	if (expect.isError === false && result.ok === false) {
 		return "expected isError not set";
 	}
 
@@ -288,10 +209,7 @@ function assertSetErrorExpectations(
 	}
 
 	if (expect.contentIncludes !== undefined) {
-		const text = result.content.map((c) => c.text).join("\n");
-		if (!text.includes(expect.contentIncludes)) {
-			return `expected content to include "${expect.contentIncludes}"`;
-		}
+		return assertContentIncludes(result, expect.contentIncludes);
 	}
 
 	return null;
@@ -299,41 +217,38 @@ function assertSetErrorExpectations(
 
 async function assertListScenario(
 	scenario: EvalScenario,
+	tool: AnyToolDef,
 ): Promise<string | null> {
-	const result = await runListScenario(scenario.input);
+	const result = await runCoreTool(tool, evalDeps, scenario.input);
 	const {expect} = scenario;
 
 	if (expect.inputSchemaReject) {
-		if (result.isError !== true) {
-			return "expected isError true for invalid input";
+		if (result.ok || result.zodIssues === undefined) {
+			return "expected input schema validation to fail with zodIssues";
 		}
-
-		if (!Array.isArray(result.structuredContent?.error)) {
-			return "expected structuredContent.error to be zod issues array";
-		}
-
 		return null;
 	}
 
 	if (expect.isError === true) {
-		if (result.isError !== true) {
+		if (result.ok !== false) {
 			return "expected isError true";
 		}
 		if (expect.contentIncludes !== undefined) {
-			const text = result.content.map((c) => c.text).join("\n");
-			if (!text.includes(expect.contentIncludes)) {
-				return `expected content to include "${expect.contentIncludes}"`;
-			}
+			return assertContentIncludes(result, expect.contentIncludes);
 		}
 		return null;
 	}
 
-	const parameters = Array.isArray(result.structuredContent?.parameters)
-		? (result.structuredContent!.parameters as Array<{
-				id: string;
-				sessionId: string;
-				howto: string;
-			}>)
+	if (!result.ok) {
+		return `list_parameter_definitions unexpectedly failed: ${result.message}`;
+	}
+
+	const structured = result.structured as {
+		parameters?: Array<{id: string; sessionId: string; howto: string}>;
+		truncated?: boolean;
+	};
+	const parameters = Array.isArray(structured.parameters)
+		? structured.parameters
 		: [];
 
 	if (
@@ -362,20 +277,23 @@ async function assertListScenario(
 	}
 
 	if (expect.contentIncludes !== undefined) {
-		const text = result.content.map((c) => c.text).join("\n");
-		if (!text.includes(expect.contentIncludes)) {
-			return `expected content to include "${expect.contentIncludes}"`;
+		const contentFailure = assertContentIncludes(
+			result,
+			expect.contentIncludes,
+		);
+		if (contentFailure) {
+			return contentFailure;
 		}
 	}
 
 	if (expect.truncated === true) {
-		if (result.structuredContent?.truncated !== true) {
-			return "expected structuredContent.truncated true";
+		if (structured.truncated !== true) {
+			return "expected structured.truncated true";
 		}
 	}
 	if (expect.truncated === false) {
-		if (result.structuredContent?.truncated === true) {
-			return "expected structuredContent.truncated not set";
+		if (structured.truncated === true) {
+			return "expected structured.truncated not set";
 		}
 	}
 
@@ -384,16 +302,20 @@ async function assertListScenario(
 
 async function assertListSessionsScenario(
 	scenario: EvalScenario,
+	tool: AnyToolDef,
 ): Promise<string | null> {
-	const result = await runListSessionsScenario(scenario.input);
+	const result = await runCoreTool(tool, evalDeps, scenario.input);
 	const {expect} = scenario;
 
-	if (result.isError) {
+	if (!result.ok) {
 		return "list_sessions unexpectedly failed";
 	}
 
-	const sessions = Array.isArray(result.structuredContent?.sessions)
-		? (result.structuredContent!.sessions as Array<{sessionId: string}>)
+	const structured = result.structured as {
+		sessions?: Array<{sessionId: string}>;
+	};
+	const sessions = Array.isArray(structured.sessions)
+		? structured.sessions
 		: [];
 
 	if (
@@ -412,10 +334,7 @@ async function assertListSessionsScenario(
 	}
 
 	if (expect.contentIncludes !== undefined) {
-		const text = result.content.map((c) => c.text).join("\n");
-		if (!text.includes(expect.contentIncludes)) {
-			return `expected content to include "${expect.contentIncludes}"`;
-		}
+		return assertContentIncludes(result, expect.contentIncludes);
 	}
 
 	return null;
@@ -423,67 +342,40 @@ async function assertListSessionsScenario(
 
 async function assertSetScenario(
 	scenario: EvalScenario,
+	tool: AnyToolDef,
 ): Promise<string | null> {
-	if (scenario.expect.inputSchemaReject) {
-		return assertInputSchemaReject(
-			setParameterValuesInputSchema,
-			scenario.input,
-		);
-	}
+	const result = await runCoreTool(tool, evalDeps, scenario.input);
 
-	const result = await runTool(
-		setParameterValuesInputSchema,
-		scenario.input,
-		async (parsed) => {
-			const updateResult = await resolveAndUpdate(
-				EVAL_NAMESPACE,
-				(ns) => (ns === EVAL_NAMESPACE ? allParameters : []),
-				parsed.updates,
-				async () => undefined,
-			);
-			const totalFailure =
-				updateResult.applied.length === 0 &&
-				updateResult.errors.length > 0;
-			const errorCount = updateResult.errors.length;
-			const text =
-				errorCount === 0
-					? `Applied ${updateResult.applied.length} of ${parsed.updates.length} updates.`
-					: `Applied ${updateResult.applied.length} of ${parsed.updates.length} updates. ${errorCount} failed.`;
-			const payload = {
-				applied: updateResult.applied,
-				errors: updateResult.errors,
-			};
-			return totalFailure
-				? toolError(text, payload)
-				: toolSuccess(text, payload);
-		},
-	);
+	if (scenario.expect.inputSchemaReject) {
+		if (result.ok || result.zodIssues === undefined) {
+			return "expected input schema validation to fail with zodIssues";
+		}
+		return null;
+	}
 
 	return assertSetErrorExpectations(result, scenario.expect);
 }
 
-// TODO SS-9745: full create/import evals require a browser WebMCP runtime.
-function assertSchemaScenario(scenario: EvalScenario): string | null {
-	const {tool, input, expect} = scenario;
-	const schema =
-		tool === "create_model_state"
-			? createModelStateInputSchema
-			: tool === "import_model_state"
-				? importModelStateInputSchema
-				: undefined;
-
-	if (!schema) {
-		return `unknown schema tool "${tool}"`;
-	}
+/**
+ * Create/import evals are schema-only until a browser WebMCP runtime exists.
+ * `expect.success` means input schema accept/reject, not tool output success.
+ */
+async function assertSchemaScenario(
+	scenario: EvalScenario,
+	tool: AnyToolDef,
+): Promise<string | null> {
+	const {input, expect} = scenario;
+	const result = await runCoreTool(tool, evalDeps, input);
 
 	if (expect.inputSchemaReject || expect.success === false) {
-		return assertInputSchemaReject(schema, input);
+		if (result.ok || result.zodIssues === undefined) {
+			return "expected input schema validation to fail";
+		}
+		return null;
 	}
 
-	try {
-		schema.parse(input);
-	} catch (e) {
-		return e instanceof Error ? e.message : String(e);
+	if (!result.ok && result.zodIssues !== undefined) {
+		return "expected input schema to accept";
 	}
 
 	return null;
@@ -493,16 +385,21 @@ function assertSchemaScenario(scenario: EvalScenario): string | null {
 export async function runWebmcpEvalScenario(
 	scenario: EvalScenario,
 ): Promise<string | null> {
+	const tool = getTool(scenario.tool);
+	if (!tool) {
+		return `unknown tool "${scenario.tool}"`;
+	}
+
 	switch (scenario.tool) {
 		case "list_sessions":
-			return assertListSessionsScenario(scenario);
+			return assertListSessionsScenario(scenario, tool);
 		case "list_parameter_definitions":
-			return assertListScenario(scenario);
+			return assertListScenario(scenario, tool);
 		case "set_parameter_values":
-			return assertSetScenario(scenario);
+			return assertSetScenario(scenario, tool);
 		case "create_model_state":
 		case "import_model_state":
-			return assertSchemaScenario(scenario);
+			return assertSchemaScenario(scenario, tool);
 		default:
 			return `unknown tool "${scenario.tool}"`;
 	}
