@@ -1,9 +1,9 @@
 import {ZodError} from "@AppBuilderLib/shared/lib/zod";
-import {createModelStateInputSchema} from "../config/createModelState";
 import {
 	importModelStateInputSchema,
 	importModelStateSuccessOutputSchema,
 } from "../config/importModelState";
+import {createModelStateInputSchema} from "../core/createModelState";
 import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
