@@ -1,8 +1,8 @@
+import {setParameterValuesInputSchema} from "../../core/setParameterValues";
 import {
 	SET_PARAMETER_VALUES_TOOL_DESCRIPTION,
 	SET_PARAMETER_VALUES_TOOL_NAME,
-} from "../../config/tools";
-import {setParameterValuesInputSchema} from "../../core/setParameterValues";
+} from "../../core/tools";
 import {resolveAndUpdate} from "../../lib/resolveSetParameterUpdates";
 import {runTool, toolError, toolSuccess} from "../../lib/toolResponse";
 import type {ModelContext} from "../../lib/webmcpAvailability";
