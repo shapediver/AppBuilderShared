@@ -27,7 +27,8 @@ export const SET_PARAMETER_VALUES_TOOL_DESCRIPTION =
 	"Set values of parameters, trigger execution, and wait for the 3D configurator to update. " +
 	"Input uses updates [{ name, value, sessionId? }] — use the field `updates` and `name`, not `parameters` or `id`. " +
 	"Read each parameter's `howto` from list_parameter_definitions for the exact value format per type (index vs label vs number vs color object). " +
-	"Valid updates still apply when others fail.";
+	"Valid updates still apply when others fail. " +
+	"If a user request is ambiguous (e.g. 'gold' when multiple gold variants exist, or a stone name that appears in multiple parameters), ask the user to clarify which parameter and which choice before calling set_parameter_values.";
 
 export const CREATE_MODEL_STATE_TOOL_DESCRIPTION =
 	"Create a unique identifier for the current state of the 3D configurator. " +
