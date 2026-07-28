@@ -12,6 +12,7 @@ import {
 import {registerCreateModelStateTool} from "./tools/registerCreateModelStateTool";
 import {registerImportModelStateTool} from "./tools/registerImportModelStateTool";
 import {registerListParameterDefinitionsTool} from "./tools/registerListParameterDefinitionsTool";
+import {registerListSessionsTool} from "./tools/registerListSessionsTool";
 import {registerSetParameterValuesTool} from "./tools/registerSetParameterValuesTool";
 import type {
 	UseWebMcpToolsProps,
@@ -86,6 +87,10 @@ export function useWebMcpTools(
 				Object.values(getParametersRef.current(targetNamespace)).map(
 					(store) => store.getState(),
 				),
+			listParameterNamespaces: () =>
+				Object.keys(
+					useShapeDiverStoreParameters.getState().parameterStores,
+				),
 			batchParameterValueUpdateRef,
 			createModelStateRef,
 			importModelStateRef,
@@ -95,6 +100,11 @@ export function useWebMcpTools(
 			const modelContext = getModelContext();
 
 			try {
+				await registerListSessionsTool(
+					modelContext,
+					deps,
+					controller.signal,
+				);
 				await registerListParameterDefinitionsTool(
 					modelContext,
 					deps,

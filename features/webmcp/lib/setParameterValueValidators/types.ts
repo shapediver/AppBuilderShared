@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type {z} from "@AppBuilderLib/shared/lib/zod";
 import {parameterValueSchema} from "../../config/listParameterDefinitions";
 
 export type ParameterValueInput = z.infer<typeof parameterValueSchema>;
