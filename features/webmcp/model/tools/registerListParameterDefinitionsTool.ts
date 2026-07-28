@@ -3,8 +3,8 @@ import {
 	LIST_PARAMETER_DEFINITIONS_TOOL_DESCRIPTION,
 	LIST_PARAMETER_DEFINITIONS_TOOL_NAME,
 } from "../../config/tools";
-import {formatToolInputError} from "../../lib/formatToolInputError";
 import {mapParameterDefinition} from "../../lib/parameterDefinitionMapper";
+import {runTool, toolError, toolSuccess} from "../../lib/toolResponse";
 import type {ModelContext} from "../../lib/webmcpAvailability";
 import {zodToJsonSchema} from "../../lib/zodToJsonSchema";
 import type {WebMcpToolsDeps} from "../webMcpToolsDeps";
@@ -23,33 +23,48 @@ export async function registerListParameterDefinitionsTool(
 				readOnlyHint: true,
 				untrustedContentHint: true,
 			},
-			execute: async (input) => {
-				try {
-					const parsed =
-						listParameterDefinitionsInputSchema.parse(input);
-					const filter = parsed.filter ?? "all";
-					const targetNamespace =
-						parsed.sessionId ?? deps.namespaceRef.current;
-					let parameters = deps.getLiveParameters(targetNamespace);
+			execute: async (input) =>
+				runTool(
+					listParameterDefinitionsInputSchema,
+					input,
+					(parsed) => {
+						const filter = parsed.filter ?? "all";
+						const namespaces = deps.listParameterNamespaces();
 
-					if (filter === "visible") {
-						parameters = parameters.filter(
-							(p) => !p.definition.hidden,
+						if (
+							parsed.sessionId !== undefined &&
+							!namespaces.includes(parsed.sessionId)
+						) {
+							return toolError(
+								`Error: Session "${parsed.sessionId}" does not exist.\nRecovery: Use list_sessions or avoid specifying sessionId to list parameter definitions for all sessions.`,
+							);
+						}
+
+						const targetNamespaces =
+							parsed.sessionId !== undefined
+								? [parsed.sessionId]
+								: namespaces;
+
+						const parameters = targetNamespaces.flatMap(
+							(sessionId) => {
+								let params = deps.getLiveParameters(sessionId);
+								if (filter === "visible") {
+									params = params.filter(
+										(p) => !p.definition.hidden,
+									);
+								}
+								return params.map((param) =>
+									mapParameterDefinition(param, sessionId),
+								);
+							},
 						);
-					}
 
-					return {
-						parameters: parameters.map((param) =>
-							mapParameterDefinition(param),
-						),
-					};
-				} catch (e) {
-					return {
-						parameters: [],
-						...formatToolInputError(e),
-					};
-				}
-			},
+						return toolSuccess(
+							`Found ${parameters.length} parameter definitions for ${targetNamespaces.length} sessions. Use set_parameter_values to update the state of parameters.`,
+							{parameters},
+						);
+					},
+				),
 		},
 		{signal},
 	);

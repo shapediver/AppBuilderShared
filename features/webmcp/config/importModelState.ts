@@ -2,7 +2,7 @@ import {
 	importModelStateDataSchema,
 	nameMessageSchema,
 } from "@AppBuilderLib/features/model-state/config/importModelState.zod";
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 export const importModelStateInputSchema = importModelStateDataSchema;
 

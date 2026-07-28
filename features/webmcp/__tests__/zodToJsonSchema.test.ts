@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {zodToJsonSchema} from "../lib/zodToJsonSchema";
 
 describe("zodToJsonSchema", () => {

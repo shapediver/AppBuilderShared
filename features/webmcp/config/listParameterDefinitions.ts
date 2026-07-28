@@ -1,6 +1,5 @@
-import {nameMessageSchema} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {z} from "zod";
 
 const colorValueSchema = z.object({
 	red: z.number(),
@@ -18,9 +17,11 @@ export const parameterValueSchema = z.union([
 
 const ListParameterDefinitionItemSchema = z.object({
 	id: z.string(),
+	sessionId: z.string(),
 	name: z.string(),
 	displayname: z.string().optional(),
 	type: z.string(),
+	howto: z.string(),
 	group: z.string().optional(),
 	tooltip: z.string().optional(),
 	min: z.number().nullable().optional(),
@@ -43,12 +44,25 @@ export const listParameterDefinitionsInputSchema = z.strictObject({
 	sessionId: z
 		.string()
 		.optional()
-		.describe("Optional session namespace. Omit for the main model."),
+		.describe(
+			"Optional session namespace. Omit to list parameter definitions for all sessions.",
+		),
 });
 
 export const listParameterDefinitionsOutputSchema = z.object({
-	parameters: z.array(ListParameterDefinitionItemSchema),
-	errors: z.array(nameMessageSchema).optional(),
+	content: z.array(
+		z.object({
+			type: z.literal("text"),
+			text: z.string(),
+		}),
+	),
+	structuredContent: z
+		.object({
+			parameters: z.array(ListParameterDefinitionItemSchema).optional(),
+			error: z.unknown().optional(),
+		})
+		.optional(),
+	isError: z.literal(true).optional(),
 });
 
 export type ListParameterDefinitionItem = z.infer<

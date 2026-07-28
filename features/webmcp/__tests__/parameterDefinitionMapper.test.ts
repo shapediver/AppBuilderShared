@@ -2,6 +2,8 @@ import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/par
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
 
+const SESSION_ID = "session-1";
+
 function createMockParameter(
 	overrides: Partial<IShapeDiverParameter<any>> & {
 		definition: IShapeDiverParameter<any>["definition"];
@@ -42,10 +44,12 @@ describe("mapParameterDefinition", () => {
 			state: {uiValue: 0} as IShapeDiverParameter<any>["state"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "list-1",
+			sessionId: SESSION_ID,
 			name: "Material",
 			type: ResParameterType.STRINGLIST,
+			howto: 'Use a 0-based integer index (0..1). Choices: ["Wood","Metal"]. Never send the label text. Never wrap in {index:N}.',
 			settable: true,
 			choices: ["Wood", "Metal"],
 			currentValue: 0,
@@ -66,10 +70,12 @@ describe("mapParameterDefinition", () => {
 			} as IShapeDiverParameter<any>["state"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "color-1",
+			sessionId: SESSION_ID,
 			name: "Paint",
 			type: ResParameterType.COLOR,
+			howto: "Use a color object {red, green, blue, alpha} (0-255). Never send a hex string or color name.",
 			settable: true,
 			currentValue: {red: 0, green: 255, blue: 0, alpha: 255},
 			defaultValue: {red: 255, green: 0, blue: 0, alpha: 255},
@@ -90,10 +96,12 @@ describe("mapParameterDefinition", () => {
 			state: {uiValue: 42.5} as IShapeDiverParameter<any>["state"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "float-1",
+			sessionId: SESSION_ID,
 			name: "Width",
 			type: ResParameterType.FLOAT,
+			howto: "Use a number in range [0, 100].",
 			settable: true,
 			min: 0,
 			max: 100,
@@ -114,10 +122,12 @@ describe("mapParameterDefinition", () => {
 			state: {uiValue: true} as IShapeDiverParameter<any>["state"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "bool-1",
+			sessionId: SESSION_ID,
 			name: "Enabled",
 			type: ResParameterType.BOOL,
+			howto: 'Use a boolean. Never send 0/1 or "true"/"false" strings.',
 			settable: true,
 			currentValue: true,
 			defaultValue: false,
@@ -140,10 +150,12 @@ describe("mapParameterDefinition", () => {
 			state: {uiValue: 7} as IShapeDiverParameter<any>["state"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "p1",
+			sessionId: SESSION_ID,
 			name: "Width",
 			type: ResParameterType.INT,
+			howto: "Use an integer in range [0, 10].",
 			settable: true,
 			group: "Dimensions",
 			tooltip: "Model width",
@@ -163,10 +175,12 @@ describe("mapParameterDefinition", () => {
 			} as IShapeDiverParameter<any>["definition"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "file-1",
+			sessionId: SESSION_ID,
 			name: "Upload",
 			type: ResParameterType.FILE,
+			howto: "Read-only: this parameter type is not supported by set_parameter_values.",
 			settable: false,
 		});
 	});

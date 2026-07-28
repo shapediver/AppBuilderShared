@@ -1,3 +1,5 @@
+export const LIST_SESSIONS_TOOL_NAME = "list_sessions";
+
 export const LIST_PARAMETER_DEFINITIONS_TOOL_NAME =
 	"list_parameter_definitions";
 
@@ -7,36 +9,30 @@ export const CREATE_MODEL_STATE_TOOL_NAME = "create_model_state";
 
 export const IMPORT_MODEL_STATE_TOOL_NAME = "import_model_state";
 
+export const LIST_SESSIONS_TOOL_DESCRIPTION =
+	"List ids of sessions which offer parameters.";
+
 export const LIST_PARAMETER_DEFINITIONS_TOOL_DESCRIPTION =
-	"Read configurator parameters before changing anything. " +
-	"Input: { filter?: 'all' | 'visible' } — field name is filter, not visibleOnly. " +
-	"Returns { parameters: [...], errors?: [{ name, message }] } with id, name, type, settable, choices/min/max, currentValue. " +
-	"settable=false means read-only via set_parameter_values (unsupported type). " +
-	"On invalid input, returns { parameters: [], errors: [{ name: '*', message }] }. " +
-	"Trust type over display name (e.g. name Color may still be StringList). " +
+	"Get definitions of parameters whose values can be updated to change the state of the 3D configurator. " +
+	"Optional filter (all | visible) and sessionId; omit sessionId to list all sessions. " +
+	"Each parameter has a `howto` field stating the exact value format set_parameter_values expects. " +
+	"Trust `type` over the display name (e.g. a parameter named Color may still be StringList). " +
+	"`settable=false` means read-only via set_parameter_values (unsupported type). " +
 	"Call with filter=all first when you do not know parameter names or value rules.";
 
 export const SET_PARAMETER_VALUES_TOOL_DESCRIPTION =
-	"Change configurator parameters. " +
-	"Input shape: { updates: [{ name, value }] } — use updates and name, not parameters/id. " +
-	"Value rules: Bool=boolean; Int/Float/Even/Odd=number in range; String=text; " +
-	"StringList=0-based integer index only (1 = second choice), never the label and never {index:N}; " +
-	"Color={red,green,blue,alpha} 0-255. " +
-	"Returns { applied: string[], errors: [{ name, message }] }. Valid updates still apply when others fail.";
+	"Set values of parameters, trigger execution, and wait for the 3D configurator to update. " +
+	"Input uses updates [{ name, value, sessionId? }] — use the field `updates` and `name`, not `parameters` or `id`. " +
+	"Read each parameter's `howto` from list_parameter_definitions for the exact value format per type (index vs label vs number vs color object). " +
+	"Valid updates still apply when others fail.";
 
 export const CREATE_MODEL_STATE_TOOL_DESCRIPTION =
-	"Save current configurator state for sharing or later restore via import_model_state. " +
-	"Input: { includeImage?: boolean, includeGltf?: boolean, parameterNamesToInclude?: string[], parameterNamesToExclude?: string[], data?: object }. " +
+	"Create a unique identifier for the current state of the 3D configurator. " +
+	"Optional includeImage, includeGltf, parameterNamesToInclude, parameterNamesToExclude, data. " +
 	"Use includeImage:false when no preview screenshot is needed; includeGltf:true only when a GLTF export is required. " +
-	"Success: { success: true, modelStateId: string, modelViewUrl: string, modelStateImageUrl?: string, modelStateGltfUrl?: string, modelStateUsdzUrl?: string }. " +
-	"modelStateId is required for import_model_state. Image/GLTF/USDZ URL fields appear only when the matching include* flag was true. " +
-	"Failure: { success: false, error: string }.";
+	"The returned modelStateId is required for import_model_state.";
 
 export const IMPORT_MODEL_STATE_TOOL_DESCRIPTION =
-	"Restore a saved configuration. " +
+	"Load configurator state from a modelStateId and wait for the update to complete. " +
 	"Input: { modelStateId } from create_model_state (or URL containing modelStateId). " +
-	"Waits for session update before returning. " +
-	"Success: { success: true, appliedParameterIds: string[], invalidParameters?: [{ name, message }] } — appliedParameterIds lists parameter ids whose values changed during import (empty array when none changed). " +
-	"invalidParameters appears on partial success when some saved parameters could not be applied. " +
-	"Failure: { success: false, message: string, invalidParameters?: [{ name, message }] } — per-parameter reasons when saved state does not match current model. " +
 	"Use list_parameter_definitions after import to verify currentValue.";

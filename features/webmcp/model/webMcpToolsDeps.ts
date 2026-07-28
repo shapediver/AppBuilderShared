@@ -13,6 +13,7 @@ import type {MutableRefObject} from "react";
 export interface WebMcpToolsDeps {
 	namespaceRef: MutableRefObject<string>;
 	getLiveParameters: (namespace: string) => IShapeDiverParameter<any>[];
+	listParameterNamespaces: () => string[];
 	batchParameterValueUpdateRef: MutableRefObject<
 		IShapeDiverStoreParameters["batchParameterValueUpdate"]
 	>;

@@ -5,20 +5,27 @@ import {
 	SUPPORTED_PARAMETER_TYPES,
 	type ListParameterDefinitionItem,
 } from "../config/listParameterDefinitions";
+import {howtoForParameterType} from "./parameterHowto";
 import {parseStringListIndex} from "./stringListValue";
 
 export function mapParameterDefinition(
 	param: IShapeDiverParameter<any>,
+	sessionId: string,
 ): ListParameterDefinitionItem {
 	const def = param.definition;
 	const currentValue = param.state.uiValue;
 	const name = def.displayname || def.name;
 
+	const settable = SUPPORTED_PARAMETER_TYPES.includes(def.type);
 	const item: ListParameterDefinitionItem = {
 		id: def.id,
+		sessionId,
 		name,
 		type: def.type,
-		settable: SUPPORTED_PARAMETER_TYPES.includes(def.type),
+		howto: settable
+			? howtoForParameterType(def)
+			: "Read-only: this parameter type is not supported by set_parameter_values.",
+		settable,
 	};
 
 	if (def.hidden !== undefined) {

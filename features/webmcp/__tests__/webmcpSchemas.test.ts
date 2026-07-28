@@ -1,3 +1,4 @@
+import {ZodError} from "@AppBuilderLib/shared/lib/zod";
 import {createModelStateInputSchema} from "../config/createModelState";
 import {
 	importModelStateInputSchema,
@@ -7,10 +8,53 @@ import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
 } from "../config/listParameterDefinitions";
+import {
+	listSessionsInputSchema,
+	listSessionsOutputSchema,
+} from "../config/listSessions";
 import {setParameterValuesInputSchema} from "../config/setParameterValues";
-import {formatToolInputError} from "../lib/formatToolInputError";
+import {
+	runTool,
+	toolError,
+	toolSuccess,
+	toolZodError,
+} from "../lib/toolResponse";
 
 describe("webmcp input schemas", () => {
+	describe("listSessionsInputSchema", () => {
+		it("accepts empty object", () => {
+			expect(listSessionsInputSchema.parse({})).toEqual({});
+		});
+
+		it("rejects unknown keys", () => {
+			expect(() =>
+				listSessionsInputSchema.parse({sessionId: "x"}),
+			).toThrow();
+		});
+	});
+
+	describe("listSessionsOutputSchema", () => {
+		it("accepts envelope with sessions", () => {
+			expect(
+				listSessionsOutputSchema.parse({
+					content: [
+						{
+							type: "text",
+							text: "Found 1 sessions. Next you can use one of the sessionIds with list_parameter_definitions.",
+						},
+					],
+					structuredContent: {
+						sessions: [{sessionId: "session-1"}],
+					},
+				}),
+			).toMatchObject({
+				structuredContent: {
+					sessions: [{sessionId: "session-1"}],
+				},
+			});
+		});
+	});
+
 	describe("listParameterDefinitionsInputSchema", () => {
 		it("accepts valid input", () => {
 			expect(
@@ -42,54 +86,120 @@ describe("webmcp input schemas", () => {
 	});
 
 	describe("listParameterDefinitionsOutputSchema", () => {
-		it("accepts parameters-only output", () => {
+		it("accepts success envelope with sessionId and howto", () => {
 			expect(
 				listParameterDefinitionsOutputSchema.parse({
+					content: [
+						{
+							type: "text",
+							text: "Found 1 parameter definitions for 1 sessions. Use set_parameter_values to update the state of parameters.",
+						},
+					],
+					structuredContent: {
+						parameters: [
+							{
+								id: "width",
+								sessionId: "session-1",
+								name: "Width",
+								type: "Int",
+								howto: "Use a number in range [0, 10].",
+								settable: true,
+							},
+						],
+					},
+				}),
+			).toMatchObject({
+				structuredContent: {
 					parameters: [
 						{
 							id: "width",
-							name: "Width",
-							type: "Int",
-							settable: true,
+							sessionId: "session-1",
+							howto: "Use a number in range [0, 10].",
 						},
 					],
-				}),
-			).toEqual({
-				parameters: [
-					{
-						id: "width",
-						name: "Width",
-						type: "Int",
-						settable: true,
-					},
-				],
+				},
 			});
 		});
 
-		it("accepts optional errors array", () => {
+		it("accepts error envelope with zod issues object", () => {
 			expect(
 				listParameterDefinitionsOutputSchema.parse({
-					parameters: [],
-					errors: [{name: "*", message: "Invalid input"}],
+					content: [
+						{
+							type: "text",
+							text: "Error: Invalid input data.\nRecovery: Fix filter and try again.",
+						},
+					],
+					structuredContent: {
+						error: [
+							{
+								code: "invalid_value",
+								path: ["filter"],
+								message: "Invalid option",
+							},
+						],
+					},
+					isError: true,
 				}),
-			).toEqual({
-				parameters: [],
-				errors: [{name: "*", message: "Invalid input"}],
+			).toMatchObject({
+				isError: true,
 			});
 		});
 	});
 
-	describe("formatToolInputError", () => {
-		it("formats Error instances", () => {
-			expect(formatToolInputError(new Error("bad input"))).toEqual({
-				errors: [{name: "*", message: "bad input"}],
+	describe("toolResponse helpers", () => {
+		it("toolSuccess builds content + structuredContent", () => {
+			expect(toolSuccess("ok", {foo: 1})).toEqual({
+				content: [{type: "text", text: "ok"}],
+				structuredContent: {foo: 1},
 			});
 		});
 
-		it("formats non-Error values", () => {
-			expect(formatToolInputError("bad input")).toEqual({
-				errors: [{name: "*", message: "bad input"}],
+		it("toolError sets isError", () => {
+			expect(toolError("Error: boom\nRecovery: retry")).toEqual({
+				content: [{type: "text", text: "Error: boom\nRecovery: retry"}],
+				isError: true,
 			});
+		});
+
+		it("toolZodError keeps issues as object, not stringified", () => {
+			let zodError: ZodError;
+			try {
+				listParameterDefinitionsInputSchema.parse({filter: "hidden"});
+				throw new Error("expected parse to throw");
+			} catch (e) {
+				zodError = e as ZodError;
+			}
+
+			const result = toolZodError(zodError);
+			expect(result.isError).toBe(true);
+			expect(result.content[0].text).toContain("Invalid input data");
+			expect(result.content[0].text).toContain("Recovery: Fix filter");
+			expect(Array.isArray(result.structuredContent?.error)).toBe(true);
+			expect(typeof result.structuredContent?.error === "string").toBe(
+				false,
+			);
+		});
+
+		it("runTool separates zod parse errors from execution errors", async () => {
+			const zodResult = await runTool(
+				listParameterDefinitionsInputSchema,
+				{visibleOnly: true},
+				() => toolSuccess("should not run"),
+			);
+			expect(zodResult.isError).toBe(true);
+			expect(zodResult.content[0].text).toContain("Invalid input data");
+
+			const execResult = await runTool(
+				listParameterDefinitionsInputSchema,
+				{},
+				() => {
+					throw new Error("runtime failed");
+				},
+			);
+			expect(execResult.isError).toBe(true);
+			expect(execResult.content[0].text).toContain("runtime failed");
+			expect(execResult.content[0].text).toContain("Recovery:");
 		});
 	});
 

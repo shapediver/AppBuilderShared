@@ -1,10 +1,25 @@
 [
 	{
+		"id": "list_sessions",
+		"tool": "list_sessions",
+		"description": "List session ids that offer parameters",
+		"input": {},
+		"expect": {
+			"sessionsCount": 1,
+			"sessionIds": ["eval-session"],
+			"contentIncludes": "list_parameter_definitions"
+		}
+	},
+	{
 		"id": "list_all",
 		"tool": "list_parameter_definitions",
 		"description": "List all supported parameters",
 		"input": {"filter": "all"},
-		"expect": {"parametersCount": 7}
+		"expect": {
+			"parametersCount": 7,
+			"howtoPresent": true,
+			"contentIncludes": "set_parameter_values"
+		}
 	},
 	{
 		"id": "list_visible",
@@ -20,7 +35,38 @@
 				"height-float",
 				"enabled-bool",
 				"color-list"
-			]
+			],
+			"howtoPresent": true
+		}
+	},
+	{
+		"id": "list_omit_session_id",
+		"tool": "list_parameter_definitions",
+		"description": "Omit sessionId — list all sessions with sessionId+howto on items",
+		"input": {"filter": "all"},
+		"expect": {
+			"parametersCount": 7,
+			"howtoPresent": true,
+			"contentIncludes": "for 1 sessions"
+		}
+	},
+	{
+		"id": "list_valid_session_id",
+		"tool": "list_parameter_definitions",
+		"description": "Valid sessionId — list only that session's parameters",
+		"input": {"filter": "all", "sessionId": "eval-session"},
+		"expect": {
+			"parametersCount": 7
+		}
+	},
+	{
+		"id": "list_invalid_session_id",
+		"tool": "list_parameter_definitions",
+		"description": "Reject unknown sessionId with recovery hint",
+		"input": {"filter": "all", "sessionId": "example_string"},
+		"expect": {
+			"isError": true,
+			"contentIncludes": "does not exist"
 		}
 	},
 	{
@@ -37,7 +83,7 @@
 		"input": {
 			"updates": [{"name": "Width", "value": 7}]
 		},
-		"expect": {"applied": ["width-int"], "errors": []}
+		"expect": {"applied": ["width-int"], "errors": [], "contentIncludes": "Applied 1 of 1"}
 	},
 	{
 		"id": "set_out_of_range",
@@ -47,6 +93,19 @@
 			"updates": [{"name": "Width", "value": 99}]
 		},
 		"expect": {"applied": [], "errorsNonEmpty": true, "appliedExcludes": ["width-int"], "errorMessageIncludes": "range"}
+	},
+	{
+		"id": "set_total_failure_is_error",
+		"tool": "set_parameter_values",
+		"description": "Total failure sets isError true",
+		"input": {
+			"updates": [{"name": "Width", "value": 99}]
+		},
+		"expect": {
+			"applied": [],
+			"errorsNonEmpty": true,
+			"isError": true
+		}
 	},
 	{
 		"id": "set_unknown_id",
@@ -87,7 +146,8 @@
 		"expect": {
 			"applied": ["width-int"],
 			"errorsNonEmpty": true,
-			"errorMessageIncludes": "twice"
+			"errorMessageIncludes": "twice",
+			"contentIncludes": "1 failed"
 		}
 	},
 	{
@@ -121,7 +181,8 @@
 		"expect": {
 			"applied": ["width-int"],
 			"errorsNonEmpty": true,
-			"errorMessageIncludes": "does not exist"
+			"errorMessageIncludes": "does not exist",
+			"contentIncludes": "1 failed"
 		}
 	},
 	{
