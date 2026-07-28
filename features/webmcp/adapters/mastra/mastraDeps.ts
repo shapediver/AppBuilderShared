@@ -5,9 +5,15 @@ import {importModelStateFromStores} from "./importModelStateFromStores";
 
 export function buildMastraDeps(
 	namespace: string,
-	options?: {viewportId?: string},
+	options?: {
+		viewportId?: string;
+		/** Same list as CreateModelStateHook theme default; host must supply (e.g. ["context"]). */
+		parameterNamesToAlwaysExclude?: string[];
+	},
 ): ToolDeps {
 	const viewportId = options?.viewportId ?? "viewport_1";
+	const parameterNamesToAlwaysExclude =
+		options?.parameterNamesToAlwaysExclude ?? [];
 	return {
 		namespace,
 		getLiveParameters: (ns) => {
@@ -25,7 +31,12 @@ export function buildMastraDeps(
 				.getState()
 				.batchParameterValueUpdate(...args),
 		createModelState: (props) =>
-			createModelStateFromStores(namespace, props, viewportId),
+			createModelStateFromStores(
+				namespace,
+				props,
+				viewportId,
+				parameterNamesToAlwaysExclude,
+			),
 		importModelState: (props) =>
 			importModelStateFromStores(namespace, props),
 	};

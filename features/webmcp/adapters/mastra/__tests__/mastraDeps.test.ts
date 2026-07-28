@@ -41,6 +41,21 @@ describe("buildMastraDeps", () => {
 			"main",
 			{includeImage: false},
 			"viewport_1",
+			[],
+		);
+	});
+
+	it("passes parameterNamesToAlwaysExclude to createModelStateFromStores", async () => {
+		const deps = buildMastraDeps("main", {
+			viewportId: "viewport_1",
+			parameterNamesToAlwaysExclude: ["context"],
+		});
+		await deps.createModelState({includeImage: false});
+		expect(createModelStateFromStores).toHaveBeenCalledWith(
+			"main",
+			{includeImage: false},
+			"viewport_1",
+			["context"],
 		);
 	});
 });

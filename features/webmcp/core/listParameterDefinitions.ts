@@ -142,7 +142,7 @@ export const listParameterDefinitionsTool: ToolDef<
 			!namespaces.includes(parsed.sessionId)
 		) {
 			throw new Error(
-				`Session "${parsed.sessionId}" does not exist.\nRecovery: Use list_sessions or avoid specifying sessionId to list parameter definitions for all sessions.`,
+				`Error: Session "${parsed.sessionId}" does not exist.\nRecovery: Use list_sessions or avoid specifying sessionId to list parameter definitions for all sessions.`,
 			);
 		}
 

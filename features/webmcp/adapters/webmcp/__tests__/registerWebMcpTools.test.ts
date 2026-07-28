@@ -111,4 +111,76 @@ describe("registerWebMcpTools", () => {
 		expect(Array.isArray(result.structuredContent?.error)).toBe(true);
 		expect(result.content[0].text).toContain("Invalid input data");
 	});
+
+	it("passes list_parameter_definitions invalid-session text as-is", async () => {
+		const executes: Array<(input: unknown) => Promise<unknown>> = [];
+		const modelContext = {
+			registerTool: jest.fn(async (tool: any) => {
+				executes.push(tool.execute);
+			}),
+		};
+		const deps: ToolDeps = {
+			namespace: "main",
+			getLiveParameters: () => [],
+			listParameterNamespaces: () => ["main"],
+			batchParameterValueUpdate: jest.fn(),
+			createModelState: jest.fn(),
+			importModelState: jest.fn(),
+		};
+		await registerWebMcpTools(
+			modelContext as any,
+			() => deps,
+			new AbortController().signal,
+		);
+		const result = (await executes[1]({sessionId: "bad"})) as {
+			isError?: true;
+			content: Array<{text: string}>;
+		};
+		expect(result.isError).toBe(true);
+		expect(result.content[0].text).toBe(
+			'Error: Session "bad" does not exist.\nRecovery: Use list_sessions or avoid specifying sessionId to list parameter definitions for all sessions.',
+		);
+	});
+
+	it("passes set_parameter_values total-failure text as-is without Error/Recovery wrap", async () => {
+		const executes: Array<(input: unknown) => Promise<unknown>> = [];
+		const modelContext = {
+			registerTool: jest.fn(async (tool: any) => {
+				executes.push(tool.execute);
+			}),
+		};
+		const deps: ToolDeps = {
+			namespace: "main",
+			getLiveParameters: () => [],
+			listParameterNamespaces: () => ["main"],
+			batchParameterValueUpdate: jest.fn(),
+			createModelState: jest.fn(),
+			importModelState: jest.fn(),
+		};
+		await registerWebMcpTools(
+			modelContext as any,
+			() => deps,
+			new AbortController().signal,
+		);
+		// set_parameter_values is index 2
+		const result = (await executes[2]({
+			updates: [{name: "missing", value: 1}],
+		})) as {
+			isError?: true;
+			content: Array<{text: string}>;
+			structuredContent?: {
+				applied?: string[];
+				errors?: unknown[];
+			};
+		};
+		expect(result.isError).toBe(true);
+		expect(result.content[0].text).toBe(
+			"Applied 0 of 1 updates. 1 failed.",
+		);
+		expect(result.content[0].text).not.toMatch(/^Error:/);
+		expect(result.content[0].text).not.toContain("Recovery:");
+		expect(result.structuredContent?.applied).toEqual([]);
+		expect(Array.isArray(result.structuredContent?.errors)).toBe(true);
+		expect(result.structuredContent?.errors?.length).toBeGreaterThan(0);
+	});
 });
