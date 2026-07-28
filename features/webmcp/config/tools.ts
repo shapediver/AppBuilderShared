@@ -28,7 +28,7 @@ export const SET_PARAMETER_VALUES_TOOL_DESCRIPTION =
 	"Input uses updates [{ name, value, sessionId? }] — use the field `updates` and `name`, not `parameters` or `id`. " +
 	"Read each parameter's `howto` from list_parameter_definitions for the exact value format per type (index vs label vs number vs color object). " +
 	"Valid updates still apply when others fail. " +
-	"If a user request is ambiguous (e.g. 'gold' when multiple gold variants exist, or a stone name that appears in multiple parameters), ask the user to clarify which parameter and which choice before calling set_parameter_values. " +
+	"If a user request is ambiguous (e.g. a value name that maps to multiple parameters, or a label that matches several choices across different parameters), ask the user to clarify which parameter and which choice before calling set_parameter_values. " +
 	"For relative changes ('wider', 'larger', 'smaller'), read currentValue from list_parameter_definitions first and pick a moderate change; do not jump to min or max. " +
 	"If two updates in one call target the same parameter with different values, detect the conflict and ask the user which one to apply instead of sending both.";
 
