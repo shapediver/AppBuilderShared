@@ -119,7 +119,7 @@ describe("resolveAndUpdate", () => {
 				{
 					name: "Width",
 					message:
-						'Value 200 is not valid for parameter "Width" (Float). Use a number in range [0, 100].',
+						'Value 200 is not valid for parameter "Width" (Float). Use a number in range [0, 100]. Tool validates min/max; out-of-range values are rejected.',
 				},
 			],
 		});
