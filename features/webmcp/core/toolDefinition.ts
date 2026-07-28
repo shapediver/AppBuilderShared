@@ -8,6 +8,8 @@ export class ToolExecutionError extends Error {
 
 	constructor(message: string, structuredContent?: Record<string, unknown>) {
 		super(message);
+		// ES5 emit breaks Error subclass prototype; restore for instanceof.
+		Object.setPrototypeOf(this, new.target.prototype);
 		this.name = "ToolExecutionError";
 		this.structuredContent = structuredContent;
 	}
