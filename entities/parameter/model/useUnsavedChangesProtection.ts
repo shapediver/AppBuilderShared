@@ -9,9 +9,14 @@ import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
  * entry directly from the store, so it stays in sync with parameter changes
  * and model state / parameter JSON creation or import without re-subscribing
  * on every state update.
+ *
+ * Only active when the env var `VITE_STATE_PROTECTION=true` is set, so existing
+ * configurators keep their previous behaviour unless explicitly opted in.
  */
 export function useUnsavedChangesProtection() {
 	useEffect(() => {
+		if (import.meta.env.VITE_STATE_PROTECTION !== "true") return;
+
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			const {history, historyIndex} =
 				useShapeDiverStoreParameters.getState();
