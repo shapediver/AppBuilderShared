@@ -181,6 +181,7 @@ export default function ParameterFileInputComponent(
 			parameterFormat: definition.format,
 			handleChange,
 			increaseReferenceCount: isStargate,
+			sessionId: props.namespace,
 		});
 
 	const statusData = useMemo(() => {
