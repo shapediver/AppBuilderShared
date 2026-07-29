@@ -11,6 +11,14 @@ jest.mock("../../../lib/computeAppliedParameterIds", () => ({
 }));
 
 import {createTool} from "@mastra/core/tools";
+import {
+	listParameterDefinitionsInputSchema,
+	listParameterDefinitionsOutputSchema,
+} from "../../../core/listParameterDefinitions";
+import {
+	listSessionsInputSchema,
+	listSessionsOutputSchema,
+} from "../../../core/listSessions";
 import type {ToolDeps} from "../../core/deps";
 import {buildMastraTools} from "../mastraTools";
 
@@ -48,5 +56,30 @@ describe("buildMastraTools", () => {
 			sessions: [{sessionId: "main"}],
 		});
 		expect(modelOut.value[0].text).toContain("Found 1 sessions");
+	});
+
+	it("passes Zod inputSchema and outputSchema through to createTool", () => {
+		const deps: ToolDeps = {
+			namespace: "main",
+			getLiveParameters: () => [],
+			listParameterNamespaces: () => ["main"],
+			batchParameterValueUpdate: jest.fn(),
+			createModelState: jest.fn(),
+			importModelState: jest.fn(),
+		};
+		const tools = buildMastraTools(deps);
+
+		expect(tools["list_sessions"].inputSchema).toBe(
+			listSessionsInputSchema,
+		);
+		expect(tools["list_sessions"].outputSchema).toBe(
+			listSessionsOutputSchema,
+		);
+		expect(tools["list_parameter_definitions"].inputSchema).toBe(
+			listParameterDefinitionsInputSchema,
+		);
+		expect(tools["list_parameter_definitions"].outputSchema).toBe(
+			listParameterDefinitionsOutputSchema,
+		);
 	});
 });
