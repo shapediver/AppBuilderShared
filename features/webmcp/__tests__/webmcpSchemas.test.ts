@@ -5,7 +5,7 @@ jest.mock("@AppBuilderLib/entities/parameter/lib/parameterStates", () => ({
 import {createModelStateInputSchema} from "../core/createModelState";
 import {
 	importModelStateInputSchema,
-	importModelStateSuccessOutputSchema,
+	importModelStateOutputSchema,
 } from "../core/importModelState";
 import {
 	listParameterDefinitionsInputSchema,
@@ -257,10 +257,10 @@ describe("webmcp input schemas", () => {
 		});
 	});
 
-	describe("importModelStateSuccessOutputSchema", () => {
+	describe("importModelStateOutputSchema", () => {
 		it("accepts success output with optional invalidParameters", () => {
 			expect(
-				importModelStateSuccessOutputSchema.parse({
+				importModelStateOutputSchema.parse({
 					success: true,
 					appliedParameterIds: ["width"],
 					invalidParameters: [
@@ -286,7 +286,7 @@ describe("webmcp input schemas", () => {
 
 		it("accepts empty appliedParameterIds", () => {
 			expect(
-				importModelStateSuccessOutputSchema.parse({
+				importModelStateOutputSchema.parse({
 					success: true,
 					appliedParameterIds: [],
 				}),

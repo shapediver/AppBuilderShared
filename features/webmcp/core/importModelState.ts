@@ -15,9 +15,6 @@ export const importModelStateOutputSchema = z.object({
 	invalidParameters: z.array(nameMessageSchema).optional(),
 });
 
-/** @deprecated alias kept for existing test name */
-export const importModelStateSuccessOutputSchema = importModelStateOutputSchema;
-
 export type ImportModelStateOutput = z.infer<
 	typeof importModelStateOutputSchema
 >;
