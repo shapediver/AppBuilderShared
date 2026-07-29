@@ -176,11 +176,13 @@ export default function useResolveAppBuilderSessions(
 						return result.data;
 					};
 					const iframeData = await getIframeData();
-					if (sessionIdx === 0) setCurrentModel(iframeData.model);
 					for (const savedState of iframeData.model.saved_states ??
 						[]) {
 						addSavedState(savedState);
 					}
+					// Set current model after seeding saved states so the widget
+					// does not query an empty store on first render.
+					if (sessionIdx === 0) setCurrentModel(iframeData.model);
 
 					return {
 						acceptRejectMode:

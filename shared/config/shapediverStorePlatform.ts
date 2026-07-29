@@ -39,9 +39,11 @@ export interface IShapeDiverStorePlatform {
 	) => Promise<IPlatformClientRef | undefined>;
 
 	/**
-	 * Wrapper for executing functions requiring an authenticated platform client.
+	 * Wrapper for executing functions that need a platform client.
 	 * Tries to re-authenticate in case the current authentication is invalid.
-	 * @param cb The callback to execute with an authenticated platform client.
+	 * When `redirect` is false, an anonymous (unauthenticated) client is allowed
+	 * so public platform APIs can be called without login.
+	 * @param cb The callback to execute with a platform client.
 	 * @param redirect Redirect for authentication in case re-authentication is required. Defaults to true.
 	 * @returns The result of the callback.
 	 */
