@@ -64,8 +64,9 @@ export function useWebMcpTools(
 	const componentSettingsRef = useRef<Record<string, any> | undefined>(
 		undefined,
 	);
-	componentSettingsRef.current = (theme as any)?.components
-		?.ParameterSelectComponent?.defaultProps?.componentSettings;
+	componentSettingsRef.current = (
+		theme as any
+	)?.components?.ParameterSelectComponent?.defaultProps?.componentSettings;
 
 	const sessionReady = !!namespace && !!sessions[namespace];
 	const paramsPopulated =

@@ -1,5 +1,7 @@
-import type {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
-import type {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
+import type {
+	IShapeDiverParameter,
+	IShapeDiverParameterDefinition,
+} from "@AppBuilderLib/entities/parameter/config/parameter";
 import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import type {
 	ICreateModelStateData,
