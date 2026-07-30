@@ -147,6 +147,7 @@ export default function ParameterStargateComponent(
 			parameterFormat: definition.format,
 			handleChange,
 			increaseReferenceCount: true,
+			sessionId: props.namespace,
 		});
 
 	const statusData = useMemo(() => {
