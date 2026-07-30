@@ -28,6 +28,21 @@ const LOCAL_STORAGE_REFRESH_TOKEN = "refresh_token";
 let clientRef: IPlatformClientRef | undefined = undefined;
 
 /**
+ * Resolve whether {@link IShapeDiverStorePlatform.authWrapper} may proceed.
+ * Anonymous clients (no JWT) are allowed when `redirect` is false, so public
+ * platform APIs (e.g. listing public saved states) work without login.
+ */
+function requireClient(
+	ref: IPlatformClientRef | undefined,
+	redirect: boolean,
+): IPlatformClientRef {
+	if (!ref || (redirect && !ref.jwtToken)) {
+		throw new Error("Authentication failed");
+	}
+	return ref;
+}
+
+/**
  * Store data related to the ShapeDiver Platform.
  * @see {@link IShapeDiverStorePlatform}
  */
@@ -45,10 +60,10 @@ export const useShapeDiverStorePlatform =
 					redirect: boolean = true,
 				) => {
 					const {authenticate} = get();
-					const clientRef = await authenticate(redirect);
-					if (!clientRef || !clientRef.jwtToken) {
-						throw new Error("Authentication failed");
-					}
+					const clientRef = requireClient(
+						await authenticate(redirect),
+						redirect,
+					);
 
 					try {
 						return await cb(clientRef);
@@ -62,7 +77,10 @@ export const useShapeDiverStorePlatform =
 								redirect,
 								true,
 							);
-							if (!newClientRef || !newClientRef.jwtToken) {
+							if (
+								!newClientRef ||
+								(redirect && !newClientRef.jwtToken)
+							) {
 								console.error("Re-authentication failed");
 								throw error;
 							}

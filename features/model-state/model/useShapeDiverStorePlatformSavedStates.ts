@@ -8,18 +8,17 @@ import {
 import {IPlatformPagedItemQueryProps} from "@AppBuilderLib/shared/config/shapediverStorePlatformGeneric";
 import {devtoolsSettings} from "@AppBuilderLib/shared/config/storeSettings";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
 import {defineFilter} from "@AppBuilderLib/shared/lib/platform/filter";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
-	SdPlatformQueryResponse,
 	SdPlatformRequestSavedStatePatch,
-	SdPlatformResponseSavedStatePublic,
 	SdPlatformSavedStateApiQueryParameters,
 	SdPlatformSavedStateQueryEmbeddableFields,
 	SdPlatformSortingOrder,
 } from "@shapediver/sdk.platform-api-sdk-v1";
 import {produce} from "immer";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 import {useShallow} from "zustand/react/shallow";
@@ -209,75 +208,116 @@ export const useShapeDiverStorePlatformSavedStates =
 					const [error, setError] = useState<Error | undefined>(
 						undefined,
 					);
+					const loadInFlightRef = useRef(false);
 
 					const loadMore = useCallback(async () => {
-						const {queryCache} = get();
-
-						// Note: We can't define the following filter criteria outside of loadMore,
-						// because some of them require a promise to be resolved.
-						const userFilter = defineFilter(
-							"owner_id[=]",
-							filterByUser,
-							(await getUser())?.id ?? "%",
-						);
-						const orgFilter = defineFilter(
-							"organization_id[=]",
-							filterByOrganization,
-							(await getUser())?.organization?.id ?? "%",
-						);
-						const modelFilter = defineFilter(
-							"model_id[=]",
-							filterByModel,
-							currentModel?.id ?? "%",
-						);
-
-						const params: SdPlatformSavedStateApiQueryParameters = {
-							...queryParamsExt,
-							offset:
-								queryCache[key]?.pagination?.next_offset ??
-								undefined,
-							filters: {
-								...queryParamsExt.filters,
-								...(userFilter ?? {}),
-								...(orgFilter ?? {}),
-								...(modelFilter ?? {}),
-							},
-						};
-
+						// Prevent parallel first-page fetches (effect / Strict Mode /
+						// infinite scroll) from duplicating ids.
+						if (loadInFlightRef.current) return;
+						loadInFlightRef.current = true;
 						setLoading(true);
-						let response:
-							| SdPlatformQueryResponse<SdPlatformResponseSavedStatePublic>
-							| Error
-							| undefined = undefined;
+
 						try {
-							response = await authWrapper(async (c) => {
-								if (!c) return;
+							// Note: We can't define the following filter criteria outside of loadMore,
+							// because some of them require a promise to be resolved.
+							const userFilter = defineFilter(
+								"owner_id[=]",
+								filterByUser,
+								(await getUser())?.id ?? "%",
+							);
+							const orgFilter = defineFilter(
+								"organization_id[=]",
+								filterByOrganization,
+								(await getUser())?.organization?.id ?? "%",
+							);
+							const modelFilter = defineFilter(
+								"model_id[=]",
+								filterByModel,
+								currentModel?.id ?? "%",
+							);
+
+							const {queryCache: cache} = get();
+							const params: SdPlatformSavedStateApiQueryParameters =
+								{
+									...queryParamsExt,
+									offset:
+										cache[key]?.pagination?.next_offset ??
+										undefined,
+									filters: {
+										...queryParamsExt.filters,
+										...(userFilter ?? {}),
+										...(orgFilter ?? {}),
+										...(modelFilter ?? {}),
+									},
+								};
+
+							// Off-platform: no SDK client — use items from iframe embedding.
+							if (!shouldUsePlatform()) {
+								const modelIdFilter =
+									filterByModel === true
+										? currentModel?.id
+										: typeof filterByModel === "string"
+											? filterByModel
+											: undefined;
+								const ids = Object.values(get().items)
+									.map((item) => item.data)
+									.filter((data) =>
+										filterByModel === undefined
+											? true
+											: !!modelIdFilter &&
+												data.model_id === modelIdFilter,
+									)
+									.map((data) => data.id);
+								set(
+									produce((state) => {
+										if (!state.queryCache[key]) {
+											state.queryCache[key] = {
+												items: [],
+												cacheKeys,
+											};
+										}
+										state.queryCache[key].items = ids;
+										state.queryCache[key].pagination = {
+											next_offset: undefined,
+										};
+									}),
+									false,
+									`loadMore cached ${key}`,
+								);
+								return;
+							}
+
+							// Public listing must work without login (redirect=false).
+							const response = await authWrapper(async (c) => {
 								return c.client.savedStates.query(params);
-							});
+							}, false);
 							if (!response) return;
 
 							const {pagination, result: items} = response.data;
 							items.forEach((item) => addItem(item));
 							set(
 								produce((state) => {
-									state.queryCache[key].items.push(
-										...items.map((m) => m.id),
-									);
+									const existing =
+										state.queryCache[key].items;
+									const newIds = items
+										.map((m) => m.id)
+										.filter((id) => !existing.includes(id));
+									existing.push(...newIds);
 									state.queryCache[key].pagination =
 										pagination;
 								}),
 								false,
 								`loadMore ${key}`,
 							);
+							return response;
 						} catch (error) {
 							// TODO central error handling
 							setError(error as Error);
-							response = error as Error;
+							return error as Error;
 						} finally {
+							loadInFlightRef.current = false;
 							setLoading(false);
 						}
-
-						return response;
 					}, [
 						authWrapper,
 						getUser,
@@ -287,6 +327,8 @@ export const useShapeDiverStorePlatformSavedStates =
 						filterByModel,
 						currentModel,
 						key,
+						cacheKeys,
+						addItem,
 					]);
 
 					return {

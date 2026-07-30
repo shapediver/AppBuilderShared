@@ -33,7 +33,7 @@ import {
 	useProps,
 } from "@mantine/core";
 import {SdPlatformSortingOrder} from "@shapediver/sdk.platform-api-sdk-v1";
-import {useContext, useEffect, useMemo, useState} from "react";
+import {useContext, useEffect, useMemo, useRef, useState} from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import {useShallow} from "zustand/react/shallow";
 
@@ -203,6 +203,16 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		return {items, itemData};
 	}, [savedStateIds, savedStateItems]);
 
+	// Load first page without a loader shell (avoids spinner flash when empty).
+	const initialFetchStartedRef = useRef(false);
+	useEffect(() => {
+		if (!currentModel || error || loading) return;
+		if (items.length > 0 || !hasNextPage) return;
+		if (initialFetchStartedRef.current) return;
+		initialFetchStartedRef.current = true;
+		void loadMore();
+	}, [currentModel, error, loading, items.length, hasNextPage, loadMore]);
+
 	const [selectedValue, setSelectedValue] = useState<string | null>(null);
 	const handleChange = async (value: string | null) => {
 		if (namespace && value) {
@@ -284,7 +294,8 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		);
 	}
 
-	if (items.length === 0 && !hasNextPage) {
+	// Hidden while loading / empty — no loader flash then disappear.
+	if (items.length === 0) {
 		return null;
 	}
 
