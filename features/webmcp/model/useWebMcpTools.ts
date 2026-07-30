@@ -123,7 +123,7 @@ export function useWebMcpTools(
 		crossOriginIsolated: environment.crossOriginIsolated,
 	};
 
-	if (!enabled || !isWebMcpAvailable()) {
+	if (enabled === false || !isWebMcpAvailable()) {
 		return {
 			registered: false,
 			ready: false,
