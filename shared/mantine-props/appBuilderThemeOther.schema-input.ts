@@ -9,6 +9,12 @@ export interface AppBuilderThemeOtherProps {
 	 * variables (v8 `light` variant colors). Default in product theme: `false`.
 	 */
 	v8ThemeSupport?: boolean;
+	/**
+	 * When `true`, installs a `beforeunload` handler that prompts before
+	 * closing/navigating away with unsaved parameter changes. Default in
+	 * product theme: `false` (opt-in, to avoid breaking existing configurators).
+	 */
+	stateProtection?: boolean;
 	/** Force light or dark color scheme on `MantineProvider`. */
 	forceColorScheme?: "light" | "dark";
 	/** Single favicon URL when `iconDarkUrl` / `iconLightUrl` are not both set. */
