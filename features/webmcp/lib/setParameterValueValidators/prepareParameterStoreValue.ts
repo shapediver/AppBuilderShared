@@ -1,10 +1,17 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import type {DecomposedColorFormat} from "@AppBuilderLib/shared/lib/colors";
 import {composeSdColor} from "@AppBuilderLib/shared/lib/colors";
+import type {z} from "@AppBuilderLib/shared/lib/zod";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
+import {parameterValueSchema} from "../../core/listParameterDefinitions";
 import {howtoForParameterType, isHowtoTypeKnown} from "../parameterHowto";
 import {toStringListStoreValue} from "../stringListValue";
-import type {ParameterValueInput, ParameterValuePrepareResult} from "./types";
+
+type ParameterValueInput = z.infer<typeof parameterValueSchema>;
+
+type ParameterValuePrepareResult =
+	| {success: true; storeValue: unknown}
+	| {success: false; message: string};
 
 const COLOR_ON_NON_COLOR_MESSAGE =
 	"Color object value is only valid for Color parameters.";

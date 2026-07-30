@@ -6,8 +6,19 @@ import type {
 	SetParameterValuesError,
 	SetParameterValuesOutput,
 } from "../core/setParameterValues";
-import {findParameterByName} from "./findParameterByName";
 import {prepareParameterStoreValue} from "./setParameterValueValidators/prepareParameterStoreValue";
+
+function findParameterByName(
+	parameters: IShapeDiverParameter<any>[],
+	name: string,
+): IShapeDiverParameter<any> | undefined {
+	return parameters.find(
+		(p) =>
+			p.definition.id === name ||
+			p.definition.name === name ||
+			p.definition.displayname === name,
+	);
+}
 
 export async function resolveAndUpdate(
 	defaultNamespace: string,
