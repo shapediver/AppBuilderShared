@@ -129,4 +129,44 @@ describe("listParameterDefinitionsTool", () => {
 			"Found 2 parameter definitions for 1 sessions (page starting at offset 0; 3 more remain). Use set_parameter_values to update the state of parameters. More parameters match beyond this page. Raise offset (e.g. offset=2) or narrow your search.",
 		);
 	});
+
+	it("surfaces choiceMetadata from getChoiceMetadata for STRINGLIST", async () => {
+		const stringListParam = {
+			...mockParam("material", "Material"),
+			definition: {
+				id: "material",
+				name: "Material",
+				type: ResParameterType.STRINGLIST,
+				choices: ["Apple"],
+				defval: 0,
+				hidden: false,
+			},
+			state: {
+				uiValue: 0,
+				execValue: 0,
+				dirty: false,
+				disableOtherParameters: false,
+				stringExecValue: () => "",
+			},
+		} as IShapeDiverParameter<any>;
+
+		const metadata = {
+			Apple: {
+				description: "Crisp",
+				displayname: "Apples",
+				imageUrl: "http://x/a.jpg",
+			},
+		};
+		const deps = {
+			...mockDeps({main: [stringListParam]}),
+			getChoiceMetadata: () => metadata,
+		};
+
+		const output = await listParameterDefinitionsTool.execute(
+			deps,
+			{},
+			signal,
+		);
+		expect(output.parameters[0].choiceMetadata).toEqual(metadata);
+	});
 });

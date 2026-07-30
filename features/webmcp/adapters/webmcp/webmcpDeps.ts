@@ -28,6 +28,7 @@ export interface WebMcpToolsRefs {
 		(props: IImportModelStateData) => Promise<IImportModelStateResult>
 	>;
 	listParameterNamespaces: () => string[];
+	componentSettingsRef: MutableRefObject<Record<string, any> | undefined>;
 }
 
 export function buildWebMcpDeps(refs: WebMcpToolsRefs): ToolDeps {
@@ -41,5 +42,11 @@ export function buildWebMcpDeps(refs: WebMcpToolsRefs): ToolDeps {
 		batchParameterValueUpdate: refs.batchParameterValueUpdateRef.current,
 		createModelState: refs.createModelStateRef.current,
 		importModelState: refs.importModelStateRef.current,
+		getChoiceMetadata: (ns, def) => {
+			const cs = refs.componentSettingsRef.current;
+			if (!cs) return undefined;
+			const key = def.displayname || def.name || def.id;
+			return cs[key]?.itemData;
+		},
 	};
 }

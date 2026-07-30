@@ -57,6 +57,43 @@ describe("mapParameterDefinition", () => {
 		});
 	});
 
+	it("attaches choiceMetadata for STRINGLIST when provided", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "list-1",
+				name: "Material",
+				type: ResParameterType.STRINGLIST,
+				choices: ["Apple"],
+				defval: 0,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 0} as IShapeDiverParameter<any>["state"],
+		});
+
+		const result = mapParameterDefinition(param, SESSION_ID, {
+			Apple: {description: "Crisp"},
+		});
+		expect(result.choiceMetadata).toEqual({
+			Apple: {description: "Crisp"},
+		});
+	});
+
+	it("omits choiceMetadata for STRINGLIST when not provided", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "list-1",
+				name: "Material",
+				type: ResParameterType.STRINGLIST,
+				choices: ["Apple"],
+				defval: 0,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 0} as IShapeDiverParameter<any>["state"],
+		});
+
+		expect(
+			mapParameterDefinition(param, SESSION_ID).choiceMetadata,
+		).toBeUndefined();
+	});
+
 	it("maps COLOR with decomposed values", () => {
 		const param = createMockParameter({
 			definition: {

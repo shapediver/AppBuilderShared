@@ -1,5 +1,6 @@
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
+import type {ChoiceMetadata} from "./deps";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
 import type {ToolDef} from "./toolDefinition";
 
@@ -17,6 +18,12 @@ export const parameterValueSchema = z.union([
 	colorValueSchema,
 ]);
 
+const choiceMetadataValueSchema = z.object({
+	description: z.string().optional(),
+	displayname: z.string().optional(),
+	imageUrl: z.string().optional(),
+});
+
 const ListParameterDefinitionItemSchema = z.object({
 	id: z.string(),
 	sessionId: z.string(),
@@ -30,6 +37,7 @@ const ListParameterDefinitionItemSchema = z.object({
 	max: z.number().nullable().optional(),
 	decimalplaces: z.number().nullable().optional(),
 	choices: z.array(z.string()).optional(),
+	choiceMetadata: z.record(z.string(), choiceMetadataValueSchema).optional(),
 	currentValue: parameterValueSchema.optional(),
 	defaultValue: parameterValueSchema.optional(),
 	hidden: z.boolean().optional(),
@@ -160,9 +168,13 @@ export const listParameterDefinitionsTool: ToolDef<
 					matchesSearch(p.definition, search),
 				);
 			}
-			return params.map((param) =>
-				mapParameterDefinition(param, sessionId),
-			);
+			return params.map((param) => {
+				const choiceMetadata = deps.getChoiceMetadata?.(
+					sessionId,
+					param.definition,
+				) as Record<string, ChoiceMetadata> | undefined;
+				return mapParameterDefinition(param, sessionId, choiceMetadata);
+			});
 		});
 
 		const limit = parsed.limit ?? DEFAULT_LIMIT;

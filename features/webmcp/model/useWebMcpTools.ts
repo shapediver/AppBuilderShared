@@ -2,6 +2,7 @@ import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/mo
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
+import {useCustomTheme} from "@AppBuilderLib/shared/ui/theme/useCustomTheme";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {registerWebMcpTools} from "../adapters/webmcp/registerWebMcpTools";
@@ -44,6 +45,7 @@ export function useWebMcpTools(
 	const {importModelState} = useImportModelState({
 		namespace: namespace ?? "",
 	});
+	const {theme} = useCustomTheme();
 	const namespaceRef = useRef<string>(namespace ?? "");
 	namespaceRef.current = namespace ?? "";
 
@@ -58,6 +60,12 @@ export function useWebMcpTools(
 
 	const importModelStateRef = useRef(importModelState);
 	importModelStateRef.current = importModelState;
+
+	const componentSettingsRef = useRef<Record<string, any> | undefined>(
+		undefined,
+	);
+	componentSettingsRef.current = (theme as any)?.components
+		?.ParameterSelectComponent?.defaultProps?.componentSettings;
 
 	const sessionReady = !!namespace && !!sessions[namespace];
 	const paramsPopulated =
@@ -83,6 +91,7 @@ export function useWebMcpTools(
 			batchParameterValueUpdateRef,
 			createModelStateRef,
 			importModelStateRef,
+			componentSettingsRef,
 			listParameterNamespaces: () =>
 				Object.keys(
 					useShapeDiverStoreParameters.getState().parameterStores,
