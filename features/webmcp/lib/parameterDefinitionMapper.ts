@@ -1,6 +1,7 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {decomposeSdColor} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
+import type {ChoiceMetadata} from "../core/deps";
 import {
 	SUPPORTED_PARAMETER_TYPES,
 	type ListParameterDefinitionItem,
@@ -11,6 +12,7 @@ import {parseStringListIndex} from "./stringListValue";
 export function mapParameterDefinition(
 	param: IShapeDiverParameter<any>,
 	sessionId: string,
+	choiceMetadata?: Record<string, ChoiceMetadata>,
 ): ListParameterDefinitionItem {
 	const def = param.definition;
 	const currentValue = param.state.uiValue;
@@ -44,6 +46,9 @@ export function mapParameterDefinition(
 		item.choices = def.choices;
 		item.currentValue = parseStringListIndex(currentValue);
 		item.defaultValue = parseStringListIndex(def.defval);
+		if (choiceMetadata && Object.keys(choiceMetadata).length > 0) {
+			item.choiceMetadata = choiceMetadata;
+		}
 	} else if (def.type === ResParameterType.COLOR) {
 		item.currentValue = decomposeSdColor(currentValue as string);
 		item.defaultValue = decomposeSdColor(def.defval as string);
