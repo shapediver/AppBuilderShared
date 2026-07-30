@@ -1,7 +1,7 @@
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import type {ChoiceMetadata} from "./deps";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
+import type {ChoiceMetadata} from "./deps";
 import type {ToolDef} from "./toolDefinition";
 
 const colorValueSchema = z.object({
