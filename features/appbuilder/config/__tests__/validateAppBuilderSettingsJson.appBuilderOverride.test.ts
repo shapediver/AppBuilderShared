@@ -320,6 +320,14 @@ describe("validateAppBuilderSettingsJson themeOverrides.other", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts stateProtection boolean", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			themeOverrides: {other: {stateProtection: true}},
+		});
+		expect(result.success).toBe(true);
+	});
+
 	it("rejects unknown keys under themeOverrides.other", () => {
 		const result = validateAppBuilderSettingsJson({
 			version: "1.0",

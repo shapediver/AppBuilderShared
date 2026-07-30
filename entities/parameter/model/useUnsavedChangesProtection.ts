@@ -1,3 +1,4 @@
+import {useMantineTheme} from "@mantine/core";
 import {useEffect} from "react";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
@@ -10,12 +11,16 @@ import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
  * and model state / parameter JSON creation or import without re-subscribing
  * on every state update.
  *
- * Only active when the env var `VITE_STATE_PROTECTION=true` is set, so existing
- * configurators keep their previous behaviour unless explicitly opted in.
+ * Only active when the theme flag `theme.other.stateProtection` is `true`, so
+ * existing configurators keep their previous behaviour unless explicitly
+ * opted in via `themeOverrides.other`.
  */
 export function useUnsavedChangesProtection() {
+	const theme = useMantineTheme();
+	const enabled = theme.other?.stateProtection === true;
+
 	useEffect(() => {
-		if (import.meta.env.VITE_STATE_PROTECTION !== "true") return;
+		if (!enabled) return;
 
 		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
 			const {history, historyIndex} =
@@ -33,5 +38,5 @@ export function useUnsavedChangesProtection() {
 		return () => {
 			window.removeEventListener("beforeunload", handleBeforeUnload);
 		};
-	}, []);
+	}, [enabled]);
 }

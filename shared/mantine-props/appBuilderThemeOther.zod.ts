@@ -3,6 +3,7 @@ import {z} from "@AppBuilderLib/shared/lib/zod";
 
 export const appBuilderThemeOtherPropsSchema = z.strictObject({
 	v8ThemeSupport: z.boolean().optional(),
+	stateProtection: z.boolean().optional(),
 	forceColorScheme: z
 		.union([z.literal("light"), z.literal("dark")])
 		.optional(),

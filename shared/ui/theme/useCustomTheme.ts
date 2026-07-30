@@ -199,6 +199,11 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * `light` variant colors. Off by default — enable via `themeOverrides.other`.
 			 */
 			v8ThemeSupport: false,
+			/**
+			 * `beforeunload` protection prompt for unsaved parameter changes.
+			 * Off by default — enable via `themeOverrides.other`.
+			 */
+			stateProtection: false,
 			/** Single favicon URL (used when iconDarkUrl and iconLightUrl are not both set). */
 			iconUrl: "/favicon.ico",
 			/** Dark-scheme favicon; pair with iconLightUrl to switch via prefers-color-scheme. */
