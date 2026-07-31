@@ -220,15 +220,24 @@ export const useShapeDiverStorePlatformSavedStates =
 						try {
 							// Note: We can't define the following filter criteria outside of loadMore,
 							// because some of them require a promise to be resolved.
+							// Skip getUser() when neither user nor organization filter is needed:
+							// getUser() authenticates with redirect=true by default, which would
+							// override a `redirect=0` URL parameter and trigger a login redirect.
+							const needsUser =
+								filterByUser !== undefined ||
+								filterByOrganization !== undefined;
+							const user = needsUser
+								? await getUser()
+								: undefined;
 							const userFilter = defineFilter(
 								"owner_id[=]",
 								filterByUser,
-								(await getUser())?.id ?? "%",
+								user?.id ?? "%",
 							);
 							const orgFilter = defineFilter(
 								"organization_id[=]",
 								filterByOrganization,
-								(await getUser())?.organization?.id ?? "%",
+								user?.organization?.id ?? "%",
 							);
 							const modelFilter = defineFilter(
 								"model_id[=]",
