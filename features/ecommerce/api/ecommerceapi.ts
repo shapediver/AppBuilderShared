@@ -206,71 +206,77 @@ export class ECommerceApi implements IECommerceApi {
 }
 
 export class ECommerceApiConnector implements IECommerceApiConnector {
-	peerIsReady: Promise<ICrossWindowPeerInfo>;
+	
+	#_peerIsReady: Promise<ICrossWindowPeerInfo>;
+
+	get peerIsReady() {
+		return this.#_peerIsReady;
+	} 
 
 	/**
 	 * Implementation of the API actions.
 	 */
-	actions: IECommerceApiActions;
+	#actions: IECommerceApiActions;
 
 	/**
 	 * The cross window API instance to use for communication
 	 * with the application using the e-commerce API.
 	 */
-	crossWindowApi: ICrossWindowApi;
+	#crossWindowApi: ICrossWindowApi;
 
 	/**
 	 * Timeout for the API calls.
 	 */
-	timeout?: number;
+	#timeout?: number;
 
-	debug: boolean;
+	/** Debug flag. */
+	#debug: boolean;
 
 	constructor(
 		actions: IECommerceApiActions,
 		crossWindowApi: ICrossWindowApi,
 		options?: ICrossWindowApiOptions,
 	) {
-		this.actions = actions;
-		this.crossWindowApi = crossWindowApi;
-		this.debug = options?.debug ?? false;
-		this.timeout = options?.timeout;
-		this.peerIsReady = this.crossWindowApi
-			.handshake(MESSAGE_TYPE_HANDSHAKE, this.timeout)
+		this.#actions = actions;
+		this.#crossWindowApi = crossWindowApi;
+		this.#debug = options?.debug ?? false;
+		this.#timeout = options?.timeout;
+		this.#_peerIsReady = this.#crossWindowApi
+			.handshake(MESSAGE_TYPE_HANDSHAKE, this.#timeout)
 			.then((peerInfo) => {
-				this.crossWindowApi.on(
+				this.#crossWindowApi.on(
 					MESSAGE_TYPE_ADD_ITEM_TO_CART,
 					(data: IAddItemToCartData) =>
-						this.actions.addItemToCart(data),
+						this.#actions.addItemToCart(data),
 				);
-				this.crossWindowApi.on(MESSAGE_TYPE_GET_USER_PROFILE, () =>
-					this.actions.getUserProfile(),
+				this.#crossWindowApi.on(MESSAGE_TYPE_GET_USER_PROFILE, () =>
+					this.#actions.getUserProfile(),
 				);
-				this.crossWindowApi.on(MESSAGE_TYPE_CLOSE_CONFIGURATOR, () =>
-					this.actions.closeConfigurator(),
+				this.#crossWindowApi.on(MESSAGE_TYPE_CLOSE_CONFIGURATOR, () =>
+					this.#actions.closeConfigurator(),
 				);
-				this.crossWindowApi.on(MESSAGE_TYPE_GET_PARENT_PAGE_INFO, () =>
-					this.actions.getParentPageInfo(),
+				this.#crossWindowApi.on(MESSAGE_TYPE_GET_PARENT_PAGE_INFO, () =>
+					this.#actions.getParentPageInfo(),
 				);
-				this.crossWindowApi.on(
+				this.#crossWindowApi.on(
 					MESSAGE_TYPE_UPDATE_SHARING_LINK,
 					(data: IUpdateSharingLinkData) =>
-						this.actions.updateSharingLink(data),
+						this.#actions.updateSharingLink(data),
 				);
-				this.crossWindowApi.on(
+				this.#crossWindowApi.on(
 					MESSAGE_TYPE_SCROLLINGAPI_SET_PARAMETERS,
 					(data: IScrollingApiSetParametersData) =>
-						this.actions.scrollingApiSetParameters(data),
+						this.#actions.scrollingApiSetParameters(data),
 				);
-				this.crossWindowApi.on(
+				this.#crossWindowApi.on(
 					MESSAGE_TYPE_SCROLLINGAPI_LOAD_MORE,
 					(data: IScrollingApiLoadMoreData) =>
-						this.actions.scrollingApiLoadMore(data),
+						this.#actions.scrollingApiLoadMore(data),
 				);
-				this.crossWindowApi.on(
+				this.#crossWindowApi.on(
 					MESSAGE_TYPE_MESSAGE_TO_PARENT,
 					(data: IMessageToParentData) =>
-						this.actions.messageToParent(data),
+						this.#actions.messageToParent(data),
 				);
 
 				return peerInfo;
@@ -282,10 +288,10 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 	): Promise<IUpdateParameterValuesReply> {
 		await this.peerIsReady;
 
-		return this.crossWindowApi.send(
+		return this.#crossWindowApi.send(
 			MESSAGE_TYPE_CONNECTOR_UPDATE_PARAMETER_VALUES,
 			data,
-			this.timeout,
+			this.#timeout,
 		);
 	}
 
@@ -294,10 +300,10 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 	): Promise<ICreateModelStateResult> {
 		await this.peerIsReady;
 
-		return this.crossWindowApi.send(
+		return this.#crossWindowApi.send(
 			MESSAGE_TYPE_CONNECTOR_CREATE_MODEL_STATE,
 			data,
-			this.timeout,
+			this.#timeout,
 		);
 	}
 
@@ -306,10 +312,10 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 	): Promise<IImportModelStateResult> {
 		await this.peerIsReady;
 
-		return this.crossWindowApi.send(
+		return this.#crossWindowApi.send(
 			MESSAGE_TYPE_CONNECTOR_IMPORT_MODEL_STATE,
 			data,
-			this.timeout,
+			this.#timeout,
 		);
 	}
 }
