@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
 import {MantineProvider} from "@mantine/core";
 import {fireEvent, render, screen} from "@testing-library/react";

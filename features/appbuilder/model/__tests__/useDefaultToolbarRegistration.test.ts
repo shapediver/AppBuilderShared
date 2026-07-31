@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
 import {useShapeDiverDefaultViewportToolbarStore} from "@AppBuilderLib/entities/viewport/model/useShapeDiverDefaultViewportToolbarStore";
 import type {IViewportApi} from "@shapediver/viewer.viewport";
