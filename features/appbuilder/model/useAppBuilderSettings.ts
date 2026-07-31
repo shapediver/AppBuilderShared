@@ -114,7 +114,11 @@ export default function useAppBuilderSettings(
 			: undefined;
 	const context = parameters.get(QUERYPARAM_CONTEXT);
 	const savedStateId = parameters.get(QUERYPARAM_SAVEDSTATEID);
-	const {initialSavedState} = useQuerySavedState(savedStateId);
+	const {initialSavedState} = useQuerySavedState(
+		savedStateId,
+		slug ?? undefined,
+		platformUrl,
+	);
 	const initialParameterValues = useMemo(
 		() =>
 			initialSavedState.status === "success" &&
@@ -252,6 +256,7 @@ export default function useAppBuilderSettings(
 		modelStateId,
 		themeSessions,
 		initialParameterValues,
+		initialSavedState.status,
 	]);
 
 	// create the settings object, either with the json data or without
