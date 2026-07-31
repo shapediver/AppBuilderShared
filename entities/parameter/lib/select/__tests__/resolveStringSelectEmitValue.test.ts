@@ -1,6 +1,15 @@
 import {resolveStringSelectEmitValue} from "../resolveStringSelectEmitValue";
 
 describe("resolveStringSelectEmitValue", () => {
+	it("uses itemKey for static item configs", () => {
+		expect(
+			resolveStringSelectEmitValue({
+				type: "grid",
+				items: ["one", "two"],
+			}),
+		).toBe("itemKey");
+	});
+
 	it("uses itemData for filterable database configs", () => {
 		expect(
 			resolveStringSelectEmitValue({
@@ -18,13 +27,13 @@ describe("resolveStringSelectEmitValue", () => {
 		).toBe("itemData");
 	});
 
-	it("uses itemKey for e-commerce source without database", () => {
+	it("uses itemData for e-commerce source without database", () => {
 		expect(
 			resolveStringSelectEmitValue({
 				type: "grid",
 				source: "graphics",
 			}),
-		).toBe("itemKey");
+		).toBe("itemData");
 	});
 
 	it("prefers database over source when both are set", () => {
