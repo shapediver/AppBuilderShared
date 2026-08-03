@@ -1148,6 +1148,9 @@ const createInstance = (
 		instance.session,
 		instance.parameterValues,
 	);
+	const currentSessionOutputsLoaded = Object.values(
+		instance.session.outputs,
+	).every((output) => output.node !== undefined);
 
 	// first we need to check if the session instance already exists
 	// there are two cases:
@@ -1163,6 +1166,17 @@ const createInstance = (
 		customizationResultPromise[instanceCustomizationId] !== undefined
 	) {
 		creationPromise = customizationResultPromise[instanceCustomizationId];
+	} else if (currentSessionMatches && !currentSessionOutputsLoaded) {
+		// The session creation response already contains the output versions for
+		// its current parameter values. Load those outputs without submitting a
+		// second customization, and keep the embedded session node out of the
+		// viewer scene because only its instances should be displayed.
+		instance.session.automaticSceneUpdate = false;
+		creationPromise = instance.session.updateOutputs().then((node) => {
+			addCustomizationResult(instanceCustomizationId, node);
+			return node;
+		});
+		customizationResultPromise[instanceCustomizationId] = creationPromise;
 	} else if (currentSessionMatches) {
 		creationPromise = Promise.resolve(instance.session.node).then(
 			(node) => {
