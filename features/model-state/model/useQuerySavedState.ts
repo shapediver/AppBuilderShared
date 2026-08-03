@@ -1,11 +1,7 @@
-import {
-	getDefaultPlatformUrl,
-	getPlatformClientId,
-	shouldUsePlatform,
-} from "@AppBuilderLib/shared/lib/platform/environment";
+import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
 import useAsync from "@AppBuilderLib/shared/lib/useAsync";
+import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {
-	create as createSdk,
 	SdPlatformQueryResponse,
 	SdPlatformResponseSavedStatePublic,
 } from "@shapediver/sdk.platform-api-sdk-v1";
@@ -13,42 +9,21 @@ import {useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {useShapeDiverStorePlatformSavedStates} from "./useShapeDiverStorePlatformSavedStates";
 
-// Fetch the saved states of a model via the iframe-embedding endpoint.
-// Used off-platform, where the saved_states/query API is not CORS-enabled and
-// the store has no platform client. iframeEmbedding is public and CORS-enabled.
-async function loadFromIframe(
-	slug: string,
-	platformUrl?: string,
-): Promise<SdPlatformResponseSavedStatePublic[]> {
-	const client = createSdk({
-		clientId: getPlatformClientId(),
-		baseUrl: platformUrl ?? getDefaultPlatformUrl(),
-	});
-	const result = await client.models.iframeEmbedding(slug, {
-		saved_states: true,
-	});
-	return (
-		(result.data?.model?.saved_states as
-			| SdPlatformResponseSavedStatePublic[]
-			| undefined) ?? []
-	);
-}
-
-export default function useQuerySavedState(
-	savedStateId: string | null,
-	slug?: string,
-	platformUrl?: string,
-) {
+export default function useQuerySavedState(savedStateId: string | null) {
 	const [initialSavedState, setInitialSavedState] = useState<{
 		status: "loading" | "success" | "error";
 		data: SdPlatformResponseSavedStatePublic | undefined;
 	}>({status: savedStateId ? "loading" : "success", data: undefined});
 
-	const {useQuery, addItem} = useShapeDiverStorePlatformSavedStates(
+	const {useQuery, storeItems} = useShapeDiverStorePlatformSavedStates(
 		useShallow((state) => ({
 			useQuery: state.useQuery,
-			addItem: state.addItem,
+			storeItems: state.items,
 		})),
+	);
+
+	const {currentModel} = useShapeDiverStorePlatform(
+		useShallow((state) => ({currentModel: state.currentModel})),
 	);
 
 	const {
@@ -77,12 +52,10 @@ export default function useQuerySavedState(
 	// Platform path: use the store's query (loadMore), which authenticates with
 	// redirect=false so public saved states work without a login redirect.
 	//
-	// Off-platform path: the store has no platform client (authenticate returns
-	// undefined) and session resolution is blocked while this hook is "loading",
-	// which deadlocks the iframe-embedding flow that would otherwise seed saved
-	// states into the store. The saved_states/query API is not CORS-enabled for
-	// arbitrary origins, so use the iframe-embedding endpoint (which is) with the
-	// model slug to fetch the saved state and seed the store.
+	// Off-platform path: the store has no platform client. Session resolution
+	// (useResolveAppBuilderSessions) seeds saved states into the store via the
+	// iframe-embedding call it already performs. Read the seeded item from the
+	// store instead of issuing a second iframe call.
 	useAsync(
 		async () => {
 			if (initialSavedState.status !== "loading") return;
@@ -99,22 +72,24 @@ export default function useQuerySavedState(
 				return;
 			}
 
-			if (!slug) {
-				setInitialSavedState({status: "error", data: undefined});
+			const stored = storeItems[savedStateId]?.data;
+			if (stored) {
+				setInitialSavedState({status: "success", data: stored});
 				return;
 			}
-			const savedStates = await loadFromIframe(slug, platformUrl);
-			return {
-				success: true,
-				data: {result: savedStates},
-			} as SdPlatformQueryResponse<SdPlatformResponseSavedStatePublic>;
+			// Resolve finished seeding the store (currentModel is set) but the
+			// requested saved state is not part of the model's saved states.
+			if (currentModel) {
+				setInitialSavedState({status: "error", data: undefined});
+			}
+			// else: resolve has not run yet, stay loading.
 		},
 		[
 			savedStateId,
-			slug,
-			platformUrl,
 			savedStateIds.length,
 			savedStateLoading,
+			storeItems,
+			currentModel,
 			initialSavedState,
 		],
 		{
@@ -137,7 +112,6 @@ export default function useQuerySavedState(
 				if (!success || !result) return;
 				const found = result.find((s) => s.id === savedStateId);
 				if (found) {
-					addItem(found);
 					setInitialSavedState({status: "success", data: found});
 				} else {
 					setInitialSavedState({status: "error", data: undefined});
