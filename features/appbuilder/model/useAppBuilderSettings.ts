@@ -114,11 +114,7 @@ export default function useAppBuilderSettings(
 			: undefined;
 	const context = parameters.get(QUERYPARAM_CONTEXT);
 	const savedStateId = parameters.get(QUERYPARAM_SAVEDSTATEID);
-	const {initialSavedState} = useQuerySavedState(
-		savedStateId,
-		slug ?? undefined,
-		platformUrl,
-	);
+	const {initialSavedState} = useQuerySavedState(savedStateId);
 	const initialParameterValues = useMemo(
 		() =>
 			initialSavedState.status === "success" &&
@@ -145,7 +141,6 @@ export default function useAppBuilderSettings(
 						slug,
 						platformUrl: platformUrl ?? getDefaultPlatformUrl(),
 						modelStateId,
-						initialParameterValues,
 					} as IAppBuilderSettingsSession)
 				: ticket && modelViewUrl
 					? {
@@ -153,17 +148,9 @@ export default function useAppBuilderSettings(
 							ticket,
 							modelViewUrl,
 							modelStateId,
-							initialParameterValues,
 						}
 					: undefined,
-		[
-			slug,
-			platformUrl,
-			ticket,
-			modelViewUrl,
-			modelStateId,
-			initialParameterValues,
-		],
+		[slug, platformUrl, ticket, modelViewUrl, modelStateId],
 	);
 
 	// get all query parameters starting with QUERYPARAM_PARAMVALUE_PREFIX
@@ -199,7 +186,7 @@ export default function useAppBuilderSettings(
 	const sessionsArray = useMemo<
 		IAppBuilderSettingsJsonSession[] | undefined
 	>(() => {
-		if (loading || initialSavedState.status === "loading") return undefined;
+		if (loading) return undefined;
 
 		if (!value) {
 			// No JSON loaded, use query params or default session
@@ -213,9 +200,6 @@ export default function useAppBuilderSettings(
 
 			if (modelStateId && !mergedSession.modelStateId)
 				mergedSession.modelStateId = modelStateId;
-
-			if (initialParameterValues && !mergedSession.initialParameterValues)
-				mergedSession.initialParameterValues = initialParameterValues;
 
 			return [mergedSession, ...(themeSessions ?? [])];
 		} else {
@@ -237,15 +221,6 @@ export default function useAppBuilderSettings(
 				combinedSessions[0].modelStateId = modelStateId;
 			}
 
-			if (
-				initialParameterValues &&
-				combinedSessions.length > 0 &&
-				!combinedSessions[0].initialParameterValues
-			) {
-				combinedSessions[0].initialParameterValues =
-					initialParameterValues;
-			}
-
 			return combinedSessions.concat(themeSessions ?? []);
 		}
 	}, [
@@ -255,8 +230,6 @@ export default function useAppBuilderSettings(
 		queryParamSession,
 		modelStateId,
 		themeSessions,
-		initialParameterValues,
-		initialSavedState.status,
 	]);
 
 	// create the settings object, either with the json data or without
@@ -311,6 +284,14 @@ export default function useAppBuilderSettings(
 		loading: resolveLoading,
 	} = useResolveAppBuilderSettings(settings);
 
+	// add the initial parameter values of the resolved saved state to the first session
+	if (initialParameterValues && resolvedSettings?.sessions?.length) {
+		const session = resolvedSettings.sessions[0];
+		if (!session.initialParameterValues)
+			session.initialParameterValues = {};
+		Object.assign(session.initialParameterValues, initialParameterValues);
+	}
+
 	// add context as an initial parameter value to all sessions
 	if (context && resolvedSettings?.sessions) {
 		for (let i = 0; i < resolvedSettings.sessions.length; i++) {
@@ -335,15 +316,20 @@ export default function useAppBuilderSettings(
 		}
 	}
 
+	// Withhold the resolved settings while the initial saved state is still
+	// loading, so the page does not start a viewer session before the saved
+	// state's initial parameter values are available.
+	const publicSettings =
+		initialSavedState.status === "loading" ? undefined : resolvedSettings;
+
 	return {
-		settings: resolvedSettings,
+		settings: publicSettings,
 		error: error || resolveError,
 		loading:
 			loading || resolveLoading || initialSavedState.status === "loading",
 		hasSettings: parameters.size > 0,
 		hasSession:
 			(settings?.sessions && settings.sessions.length > 0) ||
-			(resolvedSettings?.sessions &&
-				resolvedSettings.sessions.length > 0),
+			(publicSettings?.sessions && publicSettings.sessions.length > 0),
 	};
 }
