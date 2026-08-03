@@ -3,6 +3,7 @@ import useQuerySavedState from "@AppBuilderLib/features/model-state/model/useQue
 import {
 	QUERYPARAM_CONTEXT,
 	QUERYPARAM_DISABLEFALLBACKUI,
+	QUERYPARAM_JWTTOKEN,
 	QUERYPARAM_MODELSTATEID,
 	QUERYPARAM_MODELVIEWURL,
 	QUERYPARAM_PARAMVALUE_PREFIX,
@@ -100,6 +101,7 @@ export default function useAppBuilderSettings(
 	const modelViewUrl = parameters
 		.get(QUERYPARAM_MODELVIEWURL)
 		?.replace(/\/+$/, "");
+	const jwtToken = parameters.get(QUERYPARAM_JWTTOKEN) ?? undefined;
 	const slug = parameters.get(QUERYPARAM_SLUG);
 	const platformUrl = parameters
 		.get(QUERYPARAM_PLATFORMURL)
@@ -148,6 +150,7 @@ export default function useAppBuilderSettings(
 							id: "default",
 							ticket,
 							modelViewUrl,
+							jwtToken,
 							modelStateId,
 							initialParameterValues,
 						}
@@ -157,6 +160,7 @@ export default function useAppBuilderSettings(
 			platformUrl,
 			ticket,
 			modelViewUrl,
+			jwtToken,
 			modelStateId,
 			initialParameterValues,
 		],
