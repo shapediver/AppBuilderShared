@@ -1,6 +1,7 @@
 export const QUERYPARAM_SLUG = "slug";
 export const QUERYPARAM_TICKET = "ticket";
 export const QUERYPARAM_MODELVIEWURL = "modelViewUrl";
+export const QUERYPARAM_JWTTOKEN = "jwtToken";
 export const QUERYPARAM_PLATFORMURL = "platformUrl";
 export const QUERYPARAM_DISABLEFALLBACKUI = "disableFallbackUi";
 export const QUERYPARAM_TEMPLATE = "template";
