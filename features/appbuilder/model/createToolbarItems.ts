@@ -22,10 +22,11 @@ export const createToolbarCheckboxItem = ({
 	checked,
 	readOnly,
 	setChecked,
+	trailingAction,
 	...item
 }: Omit<ToolbarCheckboxItem, "type" | "props"> &
 	ToolbarCheckboxItem["props"]): ToolbarCheckboxItem => ({
 	type: "checkbox",
 	...item,
-	props: {checked, readOnly, setChecked},
+	props: {checked, readOnly, setChecked, trailingAction},
 });

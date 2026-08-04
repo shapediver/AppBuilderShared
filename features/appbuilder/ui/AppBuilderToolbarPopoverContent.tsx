@@ -89,10 +89,13 @@ export default function AppBuilderToolbarPopoverContent({
 															menuItem.props
 																.readOnly
 														}
-														disabled={
-															menuItem.disabled
-														}
-														onChange={() =>
+									disabled={
+										menuItem.disabled
+									}
+									trailingAction={
+										menuItem.props.trailingAction
+									}
+									onChange={() =>
 															menuItem.props.setChecked(
 																!menuItem.props
 																	.checked,

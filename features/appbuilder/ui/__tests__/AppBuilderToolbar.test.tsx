@@ -205,7 +205,7 @@ describe("AppBuilderToolbar", () => {
 		expect(firstButton.getAttribute("data-open")).toBe("false");
 	});
 
-	it("keeps an open popover while dismissal is generically guarded", () => {
+	it("closes an open popover when the canvas is clicked during an interaction", () => {
 		const toolbar = createToolbar("top");
 		useShapeDiverStoreInteractionRequestManagement.setState({
 			interactionRequests: {
@@ -244,7 +244,7 @@ describe("AppBuilderToolbar", () => {
 		document.body.appendChild(canvas);
 		fireEvent.pointerDown(canvas);
 
-		expect(firstButton.getAttribute("data-open")).toBe("true");
+		expect(firstButton.getAttribute("data-open")).toBe("false");
 
 	});
 });

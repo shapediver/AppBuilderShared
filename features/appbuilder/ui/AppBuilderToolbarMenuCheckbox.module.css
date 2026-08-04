@@ -1,5 +1,9 @@
-.root {
+.container {
 	width: 100%;
+}
+
+.root {
+	flex: 1;
 	padding: calc(var(--mantine-spacing-xs) / 1.5) var(--mantine-spacing-sm);
 	border-radius: var(--popover-radius, var(--mantine-radius-default));
 	cursor: pointer;

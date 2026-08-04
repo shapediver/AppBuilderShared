@@ -108,11 +108,15 @@ export default function AppBuilderToolbar(props: Props) {
 		const closeOnOutsidePointerDown = (
 			event: PointerEvent | MouseEvent | TouchEvent,
 		) => {
-			if (popoverDismissalBlocked) return;
-			if (event.target instanceof HTMLCanvasElement) {
+			const canvasTarget =
+				event.target instanceof HTMLCanvasElement ||
+				(event.target instanceof Element &&
+					!!event.target.closest("canvas"));
+			if (canvasTarget) {
 				setOpenedPopoverId(undefined);
 				return;
 			}
+			if (popoverDismissalBlocked) return;
 			if (isToolbarPopoverSafeTarget(event.target, toolbarRef.current)) {
 				return;
 			}

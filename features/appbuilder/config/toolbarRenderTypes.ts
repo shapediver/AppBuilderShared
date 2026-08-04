@@ -78,6 +78,13 @@ export type ToolbarCheckboxItem = ToolbarItemBase<
 		checked: boolean;
 		readOnly?: boolean;
 		setChecked: (checked: boolean) => void;
+		/** Optional parameter-scoped action displayed beside the checkbox. */
+		trailingAction?: {
+			label: string;
+			icon: IconType;
+			execute: () => void;
+			disabled?: boolean;
+		};
 	}
 >;
 

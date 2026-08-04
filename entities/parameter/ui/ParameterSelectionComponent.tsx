@@ -179,6 +179,7 @@ export default function ParameterSelectionComponent(
 
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
+	const showClearButton = selectionProps.buttons?.clear ?? true;
 	const alwaysActive = selectionProps.activeMode === "alwaysActive";
 	const presentation = resolveInteractionPresentation(
 		selectionProps.presentation,
@@ -416,6 +417,15 @@ export default function ParameterSelectionComponent(
 			// exclusive viewport interaction releases it. A blocked selection,
 			// however, can be manually retried.
 			readOnly: alwaysActive && effectiveSelectionActive,
+			// Kept on the parameter's own checkbox row. Future parameter settings
+			// can omit this action to hide Clear for that parameter.
+			trailingAction: showClearButton
+				? {
+						label: `Clear ${toolbarLabel}`,
+						icon: "tabler:circle-off",
+						execute: clearSelection,
+					}
+				: undefined,
 			setChecked: (checked) => {
 				if (checked) {
 					takeOverInteraction();
@@ -474,17 +484,6 @@ export default function ParameterSelectionComponent(
 			}),
 		);
 	}
-	commands.push(
-		createToolbarCommand({
-			id: `${namespace}-${definition.id}-${viewportId}-clear`,
-			label: "Clear",
-			icon: "tabler:circle-off",
-			aggregationId: "selection-clear",
-			order: 30,
-			execute: clearSelection,
-		}),
-	);
-
 	useInteractionToolbarContribution({
 		id: `${namespace}-${definition.id}-${viewportId}`,
 		namespace,
