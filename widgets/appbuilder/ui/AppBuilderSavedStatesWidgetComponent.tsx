@@ -146,15 +146,6 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		})),
 	);
 
-	const parameters = useMemo<URLSearchParams>(
-		() => new URLSearchParams(window.location.search),
-		[],
-	);
-	const initialSavedStateId = useMemo(
-		() => parameters.get(QUERYPARAM_SAVEDSTATEID),
-		[parameters],
-	);
-
 	const styleProps: MantineStyleProp = {};
 	if (context.orientation === "horizontal") {
 		styleProps.height = "100%";
@@ -223,11 +214,15 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 			const savedStateItem = savedStateItems[value];
 			try {
 				if (savedStateItem?.data?.parameters) {
+					// skipUrlUpdate: batchParameterValueUpdate would otherwise
+					// remove savedStateId from the URL, which clears selection
+					// via the URL listener below before we re-apply it.
 					await batchParameterValueUpdate(
 						{
 							[namespace]: savedStateItem.data.parameters,
 						},
 						false,
+						true,
 					);
 				}
 
@@ -246,21 +241,6 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		window.location.search,
 	);
 
-	// NOTE: savedStateIds updates regularly (e.g., during infinite scroll fetching),
-	// causing this hook to re-execute. This may trigger unnecessary state updates.
-	// TODO: If initialSavedStateId is not found in savedStateIds, we should ideally
-	// continue fetching until it's found or we reach the end of the list.
-	// For now, this edge case is not handled.
-	useEffect(() => {
-		if (
-			initialSavedStateId &&
-			selectedValue !== initialSavedStateId &&
-			savedStateIds.includes(initialSavedStateId)
-		) {
-			setSelectedValue(initialSavedStateId);
-		}
-	}, [savedStateIds]);
-
 	// Listen to URL changes:
 	// - popstate: browser navigation (back/forward)
 	// - urlchanged: programmatic URL changes via modifyUrl functions
@@ -274,13 +254,24 @@ export default function AppBuilderSavedStatesWidgetComponent(props: Props) {
 		};
 	}, []);
 
-	// listen to the query parameters in the URL and remove the selected value if it is removed
+	// Selection follows savedStateId in the URL:
+	// - present → select (once the item is loaded)
+	// - absent → clear (e.g. after a parameter change removes it)
+	// NOTE: If the id is not yet in savedStateIds (infinite scroll), keep
+	// waiting until it appears or the list ends. Edge case not fully handled.
 	useEffect(() => {
 		const parameters = new URLSearchParams(windowLocationSearch);
 		const savedStatesIdParam = parameters.get(QUERYPARAM_SAVEDSTATEID);
 
-		if (!savedStatesIdParam) setSelectedValue(null);
-	}, [windowLocationSearch]);
+		if (!savedStatesIdParam) {
+			setSelectedValue(null);
+			return;
+		}
+
+		if (savedStateIds.includes(savedStatesIdParam)) {
+			setSelectedValue(savedStatesIdParam);
+		}
+	}, [windowLocationSearch, savedStateIds]);
 
 	if (!currentModel) {
 		return null;
