@@ -12,7 +12,7 @@ export const useShapeDiverStoreInteractionRequestManagement =
 				addInteractionRequest: (request) => {
 					const {interactionRequests} = get();
 					const {viewportId, type} = request;
-					const token = Math.random().toString(36).substring(7);
+					const token = crypto.randomUUID();
 
 					if (!interactionRequests[viewportId]) {
 						interactionRequests[viewportId] = {
