@@ -146,6 +146,32 @@ describe("resolveRuntimeToolbarGroups", () => {
 		expect(clear).toHaveBeenCalledTimes(1);
 	});
 
+	it("does not promote a read-only selection checkbox", () => {
+		const clear = jest.fn();
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("only", "selection", {
+				menuVisibility: "multipleToggleable",
+				items: [
+					createToolbarCheckboxItem({
+						id: "only-toggle",
+						label: "Only",
+						checked: true,
+						readOnly: true,
+						setChecked: jest.fn(),
+						trailingAction: {
+							label: "Clear Only",
+							icon: "tabler:circle-off",
+							execute: clear,
+						},
+					}),
+				],
+			}),
+		]);
+
+		expect(groups[0].map((item) => item.type)).toEqual(["command"]);
+		expect(groups[0][0].label).toBe("Clear Only");
+	});
+
 	it("keeps aggregate command order independent of contribution shape", () => {
 		const groups = resolveRuntimeToolbarGroups([
 			contribution("first", "selection", {

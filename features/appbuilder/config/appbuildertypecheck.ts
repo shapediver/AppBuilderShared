@@ -1347,9 +1347,12 @@ const ISelectionParameterPropsSchema = z.strictObject({
 			activeText: z.string().optional(),
 		})
 		.optional(),
-	activeMode: z
-		.enum(["default", "activeOnStart", "alwaysActive"])
+	buttons: z
+		.strictObject({
+			clear: z.boolean().optional(),
+		})
 		.optional(),
+	activeMode: z.enum(["default", "activeOnStart", "alwaysActive"]).optional(),
 	presentation: z.enum(["widget", "toolbar"]).optional(),
 });
 

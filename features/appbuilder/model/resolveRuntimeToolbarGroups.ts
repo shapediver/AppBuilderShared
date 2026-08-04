@@ -31,10 +31,12 @@ export const resolveRuntimeToolbarGroups = (
 					(item) => item.type === "checkbox" && !item.props.readOnly,
 				));
 		const singleCheckbox =
-			!showMenu &&
-			items.length === 1 &&
-			items[0].type === "checkbox"
+			!showMenu && items.length === 1 && items[0].type === "checkbox"
 				? items[0]
+				: undefined;
+		const singleToggleableCheckbox =
+			singleCheckbox && !singleCheckbox.props.readOnly
+				? singleCheckbox
 				: undefined;
 		const commands = new Map<string, ToolbarCommandItem[]>();
 		for (const command of contributions.flatMap(
@@ -100,28 +102,28 @@ export const resolveRuntimeToolbarGroups = (
 			});
 
 		return [
-			...(singleCheckbox
+			...(singleToggleableCheckbox
 				? [
 						{
-							...singleCheckbox,
-							icon: singleCheckbox.icon ?? menu.icon,
+							...singleToggleableCheckbox,
+							icon: singleToggleableCheckbox.icon ?? menu.icon,
 						},
 					]
 				: showMenu
-				? [
-						{
-							type: "menu" as const,
-							id: menu.id,
-							label: menu.label,
-							icon: menu.icon,
-							props: {
-								sections: [
-									{id: menu.sectionId ?? menu.id, items},
-								],
+					? [
+							{
+								type: "menu" as const,
+								id: menu.id,
+								label: menu.label,
+								icon: menu.icon,
+								props: {
+									sections: [
+										{id: menu.sectionId ?? menu.id, items},
+									],
+								},
 							},
-						},
-					]
-				: []),
+						]
+					: []),
 			...aggregatedCommands,
 			...(singleCheckbox?.props.trailingAction
 				? [
@@ -130,9 +132,11 @@ export const resolveRuntimeToolbarGroups = (
 							id: `${singleCheckbox.id}-trailing-action`,
 							label: singleCheckbox.props.trailingAction.label,
 							icon: singleCheckbox.props.trailingAction.icon,
-							disabled: singleCheckbox.props.trailingAction.disabled,
+							disabled:
+								singleCheckbox.props.trailingAction.disabled,
 							props: {
-								execute: singleCheckbox.props.trailingAction.execute,
+								execute:
+									singleCheckbox.props.trailingAction.execute,
 							},
 						},
 					]

@@ -73,6 +73,9 @@ const parseNames = (value?: string): string[] => {
 	}
 };
 
+const getSelectionButtons = (settings: unknown) =>
+	(settings as {props?: SelectionParameterProps} | undefined)?.props?.buttons;
+
 const defaultStyleProps: StyleProps = {
 	selectionColor: {
 		properties: {
@@ -157,12 +160,20 @@ export default function ParameterSelectionComponent(
 
 	// get the notification store
 	const notifications = useNotificationStore();
+	const selectionSettingsKey = JSON.stringify(definition.settings);
+	const selectionColorKey = JSON.stringify(selectionColor);
+	const availableColorKey = JSON.stringify(availableColor);
+	const hoverColorKey = JSON.stringify(hoverColor);
 
 	// settings validation
 	const selectionProps = useMemo(() => {
+		const buttons = getSelectionButtons(definition.settings);
 		const result = validateSelectionParameterSettings(definition.settings);
 		if (result.success) {
 			const props = result.data.props as SelectionParameterProps;
+			// Keep App Builder UI settings even while an older viewer validator is
+			// in use and strips fields it does not yet know about.
+			if (buttons) props.buttons = buttons;
 			if (!props.selectionColor) props.selectionColor = selectionColor;
 			if (!props.availableColor) props.availableColor = availableColor;
 			if (!props.hoverColor) props.hoverColor = hoverColor;
@@ -181,7 +192,12 @@ export default function ParameterSelectionComponent(
 				hoverColor,
 			} as SelectionParameterProps;
 		}
-	}, [definition.settings, selectionColor, availableColor]);
+	}, [
+		selectionSettingsKey,
+		selectionColorKey,
+		availableColorKey,
+		hoverColorKey,
+	]);
 
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
@@ -507,6 +523,17 @@ export default function ParameterSelectionComponent(
 		commands,
 	});
 
+	// Keep this registration hook above the presentation branch. Settings can
+	// switch a selection parameter between widget and toolbar presentation while
+	// it is mounted, and React requires the same hook sequence in both modes.
+	const onCancelCallback = useCallback(() => {
+		resetSelection(state.execValue);
+	}, [resetSelection, state.execValue]);
+
+	useEffect(() => {
+		setOnCancelCallback(() => onCancelCallback);
+	}, [onCancelCallback, setOnCancelCallback]);
+
 	// Toolbar presentation owns the complete interaction UI; do not leave an
 	// inline wrapper or parameter label behind in the widget tree.
 	if (presentation === "toolbar") return <></>;
@@ -614,15 +641,6 @@ export default function ParameterSelectionComponent(
 			</Text>
 		</Button>
 	);
-
-	// extend the onCancel callback to reset the selected node names.
-	const _onCancelCallback = useCallback(() => {
-		resetSelection(state.execValue);
-	}, []);
-
-	useEffect(() => {
-		setOnCancelCallback(() => _onCancelCallback);
-	}, [_onCancelCallback]);
 
 	return (
 		<ParameterWrapperComponent
