@@ -7,6 +7,7 @@ import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
+import {ToolbarMenuItem} from "@AppBuilderShared/features/appbuilder/config/toolbarRenderTypes";
 import {
 	ActionIcon,
 	Box,
@@ -361,6 +362,53 @@ export default function ParameterSelectionComponent(
 		(minimumSelection === 0 && maximumSelection === 1)
 	);
 
+	const items: ToolbarMenuItem[] = [];
+
+	items.push(
+		createToolbarCheckboxItem({
+			id: `${namespace}-${definition.id}-${viewportId}-toggle`,
+			label: `${toolbarLabel} (${selectedNodeNames.length})`,
+			checked: effectiveSelectionActive,
+			readOnly: alwaysActive,
+			setChecked: (checked) => {
+				if (alwaysActive) return;
+				if (checked) {
+					if (tryAcquireClaim(true)) setSelectionActive(true);
+				} else setSelectionActive(false);
+			},
+		}),
+	);
+
+	// Add Confirm and Cancel buttons for multi/range selections
+	if (showConfirmationControls) {
+		items.push(
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+				label: "Confirm",
+				icon: "tabler:check",
+				disabled: !showConfirmationControls || !acceptable || !dirty,
+				execute: () => changeValue(selectedNodeNames),
+			}),
+		);
+		items.push(
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+				label: "Cancel",
+				icon: "tabler:x",
+				disabled: !showConfirmationControls || !acceptable || !dirty,
+				execute: cancel,
+			}),
+		);
+	}
+	items.push(
+		createToolbarCommand({
+			id: `${namespace}-${definition.id}-${viewportId}-clear`,
+			label: "Clear",
+			icon: "tabler:circle-off",
+			execute: clearSelection,
+		}),
+	);
+
 	useInteractionToolbarContribution({
 		id: `${namespace}-${definition.id}-${viewportId}`,
 		namespace,
@@ -371,40 +419,7 @@ export default function ParameterSelectionComponent(
 			label: toolbarLabel,
 			icon: "tabler:hand-finger",
 		},
-		items: [
-			createToolbarCheckboxItem({
-				id: `${namespace}-${definition.id}-${viewportId}-toggle`,
-				label: `${toolbarLabel} (${selectedNodeNames.length})`,
-				checked: effectiveSelectionActive,
-				readOnly: alwaysActive,
-				setChecked: (checked) => {
-					if (alwaysActive) return;
-					if (checked) {
-						if (tryAcquireClaim(true)) setSelectionActive(true);
-					} else setSelectionActive(false);
-				},
-			}),
-			createToolbarCommand({
-				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
-				label: "Confirm",
-				icon: "tabler:check",
-				disabled: !showConfirmationControls || !acceptable || !dirty,
-				execute: () => changeValue(selectedNodeNames),
-			}),
-			createToolbarCommand({
-				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
-				label: "Cancel",
-				icon: "tabler:x",
-				disabled: !showConfirmationControls || !acceptable || !dirty,
-				execute: cancel,
-			}),
-			createToolbarCommand({
-				id: `${namespace}-${definition.id}-${viewportId}-clear`,
-				label: "Clear",
-				icon: "tabler:circle-off",
-				execute: clearSelection,
-			}),
-		],
+		items,
 	});
 
 	// Toolbar presentation owns the complete interaction UI; do not leave an
