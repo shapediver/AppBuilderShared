@@ -6,6 +6,7 @@ import {
 	SelectManager,
 } from "@shapediver/viewer.features.interaction";
 import {
+	GeometryData,
 	ISelectionParameterProps,
 	ITreeNode,
 	MaterialStandardData,
@@ -31,6 +32,26 @@ const selectManagers: {
 	};
 } = {};
 
+type AppliedAvailableEffect = {
+	token: string;
+	geometries: GeometryData[];
+};
+
+const gatherGeometryData = (node: ITreeNode): GeometryData[] => {
+	const geometries: GeometryData[] = [];
+	node.traverseData((data) => {
+		if (data instanceof GeometryData) geometries.push(data);
+	});
+	return geometries;
+};
+
+const geometriesChanged = (
+	previous: GeometryData[],
+	current: GeometryData[],
+): boolean =>
+	previous.length !== current.length ||
+	previous.some((geometry, index) => geometry !== current[index]);
+
 /**
  * Clean up the select manager for the given viewportId and componentId.
  * We also deselect all selected nodes.
@@ -42,7 +63,7 @@ const selectManagers: {
 const cleanUpSelectManager = (
 	viewportId: string,
 	componentId: string,
-	appliedEffects?: Map<ITreeNode, string>,
+	appliedEffects?: Map<ITreeNode, AppliedAvailableEffect>,
 	interactionEngine?: InteractionEngine,
 ) => {
 	if (selectManagers[viewportId][componentId]) {
@@ -66,7 +87,7 @@ const cleanUpSelectManager = (
 			}
 
 			if (appliedEffects) {
-				appliedEffects.forEach((token, node) => {
+				appliedEffects.forEach(({token}, node) => {
 					selectManagers[viewportId][
 						componentId
 					].selectManager!.interactionEffectUtils.removeInteractionEffect(
@@ -75,7 +96,6 @@ const cleanUpSelectManager = (
 					);
 				});
 			}
-
 			interactionEngine.removeInteractionManager(
 				selectManagers[viewportId][componentId].token,
 			);
@@ -125,6 +145,8 @@ export function useSelectManager(
 	 * decremented.
 	 */
 	removeAvailableEffectsForNodes(nodes: ITreeNode[]): void;
+	/** Current candidates supplied to the manager. */
+	availableNodes: ITreeNode[] | undefined;
 } {
 	// call the interaction engine hook
 	const {interactionEngine} = useInteractionEngine(viewportId, componentId);
@@ -150,13 +172,12 @@ export function useSelectManager(
 	const [availableEffect, setAvailableEffect] = useState<
 		IInteractionEffect | undefined
 	>();
-
 	// Tracks the currently applied available effects so we can diff incrementally
 	// instead of removing all effects and re-adding them whenever availableNodes changes.
 	// This prevents the brief flash where all outlines disappear then reappear.
-	const appliedAvailableEffectsRef = useRef<Map<ITreeNode, string>>(
-		new Map(),
-	);
+	const appliedAvailableEffectsRef = useRef<
+		Map<ITreeNode, AppliedAvailableEffect>
+	>(new Map());
 	const prevAvailableManagerRef = useRef<
 		SelectManager | MultiSelectManager | undefined
 	>(undefined);
@@ -283,7 +304,7 @@ export function useSelectManager(
 		// effects using the old manager/effect before proceeding.
 		if ((prevManager && managerChanged) || (prevEffect && effectChanged)) {
 			if (prevManager) {
-				appliedMap.forEach((token, node) => {
+				appliedMap.forEach(({token}, node) => {
 					prevManager.interactionEffectUtils.removeInteractionEffect(
 						node,
 						token,
@@ -296,33 +317,41 @@ export function useSelectManager(
 		prevAvailableManagerRef.current = selectManager;
 		prevAvailableEffectRef.current = availableEffect;
 
-		if (!availableEffect || !selectManager) {
-			return;
-		}
+		if (!availableEffect || !selectManager) return;
 
 		const newNodeSet = new Set(availableNodes ?? []);
 
 		// Remove effect from nodes that are no longer available
-		Array.from(appliedMap.entries()).forEach(([node, token]) => {
+		Array.from(appliedMap.entries()).forEach(([node, appliedEffect]) => {
 			if (!newNodeSet.has(node)) {
 				selectManager.interactionEffectUtils.removeInteractionEffect(
 					node,
-					token,
+					appliedEffect.token,
 				);
 				appliedMap.delete(node);
 			}
 		});
 
-		// Apply effect to newly available nodes (skip nodes already tracked)
+		// Apply the effect to new candidates. Output updates can retain the
+		// ITreeNode while replacing its GeometryData, so refresh the effect when
+		// those underlying data objects change as well.
 		Array.from(newNodeSet).forEach((node) => {
-			if (!appliedMap.has(node)) {
-				const token =
-					selectManager.interactionEffectUtils.applyInteractionEffect(
-						node,
-						availableEffect,
-					);
-				appliedMap.set(node, token);
+			const geometries = gatherGeometryData(node);
+			const previous = appliedMap.get(node);
+			if (previous && !geometriesChanged(previous.geometries, geometries))
+				return;
+			if (previous) {
+				selectManager.interactionEffectUtils.removeInteractionEffect(
+					node,
+					previous.token,
+				);
 			}
+			const token =
+				selectManager.interactionEffectUtils.applyInteractionEffect(
+					node,
+					availableEffect,
+				);
+			appliedMap.set(node, {token, geometries});
 		});
 	}, [availableEffect, availableNodes, selectManager]);
 
@@ -343,9 +372,12 @@ export function useSelectManager(
 		const appliedMap = appliedAvailableEffectsRef.current;
 		if (!mgr) return;
 		nodes.forEach((node) => {
-			const token = appliedMap.get(node);
-			if (token !== undefined) {
-				mgr.interactionEffectUtils.removeInteractionEffect(node, token);
+			const appliedEffect = appliedMap.get(node);
+			if (appliedEffect !== undefined) {
+				mgr.interactionEffectUtils.removeInteractionEffect(
+					node,
+					appliedEffect.token,
+				);
 				appliedMap.delete(node);
 			}
 		});
@@ -457,6 +489,7 @@ export function useSelectManager(
 		selectManager,
 		setAvailableNodes,
 		removeAvailableEffectsForNodes,
+		availableNodes,
 	};
 }
 

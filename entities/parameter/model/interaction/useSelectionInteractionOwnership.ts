@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useRef} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {interactionOwnership} from "./interactionOwnership";
 import {useInteractionRequestLifecycle} from "./useInteractionRequestLifecycle";
 
@@ -17,8 +17,7 @@ interface UseSelectionInteractionOwnershipOptions {
 	setSelectionActive: (active: boolean) => void;
 	setOwnershipBlocked: (blocked: boolean) => void;
 	setSuspended: (suspended: boolean) => void;
-	cancel: () => void;
-	restoreSelection: () => void;
+	onDisable: () => void;
 	setDisableOtherParameters: (disabled: boolean) => void;
 	onConflict: (title: string, message: string) => void;
 }
@@ -37,20 +36,30 @@ export const useSelectionInteractionOwnership = ({
 	setSelectionActive,
 	setOwnershipBlocked,
 	setSuspended,
-	cancel,
-	restoreSelection,
+	onDisable,
 	setDisableOtherParameters,
 	onConflict,
 }: UseSelectionInteractionOwnershipOptions) => {
 	const ownershipKey = `${namespace}-${parameterId}-${viewportId}`;
+	// Persistent selections remain suspendable and can be reactivated manually,
+	// so their node claim must remain user-displaceable.
+	const ownershipAlwaysActive = false;
 	const ownershipKeyRef = useRef(ownershipKey);
 	const claimedRef = useRef(false);
 	const deactivateRef = useRef<() => void>();
 	const lastAutomaticCandidateSignatureRef = useRef<string>();
+	const [ownershipRevision, setOwnershipRevision] = useState(0);
 
 	useEffect(() => {
 		ownershipKeyRef.current = ownershipKey;
 	}, [ownershipKey]);
+	useEffect(
+		() =>
+			interactionOwnership.subscribe(() =>
+				setOwnershipRevision((revision) => revision + 1),
+			),
+		[],
+	);
 
 	const deactivate = useCallback(() => {
 		interactionOwnership.release(viewportId, ownershipKey);
@@ -71,7 +80,7 @@ export const useSelectionInteractionOwnership = ({
 				ownershipKey,
 				label,
 				"selection",
-				alwaysActive,
+				ownershipAlwaysActive,
 				candidateNodes,
 				() => deactivateRef.current?.(),
 				userRequested,
@@ -88,7 +97,6 @@ export const useSelectionInteractionOwnership = ({
 			return false;
 		},
 		[
-			alwaysActive,
 			candidateNodes,
 			label,
 			onConflict,
@@ -100,19 +108,19 @@ export const useSelectionInteractionOwnership = ({
 
 	const suspend = useCallback(() => {
 		setSuspended(true);
-		restoreSelection();
-	}, [restoreSelection, setSuspended]);
+	}, [setSuspended]);
 	const resume = useCallback(() => setSuspended(false), [setSuspended]);
 
-	useInteractionRequestLifecycle({
-		viewportId,
-		active: selectionRegistered,
-		persistent: alwaysActive,
-		onDisable: cancel,
-		onSuspend: suspend,
-		onResume: resume,
-		setDisableOtherParameters,
-	});
+	const {releaseInteraction, takeOverInteraction} =
+		useInteractionRequestLifecycle({
+			viewportId,
+			active: selectionRegistered,
+			persistent: alwaysActive,
+			onDisable,
+			onSuspend: suspend,
+			onResume: resume,
+			setDisableOtherParameters,
+		});
 
 	const candidateSignature = useMemo(
 		() =>
@@ -125,7 +133,10 @@ export const useSelectionInteractionOwnership = ({
 
 	useEffect(() => {
 		if (!automaticallyActivated || candidateNodes.length === 0) return;
-		if (lastAutomaticCandidateSignatureRef.current === candidateSignature)
+		if (
+			claimedRef.current &&
+			lastAutomaticCandidateSignatureRef.current === candidateSignature
+		)
 			return;
 		lastAutomaticCandidateSignatureRef.current = candidateSignature;
 
@@ -134,7 +145,7 @@ export const useSelectionInteractionOwnership = ({
 			ownershipKey,
 			label,
 			"selection",
-			alwaysActive,
+			ownershipAlwaysActive,
 			candidateNodes,
 			() => deactivateRef.current?.(),
 			false,
@@ -157,6 +168,7 @@ export const useSelectionInteractionOwnership = ({
 		candidateSignature,
 		label,
 		onConflict,
+		ownershipRevision,
 		ownershipKey,
 		setOwnershipBlocked,
 		viewportId,
@@ -204,5 +216,5 @@ export const useSelectionInteractionOwnership = ({
 		[viewportId],
 	);
 
-	return {tryAcquireClaim};
+	return {tryAcquireClaim, releaseInteraction, takeOverInteraction};
 };

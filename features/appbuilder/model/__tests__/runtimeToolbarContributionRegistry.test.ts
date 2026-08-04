@@ -59,4 +59,19 @@ describe("runtimeToolbarContributionRegistry", () => {
 			runtimeToolbarContributionRegistry.select("viewport", "namespace")[0],
 		).toMatchObject({id: "contribution", items, menu});
 	});
+
+	it("sorts contributions by parameter order before their stable identity", () => {
+		runtimeToolbarContributionRegistry.register(
+			contribution({id: "later", order: 20}),
+		);
+		runtimeToolbarContributionRegistry.register(
+			contribution({id: "earlier", order: 10}),
+		);
+
+		expect(
+			runtimeToolbarContributionRegistry
+				.select("viewport", "namespace")
+				.map(({id}) => id),
+		).toEqual(["earlier", "later"]);
+	});
 });

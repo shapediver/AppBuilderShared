@@ -55,7 +55,15 @@ export type ToolbarTabsItem = ToolbarItemBase<
 /** A runtime operation rendered as a toolbar button or menu row. */
 export type ToolbarCommandItem = ToolbarItemBase<
 	"command",
-	{execute: () => void | Promise<void>}
+	{
+		execute: () => void | Promise<void>;
+		batchUpdate?: {
+			namespace: string;
+			parameterId: string;
+			value: unknown;
+			prepare: () => void;
+		};
+	}
 > & {
 	/** Commands with the same aggregation id become one toolbar button. */
 	aggregationId?: string;

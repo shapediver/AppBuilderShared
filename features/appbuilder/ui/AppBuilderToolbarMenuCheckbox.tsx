@@ -25,8 +25,12 @@ export default function AppBuilderToolbarMenuCheckbox({
 		<Checkbox
 			checked={checked}
 			readOnly={readOnly}
-			disabled={disabled}
+			// Keep the label readable while visually distinguishing always-active
+			// selections from user-toggleable checkboxes.
+			color={readOnly ? "gray" : undefined}
+			disabled={disabled || readOnly}
 			aria-readonly={readOnly || undefined}
+			data-read-only={readOnly || undefined}
 			label={label}
 			classNames={{
 				root: classes.root,

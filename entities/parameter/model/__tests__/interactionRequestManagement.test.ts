@@ -49,4 +49,33 @@ describe("useShapeDiverStoreInteractionRequestManagement", () => {
 			/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
 		);
 	});
+
+	it("lets a passive request take over an active interaction", () => {
+		const viewportId = "vp-3";
+		const activeDisable = jest.fn();
+		const passiveEnable = jest.fn();
+		const {addInteractionRequest, activatePassiveInteraction} =
+			useShapeDiverStoreInteractionRequestManagement.getState();
+
+		addInteractionRequest({
+			type: "active",
+			viewportId,
+			disable: activeDisable,
+		});
+		const passiveToken = addInteractionRequest({
+			type: "passive",
+			viewportId,
+			disable: jest.fn(),
+			enable: passiveEnable,
+		})!;
+
+		activatePassiveInteraction(passiveToken);
+
+		expect(activeDisable).toHaveBeenCalledTimes(1);
+		expect(passiveEnable).toHaveBeenCalledTimes(1);
+		expect(
+			useShapeDiverStoreInteractionRequestManagement.getState()
+				.interactionRequests[viewportId].activeRequest,
+		).toBeUndefined();
+	});
 });

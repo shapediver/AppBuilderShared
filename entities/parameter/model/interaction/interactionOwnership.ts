@@ -23,6 +23,15 @@ class InteractionOwnershipRegistry {
 		InteractionOwnershipEntry
 	>();
 	private readonly ownerViewports = new Map<string, string>();
+	private readonly listeners = new Set<() => void>();
+
+	/** Subscribe to ownership changes so automatic interactions can retry. */
+	public subscribe(listener: () => void) {
+		this.listeners.add(listener);
+		return () => {
+			this.listeners.delete(listener);
+		};
+	}
 
 	public acquire(
 		viewportId: string,
@@ -122,12 +131,14 @@ class InteractionOwnershipRegistry {
 		this.unregisterNodes(viewportId, owner, entry.candidates);
 		this.ownerEntries.delete(owner);
 		this.ownerViewports.delete(owner);
+		this.notify();
 	}
 
 	public reset() {
 		this.ownerEntries.clear();
 		this.ownerViewports.clear();
 		this.nodeToOwners.clear();
+		this.notify();
 	}
 
 	public update(
@@ -150,6 +161,7 @@ class InteractionOwnershipRegistry {
 			this.ownerEntries.delete(owner);
 			this.ownerViewports.delete(owner);
 			entry.onDeactivate();
+			this.notify();
 			return {
 				updated: false,
 				reason: "node_clash",
@@ -170,6 +182,11 @@ class InteractionOwnershipRegistry {
 		this.ownerEntries.set(entry.owner, entry);
 		this.ownerViewports.set(entry.owner, viewportId);
 		this.registerNodes(viewportId, entry.owner, entry.candidates);
+		this.notify();
+	}
+
+	private notify() {
+		this.listeners.forEach((listener) => listener());
 	}
 
 	private registerNodes(

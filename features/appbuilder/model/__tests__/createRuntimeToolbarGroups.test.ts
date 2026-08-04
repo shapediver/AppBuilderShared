@@ -1,6 +1,10 @@
+/**
+ * @jest-environment jsdom
+ */
 import {createToolbarCheckboxItem, createToolbarCommand} from "../createToolbarItems";
 import {resolveRuntimeToolbarGroups} from "../resolveRuntimeToolbarGroups";
 import type {RuntimeToolbarContribution} from "../runtimeToolbarContributionRegistry";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 
 const contribution = (
 	id: string,
@@ -98,5 +102,47 @@ describe("resolveRuntimeToolbarGroups", () => {
 			"runtime-interaction-selection-menu",
 			"runtime-interaction-dragging-menu",
 		]);
+	});
+
+	it("batches multiple aggregate command updates", () => {
+		const batchParameterValueUpdate = jest.fn();
+		useShapeDiverStoreParameters.setState({batchParameterValueUpdate});
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				commands: [createToolbarCommand({
+					id: "first-confirm",
+					aggregationId: "selection-confirm",
+					label: "Confirm",
+					execute: jest.fn(),
+					batchUpdate: {
+						namespace: "namespace",
+						parameterId: "first",
+						value: "first-value",
+						prepare: jest.fn(),
+					},
+				})],
+			}),
+			contribution("second", "selection", {
+				commands: [createToolbarCommand({
+					id: "second-confirm",
+					aggregationId: "selection-confirm",
+					label: "Confirm",
+					execute: jest.fn(),
+					batchUpdate: {
+						namespace: "namespace",
+						parameterId: "second",
+						value: "second-value",
+						prepare: jest.fn(),
+					},
+				})],
+			}),
+		]);
+
+		const command = groups[0][1];
+		if (command.type !== "command") throw new Error("Expected command");
+		command.props.execute();
+		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
+			namespace: {first: "first-value", second: "second-value"},
+		});
 	});
 });

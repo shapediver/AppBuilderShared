@@ -431,6 +431,7 @@ export default function ParameterGumballComponent(
 		viewportId,
 		presentation: gumballPresentation,
 		sectionId: "gumball",
+		order: definition.order,
 		menu: {
 			id: "runtime-interaction-gumball-menu",
 			label: "Gumball",

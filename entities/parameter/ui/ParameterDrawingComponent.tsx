@@ -412,6 +412,7 @@ export default function ParameterDrawingComponent(
 		viewportId,
 		presentation: drawingPresentation,
 		sectionId: "drawing",
+		order: definition.order,
 		menu: {
 			id: "runtime-interaction-drawing-menu",
 			label: "Drawing",

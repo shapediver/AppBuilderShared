@@ -1,5 +1,5 @@
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
-import {useEffect, useRef} from "react";
+import {useCallback, useEffect, useRef} from "react";
 
 interface UseInteractionRequestLifecycleOptions {
 	viewportId: string;
@@ -25,45 +25,75 @@ export const useInteractionRequestLifecycle = ({
 	onResume,
 	setDisableOtherParameters,
 }: UseInteractionRequestLifecycleOptions) => {
-	const {addInteractionRequest, removeInteractionRequest} =
+	const {
+		activatePassiveInteraction,
+		addInteractionRequest,
+		removeInteractionRequest,
+	} =
 		useShapeDiverStoreInteractionRequestManagement();
 	const tokenRef = useRef<string>();
+	const callbacksRef = useRef({
+		onDisable,
+		onResume,
+		onSuspend,
+		setDisableOtherParameters,
+	});
+	callbacksRef.current = {
+		onDisable,
+		onResume,
+		onSuspend,
+		setDisableOtherParameters,
+	};
 
-	useEffect(() => {
-		setDisableOtherParameters(!persistent && active);
-
-		if (active && !tokenRef.current) {
-			tokenRef.current = addInteractionRequest(
-				persistent
-					? {
-							type: "passive",
-							viewportId,
-							disable: onSuspend ?? onDisable,
-							enable: onResume ?? (() => undefined),
-						}
-					: {type: "active", viewportId, disable: onDisable},
-			);
-		} else if (!active && tokenRef.current) {
+	const releaseInteraction = useCallback(() => {
+		callbacksRef.current.setDisableOtherParameters(false);
+		if (tokenRef.current) {
 			removeInteractionRequest(tokenRef.current);
 			tokenRef.current = undefined;
 		}
+	}, [removeInteractionRequest]);
+	const takeOverInteraction = useCallback(() => {
+		if (persistent && tokenRef.current) {
+			activatePassiveInteraction(tokenRef.current);
+		}
+	}, [activatePassiveInteraction, persistent]);
+
+	useEffect(() => {
+		callbacksRef.current.setDisableOtherParameters(!persistent && active);
+
+		if (active && !tokenRef.current) {
+				tokenRef.current = addInteractionRequest(
+					persistent
+						? {
+							type: "passive",
+							viewportId,
+							disable: () =>
+								callbacksRef.current.onSuspend?.() ??
+								callbacksRef.current.onDisable(),
+							enable: () =>
+								callbacksRef.current.onResume?.(),
+						}
+						: {
+								type: "active",
+								viewportId,
+								disable: () =>
+									callbacksRef.current.onDisable(),
+							},
+			);
+		} else if (!active && tokenRef.current) {
+			releaseInteraction();
+		}
 
 		return () => {
-			setDisableOtherParameters(false);
-			if (tokenRef.current) {
-				removeInteractionRequest(tokenRef.current);
-				tokenRef.current = undefined;
-			}
+			releaseInteraction();
 		};
 	}, [
 		active,
 		addInteractionRequest,
-		onDisable,
-		onResume,
-		onSuspend,
 		persistent,
-		removeInteractionRequest,
-		setDisableOtherParameters,
+		releaseInteraction,
 		viewportId,
 	]);
+
+	return {releaseInteraction, takeOverInteraction};
 };

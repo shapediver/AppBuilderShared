@@ -65,13 +65,24 @@ export function useSelection(
 	 * @returns
 	 */
 	setSelectedNodeNamesAndRestoreSelection: (names: string[]) => void;
+	/**
+	 * Request restoration of the current selection after an interaction resumes.
+	 * This is needed when node interaction data changed while the manager was
+	 * suspended, because none of the regular selection-state dependencies then
+	 * change at resume time.
+	 */
+	requestSelectionRestore: () => void;
 } {
 	// create a unique component ID
 	const componentId = useId();
 
 	// call the select manager hook
-	const {selectManager, setAvailableNodes, removeAvailableEffectsForNodes} =
-		useSelectManager(
+	const {
+		selectManager,
+		setAvailableNodes,
+		removeAvailableEffectsForNodes,
+		availableNodes: managerAvailableNodes,
+	} = useSelectManager(
 			viewportId,
 			componentId,
 			activate ? selectionProps : undefined,
@@ -117,7 +128,13 @@ export function useSelection(
 			componentId,
 			initialSelectedNodeNames,
 			strictNaming,
+			activate,
+			selectManager,
 		);
+	const [restoreRevision, requestSelectionRestore] = React.useReducer(
+		(revision: number) => revision + 1,
+		0,
+	);
 
 	const nodesInteractionInput = useMemo(() => {
 		const nodesInteractionInput: {
@@ -261,6 +278,9 @@ export function useSelection(
 			},
 		);
 		setAvailableNodes(nodes.map((n) => n.node));
+		// Intentionally only rerun for selection state changes. The manager
+		// callbacks and its available-node array are recreated by the manager
+		// hook, so subscribing to them would cause an update loop.
 	}, [availableNodeNames, selectedNodeNames, activate]);
 
 	// in case selection becomes active or the output node changes, restore the selection status.
@@ -275,17 +295,25 @@ export function useSelection(
 	// restoreNodeSelection with an empty list would unconditionally deselect all nodes
 	// (undoing a selection that was just re-applied by a prior effect run).
 	useEffect(() => {
+		if (!activate) return;
 		if (!selectManager) return;
 		if (selectedNodeNames.length === 0) return;
 
-		restoreSelection(
-			outputsPerSession,
-			instances,
-			componentId,
-			selectManager,
-			selectedNodeNames,
-			strictNaming,
-		);
+		// The manager and its candidate interaction data are installed by sibling
+		// effects. Restore on the next task so select() cannot race that setup
+		// during an interaction resume or an output replacement.
+		const restoreTimer = window.setTimeout(() => {
+			restoreSelection(
+				outputsPerSession,
+				instances,
+				componentId,
+				selectManager,
+				selectedNodeNames,
+				strictNaming,
+			);
+		}, 0);
+
+		return () => window.clearTimeout(restoreTimer);
 	}, [
 		outputsPerSession,
 		instances,
@@ -293,6 +321,8 @@ export function useSelection(
 		selectManager,
 		availableNodeNames,
 		selectedNodeNames,
+		restoreRevision,
+		managerAvailableNodes,
 	]);
 
 	// we need to return the available node names in a dictionary for each output
@@ -367,6 +397,7 @@ export function useSelection(
 		resetSelectedNodeNames,
 		availableNodeNames: availableNodeNamesReturn,
 		setSelectedNodeNamesAndRestoreSelection,
+		requestSelectionRestore,
 	};
 }
 

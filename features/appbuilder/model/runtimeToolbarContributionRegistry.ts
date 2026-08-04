@@ -15,6 +15,7 @@ export interface RuntimeToolbarContribution {
 	items: ToolbarMenuItem[];
 	commands?: ToolbarCommandItem[];
 	sectionId: string;
+	order?: number;
 	menuVisibility?: RuntimeToolbarMenuVisibility;
 }
 
@@ -52,7 +53,11 @@ export const runtimeToolbarContributionRegistry = {
 					contribution.viewportId === viewportId &&
 					contribution.namespace === namespace,
 			)
-			.sort((a, b) => a.id.localeCompare(b.id));
+			.sort(
+				(a, b) =>
+					(a.order ?? Infinity) - (b.order ?? Infinity) ||
+					a.id.localeCompare(b.id),
+			);
 	},
 	subscribe(listener: () => void) {
 		listeners.add(listener);

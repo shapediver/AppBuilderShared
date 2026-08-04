@@ -419,6 +419,7 @@ export default function ParameterDraggingComponent(
 		viewportId,
 		presentation: draggingPresentation,
 		sectionId: "dragging",
+		order: definition.order,
 		menu: {
 			id: "runtime-interaction-dragging-menu",
 			label: "Dragging",

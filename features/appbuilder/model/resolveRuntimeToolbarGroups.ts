@@ -3,6 +3,7 @@ import type {
 	ToolbarRenderItem,
 } from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import type {RuntimeToolbarContribution} from "./runtimeToolbarContributionRegistry";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 
 /**
  * Projects feature-owned runtime contributions into visual toolbar groups.
@@ -43,8 +44,30 @@ export const resolveRuntimeToolbarGroups = (
 				disabled: group.every((command) => command.disabled),
 				props: {
 					execute: () => {
-						for (const command of group)
-							if (!command.disabled) void command.props.execute();
+						const enabledCommands = group.filter(
+							(command) => !command.disabled,
+						);
+						const batchUpdates = enabledCommands.map(
+							(command) => command.props.batchUpdate,
+						);
+						if (
+							batchUpdates.length > 1 &&
+							batchUpdates.every((update) => update !== undefined)
+						) {
+							const values: Record<string, Record<string, unknown>> = {};
+							for (const update of batchUpdates) {
+								if (!update) continue;
+								update.prepare();
+								(values[update.namespace] ??= {})[update.parameterId] =
+									update.value;
+							}
+							void useShapeDiverStoreParameters
+								.getState()
+								.batchParameterValueUpdate(values);
+							return;
+						}
+						for (const command of enabledCommands)
+							void command.props.execute();
 					},
 				},
 			};

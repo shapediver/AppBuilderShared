@@ -440,6 +440,7 @@ export default function ParameterRectangleTransformComponent(
 		viewportId,
 		presentation: rectanglePresentation,
 		sectionId: "rectangle-transform",
+		order: definition.order,
 		menu: {
 			id: "runtime-interaction-rectangle-transform-menu",
 			label: "Rectangle transform",

@@ -27,7 +27,7 @@ import {
 } from "@shapediver/viewer.session";
 import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
 import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
@@ -36,8 +36,11 @@ import {
 import type {ParameterSelectionComponentStyleProps as StyleProps} from "../config/theme/parameterSelectionComponentTheme";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
+import {usePendingSelectionRegistry} from "../model/interaction/usePendingSelectionRegistry";
 import {useSelection} from "../model/interaction/useSelection";
+import {useSelectionActivationState} from "../model/interaction/useSelectionActivationState";
 import {useSelectionInteractionOwnership} from "../model/interaction/useSelectionInteractionOwnership";
+import {useSuspendedSelectionRestore} from "../model/interaction/useSuspendedSelectionRestore";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
@@ -181,24 +184,15 @@ export default function ParameterSelectionComponent(
 	// For default, selection starts inactive.
 	const automaticallyActivated =
 		alwaysActive || selectionProps.activeMode === "activeOnStart";
-	const [selectionActive, setSelectionActive] = useState<boolean>(
-		automaticallyActivated,
-	);
-
-	// Track whether this persistent selection is suspended by an exclusive tool.
-	// Always-active selections use passive interaction requests so the store can
-	// disable (suspend) and later re-enable (resume) them when exclusive tools
-	// claim and release the viewport.
-	const [suspended, setSuspended] = useState(false);
-	const [ownershipBlocked, setOwnershipBlocked] = useState(
-		automaticallyActivated,
-	);
-	const effectiveSelectionActive =
-		!suspended && !ownershipBlocked && (alwaysActive || selectionActive);
-	// Keep a suspended always-active request registered for later resume, but do
-	// not register selections whose candidate ownership was rejected.
-	const selectionRegistered =
-		!ownershipBlocked && (alwaysActive || selectionActive);
+	const {
+		deactivateSelection,
+		effectiveSelectionActive,
+		selectionRegistered,
+		setOwnershipBlocked,
+		setSelectionActive,
+		setSuspended,
+		suspended,
+	} = useSelectionActivationState({alwaysActive, automaticallyActivated});
 
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
@@ -212,25 +206,47 @@ export default function ParameterSelectionComponent(
 		selectedNodeNames,
 		setSelectedNodeNames,
 		setSelectedNodeNamesAndRestoreSelection,
+		requestSelectionRestore,
 	} = useSelection(
 		viewportId,
 		selectionProps,
 		effectiveSelectionActive,
 		parseNames(value),
+		true,
 	);
+	const restoreBatchSelectionRef = useRef(false);
+	useSuspendedSelectionRestore({
+		suspended,
+		selectedNodeNames,
+		setSelectedNodeNames,
+		requestSelectionRestore,
+	});
 
 	const acceptable =
 		selectedNodeNames.length >= minimumSelection &&
 		selectedNodeNames.length <= maximumSelection;
-	// Always-active multi-selections submit immediately when their configured
-	// maximum is reached. Non-persistent selections retain the established
-	// fixed/single auto-commit behavior.
+	const committedNodeNames = parseNames(value);
+	const hasPendingSelection =
+		committedNodeNames.length !== selectedNodeNames.length ||
+		!committedNodeNames.every(
+			(name, index) => name === selectedNodeNames[index],
+		);
+	const selectionOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
+	const hasOtherPendingSelection = usePendingSelectionRegistry(
+		selectionOwnerKey,
+		`${namespace}-${viewportId}`,
+		hasPendingSelection,
+	);
+	// Keep the established automatic behavior unless another selection parameter
+	// has an outstanding pending selection. A committed batch is not pending
+	// interaction state, so it must restore the normal single-selection UI.
+	const hasStoredSelection = hasOtherPendingSelection;
 	const acceptImmediately =
-		(alwaysActive && selectedNodeNames.length === maximumSelection) ||
-		((minimumSelection === maximumSelection ||
-			(minimumSelection === 0 && maximumSelection === 1)) &&
-			acceptable);
-
+		!hasStoredSelection &&
+		((alwaysActive && selectedNodeNames.length === maximumSelection) ||
+			((minimumSelection === maximumSelection ||
+				(minimumSelection === 0 && maximumSelection === 1)) &&
+				acceptable));
 	useEffect(() => {
 		const parsed = parseNames(state.uiValue);
 
@@ -245,12 +261,28 @@ export default function ParameterSelectionComponent(
 		}
 	}, [state.uiValue, selectedNodeNames]);
 
-	// reset the selected node names when the definition changes
+	// Do not overwrite a pending selection when parameter definitions refresh.
+	// Pending selection state is intentionally retained until Confirm, Cancel, or
+	// Clear, even when another parameter triggers a computation.
 	useEffect(() => {
 		const parsed = parseNames(value);
+		const committed = parseNames(state.uiValue);
+		const hasPendingSelection =
+			committed.length !== selectedNodeNames.length ||
+			!committed.every((name, index) => name === selectedNodeNames[index]);
+		if (hasPendingSelection) return;
 		if (JSON.stringify(parsed) !== JSON.stringify(selectedNodeNames))
 			setSelectedNodeNames(parsed);
-	}, [JSON.stringify(definition)]);
+	}, [JSON.stringify(definition), selectedNodeNames, state.uiValue, value]);
+
+	// Batch confirmation temporarily deactivates the manager. That can emit a
+	// deselection event before the new parameter value reaches this component;
+	// restore the committed names once it does.
+	useEffect(() => {
+		if (!restoreBatchSelectionRef.current) return;
+		restoreBatchSelectionRef.current = false;
+		setSelectedNodeNamesAndRestoreSelection(parseNames(value));
+	}, [setSelectedNodeNamesAndRestoreSelection, value]);
 
 	/**
 	 * Callback function to change the value of the parameter.
@@ -271,8 +303,6 @@ export default function ParameterSelectionComponent(
 		[value, alwaysActive],
 	);
 
-	// Preserve the established immediate-update path. The canonical-value check
-	// in changeValue prevents duplicate parameter updates.
 	useEffect(() => {
 		if (acceptImmediately) changeValue(selectedNodeNames);
 	}, [acceptImmediately, changeValue, selectedNodeNames]);
@@ -291,21 +321,6 @@ export default function ParameterSelectionComponent(
 		[alwaysActive],
 	);
 
-	// react to changes of the uiValue and update the selection state if necessary
-	useEffect(() => {
-		const names = parseNames(state.uiValue);
-		// compare names to selectedNodeNames
-		if (
-			names.length !== selectedNodeNames.length ||
-			!names.every((n, i) => n === selectedNodeNames[i])
-		) {
-			if (!alwaysActive) {
-				setSelectionActive(false);
-			}
-			setSelectedNodeNames(names);
-		}
-	}, [state.uiValue, alwaysActive]);
-
 	/**
 	 * Callback function to cancel the selection.
 	 * For alwaysActive: resets to last committed value but stays enabled.
@@ -322,56 +337,55 @@ export default function ParameterSelectionComponent(
 		setSelectedNodeNamesAndRestoreSelection([]);
 	}, []);
 
-	const restoreSelection = useCallback(
-		() => setSelectedNodeNames(parseNames(value)),
-		[parseNames, setSelectedNodeNames, value],
-	);
 	const notifyConflict = useCallback(
 		(title: string, message: string) =>
 			notifications.warning({title, message}),
 		[notifications],
 	);
-	const {tryAcquireClaim} = useSelectionInteractionOwnership({
-		viewportId,
-		namespace,
-		parameterId: definition.id,
-		label: definition.name,
-		candidateNodes,
-		alwaysActive,
-		automaticallyActivated,
-		selectionRegistered,
-		effectiveSelectionActive,
-		setSelectionActive,
-		setOwnershipBlocked,
-		setSuspended,
-		cancel,
-		restoreSelection,
-		setDisableOtherParameters: actions.setDisableOtherParameters,
-		onConflict: notifyConflict,
-	});
+	const {tryAcquireClaim, releaseInteraction, takeOverInteraction} =
+		useSelectionInteractionOwnership({
+			viewportId,
+			namespace,
+			parameterId: definition.id,
+			label: definition.name,
+			candidateNodes,
+			alwaysActive,
+			automaticallyActivated,
+			selectionRegistered,
+			effectiveSelectionActive,
+			setSelectionActive,
+			setOwnershipBlocked,
+			setSuspended,
+			onDisable: deactivateSelection,
+			setDisableOtherParameters: actions.setDisableOtherParameters,
+			onConflict: notifyConflict,
+		});
 
 	// ── Toolbar registration ────────────────────────────────────────────────
 	// Register with interaction toolbar if presentation is "toolbar"
 	const toolbarLabel = definition.name;
-	// Fixed/optional single selections use the immediate-update path, so their
-	// Confirm and Cancel controls would be redundant. Multi and range selections
-	// retain explicit confirmation controls.
-	const showConfirmationControls = !(
-		(minimumSelection === 1 && maximumSelection === 1) ||
-		(minimumSelection === 0 && maximumSelection === 1)
-	);
+	// Fixed/optional single selections normally commit automatically. When a
+	// different selection has pending changes, expose Confirm/Cancel instead so
+	// the shared toolbar can commit them as one batch.
+	const showConfirmationControls =
+		hasOtherPendingSelection ||
+		!((minimumSelection === 1 && maximumSelection === 1) ||
+			(minimumSelection === 0 && maximumSelection === 1));
 
 	const items = [
 		createToolbarCheckboxItem({
 			id: `${namespace}-${definition.id}-${viewportId}-toggle`,
-			label: `${toolbarLabel} (${selectedNodeNames.length})`,
+			label: `${toolbarLabel} (${selectedNodeNames.length}/${maximumSelection})`,
 			checked: effectiveSelectionActive,
-			readOnly: alwaysActive,
+			// A suspended persistent selection cannot safely resume until the
+			// exclusive viewport interaction releases it. A blocked selection,
+			// however, can be manually retried.
+			readOnly: alwaysActive && effectiveSelectionActive,
 			setChecked: (checked) => {
-				if (alwaysActive) return;
 				if (checked) {
+					takeOverInteraction();
 					if (tryAcquireClaim(true)) setSelectionActive(true);
-				} else setSelectionActive(false);
+				} else if (!alwaysActive) setSelectionActive(false);
 			},
 		}),
 	];
@@ -396,6 +410,20 @@ export default function ParameterSelectionComponent(
 					}
 					changeValue(selectedNodeNames);
 				},
+				batchUpdate: acceptable
+					? {
+							namespace,
+							parameterId: definition.id,
+							value: JSON.stringify({names: selectedNodeNames}),
+						prepare: () => {
+							restoreBatchSelectionRef.current = true;
+								if (!alwaysActive) {
+									releaseInteraction();
+									setSelectionActive(false);
+								}
+							},
+						}
+					: undefined,
 			}),
 		);
 		commands.push(
@@ -425,6 +453,7 @@ export default function ParameterSelectionComponent(
 		viewportId,
 		presentation,
 		sectionId: "selection",
+		order: definition.order,
 		menuVisibility: "multipleToggleable",
 		menu: {
 			id: "runtime-interaction-selection-menu",

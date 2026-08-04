@@ -1,6 +1,8 @@
 import {
 	InteractionEventResponseMapping,
 	matchNodesWithPatterns,
+	MultiSelectManager,
+	SelectManager,
 } from "@shapediver/viewer.features.interaction";
 import {
 	addListener,
@@ -9,7 +11,7 @@ import {
 	ITreeNode,
 	removeListener,
 } from "@shapediver/viewer.session";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {IUseCreateNameFilterPatternResult} from "./useCreateNameFilterPattern";
 
 // #region Functions (1)
@@ -74,7 +76,19 @@ export function useSelectManagerEvents(
 	componentId: string,
 	initialSelectedNodeNames?: string[],
 	strictNaming = true,
+	active = true,
+	selectManager?: SelectManager | MultiSelectManager,
 ): ISelectionState {
+	// A select manager is disposed while an interaction is suspended. Disposal
+	// emits selection-off events asynchronously, so keep the current activity in
+	// a ref and ignore events from that stale manager. Without this guard a
+	// persistent selection can restore its names on resume and then immediately
+	// have them cleared by the manager it just disposed.
+	const activeRef = useRef(active);
+	activeRef.current = active;
+	const selectManagerRef = useRef(selectManager);
+	selectManagerRef.current = selectManager;
+
 	// state for the selected nodes
 	const [selectedNodeNames, setSelectedNodeNames] = useState<string[]>(
 		initialSelectedNodeNames ?? [],
@@ -97,9 +111,13 @@ export function useSelectManagerEvents(
 					event as InteractionEventResponseMapping[EVENTTYPE_INTERACTION.SELECT_ON];
 
 				// We ignore the event if it's not based on an event triggered by the UI.
-				if (!selectEvent.event) return;
+				if (!activeRef.current || !selectEvent.event) return;
 				// We ignore the event if it's not based on the component ID.
-				if (selectEvent.manager.id !== componentId) return;
+				if (
+					selectEvent.manager.id !== componentId ||
+					selectEvent.manager !== selectManagerRef.current
+				)
+					return;
 
 				const selected = [selectEvent.node];
 				const names = getNodeNames(patterns, selected, strictNaming);
@@ -118,11 +136,15 @@ export function useSelectManagerEvents(
 					event as InteractionEventResponseMapping[EVENTTYPE_INTERACTION.SELECT_OFF];
 
 				// don't send the event if it is a reselection
-				if (selectEvent.reselection) return;
+				if (!activeRef.current || selectEvent.reselection) return;
 				// We ignore the event if it's not based on an event triggered by the UI.
 				if (!selectEvent.event) return;
 				// We ignore the event if it's not based on the component ID.
-				if (selectEvent.manager.id !== componentId) return;
+				if (
+					selectEvent.manager.id !== componentId ||
+					selectEvent.manager !== selectManagerRef.current
+				)
+					return;
 
 				setSelectedNodeNames([]);
 			},
@@ -139,9 +161,13 @@ export function useSelectManagerEvents(
 					event as InteractionEventResponseMapping[EVENTTYPE_INTERACTION.MULTI_SELECT_ON];
 
 				// We ignore the event if it's not based on an event triggered by the UI.
-				if (!multiSelectEvent.event) return;
+				if (!activeRef.current || !multiSelectEvent.event) return;
 				// We ignore the event if it's not based on the component ID.
-				if (multiSelectEvent.manager.id !== componentId) return;
+				if (
+					multiSelectEvent.manager.id !== componentId ||
+					multiSelectEvent.manager !== selectManagerRef.current
+				)
+					return;
 
 				// Snapshot the nodes array immediately (it may be a live reference).
 				const selected = [...multiSelectEvent.nodes];
@@ -161,9 +187,13 @@ export function useSelectManagerEvents(
 					event as InteractionEventResponseMapping[EVENTTYPE_INTERACTION.MULTI_SELECT_OFF];
 
 				// We ignore the event if it's not based on an event triggered by the UI.
-				if (!multiSelectEvent.event) return;
+				if (!activeRef.current || !multiSelectEvent.event) return;
 				// We ignore the event if it's not based on the component ID.
-				if (multiSelectEvent.manager.id !== componentId) return;
+				if (
+					multiSelectEvent.manager.id !== componentId ||
+					multiSelectEvent.manager !== selectManagerRef.current
+				)
+					return;
 
 				// remove the node from the selected nodes
 				const selected = multiSelectEvent.nodes;
