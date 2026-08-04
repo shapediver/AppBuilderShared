@@ -430,9 +430,10 @@ export default function ParameterGumballComponent(
 		namespace,
 		viewportId,
 		presentation: gumballPresentation,
+		sectionId: "gumball",
 		menu: {
-			id: `${namespace}-${definition.id}-${viewportId}-gumball-menu`,
-			label: gumballLabel,
+			id: "runtime-interaction-gumball-menu",
+			label: "Gumball",
 			icon: "tabler:axis-3d",
 		},
 		items: [
@@ -446,6 +447,8 @@ export default function ParameterGumballComponent(
 					} else setGumballActive(false);
 				},
 			}),
+		],
+		commands: [
 			createToolbarCommand({
 				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
 				label: "Confirm",

@@ -411,9 +411,10 @@ export default function ParameterDrawingComponent(
 		namespace,
 		viewportId,
 		presentation: drawingPresentation,
+		sectionId: "drawing",
 		menu: {
-			id: `${namespace}-${definition.id}-${viewportId}-drawing-menu`,
-			label: drawingLabel,
+			id: "runtime-interaction-drawing-menu",
+			label: "Drawing",
 			icon: "tabler:pencil",
 		},
 		items: [
@@ -423,6 +424,8 @@ export default function ParameterDrawingComponent(
 				checked: drawingActive && hasInteractionPermission,
 				setChecked: (checked) => setDrawingActive(checked),
 			}),
+		],
+		commands: [
 			createToolbarCommand({
 				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
 				label: "Confirm",

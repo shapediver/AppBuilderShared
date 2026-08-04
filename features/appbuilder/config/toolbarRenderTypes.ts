@@ -56,7 +56,10 @@ export type ToolbarTabsItem = ToolbarItemBase<
 export type ToolbarCommandItem = ToolbarItemBase<
 	"command",
 	{execute: () => void | Promise<void>}
->;
+> & {
+	/** Commands with the same aggregation id become one toolbar button. */
+	aggregationId?: string;
+};
 
 /** A runtime checkbox rendered in a toolbar menu. */
 export type ToolbarCheckboxItem = ToolbarItemBase<
@@ -91,6 +94,10 @@ export type RuntimeToolbarMenuDefinition = Pick<
 > & {
 	sectionId?: string;
 };
+
+export type RuntimeToolbarMenuVisibility =
+	| "always"
+	| "multipleToggleable";
 
 /** Every resolved item that can own a toolbar popover. */
 export type ToolbarPopoverItem =

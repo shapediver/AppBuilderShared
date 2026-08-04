@@ -439,9 +439,10 @@ export default function ParameterRectangleTransformComponent(
 		namespace,
 		viewportId,
 		presentation: rectanglePresentation,
+		sectionId: "rectangle-transform",
 		menu: {
-			id: `${namespace}-${definition.id}-${viewportId}-rectangle-transform-menu`,
-			label: rtLabel,
+			id: "runtime-interaction-rectangle-transform-menu",
+			label: "Rectangle transform",
 			icon: "tabler:vector",
 		},
 		items: [
@@ -455,6 +456,8 @@ export default function ParameterRectangleTransformComponent(
 					} else setRectangleTransformActive(false);
 				},
 			}),
+		],
+		commands: [
 			createToolbarCommand({
 				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
 				label: "Confirm",

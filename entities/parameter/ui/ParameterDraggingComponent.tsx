@@ -418,9 +418,10 @@ export default function ParameterDraggingComponent(
 		namespace,
 		viewportId,
 		presentation: draggingPresentation,
+		sectionId: "dragging",
 		menu: {
-			id: `${namespace}-${definition.id}-${viewportId}-dragging-menu`,
-			label: draggingLabel,
+			id: "runtime-interaction-dragging-menu",
+			label: "Dragging",
 			icon: "tabler:drag-drop",
 		},
 		items: [
@@ -434,6 +435,8 @@ export default function ParameterDraggingComponent(
 					} else setDraggingActive(false);
 				},
 			}),
+		],
+		commands: [
 			createToolbarCommand({
 				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
 				label: "Confirm",

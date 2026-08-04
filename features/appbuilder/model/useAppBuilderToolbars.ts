@@ -4,9 +4,9 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {
 	ResolvedToolbarRegistration,
-	ToolbarMenuModel,
 } from "../config/toolbarRenderTypes";
 import {useRuntimeToolbarContributions} from "./runtimeToolbarContributionRegistry";
+import {resolveRuntimeToolbarGroups} from "./resolveRuntimeToolbarGroups";
 import {ToolbarRegistration} from "../config/shapediverStoreToolbars";
 import {useEffect, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
@@ -68,17 +68,8 @@ export function useAppBuilderToolbars(props: UseAppBuilderToolbarsProps) {
 		viewportId ?? "",
 		namespace,
 	);
-	const controls = useMemo<ToolbarMenuModel[]>(
-		() =>
-			runtimeToolbarContributions.map(({menu, items}) => ({
-				type: "menu",
-				id: menu.id,
-				label: menu.label,
-				icon: menu.icon,
-				props: {
-					sections: [{id: menu.sectionId ?? menu.id, items}],
-				},
-			})),
+	const controls = useMemo(
+		() => resolveRuntimeToolbarGroups(runtimeToolbarContributions),
 		[runtimeToolbarContributions],
 	);
 	const renderedToolbars = useMemo<ToolbarRegistration[]>(() => {
@@ -89,7 +80,7 @@ export function useAppBuilderToolbars(props: UseAppBuilderToolbarsProps) {
 		if (target)
 			return toolbars.map((toolbar) =>
 				toolbar.id === target.id
-					? {...toolbar, groups: [...toolbar.groups, controls]}
+					? {...toolbar, groups: [...toolbar.groups, ...controls]}
 					: toolbar,
 			);
 		return [...toolbars, {
@@ -101,7 +92,7 @@ export function useAppBuilderToolbars(props: UseAppBuilderToolbarsProps) {
 			order: 0,
 			visibility: "always",
 			ariaLabel: "Interaction toolbar",
-			groups: [controls],
+			groups: controls,
 		}];
 	}, [controls, namespace, toolbars, viewportId]);
 

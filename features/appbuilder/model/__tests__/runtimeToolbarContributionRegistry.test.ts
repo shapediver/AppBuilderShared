@@ -6,6 +6,7 @@ const contribution = (overrides = {}) => ({
 	id: "contribution",
 	namespace: "namespace",
 	viewportId: "viewport",
+	sectionId: "selection",
 	menu: {id: "menu", label: "Menu", icon: "tabler:menu"},
 	items: [{
 		id: "command",

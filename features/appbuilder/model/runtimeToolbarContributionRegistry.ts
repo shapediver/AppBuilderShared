@@ -1,5 +1,7 @@
 import type {
 	RuntimeToolbarMenuDefinition,
+	RuntimeToolbarMenuVisibility,
+	ToolbarCommandItem,
 	ToolbarMenuItem,
 } from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import {useSyncExternalStore} from "react";
@@ -11,6 +13,9 @@ export interface RuntimeToolbarContribution {
 	viewportId: string;
 	menu: RuntimeToolbarMenuDefinition;
 	items: ToolbarMenuItem[];
+	commands?: ToolbarCommandItem[];
+	sectionId: string;
+	menuVisibility?: RuntimeToolbarMenuVisibility;
 }
 
 type Snapshot = Readonly<Record<string, RuntimeToolbarContribution>>;

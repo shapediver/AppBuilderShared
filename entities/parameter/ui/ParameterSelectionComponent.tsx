@@ -7,7 +7,6 @@ import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
-import {ToolbarMenuItem} from "@AppBuilderShared/features/appbuilder/config/toolbarRenderTypes";
 import {
 	ActionIcon,
 	Box,
@@ -362,9 +361,7 @@ export default function ParameterSelectionComponent(
 		(minimumSelection === 0 && maximumSelection === 1)
 	);
 
-	const items: ToolbarMenuItem[] = [];
-
-	items.push(
+	const items = [
 		createToolbarCheckboxItem({
 			id: `${namespace}-${definition.id}-${viewportId}-toggle`,
 			label: `${toolbarLabel} (${selectedNodeNames.length})`,
@@ -377,34 +374,47 @@ export default function ParameterSelectionComponent(
 				} else setSelectionActive(false);
 			},
 		}),
-	);
+	];
+	const commands = [];
 
 	// Add Confirm and Cancel buttons for multi/range selections
 	if (showConfirmationControls) {
-		items.push(
+		commands.push(
 			createToolbarCommand({
 				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
 				label: "Confirm",
 				icon: "tabler:check",
-				disabled: !showConfirmationControls || !acceptable || !dirty,
-				execute: () => changeValue(selectedNodeNames),
+				aggregationId: "selection-confirm",
+				disabled: !dirty,
+				execute: () => {
+					if (!acceptable) {
+						notifications.warning({
+							title: "Selection cannot be confirmed",
+							message: `\"${definition.name}\" must contain between ${minimumSelection} and ${maximumSelection} selected objects.`,
+						});
+						return;
+					}
+					changeValue(selectedNodeNames);
+				},
 			}),
 		);
-		items.push(
+		commands.push(
 			createToolbarCommand({
 				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
 				label: "Cancel",
 				icon: "tabler:x",
-				disabled: !showConfirmationControls || !acceptable || !dirty,
+				aggregationId: "selection-cancel",
+				disabled: !dirty,
 				execute: cancel,
 			}),
 		);
 	}
-	items.push(
+	commands.push(
 		createToolbarCommand({
 			id: `${namespace}-${definition.id}-${viewportId}-clear`,
 			label: "Clear",
 			icon: "tabler:circle-off",
+			aggregationId: "selection-clear",
 			execute: clearSelection,
 		}),
 	);
@@ -414,12 +424,15 @@ export default function ParameterSelectionComponent(
 		namespace,
 		viewportId,
 		presentation,
+		sectionId: "selection",
+		menuVisibility: "multipleToggleable",
 		menu: {
-			id: `${namespace}-${definition.id}-${viewportId}-selection-menu`,
-			label: toolbarLabel,
+			id: "runtime-interaction-selection-menu",
+			label: "Selection",
 			icon: "tabler:hand-finger",
 		},
 		items,
+		commands,
 	});
 
 	// Toolbar presentation owns the complete interaction UI; do not leave an
