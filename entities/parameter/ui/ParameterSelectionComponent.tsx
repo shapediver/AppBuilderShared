@@ -36,7 +36,12 @@ import {
 import type {ParameterSelectionComponentStyleProps as StyleProps} from "../config/theme/parameterSelectionComponentTheme";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
-import {usePendingSelectionRegistry} from "../model/interaction/usePendingSelectionRegistry";
+import {
+	clearPendingSelection,
+	hasOtherPendingSelectionInScope,
+	markPendingSelection,
+	usePendingSelectionRegistry,
+} from "../model/interaction/usePendingSelectionRegistry";
 import {useSelection} from "../model/interaction/useSelection";
 import {useSelectionActivationState} from "../model/interaction/useSelectionActivationState";
 import {useSelectionInteractionOwnership} from "../model/interaction/useSelectionInteractionOwnership";
@@ -225,7 +230,10 @@ export default function ParameterSelectionComponent(
 	const acceptable =
 		selectedNodeNames.length >= minimumSelection &&
 		selectedNodeNames.length <= maximumSelection;
-	const committedNodeNames = parseNames(value);
+	// Pending and dirty state must use the same committed source. The value prop
+	// can lag behind state.uiValue after a batch update, otherwise leaving a
+	// phantom pending selection after Cancel.
+	const committedNodeNames = parseNames(state.uiValue);
 	const hasPendingSelection =
 		committedNodeNames.length !== selectedNodeNames.length ||
 		!committedNodeNames.every(
@@ -269,7 +277,9 @@ export default function ParameterSelectionComponent(
 		const committed = parseNames(state.uiValue);
 		const hasPendingSelection =
 			committed.length !== selectedNodeNames.length ||
-			!committed.every((name, index) => name === selectedNodeNames[index]);
+			!committed.every(
+				(name, index) => name === selectedNodeNames[index],
+			);
 		if (hasPendingSelection) return;
 		if (JSON.stringify(parsed) !== JSON.stringify(selectedNodeNames))
 			setSelectedNodeNames(parsed);
@@ -291,6 +301,17 @@ export default function ParameterSelectionComponent(
 	 */
 	const changeValue = useCallback(
 		(names: string[]) => {
+			if (
+				alwaysActive &&
+				hasOtherPendingSelectionInScope(
+					selectionOwnerKey,
+					`${namespace}-${viewportId}`,
+				)
+			) {
+				// Another selection owns an unconfirmed draft. Automatic
+				// always-active retries are expected here and stay silent.
+				return;
+			}
 			if (!alwaysActive) {
 				setSelectionActive(false);
 			}
@@ -300,7 +321,7 @@ export default function ParameterSelectionComponent(
 			if (value === JSON.stringify(parameterValue)) return;
 			handleChange(JSON.stringify(parameterValue), 0);
 		},
-		[value, alwaysActive],
+		[alwaysActive, namespace, selectionOwnerKey, value, viewportId],
 	);
 
 	useEffect(() => {
@@ -316,9 +337,12 @@ export default function ParameterSelectionComponent(
 			if (!alwaysActive) {
 				setSelectionActive(false);
 			}
+			// Cancel is a committed reset, so remove the draft marker before any
+			// other always-active selection can attempt an automatic update.
+			clearPendingSelection(selectionOwnerKey);
 			setSelectedNodeNames(parseNames(val));
 		},
-		[alwaysActive],
+		[alwaysActive, selectionOwnerKey, setSelectedNodeNames],
 	);
 
 	/**
@@ -334,8 +358,17 @@ export default function ParameterSelectionComponent(
 	 * Callback function to clear the selection.
 	 */
 	const clearSelection = useCallback(() => {
+		// This draft must be visible to other interaction parameters before the
+		// selection manager emits its clear event. Otherwise an always-active
+		// selection can submit independently while this parameter is invalid.
+		markPendingSelection(selectionOwnerKey, `${namespace}-${viewportId}`);
 		setSelectedNodeNamesAndRestoreSelection([]);
-	}, []);
+	}, [
+		namespace,
+		selectionOwnerKey,
+		setSelectedNodeNamesAndRestoreSelection,
+		viewportId,
+	]);
 
 	const notifyConflict = useCallback(
 		(title: string, message: string) =>
@@ -369,8 +402,10 @@ export default function ParameterSelectionComponent(
 	// the shared toolbar can commit them as one batch.
 	const showConfirmationControls =
 		hasOtherPendingSelection ||
-		!((minimumSelection === 1 && maximumSelection === 1) ||
-			(minimumSelection === 0 && maximumSelection === 1));
+		!(
+			(minimumSelection === 1 && maximumSelection === 1) ||
+			(minimumSelection === 0 && maximumSelection === 1)
+		);
 
 	const items = [
 		createToolbarCheckboxItem({
@@ -399,6 +434,7 @@ export default function ParameterSelectionComponent(
 				label: "Confirm",
 				icon: "tabler:check",
 				aggregationId: "selection-confirm",
+				order: 10,
 				disabled: !dirty,
 				execute: () => {
 					if (!acceptable) {
@@ -415,8 +451,8 @@ export default function ParameterSelectionComponent(
 							namespace,
 							parameterId: definition.id,
 							value: JSON.stringify({names: selectedNodeNames}),
-						prepare: () => {
-							restoreBatchSelectionRef.current = true;
+							prepare: () => {
+								restoreBatchSelectionRef.current = true;
 								if (!alwaysActive) {
 									releaseInteraction();
 									setSelectionActive(false);
@@ -432,6 +468,7 @@ export default function ParameterSelectionComponent(
 				label: "Cancel",
 				icon: "tabler:x",
 				aggregationId: "selection-cancel",
+				order: 20,
 				disabled: !dirty,
 				execute: cancel,
 			}),
@@ -443,6 +480,7 @@ export default function ParameterSelectionComponent(
 			label: "Clear",
 			icon: "tabler:circle-off",
 			aggregationId: "selection-clear",
+			order: 30,
 			execute: clearSelection,
 		}),
 	);

@@ -1,9 +1,9 @@
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import type {
 	ToolbarCommandItem,
 	ToolbarRenderItem,
 } from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import type {RuntimeToolbarContribution} from "./runtimeToolbarContributionRegistry";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 
 /**
  * Projects feature-owned runtime contributions into visual toolbar groups.
@@ -21,7 +21,9 @@ export const resolveRuntimeToolbarGroups = (
 
 	return Array.from(sections.values()).map((contributions) => {
 		const [{menu, menuVisibility = "always"}] = contributions;
-		const items = contributions.flatMap((contribution) => contribution.items);
+		const items = contributions.flatMap(
+			(contribution) => contribution.items,
+		);
 		const showMenu =
 			menuVisibility === "always" ||
 			(items.length > 1 &&
@@ -37,52 +39,76 @@ export const resolveRuntimeToolbarGroups = (
 			existing.push(command);
 			commands.set(key, existing);
 		}
-		const aggregatedCommands = Array.from(commands.values()).map((group) => {
-			const [first] = group;
-			return {
-				...first,
-				disabled: group.every((command) => command.disabled),
-				props: {
-					execute: () => {
-						const enabledCommands = group.filter(
-							(command) => !command.disabled,
-						);
-						const batchUpdates = enabledCommands.map(
-							(command) => command.props.batchUpdate,
-						);
-						if (
-							batchUpdates.length > 1 &&
-							batchUpdates.every((update) => update !== undefined)
-						) {
-							const values: Record<string, Record<string, unknown>> = {};
-							for (const update of batchUpdates) {
-								if (!update) continue;
-								update.prepare();
-								(values[update.namespace] ??= {})[update.parameterId] =
-									update.value;
+		const aggregatedCommands = Array.from(commands.entries())
+			.sort(
+				([keyA, groupA], [keyB, groupB]) =>
+					Math.min(
+						...groupA.map((command) => command.order ?? Infinity),
+					) -
+						Math.min(
+							...groupB.map(
+								(command) => command.order ?? Infinity,
+							),
+						) || keyA.localeCompare(keyB),
+			)
+			.map(([, group]) => {
+				const [first] = group;
+				return {
+					...first,
+					disabled: group.every((command) => command.disabled),
+					props: {
+						execute: () => {
+							const enabledCommands = group.filter(
+								(command) => !command.disabled,
+							);
+							const batchUpdates = enabledCommands.map(
+								(command) => command.props.batchUpdate,
+							);
+							if (
+								batchUpdates.length > 1 &&
+								batchUpdates.every(
+									(update) => update !== undefined,
+								)
+							) {
+								const values: Record<
+									string,
+									Record<string, unknown>
+								> = {};
+								for (const update of batchUpdates) {
+									if (!update) continue;
+									update.prepare();
+									(values[update.namespace] ??= {})[
+										update.parameterId
+									] = update.value;
+								}
+								void useShapeDiverStoreParameters
+									.getState()
+									.batchParameterValueUpdate(values);
+								return;
 							}
-							void useShapeDiverStoreParameters
-								.getState()
-								.batchParameterValueUpdate(values);
-							return;
-						}
-						for (const command of enabledCommands)
-							void command.props.execute();
+							for (const command of enabledCommands)
+								void command.props.execute();
+						},
 					},
-				},
-			};
-		});
+				};
+			});
 
 		return [
 			...(showMenu
-				? [{
-						type: "menu" as const,
-						id: menu.id,
-						label: menu.label,
-						icon: menu.icon,
-						props: {sections: [{id: menu.sectionId ?? menu.id, items}]},
-					}]
-					: []),
+				? [
+						{
+							type: "menu" as const,
+							id: menu.id,
+							label: menu.label,
+							icon: menu.icon,
+							props: {
+								sections: [
+									{id: menu.sectionId ?? menu.id, items},
+								],
+							},
+						},
+					]
+				: []),
 			...aggregatedCommands,
 		];
 	});

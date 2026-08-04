@@ -157,17 +157,14 @@ export const useSelectionInteractionOwnership = ({
 		}
 		claimedRef.current = false;
 		setOwnershipBlocked(true);
-		onConflict(
-			"Selection unavailable",
-			`${label} shares selectable nodes with ${result.conflictingOwners.join(", ")}.`,
-		);
+		// This is an automatic reclaim after another interaction changed. A
+		// conflict is expected while the user-selected interaction owns these
+		// nodes, so it must not produce a user-facing warning.
 	}, [
 		automaticallyActivated,
-		alwaysActive,
 		candidateNodes,
 		candidateSignature,
 		label,
-		onConflict,
 		ownershipRevision,
 		ownershipKey,
 		setOwnershipBlocked,

@@ -1,10 +1,13 @@
 /**
  * @jest-environment jsdom
  */
-import {createToolbarCheckboxItem, createToolbarCommand} from "../createToolbarItems";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {
+	createToolbarCheckboxItem,
+	createToolbarCommand,
+} from "../createToolbarItems";
 import {resolveRuntimeToolbarGroups} from "../resolveRuntimeToolbarGroups";
 import type {RuntimeToolbarContribution} from "../runtimeToolbarContributionRegistry";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 
 const contribution = (
 	id: string,
@@ -16,12 +19,14 @@ const contribution = (
 	viewportId: "viewport",
 	sectionId,
 	menu: {id: `runtime-interaction-${sectionId}-menu`, label: sectionId},
-	items: [createToolbarCheckboxItem({
-		id: `${id}-toggle`,
-		label: id,
-		checked: false,
-		setChecked: jest.fn(),
-	})],
+	items: [
+		createToolbarCheckboxItem({
+			id: `${id}-toggle`,
+			label: id,
+			checked: false,
+			setChecked: jest.fn(),
+		}),
+	],
 	...overrides,
 });
 
@@ -32,21 +37,25 @@ describe("resolveRuntimeToolbarGroups", () => {
 		const groups = resolveRuntimeToolbarGroups([
 			contribution("first", "selection", {
 				menuVisibility: "multipleToggleable",
-				commands: [createToolbarCommand({
-					id: "first-confirm",
-					aggregationId: "selection-confirm",
-					label: "Confirm",
-					execute: firstConfirm,
-				})],
+				commands: [
+					createToolbarCommand({
+						id: "first-confirm",
+						aggregationId: "selection-confirm",
+						label: "Confirm",
+						execute: firstConfirm,
+					}),
+				],
 			}),
 			contribution("second", "selection", {
 				menuVisibility: "multipleToggleable",
-				commands: [createToolbarCommand({
-					id: "second-confirm",
-					aggregationId: "selection-confirm",
-					label: "Confirm",
-					execute: secondConfirm,
-				})],
+				commands: [
+					createToolbarCommand({
+						id: "second-confirm",
+						aggregationId: "selection-confirm",
+						label: "Confirm",
+						execute: secondConfirm,
+					}),
+				],
 			}),
 		]);
 
@@ -68,27 +77,72 @@ describe("resolveRuntimeToolbarGroups", () => {
 		const groups = resolveRuntimeToolbarGroups([
 			contribution("first", "selection", {
 				menuVisibility: "multipleToggleable",
-				items: [createToolbarCheckboxItem({
-					id: "first-toggle",
-					label: "First",
-					checked: true,
-					readOnly: true,
-					setChecked: jest.fn(),
-				})],
+				items: [
+					createToolbarCheckboxItem({
+						id: "first-toggle",
+						label: "First",
+						checked: true,
+						readOnly: true,
+						setChecked: jest.fn(),
+					}),
+				],
 			}),
 			contribution("second", "selection", {
 				menuVisibility: "multipleToggleable",
-				items: [createToolbarCheckboxItem({
-					id: "second-toggle",
-					label: "Second",
-					checked: true,
-					readOnly: true,
-					setChecked: jest.fn(),
-				})],
+				items: [
+					createToolbarCheckboxItem({
+						id: "second-toggle",
+						label: "Second",
+						checked: true,
+						readOnly: true,
+						setChecked: jest.fn(),
+					}),
+				],
 			}),
 		]);
 
 		expect(groups).toEqual([[]]);
+	});
+
+	it("keeps aggregate command order independent of contribution shape", () => {
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				commands: [
+					createToolbarCommand({
+						id: "first-clear",
+						aggregationId: "selection-clear",
+						order: 30,
+						label: "Clear",
+						execute: jest.fn(),
+					}),
+				],
+			}),
+			contribution("second", "selection", {
+				commands: [
+					createToolbarCommand({
+						id: "second-confirm",
+						aggregationId: "selection-confirm",
+						order: 10,
+						label: "Confirm",
+						execute: jest.fn(),
+					}),
+					createToolbarCommand({
+						id: "second-cancel",
+						aggregationId: "selection-cancel",
+						order: 20,
+						label: "Cancel",
+						execute: jest.fn(),
+					}),
+				],
+			}),
+		]);
+
+		expect(groups[0].map((item) => item.label)).toEqual([
+			"selection",
+			"Confirm",
+			"Cancel",
+			"Clear",
+		]);
 	});
 
 	it("keeps different interaction types in separate sections", () => {
@@ -109,32 +163,36 @@ describe("resolveRuntimeToolbarGroups", () => {
 		useShapeDiverStoreParameters.setState({batchParameterValueUpdate});
 		const groups = resolveRuntimeToolbarGroups([
 			contribution("first", "selection", {
-				commands: [createToolbarCommand({
-					id: "first-confirm",
-					aggregationId: "selection-confirm",
-					label: "Confirm",
-					execute: jest.fn(),
-					batchUpdate: {
-						namespace: "namespace",
-						parameterId: "first",
-						value: "first-value",
-						prepare: jest.fn(),
-					},
-				})],
+				commands: [
+					createToolbarCommand({
+						id: "first-confirm",
+						aggregationId: "selection-confirm",
+						label: "Confirm",
+						execute: jest.fn(),
+						batchUpdate: {
+							namespace: "namespace",
+							parameterId: "first",
+							value: "first-value",
+							prepare: jest.fn(),
+						},
+					}),
+				],
 			}),
 			contribution("second", "selection", {
-				commands: [createToolbarCommand({
-					id: "second-confirm",
-					aggregationId: "selection-confirm",
-					label: "Confirm",
-					execute: jest.fn(),
-					batchUpdate: {
-						namespace: "namespace",
-						parameterId: "second",
-						value: "second-value",
-						prepare: jest.fn(),
-					},
-				})],
+				commands: [
+					createToolbarCommand({
+						id: "second-confirm",
+						aggregationId: "selection-confirm",
+						label: "Confirm",
+						execute: jest.fn(),
+						batchUpdate: {
+							namespace: "namespace",
+							parameterId: "second",
+							value: "second-value",
+							prepare: jest.fn(),
+						},
+					}),
+				],
 			}),
 		]);
 
