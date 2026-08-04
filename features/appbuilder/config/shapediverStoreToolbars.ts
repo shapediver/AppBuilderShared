@@ -6,7 +6,11 @@ import {
 	IAppBuilderToolbarControlItem,
 	IAppBuilderToolbarItem,
 } from "./appbuilder";
-import type {ToolbarCommandItem, ToolbarMenuModel} from "./toolbarRenderTypes";
+import type {
+	ToolbarCheckboxItem,
+	ToolbarCommandItem,
+	ToolbarMenuModel,
+} from "./toolbarRenderTypes";
 
 export type ToolbarSource = "definition" | "default" | "runtime";
 
@@ -14,6 +18,7 @@ export type ToolbarSource = "definition" | "default" | "runtime";
 export type ToolbarItem =
 	| IAppBuilderToolbarItem
 	| ToolbarCommandItem
+	| ToolbarCheckboxItem
 	| ToolbarMenuModel;
 export type ToolbarGroups = ToolbarItem[][];
 

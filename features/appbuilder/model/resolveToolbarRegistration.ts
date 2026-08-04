@@ -40,7 +40,12 @@ const resolveItem = (
 	item: ToolbarItem,
 	fallbackId: string,
 ): ToolbarRenderItem => {
-	if (item.type === "command" || item.type === "menu") return item;
+	if (
+		item.type === "command" ||
+		item.type === "checkbox" ||
+		item.type === "menu"
+	)
+		return item;
 	if (isToolbarActionMenuItem(item)) {
 		const menu: ToolbarMenuModel = {
 			id: item.id ?? fallbackId,

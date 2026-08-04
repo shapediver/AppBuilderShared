@@ -104,6 +104,48 @@ describe("resolveRuntimeToolbarGroups", () => {
 		expect(groups).toEqual([[]]);
 	});
 
+	it("promotes one selection checkbox and its clear action into toolbar buttons", () => {
+		const setChecked = jest.fn();
+		const clear = jest.fn();
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("only", "selection", {
+				menu: {
+					id: "runtime-interaction-selection-menu",
+					label: "Selection",
+					icon: "tabler:hand-finger",
+				},
+				menuVisibility: "multipleToggleable",
+				items: [
+					createToolbarCheckboxItem({
+						id: "only-toggle",
+						label: "Only",
+						checked: true,
+						setChecked,
+						trailingAction: {
+							label: "Clear Only",
+							icon: "tabler:circle-off",
+							execute: clear,
+						},
+					}),
+				],
+			}),
+		]);
+
+		expect(groups[0].map((item) => item.type)).toEqual([
+			"checkbox",
+			"command",
+		]);
+		const toggle = groups[0][0];
+		if (toggle.type !== "checkbox") throw new Error("Expected toggle");
+		expect(toggle.icon).toBe("tabler:hand-finger");
+		const clearCommand = groups[0][1];
+		if (clearCommand.type !== "command")
+			throw new Error("Expected clear command");
+		expect(clearCommand.label).toBe("Clear Only");
+		clearCommand.props.execute();
+		expect(clear).toHaveBeenCalledTimes(1);
+	});
+
 	it("keeps aggregate command order independent of contribution shape", () => {
 		const groups = resolveRuntimeToolbarGroups([
 			contribution("first", "selection", {

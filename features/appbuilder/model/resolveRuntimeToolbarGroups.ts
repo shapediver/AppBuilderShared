@@ -30,6 +30,12 @@ export const resolveRuntimeToolbarGroups = (
 				items.some(
 					(item) => item.type === "checkbox" && !item.props.readOnly,
 				));
+		const singleCheckbox =
+			!showMenu &&
+			items.length === 1 &&
+			items[0].type === "checkbox"
+				? items[0]
+				: undefined;
 		const commands = new Map<string, ToolbarCommandItem[]>();
 		for (const command of contributions.flatMap(
 			(contribution) => contribution.commands ?? [],
@@ -94,7 +100,14 @@ export const resolveRuntimeToolbarGroups = (
 			});
 
 		return [
-			...(showMenu
+			...(singleCheckbox
+				? [
+						{
+							...singleCheckbox,
+							icon: singleCheckbox.icon ?? menu.icon,
+						},
+					]
+				: showMenu
 				? [
 						{
 							type: "menu" as const,
@@ -110,6 +123,20 @@ export const resolveRuntimeToolbarGroups = (
 					]
 				: []),
 			...aggregatedCommands,
+			...(singleCheckbox?.props.trailingAction
+				? [
+						{
+							type: "command" as const,
+							id: `${singleCheckbox.id}-trailing-action`,
+							label: singleCheckbox.props.trailingAction.label,
+							icon: singleCheckbox.props.trailingAction.icon,
+							disabled: singleCheckbox.props.trailingAction.disabled,
+							props: {
+								execute: singleCheckbox.props.trailingAction.execute,
+							},
+						},
+					]
+				: []),
 		];
 	});
 };

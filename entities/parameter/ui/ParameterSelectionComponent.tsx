@@ -51,6 +51,12 @@ import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
+type SelectionParameterProps = ISelectionParameterProps & {
+	buttons?: {
+		clear?: boolean;
+	};
+};
+
 /**
  * Parse the value of a selection parameter and extract the selected node names.
  * @param value
@@ -156,7 +162,7 @@ export default function ParameterSelectionComponent(
 	const selectionProps = useMemo(() => {
 		const result = validateSelectionParameterSettings(definition.settings);
 		if (result.success) {
-			const props = result.data.props as ISelectionParameterProps;
+			const props = result.data.props as SelectionParameterProps;
 			if (!props.selectionColor) props.selectionColor = selectionColor;
 			if (!props.availableColor) props.availableColor = availableColor;
 			if (!props.hoverColor) props.hoverColor = hoverColor;
@@ -173,7 +179,7 @@ export default function ParameterSelectionComponent(
 				selectionColor,
 				availableColor,
 				hoverColor,
-			} as ISelectionParameterProps;
+			} as SelectionParameterProps;
 		}
 	}, [definition.settings, selectionColor, availableColor]);
 

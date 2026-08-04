@@ -129,7 +129,10 @@ export type ToolbarButtonItem =
 	| ToolbarPopoverItem;
 
 /** Every resolved item rendered in a toolbar group. */
-export type ToolbarRenderItem = ToolbarButtonItem | ToolbarCommandItem;
+export type ToolbarRenderItem =
+	| ToolbarButtonItem
+	| ToolbarCommandItem
+	| ToolbarCheckboxItem;
 
 export type ResolvedToolbarRegistration = Omit<
 	ToolbarRegistration,

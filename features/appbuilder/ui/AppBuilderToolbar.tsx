@@ -219,6 +219,29 @@ export default function AppBuilderToolbar(props: Props) {
 											defaultIcon={toolbar.defaultIcon}
 										/>
 									);
+								case "checkbox":
+									return (
+										<AppBuilderToolbarCommandButton
+											key={popoverId}
+											item={{
+												type: "command",
+												id: toolbarItem.id,
+												label: toolbarItem.label,
+												icon: toolbarItem.icon,
+												tooltip: toolbarItem.tooltip,
+												disabled:
+													toolbarItem.disabled || toolbarItem.props.readOnly,
+												props: {
+													execute: () =>
+														toolbarItem.props.setChecked(
+															!toolbarItem.props.checked,
+														),
+												},
+											}}
+											presentation="toolbar"
+											defaultIcon={toolbar.defaultIcon}
+										/>
+									);
 								case "action":
 									return (
 										<AppBuilderToolbarActionButton
