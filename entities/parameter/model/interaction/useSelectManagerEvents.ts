@@ -67,6 +67,7 @@ const getNodeNames = (
  * @param componentId The ID of the component.
  * @param initialSelectedNodeNames The initial selected node names (used to initialize the selection state).
  * 					Note that this initial state is not checked against the filter pattern.
+ * @param strictNaming Whether to use strict naming for node name matching.
  */
 export function useSelectManagerEvents(
 	patterns: IUseCreateNameFilterPatternResult,
@@ -181,7 +182,7 @@ export function useSelectManagerEvents(
 			removeListener(tokenMultiSelectOn);
 			removeListener(tokenMultiSelectOff);
 		};
-	}, [patterns, componentId]);
+	}, [patterns, componentId, strictNaming]);
 
 	return {
 		selectedNodeNames,

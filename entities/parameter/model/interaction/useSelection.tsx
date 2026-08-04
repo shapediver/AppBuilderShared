@@ -50,6 +50,11 @@ export function useSelection(
 	strictNaming: boolean = true,
 ): ISelectionState & {
 	/**
+	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
+	 * Used for ownership conflict detection at the registration layer.
+	 */
+	candidateNodes: Array<{nodeId: string; name: string}>;
+	/**
 	 * The available node names in a dictionary for each output.
 	 */
 	availableNodeNames: {[key: string]: {[key: string]: string[]}};
@@ -347,7 +352,16 @@ export function useSelection(
 		],
 	);
 
+	const candidateNodes = useMemo(
+		() =>
+			Object.values(availableNodeNames)
+				.flat()
+				.map((entry) => ({nodeId: entry.node.id, name: entry.name})),
+		[availableNodeNames],
+	);
+
 	return {
+		candidateNodes,
 		selectedNodeNames,
 		setSelectedNodeNames,
 		resetSelectedNodeNames,

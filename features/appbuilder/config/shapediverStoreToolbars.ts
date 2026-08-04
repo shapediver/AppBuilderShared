@@ -4,10 +4,18 @@ import {
 	AppBuilderToolbarSide,
 	AppBuilderToolbarVisibility,
 	IAppBuilderToolbarControlItem,
-	IAppBuilderToolbarGroups,
+	IAppBuilderToolbarItem,
 } from "./appbuilder";
+import type {ToolbarCommandItem, ToolbarMenuModel} from "./toolbarRenderTypes";
 
 export type ToolbarSource = "definition" | "default" | "runtime";
+
+/** Runtime toolbar controls use the same generic command/menu models as the UI. */
+export type ToolbarItem =
+	| IAppBuilderToolbarItem
+	| ToolbarCommandItem
+	| ToolbarMenuModel;
+export type ToolbarGroups = ToolbarItem[][];
 
 export interface ToolbarRegistration {
 	id: string;
@@ -20,7 +28,7 @@ export interface ToolbarRegistration {
 	visibility: AppBuilderToolbarVisibility;
 	ariaLabel?: string;
 	defaultIcon?: IconType;
-	groups: IAppBuilderToolbarGroups;
+	groups: ToolbarGroups;
 }
 
 export interface ToolbarRuntimeTarget {
@@ -48,12 +56,10 @@ export interface IShapeDiverStoreToolbars {
 	resetDefinitionToolbars: () => void;
 	setDefaultToolbar: (toolbar: ToolbarRegistration) => void;
 	removeDefaultToolbar: (toolbarId: string) => void;
-
 	addRuntimeToolbarControls: (
 		target: ToolbarRuntimeTarget,
 		items: IAppBuilderToolbarControlItem[],
 	) => string | undefined;
 	removeRuntimeToolbarToken: (token: string) => boolean;
-
 	selectMergedToolbars: (viewportId?: string) => ToolbarRegistration[];
 }

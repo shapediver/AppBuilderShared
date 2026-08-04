@@ -1,5 +1,6 @@
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
@@ -22,7 +23,12 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import type {ParameterDraggingComponentStyleProps as StyleProps} from "../config/theme/parameterDraggingComponentTheme";
+import {
+	createToolbarCheckboxItem,
+	createToolbarCommand,
+} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
 import {useDragging} from "../model/interaction/useDragging";
+import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
@@ -107,6 +113,8 @@ export default function ParameterDraggingComponent(
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 
+	const {namespace} = props;
+
 	const {draggingColor, availableColor, hoverColor} = useProps(
 		"ParameterDraggingComponent",
 		defaultStyleProps,
@@ -152,9 +160,8 @@ export default function ParameterDraggingComponent(
 	}, [definition.settings, draggingColor, availableColor]);
 
 	// is the dragging active or not?
-	const [draggingActive, setDraggingActive] = useState<boolean>(
-		draggingProps.activeMode === "activeOnStart" ? true : false,
-	);
+	const draggingPresentation = draggingProps.presentation ?? "widget";
+	const [draggingActive, setDraggingActive] = useState(false);
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
 	// parsed execValue
@@ -170,13 +177,35 @@ export default function ParameterDraggingComponent(
 	// get the viewport ID
 	const {viewportId} = useViewportId();
 
-	const {draggedNodes, setDraggedNodes, restoreDraggedNodes} = useDragging(
+	const {candidateNodes, draggedNodes, setDraggedNodes, restoreDraggedNodes} = useDragging(
 		sessionDependencies,
 		viewportId,
 		draggingProps,
 		draggingActive,
 		parsedUiValue,
 	);
+
+	const draggingLabel =
+		draggingProps.prompt?.inactiveTitle ??
+		`Start dragging (${parsedUiValue.length})`;
+
+	const automaticallyActivated =
+		draggingProps.activeMode === "activeOnStart";
+	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
+		viewportId,
+		ownerKey: `${namespace}-${definition.id}-${viewportId}`,
+		ownerLabel: draggingLabel,
+		type: "dragging",
+		alwaysActive: false,
+		automaticallyActivated,
+		candidateNodes,
+		active: draggingActive,
+	});
+	const effectiveDraggingActive = draggingActive && !ownershipBlocked;
+	useEffect(() => {
+		if (ownershipBlocked) setDraggingActive(false);
+		else if (automaticallyActivated) setDraggingActive(true);
+	}, [automaticallyActivated, ownershipBlocked]);
 
 	// reference to the last confirmed value
 	const lastConfirmedValueRef = useRef<DraggingParameterValue["objects"]>(
@@ -272,16 +301,16 @@ export default function ParameterDraggingComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the dragging state changes.
 	 */
 	useEffect(() => {
-		actions.setDisableOtherParameters(draggingActive);
+		actions.setDisableOtherParameters(effectiveDraggingActive);
 
-		if (draggingActive && !interactionRequestTokenRef.current) {
+		if (effectiveDraggingActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
 				viewportId,
 				disable: cancel,
 			});
 			interactionRequestTokenRef.current = returnedToken;
-		} else if (!draggingActive && interactionRequestTokenRef.current) {
+		} else if (!effectiveDraggingActive && interactionRequestTokenRef.current) {
 			removeInteractionRequest(interactionRequestTokenRef.current);
 			interactionRequestTokenRef.current = undefined;
 		}
@@ -293,7 +322,7 @@ export default function ParameterDraggingComponent(
 				interactionRequestTokenRef.current = undefined;
 			}
 		};
-	}, [draggingActive, cancel]);
+	}, [effectiveDraggingActive, cancel]);
 
 	/**
 	 * The content of the parameter when it is active.
@@ -364,7 +393,7 @@ export default function ParameterDraggingComponent(
 			className={classes.interactionButton}
 			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={parsedUiValue.length === 0 ? "light" : "filled"}
-			onClick={() => setDraggingActive(true)}
+			onClick={() => { if (tryAcquireClaim(true)) setDraggingActive(true); }}
 		>
 			<Text size="sm" className={classes.interactionText}>
 				{draggingProps.prompt?.inactiveTitle ??
@@ -382,6 +411,48 @@ export default function ParameterDraggingComponent(
 		setOnCancelCallback(() => _onCancelCallback);
 	}, [_onCancelCallback]);
 
+	// Register with interaction toolbar if presentation is "toolbar"
+
+	useInteractionToolbarContribution({
+		id: `${namespace}-${definition.id}-${viewportId}`,
+		namespace,
+		viewportId,
+		presentation: draggingPresentation,
+		menu: {
+			id: `${namespace}-${definition.id}-${viewportId}-dragging-menu`,
+			label: draggingLabel,
+			icon: "tabler:drag-drop",
+		},
+		items: [
+			createToolbarCheckboxItem({
+				id: `${namespace}-${definition.id}-${viewportId}-toggle`,
+				label: draggingLabel,
+				checked: effectiveDraggingActive,
+				setChecked: (checked) => {
+					if (checked) {
+						if (tryAcquireClaim(true)) setDraggingActive(true);
+					} else setDraggingActive(false);
+				},
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+				label: "Confirm",
+				icon: "tabler:check",
+				disabled: !dirty,
+				execute: changeValue,
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+				label: "Cancel",
+				icon: "tabler:x",
+				disabled: !dirty,
+				execute: cancel,
+			}),
+		],
+	});
+
+	if (draggingPresentation === "toolbar") return <></>;
+
 	return (
 		<ParameterWrapperComponent
 			onCancel={onCancel}
@@ -389,7 +460,7 @@ export default function ParameterDraggingComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && draggingActive ? contentActive : contentInactive}
+			{definition && effectiveDraggingActive ? contentActive : contentInactive}
 		</ParameterWrapperComponent>
 	);
 }

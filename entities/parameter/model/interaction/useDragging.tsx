@@ -38,6 +38,10 @@ export function useDragging(
 	strictNaming = true,
 ): {
 	/**
+	 * All resolved candidate nodes (unfiltered — dragged nodes NOT excluded).
+	 */
+	candidateNodes: Array<{nodeId: string; name: string}>;
+	/**
 	 * The dragged nodes.
 	 */
 	draggedNodes: DraggingParameterValue["objects"];
@@ -171,15 +175,17 @@ export function useDragging(
 	}, [objects, componentId, draggingProps]);
 
 	// call the node interaction data hook
-	const {availableNodeNames} = useNodesInteractionData(
-		activate ? nodesInteractionInput : {},
-	);
+	const {availableNodeNames} = useNodesInteractionData(nodesInteractionInput);
 
 	/**
 	 * Effect to update the available nodes in the drag manager.
 	 * The available nodes are all nodes that match the filter pattern and are not currently dragged.
 	 */
 	useEffect(() => {
+		if (!activate) {
+			setAvailableNodes([]);
+			return;
+		}
 		const nodes = Object.values(availableNodeNames).flatMap(
 			(availableNames) => {
 				return availableNames.filter(
@@ -261,7 +267,16 @@ export function useDragging(
 		[sessionApis],
 	);
 
+	const candidateNodes = useMemo(
+		() =>
+			Object.values(availableNodeNames)
+				.flat()
+				.map((entry) => ({nodeId: entry.node.id, name: entry.name})),
+		[availableNodeNames],
+	);
+
 	return {
+		candidateNodes,
 		draggedNodes,
 		setDraggedNodes,
 		resetDraggedNodes,

@@ -2,18 +2,25 @@ import {
 	IAppBuilder,
 	isToolbarContainer,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {useEffect} from "react";
-import {useShallow} from "zustand/react/shallow";
+import type {
+	ResolvedToolbarRegistration,
+	ToolbarMenuModel,
+} from "../config/toolbarRenderTypes";
+import {useRuntimeToolbarContributions} from "./runtimeToolbarContributionRegistry";
 import {ToolbarRegistration} from "../config/shapediverStoreToolbars";
+import {useEffect, useMemo} from "react";
+import {useShallow} from "zustand/react/shallow";
+import {resolveToolbarRegistration} from "./resolveToolbarRegistration";
 import {useShapeDiverStoreToolbars} from "./useShapeDiverStoreToolbars";
 
 interface UseAppBuilderToolbarsProps {
 	appBuilderData?: IAppBuilder;
 	viewportId?: string;
+	namespace?: string;
 }
 
 export function useAppBuilderToolbars(props: UseAppBuilderToolbarsProps) {
-	const {appBuilderData, viewportId} = props;
+	const {appBuilderData, viewportId, namespace = ""} = props;
 
 	const {setDefinitionToolbars, resetDefinitionToolbars} =
 		useShapeDiverStoreToolbars(
@@ -57,5 +64,51 @@ export function useAppBuilderToolbars(props: UseAppBuilderToolbarsProps) {
 		viewportId,
 	]);
 
-	return {toolbars};
+	const runtimeToolbarContributions = useRuntimeToolbarContributions(
+		viewportId ?? "",
+		namespace,
+	);
+	const controls = useMemo<ToolbarMenuModel[]>(
+		() =>
+			runtimeToolbarContributions.map(({menu, items}) => ({
+				type: "menu",
+				id: menu.id,
+				label: menu.label,
+				icon: menu.icon,
+				props: {
+					sections: [{id: menu.sectionId ?? menu.id, items}],
+				},
+			})),
+		[runtimeToolbarContributions],
+	);
+	const renderedToolbars = useMemo<ToolbarRegistration[]>(() => {
+		if (controls.length === 0) return toolbars;
+		const target = toolbars.find(
+			(toolbar) => toolbar.side === "bottom" && toolbar.align === "center",
+		);
+		if (target)
+			return toolbars.map((toolbar) =>
+				toolbar.id === target.id
+					? {...toolbar, groups: [...toolbar.groups, controls]}
+					: toolbar,
+			);
+		return [...toolbars, {
+			id: `interaction-toolbar-${viewportId}-${namespace}`,
+			source: "runtime",
+			viewportId,
+			side: "bottom",
+			align: "center",
+			order: 0,
+			visibility: "always",
+			ariaLabel: "Interaction toolbar",
+			groups: [controls],
+		}];
+	}, [controls, namespace, toolbars, viewportId]);
+
+	const resolvedToolbars = useMemo<ResolvedToolbarRegistration[]>(
+		() => renderedToolbars.map(resolveToolbarRegistration),
+		[renderedToolbars],
+	);
+
+	return {toolbars: resolvedToolbars};
 }

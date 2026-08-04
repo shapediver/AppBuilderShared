@@ -28,6 +28,11 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import {useDrawingTools} from "../model/drawing/useDrawingTools";
+import {
+	createToolbarCheckboxItem,
+	createToolbarCommand,
+} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
+import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import DrawingOptionsComponent from "./DrawingOptionsComponent";
@@ -70,6 +75,8 @@ export default function ParameterDrawingComponent(
 		value,
 	} = useParameterComponentCommons<string>(props);
 
+	const {namespace} = props;
+
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterDrawingComponent",
 		defaultPropsParameterWrapper,
@@ -107,6 +114,8 @@ export default function ParameterDrawingComponent(
 	}, [definition.settings]);
 
 	// state for the drawing application
+	const drawingPresentation =
+		drawingProps.general?.presentation ?? "widget";
 	const [drawingActive, setDrawingActive] = useState<boolean>(
 		drawingProps.general?.activeMode === "activeOnStart" ? true : false,
 	);
@@ -392,6 +401,52 @@ export default function ParameterDrawingComponent(
 			</Text>
 		</Button>
 	);
+
+	// Register with interaction toolbar if presentation is "toolbar"
+	const drawingLabel =
+		drawingProps.general?.prompt?.inactiveTitle ?? "Start drawing";
+
+	useInteractionToolbarContribution({
+		id: `${namespace}-${definition.id}-${viewportId}`,
+		namespace,
+		viewportId,
+		presentation: drawingPresentation,
+		menu: {
+			id: `${namespace}-${definition.id}-${viewportId}-drawing-menu`,
+			label: drawingLabel,
+			icon: "tabler:pencil",
+		},
+		items: [
+			createToolbarCheckboxItem({
+				id: `${namespace}-${definition.id}-${viewportId}-toggle`,
+				label: drawingLabel,
+				checked: drawingActive && hasInteractionPermission,
+				setChecked: (checked) => setDrawingActive(checked),
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+				label: "Confirm",
+				icon: "tabler:check",
+				disabled: !isWithinConstraints || !dirty,
+				execute: () => confirmDrawing(pointsData),
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+				label: "Cancel",
+				icon: "tabler:x",
+				disabled: !dirty,
+				execute: cancelDrawing,
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-clear`,
+				label: "Clear",
+				icon: "tabler:circle-off",
+				execute: clearDrawing,
+			}),
+		],
+	});
+
+	if (drawingPresentation === "toolbar") return <></>;
 
 	return (
 		<ParameterWrapperComponent

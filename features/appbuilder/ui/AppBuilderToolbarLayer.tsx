@@ -93,6 +93,7 @@ export default function AppBuilderToolbarLayer({
 	const {toolbars} = useAppBuilderToolbars({
 		appBuilderData,
 		viewportId,
+		namespace,
 	});
 	const viewport = useShapeDiverStoreViewport(
 		useShallow((state) => state.viewports[viewportId]),

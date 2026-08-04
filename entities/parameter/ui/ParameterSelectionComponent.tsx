@@ -1,4 +1,8 @@
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {
+	createToolbarCheckboxItem,
+	createToolbarCommand,
+} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
@@ -23,16 +27,17 @@ import {
 } from "@shapediver/viewer.session";
 import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
 import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
-import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import type {ParameterSelectionComponentStyleProps as StyleProps} from "../config/theme/parameterSelectionComponentTheme";
+import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useSelection} from "../model/interaction/useSelection";
+import {useSelectionInteractionOwnership} from "../model/interaction/useSelectionInteractionOwnership";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
-import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
@@ -121,6 +126,8 @@ export default function ParameterSelectionComponent(
 		state,
 	} = useParameterComponentCommons<string>(props);
 
+	const {namespace} = props;
+
 	const {selectionColor, availableColor, hoverColor} = useProps(
 		"ParameterSelectionComponent",
 		defaultStyleProps,
@@ -132,10 +139,6 @@ export default function ParameterSelectionComponent(
 		defaultPropsParameterWrapper,
 		props,
 	);
-
-	// get the interaction request management
-	const {addInteractionRequest, removeInteractionRequest} =
-		useShapeDiverStoreInteractionRequestManagement();
 
 	// get the notification store
 	const notifications = useNotificationStore();
@@ -167,20 +170,40 @@ export default function ParameterSelectionComponent(
 
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
-
-	// is the selection active or not?
+	const alwaysActive = selectionProps.activeMode === "alwaysActive";
+	const presentation = selectionProps.presentation ?? "widget";
+	// For alwaysActive, selection is always active.
+	// For activeOnStart, selection starts active.
+	// For default, selection starts inactive.
+	const automaticallyActivated =
+		alwaysActive || selectionProps.activeMode === "activeOnStart";
 	const [selectionActive, setSelectionActive] = useState<boolean>(
-		selectionProps.activeMode === "activeOnStart" ? true : false,
+		automaticallyActivated,
 	);
+
+	// Track whether this persistent selection is suspended by an exclusive tool.
+	// Always-active selections use passive interaction requests so the store can
+	// disable (suspend) and later re-enable (resume) them when exclusive tools
+	// claim and release the viewport.
+	const [suspended, setSuspended] = useState(false);
+	const [ownershipBlocked, setOwnershipBlocked] = useState(
+		automaticallyActivated,
+	);
+	const effectiveSelectionActive =
+		!suspended && !ownershipBlocked && (alwaysActive || selectionActive);
+	// Keep a suspended always-active request registered for later resume, but do
+	// not register selections whose candidate ownership was rejected.
+	const selectionRegistered =
+		!ownershipBlocked && (alwaysActive || selectionActive);
+
 	// state for the dirty flag
 	const [dirty, setDirty] = useState<boolean>(false);
-	// reference to manage the interaction request token
-	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
 
 	const {
+		candidateNodes,
 		availableNodeNames,
 		selectedNodeNames,
 		setSelectedNodeNames,
@@ -188,18 +211,21 @@ export default function ParameterSelectionComponent(
 	} = useSelection(
 		viewportId,
 		selectionProps,
-		selectionActive,
+		effectiveSelectionActive,
 		parseNames(value),
 	);
 
-	// check if the current selection is within the constraints
 	const acceptable =
 		selectedNodeNames.length >= minimumSelection &&
 		selectedNodeNames.length <= maximumSelection;
+	// Always-active multi-selections submit immediately when their configured
+	// maximum is reached. Non-persistent selections retain the established
+	// fixed/single auto-commit behavior.
 	const acceptImmediately =
-		(minimumSelection === maximumSelection ||
+		(alwaysActive && selectedNodeNames.length === maximumSelection) ||
+		((minimumSelection === maximumSelection ||
 			(minimumSelection === 0 && maximumSelection === 1)) &&
-		acceptable;
+			acceptable);
 
 	useEffect(() => {
 		const parsed = parseNames(state.uiValue);
@@ -225,34 +251,41 @@ export default function ParameterSelectionComponent(
 	/**
 	 * Callback function to change the value of the parameter.
 	 * This function is called when the selection is confirmed (by the user, or automatically).
-	 * It also ends the selection process.
+	 * For non-alwaysActive, it also ends the selection process.
 	 */
 	const changeValue = useCallback(
 		(names: string[]) => {
-			setSelectionActive(false);
+			if (!alwaysActive) {
+				setSelectionActive(false);
+			}
 			const parameterValue: SelectionParameterValue = {names};
 
 			// if the value is already the same, do not change it
 			if (value === JSON.stringify(parameterValue)) return;
 			handleChange(JSON.stringify(parameterValue), 0);
 		},
-		[value],
+		[value, alwaysActive],
 	);
 
-	// check whether the selection should be accepted immediately
+	// Preserve the established immediate-update path. The canonical-value check
+	// in changeValue prevents duplicate parameter updates.
 	useEffect(() => {
 		if (acceptImmediately) changeValue(selectedNodeNames);
-	}, [acceptImmediately, selectedNodeNames, changeValue]);
+	}, [acceptImmediately, changeValue, selectedNodeNames]);
 
 	/**
 	 * Callback function to reset the selected node names.
-	 * This function is called when the selection is aborted by the user.
-	 * It also ends the selection process.
+	 * For non-alwaysActive, it also ends the selection process.
 	 */
-	const resetSelection = useCallback((val: string) => {
-		setSelectionActive(false);
-		setSelectedNodeNames(parseNames(val));
-	}, []);
+	const resetSelection = useCallback(
+		(val: string) => {
+			if (!alwaysActive) {
+				setSelectionActive(false);
+			}
+			setSelectedNodeNames(parseNames(val));
+		},
+		[alwaysActive],
+	);
 
 	// react to changes of the uiValue and update the selection state if necessary
 	useEffect(() => {
@@ -262,14 +295,17 @@ export default function ParameterSelectionComponent(
 			names.length !== selectedNodeNames.length ||
 			!names.every((n, i) => n === selectedNodeNames[i])
 		) {
-			setSelectionActive(false);
+			if (!alwaysActive) {
+				setSelectionActive(false);
+			}
 			setSelectedNodeNames(names);
 		}
-	}, [state.uiValue]);
+	}, [state.uiValue, alwaysActive]);
 
 	/**
 	 * Callback function to cancel the selection.
-	 * It resets the selection to the last value and ends the selection process.
+	 * For alwaysActive: resets to last committed value but stays enabled.
+	 * For others: resets to last value and ends selection.
 	 */
 	const cancel = useCallback(() => {
 		resetSelection(value);
@@ -282,34 +318,94 @@ export default function ParameterSelectionComponent(
 		setSelectedNodeNamesAndRestoreSelection([]);
 	}, []);
 
-	/**
-	 * Effect to manage the interaction request for the selection.
-	 * It adds an interaction request when the selection is active and removes it when the selection is inactive.
-	 * It also cleans up the interaction request when the component is unmounted or when the selection state changes.
-	 */
-	useEffect(() => {
-		actions.setDisableOtherParameters(selectionActive);
+	const restoreSelection = useCallback(
+		() => setSelectedNodeNames(parseNames(value)),
+		[parseNames, setSelectedNodeNames, value],
+	);
+	const notifyConflict = useCallback(
+		(title: string, message: string) =>
+			notifications.warning({title, message}),
+		[notifications],
+	);
+	const {tryAcquireClaim} = useSelectionInteractionOwnership({
+		viewportId,
+		namespace,
+		parameterId: definition.id,
+		label: definition.name,
+		candidateNodes,
+		alwaysActive,
+		automaticallyActivated,
+		selectionRegistered,
+		effectiveSelectionActive,
+		setSelectionActive,
+		setOwnershipBlocked,
+		setSuspended,
+		cancel,
+		restoreSelection,
+		setDisableOtherParameters: actions.setDisableOtherParameters,
+		onConflict: notifyConflict,
+	});
 
-		if (selectionActive && !interactionRequestTokenRef.current) {
-			const returnedToken = addInteractionRequest({
-				type: "active",
-				viewportId,
-				disable: cancel,
-			});
-			interactionRequestTokenRef.current = returnedToken;
-		} else if (!selectionActive && interactionRequestTokenRef.current) {
-			removeInteractionRequest(interactionRequestTokenRef.current);
-			interactionRequestTokenRef.current = undefined;
-		}
+	// ── Toolbar registration ────────────────────────────────────────────────
+	// Register with interaction toolbar if presentation is "toolbar"
+	const toolbarLabel = definition.name;
+	// Fixed/optional single selections use the immediate-update path, so their
+	// Confirm and Cancel controls would be redundant. Multi and range selections
+	// retain explicit confirmation controls.
+	const showConfirmationControls = !(
+		(minimumSelection === 1 && maximumSelection === 1) ||
+		(minimumSelection === 0 && maximumSelection === 1)
+	);
 
-		return () => {
-			actions.setDisableOtherParameters(false);
-			if (interactionRequestTokenRef.current) {
-				removeInteractionRequest(interactionRequestTokenRef.current);
-				interactionRequestTokenRef.current = undefined;
-			}
-		};
-	}, [selectionActive, cancel]);
+	useInteractionToolbarContribution({
+		id: `${namespace}-${definition.id}-${viewportId}`,
+		namespace,
+		viewportId,
+		presentation,
+		menu: {
+			id: `${namespace}-${definition.id}-${viewportId}-selection-menu`,
+			label: toolbarLabel,
+			icon: "tabler:cursor-text",
+		},
+		items: [
+			createToolbarCheckboxItem({
+				id: `${namespace}-${definition.id}-${viewportId}-toggle`,
+				label: `${toolbarLabel} (${selectedNodeNames.length})`,
+				checked: effectiveSelectionActive,
+				readOnly: alwaysActive,
+				setChecked: (checked) => {
+					if (alwaysActive) return;
+					if (checked) {
+						if (tryAcquireClaim(true)) setSelectionActive(true);
+					} else setSelectionActive(false);
+				},
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+				label: "Confirm",
+				icon: "tabler:check",
+				disabled: !showConfirmationControls || !acceptable || !dirty,
+				execute: () => changeValue(selectedNodeNames),
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+				label: "Cancel",
+				icon: "tabler:x",
+				disabled: !showConfirmationControls || !acceptable || !dirty,
+				execute: cancel,
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-clear`,
+				label: "Clear",
+				icon: "tabler:circle-off",
+				execute: clearSelection,
+			}),
+		],
+	});
+
+	// Toolbar presentation owns the complete interaction UI; do not leave an
+	// inline wrapper or parameter label behind in the widget tree.
+	if (presentation === "toolbar") return <></>;
 
 	/**
 	 * The content of the parameter when it is active.
@@ -404,7 +500,9 @@ export default function ParameterSelectionComponent(
 			className={classes.interactionButton}
 			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={selectedNodeNames.length === 0 ? "light" : "filled"}
-			onClick={() => setSelectionActive(true)}
+			onClick={() => {
+				if (tryAcquireClaim(true)) setSelectionActive(true);
+			}}
 		>
 			<Text size="sm" className={classes.interactionText}>
 				{selectionProps.prompt?.inactiveTitle ??
@@ -429,7 +527,9 @@ export default function ParameterSelectionComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && selectionActive ? contentActive : contentInactive}
+			{definition && effectiveSelectionActive
+				? contentActive
+				: contentInactive}
 		</ParameterWrapperComponent>
 	);
 }

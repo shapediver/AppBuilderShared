@@ -1347,7 +1347,10 @@ const ISelectionParameterPropsSchema = z.strictObject({
 			activeText: z.string().optional(),
 		})
 		.optional(),
-	activeMode: z.enum(["default", "activeOnStart"]).optional(),
+	activeMode: z
+		.enum(["default", "activeOnStart", "alwaysActive"])
+		.optional(),
+	presentation: z.enum(["widget", "toolbar"]).optional(),
 });
 
 // Zod type definition for IAppBuilderAnchor3dContainerProperties

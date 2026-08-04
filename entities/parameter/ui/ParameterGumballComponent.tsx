@@ -1,5 +1,6 @@
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
@@ -28,7 +29,12 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import type {ParameterGumballComponentStyleProps as StyleProps} from "../config/theme/parameterGumballComponentTheme";
+import {
+	createToolbarCheckboxItem,
+	createToolbarCommand,
+} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
 import {useGumball} from "../model/interaction/useGumball";
+import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
@@ -123,6 +129,8 @@ export default function ParameterGumballComponent(
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 
+	const {namespace} = props;
+
 	const {selectionColor, availableColor, hoverColor} = useProps(
 		"ParameterGumballComponent",
 		defaultStyleProps,
@@ -170,9 +178,8 @@ export default function ParameterGumballComponent(
 	}, [definition.settings, selectionColor, availableColor]);
 
 	// state for the gumball application
-	const [gumballActive, setGumballActive] = useState<boolean>(
-		gumballProps.activeMode === "activeOnStart" ? true : false,
-	);
+	const gumballPresentation = gumballProps.presentation ?? "widget";
+	const [gumballActive, setGumballActive] = useState(false);
 	// store the last confirmed value in a state to reset the transformation
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
 		TransformedNode[]
@@ -188,6 +195,7 @@ export default function ParameterGumballComponent(
 
 	// get the transformed nodes and the selected nods
 	const {
+		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
 		setSelectedNodeNames,
@@ -199,6 +207,27 @@ export default function ParameterGumballComponent(
 		gumballActive,
 		parseTransformation(value),
 	);
+
+	const gumballLabel =
+		gumballProps.prompt?.inactiveTitle ?? "Start gumball";
+
+	const automaticallyActivated =
+		gumballProps.activeMode === "activeOnStart";
+	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
+		viewportId,
+		ownerKey: `${namespace}-${definition.id}-${viewportId}`,
+		ownerLabel: gumballLabel,
+		type: "gumball",
+		alwaysActive: false,
+		automaticallyActivated,
+		candidateNodes,
+		active: gumballActive,
+	});
+	const effectiveGumballActive = gumballActive && !ownershipBlocked;
+	useEffect(() => {
+		if (ownershipBlocked) setGumballActive(false);
+		else if (automaticallyActivated) setGumballActive(true);
+	}, [automaticallyActivated, ownershipBlocked]);
 
 	const transformedNodeNamesRef = useRef(transformedNodeNames);
 	useEffect(() => {
@@ -287,16 +316,16 @@ export default function ParameterGumballComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the gumball state changes.
 	 */
 	useEffect(() => {
-		actions.setDisableOtherParameters(gumballActive);
+		actions.setDisableOtherParameters(effectiveGumballActive);
 
-		if (gumballActive && !interactionRequestTokenRef.current) {
+		if (effectiveGumballActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
 				viewportId,
 				disable: resetTransformation,
 			});
 			interactionRequestTokenRef.current = returnedToken;
-		} else if (!gumballActive && interactionRequestTokenRef.current) {
+		} else if (!effectiveGumballActive && interactionRequestTokenRef.current) {
 			removeInteractionRequest(interactionRequestTokenRef.current);
 			interactionRequestTokenRef.current = undefined;
 		}
@@ -308,7 +337,7 @@ export default function ParameterGumballComponent(
 				interactionRequestTokenRef.current = undefined;
 			}
 		};
-	}, [gumballActive, resetTransformation]);
+	}, [effectiveGumballActive, resetTransformation]);
 
 	/**
 	 * The content of the parameter when it is active.
@@ -387,13 +416,54 @@ export default function ParameterGumballComponent(
 			className={classes.interactionButton}
 			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={transformedNodeNames.length === 0 ? "light" : "filled"}
-			onClick={() => setGumballActive(true)}
+			onClick={() => { if (tryAcquireClaim(true)) setGumballActive(true); }}
 		>
 			<Text size="sm" className={classes.interactionText}>
 				{gumballProps.prompt?.inactiveTitle ?? "Start gumball"}
 			</Text>
 		</Button>
 	);
+
+	// Register with interaction toolbar if presentation is "toolbar"
+	useInteractionToolbarContribution({
+		id: `${namespace}-${definition.id}-${viewportId}`,
+		namespace,
+		viewportId,
+		presentation: gumballPresentation,
+		menu: {
+			id: `${namespace}-${definition.id}-${viewportId}-gumball-menu`,
+			label: gumballLabel,
+			icon: "tabler:axis-3d",
+		},
+		items: [
+			createToolbarCheckboxItem({
+				id: `${namespace}-${definition.id}-${viewportId}-toggle`,
+				label: gumballLabel,
+				checked: effectiveGumballActive,
+				setChecked: (checked) => {
+					if (checked) {
+						if (tryAcquireClaim(true)) setGumballActive(true);
+					} else setGumballActive(false);
+				},
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+				label: "Confirm",
+				icon: "tabler:check",
+				disabled: transformedNodeNames.length === 0,
+				execute: () => changeValue(transformedNodeNames),
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+				label: "Cancel",
+				icon: "tabler:x",
+				disabled: transformedNodeNames.length === 0,
+				execute: resetTransformation,
+			}),
+		],
+	});
+
+	if (gumballPresentation === "toolbar") return <></>;
 
 	return (
 		<ParameterWrapperComponent
@@ -402,7 +472,7 @@ export default function ParameterGumballComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && gumballActive ? contentActive : contentInactive}
+			{definition && effectiveGumballActive ? contentActive : contentInactive}
 		</ParameterWrapperComponent>
 	);
 }

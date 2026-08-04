@@ -26,6 +26,10 @@ import {useSelection} from "./useSelection";
 
 export interface IRectangleTransformState {
 	/**
+	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
+	 */
+	candidateNodes: Array<{nodeId: string; name: string}>;
+	/**
 	 * The transformed node names.
 	 */
 	transformedNodeNames: {
@@ -126,6 +130,7 @@ export function useRectangleTransform(
 
 	// use the selection hook to get the selected node names
 	const {
+		candidateNodes,
 		selectedNodeNames,
 		setSelectedNodeNames,
 		availableNodeNames,
@@ -359,6 +364,7 @@ export function useRectangleTransform(
 	);
 
 	return {
+		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
 		selectedNodeNames,

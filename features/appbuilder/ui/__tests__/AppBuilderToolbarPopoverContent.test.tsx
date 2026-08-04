@@ -53,7 +53,8 @@ describe("AppBuilderToolbarPopoverContent", () => {
 			<MantineProvider>
 				<AppBuilderToolbarPopoverContent
 					{...baseProps}
-					toolbarItem={{
+					item={{
+						id: "details",
 						type: "widgets",
 						label: "Details",
 						props: {

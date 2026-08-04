@@ -8,6 +8,7 @@ import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/Parame
 import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
@@ -31,7 +32,12 @@ import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
 import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import type {ParameterRectangleTransformComponentStyleProps as StyleProps} from "../config/theme/parameterRectangleTransformComponentTheme";
+import {
+	createToolbarCheckboxItem,
+	createToolbarCommand,
+} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
 import {useRectangleTransform} from "../model/interaction/useRectangleTransform";
+import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
 
@@ -123,6 +129,8 @@ export default function ParameterRectangleTransformComponent(
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 
+	const {namespace} = props;
+
 	const {selectionColor, availableColor, hoverColor} = useProps(
 		"ParameterRectangleTransformComponent",
 		defaultStyleProps,
@@ -171,12 +179,10 @@ export default function ParameterRectangleTransformComponent(
 	}, [definition.settings, selectionColor, availableColor]);
 
 	// state for the rectangle transform application
+	const rectanglePresentation =
+		rectangleTransformProps.presentation ?? "widget";
 	const [rectangleTransformActive, setRectangleTransformActive] =
-		useState<boolean>(
-			rectangleTransformProps.activeMode === "activeOnStart"
-				? true
-				: false,
-		);
+		useState(false);
 	// store the last confirmed value in a state to reset the transformation
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
 		TransformedNode[]
@@ -192,6 +198,7 @@ export default function ParameterRectangleTransformComponent(
 
 	// get the transformed nodes and the selected nodes
 	const {
+		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
 		setSelectedNodeNames,
@@ -203,6 +210,28 @@ export default function ParameterRectangleTransformComponent(
 		rectangleTransformActive,
 		parseTransformation(value),
 	);
+
+	const rtLabel =
+		rectangleTransformProps.prompt?.inactiveTitle ??
+		"Start rectangle transform";
+
+	const automaticallyActivated =
+		rectangleTransformProps.activeMode === "activeOnStart";
+	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
+		viewportId,
+		ownerKey: `${namespace}-${definition.id}-${viewportId}`,
+		ownerLabel: rtLabel,
+		type: "rectangleTransform",
+		alwaysActive: false,
+		automaticallyActivated,
+		candidateNodes,
+		active: rectangleTransformActive,
+	});
+	const effectiveRectangleActive = rectangleTransformActive && !ownershipBlocked;
+	useEffect(() => {
+		if (ownershipBlocked) setRectangleTransformActive(false);
+		else if (automaticallyActivated) setRectangleTransformActive(true);
+	}, [automaticallyActivated, ownershipBlocked]);
 
 	const transformedNodeNamesRef = useRef(transformedNodeNames);
 	useEffect(() => {
@@ -291,9 +320,9 @@ export default function ParameterRectangleTransformComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the state changes.
 	 */
 	useEffect(() => {
-		actions.setDisableOtherParameters(rectangleTransformActive);
+		actions.setDisableOtherParameters(effectiveRectangleActive);
 
-		if (rectangleTransformActive && !interactionRequestTokenRef.current) {
+		if (effectiveRectangleActive && !interactionRequestTokenRef.current) {
 			const returnedToken = addInteractionRequest({
 				type: "active",
 				viewportId,
@@ -301,7 +330,7 @@ export default function ParameterRectangleTransformComponent(
 			});
 			interactionRequestTokenRef.current = returnedToken;
 		} else if (
-			!rectangleTransformActive &&
+			!effectiveRectangleActive &&
 			interactionRequestTokenRef.current
 		) {
 			removeInteractionRequest(interactionRequestTokenRef.current);
@@ -315,7 +344,7 @@ export default function ParameterRectangleTransformComponent(
 				interactionRequestTokenRef.current = undefined;
 			}
 		};
-	}, [rectangleTransformActive, resetTransformation]);
+	}, [effectiveRectangleActive, resetTransformation]);
 
 	/**
 	 * The content of the parameter when it is active.
@@ -394,7 +423,7 @@ export default function ParameterRectangleTransformComponent(
 			className={classes.interactionButton}
 			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={transformedNodeNames.length === 0 ? "light" : "filled"}
-			onClick={() => setRectangleTransformActive(true)}
+			onClick={() => { if (tryAcquireClaim(true)) setRectangleTransformActive(true); }}
 		>
 			<Text size="sm" className={classes.interactionText}>
 				{rectangleTransformProps.prompt?.inactiveTitle ??
@@ -403,6 +432,48 @@ export default function ParameterRectangleTransformComponent(
 		</Button>
 	);
 
+	// Register with interaction toolbar if presentation is "toolbar"
+
+	useInteractionToolbarContribution({
+		id: `${namespace}-${definition.id}-${viewportId}`,
+		namespace,
+		viewportId,
+		presentation: rectanglePresentation,
+		menu: {
+			id: `${namespace}-${definition.id}-${viewportId}-rectangle-transform-menu`,
+			label: rtLabel,
+			icon: "tabler:vector",
+		},
+		items: [
+			createToolbarCheckboxItem({
+				id: `${namespace}-${definition.id}-${viewportId}-toggle`,
+				label: rtLabel,
+				checked: effectiveRectangleActive,
+				setChecked: (checked) => {
+					if (checked) {
+						if (tryAcquireClaim(true)) setRectangleTransformActive(true);
+					} else setRectangleTransformActive(false);
+				},
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+				label: "Confirm",
+				icon: "tabler:check",
+				disabled: transformedNodeNames.length === 0,
+				execute: () => changeValue(transformedNodeNames),
+			}),
+			createToolbarCommand({
+				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+				label: "Cancel",
+				icon: "tabler:x",
+				disabled: transformedNodeNames.length === 0,
+				execute: resetTransformation,
+			}),
+		],
+	});
+
+	if (rectanglePresentation === "toolbar") return <></>;
+
 	return (
 		<ParameterWrapperComponent
 			onCancel={onCancel}
@@ -410,7 +481,7 @@ export default function ParameterRectangleTransformComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && rectangleTransformActive
+			{definition && effectiveRectangleActive
 				? contentActive
 				: contentInactive}
 		</ParameterWrapperComponent>
