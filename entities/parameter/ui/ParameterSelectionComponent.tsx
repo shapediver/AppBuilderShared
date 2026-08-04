@@ -34,6 +34,7 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import type {ParameterSelectionComponentStyleProps as StyleProps} from "../config/theme/parameterSelectionComponentTheme";
+import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useSelection} from "../model/interaction/useSelection";
 import {useSelectionInteractionOwnership} from "../model/interaction/useSelectionInteractionOwnership";
@@ -171,7 +172,10 @@ export default function ParameterSelectionComponent(
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
 	const alwaysActive = selectionProps.activeMode === "alwaysActive";
-	const presentation = selectionProps.presentation ?? "widget";
+	const presentation = resolveInteractionPresentation(
+		selectionProps.presentation,
+		alwaysActive,
+	);
 	// For alwaysActive, selection is always active.
 	// For activeOnStart, selection starts active.
 	// For default, selection starts inactive.
@@ -365,7 +369,7 @@ export default function ParameterSelectionComponent(
 		menu: {
 			id: `${namespace}-${definition.id}-${viewportId}-selection-menu`,
 			label: toolbarLabel,
-			icon: "tabler:cursor-text",
+			icon: "tabler:hand-finger",
 		},
 		items: [
 			createToolbarCheckboxItem({

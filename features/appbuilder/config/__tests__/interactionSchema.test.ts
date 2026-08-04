@@ -151,6 +151,25 @@ describe("Interaction parameter schema", () => {
 		});
 
 
+		it("accepts alwaysActive without explicit presentation", () => {
+			const result = validateAppBuilder({
+				version: "1.0",
+				containers: [
+					{
+						name: "anchor3d",
+						props: {
+							id: "a1",
+							location: [0, 0, 0],
+							selectionProperties: {
+								activeMode: "alwaysActive",
+							},
+						},
+					},
+				],
+			});
+			expect(result.success).toBe(true);
+		});
+
 		it("accepts combined alwaysActive + toolbar presentation", () => {
 			const result = validateAppBuilder({
 				version: "1.0",
