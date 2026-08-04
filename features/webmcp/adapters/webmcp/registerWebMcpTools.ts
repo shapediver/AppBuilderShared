@@ -1,10 +1,23 @@
-import {ZodError} from "@AppBuilderLib/shared/lib/zod";
+import {ZodError, type ZodType} from "@AppBuilderLib/shared/lib/zod";
 import type {ToolDeps} from "../../core/deps";
 import {ToolExecutionError, type AnyToolDef} from "../../core/toolDefinition";
 import {ALL_TOOLS} from "../../core/tools";
 import type {ModelContext} from "../../lib/webmcpAvailability";
-import {zodToJsonSchema} from "./zodToJsonSchema";
 
+/**
+ * Zod 4 native JSON Schema export. Surfaces per-property `.describe()` text
+ * and numeric bounds (`integer`/`minimum`/`maximum`) that the hand-rolled
+ * converter silently dropped under Zod 4. Top-level `$schema` is stripped to
+ * keep the payload minimal and match what WebMCP `registerTool` consumed before.
+ */
+function toInputJsonSchema(schema: ZodType): object {
+	const json = schema.toJSONSchema({target: "draft-07"}) as {
+		$schema?: string;
+		[k: string]: unknown;
+	};
+	delete json.$schema;
+	return json;
+}
 type ToolContentItem = {type: "text"; text: string};
 type ToolResponse = {
 	content: ToolContentItem[];
@@ -48,7 +61,7 @@ export async function registerWebMcpTools(
 			{
 				name: tool.name,
 				description: tool.description,
-				inputSchema: zodToJsonSchema(tool.inputSchema),
+				inputSchema: toInputJsonSchema(tool.inputSchema),
 				annotations: tool.annotations ?? {},
 				execute: async (rawInput) => {
 					const deps = depsRef();
