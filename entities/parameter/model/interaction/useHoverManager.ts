@@ -143,6 +143,7 @@ export function useHoverManager(
 	}, [settings?.hoverColor, settings !== undefined]);
 
 	const settingsDefined = settings !== undefined;
+	const occludeBySceneGeometry = settings?.occludeBySceneGeometry ?? false;
 
 	// use an effect to create the hover manager
 	useEffect(() => {
@@ -154,8 +155,7 @@ export function useHoverManager(
 		) {
 			// create the hover manager with the given settings
 			const hoverManager = new HoverManager(componentId, hoverEffect);
-			hoverManager.occludeBySceneGeometry =
-				settings.occludeBySceneGeometry ?? false;
+			hoverManager.occludeBySceneGeometry = occludeBySceneGeometry;
 			const token = interactionEngine.addInteractionManager(hoverManager);
 			hoverManagers[viewportId][componentId] = {hoverManager, token};
 			setHoverManager(
@@ -170,7 +170,7 @@ export function useHoverManager(
 				setHoverManager(undefined);
 			}
 		};
-	}, [interactionEngine, settingsDefined, hoverEffect]);
+	}, [interactionEngine, settingsDefined, hoverEffect, occludeBySceneGeometry]);
 
 	return {
 		hoverManager,

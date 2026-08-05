@@ -364,6 +364,7 @@ export function useSelectManager(
 
 	const settingsDefined = settings !== undefined;
 	const deselectOnEmpty = settings?.deselectOnEmpty ?? false;
+	const occludeBySceneGeometry = settings?.occludeBySceneGeometry;
 
 	useEffect(() => {
 		if (settings) {
@@ -393,9 +394,9 @@ export function useSelectManager(
 						settings.maximumSelection!,
 					);
 					selectManager.deselectOnEmpty = deselectOnEmpty;
-					if (settings.occludeBySceneGeometry !== undefined)
+					if (occludeBySceneGeometry !== undefined)
 						selectManager.occludeBySceneGeometry =
-							settings.occludeBySceneGeometry;
+							occludeBySceneGeometry;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);
@@ -411,9 +412,9 @@ export function useSelectManager(
 						selectionEffect,
 					);
 					selectManager.deselectOnEmpty = deselectOnEmpty;
-					if (settings.occludeBySceneGeometry !== undefined)
+					if (occludeBySceneGeometry !== undefined)
 						selectManager.occludeBySceneGeometry =
-							settings.occludeBySceneGeometry;
+							occludeBySceneGeometry;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);
@@ -451,6 +452,7 @@ export function useSelectManager(
 		selectMultiple,
 		deselectOnEmpty,
 		selectionEffect,
+		occludeBySceneGeometry,
 	]);
 
 	return {
