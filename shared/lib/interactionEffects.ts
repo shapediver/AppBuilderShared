@@ -5,6 +5,7 @@ import {
 } from "@shapediver/viewer.session";
 import {
 	IPostProcessingEffectDefinition,
+	IPulseEffectDefinition,
 	MaterialEngine,
 	POST_PROCESSING_EFFECT_TYPE,
 } from "@shapediver/viewer.viewport";
@@ -14,6 +15,7 @@ export const parseInteractionEffect = async (
 		| string
 		| IMaterialStandardDataPropertiesDefinition
 		| IPostProcessingEffectDefinition
+		| IPulseEffectDefinition
 		| null,
 ) => {
 	if (!effect) return effect;
@@ -38,6 +40,9 @@ export const parseInteractionEffect = async (
 	) {
 		// we received a post processing effect
 		return effect as IPostProcessingEffectDefinition;
+	} else if (typeof effect === "object" && effect.type === "pulse") {
+		// we received a pulse effect
+		return effect as IPulseEffectDefinition;
 	}
 	return effect;
 };

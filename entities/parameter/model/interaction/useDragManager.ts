@@ -9,11 +9,7 @@ import {
 	ITreeNode,
 	MaterialStandardData,
 } from "@shapediver/viewer.session";
-import {
-	BlendFunction,
-	KernelSize,
-	POST_PROCESSING_EFFECT_TYPE,
-} from "@shapediver/viewer.viewport";
+import {IPulseEffectDefinition} from "@shapediver/viewer.viewport";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useInteractionEngine} from "./useInteractionEngine";
 
@@ -158,17 +154,11 @@ export function useDragManager(
 				settings.draggingColor !== null
 			) {
 				const defaultPurple: IInteractionEffect = {
-					properties: {
-						blendFunction: BlendFunction.ALPHA,
-						blur: true,
-						edgeStrength: 10,
-						hiddenEdgeColor: "#9e27d8",
-						kernelSize: KernelSize.LARGE,
-						visibleEdgeColor: "#9e27d8",
-						xRay: true,
-					},
-					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
-				} as IInteractionEffect;
+					type: "pulse",
+					color: "#9e27d8",
+					intensity: 0.25,
+					pulseSpeed: 1,
+				} as IPulseEffectDefinition;
 				setDraggingEffect((prev) =>
 					JSON.stringify(prev) === JSON.stringify(defaultPurple)
 						? prev
@@ -206,17 +196,11 @@ export function useDragManager(
 				settings.availableColor !== null
 			) {
 				const defaultWhite: IInteractionEffect = {
-					properties: {
-						blendFunction: BlendFunction.ALPHA,
-						blur: true,
-						edgeStrength: 10,
-						hiddenEdgeColor: "#ffffff",
-						kernelSize: KernelSize.LARGE,
-						pulseSpeed: 0.5,
-						visibleEdgeColor: "#ffffff",
-					},
-					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
-				} as IInteractionEffect;
+					type: "pulse",
+					color: "#ffffff",
+					intensity: 0.2,
+					pulseSpeed: 1,
+				} as IPulseEffectDefinition;
 				setAvailableEffect((prev) =>
 					JSON.stringify(prev) === JSON.stringify(defaultWhite)
 						? prev
@@ -294,7 +278,7 @@ export function useDragManager(
 		dragManagerCurrentRef.current = dragManager;
 	}, [dragManager]);
 
-	// Stable callback that removes available outline effect from specific nodes synchronously
+	// Stable callback that removes available interaction effect from specific nodes synchronously
 	const removeAvailableEffectsForNodes = useCallback((nodes: ITreeNode[]) => {
 		const mgr = dragManagerCurrentRef.current;
 		const appliedMap = appliedAvailableEffectsRef.current;
@@ -340,7 +324,12 @@ export function useDragManager(
 				setDragManager(undefined);
 			}
 		};
-	}, [interactionEngine, settingsDefined, draggingEffect, occludeBySceneGeometry]);
+	}, [
+		interactionEngine,
+		settingsDefined,
+		draggingEffect,
+		occludeBySceneGeometry,
+	]);
 
 	return {
 		dragManager,

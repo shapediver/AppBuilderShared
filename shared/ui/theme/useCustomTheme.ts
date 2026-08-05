@@ -42,8 +42,8 @@ import {AppBuilderAreaChartWidgetComponentThemeProps} from "@AppBuilderLib/widge
 import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderControlsWidgetComponent";
 import {AppBuilderFormWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFormWidgetComponent";
 import {AppBuilderImageThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderImage";
-import {AppBuilderPdfEmbedThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderPdfEmbed";
 import {AppBuilderLineChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderLineChartWidgetComponent";
+import {AppBuilderPdfEmbedThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderPdfEmbed";
 import {AppBuilderRoundChartWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderRoundChartWidgetComponent";
 import {AppBuilderSavedStatesWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderSavedStatesWidgetComponent";
 import {AppBuilderStackUiWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderStackUiWidget/AppBuilderStackUiWidgetComponent";
@@ -1151,38 +1151,22 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			ParameterDraggingComponent: ParameterDraggingComponentThemeProps({
 				// draggingColor: {
-				// 	properties: {
-				// 		blendFunction: BlendFunction.ALPHA,
-				// 		blur: true,
-				// 		edgeStrength: 10,
-				// 		hiddenEdgeColor: "#0d44f0",
-				// 		kernelSize: KernelSize.LARGE,
-				// 		visibleEdgeColor: "#0d44f0",
-				// 	},
-				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// 	type: "pulse",
+				// 	color: "#0d44f0",
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 1,
 				// } as IInteractionEffect,
 				// availableColor: {
-				// 	properties: {
-				// 		blendFunction: BlendFunction.ALPHA,
-				// 		blur: true,
-				// 		edgeStrength: 10,
-				// 		hiddenEdgeColor: "#ffffff",
-				// 		kernelSize: KernelSize.LARGE,
-				// 		pulseSpeed: 0.5,
-				// 		visibleEdgeColor: "#ffffff",
-				// 	},
-				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// 	type: "pulse",
+				// 	color: "#ffffff",
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 1,
 				// } as IInteractionEffect,
 				// hoverColor: {
-				// 	properties: {
-				// 		blendFunction: BlendFunction.ALPHA,
-				// 		blur: true,
-				// 		edgeStrength: 10,
-				// 		hiddenEdgeColor: "#ffffff",
-				// 		kernelSize: KernelSize.LARGE,
-				// 		visibleEdgeColor: "#ffffff",
-				// 	},
-				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// 	type: "pulse",
+				// 	color: "#ffffff",
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 1.5,
 				// } as IInteractionEffect,
 			}),
 			/**
@@ -1192,38 +1176,22 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			ParameterGumballComponent: ParameterGumballComponentThemeProps({
 				// selectionColor: {
-				// 	properties: {
-				// 		blendFunction: BlendFunction.ALPHA,
-				// 		blur: true,
-				// 		edgeStrength: 10,
-				// 		hiddenEdgeColor: "#0d44f0",
-				// 		kernelSize: KernelSize.LARGE,
-				// 		visibleEdgeColor: "#0d44f0",
-				// 	},
-				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// 	type: "pulse",
+				// 	color: "#0d44f0",
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 1,
 				// } as IInteractionEffect,
 				// availableColor: {
-				// 	properties: {
-				// 		blendFunction: BlendFunction.ALPHA,
-				// 		blur: true,
-				// 		edgeStrength: 10,
-				// 		hiddenEdgeColor: "#ffffff",
-				// 		kernelSize: KernelSize.LARGE,
-				// 		pulseSpeed: 0.5,
-				// 		visibleEdgeColor: "#ffffff",
-				// 	},
-				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// 	type: "pulse",
+				// 	color: "#ffffff",
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 1,
 				// } as IInteractionEffect,
 				// hoverColor: {
-				// 	properties: {
-				// 		blendFunction: BlendFunction.ALPHA,
-				// 		blur: true,
-				// 		edgeStrength: 10,
-				// 		hiddenEdgeColor: "#ffffff",
-				// 		kernelSize: KernelSize.LARGE,
-				// 		visibleEdgeColor: "#ffffff",
-				// 	},
-				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// 	type: "pulse",
+				// 	color: "#ffffff",
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 1.5,
 				// } as IInteractionEffect,
 			}),
 			/**
@@ -1234,38 +1202,22 @@ export const useCustomTheme = (props: Props = {}) => {
 			ParameterRectangleTransformComponent:
 				ParameterRectangleTransformComponentThemeProps({
 					// selectionColor: {
-					// 	properties: {
-					// 		blendFunction: BlendFunction.ALPHA,
-					// 		blur: true,
-					// 		edgeStrength: 10,
-					// 		hiddenEdgeColor: "#0d44f0",
-					// 		kernelSize: KernelSize.LARGE,
-					// 		visibleEdgeColor: "#0d44f0",
-					// 	},
-					// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+					// 	type: "pulse",
+					// 	color: "#0d44f0",
+					// 	intensity: 0.25,
+					// 	pulseSpeed: 1,
 					// } as IInteractionEffect,
 					// availableColor: {
-					// 	properties: {
-					// 		blendFunction: BlendFunction.ALPHA,
-					// 		blur: true,
-					// 		edgeStrength: 10,
-					// 		hiddenEdgeColor: "#ffffff",
-					// 		kernelSize: KernelSize.LARGE,
-					// 		pulseSpeed: 0.5,
-					// 		visibleEdgeColor: "#ffffff",
-					// 	},
-					// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+					// 	type: "pulse",
+					// 	color: "#ffffff",
+					// 	intensity: 0.25,
+					// 	pulseSpeed: 1,
 					// } as IInteractionEffect,
 					// hoverColor: {
-					// 	properties: {
-					// 		blendFunction: BlendFunction.ALPHA,
-					// 		blur: true,
-					// 		edgeStrength: 10,
-					// 		hiddenEdgeColor: "#ffffff",
-					// 		kernelSize: KernelSize.LARGE,
-					// 		visibleEdgeColor: "#ffffff",
-					// 	},
-					// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+					// 	type: "pulse",
+					// 	color: "#ffffff",
+					// 	intensity: 0.25,
+					// 	pulseSpeed: 1.5,
 					// } as IInteractionEffect,
 				}),
 			/**
@@ -1275,38 +1227,22 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			ParameterSelectionComponent: ParameterSelectionComponentThemeProps({
 				// selectionColor: {
-				// 	properties: {
-				// 		blendFunction: BlendFunction.ALPHA,
-				// 		blur: true,
-				// 		edgeStrength: 10,
-				// 		hiddenEdgeColor: "#0d44f0",
-				// 		kernelSize: KernelSize.LARGE,
-				// 		visibleEdgeColor: "#0d44f0",
-				// 	},
-				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// 	type: "pulse",
+				// 	color: "#0d44f0",
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 1,
 				// } as IInteractionEffect,
 				// availableColor: {
-				// 	properties: {
-				// 		blendFunction: BlendFunction.ALPHA,
-				// 		blur: true,
-				// 		edgeStrength: 10,
-				// 		hiddenEdgeColor: "#ffffff",
-				// 		kernelSize: KernelSize.LARGE,
-				// 		pulseSpeed: 0.5,
-				// 		visibleEdgeColor: "#ffffff",
-				// 	},
-				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// 	type: "pulse",
+				// 	color: "#ffffff",
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 1,
 				// } as IInteractionEffect,
 				// hoverColor: {
-				// 	properties: {
-				// 		blendFunction: BlendFunction.ALPHA,
-				// 		blur: true,
-				// 		edgeStrength: 10,
-				// 		hiddenEdgeColor: "#ffffff",
-				// 		kernelSize: KernelSize.LARGE,
-				// 		visibleEdgeColor: "#ffffff",
-				// 	},
-				// 	type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+				// 	type: "pulse",
+				// 	color: "#ffffff",
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 1.5,
 				// } as IInteractionEffect,
 			}),
 			/**

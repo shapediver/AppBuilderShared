@@ -8,11 +8,7 @@ import {
 	IInteractionParameterProps,
 	MaterialStandardData,
 } from "@shapediver/viewer.session";
-import {
-	BlendFunction,
-	KernelSize,
-	POST_PROCESSING_EFFECT_TYPE,
-} from "@shapediver/viewer.viewport";
+import {IPulseEffectDefinition} from "@shapediver/viewer.viewport";
 import {useEffect, useState} from "react";
 import {useInteractionEngine} from "./useInteractionEngine";
 
@@ -117,16 +113,11 @@ export function useHoverManager(
 				}
 			} else if (settings !== undefined && settings.hoverColor !== null) {
 				const defaultWhite: IInteractionEffect = {
-					properties: {
-						blendFunction: BlendFunction.ALPHA,
-						blur: true,
-						edgeStrength: 10,
-						hiddenEdgeColor: "#ffffff",
-						kernelSize: KernelSize.LARGE,
-						visibleEdgeColor: "#ffffff",
-					},
-					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
-				} as IInteractionEffect;
+					type: "pulse",
+					color: "#ffffff",
+					intensity: 0.25,
+					pulseSpeed: 1,
+				} as IPulseEffectDefinition;
 				setHoverEffect((prev) =>
 					JSON.stringify(prev) === JSON.stringify(defaultWhite)
 						? prev
@@ -170,7 +161,12 @@ export function useHoverManager(
 				setHoverManager(undefined);
 			}
 		};
-	}, [interactionEngine, settingsDefined, hoverEffect, occludeBySceneGeometry]);
+	}, [
+		interactionEngine,
+		settingsDefined,
+		hoverEffect,
+		occludeBySceneGeometry,
+	]);
 
 	return {
 		hoverManager,
