@@ -309,6 +309,7 @@ export function useDragManager(
 	}, []);
 
 	const settingsDefined = settings !== undefined;
+	const occludeBySceneGeometry = settings?.occludeBySceneGeometry ?? false;
 
 	// use an effect to create the drag manager
 	useEffect(() => {
@@ -319,8 +320,7 @@ export function useDragManager(
 			!dragManagers[viewportId][componentId]
 		) {
 			const dragManager = new DragManager(componentId, draggingEffect);
-			dragManager.occludeBySceneGeometry =
-				settings.occludeBySceneGeometry ?? false;
+			dragManager.occludeBySceneGeometry = occludeBySceneGeometry;
 			const token = interactionEngine.addInteractionManager(dragManager);
 			dragManagers[viewportId][componentId] = {dragManager, token};
 			setDragManager(dragManagers[viewportId][componentId].dragManager);
@@ -340,7 +340,7 @@ export function useDragManager(
 				setDragManager(undefined);
 			}
 		};
-	}, [interactionEngine, settingsDefined, draggingEffect]);
+	}, [interactionEngine, settingsDefined, draggingEffect, occludeBySceneGeometry]);
 
 	return {
 		dragManager,

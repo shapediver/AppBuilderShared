@@ -87,7 +87,10 @@ export function useDragging(
 
 	// call the hover manager hook
 	const hoverSettings = useMemo(() => {
-		return {hoverColor: draggingProps.hoverColor};
+		return {
+			hoverColor: draggingProps.hoverColor,
+			occludeBySceneGeometry: draggingProps.occludeBySceneGeometry,
+		};
 	}, [draggingProps]);
 	useHoverManager(
 		viewportId,
