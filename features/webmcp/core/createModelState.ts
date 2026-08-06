@@ -2,7 +2,7 @@ import {createModelStateDataSchema} from "@AppBuilderLib/features/model-state/co
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {ToolExecutionError, type ToolDef} from "./toolDefinition";
 
-/** WebMCP/Mastra input = hook data without `image` (agents don't set export screenshot refs). */
+/** Tool input = hook data without `image` (agents don't set export screenshot refs). */
 export const createModelStateInputSchema = createModelStateDataSchema.omit({
 	image: true,
 });

@@ -22,7 +22,7 @@ export interface CreateModelStateCoreArgs {
 }
 
 /**
- * Pure createModelState logic shared by the React hook and the Mastra store port.
+ * Pure createModelState logic shared by the React hook and the hook-free store port.
  */
 export async function createModelStateCore(
 	args: CreateModelStateCoreArgs,
