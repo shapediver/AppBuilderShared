@@ -183,4 +183,50 @@ describe("registerWebMcpTools", () => {
 		expect(Array.isArray(result.structuredContent?.errors)).toBe(true);
 		expect(result.structuredContent?.errors?.length).toBeGreaterThan(0);
 	});
+
+	it("skips tools listed in disabledTools", async () => {
+		const registeredNames: string[] = [];
+		const modelContext = {
+			registerTool: jest.fn(async (tool: any) => {
+				registeredNames.push(tool.name);
+			}),
+		};
+		const deps: ToolDeps = {
+			namespace: "main",
+			getLiveParameters: () => [],
+			listParameterNamespaces: () => ["main"],
+			batchParameterValueUpdate: jest.fn(),
+			createModelState: jest.fn(),
+			importModelState: jest.fn(),
+		};
+		await registerWebMcpTools(
+			modelContext as any,
+			() => deps,
+			new AbortController().signal,
+			new Set(["create_model_state"]),
+		);
+
+		expect(modelContext.registerTool).toHaveBeenCalledTimes(4);
+		expect(registeredNames).not.toContain("create_model_state");
+		expect(registeredNames).toHaveLength(4);
+	});
+
+	it("registers all tools when disabledTools is empty/undefined", async () => {
+		const modelContext = {registerTool: jest.fn(async () => undefined)};
+		const deps: ToolDeps = {
+			namespace: "main",
+			getLiveParameters: () => [],
+			listParameterNamespaces: () => ["main"],
+			batchParameterValueUpdate: jest.fn(),
+			createModelState: jest.fn(),
+			importModelState: jest.fn(),
+		};
+		await registerWebMcpTools(
+			modelContext as any,
+			() => deps,
+			new AbortController().signal,
+			new Set(),
+		);
+		expect(modelContext.registerTool).toHaveBeenCalledTimes(5);
+	});
 });
