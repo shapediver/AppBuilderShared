@@ -20,7 +20,7 @@ import type {
 export function useWebMcpTools(
 	props: UseWebMcpToolsProps,
 ): UseWebMcpToolsResult {
-	const {namespace, enabled = isWebMcpAvailable()} = props;
+	const {namespace, enabled = isWebMcpAvailable(), disabledTools} = props;
 	const [registered, setRegistered] = useState(false);
 	const environment = getWebMcpEnvironment();
 	const ready = registered && environment.ready;
@@ -68,6 +68,13 @@ export function useWebMcpTools(
 		theme as any
 	)?.components?.ParameterSelectComponent?.defaultProps?.componentSettings;
 
+	// Latest disabledTools for use inside the effect; deps compare by content
+	// (sorted join) so a new array instance with the same names does NOT trigger
+	// a re-register cycle.
+	const disabledToolsRef = useRef<string[] | undefined>(disabledTools);
+	disabledToolsRef.current = disabledTools;
+	const disabledKey = (disabledTools ?? []).slice().sort().join(",");
+
 	const sessionReady = !!namespace && !!sessions[namespace];
 	const paramsPopulated =
 		!!namespace && Object.keys(getParameters(namespace)).length > 0;
@@ -107,6 +114,7 @@ export function useWebMcpTools(
 					modelContext,
 					() => buildWebMcpDeps(refs),
 					controller.signal,
+					new Set(disabledToolsRef.current ?? []),
 				);
 
 				if (!cancelled) {
@@ -126,7 +134,7 @@ export function useWebMcpTools(
 			controller.abort();
 			setRegistered(false);
 		};
-	}, [enabled, namespace, sessionReady, paramsPopulated]);
+	}, [enabled, namespace, sessionReady, paramsPopulated, disabledKey]);
 
 	const environmentSnapshot = {
 		modelContextAvailable: environment.modelContextAvailable,

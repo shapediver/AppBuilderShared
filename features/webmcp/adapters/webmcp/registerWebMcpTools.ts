@@ -11,7 +11,7 @@ import type {ModelContext} from "../../lib/webmcpAvailability";
  * keep the payload minimal and match what WebMCP `registerTool` consumed before.
  */
 function toInputJsonSchema(schema: ZodType): object {
-	const json = schema.toJSONSchema({target: "draft-07"}) as {
+	const json = schema.toJSONSchema() as {
 		$schema?: string;
 		[k: string]: unknown;
 	};
@@ -55,8 +55,12 @@ export async function registerWebMcpTools(
 	modelContext: ModelContext,
 	depsRef: () => ToolDeps,
 	signal: AbortSignal,
+	disabledTools?: ReadonlySet<string>,
 ): Promise<void> {
 	for (const tool of ALL_TOOLS) {
+		if (disabledTools?.has(tool.name)) {
+			continue;
+		}
 		await modelContext.registerTool(
 			{
 				name: tool.name,
