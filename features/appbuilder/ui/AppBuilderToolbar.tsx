@@ -34,6 +34,12 @@ const toolbarPopoverSafeTargetSelector = [
 	"[data-position]",
 	"[data-position][role='dialog']",
 	"[data-position][role='presentation']",
+	// Mantine `Modal` content has `role="dialog"` without `data-position`.
+	// Clicks inside such a modal (e.g. the "Import model state" dialog opened
+	// from a toolbar menu item) must not close the toolbar popover, otherwise
+	// the popover unmounts the action component that owns the dialog state
+	// and the dialog disappears on any inside click.
+	"[role='dialog']",
 ].join(",");
 
 const isToolbarPopoverSafeTarget = (
