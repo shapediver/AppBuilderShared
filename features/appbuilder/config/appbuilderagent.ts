@@ -8,6 +8,7 @@ import {
 /** Names of generic tool definitions */
 export type GenericToolName =
 	| "list_parameter_definitions"
+	| "get_parameter_values"
 	| "set_parameter_values"
 	| "list_action_controls"
 	| "trigger_action_control"
@@ -92,6 +93,10 @@ export type ListParameterDefinitionsToolSettings = {
 		 */
 		sessionIds?: string[];
 	};
+};
+
+export type GetParameterValuesToolSettings = {
+	name: "get_parameter_values";
 };
 
 export type SetParameterValuesToolSettings = {
