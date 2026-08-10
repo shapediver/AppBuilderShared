@@ -85,22 +85,28 @@ describe("AppBuilderToolbarPopoverContent", () => {
 				<AppBuilderToolbarPopoverContent
 					{...baseProps}
 					onActionActivate={onActionActivate}
-					toolbarItem={{
-						type: "actionMenu",
+					item={{
+						id: "actions",
+						type: "menu",
+						label: "Actions",
 						props: {
 							sections: [
-								[
-									{
-										type: "action",
-										id: "import-model-state",
-										props: {
-											definition: {
-												type: "importModelState",
-												props: {},
+								{
+									id: "actions",
+									items: [
+										{
+											type: "action",
+											id: "import-model-state",
+											label: "Import model state",
+											props: {
+												definition: {
+													type: "importModelState",
+													props: {},
+												},
 											},
 										},
-									},
-								],
+									],
+								},
 							],
 						},
 					}}

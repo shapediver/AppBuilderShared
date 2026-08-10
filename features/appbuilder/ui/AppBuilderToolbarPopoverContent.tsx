@@ -143,7 +143,13 @@ export default function AppBuilderToolbarPopoverContent({
 												<React.Fragment
 													key={menuItem.id}
 												>
-													{action}
+													<span
+														onClick={
+															onActionActivate
+														}
+													>
+														{action}
+													</span>
 												</React.Fragment>
 											) : null;
 										})}
