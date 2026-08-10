@@ -26,6 +26,12 @@ type Props = {
 	menuStackProps: React.ComponentProps<typeof Stack>;
 	menuSectionStackProps: React.ComponentProps<typeof Stack>;
 	menuDividerProps: React.ComponentProps<typeof Divider>;
+	/**
+	 * Called when a toolbar menu action is activated (clicked). Used by the
+	 * toolbar button to close the popover after an action runs, so the menu
+	 * does not stay open over a modal the action may have opened.
+	 */
+	onActionActivate?: () => void;
 };
 
 /** Renders the resolved popover representation for a toolbar item. */
@@ -41,6 +47,7 @@ export default function AppBuilderToolbarPopoverContent({
 	menuStackProps,
 	menuSectionStackProps,
 	menuDividerProps,
+	onActionActivate,
 }: Props) {
 	const parameters = useParameters(parameterProps);
 	const outputs = useOutputs(outputProps);
@@ -89,13 +96,14 @@ export default function AppBuilderToolbarPopoverContent({
 															menuItem.props
 																.readOnly
 														}
-									disabled={
-										menuItem.disabled
-									}
-									trailingAction={
-										menuItem.props.trailingAction
-									}
-									onChange={() =>
+														disabled={
+															menuItem.disabled
+														}
+														trailingAction={
+															menuItem.props
+																.trailingAction
+														}
+														onChange={() =>
 															menuItem.props.setChecked(
 																!menuItem.props
 																	.checked,
@@ -217,6 +225,7 @@ export default function AppBuilderToolbarPopoverContent({
 		menuSectionStackProps,
 		menuStackProps,
 		namespace,
+		onActionActivate,
 		outputProps,
 		outputs,
 		parameterProps,
