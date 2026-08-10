@@ -78,20 +78,20 @@ const defaultStyleProps: StyleProps = {
 	selectionColor: {
 		type: "pulse",
 		color: "#0d44f0",
-		intensity: 0.4,
-		pulseSpeed: 1,
+		intensity: 1,
+		pulseSpeed: 0.75,
 	} as IInteractionEffect,
 	availableColor: {
 		type: "pulse",
 		color: "#ffffff",
-		intensity: 0.4,
-		pulseSpeed: 1,
+		intensity: 0.25,
+		pulseSpeed: 0.75,
 	} as IInteractionEffect,
 	hoverColor: {
 		type: "pulse",
 		color: "#ffffff",
-		intensity: 0.4,
-		pulseSpeed: 1.5,
+		intensity: 0.75,
+		pulseSpeed: 1.75,
 	} as IInteractionEffect,
 };
 
@@ -230,6 +230,7 @@ export default function ParameterSelectionComponent(
 	const restoreBatchSelectionRef = useRef(false);
 	const clearSelectionRef = useRef<() => void>(() => {});
 	const skipNextAutomaticConfirmationRef = useRef(false);
+	const clearedSinceLastConfirmationRef = useRef(false);
 	useSuspendedSelectionRestore({
 		suspended,
 		selectedNodeNames,
@@ -328,7 +329,13 @@ export default function ParameterSelectionComponent(
 			const parameterValue: SelectionParameterValue = {names};
 
 			// if the value is already the same, do not change it
-			if (value === JSON.stringify(parameterValue)) return;
+			const selectionWasCleared = clearedSinceLastConfirmationRef.current;
+			clearedSinceLastConfirmationRef.current = false;
+			if (
+				value === JSON.stringify(parameterValue) &&
+				!selectionWasCleared
+			)
+				return;
 			handleChange(JSON.stringify(parameterValue), 0, () => {
 				if (shouldAutoClear) clearSelectionRef.current();
 			});
@@ -387,6 +394,7 @@ export default function ParameterSelectionComponent(
 		// Clearing is intentionally UI-only. Optional and single selections can
 		// otherwise immediately auto-confirm the empty draft.
 		skipNextAutomaticConfirmationRef.current = true;
+		clearedSinceLastConfirmationRef.current = true;
 		// This draft must be visible to other interaction parameters before the
 		// selection manager emits its clear event. Otherwise an always-active
 		// selection can submit independently while this parameter is invalid.

@@ -55,21 +55,21 @@ const parseDraggedNodes = (
 const defaultStyleProps: StyleProps = {
 	draggingColor: {
 		type: "pulse",
-		color: "#0d44f0",
-		intensity: 0.4,
-		pulseSpeed: 1,
+		color: "#9e27d8",
+		intensity: 1,
+		pulseSpeed: 0.75,
 	} as IInteractionEffect,
 	availableColor: {
 		type: "pulse",
 		color: "#ffffff",
-		intensity: 0.4,
-		pulseSpeed: 1,
+		intensity: 0.25,
+		pulseSpeed: 0.75,
 	} as IInteractionEffect,
 	hoverColor: {
 		type: "pulse",
 		color: "#ffffff",
-		intensity: 0.4,
-		pulseSpeed: 1.5,
+		intensity: 0.75,
+		pulseSpeed: 1.75,
 	} as IInteractionEffect,
 };
 

@@ -1150,23 +1150,23 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Defaults and settings for dragging components.
 			 */
 			ParameterDraggingComponent: ParameterDraggingComponentThemeProps({
-				// draggingColor: {
+				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",
-				// 	intensity: 0.4,
-				// 	pulseSpeed: 1,
+				// 	intensity: 1,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// availableColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
-				// 	intensity: 0.4,
-				// 	pulseSpeed: 1,
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// hoverColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
-				// 	intensity: 0.4,
-				// 	pulseSpeed: 1.5,
+				// 	intensity: 0.75,
+				// 	pulseSpeed: 1.75,
 				// } as IInteractionEffect,
 			}),
 			/**
@@ -1178,20 +1178,20 @@ export const useCustomTheme = (props: Props = {}) => {
 				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",
-				// 	intensity: 0.4,
-				// 	pulseSpeed: 1,
+				// 	intensity: 1,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// availableColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
-				// 	intensity: 0.4,
-				// 	pulseSpeed: 1,
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// hoverColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
-				// 	intensity: 0.4,
-				// 	pulseSpeed: 1.5,
+				// 	intensity: 0.75,
+				// 	pulseSpeed: 1.75,
 				// } as IInteractionEffect,
 			}),
 			/**
@@ -1204,20 +1204,20 @@ export const useCustomTheme = (props: Props = {}) => {
 					// selectionColor: {
 					// 	type: "pulse",
 					// 	color: "#0d44f0",
-					// 	intensity: 0.4,
-					// 	pulseSpeed: 1,
+					// 	intensity: 1,
+					// 	pulseSpeed: 0.75,
 					// } as IInteractionEffect,
 					// availableColor: {
 					// 	type: "pulse",
 					// 	color: "#ffffff",
-					// 	intensity: 0.4,
-					// 	pulseSpeed: 1,
+					// 	intensity: 0.25,
+					// 	pulseSpeed: 0.75,
 					// } as IInteractionEffect,
 					// hoverColor: {
 					// 	type: "pulse",
 					// 	color: "#ffffff",
-					// 	intensity: 0.4,
-					// 	pulseSpeed: 1.5,
+					// 	intensity: 0.75,
+					// 	pulseSpeed: 1.75,
 					// } as IInteractionEffect,
 				}),
 			/**
@@ -1229,20 +1229,20 @@ export const useCustomTheme = (props: Props = {}) => {
 				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",
-				// 	intensity: 0.4,
-				// 	pulseSpeed: 1,
+				// 	intensity: 1,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// availableColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
-				// 	intensity: 0.4,
-				// 	pulseSpeed: 1,
+				// 	intensity: 0.25,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// hoverColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
-				// 	intensity: 0.4,
-				// 	pulseSpeed: 1.5,
+				// 	intensity: 0.75,
+				// 	pulseSpeed: 1.75,
 				// } as IInteractionEffect,
 			}),
 			/**

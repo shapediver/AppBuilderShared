@@ -90,7 +90,7 @@ function createParameterExecutor<T>(
 
 			// check whether there is anything to do
 			const result = changes.removeValueChange(paramId);
-			if (result.removed && uiValue === execValue) {
+			if (result.removed && uiValue === execValue && !forceImmediate) {
 				Logger.debug(`Removing change of parameter ${paramId}`);
 				// check if there are any other parameter updates queued
 				if (result.isEmpty) {

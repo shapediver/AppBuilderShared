@@ -1,6 +1,10 @@
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {
+	createToolbarCheckboxItem,
+	createToolbarCommand,
+} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
@@ -27,10 +31,6 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import type {ParameterGumballComponentStyleProps as StyleProps} from "../config/theme/parameterGumballComponentTheme";
-import {
-	createToolbarCheckboxItem,
-	createToolbarCommand,
-} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
 import {useGumball} from "../model/interaction/useGumball";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
@@ -72,20 +72,20 @@ const defaultStyleProps: StyleProps = {
 	selectionColor: {
 		type: "pulse",
 		color: "#0d44f0",
-		intensity: 0.4,
-		pulseSpeed: 1,
+		intensity: 1,
+		pulseSpeed: 0.75,
 	} as IInteractionEffect,
 	availableColor: {
 		type: "pulse",
 		color: "#ffffff",
-		intensity: 0.4,
-		pulseSpeed: 1,
+		intensity: 0.25,
+		pulseSpeed: 0.75,
 	} as IInteractionEffect,
 	hoverColor: {
 		type: "pulse",
 		color: "#ffffff",
-		intensity: 0.4,
-		pulseSpeed: 1.5,
+		intensity: 0.75,
+		pulseSpeed: 1.75,
 	} as IInteractionEffect,
 };
 
@@ -190,11 +190,9 @@ export default function ParameterGumballComponent(
 		parseTransformation(value),
 	);
 
-	const gumballLabel =
-		gumballProps.prompt?.inactiveTitle ?? "Start gumball";
+	const gumballLabel = gumballProps.prompt?.inactiveTitle ?? "Start gumball";
 
-	const automaticallyActivated =
-		gumballProps.activeMode === "activeOnStart";
+	const automaticallyActivated = gumballProps.activeMode === "activeOnStart";
 	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
 		viewportId,
 		ownerKey: `${namespace}-${definition.id}-${viewportId}`,
@@ -307,7 +305,10 @@ export default function ParameterGumballComponent(
 				disable: resetTransformation,
 			});
 			interactionRequestTokenRef.current = returnedToken;
-		} else if (!effectiveGumballActive && interactionRequestTokenRef.current) {
+		} else if (
+			!effectiveGumballActive &&
+			interactionRequestTokenRef.current
+		) {
 			removeInteractionRequest(interactionRequestTokenRef.current);
 			interactionRequestTokenRef.current = undefined;
 		}
@@ -398,7 +399,9 @@ export default function ParameterGumballComponent(
 			className={classes.interactionButton}
 			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={transformedNodeNames.length === 0 ? "light" : "filled"}
-			onClick={() => { if (tryAcquireClaim(true)) setGumballActive(true); }}
+			onClick={() => {
+				if (tryAcquireClaim(true)) setGumballActive(true);
+			}}
 		>
 			<Text size="sm" className={classes.interactionText}>
 				{gumballProps.prompt?.inactiveTitle ?? "Start gumball"}
@@ -458,7 +461,9 @@ export default function ParameterGumballComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && effectiveGumballActive ? contentActive : contentInactive}
+			{definition && effectiveGumballActive
+				? contentActive
+				: contentInactive}
 		</ParameterWrapperComponent>
 	);
 }
