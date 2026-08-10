@@ -1340,6 +1340,7 @@ const ISelectionParameterPropsSchema = z.strictObject({
 	deselectOnEmpty: z.boolean().optional(),
 	hover: z.boolean().optional(),
 	hoverColor: SelectionColorSchema.optional(),
+	occludeBySceneGeometry: z.boolean().optional(),
 	prompt: z
 		.strictObject({
 			inactiveTitle: z.string().optional(),

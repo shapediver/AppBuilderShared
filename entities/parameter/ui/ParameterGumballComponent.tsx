@@ -20,8 +20,6 @@ import {
 	IGumballTransformParameterProps,
 	validateGumballTransformParameterSettings,
 } from "@shapediver/viewer.session";
-import {POST_PROCESSING_EFFECT_TYPE} from "@shapediver/viewer.shared.types";
-import {BlendFunction, KernelSize} from "@shapediver/viewer.viewport";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
 	defaultPropsParameterWrapper,
@@ -72,38 +70,22 @@ const parseTransformation = (value?: string): TransformedNode[] => {
 
 const defaultStyleProps: StyleProps = {
 	selectionColor: {
-		properties: {
-			blendFunction: BlendFunction.ALPHA,
-			blur: true,
-			edgeStrength: 10,
-			hiddenEdgeColor: "#0d44f0",
-			kernelSize: KernelSize.LARGE,
-			visibleEdgeColor: "#0d44f0",
-		},
-		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+		type: "pulse",
+		color: "#0d44f0",
+		intensity: 0.25,
+		pulseSpeed: 1,
 	} as IInteractionEffect,
 	availableColor: {
-		properties: {
-			blendFunction: BlendFunction.ALPHA,
-			blur: true,
-			edgeStrength: 10,
-			hiddenEdgeColor: "#ffffff",
-			kernelSize: KernelSize.LARGE,
-			pulseSpeed: 0.5,
-			visibleEdgeColor: "#ffffff",
-		},
-		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+		type: "pulse",
+		color: "#ffffff",
+		intensity: 0.25,
+		pulseSpeed: 1,
 	} as IInteractionEffect,
 	hoverColor: {
-		properties: {
-			blendFunction: BlendFunction.ALPHA,
-			blur: true,
-			edgeStrength: 10,
-			hiddenEdgeColor: "#ffffff",
-			kernelSize: KernelSize.LARGE,
-			visibleEdgeColor: "#ffffff",
-		},
-		type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
+		type: "pulse",
+		color: "#ffffff",
+		intensity: 0.25,
+		pulseSpeed: 1.5,
 	} as IInteractionEffect,
 };
 

@@ -1,4 +1,5 @@
 import {
+	drawingParameterToRuntimeSettings,
 	IDrawingToolsApi,
 	PointsData,
 	Settings,
@@ -55,21 +56,13 @@ export function useDrawingTools(
 	// use the restrictions
 	const {restrictions} = useRestrictions(drawingParameterProps.restrictions);
 
-	// set the drawing tools settings
+	// set the drawing tools settings using the canonical conversion utility
 	const drawingToolsSettings: Partial<Settings> = useMemo(() => {
-		return {
-			// for the controls we currently don't do a strict type check
-			// as more controls might be added in the future and we want to allow passing them without needing to update the type definition here
-			controls: drawingParameterProps?.controls as Settings["controls"],
-			general: drawingParameterProps?.behavior,
-			geometry: {
-				points: initialPointsData || [],
-				...drawingParameterProps?.geometry,
-			},
-			keyBindings: drawingParameterProps?.keyBindings,
+		return drawingParameterToRuntimeSettings(
+			drawingParameterProps,
 			restrictions,
-			visualization: drawingParameterProps?.visualization,
-		};
+			initialPointsData,
+		);
 	}, [drawingParameterProps, initialPointsData, restrictions]);
 
 	// reference for the drawing tools API

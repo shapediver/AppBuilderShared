@@ -11,11 +11,7 @@ import {
 	ITreeNode,
 	MaterialStandardData,
 } from "@shapediver/viewer.session";
-import {
-	BlendFunction,
-	KernelSize,
-	POST_PROCESSING_EFFECT_TYPE,
-} from "@shapediver/viewer.viewport";
+import {IPulseEffectDefinition} from "@shapediver/viewer.viewport";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useInteractionEngine} from "./useInteractionEngine";
 
@@ -215,16 +211,12 @@ export function useSelectManager(
 				settings.selectionColor !== null
 			) {
 				const defaultBlue: IInteractionEffect = {
-					properties: {
-						blendFunction: BlendFunction.ALPHA,
-						blur: true,
-						edgeStrength: 10,
-						hiddenEdgeColor: "#0d44f0",
-						kernelSize: KernelSize.LARGE,
-						visibleEdgeColor: "#0d44f0",
-					},
-					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
-				} as IInteractionEffect;
+					type: "pulse",
+					color: "#0d44f0",
+					intensity: 0.2,
+					pulseSpeed: 1,
+				} as IPulseEffectDefinition;
+
 				setSelectionEffect((prev) =>
 					JSON.stringify(prev) === JSON.stringify(defaultBlue)
 						? prev
@@ -262,17 +254,11 @@ export function useSelectManager(
 				settings.availableColor !== null
 			) {
 				const defaultWhite: IInteractionEffect = {
-					properties: {
-						blendFunction: BlendFunction.ALPHA,
-						blur: true,
-						edgeStrength: 10,
-						hiddenEdgeColor: "#ffffff",
-						kernelSize: KernelSize.LARGE,
-						pulseSpeed: 0.5,
-						visibleEdgeColor: "#ffffff",
-					},
-					type: POST_PROCESSING_EFFECT_TYPE.OUTLINE,
-				} as IInteractionEffect;
+					type: "pulse",
+					color: "#ffffff",
+					intensity: 0.25,
+					pulseSpeed: 1,
+				} as IPulseEffectDefinition;
 				setAvailableEffect((prev) =>
 					JSON.stringify(prev) === JSON.stringify(defaultWhite)
 						? prev
@@ -364,7 +350,7 @@ export function useSelectManager(
 		selectManagerCurrentRef.current = selectManager;
 	}, [selectManager]);
 
-	// Stable callback (no deps — uses only refs) that removes the available outline
+	// Stable callback (no deps — uses only refs) that removes the available interaction
 	// effect from specific nodes synchronously. This must be called while the nodes
 	// are still live in the viewer scene, before they are replaced after computation.
 	const removeAvailableEffectsForNodes = useCallback((nodes: ITreeNode[]) => {
@@ -396,6 +382,7 @@ export function useSelectManager(
 
 	const settingsDefined = settings !== undefined;
 	const deselectOnEmpty = settings?.deselectOnEmpty ?? false;
+	const occludeBySceneGeometry = settings?.occludeBySceneGeometry;
 
 	useEffect(() => {
 		if (settings) {
@@ -425,9 +412,9 @@ export function useSelectManager(
 						settings.maximumSelection!,
 					);
 					selectManager.deselectOnEmpty = deselectOnEmpty;
-					if (settings.occludeBySceneGeometry !== undefined)
+					if (occludeBySceneGeometry !== undefined)
 						selectManager.occludeBySceneGeometry =
-							settings.occludeBySceneGeometry;
+							occludeBySceneGeometry;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);
@@ -443,9 +430,9 @@ export function useSelectManager(
 						selectionEffect,
 					);
 					selectManager.deselectOnEmpty = deselectOnEmpty;
-					if (settings.occludeBySceneGeometry !== undefined)
+					if (occludeBySceneGeometry !== undefined)
 						selectManager.occludeBySceneGeometry =
-							settings.occludeBySceneGeometry;
+							occludeBySceneGeometry;
 
 					const token =
 						interactionEngine.addInteractionManager(selectManager);
@@ -483,6 +470,7 @@ export function useSelectManager(
 		selectMultiple,
 		deselectOnEmpty,
 		selectionEffect,
+		occludeBySceneGeometry,
 	]);
 
 	return {

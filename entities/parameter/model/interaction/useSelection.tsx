@@ -104,7 +104,10 @@ export function useSelection(
 
 	// call the hover manager hook
 	const hoverSettings = useMemo(() => {
-		return {hoverColor: selectionProps.hoverColor};
+		return {
+			hoverColor: selectionProps.hoverColor,
+			occludeBySceneGeometry: selectionProps.occludeBySceneGeometry,
+		};
 	}, [selectionProps]);
 	useHoverManager(
 		viewportId,
