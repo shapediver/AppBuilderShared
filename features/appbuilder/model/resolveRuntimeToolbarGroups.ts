@@ -93,13 +93,14 @@ export const resolveRuntimeToolbarGroups = (
 											update.parameterId
 										] = update.value;
 									}
-									void useShapeDiverStoreParameters
-										.getState()
-										.batchParameterValueUpdate(values)
-										.then(() => {
-											for (const update of batchUpdates)
-												update?.onComplete?.();
-										});
+									void Promise.resolve(
+										useShapeDiverStoreParameters
+											.getState()
+											.batchParameterValueUpdate(values),
+									).then(() => {
+										for (const update of batchUpdates)
+											update?.onComplete?.();
+									});
 									return;
 								}
 								for (const command of enabledCommands)

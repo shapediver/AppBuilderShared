@@ -101,7 +101,7 @@ describe("resolveRuntimeToolbarGroups", () => {
 			}),
 		]);
 
-		expect(groups).toEqual([[]]);
+		expect(groups).toEqual([]);
 	});
 
 	it("promotes one selection checkbox and its clear action into toolbar buttons", () => {
