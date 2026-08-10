@@ -213,7 +213,7 @@ export function useSelectManager(
 				const defaultBlue: IInteractionEffect = {
 					type: "pulse",
 					color: "#0d44f0",
-					intensity: 0.2,
+					intensity: 0.4,
 					pulseSpeed: 1,
 				} as IPulseEffectDefinition;
 
@@ -256,7 +256,7 @@ export function useSelectManager(
 				const defaultWhite: IInteractionEffect = {
 					type: "pulse",
 					color: "#ffffff",
-					intensity: 0.25,
+					intensity: 0.4,
 					pulseSpeed: 1,
 				} as IPulseEffectDefinition;
 				setAvailableEffect((prev) =>

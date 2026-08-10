@@ -72,19 +72,19 @@ const defaultStyleProps: StyleProps = {
 	selectionColor: {
 		type: "pulse",
 		color: "#0d44f0",
-		intensity: 0.25,
+		intensity: 0.4,
 		pulseSpeed: 1,
 	} as IInteractionEffect,
 	availableColor: {
 		type: "pulse",
 		color: "#ffffff",
-		intensity: 0.25,
+		intensity: 0.4,
 		pulseSpeed: 1,
 	} as IInteractionEffect,
 	hoverColor: {
 		type: "pulse",
 		color: "#ffffff",
-		intensity: 0.25,
+		intensity: 0.4,
 		pulseSpeed: 1.5,
 	} as IInteractionEffect,
 };

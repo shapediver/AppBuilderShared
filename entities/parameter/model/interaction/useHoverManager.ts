@@ -115,7 +115,7 @@ export function useHoverManager(
 				const defaultWhite: IInteractionEffect = {
 					type: "pulse",
 					color: "#ffffff",
-					intensity: 0.25,
+					intensity: 0.4,
 					pulseSpeed: 1,
 				} as IPulseEffectDefinition;
 				setHoverEffect((prev) =>
