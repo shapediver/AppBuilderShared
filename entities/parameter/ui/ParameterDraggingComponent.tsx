@@ -1,6 +1,10 @@
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {
+	createToolbarCheckboxItem,
+	createToolbarCommand,
+} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
@@ -21,10 +25,6 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import type {ParameterDraggingComponentStyleProps as StyleProps} from "../config/theme/parameterDraggingComponentTheme";
-import {
-	createToolbarCheckboxItem,
-	createToolbarCommand,
-} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
 import {useDragging} from "../model/interaction/useDragging";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
@@ -159,20 +159,20 @@ export default function ParameterDraggingComponent(
 	// get the viewport ID
 	const {viewportId} = useViewportId();
 
-	const {candidateNodes, draggedNodes, setDraggedNodes, restoreDraggedNodes} = useDragging(
-		sessionDependencies,
-		viewportId,
-		draggingProps,
-		draggingActive,
-		parsedUiValue,
-	);
+	const {candidateNodes, draggedNodes, setDraggedNodes, restoreDraggedNodes} =
+		useDragging(
+			sessionDependencies,
+			viewportId,
+			draggingProps,
+			draggingActive,
+			parsedUiValue,
+		);
 
 	const draggingLabel =
 		draggingProps.prompt?.inactiveTitle ??
 		`Start dragging (${parsedUiValue.length})`;
 
-	const automaticallyActivated =
-		draggingProps.activeMode === "activeOnStart";
+	const automaticallyActivated = draggingProps.activeMode === "activeOnStart";
 	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
 		viewportId,
 		ownerKey: `${namespace}-${definition.id}-${viewportId}`,
@@ -292,7 +292,10 @@ export default function ParameterDraggingComponent(
 				disable: cancel,
 			});
 			interactionRequestTokenRef.current = returnedToken;
-		} else if (!effectiveDraggingActive && interactionRequestTokenRef.current) {
+		} else if (
+			!effectiveDraggingActive &&
+			interactionRequestTokenRef.current
+		) {
 			removeInteractionRequest(interactionRequestTokenRef.current);
 			interactionRequestTokenRef.current = undefined;
 		}
@@ -375,7 +378,9 @@ export default function ParameterDraggingComponent(
 			className={classes.interactionButton}
 			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={parsedUiValue.length === 0 ? "light" : "filled"}
-			onClick={() => { if (tryAcquireClaim(true)) setDraggingActive(true); }}
+			onClick={() => {
+				if (tryAcquireClaim(true)) setDraggingActive(true);
+			}}
 		>
 			<Text size="sm" className={classes.interactionText}>
 				{draggingProps.prompt?.inactiveTitle ??
@@ -446,7 +451,9 @@ export default function ParameterDraggingComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && effectiveDraggingActive ? contentActive : contentInactive}
+			{definition && effectiveDraggingActive
+				? contentActive
+				: contentInactive}
 		</ParameterWrapperComponent>
 	);
 }

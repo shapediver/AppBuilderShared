@@ -3,12 +3,16 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
 import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {
+	createToolbarCheckboxItem,
+	createToolbarCommand,
+} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
-import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
@@ -30,12 +34,8 @@ import {
 } from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import type {ParameterRectangleTransformComponentStyleProps as StyleProps} from "../config/theme/parameterRectangleTransformComponentTheme";
-import {
-	createToolbarCheckboxItem,
-	createToolbarCommand,
-} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
-import {useRectangleTransform} from "../model/interaction/useRectangleTransform";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
+import {useRectangleTransform} from "../model/interaction/useRectangleTransform";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
 
@@ -209,7 +209,8 @@ export default function ParameterRectangleTransformComponent(
 		candidateNodes,
 		active: rectangleTransformActive,
 	});
-	const effectiveRectangleActive = rectangleTransformActive && !ownershipBlocked;
+	const effectiveRectangleActive =
+		rectangleTransformActive && !ownershipBlocked;
 	useEffect(() => {
 		if (ownershipBlocked) setRectangleTransformActive(false);
 		else if (automaticallyActivated) setRectangleTransformActive(true);
@@ -405,7 +406,9 @@ export default function ParameterRectangleTransformComponent(
 			className={classes.interactionButton}
 			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={transformedNodeNames.length === 0 ? "light" : "filled"}
-			onClick={() => { if (tryAcquireClaim(true)) setRectangleTransformActive(true); }}
+			onClick={() => {
+				if (tryAcquireClaim(true)) setRectangleTransformActive(true);
+			}}
 		>
 			<Text size="sm" className={classes.interactionText}>
 				{rectangleTransformProps.prompt?.inactiveTitle ??
@@ -435,7 +438,8 @@ export default function ParameterRectangleTransformComponent(
 				checked: effectiveRectangleActive,
 				setChecked: (checked) => {
 					if (checked) {
-						if (tryAcquireClaim(true)) setRectangleTransformActive(true);
+						if (tryAcquireClaim(true))
+							setRectangleTransformActive(true);
 					} else setRectangleTransformActive(false);
 				},
 			}),

@@ -184,6 +184,9 @@ export default function ParameterSelectionComponent(
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
 	const showClearButton = selectionProps.buttons?.clear ?? true;
+	const shouldAutoClear = selectionProps.autoClear ?? false;
+	const shouldShowClearButton =
+		showClearButton && !(shouldAutoClear && maximumSelection === 1);
 	const alwaysActive = selectionProps.activeMode === "alwaysActive";
 	const presentation = resolveInteractionPresentation(
 		selectionProps.presentation,
@@ -225,6 +228,8 @@ export default function ParameterSelectionComponent(
 		true,
 	);
 	const restoreBatchSelectionRef = useRef(false);
+	const clearSelectionRef = useRef<() => void>(() => {});
+	const skipNextAutomaticConfirmationRef = useRef(false);
 	useSuspendedSelectionRestore({
 		suspended,
 		selectedNodeNames,
@@ -256,7 +261,7 @@ export default function ParameterSelectionComponent(
 	const hasStoredSelection = hasOtherPendingSelection;
 	const acceptImmediately =
 		!hasStoredSelection &&
-		((alwaysActive && selectedNodeNames.length === maximumSelection) ||
+		(selectedNodeNames.length === maximumSelection ||
 			((minimumSelection === maximumSelection ||
 				(minimumSelection === 0 && maximumSelection === 1)) &&
 				acceptable));
@@ -324,12 +329,28 @@ export default function ParameterSelectionComponent(
 
 			// if the value is already the same, do not change it
 			if (value === JSON.stringify(parameterValue)) return;
-			handleChange(JSON.stringify(parameterValue), 0);
+			handleChange(JSON.stringify(parameterValue), 0, () => {
+				if (shouldAutoClear) clearSelectionRef.current();
+			});
 		},
-		[alwaysActive, namespace, selectionOwnerKey, value, viewportId],
+		[
+			alwaysActive,
+			namespace,
+			selectionOwnerKey,
+			shouldAutoClear,
+			value,
+			viewportId,
+		],
 	);
 
 	useEffect(() => {
+		if (
+			skipNextAutomaticConfirmationRef.current &&
+			selectedNodeNames.length === 0
+		) {
+			skipNextAutomaticConfirmationRef.current = false;
+			return;
+		}
 		if (acceptImmediately) changeValue(selectedNodeNames);
 	}, [acceptImmediately, changeValue, selectedNodeNames]);
 
@@ -363,6 +384,9 @@ export default function ParameterSelectionComponent(
 	 * Callback function to clear the selection.
 	 */
 	const clearSelection = useCallback(() => {
+		// Clearing is intentionally UI-only. Optional and single selections can
+		// otherwise immediately auto-confirm the empty draft.
+		skipNextAutomaticConfirmationRef.current = true;
 		// This draft must be visible to other interaction parameters before the
 		// selection manager emits its clear event. Otherwise an always-active
 		// selection can submit independently while this parameter is invalid.
@@ -374,6 +398,7 @@ export default function ParameterSelectionComponent(
 		setSelectedNodeNamesAndRestoreSelection,
 		viewportId,
 	]);
+	clearSelectionRef.current = clearSelection;
 
 	const notifyConflict = useCallback(
 		(title: string, message: string) =>
@@ -402,15 +427,19 @@ export default function ParameterSelectionComponent(
 	// ── Toolbar registration ────────────────────────────────────────────────
 	// Register with interaction toolbar if presentation is "toolbar"
 	const toolbarLabel = definition.name;
-	// Fixed/optional single selections normally commit automatically. When a
-	// different selection has pending changes, expose Confirm/Cancel instead so
-	// the shared toolbar can commit them as one batch.
+	// Fixed/optional single selections normally commit automatically. A cleared
+	// auto-clear draft only exposes Confirm/Cancel when its empty value is valid.
+	const hasAutomaticSelectionControls = !(
+		(minimumSelection === 1 && maximumSelection === 1) ||
+		(minimumSelection === 0 && maximumSelection === 1)
+	);
 	const showConfirmationControls =
 		hasOtherPendingSelection ||
-		!(
-			(minimumSelection === 1 && maximumSelection === 1) ||
-			(minimumSelection === 0 && maximumSelection === 1)
-		);
+		(shouldAutoClear && selectedNodeNames.length === 0
+			? minimumSelection === 0
+			: !acceptImmediately &&
+				(hasAutomaticSelectionControls ||
+					(hasPendingSelection && minimumSelection === 0)));
 
 	const items = [
 		createToolbarCheckboxItem({
@@ -423,7 +452,7 @@ export default function ParameterSelectionComponent(
 			readOnly: alwaysActive && effectiveSelectionActive,
 			// Kept on the parameter's own checkbox row. Future parameter settings
 			// can omit this action to hide Clear for that parameter.
-			trailingAction: showClearButton
+			trailingAction: shouldShowClearButton
 				? {
 						label: `Clear ${toolbarLabel}`,
 						icon: "tabler:circle-off",
@@ -454,7 +483,7 @@ export default function ParameterSelectionComponent(
 					if (!acceptable) {
 						notifications.warning({
 							title: "Selection cannot be confirmed",
-							message: `\"${definition.name}\" must contain between ${minimumSelection} and ${maximumSelection} selected objects.`,
+							message: `"${definition.name}" must contain between ${minimumSelection} and ${maximumSelection} selected objects.`,
 						});
 						return;
 					}
@@ -465,6 +494,9 @@ export default function ParameterSelectionComponent(
 							namespace,
 							parameterId: definition.id,
 							value: JSON.stringify({names: selectedNodeNames}),
+							onComplete: shouldAutoClear
+								? () => clearSelectionRef.current()
+								: undefined,
 							prepare: () => {
 								restoreBatchSelectionRef.current = true;
 								if (!alwaysActive) {
@@ -545,18 +577,20 @@ export default function ParameterSelectionComponent(
 								`Currently selected: ${selectedNodeNames.length}`}
 						</TextWeighted>
 					</Box>
-					<Box style={{width: "auto"}}>
-						<ActionIcon
-							onClick={clearSelection}
-							variant={
-								selectedNodeNames.length === 0
-									? "light"
-									: "filled"
-							}
-						>
-							<Icon iconType={"tabler:circle-off"} />
-						</ActionIcon>
-					</Box>
+					{shouldShowClearButton && (
+						<Box style={{width: "auto"}}>
+							<ActionIcon
+								onClick={clearSelection}
+								variant={
+									selectedNodeNames.length === 0
+										? "light"
+										: "filled"
+								}
+							>
+								<Icon iconType={"tabler:circle-off"} />
+							</ActionIcon>
+						</Box>
+					)}
 				</Flex>
 				<Flex align="center" justify="flex-start" w={"100%"}>
 					<Box style={{flex: 1}}>

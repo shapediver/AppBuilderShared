@@ -62,6 +62,7 @@ export type ToolbarCommandItem = ToolbarItemBase<
 			parameterId: string;
 			value: unknown;
 			prepare: () => void;
+			onComplete?: () => void;
 		};
 	}
 > & {

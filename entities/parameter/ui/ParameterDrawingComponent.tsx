@@ -1,5 +1,9 @@
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {
+	createToolbarCheckboxItem,
+	createToolbarCommand,
+} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
@@ -28,10 +32,6 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import {useDrawingTools} from "../model/drawing/useDrawingTools";
-import {
-	createToolbarCheckboxItem,
-	createToolbarCommand,
-} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
@@ -114,8 +114,8 @@ export default function ParameterDrawingComponent(
 	}, [definition.settings]);
 
 	// state for the drawing application
-	const drawingPresentation =
-		drawingProps.general?.presentation ?? "widget";
+	const drawingPresentation = drawingProps.general?.presentation ?? "widget";
+	const shouldAutoClear = drawingProps.general?.autoClear ?? false;
 	const [drawingActive, setDrawingActive] = useState<boolean>(
 		drawingProps.general?.activeMode === "activeOnStart" ? true : false,
 	);
@@ -128,6 +128,7 @@ export default function ParameterDrawingComponent(
 	);
 	// reference to manage the interaction request token
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
+	const clearDrawingRef = useRef<() => void>(() => {});
 
 	// update the interaction request token and activate drawing tools if necessary
 	const updateInteractionRequestToken = (token: string | undefined) => {
@@ -146,9 +147,11 @@ export default function ParameterDrawingComponent(
 			setParsedUiValue(pointsData ?? []);
 			// if the value is already the same, do not change it
 			if (value === JSON.stringify({points: pointsData})) return;
-			handleChange(JSON.stringify({points: pointsData}), 0);
+			handleChange(JSON.stringify({points: pointsData}), 0, () => {
+				if (shouldAutoClear) clearDrawingRef.current();
+			});
 		},
-		[value],
+		[shouldAutoClear, value],
 	);
 
 	/**
@@ -168,6 +171,7 @@ export default function ParameterDrawingComponent(
 		setPointsData([]);
 		setParsedUiValue([]);
 	}, []);
+	clearDrawingRef.current = clearDrawing;
 
 	// use the drawing tools
 	const {pointsData, setPointsData, drawingToolsApi} = useDrawingTools(
