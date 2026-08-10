@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import {MantineProvider} from "@mantine/core";
-import {render, screen} from "@testing-library/react";
+import {fireEvent, render, screen} from "@testing-library/react";
 import AppBuilderToolbarPopoverContent from "../AppBuilderToolbarPopoverContent";
 
 jest.mock("@AppBuilderLib/entities/parameter/model/useParameters", () => ({
@@ -68,5 +68,47 @@ describe("AppBuilderToolbarPopoverContent", () => {
 		expect(screen.getByTestId("toolbar-widgets").textContent).toBe(
 			"widgets: 1",
 		);
+	});
+
+	it("calls onActionActivate when a toolbar menu action is clicked", () => {
+		const {AppBuilderActionFromType} = jest.requireMock(
+			"../AppBuilderActionFromType",
+		);
+		AppBuilderActionFromType.mockReturnValue(
+			<button data-testid="menu-action">Import model state</button>,
+		);
+		const onActionActivate = jest.fn();
+
+		render(
+			<MantineProvider>
+				<AppBuilderToolbarPopoverContent
+					{...baseProps}
+					onActionActivate={onActionActivate}
+					toolbarItem={{
+						type: "actionMenu",
+						props: {
+							sections: [
+								[
+									{
+										type: "action",
+										id: "import-model-state",
+										props: {
+											definition: {
+												type: "importModelState",
+												props: {},
+											},
+										},
+									},
+								],
+							],
+						},
+					}}
+				/>
+			</MantineProvider>,
+		);
+
+		fireEvent.click(screen.getByTestId("menu-action"));
+
+		expect(onActionActivate).toHaveBeenCalledTimes(1);
 	});
 });
