@@ -256,9 +256,24 @@ export default function AppBuilderToolbarButton({
 		return renderTriggerButton();
 	}
 
+	// Action menu items can open a Mantine `Modal` (e.g. "Import model state").
+	// The popover has `closeOnClickOutside={false}`, so the menu stays open
+	// after an action is clicked. We close it on action click (see
+	// `onActionActivate` in AppBuilderToolbarPopoverContent). Closing the
+	// popover would normally unmount the action component that owns the modal
+	// state, killing the modal. `keepMounted` keeps the dropdown content
+	// mounted (hidden) while closed, so the action component — and its
+	// modal — survive. Use `display-none` (not the default `activity`): React
+	// 19 `Activity` hidden pauses the subtree, which would freeze the modal's
+	// state updates (e.g. Cancel would no longer close it).
+	const actionMenuKeepMounted = isToolbarActionMenuItem(toolbarItem)
+		? {keepMounted: true, keepMountedMode: "display-none" as const}
+		: {};
+
 	return (
 		<Popover
 			{...popoverProps}
+			{...actionMenuKeepMounted}
 			width={
 				fixedWidthPopover
 					? (popoverProps.width ?? 320)
@@ -309,6 +324,7 @@ export default function AppBuilderToolbarButton({
 					menuStackProps={menuStackProps}
 					menuSectionStackProps={menuSectionStackProps}
 					menuDividerProps={menuDividerProps}
+					onActionActivate={() => setOpened(false)}
 				/>
 			</Popover.Dropdown>
 		</Popover>

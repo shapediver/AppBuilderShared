@@ -170,6 +170,36 @@ describe("AppBuilderToolbar", () => {
 		expect(firstButton.getAttribute("data-open")).toBe("true");
 	});
 
+	it("keeps an open popover when interacting with a Mantine Modal portal", () => {
+		const toolbar = createToolbar("top");
+
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={toolbar}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		const firstButton = screen.getByRole("button", {name: "First"});
+		fireEvent.click(firstButton);
+		expect(firstButton.getAttribute("data-open")).toBe("true");
+
+		// Mantine `Modal` content carries `role="dialog"` but no `data-position`.
+		// Clicking inside it (e.g. the "Import model state" dialog opened from a
+		// toolbar menu item) must not close the toolbar popover, otherwise the
+		// action component owning the dialog state unmounts and the dialog
+		// disappears on any inside click.
+		const modalContent = document.createElement("div");
+		modalContent.setAttribute("role", "dialog");
+		modalContent.setAttribute("aria-modal", "true");
+		document.body.appendChild(modalContent);
+		fireEvent.pointerDown(modalContent);
+
+		expect(firstButton.getAttribute("data-open")).toBe("true");
+	});
+
 	it("closes an open popover on true outside clicks", () => {
 		const toolbar = createToolbar("top");
 

@@ -32,6 +32,12 @@ type Props = {
 	menuStackProps: React.ComponentProps<typeof Stack>;
 	menuSectionStackProps: React.ComponentProps<typeof Stack>;
 	menuDividerProps: React.ComponentProps<typeof Divider>;
+	/**
+	 * Called when a toolbar menu action is activated (clicked). Used by the
+	 * toolbar button to close the popover after an action runs, so the menu
+	 * does not stay open over a modal the action may have opened.
+	 */
+	onActionActivate?: () => void;
 };
 
 /**
@@ -50,6 +56,7 @@ export default function AppBuilderToolbarPopoverContent({
 	menuStackProps,
 	menuSectionStackProps,
 	menuDividerProps,
+	onActionActivate,
 }: Props) {
 	const parameters = useParameters(parameterProps);
 	const outputs = useOutputs(outputProps);
@@ -96,7 +103,9 @@ export default function AppBuilderToolbarPopoverContent({
 
 							return actionEl ? (
 								<React.Fragment key={key}>
-									{actionEl}
+									<span onClick={onActionActivate}>
+										{actionEl}
+									</span>
 								</React.Fragment>
 							) : null;
 						})
@@ -201,6 +210,7 @@ export default function AppBuilderToolbarPopoverContent({
 		menuSectionStackProps,
 		menuStackProps,
 		namespace,
+		onActionActivate,
 		outputProps,
 		outputs,
 		parameterProps,
