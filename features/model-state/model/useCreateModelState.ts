@@ -101,6 +101,7 @@ export function useCreateModelState(props: Props) {
 				parameterNamesToExclude = parameterNamesToExcludeDefault,
 				includeImage,
 				image,
+				screenshotProps,
 				data,
 				includeGltf,
 			} = props;
@@ -167,7 +168,7 @@ export function useCreateModelState(props: Props) {
 					}
 				}
 			} else if (includeImage && currentGetScreenshot) {
-				modelStateImage = await currentGetScreenshot();
+				modelStateImage = await currentGetScreenshot(screenshotProps);
 			}
 
 			const modelStateId = sessionApi
