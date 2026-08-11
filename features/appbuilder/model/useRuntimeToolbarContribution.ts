@@ -1,14 +1,14 @@
-import {
-	runtimeToolbarContributionRegistry,
-	type RuntimeToolbarContribution,
-} from "@AppBuilderLib/features/appbuilder/model/runtimeToolbarContributionRegistry";
 import type {
 	RuntimeToolbarMenuDefinition,
 	RuntimeToolbarMenuVisibility,
 	ToolbarCommandItem,
 	ToolbarMenuItem,
 } from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
-import {useEffect} from "react";
+import {
+	runtimeToolbarContributionRegistry,
+	type RuntimeToolbarContribution,
+} from "@AppBuilderLib/features/appbuilder/model/runtimeToolbarContributionRegistry";
+import {useEffect, useRef} from "react";
 
 interface UseRuntimeToolbarContributionOptions {
 	id: string;
@@ -36,6 +36,7 @@ export function useRuntimeToolbarContribution({
 	order,
 	menuVisibility,
 }: UseRuntimeToolbarContributionOptions) {
+	const registrationTokenRef = useRef<symbol>();
 	useEffect(() => {
 		if (!enabled) return;
 
@@ -50,19 +51,28 @@ export function useRuntimeToolbarContribution({
 			order,
 			menuVisibility,
 		};
-		runtimeToolbarContributionRegistry.register(contribution);
-		return () => runtimeToolbarContributionRegistry.unregister(id);
+		const token = runtimeToolbarContributionRegistry.register(contribution);
+		registrationTokenRef.current = token;
+		return () => {
+			runtimeToolbarContributionRegistry.unregister(id, token);
+			if (registrationTokenRef.current === token)
+				registrationTokenRef.current = undefined;
+		};
 	}, [enabled, id, namespace, viewportId]);
 
 	useEffect(() => {
 		if (enabled)
-			runtimeToolbarContributionRegistry.update(id, {
-				items,
-				menu,
-				commands,
-				sectionId,
-				order,
-				menuVisibility,
-			});
+			runtimeToolbarContributionRegistry.update(
+				id,
+				{
+					items,
+					menu,
+					commands,
+					sectionId,
+					order,
+					menuVisibility,
+				},
+				registrationTokenRef.current,
+			);
 	}, [commands, enabled, id, items, menu, menuVisibility, order, sectionId]);
 }

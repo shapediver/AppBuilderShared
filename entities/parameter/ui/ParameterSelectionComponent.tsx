@@ -344,13 +344,20 @@ export default function ParameterSelectionComponent(
 			)
 				return;
 			const serializedValue = JSON.stringify(parameterValue);
-			handleChange(serializedValue, 0, () => {
-				if (shouldAutoClear)
-					requestSelectionAutoClear(
-						selectionOwnerKey,
-						serializedValue,
-					);
-			});
+			handleChange(
+				serializedValue,
+				0,
+				() => {
+					if (shouldAutoClear)
+						requestSelectionAutoClear(
+							selectionOwnerKey,
+							serializedValue,
+						);
+				},
+				// A selection cleared only in the UI can legitimately submit the
+				// same value again. Keep that exception scoped to selection.
+				selectionWasCleared,
+			);
 		},
 		[
 			alwaysActive,
@@ -502,6 +509,9 @@ export default function ParameterSelectionComponent(
 		}),
 	];
 	const commands = [];
+	const serializedSelectionValue = JSON.stringify({
+		names: selectedNodeNames,
+	});
 
 	// Add Confirm and Cancel buttons for multi/range selections
 	if (showConfirmationControls) {
@@ -527,9 +537,13 @@ export default function ParameterSelectionComponent(
 					? {
 							namespace,
 							parameterId: definition.id,
-							value: JSON.stringify({names: selectedNodeNames}),
+							value: serializedSelectionValue,
 							onComplete: shouldAutoClear
-								? () => clearSelectionRef.current()
+								? () =>
+										requestSelectionAutoClear(
+											selectionOwnerKey,
+											serializedSelectionValue,
+										)
 								: undefined,
 							prepare: () => {
 								restoreBatchSelectionRef.current = true;

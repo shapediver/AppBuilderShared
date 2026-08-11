@@ -115,13 +115,26 @@ export function useParameterComponentCommons<T>(
 	const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
 	const handleChange = useCallback(
-		(curval: T | string, timeout?: number, cb: () => void = () => {}) => {
+		(
+			curval: T | string,
+			timeout?: number,
+			cb: () => void = () => {},
+			forceSameValue = false,
+		) => {
 			clearTimeout(debounceRef.current);
 			setValue(curval);
 			debounceRef.current = setTimeout(
 				() => {
 					if (actions.setUiValue(curval)) {
-						actions.execute(!acceptRejectMode).then(() => cb());
+						actions
+							.execute(
+								!acceptRejectMode,
+								undefined,
+								undefined,
+								undefined,
+								forceSameValue,
+							)
+							.then(() => cb());
 					} else {
 						Logger.warn(
 							`setUiValue failed for parameter ${definition.id}, the value is not valid.`,

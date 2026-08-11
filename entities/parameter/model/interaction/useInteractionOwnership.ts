@@ -47,8 +47,16 @@ export function useInteractionOwnership(options: {
 
 	const notifications = useNotificationStore();
 	const claimedRef = useRef(false);
+	const [ownershipRevision, setOwnershipRevision] = useState(0);
 	const [ownershipBlocked, setOwnershipBlocked] = useState(
 		automaticallyActivated,
+	);
+	useEffect(
+		() =>
+			interactionOwnership.subscribe(() =>
+				setOwnershipRevision((revision) => revision + 1),
+			),
+		[],
 	);
 
 	const releaseClaim = useCallback(() => {
@@ -109,7 +117,11 @@ export function useInteractionOwnership(options: {
 
 	useEffect(() => {
 		if (!automaticallyActivated || candidateNodes.length === 0) return;
-		if (lastAutoSignatureRef.current === candidateSignature) return;
+		if (
+			claimedRef.current &&
+			lastAutoSignatureRef.current === candidateSignature
+		)
+			return;
 		lastAutoSignatureRef.current = candidateSignature;
 
 		const result = interactionOwnership.acquire(
@@ -143,6 +155,7 @@ export function useInteractionOwnership(options: {
 		viewportId,
 		ownerKey,
 		ownerLabel,
+		ownershipRevision,
 		type,
 		alwaysActive,
 		releaseClaim,

@@ -86,6 +86,7 @@ export interface IShapeDiverParameterActions<T> {
 	 * @param acceptAll If true and if forceImmediate, accept all pending changes for other
 	 * 					parameters of the same namespace.
 	 * @param skipUrlUpdate If true, skip updating the URL after executing the changes.
+	 * @param forceSameValue If true, execute even when the UI value equals the latest executed value.
 	 *
 	 * @returns the value that was executed.
 	 */
@@ -94,6 +95,7 @@ export interface IShapeDiverParameterActions<T> {
 		skipHistory?: boolean,
 		acceptAll?: boolean,
 		skipUrlUpdate?: boolean,
+		forceSameValue?: boolean,
 	): Promise<T | string>;
 
 	/**
@@ -184,6 +186,7 @@ export interface IShapeDiverParameterExecutor<T> {
 	 * @param acceptAll If true and if forceImmediate, accept all pending changes for other
 	 * 					parameters of the same namespace.
 	 * @param skipUrlUpdate If true, skip updating the URL after executing the changes.
+	 * @param forceSameValue If true, execute even when uiValue equals execValue.
 	 *
 	 * @returns the value that was executed, which might be different from uiValue and execValue.
 	 */
@@ -194,6 +197,7 @@ export interface IShapeDiverParameterExecutor<T> {
 		skipHistory?: boolean,
 		acceptAll?: boolean,
 		skipUrlUpdate?: boolean,
+		forceSameValue?: boolean,
 	) => Promise<T | string>;
 
 	/**

@@ -8,7 +8,9 @@ import AppBuilderToolbarPopoverButton from "../AppBuilderToolbarPopoverButton";
 
 jest.mock("../AppBuilderToolbarPopoverContent", () => ({
 	__esModule: true,
-	default: () => null,
+	default: ({onActionActivate}: {onActionActivate?: () => void}) => (
+		<button onClick={onActionActivate}>Activate menu action</button>
+	),
 }));
 
 jest.mock(
@@ -30,6 +32,101 @@ jest.mock(
 );
 
 describe("AppBuilderToolbarPopoverButton", () => {
+	it("closes action menus while keeping their content mounted", () => {
+		const onPopoverOpenChange = jest.fn();
+		const {rerender} = render(
+			<MantineProvider>
+				<AppBuilderToolbarPopoverButton
+					item={{
+						id: "actions",
+						type: "menu",
+						label: "Actions",
+						props: {
+							sections: [
+								{
+									id: "section",
+									items: [
+										{
+											id: "action",
+											type: "action",
+											label: "Action",
+											props: {
+												definition: {
+													type: "importModelState",
+													props: {},
+												},
+											},
+										},
+									],
+								},
+							],
+						},
+					}}
+					buttonRenderContext={{
+						namespace: "namespace",
+						buttonsDisabled: false,
+						executing: false,
+						hasPendingChanges: false,
+						fullscreenId: "fullscreen-root",
+					}}
+					popoverId="actions"
+					openedPopoverId="actions"
+					onPopoverOpenChange={onPopoverOpenChange}
+				/>
+			</MantineProvider>,
+		);
+
+		fireEvent.click(
+			screen.getByRole("button", {name: "Activate menu action"}),
+		);
+		expect(onPopoverOpenChange).toHaveBeenCalledWith("actions", false);
+
+		rerender(
+			<MantineProvider>
+				<AppBuilderToolbarPopoverButton
+					item={{
+						id: "actions",
+						type: "menu",
+						label: "Actions",
+						props: {
+							sections: [
+								{
+									id: "section",
+									items: [
+										{
+											id: "action",
+											type: "action",
+											label: "Action",
+											props: {
+												definition: {
+													type: "importModelState",
+													props: {},
+												},
+											},
+										},
+									],
+								},
+							],
+						},
+					}}
+					buttonRenderContext={{
+						namespace: "namespace",
+						buttonsDisabled: false,
+						executing: false,
+						hasPendingChanges: false,
+						fullscreenId: "fullscreen-root",
+					}}
+					popoverId="actions"
+					onPopoverOpenChange={onPopoverOpenChange}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(
+			screen.getByRole("button", {name: "Activate menu action"}),
+		).toBeTruthy();
+	});
+
 	it("does not close a popover while an interaction request is active", () => {
 		const onPopoverOpenChange = jest.fn();
 

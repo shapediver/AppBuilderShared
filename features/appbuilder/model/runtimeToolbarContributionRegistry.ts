@@ -22,28 +22,66 @@ export interface RuntimeToolbarContribution {
 type Snapshot = Readonly<Record<string, RuntimeToolbarContribution>>;
 
 let contributions: Snapshot = {};
+type RegistrationToken = symbol;
+const registrations = new Map<
+	string,
+	Map<RegistrationToken, RuntimeToolbarContribution>
+>();
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((listener) => listener());
 
+const syncContribution = (id: string) => {
+	const registered = registrations.get(id);
+	const contribution = registered
+		? Array.from(registered.values()).at(-1)
+		: undefined;
+	if (contribution) {
+		contributions = {...contributions, [id]: contribution};
+		return;
+	}
+	const next = {...contributions};
+	delete next[id];
+	contributions = next;
+};
+
 export const runtimeToolbarContributionRegistry = {
 	register(contribution: RuntimeToolbarContribution) {
-		contributions = {...contributions, [contribution.id]: contribution};
+		const token = Symbol(contribution.id);
+		const registered =
+			registrations.get(contribution.id) ??
+			new Map<RegistrationToken, RuntimeToolbarContribution>();
+		registered.set(token, contribution);
+		registrations.set(contribution.id, registered);
+		syncContribution(contribution.id);
+		notify();
+		return token;
+	},
+	update(
+		id: string,
+		patch: Partial<Omit<RuntimeToolbarContribution, "id">>,
+		token?: RegistrationToken,
+	) {
+		const registered = registrations.get(id);
+		if (!registered) return;
+		if (token) {
+			const existing = registered.get(token);
+			if (!existing) return;
+			registered.set(token, {...existing, ...patch});
+		} else {
+			registered.forEach((existing, registrationToken) =>
+				registered.set(registrationToken, {...existing, ...patch}),
+			);
+		}
+		syncContribution(id);
 		notify();
 	},
-	update(id: string, patch: Partial<Omit<RuntimeToolbarContribution, "id">>) {
-		const existing = contributions[id];
-		if (!existing) return;
-		contributions = {
-			...contributions,
-			[id]: {...existing, ...patch},
-		};
-		notify();
-	},
-	unregister(id: string) {
-		if (!contributions[id]) return;
-		const next = {...contributions};
-		delete next[id];
-		contributions = next;
+	unregister(id: string, token?: RegistrationToken) {
+		const registered = registrations.get(id);
+		if (!registered) return;
+		if (token) registered.delete(token);
+		else registered.clear();
+		if (registered.size === 0) registrations.delete(id);
+		syncContribution(id);
 		notify();
 	},
 	select(viewportId: string, namespace: string) {
@@ -66,6 +104,7 @@ export const runtimeToolbarContributionRegistry = {
 	getSnapshot: () => contributions,
 	reset() {
 		contributions = {};
+		registrations.clear();
 		notify();
 	},
 };

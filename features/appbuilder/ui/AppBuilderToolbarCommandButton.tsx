@@ -8,6 +8,7 @@ type Props = {
 	item: ToolbarCommandItem;
 	presentation: "toolbar" | "menu";
 	defaultIcon?: IconType;
+	globalDisabled?: boolean;
 };
 
 const useToolbarCommand = (item: ToolbarCommandItem) => {
@@ -31,6 +32,7 @@ export default function AppBuilderToolbarCommandButton({
 	item,
 	presentation,
 	defaultIcon,
+	globalDisabled = false,
 }: Props) {
 	const {execute, loading} = useToolbarCommand(item);
 
@@ -40,7 +42,7 @@ export default function AppBuilderToolbarCommandButton({
 				label={item.label}
 				icon={item.icon}
 				tooltip={item.tooltip}
-				disabled={item.disabled}
+				disabled={item.disabled || globalDisabled}
 				loading={loading}
 				onClick={execute}
 			/>
@@ -52,7 +54,7 @@ export default function AppBuilderToolbarCommandButton({
 			label={item.label}
 			tooltipLabel={item.tooltip}
 			iconType={item.icon ?? defaultIcon ?? "tabler:apps"}
-			disabled={item.disabled}
+			disabled={item.disabled || globalDisabled}
 			loading={loading}
 			onClick={execute}
 		/>

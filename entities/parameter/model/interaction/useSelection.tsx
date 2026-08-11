@@ -242,22 +242,11 @@ export function useSelection(
 					}
 				});
 
-				// If not found (e.g. geometry changed after computation), try fallback:
-				// find the first available node with the same output name prefix so that
-				// selection is preserved across geometry updates.
+				// Do not silently replace a missing node with another object from the
+				// same output. The output may still be rebuilding, and changing the
+				// logical selection here can trigger an unintended automatic commit.
 				if (!found) {
-					const outputPrefix = name.split(".")[0];
-					for (const availableNames of Object.values(
-						availableNodeNames,
-					)) {
-						const fallback = availableNames.find(
-							(n) => n.name.split(".")[0] === outputPrefix,
-						);
-						if (fallback) {
-							newSelectedNodeNames.push(fallback.name);
-							break;
-						}
-					}
+					newSelectedNodeNames.push(name);
 				}
 			});
 		}

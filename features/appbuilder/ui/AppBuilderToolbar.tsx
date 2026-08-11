@@ -223,6 +223,11 @@ export default function AppBuilderToolbar(props: Props) {
 											item={toolbarItem}
 											presentation="toolbar"
 											defaultIcon={toolbar.defaultIcon}
+											globalDisabled={
+												resolvedButtonRenderContext.buttonsDisabled ||
+												resolvedButtonRenderContext.executing ||
+												resolvedButtonRenderContext.hasPendingChanges
+											}
 										/>
 									);
 								case "checkbox":
@@ -236,16 +241,23 @@ export default function AppBuilderToolbar(props: Props) {
 												icon: toolbarItem.icon,
 												tooltip: toolbarItem.tooltip,
 												disabled:
-													toolbarItem.disabled || toolbarItem.props.readOnly,
+													toolbarItem.disabled ||
+													toolbarItem.props.readOnly,
 												props: {
 													execute: () =>
 														toolbarItem.props.setChecked(
-															!toolbarItem.props.checked,
+															!toolbarItem.props
+																.checked,
 														),
 												},
 											}}
 											presentation="toolbar"
 											defaultIcon={toolbar.defaultIcon}
+											globalDisabled={
+												resolvedButtonRenderContext.buttonsDisabled ||
+												resolvedButtonRenderContext.executing ||
+												resolvedButtonRenderContext.hasPendingChanges
+											}
 										/>
 									);
 								case "action":

@@ -85,12 +85,14 @@ function createParameterExecutor<T>(
 			forceImmediate?: boolean,
 			skipHistory?: boolean,
 			acceptAll?: boolean,
+			_skipUrlUpdate?: boolean,
+			forceSameValue?: boolean,
 		) => {
 			const changes = getChanges();
 
 			// check whether there is anything to do
 			const result = changes.removeValueChange(paramId);
-			if (result.removed && uiValue === execValue && !forceImmediate) {
+			if (result.removed && uiValue === execValue && !forceSameValue) {
 				Logger.debug(`Removing change of parameter ${paramId}`);
 				// check if there are any other parameter updates queued
 				if (result.isEmpty) {
@@ -482,6 +484,7 @@ function createParameterStore<T>(
 						skipHistory?: boolean,
 						acceptAll?: boolean,
 						skipUrlUpdate?: boolean,
+						forceSameValue?: boolean,
 					): Promise<T | string> {
 						const state = get().state;
 						const result = await executor.execute(
@@ -491,6 +494,7 @@ function createParameterStore<T>(
 							skipHistory,
 							acceptAll,
 							skipUrlUpdate,
+							forceSameValue,
 						);
 						// TODO in case result is not the current uiValue, we could somehow visualize
 						// the fact that the uiValue gets reset here

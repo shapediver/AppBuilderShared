@@ -1,6 +1,4 @@
-import {
-	runtimeToolbarContributionRegistry,
-} from "../runtimeToolbarContributionRegistry";
+import {runtimeToolbarContributionRegistry} from "../runtimeToolbarContributionRegistry";
 
 const contribution = (overrides = {}) => ({
 	id: "contribution",
@@ -8,12 +6,14 @@ const contribution = (overrides = {}) => ({
 	viewportId: "viewport",
 	sectionId: "selection",
 	menu: {id: "menu", label: "Menu", icon: "tabler:menu"},
-	items: [{
-		id: "command",
-		type: "command" as const,
-		label: "Command",
-		props: {execute: jest.fn()},
-	}],
+	items: [
+		{
+			id: "command",
+			type: "command" as const,
+			label: "Command",
+			props: {execute: jest.fn()},
+		},
+	],
 	...overrides,
 });
 
@@ -45,18 +45,26 @@ describe("runtimeToolbarContributionRegistry", () => {
 
 	it("updates presentation and items without changing contribution identity", () => {
 		runtimeToolbarContributionRegistry.register(contribution());
-		const items = [{
-			id: "updated-command",
-			type: "command" as const,
-			label: "Updated command",
-			props: {execute: jest.fn()},
-		}];
+		const items = [
+			{
+				id: "updated-command",
+				type: "command" as const,
+				label: "Updated command",
+				props: {execute: jest.fn()},
+			},
+		];
 		const menu = {id: "updated-menu", label: "Updated menu"};
 
-		runtimeToolbarContributionRegistry.update("contribution", {items, menu});
+		runtimeToolbarContributionRegistry.update("contribution", {
+			items,
+			menu,
+		});
 
 		expect(
-			runtimeToolbarContributionRegistry.select("viewport", "namespace")[0],
+			runtimeToolbarContributionRegistry.select(
+				"viewport",
+				"namespace",
+			)[0],
 		).toMatchObject({id: "contribution", items, menu});
 	});
 
@@ -73,5 +81,22 @@ describe("runtimeToolbarContributionRegistry", () => {
 				.select("viewport", "namespace")
 				.map(({id}) => id),
 		).toEqual(["earlier", "later"]);
+	});
+
+	it("keeps a contribution until every instance with the same id unmounts", () => {
+		const first =
+			runtimeToolbarContributionRegistry.register(contribution());
+		const second =
+			runtimeToolbarContributionRegistry.register(contribution());
+
+		runtimeToolbarContributionRegistry.unregister("contribution", second);
+		expect(
+			runtimeToolbarContributionRegistry.select("viewport", "namespace"),
+		).toHaveLength(1);
+
+		runtimeToolbarContributionRegistry.unregister("contribution", first);
+		expect(
+			runtimeToolbarContributionRegistry.select("viewport", "namespace"),
+		).toEqual([]);
 	});
 });

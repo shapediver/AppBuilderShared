@@ -226,8 +226,12 @@ describe("resolveRuntimeToolbarGroups", () => {
 		]);
 	});
 
-	it("batches multiple aggregate command updates", () => {
-		const batchParameterValueUpdate = jest.fn();
+	it("batches multiple aggregate command updates and completes each one", async () => {
+		const batchParameterValueUpdate = jest
+			.fn()
+			.mockResolvedValue(undefined);
+		const firstComplete = jest.fn();
+		const secondComplete = jest.fn();
 		useShapeDiverStoreParameters.setState({batchParameterValueUpdate});
 		const groups = resolveRuntimeToolbarGroups([
 			contribution("first", "selection", {
@@ -242,6 +246,7 @@ describe("resolveRuntimeToolbarGroups", () => {
 							parameterId: "first",
 							value: "first-value",
 							prepare: jest.fn(),
+							onComplete: firstComplete,
 						},
 					}),
 				],
@@ -258,6 +263,7 @@ describe("resolveRuntimeToolbarGroups", () => {
 							parameterId: "second",
 							value: "second-value",
 							prepare: jest.fn(),
+							onComplete: secondComplete,
 						},
 					}),
 				],
@@ -270,5 +276,8 @@ describe("resolveRuntimeToolbarGroups", () => {
 		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
 			namespace: {first: "first-value", second: "second-value"},
 		});
+		await Promise.resolve();
+		expect(firstComplete).toHaveBeenCalledTimes(1);
+		expect(secondComplete).toHaveBeenCalledTimes(1);
 	});
 });

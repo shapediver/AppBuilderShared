@@ -1,10 +1,8 @@
 import {useLayoutEffect, useRef, useSyncExternalStore} from "react";
 
 let pendingSelections: Readonly<Record<string, string>> = {};
-const pendingStateRefs = new Map<
-	string,
-	{current: {pending: boolean; scopeKey: string}}
->();
+type PendingStateRef = {current: {pending: boolean; scopeKey: string}};
+const pendingStateRefs = new Map<string, Set<PendingStateRef>>();
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((listener) => listener());
 
@@ -31,6 +29,13 @@ const subscribe = (listener: () => void) => {
 
 const getSnapshot = () => pendingSelections;
 
+const hasPendingMountedInstance = (ownerKey: string) => {
+	const refs = pendingStateRefs.get(ownerKey);
+	return refs
+		? Array.from(refs).some((ref) => ref.current.pending)
+		: undefined;
+};
+
 /** Checks the current registry synchronously before an automatic commit. */
 export const hasOtherPendingSelectionInScope = (
 	ownerKey: string,
@@ -38,11 +43,12 @@ export const hasOtherPendingSelectionInScope = (
 ) =>
 	Object.entries(pendingSelections).some(
 		([registeredOwnerKey, registeredScopeKey]) => {
-			const registeredState = pendingStateRefs.get(registeredOwnerKey);
+			const registeredState =
+				hasPendingMountedInstance(registeredOwnerKey);
 			return (
 				registeredOwnerKey !== ownerKey &&
 				registeredScopeKey === scopeKey &&
-				(registeredState?.current.pending ?? true)
+				(registeredState ?? true)
 			);
 		},
 	);
@@ -64,10 +70,23 @@ export const usePendingSelectionRegistry = (
 	// A pending draft gates automatic interaction commits. Keep this registry in
 	// sync before the browser can process the next toolbar/viewport action.
 	useLayoutEffect(() => {
-		pendingStateRefs.set(ownerKey, pendingStateRef);
-		if (pending) markPendingSelection(ownerKey, scopeKey);
+		const refs =
+			pendingStateRefs.get(ownerKey) ?? new Set<PendingStateRef>();
+		refs.add(pendingStateRef);
+		pendingStateRefs.set(ownerKey, refs);
+		if (Array.from(refs).some((ref) => ref.current.pending))
+			markPendingSelection(ownerKey, scopeKey);
 		else clearPendingSelection(ownerKey);
 		return () => {
+			const registeredRefs = pendingStateRefs.get(ownerKey);
+			registeredRefs?.delete(pendingStateRef);
+			if (registeredRefs?.size) {
+				const remainingPending = Array.from(registeredRefs).some(
+					(ref) => ref.current.pending,
+				);
+				if (!remainingPending) clearPendingSelection(ownerKey);
+				return;
+			}
 			pendingStateRefs.delete(ownerKey);
 			clearPendingSelection(ownerKey);
 		};
@@ -75,11 +94,12 @@ export const usePendingSelectionRegistry = (
 
 	return Object.entries(snapshot).some(
 		([registeredOwnerKey, registeredScopeKey]) => {
-			const registeredState = pendingStateRefs.get(registeredOwnerKey);
+			const registeredState =
+				hasPendingMountedInstance(registeredOwnerKey);
 			return (
 				registeredOwnerKey !== ownerKey &&
 				registeredScopeKey === scopeKey &&
-				(registeredState?.current.pending ?? true)
+				(registeredState ?? true)
 			);
 		},
 	);

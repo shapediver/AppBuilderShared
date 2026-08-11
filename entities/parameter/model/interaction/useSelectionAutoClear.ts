@@ -8,6 +8,7 @@ interface SelectionAutoClearRequest {
 let requests: Readonly<Record<string, SelectionAutoClearRequest>> = {};
 const listeners = new Set<() => void>();
 const cleanupTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const mountCounts = new Map<string, number>();
 
 const subscribe = (listener: () => void) => {
 	listeners.add(listener);
@@ -39,6 +40,7 @@ export const useSelectionAutoClear = (ownerKey: string) => {
 	const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
 	useEffect(() => {
+		mountCounts.set(ownerKey, (mountCounts.get(ownerKey) ?? 0) + 1);
 		const cleanupTimer = cleanupTimers.get(ownerKey);
 		if (cleanupTimer) {
 			clearTimeout(cleanupTimer);
@@ -46,6 +48,12 @@ export const useSelectionAutoClear = (ownerKey: string) => {
 		}
 
 		return () => {
+			const remainingMounts = (mountCounts.get(ownerKey) ?? 1) - 1;
+			if (remainingMounts > 0) {
+				mountCounts.set(ownerKey, remainingMounts);
+				return;
+			}
+			mountCounts.delete(ownerKey);
 			cleanupTimers.set(
 				ownerKey,
 				setTimeout(() => {

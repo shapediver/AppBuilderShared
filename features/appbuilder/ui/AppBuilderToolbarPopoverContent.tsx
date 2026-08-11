@@ -97,11 +97,24 @@ export default function AppBuilderToolbarPopoverContent({
 																.readOnly
 														}
 														disabled={
-															menuItem.disabled
+															menuItem.disabled ||
+															actionDisabled
 														}
 														trailingAction={
 															menuItem.props
 																.trailingAction
+																? {
+																		...menuItem
+																			.props
+																			.trailingAction,
+																		disabled:
+																			actionDisabled ||
+																			menuItem
+																				.props
+																				.trailingAction
+																				.disabled,
+																	}
+																: undefined
 														}
 														onChange={() =>
 															menuItem.props.setChecked(
@@ -118,6 +131,9 @@ export default function AppBuilderToolbarPopoverContent({
 														key={menuItem.id}
 														item={menuItem}
 														presentation="menu"
+														globalDisabled={
+															actionDisabled
+														}
 													/>
 												);
 											}

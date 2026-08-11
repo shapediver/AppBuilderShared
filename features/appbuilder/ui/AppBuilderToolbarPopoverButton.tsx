@@ -85,25 +85,27 @@ export default function AppBuilderToolbarPopoverButton({
 	) as ToolbarButtonThemeProps;
 	const parameterProps = useMemo<PropsParameter[]>(() => {
 		if (item.type !== "parameter") return [];
-		const props = item.props;
+		const parameterItem = item.props;
 		return [
 			{
-				namespace: props.sessionId ?? buttonRenderContext.namespace,
-				parameterId: props.name,
-				disableIfDirty: props.disableIfDirty,
-				acceptRejectMode: props.acceptRejectMode,
-				overrides: props.overrides,
+				namespace:
+					parameterItem.sessionId ?? buttonRenderContext.namespace,
+				parameterId: parameterItem.name,
+				disableIfDirty: parameterItem.disableIfDirty,
+				acceptRejectMode: parameterItem.acceptRejectMode,
+				overrides: parameterItem.overrides,
 			},
 		];
 	}, [buttonRenderContext.namespace, item]);
 	const outputProps = useMemo<PropsOutput[]>(() => {
 		if (item.type !== "output") return [];
-		const props = item.props;
+		const outputItem = item.props;
 		return [
 			{
-				namespace: props.sessionId ?? buttonRenderContext.namespace,
-				outputId: props.name,
-				overrides: props.overrides,
+				namespace:
+					outputItem.sessionId ?? buttonRenderContext.namespace,
+				outputId: outputItem.name,
+				overrides: outputItem.overrides,
 			},
 		];
 	}, [buttonRenderContext.namespace, item]);
@@ -115,7 +117,20 @@ export default function AppBuilderToolbarPopoverButton({
 	const iconType =
 		item.icon ?? defaultIcon ?? item.label.slice(0, 1).toUpperCase();
 	const hasPopoverContent =
-		item.type !== "menu" || item.props.sections.length > 0;
+		item.type === "menu"
+			? item.props.sections.some((section) => section.items.length > 0)
+			: item.type === "widgets"
+				? item.props.widgets.length > 0
+				: item.type === "tabs"
+					? item.props.tabs.length > 0
+					: true;
+	const actionMenuKeepMounted =
+		item.type === "menu" &&
+		item.props.sections.some((section) =>
+			section.items.some((menuItem) => menuItem.type === "action"),
+		)
+			? {keepMounted: true, keepMountedMode: "display-none" as const}
+			: {};
 
 	const setOpened = useCallback(
 		(next: boolean | ((current: boolean) => boolean)) => {
@@ -147,6 +162,7 @@ export default function AppBuilderToolbarPopoverButton({
 	return (
 		<Popover
 			{...popoverProps}
+			{...actionMenuKeepMounted}
 			width={
 				fixedWidthPopover
 					? (popoverProps.width ?? 320)
@@ -198,6 +214,7 @@ export default function AppBuilderToolbarPopoverButton({
 					menuStackProps={menuStackProps}
 					menuSectionStackProps={menuSectionStackProps}
 					menuDividerProps={menuDividerProps}
+					onActionActivate={() => setOpened(false)}
 				/>
 			</Popover.Dropdown>
 		</Popover>

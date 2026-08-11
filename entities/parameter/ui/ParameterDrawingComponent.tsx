@@ -115,7 +115,7 @@ export default function ParameterDrawingComponent(
 
 	// state for the drawing application
 	const drawingPresentation = drawingProps.general?.presentation ?? "widget";
-	const shouldAutoClear = drawingProps.general?.autoClear ?? false;
+	// autoClear is intentionally supported by selection parameters only for now.
 	const [drawingActive, setDrawingActive] = useState<boolean>(
 		drawingProps.general?.activeMode === "activeOnStart" ? true : false,
 	);
@@ -128,7 +128,6 @@ export default function ParameterDrawingComponent(
 	);
 	// reference to manage the interaction request token
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
-	const clearDrawingRef = useRef<() => void>(() => {});
 
 	// update the interaction request token and activate drawing tools if necessary
 	const updateInteractionRequestToken = (token: string | undefined) => {
@@ -147,11 +146,9 @@ export default function ParameterDrawingComponent(
 			setParsedUiValue(pointsData ?? []);
 			// if the value is already the same, do not change it
 			if (value === JSON.stringify({points: pointsData})) return;
-			handleChange(JSON.stringify({points: pointsData}), 0, () => {
-				if (shouldAutoClear) clearDrawingRef.current();
-			});
+			handleChange(JSON.stringify({points: pointsData}), 0);
 		},
-		[shouldAutoClear, value],
+		[value],
 	);
 
 	/**
@@ -171,7 +168,6 @@ export default function ParameterDrawingComponent(
 		setPointsData([]);
 		setParsedUiValue([]);
 	}, []);
-	clearDrawingRef.current = clearDrawing;
 
 	// use the drawing tools
 	const {pointsData, setPointsData, drawingToolsApi} = useDrawingTools(
