@@ -83,10 +83,10 @@ export function useSelection(
 		removeAvailableEffectsForNodes,
 		availableNodes: managerAvailableNodes,
 	} = useSelectManager(
-			viewportId,
-			componentId,
-			activate ? selectionProps : undefined,
-		);
+		viewportId,
+		componentId,
+		activate ? selectionProps : undefined,
+	);
 
 	// store the select manager in a ref
 	const selectManagerRef = React.useRef<SelectManager | MultiSelectManager>();
@@ -138,6 +138,15 @@ export function useSelection(
 		(revision: number) => revision + 1,
 		0,
 	);
+
+	// A selection can be cleared before the first manager instance reaches this
+	// hook. Keep the viewer manager synchronized once it becomes available.
+	useEffect(() => {
+		if (!selectManager || selectedNodeNames.length > 0) return;
+		if (selectManager instanceof SelectManager) selectManager.deselect();
+		else if (selectManager instanceof MultiSelectManager)
+			selectManager.deselectAll();
+	}, [selectManager, selectedNodeNames]);
 
 	const nodesInteractionInput = useMemo(() => {
 		const nodesInteractionInput: {
@@ -367,11 +376,18 @@ export function useSelection(
 	const setSelectedNodeNamesAndRestoreSelection = useCallback(
 		(names: string[]) => {
 			setSelectedNodeNames(names);
+			const manager = selectManagerRef.current ?? selectManager;
+			if (names.length === 0) {
+				if (manager instanceof SelectManager) manager.deselect();
+				else if (manager instanceof MultiSelectManager)
+					manager.deselectAll();
+				return;
+			}
 			restoreSelection(
 				outputsPerSession,
 				instances,
 				componentId,
-				selectManagerRef.current,
+				manager,
 				names,
 				strictNaming,
 			);
@@ -381,6 +397,7 @@ export function useSelection(
 			instances,
 			componentId,
 			setSelectedNodeNames,
+			selectManager,
 			restoreSelection,
 		],
 	);

@@ -42,6 +42,10 @@ import {
 } from "../model/interaction/usePendingSelectionRegistry";
 import {useSelection} from "../model/interaction/useSelection";
 import {useSelectionActivationState} from "../model/interaction/useSelectionActivationState";
+import {
+	requestSelectionAutoClear,
+	useSelectionAutoClear,
+} from "../model/interaction/useSelectionAutoClear";
 import {useSelectionInteractionOwnership} from "../model/interaction/useSelectionInteractionOwnership";
 import {useSuspendedSelectionRestore} from "../model/interaction/useSuspendedSelectionRestore";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
@@ -212,6 +216,10 @@ export default function ParameterSelectionComponent(
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
+	const selectionOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
+	const autoClearRequest = useSelectionAutoClear(selectionOwnerKey);
+	const startsAutoCleared =
+		shouldAutoClear && autoClearRequest?.value === value;
 
 	const {
 		candidateNodes,
@@ -224,7 +232,7 @@ export default function ParameterSelectionComponent(
 		viewportId,
 		selectionProps,
 		effectiveSelectionActive,
-		parseNames(value),
+		startsAutoCleared ? [] : parseNames(value),
 		true,
 	);
 	const restoreBatchSelectionRef = useRef(false);
@@ -250,7 +258,6 @@ export default function ParameterSelectionComponent(
 		!committedNodeNames.every(
 			(name, index) => name === selectedNodeNames[index],
 		);
-	const selectionOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
 	const hasOtherPendingSelection = usePendingSelectionRegistry(
 		selectionOwnerKey,
 		`${namespace}-${viewportId}`,
@@ -336,8 +343,13 @@ export default function ParameterSelectionComponent(
 				!selectionWasCleared
 			)
 				return;
-			handleChange(JSON.stringify(parameterValue), 0, () => {
-				if (shouldAutoClear) clearSelectionRef.current();
+			const serializedValue = JSON.stringify(parameterValue);
+			handleChange(serializedValue, 0, () => {
+				if (shouldAutoClear)
+					requestSelectionAutoClear(
+						selectionOwnerKey,
+						serializedValue,
+					);
 			});
 		},
 		[
@@ -407,6 +419,20 @@ export default function ParameterSelectionComponent(
 		viewportId,
 	]);
 	clearSelectionRef.current = clearSelection;
+	const appliedAutoClearRevisionRef = useRef(0);
+	useEffect(() => {
+		if (
+			!shouldAutoClear ||
+			!autoClearRequest ||
+			autoClearRequest.revision <= appliedAutoClearRevisionRef.current ||
+			(autoClearRequest.value !== value &&
+				autoClearRequest.value !== state.uiValue)
+		)
+			return;
+
+		appliedAutoClearRevisionRef.current = autoClearRequest.revision;
+		clearSelectionRef.current();
+	}, [autoClearRequest, shouldAutoClear, state.uiValue, value]);
 
 	const notifyConflict = useCallback(
 		(title: string, message: string) =>
@@ -444,7 +470,7 @@ export default function ParameterSelectionComponent(
 	const showConfirmationControls =
 		hasOtherPendingSelection ||
 		(shouldAutoClear && selectedNodeNames.length === 0
-			? minimumSelection === 0
+			? minimumSelection === 0 && hasPendingSelection
 			: !acceptImmediately &&
 				(hasAutomaticSelectionControls ||
 					(hasPendingSelection && minimumSelection === 0)));
