@@ -74,26 +74,36 @@ jest.mock("../AppBuilderToolbarPopoverButton", () => ({
 
 const buttonRenderContext: ButtonRenderContext = {
 	namespace: "default",
-	buttonsDisabled: false,
 	executing: false,
-	hasPendingChanges: false,
 	fullscreenId: "viewer-fullscreen-area",
 };
 
-const createToolbar = (
-	side: ToolbarRegistration["side"],
-) =>
+const createToolbar = (side: ToolbarRegistration["side"]) =>
 	resolveToolbarRegistration({
-	id: `${side}-toolbar`,
-	source: "definition",
-	side,
-	align: "center",
-	order: 0,
-	visibility: "always",
-	groups: [
-		[{id: "first", type: "widgets", label: "First", props: {widgets: []}}],
-		[{id: "second", type: "widgets", label: "Second", props: {widgets: []}}],
-	],
+		id: `${side}-toolbar`,
+		source: "definition",
+		side,
+		align: "center",
+		order: 0,
+		visibility: "always",
+		groups: [
+			[
+				{
+					id: "first",
+					type: "widgets",
+					label: "First",
+					props: {widgets: []},
+				},
+			],
+			[
+				{
+					id: "second",
+					type: "widgets",
+					label: "Second",
+					props: {widgets: []},
+				},
+			],
+		],
 	});
 
 describe("AppBuilderToolbar", () => {
@@ -275,6 +285,5 @@ describe("AppBuilderToolbar", () => {
 		fireEvent.pointerDown(canvas);
 
 		expect(firstButton.getAttribute("data-open")).toBe("false");
-
 	});
 });

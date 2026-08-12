@@ -6,6 +6,7 @@ import {
 } from "@AppBuilderLib/entities/viewport/config/legacyViewportIconsTheme";
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import type {ResolvedToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
+import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useToolbarVisibility} from "../model/useToolbarVisibility";
@@ -216,6 +217,13 @@ export default function AppBuilderToolbar(props: Props) {
 								popoverDismissalBlocked,
 							};
 							switch (toolbarItem.type) {
+								case "acceptReject":
+									return (
+										<ViewportAcceptRejectButtons
+											key={popoverId}
+											inToolbar
+										/>
+									);
 								case "command":
 									return (
 										<AppBuilderToolbarCommandButton
@@ -224,9 +232,7 @@ export default function AppBuilderToolbar(props: Props) {
 											presentation="toolbar"
 											defaultIcon={toolbar.defaultIcon}
 											globalDisabled={
-												resolvedButtonRenderContext.buttonsDisabled ||
-												resolvedButtonRenderContext.executing ||
-												resolvedButtonRenderContext.hasPendingChanges
+												resolvedButtonRenderContext.executing
 											}
 										/>
 									);
@@ -254,9 +260,7 @@ export default function AppBuilderToolbar(props: Props) {
 											presentation="toolbar"
 											defaultIcon={toolbar.defaultIcon}
 											globalDisabled={
-												resolvedButtonRenderContext.buttonsDisabled ||
-												resolvedButtonRenderContext.executing ||
-												resolvedButtonRenderContext.hasPendingChanges
+												resolvedButtonRenderContext.executing
 											}
 										/>
 									);

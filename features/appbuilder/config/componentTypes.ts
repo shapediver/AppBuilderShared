@@ -158,9 +158,7 @@ export const getExportComponent = (
 export interface ButtonRenderContext {
 	viewportId?: string;
 	namespace: string;
-	buttonsDisabled: boolean;
 	executing: boolean;
-	hasPendingChanges: boolean;
 	iconsVisible?: boolean;
 	fullscreenId: string;
 }

@@ -15,6 +15,7 @@ import {
 	IAppBuilderSettingsSession,
 	IAppBuilderWidget,
 } from "./appbuilder";
+import type {ResolvedToolbarRegistration} from "./toolbarRenderTypes";
 
 // #region Interfaces (7)
 
@@ -143,8 +144,7 @@ export interface ViewportComponentMapValueType extends ComponentType {
 	// #endregion Properties (1)
 }
 
-export interface AppBuilderToolbarLayerComponentMapValueType
-	extends ComponentType {
+export interface AppBuilderToolbarLayerComponentMapValueType extends ComponentType {
 	// #region Properties (1)
 
 	/** Optional viewport toolbar layer. Apps can omit it to avoid viewport toolbar dependencies. */
@@ -153,6 +153,7 @@ export interface AppBuilderToolbarLayerComponentMapValueType
 		appBuilderData?: IAppBuilder;
 		sessionSettings?: IAppBuilderSettingsSession;
 		viewportId?: string;
+		onToolbarsChange?: (toolbars: ResolvedToolbarRegistration[]) => void;
 	}) => ReactElement | null;
 
 	// #endregion Properties (1)

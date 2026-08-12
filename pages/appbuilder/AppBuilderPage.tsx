@@ -5,6 +5,7 @@ import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {ResolvedToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import useAppBuilderSettings from "@AppBuilderLib/features/appbuilder/model/useAppBuilderSettings";
 import {useAppBuilderStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderStandardContainers";
@@ -22,7 +23,7 @@ import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/Vi
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
-import {useContext, useEffect, useMemo} from "react";
+import {useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
@@ -134,6 +135,18 @@ interface Props extends IAppBuilderSettingsSession {
  * @returns
  */
 export default function AppBuilderPage(props: Partial<Props>) {
+	const [hasBottomCenterToolbar, setHasBottomCenterToolbar] = useState(false);
+	const handleToolbarsChange = useCallback(
+		(toolbars: ResolvedToolbarRegistration[]) => {
+			setHasBottomCenterToolbar(
+				toolbars.some(
+					(toolbar) =>
+						toolbar.side === "bottom" && toolbar.align === "center",
+				),
+			);
+		},
+		[],
+	);
 	// get default session dto, if any
 	const {defaultSessionDto} = useDefaultSessionDto(props);
 
@@ -280,14 +293,17 @@ export default function AppBuilderPage(props: Partial<Props>) {
 										namespace={namespace}
 										appBuilderData={appBuilderData}
 										sessionSettings={sessionSettings}
+										onToolbarsChange={handleToolbarsChange}
 									/>
 								)}
-								<ViewportOverlayWrapper
-									position={OverlayPosition.BOTTOM_MIDDLE}
-									offset="1em"
-								>
-									<ViewportAcceptRejectButtons />
-								</ViewportOverlayWrapper>
+								{!hasBottomCenterToolbar && (
+									<ViewportOverlayWrapper
+										position={OverlayPosition.BOTTOM_MIDDLE}
+										offset="1em"
+									>
+										<ViewportAcceptRejectButtons />
+									</ViewportOverlayWrapper>
+								)}
 							</>
 						)}
 					</ViewportComponent>

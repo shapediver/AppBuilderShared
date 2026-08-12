@@ -64,9 +64,7 @@ describe("AppBuilderToolbarPopoverButton", () => {
 					}}
 					buttonRenderContext={{
 						namespace: "namespace",
-						buttonsDisabled: false,
 						executing: false,
-						hasPendingChanges: false,
 						fullscreenId: "fullscreen-root",
 					}}
 					popoverId="actions"
@@ -111,9 +109,7 @@ describe("AppBuilderToolbarPopoverButton", () => {
 					}}
 					buttonRenderContext={{
 						namespace: "namespace",
-						buttonsDisabled: false,
 						executing: false,
-						hasPendingChanges: false,
 						fullscreenId: "fullscreen-root",
 					}}
 					popoverId="actions"
@@ -141,9 +137,7 @@ describe("AppBuilderToolbarPopoverButton", () => {
 					}}
 					buttonRenderContext={{
 						namespace: "namespace",
-						buttonsDisabled: false,
 						executing: false,
-						hasPendingChanges: false,
 						fullscreenId: "fullscreen-root",
 					}}
 					popoverId="drawing"

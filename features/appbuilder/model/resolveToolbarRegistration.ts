@@ -41,6 +41,7 @@ const resolveItem = (
 	fallbackId: string,
 ): ToolbarRenderItem => {
 	if (
+		item.type === "acceptReject" ||
 		item.type === "command" ||
 		item.type === "checkbox" ||
 		item.type === "menu"

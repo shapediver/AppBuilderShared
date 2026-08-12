@@ -1,3 +1,4 @@
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
@@ -47,9 +48,11 @@ export default function AppBuilderActionCreateModelStateComponent(
 	} = useCreateModelState({namespace});
 
 	const [loading, setLoading] = useState(false);
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = disabled || hasPendingChanges;
 
 	const onClick = useCallback(async () => {
-		if (disabled) return;
+		if (resolvedDisabled) return;
 		setLoading(true);
 
 		try {
@@ -116,7 +119,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 		themeErrorMessage,
 		success,
 		error,
-		disabled,
+		resolvedDisabled,
 	]);
 
 	return (
@@ -127,7 +130,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 			tooltip={tooltip}
 			onClick={() => void onClick()}
 			loading={loading}
-			disabled={disabled}
+			disabled={resolvedDisabled}
 			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);

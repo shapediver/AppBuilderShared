@@ -26,11 +26,7 @@ export default function AppBuilderToolbarActionButton({
 		},
 		{},
 	) as AppBuilderToolbarButtonThemeDefaultProps;
-	const disabled =
-		buttonRenderContext.buttonsDisabled ||
-		buttonRenderContext.executing ||
-		buttonRenderContext.hasPendingChanges ||
-		item.disabled;
+	const disabled = buttonRenderContext.executing || item.disabled;
 
 	return AppBuilderActionFromType(
 		item.props,

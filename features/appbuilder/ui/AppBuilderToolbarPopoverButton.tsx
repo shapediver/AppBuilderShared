@@ -110,10 +110,7 @@ export default function AppBuilderToolbarPopoverButton({
 		];
 	}, [buttonRenderContext.namespace, item]);
 	const opened = popoverId ? openedPopoverId === popoverId : localOpened;
-	const actionDisabled =
-		buttonRenderContext.buttonsDisabled ||
-		buttonRenderContext.executing ||
-		buttonRenderContext.hasPendingChanges;
+	const actionDisabled = buttonRenderContext.executing;
 	const iconType =
 		item.icon ?? defaultIcon ?? item.label.slice(0, 1).toUpperCase();
 	const hasPopoverContent =

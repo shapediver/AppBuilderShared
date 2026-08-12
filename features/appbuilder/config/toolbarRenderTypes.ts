@@ -52,6 +52,9 @@ export type ToolbarTabsItem = ToolbarItemBase<
 	IAppBuilderToolbarTabbedPanelItem["props"]
 >;
 
+/** Built-in accept/reject controls injected into a toolbar at runtime. */
+export type ToolbarAcceptRejectItem = ToolbarItemBase<"acceptReject", {}>;
+
 /** A runtime operation rendered as a toolbar button or menu row. */
 export type ToolbarCommandItem = ToolbarItemBase<
 	"command",
@@ -133,7 +136,8 @@ export type ToolbarButtonItem =
 export type ToolbarRenderItem =
 	| ToolbarButtonItem
 	| ToolbarCommandItem
-	| ToolbarCheckboxItem;
+	| ToolbarCheckboxItem
+	| ToolbarAcceptRejectItem;
 
 export type ResolvedToolbarRegistration = Omit<
 	ToolbarRegistration,

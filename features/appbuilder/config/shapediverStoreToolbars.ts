@@ -7,6 +7,7 @@ import {
 	IAppBuilderToolbarItem,
 } from "./appbuilder";
 import type {
+	ToolbarAcceptRejectItem,
 	ToolbarCheckboxItem,
 	ToolbarCommandItem,
 	ToolbarMenuModel,
@@ -17,6 +18,7 @@ export type ToolbarSource = "definition" | "default" | "runtime";
 /** Runtime toolbar controls use the same generic command/menu models as the UI. */
 export type ToolbarItem =
 	| IAppBuilderToolbarItem
+	| ToolbarAcceptRejectItem
 	| ToolbarCommandItem
 	| ToolbarCheckboxItem
 	| ToolbarMenuModel;
