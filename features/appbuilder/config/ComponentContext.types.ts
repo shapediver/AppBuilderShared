@@ -15,7 +15,6 @@ import {
 	IAppBuilderSettingsSession,
 	IAppBuilderWidget,
 } from "./appbuilder";
-import type {ResolvedToolbarRegistration} from "./toolbarRenderTypes";
 
 // #region Interfaces (7)
 
@@ -153,7 +152,6 @@ export interface AppBuilderToolbarLayerComponentMapValueType extends ComponentTy
 		appBuilderData?: IAppBuilder;
 		sessionSettings?: IAppBuilderSettingsSession;
 		viewportId?: string;
-		onToolbarsChange?: (toolbars: ResolvedToolbarRegistration[]) => void;
 	}) => ReactElement | null;
 
 	// #endregion Properties (1)

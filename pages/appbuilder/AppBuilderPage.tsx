@@ -3,14 +3,15 @@ import {useUnsavedChangesProtection} from "@AppBuilderLib/entities/parameter/mod
 import useDefaultSessionDto from "@AppBuilderLib/entities/session/model/useDefaultSessionDto";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import type {ResolvedToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import useAppBuilderSettings from "@AppBuilderLib/features/appbuilder/model/useAppBuilderSettings";
 import {useAppBuilderStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderStandardContainers";
 import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBindings";
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
+import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {isWebMcpAvailable} from "@AppBuilderLib/features/webmcp/lib/webmcpAvailability";
@@ -23,7 +24,7 @@ import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/Vi
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
-import {useCallback, useContext, useEffect, useMemo, useState} from "react";
+import {useContext, useEffect, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
@@ -135,17 +136,14 @@ interface Props extends IAppBuilderSettingsSession {
  * @returns
  */
 export default function AppBuilderPage(props: Partial<Props>) {
-	const [hasBottomCenterToolbar, setHasBottomCenterToolbar] = useState(false);
-	const handleToolbarsChange = useCallback(
-		(toolbars: ResolvedToolbarRegistration[]) => {
-			setHasBottomCenterToolbar(
-				toolbars.some(
-					(toolbar) =>
-						toolbar.side === "bottom" && toolbar.align === "center",
-				),
-			);
-		},
-		[],
+	const {viewportId} = useViewportId();
+	const hasBottomCenterToolbar = useShapeDiverStoreToolbars((state) =>
+		state
+			.selectMergedToolbars(viewportId)
+			.some(
+				(toolbar) =>
+					toolbar.side === "bottom" && toolbar.align === "center",
+			),
 	);
 	// get default session dto, if any
 	const {defaultSessionDto} = useDefaultSessionDto(props);
@@ -293,7 +291,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 										namespace={namespace}
 										appBuilderData={appBuilderData}
 										sessionSettings={sessionSettings}
-										onToolbarsChange={handleToolbarsChange}
 									/>
 								)}
 								{!hasBottomCenterToolbar && (

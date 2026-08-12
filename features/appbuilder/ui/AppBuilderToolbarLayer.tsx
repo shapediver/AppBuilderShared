@@ -12,15 +12,12 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderToolbarLayerThemeDefaultProps} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarLayer.theme.types";
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
-import type {
-	ResolvedToolbarRegistration,
-	ToolbarAcceptRejectItem,
-} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
+import type {ToolbarAcceptRejectItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import {useAppBuilderToolbars} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderToolbars";
 import {useDefaultToolbarRegistration} from "@AppBuilderLib/features/appbuilder/model/useDefaultToolbarRegistration";
 import {useResolvedAppBuilderToolbarIconButtonTheme} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {useProps} from "@mantine/core";
-import {useCallback, useLayoutEffect, useMemo} from "react";
+import {useCallback, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderToolbar from "./AppBuilderToolbar";
 import {
@@ -49,7 +46,6 @@ interface Props {
 	appBuilderData?: IAppBuilder;
 	sessionSettings?: IAppBuilderSettingsSession;
 	viewportId?: string;
-	onToolbarsChange?: (toolbars: ResolvedToolbarRegistration[]) => void;
 }
 
 const buildButtonRenderContext = ({
@@ -75,7 +71,6 @@ export default function AppBuilderToolbarLayer({
 	appBuilderData,
 	sessionSettings,
 	viewportId: inputViewportId,
-	onToolbarsChange,
 }: Props) {
 	const {viewportId: defaultViewportId} = useViewportId();
 	const viewportId = inputViewportId ?? defaultViewportId;
@@ -180,9 +175,6 @@ export default function AppBuilderToolbarLayer({
 	const bottomCenterToolbar = toolbars.find(
 		(toolbar) => toolbar.side === "bottom" && toolbar.align === "center",
 	);
-	useLayoutEffect(() => {
-		onToolbarsChange?.(toolbars);
-	}, [onToolbarsChange, toolbars]);
 	const {showButtons: showAcceptRejectButtons} = useProps(
 		"ViewportAcceptRejectButtons",
 		{},
