@@ -66,7 +66,7 @@ export default function Svg(props: SvgProps) {
 	if (svgElement)
 		return (
 			<section
-				style={{height: "inherit", width: "inherit"}}
+				style={{height: "inherit"}}
 				ref={(ref) => ref?.replaceChildren(svgElement)}
 			/>
 		);

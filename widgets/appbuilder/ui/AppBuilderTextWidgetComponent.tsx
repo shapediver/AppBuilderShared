@@ -47,7 +47,7 @@ export default function AppBuilderTextWidgetComponent(
 
 	const context = useContext(AppBuilderContainerContext);
 
-	const styleProps: MantineStyleProp = {width: "inherit"};
+	const styleProps: MantineStyleProp = {};
 	if (context.orientation === "horizontal") {
 		styleProps.height = "100%";
 	} else if (context.orientation === "vertical") {
