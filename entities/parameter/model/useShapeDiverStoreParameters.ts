@@ -85,7 +85,7 @@ function createParameterExecutor<T>(
 			forceImmediate?: boolean,
 			skipHistory?: boolean,
 			acceptAll?: boolean,
-			_skipUrlUpdate?: boolean,
+			skipUrlUpdate?: boolean,
 			forceSameValue?: boolean,
 		) => {
 			const changes = getChanges();
@@ -115,6 +115,7 @@ function createParameterExecutor<T>(
 					? await changes.accept(
 							skipHistory,
 							acceptAll ? undefined : [paramId],
+							skipUrlUpdate,
 						)
 					: await changes.wait;
 				const value = paramId in values ? values[paramId] : uiValue;
@@ -868,7 +869,11 @@ export const useShapeDiverStoreParameters =
 					};
 
 					changes.wait = new Promise((resolve, reject) => {
-						changes.accept = async (skipHistory, parameterIds) => {
+						changes.accept = async (
+							skipHistory,
+							parameterIds,
+							skipUrlUpdate,
+						) => {
 							// get currently queued parameter value changes
 							const {parameterChanges, parameterStores} = get();
 							if (!(namespace in parameterChanges))
@@ -931,6 +936,7 @@ export const useShapeDiverStoreParameters =
 									namespace,
 									skipHistory,
 									historyState,
+									skipUrlUpdate,
 								);
 								// set "executing" mode
 								set(
