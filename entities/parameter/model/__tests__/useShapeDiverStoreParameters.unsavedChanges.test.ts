@@ -15,6 +15,13 @@ describe("useShapeDiverStoreParameters unsavedChanges", () => {
 
 	beforeEach(() => {
 		store.getState().resetHistory();
+		store.setState({
+			parameterStores: {},
+			parameterChanges: {},
+			exportStores: {},
+			outputStores: {},
+			sessionDependency: {},
+		});
 	});
 
 	it("initial default state entry has unsavedChanges=false", () => {
@@ -117,5 +124,37 @@ describe("useShapeDiverStoreParameters unsavedChanges", () => {
 
 		const entry = store.getState().pushHistoryState({ns: {p: "b"}});
 		expect(entry.unsavedChanges).toBe(true);
+	});
+
+	it("keeps modelStateId when a batch update skips URL cleanup", async () => {
+		window.history.replaceState({}, "", "/?modelStateId=initial-state");
+		const parameter = {
+			id: "p1",
+			name: "p1",
+			displayname: "Parameter 1",
+			value: "initial",
+			isValid: () => true,
+			stringify: (value: unknown) => String(value),
+		};
+		const session = {
+			id: "session-1",
+			parameters: {p1: parameter},
+			exports: {},
+			outputs: {},
+			parameterValues: {p1: "initial"},
+			customize: jest.fn().mockResolvedValue(undefined),
+		};
+
+		store.getState().addSession(session as any, false);
+		await store.getState().batchParameterValueUpdate(
+			{[session.id]: {p1: "updated"}},
+			true,
+			true,
+		);
+
+		expect(session.customize).toHaveBeenCalledTimes(1);
+		expect(new URL(window.location.href).searchParams.get("modelStateId")).toBe(
+			"initial-state",
+		);
 	});
 });
