@@ -1,3 +1,4 @@
+import {resolveAppBuilderContainerOrientation} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContainerOrientation";
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {IAppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
 import {usePropsAppBuilder} from "@AppBuilderLib/features/appbuilder/model/usePropsAppBuilder";
@@ -64,15 +65,16 @@ export default function AppBuilderContainer(
 		{orientation: orientationProp},
 	);
 
-	const {name} = useContext(AppBuilderContainerContext);
+	const {name, orientation: parentOrientation} = useContext(
+		AppBuilderContainerContext,
+	);
 
 	const context: IAppBuilderContainerContext = {
-		orientation:
-			!orientation || orientation === "unspecified"
-				? name === "top" || name === "bottom"
-					? "horizontal"
-					: "vertical"
-				: orientation,
+		orientation: resolveAppBuilderContainerOrientation(
+			orientation,
+			parentOrientation,
+			name,
+		),
 		name,
 	};
 

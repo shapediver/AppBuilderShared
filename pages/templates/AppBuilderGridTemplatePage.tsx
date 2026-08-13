@@ -230,7 +230,14 @@ export default function AppBuilderGridTemplatePage(
 						className={classes.appBuilderTemplatePageBottom}
 						style={{background: bgBottom}}
 					>
-						<AppBuilderContainerWrapper name="bottom">
+						<AppBuilderContainerWrapper
+							orientation={
+								bottom.hints?.preferVertical
+									? "vertical"
+									: undefined
+							}
+							name="bottom"
+						>
 							{bottom.node}
 						</AppBuilderContainerWrapper>
 					</section>
