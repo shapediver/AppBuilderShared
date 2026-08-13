@@ -54,6 +54,9 @@ export interface IShapeDiverParameterState<T> {
  * Actions which can be taken on a parameter.
  */
 export interface IShapeDiverParameterActions<T> {
+	/** Convert a parameter value to the format expected by the Viewer. */
+	stringify?(value: T | string): string;
+
 	/**
 	 * Set the ui value of the parameter.
 	 * The provided value must be valid, otherwise this function will return false.
