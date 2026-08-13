@@ -15,6 +15,8 @@ export interface RuntimeToolbarContribution {
 	items: ToolbarMenuItem[];
 	commands?: ToolbarCommandItem[];
 	sectionId: string;
+	/** Sections sharing a toolbar group are rendered without a divider. */
+	groupId?: string;
 	order?: number;
 	menuVisibility?: RuntimeToolbarMenuVisibility;
 }

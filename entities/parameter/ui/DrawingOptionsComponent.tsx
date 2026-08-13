@@ -21,70 +21,41 @@ import {useEffect, useState} from "react";
 import {useDrawingOptionsStore} from "../model/drawing/useDrawingOptionsStore";
 import classes from "./DrawingOptionsComponent.module.css";
 
-/**
- * Component for the drawing options.
- *
- * @param props The properties.
- * @param props.viewportId The viewport ID.
- * @param props.drawingToolsApi The drawing tools API.
- * @returns
- */
-export default function DrawingOptionsComponent(props: {
+export type DrawingOptions = {
+	showPointLabels: boolean;
+	setShowPointLabels: (show: boolean) => void;
+	showDistanceLabels: boolean;
+	setShowDistanceLabels: (show: boolean) => void;
+};
+
+/** Synchronizes drawing display options with the active drawing-tools API. */
+export const useDrawingOptions = ({
+	viewportId,
+	drawingToolsApi,
+	drawingToolsSettings,
+}: {
 	viewportId: string;
 	drawingToolsApi: IDrawingToolsApi | undefined;
 	drawingToolsSettings: IDrawingParameterSettings;
-}) {
+}): DrawingOptions => {
 	const {
 		showPointLabels,
 		setShowPointLabels,
 		showDistanceLabels,
 		setShowDistanceLabels,
 	} = useDrawingOptionsStore();
-
-	const {drawingToolsApi, drawingToolsSettings, viewportId} = props;
-
-	// state for the options
-	const [optionsOpened, setOptionsOpened] = useState(false);
-	// get the viewport API
 	const viewportApi = useShapeDiverStoreViewport((state) => {
 		return state.viewports[viewportId];
 	});
-	// state for the geometry restriction availability
-	const [_hasGeometryRestriction, setHasGeometryRestriction] =
-		useState(false);
-
-	/**
-	 * Various effects for the drawing tools API.
-	 *
-	 * The effects are used to set the options for the drawing tools.
-	 * The options are set depending on the state of the component.
-	 */
 
 	useEffect(() => {
-		if (
-			drawingToolsSettings &&
-			drawingToolsSettings.general &&
-			drawingToolsSettings.general.options
-		) {
-			if (
-				drawingToolsSettings.general.options.showPointLabels !==
-				undefined
-			) {
-				setShowPointLabels(
-					drawingToolsSettings.general.options.showPointLabels,
-				);
-			}
-
-			if (
-				drawingToolsSettings.general.options.showDistanceLabels !==
-				undefined
-			) {
-				setShowDistanceLabels(
-					drawingToolsSettings.general.options.showDistanceLabels,
-				);
-			}
-		}
-	}, [drawingToolsSettings]);
+		if (!drawingToolsApi) return;
+		const options = drawingToolsSettings.general?.options;
+		if (options?.showPointLabels !== undefined)
+			setShowPointLabels(options.showPointLabels);
+		if (options?.showDistanceLabels !== undefined)
+			setShowDistanceLabels(options.showDistanceLabels);
+	}, [drawingToolsApi, drawingToolsSettings]);
 
 	useEffect(() => {
 		if (drawingToolsApi) {
@@ -99,6 +70,48 @@ export default function DrawingOptionsComponent(props: {
 			viewportApi.render();
 		}
 	}, [showDistanceLabels, drawingToolsApi]);
+
+	return {
+		showPointLabels,
+		setShowPointLabels,
+		showDistanceLabels,
+		setShowDistanceLabels,
+	};
+};
+
+/**
+ * Component for the drawing options.
+ *
+ * @param props The properties.
+ * @param props.viewportId The viewport ID.
+ * @param props.drawingToolsApi The drawing tools API.
+ * @returns
+ */
+export default function DrawingOptionsComponent(props: {
+	drawingToolsApi: IDrawingToolsApi | undefined;
+	options: DrawingOptions;
+}) {
+	const {
+		showPointLabels,
+		setShowPointLabels,
+		showDistanceLabels,
+		setShowDistanceLabels,
+	} = props.options;
+
+	const {drawingToolsApi} = props;
+
+	// state for the options
+	const [optionsOpened, setOptionsOpened] = useState(false);
+	// state for the geometry restriction availability
+	const [_hasGeometryRestriction, setHasGeometryRestriction] =
+		useState(false);
+
+	/**
+	 * Various effects for the drawing tools API.
+	 *
+	 * The effects are used to set the options for the drawing tools.
+	 * The options are set depending on the state of the component.
+	 */
 
 	useEffect(() => {
 		if (drawingToolsApi) {

@@ -30,6 +30,7 @@ export function useDrawingTools(
 	onCancelComponent: () => void,
 	activate: boolean,
 	initialPointsData?: PointsData,
+	resetRevision?: number,
 ): {
 	/**
 	 * The drawing tools API.
@@ -63,7 +64,7 @@ export function useDrawingTools(
 			restrictions,
 			initialPointsData,
 		);
-	}, [drawingParameterProps, initialPointsData, restrictions]);
+	}, [drawingParameterProps, initialPointsData, resetRevision, restrictions]);
 
 	// reference for the drawing tools API
 	const drawingToolsApiRef = useRef<IDrawingToolsApi | undefined>(undefined);

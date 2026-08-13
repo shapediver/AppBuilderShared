@@ -19,6 +19,7 @@ interface UseRuntimeToolbarContributionOptions {
 	items: ToolbarMenuItem[];
 	commands?: ToolbarCommandItem[];
 	sectionId: string;
+	groupId?: string;
 	order?: number;
 	menuVisibility?: RuntimeToolbarMenuVisibility;
 }
@@ -33,6 +34,7 @@ export function useRuntimeToolbarContribution({
 	items,
 	commands,
 	sectionId,
+	groupId,
 	order,
 	menuVisibility,
 }: UseRuntimeToolbarContributionOptions) {
@@ -48,6 +50,7 @@ export function useRuntimeToolbarContribution({
 			items,
 			commands,
 			sectionId,
+			groupId,
 			order,
 			menuVisibility,
 		};
@@ -69,10 +72,21 @@ export function useRuntimeToolbarContribution({
 					menu,
 					commands,
 					sectionId,
+					groupId,
 					order,
 					menuVisibility,
 				},
 				registrationTokenRef.current,
 			);
-	}, [commands, enabled, id, items, menu, menuVisibility, order, sectionId]);
+	}, [
+		commands,
+		enabled,
+		groupId,
+		id,
+		items,
+		menu,
+		menuVisibility,
+		order,
+		sectionId,
+	]);
 }

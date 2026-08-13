@@ -7,7 +7,7 @@ import type {RuntimeToolbarContribution} from "./runtimeToolbarContributionRegis
 
 /**
  * Projects feature-owned runtime contributions into visual toolbar groups.
- * Each section id owns one divider-separated toolbar section.
+ * Consecutive sections sharing a group id are rendered without a divider.
  */
 export const resolveRuntimeToolbarGroups = (
 	runtimeToolbarContributions: RuntimeToolbarContribution[],
@@ -19,7 +19,7 @@ export const resolveRuntimeToolbarGroups = (
 		sections.set(contribution.sectionId, existing);
 	}
 
-	return Array.from(sections.values())
+	const resolvedSections = Array.from(sections.values())
 		.map((contributions) => {
 			const [{menu, menuVisibility = "always"}] = contributions;
 			const items = contributions.flatMap(
@@ -110,54 +110,76 @@ export const resolveRuntimeToolbarGroups = (
 					};
 				});
 
-			return [
-				...(singleToggleableCheckbox
-					? [
-							{
-								...singleToggleableCheckbox,
-								icon:
-									singleToggleableCheckbox.icon ?? menu.icon,
-							},
-						]
-					: showMenu
+			return {
+				groupId: contributions[0].groupId ?? contributions[0].sectionId,
+				items: [
+					...(singleToggleableCheckbox
 						? [
 								{
-									type: "menu" as const,
-									id: menu.id,
-									label: menu.label,
-									icon: menu.icon,
+									...singleToggleableCheckbox,
+									icon:
+										singleToggleableCheckbox.icon ??
+										menu.icon,
+								},
+							]
+						: showMenu
+							? [
+									{
+										type: "menu" as const,
+										id: menu.id,
+										label: menu.label,
+										icon: menu.icon,
+										props: {
+											sections: [
+												{
+													id:
+														menu.sectionId ??
+														menu.id,
+													items,
+												},
+											],
+										},
+									},
+								]
+							: []),
+					...aggregatedCommands,
+					...(singleCheckbox?.props.trailingAction
+						? [
+								{
+									type: "command" as const,
+									id: `${singleCheckbox.id}-trailing-action`,
+									label: singleCheckbox.props.trailingAction
+										.label,
+									icon: singleCheckbox.props.trailingAction
+										.icon,
+									disabled:
+										singleCheckbox.props.trailingAction
+											.disabled,
 									props: {
-										sections: [
-											{
-												id: menu.sectionId ?? menu.id,
-												items,
-											},
-										],
+										execute:
+											singleCheckbox.props.trailingAction
+												.execute,
 									},
 								},
 							]
 						: []),
-				...aggregatedCommands,
-				...(singleCheckbox?.props.trailingAction
-					? [
-							{
-								type: "command" as const,
-								id: `${singleCheckbox.id}-trailing-action`,
-								label: singleCheckbox.props.trailingAction
-									.label,
-								icon: singleCheckbox.props.trailingAction.icon,
-								disabled:
-									singleCheckbox.props.trailingAction
-										.disabled,
-								props: {
-									execute:
-										singleCheckbox.props.trailingAction
-											.execute,
-								},
-							},
-						]
-					: []),
-			];
+				],
+			};
 		})
-		.filter((group) => group.length > 0);
+		.filter((section) => section.items.length > 0);
+
+	return resolvedSections
+		.reduce<Array<{groupId: string; items: ToolbarRenderItem[]}>>(
+			(groups, section) => {
+				const previous = groups.at(-1);
+				if (previous?.groupId === section.groupId) {
+					previous.items.push(...section.items);
+				} else {
+					groups.push(section);
+				}
+				return groups;
+			},
+			[],
+		)
+		.map((group) => group.items);
 };

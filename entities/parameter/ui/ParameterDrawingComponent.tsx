@@ -32,10 +32,17 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import {useDrawingTools} from "../model/drawing/useDrawingTools";
+import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
+import {
+	requestSelectionAutoClear,
+	useSelectionAutoClear,
+} from "../model/interaction/useSelectionAutoClear";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
-import DrawingOptionsComponent from "./DrawingOptionsComponent";
+import DrawingOptionsComponent, {
+	useDrawingOptions,
+} from "./DrawingOptionsComponent";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
@@ -56,6 +63,8 @@ const parsePointsData = (value?: string): PointsData => {
 		return [];
 	}
 };
+
+const emptyPointsData: PointsData = [];
 
 /**
  * Functional component that creates a component for a drawing parameter.
@@ -89,6 +98,7 @@ export default function ParameterDrawingComponent(
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
+	const drawingOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
 	// get the viewport from the store
 	const {viewport} = useShapeDiverStoreViewport((state) => ({
 		viewport: state.viewports[viewportId],
@@ -114,10 +124,22 @@ export default function ParameterDrawingComponent(
 	}, [definition.settings]);
 
 	// state for the drawing application
-	const drawingPresentation = drawingProps.general?.presentation ?? "widget";
-	// autoClear is intentionally supported by selection parameters only for now.
+	const alwaysActive = drawingProps.general?.activeMode === "alwaysActive";
+	const drawingPresentation = resolveInteractionPresentation(
+		drawingProps.general?.presentation,
+		alwaysActive,
+	);
+	const shouldAutoClear = drawingProps.general?.autoClear ?? false;
+	const autoClearRequest = useSelectionAutoClear(drawingOwnerKey);
+	const startsAutoCleared =
+		shouldAutoClear && autoClearRequest?.value === value;
+	const [autoClearPending, setAutoClearPending] = useState(false);
+	const [autoClearApplied, setAutoClearApplied] = useState(false);
+	const [drawingResetRevision, setDrawingResetRevision] = useState(0);
+	const useAutoClearedPoints =
+		startsAutoCleared || autoClearPending || autoClearApplied;
 	const [drawingActive, setDrawingActive] = useState<boolean>(
-		drawingProps.general?.activeMode === "activeOnStart" ? true : false,
+		alwaysActive || drawingProps.general?.activeMode === "activeOnStart",
 	);
 	// state for the interaction permission
 	const [hasInteractionPermission, setHasInteractionPermission] =
@@ -128,11 +150,19 @@ export default function ParameterDrawingComponent(
 	);
 	// reference to manage the interaction request token
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
+	const drawingToolsApiRef =
+		useRef<ReturnType<typeof useDrawingTools>["drawingToolsApi"]>(
+			undefined,
+		);
+	const resetDrawingToCommittedRef = useRef<() => void>(() => {});
 
 	// update the interaction request token and activate drawing tools if necessary
-	const updateInteractionRequestToken = (token: string | undefined) => {
+	const updateInteractionRequestToken = (
+		token: string | undefined,
+		hasPermission = token !== undefined,
+	) => {
 		interactionRequestTokenRef.current = token;
-		setHasInteractionPermission(token !== undefined);
+		setHasInteractionPermission(hasPermission);
 	};
 
 	/**
@@ -142,13 +172,28 @@ export default function ParameterDrawingComponent(
 	 */
 	const confirmDrawing = useCallback(
 		(pointsData?: PointsData) => {
-			setDrawingActive(false);
-			setParsedUiValue(pointsData ?? []);
+			const confirmedPoints = pointsData ?? emptyPointsData;
+			if (!alwaysActive) setDrawingActive(false);
 			// if the value is already the same, do not change it
-			if (value === JSON.stringify({points: pointsData})) return;
-			handleChange(JSON.stringify({points: pointsData}), 0);
+			const serializedValue = JSON.stringify({points: confirmedPoints});
+			if (shouldAutoClear) {
+				setAutoClearPending(true);
+				setPointsData(emptyPointsData);
+				setParsedUiValue(emptyPointsData);
+			} else {
+				setParsedUiValue(confirmedPoints);
+			}
+			if (value === serializedValue) {
+				if (shouldAutoClear)
+					requestSelectionAutoClear(drawingOwnerKey, serializedValue);
+				return;
+			}
+			handleChange(serializedValue, 0, () => {
+				if (shouldAutoClear)
+					requestSelectionAutoClear(drawingOwnerKey, serializedValue);
+			});
 		},
-		[value],
+		[alwaysActive, drawingOwnerKey, shouldAutoClear, value],
 	);
 
 	/**
@@ -156,9 +201,12 @@ export default function ParameterDrawingComponent(
 	 * This function is called when the drawing interaction is aborted by the user.
 	 */
 	const cancelDrawing = useCallback(() => {
-		if (drawingToolsApi) drawingToolsApi.close();
-		setDrawingActive(false);
-	}, []);
+		if (alwaysActive) resetDrawingToCommittedRef.current();
+		else {
+			drawingToolsApiRef.current?.close();
+			setDrawingActive(false);
+		}
+	}, [alwaysActive]);
 
 	/**
 	 * Callback function to clear the drawing.
@@ -176,20 +224,62 @@ export default function ParameterDrawingComponent(
 		confirmDrawing,
 		cancelDrawing,
 		drawingActive && hasInteractionPermission,
-		parsedUiValue,
+		useAutoClearedPoints ? emptyPointsData : parsedUiValue,
+		drawingResetRevision,
 	);
+	useEffect(() => {
+		drawingToolsApiRef.current = drawingToolsApi;
+	}, [drawingToolsApi]);
+	const resetDrawingToCommitted = useCallback(() => {
+		const committedPoints = useAutoClearedPoints
+			? emptyPointsData
+			: parsePointsData(state.execValue);
+		setPointsData(committedPoints);
+		setParsedUiValue(committedPoints);
+		setDrawingResetRevision((revision) => revision + 1);
+	}, [setPointsData, state.execValue, useAutoClearedPoints]);
+	resetDrawingToCommittedRef.current = resetDrawingToCommitted;
+	const drawingOptions = useDrawingOptions({
+		viewportId,
+		drawingToolsApi,
+		drawingToolsSettings: drawingProps,
+	});
+	const appliedAutoClearRevisionRef = useRef(0);
+	useEffect(() => {
+		if (
+			!shouldAutoClear ||
+			!autoClearRequest ||
+			autoClearRequest.revision <= appliedAutoClearRevisionRef.current ||
+			(autoClearRequest.value !== value &&
+				autoClearRequest.value !== state.uiValue)
+		)
+			return;
+
+		appliedAutoClearRevisionRef.current = autoClearRequest.revision;
+		clearDrawing();
+		setDrawingResetRevision((revision) => revision + 1);
+		setAutoClearApplied(true);
+		setAutoClearPending(false);
+	}, [autoClearRequest, clearDrawing, shouldAutoClear, state.uiValue, value]);
+	useEffect(() => {
+		if (!shouldAutoClear) setAutoClearApplied(false);
+	}, [shouldAutoClear]);
 
 	useEffect(() => {
-		const parsed = parsePointsData(state.execValue);
+		const parsed = useAutoClearedPoints
+			? []
+			: parsePointsData(state.execValue);
 		if (JSON.stringify(parsed) !== JSON.stringify(parsedUiValue)) {
 			setPointsData(parsed);
 			setParsedUiValue(parsed);
 		}
-	}, [JSON.stringify(definition)]);
+	}, [JSON.stringify(definition), useAutoClearedPoints]);
 
 	// react to changes of the uiValue and update the drawing state if necessary
 	useEffect(() => {
-		const parsed = parsePointsData(state.uiValue);
+		const parsed = useAutoClearedPoints
+			? []
+			: parsePointsData(state.uiValue);
 		setParsedUiValue(parsed);
 		// compare the parsed value with the current points data
 		if (
@@ -198,21 +288,21 @@ export default function ParameterDrawingComponent(
 				(p, i) => JSON.stringify(p) === JSON.stringify(pointsData[i]),
 			)
 		) {
-			setDrawingActive(false);
+			if (!alwaysActive) setDrawingActive(false);
 			setPointsData(parsed);
 		}
-	}, [state.uiValue]);
+	}, [alwaysActive, state.uiValue, useAutoClearedPoints]);
 
 	// extend the onCancel callback to reset the drawing state
 	const _onCancel = useMemo(
 		() =>
 			onCancel
 				? () => {
-						setDrawingActive(false);
+						if (!alwaysActive) setDrawingActive(false);
 						onCancel?.();
 					}
 				: undefined,
-		[onCancel],
+		[alwaysActive, onCancel],
 	);
 
 	// state for the constraints
@@ -223,7 +313,9 @@ export default function ParameterDrawingComponent(
 
 	// check if the current points data is different from the uiValue
 	useEffect(() => {
-		const parsed = parsePointsData(state.uiValue);
+		const parsed = useAutoClearedPoints
+			? emptyPointsData
+			: parsePointsData(state.uiValue);
 
 		// compare uiValue to pointsData
 		if (
@@ -236,7 +328,7 @@ export default function ParameterDrawingComponent(
 		} else {
 			setDirty(false);
 		}
-	}, [state.uiValue, pointsData]);
+	}, [pointsData, state.uiValue, useAutoClearedPoints]);
 
 	// check if the current selection is within the constraints
 	useEffect(() => {
@@ -260,15 +352,28 @@ export default function ParameterDrawingComponent(
 	 * It also cleans up the interaction request when the component is unmounted or when the drawing state changes.
 	 */
 	useEffect(() => {
-		actions.setDisableOtherParameters(drawingActive);
+		actions.setDisableOtherParameters(drawingActive && !alwaysActive);
 
 		if (drawingActive && !interactionRequestTokenRef.current) {
-			const returnedToken = addInteractionRequest({
-				type: "active",
-				viewportId,
-				disable: cancelDrawing,
-			});
-			updateInteractionRequestToken(returnedToken);
+			let permissionGranted = true;
+			const returnedToken = addInteractionRequest(
+				alwaysActive
+					? {
+							type: "passive",
+							viewportId,
+							disable: () => {
+								permissionGranted = false;
+								setHasInteractionPermission(false);
+							},
+							enable: () => setHasInteractionPermission(true),
+						}
+					: {
+							type: "active",
+							viewportId,
+							disable: cancelDrawing,
+						},
+			);
+			updateInteractionRequestToken(returnedToken, permissionGranted);
 		} else if (!drawingActive && interactionRequestTokenRef.current) {
 			removeInteractionRequest(interactionRequestTokenRef.current);
 			updateInteractionRequestToken(undefined);
@@ -281,7 +386,7 @@ export default function ParameterDrawingComponent(
 				updateInteractionRequestToken(undefined);
 			}
 		};
-	}, [drawingActive, cancelDrawing]);
+	}, [alwaysActive, drawingActive, cancelDrawing]);
 
 	/**
 	 * The content of the parameter when it is active.
@@ -308,16 +413,20 @@ export default function ParameterDrawingComponent(
 								`Created a drawing with ${pointsData?.length} points`}
 						</TextWeighted>
 					</Box>
-					<Box style={{width: "auto"}}>
-						<ActionIcon
-							onClick={clearDrawing}
-							variant={
-								pointsData?.length === 0 ? "light" : "filled"
-							}
-						>
-							<Icon iconType={"tabler:circle-off"} />
-						</ActionIcon>
-					</Box>
+					{!shouldAutoClear && (
+						<Box style={{width: "auto"}}>
+							<ActionIcon
+								onClick={clearDrawing}
+								variant={
+									pointsData?.length === 0
+										? "light"
+										: "filled"
+								}
+							>
+								<Icon iconType={"tabler:circle-off"} />
+							</ActionIcon>
+						</Box>
+					)}
 				</Flex>
 				<Flex align="center" justify="flex-start" w={"100%"}>
 					<Box style={{flex: 1}}>
@@ -339,9 +448,8 @@ export default function ParameterDrawingComponent(
 			</Group>
 
 			<DrawingOptionsComponent
-				viewportId={viewportId}
 				drawingToolsApi={drawingToolsApi}
-				drawingToolsSettings={drawingProps}
+				options={drawingOptions}
 			/>
 
 			<Group justify="space-between" w="100%" wrap="nowrap">
@@ -413,6 +521,7 @@ export default function ParameterDrawingComponent(
 		presentation: drawingPresentation,
 		sectionId: "drawing",
 		order: definition.order,
+		menuVisibility: "multipleToggleable",
 		menu: {
 			id: "runtime-interaction-drawing-menu",
 			label: "Drawing",
@@ -423,29 +532,76 @@ export default function ParameterDrawingComponent(
 				id: `${namespace}-${definition.id}-${viewportId}-toggle`,
 				label: drawingLabel,
 				checked: drawingActive && hasInteractionPermission,
+				readOnly:
+					alwaysActive && drawingActive && hasInteractionPermission,
 				setChecked: (checked) => setDrawingActive(checked),
 			}),
 		],
-		commands: [
-			createToolbarCommand({
-				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
-				label: "Confirm",
-				icon: "tabler:check",
-				disabled: !isWithinConstraints || !dirty,
-				execute: () => confirmDrawing(pointsData),
+		commands: dirty
+			? [
+					createToolbarCommand({
+						id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+						aggregationId: "drawing-confirm",
+						label: "Confirm",
+						icon: "tabler:check",
+						order: 10,
+						disabled: !isWithinConstraints || !dirty,
+						execute: () => confirmDrawing(pointsData),
+					}),
+					createToolbarCommand({
+						id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+						aggregationId: "drawing-cancel",
+						label: "Cancel",
+						icon: "tabler:x",
+						order: 20,
+						disabled: !dirty,
+						execute: cancelDrawing,
+					}),
+					...(shouldAutoClear
+						? []
+						: [
+								createToolbarCommand({
+									id: `${namespace}-${definition.id}-${viewportId}-clear`,
+									aggregationId: "drawing-clear",
+									label: "Clear",
+									icon: "tabler:circle-off",
+									order: 30,
+									execute: clearDrawing,
+								}),
+							]),
+				]
+			: [],
+	});
+
+	useInteractionToolbarContribution({
+		id: `${namespace}-${definition.id}-${viewportId}-settings`,
+		namespace,
+		viewportId,
+		presentation: drawingToolsApi ? drawingPresentation : "widget",
+		sectionId: "drawing-settings",
+		groupId: "drawing",
+		order: definition.order,
+		menu: {
+			id: "runtime-interaction-drawing-settings-menu",
+			label: "Drawing settings",
+			icon: "tabler:settings",
+		},
+		items: [
+			createToolbarCheckboxItem({
+				id: `${namespace}-${definition.id}-${viewportId}-point-labels`,
+				label: "Show Point Labels",
+				icon: "tabler:tag",
+				checked: drawingOptions.showPointLabels,
+				disabled: !drawingActive || !hasInteractionPermission,
+				setChecked: drawingOptions.setShowPointLabels,
 			}),
-			createToolbarCommand({
-				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
-				label: "Cancel",
-				icon: "tabler:x",
-				disabled: !dirty,
-				execute: cancelDrawing,
-			}),
-			createToolbarCommand({
-				id: `${namespace}-${definition.id}-${viewportId}-clear`,
-				label: "Clear",
-				icon: "tabler:circle-off",
-				execute: clearDrawing,
+			createToolbarCheckboxItem({
+				id: `${namespace}-${definition.id}-${viewportId}-distance-labels`,
+				label: "Show Distance Labels",
+				icon: "tabler:ruler-measure",
+				checked: drawingOptions.showDistanceLabels,
+				disabled: !drawingActive || !hasInteractionPermission,
+				setChecked: drawingOptions.setShowDistanceLabels,
 			}),
 		],
 	});
