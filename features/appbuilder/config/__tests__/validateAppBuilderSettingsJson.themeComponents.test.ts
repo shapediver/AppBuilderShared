@@ -394,7 +394,11 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 	},
 	{
 		component: "NotificationWrapper",
-		validDefaultProps: {autoClose: 5000, successColor: "green"},
+		validDefaultProps: {
+			autoClose: 5000,
+			successColor: "green",
+			infoColor: "blue",
+		},
 		invalidDefaultProps: {__unrecognizedThemeKey: true},
 	},
 	{

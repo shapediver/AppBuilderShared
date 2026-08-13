@@ -1080,6 +1080,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// successColor?: undefined,
 				// warningColor: "yellow",
 				// errorColor?: "red",
+				// infoColor?: "blue",
 				// autoClose: 20000, // boolean | number
 			}),
 			/**

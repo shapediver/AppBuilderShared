@@ -108,6 +108,13 @@ export interface INotificationStoreActions {
 	success: (notification: NotificationInput) => string | undefined;
 
 	/**
+	 * Show an info notification.
+	 * @param notification Notification data
+	 * @returns id of notification
+	 */
+	info: (notification: NotificationInput) => string | undefined;
+
+	/**
 	 * Update style properties for notifications.
 	 * @param props Style properties
 	 */

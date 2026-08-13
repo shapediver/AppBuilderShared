@@ -1,4 +1,7 @@
-import {NotificationStyleProps} from "@AppBuilderLib/features/notifications/config/notificationcontext";
+import {
+	defaultNotificationStyleProps,
+	NotificationStyleProps,
+} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {
 	ICustomNotificationData,
 	ICustomNotificationStored,
@@ -16,13 +19,6 @@ import {
 import {notifications} from "@mantine/notifications";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
-
-const defaultStyleProps: NotificationStyleProps = {
-	errorColor: "red",
-	warningColor: "yellow",
-	successColor: undefined,
-	autoClose: 20000,
-};
 
 /**
  * Generate a unique notification ID.
@@ -66,7 +62,7 @@ function shouldDisplayNotification(
 export const useNotificationStore = create<IShapeDiverStoreNotifications>()(
 	devtools(
 		(set, get) => ({
-			styleProps: defaultStyleProps,
+			styleProps: defaultNotificationStyleProps,
 			customNotifications: [],
 
 			show: (notification: NotificationInput): string | undefined => {
@@ -169,6 +165,16 @@ export const useNotificationStore = create<IShapeDiverStoreNotifications>()(
 				});
 			},
 
+			info: (
+				notification: INotificationDataExtended,
+			): string | undefined => {
+				const {styleProps, show} = get();
+				return show({
+					...notification,
+					color: styleProps.infoColor,
+				});
+			},
+
 			setStyleProps: (props: Partial<NotificationStyleProps>): void => {
 				set(
 					(state) => ({
@@ -191,7 +197,7 @@ export const useNotificationStore = create<IShapeDiverStoreNotifications>()(
  * Useful for calling from non-React code or callbacks.
  */
 export const getNotificationActions = () => {
-	const {show, hide, update, error, warning, success, setStyleProps} =
+	const {show, hide, update, error, warning, success, info, setStyleProps} =
 		useNotificationStore.getState();
-	return {show, hide, update, error, warning, success, setStyleProps};
+	return {show, hide, update, error, warning, success, info, setStyleProps};
 };

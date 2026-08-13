@@ -1,4 +1,7 @@
-import {NotificationStyleProps} from "@AppBuilderLib/features/notifications/config/notificationcontext";
+import {
+	defaultNotificationStyleProps,
+	NotificationStyleProps,
+} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {useSessionErrorNotifications} from "@AppBuilderLib/features/notifications/model/useSessionErrorNotifications";
 import {MantineThemeComponent, useProps} from "@mantine/core";
@@ -7,13 +10,6 @@ import React, {useEffect} from "react";
 interface Props {
 	children?: React.ReactNode;
 }
-
-const defaultStyleProps: NotificationStyleProps = {
-	errorColor: "red",
-	warningColor: "yellow",
-	successColor: undefined,
-	autoClose: 20000,
-};
 
 type NotificationWrapperThemePropsType = Partial<NotificationStyleProps>;
 
@@ -34,7 +30,11 @@ export default function NotificationWrapper(
 	props: Props & Partial<NotificationStyleProps>,
 ) {
 	const {children = <></>, ...rest} = props;
-	const _props = useProps("NotificationWrapper", defaultStyleProps, rest);
+	const _props = useProps(
+		"NotificationWrapper",
+		defaultNotificationStyleProps,
+		rest,
+	);
 	const setStyleProps = useNotificationStore((state) => state.setStyleProps);
 
 	// Initialize store with style props from theme
@@ -44,6 +44,7 @@ export default function NotificationWrapper(
 		_props.errorColor,
 		_props.successColor,
 		_props.warningColor,
+		_props.infoColor,
 		_props.autoClose,
 		setStyleProps,
 	]);
