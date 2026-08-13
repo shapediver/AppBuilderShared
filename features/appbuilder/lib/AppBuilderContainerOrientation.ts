@@ -1,18 +1,30 @@
 import {z} from "@AppBuilderLib/shared/lib/zod";
+import {AppBuilderContainerNameType} from "../config/appbuilder";
+
+/** Flex orientation of an App Builder container (theme JSON + context). */
+export enum AppBuilderContainerOrientation {
+	Unspecified = "unspecified",
+	Horizontal = "horizontal",
+	Vertical = "vertical",
+}
 
 /** Single source for container orientation literals (theme JSON + context). */
 export const APP_BUILDER_CONTAINER_ORIENTATIONS = [
-	"unspecified",
-	"horizontal",
-	"vertical",
+	AppBuilderContainerOrientation.Unspecified,
+	AppBuilderContainerOrientation.Horizontal,
+	AppBuilderContainerOrientation.Vertical,
 ] as const;
 
 export type AppBuilderContainerOrientationType =
-	(typeof APP_BUILDER_CONTAINER_ORIENTATIONS)[number];
+	AppBuilderContainerOrientation;
 
 export const appBuilderContainerOrientationSchema = z.enum(
 	APP_BUILDER_CONTAINER_ORIENTATIONS,
 );
+
+export type AppBuilderContainerResolvedOrientation =
+	| AppBuilderContainerOrientation.Horizontal
+	| AppBuilderContainerOrientation.Vertical;
 
 /**
  * Resolve container flex orientation.
@@ -23,15 +35,21 @@ export function resolveAppBuilderContainerOrientation(
 	orientation: AppBuilderContainerOrientationType | undefined,
 	parentOrientation: AppBuilderContainerOrientationType | undefined,
 	name: string,
-): "horizontal" | "vertical" {
-	if (orientation === "horizontal" || orientation === "vertical") {
+): AppBuilderContainerResolvedOrientation {
+	if (
+		orientation === AppBuilderContainerOrientation.Horizontal ||
+		orientation === AppBuilderContainerOrientation.Vertical
+	) {
 		return orientation;
 	}
 	if (
-		parentOrientation === "horizontal" ||
-		parentOrientation === "vertical"
+		parentOrientation === AppBuilderContainerOrientation.Horizontal ||
+		parentOrientation === AppBuilderContainerOrientation.Vertical
 	) {
 		return parentOrientation;
 	}
-	return name === "top" || name === "bottom" ? "horizontal" : "vertical";
+	return name === AppBuilderContainerNameType.Top ||
+		name === AppBuilderContainerNameType.Bottom
+		? AppBuilderContainerOrientation.Horizontal
+		: AppBuilderContainerOrientation.Vertical;
 }

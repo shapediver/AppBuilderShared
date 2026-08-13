@@ -1,3 +1,4 @@
+import {AppBuilderContainerOrientation} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContainerOrientation";
 import {
 	AppBuilderContainerContext,
 	AppBuilderTemplateContext,
@@ -61,7 +62,7 @@ export default function AppBuilderContainerWrapper(
 	const {
 		containerThemeOverrides: _themeOverrides,
 		name,
-		orientation = "unspecified",
+		orientation = AppBuilderContainerOrientation.Unspecified,
 		children,
 	} = props;
 
