@@ -15,6 +15,7 @@ interface UseInteractionToolbarContributionOptions {
 	items: ToolbarMenuItem[];
 	commands?: ToolbarCommandItem[];
 	sectionId: string;
+	groupId?: string;
 	order?: number;
 	menuVisibility?: RuntimeToolbarMenuVisibility;
 }

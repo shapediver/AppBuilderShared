@@ -48,6 +48,7 @@ export function useSelection(
 	activate: boolean,
 	initialSelectedNodeNames?: string[],
 	strictNaming: boolean = true,
+	suppressSingleSelectionEffect: boolean = false,
 ): ISelectionState & {
 	/**
 	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
@@ -75,6 +76,8 @@ export function useSelection(
 } {
 	// create a unique component ID
 	const componentId = useId();
+	const [singleCandidateSuppressed, setSingleCandidateSuppressed] =
+		React.useState(false);
 
 	// call the select manager hook
 	const {
@@ -112,7 +115,7 @@ export function useSelection(
 	useHoverManager(
 		viewportId,
 		componentId,
-		activate ? hoverSettings : undefined,
+		activate && !singleCandidateSuppressed ? hoverSettings : undefined,
 	);
 
 	// create the input for the name filter pattern
@@ -165,8 +168,10 @@ export function useSelection(
 							outputId,
 							patterns: pattern,
 							interactionSettings: {
-								select: true,
-								hover: selectionProps.hover,
+								select: !singleCandidateSuppressed,
+								hover:
+									!singleCandidateSuppressed &&
+									selectionProps.hover,
 							},
 							selectManagerRef,
 							removeAvailableEffectsRef,
@@ -184,8 +189,10 @@ export function useSelection(
 						componentId,
 						patterns: pattern,
 						interactionSettings: {
-							select: true,
-							hover: selectionProps.hover,
+							select: !singleCandidateSuppressed,
+							hover:
+								!singleCandidateSuppressed &&
+								selectionProps.hover,
 						},
 						selectManagerRef,
 						removeAvailableEffectsRef,
@@ -196,9 +203,15 @@ export function useSelection(
 		}
 
 		return nodesInteractionInput;
-	}, [patterns, selectionProps]);
+	}, [patterns, selectionProps, singleCandidateSuppressed]);
 
 	const {availableNodeNames} = useNodesInteractionData(nodesInteractionInput);
+
+	useEffect(() => {
+		if (!suppressSingleSelectionEffect) return;
+		const candidateCount = Object.values(availableNodeNames).flat().length;
+		setSingleCandidateSuppressed(activate && candidateCount === 1);
+	}, [activate, availableNodeNames, suppressSingleSelectionEffect]);
 
 	const outputsPerSession = useShapeDiverStoreSession(
 		useShallow((state) => {
@@ -296,7 +309,7 @@ export function useSelection(
 	// restoreNodeSelection with an empty list would unconditionally deselect all nodes
 	// (undoing a selection that was just re-applied by a prior effect run).
 	useEffect(() => {
-		if (!activate) return;
+		if (!activate || singleCandidateSuppressed) return;
 		if (!selectManager) return;
 		if (selectedNodeNames.length === 0) return;
 
@@ -324,6 +337,7 @@ export function useSelection(
 		selectedNodeNames,
 		restoreRevision,
 		managerAvailableNodes,
+		singleCandidateSuppressed,
 	]);
 
 	// we need to return the available node names in a dictionary for each output
