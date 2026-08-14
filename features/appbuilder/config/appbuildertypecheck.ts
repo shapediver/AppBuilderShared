@@ -686,6 +686,26 @@ const IAppBuilderLegacyActionPropsSoundSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
+const IAppBuilderActionPropsSetContainerOpenSchema = z.strictObject({
+	// The full container schema is recursive through action widgets, so validate
+	// the discriminator and identity fields needed by this action here.
+	container: z.union([
+		z.looseObject({
+			name: z.enum(["left", "right", "top", "bottom"]),
+		}),
+		z.looseObject({
+			name: z.enum(["anchor2d", "anchor3d", "toolbar"]),
+			props: z.looseObject({id: z.string()}),
+		}),
+	]),
+	mode: z.enum(["open", "close", "toggle"]),
+});
+
+const IAppBuilderLegacyActionPropsSetContainerOpenSchema =
+	IAppBuilderActionPropsSetContainerOpenSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
 // Zod type definition for IAppBuilderActionPropsMessageToParent
 const IAppBuilderActionPropsMessageToParentSchema = z.strictObject({
 	type: z.string(),
@@ -763,6 +783,10 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
 		type: z.literal("sound"),
 		props: IAppBuilderLegacyActionPropsSoundSchema,
+	}),
+	z.strictObject({
+		type: z.literal("setContainerOpen"),
+		props: IAppBuilderLegacyActionPropsSetContainerOpenSchema,
 	}),
 	z.strictObject({
 		type: z.literal("messageToParent"),
@@ -880,6 +904,10 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
 		type: z.literal("sound"),
 		props: IAppBuilderLegacyActionPropsSoundSchema,
+	}),
+	z.strictObject({
+		type: z.literal("setContainerOpen"),
+		props: IAppBuilderLegacyActionPropsSetContainerOpenSchema,
 	}),
 	z.strictObject({
 		type: z.literal("messageToParent"),
