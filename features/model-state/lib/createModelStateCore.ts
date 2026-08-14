@@ -12,7 +12,7 @@ export interface CreateModelStateCoreArgs {
 	sessionId: string;
 	viewportAccessFunctions?: {
 		getScreenshot?: () => Promise<string>;
-		convertToGlTF?: () => Promise<unknown>;
+		convertToGlTF?: () => Promise<Blob>;
 	};
 	clearUnsavedChanges: () => void;
 	parameterNamesToAlwaysExclude: string[];
