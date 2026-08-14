@@ -370,7 +370,8 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsImportParameterValues
 		| IAppBuilderActionPropsExportParameterValues
 		| IAppBuilderActionPropsImportModelState
-		| IAppBuilderActionPropsAr;
+		| IAppBuilderActionPropsAr
+		| IAppBuilderActionPropsSetContainerOpen;
 }
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -546,7 +547,16 @@ export type AppBuilderActionType =
 	| "importModelState"
 	| "camera"
 	| "sound"
-	| "messageToParent";
+	| "messageToParent"
+	| "setContainerOpen";
+
+/** Properties of a "setContainerOpen" action. */
+export interface IAppBuilderActionPropsSetContainerOpen {
+	/** Container to open or close. */
+	container: IAppBuilderContainer;
+	/** Mode of the action. */
+	mode: "open" | "close" | "toggle";
+}
 
 /** Properties of a "createModelState" action. */
 export interface IAppBuilderActionPropsCreateModelState {
@@ -841,6 +851,10 @@ export type IAppBuilderActionPropsSound = {
 export type IAppBuilderLegacyActionPropsSound = IAppBuilderActionPropsSound &
 	IAppBuilderActionPropsCommon;
 
+/** Properties of a legacy "setContainerOpen" action. */
+export type IAppBuilderLegacyActionPropsSetContainerOpen =
+	IAppBuilderActionPropsSetContainerOpen & IAppBuilderActionPropsCommon;
+
 /** Properties of a "messageToParent" action. */
 export interface IAppBuilderActionPropsMessageToParent {
 	/** Type identifier for the message. */
@@ -875,6 +889,7 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsImportModelState
 		| IAppBuilderLegacyActionPropsCamera
 		| IAppBuilderLegacyActionPropsSound
+		| IAppBuilderLegacyActionPropsSetContainerOpen
 		| IAppBuilderLegacyActionPropsMessageToParent;
 }
 
@@ -1879,6 +1894,16 @@ export function isSoundAction(
 	action: IAppBuilderActionDefinition,
 ): action is {type: "sound"; props: IAppBuilderActionPropsSound} {
 	return action.type === "sound";
+}
+
+/** assert action type "setContainerOpen" */
+export function isSetContainerOpenAction(
+	action: IAppBuilderActionDefinition,
+): action is {
+	type: "setContainerOpen";
+	props: IAppBuilderActionPropsSetContainerOpen;
+} {
+	return action.type === "setContainerOpen";
 }
 
 /** assert action type "messageToParent" */

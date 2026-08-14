@@ -1,4 +1,7 @@
-import {AppBuilderContainerNameType, IAppBuilderStandardContainer} from "./appbuilder";
+import {
+	AppBuilderContainerNameType,
+	IAppBuilderStandardContainer,
+} from "./appbuilder";
 
 /**
  * Type representing the standard container names in the app builder.
@@ -29,6 +32,9 @@ export interface IShapeDiverStoreStandardContainers {
 	 * If a container does not have tabs, the index is ignored.
 	 */
 	activeTabIndices: Record<AppBuilderStandardContainerNameType, number>;
+
+	/** Whether each standard container is currently rendered. */
+	containerOpen: Record<AppBuilderStandardContainerNameType, boolean>;
 
 	/**
 	 * The default container state for each of the standard container names.
@@ -69,6 +75,12 @@ export interface IShapeDiverStoreStandardContainers {
 	 * @param tabIndex - The index of the tab to set as active.
 	 */
 	setActiveTab: (containerName: string, tabIndex: number) => void;
+
+	/** Open or close a standard container without changing its contents. */
+	setContainerOpen: (
+		containerName: AppBuilderStandardContainerNameType,
+		open: boolean,
+	) => void;
 
 	/**
 	 * Set the default container definition for a specific name.

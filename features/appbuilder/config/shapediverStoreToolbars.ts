@@ -58,6 +58,7 @@ export interface IShapeDiverStoreToolbars {
 	defaultToolbars: ToolbarRegistration[];
 	runtimeToolbars: ToolbarRegistration[];
 	runtimeTokens: Record<string, ToolbarRuntimeTokenEntry>;
+	toolbarOpen: Record<string, boolean>;
 
 	setDefinitionToolbars: (toolbars: ToolbarRegistration[]) => void;
 	resetDefinitionToolbars: () => void;
@@ -68,5 +69,6 @@ export interface IShapeDiverStoreToolbars {
 		items: IAppBuilderToolbarControlItem[],
 	) => string | undefined;
 	removeRuntimeToolbarToken: (token: string) => boolean;
+	setToolbarOpen: (toolbarId: string, open: boolean) => void;
 	selectMergedToolbars: (viewportId?: string) => ToolbarRegistration[];
 }
