@@ -3,7 +3,7 @@ import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportI
 import {
 	AppBuilderContainerNameType,
 	IAppBuilderActionPropsCommon,
-	IAppBuilderActionPropsSetContainerOpen,
+	IAppBuilderActionPropsSetContainerVisibility,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
@@ -12,7 +12,7 @@ import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
 } from "./AppBuilderActionBase";
 
-type Props = IAppBuilderActionPropsSetContainerOpen &
+type Props = IAppBuilderActionPropsSetContainerVisibility &
 	IAppBuilderActionPropsCommon &
 	AppBuilderActionRenderProps;
 
@@ -22,19 +22,18 @@ const DEFAULT_ICON_BY_MODE: Record<Props["mode"], string> = {
 	toggle: "tabler:eye",
 };
 
-/** Opens or closes a standard container, viewport anchor, or toolbar. */
-export default function AppBuilderActionSetContainerOpenComponent(
+/** Changes the visibility of a standard container, viewport anchor, or toolbar. */
+export default function AppBuilderActionSetContainerVisibilityComponent(
 	props: Props,
 ) {
 	const {
 		container,
 		mode,
-		label =
-			mode === "open"
-				? "Open container"
-				: mode === "close"
-					? "Close container"
-					: "Toggle container",
+		label = mode === "open"
+			? "Open container"
+			: mode === "close"
+				? "Close container"
+				: "Toggle container",
 		icon: inputIcon,
 		tooltip,
 		presentation,
@@ -42,6 +41,7 @@ export default function AppBuilderActionSetContainerOpenComponent(
 		disabled,
 	} = props;
 	const {viewportId: defaultViewportId} = useViewportId();
+	const containerId = container.props?.id;
 	const standardContainerOpen = useShapeDiverStoreStandardContainers(
 		(state) => {
 			switch (container.name) {
@@ -61,17 +61,14 @@ export default function AppBuilderActionSetContainerOpenComponent(
 			container.name !== AppBuilderContainerNameType.Anchor3d
 		)
 			return undefined;
-		return state.anchors[defaultViewportId]
-			?.find(
-				(anchor) =>
-					anchor.id === container.props.id &&
-					anchor.type === container.name,
-			)
-			?.showContent;
+		return state.anchors[defaultViewportId]?.find(
+			(anchor) =>
+				anchor.id === containerId && anchor.type === container.name,
+		)?.showContent;
 	});
 	const toolbarOpen = useShapeDiverStoreToolbars((state) =>
 		container.name === AppBuilderContainerNameType.Toolbar
-			? (state.toolbarOpen[container.props.id] ?? true)
+			? (state.toolbarOpen[containerId ?? ""] ?? true)
 			: undefined,
 	);
 	const isOpen = standardContainerOpen ?? anchorOpen ?? toolbarOpen ?? false;
@@ -101,30 +98,34 @@ export default function AppBuilderActionSetContainerOpenComponent(
 				break;
 			case AppBuilderContainerNameType.Anchor2d:
 			case AppBuilderContainerNameType.Anchor3d:
+				if (!containerId) return;
 				const viewportAnchors =
 					useShapeDiverStoreViewportAnchors.getState();
 				const anchor = viewportAnchors.anchors[defaultViewportId]?.find(
 					(candidate) =>
-						candidate.id === container.props.id &&
+						candidate.id === containerId &&
 						candidate.type === container.name,
 				);
 				viewportAnchors.updateShowContent(
 					defaultViewportId,
-					container.props.id,
-					mode === "toggle" ? !(anchor?.showContent ?? false) : mode === "open",
+					containerId,
+					mode === "toggle"
+						? !(anchor?.showContent ?? false)
+						: mode === "open",
 				);
 				break;
 			case AppBuilderContainerNameType.Toolbar:
+				if (!containerId) return;
 				const toolbars = useShapeDiverStoreToolbars.getState();
 				toolbars.setToolbarOpen(
-					container.props.id,
+					containerId,
 					mode === "toggle"
-						? !(toolbars.toolbarOpen[container.props.id] ?? true)
+						? !(toolbars.toolbarOpen[containerId] ?? true)
 						: mode === "open",
 				);
 				break;
 		}
-	}, [container, defaultViewportId, disabled, mode]);
+	}, [container, containerId, defaultViewportId, disabled, mode]);
 
 	return (
 		<AppBuilderActionBase

@@ -64,7 +64,7 @@ const makeLegacyViewportAction = (type: string) =>
 	});
 
 describe("toolbar container schema", () => {
-	it("accepts a setContainerOpen action for every container kind", () => {
+	it("accepts a setContainerVisibility action for every container kind", () => {
 		const result = validateAppBuilder({
 			version: "1.0",
 			containers: [
@@ -74,11 +74,11 @@ describe("toolbar container schema", () => {
 					groups: [
 						[
 							makeSemanticAction({
-								type: "setContainerOpen",
+								type: "setContainerVisibility",
 								props: {container: {name: "left"}, mode: "close"},
 							}),
 							makeSemanticAction({
-								type: "setContainerOpen",
+								type: "setContainerVisibility",
 								props: {
 									container: {
 										name: "anchor2d",
@@ -88,7 +88,7 @@ describe("toolbar container schema", () => {
 								},
 							}),
 							makeSemanticAction({
-								type: "setContainerOpen",
+								type: "setContainerVisibility",
 								props: {
 									container: {
 										name: "toolbar",

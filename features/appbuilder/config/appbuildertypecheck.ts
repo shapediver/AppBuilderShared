@@ -686,7 +686,7 @@ const IAppBuilderLegacyActionPropsSoundSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
-const IAppBuilderActionPropsSetContainerOpenSchema = z.strictObject({
+const IAppBuilderActionPropsSetContainerVisibilitySchema = z.strictObject({
 	// The full container schema is recursive through action widgets, so validate
 	// the discriminator and identity fields needed by this action here.
 	container: z.union([
@@ -701,8 +701,8 @@ const IAppBuilderActionPropsSetContainerOpenSchema = z.strictObject({
 	mode: z.enum(["open", "close", "toggle"]),
 });
 
-const IAppBuilderLegacyActionPropsSetContainerOpenSchema =
-	IAppBuilderActionPropsSetContainerOpenSchema.extend(
+const IAppBuilderLegacyActionPropsSetContainerVisibilitySchema =
+	IAppBuilderActionPropsSetContainerVisibilitySchema.extend(
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
@@ -785,8 +785,8 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 		props: IAppBuilderLegacyActionPropsSoundSchema,
 	}),
 	z.strictObject({
-		type: z.literal("setContainerOpen"),
-		props: IAppBuilderLegacyActionPropsSetContainerOpenSchema,
+		type: z.literal("setContainerVisibility"),
+		props: IAppBuilderLegacyActionPropsSetContainerVisibilitySchema,
 	}),
 	z.strictObject({
 		type: z.literal("messageToParent"),
@@ -915,8 +915,8 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 		props: IAppBuilderLegacyActionPropsSoundSchema,
 	}),
 	z.strictObject({
-		type: z.literal("setContainerOpen"),
-		props: IAppBuilderLegacyActionPropsSetContainerOpenSchema,
+		type: z.literal("setContainerVisibility"),
+		props: IAppBuilderLegacyActionPropsSetContainerVisibilitySchema,
 	}),
 	z.strictObject({
 		type: z.literal("messageToParent"),

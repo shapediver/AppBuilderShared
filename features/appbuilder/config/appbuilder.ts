@@ -373,7 +373,7 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsExportParameterValues
 		| IAppBuilderActionPropsImportModelState
 		| IAppBuilderActionPropsAr
-		| IAppBuilderActionPropsSetContainerOpen;
+		| IAppBuilderActionPropsSetContainerVisibility;
 }
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -550,12 +550,14 @@ export type AppBuilderActionType =
 	| "camera"
 	| "sound"
 	| "messageToParent"
-	| "setContainerOpen";
+	| "setContainerVisibility";
 
-/** Properties of a "setContainerOpen" action. */
-export interface IAppBuilderActionPropsSetContainerOpen {
+/** Properties of a "setContainerVisibility" action. */
+export interface IAppBuilderActionPropsSetContainerVisibility {
 	/** Container to open or close. */
-	container: IAppBuilderContainer;
+	container: Pick<IAppBuilderContainer, "name"> & {
+		props?: Pick<NonNullable<IAppBuilderContainer["props"]>, "id">;
+	};
 	/** Mode of the action. */
 	mode: "open" | "close" | "toggle";
 }
@@ -853,9 +855,9 @@ export type IAppBuilderActionPropsSound = {
 export type IAppBuilderLegacyActionPropsSound = IAppBuilderActionPropsSound &
 	IAppBuilderActionPropsCommon;
 
-/** Properties of a legacy "setContainerOpen" action. */
-export type IAppBuilderLegacyActionPropsSetContainerOpen =
-	IAppBuilderActionPropsSetContainerOpen & IAppBuilderActionPropsCommon;
+/** Properties of a legacy "setContainerVisibility" action. */
+export type IAppBuilderLegacyActionPropsSetContainerVisibility =
+	IAppBuilderActionPropsSetContainerVisibility & IAppBuilderActionPropsCommon;
 
 /** Properties of a "messageToParent" action. */
 export interface IAppBuilderActionPropsMessageToParent {
@@ -891,7 +893,7 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsImportModelState
 		| IAppBuilderLegacyActionPropsCamera
 		| IAppBuilderLegacyActionPropsSound
-		| IAppBuilderLegacyActionPropsSetContainerOpen
+		| IAppBuilderLegacyActionPropsSetContainerVisibility
 		| IAppBuilderLegacyActionPropsMessageToParent;
 }
 
@@ -1898,14 +1900,14 @@ export function isSoundAction(
 	return action.type === "sound";
 }
 
-/** assert action type "setContainerOpen" */
-export function isSetContainerOpenAction(
+/** assert action type "setContainerVisibility" */
+export function isSetContainerVisibilityAction(
 	action: IAppBuilderActionDefinition,
 ): action is {
-	type: "setContainerOpen";
-	props: IAppBuilderActionPropsSetContainerOpen;
+	type: "setContainerVisibility";
+	props: IAppBuilderActionPropsSetContainerVisibility;
 } {
-	return action.type === "setContainerOpen";
+	return action.type === "setContainerVisibility";
 }
 
 /** assert action type "messageToParent" */

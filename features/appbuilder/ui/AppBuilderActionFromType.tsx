@@ -12,7 +12,7 @@ import {
 	isRedoAction,
 	isResetParameterValuesAction,
 	isSetBrowserLocationAction,
-	isSetContainerOpenAction,
+	isSetContainerVisibilityAction,
 	isSetParameterValueAction,
 	isSetParameterValuesAction,
 	isSoundAction,
@@ -29,7 +29,7 @@ import AppBuilderActionMessageToParentComponent from "./AppBuilderActionMessageT
 import AppBuilderActionRedoComponent from "./AppBuilderActionRedoComponent";
 import AppBuilderActionResetParameterValuesComponent from "./AppBuilderActionResetParameterValuesComponent";
 import AppBuilderActionSetBrowserLocationComponent from "./AppBuilderActionSetBrowserLocationComponent";
-import AppBuilderActionSetContainerOpenComponent from "./AppBuilderActionSetContainerOpenComponent";
+import AppBuilderActionSetContainerVisibilityComponent from "./AppBuilderActionSetContainerVisibilityComponent";
 import AppBuilderActionSetParameterValuesComponent from "./AppBuilderActionSetParameterValuesComponent";
 import AppBuilderActionSoundComponent from "./AppBuilderActionSoundComponent";
 import AppBuilderActionUndoComponent from "./AppBuilderActionUndoComponent";
@@ -190,9 +190,9 @@ export function AppBuilderActionFromType(
 				{...actionRef.definition.props}
 			/>
 		);
-	else if (isSetContainerOpenAction(actionRef.definition))
+	else if (isSetContainerVisibilityAction(actionRef.definition))
 		return (
-			<AppBuilderActionSetContainerOpenComponent
+			<AppBuilderActionSetContainerVisibilityComponent
 				key={key}
 				presentation={presentation}
 				toolbarButtonProps={toolbarButtonProps}
