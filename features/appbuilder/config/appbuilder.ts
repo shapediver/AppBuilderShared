@@ -315,6 +315,8 @@ export interface IAppBuilderControlParameterRef {
 	disableIfDirty?: boolean;
 	/** Ask the user to accept or reject changes of this parameter before executing them. */
 	acceptRejectMode?: boolean;
+	/** Identifiers of the parameters that shall be updated in addition. */
+	delegates: Array<Pick<IAppBuilderParameterRef, "name" | "sessionId">>;
 }
 
 /** Control referencing an export (defined by the session) */

@@ -94,6 +94,11 @@ export default function AppBuilderToolbarPopoverButton({
 				disableIfDirty: parameterItem.disableIfDirty,
 				acceptRejectMode: parameterItem.acceptRejectMode,
 				overrides: parameterItem.overrides,
+				delegates: (parameterItem.delegates ?? []).map((delegate) => ({
+					namespace:
+						delegate.sessionId ?? buttonRenderContext.namespace,
+					parameterId: delegate.name,
+				})),
 			},
 		];
 	}, [buttonRenderContext.namespace, item]);

@@ -415,6 +415,9 @@ function createParameterStore<T>(
 				state,
 				/** Actions that can be taken on the parameter. */
 				actions: {
+					stringify: function (value: T | string): string {
+						return executor.stringify(value);
+					},
 					setUiValue: function (uiValue: string | T): boolean {
 						const actions = get().actions;
 						if (!actions.isValid(uiValue, false)) return false;

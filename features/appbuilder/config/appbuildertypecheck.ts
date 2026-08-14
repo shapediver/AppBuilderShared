@@ -827,6 +827,15 @@ const IAppBuilderControlParameterRefSchema = z.strictObject({
 	overrides: IAppBuilderControlParameterRefOverridesSchema.optional(),
 	disableIfDirty: z.boolean().optional(),
 	acceptRejectMode: z.boolean().optional(),
+	// Default preserves compatibility with controls created before delegates were introduced.
+	delegates: z
+		.array(
+			z.strictObject({
+				name: z.string(),
+				sessionId: z.string().optional(),
+			}),
+		)
+		.default([]),
 });
 
 // Zod type definition for IAppBuilderControlExportRef
