@@ -5,6 +5,7 @@ import {ParameterLabelComponentThemeDefaultPropsSchema} from "@AppBuilderLib/ent
 import {ParameterRectangleTransformComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/parameterRectangleTransformComponent.theme.types";
 import {ParameterSelectComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/ParameterSelectComponent.theme.types";
 import {ParameterStargateComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/ParameterStargateComponent.theme.types";
+import {ParameterStringComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/ParameterStringComponent.theme.types";
 import {SelectButtonFlexComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/SelectButtonFlexComponent.theme.types";
 import {SelectCarouselComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/SelectCarouselComponent.theme.types";
 import {SelectFullWidthCardsComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/SelectFullWidthCardsComponent.theme.types";
@@ -14,17 +15,17 @@ import {DefaultSessionThemeDefaultPropsSchema} from "@AppBuilderLib/entities/ses
 import {DesktopClientPanelThemeDefaultPropsSchema} from "@AppBuilderLib/entities/stargate/config/DesktopClientPanel.theme.types";
 import {StargateInputThemeDefaultPropsSchema} from "@AppBuilderLib/entities/stargate/config/StargateInput.theme.types";
 import {StargateSharedThemeDefaultPropsSchema} from "@AppBuilderLib/entities/stargate/ui/stargateShared";
+import {LegacyViewportIconsThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/LegacyViewportIcons.theme.types";
 import {ViewportBrandingThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportBranding.theme.types";
 import {ViewportComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportComponent.theme.types";
-import {LegacyViewportIconsThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/LegacyViewportIcons.theme.types";
 import {ViewportOverlayWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportOverlayWrapper.theme.types";
 import {AddToCartActionThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AddToCartAction.theme.types";
 import {AppBuilderActionComponentThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderActionComponent.theme.types";
-import {AppBuilderToolbarMenuItemButtonThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarMenuItemButton.theme.types";
 import {AppBuilderToolbarThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbar.theme.types";
 import {AppBuilderToolbarButtonThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarButton.theme.types";
 import {AppBuilderToolbarIconButtonThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarIconButton.theme.types";
 import {AppBuilderToolbarLayerThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarLayer.theme.types";
+import {AppBuilderToolbarMenuItemButtonThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarMenuItemButton.theme.types";
 import {CreateModelStateHookThemeDefaultPropsSchema} from "@AppBuilderLib/features/model-state/model/useCreateModelState.types";
 import {NotificationWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/features/notifications/config/notificationcontext";
 import {AppBuilderContainerWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/pages/config/AppBuilderContainerWrapper.theme.types";
@@ -51,8 +52,8 @@ import {AppBuilderBarChartWidgetComponentThemeDefaultPropsSchema} from "@AppBuil
 import {AppBuilderControlsWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderControlsWidgetComponent.theme.types";
 import {AppBuilderFormWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderFormWidgetComponent.theme.types";
 import {AppBuilderImageThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderImage.theme.types";
-import {AppBuilderPdfEmbedThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderPdfEmbed.theme.types";
 import {AppBuilderLineChartWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderLineChartWidgetComponent.theme.types";
+import {AppBuilderPdfEmbedThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderPdfEmbed.theme.types";
 import {AppBuilderRoundChartWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderRoundChartWidgetComponent.theme.types";
 import {AppBuilderSavedStatesWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderSavedStatesWidgetComponent.theme.types";
 import {AppBuilderStackUiWidgetThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderStackUiWidgetComponent.theme.types";
@@ -154,6 +155,7 @@ export const themeComponentDefaultPropsRegistry = {
 	ParameterRectangleTransformComponent:
 		ParameterRectangleTransformComponentThemeDefaultPropsSchema,
 	ParameterSelectComponent: ParameterSelectComponentThemeDefaultPropsSchema,
+	ParameterStringComponent: ParameterStringComponentThemeDefaultPropsSchema,
 	ParameterSelectionComponent: ISelectionParameterPropsJsonSchema,
 	ParameterSliderComponent: ParameterSliderComponentThemeDefaultPropsSchema,
 	ParameterStargateComponent:

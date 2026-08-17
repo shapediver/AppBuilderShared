@@ -38,9 +38,7 @@ const REGISTRY_KEYS_WITHOUT_DOC_FLAT_ALLOWLIST = new Set([
  * Dynamic runtime keys (NumberAttribute, StringAttribute, ViewportAnchor2d/3d) use computed
  * useProps ids and are not @docAttached — none appear in doc-flat.
  */
-const DOC_FLAT_KEYS_WITHOUT_REGISTRY_ALLOWLIST = new Set<string>([
-	"ParameterStringComponent",
-]);
+const DOC_FLAT_KEYS_WITHOUT_REGISTRY_ALLOWLIST = new Set<string>([]);
 
 function readDocFlatThemeComponentNames(): string[] {
 	if (!fs.existsSync(DOC_FLAT_PATH)) {
