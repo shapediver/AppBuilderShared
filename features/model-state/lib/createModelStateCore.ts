@@ -1,3 +1,4 @@
+import type {IViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/config/shapediverStoreViewportAccessFunctions";
 import type {ISessionApi} from "@shapediver/viewer.session";
 import type {
 	ICreateModelStateData,
@@ -10,10 +11,10 @@ export interface CreateModelStateCoreArgs {
 	sessions: {[id: string]: ISessionApi};
 	/** Namespace / session id used for export-session fallback. */
 	sessionId: string;
-	viewportAccessFunctions?: {
-		getScreenshot?: () => Promise<string>;
-		convertToGlTF?: () => Promise<Blob>;
-	};
+	viewportAccessFunctions?: Pick<
+		IViewportAccessFunctions,
+		"getScreenshot" | "convertToGlTF"
+	>;
 	clearUnsavedChanges: () => void;
 	parameterNamesToAlwaysExclude: string[];
 	props: ICreateModelStateData;
@@ -46,6 +47,7 @@ export async function createModelStateCore(
 		parameterNamesToExclude,
 		includeImage,
 		image,
+		screenshotProps,
 		data,
 		includeGltf,
 	} = props;
@@ -108,7 +110,7 @@ export async function createModelStateCore(
 			}
 		}
 	} else if (includeImage && currentGetScreenshot) {
-		modelStateImage = await currentGetScreenshot();
+		modelStateImage = await currentGetScreenshot(screenshotProps);
 	}
 
 	const modelStateId = sessionApi

@@ -55,4 +55,33 @@ describe("createModelStateCore", () => {
 			modelStateUsdzUrl: "https://example.com/api/v2/ar-scene/ms-1/usdz",
 		});
 	});
+
+	it("passes screenshotProps to getScreenshot when capturing an image", async () => {
+		const getScreenshot = jest
+			.fn()
+			.mockResolvedValue("data:image/png;base64,test");
+		const createModelState = jest.fn(async () => "ms-1");
+		const sessionApi = {
+			parameters: {},
+			modelViewUrl: "https://example.com",
+			createModelState,
+		} as unknown as ISessionApi;
+		const screenshotProps = {
+			contentType: "image/jpeg",
+			quality: 0.7,
+			resolution: {width: 800, height: 600},
+		};
+
+		await createModelStateCore({
+			sessionApi,
+			sessions: {s1: sessionApi},
+			sessionId: "s1",
+			clearUnsavedChanges: jest.fn(),
+			parameterNamesToAlwaysExclude: [],
+			viewportAccessFunctions: {getScreenshot},
+			props: {includeImage: true, screenshotProps},
+		});
+
+		expect(getScreenshot).toHaveBeenCalledWith(screenshotProps);
+	});
 });

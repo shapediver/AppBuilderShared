@@ -585,6 +585,12 @@ export interface IAppBuilderActionPropsCreateModelState {
 	/** Names of parameters to exclude from the model state. */
 	parameterNamesToExclude?: string[];
 	/**
+	 * Optional screenshot settings applied when capturing the preview image
+	 * automatically (i.e. when {@link includeImage} is true and no explicit
+	 * {@link image} is provided).
+	 */
+	screenshotProps?: IAppBuilderParameterValueSourcePropsScreenshot;
+	/**
 	 * Optional success message shown after a model state has been created.
 	 * Supports the optional placeholder `{modelStateId}`.
 	 */
