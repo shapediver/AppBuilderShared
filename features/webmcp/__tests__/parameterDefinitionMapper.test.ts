@@ -2,6 +2,8 @@ import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/par
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
 
+const SESSION_ID = "session-1";
+
 function createMockParameter(
 	overrides: Partial<IShapeDiverParameter<any>> & {
 		definition: IShapeDiverParameter<any>["definition"];
@@ -42,15 +44,54 @@ describe("mapParameterDefinition", () => {
 			state: {uiValue: 0} as IShapeDiverParameter<any>["state"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "list-1",
+			sessionId: SESSION_ID,
 			name: "Material",
 			type: ResParameterType.STRINGLIST,
+			howto: "Use a 0-based integer index (0..1). Choices: [\"Wood\",\"Metal\"]. Never send the label text. Never wrap in {index:N}. If choices look like numbers (e.g. ['4','6','8'] or ['3','3 1/4',...]) the value is still the INDEX, not the label — e.g. for choices ['4','6','8'], '6 prongs' = index 1, not value 6; for a label that is itself a number (e.g. '7'), find its position in choices and send that index, not the number itself. Match choice labels case-insensitively to find the index (e.g. 'Button' matches 'button' = index 0), then send the index.",
 			settable: true,
 			choices: ["Wood", "Metal"],
 			currentValue: 0,
 			defaultValue: 1,
 		});
+	});
+
+	it("attaches choiceMetadata for STRINGLIST when provided", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "list-1",
+				name: "Material",
+				type: ResParameterType.STRINGLIST,
+				choices: ["Apple"],
+				defval: 0,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 0} as IShapeDiverParameter<any>["state"],
+		});
+
+		const result = mapParameterDefinition(param, SESSION_ID, {
+			Apple: {description: "Crisp"},
+		});
+		expect(result.choiceMetadata).toEqual({
+			Apple: {description: "Crisp"},
+		});
+	});
+
+	it("omits choiceMetadata for STRINGLIST when not provided", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "list-1",
+				name: "Material",
+				type: ResParameterType.STRINGLIST,
+				choices: ["Apple"],
+				defval: 0,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 0} as IShapeDiverParameter<any>["state"],
+		});
+
+		expect(
+			mapParameterDefinition(param, SESSION_ID).choiceMetadata,
+		).toBeUndefined();
 	});
 
 	it("maps COLOR with decomposed values", () => {
@@ -66,10 +107,12 @@ describe("mapParameterDefinition", () => {
 			} as IShapeDiverParameter<any>["state"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "color-1",
+			sessionId: SESSION_ID,
 			name: "Paint",
 			type: ResParameterType.COLOR,
+			howto: "Use a color object {red, green, blue, alpha} (0-255). Never send a hex string or color name.",
 			settable: true,
 			currentValue: {red: 0, green: 255, blue: 0, alpha: 255},
 			defaultValue: {red: 255, green: 0, blue: 0, alpha: 255},
@@ -90,10 +133,12 @@ describe("mapParameterDefinition", () => {
 			state: {uiValue: 42.5} as IShapeDiverParameter<any>["state"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "float-1",
+			sessionId: SESSION_ID,
 			name: "Width",
 			type: ResParameterType.FLOAT,
+			howto: "Use a number in range [0, 100]. Tool validates min/max; out-of-range values are rejected.",
 			settable: true,
 			min: 0,
 			max: 100,
@@ -114,10 +159,12 @@ describe("mapParameterDefinition", () => {
 			state: {uiValue: true} as IShapeDiverParameter<any>["state"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "bool-1",
+			sessionId: SESSION_ID,
 			name: "Enabled",
 			type: ResParameterType.BOOL,
+			howto: 'Use a boolean. Never send 0/1 or "true"/"false" strings.',
 			settable: true,
 			currentValue: true,
 			defaultValue: false,
@@ -140,10 +187,12 @@ describe("mapParameterDefinition", () => {
 			state: {uiValue: 7} as IShapeDiverParameter<any>["state"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "p1",
+			sessionId: SESSION_ID,
 			name: "Width",
 			type: ResParameterType.INT,
+			howto: "Use an integer in range [0, 10]. Tool validates min/max and integer-ness; out-of-range or non-integer values are rejected.",
 			settable: true,
 			group: "Dimensions",
 			tooltip: "Model width",
@@ -163,10 +212,12 @@ describe("mapParameterDefinition", () => {
 			} as IShapeDiverParameter<any>["definition"],
 		});
 
-		expect(mapParameterDefinition(param)).toEqual({
+		expect(mapParameterDefinition(param, SESSION_ID)).toEqual({
 			id: "file-1",
+			sessionId: SESSION_ID,
 			name: "Upload",
 			type: ResParameterType.FILE,
+			howto: "Read-only: this parameter type is not supported by set_parameter_values.",
 			settable: false,
 		});
 	});

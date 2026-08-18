@@ -1,3 +1,7 @@
+import {
+	AppBuilderContainerOrientation,
+	resolveAppBuilderContainerOrientation,
+} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContainerOrientation";
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {IAppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext.types";
 import {usePropsAppBuilder} from "@AppBuilderLib/features/appbuilder/model/usePropsAppBuilder";
@@ -17,7 +21,7 @@ interface Props {
 }
 
 const defaultStyleProps = {
-	orientation: "unspecified",
+	orientation: AppBuilderContainerOrientation.Unspecified,
 } as const satisfies Pick<AppBuilderContainerThemeDefaultProps, "orientation">;
 
 /**
@@ -64,20 +68,21 @@ export default function AppBuilderContainer(
 		{orientation: orientationProp},
 	);
 
-	const {name} = useContext(AppBuilderContainerContext);
+	const {name, orientation: parentOrientation} = useContext(
+		AppBuilderContainerContext,
+	);
 
 	const context: IAppBuilderContainerContext = {
-		orientation:
-			!orientation || orientation === "unspecified"
-				? name === "top" || name === "bottom"
-					? "horizontal"
-					: "vertical"
-				: orientation,
+		orientation: resolveAppBuilderContainerOrientation(
+			orientation,
+			parentOrientation,
+			name,
+		),
 		name,
 	};
 
 	const container =
-		context.orientation === "vertical" ? (
+		context.orientation === AppBuilderContainerOrientation.Vertical ? (
 			<AppBuilderVerticalContainer style={style} {...containerProps}>
 				{children}
 			</AppBuilderVerticalContainer>

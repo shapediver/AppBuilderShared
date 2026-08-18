@@ -64,6 +64,48 @@ const makeLegacyViewportAction = (type: string) =>
 	});
 
 describe("toolbar container schema", () => {
+	it("accepts a setContainerVisibility action for every container kind", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {id: "toolbar"},
+					groups: [
+						[
+							makeSemanticAction({
+								type: "setContainerVisibility",
+								props: {container: {name: "left"}, mode: "close"},
+							}),
+							makeSemanticAction({
+								type: "setContainerVisibility",
+								props: {
+									container: {
+										name: "anchor2d",
+										props: {id: "details", location: [0, 0]},
+									},
+									mode: "open",
+								},
+							}),
+							makeSemanticAction({
+								type: "setContainerVisibility",
+								props: {
+									container: {
+										name: "toolbar",
+										props: {id: "secondary"},
+									},
+									mode: "toggle",
+								},
+							}),
+						],
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(true);
+	});
+
 	it("accepts a valid toolbar container with mixed item types", () => {
 		const result = validateAppBuilder({
 			version: "1.0",

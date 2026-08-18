@@ -92,4 +92,9 @@ export interface IShapeDiverStoreInteractionRequestManagement {
 	 * @param token The token associated with the interaction request to remove.
 	 */
 	removeInteractionRequest: (token: string) => void;
+	/**
+	 * Makes a suspended passive request the current viewport interaction.
+	 * Any active request in that viewport is disabled first.
+	 */
+	activatePassiveInteraction: (token: string) => void;
 }

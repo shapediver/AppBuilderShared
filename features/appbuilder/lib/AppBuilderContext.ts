@@ -1,4 +1,5 @@
 import {createContext} from "react";
+import {AppBuilderContainerOrientation} from "./AppBuilderContainerOrientation";
 import {
 	IAppBuilderContainerContext,
 	IAppBuilderDataContext,
@@ -8,7 +9,7 @@ import {
 /** Information about a container's context. */
 export const AppBuilderContainerContext =
 	createContext<IAppBuilderContainerContext>({
-		orientation: "unspecified",
+		orientation: AppBuilderContainerOrientation.Unspecified,
 		name: "unspecified",
 	});
 

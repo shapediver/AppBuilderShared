@@ -12,6 +12,7 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderToolbarLayerThemeDefaultProps} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarLayer.theme.types";
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
+import type {ToolbarAcceptRejectItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import {useAppBuilderToolbars} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderToolbars";
 import {useDefaultToolbarRegistration} from "@AppBuilderLib/features/appbuilder/model/useDefaultToolbarRegistration";
 import {useResolvedAppBuilderToolbarIconButtonTheme} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
@@ -51,20 +52,16 @@ const buildButtonRenderContext = ({
 	namespace,
 	viewportId,
 	executing,
-	hasPendingChanges,
 	legacyViewportIconsTheme,
 }: {
 	namespace: string;
 	viewportId?: string;
 	executing: boolean;
-	hasPendingChanges: boolean;
 	legacyViewportIconsTheme: LegacyViewportIconsThemeProps;
 }): ButtonRenderContext => ({
 	viewportId,
 	namespace,
-	buttonsDisabled: hasPendingChanges,
 	executing,
-	hasPendingChanges,
 	fullscreenId:
 		legacyViewportIconsTheme.fullscreenId || "viewer-fullscreen-area",
 });
@@ -93,6 +90,7 @@ export default function AppBuilderToolbarLayer({
 	const {toolbars} = useAppBuilderToolbars({
 		appBuilderData,
 		viewportId,
+		namespace,
 	});
 	const viewport = useShapeDiverStoreViewport(
 		useShallow((state) => state.viewports[viewportId]),
@@ -156,16 +154,9 @@ export default function AppBuilderToolbarLayer({
 				namespace,
 				viewportId,
 				executing,
-				hasPendingChanges,
 				legacyViewportIconsTheme,
 			}),
-		[
-			executing,
-			hasPendingChanges,
-			namespace,
-			viewportId,
-			legacyViewportIconsTheme,
-		],
+		[executing, namespace, viewportId, legacyViewportIconsTheme],
 	);
 
 	const buttonSize = viewportIconButtonTheme.actionIconProps?.size ?? 32;
@@ -181,9 +172,37 @@ export default function AppBuilderToolbarLayer({
 		() => computeToolbarThickness(buttonSize, buttonMargin, paperPaddingY),
 		[buttonMargin, buttonSize, paperPaddingY],
 	);
+	const bottomCenterToolbar = toolbars.find(
+		(toolbar) => toolbar.side === "bottom" && toolbar.align === "center",
+	);
+	const {showButtons: showAcceptRejectButtons} = useProps(
+		"ViewportAcceptRejectButtons",
+		{},
+		{},
+	) as {showButtons?: boolean};
+	const showToolbarAcceptRejectButtons =
+		showAcceptRejectButtons !== false &&
+		(hasPendingChanges || showAcceptRejectButtons === true);
+	const toolbarsWithAcceptRejectButtons = useMemo(() => {
+		if (!bottomCenterToolbar || !showToolbarAcceptRejectButtons) {
+			return toolbars;
+		}
+
+		const acceptRejectItem: ToolbarAcceptRejectItem = {
+			id: "accept-reject",
+			type: "acceptReject",
+			label: "Accept or reject changes",
+			props: {},
+		};
+		return toolbars.map((toolbar) =>
+			toolbar.id === bottomCenterToolbar.id
+				? {...toolbar, groups: [[acceptRejectItem], ...toolbar.groups]}
+				: toolbar,
+		);
+	}, [bottomCenterToolbar, showToolbarAcceptRejectButtons, toolbars]);
 	const slotEntries = useMemo(
-		() => groupToolbarsBySlot(toolbars),
-		[toolbars],
+		() => groupToolbarsBySlot(toolbarsWithAcceptRejectButtons),
+		[toolbarsWithAcceptRejectButtons],
 	);
 	const pushOffsets = useMemo(
 		() =>

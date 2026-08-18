@@ -2,7 +2,10 @@ import {ToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/sha
 
 export type ToolbarSide = ToolbarRegistration["side"];
 export type ToolbarAlign = ToolbarRegistration["align"];
-export type ToolbarSlotEntries = Array<[string, ToolbarRegistration[]]>;
+type ToolbarLayoutItem = Pick<ToolbarRegistration, "side" | "align" | "order">;
+export type ToolbarSlotEntries<
+	T extends ToolbarLayoutItem = ToolbarRegistration,
+> = Array<[string, T[]]>;
 
 /** Mantine spacing token → px (theme spacing step = 0.25rem = 4px). */
 const mantineSpacingPx = (token: number | string | undefined): number => {
@@ -154,10 +157,10 @@ export const getToolbarSlotStyle = (
 	return style;
 };
 
-export const groupToolbarsBySlot = (
-	toolbars: ToolbarRegistration[],
-): ToolbarSlotEntries => {
-	const slotMap = new Map<string, ToolbarRegistration[]>();
+export const groupToolbarsBySlot = <T extends ToolbarLayoutItem>(
+	toolbars: T[],
+): ToolbarSlotEntries<T> => {
+	const slotMap = new Map<string, T[]>();
 	for (const toolbar of toolbars) {
 		const key = `${toolbar.side}:${toolbar.align}`;
 		const current = slotMap.get(key) ?? [];
@@ -167,14 +170,14 @@ export const groupToolbarsBySlot = (
 	return Array.from(slotMap.entries());
 };
 
-export const computeToolbarPushOffsets = ({
+export const computeToolbarPushOffsets = <T extends ToolbarLayoutItem>({
 	slotEntries,
 	verticalThickness,
 	horizontalThickness,
 	offsetX,
 	offsetY,
 }: {
-	slotEntries: ToolbarSlotEntries;
+	slotEntries: ToolbarSlotEntries<T>;
 	verticalThickness: number;
 	horizontalThickness: number;
 	offsetX: string;
@@ -192,11 +195,16 @@ export const computeToolbarPushOffsets = ({
 			const conflict = CORNER_CONFLICTS[`${keyA}|${keyB}`];
 			if (!conflict) continue;
 
-			const minOrderA = Math.min(...toolbarsA.map((toolbar) => toolbar.order));
-			const minOrderB = Math.min(...toolbarsB.map((toolbar) => toolbar.order));
+			const minOrderA = Math.min(
+				...toolbarsA.map((toolbar) => toolbar.order),
+			);
+			const minOrderB = Math.min(
+				...toolbarsB.map((toolbar) => toolbar.order),
+			);
 			const [blockerKey, loserKey] =
 				minOrderA <= minOrderB ? [keyA, keyB] : [keyB, keyA];
-			const actualConflict = CORNER_CONFLICTS[`${blockerKey}|${loserKey}`];
+			const actualConflict =
+				CORNER_CONFLICTS[`${blockerKey}|${loserKey}`];
 			if (!actualConflict || offsets[loserKey]) continue;
 
 			const thickness =

@@ -4,6 +4,7 @@
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {ToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreToolbars";
+import {resolveToolbarRegistration} from "@AppBuilderLib/features/appbuilder/model/resolveToolbarRegistration";
 import {MantineProvider} from "@mantine/core";
 import {fireEvent, render, screen} from "@testing-library/react";
 import AppBuilderToolbar from "../AppBuilderToolbar";
@@ -32,30 +33,40 @@ jest.mock("../../model/useToolbarVisibility", () => ({
 	}),
 }));
 
-jest.mock("../AppBuilderToolbarButton", () => ({
+jest.mock("../AppBuilderToolbarActionButton", () => ({
+	__esModule: true,
+	default: () => null,
+}));
+
+jest.mock("../AppBuilderToolbarExportButton", () => ({
+	__esModule: true,
+	default: () => null,
+}));
+
+jest.mock("../AppBuilderToolbarPopoverButton", () => ({
 	__esModule: true,
 	default: ({
-		toolbarItem,
+		item,
 		popoverId,
 		openedPopoverId,
 		onPopoverOpenChange,
-		hasActiveInteractionRequest,
+		popoverDismissalBlocked,
 	}: {
-		toolbarItem: {label?: string};
+		item: {label?: string};
 		popoverId: string;
 		openedPopoverId?: string;
 		onPopoverOpenChange: (popoverId: string, open: boolean) => void;
-		hasActiveInteractionRequest: boolean;
+		popoverDismissalBlocked: boolean;
 	}) => {
 		const opened = openedPopoverId === popoverId;
 
 		return (
 			<button
-				data-active-interaction={String(hasActiveInteractionRequest)}
+				data-popover-dismissal-blocked={String(popoverDismissalBlocked)}
 				data-open={String(opened)}
 				onClick={() => onPopoverOpenChange(popoverId, !opened)}
 			>
-				{toolbarItem.label}
+				{item.label}
 			</button>
 		);
 	},
@@ -63,26 +74,37 @@ jest.mock("../AppBuilderToolbarButton", () => ({
 
 const buttonRenderContext: ButtonRenderContext = {
 	namespace: "default",
-	buttonsDisabled: false,
 	executing: false,
-	hasPendingChanges: false,
 	fullscreenId: "viewer-fullscreen-area",
 };
 
-const createToolbar = (
-	side: ToolbarRegistration["side"],
-): ToolbarRegistration => ({
-	id: `${side}-toolbar`,
-	source: "definition",
-	side,
-	align: "center",
-	order: 0,
-	visibility: "always",
-	groups: [
-		[{id: "first", label: "First"}],
-		[{id: "second", label: "Second"}],
-	],
-});
+const createToolbar = (side: ToolbarRegistration["side"]) =>
+	resolveToolbarRegistration({
+		id: `${side}-toolbar`,
+		source: "definition",
+		side,
+		align: "center",
+		order: 0,
+		visibility: "always",
+		groups: [
+			[
+				{
+					id: "first",
+					type: "widgets",
+					label: "First",
+					props: {widgets: []},
+				},
+			],
+			[
+				{
+					id: "second",
+					type: "widgets",
+					label: "Second",
+					props: {widgets: []},
+				},
+			],
+		],
+	});
 
 describe("AppBuilderToolbar", () => {
 	beforeEach(() => {
@@ -170,6 +192,36 @@ describe("AppBuilderToolbar", () => {
 		expect(firstButton.getAttribute("data-open")).toBe("true");
 	});
 
+	it("keeps an open popover when interacting with a Mantine Modal portal", () => {
+		const toolbar = createToolbar("top");
+
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={toolbar}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		const firstButton = screen.getByRole("button", {name: "First"});
+		fireEvent.click(firstButton);
+		expect(firstButton.getAttribute("data-open")).toBe("true");
+
+		// Mantine `Modal` content carries `role="dialog"` but no `data-position`.
+		// Clicking inside it (e.g. the "Import model state" dialog opened from a
+		// toolbar menu item) must not close the toolbar popover, otherwise the
+		// action component owning the dialog state unmounts and the dialog
+		// disappears on any inside click.
+		const modalContent = document.createElement("div");
+		modalContent.setAttribute("role", "dialog");
+		modalContent.setAttribute("aria-modal", "true");
+		document.body.appendChild(modalContent);
+		fireEvent.pointerDown(modalContent);
+
+		expect(firstButton.getAttribute("data-open")).toBe("true");
+	});
+
 	it("closes an open popover on true outside clicks", () => {
 		const toolbar = createToolbar("top");
 
@@ -193,17 +245,16 @@ describe("AppBuilderToolbar", () => {
 		expect(firstButton.getAttribute("data-open")).toBe("false");
 	});
 
-	it("keeps an open popover while a viewport interaction request is active", () => {
+	it("closes an open popover when the canvas is clicked during an interaction", () => {
 		const toolbar = createToolbar("top");
-		const disable = jest.fn();
 		useShapeDiverStoreInteractionRequestManagement.setState({
 			interactionRequests: {
 				viewer: {
 					activeRequest: {
 						type: "active",
 						viewportId: "viewer",
-						token: "active-token",
-						disable,
+						token: "active-request",
+						disable: jest.fn(),
 					},
 					passiveRequests: [],
 				},
@@ -225,7 +276,7 @@ describe("AppBuilderToolbar", () => {
 		const firstButton = screen.getByRole("button", {name: "First"});
 		fireEvent.click(firstButton);
 		expect(firstButton.getAttribute("data-open")).toBe("true");
-		expect(firstButton.getAttribute("data-active-interaction")).toBe(
+		expect(firstButton.getAttribute("data-popover-dismissal-blocked")).toBe(
 			"true",
 		);
 
@@ -233,7 +284,6 @@ describe("AppBuilderToolbar", () => {
 		document.body.appendChild(canvas);
 		fireEvent.pointerDown(canvas);
 
-		expect(firstButton.getAttribute("data-open")).toBe("true");
-		expect(disable).not.toHaveBeenCalled();
+		expect(firstButton.getAttribute("data-open")).toBe("false");
 	});
 });

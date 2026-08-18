@@ -85,12 +85,14 @@ function createParameterExecutor<T>(
 			forceImmediate?: boolean,
 			skipHistory?: boolean,
 			acceptAll?: boolean,
+			skipUrlUpdate?: boolean,
+			forceSameValue?: boolean,
 		) => {
 			const changes = getChanges();
 
 			// check whether there is anything to do
 			const result = changes.removeValueChange(paramId);
-			if (result.removed && uiValue === execValue) {
+			if (result.removed && uiValue === execValue && !forceSameValue) {
 				Logger.debug(`Removing change of parameter ${paramId}`);
 				// check if there are any other parameter updates queued
 				if (result.isEmpty) {
@@ -113,6 +115,7 @@ function createParameterExecutor<T>(
 					? await changes.accept(
 							skipHistory,
 							acceptAll ? undefined : [paramId],
+							skipUrlUpdate,
 						)
 					: await changes.wait;
 				const value = paramId in values ? values[paramId] : uiValue;
@@ -412,6 +415,9 @@ function createParameterStore<T>(
 				state,
 				/** Actions that can be taken on the parameter. */
 				actions: {
+					stringify: function (value: T | string): string {
+						return executor.stringify(value);
+					},
 					setUiValue: function (uiValue: string | T): boolean {
 						const actions = get().actions;
 						if (!actions.isValid(uiValue, false)) return false;
@@ -482,6 +488,7 @@ function createParameterStore<T>(
 						skipHistory?: boolean,
 						acceptAll?: boolean,
 						skipUrlUpdate?: boolean,
+						forceSameValue?: boolean,
 					): Promise<T | string> {
 						const state = get().state;
 						const result = await executor.execute(
@@ -491,6 +498,7 @@ function createParameterStore<T>(
 							skipHistory,
 							acceptAll,
 							skipUrlUpdate,
+							forceSameValue,
 						);
 						// TODO in case result is not the current uiValue, we could somehow visualize
 						// the fact that the uiValue gets reset here
@@ -864,7 +872,11 @@ export const useShapeDiverStoreParameters =
 					};
 
 					changes.wait = new Promise((resolve, reject) => {
-						changes.accept = async (skipHistory, parameterIds) => {
+						changes.accept = async (
+							skipHistory,
+							parameterIds,
+							skipUrlUpdate,
+						) => {
 							// get currently queued parameter value changes
 							const {parameterChanges, parameterStores} = get();
 							if (!(namespace in parameterChanges))
@@ -927,6 +939,7 @@ export const useShapeDiverStoreParameters =
 									namespace,
 									skipHistory,
 									historyState,
+									skipUrlUpdate,
 								);
 								// set "executing" mode
 								set(

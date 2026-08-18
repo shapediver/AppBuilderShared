@@ -1,6 +1,7 @@
 import type {IParameterChanges} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderLib/entities/viewport/config/viewport";
+import AppBuilderToolbarIconButton from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import type {MantineButtonProps} from "@AppBuilderLib/shared/mantine-props/button";
 import type {MantineGroupProps} from "@AppBuilderLib/shared/mantine-props/group";
 import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
@@ -88,12 +89,14 @@ export function ViewportAcceptRejectButtonsComponentThemeProps(
 interface Props {
 	/** Optional list of session IDs to which the buttons should be limited. */
 	sessionIds?: string[];
+	/** Render a compact variant suitable for embedding in an App Builder toolbar. */
+	inToolbar?: boolean;
 }
 
 function ViewportAcceptRejectButtons(
 	props: Props & ViewportAcceptRejectButtonsComponentThemePropsType,
 ) {
-	const {sessionIds, ...styleProps} = props;
+	const {sessionIds, inToolbar = false, ...styleProps} = props;
 	// style properties
 	const {
 		groupProps,
@@ -151,26 +154,57 @@ function ViewportAcceptRejectButtons(
 		return null;
 	}
 
+	const resolvedGroupProps = inToolbar
+		? {...groupProps, p: 0, gap: 0}
+		: groupProps;
+
 	return (
-		<Group {...groupProps}>
-			<Button
-				rightSection={<Icon iconType={"tabler:check"} {...iconProps} />}
-				onClick={acceptChanges}
-				disabled={disableChangeControls}
-				{...buttonProps}
-				{...acceptButtonProps}
-			>
-				<Text {...textProps}>Accept</Text>
-			</Button>
-			<Button
-				rightSection={<Icon iconType={"tabler:x"} {...iconProps} />}
-				onClick={rejectChanges}
-				disabled={disableChangeControls}
-				{...buttonProps}
-				{...rejectButtonProps}
-			>
-				<Text {...textProps}>Reject</Text>
-			</Button>
+		<Group {...resolvedGroupProps}>
+			{inToolbar ? (
+				<>
+					<AppBuilderToolbarIconButton
+						label="Accept"
+						iconType="tabler:check"
+						onClick={acceptChanges}
+						disabled={disableChangeControls}
+						iconProps={{
+							color: "var(--mantine-primary-color-filled)",
+						}}
+					/>
+					<AppBuilderToolbarIconButton
+						label="Reject"
+						iconType="tabler:x"
+						onClick={rejectChanges}
+						disabled={disableChangeControls}
+						iconProps={{color: "var(--mantine-color-red-filled)"}}
+					/>
+				</>
+			) : (
+				<>
+					<Button
+						rightSection={
+							<Icon iconType={"tabler:check"} {...iconProps} />
+						}
+						onClick={acceptChanges}
+						disabled={disableChangeControls}
+						{...buttonProps}
+						{...acceptButtonProps}
+					>
+						<Text {...textProps}>Accept</Text>
+					</Button>
+					<Button
+						rightSection={
+							<Icon iconType={"tabler:x"} {...iconProps} />
+						}
+						onClick={rejectChanges}
+						disabled={disableChangeControls}
+						{...buttonProps}
+						{...rejectButtonProps}
+					>
+						<Text {...textProps}>Reject</Text>
+					</Button>
+				</>
+			)}
 		</Group>
 	);
 }

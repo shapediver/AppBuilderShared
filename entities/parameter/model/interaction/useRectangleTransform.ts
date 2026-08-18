@@ -26,6 +26,10 @@ import {useSelection} from "./useSelection";
 
 export interface IRectangleTransformState {
 	/**
+	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
+	 */
+	candidateNodes: Array<{nodeId: string; name: string}>;
+	/**
 	 * The transformed node names.
 	 */
 	transformedNodeNames: {
@@ -72,6 +76,8 @@ export interface IRectangleTransformState {
 		}[],
 		oldTransformedNodeNames: {name: string}[],
 	) => void;
+	/** Close the active rectangle transform before restoring a transformation. */
+	closeTransform: () => void;
 }
 
 /**
@@ -126,11 +132,18 @@ export function useRectangleTransform(
 
 	// use the selection hook to get the selected node names
 	const {
+		candidateNodes,
 		selectedNodeNames,
 		setSelectedNodeNames,
 		availableNodeNames,
-		setSelectedNodeNamesAndRestoreSelection,
-	} = useSelection(viewportId, selectionSettings, activate && !maxReached);
+	} = useSelection(
+		viewportId,
+		selectionSettings,
+		activate && !maxReached,
+		undefined,
+		strictNaming,
+		true,
+	);
 
 	// disable selection once the maximum number of objects has been reached
 	useEffect(() => {
@@ -158,9 +171,9 @@ export function useRectangleTransform(
 		const singleAvailableNodeName =
 			getSingleAvailableNodeName(availableNodeNames);
 		if (activate && singleAvailableNodeName) {
-			setSelectedNodeNamesAndRestoreSelection([singleAvailableNodeName]);
+			setSelectedNodeNames([singleAvailableNodeName]);
 		}
-	}, [activate, availableNodeNames, setSelectedNodeNamesAndRestoreSelection]);
+	}, [activate, availableNodeNames, setSelectedNodeNames]);
 
 	// create a reference for the rectangle transform
 	const rectangleTransformRef = useRef<RectangleTransform | undefined>(
@@ -174,7 +187,12 @@ export function useRectangleTransform(
 
 	// use an effect to create the rectangle transform whenever the selected node names change
 	useEffect(() => {
-		if (viewportApi && sessionApis && selectedNodeNames.length > 0) {
+		if (
+			activate &&
+			viewportApi &&
+			sessionApis &&
+			selectedNodeNames.length > 0
+		) {
 			// whenever the selected node names change, create a new rectangle transform
 			const nodes = getNodesByName(
 				Object.values(sessionApis),
@@ -288,11 +306,17 @@ export function useRectangleTransform(
 	}, [
 		viewportApi,
 		sessionApis,
+		activate,
 		selectedNodeNames,
 		objects,
 		restrictions,
 		componentId,
 	]);
+
+	const closeTransform = useCallback(() => {
+		rectangleTransformRef.current?.close();
+		rectangleTransformRef.current = undefined;
+	}, []);
 
 	/**
 	 * Restore the transformed node names.
@@ -353,17 +377,20 @@ export function useRectangleTransform(
 				updateTransformation(tn.node, transformationMatrix);
 			});
 
+			viewportApi?.render();
 			setTransformedNodeNames(newTransformedNodeNames);
 		},
-		[sessionApis],
+		[sessionApis, viewportApi],
 	);
 
 	return {
+		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
 		selectedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
+		closeTransform,
 	};
 }
 

@@ -156,8 +156,8 @@ export function useDragManager(
 				const defaultPurple: IInteractionEffect = {
 					type: "pulse",
 					color: "#9e27d8",
-					intensity: 0.25,
-					pulseSpeed: 1,
+					intensity: 1,
+					pulseSpeed: 0.75,
 				} as IPulseEffectDefinition;
 				setDraggingEffect((prev) =>
 					JSON.stringify(prev) === JSON.stringify(defaultPurple)
@@ -198,8 +198,8 @@ export function useDragManager(
 				const defaultWhite: IInteractionEffect = {
 					type: "pulse",
 					color: "#ffffff",
-					intensity: 0.2,
-					pulseSpeed: 1,
+					intensity: 0.25,
+					pulseSpeed: 0.75,
 				} as IPulseEffectDefinition;
 				setAvailableEffect((prev) =>
 					JSON.stringify(prev) === JSON.stringify(defaultWhite)

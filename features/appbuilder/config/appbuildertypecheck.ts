@@ -668,6 +668,26 @@ const IAppBuilderLegacyActionPropsSoundSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
+const IAppBuilderActionPropsSetContainerVisibilitySchema = z.strictObject({
+	// The full container schema is recursive through action widgets, so validate
+	// the discriminator and identity fields needed by this action here.
+	container: z.union([
+		z.looseObject({
+			name: z.enum(["left", "right", "top", "bottom"]),
+		}),
+		z.looseObject({
+			name: z.enum(["anchor2d", "anchor3d", "toolbar"]),
+			props: z.looseObject({id: z.string()}),
+		}),
+	]),
+	mode: z.enum(["open", "close", "toggle"]),
+});
+
+const IAppBuilderLegacyActionPropsSetContainerVisibilitySchema =
+	IAppBuilderActionPropsSetContainerVisibilitySchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
 // Zod type definition for IAppBuilderActionPropsMessageToParent
 const IAppBuilderActionPropsMessageToParentSchema = z.strictObject({
 	type: z.string(),
@@ -747,6 +767,10 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 		props: IAppBuilderLegacyActionPropsSoundSchema,
 	}),
 	z.strictObject({
+		type: z.literal("setContainerVisibility"),
+		props: IAppBuilderLegacyActionPropsSetContainerVisibilitySchema,
+	}),
+	z.strictObject({
 		type: z.literal("messageToParent"),
 		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
 	}),
@@ -785,6 +809,15 @@ const IAppBuilderControlParameterRefSchema = z.strictObject({
 	overrides: IAppBuilderControlParameterRefOverridesSchema.optional(),
 	disableIfDirty: z.boolean().optional(),
 	acceptRejectMode: z.boolean().optional(),
+	// Default preserves compatibility with controls created before delegates were introduced.
+	delegates: z
+		.array(
+			z.strictObject({
+				name: z.string(),
+				sessionId: z.string().optional(),
+			}),
+		)
+		.default([]),
 });
 
 // Zod type definition for IAppBuilderControlExportRef
@@ -862,6 +895,10 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
 		type: z.literal("sound"),
 		props: IAppBuilderLegacyActionPropsSoundSchema,
+	}),
+	z.strictObject({
+		type: z.literal("setContainerVisibility"),
+		props: IAppBuilderLegacyActionPropsSetContainerVisibilitySchema,
 	}),
 	z.strictObject({
 		type: z.literal("messageToParent"),
@@ -1330,7 +1367,13 @@ const ISelectionParameterPropsSchema = z.strictObject({
 			activeText: z.string().optional(),
 		})
 		.optional(),
-	activeMode: z.enum(["default", "activeOnStart"]).optional(),
+	buttons: z
+		.strictObject({
+			clear: z.boolean().optional(),
+		})
+		.optional(),
+	activeMode: z.enum(["default", "activeOnStart", "alwaysActive"]).optional(),
+	presentation: z.enum(["widget", "toolbar"]).optional(),
 });
 
 // Zod type definition for IAppBuilderAnchor3dContainerProperties

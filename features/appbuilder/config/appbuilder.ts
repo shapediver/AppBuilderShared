@@ -315,6 +315,8 @@ export interface IAppBuilderControlParameterRef {
 	disableIfDirty?: boolean;
 	/** Ask the user to accept or reject changes of this parameter before executing them. */
 	acceptRejectMode?: boolean;
+	/** Identifiers of the parameters that shall be updated in addition. */
+	delegates: Array<Pick<IAppBuilderParameterRef, "name" | "sessionId">>;
 }
 
 /** Control referencing an export (defined by the session) */
@@ -370,7 +372,8 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsImportParameterValues
 		| IAppBuilderActionPropsExportParameterValues
 		| IAppBuilderActionPropsImportModelState
-		| IAppBuilderActionPropsAr;
+		| IAppBuilderActionPropsAr
+		| IAppBuilderActionPropsSetContainerVisibility;
 }
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -546,7 +549,18 @@ export type AppBuilderActionType =
 	| "importModelState"
 	| "camera"
 	| "sound"
-	| "messageToParent";
+	| "messageToParent"
+	| "setContainerVisibility";
+
+/** Properties of a "setContainerVisibility" action. */
+export interface IAppBuilderActionPropsSetContainerVisibility {
+	/** Container to open or close. */
+	container: Pick<IAppBuilderContainer, "name"> & {
+		props?: Pick<NonNullable<IAppBuilderContainer["props"]>, "id">;
+	};
+	/** Mode of the action. */
+	mode: "open" | "close" | "toggle";
+}
 
 /** Properties of a "createModelState" action. */
 export interface IAppBuilderActionPropsCreateModelState {
@@ -847,6 +861,10 @@ export type IAppBuilderActionPropsSound = {
 export type IAppBuilderLegacyActionPropsSound = IAppBuilderActionPropsSound &
 	IAppBuilderActionPropsCommon;
 
+/** Properties of a legacy "setContainerVisibility" action. */
+export type IAppBuilderLegacyActionPropsSetContainerVisibility =
+	IAppBuilderActionPropsSetContainerVisibility & IAppBuilderActionPropsCommon;
+
 /** Properties of a "messageToParent" action. */
 export interface IAppBuilderActionPropsMessageToParent {
 	/** Type identifier for the message. */
@@ -881,6 +899,7 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsImportModelState
 		| IAppBuilderLegacyActionPropsCamera
 		| IAppBuilderLegacyActionPropsSound
+		| IAppBuilderLegacyActionPropsSetContainerVisibility
 		| IAppBuilderLegacyActionPropsMessageToParent;
 }
 
@@ -1885,6 +1904,16 @@ export function isSoundAction(
 	action: IAppBuilderActionDefinition,
 ): action is {type: "sound"; props: IAppBuilderActionPropsSound} {
 	return action.type === "sound";
+}
+
+/** assert action type "setContainerVisibility" */
+export function isSetContainerVisibilityAction(
+	action: IAppBuilderActionDefinition,
+): action is {
+	type: "setContainerVisibility";
+	props: IAppBuilderActionPropsSetContainerVisibility;
+} {
+	return action.type === "setContainerVisibility";
 }
 
 /** assert action type "messageToParent" */

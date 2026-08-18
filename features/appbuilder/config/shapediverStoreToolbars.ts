@@ -4,10 +4,25 @@ import {
 	AppBuilderToolbarSide,
 	AppBuilderToolbarVisibility,
 	IAppBuilderToolbarControlItem,
-	IAppBuilderToolbarGroups,
+	IAppBuilderToolbarItem,
 } from "./appbuilder";
+import type {
+	ToolbarAcceptRejectItem,
+	ToolbarCheckboxItem,
+	ToolbarCommandItem,
+	ToolbarMenuModel,
+} from "./toolbarRenderTypes";
 
 export type ToolbarSource = "definition" | "default" | "runtime";
+
+/** Runtime toolbar controls use the same generic command/menu models as the UI. */
+export type ToolbarItem =
+	| IAppBuilderToolbarItem
+	| ToolbarAcceptRejectItem
+	| ToolbarCommandItem
+	| ToolbarCheckboxItem
+	| ToolbarMenuModel;
+export type ToolbarGroups = ToolbarItem[][];
 
 export interface ToolbarRegistration {
 	id: string;
@@ -20,7 +35,7 @@ export interface ToolbarRegistration {
 	visibility: AppBuilderToolbarVisibility;
 	ariaLabel?: string;
 	defaultIcon?: IconType;
-	groups: IAppBuilderToolbarGroups;
+	groups: ToolbarGroups;
 }
 
 export interface ToolbarRuntimeTarget {
@@ -43,17 +58,17 @@ export interface IShapeDiverStoreToolbars {
 	defaultToolbars: ToolbarRegistration[];
 	runtimeToolbars: ToolbarRegistration[];
 	runtimeTokens: Record<string, ToolbarRuntimeTokenEntry>;
+	toolbarOpen: Record<string, boolean>;
 
 	setDefinitionToolbars: (toolbars: ToolbarRegistration[]) => void;
 	resetDefinitionToolbars: () => void;
 	setDefaultToolbar: (toolbar: ToolbarRegistration) => void;
 	removeDefaultToolbar: (toolbarId: string) => void;
-
 	addRuntimeToolbarControls: (
 		target: ToolbarRuntimeTarget,
 		items: IAppBuilderToolbarControlItem[],
 	) => string | undefined;
 	removeRuntimeToolbarToken: (token: string) => boolean;
-
+	setToolbarOpen: (toolbarId: string, open: boolean) => void;
 	selectMergedToolbars: (viewportId?: string) => ToolbarRegistration[];
 }

@@ -3,10 +3,15 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "@AppBuilderLib/entities/parameter/config/propsParameter";
+import {useInteractionOwnership} from "@AppBuilderLib/entities/parameter/model/interaction/useInteractionOwnership";
 import {useParameterComponentCommons} from "@AppBuilderLib/entities/parameter/model/useParameterComponentCommons";
 import ParameterLabelComponent from "@AppBuilderLib/entities/parameter/ui/ParameterLabelComponent";
 import ParameterWrapperComponent from "@AppBuilderLib/entities/parameter/ui/ParameterWrapperComponent";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {
+	createToolbarCheckboxItem,
+	createToolbarCommand,
+} from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
@@ -29,8 +34,14 @@ import {
 } from "@shapediver/viewer.session";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import type {ParameterRectangleTransformComponentStyleProps as StyleProps} from "../config/theme/parameterRectangleTransformComponentTheme";
+import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
+import {useInteractionRequestLifecycle} from "../model/interaction/useInteractionRequestLifecycle";
+import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useRectangleTransform} from "../model/interaction/useRectangleTransform";
-import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
+import {
+	requestSelectionAutoClear,
+	useSelectionAutoClear,
+} from "../model/interaction/useSelectionAutoClear";
 import classes from "./ParameterInteractionComponent.module.css";
 
 type TransformedNode = {
@@ -66,20 +77,20 @@ const defaultStyleProps: StyleProps = {
 	selectionColor: {
 		type: "pulse",
 		color: "#0d44f0",
-		intensity: 0.25,
-		pulseSpeed: 1,
+		intensity: 1,
+		pulseSpeed: 0.75,
 	} as IInteractionEffect,
 	availableColor: {
 		type: "pulse",
 		color: "#ffffff",
 		intensity: 0.25,
-		pulseSpeed: 1,
+		pulseSpeed: 0.75,
 	} as IInteractionEffect,
 	hoverColor: {
 		type: "pulse",
 		color: "#ffffff",
-		intensity: 0.25,
-		pulseSpeed: 1.5,
+		intensity: 0.75,
+		pulseSpeed: 1.75,
 	} as IInteractionEffect,
 };
 
@@ -105,6 +116,8 @@ export default function ParameterRectangleTransformComponent(
 		sessionDependencies,
 	} = useParameterComponentCommons<string>(props);
 
+	const {namespace} = props;
+
 	const {selectionColor, availableColor, hoverColor} = useProps(
 		"ParameterRectangleTransformComponent",
 		defaultStyleProps,
@@ -116,10 +129,6 @@ export default function ParameterRectangleTransformComponent(
 		defaultPropsParameterWrapper,
 		props,
 	);
-
-	// get the interaction request management
-	const {addInteractionRequest, removeInteractionRequest} =
-		useShapeDiverStoreInteractionRequestManagement();
 
 	// get the notification store
 	const notifications = useNotificationStore();
@@ -153,12 +162,13 @@ export default function ParameterRectangleTransformComponent(
 	}, [definition.settings, selectionColor, availableColor]);
 
 	// state for the rectangle transform application
+	const alwaysActive = rectangleTransformProps.activeMode === "alwaysActive";
+	const rectanglePresentation = resolveInteractionPresentation(
+		rectangleTransformProps.presentation,
+		alwaysActive,
+	);
 	const [rectangleTransformActive, setRectangleTransformActive] =
-		useState<boolean>(
-			rectangleTransformProps.activeMode === "activeOnStart"
-				? true
-				: false,
-		);
+		useState(false);
 	// store the last confirmed value in a state to reset the transformation
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
 		TransformedNode[]
@@ -167,37 +177,110 @@ export default function ParameterRectangleTransformComponent(
 	const [parsedExecValue, setParsedExecValue] = useState<TransformedNode[]>(
 		[],
 	);
-	// reference to manage the interaction request token
-	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
-
 	const {viewportId} = useViewportId();
+	const interactionOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
+	const shouldAutoClear = rectangleTransformProps.autoClear ?? false;
+	const autoClearRequest = useSelectionAutoClear(interactionOwnerKey);
+	const startsAutoCleared =
+		shouldAutoClear && autoClearRequest?.value === value;
 
 	// get the transformed nodes and the selected nodes
 	const {
+		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
+		closeTransform,
 	} = useRectangleTransform(
 		sessionDependencies,
 		viewportId,
 		rectangleTransformProps,
 		rectangleTransformActive,
-		parseTransformation(value),
+		startsAutoCleared ? [] : parseTransformation(value),
 	);
+
+	const rtLabel =
+		rectangleTransformProps.prompt?.inactiveTitle ??
+		"Start rectangle transform";
+
+	const automaticallyActivated =
+		alwaysActive || rectangleTransformProps.activeMode === "activeOnStart";
+	const [rectangleTransformSuspended, setRectangleTransformSuspended] =
+		useState(false);
+	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
+		viewportId,
+		ownerKey: interactionOwnerKey,
+		ownerLabel: rtLabel,
+		type: "rectangleTransform",
+		// Persistent transforms can be suspended by a user-requested interaction,
+		// just like persistent selection parameters.
+		alwaysActive: false,
+		automaticallyActivated,
+		candidateNodes,
+		active: rectangleTransformActive,
+	});
+	const rectangleTransformRegistered =
+		rectangleTransformActive && !ownershipBlocked;
+	const effectiveRectangleActive =
+		rectangleTransformRegistered && !rectangleTransformSuspended;
+	useEffect(() => {
+		if (ownershipBlocked) {
+			setRectangleTransformSuspended(false);
+			setRectangleTransformActive(false);
+		} else if (automaticallyActivated) setRectangleTransformActive(true);
+	}, [automaticallyActivated, ownershipBlocked]);
 
 	const transformedNodeNamesRef = useRef(transformedNodeNames);
 	useEffect(() => {
 		transformedNodeNamesRef.current = transformedNodeNames;
 	}, [transformedNodeNames]);
+	const restartPersistentTransform = useCallback(() => {
+		setRectangleTransformActive(false);
+		window.requestAnimationFrame(() => {
+			if (tryAcquireClaim(true)) setRectangleTransformActive(true);
+		});
+	}, [tryAcquireClaim]);
+
+	const appliedAutoClearRevisionRef = useRef(0);
+	useEffect(() => {
+		if (
+			!shouldAutoClear ||
+			!autoClearRequest ||
+			autoClearRequest.revision <= appliedAutoClearRevisionRef.current ||
+			(autoClearRequest.value !== value &&
+				autoClearRequest.value !== state.uiValue)
+		)
+			return;
+
+		appliedAutoClearRevisionRef.current = autoClearRequest.revision;
+		closeTransform();
+		restoreTransformedNodeNames(
+			[],
+			structuredClone(transformedNodeNamesRef.current),
+		);
+		setTransformedNodeNames([]);
+		if (alwaysActive) restartPersistentTransform();
+	}, [
+		alwaysActive,
+		autoClearRequest,
+		closeTransform,
+		restartPersistentTransform,
+		restoreTransformedNodeNames,
+		shouldAutoClear,
+		state.uiValue,
+		value,
+	]);
 
 	// react to changes of the execValue and reset the last confirmed value
 	useEffect(() => {
 		const parsedExecValue = parseTransformation(state.execValue);
 		setParsedExecValue(structuredClone(parsedExecValue));
 		setLastConfirmedValue(structuredClone(parsedExecValue));
-		setTransformedNodeNames(structuredClone(parsedExecValue));
-	}, [state.execValue]);
+		setTransformedNodeNames(
+			structuredClone(startsAutoCleared ? [] : parsedExecValue),
+		);
+	}, [startsAutoCleared, state.execValue]);
 
 	// reset the transformed nodes when the definition changes
 	useEffect(() => {
@@ -219,7 +302,7 @@ export default function ParameterRectangleTransformComponent(
 	 */
 	const changeValue = useCallback(
 		(transformedNodeNames: TransformedNode[]) => {
-			setRectangleTransformActive(false);
+			if (!alwaysActive) setRectangleTransformActive(false);
 			const parameterValue: RectangleTransformParameterValue = {
 				names: transformedNodeNames.map((node) => node.name),
 				transformations: transformedNodeNames.map(
@@ -230,12 +313,37 @@ export default function ParameterRectangleTransformComponent(
 			// create a deep copy of the transformed node names
 			setLastConfirmedValue(structuredClone(transformedNodeNames));
 			// if the value is already the same, do not change it
-			if (value === JSON.stringify(parameterValue)) return;
-			handleChange(JSON.stringify(parameterValue), 0);
-			setSelectedNodeNames([]);
+			const serializedValue = JSON.stringify(parameterValue);
+			if (value === serializedValue) {
+				if (shouldAutoClear)
+					requestSelectionAutoClear(
+						interactionOwnerKey,
+						serializedValue,
+					);
+				else if (!alwaysActive) setSelectedNodeNames([]);
+				return;
+			}
+			handleChange(serializedValue, 0, () => {
+				if (shouldAutoClear)
+					requestSelectionAutoClear(
+						interactionOwnerKey,
+						serializedValue,
+					);
+			});
+			if (!alwaysActive) setSelectedNodeNames([]);
 		},
-		[value],
+		[alwaysActive, interactionOwnerKey, shouldAutoClear, value],
 	);
+
+	const restartAfterCancel = useCallback(() => {
+		if (!alwaysActive) {
+			setRectangleTransformActive(false);
+			setSelectedNodeNames([]);
+			return;
+		}
+
+		restartPersistentTransform();
+	}, [alwaysActive, restartPersistentTransform]);
 
 	/**
 	 * Callback function to reset the transformed nodes.
@@ -244,60 +352,48 @@ export default function ParameterRectangleTransformComponent(
 	 * It also ends the rectangle transform.
 	 */
 	const resetTransformation = useCallback(() => {
+		closeTransform();
 		restoreTransformedNodeNames(
 			structuredClone(lastConfirmedValue),
 			structuredClone(transformedNodeNames),
 		);
-		setRectangleTransformActive(false);
-		setSelectedNodeNames([]);
-	}, [lastConfirmedValue, transformedNodeNames]);
+		restartAfterCancel();
+	}, [
+		closeTransform,
+		lastConfirmedValue,
+		restartAfterCancel,
+		transformedNodeNames,
+	]);
 
 	// extend the onCancel callback to reset the transformed nodes.
 	const _onCancelCallback = useCallback(() => {
+		closeTransform();
 		restoreTransformedNodeNames(
 			structuredClone(parsedExecValue),
 			structuredClone(transformedNodeNames),
 		);
-		setRectangleTransformActive(false);
-		setSelectedNodeNames([]);
+		restartAfterCancel();
 		setLastConfirmedValue(structuredClone(parsedExecValue));
-	}, [parsedExecValue, transformedNodeNames]);
+	}, [
+		closeTransform,
+		parsedExecValue,
+		restartAfterCancel,
+		transformedNodeNames,
+	]);
 
 	useEffect(() => {
 		setOnCancelCallback(() => _onCancelCallback);
 	}, [_onCancelCallback]);
 
-	/**
-	 * Effect to manage the interaction request for the rectangle transform.
-	 * It adds an interaction request when the rectangle transform is active and removes it when inactive.
-	 * It also cleans up the interaction request when the component is unmounted or when the state changes.
-	 */
-	useEffect(() => {
-		actions.setDisableOtherParameters(rectangleTransformActive);
-
-		if (rectangleTransformActive && !interactionRequestTokenRef.current) {
-			const returnedToken = addInteractionRequest({
-				type: "active",
-				viewportId,
-				disable: resetTransformation,
-			});
-			interactionRequestTokenRef.current = returnedToken;
-		} else if (
-			!rectangleTransformActive &&
-			interactionRequestTokenRef.current
-		) {
-			removeInteractionRequest(interactionRequestTokenRef.current);
-			interactionRequestTokenRef.current = undefined;
-		}
-
-		return () => {
-			actions.setDisableOtherParameters(false);
-			if (interactionRequestTokenRef.current) {
-				removeInteractionRequest(interactionRequestTokenRef.current);
-				interactionRequestTokenRef.current = undefined;
-			}
-		};
-	}, [rectangleTransformActive, resetTransformation]);
+	const {takeOverInteraction} = useInteractionRequestLifecycle({
+		viewportId,
+		active: rectangleTransformRegistered,
+		persistent: alwaysActive,
+		onDisable: resetTransformation,
+		onSuspend: () => setRectangleTransformSuspended(true),
+		onResume: () => setRectangleTransformSuspended(false),
+		setDisableOtherParameters: actions.setDisableOtherParameters,
+	});
 
 	/**
 	 * The content of the parameter when it is active.
@@ -376,7 +472,10 @@ export default function ParameterRectangleTransformComponent(
 			className={classes.interactionButton}
 			rightSection={<Icon iconType={"tabler:hand-finger"} />}
 			variant={transformedNodeNames.length === 0 ? "light" : "filled"}
-			onClick={() => setRectangleTransformActive(true)}
+			onClick={() => {
+				takeOverInteraction();
+				if (tryAcquireClaim(true)) setRectangleTransformActive(true);
+			}}
 		>
 			<Text size="sm" className={classes.interactionText}>
 				{rectangleTransformProps.prompt?.inactiveTitle ??
@@ -384,6 +483,66 @@ export default function ParameterRectangleTransformComponent(
 			</Text>
 		</Button>
 	);
+	const hasPendingTransformation =
+		JSON.stringify(transformedNodeNames) !==
+		JSON.stringify(lastConfirmedValue);
+
+	// Register with interaction toolbar if presentation is "toolbar"
+
+	useInteractionToolbarContribution({
+		id: `${namespace}-${definition.id}-${viewportId}`,
+		namespace,
+		viewportId,
+		presentation: rectanglePresentation,
+		sectionId: "rectangle-transform",
+		order: definition.order,
+		menuVisibility: "multipleToggleable",
+		menu: {
+			id: "runtime-interaction-rectangle-transform-menu",
+			label: "Rectangle transform",
+			icon: "tabler:vector",
+		},
+		items: [
+			createToolbarCheckboxItem({
+				id: `${namespace}-${definition.id}-${viewportId}-toggle`,
+				label: rtLabel,
+				checked: effectiveRectangleActive,
+				readOnly: alwaysActive && effectiveRectangleActive,
+				setChecked: (checked) => {
+					if (checked) {
+						takeOverInteraction();
+						if (tryAcquireClaim(true))
+							setRectangleTransformActive(true);
+					} else if (!alwaysActive)
+						setRectangleTransformActive(false);
+				},
+			}),
+		],
+		commands: hasPendingTransformation
+			? [
+					createToolbarCommand({
+						id: `${namespace}-${definition.id}-${viewportId}-confirm`,
+						aggregationId: "rectangle-transform-confirm",
+						label: "Confirm",
+						icon: "tabler:check",
+						order: 10,
+						disabled: !hasPendingTransformation,
+						execute: () => changeValue(transformedNodeNames),
+					}),
+					createToolbarCommand({
+						id: `${namespace}-${definition.id}-${viewportId}-cancel`,
+						aggregationId: "rectangle-transform-cancel",
+						label: "Cancel",
+						icon: "tabler:x",
+						order: 20,
+						disabled: !hasPendingTransformation,
+						execute: resetTransformation,
+					}),
+				]
+			: [],
+	});
+
+	if (rectanglePresentation === "toolbar") return <></>;
 
 	return (
 		<ParameterWrapperComponent
@@ -392,7 +551,7 @@ export default function ParameterRectangleTransformComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && rectangleTransformActive
+			{definition && effectiveRectangleActive
 				? contentActive
 				: contentInactive}
 		</ParameterWrapperComponent>

@@ -2,27 +2,25 @@ import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/mo
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
+import {useCustomTheme} from "@AppBuilderLib/shared/ui/theme/useCustomTheme";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
+import {registerWebMcpTools} from "../adapters/webmcp/registerWebMcpTools";
+import {buildWebMcpDeps} from "../adapters/webmcp/webmcpDeps";
 import {
 	getModelContext,
 	getWebMcpEnvironment,
 	isWebMcpAvailable,
 } from "../lib/webmcpAvailability";
-import {registerCreateModelStateTool} from "./tools/registerCreateModelStateTool";
-import {registerImportModelStateTool} from "./tools/registerImportModelStateTool";
-import {registerListParameterDefinitionsTool} from "./tools/registerListParameterDefinitionsTool";
-import {registerSetParameterValuesTool} from "./tools/registerSetParameterValuesTool";
 import type {
 	UseWebMcpToolsProps,
 	UseWebMcpToolsResult,
 } from "./useWebMcpTools.types";
-import type {WebMcpToolsDeps} from "./webMcpToolsDeps";
 
 export function useWebMcpTools(
 	props: UseWebMcpToolsProps,
 ): UseWebMcpToolsResult {
-	const {namespace, enabled = isWebMcpAvailable()} = props;
+	const {namespace, enabled = isWebMcpAvailable(), disabledTools} = props;
 	const [registered, setRegistered] = useState(false);
 	const environment = getWebMcpEnvironment();
 	const ready = registered && environment.ready;
@@ -47,6 +45,7 @@ export function useWebMcpTools(
 	const {importModelState} = useImportModelState({
 		namespace: namespace ?? "",
 	});
+	const {theme} = useCustomTheme();
 	const namespaceRef = useRef<string>(namespace ?? "");
 	namespaceRef.current = namespace ?? "";
 
@@ -61,6 +60,20 @@ export function useWebMcpTools(
 
 	const importModelStateRef = useRef(importModelState);
 	importModelStateRef.current = importModelState;
+
+	const componentSettingsRef = useRef<Record<string, any> | undefined>(
+		undefined,
+	);
+	componentSettingsRef.current = (
+		theme as any
+	)?.components?.ParameterSelectComponent?.defaultProps?.componentSettings;
+
+	// Latest disabledTools for use inside the effect; deps compare by content
+	// (sorted join) so a new array instance with the same names does NOT trigger
+	// a re-register cycle.
+	const disabledToolsRef = useRef<string[] | undefined>(disabledTools);
+	disabledToolsRef.current = disabledTools;
+	const disabledKey = (disabledTools ?? []).slice().sort().join(",");
 
 	const sessionReady = !!namespace && !!sessions[namespace];
 	const paramsPopulated =
@@ -80,40 +93,28 @@ export function useWebMcpTools(
 		const controller = new AbortController();
 		let cancelled = false;
 
-		const deps: WebMcpToolsDeps = {
+		const refs = {
 			namespaceRef,
-			getLiveParameters: (targetNamespace) =>
-				Object.values(getParametersRef.current(targetNamespace)).map(
-					(store) => store.getState(),
-				),
+			getParametersRef,
 			batchParameterValueUpdateRef,
 			createModelStateRef,
 			importModelStateRef,
+			componentSettingsRef,
+			listParameterNamespaces: () =>
+				Object.keys(
+					useShapeDiverStoreParameters.getState().parameterStores,
+				),
 		};
 
 		const registerTools = async () => {
 			const modelContext = getModelContext();
 
 			try {
-				await registerListParameterDefinitionsTool(
+				await registerWebMcpTools(
 					modelContext,
-					deps,
+					() => buildWebMcpDeps(refs),
 					controller.signal,
-				);
-				await registerSetParameterValuesTool(
-					modelContext,
-					deps,
-					controller.signal,
-				);
-				await registerCreateModelStateTool(
-					modelContext,
-					deps,
-					controller.signal,
-				);
-				await registerImportModelStateTool(
-					modelContext,
-					deps,
-					controller.signal,
+					new Set(disabledToolsRef.current ?? []),
 				);
 
 				if (!cancelled) {
@@ -133,7 +134,7 @@ export function useWebMcpTools(
 			controller.abort();
 			setRegistered(false);
 		};
-	}, [enabled, namespace, sessionReady, paramsPopulated]);
+	}, [enabled, namespace, sessionReady, paramsPopulated, disabledKey]);
 
 	const environmentSnapshot = {
 		modelContextAvailable: environment.modelContextAvailable,

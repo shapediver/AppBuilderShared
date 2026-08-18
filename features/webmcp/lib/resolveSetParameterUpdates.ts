@@ -1,13 +1,24 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
-import {SUPPORTED_PARAMETER_TYPES} from "../config/listParameterDefinitions";
+import {SUPPORTED_PARAMETER_TYPES} from "../core/listParameterDefinitions";
 import type {
 	ParameterUpdateInput,
 	SetParameterValuesError,
 	SetParameterValuesOutput,
-} from "../config/setParameterValues";
-import {findParameterByName} from "./findParameterByName";
+} from "../core/setParameterValues";
 import {prepareParameterStoreValue} from "./setParameterValueValidators/prepareParameterStoreValue";
+
+function findParameterByName(
+	parameters: IShapeDiverParameter<any>[],
+	name: string,
+): IShapeDiverParameter<any> | undefined {
+	return parameters.find(
+		(p) =>
+			p.definition.id === name ||
+			p.definition.name === name ||
+			p.definition.displayname === name,
+	);
+}
 
 export async function resolveAndUpdate(
 	defaultNamespace: string,

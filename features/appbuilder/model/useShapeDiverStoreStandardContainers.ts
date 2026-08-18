@@ -140,6 +140,12 @@ export const useShapeDiverStoreStandardContainers =
 					left: 0,
 					right: 0,
 				},
+				containerOpen: {
+					top: true,
+					bottom: true,
+					left: true,
+					right: true,
+				},
 
 				setActiveTab: (containerName, tabIndex) =>
 					set(
@@ -159,6 +165,18 @@ export const useShapeDiverStoreStandardContainers =
 						},
 						false,
 						`setActiveTab-${containerName}-${tabIndex}`,
+					),
+
+				setContainerOpen: (containerName, open) =>
+					set(
+						(state) => ({
+							containerOpen: {
+								...state.containerOpen,
+								[containerName]: open,
+							},
+						}),
+						false,
+						`setContainerOpen-${containerName}-${open}`,
 					),
 
 				setDefaultContainer: (name, container) =>

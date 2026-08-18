@@ -5,11 +5,15 @@ import {
 	legacyViewportIconsDefaultTransitionProps,
 } from "@AppBuilderLib/entities/viewport/config/legacyViewportIconsTheme";
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
-import {ToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreToolbars";
+import type {ResolvedToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
+import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useToolbarVisibility} from "../model/useToolbarVisibility";
-import AppBuilderToolbarButton from "./AppBuilderToolbarButton";
+import AppBuilderToolbarActionButton from "./AppBuilderToolbarActionButton";
+import AppBuilderToolbarCommandButton from "./AppBuilderToolbarCommandButton";
+import AppBuilderToolbarExportButton from "./AppBuilderToolbarExportButton";
+import AppBuilderToolbarPopoverButton from "./AppBuilderToolbarPopoverButton";
 
 const layoutBaseStyle: React.CSSProperties = {
 	// Keep old `ViewportIcons` theme overrides as the visual fallback baseline.
@@ -34,6 +38,12 @@ const toolbarPopoverSafeTargetSelector = [
 	"[data-position]",
 	"[data-position][role='dialog']",
 	"[data-position][role='presentation']",
+	// Mantine `Modal` content has `role="dialog"` without `data-position`.
+	// Clicks inside such a modal (e.g. the "Import model state" dialog opened
+	// from a toolbar menu item) must not close the toolbar popover, otherwise
+	// the popover unmounts the action component that owns the dialog state
+	// and the dialog disappears on any inside click.
+	"[role='dialog']",
 ].join(",");
 
 const isToolbarPopoverSafeTarget = (
@@ -47,7 +57,7 @@ const isToolbarPopoverSafeTarget = (
 };
 
 interface Props {
-	toolbar: ToolbarRegistration;
+	toolbar: ResolvedToolbarRegistration;
 	buttonRenderContext: ButtonRenderContext;
 	themePropsOverride?: Partial<typeof defaultStyleProps>;
 }
@@ -79,18 +89,21 @@ export default function AppBuilderToolbar(props: Props) {
 		});
 	const toolbarRef = useRef<HTMLDivElement | null>(null);
 	const [openedPopoverId, setOpenedPopoverId] = useState<string>();
-	const hasActiveInteractionRequest =
-		useShapeDiverStoreInteractionRequestManagement((state) => {
-			const viewportId = buttonRenderContext.viewportId;
-
-			if (viewportId) {
-				return !!state.interactionRequests[viewportId]?.activeRequest;
-			}
-
-			return Object.values(state.interactionRequests).some(
-				({activeRequest}) => !!activeRequest,
-			);
-		});
+	const popoverDismissalBlocked =
+		useShapeDiverStoreInteractionRequestManagement(
+			useCallback(
+				(state) => {
+					const {viewportId} = buttonRenderContext;
+					if (viewportId)
+						return !!state.interactionRequests[viewportId]
+							?.activeRequest;
+					return Object.values(state.interactionRequests).some(
+						({activeRequest}) => !!activeRequest,
+					);
+				},
+				[buttonRenderContext.viewportId],
+			),
+		);
 
 	useEffect(() => {
 		setMenuOpen(!!openedPopoverId);
@@ -102,11 +115,15 @@ export default function AppBuilderToolbar(props: Props) {
 		const closeOnOutsidePointerDown = (
 			event: PointerEvent | MouseEvent | TouchEvent,
 		) => {
-			if (hasActiveInteractionRequest) return;
-			if (event.target instanceof HTMLCanvasElement) {
+			const canvasTarget =
+				event.target instanceof HTMLCanvasElement ||
+				(event.target instanceof Element &&
+					!!event.target.closest("canvas"));
+			if (canvasTarget) {
 				setOpenedPopoverId(undefined);
 				return;
 			}
+			if (popoverDismissalBlocked) return;
 			if (isToolbarPopoverSafeTarget(event.target, toolbarRef.current)) {
 				return;
 			}
@@ -143,7 +160,7 @@ export default function AppBuilderToolbar(props: Props) {
 				true,
 			);
 		};
-	}, [hasActiveInteractionRequest, openedPopoverId]);
+	}, [popoverDismissalBlocked, openedPopoverId]);
 
 	const handlePopoverOpenChange = useCallback(
 		(popoverId: string, open: boolean) => {
@@ -189,25 +206,94 @@ export default function AppBuilderToolbar(props: Props) {
 						{group.map((toolbarItem, index) => {
 							const popoverId =
 								toolbarItem.id ?? `${originalIndex}-${index}`;
-							return (
-								<AppBuilderToolbarButton
-									key={popoverId}
-									toolbarItem={toolbarItem}
-									buttonRenderContext={
-										resolvedButtonRenderContext
-									}
-									defaultIcon={toolbar.defaultIcon}
-									toolbarSide={toolbar.side}
-									popoverId={popoverId}
-									openedPopoverId={openedPopoverId}
-									onPopoverOpenChange={
-										handlePopoverOpenChange
-									}
-									hasActiveInteractionRequest={
-										hasActiveInteractionRequest
-									}
-								/>
-							);
+							const buttonProps = {
+								buttonRenderContext:
+									resolvedButtonRenderContext,
+								defaultIcon: toolbar.defaultIcon,
+								toolbarSide: toolbar.side,
+								popoverId,
+								openedPopoverId,
+								onPopoverOpenChange: handlePopoverOpenChange,
+								popoverDismissalBlocked,
+							};
+							switch (toolbarItem.type) {
+								case "acceptReject":
+									return (
+										<ViewportAcceptRejectButtons
+											key={popoverId}
+											inToolbar
+										/>
+									);
+								case "command":
+									return (
+										<AppBuilderToolbarCommandButton
+											key={popoverId}
+											item={toolbarItem}
+											presentation="toolbar"
+											defaultIcon={toolbar.defaultIcon}
+											globalDisabled={
+												resolvedButtonRenderContext.executing
+											}
+										/>
+									);
+								case "checkbox":
+									return (
+										<AppBuilderToolbarCommandButton
+											key={popoverId}
+											item={{
+												type: "command",
+												id: toolbarItem.id,
+												label: toolbarItem.label,
+												icon: toolbarItem.icon,
+												tooltip: toolbarItem.tooltip,
+												disabled:
+													toolbarItem.disabled ||
+													toolbarItem.props.readOnly,
+												props: {
+													execute: () =>
+														toolbarItem.props.setChecked(
+															!toolbarItem.props
+																.checked,
+														),
+												},
+											}}
+											presentation="toolbar"
+											defaultIcon={toolbar.defaultIcon}
+											globalDisabled={
+												resolvedButtonRenderContext.executing
+											}
+										/>
+									);
+								case "action":
+									return (
+										<AppBuilderToolbarActionButton
+											key={popoverId}
+											item={toolbarItem}
+											buttonRenderContext={
+												resolvedButtonRenderContext
+											}
+										/>
+									);
+								case "export":
+									return (
+										<AppBuilderToolbarExportButton
+											key={popoverId}
+											item={toolbarItem}
+											buttonRenderContext={
+												resolvedButtonRenderContext
+											}
+											defaultIcon={toolbar.defaultIcon}
+										/>
+									);
+								default:
+									return (
+										<AppBuilderToolbarPopoverButton
+											key={popoverId}
+											{...buttonProps}
+											item={toolbarItem}
+										/>
+									);
+							}
 						})}
 						{groupIndex < visibleGroups.length - 1 && (
 							<Divider

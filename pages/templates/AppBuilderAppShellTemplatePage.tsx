@@ -1,3 +1,4 @@
+import {AppBuilderContainerOrientation} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContainerOrientation";
 import {createGridLayout} from "@AppBuilderLib/shared/lib/layout";
 import {useIsLandscape} from "@AppBuilderLib/shared/lib/useIsLandscape";
 import {
@@ -295,7 +296,9 @@ export default function AppBuilderAppShellTemplatePage(
 					{!bottom ? undefined : showBottomInGrid ? undefined : (
 						<AppBuilderContainerWrapper
 							name="bottom"
-							orientation="vertical"
+							orientation={
+								AppBuilderContainerOrientation.Vertical
+							}
 						>
 							{bottom.node}
 						</AppBuilderContainerWrapper>
@@ -330,7 +333,7 @@ export default function AppBuilderAppShellTemplatePage(
 							<AppBuilderContainerWrapper
 								orientation={
 									bottom.hints?.preferVertical
-										? "vertical"
+										? AppBuilderContainerOrientation.Vertical
 										: undefined
 								}
 								name="bottom"

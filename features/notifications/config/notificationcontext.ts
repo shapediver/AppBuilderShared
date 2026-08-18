@@ -21,6 +21,7 @@ export const NotificationWrapperThemeDefaultPropsSchema = z.strictObject({
 	successColor: z.string().optional(),
 	warningColor: z.string().optional(),
 	errorColor: z.string().optional(),
+	infoColor: z.string().optional(),
 	autoClose: z.union([z.boolean(), z.number()]).optional(),
 });
 
@@ -48,6 +49,10 @@ export interface NotificationStyleProps extends z.infer<
 	 */
 	errorColor?: string;
 	/**
+	 * Optional color to use for info notifications.
+	 */
+	infoColor?: string;
+	/**
 	 * Determines whether notification should be closed automatically,
 	 * number is auto close timeout in ms.
 	 *
@@ -56,10 +61,20 @@ export interface NotificationStyleProps extends z.infer<
 	autoClose?: boolean | number;
 }
 
+/** Shared defaults for `useProps("NotificationWrapper")` and the notification store. */
+export const defaultNotificationStyleProps: NotificationStyleProps = {
+	errorColor: "red",
+	warningColor: "yellow",
+	successColor: undefined,
+	infoColor: "blue",
+	autoClose: 20000,
+};
+
 export enum NotificationAction {
 	SUCCESS = "success",
 	WARNING = "warning",
 	ERROR = "error",
+	INFO = "info",
 }
 
 /**
@@ -107,6 +122,14 @@ export interface INotificationContext {
 	 * @returns
 	 */
 	[NotificationAction.SUCCESS]: (
+		notification: AppBuilderNotificationData,
+	) => string;
+	/**
+	 * Show an info notification
+	 * @param message
+	 * @returns
+	 */
+	[NotificationAction.INFO]: (
 		notification: AppBuilderNotificationData,
 	) => string;
 }

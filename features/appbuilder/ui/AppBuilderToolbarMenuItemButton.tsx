@@ -1,9 +1,9 @@
 import {AppBuilderToolbarMenuItemButtonThemeDefaultProps} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarMenuItemButton.theme.types";
 import {IAppBuilderActionPropsCommon} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import type {IconProps} from "@AppBuilderLib/shared/ui/icon/Icon.types";
-import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
-import {useProps} from "@mantine/core";
+import {Loader, useProps} from "@mantine/core";
 import classes from "./AppBuilderToolbarMenuItemButton.module.css";
 
 type Props = IAppBuilderActionPropsCommon & {
@@ -39,7 +39,8 @@ export default function AppBuilderToolbarMenuItemButton({
 		defaultStyleProps,
 		{},
 	) as ThemeProps;
-	const itemProps = themedProps.itemProps ?? defaultStyleProps.itemProps ?? {};
+	const itemProps =
+		themedProps.itemProps ?? defaultStyleProps.itemProps ?? {};
 	const labelProps =
 		themedProps.labelProps ?? defaultStyleProps.labelProps ?? {};
 	const iconProps = themedProps.iconProps ?? defaultStyleProps.iconProps;
@@ -62,9 +63,13 @@ export default function AppBuilderToolbarMenuItemButton({
 			onClick={onClick}
 			title={tooltip}
 		>
-			{icon && (
+			{(icon || loading) && (
 				<span className={classes.itemSection} data-position="left">
-					<Icon iconType={icon} {...iconProps} />
+					{loading ? (
+						<Loader size={iconProps?.size} />
+					) : (
+						<Icon iconType={icon!} {...iconProps} />
+					)}
 				</span>
 			)}
 			<span
