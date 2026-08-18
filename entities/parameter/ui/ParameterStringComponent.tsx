@@ -98,17 +98,6 @@ export default function ParameterStringComponent(
 	const notifications = useNotificationStore();
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
-	const onTextChange = useCallback(
-		(next: string) => {
-			if (mode === ParameterStringInputMode.Validate) {
-				setValue(next);
-			} else {
-				handleChange(next, undefined, restoreFocus);
-			}
-		},
-		[mode, setValue, handleChange, restoreFocus],
-	);
-
 	const commitImmediate = useCallback(
 		(next: string, restore?: () => void) => {
 			if (next === state.uiValue) {
@@ -133,39 +122,70 @@ export default function ParameterStringComponent(
 		definition?.id,
 	]);
 
-	const {lines, selectSettings} = useMemo(() => {
-		let definitionLines: number | undefined;
-		let definitionSelectSettings:
-			| IStringParameterSelectSettings
-			| undefined;
+	const {lines, selectSettings, definitionMode, definitionDebounce} =
+		useMemo(() => {
+			let definitionLines: number | undefined;
+			let definitionSelectSettings:
+				| IStringParameterSelectSettings
+				| undefined;
+			let definitionMode: ParameterStringInputMode | undefined;
+			let definitionDebounce: number | undefined;
 
-		if (definition?.settings) {
-			const result = validateStringParameterSettings(definition.settings);
-			if (result.success) {
-				definitionLines = result.data.lines;
-				definitionSelectSettings = result.data.selectSettings;
-			} else {
-				Logger.warn(
-					`Invalid settings for parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
+			if (definition?.settings) {
+				const result = validateStringParameterSettings(
+					definition.settings,
 				);
+				if (result.success) {
+					definitionLines = result.data.lines;
+					definitionSelectSettings = result.data.selectSettings;
+					definitionMode = result.data.mode;
+					definitionDebounce = result.data.debounce;
+				} else {
+					Logger.warn(
+						`Invalid settings for parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
+					);
+				}
 			}
-		}
 
-		const mergedSelectSettings =
-			themeSelectSettings || definitionSelectSettings
-				? {
-						...themeSelectSettings,
-						...definitionSelectSettings,
-					}
-				: undefined;
+			const mergedSelectSettings =
+				themeSelectSettings || definitionSelectSettings
+					? {
+							...themeSelectSettings,
+							...definitionSelectSettings,
+						}
+					: undefined;
 
-		return {lines: definitionLines, selectSettings: mergedSelectSettings};
-	}, [
-		definition?.settings,
-		definition?.id,
-		definition?.name,
-		themeSelectSettings,
-	]);
+			return {
+				lines: definitionLines,
+				selectSettings: mergedSelectSettings,
+				definitionMode,
+				definitionDebounce,
+			};
+		}, [
+			definition?.settings,
+			definition?.id,
+			definition?.name,
+			themeSelectSettings,
+		]);
+
+	const resolvedMode = definitionMode ?? mode;
+
+	const onTextChange = useCallback(
+		(next: string) => {
+			if (resolvedMode === ParameterStringInputMode.Validate) {
+				setValue(next);
+			} else {
+				handleChange(next, definitionDebounce, restoreFocus);
+			}
+		},
+		[
+			resolvedMode,
+			setValue,
+			handleChange,
+			restoreFocus,
+			definitionDebounce,
+		],
+	);
 
 	// Show error notification in useEffect to avoid setState during render
 	useEffect(() => {

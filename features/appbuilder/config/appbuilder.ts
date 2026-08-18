@@ -1,4 +1,5 @@
 import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export/config/export";
+import {ParameterStringInputMode} from "@AppBuilderLib/entities/parameter/config/ParameterStringComponent.theme.types";
 import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {SessionCreateDto} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
 import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
@@ -226,6 +227,18 @@ export interface IStringParameterSelectSettings extends ISelectParameterSettings
 export interface IStringParameterSettings {
 	/** Number of lines to display. If > 1, a Textarea is used with autosize and fixed rows. Default: 1 */
 	lines?: number;
+	/**
+	 * Debounce delay in milliseconds before recomputing after text changes.
+	 * Same meaning as theme `ParameterStringComponent.defaultProps.debounce`.
+	 * Per-parameter override; wins over theme.
+	 */
+	debounce?: number;
+	/**
+	 * How the string text input commits values to the session.
+	 * Same meaning as theme `ParameterStringComponent.defaultProps.mode`.
+	 * Per-parameter override; wins over theme.
+	 */
+	mode?: ParameterStringInputMode;
 	/**
 	 * Optional selection settings.
 	 * If this is specified, the parameter is visualized as a selection parameter.

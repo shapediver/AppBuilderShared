@@ -1,3 +1,4 @@
+import {ParameterStringInputMode} from "@AppBuilderLib/entities/parameter/config/ParameterStringComponent.theme.types";
 import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
 import {createModelStateCoreSchema} from "@AppBuilderLib/features/model-state/config/createModelState.zod";
 import {prettifyError, z} from "@AppBuilderLib/shared/lib/zod";
@@ -225,6 +226,8 @@ const IStringParameterSelectSettingsSchema =
 // Zod type definition for IStringParameterSettings
 const IStringParameterSettingsSchema = z.object({
 	lines: z.int().positive().optional(),
+	debounce: z.int().nonnegative().optional(),
+	mode: z.enum(ParameterStringInputMode).optional(),
 	selectSettings: IStringParameterSelectSettingsSchema.optional(),
 });
 
