@@ -1,4 +1,6 @@
+import {ParameterStringInputMode} from "@AppBuilderLib/entities/parameter/config/ParameterStringComponent.theme.types";
 import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
+import {viewportScreenshotPropsSchema} from "@AppBuilderLib/entities/viewport/config/viewportScreenshotProps.zod";
 import {createModelStateCoreSchema} from "@AppBuilderLib/features/model-state/config/createModelState.zod";
 import {prettifyError, z} from "@AppBuilderLib/shared/lib/zod";
 import {appBuilderThemeOtherPropsSchema} from "@AppBuilderLib/shared/mantine-props/appBuilderThemeOther.zod";
@@ -225,6 +227,8 @@ const IStringParameterSelectSettingsSchema =
 // Zod type definition for IStringParameterSettings
 const IStringParameterSettingsSchema = z.object({
 	lines: z.int().positive().optional(),
+	debounce: z.int().nonnegative().optional(),
+	mode: z.enum(ParameterStringInputMode).optional(),
 	selectSettings: IStringParameterSelectSettingsSchema.optional(),
 });
 
@@ -330,27 +334,8 @@ export const IAppBuilderImageRefSchema = z.strictObject({
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsScreenshot
-const IAppBuilderParameterValueSourcePropsScreenshotSchema = z.strictObject({
-	contentType: z.string().optional(),
-	quality: z.number().min(0).max(1).optional(),
-	resolution: z
-		.strictObject({
-			width: z.number().int().positive(),
-			height: z.number().int().positive(),
-		})
-		.optional(),
-	// check if there is either a name or type present
-	camera: z
-		.union([
-			z.looseObject({
-				name: z.string(),
-			}),
-			z.looseObject({
-				type: z.enum(CAMERA_TYPE),
-			}),
-		])
-		.optional(),
-});
+const IAppBuilderParameterValueSourcePropsScreenshotSchema =
+	viewportScreenshotPropsSchema;
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsDataOutput
 const IAppBuilderParameterValueSourcePropsDataOutputSchema = z.strictObject({

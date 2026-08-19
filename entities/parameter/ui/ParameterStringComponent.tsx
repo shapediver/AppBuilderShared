@@ -14,6 +14,7 @@ import {
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
+import {ParameterStringInputMode} from "../config/ParameterStringComponent.theme.types";
 import {resolveStringSelectEmitValue} from "../lib/select/resolveStringSelectEmitValue";
 import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
@@ -32,10 +33,24 @@ import SelectComponent from "./select/SelectComponent";
 export interface ParameterStringComponentStyleProps {
 	/** Select settings per parameter name, displayname, or id (see ParameterSelectComponent). */
 	componentSettings?: Record<string, IStringParameterSelectSettings>;
+	/**
+	 * Debounce delay in milliseconds before recomputing after text changes.
+	 * Used when `mode` is `"debounce"`.
+	 * @default 2000
+	 */
+	debounce?: number;
+	/**
+	 * When {@link ParameterStringInputMode.Debounce}, recompute after the user stops typing.
+	 * When {@link ParameterStringInputMode.Validate}, recompute on blur (and Enter for single-line input).
+	 * @default ParameterStringInputMode.Debounce
+	 */
+	mode?: ParameterStringInputMode;
 }
 
-export const defaultStyleProps: Partial<ParameterStringComponentStyleProps> =
-	{};
+export const defaultStyleProps = {
+	debounce: 2000,
+	mode: ParameterStringInputMode.Debounce,
+} as const satisfies ParameterStringComponentStyleProps;
 
 export type ParameterStringComponentThemePropsType =
 	Partial<ParameterStringComponentStyleProps>;
@@ -58,19 +73,7 @@ export default function ParameterStringComponent(
 		ParameterStringComponentThemePropsType &
 		Partial<PropsParameterWrapper>,
 ) {
-	const {
-		definition,
-		value,
-		handleChange,
-		onCancel,
-		disabled,
-		showReset,
-		resetToDefault,
-		formInputProps,
-		formKey,
-	} = useParameterComponentCommons<string>(props);
-
-	const {componentSettings} = useProps(
+	const {componentSettings, debounce, mode} = useProps(
 		"ParameterStringComponent",
 		defaultStyleProps,
 		props,
@@ -82,8 +85,32 @@ export default function ParameterStringComponent(
 		props,
 	);
 
+	const {
+		definition,
+		state,
+		value,
+		setValue,
+		handleChange,
+		onCancel,
+		disabled,
+		showReset,
+		resetToDefault,
+		formInputProps,
+		formKey,
+	} = useParameterComponentCommons<string>(props, debounce);
+
 	const notifications = useNotificationStore();
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
+
+	const commitImmediate = useCallback(
+		(next: string, restore?: () => void) => {
+			if (next === state.uiValue) {
+				return;
+			}
+			handleChange(next, 0, restore);
+		},
+		[handleChange, state.uiValue],
+	);
 
 	const themeSelectSettings = useMemo(() => {
 		if (!definition) {
@@ -99,39 +126,70 @@ export default function ParameterStringComponent(
 		definition?.id,
 	]);
 
-	const {lines, selectSettings} = useMemo(() => {
-		let definitionLines: number | undefined;
-		let definitionSelectSettings:
-			| IStringParameterSelectSettings
-			| undefined;
+	const {lines, selectSettings, definitionMode, definitionDebounce} =
+		useMemo(() => {
+			let definitionLines: number | undefined;
+			let definitionSelectSettings:
+				| IStringParameterSelectSettings
+				| undefined;
+			let definitionMode: ParameterStringInputMode | undefined;
+			let definitionDebounce: number | undefined;
 
-		if (definition?.settings) {
-			const result = validateStringParameterSettings(definition.settings);
-			if (result.success) {
-				definitionLines = result.data.lines;
-				definitionSelectSettings = result.data.selectSettings;
-			} else {
-				Logger.warn(
-					`Invalid settings for parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
+			if (definition?.settings) {
+				const result = validateStringParameterSettings(
+					definition.settings,
 				);
+				if (result.success) {
+					definitionLines = result.data.lines;
+					definitionSelectSettings = result.data.selectSettings;
+					definitionMode = result.data.mode;
+					definitionDebounce = result.data.debounce;
+				} else {
+					Logger.warn(
+						`Invalid settings for parameter (id: "${definition.id}", name: "${definition.name}"): ${result.error}`,
+					);
+				}
 			}
-		}
 
-		const mergedSelectSettings =
-			themeSelectSettings || definitionSelectSettings
-				? {
-						...themeSelectSettings,
-						...definitionSelectSettings,
-					}
-				: undefined;
+			const mergedSelectSettings =
+				themeSelectSettings || definitionSelectSettings
+					? {
+							...themeSelectSettings,
+							...definitionSelectSettings,
+						}
+					: undefined;
 
-		return {lines: definitionLines, selectSettings: mergedSelectSettings};
-	}, [
-		definition?.settings,
-		definition?.id,
-		definition?.name,
-		themeSelectSettings,
-	]);
+			return {
+				lines: definitionLines,
+				selectSettings: mergedSelectSettings,
+				definitionMode,
+				definitionDebounce,
+			};
+		}, [
+			definition?.settings,
+			definition?.id,
+			definition?.name,
+			themeSelectSettings,
+		]);
+
+	const resolvedMode = definitionMode ?? mode;
+
+	const onTextChange = useCallback(
+		(next: string) => {
+			if (resolvedMode === ParameterStringInputMode.Validate) {
+				setValue(next);
+			} else {
+				handleChange(next, definitionDebounce, restoreFocus);
+			}
+		},
+		[
+			resolvedMode,
+			setValue,
+			handleChange,
+			restoreFocus,
+			definitionDebounce,
+		],
+	);
 
 	// Show error notification in useEffect to avoid setState during render
 	useEffect(() => {
@@ -173,7 +231,7 @@ export default function ParameterStringComponent(
 			{...(formInputProps || {})}
 			onChange={(v) => {
 				const val = v ?? "";
-				handleChange(val, undefined, restoreFocus);
+				handleChange(val, 0, restoreFocus);
 				if (formInputProps?.onChange) {
 					formInputProps.onChange(val);
 				}
@@ -223,11 +281,7 @@ export default function ParameterStringComponent(
 						value={value}
 						{...(formInputProps || {})}
 						onChange={(e) => {
-							handleChange(
-								e.currentTarget.value,
-								undefined,
-								restoreFocus,
-							);
+							onTextChange(e.currentTarget.value);
 							if (formInputProps?.onChange) {
 								formInputProps.onChange(e);
 							}
@@ -254,7 +308,11 @@ export default function ParameterStringComponent(
 								formInputProps.onFocus(e);
 							}
 						}}
-						onBlur={() => {
+						onBlur={(e) => {
+							if (e.currentTarget.disabled) {
+								return;
+							}
+							commitImmediate(e.currentTarget.value);
 							onBlurHandler();
 							if (formInputProps?.onBlur) {
 								formInputProps.onBlur();
@@ -267,11 +325,7 @@ export default function ParameterStringComponent(
 						{...(formInputProps || {})}
 						value={value}
 						onChange={(e) => {
-							handleChange(
-								e.target.value,
-								undefined,
-								restoreFocus,
-							);
+							onTextChange(e.target.value);
 							if (formInputProps?.onChange) {
 								formInputProps.onChange(e);
 							}
@@ -295,11 +349,30 @@ export default function ParameterStringComponent(
 								formInputProps.onFocus(e);
 							}
 						}}
-						onBlur={() => {
+						onBlur={(e) => {
+							if (e.currentTarget.disabled) {
+								return;
+							}
+							commitImmediate(e.currentTarget.value);
 							onBlurHandler();
 							if (formInputProps?.onBlur) {
 								formInputProps.onBlur();
 							}
+						}}
+						onKeyDown={(e) => {
+							if (
+								e.key !== "Enter" ||
+								e.nativeEvent.isComposing
+							) {
+								return;
+							}
+							if (!formInputProps) {
+								e.preventDefault();
+							}
+							commitImmediate(
+								e.currentTarget.value,
+								restoreFocus,
+							);
 						}}
 					/>
 				))}

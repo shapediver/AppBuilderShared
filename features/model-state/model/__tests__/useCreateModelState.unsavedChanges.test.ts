@@ -113,6 +113,36 @@ describe("useCreateModelState unsavedChanges wiring", () => {
 		);
 	});
 
+	it("passes screenshotProps to getScreenshot when capturing an image", async () => {
+		const getScreenshot = jest
+			.fn()
+			.mockResolvedValue("data:image/png;base64,test");
+		viewportAccessFunctionsStore.setState({
+			viewportAccessFunctions: {
+				vp1: {getScreenshot},
+			},
+		});
+
+		const {result} = renderHook(() =>
+			useCreateModelState({namespace: "ns"}),
+		);
+
+		const screenshotProps = {
+			contentType: "image/jpeg",
+			quality: 0.7,
+			resolution: {width: 800, height: 600},
+		};
+
+		await act(async () => {
+			await result.current.createModelState({
+				includeImage: true,
+				screenshotProps,
+			});
+		});
+
+		expect(getScreenshot).toHaveBeenCalledWith(screenshotProps);
+	});
+
 	it("does not clear unsavedChanges when markSaved is false (value-source usage)", async () => {
 		seedUnsaved();
 		expect(currentUnsaved()).toBe(true);

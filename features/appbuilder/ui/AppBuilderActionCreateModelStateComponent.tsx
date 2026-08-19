@@ -34,6 +34,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 		includeImage,
 		image,
 		includeGltf,
+		screenshotProps,
 		parameterNamesToInclude,
 		parameterNamesToExclude,
 		successMessage,
@@ -61,6 +62,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 				parameterNamesToExclude,
 				includeImage,
 				image,
+				screenshotProps,
 				data: undefined, // <-- custom data
 				includeGltf,
 			});
@@ -113,6 +115,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 		image,
 		includeImage,
 		includeGltf,
+		screenshotProps,
 		successMessage,
 		errorMessage,
 		themeSuccessMessage,

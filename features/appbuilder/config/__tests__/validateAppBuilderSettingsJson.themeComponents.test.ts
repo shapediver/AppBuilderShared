@@ -345,6 +345,21 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 		},
 	},
 	{
+		component: "ParameterStringComponent",
+		validDefaultProps: {
+			mode: "validate",
+			debounce: 2000,
+			componentSettings: {
+				Width: {
+					type: "grid",
+					items: ["a", "b"],
+					settings: {gridProps: {cols: {base: 2}, spacing: "xs"}},
+				},
+			},
+		},
+		invalidDefaultProps: {mode: "instant"},
+	},
+	{
 		component: "SelectGridComponent",
 		validDefaultProps: {
 			gridProps: {cols: 2, spacing: "xs"},
@@ -554,6 +569,17 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 			});
 		},
 	);
+
+	it("rejects non-integer debounce for ParameterStringComponent", () => {
+		const result = validateAppBuilderSettingsJson(
+			themeOverridesFor("ParameterStringComponent", {debounce: 1.5}),
+		);
+		expect(result.success).toBe(false);
+		if (result.success) return;
+		const msg = formatAppBuilderZodError(result.error);
+		expect(msg).toMatch(/ParameterStringComponent/i);
+		expect(msg).toMatch(/defaultProps/i);
+	});
 
 	it("validates nested AppBuilderHorizontalContainer under containerThemeOverrides", () => {
 		const result = validateAppBuilderSettingsJson({
