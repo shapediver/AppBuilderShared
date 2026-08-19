@@ -15,6 +15,7 @@ import {
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 } from "@shapediver/viewer.shared.types";
+import {IAppBuilderAgent} from "./appbuilderagent";
 import {
 	IAppBuilderWidgetPropsAreaChart,
 	IAppBuilderWidgetPropsBarChart,
@@ -391,6 +392,8 @@ export interface IAppBuilderActionDefinition {
 
 /** Common properties of App Builder action controls and legacy actions. */
 export interface IAppBuilderActionPropsCommon {
+	/** Optional identifier of the action. Used to uniquely reference actions in agent definitions, etc. */
+	id?: string;
 	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. Set to empty string to show only an icon. */
 	label?: string;
 	/** Optional icon (of the button etc). */
@@ -420,7 +423,8 @@ export type AppBuilderParameterValueSourceType =
 	| "dataOutput"
 	| "export"
 	| "sdtf"
-	| "modelState";
+	| "modelState"
+	| "agentTool";
 
 /**
  * Properties for the "screenshot" parameter value source.
@@ -524,6 +528,18 @@ export interface IAppBuilderParameterValueSourcePropsModelState extends IAppBuil
 	updateUrl?: boolean;
 }
 
+/**
+ * Properties for the "agentTool" parameter value source.
+ * This source is used for actions that are triggered by an agent tool.
+ */
+export interface IAppBuilderParameterValueSourcePropsAgentTool {
+	/**
+	 * JSON path to the value in the agent tool's input data that should be used as the parameter value.
+	 * @see https://www.rfc-editor.org/info/rfc9535/
+	 */
+	jsonPath: string;
+}
+
 /** Definition of a parameter value source. */
 export interface IAppBuilderParameterValueSourceDefinition {
 	/** Type of the parameter value source. */
@@ -534,7 +550,8 @@ export interface IAppBuilderParameterValueSourceDefinition {
 		| IAppBuilderParameterValueSourcePropsDataOutput
 		| IAppBuilderParameterValueSourcePropsExport
 		| IAppBuilderParameterValueSourcePropsSdtf
-		| IAppBuilderParameterValueSourcePropsModelState;
+		| IAppBuilderParameterValueSourcePropsModelState
+		| IAppBuilderParameterValueSourcePropsAgentTool;
 }
 
 /** Type used for parameter value definitions */
@@ -1537,6 +1554,16 @@ export interface IAppBuilder {
 	 * Instances are used to customize a session by setting parameters and transformations.
 	 */
 	instances?: IAppBuilderInstanceDefinition[];
+
+	/**
+	 * Optional list of agents.
+	 * For now only one agent is supported, but in the future we might support
+	 * multiple agents, or allow agents to reference others as sub-agents.
+	 * We do not consider parametric updates to the agent definition, i.e.,
+	 * the agents get initialized on loading of the app, and updates to this
+	 * property due to parameter changes are ignored.
+	 */
+	agents?: IAppBuilderAgent[];
 }
 
 /** assert default containers */
