@@ -7,9 +7,20 @@ import {IShapeDiverParamOrExport} from "./common";
  */
 export type IShapeDiverParameterDefinition = ShapeDiverResponseParameter & {
 	/**
+	 * @deprecated use settings.step instead
 	 * Optional step value for numeric parameters.
 	 */
 	step?: number;
+
+	settings?: {
+		/**
+		 * When true, render a reset button on the parameter control that
+		 * restores the parameter's default value. Defaults to false.
+		 * Color parameters always show a reset button regardless of this flag.
+		 * JSON: `overrides.settings.resettable`.
+		 */
+		resettable?: boolean;
+	};
 };
 
 /**
