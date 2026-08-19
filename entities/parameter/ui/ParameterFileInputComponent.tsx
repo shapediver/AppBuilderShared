@@ -21,6 +21,7 @@ import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
 	ActionIconProps,
+	Box,
 	FileInput,
 	Group,
 	MantineThemeComponent,
@@ -41,6 +42,8 @@ import {
 } from "../config/propsParameter";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterResetButton from "./ParameterResetButton";
+import ParameterResetRow from "./ParameterResetRow";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 /**
@@ -134,6 +137,8 @@ export default function ParameterFileInputComponent(
 		handleChange,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		formInputProps,
 		formKey,
 	} = useParameterComponentCommons<File>(props, 0);
@@ -227,6 +232,45 @@ export default function ParameterFileInputComponent(
 		}
 	}, [value]);
 
+	const fileInput = (
+		<FileInput
+			key={formKey}
+			{...(formInputProps || {})}
+			placeholder="File upload"
+			accept={fileEndings.join(",")}
+			clearable={!!state.execValue}
+			onChange={(v) => {
+				handleChange(guessMissingMimeType(v || ""));
+				if (formInputProps?.onChange) {
+					formInputProps.onChange(v);
+				}
+			}}
+			leftSection={<Icon iconType={"tabler:upload"} />}
+			leftSectionPointerEvents="none"
+			disabled={disabled}
+			valueComponent={undefined}
+			value={
+				typeof value === "string"
+					? value === definition.defval
+						? defaultFile
+						: null
+					: value
+			}
+		/>
+	);
+
+	const stargateInput = (
+		<StargateInput
+			message={statusData.message}
+			color={statusData.color}
+			isWaiting={isWaiting}
+			waitingText="Waiting for import..."
+			disabled={statusData.disabled || disabled}
+			onClick={onObjectAdd}
+			icon={"tabler:device-desktop-up"}
+		/>
+	);
+
 	return (
 		<ParameterWrapperComponent
 			onCancel={onCancel}
@@ -264,15 +308,13 @@ export default function ParameterFileInputComponent(
 			{definition &&
 				(isStargate ? (
 					<Group wrap="nowrap">
-						<StargateInput
-							message={statusData.message}
-							color={statusData.color}
-							isWaiting={isWaiting}
-							waitingText="Waiting for import..."
-							disabled={statusData.disabled || disabled}
-							onClick={onObjectAdd}
-							icon={"tabler:device-desktop-up"}
-						/>
+						{showReset ? (
+							<Box style={{flex: 1, minWidth: 0}}>
+								{stargateInput}
+							</Box>
+						) : (
+							stargateInput
+						)}
 						<TooltipWrapper
 							{...uploadTooltipProps}
 							label={uploadTooltipProps.label || "Upload file"}
@@ -303,32 +345,21 @@ export default function ParameterFileInputComponent(
 								}
 							></FileInput>
 						</TooltipWrapper>
+						{showReset && (
+							<ParameterResetButton
+								onClick={resetToDefault}
+								disabled={disabled}
+							/>
+						)}
 					</Group>
 				) : (
-					<FileInput
-						key={formKey}
-						{...(formInputProps || {})}
-						placeholder="File upload"
-						accept={fileEndings.join(",")}
-						clearable={!!state.execValue}
-						onChange={(v) => {
-							handleChange(guessMissingMimeType(v || ""));
-							if (formInputProps?.onChange) {
-								formInputProps.onChange(v);
-							}
-						}}
-						leftSection={<Icon iconType={"tabler:upload"} />}
-						leftSectionPointerEvents="none"
+					<ParameterResetRow
+						show={showReset}
+						onClick={resetToDefault}
 						disabled={disabled}
-						valueComponent={undefined}
-						value={
-							typeof value === "string"
-								? value === definition.defval
-									? defaultFile
-									: null
-								: value
-						}
-					/>
+					>
+						{fileInput}
+					</ParameterResetRow>
 				))}
 		</ParameterWrapperComponent>
 	);

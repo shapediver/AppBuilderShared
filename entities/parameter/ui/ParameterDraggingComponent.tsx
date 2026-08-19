@@ -31,6 +31,7 @@ import {useParameterComponentCommons} from "../model/useParameterComponentCommon
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterResetRow from "./ParameterResetRow";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 /**
@@ -90,6 +91,8 @@ export default function ParameterDraggingComponent(
 		setOnCancelCallback,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		value,
 		state,
 		sessionDependencies,
@@ -451,9 +454,15 @@ export default function ParameterDraggingComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && effectiveDraggingActive
-				? contentActive
-				: contentInactive}
+			{definition && (
+				<ParameterResetRow
+					show={showReset}
+					onClick={resetToDefault}
+					disabled={disabled}
+				>
+					{effectiveDraggingActive ? contentActive : contentInactive}
+				</ParameterResetRow>
+			)}
 		</ParameterWrapperComponent>
 	);
 }
