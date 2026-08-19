@@ -180,6 +180,7 @@ export type GetMetricToolSettings = {
 
 export type GenericToolSettings =
 	| ListParameterDefinitionsToolSettings
+	| GetParameterValuesToolSettings
 	| SetParameterValuesToolSettings
 	| ListActionControlsToolSettings
 	| TriggerActionControlToolSettings
