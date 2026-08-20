@@ -1,7 +1,7 @@
 import {getMetricInputSchema} from "@AppBuilderLib/features/agent-tools/config/getMetric";
 import {getParameterValuesInputSchema} from "@AppBuilderLib/features/agent-tools/config/getParameterValues";
 import {getScreenshotInputSchema} from "@AppBuilderLib/features/agent-tools/config/getScreenshot";
-import type {InScopeGenericToolName} from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
+import {InScopeGenericToolName} from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
 import {listActionControlsInputSchema} from "@AppBuilderLib/features/agent-tools/config/listActionControls";
 import {listParameterDefinitionsInputSchema} from "@AppBuilderLib/features/agent-tools/config/listParameterDefinitions";
 import type {ResolvedGenericTool} from "@AppBuilderLib/features/agent-tools/config/resolveToolset";
@@ -16,21 +16,21 @@ import {zodToJsonSchema} from "../lib/zodToJsonSchema";
 
 function schemaFor(name: InScopeGenericToolName): z.ZodType {
 	switch (name) {
-		case "list_parameter_definitions":
+		case InScopeGenericToolName.ListParameterDefinitions:
 			return listParameterDefinitionsInputSchema;
-		case "get_parameter_values":
+		case InScopeGenericToolName.GetParameterValues:
 			return getParameterValuesInputSchema;
-		case "set_parameter_values":
+		case InScopeGenericToolName.SetParameterValues:
 			return setParameterValuesInputSchema;
-		case "list_action_controls":
+		case InScopeGenericToolName.ListActionControls:
 			return listActionControlsInputSchema;
-		case "trigger_action_control":
+		case InScopeGenericToolName.TriggerActionControl:
 			return triggerActionControlInputSchema;
-		case "set_camera_position":
+		case InScopeGenericToolName.SetCameraPosition:
 			return setCameraPositionInputSchema;
-		case "get_screenshot":
+		case InScopeGenericToolName.GetScreenshot:
 			return getScreenshotInputSchema;
-		case "get_metric":
+		case InScopeGenericToolName.GetMetric:
 			return getMetricInputSchema;
 	}
 }

@@ -1,4 +1,4 @@
-import type {InScopeGenericToolName} from "./inScopeGenericTools";
+import {InScopeGenericToolName} from "./inScopeGenericTools";
 
 export type AgentToolMeta = {
 	description: string;

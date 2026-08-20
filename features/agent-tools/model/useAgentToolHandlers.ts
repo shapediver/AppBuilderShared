@@ -23,7 +23,7 @@ import {useContext, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
 	defaultSettingsFor,
-	type InScopeGenericToolName,
+	InScopeGenericToolName,
 } from "../config/inScopeGenericTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import type {Vec3} from "../config/setCameraPosition";
@@ -223,43 +223,50 @@ export function useAgentToolHandlers(args: {
 
 	return useMemo(
 		() => ({
-			list_parameter_definitions: (input) =>
+			[InScopeGenericToolName.ListParameterDefinitions]: (input) =>
 				handleListParameterDefinitions(
 					input,
 					settingsNamed(
 						resolvedRef.current,
-						"list_parameter_definitions",
+						InScopeGenericToolName.ListParameterDefinitions,
 					),
 					depsRef.current,
 				),
-			get_parameter_values: (input) =>
+			[InScopeGenericToolName.GetParameterValues]: (input) =>
 				handleGetParameterValues(
 					input,
 					settingsNamed(
 						resolvedRef.current,
-						"list_parameter_definitions",
+						InScopeGenericToolName.ListParameterDefinitions,
 					),
 					depsRef.current,
 				),
-			set_parameter_values: (input) =>
+			[InScopeGenericToolName.SetParameterValues]: (input) =>
 				handleSetParameterValues(input, depsRef.current),
-			list_action_controls: (input) =>
+			[InScopeGenericToolName.ListActionControls]: (input) =>
 				handleListActionControls(
 					input,
-					settingsNamed(resolvedRef.current, "list_action_controls"),
+					settingsNamed(
+						resolvedRef.current,
+						InScopeGenericToolName.ListActionControls,
+					),
 					depsRef.current,
 				),
-			trigger_action_control: (input) =>
+			[InScopeGenericToolName.TriggerActionControl]: (input) =>
 				handleTriggerActionControl(
 					input,
-					settingsNamed(resolvedRef.current, "list_action_controls"),
+					settingsNamed(
+						resolvedRef.current,
+						InScopeGenericToolName.ListActionControls,
+					),
 					depsRef.current,
 				),
-			set_camera_position: (input) =>
+			[InScopeGenericToolName.SetCameraPosition]: (input) =>
 				handleSetCameraPosition(input, depsRef.current),
-			get_screenshot: (input) =>
+			[InScopeGenericToolName.GetScreenshot]: (input) =>
 				handleGetScreenshot(input, depsRef.current),
-			get_metric: (input) => handleGetMetric(input, depsRef.current),
+			[InScopeGenericToolName.GetMetric]: (input) =>
+				handleGetMetric(input, depsRef.current),
 		}),
 		[],
 	);

@@ -1,4 +1,7 @@
-import {defaultSettingsFor} from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
+import {
+	defaultSettingsFor,
+	InScopeGenericToolName,
+} from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
 import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
@@ -62,7 +65,7 @@ async function runListScenario(input: Record<string, unknown>) {
 	return handleListParameterDefinitions(
 		input,
 		defaultSettingsFor(
-			"list_parameter_definitions",
+			InScopeGenericToolName.ListParameterDefinitions,
 		) as ListParameterDefinitionsToolSettings,
 		createEvalDeps(),
 	);
