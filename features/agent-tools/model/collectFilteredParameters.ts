@@ -12,9 +12,17 @@ export function collectFilteredParameters(
 ): NamespacedParameter[] {
 	const appBuilder = deps.getAppBuilder();
 	const uiRefs = appBuilder ? collectUiParameterRefs(appBuilder) : [];
-	const sessionIds = settings.filter?.sessionIds ?? [
-		deps.controllerNamespace,
-	];
+	const refs = settings.parameters;
+	const sessionIds =
+		refs && refs.length > 0
+			? [
+					...new Set(
+						refs.map(
+							(ref) => ref.sessionId ?? deps.controllerNamespace,
+						),
+					),
+				]
+			: (settings.filter?.sessionIds ?? [deps.controllerNamespace]);
 	const namespaced = sessionIds.flatMap((ns) =>
 		deps.getLiveParameters(ns).map((parameter) => ({
 			namespace: ns,

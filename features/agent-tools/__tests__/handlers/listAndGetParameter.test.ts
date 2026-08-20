@@ -86,6 +86,33 @@ describe("handleListParameterDefinitions", () => {
 			"secret",
 		]);
 	});
+
+	it("resolves explicit parameter refs from their sessionId, ignoring filter", async () => {
+		const deps = createDeps({
+			c: [],
+			other: [param("p")],
+		});
+
+		const withSessionId = await handleListParameterDefinitions(
+			{},
+			{
+				name: "list_parameter_definitions",
+				parameters: [{name: "p", sessionId: "other"}],
+			},
+			deps,
+		);
+		expect(withSessionId.parameters.map((p) => p.id)).toEqual(["p"]);
+
+		const withoutSessionId = await handleListParameterDefinitions(
+			{},
+			{
+				name: "list_parameter_definitions",
+				parameters: [{name: "p"}],
+			},
+			deps,
+		);
+		expect(withoutSessionId.parameters).toEqual([]);
+	});
 });
 
 describe("handleGetParameterValues", () => {
