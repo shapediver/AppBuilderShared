@@ -1,7 +1,19 @@
+/**
+ * @jest-environment jsdom
+ */
+import type {
+	ICrossWindowApi,
+	ICrossWindowPeerInfo,
+} from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import type {IAppBuilderAgent} from "../../appbuilder/config/appbuilderagent";
+import {ToolsApi, ToolsApiConnector} from "../api/toolsApi";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../config/inScopeGenericTools";
 import {resolveToolset} from "../config/resolveToolset";
 import type {IToolsApiHandlerMap} from "../config/toolsApi";
+import {
+	MESSAGE_TYPE_EXECUTE_TOOL,
+	MESSAGE_TYPE_LIST_TOOLS,
+} from "../config/toolsApi";
 import {executeResolvedTool} from "../lib/executeResolvedTool";
 import {listToolsFromResolved} from "../lib/listToolsFromResolved";
 
@@ -116,5 +128,118 @@ describe("executeResolvedTool", () => {
 			}),
 		);
 		expect(result).toEqual({success: false, message: "boom"});
+	});
+});
+
+function createMockCrossWindowApi(): ICrossWindowApi {
+	const handlers = new Map<
+		string,
+		(data: unknown) => Promise<unknown>
+	>();
+	const peer: ICrossWindowPeerInfo = {origin: "test", name: "agent"};
+	return {
+		name: "app",
+		peerName: "agent",
+		peerIsReady: Promise.resolve(peer),
+		send: async (type, data) => {
+			const handler = handlers.get(type);
+			if (!handler) {
+				throw new Error(`No handler for ${type}`);
+			}
+			return handler(data) as never;
+		},
+		on: (type, handler) => {
+			handlers.set(type, handler as (data: unknown) => Promise<unknown>);
+			return {
+				cancel: () => {
+					handlers.delete(type);
+				},
+			};
+		},
+		once: async () => {
+			throw new Error("once unused in ToolsApi tests");
+		},
+		handshake: async () => peer,
+	};
+}
+
+describe("ToolsApi over mock ICrossWindowApi", () => {
+	it("listTools returns the resolved set", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		const {tools} = await client.listTools();
+		expect(tools.map((t) => t.name)).toEqual([...IN_SCOPE_GENERIC_TOOL_NAMES]);
+		connector.cancel();
+	});
+
+	it("execute routes to the handler through EXECUTE_TOOL", async () => {
+		const mock = createMockCrossWindowApi();
+		const get_screenshot = jest.fn(async (input: unknown) => ({
+			success: true,
+			input,
+		}));
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers({get_screenshot}),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		const result = await client.execute({
+			name: "get_screenshot",
+			input: {viewportId: "vp"},
+		});
+		expect(get_screenshot).toHaveBeenCalledWith({viewportId: "vp"});
+		expect(result).toEqual({
+			success: true,
+			input: {viewportId: "vp"},
+		});
+		connector.cancel();
+	});
+
+	it("execute of a name not in resolved does not call the handler", async () => {
+		const mock = createMockCrossWindowApi();
+		const list_parameter_definitions = jest.fn(async () => ({
+			parameters: [],
+		}));
+		const connector = new ToolsApiConnector(
+			resolveToolset(screenshotOnlyAgent()),
+			stubHandlers({list_parameter_definitions}),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		const result = await client.execute({
+			name: "list_parameter_definitions",
+			input: {},
+		});
+		expect(result).toEqual({
+			success: false,
+			message: 'Tool "list_parameter_definitions" does not exist.',
+		});
+		expect(list_parameter_definitions).not.toHaveBeenCalled();
+		connector.cancel();
+	});
+
+	it("cancel unregisters LIST_TOOLS", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		connector.cancel();
+		await expect(client.listTools()).rejects.toThrow(
+			`No handler for ${MESSAGE_TYPE_LIST_TOOLS}`,
+		);
+		void MESSAGE_TYPE_EXECUTE_TOOL;
 	});
 });
