@@ -1,11 +1,12 @@
-import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {ResolvedGenericTool} from "@AppBuilderLib/features/agent-tools/config/resolveToolset";
+import type {IToolsApiHandlerMap} from "@AppBuilderLib/features/agent-tools/config/toolsApi";
 
 export interface UseWebMcpToolsProps {
 	namespace?: string;
 	enabled?: boolean;
-	appBuilderData?: IAppBuilder;
-	/** True once App Builder parse finished (data loaded, parse error, or no output). */
-	appBuilderParseSettled?: boolean;
+	resolved: ResolvedGenericTool[];
+	handlers: IToolsApiHandlerMap;
+	snapshotComplete: boolean;
 }
 
 export interface WebMcpEnvironment {

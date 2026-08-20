@@ -1,7 +1,5 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {resolveToolset} from "@AppBuilderLib/features/agent-tools/config/resolveToolset";
-import {useAgentToolHandlers} from "@AppBuilderLib/features/agent-tools/model/useAgentToolHandlers";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
@@ -10,7 +8,6 @@ import {
 	isWebMcpAvailable,
 } from "../lib/webmcpAvailability";
 import {registerResolvedTools} from "./registerResolvedTools";
-import {takeAgentSnapshot} from "./takeAgentSnapshot";
 import type {
 	UseWebMcpToolsProps,
 	UseWebMcpToolsResult,
@@ -22,8 +19,9 @@ export function useWebMcpTools(
 	const {
 		namespace,
 		enabled = isWebMcpAvailable(),
-		appBuilderData,
-		appBuilderParseSettled = false,
+		resolved,
+		handlers,
+		snapshotComplete,
 	} = props;
 	const [registered, setRegistered] = useState(false);
 	const environment = getWebMcpEnvironment();
@@ -45,22 +43,6 @@ export function useWebMcpTools(
 	const paramsPopulated =
 		!!namespace && Object.keys(getParameters(namespace)).length > 0;
 
-	const agentRef = useRef(takeAgentSnapshot("unset", undefined));
-	agentRef.current = takeAgentSnapshot(
-		agentRef.current,
-		appBuilderData,
-		appBuilderParseSettled,
-	);
-	const snapshotComplete = agentRef.current !== "unset";
-
-	const resolved = resolveToolset(
-		agentRef.current === "unset" ? undefined : agentRef.current,
-	);
-	const handlers = useAgentToolHandlers({
-		namespace: namespace ?? "",
-		appBuilderData,
-		resolved,
-	});
 	const resolvedRef = useRef(resolved);
 	resolvedRef.current = resolved;
 	const handlersRef = useRef(handlers);

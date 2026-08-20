@@ -2,7 +2,7 @@ import type {ResolvedGenericTool} from "@AppBuilderLib/features/agent-tools/conf
 import {schemaFor} from "@AppBuilderLib/features/agent-tools/config/schemaFor";
 import {AGENT_TOOL_META} from "@AppBuilderLib/features/agent-tools/config/toolMeta";
 import {zodToJsonSchema} from "@AppBuilderLib/features/agent-tools/lib/zodToJsonSchema";
-import type {AgentToolHandlerMap} from "@AppBuilderLib/features/agent-tools/model/useAgentToolHandlers";
+import type {IToolsApiHandlerMap} from "@AppBuilderLib/features/agent-tools/config/toolsApi";
 import type {ModelContext} from "../lib/webmcpAvailability";
 
 /**
@@ -12,7 +12,7 @@ import type {ModelContext} from "../lib/webmcpAvailability";
 export async function registerResolvedTools(
 	modelContext: ModelContext,
 	resolved: ResolvedGenericTool[],
-	handlers: AgentToolHandlerMap,
+	handlers: IToolsApiHandlerMap,
 	signal: AbortSignal,
 ): Promise<void> {
 	for (const tool of resolved) {

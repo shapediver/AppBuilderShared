@@ -12,6 +12,7 @@ import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBin
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
+import {useAgentToolRuntime} from "@AppBuilderLib/features/agent-tools/model/useAgentToolRuntime";
 import {isWebMcpAvailable} from "@AppBuilderLib/features/webmcp/lib/webmcpAvailability";
 import {useWebMcpTools} from "@AppBuilderLib/features/webmcp/model/useWebMcpTools";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
@@ -232,11 +233,18 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	useECommerceApiConnectorActions({namespace});
 
+	const {resolved, handlers, snapshotComplete} = useAgentToolRuntime({
+		namespace,
+		appBuilderData,
+		appBuilderParseSettled,
+	});
+
 	useWebMcpTools({
 		namespace,
 		enabled: isWebMcpAvailable(),
-		appBuilderData,
-		appBuilderParseSettled,
+		resolved,
+		handlers,
+		snapshotComplete,
 	});
 
 	const showMarkdown =
