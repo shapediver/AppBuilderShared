@@ -16,6 +16,7 @@ import {
 	InScopeGenericToolName,
 } from "../config/inScopeGenericTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
+import type {IToolsApiHandlerMap} from "../config/toolsApi";
 import type {AgentToolsDeps} from "./agentToolsDeps";
 import {buildAgentToolsDeps} from "./buildAgentToolsDeps";
 import {handleGetMetric} from "./handlers/getMetric";
@@ -27,10 +28,7 @@ import {handleSetCameraPosition} from "./handlers/setCameraPosition";
 import {handleSetParameterValues} from "./handlers/setParameterValues";
 import {handleTriggerActionControl} from "./handlers/triggerActionControl";
 
-export type AgentToolHandlerMap = Record<
-	InScopeGenericToolName,
-	(input: unknown) => Promise<unknown>
->;
+export type AgentToolHandlerMap = IToolsApiHandlerMap;
 
 /** Settings for this generic tool from the resolved toolset, or `{name}` default. */
 function settingsForTool<N extends InScopeGenericToolName>(

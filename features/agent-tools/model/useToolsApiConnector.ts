@@ -48,13 +48,14 @@ export function useToolsApiConnector(
 					TOOLS_API_NAME_AGENT,
 					{timeout: TOOLS_API_TIMEOUT_MS},
 				);
+				void created.peerIsReady.catch(() => {});
 				if (cancelled) {
 					created.cancel();
 					return;
 				}
 				connector = created;
 			} catch {
-				// peerIsReady timeout is a transport failure, not a fake toolset
+				// getConnectorApi / transport failure — not a fake toolset
 			}
 		})();
 

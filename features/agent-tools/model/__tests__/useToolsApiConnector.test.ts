@@ -83,4 +83,39 @@ describe("useToolsApiConnector", () => {
 		);
 		expect(getConnectorApi.mock.calls[0][2]).toBe(handlers);
 	});
+
+	it("cancels on unmount while peerIsReady is still pending", async () => {
+		const cancel = jest.fn();
+		const peerIsReady = new Promise<{origin: string; name: string}>(() => {
+			/* never resolves */
+		});
+		getConnectorApi.mockResolvedValue({peerIsReady, cancel});
+		const {unmount} = renderHook(() =>
+			useToolsApiConnector({
+				window: {} as Window,
+				resolved: resolveToolset(undefined),
+				handlers: stubHandlers(),
+				snapshotComplete: true,
+			}),
+		);
+		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
+		unmount();
+		expect(cancel).toHaveBeenCalledTimes(1);
+	});
+
+	it("swallows peerIsReady rejection without unhandled rejection", async () => {
+		const cancel = jest.fn();
+		const peerIsReady = Promise.reject(new Error("handshake timeout"));
+		getConnectorApi.mockResolvedValue({peerIsReady, cancel});
+		renderHook(() =>
+			useToolsApiConnector({
+				window: {} as Window,
+				resolved: resolveToolset(undefined),
+				handlers: stubHandlers(),
+				snapshotComplete: true,
+			}),
+		);
+		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
+		await expect(peerIsReady).rejects.toThrow("handshake timeout");
+	});
 });

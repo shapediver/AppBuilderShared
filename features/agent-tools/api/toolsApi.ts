@@ -83,28 +83,27 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		crossWindowApi: ICrossWindowApi,
 		options?: ICrossWindowApiOptions,
 	) {
-		this.#_peerIsReady = crossWindowApi
-			.handshake(MESSAGE_TYPE_TOOLS_API_HANDSHAKE, options?.timeout)
-			.then((peerInfo) => {
-				this.#cancels.push(
-					crossWindowApi.on(MESSAGE_TYPE_LIST_TOOLS, async () =>
-						listToolsFromResolved(resolved),
+		this.#cancels.push(
+			crossWindowApi.on(MESSAGE_TYPE_LIST_TOOLS, async () =>
+				listToolsFromResolved(resolved),
+			),
+		);
+		this.#cancels.push(
+			crossWindowApi.on(
+				MESSAGE_TYPE_EXECUTE_TOOL,
+				(data: IExecuteToolData) =>
+					executeResolvedTool(
+						data.name,
+						data.input,
+						resolved,
+						handlers,
 					),
-				);
-				this.#cancels.push(
-					crossWindowApi.on(
-						MESSAGE_TYPE_EXECUTE_TOOL,
-						(data: IExecuteToolData) =>
-							executeResolvedTool(
-								data.name,
-								data.input,
-								resolved,
-								handlers,
-							),
-					),
-				);
-				return peerInfo;
-			});
+			),
+		);
+		this.#_peerIsReady = crossWindowApi.handshake(
+			MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
+			options?.timeout,
+		);
 	}
 
 	cancel(): void {

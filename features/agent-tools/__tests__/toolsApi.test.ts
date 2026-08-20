@@ -131,7 +131,9 @@ describe("executeResolvedTool", () => {
 	});
 });
 
-function createMockCrossWindowApi(): ICrossWindowApi {
+function createMockCrossWindowApi(options?: {
+	handshake?: () => Promise<ICrossWindowPeerInfo>;
+}): ICrossWindowApi {
 	const handlers = new Map<
 		string,
 		(data: unknown) => Promise<unknown>
@@ -159,7 +161,7 @@ function createMockCrossWindowApi(): ICrossWindowApi {
 		once: async () => {
 			throw new Error("once unused in ToolsApi tests");
 		},
-		handshake: async () => peer,
+		handshake: options?.handshake ?? (async () => peer),
 	};
 }
 
@@ -227,7 +229,7 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		connector.cancel();
 	});
 
-	it("cancel unregisters LIST_TOOLS", async () => {
+	it("cancel unregisters LIST_TOOLS and EXECUTE_TOOL", async () => {
 		const mock = createMockCrossWindowApi();
 		const connector = new ToolsApiConnector(
 			resolveToolset(undefined),
@@ -240,6 +242,35 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		await expect(client.listTools()).rejects.toThrow(
 			`No handler for ${MESSAGE_TYPE_LIST_TOOLS}`,
 		);
-		void MESSAGE_TYPE_EXECUTE_TOOL;
+		await expect(
+			client.execute({name: "get_screenshot", input: {}}),
+		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_EXECUTE_TOOL}`);
+	});
+
+	it("cancel before handshake resolves unregisters both listeners", async () => {
+		let resolveHandshake!: (peer: ICrossWindowPeerInfo) => void;
+		const pendingHandshake = new Promise<ICrossWindowPeerInfo>((resolve) => {
+			resolveHandshake = resolve;
+		});
+		const mock = createMockCrossWindowApi({
+			handshake: () => pendingHandshake,
+		});
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		connector.cancel();
+		resolveHandshake({origin: "test", name: "agent"});
+		await connector.peerIsReady;
+		await expect(
+			mock.send(MESSAGE_TYPE_LIST_TOOLS, undefined),
+		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_LIST_TOOLS}`);
+		await expect(
+			mock.send(MESSAGE_TYPE_EXECUTE_TOOL, {
+				name: "get_screenshot",
+				input: {},
+			}),
+		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_EXECUTE_TOOL}`);
 	});
 });
