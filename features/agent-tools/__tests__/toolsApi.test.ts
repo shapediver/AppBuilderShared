@@ -14,7 +14,10 @@ import {
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_LIST_TOOLS,
 } from "../config/toolsApi";
-import {executeResolvedTool} from "../lib/executeResolvedTool";
+import {
+	executeResolvedTool,
+	unknownToolResult,
+} from "../lib/executeResolvedTool";
 import {listToolsFromResolved} from "../lib/listToolsFromResolved";
 
 function screenshotOnlyAgent(): IAppBuilderAgent {
@@ -226,6 +229,29 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 			message: 'Tool "list_parameter_definitions" does not exist.',
 		});
 		expect(list_parameter_definitions).not.toHaveBeenCalled();
+		connector.cancel();
+	});
+
+	it("EXECUTE_TOOL with missing or non-object data returns unknown-tool JSON, does not throw", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+
+		await expect(
+			mock.send(MESSAGE_TYPE_EXECUTE_TOOL, undefined),
+		).resolves.toEqual(unknownToolResult(""));
+		await expect(
+			mock.send(MESSAGE_TYPE_EXECUTE_TOOL, null as never),
+		).resolves.toEqual(unknownToolResult(""));
+		await expect(
+			mock.send(MESSAGE_TYPE_EXECUTE_TOOL, {} as never),
+		).resolves.toEqual(unknownToolResult(""));
+
 		connector.cancel();
 	});
 

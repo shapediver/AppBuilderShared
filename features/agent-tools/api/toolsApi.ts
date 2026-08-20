@@ -21,7 +21,7 @@ import {
 	TOOLS_API_NAME_APP,
 	TOOLS_API_TIMEOUT_MS,
 } from "../config/toolsApi";
-import {executeResolvedTool} from "../lib/executeResolvedTool";
+import {executeResolvedTool, unknownToolResult} from "../lib/executeResolvedTool";
 import {listToolsFromResolved} from "../lib/listToolsFromResolved";
 
 function withDefaultTimeout(
@@ -91,13 +91,21 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		this.#cancels.push(
 			crossWindowApi.on(
 				MESSAGE_TYPE_EXECUTE_TOOL,
-				(data: IExecuteToolData) =>
-					executeResolvedTool(
+				async (data: IExecuteToolData) => {
+					if (
+						!data ||
+						typeof data !== "object" ||
+						typeof data.name !== "string"
+					) {
+						return unknownToolResult("");
+					}
+					return executeResolvedTool(
 						data.name,
 						data.input,
 						resolved,
 						handlers,
-					),
+					);
+				},
 			),
 		);
 		this.#_peerIsReady = crossWindowApi.handshake(
