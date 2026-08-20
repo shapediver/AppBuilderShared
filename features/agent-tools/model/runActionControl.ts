@@ -31,6 +31,13 @@ async function runSetParameterAction(
 		: isSetParameterValueAction(definition)
 			? [definition.props]
 			: [];
+	if (
+		items.some(
+			(item) => item.source !== undefined && item.value === undefined,
+		)
+	) {
+		return {success: false, message: "not supported"};
+	}
 	const updates = items.flatMap((item) =>
 		item.value === undefined
 			? []
@@ -59,6 +66,9 @@ export async function runActionControl(
 	deps: AgentToolsDeps,
 ): Promise<RunActionControlResult> {
 	try {
+		if (deps.isCustomComponentContextAction?.(action)) {
+			return {success: false, message: "not supported"};
+		}
 		const definition = action.definition;
 		if (isCreateModelStateAction(definition)) {
 			return await deps.createModelState(definition.props);

@@ -36,4 +36,7 @@ export type AgentToolsDeps = {
 	playSound?: (
 		props: IAppBuilderActionPropsSound,
 	) => Promise<RunActionControlResult>;
+	isCustomComponentContextAction?: (
+		action: IAppBuilderControlActionRef,
+	) => boolean;
 };

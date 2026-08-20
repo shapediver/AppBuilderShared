@@ -275,6 +275,107 @@ describe("runActionControl", () => {
 		expect(result).toEqual({success: true});
 	});
 
+	it("returns not supported for setParameterValue with source only", async () => {
+		const batchParameterValueUpdate = jest
+			.fn()
+			.mockResolvedValue(undefined);
+		const deps = createDeps({
+			getLiveParameters: () => [param("width")],
+			batchParameterValueUpdate,
+		});
+
+		const result = await runActionControl(
+			actionRef({
+				definition: {
+					type: "setParameterValue",
+					props: {
+						parameter: {name: "width"},
+						source: {type: "screenshot", props: {}},
+					},
+				},
+			}),
+			deps,
+		);
+
+		expect(result).toEqual({
+			success: false,
+			message: "not supported",
+		});
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
+	});
+
+	it("fails the whole setParameterValues batch when any item is source-only", async () => {
+		const batchParameterValueUpdate = jest
+			.fn()
+			.mockResolvedValue(undefined);
+		const deps = createDeps({
+			getLiveParameters: () => [param("width"), param("height")],
+			batchParameterValueUpdate,
+		});
+
+		const result = await runActionControl(
+			actionRef({
+				definition: {
+					type: "setParameterValues",
+					props: {
+						parameterValues: [
+							{
+								parameter: {name: "width"},
+								value: "10",
+							},
+							{
+								parameter: {name: "height"},
+								source: {type: "screenshot", props: {}},
+							},
+						],
+					},
+				},
+			}),
+			deps,
+		);
+
+		expect(result).toEqual({
+			success: false,
+			message: "not supported",
+		});
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
+	});
+
+	it("returns not supported when isCustomComponentContextAction is true", async () => {
+		const createModelState = jest.fn().mockResolvedValue({success: true});
+		const result = await runActionControl(
+			actionRef({
+				definition: {type: "createModelState", props: {}},
+			}),
+			createDeps({
+				createModelState,
+				isCustomComponentContextAction: () => true,
+			}),
+		);
+
+		expect(result).toEqual({
+			success: false,
+			message: "not supported",
+		});
+		expect(createModelState).not.toHaveBeenCalled();
+	});
+
+	it("runs createModelState when isCustomComponentContextAction is omitted", async () => {
+		const createModelState = jest.fn().mockResolvedValue({success: true});
+		const result = await runActionControl(
+			actionRef({
+				definition: {
+					type: "createModelState",
+					props: {includeImage: true},
+				},
+			}),
+			createDeps({createModelState}),
+		);
+
+		expect(createModelState).toHaveBeenCalledWith({includeImage: true});
+		expect(result).toEqual({success: true});
+	});
+
 	it("returns createModelState failure message", async () => {
 		const result = await runActionControl(
 			actionRef({
