@@ -4,7 +4,7 @@ import {
 	resolveToolset,
 	type ResolvedGenericTool,
 } from "../config/resolveToolset";
-import {takeAgentSnapshot} from "./takeAgentSnapshot";
+import {AGENT_SNAPSHOT_UNSET, takeAgentSnapshot} from "./takeAgentSnapshot";
 import {
 	useAgentToolHandlers,
 	type AgentToolHandlerMap,
@@ -31,15 +31,15 @@ export function useAgentToolRuntime(
 		appBuilderParseSettled = false,
 	} = props;
 
-	const agentRef = useRef(takeAgentSnapshot("unset", undefined));
+	const agentRef = useRef(takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, undefined));
 	agentRef.current = takeAgentSnapshot(
 		agentRef.current,
 		appBuilderData,
 		appBuilderParseSettled,
 	);
-	const snapshotComplete = agentRef.current !== "unset";
+	const snapshotComplete = agentRef.current !== AGENT_SNAPSHOT_UNSET;
 	const resolved = resolveToolset(
-		agentRef.current === "unset" ? undefined : agentRef.current,
+		agentRef.current === AGENT_SNAPSHOT_UNSET ? undefined : agentRef.current,
 	);
 	const handlers = useAgentToolHandlers({
 		namespace: namespace ?? "",

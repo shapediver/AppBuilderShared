@@ -1,7 +1,12 @@
 import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {IAppBuilderAgent} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 
-export type AgentSnapshot = IAppBuilderAgent | undefined | "unset";
+export const AGENT_SNAPSHOT_UNSET = "unset" as const;
+
+export type AgentSnapshot =
+	| IAppBuilderAgent
+	| undefined
+	| typeof AGENT_SNAPSHOT_UNSET;
 
 /**
  * First loaded `IAppBuilder.agents[0]` (including missing agents → undefined).
@@ -12,7 +17,7 @@ export function takeAgentSnapshot(
 	appBuilderData: IAppBuilder | undefined,
 	parseSettled = false,
 ): AgentSnapshot {
-	if (current !== "unset") {
+	if (current !== AGENT_SNAPSHOT_UNSET) {
 		return current;
 	}
 	if (appBuilderData !== undefined) {
@@ -21,5 +26,5 @@ export function takeAgentSnapshot(
 	if (parseSettled) {
 		return undefined;
 	}
-	return "unset";
+	return AGENT_SNAPSHOT_UNSET;
 }
