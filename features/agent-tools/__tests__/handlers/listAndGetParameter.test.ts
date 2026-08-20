@@ -48,6 +48,7 @@ function createDeps(
 		listSessionNamespaces: () => Object.keys(paramsByNamespace),
 		getAppBuilder: () => ({version: "1.0", containers: []}),
 		batchParameterValueUpdate: jest.fn().mockResolvedValue(undefined),
+		getDefaultToolbarActions: () => [],
 		...overrides,
 	};
 }

@@ -1,6 +1,9 @@
 import type {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
-import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {
+	IAppBuilder,
+	IAppBuilderControlActionRef,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 
 export type AgentToolsDeps = {
 	controllerNamespace: string;
@@ -8,4 +11,5 @@ export type AgentToolsDeps = {
 	listSessionNamespaces: () => string[];
 	getAppBuilder: () => IAppBuilder | undefined;
 	batchParameterValueUpdate: IShapeDiverStoreParameters["batchParameterValueUpdate"];
+	getDefaultToolbarActions: () => IAppBuilderControlActionRef[];
 };

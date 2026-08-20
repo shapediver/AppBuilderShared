@@ -1,0 +1,338 @@
+import {
+	AppBuilderContainerNameType,
+	type IAppBuilder,
+	type IAppBuilderControlActionRef,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {ListActionControlsToolSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
+import {listActionControlsInputSchema} from "../config/listActionControls";
+import {collectActionControls} from "../lib/collectActionControls";
+import type {AgentToolsDeps} from "../model/agentToolsDeps";
+import {handleListActionControls} from "../model/handlers/listActionControls";
+
+const defaultSettings: ListActionControlsToolSettings = {
+	name: "list_action_controls",
+};
+
+const emptyApp: IAppBuilder = {version: "1.0", containers: []};
+
+function undoAction(
+	overrides: Partial<IAppBuilderControlActionRef> = {},
+): IAppBuilderControlActionRef {
+	return {
+		definition: {type: "undo", props: {}},
+		...overrides,
+	};
+}
+
+function fullscreenAction(
+	overrides: Partial<IAppBuilderControlActionRef> = {},
+): IAppBuilderControlActionRef {
+	return {
+		definition: {type: "fullscreen", props: {}},
+		...overrides,
+	};
+}
+
+function ids(actions: ReturnType<typeof collectActionControls>): string[] {
+	return actions.map((action) => action.id);
+}
+
+describe("collectActionControls", () => {
+	it("returns toolbar undo when app is empty and types default", () => {
+		const actions = collectActionControls({
+			appBuilder: emptyApp,
+			defaultToolbarActions: [undoAction()],
+			settings: defaultSettings,
+		});
+
+		expect(actions).toEqual([{id: "undo", name: "undo", type: "undo"}]);
+	});
+
+	it("drops undo when filter.types is sound only", () => {
+		const actions = collectActionControls({
+			appBuilder: emptyApp,
+			defaultToolbarActions: [undoAction()],
+			settings: {
+				name: "list_action_controls",
+				filter: {types: ["sound"]},
+			},
+		});
+
+		expect(actions).toEqual([]);
+	});
+
+	it("keeps only the explicit actions name when provided", () => {
+		const actions = collectActionControls({
+			appBuilder: emptyApp,
+			defaultToolbarActions: [undoAction(), fullscreenAction({id: "x"})],
+			settings: {
+				name: "list_action_controls",
+				actions: [{name: "x"}],
+			},
+		});
+
+		expect(ids(actions)).toEqual(["x"]);
+	});
+
+	it("collects action controls from widgets, forms, and toolbars", () => {
+		const appBuilder: IAppBuilder = {
+			version: "1.0",
+			containers: [
+				{
+					name: AppBuilderContainerNameType.Left,
+					widgets: [
+						{
+							type: "controls",
+							props: {
+								controls: [
+									{
+										type: "action",
+										props: undoAction({id: "fromControls"}),
+									},
+									{type: "parameter", props: {name: "width"}},
+								],
+							},
+						},
+						{
+							type: "form",
+							props: {
+								controls: [
+									{
+										type: "action",
+										props: undoAction({
+											id: "fromForm",
+											label: "Form Undo",
+										}),
+									},
+								],
+							},
+						},
+						{
+							type: "stackUi",
+							props: {
+								name: "stack",
+								widgets: [
+									{
+										type: "controls",
+										props: {
+											controls: [
+												{
+													type: "action",
+													props: undoAction({
+														id: "fromStack",
+													}),
+												},
+											],
+										},
+									},
+								],
+							},
+						},
+					],
+					tabs: [
+						{
+							name: "tab",
+							widgets: [
+								{
+									type: "accordionUi",
+									props: {
+										items: [
+											{
+												name: "item",
+												widgets: [
+													{
+														type: "controls",
+														props: {
+															controls: [
+																{
+																	type: "action",
+																	props: undoAction(
+																		{
+																			id: "fromTab",
+																		},
+																	),
+																},
+															],
+														},
+													},
+												],
+											},
+										],
+									},
+								},
+							],
+						},
+					],
+				},
+				{
+					name: AppBuilderContainerNameType.Toolbar,
+					props: {id: "tb"},
+					groups: [
+						[
+							{
+								type: "action",
+								props: undoAction({id: "fromToolbar"}),
+							},
+							{
+								type: "actionMenu",
+								props: {
+									sections: [
+										[
+											{
+												type: "action",
+												props: undoAction({
+													id: "fromMenu",
+												}),
+											},
+										],
+									],
+								},
+							},
+							{
+								type: "widgets",
+								props: {
+									widgets: [
+										{
+											type: "controls",
+											props: {
+												controls: [
+													{
+														type: "action",
+														props: undoAction({
+															id: "fromPanel",
+														}),
+													},
+												],
+											},
+										},
+									],
+								},
+							},
+							{
+								type: "tabs",
+								props: {
+									tabs: [
+										{
+											name: "t",
+											widgets: [
+												{
+													type: "controls",
+													props: {
+														controls: [
+															{
+																type: "action",
+																props: undoAction(
+																	{
+																		id: "fromToolbarTab",
+																	},
+																),
+															},
+														],
+													},
+												},
+											],
+										},
+									],
+								},
+							},
+						],
+					],
+				},
+			],
+		};
+
+		expect(
+			ids(
+				collectActionControls({
+					appBuilder,
+					defaultToolbarActions: [],
+					settings: defaultSettings,
+				}),
+			),
+		).toEqual([
+			"fromTab",
+			"fromControls",
+			"fromForm",
+			"fromStack",
+			"fromToolbar",
+			"fromMenu",
+			"fromPanel",
+			"fromToolbarTab",
+		]);
+	});
+
+	it("uses label as identity when id is missing", () => {
+		const actions = collectActionControls({
+			appBuilder: undefined,
+			defaultToolbarActions: [undoAction({label: "Undo"})],
+			settings: defaultSettings,
+		});
+
+		expect(actions).toEqual([{id: "Undo", name: "Undo", type: "undo"}]);
+	});
+
+	it("matches explicit actions name against label", () => {
+		const actions = collectActionControls({
+			appBuilder: emptyApp,
+			defaultToolbarActions: [undoAction({label: "Undo"})],
+			settings: {
+				name: "list_action_controls",
+				actions: [{name: "Undo"}],
+			},
+		});
+
+		expect(ids(actions)).toEqual(["Undo"]);
+	});
+});
+
+describe("listActionControlsInputSchema", () => {
+	it("accepts empty object", () => {
+		expect(listActionControlsInputSchema.parse({})).toEqual({});
+	});
+
+	it("rejects extra keys", () => {
+		expect(() =>
+			listActionControlsInputSchema.parse({filter: "all"}),
+		).toThrow();
+	});
+});
+
+describe("handleListActionControls", () => {
+	function createDeps(
+		overrides: Partial<AgentToolsDeps> = {},
+	): AgentToolsDeps {
+		return {
+			controllerNamespace: "c",
+			getLiveParameters: () => [],
+			listSessionNamespaces: () => ["c"],
+			getAppBuilder: () => emptyApp,
+			batchParameterValueUpdate: jest.fn().mockResolvedValue(undefined),
+			getDefaultToolbarActions: () => [undoAction()],
+			...overrides,
+		};
+	}
+
+	it("returns input error named * when extra keys are present", async () => {
+		const result = await handleListActionControls(
+			{filter: "sound"},
+			defaultSettings,
+			createDeps(),
+		);
+
+		expect(result.actions).toEqual([]);
+		expect(result.errors?.[0]?.name).toBe("*");
+	});
+
+	it("lists default-toolbar undo from deps", async () => {
+		const result = await handleListActionControls(
+			{},
+			defaultSettings,
+			createDeps(),
+		);
+
+		expect(result.actions).toEqual([
+			{id: "undo", name: "undo", type: "undo"},
+		]);
+		expect(result.errors).toBeUndefined();
+	});
+});

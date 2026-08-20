@@ -8,6 +8,7 @@ function createDeps(): AgentToolsDeps {
 		listSessionNamespaces: () => ["c"],
 		getAppBuilder: () => ({version: "1.0", containers: []}),
 		batchParameterValueUpdate: jest.fn().mockResolvedValue(undefined),
+		getDefaultToolbarActions: () => [],
 	};
 }
 
