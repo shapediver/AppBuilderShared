@@ -283,6 +283,91 @@ describe("collectActionControls", () => {
 
 		expect(ids(actions)).toEqual(["Undo"]);
 	});
+
+	it("merges toolbar item-level label onto the action ref", () => {
+		const appBuilder: IAppBuilder = {
+			version: "1.0",
+			containers: [
+				{
+					name: AppBuilderContainerNameType.Toolbar,
+					props: {id: "tb"},
+					groups: [
+						[
+							{
+								type: "action",
+								label: "Undo",
+								props: {definition: {type: "undo", props: {}}},
+							},
+						],
+					],
+				},
+			],
+		};
+
+		expect(
+			collectActionControls({
+				appBuilder,
+				defaultToolbarActions: [],
+				settings: defaultSettings,
+			}),
+		).toEqual([{id: "Undo", name: "Undo", type: "undo"}]);
+
+		expect(
+			ids(
+				collectActionControls({
+					appBuilder,
+					defaultToolbarActions: [],
+					settings: {
+						name: "list_action_controls",
+						actions: [{name: "Undo"}],
+					},
+				}),
+			),
+		).toEqual(["Undo"]);
+	});
+
+	it("lists embedded settings.actions refs that are not in the UI", () => {
+		const actions = collectActionControls({
+			appBuilder: emptyApp,
+			defaultToolbarActions: [],
+			settings: {
+				name: "list_action_controls",
+				actions: [
+					{
+						action: {
+							id: "save",
+							definition: {type: "createModelState", props: {}},
+						},
+					},
+				],
+			},
+		});
+
+		expect(actions).toEqual([
+			{id: "save", name: "save", type: "createModelState"},
+		]);
+	});
+
+	it("lists a mix of embedded action refs and name matches", () => {
+		const actions = collectActionControls({
+			appBuilder: emptyApp,
+			defaultToolbarActions: [undoAction({label: "Undo"})],
+			settings: {
+				name: "list_action_controls",
+				actions: [
+					{
+						action: {
+							id: "save",
+							definition: {type: "createModelState", props: {}},
+						},
+					},
+					{name: "Undo"},
+				],
+			},
+		});
+
+		expect(ids(actions)).toEqual(["save", "Undo"]);
+	});
 });
 
 describe("listActionControlsInputSchema", () => {

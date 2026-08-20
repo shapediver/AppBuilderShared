@@ -12,10 +12,14 @@ import {
 	type IAppBuilderControl,
 	type IAppBuilderControlActionRef,
 	type IAppBuilderTab,
+	type IAppBuilderToolbarActionItem,
 	type IAppBuilderToolbarItem,
 	type IAppBuilderWidget,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import type {ListActionControlsToolSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
+import type {
+	IAgentActionControlRef,
+	ListActionControlsToolSettings,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {
 	DEFAULT_LIST_ACTION_CONTROL_TYPES,
 	type ListedActionControl,
@@ -36,6 +40,25 @@ function toListed(ref: IAppBuilderControlActionRef): ListedActionControl {
 
 function matchesName(ref: IAppBuilderControlActionRef, name: string): boolean {
 	return ref.id === name || ref.label === name;
+}
+
+function listExplicitActions(
+	collected: IAppBuilderControlActionRef[],
+	explicit: IAgentActionControlRef[],
+): ListedActionControl[] {
+	const listed: ListedActionControl[] = [];
+	for (const wanted of explicit) {
+		if (wanted.action) {
+			listed.push(toListed(wanted.action));
+		} else if (wanted.name !== undefined) {
+			for (const ref of collected) {
+				if (matchesName(ref, wanted.name)) {
+					listed.push(toListed(ref));
+				}
+			}
+		}
+	}
+	return listed;
 }
 
 function collectFromControls(
@@ -77,13 +100,24 @@ function collectFromTabs(
 	}
 }
 
+function mergeToolbarActionItem(
+	item: IAppBuilderToolbarActionItem,
+): IAppBuilderControlActionRef {
+	return {
+		...item.props,
+		label: item.label ?? item.props.label,
+		icon: item.icon ?? item.props.icon,
+		tooltip: item.tooltip ?? item.props.tooltip,
+	};
+}
+
 function collectFromToolbarItems(
 	refs: IAppBuilderControlActionRef[],
 	items?: IAppBuilderToolbarItem[],
 ): void {
 	for (const item of items ?? []) {
 		if (isActionRefControl(item)) {
-			refs.push(item.props);
+			refs.push(mergeToolbarActionItem(item));
 		} else if (isToolbarActionMenuItem(item)) {
 			for (const section of item.props.sections) {
 				collectFromToolbarItems(refs, section);
@@ -128,15 +162,7 @@ export function collectActionControls(args: {
 
 	const explicit = args.settings.actions;
 	if (explicit) {
-		return collected
-			.filter((ref) =>
-				explicit.some(
-					(wanted) =>
-						wanted.name !== undefined &&
-						matchesName(ref, wanted.name),
-				),
-			)
-			.map(toListed);
+		return listExplicitActions(collected, explicit);
 	}
 
 	const types = new Set(
