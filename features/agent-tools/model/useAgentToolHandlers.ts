@@ -11,7 +11,6 @@ import type {
 	IAppBuilderActionPropsCreateModelState,
 	IAppBuilderActionPropsImportModelState,
 	IAppBuilderControlActionRef,
-	IAppBuilderToolbarActionItem,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {GenericToolSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import type {ToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreToolbars";
@@ -29,6 +28,7 @@ import {
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import type {Vec3} from "../config/setCameraPosition";
 import type {RunActionControlResult} from "../config/triggerActionControl";
+import {collectFromToolbarItems} from "../lib/collectActionControls";
 import type {AgentToolsDeps} from "./agentToolsDeps";
 import {handleGetMetric} from "./handlers/getMetric";
 import {handleGetParameterValues} from "./handlers/getParameterValues";
@@ -68,16 +68,7 @@ function flattenDefaultToolbarActions(
 	const refs: IAppBuilderControlActionRef[] = [];
 	for (const toolbar of defaultToolbars) {
 		for (const group of toolbar.groups) {
-			for (const item of group) {
-				if (item.type !== "action") continue;
-				const actionItem = item as IAppBuilderToolbarActionItem;
-				refs.push({
-					...actionItem.props,
-					label: actionItem.label ?? actionItem.props.label,
-					icon: actionItem.icon ?? actionItem.props.icon,
-					tooltip: actionItem.tooltip ?? actionItem.props.tooltip,
-				});
-			}
+			refs.push(...collectFromToolbarItems(group));
 		}
 	}
 	return refs;

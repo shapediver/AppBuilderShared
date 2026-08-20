@@ -5,7 +5,10 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {ListActionControlsToolSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {listActionControlsInputSchema} from "../config/listActionControls";
-import {collectActionControls} from "../lib/collectActionControls";
+import {
+	collectActionControls,
+	collectFromToolbarItems,
+} from "../lib/collectActionControls";
 import type {AgentToolsDeps} from "../model/agentToolsDeps";
 import {handleListActionControls} from "../model/handlers/listActionControls";
 
@@ -346,6 +349,40 @@ describe("collectActionControls", () => {
 		expect(actions).toEqual([
 			{id: "save", name: "save", type: "createModelState"},
 		]);
+	});
+
+	it("collects createModelState nested in an actionMenu", () => {
+		const refs = collectFromToolbarItems([
+			{
+				type: "action",
+				props: {definition: {type: "undo", props: {}}},
+			},
+			{
+				type: "actionMenu",
+				props: {
+					sections: [
+						[
+							{
+								type: "action",
+								label: "Save",
+								props: {
+									definition: {
+										type: "createModelState",
+										props: {},
+									},
+								},
+							},
+						],
+					],
+				},
+			},
+		]);
+
+		expect(refs.map((ref) => ref.definition.type)).toEqual([
+			"undo",
+			"createModelState",
+		]);
+		expect(refs[1]?.label).toBe("Save");
 	});
 
 	it("lists a mix of embedded action refs and name matches", () => {

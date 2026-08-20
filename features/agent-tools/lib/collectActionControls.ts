@@ -111,7 +111,7 @@ function mergeToolbarActionItem(
 	};
 }
 
-function collectFromToolbarItems(
+function appendFromToolbarItems(
 	refs: IAppBuilderControlActionRef[],
 	items?: IAppBuilderToolbarItem[],
 ): void {
@@ -120,7 +120,7 @@ function collectFromToolbarItems(
 			refs.push(mergeToolbarActionItem(item));
 		} else if (isToolbarActionMenuItem(item)) {
 			for (const section of item.props.sections) {
-				collectFromToolbarItems(refs, section);
+				appendFromToolbarItems(refs, section);
 			}
 		} else if (isToolbarWidgetPanelItem(item)) {
 			collectFromWidgets(refs, item.props.widgets);
@@ -128,6 +128,14 @@ function collectFromToolbarItems(
 			collectFromTabs(refs, item.props.tabs);
 		}
 	}
+}
+
+export function collectFromToolbarItems(
+	items?: IAppBuilderToolbarItem[],
+): IAppBuilderControlActionRef[] {
+	const refs: IAppBuilderControlActionRef[] = [];
+	appendFromToolbarItems(refs, items);
+	return refs;
 }
 
 type CollectActionControlsArgs = {
@@ -146,7 +154,7 @@ function collectFromAppBuilder(
 	for (const container of appBuilder.containers) {
 		if (isToolbarContainer(container)) {
 			for (const group of container.groups ?? []) {
-				collectFromToolbarItems(refs, group);
+				refs.push(...collectFromToolbarItems(group));
 			}
 		} else {
 			collectFromTabs(refs, container.tabs);
