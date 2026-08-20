@@ -1,5 +1,5 @@
 import {parameterValueSchema} from "@AppBuilderLib/features/agent-tools/config/listParameterDefinitions";
-import type {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 export type ParameterValueInput = z.infer<typeof parameterValueSchema>;
 

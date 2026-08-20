@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 export const getScreenshotInputSchema = z.strictObject({
 	viewportId: z.string().optional(),

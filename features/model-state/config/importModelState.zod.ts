@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /** Shared `{ name, message }` for validation / tool errors. */
 export const nameMessageSchema = z.object({

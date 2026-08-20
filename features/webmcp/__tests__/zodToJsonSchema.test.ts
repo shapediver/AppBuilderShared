@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {zodToJsonSchema} from "../lib/zodToJsonSchema";
 
 describe("zodToJsonSchema", () => {
@@ -56,7 +56,14 @@ describe("zodToJsonSchema", () => {
 					additionalProperties: {},
 				},
 			},
-			required: ["name", "enabled", "filter", "value", "tags", "metadata"],
+			required: [
+				"name",
+				"enabled",
+				"filter",
+				"value",
+				"tags",
+				"metadata",
+			],
 			additionalProperties: false,
 		});
 	});

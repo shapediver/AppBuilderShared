@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /** JSON Schema subset accepted by WebMCP `registerTool({ inputSchema })`. */
 export type JsonSchema = {

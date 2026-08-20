@@ -8,7 +8,7 @@ import type {AgentToolsDeps} from "@AppBuilderLib/features/agent-tools/model/age
 import {handleListParameterDefinitions} from "@AppBuilderLib/features/agent-tools/model/handlers/listParameterDefinitions";
 import {handleSetParameterValues} from "@AppBuilderLib/features/agent-tools/model/handlers/setParameterValues";
 import type {ListParameterDefinitionsToolSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {allParameters, EVAL_NAMESPACE} from "./__fixtures__/parameters";
 import evalScenariosJson from "./evals.json";
 

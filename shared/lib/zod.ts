@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {prettifyError} from "zod/v4";
 
 // Zod's default JIT/eval capability probe uses new Function(""), which is

@@ -104,6 +104,23 @@ export type SetParameterValuesToolSettings = {
 };
 
 /**
+ * Default `filter.types` for {@link ListActionControlsToolSettings} when
+ * `actions` is omitted. Export actions are not included.
+ */
+export enum DefaultListActionControlType {
+	CreateModelState = "createModelState",
+	AddToCart = "addToCart",
+	SetParameterValue = "setParameterValue",
+	SetParameterValues = "setParameterValues",
+	Undo = "undo",
+	Redo = "redo",
+	ResetParameterValues = "resetParameterValues",
+	ImportModelState = "importModelState",
+	Camera = "camera",
+	Sound = "sound",
+}
+
+/**
  * The "list_actions" tool is used to expose a list of action controls to the agent.
  *
  * It's important to note the distinction between "action controls" and "actions".
@@ -142,17 +159,7 @@ export type ListActionControlsToolSettings = {
 	filter?: {
 		/**
 		 * The types of actions that should be exposed to the agent.
-		 * Defaults to the following types:
-		 *   * createModelState
-		 *   * addToCart
-		 *   * setParameterValue
-		 *   * setParameterValues
-		 *   * undo
-		 *   * redo
-		 *   * resetParameterValues
-		 *   * importModelState
-		 *   * camera
-		 *   * sound
+		 * Defaults to {@link DefaultListActionControlType}.
 		 */
 		types?: AppBuilderActionType[];
 	};

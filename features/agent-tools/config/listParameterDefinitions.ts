@@ -1,6 +1,6 @@
 import {nameMessageSchema} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {z} from "zod";
 
 const colorValueSchema = z.object({
 	red: z.number(),

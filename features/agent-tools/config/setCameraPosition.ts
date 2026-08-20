@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 export const vec3Schema = z.strictObject({
 	x: z.number(),
