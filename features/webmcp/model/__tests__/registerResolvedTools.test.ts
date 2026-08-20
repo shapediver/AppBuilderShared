@@ -2,8 +2,8 @@ import {
 	IN_SCOPE_GENERIC_TOOL_NAMES,
 	InScopeGenericToolName,
 } from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
-import {zodToJsonSchema} from "../../lib/zodToJsonSchema";
-import {INPUT_SCHEMA_BY_TOOL} from "../registerResolvedTools";
+import {INPUT_SCHEMA_BY_TOOL} from "@AppBuilderLib/features/agent-tools/config/schemaFor";
+import {zodToJsonSchema} from "@AppBuilderLib/features/agent-tools/lib/zodToJsonSchema";
 
 describe("INPUT_SCHEMA_BY_TOOL", () => {
 	it("has a schema for every in-scope generic tool", () => {

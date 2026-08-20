@@ -1,35 +1,13 @@
-import {getMetricInputSchema} from "@AppBuilderLib/features/agent-tools/config/getMetric";
-import {getParameterValuesInputSchema} from "@AppBuilderLib/features/agent-tools/config/getParameterValues";
-import {getScreenshotInputSchema} from "@AppBuilderLib/features/agent-tools/config/getScreenshot";
-import {InScopeGenericToolName} from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
-import {listActionControlsInputSchema} from "@AppBuilderLib/features/agent-tools/config/listActionControls";
-import {listParameterDefinitionsInputSchema} from "@AppBuilderLib/features/agent-tools/config/listParameterDefinitions";
 import type {ResolvedGenericTool} from "@AppBuilderLib/features/agent-tools/config/resolveToolset";
-import {setCameraPositionInputSchema} from "@AppBuilderLib/features/agent-tools/config/setCameraPosition";
-import {setParameterValuesInputSchema} from "@AppBuilderLib/features/agent-tools/config/setParameterValues";
+import {schemaFor} from "@AppBuilderLib/features/agent-tools/config/schemaFor";
 import {AGENT_TOOL_META} from "@AppBuilderLib/features/agent-tools/config/toolMeta";
-import {triggerActionControlInputSchema} from "@AppBuilderLib/features/agent-tools/config/triggerActionControl";
+import {zodToJsonSchema} from "@AppBuilderLib/features/agent-tools/lib/zodToJsonSchema";
 import type {AgentToolHandlerMap} from "@AppBuilderLib/features/agent-tools/model/useAgentToolHandlers";
-import type {z} from "zod";
 import type {ModelContext} from "../lib/webmcpAvailability";
-import {zodToJsonSchema} from "../lib/zodToJsonSchema";
-
-export const INPUT_SCHEMA_BY_TOOL: Record<InScopeGenericToolName, z.ZodType> = {
-	[InScopeGenericToolName.ListParameterDefinitions]:
-		listParameterDefinitionsInputSchema,
-	[InScopeGenericToolName.GetParameterValues]: getParameterValuesInputSchema,
-	[InScopeGenericToolName.SetParameterValues]: setParameterValuesInputSchema,
-	[InScopeGenericToolName.ListActionControls]: listActionControlsInputSchema,
-	[InScopeGenericToolName.TriggerActionControl]:
-		triggerActionControlInputSchema,
-	[InScopeGenericToolName.SetCameraPosition]: setCameraPositionInputSchema,
-	[InScopeGenericToolName.GetScreenshot]: getScreenshotInputSchema,
-	[InScopeGenericToolName.GetMetric]: getMetricInputSchema,
-};
 
 /**
  * Register each resolved generic tool on WebMCP.
- * Schema map stays here; execute comes from `handlers` (agent-tools).
+ * Schema lookup lives in agent-tools (`schemaFor`); execute comes from `handlers`.
  */
 export async function registerResolvedTools(
 	modelContext: ModelContext,
@@ -43,7 +21,7 @@ export async function registerResolvedTools(
 			{
 				name: tool.name,
 				description: meta.description,
-				inputSchema: zodToJsonSchema(INPUT_SCHEMA_BY_TOOL[tool.name]),
+				inputSchema: zodToJsonSchema(schemaFor(tool.name)),
 				execute: handlers[tool.name],
 				annotations: {
 					readOnlyHint: meta.annotations.readOnlyHint,

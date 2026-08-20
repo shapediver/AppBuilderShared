@@ -98,7 +98,7 @@ function objectSchema(
 }
 
 /**
- * Converts a Zod schema to JSON Schema for WebMCP tool registration.
+ * Converts a Zod schema to JSON Schema for WebMCP and ToolsApi tool listing.
  *
  * Intentionally small: only handles Zod types used by `features/agent-tools/config`
  * (`strictObject`, primitives, enum, union, array, record, literal).
