@@ -1,14 +1,14 @@
-import {z} from "zod";
-import {createModelStateInputSchema} from "../config/createModelState";
-import {importModelStateInputSchema} from "../config/importModelState";
+import {defaultSettingsFor} from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
 import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
-} from "../config/listParameterDefinitions";
-import {setParameterValuesInputSchema} from "../config/setParameterValues";
-import {formatToolInputError} from "../lib/formatToolInputError";
-import {mapParameterDefinition} from "../lib/parameterDefinitionMapper";
-import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
+} from "@AppBuilderLib/features/agent-tools/config/listParameterDefinitions";
+import {setParameterValuesInputSchema} from "@AppBuilderLib/features/agent-tools/config/setParameterValues";
+import type {AgentToolsDeps} from "@AppBuilderLib/features/agent-tools/model/agentToolsDeps";
+import {handleListParameterDefinitions} from "@AppBuilderLib/features/agent-tools/model/handlers/listParameterDefinitions";
+import {handleSetParameterValues} from "@AppBuilderLib/features/agent-tools/model/handlers/setParameterValues";
+import type {ListParameterDefinitionsToolSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
+import {z} from "zod";
 import {allParameters, EVAL_NAMESPACE} from "./__fixtures__/parameters";
 import evalScenariosJson from "./evals.json";
 
@@ -38,27 +38,34 @@ export function loadWebmcpEvalScenarios(): EvalScenario[] {
 	return evalScenariosJson as EvalScenario[];
 }
 
-function runListScenario(input: Record<string, unknown>) {
-	try {
-		const parsed = listParameterDefinitionsInputSchema.parse(input);
-		const filter = parsed.filter ?? "all";
-		let parameters = allParameters;
+function createEvalDeps(): AgentToolsDeps {
+	return {
+		controllerNamespace: EVAL_NAMESPACE,
+		getLiveParameters: (ns) => (ns === EVAL_NAMESPACE ? allParameters : []),
+		listSessionNamespaces: () => [EVAL_NAMESPACE],
+		getAppBuilder: () => undefined,
+		batchParameterValueUpdate: async () => undefined,
+		getDefaultToolbarActions: () => [],
+		createModelState: async () => ({success: true}),
+		importModelState: async () => ({success: true}),
+		undo: async () => ({success: true}),
+		redo: async () => ({success: true}),
+		resetParameters: async () => ({success: true}),
+		getViewportId: () => "vp",
+		setCamera: async () => ({success: true}),
+		getScreenshot: async () => undefined,
+		getOutputByName: () => undefined,
+	};
+}
 
-		if (filter === "visible") {
-			parameters = parameters.filter((p) => !p.definition.hidden);
-		}
-
-		return {
-			parameters: parameters.map((param) =>
-				mapParameterDefinition(param),
-			),
-		};
-	} catch (e) {
-		return {
-			parameters: [],
-			...formatToolInputError(e),
-		};
-	}
+async function runListScenario(input: Record<string, unknown>) {
+	return handleListParameterDefinitions(
+		input,
+		defaultSettingsFor(
+			"list_parameter_definitions",
+		) as ListParameterDefinitionsToolSettings,
+		createEvalDeps(),
+	);
 }
 
 function assertInputSchemaReject(
@@ -137,24 +144,24 @@ function assertSetErrorExpectations(
 	return null;
 }
 
-function assertListScenario(scenario: EvalScenario): string | null {
+async function assertListScenario(
+	scenario: EvalScenario,
+): Promise<string | null> {
 	if (scenario.expect.inputSchemaReject) {
-		const result = runListScenario(scenario.input);
-		const parsed = listParameterDefinitionsOutputSchema.safeParse(result);
-
-		if (!parsed.success) {
-			return "list output did not match schema after input rejection";
-		}
-
-		if (!parsed.data.errors?.length) {
-			return "expected non-empty errors array for invalid input";
-		}
-
-		return null;
+		return assertInputSchemaReject(
+			listParameterDefinitionsInputSchema,
+			scenario.input,
+		);
 	}
 
-	const result = runListScenario(scenario.input);
-	const parameters = result.parameters;
+	const result = await runListScenario(scenario.input);
+	const parsed = listParameterDefinitionsOutputSchema.safeParse(result);
+
+	if (!parsed.success) {
+		return "list output did not match schema";
+	}
+
+	const parameters = parsed.data.parameters;
 	const {expect} = scenario;
 
 	if (
@@ -186,43 +193,12 @@ async function assertSetScenario(
 		);
 	}
 
-	const parsed = setParameterValuesInputSchema.parse(scenario.input);
-
-	const result = await resolveAndUpdate(
-		EVAL_NAMESPACE,
-		(ns) => (ns === EVAL_NAMESPACE ? allParameters : []),
-		parsed.updates,
-		async () => undefined,
+	const result = await handleSetParameterValues(
+		scenario.input,
+		createEvalDeps(),
 	);
 
 	return assertSetErrorExpectations(result, scenario.expect);
-}
-
-// TODO SS-9745: full create/import evals require a browser WebMCP runtime.
-function assertSchemaScenario(scenario: EvalScenario): string | null {
-	const {tool, input, expect} = scenario;
-	const schema =
-		tool === "create_model_state"
-			? createModelStateInputSchema
-			: tool === "import_model_state"
-				? importModelStateInputSchema
-				: undefined;
-
-	if (!schema) {
-		return `unknown schema tool "${tool}"`;
-	}
-
-	if (expect.inputSchemaReject || expect.success === false) {
-		return assertInputSchemaReject(schema, input);
-	}
-
-	try {
-		schema.parse(input);
-	} catch (e) {
-		return e instanceof Error ? e.message : String(e);
-	}
-
-	return null;
 }
 
 /** Returns failure reason, or null when the scenario passes. */
@@ -234,9 +210,6 @@ export async function runWebmcpEvalScenario(
 			return assertListScenario(scenario);
 		case "set_parameter_values":
 			return assertSetScenario(scenario);
-		case "create_model_state":
-		case "import_model_state":
-			return assertSchemaScenario(scenario);
 		default:
 			return `unknown tool "${scenario.tool}"`;
 	}

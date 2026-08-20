@@ -2,33 +2,9 @@
 	{
 		"id": "list_all",
 		"tool": "list_parameter_definitions",
-		"description": "List all supported parameters",
-		"input": {"filter": "all"},
-		"expect": {"parametersCount": 7}
-	},
-	{
-		"id": "list_visible",
-		"tool": "list_parameter_definitions",
-		"description": "List only non-hidden parameters",
-		"input": {"filter": "visible"},
-		"expect": {
-			"parametersCount": 6,
-			"parameterIds": [
-				"width-int",
-				"material-list",
-				"paint-color",
-				"height-float",
-				"enabled-bool",
-				"color-list"
-			]
-		}
-	},
-	{
-		"id": "list_reject_visible_only",
-		"tool": "list_parameter_definitions",
-		"description": "Reject weak-model alias visibleOnly (use filter instead)",
-		"input": {"visibleOnly": true},
-		"expect": {"inputSchemaReject": true}
+		"description": "List parameters with default agent settings (hidden excluded)",
+		"input": {},
+		"expect": {"parametersCount": 6}
 	},
 	{
 		"id": "set_valid_int",
@@ -46,7 +22,12 @@
 		"input": {
 			"updates": [{"name": "Width", "value": 99}]
 		},
-		"expect": {"applied": [], "errorsNonEmpty": true, "appliedExcludes": ["width-int"], "errorMessageIncludes": "range"}
+		"expect": {
+			"applied": [],
+			"errorsNonEmpty": true,
+			"appliedExcludes": ["width-int"],
+			"errorMessageIncludes": "range"
+		}
 	},
 	{
 		"id": "set_unknown_id",
@@ -219,50 +200,5 @@
 			"updates": [{"name": "Color", "value": 0}]
 		},
 		"expect": {"applied": ["color-list"], "errors": []}
-	},
-	{
-		"id": "create_model_state",
-		"tool": "create_model_state",
-		"description": "Validate create_model_state input schema (execution mocked)",
-		"input": {
-			"parameterNamesToInclude": ["Width"],
-			"includeImage": true
-		},
-		"expect": {"success": true}
-	},
-	{
-		"id": "create_include_image_false",
-		"tool": "create_model_state",
-		"description": "Accept includeImage:false (common demo save path)",
-		"input": {"includeImage": false},
-		"expect": {"success": true}
-	},
-	{
-		"id": "create_reject_unknown_key",
-		"tool": "create_model_state",
-		"description": "Reject unknown create_model_state keys",
-		"input": {"includeImage": false, "saveSnapshot": true},
-		"expect": {"success": false}
-	},
-	{
-		"id": "import_valid",
-		"tool": "import_model_state",
-		"description": "Validate import_model_state input schema (execution mocked)",
-		"input": {"modelStateId": "ms-abc-123"},
-		"expect": {"success": true}
-	},
-	{
-		"id": "import_invalid",
-		"tool": "import_model_state",
-		"description": "Reject invalid import_model_state input type",
-		"input": {"modelStateId": 12345},
-		"expect": {"success": false}
-	},
-	{
-		"id": "import_reject_unknown_key",
-		"tool": "import_model_state",
-		"description": "Reject unknown import_model_state keys",
-		"input": {"modelStateId": "ms-abc-123", "applied": true},
-		"expect": {"success": false}
 	}
 ]

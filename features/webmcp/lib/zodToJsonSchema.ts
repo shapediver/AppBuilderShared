@@ -100,7 +100,7 @@ function objectSchema(
 /**
  * Converts a Zod schema to JSON Schema for WebMCP tool registration.
  *
- * Intentionally small: only handles Zod types used by `features/webmcp/config`
+ * Intentionally small: only handles Zod types used by `features/agent-tools/config`
  * (`strictObject`, primitives, enum, union, array, record, literal).
  * Every object node sets `additionalProperties: false` so weak models cannot
  * invent extra keys (`parameters`, `visibleOnly`, etc.).

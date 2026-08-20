@@ -10,7 +10,7 @@ Weak-model stress tests. Run against `http://localhost:3000/?g=SS-8076.json` via
 4. Call tools: `const r = await mc.executeTool(tool("list_parameter_definitions"), JSON.stringify(input));`
    - First arg is the **RegisteredTool** from `getTools()` (not a string name).
    - Second arg MUST be a JSON string.
-5. `await mc.getTools()` lists registered tools (4 expected, snake_case names).
+5. `await mc.getTools()` lists registered tools (8 in-scope generic names by default, snake_case).
 
 **Schema reject:** invalid input returns `{ errors: [{ name: "*", message }] }` or `{ success: false, message }` — does **not** throw.
 
@@ -22,7 +22,7 @@ This JSON exposes **StringList UI widgets only** (ButtonChipGroup, DropDown, Che
 
 ## Conventions
 
-- Discover params first with `list_parameter_definitions` `{filter:"all"}` to learn real names/ids/types.
+- Discover params first with `list_parameter_definitions` `{}` to learn real names/ids/types. Hidden/visibility filters live in agent settings, not tool input.
 - On SS-8076, **Color** = StringList trap (label vs index). Width/Material/Paint apply only on other models.
 - Indices are 0-based integers.
 
@@ -30,13 +30,13 @@ This JSON exposes **StringList UI widgets only** (ButtonChipGroup, DropDown, Che
 
 ### 1. discover_all
 Task: "List every parameter of this model."
-Tool: `list_parameter_definitions`, input `{"filter":"all"}`
-Expect: `parameters` array, each has `settable` boolean. No `errors`.
+Tool: `list_parameter_definitions`, input `{}`
+Expect: `parameters` array, each has `settable` boolean. No `errors`. Extra keys (`filter`, `visibleOnly`) reject.
 
-### 2. discover_visible
-Task: "List only the visible (non-hidden) parameters."
-Tool: `list_parameter_definitions`, input `{"filter":"visible"}`
-Expect: `parameters` array; count <= all; no param with `hidden:true`.
+### 2. discover_hidden_filter
+Task: "Hidden parameters are excluded by default agent settings, not by tool input."
+Tool: `list_parameter_definitions`, input `{}`
+Expect: no param with `hidden:true` unless agent settings `filter.hidden` is `include`.
 
 ### 3. reject_visibleOnly_alias
 Task: "List visibleOnly true." (weak-model alias)
@@ -118,33 +118,33 @@ Task: "Set Width to 7 and also set the same parameter by id to 8 in one call."
 Tool: `set_parameter_values`, input `{"updates":[{"name":"<WidthName>","value":7},{"name":"<WidthId>","value":8}]}`
 Expect: `applied` contains width id once; one error ("twice").
 
-### 19. create_model_state
-Task: "Create a model state of the current configuration."
-Tool: `create_model_state`, input `{}`
-Expect: `success:true`, `modelStateId` returned.
+### 19. create_via_action
+Task: "Save current configuration."
+Tool: `list_action_controls` then `trigger_action_control` for a createModelState action (no `create_model_state` WebMCP tool).
+Expect: listed action triggers; `success:true`.
 
-### 20. import_model_state_roundtrip
-Task: "Import the model state just created."
-Tool: `import_model_state`, input `{"modelStateId":"<id from #19>"}`
-Expect: `success:true`, `appliedParameterIds` array (possibly empty if no diff).
+### 20. import_via_action
+Task: "Restore a saved configuration."
+Tool: `trigger_action_control` for an importModelState action (no `import_model_state` WebMCP tool).
+Expect: `success:true` or a message when the action is unavailable.
 
-### 21. import_invalid_id
-Task: "Import a non-existent model state id."
-Tool: `import_model_state`, input `{"modelStateId":"does-not-exist-xyz"}`
-Expect: `success:false` with a message (fetch error).
+### 21. import_missing_action
+Task: "Import when no import action is listed."
+Tool: `trigger_action_control`, input `{"name":"import"}`
+Expect: `success:false`, message that the action does not exist.
 
-### 22. import_wrong_type
-Task: "Import model state with a numeric id."
-Tool: `import_model_state`, input `{"modelStateId":12345}`
+### 22. list_reject_extra_keys
+Task: "List with filter key."
+Tool: `list_parameter_definitions`, input `{"filter":"all"}`
 Expect: schema reject.
 
 ### 23. unknown_tool
 Task: "Call a tool named get_params."
-Expect: tool not registered / error. Only 4 tools exist.
+Expect: tool not registered / error. Default toolset is the 8 in-scope generic names (no create/import).
 
 ### 24. full_workflow
-Task: "List visible params, set the first settable one to a valid value, create a state, import it back."
-Expect: each step succeeds; final import `success:true`.
+Task: "List params, set the first settable one to a valid value."
+Expect: each step succeeds.
 
 ### 25. bool_toggle
 Task: "Set the Enabled boolean to true."
@@ -171,4 +171,4 @@ End with: aggregate pass rate, list of weak-model failure patterns observed, sug
 | `updates` as object | `{"Width": 7}` | Schema requires `updates: [{ name, value }]` |
 | StringList label | `Color: "Red"` | Error hints with choices + index range |
 | Color shape | `{r,g,b}` | Schema/docs: `{red,green,blue,alpha}` |
-| Import key | `id` not `modelStateId` | `strictObject` on import input |
+| Action name | call `create_model_state` tool | use `list_action_controls` + `trigger_action_control` |

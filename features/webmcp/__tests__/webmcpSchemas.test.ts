@@ -1,40 +1,19 @@
-import {createModelStateInputSchema} from "../config/createModelState";
-import {
-	importModelStateInputSchema,
-	importModelStateSuccessOutputSchema,
-} from "../config/importModelState";
 import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
-} from "../config/listParameterDefinitions";
-import {setParameterValuesInputSchema} from "../config/setParameterValues";
-import {formatToolInputError} from "../lib/formatToolInputError";
+} from "@AppBuilderLib/features/agent-tools/config/listParameterDefinitions";
+import {setParameterValuesInputSchema} from "@AppBuilderLib/features/agent-tools/config/setParameterValues";
 
 describe("webmcp input schemas", () => {
 	describe("listParameterDefinitionsInputSchema", () => {
-		it("accepts valid input", () => {
-			expect(
-				listParameterDefinitionsInputSchema.parse({
-					filter: "visible",
-					sessionId: "session-1",
-				}),
-			).toEqual({
-				filter: "visible",
-				sessionId: "session-1",
-			});
-		});
-
-		it("accepts empty object with defaults implied at runtime", () => {
+		it("accepts empty object", () => {
 			expect(listParameterDefinitionsInputSchema.parse({})).toEqual({});
 		});
 
-		it("rejects invalid filter enum", () => {
+		it("rejects extra keys such as filter and visibleOnly", () => {
 			expect(() =>
-				listParameterDefinitionsInputSchema.parse({filter: "hidden"}),
+				listParameterDefinitionsInputSchema.parse({filter: "all"}),
 			).toThrow();
-		});
-
-		it("rejects unknown keys such as visibleOnly", () => {
 			expect(() =>
 				listParameterDefinitionsInputSchema.parse({visibleOnly: true}),
 			).toThrow();
@@ -79,20 +58,6 @@ describe("webmcp input schemas", () => {
 		});
 	});
 
-	describe("formatToolInputError", () => {
-		it("formats Error instances", () => {
-			expect(formatToolInputError(new Error("bad input"))).toEqual({
-				errors: [{name: "*", message: "bad input"}],
-			});
-		});
-
-		it("formats non-Error values", () => {
-			expect(formatToolInputError("bad input")).toEqual({
-				errors: [{name: "*", message: "bad input"}],
-			});
-		});
-	});
-
 	describe("setParameterValuesInputSchema", () => {
 		it("accepts valid updates", () => {
 			expect(
@@ -118,80 +83,6 @@ describe("webmcp input schemas", () => {
 
 		it("rejects missing updates array", () => {
 			expect(() => setParameterValuesInputSchema.parse({})).toThrow();
-		});
-	});
-
-	describe("createModelStateInputSchema", () => {
-		it("accepts optional fields", () => {
-			expect(
-				createModelStateInputSchema.parse({
-					includeImage: true,
-					includeGltf: false,
-					data: {foo: "bar"},
-				}),
-			).toEqual({
-				includeImage: true,
-				includeGltf: false,
-				data: {foo: "bar"},
-			});
-		});
-
-		it("rejects non-object input", () => {
-			expect(() => createModelStateInputSchema.parse("bad")).toThrow();
-		});
-	});
-
-	describe("importModelStateInputSchema", () => {
-		it("accepts modelStateId", () => {
-			expect(
-				importModelStateInputSchema.parse({
-					modelStateId: "abc-123",
-				}),
-			).toEqual({modelStateId: "abc-123"});
-		});
-
-		it("rejects missing modelStateId", () => {
-			expect(() => importModelStateInputSchema.parse({})).toThrow();
-		});
-	});
-
-	describe("importModelStateSuccessOutputSchema", () => {
-		it("accepts success output with optional invalidParameters", () => {
-			expect(
-				importModelStateSuccessOutputSchema.parse({
-					success: true,
-					appliedParameterIds: ["width"],
-					invalidParameters: [
-						{
-							name: "unknown",
-							message:
-								'Parameter "unknown" does not exist in the current model session.',
-						},
-					],
-				}),
-			).toEqual({
-				success: true,
-				appliedParameterIds: ["width"],
-				invalidParameters: [
-					{
-						name: "unknown",
-						message:
-							'Parameter "unknown" does not exist in the current model session.',
-					},
-				],
-			});
-		});
-
-		it("accepts empty appliedParameterIds", () => {
-			expect(
-				importModelStateSuccessOutputSchema.parse({
-					success: true,
-					appliedParameterIds: [],
-				}),
-			).toEqual({
-				success: true,
-				appliedParameterIds: [],
-			});
 		});
 	});
 });
