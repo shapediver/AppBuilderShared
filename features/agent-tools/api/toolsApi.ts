@@ -23,6 +23,7 @@ import {
 } from "../config/toolsApi";
 import {executeResolvedTool, unknownToolResult} from "../lib/executeResolvedTool";
 import {listToolsFromResolved} from "../lib/listToolsFromResolved";
+import {parseExecuteToolData} from "../lib/parseExecuteToolData";
 
 function withDefaultTimeout(
 	options?: ICrossWindowApiOptions,
@@ -88,16 +89,13 @@ export class ToolsApiConnector implements IToolsApiConnector {
 			crossWindowApi.on(
 				MESSAGE_TYPE_EXECUTE_TOOL,
 				async (data: IExecuteToolData) => {
-					if (
-						!data ||
-						typeof data !== "object" ||
-						typeof data.name !== "string"
-					) {
+					const request = parseExecuteToolData(data);
+					if (!request) {
 						return unknownToolResult("");
 					}
 					return executeResolvedTool(
-						data.name,
-						data.input,
+						request.name,
+						request.input,
 						resolved,
 						handlers,
 					);
