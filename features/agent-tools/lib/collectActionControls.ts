@@ -42,23 +42,23 @@ function matchesName(ref: IAppBuilderControlActionRef, name: string): boolean {
 	return ref.id === name || ref.label === name;
 }
 
-function listExplicitActions(
+function listExplicitActionRefs(
 	collected: IAppBuilderControlActionRef[],
 	explicit: IAgentActionControlRef[],
-): ListedActionControl[] {
-	const listed: ListedActionControl[] = [];
+): IAppBuilderControlActionRef[] {
+	const refs: IAppBuilderControlActionRef[] = [];
 	for (const wanted of explicit) {
 		if (wanted.action) {
-			listed.push(toListed(wanted.action));
+			refs.push(wanted.action);
 		} else if (wanted.name !== undefined) {
 			for (const ref of collected) {
 				if (matchesName(ref, wanted.name)) {
-					listed.push(toListed(ref));
+					refs.push(ref);
 				}
 			}
 		}
 	}
-	return listed;
+	return refs;
 }
 
 function collectFromControls(
@@ -130,6 +130,12 @@ function collectFromToolbarItems(
 	}
 }
 
+type CollectActionControlsArgs = {
+	appBuilder: IAppBuilder | undefined;
+	defaultToolbarActions: IAppBuilderControlActionRef[];
+	settings: ListActionControlsToolSettings;
+};
+
 function collectFromAppBuilder(
 	appBuilder: IAppBuilder | undefined,
 ): IAppBuilderControlActionRef[] {
@@ -150,11 +156,9 @@ function collectFromAppBuilder(
 	return refs;
 }
 
-export function collectActionControls(args: {
-	appBuilder: IAppBuilder | undefined;
-	defaultToolbarActions: IAppBuilderControlActionRef[];
-	settings: ListActionControlsToolSettings;
-}): ListedActionControl[] {
+export function collectActionControlRefs(
+	args: CollectActionControlsArgs,
+): IAppBuilderControlActionRef[] {
 	const collected = [
 		...collectFromAppBuilder(args.appBuilder),
 		...args.defaultToolbarActions,
@@ -162,13 +166,27 @@ export function collectActionControls(args: {
 
 	const explicit = args.settings.actions;
 	if (explicit) {
-		return listExplicitActions(collected, explicit);
+		return listExplicitActionRefs(collected, explicit);
 	}
 
 	const types = new Set(
 		args.settings.filter?.types ?? DEFAULT_LIST_ACTION_CONTROL_TYPES,
 	);
-	return collected
-		.filter((ref) => types.has(ref.definition.type))
-		.map(toListed);
+	return collected.filter((ref) => types.has(ref.definition.type));
+}
+
+export function findActionControlByName(
+	args: CollectActionControlsArgs,
+	name: string,
+): IAppBuilderControlActionRef | undefined {
+	return collectActionControlRefs(args).find((ref) => {
+		const listed = toListed(ref);
+		return listed.id === name || listed.name === name;
+	});
+}
+
+export function collectActionControls(
+	args: CollectActionControlsArgs,
+): ListedActionControl[] {
+	return collectActionControlRefs(args).map(toListed);
 }

@@ -49,6 +49,12 @@ function createDeps(
 		getAppBuilder: () => ({version: "1.0", containers: []}),
 		batchParameterValueUpdate: jest.fn().mockResolvedValue(undefined),
 		getDefaultToolbarActions: () => [],
+		createModelState: async () => ({success: true}),
+		importModelState: async () => ({success: true}),
+		undo: async () => ({success: true}),
+		redo: async () => ({success: true}),
+		resetParameters: async () => ({success: true}),
+		setCamera: async () => ({success: true}),
 		...overrides,
 	};
 }
