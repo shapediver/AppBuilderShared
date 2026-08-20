@@ -14,26 +14,18 @@ import type {z} from "zod";
 import type {ModelContext} from "../lib/webmcpAvailability";
 import {zodToJsonSchema} from "../lib/zodToJsonSchema";
 
-function schemaFor(name: InScopeGenericToolName): z.ZodType {
-	switch (name) {
-		case InScopeGenericToolName.ListParameterDefinitions:
-			return listParameterDefinitionsInputSchema;
-		case InScopeGenericToolName.GetParameterValues:
-			return getParameterValuesInputSchema;
-		case InScopeGenericToolName.SetParameterValues:
-			return setParameterValuesInputSchema;
-		case InScopeGenericToolName.ListActionControls:
-			return listActionControlsInputSchema;
-		case InScopeGenericToolName.TriggerActionControl:
-			return triggerActionControlInputSchema;
-		case InScopeGenericToolName.SetCameraPosition:
-			return setCameraPositionInputSchema;
-		case InScopeGenericToolName.GetScreenshot:
-			return getScreenshotInputSchema;
-		case InScopeGenericToolName.GetMetric:
-			return getMetricInputSchema;
-	}
-}
+export const INPUT_SCHEMA_BY_TOOL: Record<InScopeGenericToolName, z.ZodType> = {
+	[InScopeGenericToolName.ListParameterDefinitions]:
+		listParameterDefinitionsInputSchema,
+	[InScopeGenericToolName.GetParameterValues]: getParameterValuesInputSchema,
+	[InScopeGenericToolName.SetParameterValues]: setParameterValuesInputSchema,
+	[InScopeGenericToolName.ListActionControls]: listActionControlsInputSchema,
+	[InScopeGenericToolName.TriggerActionControl]:
+		triggerActionControlInputSchema,
+	[InScopeGenericToolName.SetCameraPosition]: setCameraPositionInputSchema,
+	[InScopeGenericToolName.GetScreenshot]: getScreenshotInputSchema,
+	[InScopeGenericToolName.GetMetric]: getMetricInputSchema,
+};
 
 export async function registerResolvedTools(
 	modelContext: ModelContext,
@@ -47,7 +39,7 @@ export async function registerResolvedTools(
 			{
 				name: tool.name,
 				description: meta.description,
-				inputSchema: zodToJsonSchema(schemaFor(tool.name)),
+				inputSchema: zodToJsonSchema(INPUT_SCHEMA_BY_TOOL[tool.name]),
 				execute: handlers[tool.name],
 				annotations: {
 					readOnlyHint: meta.annotations.readOnlyHint,

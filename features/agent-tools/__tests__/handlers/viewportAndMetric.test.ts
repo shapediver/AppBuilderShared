@@ -52,6 +52,21 @@ describe("handleSetCameraPosition", () => {
 		});
 		expect(result).toEqual({success: true});
 	});
+
+	it("uses viewportId from input over deps.getViewportId", async () => {
+		const deps = createDeps({getViewportId: () => "from-deps"});
+
+		await handleSetCameraPosition(
+			{position, target, viewportId: "from-input"},
+			deps,
+		);
+
+		expect(deps.setCamera).toHaveBeenCalledWith({
+			viewportId: "from-input",
+			position,
+			target,
+		});
+	});
 });
 
 describe("handleGetScreenshot", () => {
@@ -92,6 +107,20 @@ describe("handleGetScreenshot", () => {
 		);
 
 		expect(result).toEqual({success: true, image});
+	});
+
+	it("uses viewportId from input over deps.getViewportId", async () => {
+		const getScreenshot = jest
+			.fn()
+			.mockResolvedValue("data:image/png;base64,abc");
+		const deps = createDeps({
+			getViewportId: () => "from-deps",
+			getScreenshot,
+		});
+
+		await handleGetScreenshot({viewportId: "from-input"}, deps);
+
+		expect(getScreenshot).toHaveBeenCalledWith("from-input");
 	});
 });
 

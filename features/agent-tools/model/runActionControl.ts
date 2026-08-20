@@ -11,6 +11,7 @@ import {
 	isSoundAction,
 	isUndoAction,
 	type IAppBuilderActionDefinition,
+	type IAppBuilderActionPropsCamera,
 	type IAppBuilderControlActionRef,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {RunActionControlResult} from "../config/triggerActionControl";
@@ -71,6 +72,31 @@ async function runSetParameterAction(
 	return {success: true};
 }
 
+async function runCameraAction(
+	definition: {type: "camera"; props: IAppBuilderActionPropsCamera},
+	deps: AgentToolsDeps,
+): Promise<RunActionControlResult> {
+	if (!isSetCameraAction(definition.props)) {
+		return {
+			success: false,
+			message: "Camera action subtype not supported",
+		};
+	}
+	const position = tupleToVec3(definition.props.props.position);
+	const target = tupleToVec3(definition.props.props.target);
+	if (!position || !target) {
+		return {
+			success: false,
+			message: "Camera position and target are required.",
+		};
+	}
+	return await deps.setCamera({
+		viewportId: deps.getViewportId(),
+		position,
+		target,
+	});
+}
+
 export async function runActionControl(
 	action: IAppBuilderControlActionRef,
 	deps: AgentToolsDeps,
@@ -111,25 +137,7 @@ export async function runActionControl(
 			return await deps.addToCart(definition.props);
 		}
 		if (isCameraAction(definition)) {
-			if (!isSetCameraAction(definition.props)) {
-				return {
-					success: false,
-					message: "Camera action subtype not supported",
-				};
-			}
-			const position = tupleToVec3(definition.props.props.position);
-			const target = tupleToVec3(definition.props.props.target);
-			if (!position || !target) {
-				return {
-					success: false,
-					message: "Camera position and target are required.",
-				};
-			}
-			return await deps.setCamera({
-				viewportId: deps.getViewportId(),
-				position,
-				target,
-			});
+			return await runCameraAction(definition, deps);
 		}
 		if (isSoundAction(definition)) {
 			if (!deps.playSound) {

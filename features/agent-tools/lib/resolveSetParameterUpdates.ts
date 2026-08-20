@@ -9,6 +9,75 @@ import type {
 import {findParameterByName} from "./findParameterByName";
 import {prepareParameterStoreValue} from "./setParameterValueValidators/prepareParameterStoreValue";
 
+type PrepareOneUpdateResult =
+	| {
+			ok: true;
+			paramId: string;
+			namespace: string;
+			storeValue: unknown;
+	  }
+	| {ok: false; error: SetParameterValuesError};
+
+function prepareOneUpdate(
+	update: ParameterUpdateInput,
+	defaultNamespace: string,
+	getParameters: (namespace: string) => IShapeDiverParameter<any>[],
+	processedIds: Set<string>,
+): PrepareOneUpdateResult {
+	const targetNamespace = update.sessionId ?? defaultNamespace;
+	const parameter = findParameterByName(
+		getParameters(targetNamespace),
+		update.name,
+	);
+
+	if (!parameter) {
+		return {
+			ok: false,
+			error: {
+				name: update.name,
+				message: `Parameter with id/name/displayname "${update.name}" does not exist.`,
+			},
+		};
+	}
+
+	const paramId = parameter.definition.id;
+	if (processedIds.has(paramId)) {
+		return {
+			ok: false,
+			error: {
+				name: update.name,
+				message: `Refusing to update parameter "${update.name}" twice.`,
+			},
+		};
+	}
+	processedIds.add(paramId);
+
+	if (!SUPPORTED_PARAMETER_TYPES.includes(parameter.definition.type)) {
+		return {
+			ok: false,
+			error: {
+				name: update.name,
+				message: `Parameter type "${parameter.definition.type}" is not supported for setting via WebMCP.`,
+			},
+		};
+	}
+
+	const prepared = prepareParameterStoreValue(parameter, update.value);
+	if (!prepared.success) {
+		return {
+			ok: false,
+			error: {name: update.name, message: prepared.message},
+		};
+	}
+
+	return {
+		ok: true,
+		paramId,
+		namespace: targetNamespace,
+		storeValue: prepared.storeValue,
+	};
+}
+
 export async function resolveAndUpdate(
 	defaultNamespace: string,
 	getParameters: (namespace: string) => IShapeDiverParameter<any>[],
@@ -20,45 +89,18 @@ export async function resolveAndUpdate(
 	const processedIds = new Set<string>();
 
 	for (const update of updates) {
-		const targetNamespace = update.sessionId ?? defaultNamespace;
-		const parameter = findParameterByName(
-			getParameters(targetNamespace),
-			update.name,
+		const prepared = prepareOneUpdate(
+			update,
+			defaultNamespace,
+			getParameters,
+			processedIds,
 		);
-
-		if (!parameter) {
-			errors.push({
-				name: update.name,
-				message: `Parameter with id/name/displayname "${update.name}" does not exist.`,
-			});
+		if (!prepared.ok) {
+			errors.push(prepared.error);
 			continue;
 		}
 
-		const paramId = parameter.definition.id;
-		if (processedIds.has(paramId)) {
-			errors.push({
-				name: update.name,
-				message: `Refusing to update parameter "${update.name}" twice.`,
-			});
-			continue;
-		}
-		processedIds.add(paramId);
-
-		if (!SUPPORTED_PARAMETER_TYPES.includes(parameter.definition.type)) {
-			errors.push({
-				name: update.name,
-				message: `Parameter type "${parameter.definition.type}" is not supported for setting via WebMCP.`,
-			});
-			continue;
-		}
-
-		const prepared = prepareParameterStoreValue(parameter, update.value);
-		if (!prepared.success) {
-			errors.push({name: update.name, message: prepared.message});
-			continue;
-		}
-
-		(valuesByNamespace[targetNamespace] ??= {})[paramId] =
+		(valuesByNamespace[prepared.namespace] ??= {})[prepared.paramId] =
 			prepared.storeValue;
 	}
 

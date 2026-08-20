@@ -25,14 +25,25 @@ function resolveRef(
 	return inNamespace.find((p) => p.parameter === found);
 }
 
+function refMatchesItem(
+	item: NamespacedParameter,
+	ref: {name: string; sessionId?: string},
+	controllerNamespace: string,
+): boolean {
+	const ns = ref.sessionId ?? controllerNamespace;
+	if (item.namespace !== ns) return false;
+	const d = item.parameter.definition;
+	return (
+		d.id === ref.name || d.name === ref.name || d.displayname === ref.name
+	);
+}
+
 function isUiVisible(
 	item: NamespacedParameter,
 	uiRefs: UiParameterRef[],
 	controllerNamespace: string,
 ): boolean {
-	return uiRefs.some(
-		(ref) => resolveRef([item], ref, controllerNamespace) !== undefined,
-	);
+	return uiRefs.some((ref) => refMatchesItem(item, ref, controllerNamespace));
 }
 
 export function filterParametersForAgent(args: {
@@ -54,8 +65,9 @@ export function filterParametersForAgent(args: {
 		return resolved;
 	}
 
-	const allowedNamespaces =
-		settings.filter?.sessionIds ?? [controllerNamespace];
+	const allowedNamespaces = settings.filter?.sessionIds ?? [
+		controllerNamespace,
+	];
 	const hiddenMode = settings.filter?.hidden ?? "exclude";
 	const invisibleMode = settings.filter?.invisible ?? "include";
 

@@ -2,28 +2,28 @@ import {
 	setCameraPositionInputSchema,
 	type SetCameraPositionOutput,
 } from "../../config/setCameraPosition";
-import {formatToolInputError} from "../../lib/formatToolInputError";
+import {resolveViewportId} from "../../lib/resolveViewportId";
+import {runParsedTool} from "../../lib/runParsedTool";
 import type {AgentToolsDeps} from "../agentToolsDeps";
 
 export async function handleSetCameraPosition(
 	input: unknown,
 	deps: AgentToolsDeps,
 ): Promise<SetCameraPositionOutput> {
-	try {
-		const parsed = setCameraPositionInputSchema.parse(input);
-		const viewportId = parsed.viewportId ?? deps.getViewportId();
-		if (!viewportId) {
-			return {success: false, message: "Viewport not found."};
-		}
-		return await deps.setCamera({
-			viewportId,
-			position: parsed.position,
-			target: parsed.target,
-		});
-	} catch (e) {
-		return {
-			success: false,
-			message: formatToolInputError(e).errors[0].message,
-		};
-	}
+	return runParsedTool(
+		setCameraPositionInputSchema,
+		input,
+		async (parsed) => {
+			const viewportId = resolveViewportId(parsed, deps);
+			if (!viewportId) {
+				return {success: false, message: "Viewport not found."};
+			}
+			return await deps.setCamera({
+				viewportId,
+				position: parsed.position,
+				target: parsed.target,
+			});
+		},
+		(message) => ({success: false, message}),
+	);
 }

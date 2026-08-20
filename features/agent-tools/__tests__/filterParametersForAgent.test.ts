@@ -91,6 +91,19 @@ describe("filterParametersForAgent", () => {
 		expect(ids(result)).toEqual(["a", "b"]);
 	});
 
+	it("returns empty array when settings.parameters is empty even if live params exist", () => {
+		const result = filterParametersForAgent({
+			parameters: [ns(param("a")), ns(param("b"))],
+			controllerNamespace: "c",
+			settings: {
+				name: "list_parameter_definitions",
+				parameters: [],
+			},
+			uiRefs: [{name: "a"}],
+		});
+		expect(result).toEqual([]);
+	});
+
 	it("explicit parameters list wins over filter", () => {
 		const result = filterParametersForAgent({
 			parameters: [ns(param("a")), ns(param("b", {hidden: true}))],
@@ -166,6 +179,69 @@ describe("filterParametersForAgent", () => {
 			uiRefs: [],
 		});
 		expect(result[0]?.namespace).toBe("c");
+		expect(ids(result)).toEqual(["width"]);
+	});
+
+	it("matches UI ref by id when filter.invisible is exclude", () => {
+		const result = filterParametersForAgent({
+			parameters: [
+				ns(param("id-1", {name: "internal", displayname: "Width"})),
+				ns(param("id-2")),
+			],
+			controllerNamespace: "c",
+			settings: {
+				name: "list_parameter_definitions",
+				filter: {invisible: "exclude"},
+			},
+			uiRefs: [{name: "id-1"}],
+		});
+		expect(ids(result)).toEqual(["id-1"]);
+	});
+
+	it("matches UI ref by name when filter.invisible is exclude", () => {
+		const result = filterParametersForAgent({
+			parameters: [
+				ns(param("id-1", {name: "internal", displayname: "Width"})),
+				ns(param("id-2")),
+			],
+			controllerNamespace: "c",
+			settings: {
+				name: "list_parameter_definitions",
+				filter: {invisible: "exclude"},
+			},
+			uiRefs: [{name: "internal"}],
+		});
+		expect(ids(result)).toEqual(["id-1"]);
+	});
+
+	it("matches UI ref by displayname when filter.invisible is exclude", () => {
+		const result = filterParametersForAgent({
+			parameters: [
+				ns(param("id-1", {name: "internal", displayname: "Width"})),
+				ns(param("id-2")),
+			],
+			controllerNamespace: "c",
+			settings: {
+				name: "list_parameter_definitions",
+				filter: {invisible: "exclude"},
+			},
+			uiRefs: [{name: "Width"}],
+		});
+		expect(ids(result)).toEqual(["id-1"]);
+	});
+
+	it("does not match UI ref sessionId to the same name in a different namespace", () => {
+		const result = filterParametersForAgent({
+			parameters: [ns(param("width"), "c"), ns(param("width"), "other")],
+			controllerNamespace: "c",
+			settings: {
+				name: "list_parameter_definitions",
+				filter: {invisible: "exclude", sessionIds: ["c", "other"]},
+			},
+			uiRefs: [{name: "width", sessionId: "other"}],
+		});
+		expect(result).toHaveLength(1);
+		expect(result[0]?.namespace).toBe("other");
 		expect(ids(result)).toEqual(["width"]);
 	});
 

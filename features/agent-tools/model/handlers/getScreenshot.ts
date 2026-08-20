@@ -2,28 +2,28 @@ import {
 	getScreenshotInputSchema,
 	type GetScreenshotOutput,
 } from "../../config/getScreenshot";
-import {formatToolInputError} from "../../lib/formatToolInputError";
+import {resolveViewportId} from "../../lib/resolveViewportId";
+import {runParsedTool} from "../../lib/runParsedTool";
 import type {AgentToolsDeps} from "../agentToolsDeps";
 
 export async function handleGetScreenshot(
 	input: unknown,
 	deps: AgentToolsDeps,
 ): Promise<GetScreenshotOutput> {
-	try {
-		const parsed = getScreenshotInputSchema.parse(input ?? {});
-		const viewportId = parsed.viewportId ?? deps.getViewportId();
-		if (!viewportId) {
-			return {success: false, message: "Viewport not found."};
-		}
-		const image = await deps.getScreenshot(viewportId);
-		if (!image) {
-			return {success: false, message: "Screenshot failed."};
-		}
-		return {success: true, image};
-	} catch (e) {
-		return {
-			success: false,
-			message: formatToolInputError(e).errors[0].message,
-		};
-	}
+	return runParsedTool(
+		getScreenshotInputSchema,
+		input ?? {},
+		async (parsed) => {
+			const viewportId = resolveViewportId(parsed, deps);
+			if (!viewportId) {
+				return {success: false, message: "Viewport not found."};
+			}
+			const image = await deps.getScreenshot(viewportId);
+			if (!image) {
+				return {success: false, message: "Screenshot failed."};
+			}
+			return {success: true, image};
+		},
+		(message) => ({success: false, message}),
+	);
 }
