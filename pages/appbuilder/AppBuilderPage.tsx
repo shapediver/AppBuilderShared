@@ -13,6 +13,7 @@ import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {useAgentToolRuntime} from "@AppBuilderLib/features/agent-tools/model/useAgentToolRuntime";
+import {useToolsApiConnector} from "@AppBuilderLib/features/agent-tools/model/useToolsApiConnector";
 import {isWebMcpAvailable} from "@AppBuilderLib/features/webmcp/lib/webmcpAvailability";
 import {useWebMcpTools} from "@AppBuilderLib/features/webmcp/model/useWebMcpTools";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
@@ -242,6 +243,12 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	useWebMcpTools({
 		namespace,
 		enabled: isWebMcpAvailable(),
+		resolved,
+		handlers,
+		snapshotComplete,
+	});
+
+	useToolsApiConnector({
 		resolved,
 		handlers,
 		snapshotComplete,
