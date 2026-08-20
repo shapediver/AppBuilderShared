@@ -57,7 +57,10 @@ function createDeps(overrides: Partial<AgentToolsDeps> = {}): AgentToolsDeps {
 		undo: jest.fn().mockResolvedValue({success: true}),
 		redo: jest.fn().mockResolvedValue({success: true}),
 		resetParameters: jest.fn().mockResolvedValue({success: true}),
+		getViewportId: () => "vp",
 		setCamera: jest.fn().mockResolvedValue({success: true}),
+		getScreenshot: jest.fn().mockResolvedValue(undefined),
+		getOutputByName: () => undefined,
 		...overrides,
 	};
 }
@@ -237,10 +240,31 @@ describe("runActionControl", () => {
 		);
 
 		expect(deps.setCamera).toHaveBeenCalledWith({
-			position: [1, 2, 3],
-			target: [0, 1, 0],
+			viewportId: "vp",
+			position: {x: 1, y: 2, z: 3},
+			target: {x: 0, y: 1, z: 0},
 		});
 		expect(result).toEqual({success: true});
+	});
+
+	it("returns success false when set-camera position or target is missing", async () => {
+		const deps = createDeps();
+		const result = await runActionControl(
+			actionRef({
+				definition: {
+					type: "camera",
+					props: {
+						type: "set",
+						props: {position: [1, 2, 3]},
+					},
+				},
+			}),
+			deps,
+		);
+
+		expect(result.success).toBe(false);
+		expect(typeof result.message).toBe("string");
+		expect(deps.setCamera).not.toHaveBeenCalled();
 	});
 
 	it("maps setParameterValues definition props through resolve helpers", async () => {

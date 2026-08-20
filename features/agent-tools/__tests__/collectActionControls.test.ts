@@ -398,7 +398,10 @@ describe("handleListActionControls", () => {
 			undo: async () => ({success: true}),
 			redo: async () => ({success: true}),
 			resetParameters: async () => ({success: true}),
+			getViewportId: () => "vp",
 			setCamera: async () => ({success: true}),
+			getScreenshot: async () => undefined,
+			getOutputByName: () => undefined,
 			...overrides,
 		};
 	}

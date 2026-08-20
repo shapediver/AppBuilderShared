@@ -7,8 +7,8 @@ import type {
 	IAppBuilderActionPropsImportModelState,
 	IAppBuilderActionPropsSound,
 	IAppBuilderControlActionRef,
-	IAppBuilderPropsSetCamera,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {Vec3} from "../config/setCameraPosition";
 import type {RunActionControlResult} from "../config/triggerActionControl";
 
 export type AgentToolsDeps = {
@@ -27,9 +27,17 @@ export type AgentToolsDeps = {
 	undo: () => Promise<RunActionControlResult>;
 	redo: () => Promise<RunActionControlResult>;
 	resetParameters: (namespace: string) => Promise<RunActionControlResult>;
-	setCamera: (
-		props: Pick<IAppBuilderPropsSetCamera, "position" | "target">,
-	) => Promise<RunActionControlResult>;
+	getViewportId: () => string;
+	setCamera: (args: {
+		viewportId: string;
+		position: Vec3;
+		target: Vec3;
+	}) => Promise<RunActionControlResult>;
+	getScreenshot: (viewportId: string) => Promise<string | undefined>;
+	getOutputByName: (
+		namespace: string,
+		name: string,
+	) => {content: unknown} | undefined;
 	addToCart?: (
 		props: IAppBuilderActionPropsAddToCart,
 	) => Promise<RunActionControlResult>;

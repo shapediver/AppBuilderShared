@@ -22,6 +22,16 @@ function failureMessage(e: unknown): string {
 	return formatToolInputError(e).errors[0].message;
 }
 
+function tupleToVec3(
+	tuple: [number, number, number] | undefined,
+): {x: number; y: number; z: number} | undefined {
+	if (!tuple) {
+		return undefined;
+	}
+	const [x, y, z] = tuple;
+	return {x, y, z};
+}
+
 async function runSetParameterAction(
 	definition: IAppBuilderActionDefinition,
 	deps: AgentToolsDeps,
@@ -107,9 +117,18 @@ export async function runActionControl(
 					message: "Camera action subtype not supported",
 				};
 			}
+			const position = tupleToVec3(definition.props.props.position);
+			const target = tupleToVec3(definition.props.props.target);
+			if (!position || !target) {
+				return {
+					success: false,
+					message: "Camera position and target are required.",
+				};
+			}
 			return await deps.setCamera({
-				position: definition.props.props.position,
-				target: definition.props.props.target,
+				viewportId: deps.getViewportId(),
+				position,
+				target,
 			});
 		}
 		if (isSoundAction(definition)) {
