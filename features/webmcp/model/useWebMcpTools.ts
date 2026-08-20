@@ -1,7 +1,8 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
-import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
+import {resolveToolset} from "@AppBuilderLib/features/agent-tools/config/resolveToolset";
+import {useAgentToolHandlers} from "@AppBuilderLib/features/agent-tools/model/useAgentToolHandlers";
+import type {IAppBuilderAgent} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
@@ -9,20 +10,16 @@ import {
 	getWebMcpEnvironment,
 	isWebMcpAvailable,
 } from "../lib/webmcpAvailability";
-import {registerCreateModelStateTool} from "./tools/registerCreateModelStateTool";
-import {registerImportModelStateTool} from "./tools/registerImportModelStateTool";
-import {registerListParameterDefinitionsTool} from "./tools/registerListParameterDefinitionsTool";
-import {registerSetParameterValuesTool} from "./tools/registerSetParameterValuesTool";
+import {registerResolvedTools} from "./registerResolvedTools";
 import type {
 	UseWebMcpToolsProps,
 	UseWebMcpToolsResult,
 } from "./useWebMcpTools.types";
-import type {WebMcpToolsDeps} from "./webMcpToolsDeps";
 
 export function useWebMcpTools(
 	props: UseWebMcpToolsProps,
 ): UseWebMcpToolsResult {
-	const {namespace, enabled = isWebMcpAvailable()} = props;
+	const {namespace, enabled = isWebMcpAvailable(), appBuilderData} = props;
 	const [registered, setRegistered] = useState(false);
 	const environment = getWebMcpEnvironment();
 	const ready = registered && environment.ready;
@@ -33,38 +30,36 @@ export function useWebMcpTools(
 		})),
 	);
 
-	const {getParameters, batchParameterValueUpdate} =
-		useShapeDiverStoreParameters(
-			useShallow((state) => ({
-				getParameters: state.getParameters,
-				batchParameterValueUpdate: state.batchParameterValueUpdate,
-			})),
-		);
-
-	const {createModelState} = useCreateModelState({
-		namespace: namespace ?? "",
-	});
-	const {importModelState} = useImportModelState({
-		namespace: namespace ?? "",
-	});
-	const namespaceRef = useRef<string>(namespace ?? "");
-	namespaceRef.current = namespace ?? "";
-
-	const getParametersRef = useRef(getParameters);
-	getParametersRef.current = getParameters;
-
-	const batchParameterValueUpdateRef = useRef(batchParameterValueUpdate);
-	batchParameterValueUpdateRef.current = batchParameterValueUpdate;
-
-	const createModelStateRef = useRef(createModelState);
-	createModelStateRef.current = createModelState;
-
-	const importModelStateRef = useRef(importModelState);
-	importModelStateRef.current = importModelState;
+	const {getParameters} = useShapeDiverStoreParameters(
+		useShallow((state) => ({
+			getParameters: state.getParameters,
+		})),
+	);
 
 	const sessionReady = !!namespace && !!sessions[namespace];
 	const paramsPopulated =
 		!!namespace && Object.keys(getParameters(namespace)).length > 0;
+
+	const agentRef = useRef<IAppBuilderAgent | undefined | "unset">("unset");
+	if (
+		agentRef.current === "unset" &&
+		(appBuilderData !== undefined || sessionReady)
+	) {
+		agentRef.current = appBuilderData?.agents?.[0];
+	}
+
+	const resolved = resolveToolset(
+		agentRef.current === "unset" ? undefined : agentRef.current,
+	);
+	const handlers = useAgentToolHandlers({
+		namespace: namespace ?? "",
+		appBuilderData,
+		resolved,
+	});
+	const resolvedRef = useRef(resolved);
+	resolvedRef.current = resolved;
+	const handlersRef = useRef(handlers);
+	handlersRef.current = handlers;
 
 	useEffect(() => {
 		if (enabled === false || !isWebMcpAvailable()) {
@@ -80,39 +75,14 @@ export function useWebMcpTools(
 		const controller = new AbortController();
 		let cancelled = false;
 
-		const deps: WebMcpToolsDeps = {
-			namespaceRef,
-			getLiveParameters: (targetNamespace) =>
-				Object.values(getParametersRef.current(targetNamespace)).map(
-					(store) => store.getState(),
-				),
-			batchParameterValueUpdateRef,
-			createModelStateRef,
-			importModelStateRef,
-		};
-
 		const registerTools = async () => {
 			const modelContext = getModelContext();
 
 			try {
-				await registerListParameterDefinitionsTool(
+				await registerResolvedTools(
 					modelContext,
-					deps,
-					controller.signal,
-				);
-				await registerSetParameterValuesTool(
-					modelContext,
-					deps,
-					controller.signal,
-				);
-				await registerCreateModelStateTool(
-					modelContext,
-					deps,
-					controller.signal,
-				);
-				await registerImportModelStateTool(
-					modelContext,
-					deps,
+					resolvedRef.current,
+					handlersRef.current,
 					controller.signal,
 				);
 

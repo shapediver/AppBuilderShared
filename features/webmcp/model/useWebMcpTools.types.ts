@@ -1,6 +1,9 @@
+import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+
 export interface UseWebMcpToolsProps {
 	namespace?: string;
 	enabled?: boolean;
+	appBuilderData?: IAppBuilder;
 }
 
 export interface WebMcpEnvironment {

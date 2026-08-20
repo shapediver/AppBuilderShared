@@ -234,6 +234,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	useWebMcpTools({
 		namespace,
 		enabled: isWebMcpAvailable(),
+		appBuilderData,
 	});
 
 	const showMarkdown =
