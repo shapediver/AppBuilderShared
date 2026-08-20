@@ -5,6 +5,7 @@ import {
 	TOOLS_API_NAME_AGENT,
 	TOOLS_API_NAME_APP,
 	TOOLS_API_TIMEOUT_MS,
+	type IToolsApiConnector,
 	type IToolsApiHandlerMap,
 } from "../config/toolsApi";
 
@@ -35,12 +36,12 @@ export function useToolsApiConnector(
 			return;
 		}
 
-		let cancelled = false;
-		let connector: {cancel: () => void} | undefined;
+		let effectAbandoned = false;
+		let connector: IToolsApiConnector | undefined;
 
 		void (async () => {
 			try {
-				const created = await ToolsApiFactory.getConnectorApi(
+				connector = await ToolsApiFactory.getConnectorApi(
 					peerWindow,
 					resolvedRef.current,
 					handlersRef.current,
@@ -48,19 +49,18 @@ export function useToolsApiConnector(
 					TOOLS_API_NAME_AGENT,
 					{timeout: TOOLS_API_TIMEOUT_MS},
 				);
-				void created.peerIsReady.catch(() => {});
-				if (cancelled) {
-					created.cancel();
+				void connector.peerIsReady.catch(() => {});
+				if (effectAbandoned) {
+					connector.cancel();
 					return;
 				}
-				connector = created;
 			} catch {
 				// getConnectorApi / transport failure — not a fake toolset
 			}
 		})();
 
 		return () => {
-			cancelled = true;
+			effectAbandoned = true;
 			connector?.cancel();
 		};
 	}, [peerWindow, snapshotComplete]);

@@ -70,12 +70,8 @@ export class ToolsApi implements IToolsApi {
 }
 
 export class ToolsApiConnector implements IToolsApiConnector {
-	#cancels: ICrossWindowCancelable[] = [];
-	#_peerIsReady: Promise<ICrossWindowPeerInfo>;
-
-	get peerIsReady() {
-		return this.#_peerIsReady;
-	}
+	#listenerCancels: ICrossWindowCancelable[] = [];
+	peerIsReady: Promise<ICrossWindowPeerInfo>;
 
 	constructor(
 		resolved: ResolvedGenericTool[],
@@ -83,12 +79,12 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		crossWindowApi: ICrossWindowApi,
 		options?: ICrossWindowApiOptions,
 	) {
-		this.#cancels.push(
+		this.#listenerCancels.push(
 			crossWindowApi.on(MESSAGE_TYPE_LIST_TOOLS, async () =>
 				listToolsFromResolved(resolved),
 			),
 		);
-		this.#cancels.push(
+		this.#listenerCancels.push(
 			crossWindowApi.on(
 				MESSAGE_TYPE_EXECUTE_TOOL,
 				async (data: IExecuteToolData) => {
@@ -108,17 +104,17 @@ export class ToolsApiConnector implements IToolsApiConnector {
 				},
 			),
 		);
-		this.#_peerIsReady = crossWindowApi.handshake(
+		this.peerIsReady = crossWindowApi.handshake(
 			MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 			options?.timeout,
 		);
 	}
 
 	cancel(): void {
-		for (const token of this.#cancels) {
+		for (const token of this.#listenerCancels) {
 			token.cancel();
 		}
-		this.#cancels = [];
+		this.#listenerCancels = [];
 	}
 }
 
@@ -131,14 +127,14 @@ class _ToolsApiFactory implements IToolsApiFactory {
 		peerName = TOOLS_API_NAME_APP,
 		options?: ICrossWindowApiOptions,
 	): Promise<IToolsApi> {
-		const opts = withDefaultTimeout(options);
+		const optionsWithTimeout = withDefaultTimeout(options);
 		const api = await this.crossWindowFactory.getWindowApi(
 			window,
 			name,
 			peerName,
-			opts,
+			optionsWithTimeout,
 		);
-		return new ToolsApi(api, opts);
+		return new ToolsApi(api, optionsWithTimeout);
 	}
 
 	async getParentClientApi(
@@ -146,13 +142,13 @@ class _ToolsApiFactory implements IToolsApiFactory {
 		peerName = TOOLS_API_NAME_APP,
 		options?: ICrossWindowApiOptions,
 	): Promise<IToolsApi> {
-		const opts = withDefaultTimeout(options);
+		const optionsWithTimeout = withDefaultTimeout(options);
 		const api = await this.crossWindowFactory.getParentApi(
 			name,
 			peerName,
-			opts,
+			optionsWithTimeout,
 		);
-		return new ToolsApi(api, opts);
+		return new ToolsApi(api, optionsWithTimeout);
 	}
 
 	async getConnectorApi(
@@ -163,14 +159,14 @@ class _ToolsApiFactory implements IToolsApiFactory {
 		peerName = TOOLS_API_NAME_AGENT,
 		options?: ICrossWindowApiOptions,
 	): Promise<IToolsApiConnector> {
-		const opts = withDefaultTimeout(options);
+		const optionsWithTimeout = withDefaultTimeout(options);
 		const api = await this.crossWindowFactory.getWindowApi(
 			window,
 			name,
 			peerName,
-			opts,
+			optionsWithTimeout,
 		);
-		return new ToolsApiConnector(resolved, handlers, api, opts);
+		return new ToolsApiConnector(resolved, handlers, api, optionsWithTimeout);
 	}
 }
 

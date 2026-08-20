@@ -17,16 +17,16 @@ export async function executeResolvedTool(
 	resolved: ResolvedGenericTool[],
 	handlers: IToolsApiHandlerMap,
 ): Promise<unknown> {
-	const tool = resolved.find((entry) => entry.name === name);
+	const tool = resolved.find((resolvedTool) => resolvedTool.name === name);
 	if (!tool) {
 		return unknownToolResult(name);
 	}
 	try {
 		return await handlers[tool.name](input);
-	} catch (e) {
+	} catch (error) {
 		return {
 			success: false,
-			message: e instanceof Error ? e.message : String(e),
+			message: error instanceof Error ? error.message : String(error),
 		};
 	}
 }
