@@ -178,6 +178,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		error: appBuilderError,
 		hasAppBuilderOutput,
 		appBuilderData,
+		appBuilderParseSettled,
 		customParametersLoaded,
 		sessionSettings,
 	} = useSessionWithAppBuilder(
@@ -235,6 +236,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		namespace,
 		enabled: isWebMcpAvailable(),
 		appBuilderData,
+		appBuilderParseSettled,
 	});
 
 	const showMarkdown =

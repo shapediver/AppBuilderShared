@@ -4,6 +4,8 @@ export interface UseWebMcpToolsProps {
 	namespace?: string;
 	enabled?: boolean;
 	appBuilderData?: IAppBuilder;
+	/** True once App Builder parse finished (data loaded, parse error, or no output). */
+	appBuilderParseSettled?: boolean;
 }
 
 export interface WebMcpEnvironment {
