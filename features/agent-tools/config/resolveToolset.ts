@@ -14,7 +14,8 @@ export type ResolvedGenericTool = {
 	settings: GenericToolSettings;
 };
 
-function overlayByName(
+/** Last listed settings per tool name. Used only when defaults are on. */
+function genericToolsByName(
 	listed: GenericToolSettings[] | undefined,
 ): Map<string, GenericToolSettings> {
 	const map = new Map<string, GenericToolSettings>();
@@ -24,10 +25,16 @@ function overlayByName(
 	return map;
 }
 
+/**
+ * In-scope generic tools for one agent (or defaults when `agent` is missing).
+ * `useGenericToolDefaults !== false` → every in-scope name, overlay from `genericTools`.
+ * `useGenericToolDefaults === false` → listed in-scope tools only (`genericToolsByName` unused).
+ * `specificTools` and `ask_user_question` are ignored.
+ */
 export function resolveToolset(
 	agent: IAppBuilderAgent | undefined,
 ): ResolvedGenericTool[] {
-	const listed = overlayByName(agent?.genericTools);
+	const listed = genericToolsByName(agent?.genericTools);
 
 	if (agent && agent.useGenericToolDefaults === false) {
 		const resolved: ResolvedGenericTool[] = [];

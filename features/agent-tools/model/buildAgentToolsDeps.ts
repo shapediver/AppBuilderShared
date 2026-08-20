@@ -86,6 +86,7 @@ async function setViewportCamera(args: {
 	return {success: true};
 }
 
+/** Wire ShapeDiver stores/hooks into `AgentToolsDeps` for tool handlers. */
 export function buildAgentToolsDeps(
 	args: BuildAgentToolsDepsArgs,
 ): AgentToolsDeps {

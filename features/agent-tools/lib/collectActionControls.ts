@@ -25,12 +25,13 @@ import {
 	type ListedActionControl,
 } from "../config/listActionControls";
 
-function identityOf(ref: IAppBuilderControlActionRef): string {
+/** Listed action id: `id ?? label ?? type`. Trigger match also uses `toListed` name. */
+function listedActionId(ref: IAppBuilderControlActionRef): string {
 	return ref.id ?? ref.label ?? ref.definition.type;
 }
 
 function toListed(ref: IAppBuilderControlActionRef): ListedActionControl {
-	const identity = identityOf(ref);
+	const identity = listedActionId(ref);
 	return {
 		id: identity,
 		name: ref.label ?? identity,
@@ -38,7 +39,11 @@ function toListed(ref: IAppBuilderControlActionRef): ListedActionControl {
 	};
 }
 
-function matchesName(ref: IAppBuilderControlActionRef, name: string): boolean {
+/** Explicit `actions[].name` match: id or label only — not the type fallback used as listed id. */
+function matchesActionIdOrLabel(
+	ref: IAppBuilderControlActionRef,
+	name: string,
+): boolean {
 	return ref.id === name || ref.label === name;
 }
 
@@ -52,7 +57,7 @@ function listExplicitActionRefs(
 			refs.push(wanted.action);
 		} else if (wanted.name !== undefined) {
 			for (const ref of collected) {
-				if (matchesName(ref, wanted.name)) {
+				if (matchesActionIdOrLabel(ref, wanted.name)) {
 					refs.push(ref);
 				}
 			}
@@ -164,6 +169,7 @@ function collectFromAppBuilder(
 	return refs;
 }
 
+/** UI + default-toolbar action refs, then explicit `settings.actions` or type filter. */
 export function collectActionControlRefs(
 	args: CollectActionControlsArgs,
 ): IAppBuilderControlActionRef[] {
@@ -183,6 +189,7 @@ export function collectActionControlRefs(
 	return collected.filter((ref) => types.has(ref.definition.type));
 }
 
+/** First collected ref whose listed id or name equals `name`. */
 export function findActionControlByName(
 	args: CollectActionControlsArgs,
 	name: string,
@@ -193,6 +200,7 @@ export function findActionControlByName(
 	});
 }
 
+/** Same refs as `collectActionControlRefs`, mapped to `{id, name, type}` for the tool output. */
 export function collectActionControls(
 	args: CollectActionControlsArgs,
 ): ListedActionControl[] {

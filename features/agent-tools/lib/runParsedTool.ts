@@ -1,5 +1,6 @@
 import {formatToolInputError} from "./formatToolInputError";
 
+/** Parse `input` with `schema`, then `onOk`. Zod/throw → `onError(message)`. Caller owns the envelope. */
 export async function runParsedTool<TParsed, TOut>(
 	schema: {parse: (data: unknown) => TParsed},
 	input: unknown,

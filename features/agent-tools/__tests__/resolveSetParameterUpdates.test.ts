@@ -1,6 +1,6 @@
 import type {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
+import {applyParameterUpdates} from "../lib/resolveSetParameterUpdates";
 
 function param(
 	id: string,
@@ -33,7 +33,7 @@ const getParametersFor =
 	(ns: string) =>
 		paramsByNamespace[ns] ?? [];
 
-describe("resolveAndUpdate", () => {
+describe("applyParameterUpdates", () => {
 	const defaultNamespace = "c";
 	let batchUpdate: jest.Mock;
 
@@ -43,7 +43,7 @@ describe("resolveAndUpdate", () => {
 
 	it("unknown name: error, empty applied, no batch", async () => {
 		const name = "missing";
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			defaultNamespace,
 			getParametersFor({[defaultNamespace]: [param("width")]}),
 			[{name, value: 10}],
@@ -62,7 +62,7 @@ describe("resolveAndUpdate", () => {
 
 	it("duplicate param id: second update refused", async () => {
 		const width = param("width", {name: "Width"});
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			defaultNamespace,
 			getParametersFor({[defaultNamespace]: [width]}),
 			[
@@ -87,7 +87,7 @@ describe("resolveAndUpdate", () => {
 			name: "Upload",
 			type: ResParameterType.FILE,
 		});
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			defaultNamespace,
 			getParametersFor({[defaultNamespace]: [upload]}),
 			[{name: "Upload", value: "x"}],
@@ -105,7 +105,7 @@ describe("resolveAndUpdate", () => {
 
 	it("valid update: batch keyed by namespace and param id", async () => {
 		const width = param("width", {name: "Width"});
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			defaultNamespace,
 			getParametersFor({[defaultNamespace]: [width]}),
 			[{name: "Width", value: 42}],
@@ -121,7 +121,7 @@ describe("resolveAndUpdate", () => {
 
 	it("mixed valid and invalid: valid applied, errors listed", async () => {
 		const width = param("width", {name: "Width"});
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			defaultNamespace,
 			getParametersFor({[defaultNamespace]: [width]}),
 			[
@@ -157,7 +157,7 @@ describe("resolveAndUpdate", () => {
 			return [];
 		});
 
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			defaultNamespace,
 			getParameters,
 			[{name: "Height", sessionId: "other", value: 55}],

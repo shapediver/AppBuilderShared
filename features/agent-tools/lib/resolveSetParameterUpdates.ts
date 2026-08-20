@@ -78,7 +78,11 @@ function prepareOneUpdate(
 	};
 }
 
-export async function resolveAndUpdate(
+/**
+ * Validate each update, then batch-write applied values.
+ * Does not apply the agent parameter filter — any live param in the namespace can be set.
+ */
+export async function applyParameterUpdates(
 	defaultNamespace: string,
 	getParameters: (namespace: string) => IShapeDiverParameter<any>[],
 	updates: ParameterUpdateInput[],

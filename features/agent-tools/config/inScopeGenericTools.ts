@@ -26,6 +26,7 @@ export function isInScopeGenericToolName(
 
 export const ASK_USER_QUESTION_TOOL_NAME: GenericToolName = "ask_user_question";
 
+/** Default generic-tool settings: `{name}` only. Overlay fields come from `genericTools`. */
 export function defaultSettingsFor(
 	name: InScopeGenericToolName,
 ): GenericToolSettings {

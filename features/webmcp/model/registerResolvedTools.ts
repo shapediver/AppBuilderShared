@@ -27,6 +27,10 @@ export const INPUT_SCHEMA_BY_TOOL: Record<InScopeGenericToolName, z.ZodType> = {
 	[InScopeGenericToolName.GetMetric]: getMetricInputSchema,
 };
 
+/**
+ * Register each resolved generic tool on WebMCP.
+ * Schema map stays here; execute comes from `handlers` (agent-tools).
+ */
 export async function registerResolvedTools(
 	modelContext: ModelContext,
 	resolved: ResolvedGenericTool[],

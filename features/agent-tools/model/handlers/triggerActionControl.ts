@@ -8,6 +8,7 @@ import {formatToolInputError} from "../../lib/formatToolInputError";
 import type {AgentToolsDeps} from "../agentToolsDeps";
 import {runActionControl} from "../runActionControl";
 
+/** Uses the same agent settings as `list_action_controls` (intentional). */
 export async function handleTriggerActionControl(
 	input: unknown,
 	settings: ListActionControlsToolSettings,

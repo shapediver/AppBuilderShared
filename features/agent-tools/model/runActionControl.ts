@@ -16,7 +16,7 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {RunActionControlResult} from "../config/triggerActionControl";
 import {formatToolInputError} from "../lib/formatToolInputError";
-import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
+import {applyParameterUpdates} from "../lib/resolveSetParameterUpdates";
 import type {AgentToolsDeps} from "./agentToolsDeps";
 
 function failureMessage(e: unknown): string {
@@ -60,7 +60,7 @@ async function runSetParameterAction(
 					},
 				],
 	);
-	const result = await resolveAndUpdate(
+	const result = await applyParameterUpdates(
 		deps.controllerNamespace,
 		deps.getLiveParameters,
 		updates,
@@ -97,6 +97,7 @@ async function runCameraAction(
 	});
 }
 
+/** Run an action control without mounting App Builder UI. Custom/source-only → "not supported". */
 export async function runActionControl(
 	action: IAppBuilderControlActionRef,
 	deps: AgentToolsDeps,

@@ -32,7 +32,8 @@ export type AgentToolHandlerMap = Record<
 	(input: unknown) => Promise<unknown>
 >;
 
-function settingsNamed<N extends InScopeGenericToolName>(
+/** Settings for this generic tool from the resolved toolset, or `{name}` default. */
+function settingsForTool<N extends InScopeGenericToolName>(
 	resolved: ResolvedGenericTool[],
 	name: N,
 ): Extract<GenericToolSettings, {name: N}> {
@@ -43,6 +44,7 @@ function settingsNamed<N extends InScopeGenericToolName>(
 	return defaultSettingsFor(name) as Extract<GenericToolSettings, {name: N}>;
 }
 
+/** Client implementations for the resolved generic tools. Handler map is stable (`useMemo` []). */
 export function useAgentToolHandlers(args: {
 	namespace: string;
 	appBuilderData: IAppBuilder | undefined;
@@ -101,7 +103,7 @@ export function useAgentToolHandlers(args: {
 			[InScopeGenericToolName.ListParameterDefinitions]: (input) =>
 				handleListParameterDefinitions(
 					input,
-					settingsNamed(
+					settingsForTool(
 						resolvedRef.current,
 						InScopeGenericToolName.ListParameterDefinitions,
 					),
@@ -111,7 +113,7 @@ export function useAgentToolHandlers(args: {
 				handleGetParameterValues(
 					input,
 					// Sharing ListParameterDefinitions settings is intentional.
-					settingsNamed(
+					settingsForTool(
 						resolvedRef.current,
 						InScopeGenericToolName.ListParameterDefinitions,
 					),
@@ -122,7 +124,7 @@ export function useAgentToolHandlers(args: {
 			[InScopeGenericToolName.ListActionControls]: (input) =>
 				handleListActionControls(
 					input,
-					settingsNamed(
+					settingsForTool(
 						resolvedRef.current,
 						InScopeGenericToolName.ListActionControls,
 					),
@@ -132,7 +134,7 @@ export function useAgentToolHandlers(args: {
 				handleTriggerActionControl(
 					input,
 					// Sharing ListActionControls settings is intentional.
-					settingsNamed(
+					settingsForTool(
 						resolvedRef.current,
 						InScopeGenericToolName.ListActionControls,
 					),

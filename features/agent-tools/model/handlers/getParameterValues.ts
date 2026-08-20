@@ -24,6 +24,7 @@ function toValueItem(
 	};
 }
 
+/** Uses the same agent settings as `list_parameter_definitions` (intentional). */
 export async function handleGetParameterValues(
 	input: unknown,
 	settings: ListParameterDefinitionsToolSettings,

@@ -32,7 +32,7 @@ describe("handleSetParameterValues", () => {
 		expect(result.errors[0].name).toBe("*");
 	});
 
-	it("delegates parsed updates to resolveAndUpdate", async () => {
+	it("delegates parsed updates to applyParameterUpdates", async () => {
 		const result = await handleSetParameterValues(
 			{updates: [{name: "width", value: 10}]},
 			createDeps(),

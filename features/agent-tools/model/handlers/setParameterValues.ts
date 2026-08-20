@@ -1,6 +1,6 @@
 import {setParameterValuesInputSchema} from "../../config/setParameterValues";
 import {formatToolInputError} from "../../lib/formatToolInputError";
-import {resolveAndUpdate} from "../../lib/resolveSetParameterUpdates";
+import {applyParameterUpdates} from "../../lib/resolveSetParameterUpdates";
 import type {AgentToolsDeps} from "../agentToolsDeps";
 
 export async function handleSetParameterValues(
@@ -9,7 +9,7 @@ export async function handleSetParameterValues(
 ): Promise<{applied: string[]; errors: {name: string; message: string}[]}> {
 	try {
 		const parsed = setParameterValuesInputSchema.parse(input);
-		return await resolveAndUpdate(
+		return await applyParameterUpdates(
 			deps.controllerNamespace,
 			deps.getLiveParameters,
 			parsed.updates,

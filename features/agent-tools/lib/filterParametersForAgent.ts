@@ -8,7 +8,8 @@ export type NamespacedParameter = {
 	parameter: IShapeDiverParameter<unknown>;
 };
 
-function resolveRef(
+/** Find a live parameter for an agent `{name, sessionId?}` (id, name, or displayname). */
+function findParameterForAgentRef(
 	parameters: NamespacedParameter[],
 	ref: {name: string; sessionId?: string},
 	controllerNamespace: string,
@@ -25,6 +26,7 @@ function resolveRef(
 	return inNamespace.find((p) => p.parameter === found);
 }
 
+/** Same id/name/displayname rules as `findParameterByName`, for one namespaced item. */
 function refMatchesItem(
 	item: NamespacedParameter,
 	ref: {name: string; sessionId?: string},
@@ -38,7 +40,8 @@ function refMatchesItem(
 	);
 }
 
-function isUiVisible(
+/** True when the parameter appears in App Builder UI refs (not CSS `hidden`). */
+function isListedInUiRefs(
 	item: NamespacedParameter,
 	uiRefs: UiParameterRef[],
 	controllerNamespace: string,
@@ -46,6 +49,12 @@ function isUiVisible(
 	return uiRefs.some((ref) => refMatchesItem(item, ref, controllerNamespace));
 }
 
+/**
+ * Parameters exposed to list/get tools.
+ * `settings.parameters` present (including `[]`) → those refs only; empty list is empty, not "all".
+ * Omitted `parameters` → filter (`hidden` default exclude, `invisible` default include).
+ * Missing `sessionId` on a ref → `controllerNamespace`.
+ */
 export function filterParametersForAgent(args: {
 	parameters: NamespacedParameter[];
 	controllerNamespace: string;
@@ -57,7 +66,11 @@ export function filterParametersForAgent(args: {
 	if (settings.parameters) {
 		const resolved: NamespacedParameter[] = [];
 		for (const ref of settings.parameters) {
-			const match = resolveRef(parameters, ref, controllerNamespace);
+			const match = findParameterForAgentRef(
+				parameters,
+				ref,
+				controllerNamespace,
+			);
 			if (match) {
 				resolved.push(match);
 			}
@@ -83,7 +96,7 @@ export function filterParametersForAgent(args: {
 		}
 		if (
 			invisibleMode === "exclude" &&
-			!isUiVisible(item, uiRefs, controllerNamespace)
+			!isListedInUiRefs(item, uiRefs, controllerNamespace)
 		) {
 			return false;
 		}

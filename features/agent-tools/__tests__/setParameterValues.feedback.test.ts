@@ -1,7 +1,7 @@
 import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {composeSdColor} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
+import {applyParameterUpdates} from "../lib/resolveSetParameterUpdates";
 
 function createMockParameter(
 	overrides: Partial<IShapeDiverParameter<any>> & {
@@ -30,7 +30,7 @@ function createMockParameter(
 	} as IShapeDiverParameter<any>;
 }
 
-describe("resolveAndUpdate", () => {
+describe("applyParameterUpdates", () => {
 	const namespace = "session-1";
 	const batchParameterValueUpdate = jest.fn().mockResolvedValue(undefined);
 
@@ -44,7 +44,7 @@ describe("resolveAndUpdate", () => {
 	});
 
 	it("returns error for unknown parameter", async () => {
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			namespace,
 			getParametersFor({[namespace]: []}),
 			[{name: "Missing", value: 1}],
@@ -77,7 +77,7 @@ describe("resolveAndUpdate", () => {
 			state: {uiValue: 10} as IShapeDiverParameter<any>["state"],
 		});
 
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			namespace,
 			getParametersFor({[namespace]: [param]}),
 			[{name: "Width", value: 42}],
@@ -106,7 +106,7 @@ describe("resolveAndUpdate", () => {
 			} as IShapeDiverParameter<any>["actions"],
 		});
 
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			namespace,
 			getParametersFor({[namespace]: [param]}),
 			[{name: "Width", value: 200}],
@@ -139,7 +139,7 @@ describe("resolveAndUpdate", () => {
 			state: {uiValue: 10} as IShapeDiverParameter<any>["state"],
 		});
 
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			namespace,
 			getParametersFor({[namespace]: [param]}),
 			[
@@ -184,7 +184,7 @@ describe("resolveAndUpdate", () => {
 			} as IShapeDiverParameter<any>["actions"],
 		});
 
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			namespace,
 			getParametersFor({[namespace]: [param]}),
 			[{name: "Paint", value: colorValue}],
@@ -213,7 +213,7 @@ describe("resolveAndUpdate", () => {
 			state: {uiValue: 10} as IShapeDiverParameter<any>["state"],
 		});
 
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			namespace,
 			getParametersFor({[namespace]: [param]}),
 			[
@@ -251,7 +251,7 @@ describe("resolveAndUpdate", () => {
 			actions: {isValid} as IShapeDiverParameter<any>["actions"],
 		});
 
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			namespace,
 			getParametersFor({[namespace]: [param]}),
 			[{name: "Material", value: 1}],
@@ -300,7 +300,7 @@ describe("resolveAndUpdate", () => {
 			return [];
 		});
 
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			namespace,
 			getParameters,
 			[{name: "Height", sessionId: childNamespace, value: 55}],
@@ -331,7 +331,7 @@ describe("resolveAndUpdate", () => {
 			ns === namespace ? [mainParam] : [],
 		);
 
-		const result = await resolveAndUpdate(
+		const result = await applyParameterUpdates(
 			namespace,
 			getParameters,
 			[{name: "Width", sessionId: childNamespace, value: 42}],

@@ -6,6 +6,7 @@ import {
 } from "../lib/filterParametersForAgent";
 import type {AgentToolsDeps} from "./agentToolsDeps";
 
+/** Load live parameters for the sessions the settings need, then `filterParametersForAgent`. */
 export function collectFilteredParameters(
 	settings: ListParameterDefinitionsToolSettings,
 	deps: AgentToolsDeps,
