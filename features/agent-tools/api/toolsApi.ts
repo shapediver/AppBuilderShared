@@ -119,8 +119,15 @@ export class ToolsApiConnector implements IToolsApiConnector {
 	}
 }
 
-class _ToolsApiFactory implements IToolsApiFactory {
+export class ToolsApiFactoryClass implements IToolsApiFactory {
 	constructor(private readonly crossWindowFactory: ICrossWindowFactory) {}
+
+	private createClientApi(
+		crossWindowApi: ICrossWindowApi,
+		options: ICrossWindowApiOptions,
+	): IToolsApi {
+		return new ToolsApi(crossWindowApi, options);
+	}
 
 	async getClientApi(
 		window: Window,
@@ -135,7 +142,7 @@ class _ToolsApiFactory implements IToolsApiFactory {
 			peerName,
 			optionsWithTimeout,
 		);
-		return new ToolsApi(api, optionsWithTimeout);
+		return this.createClientApi(api, optionsWithTimeout);
 	}
 
 	async getParentClientApi(
@@ -149,7 +156,7 @@ class _ToolsApiFactory implements IToolsApiFactory {
 			peerName,
 			optionsWithTimeout,
 		);
-		return new ToolsApi(api, optionsWithTimeout);
+		return this.createClientApi(api, optionsWithTimeout);
 	}
 
 	async getConnectorApi(
@@ -176,4 +183,4 @@ class _ToolsApiFactory implements IToolsApiFactory {
 	}
 }
 
-export const ToolsApiFactory = new _ToolsApiFactory(CrossWindowApiFactory);
+export const ToolsApiFactory = new ToolsApiFactoryClass(CrossWindowApiFactory);
