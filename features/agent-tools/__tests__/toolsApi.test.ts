@@ -141,7 +141,7 @@ describe("executeResolvedTool", () => {
 
 function createMockCrossWindowApi(options?: {
 	handshake?: () => Promise<ICrossWindowPeerInfo>;
-}): ICrossWindowApi {
+}): ICrossWindowApi & {cancelHandshake: jest.Mock} {
 	const handlers = new Map<
 		string,
 		(data: unknown) => Promise<unknown>
@@ -170,6 +170,7 @@ function createMockCrossWindowApi(options?: {
 			throw new Error("once unused in ToolsApi tests");
 		},
 		handshake: options?.handshake ?? (async () => peer),
+		cancelHandshake: jest.fn(),
 	};
 }
 
@@ -258,6 +259,18 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		).resolves.toEqual(unknownToolResult(""));
 
 		connector.cancel();
+	});
+
+	it("cancel calls cancelHandshake once", () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		expect(mock.cancelHandshake).not.toHaveBeenCalled();
+		connector.cancel();
+		expect(mock.cancelHandshake).toHaveBeenCalledTimes(1);
 	});
 
 	it("cancel unregisters LIST_TOOLS and EXECUTE_TOOL", async () => {

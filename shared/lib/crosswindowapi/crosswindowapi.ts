@@ -29,6 +29,10 @@ class CrossWindowApi implements ICrossWindowApi {
 	public name: string;
 	public peerName: string;
 	public peerIsReady: Promise<ICrossWindowPeerInfo>;
+	private handshakeIntervalId?: ReturnType<typeof setInterval>;
+	private handshakeTimeoutId?: ReturnType<typeof setTimeout>;
+	private handshakeToken?: ICrossWindowCancelable;
+	private handshakeReject?: (reason: Error) => void;
 
 	constructor(
 		window: Window,
@@ -108,11 +112,14 @@ class CrossWindowApi implements ICrossWindowApi {
 	handshake(type: string, timeout?: number): Promise<ICrossWindowPeerInfo> {
 		// send a handshake message to the peer
 		// do this regularly until we get a response
-		const intervalId = setInterval(async () => {
+		this.handshakeIntervalId = setInterval(async () => {
 			try {
 				await this.send(type, undefined);
 				this.log(`Handshake "${type}" successfully sent`);
-				clearInterval(intervalId);
+				if (this.handshakeIntervalId !== undefined) {
+					clearInterval(this.handshakeIntervalId);
+					this.handshakeIntervalId = undefined;
+				}
 			} catch {
 				// ignore
 			}
@@ -120,23 +127,43 @@ class CrossWindowApi implements ICrossWindowApi {
 
 		// wait until we receive a handshake message from the peer
 		return new Promise<ICrossWindowPeerInfo>((resolve, reject) => {
-			const timeoutId = timeout
+			this.handshakeReject = reject;
+			this.handshakeTimeoutId = timeout
 				? setTimeout(() => {
 						const msg = `Peer did not respond to handshake "${type}" within ${timeout}ms, giving up`;
 						this.log(msg);
-						token.cancel();
-						clearInterval(intervalId);
+						this.clearHandshakeResources();
 						reject(new Error(msg));
 					}, timeout)
 				: undefined;
 
-			const token = this.on(type, async () => {
+			this.handshakeToken = this.on(type, async () => {
 				this.log(`Handshake "${type}" successfully received`);
-				clearTimeout(timeoutId);
-				token.cancel();
+				this.clearHandshakeResources();
 				resolve(this.peerIsReady);
 			});
 		});
+	}
+
+	/** Stop handshake() polling and the handshake listener. No-op if handshake was not started or already finished. */
+	cancelHandshake(): void {
+		const reject = this.handshakeReject;
+		this.clearHandshakeResources();
+		reject?.(new Error("Handshake cancelled"));
+	}
+
+	private clearHandshakeResources(): void {
+		if (this.handshakeIntervalId !== undefined) {
+			clearInterval(this.handshakeIntervalId);
+			this.handshakeIntervalId = undefined;
+		}
+		if (this.handshakeTimeoutId !== undefined) {
+			clearTimeout(this.handshakeTimeoutId);
+			this.handshakeTimeoutId = undefined;
+		}
+		this.handshakeToken?.cancel();
+		this.handshakeToken = undefined;
+		this.handshakeReject = undefined;
 	}
 
 	log(...message: any[]): void {

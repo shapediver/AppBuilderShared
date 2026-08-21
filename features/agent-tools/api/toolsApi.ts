@@ -75,6 +75,7 @@ export class ToolsApi implements IToolsApi {
 
 export class ToolsApiConnector implements IToolsApiConnector {
 	#listenerCancels: ICrossWindowCancelable[] = [];
+	#crossWindowApi: ICrossWindowApi;
 	peerIsReady: Promise<ICrossWindowPeerInfo>;
 
 	constructor(
@@ -83,6 +84,7 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		crossWindowApi: ICrossWindowApi,
 		options?: ICrossWindowApiOptions,
 	) {
+		this.#crossWindowApi = crossWindowApi;
 		this.#listenerCancels.push(
 			crossWindowApi.on(MESSAGE_TYPE_LIST_TOOLS, async () =>
 				listToolsFromResolved(resolvedTools),
@@ -116,6 +118,7 @@ export class ToolsApiConnector implements IToolsApiConnector {
 			token.cancel();
 		}
 		this.#listenerCancels = [];
+		this.#crossWindowApi.cancelHandshake();
 	}
 }
 
