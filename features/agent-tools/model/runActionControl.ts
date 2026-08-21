@@ -10,6 +10,7 @@ import {
 	isSetParameterValuesAction,
 	isSoundAction,
 	isUndoAction,
+	isZoomToCameraAction,
 	type IAppBuilderActionDefinition,
 	type IAppBuilderActionPropsCamera,
 	type IAppBuilderControlActionRef,
@@ -76,6 +77,13 @@ async function runCameraAction(
 	definition: {type: "camera"; props: IAppBuilderActionPropsCamera},
 	deps: AgentToolsDeps,
 ): Promise<RunActionControlResult> {
+	const viewportId = definition.props.viewportId ?? deps.getViewportId();
+	if (isZoomToCameraAction(definition.props)) {
+		if (!deps.zoomTo) {
+			return {success: false, message: "Viewport not found."};
+		}
+		return await deps.zoomTo(viewportId);
+	}
 	if (!isSetCameraAction(definition.props)) {
 		return {
 			success: false,
@@ -91,7 +99,7 @@ async function runCameraAction(
 		};
 	}
 	return await deps.setCamera({
-		viewportId: deps.getViewportId(),
+		viewportId,
 		position,
 		target,
 	});
@@ -103,9 +111,6 @@ export async function runActionControl(
 	deps: AgentToolsDeps,
 ): Promise<RunActionControlResult> {
 	try {
-		if (deps.isCustomComponentContextAction?.(action)) {
-			return {success: false, message: "not supported"};
-		}
 		const definition = action.definition;
 		if (isCreateModelStateAction(definition)) {
 			return await deps.createModelState(definition.props);
@@ -145,6 +150,9 @@ export async function runActionControl(
 				return {success: false, message: "not supported"};
 			}
 			return await deps.playSound(definition.props);
+		}
+		if (deps.isCustomComponentContextAction?.(action)) {
+			return {success: false, message: "not supported"};
 		}
 		return {success: false, message: "not supported"};
 	} catch (e) {

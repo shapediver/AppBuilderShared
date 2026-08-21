@@ -103,7 +103,13 @@ export function prepareParameterStoreValue(
 	}
 
 	let storeValue: unknown;
-	if (type === ResParameterType.COLOR && isColorObject(value)) {
+	if (type === ResParameterType.COLOR) {
+		if (!isColorObject(value)) {
+			return {
+				success: false,
+				message: invalidValueMessage(parameter, value),
+			};
+		}
 		storeValue = composeSdColor(value);
 	} else if (type === ResParameterType.STRINGLIST) {
 		storeValue = toStringListStoreValue(value);

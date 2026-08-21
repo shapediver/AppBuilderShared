@@ -200,6 +200,41 @@ describe("applyParameterUpdates", () => {
 		composeSpy.mockRestore();
 	});
 
+	it("rejects named color string for COLOR even if isValid would accept it", async () => {
+		const param = createMockParameter({
+			definition: {
+				id: "paint",
+				name: "Colour",
+				type: ResParameterType.COLOR,
+				defval: "0x000000ff",
+			} as IShapeDiverParameter<any>["definition"],
+			state: {
+				uiValue: "0x000000ff",
+			} as IShapeDiverParameter<any>["state"],
+			actions: {
+				isValid: () => true,
+			} as IShapeDiverParameter<any>["actions"],
+		});
+
+		const result = await applyParameterUpdates(
+			namespace,
+			getParametersFor({[namespace]: [param]}),
+			[{name: "Colour", value: "Red"}],
+			batchParameterValueUpdate,
+		);
+
+		expect(result.applied).toEqual([]);
+		expect(result.errors).toEqual([
+			{
+				name: "Colour",
+				message: expect.stringContaining(
+					"Use a color object {red, green, blue, alpha}",
+				),
+			},
+		]);
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
+	});
+
 	it("rejects color object for non-color parameter", async () => {
 		const param = createMockParameter({
 			definition: {

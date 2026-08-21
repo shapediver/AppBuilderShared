@@ -148,7 +148,7 @@ export function buildAgentToolsDeps(
 				const result = await importModelState(
 					props as IImportModelStateData,
 				);
-				if (result.success === false) {
+				if (!result.success) {
 					return {success: false, message: result.message};
 				}
 				return {success: true};
@@ -174,6 +174,16 @@ export function buildAgentToolsDeps(
 		},
 		getViewportId: () => viewportId,
 		setCamera: setViewportCamera,
+		zoomTo: async (id) => {
+			const zoomTo =
+				useShapeDiverStoreViewportAccessFunctions.getState()
+					.viewportAccessFunctions[id]?.zoomTo;
+			if (!zoomTo) {
+				return {success: false, message: "Viewport not found."};
+			}
+			zoomTo(false);
+			return {success: true};
+		},
 		getScreenshot: async (id) => {
 			const getScreenshot =
 				useShapeDiverStoreViewportAccessFunctions.getState()

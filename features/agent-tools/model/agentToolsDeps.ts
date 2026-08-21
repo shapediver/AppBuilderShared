@@ -33,6 +33,7 @@ export type AgentToolsDeps = {
 		position: Vec3;
 		target: Vec3;
 	}) => Promise<RunActionControlResult>;
+	zoomTo?: (viewportId: string) => Promise<RunActionControlResult>;
 	getScreenshot: (viewportId: string) => Promise<string | undefined>;
 	getOutputByName: (
 		namespace: string,

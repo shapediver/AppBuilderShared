@@ -72,7 +72,10 @@ function collectFromWidgets(
 	}
 }
 
-function collectFromTabs(refs: UiParameterRef[], tabs?: IAppBuilderTab[]): void {
+function collectFromTabs(
+	refs: UiParameterRef[],
+	tabs?: IAppBuilderTab[],
+): void {
 	for (const tab of tabs ?? []) {
 		collectFromWidgets(refs, tab.widgets);
 	}

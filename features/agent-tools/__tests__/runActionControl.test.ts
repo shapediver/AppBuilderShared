@@ -59,6 +59,7 @@ function createDeps(overrides: Partial<AgentToolsDeps> = {}): AgentToolsDeps {
 		resetParameters: jest.fn().mockResolvedValue({success: true}),
 		getViewportId: () => "vp",
 		setCamera: jest.fn().mockResolvedValue({success: true}),
+		zoomTo: jest.fn().mockResolvedValue({success: true}),
 		getScreenshot: jest.fn().mockResolvedValue(undefined),
 		getOutputByName: () => undefined,
 		...overrides,
@@ -157,7 +158,9 @@ describe("handleTriggerActionControl", () => {
 			deps,
 		);
 
-		expect(deps.createModelState).toHaveBeenCalledWith({includeImage: true});
+		expect(deps.createModelState).toHaveBeenCalledWith({
+			includeImage: true,
+		});
 		expect(result).toEqual({success: true});
 	});
 });
@@ -219,6 +222,42 @@ describe("runActionControl", () => {
 			success: false,
 			message: "Camera action subtype not supported",
 		});
+	});
+
+	it("zooms to extents for the zoomTo subtype", async () => {
+		const deps = createDeps();
+		const result = await runActionControl(
+			actionRef({
+				label: "Zoom extents",
+				definition: {
+					type: "camera",
+					props: {type: "zoomTo", props: {}},
+				},
+			}),
+			deps,
+		);
+
+		expect(deps.zoomTo).toHaveBeenCalledWith("vp");
+		expect(result).toEqual({success: true});
+	});
+
+	it("runs zoomTo even when ComponentContext also claims camera", async () => {
+		const deps = createDeps({
+			isCustomComponentContextAction: () => true,
+		});
+		const result = await runActionControl(
+			actionRef({
+				label: "Zoom extents",
+				definition: {
+					type: "camera",
+					props: {type: "zoomTo", props: {}},
+				},
+			}),
+			deps,
+		);
+
+		expect(deps.zoomTo).toHaveBeenCalledWith("vp");
+		expect(result).toEqual({success: true});
 	});
 
 	it("sets camera position and target for the set subtype", async () => {
@@ -365,7 +404,24 @@ describe("runActionControl", () => {
 		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
 	});
 
-	it("returns not supported when isCustomComponentContextAction is true", async () => {
+	it("returns not supported for ComponentContext-only types", async () => {
+		const result = await runActionControl(
+			actionRef({
+				id: "fs",
+				definition: {type: "fullscreen", props: {}},
+			}),
+			createDeps({
+				isCustomComponentContextAction: () => true,
+			}),
+		);
+
+		expect(result).toEqual({
+			success: false,
+			message: "not supported",
+		});
+	});
+
+	it("does not let ComponentContext block first-party handlers", async () => {
 		const createModelState = jest.fn().mockResolvedValue({success: true});
 		const result = await runActionControl(
 			actionRef({
@@ -377,11 +433,8 @@ describe("runActionControl", () => {
 			}),
 		);
 
-		expect(result).toEqual({
-			success: false,
-			message: "not supported",
-		});
-		expect(createModelState).not.toHaveBeenCalled();
+		expect(createModelState).toHaveBeenCalled();
+		expect(result).toEqual({success: true});
 	});
 
 	it("runs createModelState when isCustomComponentContextAction is omitted", async () => {
@@ -438,7 +491,9 @@ describe("runActionControl", () => {
 				definition: {type: "importModelState", props: {}},
 			}),
 			createDeps({
-				importModelState: jest.fn().mockRejectedValue(new Error("boom")),
+				importModelState: jest
+					.fn()
+					.mockRejectedValue(new Error("boom")),
 			}),
 		);
 
