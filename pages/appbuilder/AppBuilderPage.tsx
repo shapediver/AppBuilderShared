@@ -3,6 +3,8 @@ import {useUnsavedChangesProtection} from "@AppBuilderLib/entities/parameter/mod
 import useDefaultSessionDto from "@AppBuilderLib/entities/session/model/useDefaultSessionDto";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
+import {openAgentWindow} from "@AppBuilderLib/features/agent-tools/lib/openAgentWindow";
+import {resolveAgentUrl} from "@AppBuilderLib/features/agent-tools/lib/resolveAgentUrl";
 import {useAgentToolRuntime} from "@AppBuilderLib/features/agent-tools/model/useAgentToolRuntime";
 import {useToolsApiConnector} from "@AppBuilderLib/features/agent-tools/model/useToolsApiConnector";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
@@ -13,9 +15,11 @@ import {useAppBuilderStandardContainers} from "@AppBuilderLib/features/appbuilde
 import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBindings";
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {isWebMcpAvailable} from "@AppBuilderLib/features/webmcp/lib/webmcpAvailability";
 import {useWebMcpTools} from "@AppBuilderLib/features/webmcp/model/useWebMcpTools";
+import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
@@ -24,7 +28,8 @@ import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/Vi
 import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
-import {useContext, useEffect, useMemo} from "react";
+import {Button} from "@mantine/core";
+import {useContext, useEffect, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
@@ -156,6 +161,12 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		hasSession,
 	} = useAppBuilderSettings(defaultSessionDto);
 
+	const agentUrl = resolveAgentUrl(
+		new URLSearchParams(window.location.search).get(QUERYPARAM_AGENTURL),
+		settings?.settings?.agentUrl,
+	);
+	const [agentWindow, setAgentWindow] = useState<Window | null>(null);
+
 	// extract the various session types
 	const {controllerSession, secondarySessions, instancedSessions} =
 		useMemo(() => {
@@ -250,14 +261,29 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		snapshotComplete,
 	});
 
-	// ToolsApi server: same runtime as WebMCP. `window` omitted until Step 3
-	// passes the agent Window (`window.open` / iframe / parent). Without it
-	// the hook is a no-op — handshake must not start against `globalThis.window`.
 	useToolsApiConnector({
+		window: agentWindow,
 		resolvedTools,
 		toolHandlers,
 		snapshotComplete,
 	});
+
+	function handleOpenAgent() {
+		if (!agentUrl) {
+			return;
+		}
+		const opened = openAgentWindow(agentUrl);
+		if (!opened) {
+			useNotificationStore.getState().show({
+				title: "Agent window blocked",
+				message:
+					"Allow popups for this site, then try Open agent again.",
+				color: "red",
+			});
+			return;
+		}
+		setAgentWindow(opened);
+	}
 
 	const showMarkdown =
 		!(settings && hasSession) && // no settings or no session
@@ -312,6 +338,19 @@ export default function AppBuilderPage(props: Partial<Props>) {
 									<ViewportAcceptRejectButtons />
 								</ViewportOverlayWrapper>
 							</>
+						)}
+						{agentUrl && ViewportOverlayWrapper && (
+							<ViewportOverlayWrapper
+								position={OverlayPosition.TOP_RIGHT}
+								offset="1em"
+							>
+								<Button
+									disabled={!snapshotComplete}
+									onClick={handleOpenAgent}
+								>
+									Open agent
+								</Button>
+							</ViewportOverlayWrapper>
 						)}
 					</ViewportComponent>
 				)}
