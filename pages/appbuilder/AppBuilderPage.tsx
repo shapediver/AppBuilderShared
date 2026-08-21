@@ -3,10 +3,10 @@ import {useUnsavedChangesProtection} from "@AppBuilderLib/entities/parameter/mod
 import useDefaultSessionDto from "@AppBuilderLib/entities/session/model/useDefaultSessionDto";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
-import {openAgentWindow} from "@AppBuilderLib/features/agent-tools/lib/openAgentWindow";
 import {resolveAgentUrl} from "@AppBuilderLib/features/agent-tools/lib/resolveAgentUrl";
 import {useAgentToolRuntime} from "@AppBuilderLib/features/agent-tools/model/useAgentToolRuntime";
 import {useToolsApiConnector} from "@AppBuilderLib/features/agent-tools/model/useToolsApiConnector";
+import AppBuilderAgentFrame from "@AppBuilderLib/features/agent-tools/ui/AppBuilderAgentFrame";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
@@ -15,7 +15,6 @@ import {useAppBuilderStandardContainers} from "@AppBuilderLib/features/appbuilde
 import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBindings";
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {isWebMcpAvailable} from "@AppBuilderLib/features/webmcp/lib/webmcpAvailability";
 import {useWebMcpTools} from "@AppBuilderLib/features/webmcp/model/useWebMcpTools";
@@ -29,7 +28,7 @@ import AlertPage from "@AppBuilderShared/pages/misc/AlertPage";
 import LoaderPage from "@AppBuilderShared/pages/misc/LoaderPage";
 import AppBuilderTemplateSelector from "@AppBuilderShared/pages/templates/AppBuilderTemplateSelector";
 import {Button} from "@mantine/core";
-import {useContext, useEffect, useMemo, useState} from "react";
+import {useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 const urlWithoutQueryParams = window.location.origin + window.location.pathname;
@@ -166,6 +165,10 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		settings?.settings?.agentUrl,
 	);
 	const [agentWindow, setAgentWindow] = useState<Window | null>(null);
+	const [agentOpen, setAgentOpen] = useState(false);
+	const onAgentPeerWindow = useCallback((peer: Window | null) => {
+		setAgentWindow(peer);
+	}, []);
 
 	// extract the various session types
 	const {controllerSession, secondarySessions, instancedSessions} =
@@ -272,17 +275,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		if (!agentUrl) {
 			return;
 		}
-		const opened = openAgentWindow(agentUrl);
-		if (!opened) {
-			useNotificationStore.getState().show({
-				title: "Agent window blocked",
-				message:
-					"Allow popups for this site, then try Open agent again.",
-				color: "red",
-			});
-			return;
-		}
-		setAgentWindow(opened);
+		setAgentOpen(true);
 	}
 
 	const showMarkdown =
@@ -344,12 +337,19 @@ export default function AppBuilderPage(props: Partial<Props>) {
 								position={OverlayPosition.TOP_RIGHT}
 								offset="1em"
 							>
-								<Button
-									disabled={!snapshotComplete}
-									onClick={handleOpenAgent}
-								>
-									Open agent
-								</Button>
+								{agentOpen ? (
+									<AppBuilderAgentFrame
+										src={agentUrl}
+										onPeerWindow={onAgentPeerWindow}
+									/>
+								) : (
+									<Button
+										disabled={!snapshotComplete}
+										onClick={handleOpenAgent}
+									>
+										Open agent
+									</Button>
+								)}
 							</ViewportOverlayWrapper>
 						)}
 					</ViewportComponent>
