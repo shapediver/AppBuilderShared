@@ -11,25 +11,23 @@ import {
 
 export type UseToolsApiConnectorProps = {
 	window?: Window | null;
-	resolved: ResolvedGenericTool[];
-	handlers: IToolsApiHandlerMap;
+	resolvedTools: ResolvedGenericTool[];
+	toolHandlers: IToolsApiHandlerMap;
 	snapshotComplete: boolean;
 };
 
-export function useToolsApiConnector(
-	props: UseToolsApiConnectorProps,
-): void {
+export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 	const {
 		window: peerWindow,
-		resolved,
-		handlers,
+		resolvedTools,
+		toolHandlers,
 		snapshotComplete,
 	} = props;
 
-	const resolvedRef = useRef(resolved);
-	resolvedRef.current = resolved;
-	const handlersRef = useRef(handlers);
-	handlersRef.current = handlers;
+	const resolvedToolsRef = useRef(resolvedTools);
+	resolvedToolsRef.current = resolvedTools;
+	const toolHandlersRef = useRef(toolHandlers);
+	toolHandlersRef.current = toolHandlers;
 
 	useEffect(() => {
 		if (!peerWindow || !snapshotComplete) {
@@ -43,8 +41,8 @@ export function useToolsApiConnector(
 			try {
 				connector = await ToolsApiFactory.getConnectorApi(
 					peerWindow,
-					resolvedRef.current,
-					handlersRef.current,
+					resolvedToolsRef.current,
+					toolHandlersRef.current,
 					TOOLS_API_NAME_APP,
 					TOOLS_API_NAME_AGENT,
 					{timeout: TOOLS_API_TIMEOUT_MS},

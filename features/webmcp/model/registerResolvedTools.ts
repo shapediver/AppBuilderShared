@@ -7,22 +7,22 @@ import type {ModelContext} from "../lib/webmcpAvailability";
 
 /**
  * Register each resolved generic tool on WebMCP.
- * Schema lookup lives in agent-tools (`schemaFor`); execute comes from `handlers`.
+ * Schema lookup lives in agent-tools (`schemaFor`); execute comes from `toolHandlers`.
  */
 export async function registerResolvedTools(
 	modelContext: ModelContext,
-	resolved: ResolvedGenericTool[],
-	handlers: IToolsApiHandlerMap,
+	resolvedTools: ResolvedGenericTool[],
+	toolHandlers: IToolsApiHandlerMap,
 	signal: AbortSignal,
 ): Promise<void> {
-	for (const tool of resolved) {
+	for (const tool of resolvedTools) {
 		const meta = AGENT_TOOL_META[tool.name];
 		await modelContext.registerTool(
 			{
 				name: tool.name,
 				description: meta.description,
 				inputSchema: zodToJsonSchema(schemaFor(tool.name)),
-				execute: handlers[tool.name],
+				execute: toolHandlers[tool.name],
 				annotations: {
 					readOnlyHint: meta.annotations.readOnlyHint,
 					untrustedContentHint: true,

@@ -43,8 +43,8 @@ describe("useToolsApiConnector", () => {
 		expect(() => {
 			renderHook(() =>
 				useToolsApiConnector({
-					resolved: resolveToolset(undefined),
-					handlers: stubHandlers(),
+					resolvedTools: resolveToolset(undefined),
+					toolHandlers: stubHandlers(),
 					snapshotComplete: true,
 				}),
 			);
@@ -56,8 +56,8 @@ describe("useToolsApiConnector", () => {
 		renderHook(() =>
 			useToolsApiConnector({
 				window: {} as Window,
-				resolved: resolveToolset(undefined),
-				handlers: stubHandlers(),
+				resolvedTools: resolveToolset(undefined),
+				toolHandlers: stubHandlers(),
 				snapshotComplete: false,
 			}),
 		);
@@ -65,23 +65,23 @@ describe("useToolsApiConnector", () => {
 	});
 
 	it("calls getConnectorApi when window and snapshot are ready", async () => {
-		const resolved = resolveToolset(undefined);
-		const handlers = stubHandlers();
+		const resolvedTools = resolveToolset(undefined);
+		const toolHandlers = stubHandlers();
 		const peer = {} as Window;
 		renderHook(() =>
 			useToolsApiConnector({
 				window: peer,
-				resolved,
-				handlers,
+				resolvedTools,
+				toolHandlers,
 				snapshotComplete: true,
 			}),
 		);
 		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
 		expect(getConnectorApi.mock.calls[0][0]).toBe(peer);
-		expect(getConnectorApi.mock.calls[0][1].map((t: {name: string}) => t.name)).toEqual(
-			[...IN_SCOPE_GENERIC_TOOL_NAMES],
-		);
-		expect(getConnectorApi.mock.calls[0][2]).toBe(handlers);
+		expect(
+			getConnectorApi.mock.calls[0][1].map((t: {name: string}) => t.name),
+		).toEqual([...IN_SCOPE_GENERIC_TOOL_NAMES]);
+		expect(getConnectorApi.mock.calls[0][2]).toBe(toolHandlers);
 	});
 
 	it("cancels on unmount while peerIsReady is still pending", async () => {
@@ -93,8 +93,8 @@ describe("useToolsApiConnector", () => {
 		const {unmount} = renderHook(() =>
 			useToolsApiConnector({
 				window: {} as Window,
-				resolved: resolveToolset(undefined),
-				handlers: stubHandlers(),
+				resolvedTools: resolveToolset(undefined),
+				toolHandlers: stubHandlers(),
 				snapshotComplete: true,
 			}),
 		);
@@ -110,8 +110,8 @@ describe("useToolsApiConnector", () => {
 		renderHook(() =>
 			useToolsApiConnector({
 				window: {} as Window,
-				resolved: resolveToolset(undefined),
-				handlers: stubHandlers(),
+				resolvedTools: resolveToolset(undefined),
+				toolHandlers: stubHandlers(),
 				snapshotComplete: true,
 			}),
 		);

@@ -17,19 +17,15 @@ export type UseAgentToolRuntimeProps = {
 };
 
 export type UseAgentToolRuntimeResult = {
-	resolved: ResolvedGenericTool[];
-	handlers: AgentToolHandlerMap;
+	resolvedTools: ResolvedGenericTool[];
+	toolHandlers: AgentToolHandlerMap;
 	snapshotComplete: boolean;
 };
 
 export function useAgentToolRuntime(
 	props: UseAgentToolRuntimeProps,
 ): UseAgentToolRuntimeResult {
-	const {
-		namespace,
-		appBuilderData,
-		appBuilderParseSettled = false,
-	} = props;
+	const {namespace, appBuilderData, appBuilderParseSettled = false} = props;
 
 	const agentRef = useRef(takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, undefined));
 	agentRef.current = takeAgentSnapshot(
@@ -38,14 +34,16 @@ export function useAgentToolRuntime(
 		appBuilderParseSettled,
 	);
 	const snapshotComplete = agentRef.current !== AGENT_SNAPSHOT_UNSET;
-	const resolved = resolveToolset(
-		agentRef.current === AGENT_SNAPSHOT_UNSET ? undefined : agentRef.current,
+	const resolvedTools = resolveToolset(
+		agentRef.current === AGENT_SNAPSHOT_UNSET
+			? undefined
+			: agentRef.current,
 	);
-	const handlers = useAgentToolHandlers({
+	const toolHandlers = useAgentToolHandlers({
 		namespace: namespace ?? "",
 		appBuilderData,
-		resolved,
+		resolvedTools,
 	});
 
-	return {resolved, handlers, snapshotComplete};
+	return {resolvedTools, toolHandlers, snapshotComplete};
 }

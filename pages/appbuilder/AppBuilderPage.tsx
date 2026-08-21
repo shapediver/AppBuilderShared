@@ -3,6 +3,8 @@ import {useUnsavedChangesProtection} from "@AppBuilderLib/entities/parameter/mod
 import useDefaultSessionDto from "@AppBuilderLib/entities/session/model/useDefaultSessionDto";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
+import {useAgentToolRuntime} from "@AppBuilderLib/features/agent-tools/model/useAgentToolRuntime";
+import {useToolsApiConnector} from "@AppBuilderLib/features/agent-tools/model/useToolsApiConnector";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
@@ -12,8 +14,6 @@ import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBin
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
-import {useAgentToolRuntime} from "@AppBuilderLib/features/agent-tools/model/useAgentToolRuntime";
-import {useToolsApiConnector} from "@AppBuilderLib/features/agent-tools/model/useToolsApiConnector";
 import {isWebMcpAvailable} from "@AppBuilderLib/features/webmcp/lib/webmcpAvailability";
 import {useWebMcpTools} from "@AppBuilderLib/features/webmcp/model/useWebMcpTools";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
@@ -234,23 +234,25 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	useECommerceApiConnectorActions({namespace});
 
-	const {resolved, handlers, snapshotComplete} = useAgentToolRuntime({
-		namespace,
-		appBuilderData,
-		appBuilderParseSettled,
-	});
+	const {resolvedTools, toolHandlers, snapshotComplete} = useAgentToolRuntime(
+		{
+			namespace,
+			appBuilderData,
+			appBuilderParseSettled,
+		},
+	);
 
 	useWebMcpTools({
 		namespace,
 		enabled: isWebMcpAvailable(),
-		resolved,
-		handlers,
+		resolvedTools,
+		toolHandlers,
 		snapshotComplete,
 	});
 
 	useToolsApiConnector({
-		resolved,
-		handlers,
+		resolvedTools,
+		toolHandlers,
 		snapshotComplete,
 	});
 

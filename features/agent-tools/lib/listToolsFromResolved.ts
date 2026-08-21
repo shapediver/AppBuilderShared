@@ -5,10 +5,10 @@ import type {IListToolsReply} from "../config/toolsApi";
 import {zodToJsonSchema} from "./zodToJsonSchema";
 
 export function listToolsFromResolved(
-	resolved: ResolvedGenericTool[],
+	resolvedTools: ResolvedGenericTool[],
 ): IListToolsReply {
 	return {
-		tools: resolved.map((tool) => ({
+		tools: resolvedTools.map((tool) => ({
 			name: tool.name,
 			description: AGENT_TOOL_META[tool.name].description,
 			inputSchema: zodToJsonSchema(schemaFor(tool.name)),

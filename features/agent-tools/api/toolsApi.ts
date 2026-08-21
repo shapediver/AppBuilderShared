@@ -21,7 +21,10 @@ import {
 	TOOLS_API_NAME_APP,
 	TOOLS_API_TIMEOUT_MS,
 } from "../config/toolsApi";
-import {executeResolvedTool, unknownToolResult} from "../lib/executeResolvedTool";
+import {
+	executeResolvedTool,
+	unknownToolResult,
+} from "../lib/executeResolvedTool";
 import {listToolsFromResolved} from "../lib/listToolsFromResolved";
 import {parseExecuteToolData} from "../lib/parseExecuteToolData";
 
@@ -75,14 +78,14 @@ export class ToolsApiConnector implements IToolsApiConnector {
 	peerIsReady: Promise<ICrossWindowPeerInfo>;
 
 	constructor(
-		resolved: ResolvedGenericTool[],
-		handlers: IToolsApiHandlerMap,
+		resolvedTools: ResolvedGenericTool[],
+		toolHandlers: IToolsApiHandlerMap,
 		crossWindowApi: ICrossWindowApi,
 		options?: ICrossWindowApiOptions,
 	) {
 		this.#listenerCancels.push(
 			crossWindowApi.on(MESSAGE_TYPE_LIST_TOOLS, async () =>
-				listToolsFromResolved(resolved),
+				listToolsFromResolved(resolvedTools),
 			),
 		);
 		this.#listenerCancels.push(
@@ -96,8 +99,8 @@ export class ToolsApiConnector implements IToolsApiConnector {
 					return executeResolvedTool(
 						request.name,
 						request.input,
-						resolved,
-						handlers,
+						resolvedTools,
+						toolHandlers,
 					);
 				},
 			),
@@ -151,8 +154,8 @@ class _ToolsApiFactory implements IToolsApiFactory {
 
 	async getConnectorApi(
 		window: Window,
-		resolved: ResolvedGenericTool[],
-		handlers: IToolsApiHandlerMap,
+		resolvedTools: ResolvedGenericTool[],
+		toolHandlers: IToolsApiHandlerMap,
 		name = TOOLS_API_NAME_APP,
 		peerName = TOOLS_API_NAME_AGENT,
 		options?: ICrossWindowApiOptions,
@@ -164,7 +167,12 @@ class _ToolsApiFactory implements IToolsApiFactory {
 			peerName,
 			optionsWithTimeout,
 		);
-		return new ToolsApiConnector(resolved, handlers, api, optionsWithTimeout);
+		return new ToolsApiConnector(
+			resolvedTools,
+			toolHandlers,
+			api,
+			optionsWithTimeout,
+		);
 	}
 }
 

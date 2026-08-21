@@ -4,8 +4,8 @@ import type {IToolsApiHandlerMap} from "@AppBuilderLib/features/agent-tools/conf
 export interface UseWebMcpToolsProps {
 	namespace?: string;
 	enabled?: boolean;
-	resolved: ResolvedGenericTool[];
-	handlers: IToolsApiHandlerMap;
+	resolvedTools: ResolvedGenericTool[];
+	toolHandlers: IToolsApiHandlerMap;
 	snapshotComplete: boolean;
 }
 

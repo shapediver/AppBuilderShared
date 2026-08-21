@@ -32,10 +32,10 @@ export type AgentToolHandlerMap = IToolsApiHandlerMap;
 
 /** Settings for this generic tool from the resolved toolset, or `{name}` default. */
 function settingsForTool<N extends InScopeGenericToolName>(
-	resolved: ResolvedGenericTool[],
+	resolvedTools: ResolvedGenericTool[],
 	name: N,
 ): Extract<GenericToolSettings, {name: N}> {
-	const found = resolved.find((tool) => tool.name === name);
+	const found = resolvedTools.find((tool) => tool.name === name);
 	if (found) {
 		return found.settings as Extract<GenericToolSettings, {name: N}>;
 	}
@@ -46,9 +46,9 @@ function settingsForTool<N extends InScopeGenericToolName>(
 export function useAgentToolHandlers(args: {
 	namespace: string;
 	appBuilderData: IAppBuilder | undefined;
-	resolved: ResolvedGenericTool[];
+	resolvedTools: ResolvedGenericTool[];
 }): AgentToolHandlerMap {
-	const {namespace, appBuilderData, resolved} = args;
+	const {namespace, appBuilderData, resolvedTools} = args;
 	const componentContext = useContext(ComponentContext);
 	const {viewportId} = useViewportId();
 	const {goBack, goForward} = useViewportHistory();
@@ -75,8 +75,8 @@ export function useAgentToolHandlers(args: {
 		(state) => state.defaultToolbars,
 	);
 
-	const resolvedRef = useRef(resolved);
-	resolvedRef.current = resolved;
+	const resolvedToolsRef = useRef(resolvedTools);
+	resolvedToolsRef.current = resolvedTools;
 
 	const depsRef = useRef<AgentToolsDeps>(null!);
 	depsRef.current = buildAgentToolsDeps({
@@ -102,7 +102,7 @@ export function useAgentToolHandlers(args: {
 				handleListParameterDefinitions(
 					input,
 					settingsForTool(
-						resolvedRef.current,
+						resolvedToolsRef.current,
 						InScopeGenericToolName.ListParameterDefinitions,
 					),
 					depsRef.current,
@@ -112,7 +112,7 @@ export function useAgentToolHandlers(args: {
 					input,
 					// Sharing ListParameterDefinitions settings is intentional.
 					settingsForTool(
-						resolvedRef.current,
+						resolvedToolsRef.current,
 						InScopeGenericToolName.ListParameterDefinitions,
 					),
 					depsRef.current,
@@ -123,7 +123,7 @@ export function useAgentToolHandlers(args: {
 				handleListActionControls(
 					input,
 					settingsForTool(
-						resolvedRef.current,
+						resolvedToolsRef.current,
 						InScopeGenericToolName.ListActionControls,
 					),
 					depsRef.current,
@@ -133,7 +133,7 @@ export function useAgentToolHandlers(args: {
 					input,
 					// Sharing ListActionControls settings is intentional.
 					settingsForTool(
-						resolvedRef.current,
+						resolvedToolsRef.current,
 						InScopeGenericToolName.ListActionControls,
 					),
 					depsRef.current,

@@ -14,15 +14,17 @@ export function unknownToolResult(name: string): {
 export async function executeResolvedTool(
 	name: string,
 	input: unknown,
-	resolved: ResolvedGenericTool[],
-	handlers: IToolsApiHandlerMap,
+	resolvedTools: ResolvedGenericTool[],
+	toolHandlers: IToolsApiHandlerMap,
 ): Promise<unknown> {
-	const tool = resolved.find((resolvedTool) => resolvedTool.name === name);
+	const tool = resolvedTools.find(
+		(resolvedTool) => resolvedTool.name === name,
+	);
 	if (!tool) {
 		return unknownToolResult(name);
 	}
 	try {
-		return await handlers[tool.name](input);
+		return await toolHandlers[tool.name](input);
 	} catch (error) {
 		return {
 			success: false,

@@ -59,8 +59,8 @@ export interface IToolsApiFactory {
 	): Promise<IToolsApi>;
 	getConnectorApi(
 		window: Window,
-		resolved: ResolvedGenericTool[],
-		handlers: IToolsApiHandlerMap,
+		resolvedTools: ResolvedGenericTool[],
+		toolHandlers: IToolsApiHandlerMap,
 		name?: string,
 		peerName?: string,
 		options?: ICrossWindowApiOptions,

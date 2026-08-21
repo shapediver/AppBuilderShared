@@ -19,8 +19,8 @@ export function useWebMcpTools(
 	const {
 		namespace,
 		enabled = isWebMcpAvailable(),
-		resolved,
-		handlers,
+		resolvedTools,
+		toolHandlers,
 		snapshotComplete,
 	} = props;
 	const [registered, setRegistered] = useState(false);
@@ -43,13 +43,13 @@ export function useWebMcpTools(
 	const paramsPopulated =
 		!!namespace && Object.keys(getParameters(namespace)).length > 0;
 
-	const resolvedRef = useRef(resolved);
-	resolvedRef.current = resolved;
-	const handlersRef = useRef(handlers);
-	handlersRef.current = handlers;
+	const resolvedToolsRef = useRef(resolvedTools);
+	resolvedToolsRef.current = resolvedTools;
+	const toolHandlersRef = useRef(toolHandlers);
+	toolHandlersRef.current = toolHandlers;
 
 	useEffect(() => {
-		if (enabled === false || !isWebMcpAvailable()) {
+		if (!enabled || !isWebMcpAvailable()) {
 			setRegistered(false);
 			return;
 		}
@@ -68,8 +68,8 @@ export function useWebMcpTools(
 			try {
 				await registerResolvedTools(
 					modelContext,
-					resolvedRef.current,
-					handlersRef.current,
+					resolvedToolsRef.current,
+					toolHandlersRef.current,
 					controller.signal,
 				);
 
@@ -97,7 +97,7 @@ export function useWebMcpTools(
 		crossOriginIsolated: environment.crossOriginIsolated,
 	};
 
-	if (enabled === false || !isWebMcpAvailable()) {
+	if (!enabled || !isWebMcpAvailable()) {
 		return {
 			registered: false,
 			ready: false,
