@@ -37,6 +37,13 @@ function withDefaultTimeout(
 	};
 }
 
+/**
+ * Agent-window client. Sends LIST_TOOLS / EXECUTE_TOOL over CrossWindow after
+ * handshake `TOOLS_API_HANDSHAKE`. Does not run tool handlers — App Builder does.
+ *
+ * Construct via {@link ToolsApiFactoryClass.getClientApi} or
+ * {@link ToolsApiFactoryClass.getParentClientApi}, not `new ToolsApi` from app code.
+ */
 export class ToolsApi implements IToolsApi {
 	#crossWindowApi: ICrossWindowApi;
 	#timeout?: number;
@@ -54,6 +61,7 @@ export class ToolsApi implements IToolsApi {
 		);
 	}
 
+	/** Ask App Builder for the resolved generic tools (name, description, JSON Schema). */
 	async listTools(): Promise<IListToolsReply> {
 		await this.peerIsReady;
 		return this.#crossWindowApi.send(
@@ -63,6 +71,11 @@ export class ToolsApi implements IToolsApi {
 		);
 	}
 
+	/**
+	 * Run one tool in App Builder. `data.name` must match a listed tool.
+	 * Reply is handler JSON; unknown / malformed names return
+	 * `{ success: false, message: 'Tool "…" does not exist.' }` instead of throwing.
+	 */
 	async execute(data: IExecuteToolData): Promise<unknown> {
 		await this.peerIsReady;
 		return this.#crossWindowApi.send(
@@ -73,6 +86,16 @@ export class ToolsApi implements IToolsApi {
 	}
 }
 
+/**
+ * App Builder server. Registers LIST_TOOLS and EXECUTE_TOOL **before** handshake
+ * so an eager client cannot race. `cancel()` removes listeners and aborts handshake.
+ *
+ * LIST_TOOLS → {@link listToolsFromResolved}.
+ * EXECUTE_TOOL → {@link parseExecuteToolData} then {@link executeResolvedTool}.
+ * Malformed EXECUTE_TOOL (missing string `name`) → unknown-tool JSON, not a throw.
+ *
+ * Construct via {@link ToolsApiFactoryClass.getConnectorApi}.
+ */
 export class ToolsApiConnector implements IToolsApiConnector {
 	#listenerCancels: ICrossWindowCancelable[] = [];
 	#crossWindowApi: ICrossWindowApi;
@@ -113,6 +136,7 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		);
 	}
 
+	/** Drop LIST_TOOLS / EXECUTE_TOOL listeners and cancel an in-flight handshake. */
 	cancel(): void {
 		for (const token of this.#listenerCancels) {
 			token.cancel();
@@ -122,6 +146,15 @@ export class ToolsApiConnector implements IToolsApiConnector {
 	}
 }
 
+/**
+ * Builds {@link ToolsApi} (client) and {@link ToolsApiConnector} (server) on top of
+ * {@link CrossWindowApiFactory}. Default timeout {@link TOOLS_API_TIMEOUT_MS}.
+ *
+ * Name defaults: client methods use this=`"agent"` peer=`"app"`;
+ * {@link getConnectorApi} uses this=`"app"` peer=`"agent"`.
+ *
+ * Pass an explicit peer `Window`. This factory does not `window.open` or guess topology.
+ */
 export class ToolsApiFactoryClass implements IToolsApiFactory {
 	constructor(private readonly crossWindowFactory: ICrossWindowFactory) {}
 
@@ -132,6 +165,10 @@ export class ToolsApiFactoryClass implements IToolsApiFactory {
 		return new ToolsApi(crossWindowApi, options);
 	}
 
+	/**
+	 * Client bound to `window` (the App Builder frame that opened us, or the
+	 * iframe we are talking to). Default names: `"agent"` → `"app"`.
+	 */
 	async getClientApi(
 		window: Window,
 		name = TOOLS_API_NAME_AGENT,
@@ -148,6 +185,10 @@ export class ToolsApiFactoryClass implements IToolsApiFactory {
 		return this.createClientApi(api, optionsWithTimeout);
 	}
 
+	/**
+	 * Client bound to `window.parent` (App Builder running as an iframe inside
+	 * the host that owns the agent). Default names: `"agent"` → `"app"`.
+	 */
 	async getParentClientApi(
 		name = TOOLS_API_NAME_AGENT,
 		peerName = TOOLS_API_NAME_APP,
@@ -162,6 +203,13 @@ export class ToolsApiFactoryClass implements IToolsApiFactory {
 		return this.createClientApi(api, optionsWithTimeout);
 	}
 
+	/**
+	 * Server bound to the agent `window`. Registers listeners, then handshakes.
+	 * Default names: `"app"` → `"agent"`.
+	 *
+	 * `resolvedTools` filters which names exist; `toolHandlers` runs them.
+	 * Called from {@link useToolsApiConnector} once snapshot + peer window exist.
+	 */
 	async getConnectorApi(
 		window: Window,
 		resolvedTools: ResolvedGenericTool[],
@@ -186,4 +234,5 @@ export class ToolsApiFactoryClass implements IToolsApiFactory {
 	}
 }
 
+/** Process-wide factory used by App Builder (`useToolsApiConnector`) and by agent clients. */
 export const ToolsApiFactory = new ToolsApiFactoryClass(CrossWindowApiFactory);

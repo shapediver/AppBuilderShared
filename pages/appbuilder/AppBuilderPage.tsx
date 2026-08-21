@@ -250,6 +250,9 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		snapshotComplete,
 	});
 
+	// ToolsApi server: same runtime as WebMCP. `window` omitted until Step 3
+	// passes the agent Window (`window.open` / iframe / parent). Without it
+	// the hook is a no-op — handshake must not start against `globalThis.window`.
 	useToolsApiConnector({
 		resolvedTools,
 		toolHandlers,

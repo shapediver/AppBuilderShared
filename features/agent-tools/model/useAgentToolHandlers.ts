@@ -42,7 +42,14 @@ function settingsForTool<N extends InScopeGenericToolName>(
 	return defaultSettingsFor(name) as Extract<GenericToolSettings, {name: N}>;
 }
 
-/** Client implementations for the resolved generic tools. Handler map is stable (`useMemo` []). */
+/**
+ * Builds the live handler map for in-scope generic tools (parameters, actions,
+ * camera, screenshot, metric). Map identity is stable (`useMemo` []); deps are
+ * read from a ref so WebMCP and ToolsApi can share one object.
+ *
+ * This is execution, not transport. {@link useWebMcpTools} and
+ * {@link useToolsApiConnector} only register / listen.
+ */
 export function useAgentToolHandlers(args: {
 	namespace: string;
 	appBuilderData: IAppBuilder | undefined;

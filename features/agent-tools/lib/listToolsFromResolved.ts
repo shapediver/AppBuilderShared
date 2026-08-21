@@ -4,6 +4,7 @@ import {AGENT_TOOL_META} from "../config/toolMeta";
 import type {IListToolsReply} from "../config/toolsApi";
 import {zodToJsonSchema} from "./zodToJsonSchema";
 
+/** Build the `listTools()` payload from the resolved snapshot (no live store reads). */
 export function listToolsFromResolved(
 	resolvedTools: ResolvedGenericTool[],
 ): IListToolsReply {

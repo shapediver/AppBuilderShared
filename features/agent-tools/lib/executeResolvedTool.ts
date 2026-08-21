@@ -11,6 +11,12 @@ export function unknownToolResult(name: string): {
 	};
 }
 
+/**
+ * Dispatch one ToolsApi / WebMCP execute to the handler map.
+ *
+ * Unknown `name` (not in `resolvedTools`) → {@link unknownToolResult}.
+ * Handler throw → `{ success: false, message }` (transports must not throw).
+ */
 export async function executeResolvedTool(
 	name: string,
 	input: unknown,
