@@ -1,8 +1,3 @@
-import type {
-	GenericToolName,
-	GenericToolSettings,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
-
 /** Generic tools Step 1 exposes. Excludes `ask_user_question`. */
 export enum InScopeGenericToolName {
 	ListParameterDefinitions = "list_parameter_definitions",
@@ -24,11 +19,11 @@ export function isInScopeGenericToolName(
 	return IN_SCOPE_GENERIC_TOOL_NAMES.includes(name as InScopeGenericToolName);
 }
 
-export const ASK_USER_QUESTION_TOOL_NAME: GenericToolName = "ask_user_question";
+export const ASK_USER_QUESTION_TOOL_NAME = "ask_user_question";
 
 /** Default generic-tool settings: `{name}` only. Overlay fields come from `genericTools`. */
-export function defaultSettingsFor(
-	name: InScopeGenericToolName,
-): GenericToolSettings {
-	return {name} as GenericToolSettings;
+export function defaultSettingsFor(name: InScopeGenericToolName): {
+	name: InScopeGenericToolName;
+} {
+	return {name};
 }

@@ -1,13 +1,17 @@
-import type {
-	GenericToolSettings,
-	IAppBuilderAgent,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {
 	defaultSettingsFor,
 	IN_SCOPE_GENERIC_TOOL_NAMES,
 	isInScopeGenericToolName,
 	type InScopeGenericToolName,
 } from "./inScopeGenericTools";
+
+/** Settings bag from agent config. Overlay fields are tool-specific. */
+type GenericToolSettings = {name: string};
+
+type ResolveToolsetAgent = {
+	useGenericToolDefaults?: boolean;
+	genericTools?: GenericToolSettings[];
+};
 
 export type ResolvedGenericTool = {
 	name: InScopeGenericToolName;
@@ -32,7 +36,7 @@ function genericToolsByName(
  * `specificTools` and `ask_user_question` are ignored.
  */
 export function resolveToolset(
-	agent: IAppBuilderAgent | undefined,
+	agent: ResolveToolsetAgent | undefined,
 ): ResolvedGenericTool[] {
 	const listed = genericToolsByName(agent?.genericTools);
 
@@ -49,7 +53,7 @@ export function resolveToolset(
 		const overlay = listed.get(name);
 		return {
 			name,
-			settings: overlay ?? defaultSettingsFor(name),
+			settings: overlay ?? (defaultSettingsFor(name) as GenericToolSettings),
 		};
 	});
 }

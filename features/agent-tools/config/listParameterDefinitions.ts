@@ -1,6 +1,5 @@
 import {nameMessageSchema} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
 import {z} from "@AppBuilderLib/shared/lib/zod";
-import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 
 const colorValueSchema = z.object({
 	red: z.number(),
@@ -46,13 +45,13 @@ export type ListParameterDefinitionItem = z.infer<
 
 /** Supported types of parameters (for now). */
 // TODO SS-9745: Grasshopper-dev-controlled exposure for additional parameter types.
-export const SUPPORTED_PARAMETER_TYPES: ResParameterType[] = [
-	ResParameterType.BOOL,
-	ResParameterType.COLOR,
-	ResParameterType.EVEN,
-	ResParameterType.FLOAT,
-	ResParameterType.INT,
-	ResParameterType.ODD,
-	ResParameterType.STRING,
-	ResParameterType.STRINGLIST,
+export const SUPPORTED_PARAMETER_TYPES: string[] = [
+	"Bool",
+	"Color",
+	"Even",
+	"Float",
+	"Int",
+	"Odd",
+	"String",
+	"StringList",
 ];

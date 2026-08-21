@@ -1,16 +1,30 @@
-import type {AppBuilderActionType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {DefaultListActionControlType} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 
-export {DefaultListActionControlType};
+/**
+ * Default `filter.types` for list_action_controls when `actions` is omitted.
+ * Export actions are not included.
+ */
+export enum DefaultListActionControlType {
+	CreateModelState = "createModelState",
+	AddToCart = "addToCart",
+	SetParameterValue = "setParameterValue",
+	SetParameterValues = "setParameterValues",
+	Undo = "undo",
+	Redo = "redo",
+	ResetParameterValues = "resetParameterValues",
+	ImportModelState = "importModelState",
+	Camera = "camera",
+	Sound = "sound",
+}
 
-export const DEFAULT_LIST_ACTION_CONTROL_TYPES: AppBuilderActionType[] =
-	Object.values(DefaultListActionControlType);
+export const DEFAULT_LIST_ACTION_CONTROL_TYPES = Object.values(
+	DefaultListActionControlType,
+);
 
 export type ListedActionControl = {
 	id: string;
 	name: string;
-	type: AppBuilderActionType;
+	type: string;
 	description?: string;
 };
 
