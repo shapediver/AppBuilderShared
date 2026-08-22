@@ -110,38 +110,47 @@ class CrossWindowApi implements ICrossWindowApi {
 	}
 
 	handshake(type: string, timeout?: number): Promise<ICrossWindowPeerInfo> {
-		// send a handshake message to the peer
-		// do this regularly until we get a response
-		this.handshakeIntervalId = setInterval(async () => {
-			try {
-				await this.send(type, undefined);
-				this.log(`Handshake "${type}" successfully sent`);
-				if (this.handshakeIntervalId !== undefined) {
-					clearInterval(this.handshakeIntervalId);
-					this.handshakeIntervalId = undefined;
-				}
-			} catch {
-				// ignore
-			}
-		}, SETUP_INTERVAL);
-
-		// wait until we receive a handshake message from the peer
 		return new Promise<ICrossWindowPeerInfo>((resolve, reject) => {
-			this.handshakeReject = reject;
+			let settled = false;
+			const complete = () => {
+				if (settled) {
+					return;
+				}
+				settled = true;
+				this.clearHandshakeResources();
+				resolve(this.peerIsReady);
+			};
+
+			this.handshakeReject = (reason) => {
+				if (settled) {
+					return;
+				}
+				settled = true;
+				reject(reason);
+			};
 			this.handshakeTimeoutId = timeout
 				? setTimeout(() => {
 						const msg = `Peer did not respond to handshake "${type}" within ${timeout}ms, giving up`;
 						this.log(msg);
+						this.handshakeReject?.(new Error(msg));
 						this.clearHandshakeResources();
-						reject(new Error(msg));
 					}, timeout)
 				: undefined;
 
 			this.handshakeToken = this.on(type, async () => {
 				this.log(`Handshake "${type}" successfully received`);
-				this.clearHandshakeResources();
-				resolve(this.peerIsReady);
+				complete();
 			});
+
+			this.handshakeIntervalId = setInterval(async () => {
+				try {
+					await this.send(type, undefined);
+					this.log(`Handshake "${type}" successfully sent`);
+					complete();
+				} catch {
+					// ignore
+				}
+			}, SETUP_INTERVAL);
 		});
 	}
 
