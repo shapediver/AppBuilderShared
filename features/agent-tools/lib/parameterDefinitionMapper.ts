@@ -9,12 +9,12 @@ import {parseStringListIndex} from "./stringListValue";
 
 export function mapParameterDefinition(
 	param: IShapeDiverParameter<any>,
-): ListParameterDefinitionItem {
+): Omit<ListParameterDefinitionItem, "namespace"> {
 	const def = param.definition;
 	const currentValue = param.state.uiValue;
 	const name = def.displayname || def.name;
 
-	const item: ListParameterDefinitionItem = {
+	const item: Omit<ListParameterDefinitionItem, "namespace"> = {
 		id: def.id,
 		name,
 		type: def.type,

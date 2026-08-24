@@ -12,7 +12,7 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 		description:
 			"Read configurator parameters before changing anything. " +
 			"Call with no arguments. Which parameters appear is agent settings, not a tool argument. " +
-			"Returns { parameters: [...], errors?: [{ name, message }] } with id, name, type, settable, choices/min/max, currentValue. " +
+			"Returns { parameters: [...], errors?: [{ name, message }] } with id, name, namespace (session id), type, settable, choices/min/max, currentValue. " +
 			"settable=false means read-only via set_parameter_values (unsupported type). " +
 			"Trust type over display name (e.g. name Color may still be StringList).",
 		annotations: {readOnlyHint: true},

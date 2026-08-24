@@ -17,6 +17,7 @@ export const parameterValueSchema = z.union([
 
 const ListParameterDefinitionItemSchema = z.object({
 	id: z.string(),
+	namespace: z.string(),
 	name: z.string(),
 	displayname: z.string().optional(),
 	type: z.string(),

@@ -20,9 +20,10 @@ export async function handleListParameterDefinitions(
 		listParameterDefinitionsInputSchema.parse(input ?? {});
 		const filtered = collectFilteredParameters(settings, deps);
 		return {
-			parameters: filtered.map(({parameter}) =>
-				mapParameterDefinition(parameter),
-			),
+			parameters: filtered.map(({namespace, parameter}) => ({
+				...mapParameterDefinition(parameter),
+				namespace,
+			})),
 		};
 	} catch (e) {
 		return {parameters: [], ...formatToolInputError(e)};
