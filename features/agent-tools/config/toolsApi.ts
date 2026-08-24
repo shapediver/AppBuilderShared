@@ -26,10 +26,10 @@ export const MESSAGE_TYPE_EXECUTE_TOOL = "EXECUTE_TOOL";
 export const MESSAGE_TYPE_TOOLS_API_HANDSHAKE = "TOOLS_API_HANDSHAKE";
 
 /** CrossWindow `name` of the App Builder side (server / connector). */
-export const TOOLS_API_NAME_APP = "app";
+export const TOOLS_API_NAME_APP = "tools_app";
 
 /** CrossWindow `name` of the agent side (client). */
-export const TOOLS_API_NAME_AGENT = "agent";
+export const TOOLS_API_NAME_AGENT = "tools_agent";
 
 /** Default CrossWindow timeout for handshake and request/reply (ms). */
 export const TOOLS_API_TIMEOUT_MS = 20000;
