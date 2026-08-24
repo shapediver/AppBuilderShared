@@ -13,8 +13,8 @@ export async function handleGetScreenshot(
 	return runParsedTool(
 		getScreenshotInputSchema,
 		input ?? {},
-		async (parsed) => {
-			const viewportId = resolveViewportId(parsed, deps);
+		async () => {
+			const viewportId = resolveViewportId(deps);
 			if (!viewportId) {
 				return {success: false, message: "Viewport not found."};
 			}

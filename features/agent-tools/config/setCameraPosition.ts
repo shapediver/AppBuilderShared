@@ -9,7 +9,6 @@ export const vec3Schema = z.strictObject({
 export const setCameraPositionInputSchema = z.strictObject({
 	position: vec3Schema,
 	target: vec3Schema,
-	viewportId: z.string().optional(),
 });
 
 export type Vec3 = z.infer<typeof vec3Schema>;

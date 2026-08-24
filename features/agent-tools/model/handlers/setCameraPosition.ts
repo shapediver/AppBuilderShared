@@ -14,7 +14,7 @@ export async function handleSetCameraPosition(
 		setCameraPositionInputSchema,
 		input,
 		async (parsed) => {
-			const viewportId = resolveViewportId(parsed, deps);
+			const viewportId = resolveViewportId(deps);
 			if (!viewportId) {
 				return {success: false, message: "Viewport not found."};
 			}

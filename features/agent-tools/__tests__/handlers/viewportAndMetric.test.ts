@@ -53,19 +53,27 @@ describe("handleSetCameraPosition", () => {
 		expect(result).toEqual({success: true});
 	});
 
-	it("uses viewportId from input over deps.getViewportId", async () => {
+	it("rejects extra viewportId on input", async () => {
 		const deps = createDeps({getViewportId: () => "from-deps"});
 
-		await handleSetCameraPosition(
+		const result = await handleSetCameraPosition(
 			{position, target, viewportId: "from-input"},
 			deps,
 		);
 
-		expect(deps.setCamera).toHaveBeenCalledWith({
-			viewportId: "from-input",
-			position,
-			target,
-		});
+		expect(result.success).toBe(false);
+		expect(typeof result.message).toBe("string");
+		expect(deps.setCamera).not.toHaveBeenCalled();
+	});
+
+	it("rejects input without position or target", async () => {
+		const deps = createDeps();
+
+		const result = await handleSetCameraPosition({}, deps);
+
+		expect(result.success).toBe(false);
+		expect(typeof result.message).toBe("string");
+		expect(deps.setCamera).not.toHaveBeenCalled();
 	});
 });
 
@@ -99,17 +107,21 @@ describe("handleGetScreenshot", () => {
 		});
 	});
 
-	it("returns success with the image data URL", async () => {
+	it("returns success with the image data URL from deps viewport", async () => {
 		const image = "data:image/png;base64,abc";
-		const result = await handleGetScreenshot(
-			{},
-			createDeps({getScreenshot: async () => image}),
-		);
+		const getScreenshot = jest.fn().mockResolvedValue(image);
+		const deps = createDeps({
+			getViewportId: () => "from-deps",
+			getScreenshot,
+		});
 
+		const result = await handleGetScreenshot({}, deps);
+
+		expect(getScreenshot).toHaveBeenCalledWith("from-deps");
 		expect(result).toEqual({success: true, image});
 	});
 
-	it("uses viewportId from input over deps.getViewportId", async () => {
+	it("rejects extra viewportId on input", async () => {
 		const getScreenshot = jest
 			.fn()
 			.mockResolvedValue("data:image/png;base64,abc");
@@ -118,9 +130,11 @@ describe("handleGetScreenshot", () => {
 			getScreenshot,
 		});
 
-		await handleGetScreenshot({viewportId: "from-input"}, deps);
+		const result = await handleGetScreenshot({viewportId: "from-input"}, deps);
 
-		expect(getScreenshot).toHaveBeenCalledWith("from-input");
+		expect(result.success).toBe(false);
+		expect(typeof result.message).toBe("string");
+		expect(getScreenshot).not.toHaveBeenCalled();
 	});
 });
 

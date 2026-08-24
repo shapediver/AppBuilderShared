@@ -1,8 +1,6 @@
 import {z} from "@AppBuilderLib/shared/lib/zod";
 
-export const getScreenshotInputSchema = z.strictObject({
-	viewportId: z.string().optional(),
-});
+export const getScreenshotInputSchema = z.strictObject({});
 
 export type GetScreenshotInput = z.infer<typeof getScreenshotInputSchema>;
 export type GetScreenshotOutput = {

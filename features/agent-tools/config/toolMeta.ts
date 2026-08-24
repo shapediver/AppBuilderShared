@@ -11,10 +11,9 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 	list_parameter_definitions: {
 		description:
 			"Read configurator parameters before changing anything. " +
-			"Input: {}. Extra keys are rejected. " +
+			"Call with no arguments. Which parameters appear is agent settings, not a tool argument. " +
 			"Returns { parameters: [...], errors?: [{ name, message }] } with id, name, type, settable, choices/min/max, currentValue. " +
 			"settable=false means read-only via set_parameter_values (unsupported type). " +
-			"On invalid input, returns { parameters: [], errors: [{ name: '*', message }] }. " +
 			"Trust type over display name (e.g. name Color may still be StringList).",
 		annotations: {readOnlyHint: true},
 	},
@@ -40,10 +39,9 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 	list_action_controls: {
 		description:
 			"List action controls the agent may trigger. " +
-			"Input: {}. Extra keys are rejected. " +
+			"Call with no arguments. Which actions appear is agent settings, not a tool argument. " +
 			"Returns { actions: [{ id, name, type, description? }], errors?: [{ name, message }] }. " +
-			"Use name with trigger_action_control. " +
-			"Which actions appear is controlled by agent settings, not by this tool's input.",
+			"Use name with trigger_action_control.",
 		annotations: {readOnlyHint: true},
 	},
 	trigger_action_control: {
@@ -57,7 +55,7 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 	set_camera_position: {
 		description:
 			"Set the viewport camera position and look-at target. " +
-			"Input: { position: {x,y,z}, target: {x,y,z}, viewportId?: string } — omit viewportId for the main viewport. " +
+			"Input: { position: {x,y,z}, target: {x,y,z} }. Uses the main viewport. " +
 			"Does not change camera type. " +
 			"Success: { success: true }. Failure: { success: false, message } (e.g. Viewport not found).",
 		annotations: {readOnlyHint: false},
@@ -65,16 +63,16 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 	get_screenshot: {
 		description:
 			"Capture a screenshot of the 3D viewport as a data URL. " +
-			"Input: { viewportId?: string } — omit viewportId for the main viewport. " +
+			"Call with no arguments. Uses the main viewport. " +
 			"Success: { success: true, image } with a data URL. Failure: { success: false, message }.",
 		annotations: {readOnlyHint: true},
 	},
 	get_metric: {
 		description:
 			"Read the model's AgentMetric data output. " +
-			"Input: {}. Extra keys are rejected. " +
+			"Call with no arguments. " +
 			"If the output exists: { found: true, value } where value is the output content. " +
-			"If missing: { found: false }. On invalid input: { found: false, message }.",
+			"If missing: { found: false }.",
 		annotations: {readOnlyHint: true},
 	},
 };
