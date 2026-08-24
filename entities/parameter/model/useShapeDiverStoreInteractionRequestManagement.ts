@@ -12,7 +12,7 @@ export const useShapeDiverStoreInteractionRequestManagement =
 				addInteractionRequest: (request) => {
 					const {interactionRequests} = get();
 					const {viewportId, type} = request;
-					const token = Math.random().toString(36).substring(7);
+					const token = crypto.randomUUID();
 
 					if (!interactionRequests[viewportId]) {
 						interactionRequests[viewportId] = {
@@ -102,6 +102,25 @@ export const useShapeDiverStoreInteractionRequestManagement =
 							false,
 							`removeInteractionRequest ${token}`,
 						);
+					}
+				},
+				activatePassiveInteraction: (token) => {
+					const {interactionRequests} = get();
+					for (const viewportId of Object.keys(interactionRequests)) {
+						const requests = interactionRequests[viewportId];
+						const passiveRequest = requests.passiveRequests.find(
+							(request) => request.token === token,
+						);
+						if (!passiveRequest) continue;
+
+						const activeRequest = requests.activeRequest;
+						requests.activeRequest = undefined;
+						activeRequest?.disable();
+						requests.passiveRequests.forEach((request) =>
+							request.enable(),
+						);
+						set({interactionRequests}, false, "activatePassiveInteraction");
+						return;
 					}
 				},
 			}),

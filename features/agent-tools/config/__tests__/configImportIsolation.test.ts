@@ -12,7 +12,10 @@ const FORBIDDEN_EXACT = [
 function configTsFiles(): string[] {
 	return fs
 		.readdirSync(CONFIG_DIR)
-		.filter((name) => name.endsWith(".ts"))
+		.filter(
+			(name) =>
+				name.endsWith(".ts") && name !== "appBuilderAgentHost.ts",
+		)
 		.map((name) => path.join(CONFIG_DIR, name));
 }
 

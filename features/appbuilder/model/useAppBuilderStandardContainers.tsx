@@ -12,9 +12,9 @@ import {useContext, useEffect, useMemo} from "react";
 import {
 	AppBuilderContainerNameType,
 	IAppBuilder,
-	IAppBuilderStandardContainer,
 	IAppBuilderSettingsResolved,
 	IAppBuilderSettingsSession,
+	IAppBuilderStandardContainer,
 	isStandardContainer,
 } from "../config/appbuilder";
 import {ComponentContext} from "../config/ComponentContext";
@@ -83,12 +83,17 @@ export function useAppBuilderStandardContainers(props: Props) {
 		(output) => !!output.chunks,
 	);
 
-	const {mergedContainers, resetDefaultContainers, setDefaultContainers} =
-		useShapeDiverStoreStandardContainers((state) => ({
-			mergedContainers: state.mergedContainers,
-			resetDefaultContainers: state.resetDefaultContainers,
-			setDefaultContainers: state.setDefaultContainers,
-		}));
+	const {
+		mergedContainers,
+		containerOpen,
+		resetDefaultContainers,
+		setDefaultContainers,
+	} = useShapeDiverStoreStandardContainers((state) => ({
+		mergedContainers: state.mergedContainers,
+		containerOpen: state.containerOpen,
+		resetDefaultContainers: state.resetDefaultContainers,
+		setDefaultContainers: state.setDefaultContainers,
+	}));
 
 	// viewport anchors
 	const anchors = useViewportAnchors({
@@ -175,7 +180,8 @@ export function useAppBuilderStandardContainers(props: Props) {
 		};
 
 		const mergedContainerArray = Object.values(mergedContainers).filter(
-			(container): container is IAppBuilderStandardContainer => !!container,
+			(container): container is IAppBuilderStandardContainer =>
+				!!container && containerOpen[container.name],
 		);
 
 		if (mergedContainerArray.length === 0) {
@@ -200,7 +206,13 @@ export function useAppBuilderStandardContainers(props: Props) {
 		}
 
 		return result;
-	}, [mergedContainers, namespace, fallbackContainer, ContainerComponent]);
+	}, [
+		mergedContainers,
+		containerOpen,
+		namespace,
+		fallbackContainer,
+		ContainerComponent,
+	]);
 
 	return {containers, anchors};
 }

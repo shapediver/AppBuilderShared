@@ -48,7 +48,13 @@ export function useSelection(
 	activate: boolean,
 	initialSelectedNodeNames?: string[],
 	strictNaming: boolean = true,
+	suppressSingleSelectionEffect: boolean = false,
 ): ISelectionState & {
+	/**
+	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
+	 * Used for ownership conflict detection at the registration layer.
+	 */
+	candidateNodes: Array<{nodeId: string; name: string}>;
 	/**
 	 * The available node names in a dictionary for each output.
 	 */
@@ -60,17 +66,30 @@ export function useSelection(
 	 * @returns
 	 */
 	setSelectedNodeNamesAndRestoreSelection: (names: string[]) => void;
+	/**
+	 * Request restoration of the current selection after an interaction resumes.
+	 * This is needed when node interaction data changed while the manager was
+	 * suspended, because none of the regular selection-state dependencies then
+	 * change at resume time.
+	 */
+	requestSelectionRestore: () => void;
 } {
 	// create a unique component ID
 	const componentId = useId();
+	const [singleCandidateSuppressed, setSingleCandidateSuppressed] =
+		React.useState(false);
 
 	// call the select manager hook
-	const {selectManager, setAvailableNodes, removeAvailableEffectsForNodes} =
-		useSelectManager(
-			viewportId,
-			componentId,
-			activate ? selectionProps : undefined,
-		);
+	const {
+		selectManager,
+		setAvailableNodes,
+		removeAvailableEffectsForNodes,
+		availableNodes: managerAvailableNodes,
+	} = useSelectManager(
+		viewportId,
+		componentId,
+		activate ? selectionProps : undefined,
+	);
 
 	// store the select manager in a ref
 	const selectManagerRef = React.useRef<SelectManager | MultiSelectManager>();
@@ -96,7 +115,7 @@ export function useSelection(
 	useHoverManager(
 		viewportId,
 		componentId,
-		activate ? hoverSettings : undefined,
+		activate && !singleCandidateSuppressed ? hoverSettings : undefined,
 	);
 
 	// create the input for the name filter pattern
@@ -115,7 +134,22 @@ export function useSelection(
 			componentId,
 			initialSelectedNodeNames,
 			strictNaming,
+			activate,
+			selectManager,
 		);
+	const [restoreRevision, requestSelectionRestore] = React.useReducer(
+		(revision: number) => revision + 1,
+		0,
+	);
+
+	// A selection can be cleared before the first manager instance reaches this
+	// hook. Keep the viewer manager synchronized once it becomes available.
+	useEffect(() => {
+		if (!selectManager || selectedNodeNames.length > 0) return;
+		if (selectManager instanceof SelectManager) selectManager.deselect();
+		else if (selectManager instanceof MultiSelectManager)
+			selectManager.deselectAll();
+	}, [selectManager, selectedNodeNames]);
 
 	const nodesInteractionInput = useMemo(() => {
 		const nodesInteractionInput: {
@@ -134,8 +168,10 @@ export function useSelection(
 							outputId,
 							patterns: pattern,
 							interactionSettings: {
-								select: true,
-								hover: selectionProps.hover,
+								select: !singleCandidateSuppressed,
+								hover:
+									!singleCandidateSuppressed &&
+									selectionProps.hover,
 							},
 							selectManagerRef,
 							removeAvailableEffectsRef,
@@ -153,8 +189,10 @@ export function useSelection(
 						componentId,
 						patterns: pattern,
 						interactionSettings: {
-							select: true,
-							hover: selectionProps.hover,
+							select: !singleCandidateSuppressed,
+							hover:
+								!singleCandidateSuppressed &&
+								selectionProps.hover,
 						},
 						selectManagerRef,
 						removeAvailableEffectsRef,
@@ -165,9 +203,15 @@ export function useSelection(
 		}
 
 		return nodesInteractionInput;
-	}, [patterns, selectionProps]);
+	}, [patterns, selectionProps, singleCandidateSuppressed]);
 
 	const {availableNodeNames} = useNodesInteractionData(nodesInteractionInput);
+
+	useEffect(() => {
+		if (!suppressSingleSelectionEffect) return;
+		const candidateCount = Object.values(availableNodeNames).flat().length;
+		setSingleCandidateSuppressed(activate && candidateCount === 1);
+	}, [activate, availableNodeNames, suppressSingleSelectionEffect]);
 
 	const outputsPerSession = useShapeDiverStoreSession(
 		useShallow((state) => {
@@ -211,22 +255,11 @@ export function useSelection(
 					}
 				});
 
-				// If not found (e.g. geometry changed after computation), try fallback:
-				// find the first available node with the same output name prefix so that
-				// selection is preserved across geometry updates.
+				// Do not silently replace a missing node with another object from the
+				// same output. The output may still be rebuilding, and changing the
+				// logical selection here can trigger an unintended automatic commit.
 				if (!found) {
-					const outputPrefix = name.split(".")[0];
-					for (const availableNames of Object.values(
-						availableNodeNames,
-					)) {
-						const fallback = availableNames.find(
-							(n) => n.name.split(".")[0] === outputPrefix,
-						);
-						if (fallback) {
-							newSelectedNodeNames.push(fallback.name);
-							break;
-						}
-					}
+					newSelectedNodeNames.push(name);
 				}
 			});
 		}
@@ -259,6 +292,9 @@ export function useSelection(
 			},
 		);
 		setAvailableNodes(nodes.map((n) => n.node));
+		// Intentionally only rerun for selection state changes. The manager
+		// callbacks and its available-node array are recreated by the manager
+		// hook, so subscribing to them would cause an update loop.
 	}, [availableNodeNames, selectedNodeNames, activate]);
 
 	// in case selection becomes active or the output node changes, restore the selection status.
@@ -273,17 +309,25 @@ export function useSelection(
 	// restoreNodeSelection with an empty list would unconditionally deselect all nodes
 	// (undoing a selection that was just re-applied by a prior effect run).
 	useEffect(() => {
+		if (!activate || singleCandidateSuppressed) return;
 		if (!selectManager) return;
 		if (selectedNodeNames.length === 0) return;
 
-		restoreSelection(
-			outputsPerSession,
-			instances,
-			componentId,
-			selectManager,
-			selectedNodeNames,
-			strictNaming,
-		);
+		// The manager and its candidate interaction data are installed by sibling
+		// effects. Restore on the next task so select() cannot race that setup
+		// during an interaction resume or an output replacement.
+		const restoreTimer = window.setTimeout(() => {
+			restoreSelection(
+				outputsPerSession,
+				instances,
+				componentId,
+				selectManager,
+				selectedNodeNames,
+				strictNaming,
+			);
+		}, 0);
+
+		return () => window.clearTimeout(restoreTimer);
 	}, [
 		outputsPerSession,
 		instances,
@@ -291,6 +335,9 @@ export function useSelection(
 		selectManager,
 		availableNodeNames,
 		selectedNodeNames,
+		restoreRevision,
+		managerAvailableNodes,
+		singleCandidateSuppressed,
 	]);
 
 	// we need to return the available node names in a dictionary for each output
@@ -332,11 +379,18 @@ export function useSelection(
 	const setSelectedNodeNamesAndRestoreSelection = useCallback(
 		(names: string[]) => {
 			setSelectedNodeNames(names);
+			const manager = selectManagerRef.current ?? selectManager;
+			if (names.length === 0) {
+				if (manager instanceof SelectManager) manager.deselect();
+				else if (manager instanceof MultiSelectManager)
+					manager.deselectAll();
+				return;
+			}
 			restoreSelection(
 				outputsPerSession,
 				instances,
 				componentId,
-				selectManagerRef.current,
+				manager,
 				names,
 				strictNaming,
 			);
@@ -346,16 +400,27 @@ export function useSelection(
 			instances,
 			componentId,
 			setSelectedNodeNames,
+			selectManager,
 			restoreSelection,
 		],
 	);
 
+	const candidateNodes = useMemo(
+		() =>
+			Object.values(availableNodeNames)
+				.flat()
+				.map((entry) => ({nodeId: entry.node.id, name: entry.name})),
+		[availableNodeNames],
+	);
+
 	return {
+		candidateNodes,
 		selectedNodeNames,
 		setSelectedNodeNames,
 		resetSelectedNodeNames,
 		availableNodeNames: availableNodeNamesReturn,
 		setSelectedNodeNamesAndRestoreSelection,
+		requestSelectionRestore,
 	};
 }
 

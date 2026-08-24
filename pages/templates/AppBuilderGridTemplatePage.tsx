@@ -1,3 +1,4 @@
+import {AppBuilderContainerOrientation} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContainerOrientation";
 import {createGridLayout} from "@AppBuilderLib/shared/lib/layout";
 import AppBuilderContainerWrapper from "@AppBuilderShared/pages/templates/AppBuilderContainerWrapper";
 import {MantineThemeComponent, useProps} from "@mantine/core";
@@ -230,7 +231,14 @@ export default function AppBuilderGridTemplatePage(
 						className={classes.appBuilderTemplatePageBottom}
 						style={{background: bgBottom}}
 					>
-						<AppBuilderContainerWrapper name="bottom">
+						<AppBuilderContainerWrapper
+							orientation={
+								bottom.hints?.preferVertical
+									? AppBuilderContainerOrientation.Vertical
+									: undefined
+							}
+							name="bottom"
+						>
 							{bottom.node}
 						</AppBuilderContainerWrapper>
 					</section>

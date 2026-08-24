@@ -1,3 +1,4 @@
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -24,6 +25,7 @@ export default function AppBuilderActionArComponent(props: Props) {
 		label = "View in AR",
 		icon = "tabler:augmented-reality",
 		tooltip,
+		namespace,
 		presentation,
 		viewportId,
 		toolbarButtonProps,
@@ -35,12 +37,14 @@ export default function AppBuilderActionArComponent(props: Props) {
 	const [arError, setArError] = useState("");
 	const {viewportId: defaultViewportId} = useViewportId();
 	const actionViewportId = viewportId ?? defaultViewportId;
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = disabled || hasPendingChanges;
 	const {viewportApi} = useShapeDiverStoreViewport((state) => ({
 		viewportApi: state.viewports[actionViewportId],
 	}));
 
 	const onClick = useCallback(async () => {
-		if (disabled || !viewportApi) return;
+		if (resolvedDisabled || !viewportApi) return;
 		setLoading(true);
 		setArError("");
 		try {
@@ -62,7 +66,7 @@ export default function AppBuilderActionArComponent(props: Props) {
 		} finally {
 			setLoading(false);
 		}
-	}, [disabled, viewportApi]);
+	}, [resolvedDisabled, viewportApi]);
 
 	return (
 		<>
@@ -73,7 +77,7 @@ export default function AppBuilderActionArComponent(props: Props) {
 				tooltip={tooltip}
 				onClick={() => void onClick()}
 				loading={loading}
-				disabled={disabled || !viewportApi}
+				disabled={resolvedDisabled || !viewportApi}
 				toolbarButtonProps={toolbarButtonProps}
 			/>
 			<Modal

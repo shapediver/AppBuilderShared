@@ -34,6 +34,7 @@ export function useModelStateSources(props: {
 					includeImage,
 					image,
 					includeGltf,
+					screenshotProps,
 					parameterNamesToInclude,
 					parameterNamesToExclude,
 				} = source;
@@ -44,6 +45,7 @@ export function useModelStateSources(props: {
 						parameterNamesToExclude,
 						includeImage,
 						image,
+						screenshotProps,
 						data: undefined,
 						includeGltf,
 					},

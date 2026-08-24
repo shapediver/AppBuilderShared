@@ -7,6 +7,12 @@ export interface UseWebMcpToolsProps {
 	resolvedTools: ResolvedGenericTool[];
 	toolHandlers: IToolsApiHandlerMap;
 	snapshotComplete: boolean;
+	/**
+	 * Extra tool names (`tool.name`) to NOT register from webmcp/core.
+	 * Agent generic tools from `resolvedTools` are always skipped there
+	 * so list/set stay on the agent-tools handlers.
+	 */
+	disabledTools?: string[];
 }
 
 export interface WebMcpEnvironment {

@@ -18,6 +18,8 @@ import type {IToolsApiHandlerMap} from "../config/toolsApi";
 import {
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_LIST_TOOLS,
+	TOOLS_API_NAME_AGENT,
+	TOOLS_API_NAME_APP,
 } from "../config/toolsApi";
 import {
 	executeResolvedTool,
@@ -336,8 +338,8 @@ describe("ToolsApiFactoryClass defaults", () => {
 		await new ToolsApiFactoryClass(factory).getClientApi(peerWindow);
 		expect(getWindowApi).toHaveBeenCalledWith(
 			peerWindow,
-			"agent",
-			"app",
+			TOOLS_API_NAME_AGENT,
+			TOOLS_API_NAME_APP,
 			expect.objectContaining({timeout: 20000}),
 		);
 	});
@@ -346,8 +348,8 @@ describe("ToolsApiFactoryClass defaults", () => {
 		const {factory, getParentApi} = createMockCrossWindowFactory();
 		await new ToolsApiFactoryClass(factory).getParentClientApi();
 		expect(getParentApi).toHaveBeenCalledWith(
-			"agent",
-			"app",
+			TOOLS_API_NAME_AGENT,
+			TOOLS_API_NAME_APP,
 			expect.objectContaining({timeout: 20000}),
 		);
 	});
@@ -361,8 +363,8 @@ describe("ToolsApiFactoryClass defaults", () => {
 		);
 		expect(getWindowApi).toHaveBeenCalledWith(
 			peerWindow,
-			"app",
-			"agent",
+			TOOLS_API_NAME_APP,
+			TOOLS_API_NAME_AGENT,
 			expect.objectContaining({timeout: 20000}),
 		);
 	});
@@ -377,8 +379,8 @@ describe("ToolsApiFactoryClass defaults", () => {
 		);
 		expect(getWindowApi).toHaveBeenCalledWith(
 			peerWindow,
-			"agent",
-			"app",
+			TOOLS_API_NAME_AGENT,
+			TOOLS_API_NAME_APP,
 			expect.objectContaining({timeout: 5}),
 		);
 	});
@@ -391,8 +393,8 @@ describe("ToolsApiFactoryClass defaults", () => {
 			{timeout: 5},
 		);
 		expect(getParentApi).toHaveBeenCalledWith(
-			"agent",
-			"app",
+			TOOLS_API_NAME_AGENT,
+			TOOLS_API_NAME_APP,
 			expect.objectContaining({timeout: 5}),
 		);
 	});
@@ -409,8 +411,8 @@ describe("ToolsApiFactoryClass defaults", () => {
 		);
 		expect(getWindowApi).toHaveBeenCalledWith(
 			peerWindow,
-			"app",
-			"agent",
+			TOOLS_API_NAME_APP,
+			TOOLS_API_NAME_AGENT,
 			expect.objectContaining({timeout: 5}),
 		);
 	});

@@ -98,7 +98,7 @@ describe("applyParameterUpdates", () => {
 		expect(result.errors).toHaveLength(1);
 		expect(result.errors[0].name).toBe("Upload");
 		expect(result.errors[0].message).toContain(
-			"is not supported for setting via WebMCP",
+			"is not supported for setting via agent tools.",
 		);
 		expect(batchUpdate).not.toHaveBeenCalled();
 	});

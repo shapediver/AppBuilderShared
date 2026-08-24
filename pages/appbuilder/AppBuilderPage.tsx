@@ -3,6 +3,7 @@ import {useUnsavedChangesProtection} from "@AppBuilderLib/entities/parameter/mod
 import useDefaultSessionDto from "@AppBuilderLib/entities/session/model/useDefaultSessionDto";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {useAppBuilderAgentHost} from "@AppBuilderLib/features/agent-tools/model/useAppBuilderAgentHost";
 import AppBuilderAgentOverlay from "@AppBuilderLib/features/agent-tools/ui/AppBuilderAgentOverlay";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
@@ -12,6 +13,7 @@ import useAppBuilderSettings from "@AppBuilderLib/features/appbuilder/model/useA
 import {useAppBuilderStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderStandardContainers";
 import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBindings";
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
+import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
@@ -134,6 +136,15 @@ interface Props extends IAppBuilderSettingsSession {
  * @returns
  */
 export default function AppBuilderPage(props: Partial<Props>) {
+	const {viewportId} = useViewportId();
+	const hasBottomCenterToolbar = useShapeDiverStoreToolbars((state) =>
+		state
+			.selectMergedToolbars(viewportId)
+			.some(
+				(toolbar) =>
+					toolbar.side === "bottom" && toolbar.align === "center",
+			),
+	);
 	// get default session dto, if any
 	const {defaultSessionDto} = useDefaultSessionDto(props);
 
@@ -285,12 +296,14 @@ export default function AppBuilderPage(props: Partial<Props>) {
 										sessionSettings={sessionSettings}
 									/>
 								)}
-								<ViewportOverlayWrapper
-									position={OverlayPosition.BOTTOM_MIDDLE}
-									offset="1em"
-								>
-									<ViewportAcceptRejectButtons />
-								</ViewportOverlayWrapper>
+								{!hasBottomCenterToolbar && (
+									<ViewportOverlayWrapper
+										position={OverlayPosition.BOTTOM_MIDDLE}
+										offset="1em"
+									>
+										<ViewportAcceptRejectButtons />
+									</ViewportOverlayWrapper>
+								)}
 							</>
 						)}
 						<AppBuilderAgentOverlay {...agentHost} />

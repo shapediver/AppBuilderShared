@@ -35,6 +35,7 @@ export function useParameterComponentCommons<T>(
 
 	const {
 		namespace,
+		delegates = [],
 		disableIfDirty,
 		acceptRejectMode: propAcceptRejectMode,
 		reactive = true,
@@ -79,6 +80,13 @@ export function useParameterComponentCommons<T>(
 		state.isAnyParameterDisablingOthers(definition.id),
 	);
 
+	const delegatesExecuting = useShapeDiverStoreParameters((state) =>
+		delegates.some(
+			({namespace: delegateNamespace}) =>
+				state.parameterChanges[delegateNamespace]?.executing ?? false,
+		),
+	);
+
 	const processesInSession = useShapeDiverStoreProcessManager((state) => {
 		// check if there are currently processes running in the session
 		return (
@@ -115,13 +123,71 @@ export function useParameterComponentCommons<T>(
 	const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 
 	const handleChange = useCallback(
-		(curval: T | string, timeout?: number, cb: () => void = () => {}) => {
+		(
+			curval: T | string,
+			timeout?: number,
+			cb: () => void = () => {},
+			forceSameValue = false,
+		) => {
 			clearTimeout(debounceRef.current);
 			setValue(curval);
 			debounceRef.current = setTimeout(
 				() => {
 					if (actions.setUiValue(curval)) {
-						actions.execute(!acceptRejectMode).then(() => cb());
+						const delegateExecutions = delegates.flatMap(
+							({namespace: delegateNamespace, parameterId}) => {
+								const delegate = useShapeDiverStoreParameters
+									.getState()
+									.getParameter(
+										delegateNamespace,
+										parameterId,
+									);
+								if (!delegate) {
+									Logger.warn(
+										`Delegate parameter ${parameterId} does not exist for session namespace ${delegateNamespace}.`,
+									);
+									return [];
+								}
+
+								const delegateActions =
+									delegate.getState().actions;
+								let delegateValue = curval;
+								let valueWasSet = delegateActions.setUiValue(delegateValue);
+								if (!valueWasSet) {
+									delegateValue =
+										actions.stringify?.(curval) ?? `${curval}`;
+									valueWasSet =
+										delegateActions.setUiValue(delegateValue);
+								}
+								if (!valueWasSet) {
+									Logger.warn(
+										`setUiValue failed for delegate parameter ${parameterId}.`,
+										delegateValue,
+									);
+									return [];
+								}
+
+								return [
+									delegateActions.execute(
+										!acceptRejectMode,
+										undefined,
+										undefined,
+										undefined,
+										forceSameValue,
+									),
+								];
+							},
+						);
+						Promise.all([
+							actions.execute(
+								!acceptRejectMode,
+								undefined,
+								undefined,
+								undefined,
+								forceSameValue,
+							),
+							...delegateExecutions,
+						]).then(() => cb());
 					} else {
 						Logger.warn(
 							`setUiValue failed for parameter ${definition.id}, the value is not valid.`,
@@ -132,7 +198,7 @@ export function useParameterComponentCommons<T>(
 				timeout === undefined ? debounceTimeout : timeout,
 			);
 		},
-		[acceptRejectMode, debounceTimeout, actions, definition],
+		[acceptRejectMode, debounceTimeout, actions, definition, delegates],
 	);
 
 	useEffect(() => {
@@ -208,6 +274,7 @@ export function useParameterComponentCommons<T>(
 	const disabled =
 		(disableIfDirty && state.dirty) ||
 		executing ||
+		delegatesExecuting ||
 		processesInSession ||
 		disabledByParameter;
 

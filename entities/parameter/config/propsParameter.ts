@@ -40,6 +40,14 @@ export interface PropsParameter extends PropsParameterOrExport {
 	readonly parameterId: string;
 
 	/**
+	 * Additional parameters to receive the same value whenever this parameter is changed.
+	 */
+	readonly delegates?: ReadonlyArray<{
+		readonly parameterId: string;
+		readonly namespace: string;
+	}>;
+
+	/**
 	 * Disable the parameter component if it's in dirty state.
 	 */
 	readonly disableIfDirty?: boolean;

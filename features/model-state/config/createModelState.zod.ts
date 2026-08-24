@@ -1,3 +1,4 @@
+import {viewportScreenshotPropsSchema} from "@AppBuilderLib/entities/viewport/config/viewportScreenshotProps.zod";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 
 export const createModelStateImageRefSchema = z.strictObject({
@@ -29,6 +30,11 @@ export const createModelStateCoreSchema = z.strictObject({
 		.boolean()
 		.optional()
 		.describe("Whether to include an exported GLTF asset."),
+	screenshotProps: viewportScreenshotPropsSchema
+		.optional()
+		.describe(
+			"Screenshot settings applied when capturing the preview image automatically.",
+		),
 });
 
 export const createModelStateDataSchema = createModelStateCoreSchema.extend({

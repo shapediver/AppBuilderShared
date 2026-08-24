@@ -47,6 +47,9 @@ const defaultStyleProps: Partial<AppBuilderControlsWidgetComponentStyleProps> =
 type AppBuilderControlsWidgetComponentThemePropsType =
 	Partial<AppBuilderControlsWidgetComponentStyleProps>;
 
+const parameterMapKey = (namespace: string, parameterId: string) =>
+	`${namespace}:${parameterId}`;
+
 export function AppBuilderControlsWidgetComponentThemeProps(
 	props: AppBuilderControlsWidgetComponentThemePropsType,
 ): MantineThemeComponent {
@@ -81,6 +84,10 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 					disableIfDirty: p.disableIfDirty,
 					acceptRejectMode: p.acceptRejectMode,
 					overrides: p.overrides,
+					delegates: (p.delegates ?? []).map((delegate) => ({
+						namespace: delegate.sessionId ?? namespace,
+						parameterId: delegate.name,
+					})),
 				};
 			}),
 		[controls, namespace],
@@ -127,9 +134,12 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 				getParameterComponent(componentContext, param.definition);
 
 			map.set(
-				parameterProps[index].parameterId,
+				parameterMapKey(
+					parameterProps[index].namespace,
+					parameterProps[index].parameterId,
+				),
 				<ParameterComponent
-					key={param.definition.id}
+					key={`${parameterProps[index].namespace}:${param.definition.id}`}
 					{...parameterProps[index]}
 					wrapperComponent={Paper}
 					wrapperProps={{
@@ -191,7 +201,12 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 
 		controls.forEach((control, index) => {
 			if (isParameterRefControl(control)) {
-				const component = parameterMap.get(control.props.name);
+				const component = parameterMap.get(
+					parameterMapKey(
+						control.props.sessionId ?? namespace,
+						control.props.name,
+					),
+				);
 				if (component) {
 					components.push(component);
 				}

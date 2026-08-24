@@ -1,10 +1,26 @@
-import type {z} from "zod";
+import {viewportScreenshotPropsSchema} from "@AppBuilderLib/entities/viewport/config/viewportScreenshotProps.zod";
+import type {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 import {createModelStateDataSchema} from "./createModelState.zod";
+
+type ScreenshotPropsFromZod = z.infer<typeof viewportScreenshotPropsSchema>;
 
 /**
  * Data accepted by the useCreateModelState hook to create a model state.
+ *
+ * Zod validates `screenshotProps.camera` as a name/type lookup union for settings
+ * JSON. Runtime callers use the broader camera shape from
+ * {@link IAppBuilderParameterValueSourcePropsScreenshot}; only `camera` is
+ * widened here so the rest of the bag stays Zod-inferred.
  */
-export type ICreateModelStateData = z.infer<typeof createModelStateDataSchema>;
+export type ICreateModelStateData = Omit<
+	z.infer<typeof createModelStateDataSchema>,
+	"screenshotProps"
+> & {
+	screenshotProps?: Omit<ScreenshotPropsFromZod, "camera"> & {
+		camera?: IAppBuilderParameterValueSourcePropsScreenshot["camera"];
+	};
+};
 
 /**
  * Data returned from the useCreateModelState hook.

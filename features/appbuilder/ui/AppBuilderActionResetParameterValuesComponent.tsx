@@ -1,3 +1,4 @@
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
 import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
 import {useCallback, useState} from "react";
 import {IAppBuilderActionPropsCommon} from "../config/appbuilder";
@@ -24,7 +25,8 @@ export default function AppBuilderActionResetParameterValuesComponent(
 	} = props;
 	const {resetParameters} = useParameterImportExport(namespace);
 	const [loading, setLoading] = useState(false);
-	const isDisabled = !namespace || !!disabled;
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const isDisabled = !namespace || !!disabled || hasPendingChanges;
 
 	const onClick = useCallback(async () => {
 		setLoading(true);

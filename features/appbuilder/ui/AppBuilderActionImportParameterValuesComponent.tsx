@@ -1,3 +1,4 @@
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
 import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
 import {useCallback, useState} from "react";
 import {IAppBuilderLegacyActionPropsImportParameterValues} from "../config/appbuilder";
@@ -25,16 +26,18 @@ export default function AppBuilderActionImportParameterValuesComponent(
 	} = props;
 	const {importParameters} = useParameterImportExport(namespace);
 	const [loading, setLoading] = useState(false);
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = disabled || hasPendingChanges;
 
 	const onClick = useCallback(async () => {
-		if (disabled) return;
+		if (resolvedDisabled) return;
 		setLoading(true);
 		try {
 			await importParameters();
 		} finally {
 			setLoading(false);
 		}
-	}, [disabled, importParameters]);
+	}, [importParameters, resolvedDisabled]);
 
 	return (
 		<AppBuilderActionBase
@@ -44,7 +47,7 @@ export default function AppBuilderActionImportParameterValuesComponent(
 			tooltip={tooltip}
 			onClick={() => void onClick()}
 			loading={loading}
-			disabled={disabled}
+			disabled={resolvedDisabled}
 			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);

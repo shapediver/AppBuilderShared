@@ -1,3 +1,4 @@
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
 import {useViewportHistory} from "@AppBuilderLib/entities/viewport/model/useViewportHistory";
 import {IAppBuilderActionPropsCommon} from "../config/appbuilder";
 import AppBuilderActionBase, {
@@ -14,12 +15,14 @@ export default function AppBuilderActionUndoComponent(props: Props) {
 		label = "Undo",
 		icon = "tabler:arrow-back-up",
 		tooltip,
+		namespace,
 		disabled,
 		presentation,
 		toolbarButtonProps,
 	} = props;
 	const {canGoBack, goBack} = useViewportHistory();
-	const resolvedDisabled = disabled || !canGoBack;
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = disabled || hasPendingChanges || !canGoBack;
 
 	return (
 		<AppBuilderActionBase

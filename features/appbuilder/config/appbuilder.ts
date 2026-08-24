@@ -1,4 +1,5 @@
 import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export/config/export";
+import {ParameterStringInputMode} from "@AppBuilderLib/entities/parameter/config/ParameterStringComponent.theme.types";
 import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
 import {SessionCreateDto} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
 import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
@@ -228,6 +229,18 @@ export interface IStringParameterSettings {
 	/** Number of lines to display. If > 1, a Textarea is used with autosize and fixed rows. Default: 1 */
 	lines?: number;
 	/**
+	 * Debounce delay in milliseconds before recomputing after text changes.
+	 * Same meaning as theme `ParameterStringComponent.defaultProps.debounce`.
+	 * Per-parameter override; wins over theme.
+	 */
+	debounce?: number;
+	/**
+	 * How the string text input commits values to the session.
+	 * Same meaning as theme `ParameterStringComponent.defaultProps.mode`.
+	 * Per-parameter override; wins over theme.
+	 */
+	mode?: ParameterStringInputMode;
+	/**
 	 * Optional selection settings.
 	 * If this is specified, the parameter is visualized as a selection parameter.
 	 * In this case, the selected item is set as the string value of the parameter.
@@ -316,6 +329,8 @@ export interface IAppBuilderControlParameterRef {
 	disableIfDirty?: boolean;
 	/** Ask the user to accept or reject changes of this parameter before executing them. */
 	acceptRejectMode?: boolean;
+	/** Identifiers of the parameters that shall be updated in addition. */
+	delegates: Array<Pick<IAppBuilderParameterRef, "name" | "sessionId">>;
 }
 
 /** Control referencing an export (defined by the session) */
@@ -371,7 +386,8 @@ export interface IAppBuilderActionDefinition {
 		| IAppBuilderActionPropsImportParameterValues
 		| IAppBuilderActionPropsExportParameterValues
 		| IAppBuilderActionPropsImportModelState
-		| IAppBuilderActionPropsAr;
+		| IAppBuilderActionPropsAr
+		| IAppBuilderActionPropsSetContainerVisibility;
 }
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -563,7 +579,18 @@ export type AppBuilderActionType =
 	| "importModelState"
 	| "camera"
 	| "sound"
-	| "messageToParent";
+	| "messageToParent"
+	| "setContainerVisibility";
+
+/** Properties of a "setContainerVisibility" action. */
+export interface IAppBuilderActionPropsSetContainerVisibility {
+	/** Container to open or close. */
+	container: Pick<IAppBuilderContainer, "name"> & {
+		props?: Pick<NonNullable<IAppBuilderContainer["props"]>, "id">;
+	};
+	/** Mode of the action. */
+	mode: "open" | "close" | "toggle";
+}
 
 /** Properties of a "createModelState" action. */
 export interface IAppBuilderActionPropsCreateModelState {
@@ -587,6 +614,12 @@ export interface IAppBuilderActionPropsCreateModelState {
 	parameterNamesToInclude?: string[];
 	/** Names of parameters to exclude from the model state. */
 	parameterNamesToExclude?: string[];
+	/**
+	 * Optional screenshot settings applied when capturing the preview image
+	 * automatically (i.e. when {@link includeImage} is true and no explicit
+	 * {@link image} is provided).
+	 */
+	screenshotProps?: IAppBuilderParameterValueSourcePropsScreenshot;
 	/**
 	 * Optional success message shown after a model state has been created.
 	 * Supports the optional placeholder `{modelStateId}`.
@@ -858,6 +891,10 @@ export type IAppBuilderActionPropsSound = {
 export type IAppBuilderLegacyActionPropsSound = IAppBuilderActionPropsSound &
 	IAppBuilderActionPropsCommon;
 
+/** Properties of a legacy "setContainerVisibility" action. */
+export type IAppBuilderLegacyActionPropsSetContainerVisibility =
+	IAppBuilderActionPropsSetContainerVisibility & IAppBuilderActionPropsCommon;
+
 /** Properties of a "messageToParent" action. */
 export interface IAppBuilderActionPropsMessageToParent {
 	/** Type identifier for the message. */
@@ -892,6 +929,7 @@ export interface IAppBuilderLegacyActionDefinition {
 		| IAppBuilderLegacyActionPropsImportModelState
 		| IAppBuilderLegacyActionPropsCamera
 		| IAppBuilderLegacyActionPropsSound
+		| IAppBuilderLegacyActionPropsSetContainerVisibility
 		| IAppBuilderLegacyActionPropsMessageToParent;
 }
 
@@ -1906,6 +1944,16 @@ export function isSoundAction(
 	action: IAppBuilderActionDefinition,
 ): action is {type: "sound"; props: IAppBuilderActionPropsSound} {
 	return action.type === "sound";
+}
+
+/** assert action type "setContainerVisibility" */
+export function isSetContainerVisibilityAction(
+	action: IAppBuilderActionDefinition,
+): action is {
+	type: "setContainerVisibility";
+	props: IAppBuilderActionPropsSetContainerVisibility;
+} {
+	return action.type === "setContainerVisibility";
 }
 
 /** assert action type "messageToParent" */

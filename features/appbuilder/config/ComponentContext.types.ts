@@ -143,8 +143,7 @@ export interface ViewportComponentMapValueType extends ComponentType {
 	// #endregion Properties (1)
 }
 
-export interface AppBuilderToolbarLayerComponentMapValueType
-	extends ComponentType {
+export interface AppBuilderToolbarLayerComponentMapValueType extends ComponentType {
 	// #region Properties (1)
 
 	/** Optional viewport toolbar layer. Apps can omit it to avoid viewport toolbar dependencies. */

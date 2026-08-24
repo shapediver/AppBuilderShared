@@ -8,6 +8,7 @@ import {ParameterLabelComponentThemeProps} from "@AppBuilderLib/entities/paramet
 import {ParameterSelectComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterSelectComponent";
 import {ParameterSliderComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent";
 import {ParameterStargateComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterStargateComponent";
+import {ParameterStringComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/ParameterStringComponent";
 import {SelectButtonFlexComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectButtonFlexComponent";
 import {SelectCarouselComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectCarouselComponent";
 import {SelectFullWidthCardsComponentThemeProps} from "@AppBuilderLib/entities/parameter/ui/select/SelectFullWidthCards";
@@ -1080,6 +1081,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// successColor?: undefined,
 				// warningColor: "yellow",
 				// errorColor?: "red",
+				// infoColor?: "blue",
 				// autoClose: 20000, // boolean | number
 			}),
 			/**
@@ -1143,6 +1145,21 @@ export const useCustomTheme = (props: Props = {}) => {
 			ParameterSelectComponent: ParameterSelectComponentThemeProps({
 				// componentSettings: { "Predefined positions": { type: "chipgroup" } },
 			}),
+			/**
+			 * ParameterStringComponent
+			 *
+			 * Defaults for string text inputs and textareas.
+			 *
+			 * Example:
+			 * ParameterStringComponent: ParameterStringComponentThemeProps({
+			 *   mode: "validate",
+			 *   debounce: 2000,
+			 * }),
+			 */
+			ParameterStringComponent: ParameterStringComponentThemeProps({
+				// mode: "debounce",
+				// debounce: 2000,
+			}),
 
 			/**
 			 * ParameterDraggingComponent
@@ -1150,23 +1167,23 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Defaults and settings for dragging components.
 			 */
 			ParameterDraggingComponent: ParameterDraggingComponentThemeProps({
-				// draggingColor: {
+				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",
-				// 	intensity: 0.25,
-				// 	pulseSpeed: 1,
+				// 	intensity: 1,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// availableColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
 				// 	intensity: 0.25,
-				// 	pulseSpeed: 1,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// hoverColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
-				// 	intensity: 0.25,
-				// 	pulseSpeed: 1.5,
+				// 	intensity: 0.75,
+				// 	pulseSpeed: 1.75,
 				// } as IInteractionEffect,
 			}),
 			/**
@@ -1178,20 +1195,20 @@ export const useCustomTheme = (props: Props = {}) => {
 				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",
-				// 	intensity: 0.25,
-				// 	pulseSpeed: 1,
+				// 	intensity: 1,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// availableColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
 				// 	intensity: 0.25,
-				// 	pulseSpeed: 1,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// hoverColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
-				// 	intensity: 0.25,
-				// 	pulseSpeed: 1.5,
+				// 	intensity: 0.75,
+				// 	pulseSpeed: 1.75,
 				// } as IInteractionEffect,
 			}),
 			/**
@@ -1204,20 +1221,20 @@ export const useCustomTheme = (props: Props = {}) => {
 					// selectionColor: {
 					// 	type: "pulse",
 					// 	color: "#0d44f0",
-					// 	intensity: 0.25,
-					// 	pulseSpeed: 1,
+					// 	intensity: 1,
+					// 	pulseSpeed: 0.75,
 					// } as IInteractionEffect,
 					// availableColor: {
 					// 	type: "pulse",
 					// 	color: "#ffffff",
 					// 	intensity: 0.25,
-					// 	pulseSpeed: 1,
+					// 	pulseSpeed: 0.75,
 					// } as IInteractionEffect,
 					// hoverColor: {
 					// 	type: "pulse",
 					// 	color: "#ffffff",
-					// 	intensity: 0.25,
-					// 	pulseSpeed: 1.5,
+					// 	intensity: 0.75,
+					// 	pulseSpeed: 1.75,
 					// } as IInteractionEffect,
 				}),
 			/**
@@ -1229,20 +1246,20 @@ export const useCustomTheme = (props: Props = {}) => {
 				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",
-				// 	intensity: 0.25,
-				// 	pulseSpeed: 1,
+				// 	intensity: 1,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// availableColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
 				// 	intensity: 0.25,
-				// 	pulseSpeed: 1,
+				// 	pulseSpeed: 0.75,
 				// } as IInteractionEffect,
 				// hoverColor: {
 				// 	type: "pulse",
 				// 	color: "#ffffff",
-				// 	intensity: 0.25,
-				// 	pulseSpeed: 1.5,
+				// 	intensity: 0.75,
+				// 	pulseSpeed: 1.75,
 				// } as IInteractionEffect,
 			}),
 			/**

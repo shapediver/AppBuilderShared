@@ -1,4 +1,6 @@
+import {ParameterStringInputMode} from "@AppBuilderLib/entities/parameter/config/ParameterStringComponent.theme.types";
 import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
+import {viewportScreenshotPropsSchema} from "@AppBuilderLib/entities/viewport/config/viewportScreenshotProps.zod";
 import {createModelStateCoreSchema} from "@AppBuilderLib/features/model-state/config/createModelState.zod";
 import {prettifyError, z} from "@AppBuilderLib/shared/lib/zod";
 import {appBuilderThemeOtherPropsSchema} from "@AppBuilderLib/shared/mantine-props/appBuilderThemeOther.zod";
@@ -225,6 +227,8 @@ const IStringParameterSelectSettingsSchema =
 // Zod type definition for IStringParameterSettings
 const IStringParameterSettingsSchema = z.object({
 	lines: z.int().positive().optional(),
+	debounce: z.int().nonnegative().optional(),
+	mode: z.enum(ParameterStringInputMode).optional(),
 	selectSettings: IStringParameterSelectSettingsSchema.optional(),
 });
 
@@ -330,27 +334,8 @@ export const IAppBuilderImageRefSchema = z.strictObject({
 });
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsScreenshot
-const IAppBuilderParameterValueSourcePropsScreenshotSchema = z.strictObject({
-	contentType: z.string().optional(),
-	quality: z.number().min(0).max(1).optional(),
-	resolution: z
-		.strictObject({
-			width: z.number().int().positive(),
-			height: z.number().int().positive(),
-		})
-		.optional(),
-	// check if there is either a name or type present
-	camera: z
-		.union([
-			z.looseObject({
-				name: z.string(),
-			}),
-			z.looseObject({
-				type: z.enum(CAMERA_TYPE),
-			}),
-		])
-		.optional(),
-});
+const IAppBuilderParameterValueSourcePropsScreenshotSchema =
+	viewportScreenshotPropsSchema;
 
 // Zod type definition for IAppBuilderParameterValueSourcePropsDataOutput
 const IAppBuilderParameterValueSourcePropsDataOutputSchema = z.strictObject({
@@ -686,6 +671,26 @@ const IAppBuilderLegacyActionPropsSoundSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
+const IAppBuilderActionPropsSetContainerVisibilitySchema = z.strictObject({
+	// The full container schema is recursive through action widgets, so validate
+	// the discriminator and identity fields needed by this action here.
+	container: z.union([
+		z.looseObject({
+			name: z.enum(["left", "right", "top", "bottom"]),
+		}),
+		z.looseObject({
+			name: z.enum(["anchor2d", "anchor3d", "toolbar"]),
+			props: z.looseObject({id: z.string()}),
+		}),
+	]),
+	mode: z.enum(["open", "close", "toggle"]),
+});
+
+const IAppBuilderLegacyActionPropsSetContainerVisibilitySchema =
+	IAppBuilderActionPropsSetContainerVisibilitySchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
 // Zod type definition for IAppBuilderActionPropsMessageToParent
 const IAppBuilderActionPropsMessageToParentSchema = z.strictObject({
 	type: z.string(),
@@ -765,6 +770,10 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 		props: IAppBuilderLegacyActionPropsSoundSchema,
 	}),
 	z.strictObject({
+		type: z.literal("setContainerVisibility"),
+		props: IAppBuilderLegacyActionPropsSetContainerVisibilitySchema,
+	}),
+	z.strictObject({
 		type: z.literal("messageToParent"),
 		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
 	}),
@@ -803,6 +812,15 @@ const IAppBuilderControlParameterRefSchema = z.strictObject({
 	overrides: IAppBuilderControlParameterRefOverridesSchema.optional(),
 	disableIfDirty: z.boolean().optional(),
 	acceptRejectMode: z.boolean().optional(),
+	// Default preserves compatibility with controls created before delegates were introduced.
+	delegates: z
+		.array(
+			z.strictObject({
+				name: z.string(),
+				sessionId: z.string().optional(),
+			}),
+		)
+		.default([]),
 });
 
 // Zod type definition for IAppBuilderControlExportRef
@@ -880,6 +898,10 @@ const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
 		type: z.literal("sound"),
 		props: IAppBuilderLegacyActionPropsSoundSchema,
+	}),
+	z.strictObject({
+		type: z.literal("setContainerVisibility"),
+		props: IAppBuilderLegacyActionPropsSetContainerVisibilitySchema,
 	}),
 	z.strictObject({
 		type: z.literal("messageToParent"),
@@ -1348,7 +1370,13 @@ const ISelectionParameterPropsSchema = z.strictObject({
 			activeText: z.string().optional(),
 		})
 		.optional(),
-	activeMode: z.enum(["default", "activeOnStart"]).optional(),
+	buttons: z
+		.strictObject({
+			clear: z.boolean().optional(),
+		})
+		.optional(),
+	activeMode: z.enum(["default", "activeOnStart", "alwaysActive"]).optional(),
+	presentation: z.enum(["widget", "toolbar"]).optional(),
 });
 
 // Zod type definition for IAppBuilderAnchor3dContainerProperties

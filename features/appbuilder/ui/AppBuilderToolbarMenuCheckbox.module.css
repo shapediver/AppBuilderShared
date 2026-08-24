@@ -1,0 +1,40 @@
+.container {
+	width: 100%;
+}
+
+.root {
+	flex: 1;
+	padding: calc(var(--mantine-spacing-xs) / 1.5) var(--mantine-spacing-sm);
+	border-radius: var(--popover-radius, var(--mantine-radius-default));
+	cursor: pointer;
+}
+
+.root:has(input:disabled):not([data-read-only]) {
+	cursor: not-allowed;
+	opacity: 0.6;
+}
+
+.root[data-read-only] {
+	cursor: default;
+}
+
+:global([data-mantine-color-scheme="light"])
+	.root:hover:not(:has(input:disabled)):not([data-read-only]) {
+	background-color: var(--menu-item-hover, var(--mantine-color-gray-1));
+}
+
+:global([data-mantine-color-scheme="dark"])
+	.root:hover:not(:has(input:disabled)):not([data-read-only]) {
+	background-color: var(--menu-item-hover, var(--mantine-color-dark-4));
+}
+
+.label {
+	flex: 1;
+	/* Always-active rows disable only the checkbox, not their label. */
+	color: inherit !important;
+	opacity: 1 !important;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: inherit;
+}

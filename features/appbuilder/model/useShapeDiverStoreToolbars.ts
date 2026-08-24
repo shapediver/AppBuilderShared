@@ -19,6 +19,7 @@ type ToolbarStoreState = Pick<
 	| "defaultToolbars"
 	| "runtimeToolbars"
 	| "runtimeTokens"
+	| "toolbarOpen"
 >;
 
 type ToolbarInput = Partial<ToolbarRegistration> & {
@@ -316,8 +317,10 @@ const selectMergedToolbars = (
 	];
 
 	return sortToolbars(
-		visibleToolbars.filter((toolbar) =>
-			toolbarMatchesViewport(toolbar, viewportId),
+		visibleToolbars.filter(
+			(toolbar) =>
+				toolbarMatchesViewport(toolbar, viewportId) &&
+				state.toolbarOpen[toolbar.id] !== false,
 		),
 	);
 };
@@ -329,6 +332,7 @@ export const useShapeDiverStoreToolbars = create<IShapeDiverStoreToolbars>()(
 			defaultToolbars: [],
 			runtimeToolbars: [],
 			runtimeTokens: {},
+			toolbarOpen: {},
 
 			setDefinitionToolbars: (toolbars) =>
 				set(
@@ -411,6 +415,15 @@ export const useShapeDiverStoreToolbars = create<IShapeDiverStoreToolbars>()(
 				);
 				return true;
 			},
+
+			setToolbarOpen: (toolbarId, open) =>
+				set(
+					(state) => ({
+						toolbarOpen: {...state.toolbarOpen, [toolbarId]: open},
+					}),
+					false,
+					`setToolbarOpen-${toolbarId}-${open}`,
+				),
 
 			selectMergedToolbars: (viewportId) =>
 				selectMergedToolbars(get(), viewportId),

@@ -25,6 +25,10 @@ import {useSelection} from "./useSelection";
 
 export interface IGumballState {
 	/**
+	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
+	 */
+	candidateNodes: Array<{nodeId: string; name: string}>;
+	/**
 	 * The transformed node names.
 	 */
 	transformedNodeNames: {
@@ -71,6 +75,8 @@ export interface IGumballState {
 		}[],
 		oldTransformedNodeNames: {name: string}[],
 	) => void;
+	/** Close the active gumball before restoring a transformation. */
+	closeTransform: () => void;
 }
 
 /**
@@ -122,11 +128,18 @@ export function useGumball(
 
 	// use the selection hook to get the selected node names
 	const {
+		candidateNodes,
 		selectedNodeNames,
 		setSelectedNodeNames,
 		availableNodeNames,
-		setSelectedNodeNamesAndRestoreSelection,
-	} = useSelection(viewportId, selectionSettings, activate);
+	} = useSelection(
+		viewportId,
+		selectionSettings,
+		activate,
+		undefined,
+		strictNaming,
+		true,
+	);
 
 	// convert the dragging data
 	const {objects} = useConvertDraggingData(sessionIds, gumballProps);
@@ -143,9 +156,9 @@ export function useGumball(
 		const singleAvailableNodeName =
 			getSingleAvailableNodeName(availableNodeNames);
 		if (activate && singleAvailableNodeName) {
-			setSelectedNodeNamesAndRestoreSelection([singleAvailableNodeName]);
+			setSelectedNodeNames([singleAvailableNodeName]);
 		}
-	}, [activate, availableNodeNames, setSelectedNodeNamesAndRestoreSelection]);
+	}, [activate, availableNodeNames, setSelectedNodeNames]);
 
 	// create a reference for the gumball
 	const gumballRef = useRef<GumballTransform | undefined>(undefined);
@@ -155,7 +168,12 @@ export function useGumball(
 
 	// use an effect to create the gumball whenever the selected node names change
 	useEffect(() => {
-		if (viewportApi && sessionApis && selectedNodeNames.length > 0) {
+		if (
+			activate &&
+			viewportApi &&
+			sessionApis &&
+			selectedNodeNames.length > 0
+		) {
 			// whenever the selected node names change, create a new gumball
 			const nodes = getNodesByName(
 				Object.values(sessionApis),
@@ -246,11 +264,17 @@ export function useGumball(
 	}, [
 		viewportApi,
 		sessionApis,
+		activate,
 		selectedNodeNames,
 		objects,
 		restrictions,
 		componentId,
 	]);
+
+	const closeTransform = useCallback(() => {
+		gumballRef.current?.close();
+		gumballRef.current = undefined;
+	}, []);
 
 	/**
 	 * Restore the transformed node names.
@@ -311,17 +335,20 @@ export function useGumball(
 				updateTransformation(tn.node, transformationMatrix);
 			});
 
+			viewportApi?.render();
 			setTransformedNodeNames(newTransformedNodeNames);
 		},
-		[sessionApis],
+		[sessionApis, viewportApi],
 	);
 
 	return {
+		candidateNodes,
 		transformedNodeNames,
 		setTransformedNodeNames,
 		selectedNodeNames,
 		setSelectedNodeNames,
 		restoreTransformedNodeNames,
+		closeTransform,
 	};
 }
 
