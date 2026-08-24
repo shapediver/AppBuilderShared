@@ -17,86 +17,85 @@ const overlayContext = {
 };
 
 const idleProps = {
-	agentOpen: false,
-	snapshotComplete: true,
-	onOpen: jest.fn(),
-	onPeerWindow: jest.fn(),
+	isAgentOpen: false,
+	isAgentReady: true,
+	onOpenAgent: jest.fn(),
+	onAgentWindow: jest.fn(),
 };
+
+function renderOverlay(ui: ReactElement, withWrapper = true) {
+	return render(
+		<MantineProvider>
+			{withWrapper ? (
+				<ComponentContext.Provider value={overlayContext}>
+					{ui}
+				</ComponentContext.Provider>
+			) : (
+				ui
+			)}
+		</MantineProvider>,
+	);
+}
 
 describe("AppBuilderAgentOverlay", () => {
 	beforeEach(() => {
-		idleProps.onOpen.mockReset();
-		idleProps.onPeerWindow.mockReset();
+		idleProps.onOpenAgent.mockReset();
+		idleProps.onAgentWindow.mockReset();
 	});
 
 	it("renders nothing without agentUrl", () => {
-		const {queryByTestId, queryByRole} = render(
-			<MantineProvider>
-				<ComponentContext.Provider value={overlayContext}>
-					<AppBuilderAgentOverlay {...idleProps} />
-				</ComponentContext.Provider>
-			</MantineProvider>,
+		const {queryByTestId, queryByRole} = renderOverlay(
+			<AppBuilderAgentOverlay {...idleProps} />,
 		);
 		expect(queryByTestId("overlay")).toBeNull();
 		expect(queryByRole("button")).toBeNull();
 	});
 
 	it("renders nothing without overlay wrapper", () => {
-		const {queryByRole} = render(
-			<MantineProvider>
-				<AppBuilderAgentOverlay
-					{...idleProps}
-					agentUrl="http://localhost:3001/app"
-				/>
-			</MantineProvider>,
+		const {queryByRole} = renderOverlay(
+			<AppBuilderAgentOverlay
+				{...idleProps}
+				agentUrl="http://localhost:3001/app"
+			/>,
+			false,
 		);
 		expect(queryByRole("button")).toBeNull();
 	});
 
-	it("disables Open agent until snapshotComplete", () => {
-		const {getByRole} = render(
-			<MantineProvider>
-				<ComponentContext.Provider value={overlayContext}>
-					<AppBuilderAgentOverlay
-						{...idleProps}
-						agentUrl="http://localhost:3001/app"
-						snapshotComplete={false}
-					/>
-				</ComponentContext.Provider>
-			</MantineProvider>,
+	it("disables Open agent until isAgentReady", () => {
+		const {getByRole} = renderOverlay(
+			<AppBuilderAgentOverlay
+				{...idleProps}
+				agentUrl="http://localhost:3001/app"
+				isAgentReady={false}
+			/>,
 		);
 		expect(getByRole("button", {name: "Open agent"})).toBeDisabled();
 	});
 
-	it("calls onOpen when Open agent is clicked", () => {
-		const {getByRole} = render(
-			<MantineProvider>
-				<ComponentContext.Provider value={overlayContext}>
-					<AppBuilderAgentOverlay
-						{...idleProps}
-						agentUrl="http://localhost:3001/app"
-					/>
-				</ComponentContext.Provider>
-			</MantineProvider>,
+	it("calls onOpenAgent when Open agent is clicked", () => {
+		const {getByRole} = renderOverlay(
+			<AppBuilderAgentOverlay
+				{...idleProps}
+				agentUrl="http://localhost:3001/app"
+			/>,
 		);
 		fireEvent.click(getByRole("button", {name: "Open agent"}));
-		expect(idleProps.onOpen).toHaveBeenCalledTimes(1);
+		expect(idleProps.onOpenAgent).toHaveBeenCalledTimes(1);
 	});
 
 	it("shows the agent frame when open", () => {
-		const {getByTitle} = render(
-			<MantineProvider>
-				<ComponentContext.Provider value={overlayContext}>
-					<AppBuilderAgentOverlay
-						{...idleProps}
-						agentUrl="http://localhost:3001/app"
-						agentOpen={true}
-					/>
-				</ComponentContext.Provider>
-			</MantineProvider>,
+		const {getByTitle} = renderOverlay(
+			<AppBuilderAgentOverlay
+				{...idleProps}
+				agentUrl="http://localhost:3001/app"
+				isAgentOpen={true}
+			/>,
 		);
 		const frame = getByTitle("ShapeDiver agent") as HTMLIFrameElement;
 		fireEvent.load(frame);
-		expect(idleProps.onPeerWindow).toHaveBeenCalledWith(frame.contentWindow);
+		expect(idleProps.onAgentWindow).toHaveBeenCalledWith(
+			frame.contentWindow,
+		);
 	});
 });

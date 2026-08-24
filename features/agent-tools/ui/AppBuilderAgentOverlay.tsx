@@ -2,19 +2,19 @@ import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/Compon
 import {OverlayPosition} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {Button} from "@mantine/core";
 import {useContext} from "react";
-import type {AppBuilderAgentOverlayProps} from "../model/useAppBuilderAgent";
+import type {AppBuilderAgentOverlayProps} from "../config/appBuilderAgentHost";
 import AppBuilderAgentFrame from "./AppBuilderAgentFrame";
 
+export type {AppBuilderAgentOverlayProps};
 export default function AppBuilderAgentOverlay({
 	agentUrl,
-	agentOpen,
-	snapshotComplete,
-	onOpen,
-	onPeerWindow,
+	isAgentOpen,
+	isAgentReady,
+	onOpenAgent,
+	onAgentWindow,
 }: AppBuilderAgentOverlayProps) {
-	const {
-		viewportOverlayWrapper: {component: ViewportOverlayWrapper} = {},
-	} = useContext(ComponentContext);
+	const {viewportOverlayWrapper: {component: ViewportOverlayWrapper} = {}} =
+		useContext(ComponentContext);
 
 	if (!agentUrl || !ViewportOverlayWrapper) {
 		return null;
@@ -25,13 +25,13 @@ export default function AppBuilderAgentOverlay({
 			position={OverlayPosition.TOP_RIGHT}
 			offset="1em"
 		>
-			{agentOpen ? (
+			{isAgentOpen ? (
 				<AppBuilderAgentFrame
 					src={agentUrl}
-					onPeerWindow={onPeerWindow}
+					onPeerWindow={onAgentWindow}
 				/>
 			) : (
-				<Button disabled={!snapshotComplete} onClick={onOpen}>
+				<Button disabled={!isAgentReady} onClick={onOpenAgent}>
 					Open agent
 				</Button>
 			)}

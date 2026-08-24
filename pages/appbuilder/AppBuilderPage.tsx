@@ -3,7 +3,7 @@ import {useUnsavedChangesProtection} from "@AppBuilderLib/entities/parameter/mod
 import useDefaultSessionDto from "@AppBuilderLib/entities/session/model/useDefaultSessionDto";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
-import {useAppBuilderAgent} from "@AppBuilderLib/features/agent-tools/model/useAppBuilderAgent";
+import {useAppBuilderAgentHost} from "@AppBuilderLib/features/agent-tools/model/useAppBuilderAgentHost";
 import AppBuilderAgentOverlay from "@AppBuilderLib/features/agent-tools/ui/AppBuilderAgentOverlay";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
@@ -232,7 +232,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	useECommerceApiConnectorActions({namespace});
 
-	const agentOverlay = useAppBuilderAgent({
+	const agentHost = useAppBuilderAgentHost({
 		namespace,
 		appBuilderData,
 		appBuilderParseSettled,
@@ -293,7 +293,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 								</ViewportOverlayWrapper>
 							</>
 						)}
-						<AppBuilderAgentOverlay {...agentOverlay} />
+						<AppBuilderAgentOverlay {...agentHost} />
 					</ViewportComponent>
 				)}
 				{anchors}
