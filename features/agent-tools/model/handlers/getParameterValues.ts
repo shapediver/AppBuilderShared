@@ -1,27 +1,31 @@
-import type {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import type {ListParameterDefinitionsToolSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
-import {getParameterValuesInputSchema} from "../../config/getParameterValues";
+import {
+	getParameterValuesInputSchema,
+	type GetParameterValueItem,
+} from "../../config/getParameterValues";
 import {findParameterByName} from "../../lib/findParameterByName";
+import type {NamespacedParameter} from "../../lib/filterParametersForAgent";
 import {formatToolInputError} from "../../lib/formatToolInputError";
 import {mapParameterDefinition} from "../../lib/parameterDefinitionMapper";
 import type {AgentToolsDeps} from "../agentToolsDeps";
 import {collectFilteredParameters} from "../collectFilteredParameters";
 
-type ParameterValueItem = {
-	id: string;
-	name: string;
-	currentValue: unknown;
-};
-
-function toValueItem(
-	parameter: IShapeDiverParameter<unknown>,
-): ParameterValueItem {
-	const item = mapParameterDefinition(parameter);
-	return {
-		id: item.id,
-		name: item.name,
-		currentValue: item.currentValue,
+function toValueItem({
+	namespace,
+	parameter,
+}: NamespacedParameter): GetParameterValueItem {
+	const def = parameter.definition;
+	const mapped = mapParameterDefinition(parameter);
+	const item: GetParameterValueItem = {
+		id: def.id,
+		name: def.name,
+		namespace,
+		currentValue: mapped.currentValue,
 	};
+	if (def.displayname !== undefined) {
+		item.displayname = def.displayname;
+	}
+	return item;
 }
 
 /** Uses the same agent settings as `list_parameter_definitions` (intentional). */
@@ -30,23 +34,26 @@ export async function handleGetParameterValues(
 	settings: ListParameterDefinitionsToolSettings,
 	deps: AgentToolsDeps,
 ): Promise<{
-	values: ParameterValueItem[];
+	values: GetParameterValueItem[];
 	errors?: {name: string; message: string}[];
 }> {
 	try {
 		const parsed = getParameterValuesInputSchema.parse(input ?? {});
-		const live = collectFilteredParameters(settings, deps).map(
-			({parameter}) => parameter,
+		const live = collectFilteredParameters(settings, deps).filter(
+			(item) =>
+				parsed.namespace === undefined ||
+				item.namespace === parsed.namespace,
 		);
 
 		if (!parsed.names) {
 			return {values: live.map(toValueItem)};
 		}
 
-		const values: ParameterValueItem[] = [];
+		const parameters = live.map(({parameter}) => parameter);
+		const values: GetParameterValueItem[] = [];
 		const errors: {name: string; message: string}[] = [];
 		for (const name of parsed.names) {
-			const parameter = findParameterByName(live, name);
+			const parameter = findParameterByName(parameters, name);
 			if (!parameter) {
 				errors.push({
 					name,
@@ -54,7 +61,7 @@ export async function handleGetParameterValues(
 				});
 				continue;
 			}
-			values.push(toValueItem(parameter));
+			values.push(toValueItem(live[parameters.indexOf(parameter)]));
 		}
 		return errors.length > 0 ? {values, errors} : {values};
 	} catch (e) {

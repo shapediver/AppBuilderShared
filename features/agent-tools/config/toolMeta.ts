@@ -20,8 +20,10 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 	get_parameter_values: {
 		description:
 			"Read current values of configurator parameters exposed to the agent. " +
-			"Input: { names?: string[] } — omit names to read all exposed parameters; names match id, name, or displayname. " +
-			"Returns { values: [{ id, name, currentValue }], errors?: [{ name, message }] }. " +
+			"Input: { names?: string[], namespace?: string }. " +
+			"Omit names to read all exposed parameters; names match id, name, or displayname. " +
+			"Omit namespace for no extra session filter (agent definition still applies). " +
+			"Returns { values: [{ id, name, displayname, namespace, currentValue }], errors?: [{ name, message }] }. " +
 			"Unknown names are listed in errors; found names still appear in values. " +
 			"On invalid input, returns { values: [], errors: [{ name: '*', message }] }.",
 		annotations: {readOnlyHint: true},

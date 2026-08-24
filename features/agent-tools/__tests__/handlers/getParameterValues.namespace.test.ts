@@ -4,11 +4,15 @@ import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {defaultSettingsFor, InScopeGenericToolName} from "../../config/inScopeGenericTools";
 import type {AgentToolsDeps} from "../../model/agentToolsDeps";
 import {handleGetParameterValues} from "../../model/handlers/getParameterValues";
-import {handleListParameterDefinitions} from "../../model/handlers/listParameterDefinitions";
 
 const listSettings = defaultSettingsFor(
 	InScopeGenericToolName.ListParameterDefinitions,
 ) as ListParameterDefinitionsToolSettings;
+
+const bothSessionsSettings: ListParameterDefinitionsToolSettings = {
+	name: "list_parameter_definitions",
+	filter: {sessionIds: ["c", "other"]},
+};
 
 function param(
 	id: string,
@@ -62,71 +66,8 @@ function createDeps(
 	};
 }
 
-describe("handleListParameterDefinitions", () => {
-	it("returns input error named * when extra keys are present", async () => {
-		const result = await handleListParameterDefinitions(
-			{filter: "visible"},
-			listSettings,
-			createDeps({c: [param("width")]}),
-		);
-
-		expect(result.parameters).toEqual([]);
-		expect(result.errors?.[0]?.name).toBe("*");
-	});
-
-	it("uses agent hidden filter, not tool input", async () => {
-		const deps = createDeps({
-			c: [param("width"), param("secret", {hidden: true})],
-		});
-
-		const listed = await handleListParameterDefinitions(
-			{},
-			listSettings,
-			deps,
-		);
-		expect(listed.parameters.map((p) => p.id)).toEqual(["width"]);
-
-		const withHidden = await handleListParameterDefinitions(
-			{},
-			{name: "list_parameter_definitions", filter: {hidden: "include"}},
-			deps,
-		);
-		expect(withHidden.parameters.map((p) => p.id)).toEqual([
-			"width",
-			"secret",
-		]);
-	});
-
-	it("resolves explicit parameter refs from their sessionId, ignoring filter", async () => {
-		const deps = createDeps({
-			c: [],
-			other: [param("p")],
-		});
-
-		const withSessionId = await handleListParameterDefinitions(
-			{},
-			{
-				name: "list_parameter_definitions",
-				parameters: [{name: "p", sessionId: "other"}],
-			},
-			deps,
-		);
-		expect(withSessionId.parameters.map((p) => p.id)).toEqual(["p"]);
-
-		const withoutSessionId = await handleListParameterDefinitions(
-			{},
-			{
-				name: "list_parameter_definitions",
-				parameters: [{name: "p"}],
-			},
-			deps,
-		);
-		expect(withoutSessionId.parameters).toEqual([]);
-	});
-});
-
-describe("handleGetParameterValues", () => {
-	it("returns currentValue for the filtered set when names are omitted", async () => {
+describe("handleGetParameterValues namespace", () => {
+	it("returns all agent-filtered params with namespace when namespace is omitted", async () => {
 		const result = await handleGetParameterValues(
 			{},
 			listSettings,
@@ -144,18 +85,89 @@ describe("handleGetParameterValues", () => {
 		expect(result.errors).toBeUndefined();
 	});
 
-	it("adds an error for unknown names and still returns other values", async () => {
+	it("keeps only matching namespace after agent filtering", async () => {
+		const deps = createDeps({
+			c: [param("width", {uiValue: 42})],
+			other: [
+				param("height", {uiValue: 7}),
+				param("secret", {hidden: true, uiValue: 99}),
+			],
+		});
+
+		const excluded = await handleGetParameterValues(
+			{namespace: "other"},
+			bothSessionsSettings,
+			deps,
+		);
+		expect(excluded.values).toEqual([
+			{id: "height", name: "height", namespace: "other", currentValue: 7},
+		]);
+
+		const included = await handleGetParameterValues(
+			{namespace: "other"},
+			{
+				name: "list_parameter_definitions",
+				filter: {sessionIds: ["c", "other"], hidden: "include"},
+			},
+			deps,
+		);
+		expect(included.values.map((v) => v.id)).toEqual(["height", "secret"]);
+		expect(included.values.every((v) => v.namespace === "other")).toBe(
+			true,
+		);
+	});
+
+	it("returns empty values when namespace matches no live parameters", async () => {
 		const result = await handleGetParameterValues(
-			{names: ["width", "missing"]},
+			{namespace: "missing"},
+			bothSessionsSettings,
+			createDeps({
+				c: [param("width", {uiValue: 42})],
+				other: [param("height", {uiValue: 7})],
+			}),
+		);
+
+		expect(result.values).toEqual([]);
+		expect(result.errors).toBeUndefined();
+	});
+
+	it("errors unknown names and returns hits with id, name, displayname, namespace, currentValue", async () => {
+		const result = await handleGetParameterValues(
+			{names: ["Width", "missing"]},
 			listSettings,
-			createDeps({c: [param("width", {uiValue: 42})]}),
+			createDeps({
+				c: [
+					param("width", {
+						name: "width_name",
+						displayname: "Width",
+						uiValue: 42,
+					}),
+				],
+			}),
 		);
 
 		expect(result.values).toEqual([
-			{id: "width", name: "width", namespace: "c", currentValue: 42},
+			{
+				id: "width",
+				name: "width_name",
+				displayname: "Width",
+				namespace: "c",
+				currentValue: 42,
+			},
 		]);
 		expect(result.errors).toEqual([
 			expect.objectContaining({name: "missing"}),
 		]);
+	});
+
+	it("returns input error named * when extra keys are present", async () => {
+		const result = await handleGetParameterValues(
+			{filter: "visible"},
+			listSettings,
+			createDeps({c: [param("width")]}),
+		);
+
+		expect(result.values).toEqual([]);
+		expect(result.errors?.[0]?.name).toBe("*");
 	});
 });
