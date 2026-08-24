@@ -57,7 +57,7 @@ function prepareOneUpdate(
 			ok: false,
 			error: {
 				name: update.name,
-				message: `Parameter type "${parameter.definition.type}" is not supported for setting via WebMCP.`,
+				message: `Parameter type "${parameter.definition.type}" is not supported for setting via agent tools.`,
 			},
 		};
 	}
