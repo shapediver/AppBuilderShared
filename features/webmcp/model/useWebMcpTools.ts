@@ -1,12 +1,7 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
-import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
-import {useCustomTheme} from "@AppBuilderLib/shared/ui/theme/useCustomTheme";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {registerWebMcpTools} from "../adapters/webmcp/registerWebMcpTools";
-import {buildWebMcpDeps} from "../adapters/webmcp/webmcpDeps";
 import {
 	getModelContext,
 	getWebMcpEnvironment,
@@ -27,7 +22,6 @@ export function useWebMcpTools(
 		resolvedTools,
 		toolHandlers,
 		snapshotComplete,
-		disabledTools,
 	} = props;
 	const [registered, setRegistered] = useState(false);
 	const environment = getWebMcpEnvironment();
@@ -39,46 +33,11 @@ export function useWebMcpTools(
 		})),
 	);
 
-	const {getParameters, batchParameterValueUpdate} =
-		useShapeDiverStoreParameters(
-			useShallow((state) => ({
-				getParameters: state.getParameters,
-				batchParameterValueUpdate: state.batchParameterValueUpdate,
-			})),
-		);
-
-	const {createModelState} = useCreateModelState({
-		namespace: namespace ?? "",
-	});
-	const {importModelState} = useImportModelState({
-		namespace: namespace ?? "",
-	});
-	const {theme} = useCustomTheme();
-	const namespaceRef = useRef<string>(namespace ?? "");
-	namespaceRef.current = namespace ?? "";
-
-	const getParametersRef = useRef(getParameters);
-	getParametersRef.current = getParameters;
-
-	const batchParameterValueUpdateRef = useRef(batchParameterValueUpdate);
-	batchParameterValueUpdateRef.current = batchParameterValueUpdate;
-
-	const createModelStateRef = useRef(createModelState);
-	createModelStateRef.current = createModelState;
-
-	const importModelStateRef = useRef(importModelState);
-	importModelStateRef.current = importModelState;
-
-	const componentSettingsRef = useRef<Record<string, any> | undefined>(
-		undefined,
+	const {getParameters} = useShapeDiverStoreParameters(
+		useShallow((state) => ({
+			getParameters: state.getParameters,
+		})),
 	);
-	componentSettingsRef.current = (
-		theme as any
-	)?.components?.ParameterSelectComponent?.defaultProps?.componentSettings;
-
-	const disabledToolsRef = useRef<string[] | undefined>(disabledTools);
-	disabledToolsRef.current = disabledTools;
-	const disabledKey = (disabledTools ?? []).slice().sort().join(",");
 
 	const sessionReady = !!namespace && !!sessions[namespace];
 	const paramsPopulated =
@@ -103,19 +62,6 @@ export function useWebMcpTools(
 		const controller = new AbortController();
 		let cancelled = false;
 
-		const refs = {
-			namespaceRef,
-			getParametersRef,
-			batchParameterValueUpdateRef,
-			createModelStateRef,
-			importModelStateRef,
-			componentSettingsRef,
-			listParameterNamespaces: () =>
-				Object.keys(
-					useShapeDiverStoreParameters.getState().parameterStores,
-				),
-		};
-
 		const registerTools = async () => {
 			const modelContext = getModelContext();
 
@@ -125,17 +71,6 @@ export function useWebMcpTools(
 					resolvedToolsRef.current,
 					toolHandlersRef.current,
 					controller.signal,
-				);
-
-				const skipped = new Set([
-					...resolvedToolsRef.current.map((tool) => tool.name),
-					...(disabledToolsRef.current ?? []),
-				]);
-				await registerWebMcpTools(
-					modelContext,
-					() => buildWebMcpDeps(refs),
-					controller.signal,
-					skipped,
 				);
 
 				if (!cancelled) {
@@ -155,14 +90,7 @@ export function useWebMcpTools(
 			controller.abort();
 			setRegistered(false);
 		};
-	}, [
-		enabled,
-		namespace,
-		sessionReady,
-		paramsPopulated,
-		snapshotComplete,
-		disabledKey,
-	]);
+	}, [enabled, namespace, sessionReady, paramsPopulated, snapshotComplete]);
 
 	const environmentSnapshot = {
 		modelContextAvailable: environment.modelContextAvailable,
