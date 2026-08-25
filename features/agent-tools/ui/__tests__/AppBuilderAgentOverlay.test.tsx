@@ -85,7 +85,7 @@ describe("AppBuilderAgentOverlay", () => {
 	});
 
 	it("shows the agent frame when open", () => {
-		const {getByTitle} = renderOverlay(
+		const {getByTitle, getByLabelText} = renderOverlay(
 			<AppBuilderAgentOverlay
 				{...idleProps}
 				agentUrl="http://localhost:3001/app"
@@ -97,5 +97,6 @@ describe("AppBuilderAgentOverlay", () => {
 		expect(idleProps.onAgentWindow).toHaveBeenCalledWith(
 			frame.contentWindow,
 		);
+		expect(getByLabelText("Resize agent")).toBeInTheDocument();
 	});
 });
