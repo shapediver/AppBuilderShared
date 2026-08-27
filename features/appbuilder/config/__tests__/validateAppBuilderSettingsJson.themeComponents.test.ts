@@ -84,6 +84,11 @@ type ThemeComponentCase = {
  */
 const APP_OWNED_THEME_COMPONENT_CASES = [
 	{
+		component: "AddToCartAction",
+		validDefaultProps: {successMessage: "ok"},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
 		component: "AppBuilderContainer",
 		validDefaultProps: {orientation: "horizontal"},
 		invalidDefaultProps: {__unrecognizedThemeKey: true},
@@ -648,10 +653,147 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		});
 		expect(result.success).toBe(false);
 		if (result.success) return;
-		const msg = formatAppBuilderZodError(result.error);
-		expect(msg).toMatch(/containerThemeOverrides/i);
-		expect(msg).toMatch(/AppBuilderHorizontalContainer/i);
-		expect(msg).toMatch(/wrap/i);
+		expect(
+			result.error.issues.some(
+				(issue) =>
+					issue.path.includes("containerThemeOverrides") &&
+					issue.path.includes("AppBuilderHorizontalContainer") &&
+					issue.path.includes("wrap"),
+			),
+		).toBe(true);
+	});
+
+	it("accepts registered defaultProps that include successMessage for AddToCartAction", () => {
+		const result = validateAppBuilderSettingsJson(
+			themeOverridesFor("AddToCartAction", {successMessage: "ok"}),
+		);
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.data.themeOverrides?.components?.AddToCartAction).toEqual(
+			{
+				defaultProps: {successMessage: "ok"},
+			},
+		);
+	});
+
+	it("accepts a registered component entry with defaultProps omitted", () => {
+		const result = validateAppBuilderSettingsJson({
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					AddToCartAction: {},
+				},
+			},
+		});
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.data.themeOverrides?.components?.AddToCartAction).toEqual(
+			{},
+		);
+	});
+
+	it("does not throw when registered defaultProps is a non-object", () => {
+		const input = {
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					AddToCartAction: {defaultProps: "not-an-object"},
+				},
+			},
+		};
+		expect(() => validateAppBuilderSettingsJson(input)).not.toThrow();
+		expect(validateAppBuilderSettingsJson(input).success).toBe(false);
+	});
+
+	it("does not throw when registered defaultProps is null", () => {
+		const input = {
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					AddToCartAction: {defaultProps: null},
+				},
+			},
+		};
+		expect(() => validateAppBuilderSettingsJson(input)).not.toThrow();
+		expect(validateAppBuilderSettingsJson(input).success).toBe(false);
+	});
+});
+
+describe("validateAppBuilderSettingsJson nested containerThemeOverrides walk", () => {
+	const invalidNestedWrap = {
+		AppBuilderHorizontalContainer: {
+			defaultProps: {wrap: "invalid-wrap"},
+		},
+	};
+
+	function unregisteredWithOverrides(containerThemeOverrides: unknown) {
+		return {
+			...minimalValidSettings,
+			themeOverrides: {
+				components: {
+					NotRegisteredInAppBuilderRegistry123: {
+						defaultProps: {containerThemeOverrides},
+					},
+				},
+			},
+		};
+	}
+
+	it.each([
+		["null overrides", null],
+		["string overrides", "nope"],
+		["number overrides", 1],
+		["boolean overrides", true],
+		["null template map", {appshell: null}],
+		["string template map", {appshell: "nope"}],
+		["null container entry", {appshell: {bottom: null}}],
+		["string container entry", {appshell: {bottom: "nope"}}],
+		["missing components", {appshell: {bottom: {}}}],
+		["null components", {appshell: {bottom: {components: null}}}],
+		["string components", {appshell: {bottom: {components: "nope"}}}],
+		[
+			"nullish nested component entry",
+			{appshell: {bottom: {components: {AddToCartAction: null}}}},
+		],
+	])(
+		"skips %s without throwing or failing",
+		(_label, containerThemeOverrides) => {
+			const input = unregisteredWithOverrides(containerThemeOverrides);
+			expect(() => validateAppBuilderSettingsJson(input)).not.toThrow();
+			expect(validateAppBuilderSettingsJson(input).success).toBe(true);
+		},
+	);
+
+	it("still fails invalid nested defaultProps when sibling walk levels are non-objects", () => {
+		const input = unregisteredWithOverrides({
+			nullTemplate: null,
+			stringTemplate: "nope",
+			appshell: {
+				nullContainer: null,
+				stringContainer: "nope",
+				bottom: {
+					components: {
+						nullEntry: null,
+						...invalidNestedWrap,
+					},
+				},
+				missingComponents: {},
+				nullComponents: {components: null},
+				stringComponents: {components: "nope"},
+			},
+		});
+		expect(() => validateAppBuilderSettingsJson(input)).not.toThrow();
+		const result = validateAppBuilderSettingsJson(input);
+		expect(result.success).toBe(false);
+		if (result.success) return;
+		expect(
+			result.error.issues.some(
+				(issue) =>
+					issue.path.includes("containerThemeOverrides") &&
+					issue.path.includes("AppBuilderHorizontalContainer") &&
+					issue.path.includes("wrap"),
+			),
+		).toBe(true);
 	});
 });
 

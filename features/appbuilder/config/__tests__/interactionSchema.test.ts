@@ -189,6 +189,45 @@ describe("Interaction parameter schema", () => {
 			});
 			expect(result.success).toBe(true);
 		});
+
+		it("keeps selection buttons, colors, and 3d size unions", () => {
+			const result = validateAppBuilder({
+				version: "1.0",
+				containers: [
+					{
+						name: "anchor3d",
+						props: {
+							id: "a1",
+							location: [0, 1, 2],
+							justification: "left",
+							width: "10%",
+							height: 20,
+							maxWidth: 300,
+							maxHeight: "80vh",
+							selectionProperties: {
+								maximumSelection: 2,
+								buttons: {clear: true},
+								selectionColor: "#f00",
+								presentation: "widget",
+							},
+						},
+					},
+				],
+			});
+			expect(result.success).toBe(true);
+			if (!result.success) return;
+			expect(result.data.containers[0].props).toMatchObject({
+				justification: "left",
+				width: "10%",
+				height: 20,
+				selectionProperties: {
+					maximumSelection: 2,
+					buttons: {clear: true},
+					selectionColor: "#f00",
+					presentation: "widget",
+				},
+			});
+		});
 	});
 
 	describe("anchor 2d selectionProperties", () => {

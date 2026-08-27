@@ -8,20 +8,19 @@ function walkContainerThemeOverrides(
 	ctx: RefinementCtx,
 	basePath: (string | number)[],
 ): void {
-	if (!containerThemeOverrides || typeof containerThemeOverrides !== "object")
-		return;
+	if (!containerThemeOverrides) return;
 
 	for (const [template, containers] of Object.entries(
 		containerThemeOverrides as Record<string, unknown>,
 	)) {
-		if (!containers || typeof containers !== "object") continue;
+		if (!containers) continue;
 		for (const [containerName, containerEntry] of Object.entries(
 			containers as Record<string, unknown>,
 		)) {
-			if (!containerEntry || typeof containerEntry !== "object") continue;
+			if (!containerEntry) continue;
 			const components = (containerEntry as {components?: unknown})
 				.components;
-			if (!components || typeof components !== "object") continue;
+			if (!components) continue;
 			validateThemeComponentsRecord(
 				components as Record<string, ThemeComponentEntry>,
 				ctx,
@@ -59,20 +58,14 @@ export function validateThemeComponentsRecord(
 			}
 		}
 
-		if (
-			entry?.defaultProps !== undefined &&
-			typeof entry.defaultProps === "object"
-		) {
+		if (entry?.defaultProps !== undefined && entry.defaultProps !== null) {
 			const dp = entry.defaultProps as Record<string, unknown>;
-			const nested = dp.containerThemeOverrides;
-			if (nested !== undefined) {
-				walkContainerThemeOverrides(nested, ctx, [
-					...basePath,
-					componentName,
-					"defaultProps",
-					"containerThemeOverrides",
-				]);
-			}
+			walkContainerThemeOverrides(dp.containerThemeOverrides, ctx, [
+				...basePath,
+				componentName,
+				"defaultProps",
+				"containerThemeOverrides",
+			]);
 		}
 	}
 }

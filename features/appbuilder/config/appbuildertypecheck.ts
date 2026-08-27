@@ -52,6 +52,7 @@ type _AssertComponentKeys = [
 		? true
 		: false,
 ];
+// Stryker disable next-line BooleanLiteral,ArrayDeclaration: compile-time key assert, unused at runtime
 const _checkComponent: _AssertComponentKeys = [true, true];
 void _checkComponent;
 
@@ -145,6 +146,7 @@ type _AssertThemeKeys = [
 	_MantineThemeSchemaKeys extends _MantineThemeKeys ? true : false,
 	_MantineThemeKeys extends _MantineThemeSchemaKeys ? true : false,
 ];
+// Stryker disable next-line BooleanLiteral,ArrayDeclaration: compile-time key assert, unused at runtime
 const _checkTheme: _AssertThemeKeys = [true, true];
 void _checkTheme;
 
@@ -160,6 +162,7 @@ type _AssertThemeOverrideMirrorKeys = [
 		? true
 		: false,
 ];
+// Stryker disable next-line BooleanLiteral,ArrayDeclaration: compile-time key assert, unused at runtime
 const _checkThemeOverrideMirror: _AssertThemeOverrideMirrorKeys = [true, true];
 void _checkThemeOverrideMirror;
 
@@ -207,6 +210,7 @@ const ISelectParameterSettingsSchema = z
 	})
 	.refine(
 		(s) => !s.database || s.type === "fullwidthcards" || s.type === "grid",
+		// Stryker disable next-line ObjectLiteral: refine still fails; message copy is out of contract
 		{
 			message:
 				'database requires selectSettings.type "fullwidthcards" or "grid"',
@@ -253,8 +257,6 @@ const INumberParameterSettingsSchema = z.object({
 });
 
 export const validateNumberParameterSettings = (value: any) => {
-	if (value === undefined || value === null)
-		return {success: false as const, error: undefined};
 	return INumberParameterSettingsSchema.safeParse(value);
 };
 
@@ -584,6 +586,7 @@ const IAppBuilderActionPropsCameraCommonSchema = z.strictObject({
 				id: z.string().optional(),
 				name: z.string().optional(),
 			}),
+			// Stryker disable next-line ObjectLiteral: sibling looseObject already accepts objects without id/name
 			z.looseObject({
 				type: z.enum(CAMERA_TYPE),
 			}),
@@ -1646,7 +1649,7 @@ const IAppBuilderSettingsJsonSchema =
 		const components = data.themeOverrides?.components as
 			| Record<string, {defaultProps?: unknown}>
 			| undefined;
-		if (!components || typeof components !== "object") return;
+		if (!components) return;
 
 		validateThemeComponentsRecord(components, ctx, [
 			"themeOverrides",
