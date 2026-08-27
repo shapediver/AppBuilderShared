@@ -93,8 +93,11 @@ export async function createModelStateCore(
 			if (exportSession) {
 				const exp = Object.values(exportSession.exports).find(
 					(e) =>
+						// Stryker disable next-line OptionalChaining: export is already truthy in this branch
 						e.id === image.export?.name ||
+						// Stryker disable next-line OptionalChaining: export is already truthy in this branch
 						e.name === image.export?.name ||
+						// Stryker disable next-line OptionalChaining: export is already truthy in this branch
 						e.displayname === image.export?.name,
 				);
 				if (exp) {

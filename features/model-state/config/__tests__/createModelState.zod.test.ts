@@ -30,6 +30,32 @@ describe("createModelStateCoreSchema screenshotProps", () => {
 			}).success,
 		).toBe(false);
 	});
+
+	it("accepts parameter name filters and flags", () => {
+		expect(
+			createModelStateCoreSchema.safeParse({
+				parameterNamesToInclude: ["a"],
+				parameterNamesToExclude: ["b"],
+				includeImage: false,
+				includeGltf: true,
+			}).success,
+		).toBe(true);
+	});
+
+	it("rejects unknown keys and wrong types", () => {
+		expect(
+			createModelStateCoreSchema.safeParse({extra: true}).success,
+		).toBe(false);
+		expect(
+			createModelStateCoreSchema.safeParse({
+				parameterNamesToInclude: "a",
+			}).success,
+		).toBe(false);
+		expect(
+			createModelStateCoreSchema.safeParse({includeImage: "yes"})
+				.success,
+		).toBe(false);
+	});
 });
 
 describe("createModelStateDataSchema screenshotProps", () => {
@@ -41,5 +67,29 @@ describe("createModelStateDataSchema screenshotProps", () => {
 				screenshotProps: {resolution: {width: 800, height: 600}},
 			}).success,
 		).toBe(true);
+	});
+
+	it("accepts image.export with name only", () => {
+		expect(
+			createModelStateDataSchema.safeParse({
+				image: {export: {name: "preview"}},
+			}).success,
+		).toBe(true);
+	});
+
+	it("accepts image.export with sessionId", () => {
+		expect(
+			createModelStateDataSchema.safeParse({
+				image: {export: {name: "preview", sessionId: "s1"}},
+			}).success,
+		).toBe(true);
+	});
+
+	it("rejects image.export without name", () => {
+		expect(
+			createModelStateDataSchema.safeParse({
+				image: {export: {}},
+			}).success,
+		).toBe(false);
 	});
 });

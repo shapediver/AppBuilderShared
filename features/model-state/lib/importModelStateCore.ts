@@ -94,11 +94,13 @@ export async function importModelStateCore(
 		onNotification?.({
 			type: "error",
 			title: "Failed to fetch model state",
+			// Stryker disable next-line ConditionalExpression,LogicalOperator: error copy is out of contract
 			message: response.error.message || "An unknown error occurred",
 		});
 		return {
 			success: false,
 			message: `Failed to fetch model state: ${
+				// Stryker disable next-line ConditionalExpression,LogicalOperator: error copy is out of contract
 				response.error.message || "An unknown error occurred"
 			}`,
 		};
