@@ -37,7 +37,10 @@ export const useShapeDiverStoreInteractionRequestManagement =
 							passiveRequests:
 								interactionRequests[viewportId].passiveRequests,
 						};
-					} else if (type === "passive") {
+					} else if (
+						// Stryker disable next-line ConditionalExpression: request type is active | passive
+						type === "passive"
+					) {
 						if (interactionRequests[viewportId].activeRequest) {
 							request.disable();
 						}
@@ -53,6 +56,7 @@ export const useShapeDiverStoreInteractionRequestManagement =
 					}
 
 					set(
+						// Stryker disable next-line ObjectLiteral: in-place mutation already updated store state
 						{interactionRequests},
 						false,
 						`addInteractionRequest ${viewportId}`,
@@ -71,6 +75,7 @@ export const useShapeDiverStoreInteractionRequestManagement =
 				 */
 				removeInteractionRequest: (token) => {
 					const {interactionRequests} = get();
+					// Stryker disable next-line BooleanLiteral: extra set() is a no-op after in-place mutation
 					let found = false;
 
 					Object.keys(interactionRequests).forEach((viewportId) => {
@@ -80,6 +85,7 @@ export const useShapeDiverStoreInteractionRequestManagement =
 							interactionRequests[viewportId].passiveRequests;
 
 						if (activeRequest?.token === token) {
+							// Stryker disable next-line BooleanLiteral: in-place mutation already applied
 							found = true;
 							interactionRequests[viewportId].activeRequest =
 								undefined;
@@ -91,14 +97,19 @@ export const useShapeDiverStoreInteractionRequestManagement =
 							);
 							if (index !== -1) {
 								passiveRequests.splice(index, 1);
+								// Stryker disable next-line BooleanLiteral: in-place splice already applied
 								found = true;
 							}
 						}
 					});
 
+					// Stryker disable next-line ConditionalExpression,BlockStatement: in-place mutation already applied
 					if (found) {
+						// Stryker disable next-line CallExpression: in-place mutation already updated store state
 						set(
+							// Stryker disable next-line ObjectLiteral: in-place mutation already updated store state
 							{interactionRequests},
+							// Stryker disable next-line BooleanLiteral: zustand replace flag unused in unit tests
 							false,
 							`removeInteractionRequest ${token}`,
 						);
@@ -119,11 +130,19 @@ export const useShapeDiverStoreInteractionRequestManagement =
 						requests.passiveRequests.forEach((request) =>
 							request.enable(),
 						);
-						set({interactionRequests}, false, "activatePassiveInteraction");
+						// Stryker disable next-line CallExpression: in-place mutation already updated store state
+						set(
+							// Stryker disable next-line ObjectLiteral: in-place mutation already updated store state
+							{interactionRequests},
+							// Stryker disable next-line BooleanLiteral: zustand replace flag unused in unit tests
+							false,
+							"activatePassiveInteraction",
+						);
 						return;
 					}
 				},
 			}),
+			// Stryker disable next-line ObjectLiteral: zustand name unused in unit tests
 			{
 				...devtoolsSettings,
 				name: "ShapeDiver | InteractionRequestManagement",

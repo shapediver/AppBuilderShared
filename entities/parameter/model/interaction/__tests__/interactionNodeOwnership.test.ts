@@ -159,4 +159,50 @@ describe("interactionOwnership", () => {
 		expect(vp1).toHaveLength(1);
 		expect(vp1[0].owner).toBe("owner-a");
 	});
+
+	it("notifies subscribers until they unsubscribe", () => {
+		const listener = jest.fn();
+		const unsubscribe = registry.subscribe(listener);
+
+		registry.acquire(vp, "owner-a", "Selection A", "selection", false, [node("n1", "out.A")], deactivate, false);
+		expect(listener).toHaveBeenCalled();
+
+		listener.mockClear();
+		registry.release(vp, "owner-a");
+		expect(listener).toHaveBeenCalled();
+
+		registry.acquire(vp, "owner-a", "Selection A", "selection", false, [node("n1", "out.A")], deactivate, false);
+		registry.acquire(vp, "owner-b", "Selection B", "selection", false, [node("n3", "out.C")], deactivate2, false);
+		listener.mockClear();
+		registry.update(vp, "owner-b", [node("n1", "out.A")]);
+		expect(listener).toHaveBeenCalled();
+
+		listener.mockClear();
+		registry.reset();
+		expect(listener).toHaveBeenCalled();
+
+		listener.mockClear();
+		unsubscribe();
+		registry.acquire(vp, "owner-a", "Selection A", "selection", false, [node("n1", "out.A")], deactivate, false);
+		expect(listener).not.toHaveBeenCalled();
+	});
+
+	it("rejects re-acquire when the updated candidates clash", () => {
+		registry.acquire(vp, "owner-a", "Selection A", "selection", false, [node("n1", "out.A")], deactivate, false);
+		registry.acquire(vp, "owner-b", "Selection B", "selection", false, [node("n3", "out.C")], deactivate2, false);
+		const result = registry.acquire(
+			vp, "owner-b", "Selection B", "selection", false,
+			[node("n1", "out.A")],
+			deactivate2, false,
+		);
+		expect(result.acquired).toBe(false);
+		expect(registry.isAcquired("owner-b")).toBe(false);
+		expect(registry.isAcquired("owner-a")).toBe(true);
+	});
+
+	it("update of an unknown owner reports failure", () => {
+		const result = registry.update(vp, "unknown", [node("n1", "out.A")]);
+		expect(result.updated).toBe(false);
+		expect((result as {conflictingOwners: string[]}).conflictingOwners).toEqual([]);
+	});
 });

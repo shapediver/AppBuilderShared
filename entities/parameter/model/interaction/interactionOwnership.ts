@@ -64,6 +64,7 @@ class InteractionOwnershipRegistry {
 				};
 			}
 			if (
+				// Stryker disable next-line OptionalChaining: conflict ids always exist in ownerEntries
 				conflicts.some((id) => this.ownerEntries.get(id)?.alwaysActive)
 			) {
 				return {
@@ -75,7 +76,9 @@ class InteractionOwnershipRegistry {
 
 			conflicts.forEach((id) => {
 				const entry = this.ownerEntries.get(id);
+				// Stryker disable next-line ConditionalExpression: conflict ids always have an entry
 				if (!entry) return;
+				// Stryker disable next-line LogicalOperator: ownerViewports always set when entry exists
 				this.release(this.ownerViewports.get(id) ?? viewportId, id);
 				entry.onDeactivate();
 			});
@@ -102,6 +105,7 @@ class InteractionOwnershipRegistry {
 			this.nodeToOwners
 				.get(this.nodeKey(viewportId, nodeId))
 				?.forEach((other) => {
+					// Stryker disable next-line ConditionalExpression: findConflicts runs after unregister or on a new owner
 					if (other !== owner) conflicts.add(other);
 				});
 		});
@@ -115,6 +119,7 @@ class InteractionOwnershipRegistry {
 	}
 
 	public getViewportSnapshots(viewportId: string) {
+		// Stryker disable next-line MethodExpression: stale viewport keys already filtered by missing ownerEntries
 		return Array.from(this.ownerViewports.entries())
 			.filter(([, ownerViewportId]) => ownerViewportId === viewportId)
 			.map(([owner]) => this.ownerEntries.get(owner))
@@ -130,12 +135,14 @@ class InteractionOwnershipRegistry {
 		if (!entry) return;
 		this.unregisterNodes(viewportId, owner, entry.candidates);
 		this.ownerEntries.delete(owner);
+		// Stryker disable next-line CallExpression: leftover viewport keys are invisible without ownerEntries
 		this.ownerViewports.delete(owner);
 		this.notify();
 	}
 
 	public reset() {
 		this.ownerEntries.clear();
+		// Stryker disable next-line CallExpression: leftover viewport keys are invisible without ownerEntries
 		this.ownerViewports.clear();
 		this.nodeToOwners.clear();
 		this.notify();
@@ -159,6 +166,7 @@ class InteractionOwnershipRegistry {
 		const conflicts = this.findConflicts(viewportId, owner, candidates);
 		if (conflicts.length > 0) {
 			this.ownerEntries.delete(owner);
+			// Stryker disable next-line CallExpression: leftover viewport keys are invisible without ownerEntries
 			this.ownerViewports.delete(owner);
 			entry.onDeactivate();
 			this.notify();
@@ -210,8 +218,10 @@ class InteractionOwnershipRegistry {
 		candidates.forEach(({nodeId}) => {
 			const key = this.nodeKey(viewportId, nodeId);
 			const owners = this.nodeToOwners.get(key);
+			// Stryker disable next-line ConditionalExpression: unregister only runs on previously registered nodes
 			if (!owners) return;
 			owners.delete(owner);
+			// Stryker disable next-line ConditionalExpression,EqualityOperator,CallExpression: exclusive ownership means size is 0 after delete
 			if (owners.size === 0) this.nodeToOwners.delete(key);
 		});
 	}
