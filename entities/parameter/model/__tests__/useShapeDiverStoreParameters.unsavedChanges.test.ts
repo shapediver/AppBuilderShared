@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
 import {useShapeDiverStoreParameters} from "../useShapeDiverStoreParameters";
 
@@ -95,6 +95,19 @@ describe("useShapeDiverStoreParameters unsavedChanges", () => {
 		expect(store.getState().historyIndex).toBe(-1);
 		expect(() => store.getState().clearUnsavedChanges()).not.toThrow();
 		expect(store.getState().historyIndex).toBe(-1);
+	});
+
+	it("clears unsavedChanges on the first history entry", () => {
+		const entry = store.getState().pushHistoryState({ns: {p: "v"}});
+		expect(entry.unsavedChanges).toBe(true);
+		expect(store.getState().historyIndex).toBe(0);
+
+		const previous = store.getState().history;
+		store.getState().clearUnsavedChanges();
+
+		expect(previous[0].unsavedChanges).toBe(true);
+		expect(store.getState().history[0].unsavedChanges).toBe(false);
+		expect(store.getState().history).not.toBe(previous);
 	});
 
 	it("clearUnsavedChanges is a no-op when the flag is already false", () => {

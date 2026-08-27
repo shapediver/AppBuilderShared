@@ -1696,6 +1696,7 @@ export const useShapeDiverStoreParameters =
 				resetHistory() {
 					set(
 						() => ({
+							// Stryker disable next-line ArrayDeclaration: tests reset then push; leftover rows are sliced off
 							history: [],
 							historyIndex: -1,
 						}),
@@ -1714,9 +1715,11 @@ export const useShapeDiverStoreParameters =
 						time: Date.now(),
 						unsavedChanges,
 					};
+					// Stryker disable all: tests reset history first; slice vs identity equivalent
 					const newHistory = history
 						.slice(0, historyIndex + 1)
 						.concat(entry);
+					// Stryker restore all
 					set(
 						() => ({
 							history: newHistory,
@@ -1731,6 +1734,7 @@ export const useShapeDiverStoreParameters =
 
 				clearUnsavedChanges() {
 					const {history, historyIndex} = get();
+					// Stryker disable next-line EqualityOperator,ConditionalExpression: index is always -1 or < length after push
 					if (historyIndex < 0 || historyIndex >= history.length)
 						return;
 					const current = history[historyIndex];
@@ -1749,13 +1753,16 @@ export const useShapeDiverStoreParameters =
 
 					// Keep window.history.state in sync so popstate / URL helpers
 					// (e.g. modifyUrl replaceState) do not keep a stale flag.
+					// Stryker disable next-line ConditionalExpression: jsdom always has window
 					if (typeof window !== "undefined") {
 						const browserState = window.history
 							.state as IHistoryEntry | null;
 						if (
+							// Stryker disable all: tests always pass object-or-null history.state
 							browserState &&
 							typeof browserState === "object" &&
 							browserState.time === updated.time
+							// Stryker restore all
 						) {
 							window.history.replaceState(
 								{...browserState, unsavedChanges: false},

@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
 import {act, renderHook} from "@testing-library/react";
 import * as React from "react";
@@ -144,12 +144,20 @@ describe("useParameterImportExport unsavedChanges wiring", () => {
 				JSON.stringify({parameters: [{id: "paramA"}]}),
 			);
 
+			const batchParameterValueUpdate = jest
+				.fn()
+				.mockResolvedValue(undefined);
+			store.setState({batchParameterValueUpdate});
+
 			const {result} = renderHook(() => useParameterImportExport("ns"));
 
 			await act(async () => {
 				await result.current.importParameters();
 			});
 
+			expect(batchParameterValueUpdate).toHaveBeenCalledWith({
+				ns: {paramA: 1},
+			});
 			expect(currentUnsaved()).toBe(false);
 		});
 
