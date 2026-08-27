@@ -108,6 +108,24 @@ describe("setParameterValuesTool", () => {
 		}
 	});
 
+	it("execute does not throw when updates array is empty", async () => {
+		const deps = mockDeps([mockFloat("width", "Width")]);
+		const output = await setParameterValuesTool.execute(
+			deps,
+			{updates: []},
+			signal,
+		);
+		expect(output).toEqual({applied: [], errors: []});
+		expect(deps.batchParameterValueUpdate).not.toHaveBeenCalled();
+	});
+
+	it("declares mutating untrusted annotations", () => {
+		expect(setParameterValuesTool.annotations).toEqual({
+			readOnlyHint: false,
+			untrustedContentHint: true,
+		});
+	});
+
 	it("format mentions applied and failed counts", () => {
 		expect(
 			setParameterValuesTool.format({

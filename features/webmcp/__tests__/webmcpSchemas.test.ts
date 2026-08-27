@@ -2,7 +2,7 @@ jest.mock("@AppBuilderLib/entities/parameter/lib/parameterStates", () => ({
 	getParameterStates: jest.fn(),
 }));
 
-import {createModelStateInputSchema} from "../core/createModelState";
+import {createModelStateInputSchema, createModelStateOutputSchema} from "../core/createModelState";
 import {
 	importModelStateInputSchema,
 	importModelStateOutputSchema,
@@ -15,7 +15,10 @@ import {
 	listSessionsInputSchema,
 	listSessionsOutputSchema,
 } from "../core/listSessions";
-import {setParameterValuesInputSchema} from "../core/setParameterValues";
+import {
+	setParameterValuesInputSchema,
+	setParameterValuesOutputSchema,
+} from "../core/setParameterValues";
 
 describe("webmcp input schemas", () => {
 	describe("listSessionsInputSchema", () => {
@@ -293,6 +296,72 @@ describe("webmcp input schemas", () => {
 			).toEqual({
 				success: true,
 				appliedParameterIds: [],
+			});
+		});
+	});
+
+	describe("createModelStateInputSchema image omit", () => {
+		it("rejects image", () => {
+			expect(() =>
+				createModelStateInputSchema.parse({
+					image: {href: "https://example.com/x.png"},
+					includeImage: false,
+				}),
+			).toThrow();
+		});
+	});
+
+	describe("createModelStateOutputSchema", () => {
+		it("requires modelStateId", () => {
+			expect(
+				createModelStateOutputSchema.parse({modelStateId: "ms-1"}),
+			).toEqual({modelStateId: "ms-1"});
+			expect(() => createModelStateOutputSchema.parse({})).toThrow();
+		});
+	});
+
+	describe("setParameterValuesOutputSchema", () => {
+		it("requires applied and errors arrays", () => {
+			expect(
+				setParameterValuesOutputSchema.parse({
+					applied: ["width"],
+					errors: [{name: "x", message: "y"}],
+				}),
+			).toEqual({
+				applied: ["width"],
+				errors: [{name: "x", message: "y"}],
+			});
+			expect(() => setParameterValuesOutputSchema.parse({})).toThrow();
+		});
+	});
+
+	describe("choiceMetadata output schema", () => {
+		it("keeps choiceMetadata fields", () => {
+			const parsed = listParameterDefinitionsOutputSchema.parse({
+				parameters: [
+					{
+						id: "list-1",
+						sessionId: "session-1",
+						name: "Material",
+						type: "StringList",
+						howto: "Use a 0-based integer index.",
+						settable: true,
+						choiceMetadata: {
+							Apple: {
+								description: "Crisp",
+								displayname: "Apples",
+								imageUrl: "http://x/a.jpg",
+							},
+						},
+					},
+				],
+				sessionCount: 1,
+				offset: 0,
+			});
+			expect(parsed.parameters[0].choiceMetadata?.Apple).toEqual({
+				description: "Crisp",
+				displayname: "Apples",
+				imageUrl: "http://x/a.jpg",
 			});
 		});
 	});

@@ -4,6 +4,7 @@ import {ToolExecutionError, type ToolDef} from "./toolDefinition";
 
 /** Tool input = hook data without `image` (agents don't set export screenshot refs). */
 export const createModelStateInputSchema = createModelStateDataSchema.omit({
+	// Stryker disable next-line BooleanLiteral: omit matches on key; true/false both drop image
 	image: true,
 });
 

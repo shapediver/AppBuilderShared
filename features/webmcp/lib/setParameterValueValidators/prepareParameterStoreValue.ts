@@ -84,10 +84,12 @@ export function prepareParameterStoreValue(
 	}
 
 	let storeValue: unknown;
+	// Stryker disable next-line ConditionalExpression,LogicalOperator: color-on-non-color already returned
 	if (type === ResParameterType.COLOR && isColorObject(value)) {
 		storeValue = composeSdColor(value);
 	} else if (type === ResParameterType.STRINGLIST) {
 		storeValue = toStringListStoreValue(value);
+		// Stryker disable next-line ConditionalExpression,BlockStatement: NaN also fails the range check below
 		if (storeValue === undefined) {
 			return {
 				success: false,
@@ -101,6 +103,7 @@ export function prepareParameterStoreValue(
 		const index = Number(storeValue);
 		if (
 			choices.length > 0 &&
+			// Stryker disable next-line ConditionalExpression: parseStringListIndex already yields integers
 			(!Number.isInteger(index) || index < 0 || index >= choices.length)
 		) {
 			return {

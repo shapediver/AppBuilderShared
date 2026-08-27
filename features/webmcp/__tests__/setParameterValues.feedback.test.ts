@@ -2,6 +2,11 @@ import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/par
 import {composeSdColor} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {resolveAndUpdate} from "../lib/resolveSetParameterUpdates";
+import {prepareParameterStoreValue} from "../lib/setParameterValueValidators/prepareParameterStoreValue";
+import {
+	parseStringListIndex,
+	toStringListStoreValue,
+} from "../lib/stringListValue";
 
 function createMockParameter(
 	overrides: Partial<IShapeDiverParameter<any>> & {
@@ -385,5 +390,198 @@ describe("resolveAndUpdate", () => {
 			],
 		});
 		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
+	});
+
+	it("looks up parameters by displayname", async () => {
+		const param = createMockParameter({
+			definition: {
+				id: "width",
+				name: "internal",
+				displayname: "ShownWidth",
+				type: ResParameterType.FLOAT,
+				min: 0,
+				max: 100,
+				defval: 10,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 10} as IShapeDiverParameter<any>["state"],
+		});
+		const result = await resolveAndUpdate(
+			namespace,
+			getParametersFor({[namespace]: [param]}),
+			[{name: "ShownWidth", value: 42}],
+			batchParameterValueUpdate,
+		);
+		expect(result).toEqual({applied: ["width"], errors: []});
+	});
+
+	it("rejects unsupported parameter types", async () => {
+		const param = createMockParameter({
+			definition: {
+				id: "file-1",
+				name: "Upload",
+				type: ResParameterType.FILE,
+			} as IShapeDiverParameter<any>["definition"],
+		});
+		const result = await resolveAndUpdate(
+			namespace,
+			getParametersFor({[namespace]: [param]}),
+			[{name: "Upload", value: "x"}],
+			batchParameterValueUpdate,
+		);
+		expect(result.applied).toEqual([]);
+		expect(result.errors).toHaveLength(1);
+		expect(result.errors[0].name).toBe("Upload");
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
+	});
+});
+
+describe("parseStringListIndex / toStringListStoreValue", () => {
+	it("parses integer numbers and numeric strings", () => {
+		expect(parseStringListIndex(1)).toBe(1);
+		expect(parseStringListIndex("2")).toBe(2);
+		expect(toStringListStoreValue(1)).toBe("1");
+		expect(toStringListStoreValue("2")).toBe("2");
+	});
+
+	it("rejects non-integer and empty values", () => {
+		expect(parseStringListIndex(1.5)).toBeUndefined();
+		expect(parseStringListIndex("1.5")).toBeUndefined();
+		expect(parseStringListIndex("")).toBeUndefined();
+		expect(parseStringListIndex("abc")).toBeUndefined();
+		expect(parseStringListIndex(true)).toBeUndefined();
+		expect(toStringListStoreValue("")).toBeUndefined();
+		expect(toStringListStoreValue(true)).toBeUndefined();
+	});
+});
+
+describe("prepareParameterStoreValue extra cases", () => {
+	it("rejects StringList label text", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "material",
+				name: "Material",
+				type: ResParameterType.STRINGLIST,
+				choices: ["Wood", "Metal"],
+				defval: 0,
+			} as unknown as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: "0"} as IShapeDiverParameter<any>["state"],
+		});
+		expect(prepareParameterStoreValue(param, "Wood").success).toBe(false);
+	});
+
+	it("rejects negative and length-equal StringList indexes", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "material",
+				name: "Material",
+				type: ResParameterType.STRINGLIST,
+				choices: ["Wood", "Metal"],
+				defval: 0,
+			} as unknown as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: "0"} as IShapeDiverParameter<any>["state"],
+		});
+		expect(prepareParameterStoreValue(param, -1).success).toBe(false);
+		expect(prepareParameterStoreValue(param, 2).success).toBe(false);
+	});
+
+	it("allows index 0 when choices is empty", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "material",
+				name: "Material",
+				type: ResParameterType.STRINGLIST,
+				choices: [],
+				defval: 0,
+			} as unknown as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: "0"} as IShapeDiverParameter<any>["state"],
+		});
+		expect(prepareParameterStoreValue(param, 0)).toEqual({
+			success: true,
+			storeValue: "0",
+		});
+	});
+
+	it("uses canonical validator message for unknown types", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "file-1",
+				name: "Upload",
+				type: ResParameterType.FILE,
+			} as IShapeDiverParameter<any>["definition"],
+			actions: {
+				isValid: (_value: unknown, throwError?: boolean) => {
+					if (throwError) {
+						throw new Error("canonical boom");
+					}
+					return false;
+				},
+			} as IShapeDiverParameter<any>["actions"],
+		});
+		const result = prepareParameterStoreValue(param, "x");
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.message).toContain("canonical boom");
+		}
+	});
+
+	it("does not throw when value is null", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "width",
+				name: "Width",
+				type: ResParameterType.FLOAT,
+				min: 0,
+				max: 100,
+				defval: 10,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 10} as IShapeDiverParameter<any>["state"],
+		});
+		expect(() =>
+			prepareParameterStoreValue(param, null as any),
+		).not.toThrow();
+	});
+
+	it("prefers howto over canonical validator when type is known", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "width",
+				name: "Width",
+				type: ResParameterType.FLOAT,
+				min: 0,
+				max: 100,
+				defval: 10,
+			} as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: 10} as IShapeDiverParameter<any>["state"],
+			actions: {
+				isValid: (_value: unknown, throwError?: boolean) => {
+					if (throwError) {
+						throw new Error("canonical boom");
+					}
+					return false;
+				},
+			} as IShapeDiverParameter<any>["actions"],
+		});
+		const result = prepareParameterStoreValue(param, 200);
+		expect(result.success).toBe(false);
+		if (!result.success) {
+			expect(result.message).not.toContain("canonical boom");
+			expect(result.message).toMatch(/number in range/);
+		}
+	});
+
+	it("range-checks StringList when choices is missing", () => {
+		const param = createMockParameter({
+			definition: {
+				id: "material",
+				name: "Material",
+				type: ResParameterType.STRINGLIST,
+				defval: 0,
+			} as unknown as IShapeDiverParameter<any>["definition"],
+			state: {uiValue: "0"} as IShapeDiverParameter<any>["state"],
+		});
+		expect(prepareParameterStoreValue(param, 1)).toEqual({
+			success: true,
+			storeValue: "1",
+		});
 	});
 });

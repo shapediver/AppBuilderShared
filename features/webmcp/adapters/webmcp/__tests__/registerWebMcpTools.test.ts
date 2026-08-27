@@ -35,6 +35,18 @@ describe("registerWebMcpTools", () => {
 
 		expect(modelContext.registerTool).toHaveBeenCalledTimes(5);
 
+		const firstCall = modelContext.registerTool.mock.calls[0];
+		expect(firstCall[0].inputSchema).toEqual(
+			expect.objectContaining({type: "object"}),
+		);
+		expect(firstCall[0].inputSchema).not.toHaveProperty("$schema");
+		expect(firstCall[0].annotations).toEqual(
+			expect.objectContaining({readOnlyHint: true}),
+		);
+		expect(firstCall[1]).toEqual(
+			expect.objectContaining({signal: expect.any(AbortSignal)}),
+		);
+
 		const listSessionsExecute = executes[0];
 		const result = (await listSessionsExecute({})) as {
 			content: Array<{type: string; text: string}>;
@@ -79,6 +91,9 @@ describe("registerWebMcpTools", () => {
 		};
 		expect(result.isError).toBe(true);
 		expect(result.content[0].text).toContain("nope");
+		expect(result.structuredContent).toEqual(
+			expect.objectContaining({success: false}),
+		);
 	});
 
 	it("maps ZodError to isError with issues array", async () => {
@@ -110,6 +125,7 @@ describe("registerWebMcpTools", () => {
 		expect(result.isError).toBe(true);
 		expect(Array.isArray(result.structuredContent?.error)).toBe(true);
 		expect(result.content[0].text).toContain("Invalid input data");
+		expect(result.content[0].text).toContain("Fix filter");
 	});
 
 	it("passes list_parameter_definitions invalid-session text as-is", async () => {
@@ -135,8 +151,10 @@ describe("registerWebMcpTools", () => {
 		const result = (await executes[1]({sessionId: "bad"})) as {
 			isError?: true;
 			content: Array<{text: string}>;
+			structuredContent?: {error?: unknown};
 		};
 		expect(result.isError).toBe(true);
+		expect(result.structuredContent?.error).toEqual(expect.any(String));
 		expect(result.content[0].text).toBe(
 			'Error: Session "bad" does not exist.\nRecovery: Use list_sessions or avoid specifying sessionId to list parameter definitions for all sessions.',
 		);

@@ -67,11 +67,64 @@ describe("importModelStateTool", () => {
 		const deps = mockDeps(async () => ({
 			success: false as const,
 			message: "bad id",
-			invalidParameters: [],
 		}));
-		await expect(
-			importModelStateTool.execute(deps, {modelStateId: "x"}, signal),
-		).rejects.toBeInstanceOf(ToolExecutionError);
+		try {
+			await importModelStateTool.execute(
+				deps,
+				{modelStateId: "x"},
+				signal,
+			);
+			throw new Error("expected ToolExecutionError");
+		} catch (e) {
+			expect(e).toBeInstanceOf(ToolExecutionError);
+			const err = e as ToolExecutionError;
+			expect(err.structuredContent).toEqual({
+				success: false,
+				message: "bad id",
+				invalidParameters: [],
+			});
+		}
+	});
+
+	it("execute includes invalidParameters on success when present", async () => {
+		const deps = mockDeps(async () => ({
+			success: true as const,
+			data: {} as any,
+			invalidParameters: [{name: "z", message: "nope"}],
+		}));
+		const output = await importModelStateTool.execute(
+			deps,
+			{modelStateId: "ms-1"},
+			signal,
+		);
+		expect(output.invalidParameters).toEqual([
+			{name: "z", message: "nope"},
+		]);
+	});
+
+	it("passes before-values map keyed by parameter id", async () => {
+		const deps = mockDeps(async () => ({
+			success: true as const,
+			data: {} as any,
+		}));
+		await importModelStateTool.execute(
+			deps,
+			{modelStateId: "ms-1"},
+			signal,
+		);
+		const before = computeAppliedMock.mock.calls[0][0] as Map<
+			string,
+			unknown
+		>;
+		expect(before).toBeInstanceOf(Map);
+		expect(before.get("width")).toBe(1);
+	});
+
+	it("declares mutating untrusted annotations", () => {
+		expect(importModelStateTool.annotations).toEqual({
+			readOnlyHint: false,
+			untrustedContentHint: true,
+		});
 	});
 
 	it("format mentions applied count", () => {

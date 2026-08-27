@@ -1,5 +1,6 @@
 /** Parse StringList index from store value (string) or agent input (number). */
 export function parseStringListIndex(value: unknown): number | undefined {
+	// Stryker disable next-line ConditionalExpression: Number.isInteger already excludes non-numbers
 	if (typeof value === "number" && Number.isInteger(value)) {
 		return value;
 	}

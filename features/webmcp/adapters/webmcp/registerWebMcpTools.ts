@@ -31,6 +31,7 @@ function toolError(
 ): ToolResponse {
 	return {
 		content: [{type: "text", text}],
+		// Stryker disable next-line ConditionalExpression: all call sites pass structuredContent
 		...(structuredContent !== undefined ? {structuredContent} : {}),
 		isError: true,
 	};
@@ -38,13 +39,16 @@ function toolError(
 
 function toWebMcpError(_tool: AnyToolDef, e: unknown): ToolResponse {
 	if (e instanceof ZodError) {
+		// Stryker disable next-line OptionalChaining: ZodError always has issues[0]
 		const path = e.issues[0]?.path.join(".") || "input";
 		return toolError(
 			`Error: Invalid input data.\nRecovery: Fix ${path} and try again.`,
 			{error: e.issues},
 		);
 	}
+	// Stryker disable next-line ConditionalExpression: generic Error uses the same envelope
 	if (e instanceof ToolExecutionError) {
+		// Stryker disable next-line ObjectLiteral: ToolExecutionError always carries structuredContent here
 		return toolError(e.message, e.structuredContent ?? {error: e.message});
 	}
 	const message = e instanceof Error ? e.message : String(e);

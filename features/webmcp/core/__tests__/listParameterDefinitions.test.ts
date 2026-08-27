@@ -69,6 +69,8 @@ describe("listParameterDefinitionsTool", () => {
 		);
 		expect(page1.parameters).toHaveLength(1);
 		expect(page1.truncated).toBe(true);
+		expect(page1.remaining).toBe(1);
+		expect(page1.nextOffset).toBe(1);
 
 		const page2 = await listParameterDefinitionsTool.execute(
 			deps,
@@ -168,5 +170,88 @@ describe("listParameterDefinitionsTool", () => {
 			signal,
 		);
 		expect(output.parameters[0].choiceMetadata).toEqual(metadata);
+	});
+
+	it("search matches name when id and displayname do not", async () => {
+		const deps = mockDeps({main: [mockParam("p1", "Width")]});
+		const output = await listParameterDefinitionsTool.execute(
+			deps,
+			{search: "wid"},
+			signal,
+		);
+		expect(output.parameters.map((p) => p.id)).toEqual(["p1"]);
+	});
+
+	it("search matches id when name and displayname do not", async () => {
+		const deps = mockDeps({main: [mockParam("abc-id", "Width")]});
+		const output = await listParameterDefinitionsTool.execute(
+			deps,
+			{search: "abc"},
+			signal,
+		);
+		expect(output.parameters.map((p) => p.id)).toEqual(["abc-id"]);
+	});
+
+	it("search matches displayname when id and name do not", async () => {
+		const param = mockParam("p1", "internal");
+		param.definition.displayname = "ShownLabel";
+		const deps = mockDeps({main: [param]});
+		const output = await listParameterDefinitionsTool.execute(
+			deps,
+			{search: "shown"},
+			signal,
+		);
+		expect(output.parameters.map((p) => p.id)).toEqual(["p1"]);
+	});
+
+	it("search trims whitespace", async () => {
+		const deps = mockDeps({main: [mockParam("width", "Width")]});
+		const output = await listParameterDefinitionsTool.execute(
+			deps,
+			{search: "  Width  "},
+			signal,
+		);
+		expect(output.parameters.map((p) => p.id)).toEqual(["width"]);
+	});
+
+	it("paginates remaining from a non-zero offset", async () => {
+		const deps = mockDeps({
+			main: [
+				mockParam("p0", "P0"),
+				mockParam("p1", "P1"),
+				mockParam("p2", "P2"),
+				mockParam("p3", "P3"),
+			],
+		});
+		const page = await listParameterDefinitionsTool.execute(
+			deps,
+			{search: "p", limit: 1, offset: 1},
+			signal,
+		);
+		expect(page.parameters).toHaveLength(1);
+		expect(page.truncated).toBe(true);
+		expect(page.remaining).toBe(2);
+		expect(page.nextOffset).toBe(2);
+	});
+
+	it("lists only the requested sessionId", async () => {
+		const deps = mockDeps({
+			main: [mockParam("width", "Width")],
+			other: [mockParam("height", "Height")],
+		});
+		const output = await listParameterDefinitionsTool.execute(
+			deps,
+			{sessionId: "other"},
+			signal,
+		);
+		expect(output.parameters.map((p) => p.id)).toEqual(["height"]);
+		expect(output.sessionCount).toBe(1);
+	});
+
+	it("declares read-only untrusted annotations", () => {
+		expect(listParameterDefinitionsTool.annotations).toEqual({
+			readOnlyHint: true,
+			untrustedContentHint: true,
+		});
 	});
 });

@@ -31,9 +31,22 @@ describe("createModelStateTool", () => {
 		await expect(
 			createModelStateTool.execute(deps, {}, signal),
 		).rejects.toBeInstanceOf(ToolExecutionError);
-		await expect(
-			createModelStateTool.execute(deps, {}, signal),
-		).rejects.toThrow(/Failed to create model state/);
+		try {
+			await createModelStateTool.execute(deps, {}, signal);
+		} catch (e) {
+			const err = e as ToolExecutionError;
+			expect(err.structuredContent).toEqual({
+				success: false,
+				error: expect.any(String),
+			});
+		}
+	});
+
+	it("declares mutating untrusted annotations", () => {
+		expect(createModelStateTool.annotations).toEqual({
+			readOnlyHint: false,
+			untrustedContentHint: true,
+		});
 	});
 
 	it("format points at import_model_state", () => {
