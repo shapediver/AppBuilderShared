@@ -6,8 +6,6 @@ import {
 	isParameterRefControl,
 	isStackUiWidget,
 	isToolbarContainer,
-	isToolbarTabbedPanelItem,
-	isToolbarWidgetPanelItem,
 	type IAppBuilder,
 	type IAppBuilderControl,
 	type IAppBuilderParameterRef,
@@ -15,6 +13,10 @@ import {
 	type IAppBuilderToolbarItem,
 	type IAppBuilderWidget,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	isToolbarTabbedPanelItem,
+	isToolbarWidgetPanelItem,
+} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreToolbars";
 
 export type UiParameterRef = {name: string; sessionId?: string};
 

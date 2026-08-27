@@ -385,6 +385,52 @@ describe("collectActionControls", () => {
 		expect(refs[1]?.label).toBe("Save");
 	});
 
+	it("skips runtime-only toolbar items and still collects nested menu actions", () => {
+		const refs = collectFromToolbarItems([
+			{
+				id: "accept-reject",
+				type: "acceptReject",
+				label: "Accept or reject",
+				props: {},
+			},
+			{
+				id: "save-menu",
+				type: "menu",
+				label: "Save",
+				props: {
+					sections: [
+						{
+							id: "save-section",
+							items: [
+								{
+									id: "save-action",
+									type: "action",
+									label: "Save",
+									props: {
+										definition: {
+											type: "createModelState",
+											props: {},
+										},
+									},
+								},
+							],
+						},
+					],
+				},
+			},
+			{
+				id: "zoom",
+				type: "command",
+				label: "Zoom",
+				props: {execute: () => undefined},
+			},
+		]);
+
+		expect(refs.map((ref) => ref.definition.type)).toEqual([
+			"createModelState",
+		]);
+	});
+
 	it("lists a mix of embedded action refs and name matches", () => {
 		const actions = collectActionControls({
 			appBuilder: emptyApp,

@@ -2008,27 +2008,6 @@ export function isOutputRefControl<T extends AppBuilderControlLike>(
 	return control.type === "output";
 }
 
-/** assert toolbar item type "actionMenu" */
-export function isToolbarActionMenuItem(
-	item: IAppBuilderToolbarItem,
-): item is IAppBuilderToolbarActionMenuItem {
-	return item.type === "actionMenu";
-}
-
-/** assert toolbar item type "widgets" */
-export function isToolbarWidgetPanelItem(
-	item: IAppBuilderToolbarItem,
-): item is IAppBuilderToolbarWidgetPanelItem {
-	return item.type === "widgets";
-}
-
-/** assert toolbar item type "tabs" */
-export function isToolbarTabbedPanelItem(
-	item: IAppBuilderToolbarItem,
-): item is IAppBuilderToolbarTabbedPanelItem {
-	return item.type === "tabs";
-}
-
 /** assert parameter source */
 export function isParameterSource(
 	source: IAppBuilderParameterValueSourceDefinition,

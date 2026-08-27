@@ -4,22 +4,26 @@ import {
 	isControlsWidget,
 	isFormWidget,
 	isStackUiWidget,
-	isToolbarActionMenuItem,
 	isToolbarContainer,
-	isToolbarTabbedPanelItem,
-	isToolbarWidgetPanelItem,
 	type IAppBuilder,
 	type IAppBuilderControl,
 	type IAppBuilderControlActionRef,
 	type IAppBuilderTab,
 	type IAppBuilderToolbarActionItem,
-	type IAppBuilderToolbarItem,
 	type IAppBuilderWidget,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {
 	IAgentActionControlRef,
 	ListActionControlsToolSettings,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
+import {
+	isToolbarActionItem,
+	isToolbarActionMenuItem,
+	isToolbarMenuModel,
+	isToolbarTabbedPanelItem,
+	isToolbarWidgetPanelItem,
+	type ToolbarItem,
+} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreToolbars";
 import {
 	DEFAULT_LIST_ACTION_CONTROL_TYPES,
 	type ListedActionControl,
@@ -118,14 +122,18 @@ function mergeToolbarActionItem(
 
 function appendFromToolbarItems(
 	refs: IAppBuilderControlActionRef[],
-	items?: IAppBuilderToolbarItem[],
+	items?: ToolbarItem[],
 ): void {
 	for (const item of items ?? []) {
-		if (isActionRefControl(item)) {
+		if (isToolbarActionItem(item)) {
 			refs.push(mergeToolbarActionItem(item));
 		} else if (isToolbarActionMenuItem(item)) {
 			for (const section of item.props.sections) {
 				appendFromToolbarItems(refs, section);
+			}
+		} else if (isToolbarMenuModel(item)) {
+			for (const section of item.props.sections) {
+				appendFromToolbarItems(refs, section.items);
 			}
 		} else if (isToolbarWidgetPanelItem(item)) {
 			collectFromWidgets(refs, item.props.widgets);
@@ -136,7 +144,7 @@ function appendFromToolbarItems(
 }
 
 export function collectFromToolbarItems(
-	items?: IAppBuilderToolbarItem[],
+	items?: ToolbarItem[],
 ): IAppBuilderControlActionRef[] {
 	const refs: IAppBuilderControlActionRef[] = [];
 	appendFromToolbarItems(refs, items);
