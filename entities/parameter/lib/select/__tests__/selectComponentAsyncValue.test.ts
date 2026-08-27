@@ -1,6 +1,7 @@
 import {
 	isValueInAvailableItems,
 	resolveDisplayValueForCards,
+	resolveItemKeyForValue,
 } from "../selectComponentAsyncValue";
 
 const itemsData = {
@@ -47,6 +48,54 @@ describe("selectComponentAsyncValue", () => {
 				itemsData,
 			),
 		).toBe(false);
+	});
+
+	it("isValueInAvailableItems matches JSON data among several visible keys", () => {
+		expect(
+			isValueInAvailableItems(
+				JSON.stringify(itemsData.b.data),
+				["a", "b"],
+				itemsData,
+			),
+		).toBe(true);
+	});
+
+	it("resolveDisplayValueForCards returns empty and null values unchanged", () => {
+		expect(resolveDisplayValueForCards("", ["a"], itemsData)).toBe("");
+		expect(resolveDisplayValueForCards(null, ["a"], itemsData)).toBeNull();
+		expect(
+			resolveDisplayValueForCards(undefined, ["a"], itemsData),
+		).toBeUndefined();
+	});
+
+	describe("resolveItemKeyForValue", () => {
+		it("returns the item key when the stored value is already a key", () => {
+			expect(resolveItemKeyForValue("a", ["a", "b"], itemsData)).toBe("a");
+		});
+
+		it("maps serialized item data to the matching visible key", () => {
+			expect(
+				resolveItemKeyForValue(
+					JSON.stringify(itemsData.b.data),
+					["a", "b"],
+					itemsData,
+				),
+			).toBe("b");
+		});
+
+		it("returns the stored value when itemsData is omitted", () => {
+			expect(resolveItemKeyForValue("missing", ["a"])).toBe("missing");
+		});
+
+		it("skips keys that are absent from itemsData", () => {
+			expect(
+				resolveItemKeyForValue(
+					JSON.stringify(itemsData.b.data),
+					["gone", "b"],
+					itemsData,
+				),
+			).toBe("b");
+		});
 	});
 
 	describe("e-commerce itemKey path (source scrolling API)", () => {

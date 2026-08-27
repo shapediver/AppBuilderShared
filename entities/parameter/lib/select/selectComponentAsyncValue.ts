@@ -20,7 +20,11 @@ export function isValueInAvailableItems(
 
 	return items.some((key) => {
 		const data = itemsData[key]?.data;
-		return data !== undefined && JSON.stringify(data) === value;
+		// Stryker disable next-line ConditionalExpression,BlockStatement: JSON.stringify(undefined) never equals a string value
+		if (data === undefined) {
+			return false;
+		}
+		return JSON.stringify(data) === value;
 	});
 }
 
@@ -34,6 +38,7 @@ export function resolveItemKeyForValue(
 	items: string[],
 	itemsData?: Record<string, ISelectComponentItemDataType>,
 ): string {
+	// Stryker disable next-line ConditionalExpression,BlockStatement: object itemData JSON cannot equal the item key; fallthrough returns the same value
 	if (items.includes(value)) {
 		return value;
 	}
@@ -44,7 +49,11 @@ export function resolveItemKeyForValue(
 
 	const match = items.find((key) => {
 		const data = itemsData[key]?.data;
-		return data !== undefined && JSON.stringify(data) === value;
+		// Stryker disable next-line ConditionalExpression,BlockStatement: JSON.stringify(undefined) never equals a string value
+		if (data === undefined) {
+			return false;
+		}
+		return JSON.stringify(data) === value;
 	});
 
 	return match ?? value;

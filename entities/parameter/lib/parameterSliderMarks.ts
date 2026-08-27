@@ -34,6 +34,7 @@ export function getAdjacentMarkValue(
 	if (sorted.length === 0) {
 		return +current.toFixed(decimalplaces);
 	}
+	// Stryker disable next-line ConditionalExpression,BlockStatement: one mark also wins via find/fallback
 	if (sorted.length === 1) {
 		return +sorted[0].toFixed(decimalplaces);
 	}
@@ -48,6 +49,7 @@ export function getAdjacentMarkValue(
 				decimalplaces,
 			);
 		}
+		// Stryker disable next-line EqualityOperator: equals go through exactIndex, so > and >= agree
 		const above = sorted.find((v) => v > current);
 		return +(above ?? sorted[sorted.length - 1]).toFixed(decimalplaces);
 	}
@@ -55,6 +57,7 @@ export function getAdjacentMarkValue(
 	if (exactIndex !== -1) {
 		return +sorted[Math.max(exactIndex - 1, 0)].toFixed(decimalplaces);
 	}
+	// Stryker disable next-line EqualityOperator: equals go through exactIndex, so < and <= agree
 	const below = [...sorted].reverse().find((v) => v < current);
 	return +(below ?? sorted[0]).toFixed(decimalplaces);
 }
