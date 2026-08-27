@@ -1,7 +1,9 @@
 import {
 	applyFilters,
 	applySelectAll,
+	extractFilterValues,
 	filterNodesBySearch,
+	getCellValues,
 	getSelectAllState,
 	rowMatchesFilter,
 	toggleFilterSelection,
@@ -51,6 +53,63 @@ describe("toggleFilterSelection", () => {
 		it("clears when the same value is toggled again", () => {
 			expect(toggleFilterSelection(["Red"], "Red", false)).toEqual([]);
 		});
+
+		it("replaces even when the current selection has more than one value", () => {
+			expect(
+				toggleFilterSelection(["Red", "Blue"], "Red", false),
+			).toEqual(["Red"]);
+		});
+	});
+});
+
+describe("getCellValues", () => {
+	it("returns the cell as a single value when not multivalued", () => {
+		expect(getCellValues(["a", "Cotton;Linen"], 1)).toEqual([
+			"Cotton;Linen",
+		]);
+	});
+
+	it("splits, trims, and drops empty tokens when multivalued", () => {
+		expect(getCellValues(["a", "Cotton;  ; Linen "], 1, true)).toEqual([
+			"Cotton",
+			"Linen",
+		]);
+	});
+});
+
+describe("extractFilterValues", () => {
+	it("uses sorted filterValues from settings when provided", () => {
+		expect(
+			extractFilterValues(table, {
+				column: 3,
+				filterValues: ["Zed", "Amy"],
+			}),
+		).toEqual(["Amy", "Zed"]);
+	});
+
+	it("derives unique sorted values from the table column", () => {
+		const unordered: DatabaseTable = {
+			rows: [
+				["id1", "Zebra"],
+				["id2", "Apple"],
+			],
+		};
+		expect(extractFilterValues(unordered, {column: 1})).toEqual([
+			"Apple",
+			"Zebra",
+		]);
+	});
+
+	it("derives unique tokens from a multivalued column", () => {
+		const multi: DatabaseTable = {
+			rows: [
+				["id1", "Cotton;Linen"],
+				["id2", "Cotton"],
+			],
+		};
+		expect(
+			extractFilterValues(multi, {column: 1, multivalued: true}),
+		).toEqual(["Cotton", "Linen"]);
 	});
 });
 
@@ -68,6 +127,23 @@ describe("rowMatchesFilter", () => {
 		);
 	});
 
+	it("does not treat tag filters as substring search", () => {
+		expect(rowMatchesFilter(["id", "Redhead"], {column: 1}, ["Red"])).toBe(
+			false,
+		);
+		expect(
+			rowMatchesFilter(["id", "Redhead"], {type: "text", column: 1}, [
+				"Red",
+			]),
+		).toBe(true);
+	});
+
+	it("matches a tag row when any selected value is present", () => {
+		expect(
+			rowMatchesFilter(table.rows[0], {column: 4}, ["Blue", "Red"]),
+		).toBe(true);
+	});
+
 	it("matches text filters by substring (case-insensitive)", () => {
 		expect(
 			rowMatchesFilter(table.rows[0], {type: "text", column: 1}, [
@@ -80,6 +156,35 @@ describe("rowMatchesFilter", () => {
 			]),
 		).toBe(false);
 	});
+
+	it("treats a missing text query token as no filter", () => {
+		expect(
+			rowMatchesFilter(table.rows[1], {type: "text", column: 1}, [
+				undefined as unknown as string,
+			]),
+		).toBe(true);
+	});
+
+	it("trims text queries and treats whitespace-only as no filter", () => {
+		expect(
+			rowMatchesFilter(table.rows[0], {type: "text", column: 1}, [
+				"  FABRIC A  ",
+			]),
+		).toBe(true);
+		expect(
+			rowMatchesFilter(table.rows[1], {type: "text", column: 1}, ["   "]),
+		).toBe(true);
+	});
+
+	it("matches text against any multivalued token", () => {
+		expect(
+			rowMatchesFilter(
+				["id", "Cotton;Linen"],
+				{type: "text", column: 1, multivalued: true},
+				["lin"],
+			),
+		).toBe(true);
+	});
 });
 
 describe("filterNodesBySearch", () => {
@@ -88,12 +193,13 @@ describe("filterNodesBySearch", () => {
 		{value: "Blue", label: "Blue"},
 	];
 
-	it("returns all nodes when search is empty", () => {
+	it("returns all nodes when search is empty or whitespace", () => {
 		expect(filterNodesBySearch(nodes, "")).toEqual(nodes);
+		expect(filterNodesBySearch(nodes, "   ")).toEqual(nodes);
 	});
 
-	it("filters nodes by label", () => {
-		expect(filterNodesBySearch(nodes, "bl")).toEqual([
+	it("filters nodes by label after trimming", () => {
+		expect(filterNodesBySearch(nodes, "  BL  ")).toEqual([
 			{value: "Blue", label: "Blue"},
 		]);
 	});
@@ -114,6 +220,15 @@ describe("applyFilters", () => {
 		expect(applyFilters(table, filters, selection)).toEqual([
 			table.rows[0],
 		]);
+	});
+
+	it("does not keep a row that matches only one of two groups", () => {
+		const selection: FilterSelection = {
+			0: ["Fabric"],
+			1: ["Blue"],
+		};
+
+		expect(applyFilters(table, filters, selection)).toEqual([]);
 	});
 });
 

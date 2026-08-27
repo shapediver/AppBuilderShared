@@ -71,6 +71,8 @@ export function buildFilterTreeData(
 				showSelectAll,
 				allValues,
 			} satisfies FilterGroupTreeNodeMeta,
+			// Always replaced below; empty array is a typed placeholder.
+			// Stryker disable next-line ArrayDeclaration: overwritten before return
 			children: [],
 		};
 

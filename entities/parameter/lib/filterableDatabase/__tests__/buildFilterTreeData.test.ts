@@ -40,14 +40,22 @@ const filters: IFilterableDatabaseSettings["filters"] = [
 	{column: 4, label: "Color", type: "color", multiple: true},
 ];
 
+describe("filter tree node ids", () => {
+	it("builds stable ids from filter index and option value", () => {
+		expect(filterGroupNodeId(0)).toBe("filter-0");
+		expect(filterOptionNodeId(1, "Fabric")).toBe("filter-1-option-Fabric");
+		expect(filterTextInputNodeId(2)).toBe("filter-2-text-input");
+	});
+});
+
 describe("buildFilterTreeData", () => {
 	it("creates one parent node per filter group", () => {
 		const tree = buildFilterTreeData(filterGroups, filters);
 		expect(tree).toHaveLength(3);
 		expect(tree.map((node) => node.value)).toEqual([
-			filterGroupNodeId(0),
-			filterGroupNodeId(1),
-			filterGroupNodeId(2),
+			"filter-0",
+			"filter-1",
+			"filter-2",
 		]);
 	});
 
@@ -56,8 +64,29 @@ describe("buildFilterTreeData", () => {
 		const categoryGroup = tree[1];
 		expect(categoryGroup.children).toHaveLength(2);
 		expect(categoryGroup.children?.[0]?.value).toBe(
-			filterOptionNodeId(1, "Fabric"),
+			"filter-1-option-Fabric",
 		);
+		expect(getFilterTreeNodeMeta(categoryGroup.children![0]!)).toEqual({
+			kind: "option",
+			filterIndex: 1,
+			optionValue: "Fabric",
+			optionLabel: "Fabric",
+			color: undefined,
+			groupType: undefined,
+			multiple: true,
+		});
+	});
+
+	it("marks color option nodes with groupType color", () => {
+		const tree = buildFilterTreeData(filterGroups, filters);
+		expect(getFilterTreeNodeMeta(tree[2]!.children![0]!)).toMatchObject({
+			kind: "option",
+			optionValue: "Red",
+			optionLabel: "Red",
+			color: "Red",
+			groupType: "color",
+			multiple: true,
+		});
 	});
 
 	it("narrows option children when searchTerm matches labels", () => {
@@ -65,7 +94,7 @@ describe("buildFilterTreeData", () => {
 		const categoryGroup = tree[1];
 		expect(categoryGroup.children).toHaveLength(1);
 		expect(categoryGroup.children?.[0]?.value).toBe(
-			filterOptionNodeId(1, "Fabric"),
+			"filter-1-option-Fabric",
 		);
 	});
 
@@ -73,16 +102,56 @@ describe("buildFilterTreeData", () => {
 		const tree = buildFilterTreeData(filterGroups, filters);
 		const nameGroup = tree[0];
 		expect(nameGroup.children).toHaveLength(1);
-		expect(nameGroup.children?.[0]?.value).toBe(filterTextInputNodeId(0));
+		expect(nameGroup.children?.[0]?.value).toBe("filter-0-text-input");
 		const meta = getFilterTreeNodeMeta(nameGroup.children![0]!);
 		expect(meta?.kind).toBe("text-input");
+		expect(getFilterTreeNodeMeta(nameGroup)).toMatchObject({
+			kind: "group",
+			showSelectAll: false,
+			allValues: [],
+			multiple: true,
+			groupType: "text",
+		});
 	});
 
 	it("marks multi-select tag groups for select-all on the title row", () => {
 		const tree = buildFilterTreeData(filterGroups, filters);
-		const categoryMeta = getFilterTreeNodeMeta(tree[1]!) as {
-			showSelectAll: boolean;
-		};
-		expect(categoryMeta.showSelectAll).toBe(true);
+		const categoryMeta = getFilterTreeNodeMeta(tree[1]!);
+		expect(categoryMeta).toMatchObject({
+			kind: "group",
+			showSelectAll: true,
+			allValues: ["Fabric", "Leather"],
+			multiple: true,
+		});
+	});
+
+	it("hides select-all for single-select tag groups", () => {
+		const tree = buildFilterTreeData(filterGroups, [
+			filters[0]!,
+			{column: 3, label: "Category", multiple: false},
+			filters[2]!,
+		]);
+		expect(getFilterTreeNodeMeta(tree[1]!)).toMatchObject({
+			multiple: false,
+			showSelectAll: false,
+		});
+	});
+
+	it("defaults missing filter definitions to multi-select", () => {
+		const tree = buildFilterTreeData(
+			[
+				{
+					filterIndex: 99,
+					label: "Orphan",
+					nodes: [{value: "A", label: "A"}],
+				},
+			],
+			[],
+		);
+		expect(getFilterTreeNodeMeta(tree[0]!)).toMatchObject({
+			multiple: true,
+			showSelectAll: true,
+			allValues: ["A"],
+		});
 	});
 });

@@ -24,11 +24,28 @@ describe("csvEngine.parse", () => {
 		expect(rows).toEqual([['say "hi"', "b"]]);
 	});
 
+	it("trims trailing spaces on each line", () => {
+		const {rows} = csvEngine.parse("a,b  \n1,2  \n");
+		expect(rows).toEqual([["1", "2"]]);
+	});
+
 	it("skips first row as header", () => {
 		const {rows} = csvEngine.parse("category,color\nShirts,Red\nPants,Blue\n");
 		expect(rows).toEqual([
 			["Shirts", "Red"],
 			["Pants", "Blue"],
 		]);
+	});
+
+	it("fetch returns the response body", async () => {
+		const spy = jest.spyOn(global, "fetch").mockResolvedValue({
+			ok: true,
+			text: async () => "raw-csv",
+		} as Response);
+
+		await expect(csvEngine.fetch("https://example.com/a.csv")).resolves.toBe(
+			"raw-csv",
+		);
+		spy.mockRestore();
 	});
 });

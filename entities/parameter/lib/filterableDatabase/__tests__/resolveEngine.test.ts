@@ -55,4 +55,11 @@ describe("resolveFilterableDatabaseEngine", () => {
 		);
 		expect(engine).toBe(csvEngine);
 	});
+
+	it("defaults to csvEngine when href is omitted", () => {
+		const engine = resolveFilterableDatabaseEngine(
+			baseSettings({export: {name: "database-csv"}}),
+		);
+		expect(engine).toBe(csvEngine);
+	});
 });

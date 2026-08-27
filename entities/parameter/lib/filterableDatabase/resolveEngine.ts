@@ -9,6 +9,8 @@ function inferFormatFromHref(href: string | undefined): "csv" | "json" {
 		return "csv";
 	}
 
+	// String.split always yields at least one element.
+	// Stryker disable next-line OptionalChaining: split[0] is never undefined
 	const path = href.split(/[?#]/)[0]?.toLowerCase() ?? "";
 	if (path.endsWith(".json")) {
 		return "json";

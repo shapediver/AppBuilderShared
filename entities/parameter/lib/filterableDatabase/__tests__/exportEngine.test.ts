@@ -86,6 +86,63 @@ describe("fetchExportText", () => {
 		);
 	});
 
+	it("throws when sessionId is missing", async () => {
+		await expect(fetchExportText({name: "database-csv"})).rejects.toThrow(
+			'Export "database-csv" requires sessionId',
+		);
+	});
+
+	it("throws when export response omits content", async () => {
+		const exportStore = {
+			getState: jest.fn().mockReturnValue({
+				actions: {
+					request: jest.fn().mockResolvedValue({
+						name: "database-csv",
+					}),
+					fetch: jest.fn(),
+				},
+			}),
+		};
+
+		mockGetState.mockReturnValue({
+			getExport: jest.fn().mockReturnValue(exportStore),
+		});
+
+		await expect(fetchExportText(exportRef)).rejects.toThrow(
+			'Export "database-csv" did not return downloadable content',
+		);
+	});
+
+	it("falls back to fetchText when the JWT fetch response is not ok", async () => {
+		const request = jest.fn().mockResolvedValue({
+			name: "database-csv",
+			content: [{href: "https://example.com/export.csv", format: "csv"}],
+		});
+		const fetch = jest.fn().mockResolvedValue({
+			ok: false,
+			status: 401,
+			statusText: "Unauthorized",
+			text: async () => "jwt-body",
+		});
+		const exportStore = {
+			getState: jest.fn().mockReturnValue({
+				actions: {request, fetch},
+			}),
+		};
+
+		mockGetState.mockReturnValue({
+			getExport: jest.fn().mockReturnValue(exportStore),
+		});
+
+		const globalFetch = jest.spyOn(global, "fetch").mockResolvedValue({
+			ok: true,
+			text: async () => "cdn-body",
+		} as Response);
+
+		await expect(fetchExportText(exportRef)).resolves.toBe("cdn-body");
+		globalFetch.mockRestore();
+	});
+
 	it("throws when export response has no download URL", async () => {
 		const exportStore = {
 			getState: jest.fn().mockReturnValue({

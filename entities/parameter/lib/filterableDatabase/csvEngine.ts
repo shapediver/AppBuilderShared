@@ -42,6 +42,8 @@ function parseCsv(raw: string): DatabaseTable {
 		.map((l) => l.trimEnd())
 		.filter((l) => l.length > 0)
 		.map(parseCsvLine);
+	// length is never negative; skip vs shift() on [] is a no-op.
+	// Stryker disable next-line ConditionalExpression,EqualityOperator: empty shift is equivalent
 	if (rows.length > 0) {
 		rows.shift();
 	}

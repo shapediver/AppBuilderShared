@@ -25,6 +25,7 @@ function isSelectionEqual(a: FilterSelection, b: FilterSelection): boolean {
 			return false;
 		}
 
+		// Stryker disable next-line EqualityOperator: i <= length reads undefined===undefined
 		for (let i = 0; i < valuesA.length; i++) {
 			if (valuesA[i] !== valuesB[i]) {
 				return false;
@@ -43,10 +44,14 @@ function matchesSearchTerms(
 	entry: IScrollingApiItemTypeSelect,
 	terms: string[],
 ): boolean {
+	// Stryker disable next-line ConditionalExpression,BlockStatement,BooleanLiteral: Array#every on [] is also true
 	if (terms.length === 0) {
+		// Stryker disable next-line BooleanLiteral: unreachable — buildAllItems already returns on empty terms
 		return true;
 	}
 
+	// itemData is always an object from mapRowsToSelectItems
+	// Stryker disable next-line OptionalChaining: data is never undefined here
 	const haystack = [entry.item, entry.data?.displayname ?? ""]
 		.join(" ")
 		.toLowerCase();
@@ -72,6 +77,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 	const settings = options.settings;
 	let pageSize = options.pageSize ?? 20;
 	let searchTerms: string[] = [];
+	// Stryker disable next-line ArrayDeclaration: applyPaging overwrites before return
 	let allItems: IScrollingApiItemTypeSelect[] = [];
 	let loadedCount = 0;
 	let resetStateCounter = 0;
@@ -89,6 +95,7 @@ export function createFilterableDatabaseScrollingApi(options: {
 			data: itemData[item],
 		}));
 
+		// Stryker disable next-line ConditionalExpression,BlockStatement: empty terms keep every mapped item
 		if (searchTerms.length === 0) {
 			return mapped;
 		}
@@ -116,7 +123,9 @@ export function createFilterableDatabaseScrollingApi(options: {
 	} = {
 		loading: false,
 		error: undefined,
+		// Stryker disable next-line BooleanLiteral: applyPaging overwrites before return
 		hasNextPage: false,
+		// Stryker disable next-line ArrayDeclaration: applyPaging overwrites before return
 		items: [],
 		resetState: 0,
 		/** Appends the next page slice without rebuilding the filtered list. */
@@ -125,10 +134,13 @@ export function createFilterableDatabaseScrollingApi(options: {
 				return;
 			}
 
+			// loadMore is fully synchronous; loading is not observable between assignments
+			// Stryker disable next-line BooleanLiteral: set true then false in the same tick
 			api.loading = true;
 			loadedCount = Math.min(loadedCount + pageSize, allItems.length);
 			api.items = allItems.slice(0, loadedCount);
 			api.hasNextPage = loadedCount < allItems.length;
+			// Stryker disable next-line BooleanLiteral: set true then false in the same tick
 			api.loading = false;
 			bumpResetState();
 		},

@@ -57,6 +57,15 @@ describe("buildActiveFilterTags", () => {
 		);
 	});
 
+	it("ignores empty or missing values for a known group", () => {
+		expect(
+			buildActiveFilterTags(
+				{0: [], 1: undefined as unknown as string[]},
+				filterGroups,
+			),
+		).toEqual([]);
+	});
+
 	it("uses custom group labels from filterGroups", () => {
 		const groups: FilterTreeGroup[] = [
 			{

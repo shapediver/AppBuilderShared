@@ -174,4 +174,96 @@ describe("jsonEngine.parse", () => {
 	it("rejects invalid JSON", () => {
 		expect(() => jsonEngine.parse("{not json")).toThrow(/invalid json/i);
 	});
+
+	it("rejects a JSON array or null document", () => {
+		expect(() => jsonEngine.parse("[]")).toThrow(
+			/must be an object with a rows array/i,
+		);
+		expect(() => jsonEngine.parse("null")).toThrow(
+			/must be an object with a rows array/i,
+		);
+	});
+
+	it("rejects rows that are not an array", () => {
+		expect(() =>
+			jsonEngine.parse(JSON.stringify({rows: {value: "A"}})),
+		).toThrow(/"rows" must be an array/i);
+	});
+
+	it("rejects columns that omit value", () => {
+		expect(() =>
+			jsonEngine.parse(
+				JSON.stringify({
+					columns: ["displayname"],
+					rows: [{value: "A", displayname: "Alpha"}],
+				}),
+			),
+		).toThrow(/must include "value"/i);
+	});
+
+	it("rejects a non-array row when rows start as arrays", () => {
+		expect(() =>
+			jsonEngine.parse(
+				JSON.stringify({
+					rows: [["Option 1"], {value: "Option 2"}],
+				}),
+			),
+		).toThrow(/must be an array/i);
+	});
+
+	it("drops empty and whitespace-only array items when joining", () => {
+		const raw = JSON.stringify({
+			columns: ["value", "materials"],
+			rows: [{value: "A", data: {materials: ["Cotton", "  ", "Linen"]}}],
+		});
+		expect(jsonEngine.parse(raw).rows).toEqual([["A", "Cotton;Linen"]]);
+	});
+
+	it("puts value first even when it is not the first key on the object", () => {
+		const raw = JSON.stringify({
+			rows: [{displayname: "Alpha", value: "A", data: {z: "Z", a: "A"}}],
+		});
+		expect(jsonEngine.parse(raw).rows).toEqual([["A", "Alpha", "A", "Z"]]);
+	});
+
+	it("ignores a non-object data field when inferring columns", () => {
+		const raw = JSON.stringify({
+			rows: [
+				{value: "A", data: {category: "Fabric"}},
+				{value: "B", data: "not-an-object"},
+			],
+		});
+		expect(jsonEngine.parse(raw).rows).toEqual([
+			["A", "Fabric"],
+			["B", ""],
+		]);
+	});
+
+	it("does not stringify the nested data object as a column", () => {
+		const raw = JSON.stringify({
+			columns: ["value", "data"],
+			rows: [{value: "A", data: {category: "Fabric"}}],
+		});
+		expect(jsonEngine.parse(raw).rows).toEqual([["A", ""]]);
+	});
+
+	it("reads nested data without throwing when data is null", () => {
+		const raw = JSON.stringify({
+			columns: ["value", "category"],
+			rows: [{value: "A", data: null}],
+		});
+		expect(jsonEngine.parse(raw).rows).toEqual([["A", ""]]);
+	});
+
+	it("fetch returns the response body", async () => {
+		const spy = jest.spyOn(global, "fetch").mockResolvedValue({
+			ok: true,
+			text: async () => "raw-json",
+		} as Response);
+
+		await expect(
+			jsonEngine.fetch("https://example.com/a.json"),
+		).resolves.toBe("raw-json");
+		spy.mockRestore();
+	});
 });

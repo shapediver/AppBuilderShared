@@ -66,6 +66,7 @@ export function rowMatchesFilter(
 
 	if (filter.type === "text") {
 		const query = selected[0]?.trim().toLowerCase() ?? "";
+		// Stryker disable next-line ConditionalExpression,BlockStatement: "".includes is true for every cell
 		if (!query) {
 			return true;
 		}
@@ -84,6 +85,7 @@ export function filterNodesBySearch<T extends {label: string; value: string}>(
 	searchTerm: string,
 ): T[] {
 	const query = searchTerm.trim().toLowerCase();
+	// Stryker disable next-line ConditionalExpression,BlockStatement: "".includes is true for every label
 	if (!query) {
 		return nodes;
 	}
@@ -95,6 +97,7 @@ export function getSelectAllState(
 	selected: string[],
 	allValues: string[],
 ): "checked" | "unchecked" | "indeterminate" {
+	// Stryker disable next-line ConditionalExpression,BlockStatement: matchCount 0 also returns unchecked
 	if (allValues.length === 0) {
 		return "unchecked";
 	}
