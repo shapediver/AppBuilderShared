@@ -69,4 +69,23 @@ describe("mapLegacyViewportIconsThemeToDefaultToolbarOptions", () => {
 			expect(result.showButtons.historyMenu).toBeUndefined();
 		});
 	});
+
+	describe("fullscreen vs fullscreen3States", () => {
+		it("forces fullscreen off when enableFullscreenBtn3States is true", () => {
+			const result = mapLegacyViewportIconsThemeToDefaultToolbarOptions({
+				enableFullscreenBtn: true,
+				enableFullscreenBtn3States: true,
+			});
+			expect(result.showButtons.fullscreen).toBe(false);
+			expect(result.showButtons.fullscreen3States).toBe(true);
+		});
+
+		it("passes through enableFullscreenBtn when 3-states is not set", () => {
+			const result = mapLegacyViewportIconsThemeToDefaultToolbarOptions({
+				enableFullscreenBtn: true,
+			});
+			expect(result.showButtons.fullscreen).toBe(true);
+			expect(result.showButtons.fullscreen3States).toBeUndefined();
+		});
+	});
 });

@@ -4,6 +4,7 @@
  */
 export function isPdfSrc(href?: string, contentType?: string): boolean {
 	if (contentType) {
+		// Stryker disable next-line OptionalChaining: split always yields [0]
 		const mime = contentType.split(";", 1)[0]?.trim();
 		if (mime === "application/pdf") {
 			return true;

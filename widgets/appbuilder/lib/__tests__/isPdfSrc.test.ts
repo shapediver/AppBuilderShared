@@ -7,6 +7,7 @@ describe("isPdfSrc", () => {
 		expect(isPdfSrc(undefined, "application/pdf; charset=utf-8")).toBe(
 			true,
 		);
+		expect(isPdfSrc(undefined, " application/pdf ")).toBe(true);
 	});
 
 	it("returns true for data:application/pdf URLs", () => {

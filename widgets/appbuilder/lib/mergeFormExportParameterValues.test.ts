@@ -45,4 +45,44 @@ describe("mergeFormExportParameterValues", () => {
 			{parameter: {name: "parameter-id"}, value: "make it funny"},
 		]);
 	});
+
+	it("keeps export values that have no matching form field", () => {
+		expect(
+			mergeFormExportParameterValues(
+				[{parameter: {name: "kept"}, value: "export"}],
+				[
+					createFormExportParameterValue(
+						"added",
+						"default",
+						"default",
+						"form",
+					),
+				],
+			),
+		).toEqual([
+			{parameter: {name: "kept"}, value: "export"},
+			{parameter: {name: "added"}, value: "form"},
+		]);
+	});
+
+	it("overrides the matching export value at index 0 by parameter name", () => {
+		expect(
+			mergeFormExportParameterValues(
+				[{parameter: {name: "parameter-id"}, value: "export"}],
+				[
+					createFormExportParameterValue(
+						"parameter-id",
+						"other",
+						"default",
+						"form",
+					),
+				],
+			),
+		).toEqual([
+			{
+				parameter: {name: "parameter-id", sessionId: "other"},
+				value: "form",
+			},
+		]);
+	});
 });

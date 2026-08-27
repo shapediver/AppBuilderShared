@@ -31,6 +31,12 @@ describe("viewportScreenshotPropsSchema", () => {
 		).toBe(true);
 	});
 
+	it("rejects camera without name or type", () => {
+		expect(
+			viewportScreenshotPropsSchema.safeParse({camera: {}}).success,
+		).toBe(false);
+	});
+
 	it("rejects quality out of range", () => {
 		expect(
 			viewportScreenshotPropsSchema.safeParse({quality: 1.5}).success,

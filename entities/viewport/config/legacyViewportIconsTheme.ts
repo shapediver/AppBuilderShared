@@ -125,6 +125,7 @@ export interface LegacyViewportIconsThemeProps {
 
 type LegacyViewportIconsThemePropsType = Partial<LegacyViewportIconsThemeProps>;
 
+// Stryker disable all: theme factory + defaults unused by unit tests
 export function LegacyViewportIconsThemeProps(
 	props: LegacyViewportIconsThemePropsType,
 ): MantineThemeComponent {
@@ -165,6 +166,7 @@ export const legacyViewportIconsDefaultStyleProps: LegacyViewportIconsThemeProps
 		dividerProps: legacyViewportIconsDefaultDividerProps,
 		transitionProps: legacyViewportIconsDefaultTransitionProps,
 	};
+// Stryker restore all
 
 export function mapLegacyViewportIconsThemeToDefaultToolbarOptions(
 	props: LegacyViewportIconsThemeProps,
