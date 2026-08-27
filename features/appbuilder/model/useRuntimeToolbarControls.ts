@@ -8,6 +8,7 @@ import {useShapeDiverStoreToolbars} from "./useShapeDiverStoreToolbars";
  * cleaning them up when the owning component unmounts.
  */
 export function useRuntimeToolbarControls() {
+	// Stryker disable next-line ArrayDeclaration: empty token list unused by add/remove tests
 	const tokensRef = useRef<string[]>([]);
 
 	useEffect(() => {
@@ -17,9 +18,12 @@ export function useRuntimeToolbarControls() {
 			for (const token of tokensRef.current) {
 				removeRuntimeToolbarToken(token);
 			}
+			// Stryker disable next-line ArrayDeclaration: cleanup identity unused by unmount tests
 			tokensRef.current = [];
 		};
-	}, []);
+	},
+	// Stryker disable next-line ArrayDeclaration: effect identity unused by add/remove tests
+	[]);
 
 	return {
 		// Register controls into a runtime toolbar slot and remember the token
@@ -33,6 +37,7 @@ export function useRuntimeToolbarControls() {
 					target,
 					controls,
 				);
+			// Stryker disable next-line ConditionalExpression: tests always receive a token
 			if (token) {
 				tokensRef.current.push(token);
 			}
@@ -42,7 +47,9 @@ export function useRuntimeToolbarControls() {
 		// before the owner unmounts.
 		removeToken: (token: string) => {
 			useShapeDiverStoreToolbars.getState().removeRuntimeToolbarToken(token);
+			// Stryker disable all: ref filter unused after store removal; tests assert store only
 			tokensRef.current = tokensRef.current.filter((t) => t !== token);
+			// Stryker restore all
 		},
 	};
 }

@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {
@@ -279,5 +279,138 @@ describe("resolveRuntimeToolbarGroups", () => {
 		await Promise.resolve();
 		expect(firstComplete).toHaveBeenCalledTimes(1);
 		expect(secondComplete).toHaveBeenCalledTimes(1);
+	});
+
+	it("shows a menu when at least one checkbox is toggleable", () => {
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				menuVisibility: "multipleToggleable",
+				items: [
+					createToolbarCheckboxItem({
+						id: "toggle",
+						label: "toggle",
+						checked: false,
+						setChecked: jest.fn(),
+					}),
+					createToolbarCheckboxItem({
+						id: "locked",
+						label: "locked",
+						checked: false,
+						setChecked: jest.fn(),
+						readOnly: true,
+					}),
+				],
+			}),
+		]);
+
+		expect(groups[0][0]?.type).toBe("menu");
+	});
+
+	it("sorts aggregated commands by the lowest order in each group", () => {
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("late", "selection", {
+				commands: [
+					createToolbarCommand({
+						id: "late-a",
+						aggregationId: "late",
+						label: "Late",
+						order: 10,
+						execute: jest.fn(),
+					}),
+					createToolbarCommand({
+						id: "late-b",
+						aggregationId: "late",
+						label: "Late",
+						order: 30,
+						execute: jest.fn(),
+					}),
+				],
+			}),
+			contribution("early", "selection", {
+				commands: [
+					createToolbarCommand({
+						id: "early-a",
+						aggregationId: "early",
+						label: "Early",
+						order: 5,
+						execute: jest.fn(),
+					}),
+					createToolbarCommand({
+						id: "early-b",
+						aggregationId: "early",
+						label: "Early",
+						order: 100,
+						execute: jest.fn(),
+					}),
+				],
+			}),
+		]);
+
+		const commandLabels = groups[0]
+			.filter((item) => item.type === "command")
+			.map((item) => item.label);
+		expect(commandLabels).toEqual(["Early", "Late"]);
+	});
+
+	it("keeps an aggregated command enabled when any member is enabled", () => {
+		const enabledExecute = jest.fn();
+		const disabledExecute = jest.fn();
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				commands: [
+					createToolbarCommand({
+						id: "enabled",
+						aggregationId: "go",
+						label: "Go",
+						execute: enabledExecute,
+					}),
+					createToolbarCommand({
+						id: "disabled",
+						aggregationId: "go",
+						label: "Go",
+						disabled: true,
+						execute: disabledExecute,
+					}),
+				],
+			}),
+		]);
+
+		const command = groups[0].find((item) => item.type === "command");
+		if (command?.type !== "command") throw new Error("Expected command");
+		expect(command.disabled).toBeFalsy();
+		command.props.execute();
+		expect(enabledExecute).toHaveBeenCalledTimes(1);
+		expect(disabledExecute).not.toHaveBeenCalled();
+	});
+
+	it("does not batch a single command that has batchUpdate", () => {
+		const batchParameterValueUpdate = jest.fn();
+		const execute = jest.fn();
+		useShapeDiverStoreParameters.setState({batchParameterValueUpdate});
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				commands: [
+					createToolbarCommand({
+						id: "confirm",
+						aggregationId: "selection-confirm",
+						label: "Confirm",
+						execute,
+						batchUpdate: {
+							namespace: "namespace",
+							parameterId: "first",
+							value: "first-value",
+							prepare: jest.fn(),
+							onComplete: jest.fn(),
+						},
+					}),
+				],
+			}),
+		]);
+
+		const command = groups[0].find((item) => item.type === "command");
+		if (command?.type !== "command") throw new Error("Expected command");
+		command.props.execute();
+		expect(execute).toHaveBeenCalledTimes(1);
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
 	});
 });

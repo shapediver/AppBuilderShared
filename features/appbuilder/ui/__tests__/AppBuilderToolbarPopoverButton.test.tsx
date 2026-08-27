@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
 import {MantineProvider} from "@mantine/core";
 import {fireEvent, render, screen} from "@testing-library/react";
@@ -121,6 +121,30 @@ describe("AppBuilderToolbarPopoverButton", () => {
 		expect(
 			screen.getByRole("button", {name: "Activate menu action"}),
 		).toBeTruthy();
+	});
+
+	it("starts closed when open state is uncontrolled", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbarPopoverButton
+					item={{
+						id: "drawing",
+						type: "parameter",
+						label: "Drawing",
+						props: {name: "Drawing"},
+					}}
+					buttonRenderContext={{
+						namespace: "namespace",
+						executing: false,
+						fullscreenId: "fullscreen-root",
+					}}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(
+			screen.queryByRole("button", {name: "Activate menu action"}),
+		).toBeNull();
 	});
 
 	it("does not close a popover while an interaction request is active", () => {

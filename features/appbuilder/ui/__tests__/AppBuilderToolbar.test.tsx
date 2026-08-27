@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
@@ -35,13 +35,30 @@ jest.mock("../../model/useToolbarVisibility", () => ({
 
 jest.mock("../AppBuilderToolbarActionButton", () => ({
 	__esModule: true,
-	default: () => null,
+	default: () => <div data-testid="toolbar-action" />,
 }));
 
 jest.mock("../AppBuilderToolbarExportButton", () => ({
 	__esModule: true,
-	default: () => null,
+	default: () => <div data-testid="toolbar-export" />,
 }));
+
+jest.mock("../AppBuilderToolbarCommandButton", () => ({
+	__esModule: true,
+	default: ({item}: {item: {label?: string; type?: string}}) => (
+		<div data-testid={`toolbar-command-${item.type ?? "command"}`}>
+			{item.label}
+		</div>
+	),
+}));
+
+jest.mock(
+	"@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons",
+	() => ({
+		__esModule: true,
+		default: () => <div data-testid="toolbar-accept-reject" />,
+	}),
+);
 
 jest.mock("../AppBuilderToolbarPopoverButton", () => ({
 	__esModule: true,
@@ -285,5 +302,71 @@ describe("AppBuilderToolbar", () => {
 		fireEvent.pointerDown(canvas);
 
 		expect(firstButton.getAttribute("data-open")).toBe("false");
+	});
+
+	it("renders each resolved toolbar item type", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={{
+						id: "mixed",
+						source: "definition",
+						side: "top",
+						align: "center",
+						order: 0,
+						visibility: "always",
+						groups: [
+							[
+								{
+									id: "accept",
+									type: "acceptReject",
+									label: "Accept",
+									props: {},
+								},
+								{
+									id: "cmd",
+									type: "command",
+									label: "Run",
+									props: {execute: jest.fn()},
+								},
+								{
+									id: "check",
+									type: "checkbox",
+									label: "Toggle",
+									props: {
+										checked: false,
+										setChecked: jest.fn(),
+									},
+								},
+								{
+									id: "act",
+									type: "action",
+									label: "Action",
+									props: {
+										definition: {
+											type: "undo",
+											props: {},
+										},
+									},
+								},
+								{
+									id: "exp",
+									type: "export",
+									label: "Export",
+									props: {name: "stl"},
+								},
+							],
+						],
+					}}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(screen.getByTestId("toolbar-accept-reject")).toBeTruthy();
+		expect(screen.getByText("Run")).toBeTruthy();
+		expect(screen.getByText("Toggle")).toBeTruthy();
+		expect(screen.getByTestId("toolbar-action")).toBeTruthy();
+		expect(screen.getByTestId("toolbar-export")).toBeTruthy();
 	});
 });

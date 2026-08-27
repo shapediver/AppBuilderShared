@@ -1,75 +1,113 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
-const MockActionComponent = () => null;
-
 jest.mock("../AppBuilderActionAddToCartComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockAddToCart() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionArComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockAr() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionCameraComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockCamera() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionCloseConfiguratorComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockCloseConfigurator() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionCreateModelStateComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockCreateModelState() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionExportParameterValuesComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockExportParameterValues() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionFullscreenComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockFullscreen() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionImportModelStateComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockImportModelState() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionImportParameterValuesComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockImportParameterValues() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionMessageToParentComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockMessageToParent() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionRedoComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockRedo() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionResetParameterValuesComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockResetParameterValues() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionSetBrowserLocationComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockSetBrowserLocation() {
+		return null;
+	},
+}));
+jest.mock("../AppBuilderActionSetContainerVisibilityComponent", () => ({
+	__esModule: true,
+	default: function MockSetContainerVisibility() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionSetParameterValuesComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockSetParameterValues() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionSoundComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockSound() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionUndoComponent", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockUndo() {
+		return null;
+	},
 }));
 jest.mock("../AppBuilderActionBase", () => ({
 	__esModule: true,
-	default: MockActionComponent,
+	default: function MockActionBase() {
+		return null;
+	},
 }));
 
 import type {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
@@ -77,6 +115,10 @@ import type {IAppBuilderControlActionRef} from "@AppBuilderLib/features/appbuild
 import {AppBuilderActionFromType} from "../AppBuilderActionFromType";
 
 const CustomAction = () => <div />;
+
+function mockDefault(modulePath: string) {
+	return jest.requireMock(modulePath).default;
+}
 
 describe("AppBuilderActionFromType", () => {
 	it("forwards toolbar render options to custom action components", () => {
@@ -162,4 +204,107 @@ describe("AppBuilderActionFromType", () => {
 
 		expect(element).toBeNull();
 	});
+
+	it("skips custom actions whose isAction does not match", () => {
+		const OtherAction = () => <div />;
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Zoom extents",
+			definition: {
+				type: "camera",
+				props: {
+					type: "zoomTo",
+					props: {},
+				},
+			},
+		};
+
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{
+				actions: {
+					other: {
+						isAction: () => false,
+						component: OtherAction,
+					},
+					camera: {
+						isAction: (definition) => definition.type === "camera",
+						component: CustomAction,
+					},
+				},
+			},
+		);
+
+		expect(element?.type).toBe(CustomAction);
+	});
+
+	it.each([
+		[
+			"createModelState",
+			"../AppBuilderActionCreateModelStateComponent",
+			{},
+		],
+		["addToCart", "../AppBuilderActionAddToCartComponent", {}],
+		[
+			"closeConfigurator",
+			"../AppBuilderActionCloseConfiguratorComponent",
+			{},
+		],
+		[
+			"importParameterValues",
+			"../AppBuilderActionImportParameterValuesComponent",
+			{},
+		],
+		[
+			"exportParameterValues",
+			"../AppBuilderActionExportParameterValuesComponent",
+			{},
+		],
+		["importModelState", "../AppBuilderActionImportModelStateComponent", {}],
+		[
+			"setParameterValue",
+			"../AppBuilderActionSetParameterValuesComponent",
+			{parameterId: "p1", value: "v"},
+		],
+		[
+			"setParameterValues",
+			"../AppBuilderActionSetParameterValuesComponent",
+			{parameterValues: []},
+		],
+		[
+			"setBrowserLocation",
+			"../AppBuilderActionSetBrowserLocationComponent",
+			{},
+		],
+		[
+			"setContainerVisibility",
+			"../AppBuilderActionSetContainerVisibilityComponent",
+			{containerId: "c1"},
+		],
+		["undo", "../AppBuilderActionUndoComponent", {}],
+		["redo", "../AppBuilderActionRedoComponent", {}],
+		[
+			"resetParameterValues",
+			"../AppBuilderActionResetParameterValuesComponent",
+			{},
+		],
+		["sound", "../AppBuilderActionSoundComponent", {}],
+		["messageToParent", "../AppBuilderActionMessageToParentComponent", {}],
+	] as const)(
+		"renders built-in %s action",
+		(type, modulePath, props) => {
+			const element = AppBuilderActionFromType(
+				{
+					label: type,
+					definition: {type, props},
+				} as unknown as IAppBuilderControlActionRef,
+				"namespace",
+				"key",
+				{},
+			);
+
+			expect(element?.type).toBe(mockDefault(modulePath));
+		},
+	);
 });

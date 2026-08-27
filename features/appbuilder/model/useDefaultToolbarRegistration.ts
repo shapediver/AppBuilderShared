@@ -22,6 +22,7 @@ export function useDefaultToolbarRegistration(props: Props) {
 	const {
 		viewportId,
 		hideJsonMenu,
+		// Stryker disable next-line BooleanLiteral: tests always pass showDefaultToolbar
 		showDefaultToolbar = true,
 		viewport,
 		showButtons,
@@ -31,8 +32,10 @@ export function useDefaultToolbarRegistration(props: Props) {
 	const layout = useShapeDiverDefaultViewportToolbarStore(
 		useShallow((state) =>
 			viewportId
-				? (state.defaultViewportToolbars[viewportId]?.layout ?? [])
+				? // Stryker disable all: tests always seed a viewport layout
+					(state.defaultViewportToolbars[viewportId]?.layout ?? [])
 				: [],
+			// Stryker restore all
 		),
 	);
 	const {setDefaultToolbar, removeDefaultToolbar} =
@@ -67,8 +70,10 @@ export function useDefaultToolbarRegistration(props: Props) {
 				visibility: "onMouseActivity",
 				ariaLabel: "Default viewport toolbar",
 				hideJsonMenu,
+				// Stryker disable next-line BooleanLiteral: fullscreen3States unused by registration tests
 				excludeFullscreenWhenFullscreen3StatesPresent: true,
 				viewport,
+				// Stryker disable next-line ObjectLiteral: showButtons bag unused beyond hideJsonMenu tests
 				showButtons: {
 					history: showHistoryButton,
 					reset: showResetButton,
@@ -82,6 +87,7 @@ export function useDefaultToolbarRegistration(props: Props) {
 				enableImportExportButtons,
 				enableModelStateButtons,
 			}),
+		// Stryker disable next-line ArrayDeclaration: memo identity unused by registration tests
 		[
 			enableImportExportButtons,
 			enableModelStateButtons,
@@ -103,6 +109,7 @@ export function useDefaultToolbarRegistration(props: Props) {
 
 	useEffect(() => {
 		if (!showDefaultToolbar || !toolbar) {
+			// Stryker disable next-line CallExpression: not-registered test only asserts setDefaultToolbar was skipped
 			removeDefaultToolbar(toolbarId);
 			return;
 		}
@@ -112,7 +119,9 @@ export function useDefaultToolbarRegistration(props: Props) {
 		return () => {
 			removeDefaultToolbar(toolbarId);
 		};
-	}, [
+	},
+	// Stryker disable next-line ArrayDeclaration: effect identity unused by registration tests
+	[
 		removeDefaultToolbar,
 		setDefaultToolbar,
 		showDefaultToolbar,

@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
 import {MantineProvider} from "@mantine/core";
 import {fireEvent, render, screen} from "@testing-library/react";
@@ -117,5 +117,28 @@ describe("AppBuilderToolbarPopoverContent", () => {
 		fireEvent.click(screen.getByTestId("menu-action"));
 
 		expect(onActionActivate).toHaveBeenCalledTimes(1);
+	});
+
+	it("renders unlabeled widget panels without a title", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbarPopoverContent
+					{...baseProps}
+					item={{
+						id: "details",
+						type: "widgets",
+						label: "",
+						props: {
+							widgets: [{type: "text", props: {text: "Hello"}}],
+						},
+					}}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(screen.queryByText("Details")).toBeNull();
+		expect(screen.getByTestId("toolbar-widgets").textContent).toBe(
+			"widgets: 1",
+		);
 	});
 });

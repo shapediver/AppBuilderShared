@@ -1,5 +1,5 @@
 /**
- * @jest-environment jsdom
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
 
 jest.mock("@AppBuilderLib/entities/viewport/model/useViewportControls", () => ({
@@ -9,12 +9,10 @@ jest.mock("@AppBuilderLib/entities/viewport/model/useViewportControls", () => ({
 	}),
 }));
 
+const systemInfo = {instance: {isMobile: false}};
+
 jest.mock("@shapediver/viewer.session", () => ({
-	SystemInfo: {
-		instance: {
-			isMobile: false,
-		},
-	},
+	SystemInfo: systemInfo,
 }));
 
 import {act, renderHook} from "@testing-library/react";
@@ -65,5 +63,32 @@ describe("useToolbarVisibility", () => {
 			result.current.setMenuOpen(true);
 		});
 		expect(result.current.visible).toBe(true);
+	});
+
+	it("is always visible on mobile even in onMouseActivity mode", () => {
+		systemInfo.instance.isMobile = true;
+		try {
+			const {result} = renderHook(() =>
+				useToolbarVisibility({mode: "onMouseActivity"}),
+			);
+			expect(result.current.visible).toBe(true);
+		} finally {
+			systemInfo.instance.isMobile = false;
+		}
+	});
+
+	it("clears pointer-driven focus on blur", () => {
+		const {result} = renderHook(() =>
+			useToolbarVisibility({mode: "onMouseActivity"}),
+		);
+		act(() => {
+			result.current.containerProps.onKeyDown();
+			result.current.containerProps.onFocus();
+		});
+		expect(result.current.visible).toBe(true);
+		act(() => {
+			result.current.containerProps.onBlur();
+		});
+		expect(result.current.visible).toBe(false);
 	});
 });
