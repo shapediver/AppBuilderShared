@@ -1,4 +1,5 @@
 import {z} from "@AppBuilderLib/shared/lib/zod";
+import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {zodResponseFormat} from "openai/helpers/zod";
 import {
 	AGENT_RESPONSE_FORMAT_NAME,
@@ -99,6 +100,57 @@ describe("agent LLM response schema", () => {
 			AGENT_RESPONSE_SCHEMA.parse({
 				parameterUpdates: [],
 				summaryAndReasoning: 123,
+			}),
+		).toThrow();
+	});
+
+	it("round-trips a StringList parameter update", () => {
+		const payload = {
+			parameterUpdates: [
+				{
+					type: ResParameterType.STRINGLIST,
+					id: "param-list",
+					name: "Options",
+					newIndex: "2",
+					oldIndex: "0",
+				},
+			],
+			summaryAndReasoning: "Picked a list option.",
+		};
+
+		expect(AGENT_RESPONSE_SCHEMA.parse(payload)).toEqual(payload);
+	});
+
+	it("round-trips a Color parameter update with channels", () => {
+		const payload = {
+			parameterUpdates: [
+				{
+					type: ResParameterType.COLOR,
+					id: "param-color",
+					name: "Paint",
+					newValue: {red: 10, green: 20, blue: 30, alpha: 40},
+					oldValue: {red: 0, green: 0, blue: 0, alpha: 255},
+				},
+			],
+			summaryAndReasoning: "Changed paint color.",
+		};
+
+		expect(AGENT_RESPONSE_SCHEMA.parse(payload)).toEqual(payload);
+	});
+
+	it("rejects Color updates that omit channels", () => {
+		expect(() =>
+			AGENT_RESPONSE_SCHEMA.parse({
+				parameterUpdates: [
+					{
+						type: ResParameterType.COLOR,
+						id: "param-color",
+						name: "Paint",
+						newValue: {},
+						oldValue: {},
+					},
+				],
+				summaryAndReasoning: "Invalid color.",
 			}),
 		).toThrow();
 	});

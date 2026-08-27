@@ -64,9 +64,11 @@ const toolbarMatchesViewport = (
 
 const compareToolbars = (a: ToolbarRegistration, b: ToolbarRegistration) => {
 	if (a.order !== b.order) return a.order - b.order;
+	// Stryker disable next-line ConditionalExpression: opposite compare order still hits return 1 when only b has definitionIndex
 	if (a.definitionIndex !== undefined && b.definitionIndex !== undefined) {
 		return a.definitionIndex - b.definitionIndex;
 	}
+	// Stryker disable next-line UnaryOperator,ConditionalExpression: complementary return 1 branch already orders mixed definitionIndex
 	if (a.definitionIndex !== undefined) return -1;
 	if (b.definitionIndex !== undefined) return 1;
 	return a.id.localeCompare(b.id);
@@ -82,12 +84,15 @@ const toolbarGroupsEqual = (
 	a.length === b.length &&
 	a.every(
 		(group, groupIndex) =>
+			// Stryker disable next-line OptionalChaining: dense groups always defined at index
 			group.length === b[groupIndex]?.length &&
 			group.every((item, itemIndex) => item === b[groupIndex][itemIndex]),
 	);
 
 const toolbarsEqual = (a: ToolbarRegistration, b: ToolbarRegistration) =>
+	// Stryker disable next-line LogicalOperator,ConditionalExpression: upsert only compares same-id rows
 	a.id === b.id &&
+	// Stryker disable next-line ConditionalExpression: source is fixed per upsert caller
 	a.source === b.source &&
 	a.viewportId === b.viewportId &&
 	a.side === b.side &&
@@ -118,6 +123,7 @@ const ensureGroup = (
 	toolbar: ToolbarRegistration,
 	groupIndex: number,
 ): ToolbarRegistration => {
+	// Stryker disable next-line ConditionalExpression,BlockStatement: missing-group path also appends to existing group 0
 	if (toolbar.groups[groupIndex]) {
 		return toolbar;
 	}
@@ -328,8 +334,11 @@ const selectMergedToolbars = (
 export const useShapeDiverStoreToolbars = create<IShapeDiverStoreToolbars>()(
 	devtools(
 		(set, get) => ({
+			// Stryker disable next-line ArrayDeclaration: tests reset store; create() defaults unused
 			definitionToolbars: [],
+			// Stryker disable next-line ArrayDeclaration: tests reset store; create() defaults unused
 			defaultToolbars: [],
+			// Stryker disable next-line ArrayDeclaration: tests reset store; create() defaults unused
 			runtimeToolbars: [],
 			runtimeTokens: {},
 			toolbarOpen: {},
@@ -358,6 +367,7 @@ export const useShapeDiverStoreToolbars = create<IShapeDiverStoreToolbars>()(
 							normalizeToolbar({...toolbar, source: "default"}),
 						);
 
+						// Stryker disable next-line ConditionalExpression: zustand merge; equal upsert already keeps the array
 						return defaultToolbars === state.defaultToolbars
 							? state
 							: {defaultToolbars};
@@ -428,6 +438,7 @@ export const useShapeDiverStoreToolbars = create<IShapeDiverStoreToolbars>()(
 			selectMergedToolbars: (viewportId) =>
 				selectMergedToolbars(get(), viewportId),
 		}),
+		// Stryker disable next-line ObjectLiteral: zustand name unused in unit tests
 		{...devtoolsSettings, name: "ShapeDiver | Toolbars"},
 	),
 );

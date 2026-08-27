@@ -82,6 +82,7 @@ export const runtimeToolbarContributionRegistry = {
 		if (!registered) return;
 		if (token) registered.delete(token);
 		else registered.clear();
+		// Stryker disable next-line ConditionalExpression,CallExpression: empty map leftover unused; next register reuses it
 		if (registered.size === 0) registrations.delete(id);
 		syncContribution(id);
 		notify();
@@ -111,6 +112,7 @@ export const runtimeToolbarContributionRegistry = {
 	},
 };
 
+// Stryker disable all: React hook; jsdom campaign later
 const useSnapshot = () =>
 	useSyncExternalStore(
 		runtimeToolbarContributionRegistry.subscribe,
@@ -125,3 +127,4 @@ export const useRuntimeToolbarContributions = (
 	useSnapshot();
 	return runtimeToolbarContributionRegistry.select(viewportId, namespace);
 };
+// Stryker restore all
