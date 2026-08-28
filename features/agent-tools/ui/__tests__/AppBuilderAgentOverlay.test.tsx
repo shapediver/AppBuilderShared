@@ -17,10 +17,8 @@ const overlayContext = {
 };
 
 const idleProps = {
-	isAgentOpen: false,
 	isAgentReady: true,
 	onOpenAgent: jest.fn(),
-	onAgentWindow: jest.fn(),
 };
 
 function renderOverlay(ui: ReactElement, withWrapper = true) {
@@ -40,7 +38,6 @@ function renderOverlay(ui: ReactElement, withWrapper = true) {
 describe("AppBuilderAgentOverlay", () => {
 	beforeEach(() => {
 		idleProps.onOpenAgent.mockReset();
-		idleProps.onAgentWindow.mockReset();
 	});
 
 	it("renders nothing without agentUrl", () => {
@@ -84,19 +81,15 @@ describe("AppBuilderAgentOverlay", () => {
 		expect(idleProps.onOpenAgent).toHaveBeenCalledTimes(1);
 	});
 
-	it("shows the agent frame when open", () => {
-		const {getByTitle, getByLabelText} = renderOverlay(
+	it("keeps the Open agent button and does not render an iframe", () => {
+		const {getByRole, queryByTitle, queryByLabelText} = renderOverlay(
 			<AppBuilderAgentOverlay
 				{...idleProps}
 				agentUrl="http://localhost:3001/app"
-				isAgentOpen={true}
 			/>,
 		);
-		const frame = getByTitle("ShapeDiver agent") as HTMLIFrameElement;
-		fireEvent.load(frame);
-		expect(idleProps.onAgentWindow).toHaveBeenCalledWith(
-			frame.contentWindow,
-		);
-		expect(getByLabelText("Resize agent")).toBeInTheDocument();
+		expect(getByRole("button", {name: "Open agent"})).toBeInTheDocument();
+		expect(queryByTitle("ShapeDiver agent")).toBeNull();
+		expect(queryByLabelText("Resize agent")).toBeNull();
 	});
 });

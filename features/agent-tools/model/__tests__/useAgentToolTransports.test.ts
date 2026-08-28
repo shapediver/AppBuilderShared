@@ -29,6 +29,7 @@ const runtime = {
 	resolvedTools: [],
 	toolHandlers: {},
 	snapshotComplete: true,
+	agentConfig: {id: "a", name: "A", message: "hi"},
 };
 
 describe("useAgentToolTransports", () => {
@@ -62,6 +63,7 @@ describe("useAgentToolTransports", () => {
 			resolvedTools: runtime.resolvedTools,
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
+			agentConfig: runtime.agentConfig,
 		});
 	});
 
@@ -73,6 +75,7 @@ describe("useAgentToolTransports", () => {
 			resolvedTools: runtime.resolvedTools,
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
+			agentConfig: runtime.agentConfig,
 		});
 	});
 });

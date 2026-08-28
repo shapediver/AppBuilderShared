@@ -6,6 +6,11 @@ function nonempty(value: string | null | undefined): string | undefined {
 export function resolveAgentUrl(
 	queryAgentUrl: string | null | undefined,
 	settingsAgentUrl: string | null | undefined,
+	envAgentUrl?: string | null,
 ): string | undefined {
-	return nonempty(queryAgentUrl) ?? nonempty(settingsAgentUrl);
+	return (
+		nonempty(queryAgentUrl) ??
+		nonempty(settingsAgentUrl) ??
+		nonempty(envAgentUrl)
+	);
 }

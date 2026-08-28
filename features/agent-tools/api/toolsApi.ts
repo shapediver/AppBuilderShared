@@ -15,11 +15,14 @@ import {
 	IToolsApiFactory,
 	IToolsApiHandlerMap,
 	MESSAGE_TYPE_EXECUTE_TOOL,
+	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_LIST_TOOLS,
 	MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 	TOOLS_API_NAME_AGENT,
 	TOOLS_API_NAME_APP,
 	TOOLS_API_TIMEOUT_MS,
+	agentConfigReplyFrom,
+	type IAgentConfigReply,
 } from "../config/toolsApi";
 import {
 	executeResolvedTool,
@@ -38,8 +41,9 @@ function withDefaultTimeout(
 }
 
 /**
- * Agent-window client. Sends LIST_TOOLS / EXECUTE_TOOL over CrossWindow after
- * handshake `TOOLS_API_HANDSHAKE`. Does not run tool handlers — App Builder does.
+ * Agent-window client. Sends LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG over
+ * CrossWindow after handshake `TOOLS_API_HANDSHAKE`. Does not run tool handlers —
+ * App Builder does.
  *
  * Construct via {@link ToolsApiFactoryClass.getClientApi} or
  * {@link ToolsApiFactoryClass.getParentClientApi}, not `new ToolsApi` from app code.
@@ -84,14 +88,29 @@ export class ToolsApi implements IToolsApi {
 			this.#timeout,
 		);
 	}
+
+	/**
+	 * Agent config `{ id, name, message }` from App Builder (`agents[0]`).
+	 * `null` when agents[] is missing or empty — never a throw.
+	 */
+	async getAgentConfig(): Promise<IAgentConfigReply | null> {
+		await this.peerIsReady;
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_GET_AGENT_CONFIG,
+			undefined,
+			this.#timeout,
+		);
+	}
 }
 
 /**
- * App Builder server. Registers LIST_TOOLS and EXECUTE_TOOL **before** handshake
- * so an eager client cannot race. `cancel()` removes listeners and aborts handshake.
+ * App Builder server. Registers LIST_TOOLS, EXECUTE_TOOL, and GET_AGENT_CONFIG
+ * **before** handshake so an eager client cannot race. `cancel()` removes
+ * listeners and aborts handshake.
  *
  * LIST_TOOLS → {@link listToolsFromResolved}.
  * EXECUTE_TOOL → {@link parseExecuteToolData} then {@link executeResolvedTool}.
+ * GET_AGENT_CONFIG → {@link agentConfigReplyFrom} (`null` if no Agent config).
  * Malformed EXECUTE_TOOL (missing string `name`) → unknown-tool JSON, not a throw.
  *
  * Construct via {@link ToolsApiFactoryClass.getConnectorApi}.
@@ -106,6 +125,7 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		toolHandlers: IToolsApiHandlerMap,
 		crossWindowApi: ICrossWindowApi,
 		options?: ICrossWindowApiOptions,
+		agentConfig?: IAgentConfigReply | null,
 	) {
 		this.#crossWindowApi = crossWindowApi;
 		this.#listenerCancels.push(
@@ -130,13 +150,18 @@ export class ToolsApiConnector implements IToolsApiConnector {
 				},
 			),
 		);
+		this.#listenerCancels.push(
+			crossWindowApi.on(MESSAGE_TYPE_GET_AGENT_CONFIG, async () =>
+				agentConfigReplyFrom(agentConfig),
+			),
+		);
 		this.peerIsReady = crossWindowApi.handshake(
 			MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 			options?.timeout,
 		);
 	}
 
-	/** Drop LIST_TOOLS / EXECUTE_TOOL listeners and cancel an in-flight handshake. */
+	/** Drop LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG listeners and cancel an in-flight handshake. */
 	cancel(): void {
 		for (const token of this.#listenerCancels) {
 			token.cancel();
@@ -208,7 +233,8 @@ export class ToolsApiFactoryClass implements IToolsApiFactory {
 	 * Default names: `"app"` → `"agent"`.
 	 *
 	 * `resolvedTools` filters which names exist; `toolHandlers` runs them.
-	 * Called from {@link useToolsApiConnector} once snapshot + peer window exist.
+	 * `agentConfig` is `IAppBuilder.agents[0]` (parameterized). Called from
+	 * {@link useToolsApiConnector} once snapshot + peer window exist.
 	 */
 	async getConnectorApi(
 		window: Window,
@@ -217,6 +243,7 @@ export class ToolsApiFactoryClass implements IToolsApiFactory {
 		name = TOOLS_API_NAME_APP,
 		peerName = TOOLS_API_NAME_AGENT,
 		options?: ICrossWindowApiOptions,
+		agentConfig?: IAgentConfigReply | null,
 	): Promise<IToolsApiConnector> {
 		const optionsWithTimeout = withDefaultTimeout(options);
 		const api = await this.crossWindowFactory.getWindowApi(
@@ -230,6 +257,7 @@ export class ToolsApiFactoryClass implements IToolsApiFactory {
 			toolHandlers,
 			api,
 			optionsWithTimeout,
+			agentConfig,
 		);
 	}
 }

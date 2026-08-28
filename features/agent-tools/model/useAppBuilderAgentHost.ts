@@ -1,9 +1,12 @@
+import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
 import {useCallback, useState} from "react";
 import type {
 	AppBuilderAgentOverlayProps,
 	UseAppBuilderAgentHostProps,
 } from "../config/appBuilderAgentHost";
+import {openAgentWindow} from "../lib/openAgentWindow";
+import {readAgentUrlEnv} from "../lib/readAgentUrlEnv";
 import {resolveAgentUrl} from "../lib/resolveAgentUrl";
 import {useAgentToolTransports} from "./useAgentToolTransports";
 
@@ -19,12 +22,9 @@ export function useAppBuilderAgentHost(
 	const agentUrl = resolveAgentUrl(
 		new URLSearchParams(window.location.search).get(QUERYPARAM_AGENTURL),
 		settings?.settings?.agentUrl,
+		readAgentUrlEnv(),
 	);
 	const [agentWindow, setAgentWindow] = useState<Window | null>(null);
-	const [isAgentOpen, setIsAgentOpen] = useState(false);
-	const onAgentWindow = useCallback((nextWindow: Window | null) => {
-		setAgentWindow(nextWindow);
-	}, []);
 
 	const {snapshotComplete} = useAgentToolTransports({
 		namespace,
@@ -37,14 +37,23 @@ export function useAppBuilderAgentHost(
 		if (!agentUrl) {
 			return;
 		}
-		setIsAgentOpen(true);
+		const opened = openAgentWindow(agentUrl);
+		if (!opened) {
+			useNotificationStore.getState().show({
+				title: "Agent window blocked",
+				message:
+					"Allow popups for this site, then try Open agent again.",
+				color: "red",
+			});
+			return;
+		}
+		setAgentWindow(null);
+		window.setTimeout(() => setAgentWindow(opened), 0);
 	}, [agentUrl]);
 
 	return {
 		agentUrl,
-		isAgentOpen,
 		isAgentReady: snapshotComplete,
 		onOpenAgent,
-		onAgentWindow,
 	};
 }

@@ -7,9 +7,9 @@ describe("resolveAgentUrl", () => {
 	});
 
 	it("uses settings when query is missing", () => {
-		expect(
-			resolveAgentUrl(null, "http://localhost:3001/app"),
-		).toBe("http://localhost:3001/app");
+		expect(resolveAgentUrl(null, "http://localhost:3001/app")).toBe(
+			"http://localhost:3001/app",
+		);
 	});
 
 	it("query wins over settings", () => {
@@ -22,8 +22,38 @@ describe("resolveAgentUrl", () => {
 	});
 
 	it("trims whitespace", () => {
-		expect(resolveAgentUrl("  http://localhost:3001/app  ", undefined)).toBe(
-			"http://localhost:3001/app",
-		);
+		expect(
+			resolveAgentUrl("  http://localhost:3001/app  ", undefined),
+		).toBe("http://localhost:3001/app");
+	});
+
+	it("uses env when query and settings are missing", () => {
+		expect(
+			resolveAgentUrl(null, undefined, "http://localhost:3001/app"),
+		).toBe("http://localhost:3001/app");
+	});
+
+	it("query wins over settings and env", () => {
+		expect(
+			resolveAgentUrl(
+				"http://localhost:3001/app",
+				"http://example.invalid/settings",
+				"http://example.invalid/env",
+			),
+		).toBe("http://localhost:3001/app");
+	});
+
+	it("settings wins over env", () => {
+		expect(
+			resolveAgentUrl(
+				null,
+				"http://localhost:3001/app",
+				"http://example.invalid/env",
+			),
+		).toBe("http://localhost:3001/app");
+	});
+
+	it("ignores blank env", () => {
+		expect(resolveAgentUrl(null, undefined, "  ")).toBeUndefined();
 	});
 });

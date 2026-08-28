@@ -9,11 +9,18 @@ type Handler = (event: {
 }) => Promise<unknown>;
 
 const mockListeners = new Map<string, Handler>();
+const mockSends: Array<{name: string; timeout?: number}> = [];
 
 jest.mock("post-robot", () => ({
 	__esModule: true,
 	default: {
-		send: async (_window: object, name: string, data: unknown) => {
+		send: async (
+			_window: object,
+			name: string,
+			data: unknown,
+			options?: {timeout?: number},
+		) => {
+			mockSends.push({name, timeout: options?.timeout});
 			const handler = mockListeners.get(name);
 			if (!handler) {
 				throw new Error(`no listener for ${name}`);
@@ -78,6 +85,7 @@ describe("CrossWindowApi handshake", () => {
 
 	beforeEach(() => {
 		mockListeners.clear();
+		mockSends.length = 0;
 	});
 
 	afterEach(() => {
@@ -87,6 +95,13 @@ describe("CrossWindowApi handshake", () => {
 		agentApi = undefined;
 		jest.useRealTimers();
 		mockListeners.clear();
+	});
+
+	it("plants API_READY with options.timeout so post-robot onChildWindowReady is not poisoned at 100ms", async () => {
+		({appApi, agentApi} = await createPeerApis());
+		const readyPings = mockSends.filter((s) => s.name.endsWith("API_READY"));
+		expect(readyPings.length).toBeGreaterThan(0);
+		expect(readyPings.some((s) => s.timeout === 2000)).toBe(true);
 	});
 
 	it("resolves handshake() when send of the handshake type succeeds, without waiting for receive", async () => {

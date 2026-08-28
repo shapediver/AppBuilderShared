@@ -1,4 +1,5 @@
 import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {IAppBuilderAgent} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {useRef} from "react";
 import {
 	resolveToolset,
@@ -29,6 +30,11 @@ export type UseAgentToolRuntimeResult = {
 	toolHandlers: AgentToolHandlerMap;
 	/** `false` while snapshot is still `"unset"` — do not handshake / register yet. */
 	snapshotComplete: boolean;
+	/**
+	 * Frozen `IAppBuilder.agents[0]`, or `undefined` when agents[] is missing/empty.
+	 * Passed into ToolsApi `getAgentConfig` (parameterized, not a singleton).
+	 */
+	agentConfig: IAppBuilderAgent | undefined;
 };
 
 /**
@@ -40,7 +46,7 @@ export type UseAgentToolRuntimeResult = {
  *
  * Callers:
  * - `useWebMcpTools({ resolvedTools, toolHandlers, snapshotComplete })`
- * - `useToolsApiConnector({ resolvedTools, toolHandlers, snapshotComplete, window? })`
+ * - `useToolsApiConnector({ resolvedTools, toolHandlers, snapshotComplete, agentConfig, window? })`
  *
  * Do not resolve the toolset again inside those hooks.
  */
@@ -56,16 +62,16 @@ export function useAgentToolRuntime(
 		appBuilderParseSettled,
 	);
 	const snapshotComplete = agentRef.current !== AGENT_SNAPSHOT_UNSET;
-	const resolvedTools = resolveToolset(
+	const agentConfig =
 		agentRef.current === AGENT_SNAPSHOT_UNSET
 			? undefined
-			: agentRef.current,
-	);
+			: agentRef.current;
+	const resolvedTools = resolveToolset(agentConfig);
 	const toolHandlers = useAgentToolHandlers({
 		namespace: namespace ?? "",
 		appBuilderData,
 		resolvedTools,
 	});
 
-	return {resolvedTools, toolHandlers, snapshotComplete};
+	return {resolvedTools, toolHandlers, snapshotComplete, agentConfig};
 }

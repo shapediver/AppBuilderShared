@@ -5,6 +5,7 @@ import {
 	TOOLS_API_NAME_AGENT,
 	TOOLS_API_NAME_APP,
 	TOOLS_API_TIMEOUT_MS,
+	type IAgentConfigReply,
 	type IToolsApiConnector,
 	type IToolsApiHandlerMap,
 } from "../config/toolsApi";
@@ -34,6 +35,11 @@ export type UseToolsApiConnectorProps = {
 	 * Handshake must not start with a fluctuating / empty toolset.
 	 */
 	snapshotComplete: boolean;
+	/**
+	 * Parameterized Agent config (`IAppBuilder.agents[0]`). `undefined` / omit →
+	 * `getAgentConfig` replies `null` (Chat page fallback prompt).
+	 */
+	agentConfig?: IAgentConfigReply | null;
 };
 
 /**
@@ -47,13 +53,14 @@ export type UseToolsApiConnectorProps = {
  * App Builder page                         Agent window (Step 3)
  * -----------------                        ---------------------
  * useAgentToolRuntime                      ToolsApiFactory.getClientApi
- *   resolvedTools + toolHandlers             .listTools() / .execute()
+ *   resolvedTools + toolHandlers + agentConfig
  *         │                                         │
  *         ├─ useWebMcpTools (same map)              │
  *         └─ useToolsApiConnector  ←── postMessage ─┘
  *              ToolsApiConnector
  *              LIST_TOOLS  → listToolsFromResolved
  *              EXECUTE_TOOL → executeResolvedTool → handlers
+ *              GET_AGENT_CONFIG → { id, name, message } | null
  * ```
  *
  * **When it connects.** Effect runs only if `window` is set **and**
@@ -76,8 +83,8 @@ export type UseToolsApiConnectorProps = {
  *    immediately.
  *
  * **This hook returns void.** Callers do not get `IToolsApi`; that object lives
- * in the agent window. Success is "peer can list/execute". Failure is silent
- * at this layer (no UI).
+ * in the agent window. Success is "peer can list/execute/getAgentConfig". Failure
+ * is silent at this layer (no UI).
  *
  * @see ToolsApiFactory.getConnectorApi
  * @see IToolsApi — client in the agent window
@@ -90,12 +97,15 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 		resolvedTools,
 		toolHandlers,
 		snapshotComplete,
+		agentConfig,
 	} = props;
 
 	const resolvedToolsRef = useRef(resolvedTools);
 	resolvedToolsRef.current = resolvedTools;
 	const toolHandlersRef = useRef(toolHandlers);
 	toolHandlersRef.current = toolHandlers;
+	const agentConfigRef = useRef(agentConfig);
+	agentConfigRef.current = agentConfig;
 
 	useEffect(() => {
 		if (!peerWindow || !snapshotComplete) {
@@ -114,6 +124,7 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 					TOOLS_API_NAME_APP,
 					TOOLS_API_NAME_AGENT,
 					{timeout: TOOLS_API_TIMEOUT_MS},
+					agentConfigRef.current,
 				);
 				void connector.peerIsReady.catch(() => {});
 				if (effectAbandoned) {

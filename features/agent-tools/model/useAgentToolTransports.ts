@@ -48,6 +48,7 @@ export function useAgentToolTransports(
 		resolvedTools: runtime.resolvedTools,
 		toolHandlers: runtime.toolHandlers,
 		snapshotComplete: runtime.snapshotComplete,
+		agentConfig: runtime.agentConfig,
 	});
 
 	return runtime;

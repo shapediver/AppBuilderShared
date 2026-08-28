@@ -17,9 +17,7 @@ export type UseAppBuilderAgentHostProps = {
  */
 export type AppBuilderAgentOverlayProps = {
 	agentUrl?: string;
-	isAgentOpen: boolean;
 	/** Tools snapshot is ready — Open agent button may be clicked. */
 	isAgentReady: boolean;
 	onOpenAgent: () => void;
-	onAgentWindow: (agentWindow: Window | null) => void;
 };

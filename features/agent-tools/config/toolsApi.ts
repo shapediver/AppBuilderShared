@@ -19,9 +19,16 @@ export const MESSAGE_TYPE_LIST_TOOLS = "LIST_TOOLS";
 export const MESSAGE_TYPE_EXECUTE_TOOL = "EXECUTE_TOOL";
 
 /**
+ * CrossWindow message type: agent asks App Builder for Agent config prompt fields.
+ * Payload is unused. Reply is {@link IAgentConfigReply} or `null` when agents[] is
+ * missing/empty. Never throws across the wire.
+ */
+export const MESSAGE_TYPE_GET_AGENT_CONFIG = "GET_AGENT_CONFIG";
+
+/**
  * CrossWindow handshake name for ToolsApi (same role as ECommerce's ready handshake).
- * Listeners for LIST_TOOLS / EXECUTE_TOOL must be registered **before** this runs,
- * or the agent can send into a window that is not listening yet.
+ * Listeners for LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG must be registered
+ * **before** this runs, or the agent can send into a window that is not listening yet.
  */
 export const MESSAGE_TYPE_TOOLS_API_HANDSHAKE = "TOOLS_API_HANDSHAKE";
 
@@ -61,23 +68,49 @@ export interface IExecuteToolData {
 }
 
 /**
+ * Agent config fields ToolsApi exposes after handshake.
+ * Subset of `IAppBuilderAgent` — never the full object (`genericTools` /
+ * `specificTools` stay in App Builder).
+ */
+export interface IAgentConfigReply {
+	id: string;
+	name: string;
+	message: string;
+}
+
+/**
+ * `{ id, name, message }` from parameterized Agent config, or `null` when
+ * `agents[]` is missing/empty. Strips other `IAppBuilderAgent` fields.
+ */
+export function agentConfigReplyFrom(
+	agent: IAgentConfigReply | null | undefined,
+): IAgentConfigReply | null {
+	if (agent == null) {
+		return null;
+	}
+	return {id: agent.id, name: agent.name, message: agent.message};
+}
+
+/**
  * Agent-window **client**. Lives in the peer that does **not** run tool handlers.
  *
  * Obtained via {@link IToolsApiFactory.getClientApi} (peer `Window`) or
  * {@link IToolsApiFactory.getParentClientApi} (`window.parent`).
  *
- * Await `peerIsReady` (or let `listTools` / `execute` await it) before assuming
- * App Builder is listening.
+ * Await `peerIsReady` (or let `listTools` / `execute` / `getAgentConfig` await it)
+ * before assuming App Builder is listening.
  */
 export interface IToolsApi {
 	readonly peerIsReady: Promise<ICrossWindowPeerInfo>;
 	listTools(): Promise<IListToolsReply>;
 	execute(data: IExecuteToolData): Promise<unknown>;
+	getAgentConfig(): Promise<IAgentConfigReply | null>;
 }
 
 /**
- * App Builder **server**. Owns LIST_TOOLS / EXECUTE_TOOL listeners and handshake.
- * Does not expose list/execute methods — the agent calls those on {@link IToolsApi}.
+ * App Builder **server**. Owns LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG listeners
+ * and handshake.
+ * Does not expose list/execute/getAgentConfig methods — the agent calls those on {@link IToolsApi}.
  *
  * `cancel()` tears down listeners and the handshake. Required on React unmount
  * and when `getConnectorApi` resolves after the effect was already cleaned up.
@@ -125,6 +158,8 @@ export interface IToolsApiFactory {
 	 *
 	 * `resolvedTools` is the snapshot from `resolveToolset` (which tools exist).
 	 * `toolHandlers` is the live map from `useAgentToolHandlers` (how they run).
+	 * `agentConfig` is parameterized Agent config (`IAppBuilder.agents[0]`); omit /
+	 * `null` / `undefined` → `getAgentConfig` replies `null`.
 	 * Listeners are attached before handshake starts.
 	 */
 	getConnectorApi(
@@ -134,5 +169,6 @@ export interface IToolsApiFactory {
 		name?: string,
 		peerName?: string,
 		options?: ICrossWindowApiOptions,
+		agentConfig?: IAgentConfigReply | null,
 	): Promise<IToolsApiConnector>;
 }

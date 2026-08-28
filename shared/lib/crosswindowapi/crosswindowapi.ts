@@ -53,9 +53,39 @@ class CrossWindowApi implements ICrossWindowApi {
 		this.name = name;
 		this.peerName = peerName;
 
-		// notify the peer that we are ready, do this until
-		// we get a response
-		const intervalId = setInterval(async () => {
+		// post-robot send() to a popup/iframe waits onChildWindowReady using
+		// the same timeout. A 100ms timeout rejects that promise and caches it,
+		// so every later parent→child send fails (ToolsApi handshake too).
+		// Plant a long wait first (sync), then retry ACK on SETUP_INTERVAL.
+		const pingTimeout = this.timeout ?? 5000;
+		let intervalId: ReturnType<typeof setInterval> | undefined;
+		const onPingSuccess = (result: unknown) => {
+			this.log(
+				"Peer answered ready event",
+				(result as {origin?: string})?.origin,
+			);
+			if (intervalId !== undefined) {
+				clearInterval(intervalId);
+				intervalId = undefined;
+			}
+		};
+
+		void postRobot
+			.send(
+				window,
+				`${this.name}${MESSAGE_TYPE_READY}`,
+				{name},
+				{timeout: pingTimeout},
+			)
+			.then(onPingSuccess)
+			.catch((error: unknown) => {
+				this.log(
+					"Peer not ready (initial ping)",
+					error instanceof Error ? error.message : error,
+				);
+			});
+
+		intervalId = setInterval(async () => {
 			try {
 				const result = await postRobot.send(
 					window,
@@ -63,11 +93,12 @@ class CrossWindowApi implements ICrossWindowApi {
 					{name},
 					{timeout: SETUP_INTERVAL},
 				);
-				this.log("Peer answered ready event", result);
-				clearInterval(intervalId);
-			} catch {
-				//(error)
-				//this.log("Peer not ready", error);
+				onPingSuccess(result);
+			} catch (error) {
+				this.log(
+					"Peer not ready",
+					error instanceof Error ? error.message : error,
+				);
 			}
 		}, SETUP_INTERVAL);
 
@@ -93,7 +124,11 @@ class CrossWindowApi implements ICrossWindowApi {
 							this.log(msg);
 							throw new Error(msg);
 						}
-						this.log("Peer ready event received", event);
+						this.log(
+							"Peer ready event received",
+							event.origin,
+							event.data?.name,
+						);
 						clearTimeout(timeoutId);
 						token.cancel();
 						resolve({
@@ -176,11 +211,18 @@ class CrossWindowApi implements ICrossWindowApi {
 	}
 
 	log(...message: any[]): void {
-		if (this.debug)
+		if (!this.debug) {
+			return;
+		}
+		try {
 			console.log(
 				`CrossWindowApi (name = "${this.name}", peerName = "${this.peerName}"):`,
 				...message,
 			);
+		} catch {
+			// console.log of a cross-origin Window (event.source) throws
+			// SecurityError and must not abort API_READY / handshake handlers.
+		}
 	}
 
 	async once<Trequest, Tresponse>(

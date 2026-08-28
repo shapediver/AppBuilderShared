@@ -8,6 +8,7 @@ describe("openAgentWindow", () => {
 		expect(open).toHaveBeenCalledWith(
 			"http://localhost:3001/app",
 			AGENT_WINDOW_NAME,
+			"width=520,height=780",
 		);
 	});
 

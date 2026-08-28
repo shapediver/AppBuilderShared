@@ -84,6 +84,26 @@ describe("useToolsApiConnector", () => {
 		expect(getConnectorApi.mock.calls[0][2]).toBe(toolHandlers);
 	});
 
+	it("passes parameterized Agent config as getConnectorApi last argument", async () => {
+		const agent = {
+			id: "a",
+			name: "A",
+			message: "hi",
+		};
+		const peer = {} as Window;
+		renderHook(() =>
+			useToolsApiConnector({
+				window: peer,
+				resolvedTools: resolveToolset(undefined),
+				toolHandlers: stubHandlers(),
+				snapshotComplete: true,
+				agentConfig: agent,
+			}),
+		);
+		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
+		expect(getConnectorApi.mock.calls[0][6]).toBe(agent);
+	});
+
 	it("cancels on unmount while peerIsReady is still pending", async () => {
 		const cancel = jest.fn();
 		const peerIsReady = new Promise<{origin: string; name: string}>(() => {

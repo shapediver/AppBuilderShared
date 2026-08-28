@@ -17,6 +17,7 @@ import {resolveToolset} from "../config/resolveToolset";
 import type {IToolsApiHandlerMap} from "../config/toolsApi";
 import {
 	MESSAGE_TYPE_EXECUTE_TOOL,
+	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_LIST_TOOLS,
 	TOOLS_API_NAME_AGENT,
 	TOOLS_API_NAME_APP,
@@ -191,6 +192,107 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		connector.cancel();
 	});
 
+	it("getAgentConfig returns id, name, and message from the parameterized Agent config", async () => {
+		const mock = createMockCrossWindowApi();
+		const agent = screenshotOnlyAgent();
+		const connector = new ToolsApiConnector(
+			resolveToolset(agent),
+			stubHandlers(),
+			mock,
+			undefined,
+			agent,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getAgentConfig()).resolves.toEqual({
+			id: "a",
+			name: "A",
+			message: "hi",
+		});
+		connector.cancel();
+	});
+
+	it("getAgentConfig omits genericTools and specificTools", async () => {
+		const mock = createMockCrossWindowApi();
+		const agent: IAppBuilderAgent = {
+			...screenshotOnlyAgent(),
+			specificTools: [
+				{
+					name: "do_thing",
+					inputSchema: {type: "object"},
+				},
+			],
+		};
+		const connector = new ToolsApiConnector(
+			resolveToolset(agent),
+			stubHandlers(),
+			mock,
+			undefined,
+			agent,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		const reply = await client.getAgentConfig();
+		expect(reply).not.toHaveProperty("genericTools");
+		expect(reply).not.toHaveProperty("specificTools");
+		expect(reply).not.toHaveProperty("useGenericToolDefaults");
+		connector.cancel();
+	});
+
+	it("getAgentConfig returns null when Agent config is missing, does not throw", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getAgentConfig()).resolves.toBeNull();
+		connector.cancel();
+	});
+
+	it("getAgentConfig returns null for empty agents[], does not throw", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+			undefined,
+			undefined,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getAgentConfig()).resolves.toBeNull();
+		connector.cancel();
+	});
+
+	it("handshake then listTools, execute, and getAgentConfig all work", async () => {
+		const mock = createMockCrossWindowApi();
+		const agent = screenshotOnlyAgent();
+		const get_screenshot = jest.fn(async () => ({success: true}));
+		const connector = new ToolsApiConnector(
+			resolveToolset(agent),
+			stubHandlers({get_screenshot}),
+			mock,
+			undefined,
+			agent,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		const {tools} = await client.listTools();
+		expect(tools.map((t) => t.name)).toEqual(["get_screenshot"]);
+		await expect(
+			client.execute({name: "get_screenshot", input: {}}),
+		).resolves.toEqual({success: true});
+		await expect(client.getAgentConfig()).resolves.toEqual({
+			id: "a",
+			name: "A",
+			message: "hi",
+		});
+		connector.cancel();
+	});
+
 	it("execute routes to the handler through EXECUTE_TOOL", async () => {
 		const mock = createMockCrossWindowApi();
 		const get_screenshot = jest.fn(async (input: unknown) => ({
@@ -275,7 +377,7 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		expect(mock.cancelHandshake).toHaveBeenCalledTimes(1);
 	});
 
-	it("cancel unregisters LIST_TOOLS and EXECUTE_TOOL", async () => {
+	it("cancel unregisters LIST_TOOLS, EXECUTE_TOOL, and GET_AGENT_CONFIG", async () => {
 		const mock = createMockCrossWindowApi();
 		const connector = new ToolsApiConnector(
 			resolveToolset(undefined),
@@ -291,6 +393,9 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		await expect(
 			client.execute({name: "get_screenshot", input: {}}),
 		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_EXECUTE_TOOL}`);
+		await expect(client.getAgentConfig()).rejects.toThrow(
+			`No handler for ${MESSAGE_TYPE_GET_AGENT_CONFIG}`,
+		);
 	});
 
 	it("cancel before handshake resolves unregisters both listeners", async () => {
@@ -318,6 +423,9 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 				input: {},
 			}),
 		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_EXECUTE_TOOL}`);
+		await expect(
+			mock.send(MESSAGE_TYPE_GET_AGENT_CONFIG, undefined),
+		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_GET_AGENT_CONFIG}`);
 	});
 });
 
@@ -415,5 +523,30 @@ describe("ToolsApiFactoryClass defaults", () => {
 			TOOLS_API_NAME_AGENT,
 			expect.objectContaining({timeout: 5}),
 		);
+	});
+
+	it("getConnectorApi forwards parameterized Agent config to getAgentConfig", async () => {
+		const mock = createMockCrossWindowApi();
+		const {factory} = createMockCrossWindowFactory(mock);
+		const agent = screenshotOnlyAgent();
+		const connector = await new ToolsApiFactoryClass(
+			factory,
+		).getConnectorApi(
+			peerWindow,
+			resolveToolset(agent),
+			stubHandlers(),
+			undefined,
+			undefined,
+			undefined,
+			agent,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getAgentConfig()).resolves.toEqual({
+			id: "a",
+			name: "A",
+			message: "hi",
+		});
+		connector.cancel();
 	});
 });
