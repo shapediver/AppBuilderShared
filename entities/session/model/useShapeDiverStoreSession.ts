@@ -764,7 +764,7 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 	Object.values(state.sessions).forEach((session) => {
 		syncLatestSessionNode(session.id, session.node);
 
-		Object.entries(session.outputs).forEach(([outputId, output]) => {
+		Object.entries(session.outputs ?? {}).forEach(([outputId, output]) => {
 			syncLatestOutputNode(session.id, outputId, output.node);
 		});
 	});
