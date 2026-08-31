@@ -1,12 +1,7 @@
 import type {MantineThemeComponent} from "@mantine/core";
 import type {InteractionEffect} from "@shapediver/viewer.shared.types";
+import type {ParameterRectangleTransformComponentThemeDefaultProps} from "../parameterRectangleTransformComponent.theme.types";
 
-/**
- * @docAttached
- * @category entity
- * @configPath themeOverrides.components.ParameterRectangleTransformComponent.defaultProps
- * @displayName ParameterRectangleTransformComponent
- */
 export interface ParameterRectangleTransformComponentStyleProps {
 	selectionColor?: InteractionEffect;
 	availableColor?: InteractionEffect;
@@ -14,7 +9,7 @@ export interface ParameterRectangleTransformComponentStyleProps {
 }
 
 export type ParameterRectangleTransformComponentThemePropsInput =
-	Partial<ParameterRectangleTransformComponentStyleProps>;
+	Partial<ParameterRectangleTransformComponentThemeDefaultProps>;
 
 export function ParameterRectangleTransformComponentThemeProps(
 	props: ParameterRectangleTransformComponentThemePropsInput,

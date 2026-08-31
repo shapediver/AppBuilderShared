@@ -579,7 +579,14 @@ export interface IAppBuilderActionPropsSetContainerVisibility {
 	mode: "open" | "close" | "toggle";
 }
 
-/** Properties of a "createModelState" action. */
+/**
+ * Properties of a "createModelState" action (also inherited by "addToCart").
+ *
+ * @docAttached
+ * @category feature
+ * @configPath actions.createModelState.props
+ * @displayName IAppBuilderActionPropsCreateModelState
+ */
 export interface IAppBuilderActionPropsCreateModelState {
 	/**
 	 * Optional flag to control whether an image of the scene shall be
