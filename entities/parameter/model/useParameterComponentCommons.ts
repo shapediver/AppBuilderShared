@@ -152,12 +152,16 @@ export function useParameterComponentCommons<T>(
 								const delegateActions =
 									delegate.getState().actions;
 								let delegateValue = curval;
-								let valueWasSet = delegateActions.setUiValue(delegateValue);
+								let valueWasSet =
+									delegateActions.setUiValue(delegateValue);
 								if (!valueWasSet) {
 									delegateValue =
-										actions.stringify?.(curval) ?? `${curval}`;
+										actions.stringify?.(curval) ??
+										`${curval}`;
 									valueWasSet =
-										delegateActions.setUiValue(delegateValue);
+										delegateActions.setUiValue(
+											delegateValue,
+										);
 								}
 								if (!valueWasSet) {
 									Logger.warn(
@@ -282,6 +286,13 @@ export function useParameterComponentCommons<T>(
 		return applyOverrides(definition, props.overrides);
 	}, [definition, props.overrides]);
 
+	const showReset = memoizedDefinition.settings?.resettable === true;
+
+	const resetToDefault = useCallback(
+		() => handleChange(memoizedDefinition.defval!, 0),
+		[handleChange, memoizedDefinition.defval],
+	);
+
 	// Extract form from props if provided
 	const form = formFromProps;
 	const fieldError =
@@ -308,6 +319,8 @@ export function useParameterComponentCommons<T>(
 		setOnCancelCallback,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		sessionDependencies,
 		// Form instance (optional)
 		form,

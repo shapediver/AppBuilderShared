@@ -322,7 +322,11 @@ export interface IAppBuilderControlParameterRef {
 	/** Properties of the parameter to be overridden. */
 	overrides?: Pick<
 		Partial<IAppBuilderParameterDefinition>,
-		"displayname" | "tooltip" | "hidden" | "settings" | "step"
+		| "displayname"
+		| "tooltip"
+		| "hidden"
+		| "settings"
+		| "step"
 	>;
 	/** Disable the UI element of the parameter if its state is dirty. */
 	disableIfDirty?: boolean;

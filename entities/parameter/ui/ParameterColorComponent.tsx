@@ -2,13 +2,7 @@ import {
 	convertFromSdColor,
 	convertToSdColor,
 } from "@AppBuilderLib/shared/lib/colors";
-import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
-import {
-	ActionIcon,
-	ColorInput,
-	MantineThemeComponent,
-	useProps,
-} from "@mantine/core";
+import {ColorInput, MantineThemeComponent, useProps} from "@mantine/core";
 import {useCallback, useEffect, useState} from "react";
 import type {ParameterColorComponentThemeDefaultProps} from "shared/entities/parameter/config/ParameterColorComponent.types";
 import {
@@ -19,6 +13,7 @@ import {
 import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterResetButton from "./ParameterResetButton";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 const defaultStyleProps = {
@@ -114,7 +109,7 @@ export default function ParameterColorComponent(
 					placeholder="Pick color"
 					value={value}
 					rightSection={
-						<ActionIcon
+						<ParameterResetButton
 							onClick={() =>
 								handleChange(
 									definition.defval!,
@@ -122,9 +117,8 @@ export default function ParameterColorComponent(
 									restoreFocus,
 								)
 							}
-						>
-							<Icon iconType={"tabler:refresh"} />
-						</ActionIcon>
+							disabled={disabled}
+						/>
 					}
 					onChange={setValue}
 					onChangeEnd={handleSdColorChange}

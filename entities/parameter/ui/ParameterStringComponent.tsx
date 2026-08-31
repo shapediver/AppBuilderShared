@@ -19,6 +19,8 @@ import {resolveStringSelectEmitValue} from "../lib/select/resolveStringSelectEmi
 import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterResetButton from "./ParameterResetButton";
+import ParameterResetRow from "./ParameterResetRow";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 import SelectComponent from "./select/SelectComponent";
 
@@ -91,6 +93,8 @@ export default function ParameterStringComponent(
 		handleChange,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		formInputProps,
 		formKey,
 	} = useParameterComponentCommons<string>(props, debounce);
@@ -220,6 +224,38 @@ export default function ParameterStringComponent(
 		[onFocusHandler, onBlurHandler],
 	);
 
+	const selectComponent = selectSettings ? (
+		<SelectComponent
+			key={formKey}
+			value={value || undefined}
+			{...(formInputProps || {})}
+			onChange={(v) => {
+				const val = v ?? "";
+				handleChange(val, 0, restoreFocus);
+				if (formInputProps?.onChange) {
+					formInputProps.onChange(val);
+				}
+			}}
+			disabled={disabled}
+			emitValue={resolveStringSelectEmitValue(selectSettings)}
+			inputContainer={inputContainer}
+			onFocus={(e) => {
+				onFocusHandler(e);
+				if (formInputProps?.onFocus) {
+					formInputProps.onFocus(e);
+				}
+			}}
+			onBlur={() => {
+				onBlurHandler();
+				if (formInputProps?.onBlur) {
+					formInputProps.onBlur();
+				}
+			}}
+			items={selectSettings.items ?? []}
+			{...selectSettings}
+		/>
+	) : null;
+
 	return (
 		<ParameterWrapperComponent
 			onCancel={onCancel}
@@ -232,35 +268,13 @@ export default function ParameterStringComponent(
 				(selectSettings.items ||
 					selectSettings.source ||
 					selectSettings.database) ? (
-					<SelectComponent
-						key={formKey}
-						value={value || undefined}
-						{...(formInputProps || {})}
-						onChange={(v) => {
-							const val = v ?? "";
-							handleChange(val, 0, restoreFocus);
-							if (formInputProps?.onChange) {
-								formInputProps.onChange(val);
-							}
-						}}
+					<ParameterResetRow
+						show={showReset}
+						onClick={resetToDefault}
 						disabled={disabled}
-						emitValue={resolveStringSelectEmitValue(selectSettings)}
-						inputContainer={inputContainer}
-						onFocus={(e) => {
-							onFocusHandler(e);
-							if (formInputProps?.onFocus) {
-								formInputProps.onFocus(e);
-							}
-						}}
-						onBlur={() => {
-							onBlurHandler();
-							if (formInputProps?.onBlur) {
-								formInputProps.onBlur();
-							}
-						}}
-						items={selectSettings.items ?? []}
-						{...selectSettings}
-					/>
+					>
+						{selectComponent}
+					</ParameterResetRow>
 				) : lines !== undefined ? (
 					<Textarea
 						key={formKey}
@@ -277,6 +291,17 @@ export default function ParameterStringComponent(
 						autosize
 						minRows={lines}
 						maxRows={lines}
+						rightSection={
+							showReset ? (
+								<ParameterResetButton
+									onClick={resetToDefault}
+									disabled={disabled}
+								/>
+							) : undefined
+						}
+						rightSectionPointerEvents={
+							showReset ? "all" : undefined
+						}
 						onFocus={(e) => {
 							onFocusHandler(e);
 							if (formInputProps?.onFocus) {
@@ -307,6 +332,17 @@ export default function ParameterStringComponent(
 						}}
 						disabled={disabled}
 						maxLength={definition.max}
+						rightSection={
+							showReset ? (
+								<ParameterResetButton
+									onClick={resetToDefault}
+									disabled={disabled}
+								/>
+							) : undefined
+						}
+						rightSectionPointerEvents={
+							showReset ? "all" : undefined
+						}
 						onFocus={(e) => {
 							onFocusHandler(e);
 							if (formInputProps?.onFocus) {
