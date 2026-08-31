@@ -30,6 +30,10 @@ const createSessionIdentifier = function (
 
 const latestSessionNodes: {[sessionId: string]: ITreeNode | undefined} = {};
 
+// The Viewer API objects are mutable, which means Zustand's previous state
+// cannot tell us whether session.node changed. Keep that observation separately.
+const observedSessionNodes: {[sessionId: string]: ITreeNode | undefined} = {};
+
 const setLatestSessionNode = (sessionId: string, node?: ITreeNode) => {
 	if (node) {
 		latestSessionNodes[sessionId] = node;
@@ -40,6 +44,18 @@ const setLatestSessionNode = (sessionId: string, node?: ITreeNode) => {
 
 const getLatestSessionNode = (sessionId: string) =>
 	latestSessionNodes[sessionId];
+
+/**
+ * Promote session.node to the callback cache only after its reference changes.
+ * This preserves a newer callback node during a remount and releases it once
+ * session.node catches up.
+ */
+const syncLatestSessionNode = (sessionId: string, node?: ITreeNode) => {
+	if (observedSessionNodes[sessionId] === node) return;
+
+	observedSessionNodes[sessionId] = node;
+	setLatestSessionNode(sessionId, node);
+};
 
 const latestOutputNodes: {
 	[sessionId: string]: {
@@ -228,6 +244,7 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				}
 
 				delete latestSessionNodes[sessionId];
+				delete observedSessionNodes[sessionId];
 				delete latestOutputNodes[sessionId];
 				delete observedOutputNodes[sessionId];
 
@@ -258,6 +275,8 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				// get the session
 				const session = sessions[sessionId];
 				if (session) {
+					syncLatestSessionNode(sessionId, session.node);
+
 					// call the callback once using the latest node seen by the
 					// session update callback. session.node can lag behind newNode
 					// during AppBuilder/custom parameter remounts.
@@ -739,10 +758,12 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 		);
 	});
 
-	// Keep the callback cache only for the remount handover. Once an output.node
-	// reference changes, it is authoritative and replaces the cached callback
-	// node before consumers register again.
+	// Keep callback caches only for the remount handover. Once a session.node or
+	// output.node reference changes, it is authoritative and replaces the cached
+	// callback node before consumers register again.
 	Object.values(state.sessions).forEach((session) => {
+		syncLatestSessionNode(session.id, session.node);
+
 		Object.entries(session.outputs).forEach(([outputId, output]) => {
 			syncLatestOutputNode(session.id, outputId, output.node);
 		});
