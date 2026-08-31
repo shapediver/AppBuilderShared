@@ -196,7 +196,16 @@ export type IGenericParameterExecutor = (
 	 * like output actions.
 	 */
 	skipUrlUpdate?: boolean,
-) => Promise<unknown | void>;
+) => Promise<void | IGenericParameterExecutedValues>;
+
+/**
+ * Key-value pairs of parameter values which differ from the values
+ * that were passed to an {@link IGenericParameterExecutor}, as a result
+ * of the execution. Example: A model defines a new value for a
+ * custom parameter as a result of the computation (dynamic parameter).
+ * These values become the executed values of the parameters.
+ */
+export type IGenericParameterExecutedValues = {[key: string]: any};
 
 /**
  * Hook to be executed before executor.

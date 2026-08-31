@@ -1,5 +1,6 @@
 import {
 	IAcceptRejectModeSelector,
+	IGenericParameterExecutedValues,
 	IGenericParameterExecutor,
 } from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {useDefineGenericParameters} from "@AppBuilderLib/entities/parameter/model/useDefineGenericParameters";
@@ -17,6 +18,9 @@ export const CUSTOM_SESSION_ID_POSTFIX = "_appbuilder";
 
 /** Name of input (parameter of the Grasshopper model) used to consume the custom parameter values */
 const CUSTOM_DATA_INPUT_NAME = "AppBuilder";
+
+/** Name of data output used to define the AppBuilder UI, including the custom parameters */
+const CUSTOM_DATA_OUTPUT_NAME = "AppBuilder";
 
 interface Props {
 	sessionApi: ISessionApi | undefined;
@@ -124,12 +128,79 @@ export function useAppBuilderCustomParameters(props: Props) {
 		};
 	}, [appBuilderData]);
 
+	/**
+	 * Read the values the model defines for its custom parameters (property "value")
+	 * from the current content of the "AppBuilder" data output.
+	 * @returns Values keyed by custom parameter id, or undefined if the output is not available.
+	 */
+	const readModelDefinedValues = useCallback(():
+		| IGenericParameterExecutedValues
+		| undefined => {
+		if (!sessionApi) return undefined;
+		try {
+			const output = sessionApi.getOutputByName(
+				CUSTOM_DATA_OUTPUT_NAME,
+			)[0];
+			const data = output?.content?.[0]?.data as
+				| IAppBuilder
+				| string
+				| undefined;
+			const parsed = (
+				typeof data === "string" ? JSON.parse(data) : data
+			) as IAppBuilder | undefined;
+			if (!Array.isArray(parsed?.parameters)) return undefined;
+			const definedValues: IGenericParameterExecutedValues = {};
+			parsed.parameters.forEach((p) => {
+				if (p.value !== undefined) definedValues[p.id] = p.value;
+			});
+
+			return definedValues;
+		} catch {
+			return undefined;
+		}
+	}, [sessionApi]);
+
+	/**
+	 * Apply the values the model defines for the given custom parameters
+	 * after a computation.
+	 *
+	 * The viewer only updates the "AppBuilder" output (and thereby the custom
+	 * parameter definitions, see the effect on appBuilderData above) when its
+	 * content changes. A model which defines the same "value" for a custom
+	 * parameter in consecutive computations (e.g. to reset a selection after
+	 * each computation) therefore needs the defined values to be applied here.
+	 *
+	 * @param parameterIds Ids of the custom parameters whose values were executed.
+	 * @returns The values defined by the model for the given parameters, if any.
+	 */
+	const applyModelDefinedValues = useCallback(
+		(
+			parameterIds: string[],
+		): IGenericParameterExecutedValues | undefined => {
+			const definedValues = readModelDefinedValues();
+			if (!definedValues) return undefined;
+			const executedValues: IGenericParameterExecutedValues = {};
+			parameterIds.forEach((id) => {
+				if (!(id in definedValues)) return;
+				defaultCustomParameterValues.current[id] = definedValues[id];
+				delete customParameterValues.current[id];
+				executedValues[id] = definedValues[id];
+			});
+
+			return Object.keys(executedValues).length > 0
+				? executedValues
+				: undefined;
+		},
+		[readModelDefinedValues],
+	);
+
 	// executor function for changes of custom parameter values
 	const executor = useCallback<IGenericParameterExecutor>(
 		async (values: {[key: string]: any}, _, skipHistory) => {
 			Object.keys(values).forEach(
 				(key) => (customParameterValues.current[key] = values[key]),
 			);
+			let executed = false;
 
 			// Note: Strictly speaking there would be no need to set the value of
 			// the "AppBuilder" parameter, as it is set by the pre-execution hook anyway.
@@ -167,6 +238,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 							true,
 						);
 					}
+					executed = true;
 				} else {
 					Logger.warn(
 						`setUiValue failed for "${CUSTOM_DATA_INPUT_NAME}" parameter ${appBuilderParam.definition.id}, the value is not valid.`,
@@ -202,6 +274,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 							true,
 						);
 					}
+					executed = true;
 				} else {
 					Logger.warn(
 						`setUiValue failed for "${CUSTOM_DATA_INPUT_NAME}" parameter ${appBuilderFileParam.definition.id}, the value is not valid.`,
@@ -217,8 +290,13 @@ export function useAppBuilderCustomParameters(props: Props) {
 					`Could not find a suitable parameter named "${CUSTOM_DATA_INPUT_NAME}" whose type is 'String' or 'File'!`,
 				);
 			}
+
+			if (!executed) return;
+			// The computation may have changed the values of the custom parameters
+			// (dynamic parameters). The returned values become the executed values.
+			return applyModelDefinedValues(Object.keys(values));
 		},
-		[appBuilderParam, appBuilderFileParam],
+		[appBuilderParam, appBuilderFileParam, applyModelDefinedValues],
 	);
 
 	// register the pre-execution hook

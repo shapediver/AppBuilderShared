@@ -943,10 +943,15 @@ export const useShapeDiverStoreParameters =
 									"executeChanges - start",
 								);
 								// wait for execution
-								await promise;
+								const executedValues = await promise;
+								// values changed as a result of the execution
+								// (e.g. by the model) override the executed values
+								const resultValues = executedValues
+									? {...amendedValues, ...executedValues}
+									: amendedValues;
 								// if there are no changes left, resolve and remove the changes
 								if (allChangesAccepted) {
-									resolve(amendedValues);
+									resolve(resultValues);
 								} else {
 									// else disable the executing mode
 									set(
@@ -959,7 +964,7 @@ export const useShapeDiverStoreParameters =
 										"executeChanges - end",
 									);
 								}
-								return amendedValues;
+								return resultValues;
 							} catch (e: any) {
 								// reset the parameter values in case of an error
 								if (store) {

@@ -32,7 +32,9 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import type {ParameterSelectionComponentStyleProps as StyleProps} from "../config/theme/parameterSelectionComponentTheme";
+import {parseSelectionNames as parseNames} from "../model/interaction/parseSelectionNames";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
+import {useCommittedSelectionAdoption} from "../model/interaction/useCommittedSelectionAdoption";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {
 	clearPendingSelection,
@@ -57,22 +59,6 @@ type SelectionParameterProps = ISelectionParameterProps & {
 	buttons?: {
 		clear?: boolean;
 	};
-};
-
-/**
- * Parse the value of a selection parameter and extract the selected node names.
- * @param value
- * @returns
- */
-const parseNames = (value?: string): string[] => {
-	if (!value) return [];
-	try {
-		const parsed = JSON.parse(value);
-
-		return parsed.names;
-	} catch {
-		return [];
-	}
 };
 
 const getSelectionButtons = (settings: unknown) =>
@@ -287,6 +273,22 @@ export default function ParameterSelectionComponent(
 		}
 	}, [state.uiValue, selectedNodeNames]);
 
+	// A committed value changed by the model (dynamic parameter), a history
+	// restore, or a reject replaces the current draft. Otherwise the stale draft
+	// would be submitted again with the next update, see
+	// useCommittedSelectionAdoption.
+	const onAdoptCommittedSelection = useCallback(() => {
+		// The draft is superseded; forget clear-related bookkeeping of the draft.
+		skipNextAutomaticConfirmationRef.current = false;
+		clearedSinceLastConfirmationRef.current = false;
+	}, []);
+	useCommittedSelectionAdoption({
+		committedValue: state.uiValue,
+		selectedNodeNames,
+		setSelectedNodeNames,
+		onAdopt: onAdoptCommittedSelection,
+	});
+
 	// Do not overwrite a pending selection when parameter definitions refresh.
 	// Pending selection state is intentionally retained until Confirm, Cancel, or
 	// Clear, even when another parameter triggers a computation.
@@ -336,10 +338,12 @@ export default function ParameterSelectionComponent(
 			const parameterValue: SelectionParameterValue = {names};
 
 			// if the value is already the same, do not change it
+			// (compare parsed names, the serialization of the committed value
+			// may differ when it was set by the model)
 			const selectionWasCleared = clearedSinceLastConfirmationRef.current;
 			clearedSinceLastConfirmationRef.current = false;
 			if (
-				value === JSON.stringify(parameterValue) &&
+				JSON.stringify(parseNames(value)) === JSON.stringify(names) &&
 				!selectionWasCleared
 			)
 				return;
