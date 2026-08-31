@@ -1,3 +1,4 @@
+import {AppBuilderActionType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /**
@@ -5,16 +6,16 @@ import {z} from "@AppBuilderLib/shared/lib/zod";
  * Export actions are not included.
  */
 export enum DefaultListActionControlType {
-	CreateModelState = "createModelState",
-	AddToCart = "addToCart",
-	SetParameterValue = "setParameterValue",
-	SetParameterValues = "setParameterValues",
-	Undo = "undo",
-	Redo = "redo",
-	ResetParameterValues = "resetParameterValues",
-	ImportModelState = "importModelState",
-	Camera = "camera",
-	Sound = "sound",
+	CreateModelState = AppBuilderActionType.CreateModelState,
+	AddToCart = AppBuilderActionType.AddToCart,
+	SetParameterValue = AppBuilderActionType.SetParameterValue,
+	SetParameterValues = AppBuilderActionType.SetParameterValues,
+	Undo = AppBuilderActionType.Undo,
+	Redo = AppBuilderActionType.Redo,
+	ResetParameterValues = AppBuilderActionType.ResetParameterValues,
+	ImportModelState = AppBuilderActionType.ImportModelState,
+	Camera = AppBuilderActionType.Camera,
+	Sound = AppBuilderActionType.Sound,
 }
 
 export const DEFAULT_LIST_ACTION_CONTROL_TYPES = Object.values(

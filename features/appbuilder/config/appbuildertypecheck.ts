@@ -17,14 +17,17 @@ import {
 	CAMERA_TYPE,
 } from "@shapediver/viewer.shared.types";
 import {
+	AppBuilderActionType,
 	AppBuilderContainerNameType,
 	AttributeVisualizationVisibility,
 	FormWidgetSubmitBehavior,
+	IAppBuilder,
 	IAppBuilderParameterValueSourceDefinition,
 	IAppBuilderWidget,
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
+import {GenericToolName} from "./appbuilderagent";
 import {validateThemeComponentsRecord} from "./validateThemeComponentsRecord";
 
 import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
@@ -376,6 +379,11 @@ const IAppBuilderParameterValueSourcePropsSdtfSchema = z.strictObject({
 		.optional(),
 });
 
+// Zod type definition for IAppBuilderParameterValueSourcePropsAgentTool
+const IAppBuilderParameterValueSourcePropsAgentToolSchema = z.strictObject({
+	jsonPath: z.string(),
+});
+
 // Zod type definition for IAppBuilderActionPropsCreateModelState
 const IAppBuilderActionPropsCreateModelStateSchema =
 	createModelStateCoreSchema.extend({
@@ -414,11 +422,16 @@ const IAppBuilderParameterValueSourceDefinitionSchema = z.discriminatedUnion(
 			type: z.literal("sdtf"),
 			props: IAppBuilderParameterValueSourcePropsSdtfSchema,
 		}),
+		z.strictObject({
+			type: z.literal("agentTool"),
+			props: IAppBuilderParameterValueSourcePropsAgentToolSchema,
+		}),
 	],
 );
 
 // Zod type definition for IAppBuilderActionPropsCommon
 const IAppBuilderActionPropsCommonSchema = z.strictObject({
+	id: z.string().optional(),
 	label: z.string().optional(),
 	icon: z.string().optional(),
 	tooltip: z.string().optional(),
@@ -706,75 +719,75 @@ const IAppBuilderLegacyActionPropsMessageToParentSchema =
 // Zod type definition for IAppBuilderLegacyActionDefinition
 const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
-		type: z.literal("createModelState"),
+		type: z.literal(AppBuilderActionType.CreateModelState),
 		props: IAppBuilderLegacyActionPropsCreateModelStateSchema,
 	}),
 	z.strictObject({
-		type: z.literal("addToCart"),
+		type: z.literal(AppBuilderActionType.AddToCart),
 		props: IAppBuilderLegacyActionPropsAddToCartSchema,
 	}),
 	z.strictObject({
-		type: z.literal("setParameterValue"),
+		type: z.literal(AppBuilderActionType.SetParameterValue),
 		props: IAppBuilderLegacyActionPropsSetParameterValueSchema,
 	}),
 	z.strictObject({
-		type: z.literal("setParameterValues"),
+		type: z.literal(AppBuilderActionType.SetParameterValues),
 		props: IAppBuilderLegacyActionPropsSetParameterValuesSchema,
 	}),
 	z.strictObject({
-		type: z.literal("setBrowserLocation"),
+		type: z.literal(AppBuilderActionType.SetBrowserLocation),
 		props: IAppBuilderLegacyActionPropsSetBrowserLocationSchema,
 	}),
 	z.strictObject({
-		type: z.literal("closeConfigurator"),
+		type: z.literal(AppBuilderActionType.CloseConfigurator),
 		props: IAppBuilderLegacyActionPropsCloseConfiguratorSchema,
 	}),
 	z.strictObject({
-		type: z.literal("ar"),
+		type: z.literal(AppBuilderActionType.Ar),
 		props: IAppBuilderLegacyActionPropsArSchema,
 	}),
 	z.strictObject({
-		type: z.literal("fullscreen"),
+		type: z.literal(AppBuilderActionType.Fullscreen),
 		props: IAppBuilderLegacyActionPropsFullscreenSchema,
 	}),
 	z.strictObject({
-		type: z.literal("undo"),
+		type: z.literal(AppBuilderActionType.Undo),
 		props: IAppBuilderLegacyActionPropsUndoSchema,
 	}),
 	z.strictObject({
-		type: z.literal("redo"),
+		type: z.literal(AppBuilderActionType.Redo),
 		props: IAppBuilderLegacyActionPropsRedoSchema,
 	}),
 	z.strictObject({
-		type: z.literal("resetParameterValues"),
+		type: z.literal(AppBuilderActionType.ResetParameterValues),
 		props: IAppBuilderLegacyActionPropsResetParameterValuesSchema,
 	}),
 	z.strictObject({
-		type: z.literal("importParameterValues"),
+		type: z.literal(AppBuilderActionType.ImportParameterValues),
 		props: IAppBuilderLegacyActionPropsImportParameterValuesSchema,
 	}),
 	z.strictObject({
-		type: z.literal("exportParameterValues"),
+		type: z.literal(AppBuilderActionType.ExportParameterValues),
 		props: IAppBuilderLegacyActionPropsExportParameterValuesSchema,
 	}),
 	z.strictObject({
-		type: z.literal("importModelState"),
+		type: z.literal(AppBuilderActionType.ImportModelState),
 		props: IAppBuilderLegacyActionPropsImportModelStateSchema,
 	}),
 	z.strictObject({
-		type: z.literal("camera"),
+		type: z.literal(AppBuilderActionType.Camera),
 		props: IAppBuilderActionPropsCameraSchema,
 	}),
 	z.strictObject({
-		type: z.literal("sound"),
+		type: z.literal(AppBuilderActionType.Sound),
 		props: IAppBuilderLegacyActionPropsSoundSchema,
 	}),
 	z.strictObject({
-		type: z.literal("setContainerVisibility"),
+		type: z.literal(AppBuilderActionType.SetContainerVisibility),
 		props: IAppBuilderLegacyActionPropsSetContainerVisibilitySchema,
 	}),
 	z.strictObject({
-		type: z.literal("messageToParent"),
+		type: z.literal(AppBuilderActionType.MessageToParent),
 		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
 	}),
 ]);
@@ -834,80 +847,8 @@ const IAppBuilderControlExportRefSchema = z.strictObject({
 });
 
 // Zod type definition for IAppBuilderActionDefinition
-const IAppBuilderActionDefinitionSchema = z.discriminatedUnion("type", [
-	z.strictObject({
-		type: z.literal("createModelState"),
-		props: IAppBuilderLegacyActionPropsCreateModelStateSchema,
-	}),
-	z.strictObject({
-		type: z.literal("addToCart"),
-		props: IAppBuilderLegacyActionPropsAddToCartSchema,
-	}),
-	z.strictObject({
-		type: z.literal("setParameterValue"),
-		props: IAppBuilderLegacyActionPropsSetParameterValueSchema,
-	}),
-	z.strictObject({
-		type: z.literal("setParameterValues"),
-		props: IAppBuilderLegacyActionPropsSetParameterValuesSchema,
-	}),
-	z.strictObject({
-		type: z.literal("setBrowserLocation"),
-		props: IAppBuilderLegacyActionPropsSetBrowserLocationSchema,
-	}),
-	z.strictObject({
-		type: z.literal("closeConfigurator"),
-		props: IAppBuilderLegacyActionPropsCloseConfiguratorSchema,
-	}),
-	z.strictObject({
-		type: z.literal("ar"),
-		props: IAppBuilderLegacyActionPropsArSchema,
-	}),
-	z.strictObject({
-		type: z.literal("fullscreen"),
-		props: IAppBuilderLegacyActionPropsFullscreenSchema,
-	}),
-	z.strictObject({
-		type: z.literal("undo"),
-		props: IAppBuilderLegacyActionPropsUndoSchema,
-	}),
-	z.strictObject({
-		type: z.literal("redo"),
-		props: IAppBuilderLegacyActionPropsRedoSchema,
-	}),
-	z.strictObject({
-		type: z.literal("resetParameterValues"),
-		props: IAppBuilderLegacyActionPropsResetParameterValuesSchema,
-	}),
-	z.strictObject({
-		type: z.literal("importParameterValues"),
-		props: IAppBuilderLegacyActionPropsImportParameterValuesSchema,
-	}),
-	z.strictObject({
-		type: z.literal("exportParameterValues"),
-		props: IAppBuilderLegacyActionPropsExportParameterValuesSchema,
-	}),
-	z.strictObject({
-		type: z.literal("importModelState"),
-		props: IAppBuilderLegacyActionPropsImportModelStateSchema,
-	}),
-	z.strictObject({
-		type: z.literal("camera"),
-		props: IAppBuilderActionPropsCameraSchema,
-	}),
-	z.strictObject({
-		type: z.literal("sound"),
-		props: IAppBuilderLegacyActionPropsSoundSchema,
-	}),
-	z.strictObject({
-		type: z.literal("setContainerVisibility"),
-		props: IAppBuilderLegacyActionPropsSetContainerVisibilitySchema,
-	}),
-	z.strictObject({
-		type: z.literal("messageToParent"),
-		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
-	}),
-]);
+const IAppBuilderActionDefinitionSchema =
+	IAppBuilderLegacyActionDefinitionSchema;
 
 // Zod type definition for IAppBuilderControlActionRef
 const IAppBuilderControlActionRefSchema = z
@@ -1593,6 +1534,257 @@ const IAppBuilderInstancesSchema = z.strictObject({
 		.optional(),
 });
 
+// Zod type definition for FilterValue ("include" | "exclude")
+const FilterValueSchema = z.enum(["include", "exclude"]);
+
+// Zod type definition for IAgentParameterRef
+const IAgentParameterRefSchema = z.strictObject({
+	name: z
+		.string()
+		.describe(
+			"Id or name or displayname of the referenced parameter (in that order).",
+		),
+	sessionId: z
+		.string()
+		.optional()
+		.describe("Optional id of the session the referenced parameter belongs to."),
+	description: z
+		.string()
+		.optional()
+		.describe(
+			"Optional description of the parameter, providing further context to the agent.",
+		),
+});
+
+// Zod type definition for IAgentActionControlRef.action (id required)
+const IAgentEmbeddedActionSchema = IAppBuilderControlActionRefSchema.extend({
+	id: z.string(),
+});
+
+// Zod type definition for IAgentActionControlRef
+const IAgentActionControlRefSchema = z.strictObject({
+	name: z
+		.string()
+		.optional()
+		.describe(
+			"Id or label (in that order) of the action control that should be referenced. This considers all action controls available anywhere in the App Builder output, which are part of some controls widget.",
+		),
+	action: IAgentEmbeddedActionSchema.optional().describe(
+		"Optional embedded action control definition. If this is provided, the name property will be ignored.",
+	),
+	description: z
+		.string()
+		.optional()
+		.describe(
+			"Optional description of the action, providing further context to the agent.",
+		),
+});
+
+// Zod type definition for AppBuilderActionType
+const AppBuilderActionTypeSchema = z.enum(AppBuilderActionType);
+
+/**
+ * The "list_action_controls" tool exposes action *controls* (UI elements that
+ * trigger actions), not the underlying actions themselves.
+ * Depending on the action definition, triggering may show UI (e.g. a modal).
+ * For headless use of underlying actions, define further generic tools or
+ * specific tool definitions.
+ */
+// Zod type definition for GenericToolSettings
+const GenericToolSettingsSchema = z.discriminatedUnion("name", [
+	z.strictObject({
+		name: z.literal(GenericToolName.ListParameterDefinitions),
+		parameters: z
+			.array(IAgentParameterRefSchema)
+			.optional()
+			.describe(
+				"Optional list of parameters that should be exposed to the agent. In case this list is not provided, parameters will be filtered based on the filter property.",
+			),
+		filter: z
+			.strictObject({
+				hidden: FilterValueSchema.optional().describe(
+					'Whether to include parameters whose "hidden" property is true. Defaults to "exclude" if not provided.',
+				),
+				invisible: FilterValueSchema.optional().describe(
+					'Whether to include parameters that are currently not exposed in the UI (not referenced by some parameter control or accordion widget). This filter applies on top of the "hidden" filter. Defaults to "include" if not provided.',
+				),
+				sessionIds: z
+					.array(z.string())
+					.optional()
+					.describe(
+						"Which sessions' parameters should be exposed to the agent. If not provided, parameters of the controller session will be exposed.",
+					),
+			})
+			.optional()
+			.describe(
+				"Optional filter for parameters that should be exposed to the agent. Ignored if the parameters property is provided.",
+			),
+	}),
+	z.strictObject({
+		name: z.literal(GenericToolName.GetParameterValues),
+	}),
+	z.strictObject({
+		name: z.literal(GenericToolName.SetParameterValues),
+	}),
+	z.strictObject({
+		name: z.literal(GenericToolName.ListActionControls),
+		actions: z
+			.array(IAgentActionControlRefSchema)
+			.optional()
+			.describe(
+				"Optional list of actions that should be exposed to the agent. In case this list is not provided, actions will be filtered based on the filter property. The filter will be applied to all actions available anywhere in the App Builder output, as well as to actions available via default toolbars.",
+			),
+		filter: z
+			.strictObject({
+				types: z
+					.array(AppBuilderActionTypeSchema)
+					.optional()
+					.describe(
+						"The types of actions that should be exposed to the agent. Defaults to DefaultListActionControlType.",
+					),
+			})
+			.optional()
+			.describe(
+				"Optional filter for actions that should be exposed to the agent. Ignored if the actions property is provided.",
+			),
+	}),
+	z.strictObject({
+		name: z.literal(GenericToolName.TriggerActionControl),
+	}),
+	z.strictObject({
+		name: z.literal(GenericToolName.SetCameraPosition),
+	}),
+	z.strictObject({
+		name: z.literal(GenericToolName.GetScreenshot),
+	}),
+	z.strictObject({
+		name: z.literal(GenericToolName.AskUserQuestion),
+	}),
+	z.strictObject({
+		name: z.literal(GenericToolName.GetMetric),
+	}),
+]);
+
+/**
+ * Settings of a tool to be executed remotely, typically by an API call,
+ * the Agent2Agent protocol, model context protocol (MCP), etc.
+ * To be defined.
+ */
+// Zod type definition for RemoteToolExecutionSettings
+const RemoteToolExecutionSettingsSchema = z.strictObject({});
+
+// Zod type definition for SpecificToolSettings
+const SpecificToolSettingsSchema = z.strictObject({
+	name: z.string().describe("Name of the tool. Use snake case."),
+	description: z
+		.string()
+		.optional()
+		.describe("Optional description of the tool, providing context to the agent."),
+	inputSchema: z.record(z.string(), JsonValueSchema).describe(
+		"Input schema for the tool.",
+	),
+	actionSequence: z
+		.array(IAppBuilderActionDefinitionSchema)
+		.optional()
+		.describe(
+			"Optional sequence of actions that should be run when the tool is triggered. Information about these actions will not be exposed to the agent. Values from inputSchema can be mapped to the action properties using the agentTool parameter value source.",
+		),
+	remoteExecution: RemoteToolExecutionSettingsSchema.optional().describe(
+		"Optional remote execution settings for the tool. Will be ignored if actionSequence is provided.",
+	),
+});
+
+// Zod type definition for IAppBuilderAgent
+const IAppBuilderAgentSchema = z.strictObject({
+	id: z.string().describe("Unique identifier of the agent."),
+	name: z.string().describe("Display name of the agent (exposed to the user)."),
+	message: z.string().describe("The agent's system prompt."),
+	useGenericToolDefaults: z
+		.boolean()
+		.optional()
+		.describe(
+			"Boolean indicating whether all available generic tools shall be exposed using their default settings. Default is true. If this is set to true, settings for individual generic tools can be overridden by including them in the genericTools property. If this is set to false, only the generic tools included in the genericTools property will be available to the agent.",
+		),
+	genericTools: z
+		.array(GenericToolSettingsSchema)
+		.optional()
+		.describe(
+			"Settings of the generic tools that should be available to the agent.",
+		),
+	specificTools: z
+		.array(SpecificToolSettingsSchema)
+		.optional()
+		.describe(
+			"Definition of specific tools that should be available to the agent.",
+		),
+});
+
+/** Agent-specific reference for a parameter */
+export type IAgentParameterRef = z.infer<typeof IAgentParameterRefSchema>;
+
+/**
+ * Agent-specific reference for an action control.
+ */
+export type IAgentActionControlRef = z.infer<typeof IAgentActionControlRefSchema>;
+
+export type GenericToolSettings = z.infer<typeof GenericToolSettingsSchema>;
+
+export type ListParameterDefinitionsToolSettings = Extract<
+	GenericToolSettings,
+	{name: GenericToolName.ListParameterDefinitions}
+>;
+
+export type GetParameterValuesToolSettings = Extract<
+	GenericToolSettings,
+	{name: GenericToolName.GetParameterValues}
+>;
+
+export type SetParameterValuesToolSettings = Extract<
+	GenericToolSettings,
+	{name: GenericToolName.SetParameterValues}
+>;
+
+export type ListActionControlsToolSettings = Extract<
+	GenericToolSettings,
+	{name: GenericToolName.ListActionControls}
+>;
+
+export type TriggerActionControlToolSettings = Extract<
+	GenericToolSettings,
+	{name: GenericToolName.TriggerActionControl}
+>;
+
+export type SetCameraPositionToolSettings = Extract<
+	GenericToolSettings,
+	{name: GenericToolName.SetCameraPosition}
+>;
+
+export type GetScreenshotToolSettings = Extract<
+	GenericToolSettings,
+	{name: GenericToolName.GetScreenshot}
+>;
+
+export type AskUserQuestionToolSettings = Extract<
+	GenericToolSettings,
+	{name: GenericToolName.AskUserQuestion}
+>;
+
+export type GetMetricToolSettings = Extract<
+	GenericToolSettings,
+	{name: GenericToolName.GetMetric}
+>;
+
+export type RemoteToolExecutionSettings = z.infer<
+	typeof RemoteToolExecutionSettingsSchema
+>;
+
+export type SpecificToolSettings = z.infer<typeof SpecificToolSettingsSchema>;
+
+/**
+ * Definition of an agent that can be used with App Builder.
+ */
+export type IAppBuilderAgent = z.infer<typeof IAppBuilderAgentSchema>;
+
 // Zod type definition for IAppBuilder
 const IAppBuilderSchema = z.strictObject({
 	version: z.literal("1.0"),
@@ -1600,7 +1792,20 @@ const IAppBuilderSchema = z.strictObject({
 	sessionId: z.string().optional(),
 	containers: z.array(IAppBuilderContainerSchema),
 	instances: z.array(IAppBuilderInstancesSchema).optional(),
+	agents: z.array(IAppBuilderAgentSchema).optional(),
 });
+
+// Compile-time assertion: IAppBuilderSchema keys must match IAppBuilder keys
+type _AssertAppBuilderKeys = [
+	keyof z.infer<typeof IAppBuilderSchema> extends keyof IAppBuilder
+		? true
+		: false,
+	keyof IAppBuilder extends keyof z.infer<typeof IAppBuilderSchema>
+		? true
+		: false,
+];
+const _checkAppBuilder: _AssertAppBuilderKeys = [true, true];
+void _checkAppBuilder;
 
 export const validateAppBuilder = (value: any) => {
 	return IAppBuilderSchema.safeParse(value);

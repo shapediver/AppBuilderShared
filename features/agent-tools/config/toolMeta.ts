@@ -8,7 +8,7 @@ export type AgentToolMeta = {
 };
 
 export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
-	list_parameter_definitions: {
+	[InScopeGenericToolName.ListParameterDefinitions]: {
 		description:
 			"Read configurator parameters before changing anything. " +
 			"Call with no arguments. Which parameters appear is agent settings, not a tool argument. " +
@@ -17,7 +17,7 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 			"Trust type over display name (e.g. name Color may still be StringList).",
 		annotations: {readOnlyHint: true},
 	},
-	get_parameter_values: {
+	[InScopeGenericToolName.GetParameterValues]: {
 		description:
 			"Read current values of configurator parameters exposed to the agent. " +
 			"Input: { names?: string[], namespace?: string }. " +
@@ -28,7 +28,7 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 			"On invalid input, returns { values: [], errors: [{ name: '*', message }] }.",
 		annotations: {readOnlyHint: true},
 	},
-	set_parameter_values: {
+	[InScopeGenericToolName.SetParameterValues]: {
 		description:
 			"Change configurator parameters. " +
 			"Input shape: { updates: [{ name, value }] } — use updates and name, not parameters/id. " +
@@ -38,7 +38,7 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 			"Returns { applied: string[], errors: [{ name, message }] }. Valid updates still apply when others fail.",
 		annotations: {readOnlyHint: false},
 	},
-	list_action_controls: {
+	[InScopeGenericToolName.ListActionControls]: {
 		description:
 			"List action controls the agent may trigger. " +
 			"Call with no arguments. Which actions appear is agent settings, not a tool argument. " +
@@ -46,7 +46,7 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 			"Use name with trigger_action_control.",
 		annotations: {readOnlyHint: true},
 	},
-	trigger_action_control: {
+	[InScopeGenericToolName.TriggerActionControl]: {
 		description:
 			"Run an action control without mounting App Builder UI. " +
 			"Input: { name } — id or name from list_action_controls. " +
@@ -54,7 +54,7 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 			"Unsupported action types return message 'not supported'.",
 		annotations: {readOnlyHint: false},
 	},
-	set_camera_position: {
+	[InScopeGenericToolName.SetCameraPosition]: {
 		description:
 			"Set the viewport camera position and look-at target. " +
 			"Input: { position: {x,y,z}, target: {x,y,z} }. Uses the main viewport. " +
@@ -62,14 +62,14 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 			"Success: { success: true }. Failure: { success: false, message } (e.g. Viewport not found).",
 		annotations: {readOnlyHint: false},
 	},
-	get_screenshot: {
+	[InScopeGenericToolName.GetScreenshot]: {
 		description:
 			"Capture a screenshot of the 3D viewport as a data URL. " +
 			"Call with no arguments. Uses the main viewport. " +
 			"Success: { success: true, image } with a data URL. Failure: { success: false, message }.",
 		annotations: {readOnlyHint: true},
 	},
-	get_metric: {
+	[InScopeGenericToolName.GetMetric]: {
 		description:
 			"Read the model's AgentMetric data output. " +
 			"Call with no arguments. " +

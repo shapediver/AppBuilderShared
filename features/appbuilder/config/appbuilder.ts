@@ -15,7 +15,7 @@ import {
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 } from "@shapediver/viewer.shared.types";
-import {IAppBuilderAgent} from "./appbuilderagent";
+import type {IAppBuilderAgent} from "./appbuilderagent";
 import {
 	IAppBuilderWidgetPropsAreaChart,
 	IAppBuilderWidgetPropsBarChart,
@@ -562,25 +562,26 @@ export type IAppBuilderParameterValueDefinition =
 	| IAppBuilderParameterValueSourceDefinition;
 
 /** Types of actions */
-export type AppBuilderActionType =
-	| "createModelState"
-	| "addToCart"
-	| "setParameterValue"
-	| "setParameterValues"
-	| "setBrowserLocation"
-	| "closeConfigurator"
-	| "ar"
-	| "fullscreen"
-	| "undo"
-	| "redo"
-	| "resetParameterValues"
-	| "importParameterValues"
-	| "exportParameterValues"
-	| "importModelState"
-	| "camera"
-	| "sound"
-	| "messageToParent"
-	| "setContainerVisibility";
+export enum AppBuilderActionType {
+	CreateModelState = "createModelState",
+	AddToCart = "addToCart",
+	SetParameterValue = "setParameterValue",
+	SetParameterValues = "setParameterValues",
+	SetBrowserLocation = "setBrowserLocation",
+	CloseConfigurator = "closeConfigurator",
+	Ar = "ar",
+	Fullscreen = "fullscreen",
+	Undo = "undo",
+	Redo = "redo",
+	ResetParameterValues = "resetParameterValues",
+	ImportParameterValues = "importParameterValues",
+	ExportParameterValues = "exportParameterValues",
+	ImportModelState = "importModelState",
+	Camera = "camera",
+	Sound = "sound",
+	MessageToParent = "messageToParent",
+	SetContainerVisibility = "setContainerVisibility",
+}
 
 /** Properties of a "setContainerVisibility" action. */
 export interface IAppBuilderActionPropsSetContainerVisibility {

@@ -1,13 +1,15 @@
-/** Generic tools Step 1 exposes. Excludes `ask_user_question`. */
+import {GenericToolName} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
+
+/** Generic tools Step 1 exposes. Excludes `GenericToolName.AskUserQuestion`. */
 export enum InScopeGenericToolName {
-	ListParameterDefinitions = "list_parameter_definitions",
-	GetParameterValues = "get_parameter_values",
-	SetParameterValues = "set_parameter_values",
-	ListActionControls = "list_action_controls",
-	TriggerActionControl = "trigger_action_control",
-	SetCameraPosition = "set_camera_position",
-	GetScreenshot = "get_screenshot",
-	GetMetric = "get_metric",
+	ListParameterDefinitions = GenericToolName.ListParameterDefinitions,
+	GetParameterValues = GenericToolName.GetParameterValues,
+	SetParameterValues = GenericToolName.SetParameterValues,
+	ListActionControls = GenericToolName.ListActionControls,
+	TriggerActionControl = GenericToolName.TriggerActionControl,
+	SetCameraPosition = GenericToolName.SetCameraPosition,
+	GetScreenshot = GenericToolName.GetScreenshot,
+	GetMetric = GenericToolName.GetMetric,
 }
 
 export const IN_SCOPE_GENERIC_TOOL_NAMES: InScopeGenericToolName[] =
@@ -19,7 +21,7 @@ export function isInScopeGenericToolName(
 	return IN_SCOPE_GENERIC_TOOL_NAMES.includes(name as InScopeGenericToolName);
 }
 
-export const ASK_USER_QUESTION_TOOL_NAME = "ask_user_question";
+export const ASK_USER_QUESTION_TOOL_NAME = GenericToolName.AskUserQuestion;
 
 /** Default generic-tool settings: `{name}` only. Overlay fields come from `genericTools`. */
 export function defaultSettingsFor(name: InScopeGenericToolName): {
