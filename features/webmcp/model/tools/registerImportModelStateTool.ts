@@ -30,7 +30,7 @@ export async function registerImportModelStateTool(
 					const beforeValues = new Map(
 						getParameterStates(targetNamespace).map((p) => [
 							p.definition.id,
-							p.state.uiValue,
+							p.state.execValue,
 						]),
 					);
 					const result =

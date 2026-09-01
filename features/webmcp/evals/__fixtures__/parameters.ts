@@ -13,18 +13,22 @@ function createMockParameter(
 		state: {
 			uiValue: overrides.state?.uiValue,
 			execValue: overrides.state?.execValue,
+			commitValue:
+				overrides.state?.commitValue ?? overrides.state?.execValue,
+			commitRevision: 0,
 			dirty: false,
 			disableOtherParameters: false,
 			stringExecValue: () => "",
 		},
 		actions: {
 			setUiValue: () => true,
-			setUiAndExecValue: () => true,
+			setExecutedValue: () => true,
 			execute: async () => "",
 			isValid: overrides.actions?.isValid ?? (() => true),
 			isUiValueDifferent: () => false,
 			resetToDefaultValue: () => undefined,
-			resetToExecValue: () => undefined,
+			resetToCommitValue: () => undefined,
+			setResetValue: () => undefined,
 		},
 		acceptRejectMode: false,
 		...overrides,
@@ -63,9 +67,7 @@ export const stringListParameter = createMockParameter({
 		isValid: (value) => {
 			const index = typeof value === "number" ? value : Number(value);
 
-			return (
-				Number.isInteger(index) && index >= 0 && index < 3
-			);
+			return Number.isInteger(index) && index >= 0 && index < 3;
 		},
 	} as IShapeDiverParameter<any>["actions"],
 });

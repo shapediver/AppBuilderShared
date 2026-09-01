@@ -17,7 +17,8 @@ function createMockParameter(
 		},
 		actions: {
 			setUiValue: () => true,
-			setUiAndExecValue: () => true,
+			setExecutedValue: () => true,
+			setResetValue: () => undefined,
 			execute: async () => "",
 			isValid: () => true,
 			isUiValueDifferent: () => false,

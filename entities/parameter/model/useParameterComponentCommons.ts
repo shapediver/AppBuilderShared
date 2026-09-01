@@ -7,6 +7,7 @@ import {
 	PropsParameterComponent,
 	PropsParameterWithForm,
 } from "../config/propsParameter";
+import {IParameterResetValueSettings} from "../lib/parameterResetValue";
 import {useParameter} from "./useParameter";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
@@ -47,6 +48,26 @@ export function useParameterComponentCommons<T>(
 	} = useParameter<T | string>(props);
 	const customActions = props.customActions || {};
 	const actions = {...paramActions, ...customActions};
+
+	// A reset value defined by the overrides of the parameter reference applies
+	// to the parameter: register it with the parameter store, which applies it
+	// after executions. The registration is kept when the component unmounts,
+	// and removed once the overrides no longer define a reset value.
+	const overrideResetValue = (
+		(props.overrides as {settings?: unknown} | undefined)?.settings as
+			| IParameterResetValueSettings
+			| undefined
+	)?.resetValue;
+	const registeredResetValueRef = useRef<unknown>(undefined);
+	useEffect(() => {
+		const value =
+			overrideResetValue === null ? undefined : overrideResetValue;
+		const registered = registeredResetValueRef.current;
+		registeredResetValueRef.current = value;
+		if (value !== undefined) paramActions.setResetValue(value);
+		else if (registered !== undefined)
+			paramActions.setResetValue(undefined);
+	}, [overrideResetValue, paramActions]);
 
 	// Read acceptRejectMode from the store as a fallback.
 	// The prop may be undefined if the component renders before the store is populated
@@ -165,27 +186,27 @@ export function useParameterComponentCommons<T>(
 		(() => void) | undefined
 	>(undefined);
 
-	// Track previous dirty/execValue to detect cancellation vs acceptance
+	// Track previous dirty/commitValue to detect cancellation vs acceptance
 	const prevDirtyRef = useRef(state.dirty);
-	const prevExecValueRef = useRef(state.execValue);
+	const prevCommitValueRef = useRef(state.commitValue);
 
 	useEffect(() => {
 		const wasDirty = prevDirtyRef.current;
-		const prevExecValue = prevExecValueRef.current;
+		const prevCommitValue = prevCommitValueRef.current;
 		prevDirtyRef.current = state.dirty;
-		prevExecValueRef.current = state.execValue;
+		prevCommitValueRef.current = state.commitValue;
 
-		// dirty true→false with execValue unchanged = cancelled (X-icon or global Reject)
-		// dirty true→false with execValue changed = accepted
+		// dirty true→false with commitValue unchanged = cancelled (X-icon or global Reject)
+		// dirty true→false with commitValue changed = accepted
 		if (
 			wasDirty &&
 			!state.dirty &&
 			acceptRejectMode &&
-			state.execValue === prevExecValue
+			state.commitValue === prevCommitValue
 		) {
 			onCancelCallback?.();
 		}
-	}, [state.dirty, state.execValue, acceptRejectMode, onCancelCallback]);
+	}, [state.dirty, state.commitValue, acceptRejectMode, onCancelCallback]);
 
 	/**
 	 * Provide a possibility to cancel if
@@ -199,14 +220,14 @@ export function useParameterComponentCommons<T>(
 		() =>
 			acceptRejectMode && state.dirty && !executing
 				? () => {
-						handleChange(state.execValue, 0);
+						handleChange(state.commitValue, 0);
 					}
 				: undefined,
 		[
 			acceptRejectMode,
 			state.dirty,
 			executing,
-			state.execValue,
+			state.commitValue,
 			handleChange,
 		],
 	);
