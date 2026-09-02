@@ -161,7 +161,7 @@ export default function ParameterGumballComponent(
 				hoverColor,
 			} as IGumballTransformParameterProps;
 		}
-	}, [definition.settings, selectionColor, availableColor]);
+	}, [definition.settings, selectionColor, availableColor, hoverColor]);
 
 	// state for the gumball application
 	const alwaysActive = gumballProps.activeMode === "alwaysActive";

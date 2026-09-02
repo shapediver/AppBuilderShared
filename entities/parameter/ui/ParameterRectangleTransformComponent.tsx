@@ -162,7 +162,7 @@ export default function ParameterRectangleTransformComponent(
 				hoverColor,
 			} as IRectangleTransformParameterProps;
 		}
-	}, [definition.settings, selectionColor, availableColor]);
+	}, [definition.settings, selectionColor, availableColor, hoverColor]);
 
 	// state for the rectangle transform application
 	const alwaysActive = rectangleTransformProps.activeMode === "alwaysActive";
