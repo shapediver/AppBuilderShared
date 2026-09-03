@@ -59,7 +59,7 @@ function listExplicitActionRefs(
 	const refs: IAppBuilderControlActionRef[] = [];
 	for (const wanted of explicit) {
 		if (wanted.action) {
-			refs.push(wanted.action as IAppBuilderControlActionRef);
+			refs.push(wanted.action);
 		} else if (wanted.name !== undefined) {
 			for (const ref of collected) {
 				if (matchesActionIdOrLabel(ref, wanted.name)) {

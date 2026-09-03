@@ -950,30 +950,64 @@ export type IAppBuilderLegacyActionPropsMessageToParent =
 	IAppBuilderActionPropsMessageToParent & IAppBuilderActionPropsCommon;
 
 /** A legacy App Builder action definition. */
-export interface IAppBuilderLegacyActionDefinition {
-	/** Type of the action. */
-	type: AppBuilderActionType;
-	/** Properties of the action. */
-	props:
-		| IAppBuilderLegacyActionPropsCreateModelState
-		| IAppBuilderLegacyActionPropsAddToCart
-		| IAppBuilderLegacyActionPropsSetParameterValue
-		| IAppBuilderLegacyActionPropsSetParameterValues
-		| IAppBuilderLegacyActionPropsSetBrowserLocation
-		| IAppBuilderLegacyActionPropsCloseConfigurator
-		| IAppBuilderLegacyActionPropsAr
-		| IAppBuilderLegacyActionPropsFullscreen
-		| IAppBuilderLegacyActionPropsUndo
-		| IAppBuilderLegacyActionPropsRedo
-		| IAppBuilderLegacyActionPropsResetParameterValues
-		| IAppBuilderLegacyActionPropsImportParameterValues
-		| IAppBuilderLegacyActionPropsExportParameterValues
-		| IAppBuilderLegacyActionPropsImportModelState
-		| IAppBuilderLegacyActionPropsCamera
-		| IAppBuilderLegacyActionPropsSound
-		| IAppBuilderLegacyActionPropsSetContainerVisibility
-		| IAppBuilderLegacyActionPropsMessageToParent;
-}
+export type IAppBuilderLegacyActionDefinition =
+	| {
+			type: AppBuilderActionType.CreateModelState;
+			props: IAppBuilderLegacyActionPropsCreateModelState;
+	  }
+	| {
+			type: AppBuilderActionType.AddToCart;
+			props: IAppBuilderLegacyActionPropsAddToCart;
+	  }
+	| {
+			type: AppBuilderActionType.SetParameterValue;
+			props: IAppBuilderLegacyActionPropsSetParameterValue;
+	  }
+	| {
+			type: AppBuilderActionType.SetParameterValues;
+			props: IAppBuilderLegacyActionPropsSetParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.SetBrowserLocation;
+			props: IAppBuilderLegacyActionPropsSetBrowserLocation;
+	  }
+	| {
+			type: AppBuilderActionType.CloseConfigurator;
+			props: IAppBuilderLegacyActionPropsCloseConfigurator;
+	  }
+	| {type: AppBuilderActionType.Ar; props: IAppBuilderLegacyActionPropsAr}
+	| {
+			type: AppBuilderActionType.Fullscreen;
+			props: IAppBuilderLegacyActionPropsFullscreen;
+	  }
+	| {type: AppBuilderActionType.Undo; props: IAppBuilderLegacyActionPropsUndo}
+	| {type: AppBuilderActionType.Redo; props: IAppBuilderLegacyActionPropsRedo}
+	| {
+			type: AppBuilderActionType.ResetParameterValues;
+			props: IAppBuilderLegacyActionPropsResetParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.ImportParameterValues;
+			props: IAppBuilderLegacyActionPropsImportParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.ExportParameterValues;
+			props: IAppBuilderLegacyActionPropsExportParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.ImportModelState;
+			props: IAppBuilderLegacyActionPropsImportModelState;
+	  }
+	| {type: AppBuilderActionType.Camera; props: IAppBuilderLegacyActionPropsCamera}
+	| {type: AppBuilderActionType.Sound; props: IAppBuilderLegacyActionPropsSound}
+	| {
+			type: AppBuilderActionType.SetContainerVisibility;
+			props: IAppBuilderLegacyActionPropsSetContainerVisibility;
+	  }
+	| {
+			type: AppBuilderActionType.MessageToParent;
+			props: IAppBuilderLegacyActionPropsMessageToParent;
+	  };
 
 /** Types of widgets */
 export type AppBuilderWidgetType =
