@@ -29,10 +29,14 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameter,
+	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import type {ParameterSelectionComponentStyleProps as StyleProps} from "../config/theme/parameterSelectionComponentTheme";
+import {getResetValue} from "../lib/parameterResetValue";
+import {parseSelectionNames as parseNames} from "../model/interaction/parseSelectionNames";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
+import {useCommittedSelectionAdoption} from "../model/interaction/useCommittedSelectionAdoption";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {
 	clearPendingSelection,
@@ -42,10 +46,6 @@ import {
 } from "../model/interaction/usePendingSelectionRegistry";
 import {useSelection} from "../model/interaction/useSelection";
 import {useSelectionActivationState} from "../model/interaction/useSelectionActivationState";
-import {
-	requestSelectionAutoClear,
-	useSelectionAutoClear,
-} from "../model/interaction/useSelectionAutoClear";
 import {useSelectionInteractionOwnership} from "../model/interaction/useSelectionInteractionOwnership";
 import {useSuspendedSelectionRestore} from "../model/interaction/useSuspendedSelectionRestore";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
@@ -58,22 +58,6 @@ type SelectionParameterProps = ISelectionParameterProps & {
 	buttons?: {
 		clear?: boolean;
 	};
-};
-
-/**
- * Parse the value of a selection parameter and extract the selected node names.
- * @param value
- * @returns
- */
-const parseNames = (value?: string): string[] => {
-	if (!value) return [];
-	try {
-		const parsed = JSON.parse(value);
-
-		return parsed.names;
-	} catch {
-		return [];
-	}
 };
 
 const getSelectionButtons = (settings: unknown) =>
@@ -190,10 +174,23 @@ export default function ParameterSelectionComponent(
 
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
-	const showClearButton = selectionProps.buttons?.clear ?? true;
-	const shouldAutoClear = selectionProps.autoClear ?? false;
+	// Clearing is UI-only: the empty draft can either be confirmed (optional
+	// selections) or replaced by a new selection. For a single selection it is
+	// pointless in case the selection is required (an empty draft can never be
+	// confirmed, and picking another object replaces the selection anyway), or
+	// in case the selection is reset to an empty selection after each execution
+	// (see the "resetValue" setting). Unless configured explicitly, the Clear
+	// button is hidden in these cases.
+	const resetValue = getResetValue(definition);
+	const resetsToEmptySelection =
+		resetValue !== undefined &&
+		actions.isValid(resetValue) &&
+		parseNames(resetValue as string).length === 0;
+	const clearIsPointless =
+		maximumSelection === 1 &&
+		(minimumSelection >= 1 || resetsToEmptySelection);
 	const shouldShowClearButton =
-		showClearButton && !(shouldAutoClear && maximumSelection === 1);
+		selectionProps.buttons?.clear ?? !clearIsPointless;
 	const alwaysActive = selectionProps.activeMode === "alwaysActive";
 	const presentation = resolveInteractionPresentation(
 		selectionProps.presentation,
@@ -220,9 +217,6 @@ export default function ParameterSelectionComponent(
 	// get the viewport ID
 	const {viewportId} = useViewportId();
 	const selectionOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
-	const autoClearRequest = useSelectionAutoClear(selectionOwnerKey);
-	const startsAutoCleared =
-		shouldAutoClear && autoClearRequest?.value === value;
 
 	const {
 		candidateNodes,
@@ -235,11 +229,10 @@ export default function ParameterSelectionComponent(
 		viewportId,
 		selectionProps,
 		effectiveSelectionActive,
-		startsAutoCleared ? [] : parseNames(value),
+		parseNames(value),
 		true,
 	);
 	const restoreBatchSelectionRef = useRef(false);
-	const clearSelectionRef = useRef<() => void>(() => {});
 	const skipNextAutomaticConfirmationRef = useRef(false);
 	const clearedSinceLastConfirmationRef = useRef(false);
 	useSuspendedSelectionRestore({
@@ -290,10 +283,41 @@ export default function ParameterSelectionComponent(
 		}
 	}, [state.uiValue, selectedNodeNames]);
 
+	// Whenever the parameter is committed (an execution of this component, an
+	// external execution, a value defined by the model, a reject), the committed
+	// value replaces the current draft, see useCommittedSelectionAdoption.
+	const onAdoptCommittedSelection = useCallback(() => {
+		// The adopted selection must not be confirmed automatically, and the
+		// clear-related bookkeeping of the superseded draft is obsolete.
+		skipNextAutomaticConfirmationRef.current = true;
+		clearedSinceLastConfirmationRef.current = false;
+	}, []);
+	// Parameters whose execution is managed elsewhere (e.g. by a form providing
+	// custom actions, non-reactive) are not backed by the parameter store.
+	const {reactive = true, customActions} = props as PropsParameterComponent;
+	const storeBacked = reactive && !customActions?.execute;
+	useCommittedSelectionAdoption({
+		committedValue: storeBacked ? state.commitValue : undefined,
+		commitRevision: state.commitRevision,
+		selectedNodeNames,
+		setSelectedNodeNames,
+		onAdopt: onAdoptCommittedSelection,
+	});
+
+	// Once an execution triggered by this component completed, the committed
+	// value is authoritative: it may differ from the executed selection, e.g.
+	// when the parameter is reset after each execution (see the "resetValue"
+	// setting). Adopt it into the selection. This is required in addition to
+	// useCommittedSelectionAdoption, because the committed value itself may not
+	// change at all (reset to the same value as before the execution).
 	// Do not overwrite a pending selection when parameter definitions refresh.
 	// Pending selection state is intentionally retained until Confirm, Cancel, or
 	// Clear, even when another parameter triggers a computation.
 	useEffect(() => {
+		// The value prop can lag behind state.uiValue by a render (e.g. after a
+		// reset value was committed). Only act once it caught up, otherwise the
+		// stale value would be re-applied to the selection.
+		if (value !== state.uiValue) return;
 		const parsed = parseNames(value);
 		const committed = parseNames(state.uiValue);
 		const hasPendingSelection =
@@ -339,10 +363,12 @@ export default function ParameterSelectionComponent(
 			const parameterValue: SelectionParameterValue = {names};
 
 			// if the value is already the same, do not change it
+			// (compare parsed names, the serialization of the committed value
+			// may differ, e.g. for a reset value)
 			const selectionWasCleared = clearedSinceLastConfirmationRef.current;
 			clearedSinceLastConfirmationRef.current = false;
 			if (
-				value === JSON.stringify(parameterValue) &&
+				JSON.stringify(parseNames(value)) === JSON.stringify(names) &&
 				!selectionWasCleared
 			)
 				return;
@@ -350,38 +376,30 @@ export default function ParameterSelectionComponent(
 			handleChange(
 				serializedValue,
 				0,
-				() => {
-					if (shouldAutoClear)
-						requestSelectionAutoClear(
-							selectionOwnerKey,
-							serializedValue,
-						);
-				},
+				undefined,
 				// A selection cleared only in the UI can legitimately submit the
 				// same value again. Keep that exception scoped to selection.
 				selectionWasCleared,
 			);
 		},
-		[
-			alwaysActive,
-			namespace,
-			selectionOwnerKey,
-			shouldAutoClear,
-			value,
-			viewportId,
-		],
+		[alwaysActive, namespace, selectionOwnerKey, value, viewportId],
 	);
 
+	// The automatic confirmation must be triggered by an actual change of the
+	// selection, not by a new identity of changeValue. Otherwise a re-render
+	// caused by an unrelated parameter (e.g. a dynamic parameter whose value the
+	// model changes on every computation) would re-run this effect and submit
+	// the unchanged selection again, causing a second computation. changeValue
+	// is therefore called via a ref instead of being a dependency.
+	const changeValueRef = useRef(changeValue);
+	changeValueRef.current = changeValue;
 	useEffect(() => {
-		if (
-			skipNextAutomaticConfirmationRef.current &&
-			selectedNodeNames.length === 0
-		) {
+		if (skipNextAutomaticConfirmationRef.current) {
 			skipNextAutomaticConfirmationRef.current = false;
 			return;
 		}
-		if (acceptImmediately) changeValue(selectedNodeNames);
-	}, [acceptImmediately, changeValue, selectedNodeNames]);
+		if (acceptImmediately) changeValueRef.current(selectedNodeNames);
+	}, [acceptImmediately, selectedNodeNames]);
 
 	/**
 	 * Callback function to reset the selected node names.
@@ -447,22 +465,6 @@ export default function ParameterSelectionComponent(
 		setSelectedNodeNamesAndRestoreSelection,
 		viewportId,
 	]);
-	clearSelectionRef.current = clearSelection;
-	const appliedAutoClearRevisionRef = useRef(0);
-	useEffect(() => {
-		if (
-			!shouldAutoClear ||
-			!autoClearRequest ||
-			autoClearRequest.revision <= appliedAutoClearRevisionRef.current ||
-			(autoClearRequest.value !== value &&
-				autoClearRequest.value !== state.uiValue)
-		)
-			return;
-
-		appliedAutoClearRevisionRef.current = autoClearRequest.revision;
-		clearSelectionRef.current();
-	}, [autoClearRequest, shouldAutoClear, state.uiValue, value]);
-
 	const notifyConflict = useCallback(
 		(title: string, message: string) =>
 			notifications.warning({title, message}),
@@ -498,11 +500,9 @@ export default function ParameterSelectionComponent(
 	);
 	const showConfirmationControls =
 		hasOtherPendingSelection ||
-		(shouldAutoClear && selectedNodeNames.length === 0
-			? minimumSelection === 0 && hasPendingSelection
-			: !acceptImmediately &&
-				(hasAutomaticSelectionControls ||
-					(hasPendingSelection && minimumSelection === 0)));
+		(!acceptImmediately &&
+			(hasAutomaticSelectionControls ||
+				(hasPendingSelection && minimumSelection === 0)));
 
 	const items = [
 		createToolbarCheckboxItem({
@@ -560,13 +560,6 @@ export default function ParameterSelectionComponent(
 							namespace,
 							parameterId: definition.id,
 							value: serializedSelectionValue,
-							onComplete: shouldAutoClear
-								? () =>
-										requestSelectionAutoClear(
-											selectionOwnerKey,
-											serializedSelectionValue,
-										)
-								: undefined,
 							prepare: () => {
 								restoreBatchSelectionRef.current = true;
 								if (!alwaysActive) {
@@ -611,8 +604,8 @@ export default function ParameterSelectionComponent(
 	// switch a selection parameter between widget and toolbar presentation while
 	// it is mounted, and React requires the same hook sequence in both modes.
 	const onCancelCallback = useCallback(() => {
-		resetSelection(state.execValue);
-	}, [resetSelection, state.execValue]);
+		resetSelection(state.commitValue);
+	}, [resetSelection, state.commitValue]);
 
 	useEffect(() => {
 		setOnCancelCallback(() => onCancelCallback);
