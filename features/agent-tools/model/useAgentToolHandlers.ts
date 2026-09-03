@@ -5,7 +5,10 @@ import {useViewportHistory} from "@AppBuilderLib/entities/viewport/model/useView
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import type {GenericToolSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
+import {
+	GenericToolName,
+	type GenericToolSettings,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
@@ -13,7 +16,8 @@ import {useContext, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
 	defaultSettingsFor,
-	InScopeGenericToolName,
+	isGenericToolSettingsFor,
+	type InScopeGenericToolName,
 } from "../config/inScopeGenericTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import type {IToolsApiHandlerMap} from "../config/toolsApi";
@@ -36,10 +40,10 @@ function settingsForTool<N extends InScopeGenericToolName>(
 	name: N,
 ): Extract<GenericToolSettings, {name: N}> {
 	const found = resolvedTools.find((tool) => tool.name === name);
-	if (found) {
-		return found.settings as Extract<GenericToolSettings, {name: N}>;
+	if (found && isGenericToolSettingsFor(found.settings, name)) {
+		return found.settings;
 	}
-	return defaultSettingsFor(name) as Extract<GenericToolSettings, {name: N}>;
+	return defaultSettingsFor(name);
 }
 
 /**
@@ -105,51 +109,51 @@ export function useAgentToolHandlers(args: {
 
 	return useMemo(
 		() => ({
-			[InScopeGenericToolName.ListParameterDefinitions]: (input) =>
+			[GenericToolName.ListParameterDefinitions]: (input) =>
 				handleListParameterDefinitions(
 					input,
 					settingsForTool(
 						resolvedToolsRef.current,
-						InScopeGenericToolName.ListParameterDefinitions,
+						GenericToolName.ListParameterDefinitions,
 					),
 					depsRef.current,
 				),
-			[InScopeGenericToolName.GetParameterValues]: (input) =>
+			[GenericToolName.GetParameterValues]: (input) =>
 				handleGetParameterValues(
 					input,
 					// Sharing ListParameterDefinitions settings is intentional.
 					settingsForTool(
 						resolvedToolsRef.current,
-						InScopeGenericToolName.ListParameterDefinitions,
+						GenericToolName.ListParameterDefinitions,
 					),
 					depsRef.current,
 				),
-			[InScopeGenericToolName.SetParameterValues]: (input) =>
+			[GenericToolName.SetParameterValues]: (input) =>
 				handleSetParameterValues(input, depsRef.current),
-			[InScopeGenericToolName.ListActionControls]: (input) =>
+			[GenericToolName.ListActionControls]: (input) =>
 				handleListActionControls(
 					input,
 					settingsForTool(
 						resolvedToolsRef.current,
-						InScopeGenericToolName.ListActionControls,
+						GenericToolName.ListActionControls,
 					),
 					depsRef.current,
 				),
-			[InScopeGenericToolName.TriggerActionControl]: (input) =>
+			[GenericToolName.TriggerActionControl]: (input) =>
 				handleTriggerActionControl(
 					input,
 					// Sharing ListActionControls settings is intentional.
 					settingsForTool(
 						resolvedToolsRef.current,
-						InScopeGenericToolName.ListActionControls,
+						GenericToolName.ListActionControls,
 					),
 					depsRef.current,
 				),
-			[InScopeGenericToolName.SetCameraPosition]: (input) =>
+			[GenericToolName.SetCameraPosition]: (input) =>
 				handleSetCameraPosition(input, depsRef.current),
-			[InScopeGenericToolName.GetScreenshot]: (input) =>
+			[GenericToolName.GetScreenshot]: (input) =>
 				handleGetScreenshot(input, depsRef.current),
-			[InScopeGenericToolName.GetMetric]: (input) =>
+			[GenericToolName.GetMetric]: (input) =>
 				handleGetMetric(input, depsRef.current),
 		}),
 		[],

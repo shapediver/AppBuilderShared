@@ -5,6 +5,7 @@ import {
 	isFormWidget,
 	isStackUiWidget,
 	isToolbarContainer,
+	type AppBuilderActionType,
 	type IAppBuilder,
 	type IAppBuilderControl,
 	type IAppBuilderControlActionRef,
@@ -191,7 +192,7 @@ export function collectActionControlRefs(
 		return listExplicitActionRefs(collected, explicit);
 	}
 
-	const types = new Set(
+	const types = new Set<AppBuilderActionType>(
 		args.settings.filter?.types ?? DEFAULT_LIST_ACTION_CONTROL_TYPES,
 	);
 	return collected.filter((ref) => types.has(ref.definition.type));

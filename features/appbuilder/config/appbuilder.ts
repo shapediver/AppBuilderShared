@@ -323,11 +323,7 @@ export interface IAppBuilderControlParameterRef {
 	/** Properties of the parameter to be overridden. */
 	overrides?: Pick<
 		Partial<IAppBuilderParameterDefinition>,
-		| "displayname"
-		| "tooltip"
-		| "hidden"
-		| "settings"
-		| "step"
+		"displayname" | "tooltip" | "hidden" | "settings" | "step"
 	>;
 	/** Disable the UI element of the parameter if its state is dirty. */
 	disableIfDirty?: boolean;
@@ -369,30 +365,64 @@ export interface IAppBuilderControlOutputRef {
 }
 
 /** An App Builder action definition. */
-export interface IAppBuilderActionDefinition {
-	/** Type of the action. */
-	type: AppBuilderActionType;
-	/** Properties of the action. */
-	props:
-		| IAppBuilderActionPropsCreateModelState
-		| IAppBuilderActionPropsAddToCart
-		| IAppBuilderActionPropsSetParameterValue
-		| IAppBuilderActionPropsSetParameterValues
-		| IAppBuilderActionPropsSetBrowserLocation
-		| IAppBuilderActionPropsCloseConfigurator
-		| IAppBuilderActionPropsCamera
-		| IAppBuilderActionPropsSound
-		| IAppBuilderActionPropsMessageToParent
-		| IAppBuilderActionPropsFullscreen
-		| IAppBuilderActionPropsUndo
-		| IAppBuilderActionPropsRedo
-		| IAppBuilderActionPropsResetParameterValues
-		| IAppBuilderActionPropsImportParameterValues
-		| IAppBuilderActionPropsExportParameterValues
-		| IAppBuilderActionPropsImportModelState
-		| IAppBuilderActionPropsAr
-		| IAppBuilderActionPropsSetContainerVisibility;
-}
+export type IAppBuilderActionDefinition =
+	| {
+			type: AppBuilderActionType.CreateModelState;
+			props: IAppBuilderActionPropsCreateModelState;
+	  }
+	| {
+			type: AppBuilderActionType.AddToCart;
+			props: IAppBuilderActionPropsAddToCart;
+	  }
+	| {
+			type: AppBuilderActionType.SetParameterValue;
+			props: IAppBuilderActionPropsSetParameterValue;
+	  }
+	| {
+			type: AppBuilderActionType.SetParameterValues;
+			props: IAppBuilderActionPropsSetParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.SetBrowserLocation;
+			props: IAppBuilderActionPropsSetBrowserLocation;
+	  }
+	| {
+			type: AppBuilderActionType.CloseConfigurator;
+			props: IAppBuilderActionPropsCloseConfigurator;
+	  }
+	| {type: AppBuilderActionType.Ar; props: IAppBuilderActionPropsAr}
+	| {
+			type: AppBuilderActionType.Fullscreen;
+			props: IAppBuilderActionPropsFullscreen;
+	  }
+	| {type: AppBuilderActionType.Undo; props: IAppBuilderActionPropsUndo}
+	| {type: AppBuilderActionType.Redo; props: IAppBuilderActionPropsRedo}
+	| {
+			type: AppBuilderActionType.ResetParameterValues;
+			props: IAppBuilderActionPropsResetParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.ImportParameterValues;
+			props: IAppBuilderActionPropsImportParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.ExportParameterValues;
+			props: IAppBuilderActionPropsExportParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.ImportModelState;
+			props: IAppBuilderActionPropsImportModelState;
+	  }
+	| {type: AppBuilderActionType.Camera; props: IAppBuilderActionPropsCamera}
+	| {type: AppBuilderActionType.Sound; props: IAppBuilderActionPropsSound}
+	| {
+			type: AppBuilderActionType.MessageToParent;
+			props: IAppBuilderActionPropsMessageToParent;
+	  }
+	| {
+			type: AppBuilderActionType.SetContainerVisibility;
+			props: IAppBuilderActionPropsSetContainerVisibility;
+	  };
 
 /** Common properties of App Builder action controls and legacy actions. */
 export interface IAppBuilderActionPropsCommon {
@@ -920,30 +950,64 @@ export type IAppBuilderLegacyActionPropsMessageToParent =
 	IAppBuilderActionPropsMessageToParent & IAppBuilderActionPropsCommon;
 
 /** A legacy App Builder action definition. */
-export interface IAppBuilderLegacyActionDefinition {
-	/** Type of the action. */
-	type: AppBuilderActionType;
-	/** Properties of the action. */
-	props:
-		| IAppBuilderLegacyActionPropsCreateModelState
-		| IAppBuilderLegacyActionPropsAddToCart
-		| IAppBuilderLegacyActionPropsSetParameterValue
-		| IAppBuilderLegacyActionPropsSetParameterValues
-		| IAppBuilderLegacyActionPropsSetBrowserLocation
-		| IAppBuilderLegacyActionPropsCloseConfigurator
-		| IAppBuilderLegacyActionPropsAr
-		| IAppBuilderLegacyActionPropsFullscreen
-		| IAppBuilderLegacyActionPropsUndo
-		| IAppBuilderLegacyActionPropsRedo
-		| IAppBuilderLegacyActionPropsResetParameterValues
-		| IAppBuilderLegacyActionPropsImportParameterValues
-		| IAppBuilderLegacyActionPropsExportParameterValues
-		| IAppBuilderLegacyActionPropsImportModelState
-		| IAppBuilderLegacyActionPropsCamera
-		| IAppBuilderLegacyActionPropsSound
-		| IAppBuilderLegacyActionPropsSetContainerVisibility
-		| IAppBuilderLegacyActionPropsMessageToParent;
-}
+export type IAppBuilderLegacyActionDefinition =
+	| {
+			type: AppBuilderActionType.CreateModelState;
+			props: IAppBuilderLegacyActionPropsCreateModelState;
+	  }
+	| {
+			type: AppBuilderActionType.AddToCart;
+			props: IAppBuilderLegacyActionPropsAddToCart;
+	  }
+	| {
+			type: AppBuilderActionType.SetParameterValue;
+			props: IAppBuilderLegacyActionPropsSetParameterValue;
+	  }
+	| {
+			type: AppBuilderActionType.SetParameterValues;
+			props: IAppBuilderLegacyActionPropsSetParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.SetBrowserLocation;
+			props: IAppBuilderLegacyActionPropsSetBrowserLocation;
+	  }
+	| {
+			type: AppBuilderActionType.CloseConfigurator;
+			props: IAppBuilderLegacyActionPropsCloseConfigurator;
+	  }
+	| {type: AppBuilderActionType.Ar; props: IAppBuilderLegacyActionPropsAr}
+	| {
+			type: AppBuilderActionType.Fullscreen;
+			props: IAppBuilderLegacyActionPropsFullscreen;
+	  }
+	| {type: AppBuilderActionType.Undo; props: IAppBuilderLegacyActionPropsUndo}
+	| {type: AppBuilderActionType.Redo; props: IAppBuilderLegacyActionPropsRedo}
+	| {
+			type: AppBuilderActionType.ResetParameterValues;
+			props: IAppBuilderLegacyActionPropsResetParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.ImportParameterValues;
+			props: IAppBuilderLegacyActionPropsImportParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.ExportParameterValues;
+			props: IAppBuilderLegacyActionPropsExportParameterValues;
+	  }
+	| {
+			type: AppBuilderActionType.ImportModelState;
+			props: IAppBuilderLegacyActionPropsImportModelState;
+	  }
+	| {type: AppBuilderActionType.Camera; props: IAppBuilderLegacyActionPropsCamera}
+	| {type: AppBuilderActionType.Sound; props: IAppBuilderLegacyActionPropsSound}
+	| {
+			type: AppBuilderActionType.SetContainerVisibility;
+			props: IAppBuilderLegacyActionPropsSetContainerVisibility;
+	  }
+	| {
+			type: AppBuilderActionType.MessageToParent;
+			props: IAppBuilderLegacyActionPropsMessageToParent;
+	  };
 
 /** Types of widgets */
 export type AppBuilderWidgetType =
@@ -1769,136 +1833,161 @@ export function isTableWidget(widget: IAppBuilderWidget): widget is {
 	return widget.type === "table";
 }
 
+function isActionType<T extends AppBuilderActionType>(
+	action: IAppBuilderActionDefinition,
+	type: T,
+): action is Extract<IAppBuilderActionDefinition, {type: T}> {
+	return action.type === type;
+}
+
 /** assert action type "createModelState" */
 export function isCreateModelStateAction(
 	action: IAppBuilderActionDefinition,
-): action is {
-	type: "createModelState";
-	props: IAppBuilderActionPropsCreateModelState;
-} {
-	return action.type === "createModelState";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.CreateModelState}
+> {
+	return isActionType(action, AppBuilderActionType.CreateModelState);
 }
 
 /** assert action type "addToCart" */
 export function isAddToCartAction(
 	action: IAppBuilderActionDefinition,
-): action is {type: "addToCart"; props: IAppBuilderActionPropsAddToCart} {
-	return action.type === "addToCart";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.AddToCart}
+> {
+	return isActionType(action, AppBuilderActionType.AddToCart);
 }
 
 /** assert action type "setParameterValue" */
 export function isSetParameterValueAction(
 	action: IAppBuilderActionDefinition,
-): action is {
-	type: "setParameterValue";
-	props: IAppBuilderActionPropsSetParameterValue;
-} {
-	return action.type === "setParameterValue";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.SetParameterValue}
+> {
+	return isActionType(action, AppBuilderActionType.SetParameterValue);
 }
 
 /** assert action type "setParameterValues" */
 export function isSetParameterValuesAction(
 	action: IAppBuilderActionDefinition,
-): action is {
-	type: "setParameterValues";
-	props: IAppBuilderActionPropsSetParameterValues;
-} {
-	return action.type === "setParameterValues";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.SetParameterValues}
+> {
+	return isActionType(action, AppBuilderActionType.SetParameterValues);
 }
 
 /** assert action type "setBrowserLocation" */
 export function isSetBrowserLocationAction(
 	action: IAppBuilderActionDefinition,
-): action is {
-	type: "setBrowserLocation";
-	props: IAppBuilderActionPropsSetBrowserLocation;
-} {
-	return action.type === "setBrowserLocation";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.SetBrowserLocation}
+> {
+	return isActionType(action, AppBuilderActionType.SetBrowserLocation);
 }
 
 /** assert action type "closeConfigurator" */
 export function isCloseConfiguratorAction(
 	action: IAppBuilderActionDefinition,
-): action is {
-	type: "closeConfigurator";
-	props: IAppBuilderActionPropsCloseConfigurator;
-} {
-	return action.type === "closeConfigurator";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.CloseConfigurator}
+> {
+	return isActionType(action, AppBuilderActionType.CloseConfigurator);
 }
 
 /** assert action type "ar" */
 export function isArAction(
 	action: IAppBuilderActionDefinition,
-): action is {type: "ar"; props: IAppBuilderActionPropsAr} {
-	return action.type === "ar";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Ar}
+> {
+	return isActionType(action, AppBuilderActionType.Ar);
 }
 
 /** assert action type "fullscreen" */
 export function isFullscreenAction(
 	action: IAppBuilderActionDefinition,
-): action is {type: "fullscreen"; props: IAppBuilderActionPropsFullscreen} {
-	return action.type === "fullscreen";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Fullscreen}
+> {
+	return isActionType(action, AppBuilderActionType.Fullscreen);
 }
 
 /** assert action type "undo" */
 export function isUndoAction(
 	action: IAppBuilderActionDefinition,
-): action is {type: "undo"; props: IAppBuilderActionPropsUndo} {
-	return action.type === "undo";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Undo}
+> {
+	return isActionType(action, AppBuilderActionType.Undo);
 }
 
 /** assert action type "redo" */
 export function isRedoAction(
 	action: IAppBuilderActionDefinition,
-): action is {type: "redo"; props: IAppBuilderActionPropsRedo} {
-	return action.type === "redo";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Redo}
+> {
+	return isActionType(action, AppBuilderActionType.Redo);
 }
 
 /** assert action type "resetParameterValues" */
 export function isResetParameterValuesAction(
 	action: IAppBuilderActionDefinition,
-): action is {
-	type: "resetParameterValues";
-	props: IAppBuilderActionPropsResetParameterValues;
-} {
-	return action.type === "resetParameterValues";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.ResetParameterValues}
+> {
+	return isActionType(action, AppBuilderActionType.ResetParameterValues);
 }
 
 /** assert action type "importParameterValues" */
 export function isImportParameterValuesAction(
 	action: IAppBuilderActionDefinition,
-): action is {
-	type: "importParameterValues";
-	props: IAppBuilderActionPropsImportParameterValues;
-} {
-	return action.type === "importParameterValues";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.ImportParameterValues}
+> {
+	return isActionType(action, AppBuilderActionType.ImportParameterValues);
 }
 
 /** assert action type "exportParameterValues" */
 export function isExportParameterValuesAction(
 	action: IAppBuilderActionDefinition,
-): action is {
-	type: "exportParameterValues";
-	props: IAppBuilderActionPropsExportParameterValues;
-} {
-	return action.type === "exportParameterValues";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.ExportParameterValues}
+> {
+	return isActionType(action, AppBuilderActionType.ExportParameterValues);
 }
 
 /** assert action type "importModelState" */
 export function isImportModelStateAction(
 	action: IAppBuilderActionDefinition,
-): action is {
-	type: "importModelState";
-	props: IAppBuilderActionPropsImportModelState;
-} {
-	return action.type === "importModelState";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.ImportModelState}
+> {
+	return isActionType(action, AppBuilderActionType.ImportModelState);
 }
 
 /** assert action type "camera" */
 export function isCameraAction(
 	action: IAppBuilderActionDefinition,
-): action is {type: "camera"; props: IAppBuilderActionPropsCamera} {
-	return action.type === "camera";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Camera}
+> {
+	return isActionType(action, AppBuilderActionType.Camera);
 }
 
 /** assert camera action "animate" */
@@ -1954,28 +2043,31 @@ export function isZoomToCameraAction(
 /** assert action type "sound" */
 export function isSoundAction(
 	action: IAppBuilderActionDefinition,
-): action is {type: "sound"; props: IAppBuilderActionPropsSound} {
-	return action.type === "sound";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Sound}
+> {
+	return isActionType(action, AppBuilderActionType.Sound);
 }
 
 /** assert action type "setContainerVisibility" */
 export function isSetContainerVisibilityAction(
 	action: IAppBuilderActionDefinition,
-): action is {
-	type: "setContainerVisibility";
-	props: IAppBuilderActionPropsSetContainerVisibility;
-} {
-	return action.type === "setContainerVisibility";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.SetContainerVisibility}
+> {
+	return isActionType(action, AppBuilderActionType.SetContainerVisibility);
 }
 
 /** assert action type "messageToParent" */
 export function isMessageToParentAction(
 	action: IAppBuilderActionDefinition,
-): action is {
-	type: "messageToParent";
-	props: IAppBuilderActionPropsMessageToParent;
-} {
-	return action.type === "messageToParent";
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.MessageToParent}
+> {
+	return isActionType(action, AppBuilderActionType.MessageToParent);
 }
 
 type AppBuilderControlLike = IAppBuilderControl | IAppBuilderToolbarItem;

@@ -5,6 +5,7 @@ import type {
 import {
 	defaultSettingsFor,
 	IN_SCOPE_GENERIC_TOOL_NAMES,
+	isGenericToolSettingsFor,
 	isInScopeGenericToolName,
 	type InScopeGenericToolName,
 } from "./inScopeGenericTools";
@@ -42,6 +43,7 @@ export function resolveToolset(
 		const resolved: ResolvedGenericTool[] = [];
 		for (const tool of agent.genericTools ?? []) {
 			if (!isInScopeGenericToolName(tool.name)) continue;
+			if (!isGenericToolSettingsFor(tool, tool.name)) continue;
 			resolved.push({name: tool.name, settings: tool});
 		}
 		return resolved;
@@ -49,9 +51,10 @@ export function resolveToolset(
 
 	return IN_SCOPE_GENERIC_TOOL_NAMES.map((name) => {
 		const overlay = listed.get(name);
-		return {
-			name,
-			settings: overlay ?? (defaultSettingsFor(name) as GenericToolSettings),
-		};
+		const settings =
+			overlay && isGenericToolSettingsFor(overlay, name)
+				? overlay
+				: defaultSettingsFor(name);
+		return {name, settings};
 	});
 }

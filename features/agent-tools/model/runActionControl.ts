@@ -1,4 +1,5 @@
 import {
+	AppBuilderActionType,
 	isAddToCartAction,
 	isCameraAction,
 	isCreateModelStateAction,
@@ -74,7 +75,10 @@ async function runSetParameterAction(
 }
 
 async function runCameraAction(
-	definition: {type: "camera"; props: IAppBuilderActionPropsCamera},
+	definition: {
+		type: AppBuilderActionType.Camera;
+		props: IAppBuilderActionPropsCamera;
+	},
 	deps: AgentToolsDeps,
 ): Promise<RunActionControlResult> {
 	const viewportId = definition.props.viewportId ?? deps.getViewportId();

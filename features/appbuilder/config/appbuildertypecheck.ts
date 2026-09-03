@@ -22,11 +22,14 @@ import {
 	AttributeVisualizationVisibility,
 	FormWidgetSubmitBehavior,
 	IAppBuilder,
+	IAppBuilderActionDefinition,
 	IAppBuilderParameterValueSourceDefinition,
+	IAppBuilderSettingsJson,
 	IAppBuilderWidget,
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
+import {preprocessActionDefinitionInput} from "@AppBuilderLib/features/appbuilder/lib/legacyActionToDefinition";
 import {GenericToolName} from "./appbuilderagent";
 import {validateThemeComponentsRecord} from "./validateThemeComponentsRecord";
 
@@ -478,9 +481,7 @@ const IAppBuilderLegacyActionPropsSetParameterValueSchema =
 
 // Zod type definition for IAppBuilderActionPropsSetParameterValues
 const IAppBuilderActionPropsSetParameterValuesSchema = z.strictObject({
-	parameterValues: z.array(
-		IAppBuilderLegacyActionPropsSetParameterValueSchema,
-	),
+	parameterValues: z.array(IAppBuilderActionPropsSetParameterValueSchema),
 	message: z.string().optional(),
 });
 
@@ -689,10 +690,19 @@ const IAppBuilderActionPropsSetContainerVisibilitySchema = z.strictObject({
 	// the discriminator and identity fields needed by this action here.
 	container: z.union([
 		z.looseObject({
-			name: z.enum(["left", "right", "top", "bottom"]),
+			name: z.enum([
+				AppBuilderContainerNameType.Left,
+				AppBuilderContainerNameType.Right,
+				AppBuilderContainerNameType.Top,
+				AppBuilderContainerNameType.Bottom,
+			]),
 		}),
 		z.looseObject({
-			name: z.enum(["anchor2d", "anchor3d", "toolbar"]),
+			name: z.enum([
+				AppBuilderContainerNameType.Anchor2d,
+				AppBuilderContainerNameType.Anchor3d,
+				AppBuilderContainerNameType.Toolbar,
+			]),
 			props: z.looseObject({id: z.string()}),
 		}),
 	]),
@@ -847,8 +857,93 @@ const IAppBuilderControlExportRefSchema = z.strictObject({
 });
 
 // Zod type definition for IAppBuilderActionDefinition
-const IAppBuilderActionDefinitionSchema =
-	IAppBuilderLegacyActionDefinitionSchema;
+const IAppBuilderActionDefinitionSchemaBase = z.discriminatedUnion("type", [
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.CreateModelState),
+		props: IAppBuilderActionPropsCreateModelStateSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.AddToCart),
+		props: IAppBuilderActionPropsAddToCartSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.SetParameterValue),
+		props: IAppBuilderActionPropsSetParameterValueSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.SetParameterValues),
+		props: IAppBuilderActionPropsSetParameterValuesSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.SetBrowserLocation),
+		props: IAppBuilderActionPropsSetBrowserLocationSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.CloseConfigurator),
+		props: IAppBuilderActionPropsCloseConfigurator,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.Ar),
+		props: IAppBuilderActionPropsArSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.Fullscreen),
+		props: IAppBuilderActionPropsFullscreenSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.Undo),
+		props: IAppBuilderActionPropsUndoSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.Redo),
+		props: IAppBuilderActionPropsRedoSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.ResetParameterValues),
+		props: IAppBuilderActionPropsResetParameterValuesSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.ImportParameterValues),
+		props: IAppBuilderActionPropsImportParameterValuesSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.ExportParameterValues),
+		props: IAppBuilderActionPropsExportParameterValuesSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.ImportModelState),
+		props: IAppBuilderActionPropsImportModelStateSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.Camera),
+		props: IAppBuilderActionPropsCameraSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.Sound),
+		props: IAppBuilderActionPropsSoundSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.SetContainerVisibility),
+		props: IAppBuilderActionPropsSetContainerVisibilitySchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.MessageToParent),
+		props: IAppBuilderActionPropsMessageToParentSchema,
+	}),
+]);
+
+const IAppBuilderActionDefinitionSchema = z.preprocess(
+	preprocessActionDefinitionInput,
+	IAppBuilderActionDefinitionSchemaBase,
+);
+
+// Compile-time assertion: validated action definitions match IAppBuilderActionDefinition
+type _AssertActionDefinition =
+	z.infer<typeof IAppBuilderActionDefinitionSchema> extends IAppBuilderActionDefinition
+		? true
+		: false;
+const _checkActionDefinition: _AssertActionDefinition = true;
+void _checkActionDefinition;
 
 // Zod type definition for IAppBuilderControlActionRef
 const IAppBuilderControlActionRefSchema = z
@@ -1547,7 +1642,9 @@ const IAgentParameterRefSchema = z.strictObject({
 	sessionId: z
 		.string()
 		.optional()
-		.describe("Optional id of the session the referenced parameter belongs to."),
+		.describe(
+			"Optional id of the session the referenced parameter belongs to.",
+		),
 	description: z
 		.string()
 		.optional()
@@ -1679,10 +1776,12 @@ const SpecificToolSettingsSchema = z.strictObject({
 	description: z
 		.string()
 		.optional()
-		.describe("Optional description of the tool, providing context to the agent."),
-	inputSchema: z.record(z.string(), JsonValueSchema).describe(
-		"Input schema for the tool.",
-	),
+		.describe(
+			"Optional description of the tool, providing context to the agent.",
+		),
+	inputSchema: z
+		.record(z.string(), JsonValueSchema)
+		.describe("Input schema for the tool."),
 	actionSequence: z
 		.array(IAppBuilderActionDefinitionSchema)
 		.optional()
@@ -1697,7 +1796,9 @@ const SpecificToolSettingsSchema = z.strictObject({
 // Zod type definition for IAppBuilderAgent
 const IAppBuilderAgentSchema = z.strictObject({
 	id: z.string().describe("Unique identifier of the agent."),
-	name: z.string().describe("Display name of the agent (exposed to the user)."),
+	name: z
+		.string()
+		.describe("Display name of the agent (exposed to the user)."),
 	message: z.string().describe("The agent's system prompt."),
 	useGenericToolDefaults: z
 		.boolean()
@@ -1725,7 +1826,9 @@ export type IAgentParameterRef = z.infer<typeof IAgentParameterRefSchema>;
 /**
  * Agent-specific reference for an action control.
  */
-export type IAgentActionControlRef = z.infer<typeof IAgentActionControlRefSchema>;
+export type IAgentActionControlRef = z.infer<
+	typeof IAgentActionControlRefSchema
+>;
 
 export type GenericToolSettings = z.infer<typeof GenericToolSettingsSchema>;
 
@@ -1807,6 +1910,12 @@ type _AssertAppBuilderKeys = [
 const _checkAppBuilder: _AssertAppBuilderKeys = [true, true];
 void _checkAppBuilder;
 
+// Compile-time assertion: validated layout JSON matches IAppBuilder
+type _AssertAppBuilderOutput =
+	z.infer<typeof IAppBuilderSchema> extends IAppBuilder ? true : false;
+const _checkAppBuilderOutput: _AssertAppBuilderOutput = true;
+void _checkAppBuilderOutput;
+
 export const validateAppBuilder = (value: any) => {
 	return IAppBuilderSchema.safeParse(value);
 };
@@ -1859,6 +1968,14 @@ const IAppBuilderSettingsJsonSchema =
 			"components",
 		]);
 	});
+
+// Compile-time assertion: validated settings JSON matches IAppBuilderSettingsJson
+type _AssertSettingsJson =
+	z.infer<typeof IAppBuilderSettingsJsonSchema> extends IAppBuilderSettingsJson
+		? true
+		: false;
+const _checkSettingsJson: _AssertSettingsJson = true;
+void _checkSettingsJson;
 
 export const validateAppBuilderSettingsJson = (value: any) => {
 	return IAppBuilderSettingsJsonSchema.safeParse(value);

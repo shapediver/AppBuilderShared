@@ -1,13 +1,13 @@
 import type {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
-import type {ListParameterDefinitionsToolSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
+import {GenericToolName} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {defaultSettingsFor, InScopeGenericToolName} from "../../config/inScopeGenericTools";
+import {defaultSettingsFor} from "../../config/inScopeGenericTools";
 import type {AgentToolsDeps} from "../../model/agentToolsDeps";
 import {handleListParameterDefinitions} from "../../model/handlers/listParameterDefinitions";
 
 const listSettings = defaultSettingsFor(
-	InScopeGenericToolName.ListParameterDefinitions,
-) as ListParameterDefinitionsToolSettings;
+	GenericToolName.ListParameterDefinitions,
+);
 
 function param(id: string): IShapeDiverParameter<unknown> {
 	return {
