@@ -1,6 +1,9 @@
 import {viewportScreenshotPropsSchema} from "@AppBuilderLib/entities/viewport/config/viewportScreenshotProps.zod";
-import type {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {z} from "@AppBuilderLib/shared/lib/zod";
+import type {
+	OrthographicCameraProperties,
+	PerspectiveCameraProperties,
+} from "@shapediver/viewer.shared.types";
 import {createModelStateDataSchema} from "./createModelState.zod";
 
 type ScreenshotPropsFromZod = z.infer<typeof viewportScreenshotPropsSchema>;
@@ -10,15 +13,17 @@ type ScreenshotPropsFromZod = z.infer<typeof viewportScreenshotPropsSchema>;
  *
  * Zod validates `screenshotProps.camera` as a name/type lookup union for settings
  * JSON. Runtime callers use the broader camera shape from
- * {@link IAppBuilderParameterValueSourcePropsScreenshot}; only `camera` is
- * widened here so the rest of the bag stays Zod-inferred.
+ * {@link OrthographicCameraProperties} / {@link PerspectiveCameraProperties};
+ * only `camera` is widened here so the rest of the bag stays Zod-inferred.
  */
 export type ICreateModelStateData = Omit<
 	z.infer<typeof createModelStateDataSchema>,
 	"screenshotProps"
 > & {
 	screenshotProps?: Omit<ScreenshotPropsFromZod, "camera"> & {
-		camera?: IAppBuilderParameterValueSourcePropsScreenshot["camera"];
+		camera?:
+			| Partial<OrthographicCameraProperties>
+			| Partial<PerspectiveCameraProperties>;
 	};
 };
 
