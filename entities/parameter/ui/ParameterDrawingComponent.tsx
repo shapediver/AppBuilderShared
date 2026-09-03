@@ -31,13 +31,10 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
+import {getResetValue} from "../lib/parameterResetValue";
 import {useDrawingTools} from "../model/drawing/useDrawingTools";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
-import {
-	requestSelectionAutoClear,
-	useSelectionAutoClear,
-} from "../model/interaction/useSelectionAutoClear";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useShapeDiverStoreInteractionRequestManagement} from "../model/useShapeDiverStoreInteractionRequestManagement";
 import DrawingOptionsComponent, {
@@ -101,7 +98,6 @@ export default function ParameterDrawingComponent(
 
 	// get the viewport ID
 	const {viewportId} = useViewportId();
-	const drawingOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
 	// get the viewport from the store
 	const {viewport} = useShapeDiverStoreViewport((state) => ({
 		viewport: state.viewports[viewportId],
@@ -132,15 +128,15 @@ export default function ParameterDrawingComponent(
 		drawingProps.general?.presentation,
 		alwaysActive,
 	);
-	const shouldAutoClear = drawingProps.general?.autoClear ?? false;
-	const autoClearRequest = useSelectionAutoClear(drawingOwnerKey);
-	const startsAutoCleared =
-		shouldAutoClear && autoClearRequest?.value === value;
-	const [autoClearPending, setAutoClearPending] = useState(false);
-	const [autoClearApplied, setAutoClearApplied] = useState(false);
 	const [drawingResetRevision, setDrawingResetRevision] = useState(0);
-	const useAutoClearedPoints =
-		startsAutoCleared || autoClearPending || autoClearApplied;
+	// A drawing which is reset to an empty drawing after each execution (see
+	// the "resetValue" setting) has nothing to clear.
+	const resetValue = getResetValue(definition);
+	const showClearButton = !(
+		resetValue !== undefined &&
+		actions.isValid(resetValue) &&
+		parsePointsData(resetValue as string).length === 0
+	);
 	const [drawingActive, setDrawingActive] = useState<boolean>(
 		alwaysActive || drawingProps.general?.activeMode === "activeOnStart",
 	);
@@ -179,24 +175,11 @@ export default function ParameterDrawingComponent(
 			if (!alwaysActive) setDrawingActive(false);
 			// if the value is already the same, do not change it
 			const serializedValue = JSON.stringify({points: confirmedPoints});
-			if (shouldAutoClear) {
-				setAutoClearPending(true);
-				setPointsData(emptyPointsData);
-				setParsedUiValue(emptyPointsData);
-			} else {
-				setParsedUiValue(confirmedPoints);
-			}
-			if (value === serializedValue) {
-				if (shouldAutoClear)
-					requestSelectionAutoClear(drawingOwnerKey, serializedValue);
-				return;
-			}
-			handleChange(serializedValue, 0, () => {
-				if (shouldAutoClear)
-					requestSelectionAutoClear(drawingOwnerKey, serializedValue);
-			});
+			setParsedUiValue(confirmedPoints);
+			if (value === serializedValue) return;
+			handleChange(serializedValue, 0);
 		},
-		[alwaysActive, drawingOwnerKey, shouldAutoClear, value],
+		[alwaysActive, value],
 	);
 
 	/**
@@ -227,62 +210,43 @@ export default function ParameterDrawingComponent(
 		confirmDrawing,
 		cancelDrawing,
 		drawingActive && hasInteractionPermission,
-		useAutoClearedPoints ? emptyPointsData : parsedUiValue,
+		parsedUiValue,
 		drawingResetRevision,
 	);
 	useEffect(() => {
 		drawingToolsApiRef.current = drawingToolsApi;
 	}, [drawingToolsApi]);
 	const resetDrawingToCommitted = useCallback(() => {
-		const committedPoints = useAutoClearedPoints
-			? emptyPointsData
-			: parsePointsData(state.execValue);
+		const committedPoints = parsePointsData(state.commitValue);
 		setPointsData(committedPoints);
 		setParsedUiValue(committedPoints);
 		setDrawingResetRevision((revision) => revision + 1);
-	}, [setPointsData, state.execValue, useAutoClearedPoints]);
+	}, [setPointsData, state.commitValue]);
 	resetDrawingToCommittedRef.current = resetDrawingToCommitted;
 	const drawingOptions = useDrawingOptions({
 		viewportId,
 		drawingToolsApi,
 		drawingToolsSettings: drawingProps,
 	});
-	const appliedAutoClearRevisionRef = useRef(0);
+	// React to commits of the parameter: in case the parameter was reset after
+	// an execution (see the "resetValue" setting), the committed value differs
+	// from the executed value and the drawing is reset to the committed value.
 	useEffect(() => {
-		if (
-			!shouldAutoClear ||
-			!autoClearRequest ||
-			autoClearRequest.revision <= appliedAutoClearRevisionRef.current ||
-			(autoClearRequest.value !== value &&
-				autoClearRequest.value !== state.uiValue)
-		)
-			return;
-
-		appliedAutoClearRevisionRef.current = autoClearRequest.revision;
-		clearDrawing();
-		setDrawingResetRevision((revision) => revision + 1);
-		setAutoClearApplied(true);
-		setAutoClearPending(false);
-	}, [autoClearRequest, clearDrawing, shouldAutoClear, state.uiValue, value]);
-	useEffect(() => {
-		if (!shouldAutoClear) setAutoClearApplied(false);
-	}, [shouldAutoClear]);
+		if (state.commitValue === state.execValue) return;
+		resetDrawingToCommittedRef.current();
+	}, [state.commitValue, state.commitRevision]);
 
 	useEffect(() => {
-		const parsed = useAutoClearedPoints
-			? []
-			: parsePointsData(state.execValue);
+		const parsed = parsePointsData(state.commitValue);
 		if (JSON.stringify(parsed) !== JSON.stringify(parsedUiValue)) {
 			setPointsData(parsed);
 			setParsedUiValue(parsed);
 		}
-	}, [JSON.stringify(definition), useAutoClearedPoints]);
+	}, [JSON.stringify(definition)]);
 
 	// react to changes of the uiValue and update the drawing state if necessary
 	useEffect(() => {
-		const parsed = useAutoClearedPoints
-			? []
-			: parsePointsData(state.uiValue);
+		const parsed = parsePointsData(state.uiValue);
 		setParsedUiValue(parsed);
 		// compare the parsed value with the current points data
 		if (
@@ -294,7 +258,7 @@ export default function ParameterDrawingComponent(
 			if (!alwaysActive) setDrawingActive(false);
 			setPointsData(parsed);
 		}
-	}, [alwaysActive, state.uiValue, useAutoClearedPoints]);
+	}, [alwaysActive, state.uiValue]);
 
 	// extend the onCancel callback to reset the drawing state
 	const _onCancel = useMemo(
@@ -316,9 +280,7 @@ export default function ParameterDrawingComponent(
 
 	// check if the current points data is different from the uiValue
 	useEffect(() => {
-		const parsed = useAutoClearedPoints
-			? emptyPointsData
-			: parsePointsData(state.uiValue);
+		const parsed = parsePointsData(state.uiValue);
 
 		// compare uiValue to pointsData
 		if (
@@ -331,7 +293,7 @@ export default function ParameterDrawingComponent(
 		} else {
 			setDirty(false);
 		}
-	}, [pointsData, state.uiValue, useAutoClearedPoints]);
+	}, [pointsData, state.uiValue]);
 
 	// check if the current selection is within the constraints
 	useEffect(() => {
@@ -416,7 +378,7 @@ export default function ParameterDrawingComponent(
 								`Created a drawing with ${pointsData?.length} points`}
 						</TextWeighted>
 					</Box>
-					{!shouldAutoClear && (
+					{showClearButton && (
 						<Box style={{width: "auto"}}>
 							<ActionIcon
 								onClick={clearDrawing}
@@ -560,9 +522,8 @@ export default function ParameterDrawingComponent(
 						disabled: !dirty,
 						execute: cancelDrawing,
 					}),
-					...(shouldAutoClear
-						? []
-						: [
+					...(showClearButton
+						? [
 								createToolbarCommand({
 									id: `${namespace}-${definition.id}-${viewportId}-clear`,
 									aggregationId: "drawing-clear",
@@ -571,7 +532,8 @@ export default function ParameterDrawingComponent(
 									order: 30,
 									execute: clearDrawing,
 								}),
-							]),
+							]
+						: []),
 				]
 			: [],
 	});

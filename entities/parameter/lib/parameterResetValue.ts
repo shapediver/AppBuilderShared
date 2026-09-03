@@ -9,7 +9,8 @@ import {IShapeDiverParameterDefinition} from "../config/parameter";
  * (see IShapeDiverParameterActions.execute and setExecutedValue). A reset value
  * defined by overrides is registered with the store once the parameter component
  * is mounted (see IShapeDiverParameterActions.setResetValue).
- * Reflecting the reset in the UI is currently supported by selection parameters.
+ * The interaction parameter components (selection, gumball, rectangle transform,
+ * drawing) reflect the reset by following the committed value.
  */
 export interface IParameterResetValueSettings {
 	/**
