@@ -382,13 +382,21 @@ export default function ParameterSelectionComponent(
 		[alwaysActive, namespace, selectionOwnerKey, value, viewportId],
 	);
 
+	// The automatic confirmation must be triggered by an actual change of the
+	// selection, not by a new identity of changeValue. Otherwise a re-render
+	// caused by an unrelated parameter (e.g. a dynamic parameter whose value the
+	// model changes on every computation) would re-run this effect and submit
+	// the unchanged selection again, causing a second computation. changeValue
+	// is therefore called via a ref instead of being a dependency.
+	const changeValueRef = useRef(changeValue);
+	changeValueRef.current = changeValue;
 	useEffect(() => {
 		if (skipNextAutomaticConfirmationRef.current) {
 			skipNextAutomaticConfirmationRef.current = false;
 			return;
 		}
-		if (acceptImmediately) changeValue(selectedNodeNames);
-	}, [acceptImmediately, changeValue, selectedNodeNames]);
+		if (acceptImmediately) changeValueRef.current(selectedNodeNames);
+	}, [acceptImmediately, selectedNodeNames]);
 
 	/**
 	 * Callback function to reset the selected node names.
