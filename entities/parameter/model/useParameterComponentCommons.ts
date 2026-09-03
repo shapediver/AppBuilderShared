@@ -50,23 +50,20 @@ export function useParameterComponentCommons<T>(
 	const actions = {...paramActions, ...customActions};
 
 	// A reset value defined by the overrides of the parameter reference applies
-	// to the parameter: register it with the parameter store, which applies it
-	// after executions. The registration is kept when the component unmounts,
-	// and removed once the overrides no longer define a reset value.
+	// to the parameter: the rendered reference is the source of truth for the
+	// override registered with the parameter store (which applies the reset
+	// after executions). A reference rendered without a reset value removes a
+	// registered one (e.g. a model which defines the reset value only for some
+	// computations). The registration is kept when the component unmounts.
 	const overrideResetValue = (
 		(props.overrides as {settings?: unknown} | undefined)?.settings as
 			| IParameterResetValueSettings
 			| undefined
 	)?.resetValue;
-	const registeredResetValueRef = useRef<unknown>(undefined);
 	useEffect(() => {
-		const value =
-			overrideResetValue === null ? undefined : overrideResetValue;
-		const registered = registeredResetValueRef.current;
-		registeredResetValueRef.current = value;
-		if (value !== undefined) paramActions.setResetValue(value);
-		else if (registered !== undefined)
-			paramActions.setResetValue(undefined);
+		paramActions.setResetValue(
+			overrideResetValue === null ? undefined : overrideResetValue,
+		);
 	}, [overrideResetValue, paramActions]);
 
 	// Read acceptRejectMode from the store as a fallback.

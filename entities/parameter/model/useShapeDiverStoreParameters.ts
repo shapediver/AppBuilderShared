@@ -446,6 +446,9 @@ function createParameterStore<T>(
 					return resetValue as T | string;
 				};
 
+				/** Number of executions of this parameter in flight. */
+				let executing = 0;
+
 				return {
 					definition,
 					acceptRejectMode,
@@ -541,17 +544,21 @@ function createParameterStore<T>(
 							forceSameValue?: boolean,
 						): Promise<T | string> {
 							const state = get().state;
-							// the reset policy applicable to this execution
-							const resetValue = resolveResetValue();
-							const result = await executor.execute(
-								state.uiValue,
-								state.commitValue,
-								forceImmediate,
-								skipHistory,
-								acceptAll,
-								skipUrlUpdate,
-								forceSameValue,
-							);
+							executing++;
+							let result: T | string | undefined;
+							try {
+								result = await executor.execute(
+									state.uiValue,
+									state.commitValue,
+									forceImmediate,
+									skipHistory,
+									acceptAll,
+									skipUrlUpdate,
+									forceSameValue,
+								);
+							} finally {
+								executing--;
+							}
 							// Nothing was executed (no change, cancelled, or failed):
 							// discard the pending change, keep the executed and committed values.
 							if (result === undefined) {
@@ -572,7 +579,10 @@ function createParameterStore<T>(
 							// TODO in case result is not the current uiValue, we could somehow visualize
 							// the fact that the uiValue gets reset here
 							// In case a reset value is defined, the parameter is committed to
-							// the reset value instead of the executed value.
+							// the reset value instead of the executed value. The reset value is
+							// resolved after the execution, such that a reset value defined by
+							// the model with the response of this execution applies.
+							const resetValue = resolveResetValue();
 							const commitValue =
 								resetValue !== undefined ? resetValue : result;
 							set(
@@ -643,47 +653,56 @@ function createParameterStore<T>(
 						},
 						setResetValue: function (value: unknown): void {
 							const current = get().resetValueOverride;
-							if (
-								current !== undefined &&
-								value !== undefined &&
-								current !== value
-							)
-								Logger.warn(
-									`Conflicting reset values for parameter ${definition.id}`,
-									current,
-									value,
-								);
 							if (current === value) return;
+							// the reset value applicable before the change
+							const previousResetValue = resolveResetValue();
 							set(
 								() => ({resetValueOverride: value}),
 								false,
 								"setResetValue",
 							);
-							// The latest execution (or the initial computation) has not
-							// been followed by a reset yet: apply the reset value now, such
-							// that the next execution uses it.
-							const {state, actions} = get();
+							// While the parameter is in its reset state (the latest execution
+							// or the initial computation has not been followed by a reset yet,
+							// or the parameter was reset to the previous reset value), it
+							// follows the reset policy: a new reset value is applied, and
+							// without a reset value the executed value is committed again
+							// (e.g. a model which defines the reset value only for some
+							// computations). The next execution uses the committed value.
+							const {state} = get();
+							// While an execution is in flight, the reset policy is resolved
+							// when it completes.
+							if (executing > 0) return;
 							if (
-								value === undefined ||
-								state.commitValue !== state.execValue ||
-								!actions.isValid(value, false)
+								state.commitValue !== state.execValue &&
+								state.commitValue !== previousResetValue
 							)
 								return;
+							const nextResetValue = resolveResetValue();
+							const target =
+								nextResetValue !== undefined
+									? nextResetValue
+									: state.execValue;
+							if (target === state.commitValue) return;
+							// a pending change is kept, it is now relative to the new commit value
 							set(
 								(_state) => ({
 									state: {
 										..._state.state,
-										uiValue: value as T | string,
-										commitValue: value as T | string,
+										uiValue: _state.state.dirty
+											? _state.state.uiValue
+											: target,
+										commitValue: target,
 										commitRevision:
 											_state.state.commitRevision + 1,
-										dirty: false,
+										dirty: _state.state.dirty
+											? _state.state.uiValue !== target
+											: false,
 									},
 								}),
 								false,
 								"setResetValue - apply",
 							);
-							executor.commit?.(value as T | string);
+							executor.commit?.(target);
 						},
 						// TODO add action to get the stringified value of the parameter
 					},

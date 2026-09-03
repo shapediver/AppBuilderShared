@@ -207,6 +207,93 @@ describe("useShapeDiverStoreParameters commit value", () => {
 		expect(parameter.getState().state.commitValue).toBe("b");
 	});
 
+	it("re-applies a changed reset value while the parameter is in its reset state", async () => {
+		const commit = jest.fn();
+		store
+			.getState()
+			.addGeneric(
+				genericNamespace,
+				false,
+				genericDefinition(),
+				async () => {},
+				undefined,
+				commit,
+			);
+		const parameter = getParameter(genericNamespace, "g1");
+
+		// a model defines the reset value "r1" with the response of an execution
+		parameter.getState().actions.setUiValue("x");
+		await parameter.getState().actions.execute(true);
+		parameter.getState().actions.setResetValue("r1");
+		expect(parameter.getState().state.commitValue).toBe("r1");
+
+		// the next execution is reset to "r1", then the model defines "r2":
+		// the parameter is in its reset state and follows the new reset value
+		parameter.getState().actions.setUiValue("y");
+		await parameter.getState().actions.execute(true);
+		expect(parameter.getState().state.commitValue).toBe("r1");
+		parameter.getState().actions.setResetValue("r2");
+		expect(parameter.getState().state.commitValue).toBe("r2");
+		expect(parameter.getState().state.uiValue).toBe("r2");
+		expect(parameter.getState().state.execValue).toBe("y");
+		expect(commit).toHaveBeenLastCalledWith("g1", "r2");
+
+		// a pending change is not overwritten by a changed reset value
+		parameter.getState().actions.setUiValue("z");
+		parameter.getState().actions.setResetValue("r3");
+		expect(parameter.getState().state.uiValue).toBe("z");
+		expect(parameter.getState().state.commitValue).toBe("r3");
+
+		// without a reset value, the parameter in its reset state is committed
+		// to the executed value again
+		parameter.getState().actions.resetToCommitValue();
+		parameter.getState().actions.setResetValue(undefined);
+		expect(parameter.getState().state.commitValue).toBe("y");
+		expect(parameter.getState().state.uiValue).toBe("y");
+		expect(commit).toHaveBeenLastCalledWith("g1", "y");
+	});
+
+	it("applies a reset value changed during an execution when the execution completes", async () => {
+		const commit = jest.fn();
+		let resolveExecution: () => void = () => undefined;
+		const executor = jest.fn(
+			() =>
+				new Promise<undefined>((resolve) => {
+					resolveExecution = () => resolve(undefined);
+				}),
+		);
+		store
+			.getState()
+			.addGeneric(
+				genericNamespace,
+				false,
+				genericDefinition(),
+				executor,
+				undefined,
+				commit,
+			);
+		const parameter = getParameter(genericNamespace, "g1");
+		parameter.getState().actions.setResetValue("r1");
+		expect(parameter.getState().state.commitValue).toBe("r1");
+
+		// execution of "b" in flight, the model removes the reset value
+		parameter.getState().actions.setUiValue("b");
+		const execution = parameter.getState().actions.execute(true);
+		await Promise.resolve();
+		parameter.getState().actions.setResetValue(undefined);
+		// nothing is committed while the execution is in flight
+		expect(parameter.getState().state.commitValue).toBe("r1");
+		expect(commit).toHaveBeenLastCalledWith("g1", "r1");
+
+		resolveExecution();
+		await execution;
+		// the execution completes without a reset value: "b" is committed
+		expect(parameter.getState().state.execValue).toBe("b");
+		expect(parameter.getState().state.commitValue).toBe("b");
+		expect(parameter.getState().state.uiValue).toBe("b");
+		expect(commit).toHaveBeenCalledTimes(1);
+	});
+
 	it("commits the reset value initially and applies a registered override", () => {
 		const commit = jest.fn();
 		store
