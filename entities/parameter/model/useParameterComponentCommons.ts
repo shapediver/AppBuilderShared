@@ -2,6 +2,7 @@ import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder/mode
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useShallow} from "zustand/react/shallow";
 import {IShapeDiverParameterState} from "../config/parameter";
 import {
 	PropsParameterComponent,
@@ -104,6 +105,13 @@ export function useParameterComponentCommons<T>(
 				state.parameterChanges[delegateNamespace]?.executing ?? false,
 		),
 	);
+	const delegateStores = useShapeDiverStoreParameters(
+		useShallow((store) =>
+			delegates.map(({namespace: delegateNamespace, parameterId}) =>
+				store.getParameter(delegateNamespace, parameterId),
+			),
+		),
+	);
 
 	const processesInSession = useShapeDiverStoreProcessManager((state) => {
 		// check if there are currently processes running in the session
@@ -139,6 +147,56 @@ export function useParameterComponentCommons<T>(
 
 	const debounceTimeout = acceptRejectMode ? 0 : debounceTimeoutForExecution;
 	const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+	const delegatesInitializedRef = useRef(false);
+
+	const executeDelegates = useCallback(
+		(value: T | string, forceImmediate: boolean, forceSameValue = false) =>
+			delegates.flatMap(({namespace: delegateNamespace, parameterId}) => {
+				const delegate = useShapeDiverStoreParameters
+					.getState()
+					.getParameter(delegateNamespace, parameterId);
+				if (!delegate) {
+					Logger.warn(
+						`Delegate parameter ${parameterId} does not exist for session namespace ${delegateNamespace}.`,
+					);
+					return [];
+				}
+
+				const delegateActions = delegate.getState().actions;
+				let delegateValue = value;
+				let valueWasSet = delegateActions.setUiValue(delegateValue);
+				if (!valueWasSet) {
+					delegateValue = actions.stringify?.(value) ?? `${value}`;
+					valueWasSet = delegateActions.setUiValue(delegateValue);
+				}
+				if (!valueWasSet) {
+					Logger.warn(
+						`setUiValue failed for delegate parameter ${parameterId}.`,
+						delegateValue,
+					);
+					return [];
+				}
+
+				return [
+					delegateActions.execute(
+						forceImmediate,
+						undefined,
+						undefined,
+						undefined,
+						forceSameValue,
+					),
+				];
+			}),
+		[actions, delegates],
+	);
+
+	useEffect(() => {
+		if (delegatesInitializedRef.current || delegates.length === 0) return;
+		if (delegateStores.some((delegate) => !delegate)) return;
+
+		delegatesInitializedRef.current = true;
+		void Promise.all(executeDelegates(state.commitValue, true));
+	}, [delegateStores, delegates.length, executeDelegates, state.commitValue]);
 
 	const handleChange = useCallback(
 		(
@@ -152,54 +210,6 @@ export function useParameterComponentCommons<T>(
 			debounceRef.current = setTimeout(
 				() => {
 					if (actions.setUiValue(curval)) {
-						const delegateExecutions = delegates.flatMap(
-							({namespace: delegateNamespace, parameterId}) => {
-								const delegate = useShapeDiverStoreParameters
-									.getState()
-									.getParameter(
-										delegateNamespace,
-										parameterId,
-									);
-								if (!delegate) {
-									Logger.warn(
-										`Delegate parameter ${parameterId} does not exist for session namespace ${delegateNamespace}.`,
-									);
-									return [];
-								}
-
-								const delegateActions =
-									delegate.getState().actions;
-								let delegateValue = curval;
-								let valueWasSet =
-									delegateActions.setUiValue(delegateValue);
-								if (!valueWasSet) {
-									delegateValue =
-										actions.stringify?.(curval) ??
-										`${curval}`;
-									valueWasSet =
-										delegateActions.setUiValue(
-											delegateValue,
-										);
-								}
-								if (!valueWasSet) {
-									Logger.warn(
-										`setUiValue failed for delegate parameter ${parameterId}.`,
-										delegateValue,
-									);
-									return [];
-								}
-
-								return [
-									delegateActions.execute(
-										!acceptRejectMode,
-										undefined,
-										undefined,
-										undefined,
-										forceSameValue,
-									),
-								];
-							},
-						);
 						Promise.all([
 							actions.execute(
 								!acceptRejectMode,
@@ -208,7 +218,11 @@ export function useParameterComponentCommons<T>(
 								undefined,
 								forceSameValue,
 							),
-							...delegateExecutions,
+							...executeDelegates(
+								curval,
+								!acceptRejectMode,
+								forceSameValue,
+							),
 						]).then(() => cb());
 					} else {
 						Logger.warn(
@@ -220,7 +234,13 @@ export function useParameterComponentCommons<T>(
 				timeout === undefined ? debounceTimeout : timeout,
 			);
 		},
-		[acceptRejectMode, debounceTimeout, actions, definition, delegates],
+		[
+			acceptRejectMode,
+			debounceTimeout,
+			actions,
+			definition,
+			executeDelegates,
+		],
 	);
 
 	useEffect(() => {
