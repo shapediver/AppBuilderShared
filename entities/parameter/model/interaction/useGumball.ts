@@ -120,6 +120,9 @@ export function useGumball(
 		return {
 			nameFilter,
 			hover: gumballProps.hover,
+			selectionColor: gumballProps.selectionColor,
+			availableColor: gumballProps.availableColor,
+			hoverColor: gumballProps.hoverColor,
 			minimumSelection: gumballProps.minimumSelection ?? 0,
 			maximumSelection: gumballProps.maximumSelection ?? Infinity,
 			deselectOnEmpty: gumballProps.deselectOnEmpty ?? false,
@@ -138,7 +141,7 @@ export function useGumball(
 		activate,
 		undefined,
 		strictNaming,
-		true,
+		false,
 	);
 
 	// convert the dragging data

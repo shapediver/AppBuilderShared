@@ -14,6 +14,7 @@ import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import MultiSelectComponent from "./multiselect/MultiSelectComponent";
 import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterResetRow from "./ParameterResetRow";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 import SelectComponent, {
 	SelectComponentSettings,
@@ -67,6 +68,8 @@ export default function ParameterSelectComponent(
 		handleChange,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		formInputProps,
 		formKey,
 	} = useParameterComponentCommons<string>(props, 0);
@@ -273,7 +276,15 @@ export default function ParameterSelectComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && inputComponent}
+			{definition && (
+				<ParameterResetRow
+					show={showReset}
+					onClick={resetToDefault}
+					disabled={disabled}
+				>
+					{inputComponent}
+				</ParameterResetRow>
+			)}
 		</ParameterWrapperComponent>
 	);
 }

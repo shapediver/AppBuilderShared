@@ -32,7 +32,10 @@ jest.mock("@shapediver/viewer.shared.types", () => ({
 	},
 }));
 
-import {validateAppBuilderSettingsJson} from "../appbuildertypecheck";
+import {
+	validateAppBuilder,
+	validateAppBuilderSettingsJson,
+} from "../appbuildertypecheck";
 
 /** SS-9065-shaped appBuilderOverride + themeOverrides (no sessions / tickets). */
 const ss9065ShapeSettings = {
@@ -334,5 +337,119 @@ describe("validateAppBuilderSettingsJson themeOverrides.other", () => {
 			themeOverrides: {other: {v8ThemeSupport: true, notARealKey: true}},
 		});
 		expect(result.success).toBe(false);
+	});
+});
+
+function settingsWithControlOverrides(overrides?: Record<string, unknown>) {
+	return {
+		version: "1.0" as const,
+		appBuilderOverride: {
+			version: "1.0",
+			containers: [
+				{
+					name: "left",
+					widgets: [
+						{
+							type: "controls",
+							props: {
+								controls: [
+									{
+										type: "parameter",
+										props: {
+											name: "File Input",
+											...(overrides === undefined
+												? {}
+												: {overrides}),
+										},
+									},
+								],
+							},
+						},
+					],
+				},
+			],
+		},
+	};
+}
+
+describe("validateAppBuilderSettingsJson resettable overrides", () => {
+	it("rejects overrides.resettable (must be settings.resettable)", () => {
+		const result = validateAppBuilderSettingsJson(
+			settingsWithControlOverrides({resettable: true}),
+		);
+		expect(result.success).toBe(false);
+	});
+
+	it("accepts omitted resettable", () => {
+		const result = validateAppBuilderSettingsJson(
+			settingsWithControlOverrides(),
+		);
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts overrides.settings.resettable true", () => {
+		const result = validateAppBuilderSettingsJson(
+			settingsWithControlOverrides({settings: {resettable: true}}),
+		);
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts overrides.settings.resettable false", () => {
+		const result = validateAppBuilderSettingsJson(
+			settingsWithControlOverrides({settings: {resettable: false}}),
+		);
+		expect(result.success).toBe(true);
+	});
+});
+
+const baseLayoutParameter = {
+	id: "p1",
+	defval: "",
+	name: "File Input",
+	type: "File",
+	hidden: false,
+};
+
+function layoutWithParameter(parameter: Record<string, unknown>) {
+	return {
+		version: "1.0" as const,
+		containers: [],
+		parameters: [parameter],
+	};
+}
+
+describe("validateAppBuilder resettable on parameters[]", () => {
+	it("rejects top-level resettable (must be settings.resettable)", () => {
+		const result = validateAppBuilder(
+			layoutWithParameter({...baseLayoutParameter, resettable: true}),
+		);
+		expect(result.success).toBe(false);
+	});
+
+	it("accepts omitted resettable", () => {
+		const result = validateAppBuilder(
+			layoutWithParameter({...baseLayoutParameter}),
+		);
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts settings.resettable true", () => {
+		const result = validateAppBuilder(
+			layoutWithParameter({
+				...baseLayoutParameter,
+				settings: {resettable: true},
+			}),
+		);
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts settings.resettable false", () => {
+		const result = validateAppBuilder(
+			layoutWithParameter({
+				...baseLayoutParameter,
+				settings: {resettable: false},
+			}),
+		);
+		expect(result.success).toBe(true);
 	});
 });

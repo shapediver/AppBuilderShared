@@ -45,6 +45,7 @@ import DrawingOptionsComponent, {
 } from "./DrawingOptionsComponent";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterResetRow from "./ParameterResetRow";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 /**
@@ -80,6 +81,8 @@ export default function ParameterDrawingComponent(
 		handleChange,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		state,
 		value,
 	} = useParameterComponentCommons<string>(props);
@@ -608,6 +611,13 @@ export default function ParameterDrawingComponent(
 
 	if (drawingPresentation === "toolbar") return <></>;
 
+	const control =
+		viewport?.type === RENDERER_TYPE.ATTRIBUTES
+			? contentAttributeVisualization
+			: definition && drawingActive && hasInteractionPermission
+				? contentActive
+				: contentInactive;
+
 	return (
 		<ParameterWrapperComponent
 			onCancel={onCancel}
@@ -615,11 +625,13 @@ export default function ParameterDrawingComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={_onCancel} />
-			{viewport?.type === RENDERER_TYPE.ATTRIBUTES
-				? contentAttributeVisualization
-				: definition && drawingActive && hasInteractionPermission
-					? contentActive
-					: contentInactive}
+			<ParameterResetRow
+				show={showReset}
+				onClick={resetToDefault}
+				disabled={disabled}
+			>
+				{control}
+			</ParameterResetRow>
 		</ParameterWrapperComponent>
 	);
 }

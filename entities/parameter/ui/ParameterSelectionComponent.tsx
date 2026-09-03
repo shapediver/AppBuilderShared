@@ -51,6 +51,7 @@ import {useSuspendedSelectionRestore} from "../model/interaction/useSuspendedSel
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterResetRow from "./ParameterResetRow";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 type SelectionParameterProps = ISelectionParameterProps & {
@@ -126,6 +127,8 @@ export default function ParameterSelectionComponent(
 		setOnCancelCallback,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		value,
 		state,
 	} = useParameterComponentCommons<string>(props);
@@ -396,6 +399,25 @@ export default function ParameterSelectionComponent(
 		},
 		[alwaysActive, selectionOwnerKey, setSelectedNodeNames],
 	);
+
+	const resetToDefaultSelection = useCallback(() => {
+		const defaultNames = parseNames(definition.defval);
+		if (defaultNames.length === 0) {
+			skipNextAutomaticConfirmationRef.current = true;
+		}
+		if (!alwaysActive) {
+			setSelectionActive(false);
+		}
+		clearPendingSelection(selectionOwnerKey);
+		setSelectedNodeNamesAndRestoreSelection(defaultNames);
+		resetToDefault();
+	}, [
+		alwaysActive,
+		definition.defval,
+		resetToDefault,
+		selectionOwnerKey,
+		setSelectedNodeNamesAndRestoreSelection,
+	]);
 
 	/**
 	 * Callback function to cancel the selection.
@@ -713,9 +735,15 @@ export default function ParameterSelectionComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && effectiveSelectionActive
-				? contentActive
-				: contentInactive}
+			{definition && (
+				<ParameterResetRow
+					show={showReset}
+					onClick={resetToDefaultSelection}
+					disabled={disabled}
+				>
+					{effectiveSelectionActive ? contentActive : contentInactive}
+				</ParameterResetRow>
+			)}
 		</ParameterWrapperComponent>
 	);
 }

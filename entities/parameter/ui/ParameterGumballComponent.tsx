@@ -42,6 +42,7 @@ import {
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import classes from "./ParameterInteractionComponent.module.css";
 import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterResetRow from "./ParameterResetRow";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 type TransformedNode = {
@@ -111,6 +112,8 @@ export default function ParameterGumballComponent(
 		setOnCancelCallback,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		value,
 		state,
 		sessionDependencies,
@@ -158,7 +161,7 @@ export default function ParameterGumballComponent(
 				hoverColor,
 			} as IGumballTransformParameterProps;
 		}
-	}, [definition.settings, selectionColor, availableColor]);
+	}, [definition.settings, selectionColor, availableColor, hoverColor]);
 
 	// state for the gumball application
 	const alwaysActive = gumballProps.activeMode === "alwaysActive";
@@ -540,9 +543,15 @@ export default function ParameterGumballComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && effectiveGumballActive
-				? contentActive
-				: contentInactive}
+			{definition && (
+				<ParameterResetRow
+					show={showReset}
+					onClick={resetToDefault}
+					disabled={disabled}
+				>
+					{effectiveGumballActive ? contentActive : contentInactive}
+				</ParameterResetRow>
+			)}
 		</ParameterWrapperComponent>
 	);
 }

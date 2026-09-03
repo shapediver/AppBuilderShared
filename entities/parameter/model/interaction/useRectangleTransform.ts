@@ -121,6 +121,9 @@ export function useRectangleTransform(
 		return {
 			nameFilter,
 			hover: rectangleTransformProps.hover,
+			selectionColor: rectangleTransformProps.selectionColor,
+			availableColor: rectangleTransformProps.availableColor,
+			hoverColor: rectangleTransformProps.hoverColor,
 			minimumSelection: rectangleTransformProps.minimumSelection ?? 0,
 			maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
 			deselectOnEmpty: rectangleTransformProps.deselectOnEmpty ?? false,
@@ -142,7 +145,7 @@ export function useRectangleTransform(
 		activate && !maxReached,
 		undefined,
 		strictNaming,
-		true,
+		false,
 	);
 
 	// disable selection once the maximum number of objects has been reached

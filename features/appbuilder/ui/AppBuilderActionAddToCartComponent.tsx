@@ -47,6 +47,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 	const {
 		successMessage: themeSuccessMessage,
 		errorMessage: themeErrorMessage,
+		screenshotProps: themeScreenshotProps,
 	} = useProps(
 		"AddToCartAction",
 		{} as AddToCartActionThemeDefaultProps,
@@ -71,7 +72,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 				parameterNamesToExclude,
 				includeImage,
 				image,
-				screenshotProps,
+				screenshotProps: screenshotProps ?? themeScreenshotProps,
 				data: undefined, // <-- custom data
 				includeGltf,
 			});
@@ -124,6 +125,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		includeImage,
 		includeGltf,
 		screenshotProps,
+		themeScreenshotProps,
 		successMessage,
 		errorMessage,
 		themeSuccessMessage,

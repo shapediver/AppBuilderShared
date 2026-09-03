@@ -43,6 +43,7 @@ import {
 	useSelectionAutoClear,
 } from "../model/interaction/useSelectionAutoClear";
 import classes from "./ParameterInteractionComponent.module.css";
+import ParameterResetRow from "./ParameterResetRow";
 
 type TransformedNode = {
 	name: string;
@@ -111,6 +112,8 @@ export default function ParameterRectangleTransformComponent(
 		setOnCancelCallback,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		value,
 		state,
 		sessionDependencies,
@@ -159,7 +162,7 @@ export default function ParameterRectangleTransformComponent(
 				hoverColor,
 			} as IRectangleTransformParameterProps;
 		}
-	}, [definition.settings, selectionColor, availableColor]);
+	}, [definition.settings, selectionColor, availableColor, hoverColor]);
 
 	// state for the rectangle transform application
 	const alwaysActive = rectangleTransformProps.activeMode === "alwaysActive";
@@ -551,9 +554,15 @@ export default function ParameterRectangleTransformComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && effectiveRectangleActive
-				? contentActive
-				: contentInactive}
+			{definition && (
+				<ParameterResetRow
+					show={showReset}
+					onClick={resetToDefault}
+					disabled={disabled}
+				>
+					{effectiveRectangleActive ? contentActive : contentInactive}
+				</ParameterResetRow>
+			)}
 		</ParameterWrapperComponent>
 	);
 }

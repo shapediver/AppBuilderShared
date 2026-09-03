@@ -1,21 +1,29 @@
-import {z} from "@AppBuilderLib/shared/lib/zod";
-import {
-	IDraggingParameterPropsJsonSchema,
-	IGumballTransformParameterPropsJsonSchema,
-	ISelectionParameterPropsJsonSchema,
+import type {
+	IDraggingParameterProps,
+	IGumballTransformParameterProps,
+	ISelectionParameterProps,
 } from "@shapediver/viewer.shared.types";
 
-/** TypeDoc surface for `useProps("ParameterDraggingComponent", …)` theme defaults. */
-export interface ParameterDraggingComponentThemeDefaultProps extends z.infer<
-	typeof IDraggingParameterPropsJsonSchema
-> {}
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ParameterDraggingComponent.defaultProps
+ * @displayName ParameterDraggingComponent
+ */
+export interface ParameterDraggingComponentThemeDefaultProps extends IDraggingParameterProps {}
 
-/** TypeDoc surface for `useProps("ParameterGumballComponent", …)` theme defaults. */
-export interface ParameterGumballComponentThemeDefaultProps extends z.infer<
-	typeof IGumballTransformParameterPropsJsonSchema
-> {}
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ParameterGumballComponent.defaultProps
+ * @displayName ParameterGumballComponent
+ */
+export interface ParameterGumballComponentThemeDefaultProps extends IGumballTransformParameterProps {}
 
-/** TypeDoc surface for `useProps("ParameterSelectionComponent", …)` theme defaults. */
-export interface ParameterSelectionComponentThemeDefaultProps extends z.infer<
-	typeof ISelectionParameterPropsJsonSchema
-> {}
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ParameterSelectionComponent.defaultProps
+ * @displayName ParameterSelectionComponent
+ */
+export interface ParameterSelectionComponentThemeDefaultProps extends ISelectionParameterProps {}
