@@ -448,6 +448,12 @@ function createParameterStore<T>(
 
 				/** Number of executions of this parameter in flight. */
 				let executing = 0;
+				/**
+				 * Number of values committed without an execution (see setExecutedValue).
+				 * Used by execute to detect values committed while the execution
+				 * was in flight, e.g. a value defined by the model with the response.
+				 */
+				let externalCommits = 0;
 
 				return {
 					definition,
@@ -502,6 +508,7 @@ function createParameterStore<T>(
 								false,
 								"setExecutedValue",
 							);
+							externalCommits++;
 							executor.commit?.(commitValue);
 
 							return true;
@@ -544,6 +551,7 @@ function createParameterStore<T>(
 							forceSameValue?: boolean,
 						): Promise<T | string> {
 							const state = get().state;
+							const externalCommitsAtStart = externalCommits;
 							executing++;
 							let result: T | string | undefined;
 							try {
@@ -582,9 +590,18 @@ function createParameterStore<T>(
 							// the reset value instead of the executed value. The reset value is
 							// resolved after the execution, such that a reset value defined by
 							// the model with the response of this execution applies.
+							// A value committed while the execution was in flight (e.g. a
+							// value defined by the model with the response of this execution,
+							// see setExecutedValue) takes precedence over the executed value.
+							const committedMeanwhile =
+								externalCommits !== externalCommitsAtStart;
 							const resetValue = resolveResetValue();
 							const commitValue =
-								resetValue !== undefined ? resetValue : result;
+								resetValue !== undefined
+									? resetValue
+									: committedMeanwhile
+										? get().state.commitValue
+										: result;
 							set(
 								(_state) => ({
 									state: {

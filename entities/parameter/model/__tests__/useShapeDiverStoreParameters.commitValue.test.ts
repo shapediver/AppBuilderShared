@@ -294,6 +294,57 @@ describe("useShapeDiverStoreParameters commit value", () => {
 		expect(commit).toHaveBeenCalledTimes(1);
 	});
 
+	it("keeps a value committed during an execution when the execution completes", async () => {
+		const commit = jest.fn();
+		let resolveExecution: () => void = () => undefined;
+		const executor = jest.fn(
+			() =>
+				new Promise<undefined>((resolve) => {
+					resolveExecution = () => resolve(undefined);
+				}),
+		);
+		store
+			.getState()
+			.addGeneric(
+				genericNamespace,
+				false,
+				genericDefinition(),
+				executor,
+				undefined,
+				commit,
+			);
+		const parameter = getParameter(genericNamespace, "g1");
+
+		// execution of "b" in flight, the model defines the value "c" with the
+		// response of the execution (see syncGeneric)
+		parameter.getState().actions.setUiValue("b");
+		let execution = parameter.getState().actions.execute(true);
+		await Promise.resolve();
+		expect(parameter.getState().actions.setExecutedValue("c")).toBe(true);
+		expect(commit).toHaveBeenLastCalledWith("g1", "c");
+
+		resolveExecution();
+		await execution;
+		// the executed value is "b", the committed value stays "c"
+		expect(parameter.getState().state.execValue).toBe("b");
+		expect(parameter.getState().state.commitValue).toBe("c");
+		expect(parameter.getState().state.uiValue).toBe("c");
+		expect(parameter.getState().state.dirty).toBe(false);
+		expect(commit).toHaveBeenCalledTimes(1);
+
+		// a subsequent execution without a value committed meanwhile commits
+		// the executed value again
+		parameter.getState().actions.setUiValue("d");
+		execution = parameter.getState().actions.execute(true);
+		await Promise.resolve();
+		resolveExecution();
+		await execution;
+		expect(parameter.getState().state.execValue).toBe("d");
+		expect(parameter.getState().state.commitValue).toBe("d");
+		expect(parameter.getState().state.uiValue).toBe("d");
+		expect(commit).toHaveBeenCalledTimes(1);
+	});
+
 	it("commits the reset value initially and applies a registered override", () => {
 		const commit = jest.fn();
 		store
