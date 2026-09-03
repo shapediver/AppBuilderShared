@@ -1,7 +1,7 @@
 import {computeAppliedParameterIds} from "../lib/computeAppliedParameterIds";
 
 describe("computeAppliedParameterIds", () => {
-	it("returns ids whose uiValue changed", () => {
+	it("returns ids whose execValue changed", () => {
 		const beforeValues = new Map<string, unknown>([
 			["width", 10],
 			["height", 20],
@@ -9,9 +9,9 @@ describe("computeAppliedParameterIds", () => {
 		]);
 
 		const applied = computeAppliedParameterIds(beforeValues, [
-			{definition: {id: "width"}, state: {uiValue: 42}},
-			{definition: {id: "height"}, state: {uiValue: 20}},
-			{definition: {id: "depth"}, state: {uiValue: 8}},
+			{definition: {id: "width"}, state: {execValue: 42}},
+			{definition: {id: "height"}, state: {execValue: 20}},
+			{definition: {id: "depth"}, state: {execValue: 8}},
 		]);
 
 		expect(applied).toEqual(["width", "depth"]);
@@ -24,8 +24,8 @@ describe("computeAppliedParameterIds", () => {
 		]);
 
 		const applied = computeAppliedParameterIds(beforeValues, [
-			{definition: {id: "width"}, state: {uiValue: 10}},
-			{definition: {id: "height"}, state: {uiValue: 20}},
+			{definition: {id: "width"}, state: {execValue: 10}},
+			{definition: {id: "height"}, state: {execValue: 20}},
 		]);
 
 		expect(applied).toEqual([]);
@@ -35,7 +35,7 @@ describe("computeAppliedParameterIds", () => {
 		const beforeValues = new Map<string, unknown>();
 
 		const applied = computeAppliedParameterIds(beforeValues, [
-			{definition: {id: "width"}, state: {uiValue: 10}},
+			{definition: {id: "width"}, state: {execValue: 10}},
 		]);
 
 		expect(applied).toEqual(["width"]);
