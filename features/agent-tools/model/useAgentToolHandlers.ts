@@ -16,6 +16,7 @@ import {useContext, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
 	defaultSettingsFor,
+	isGenericToolSettingsFor,
 	type InScopeGenericToolName,
 } from "../config/inScopeGenericTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
@@ -39,10 +40,10 @@ function settingsForTool<N extends InScopeGenericToolName>(
 	name: N,
 ): Extract<GenericToolSettings, {name: N}> {
 	const found = resolvedTools.find((tool) => tool.name === name);
-	if (found) {
-		return found.settings as Extract<GenericToolSettings, {name: N}>;
+	if (found && isGenericToolSettingsFor(found.settings, name)) {
+		return found.settings;
 	}
-	return defaultSettingsFor(name) as Extract<GenericToolSettings, {name: N}>;
+	return defaultSettingsFor(name);
 }
 
 /**

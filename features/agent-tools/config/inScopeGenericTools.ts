@@ -30,27 +30,45 @@ export function isInScopeGenericToolName(
 	return IN_SCOPE_GENERIC_TOOL_NAME_SET.has(name);
 }
 
-export const ASK_USER_QUESTION_TOOL_NAME = GenericToolName.AskUserQuestion;
-
-function defaultGenericToolSettings(): Record<
-	InScopeGenericToolName,
-	GenericToolSettings
-> {
-	const settings = {} as Record<InScopeGenericToolName, GenericToolSettings>;
-	for (const name of IN_SCOPE_GENERIC_TOOL_NAMES) {
-		settings[name] = {name};
-	}
-	return settings;
+export function isGenericToolSettingsFor<N extends InScopeGenericToolName>(
+	settings: GenericToolSettings,
+	name: N,
+): settings is Extract<GenericToolSettings, {name: N}> {
+	return settings.name === name;
 }
 
-const DEFAULT_GENERIC_TOOL_SETTINGS = defaultGenericToolSettings();
+export const ASK_USER_QUESTION_TOOL_NAME = GenericToolName.AskUserQuestion;
+
+type DefaultGenericToolSettings = {
+	[K in InScopeGenericToolName]: Extract<GenericToolSettings, {name: K}>;
+};
+
+const DEFAULT_GENERIC_TOOL_SETTINGS: DefaultGenericToolSettings = {
+	[GenericToolName.ListParameterDefinitions]: {
+		name: GenericToolName.ListParameterDefinitions,
+	},
+	[GenericToolName.GetParameterValues]: {
+		name: GenericToolName.GetParameterValues,
+	},
+	[GenericToolName.SetParameterValues]: {
+		name: GenericToolName.SetParameterValues,
+	},
+	[GenericToolName.ListActionControls]: {
+		name: GenericToolName.ListActionControls,
+	},
+	[GenericToolName.TriggerActionControl]: {
+		name: GenericToolName.TriggerActionControl,
+	},
+	[GenericToolName.SetCameraPosition]: {
+		name: GenericToolName.SetCameraPosition,
+	},
+	[GenericToolName.GetScreenshot]: {name: GenericToolName.GetScreenshot},
+	[GenericToolName.GetMetric]: {name: GenericToolName.GetMetric},
+};
 
 /** Default generic-tool settings: `{name}` only. Overlay fields come from `genericTools`. */
 export function defaultSettingsFor<T extends InScopeGenericToolName>(
 	name: T,
-): Extract<GenericToolSettings, {name: T}> {
-	return DEFAULT_GENERIC_TOOL_SETTINGS[name] as Extract<
-		GenericToolSettings,
-		{name: T}
-	>;
+): DefaultGenericToolSettings[T] {
+	return DEFAULT_GENERIC_TOOL_SETTINGS[name];
 }

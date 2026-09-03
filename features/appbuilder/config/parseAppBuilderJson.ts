@@ -29,7 +29,7 @@ export function parseAppBuilderSettingsJson(
 			`App Builder settings invalid:\n${formatAppBuilderZodError(result.error)}`,
 		);
 	}
-	return result.data as IAppBuilderSettingsJson;
+	return result.data;
 }
 
 export function parseAppBuilderSkeleton(
@@ -46,5 +46,5 @@ export function parseAppBuilderSkeleton(
 			`App Builder layout invalid:\n${formatAppBuilderZodError(result.error)}`,
 		);
 	}
-	return result.data as IAppBuilder;
+	return result.data;
 }
