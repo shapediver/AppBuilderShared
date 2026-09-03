@@ -1807,87 +1807,152 @@ function isActionType<T extends AppBuilderActionType>(
 }
 
 /** assert action type "createModelState" */
-export function isCreateModelStateAction(action: IAppBuilderActionDefinition) {
+export function isCreateModelStateAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.CreateModelState}
+> {
 	return isActionType(action, AppBuilderActionType.CreateModelState);
 }
 
 /** assert action type "addToCart" */
-export function isAddToCartAction(action: IAppBuilderActionDefinition) {
+export function isAddToCartAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.AddToCart}
+> {
 	return isActionType(action, AppBuilderActionType.AddToCart);
 }
 
 /** assert action type "setParameterValue" */
-export function isSetParameterValueAction(action: IAppBuilderActionDefinition) {
+export function isSetParameterValueAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.SetParameterValue}
+> {
 	return isActionType(action, AppBuilderActionType.SetParameterValue);
 }
 
 /** assert action type "setParameterValues" */
 export function isSetParameterValuesAction(
 	action: IAppBuilderActionDefinition,
-) {
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.SetParameterValues}
+> {
 	return isActionType(action, AppBuilderActionType.SetParameterValues);
 }
 
 /** assert action type "setBrowserLocation" */
 export function isSetBrowserLocationAction(
 	action: IAppBuilderActionDefinition,
-) {
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.SetBrowserLocation}
+> {
 	return isActionType(action, AppBuilderActionType.SetBrowserLocation);
 }
 
 /** assert action type "closeConfigurator" */
-export function isCloseConfiguratorAction(action: IAppBuilderActionDefinition) {
+export function isCloseConfiguratorAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.CloseConfigurator}
+> {
 	return isActionType(action, AppBuilderActionType.CloseConfigurator);
 }
 
 /** assert action type "ar" */
-export function isArAction(action: IAppBuilderActionDefinition) {
+export function isArAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Ar}
+> {
 	return isActionType(action, AppBuilderActionType.Ar);
 }
 
 /** assert action type "fullscreen" */
-export function isFullscreenAction(action: IAppBuilderActionDefinition) {
+export function isFullscreenAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Fullscreen}
+> {
 	return isActionType(action, AppBuilderActionType.Fullscreen);
 }
 
 /** assert action type "undo" */
-export function isUndoAction(action: IAppBuilderActionDefinition) {
+export function isUndoAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Undo}
+> {
 	return isActionType(action, AppBuilderActionType.Undo);
 }
 
 /** assert action type "redo" */
-export function isRedoAction(action: IAppBuilderActionDefinition) {
+export function isRedoAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Redo}
+> {
 	return isActionType(action, AppBuilderActionType.Redo);
 }
 
 /** assert action type "resetParameterValues" */
 export function isResetParameterValuesAction(
 	action: IAppBuilderActionDefinition,
-) {
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.ResetParameterValues}
+> {
 	return isActionType(action, AppBuilderActionType.ResetParameterValues);
 }
 
 /** assert action type "importParameterValues" */
 export function isImportParameterValuesAction(
 	action: IAppBuilderActionDefinition,
-) {
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.ImportParameterValues}
+> {
 	return isActionType(action, AppBuilderActionType.ImportParameterValues);
 }
 
 /** assert action type "exportParameterValues" */
 export function isExportParameterValuesAction(
 	action: IAppBuilderActionDefinition,
-) {
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.ExportParameterValues}
+> {
 	return isActionType(action, AppBuilderActionType.ExportParameterValues);
 }
 
 /** assert action type "importModelState" */
-export function isImportModelStateAction(action: IAppBuilderActionDefinition) {
+export function isImportModelStateAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.ImportModelState}
+> {
 	return isActionType(action, AppBuilderActionType.ImportModelState);
 }
 
 /** assert action type "camera" */
-export function isCameraAction(action: IAppBuilderActionDefinition) {
+export function isCameraAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Camera}
+> {
 	return isActionType(action, AppBuilderActionType.Camera);
 }
 
@@ -1942,19 +2007,32 @@ export function isZoomToCameraAction(
 }
 
 /** assert action type "sound" */
-export function isSoundAction(action: IAppBuilderActionDefinition) {
+export function isSoundAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.Sound}
+> {
 	return isActionType(action, AppBuilderActionType.Sound);
 }
 
 /** assert action type "setContainerVisibility" */
 export function isSetContainerVisibilityAction(
 	action: IAppBuilderActionDefinition,
-) {
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.SetContainerVisibility}
+> {
 	return isActionType(action, AppBuilderActionType.SetContainerVisibility);
 }
 
 /** assert action type "messageToParent" */
-export function isMessageToParentAction(action: IAppBuilderActionDefinition) {
+export function isMessageToParentAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.MessageToParent}
+> {
 	return isActionType(action, AppBuilderActionType.MessageToParent);
 }
 
