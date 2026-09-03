@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /** Shared `{ name, message }` for validation / tool errors. */
 export const nameMessageSchema = z.object({
@@ -10,6 +10,6 @@ export const importModelStateDataSchema = z.strictObject({
 	modelStateId: z
 		.string()
 		.describe(
-			"modelStateId from create_model_state, or a full model view URL containing modelStateId.",
+			"modelStateId from a createModelState action, or a full model view URL containing modelStateId.",
 		),
 });

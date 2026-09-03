@@ -1,10 +1,8 @@
+import {IAppBuilderToolbarActionItem} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
-	IAppBuilderToolbarActionItem,
 	isToolbarActionMenuItem,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import type {
-	ToolbarItem,
-	ToolbarRegistration,
+	type ToolbarItem,
+	type ToolbarRegistration,
 } from "@AppBuilderLib/features/appbuilder/config/shapediverStoreToolbars";
 import type {
 	ResolvedToolbarRegistration,

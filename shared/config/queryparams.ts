@@ -27,6 +27,7 @@ export const QUERYPARAM_LANGFUSE_SECRET_KEY = "langfuseSecretKey";
 export const QUERYPARAM_LANGFUSE_BASE_URL = "langfuseBaseUrl";
 export const QUERYPARAM_REDIRECT = "redirect";
 export const QUERYPARAM_PROVIDER = "provider";
+export const QUERYPARAM_AGENTURL = "agentUrl";
 export const QUERYPARAM_USE_DEV_PLATFORM = "useDevPlatform";
 export const QUERYPARAM_USE_STAGING_PLATFORM = "useStagingPlatform";
 export const QUERYPARAM_USE_SANDBOX_PLATFORM = "useSandboxPlatform";

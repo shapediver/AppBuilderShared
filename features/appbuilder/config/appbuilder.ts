@@ -15,6 +15,7 @@ import {
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 } from "@shapediver/viewer.shared.types";
+import type {IAppBuilderAgent} from "./appbuilderagent";
 import {
 	IAppBuilderWidgetPropsAreaChart,
 	IAppBuilderWidgetPropsBarChart,
@@ -395,6 +396,8 @@ export interface IAppBuilderActionDefinition {
 
 /** Common properties of App Builder action controls and legacy actions. */
 export interface IAppBuilderActionPropsCommon {
+	/** Optional identifier of the action. Used to uniquely reference actions in agent definitions, etc. */
+	id?: string;
 	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. Set to empty string to show only an icon. */
 	label?: string;
 	/** Optional icon (of the button etc). */
@@ -424,7 +427,8 @@ export type AppBuilderParameterValueSourceType =
 	| "dataOutput"
 	| "export"
 	| "sdtf"
-	| "modelState";
+	| "modelState"
+	| "agentTool";
 
 /**
  * Properties for the "screenshot" parameter value source.
@@ -528,6 +532,18 @@ export interface IAppBuilderParameterValueSourcePropsModelState extends IAppBuil
 	updateUrl?: boolean;
 }
 
+/**
+ * Properties for the "agentTool" parameter value source.
+ * This source is used for actions that are triggered by an agent tool.
+ */
+export interface IAppBuilderParameterValueSourcePropsAgentTool {
+	/**
+	 * JSON path to the value in the agent tool's input data that should be used as the parameter value.
+	 * @see https://www.rfc-editor.org/info/rfc9535/
+	 */
+	jsonPath: string;
+}
+
 /** Definition of a parameter value source. */
 export interface IAppBuilderParameterValueSourceDefinition {
 	/** Type of the parameter value source. */
@@ -538,7 +554,8 @@ export interface IAppBuilderParameterValueSourceDefinition {
 		| IAppBuilderParameterValueSourcePropsDataOutput
 		| IAppBuilderParameterValueSourcePropsExport
 		| IAppBuilderParameterValueSourcePropsSdtf
-		| IAppBuilderParameterValueSourcePropsModelState;
+		| IAppBuilderParameterValueSourcePropsModelState
+		| IAppBuilderParameterValueSourcePropsAgentTool;
 }
 
 /** Type used for parameter value definitions */
@@ -549,25 +566,26 @@ export type IAppBuilderParameterValueDefinition =
 	| IAppBuilderParameterValueSourceDefinition;
 
 /** Types of actions */
-export type AppBuilderActionType =
-	| "createModelState"
-	| "addToCart"
-	| "setParameterValue"
-	| "setParameterValues"
-	| "setBrowserLocation"
-	| "closeConfigurator"
-	| "ar"
-	| "fullscreen"
-	| "undo"
-	| "redo"
-	| "resetParameterValues"
-	| "importParameterValues"
-	| "exportParameterValues"
-	| "importModelState"
-	| "camera"
-	| "sound"
-	| "messageToParent"
-	| "setContainerVisibility";
+export enum AppBuilderActionType {
+	CreateModelState = "createModelState",
+	AddToCart = "addToCart",
+	SetParameterValue = "setParameterValue",
+	SetParameterValues = "setParameterValues",
+	SetBrowserLocation = "setBrowserLocation",
+	CloseConfigurator = "closeConfigurator",
+	Ar = "ar",
+	Fullscreen = "fullscreen",
+	Undo = "undo",
+	Redo = "redo",
+	ResetParameterValues = "resetParameterValues",
+	ImportParameterValues = "importParameterValues",
+	ExportParameterValues = "exportParameterValues",
+	ImportModelState = "importModelState",
+	Camera = "camera",
+	Sound = "sound",
+	MessageToParent = "messageToParent",
+	SetContainerVisibility = "setContainerVisibility",
+}
 
 /** Properties of a "setContainerVisibility" action. */
 export interface IAppBuilderActionPropsSetContainerVisibility {
@@ -1548,6 +1566,16 @@ export interface IAppBuilder {
 	 * Instances are used to customize a session by setting parameters and transformations.
 	 */
 	instances?: IAppBuilderInstanceDefinition[];
+
+	/**
+	 * Optional list of agents.
+	 * For now only one agent is supported, but in the future we might support
+	 * multiple agents, or allow agents to reference others as sub-agents.
+	 * We do not consider parametric updates to the agent definition, i.e.,
+	 * the agents get initialized on loading of the app, and updates to this
+	 * property due to parameter changes are ignored.
+	 */
+	agents?: IAppBuilderAgent[];
 }
 
 /** assert default containers */
@@ -1992,27 +2020,6 @@ export function isOutputRefControl<T extends AppBuilderControlLike>(
 	return control.type === "output";
 }
 
-/** assert toolbar item type "actionMenu" */
-export function isToolbarActionMenuItem(
-	item: IAppBuilderToolbarItem,
-): item is IAppBuilderToolbarActionMenuItem {
-	return item.type === "actionMenu";
-}
-
-/** assert toolbar item type "widgets" */
-export function isToolbarWidgetPanelItem(
-	item: IAppBuilderToolbarItem,
-): item is IAppBuilderToolbarWidgetPanelItem {
-	return item.type === "widgets";
-}
-
-/** assert toolbar item type "tabs" */
-export function isToolbarTabbedPanelItem(
-	item: IAppBuilderToolbarItem,
-): item is IAppBuilderToolbarTabbedPanelItem {
-	return item.type === "tabs";
-}
-
 /** assert parameter source */
 export function isParameterSource(
 	source: IAppBuilderParameterValueSourceDefinition,
@@ -2164,6 +2171,11 @@ export interface IAppBuilderSettingsSettings {
 	 * are shown in case no AppBuilder data output is found.
 	 */
 	disableFallbackUi?: boolean;
+	/**
+	 * URL of the AppBuilderAgent window (Step 3). Query `agentUrl` overrides this.
+	 * Not `IAppBuilder.agents[].url`.
+	 */
+	agentUrl?: string;
 }
 
 /**

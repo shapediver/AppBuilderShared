@@ -1,13 +1,12 @@
+import type {ResolvedGenericTool} from "@AppBuilderLib/features/agent-tools/config/resolveToolset";
+import type {IToolsApiHandlerMap} from "@AppBuilderLib/features/agent-tools/config/toolsApi";
+
 export interface UseWebMcpToolsProps {
 	namespace?: string;
 	enabled?: boolean;
-	/**
-	 * Tool names (`tool.name`) to NOT register. Changing this re-registers:
-	 * the effect aborts the previous cycle's shared AbortSignal (unregistering
-	 * all tools from that cycle) then re-registers, skipping these names.
-	 * Default: all tools registered.
-	 */
-	disabledTools?: string[];
+	resolvedTools: ResolvedGenericTool[];
+	toolHandlers: IToolsApiHandlerMap;
+	snapshotComplete: boolean;
 }
 
 export interface WebMcpEnvironment {

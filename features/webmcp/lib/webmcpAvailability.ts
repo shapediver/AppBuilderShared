@@ -16,13 +16,25 @@ export interface ModelContextRegisterToolParams {
 	annotations?: ModelContextToolAnnotations;
 }
 
+/** Chrome <154 may still stringify; 154+ returns a deep-copied object. */
+export type WebMcpToolInputSchema = object | string;
+
+export interface WebMcpRegisteredTool {
+	name: string;
+	description?: string;
+	inputSchema: WebMcpToolInputSchema;
+}
+
 export interface ModelContext {
 	registerTool(
 		params: ModelContextRegisterToolParams,
 		options?: ModelContextRegisterToolOptions,
 	): Promise<void>;
-	getTools(): unknown[];
-	executeTool(tool: unknown, jsonString: string): Promise<unknown>;
+	getTools(): WebMcpRegisteredTool[];
+	executeTool(
+		tool: WebMcpRegisteredTool | unknown,
+		jsonString: string,
+	): Promise<unknown>;
 }
 
 function getModelContextHost():

@@ -4,6 +4,8 @@ import useDefaultSessionDto from "@AppBuilderLib/entities/session/model/useDefau
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {useAppBuilderAgentHost} from "@AppBuilderLib/features/agent-tools/model/useAppBuilderAgentHost";
+import AppBuilderAgentOverlay from "@AppBuilderLib/features/agent-tools/ui/AppBuilderAgentOverlay";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
@@ -14,8 +16,6 @@ import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
-import {isWebMcpAvailable} from "@AppBuilderLib/features/webmcp/lib/webmcpAvailability";
-import {useWebMcpTools} from "@AppBuilderLib/features/webmcp/model/useWebMcpTools";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import MarkdownWidgetComponent from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
@@ -189,6 +189,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		error: appBuilderError,
 		hasAppBuilderOutput,
 		appBuilderData,
+		appBuilderParseSettled,
 		customParametersLoaded,
 		sessionSettings,
 	} = useSessionWithAppBuilder(
@@ -242,9 +243,11 @@ export default function AppBuilderPage(props: Partial<Props>) {
 
 	useECommerceApiConnectorActions({namespace});
 
-	useWebMcpTools({
+	const agentHost = useAppBuilderAgentHost({
 		namespace,
-		enabled: isWebMcpAvailable(),
+		appBuilderData,
+		appBuilderParseSettled,
+		settings,
 	});
 
 	const showMarkdown =
@@ -303,6 +306,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 								)}
 							</>
 						)}
+						<AppBuilderAgentOverlay {...agentHost} />
 					</ViewportComponent>
 				)}
 				{anchors}
