@@ -171,16 +171,23 @@ export default function ParameterSelectionComponent(
 
 	const minimumSelection = selectionProps?.minimumSelection ?? 1;
 	const maximumSelection = selectionProps?.maximumSelection ?? 1;
-	const showClearButton = selectionProps.buttons?.clear ?? true;
-	// A single selection which is reset after each execution (see the
-	// "resetValue" setting) has nothing to clear.
+	// Clearing is UI-only: the empty draft can either be confirmed (optional
+	// selections) or replaced by a new selection. For a single selection it is
+	// pointless in case the selection is required (an empty draft can never be
+	// confirmed, and picking another object replaces the selection anyway), or
+	// in case the selection is reset to an empty selection after each execution
+	// (see the "resetValue" setting). Unless configured explicitly, the Clear
+	// button is hidden in these cases.
 	const resetValue = getResetValue(definition);
 	const resetsToEmptySelection =
 		resetValue !== undefined &&
 		actions.isValid(resetValue) &&
 		parseNames(resetValue as string).length === 0;
+	const clearIsPointless =
+		maximumSelection === 1 &&
+		(minimumSelection >= 1 || resetsToEmptySelection);
 	const shouldShowClearButton =
-		showClearButton && !(resetsToEmptySelection && maximumSelection === 1);
+		selectionProps.buttons?.clear ?? !clearIsPointless;
 	const alwaysActive = selectionProps.activeMode === "alwaysActive";
 	const presentation = resolveInteractionPresentation(
 		selectionProps.presentation,
