@@ -11,6 +11,7 @@ import {
 	IImportModelStateData,
 	IImportModelStateResult,
 } from "../config/importModelState";
+import {computeAppliedParameterIds} from "./computeAppliedParameterIds";
 
 export type ImportModelStateNotificationType =
 	| "error"
@@ -135,9 +136,21 @@ export async function importModelStateCore(
 		};
 	}
 
+	const beforeValues = new Map(
+		getParameterStates(namespace).map((p) => [
+			p.definition.id,
+			p.state.execValue,
+		]),
+	);
+
 	await batchParameterValueUpdate({
 		[namespace]: validationResult.validParameters,
 	});
+
+	const appliedParameterIds = computeAppliedParameterIds(
+		beforeValues,
+		getParameterStates(namespace),
+	);
 
 	// importing a model state reverts the unsaved changes flag
 	clearUnsavedChanges();
@@ -161,6 +174,7 @@ export async function importModelStateCore(
 	return {
 		success: true,
 		data: response.data,
+		appliedParameterIds,
 		...(validationResult.skippedParameters.length > 0
 			? {
 					invalidParameters: validationResult.invalidParameters,

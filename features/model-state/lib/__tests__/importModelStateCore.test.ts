@@ -73,7 +73,7 @@ describe("importModelStateCore", () => {
 			onNotification,
 		});
 
-		expect(result).toEqual({success: true, data});
+		expect(result).toEqual({success: true, data, appliedParameterIds: []});
 		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
 			ns: {p1: 1},
 		});
@@ -81,6 +81,47 @@ describe("importModelStateCore", () => {
 		expect(onNotification).toHaveBeenCalledWith({
 			type: "success",
 			message: "Model state abc imported successfully",
+		});
+	});
+
+	it("lists ids whose execValue changed even if uiValue was reset", async () => {
+		const data = {modelState: {parameters: {add: "DoorHandle"}}};
+		const sessionApi = {
+			getModelState: jest.fn().mockResolvedValue(data),
+		};
+		filterAndValidateModelStateParameters.mockReturnValue({
+			hasValidParameters: true,
+			validParameters: {add: "DoorHandle"},
+			invalidParameters: [],
+			skippedParameters: [],
+		});
+		generateParameterFeedback.mockReturnValue({
+			type: "success",
+			message: "ok",
+		});
+
+		let execValue: unknown = "";
+		const getParameterStates = () => [
+			{
+				definition: {id: "add"},
+				state: {execValue, uiValue: ""},
+			},
+		];
+
+		const result = await importModelStateCore({
+			sessionApi: sessionApi as any,
+			namespace: "ns",
+			getParameterStates: getParameterStates as any,
+			batchParameterValueUpdate: async () => {
+				execValue = "DoorHandle";
+			},
+			clearUnsavedChanges: jest.fn(),
+			props: {modelStateId: "abc"},
+		});
+
+		expect(result).toMatchObject({
+			success: true,
+			appliedParameterIds: ["add"],
 		});
 	});
 });

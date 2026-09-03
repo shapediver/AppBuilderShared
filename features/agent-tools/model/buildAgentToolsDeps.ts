@@ -151,7 +151,10 @@ export function buildAgentToolsDeps(
 				if (!result.success) {
 					return {success: false, message: result.message};
 				}
-				return {success: true};
+				return {
+					success: true,
+					appliedParameterIds: result.appliedParameterIds,
+				};
 			} catch (e) {
 				return failureResult(e);
 			}

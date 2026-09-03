@@ -485,6 +485,24 @@ describe("runActionControl", () => {
 		expect(result).toEqual({success: true});
 	});
 
+	it("returns appliedParameterIds from importModelState", async () => {
+		const importModelState = jest.fn().mockResolvedValue({
+			success: true,
+			appliedParameterIds: ["add"],
+		});
+		const result = await runActionControl(
+			actionRef({
+				definition: {type: "importModelState", props: {}},
+			}),
+			createDeps({importModelState}),
+		);
+
+		expect(result).toEqual({
+			success: true,
+			appliedParameterIds: ["add"],
+		});
+	});
+
 	it("returns success false when importModelState throws", async () => {
 		const result = await runActionControl(
 			actionRef({

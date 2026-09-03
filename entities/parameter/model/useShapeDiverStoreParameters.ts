@@ -45,6 +45,7 @@ import {
 	IExportStore,
 	IExportStores,
 	IExportStoresPerSession,
+	IGenericParameterCommitter,
 	IGenericParameterDefinition,
 	IGenericParameterExecutor,
 	IHistoryEntry,
@@ -60,6 +61,7 @@ import {
 	ISessionsHistoryState,
 	IShapeDiverStoreParameters,
 } from "../config/shapediverStoreParameters";
+import {getResetValue} from "../lib/parameterResetValue";
 import {addValidator} from "../lib/parameterValidation";
 
 /**
@@ -69,19 +71,21 @@ import {addValidator} from "../lib/parameterValidation";
  * @param namespace The session namespace of the parameter.
  * @param param The parameter definition.
  * @param getChanges Function for getting the change object of the parameter's session.
+ * @param commit Optional function for committing a value without executing it.
  * @returns
  */
 function createParameterExecutor<T>(
 	namespace: string,
 	param: IGenericParameterDefinition,
 	getChanges: () => IParameterChanges,
+	commit?: (value: T | string) => void,
 ): IShapeDiverParameterExecutor<T> {
 	const paramId = param.definition.id;
 
 	return {
 		execute: async (
 			uiValue: T | string,
-			execValue: T | string,
+			commitValue: T | string,
 			forceImmediate?: boolean,
 			skipHistory?: boolean,
 			acceptAll?: boolean,
@@ -92,7 +96,7 @@ function createParameterExecutor<T>(
 
 			// check whether there is anything to do
 			const result = changes.removeValueChange(paramId);
-			if (result.removed && uiValue === execValue && !forceSameValue) {
+			if (result.removed && uiValue === commitValue && !forceSameValue) {
 				Logger.debug(`Removing change of parameter ${paramId}`);
 				// check if there are any other parameter updates queued
 				if (result.isEmpty) {
@@ -102,7 +106,7 @@ function createParameterExecutor<T>(
 					changes.reject();
 				}
 
-				return execValue;
+				return undefined;
 			}
 
 			// execute the change
@@ -118,6 +122,8 @@ function createParameterExecutor<T>(
 							skipUrlUpdate,
 						)
 					: await changes.wait;
+				// the execution failed
+				if (values === undefined) return undefined;
 				const value = paramId in values ? values[paramId] : uiValue;
 				if (value !== uiValue)
 					Logger.debug(
@@ -131,17 +137,18 @@ function createParameterExecutor<T>(
 				return value;
 			} catch (e) {
 				Logger.debug(
-					`Rejecting change of parameter ${paramId} to ${uiValue}, resetting to "${execValue}"`,
+					`Rejecting change of parameter ${paramId} to ${uiValue}, resetting to "${commitValue}"`,
 					e ?? "",
 				);
 
-				return execValue;
+				return undefined;
 			}
 		},
 		isValid: (uiValue: T | string, throwError?: boolean) =>
 			param.isValid ? param.isValid(uiValue, throwError) : true,
 		stringify: (value: T | string) =>
 			param.stringify ? param.stringify(value) : value + "",
+		commit,
 		definition: param.definition,
 	};
 }
@@ -393,9 +400,20 @@ function createParameterStore<T>(
 	/** The static definition of a parameter. */
 	const defval =
 		defaultValue !== undefined ? defaultValue : definition.defval!;
+	// The initial computation of the model counts as an execution: in case a
+	// reset value is defined, the parameter is committed to it right away.
+	const initialResetValue = getResetValue(definition);
+	const initialCommitValue =
+		initialResetValue !== undefined &&
+		executor.isValid(initialResetValue, false)
+			? (initialResetValue as T | string)
+			: defval;
+	if (initialCommitValue !== defval) executor.commit?.(initialCommitValue);
 	const state: IShapeDiverParameterState<T> = {
-		uiValue: defval,
+		uiValue: initialCommitValue,
 		execValue: defval,
+		commitValue: initialCommitValue,
+		commitRevision: 0,
 		dirty: false,
 		disableOtherParameters: false,
 		stringExecValue() {
@@ -405,167 +423,295 @@ function createParameterStore<T>(
 
 	return create<IShapeDiverParameter<T>>()(
 		devtools(
-			(set, get) => ({
-				definition,
-				acceptRejectMode,
+			(set, get) => {
 				/**
-				 * The dynamic properties (aka the "state") of a parameter.
-				 * Reactive components can react to this state, but not update it.
+				 * Resolve the value the parameter shall be reset to after an execution:
+				 * the override (see setResetValue), or the "resetValue" setting of the definition.
+				 * Invalid reset values are ignored.
 				 */
-				state,
-				/** Actions that can be taken on the parameter. */
-				actions: {
-					stringify: function (value: T | string): string {
-						return executor.stringify(value);
-					},
-					setUiValue: function (uiValue: string | T): boolean {
-						const actions = get().actions;
-						if (!actions.isValid(uiValue, false)) return false;
-						set(
-							(_state) => ({
-								state: {
-									..._state.state,
-									uiValue,
-									dirty: uiValue !== _state.state.execValue,
-								},
-							}),
-							false,
-							"setUiValue",
+				const resolveResetValue = (): T | string | undefined => {
+					const {resetValueOverride, actions} = get();
+					const resetValue =
+						resetValueOverride !== undefined
+							? resetValueOverride
+							: getResetValue(definition);
+					if (resetValue === undefined) return undefined;
+					if (!actions.isValid(resetValue, false)) {
+						Logger.warn(
+							`Ignoring invalid reset value of parameter ${definition.id}`,
+							resetValue,
 						);
+						return undefined;
+					}
 
-						return true;
-					},
-					setUiAndExecValue: function (value: string | T): boolean {
-						const actions = get().actions;
-						if (!actions.isValid(value, false)) return false;
-						set(
-							(_state) => ({
-								state: {
-									..._state.state,
-									uiValue: value,
-									execValue: value,
-									dirty: false,
-								},
-							}),
-							false,
-							"setUiAndExecValue",
-						);
+					return resetValue as T | string;
+				};
 
-						return true;
-					},
-					setDisableOtherParameters: function (
-						disable: boolean,
-					): void {
-						set(
-							(_state) => ({
-								state: {
-									..._state.state,
-									disableOtherParameters: disable,
-								},
-							}),
-							false,
-							"setDisableOtherParameters",
-						);
+				/** Number of executions of this parameter in flight. */
+				let executing = 0;
 
-						// Update the main store's reactive flag
-						const mainStore =
-							useShapeDiverStoreParameters.getState();
-						const hasDisabling =
-							mainStore.isAnyParameterDisablingOthers();
-						if (
-							mainStore.hasParameterDisablingOthers !==
-							hasDisabling
-						) {
-							useShapeDiverStoreParameters.setState(
-								{hasParameterDisablingOthers: hasDisabling},
+				return {
+					definition,
+					acceptRejectMode,
+					resetValueOverride: undefined,
+					/**
+					 * The dynamic properties (aka the "state") of a parameter.
+					 * Reactive components can react to this state, but not update it.
+					 */
+					state,
+					/** Actions that can be taken on the parameter. */
+					actions: {
+						stringify: function (value: T | string): string {
+							return executor.stringify(value);
+						},
+						setUiValue: function (uiValue: string | T): boolean {
+							const actions = get().actions;
+							if (!actions.isValid(uiValue, false)) return false;
+							set(
+								(_state) => ({
+									state: {
+										..._state.state,
+										uiValue,
+										dirty:
+											uiValue !==
+											_state.state.commitValue,
+									},
+								}),
 								false,
-								"setDisableOtherParameters - update flag",
+								"setUiValue",
 							);
-						}
-					},
-					execute: async function (
-						forceImmediate?: boolean,
-						skipHistory?: boolean,
-						acceptAll?: boolean,
-						skipUrlUpdate?: boolean,
-						forceSameValue?: boolean,
-					): Promise<T | string> {
-						const state = get().state;
-						const result = await executor.execute(
-							state.uiValue,
-							state.execValue,
-							forceImmediate,
-							skipHistory,
-							acceptAll,
-							skipUrlUpdate,
-							forceSameValue,
-						);
-						// TODO in case result is not the current uiValue, we could somehow visualize
-						// the fact that the uiValue gets reset here
-						set(
-							(_state) => ({
-								state: {
-									..._state.state,
-									uiValue: result,
-									execValue: result,
-									dirty: false,
-								},
-							}),
-							false,
-							"execute",
-						);
 
-						return result;
-					},
-					isValid: function (
-						value: any,
-						throwError?: boolean | undefined,
-					): boolean {
-						return executor.isValid(value, throwError);
-					},
-					isUiValueDifferent: function (value: any): boolean {
-						const {
-							state: {uiValue},
-						} = get();
+							return true;
+						},
+						setExecutedValue: function (
+							value: string | T,
+						): boolean {
+							const actions = get().actions;
+							if (!actions.isValid(value, false)) return false;
+							const resetValue = resolveResetValue();
+							const commitValue =
+								resetValue !== undefined ? resetValue : value;
+							set(
+								(_state) => ({
+									state: {
+										..._state.state,
+										uiValue: commitValue,
+										execValue: value,
+										commitValue,
+										commitRevision:
+											_state.state.commitRevision + 1,
+										dirty: false,
+									},
+								}),
+								false,
+								"setExecutedValue",
+							);
+							executor.commit?.(commitValue);
 
-						return (
-							executor.stringify(value) !==
-							executor.stringify(uiValue)
-						);
+							return true;
+						},
+						setDisableOtherParameters: function (
+							disable: boolean,
+						): void {
+							set(
+								(_state) => ({
+									state: {
+										..._state.state,
+										disableOtherParameters: disable,
+									},
+								}),
+								false,
+								"setDisableOtherParameters",
+							);
+
+							// Update the main store's reactive flag
+							const mainStore =
+								useShapeDiverStoreParameters.getState();
+							const hasDisabling =
+								mainStore.isAnyParameterDisablingOthers();
+							if (
+								mainStore.hasParameterDisablingOthers !==
+								hasDisabling
+							) {
+								useShapeDiverStoreParameters.setState(
+									{hasParameterDisablingOthers: hasDisabling},
+									false,
+									"setDisableOtherParameters - update flag",
+								);
+							}
+						},
+						execute: async function (
+							forceImmediate?: boolean,
+							skipHistory?: boolean,
+							acceptAll?: boolean,
+							skipUrlUpdate?: boolean,
+							forceSameValue?: boolean,
+						): Promise<T | string> {
+							const state = get().state;
+							executing++;
+							let result: T | string | undefined;
+							try {
+								result = await executor.execute(
+									state.uiValue,
+									state.commitValue,
+									forceImmediate,
+									skipHistory,
+									acceptAll,
+									skipUrlUpdate,
+									forceSameValue,
+								);
+							} finally {
+								executing--;
+							}
+							// Nothing was executed (no change, cancelled, or failed):
+							// discard the pending change, keep the executed and committed values.
+							if (result === undefined) {
+								set(
+									(_state) => ({
+										state: {
+											..._state.state,
+											uiValue: _state.state.commitValue,
+											dirty: false,
+										},
+									}),
+									false,
+									"execute - nothing executed",
+								);
+
+								return get().state.commitValue;
+							}
+							// TODO in case result is not the current uiValue, we could somehow visualize
+							// the fact that the uiValue gets reset here
+							// In case a reset value is defined, the parameter is committed to
+							// the reset value instead of the executed value. The reset value is
+							// resolved after the execution, such that a reset value defined by
+							// the model with the response of this execution applies.
+							const resetValue = resolveResetValue();
+							const commitValue =
+								resetValue !== undefined ? resetValue : result;
+							set(
+								(_state) => ({
+									state: {
+										..._state.state,
+										uiValue: commitValue,
+										execValue: result,
+										commitValue,
+										commitRevision:
+											_state.state.commitRevision + 1,
+										dirty: false,
+									},
+								}),
+								false,
+								"execute",
+							);
+							if (resetValue !== undefined)
+								executor.commit?.(resetValue);
+
+							return result;
+						},
+						isValid: function (
+							value: any,
+							throwError?: boolean | undefined,
+						): boolean {
+							return executor.isValid(value, throwError);
+						},
+						isUiValueDifferent: function (value: any): boolean {
+							const {
+								state: {uiValue},
+							} = get();
+
+							return (
+								executor.stringify(value) !==
+								executor.stringify(uiValue)
+							);
+						},
+						resetToDefaultValue: function (): void {
+							const definition = get().definition;
+							set(
+								(_state) => ({
+									state: {
+										..._state.state,
+										uiValue: definition.defval!,
+										dirty:
+											definition.defval !==
+											_state.state.commitValue,
+									},
+								}),
+								false,
+								"resetToDefaultValue",
+							);
+						},
+						resetToCommitValue: function (): void {
+							const state = get().state;
+							set(
+								(_state) => ({
+									state: {
+										..._state.state,
+										uiValue: state.commitValue,
+										dirty: false,
+									},
+								}),
+								false,
+								"resetToCommitValue",
+							);
+						},
+						setResetValue: function (value: unknown): void {
+							const current = get().resetValueOverride;
+							if (current === value) return;
+							// the reset value applicable before the change
+							const previousResetValue = resolveResetValue();
+							set(
+								() => ({resetValueOverride: value}),
+								false,
+								"setResetValue",
+							);
+							// While the parameter is in its reset state (the latest execution
+							// or the initial computation has not been followed by a reset yet,
+							// or the parameter was reset to the previous reset value), it
+							// follows the reset policy: a new reset value is applied, and
+							// without a reset value the executed value is committed again
+							// (e.g. a model which defines the reset value only for some
+							// computations). The next execution uses the committed value.
+							const {state} = get();
+							// While an execution is in flight, the reset policy is resolved
+							// when it completes.
+							if (executing > 0) return;
+							if (
+								state.commitValue !== state.execValue &&
+								state.commitValue !== previousResetValue
+							)
+								return;
+							const nextResetValue = resolveResetValue();
+							const target =
+								nextResetValue !== undefined
+									? nextResetValue
+									: state.execValue;
+							if (target === state.commitValue) return;
+							// a pending change is kept, it is now relative to the new commit value
+							set(
+								(_state) => ({
+									state: {
+										..._state.state,
+										uiValue: _state.state.dirty
+											? _state.state.uiValue
+											: target,
+										commitValue: target,
+										commitRevision:
+											_state.state.commitRevision + 1,
+										dirty: _state.state.dirty
+											? _state.state.uiValue !== target
+											: false,
+									},
+								}),
+								false,
+								"setResetValue - apply",
+							);
+							executor.commit?.(target);
+						},
+						// TODO add action to get the stringified value of the parameter
 					},
-					resetToDefaultValue: function (): void {
-						const definition = get().definition;
-						set(
-							(_state) => ({
-								state: {
-									..._state.state,
-									uiValue: definition.defval!,
-									dirty:
-										definition.defval !==
-										_state.state.execValue,
-								},
-							}),
-							false,
-							"resetToDefaultValue",
-						);
-					},
-					resetToExecValue: function (): void {
-						const state = get().state;
-						set(
-							(_state) => ({
-								state: {
-									..._state.state,
-									uiValue: state.execValue,
-									dirty: false,
-								},
-							}),
-							false,
-							"resetToExecValue",
-						);
-					},
-					// TODO add action to get the stringified value of the parameter
-				},
-			}),
+				};
+			},
 			{
 				...devtoolsSettings,
 				name: `ShapeDiver | Parameter | ${definition.id}`,
@@ -753,16 +899,16 @@ function isMatchingParameterDefinition(
 }
 
 /**
- * Check if the given parameter value matches the executed value in the parameter store
+ * Check if the given parameter value matches the committed value in the parameter store
  */
-function isMatchingExecutedParameterValue(
+function isMatchingCommittedParameterValue(
 	store: IParameterStore,
 	definition: IGenericParameterDefinition,
 ) {
-	const {execValue} = store.getState().state;
+	const {commitValue} = store.getState().state;
 	const value = definition.value;
 
-	return value === undefined || execValue === value;
+	return value === undefined || commitValue === value;
 }
 
 /**
@@ -975,7 +1121,7 @@ export const useShapeDiverStoreParameters =
 									Object.values(store).forEach((paramStore) =>
 										paramStore
 											.getState()
-											.actions.resetToExecValue(),
+											.actions.resetToCommitValue(),
 									);
 								}
 								// reset the executing flag to unblock the UI when not all changes were accepted
@@ -999,7 +1145,8 @@ export const useShapeDiverStoreParameters =
 								if (allChangesAccepted)
 									removeChanges(namespace);
 							}
-							return {};
+							// the execution failed
+							return undefined;
 						};
 						changes.reject = () => {
 							removeChanges(namespace);
@@ -1017,6 +1164,9 @@ export const useShapeDiverStoreParameters =
 							"getChanges",
 						);
 					});
+					// Rejections must not be unhandled in case nobody awaits the
+					// changes (immediate executions); awaiting callers still get them.
+					changes.wait.catch(() => undefined);
 
 					return changes;
 				},
@@ -1124,6 +1274,11 @@ export const useShapeDiverStoreParameters =
 																	],
 																);
 															},
+															// commit values set without a computation to the session
+															(value) => {
+																param.value =
+																	value;
+															},
 														),
 														acceptRejectMode,
 														param.value,
@@ -1187,6 +1342,7 @@ export const useShapeDiverStoreParameters =
 						| IGenericParameterDefinition[],
 					executor: IGenericParameterExecutor,
 					dependsOnSessions: string[] | string | undefined,
+					commit?: IGenericParameterCommitter,
 				) => {
 					const {parameterStores: parameters, getChanges} = get();
 
@@ -1229,6 +1385,13 @@ export const useShapeDiverStoreParameters =
 																	executor,
 																	-1,
 																),
+															commit
+																? (value) =>
+																		commit(
+																			paramId,
+																			value,
+																		)
+																: undefined,
 														),
 														acceptRejectMode,
 													);
@@ -1263,6 +1426,7 @@ export const useShapeDiverStoreParameters =
 						| IGenericParameterDefinition[],
 					executor: IGenericParameterExecutor,
 					dependsOnSessions: string[] | string | undefined,
+					commit?: IGenericParameterCommitter,
 				) => {
 					const {
 						parameterStores: parameterStorePerSession,
@@ -1285,7 +1449,7 @@ export const useShapeDiverStoreParameters =
 					definitions.forEach((def) => {
 						def = addValidator(def);
 						const paramId = def.definition.id;
-						let setUiAndExecValue = false;
+						let setExecutedValue = false;
 						// check if a matching parameter store already exists
 						if (
 							paramId in existingParameterStores &&
@@ -1296,8 +1460,8 @@ export const useShapeDiverStoreParameters =
 						) {
 							parameterStores[paramId] =
 								existingParameterStores[paramId];
-							setUiAndExecValue =
-								!isMatchingExecutedParameterValue(
+							setExecutedValue =
+								!isMatchingCommittedParameterValue(
 									existingParameterStores[paramId],
 									def,
 								);
@@ -1306,8 +1470,13 @@ export const useShapeDiverStoreParameters =
 								def.definition,
 							);
 							parameterStores[paramId] = createParameterStore(
-								createParameterExecutor(namespace, def, () =>
-									getChanges(namespace, executor, -1),
+								createParameterExecutor(
+									namespace,
+									def,
+									() => getChanges(namespace, executor, -1),
+									commit
+										? (value) => commit(paramId, value)
+										: undefined,
 								),
 								acceptRejectMode,
 							);
@@ -1318,13 +1487,13 @@ export const useShapeDiverStoreParameters =
 							}
 
 							hasChanges = true;
-							setUiAndExecValue = def.value !== undefined;
+							setExecutedValue = def.value !== undefined;
 						}
 
-						if (setUiAndExecValue) {
+						if (setExecutedValue) {
 							const {actions} =
 								parameterStores[paramId].getState();
-							if (!actions.setUiAndExecValue(def.value)) {
+							if (!actions.setExecutedValue(def.value)) {
 								Logger.warn(
 									`Could not update value of generic parameter ${paramId} to ${def.value}`,
 								);

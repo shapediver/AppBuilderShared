@@ -1,5 +1,6 @@
 import {
 	IAcceptRejectModeSelector,
+	IGenericParameterCommitter,
 	IGenericParameterExecutor,
 } from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {useDefineGenericParameters} from "@AppBuilderLib/entities/parameter/model/useDefineGenericParameters";
@@ -221,6 +222,12 @@ export function useAppBuilderCustomParameters(props: Props) {
 		[appBuilderParam, appBuilderFileParam],
 	);
 
+	// values of custom parameters committed without a computation
+	// (e.g. a parameter reset via its "resetValue" setting) must be used by the next computation
+	const commit = useCallback<IGenericParameterCommitter>((id, value) => {
+		customParameterValues.current[id] = value;
+	}, []);
+
 	// register the pre-execution hook
 	useEffect(() => {
 		if (appBuilderParam || appBuilderFileParam) {
@@ -293,6 +300,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 		parameterDefinitions,
 		executor,
 		namespace,
+		commit,
 	);
 
 	useEffect(() => {
@@ -318,7 +326,7 @@ export function useAppBuilderCustomParameters(props: Props) {
 
 			const store = parameterStores?.[p.id];
 			const {actions} = store?.getState() ?? {};
-			actions?.setUiAndExecValue(pendingHistoryDerivedState[p.id]);
+			actions?.setExecutedValue(pendingHistoryDerivedState[p.id]);
 		});
 
 		clearPendingHistoryDerivedState(namespaceAppBuilder);

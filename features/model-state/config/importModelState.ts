@@ -24,5 +24,6 @@ export type IImportModelStateResult =
 	| {
 			success: true;
 			data: ResGetModelState;
+			appliedParameterIds: string[];
 			invalidParameters?: NameMessage[];
 	  };
