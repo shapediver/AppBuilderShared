@@ -18,9 +18,18 @@ export enum DefaultListActionControlType {
 	Sound = AppBuilderActionType.Sound,
 }
 
-export const DEFAULT_LIST_ACTION_CONTROL_TYPES = Object.values(
-	DefaultListActionControlType,
-);
+export const DEFAULT_LIST_ACTION_CONTROL_TYPES: AppBuilderActionType[] = [
+	AppBuilderActionType.CreateModelState,
+	AppBuilderActionType.AddToCart,
+	AppBuilderActionType.SetParameterValue,
+	AppBuilderActionType.SetParameterValues,
+	AppBuilderActionType.Undo,
+	AppBuilderActionType.Redo,
+	AppBuilderActionType.ResetParameterValues,
+	AppBuilderActionType.ImportModelState,
+	AppBuilderActionType.Camera,
+	AppBuilderActionType.Sound,
+];
 
 export type ListedActionControl = {
 	id: string;

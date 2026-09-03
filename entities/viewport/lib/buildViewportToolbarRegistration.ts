@@ -3,6 +3,7 @@ import {
 	DefaultViewportToolbarLayoutItem,
 } from "@AppBuilderLib/entities/viewport/config/shapediverStoreDefaultViewportToolbar";
 import {
+	AppBuilderActionType,
 	IAppBuilderActionDefinition,
 	IAppBuilderToolbarActionItem,
 	IAppBuilderToolbarActionMenuItem,
@@ -100,11 +101,17 @@ const createHistoryMenuItem = (
 	if (importExportEnabled) {
 		sections.push([
 			toActionItem(
-				{type: "importParameterValues", props: {}},
+				{
+					type: AppBuilderActionType.ImportParameterValues,
+					props: {},
+				},
 				{label: "Import parameter values", icon: "tabler:upload"},
 			),
 			toActionItem(
-				{type: "exportParameterValues", props: {}},
+				{
+					type: AppBuilderActionType.ExportParameterValues,
+					props: {},
+				},
 				{label: "Export parameter values", icon: "tabler:download"},
 			),
 		]);
@@ -114,13 +121,16 @@ const createHistoryMenuItem = (
 		sections.push([
 			toActionItem(
 				{
-					type: "createModelState",
+					type: AppBuilderActionType.CreateModelState,
 					props: {includeImage: true, includeGltf: false},
 				},
 				{label: "Create model state", icon: "tabler:device-floppy"},
 			),
 			toActionItem(
-				{type: "importModelState", props: {}},
+				{
+					type: AppBuilderActionType.ImportModelState,
+					props: {},
+				},
 				{label: "Import model state", icon: "tabler:file-import"},
 			),
 		]);
@@ -155,7 +165,7 @@ const createCamerasMenuItem = (
 				cameras.map((camera) =>
 					toActionItem(
 						{
-							type: "camera",
+							type: AppBuilderActionType.Camera,
 							props: {
 								type: "assign",
 								viewportId,
@@ -186,7 +196,7 @@ const toViewportToolbarItem = (
 	switch (kind) {
 		case DefaultViewportToolbarButtonEnum.Ar:
 			return toActionControl(
-				{type: "ar", props: {}},
+				{type: AppBuilderActionType.Ar, props: {}},
 				{
 					icon: "tabler:augmented-reality",
 					label: "View in AR",
@@ -195,7 +205,7 @@ const toViewportToolbarItem = (
 		case DefaultViewportToolbarButtonEnum.Zoom:
 			return toActionControl(
 				{
-					type: "camera",
+					type: AppBuilderActionType.Camera,
 					props: {type: "zoomTo", props: {}},
 				},
 				{icon: "tabler:zoom-in", label: "Zoom extents"},
@@ -203,7 +213,7 @@ const toViewportToolbarItem = (
 		case DefaultViewportToolbarButtonEnum.Fullscreen:
 			return toActionControl(
 				{
-					type: "fullscreen",
+					type: AppBuilderActionType.Fullscreen,
 					props: {type: "fullscreen"},
 				},
 				{icon: "tabler:maximize", label: "Fullscreen"},
@@ -211,7 +221,7 @@ const toViewportToolbarItem = (
 		case DefaultViewportToolbarButtonEnum.Fullscreen3States:
 			return toActionControl(
 				{
-					type: "fullscreen",
+					type: AppBuilderActionType.Fullscreen,
 					props: {type: "fullscreen3States"},
 				},
 				{icon: "tabler:maximize", label: "Fullscreen"},
@@ -219,7 +229,7 @@ const toViewportToolbarItem = (
 		case DefaultViewportToolbarButtonEnum.Undo:
 			return toActionControl(
 				{
-					type: "undo",
+					type: AppBuilderActionType.Undo,
 					props: {},
 				},
 				{icon: "tabler:arrow-back-up", label: "Undo"},
@@ -227,14 +237,14 @@ const toViewportToolbarItem = (
 		case DefaultViewportToolbarButtonEnum.Redo:
 			return toActionControl(
 				{
-					type: "redo",
+					type: AppBuilderActionType.Redo,
 					props: {},
 				},
 				{icon: "tabler:arrow-forward-up", label: "Redo"},
 			);
 		case DefaultViewportToolbarButtonEnum.Reload:
 			return toActionControl(
-				{type: "resetParameterValues", props: {}},
+				{type: AppBuilderActionType.ResetParameterValues, props: {}},
 				{
 					icon: "tabler:reload",
 					label: "Reset to default parameters",

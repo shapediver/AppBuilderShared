@@ -1,7 +1,4 @@
-import {
-	IN_SCOPE_GENERIC_TOOL_NAMES,
-	InScopeGenericToolName,
-} from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
+import {IN_SCOPE_GENERIC_TOOL_NAMES} from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
 import {INPUT_SCHEMA_BY_TOOL} from "@AppBuilderLib/features/agent-tools/config/schemaFor";
 import {zodToJsonSchema} from "@AppBuilderLib/features/agent-tools/lib/zodToJsonSchema";
 
@@ -11,12 +8,6 @@ describe("INPUT_SCHEMA_BY_TOOL", () => {
 			[...IN_SCOPE_GENERIC_TOOL_NAMES].sort(),
 		);
 		for (const name of IN_SCOPE_GENERIC_TOOL_NAMES) {
-			expect(INPUT_SCHEMA_BY_TOOL[name]).toBeDefined();
-		}
-	});
-
-	it("covers every InScopeGenericToolName enum member", () => {
-		for (const name of Object.values(InScopeGenericToolName)) {
 			expect(INPUT_SCHEMA_BY_TOOL[name]).toBeDefined();
 		}
 	});

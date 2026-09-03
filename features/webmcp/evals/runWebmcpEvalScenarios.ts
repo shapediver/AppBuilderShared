@@ -1,7 +1,4 @@
-import {
-	defaultSettingsFor,
-	InScopeGenericToolName,
-} from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
+import {defaultSettingsFor} from "@AppBuilderLib/features/agent-tools/config/inScopeGenericTools";
 import {
 	listParameterDefinitionsInputSchema,
 	listParameterDefinitionsOutputSchema,
@@ -10,7 +7,7 @@ import {setParameterValuesInputSchema} from "@AppBuilderLib/features/agent-tools
 import type {AgentToolsDeps} from "@AppBuilderLib/features/agent-tools/model/agentToolsDeps";
 import {handleListParameterDefinitions} from "@AppBuilderLib/features/agent-tools/model/handlers/listParameterDefinitions";
 import {handleSetParameterValues} from "@AppBuilderLib/features/agent-tools/model/handlers/setParameterValues";
-import type {ListParameterDefinitionsToolSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
+import {GenericToolName} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {allParameters, EVAL_NAMESPACE} from "./__fixtures__/parameters";
 import evalScenariosJson from "./evals.json";
@@ -64,9 +61,7 @@ function createEvalDeps(): AgentToolsDeps {
 async function runListScenario(input: Record<string, unknown>) {
 	return handleListParameterDefinitions(
 		input,
-		defaultSettingsFor(
-			InScopeGenericToolName.ListParameterDefinitions,
-		) as ListParameterDefinitionsToolSettings,
+		defaultSettingsFor(GenericToolName.ListParameterDefinitions),
 		createEvalDeps(),
 	);
 }

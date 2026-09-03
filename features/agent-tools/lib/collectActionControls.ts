@@ -5,6 +5,7 @@ import {
 	isFormWidget,
 	isStackUiWidget,
 	isToolbarContainer,
+	type AppBuilderActionType,
 	type IAppBuilder,
 	type IAppBuilderControl,
 	type IAppBuilderControlActionRef,
@@ -58,7 +59,7 @@ function listExplicitActionRefs(
 	const refs: IAppBuilderControlActionRef[] = [];
 	for (const wanted of explicit) {
 		if (wanted.action) {
-			refs.push(wanted.action);
+			refs.push(wanted.action as IAppBuilderControlActionRef);
 		} else if (wanted.name !== undefined) {
 			for (const ref of collected) {
 				if (matchesActionIdOrLabel(ref, wanted.name)) {
@@ -191,7 +192,7 @@ export function collectActionControlRefs(
 		return listExplicitActionRefs(collected, explicit);
 	}
 
-	const types = new Set(
+	const types = new Set<AppBuilderActionType>(
 		args.settings.filter?.types ?? DEFAULT_LIST_ACTION_CONTROL_TYPES,
 	);
 	return collected.filter((ref) => types.has(ref.definition.type));

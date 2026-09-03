@@ -1132,7 +1132,8 @@ const IAppBuilderWidgetPropsAccordionUiSchema = z.strictObject({
 			tooltip: z.string().optional(),
 			widgets: z.array(
 				z.lazy(
-					(): z.ZodType<IAppBuilderWidget> => IAppBuilderWidgetSchema,
+					(): z.ZodType<IAppBuilderWidget> =>
+						IAppBuilderWidgetSchema as z.ZodType<IAppBuilderWidget>,
 				),
 			),
 		}),
@@ -1148,7 +1149,10 @@ const IAppBuilderWidgetPropsStackUiSchema = z.strictObject({
 	icon: z.string().optional(),
 	tooltip: z.string().optional(),
 	widgets: z.array(
-		z.lazy((): z.ZodType<IAppBuilderWidget> => IAppBuilderWidgetSchema),
+		z.lazy(
+			(): z.ZodType<IAppBuilderWidget> =>
+				IAppBuilderWidgetSchema as z.ZodType<IAppBuilderWidget>,
+		),
 	),
 });
 
@@ -1547,7 +1551,9 @@ const IAgentParameterRefSchema = z.strictObject({
 	sessionId: z
 		.string()
 		.optional()
-		.describe("Optional id of the session the referenced parameter belongs to."),
+		.describe(
+			"Optional id of the session the referenced parameter belongs to.",
+		),
 	description: z
 		.string()
 		.optional()
@@ -1679,10 +1685,12 @@ const SpecificToolSettingsSchema = z.strictObject({
 	description: z
 		.string()
 		.optional()
-		.describe("Optional description of the tool, providing context to the agent."),
-	inputSchema: z.record(z.string(), JsonValueSchema).describe(
-		"Input schema for the tool.",
-	),
+		.describe(
+			"Optional description of the tool, providing context to the agent.",
+		),
+	inputSchema: z
+		.record(z.string(), JsonValueSchema)
+		.describe("Input schema for the tool."),
 	actionSequence: z
 		.array(IAppBuilderActionDefinitionSchema)
 		.optional()
@@ -1697,7 +1705,9 @@ const SpecificToolSettingsSchema = z.strictObject({
 // Zod type definition for IAppBuilderAgent
 const IAppBuilderAgentSchema = z.strictObject({
 	id: z.string().describe("Unique identifier of the agent."),
-	name: z.string().describe("Display name of the agent (exposed to the user)."),
+	name: z
+		.string()
+		.describe("Display name of the agent (exposed to the user)."),
 	message: z.string().describe("The agent's system prompt."),
 	useGenericToolDefaults: z
 		.boolean()
@@ -1725,7 +1735,9 @@ export type IAgentParameterRef = z.infer<typeof IAgentParameterRefSchema>;
 /**
  * Agent-specific reference for an action control.
  */
-export type IAgentActionControlRef = z.infer<typeof IAgentActionControlRefSchema>;
+export type IAgentActionControlRef = z.infer<
+	typeof IAgentActionControlRefSchema
+>;
 
 export type GenericToolSettings = z.infer<typeof GenericToolSettingsSchema>;
 

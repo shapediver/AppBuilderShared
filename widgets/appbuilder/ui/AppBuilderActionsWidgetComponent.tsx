@@ -1,5 +1,8 @@
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import {IAppBuilderWidgetPropsActions} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {
+	IAppBuilderActionDefinition,
+	IAppBuilderWidgetPropsActions,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
 import {
@@ -55,7 +58,10 @@ export default function AppBuilderActionsWidgetComponent(
 				label,
 				icon,
 				tooltip,
-				definition: {type: action.type, props},
+				definition: {
+					type: action.type,
+					props,
+				} as IAppBuilderActionDefinition,
 			},
 			namespace,
 			i,

@@ -1,13 +1,16 @@
 import type {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
-import type {ListParameterDefinitionsToolSettings} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
+import {
+	GenericToolName,
+	type ListParameterDefinitionsToolSettings,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {defaultSettingsFor, InScopeGenericToolName} from "../../config/inScopeGenericTools";
+import {defaultSettingsFor} from "../../config/inScopeGenericTools";
 import type {AgentToolsDeps} from "../../model/agentToolsDeps";
 import {handleGetParameterValues} from "../../model/handlers/getParameterValues";
 
 const listSettings = defaultSettingsFor(
-	InScopeGenericToolName.ListParameterDefinitions,
-) as ListParameterDefinitionsToolSettings;
+	GenericToolName.ListParameterDefinitions,
+);
 
 const bothSessionsSettings: ListParameterDefinitionsToolSettings = {
 	name: "list_parameter_definitions",

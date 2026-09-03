@@ -51,7 +51,7 @@ export function resolveToolset(
 		const overlay = listed.get(name);
 		return {
 			name,
-			settings: overlay ?? (defaultSettingsFor(name) as GenericToolSettings),
+			settings: overlay ?? defaultSettingsFor(name),
 		};
 	});
 }
