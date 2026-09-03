@@ -2,11 +2,13 @@ import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {IAttributeDefinition} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderAttributeVisualizationWidgetComponent";
-import {getNodesByName} from "@shapediver/viewer.features.interaction";
+import {
+	getNodesByName,
+	IInteractionEffect,
+} from "@shapediver/viewer.features.interaction";
 import {
 	ISDTFAttributeData,
 	ITreeNode,
-	MATERIAL_TYPE,
 	SDTFItemData,
 	SessionApiData,
 } from "@shapediver/viewer.session";
@@ -161,14 +163,18 @@ export default function useAttributeSelection(
 			availableColor: null,
 			hover: true,
 			hoverColor: {
-				type: MATERIAL_TYPE.UNLIT,
+				type: "pulse",
 				color: "#ffffff",
-			},
+				intensity: 0.75,
+				pulseSpeed: 1.75,
+			} as IInteractionEffect,
 			deselectOnEmpty: true,
 			selectionColor: {
-				type: MATERIAL_TYPE.UNLIT,
+				type: "pulse",
 				color: "#0d44f0",
-			},
+				intensity: 1,
+				pulseSpeed: 0.75,
+			} as IInteractionEffect,
 		};
 	}, [nameFilter]);
 
