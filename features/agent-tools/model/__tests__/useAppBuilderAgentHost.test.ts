@@ -2,13 +2,16 @@
  * @jest-environment jsdom
  */
 
-jest.mock("@mantine/notifications", () => ({
-	notifications: {
-		show: jest.fn(),
-		hide: jest.fn(),
-		update: jest.fn(),
-	},
-}));
+const showNotification = jest.fn();
+
+jest.mock(
+	"@AppBuilderLib/features/notifications/model/useNotificationStore",
+	() => ({
+		useNotificationStore: {
+			getState: () => ({show: showNotification}),
+		},
+	}),
+);
 
 const useAgentToolTransports = jest.fn();
 
@@ -22,7 +25,6 @@ jest.mock("../../lib/readAgentUrlEnv", () => ({
 }));
 
 import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
-import {notifications} from "@mantine/notifications";
 import {act, renderHook} from "@testing-library/react";
 import {readAgentUrlEnv} from "../../lib/readAgentUrlEnv";
 import {useAppBuilderAgentHost} from "../useAppBuilderAgentHost";
@@ -40,7 +42,7 @@ describe("useAppBuilderAgentHost", () => {
 		window.history.replaceState({}, "", "/");
 		useAgentToolTransports.mockReset().mockReturnValue(transports);
 		jest.mocked(readAgentUrlEnv).mockReset().mockReturnValue(undefined);
-		jest.mocked(notifications.show).mockClear();
+		showNotification.mockClear();
 		window.open = jest.fn().mockReturnValue(null);
 	});
 
@@ -140,9 +142,10 @@ describe("useAppBuilderAgentHost", () => {
 			appBuilderParseSettled: undefined,
 			agentWindow: opened,
 		});
+		expect(showNotification).not.toHaveBeenCalled();
 	});
 
-	it("shows the existing notification when the popup is blocked", () => {
+	it("shows the existing notification when openAgentWindow returns null", () => {
 		const {result} = renderHook(() =>
 			useAppBuilderAgentHost({
 				settings: {settings: {agentUrl: "http://localhost:3001/app"}},
@@ -151,13 +154,17 @@ describe("useAppBuilderAgentHost", () => {
 		act(() => {
 			result.current.onOpenAgent();
 		});
-		expect(notifications.show).toHaveBeenCalledWith(
-			expect.objectContaining({
-				title: "Agent window blocked",
-				message:
-					"Allow popups for this site, then try Open agent again.",
-				color: "red",
-			}),
+		expect(showNotification).toHaveBeenCalledWith({
+			title: "Could not open agent window.",
+			message:
+				"The agent window is not connected. Close it if it is open, then try Open agent again.",
+			color: "red",
+		});
+		expect(showNotification.mock.calls[0]?.[0]?.title).not.toMatch(
+			/popup/i,
+		);
+		expect(showNotification.mock.calls[0]?.[0]?.message).not.toMatch(
+			/allow popups/i,
 		);
 		expect(useAgentToolTransports).toHaveBeenLastCalledWith(
 			expect.objectContaining({agentWindow: null}),
@@ -170,6 +177,6 @@ describe("useAppBuilderAgentHost", () => {
 			result.current.onOpenAgent();
 		});
 		expect(window.open).not.toHaveBeenCalled();
-		expect(notifications.show).not.toHaveBeenCalled();
+		expect(showNotification).not.toHaveBeenCalled();
 	});
 });
