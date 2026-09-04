@@ -46,6 +46,7 @@ describe("useAppBuilderAgentHost", () => {
 
 	afterEach(() => {
 		window.open = originalOpen;
+		jest.useRealTimers();
 	});
 
 	it("uses settings.agentUrl when query is missing", () => {
@@ -107,6 +108,7 @@ describe("useAppBuilderAgentHost", () => {
 	});
 
 	it("onOpenAgent opens shapediver-agent and passes the Window to transports", () => {
+		jest.useFakeTimers();
 		const opened = {} as Window;
 		jest.mocked(window.open).mockReturnValue(opened);
 		const {result} = renderHook(() =>
@@ -123,6 +125,15 @@ describe("useAppBuilderAgentHost", () => {
 			"shapediver-agent",
 			"width=520,height=780",
 		);
+		expect(useAgentToolTransports).toHaveBeenLastCalledWith({
+			namespace: "ns",
+			appBuilderData: undefined,
+			appBuilderParseSettled: undefined,
+			agentWindow: null,
+		});
+		act(() => {
+			jest.runAllTimers();
+		});
 		expect(useAgentToolTransports).toHaveBeenLastCalledWith({
 			namespace: "ns",
 			appBuilderData: undefined,

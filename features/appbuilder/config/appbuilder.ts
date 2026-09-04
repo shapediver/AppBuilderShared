@@ -15,6 +15,7 @@ import {
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 } from "@shapediver/viewer.shared.types";
+import {AppBuilderActionType} from "./appBuilderActionType";
 import type {IAppBuilderAgent} from "./appbuilderagent";
 import {
 	IAppBuilderWidgetPropsAreaChart,
@@ -22,6 +23,8 @@ import {
 	IAppBuilderWidgetPropsLineChart,
 	IAppBuilderWidgetPropsRoundChart,
 } from "./appbuildercharts";
+
+export {AppBuilderActionType};
 
 /** Type used for parameter definitions */
 export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
@@ -595,28 +598,6 @@ export type IAppBuilderParameterValueDefinition =
 	| boolean
 	| IAppBuilderParameterValueSourceDefinition;
 
-/** Types of actions */
-export enum AppBuilderActionType {
-	CreateModelState = "createModelState",
-	AddToCart = "addToCart",
-	SetParameterValue = "setParameterValue",
-	SetParameterValues = "setParameterValues",
-	SetBrowserLocation = "setBrowserLocation",
-	CloseConfigurator = "closeConfigurator",
-	Ar = "ar",
-	Fullscreen = "fullscreen",
-	Undo = "undo",
-	Redo = "redo",
-	ResetParameterValues = "resetParameterValues",
-	ImportParameterValues = "importParameterValues",
-	ExportParameterValues = "exportParameterValues",
-	ImportModelState = "importModelState",
-	Camera = "camera",
-	Sound = "sound",
-	MessageToParent = "messageToParent",
-	SetContainerVisibility = "setContainerVisibility",
-}
-
 /** Properties of a "setContainerVisibility" action. */
 export interface IAppBuilderActionPropsSetContainerVisibility {
 	/** Container to open or close. */
@@ -998,8 +979,14 @@ export type IAppBuilderLegacyActionDefinition =
 			type: AppBuilderActionType.ImportModelState;
 			props: IAppBuilderLegacyActionPropsImportModelState;
 	  }
-	| {type: AppBuilderActionType.Camera; props: IAppBuilderLegacyActionPropsCamera}
-	| {type: AppBuilderActionType.Sound; props: IAppBuilderLegacyActionPropsSound}
+	| {
+			type: AppBuilderActionType.Camera;
+			props: IAppBuilderLegacyActionPropsCamera;
+	  }
+	| {
+			type: AppBuilderActionType.Sound;
+			props: IAppBuilderLegacyActionPropsSound;
+	  }
 	| {
 			type: AppBuilderActionType.SetContainerVisibility;
 			props: IAppBuilderLegacyActionPropsSetContainerVisibility;
