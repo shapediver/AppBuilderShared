@@ -1820,73 +1820,42 @@ const IAppBuilderAgentSchema = z.strictObject({
 		),
 });
 
-/** Agent-specific reference for a parameter */
-export type IAgentParameterRef = z.infer<typeof IAgentParameterRefSchema>;
-
-/**
- * Agent-specific reference for an action control.
- */
-export type IAgentActionControlRef = z.infer<
-	typeof IAgentActionControlRefSchema
->;
-
-export type GenericToolSettings = z.infer<typeof GenericToolSettingsSchema>;
-
-export type ListParameterDefinitionsToolSettings = Extract<
+import type {
 	GenericToolSettings,
-	{name: GenericToolName.ListParameterDefinitions}
->;
+	IAppBuilderAgent,
+} from "./appbuilderagent";
 
-export type GetParameterValuesToolSettings = Extract<
+export type {
+	AskUserQuestionToolSettings,
 	GenericToolSettings,
-	{name: GenericToolName.GetParameterValues}
->;
+	GetMetricToolSettings,
+	GetParameterValuesToolSettings,
+	GetScreenshotToolSettings,
+	IAgentActionControlRef,
+	IAgentParameterRef,
+	IAppBuilderAgent,
+	ListActionControlsToolSettings,
+	ListParameterDefinitionsToolSettings,
+	RemoteToolExecutionSettings,
+	SetCameraPositionToolSettings,
+	SetParameterValuesToolSettings,
+	SpecificToolSettings,
+	TriggerActionControlToolSettings,
+} from "./appbuilderagent";
 
-export type SetParameterValuesToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.SetParameterValues}
->;
+type _AssertGenericToolSettings =
+	z.infer<typeof GenericToolSettingsSchema> extends GenericToolSettings
+		? true
+		: false;
+const _checkGenericToolSettings: _AssertGenericToolSettings = true;
+void _checkGenericToolSettings;
 
-export type ListActionControlsToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.ListActionControls}
->;
-
-export type TriggerActionControlToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.TriggerActionControl}
->;
-
-export type SetCameraPositionToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.SetCameraPosition}
->;
-
-export type GetScreenshotToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.GetScreenshot}
->;
-
-export type AskUserQuestionToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.AskUserQuestion}
->;
-
-export type GetMetricToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.GetMetric}
->;
-
-export type RemoteToolExecutionSettings = z.infer<
-	typeof RemoteToolExecutionSettingsSchema
->;
-
-export type SpecificToolSettings = z.infer<typeof SpecificToolSettingsSchema>;
-
-/**
- * Definition of an agent that can be used with App Builder.
- */
-export type IAppBuilderAgent = z.infer<typeof IAppBuilderAgentSchema>;
+type _AssertAgent =
+	z.infer<typeof IAppBuilderAgentSchema> extends IAppBuilderAgent
+		? true
+		: false;
+const _checkAgent: _AssertAgent = true;
+void _checkAgent;
 
 // Zod type definition for IAppBuilder
 const IAppBuilderSchema = z.strictObject({
