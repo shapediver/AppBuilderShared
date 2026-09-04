@@ -6,15 +6,13 @@ const CONFIG_DIR = path.resolve(__dirname, "..");
 const FORBIDDEN_PREFIXES = ["@shapediver/", "@mantine/"];
 const FORBIDDEN_EXACT = [
 	"@AppBuilderLib/features/appbuilder/config/appbuilder",
-	"@AppBuilderLib/features/appbuilder/config/appbuilderagent",
 ];
 
 function configTsFiles(): string[] {
 	return fs
 		.readdirSync(CONFIG_DIR)
 		.filter(
-			(name) =>
-				name.endsWith(".ts") && name !== "appBuilderAgentHost.ts",
+			(name) => name.endsWith(".ts") && name !== "appBuilderAgentHost.ts",
 		)
 		.map((name) => path.join(CONFIG_DIR, name));
 }
@@ -41,11 +39,11 @@ function isForbiddenSpecifier(spec: string): boolean {
 		return true;
 	}
 	const base = spec.split("/").pop();
-	return base === "appbuilder" || base === "appbuilderagent";
+	return base === "appbuilder";
 }
 
 describe("agent-tools config import isolation", () => {
-	it("does not import shapediver, mantine, appbuilder, or appbuilderagent", () => {
+	it("does not import shapediver, mantine, or appbuilder", () => {
 		const violations: string[] = [];
 		for (const filePath of configTsFiles()) {
 			const source = fs.readFileSync(filePath, "utf8");

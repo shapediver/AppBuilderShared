@@ -1,4 +1,4 @@
-import {AppBuilderActionType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {AppBuilderActionType} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionType";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /**

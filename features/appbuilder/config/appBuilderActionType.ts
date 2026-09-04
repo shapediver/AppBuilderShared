@@ -1,0 +1,21 @@
+/** Types of actions */
+export enum AppBuilderActionType {
+	CreateModelState = "createModelState",
+	AddToCart = "addToCart",
+	SetParameterValue = "setParameterValue",
+	SetParameterValues = "setParameterValues",
+	SetBrowserLocation = "setBrowserLocation",
+	CloseConfigurator = "closeConfigurator",
+	Ar = "ar",
+	Fullscreen = "fullscreen",
+	Undo = "undo",
+	Redo = "redo",
+	ResetParameterValues = "resetParameterValues",
+	ImportParameterValues = "importParameterValues",
+	ExportParameterValues = "exportParameterValues",
+	ImportModelState = "importModelState",
+	Camera = "camera",
+	Sound = "sound",
+	MessageToParent = "messageToParent",
+	SetContainerVisibility = "setContainerVisibility",
+}
