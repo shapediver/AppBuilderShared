@@ -40,9 +40,9 @@ export function useAppBuilderAgentHost(
 		const opened = openAgentWindow(agentUrl);
 		if (!opened) {
 			useNotificationStore.getState().show({
-				title: "Agent window blocked",
+				title: "Could not open agent window.",
 				message:
-					"Allow popups for this site, then try Open agent again.",
+					"The agent window is not connected. Close it if it is open, then try Open agent again.",
 				color: "red",
 			});
 			return;
