@@ -1,6 +1,6 @@
-import {ParameterStringInputMode} from "@AppBuilderLib/entities/parameter/config/ParameterStringComponent.theme.types";
 import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
 import {viewportScreenshotPropsSchema} from "@AppBuilderLib/entities/viewport/config/viewportScreenshotProps.zod";
+import {preprocessActionDefinitionInput} from "@AppBuilderLib/features/appbuilder/lib/legacyActionToDefinition";
 import {createModelStateCoreSchema} from "@AppBuilderLib/features/model-state/config/createModelState.zod";
 import {prettifyError, z} from "@AppBuilderLib/shared/lib/zod";
 import {appBuilderThemeOtherPropsSchema} from "@AppBuilderLib/shared/mantine-props/appBuilderThemeOther.zod";
@@ -26,10 +26,11 @@ import {
 	IAppBuilderParameterValueSourceDefinition,
 	IAppBuilderSettingsJson,
 	IAppBuilderWidget,
+	ParameterStringInputMode,
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
-import {preprocessActionDefinitionInput} from "@AppBuilderLib/features/appbuilder/lib/legacyActionToDefinition";
+import "./appbuilderContractCompat";
 import {GenericToolName} from "./appbuilderagent";
 import {validateThemeComponentsRecord} from "./validateThemeComponentsRecord";
 
@@ -939,7 +940,9 @@ const IAppBuilderActionDefinitionSchema = z.preprocess(
 
 // Compile-time assertion: validated action definitions match IAppBuilderActionDefinition
 type _AssertActionDefinition =
-	z.infer<typeof IAppBuilderActionDefinitionSchema> extends IAppBuilderActionDefinition
+	z.infer<
+		typeof IAppBuilderActionDefinitionSchema
+	> extends IAppBuilderActionDefinition
 		? true
 		: false;
 const _checkActionDefinition: _AssertActionDefinition = true;
@@ -1971,7 +1974,9 @@ const IAppBuilderSettingsJsonSchema =
 
 // Compile-time assertion: validated settings JSON matches IAppBuilderSettingsJson
 type _AssertSettingsJson =
-	z.infer<typeof IAppBuilderSettingsJsonSchema> extends IAppBuilderSettingsJson
+	z.infer<
+		typeof IAppBuilderSettingsJsonSchema
+	> extends IAppBuilderSettingsJson
 		? true
 		: false;
 const _checkSettingsJson: _AssertSettingsJson = true;

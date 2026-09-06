@@ -1,11 +1,8 @@
 import {selectComponentOverridesSchema} from "@AppBuilderLib/entities/parameter/config/selectComponent.theme.types";
+import {ParameterStringInputMode} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 
-/** How a string text input commits values to the session. */
-export enum ParameterStringInputMode {
-	Debounce = "debounce",
-	Validate = "validate",
-}
+export {ParameterStringInputMode};
 
 /** Theme `defaultProps` for `useProps("ParameterStringComponent", …)`. */
 export const ParameterStringComponentThemeDefaultPropsSchema = z.strictObject({
