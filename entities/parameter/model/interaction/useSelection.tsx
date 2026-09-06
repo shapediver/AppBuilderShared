@@ -10,11 +10,11 @@ import {
 } from "@shapediver/viewer.features.interaction";
 import {
 	IOutputApi,
-	ISelectionParameterProps,
 	ITreeNode,
 	OutputApiData,
 	SessionApiData,
 } from "@shapediver/viewer.session";
+import type {ISelectionParameterProps} from "@shapediver/viewer.shared.types";
 import {vec3} from "gl-matrix";
 import React, {useCallback, useEffect, useId, useMemo} from "react";
 import {useShallow} from "zustand/react/shallow";

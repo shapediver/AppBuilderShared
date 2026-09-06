@@ -6,12 +6,12 @@ import {prettifyError, z} from "@AppBuilderLib/shared/lib/zod";
 import {appBuilderThemeOtherPropsSchema} from "@AppBuilderLib/shared/mantine-props/appBuilderThemeOther.zod";
 import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
 import type {MantineTheme, MantineThemeComponent} from "@mantine/core";
-import {ResStructureType} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
-	PARAMETER_TYPE,
-	PARAMETER_VISUALIZATION,
-	TAG3D_JUSTIFICATION,
-} from "@shapediver/viewer.session";
+	ResParameterType,
+	ResStructureType,
+	ResVisualizationType,
+} from "@shapediver/sdk.geometry-api-sdk-v2";
+import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
 import {
 	ATTRIBUTE_VISUALIZATION,
 	CAMERA_TYPE,
@@ -281,8 +281,8 @@ const IAppBuilderParameterDefinitionSchema = z.strictObject({
 	vmax: z.number().optional(),
 	interval: z.number().optional(),
 	name: z.string(),
-	type: z.enum(PARAMETER_TYPE),
-	visualization: z.enum(PARAMETER_VISUALIZATION).optional(),
+	type: z.enum(ResParameterType),
+	visualization: z.enum(ResVisualizationType).optional(),
 	structure: z.enum(ResStructureType).optional(),
 	group: z
 		.strictObject({

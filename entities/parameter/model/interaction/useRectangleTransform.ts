@@ -11,10 +11,10 @@ import {
 	RectangleTransform,
 	updateTransformation,
 } from "@shapediver/viewer.features.transformation-tools";
-import {
+import type {
 	IRectangleTransformParameterProps,
 	ISelectionParameterProps,
-} from "@shapediver/viewer.session";
+} from "@shapediver/viewer.shared.types";
 import {mat4, vec3} from "gl-matrix";
 import {useCallback, useEffect, useId, useMemo, useRef, useState} from "react";
 import {useRestrictions} from "../drawing/useRestrictions";
