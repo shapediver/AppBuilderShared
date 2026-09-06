@@ -29,9 +29,7 @@ import {
 import {GenericToolName} from "./appbuilderagent";
 import {validateThemeComponentsRecord} from "./validateThemeComponentsRecord";
 
-import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
-export type {JsonValue} from "@AppBuilderLib/shared/lib/jsonValue";
-export {JsonValueSchema};
+import {JsonValueSchema} from "./jsonValue";
 
 // Zod schema for MantineThemeComponent (classNames, styles, vars, defaultProps are opaque JSON values)
 const MantineThemeComponentSchema = z.strictObject({

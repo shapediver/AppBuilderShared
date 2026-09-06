@@ -1,6 +1,14 @@
 import {z} from "@AppBuilderLib/shared/lib/zod";
 
-export const JsonValueSchema: z.ZodTypeAny = z.lazy(() =>
+export type JsonValue =
+	| string
+	| number
+	| boolean
+	| null
+	| JsonValue[]
+	| {[key: string]: JsonValue};
+
+export const JsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
 	z.union([
 		z.string(),
 		z.number(),
@@ -10,5 +18,3 @@ export const JsonValueSchema: z.ZodTypeAny = z.lazy(() =>
 		z.record(z.string(), JsonValueSchema),
 	]),
 );
-
-export type JsonValue = z.infer<typeof JsonValueSchema>;

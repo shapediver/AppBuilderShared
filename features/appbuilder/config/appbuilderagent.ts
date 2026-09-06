@@ -3,6 +3,7 @@ import type {
 	IAppBuilderControlActionRef,
 } from "./appbuilder";
 import {AppBuilderActionType} from "./appBuilderActionType";
+import type {JsonValue} from "./jsonValue";
 
 /** Names of generic tool definitions */
 export enum GenericToolName {
@@ -196,7 +197,7 @@ export interface SpecificToolSettings {
 	/**
 	 * Input schema for the tool.
 	 */
-	inputSchema: Record<string, unknown>;
+	inputSchema: Record<string, JsonValue>;
 
 	/**
 	 * Optional sequence of actions that should be run when the tool is triggered.
