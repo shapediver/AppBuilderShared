@@ -11,8 +11,6 @@ export enum GenericToolName {
 	GetMetric = "get_metric",
 }
 
-export type {DefaultListActionControlType} from "@AppBuilderLib/features/agent-tools/config/listActionControls";
-
 export type {
 	AskUserQuestionToolSettings,
 	GenericToolSettings,
