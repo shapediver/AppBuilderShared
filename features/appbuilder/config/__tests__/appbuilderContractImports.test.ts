@@ -6,6 +6,8 @@ const CONTRACT_FILES = [
 	"appbuilder.ts",
 	"appbuildercharts.ts",
 	"appbuilderColor.ts",
+	"appbuilderagent.ts",
+	"appBuilderActionType.ts",
 ] as const;
 
 const IMPORT_RE =

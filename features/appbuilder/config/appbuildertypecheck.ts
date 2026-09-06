@@ -5,7 +5,6 @@ import {createModelStateCoreSchema} from "@AppBuilderLib/features/model-state/co
 import {prettifyError, z} from "@AppBuilderLib/shared/lib/zod";
 import {appBuilderThemeOtherPropsSchema} from "@AppBuilderLib/shared/mantine-props/appBuilderThemeOther.zod";
 import {mantineThemeOverridePropsSchema} from "@AppBuilderLib/shared/mantine-props/themeOverride.zod";
-import type {MantineTheme, MantineThemeComponent} from "@mantine/core";
 import {
 	ResParameterType,
 	ResStructureType,
@@ -21,16 +20,12 @@ import {
 	AppBuilderContainerNameType,
 	AttributeVisualizationVisibility,
 	FormWidgetSubmitBehavior,
-	IAppBuilder,
-	IAppBuilderActionDefinition,
 	IAppBuilderParameterValueSourceDefinition,
-	IAppBuilderSettingsJson,
 	IAppBuilderWidget,
 	ParameterStringInputMode,
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
-import "./appbuilderContractCompat";
 import {GenericToolName} from "./appbuilderagent";
 import {validateThemeComponentsRecord} from "./validateThemeComponentsRecord";
 
@@ -46,21 +41,9 @@ const MantineThemeComponentSchema = z.strictObject({
 	defaultProps: JsonValueSchema.optional(),
 });
 
-// Compile-time assertion: MantineThemeComponentSchema keys must match MantineThemeComponent keys
-type _AssertComponentKeys = [
-	keyof z.infer<
-		typeof MantineThemeComponentSchema
-	> extends keyof MantineThemeComponent
-		? true
-		: false,
-	keyof MantineThemeComponent extends keyof z.infer<
-		typeof MantineThemeComponentSchema
-	>
-		? true
-		: false,
-];
-const _checkComponent: _AssertComponentKeys = [true, true];
-void _checkComponent;
+export type MantineThemeComponentSchemaOutput = z.infer<
+	typeof MantineThemeComponentSchema
+>;
 
 // Hand-written strict schema for top-level `themeOverrides` in settings JSON.
 // Doc mirror / nested component prop: `MantineThemeOverrideProps` in
@@ -144,31 +127,13 @@ const MantineThemeFullSchema = z.strictObject({
 	// variantColorResolver is a function — excluded from JSON config schema
 });
 
-// Compile-time assertion: schema keys (minus variantColorResolver) must match MantineTheme keys.
-// If Mantine adds/removes fields, tsc will fail here.
-type _MantineThemeSchemaKeys = keyof z.infer<typeof MantineThemeFullSchema>;
-type _MantineThemeKeys = Exclude<keyof MantineTheme, "variantColorResolver">;
-type _AssertThemeKeys = [
-	_MantineThemeSchemaKeys extends _MantineThemeKeys ? true : false,
-	_MantineThemeKeys extends _MantineThemeSchemaKeys ? true : false,
-];
-const _checkTheme: _AssertThemeKeys = [true, true];
-void _checkTheme;
+export type MantineThemeFullSchemaOutput = z.infer<
+	typeof MantineThemeFullSchema
+>;
 
-// Doc-mirror `MantineThemeOverrideProps` keys must match serializable settings theme keys.
-type _MantineThemeOverridePropsKeys = keyof z.infer<
+export type MantineThemeOverridePropsSchemaOutput = z.infer<
 	typeof mantineThemeOverridePropsSchema
 >;
-type _AssertThemeOverrideMirrorKeys = [
-	_MantineThemeOverridePropsKeys extends _MantineThemeSchemaKeys
-		? true
-		: false,
-	_MantineThemeSchemaKeys extends _MantineThemeOverridePropsKeys
-		? true
-		: false,
-];
-const _checkThemeOverrideMirror: _AssertThemeOverrideMirrorKeys = [true, true];
-void _checkThemeOverrideMirror;
 
 // Partial version used for themeOverrides in config files (matches MantineThemeOverride = PartialDeep<MantineTheme>)
 export const MantineThemeOverrideSchema = MantineThemeFullSchema.partial();
@@ -938,15 +903,9 @@ const IAppBuilderActionDefinitionSchema = z.preprocess(
 	IAppBuilderActionDefinitionSchemaBase,
 );
 
-// Compile-time assertion: validated action definitions match IAppBuilderActionDefinition
-type _AssertActionDefinition =
-	z.infer<
-		typeof IAppBuilderActionDefinitionSchema
-	> extends IAppBuilderActionDefinition
-		? true
-		: false;
-const _checkActionDefinition: _AssertActionDefinition = true;
-void _checkActionDefinition;
+export type AppBuilderActionDefinitionSchemaOutput = z.infer<
+	typeof IAppBuilderActionDefinitionSchema
+>;
 
 // Zod type definition for IAppBuilderControlActionRef
 const IAppBuilderControlActionRefSchema = z
@@ -1823,73 +1782,13 @@ const IAppBuilderAgentSchema = z.strictObject({
 		),
 });
 
-/** Agent-specific reference for a parameter */
-export type IAgentParameterRef = z.infer<typeof IAgentParameterRefSchema>;
-
-/**
- * Agent-specific reference for an action control.
- */
-export type IAgentActionControlRef = z.infer<
-	typeof IAgentActionControlRefSchema
+export type GenericToolSettingsSchemaOutput = z.infer<
+	typeof GenericToolSettingsSchema
 >;
 
-export type GenericToolSettings = z.infer<typeof GenericToolSettingsSchema>;
-
-export type ListParameterDefinitionsToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.ListParameterDefinitions}
+export type AppBuilderAgentSchemaOutput = z.infer<
+	typeof IAppBuilderAgentSchema
 >;
-
-export type GetParameterValuesToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.GetParameterValues}
->;
-
-export type SetParameterValuesToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.SetParameterValues}
->;
-
-export type ListActionControlsToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.ListActionControls}
->;
-
-export type TriggerActionControlToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.TriggerActionControl}
->;
-
-export type SetCameraPositionToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.SetCameraPosition}
->;
-
-export type GetScreenshotToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.GetScreenshot}
->;
-
-export type AskUserQuestionToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.AskUserQuestion}
->;
-
-export type GetMetricToolSettings = Extract<
-	GenericToolSettings,
-	{name: GenericToolName.GetMetric}
->;
-
-export type RemoteToolExecutionSettings = z.infer<
-	typeof RemoteToolExecutionSettingsSchema
->;
-
-export type SpecificToolSettings = z.infer<typeof SpecificToolSettingsSchema>;
-
-/**
- * Definition of an agent that can be used with App Builder.
- */
-export type IAppBuilderAgent = z.infer<typeof IAppBuilderAgentSchema>;
 
 // Zod type definition for IAppBuilder
 const IAppBuilderSchema = z.strictObject({
@@ -1901,23 +1800,7 @@ const IAppBuilderSchema = z.strictObject({
 	agents: z.array(IAppBuilderAgentSchema).optional(),
 });
 
-// Compile-time assertion: IAppBuilderSchema keys must match IAppBuilder keys
-type _AssertAppBuilderKeys = [
-	keyof z.infer<typeof IAppBuilderSchema> extends keyof IAppBuilder
-		? true
-		: false,
-	keyof IAppBuilder extends keyof z.infer<typeof IAppBuilderSchema>
-		? true
-		: false,
-];
-const _checkAppBuilder: _AssertAppBuilderKeys = [true, true];
-void _checkAppBuilder;
-
-// Compile-time assertion: validated layout JSON matches IAppBuilder
-type _AssertAppBuilderOutput =
-	z.infer<typeof IAppBuilderSchema> extends IAppBuilder ? true : false;
-const _checkAppBuilderOutput: _AssertAppBuilderOutput = true;
-void _checkAppBuilderOutput;
+export type AppBuilderSchemaOutput = z.infer<typeof IAppBuilderSchema>;
 
 export const validateAppBuilder = (value: any) => {
 	return IAppBuilderSchema.safeParse(value);
@@ -1972,15 +1855,9 @@ const IAppBuilderSettingsJsonSchema =
 		]);
 	});
 
-// Compile-time assertion: validated settings JSON matches IAppBuilderSettingsJson
-type _AssertSettingsJson =
-	z.infer<
-		typeof IAppBuilderSettingsJsonSchema
-	> extends IAppBuilderSettingsJson
-		? true
-		: false;
-const _checkSettingsJson: _AssertSettingsJson = true;
-void _checkSettingsJson;
+export type AppBuilderSettingsJsonSchemaOutput = z.infer<
+	typeof IAppBuilderSettingsJsonSchema
+>;
 
 export const validateAppBuilderSettingsJson = (value: any) => {
 	return IAppBuilderSettingsJsonSchema.safeParse(value);
