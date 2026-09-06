@@ -1,5 +1,5 @@
 import {useEffect, useRef} from "react";
-import {ToolsApiFactory} from "../api/toolsApi";
+import {ToolsApiConnectorFactory} from "../api/toolsApiConnector";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import {
 	TOOLS_API_NAME_AGENT,
@@ -7,9 +7,11 @@ import {
 	TOOLS_API_TIMEOUT_MS,
 	type IAgentConfigReply,
 	type IAgentSessionInfo,
-	type IToolsApiConnector,
-	type IToolsApiHandlerMap,
 } from "../config/toolsApi";
+import type {
+	IToolsApiConnector,
+	IToolsApiHandlerMap,
+} from "../config/toolsApiConnector";
 
 /**
  * Props for the App Builder ToolsApi **server** hook.
@@ -81,7 +83,7 @@ export type UseToolsApiConnectorProps = {
  * `useAgentToolRuntime` / `useAgentToolHandlers`.
  *
  * **Lifecycle.**
- * 1. `ToolsApiFactory.getConnectorApi(peer, tools, handlers, "app", "agent", {timeout: 20000})`
+ * 1. `ToolsApiConnectorFactory.getConnectorApi(peer, tools, handlers, "app", "agent", {timeout: 20000})`
  * 2. Connector registers LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
  *    GET_SESSION_INFO **then** starts handshake.
  * 3. `peerIsReady` rejection is swallowed so a missed handshake is not an
@@ -94,7 +96,7 @@ export type UseToolsApiConnectorProps = {
  * in the agent window. Success is "peer can list/execute/getAgentConfig/getSessionInfo". Failure
  * is silent at this layer (no UI).
  *
- * @see ToolsApiFactory.getConnectorApi
+ * @see ToolsApiConnectorFactory.getConnectorApi
  * @see IToolsApi — client in the agent window
  * @see useAgentToolRuntime — shared snapshot + handlers
  * @see useWebMcpTools — parallel transport, not a dependency
@@ -128,7 +130,7 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 
 		void (async () => {
 			try {
-				connector = await ToolsApiFactory.getConnectorApi(
+				connector = await ToolsApiConnectorFactory.getConnectorApi(
 					peerWindow,
 					resolvedToolsRef.current,
 					toolHandlersRef.current,

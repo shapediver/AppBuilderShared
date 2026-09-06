@@ -4,8 +4,8 @@
 
 const getConnectorApi = jest.fn();
 
-jest.mock("../../api/toolsApi", () => ({
-	ToolsApiFactory: {
+jest.mock("../../api/toolsApiConnector", () => ({
+	ToolsApiConnectorFactory: {
 		getConnectorApi: (...args: unknown[]) => getConnectorApi(...args),
 	},
 }));
@@ -13,7 +13,7 @@ jest.mock("../../api/toolsApi", () => ({
 import {renderHook, waitFor} from "@testing-library/react";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../../config/inScopeGenericTools";
 import {resolveToolset} from "../../config/resolveToolset";
-import type {IToolsApiHandlerMap} from "../../config/toolsApi";
+import type {IToolsApiHandlerMap} from "../../config/toolsApiConnector";
 import {useToolsApiConnector} from "../useToolsApiConnector";
 
 function stubHandlers(): IToolsApiHandlerMap {
