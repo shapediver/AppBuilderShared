@@ -106,6 +106,7 @@ describe("useAppBuilderAgentHost", () => {
 			appBuilderData: undefined,
 			appBuilderParseSettled: true,
 			agentWindow: null,
+			sessionInfo: undefined,
 		});
 	});
 
@@ -132,6 +133,7 @@ describe("useAppBuilderAgentHost", () => {
 			appBuilderData: undefined,
 			appBuilderParseSettled: undefined,
 			agentWindow: null,
+			sessionInfo: undefined,
 		});
 		act(() => {
 			jest.runAllTimers();
@@ -141,6 +143,7 @@ describe("useAppBuilderAgentHost", () => {
 			appBuilderData: undefined,
 			appBuilderParseSettled: undefined,
 			agentWindow: opened,
+			sessionInfo: undefined,
 		});
 		expect(showNotification).not.toHaveBeenCalled();
 	});
@@ -168,6 +171,23 @@ describe("useAppBuilderAgentHost", () => {
 		);
 		expect(useAgentToolTransports).toHaveBeenLastCalledWith(
 			expect.objectContaining({agentWindow: null}),
+		);
+	});
+
+	it("forwards sessionInfo to transports", () => {
+		const sessionInfo = {
+			jwtToken: "tok",
+			slug: "my-model",
+			modelStateId: "ms-1",
+		};
+		renderHook(() =>
+			useAppBuilderAgentHost({
+				namespace: "ns",
+				sessionInfo,
+			}),
+		);
+		expect(useAgentToolTransports).toHaveBeenCalledWith(
+			expect.objectContaining({sessionInfo}),
 		);
 	});
 

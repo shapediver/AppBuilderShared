@@ -64,6 +64,7 @@ describe("useAgentToolTransports", () => {
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
+			sessionInfo: undefined,
 		});
 	});
 
@@ -76,6 +77,24 @@ describe("useAgentToolTransports", () => {
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
+			sessionInfo: undefined,
+		});
+	});
+
+	it("passes sessionInfo into ToolsApi alongside agentConfig", () => {
+		const sessionInfo = {
+			jwtToken: "tok",
+			slug: "my-model",
+			modelStateId: "ms-1",
+		};
+		renderHook(() => useAgentToolTransports({sessionInfo}));
+		expect(useToolsApiConnector).toHaveBeenCalledWith({
+			window: null,
+			resolvedTools: runtime.resolvedTools,
+			toolHandlers: runtime.toolHandlers,
+			snapshotComplete: true,
+			agentConfig: runtime.agentConfig,
+			sessionInfo,
 		});
 	});
 });

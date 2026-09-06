@@ -1,6 +1,7 @@
 import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {isWebMcpAvailable} from "@AppBuilderLib/features/webmcp/lib/webmcpAvailability";
 import {useWebMcpTools} from "@AppBuilderLib/features/webmcp/model/useWebMcpTools";
+import type {IAgentSessionInfo} from "../config/toolsApi";
 import {
 	useAgentToolRuntime,
 	type UseAgentToolRuntimeResult,
@@ -13,6 +14,8 @@ export type UseAgentToolTransportsProps = {
 	appBuilderParseSettled?: boolean;
 	/** Peer agent window for ToolsApi. Omit / null → connector is a no-op. */
 	agentWindow?: Window | null;
+	/** Controller session fields for ToolsApi `getSessionInfo`. */
+	sessionInfo?: IAgentSessionInfo;
 };
 
 /**
@@ -27,6 +30,7 @@ export function useAgentToolTransports(
 		appBuilderData,
 		appBuilderParseSettled,
 		agentWindow = null,
+		sessionInfo,
 	} = props;
 
 	const runtime = useAgentToolRuntime({
@@ -49,6 +53,7 @@ export function useAgentToolTransports(
 		toolHandlers: runtime.toolHandlers,
 		snapshotComplete: runtime.snapshotComplete,
 		agentConfig: runtime.agentConfig,
+		sessionInfo,
 	});
 
 	return runtime;

@@ -248,6 +248,13 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		appBuilderData,
 		appBuilderParseSettled,
 		settings,
+		sessionInfo: controllerSession
+			? {
+					jwtToken: controllerSession.jwtToken,
+					slug: controllerSession.slug,
+					modelStateId: controllerSession.modelStateId,
+				}
+			: undefined,
 	});
 
 	const showMarkdown =

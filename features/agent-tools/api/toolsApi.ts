@@ -16,13 +16,16 @@ import {
 	IToolsApiHandlerMap,
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
+	MESSAGE_TYPE_GET_SESSION_INFO,
 	MESSAGE_TYPE_LIST_TOOLS,
 	MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 	TOOLS_API_NAME_AGENT,
 	TOOLS_API_NAME_APP,
 	TOOLS_API_TIMEOUT_MS,
 	agentConfigReplyFrom,
+	agentSessionInfoFrom,
 	type IAgentConfigReply,
+	type IAgentSessionInfo,
 } from "../config/toolsApi";
 import {
 	executeResolvedTool,
@@ -41,9 +44,9 @@ function withDefaultTimeout(
 }
 
 /**
- * Agent-window client. Sends LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG over
- * CrossWindow after handshake `TOOLS_API_HANDSHAKE`. Does not run tool handlers —
- * App Builder does.
+ * Agent-window client. Sends LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
+ * GET_SESSION_INFO over CrossWindow after handshake `TOOLS_API_HANDSHAKE`.
+ * Does not run tool handlers — App Builder does.
  *
  * Construct via {@link ToolsApiFactoryClass.getClientApi} or
  * {@link ToolsApiFactoryClass.getParentClientApi}, not `new ToolsApi` from app code.
@@ -101,16 +104,30 @@ export class ToolsApi implements IToolsApi {
 			this.#timeout,
 		);
 	}
+
+	/**
+	 * Controller session `{ jwtToken, slug, modelStateId }` from App Builder.
+	 * Empty object when those fields are missing — never `null` or a throw.
+	 */
+	async getSessionInfo(): Promise<IAgentSessionInfo> {
+		await this.peerIsReady;
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_GET_SESSION_INFO,
+			undefined,
+			this.#timeout,
+		);
+	}
 }
 
 /**
- * App Builder server. Registers LIST_TOOLS, EXECUTE_TOOL, and GET_AGENT_CONFIG
- * **before** handshake so an eager client cannot race. `cancel()` removes
- * listeners and aborts handshake.
+ * App Builder server. Registers LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG, and
+ * GET_SESSION_INFO **before** handshake so an eager client cannot race.
+ * `cancel()` removes listeners and aborts handshake.
  *
  * LIST_TOOLS → {@link listToolsFromResolved}.
  * EXECUTE_TOOL → {@link parseExecuteToolData} then {@link executeResolvedTool}.
  * GET_AGENT_CONFIG → {@link agentConfigReplyFrom} (`null` if no Agent config).
+ * GET_SESSION_INFO → {@link agentSessionInfoFrom} (`{}` if no session fields).
  * Malformed EXECUTE_TOOL (missing string `name`) → unknown-tool JSON, not a throw.
  *
  * Construct via {@link ToolsApiFactoryClass.getConnectorApi}.
@@ -126,6 +143,7 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		crossWindowApi: ICrossWindowApi,
 		options?: ICrossWindowApiOptions,
 		agentConfig?: IAgentConfigReply | null,
+		sessionInfo?: IAgentSessionInfo | null,
 	) {
 		this.#crossWindowApi = crossWindowApi;
 		this.#listenerCancels.push(
@@ -155,13 +173,18 @@ export class ToolsApiConnector implements IToolsApiConnector {
 				agentConfigReplyFrom(agentConfig),
 			),
 		);
+		this.#listenerCancels.push(
+			crossWindowApi.on(MESSAGE_TYPE_GET_SESSION_INFO, async () =>
+				agentSessionInfoFrom(sessionInfo),
+			),
+		);
 		this.peerIsReady = crossWindowApi.handshake(
 			MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 			options?.timeout,
 		);
 	}
 
-	/** Drop LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG listeners and cancel an in-flight handshake. */
+	/** Drop LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG / GET_SESSION_INFO listeners and cancel an in-flight handshake. */
 	cancel(): void {
 		for (const token of this.#listenerCancels) {
 			token.cancel();
@@ -233,8 +256,9 @@ export class ToolsApiFactoryClass implements IToolsApiFactory {
 	 * Default names: `"app"` → `"agent"`.
 	 *
 	 * `resolvedTools` filters which names exist; `toolHandlers` runs them.
-	 * `agentConfig` is `IAppBuilder.agents[0]` (parameterized). Called from
-	 * {@link useToolsApiConnector} once snapshot + peer window exist.
+	 * `agentConfig` is `IAppBuilder.agents[0]` (parameterized).
+	 * `sessionInfo` is controller session fields for `getSessionInfo`.
+	 * Called from {@link useToolsApiConnector} once snapshot + peer window exist.
 	 */
 	async getConnectorApi(
 		window: Window,
@@ -244,6 +268,7 @@ export class ToolsApiFactoryClass implements IToolsApiFactory {
 		peerName = TOOLS_API_NAME_AGENT,
 		options?: ICrossWindowApiOptions,
 		agentConfig?: IAgentConfigReply | null,
+		sessionInfo?: IAgentSessionInfo | null,
 	): Promise<IToolsApiConnector> {
 		const optionsWithTimeout = withDefaultTimeout(options);
 		const api = await this.crossWindowFactory.getWindowApi(
@@ -258,6 +283,7 @@ export class ToolsApiFactoryClass implements IToolsApiFactory {
 			api,
 			optionsWithTimeout,
 			agentConfig,
+			sessionInfo,
 		);
 	}
 }

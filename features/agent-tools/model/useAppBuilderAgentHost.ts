@@ -17,7 +17,13 @@ import {useAgentToolTransports} from "./useAgentToolTransports";
 export function useAppBuilderAgentHost(
 	props: UseAppBuilderAgentHostProps,
 ): AppBuilderAgentOverlayProps {
-	const {namespace, appBuilderData, appBuilderParseSettled, settings} = props;
+	const {
+		namespace,
+		appBuilderData,
+		appBuilderParseSettled,
+		settings,
+		sessionInfo,
+	} = props;
 
 	const agentUrl = resolveAgentUrl(
 		new URLSearchParams(window.location.search).get(QUERYPARAM_AGENTURL),
@@ -31,6 +37,7 @@ export function useAppBuilderAgentHost(
 		appBuilderData,
 		appBuilderParseSettled,
 		agentWindow,
+		sessionInfo,
 	});
 
 	const onOpenAgent = useCallback(() => {
