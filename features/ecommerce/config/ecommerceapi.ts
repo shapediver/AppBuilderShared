@@ -1,12 +1,12 @@
-import {
+import type {
 	ICrossWindowApiOptions,
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
-import {
+import type {
 	ICreateModelStateData,
 	ICreateModelStateResult,
 } from "@AppBuilderShared/features/model-state/config/createModelState";
-import {
+import type {
 	IImportModelStateData,
 	IImportModelStateResult,
 } from "@AppBuilderShared/features/model-state/config/importModelState";

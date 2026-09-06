@@ -1,4 +1,4 @@
-import {
+import type {
 	IAddItemToCartData,
 	IAddItemToCartReply,
 	IECommerceApi,
@@ -19,7 +19,7 @@ import {
 	IUpdateSharingLinkData,
 	IUpdateSharingLinkReply,
 } from "@AppBuilderLib/features/ecommerce/config/ecommerceapi";
-import {
+import type {
 	ICrossWindowApi,
 	ICrossWindowApiOptions,
 	ICrossWindowFactory,
@@ -27,11 +27,11 @@ import {
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import {CrossWindowApiFactory} from "@AppBuilderLib/shared/lib/crosswindowapi/crosswindowapi";
 import {applyModelStateToUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
-import {
+import type {
 	ICreateModelStateData,
 	ICreateModelStateResult,
 } from "@AppBuilderShared/features/model-state/config/createModelState";
-import {
+import type {
 	IImportModelStateData,
 	IImportModelStateResult,
 } from "@AppBuilderShared/features/model-state/config/importModelState";
@@ -206,12 +206,11 @@ export class ECommerceApi implements IECommerceApi {
 }
 
 export class ECommerceApiConnector implements IECommerceApiConnector {
-	
 	#_peerIsReady: Promise<ICrossWindowPeerInfo>;
 
 	get peerIsReady() {
 		return this.#_peerIsReady;
-	} 
+	}
 
 	/**
 	 * Implementation of the API actions.

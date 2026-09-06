@@ -1,10 +1,10 @@
-import {viewportScreenshotPropsSchema} from "@AppBuilderLib/entities/viewport/config/viewportScreenshotProps.zod";
-import {z} from "@AppBuilderLib/shared/lib/zod";
+import type {viewportScreenshotPropsSchema} from "@AppBuilderLib/entities/viewport/config/viewportScreenshotProps.zod";
+import type {z} from "@AppBuilderLib/shared/lib/zod";
 import type {
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 } from "@shapediver/viewer.shared.types";
-import {createModelStateDataSchema} from "./createModelState.zod";
+import type {createModelStateDataSchema} from "./createModelState.zod";
 
 type ScreenshotPropsFromZod = z.infer<typeof viewportScreenshotPropsSchema>;
 
