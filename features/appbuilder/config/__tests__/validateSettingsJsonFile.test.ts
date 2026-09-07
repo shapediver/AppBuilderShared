@@ -5,12 +5,12 @@ jest.mock("@shapediver/viewer.session", () => ({
 		String: "String",
 	},
 	PARAMETER_VISUALIZATION: {},
-	TAG3D_JUSTIFICATION: {},
 }));
 
 jest.mock("@shapediver/viewer.shared.types", () => ({
 	ATTRIBUTE_VISUALIZATION: {},
 	CAMERA_TYPE: {},
+	TAG3D_JUSTIFICATION: {},
 }));
 
 import * as fs from "node:fs";

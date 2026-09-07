@@ -10,10 +10,10 @@ import {
 	ResStructureType,
 	ResVisualizationType,
 } from "@shapediver/sdk.geometry-api-sdk-v2";
-import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
 import {
 	ATTRIBUTE_VISUALIZATION,
 	CAMERA_TYPE,
+	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.shared.types";
 import {
 	AppBuilderActionType,

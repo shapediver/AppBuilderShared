@@ -21,12 +21,6 @@ function isAllowedExternal(
 	if (specifier === "@shapediver/viewer.shared.types") {
 		return true;
 	}
-	if (specifier === "@shapediver/viewer.session") {
-		return (
-			importedNames.length > 0 &&
-			importedNames.every((name) => name === "TAG3D_JUSTIFICATION")
-		);
-	}
 	if (
 		specifier === "@AppBuilderLib/shared/lib/zod" ||
 		specifier === "@AppBuilderShared/shared/lib/zod"

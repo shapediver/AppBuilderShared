@@ -2,8 +2,6 @@ import {
 	ResExportDefinition,
 	ResParameter,
 } from "@shapediver/sdk.geometry-api-sdk-v2";
-// TAG3D_JUSTIFICATION will be moved to @shapediver/viewer.shared.types.
-import {TAG3D_JUSTIFICATION} from "@shapediver/viewer.session";
 import {
 	Gradient,
 	ICameraOptions,
@@ -11,6 +9,7 @@ import {
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 	SessionCreationDefinition,
+	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.shared.types";
 import {AppBuilderActionType} from "./appBuilderActionType";
 import type {IAppBuilderAgent} from "./appbuilderagent";

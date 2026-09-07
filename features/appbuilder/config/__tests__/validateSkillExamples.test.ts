@@ -5,21 +5,21 @@ jest.mock("@shapediver/viewer.session", () => ({
 		String: "String",
 	},
 	PARAMETER_VISUALIZATION: {},
-	TAG3D_JUSTIFICATION: {},
 }));
 
 jest.mock("@shapediver/viewer.shared.types", () => ({
 	ATTRIBUTE_VISUALIZATION: {},
 	CAMERA_TYPE: {},
+	TAG3D_JUSTIFICATION: {},
 }));
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import {skillExamples} from "./skillExamples.data";
 import {
 	formatAppBuilderZodError,
 	validateAppBuilderSettingsJson,
 } from "../appbuildertypecheck";
+import {skillExamples} from "./skillExamples.data";
 
 const SHOULD_PASS = [
 	"minimal-brand",
