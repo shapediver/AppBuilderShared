@@ -388,6 +388,32 @@ function createGenericParameterExecutorForSession(
 }
 
 /**
+ * Parameter stores which were replaced by a store created for a changed
+ * definition (see syncGeneric). An execution of a replaced store may still
+ * complete afterwards: it must not commit values (e.g. a stale reset value)
+ * to the executor, the replacing store holds the current state.
+ */
+const replacedParameterStores = new WeakSet<IParameterStore>();
+
+/**
+ * Create the commit callback of a generic parameter store, which ignores
+ * commits once the store was replaced (see replacedParameterStores).
+ */
+const createStoreCommitter = (
+	paramId: string,
+	commit: IGenericParameterCommitter | undefined,
+	holder: {store?: IParameterStore},
+) =>
+	commit
+		? (value: unknown) => {
+				// the store commits its initial reset value while being created
+				if (holder.store && replacedParameterStores.has(holder.store))
+					return;
+				commit(paramId, value);
+			}
+		: undefined;
+
+/**
  * Create store for a single parameter.
  */
 function createParameterStore<T>(
@@ -1391,7 +1417,10 @@ export const useShapeDiverStoreParameters =
 													acceptRejectModeSelector(
 														def.definition,
 													);
-												acc[paramId] =
+												const holder: {
+													store?: IParameterStore;
+												} = {};
+												holder.store =
 													createParameterStore(
 														createParameterExecutor(
 															namespace,
@@ -1402,16 +1431,15 @@ export const useShapeDiverStoreParameters =
 																	executor,
 																	-1,
 																),
-															commit
-																? (value) =>
-																		commit(
-																			paramId,
-																			value,
-																		)
-																: undefined,
+															createStoreCommitter(
+																paramId,
+																commit,
+																holder,
+															),
 														),
 														acceptRejectMode,
 													);
+												acc[paramId] = holder.store;
 
 												return acc;
 											}, {} as IParameterStores),
@@ -1486,17 +1514,27 @@ export const useShapeDiverStoreParameters =
 							const acceptRejectMode = acceptRejectModeSelector(
 								def.definition,
 							);
-							parameterStores[paramId] = createParameterStore(
+							// the store created for the changed definition
+							// replaces the existing one
+							const replacedStore =
+								existingParameterStores[paramId];
+							if (replacedStore)
+								replacedParameterStores.add(replacedStore);
+							const holder: {store?: IParameterStore} = {};
+							holder.store = createParameterStore(
 								createParameterExecutor(
 									namespace,
 									def,
 									() => getChanges(namespace, executor, -1),
-									commit
-										? (value) => commit(paramId, value)
-										: undefined,
+									createStoreCommitter(
+										paramId,
+										commit,
+										holder,
+									),
 								),
 								acceptRejectMode,
 							);
+							parameterStores[paramId] = holder.store;
 							if (!def.isValid?.(def.definition.defval)) {
 								Logger.warn(
 									`Generic parameter ${paramId} has an invalid default value: ${def.definition.defval}`,

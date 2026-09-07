@@ -345,6 +345,59 @@ describe("useShapeDiverStoreParameters commit value", () => {
 		expect(commit).toHaveBeenCalledTimes(1);
 	});
 
+	it("does not commit the reset value of a store replaced during its execution", async () => {
+		const commit = jest.fn();
+		let resolveExecution: () => void = () => undefined;
+		const executor = jest.fn(
+			() =>
+				new Promise<undefined>((resolve) => {
+					resolveExecution = () => resolve(undefined);
+				}),
+		);
+		store
+			.getState()
+			.addGeneric(
+				genericNamespace,
+				false,
+				genericDefinition({resetValue: "r"}),
+				executor,
+				undefined,
+				commit,
+			);
+		const parameter = getParameter(genericNamespace, "g1");
+		expect(parameter.getState().state.commitValue).toBe("r");
+
+		// execution of "b" in flight
+		parameter.getState().actions.setUiValue("b");
+		const execution = parameter.getState().actions.execute(true);
+		await Promise.resolve();
+
+		// the response of the execution changes the definition (the reset
+		// value is removed) and defines the value "v": a new store replaces
+		// the existing one
+		store
+			.getState()
+			.syncGeneric(
+				genericNamespace,
+				false,
+				{...genericDefinition(), value: "v"},
+				executor,
+				undefined,
+				commit,
+			);
+		const replacement = getParameter(genericNamespace, "g1");
+		expect(replacement).not.toBe(parameter);
+		expect(replacement.getState().state.commitValue).toBe("v");
+		expect(commit).toHaveBeenLastCalledWith("g1", "v");
+
+		// the execution of the replaced store completes: its stale reset
+		// value must not be committed
+		resolveExecution();
+		await execution;
+		expect(commit).toHaveBeenLastCalledWith("g1", "v");
+		expect(replacement.getState().state.commitValue).toBe("v");
+	});
+
 	it("commits the reset value initially and applies a registered override", () => {
 		const commit = jest.fn();
 		store
