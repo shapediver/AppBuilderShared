@@ -313,21 +313,18 @@ export function useSelection(
 		if (!selectManager) return;
 		if (selectedNodeNames.length === 0) return;
 
-		// The manager and its candidate interaction data are installed by sibling
-		// effects. Restore on the next task so select() cannot race that setup
-		// during an interaction resume or an output replacement.
-		const restoreTimer = window.setTimeout(() => {
-			restoreSelection(
-				outputsPerSession,
-				instances,
-				componentId,
-				selectManager,
-				selectedNodeNames,
-				strictNaming,
-			);
-		}, 0);
-
-		return () => window.clearTimeout(restoreTimer);
+		// The manager is registered with the interaction engine before it is
+		// set as state, and the interaction data is added to the nodes before
+		// availableNodeNames is set. Both are dependencies of this effect, so
+		// the selection can be restored synchronously.
+		restoreSelection(
+			outputsPerSession,
+			instances,
+			componentId,
+			selectManager,
+			selectedNodeNames,
+			strictNaming,
+		);
 	}, [
 		outputsPerSession,
 		instances,
