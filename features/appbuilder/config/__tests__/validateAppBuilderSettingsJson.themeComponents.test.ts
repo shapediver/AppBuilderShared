@@ -17,11 +17,6 @@ jest.mock("@shapediver/viewer.session", () => ({
 	PARAMETER_VISUALIZATION: {
 		SLIDER: "slider",
 	},
-	TAG3D_JUSTIFICATION: {
-		LEFT: "left",
-		CENTER: "center",
-		RIGHT: "right",
-	},
 }));
 
 jest.mock("@shapediver/viewer.shared.types", () => {
@@ -32,6 +27,11 @@ jest.mock("@shapediver/viewer.shared.types", () => {
 		CAMERA_TYPE: {
 			PERSPECTIVE: "perspective",
 			ORTHOGRAPHIC: "orthographic",
+		},
+		TAG3D_JUSTIFICATION: {
+			LEFT: "left",
+			CENTER: "center",
+			RIGHT: "right",
 		},
 		IRectangleTransformParameterPropsJsonSchema: z.strictObject({
 			enableRotation: z.boolean().optional(),

@@ -1,14 +1,17 @@
 import {useEffect, useRef} from "react";
-import {ToolsApiFactory} from "../api/toolsApi";
+import {ToolsApiConnectorFactory} from "../api/toolsApiConnector";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import {
 	TOOLS_API_NAME_AGENT,
 	TOOLS_API_NAME_APP,
 	TOOLS_API_TIMEOUT_MS,
 	type IAgentConfigReply,
-	type IToolsApiConnector,
-	type IToolsApiHandlerMap,
+	type IAgentSessionInfo,
 } from "../config/toolsApi";
+import type {
+	IToolsApiConnector,
+	IToolsApiHandlerMap,
+} from "../config/toolsApiConnector";
 
 /**
  * Props for the App Builder ToolsApi **server** hook.
@@ -40,6 +43,11 @@ export type UseToolsApiConnectorProps = {
 	 * `getAgentConfig` replies `null` (Chat page fallback prompt).
 	 */
 	agentConfig?: IAgentConfigReply | null;
+	/**
+	 * Controller session fields (`jwtToken`, `slug`, `modelStateId`).
+	 * `undefined` / omit → `getSessionInfo` replies `{}`.
+	 */
+	sessionInfo?: IAgentSessionInfo;
 };
 
 /**
@@ -53,7 +61,7 @@ export type UseToolsApiConnectorProps = {
  * App Builder page                         Agent window (Step 3)
  * -----------------                        ---------------------
  * useAgentToolRuntime                      ToolsApiFactory.getClientApi
- *   resolvedTools + toolHandlers + agentConfig
+ *   resolvedTools + toolHandlers + agentConfig + sessionInfo
  *         │                                         │
  *         ├─ useWebMcpTools (same map)              │
  *         └─ useToolsApiConnector  ←── postMessage ─┘
@@ -61,21 +69,23 @@ export type UseToolsApiConnectorProps = {
  *              LIST_TOOLS  → listToolsFromResolved
  *              EXECUTE_TOOL → executeResolvedTool → handlers
  *              GET_AGENT_CONFIG → { id, name, message } | null
+ *              GET_SESSION_INFO → { jwtToken, slug, modelStateId }
  * ```
  *
  * **When it connects.** Effect runs only if `window` is set **and**
  * `snapshotComplete` is true. Otherwise it returns without creating a connector.
  *
- * **Why refs.** `resolvedTools` and `toolHandlers` are stored in refs and read
- * when `getConnectorApi` resolves. The effect depends only on
- * `[peerWindow, snapshotComplete]` so a new handler identity does not tear down
- * the handshake. The constructor of `ToolsApiConnector` still captures the
+ * **Why refs.** `resolvedTools`, `toolHandlers`, `agentConfig`, and `sessionInfo`
+ * are stored in refs and read when `getConnectorApi` resolves. The effect depends
+ * only on `[peerWindow, snapshotComplete]` so a new handler identity does not tear
+ * down the handshake. The constructor of `ToolsApiConnector` still captures the
  * arrays/maps passed at connect time; keep those identities stable from
  * `useAgentToolRuntime` / `useAgentToolHandlers`.
  *
  * **Lifecycle.**
- * 1. `ToolsApiFactory.getConnectorApi(peer, tools, handlers, "app", "agent", {timeout: 20000})`
- * 2. Connector registers LIST_TOOLS / EXECUTE_TOOL **then** starts handshake.
+ * 1. `ToolsApiConnectorFactory.getConnectorApi(peer, tools, handlers, "app", "agent", {timeout: 20000})`
+ * 2. Connector registers LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
+ *    GET_SESSION_INFO **then** starts handshake.
  * 3. `peerIsReady` rejection is swallowed so a missed handshake is not an
  *    unhandled rejection. Transport throw → empty catch (no fake toolset).
  * 4. Cleanup sets `effectAbandoned` and `cancel()`s listeners + handshake.
@@ -83,10 +93,10 @@ export type UseToolsApiConnectorProps = {
  *    immediately.
  *
  * **This hook returns void.** Callers do not get `IToolsApi`; that object lives
- * in the agent window. Success is "peer can list/execute/getAgentConfig". Failure
+ * in the agent window. Success is "peer can list/execute/getAgentConfig/getSessionInfo". Failure
  * is silent at this layer (no UI).
  *
- * @see ToolsApiFactory.getConnectorApi
+ * @see ToolsApiConnectorFactory.getConnectorApi
  * @see IToolsApi — client in the agent window
  * @see useAgentToolRuntime — shared snapshot + handlers
  * @see useWebMcpTools — parallel transport, not a dependency
@@ -98,6 +108,7 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 		toolHandlers,
 		snapshotComplete,
 		agentConfig,
+		sessionInfo,
 	} = props;
 
 	const resolvedToolsRef = useRef(resolvedTools);
@@ -106,6 +117,8 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 	toolHandlersRef.current = toolHandlers;
 	const agentConfigRef = useRef(agentConfig);
 	agentConfigRef.current = agentConfig;
+	const sessionInfoRef = useRef(sessionInfo);
+	sessionInfoRef.current = sessionInfo;
 
 	useEffect(() => {
 		if (!peerWindow || !snapshotComplete) {
@@ -117,7 +130,7 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 
 		void (async () => {
 			try {
-				connector = await ToolsApiFactory.getConnectorApi(
+				connector = await ToolsApiConnectorFactory.getConnectorApi(
 					peerWindow,
 					resolvedToolsRef.current,
 					toolHandlersRef.current,
@@ -125,6 +138,7 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 					TOOLS_API_NAME_AGENT,
 					{timeout: TOOLS_API_TIMEOUT_MS},
 					agentConfigRef.current,
+					sessionInfoRef.current,
 				);
 				void connector.peerIsReady.catch(() => {});
 				if (effectAbandoned) {

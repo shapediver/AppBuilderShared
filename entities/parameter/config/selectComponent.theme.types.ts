@@ -1,5 +1,5 @@
 import {filterableDatabaseSettingsSchema} from "@AppBuilderLib/entities/parameter/lib/filterableDatabase/filterableDatabaseSettingsSchema";
-import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
+import {JsonValueSchema} from "@AppBuilderLib/features/appbuilder/config/jsonValue";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantineCardPropsSchema} from "@AppBuilderLib/shared/mantine-props/card.zod";

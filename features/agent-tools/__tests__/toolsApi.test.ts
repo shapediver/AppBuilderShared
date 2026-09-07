@@ -7,21 +7,22 @@ import type {
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import type {IAppBuilderAgent} from "../../appbuilder/config/appbuilderagent";
+import {ToolsApi, ToolsApiFactoryClass} from "../api/toolsApi";
 import {
-	ToolsApi,
 	ToolsApiConnector,
-	ToolsApiFactoryClass,
-} from "../api/toolsApi";
+	ToolsApiConnectorFactoryClass,
+} from "../api/toolsApiConnector";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../config/inScopeGenericTools";
 import {resolveToolset} from "../config/resolveToolset";
-import type {IToolsApiHandlerMap} from "../config/toolsApi";
 import {
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
+	MESSAGE_TYPE_GET_SESSION_INFO,
 	MESSAGE_TYPE_LIST_TOOLS,
 	TOOLS_API_NAME_AGENT,
 	TOOLS_API_NAME_APP,
 } from "../config/toolsApi";
+import type {IToolsApiHandlerMap} from "../config/toolsApiConnector";
 import {
 	executeResolvedTool,
 	unknownToolResult,
@@ -58,7 +59,9 @@ function stubHandlers(
 describe("listToolsFromResolved", () => {
 	it("lists eight default in-scope tools with description and inputSchema", () => {
 		const {tools} = listToolsFromResolved(resolveToolset(undefined));
-		expect(tools.map((t) => t.name)).toEqual([...IN_SCOPE_GENERIC_TOOL_NAMES]);
+		expect(tools.map((t) => t.name)).toEqual([
+			...IN_SCOPE_GENERIC_TOOL_NAMES,
+		]);
 		for (const tool of tools) {
 			expect(typeof tool.description).toBe("string");
 			expect(tool.description.length).toBeGreaterThan(0);
@@ -145,10 +148,7 @@ describe("executeResolvedTool", () => {
 function createMockCrossWindowApi(options?: {
 	handshake?: () => Promise<ICrossWindowPeerInfo>;
 }): ICrossWindowApi & {cancelHandshake: jest.Mock} {
-	const handlers = new Map<
-		string,
-		(data: unknown) => Promise<unknown>
-	>();
+	const handlers = new Map<string, (data: unknown) => Promise<unknown>>();
 	const peer: ICrossWindowPeerInfo = {origin: "test", name: "agent"};
 	return {
 		name: "app",
@@ -188,7 +188,9 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		const client = new ToolsApi(mock);
 		await Promise.all([connector.peerIsReady, client.peerIsReady]);
 		const {tools} = await client.listTools();
-		expect(tools.map((t) => t.name)).toEqual([...IN_SCOPE_GENERIC_TOOL_NAMES]);
+		expect(tools.map((t) => t.name)).toEqual([
+			...IN_SCOPE_GENERIC_TOOL_NAMES,
+		]);
 		connector.cancel();
 	});
 
@@ -267,16 +269,93 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		connector.cancel();
 	});
 
-	it("handshake then listTools, execute, and getAgentConfig all work", async () => {
+	it("getSessionInfo returns jwtToken, slug, and modelStateId", async () => {
+		const mock = createMockCrossWindowApi();
+		const sessionInfo = {
+			jwtToken: "tok",
+			slug: "my-model",
+			modelStateId: "ms-1",
+		};
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+			undefined,
+			undefined,
+			sessionInfo,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getSessionInfo()).resolves.toEqual(sessionInfo);
+		connector.cancel();
+	});
+
+	it("getSessionInfo omits empty and missing fields", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+			undefined,
+			undefined,
+			{jwtToken: "tok", slug: "", modelStateId: undefined},
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getSessionInfo()).resolves.toEqual({
+			jwtToken: "tok",
+		});
+		connector.cancel();
+	});
+
+	it("getSessionInfo returns {} when session info is missing, does not throw", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getSessionInfo()).resolves.toEqual({});
+		connector.cancel();
+	});
+
+	it("getSessionInfo is independent of Agent config", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+			undefined,
+			undefined,
+			{slug: "my-model"},
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getAgentConfig()).resolves.toBeNull();
+		await expect(client.getSessionInfo()).resolves.toEqual({
+			slug: "my-model",
+		});
+		connector.cancel();
+	});
+
+	it("handshake then listTools, execute, getAgentConfig, and getSessionInfo all work", async () => {
 		const mock = createMockCrossWindowApi();
 		const agent = screenshotOnlyAgent();
 		const get_screenshot = jest.fn(async () => ({success: true}));
+		const sessionInfo = {
+			jwtToken: "tok",
+			slug: "my-model",
+			modelStateId: "ms-1",
+		};
 		const connector = new ToolsApiConnector(
 			resolveToolset(agent),
 			stubHandlers({get_screenshot}),
 			mock,
 			undefined,
 			agent,
+			sessionInfo,
 		);
 		const client = new ToolsApi(mock);
 		await Promise.all([connector.peerIsReady, client.peerIsReady]);
@@ -290,6 +369,7 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 			name: "A",
 			message: "hi",
 		});
+		await expect(client.getSessionInfo()).resolves.toEqual(sessionInfo);
 		connector.cancel();
 	});
 
@@ -377,7 +457,7 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		expect(mock.cancelHandshake).toHaveBeenCalledTimes(1);
 	});
 
-	it("cancel unregisters LIST_TOOLS, EXECUTE_TOOL, and GET_AGENT_CONFIG", async () => {
+	it("cancel unregisters LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG, and GET_SESSION_INFO", async () => {
 		const mock = createMockCrossWindowApi();
 		const connector = new ToolsApiConnector(
 			resolveToolset(undefined),
@@ -396,13 +476,18 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		await expect(client.getAgentConfig()).rejects.toThrow(
 			`No handler for ${MESSAGE_TYPE_GET_AGENT_CONFIG}`,
 		);
+		await expect(client.getSessionInfo()).rejects.toThrow(
+			`No handler for ${MESSAGE_TYPE_GET_SESSION_INFO}`,
+		);
 	});
 
 	it("cancel before handshake resolves unregisters both listeners", async () => {
 		let resolveHandshake!: (peer: ICrossWindowPeerInfo) => void;
-		const pendingHandshake = new Promise<ICrossWindowPeerInfo>((resolve) => {
-			resolveHandshake = resolve;
-		});
+		const pendingHandshake = new Promise<ICrossWindowPeerInfo>(
+			(resolve) => {
+				resolveHandshake = resolve;
+			},
+		);
 		const mock = createMockCrossWindowApi({
 			handshake: () => pendingHandshake,
 		});
@@ -426,6 +511,9 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		await expect(
 			mock.send(MESSAGE_TYPE_GET_AGENT_CONFIG, undefined),
 		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_GET_AGENT_CONFIG}`);
+		await expect(
+			mock.send(MESSAGE_TYPE_GET_SESSION_INFO, undefined),
+		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_GET_SESSION_INFO}`);
 	});
 });
 
@@ -462,21 +550,6 @@ describe("ToolsApiFactoryClass defaults", () => {
 		);
 	});
 
-	it("getConnectorApi calls getWindowApi with app/agent and default timeout", async () => {
-		const {factory, getWindowApi} = createMockCrossWindowFactory();
-		await new ToolsApiFactoryClass(factory).getConnectorApi(
-			peerWindow,
-			resolveToolset(undefined),
-			stubHandlers(),
-		);
-		expect(getWindowApi).toHaveBeenCalledWith(
-			peerWindow,
-			TOOLS_API_NAME_APP,
-			TOOLS_API_NAME_AGENT,
-			expect.objectContaining({timeout: 20000}),
-		);
-	});
-
 	it("timeout override wins over default for getClientApi", async () => {
 		const {factory, getWindowApi} = createMockCrossWindowFactory();
 		await new ToolsApiFactoryClass(factory).getClientApi(
@@ -506,10 +579,29 @@ describe("ToolsApiFactoryClass defaults", () => {
 			expect.objectContaining({timeout: 5}),
 		);
 	});
+});
+
+describe("ToolsApiConnectorFactoryClass defaults", () => {
+	const peerWindow = {} as Window;
+
+	it("getConnectorApi calls getWindowApi with app/agent and default timeout", async () => {
+		const {factory, getWindowApi} = createMockCrossWindowFactory();
+		await new ToolsApiConnectorFactoryClass(factory).getConnectorApi(
+			peerWindow,
+			resolveToolset(undefined),
+			stubHandlers(),
+		);
+		expect(getWindowApi).toHaveBeenCalledWith(
+			peerWindow,
+			TOOLS_API_NAME_APP,
+			TOOLS_API_NAME_AGENT,
+			expect.objectContaining({timeout: 20000}),
+		);
+	});
 
 	it("timeout override wins over default for getConnectorApi", async () => {
 		const {factory, getWindowApi} = createMockCrossWindowFactory();
-		await new ToolsApiFactoryClass(factory).getConnectorApi(
+		await new ToolsApiConnectorFactoryClass(factory).getConnectorApi(
 			peerWindow,
 			resolveToolset(undefined),
 			stubHandlers(),
@@ -529,7 +621,7 @@ describe("ToolsApiFactoryClass defaults", () => {
 		const mock = createMockCrossWindowApi();
 		const {factory} = createMockCrossWindowFactory(mock);
 		const agent = screenshotOnlyAgent();
-		const connector = await new ToolsApiFactoryClass(
+		const connector = await new ToolsApiConnectorFactoryClass(
 			factory,
 		).getConnectorApi(
 			peerWindow,
@@ -547,6 +639,32 @@ describe("ToolsApiFactoryClass defaults", () => {
 			name: "A",
 			message: "hi",
 		});
+		connector.cancel();
+	});
+
+	it("getConnectorApi forwards sessionInfo to getSessionInfo", async () => {
+		const mock = createMockCrossWindowApi();
+		const {factory} = createMockCrossWindowFactory(mock);
+		const sessionInfo = {
+			jwtToken: "tok",
+			slug: "my-model",
+			modelStateId: "ms-1",
+		};
+		const connector = await new ToolsApiConnectorFactoryClass(
+			factory,
+		).getConnectorApi(
+			peerWindow,
+			resolveToolset(undefined),
+			stubHandlers(),
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			sessionInfo,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getSessionInfo()).resolves.toEqual(sessionInfo);
 		connector.cancel();
 	});
 });

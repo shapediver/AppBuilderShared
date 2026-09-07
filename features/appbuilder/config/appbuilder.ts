@@ -1,19 +1,15 @@
-import {IShapeDiverExportDefinition} from "@AppBuilderLib/entities/export/config/export";
-import {ParameterStringInputMode} from "@AppBuilderLib/entities/parameter/config/ParameterStringComponent.theme.types";
-import {IShapeDiverParameterDefinition} from "@AppBuilderLib/entities/parameter/config/parameter";
-import {SessionCreateDto} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
-import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
-import {IAppBuilderWidgetPropsTable} from "@AppBuilderLib/widgets/appbuilder/config/appbuildertable";
-import {MantineColor, SliderProps} from "@mantine/core";
 import {
-	ISelectionParameterProps,
-	TAG3D_JUSTIFICATION,
-} from "@shapediver/viewer.session";
+	ResExportDefinition,
+	ResParameter,
+} from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	Gradient,
 	ICameraOptions,
+	ISelectionParameterProps,
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
+	SessionCreationDefinition,
+	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.shared.types";
 import {AppBuilderActionType} from "./appBuilderActionType";
 import type {IAppBuilderAgent} from "./appbuilderagent";
@@ -23,11 +19,45 @@ import {
 	IAppBuilderWidgetPropsLineChart,
 	IAppBuilderWidgetPropsRoundChart,
 } from "./appbuildercharts";
+import type {IAppBuilderColor} from "./appbuilderColor";
 
 export {AppBuilderActionType};
+export type {IAppBuilderColor};
+
+/** How a string text input commits values to the session. */
+export enum ParameterStringInputMode {
+	Debounce = "debounce",
+	Validate = "validate",
+}
+
+/**
+ * Inline Iconify icon object (SVG body plus optional viewBox / transform fields).
+ * Stand-in for Iconify `IconifyIcon` so this contract does not import `@iconify/*`.
+ */
+export interface IAppBuilderIconifyIcon {
+	/** Icon body: `<path d="..." />`, required. */
+	body: string;
+	left?: number;
+	top?: number;
+	width?: number;
+	height?: number;
+	rotate?: number;
+	hFlip?: boolean;
+	vFlip?: boolean;
+}
+
+/** Icon name (e.g. `"tabler:photo"`) or inline Iconify icon object. */
+export type IAppBuilderIcon = string | IAppBuilderIconifyIcon;
+
+/** JSON-facing slider mark. `label` is a string, not a React node. */
+export interface IAppBuilderSliderMark {
+	value: number;
+	label?: string;
+	hidden?: boolean;
+}
 
 /** Type used for parameter definitions */
-export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
+export type IAppBuilderParameterDefinition = ResParameter & {
 	/**
 	 * The value to set for the generic parameter. Use this to update
 	 * the parameter's current value (i.e. its state) without changing the
@@ -43,10 +73,20 @@ export type IAppBuilderParameterDefinition = IShapeDiverParameterDefinition & {
 	 * Optional step value for numeric parameters.
 	 */
 	step?: number;
+
+	settings?: {
+		/**
+		 * When true, render a reset button on the parameter control that
+		 * restores the parameter's default value. Defaults to false.
+		 * Color parameters always show a reset button regardless of this flag.
+		 * JSON: `overrides.settings.resettable`.
+		 */
+		resettable?: boolean;
+	};
 };
 
 /** Type used for export definitions */
-export type IAppBuilderExportDefinition = IShapeDiverExportDefinition;
+export type IAppBuilderExportDefinition = ResExportDefinition;
 
 /** Types of selection components. */
 export type SelectComponentType =
@@ -71,8 +111,8 @@ export interface ISelectComponentItemDataType {
 	description?: string;
 	/** URL to image. Can be a data URL including a base 64 encoded image. */
 	imageUrl?: string;
-	/** Optional color, used for color selection components. */
-	color?: MantineColor;
+	/** Optional color, used for color selection components. Mantine theme name, `color.shade`, hex, or other CSS color. */
+	color?: IAppBuilderColor;
 	/** Optionally hide the item. */
 	hidden?: boolean;
 	/**
@@ -145,7 +185,7 @@ export interface IFilterableDatabaseSettings {
 		imageUrl?: number;
 		/**
 		 * Optional index of the column to use for "color".
-		 * The color must be given in a format compatible with MantineColor.
+		 * The color must be given in a format compatible with Mantine (theme name, `color.shade`, hex, or other CSS color).
 		 */
 		color?: number;
 		/**
@@ -252,10 +292,13 @@ export interface IStringParameterSettings {
 }
 
 /** Settings for numeric parameters (type "Float", "Int", "Even", "Odd") */
-export interface INumberParameterSettings extends Pick<
-	SliderProps,
-	"marks" | "restrictToMarks" | "step"
-> {
+export interface INumberParameterSettings {
+	/** Marks displayed on the slider track. */
+	marks?: IAppBuilderSliderMark[];
+	/** When true, selection is restricted to the given marks. */
+	restrictToMarks?: boolean;
+	/** Step increment for the slider. */
+	step?: number;
 	/** Override the minimum value of the slider (can only increase the parameter's min). */
 	min?: number;
 	/** Override the maximum value of the slider (can only decrease the parameter's max). */
@@ -434,7 +477,7 @@ export interface IAppBuilderActionPropsCommon {
 	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. Set to empty string to show only an icon. */
 	label?: string;
 	/** Optional icon (of the button etc). */
-	icon?: IconType;
+	icon?: IAppBuilderIcon;
 	/** Optional tooltip. */
 	tooltip?: string;
 }
@@ -907,7 +950,7 @@ export type IAppBuilderActionPropsSound = {
 	/** Label to show when the sound is playing. */
 	labelPlaying?: string;
 	/** Icon to show when the sound is playing. */
-	iconPlaying?: IconType;
+	iconPlaying?: IAppBuilderIcon;
 };
 
 /** Properties of a legacy "sound" action. */
@@ -1215,7 +1258,7 @@ export interface IAppBuilderWidgetPropsAccordionUi {
 		/** Label shown for the accordion control of the item. */
 		name: string;
 		/** Optional icon of the accordion control of the item. */
-		icon?: IconType;
+		icon?: IAppBuilderIcon;
 		/** Optional tooltip for the accordion control of the item. */
 		tooltip?: string;
 		/** Widgets displayed in the accordion item. */
@@ -1243,11 +1286,64 @@ export interface IAppBuilderWidgetPropsStackUi {
 	/** Label shown for the stack control. */
 	name: string;
 	/** Optional icon of the stack control. */
-	icon?: IconType;
+	icon?: IAppBuilderIcon;
 	/** Optional tooltip of the stack control. */
 	tooltip?: string;
 	/** Widgets displayed in the stack. */
 	widgets: IAppBuilderWidget[];
+}
+
+/** Definition of a single column in the table widget. */
+export interface IAppBuilderWidgetPropsTableColumn {
+	/** Column accessor key — must match a field name in the records. */
+	accessor: string;
+	/** Optional display title for the column header. Defaults to the accessor. */
+	title?: string;
+	/** Allow sorting by this column. */
+	sortable?: boolean;
+	/** Show a search/filter input for this column. */
+	searchable?: boolean;
+	/** Optional fixed column width (number = px, string = CSS value). */
+	width?: number | string;
+}
+
+/** Properties of a table widget. */
+export interface IAppBuilderWidgetPropsTable {
+	/** Optional caption displayed below the table. */
+	caption?: string;
+	/** Column definitions. */
+	columns: IAppBuilderWidgetPropsTableColumn[];
+	/** Table records (rows). Each record must be an object whose keys match column accessors. */
+	records: Record<string, unknown>[];
+	/** Highlight row on hover. Default: false. */
+	highlightOnHover?: boolean;
+	/** Stick the header row to the top when scrolling. Default: false. */
+	stickyHeader?: boolean;
+	/** Alternate row background color. Default: false. */
+	striped?: boolean;
+	/** Show borders between columns. Default: false. */
+	withColumnBorders?: boolean;
+	/** Show borders between rows. Default: true. */
+	withRowBorders?: boolean;
+	/** Show an outer border around the table. Default: false. */
+	withTableBorder?: boolean;
+	/**
+	 * Fixed height in pixels. Constrains the scroll container height.
+	 * When omitted the table grows to fit its content.
+	 */
+	height?: number;
+	/**
+	 * Estimated row height in pixels used by the virtualizer.
+	 * Tune this to match the actual rendered row height for accurate scrollbar behaviour.
+	 * Default: 34.
+	 */
+	estimateRowHeight?: number;
+	/**
+	 * Number of extra rows rendered outside the visible area on each side.
+	 * Higher values reduce blank-row flicker during fast scrolling at the cost of more DOM nodes.
+	 * Default: 10.
+	 */
+	overscan?: number;
 }
 
 /**
@@ -1293,7 +1389,7 @@ export interface IAppBuilderTab {
 	/** Name of the tab. */
 	name: string;
 	/** Optional icon of the tab. */
-	icon?: IconType;
+	icon?: IAppBuilderIcon;
 	/** Optional tooltip. */
 	tooltip?: string;
 	/** Widgets displayed in the tab. */
@@ -1326,7 +1422,7 @@ export type AppBuilderAnchorContainerProperties = {
 	/** Optional boolean to allow pointer events on the container. (default: true) */
 	allowPointerEvents?: boolean;
 	/** Optional icon to be displayed to show the container. */
-	previewIcon?: IconType;
+	previewIcon?: IAppBuilderIcon;
 	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
 	useCloseButton?: boolean;
 	/** Optional width of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
@@ -1347,7 +1443,7 @@ export type AppBuilderAnchorContainerProperties = {
 		 * either a different or a new preview icon to show
 		 * if undefined, the original previewIcon logic will be used
 		 */
-		previewIcon?: IconType;
+		previewIcon?: IAppBuilderIcon;
 		/** fallback container to be used ("left", "right", "top", "bottom") */
 		container?: AppBuilderContainerNameType;
 	};
@@ -1391,7 +1487,7 @@ export interface IAppBuilderToolbarItemBase<
 	/** Optional stable id for runtime APIs, accessibility and diagnostics. */
 	id?: string;
 	/** Toolbar-specific presentation override. */
-	icon?: IconType;
+	icon?: IAppBuilderIcon;
 	label?: string;
 	tooltip?: string;
 	/** Optional item order for runtime-merged groups. */
@@ -2165,7 +2261,9 @@ export function isScreenshotSource(
 /**
  * Settings for a session used by the AppBuilder.
  */
-export interface IAppBuilderSettingsSession extends SessionCreateDto {
+export interface IAppBuilderSettingsSession extends SessionCreationDefinition {
+	/** Unique session id. Required for App Builder sessions. */
+	id: string;
 	/**
 	 * Either slug and platformUrl, or ticket and modelViewUrl must be set.
 	 */

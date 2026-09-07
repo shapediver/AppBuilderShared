@@ -4,7 +4,7 @@ React hooks and components shared by [ShapeDiver App Builder](https://github.com
 
 ## <a name="getting-started">🚀 Getting Started</a>
 
-Set `@AppBuilderShared` alias for the package directory
+Set `@AppBuilderShared` and `@AppBuilderLib` aliases for the package directory. Both must resolve to the same root: internals use `@AppBuilderLib/` (feature-sliced design), while some modules still import `@AppBuilderShared/`.
 
 e.g. {librarypath} = `src/shared`
 
@@ -16,6 +16,7 @@ e.g. {librarypath} = `src/shared`
   resolve: {
     alias: {
       "@AppBuilderShared": path.resolve(__dirname, "./{librarypath}"),
+      "@AppBuilderLib": path.resolve(__dirname, "./{librarypath}"),
     },
   },
 }
@@ -30,7 +31,8 @@ e.g. {librarypath} = `src/shared`
 	"compilerOptions": {
 		"baseUrl": ".",
 		"paths": {
-			"@AppBuilderShared/*": ["./{librarypath}/*"]
+			"@AppBuilderShared/*": ["./{librarypath}/*"],
+			"@AppBuilderLib/*": ["./{librarypath}/*"]
 		}
 	}
 }

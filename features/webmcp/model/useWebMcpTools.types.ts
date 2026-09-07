@@ -1,5 +1,5 @@
 import type {ResolvedGenericTool} from "@AppBuilderLib/features/agent-tools/config/resolveToolset";
-import type {IToolsApiHandlerMap} from "@AppBuilderLib/features/agent-tools/config/toolsApi";
+import type {IToolsApiHandlerMap} from "@AppBuilderLib/features/agent-tools/config/toolsApiConnector";
 
 export interface UseWebMcpToolsProps {
 	namespace?: string;

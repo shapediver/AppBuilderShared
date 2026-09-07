@@ -1,7 +1,7 @@
 import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
-import {ISelectionParameterProps} from "@shapediver/viewer.session";
+import type {ISelectionParameterProps} from "@shapediver/viewer.shared.types";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 
 const selectedNodeNamesCache: {[key: string]: string[]} = {};

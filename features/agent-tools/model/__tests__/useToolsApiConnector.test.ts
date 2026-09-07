@@ -4,8 +4,8 @@
 
 const getConnectorApi = jest.fn();
 
-jest.mock("../../api/toolsApi", () => ({
-	ToolsApiFactory: {
+jest.mock("../../api/toolsApiConnector", () => ({
+	ToolsApiConnectorFactory: {
 		getConnectorApi: (...args: unknown[]) => getConnectorApi(...args),
 	},
 }));
@@ -13,7 +13,7 @@ jest.mock("../../api/toolsApi", () => ({
 import {renderHook, waitFor} from "@testing-library/react";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../../config/inScopeGenericTools";
 import {resolveToolset} from "../../config/resolveToolset";
-import type {IToolsApiHandlerMap} from "../../config/toolsApi";
+import type {IToolsApiHandlerMap} from "../../config/toolsApiConnector";
 import {useToolsApiConnector} from "../useToolsApiConnector";
 
 function stubHandlers(): IToolsApiHandlerMap {
@@ -84,7 +84,7 @@ describe("useToolsApiConnector", () => {
 		expect(getConnectorApi.mock.calls[0][2]).toBe(toolHandlers);
 	});
 
-	it("passes parameterized Agent config as getConnectorApi last argument", async () => {
+	it("passes parameterized Agent config as getConnectorApi 7th argument", async () => {
 		const agent = {
 			id: "a",
 			name: "A",
@@ -102,6 +102,26 @@ describe("useToolsApiConnector", () => {
 		);
 		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
 		expect(getConnectorApi.mock.calls[0][6]).toBe(agent);
+	});
+
+	it("passes sessionInfo as getConnectorApi 8th argument", async () => {
+		const sessionInfo = {
+			jwtToken: "tok",
+			slug: "my-model",
+			modelStateId: "ms-1",
+		};
+		const peer = {} as Window;
+		renderHook(() =>
+			useToolsApiConnector({
+				window: peer,
+				resolvedTools: resolveToolset(undefined),
+				toolHandlers: stubHandlers(),
+				snapshotComplete: true,
+				sessionInfo,
+			}),
+		);
+		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
+		expect(getConnectorApi.mock.calls[0][7]).toBe(sessionInfo);
 	});
 
 	it("cancels on unmount while peerIsReady is still pending", async () => {

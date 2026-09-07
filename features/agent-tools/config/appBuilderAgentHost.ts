@@ -2,6 +2,7 @@ import type {
 	IAppBuilder,
 	IAppBuilderSettingsJson,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {IAgentSessionInfo} from "./toolsApi";
 
 /** Inputs for {@link useAppBuilderAgentHost} on an App Builder page. */
 export type UseAppBuilderAgentHostProps = {
@@ -9,6 +10,8 @@ export type UseAppBuilderAgentHostProps = {
 	appBuilderData?: IAppBuilder;
 	appBuilderParseSettled?: boolean;
 	settings?: Pick<IAppBuilderSettingsJson, "settings">;
+	/** Controller session fields for ToolsApi `getSessionInfo`. */
+	sessionInfo?: IAgentSessionInfo;
 };
 
 /**

@@ -8,6 +8,7 @@ import {
 function stripLegacyCommonProps<T extends IAppBuilderActionPropsCommon>(
 	props: T,
 ): Omit<T, keyof IAppBuilderActionPropsCommon> {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const {id, icon, label, tooltip, ...rest} = props;
 	return rest;
 }
@@ -15,6 +16,7 @@ function stripLegacyCommonProps<T extends IAppBuilderActionPropsCommon>(
 function stripLegacyDisplayProps<
 	T extends Pick<IAppBuilderActionPropsCommon, "icon" | "label" | "tooltip">,
 >(props: T): Omit<T, "icon" | "label" | "tooltip"> {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const {icon, label, tooltip, ...rest} = props;
 	return rest;
 }
@@ -40,12 +42,14 @@ export function preprocessActionDefinitionInput(value: unknown): unknown {
 		return value;
 	}
 	if (value.type === AppBuilderActionType.Camera) {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const {icon, label, tooltip, ...rest} = value.props;
 		return {
 			type: value.type,
 			props: rest,
 		};
 	}
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const {id, icon, label, tooltip, ...rest} = value.props;
 	return {
 		type: value.type,

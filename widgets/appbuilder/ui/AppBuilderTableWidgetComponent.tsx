@@ -1,8 +1,8 @@
-import type {MantineBoxProps} from "@AppBuilderLib/shared/mantine-props/box";
 import {
 	IAppBuilderWidgetPropsTable,
 	IAppBuilderWidgetPropsTableColumn,
-} from "@AppBuilderLib/widgets/appbuilder/config/appbuildertable";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {MantineBoxProps} from "@AppBuilderLib/shared/mantine-props/box";
 import {
 	Box,
 	MantineThemeComponent,

@@ -1,5 +1,5 @@
 import type {ResolvedGenericTool} from "../config/resolveToolset";
-import type {IToolsApiHandlerMap} from "../config/toolsApi";
+import type {IToolsApiHandlerMap} from "../config/toolsApiConnector";
 
 export function unknownToolResult(name: string): {
 	success: false;
