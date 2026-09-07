@@ -1,6 +1,6 @@
-import {ResGetModelState} from "@shapediver/sdk.geometry-api-sdk-v2";
-import type {z} from "zod";
-import {
+import type {z} from "@AppBuilderLib/shared/lib/zod";
+import type {ResGetModelState} from "@shapediver/sdk.geometry-api-sdk-v2";
+import type {
 	importModelStateDataSchema,
 	nameMessageSchema,
 } from "./importModelState.zod";

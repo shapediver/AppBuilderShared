@@ -1,4 +1,5 @@
 import type {IAppBuilder, IAppBuilderSettingsJson} from "./appbuilder";
+import "./appbuilderContractCompat";
 import {
 	type AppBuilderSettingsValidationEnv,
 	isAppBuilderValidationEnabled,

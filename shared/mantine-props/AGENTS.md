@@ -25,7 +25,7 @@ validateAppBuilderSettingsJson  (appbuildertypecheck.ts)
 | `features/appbuilder/config/themeComponentDefaultPropsRegistry.ts` | Maps theme component keys → Zod schema                                            |
 | `features/appbuilder/config/validateThemeComponentsRecord.ts`      | Deep validation of nested `containerThemeOverrides`                               |
 | `features/appbuilder/config/appbuildertypecheck.ts`                | Top-level settings schema + `superRefine`                                         |
-| `shared/lib/jsonValue.ts`                                          | `JsonValue` / `JsonValueSchema` — FSD home for opaque JSON (not in mantine-props) |
+| `features/appbuilder/config/jsonValue.ts`                          | `JsonValue` / `JsonValueSchema` — opaque JSON (not in mantine-props) |
 | `pages/config/*Container.types.ts`, widget `*.theme.types.ts`      | Re-export or extend `Mantine*Props` / compose schemas                             |
 | `shared/mantine-props/assert-mantine-subset.test-d.ts`             | Compile-time `MantinePropsSubset` vs `@mantine/core`                              |
 
@@ -155,7 +155,7 @@ The inline preprocessor expands these for ts-to-zod. Copy-pasting unions causes 
 
 Use `/** @strict */` on the props interface → `z.strictObject()`.
 
-For deep `styles`, prefer generated `mantineStylesApiSchema` from `MantineStylesApi` mirror. Fall back to `JsonValueSchema` from `@AppBuilderLib/shared/lib/jsonValue` only if ts-to-zod cannot express the shape without `z.any()`.
+For deep `styles`, prefer generated `mantineStylesApiSchema` from `MantineStylesApi` mirror. Fall back to `JsonValueSchema` from `@AppBuilderLib/features/appbuilder/config/jsonValue` only if ts-to-zod cannot express the shape without `z.any()`.
 
 ### 5. Shared Zod schemas — single canonical export
 

@@ -21,10 +21,10 @@ import {
 } from "@mantine/core";
 import {IInteractionEffect} from "@shapediver/viewer.features.interaction";
 import {
-	ISelectionParameterProps,
 	SelectionParameterValue,
 	validateSelectionParameterSettings,
 } from "@shapediver/viewer.session";
+import type {ISelectionParameterProps} from "@shapediver/viewer.shared.types";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
 	defaultPropsParameterWrapper,

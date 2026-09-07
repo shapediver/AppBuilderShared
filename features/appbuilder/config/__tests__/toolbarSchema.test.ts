@@ -15,11 +15,6 @@ jest.mock("@shapediver/viewer.session", () => ({
 	PARAMETER_VISUALIZATION: {
 		SLIDER: "slider",
 	},
-	TAG3D_JUSTIFICATION: {
-		LEFT: "left",
-		CENTER: "center",
-		RIGHT: "right",
-	},
 }));
 
 jest.mock("@shapediver/viewer.shared.types", () => ({
@@ -29,6 +24,11 @@ jest.mock("@shapediver/viewer.shared.types", () => ({
 	CAMERA_TYPE: {
 		PERSPECTIVE: "perspective",
 		ORTHOGRAPHIC: "orthographic",
+	},
+	TAG3D_JUSTIFICATION: {
+		LEFT: "left",
+		CENTER: "center",
+		RIGHT: "right",
 	},
 }));
 
@@ -75,14 +75,20 @@ describe("toolbar container schema", () => {
 						[
 							makeSemanticAction({
 								type: "setContainerVisibility",
-								props: {container: {name: "left"}, mode: "close"},
+								props: {
+									container: {name: "left"},
+									mode: "close",
+								},
 							}),
 							makeSemanticAction({
 								type: "setContainerVisibility",
 								props: {
 									container: {
 										name: "anchor2d",
-										props: {id: "details", location: [0, 0]},
+										props: {
+											id: "details",
+											location: [0, 0],
+										},
 									},
 									mode: "open",
 								},

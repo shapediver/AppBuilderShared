@@ -7,14 +7,13 @@ import type {
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import type {IAppBuilderAgent} from "../../appbuilder/config/appbuilderagent";
+import {ToolsApi, ToolsApiFactoryClass} from "../api/toolsApi";
 import {
-	ToolsApi,
 	ToolsApiConnector,
-	ToolsApiFactoryClass,
-} from "../api/toolsApi";
+	ToolsApiConnectorFactoryClass,
+} from "../api/toolsApiConnector";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../config/inScopeGenericTools";
 import {resolveToolset} from "../config/resolveToolset";
-import type {IToolsApiHandlerMap} from "../config/toolsApi";
 import {
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
@@ -23,6 +22,7 @@ import {
 	TOOLS_API_NAME_AGENT,
 	TOOLS_API_NAME_APP,
 } from "../config/toolsApi";
+import type {IToolsApiHandlerMap} from "../config/toolsApiConnector";
 import {
 	executeResolvedTool,
 	unknownToolResult,
@@ -550,21 +550,6 @@ describe("ToolsApiFactoryClass defaults", () => {
 		);
 	});
 
-	it("getConnectorApi calls getWindowApi with app/agent and default timeout", async () => {
-		const {factory, getWindowApi} = createMockCrossWindowFactory();
-		await new ToolsApiFactoryClass(factory).getConnectorApi(
-			peerWindow,
-			resolveToolset(undefined),
-			stubHandlers(),
-		);
-		expect(getWindowApi).toHaveBeenCalledWith(
-			peerWindow,
-			TOOLS_API_NAME_APP,
-			TOOLS_API_NAME_AGENT,
-			expect.objectContaining({timeout: 20000}),
-		);
-	});
-
 	it("timeout override wins over default for getClientApi", async () => {
 		const {factory, getWindowApi} = createMockCrossWindowFactory();
 		await new ToolsApiFactoryClass(factory).getClientApi(
@@ -594,10 +579,29 @@ describe("ToolsApiFactoryClass defaults", () => {
 			expect.objectContaining({timeout: 5}),
 		);
 	});
+});
+
+describe("ToolsApiConnectorFactoryClass defaults", () => {
+	const peerWindow = {} as Window;
+
+	it("getConnectorApi calls getWindowApi with app/agent and default timeout", async () => {
+		const {factory, getWindowApi} = createMockCrossWindowFactory();
+		await new ToolsApiConnectorFactoryClass(factory).getConnectorApi(
+			peerWindow,
+			resolveToolset(undefined),
+			stubHandlers(),
+		);
+		expect(getWindowApi).toHaveBeenCalledWith(
+			peerWindow,
+			TOOLS_API_NAME_APP,
+			TOOLS_API_NAME_AGENT,
+			expect.objectContaining({timeout: 20000}),
+		);
+	});
 
 	it("timeout override wins over default for getConnectorApi", async () => {
 		const {factory, getWindowApi} = createMockCrossWindowFactory();
-		await new ToolsApiFactoryClass(factory).getConnectorApi(
+		await new ToolsApiConnectorFactoryClass(factory).getConnectorApi(
 			peerWindow,
 			resolveToolset(undefined),
 			stubHandlers(),
@@ -617,7 +621,7 @@ describe("ToolsApiFactoryClass defaults", () => {
 		const mock = createMockCrossWindowApi();
 		const {factory} = createMockCrossWindowFactory(mock);
 		const agent = screenshotOnlyAgent();
-		const connector = await new ToolsApiFactoryClass(
+		const connector = await new ToolsApiConnectorFactoryClass(
 			factory,
 		).getConnectorApi(
 			peerWindow,
@@ -646,7 +650,7 @@ describe("ToolsApiFactoryClass defaults", () => {
 			slug: "my-model",
 			modelStateId: "ms-1",
 		};
-		const connector = await new ToolsApiFactoryClass(
+		const connector = await new ToolsApiConnectorFactoryClass(
 			factory,
 		).getConnectorApi(
 			peerWindow,

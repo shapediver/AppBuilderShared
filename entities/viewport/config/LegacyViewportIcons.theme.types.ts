@@ -1,4 +1,4 @@
-import {JsonValueSchema} from "@AppBuilderLib/shared/lib/jsonValue";
+import {JsonValueSchema} from "@AppBuilderLib/features/appbuilder/config/jsonValue";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineDividerPropsSchema} from "@AppBuilderLib/shared/mantine-props/divider.zod";
 import {mantinePaperPropsSchema} from "@AppBuilderLib/shared/mantine-props/paper.zod";

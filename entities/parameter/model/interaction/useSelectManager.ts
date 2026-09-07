@@ -7,10 +7,10 @@ import {
 } from "@shapediver/viewer.features.interaction";
 import {
 	GeometryData,
-	ISelectionParameterProps,
 	ITreeNode,
 	MaterialStandardData,
 } from "@shapediver/viewer.session";
+import type {ISelectionParameterProps} from "@shapediver/viewer.shared.types";
 import {IPulseEffectDefinition} from "@shapediver/viewer.viewport";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useInteractionEngine} from "./useInteractionEngine";

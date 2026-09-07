@@ -1,8 +1,8 @@
 import type {ResolvedGenericTool} from "@AppBuilderLib/features/agent-tools/config/resolveToolset";
 import {schemaFor} from "@AppBuilderLib/features/agent-tools/config/schemaFor";
 import {AGENT_TOOL_META} from "@AppBuilderLib/features/agent-tools/config/toolMeta";
+import type {IToolsApiHandlerMap} from "@AppBuilderLib/features/agent-tools/config/toolsApiConnector";
 import {zodToJsonSchema} from "@AppBuilderLib/features/agent-tools/lib/zodToJsonSchema";
-import type {IToolsApiHandlerMap} from "@AppBuilderLib/features/agent-tools/config/toolsApi";
 import type {ModelContext} from "../lib/webmcpAvailability";
 
 /**

@@ -29,10 +29,10 @@ import {
 	useProps,
 } from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
-import {
+import type {
 	ISelectionParameterProps,
 	TAG3D_JUSTIFICATION,
-} from "@shapediver/viewer.session";
+} from "@shapediver/viewer.shared.types";
 import {
 	default as React,
 	useCallback,

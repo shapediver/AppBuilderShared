@@ -20,7 +20,7 @@ import {
 	type InScopeGenericToolName,
 } from "../config/inScopeGenericTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
-import type {IToolsApiHandlerMap} from "../config/toolsApi";
+import type {IToolsApiHandlerMap} from "../config/toolsApiConnector";
 import type {AgentToolsDeps} from "./agentToolsDeps";
 import {buildAgentToolsDeps} from "./buildAgentToolsDeps";
 import {handleGetMetric} from "./handlers/getMetric";
