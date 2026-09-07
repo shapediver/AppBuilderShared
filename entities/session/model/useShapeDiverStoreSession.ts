@@ -45,6 +45,10 @@ const setLatestSessionNode = (sessionId: string, node?: ITreeNode) => {
 const getLatestSessionNode = (sessionId: string) =>
 	latestSessionNodes[sessionId];
 
+// The nodes replaced by the latest session update. session.node can still refer
+// to the replaced node for a while after the update callback (it lags behind).
+const replacedSessionNodes: {[sessionId: string]: ITreeNode | undefined} = {};
+
 /**
  * Promote session.node to the callback cache only after its reference changes.
  * This preserves a newer callback node during a remount and releases it once
@@ -54,6 +58,9 @@ const syncLatestSessionNode = (sessionId: string, node?: ITreeNode) => {
 	if (observedSessionNodes[sessionId] === node) return;
 
 	observedSessionNodes[sessionId] = node;
+	// session.node still refers to the node replaced by the latest update:
+	// keep the newer node seen by the update callback.
+	if (node && node === replacedSessionNodes[sessionId]) return;
 	setLatestSessionNode(sessionId, node);
 };
 
@@ -88,6 +95,23 @@ const setLatestOutputNode = (
 const getLatestOutputNode = (sessionId: string, outputId: string) =>
 	latestOutputNodes[sessionId]?.[outputId];
 
+// The nodes replaced by the latest output update. output.node can still refer
+// to the replaced node for a while after the update callback (it lags behind).
+const replacedOutputNodes: {
+	[sessionId: string]: {
+		[outputId: string]: ITreeNode | undefined;
+	};
+} = {};
+
+const setReplacedOutputNode = (
+	sessionId: string,
+	outputId: string,
+	node?: ITreeNode,
+) => {
+	if (!replacedOutputNodes[sessionId]) replacedOutputNodes[sessionId] = {};
+	replacedOutputNodes[sessionId][outputId] = node;
+};
+
 /**
  * Promote output.node to the callback cache only after its reference changes.
  * This avoids overwriting a newer callback node while the Viewer is remounting,
@@ -104,6 +128,9 @@ const syncLatestOutputNode = (
 	if (observedNodes[outputId] === node) return;
 
 	observedNodes[outputId] = node;
+	// output.node still refers to the node replaced by the latest update:
+	// keep the newer node seen by the update callback.
+	if (node && node === replacedOutputNodes[sessionId]?.[outputId]) return;
 	setLatestOutputNode(sessionId, outputId, node);
 };
 
@@ -245,8 +272,10 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 
 				delete latestSessionNodes[sessionId];
 				delete observedSessionNodes[sessionId];
+				delete replacedSessionNodes[sessionId];
 				delete latestOutputNodes[sessionId];
 				delete observedOutputNodes[sessionId];
+				delete replacedOutputNodes[sessionId];
 
 				return set(
 					(state) => {
@@ -512,6 +541,7 @@ const assignSessionUpdateCallback = (
 		} else if (oldNode) {
 			setLatestSessionNode(sessionApi.id, undefined);
 		}
+		replacedSessionNodes[sessionApi.id] = oldNode;
 
 		await Promise.all(
 			Object.values(callbacks).map((cb) => cb(newNode, oldNode)),
@@ -539,6 +569,7 @@ const assignOutputUpdateCallback = (
 		} else if (oldNode) {
 			setLatestOutputNode(sessionApi.id, outputApi.id, undefined);
 		}
+		setReplacedOutputNode(sessionApi.id, outputApi.id, oldNode);
 
 		await Promise.all(
 			Object.values(outputUpdateCallbacks).map((cb) =>
