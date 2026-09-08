@@ -405,6 +405,45 @@ describe("useShapeDiverStoreParameters commit value", () => {
 		expect(replacement.getState().state.commitValue).toBe("v");
 	});
 
+	it("marks the committed values of all parameters as executed after an execution", async () => {
+		const commit = jest.fn();
+		store.getState().addGeneric(
+			genericNamespace,
+			false,
+			[
+				genericDefinition({resetValue: "r"}),
+				{
+					definition: {
+						id: "g2",
+						name: "g2",
+						type: "String",
+						defval: "x",
+					},
+				} as unknown as IGenericParameterDefinition,
+			],
+			async () => {},
+			undefined,
+			commit,
+		);
+		const g1 = getParameter(genericNamespace, "g1");
+		const g2 = getParameter(genericNamespace, "g2");
+		// g1 is committed to its reset value without an execution of its own
+		expect(g1.getState().state.commitValue).toBe("r");
+		expect(g1.getState().state.execValue).toBe("a");
+
+		// an execution of g2 sends the committed values of all parameters
+		g2.getState().actions.setUiValue("y");
+		await g2.getState().actions.execute(true);
+		expect(g2.getState().state.execValue).toBe("y");
+		expect(g1.getState().state.execValue).toBe("r");
+		expect(g1.getState().state.commitValue).toBe("r");
+
+		// a reset value registered afterwards applies: g1 is in its reset state
+		g1.getState().actions.setResetValue("r2");
+		expect(g1.getState().state.commitValue).toBe("r2");
+		expect(commit).toHaveBeenLastCalledWith("g1", "r2");
+	});
+
 	it("commits the reset value initially and applies a registered override", () => {
 		const commit = jest.fn();
 		store

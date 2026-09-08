@@ -1143,6 +1143,28 @@ export const useShapeDiverStoreParameters =
 								);
 								// wait for execution
 								await promise;
+								// The committed values of all parameters of the namespace were
+								// part of the execution (session parameter values, custom
+								// parameter values): they are the executed values now. This
+								// matters for parameters committed without an execution of
+								// their own, e.g. by a reset value.
+								if (store) {
+									Object.values(store).forEach((paramStore) =>
+										paramStore.setState((_state) =>
+											_state.state.execValue ===
+											_state.state.commitValue
+												? _state
+												: {
+														state: {
+															..._state.state,
+															execValue:
+																_state.state
+																	.commitValue,
+														},
+													},
+										),
+									);
+								}
 								// if there are no changes left, resolve and remove the changes
 								if (allChangesAccepted) {
 									resolve(amendedValues);
