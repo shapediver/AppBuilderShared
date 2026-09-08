@@ -1,27 +1,17 @@
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useShapeDiverStoreInstances} from "@AppBuilderShared/features/appbuilder/model/useShapeDiverStoreInstances";
 import {
-	checkNodeNameMatch,
-	getInstanceNodeData,
-	getNodeName,
 	InteractionData,
 	MultiSelectManager,
 	SelectManager,
 } from "@shapediver/viewer.features.interaction";
-import {
-	IOutputApi,
-	ITreeNode,
-	OutputApiData,
-	SessionApiData,
-} from "@shapediver/viewer.session";
+import {ITreeNode} from "@shapediver/viewer.session";
 import type {ISelectionParameterProps} from "@shapediver/viewer.shared.types";
 import {vec3} from "gl-matrix";
 import React, {useCallback, useEffect, useId, useMemo} from "react";
-import {useShallow} from "zustand/react/shallow";
 import {useCreateNameFilterPattern} from "./useCreateNameFilterPattern";
 import {useHoverManager} from "./useHoverManager";
 import {
 	IUseNodeInteractionDataProps,
+	IUseNodeInteractionDataResult,
 	useNodesInteractionData,
 } from "./useNodeInteractionData";
 import {useSelectManager} from "./useSelectManager";
@@ -213,23 +203,6 @@ export function useSelection(
 		setSingleCandidateSuppressed(activate && candidateCount === 1);
 	}, [activate, availableNodeNames, suppressSingleSelectionEffect]);
 
-	const outputsPerSession = useShapeDiverStoreSession(
-		useShallow((state) => {
-			const outputs: {
-				[key: string]: {
-					[key: string]: IOutputApi;
-				};
-			} = {};
-			for (const sessionId in state.sessions)
-				if (state.sessions[sessionId])
-					outputs[sessionId] = state.sessions[sessionId].outputs;
-
-			return outputs;
-		}),
-	);
-
-	const instances = useShapeDiverStoreInstances((state) => state.instances);
-
 	// when the available node names change, we need to update the selected node names
 	// to ensure that the selected nodes are still available
 	useEffect(() => {
@@ -299,9 +272,11 @@ export function useSelection(
 
 	// in case selection becomes active or the output node changes, restore the selection status.
 	// availableNodeNames is included so this effect also fires after a computation update:
-	// the viewer replaces the output node in-place (outputsPerSession reference stays the same),
-	// but createOutputUpdateCallback updates availableNodeNames after adding InteractionData to
-	// the new nodes, so we re-apply the selection effect at that point.
+	// createOutputUpdateCallback updates availableNodeNames after adding InteractionData to
+	// the new nodes, so we re-apply the selection effect at that point. The selection is
+	// restored on the output nodes of these candidates: the output node of the session API
+	// (output.node) lags behind the output update callback, restoring on it would miss the
+	// new nodes.
 	// selectedNodeNames is included so this effect also fires when Effect 1 above maps a stale
 	// selected name to a fallback available name (e.g. after a geometry change where the exact
 	// child path no longer exists in the new output tree).
@@ -313,26 +288,13 @@ export function useSelection(
 		if (!selectManager) return;
 		if (selectedNodeNames.length === 0) return;
 
-		// The manager and its candidate interaction data are installed by sibling
-		// effects. Restore on the next task so select() cannot race that setup
-		// during an interaction resume or an output replacement.
-		// NOTE: restoring synchronously results in no selection highlight at all
-		// (verified with the modular cabinets model), the exact cause is open.
-		const restoreTimer = window.setTimeout(() => {
-			restoreSelection(
-				outputsPerSession,
-				instances,
-				componentId,
-				selectManager,
-				selectedNodeNames,
-				strictNaming,
-			);
-		}, 0);
-
-		return () => window.clearTimeout(restoreTimer);
+		restoreSelection(
+			availableNodeNames,
+			componentId,
+			selectManager,
+			selectedNodeNames,
+		);
 	}, [
-		outputsPerSession,
-		instances,
 		componentId,
 		selectManager,
 		availableNodeNames,
@@ -388,18 +350,10 @@ export function useSelection(
 					manager.deselectAll();
 				return;
 			}
-			restoreSelection(
-				outputsPerSession,
-				instances,
-				componentId,
-				manager,
-				names,
-				strictNaming,
-			);
+			restoreSelection(availableNodeNames, componentId, manager, names);
 		},
 		[
-			outputsPerSession,
-			instances,
+			availableNodeNames,
 			componentId,
 			setSelectedNodeNames,
 			selectManager,
@@ -427,181 +381,47 @@ export function useSelection(
 }
 
 /**
- * Restore the selection status for the given outputs.
+ * Restore the selection status: the candidate nodes (the nodes the interaction
+ * data was added to, see useNodesInteractionData) whose names are selected are
+ * selected, all others are deselected.
  *
- * @param outputsPerSession
+ * The candidates are used instead of traversing the output nodes of the session
+ * API: output.node lags behind the output update callback which adds the
+ * interaction data, traversing it would miss the new nodes after an update.
+ *
+ * @param availableNodeNames The candidate nodes per output/instance.
+ * @param componentId
  * @param selectManager
  * @param selectedNodeNames
  */
 const restoreSelection = (
-	outputsPerSession: {[key: string]: {[key: string]: IOutputApi}},
-	instances: {[key: string]: ITreeNode},
+	availableNodeNames: {[key: string]: IUseNodeInteractionDataResult},
 	componentId: string,
 	selectManager?: SelectManager | MultiSelectManager,
 	selectedNodeNames: string[] = [],
-	strictNaming: boolean = true,
 ) => {
-	for (const sessionId in outputsPerSession) {
-		const outputs = outputsPerSession[sessionId];
-		for (const outputId in outputs) {
-			const outputNode = outputs[outputId].node;
-			if (outputNode && selectManager)
-				restoreNodeSelection(
-					outputNode,
-					componentId,
-					selectManager,
-					selectedNodeNames,
-					strictNaming,
-				);
-		}
-	}
+	if (!selectManager) return;
 
-	// also check instances for selection restoration
-	for (const instanceId in instances) {
-		const instanceNode = instances[instanceId];
-		if (instanceNode && selectManager)
-			restoreNodeSelection(
-				instanceNode,
-				componentId,
-				selectManager,
-				selectedNodeNames,
-				strictNaming,
-				true,
-			);
-	}
-};
+	// deselect the nodes selected by this manager
+	if (selectManager instanceof SelectManager) selectManager.deselect();
+	else selectManager.deselectAll();
 
-/**
- * Restore selection status for the given node.
- *
- * @param node
- * @param mgr
- * @param selectedNodeNames
- * @returns
- */
-const restoreNodeSelection = (
-	node: ITreeNode,
-	componentId: string,
-	mgr: SelectManager | MultiSelectManager,
-	selectedNodeNames: string[],
-	strictNaming: boolean,
-	isInstance: boolean = false,
-) => {
-	// The identifier used to match the first part of selected node names.
-	// For regular output nodes this is the output name; for instance nodes it is the instance ID.
-	let nameIdentifier: string;
-
-	// the node must have an OutputApiData object
-	let outputApi = node.data.find(
-		(data) => data instanceof OutputApiData,
-	)?.api;
-	if (!outputApi) {
-		// try to find it in the session api
-		const sessionApi = node.parent?.data.find(
-			(data) => data instanceof SessionApiData,
-		)?.api;
-		if (!sessionApi) return;
-
-		outputApi = sessionApi.outputs[node.name];
-		if (outputApi && !isInstance) {
-			nameIdentifier = outputApi.name;
-		} else {
-			// Instance node: SessionApiData is in the parent but the node is not a session
-			// output. Use getNodeName (matching the logic in PatternUtils.getInstanceNodeData)
-			// as the identifier so it aligns with how selected node names are built.
-			nameIdentifier = getNodeName(node, strictNaming) ?? node.name;
-			isInstance = true;
-		}
-	} else {
-		nameIdentifier = outputApi.name;
-	}
-
-	// deselect all nodes restricted to the component id
-	node.traverse((n) => {
-		const interactionData = n.data.filter(
-			(d) => d instanceof InteractionData,
-		) as InteractionData[];
-		interactionData.forEach((d) => {
-			if (
-				d instanceof InteractionData &&
-				d.restrictedManagers.includes(componentId)
-			)
-				mgr.deselect(n);
-		});
-	});
-
-	// select child nodes based on selectedNodeNames
-	selectedNodeNames.forEach((name) => {
-		const parts = name.split(".");
-		if (nameIdentifier !== parts[0]) return;
-
-		if (parts.length === 1) {
-			// special case if only the output/instance name is given
-			const interactionData = node.data.filter(
-				(d) => d instanceof InteractionData,
-			) as InteractionData[];
-			const hasInteractionData = interactionData.some(
-				(d) =>
-					d instanceof InteractionData &&
-					d.restrictedManagers.includes(componentId),
-			);
-			if (hasInteractionData)
-				mgr.select({distance: 1, point: vec3.create(), node: node});
-		} else if (isInstance) {
-			// For instance nodes: use getInstanceNodeData (same function
-			// used during the initial SELECT_ON event) so the path is
-			// built from the instance root, not from the scene root.
-			node.traverse((n) => {
-				const instanceData = getInstanceNodeData(n, strictNaming);
-				if (!instanceData) return;
-				const fullName =
-					instanceData.outputId + "." + instanceData.nodeName;
-				if (fullName !== name) return;
-				const interactionData = n.data.filter(
-					(d) => d instanceof InteractionData,
-				) as InteractionData[];
-				if (
-					interactionData.some(
-						(d) =>
-							d instanceof InteractionData &&
-							d.restrictedManagers.includes(componentId),
-					)
-				)
-					mgr.select({
-						distance: 1,
-						point: vec3.create(),
-						node: n,
-					});
+	const candidates = Object.values(availableNodeNames).flat();
+	for (const name of selectedNodeNames) {
+		const candidate = candidates.find((c) => c.name === name);
+		if (!candidate) continue;
+		const hasInteractionData = candidate.node.data.some(
+			(data) =>
+				data instanceof InteractionData &&
+				data.restrictedManagers.includes(componentId),
+		);
+		if (hasInteractionData)
+			selectManager.select({
+				distance: 1,
+				point: vec3.create(),
+				node: candidate.node,
 			});
-		} else {
-			// For output nodes: pass parts without the output name prefix (parts.slice(1)).
-			// For instance nodes: pass the full name (parts.join(".") === name) because
-			// the instance name is part of the node's path (it has an originalName set),
-			// matching the behaviour of PatternUtils.getNodesByName.
-			const matchName = isInstance ? name : parts.slice(1).join(".");
-
-			// if the node name matches the pattern, select the node
-			node.traverse((n) => {
-				if (checkNodeNameMatch(n, matchName, strictNaming)) {
-					const interactionData = n.data.filter(
-						(d) => d instanceof InteractionData,
-					) as InteractionData[];
-					if (
-						interactionData.some(
-							(d) =>
-								d instanceof InteractionData &&
-								d.restrictedManagers.includes(componentId),
-						)
-					)
-						mgr.select({
-							distance: 1,
-							point: vec3.create(),
-							node: n,
-						});
-				}
-			});
-		}
-	});
+	}
 };
 
 // #endregion Functions (1)
