@@ -517,8 +517,12 @@ export default function ParameterSelectionComponent(
 			checked: effectiveSelectionActive,
 			// A suspended persistent selection cannot safely resume until the
 			// exclusive viewport interaction releases it. A blocked selection,
-			// however, can be manually retried.
-			readOnly: alwaysActive && effectiveSelectionActive,
+			// however, can be manually retried, unless it is blocked because there
+			// is nothing to select: a retry cannot succeed then, and a toggleable
+			// row would only make the selection menu appear.
+			readOnly:
+				alwaysActive &&
+				(effectiveSelectionActive || candidateNodes.length === 0),
 			// Kept on the parameter's own checkbox row. Future parameter settings
 			// can omit this action to hide Clear for that parameter. Offered only
 			// while something is selected, there is nothing to clear otherwise.
