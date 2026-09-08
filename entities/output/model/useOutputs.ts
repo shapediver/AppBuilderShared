@@ -11,25 +11,29 @@ import {IShapeDiverOutput} from "../config/output";
  * @returns Array of outputs in the same order as input
  */
 export function useOutputs(props: PropsOutput[]) {
+	// Select the output state objects only. Their references are stable
+	// until the respective output store changes, which allows the shallow
+	// comparison to succeed. Creating wrapper objects inside the selector
+	// would defeat the shallow comparison and return a new array on
+	// every render, which causes effect loops in consumers.
 	const outputs = useShapeDiverStoreParameters(
 		useShallow((state) => {
-			return props.map(({outputId, namespace, overrides}) => {
+			return props.map(({outputId, namespace}) => {
 				if (!state) return;
 				const _output = state.getOutput(namespace, outputId);
 				if (!_output) return;
-				const output = _output.getState() as IShapeDiverOutput;
-				return {output, overrides: overrides};
+				return _output.getState() as IShapeDiverOutput;
 			});
 		}),
 	);
 
 	return useMemo(() => {
-		return outputs.map((o) => {
-			if (!o) return;
+		return outputs.map((output, index) => {
+			if (!output) return;
 			return {
-				...o.output,
-				definition: {...o.output.definition, ...o.overrides},
+				...output,
+				definition: {...output.definition, ...props[index]?.overrides},
 			};
 		});
-	}, [outputs]);
+	}, [outputs, props]);
 }

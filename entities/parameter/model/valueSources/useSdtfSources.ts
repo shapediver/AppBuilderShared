@@ -10,6 +10,7 @@ import {
 	ResStypeParameter,
 } from "@shapediver/sdk.geometry-api-sdk-v2";
 import {useEffect, useMemo, useState} from "react";
+import {useShallow} from "zustand/react/shallow";
 
 export function useSdtfSources(props: {
 	namespace: string;
@@ -28,11 +29,13 @@ export function useSdtfSources(props: {
 } {
 	const {namespace, sources} = props;
 
+	// use a shallow selector, otherwise every update of the process manager
+	// store re-renders this hook and re-runs the effect below
 	const {createProcessManager, addProcess} = useShapeDiverStoreProcessManager(
-		(state) => ({
+		useShallow((state) => ({
 			createProcessManager: state.createProcessManager,
 			addProcess: state.addProcess,
-		}),
+		})),
 	);
 
 	const [sdtfValues, setSdtfValues] = useState<
@@ -84,8 +87,9 @@ export function useSdtfSources(props: {
 	useEffect(() => {
 		if (!outputResults || outputResults.length === 0) return;
 
-		// Create a process manager for sdTF resolution
-		const processManagerId = createProcessManager(namespace);
+		// Process manager for sdTF resolution, created lazily
+		// only if there is at least one upload to wait for
+		let processManagerId: string | undefined;
 
 		const promises = [];
 
@@ -154,6 +158,8 @@ export function useSdtfSources(props: {
 								return undefined;
 							});
 						// Register this sdTF upload as a process
+						if (processManagerId === undefined)
+							processManagerId = createProcessManager(namespace);
 						addProcess(processManagerId, {
 							id: `sdtf-${name}-${i}`,
 							name: `sdTF: ${name}`,
