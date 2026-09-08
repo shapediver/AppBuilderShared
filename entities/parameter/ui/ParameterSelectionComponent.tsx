@@ -456,9 +456,11 @@ export default function ParameterSelectionComponent(
 	 * Callback function to clear the selection.
 	 */
 	const clearSelection = useCallback(() => {
-		// Clearing is intentionally UI-only. Optional and single selections can
-		// otherwise immediately auto-confirm the empty draft.
-		skipNextAutomaticConfirmationRef.current = true;
+		// Clearing is UI-only for selections with confirmation controls: optional
+		// and single selections would otherwise immediately auto-confirm the
+		// empty draft. An always-active selection has no confirmation controls
+		// and commits every change immediately, including the clear.
+		skipNextAutomaticConfirmationRef.current = !alwaysActive;
 		clearedSinceLastConfirmationRef.current = true;
 		// This draft must be visible to other interaction parameters before the
 		// selection manager emits its clear event. Otherwise an always-active
@@ -466,6 +468,7 @@ export default function ParameterSelectionComponent(
 		markPendingSelection(selectionOwnerKey, `${namespace}-${viewportId}`);
 		setSelectedNodeNamesAndRestoreSelection([]);
 	}, [
+		alwaysActive,
 		namespace,
 		selectionOwnerKey,
 		setSelectedNodeNamesAndRestoreSelection,
@@ -504,9 +507,13 @@ export default function ParameterSelectionComponent(
 		(minimumSelection === 1 && maximumSelection === 1) ||
 		(minimumSelection === 0 && maximumSelection === 1)
 	);
+	// Confirm/Cancel belong to the selection which is being edited: an inactive
+	// selection without a draft has nothing to confirm, its controls would only
+	// appear as disabled buttons next to the other selection parameters.
 	const showConfirmationControls =
 		hasOtherPendingSelection ||
-		(!acceptImmediately &&
+		((effectiveSelectionActive || hasPendingSelection) &&
+			!acceptImmediately &&
 			(hasAutomaticSelectionControls ||
 				(hasPendingSelection && minimumSelection === 0)));
 

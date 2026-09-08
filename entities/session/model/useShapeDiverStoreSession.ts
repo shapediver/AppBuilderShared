@@ -58,9 +58,12 @@ const syncLatestSessionNode = (sessionId: string, node?: ITreeNode) => {
 	if (observedSessionNodes[sessionId] === node) return;
 
 	observedSessionNodes[sessionId] = node;
+	// session.node can be unavailable while the viewer processes a response:
+	// keep the node seen by the update callback.
+	if (!node) return;
 	// session.node still refers to the node replaced by the latest update:
 	// keep the newer node seen by the update callback.
-	if (node && node === replacedSessionNodes[sessionId]) return;
+	if (node === replacedSessionNodes[sessionId]) return;
 	setLatestSessionNode(sessionId, node);
 };
 
@@ -128,9 +131,13 @@ const syncLatestOutputNode = (
 	if (observedNodes[outputId] === node) return;
 
 	observedNodes[outputId] = node;
+	// output.node can be unavailable while the viewer processes a response
+	// (also for outputs whose content did not change): keep the node seen by
+	// the update callback, an output removal clears it via the callback.
+	if (!node) return;
 	// output.node still refers to the node replaced by the latest update:
 	// keep the newer node seen by the update callback.
-	if (node && node === replacedOutputNodes[sessionId]?.[outputId]) return;
+	if (node === replacedOutputNodes[sessionId]?.[outputId]) return;
 	setLatestOutputNode(sessionId, outputId, node);
 };
 
