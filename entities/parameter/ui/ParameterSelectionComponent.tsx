@@ -254,21 +254,27 @@ export default function ParameterSelectionComponent(
 		!committedNodeNames.every(
 			(name, index) => name === selectedNodeNames[index],
 		);
+	// Fixed and optional single selections (and complete selections) are
+	// accepted automatically, unless another selection parameter has an
+	// outstanding pending selection (see below).
+	const acceptsAutomatically =
+		selectedNodeNames.length === maximumSelection ||
+		((minimumSelection === maximumSelection ||
+			(minimumSelection === 0 && maximumSelection === 1)) &&
+			acceptable);
+	// Only a draft which needs a confirmation is registered as pending: a draft
+	// which is accepted automatically is committed right away, it must not
+	// switch the other selection parameters to confirmation mode meanwhile.
 	const hasOtherPendingSelection = usePendingSelectionRegistry(
 		selectionOwnerKey,
 		`${namespace}-${viewportId}`,
-		hasPendingSelection,
+		hasPendingSelection && !acceptsAutomatically,
 	);
 	// Keep the established automatic behavior unless another selection parameter
 	// has an outstanding pending selection. A committed batch is not pending
 	// interaction state, so it must restore the normal single-selection UI.
 	const hasStoredSelection = hasOtherPendingSelection;
-	const acceptImmediately =
-		!hasStoredSelection &&
-		(selectedNodeNames.length === maximumSelection ||
-			((minimumSelection === maximumSelection ||
-				(minimumSelection === 0 && maximumSelection === 1)) &&
-				acceptable));
+	const acceptImmediately = !hasStoredSelection && acceptsAutomatically;
 	useEffect(() => {
 		const parsed = parseNames(state.uiValue);
 
