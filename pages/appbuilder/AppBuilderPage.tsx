@@ -3,6 +3,7 @@ import {useUnsavedChangesProtection} from "@AppBuilderLib/entities/parameter/mod
 import useDefaultSessionDto from "@AppBuilderLib/entities/session/model/useDefaultSessionDto";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
+import {useInitialAutoAdjust} from "@AppBuilderLib/entities/viewport/model/useInitialAutoAdjust";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {useAppBuilderAgentHost} from "@AppBuilderLib/features/agent-tools/model/useAppBuilderAgentHost";
 import AppBuilderAgentOverlay from "@AppBuilderLib/features/agent-tools/ui/AppBuilderAgentOverlay";
@@ -199,7 +200,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	const error = settingsError ?? appBuilderError;
 
 	// handle additional sessions without instances
-	useSessions(secondarySessions);
+	const {sessionApis: secondarySessionApis} = useSessions(secondarySessions);
 
 	// handle instances
 	useSessions(instancedSessions);
@@ -214,6 +215,14 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	});
 
 	const show = !!sessionApi;
+
+	// once the controller session and all secondary sessions are loaded,
+	// adjust the cameras of the viewports (the controller session might not
+	// contain any geometry, in which case the initial camera fit is empty)
+	useInitialAutoAdjust({
+		loaded:
+			show && secondarySessionApis.length === secondarySessions.length,
+	});
 
 	// use parameter history
 	useParameterHistory({loaded: show && customParametersLoaded});
