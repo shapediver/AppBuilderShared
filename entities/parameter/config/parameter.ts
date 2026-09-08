@@ -176,7 +176,8 @@ export interface IShapeDiverParameterActions<T> {
 	 * reference in the App Builder JSON. The override is kept until it is
 	 * replaced, set to undefined to remove it. In case the latest execution
 	 * (or the initial computation) has not been followed by a reset yet, the
-	 * reset value is committed right away.
+	 * reset value is committed right away. Removing the reset value keeps the
+	 * committed value.
 	 *
 	 * @param value the reset value, or undefined
 	 */

@@ -711,10 +711,11 @@ function createParameterStore<T>(
 							// While the parameter is in its reset state (the latest execution
 							// or the initial computation has not been followed by a reset yet,
 							// or the parameter was reset to the previous reset value), it
-							// follows the reset policy: a new reset value is applied, and
-							// without a reset value the executed value is committed again
-							// (e.g. a model which defines the reset value only for some
-							// computations). The next execution uses the committed value.
+							// follows the reset policy: a new reset value is applied right
+							// away. Without a reset value the committed value is kept: it is
+							// the state the model was customized with (e.g. a model which
+							// defines the reset value only for some computations, to select
+							// an object once). The next execution uses the committed value.
 							const {state} = get();
 							// While an execution is in flight, the reset policy is resolved
 							// when it completes.
@@ -724,12 +725,12 @@ function createParameterStore<T>(
 								state.commitValue !== previousResetValue
 							)
 								return;
-							const nextResetValue = resolveResetValue();
-							const target =
-								nextResetValue !== undefined
-									? nextResetValue
-									: state.execValue;
-							if (target === state.commitValue) return;
+							const target = resolveResetValue();
+							if (
+								target === undefined ||
+								target === state.commitValue
+							)
+								return;
 							// a pending change is kept, it is now relative to the new commit value
 							set(
 								(_state) => ({

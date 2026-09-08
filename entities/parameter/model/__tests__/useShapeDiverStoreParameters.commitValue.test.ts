@@ -244,13 +244,20 @@ describe("useShapeDiverStoreParameters commit value", () => {
 		expect(parameter.getState().state.uiValue).toBe("z");
 		expect(parameter.getState().state.commitValue).toBe("r3");
 
-		// without a reset value, the parameter in its reset state is committed
-		// to the executed value again
+		// removing the reset value keeps the committed value (the state the
+		// model was customized with), nothing is committed
 		parameter.getState().actions.resetToCommitValue();
+		const commitCalls = commit.mock.calls.length;
 		parameter.getState().actions.setResetValue(undefined);
-		expect(parameter.getState().state.commitValue).toBe("y");
-		expect(parameter.getState().state.uiValue).toBe("y");
-		expect(commit).toHaveBeenLastCalledWith("g1", "y");
+		expect(parameter.getState().resetValueOverride).toBeUndefined();
+		expect(parameter.getState().state.commitValue).toBe("r3");
+		expect(parameter.getState().state.uiValue).toBe("r3");
+		expect(commit).toHaveBeenCalledTimes(commitCalls);
+
+		// the next execution is committed to the executed value
+		parameter.getState().actions.setUiValue("w");
+		await parameter.getState().actions.execute(true);
+		expect(parameter.getState().state.commitValue).toBe("w");
 	});
 
 	it("applies a reset value changed during an execution when the execution completes", async () => {
