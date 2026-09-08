@@ -35,6 +35,8 @@ type ParameterValueSourcesByType = {
 	}[];
 	sdtf: {
 		source: IAppBuilderParameterValueSourcePropsSdtf;
+		/** Namespace of the session owning the target parameter (used for the sdTF upload). */
+		namespace: string;
 	}[];
 	export: {
 		source: IAppBuilderParameterValueSourcePropsExport;
@@ -110,14 +112,25 @@ export function useParameterValueSources(props?: {
 
 			// get the session for the source
 			// if no namespace is given for the source, use the main namespace
-			const session = sessionsRef.current[paramNamespace || namespace];
+			const targetNamespace = paramNamespace || namespace;
+			const session = sessionsRef.current[targetNamespace];
 
-			if (!session) continue;
+			if (!session) {
+				Logger.warn(
+					`Session with namespace "${targetNamespace}" not found for parameter value source of parameter "${id}".`,
+				);
+				continue;
+			}
 
 			const parameter = Object.values(session.parameters).find(
 				(p) => p.id === id || p.name === id || p.displayname === id,
 			);
-			if (!parameter) continue;
+			if (!parameter) {
+				Logger.warn(
+					`Parameter "${id}" not found in session with namespace "${targetNamespace}" for parameter value source.`,
+				);
+				continue;
+			}
 
 			const type = parameter.type;
 
@@ -167,7 +180,10 @@ export function useParameterValueSources(props?: {
 				}
 			} else if (isSdtfSource(source)) {
 				if (type.startsWith("s")) {
-					sourcesByType.sdtf.push({source: source.props});
+					sourcesByType.sdtf.push({
+						source: source.props,
+						namespace: targetNamespace,
+					});
 					approvedSources.push(sources[i]);
 				} else {
 					Logger.warn(

@@ -171,14 +171,21 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		if (needsSourceData) {
 			const parameterValueSources: ParameterValueDefinition[] = [];
 
-			for (const {parameter, source} of parameters) {
+			for (const {
+				parameter,
+				source,
+				namespace: paramNamespace,
+			} of parameters) {
 				if (parameter === undefined || source === undefined) continue;
 				// while we could let the useResolveParameterValues hook handle all parameters
 				// we only want to pass those with sources to it
 				// as otherwise we would have to filter the results again later
+				// the namespace of the target parameter must be passed along,
+				// otherwise parameters of secondary sessions cannot be found
 				parameterValueSources.push({
 					id: parameter.definition.id,
 					value: source,
+					namespace: paramNamespace,
 				});
 			}
 
