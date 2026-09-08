@@ -218,20 +218,27 @@ export function useSelection(
 				return;
 			}
 
-			selectedNodeNames.forEach((name) => {
-				// Try exact match first
-				let found = false;
-				Object.values(availableNodeNames).forEach((availableNames) => {
-					if (availableNames.map((n) => n.name).includes(name)) {
-						newSelectedNodeNames.push(name);
-						found = true;
-					}
-				});
+			const candidateNames = new Set(
+				allAvailableNames.map((n) => n.name),
+			);
+			// The outputs (or instances) which have candidates: their update is
+			// complete, a selected node of such an output which is not a
+			// candidate anymore was removed by the update (e.g. a deleted object).
+			const updatedOutputs = new Set(
+				allAvailableNames.map((n) => n.name.split(".")[0]),
+			);
 
+			selectedNodeNames.forEach((name) => {
+				if (candidateNames.has(name)) {
+					newSelectedNodeNames.push(name);
+					return;
+				}
 				// Do not silently replace a missing node with another object from the
-				// same output. The output may still be rebuilding, and changing the
-				// logical selection here can trigger an unintended automatic commit.
-				if (!found) {
+				// same output. A node of an output without candidates is kept: the
+				// output may still be rebuilding. A node of an updated output was
+				// removed: it is pruned from the selection (like a deselection, the
+				// pruned selection is committed automatically where applicable).
+				if (!updatedOutputs.has(name.split(".")[0])) {
 					newSelectedNodeNames.push(name);
 				}
 			});
