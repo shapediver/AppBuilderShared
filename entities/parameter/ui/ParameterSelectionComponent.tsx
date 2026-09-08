@@ -514,14 +514,16 @@ export default function ParameterSelectionComponent(
 			// however, can be manually retried.
 			readOnly: alwaysActive && effectiveSelectionActive,
 			// Kept on the parameter's own checkbox row. Future parameter settings
-			// can omit this action to hide Clear for that parameter.
-			trailingAction: shouldShowClearButton
-				? {
-						label: `Clear ${toolbarLabel}`,
-						icon: "tabler:circle-off",
-						execute: clearSelection,
-					}
-				: undefined,
+			// can omit this action to hide Clear for that parameter. Offered only
+			// while something is selected, there is nothing to clear otherwise.
+			trailingAction:
+				shouldShowClearButton && selectedNodeNames.length > 0
+					? {
+							label: `Clear ${toolbarLabel}`,
+							icon: "tabler:circle-off",
+							execute: clearSelection,
+						}
+					: undefined,
 			setChecked: (checked) => {
 				if (checked) {
 					takeOverInteraction();

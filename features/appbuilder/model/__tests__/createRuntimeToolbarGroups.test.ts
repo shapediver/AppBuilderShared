@@ -172,6 +172,50 @@ describe("resolveRuntimeToolbarGroups", () => {
 		expect(groups[0][0].label).toBe("Clear Only");
 	});
 
+	it("keeps the clear actions of read-only selection checkboxes when the menu is hidden", () => {
+		const clearFirst = jest.fn();
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				menuVisibility: "multipleToggleable",
+				items: [
+					createToolbarCheckboxItem({
+						id: "first-toggle",
+						label: "First",
+						checked: true,
+						readOnly: true,
+						setChecked: jest.fn(),
+						trailingAction: {
+							label: "Clear First",
+							icon: "tabler:circle-off",
+							execute: clearFirst,
+						},
+					}),
+				],
+			}),
+			contribution("second", "selection", {
+				menuVisibility: "multipleToggleable",
+				items: [
+					createToolbarCheckboxItem({
+						id: "second-toggle",
+						label: "Second",
+						checked: true,
+						readOnly: true,
+						setChecked: jest.fn(),
+					}),
+				],
+			}),
+		]);
+
+		// two always-active selections: no menu, no checkboxes, but the
+		// clear action of the first selection is kept as a command
+		expect(groups[0].map((item) => item.type)).toEqual(["command"]);
+		expect(groups[0][0].label).toBe("Clear First");
+		if (groups[0][0].type !== "command")
+			throw new Error("Expected command");
+		groups[0][0].props.execute();
+		expect(clearFirst).toHaveBeenCalledTimes(1);
+	});
+
 	it("keeps aggregate command order independent of contribution shape", () => {
 		const groups = resolveRuntimeToolbarGroups([
 			contribution("first", "selection", {
