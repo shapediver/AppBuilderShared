@@ -39,6 +39,11 @@ export function useSelection(
 	initialSelectedNodeNames?: string[],
 	strictNaming: boolean = true,
 	suppressSingleSelectionEffect: boolean = false,
+	/**
+	 * Called with the remaining names right before selected nodes which were
+	 * removed by an output update are pruned from the selection.
+	 */
+	onPrune?: (names: string[]) => void,
 ): ISelectionState & {
 	/**
 	 * All resolved candidate nodes (unfiltered — selected nodes NOT excluded).
@@ -66,6 +71,8 @@ export function useSelection(
 } {
 	// create a unique component ID
 	const componentId = useId();
+	const onPruneRef = React.useRef(onPrune);
+	onPruneRef.current = onPrune;
 	const [singleCandidateSuppressed, setSingleCandidateSuppressed] =
 		React.useState(false);
 
@@ -252,6 +259,7 @@ export function useSelection(
 			)
 		)
 			return;
+		onPruneRef.current?.(newSelectedNodeNames);
 		setSelectedNodeNames(newSelectedNodeNames);
 	}, [availableNodeNames]);
 

@@ -19,6 +19,7 @@ function createMockParameter(
 		actions: {
 			setUiValue: () => true,
 			setExecutedValue: () => true,
+			setCommittedValue: () => true,
 			setResetValue: () => undefined,
 			execute: async () => "",
 			isValid: overrides.actions?.isValid ?? (() => true),

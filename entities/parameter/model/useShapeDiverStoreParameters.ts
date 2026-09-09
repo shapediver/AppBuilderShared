@@ -543,6 +543,30 @@ function createParameterStore<T>(
 
 							return true;
 						},
+						setCommittedValue: function (
+							value: string | T,
+						): boolean {
+							const actions = get().actions;
+							if (!actions.isValid(value, false)) return false;
+							set(
+								(_state) => ({
+									state: {
+										..._state.state,
+										uiValue: value,
+										commitValue: value,
+										commitRevision:
+											_state.state.commitRevision + 1,
+										dirty: false,
+									},
+								}),
+								false,
+								"setCommittedValue",
+							);
+							externalCommits++;
+							executor.commit?.(value);
+
+							return true;
+						},
 						setDisableOtherParameters: function (
 							disable: boolean,
 						): void {

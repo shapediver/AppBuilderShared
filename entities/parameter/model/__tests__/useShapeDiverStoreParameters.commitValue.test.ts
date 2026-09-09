@@ -605,4 +605,63 @@ describe("useShapeDiverStoreParameters commit value", () => {
 		parameter.getState().actions.setUiValue("d");
 		expect(commit).toHaveBeenCalledTimes(1);
 	});
+
+	it("setCommittedValue commits without an execution and without applying the reset value", async () => {
+		const commit = jest.fn();
+		const executor = jest.fn(async () => undefined);
+		store
+			.getState()
+			.addGeneric(
+				genericNamespace,
+				false,
+				genericDefinition({resetValue: "reset"}),
+				executor,
+				undefined,
+				commit,
+			);
+		const parameter = getParameter(genericNamespace, "g1");
+
+		expect(parameter.getState().actions.setCommittedValue("pruned")).toBe(
+			true,
+		);
+		const {state} = parameter.getState();
+		expect(state.uiValue).toBe("pruned");
+		expect(state.commitValue).toBe("pruned");
+		expect(state.execValue).toBe("a");
+		expect(state.commitRevision).toBe(1);
+		expect(state.dirty).toBe(false);
+		expect(commit).toHaveBeenCalledWith("g1", "pruned");
+		expect(executor).not.toHaveBeenCalled();
+	});
+
+	it("keeps a value committed during an execution in flight, unless a reset value applies", async () => {
+		let finish: () => void = () => {};
+		const executor = jest.fn(
+			() => new Promise<void>((resolve) => (finish = resolve)),
+		);
+		store
+			.getState()
+			.addGeneric(
+				genericNamespace,
+				false,
+				genericDefinition(),
+				executor,
+				undefined,
+			);
+		const parameter = getParameter(genericNamespace, "g1");
+
+		// e.g. a selection of an "add" button node, which the response replaces
+		parameter.getState().actions.setUiValue("add");
+		const execution = parameter.getState().actions.execute(true);
+		// the selection is pruned while the execution is in flight
+		expect(parameter.getState().actions.setCommittedValue("")).toBe(true);
+		finish();
+		expect(await execution).toBe("add");
+
+		const {state} = parameter.getState();
+		expect(state.execValue).toBe("add");
+		expect(state.commitValue).toBe("");
+		expect(state.uiValue).toBe("");
+		expect(executor).toHaveBeenCalledTimes(1);
+	});
 });

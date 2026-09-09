@@ -218,6 +218,30 @@ export default function ParameterSelectionComponent(
 	const {viewportId} = useViewportId();
 	const selectionOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
 
+	// Parameters whose execution is managed elsewhere (e.g. by a form providing
+	// custom actions, non-reactive) are not backed by the parameter store.
+	const {reactive = true, customActions} = props as PropsParameterComponent;
+	const storeBacked = reactive && !customActions?.execute;
+	const restoreBatchSelectionRef = useRef(false);
+	const skipNextAutomaticConfirmationRef = useRef(false);
+	const clearedSinceLastConfirmationRef = useRef(false);
+	const hasPendingSelectionRef = useRef(false);
+	// Selected nodes removed by an output update are pruned from the selection.
+	// A pruned committed selection is committed again without a computation:
+	// the model produced the update which removed the nodes, the next execution
+	// sends the pruned value. An automatic confirmation would cause a second
+	// computation, e.g. for a selection whose executed node is replaced by the
+	// response (a selectable "add" button). A pending draft is only pruned.
+	const onPrunedSelection = useCallback(
+		(names: string[]) => {
+			if (!storeBacked || hasPendingSelectionRef.current) return;
+			if (!actions.setCommittedValue(JSON.stringify({names}))) return;
+			skipNextAutomaticConfirmationRef.current = true;
+			clearedSinceLastConfirmationRef.current = false;
+		},
+		[actions, storeBacked],
+	);
+
 	const {
 		candidateNodes,
 		availableNodeNames,
@@ -231,10 +255,9 @@ export default function ParameterSelectionComponent(
 		effectiveSelectionActive,
 		parseNames(value),
 		true,
+		false,
+		onPrunedSelection,
 	);
-	const restoreBatchSelectionRef = useRef(false);
-	const skipNextAutomaticConfirmationRef = useRef(false);
-	const clearedSinceLastConfirmationRef = useRef(false);
 	useSuspendedSelectionRestore({
 		suspended,
 		selectedNodeNames,
@@ -254,6 +277,7 @@ export default function ParameterSelectionComponent(
 		!committedNodeNames.every(
 			(name, index) => name === selectedNodeNames[index],
 		);
+	hasPendingSelectionRef.current = hasPendingSelection;
 	// Fixed and optional single selections (and complete selections) are
 	// accepted automatically, unless another selection parameter has an
 	// outstanding pending selection (see below).
@@ -298,10 +322,6 @@ export default function ParameterSelectionComponent(
 		skipNextAutomaticConfirmationRef.current = true;
 		clearedSinceLastConfirmationRef.current = false;
 	}, []);
-	// Parameters whose execution is managed elsewhere (e.g. by a form providing
-	// custom actions, non-reactive) are not backed by the parameter store.
-	const {reactive = true, customActions} = props as PropsParameterComponent;
-	const storeBacked = reactive && !customActions?.execute;
 	useCommittedSelectionAdoption({
 		committedValue: storeBacked ? state.commitValue : undefined,
 		commitRevision: state.commitRevision,

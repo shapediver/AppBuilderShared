@@ -117,6 +117,23 @@ export interface IShapeDiverParameterActions<T> {
 	setExecutedValue(value: T | string): boolean;
 
 	/**
+	 * Commit a value without an execution: set the ui value and the commit
+	 * value, leave the executed value unchanged. Unlike setExecutedValue, a
+	 * reset value defined for the parameter is not applied.
+	 * Use this for values which do not require a computation, e.g. a selection
+	 * pruned of nodes which do not exist anymore: the next execution (of any
+	 * parameter) sends the committed value to the model.
+	 * The provided value must be valid, otherwise this function will return false.
+	 * Note: Does not call execute. For parameters of a session, the value is
+	 * committed to the session.
+	 *
+	 * @param value the value to commit
+	 *
+	 * @returns true if the value was set, false if the value was invalid.
+	 */
+	setCommittedValue(value: T | string): boolean;
+
+	/**
 	 * Run background executions, and update state.execValue on success.
 	 * The executed value is committed, unless a reset value is defined for the
 	 * parameter (see the "resetValue" setting), in which case the reset value is
