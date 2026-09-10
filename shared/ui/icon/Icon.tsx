@@ -5,7 +5,7 @@ import {
 	useMantineTheme,
 	useProps,
 } from "@mantine/core";
-import {forwardRef, useMemo} from "react";
+import {forwardRef, useMemo, type Ref} from "react";
 import classes from "./Icon.module.css";
 import {
 	CustomCSSProperties,
@@ -14,6 +14,7 @@ import {
 	iconThemeDefaultStyleProps,
 	sizeMap,
 } from "./Icon.types";
+import {isIconImageUrl} from "./isIconImageUrl";
 
 // List of all Tabler icons used in the app for preloading
 // Icons don't have to be preloaded, we just do it for the ones we know that are used
@@ -107,41 +108,57 @@ const getIconImportName = (iconName: string): string => {
 	}
 };
 
-const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
-	{iconType, ...rest}: IconProps,
-	ref,
-) {
-	const theme = useMantineTheme();
+const Icon = forwardRef<SVGSVGElement | HTMLImageElement, IconProps>(
+	function Icon({iconType, ...rest}: IconProps, ref) {
+		const theme = useMantineTheme();
 
-	const {color, size, stroke, ...iconPropsStyle} = useIconProps(rest);
-	const parsedColor = useMemo(() => {
-		return color ? parseThemeColor({color, theme}).value : color;
-	}, [color, theme]);
+		const {color, size, stroke, ...iconPropsStyle} = useIconProps(rest);
+		const parsedColor = useMemo(() => {
+			return color ? parseThemeColor({color, theme}).value : color;
+		}, [color, theme]);
 
-	const iconProps = useMemo(
-		() => ({
-			...iconPropsStyle,
-			ref,
-			color: parsedColor,
-			...rest,
-		}),
-		[iconPropsStyle, ref, parsedColor, rest],
-	);
+		const iconProps = useMemo(
+			() => ({
+				...iconPropsStyle,
+				ref,
+				color: parsedColor,
+				...rest,
+			}),
+			[iconPropsStyle, ref, parsedColor, rest],
+		);
 
-	// convert the mantine size prop to a CSS value
-	const cssSize = useMemo(() => {
-		return size
-			? typeof size === "number"
-				? `${size}px`
-				: (sizeMap[size] ?? `${size}`)
-			: undefined;
-	}, [size]);
+		// convert the mantine size prop to a CSS value
+		const cssSize = useMemo(() => {
+			return size
+				? typeof size === "number"
+					? `${size}px`
+					: (sizeMap[size] ?? `${size}`)
+				: undefined;
+		}, [size]);
 
-	if (typeof iconType === "string") {
-		const iconImportName = getIconImportName(iconType);
+		if (typeof iconType === "string" && isIconImageUrl(iconType)) {
+			return (
+				<img
+					ref={ref as Ref<HTMLImageElement>}
+					src={iconType.trim()}
+					alt=""
+					className={classes.imageIcon}
+					style={{
+						width: cssSize,
+						height: cssSize,
+						...iconProps.style,
+					}}
+				/>
+			);
+		}
+
+		const icon =
+			typeof iconType === "string"
+				? getIconImportName(iconType)
+				: iconType;
 		return (
 			<IconifyIconComponent
-				icon={iconImportName}
+				icon={icon}
 				{...iconProps}
 				className={classes.tablerIconify}
 				width={cssSize}
@@ -155,24 +172,7 @@ const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
 				}
 			/>
 		);
-	} else {
-		return (
-			<IconifyIconComponent
-				icon={iconType}
-				{...iconProps}
-				className={classes.tablerIconify}
-				width={cssSize}
-				style={
-					{
-						...iconProps.style,
-						// Apply stroke width as a CSS variable
-						// Which is used in the icon's CSS
-						"--icon-stroke-width": stroke,
-					} as CustomCSSProperties
-				}
-			/>
-		);
-	}
-});
+	},
+);
 
 export default Icon;

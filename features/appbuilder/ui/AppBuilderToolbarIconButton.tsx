@@ -2,6 +2,7 @@ import type {MantineActionIconProps} from "@AppBuilderLib/shared/mantine-props/a
 import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps, IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import {isIconImageUrl} from "@AppBuilderLib/shared/ui/icon/isIconImageUrl";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
@@ -154,7 +155,10 @@ const AppBuilderToolbarIconButton = forwardRef<
 		...iconProps,
 	};
 
-	const isIcon = typeof iconType !== "string" || iconRegex.test(iconType);
+	const isIcon =
+		typeof iconType !== "string" ||
+		iconRegex.test(iconType) ||
+		isIconImageUrl(iconType);
 
 	return (
 		<TooltipWrapper
