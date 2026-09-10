@@ -117,14 +117,14 @@ const Icon = forwardRef<SVGSVGElement | HTMLImageElement, IconProps>(
 			return color ? parseThemeColor({color, theme}).value : color;
 		}, [color, theme]);
 
+		// Iconify rejects a union ref in a spread; attach a narrowed ref on each host.
 		const iconProps = useMemo(
 			() => ({
 				...iconPropsStyle,
-				ref,
 				color: parsedColor,
 				...rest,
 			}),
-			[iconPropsStyle, ref, parsedColor, rest],
+			[iconPropsStyle, parsedColor, rest],
 		);
 
 		// convert the mantine size prop to a CSS value
@@ -160,6 +160,7 @@ const Icon = forwardRef<SVGSVGElement | HTMLImageElement, IconProps>(
 			<IconifyIconComponent
 				icon={icon}
 				{...iconProps}
+				ref={ref as Ref<SVGSVGElement>}
 				className={classes.tablerIconify}
 				width={cssSize}
 				style={
