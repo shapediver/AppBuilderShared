@@ -7,8 +7,9 @@ import {IShapeDiverParameterDefinition} from "../config/parameter";
  * or by the "overrides" of parameter references in the App Builder JSON.
  * The reset value is applied by the parameter store after each execution
  * (see IShapeDiverParameterActions.execute and setExecutedValue). A reset value
- * defined by overrides is registered with the store once the parameter component
- * is mounted (see IShapeDiverParameterActions.setResetValue).
+ * defined by the overrides of a parameter reference of the App Builder data is
+ * registered with the store for all references, hidden or not (see
+ * useAppBuilderResetValueOverrides and IShapeDiverParameterActions.setResetValue).
  * The interaction parameter components (selection, gumball, rectangle transform,
  * drawing) reflect the reset by following the committed value.
  */

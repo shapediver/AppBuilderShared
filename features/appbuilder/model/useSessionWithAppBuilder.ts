@@ -3,6 +3,7 @@ import {
 	useSession,
 } from "@AppBuilderLib/entities/session/model/useSession";
 import {useAppBuilderCustomParameters} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
+import {useAppBuilderResetValueOverrides} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderResetValueOverrides";
 import {IAppBuilder, IAppBuilderSettingsSession} from "../config/appbuilder";
 import {parseAppBuilderSkeleton} from "../config/parseAppBuilderJson";
 
@@ -270,6 +271,9 @@ export function useSessionWithAppBuilder(
 		appBuilderData,
 		acceptRejectMode: props?.acceptRejectMode,
 	});
+
+	// register the reset values defined by the overrides of parameter references
+	useAppBuilderResetValueOverrides({namespace, appBuilderData});
 
 	const handleProcessManagerAttached = useCallback(
 		(processManagerId: string | undefined) => {

@@ -8,7 +8,6 @@ import {
 	PropsParameterComponent,
 	PropsParameterWithForm,
 } from "../config/propsParameter";
-import {IParameterResetValueSettings} from "../lib/parameterResetValue";
 import {useParameter} from "./useParameter";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
@@ -51,22 +50,9 @@ export function useParameterComponentCommons<T>(
 	const customActions = props.customActions || {};
 	const actions = {...paramActions, ...customActions};
 
-	// A reset value defined by the overrides of the parameter reference applies
-	// to the parameter: the rendered reference is the source of truth for the
-	// override registered with the parameter store (which applies the reset
-	// after executions). A reference rendered without a reset value removes a
-	// registered one (e.g. a model which defines the reset value only for some
-	// computations). The registration is kept when the component unmounts.
-	const overrideResetValue = (
-		(props.overrides as {settings?: unknown} | undefined)?.settings as
-			| IParameterResetValueSettings
-			| undefined
-	)?.resetValue;
-	useEffect(() => {
-		paramActions.setResetValue(
-			overrideResetValue === null ? undefined : overrideResetValue,
-		);
-	}, [overrideResetValue, paramActions]);
+	// Note: A reset value defined by the overrides of the parameter reference is
+	// registered with the parameter store from the App Builder data, independent
+	// of the rendered components (see useAppBuilderResetValueOverrides).
 
 	// Read acceptRejectMode from the store as a fallback.
 	// The prop may be undefined if the component renders before the store is populated
