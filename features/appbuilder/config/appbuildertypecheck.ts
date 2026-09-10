@@ -1445,6 +1445,8 @@ const IAppBuilderToolbarItemBaseShape = {
 	icon: z.string().optional(),
 	label: z.string().optional(),
 	tooltip: z.string().optional(),
+	labelSide: z.enum(["top", "bottom", "left", "right"]).optional(),
+	labelAlign: z.enum(["start", "center", "end"]).optional(),
 	order: z.number().optional(),
 	presentation: z.enum(["button", "item"]).optional(),
 };

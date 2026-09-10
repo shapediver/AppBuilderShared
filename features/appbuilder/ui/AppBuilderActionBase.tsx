@@ -1,4 +1,8 @@
-import {IAppBuilderActionPropsCommon} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	AppBuilderToolbarAlign,
+	AppBuilderToolbarSide,
+	IAppBuilderActionPropsCommon,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {AppBuilderToolbarIconButtonThemeStyleProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import AppBuilderToolbarIconButton from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
@@ -10,6 +14,8 @@ export interface AppBuilderActionRenderProps {
 	presentation?: AppBuilderActionPresentation;
 	toolbarButtonProps?: Partial<AppBuilderToolbarIconButtonThemeStyleProps>;
 	disabled?: boolean;
+	labelSide?: AppBuilderToolbarSide;
+	labelAlign?: AppBuilderToolbarAlign;
 }
 
 export interface AppBuilderActionBaseProps
@@ -35,6 +41,8 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 		disabled,
 		canBeDisabledByParameter,
 		toolbarButtonProps,
+		labelSide,
+		labelAlign,
 	} = props;
 
 	if (presentation === "item") {
@@ -60,6 +68,8 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 				disabled={disabled}
 				onClick={onClick}
 				{...toolbarButtonProps}
+				{...(labelSide !== undefined ? {labelSide} : {})}
+				{...(labelAlign !== undefined ? {labelAlign} : {})}
 			/>
 		);
 	}

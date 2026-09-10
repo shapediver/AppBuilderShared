@@ -162,6 +162,12 @@ export default function AppBuilderToolbarPopoverButton({
 				iconType={iconType}
 				disabled={item.disabled || actionDisabled}
 				{...buttonThemeProps}
+				{...(item.labelSide !== undefined
+					? {labelSide: item.labelSide}
+					: {})}
+				{...(item.labelAlign !== undefined
+					? {labelAlign: item.labelAlign}
+					: {})}
 			/>
 		);
 	}
@@ -198,6 +204,12 @@ export default function AppBuilderToolbarPopoverButton({
 						disabled={item.disabled || actionDisabled}
 						onClick={() => setOpened((current) => !current)}
 						{...buttonThemeProps}
+						{...(item.labelSide !== undefined
+							? {labelSide: item.labelSide}
+							: {})}
+						{...(item.labelAlign !== undefined
+							? {labelAlign: item.labelAlign}
+							: {})}
 					/>
 				</span>
 			</Popover.Target>

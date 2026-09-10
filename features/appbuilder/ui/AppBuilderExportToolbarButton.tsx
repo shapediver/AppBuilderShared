@@ -1,5 +1,9 @@
 import {IShapeDiverExport} from "@AppBuilderLib/entities/export/config/export";
 import {useExecuteExport} from "@AppBuilderLib/entities/export/model/useExecuteExport";
+import type {
+	AppBuilderToolbarAlign,
+	AppBuilderToolbarSide,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import AppBuilderToolbarIconButton, {
 	AppBuilderToolbarIconButtonThemeStyleProps,
 } from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
@@ -13,6 +17,8 @@ type Props = {
 	iconType: IconType;
 	buttonThemeProps: Partial<AppBuilderToolbarIconButtonThemeStyleProps>;
 	disabled?: boolean;
+	labelSide?: AppBuilderToolbarSide;
+	labelAlign?: AppBuilderToolbarAlign;
 };
 
 /**
@@ -25,6 +31,8 @@ export default function AppBuilderExportToolbarButton({
 	iconType,
 	buttonThemeProps,
 	disabled,
+	labelSide,
+	labelAlign,
 }: Props) {
 	const [loading, setLoading] = useState(false);
 	const executeExport = useExecuteExport(exportData);
@@ -50,6 +58,8 @@ export default function AppBuilderExportToolbarButton({
 			disabled={disabled}
 			onClick={() => void onClick()}
 			{...buttonThemeProps}
+			{...(labelSide !== undefined ? {labelSide} : {})}
+			{...(labelAlign !== undefined ? {labelAlign} : {})}
 		/>
 	);
 }

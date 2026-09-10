@@ -195,6 +195,95 @@ describe("toolbar container schema", () => {
 		expect(result.success).toBe(false);
 	});
 
+	it("accepts toolbar item labelSide and labelAlign", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {id: "labeledToolbar"},
+					groups: [
+						[
+							{
+								type: "action",
+								label: "Zoom extents",
+								icon: "tabler:zoom-in",
+								labelSide: "bottom",
+								labelAlign: "center",
+								props: {
+									definition: {
+										type: "camera",
+										props: {type: "zoomTo", props: {}},
+									},
+								},
+							},
+						],
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects an invalid toolbar item labelSide", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {id: "labeledToolbar"},
+					groups: [
+						[
+							{
+								type: "action",
+								label: "Zoom extents",
+								labelSide: "middle",
+								props: {
+									definition: {
+										type: "camera",
+										props: {type: "zoomTo", props: {}},
+									},
+								},
+							},
+						],
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects an invalid toolbar item labelAlign", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {id: "labeledToolbar"},
+					groups: [
+						[
+							{
+								type: "action",
+								label: "Zoom extents",
+								labelAlign: "left",
+								props: {
+									definition: {
+										type: "camera",
+										props: {type: "zoomTo", props: {}},
+									},
+								},
+							},
+						],
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(false);
+	});
+
 	it("rejects an invalid toolbar align", () => {
 		const result = validateAppBuilder({
 			version: "1.0",

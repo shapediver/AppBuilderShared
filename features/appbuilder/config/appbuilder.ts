@@ -1493,6 +1493,10 @@ export interface IAppBuilderToolbarItemBase<
 	icon?: IAppBuilderIcon;
 	label?: string;
 	tooltip?: string;
+	/** When set with a non-empty label, show the label beside the icon on this side. */
+	labelSide?: AppBuilderToolbarSide;
+	/** Cross-axis alignment of the icon caption. Default "center" when rendering. */
+	labelAlign?: AppBuilderToolbarAlign;
 	/** Optional item order for runtime-merged groups. */
 	order?: number;
 	/** Optional presentation mode when this item is rendered inside a popover. */
