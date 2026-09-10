@@ -424,6 +424,12 @@ export default function ParameterSelectionComponent(
 			skipNextAutomaticConfirmationRef.current = false;
 			return;
 		}
+		// A selection equal to the committed value has nothing to confirm (e.g. a
+		// committed value adopted into the selection, or a pruned selection which
+		// was committed without a computation). A cleared selection is the
+		// exception, it may legitimately submit the committed (reset) value again.
+		if (!hasPendingSelection && !clearedSinceLastConfirmationRef.current)
+			return;
 		if (acceptImmediately) changeValueRef.current(selectedNodeNames);
 	}, [acceptImmediately, selectedNodeNames]);
 

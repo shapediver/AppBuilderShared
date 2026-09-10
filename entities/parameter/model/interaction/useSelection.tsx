@@ -203,6 +203,10 @@ export function useSelection(
 	}, [patterns, selectionProps, singleCandidateSuppressed]);
 
 	const {availableNodeNames} = useNodesInteractionData(nodesInteractionInput);
+	// the candidates per output as seen by the last pruning, see below
+	const prunedAvailableNodeNamesRef = React.useRef<typeof availableNodeNames>(
+		{},
+	);
 
 	useEffect(() => {
 		if (!suppressSingleSelectionEffect) return;
@@ -215,6 +219,8 @@ export function useSelection(
 	useEffect(() => {
 		// intentionally stale to only re-render when availableNodeNames changes
 		if (!activate) return;
+		const previousAvailableNodeNames = prunedAvailableNodeNamesRef.current;
+		prunedAvailableNodeNamesRef.current = availableNodeNames;
 
 		const newSelectedNodeNames: string[] = [];
 		if (selectedNodeNames.length > 0 && availableNodeNames) {
@@ -228,11 +234,27 @@ export function useSelection(
 			const candidateNames = new Set(
 				allAvailableNames.map((n) => n.name),
 			);
-			// The outputs (or instances) which have candidates: their update is
-			// complete, a selected node of such an output which is not a
-			// candidate anymore was removed by the update (e.g. a deleted object).
+			// The outputs (or instances) whose nodes were replaced since the last
+			// pruning: a selected node of such an output which is not a candidate
+			// anymore was removed by the update (e.g. a deleted object). The
+			// candidates of the other outputs may be outdated: a response can select
+			// a node of an output which did not deliver its new nodes yet (e.g. a
+			// reset value defined by the model selecting an added object). The
+			// candidates are re-evaluated (with the same nodes) whenever the
+			// interaction data is registered again, which is not an update.
 			const updatedOutputs = new Set(
-				allAvailableNames.map((n) => n.name.split(".")[0]),
+				Object.entries(availableNodeNames)
+					.filter(([key, names]) => {
+						const previousNames = previousAvailableNodeNames[key];
+						if (!previousNames) return true;
+						const previousNodes = new Set(
+							previousNames.map((n) => n.node),
+						);
+						return names.some((n) => !previousNodes.has(n.node));
+					})
+					.flatMap(([, names]) =>
+						names.map((n) => n.name.split(".")[0]),
+					),
 			);
 
 			selectedNodeNames.forEach((name) => {
