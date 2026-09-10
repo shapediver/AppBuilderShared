@@ -8,6 +8,7 @@ import {ToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/sha
 import type {ToolbarPopoverItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import AppBuilderToolbarIconButton, {
 	AppBuilderToolbarIconButtonDefaultStyleProps,
+	useResolvedAppBuilderToolbarIconButtonTheme,
 } from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {Popover, useProps} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
@@ -71,6 +72,7 @@ export default function AppBuilderToolbarPopoverButton({
 }: Props) {
 	const componentContext = useContext(ComponentContext);
 	const [localOpened, setLocalOpened] = useState(false);
+	const iconButtonTheme = useResolvedAppBuilderToolbarIconButtonTheme();
 	const {
 		popoverProps = defaultStyleProps.popoverProps,
 		popoverDropdownProps = defaultStyleProps.popoverDropdownProps,
@@ -80,7 +82,10 @@ export default function AppBuilderToolbarPopoverButton({
 		...buttonThemeProps
 	} = useProps(
 		"AppBuilderToolbarButton",
-		defaultStyleProps,
+		{
+			...defaultStyleProps,
+			...iconButtonTheme,
+		},
 		{},
 	) as ToolbarButtonThemeProps;
 	const parameterProps = useMemo<PropsParameter[]>(() => {

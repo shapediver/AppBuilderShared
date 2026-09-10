@@ -6,7 +6,7 @@ import type {ToolbarExportItem} from "@AppBuilderLib/features/appbuilder/config/
 import {useProps} from "@mantine/core";
 import {useMemo} from "react";
 import AppBuilderExportToolbarButton from "./AppBuilderExportToolbarButton";
-import {AppBuilderToolbarIconButtonDefaultStyleProps} from "./AppBuilderToolbarIconButton";
+import {useResolvedAppBuilderToolbarIconButtonTheme} from "./AppBuilderToolbarIconButton";
 
 type Props = {
 	item: ToolbarExportItem;
@@ -33,11 +33,12 @@ export default function AppBuilderToolbarExportButton({
 		[buttonRenderContext.namespace, item],
 	);
 	const exports = useExports(exportProps);
+	const iconButtonTheme = useResolvedAppBuilderToolbarIconButtonTheme();
 	const buttonThemeProps = useProps(
 		"AppBuilderToolbarButton",
 		{
-			...AppBuilderToolbarIconButtonDefaultStyleProps,
-			tooltipWrapperProps: {},
+			...iconButtonTheme,
+			tooltipWrapperProps: iconButtonTheme.tooltipWrapperProps ?? {},
 		},
 		{},
 	) as AppBuilderToolbarButtonThemeDefaultProps;

@@ -46,7 +46,10 @@ export interface IAppBuilderIconifyIcon {
 	vFlip?: boolean;
 }
 
-/** Icon name (e.g. `"tabler:photo"`) or inline Iconify icon object. */
+/**
+ * Icon name (e.g. `"tabler:photo"`), image URL (http(s), data URI, or path;
+ * SVG and common raster formats), or inline Iconify icon object.
+ */
 export type IAppBuilderIcon = string | IAppBuilderIconifyIcon;
 
 /** JSON-facing slider mark. `label` is a string, not a React node. */
@@ -476,7 +479,7 @@ export interface IAppBuilderActionPropsCommon {
 	id?: string;
 	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. Set to empty string to show only an icon. */
 	label?: string;
-	/** Optional icon (of the button etc). */
+	/** Optional icon name, image URL, or inline Iconify object (of the button etc). */
 	icon?: IAppBuilderIcon;
 	/** Optional tooltip. */
 	tooltip?: string;
@@ -949,7 +952,7 @@ export type IAppBuilderActionPropsSound = {
 	loop?: boolean;
 	/** Label to show when the sound is playing. */
 	labelPlaying?: string;
-	/** Icon to show when the sound is playing. */
+	/** Icon name, image URL, or inline Iconify object to show when the sound is playing. */
 	iconPlaying?: IAppBuilderIcon;
 };
 
@@ -1257,7 +1260,7 @@ export interface IAppBuilderWidgetPropsAccordionUi {
 		value?: string;
 		/** Label shown for the accordion control of the item. */
 		name: string;
-		/** Optional icon of the accordion control of the item. */
+		/** Optional icon name, image URL, or inline Iconify object of the accordion control. */
 		icon?: IAppBuilderIcon;
 		/** Optional tooltip for the accordion control of the item. */
 		tooltip?: string;
@@ -1285,7 +1288,7 @@ export interface IAppBuilderWidgetPropsAccordionUi {
 export interface IAppBuilderWidgetPropsStackUi {
 	/** Label shown for the stack control. */
 	name: string;
-	/** Optional icon of the stack control. */
+	/** Optional icon name, image URL, or inline Iconify object of the stack control. */
 	icon?: IAppBuilderIcon;
 	/** Optional tooltip of the stack control. */
 	tooltip?: string;
@@ -1388,7 +1391,7 @@ export interface IAppBuilderWidget {
 export interface IAppBuilderTab {
 	/** Name of the tab. */
 	name: string;
-	/** Optional icon of the tab. */
+	/** Optional icon name, image URL, or inline Iconify object of the tab. */
 	icon?: IAppBuilderIcon;
 	/** Optional tooltip. */
 	tooltip?: string;
@@ -1421,7 +1424,7 @@ export type AppBuilderAnchorContainerProperties = {
 	justification?: TAG3D_JUSTIFICATION;
 	/** Optional boolean to allow pointer events on the container. (default: true) */
 	allowPointerEvents?: boolean;
-	/** Optional icon to be displayed to show the container. */
+	/** Optional icon name, image URL, or inline Iconify object shown to open the container. */
 	previewIcon?: IAppBuilderIcon;
 	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
 	useCloseButton?: boolean;
@@ -1486,7 +1489,7 @@ export interface IAppBuilderToolbarItemBase<
 	props: TProps;
 	/** Optional stable id for runtime APIs, accessibility and diagnostics. */
 	id?: string;
-	/** Toolbar-specific presentation override. */
+	/** Toolbar-specific icon name, image URL, or inline Iconify object. */
 	icon?: IAppBuilderIcon;
 	label?: string;
 	tooltip?: string;
