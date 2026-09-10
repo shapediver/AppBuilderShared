@@ -38,11 +38,8 @@ import {resolveInteractionPresentation} from "../model/interaction/resolveIntera
 import {useInteractionRequestLifecycle} from "../model/interaction/useInteractionRequestLifecycle";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useRectangleTransform} from "../model/interaction/useRectangleTransform";
-import {
-	requestSelectionAutoClear,
-	useSelectionAutoClear,
-} from "../model/interaction/useSelectionAutoClear";
 import classes from "./ParameterInteractionComponent.module.css";
+import ParameterResetRow from "./ParameterResetRow";
 
 type TransformedNode = {
 	name: string;
@@ -111,6 +108,8 @@ export default function ParameterRectangleTransformComponent(
 		setOnCancelCallback,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		value,
 		state,
 		sessionDependencies,
@@ -159,7 +158,7 @@ export default function ParameterRectangleTransformComponent(
 				hoverColor,
 			} as IRectangleTransformParameterProps;
 		}
-	}, [definition.settings, selectionColor, availableColor]);
+	}, [definition.settings, selectionColor, availableColor, hoverColor]);
 
 	// state for the rectangle transform application
 	const alwaysActive = rectangleTransformProps.activeMode === "alwaysActive";
@@ -173,16 +172,12 @@ export default function ParameterRectangleTransformComponent(
 	const [lastConfirmedValue, setLastConfirmedValue] = useState<
 		TransformedNode[]
 	>([]);
-	// store the parsed exec value in a state to react to changes
-	const [parsedExecValue, setParsedExecValue] = useState<TransformedNode[]>(
-		[],
-	);
+	// store the parsed commit value in a state to react to changes
+	const [parsedCommitValue, setParsedCommitValue] = useState<
+		TransformedNode[]
+	>([]);
 	const {viewportId} = useViewportId();
 	const interactionOwnerKey = `${namespace}-${definition.id}-${viewportId}`;
-	const shouldAutoClear = rectangleTransformProps.autoClear ?? false;
-	const autoClearRequest = useSelectionAutoClear(interactionOwnerKey);
-	const startsAutoCleared =
-		shouldAutoClear && autoClearRequest?.value === value;
 
 	// get the transformed nodes and the selected nodes
 	const {
@@ -197,7 +192,7 @@ export default function ParameterRectangleTransformComponent(
 		viewportId,
 		rectangleTransformProps,
 		rectangleTransformActive,
-		startsAutoCleared ? [] : parseTransformation(value),
+		parseTransformation(value),
 	);
 
 	const rtLabel =
@@ -242,45 +237,27 @@ export default function ParameterRectangleTransformComponent(
 		});
 	}, [tryAcquireClaim]);
 
-	const appliedAutoClearRevisionRef = useRef(0);
+	// React to commits of the parameter and reset the last confirmed value.
+	// The committed value differs from the executed value in case the parameter
+	// was reset after the execution (see the "resetValue" setting). The executed
+	// transformation is part of the model output then, and the transformation
+	// applied in the viewport is reset to the committed value.
 	useEffect(() => {
-		if (
-			!shouldAutoClear ||
-			!autoClearRequest ||
-			autoClearRequest.revision <= appliedAutoClearRevisionRef.current ||
-			(autoClearRequest.value !== value &&
-				autoClearRequest.value !== state.uiValue)
-		)
-			return;
-
-		appliedAutoClearRevisionRef.current = autoClearRequest.revision;
-		closeTransform();
-		restoreTransformedNodeNames(
-			[],
-			structuredClone(transformedNodeNamesRef.current),
-		);
-		setTransformedNodeNames([]);
-		if (alwaysActive) restartPersistentTransform();
-	}, [
-		alwaysActive,
-		autoClearRequest,
-		closeTransform,
-		restartPersistentTransform,
-		restoreTransformedNodeNames,
-		shouldAutoClear,
-		state.uiValue,
-		value,
-	]);
-
-	// react to changes of the execValue and reset the last confirmed value
-	useEffect(() => {
-		const parsedExecValue = parseTransformation(state.execValue);
-		setParsedExecValue(structuredClone(parsedExecValue));
-		setLastConfirmedValue(structuredClone(parsedExecValue));
-		setTransformedNodeNames(
-			structuredClone(startsAutoCleared ? [] : parsedExecValue),
-		);
-	}, [startsAutoCleared, state.execValue]);
+		const parsed = parseTransformation(state.commitValue);
+		setParsedCommitValue(structuredClone(parsed));
+		setLastConfirmedValue(structuredClone(parsed));
+		if (state.commitValue !== state.execValue) {
+			closeTransform();
+			restoreTransformedNodeNames(
+				structuredClone(parsed),
+				structuredClone(transformedNodeNamesRef.current),
+			);
+			setTransformedNodeNames(structuredClone(parsed));
+			if (alwaysActive) restartPersistentTransform();
+		} else {
+			setTransformedNodeNames(structuredClone(parsed));
+		}
+	}, [state.commitValue, state.commitRevision]);
 
 	// reset the transformed nodes when the definition changes
 	useEffect(() => {
@@ -289,7 +266,7 @@ export default function ParameterRectangleTransformComponent(
 			JSON.stringify(parsed) !==
 			JSON.stringify(transformedNodeNamesRef.current)
 		) {
-			setParsedExecValue(structuredClone(parsed));
+			setParsedCommitValue(structuredClone(parsed));
 			setLastConfirmedValue(structuredClone(parsed));
 			setTransformedNodeNames(structuredClone(parsed));
 		}
@@ -315,24 +292,13 @@ export default function ParameterRectangleTransformComponent(
 			// if the value is already the same, do not change it
 			const serializedValue = JSON.stringify(parameterValue);
 			if (value === serializedValue) {
-				if (shouldAutoClear)
-					requestSelectionAutoClear(
-						interactionOwnerKey,
-						serializedValue,
-					);
-				else if (!alwaysActive) setSelectedNodeNames([]);
+				if (!alwaysActive) setSelectedNodeNames([]);
 				return;
 			}
-			handleChange(serializedValue, 0, () => {
-				if (shouldAutoClear)
-					requestSelectionAutoClear(
-						interactionOwnerKey,
-						serializedValue,
-					);
-			});
+			handleChange(serializedValue, 0);
 			if (!alwaysActive) setSelectedNodeNames([]);
 		},
-		[alwaysActive, interactionOwnerKey, shouldAutoClear, value],
+		[alwaysActive, value],
 	);
 
 	const restartAfterCancel = useCallback(() => {
@@ -369,14 +335,14 @@ export default function ParameterRectangleTransformComponent(
 	const _onCancelCallback = useCallback(() => {
 		closeTransform();
 		restoreTransformedNodeNames(
-			structuredClone(parsedExecValue),
+			structuredClone(parsedCommitValue),
 			structuredClone(transformedNodeNames),
 		);
 		restartAfterCancel();
-		setLastConfirmedValue(structuredClone(parsedExecValue));
+		setLastConfirmedValue(structuredClone(parsedCommitValue));
 	}, [
 		closeTransform,
-		parsedExecValue,
+		parsedCommitValue,
 		restartAfterCancel,
 		transformedNodeNames,
 	]);
@@ -551,9 +517,15 @@ export default function ParameterRectangleTransformComponent(
 			{...wrapperProps}
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
-			{definition && effectiveRectangleActive
-				? contentActive
-				: contentInactive}
+			{definition && (
+				<ParameterResetRow
+					show={showReset}
+					onClick={resetToDefault}
+					disabled={disabled}
+				>
+					{effectiveRectangleActive ? contentActive : contentInactive}
+				</ParameterResetRow>
+			)}
 		</ParameterWrapperComponent>
 	);
 }

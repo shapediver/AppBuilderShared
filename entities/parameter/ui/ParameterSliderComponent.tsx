@@ -1,5 +1,6 @@
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
+	Box,
 	Group,
 	MantineThemeComponent,
 	NumberInput,
@@ -22,6 +23,7 @@ import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import {useSettingsMinMax} from "../model/useSettingsMinMax";
 import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterResetRow from "./ParameterResetRow";
 import type {ParameterSliderComponentThemeDefaultProps} from "./ParameterSliderComponent.types";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
@@ -68,6 +70,8 @@ export default function ParameterSliderComponent(
 		handleChange,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		formInputProps,
 		formKey,
 	} = useParameterComponentCommons<number>(props);
@@ -324,66 +328,76 @@ export default function ParameterSliderComponent(
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && (
-				<Group justify="space-between" w="100%" wrap="nowrap">
-					{definition && (
-						<Slider
-							w={sliderWidth}
-							label={valueClamped}
-							value={valueClamped}
-							min={min}
-							max={max}
-							step={step}
-							onChange={(v) => setValue(roundAndClamp(v))}
-							onChangeEnd={(v) =>
-								handleChange(roundAndClamp(v), 0, restoreFocus)
-							}
-							marks={sliderMarks}
-							restrictToMarks={restrictToMarks}
-							disabled={disabled}
-							thumbProps={{
-								onFocus: onFocusHandler,
-								onBlur: onBlurHandler,
-							}}
-						/>
-					)}
-					{definition && (
-						<TooltipWrapper label={tooltip}>
-							<NumberInput
-								key={formKey}
-								{...(formInputProps || {})}
-								w={numberWidth}
-								value={niState.latest.value}
-								min={+definition.min!}
-								max={+definition.max!}
+				<ParameterResetRow
+					show={showReset}
+					onClick={resetToDefault}
+					disabled={disabled}
+				>
+					<Group justify="space-between" w="100%" wrap="nowrap">
+						<Box w={sliderWidth}>
+							<Slider
+								w="100%"
+								label={valueClamped}
+								value={valueClamped}
+								min={min}
+								max={max}
 								step={step}
-								decimalScale={definition.decimalplaces}
-								fixedDecimalScale={true}
-								clampBehavior="none"
-								onValueChange={onNumberInputValueChange}
+								onChange={(v) => setValue(roundAndClamp(v))}
+								onChangeEnd={(v) =>
+									handleChange(
+										roundAndClamp(v),
+										0,
+										restoreFocus,
+									)
+								}
+								marks={sliderMarks}
+								restrictToMarks={restrictToMarks}
 								disabled={disabled}
-								onFocus={(e) => {
-									onFocusHandler(e);
-									if (formInputProps?.onFocus) {
-										formInputProps.onFocus(e);
-									}
-								}}
-								onBlur={(event) => {
-									commitNumberInput(niState, event);
-									if (formInputProps?.onBlur) {
-										formInputProps.onBlur();
-									}
-								}}
-								onKeyDown={(event) => {
-									if (event.key === "Enter") {
-										commitNumberInput(niState);
-									} else if (event.key === "Escape") {
-										resetNumberInput(niState);
-									}
+								thumbProps={{
+									onFocus: onFocusHandler,
+									onBlur: onBlurHandler,
 								}}
 							/>
-						</TooltipWrapper>
-					)}
-				</Group>
+						</Box>
+						<Box w={numberWidth}>
+							<TooltipWrapper label={tooltip}>
+								<NumberInput
+									key={formKey}
+									{...(formInputProps || {})}
+									w="100%"
+									value={niState.latest.value}
+									min={+definition.min!}
+									max={+definition.max!}
+									step={step}
+									decimalScale={definition.decimalplaces}
+									fixedDecimalScale={true}
+									clampBehavior="none"
+									onValueChange={onNumberInputValueChange}
+									disabled={disabled}
+									onFocus={(e) => {
+										onFocusHandler(e);
+										if (formInputProps?.onFocus) {
+											formInputProps.onFocus(e);
+										}
+									}}
+									onBlur={(event) => {
+										commitNumberInput(niState, event);
+										if (formInputProps?.onBlur) {
+											formInputProps.onBlur();
+										}
+									}}
+									onKeyDown={(event) => {
+										if (event.key === "Enter") {
+											commitNumberInput(niState);
+										} else if (event.key === "Escape") {
+											resetNumberInput(niState);
+										}
+									}}
+								/>
+							</TooltipWrapper>
+						</Box>
+					</Group>
+				</ParameterResetRow>
 			)}
 		</ParameterWrapperComponent>
 	);

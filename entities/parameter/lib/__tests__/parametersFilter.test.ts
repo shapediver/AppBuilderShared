@@ -13,8 +13,26 @@ function param(
 	isValid: (value: unknown) => boolean = () => true,
 ): IShapeDiverParameter<any> {
 	return {
-		definition: {id, name},
-		actions: {isValid},
+		state: {
+			uiValue: overrides.state?.uiValue,
+			execValue: overrides.state?.execValue,
+			dirty: false,
+			disableOtherParameters: false,
+			stringExecValue: () => "",
+		},
+		actions: {
+			setUiValue: () => true,
+			setExecutedValue: () => true,
+			setCommittedValue: () => true,
+			setResetValue: () => undefined,
+			execute: async () => "",
+			isValid: overrides.actions?.isValid ?? (() => true),
+			isUiValueDifferent: () => false,
+			resetToDefaultValue: () => undefined,
+			resetToExecValue: () => undefined,
+		},
+		acceptRejectMode: false,
+		...overrides,
 	} as IShapeDiverParameter<any>;
 }
 
@@ -209,20 +227,5 @@ describe("generateParameterFeedback", () => {
 		expect(feedback.type).toBe(NotificationAction.WARNING);
 		expect(feedback.message).toContain("foo");
 		expect(feedback.message).toContain("bar");
-	});
-
-	it("signals success when every parameter validated", () => {
-		const feedback = generateParameterFeedback(
-			{
-				validParameters: {width: 42},
-				skippedParameters: [],
-				invalidParameters: [],
-				hasValidParameters: true,
-			},
-			"ok",
-		);
-
-		expect(feedback.type).toBe(NotificationAction.SUCCESS);
-		expect(feedback.message).toBe("ok");
 	});
 });

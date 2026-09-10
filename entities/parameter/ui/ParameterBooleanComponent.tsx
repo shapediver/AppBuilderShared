@@ -6,6 +6,7 @@ import {
 } from "../config/propsParameter";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
 import ParameterLabelComponent from "./ParameterLabelComponent";
+import ParameterResetRow from "./ParameterResetRow";
 import ParameterWrapperComponent from "./ParameterWrapperComponent";
 
 /**
@@ -22,6 +23,8 @@ export default function ParameterBooleanComponent(
 		handleChange,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		formInputProps,
 		formKey,
 	} = useParameterComponentCommons<boolean>(props, 0);
@@ -33,6 +36,23 @@ export default function ParameterBooleanComponent(
 		props,
 	);
 
+	const control = (
+		<Switch
+			key={formKey}
+			{...(formInputProps || {})}
+			checked={
+				value === true || value.toString().toLowerCase() === "true"
+			}
+			onChange={(e) => {
+				handleChange(e.currentTarget.checked);
+				if (formInputProps?.onChange) {
+					formInputProps.onChange(e);
+				}
+			}}
+			disabled={disabled}
+		/>
+	);
+
 	return (
 		<ParameterWrapperComponent
 			onCancel={onCancel}
@@ -41,21 +61,13 @@ export default function ParameterBooleanComponent(
 		>
 			<ParameterLabelComponent {...props} cancel={onCancel} />
 			{definition && (
-				<Switch
-					key={formKey}
-					{...(formInputProps || {})}
-					checked={
-						value === true ||
-						value.toString().toLowerCase() === "true"
-					}
-					onChange={(e) => {
-						handleChange(e.currentTarget.checked);
-						if (formInputProps?.onChange) {
-							formInputProps.onChange(e);
-						}
-					}}
+				<ParameterResetRow
+					show={showReset}
+					onClick={resetToDefault}
 					disabled={disabled}
-				/>
+				>
+					{control}
+				</ParameterResetRow>
 			)}
 		</ParameterWrapperComponent>
 	);

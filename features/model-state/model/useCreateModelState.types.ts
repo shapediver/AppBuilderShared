@@ -1,3 +1,4 @@
+import {viewportScreenshotPropsSchema} from "@AppBuilderLib/entities/viewport/config/viewportScreenshotProps.zod";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /** Theme `defaultProps` for `useProps("CreateModelStateHook", …)`. */
@@ -7,6 +8,7 @@ export const CreateModelStateHookThemeDefaultPropsSchema = z.strictObject({
 	parameterNamesToAlwaysExclude: z.array(z.string()).optional(),
 	successMessage: z.string().optional(),
 	errorMessage: z.string().optional(),
+	screenshotProps: viewportScreenshotPropsSchema.optional(),
 });
 
 /**
@@ -46,4 +48,10 @@ export interface CreateModelStateHookThemeDefaultProps extends z.infer<
 	 * Supports the optional placeholder `{modelStateId}` when available.
 	 */
 	errorMessage?: string;
+	/**
+	 * Default screenshot settings applied when capturing the preview image
+	 * automatically (when includeImage is true and no explicit image is provided).
+	 * Callers that pass screenshotProps override this default.
+	 */
+	screenshotProps?: z.infer<typeof viewportScreenshotPropsSchema>;
 }

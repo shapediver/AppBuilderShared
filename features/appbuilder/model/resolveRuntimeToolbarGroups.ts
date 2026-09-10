@@ -154,26 +154,36 @@ export const resolveRuntimeToolbarGroups = (
 								]
 							: []),
 					...aggregatedCommands,
-					...(singleCheckbox?.props.trailingAction
-						? [
-								{
-									type: "command" as const,
-									id: `${singleCheckbox.id}-trailing-action`,
-									label: singleCheckbox.props.trailingAction
-										.label,
-									icon: singleCheckbox.props.trailingAction
-										.icon,
-									disabled:
-										singleCheckbox.props.trailingAction
-											.disabled,
-									props: {
-										execute:
-											singleCheckbox.props.trailingAction
-												.execute,
-									},
-								},
-							]
-						: []),
+					// Without a menu, the trailing actions of the checkboxes are
+					// rendered as commands: the checkboxes themselves are not
+					// rendered (unless a single one is toggleable), but e.g. the
+					// "Clear" action of an always-active selection stays available.
+					...(showMenu
+						? []
+						: items.flatMap((item) =>
+								item.type === "checkbox" &&
+								item.props.trailingAction
+									? [
+											{
+												type: "command" as const,
+												id: `${item.id}-trailing-action`,
+												label: item.props.trailingAction
+													.label,
+												icon: item.props.trailingAction
+													.icon,
+												disabled:
+													item.props.trailingAction
+														.disabled,
+												props: {
+													execute:
+														item.props
+															.trailingAction
+															.execute,
+												},
+											},
+										]
+									: [],
+							)),
 				],
 			};
 		})

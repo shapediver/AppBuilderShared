@@ -24,6 +24,36 @@ export type ToolbarItem =
 	| ToolbarMenuModel;
 export type ToolbarGroups = ToolbarItem[][];
 
+export function isToolbarActionItem(
+	item: ToolbarItem,
+): item is Extract<ToolbarItem, {type: "action"}> {
+	return item.type === "action";
+}
+
+export function isToolbarActionMenuItem(
+	item: ToolbarItem,
+): item is Extract<ToolbarItem, {type: "actionMenu"}> {
+	return item.type === "actionMenu";
+}
+
+export function isToolbarWidgetPanelItem(
+	item: ToolbarItem,
+): item is Extract<ToolbarItem, {type: "widgets"}> {
+	return item.type === "widgets";
+}
+
+export function isToolbarTabbedPanelItem(
+	item: ToolbarItem,
+): item is Extract<ToolbarItem, {type: "tabs"}> {
+	return item.type === "tabs";
+}
+
+export function isToolbarMenuModel(
+	item: ToolbarItem,
+): item is Extract<ToolbarItem, {type: "menu"}> {
+	return item.type === "menu";
+}
+
 export interface ToolbarRegistration {
 	id: string;
 	source: ToolbarSource;

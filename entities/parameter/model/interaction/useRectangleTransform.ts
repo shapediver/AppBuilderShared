@@ -11,10 +11,10 @@ import {
 	RectangleTransform,
 	updateTransformation,
 } from "@shapediver/viewer.features.transformation-tools";
-import {
+import type {
 	IRectangleTransformParameterProps,
 	ISelectionParameterProps,
-} from "@shapediver/viewer.session";
+} from "@shapediver/viewer.shared.types";
 import {mat4, vec3} from "gl-matrix";
 import {useCallback, useEffect, useId, useMemo, useRef, useState} from "react";
 import {useRestrictions} from "../drawing/useRestrictions";
@@ -121,6 +121,9 @@ export function useRectangleTransform(
 		return {
 			nameFilter,
 			hover: rectangleTransformProps.hover,
+			selectionColor: rectangleTransformProps.selectionColor,
+			availableColor: rectangleTransformProps.availableColor,
+			hoverColor: rectangleTransformProps.hoverColor,
 			minimumSelection: rectangleTransformProps.minimumSelection ?? 0,
 			maximumSelection: rectangleTransformProps.maximumSelection ?? 1,
 			deselectOnEmpty: rectangleTransformProps.deselectOnEmpty ?? false,
@@ -142,7 +145,7 @@ export function useRectangleTransform(
 		activate && !maxReached,
 		undefined,
 		strictNaming,
-		true,
+		false,
 	);
 
 	// disable selection once the maximum number of objects has been reached

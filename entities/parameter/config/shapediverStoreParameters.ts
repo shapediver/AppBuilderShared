@@ -84,7 +84,10 @@ export interface IParameterChanges {
 	 * because they might have been overridden by a pre-execution hook.
 	 */
 	wait: Promise<{[parameterId: string]: any}>;
-	/** Accept the changes, this resolves wait */
+	/**
+	 * Accept the changes, this resolves wait.
+	 * Resolves undefined in case the execution failed.
+	 */
 	accept: (
 		/** If true, skip the creation of a history entry after successful execution. */
 		skipHistory?: boolean,
@@ -101,7 +104,7 @@ export interface IParameterChanges {
 		 * like output actions.
 		 */
 		skipUrlUpdate?: boolean,
-	) => Promise<{[parameterId: string]: any}>;
+	) => Promise<{[parameterId: string]: any} | undefined>;
 	/** Reject the changes, this rejects wait */
 	reject: () => void;
 	/** True if changes are currently being executed */
@@ -197,6 +200,17 @@ export type IGenericParameterExecutor = (
 	 */
 	skipUrlUpdate?: boolean,
 ) => Promise<unknown | void>;
+
+/**
+ * Callback for committing the value of a generic parameter without executing it,
+ * e.g. a parameter reset after a computation (see the "resetValue" setting of
+ * parameters). The committed value is the value the next execution shall use.
+ * @see {@link IShapeDiverParameterActions.setExecutedValue}
+ *
+ * @param id Id of the generic parameter.
+ * @param value The committed value.
+ */
+export type IGenericParameterCommitter = (id: string, value: any) => void;
 
 /**
  * Hook to be executed before executor.
@@ -345,6 +359,7 @@ export interface IShapeDiverStoreParameters {
 			| IGenericParameterDefinition[],
 		executor: IGenericParameterExecutor,
 		dependsOnSessions: string[] | string | undefined,
+		commit?: IGenericParameterCommitter,
 	) => void;
 
 	/**
@@ -364,6 +379,7 @@ export interface IShapeDiverStoreParameters {
 			| IGenericParameterDefinition[],
 		executor: IGenericParameterExecutor,
 		dependsOnSessions: string[] | string | undefined,
+		commit?: IGenericParameterCommitter,
 	) => void;
 
 	/**

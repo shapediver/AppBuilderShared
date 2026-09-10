@@ -15,11 +15,6 @@ jest.mock("@shapediver/viewer.session", () => ({
 	PARAMETER_VISUALIZATION: {
 		SLIDER: "slider",
 	},
-	TAG3D_JUSTIFICATION: {
-		LEFT: "left",
-		CENTER: "center",
-		RIGHT: "right",
-	},
 }));
 
 jest.mock("@shapediver/viewer.shared.types", () => ({
@@ -29,6 +24,11 @@ jest.mock("@shapediver/viewer.shared.types", () => ({
 	CAMERA_TYPE: {
 		PERSPECTIVE: "perspective",
 		ORTHOGRAPHIC: "orthographic",
+	},
+	TAG3D_JUSTIFICATION: {
+		LEFT: "left",
+		CENTER: "center",
+		RIGHT: "right",
 	},
 }));
 
@@ -90,5 +90,39 @@ describe("parseAppBuilderSkeleton", () => {
 		expect((result as Error).message).toMatch(
 			/^App Builder layout invalid:\n/,
 		);
+	});
+
+	it("accepts image URLs in icon fields", () => {
+		const skeleton = {
+			version: "1.0" as const,
+			containers: [
+				{
+					name: "left",
+					tabs: [
+						{
+							name: "Brand",
+							icon: "https://example.com/tab.svg",
+							widgets: [
+								{
+									type: "actions",
+									props: {
+										actions: [
+											{
+												type: "closeConfigurator",
+												props: {
+													icon: "/test.svg",
+												},
+											},
+										],
+									},
+								},
+							],
+						},
+					],
+				},
+			],
+		};
+
+		expect(parseAppBuilderSkeleton(skeleton, envOn)).toEqual(skeleton);
 	});
 });

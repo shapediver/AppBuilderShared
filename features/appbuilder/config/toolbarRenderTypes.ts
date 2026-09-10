@@ -1,5 +1,7 @@
 import type {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import type {
+	AppBuilderToolbarAlign,
+	AppBuilderToolbarSide,
 	IAppBuilderControlActionRef,
 	IAppBuilderToolbarExportItem,
 	IAppBuilderToolbarOutputItem,
@@ -15,6 +17,8 @@ export type ToolbarItemBase<TType extends string, TProps> = {
 	label: string;
 	icon?: IconType;
 	tooltip?: string;
+	labelSide?: AppBuilderToolbarSide;
+	labelAlign?: AppBuilderToolbarAlign;
 	disabled?: boolean;
 	props: TProps;
 };
@@ -53,7 +57,10 @@ export type ToolbarTabsItem = ToolbarItemBase<
 >;
 
 /** Built-in accept/reject controls injected into a toolbar at runtime. */
-export type ToolbarAcceptRejectItem = ToolbarItemBase<"acceptReject", {}>;
+export type ToolbarAcceptRejectItem = ToolbarItemBase<
+	"acceptReject",
+	Record<string, never>
+>;
 
 /** A runtime operation rendered as a toolbar button or menu row. */
 export type ToolbarCommandItem = ToolbarItemBase<

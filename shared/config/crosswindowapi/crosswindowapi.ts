@@ -76,6 +76,9 @@ export interface ICrossWindowApi {
 	 * @param type
 	 */
 	handshake(type: string, timeout?: number): Promise<ICrossWindowPeerInfo>;
+
+	/** Stop handshake() polling and the handshake listener. No-op if handshake was not started or already finished. */
+	cancelHandshake(): void;
 }
 
 /**

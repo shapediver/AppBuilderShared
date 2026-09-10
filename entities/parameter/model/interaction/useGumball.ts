@@ -10,10 +10,10 @@ import {
 	GumballTransform,
 	updateTransformation,
 } from "@shapediver/viewer.features.transformation-tools";
-import {
+import type {
 	IGumballTransformParameterProps,
 	ISelectionParameterProps,
-} from "@shapediver/viewer.session";
+} from "@shapediver/viewer.shared.types";
 import {mat4} from "gl-matrix";
 import {useCallback, useEffect, useId, useMemo, useRef} from "react";
 import {useRestrictions} from "../drawing/useRestrictions";
@@ -120,6 +120,9 @@ export function useGumball(
 		return {
 			nameFilter,
 			hover: gumballProps.hover,
+			selectionColor: gumballProps.selectionColor,
+			availableColor: gumballProps.availableColor,
+			hoverColor: gumballProps.hoverColor,
 			minimumSelection: gumballProps.minimumSelection ?? 0,
 			maximumSelection: gumballProps.maximumSelection ?? Infinity,
 			deselectOnEmpty: gumballProps.deselectOnEmpty ?? false,
@@ -138,7 +141,7 @@ export function useGumball(
 		activate,
 		undefined,
 		strictNaming,
-		true,
+		false,
 	);
 
 	// convert the dragging data

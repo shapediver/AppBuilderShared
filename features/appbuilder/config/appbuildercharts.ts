@@ -1,10 +1,38 @@
-import {
-	AreaChartCurveType,
-	AreaChartType,
-	BarChartType,
-	DonutChartCell,
-	LineChartCurveType,
-} from "@mantine/charts";
+import type {IAppBuilderColor} from "./appbuilderColor";
+
+/** Curve interpolation used by line and area charts. */
+export type IAppBuilderLineChartCurveType =
+	| "bump"
+	| "linear"
+	| "natural"
+	| "monotone"
+	| "step"
+	| "stepBefore"
+	| "stepAfter";
+
+/** Curve interpolation used by area charts. Same set as line charts. */
+export type IAppBuilderAreaChartCurveType = IAppBuilderLineChartCurveType;
+
+/** How area series are stacked. */
+export type IAppBuilderAreaChartType =
+	| "default"
+	| "stacked"
+	| "percent"
+	| "split";
+
+/** How bar series are stacked. */
+export type IAppBuilderBarChartType =
+	| "default"
+	| "stacked"
+	| "percent"
+	| "waterfall";
+
+/** A single slice of a pie or donut chart. */
+export interface IAppBuilderDonutChartCell {
+	name: string;
+	value: number;
+	color: IAppBuilderColor;
+}
 
 /** Properties of round chart widget */
 export interface IAppBuilderWidgetPropsRoundChart {
@@ -17,7 +45,7 @@ export interface IAppBuilderWidgetPropsRoundChart {
 	/** Whether or not to display badges for the legend, true by default */
 	legend?: boolean;
 	/** Data set used for the chart */
-	data: DonutChartCell[];
+	data: IAppBuilderDonutChartCell[];
 }
 
 /**
@@ -48,7 +76,7 @@ export interface IAppBuilderWidgetPropsChartDataSet {
 	keys: string[];
 	series: {
 		name: string;
-		color: string;
+		color: IAppBuilderColor;
 		values: number[];
 	}[];
 }
@@ -68,21 +96,21 @@ export interface IAppBuilderWidgetPropsChartCommon {
 /** Properties of line chart widget */
 export interface IAppBuilderWidgetPropsLineChart extends IAppBuilderWidgetPropsChartCommon {
 	/** Type of the curve, 'monotone' by default. */
-	style?: LineChartCurveType;
+	style?: IAppBuilderLineChartCurveType;
 }
 
 /** Properties of area chart widget */
 export interface IAppBuilderWidgetPropsAreaChart extends IAppBuilderWidgetPropsChartCommon {
 	/** Style of the plotted curve, 'monotone' by default */
-	style?: AreaChartCurveType;
+	style?: IAppBuilderAreaChartCurveType;
 	/** Controls how chart areas are positioned relative to each other, 'default' by default */
-	type?: AreaChartType;
+	type?: IAppBuilderAreaChartType;
 }
 
 /** Properties of bar chart widget */
 export interface IAppBuilderWidgetPropsBarChart extends IAppBuilderWidgetPropsChartCommon {
 	/** Controls how bars are positioned relative to each other, 'default' by default */
-	type?: BarChartType;
+	type?: IAppBuilderBarChartType;
 }
 
 /**

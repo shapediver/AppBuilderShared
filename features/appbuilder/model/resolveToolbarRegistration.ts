@@ -1,10 +1,8 @@
+import {IAppBuilderToolbarActionItem} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
-	IAppBuilderToolbarActionItem,
 	isToolbarActionMenuItem,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import type {
-	ToolbarItem,
-	ToolbarRegistration,
+	type ToolbarItem,
+	type ToolbarRegistration,
 } from "@AppBuilderLib/features/appbuilder/config/shapediverStoreToolbars";
 import type {
 	ResolvedToolbarRegistration,
@@ -27,6 +25,8 @@ const resolveActionItem = (
 	label: item.label ?? item.props.label ?? item.props.definition.type,
 	icon: item.icon ?? item.props.icon,
 	tooltip: item.tooltip ?? item.props.tooltip,
+	labelSide: item.labelSide,
+	labelAlign: item.labelAlign,
 	presentation: item.presentation,
 	props: {
 		...item.props,
@@ -54,6 +54,8 @@ const resolveItem = (
 			label: item.label ?? "Toolbar item",
 			icon: item.icon,
 			tooltip: item.tooltip,
+			labelSide: item.labelSide,
+			labelAlign: item.labelAlign,
 			props: {
 				sections: item.props.sections.map((section, sectionIndex) => ({
 					id: `${item.id ?? fallbackId}-section-${sectionIndex}`,
@@ -79,6 +81,8 @@ const resolveItem = (
 				label: item.label ?? item.props.name,
 				icon: item.icon,
 				tooltip: item.tooltip,
+				labelSide: item.labelSide,
+				labelAlign: item.labelAlign,
 				props: item.props,
 			};
 			return resolved;
@@ -90,6 +94,8 @@ const resolveItem = (
 				label: item.label ?? item.props.name,
 				icon: item.icon,
 				tooltip: item.tooltip,
+				labelSide: item.labelSide,
+				labelAlign: item.labelAlign,
 				props: item.props,
 			};
 			return resolved;
@@ -101,6 +107,8 @@ const resolveItem = (
 				label: item.label ?? item.props.name,
 				icon: item.icon,
 				tooltip: item.tooltip,
+				labelSide: item.labelSide,
+				labelAlign: item.labelAlign,
 				props: item.props,
 			};
 			return resolved;
@@ -112,6 +120,8 @@ const resolveItem = (
 				label: item.label ?? "Toolbar item",
 				icon: item.icon,
 				tooltip: item.tooltip,
+				labelSide: item.labelSide,
+				labelAlign: item.labelAlign,
 				props: item.props,
 			};
 			return resolved;
@@ -123,6 +133,8 @@ const resolveItem = (
 				label: item.label ?? "Toolbar item",
 				icon: item.icon,
 				tooltip: item.tooltip,
+				labelSide: item.labelSide,
+				labelAlign: item.labelAlign,
 				props: item.props,
 			};
 			return resolved;

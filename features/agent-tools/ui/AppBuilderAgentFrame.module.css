@@ -1,0 +1,40 @@
+.wrap {
+	position: relative;
+	width: min(24rem, 90vw);
+	height: min(32rem, 70vh);
+	min-width: 16rem;
+	min-height: 12rem;
+	max-width: 90vw;
+	max-height: 70vh;
+}
+
+.iframe {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	display: block;
+	background: #fff;
+}
+
+.dragging .iframe {
+	pointer-events: none;
+}
+
+.handle {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 1rem;
+	height: 1rem;
+	padding: 0;
+	border: 0;
+	appearance: none;
+	cursor: nesw-resize;
+	touch-action: none;
+	z-index: 1;
+	background: linear-gradient(
+		225deg,
+		transparent 50%,
+		rgba(0, 0, 0, 0.28) 50%
+	);
+}

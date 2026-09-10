@@ -15,20 +15,31 @@ jest.mock("../AppBuilderToolbarPopoverContent", () => ({
 
 jest.mock(
 	"@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton",
-	() => ({
-		__esModule: true,
-		default: ({
-			label,
-			disabled,
-			onClick,
-		}: {
-			label: string;
-			disabled?: boolean;
-			onClick?: React.MouseEventHandler<HTMLButtonElement>;
-		}) => (
-			<button aria-label={label} disabled={disabled} onClick={onClick} />
-		),
-	}),
+	() => {
+		const actual = jest.requireActual(
+			"@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton",
+		) as typeof import("@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton");
+
+		return {
+			...actual,
+			__esModule: true,
+			default: ({
+				label,
+				disabled,
+				onClick,
+			}: {
+				label: string;
+				disabled?: boolean;
+				onClick?: React.MouseEventHandler<HTMLButtonElement>;
+			}) => (
+				<button
+					aria-label={label}
+					disabled={disabled}
+					onClick={onClick}
+				/>
+			),
+		};
+	},
 );
 
 describe("AppBuilderToolbarPopoverButton", () => {

@@ -1,3 +1,5 @@
+import {z} from "@AppBuilderLib/shared/lib/zod";
+
 jest.mock("@shapediver/viewer.session", () => ({
 	PARAMETER_TYPE: {
 		Bool: "Bool",
@@ -15,15 +17,9 @@ jest.mock("@shapediver/viewer.session", () => ({
 	PARAMETER_VISUALIZATION: {
 		SLIDER: "slider",
 	},
-	TAG3D_JUSTIFICATION: {
-		LEFT: "left",
-		CENTER: "center",
-		RIGHT: "right",
-	},
 }));
 
 jest.mock("@shapediver/viewer.shared.types", () => {
-	const {z} = require("zod");
 	return {
 		ATTRIBUTE_VISUALIZATION: {
 			LINEAR: "linear",
@@ -31,6 +27,11 @@ jest.mock("@shapediver/viewer.shared.types", () => {
 		CAMERA_TYPE: {
 			PERSPECTIVE: "perspective",
 			ORTHOGRAPHIC: "orthographic",
+		},
+		TAG3D_JUSTIFICATION: {
+			LEFT: "left",
+			CENTER: "center",
+			RIGHT: "right",
 		},
 		IRectangleTransformParameterPropsJsonSchema: z.strictObject({
 			enableRotation: z.boolean().optional(),
@@ -85,8 +86,15 @@ type ThemeComponentCase = {
 const APP_OWNED_THEME_COMPONENT_CASES = [
 	{
 		component: "AddToCartAction",
-		validDefaultProps: {successMessage: "ok"},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: {
+			successMessage: "ok",
+			screenshotProps: {
+				quality: 0.8,
+				resolution: {width: 256, height: 256},
+				camera: {name: "top"},
+			},
+		},
+		invalidDefaultProps: {screenshotProps: {quality: 2}},
 	},
 	{
 		component: "AppBuilderContainer",
@@ -248,8 +256,14 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 	},
 	{
 		component: "CreateModelStateHook",
-		validDefaultProps: {parameterNamesToInclude: ["width"]},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: {
+			parameterNamesToInclude: ["width"],
+			screenshotProps: {
+				quality: 0.8,
+				resolution: {width: 256, height: 256},
+			},
+		},
+		invalidDefaultProps: {screenshotProps: {quality: 2}},
 	},
 	{
 		component: "ExportButtonComponent",

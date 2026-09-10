@@ -311,7 +311,7 @@ export default function AppBuilderFormWidgetComponent(props: Props) {
 			},
 			execute: (): Promise<any> =>
 				new Promise((resolve) => resolve(true)),
-			setUiAndExecValue: (v): boolean => {
+			setExecutedValue: (v): boolean => {
 				setValues((prev) => ({
 					...prev,
 					[paramId]: v,

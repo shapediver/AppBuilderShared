@@ -15,11 +15,6 @@ jest.mock("@shapediver/viewer.session", () => ({
 	PARAMETER_VISUALIZATION: {
 		SLIDER: "slider",
 	},
-	TAG3D_JUSTIFICATION: {
-		LEFT: "left",
-		CENTER: "center",
-		RIGHT: "right",
-	},
 }));
 
 jest.mock("@shapediver/viewer.shared.types", () => ({
@@ -29,6 +24,11 @@ jest.mock("@shapediver/viewer.shared.types", () => ({
 	CAMERA_TYPE: {
 		PERSPECTIVE: "perspective",
 		ORTHOGRAPHIC: "orthographic",
+	},
+	TAG3D_JUSTIFICATION: {
+		LEFT: "left",
+		CENTER: "center",
+		RIGHT: "right",
 	},
 }));
 
@@ -149,7 +149,6 @@ describe("Interaction parameter schema", () => {
 			});
 			expect(result.success).toBe(false);
 		});
-
 
 		it("accepts alwaysActive without explicit presentation", () => {
 			const result = validateAppBuilder({

@@ -269,6 +269,10 @@ export default function AppBuilderToolbar(props: Props) {
 												label: toolbarItem.label,
 												icon: toolbarItem.icon,
 												tooltip: toolbarItem.tooltip,
+												labelSide:
+													toolbarItem.labelSide,
+												labelAlign:
+													toolbarItem.labelAlign,
 												disabled:
 													toolbarItem.disabled ||
 													toolbarItem.props.readOnly,

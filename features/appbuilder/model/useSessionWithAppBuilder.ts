@@ -260,6 +260,9 @@ export function useSessionWithAppBuilder(
 		sessionError ?? (parsedData instanceof Error ? parsedData : undefined);
 	const appBuilderData = parsedData instanceof Error ? undefined : parsedData;
 	const hasAppBuilderOutput = !!outputApi;
+	// "" = session inspected, no AppBuilder output (parsedData stays undefined)
+	const appBuilderParseSettled =
+		parsedData !== undefined || appBuilderOutputId === "";
 
 	// register custom parameters
 	const {loaded: customParametersLoaded} = useAppBuilderCustomParameters({
@@ -311,6 +314,7 @@ export function useSessionWithAppBuilder(
 		error,
 		appBuilderData,
 		hasAppBuilderOutput,
+		appBuilderParseSettled,
 		customParametersLoaded,
 		sessionSettings,
 	};

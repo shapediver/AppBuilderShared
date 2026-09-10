@@ -1,17 +1,13 @@
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
-import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
-import {useCustomTheme} from "@AppBuilderLib/shared/ui/theme/useCustomTheme";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
-import {registerWebMcpTools} from "../adapters/webmcp/registerWebMcpTools";
-import {buildWebMcpDeps} from "../adapters/webmcp/webmcpDeps";
 import {
 	getModelContext,
 	getWebMcpEnvironment,
 	isWebMcpAvailable,
 } from "../lib/webmcpAvailability";
+import {registerResolvedTools} from "./registerResolvedTools";
 import type {
 	UseWebMcpToolsProps,
 	UseWebMcpToolsResult,
@@ -20,7 +16,13 @@ import type {
 export function useWebMcpTools(
 	props: UseWebMcpToolsProps,
 ): UseWebMcpToolsResult {
-	const {namespace, enabled = isWebMcpAvailable(), disabledTools} = props;
+	const {
+		namespace,
+		enabled = isWebMcpAvailable(),
+		resolvedTools,
+		toolHandlers,
+		snapshotComplete,
+	} = props;
 	const [registered, setRegistered] = useState(false);
 	const environment = getWebMcpEnvironment();
 	const ready = registered && environment.ready;
@@ -31,61 +33,28 @@ export function useWebMcpTools(
 		})),
 	);
 
-	const {getParameters, batchParameterValueUpdate} =
-		useShapeDiverStoreParameters(
-			useShallow((state) => ({
-				getParameters: state.getParameters,
-				batchParameterValueUpdate: state.batchParameterValueUpdate,
-			})),
-		);
-
-	const {createModelState} = useCreateModelState({
-		namespace: namespace ?? "",
-	});
-	const {importModelState} = useImportModelState({
-		namespace: namespace ?? "",
-	});
-	const {theme} = useCustomTheme();
-	const namespaceRef = useRef<string>(namespace ?? "");
-	namespaceRef.current = namespace ?? "";
-
-	const getParametersRef = useRef(getParameters);
-	getParametersRef.current = getParameters;
-
-	const batchParameterValueUpdateRef = useRef(batchParameterValueUpdate);
-	batchParameterValueUpdateRef.current = batchParameterValueUpdate;
-
-	const createModelStateRef = useRef(createModelState);
-	createModelStateRef.current = createModelState;
-
-	const importModelStateRef = useRef(importModelState);
-	importModelStateRef.current = importModelState;
-
-	const componentSettingsRef = useRef<Record<string, any> | undefined>(
-		undefined,
+	const {getParameters} = useShapeDiverStoreParameters(
+		useShallow((state) => ({
+			getParameters: state.getParameters,
+		})),
 	);
-	componentSettingsRef.current = (
-		theme as any
-	)?.components?.ParameterSelectComponent?.defaultProps?.componentSettings;
-
-	// Latest disabledTools for use inside the effect; deps compare by content
-	// (sorted join) so a new array instance with the same names does NOT trigger
-	// a re-register cycle.
-	const disabledToolsRef = useRef<string[] | undefined>(disabledTools);
-	disabledToolsRef.current = disabledTools;
-	const disabledKey = (disabledTools ?? []).slice().sort().join(",");
 
 	const sessionReady = !!namespace && !!sessions[namespace];
 	const paramsPopulated =
 		!!namespace && Object.keys(getParameters(namespace)).length > 0;
 
+	const resolvedToolsRef = useRef(resolvedTools);
+	resolvedToolsRef.current = resolvedTools;
+	const toolHandlersRef = useRef(toolHandlers);
+	toolHandlersRef.current = toolHandlers;
+
 	useEffect(() => {
-		if (enabled === false || !isWebMcpAvailable()) {
+		if (!enabled || !isWebMcpAvailable()) {
 			setRegistered(false);
 			return;
 		}
 
-		if (!sessionReady || !paramsPopulated) {
+		if (!sessionReady || !paramsPopulated || !snapshotComplete) {
 			setRegistered(false);
 			return;
 		}
@@ -93,28 +62,15 @@ export function useWebMcpTools(
 		const controller = new AbortController();
 		let cancelled = false;
 
-		const refs = {
-			namespaceRef,
-			getParametersRef,
-			batchParameterValueUpdateRef,
-			createModelStateRef,
-			importModelStateRef,
-			componentSettingsRef,
-			listParameterNamespaces: () =>
-				Object.keys(
-					useShapeDiverStoreParameters.getState().parameterStores,
-				),
-		};
-
 		const registerTools = async () => {
 			const modelContext = getModelContext();
 
 			try {
-				await registerWebMcpTools(
+				await registerResolvedTools(
 					modelContext,
-					() => buildWebMcpDeps(refs),
+					resolvedToolsRef.current,
+					toolHandlersRef.current,
 					controller.signal,
-					new Set(disabledToolsRef.current ?? []),
 				);
 
 				if (!cancelled) {
@@ -134,14 +90,14 @@ export function useWebMcpTools(
 			controller.abort();
 			setRegistered(false);
 		};
-	}, [enabled, namespace, sessionReady, paramsPopulated, disabledKey]);
+	}, [enabled, namespace, sessionReady, paramsPopulated, snapshotComplete]);
 
 	const environmentSnapshot = {
 		modelContextAvailable: environment.modelContextAvailable,
 		crossOriginIsolated: environment.crossOriginIsolated,
 	};
 
-	if (enabled === false || !isWebMcpAvailable()) {
+	if (!enabled || !isWebMcpAvailable()) {
 		return {
 			registered: false,
 			ready: false,

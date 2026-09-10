@@ -2,11 +2,13 @@ import {CUSTOM_SESSION_ID_POSTFIX} from "@AppBuilderLib/features/appbuilder/mode
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useShallow} from "zustand/react/shallow";
 import {IShapeDiverParameterState} from "../config/parameter";
 import {
 	PropsParameterComponent,
 	PropsParameterWithForm,
 } from "../config/propsParameter";
+import {IParameterResetValueSettings} from "../lib/parameterResetValue";
 import {useParameter} from "./useParameter";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
@@ -49,6 +51,23 @@ export function useParameterComponentCommons<T>(
 	const customActions = props.customActions || {};
 	const actions = {...paramActions, ...customActions};
 
+	// A reset value defined by the overrides of the parameter reference applies
+	// to the parameter: the rendered reference is the source of truth for the
+	// override registered with the parameter store (which applies the reset
+	// after executions). A reference rendered without a reset value removes a
+	// registered one (e.g. a model which defines the reset value only for some
+	// computations). The registration is kept when the component unmounts.
+	const overrideResetValue = (
+		(props.overrides as {settings?: unknown} | undefined)?.settings as
+			| IParameterResetValueSettings
+			| undefined
+	)?.resetValue;
+	useEffect(() => {
+		paramActions.setResetValue(
+			overrideResetValue === null ? undefined : overrideResetValue,
+		);
+	}, [overrideResetValue, paramActions]);
+
 	// Read acceptRejectMode from the store as a fallback.
 	// The prop may be undefined if the component renders before the store is populated
 	// (accept-reject mode is stored per-parameter in the session's parameter store).
@@ -86,6 +105,13 @@ export function useParameterComponentCommons<T>(
 				state.parameterChanges[delegateNamespace]?.executing ?? false,
 		),
 	);
+	const delegateStores = useShapeDiverStoreParameters(
+		useShallow((store) =>
+			delegates.map(({namespace: delegateNamespace, parameterId}) =>
+				store.getParameter(delegateNamespace, parameterId),
+			),
+		),
+	);
 
 	const processesInSession = useShapeDiverStoreProcessManager((state) => {
 		// check if there are currently processes running in the session
@@ -121,6 +147,56 @@ export function useParameterComponentCommons<T>(
 
 	const debounceTimeout = acceptRejectMode ? 0 : debounceTimeoutForExecution;
 	const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+	const delegatesInitializedRef = useRef(false);
+
+	const executeDelegates = useCallback(
+		(value: T | string, forceImmediate: boolean, forceSameValue = false) =>
+			delegates.flatMap(({namespace: delegateNamespace, parameterId}) => {
+				const delegate = useShapeDiverStoreParameters
+					.getState()
+					.getParameter(delegateNamespace, parameterId);
+				if (!delegate) {
+					Logger.warn(
+						`Delegate parameter ${parameterId} does not exist for session namespace ${delegateNamespace}.`,
+					);
+					return [];
+				}
+
+				const delegateActions = delegate.getState().actions;
+				let delegateValue = value;
+				let valueWasSet = delegateActions.setUiValue(delegateValue);
+				if (!valueWasSet) {
+					delegateValue = actions.stringify?.(value) ?? `${value}`;
+					valueWasSet = delegateActions.setUiValue(delegateValue);
+				}
+				if (!valueWasSet) {
+					Logger.warn(
+						`setUiValue failed for delegate parameter ${parameterId}.`,
+						delegateValue,
+					);
+					return [];
+				}
+
+				return [
+					delegateActions.execute(
+						forceImmediate,
+						undefined,
+						undefined,
+						undefined,
+						forceSameValue,
+					),
+				];
+			}),
+		[actions, delegates],
+	);
+
+	useEffect(() => {
+		if (delegatesInitializedRef.current || delegates.length === 0) return;
+		if (delegateStores.some((delegate) => !delegate)) return;
+
+		delegatesInitializedRef.current = true;
+		void Promise.all(executeDelegates(state.commitValue, true));
+	}, [delegateStores, delegates.length, executeDelegates, state.commitValue]);
 
 	const handleChange = useCallback(
 		(
@@ -134,50 +210,6 @@ export function useParameterComponentCommons<T>(
 			debounceRef.current = setTimeout(
 				() => {
 					if (actions.setUiValue(curval)) {
-						const delegateExecutions = delegates.flatMap(
-							({namespace: delegateNamespace, parameterId}) => {
-								const delegate = useShapeDiverStoreParameters
-									.getState()
-									.getParameter(
-										delegateNamespace,
-										parameterId,
-									);
-								if (!delegate) {
-									Logger.warn(
-										`Delegate parameter ${parameterId} does not exist for session namespace ${delegateNamespace}.`,
-									);
-									return [];
-								}
-
-								const delegateActions =
-									delegate.getState().actions;
-								let delegateValue = curval;
-								let valueWasSet = delegateActions.setUiValue(delegateValue);
-								if (!valueWasSet) {
-									delegateValue =
-										actions.stringify?.(curval) ?? `${curval}`;
-									valueWasSet =
-										delegateActions.setUiValue(delegateValue);
-								}
-								if (!valueWasSet) {
-									Logger.warn(
-										`setUiValue failed for delegate parameter ${parameterId}.`,
-										delegateValue,
-									);
-									return [];
-								}
-
-								return [
-									delegateActions.execute(
-										!acceptRejectMode,
-										undefined,
-										undefined,
-										undefined,
-										forceSameValue,
-									),
-								];
-							},
-						);
 						Promise.all([
 							actions.execute(
 								!acceptRejectMode,
@@ -186,7 +218,11 @@ export function useParameterComponentCommons<T>(
 								undefined,
 								forceSameValue,
 							),
-							...delegateExecutions,
+							...executeDelegates(
+								curval,
+								!acceptRejectMode,
+								forceSameValue,
+							),
 						]).then(() => cb());
 					} else {
 						Logger.warn(
@@ -198,7 +234,13 @@ export function useParameterComponentCommons<T>(
 				timeout === undefined ? debounceTimeout : timeout,
 			);
 		},
-		[acceptRejectMode, debounceTimeout, actions, definition, delegates],
+		[
+			acceptRejectMode,
+			debounceTimeout,
+			actions,
+			definition,
+			executeDelegates,
+		],
 	);
 
 	useEffect(() => {
@@ -218,27 +260,27 @@ export function useParameterComponentCommons<T>(
 		(() => void) | undefined
 	>(undefined);
 
-	// Track previous dirty/execValue to detect cancellation vs acceptance
+	// Track previous dirty/commitValue to detect cancellation vs acceptance
 	const prevDirtyRef = useRef(state.dirty);
-	const prevExecValueRef = useRef(state.execValue);
+	const prevCommitValueRef = useRef(state.commitValue);
 
 	useEffect(() => {
 		const wasDirty = prevDirtyRef.current;
-		const prevExecValue = prevExecValueRef.current;
+		const prevCommitValue = prevCommitValueRef.current;
 		prevDirtyRef.current = state.dirty;
-		prevExecValueRef.current = state.execValue;
+		prevCommitValueRef.current = state.commitValue;
 
-		// dirty true→false with execValue unchanged = cancelled (X-icon or global Reject)
-		// dirty true→false with execValue changed = accepted
+		// dirty true→false with commitValue unchanged = cancelled (X-icon or global Reject)
+		// dirty true→false with commitValue changed = accepted
 		if (
 			wasDirty &&
 			!state.dirty &&
 			acceptRejectMode &&
-			state.execValue === prevExecValue
+			state.commitValue === prevCommitValue
 		) {
 			onCancelCallback?.();
 		}
-	}, [state.dirty, state.execValue, acceptRejectMode, onCancelCallback]);
+	}, [state.dirty, state.commitValue, acceptRejectMode, onCancelCallback]);
 
 	/**
 	 * Provide a possibility to cancel if
@@ -252,14 +294,14 @@ export function useParameterComponentCommons<T>(
 		() =>
 			acceptRejectMode && state.dirty && !executing
 				? () => {
-						handleChange(state.execValue, 0);
+						handleChange(state.commitValue, 0);
 					}
 				: undefined,
 		[
 			acceptRejectMode,
 			state.dirty,
 			executing,
-			state.execValue,
+			state.commitValue,
 			handleChange,
 		],
 	);
@@ -281,6 +323,13 @@ export function useParameterComponentCommons<T>(
 	const memoizedDefinition = useMemo(() => {
 		return applyOverrides(definition, props.overrides);
 	}, [definition, props.overrides]);
+
+	const showReset = memoizedDefinition.settings?.resettable === true;
+
+	const resetToDefault = useCallback(
+		() => handleChange(memoizedDefinition.defval!, 0),
+		[handleChange, memoizedDefinition.defval],
+	);
 
 	// Extract form from props if provided
 	const form = formFromProps;
@@ -308,6 +357,8 @@ export function useParameterComponentCommons<T>(
 		setOnCancelCallback,
 		onCancel,
 		disabled,
+		showReset,
+		resetToDefault,
 		sessionDependencies,
 		// Form instance (optional)
 		form,

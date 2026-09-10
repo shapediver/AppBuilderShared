@@ -11,6 +11,7 @@ export interface CustomCSSProperties extends CSSProperties {
 	"--icon-stroke-width"?: string | number;
 }
 
+/** Iconify name/object, or an image URL (http(s), data, path; SVG and common rasters). */
 export type IconType = IconifyIconDefinition | string;
 
 /** AppBuilder icon props (Iconify + theme defaults via `useProps("Icon", …)`). */

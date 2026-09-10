@@ -1,5 +1,6 @@
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import {IAppBuilderWidgetPropsActions} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {IAppBuilderWidgetPropsActions} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {legacyActionToDefinition} from "@AppBuilderLib/features/appbuilder/lib/legacyActionToDefinition";
 import {AppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
 import {
@@ -49,13 +50,14 @@ export default function AppBuilderActionsWidgetComponent(
 	}
 
 	const actionComponents = actions.map((action, i) => {
-		const {icon, label, tooltip, ...props} = action.props;
+		const {id, icon, label, tooltip} = action.props;
 		return AppBuilderActionFromType(
 			{
+				id,
 				label,
 				icon,
 				tooltip,
-				definition: {type: action.type, props},
+				definition: legacyActionToDefinition(action),
 			},
 			namespace,
 			i,

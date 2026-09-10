@@ -30,6 +30,10 @@ const createSessionIdentifier = function (
 
 const latestSessionNodes: {[sessionId: string]: ITreeNode | undefined} = {};
 
+// The Viewer API objects are mutable, which means Zustand's previous state
+// cannot tell us whether session.node changed. Keep that observation separately.
+const observedSessionNodes: {[sessionId: string]: ITreeNode | undefined} = {};
+
 const setLatestSessionNode = (sessionId: string, node?: ITreeNode) => {
 	if (node) {
 		latestSessionNodes[sessionId] = node;
@@ -41,7 +45,37 @@ const setLatestSessionNode = (sessionId: string, node?: ITreeNode) => {
 const getLatestSessionNode = (sessionId: string) =>
 	latestSessionNodes[sessionId];
 
+// The nodes replaced by the latest session update. session.node can still refer
+// to the replaced node for a while after the update callback (it lags behind).
+const replacedSessionNodes: {[sessionId: string]: ITreeNode | undefined} = {};
+
+/**
+ * Promote session.node to the callback cache only after its reference changes.
+ * This preserves a newer callback node during a remount and releases it once
+ * session.node catches up.
+ */
+const syncLatestSessionNode = (sessionId: string, node?: ITreeNode) => {
+	if (observedSessionNodes[sessionId] === node) return;
+
+	observedSessionNodes[sessionId] = node;
+	// session.node can be unavailable while the viewer processes a response:
+	// keep the node seen by the update callback.
+	if (!node) return;
+	// session.node still refers to the node replaced by the latest update:
+	// keep the newer node seen by the update callback.
+	if (node === replacedSessionNodes[sessionId]) return;
+	setLatestSessionNode(sessionId, node);
+};
+
 const latestOutputNodes: {
+	[sessionId: string]: {
+		[outputId: string]: ITreeNode | undefined;
+	};
+} = {};
+
+// The Viewer API objects are mutable, which means Zustand's previous state
+// cannot tell us whether output.node changed. Keep that observation separately.
+const observedOutputNodes: {
 	[sessionId: string]: {
 		[outputId: string]: ITreeNode | undefined;
 	};
@@ -63,6 +97,49 @@ const setLatestOutputNode = (
 
 const getLatestOutputNode = (sessionId: string, outputId: string) =>
 	latestOutputNodes[sessionId]?.[outputId];
+
+// The nodes replaced by the latest output update. output.node can still refer
+// to the replaced node for a while after the update callback (it lags behind).
+const replacedOutputNodes: {
+	[sessionId: string]: {
+		[outputId: string]: ITreeNode | undefined;
+	};
+} = {};
+
+const setReplacedOutputNode = (
+	sessionId: string,
+	outputId: string,
+	node?: ITreeNode,
+) => {
+	if (!replacedOutputNodes[sessionId]) replacedOutputNodes[sessionId] = {};
+	replacedOutputNodes[sessionId][outputId] = node;
+};
+
+/**
+ * Promote output.node to the callback cache only after its reference changes.
+ * This avoids overwriting a newer callback node while the Viewer is remounting,
+ * but prevents that callback node from being retained after output.node catches up.
+ */
+const syncLatestOutputNode = (
+	sessionId: string,
+	outputId: string,
+	node?: ITreeNode,
+) => {
+	if (!observedOutputNodes[sessionId]) observedOutputNodes[sessionId] = {};
+
+	const observedNodes = observedOutputNodes[sessionId];
+	if (observedNodes[outputId] === node) return;
+
+	observedNodes[outputId] = node;
+	// output.node can be unavailable while the viewer processes a response
+	// (also for outputs whose content did not change): keep the node seen by
+	// the update callback, an output removal clears it via the callback.
+	if (!node) return;
+	// output.node still refers to the node replaced by the latest update:
+	// keep the newer node seen by the update callback.
+	if (node === replacedOutputNodes[sessionId]?.[outputId]) return;
+	setLatestOutputNode(sessionId, outputId, node);
+};
 
 /**
  * Store data related to the ShapeDiver 3D Viewer Session.
@@ -201,7 +278,11 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				}
 
 				delete latestSessionNodes[sessionId];
+				delete observedSessionNodes[sessionId];
+				delete replacedSessionNodes[sessionId];
 				delete latestOutputNodes[sessionId];
+				delete observedOutputNodes[sessionId];
+				delete replacedOutputNodes[sessionId];
 
 				return set(
 					(state) => {
@@ -230,6 +311,8 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				// get the session
 				const session = sessions[sessionId];
 				if (session) {
+					syncLatestSessionNode(sessionId, session.node);
+
 					// call the callback once using the latest node seen by the
 					// session update callback. session.node can lag behind newNode
 					// during AppBuilder/custom parameter remounts.
@@ -328,6 +411,8 @@ export const useShapeDiverStoreSession = create<IShapeDiverStoreSession>()(
 				// get the output
 				const output = session?.outputs[outputId];
 				if (output) {
+					syncLatestOutputNode(sessionId, outputId, output.node);
+
 					// call the callback once using the latest node seen by the
 					// output update callback. output.node can lag behind newNode
 					// during AppBuilder/custom parameter remounts.
@@ -463,6 +548,7 @@ const assignSessionUpdateCallback = (
 		} else if (oldNode) {
 			setLatestSessionNode(sessionApi.id, undefined);
 		}
+		replacedSessionNodes[sessionApi.id] = oldNode;
 
 		await Promise.all(
 			Object.values(callbacks).map((cb) => cb(newNode, oldNode)),
@@ -490,6 +576,7 @@ const assignOutputUpdateCallback = (
 		} else if (oldNode) {
 			setLatestOutputNode(sessionApi.id, outputApi.id, undefined);
 		}
+		setReplacedOutputNode(sessionApi.id, outputApi.id, oldNode);
 
 		await Promise.all(
 			Object.values(outputUpdateCallbacks).map((cb) =>
@@ -709,6 +796,17 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 		);
 	});
 
+	// Keep callback caches only for the remount handover. Once a session.node or
+	// output.node reference changes, it is authoritative and replaces the cached
+	// callback node before consumers register again.
+	Object.values(state.sessions).forEach((session) => {
+		syncLatestSessionNode(session.id, session.node);
+
+		Object.entries(session.outputs ?? {}).forEach(([outputId, output]) => {
+			syncLatestOutputNode(session.id, outputId, output.node);
+		});
+	});
+
 	// in the end, we check for new sessions and call the update callback once
 	// this is done to ensure that the initial state is set correctly
 	const newSessions = Object.values(state.sessions).filter(
@@ -728,8 +826,6 @@ useShapeDiverStoreSession.subscribe((state, prevState) => {
 			const output = session.outputs[outputId];
 			const callbacks =
 				state.outputUpdateCallbacks[session.id]?.[outputId] || {};
-
-			setLatestOutputNode(session.id, outputId, output.node);
 
 			// Always assign callback for parameter store sync
 			assignOutputUpdateCallback(session, output, callbacks);

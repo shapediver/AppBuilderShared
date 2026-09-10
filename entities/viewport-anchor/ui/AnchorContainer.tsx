@@ -29,10 +29,10 @@ import {
 	useProps,
 } from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
-import {
+import type {
 	ISelectionParameterProps,
 	TAG3D_JUSTIFICATION,
-} from "@shapediver/viewer.session";
+} from "@shapediver/viewer.shared.types";
 import {
 	default as React,
 	useCallback,
@@ -662,6 +662,9 @@ export function useAnchorContainer({
 
 	/**
 	 * If we are below the mobile breakpoint, we add the element to the container store.
+	 * Re-register when the App Builder widget element identity changes (JSON rebuild).
+	 * Do not depend on the whole `inner` chrome tree (that re-registers on viewport size /
+	 * pointer / local re-renders) and do not key only on the stable Anchor id (`inner.key`).
 	 */
 	useEffect(() => {
 		if (aboveMobileBreakpoint || !showContent) return;
@@ -682,7 +685,7 @@ export function useAnchorContainer({
 		showContent,
 		mobileContainer,
 		mobileDisabled,
-		inner.key,
+		element,
 	]);
 
 	return {

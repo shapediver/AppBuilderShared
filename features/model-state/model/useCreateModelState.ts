@@ -46,6 +46,7 @@ export function useCreateModelState(props: Props) {
 		parameterNamesToAlwaysExclude = [],
 		successMessage,
 		errorMessage,
+		screenshotProps: screenshotPropsDefault,
 	} = useProps(
 		"CreateModelStateHook",
 		defaultThemeProps,
@@ -126,6 +127,8 @@ export function useCreateModelState(props: Props) {
 					...restProps,
 					parameterNamesToInclude,
 					parameterNamesToExclude,
+					screenshotProps:
+						restProps.screenshotProps ?? screenshotPropsDefault,
 				},
 				// Stryker disable next-line ConditionalExpression,LogicalOperator: core also defaults markSaved to true
 				markSaved: options?.markSaved ?? true,
@@ -140,6 +143,7 @@ export function useCreateModelState(props: Props) {
 			parameterNamesToIncludeDefault,
 			parameterNamesToExcludeDefault,
 			parameterNamesToAlwaysExclude,
+			screenshotPropsDefault,
 			clearUnsavedChanges,
 		],
 	);

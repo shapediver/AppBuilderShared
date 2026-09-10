@@ -1,6 +1,6 @@
 import {createModelStateDataSchema} from "@AppBuilderLib/features/model-state/config/createModelState.zod";
 import {importModelStateDataSchema} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
-import z from "zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
 
 // Zod type definition for ICreateModelStateData
 export const ICreateModelStateDataSchema = createModelStateDataSchema;
