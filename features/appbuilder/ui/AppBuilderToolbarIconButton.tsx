@@ -1,4 +1,10 @@
+import type {
+	AppBuilderToolbarAlign,
+	AppBuilderToolbarSide,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {getToolbarIconLabelLayout} from "@AppBuilderLib/features/appbuilder/lib/getToolbarIconLabelLayout";
 import type {MantineActionIconProps} from "@AppBuilderLib/shared/mantine-props/actionIcon";
+import type {MantineTextProps} from "@AppBuilderLib/shared/mantine-props/text";
 import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tooltip";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconProps, IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
@@ -9,6 +15,7 @@ import {
 	Box,
 	MantineStyleProp,
 	MantineThemeComponent,
+	Text,
 	useProps,
 } from "@mantine/core";
 import React, {forwardRef} from "react";
@@ -23,11 +30,16 @@ interface Props {
 	styles?: MantineStyleProp;
 	onClick?: React.MouseEventHandler<HTMLButtonElement>;
 	onMouseDown?: React.MouseEventHandler<HTMLButtonElement>;
+	labelSide?: AppBuilderToolbarSide;
+	labelAlign?: AppBuilderToolbarAlign;
 }
 
 export type AppBuilderToolbarIconButtonStyleProps = {
 	actionIconProps?: MantineActionIconProps & {variantDisabled?: string};
 	iconProps?: {color?: string; colorDisabled?: string};
+	labelSide?: AppBuilderToolbarSide;
+	labelAlign?: AppBuilderToolbarAlign;
+	labelProps?: MantineTextProps;
 };
 
 /**
@@ -64,6 +76,9 @@ export const AppBuilderToolbarIconButtonDefaultStyleProps: AppBuilderToolbarIcon
 		iconProps: {
 			color: "var(--mantine-color-default-color)",
 			colorDisabled: "var(--mantine-color-disabled-color)",
+		},
+		labelProps: {
+			size: "xs",
 		},
 	};
 
@@ -131,11 +146,26 @@ const AppBuilderToolbarIconButton = forwardRef<
 		styles,
 		onClick,
 		onMouseDown,
+		labelSide: labelSideProp,
+		labelAlign: labelAlignProp,
 		...rest
 	} = props;
 
-	const {tooltipWrapperProps, actionIconProps, iconProps} =
-		useResolvedAppBuilderToolbarIconButtonTheme(rest);
+	const {
+		tooltipWrapperProps,
+		actionIconProps,
+		iconProps,
+		labelSide: labelSideTheme,
+		labelAlign: labelAlignTheme,
+		labelProps,
+	} = useResolvedAppBuilderToolbarIconButtonTheme(rest);
+	const labelSide = labelSideProp ?? labelSideTheme;
+	const labelAlign = labelAlignProp ?? labelAlignTheme;
+	const showCaption = Boolean(labelSide && label);
+	const resolvedTooltipLabel =
+		showCaption && (!tooltipLabel || tooltipLabel === label)
+			? ""
+			: (tooltipLabel ?? label ?? "");
 
 	const actionIconStyleProps = pickDefined(actionIconProps, [
 		"color",
@@ -159,12 +189,53 @@ const AppBuilderToolbarIconButton = forwardRef<
 		typeof iconType !== "string" ||
 		iconRegex.test(iconType) ||
 		isIconImageUrl(iconType);
+	const labelLayout = labelSide
+		? getToolbarIconLabelLayout(labelSide, labelAlign)
+		: undefined;
+	const {labelFirst, verticalCaption, captionRotate, ...labelLayoutStyle} =
+		labelLayout ?? {
+			labelFirst: false,
+			verticalCaption: false,
+			captionRotate: 0,
+		};
+
+	const iconNode = isIcon ? (
+		<Icon
+			iconType={iconType}
+			color={disabled ? colorDisabled : color}
+			{...restIconProps}
+		/>
+	) : (
+		<Box
+			p={"xs"}
+			style={{
+				color: iconProps?.color,
+			}}
+		>
+			{typeof iconType === "string" && iconType.startsWith("SD_")
+				? iconType.substring(3)
+				: iconType}
+		</Box>
+	);
+	const captionNode = showCaption ? (
+		<Text
+			component="span"
+			{...defaultStyleProps.labelProps}
+			{...labelProps}
+			className={[
+				classes.caption,
+				verticalCaption ? classes.captionVertical : undefined,
+				captionRotate === 180 ? classes.captionRotate180 : undefined,
+			]
+				.filter(Boolean)
+				.join(" ")}
+		>
+			{label}
+		</Text>
+	) : null;
 
 	return (
-		<TooltipWrapper
-			{...tooltipWrapperProps}
-			label={tooltipLabel ?? label ?? ""}
-		>
+		<TooltipWrapper {...tooltipWrapperProps} label={resolvedTooltipLabel}>
 			<ActionIcon
 				ref={ref}
 				onClick={onClick}
@@ -172,30 +243,39 @@ const AppBuilderToolbarIconButton = forwardRef<
 				disabled={disabled}
 				loading={loading}
 				variant={disabled ? variantDisabled : variant}
-				aria-label={label ?? undefined}
-				className={classes.toolbarIcon}
+				aria-label={showCaption ? undefined : (label ?? undefined)}
+				className={
+					showCaption
+						? `${classes.toolbarIcon} ${classes.toolbarIconLabeled}`
+						: classes.toolbarIcon
+				}
 				{...restActionIconProps}
-				style={{...restActionIconProps.style, ...styles}}
-				w={isIcon ? undefined : "100%"}
+				style={{
+					...restActionIconProps.style,
+					...styles,
+				}}
+				w={showCaption ? "auto" : isIcon ? undefined : "100%"}
+				h={showCaption ? "auto" : undefined}
 			>
-				{isIcon ? (
-					<Icon
-						iconType={iconType}
-						color={disabled ? colorDisabled : color}
-						{...restIconProps}
-					/>
-				) : (
-					<Box
-						p={"xs"}
-						style={{
-							color: iconProps?.color,
-						}}
+				{showCaption ? (
+					<span
+						className={classes.labelLayout}
+						style={labelLayoutStyle}
 					>
-						{typeof iconType === "string" &&
-						iconType.startsWith("SD_")
-							? iconType.substring(3)
-							: iconType}
-					</Box>
+						{labelFirst ? (
+							<>
+								{captionNode}
+								{iconNode}
+							</>
+						) : (
+							<>
+								{iconNode}
+								{captionNode}
+							</>
+						)}
+					</span>
+				) : (
+					iconNode
 				)}
 			</ActionIcon>
 		</TooltipWrapper>

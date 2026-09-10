@@ -54,6 +54,8 @@ export default function AppBuilderToolbarExportButton({
 			}
 			buttonThemeProps={buttonThemeProps}
 			disabled={disabled}
+			labelSide={item.labelSide}
+			labelAlign={item.labelAlign}
 		/>
 	);
 }
