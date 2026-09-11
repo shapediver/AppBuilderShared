@@ -1848,6 +1848,7 @@ const IAppBuilderSettingsJsonSchemaBase = z.strictObject({
 	settings: IAppBuilderSettingsSettingsSchema.optional(),
 	themeOverrides: MantineThemeOverrideSchema.optional(),
 	appBuilderOverride: IAppBuilderSchema.optional(),
+	agentOverride: z.array(IAppBuilderAgentSchema).optional(),
 });
 
 const IAppBuilderSettingsJsonSchema =

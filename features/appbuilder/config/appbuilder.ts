@@ -2391,6 +2391,13 @@ export interface IAppBuilderSettingsJson {
 	 * for development.
 	 */
 	appBuilderOverride?: IAppBuilder;
+	/**
+	 * Optional agents list used instead of `IAppBuilder.agents` from the model
+	 * (and instead of `appBuilderOverride.agents` if both are set).
+	 * Useful for local development of agent features without replacing the
+	 * rest of the App Builder output.
+	 */
+	agentOverride?: IAppBuilderAgent[];
 }
 
 /**

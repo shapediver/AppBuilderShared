@@ -195,6 +195,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	} = useSessionWithAppBuilder(
 		controllerSession,
 		settings?.appBuilderOverride,
+		settings?.agentOverride,
 	);
 	const error = settingsError ?? appBuilderError;
 

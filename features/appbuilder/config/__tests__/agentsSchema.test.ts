@@ -259,3 +259,57 @@ describe("appBuilderOverride.agents", () => {
 		expect(result.success).toBe(true);
 	});
 });
+
+describe("IAppBuilderSettingsJson.agentOverride", () => {
+	it("accepts a valid agentOverride", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			agentOverride: [validAgent],
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts agentOverride together with appBuilderOverride", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			appBuilderOverride: layout([
+				{
+					id: "from-full-override",
+					name: "Full Override Agent",
+					message: "From appBuilderOverride.",
+				},
+			]),
+			agentOverride: [validAgent],
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects an agent missing required id, name, or message", () => {
+		expect(
+			validateAppBuilderSettingsJson({
+				version: "1.0",
+				agentOverride: [{name: "A", message: "M"}],
+			}).success,
+		).toBe(false);
+		expect(
+			validateAppBuilderSettingsJson({
+				version: "1.0",
+				agentOverride: [{id: "a", message: "M"}],
+			}).success,
+		).toBe(false);
+		expect(
+			validateAppBuilderSettingsJson({
+				version: "1.0",
+				agentOverride: [{id: "a", name: "A"}],
+			}).success,
+		).toBe(false);
+	});
+
+	it("rejects unknown keys on an overridden agent", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			agentOverride: [{...validAgent, extra: true}],
+		});
+		expect(result.success).toBe(false);
+	});
+});
