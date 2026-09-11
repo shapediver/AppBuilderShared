@@ -1,10 +1,14 @@
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	AppBuilderContainerNameType,
+	AppBuilderToolbarSide,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {MantineThemeComponent} from "@mantine/core";
 import React, {useEffect, useRef, useState} from "react";
 import {cleanUnit, simplifyCalc, updatePosition} from "../lib/utils";
 import {useShapeDiverStoreViewportAnchors} from "../model/useShapeDiverStoreViewportAnchors";
+import {useViewportAnchorTriggerRegistry} from "../model/useViewportAnchorTriggerRegistry";
 import {
 	useAnchorContainer,
 	ViewportAnchorProps,
@@ -14,10 +18,8 @@ import {
 export interface ViewportAnchorProps2d extends ViewportAnchorProps {
 	/** Optional draggable properties */
 	draggable?: boolean;
-	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: true for 2D anchors) */
-	useCloseButton?: boolean;
 	/** The location of the anchor in the viewport. Can be px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1.5em), % (e.g. 100%) or calc (e.g. calc(100% - 20px)) */
-	location: (string | number)[];
+	location?: (string | number)[];
 }
 
 type ViewportAnchorThemePropsType = Partial<ViewportAnchorStyleProps>;
@@ -88,13 +90,78 @@ export default function ViewportAnchor2d(
 		handleMouseDown,
 	});
 
+	const triggerElement = useViewportAnchorTriggerRegistry(
+		(state) => state.triggers[props.id],
+	);
+
 	/**
 	 * This effect updates the showContentRef when the showContent state changes.
 	 */
 	useEffect(() => {
 		showContentRef.current = showContent;
 		initializedRef.current = false;
+		if (!showContent) {
+			lastComputedPosition.current = {x: "", y: ""};
+			if (!props.previewIcon && portalRef.current) {
+				portalRef.current.style.display = "none";
+			}
+		}
 		setUpdatePositionCalculation((prev) => prev + 1);
+	}, [showContent, props.previewIcon]);
+
+	/**
+	 * This effect resets positioning when the trigger element changes or mounts.
+	 */
+	useEffect(() => {
+		initializedRef.current = false;
+		setUpdatePositionCalculation((prev) => prev + 1);
+	}, [triggerElement]);
+
+	/**
+	 * Track trigger element rect reactively (animations, transitions, toolbar movements) while open.
+	 */
+	useEffect(() => {
+		if (
+			!showContent ||
+			!triggerElement ||
+			(inputLocation && inputLocation.length >= 2)
+		) {
+			return;
+		}
+
+		let animationFrameId: number;
+		let lastRect = triggerElement.getBoundingClientRect();
+
+		const checkRect = () => {
+			const newRect = triggerElement.getBoundingClientRect();
+			if (
+				Math.abs(newRect.left - lastRect.left) > 0.5 ||
+				Math.abs(newRect.top - lastRect.top) > 0.5 ||
+				Math.abs(newRect.width - lastRect.width) > 0.5 ||
+				Math.abs(newRect.height - lastRect.height) > 0.5
+			) {
+				lastRect = newRect;
+				initializedRef.current = false;
+				setUpdatePositionCalculation((prev) => prev + 1);
+			}
+			animationFrameId = requestAnimationFrame(checkRect);
+		};
+
+		animationFrameId = requestAnimationFrame(checkRect);
+		return () => cancelAnimationFrame(animationFrameId);
+	}, [showContent, triggerElement, inputLocation]);
+
+	/**
+	 * Recalculate position on window resize while open.
+	 */
+	useEffect(() => {
+		if (!showContent) return;
+		const handleResize = () => {
+			initializedRef.current = false;
+			setUpdatePositionCalculation((prev) => prev + 1);
+		};
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
 	}, [showContent]);
 
 	/**
@@ -116,9 +183,19 @@ export default function ViewportAnchor2d(
 		const el = portalRef.current;
 		if (!el || !showContent) return;
 
+		let lastW = el.offsetWidth;
+		let lastH = el.offsetHeight;
+
 		const observer = new ResizeObserver(() => {
-			initializedRef.current = false;
-			setUpdatePositionCalculation((prev) => prev + 1);
+			if (
+				Math.abs(el.offsetWidth - lastW) > 1 ||
+				Math.abs(el.offsetHeight - lastH) > 1
+			) {
+				lastW = el.offsetWidth;
+				lastH = el.offsetHeight;
+				initializedRef.current = false;
+				setUpdatePositionCalculation((prev) => prev + 1);
+			}
 		});
 		observer.observe(el);
 
@@ -134,6 +211,12 @@ export default function ViewportAnchor2d(
 		if (!portalRef.current) return;
 		if (!canvas) return;
 		if (initializedRef.current) return;
+
+		if (!showContentRef.current && !props.previewIcon) {
+			portalRef.current.style.display = "none";
+			return;
+		}
+
 		portalRef.current.style.display = "block";
 
 		const offsetWidth = portalRef.current.offsetWidth;
@@ -144,42 +227,151 @@ export default function ViewportAnchor2d(
 			portalRef.current.offsetHeight +
 			(controlElementGroupRef.current?.offsetHeight || 0);
 
-		// clean the input location
-		const location = inputLocation.map((p, i) => {
-			const cleaned = cleanUnit(p);
-			// this should never happen, but we handle it gracefully
-			if (cleaned == null) {
-				Logger.warn(`Invalid location at index ${i}:`, p);
-				return "0px";
+		let x: string;
+		let y: string;
+
+		if (inputLocation && inputLocation.length >= 2) {
+			// clean the input location
+			const location = inputLocation.map((p, i) => {
+				const cleaned = cleanUnit(p);
+				// this should never happen, but we handle it gracefully
+				if (cleaned == null) {
+					Logger.warn(`Invalid location at index ${i}:`, p);
+					return "0px";
+				}
+				return cleaned;
+			});
+
+			// first letter is vertical
+			const vertical = !showContentRef.current
+				? "M"
+				: justification?.[0] || "M";
+
+			// second letter is horizontal
+			const horizontal = !showContentRef.current
+				? "C"
+				: justification?.[1] || "C";
+
+			if (horizontal === "R") {
+				x = `calc(${location[0]} - ${offsetWidth}px)`;
+			} else if (horizontal === "L") {
+				x = location[0];
+			} else {
+				x = `calc(${location[0]} - ${offsetWidth / 2}px)`;
 			}
-			return cleaned;
-		});
 
-		// first letter is vertical
-		const vertical = !showContentRef.current
-			? "M"
-			: justification?.[0] || "M";
+			if (vertical === "B") {
+				y = `calc(${location[1]} - ${offsetHeight}px)`;
+			} else if (vertical === "T") {
+				y = location[1];
+			} else {
+				y = `calc(${location[1]} - ${offsetHeight / 2}px)`;
+			}
+		} else if (triggerElement && canvas) {
+			const canvasRect = canvas.getBoundingClientRect();
+			const triggerRect = triggerElement.getBoundingClientRect();
+			const toolbarElement = triggerElement.closest("[role='toolbar']");
+			const toolbarRect = toolbarElement?.getBoundingClientRect();
+			const GAP = 8;
 
-		// second letter is horizontal
-		const horizontal = !showContentRef.current
-			? "C"
-			: justification?.[1] || "C";
+			const buttonCanvasLeft = triggerRect.left - canvasRect.left;
+			const buttonCanvasTop = triggerRect.top - canvasRect.top;
+			const buttonCanvasRight = buttonCanvasLeft + triggerRect.width;
+			const buttonCanvasBottom = buttonCanvasTop + triggerRect.height;
+			const buttonCenterX = buttonCanvasLeft + triggerRect.width / 2;
+			const buttonCenterY = buttonCanvasTop + triggerRect.height / 2;
 
-		let x, y;
-		if (horizontal === "R") {
-			x = `calc(${location[0]} - ${offsetWidth}px)`;
-		} else if (horizontal === "L") {
-			x = location[0];
+			const toolbarSide =
+				(triggerElement
+					.closest("[data-toolbar-side]")
+					?.getAttribute(
+						"data-toolbar-side",
+					) as AppBuilderToolbarSide | null) || "bottom";
+
+			// For trigger-anchored panels, use the portal's actual rendered height.
+			// (controlElementGroupRef is inside portalRef, so adding it double-counts height).
+			const panelHeight = portalRef.current.offsetHeight;
+			const panelWidth = offsetWidth;
+
+			// Along-axis alignment. Default is center on the trigger (like a
+			// popover). Authors can override with justification ("L"/"R"/"C"
+			// horizontally, "T"/"B"/"M" vertically). The panel is allowed to
+			// extend past the toolbar; only the canvas edge is clamped later.
+			const vJust = justification?.[0];
+			const hJust = justification?.[1];
+
+			const alignedX = (): number => {
+				if (hJust === "L") return buttonCanvasLeft;
+				if (hJust === "R") return buttonCanvasRight - panelWidth;
+				return buttonCenterX - panelWidth / 2;
+			};
+			const alignedY = (): number => {
+				if (vJust === "T") return buttonCanvasTop;
+				if (vJust === "B") return buttonCanvasBottom - panelHeight;
+				return buttonCenterY - panelHeight / 2;
+			};
+
+			let candidateX: number;
+			let candidateY: number;
+
+			if (toolbarSide === "bottom") {
+				const refTop = toolbarRect
+					? Math.min(
+							buttonCanvasTop,
+							toolbarRect.top - canvasRect.top,
+						)
+					: buttonCanvasTop;
+				candidateY = refTop - panelHeight - GAP;
+				candidateX = alignedX();
+			} else if (toolbarSide === "left") {
+				const refRight = toolbarRect
+					? Math.max(
+							buttonCanvasRight,
+							toolbarRect.right - canvasRect.left,
+						)
+					: buttonCanvasRight;
+				candidateX = refRight + GAP;
+				candidateY = alignedY();
+			} else if (toolbarSide === "right") {
+				const refLeft = toolbarRect
+					? Math.min(
+							buttonCanvasLeft,
+							toolbarRect.left - canvasRect.left,
+						)
+					: buttonCanvasLeft;
+				candidateX = refLeft - panelWidth - GAP;
+				candidateY = alignedY();
+			} else if (toolbarSide === "top") {
+				const refBottom = toolbarRect
+					? Math.max(
+							buttonCanvasBottom,
+							toolbarRect.bottom - canvasRect.top,
+						)
+					: buttonCanvasBottom;
+				candidateY = refBottom + GAP;
+				candidateX = alignedX();
+			} else if (buttonCenterY > canvasHeight / 2) {
+				candidateY = buttonCanvasTop - panelHeight - GAP;
+				candidateX = alignedX();
+			} else {
+				candidateY = buttonCanvasBottom + GAP;
+				candidateX = alignedX();
+			}
+
+			// Canvas collision clamping with safety margin:
+			const maxX = Math.max(0, canvasWidth - panelWidth - GAP);
+			const maxY = Math.max(0, canvasHeight - panelHeight - GAP);
+			const clampedX = Math.max(GAP, Math.min(candidateX, maxX));
+			const clampedY = Math.max(GAP, Math.min(candidateY, maxY));
+
+			x = `${Math.round(clampedX)}px`;
+			y = `${Math.round(clampedY)}px`;
 		} else {
-			x = `calc(${location[0]} - ${offsetWidth / 2}px)`;
-		}
-
-		if (vertical === "B") {
-			y = `calc(${location[1]} - ${offsetHeight}px)`;
-		} else if (vertical === "T") {
-			y = location[1];
-		} else {
-			y = `calc(${location[1]} - ${offsetHeight / 2}px)`;
+			// Fallback: center in canvas
+			const centerX = Math.max(0, (canvasWidth - offsetWidth) / 2);
+			const centerY = Math.max(0, (canvasHeight - offsetHeight) / 2);
+			x = `${Math.round(centerX)}px`;
+			y = `${Math.round(centerY)}px`;
 		}
 
 		// evaluate the offset of the current position
@@ -217,6 +409,10 @@ export default function ViewportAnchor2d(
 		justification,
 		dragOffset,
 		showContent,
+		triggerElement,
+		canvas,
+		canvasWidth,
+		canvasHeight,
 	]);
 
 	/**

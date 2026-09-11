@@ -23,6 +23,7 @@ export interface AppBuilderActionBaseProps
 	onClick?: React.MouseEventHandler<HTMLButtonElement>;
 	loading?: boolean;
 	canBeDisabledByParameter?: boolean;
+	buttonRef?: React.Ref<HTMLButtonElement>;
 }
 
 const getToolbarIconType = (
@@ -43,11 +44,13 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 		toolbarButtonProps,
 		labelSide,
 		labelAlign,
+		buttonRef,
 	} = props;
 
 	if (presentation === "item") {
 		return (
 			<AppBuilderToolbarMenuItemButton
+				buttonRef={buttonRef}
 				label={label}
 				icon={icon}
 				tooltip={tooltip}
@@ -61,6 +64,7 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 	if (presentation === "toolbarIcon") {
 		return (
 			<AppBuilderToolbarIconButton
+				ref={buttonRef}
 				label={label ?? "Action"}
 				tooltipLabel={tooltip ?? label}
 				iconType={getToolbarIconType(icon, label)}
@@ -76,6 +80,7 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 
 	return (
 		<AppBuilderActionComponent
+			buttonRef={buttonRef}
 			label={label}
 			icon={icon}
 			tooltip={tooltip}

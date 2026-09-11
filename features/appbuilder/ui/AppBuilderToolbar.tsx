@@ -1,4 +1,5 @@
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
+import {useShapeDiverStoreViewportAnchors} from "@AppBuilderLib/entities/viewport-anchor/model/useShapeDiverStoreViewportAnchors";
 import {
 	legacyViewportIconsDefaultDividerProps,
 	legacyViewportIconsDefaultStyleProps,
@@ -6,6 +7,7 @@ import {
 } from "@AppBuilderLib/entities/viewport/config/legacyViewportIconsTheme";
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import type {ResolvedToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
+import {collectActionTargetedAnchorIdsFromGroups} from "@AppBuilderLib/features/appbuilder/lib/collectActionTargetedAnchorIds";
 import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
@@ -105,9 +107,60 @@ export default function AppBuilderToolbar(props: Props) {
 			),
 		);
 
+	const actionTargetedAnchorIds = useMemo(
+		() => collectActionTargetedAnchorIdsFromGroups(toolbar.groups),
+		[toolbar.groups],
+	);
+
+	const isAnyActionTargetedAnchorOpen = useShapeDiverStoreViewportAnchors(
+		useCallback(
+			(state) => {
+				if (actionTargetedAnchorIds.all.length === 0) return false;
+				const viewportId = buttonRenderContext.viewportId;
+				const anchors = viewportId
+					? state.anchors[viewportId]
+					: Object.values(state.anchors).flat();
+				if (!anchors) return false;
+				return anchors.some(
+					(a) =>
+						actionTargetedAnchorIds.all.includes(a.id) &&
+						a.showContent,
+				);
+			},
+			[actionTargetedAnchorIds, buttonRenderContext.viewportId],
+		),
+	);
+
+	const isAnyActionTargeted2dAnchorOpen = useShapeDiverStoreViewportAnchors(
+		useCallback(
+			(state) => {
+				if (actionTargetedAnchorIds.anchor2d.length === 0) {
+					return false;
+				}
+				const viewportId = buttonRenderContext.viewportId;
+				const anchors = viewportId
+					? state.anchors[viewportId]
+					: Object.values(state.anchors).flat();
+				if (!anchors) return false;
+				return anchors.some(
+					(a) =>
+						actionTargetedAnchorIds.anchor2d.includes(a.id) &&
+						a.showContent,
+				);
+			},
+			[actionTargetedAnchorIds, buttonRenderContext.viewportId],
+		),
+	);
+
 	useEffect(() => {
-		setMenuOpen(!!openedPopoverId);
-	}, [openedPopoverId, setMenuOpen]);
+		setMenuOpen(!!openedPopoverId || isAnyActionTargetedAnchorOpen);
+	}, [openedPopoverId, isAnyActionTargetedAnchorOpen, setMenuOpen]);
+
+	useEffect(() => {
+		if (isAnyActionTargeted2dAnchorOpen && openedPopoverId) {
+			setOpenedPopoverId(undefined);
+		}
+	}, [isAnyActionTargeted2dAnchorOpen, openedPopoverId]);
 
 	useEffect(() => {
 		if (!openedPopoverId) return;
@@ -165,8 +218,22 @@ export default function AppBuilderToolbar(props: Props) {
 	const handlePopoverOpenChange = useCallback(
 		(popoverId: string, open: boolean) => {
 			setOpenedPopoverId(open ? popoverId : undefined);
+			if (open && actionTargetedAnchorIds.anchor2d.length > 0) {
+				const store = useShapeDiverStoreViewportAnchors.getState();
+				const viewportId = buttonRenderContext.viewportId;
+				const close2d = (vId: string) => {
+					actionTargetedAnchorIds.anchor2d.forEach((id) => {
+						store.updateShowContent(vId, id, false);
+					});
+				};
+				if (viewportId) {
+					close2d(viewportId);
+				} else {
+					Object.keys(store.anchors).forEach(close2d);
+				}
+			}
 		},
-		[],
+		[actionTargetedAnchorIds.anchor2d, buttonRenderContext.viewportId],
 	);
 
 	const orientation =
@@ -337,6 +404,7 @@ export default function AppBuilderToolbar(props: Props) {
 					role="toolbar"
 					aria-label={toolbar.ariaLabel || toolbar.id}
 					aria-orientation={orientation}
+					data-toolbar-side={toolbar.side}
 					style={{
 						...layoutBaseStyle,
 						...themeStyle,
