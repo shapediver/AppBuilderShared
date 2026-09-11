@@ -20,19 +20,28 @@ jest.mock("../useAgentToolTransports", () => ({
 		useAgentToolTransports(...args),
 }));
 
-jest.mock("../../lib/readAgentUrlEnv", () => ({
-	readAgentUrlEnv: jest.fn(() => undefined),
+jest.mock("@AppBuilderLib/shared/lib/platform/environment", () => ({
+	...jest.requireActual("@AppBuilderLib/shared/lib/platform/environment"),
+	getEnvironmentIdentifier: jest.fn(() => "localhost"),
 }));
 
+import type {IAppBuilderAgent} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
+import {getEnvironmentIdentifier} from "@AppBuilderLib/shared/lib/platform/environment";
 import {act, renderHook} from "@testing-library/react";
-import {readAgentUrlEnv} from "../../lib/readAgentUrlEnv";
 import {useAppBuilderAgentHost} from "../useAppBuilderAgentHost";
+
+const sampleAgent: IAppBuilderAgent = {
+	id: "configurator",
+	name: "Configurator",
+	message: "Help the user configure the product.",
+};
 
 const transports = {
 	resolvedTools: [],
 	toolHandlers: {},
 	snapshotComplete: true,
+	agentConfig: sampleAgent,
 };
 
 describe("useAppBuilderAgentHost", () => {
@@ -41,7 +50,9 @@ describe("useAppBuilderAgentHost", () => {
 	beforeEach(() => {
 		window.history.replaceState({}, "", "/");
 		useAgentToolTransports.mockReset().mockReturnValue(transports);
-		jest.mocked(readAgentUrlEnv).mockReset().mockReturnValue(undefined);
+		jest.mocked(getEnvironmentIdentifier)
+			.mockReset()
+			.mockReturnValue("localhost");
 		showNotification.mockClear();
 		window.open = jest.fn().mockReturnValue(null);
 	});
@@ -51,38 +62,66 @@ describe("useAppBuilderAgentHost", () => {
 		jest.useRealTimers();
 	});
 
-	it("uses settings.agentUrl when query is missing", () => {
-		const {result} = renderHook(() =>
-			useAppBuilderAgentHost({
-				settings: {settings: {agentUrl: "http://localhost:3001/app"}},
-			}),
-		);
-		expect(result.current.agentUrl).toBe("http://localhost:3001/app");
+	it("uses the environment default when query is missing", () => {
+		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		expect(result.current.agentUrl).toBe("http://localhost:3001");
 		expect(result.current.isAgentReady).toBe(true);
 	});
 
-	it("uses env Agent URL when query and settings are missing", () => {
-		jest.mocked(readAgentUrlEnv).mockReturnValue(
-			"http://localhost:3001/app",
-		);
-		const {result} = renderHook(() => useAppBuilderAgentHost({}));
-		expect(result.current.agentUrl).toBe("http://localhost:3001/app");
-	});
-
-	it("query agentUrl wins over settings", () => {
+	it("query agentUrl wins on localhost", () => {
 		window.history.replaceState(
 			{},
 			"",
 			`/?${QUERYPARAM_AGENTURL}=http://localhost:3001/app`,
 		);
-		const {result} = renderHook(() =>
-			useAppBuilderAgentHost({
-				settings: {
-					settings: {agentUrl: "http://example.invalid/agent"},
-				},
-			}),
-		);
+		const {result} = renderHook(() => useAppBuilderAgentHost({}));
 		expect(result.current.agentUrl).toBe("http://localhost:3001/app");
+	});
+
+	it("ignores query agentUrl on production", () => {
+		jest.mocked(getEnvironmentIdentifier).mockReturnValue("production");
+		window.history.replaceState(
+			{},
+			"",
+			`/?${QUERYPARAM_AGENTURL}=http://evil.example/agent`,
+		);
+		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		expect(result.current.agentUrl).toBe("https://agent.shapediver.com");
+	});
+
+	it("ignores query agentUrl on iframe", () => {
+		jest.mocked(getEnvironmentIdentifier).mockReturnValue("iframe");
+		window.history.replaceState(
+			{},
+			"",
+			`/?${QUERYPARAM_AGENTURL}=http://evil.example/agent`,
+		);
+		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		expect(result.current.agentUrl).toBe("https://agent.shapediver.com");
+	});
+
+	it("hides agentUrl when there is no agent even if query is set", () => {
+		useAgentToolTransports.mockReturnValue({
+			...transports,
+			agentConfig: undefined,
+		});
+		window.history.replaceState(
+			{},
+			"",
+			`/?${QUERYPARAM_AGENTURL}=http://localhost:3001/app`,
+		);
+		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		expect(result.current.agentUrl).toBeUndefined();
+	});
+
+	it("hides agentUrl until snapshotComplete", () => {
+		useAgentToolTransports.mockReturnValue({
+			...transports,
+			snapshotComplete: false,
+		});
+		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		expect(result.current.agentUrl).toBeUndefined();
+		expect(result.current.isAgentReady).toBe(false);
 	});
 
 	it("maps snapshotComplete to isAgentReady", () => {
@@ -117,14 +156,13 @@ describe("useAppBuilderAgentHost", () => {
 		const {result} = renderHook(() =>
 			useAppBuilderAgentHost({
 				namespace: "ns",
-				settings: {settings: {agentUrl: "http://localhost:3001/app"}},
 			}),
 		);
 		act(() => {
 			result.current.onOpenAgent();
 		});
 		expect(window.open).toHaveBeenCalledWith(
-			"http://localhost:3001/app",
+			"http://localhost:3001",
 			"shapediver-agent",
 			"width=520,height=780",
 		);
@@ -149,11 +187,7 @@ describe("useAppBuilderAgentHost", () => {
 	});
 
 	it("shows the existing notification when openAgentWindow returns null", () => {
-		const {result} = renderHook(() =>
-			useAppBuilderAgentHost({
-				settings: {settings: {agentUrl: "http://localhost:3001/app"}},
-			}),
-		);
+		const {result} = renderHook(() => useAppBuilderAgentHost({}));
 		act(() => {
 			result.current.onOpenAgent();
 		});
@@ -192,6 +226,10 @@ describe("useAppBuilderAgentHost", () => {
 	});
 
 	it("onOpenAgent without url does not open a window", () => {
+		useAgentToolTransports.mockReturnValue({
+			...transports,
+			agentConfig: undefined,
+		});
 		const {result} = renderHook(() => useAppBuilderAgentHost({}));
 		act(() => {
 			result.current.onOpenAgent();

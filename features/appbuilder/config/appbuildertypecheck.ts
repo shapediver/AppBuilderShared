@@ -1838,7 +1838,6 @@ const IAppBuilderSettingsSessionSchema = z.strictObject({
 // Zod type definition for IAppBuilderSettingsSettings
 const IAppBuilderSettingsSettingsSchema = z.strictObject({
 	disableFallbackUi: z.boolean().optional(),
-	agentUrl: z.string().optional(),
 });
 
 // Zod type definition for IAppBuilderSettingsJson

@@ -2364,11 +2364,6 @@ export interface IAppBuilderSettingsSettings {
 	 * are shown in case no AppBuilder data output is found.
 	 */
 	disableFallbackUi?: boolean;
-	/**
-	 * URL of the AppBuilderAgent window (Step 3). Query `agentUrl` overrides this.
-	 * Not `IAppBuilder.agents[].url`.
-	 */
-	agentUrl?: string;
 }
 
 /**

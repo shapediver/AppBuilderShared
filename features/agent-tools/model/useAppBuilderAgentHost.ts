@@ -1,12 +1,12 @@
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
+import {getEnvironmentIdentifier} from "@AppBuilderLib/shared/lib/platform/environment";
 import {useCallback, useState} from "react";
 import type {
 	AppBuilderAgentOverlayProps,
 	UseAppBuilderAgentHostProps,
 } from "../config/appBuilderAgentHost";
 import {openAgentWindow} from "../lib/openAgentWindow";
-import {readAgentUrlEnv} from "../lib/readAgentUrlEnv";
 import {resolveAgentUrl} from "../lib/resolveAgentUrl";
 import {useAgentToolTransports} from "./useAgentToolTransports";
 
@@ -17,28 +17,25 @@ import {useAgentToolTransports} from "./useAgentToolTransports";
 export function useAppBuilderAgentHost(
 	props: UseAppBuilderAgentHostProps,
 ): AppBuilderAgentOverlayProps {
-	const {
-		namespace,
-		appBuilderData,
-		appBuilderParseSettled,
-		settings,
-		sessionInfo,
-	} = props;
+	const {namespace, appBuilderData, appBuilderParseSettled, sessionInfo} =
+		props;
 
-	const agentUrl = resolveAgentUrl(
+	const resolvedAgentUrl = resolveAgentUrl(
 		new URLSearchParams(window.location.search).get(QUERYPARAM_AGENTURL),
-		settings?.settings?.agentUrl,
-		readAgentUrlEnv(),
+		getEnvironmentIdentifier(),
 	);
 	const [agentWindow, setAgentWindow] = useState<Window | null>(null);
 
-	const {snapshotComplete} = useAgentToolTransports({
+	const {snapshotComplete, agentConfig} = useAgentToolTransports({
 		namespace,
 		appBuilderData,
 		appBuilderParseSettled,
 		agentWindow,
 		sessionInfo,
 	});
+
+	const agentUrl =
+		snapshotComplete && agentConfig ? resolvedAgentUrl : undefined;
 
 	const onOpenAgent = useCallback(() => {
 		if (!agentUrl) {

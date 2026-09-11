@@ -248,7 +248,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		namespace,
 		appBuilderData,
 		appBuilderParseSettled,
-		settings,
 		sessionInfo: controllerSession
 			? {
 					jwtToken: controllerSession.jwtToken,

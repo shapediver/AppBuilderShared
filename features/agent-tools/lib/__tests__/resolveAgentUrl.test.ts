@@ -1,59 +1,42 @@
 import {resolveAgentUrl} from "../resolveAgentUrl";
 
 describe("resolveAgentUrl", () => {
-	it("returns undefined when both are missing or blank", () => {
-		expect(resolveAgentUrl(null, undefined)).toBeUndefined();
-		expect(resolveAgentUrl("  ", "   ")).toBeUndefined();
+	it("returns undefined when query and default are missing", () => {
+		expect(resolveAgentUrl(null, "unknown")).toBeUndefined();
+		expect(resolveAgentUrl("  ", "unknown")).toBeUndefined();
 	});
 
-	it("uses settings when query is missing", () => {
-		expect(resolveAgentUrl(null, "http://localhost:3001/app")).toBe(
-			"http://localhost:3001/app",
+	it("uses the environment default when query is missing", () => {
+		expect(resolveAgentUrl(null, "localhost")).toBe(
+			"http://localhost:3001",
+		);
+		expect(resolveAgentUrl("  ", "development")).toBe(
+			"https://dev-agent.shapediver.com",
 		);
 	});
 
-	it("query wins over settings", () => {
-		expect(
-			resolveAgentUrl(
-				"http://localhost:3001/app",
-				"http://example.invalid/agent",
-			),
-		).toBe("http://localhost:3001/app");
+	it("query wins on localhost, sandbox, development, staging, and unknown", () => {
+		const query = "http://localhost:3001/custom";
+		expect(resolveAgentUrl(query, "localhost")).toBe(query);
+		expect(resolveAgentUrl(query, "sandbox")).toBe(query);
+		expect(resolveAgentUrl(query, "development")).toBe(query);
+		expect(resolveAgentUrl(query, "staging")).toBe(query);
+		expect(resolveAgentUrl(query, "unknown")).toBe(query);
 	});
 
-	it("trims whitespace", () => {
-		expect(
-			resolveAgentUrl("  http://localhost:3001/app  ", undefined),
-		).toBe("http://localhost:3001/app");
+	it("ignores query on production and iframe", () => {
+		const query = "http://evil.example/agent";
+		expect(resolveAgentUrl(query, "production")).toBe(
+			"https://agent.shapediver.com",
+		);
+		expect(resolveAgentUrl(query, "iframe")).toBe(
+			"https://agent.shapediver.com",
+		);
 	});
 
-	it("uses env when query and settings are missing", () => {
+	it("trims whitespace on query", () => {
 		expect(
-			resolveAgentUrl(null, undefined, "http://localhost:3001/app"),
+			resolveAgentUrl("  http://localhost:3001/app  ", "localhost"),
 		).toBe("http://localhost:3001/app");
-	});
-
-	it("query wins over settings and env", () => {
-		expect(
-			resolveAgentUrl(
-				"http://localhost:3001/app",
-				"http://example.invalid/settings",
-				"http://example.invalid/env",
-			),
-		).toBe("http://localhost:3001/app");
-	});
-
-	it("settings wins over env", () => {
-		expect(
-			resolveAgentUrl(
-				null,
-				"http://localhost:3001/app",
-				"http://example.invalid/env",
-			),
-		).toBe("http://localhost:3001/app");
-	});
-
-	it("ignores blank env", () => {
-		expect(resolveAgentUrl(null, undefined, "  ")).toBeUndefined();
 	});
 });

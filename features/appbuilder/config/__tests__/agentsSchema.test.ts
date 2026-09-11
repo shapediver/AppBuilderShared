@@ -313,3 +313,13 @@ describe("IAppBuilderSettingsJson.agentOverride", () => {
 		expect(result.success).toBe(false);
 	});
 });
+
+describe("IAppBuilderSettingsSettings.agentUrl", () => {
+	it("rejects leftover settings.agentUrl", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			settings: {agentUrl: "http://localhost:3001"},
+		});
+		expect(result.success).toBe(false);
+	});
+});
