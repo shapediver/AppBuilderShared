@@ -561,7 +561,6 @@ const IAppBuilderActionPropsCameraCommonSchema = z.strictObject({
 				id: z.string().optional(),
 				name: z.string().optional(),
 			}),
-			// Stryker disable next-line ObjectLiteral: sibling looseObject already accepts objects without id/name
 			z.looseObject({
 				type: z.enum(CAMERA_TYPE),
 			}),

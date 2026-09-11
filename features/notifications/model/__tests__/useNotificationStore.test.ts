@@ -2,6 +2,10 @@
  * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
 import {NotificationDisplayMode} from "@AppBuilderLib/features/notifications/config/shapediverStoreNotifications";
+import {
+	getEnvironmentIdentifier,
+	isRunningInPlatform,
+} from "@AppBuilderLib/shared/lib/platform/environment";
 import {notifications} from "@mantine/notifications";
 import {
 	getNotificationActions,
@@ -16,9 +20,24 @@ jest.mock("@mantine/notifications", () => ({
 	},
 }));
 
+jest.mock("@AppBuilderLib/shared/lib/platform/environment", () => ({
+	getEnvironmentIdentifier: jest.fn(() => "localhost"),
+	isRunningInPlatform: jest.fn(() => false),
+}));
+
+const mockedGetEnvironmentIdentifier =
+	getEnvironmentIdentifier as jest.MockedFunction<
+		typeof getEnvironmentIdentifier
+	>;
+const mockedIsRunningInPlatform = isRunningInPlatform as jest.MockedFunction<
+	typeof isRunningInPlatform
+>;
+
 describe("useNotificationStore info", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		mockedGetEnvironmentIdentifier.mockReturnValue("localhost");
+		mockedIsRunningInPlatform.mockReturnValue(false);
 	});
 
 	it("shows a notification using infoColor", () => {
@@ -83,9 +102,9 @@ describe("useNotificationStore info", () => {
 		const {show, hide} = useNotificationStore.getState();
 		const id = show({message: "plain", type: "custom"} as never);
 		expect(id).toBeDefined();
-		expect(useNotificationStore.getState().customNotifications).toHaveLength(
-			1,
-		);
+		expect(
+			useNotificationStore.getState().customNotifications,
+		).toHaveLength(1);
 
 		hide(id!);
 		expect(notifications.hide).toHaveBeenCalledWith(id);
@@ -96,16 +115,81 @@ describe("useNotificationStore info", () => {
 		const {show, hide} = useNotificationStore.getState();
 		show({id: "keep", message: "a", type: "custom"} as never);
 		show({id: "drop", message: "b", type: "custom"} as never);
-		expect(useNotificationStore.getState().customNotifications).toHaveLength(
-			2,
-		);
+		expect(
+			useNotificationStore.getState().customNotifications,
+		).toHaveLength(2);
 
 		hide("drop");
 		expect(
-			useNotificationStore.getState().customNotifications.map((n) => n.id),
+			useNotificationStore
+				.getState()
+				.customNotifications.map((n) => n.id),
 		).toEqual(["keep"]);
 		expect(notifications.show).toHaveBeenCalledWith(
 			expect.objectContaining({id: "keep"}),
 		);
+	});
+
+	it("assigns distinct ids to two rapid shows", () => {
+		const {show} = useNotificationStore.getState();
+		const first = show({message: "first"});
+		const second = show({message: "second"});
+
+		expect(first).toEqual(expect.any(String));
+		expect(second).toEqual(expect.any(String));
+		expect(first).not.toBe(second);
+	});
+
+	it("shows when displayMode is all", () => {
+		const {show} = useNotificationStore.getState();
+		expect(
+			show({
+				message: "everywhere",
+				displayMode: NotificationDisplayMode.ALL,
+			}),
+		).toEqual(expect.any(String));
+		expect(notifications.show).toHaveBeenCalled();
+	});
+
+	it("shows PLATFORM notifications only in the platform", () => {
+		const {show} = useNotificationStore.getState();
+
+		expect(
+			show({
+				message: "platform",
+				displayMode: NotificationDisplayMode.PLATFORM,
+			}),
+		).toBeUndefined();
+		expect(notifications.show).not.toHaveBeenCalled();
+
+		mockedIsRunningInPlatform.mockReturnValue(true);
+		expect(
+			show({
+				message: "platform",
+				displayMode: NotificationDisplayMode.PLATFORM,
+			}),
+		).toEqual(expect.any(String));
+		expect(notifications.show).toHaveBeenCalled();
+	});
+
+	it("shows IFRAME notifications only in an iframe environment", () => {
+		const {show} = useNotificationStore.getState();
+
+		expect(
+			show({
+				message: "iframe",
+				displayMode: NotificationDisplayMode.IFRAME,
+			}),
+		).toBeUndefined();
+		expect(notifications.show).not.toHaveBeenCalled();
+
+		mockedGetEnvironmentIdentifier.mockReturnValue("iframe");
+		expect(
+			show({
+				message: "iframe",
+				displayMode: NotificationDisplayMode.IFRAME,
+			}),
+		).toEqual(expect.any(String));
+		expect(notifications.show).toHaveBeenCalled();
 	});
 });

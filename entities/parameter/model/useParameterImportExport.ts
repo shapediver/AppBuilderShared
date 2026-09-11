@@ -41,167 +41,163 @@ export function useParameterImportExport(namespace: string) {
 	/**
 	 * Export parameters as JSON file
 	 */
-	const exportParameters = useCallback(async () => {
-		// Stryker disable all: export payload unused by unsavedChanges tests
-		const parameterArray = getParameterStates(namespace).map((param) => ({
-			id: param.definition.id,
-			value: resolveParameterExportValue({
-				definitionType: param.definition.type,
-				execValue: param.state.execValue,
-				stringExecValue: () => param.state.stringExecValue(),
-			}),
-			name: param.definition.name,
-		}));
+	const exportParameters = useCallback(
+		async () => {
+			const parameterArray = getParameterStates(namespace).map(
+				(param) => ({
+					id: param.definition.id,
+					value: resolveParameterExportValue({
+						definitionType: param.definition.type,
+						execValue: param.state.execValue,
+						stringExecValue: () => param.state.stringExecValue(),
+					}),
+					name: param.definition.name,
+				}),
+			);
 
-		const jsonContent = JSON.stringify({
-			...(currentModel && {model_id: currentModel.id}),
-			parameters: parameterArray,
-		});
-		const blob = new Blob([jsonContent], {type: "application/json"});
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement("a");
-		link.href = url;
-		link.download = `parameters_${currentModel ? currentModel.slug : namespace}_${new Date().toISOString().split("T")[0]}.json`;
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-		URL.revokeObjectURL(url);
+			const jsonContent = JSON.stringify({
+				...(currentModel && {model_id: currentModel.id}),
+				parameters: parameterArray,
+			});
+			const blob = new Blob([jsonContent], {type: "application/json"});
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement("a");
+			link.href = url;
+			link.download = `parameters_${currentModel ? currentModel.slug : namespace}_${new Date().toISOString().split("T")[0]}.json`;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+			URL.revokeObjectURL(url);
 
-		notifications.success({
-			message: "Parameter values exported successfully",
-		});
-		// Stryker restore all
+			notifications.success({
+				message: "Parameter values exported successfully",
+			});
 
-		// creating a parameter JSON file persists the current configuration
-		clearUnsavedChanges();
-	},
-	// Stryker disable next-line ArrayDeclaration: hook identity unused by unsavedChanges tests
-	[namespace, currentModel, clearUnsavedChanges]);
+			// creating a parameter JSON file persists the current configuration
+			clearUnsavedChanges();
+		},
+		// Stryker disable next-line ArrayDeclaration: hook identity unused by unsavedChanges tests
+		[namespace, currentModel, clearUnsavedChanges],
+	);
 
 	/**
 	 * Import parameters from JSON file
 	 */
-	const importParameters = useCallback(() => {
-		return new Promise<void>((resolve, reject) => {
-			const fileInput = document.createElement("input");
-			fileInput.type = "file";
-			fileInput.accept = ".json";
+	const importParameters = useCallback(
+		() => {
+			return new Promise<void>((resolve, reject) => {
+				const fileInput = document.createElement("input");
+				fileInput.type = "file";
+				fileInput.accept = ".json";
 
-			fileInput.onchange = async (event: Event) => {
-				const target = event.target as HTMLInputElement;
-				// Stryker disable next-line OptionalChaining: import tests do not exercise file input
-				const file = target.files?.[0];
+				fileInput.onchange = async (event: Event) => {
+					const target = event.target as HTMLInputElement;
+					const file = target.files?.[0];
 
-				// Stryker disable all: import error paths unused by unsavedChanges tests
-				if (!file) {
-					const errorMessage = "No file selected";
-					notifications.error({
-						message: errorMessage,
+					if (!file) {
+						const errorMessage = "No file selected";
+						notifications.error({
+							message: errorMessage,
+						});
+						reject(new Error(errorMessage));
+						return;
+					}
+
+					const response = await exceptionWrapperAsync<string>(() =>
+						file.text(),
+					);
+
+					if (response.error) {
+						errorReporting.captureException(response.error);
+						notifications.error({
+							message: (response.error as Error).message,
+						});
+						reject(response.error);
+						return;
+					}
+
+					const importResult = exceptionWrapper(() =>
+						JSON.parse(response.data),
+					);
+
+					if (importResult.error) {
+						errorReporting.captureException(importResult.error);
+						notifications.error({
+							message: (importResult.error as Error).message,
+						});
+						reject(importResult.error);
+						return;
+					}
+
+					const importData = importResult.data;
+
+					if (
+						!importData.parameters ||
+						!Array.isArray(importData.parameters)
+					) {
+						const errorMessage =
+							"The file doesn't contain the parameters data";
+						notifications.error({
+							message: errorMessage,
+						});
+						reject(new Error(errorMessage));
+						return;
+					}
+
+					if (!isImportParameterArray(importData.parameters)) {
+						const errorMessage =
+							"The schema of the parameters is not valid";
+						notifications.error({
+							message: errorMessage,
+						});
+						reject(new Error(errorMessage));
+						return;
+					}
+
+					const validationResult = filterAndValidateParameters(
+						getParameterStates(namespace),
+						importData.parameters,
+					);
+
+					if (!validationResult.hasValidParameters) {
+						const feedback =
+							generateParameterFeedback(validationResult);
+						notifications[feedback.type]({
+							message: feedback.message,
+						});
+						reject(new Error(feedback.message));
+						return;
+					}
+
+					await batchParameterValueUpdate({
+						[namespace]: validationResult.validParameters,
 					});
-					reject(new Error(errorMessage));
-					return;
-				}
 
-				const response = await exceptionWrapperAsync<string>(() =>
-					file.text(),
-				);
+					// importing a parameter JSON file reverts the unsaved changes flag
+					clearUnsavedChanges();
 
-				if (response.error) {
-					errorReporting.captureException(response.error);
-					notifications.error({
-						message: (response.error as Error).message,
-					});
-					reject(response.error);
-					return;
-				}
+					const feedback = generateParameterFeedback(
+						validationResult,
+						"Parameter values imported successfully",
+					);
 
-				const importResult = exceptionWrapper(() =>
-					JSON.parse(response.data),
-				);
-
-				if (importResult.error) {
-					errorReporting.captureException(importResult.error);
-					notifications.error({
-						message: (importResult.error as Error).message,
-					});
-					reject(importResult.error);
-					return;
-				}
-
-				const importData = importResult.data;
-
-				if (
-					!importData.parameters ||
-					!Array.isArray(importData.parameters)
-				) {
-					const errorMessage =
-						"The file doesn't contain the parameters data";
-					notifications.error({
-						message: errorMessage,
-					});
-					reject(new Error(errorMessage));
-					return;
-				}
-				// Stryker restore all
-
-				// Stryker disable all: schema/validation reject paths unused by unsavedChanges tests
-				if (!isImportParameterArray(importData.parameters)) {
-					const errorMessage =
-						"The schema of the parameters is not valid";
-					notifications.error({
-						message: errorMessage,
-					});
-					reject(new Error(errorMessage));
-					return;
-				}
-
-				const validationResult = filterAndValidateParameters(
-					getParameterStates(namespace),
-					importData.parameters,
-				);
-
-				if (!validationResult.hasValidParameters) {
-					const feedback =
-						generateParameterFeedback(validationResult);
 					notifications[feedback.type]({
 						message: feedback.message,
 					});
-					reject(new Error(feedback.message));
-					return;
-				}
-				// Stryker restore all
 
-				await batchParameterValueUpdate({
-					[namespace]: validationResult.validParameters,
-				});
+					resolve();
+				};
 
-				// importing a parameter JSON file reverts the unsaved changes flag
-				clearUnsavedChanges();
-
-				// Stryker disable all: import success copy unused by unsavedChanges tests
-				const feedback = generateParameterFeedback(
-					validationResult,
-					"Parameter values imported successfully",
-				);
-
-				notifications[feedback.type]({
-					message: feedback.message,
-				});
-
-				resolve();
-				// Stryker restore all
-			};
-
-			fileInput.click();
-		});
-	},
-	// Stryker disable next-line ArrayDeclaration: hook identity unused by unsavedChanges tests
-	[namespace, notifications, clearUnsavedChanges]);
+				fileInput.click();
+			});
+		},
+		// Stryker disable next-line ArrayDeclaration: hook identity unused by unsavedChanges tests
+		[namespace, notifications, clearUnsavedChanges],
+	);
 
 	/**
 	 * Reset parameters to default values
 	 */
-	// Stryker disable all: resetParameters unused by unsavedChanges tests
 	const resetParameters = useCallback(async () => {
 		const defaultValues = getParameterStates(namespace).reduce(
 			(acc, param) => {
@@ -217,7 +213,6 @@ export function useParameterImportExport(namespace: string) {
 			message: "Parameters reset to default values",
 		});
 	}, [namespace]);
-	// Stryker restore all
 
 	return {
 		exportParameters,

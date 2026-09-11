@@ -16,9 +16,7 @@ describe("useRuntimeToolbarControls", () => {
 	});
 
 	it("adds controls and cleans them up on unmount", () => {
-		const {result, unmount} = renderHook(() =>
-			useRuntimeToolbarControls(),
-		);
+		const {result, unmount} = renderHook(() => useRuntimeToolbarControls());
 
 		result.current.addControls(
 			{
@@ -49,9 +47,7 @@ describe("useRuntimeToolbarControls", () => {
 	});
 
 	it("supports multiple registrations and manual token removal", () => {
-		const {result} = renderHook(() =>
-			useRuntimeToolbarControls(),
-		);
+		const {result} = renderHook(() => useRuntimeToolbarControls());
 
 		const first = result.current.addControls(
 			{
@@ -104,5 +100,37 @@ describe("useRuntimeToolbarControls", () => {
 		expect(
 			useShapeDiverStoreToolbars.getState().runtimeTokens[second],
 		).toBeDefined();
+	});
+
+	it("does not track a missing token from createIfMissing=false", () => {
+		const removeRuntimeToolbarToken = jest.spyOn(
+			useShapeDiverStoreToolbars.getState(),
+			"removeRuntimeToolbarToken",
+		);
+		const {result, unmount} = renderHook(() => useRuntimeToolbarControls());
+
+		const token = result.current.addControls(
+			{
+				fallbackSide: "top",
+				fallbackAlign: "center",
+				createIfMissing: false,
+			},
+			[
+				{
+					type: "action",
+					props: {
+						definition: {
+							type: "camera",
+							props: {type: "zoomTo", props: {}},
+						},
+					},
+				},
+			],
+		);
+
+		expect(token).toBeUndefined();
+		unmount();
+		expect(removeRuntimeToolbarToken).not.toHaveBeenCalled();
+		removeRuntimeToolbarToken.mockRestore();
 	});
 });

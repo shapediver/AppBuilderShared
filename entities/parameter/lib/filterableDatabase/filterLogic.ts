@@ -97,7 +97,6 @@ export function getSelectAllState(
 	selected: string[],
 	allValues: string[],
 ): "checked" | "unchecked" | "indeterminate" {
-	// Stryker disable next-line ConditionalExpression,BlockStatement: matchCount 0 also returns unchecked
 	if (allValues.length === 0) {
 		return "unchecked";
 	}

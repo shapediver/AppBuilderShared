@@ -92,7 +92,6 @@ export default function AppBuilderToolbarPopoverButton({
 		},
 		{},
 	) as ToolbarButtonThemeProps;
-	// Stryker disable all: parameter/output popovers unused by open/close tests
 	const parameterProps = useMemo<PropsParameter[]>(() => {
 		if (item.type !== "parameter") return [];
 		const parameterItem = item.props;
@@ -124,11 +123,8 @@ export default function AppBuilderToolbarPopoverButton({
 			},
 		];
 	}, [buttonRenderContext.namespace, item]);
-	// Stryker restore all
-	// Stryker disable next-line ConditionalExpression: tests drive open state via openedPopoverId
 	const opened = popoverId ? openedPopoverId === popoverId : localOpened;
 	const actionDisabled = buttonRenderContext.executing;
-	// Stryker disable all: icon/empty-content unused by open/close tests
 	const iconType =
 		item.icon ?? defaultIcon ?? item.label.slice(0, 1).toUpperCase();
 	const hasPopoverContent =
@@ -139,7 +135,6 @@ export default function AppBuilderToolbarPopoverButton({
 				: item.type === "tabs"
 					? item.props.tabs.length > 0
 					: true;
-	// Stryker restore all
 	// Stryker disable all: keepMounted some/every unused; fixture always has one action
 	const actionMenuKeepMounted =
 		item.type === "menu" &&
@@ -154,22 +149,19 @@ export default function AppBuilderToolbarPopoverButton({
 		(next: boolean | ((current: boolean) => boolean)) => {
 			const value = typeof next === "function" ? next(opened) : next;
 			if (!value && popoverDismissalBlocked) return;
-			// Stryker disable all: tests always pass both popoverId and onPopoverOpenChange
 			if (popoverId && onPopoverOpenChange) {
 				onPopoverOpenChange(popoverId, value);
 				return;
 			}
 			setLocalOpened(value);
-			// Stryker restore all
 		},
-	// Stryker disable next-line ArrayDeclaration: callback identity unused by open/close tests
-	[opened, onPopoverOpenChange, popoverDismissalBlocked, popoverId],
+		// Stryker disable next-line ArrayDeclaration: callback identity unused by open/close tests
+		[opened, onPopoverOpenChange, popoverDismissalBlocked, popoverId],
 	);
 
 	const fixedWidthPopover = item.type === "tabs" || item.type === "widgets";
 
 	if (!hasPopoverContent) {
-		// Stryker disable all: empty-content unused by open/close tests
 		return (
 			<AppBuilderToolbarIconButton
 				label={item.label}
@@ -185,7 +177,6 @@ export default function AppBuilderToolbarPopoverButton({
 					: {})}
 			/>
 		);
-		// Stryker restore all
 	}
 
 	return (
@@ -220,7 +211,6 @@ export default function AppBuilderToolbarPopoverButton({
 						}
 						iconType={iconType}
 						disabled={item.disabled || actionDisabled}
-						// Stryker disable next-line ArrowFunction: dismissal test asserts blocked close, not the toggle itself
 						onClick={() => setOpened((current) => !current)}
 						{...buttonThemeProps}
 						{...(item.labelSide !== undefined

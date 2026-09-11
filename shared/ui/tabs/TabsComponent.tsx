@@ -29,7 +29,6 @@ export interface ITabsComponentProps extends BoxProps {
 }
 
 const getTabValue = (props: PropsTab, index: number) => {
-	// Stryker disable next-line LogicalOperator,ConditionalExpression: tests use name, not value
 	return props.value || props.name || index.toString();
 };
 
@@ -43,17 +42,14 @@ export default function TabsComponent({
 	const tabValues = tabs.map((tab, index) => getTabValue(tab, index));
 	const initialActiveTab = tabValues.includes(defaultValue)
 		? defaultValue
-		: // Stryker disable next-line LogicalOperator,ConditionalExpression: empty-tabs test returns before using this
-			(tabValues[0] ?? null);
+		: (tabValues[0] ?? null);
 	const [activeTab, setActiveTab] = useState<string | null>(initialActiveTab);
 	// keepMounted=false prop unmount the tab when it is not active
 	const activeTabsHistory = useRef(
-		// Stryker disable next-line ArrayDeclaration: initial history unused beyond keep-mounted test
 		new Set<string>(initialActiveTab ? [initialActiveTab] : []),
 	);
 	const handleActiveTabChange = (value: string | null) => {
 		setActiveTab(value);
-		// Stryker disable next-line ConditionalExpression: tests click real tabs so value is always set
 		if (value) {
 			activeTabsHistory.current.add(value);
 			// Notify parent component of tab change
@@ -61,7 +57,6 @@ export default function TabsComponent({
 				const tabIndex = tabValues.findIndex(
 					(tabValue) => tabValue === value,
 				);
-				// Stryker disable next-line ConditionalExpression,EqualityOperator: tests click real tabs
 				if (tabIndex !== -1) onActiveTabChange(tabIndex);
 			}
 		}
@@ -86,7 +81,6 @@ export default function TabsComponent({
 		<Tabs {...rest} value={activeTab} onChange={handleActiveTabChange}>
 			<Tabs.List
 				style={
-					// Stryker disable all: sticky unused by fallback/keep-mounted tests
 					stickyTabs
 						? {
 								position: "sticky",
@@ -95,7 +89,6 @@ export default function TabsComponent({
 								backgroundColor: "var(--mantine-color-body)",
 							}
 						: undefined
-					// Stryker restore all
 				}
 			>
 				{tabs.map((tab, index) => {
@@ -113,7 +106,6 @@ export default function TabsComponent({
 						</Tabs.Tab>
 					);
 
-					// Stryker disable all: tooltip unused by fallback/keep-mounted tests
 					return tab.tooltip ? (
 						<TooltipWrapper key={index} label={tab.tooltip}>
 							{tabsTab}
@@ -121,7 +113,6 @@ export default function TabsComponent({
 					) : (
 						tabsTab
 					);
-					// Stryker restore all
 				})}
 			</Tabs.List>
 			{tabs.map((tab, index) => {

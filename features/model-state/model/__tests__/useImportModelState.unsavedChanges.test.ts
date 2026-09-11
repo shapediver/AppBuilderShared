@@ -2,7 +2,6 @@
  * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
  */
 import {act, renderHook} from "@testing-library/react";
-import * as React from "react";
 import {useImportModelState} from "../useImportModelState";
 
 // Mock peer dependencies of useImportModelState.
@@ -27,9 +26,17 @@ jest.mock(
 	}),
 );
 
-jest.mock("@AppBuilderLib/shared/lib/ErrorReportingContext", () => ({
-	ErrorReportingContext: React.createContext({captureException: jest.fn()}),
-}));
+const captureExceptionMock = jest.fn();
+jest.mock("@AppBuilderLib/shared/lib/ErrorReportingContext", () => {
+	const React = jest.requireActual("react");
+	return {
+		ErrorReportingContext: React.createContext({
+			captureException: (...args: unknown[]) =>
+				captureExceptionMock(...args),
+			captureMessage: jest.fn(),
+		}),
+	};
+});
 
 const filterAndValidateModelStateParameters = jest.fn();
 const generateParameterFeedback = jest.fn();
@@ -104,6 +111,61 @@ describe("useImportModelState unsavedChanges wiring", () => {
 
 		expect(sessionApiMock.getModelState).toHaveBeenCalledWith("abc");
 		expect(currentUnsaved()).toBe(false);
+		expect(notificationMock.success).toHaveBeenCalledWith({
+			title: undefined,
+			message: "imported",
+		});
+	});
+
+	it("starts with isLoading false and sets it while the import is in flight", async () => {
+		let resolveGet!: (value: unknown) => void;
+		sessionApiMock.getModelState = jest.fn(
+			() =>
+				new Promise((resolve) => {
+					resolveGet = resolve;
+				}),
+		);
+
+		const {result} = renderHook(() =>
+			useImportModelState({namespace: "ns"}),
+		);
+		expect(result.current.isLoading).toBe(false);
+
+		let importPromise!: Promise<{success: boolean}>;
+		act(() => {
+			importPromise = result.current.importModelState({
+				modelStateId: "abc",
+			});
+		});
+		expect(result.current.isLoading).toBe(true);
+
+		await act(async () => {
+			resolveGet({modelState: {parameters: {paramA: 1}}});
+			await importPromise;
+		});
+		expect(result.current.isLoading).toBe(false);
+	});
+
+	it("notifies and reports when getModelState rejects", async () => {
+		const err = new Error("boom");
+		sessionApiMock.getModelState = jest.fn().mockRejectedValue(err);
+
+		const {result} = renderHook(() =>
+			useImportModelState({namespace: "ns"}),
+		);
+
+		await act(async () => {
+			const res = await result.current.importModelState({
+				modelStateId: "abc",
+			});
+			expect(res.success).toBe(false);
+		});
+
+		expect(notificationMock.error).toHaveBeenCalledWith({
+			title: "Failed to fetch model state",
+			message: "boom",
+		});
+		expect(captureExceptionMock).toHaveBeenCalledWith(err);
 	});
 
 	it("does not clear unsavedChanges when the model state fetch fails", async () => {
@@ -155,5 +217,9 @@ describe("useImportModelState unsavedChanges wiring", () => {
 		});
 
 		expect(currentUnsaved()).toBe(before);
+		expect(notificationMock.error).toHaveBeenCalledWith({
+			title: undefined,
+			message: "invalid",
+		});
 	});
 });

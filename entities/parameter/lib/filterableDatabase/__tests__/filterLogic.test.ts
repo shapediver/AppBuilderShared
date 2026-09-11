@@ -252,6 +252,10 @@ describe("getSelectAllState", () => {
 	it("returns unchecked when allValues is empty", () => {
 		expect(getSelectAllState(["Fabric"], [])).toBe("unchecked");
 	});
+
+	it("returns unchecked when selected values are not in allValues", () => {
+		expect(getSelectAllState(["Other"], allValues)).toBe("unchecked");
+	});
 });
 
 describe("applySelectAll", () => {

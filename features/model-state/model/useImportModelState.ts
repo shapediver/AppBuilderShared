@@ -20,7 +20,6 @@ interface Props {
  * @param namespace - The session namespace
  */
 export function useImportModelState({namespace}: Props) {
-	// Stryker disable next-line BooleanLiteral: loading flag starts false; tests assert unsavedChanges not spinner
 	const [isLoading, setIsLoading] = useState(false);
 
 	const sessionApi = useShapeDiverStoreSession(
@@ -52,7 +51,6 @@ export function useImportModelState({namespace}: Props) {
 				batchParameterValueUpdate,
 				clearUnsavedChanges,
 				props,
-				// Stryker disable all: notification/error wiring mocked by unsavedChanges tests
 				onNotification: (n) =>
 					notifications[n.type]({
 						title: n.title,
@@ -60,7 +58,6 @@ export function useImportModelState({namespace}: Props) {
 					}),
 				onLoadingChange: setIsLoading,
 				onError: (e) => errorReporting.captureException(e),
-				// Stryker restore all
 			});
 		},
 		// Stryker disable next-line ArrayDeclaration: hook identity unused by unsavedChanges tests

@@ -95,7 +95,6 @@ export function createFilterableDatabaseScrollingApi(options: {
 			data: itemData[item],
 		}));
 
-		// Stryker disable next-line ConditionalExpression,BlockStatement: empty terms keep every mapped item
 		if (searchTerms.length === 0) {
 			return mapped;
 		}

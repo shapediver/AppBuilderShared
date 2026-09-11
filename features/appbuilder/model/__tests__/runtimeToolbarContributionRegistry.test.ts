@@ -1,4 +1,11 @@
-import {runtimeToolbarContributionRegistry} from "../runtimeToolbarContributionRegistry";
+/**
+ * @jest-environment @stryker-mutator/jest-runner/jest-env/jsdom
+ */
+import {act, renderHook} from "@testing-library/react";
+import {
+	runtimeToolbarContributionRegistry,
+	useRuntimeToolbarContributions,
+} from "../runtimeToolbarContributionRegistry";
 
 const contribution = (overrides = {}) => ({
 	id: "contribution",
@@ -18,8 +25,12 @@ const contribution = (overrides = {}) => ({
 });
 
 describe("runtimeToolbarContributionRegistry", () => {
-	beforeEach(() => runtimeToolbarContributionRegistry.reset());
-	afterEach(() => runtimeToolbarContributionRegistry.reset());
+	beforeEach(() => {
+		act(() => runtimeToolbarContributionRegistry.reset());
+	});
+	afterEach(() => {
+		act(() => runtimeToolbarContributionRegistry.reset());
+	});
 
 	it("keeps independently presented contributions within their viewport and namespace scope", () => {
 		runtimeToolbarContributionRegistry.register(contribution());
@@ -102,7 +113,8 @@ describe("runtimeToolbarContributionRegistry", () => {
 
 	it("notifies subscribers and stops after unsubscribe", () => {
 		const listener = jest.fn();
-		const unsubscribe = runtimeToolbarContributionRegistry.subscribe(listener);
+		const unsubscribe =
+			runtimeToolbarContributionRegistry.subscribe(listener);
 
 		runtimeToolbarContributionRegistry.register(contribution());
 		expect(listener).toHaveBeenCalledTimes(1);
@@ -136,10 +148,10 @@ describe("runtimeToolbarContributionRegistry", () => {
 	});
 
 	it("patches only the token instance when a registration token is provided", () => {
-		const first = runtimeToolbarContributionRegistry.register(contribution());
-		const second = runtimeToolbarContributionRegistry.register(
-			contribution(),
-		);
+		const first =
+			runtimeToolbarContributionRegistry.register(contribution());
+		const second =
+			runtimeToolbarContributionRegistry.register(contribution());
 		const patchedMenu = {id: "patched", label: "Patched"};
 
 		runtimeToolbarContributionRegistry.update(
@@ -149,14 +161,18 @@ describe("runtimeToolbarContributionRegistry", () => {
 		);
 
 		expect(
-			runtimeToolbarContributionRegistry.select("viewport", "namespace")[0]
-				.menu,
+			runtimeToolbarContributionRegistry.select(
+				"viewport",
+				"namespace",
+			)[0].menu,
 		).toEqual({id: "menu", label: "Menu", icon: "tabler:menu"});
 
 		runtimeToolbarContributionRegistry.unregister("contribution", second);
 		expect(
-			runtimeToolbarContributionRegistry.select("viewport", "namespace")[0]
-				.menu,
+			runtimeToolbarContributionRegistry.select(
+				"viewport",
+				"namespace",
+			)[0].menu,
 		).toEqual(patchedMenu);
 	});
 
@@ -184,8 +200,10 @@ describe("runtimeToolbarContributionRegistry", () => {
 		);
 
 		expect(
-			runtimeToolbarContributionRegistry.select("viewport", "namespace")[0]
-				.order,
+			runtimeToolbarContributionRegistry.select(
+				"viewport",
+				"namespace",
+			)[0].order,
 		).toBeUndefined();
 	});
 
@@ -256,5 +274,47 @@ describe("runtimeToolbarContributionRegistry", () => {
 				.select("viewport", "namespace")
 				.map(({id}) => id),
 		).toEqual(["a", "b"]);
+	});
+
+	it("re-registers a contribution after the last instance is unregistered", () => {
+		const token =
+			runtimeToolbarContributionRegistry.register(contribution());
+		runtimeToolbarContributionRegistry.unregister("contribution", token);
+		expect(
+			runtimeToolbarContributionRegistry.select("viewport", "namespace"),
+		).toEqual([]);
+
+		runtimeToolbarContributionRegistry.register(contribution({order: 4}));
+		expect(
+			runtimeToolbarContributionRegistry.select(
+				"viewport",
+				"namespace",
+			)[0].order,
+		).toBe(4);
+	});
+
+	it("subscribes hook consumers to registry updates for a viewport and namespace", () => {
+		const {result} = renderHook(() =>
+			useRuntimeToolbarContributions("viewport", "namespace"),
+		);
+		expect(result.current).toEqual([]);
+
+		act(() => {
+			runtimeToolbarContributionRegistry.register(contribution());
+		});
+		expect(result.current).toHaveLength(1);
+		expect(result.current[0].id).toBe("contribution");
+
+		act(() => {
+			runtimeToolbarContributionRegistry.update("contribution", {
+				order: 3,
+			});
+		});
+		expect(result.current[0].order).toBe(3);
+
+		act(() => {
+			runtimeToolbarContributionRegistry.unregister("contribution");
+		});
+		expect(result.current).toEqual([]);
 	});
 });

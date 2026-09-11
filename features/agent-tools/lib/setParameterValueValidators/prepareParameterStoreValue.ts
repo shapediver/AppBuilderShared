@@ -2,7 +2,7 @@ import {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/par
 import type {DecomposedColorFormat} from "@AppBuilderLib/shared/lib/colors";
 import {composeSdColor} from "@AppBuilderLib/shared/lib/colors";
 import {ResParameterType} from "@shapediver/sdk.geometry-api-sdk-v2";
-import {toStringListStoreValue, parseStringListIndex} from "../stringListValue";
+import {parseStringListIndex, toStringListStoreValue} from "../stringListValue";
 import type {ParameterValueInput, ParameterValuePrepareResult} from "./types";
 
 const COLOR_ON_NON_COLOR_MESSAGE =
@@ -122,11 +122,7 @@ export function prepareParameterStoreValue(
 		}
 		const index = parseStringListIndex(storeValue);
 		const choiceCount = parameter.definition.choices?.length ?? 0;
-		if (
-			index === undefined ||
-			index < 0 ||
-			index >= choiceCount
-		) {
+		if (index === undefined || index < 0 || index >= choiceCount) {
 			return {
 				success: false,
 				message: invalidValueMessage(parameter, value),

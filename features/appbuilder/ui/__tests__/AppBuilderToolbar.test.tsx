@@ -45,10 +45,26 @@ jest.mock("../AppBuilderToolbarExportButton", () => ({
 
 jest.mock("../AppBuilderToolbarCommandButton", () => ({
 	__esModule: true,
-	default: ({item}: {item: {label?: string; type?: string}}) => (
-		<div data-testid={`toolbar-command-${item.type ?? "command"}`}>
+	default: ({
+		item,
+		globalDisabled,
+	}: {
+		item: {
+			label?: string;
+			type?: string;
+			disabled?: boolean;
+			props?: {execute?: () => void};
+		};
+		globalDisabled?: boolean;
+	}) => (
+		<button
+			data-testid={`toolbar-command-${item.type ?? "command"}`}
+			data-disabled={String(!!(item.disabled || globalDisabled))}
+			disabled={!!(item.disabled || globalDisabled)}
+			onClick={() => item.props?.execute?.()}
+		>
 			{item.label}
-		</div>
+		</button>
 	),
 }));
 
@@ -79,6 +95,7 @@ jest.mock("../AppBuilderToolbarPopoverButton", () => ({
 
 		return (
 			<button
+				data-popover-id={popoverId}
 				data-popover-dismissal-blocked={String(popoverDismissalBlocked)}
 				data-open={String(opened)}
 				onClick={() => onPopoverOpenChange(popoverId, !opened)}
@@ -140,9 +157,10 @@ describe("AppBuilderToolbar", () => {
 			</MantineProvider>,
 		);
 
-		expect(
-			screen.getByRole("separator").getAttribute("data-orientation"),
-		).toBe("horizontal");
+		const separator = screen.getByRole("separator");
+		expect(separator.getAttribute("data-orientation")).toBe("horizontal");
+		expect((separator as HTMLElement).style.width).toBe("60%");
+		expect((separator as HTMLElement).style.alignSelf).toBe("center");
 	});
 
 	it("uses vertical dividers between groups in horizontal toolbars", () => {
@@ -155,9 +173,27 @@ describe("AppBuilderToolbar", () => {
 			</MantineProvider>,
 		);
 
+		const separator = screen.getByRole("separator");
+		expect(separator.getAttribute("data-orientation")).toBe("vertical");
+		expect((separator as HTMLElement).style.alignSelf).toBe("stretch");
+	});
+
+	it("uses a vertical toolbar layout on the right side", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={createToolbar("right")}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(
+			screen.getByRole("toolbar").getAttribute("aria-orientation"),
+		).toBe("vertical");
 		expect(
 			screen.getByRole("separator").getAttribute("data-orientation"),
-		).toBe("vertical");
+		).toBe("horizontal");
 	});
 
 	it("keeps an open popover when interacting with nested portal dropdowns", () => {
@@ -304,6 +340,191 @@ describe("AppBuilderToolbar", () => {
 		expect(firstButton.getAttribute("data-open")).toBe("false");
 	});
 
+	it("keeps an open popover when clicking inside the toolbar", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={createToolbar("top")}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		const firstButton = screen.getByRole("button", {name: "First"});
+		fireEvent.click(firstButton);
+		fireEvent.pointerDown(firstButton);
+
+		expect(firstButton.getAttribute("data-open")).toBe("true");
+	});
+
+	it("keeps an open popover when interacting with a toolbar popover portal", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={createToolbar("top")}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		const firstButton = screen.getByRole("button", {name: "First"});
+		fireEvent.click(firstButton);
+
+		const popoverPortal = document.createElement("div");
+		popoverPortal.setAttribute("data-appbuilder-toolbar-popover", "true");
+		document.body.appendChild(popoverPortal);
+		fireEvent.pointerDown(popoverPortal);
+
+		expect(firstButton.getAttribute("data-open")).toBe("true");
+	});
+
+	it("does not close on a non-element pointer target", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={createToolbar("top")}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		const firstButton = screen.getByRole("button", {name: "First"});
+		fireEvent.click(firstButton);
+
+		const textNode = document.createTextNode("outside");
+		document.body.appendChild(textNode);
+		expect(() => fireEvent.pointerDown(textNode)).not.toThrow();
+
+		expect(firstButton.getAttribute("data-open")).toBe("false");
+	});
+
+	it("closes an open popover when a canvas descendant is clicked", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={createToolbar("top")}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		const firstButton = screen.getByRole("button", {name: "First"});
+		fireEvent.click(firstButton);
+
+		const canvas = document.createElement("canvas");
+		const overlay = document.createElement("div");
+		canvas.appendChild(overlay);
+		document.body.appendChild(canvas);
+		fireEvent.pointerDown(overlay);
+
+		expect(firstButton.getAttribute("data-open")).toBe("false");
+	});
+
+	it("does not dismiss a blocked popover on a non-canvas outside click", () => {
+		useShapeDiverStoreInteractionRequestManagement.setState({
+			interactionRequests: {
+				viewer: {
+					activeRequest: {
+						type: "active",
+						viewportId: "viewer",
+						token: "active-request",
+						disable: jest.fn(),
+					},
+					passiveRequests: [],
+				},
+			},
+		});
+
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={createToolbar("top")}
+					buttonRenderContext={{
+						...buttonRenderContext,
+						viewportId: "viewer",
+					}}
+				/>
+			</MantineProvider>,
+		);
+
+		const firstButton = screen.getByRole("button", {name: "First"});
+		fireEvent.click(firstButton);
+		expect(firstButton.getAttribute("data-popover-dismissal-blocked")).toBe(
+			"true",
+		);
+
+		const outside = document.createElement("div");
+		document.body.appendChild(outside);
+		fireEvent.pointerDown(outside);
+
+		expect(firstButton.getAttribute("data-open")).toBe("true");
+	});
+
+	it("blocks dismissal when any viewport has an active request", () => {
+		useShapeDiverStoreInteractionRequestManagement.setState({
+			interactionRequests: {
+				other: {
+					activeRequest: {
+						type: "active",
+						viewportId: "other",
+						token: "active-request",
+						disable: jest.fn(),
+					},
+					passiveRequests: [],
+				},
+			},
+		});
+
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={createToolbar("top")}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(
+			screen
+				.getByRole("button", {name: "First"})
+				.getAttribute("data-popover-dismissal-blocked"),
+		).toBe("true");
+	});
+
+	it("does not block dismissal for a different viewport's request", () => {
+		useShapeDiverStoreInteractionRequestManagement.setState({
+			interactionRequests: {
+				other: {
+					activeRequest: {
+						type: "active",
+						viewportId: "other",
+						token: "active-request",
+						disable: jest.fn(),
+					},
+					passiveRequests: [],
+				},
+			},
+		});
+
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={createToolbar("top")}
+					buttonRenderContext={{
+						...buttonRenderContext,
+						viewportId: "viewer",
+					}}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(
+			screen
+				.getByRole("button", {name: "First"})
+				.getAttribute("data-popover-dismissal-blocked"),
+		).toBe("false");
+	});
+
 	it("renders each resolved toolbar item type", () => {
 		render(
 			<MantineProvider>
@@ -368,5 +589,218 @@ describe("AppBuilderToolbar", () => {
 		expect(screen.getByText("Toggle")).toBeTruthy();
 		expect(screen.getByTestId("toolbar-action")).toBeTruthy();
 		expect(screen.getByTestId("toolbar-export")).toBeTruthy();
+	});
+
+	it("applies theme style overrides to the toolbar paper", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={createToolbar("top")}
+					buttonRenderContext={buttonRenderContext}
+					themePropsOverride={{
+						style: {backgroundColor: "rgb(12, 34, 56)"},
+					}}
+				/>
+			</MantineProvider>,
+		);
+
+		const toolbar = screen.getByRole("toolbar");
+		expect(toolbar.style.pointerEvents).toBe("auto");
+		expect(toolbar.style.backgroundColor).toBe("rgb(12, 34, 56)");
+	});
+
+	it("falls back to a generated popover id when an item omits id", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={{
+						id: "noid",
+						source: "definition",
+						side: "top",
+						align: "center",
+						order: 0,
+						visibility: "always",
+						groups: [
+							[
+								{
+									type: "widgets",
+									label: "NoId",
+									props: {widgets: []},
+								} as never,
+							],
+						],
+					}}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(
+			screen
+				.getByRole("button", {name: "NoId"})
+				.getAttribute("data-popover-id"),
+		).toBe("0-0");
+	});
+
+	it("disables toolbar commands while an action is executing", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={{
+						id: "cmd",
+						source: "definition",
+						side: "top",
+						align: "center",
+						order: 0,
+						visibility: "always",
+						groups: [
+							[
+								{
+									id: "run",
+									type: "command",
+									label: "Run",
+									props: {execute: jest.fn()},
+								},
+							],
+						],
+					}}
+					buttonRenderContext={{
+						...buttonRenderContext,
+						executing: true,
+					}}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(
+			(screen.getByRole("button", {name: "Run"}) as HTMLButtonElement)
+				.disabled,
+		).toBe(true);
+	});
+
+	it("toggles a checkbox item and honors readOnly", () => {
+		const setChecked = jest.fn();
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={{
+						id: "checks",
+						source: "definition",
+						side: "top",
+						align: "center",
+						order: 0,
+						visibility: "always",
+						groups: [
+							[
+								{
+									id: "on",
+									type: "checkbox",
+									label: "On",
+									props: {
+										checked: false,
+										setChecked,
+									},
+								},
+								{
+									id: "locked",
+									type: "checkbox",
+									label: "Locked",
+									props: {
+										checked: true,
+										readOnly: true,
+										setChecked: jest.fn(),
+									},
+								},
+							],
+						],
+					}}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		fireEvent.click(screen.getByRole("button", {name: "On"}));
+		expect(setChecked).toHaveBeenCalledWith(true);
+		expect(
+			(screen.getByRole("button", {name: "Locked"}) as HTMLButtonElement)
+				.disabled,
+		).toBe(true);
+	});
+
+	it("renders one fewer separator than visible groups", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={{
+						id: "one",
+						source: "definition",
+						side: "top",
+						align: "center",
+						order: 0,
+						visibility: "always",
+						groups: [
+							[
+								{
+									id: "only",
+									type: "widgets",
+									label: "Only",
+									props: {widgets: []},
+								},
+							],
+						],
+					}}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(screen.queryByRole("separator")).toBeNull();
+	});
+
+	it("renders separators only between visible groups", () => {
+		render(
+			<MantineProvider>
+				<AppBuilderToolbar
+					toolbar={{
+						id: "three",
+						source: "definition",
+						side: "top",
+						align: "center",
+						order: 0,
+						visibility: "always",
+						groups: [
+							[
+								{
+									id: "a",
+									type: "widgets",
+									label: "A",
+									props: {widgets: []},
+								},
+							],
+							[],
+							[
+								{
+									id: "b",
+									type: "widgets",
+									label: "B",
+									props: {widgets: []},
+								},
+							],
+							[
+								{
+									id: "c",
+									type: "widgets",
+									label: "C",
+									props: {widgets: []},
+								},
+							],
+						],
+					}}
+					buttonRenderContext={buttonRenderContext}
+				/>
+			</MantineProvider>,
+		);
+
+		expect(screen.getAllByRole("separator")).toHaveLength(2);
 	});
 });

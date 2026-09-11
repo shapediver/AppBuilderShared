@@ -165,6 +165,16 @@ describe("jsonEngine.parse", () => {
 		).toThrow(/missing "value"/i);
 	});
 
+	it("rejects a later object row that is missing value", () => {
+		expect(() =>
+			jsonEngine.parse(
+				JSON.stringify({
+					rows: [{value: "A"}, {displayname: "No value field"}],
+				}),
+			),
+		).toThrow(/missing "value"/i);
+	});
+
 	it("rejects invalid row entries", () => {
 		expect(() =>
 			jsonEngine.parse(JSON.stringify({rows: [{value: "A"}, "bad"]})),

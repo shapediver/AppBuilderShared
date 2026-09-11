@@ -112,7 +112,6 @@ export const runtimeToolbarContributionRegistry = {
 	},
 };
 
-// Stryker disable all: React hook; jsdom campaign later
 const useSnapshot = () =>
 	useSyncExternalStore(
 		runtimeToolbarContributionRegistry.subscribe,
@@ -127,4 +126,3 @@ export const useRuntimeToolbarContributions = (
 	useSnapshot();
 	return runtimeToolbarContributionRegistry.select(viewportId, namespace);
 };
-// Stryker restore all

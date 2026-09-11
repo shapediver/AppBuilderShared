@@ -314,6 +314,53 @@ describe("validateAppBuilderSettingsJson appBuilderOverride", () => {
 		});
 		expect(result.success).toBe(true);
 	});
+
+	it("accepts a camera assign action whose camera has a type and no id or name", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			appBuilderOverride: {
+				version: "1.0",
+				containers: [
+					{
+						name: "left",
+						widgets: [
+							{
+								type: "actions",
+								props: {
+									actions: [
+										{
+											type: "camera",
+											props: {
+												type: "assign",
+												props: {
+													camera: {
+														type: "perspective",
+													},
+												},
+											},
+										},
+										{
+											type: "camera",
+											props: {
+												type: "assign",
+												props: {
+													camera: {
+														type: "orthographic",
+														id: 1,
+													},
+												},
+											},
+										},
+									],
+								},
+							},
+						],
+					},
+				],
+			},
+		});
+		expect(result.success).toBe(true);
+	});
 });
 
 describe("validateAppBuilderSettingsJson themeOverrides.other", () => {

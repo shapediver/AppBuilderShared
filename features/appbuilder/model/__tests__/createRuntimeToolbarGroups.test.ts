@@ -274,6 +274,8 @@ describe("resolveRuntimeToolbarGroups", () => {
 		const batchParameterValueUpdate = jest
 			.fn()
 			.mockResolvedValue(undefined);
+		const firstPrepare = jest.fn();
+		const secondPrepare = jest.fn();
 		const firstComplete = jest.fn();
 		const secondComplete = jest.fn();
 		useShapeDiverStoreParameters.setState({batchParameterValueUpdate});
@@ -289,7 +291,7 @@ describe("resolveRuntimeToolbarGroups", () => {
 							namespace: "namespace",
 							parameterId: "first",
 							value: "first-value",
-							prepare: jest.fn(),
+							prepare: firstPrepare,
 							onComplete: firstComplete,
 						},
 					}),
@@ -306,7 +308,7 @@ describe("resolveRuntimeToolbarGroups", () => {
 							namespace: "namespace",
 							parameterId: "second",
 							value: "second-value",
-							prepare: jest.fn(),
+							prepare: secondPrepare,
 							onComplete: secondComplete,
 						},
 					}),
@@ -317,6 +319,8 @@ describe("resolveRuntimeToolbarGroups", () => {
 		const command = groups[0][1];
 		if (command.type !== "command") throw new Error("Expected command");
 		command.props.execute();
+		expect(firstPrepare).toHaveBeenCalledTimes(1);
+		expect(secondPrepare).toHaveBeenCalledTimes(1);
 		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
 			namespace: {first: "first-value", second: "second-value"},
 		});
@@ -456,5 +460,234 @@ describe("resolveRuntimeToolbarGroups", () => {
 		command.props.execute();
 		expect(execute).toHaveBeenCalledTimes(1);
 		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
+	});
+
+	it("does not batch when any aggregated member lacks batchUpdate", () => {
+		const batchParameterValueUpdate = jest.fn();
+		const firstExecute = jest.fn();
+		const secondExecute = jest.fn();
+		useShapeDiverStoreParameters.setState({batchParameterValueUpdate});
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				commands: [
+					createToolbarCommand({
+						id: "first-confirm",
+						aggregationId: "selection-confirm",
+						label: "Confirm",
+						execute: firstExecute,
+						batchUpdate: {
+							namespace: "namespace",
+							parameterId: "first",
+							value: "first-value",
+							prepare: jest.fn(),
+						},
+					}),
+					createToolbarCommand({
+						id: "second-confirm",
+						aggregationId: "selection-confirm",
+						label: "Confirm",
+						execute: secondExecute,
+					}),
+				],
+			}),
+		]);
+
+		const command = groups[0].find((item) => item.type === "command");
+		if (command?.type !== "command") throw new Error("Expected command");
+		command.props.execute();
+		expect(firstExecute).toHaveBeenCalledTimes(1);
+		expect(secondExecute).toHaveBeenCalledTimes(1);
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
+	});
+
+	it("hides the menu when extra items are not toggleable checkboxes", () => {
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				menuVisibility: "multipleToggleable",
+				items: [
+					createToolbarCommand({
+						id: "confirm",
+						label: "Confirm",
+						execute: jest.fn(),
+					}),
+					createToolbarCheckboxItem({
+						id: "locked",
+						label: "locked",
+						checked: true,
+						readOnly: true,
+						setChecked: jest.fn(),
+					}),
+				],
+			}),
+		]);
+
+		expect(groups).toEqual([]);
+	});
+
+	it("sorts aggregated commands by min order when ranges overlap", () => {
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("wide", "selection", {
+				commands: [
+					createToolbarCommand({
+						id: "wide-a",
+						aggregationId: "wide",
+						label: "Wide",
+						order: 1,
+						execute: jest.fn(),
+					}),
+					createToolbarCommand({
+						id: "wide-b",
+						aggregationId: "wide",
+						label: "Wide",
+						order: 100,
+						execute: jest.fn(),
+					}),
+				],
+			}),
+			contribution("tight", "selection", {
+				commands: [
+					createToolbarCommand({
+						id: "tight-a",
+						aggregationId: "tight",
+						label: "Tight",
+						order: 10,
+						execute: jest.fn(),
+					}),
+					createToolbarCommand({
+						id: "tight-b",
+						aggregationId: "tight",
+						label: "Tight",
+						order: 11,
+						execute: jest.fn(),
+					}),
+				],
+			}),
+		]);
+
+		const commandLabels = groups[0]
+			.filter((item) => item.type === "command")
+			.map((item) => item.label);
+		expect(commandLabels).toEqual(["Wide", "Tight"]);
+	});
+
+	it("disables an aggregated command only when every member is disabled", () => {
+		const firstExecute = jest.fn();
+		const secondExecute = jest.fn();
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				commands: [
+					createToolbarCommand({
+						id: "first",
+						aggregationId: "go",
+						label: "Go",
+						disabled: true,
+						execute: firstExecute,
+					}),
+					createToolbarCommand({
+						id: "second",
+						aggregationId: "go",
+						label: "Go",
+						disabled: true,
+						execute: secondExecute,
+					}),
+				],
+			}),
+		]);
+
+		const command = groups[0].find((item) => item.type === "command");
+		if (command?.type !== "command") throw new Error("Expected command");
+		expect(command.disabled).toBe(true);
+		command.props.execute();
+		expect(firstExecute).not.toHaveBeenCalled();
+		expect(secondExecute).not.toHaveBeenCalled();
+	});
+
+	it("batches without onComplete and still prepares each update", () => {
+		const batchParameterValueUpdate = jest
+			.fn()
+			.mockResolvedValue(undefined);
+		const prepare = jest.fn();
+		useShapeDiverStoreParameters.setState({batchParameterValueUpdate});
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				commands: [
+					createToolbarCommand({
+						id: "first-confirm",
+						aggregationId: "selection-confirm",
+						label: "Confirm",
+						execute: jest.fn(),
+						batchUpdate: {
+							namespace: "namespace",
+							parameterId: "first",
+							value: "first-value",
+							prepare,
+						},
+					}),
+					createToolbarCommand({
+						id: "second-confirm",
+						aggregationId: "selection-confirm",
+						label: "Confirm",
+						execute: jest.fn(),
+						batchUpdate: {
+							namespace: "namespace",
+							parameterId: "second",
+							value: "second-value",
+							prepare,
+						},
+					}),
+				],
+			}),
+		]);
+
+		const command = groups[0].find((item) => item.type === "command");
+		if (command?.type !== "command") throw new Error("Expected command");
+		expect(() => command.props.execute()).not.toThrow();
+		expect(prepare).toHaveBeenCalledTimes(2);
+		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
+			namespace: {first: "first-value", second: "second-value"},
+		});
+	});
+
+	it("uses menu.sectionId for the rendered section when it differs from menu.id", () => {
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				menu: {
+					id: "menu-id",
+					sectionId: "menu-section",
+					label: "Selection",
+				},
+			}),
+		]);
+
+		const menu = groups[0][0];
+		expect(menu.type).toBe("menu");
+		if (menu.type !== "menu") throw new Error("Expected menu");
+		expect(menu.props.sections[0].id).toBe("menu-section");
+	});
+
+	it("falls back to menu.id when sectionId is omitted", () => {
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("first", "selection", {
+				menu: {id: "menu-id", label: "Selection"},
+			}),
+		]);
+
+		const menu = groups[0][0];
+		expect(menu.type).toBe("menu");
+		if (menu.type !== "menu") throw new Error("Expected menu");
+		expect(menu.props.sections[0].id).toBe("menu-id");
+	});
+
+	it("merges consecutive sections that share a groupId", () => {
+		const groups = resolveRuntimeToolbarGroups([
+			contribution("selection", "selection", {groupId: "runtime"}),
+			contribution("dragging", "dragging", {groupId: "runtime"}),
+		]);
+
+		expect(groups).toHaveLength(1);
+		expect(groups[0].map((item) => item.id)).toEqual([
+			"runtime-interaction-selection-menu",
+			"runtime-interaction-dragging-menu",
+		]);
 	});
 });

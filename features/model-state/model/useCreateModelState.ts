@@ -16,7 +16,6 @@ type CreateModelStateHookThemePropsType =
 
 const defaultThemeProps: CreateModelStateHookThemeDefaultProps = {};
 
-// Stryker disable all: theme factory unused by unit tests
 export function CreateModelStateHookThemeProps(
 	props: CreateModelStateHookThemePropsType,
 ): MantineThemeComponent {
@@ -24,7 +23,6 @@ export function CreateModelStateHookThemeProps(
 		defaultProps: props,
 	};
 }
-// Stryker restore all
 
 interface Props {
 	namespace: string;
@@ -42,7 +40,6 @@ export function useCreateModelState(props: Props) {
 	const {
 		parameterNamesToInclude: parameterNamesToIncludeDefault,
 		parameterNamesToExclude: parameterNamesToExcludeDefault,
-		// Stryker disable next-line ArrayDeclaration: theme default unused by unit tests
 		parameterNamesToAlwaysExclude = [],
 		successMessage,
 		errorMessage,
@@ -69,7 +66,8 @@ export function useCreateModelState(props: Props) {
 						state.viewportAccessFunctions[viewportId]
 							?.getScreenshot,
 					convertToGlTF:
-						state.viewportAccessFunctions[viewportId]?.convertToGlTF,
+						state.viewportAccessFunctions[viewportId]
+							?.convertToGlTF,
 				}),
 			),
 		);
@@ -102,10 +100,8 @@ export function useCreateModelState(props: Props) {
 					.viewportAccessFunctions[viewportId];
 			const currentGetScreenshot =
 				viewportAccessFunctions?.getScreenshot ?? getScreenshot;
-			// Stryker disable all: convertToGlTF unused by unsavedChanges screenshot tests
 			const currentConvertToGlTF =
 				viewportAccessFunctions?.convertToGlTF ?? convertToGlTF;
-			// Stryker restore all
 
 			const {
 				parameterNamesToInclude = parameterNamesToIncludeDefault,
@@ -130,7 +126,6 @@ export function useCreateModelState(props: Props) {
 					screenshotProps:
 						restProps.screenshotProps ?? screenshotPropsDefault,
 				},
-				// Stryker disable next-line ConditionalExpression,LogicalOperator: core also defaults markSaved to true
 				markSaved: options?.markSaved ?? true,
 			});
 		},

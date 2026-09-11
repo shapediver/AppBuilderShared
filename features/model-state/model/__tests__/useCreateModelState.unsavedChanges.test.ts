@@ -19,10 +19,21 @@ jest.mock("@mantine/core", () => {
 	};
 });
 
+jest.mock("../../lib/createModelStateCore", () => {
+	const actual = jest.requireActual("../../lib/createModelStateCore");
+	return {
+		...actual,
+		createModelStateCore: jest.fn((args: unknown) =>
+			actual.createModelStateCore(args),
+		),
+	};
+});
+
 // Real stores — assertions and session state go directly against them.
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
+import {createModelStateCore} from "../../lib/createModelStateCore";
 
 const paramStore = useShapeDiverStoreParameters;
 const sessionStore = useShapeDiverStoreSession;
@@ -61,6 +72,7 @@ function currentUnsaved() {
 
 describe("useCreateModelState unsavedChanges wiring", () => {
 	beforeEach(() => {
+		(createModelStateCore as jest.Mock).mockClear();
 		setSessionApi();
 		viewportAccessFunctionsStore.setState({viewportAccessFunctions: {}});
 	});
@@ -78,6 +90,9 @@ describe("useCreateModelState unsavedChanges wiring", () => {
 		});
 
 		expect(sessionApiMock.createModelState).toHaveBeenCalled();
+		expect(createModelStateCore).toHaveBeenCalledWith(
+			expect.objectContaining({markSaved: true}),
+		);
 		expect(currentUnsaved()).toBe(false);
 	});
 
@@ -141,6 +156,60 @@ describe("useCreateModelState unsavedChanges wiring", () => {
 		});
 
 		expect(getScreenshot).toHaveBeenCalledWith(screenshotProps);
+	});
+
+	it("uses a convertToGlTF function registered after the callback was created", async () => {
+		const {result} = renderHook(() =>
+			useCreateModelState({namespace: "ns"}),
+		);
+		const createModelState = result.current.createModelState;
+		const convertToGlTF = jest.fn().mockResolvedValue(undefined);
+
+		act(() => {
+			viewportAccessFunctionsStore.setState({
+				viewportAccessFunctions: {
+					vp1: {convertToGlTF},
+				},
+			});
+		});
+
+		await act(async () => {
+			await createModelState({includeGltf: true});
+		});
+
+		const gltfCb = sessionApiMock.createModelState.mock.calls[0][4];
+		expect(gltfCb).toEqual(expect.any(Function));
+		await gltfCb();
+		expect(convertToGlTF).toHaveBeenCalledTimes(1);
+	});
+
+	it("falls back to convertToGlTF captured at render when the store is empty at invoke", async () => {
+		const convertToGlTF = jest.fn().mockResolvedValue(undefined);
+		viewportAccessFunctionsStore.setState({
+			viewportAccessFunctions: {
+				vp1: {convertToGlTF},
+			},
+		});
+
+		const {result} = renderHook(() =>
+			useCreateModelState({namespace: "ns"}),
+		);
+		const createModelState = result.current.createModelState;
+
+		act(() => {
+			viewportAccessFunctionsStore.setState({
+				viewportAccessFunctions: {},
+			});
+		});
+
+		await act(async () => {
+			await createModelState({includeGltf: true});
+		});
+
+		const gltfCb = sessionApiMock.createModelState.mock.calls[0][4];
+		expect(gltfCb).toEqual(expect.any(Function));
+		await gltfCb();
+		expect(convertToGlTF).toHaveBeenCalledTimes(1);
 	});
 
 	it("does not clear unsavedChanges when markSaved is false (value-source usage)", async () => {

@@ -84,6 +84,27 @@ describe("useShapeDiverStoreInteractionRequestManagement", () => {
 		).toBeUndefined();
 	});
 
+	it("does not store a request that is neither active nor passive", () => {
+		const disable = jest.fn();
+		const token = useShapeDiverStoreInteractionRequestManagement
+			.getState()
+			.addInteractionRequest({
+				type: "other" as "active",
+				viewportId: "vp-unknown-type",
+				disable,
+			});
+
+		expect(token).toMatch(
+			/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+		);
+		expect(disable).not.toHaveBeenCalled();
+		const state =
+			useShapeDiverStoreInteractionRequestManagement.getState()
+				.interactionRequests["vp-unknown-type"];
+		expect(state.activeRequest).toBeUndefined();
+		expect(state.passiveRequests).toEqual([]);
+	});
+
 	it("does not disable a passive request when no active request exists", () => {
 		const disablePassive = jest.fn();
 		useShapeDiverStoreInteractionRequestManagement

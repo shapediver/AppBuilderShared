@@ -58,7 +58,7 @@ export default function AppBuilderToolbarPopoverContent({
 				return (
 					<Stack {...menuStackProps}>
 						{item.props.sections.map((section, sectionIndex) => {
-							// Stryker disable all: spacing/checkbox/command unused by action+widget tests
+							// Stryker disable all: spacing unused by menu item tests
 							const configuredActions = section.items.filter(
 								(menuItem) => menuItem.type === "action",
 							);
@@ -68,6 +68,7 @@ export default function AppBuilderToolbarPopoverContent({
 									(menuItem) =>
 										menuItem.presentation === "item",
 								);
+							// Stryker restore all
 							return (
 								<React.Fragment key={section.id}>
 									{sectionIndex > 0 && (
@@ -76,6 +77,7 @@ export default function AppBuilderToolbarPopoverContent({
 									<Stack
 										{...menuSectionStackProps}
 										gap={
+											// Stryker disable next-line all: spacing unused by menu item tests
 											menuSectionStackProps.gap ??
 											(configuredActions.length === 0 ||
 											useItemSpacing
@@ -138,15 +140,12 @@ export default function AppBuilderToolbarPopoverContent({
 													/>
 												);
 											}
-											// Stryker restore all
-
 											const action =
 												AppBuilderActionFromType(
 													menuItem.props,
 													namespace,
 													`toolbar-menu-action-${menuItem.id}`,
 													componentContext,
-													// Stryker disable all: action tests only assert click
 													{
 														presentation:
 															menuItem.presentation ??
@@ -157,7 +156,6 @@ export default function AppBuilderToolbarPopoverContent({
 															actionDisabled ||
 															menuItem.disabled,
 													},
-													// Stryker restore all
 												);
 											return action ? (
 												<React.Fragment
@@ -186,7 +184,6 @@ export default function AppBuilderToolbarPopoverContent({
 						widgets={item.props.widgets}
 					/>
 				);
-				// Stryker disable next-line ConditionalExpression: unlabeled test only asserts the title is absent
 				if (!item.label) return widgets;
 				return (
 					<Stack gap="xs">
@@ -197,7 +194,6 @@ export default function AppBuilderToolbarPopoverContent({
 					</Stack>
 				);
 			}
-			// Stryker disable all: tabs/parameter/output unused by action+widget tests
 			case "tabs":
 				return (
 					<AppBuilderTabsComponent
@@ -243,7 +239,6 @@ export default function AppBuilderToolbarPopoverContent({
 					</Paper>
 				);
 			}
-			// Stryker restore all
 		}
 	}, [
 		// Stryker disable next-line ArrayDeclaration: memo identity unused by action+widget tests

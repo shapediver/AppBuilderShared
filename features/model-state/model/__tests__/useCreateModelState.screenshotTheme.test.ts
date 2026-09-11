@@ -2,7 +2,10 @@
  * @jest-environment jsdom
  */
 import {act, renderHook} from "@testing-library/react";
-import {useCreateModelState} from "../useCreateModelState";
+import {
+	CreateModelStateHookThemeProps,
+	useCreateModelState,
+} from "../useCreateModelState";
 
 // useViewportId reads from context; mock it to a fixed viewport id.
 jest.mock("@AppBuilderLib/entities/viewport/model/useViewportId", () => ({
@@ -19,9 +22,20 @@ jest.mock("@mantine/core", () => {
 	};
 });
 
+jest.mock("../../lib/createModelStateCore", () => {
+	const actual = jest.requireActual("../../lib/createModelStateCore");
+	return {
+		...actual,
+		createModelStateCore: jest.fn((args: unknown) =>
+			actual.createModelStateCore(args),
+		),
+	};
+});
+
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 import {useProps} from "@mantine/core";
+import {createModelStateCore} from "../../lib/createModelStateCore";
 
 const sessionStore = useShapeDiverStoreSession;
 const viewportAccessFunctionsStore = useShapeDiverStoreViewportAccessFunctions;
@@ -58,8 +72,57 @@ describe("useCreateModelState screenshotProps theme", () => {
 				...props,
 			}),
 		);
+		(createModelStateCore as jest.Mock).mockClear();
 		setSessionApi();
 		viewportAccessFunctionsStore.setState({viewportAccessFunctions: {}});
+	});
+
+	it("wraps CreateModelStateHook theme defaults for Mantine", () => {
+		const defaultProps = {parameterNamesToAlwaysExclude: ["context"]};
+		expect(CreateModelStateHookThemeProps(defaultProps)).toEqual({
+			defaultProps,
+		});
+	});
+
+	it("passes an empty always-exclude list when theme omits parameterNamesToAlwaysExclude", async () => {
+		const {result} = renderHook(() =>
+			useCreateModelState({namespace: "ns"}),
+		);
+
+		await act(async () => {
+			await result.current.createModelState({});
+		});
+
+		expect(createModelStateCore).toHaveBeenCalledWith(
+			expect.objectContaining({parameterNamesToAlwaysExclude: []}),
+		);
+		expect(sessionApiMock.createModelState).toHaveBeenCalledWith(
+			{paramA: 1},
+			true,
+			undefined,
+			undefined,
+			undefined,
+		);
+	});
+
+	it("omits parameters listed in theme parameterNamesToAlwaysExclude", async () => {
+		themeFromTest = {parameterNamesToAlwaysExclude: ["Param A"]};
+
+		const {result} = renderHook(() =>
+			useCreateModelState({namespace: "ns"}),
+		);
+
+		await act(async () => {
+			await result.current.createModelState({});
+		});
+
+		expect(sessionApiMock.createModelState).toHaveBeenCalledWith(
+			{},
+			true,
+			undefined,
+			undefined,
+			undefined,
+		);
 	});
 
 	it("falls back to theme screenshotProps when the call omits them", async () => {

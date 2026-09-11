@@ -60,12 +60,9 @@ export default function useQuerySavedState(savedStateId: string | null) {
 	// store instead of issuing a second iframe call.
 	useAsync(
 		async () => {
-			// Stryker disable next-line ConditionalExpression: initial success path already covered when id is null
 			if (initialSavedState.status !== "loading") return;
-			// Stryker disable next-line ConditionalExpression: null-id test asserts the initial state before this runs
 			if (!savedStateId) return;
 
-			// Stryker disable all: platform query path unused by off-platform tests
 			if (shouldUsePlatform()) {
 				if (savedStateIds.length === 0 && !savedStateLoading) {
 					return loadSavedState() as Promise<
@@ -76,9 +73,7 @@ export default function useQuerySavedState(savedStateId: string | null) {
 				}
 				return;
 			}
-			// Stryker restore all
 
-			// Stryker disable next-line OptionalChaining: tests always seed a defined store row
 			const stored = storeItems[savedStateId]?.data;
 			if (stored) {
 				setInitialSavedState({status: "success", data: stored});
@@ -86,7 +81,6 @@ export default function useQuerySavedState(savedStateId: string | null) {
 			}
 			// Resolve finished seeding the store (currentModel is set) but the
 			// requested saved state is not part of the model's saved states.
-			// Stryker disable next-line ConditionalExpression: missing-id error vs still-loading already covered by dedicated tests
 			if (currentModel) {
 				setInitialSavedState({status: "error", data: undefined});
 			}
@@ -101,7 +95,6 @@ export default function useQuerySavedState(savedStateId: string | null) {
 			currentModel,
 			initialSavedState,
 		],
-		// Stryker disable all: platform onSuccess/onError unused by off-platform tests
 		{
 			onSuccess: (
 				response:
@@ -131,7 +124,6 @@ export default function useQuerySavedState(savedStateId: string | null) {
 				setInitialSavedState({status: "error", data: undefined});
 			},
 		},
-		// Stryker restore all
 	);
 
 	return {initialSavedState};

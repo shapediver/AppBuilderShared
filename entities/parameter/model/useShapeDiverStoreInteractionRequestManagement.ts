@@ -37,10 +37,7 @@ export const useShapeDiverStoreInteractionRequestManagement =
 							passiveRequests:
 								interactionRequests[viewportId].passiveRequests,
 						};
-					} else if (
-						// Stryker disable next-line ConditionalExpression: request type is active | passive
-						type === "passive"
-					) {
+					} else if (type === "passive") {
 						if (interactionRequests[viewportId].activeRequest) {
 							request.disable();
 						}

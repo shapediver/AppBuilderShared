@@ -28,18 +28,14 @@ export const resolveRuntimeToolbarGroups = (
 			const showMenu =
 				menuVisibility === "always" ||
 				(items.length > 1 &&
-					// Stryker disable all: mixed toggleable covered; inner &&/some equivalents unused
 					items.some(
 						(item) =>
 							item.type === "checkbox" && !item.props.readOnly,
 					));
-			// Stryker restore all
 			const singleCheckbox =
-				// Stryker disable all: promote/hide tests already cover the menu vs button split
 				!showMenu && items.length === 1 && items[0].type === "checkbox"
 					? items[0]
 					: undefined;
-			// Stryker restore all
 			const singleToggleableCheckbox =
 				singleCheckbox && !singleCheckbox.props.readOnly
 					? singleCheckbox
@@ -61,7 +57,6 @@ export const resolveRuntimeToolbarGroups = (
 								(command) => command.order ?? Infinity,
 							),
 						) -
-							// Stryker disable next-line MethodExpression: min vs max of the other group unused once lowest-order test exists
 							Math.min(
 								...groupB.map(
 									(command) => command.order ?? Infinity,
@@ -72,7 +67,6 @@ export const resolveRuntimeToolbarGroups = (
 					const [first] = group;
 					return {
 						...first,
-						// Stryker disable next-line ArrowFunction: mixed disabled test already asserts enabled members run
 						disabled: group.every((command) => command.disabled),
 						props: {
 							execute: () => {
@@ -84,7 +78,6 @@ export const resolveRuntimeToolbarGroups = (
 								);
 								if (
 									batchUpdates.length > 1 &&
-									// Stryker disable next-line MethodExpression: single vs multi batch already covered
 									batchUpdates.every(
 										(update) => update !== undefined,
 									)
@@ -96,7 +89,6 @@ export const resolveRuntimeToolbarGroups = (
 									for (const update of batchUpdates) {
 										// Stryker disable next-line ConditionalExpression: every() already dropped missing updates
 										if (!update) continue;
-										// Stryker disable next-line CallExpression: prepare is a test stub
 										update.prepare();
 										(values[update.namespace] ??= {})[
 											update.parameterId
@@ -108,7 +100,6 @@ export const resolveRuntimeToolbarGroups = (
 											.batchParameterValueUpdate(values),
 									).then(() => {
 										for (const update of batchUpdates)
-											// Stryker disable next-line OptionalChaining: batch test always provides onComplete
 											update?.onComplete?.();
 									});
 									return;
@@ -143,7 +134,6 @@ export const resolveRuntimeToolbarGroups = (
 											sections: [
 												{
 													id:
-														// Stryker disable next-line LogicalOperator: tests set both sectionId and id
 														menu.sectionId ??
 														menu.id,
 													items,
@@ -192,7 +182,6 @@ export const resolveRuntimeToolbarGroups = (
 	return resolvedSections
 		.reduce<Array<{groupId: string; items: ToolbarRenderItem[]}>>(
 			(groups, section) => {
-				// Stryker disable all: consecutive groupId merge covered by order tests
 				const previous = groups.at(-1);
 				if (previous?.groupId === section.groupId) {
 					previous.items.push(...section.items);
@@ -200,7 +189,6 @@ export const resolveRuntimeToolbarGroups = (
 					groups.push(section);
 				}
 				return groups;
-				// Stryker restore all
 			},
 			[],
 		)

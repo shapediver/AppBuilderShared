@@ -50,9 +50,9 @@ describe("useShapeDiverStoreToolbars", () => {
 		expect(
 			useShapeDiverStoreToolbars.getState().definitionToolbars,
 		).toHaveLength(0);
-		expect(useShapeDiverStoreToolbars.getState().runtimeTokens).toHaveProperty(
-			token!,
-		);
+		expect(
+			useShapeDiverStoreToolbars.getState().runtimeTokens,
+		).toHaveProperty(token!);
 		expect(
 			useShapeDiverStoreToolbars.getState().runtimeToolbars,
 		).toHaveLength(1);
@@ -337,17 +337,19 @@ describe("useShapeDiverStoreToolbars", () => {
 
 	it("clones toolbar groups when normalizing store input", () => {
 		const store = useShapeDiverStoreToolbars.getState();
-		const inputGroups = [[
-			{
-				type: "action" as const,
-				props: {
-					definition: {
-						type: "resetParameterValues" as const,
-						props: {},
+		const inputGroups = [
+			[
+				{
+					type: "action" as const,
+					props: {
+						definition: {
+							type: "resetParameterValues" as const,
+							props: {},
+						},
 					},
 				},
-			},
-		]];
+			],
+		];
 
 		store.setDefinitionToolbars([
 			{
@@ -372,7 +374,8 @@ describe("useShapeDiverStoreToolbars", () => {
 		});
 
 		expect(
-			useShapeDiverStoreToolbars.getState().definitionToolbars[0].groups[0],
+			useShapeDiverStoreToolbars.getState().definitionToolbars[0]
+				.groups[0],
 		).toHaveLength(1);
 	});
 
@@ -419,7 +422,9 @@ describe("useShapeDiverStoreToolbars", () => {
 		store.setDefaultToolbar(defaultToolbar({groups: [[item]]}));
 		const first = useShapeDiverStoreToolbars.getState().defaultToolbars;
 		store.setDefaultToolbar(defaultToolbar({groups: [[item]]}));
-		expect(useShapeDiverStoreToolbars.getState().defaultToolbars).toBe(first);
+		expect(useShapeDiverStoreToolbars.getState().defaultToolbars).toBe(
+			first,
+		);
 
 		store.setDefaultToolbar(defaultToolbar({id: "other"}));
 		const withTwo = useShapeDiverStoreToolbars.getState().defaultToolbars;
@@ -486,7 +491,8 @@ describe("useShapeDiverStoreToolbars", () => {
 			}),
 		);
 		expect(
-			useShapeDiverStoreToolbars.getState().defaultToolbars[0].defaultIcon,
+			useShapeDiverStoreToolbars.getState().defaultToolbars[0]
+				.defaultIcon,
 		).toBe("tabler:icon");
 
 		store.setDefaultToolbar(
@@ -505,7 +511,8 @@ describe("useShapeDiverStoreToolbars", () => {
 			useShapeDiverStoreToolbars.getState().defaultToolbars[0].viewportId,
 		).toBe("vp1");
 		expect(
-			useShapeDiverStoreToolbars.getState().defaultToolbars[0].definitionIndex,
+			useShapeDiverStoreToolbars.getState().defaultToolbars[0]
+				.definitionIndex,
 		).toBe(2);
 
 		store.setDefaultToolbar(
@@ -537,7 +544,8 @@ describe("useShapeDiverStoreToolbars", () => {
 			}),
 		);
 		expect(
-			useShapeDiverStoreToolbars.getState().defaultToolbars[0].definitionIndex,
+			useShapeDiverStoreToolbars.getState().defaultToolbars[0]
+				.definitionIndex,
 		).toBe(3);
 
 		const itemA = {
@@ -616,9 +624,9 @@ describe("useShapeDiverStoreToolbars", () => {
 		store.setDefaultToolbar(defaultToolbar({id: "drop"}));
 		store.removeDefaultToolbar("drop");
 		expect(
-			useShapeDiverStoreToolbars.getState().defaultToolbars.map(
-				(toolbar) => toolbar.id,
-			),
+			useShapeDiverStoreToolbars
+				.getState()
+				.defaultToolbars.map((toolbar) => toolbar.id),
 		).toEqual(["keep"]);
 	});
 
@@ -658,7 +666,11 @@ describe("useShapeDiverStoreToolbars", () => {
 
 		store.setDefaultToolbar(defaultToolbar({id: "plain-first", order: 7}));
 		store.setDefaultToolbar(
-			defaultToolbar({id: "indexed-second", order: 7, definitionIndex: 0}),
+			defaultToolbar({
+				id: "indexed-second",
+				order: 7,
+				definitionIndex: 0,
+			}),
 		);
 		expect(
 			store
@@ -778,9 +790,7 @@ describe("useShapeDiverStoreToolbars", () => {
 		const twoToken = Object.entries(
 			useShapeDiverStoreToolbars.getState().runtimeTokens,
 		).find(([, entry]) => entry.toolbarId === "two")?.[0];
-		expect(
-			store.removeRuntimeToolbarToken(twoToken!),
-		).toBe(true);
+		expect(store.removeRuntimeToolbarToken(twoToken!)).toBe(true);
 		expect(
 			useShapeDiverStoreToolbars
 				.getState()
@@ -875,7 +885,8 @@ describe("useShapeDiverStoreToolbars", () => {
 		expect(endToolbar?.groups[0]).toHaveLength(2);
 		expect(
 			runtime.find(
-				(toolbar) => toolbar.side === "top" && toolbar.align === "start",
+				(toolbar) =>
+					toolbar.side === "top" && toolbar.align === "start",
 			)?.groups[0],
 		).toHaveLength(1);
 		expect(
@@ -955,9 +966,9 @@ describe("useShapeDiverStoreToolbars", () => {
 			},
 			[item],
 		);
-		expect(useShapeDiverStoreToolbars.getState().runtimeToolbars[0].order).toBe(
-			5,
-		);
+		expect(
+			useShapeDiverStoreToolbars.getState().runtimeToolbars[0].order,
+		).toBe(5);
 	});
 
 	it("removes only the matching runtime item when items differ", () => {
@@ -984,5 +995,56 @@ describe("useShapeDiverStoreToolbars", () => {
 		expect(
 			useShapeDiverStoreToolbars.getState().runtimeToolbars[0].groups[0],
 		).toEqual([firstItem]);
+	});
+
+	it("replaces a default toolbar when source differs from a seeded row", () => {
+		const seeded = {
+			id: "default",
+			source: "runtime" as const,
+			side: "top" as const,
+			align: "center" as const,
+			order: 0,
+			visibility: "always" as const,
+			groups: [] as [],
+		};
+		useShapeDiverStoreToolbars.setState({defaultToolbars: [seeded]});
+
+		useShapeDiverStoreToolbars
+			.getState()
+			.setDefaultToolbar(defaultToolbar());
+		expect(
+			useShapeDiverStoreToolbars.getState().defaultToolbars[0].source,
+		).toBe("default");
+	});
+
+	it("treats sparse groups as unequal during default toolbar upsert", () => {
+		const item = {
+			type: "action" as const,
+			props: {definition: {type: "undo" as const, props: {}}},
+		};
+		const store = useShapeDiverStoreToolbars.getState();
+		store.setDefaultToolbar(defaultToolbar({groups: [[item], [item]]}));
+
+		const sparse: (typeof item)[][] = [[item]];
+		sparse.length = 2;
+		expect(() =>
+			store.setDefaultToolbar(defaultToolbar({groups: sparse})),
+		).not.toThrow();
+		expect(
+			useShapeDiverStoreToolbars.getState().defaultToolbars[0].groups[0],
+		).toEqual([item]);
+	});
+
+	it("sorts mixed definitionIndex ahead of same-order toolbars without one", () => {
+		const store = useShapeDiverStoreToolbars.getState();
+		store.setDefaultToolbar(defaultToolbar({id: "plain", order: 1}));
+		store.setDefaultToolbar(
+			defaultToolbar({id: "indexed", order: 1, definitionIndex: 9}),
+		);
+		store.setDefaultToolbar(defaultToolbar({id: "later-plain", order: 1}));
+
+		expect(
+			store.selectMergedToolbars().map((toolbar) => toolbar.id),
+		).toEqual(["indexed", "later-plain", "plain"]);
 	});
 });

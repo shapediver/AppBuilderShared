@@ -166,6 +166,16 @@ describe("createFilterableDatabaseScrollingApi", () => {
 
 		expect(api.items.map((entry) => entry.item)).toEqual(["id2"]);
 		expect(api.hasNextPage).toBe(false);
+
+		await api.setSearchTerms([]);
+
+		expect(api.items.map((entry) => entry.item)).toEqual([
+			"id1",
+			"id2",
+			"id3",
+			"id4",
+			"id5",
+		]);
 	});
 
 	it("loadMore bumps resetState so consumers can re-render", async () => {

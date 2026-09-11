@@ -2005,7 +2005,6 @@ export const useShapeDiverStoreParameters =
 
 				clearUnsavedChanges() {
 					const {history, historyIndex} = get();
-					// Stryker disable next-line EqualityOperator,ConditionalExpression: index is always -1 or < length after push
 					if (historyIndex < 0 || historyIndex >= history.length)
 						return;
 					const current = history[historyIndex];
@@ -2029,11 +2028,9 @@ export const useShapeDiverStoreParameters =
 						const browserState = window.history
 							.state as IHistoryEntry | null;
 						if (
-							// Stryker disable all: tests always pass object-or-null history.state
 							browserState &&
 							typeof browserState === "object" &&
 							browserState.time === updated.time
-							// Stryker restore all
 						) {
 							window.history.replaceState(
 								{...browserState, unsavedChanges: false},

@@ -62,7 +62,6 @@ export function AppBuilderActionFromType(
 	};
 	if (!actionRef.definition) return null;
 
-	// Stryker disable next-line ObjectLiteral: tests assert component type, not rest props
 	const actionPropsCommon = {
 		...actionRef,
 		definition: undefined, // avoid passing down the definition again
@@ -73,7 +72,6 @@ export function AppBuilderActionFromType(
 	for (const actionKey in componentContext.actions ?? {}) {
 		// Stryker disable next-line OptionalChaining: `in` already skips missing keys
 		const componentDefinition = componentContext.actions?.[actionKey];
-		// Stryker disable next-line ConditionalExpression: skip-then-match covered by isAction test
 		if (!componentDefinition) continue;
 		if (componentDefinition.isAction(actionRef.definition)) {
 			const Component = componentDefinition.component;

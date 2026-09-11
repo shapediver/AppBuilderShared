@@ -58,7 +58,6 @@ function inferColumns(records: Record<string, unknown>[]): string[] {
 	// "value" is required on object rows — surface it first when present.
 	const ordered: string[] = [];
 	const valueIndex = topLevel.indexOf("value");
-	// Stryker disable next-line ConditionalExpression: object rows always have value
 	if (valueIndex !== -1) {
 		ordered.push("value");
 		topLevel.splice(valueIndex, 1);

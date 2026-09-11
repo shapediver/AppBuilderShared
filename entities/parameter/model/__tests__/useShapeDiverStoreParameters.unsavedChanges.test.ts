@@ -90,11 +90,31 @@ describe("useShapeDiverStoreParameters unsavedChanges", () => {
 		).toBe(false);
 	});
 
+	it("clearUnsavedChanges does not throw when window.history.state is null", () => {
+		store.getState().pushHistoryState({ns: {p: "v"}});
+		window.history.replaceState(null, "");
+
+		expect(() => store.getState().clearUnsavedChanges()).not.toThrow();
+		expect(window.history.state).toBeNull();
+		expect(store.getState().history[0].unsavedChanges).toBe(false);
+	});
+
 	it("clearUnsavedChanges is a no-op when there is no current entry", () => {
 		// history is empty after reset
 		expect(store.getState().historyIndex).toBe(-1);
 		expect(() => store.getState().clearUnsavedChanges()).not.toThrow();
 		expect(store.getState().historyIndex).toBe(-1);
+	});
+
+	it("clearUnsavedChanges is a no-op when historyIndex is past the last entry", () => {
+		store.getState().pushHistoryState({ns: {p: "v"}});
+		expect(store.getState().historyIndex).toBe(0);
+		store.setState({historyIndex: store.getState().history.length});
+		const history = store.getState().history;
+
+		expect(() => store.getState().clearUnsavedChanges()).not.toThrow();
+		expect(store.getState().history).toBe(history);
+		expect(history[0].unsavedChanges).toBe(true);
 	});
 
 	it("clears unsavedChanges on the first history entry", () => {
@@ -159,15 +179,17 @@ describe("useShapeDiverStoreParameters unsavedChanges", () => {
 		};
 
 		store.getState().addSession(session as any, false);
-		await store.getState().batchParameterValueUpdate(
-			{[session.id]: {p1: "updated"}},
-			true,
-			true,
-		);
+		await store
+			.getState()
+			.batchParameterValueUpdate(
+				{[session.id]: {p1: "updated"}},
+				true,
+				true,
+			);
 
 		expect(session.customize).toHaveBeenCalledTimes(1);
-		expect(new URL(window.location.href).searchParams.get("modelStateId")).toBe(
-			"initial-state",
-		);
+		expect(
+			new URL(window.location.href).searchParams.get("modelStateId"),
+		).toBe("initial-state");
 	});
 });

@@ -70,17 +70,40 @@ describe("parameterSliderMarks", () => {
 		});
 
 		it("rounds the current value when there are no marks in range", () => {
-			expect(
-				getAdjacentMarkValueFromLib(1.234, [], "up", 0, 10, 2),
-			).toBe(1.23);
+			expect(getAdjacentMarkValueFromLib(1.234, [], "up", 0, 10, 2)).toBe(
+				1.23,
+			);
 		});
 
 		it("snaps to the only in-range mark", () => {
 			expect(
+				getAdjacentMarkValueFromLib(3, [{value: 4.5}], "up", 0, 10, 3),
+			).toBe(4.5);
+			expect(
 				getAdjacentMarkValueFromLib(
 					3,
 					[{value: 4.5}],
+					"down",
+					0,
+					10,
+					3,
+				),
+			).toBe(4.5);
+			expect(
+				getAdjacentMarkValueFromLib(
+					4.5,
+					[{value: 4.5}],
 					"up",
+					0,
+					10,
+					3,
+				),
+			).toBe(4.5);
+			expect(
+				getAdjacentMarkValueFromLib(
+					4.5,
+					[{value: 4.5}],
+					"down",
 					0,
 					10,
 					3,
@@ -108,13 +131,27 @@ describe("parameterSliderMarks", () => {
 
 		it("treats a value within rounding tolerance as the nearby mark when stepping down", () => {
 			expect(
-				getAdjacentMarkValueFromLib(4.5004, testMarks, "down", 0, 10, 3),
+				getAdjacentMarkValueFromLib(
+					4.5004,
+					testMarks,
+					"down",
+					0,
+					10,
+					3,
+				),
 			).toBe(1.5);
 		});
 
 		it("does not treat a value outside rounding tolerance as an exact mark", () => {
 			expect(
-				getAdjacentMarkValueFromLib(4.5007, testMarks, "down", 0, 10, 3),
+				getAdjacentMarkValueFromLib(
+					4.5007,
+					testMarks,
+					"down",
+					0,
+					10,
+					3,
+				),
 			).toBe(4.5);
 		});
 

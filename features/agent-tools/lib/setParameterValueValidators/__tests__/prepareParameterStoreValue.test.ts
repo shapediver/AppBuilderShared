@@ -32,7 +32,9 @@ describe("prepareParameterStoreValue StringList", () => {
 
 		expect(result).toEqual({
 			success: false,
-			message: expect.stringContaining('Value 12 is not valid for parameter "Finish"'),
+			message: expect.stringContaining(
+				'Value 12 is not valid for parameter "Finish"',
+			),
 		});
 	});
 
@@ -42,5 +44,13 @@ describe("prepareParameterStoreValue StringList", () => {
 			success: true,
 			storeValue: "3",
 		});
+	});
+
+	it("rejects a non-index StringList value", () => {
+		const parameter = stringListParam(["A", "B"]);
+		expect(prepareParameterStoreValue(parameter, 1.5).success).toBe(false);
+		expect(prepareParameterStoreValue(parameter, "abc").success).toBe(
+			false,
+		);
 	});
 });

@@ -198,4 +198,131 @@ describe("useDefaultToolbarRegistration", () => {
 			[],
 		);
 	});
+
+	it("registers the default toolbar when showDefaultToolbar is omitted", () => {
+		renderHook(() =>
+			useDefaultToolbarRegistration({
+				viewportId: "vp1",
+			}),
+		);
+
+		expect(
+			useShapeDiverStoreToolbars.getState().defaultToolbars[0]?.id,
+		).toBe("defaultViewportToolbar-vp1");
+	});
+
+	it("does not register a toolbar for an unknown viewport layout", () => {
+		renderHook(() =>
+			useDefaultToolbarRegistration({
+				viewportId: "missing",
+				showDefaultToolbar: true,
+			}),
+		);
+
+		expect(useShapeDiverStoreToolbars.getState().defaultToolbars).toEqual(
+			[],
+		);
+	});
+
+	it("does not register a toolbar when viewportId is omitted", () => {
+		renderHook(() =>
+			useDefaultToolbarRegistration({
+				showDefaultToolbar: true,
+			}),
+		);
+
+		expect(useShapeDiverStoreToolbars.getState().defaultToolbars).toEqual(
+			[],
+		);
+	});
+
+	it("removes an existing default toolbar when showDefaultToolbar is false", () => {
+		useShapeDiverStoreToolbars.getState().setDefaultToolbar({
+			id: "defaultViewportToolbar-vp1",
+			source: "default",
+			side: "top",
+			align: "center",
+			order: 0,
+			visibility: "onMouseActivity",
+			groups: [
+				[
+					{
+						type: "action",
+						props: {
+							definition: {type: "undo", props: {}},
+						},
+					},
+				],
+			],
+		});
+
+		renderHook(() =>
+			useDefaultToolbarRegistration({
+				viewportId: "vp1",
+				showDefaultToolbar: false,
+			}),
+		);
+
+		expect(useShapeDiverStoreToolbars.getState().defaultToolbars).toEqual(
+			[],
+		);
+	});
+
+	it("excludes fullscreen when fullscreen3States is in the layout", () => {
+		useShapeDiverDefaultViewportToolbarStore.setState({
+			defaultViewportToolbars: {
+				vp1: {
+					layout: [
+						{
+							type: "group",
+							sections: [
+								[
+									{type: "fullscreen"},
+									{type: "fullscreen3States"},
+								],
+							],
+						},
+					],
+				},
+			},
+		});
+
+		renderHook(() =>
+			useDefaultToolbarRegistration({
+				viewportId: "vp1",
+				showDefaultToolbar: true,
+			}),
+		);
+
+		const items =
+			useShapeDiverStoreToolbars.getState().defaultToolbars[0]?.groups[0];
+		expect(items).toHaveLength(1);
+		expect(items?.[0]).toMatchObject({
+			type: "action",
+			props: {
+				definition: {
+					type: "fullscreen",
+					props: {type: "fullscreen3States"},
+				},
+			},
+		});
+	});
+
+	it("hides layout buttons listed as false in showButtons", () => {
+		renderHook(() =>
+			useDefaultToolbarRegistration({
+				viewportId: "vp1",
+				showDefaultToolbar: true,
+				showButtons: {zoom: false},
+			}),
+		);
+
+		const items =
+			useShapeDiverStoreToolbars.getState().defaultToolbars[0]?.groups[0];
+		expect(items).toHaveLength(1);
+		expect(items?.[0]).toMatchObject({
+			type: "actionMenu",
+			label: "More options",
+		});
+	});
 });

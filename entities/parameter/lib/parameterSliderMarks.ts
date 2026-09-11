@@ -34,7 +34,6 @@ export function getAdjacentMarkValue(
 	if (sorted.length === 0) {
 		return +current.toFixed(decimalplaces);
 	}
-	// Stryker disable next-line ConditionalExpression,BlockStatement: one mark also wins via find/fallback
 	if (sorted.length === 1) {
 		return +sorted[0].toFixed(decimalplaces);
 	}

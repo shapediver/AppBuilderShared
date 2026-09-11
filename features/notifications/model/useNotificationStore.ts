@@ -24,7 +24,6 @@ import {devtools} from "zustand/middleware";
  * Generate a unique notification ID.
  */
 function generateNotificationId(): string {
-	// Stryker disable next-line MethodExpression: id uniqueness unused by unit tests
 	return `notification-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
@@ -34,17 +33,14 @@ function generateNotificationId(): string {
 function shouldDisplayNotification(
 	displayMode?: NotificationDisplayMode,
 ): boolean {
-	// Stryker disable next-line ConditionalExpression,LogicalOperator: empty displayMode already shows
 	if (!displayMode || displayMode === NotificationDisplayMode.ALL) {
 		return true;
 	}
 
-	// Stryker disable next-line ConditionalExpression: NONE vs other modes already gated by the ALL/empty check
 	if (displayMode === NotificationDisplayMode.NONE) {
 		return false;
 	}
 
-	// Stryker disable all: PLATFORM/IFRAME unused by unit tests (localhost jsdom)
 	const envIdentifier = getEnvironmentIdentifier();
 	const inPlatform = isRunningInPlatform();
 
@@ -57,7 +53,6 @@ function shouldDisplayNotification(
 	}
 
 	return !!displayMode;
-	// Stryker restore all
 }
 
 /**

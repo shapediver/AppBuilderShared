@@ -124,6 +124,7 @@ describe("AppBuilderActionFromType", () => {
 	it("forwards toolbar render options to custom action components", () => {
 		const actionRef: IAppBuilderControlActionRef = {
 			label: "Zoom extents",
+			tooltip: "Zoom the camera",
 			definition: {
 				type: "camera",
 				props: {
@@ -157,6 +158,9 @@ describe("AppBuilderActionFromType", () => {
 
 		expect(element?.type).toBe(CustomAction);
 		expect(element?.props).toMatchObject({
+			label: "Zoom extents",
+			tooltip: "Zoom the camera",
+			definition: undefined,
 			presentation: "toolbarIcon",
 			viewportId: "viewport-1",
 			fullscreenId: "fullscreen-area",
@@ -239,6 +243,36 @@ describe("AppBuilderActionFromType", () => {
 		expect(element?.type).toBe(CustomAction);
 	});
 
+	it("skips a missing custom action entry then matches a later type", () => {
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Zoom extents",
+			definition: {
+				type: "camera",
+				props: {
+					type: "zoomTo",
+					props: {},
+				},
+			},
+		};
+
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{
+				actions: {
+					missing: undefined,
+					camera: {
+						isAction: (definition) => definition.type === "camera",
+						component: CustomAction,
+					},
+				},
+			} as unknown as IComponentContext,
+		);
+
+		expect(element?.type).toBe(CustomAction);
+	});
+
 	it.each([
 		[
 			"createModelState",
@@ -261,7 +295,11 @@ describe("AppBuilderActionFromType", () => {
 			"../AppBuilderActionExportParameterValuesComponent",
 			{},
 		],
-		["importModelState", "../AppBuilderActionImportModelStateComponent", {}],
+		[
+			"importModelState",
+			"../AppBuilderActionImportModelStateComponent",
+			{},
+		],
 		[
 			"setParameterValue",
 			"../AppBuilderActionSetParameterValuesComponent",
@@ -291,20 +329,17 @@ describe("AppBuilderActionFromType", () => {
 		],
 		["sound", "../AppBuilderActionSoundComponent", {}],
 		["messageToParent", "../AppBuilderActionMessageToParentComponent", {}],
-	] as const)(
-		"renders built-in %s action",
-		(type, modulePath, props) => {
-			const element = AppBuilderActionFromType(
-				{
-					label: type,
-					definition: {type, props},
-				} as unknown as IAppBuilderControlActionRef,
-				"namespace",
-				"key",
-				{},
-			);
+	] as const)("renders built-in %s action", (type, modulePath, props) => {
+		const element = AppBuilderActionFromType(
+			{
+				label: type,
+				definition: {type, props},
+			} as unknown as IAppBuilderControlActionRef,
+			"namespace",
+			"key",
+			{},
+		);
 
-			expect(element?.type).toBe(mockDefault(modulePath));
-		},
-	);
+		expect(element?.type).toBe(mockDefault(modulePath));
+	});
 });
