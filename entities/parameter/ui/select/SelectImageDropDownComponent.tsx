@@ -75,6 +75,9 @@ const ComboboxOption = React.memo(function ComboboxOption({
 	descriptionProps,
 	settings,
 }: ComboboxOptionProps) {
+	const hasLabel = option.label.trim() !== "";
+	const hasDescription = Boolean(option.description);
+
 	return (
 		<Group {...groupProps} {...settings?.groupProps}>
 			{option.imageUrl && (
@@ -87,16 +90,23 @@ const ComboboxOption = React.memo(function ComboboxOption({
 					/>
 				</TooltipWrapper>
 			)}
-			<div style={{flex: 1}}>
-				<TextWeighted {...labelProps} {...settings?.labelProps}>
-					{option.label}
-				</TextWeighted>
-				{option.description && (
-					<Text {...descriptionProps} {...settings?.descriptionProps}>
-						{option.description}
-					</Text>
-				)}
-			</div>
+			{(hasLabel || hasDescription) && (
+				<div style={{flex: 1}}>
+					{hasLabel && (
+						<TextWeighted {...labelProps} {...settings?.labelProps}>
+							{option.label}
+						</TextWeighted>
+					)}
+					{hasDescription && (
+						<Text
+							{...descriptionProps}
+							{...settings?.descriptionProps}
+						>
+							{option.description}
+						</Text>
+					)}
+				</div>
+			)}
 		</Group>
 	);
 });
@@ -134,7 +144,10 @@ export default function SelectImageDropDownComponent(
 				const data = itemData?.[item];
 				return {
 					value: item,
-					label: data?.displayname || item,
+					label:
+						data?.displayname === undefined
+							? item
+							: data.displayname,
 					description: data?.description,
 					imageUrl: data?.imageUrl,
 					tooltip: data?.tooltip,
