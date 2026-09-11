@@ -25,7 +25,7 @@ export function useWebMcpTools(
 	} = props;
 	const [registered, setRegistered] = useState(false);
 	const environment = getWebMcpEnvironment();
-	const ready = registered && environment.ready;
+	const ready = registered;
 
 	const {sessions} = useShapeDiverStoreSession(
 		useShallow((state) => ({
@@ -94,7 +94,6 @@ export function useWebMcpTools(
 
 	const environmentSnapshot = {
 		modelContextAvailable: environment.modelContextAvailable,
-		crossOriginIsolated: environment.crossOriginIsolated,
 	};
 
 	if (!enabled || !isWebMcpAvailable()) {
