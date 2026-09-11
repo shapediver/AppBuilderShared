@@ -33,9 +33,19 @@ export function useAppBuilderActionSetParameterValues(
 			return props.parameterValues;
 		} else {
 			// legacy support for single parameter value
-			return [props];
+			return [
+				{
+					parameter: props.parameter,
+					value: props.value,
+					source: props.source,
+				},
+			];
 		}
-	}, [props]);
+	}, [
+		"parameterValues" in props ? props.parameterValues : props.parameter,
+		"parameterValues" in props ? undefined : props.value,
+		"parameterValues" in props ? undefined : props.source,
+	]);
 
 	const [isDisabled, setIsDisabled] = useState(true);
 
@@ -260,7 +270,7 @@ export function useAppBuilderActionSetParameterValues(
 				return store?.getState().state.dirty ?? false;
 			},
 		);
-		setIsDisabled(initialDirty);
+		setIsDisabled((prev) => (prev !== initialDirty ? initialDirty : prev));
 
 		return () => {
 			unsubscribes.forEach((unsubscribe) => unsubscribe());

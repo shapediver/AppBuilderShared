@@ -123,21 +123,26 @@ export const useShapeDiverStoreViewportAnchors =
 						showContentMap[viewportId] || {};
 					if (!anchorList) return;
 
-					const anchorType = anchorList.find(
+					const targetAnchor = anchorList.find(
 						(a) => a.id === anchorId,
-					)?.type;
+					);
+					const anchorType = targetAnchor?.type;
 
 					if (!anchorType) return;
+
+					const targetExclusive = targetAnchor.exclusive !== false;
 
 					const updatedAnchors = anchorList.map((a) => {
 						if (a.id === anchorId) {
 							return {...a, showContent};
 						} else if (
 							showContent &&
+							targetExclusive &&
 							a.type === anchorType &&
-							a.hideable
+							a.hideable &&
+							a.exclusive !== false
 						) {
-							// If we are showing content, hide all other anchors
+							// If we are showing content, hide all other exclusive anchors
 							// If they are hideable (if a previewIcon is defined)
 							return {...a, showContent: false};
 						}
@@ -155,12 +160,16 @@ export const useShapeDiverStoreViewportAnchors =
 					Object.keys(showContentMapEntry).forEach((key) => {
 						const entry = showContentMapEntry[key];
 						if (key !== anchorId) {
+							const otherAnchor = updatedAnchors.find(
+								(a) => a.id === key,
+							);
 							if (
+								targetExclusive &&
 								entry[anchorType] &&
-								updatedAnchors.find((a) => a.id === key)
-									?.hideable
+								otherAnchor?.hideable &&
+								otherAnchor?.exclusive !== false
 							) {
-								// only set to false if it was true and the anchor is hideable
+								// only set to false if it was true and the anchor is hideable and exclusive
 								updateShowContentMap[key] = {
 									...entry,
 									[anchorType]: false,

@@ -1,3 +1,4 @@
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {MantineThemeComponent} from "@mantine/core";
@@ -19,10 +20,6 @@ import {
 export interface ViewportAnchorProps3d extends ViewportAnchorProps {
 	/** The 3D location of the anchor in the viewport. */
 	location: number[] | vec3;
-	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
-	useCloseButton?: boolean;
-	/** Option to make the anchor hideable by geometry in the scene (default: false) */
-	hideable?: boolean;
 }
 
 type ViewportAnchorThemePropsType = Partial<ViewportAnchorStyleProps>;
@@ -43,13 +40,19 @@ export default function ViewportAnchor3d(
 		justification,
 		location,
 		selectionProperties,
-		hideable = false,
+		hideable: hideableProp,
+		previewIcon,
 	} = props;
+
+	const hideable = hideableProp ?? false;
 
 	const showContentRef = useRef(false);
 	const position = useRef({x: "0px", y: "0px"});
 
 	const {viewportId} = useViewportId();
+	const viewport = useShapeDiverStoreViewport(
+		(state) => state.viewports[viewportId],
+	);
 
 	const {
 		AnchorElement,
@@ -74,7 +77,8 @@ export default function ViewportAnchor3d(
 	 */
 	useEffect(() => {
 		showContentRef.current = showContent;
-	}, [showContent]);
+		viewport?.render();
+	}, [showContent, viewport]);
 
 	/**
 	 * Use effect that listens to the zIndex changes of the anchor.
@@ -94,8 +98,12 @@ export default function ViewportAnchor3d(
 	 */
 	const create = useCallback(() => {
 		if (!portalRef.current) return;
-		portalRef.current.style.display = "block";
-	}, []);
+		if (showContentRef.current || previewIcon) {
+			portalRef.current.style.display = "block";
+		} else {
+			portalRef.current.style.display = "none";
+		}
+	}, [previewIcon]);
 
 	/**
 	 * The update function that is called on every render call.
@@ -109,10 +117,12 @@ export default function ViewportAnchor3d(
 			if (!portalRef.current) return;
 			if (!canvas || !canvas.parentElement) return;
 
-			// check if the anchor is hidden by other geometry in the scene
-			// if so, we hide the portal element and return
-			// otherwise we show the portal element
-			if (properties.hidden && hideable) {
+			// check if the anchor is hidden by other geometry in the scene,
+			// or if the anchor content is not shown and there is no preview icon
+			if (
+				(properties.hidden && hideable) ||
+				(!showContentRef.current && !previewIcon)
+			) {
 				portalRef.current.style.display = "none";
 				return;
 			} else {
@@ -191,6 +201,7 @@ export default function ViewportAnchor3d(
 		},
 		[
 			hideable,
+			previewIcon,
 			portalUpdate,
 			controlElementGroupUpdate,
 			viewportId,

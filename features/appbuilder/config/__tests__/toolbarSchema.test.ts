@@ -18,17 +18,13 @@ jest.mock("@shapediver/viewer.session", () => ({
 }));
 
 jest.mock("@shapediver/viewer.shared.types", () => ({
+	...jest.requireActual("@shapediver/viewer.shared.types"),
 	ATTRIBUTE_VISUALIZATION: {
 		LINEAR: "linear",
 	},
 	CAMERA_TYPE: {
 		PERSPECTIVE: "perspective",
 		ORTHOGRAPHIC: "orthographic",
-	},
-	TAG3D_JUSTIFICATION: {
-		LEFT: "left",
-		CENTER: "center",
-		RIGHT: "right",
 	},
 }));
 

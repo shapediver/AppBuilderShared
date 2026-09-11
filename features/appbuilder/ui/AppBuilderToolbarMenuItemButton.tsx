@@ -10,6 +10,7 @@ type Props = IAppBuilderActionPropsCommon & {
 	onClick?: React.MouseEventHandler<HTMLButtonElement>;
 	loading?: boolean;
 	disabled?: boolean;
+	buttonRef?: React.Ref<HTMLButtonElement>;
 };
 
 type ThemeProps = AppBuilderToolbarMenuItemButtonThemeDefaultProps & {
@@ -33,6 +34,7 @@ export default function AppBuilderToolbarMenuItemButton({
 	onClick,
 	loading = false,
 	disabled = false,
+	buttonRef,
 }: Props) {
 	const themedProps = useProps(
 		"AppBuilderToolbarMenuItemButton",
@@ -49,6 +51,7 @@ export default function AppBuilderToolbarMenuItemButton({
 
 	return (
 		<button
+			ref={buttonRef}
 			type="button"
 			{...itemProps}
 			className={[classes.item, itemProps.className]
