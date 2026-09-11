@@ -31,9 +31,10 @@ export interface ModelContext {
 		options?: ModelContextRegisterToolOptions,
 	): Promise<void>;
 	getTools(): WebMcpRegisteredTool[];
+	/** Optional object input as of Chrome 155; JSON strings are deprecated. */
 	executeTool(
 		tool: WebMcpRegisteredTool | unknown,
-		jsonString: string,
+		input?: object,
 	): Promise<unknown>;
 }
 
