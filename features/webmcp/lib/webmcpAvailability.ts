@@ -1,5 +1,6 @@
 export interface ModelContextToolAnnotations {
 	readOnlyHint?: boolean;
+	consequentialHint?: boolean;
 	untrustedContentHint?: boolean;
 }
 
@@ -8,11 +9,19 @@ export interface ModelContextRegisterToolOptions {
 	exposedTo?: string[];
 }
 
+export interface ModelContextExecuteCallbackOptions {
+	signal: AbortSignal;
+}
+
 export interface ModelContextRegisterToolParams {
 	name: string;
+	title?: string;
 	description: string;
 	inputSchema: object;
-	execute: (input: unknown) => Promise<unknown>;
+	execute: (
+		input: unknown,
+		options: ModelContextExecuteCallbackOptions,
+	) => Promise<unknown>;
 	annotations?: ModelContextToolAnnotations;
 }
 
@@ -21,20 +30,44 @@ export type WebMcpToolInputSchema = object | string;
 
 export interface WebMcpRegisteredTool {
 	name: string;
+	title?: string;
 	description?: string;
 	inputSchema: WebMcpToolInputSchema;
+	origin?: string;
+	window?: Window;
+	annotations?: ModelContextToolAnnotations;
 }
 
-export interface ModelContext {
+export interface ModelContextGetToolOptions {
+	fromOrigins?: string[];
+}
+
+export interface ModelContextExecuteToolOptions {
+	signal?: AbortSignal;
+}
+
+/**
+ * Chrome WebMCP `document.modelContext` / `navigator.modelContext`.
+ * Mirrors https://developer.chrome.com/docs/ai/webmcp/imperative-api (Chrome 155).
+ */
+export interface ModelContext extends EventTarget {
 	registerTool(
 		params: ModelContextRegisterToolParams,
 		options?: ModelContextRegisterToolOptions,
 	): Promise<void>;
-	getTools(): WebMcpRegisteredTool[];
+	getTools(
+		options?: ModelContextGetToolOptions,
+	): Promise<WebMcpRegisteredTool[]>;
+	/**
+	 * Chrome 155+: optional JSON-serializable object.
+	 * JSON strings are deprecated from Chrome 155.
+	 */
 	executeTool(
-		tool: WebMcpRegisteredTool | unknown,
-		jsonString: string,
+		tool: WebMcpRegisteredTool,
+		input?: object,
+		options?: ModelContextExecuteToolOptions,
 	): Promise<unknown>;
+	ontoolchange: ((this: ModelContext, event: Event) => unknown) | null;
 }
 
 function getModelContextHost():
