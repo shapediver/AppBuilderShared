@@ -46,7 +46,10 @@ export interface IAppBuilderIconifyIcon {
 	vFlip?: boolean;
 }
 
-/** Icon name (e.g. `"tabler:photo"`) or inline Iconify icon object. */
+/**
+ * Icon name (e.g. `"tabler:photo"`), image URL (http(s), data URI, or path;
+ * SVG and common raster formats), or inline Iconify icon object.
+ */
 export type IAppBuilderIcon = string | IAppBuilderIconifyIcon;
 
 /** JSON-facing slider mark. `label` is a string, not a React node. */
@@ -476,7 +479,7 @@ export interface IAppBuilderActionPropsCommon {
 	id?: string;
 	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. Set to empty string to show only an icon. */
 	label?: string;
-	/** Optional icon (of the button etc). */
+	/** Optional icon name, image URL, or inline Iconify object (of the button etc). */
 	icon?: IAppBuilderIcon;
 	/** Optional tooltip. */
 	tooltip?: string;
@@ -949,7 +952,7 @@ export type IAppBuilderActionPropsSound = {
 	loop?: boolean;
 	/** Label to show when the sound is playing. */
 	labelPlaying?: string;
-	/** Icon to show when the sound is playing. */
+	/** Icon name, image URL, or inline Iconify object to show when the sound is playing. */
 	iconPlaying?: IAppBuilderIcon;
 };
 
@@ -1257,7 +1260,7 @@ export interface IAppBuilderWidgetPropsAccordionUi {
 		value?: string;
 		/** Label shown for the accordion control of the item. */
 		name: string;
-		/** Optional icon of the accordion control of the item. */
+		/** Optional icon name, image URL, or inline Iconify object of the accordion control. */
 		icon?: IAppBuilderIcon;
 		/** Optional tooltip for the accordion control of the item. */
 		tooltip?: string;
@@ -1285,7 +1288,7 @@ export interface IAppBuilderWidgetPropsAccordionUi {
 export interface IAppBuilderWidgetPropsStackUi {
 	/** Label shown for the stack control. */
 	name: string;
-	/** Optional icon of the stack control. */
+	/** Optional icon name, image URL, or inline Iconify object of the stack control. */
 	icon?: IAppBuilderIcon;
 	/** Optional tooltip of the stack control. */
 	tooltip?: string;
@@ -1388,7 +1391,7 @@ export interface IAppBuilderWidget {
 export interface IAppBuilderTab {
 	/** Name of the tab. */
 	name: string;
-	/** Optional icon of the tab. */
+	/** Optional icon name, image URL, or inline Iconify object of the tab. */
 	icon?: IAppBuilderIcon;
 	/** Optional tooltip. */
 	tooltip?: string;
@@ -1421,10 +1424,16 @@ export type AppBuilderAnchorContainerProperties = {
 	justification?: TAG3D_JUSTIFICATION;
 	/** Optional boolean to allow pointer events on the container. (default: true) */
 	allowPointerEvents?: boolean;
-	/** Optional icon to be displayed to show the container. */
+	/** Optional icon name, image URL, or inline Iconify object shown to open the container. */
 	previewIcon?: IAppBuilderIcon;
-	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
+	/** Option to show a close button on the container. */
 	useCloseButton?: boolean;
+	/** Closing strategy if the anchor can be closed. */
+	closingStrategy?: "button" | "emptyClick";
+	/** Whether the anchor is exclusive with other anchors of the same type. Defaults to true; false when targeted by a setContainerVisibility action. */
+	exclusive?: boolean;
+	/** Whether the anchor is initially open. Defaults to !canBeHidden. Action-targeted anchors default to false. */
+	defaultOpen?: boolean;
 	/** Optional width of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
 	width?: string | number;
 	/** Optional height of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
@@ -1456,8 +1465,11 @@ export type AppBuilderAnchorContainerProperties = {
 
 /** Type for the anchor 2d containers */
 export type AppBuilderAnchor2dContainerProperties = {
-	/** 2D location */
-	location: (string | number)[];
+	/**
+	 * 2D location. When omitted, the panel docks to the DOM node of a
+	 * setContainerVisibility action that targets this container id.
+	 */
+	location?: (string | number)[];
 	/** Optional boolean to allow dragging of the container. (default: true) */
 	draggable?: boolean;
 } & AppBuilderAnchorContainerProperties;
@@ -1486,10 +1498,14 @@ export interface IAppBuilderToolbarItemBase<
 	props: TProps;
 	/** Optional stable id for runtime APIs, accessibility and diagnostics. */
 	id?: string;
-	/** Toolbar-specific presentation override. */
+	/** Toolbar-specific icon name, image URL, or inline Iconify object. */
 	icon?: IAppBuilderIcon;
 	label?: string;
 	tooltip?: string;
+	/** When set with a non-empty label, show the label beside the icon on this side. */
+	labelSide?: AppBuilderToolbarSide;
+	/** Cross-axis alignment of the icon caption. Default "center" when rendering. */
+	labelAlign?: AppBuilderToolbarAlign;
 	/** Optional item order for runtime-merged groups. */
 	order?: number;
 	/** Optional presentation mode when this item is rendered inside a popover. */
@@ -2348,11 +2364,6 @@ export interface IAppBuilderSettingsSettings {
 	 * are shown in case no AppBuilder data output is found.
 	 */
 	disableFallbackUi?: boolean;
-	/**
-	 * URL of the AppBuilderAgent window (Step 3). Query `agentUrl` overrides this.
-	 * Not `IAppBuilder.agents[].url`.
-	 */
-	agentUrl?: string;
 }
 
 /**
@@ -2375,6 +2386,13 @@ export interface IAppBuilderSettingsJson {
 	 * for development.
 	 */
 	appBuilderOverride?: IAppBuilder;
+	/**
+	 * Optional agents list used instead of `IAppBuilder.agents` from the model
+	 * (and instead of `appBuilderOverride.agents` if both are set).
+	 * Useful for local development of agent features without replacing the
+	 * rest of the App Builder output.
+	 */
+	agentOverride?: IAppBuilderAgent[];
 }
 
 /**

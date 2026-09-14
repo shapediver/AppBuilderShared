@@ -5,7 +5,7 @@ import type {ToolbarActionItem} from "@AppBuilderLib/features/appbuilder/config/
 import {useProps} from "@mantine/core";
 import {useContext} from "react";
 import {AppBuilderActionFromType} from "./AppBuilderActionFromType";
-import {AppBuilderToolbarIconButtonDefaultStyleProps} from "./AppBuilderToolbarIconButton";
+import {useResolvedAppBuilderToolbarIconButtonTheme} from "./AppBuilderToolbarIconButton";
 
 type Props = {
 	item: ToolbarActionItem;
@@ -18,11 +18,12 @@ export default function AppBuilderToolbarActionButton({
 	buttonRenderContext,
 }: Props) {
 	const componentContext = useContext(ComponentContext);
+	const iconButtonTheme = useResolvedAppBuilderToolbarIconButtonTheme();
 	const buttonThemeProps = useProps(
 		"AppBuilderToolbarButton",
 		{
-			...AppBuilderToolbarIconButtonDefaultStyleProps,
-			tooltipWrapperProps: {},
+			...iconButtonTheme,
+			tooltipWrapperProps: iconButtonTheme.tooltipWrapperProps ?? {},
 		},
 		{},
 	) as AppBuilderToolbarButtonThemeDefaultProps;
@@ -36,6 +37,8 @@ export default function AppBuilderToolbarActionButton({
 		{
 			presentation: "toolbarIcon",
 			toolbarButtonProps: buttonThemeProps,
+			labelSide: item.labelSide,
+			labelAlign: item.labelAlign,
 			viewportId: buttonRenderContext.viewportId,
 			fullscreenId: buttonRenderContext.fullscreenId,
 			disabled,

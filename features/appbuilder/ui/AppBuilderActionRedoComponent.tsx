@@ -1,5 +1,4 @@
-import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
-import {useViewportHistory} from "@AppBuilderLib/entities/viewport/model/useViewportHistory";
+import {useAppBuilderActionRedo} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionRedo";
 import {IAppBuilderActionPropsCommon} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -20,9 +19,10 @@ export default function AppBuilderActionRedoComponent(props: Props) {
 		presentation,
 		toolbarButtonProps,
 	} = props;
-	const {canGoForward, goForward} = useViewportHistory();
-	const hasPendingChanges = useHasPendingParameterChanges(namespace);
-	const resolvedDisabled = disabled || hasPendingChanges || !canGoForward;
+	const {trigger, disabled: resolvedDisabled} = useAppBuilderActionRedo({
+		namespace,
+		disabled,
+	});
 
 	return (
 		<AppBuilderActionBase
@@ -30,10 +30,7 @@ export default function AppBuilderActionRedoComponent(props: Props) {
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={() => {
-				if (resolvedDisabled) return;
-				goForward();
-			}}
+			onClick={trigger}
 			disabled={resolvedDisabled}
 			toolbarButtonProps={toolbarButtonProps}
 		/>

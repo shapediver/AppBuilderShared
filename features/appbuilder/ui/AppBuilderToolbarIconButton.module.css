@@ -4,3 +4,37 @@
 		background-color: transparent;
 	}
 }
+
+.toolbarIconLabeled {
+	width: auto;
+	height: auto;
+	min-width: var(--ai-size, 2rem);
+	min-height: var(--ai-size, 2rem);
+	padding-inline: 0.375rem;
+	padding-block: 0.25rem;
+	overflow: visible;
+}
+
+.toolbarIconLabeled :global(.mantine-ActionIcon-icon) {
+	width: auto;
+	height: auto;
+}
+
+.labelLayout {
+	display: flex;
+	gap: 0.25rem;
+}
+
+.caption {
+	white-space: nowrap;
+	line-height: 1.2;
+}
+
+.captionVertical {
+	writing-mode: vertical-rl;
+	text-orientation: mixed;
+}
+
+.captionRotate180 {
+	transform: rotate(180deg);
+}

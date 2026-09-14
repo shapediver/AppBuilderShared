@@ -91,4 +91,38 @@ describe("parseAppBuilderSkeleton", () => {
 			/^App Builder layout invalid:\n/,
 		);
 	});
+
+	it("accepts image URLs in icon fields", () => {
+		const skeleton = {
+			version: "1.0" as const,
+			containers: [
+				{
+					name: "left",
+					tabs: [
+						{
+							name: "Brand",
+							icon: "https://example.com/tab.svg",
+							widgets: [
+								{
+									type: "actions",
+									props: {
+										actions: [
+											{
+												type: "closeConfigurator",
+												props: {
+													icon: "/test.svg",
+												},
+											},
+										],
+									},
+								},
+							],
+						},
+					],
+				},
+			],
+		};
+
+		expect(parseAppBuilderSkeleton(skeleton, envOn)).toEqual(skeleton);
+	});
 });

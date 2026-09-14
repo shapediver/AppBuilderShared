@@ -1388,7 +1388,10 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.strictObject({
 	maxHeight: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
 	useCloseButton: z.boolean().optional(),
+	closingStrategy: z.enum(["button", "emptyClick"]).optional(),
 	hideable: z.boolean().optional(),
+	exclusive: z.boolean().optional(),
+	defaultOpen: z.boolean().optional(),
 	selectionProperties: ISelectionParameterPropsSchema.optional(),
 	mobileFallback: z
 		.strictObject({
@@ -1409,14 +1412,19 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.strictObject({
 // Zod type definition for IAppBuilderAnchor2dContainerProperties
 const IAppBuilderAnchor2dContainerPropertiesSchema = z.strictObject({
 	id: z.string(),
-	location: z.union([
-		z.tuple([z.string(), z.string()]),
-		z.tuple([z.number(), z.number()]),
-	]),
+	location: z
+		.union([
+			z.tuple([z.string(), z.string()]),
+			z.tuple([z.number(), z.number()]),
+		])
+		.optional(),
 	allowPointerEvents: z.boolean().optional(),
 	justification: z.enum(TAG3D_JUSTIFICATION).optional(),
 	previewIcon: z.string().optional(),
 	useCloseButton: z.boolean().optional(),
+	closingStrategy: z.enum(["button", "emptyClick"]).optional(),
+	exclusive: z.boolean().optional(),
+	defaultOpen: z.boolean().optional(),
 	draggable: z.boolean().optional(),
 	width: z.union([z.string(), z.number()]).optional(),
 	height: z.union([z.string(), z.number()]).optional(),
@@ -1445,6 +1453,8 @@ const IAppBuilderToolbarItemBaseShape = {
 	icon: z.string().optional(),
 	label: z.string().optional(),
 	tooltip: z.string().optional(),
+	labelSide: z.enum(["top", "bottom", "left", "right"]).optional(),
+	labelAlign: z.enum(["start", "center", "end"]).optional(),
 	order: z.number().optional(),
 	presentation: z.enum(["button", "item"]).optional(),
 };
@@ -1828,7 +1838,6 @@ const IAppBuilderSettingsSessionSchema = z.strictObject({
 // Zod type definition for IAppBuilderSettingsSettings
 const IAppBuilderSettingsSettingsSchema = z.strictObject({
 	disableFallbackUi: z.boolean().optional(),
-	agentUrl: z.string().optional(),
 });
 
 // Zod type definition for IAppBuilderSettingsJson
@@ -1838,6 +1847,7 @@ const IAppBuilderSettingsJsonSchemaBase = z.strictObject({
 	settings: IAppBuilderSettingsSettingsSchema.optional(),
 	themeOverrides: MantineThemeOverrideSchema.optional(),
 	appBuilderOverride: IAppBuilderSchema.optional(),
+	agentOverride: z.array(IAppBuilderAgentSchema).optional(),
 });
 
 const IAppBuilderSettingsJsonSchema =

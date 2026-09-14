@@ -57,6 +57,12 @@ export default function AppBuilderToolbarCommandButton({
 			disabled={item.disabled || globalDisabled}
 			loading={loading}
 			onClick={execute}
+			{...(item.labelSide !== undefined
+				? {labelSide: item.labelSide}
+				: {})}
+			{...(item.labelAlign !== undefined
+				? {labelAlign: item.labelAlign}
+				: {})}
 		/>
 	);
 }

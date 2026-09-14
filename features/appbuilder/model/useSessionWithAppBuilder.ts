@@ -5,6 +5,8 @@ import {
 import {useAppBuilderCustomParameters} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderCustomParameters";
 import {useAppBuilderResetValueOverrides} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderResetValueOverrides";
 import {IAppBuilder, IAppBuilderSettingsSession} from "../config/appbuilder";
+import type {IAppBuilderAgent} from "../config/appbuilderagent";
+import {applyAgentOverride} from "../config/applyAgentOverride";
 import {parseAppBuilderSkeleton} from "../config/parseAppBuilderJson";
 
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
@@ -26,11 +28,13 @@ import {useAppBuilderInstances} from "./useAppBuilderInstances";
  *
  * @param props session to start
  * @param appBuilderOverride optional AppBuilder data to override the data from the model
+ * @param agentOverride optional agents list to override `IAppBuilder.agents`
  * @returns
  */
 export function useSessionWithAppBuilder(
 	props: (IUseSessionDto & IAppBuilderSettingsSession) | undefined,
 	appBuilderOverride?: IAppBuilder,
+	agentOverride?: IAppBuilderAgent[],
 ) {
 	const namespace = props?.id ?? "";
 
@@ -78,16 +82,22 @@ export function useSessionWithAppBuilder(
 	/**
 	 * Parse AppBuilder layout from the model output, or use settings override as-is.
 	 * Override is not re-validated here (validated in settings JSON when env is on).
+	 * `agentOverride` replaces only `agents` after that resolve.
 	 */
 	const validationResult = useCallback(
 		(data: IAppBuilder | string | undefined) => {
+			if (agentOverride !== undefined) {
+				Logger.debug("Overriding AppBuilder agents from settings!");
+			}
 			if (appBuilderOverride && sessionInitialized) {
 				if (data)
 					Logger.debug("Overriding AppBuilder data from settings!");
 
-				return appBuilderOverride;
+				return applyAgentOverride(appBuilderOverride, agentOverride);
 			}
-			if (!data) return undefined;
+			if (!data) {
+				return applyAgentOverride(undefined, agentOverride);
+			}
 			if (typeof data === "string") {
 				let parsedJson: unknown;
 				try {
@@ -98,12 +108,18 @@ export function useSessionWithAppBuilder(
 					);
 				}
 
-				return parseAppBuilderSkeleton(parsedJson);
+				return applyAgentOverride(
+					parseAppBuilderSkeleton(parsedJson),
+					agentOverride,
+				);
 			}
 
-			return parseAppBuilderSkeleton(data);
+			return applyAgentOverride(
+				parseAppBuilderSkeleton(data),
+				agentOverride,
+			);
 		},
-		[appBuilderOverride, sessionInitialized],
+		[agentOverride, appBuilderOverride, sessionInitialized],
 	);
 
 	useEffect(() => {

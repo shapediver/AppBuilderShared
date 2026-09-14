@@ -1,6 +1,4 @@
-import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
-import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
-import {useCallback, useState} from "react";
+import {useAppBuilderActionExportParameterValues} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionExportParameterValues";
 import {IAppBuilderLegacyActionPropsExportParameterValues} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -24,20 +22,11 @@ export default function AppBuilderActionExportParameterValuesComponent(
 		toolbarButtonProps,
 		disabled,
 	} = props;
-	const {exportParameters} = useParameterImportExport(namespace);
-	const [loading, setLoading] = useState(false);
-	const hasPendingChanges = useHasPendingParameterChanges(namespace);
-	const resolvedDisabled = disabled || hasPendingChanges;
-
-	const onClick = useCallback(async () => {
-		if (resolvedDisabled) return;
-		setLoading(true);
-		try {
-			await exportParameters();
-		} finally {
-			setLoading(false);
-		}
-	}, [exportParameters, resolvedDisabled]);
+	const {
+		trigger,
+		disabled: resolvedDisabled,
+		loading,
+	} = useAppBuilderActionExportParameterValues({namespace, disabled});
 
 	return (
 		<AppBuilderActionBase
@@ -45,7 +34,7 @@ export default function AppBuilderActionExportParameterValuesComponent(
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={() => void onClick()}
+			onClick={() => void trigger()}
 			loading={loading}
 			disabled={resolvedDisabled}
 			toolbarButtonProps={toolbarButtonProps}

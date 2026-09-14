@@ -4,3 +4,9 @@
 .tablerIconify g * {
 	stroke-width: var(--icon-stroke-width) !important;
 }
+
+.imageIcon {
+	display: block;
+	flex-shrink: 0;
+	object-fit: contain;
+}

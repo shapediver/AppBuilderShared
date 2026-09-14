@@ -1,6 +1,4 @@
-import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
-import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
-import {useCallback, useState} from "react";
+import {useAppBuilderActionMessageToParent} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionMessageToParent";
 import {IAppBuilderLegacyActionPropsMessageToParent} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -25,43 +23,11 @@ export default function AppBuilderActionMessageToParentComponent(props: Props) {
 		toolbarButtonProps,
 		disabled,
 	} = props;
-
-	const notifications = useNotificationStore();
-
-	const [loading, setLoading] = useState(false);
-
-	const onClick = useCallback(async () => {
-		setLoading(true);
-		// in case we are not running inside an iframe, the instance of
-		// IEcommerceApi will be a dummy for testing
-		const api = await ECommerceApiSingleton;
-
-		try {
-			const result = await api.messageToParent({
-				type,
-				data,
-			});
-			if (result.notification) {
-				const {type, data} = result.notification;
-				if (type === "error") {
-					notifications.error(data);
-				} else if (type === "warning") {
-					notifications.warning(data);
-				} else if (type === "success") {
-					notifications.success(data);
-				} else {
-					notifications.show(data);
-				}
-			}
-		} catch (e) {
-			notifications.error({
-				message: `An error happened while sending message ${type} to the parent page.`,
-			});
-			throw e;
-		} finally {
-			setLoading(false);
-		}
-	}, [type, data]);
+	const {trigger, loading} = useAppBuilderActionMessageToParent({
+		type,
+		data,
+		disabled,
+	});
 
 	return (
 		<AppBuilderActionBase
@@ -69,7 +35,7 @@ export default function AppBuilderActionMessageToParentComponent(props: Props) {
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={onClick}
+			onClick={trigger}
 			loading={loading}
 			disabled={disabled}
 			toolbarButtonProps={toolbarButtonProps}

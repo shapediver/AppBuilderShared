@@ -1,4 +1,8 @@
-import {IAppBuilderActionPropsCommon} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	AppBuilderToolbarAlign,
+	AppBuilderToolbarSide,
+	IAppBuilderActionPropsCommon,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {AppBuilderToolbarIconButtonThemeStyleProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import AppBuilderToolbarIconButton from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
@@ -10,6 +14,8 @@ export interface AppBuilderActionRenderProps {
 	presentation?: AppBuilderActionPresentation;
 	toolbarButtonProps?: Partial<AppBuilderToolbarIconButtonThemeStyleProps>;
 	disabled?: boolean;
+	labelSide?: AppBuilderToolbarSide;
+	labelAlign?: AppBuilderToolbarAlign;
 }
 
 export interface AppBuilderActionBaseProps
@@ -17,6 +23,7 @@ export interface AppBuilderActionBaseProps
 	onClick?: React.MouseEventHandler<HTMLButtonElement>;
 	loading?: boolean;
 	canBeDisabledByParameter?: boolean;
+	buttonRef?: React.Ref<HTMLButtonElement>;
 }
 
 const getToolbarIconType = (
@@ -35,11 +42,15 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 		disabled,
 		canBeDisabledByParameter,
 		toolbarButtonProps,
+		labelSide,
+		labelAlign,
+		buttonRef,
 	} = props;
 
 	if (presentation === "item") {
 		return (
 			<AppBuilderToolbarMenuItemButton
+				buttonRef={buttonRef}
 				label={label}
 				icon={icon}
 				tooltip={tooltip}
@@ -53,6 +64,7 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 	if (presentation === "toolbarIcon") {
 		return (
 			<AppBuilderToolbarIconButton
+				ref={buttonRef}
 				label={label ?? "Action"}
 				tooltipLabel={tooltip ?? label}
 				iconType={getToolbarIconType(icon, label)}
@@ -60,12 +72,15 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 				disabled={disabled}
 				onClick={onClick}
 				{...toolbarButtonProps}
+				{...(labelSide !== undefined ? {labelSide} : {})}
+				{...(labelAlign !== undefined ? {labelAlign} : {})}
 			/>
 		);
 	}
 
 	return (
 		<AppBuilderActionComponent
+			buttonRef={buttonRef}
 			label={label}
 			icon={icon}
 			tooltip={tooltip}

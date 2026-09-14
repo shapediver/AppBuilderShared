@@ -11,13 +11,12 @@ export interface UseWebMcpToolsProps {
 
 export interface WebMcpEnvironment {
 	modelContextAvailable: boolean;
-	crossOriginIsolated: boolean;
 }
 
 export interface UseWebMcpToolsResult {
-	/** Tools registered on `modelContext` (registration may succeed without COI). */
+	/** Tools registered on `modelContext`. */
 	registered: boolean;
-	/** Tools callable by agents: `registered` and cross-origin isolated with `modelContext`. */
+	/** Tools registered and `modelContext` is available. */
 	ready: boolean;
 	environment: WebMcpEnvironment;
 }

@@ -90,6 +90,14 @@ export interface ViewportAnchorProps {
 		ISelectionParameterProps,
 		"minimumSelection" | "maximumSelection" | "deselectOnEmpty" | "prompt"
 	>;
+	/** Whether the 3D anchor hides when occluded by geometry. Also makes the panel closable if set. */
+	hideable?: boolean;
+	/** Whether opening this anchor hides sibling anchors of the same type. Defaults to true. */
+	exclusive?: boolean;
+	/** Option to show a close button on the container */
+	useCloseButton?: boolean;
+	/** Whether the anchor is initially open. Defaults to !canBeHidden. Action-targeted anchors pass false. */
+	defaultOpen?: boolean;
 }
 
 export type ViewportAnchorStyleProps = {
@@ -271,8 +279,18 @@ export function useAnchorContainer({
 	}, [aboveMobileBreakpoint, inputPreviewIcon, mobilePreviewIcon]);
 
 	const canBeHidden = useMemo(() => {
-		return !!previewIcon || !!selectionProperties;
-	}, [previewIcon, selectionProperties]);
+		return Boolean(
+			previewIcon ||
+			selectionProperties ||
+			properties.hideable ||
+			properties.defaultOpen === false,
+		);
+	}, [
+		previewIcon,
+		selectionProperties,
+		properties.hideable,
+		properties.defaultOpen,
+	]);
 
 	const {viewportId} = useViewportId();
 	const viewport = useShapeDiverStoreViewport(
@@ -314,13 +332,25 @@ export function useAnchorContainer({
 	 * Creates the anchor definition for the store.
 	 */
 	const anchorDefinition: IAnchor2d | IAnchor3d = useMemo(() => {
-		return {
-			type,
+		const base = {
 			id,
-			showContent: !canBeHidden,
-			hideable: canBeHidden,
+			showContent:
+				properties.defaultOpen !== undefined
+					? properties.defaultOpen
+					: !canBeHidden,
+			hideable: !!canBeHidden,
+			exclusive: properties.exclusive !== false,
 		};
-	}, [type, id, canBeHidden]);
+		return type === AppBuilderContainerNameType.Anchor2d
+			? {
+					...base,
+					type: AppBuilderContainerNameType.Anchor2d,
+				}
+			: {
+					...base,
+					type: AppBuilderContainerNameType.Anchor3d,
+				};
+	}, [type, id, canBeHidden, properties.defaultOpen, properties.exclusive]);
 
 	/**
 	 * This effect adds the anchor to the store when the component is mounted
@@ -546,26 +576,28 @@ export function useAnchorContainer({
 	 */
 	const inner = (
 		<Stack gap={0} key={id} {...anchorStackProps}>
-			<Flex
-				ref={updateControlElementGroupRef}
-				align="center"
-				style={{
-					width: "100%",
-					pointerEvents: "auto",
-				}}
-			>
-				<Box style={{flex: 1}} />
-				<Group ta="center">{hasDragIcon && dragIconElement}</Group>
-				<Group
+			{(hasDragIcon || hasCloseIcon) && (
+				<Flex
+					ref={updateControlElementGroupRef}
+					align="center"
 					style={{
-						flex: 1,
-						display: "flex",
-						justifyContent: "flex-end",
+						width: "100%",
+						pointerEvents: "auto",
 					}}
 				>
-					{hasCloseIcon && closeIconElement}
-				</Group>
-			</Flex>
+					<Box style={{flex: 1}} />
+					<Group ta="center">{hasDragIcon && dragIconElement}</Group>
+					<Group
+						style={{
+							flex: 1,
+							display: "flex",
+							justifyContent: "flex-end",
+						}}
+					>
+						{hasCloseIcon && closeIconElement}
+					</Group>
+				</Flex>
+			)}
 			<Group
 				w={aboveMobileBreakpoint ? width : "100%"}
 				h={aboveMobileBreakpoint ? height : "100%"}

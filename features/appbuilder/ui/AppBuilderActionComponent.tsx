@@ -23,6 +23,7 @@ type Props = IAppBuilderActionPropsCommon &
 	ButtonComponentProps & {
 		loading?: boolean;
 		canBeDisabledByParameter?: boolean;
+		buttonRef?: React.Ref<HTMLButtonElement>;
 	};
 
 /**
@@ -71,6 +72,7 @@ export default function AppBuilderActionComponent(
 		loading,
 		disabled,
 		canBeDisabledByParameter,
+		buttonRef,
 		...rest
 	} = props;
 
@@ -95,9 +97,10 @@ export default function AppBuilderActionComponent(
 	);
 
 	const button = useCloseButton ? (
-		<CloseButton onClick={_onclick} />
+		<CloseButton ref={buttonRef} onClick={_onclick} />
 	) : iconOnly ? (
 		<ActionIcon
+			ref={buttonRef}
 			{...actionIconProps}
 			onClick={_onclick}
 			loading={loading}
@@ -111,6 +114,7 @@ export default function AppBuilderActionComponent(
 		</ActionIcon>
 	) : (
 		<Button
+			ref={buttonRef}
 			{...buttonProps}
 			leftSection={icon ? <Icon iconType={icon} /> : undefined}
 			onClick={_onclick}

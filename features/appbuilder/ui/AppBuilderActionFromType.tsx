@@ -52,7 +52,14 @@ export function AppBuilderActionFromType(
 		viewportId,
 		fullscreenId,
 		disabled,
+		labelSide,
+		labelAlign,
 	} = options;
+	const resolvedToolbarButtonProps = {
+		...toolbarButtonProps,
+		...(labelSide !== undefined ? {labelSide} : {}),
+		...(labelAlign !== undefined ? {labelAlign} : {}),
+	};
 	if (!actionRef.definition) return null;
 
 	const actionPropsCommon = {
@@ -72,7 +79,7 @@ export function AppBuilderActionFromType(
 					key={actionKey + key}
 					namespace={namespace}
 					presentation={presentation}
-					toolbarButtonProps={toolbarButtonProps}
+					toolbarButtonProps={resolvedToolbarButtonProps}
 					viewportId={viewportId}
 					fullscreenId={fullscreenId}
 					disabled={disabled}
@@ -89,7 +96,7 @@ export function AppBuilderActionFromType(
 				key={key}
 				namespace={namespace}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
@@ -101,7 +108,7 @@ export function AppBuilderActionFromType(
 				key={key}
 				namespace={namespace}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
@@ -112,7 +119,7 @@ export function AppBuilderActionFromType(
 			<AppBuilderActionCloseConfiguratorComponent
 				key={key}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
@@ -124,7 +131,7 @@ export function AppBuilderActionFromType(
 				key={key}
 				namespace={namespace}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
@@ -136,7 +143,7 @@ export function AppBuilderActionFromType(
 				key={key}
 				namespace={namespace}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
@@ -148,7 +155,7 @@ export function AppBuilderActionFromType(
 				key={key}
 				namespace={namespace}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
@@ -160,7 +167,7 @@ export function AppBuilderActionFromType(
 				key={key}
 				namespace={namespace}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
@@ -172,7 +179,7 @@ export function AppBuilderActionFromType(
 				key={key}
 				namespace={namespace}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
@@ -184,7 +191,7 @@ export function AppBuilderActionFromType(
 				key={key}
 				namespace={namespace}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
@@ -195,7 +202,7 @@ export function AppBuilderActionFromType(
 			<AppBuilderActionSetContainerVisibilityComponent
 				key={key}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
@@ -208,7 +215,7 @@ export function AppBuilderActionFromType(
 				namespace={namespace}
 				presentation={presentation}
 				disabled={disabled}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				{...actionPropsCommon}
 			/>
 		);
@@ -219,7 +226,7 @@ export function AppBuilderActionFromType(
 				namespace={namespace}
 				presentation={presentation}
 				disabled={disabled}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				{...actionPropsCommon}
 			/>
 		);
@@ -230,7 +237,7 @@ export function AppBuilderActionFromType(
 				namespace={namespace}
 				presentation={presentation}
 				disabled={disabled}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				{...actionPropsCommon}
 			/>
 		);
@@ -239,7 +246,7 @@ export function AppBuilderActionFromType(
 			<AppBuilderActionSoundComponent
 				key={key}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}
@@ -250,7 +257,7 @@ export function AppBuilderActionFromType(
 			<AppBuilderActionMessageToParentComponent
 				key={key}
 				presentation={presentation}
-				toolbarButtonProps={toolbarButtonProps}
+				toolbarButtonProps={resolvedToolbarButtonProps}
 				disabled={disabled}
 				{...actionPropsCommon}
 				{...actionRef.definition.props}

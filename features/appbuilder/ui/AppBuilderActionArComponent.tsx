@@ -1,10 +1,5 @@
-import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
-import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {useAppBuilderActionAr} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionAr";
 import {Loader, Modal, Text} from "@mantine/core";
-import {FLAG_TYPE} from "@shapediver/viewer.session";
-import {useCallback, useState} from "react";
 import {
 	IAppBuilderActionPropsAr,
 	IAppBuilderActionPropsCommon,
@@ -31,42 +26,15 @@ export default function AppBuilderActionArComponent(props: Props) {
 		toolbarButtonProps,
 		disabled,
 	} = props;
-	const [loading, setLoading] = useState(false);
-	const [opened, setOpened] = useState(false);
-	const [arLink, setArLink] = useState("");
-	const [arError, setArError] = useState("");
-	const {viewportId: defaultViewportId} = useViewportId();
-	const actionViewportId = viewportId ?? defaultViewportId;
-	const hasPendingChanges = useHasPendingParameterChanges(namespace);
-	const resolvedDisabled = disabled || hasPendingChanges;
-	const {viewportApi} = useShapeDiverStoreViewport((state) => ({
-		viewportApi: state.viewports[actionViewportId],
-	}));
-
-	const onClick = useCallback(async () => {
-		if (resolvedDisabled || !viewportApi) return;
-		setLoading(true);
-		setArError("");
-		try {
-			if (viewportApi.viewableInAR()) {
-				const token = viewportApi.addFlag(FLAG_TYPE.BUSY_MODE);
-				try {
-					await viewportApi.viewInAR();
-				} finally {
-					viewportApi.removeFlag(token);
-				}
-			} else {
-				setArLink(await viewportApi.createArSessionLink());
-				setOpened(true);
-			}
-		} catch (e) {
-			setArError("Error while creating QR code");
-			Logger.error(e);
-			setOpened(true);
-		} finally {
-			setLoading(false);
-		}
-	}, [resolvedDisabled, viewportApi]);
+	const {
+		trigger,
+		disabled: resolvedDisabled,
+		loading,
+		opened,
+		close,
+		arLink,
+		arError,
+	} = useAppBuilderActionAr({namespace, viewportId, disabled});
 
 	return (
 		<>
@@ -75,14 +43,14 @@ export default function AppBuilderActionArComponent(props: Props) {
 				label={label}
 				icon={icon}
 				tooltip={tooltip}
-				onClick={() => void onClick()}
+				onClick={() => void trigger()}
 				loading={loading}
-				disabled={resolvedDisabled || !viewportApi}
+				disabled={resolvedDisabled}
 				toolbarButtonProps={toolbarButtonProps}
 			/>
 			<Modal
 				opened={opened}
-				onClose={() => setOpened(false)}
+				onClose={close}
 				title="Scan the code"
 				centered
 			>
