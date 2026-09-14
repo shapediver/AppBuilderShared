@@ -55,6 +55,10 @@ jest.mock("../AppBuilderActionSetBrowserLocationComponent", () => ({
 	__esModule: true,
 	default: MockActionComponent,
 }));
+jest.mock("../AppBuilderActionSetContainerVisibilityComponent", () => ({
+	__esModule: true,
+	default: MockActionComponent,
+}));
 jest.mock("../AppBuilderActionSetParameterValuesComponent", () => ({
 	__esModule: true,
 	default: MockActionComponent,
@@ -141,6 +145,34 @@ describe("AppBuilderActionFromType", () => {
 		expect(element).toBeNull();
 	});
 
+	it("returns null when a registered action has no component", () => {
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Zoom extents",
+			definition: {
+				type: "camera",
+				props: {
+					type: "zoomTo",
+					props: {},
+				},
+			},
+		};
+
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{
+				actions: {
+					camera: {
+						isAction: (definition) => definition.type === "camera",
+					},
+				},
+			},
+		);
+
+		expect(element).toBeNull();
+	});
+
 	it("returns null for an unregistered Viewer-only action", () => {
 		const actionRef: IAppBuilderControlActionRef = {
 			label: "Zoom extents",
@@ -158,6 +190,44 @@ describe("AppBuilderActionFromType", () => {
 			"namespace",
 			"key",
 			{},
+		);
+
+		expect(element).toBeNull();
+	});
+
+	it("renders a default shared action when the host omits it", () => {
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Undo",
+			definition: {type: "undo", props: {}},
+		};
+
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{},
+		);
+
+		expect(element?.type).toBe(MockActionComponent);
+	});
+
+	it("does not fall through to the default control when the host registers the key without a component", () => {
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Undo",
+			definition: {type: "undo", props: {}},
+		};
+
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{
+				actions: {
+					undo: {
+						isAction: (definition) => definition.type === "undo",
+					},
+				},
+			},
 		);
 
 		expect(element).toBeNull();

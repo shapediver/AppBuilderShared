@@ -15,6 +15,7 @@ import {
 	IAppBuilderSettingsSession,
 	IAppBuilderWidget,
 } from "./appbuilder";
+import type {AppBuilderActionRunner} from "./appBuilderActionRun";
 
 // #region Interfaces (7)
 
@@ -104,15 +105,23 @@ export interface WidgetComponentMapValueType extends ComponentType {
 	// #endregion Properties (1)
 }
 
-export interface ActionComponentMapValueType extends ComponentType {
-	// #region Properties (1)
-
-	/** Action component */
-	component: (props: any) => ReactElement;
+export interface ActionComponentMapValueType {
+	/**
+	 * Control to render. Overlay `componentContext.actions` onto
+	 * `sharedAppBuilderActions` by key. Omit `component` so the action is
+	 * not shown (do not fall through to a shared control). Hosts such as
+	 * iJewel omit `camera` / `ar` / `fullscreen` entirely so ShapeDiver
+	 * viewer UI is never imported.
+	 */
+	component?: (props: any) => ReactElement | null;
 	/** Defines whether the action is of this type */
 	isAction: (action: IAppBuilderActionDefinition) => boolean;
-
-	// #endregion Properties (1)
+	/**
+	 * Headless executor. Overlay by the same key as `component`. Omit `run`
+	 * so a host match does not fall through to a shared executor. Replace
+	 * with a host-native `run` (e.g. WebGi).
+	 */
+	run?: AppBuilderActionRunner;
 }
 
 /**

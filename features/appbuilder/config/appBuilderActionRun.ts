@@ -9,10 +9,12 @@ export type AppBuilderActionRunContext = {
 	viewportId?: string;
 	fullscreenId?: string;
 	/**
-	 * Host-registered executors from `componentContext.actions`.
-	 * A matching entry with no `run` suppresses the action (no shared fallback).
+	 * Host overlay of `componentContext.actions` (by key). Looked up before
+	 * shared defaults. A matching entry with no `run` suppresses the action
+	 * (no ShapeDiver fallback) — iJewel can omit `camera` / `ar` /
+	 * `fullscreen`, register `{ isAction }` to skip, or supply a native `run`.
 	 */
-	actionRuns?: AppBuilderActionRunRegistration[];
+	hostActions?: Record<string, AppBuilderActionRunRegistration | undefined>;
 };
 
 export type AppBuilderActionRunner = (
@@ -37,9 +39,27 @@ export function resolvedFullscreenId(
 	return context.fullscreenId ?? DEFAULT_APP_BUILDER_ACTION_FULLSCREEN_ID;
 }
 
-export function collectActionRuns(
-	actions?: Record<string, AppBuilderActionRunRegistration>,
-): AppBuilderActionRunRegistration[] {
-	if (!actions) return [];
-	return Object.values(actions).map(({isAction, run}) => ({isAction, run}));
+/**
+ * Host entries win (including a key with no `run` / no `component`).
+ * Defaults are used only for keys the host did not register.
+ */
+export function findAppBuilderActionRegistration<
+	T extends {
+		isAction: (action: IAppBuilderActionDefinition) => boolean;
+	},
+>(
+	definition: IAppBuilderActionDefinition,
+	defaults: Record<string, T>,
+	host?: Record<string, T | undefined>,
+): T | undefined {
+	if (host) {
+		for (const entry of Object.values(host)) {
+			if (entry?.isAction(definition)) return entry;
+		}
+	}
+	for (const [key, entry] of Object.entries(defaults)) {
+		if (host?.[key]) continue;
+		if (entry.isAction(definition)) return entry;
+	}
+	return undefined;
 }
