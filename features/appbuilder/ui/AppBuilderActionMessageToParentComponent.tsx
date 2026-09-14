@@ -1,4 +1,6 @@
-import {useAppBuilderActionMessageToParent} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionMessageToParent";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionMessageToParent} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionMessageToParent";
+import {useState} from "react";
 import {IAppBuilderLegacyActionPropsMessageToParent} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -23,11 +25,11 @@ export default function AppBuilderActionMessageToParentComponent(props: Props) {
 		toolbarButtonProps,
 		disabled,
 	} = props;
-	const {trigger, loading} = useAppBuilderActionMessageToParent({
-		type,
-		data,
-		disabled,
-	});
+	const [loading, setLoading] = useState(false);
+	const onClick = createActionClickHandler(
+		() => runAppBuilderActionMessageToParent({type, data}),
+		{disabled, setLoading},
+	);
 
 	return (
 		<AppBuilderActionBase
@@ -35,7 +37,7 @@ export default function AppBuilderActionMessageToParentComponent(props: Props) {
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={trigger}
+			onClick={onClick}
 			loading={loading}
 			disabled={disabled}
 			toolbarButtonProps={toolbarButtonProps}

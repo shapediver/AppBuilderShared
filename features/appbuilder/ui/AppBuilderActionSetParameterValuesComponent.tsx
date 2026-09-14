@@ -1,4 +1,6 @@
-import {useAppBuilderActionSetParameterValues} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionSetParameterValues";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionSetParameterValues} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSetParameterValues";
+import {useState} from "react";
 import {
 	IAppBuilderActionPropsCommon,
 	IAppBuilderActionPropsSetParameterValues,
@@ -34,12 +36,21 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		toolbarButtonProps,
 		disabled,
 	} = props;
-	const {trigger, disabled: resolvedDisabled} =
-		useAppBuilderActionSetParameterValues({
-			...props,
-			namespace,
-			disabled,
-		});
+	const [loading, setLoading] = useState(false);
+	const onClick = createActionClickHandler(
+		() =>
+			runAppBuilderActionSetParameterValues(
+				"parameterValues" in props
+					? {parameterValues: props.parameterValues}
+					: {
+							parameter: props.parameter,
+							value: props.value,
+							source: props.source,
+						},
+				{namespace},
+			),
+		{disabled, setLoading},
+	);
 
 	return (
 		<AppBuilderActionBase
@@ -47,8 +58,9 @@ export default function AppBuilderActionSetParameterValuesComponent(
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={trigger}
-			disabled={resolvedDisabled}
+			onClick={onClick}
+			loading={loading}
+			disabled={disabled}
 			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);

@@ -1,4 +1,7 @@
-import {useAppBuilderActionUndo} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionUndo";
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionUndo} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionUndo";
 import {IAppBuilderActionPropsCommon} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -19,9 +22,13 @@ export default function AppBuilderActionUndoComponent(props: Props) {
 		presentation,
 		toolbarButtonProps,
 	} = props;
-	const {trigger, disabled: resolvedDisabled} = useAppBuilderActionUndo({
-		namespace,
-		disabled,
+	const canGoBack = useShapeDiverStoreParameters(
+		(state) => state.historyIndex > 0,
+	);
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = disabled || hasPendingChanges || !canGoBack;
+	const onClick = createActionClickHandler(() => runAppBuilderActionUndo(), {
+		disabled: resolvedDisabled,
 	});
 
 	return (
@@ -30,7 +37,7 @@ export default function AppBuilderActionUndoComponent(props: Props) {
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={trigger}
+			onClick={onClick}
 			disabled={resolvedDisabled}
 			toolbarButtonProps={toolbarButtonProps}
 		/>
