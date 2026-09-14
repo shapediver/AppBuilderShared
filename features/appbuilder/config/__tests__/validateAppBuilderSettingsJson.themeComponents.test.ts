@@ -771,12 +771,13 @@ describe("validateAppBuilderSettingsJson theme validation singularity (R3)", () 
 			"utf8",
 		);
 		expect(source).toMatch(/from\s+["'].*parseAppBuilderJson["']/);
+		expect(source).toMatch(/from\s+["'].*applyAgentOverride["']/);
 		expect(source.match(/parseAppBuilderSkeleton\s*\(/g)).toHaveLength(2);
 		expect(source).not.toMatch(/validateAppBuilder/);
 		expect(source).not.toMatch(/isAppBuilderValidationEnabled/);
 		expect(source).not.toMatch(/formatAppBuilderZodError/);
 		expect(source).toMatch(
-			/appBuilderOverride\s*&&\s*sessionInitialized[\s\S]*return\s+appBuilderOverride/,
+			/appBuilderOverride\s*&&\s*sessionInitialized[\s\S]*return\s+applyAgentOverride\(\s*appBuilderOverride/,
 		);
 		expect(source).not.toMatch(
 			/parseAppBuilderSkeleton\s*\(\s*appBuilderOverride/,

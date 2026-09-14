@@ -1426,8 +1426,14 @@ export type AppBuilderAnchorContainerProperties = {
 	allowPointerEvents?: boolean;
 	/** Optional icon name, image URL, or inline Iconify object shown to open the container. */
 	previewIcon?: IAppBuilderIcon;
-	/** Option to show a close button on the container, if the container is closable (a previewIcon is defined) (default: false) */
+	/** Option to show a close button on the container. */
 	useCloseButton?: boolean;
+	/** Closing strategy if the anchor can be closed. */
+	closingStrategy?: "button" | "emptyClick";
+	/** Whether the anchor is exclusive with other anchors of the same type. Defaults to true; false when targeted by a setContainerVisibility action. */
+	exclusive?: boolean;
+	/** Whether the anchor is initially open. Defaults to !canBeHidden. Action-targeted anchors default to false. */
+	defaultOpen?: boolean;
 	/** Optional width of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
 	width?: string | number;
 	/** Optional height of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
@@ -1459,8 +1465,11 @@ export type AppBuilderAnchorContainerProperties = {
 
 /** Type for the anchor 2d containers */
 export type AppBuilderAnchor2dContainerProperties = {
-	/** 2D location */
-	location: (string | number)[];
+	/**
+	 * 2D location. When omitted, the panel docks to the DOM node of a
+	 * setContainerVisibility action that targets this container id.
+	 */
+	location?: (string | number)[];
 	/** Optional boolean to allow dragging of the container. (default: true) */
 	draggable?: boolean;
 } & AppBuilderAnchorContainerProperties;
@@ -2355,11 +2364,6 @@ export interface IAppBuilderSettingsSettings {
 	 * are shown in case no AppBuilder data output is found.
 	 */
 	disableFallbackUi?: boolean;
-	/**
-	 * URL of the AppBuilderAgent window (Step 3). Query `agentUrl` overrides this.
-	 * Not `IAppBuilder.agents[].url`.
-	 */
-	agentUrl?: string;
 }
 
 /**
@@ -2382,6 +2386,13 @@ export interface IAppBuilderSettingsJson {
 	 * for development.
 	 */
 	appBuilderOverride?: IAppBuilder;
+	/**
+	 * Optional agents list used instead of `IAppBuilder.agents` from the model
+	 * (and instead of `appBuilderOverride.agents` if both are set).
+	 * Useful for local development of agent features without replacing the
+	 * rest of the App Builder output.
+	 */
+	agentOverride?: IAppBuilderAgent[];
 }
 
 /**

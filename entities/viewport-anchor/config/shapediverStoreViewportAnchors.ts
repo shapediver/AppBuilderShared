@@ -15,6 +15,12 @@ interface IAnchorGeneric {
 	 */
 	hideable: boolean;
 	/**
+	 * Whether opening this anchor exclusively hides sibling anchors of the same type.
+	 * Defaults to true. When false (action-targeted anchors), this anchor
+	 * does not close other anchors and is not closed when other anchors open.
+	 */
+	exclusive?: boolean;
+	/**
 	 * The type of the anchor.
 	 */
 	type:

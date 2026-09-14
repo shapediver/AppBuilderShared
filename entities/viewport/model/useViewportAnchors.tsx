@@ -5,12 +5,39 @@ import {
 	isAnchor3dContainer,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
+import {collectActionTargetedAnchorIdsFromContainers} from "@AppBuilderLib/features/appbuilder/lib/collectActionTargetedAnchorIds";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useContext, useEffect, useState} from "react";
 
 interface Props {
 	namespace: string;
 	containers: IAppBuilderContainer[] | undefined;
+}
+
+function actionTargetedAnchorProps(
+	props: {
+		previewIcon?: unknown;
+		closingStrategy?: "button" | "emptyClick";
+		useCloseButton?: boolean;
+		hideable?: boolean;
+		exclusive?: boolean;
+		defaultOpen?: boolean;
+	},
+	isActionTargeted: boolean,
+) {
+	return {
+		closingStrategy:
+			props.closingStrategy ??
+			(props.previewIcon ? "emptyClick" : "button"),
+		useCloseButton:
+			props.useCloseButton ??
+			(isActionTargeted && !props.previewIcon ? true : undefined),
+		// Author-only: for 3D this is geometry occlusion, never inferred.
+		hideable: props.hideable,
+		exclusive: props.exclusive ?? (isActionTargeted ? false : undefined),
+		defaultOpen:
+			props.defaultOpen ?? (isActionTargeted ? false : undefined),
+	};
 }
 
 /**
@@ -31,6 +58,9 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 		const anchors: JSX.Element[] = [];
 
 		const existingIds = new Set<string>();
+		const actionTargetedAnchorIds =
+			collectActionTargetedAnchorIdsFromContainers(containers).all;
+
 		containers?.forEach((container) => {
 			if (isAnchor3dContainer(container)) {
 				// check if there are anchors with the same id
@@ -62,6 +92,10 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 					return;
 				}
 
+				const isActionTargeted = actionTargetedAnchorIds.includes(
+					container.props.id,
+				);
+
 				anchors.push(
 					<ViewportAnchor3d.component
 						key={container.props.id}
@@ -84,9 +118,10 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						maxHeight={container.props.maxHeight}
 						mobileFallback={container.props.mobileFallback}
 						useContainer={container.props.useContainer ?? true}
-						closingStrategy={"emptyClick"}
-						useCloseButton={container.props.useCloseButton}
-						hideable={container.props.hideable}
+						{...actionTargetedAnchorProps(
+							container.props,
+							isActionTargeted,
+						)}
 						selectionProperties={
 							container.props.selectionProperties
 						}
@@ -122,6 +157,10 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 					return;
 				}
 
+				const isActionTargeted = actionTargetedAnchorIds.includes(
+					container.props.id,
+				);
+
 				anchors.push(
 					<ViewportAnchor2d.component
 						key={container.props.id}
@@ -145,8 +184,10 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 						maxHeight={container.props.maxHeight}
 						mobileFallback={container.props.mobileFallback}
 						useContainer={container.props.useContainer ?? true}
-						closingStrategy={"button"}
-						useCloseButton={container.props.useCloseButton}
+						{...actionTargetedAnchorProps(
+							container.props,
+							isActionTargeted,
+						)}
 						selectionProperties={
 							container.props.selectionProperties
 						}

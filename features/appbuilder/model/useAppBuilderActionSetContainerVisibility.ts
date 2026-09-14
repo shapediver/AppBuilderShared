@@ -9,16 +9,22 @@ import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/mod
 import {useCallback} from "react";
 
 export interface UseAppBuilderActionSetContainerVisibilityProps extends IAppBuilderActionPropsSetContainerVisibility {
+	viewportId?: string;
 	disabled?: boolean;
 }
 
-/** Logic for the "setContainerVisibility" action. Can be used without the action component. */
+/**
+ * Hook providing executable logic and open state for a "setContainerVisibility" action.
+ * Can be called to trigger container open/close/toggle without mounting an action component.
+ */
 export function useAppBuilderActionSetContainerVisibility(
 	props: UseAppBuilderActionSetContainerVisibilityProps,
 ) {
-	const {container, mode, disabled} = props;
+	const {container, mode, viewportId: inputViewportId, disabled} = props;
 	const {viewportId: defaultViewportId} = useViewportId();
+	const viewportId = inputViewportId ?? defaultViewportId;
 	const containerId = container.props?.id;
+
 	const standardContainerOpen = useShapeDiverStoreStandardContainers(
 		(state) => {
 			switch (container.name) {
@@ -32,22 +38,25 @@ export function useAppBuilderActionSetContainerVisibility(
 			}
 		},
 	);
+
 	const anchorOpen = useShapeDiverStoreViewportAnchors((state) => {
 		if (
 			container.name !== AppBuilderContainerNameType.Anchor2d &&
 			container.name !== AppBuilderContainerNameType.Anchor3d
 		)
 			return undefined;
-		return state.anchors[defaultViewportId]?.find(
+		return state.anchors[viewportId]?.find(
 			(anchor) =>
 				anchor.id === containerId && anchor.type === container.name,
 		)?.showContent;
 	});
+
 	const toolbarOpen = useShapeDiverStoreToolbars((state) =>
 		container.name === AppBuilderContainerNameType.Toolbar
 			? (state.toolbarOpen[containerId ?? ""] ?? true)
 			: undefined,
 	);
+
 	const isOpen = standardContainerOpen ?? anchorOpen ?? toolbarOpen ?? false;
 
 	const trigger = useCallback(() => {
@@ -72,13 +81,13 @@ export function useAppBuilderActionSetContainerVisibility(
 				if (!containerId) return;
 				const viewportAnchors =
 					useShapeDiverStoreViewportAnchors.getState();
-				const anchor = viewportAnchors.anchors[defaultViewportId]?.find(
+				const anchor = viewportAnchors.anchors[viewportId]?.find(
 					(candidate) =>
 						candidate.id === containerId &&
 						candidate.type === container.name,
 				);
 				viewportAnchors.updateShowContent(
-					defaultViewportId,
+					viewportId,
 					containerId,
 					mode === "toggle"
 						? !(anchor?.showContent ?? false)
@@ -98,11 +107,11 @@ export function useAppBuilderActionSetContainerVisibility(
 				break;
 			}
 		}
-	}, [container, containerId, defaultViewportId, disabled, mode]);
+	}, [container.name, containerId, disabled, mode, viewportId]);
 
 	return {
 		trigger,
-		disabled,
 		isOpen,
+		disabled: !!disabled,
 	};
 }

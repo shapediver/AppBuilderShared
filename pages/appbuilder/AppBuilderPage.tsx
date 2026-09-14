@@ -195,6 +195,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	} = useSessionWithAppBuilder(
 		controllerSession,
 		settings?.appBuilderOverride,
+		settings?.agentOverride,
 	);
 	const error = settingsError ?? appBuilderError;
 
@@ -247,7 +248,6 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		namespace,
 		appBuilderData,
 		appBuilderParseSettled,
-		settings,
 		sessionInfo: controllerSession
 			? {
 					jwtToken: controllerSession.jwtToken,
