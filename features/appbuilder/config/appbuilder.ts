@@ -471,6 +471,10 @@ export type IAppBuilderActionDefinition =
 	| {
 			type: AppBuilderActionType.SetContainerVisibility;
 			props: IAppBuilderActionPropsSetContainerVisibility;
+	  }
+	| {
+			type: AppBuilderActionType.ExecuteActions;
+			props: IAppBuilderActionPropsExecuteActions;
 	  };
 
 /** Common properties of App Builder action controls and legacy actions. */
@@ -652,6 +656,27 @@ export interface IAppBuilderActionPropsSetContainerVisibility {
 	};
 	/** Mode of the action. */
 	mode: "open" | "close" | "toggle";
+}
+
+/**
+ * Properties of an "executeActions" action.
+ *
+ * Nested `executeActions` definitions are allowed, so parallel and sequential
+ * groups can be composed freely.
+ *
+ * @docAttached
+ * @category feature
+ * @configPath actions.executeActions.props
+ * @displayName IAppBuilderActionPropsExecuteActions
+ */
+export interface IAppBuilderActionPropsExecuteActions {
+	/** Actions to trigger. */
+	actions: IAppBuilderActionDefinition[];
+	/**
+	 * Whether actions are triggered simultaneously or one after another.
+	 * Defaults to "parallel".
+	 */
+	mode?: "parallel" | "sequential";
 }
 
 /**
@@ -964,6 +989,10 @@ export type IAppBuilderLegacyActionPropsSound = IAppBuilderActionPropsSound &
 export type IAppBuilderLegacyActionPropsSetContainerVisibility =
 	IAppBuilderActionPropsSetContainerVisibility & IAppBuilderActionPropsCommon;
 
+/** Properties of a legacy "executeActions" action. */
+export type IAppBuilderLegacyActionPropsExecuteActions =
+	IAppBuilderActionPropsExecuteActions & IAppBuilderActionPropsCommon;
+
 /** Properties of a "messageToParent" action. */
 export interface IAppBuilderActionPropsMessageToParent {
 	/** Type identifier for the message. */
@@ -1040,6 +1069,10 @@ export type IAppBuilderLegacyActionDefinition =
 	| {
 			type: AppBuilderActionType.MessageToParent;
 			props: IAppBuilderLegacyActionPropsMessageToParent;
+	  }
+	| {
+			type: AppBuilderActionType.ExecuteActions;
+			props: IAppBuilderLegacyActionPropsExecuteActions;
 	  };
 
 /** Types of widgets */
@@ -2167,6 +2200,16 @@ export function isMessageToParentAction(
 	{type: AppBuilderActionType.MessageToParent}
 > {
 	return isActionType(action, AppBuilderActionType.MessageToParent);
+}
+
+/** assert action type "executeActions" */
+export function isExecuteActionsAction(
+	action: IAppBuilderActionDefinition,
+): action is Extract<
+	IAppBuilderActionDefinition,
+	{type: AppBuilderActionType.ExecuteActions}
+> {
+	return isActionType(action, AppBuilderActionType.ExecuteActions);
 }
 
 type AppBuilderControlLike = IAppBuilderControl | IAppBuilderToolbarItem;

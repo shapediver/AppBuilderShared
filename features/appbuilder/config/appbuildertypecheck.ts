@@ -20,6 +20,7 @@ import {
 	AppBuilderContainerNameType,
 	AttributeVisualizationVisibility,
 	FormWidgetSubmitBehavior,
+	IAppBuilderActionDefinition,
 	IAppBuilderParameterValueSourceDefinition,
 	IAppBuilderWidget,
 	ParameterStringInputMode,
@@ -690,6 +691,23 @@ const IAppBuilderLegacyActionPropsMessageToParentSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
+// Assigned after IAppBuilderActionDefinitionSchemaBase so nested executeActions
+// can recursively validate IAppBuilderActionDefinition values.
+// eslint-disable-next-line prefer-const -- declaration must precede the recursive schema body
+let IAppBuilderActionDefinitionSchema: z.ZodType<IAppBuilderActionDefinition>;
+
+// Zod type definition for IAppBuilderActionPropsExecuteActions
+const IAppBuilderActionPropsExecuteActionsSchema = z.strictObject({
+	actions: z.array(z.lazy(() => IAppBuilderActionDefinitionSchema)),
+	mode: z.enum(["parallel", "sequential"]).optional(),
+});
+
+// Zod type definition for IAppBuilderLegacyActionPropsExecuteActions
+const IAppBuilderLegacyActionPropsExecuteActionsSchema =
+	IAppBuilderActionPropsExecuteActionsSchema.extend(
+		IAppBuilderActionPropsCommonSchema.shape,
+	);
+
 // Zod type definition for IAppBuilderLegacyActionDefinition
 const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
@@ -763,6 +781,10 @@ const IAppBuilderLegacyActionDefinitionSchema = z.discriminatedUnion("type", [
 	z.strictObject({
 		type: z.literal(AppBuilderActionType.MessageToParent),
 		props: IAppBuilderLegacyActionPropsMessageToParentSchema,
+	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.ExecuteActions),
+		props: IAppBuilderLegacyActionPropsExecuteActionsSchema,
 	}),
 ]);
 
@@ -894,9 +916,13 @@ const IAppBuilderActionDefinitionSchemaBase = z.discriminatedUnion("type", [
 		type: z.literal(AppBuilderActionType.MessageToParent),
 		props: IAppBuilderActionPropsMessageToParentSchema,
 	}),
+	z.strictObject({
+		type: z.literal(AppBuilderActionType.ExecuteActions),
+		props: IAppBuilderActionPropsExecuteActionsSchema,
+	}),
 ]);
 
-const IAppBuilderActionDefinitionSchema = z.preprocess(
+IAppBuilderActionDefinitionSchema = z.preprocess(
 	preprocessActionDefinitionInput,
 	IAppBuilderActionDefinitionSchemaBase,
 );
