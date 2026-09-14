@@ -12,8 +12,7 @@ import {
 	useMantineTheme,
 } from "@mantine/core";
 import React from "react";
-import ReactMarkdown from "react-markdown";
-import {Options} from "react-markdown/lib";
+import ReactMarkdown, {type Options} from "react-markdown";
 import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
 import {visit} from "unist-util-visit";

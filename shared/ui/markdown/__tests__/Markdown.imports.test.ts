@@ -12,7 +12,6 @@ const MARKDOWN_FILE = path.join(
 const ALLOWED_EXTERNALS = new Set([
 	"react",
 	"react-markdown",
-	"react-markdown/lib",
 	"remark-directive",
 	"remark-gfm",
 	"unist-util-visit",
