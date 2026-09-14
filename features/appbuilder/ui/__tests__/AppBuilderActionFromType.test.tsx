@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 const MockActionComponent = () => null;
+const MockExecuteActionsComponent = () => null;
 
 jest.mock("../AppBuilderActionAddToCartComponent", () => ({
 	__esModule: true,
@@ -22,6 +23,10 @@ jest.mock("../AppBuilderActionCloseConfiguratorComponent", () => ({
 jest.mock("../AppBuilderActionCreateModelStateComponent", () => ({
 	__esModule: true,
 	default: MockActionComponent,
+}));
+jest.mock("../AppBuilderActionExecuteActionsComponent", () => ({
+	__esModule: true,
+	default: MockExecuteActionsComponent,
 }));
 jest.mock("../AppBuilderActionExportParameterValuesComponent", () => ({
 	__esModule: true,
@@ -231,5 +236,39 @@ describe("AppBuilderActionFromType", () => {
 		);
 
 		expect(element).toBeNull();
+	});
+
+	it("renders executeActions with nested definitions and session context", () => {
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Run both",
+			definition: {
+				type: "executeActions",
+				props: {
+					mode: "sequential",
+					actions: [
+						{type: "undo", props: {}},
+						{type: "redo", props: {}},
+					],
+				},
+			},
+		};
+
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{},
+			{viewportId: "viewport-1", fullscreenId: "fullscreen-area"},
+		);
+
+		expect(element?.type).toBe(MockExecuteActionsComponent);
+		expect(element?.props).toMatchObject({
+			mode: "sequential",
+			namespace: "namespace",
+			viewportId: "viewport-1",
+			fullscreenId: "fullscreen-area",
+		});
+		expect(element?.props.actions).toHaveLength(2);
+		expect(element?.props.renderChild).toBeUndefined();
 	});
 });

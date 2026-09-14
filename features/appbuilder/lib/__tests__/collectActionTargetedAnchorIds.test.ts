@@ -102,4 +102,59 @@ describe("collectActionTargetedAnchorIds", () => {
 
 		expect(result.anchor2d).toEqual(["from-toolbar"]);
 	});
+
+	it("collects anchors nested inside executeActions", () => {
+		const result = collectActionTargetedAnchorIdsFromGroups([
+			[
+				{
+					type: "action",
+					props: {
+						definition: {
+							type: "executeActions",
+							props: {
+								mode: "sequential",
+								actions: [
+									{
+										type: "setContainerVisibility",
+										props: {
+											container: {
+												name: AppBuilderContainerNameType.Anchor2d,
+												props: {id: "nested-2d"},
+											},
+											mode: "open",
+										},
+									},
+									{
+										type: "executeActions",
+										props: {
+											actions: [
+												{
+													type: "setContainerVisibility",
+													props: {
+														container: {
+															name: AppBuilderContainerNameType.Anchor3d,
+															props: {
+																id: "nested-3d",
+															},
+														},
+														mode: "toggle",
+													},
+												},
+											],
+										},
+									},
+								],
+							},
+						},
+					},
+				},
+			],
+		]);
+
+		expect(result).toEqual({
+			all: ["nested-2d", "nested-3d"],
+			anchor2d: ["nested-2d"],
+			anchor3d: ["nested-3d"],
+		});
+	});
 });

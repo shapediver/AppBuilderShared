@@ -12,7 +12,8 @@ export type AppBuilderActionRunContext = {
 	 * Host overlay of `componentContext.actions` (by key). Looked up before
 	 * shared defaults. A matching entry with no `run` suppresses the action
 	 * (no ShapeDiver fallback) — iJewel can omit `camera` / `ar` /
-	 * `fullscreen`, register `{ isAction }` to skip, or supply a native `run`.
+	 * `fullscreen`, register `{ isAction }` to skip sequences, or supply a
+	 * native `run`.
 	 */
 	hostActions?: Record<string, AppBuilderActionRunRegistration | undefined>;
 };

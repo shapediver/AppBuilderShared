@@ -29,7 +29,7 @@ function addId(
 	}
 }
 
-function collectFromVisibilityAction(
+function collectFromActionDefinition(
 	definition: unknown,
 	out: ActionTargetedAnchorIds,
 ) {
@@ -38,11 +38,20 @@ function collectFromVisibilityAction(
 		type?: string;
 		props?: {
 			container?: {name?: string; props?: {id?: string}};
+			actions?: unknown[];
 		};
 	};
-	if (def.type !== "setContainerVisibility") return;
-	const container = def.props?.container;
-	addId(out, container?.name, container?.props?.id);
+	if (def.type === "setContainerVisibility") {
+		const container = def.props?.container;
+		addId(out, container?.name, container?.props?.id);
+		return;
+	}
+	if (def.type !== "executeActions" || !Array.isArray(def.props?.actions)) {
+		return;
+	}
+	for (const nested of def.props.actions) {
+		collectFromActionDefinition(nested, out);
+	}
 }
 
 function walkToolbarItem(item: unknown, out: ActionTargetedAnchorIds) {
@@ -50,7 +59,7 @@ function walkToolbarItem(item: unknown, out: ActionTargetedAnchorIds) {
 	const typed = item as {type?: string; props?: Record<string, unknown>};
 
 	if (typed.type === "action") {
-		collectFromVisibilityAction(
+		collectFromActionDefinition(
 			(typed.props as {definition?: unknown} | undefined)?.definition,
 			out,
 		);

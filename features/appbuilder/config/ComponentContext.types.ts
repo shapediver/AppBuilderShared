@@ -117,9 +117,9 @@ export interface ActionComponentMapValueType {
 	/** Defines whether the action is of this type */
 	isAction: (action: IAppBuilderActionDefinition) => boolean;
 	/**
-	 * Headless executor. Overlay by the same key as `component`. Omit `run`
-	 * so a host match does not fall through to a shared executor. Replace
-	 * with a host-native `run` (e.g. WebGi).
+	 * Headless executor for `executeActions`. Overlay by the same key as
+	 * `component`. Omit `run` to skip the action inside sequences (no
+	 * ShapeDiver fallback). Replace with a host-native `run` (e.g. WebGi).
 	 */
 	run?: AppBuilderActionRunner;
 }

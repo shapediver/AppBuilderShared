@@ -1,9 +1,11 @@
+import {isExecuteActionsAction} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderActionType} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionType";
 import type {ActionComponentMapValueType} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {defaultAppBuilderActionRuns} from "@AppBuilderLib/features/appbuilder/model/appBuilderActionCatalog";
 import AppBuilderActionAddToCartComponent from "./AppBuilderActionAddToCartComponent";
 import AppBuilderActionCloseConfiguratorComponent from "./AppBuilderActionCloseConfiguratorComponent";
 import AppBuilderActionCreateModelStateComponent from "./AppBuilderActionCreateModelStateComponent";
+import AppBuilderActionExecuteActionsComponent from "./AppBuilderActionExecuteActionsComponent";
 import AppBuilderActionExportParameterValuesComponent from "./AppBuilderActionExportParameterValuesComponent";
 import AppBuilderActionImportModelStateComponent from "./AppBuilderActionImportModelStateComponent";
 import AppBuilderActionImportParameterValuesComponent from "./AppBuilderActionImportParameterValuesComponent";
@@ -18,9 +20,9 @@ import AppBuilderActionUndoComponent from "./AppBuilderActionUndoComponent";
 
 /**
  * Shared `{ isAction, component, run? }` table (not host-specific).
- * FromType overlays `componentContext.actions` on this. Viewer-specific
- * `ar` / `camera` / `fullscreen` stay host-only so iJewel does not import
- * ShapeDiver viewer UI.
+ * FromType and `executeActions` both overlay `componentContext.actions`
+ * on this. Viewer-specific `ar` / `camera` / `fullscreen` stay host-only
+ * so iJewel does not import ShapeDiver viewer UI.
  */
 export const sharedAppBuilderActions: Record<
 	string,
@@ -93,5 +95,9 @@ export const sharedAppBuilderActions: Record<
 			AppBuilderActionType.SetContainerVisibility
 		],
 		component: AppBuilderActionSetContainerVisibilityComponent,
+	},
+	[AppBuilderActionType.ExecuteActions]: {
+		isAction: isExecuteActionsAction,
+		component: AppBuilderActionExecuteActionsComponent,
 	},
 };
