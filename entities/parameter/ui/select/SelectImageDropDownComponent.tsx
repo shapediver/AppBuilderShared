@@ -76,7 +76,9 @@ const ComboboxOption = React.memo(function ComboboxOption({
 	settings,
 }: ComboboxOptionProps) {
 	const hasLabel = option.label.trim() !== "";
-	const hasDescription = Boolean(option.description);
+	const hasDescription = (option.description ?? "").trim() !== "";
+	const isImageOnly =
+		Boolean(option.imageUrl) && !hasLabel && !hasDescription;
 
 	return (
 		<Group {...groupProps} {...settings?.groupProps}>
@@ -87,6 +89,7 @@ const ComboboxOption = React.memo(function ComboboxOption({
 						alt={option.label}
 						{...imageProps}
 						{...settings?.imageProps}
+						{...(isImageOnly ? {w: "100%", flex: 1} : {})}
 					/>
 				</TooltipWrapper>
 			)}
