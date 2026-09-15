@@ -11,6 +11,7 @@ import {createModelStateCore} from "@AppBuilderLib/features/model-state/lib/crea
 import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
 import {
 	applyCreateModelStateFilterDefaults,
+	applyCreateModelStateScreenshotFallback,
 	applyCreateModelStateThemeDefaults,
 } from "@AppBuilderLib/features/model-state/model/createModelStateThemeDefaults";
 import {getNotificationActions} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
@@ -38,7 +39,12 @@ export async function createModelStateFromStores(
 		},
 		clearUnsavedChanges,
 		parameterNamesToAlwaysExclude: themed.parameterNamesToAlwaysExclude,
-		props: themed.props,
+		props: {
+			...themed.props,
+			screenshotProps: applyCreateModelStateScreenshotFallback(
+				themed.props.screenshotProps,
+			),
+		},
 	});
 }
 

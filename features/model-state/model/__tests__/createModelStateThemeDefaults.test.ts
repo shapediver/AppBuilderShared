@@ -3,6 +3,7 @@
  */
 import {
 	applyCreateModelStateFilterDefaults,
+	applyCreateModelStateScreenshotFallback,
 	applyCreateModelStateThemeDefaults,
 	useCreateModelStateThemeDefaultsStore,
 } from "../createModelStateThemeDefaults";
@@ -67,5 +68,18 @@ describe("applyCreateModelStateThemeDefaults", () => {
 
 		expect(merged.parameterNamesToAlwaysExclude).toEqual(["context"]);
 		expect(merged.props.screenshotProps).toBeUndefined();
+	});
+
+	it("falls back to CreateModelStateHook screenshot when the caller leaves it unset", () => {
+		useCreateModelStateThemeDefaultsStore.getState().setDefaults({
+			screenshotProps: {quality: 0.5},
+		});
+
+		expect(applyCreateModelStateScreenshotFallback(undefined)).toEqual({
+			quality: 0.5,
+		});
+		expect(applyCreateModelStateScreenshotFallback({quality: 0.9})).toEqual(
+			{quality: 0.9},
+		);
 	});
 });

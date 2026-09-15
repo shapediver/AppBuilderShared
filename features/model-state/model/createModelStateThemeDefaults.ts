@@ -29,6 +29,19 @@ export function getCreateModelStateThemeDefaults(): CreateModelStateHookThemeDef
 	return useCreateModelStateThemeDefaultsStore.getState().defaults;
 }
 
+/**
+ * Last-step screenshot default matching {@link useCreateModelState}:
+ * callers that already merged action / AddToCartAction screenshot win;
+ * otherwise use CreateModelStateHook.screenshotProps.
+ */
+export function applyCreateModelStateScreenshotFallback(
+	screenshotProps?: ICreateModelStateData["screenshotProps"],
+): ICreateModelStateData["screenshotProps"] {
+	return (
+		screenshotProps ?? getCreateModelStateThemeDefaults().screenshotProps
+	);
+}
+
 export function applyCreateModelStateFilterDefaults(props: {
 	includeImage?: boolean;
 	image?: ICreateModelStateData["image"];
@@ -78,7 +91,9 @@ export function applyCreateModelStateThemeDefaults(props: {
 		...filtered,
 		props: {
 			...filtered.props,
-			screenshotProps: props.screenshotProps ?? theme.screenshotProps,
+			screenshotProps: applyCreateModelStateScreenshotFallback(
+				props.screenshotProps,
+			),
 		},
 		successMessage: props.successMessage ?? theme.successMessage,
 		errorMessage: props.errorMessage ?? theme.errorMessage,
