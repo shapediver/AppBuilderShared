@@ -9,12 +9,14 @@ import AppBuilderAgentOverlay from "@AppBuilderLib/features/agent-tools/ui/AppBu
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {APP_BUILDER_UI_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import useAppBuilderSettings from "@AppBuilderLib/features/appbuilder/model/useAppBuilderSettings";
 import {useAppBuilderStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderStandardContainers";
 import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBindings";
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import AppBuilderActionArQrModal from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionArQrModal";
+import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
 import {SyncAddToCartActionThemeDefaults} from "@AppBuilderLib/features/appbuilder/ui/SyncAddToCartActionThemeDefaults";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
 import ImportModelStateDialogHost from "@AppBuilderLib/features/model-state/ui/ImportModelStateDialogHost";
@@ -286,6 +288,11 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		<LoaderPage /> // TODO smooth transition between loading and showing
 	) : show ? (
 		<AppBuilderDataContext.Provider value={{data: appBuilderData}}>
+			<AppBuilderActionSlots
+				application
+				actionSlots={appBuilderData?.actionSlots}
+				namespace={namespace}
+			/>
 			<AppBuilderTemplateSelector
 				top={containers.top}
 				left={containers.left}
@@ -293,32 +300,42 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				bottom={containers.bottom}
 			>
 				{ViewportComponent && (
-					<ViewportComponent
-						visibilitySessionIds={secondarySessions.map(
-							(s) => s.id,
-						)}
+					<AppBuilderActionSlots
+						actionSlots={appBuilderData?.actionSlots}
+						allowedEvents={APP_BUILDER_UI_EVENTS}
+						namespace={namespace}
+						layout="fill"
+						warnUnsupported={false}
 					>
-						{ViewportOverlayWrapper && (
-							<>
-								{AppBuilderToolbarLayer && (
-									<AppBuilderToolbarLayer
-										namespace={namespace}
-										appBuilderData={appBuilderData}
-										sessionSettings={sessionSettings}
-									/>
-								)}
-								{!hasBottomCenterToolbar && (
-									<ViewportOverlayWrapper
-										position={OverlayPosition.BOTTOM_MIDDLE}
-										offset="1em"
-									>
-										<ViewportAcceptRejectButtons />
-									</ViewportOverlayWrapper>
-								)}
-							</>
-						)}
-						<AppBuilderAgentOverlay {...agentHost} />
-					</ViewportComponent>
+						<ViewportComponent
+							visibilitySessionIds={secondarySessions.map(
+								(s) => s.id,
+							)}
+						>
+							{ViewportOverlayWrapper && (
+								<>
+									{AppBuilderToolbarLayer && (
+										<AppBuilderToolbarLayer
+											namespace={namespace}
+											appBuilderData={appBuilderData}
+											sessionSettings={sessionSettings}
+										/>
+									)}
+									{!hasBottomCenterToolbar && (
+										<ViewportOverlayWrapper
+											position={
+												OverlayPosition.BOTTOM_MIDDLE
+											}
+											offset="1em"
+										>
+											<ViewportAcceptRejectButtons />
+										</ViewportOverlayWrapper>
+									)}
+								</>
+							)}
+							<AppBuilderAgentOverlay {...agentHost} />
+						</ViewportComponent>
+					</AppBuilderActionSlots>
 				)}
 				{anchors}
 			</AppBuilderTemplateSelector>

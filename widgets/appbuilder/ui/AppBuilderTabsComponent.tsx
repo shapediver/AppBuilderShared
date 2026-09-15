@@ -1,10 +1,17 @@
 import {IAppBuilderTab} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	APP_BUILDER_UI_EVENTS,
+	pickAllowedActionSlots,
+	uiSlotDomProps,
+	type AppBuilderUiSlotHandlers,
+} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
+import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
 import TabsComponent, {
 	ITabsComponentProps,
 } from "@AppBuilderLib/shared/ui/tabs/TabsComponent";
 import AppBuilderWidgetsWithStackShell from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsWithStackShell";
-import {useMemo} from "react";
+import {useMemo, useRef} from "react";
 
 interface Props {
 	/**
@@ -26,6 +33,7 @@ export default function AppBuilderTabsComponent({
 	stickyTabs = true,
 }: Props) {
 	const {setActiveTab} = useShapeDiverStoreStandardContainers();
+	const tabHandlerRefs = useRef<AppBuilderUiSlotHandlers[]>([]);
 
 	const tabProps: ITabsComponentProps | null = useMemo(() => {
 		if (!tabs || tabs.length === 0) {
@@ -35,11 +43,25 @@ export default function AppBuilderTabsComponent({
 		return {
 			defaultValue: tabs[0].name,
 			stickyTabs,
-			tabs: tabs.map((tab) => {
+			tabs: tabs.map((tab, index) => {
+				if (!tabHandlerRefs.current[index]) {
+					tabHandlerRefs.current[index] = {};
+				}
+				const handlers = tabHandlerRefs.current[index];
+				const enabledEvents = new Set(
+					pickAllowedActionSlots(
+						tab.actionSlots,
+						APP_BUILDER_UI_EVENTS,
+					).map((item) => item.eventName),
+				);
 				return {
 					name: tab.name,
 					icon: tab.icon,
 					tooltip: tab.tooltip,
+					controlProps: uiSlotDomProps(
+						(eventName) => handlers[eventName]?.(),
+						enabledEvents,
+					),
 					children: [
 						<AppBuilderWidgetsWithStackShell
 							key={0}
@@ -59,5 +81,22 @@ export default function AppBuilderTabsComponent({
 		return <></>;
 	}
 
-	return <TabsComponent {...tabProps} />;
+	return (
+		<>
+			{tabs?.map((tab, index) => {
+				if (!tabHandlerRefs.current[index]) {
+					tabHandlerRefs.current[index] = {};
+				}
+				return (
+					<AppBuilderActionSlots
+						key={`action-slots-${tab.name}-${index}`}
+						actionSlots={tab.actionSlots}
+						namespace={namespace}
+						handlersRef={{current: tabHandlerRefs.current[index]}}
+					/>
+				);
+			})}
+			<TabsComponent {...tabProps} />
+		</>
+	);
 }

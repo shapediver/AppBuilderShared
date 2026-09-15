@@ -11,7 +11,9 @@ import {collectActionTargetedAnchorIdsFromGroups} from "@AppBuilderLib/features/
 import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import type {IAppBuilderActionSlots} from "../config/appbuilderActionSlots";
 import {useToolbarVisibility} from "../model/useToolbarVisibility";
+import AppBuilderActionSlots from "./AppBuilderActionSlots";
 import AppBuilderToolbarActionButton from "./AppBuilderToolbarActionButton";
 import AppBuilderToolbarCommandButton from "./AppBuilderToolbarCommandButton";
 import AppBuilderToolbarExportButton from "./AppBuilderToolbarExportButton";
@@ -57,6 +59,25 @@ const isToolbarPopoverSafeTarget = (
 
 	return !!target.closest(toolbarPopoverSafeTargetSelector);
 };
+
+const wrapToolbarItem = (
+	item: {actionSlots?: IAppBuilderActionSlots; id?: string},
+	namespace: string,
+	viewportId: string | undefined,
+	fullscreenId: string | undefined,
+	node: React.ReactNode,
+	key?: string,
+) => (
+	<AppBuilderActionSlots
+		key={key}
+		actionSlots={item.actionSlots}
+		namespace={namespace}
+		viewportId={viewportId}
+		fullscreenId={fullscreenId}
+	>
+		{node}
+	</AppBuilderActionSlots>
+);
 
 interface Props {
 	toolbar: ResolvedToolbarRegistration;
@@ -283,6 +304,15 @@ export default function AppBuilderToolbar(props: Props) {
 								onPopoverOpenChange: handlePopoverOpenChange,
 								popoverDismissalBlocked,
 							};
+							const wrapItem = (node: React.ReactNode) =>
+								wrapToolbarItem(
+									toolbarItem,
+									resolvedButtonRenderContext.namespace,
+									resolvedButtonRenderContext.viewportId,
+									resolvedButtonRenderContext.fullscreenId,
+									node,
+									popoverId,
+								);
 							switch (toolbarItem.type) {
 								case "acceptReject":
 									return (
@@ -292,21 +322,19 @@ export default function AppBuilderToolbar(props: Props) {
 										/>
 									);
 								case "command":
-									return (
+									return wrapItem(
 										<AppBuilderToolbarCommandButton
-											key={popoverId}
 											item={toolbarItem}
 											presentation="toolbar"
 											defaultIcon={toolbar.defaultIcon}
 											globalDisabled={
 												resolvedButtonRenderContext.executing
 											}
-										/>
+										/>,
 									);
 								case "checkbox":
-									return (
+									return wrapItem(
 										<AppBuilderToolbarCommandButton
-											key={popoverId}
 											item={{
 												type: "command",
 												id: toolbarItem.id,
@@ -333,36 +361,33 @@ export default function AppBuilderToolbar(props: Props) {
 											globalDisabled={
 												resolvedButtonRenderContext.executing
 											}
-										/>
+										/>,
 									);
 								case "action":
-									return (
+									return wrapItem(
 										<AppBuilderToolbarActionButton
-											key={popoverId}
 											item={toolbarItem}
 											buttonRenderContext={
 												resolvedButtonRenderContext
 											}
-										/>
+										/>,
 									);
 								case "export":
-									return (
+									return wrapItem(
 										<AppBuilderToolbarExportButton
-											key={popoverId}
 											item={toolbarItem}
 											buttonRenderContext={
 												resolvedButtonRenderContext
 											}
 											defaultIcon={toolbar.defaultIcon}
-										/>
+										/>,
 									);
 								default:
-									return (
+									return wrapItem(
 										<AppBuilderToolbarPopoverButton
-											key={popoverId}
 											{...buttonProps}
 											item={toolbarItem}
-										/>
+										/>,
 									);
 							}
 						})}
@@ -399,28 +424,35 @@ export default function AppBuilderToolbar(props: Props) {
 			duration={reducedMotion ? 0 : transitionProps.duration}
 		>
 			{(transitionStyle) => (
-				<Paper
-					ref={toolbarRef}
-					role="toolbar"
-					aria-label={toolbar.ariaLabel || toolbar.id}
-					aria-orientation={orientation}
-					data-toolbar-side={toolbar.side}
-					style={{
-						...layoutBaseStyle,
-						...themeStyle,
-						...transitionStyle,
-						flexDirection:
-							orientation === "vertical" ? "column" : "row",
-						alignItems: "center",
-					}}
-					{...paperProps}
-					{...containerProps}
-					onTouchStart={preventEventPropagation}
-					onTouchMove={preventEventPropagation}
-					onTouchEnd={preventEventPropagation}
+				<AppBuilderActionSlots
+					actionSlots={toolbar.actionSlots}
+					namespace={resolvedButtonRenderContext.namespace}
+					viewportId={resolvedButtonRenderContext.viewportId}
+					fullscreenId={resolvedButtonRenderContext.fullscreenId}
 				>
-					{content}
-				</Paper>
+					<Paper
+						ref={toolbarRef}
+						role="toolbar"
+						aria-label={toolbar.ariaLabel || toolbar.id}
+						aria-orientation={orientation}
+						data-toolbar-side={toolbar.side}
+						style={{
+							...layoutBaseStyle,
+							...themeStyle,
+							...transitionStyle,
+							flexDirection:
+								orientation === "vertical" ? "column" : "row",
+							alignItems: "center",
+						}}
+						{...paperProps}
+						{...containerProps}
+						onTouchStart={preventEventPropagation}
+						onTouchMove={preventEventPropagation}
+						onTouchEnd={preventEventPropagation}
+					>
+						{content}
+					</Paper>
+				</AppBuilderActionSlots>
 			)}
 		</Transition>
 	);

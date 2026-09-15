@@ -11,6 +11,7 @@ import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/App
 import {Divider, Paper, Stack, Text} from "@mantine/core";
 import React, {useMemo} from "react";
 import {AppBuilderActionFromType} from "./AppBuilderActionFromType";
+import AppBuilderActionSlots from "./AppBuilderActionSlots";
 import AppBuilderToolbarCommandButton from "./AppBuilderToolbarCommandButton";
 import AppBuilderToolbarMenuCheckbox from "./AppBuilderToolbarMenuCheckbox";
 
@@ -85,56 +86,81 @@ export default function AppBuilderToolbarPopoverContent({
 										{section.items.map((menuItem) => {
 											if (menuItem.type === "checkbox") {
 												return (
-													<AppBuilderToolbarMenuCheckbox
+													<AppBuilderActionSlots
 														key={menuItem.id}
-														label={menuItem.label}
-														checked={
-															menuItem.props
-																.checked
+														actionSlots={
+															menuItem.actionSlots
 														}
-														readOnly={
-															menuItem.props
-																.readOnly
+														namespace={namespace}
+														viewportId={viewportId}
+														fullscreenId={
+															fullscreenId
 														}
-														disabled={
-															menuItem.disabled ||
-															actionDisabled
-														}
-														trailingAction={
-															menuItem.props
-																.trailingAction
-																? {
-																		...menuItem
-																			.props
-																			.trailingAction,
-																		disabled:
-																			actionDisabled ||
-																			menuItem
+													>
+														<AppBuilderToolbarMenuCheckbox
+															label={
+																menuItem.label
+															}
+															checked={
+																menuItem.props
+																	.checked
+															}
+															readOnly={
+																menuItem.props
+																	.readOnly
+															}
+															disabled={
+																menuItem.disabled ||
+																actionDisabled
+															}
+															trailingAction={
+																menuItem.props
+																	.trailingAction
+																	? {
+																			...menuItem
 																				.props
-																				.trailingAction
-																				.disabled,
-																	}
-																: undefined
-														}
-														onChange={() =>
-															menuItem.props.setChecked(
-																!menuItem.props
-																	.checked,
-															)
-														}
-													/>
+																				.trailingAction,
+																			disabled:
+																				actionDisabled ||
+																				menuItem
+																					.props
+																					.trailingAction
+																					.disabled,
+																		}
+																	: undefined
+															}
+															onChange={() =>
+																menuItem.props.setChecked(
+																	!menuItem
+																		.props
+																		.checked,
+																)
+															}
+														/>
+													</AppBuilderActionSlots>
 												);
 											}
 											if (menuItem.type === "command") {
 												return (
-													<AppBuilderToolbarCommandButton
+													<AppBuilderActionSlots
 														key={menuItem.id}
-														item={menuItem}
-														presentation="menu"
-														globalDisabled={
-															actionDisabled
+														actionSlots={
+															menuItem.actionSlots
 														}
-													/>
+														namespace={namespace}
+														viewportId={viewportId}
+														fullscreenId={
+															fullscreenId
+														}
+													>
+														<AppBuilderToolbarCommandButton
+															item={menuItem}
+															presentation="menu"
+															globalDisabled={
+																actionDisabled
+															}
+														/>
+													</AppBuilderActionSlots>
 												);
 											}
 
@@ -156,8 +182,14 @@ export default function AppBuilderToolbarPopoverContent({
 													},
 												);
 											return action ? (
-												<React.Fragment
+												<AppBuilderActionSlots
 													key={menuItem.id}
+													actionSlots={
+														menuItem.actionSlots
+													}
+													namespace={namespace}
+													viewportId={viewportId}
+													fullscreenId={fullscreenId}
 												>
 													<span
 														onClick={
@@ -166,7 +198,7 @@ export default function AppBuilderToolbarPopoverContent({
 													>
 														{action}
 													</span>
-												</React.Fragment>
+												</AppBuilderActionSlots>
 											) : null;
 										})}
 									</Stack>

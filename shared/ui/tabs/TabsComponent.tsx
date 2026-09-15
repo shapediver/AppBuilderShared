@@ -2,7 +2,13 @@ import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {BoxProps, Stack, Tabs} from "@mantine/core";
-import {ReactElement, useEffect, useRef, useState} from "react";
+import {
+	ButtonHTMLAttributes,
+	ReactElement,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 interface PropsTab extends BoxProps {
 	/** Value of tab. */
@@ -15,6 +21,15 @@ interface PropsTab extends BoxProps {
 	children: ReactElement[];
 	/** Optional tooltip to show when hovering the tab. */
 	tooltip?: string;
+	/** Optional pointer/`click` handlers attached to the tab control. */
+	controlProps?: Pick<
+		ButtonHTMLAttributes<HTMLButtonElement>,
+		| "onClick"
+		| "onPointerDown"
+		| "onPointerUp"
+		| "onPointerEnter"
+		| "onPointerLeave"
+	>;
 }
 
 export interface ITabsComponentProps extends BoxProps {
@@ -93,6 +108,7 @@ export default function TabsComponent({
 					const tabsTab = (
 						<Tabs.Tab
 							key={index}
+							{...tab.controlProps}
 							value={getTabValue(tab, index)}
 							leftSection={
 								tab.icon ? (
@@ -114,8 +130,14 @@ export default function TabsComponent({
 				})}
 			</Tabs.List>
 			{tabs.map((tab, index) => {
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				const {value, name, icon, children, ...rest} = tab;
+				const {
+					value: _value,
+					name: _name,
+					icon: _icon,
+					children,
+					controlProps: _controlProps,
+					...rest
+				} = tab;
 
 				return (
 					<Tabs.Panel

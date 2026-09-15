@@ -18,6 +18,7 @@ import {
 	getParameterComponent,
 } from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
+import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
 import type {MantineStackProps} from "@AppBuilderLib/shared/mantine-props/stack";
 import {MantineThemeComponent, Paper, Stack, useProps} from "@mantine/core";
@@ -200,37 +201,37 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 		const components: ReactElement[] = [];
 
 		controls.forEach((control, index) => {
+			let component: ReactElement | undefined;
 			if (isParameterRefControl(control)) {
-				const component = parameterMap.get(
+				component = parameterMap.get(
 					parameterMapKey(
 						control.props.sessionId ?? namespace,
 						control.props.name,
 					),
 				);
-				if (component) {
-					components.push(component);
-				}
 			} else if (isExportRefControl(control)) {
-				const component = exportMap.get(control.props.name);
-				if (component) {
-					components.push(component);
-				}
+				component = exportMap.get(control.props.name);
 			} else if (isActionRefControl(control)) {
-				const actionComponent = AppBuilderActionFromType(
-					control.props,
-					namespace,
-					index,
-					componentContext,
-				);
-				if (actionComponent) {
-					components.push(actionComponent);
-				}
+				component =
+					AppBuilderActionFromType(
+						control.props,
+						namespace,
+						index,
+						componentContext,
+					) ?? undefined;
 			} else if (isOutputRefControl(control)) {
-				const component = outputMap.get(control.props.name);
-				if (component) {
-					components.push(component);
-				}
+				component = outputMap.get(control.props.name);
 			}
+			if (!component) return;
+			components.push(
+				<AppBuilderActionSlots
+					key={`control-action-slots-${index}`}
+					actionSlots={control.actionSlots}
+					namespace={namespace}
+				>
+					{component}
+				</AppBuilderActionSlots>,
+			);
 		});
 
 		return components;
