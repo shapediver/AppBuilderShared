@@ -5,11 +5,13 @@ import ImportModelStateDialog from "./ImportModelStateDialog";
 export default function ImportModelStateDialogHost() {
 	const current = useImportModelStateDialogStore((state) => state.current);
 	const close = useImportModelStateDialogStore((state) => state.close);
+	if (!current) return null;
 
 	return (
 		<ImportModelStateDialog
-			opened={!!current}
-			namespace={current?.namespace ?? ""}
+			key={current.namespace}
+			opened
+			namespace={current.namespace}
 			onClose={close}
 		/>
 	);

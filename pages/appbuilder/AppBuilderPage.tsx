@@ -15,6 +15,7 @@ import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBin
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import AppBuilderActionArQrModal from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionArQrModal";
+import {SyncAddToCartActionThemeDefaults} from "@AppBuilderLib/features/appbuilder/ui/SyncAddToCartActionThemeDefaults";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
 import ImportModelStateDialogHost from "@AppBuilderLib/features/model-state/ui/ImportModelStateDialogHost";
 import {SyncCreateModelStateThemeDefaults} from "@AppBuilderLib/features/model-state/ui/SyncCreateModelStateThemeDefaults";
@@ -329,6 +330,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	return (
 		<>
 			<SyncCreateModelStateThemeDefaults />
+			<SyncAddToCartActionThemeDefaults />
 			<ImportModelStateDialogHost />
 			<AppBuilderActionArQrModal />
 			{page}

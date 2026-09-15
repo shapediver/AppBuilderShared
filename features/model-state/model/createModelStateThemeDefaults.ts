@@ -11,7 +11,7 @@ type CreateModelStateThemeDefaultsStore = {
 
 /**
  * Theme `CreateModelStateHook` defaults, mirrored from Mantine `useProps`
- * so headless create-model-state / add-to-cart can merge them without hooks.
+ * so headless create-model-state can merge them without hooks.
  */
 export const useCreateModelStateThemeDefaultsStore =
 	create<CreateModelStateThemeDefaultsStore>()(
@@ -27,6 +27,34 @@ export const useCreateModelStateThemeDefaultsStore =
 
 export function getCreateModelStateThemeDefaults(): CreateModelStateHookThemeDefaultProps {
 	return useCreateModelStateThemeDefaultsStore.getState().defaults;
+}
+
+export function applyCreateModelStateFilterDefaults(props: {
+	includeImage?: boolean;
+	image?: ICreateModelStateData["image"];
+	includeGltf?: boolean;
+	screenshotProps?: ICreateModelStateData["screenshotProps"];
+	parameterNamesToInclude?: string[];
+	parameterNamesToExclude?: string[];
+}): {
+	parameterNamesToAlwaysExclude: string[];
+	props: ICreateModelStateData;
+} {
+	const theme = getCreateModelStateThemeDefaults();
+	return {
+		parameterNamesToAlwaysExclude:
+			theme.parameterNamesToAlwaysExclude ?? [],
+		props: {
+			includeImage: props.includeImage,
+			image: props.image,
+			includeGltf: props.includeGltf,
+			screenshotProps: props.screenshotProps,
+			parameterNamesToInclude:
+				props.parameterNamesToInclude ?? theme.parameterNamesToInclude,
+			parameterNamesToExclude:
+				props.parameterNamesToExclude ?? theme.parameterNamesToExclude,
+		},
+	};
 }
 
 export function applyCreateModelStateThemeDefaults(props: {
@@ -45,18 +73,12 @@ export function applyCreateModelStateThemeDefaults(props: {
 	errorMessage?: string;
 } {
 	const theme = getCreateModelStateThemeDefaults();
+	const filtered = applyCreateModelStateFilterDefaults(props);
 	return {
-		parameterNamesToAlwaysExclude:
-			theme.parameterNamesToAlwaysExclude ?? [],
+		...filtered,
 		props: {
-			includeImage: props.includeImage,
-			image: props.image,
-			includeGltf: props.includeGltf,
+			...filtered.props,
 			screenshotProps: props.screenshotProps ?? theme.screenshotProps,
-			parameterNamesToInclude:
-				props.parameterNamesToInclude ?? theme.parameterNamesToInclude,
-			parameterNamesToExclude:
-				props.parameterNamesToExclude ?? theme.parameterNamesToExclude,
 		},
 		successMessage: props.successMessage ?? theme.successMessage,
 		errorMessage: props.errorMessage ?? theme.errorMessage,

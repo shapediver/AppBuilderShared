@@ -5,8 +5,8 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
-import {applyCreateModelStateThemeDefaults} from "@AppBuilderLib/features/model-state/model/createModelStateThemeDefaults";
 import {getNotificationActions} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import {applyAddToCartActionThemeDefaults} from "./addToCartActionThemeDefaults";
 import {createModelStateFromStores} from "./runAppBuilderActionCreateModelState";
 
 /** Create a model state and add it to the cart. */
@@ -14,14 +14,17 @@ export async function runAppBuilderActionAddToCart(
 	props: IAppBuilderActionPropsAddToCart,
 	context: AppBuilderActionRunContext,
 ): Promise<void> {
-	const themed = applyCreateModelStateThemeDefaults(props);
+	const themed = applyAddToCartActionThemeDefaults(props);
 	let modelStateId: string | undefined;
 	try {
 		const api = await ECommerceApiSingleton;
 		const resultModelState = await createModelStateFromStores(
 			context.namespace,
 			resolvedViewportId(context),
-			props,
+			{
+				...props,
+				screenshotProps: themed.screenshotProps,
+			},
 		);
 		modelStateId = resultModelState.modelStateId;
 		const result = await api.addItemToCart({

@@ -9,7 +9,10 @@ import {
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {createModelStateCore} from "@AppBuilderLib/features/model-state/lib/createModelStateCore";
 import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
-import {applyCreateModelStateThemeDefaults} from "@AppBuilderLib/features/model-state/model/createModelStateThemeDefaults";
+import {
+	applyCreateModelStateFilterDefaults,
+	applyCreateModelStateThemeDefaults,
+} from "@AppBuilderLib/features/model-state/model/createModelStateThemeDefaults";
 import {getNotificationActions} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {createElement} from "react";
@@ -19,7 +22,7 @@ export async function createModelStateFromStores(
 	viewportId: string,
 	props: IAppBuilderActionPropsCreateModelState,
 ) {
-	const themed = applyCreateModelStateThemeDefaults(props);
+	const themed = applyCreateModelStateFilterDefaults(props);
 	const sessions = useShapeDiverStoreSession.getState().sessions;
 	const viewportAccessFunctions =
 		useShapeDiverStoreViewportAccessFunctions.getState()
@@ -50,7 +53,12 @@ export async function runAppBuilderActionCreateModelState(
 		const result = await createModelStateFromStores(
 			context.namespace,
 			resolvedViewportId(context),
-			props,
+			{
+				...props,
+				screenshotProps: themed.props.screenshotProps,
+				parameterNamesToInclude: themed.props.parameterNamesToInclude,
+				parameterNamesToExclude: themed.props.parameterNamesToExclude,
+			},
 		);
 		modelStateId = result.modelStateId;
 		if (modelStateId) {
