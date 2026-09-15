@@ -1,11 +1,16 @@
+import {useShapeDiverStoreViewportAnchors} from "@AppBuilderLib/entities/viewport-anchor/model/useShapeDiverStoreViewportAnchors";
 import {useViewportAnchorTriggerRegistry} from "@AppBuilderLib/entities/viewport-anchor/model/useViewportAnchorTriggerRegistry";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionSetContainerVisibility} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSetContainerVisibility";
+import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
+import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
+import {useCallback, useEffect} from "react";
 import {
 	AppBuilderContainerNameType,
 	IAppBuilderActionPropsCommon,
 	IAppBuilderActionPropsSetContainerVisibility,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {useAppBuilderActionSetContainerVisibility} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionSetContainerVisibility";
-import {useCallback, useEffect} from "react";
+} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
 } from "./AppBuilderActionBase";
@@ -39,22 +44,60 @@ export default function AppBuilderActionSetContainerVisibilityComponent(
 		presentation,
 		toolbarButtonProps,
 		disabled,
-		viewportId,
+		viewportId: inputViewportId,
 		labelSide,
 		labelAlign,
 	} = props;
+	const {viewportId: defaultViewportId} = useViewportId();
+	const viewportId = inputViewportId ?? defaultViewportId;
+	const containerId = container.props?.id;
 
-	const {trigger, isOpen} = useAppBuilderActionSetContainerVisibility({
-		container,
-		mode,
-		viewportId,
-		disabled,
+	const standardContainerOpen = useShapeDiverStoreStandardContainers(
+		(state) => {
+			switch (container.name) {
+				case AppBuilderContainerNameType.Left:
+				case AppBuilderContainerNameType.Right:
+				case AppBuilderContainerNameType.Top:
+				case AppBuilderContainerNameType.Bottom:
+					return state.containerOpen[container.name];
+				default:
+					return undefined;
+			}
+		},
+	);
+
+	const anchorOpen = useShapeDiverStoreViewportAnchors((state) => {
+		if (
+			container.name !== AppBuilderContainerNameType.Anchor2d &&
+			container.name !== AppBuilderContainerNameType.Anchor3d
+		)
+			return undefined;
+		return state.anchors[viewportId]?.find(
+			(anchor) =>
+				anchor.id === containerId && anchor.type === container.name,
+		)?.showContent;
 	});
+
+	const toolbarOpen = useShapeDiverStoreToolbars((state) =>
+		container.name === AppBuilderContainerNameType.Toolbar
+			? (state.toolbarOpen[containerId ?? ""] ?? true)
+			: undefined,
+	);
+
+	const isOpen = standardContainerOpen ?? anchorOpen ?? toolbarOpen ?? false;
+	const onClick = createActionClickHandler(
+		() =>
+			runAppBuilderActionSetContainerVisibility({
+				container,
+				mode,
+				viewportId,
+			}),
+		{disabled},
+	);
 
 	const setTrigger = useViewportAnchorTriggerRegistry(
 		(state) => state.setTrigger,
 	);
-	// Register the action button so location-less 2D anchors can dock to it.
 	const anchorId =
 		container.name === AppBuilderContainerNameType.Anchor2d &&
 		container.props?.id
@@ -92,7 +135,7 @@ export default function AppBuilderActionSetContainerVisibilityComponent(
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={trigger}
+			onClick={onClick}
 			disabled={disabled}
 			toolbarButtonProps={toolbarButtonProps}
 			labelSide={labelSide}

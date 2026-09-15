@@ -1,38 +1,9 @@
 import {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
+import {findAppBuilderActionRegistration} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
 import React from "react";
-import {
-	IAppBuilderControlActionRef,
-	isAddToCartAction,
-	isCloseConfiguratorAction,
-	isCreateModelStateAction,
-	isExportParameterValuesAction,
-	isImportModelStateAction,
-	isImportParameterValuesAction,
-	isMessageToParentAction,
-	isRedoAction,
-	isResetParameterValuesAction,
-	isSetBrowserLocationAction,
-	isSetContainerVisibilityAction,
-	isSetParameterValueAction,
-	isSetParameterValuesAction,
-	isSoundAction,
-	isUndoAction,
-} from "../config/appbuilder";
-import AppBuilderActionAddToCartComponent from "./AppBuilderActionAddToCartComponent";
+import {IAppBuilderControlActionRef} from "../config/appbuilder";
 import {AppBuilderActionRenderProps} from "./AppBuilderActionBase";
-import AppBuilderActionCloseConfiguratorComponent from "./AppBuilderActionCloseConfiguratorComponent";
-import AppBuilderActionCreateModelStateComponent from "./AppBuilderActionCreateModelStateComponent";
-import AppBuilderActionExportParameterValuesComponent from "./AppBuilderActionExportParameterValuesComponent";
-import AppBuilderActionImportModelStateComponent from "./AppBuilderActionImportModelStateComponent";
-import AppBuilderActionImportParameterValuesComponent from "./AppBuilderActionImportParameterValuesComponent";
-import AppBuilderActionMessageToParentComponent from "./AppBuilderActionMessageToParentComponent";
-import AppBuilderActionRedoComponent from "./AppBuilderActionRedoComponent";
-import AppBuilderActionResetParameterValuesComponent from "./AppBuilderActionResetParameterValuesComponent";
-import AppBuilderActionSetBrowserLocationComponent from "./AppBuilderActionSetBrowserLocationComponent";
-import AppBuilderActionSetContainerVisibilityComponent from "./AppBuilderActionSetContainerVisibilityComponent";
-import AppBuilderActionSetParameterValuesComponent from "./AppBuilderActionSetParameterValuesComponent";
-import AppBuilderActionSoundComponent from "./AppBuilderActionSoundComponent";
-import AppBuilderActionUndoComponent from "./AppBuilderActionUndoComponent";
+import {sharedAppBuilderActions} from "./sharedAppBuilderActions";
 
 interface AppBuilderActionFromTypeOptions extends AppBuilderActionRenderProps {
 	viewportId?: string;
@@ -67,201 +38,26 @@ export function AppBuilderActionFromType(
 		definition: undefined, // avoid passing down the definition again
 	};
 
-	// first we loop through all registered components to see if we can find a match
-	// here some of the default actions could be overwritten by custom components
-	for (const actionKey in componentContext.actions ?? {}) {
-		const componentDefinition = componentContext.actions?.[actionKey];
-		if (!componentDefinition) continue;
-		if (componentDefinition.isAction(actionRef.definition)) {
-			const Component = componentDefinition.component;
-			return (
-				<Component
-					key={actionKey + key}
-					namespace={namespace}
-					presentation={presentation}
-					toolbarButtonProps={resolvedToolbarButtonProps}
-					viewportId={viewportId}
-					fullscreenId={fullscreenId}
-					disabled={disabled}
-					{...actionPropsCommon}
-					{...actionRef.definition.props}
-				/>
-			);
-		}
-	}
+	const entry = findAppBuilderActionRegistration(
+		actionRef.definition,
+		sharedAppBuilderActions,
+		componentContext.actions,
+	);
+	if (!entry) return null;
+	const Component = entry.component;
+	if (!Component) return null;
 
-	if (isCreateModelStateAction(actionRef.definition))
-		return (
-			<AppBuilderActionCreateModelStateComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isAddToCartAction(actionRef.definition))
-		return (
-			<AppBuilderActionAddToCartComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isCloseConfiguratorAction(actionRef.definition))
-		return (
-			<AppBuilderActionCloseConfiguratorComponent
-				key={key}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isImportParameterValuesAction(actionRef.definition))
-		return (
-			<AppBuilderActionImportParameterValuesComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isExportParameterValuesAction(actionRef.definition))
-		return (
-			<AppBuilderActionExportParameterValuesComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isImportModelStateAction(actionRef.definition))
-		return (
-			<AppBuilderActionImportModelStateComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isSetParameterValueAction(actionRef.definition))
-		return (
-			<AppBuilderActionSetParameterValuesComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isSetParameterValuesAction(actionRef.definition))
-		return (
-			<AppBuilderActionSetParameterValuesComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isSetBrowserLocationAction(actionRef.definition))
-		return (
-			<AppBuilderActionSetBrowserLocationComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isSetContainerVisibilityAction(actionRef.definition))
-		return (
-			<AppBuilderActionSetContainerVisibilityComponent
-				key={key}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isUndoAction(actionRef.definition))
-		return (
-			<AppBuilderActionUndoComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				disabled={disabled}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				{...actionPropsCommon}
-			/>
-		);
-	else if (isRedoAction(actionRef.definition))
-		return (
-			<AppBuilderActionRedoComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				disabled={disabled}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				{...actionPropsCommon}
-			/>
-		);
-	else if (isResetParameterValuesAction(actionRef.definition))
-		return (
-			<AppBuilderActionResetParameterValuesComponent
-				key={key}
-				namespace={namespace}
-				presentation={presentation}
-				disabled={disabled}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				{...actionPropsCommon}
-			/>
-		);
-	else if (isSoundAction(actionRef.definition))
-		return (
-			<AppBuilderActionSoundComponent
-				key={key}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else if (isMessageToParentAction(actionRef.definition))
-		return (
-			<AppBuilderActionMessageToParentComponent
-				key={key}
-				presentation={presentation}
-				toolbarButtonProps={resolvedToolbarButtonProps}
-				disabled={disabled}
-				{...actionPropsCommon}
-				{...actionRef.definition.props}
-			/>
-		);
-	else return null;
+	return (
+		<Component
+			key={key}
+			namespace={namespace}
+			presentation={presentation}
+			toolbarButtonProps={resolvedToolbarButtonProps}
+			viewportId={viewportId}
+			fullscreenId={fullscreenId}
+			disabled={disabled}
+			{...actionPropsCommon}
+			{...actionRef.definition.props}
+		/>
+	);
 }

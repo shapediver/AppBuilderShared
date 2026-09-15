@@ -1,4 +1,7 @@
-import {useAppBuilderActionResetParameterValues} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionResetParameterValues";
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionResetParameterValues} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionResetParameterValues";
+import {useState} from "react";
 import {IAppBuilderActionPropsCommon} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -21,11 +24,13 @@ export default function AppBuilderActionResetParameterValuesComponent(
 		presentation,
 		toolbarButtonProps,
 	} = props;
-	const {
-		trigger,
-		disabled: resolvedDisabled,
-		loading,
-	} = useAppBuilderActionResetParameterValues({namespace, disabled});
+	const [loading, setLoading] = useState(false);
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = !namespace || !!disabled || hasPendingChanges;
+	const onClick = createActionClickHandler(
+		() => runAppBuilderActionResetParameterValues(namespace),
+		{disabled: resolvedDisabled, setLoading},
+	);
 
 	return (
 		<AppBuilderActionBase
@@ -33,7 +38,7 @@ export default function AppBuilderActionResetParameterValuesComponent(
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={() => void trigger()}
+			onClick={onClick}
 			loading={loading}
 			disabled={resolvedDisabled}
 			toolbarButtonProps={toolbarButtonProps}

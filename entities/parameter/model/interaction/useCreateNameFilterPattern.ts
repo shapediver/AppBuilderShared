@@ -16,7 +16,7 @@ import {useEffect, useState} from "react";
  * @param nameFilter
  * @returns
  */
-const getPatterns = (
+export const getPatterns = (
 	sessions: {[key: string]: ISessionApi},
 	instances: {[key: string]: ITreeNode},
 	nameFilter?: string[],

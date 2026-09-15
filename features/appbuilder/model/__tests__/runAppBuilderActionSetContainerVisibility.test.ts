@@ -3,10 +3,9 @@ import {useShapeDiverStoreViewportAnchors} from "@AppBuilderLib/entities/viewpor
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
-import {act, renderHook} from "@testing-library/react";
-import {useAppBuilderActionSetContainerVisibility} from "../useAppBuilderActionSetContainerVisibility";
+import {runAppBuilderActionSetContainerVisibility} from "../runAppBuilderActionSetContainerVisibility";
 
-describe("useAppBuilderActionSetContainerVisibility", () => {
+describe("runAppBuilderActionSetContainerVisibility", () => {
 	const viewportId = "test-viewport";
 
 	beforeEach(() => {
@@ -40,19 +39,12 @@ describe("useAppBuilderActionSetContainerVisibility", () => {
 	});
 
 	it("controls standard containers visibility", () => {
-		const {result} = renderHook(() =>
-			useAppBuilderActionSetContainerVisibility({
-				container: {
-					name: AppBuilderContainerNameType.Right,
-				},
-				mode: "toggle",
-			}),
-		);
-
-		expect(result.current.isOpen).toBe(false);
-
-		act(() => {
-			result.current.trigger();
+		runAppBuilderActionSetContainerVisibility({
+			container: {
+				name: AppBuilderContainerNameType.Right,
+			},
+			mode: "toggle",
+			viewportId,
 		});
 
 		expect(
@@ -61,21 +53,13 @@ describe("useAppBuilderActionSetContainerVisibility", () => {
 	});
 
 	it("controls 2d viewport anchor visibility", () => {
-		const {result} = renderHook(() =>
-			useAppBuilderActionSetContainerVisibility({
-				container: {
-					name: AppBuilderContainerNameType.Anchor2d,
-					props: {id: "test-anchor"},
-				},
-				mode: "toggle",
-				viewportId,
-			}),
-		);
-
-		expect(result.current.isOpen).toBe(false);
-
-		act(() => {
-			result.current.trigger();
+		runAppBuilderActionSetContainerVisibility({
+			container: {
+				name: AppBuilderContainerNameType.Anchor2d,
+				props: {id: "test-anchor"},
+			},
+			mode: "toggle",
+			viewportId,
 		});
 
 		const anchor = useShapeDiverStoreViewportAnchors
@@ -101,45 +85,29 @@ describe("useAppBuilderActionSetContainerVisibility", () => {
 			dragOffsetMap: {},
 		});
 
-		const {result} = renderHook(() =>
-			useAppBuilderActionSetContainerVisibility({
-				container: {
-					name: AppBuilderContainerNameType.Anchor3d,
-					props: {id: "test-3d-anchor"},
-				},
-				mode: "toggle",
-				viewportId,
-			}),
-		);
-
-		expect(result.current.isOpen).toBe(false);
-
-		act(() => {
-			result.current.trigger();
+		runAppBuilderActionSetContainerVisibility({
+			container: {
+				name: AppBuilderContainerNameType.Anchor3d,
+				props: {id: "test-3d-anchor"},
+			},
+			mode: "toggle",
+			viewportId,
 		});
 
 		const anchor = useShapeDiverStoreViewportAnchors
 			.getState()
 			.anchors[viewportId].find((a) => a.id === "test-3d-anchor");
 		expect(anchor?.showContent).toBe(true);
-		expect(result.current.isOpen).toBe(true);
 	});
 
 	it("controls toolbar visibility", () => {
-		const {result} = renderHook(() =>
-			useAppBuilderActionSetContainerVisibility({
-				container: {
-					name: AppBuilderContainerNameType.Toolbar,
-					props: {id: "test-toolbar"},
-				},
-				mode: "toggle",
-			}),
-		);
-
-		expect(result.current.isOpen).toBe(true);
-
-		act(() => {
-			result.current.trigger();
+		runAppBuilderActionSetContainerVisibility({
+			container: {
+				name: AppBuilderContainerNameType.Toolbar,
+				props: {id: "test-toolbar"},
+			},
+			mode: "toggle",
+			viewportId,
 		});
 
 		expect(

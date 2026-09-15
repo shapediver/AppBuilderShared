@@ -1,4 +1,7 @@
-import {useAppBuilderActionAddToCart} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionAddToCart";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionAddToCart} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionAddToCart";
+import {useState} from "react";
 import {IAppBuilderLegacyActionPropsAddToCart} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -7,6 +10,7 @@ import AppBuilderActionBase, {
 type Props = IAppBuilderLegacyActionPropsAddToCart &
 	AppBuilderActionRenderProps & {
 		namespace: string;
+		viewportId?: string;
 	};
 
 /**
@@ -36,24 +40,33 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		toolbarButtonProps,
 		disabled,
 		title,
+		viewportId: inputViewportId,
 	} = props;
-	const {trigger, loading} = useAppBuilderActionAddToCart({
-		namespace,
-		productId,
-		quantity,
-		price,
-		description,
-		includeImage,
-		image,
-		includeGltf,
-		screenshotProps,
-		parameterNamesToInclude,
-		parameterNamesToExclude,
-		successMessage,
-		errorMessage,
-		disabled,
-		title,
-	});
+	const [loading, setLoading] = useState(false);
+	const {viewportId: defaultViewportId} = useViewportId();
+	const viewportId = inputViewportId ?? defaultViewportId;
+	const onClick = createActionClickHandler(
+		() =>
+			runAppBuilderActionAddToCart(
+				{
+					productId,
+					quantity,
+					price,
+					description,
+					includeImage,
+					image,
+					includeGltf,
+					screenshotProps,
+					parameterNamesToInclude,
+					parameterNamesToExclude,
+					successMessage,
+					errorMessage,
+					title,
+				},
+				{namespace, viewportId},
+			),
+		{disabled, setLoading},
+	);
 
 	return (
 		<AppBuilderActionBase
@@ -61,7 +74,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={trigger}
+			onClick={onClick}
 			loading={loading}
 			disabled={disabled}
 			toolbarButtonProps={toolbarButtonProps}

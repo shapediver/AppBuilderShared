@@ -152,6 +152,11 @@ export function legacyActionToDefinition(
 				type: action.type,
 				props: stripLegacyCommonProps(action.props),
 			};
+		case AppBuilderActionType.ExecuteActions:
+			return {
+				type: action.type,
+				props: stripLegacyCommonProps(action.props),
+			};
 		default: {
 			const _exhaustive: never = action;
 			return _exhaustive;

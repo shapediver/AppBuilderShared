@@ -30,24 +30,29 @@ export default function ImportModelStateDialog({
 	const {importModelState, isLoading: isLoadingModelState} =
 		useImportModelState({namespace});
 
-	const handleImport = useCallback(async (modelStateId: string) => {
-		setError(null);
-		setIsLoading(true);
-		const result = await importModelState({modelStateId});
-		setIsLoading(false);
-		if (!result.success) {
-			setError(result.message || "Failed to import model state");
-			return;
-		}
-		handleClose();
-	}, []);
-
-	const handleClose = () => {
+	const handleClose = useCallback(() => {
 		setModelStateId("");
 		setError(null);
 		setIsLoading(false);
 		onClose();
-	};
+	}, [onClose]);
+
+	const handleImport = useCallback(
+		async (nextModelStateId: string) => {
+			setError(null);
+			setIsLoading(true);
+			const result = await importModelState({
+				modelStateId: nextModelStateId,
+			});
+			setIsLoading(false);
+			if (!result.success) {
+				setError(result.message || "Failed to import model state");
+				return;
+			}
+			handleClose();
+		},
+		[handleClose, importModelState],
+	);
 
 	const handleKeyPress = (event: React.KeyboardEvent) => {
 		if (event.key === "Enter") {

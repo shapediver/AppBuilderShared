@@ -1,4 +1,7 @@
-import {useAppBuilderActionRedo} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionRedo";
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
+import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionRedo} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionRedo";
 import {IAppBuilderActionPropsCommon} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -19,9 +22,13 @@ export default function AppBuilderActionRedoComponent(props: Props) {
 		presentation,
 		toolbarButtonProps,
 	} = props;
-	const {trigger, disabled: resolvedDisabled} = useAppBuilderActionRedo({
-		namespace,
-		disabled,
+	const canGoForward = useShapeDiverStoreParameters(
+		(state) => state.historyIndex < state.history.length - 1,
+	);
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = disabled || hasPendingChanges || !canGoForward;
+	const onClick = createActionClickHandler(() => runAppBuilderActionRedo(), {
+		disabled: resolvedDisabled,
 	});
 
 	return (
@@ -30,7 +37,7 @@ export default function AppBuilderActionRedoComponent(props: Props) {
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={trigger}
+			onClick={onClick}
 			disabled={resolvedDisabled}
 			toolbarButtonProps={toolbarButtonProps}
 		/>

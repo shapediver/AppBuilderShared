@@ -1,4 +1,5 @@
-import {useAppBuilderActionCloseConfigurator} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionCloseConfigurator";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionCloseConfigurator} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionCloseConfigurator";
 import {IAppBuilderLegacyActionPropsCloseConfigurator} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -23,7 +24,10 @@ export default function AppBuilderActionCloseConfiguratorComponent(
 		toolbarButtonProps,
 		disabled,
 	} = props;
-	const {trigger} = useAppBuilderActionCloseConfigurator({disabled});
+	const onClick = createActionClickHandler(
+		() => runAppBuilderActionCloseConfigurator(),
+		{disabled},
+	);
 
 	return (
 		<AppBuilderActionBase
@@ -31,7 +35,7 @@ export default function AppBuilderActionCloseConfiguratorComponent(
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={trigger}
+			onClick={onClick}
 			disabled={disabled}
 			toolbarButtonProps={toolbarButtonProps}
 		/>

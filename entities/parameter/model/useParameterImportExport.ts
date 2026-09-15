@@ -1,209 +1,26 @@
-import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
-import {ErrorReportingContext} from "@AppBuilderLib/shared/lib/ErrorReportingContext";
 import {
-	exceptionWrapper,
-	exceptionWrapperAsync,
-} from "@AppBuilderLib/shared/lib/exceptionWrapper";
-import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
-import {useCallback, useContext} from "react";
-import {useShallow} from "zustand/react/shallow";
-import {
-	filterAndValidateParameters,
-	generateParameterFeedback,
-	isImportParameterArray,
-} from "../lib/parametersFilter";
-import {getParameterStates} from "../lib/parameterStates";
-import {resolveParameterExportValue} from "../lib/resolveParameterExportValue";
-import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
+	exportParameterValues,
+	importParameterValues,
+	resetParameterValues,
+} from "@AppBuilderLib/entities/parameter/lib/parameterImportExport";
+import {useCallback} from "react";
 
 /**
  * Hook for managing parameter import/export and reset functionality.
  */
 export function useParameterImportExport(namespace: string) {
-	const {batchParameterValueUpdate, clearUnsavedChanges} =
-		useShapeDiverStoreParameters(
-			useShallow((state) => ({
-				batchParameterValueUpdate: state.batchParameterValueUpdate,
-				clearUnsavedChanges: state.clearUnsavedChanges,
-			})),
-		);
-
-	const {currentModel} = useShapeDiverStorePlatform(
-		useShallow((state) => ({
-			currentModel: state.currentModel,
-		})),
+	const exportParameters = useCallback(
+		() => exportParameterValues(namespace),
+		[namespace],
 	);
-
-	const notifications = useNotificationStore();
-	const errorReporting = useContext(ErrorReportingContext);
-
-	/**
-	 * Export parameters as JSON file
-	 */
-	const exportParameters = useCallback(async () => {
-		const parameterArray = getParameterStates(namespace).map((param) => ({
-			id: param.definition.id,
-			value: resolveParameterExportValue({
-				definitionType: param.definition.type,
-				execValue: param.state.execValue,
-				stringExecValue: () => param.state.stringExecValue(),
-			}),
-			name: param.definition.name,
-		}));
-
-		// Create JSON blob and download
-		const jsonContent = JSON.stringify({
-			...(currentModel && {model_id: currentModel.id}),
-			parameters: parameterArray,
-		});
-		const blob = new Blob([jsonContent], {type: "application/json"});
-		const url = URL.createObjectURL(blob);
-		const link = document.createElement("a");
-		link.href = url;
-		link.download = `parameters_${currentModel ? currentModel.slug : namespace}_${new Date().toISOString().split("T")[0]}.json`;
-		document.body.appendChild(link);
-		link.click();
-		document.body.removeChild(link);
-		URL.revokeObjectURL(url);
-
-		notifications.success({
-			message: "Parameter values exported successfully",
-		});
-
-		// creating a parameter JSON file persists the current configuration
-		clearUnsavedChanges();
-	}, [namespace, currentModel, clearUnsavedChanges]);
-
-	/**
-	 * Import parameters from JSON file
-	 */
-	const importParameters = useCallback(() => {
-		return new Promise<void>((resolve, reject) => {
-			const fileInput = document.createElement("input");
-			fileInput.type = "file";
-			fileInput.accept = ".json";
-
-			fileInput.onchange = async (event: Event) => {
-				const target = event.target as HTMLInputElement;
-				const file = target.files?.[0];
-
-				if (!file) {
-					const errorMessage = "No file selected";
-					notifications.error({
-						message: errorMessage,
-					});
-					reject(new Error(errorMessage));
-					return;
-				}
-
-				const response = await exceptionWrapperAsync<string>(() =>
-					file.text(),
-				);
-
-				if (response.error) {
-					errorReporting.captureException(response.error);
-					notifications.error({
-						message: (response.error as Error).message,
-					});
-					reject(response.error);
-					return;
-				}
-
-				const importResult = exceptionWrapper(() =>
-					JSON.parse(response.data),
-				);
-
-				if (importResult.error) {
-					errorReporting.captureException(importResult.error);
-					notifications.error({
-						message: (importResult.error as Error).message,
-					});
-					reject(importResult.error);
-					return;
-				}
-
-				const importData = importResult.data;
-
-				if (
-					!importData.parameters ||
-					!Array.isArray(importData.parameters)
-				) {
-					const errorMessage =
-						"The file doesn't contain the parameters data";
-					notifications.error({
-						message: errorMessage,
-					});
-					reject(new Error(errorMessage));
-					return;
-				}
-
-				if (!isImportParameterArray(importData.parameters)) {
-					const errorMessage =
-						"The schema of the parameters is not valid";
-					notifications.error({
-						message: errorMessage,
-					});
-					reject(new Error(errorMessage));
-					return;
-				}
-
-				const validationResult = filterAndValidateParameters(
-					getParameterStates(namespace),
-					importData.parameters,
-				);
-
-				if (!validationResult.hasValidParameters) {
-					const feedback =
-						generateParameterFeedback(validationResult);
-					notifications[feedback.type]({
-						message: feedback.message,
-					});
-					reject(new Error(feedback.message));
-					return;
-				}
-
-				await batchParameterValueUpdate({
-					[namespace]: validationResult.validParameters,
-				});
-
-				// importing a parameter JSON file reverts the unsaved changes flag
-				clearUnsavedChanges();
-
-				// Provide user feedback
-				const feedback = generateParameterFeedback(
-					validationResult,
-					"Parameter values imported successfully",
-				);
-
-				notifications[feedback.type]({
-					message: feedback.message,
-				});
-
-				resolve();
-			};
-
-			fileInput.click();
-		});
-	}, [namespace, notifications, clearUnsavedChanges]);
-
-	/**
-	 * Reset parameters to default values
-	 */
-	const resetParameters = useCallback(async () => {
-		const defaultValues = getParameterStates(namespace).reduce(
-			(acc, param) => {
-				acc[param.definition.id] = param.definition.defval;
-				return acc;
-			},
-			{} as Record<string, any>,
-		);
-
-		await batchParameterValueUpdate({[namespace]: defaultValues});
-
-		notifications.success({
-			message: "Parameters reset to default values",
-		});
-	}, [namespace]);
+	const importParameters = useCallback(
+		() => importParameterValues(namespace),
+		[namespace],
+	);
+	const resetParameters = useCallback(
+		() => resetParameterValues(namespace),
+		[namespace],
+	);
 
 	return {
 		exportParameters,

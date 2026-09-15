@@ -23,6 +23,7 @@ jest.mock(
 	"@AppBuilderLib/features/notifications/model/useNotificationStore",
 	() => ({
 		useNotificationStore: () => notificationMock,
+		getNotificationActions: () => notificationMock,
 	}),
 );
 
@@ -30,10 +31,12 @@ jest.mock("@AppBuilderLib/shared/lib/ErrorReportingContext", () => ({
 	ErrorReportingContext: React.createContext({captureException: jest.fn()}),
 }));
 
-jest.mock("@AppBuilderLib/shared/model/useShapeDiverStorePlatform", () => ({
-	useShapeDiverStorePlatform: (selector: any) =>
-		selector({currentModel: undefined}),
-}));
+jest.mock("@AppBuilderLib/shared/model/useShapeDiverStorePlatform", () => {
+	const state = {currentModel: undefined};
+	const useShapeDiverStorePlatform = (selector: any) => selector(state);
+	useShapeDiverStorePlatform.getState = () => state;
+	return {useShapeDiverStorePlatform};
+});
 
 const filterAndValidateParameters = jest.fn();
 const generateParameterFeedback = jest.fn();

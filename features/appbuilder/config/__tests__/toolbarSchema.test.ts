@@ -108,6 +108,74 @@ describe("toolbar container schema", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts nested executeActions in parallel and sequential mode", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {id: "toolbar"},
+					groups: [
+						[
+							makeSemanticAction({
+								type: "executeActions",
+								props: {
+									mode: "sequential",
+									actions: [
+										{
+											type: "setContainerVisibility",
+											props: {
+												container: {name: "right"},
+												mode: "open",
+											},
+										},
+										{
+											type: "executeActions",
+											props: {
+												mode: "parallel",
+												actions: [
+													{type: "undo", props: {}},
+													{type: "redo", props: {}},
+												],
+											},
+										},
+									],
+								},
+							}),
+						],
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects executeActions with an unknown mode", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {id: "toolbar"},
+					groups: [
+						[
+							makeSemanticAction({
+								type: "executeActions",
+								props: {
+									mode: "waterfall",
+									actions: [{type: "undo", props: {}}],
+								},
+							}),
+						],
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(false);
+	});
+
 	it("accepts a valid toolbar container with mixed item types", () => {
 		const result = validateAppBuilder({
 			version: "1.0",

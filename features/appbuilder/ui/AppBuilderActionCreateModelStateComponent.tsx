@@ -1,4 +1,8 @@
-import {useAppBuilderActionCreateModelState} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionCreateModelState";
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionCreateModelState} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionCreateModelState";
+import {useState} from "react";
 import {IAppBuilderLegacyActionPropsCreateModelState} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -7,6 +11,7 @@ import AppBuilderActionBase, {
 type Props = IAppBuilderLegacyActionPropsCreateModelState &
 	AppBuilderActionRenderProps & {
 		namespace: string;
+		viewportId?: string;
 	};
 
 /**
@@ -33,23 +38,30 @@ export default function AppBuilderActionCreateModelStateComponent(
 		parameterNamesToExclude,
 		successMessage,
 		errorMessage,
+		viewportId: inputViewportId,
 	} = props;
-	const {
-		trigger,
-		disabled: resolvedDisabled,
-		loading,
-	} = useAppBuilderActionCreateModelState({
-		namespace,
-		disabled,
-		includeImage,
-		image,
-		includeGltf,
-		screenshotProps,
-		parameterNamesToInclude,
-		parameterNamesToExclude,
-		successMessage,
-		errorMessage,
-	});
+	const [loading, setLoading] = useState(false);
+	const {viewportId: defaultViewportId} = useViewportId();
+	const viewportId = inputViewportId ?? defaultViewportId;
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = disabled || hasPendingChanges;
+	const onClick = createActionClickHandler(
+		() =>
+			runAppBuilderActionCreateModelState(
+				{
+					includeImage,
+					image,
+					includeGltf,
+					screenshotProps,
+					parameterNamesToInclude,
+					parameterNamesToExclude,
+					successMessage,
+					errorMessage,
+				},
+				{namespace, viewportId},
+			),
+		{disabled: resolvedDisabled, setLoading},
+	);
 
 	return (
 		<AppBuilderActionBase
@@ -57,7 +69,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={() => void trigger()}
+			onClick={onClick}
 			loading={loading}
 			disabled={resolvedDisabled}
 			toolbarButtonProps={toolbarButtonProps}
