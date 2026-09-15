@@ -1,0 +1,170 @@
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import type {
+	AppBuilderApplicationEvent,
+	AppBuilderUiEvent,
+	IAppBuilderActionSlot,
+	IAppBuilderActionSlotEventProps,
+	IAppBuilderActionSlots,
+} from "../config/appbuilderActionSlots";
+
+/** React prop names for UI action-slot events. Event names are derived from these keys. */
+export const APP_BUILDER_UI_EVENT_REACT_PROPS = {
+	click: "onClick",
+	pointerdown: "onPointerDown",
+	pointerup: "onPointerUp",
+	pointerenter: "onPointerEnter",
+	pointerleave: "onPointerLeave",
+} as const satisfies Record<AppBuilderUiEvent, string>;
+
+export const APP_BUILDER_UI_EVENTS = Object.keys(
+	APP_BUILDER_UI_EVENT_REACT_PROPS,
+) as AppBuilderUiEvent[];
+
+/** Application events valid on the root `IAppBuilder` only. */
+export const APP_BUILDER_APPLICATION_EVENTS: readonly AppBuilderApplicationEvent[] =
+	[
+		"appready",
+		"computationstart",
+		"computationend",
+		"computationerror",
+		"exportstart",
+		"exportend",
+		"exporterror",
+		"selectionchange",
+	];
+
+/**
+ * Events valid on the App Builder root: application events plus viewport
+ * pointer/`click` (those attach to the viewport host, not to a UI node).
+ */
+export const APP_BUILDER_ROOT_EVENTS: readonly string[] = [
+	...APP_BUILDER_APPLICATION_EVENTS,
+	...APP_BUILDER_UI_EVENTS,
+];
+
+export type AppBuilderUiSlotHandlers = {
+	[K in AppBuilderUiEvent]?: () => void;
+};
+
+export type AppBuilderUiSlotDomProps = {
+	[K in (typeof APP_BUILDER_UI_EVENT_REACT_PROPS)[AppBuilderUiEvent]]?: () => void;
+};
+
+/**
+ * DOM listener props for the UI events in `enabledEvents`.
+ * Used by node wrappers and by hosts that cannot wrap the target (tab controls).
+ */
+export function uiSlotDomProps(
+	run: (eventName: AppBuilderUiEvent) => void,
+	enabledEvents: ReadonlySet<string> = new Set(APP_BUILDER_UI_EVENTS),
+): AppBuilderUiSlotDomProps {
+	const props: Record<string, () => void> = {};
+	for (const eventName of APP_BUILDER_UI_EVENTS) {
+		if (!enabledEvents.has(eventName)) continue;
+		props[APP_BUILDER_UI_EVENT_REACT_PROPS[eventName]] = () =>
+			run(eventName);
+	}
+	return props;
+}
+
+export function getActionSlotEventProps(
+	slot: IAppBuilderActionSlot,
+	expectedType: IAppBuilderActionSlotEventProps["type"],
+): IAppBuilderActionSlotEventProps["props"] | undefined {
+	if (!slot.eventProps) return undefined;
+	if (slot.eventProps.type !== expectedType) return undefined;
+	return slot.eventProps.props;
+}
+
+export function matchesSessionFilter(
+	sessionId: string | undefined,
+	filterSessionId: string | undefined,
+	fallbackSessionId: string,
+): boolean {
+	const expected = filterSessionId || fallbackSessionId;
+	if (!sessionId) return !filterSessionId;
+	return sessionId === expected;
+}
+
+export function matchesExportName(
+	exportIdentity: {
+		id?: string;
+		name?: string;
+		displayname?: string;
+	},
+	filterName?: string,
+): boolean {
+	if (!filterName) return true;
+	const needle = filterName.toLowerCase();
+	return [exportIdentity.id, exportIdentity.name, exportIdentity.displayname]
+		.filter((value): value is string => !!value)
+		.some((value) => value.toLowerCase() === needle);
+}
+
+export type ResolvedActionSlot = {
+	eventName: string;
+	slot: IAppBuilderActionSlot;
+};
+
+/**
+ * Pick slots whose event names are allowed on this node.
+ * Custom events and names outside `allowedEvents` are omitted.
+ */
+export function pickAllowedActionSlots(
+	actionSlots: IAppBuilderActionSlots | undefined,
+	allowedEvents: readonly string[],
+): ResolvedActionSlot[] {
+	if (!actionSlots) return [];
+	const allowed = new Set(allowedEvents);
+	const resolved: ResolvedActionSlot[] = [];
+	for (const eventName of Object.keys(actionSlots)) {
+		if (!allowed.has(eventName)) continue;
+		const slot = (
+			actionSlots as Record<string, IAppBuilderActionSlot | undefined>
+		)[eventName];
+		if (!slot) continue;
+		resolved.push({eventName, slot});
+	}
+	return resolved;
+}
+
+export function logIgnoredActionSlotEvents(
+	actionSlots: IAppBuilderActionSlots | undefined,
+	allowedEvents: readonly string[],
+	unsupportedOn: string,
+): void {
+	if (!actionSlots) return;
+	const allowed = new Set(allowedEvents);
+	for (const eventName of Object.keys(actionSlots)) {
+		const slot = (
+			actionSlots as Record<string, IAppBuilderActionSlot | undefined>
+		)[eventName];
+		if (!slot || allowed.has(eventName)) continue;
+		if (eventName.startsWith("custom:")) {
+			Logger.debug(
+				`Custom action slot "${eventName}" is not emitted ${unsupportedOn}.`,
+			);
+		} else {
+			Logger.warn(
+				`Action slot "${eventName}" is not supported ${unsupportedOn} and will be ignored.`,
+			);
+		}
+	}
+}
+
+export function readStringField(
+	value: unknown,
+	keys: readonly string[],
+): string | undefined {
+	if (!value || typeof value !== "object") return undefined;
+	const record = value as Record<string, unknown>;
+	for (const key of keys) {
+		const field = record[key];
+		if (typeof field === "string" && field.length > 0) return field;
+		if (field && typeof field === "object") {
+			const nested = readStringField(field, ["id", "name", "sessionId"]);
+			if (nested) return nested;
+		}
+	}
+	return undefined;
+}
