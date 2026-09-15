@@ -11,6 +11,7 @@ import {
 	SessionCreationDefinition,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.shared.types";
+import type {IAppBuilderActionSlots} from "./appbuilderActionSlots";
 import {AppBuilderActionType} from "./appBuilderActionType";
 import type {IAppBuilderAgent} from "./appbuilderagent";
 import {
@@ -21,6 +22,19 @@ import {
 } from "./appbuildercharts";
 import type {IAppBuilderColor} from "./appbuilderColor";
 
+export type {
+	AppBuilderActionSlotEventPropsType,
+	AppBuilderApplicationEvent,
+	AppBuilderCustomEventName,
+	AppBuilderKnownEvent,
+	AppBuilderUiEvent,
+	IAppBuilderActionSlot,
+	IAppBuilderActionSlotEventProps,
+	IAppBuilderActionSlotEventPropsExport,
+	IAppBuilderActionSlotEventPropsSelection,
+	IAppBuilderActionSlotEventPropsSession,
+	IAppBuilderActionSlots,
+} from "./appbuilderActionSlots";
 export {AppBuilderActionType};
 export type {IAppBuilderColor};
 
@@ -344,8 +358,21 @@ export interface IAppBuilderExportRef {
 	>;
 }
 
+/**
+ * Neutral node-level fields shared by widgets, tabs, containers, controls,
+ * toolbar items, and the root definition. Future node-level properties
+ * (for example style, SS-9919) belong here, not inside widget `props`.
+ */
+export interface IAppBuilderNode {
+	/**
+	 * Actions assigned to events emitted by this node.
+	 * Which events a node may use is enforced by the runtime wrappers, not by Zod.
+	 */
+	actionSlots?: IAppBuilderActionSlots;
+}
+
 /** An App Builder control. */
-export interface IAppBuilderControl {
+export interface IAppBuilderControl extends IAppBuilderNode {
 	/** Type of the control. */
 	type: AppBuilderControlType;
 	/** Properties of the control. */
@@ -1390,8 +1417,10 @@ export interface IAppBuilderWidgetPropsTable {
  *   * add the identifier for the new type to AppBuilderWidgetType, and
  *   * define a new interface for the properties of the widget type and
  *     add it to the union type of "props".
+ *
+ * Node-level fields such as `actionSlots` are on this interface, not inside `props`.
  */
-export interface IAppBuilderWidget {
+export interface IAppBuilderWidget extends IAppBuilderNode {
 	/** Type of the widget. */
 	type: AppBuilderWidgetType;
 	/** Properties of the widget. */
@@ -1421,7 +1450,7 @@ export interface IAppBuilderWidget {
 /**
  * A tab displayed in a container.
  */
-export interface IAppBuilderTab {
+export interface IAppBuilderTab extends IAppBuilderNode {
 	/** Name of the tab. */
 	name: string;
 	/** Optional icon name, image URL, or inline Iconify object of the tab. */
@@ -1524,7 +1553,7 @@ export type AppBuilderToolbarItemType =
 export interface IAppBuilderToolbarItemBase<
 	TType extends AppBuilderToolbarItemType,
 	TProps extends object,
-> {
+> extends IAppBuilderNode {
 	/** Discriminator for toolbar item rendering and validation. */
 	type: TType;
 	/** Item-specific payload. */
@@ -1618,7 +1647,7 @@ export interface IAppBuilderToolbarContainerProperties {
 	visibility?: AppBuilderToolbarVisibility;
 }
 
-export interface IAppBuilderStandardContainer {
+export interface IAppBuilderStandardContainer extends IAppBuilderNode {
 	/** Name of the container. */
 	name:
 		| AppBuilderContainerNameType.Left
@@ -1635,7 +1664,7 @@ export interface IAppBuilderStandardContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
-export interface IAppBuilderAnchor2dContainer {
+export interface IAppBuilderAnchor2dContainer extends IAppBuilderNode {
 	/** Name of the container. */
 	name: AppBuilderContainerNameType.Anchor2d;
 	/** Anchor-specific props. */
@@ -1648,7 +1677,7 @@ export interface IAppBuilderAnchor2dContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
-export interface IAppBuilderAnchor3dContainer {
+export interface IAppBuilderAnchor3dContainer extends IAppBuilderNode {
 	/** Name of the container. */
 	name: AppBuilderContainerNameType.Anchor3d;
 	/** Anchor-specific props. */
@@ -1661,7 +1690,7 @@ export interface IAppBuilderAnchor3dContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
-export interface IAppBuilderToolbarContainer {
+export interface IAppBuilderToolbarContainer extends IAppBuilderNode {
 	/** Name of the container. */
 	name: AppBuilderContainerNameType.Toolbar;
 	/** Toolbar-specific props. */
@@ -1738,8 +1767,11 @@ export interface IAppBuilderInstanceDefinition {
 /**
  * Web app definition.
  * This is the root of the custom UI definition.
+ *
+ * Application events (`appready`, computation, export, `selectionchange`)
+ * are assigned here. Pointer events are not valid on the root.
  */
-export interface IAppBuilder {
+export interface IAppBuilder extends IAppBuilderNode {
 	/** Version of the schema. */
 	version: "1.0";
 
