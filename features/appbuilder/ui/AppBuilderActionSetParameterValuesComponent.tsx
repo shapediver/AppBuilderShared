@@ -1,3 +1,5 @@
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
 import {runAppBuilderActionSetParameterValues} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSetParameterValues";
 import {useState} from "react";
@@ -17,6 +19,7 @@ type Props = (
 	IAppBuilderActionPropsCommon &
 	AppBuilderActionRenderProps & {
 		namespace: string;
+		viewportId?: string;
 	};
 
 /**
@@ -35,8 +38,13 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		presentation,
 		toolbarButtonProps,
 		disabled,
+		viewportId: inputViewportId,
 	} = props;
 	const [loading, setLoading] = useState(false);
+	const {viewportId: defaultViewportId} = useViewportId();
+	const viewportId = inputViewportId ?? defaultViewportId;
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = disabled || hasPendingChanges;
 	const onClick = createActionClickHandler(
 		() =>
 			runAppBuilderActionSetParameterValues(
@@ -47,9 +55,9 @@ export default function AppBuilderActionSetParameterValuesComponent(
 							value: props.value,
 							source: props.source,
 						},
-				{namespace},
+				{namespace, viewportId},
 			),
-		{disabled, setLoading},
+		{disabled: resolvedDisabled, setLoading},
 	);
 
 	return (
@@ -60,7 +68,7 @@ export default function AppBuilderActionSetParameterValuesComponent(
 			tooltip={tooltip}
 			onClick={onClick}
 			loading={loading}
-			disabled={disabled}
+			disabled={resolvedDisabled}
 			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);

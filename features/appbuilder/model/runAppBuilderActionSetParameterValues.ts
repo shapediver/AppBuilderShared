@@ -36,11 +36,9 @@ export async function runAppBuilderActionSetParameterValues(
 		const item = items[index];
 		if (item.value !== undefined || item.source === undefined) continue;
 		if (item.source.type === "agentTool") {
-			Logger.warn(
-				"executeActions skipped a setParameterValues item whose value source cannot be resolved headlessly:",
-				item.source.type,
+			throw new Error(
+				"executeActions cannot resolve an agentTool parameter value source.",
 			);
-			continue;
 		}
 		const paramNamespace = item.parameter.sessionId ?? context.namespace;
 		const parameterStore = getParameter(

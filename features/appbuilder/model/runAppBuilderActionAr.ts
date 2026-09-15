@@ -7,6 +7,7 @@ import {
 	AppBuilderActionRunContext,
 	resolvedViewportId,
 } from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
+import {useAppBuilderActionArQrStore} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionArQrStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 
@@ -26,9 +27,16 @@ export async function runAppBuilderActionAr(
 		return;
 	}
 	if (!viewportApi.viewableInAR()) {
-		Logger.warn(
-			"AR QR code requires the AR action component; skipping in executeActions.",
-		);
+		try {
+			const arLink = await viewportApi.createArSessionLink();
+			await useAppBuilderActionArQrStore.getState().open({arLink});
+		} catch (e) {
+			Logger.error(e);
+			await useAppBuilderActionArQrStore.getState().open({
+				error: "Error while creating QR code",
+			});
+			throw e;
+		}
 		return;
 	}
 	const token = viewportApi.addFlag(FLAG_TYPE.BUSY_MODE);

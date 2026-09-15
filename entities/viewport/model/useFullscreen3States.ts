@@ -92,18 +92,70 @@ const getAppElement = (
 	return doc.getElementsByClassName(fullscreenId).item(0);
 };
 
+const getDocument = (): CrossBrowserDocument =>
+	typeof document !== "undefined"
+		? (document as CrossBrowserDocument)
+		: ({} as CrossBrowserDocument);
+
+export function getFullscreen3StatesState(
+	doc: CrossBrowserDocument = getDocument(),
+): Fullscreen3StatesState {
+	const fullscreenElement = getFullscreenElement(doc);
+	if (!fullscreenElement) {
+		return Fullscreen3StatesState.DEFAULT;
+	}
+	if (
+		useShapeDiverDefaultViewportToolbarStore.getState()
+			.viewerFullscreen3States
+	) {
+		return Fullscreen3StatesState.VIEWER;
+	}
+	return Fullscreen3StatesState.APP;
+}
+
+function enterAppFullscreen(fullscreenId: string, doc: CrossBrowserDocument) {
+	useShapeDiverDefaultViewportToolbarStore
+		.getState()
+		.setViewerFullscreen3States(false);
+	const appElement = getAppElement(doc, fullscreenId);
+	if (!appElement) {
+		Logger.debug(`Fullscreen element with ID ${fullscreenId} not found.`);
+		return;
+	}
+	requestFullscreenOnElement(appElement);
+}
+
+/**
+ * Advance DEFAULT → APP → VIEWER → DEFAULT. Used by the toolbar button and
+ * the host-registered fullscreen `run` (not the shared action catalog).
+ */
+export function cycleFullscreen3States(fullscreenId: string): void {
+	const doc = getDocument();
+	switch (getFullscreen3StatesState(doc)) {
+		case Fullscreen3StatesState.DEFAULT:
+			enterAppFullscreen(fullscreenId, doc);
+			break;
+		case Fullscreen3StatesState.APP:
+			useShapeDiverDefaultViewportToolbarStore
+				.getState()
+				.setViewerFullscreen3States(true);
+			break;
+		case Fullscreen3StatesState.VIEWER:
+			useShapeDiverDefaultViewportToolbarStore
+				.getState()
+				.setViewerFullscreen3States(false);
+			exitFullscreen(doc);
+			break;
+	}
+}
+
 export const useFullscreen = (fullscreenId: string) => {
 	const [fullscreenState, setFullscreenState] =
 		useState<Fullscreen3StatesState>(Fullscreen3StatesState.DEFAULT);
 	const isFullScreenAvailable = useRef(true);
-	const cbDocument = useRef<CrossBrowserDocument>(
-		typeof document !== "undefined"
-			? (document as CrossBrowserDocument)
-			: ({} as CrossBrowserDocument),
-	);
+	const cbDocument = useRef<CrossBrowserDocument>(getDocument());
 	const appElementRef = useRef<Element | null>(null);
 
-	// Get viewerFullscreen state and setter from store
 	const {viewerFullscreen3States, setViewerFullscreen3States} =
 		useShapeDiverDefaultViewportToolbarStore(
 			useShallow((state) => ({
@@ -112,17 +164,9 @@ export const useFullscreen = (fullscreenId: string) => {
 			})),
 		);
 
-	// Sync internal state with browser fullscreen + store flag
 	const updateFullscreenState = useCallback(() => {
-		const fullscreenElement = getFullscreenElement(cbDocument.current);
-		if (!fullscreenElement) {
-			setFullscreenState(Fullscreen3StatesState.DEFAULT);
-		} else if (viewerFullscreen3States) {
-			setFullscreenState(Fullscreen3StatesState.VIEWER);
-		} else {
-			setFullscreenState(Fullscreen3StatesState.APP);
-		}
-	}, [viewerFullscreen3States]);
+		setFullscreenState(getFullscreen3StatesState());
+	}, [fullscreenId]);
 
 	useEffect(() => {
 		cbDocument.current = document;
@@ -138,12 +182,10 @@ export const useFullscreen = (fullscreenId: string) => {
 
 		appElementRef.current = appElement;
 
-		// Listen for fullscreen changes to keep state in sync
 		eventsFullScreen.forEach((event) => {
 			document.addEventListener(event, updateFullscreenState);
 		});
 
-		// Initial sync
 		updateFullscreenState();
 
 		return () => {
@@ -153,76 +195,31 @@ export const useFullscreen = (fullscreenId: string) => {
 		};
 	}, [fullscreenId, updateFullscreenState]);
 
-	// Also resync when viewerFullscreen flag changes
 	useEffect(() => {
 		updateFullscreenState();
 	}, [viewerFullscreen3States, updateFullscreenState]);
 
-	// State 1 → State 2: Enter app fullscreen
-	const enterAppFullscreen = useCallback(() => {
-		// Ensure UI elements are visible when entering app fullscreen
-		setViewerFullscreen3States(false);
+	const enterAppFullscreenCallback = useCallback(() => {
+		enterAppFullscreen(fullscreenId, cbDocument.current);
+	}, [fullscreenId]);
 
-		// Try to get element from ref, or find it directly
-		let appElement = appElementRef.current;
-		if (!appElement) {
-			appElement = getAppElement(cbDocument.current, fullscreenId);
-			if (appElement) {
-				appElementRef.current = appElement;
-			}
-		}
-
-		if (!appElement) {
-			Logger.debug(
-				`Fullscreen element with ID ${fullscreenId} not found.`,
-			);
-			isFullScreenAvailable.current = false;
-			return;
-		}
-
-		if (!requestFullscreenOnElement(appElement)) {
-			isFullScreenAvailable.current = false;
-		}
-	}, [fullscreenId, setViewerFullscreen3States]);
-
-	// State 2 → State 3: Enter viewer fullscreen (hide UI elements)
 	const enterViewerFullscreen = useCallback(() => {
-		// Instead of requesting fullscreen on canvas, just hide UI elements
 		setViewerFullscreen3States(true);
 	}, [setViewerFullscreen3States]);
 
-	// State 3 → State 1: Exit fullscreen completely
 	const exitFullscreenCompletely = useCallback(() => {
-		// First, show UI elements
 		setViewerFullscreen3States(false);
-		// Then exit browser fullscreen
 		exitFullscreen(cbDocument.current);
 	}, [setViewerFullscreen3States]);
 
-	// Main click handler - transitions based on current state
 	const handleFullscreenClick = useCallback(() => {
-		switch (fullscreenState) {
-			case Fullscreen3StatesState.DEFAULT:
-				enterAppFullscreen();
-				break;
-			case Fullscreen3StatesState.APP:
-				enterViewerFullscreen();
-				break;
-			case Fullscreen3StatesState.VIEWER:
-				exitFullscreenCompletely();
-				break;
-		}
-	}, [
-		fullscreenState,
-		enterAppFullscreen,
-		enterViewerFullscreen,
-		exitFullscreenCompletely,
-	]);
+		cycleFullscreen3States(fullscreenId);
+	}, [fullscreenId]);
 
 	return {
 		fullscreenState,
 		handleFullscreenClick,
-		enterAppFullscreen,
+		enterAppFullscreen: enterAppFullscreenCallback,
 		enterViewerFullscreen,
 		exitFullscreenCompletely,
 		isFullScreenAvailable,

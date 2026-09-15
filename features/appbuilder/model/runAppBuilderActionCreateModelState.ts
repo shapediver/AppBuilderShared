@@ -9,13 +9,17 @@ import {
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {createModelStateCore} from "@AppBuilderLib/features/model-state/lib/createModelStateCore";
 import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
+import {applyCreateModelStateThemeDefaults} from "@AppBuilderLib/features/model-state/model/createModelStateThemeDefaults";
 import {getNotificationActions} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
+import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
+import {createElement} from "react";
 
 export async function createModelStateFromStores(
 	namespace: string,
 	viewportId: string,
 	props: IAppBuilderActionPropsCreateModelState,
 ) {
+	const themed = applyCreateModelStateThemeDefaults(props);
 	const sessions = useShapeDiverStoreSession.getState().sessions;
 	const viewportAccessFunctions =
 		useShapeDiverStoreViewportAccessFunctions.getState()
@@ -30,15 +34,8 @@ export async function createModelStateFromStores(
 			convertToGlTF: viewportAccessFunctions?.convertToGlTF,
 		},
 		clearUnsavedChanges,
-		parameterNamesToAlwaysExclude: [],
-		props: {
-			includeImage: props.includeImage,
-			image: props.image,
-			includeGltf: props.includeGltf,
-			screenshotProps: props.screenshotProps,
-			parameterNamesToInclude: props.parameterNamesToInclude,
-			parameterNamesToExclude: props.parameterNamesToExclude,
-		},
+		parameterNamesToAlwaysExclude: themed.parameterNamesToAlwaysExclude,
+		props: themed.props,
 	});
 }
 
@@ -47,6 +44,7 @@ export async function runAppBuilderActionCreateModelState(
 	props: IAppBuilderActionPropsCreateModelState,
 	context: AppBuilderActionRunContext,
 ): Promise<void> {
+	const themed = applyCreateModelStateThemeDefaults(props);
 	let modelStateId: string | undefined;
 	try {
 		const result = await createModelStateFromStores(
@@ -57,23 +55,28 @@ export async function runAppBuilderActionCreateModelState(
 		modelStateId = result.modelStateId;
 		if (modelStateId) {
 			const api = await ECommerceApiSingleton;
-			await api.updateSharingLink({
+			const {href} = await api.updateSharingLink({
 				modelStateId,
 				updateUrl: true,
 				imageUrl: result.screenshot,
 			});
 			const message = resolveModelStateMessage(
-				props.successMessage,
+				themed.successMessage,
 				modelStateId,
 			);
-			if (message) {
-				getNotificationActions().success({message});
-			}
+			getNotificationActions().success({
+				message:
+					message ??
+					createElement(NotificationModelStateCreated, {
+						modelStateId,
+						link: href.toString(),
+					}),
+			});
 		}
 	} catch (e) {
 		getNotificationActions().error({
 			message:
-				resolveModelStateMessage(props.errorMessage, modelStateId) ??
+				resolveModelStateMessage(themed.errorMessage, modelStateId) ??
 				"An error happened while saving the model state.",
 		});
 		throw e;

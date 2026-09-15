@@ -1,3 +1,4 @@
+import {cycleFullscreen3States} from "@AppBuilderLib/entities/viewport/model/useFullscreen3States";
 import {
 	IAppBuilderActionDefinition,
 	isFullscreenAction,
@@ -29,12 +30,11 @@ export async function runAppBuilderActionFullscreen(
 ): Promise<void> {
 	if (!isFullscreenAction(definition)) return;
 
+	const fullscreenId =
+		definition.props.fullscreenId ?? resolvedFullscreenId(context);
 	if (definition.props.type === "fullscreen3States") {
-		Logger.warn(
-			"fullscreen3States cycling requires the fullscreen action component; using binary fullscreen.",
-		);
+		cycleFullscreen3States(fullscreenId);
+		return;
 	}
-	toggleAppBuilderFullscreen(
-		definition.props.fullscreenId ?? resolvedFullscreenId(context),
-	);
+	toggleAppBuilderFullscreen(fullscreenId);
 }

@@ -14,7 +14,10 @@ import {useAppBuilderStandardContainers} from "@AppBuilderLib/features/appbuilde
 import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBindings";
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
+import AppBuilderActionArQrModal from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionArQrModal";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
+import ImportModelStateDialogHost from "@AppBuilderLib/features/model-state/ui/ImportModelStateDialogHost";
+import {SyncCreateModelStateThemeDefaults} from "@AppBuilderLib/features/model-state/ui/SyncCreateModelStateThemeDefaults";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
@@ -270,7 +273,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				? WelcomePlatformMarkdown
 				: WelcomeIframeMarkdown;
 
-	return showMarkdown ? (
+	const page = showMarkdown ? (
 		<AlertPage>
 			<MarkdownWidgetComponent anchorTarget="_self">
 				{NoSettingsMarkdown}
@@ -321,5 +324,14 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		</AppBuilderDataContext.Provider>
 	) : (
 		<></>
+	);
+
+	return (
+		<>
+			<SyncCreateModelStateThemeDefaults />
+			<ImportModelStateDialogHost />
+			<AppBuilderActionArQrModal />
+			{page}
+		</>
 	);
 }

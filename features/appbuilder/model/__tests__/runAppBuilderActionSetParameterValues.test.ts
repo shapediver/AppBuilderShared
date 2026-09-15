@@ -97,4 +97,23 @@ describe("runAppBuilderActionSetParameterValues", () => {
 			session: {p1: "literal"},
 		});
 	});
+
+	it("fails when a value source is agentTool", async () => {
+		await expect(
+			runAppBuilderActionSetParameterValues(
+				{
+					parameterValues: [
+						{
+							parameter: {name: "p1"},
+							source: {
+								type: "agentTool",
+								props: {jsonPath: "$.length"},
+							},
+						},
+					],
+				},
+				{namespace: "session"},
+			),
+		).rejects.toThrow("agentTool");
+	});
 });

@@ -19,6 +19,7 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {createModelStateCore} from "@AppBuilderLib/features/model-state/lib/createModelStateCore";
+import {getCreateModelStateThemeDefaults} from "@AppBuilderLib/features/model-state/model/createModelStateThemeDefaults";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {
@@ -269,7 +270,9 @@ async function resolveModelState(
 			},
 			clearUnsavedChanges:
 				useShapeDiverStoreParameters.getState().clearUnsavedChanges,
-			parameterNamesToAlwaysExclude: [],
+			parameterNamesToAlwaysExclude:
+				getCreateModelStateThemeDefaults()
+					.parameterNamesToAlwaysExclude ?? [],
 			props: {
 				parameterNamesToInclude: source.parameterNamesToInclude,
 				parameterNamesToExclude: source.parameterNamesToExclude,

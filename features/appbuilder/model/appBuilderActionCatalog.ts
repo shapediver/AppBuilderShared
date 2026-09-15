@@ -21,11 +21,11 @@ import {
 	resolvedViewportId,
 } from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
 import {AppBuilderActionType} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionType";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {runAppBuilderActionAddToCart} from "./runAppBuilderActionAddToCart";
 import {runAppBuilderActionCloseConfigurator} from "./runAppBuilderActionCloseConfigurator";
 import {runAppBuilderActionCreateModelState} from "./runAppBuilderActionCreateModelState";
 import {runAppBuilderActionExportParameterValues} from "./runAppBuilderActionExportParameterValues";
+import {runAppBuilderActionImportModelState} from "./runAppBuilderActionImportModelState";
 import {runAppBuilderActionImportParameterValues} from "./runAppBuilderActionImportParameterValues";
 import {runAppBuilderActionMessageToParent} from "./runAppBuilderActionMessageToParent";
 import {runAppBuilderActionRedo} from "./runAppBuilderActionRedo";
@@ -58,12 +58,6 @@ const runSetContainerVisibility: AppBuilderActionRunner = (
 		...definition.props,
 		viewportId: resolvedViewportId(context),
 	});
-};
-
-const runImportModelState: AppBuilderActionRunner = async () => {
-	Logger.warn(
-		"importModelState requires its dialog and is skipped inside executeActions.",
-	);
 };
 
 /**
@@ -149,7 +143,9 @@ export const defaultAppBuilderActionRuns: Record<
 	},
 	[AppBuilderActionType.ImportModelState]: {
 		isAction: isImportModelStateAction,
-		run: runImportModelState,
+		run: async (_definition, context) => {
+			await runAppBuilderActionImportModelState(context.namespace);
+		},
 	},
 	[AppBuilderActionType.Sound]: {
 		isAction: isSoundAction,

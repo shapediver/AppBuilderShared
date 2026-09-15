@@ -21,6 +21,7 @@ jest.mock("../runAppBuilderActionSetContainerVisibility", () => ({
 }));
 
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
+import {useImportModelStateDialogStore} from "@AppBuilderLib/features/model-state/model/useImportModelStateDialogStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	AppBuilderActionType,
@@ -51,6 +52,10 @@ describe("runAppBuilderActions", () => {
 		mockWaitForAppBuilderSessionIdle.mockResolvedValue(undefined);
 		mockRunSetParameterValues.mockResolvedValue(undefined);
 		mockRunSetContainerVisibility.mockImplementation(() => {});
+		useImportModelStateDialogStore.setState({
+			current: null,
+			queue: [],
+		});
 	});
 
 	it("runs actions one after another in sequential mode and waits for session idle after each", async () => {
@@ -276,6 +281,20 @@ describe("runAppBuilderActions", () => {
 					original.restoreHistoryStateFromIndex,
 			});
 		}
+	});
+
+	it("opens the importModelState dialog and waits for the user to close it", async () => {
+		const done = runAppBuilderActions(
+			[{type: AppBuilderActionType.ImportModelState, props: {}}],
+			"sequential",
+			context,
+		);
+		expect(
+			useImportModelStateDialogStore.getState().current?.namespace,
+		).toBe("session");
+		useImportModelStateDialogStore.getState().close();
+		await done;
+		expect(useImportModelStateDialogStore.getState().current).toBeNull();
 	});
 
 	it("warns when a viewer-only action is omitted by the host", async () => {

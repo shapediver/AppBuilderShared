@@ -1,0 +1,55 @@
+/**
+ * @jest-environment jsdom
+ */
+import {
+	applyCreateModelStateThemeDefaults,
+	useCreateModelStateThemeDefaultsStore,
+} from "../createModelStateThemeDefaults";
+
+describe("applyCreateModelStateThemeDefaults", () => {
+	afterEach(() => {
+		useCreateModelStateThemeDefaultsStore.getState().setDefaults({});
+	});
+
+	it("merges theme include/exclude, always-exclude, screenshot, and messages", () => {
+		useCreateModelStateThemeDefaultsStore.getState().setDefaults({
+			parameterNamesToAlwaysExclude: ["context"],
+			parameterNamesToInclude: ["Length"],
+			parameterNamesToExclude: ["Hide Door"],
+			screenshotProps: {quality: 0.5},
+			successMessage: "saved {modelStateId}",
+			errorMessage: "failed",
+		});
+
+		const merged = applyCreateModelStateThemeDefaults({
+			includeImage: true,
+		});
+
+		expect(merged.parameterNamesToAlwaysExclude).toEqual(["context"]);
+		expect(merged.props.parameterNamesToInclude).toEqual(["Length"]);
+		expect(merged.props.parameterNamesToExclude).toEqual(["Hide Door"]);
+		expect(merged.props.screenshotProps).toEqual({quality: 0.5});
+		expect(merged.successMessage).toBe("saved {modelStateId}");
+		expect(merged.errorMessage).toBe("failed");
+	});
+
+	it("lets action props override theme include/exclude, screenshot, and messages", () => {
+		useCreateModelStateThemeDefaultsStore.getState().setDefaults({
+			parameterNamesToAlwaysExclude: ["context"],
+			parameterNamesToInclude: ["Length"],
+			screenshotProps: {quality: 0.2},
+			successMessage: "theme",
+		});
+
+		const merged = applyCreateModelStateThemeDefaults({
+			parameterNamesToInclude: ["Color"],
+			screenshotProps: {quality: 0.9},
+			successMessage: "action",
+		});
+
+		expect(merged.parameterNamesToAlwaysExclude).toEqual(["context"]);
+		expect(merged.props.parameterNamesToInclude).toEqual(["Color"]);
+		expect(merged.props.screenshotProps).toEqual({quality: 0.9});
+		expect(merged.successMessage).toBe("action");
+	});
+});

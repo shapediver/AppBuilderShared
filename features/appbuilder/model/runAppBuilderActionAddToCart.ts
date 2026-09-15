@@ -5,6 +5,7 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
 import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
+import {applyCreateModelStateThemeDefaults} from "@AppBuilderLib/features/model-state/model/createModelStateThemeDefaults";
 import {getNotificationActions} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {createModelStateFromStores} from "./runAppBuilderActionCreateModelState";
 
@@ -13,6 +14,7 @@ export async function runAppBuilderActionAddToCart(
 	props: IAppBuilderActionPropsAddToCart,
 	context: AppBuilderActionRunContext,
 ): Promise<void> {
+	const themed = applyCreateModelStateThemeDefaults(props);
 	let modelStateId: string | undefined;
 	try {
 		const api = await ECommerceApiSingleton;
@@ -37,13 +39,13 @@ export async function runAppBuilderActionAddToCart(
 		});
 		getNotificationActions().success({
 			message:
-				resolveModelStateMessage(props.successMessage, modelStateId) ??
+				resolveModelStateMessage(themed.successMessage, modelStateId) ??
 				`An item for configuration ID ${modelStateId} has been added to the cart (cart item id ${result.id}).`,
 		});
 	} catch (e) {
 		getNotificationActions().error({
 			message:
-				resolveModelStateMessage(props.errorMessage, modelStateId) ??
+				resolveModelStateMessage(themed.errorMessage, modelStateId) ??
 				`An error happened while adding configuration ID ${modelStateId} to the cart.`,
 		});
 		throw e;

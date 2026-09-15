@@ -1,3 +1,4 @@
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
 import {runAppBuilderActionAddToCart} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionAddToCart";
 import {useState} from "react";
@@ -9,6 +10,7 @@ import AppBuilderActionBase, {
 type Props = IAppBuilderLegacyActionPropsAddToCart &
 	AppBuilderActionRenderProps & {
 		namespace: string;
+		viewportId?: string;
 	};
 
 /**
@@ -38,8 +40,11 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 		toolbarButtonProps,
 		disabled,
 		title,
+		viewportId: inputViewportId,
 	} = props;
 	const [loading, setLoading] = useState(false);
+	const {viewportId: defaultViewportId} = useViewportId();
+	const viewportId = inputViewportId ?? defaultViewportId;
 	const onClick = createActionClickHandler(
 		() =>
 			runAppBuilderActionAddToCart(
@@ -58,7 +63,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 					errorMessage,
 					title,
 				},
-				{namespace},
+				{namespace, viewportId},
 			),
 		{disabled, setLoading},
 	);

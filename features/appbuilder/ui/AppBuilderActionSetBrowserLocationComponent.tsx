@@ -10,6 +10,7 @@ import AppBuilderActionBase, {
 type Props = IAppBuilderLegacyActionPropsSetBrowserLocation &
 	AppBuilderActionRenderProps & {
 		namespace: string;
+		viewportId?: string;
 	};
 
 /**
@@ -33,9 +34,11 @@ export default function AppBuilderActionSetBrowserLocationComponent(
 		presentation,
 		toolbarButtonProps,
 		disabled,
+		viewportId: inputViewportId,
 	} = props;
 	const [loading, setLoading] = useState(false);
-	const {viewportId} = useViewportId();
+	const {viewportId: defaultViewportId} = useViewportId();
+	const viewportId = inputViewportId ?? defaultViewportId;
 	const onClick = createActionClickHandler(
 		() =>
 			runAppBuilderActionSetBrowserLocation(

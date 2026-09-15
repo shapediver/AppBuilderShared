@@ -6,16 +6,26 @@ import {getNotificationActions} from "@AppBuilderLib/features/notifications/mode
 export async function runAppBuilderActionMessageToParent(
 	props: IAppBuilderActionPropsMessageToParent,
 ): Promise<void> {
-	const api = await ECommerceApiSingleton;
-	const result = await api.messageToParent({
-		type: props.type,
-		data: props.data,
-	});
-	if (!result.notification) return;
-	const {type, data} = result.notification;
 	const notifications = getNotificationActions();
-	if (type === "error") notifications.error(data);
-	else if (type === "warning") notifications.warning(data);
-	else if (type === "success") notifications.success(data);
-	else notifications.show(data);
+	try {
+		const api = await ECommerceApiSingleton;
+		const result = await api.messageToParent({
+			type: props.type,
+			data: props.data,
+		});
+		if (!result.notification) return;
+		const {type, data} = result.notification;
+		if (type === "error") notifications.error(data);
+		else if (type === "warning") notifications.warning(data);
+		else if (type === "success") notifications.success(data);
+		else notifications.show(data);
+	} catch (e) {
+		notifications.error({
+			message:
+				e instanceof Error
+					? e.message
+					: "Failed to send a message to the parent page.",
+		});
+		throw e;
+	}
 }
