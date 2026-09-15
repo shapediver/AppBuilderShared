@@ -1,5 +1,6 @@
 import {
 	AppBuilderContainerNameType,
+	IAppBuilder,
 	IAppBuilderContainer,
 	isAnchor2dContainer,
 	isAnchor3dContainer,
@@ -12,6 +13,7 @@ import {useContext, useEffect, useState} from "react";
 interface Props {
 	namespace: string;
 	containers: IAppBuilderContainer[] | undefined;
+	actionSlots?: IAppBuilder["actionSlots"];
 }
 
 function actionTargetedAnchorProps(
@@ -47,7 +49,7 @@ function actionTargetedAnchorProps(
  * @returns An array of JSX elements representing the viewport anchors.
  */
 export function useViewportAnchors(props: Props): JSX.Element[] {
-	const {namespace, containers} = props;
+	const {namespace, containers, actionSlots} = props;
 
 	const [anchors, setAnchors] = useState<JSX.Element[]>([]);
 
@@ -59,7 +61,10 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 
 		const existingIds = new Set<string>();
 		const actionTargetedAnchorIds =
-			collectActionTargetedAnchorIdsFromContainers(containers).all;
+			collectActionTargetedAnchorIdsFromContainers(
+				containers,
+				actionSlots,
+			).all;
 
 		containers?.forEach((container) => {
 			if (isAnchor3dContainer(container)) {
@@ -196,7 +201,7 @@ export function useViewportAnchors(props: Props): JSX.Element[] {
 			}
 		});
 		setAnchors(anchors);
-	}, [componentContext, containers, props.namespace]);
+	}, [componentContext, containers, actionSlots, namespace]);
 
 	return anchors;
 }

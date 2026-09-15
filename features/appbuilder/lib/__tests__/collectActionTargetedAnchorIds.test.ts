@@ -157,4 +157,55 @@ describe("collectActionTargetedAnchorIds", () => {
 			anchor3d: ["nested-3d"],
 		});
 	});
+
+	it("collects anchors from toolbar item and root actionSlots", () => {
+		const result = collectActionTargetedAnchorIdsFromGroups([
+			[
+				{
+					type: "parameter",
+					props: {name: "Length"},
+					actionSlots: {
+						click: {
+							action: {
+								type: "setContainerVisibility",
+								props: {
+									container: {
+										name: AppBuilderContainerNameType.Anchor2d,
+										props: {id: "from-slot"},
+									},
+									mode: "toggle",
+								},
+							},
+						},
+					},
+				},
+			],
+		]);
+
+		expect(result.anchor2d).toEqual(["from-slot"]);
+
+		const fromRoot = collectActionTargetedAnchorIdsFromContainers([], {
+			appready: {
+				action: {
+					type: "executeActions",
+					props: {
+						actions: [
+							{
+								type: "setContainerVisibility",
+								props: {
+									container: {
+										name: AppBuilderContainerNameType.Anchor3d,
+										props: {id: "from-appready"},
+									},
+									mode: "open",
+								},
+							},
+						],
+					},
+				},
+			},
+		});
+
+		expect(fromRoot.anchor3d).toEqual(["from-appready"]);
+	});
 });

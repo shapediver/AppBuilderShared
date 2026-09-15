@@ -1,7 +1,6 @@
 import {
 	AppBuilderContainerNameType,
 	IAppBuilderContainer,
-	IAppBuilderToolbarContainer,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 
 export type ActionTargetedAnchorIds = {
@@ -54,9 +53,22 @@ function collectFromActionDefinition(
 	}
 }
 
+function collectFromActionSlots(slots: unknown, out: ActionTargetedAnchorIds) {
+	if (!slots || typeof slots !== "object" || Array.isArray(slots)) return;
+	for (const slot of Object.values(slots as Record<string, unknown>)) {
+		if (!slot || typeof slot !== "object") continue;
+		collectFromActionDefinition((slot as {action?: unknown}).action, out);
+	}
+}
+
 function walkToolbarItem(item: unknown, out: ActionTargetedAnchorIds) {
 	if (!item || typeof item !== "object") return;
-	const typed = item as {type?: string; props?: Record<string, unknown>};
+	const typed = item as {
+		type?: string;
+		props?: Record<string, unknown>;
+		actionSlots?: unknown;
+	};
+	collectFromActionSlots(typed.actionSlots, out);
 
 	if (typed.type === "action") {
 		collectFromActionDefinition(
@@ -87,6 +99,47 @@ function walkToolbarItem(item: unknown, out: ActionTargetedAnchorIds) {
 	}
 }
 
+function walkNode(node: unknown, out: ActionTargetedAnchorIds) {
+	if (!node || typeof node !== "object") return;
+	const typed = node as {
+		actionSlots?: unknown;
+		widgets?: unknown[];
+		tabs?: unknown[];
+		controls?: unknown[];
+		groups?: unknown[][];
+		props?: {
+			widgets?: unknown[];
+			tabs?: unknown[];
+			controls?: unknown[];
+		};
+	};
+	collectFromActionSlots(typed.actionSlots, out);
+	if (Array.isArray(typed.widgets)) {
+		for (const widget of typed.widgets) walkNode(widget, out);
+	}
+	if (Array.isArray(typed.tabs)) {
+		for (const tab of typed.tabs) walkNode(tab, out);
+	}
+	if (Array.isArray(typed.controls)) {
+		for (const control of typed.controls) walkNode(control, out);
+	}
+	if (Array.isArray(typed.groups)) {
+		for (const group of typed.groups) {
+			if (!Array.isArray(group)) continue;
+			for (const item of group) walkToolbarItem(item, out);
+		}
+	}
+	if (Array.isArray(typed.props?.widgets)) {
+		for (const widget of typed.props.widgets) walkNode(widget, out);
+	}
+	if (Array.isArray(typed.props?.tabs)) {
+		for (const tab of typed.props.tabs) walkNode(tab, out);
+	}
+	if (Array.isArray(typed.props?.controls)) {
+		for (const control of typed.props.controls) walkNode(control, out);
+	}
+}
+
 /** Collects anchor ids targeted by setContainerVisibility actions in toolbar groups. */
 export function collectActionTargetedAnchorIdsFromGroups(
 	groups: unknown[][] | undefined,
@@ -100,23 +153,16 @@ export function collectActionTargetedAnchorIdsFromGroups(
 	return out;
 }
 
-/** Collects action-targeted anchor ids from App Builder containers (toolbar definitions). */
+/** Collects action-targeted anchor ids from App Builder containers and optional root slots. */
 export function collectActionTargetedAnchorIdsFromContainers(
 	containers: IAppBuilderContainer[] | undefined,
+	rootActionSlots?: unknown,
 ): ActionTargetedAnchorIds {
 	const out = emptyIds();
+	collectFromActionSlots(rootActionSlots, out);
 	if (!containers) return out;
 	for (const container of containers) {
-		if (container.name !== AppBuilderContainerNameType.Toolbar) continue;
-		const collected = collectActionTargetedAnchorIdsFromGroups(
-			(container as IAppBuilderToolbarContainer).groups,
-		);
-		for (const id of collected.anchor2d) {
-			addId(out, AppBuilderContainerNameType.Anchor2d, id);
-		}
-		for (const id of collected.anchor3d) {
-			addId(out, AppBuilderContainerNameType.Anchor3d, id);
-		}
+		walkNode(container, out);
 	}
 	return out;
 }

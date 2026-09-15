@@ -3,6 +3,7 @@ import {
 	AppBuilderToolbarAlign,
 	AppBuilderToolbarSide,
 	AppBuilderToolbarVisibility,
+	IAppBuilderActionSlots,
 	IAppBuilderToolbarControlItem,
 	IAppBuilderToolbarItem,
 } from "./appbuilder";
@@ -66,6 +67,7 @@ export interface ToolbarRegistration {
 	ariaLabel?: string;
 	defaultIcon?: IconType;
 	groups: ToolbarGroups;
+	actionSlots?: IAppBuilderActionSlots;
 }
 
 export interface ToolbarRuntimeTarget {

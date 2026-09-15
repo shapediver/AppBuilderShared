@@ -7,27 +7,20 @@ import {
 import type {
 	ResolvedToolbarRegistration,
 	ToolbarActionItem,
-	ToolbarExportItem,
 	ToolbarMenuModel,
-	ToolbarOutputItem,
-	ToolbarParameterItem,
 	ToolbarRenderItem,
-	ToolbarTabsItem,
-	ToolbarWidgetsItem,
 } from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 
 const resolveActionItem = (
 	item: IAppBuilderToolbarActionItem,
 	fallbackId: string,
 ): ToolbarActionItem => ({
+	...item,
 	id: item.id ?? fallbackId,
 	type: "action",
 	label: item.label ?? item.props.label ?? item.props.definition.type,
 	icon: item.icon ?? item.props.icon,
 	tooltip: item.tooltip ?? item.props.tooltip,
-	labelSide: item.labelSide,
-	labelAlign: item.labelAlign,
-	presentation: item.presentation,
 	props: {
 		...item.props,
 		label: item.label ?? item.props.label,
@@ -49,13 +42,10 @@ const resolveItem = (
 		return item;
 	if (isToolbarActionMenuItem(item)) {
 		const menu: ToolbarMenuModel = {
+			...item,
 			id: item.id ?? fallbackId,
 			type: "menu",
 			label: item.label ?? "Toolbar item",
-			icon: item.icon,
-			tooltip: item.tooltip,
-			labelSide: item.labelSide,
-			labelAlign: item.labelAlign,
 			props: {
 				sections: item.props.sections.map((section, sectionIndex) => ({
 					id: `${item.id ?? fallbackId}-section-${sectionIndex}`,
@@ -74,71 +64,18 @@ const resolveItem = (
 	switch (item.type) {
 		case "action":
 			return resolveActionItem(item, fallbackId);
-		case "parameter": {
-			const resolved: ToolbarParameterItem = {
+		case "parameter":
+		case "export":
+		case "output":
+		case "widgets":
+		case "tabs":
+			return {
+				...item,
 				id: item.id ?? fallbackId,
-				type: "parameter",
-				label: item.label ?? item.props.name,
-				icon: item.icon,
-				tooltip: item.tooltip,
-				labelSide: item.labelSide,
-				labelAlign: item.labelAlign,
-				props: item.props,
+				label:
+					item.label ??
+					("name" in item.props ? item.props.name : "Toolbar item"),
 			};
-			return resolved;
-		}
-		case "export": {
-			const resolved: ToolbarExportItem = {
-				id: item.id ?? fallbackId,
-				type: "export",
-				label: item.label ?? item.props.name,
-				icon: item.icon,
-				tooltip: item.tooltip,
-				labelSide: item.labelSide,
-				labelAlign: item.labelAlign,
-				props: item.props,
-			};
-			return resolved;
-		}
-		case "output": {
-			const resolved: ToolbarOutputItem = {
-				id: item.id ?? fallbackId,
-				type: "output",
-				label: item.label ?? item.props.name,
-				icon: item.icon,
-				tooltip: item.tooltip,
-				labelSide: item.labelSide,
-				labelAlign: item.labelAlign,
-				props: item.props,
-			};
-			return resolved;
-		}
-		case "widgets": {
-			const resolved: ToolbarWidgetsItem = {
-				id: item.id ?? fallbackId,
-				type: "widgets",
-				label: item.label ?? "Toolbar item",
-				icon: item.icon,
-				tooltip: item.tooltip,
-				labelSide: item.labelSide,
-				labelAlign: item.labelAlign,
-				props: item.props,
-			};
-			return resolved;
-		}
-		case "tabs": {
-			const resolved: ToolbarTabsItem = {
-				id: item.id ?? fallbackId,
-				type: "tabs",
-				label: item.label ?? "Toolbar item",
-				icon: item.icon,
-				tooltip: item.tooltip,
-				labelSide: item.labelSide,
-				labelAlign: item.labelAlign,
-				props: item.props,
-			};
-			return resolved;
-		}
 	}
 };
 
