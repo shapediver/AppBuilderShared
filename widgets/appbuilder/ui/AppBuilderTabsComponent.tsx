@@ -48,6 +48,8 @@ export default function AppBuilderTabsComponent({
 					tabHandlerRefs.current[index] = {};
 				}
 				const handlers = tabHandlerRefs.current[index];
+				// Mantine requires Tabs.Tab as a direct Tabs.List child, so UI
+				// listeners live on controlProps instead of a wrap Box.
 				const enabledEvents = new Set(
 					pickAllowedActionSlots(
 						tab.actionSlots,

@@ -57,6 +57,26 @@ import {
 	type AppBuilderUiSlotHandlers,
 } from "../lib/appBuilderActionSlots";
 
+/**
+ * Bind JSON `actionSlots` to `runAppBuilderAction`.
+ *
+ * Event *registration* lives in this file:
+ * - UI: React pointer/`click` props from `uiSlotDomProps` on a wrap `Box`, or
+ *   written into `handlersRef` for tab buttons (Mantine forbids wrapping `Tabs.Tab`).
+ * - Application: `ApplicationSlotListeners` (viewer session/task/selection +
+ *   the export request bus). `appready` waits via `waitForAppBuilderViewport`.
+ *
+ * Which slots run is decided here via `pickAllowedActionSlots`:
+ * - UI wrap (default): {@link APP_BUILDER_UI_EVENTS}
+ * - `application`: {@link APP_BUILDER_APPLICATION_EVENTS}
+ * - Viewport host: same UI list, passed as `allowedEvents`
+ * - Root ignored-slot log uses {@link APP_BUILDER_ROOT_EVENTS} (application + UI)
+ *
+ * Call sites do not pass a per-widget allowlist; they rely on these defaults.
+ * Tabs also call `pickAllowedActionSlots` themselves so `controlProps` only
+ * include listeners for slots that will actually run.
+ */
+
 export type {AppBuilderUiSlotHandlers};
 
 const SESSION_ID_KEYS = ["sessionId", "session"] as const;
@@ -67,10 +87,12 @@ const LAYOUT_STYLE: Record<"contents" | "block" | "fill", CSSProperties> = {
 	fill: {width: "100%", height: "100%", minHeight: 0, display: "grid"},
 };
 
+/** Session id on a viewer task payload (`data.sessionId` / nested `{ id }`). */
 function getTaskSessionId(event: ITaskEvent): string | undefined {
 	return readStringField(event.data, SESSION_ID_KEYS);
 }
 
+/** `computation*` slots: optional `eventProps.type: "session"`. */
 function shouldRunComputationSlot(
 	slot: IAppBuilderActionSlot,
 	sessionId: string | undefined,
@@ -86,6 +108,7 @@ function shouldRunComputationSlot(
 	);
 }
 
+/** `export*` slots: optional `eventProps.type: "export"` (session + name). */
 function shouldRunExportSlot(
 	slot: IAppBuilderActionSlot,
 	sessionId: string | undefined,
@@ -119,6 +142,10 @@ function getNodesFromSelectEvent(
 	return [];
 }
 
+/**
+ * Same `nameFilter` conversion as selection parameters: `getPatterns` +
+ * viewer `matchNodesWithPatterns` (output display names and hierarchy).
+ */
 function selectionMatchesNameFilter(
 	nodes: ITreeNode[],
 	nameFilter?: string[],
@@ -142,6 +169,7 @@ function selectionMatchesNameFilter(
 	return matchNodesWithPatterns(patterns, nodes).length > 0;
 }
 
+/** `selectionchange`: optional viewport id and `nameFilter`. */
 function shouldRunSelectionSlot(
 	slot: IAppBuilderActionSlot,
 	viewportId: string | undefined,
@@ -156,6 +184,7 @@ function shouldRunSelectionSlot(
 	return selectionMatchesNameFilter(nodes, eventProps?.nameFilter);
 }
 
+/** TASK_START / TASK_END for `SESSION_CUSTOMIZATION` only. */
 function listenSessionCustomization(
 	eventType: string,
 	slot: IAppBuilderActionSlot | undefined,
@@ -178,6 +207,11 @@ function listenSessionCustomization(
 	});
 }
 
+/**
+ * One runner per allowed slot. Hooks cannot run in a dynamic loop, so this
+ * is a component. It writes a trigger into `registerTrigger` (UI ref or
+ * application ref); it does not attach listeners itself.
+ */
 function ActionSlotRunner({
 	definition,
 	namespace,
@@ -222,6 +256,17 @@ function ActionSlotRunner({
 	return null;
 }
 
+/**
+ * Registers application-event listeners. Callers must already have filtered
+ * `slotsByName` with {@link pickAllowedActionSlots}.
+ *
+ * - `appready`: `waitForAppBuilderViewport` (no timeout)
+ * - `computationstart`/`end`: TASK_START/END + SESSION_CUSTOMIZATION
+ * - `computationerror`: SESSION_ERROR + `isViewerCustomizationError`
+ *   (not TASK_CANCEL — superseded customizes cancel without failing)
+ * - `export*`: store-backed export request bus (viewer EXPORT_REQUEST has no identity)
+ * - `selectionchange`: SELECT_ON/OFF and MULTI_SELECT_ON/OFF
+ */
 function ApplicationSlotListeners({
 	slotsByName,
 	namespace,
@@ -238,6 +283,8 @@ function ApplicationSlotListeners({
 	const appreadyFiredForNamespace = useRef<string | undefined>(undefined);
 
 	useEffect(() => {
+		// `appready` is not a viewer event: wait until the viewport is visible
+		// (host `waitUntilReady`, or ShapeDiver scene bbox), then fire once.
 		if (!slotsByName.appready) return;
 		if (appreadyFiredForNamespace.current === namespace) return;
 		const abort = new AbortController();
@@ -268,6 +315,7 @@ function ApplicationSlotListeners({
 		const tokens: string[] = [];
 		const cleanups: Array<() => void> = [];
 
+		// computationstart / computationend
 		const startToken = listenSessionCustomization(
 			EVENTTYPE_TASK.TASK_START,
 			computationStart,
@@ -284,6 +332,7 @@ function ApplicationSlotListeners({
 		if (endToken) tokens.push(endToken);
 
 		if (computationError) {
+			// computationerror: SESSION_ERROR while customizing, not TASK_CANCEL
 			tokens.push(
 				addListener(EVENTTYPE_SESSION.SESSION_ERROR, (event) => {
 					const sessionEvent =
@@ -303,6 +352,7 @@ function ApplicationSlotListeners({
 		}
 
 		if (exportStart || exportEnd || exportError) {
+			// exportstart / exportend / exporterror
 			cleanups.push(
 				addExportRequestListener((event) => {
 					const identity = {
@@ -339,6 +389,7 @@ function ApplicationSlotListeners({
 		}
 
 		if (selectionChange) {
+			// selectionchange
 			const onSelection = (event: ISelectEvent | IMultiSelectEvent) => {
 				const nodes = getNodesFromSelectEvent(event);
 				if (
@@ -388,6 +439,11 @@ function ApplicationSlotListeners({
 type Props = {
 	actionSlots?: IAppBuilderActionSlots;
 	namespace: string;
+	/**
+	 * Override the default allowlist. Defaults: UI events, or application
+	 * events when `application` is set. The viewport host passes UI events
+	 * so root `click`/`pointer*` attach there instead of being ignored.
+	 */
 	allowedEvents?: readonly string[];
 	viewportId?: string;
 	fullscreenId?: string;
@@ -432,6 +488,7 @@ export default function AppBuilderActionSlots({
 	const {viewportId: defaultViewportId} = useViewportId();
 	const viewportId = inputViewportId ?? defaultViewportId;
 	const {viewportComponent} = useContext(ComponentContext);
+	// Per-instance allowlist: application vs UI, unless the caller overrides.
 	const resolvedAllowedEvents =
 		allowedEvents ??
 		(application ? APP_BUILDER_APPLICATION_EVENTS : APP_BUILDER_UI_EVENTS);
@@ -441,6 +498,8 @@ export default function AppBuilderActionSlots({
 		Record<string, (() => void) | undefined>
 	>({});
 
+	// Slots this instance will run. Names outside the allowlist are dropped
+	// here and optionally logged below (custom:* is debug, others warn).
 	const resolved = useMemo(
 		() => pickAllowedActionSlots(actionSlots, resolvedAllowedEvents),
 		[actionSlots, resolvedAllowedEvents],
@@ -504,6 +563,7 @@ export default function AppBuilderActionSlots({
 	);
 
 	if (application) {
+		// No DOM wrap: ApplicationSlotListeners registers viewer/store events.
 		return (
 			<>
 				{runners}
@@ -519,6 +579,8 @@ export default function AppBuilderActionSlots({
 	}
 
 	if (externalHandlersRef || resolved.length === 0) {
+		// Tab buttons: runners write into handlersRef; DOM props are on Tabs.Tab.
+		// No allowed slots: still render children (ignored names already logged).
 		return (
 			<>
 				{runners}
@@ -530,6 +592,7 @@ export default function AppBuilderActionSlots({
 	return (
 		<>
 			{runners}
+			{/* UI registration: React pointer/`click` props on the wrap Box. */}
 			<Box
 				style={LAYOUT_STYLE[resolvedLayout]}
 				{...uiSlotDomProps(run, eventNames)}

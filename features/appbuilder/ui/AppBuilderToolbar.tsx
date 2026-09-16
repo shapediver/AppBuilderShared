@@ -68,6 +68,7 @@ const wrapToolbarItem = (
 	node: React.ReactNode,
 	key?: string,
 ) => (
+	// Toolbar items use the default UI allowlist (pointer/`click`).
 	<AppBuilderActionSlots
 		key={key}
 		actionSlots={item.actionSlots}

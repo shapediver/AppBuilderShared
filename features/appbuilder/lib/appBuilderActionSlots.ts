@@ -7,7 +7,18 @@ import type {
 	IAppBuilderActionSlots,
 } from "../config/appbuilderActionSlots";
 
-/** React prop names for UI action-slot events. Event names are derived from these keys. */
+/**
+ * Runtime allowlists and matching helpers for action slots.
+ *
+ * Which events a JSON node may use is not in Zod. Callers pass an allowlist
+ * into {@link pickAllowedActionSlots}; anything else is ignored (and logged).
+ * UI event names are the keys of {@link APP_BUILDER_UI_EVENT_REACT_PROPS}.
+ */
+
+/**
+ * DOM event name → React listener prop.
+ * {@link APP_BUILDER_UI_EVENTS} is derived from these keys so the two cannot drift.
+ */
 export const APP_BUILDER_UI_EVENT_REACT_PROPS = {
 	click: "onClick",
 	pointerdown: "onPointerDown",
@@ -16,6 +27,7 @@ export const APP_BUILDER_UI_EVENT_REACT_PROPS = {
 	pointerleave: "onPointerLeave",
 } as const satisfies Record<AppBuilderUiEvent, string>;
 
+/** Pointer and click events valid on widgets, tabs, containers, controls, toolbar items, and the viewport host. */
 export const APP_BUILDER_UI_EVENTS = Object.keys(
 	APP_BUILDER_UI_EVENT_REACT_PROPS,
 ) as AppBuilderUiEvent[];
@@ -42,17 +54,21 @@ export const APP_BUILDER_ROOT_EVENTS: readonly string[] = [
 	...APP_BUILDER_UI_EVENTS,
 ];
 
+/** Trigger map keyed by UI event name. Written by slot runners, read by DOM handlers. */
 export type AppBuilderUiSlotHandlers = {
 	[K in AppBuilderUiEvent]?: () => void;
 };
 
+/** React pointer/`click` props produced by {@link uiSlotDomProps}. */
 export type AppBuilderUiSlotDomProps = {
 	[K in (typeof APP_BUILDER_UI_EVENT_REACT_PROPS)[AppBuilderUiEvent]]?: () => void;
 };
 
 /**
- * DOM listener props for the UI events in `enabledEvents`.
- * Used by node wrappers and by hosts that cannot wrap the target (tab controls).
+ * Build React listener props for the UI events in `enabledEvents`.
+ *
+ * Used by the default wrap in `AppBuilderActionSlots` and by tab controls,
+ * which cannot wrap `Tabs.Tab` (Mantine requires it as a direct `Tabs.List` child).
  */
 export function uiSlotDomProps(
 	run: (eventName: AppBuilderUiEvent) => void,
@@ -67,6 +83,11 @@ export function uiSlotDomProps(
 	return props;
 }
 
+/**
+ * Read `eventProps.props` when the slot filter is of `expectedType`.
+ * Returns `undefined` when omitted or when the JSON type does not match
+ * (wrong filter on this event is treated as “no filter”).
+ */
 export function getActionSlotEventProps(
 	slot: IAppBuilderActionSlot,
 	expectedType: IAppBuilderActionSlotEventProps["type"],
@@ -76,6 +97,11 @@ export function getActionSlotEventProps(
 	return slot.eventProps.props;
 }
 
+/**
+ * Whether a session-scoped event belongs to this slot.
+ * `filterSessionId` wins when set; otherwise the controller session is the default.
+ * An event with no session id only matches when the slot also has no filter.
+ */
 export function matchesSessionFilter(
 	sessionId: string | undefined,
 	filterSessionId: string | undefined,
@@ -86,6 +112,10 @@ export function matchesSessionFilter(
 	return sessionId === expected;
 }
 
+/**
+ * Whether an export event matches `filterName` (id, name, or displayname, case-insensitive).
+ * No filter → all exports of the session.
+ */
 export function matchesExportName(
 	exportIdentity: {
 		id?: string;
@@ -107,8 +137,8 @@ export type ResolvedActionSlot = {
 };
 
 /**
- * Pick slots whose event names are allowed on this node.
- * Custom events and names outside `allowedEvents` are omitted.
+ * Slots whose event names are in `allowedEvents`.
+ * Custom events and names outside the allowlist are omitted (see {@link logIgnoredActionSlotEvents}).
  */
 export function pickAllowedActionSlots(
 	actionSlots: IAppBuilderActionSlots | undefined,
@@ -128,6 +158,10 @@ export function pickAllowedActionSlots(
 	return resolved;
 }
 
+/**
+ * Warn for slots that this node will not run.
+ * `custom:*` is debug-only (parsed, not emitted yet). Other unknown names are warnings.
+ */
 export function logIgnoredActionSlotEvents(
 	actionSlots: IAppBuilderActionSlots | undefined,
 	allowedEvents: readonly string[],
@@ -152,6 +186,11 @@ export function logIgnoredActionSlotEvents(
 	}
 }
 
+/**
+ * First non-empty string at `keys` on `value`, including one level of nested
+ * `{ id | name | sessionId }`. Used to read session id from viewer task `data`
+ * without treating a task uuid `id` as a session id.
+ */
 export function readStringField(
 	value: unknown,
 	keys: readonly string[],

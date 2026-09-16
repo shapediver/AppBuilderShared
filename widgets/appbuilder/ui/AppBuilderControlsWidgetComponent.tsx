@@ -223,6 +223,7 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 				component = outputMap.get(control.props.name);
 			}
 			if (!component) return;
+			// Default UI allowlist (pointer/`click`) on the control.
 			components.push(
 				<AppBuilderActionSlots
 					key={`control-action-slots-${index}`}

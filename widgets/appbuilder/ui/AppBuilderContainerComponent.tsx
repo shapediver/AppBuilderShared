@@ -31,6 +31,7 @@ export default function AppBuilderContainerComponent({
 	// (tab widgets get their own shell in AppBuilderTabsComponent — SS-9879).
 	const showContainerWidgets = !hasTabs || Boolean(widgets?.length);
 
+	// Default UI allowlist (pointer/`click`) on the container node.
 	return (
 		<AppBuilderActionSlots actionSlots={actionSlots} namespace={namespace}>
 			<AppBuilderTabsComponent

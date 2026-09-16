@@ -1,5 +1,11 @@
 import type {IAppBuilderActionDefinition} from "./appbuilder";
 
+/**
+ * JSON types for `actionSlots` on {@link IAppBuilderNode} (widgets, tabs,
+ * containers, controls, toolbar items, root). Runtime wrappers decide which
+ * event names a given node may use; this file only describes the shape.
+ */
+
 /** Types of action-slot event filters. */
 export type AppBuilderActionSlotEventPropsType =
 	| "session"
@@ -95,8 +101,8 @@ export type AppBuilderKnownEvent =
 
 /**
  * One optional slot per event name.
- * Which events a node may use is enforced by the runtime wrappers, not by this type.
- * Custom events use the `custom:` prefix.
+ * Which events a node may use is enforced by `AppBuilderActionSlots` (allowlist
+ * + ignored-slot log), not by this type. Custom events use the `custom:` prefix.
  */
 export type IAppBuilderActionSlots = Partial<
 	Record<AppBuilderKnownEvent, IAppBuilderActionSlot>

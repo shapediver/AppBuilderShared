@@ -288,6 +288,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		<LoaderPage /> // TODO smooth transition between loading and showing
 	) : show ? (
 		<AppBuilderDataContext.Provider value={{data: appBuilderData}}>
+			{/* Root application slots: appready, computation*, export*, selectionchange. */}
 			<AppBuilderActionSlots
 				application
 				actionSlots={appBuilderData?.actionSlots}
@@ -299,6 +300,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				right={containers.right}
 				bottom={containers.bottom}
 			>
+				{/* Root UI slots attach to the viewport host, not a panel node. */}
 				{ViewportComponent && (
 					<AppBuilderActionSlots
 						actionSlots={appBuilderData?.actionSlots}

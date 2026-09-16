@@ -80,6 +80,7 @@ export default function AppBuilderWidgetsComponent({
 				);
 				if (!inner) return null;
 
+				// Default UI allowlist (pointer/`click`).
 				return (
 					<AppBuilderActionSlots
 						key={i}

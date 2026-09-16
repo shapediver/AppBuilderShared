@@ -366,7 +366,8 @@ export interface IAppBuilderExportRef {
 export interface IAppBuilderNode {
 	/**
 	 * Actions assigned to events emitted by this node.
-	 * Which events a node may use is enforced by the runtime wrappers, not by Zod.
+	 * Which events a node may use is enforced by `AppBuilderActionSlots`
+	 * (`pickAllowedActionSlots`), not by Zod.
 	 */
 	actionSlots?: IAppBuilderActionSlots;
 }

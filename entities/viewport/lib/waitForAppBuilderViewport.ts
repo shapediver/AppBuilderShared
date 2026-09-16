@@ -12,6 +12,12 @@ import {
 	sessions,
 } from "@shapediver/viewer.session";
 
+/**
+ * Viewport readiness used by `appready` and by ShapeDiver `useViewport`.
+ * Hosts register `waitUntilReady` on viewport access functions; ShapeDiver's
+ * implementation is {@link waitForViewportScene} (bbox settled or empty).
+ */
+
 export type WaitForViewportOptions = {
 	signal?: AbortSignal;
 	/**
