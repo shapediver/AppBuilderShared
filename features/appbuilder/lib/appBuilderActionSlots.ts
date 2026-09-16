@@ -21,13 +21,14 @@ import type {
  */
 export const APP_BUILDER_UI_EVENT_REACT_PROPS = {
 	click: "onClick",
+	contextmenu: "onContextMenu",
 	pointerdown: "onPointerDown",
 	pointerup: "onPointerUp",
 	pointerenter: "onPointerEnter",
 	pointerleave: "onPointerLeave",
 } as const satisfies Record<AppBuilderUiEvent, string>;
 
-/** Pointer and click events valid on widgets, tabs, containers, controls, toolbar items, and the viewport host. */
+/** Pointer, click, and contextmenu events valid on widgets, tabs, containers, controls, toolbar items, and the viewport host. */
 export const APP_BUILDER_UI_EVENTS = Object.keys(
 	APP_BUILDER_UI_EVENT_REACT_PROPS,
 ) as AppBuilderUiEvent[];
@@ -75,9 +76,11 @@ export type AppBuilderUiSlotHandlers = {
 	[K in AppBuilderUiEvent]?: () => void;
 };
 
-/** React pointer/`click` props produced by {@link uiSlotDomProps}. */
+/** React pointer/`click`/`contextmenu` props produced by {@link uiSlotDomProps}. */
 export type AppBuilderUiSlotDomProps = {
-	[K in (typeof APP_BUILDER_UI_EVENT_REACT_PROPS)[AppBuilderUiEvent]]?: () => void;
+	[K in (typeof APP_BUILDER_UI_EVENT_REACT_PROPS)[AppBuilderUiEvent]]?: (event?: {
+		preventDefault(): void;
+	}) => void;
 };
 
 /**
@@ -85,16 +88,19 @@ export type AppBuilderUiSlotDomProps = {
  *
  * Used by the default wrap in `AppBuilderActionSlots` and by tab controls,
  * which cannot wrap `Tabs.Tab` (Mantine requires it as a direct `Tabs.List` child).
+ * `contextmenu` calls `preventDefault` so the browser menu does not also open.
  */
 export function uiSlotDomProps(
 	run: (eventName: AppBuilderUiEvent) => void,
 	enabledEvents: ReadonlySet<string> = new Set(APP_BUILDER_UI_EVENTS),
 ): AppBuilderUiSlotDomProps {
-	const props: Record<string, () => void> = {};
+	const props: AppBuilderUiSlotDomProps = {};
 	for (const eventName of APP_BUILDER_UI_EVENTS) {
 		if (!enabledEvents.has(eventName)) continue;
-		props[APP_BUILDER_UI_EVENT_REACT_PROPS[eventName]] = () =>
+		props[APP_BUILDER_UI_EVENT_REACT_PROPS[eventName]] = (event) => {
+			if (eventName === "contextmenu") event?.preventDefault();
 			run(eventName);
+		};
 	}
 	return props;
 }

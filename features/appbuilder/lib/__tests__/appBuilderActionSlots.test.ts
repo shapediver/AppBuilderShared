@@ -87,6 +87,16 @@ describe("appBuilderActionSlots helpers", () => {
 		expect(run.mock.calls).toEqual([["click"], ["pointerleave"]]);
 	});
 
+	it("prevents the default browser menu for contextmenu", () => {
+		const run = jest.fn();
+		const preventDefault = jest.fn();
+		const props = uiSlotDomProps(run, new Set(["contextmenu"]));
+		expect(Object.keys(props)).toEqual(["onContextMenu"]);
+		props.onContextMenu?.({preventDefault});
+		expect(preventDefault).toHaveBeenCalledTimes(1);
+		expect(run).toHaveBeenCalledWith("contextmenu");
+	});
+
 	it("reads string fields from nested task data without matching unrelated id", () => {
 		expect(
 			readStringField(

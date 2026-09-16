@@ -21,15 +21,11 @@ interface PropsTab extends BoxProps {
 	children: ReactElement[];
 	/** Optional tooltip to show when hovering the tab. */
 	tooltip?: string;
-	/** Optional pointer/`click` handlers attached to the tab control. */
-	controlProps?: Pick<
-		ButtonHTMLAttributes<HTMLButtonElement>,
-		| "onClick"
-		| "onPointerDown"
-		| "onPointerUp"
-		| "onPointerEnter"
-		| "onPointerLeave"
-	>;
+	/**
+	 * Optional DOM handlers on the tab control. Typed as full button attributes
+	 * so `uiSlotDomProps` can add events without updating this component.
+	 */
+	controlProps?: ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
 export interface ITabsComponentProps extends BoxProps {

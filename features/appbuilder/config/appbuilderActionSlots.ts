@@ -66,11 +66,14 @@ export interface IAppBuilderActionSlot {
 
 /**
  * DOM interaction events (extensible). Names match the DOM event, no `on` prefix.
+ * `click` is left-click; `contextmenu` is right-click (the wrap calls
+ * `preventDefault` so the browser menu does not also open).
  * Allowed on widgets, tabs, containers, controls, toolbar items, and the
  * viewport (root `actionSlots` pointer/`click` attach to the viewport host).
  */
 export type AppBuilderUiEvent =
 	| "click"
+	| "contextmenu"
 	| "pointerdown"
 	| "pointerup"
 	| "pointerenter"
