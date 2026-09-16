@@ -1,3 +1,4 @@
+import type {ISelectionParameterProps} from "@shapediver/viewer.shared.types";
 import type {IAppBuilderActionDefinition} from "./appbuilder";
 
 /**
@@ -24,18 +25,31 @@ export interface IAppBuilderActionSlotEventPropsExport extends IAppBuilderAction
 	name?: string;
 }
 
-/** Properties for `selectionchange`. */
-export interface IAppBuilderActionSlotEventPropsSelection {
-	/** Scene node name filters (same meaning as selection parameter `nameFilter`). */
-	nameFilter?: string[];
+/**
+ * Properties for viewer interaction slots (`selecton`, `selectoff`,
+ * `hoveron`, `hoveroff`). Same idea as an anchor container's
+ * `selectionProperties`: the slot enables hover/select on matching scene
+ * nodes (not a selection parameter). Pair with `setContainerVisibility`
+ * to replace `selectionProperties`.
+ *
+ * `deselectOnEmpty` is always true. `minimumSelection` defaults to 0 and
+ * `maximumSelection` to 1 (same as anchors). Viewer multi-select still
+ * runs `selecton` / `selectoff` (there is no separate multiSelect slot).
+ */
+export type IAppBuilderActionSlotEventPropsSelection = Omit<
+	ISelectionParameterProps,
+	"deselectOnEmpty" | "prompt" | "buttons" | "activeMode" | "presentation"
+> & {
 	/** Viewport to listen to. Defaults to the default viewport. */
 	viewportId?: string;
-}
+};
 
 /**
  * Optional filters for which source an application event applies to.
- * Omit on pointer/`click` slots. Needed only when the app has more
- * than one session, export, or viewport.
+ * Omit on pointer/`click` slots. For interaction events, `nameFilter`
+ * chooses which nodes activate the slot (like anchor `selectionProperties`).
+ * Session/export/viewport ids are needed only when the app has more than
+ * one of those.
  */
 export type IAppBuilderActionSlotEventProps =
 	| {
@@ -55,7 +69,9 @@ export type IAppBuilderActionSlotEventProps =
  * Action executed when a node event occurs.
  *
  * The action is static JSON: the triggering event's payload is not passed into
- * `action.props`. One action per event; multiple actions are SS-9952 sequences.
+ * `action.props`. Multiple actions in one slot are SS-9952 sequences. Multiple
+ * slots for the same event (different `eventProps`) are an array on that event
+ * name — see {@link IAppBuilderActionSlots}.
  */
 export interface IAppBuilderActionSlot {
 	/** Action executed when the event occurs. */
@@ -63,6 +79,11 @@ export interface IAppBuilderActionSlot {
 	/** Optional source filters. Application events only; omit for UI events. */
 	eventProps?: IAppBuilderActionSlotEventProps;
 }
+
+/** One slot or several for the same event (typically different `eventProps`). */
+export type IAppBuilderActionSlotList =
+	| IAppBuilderActionSlot
+	| IAppBuilderActionSlot[];
 
 /**
  * DOM interaction events (extensible). Names match the DOM event, no `on` prefix.
@@ -80,7 +101,19 @@ export type AppBuilderUiEvent =
 	| "pointerleave";
 
 /**
- * Initial application events (extensible). Allowed on the root `IAppBuilder` only.
+ * Viewer interaction events on the root `IAppBuilder` only.
+ * Names follow other application events (no dots): `selecton` is
+ * `EVENTTYPE_INTERACTION.SELECT_ON` and `MULTI_SELECT_ON`.
+ */
+export type AppBuilderInteractionEvent =
+	| "selecton"
+	| "selectoff"
+	| "hoveron"
+	| "hoveroff";
+
+/**
+ * Initial application events (extensible). Allowed on the root `IAppBuilder`
+ * only. Several slots for one event use an array (different `eventProps`).
  */
 export type AppBuilderApplicationEvent =
 	| "appready"
@@ -90,7 +123,7 @@ export type AppBuilderApplicationEvent =
 	| "exportstart"
 	| "exportend"
 	| "exporterror"
-	| "selectionchange";
+	| AppBuilderInteractionEvent;
 
 /**
  * Custom events emitted by host or custom components.
@@ -103,12 +136,16 @@ export type AppBuilderKnownEvent =
 	| AppBuilderApplicationEvent;
 
 /**
- * One optional slot per event name.
+ * Slots keyed by event name. A value may be one slot or an array of slots
+ * (same event, different `eventProps` — e.g. several `selecton`
+ * nameFilters on the App Builder root).
  * Which events a node may use is enforced by `AppBuilderActionSlots` (allowlist
  * + ignored-slot log), not by this type. Custom events use the `custom:` prefix.
  */
 export type IAppBuilderActionSlots = Partial<
-	Record<AppBuilderKnownEvent, IAppBuilderActionSlot>
+	Record<AppBuilderKnownEvent, IAppBuilderActionSlotList>
 > & {
-	[eventName: AppBuilderCustomEventName]: IAppBuilderActionSlot | undefined;
+	[eventName: AppBuilderCustomEventName]:
+		| IAppBuilderActionSlotList
+		| undefined;
 };

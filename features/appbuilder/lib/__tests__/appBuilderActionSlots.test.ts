@@ -5,10 +5,14 @@
 import type {IAppBuilderActionSlots} from "../../config/appbuilderActionSlots";
 import {
 	APP_BUILDER_APPLICATION_EVENTS,
+	APP_BUILDER_INTERACTION_EVENTS,
 	APP_BUILDER_SLOT_EVENTS,
 	APP_BUILDER_UI_EVENTS,
 	APP_BUILDER_UI_EVENT_REACT_PROPS,
+	isAppBuilderApplicationEvent,
+	isAppBuilderInteractionEvent,
 	logIgnoredActionSlotEvents,
+	mapViewerInteractionEventToSlot,
 	matchesExportName,
 	matchesSessionFilter,
 	pickAllowedActionSlots,
@@ -41,6 +45,7 @@ describe("appBuilderActionSlots helpers", () => {
 				{
 					eventName: "click",
 					slot: slots.click,
+					index: 0,
 				},
 			],
 		);
@@ -118,6 +123,50 @@ describe("appBuilderActionSlots helpers", () => {
 		).not.toThrow();
 	});
 
+	it("recognizes application and viewer interaction event names", () => {
+		expect(isAppBuilderApplicationEvent("selecton")).toBe(true);
+		expect(isAppBuilderInteractionEvent("hoveroff")).toBe(true);
+		expect(isAppBuilderApplicationEvent("interaction.select.on")).toBe(
+			false,
+		);
+		expect(isAppBuilderApplicationEvent("selectionchange")).toBe(false);
+		expect(isAppBuilderApplicationEvent("click")).toBe(false);
+		expect(APP_BUILDER_APPLICATION_EVENTS).toEqual(
+			expect.arrayContaining([...APP_BUILDER_INTERACTION_EVENTS]),
+		);
+	});
+
+	it("maps viewer interaction events onto selecton/selectoff/hoveron/hoveroff", () => {
+		expect(mapViewerInteractionEventToSlot("interaction.select.on")).toBe(
+			"selecton",
+		);
+		expect(
+			mapViewerInteractionEventToSlot("interaction.multiSelect.on"),
+		).toBe("selecton");
+		expect(mapViewerInteractionEventToSlot("interaction.select.off")).toBe(
+			"selectoff",
+		);
+		expect(
+			mapViewerInteractionEventToSlot("interaction.select.off", {
+				reselection: true,
+			}),
+		).toBeUndefined();
+		expect(
+			mapViewerInteractionEventToSlot("interaction.multiSelect.off"),
+		).toBe("selectoff");
+		expect(mapViewerInteractionEventToSlot("interaction.hover.on")).toBe(
+			"hoveron",
+		);
+		expect(mapViewerInteractionEventToSlot("interaction.hover.off")).toBe(
+			"hoveroff",
+		);
+		expect(
+			mapViewerInteractionEventToSlot(
+				"interaction.multiSelect.maximumNodes",
+			),
+		).toBeUndefined();
+	});
+
 	it("uses the same UI list for every UI node kind", () => {
 		const uiKinds = [
 			"widget",
@@ -136,6 +185,32 @@ describe("appBuilderActionSlots helpers", () => {
 		expect(APP_BUILDER_SLOT_EVENTS.root).toEqual([
 			...APP_BUILDER_APPLICATION_EVENTS,
 			...APP_BUILDER_UI_EVENTS,
+		]);
+	});
+
+	it("flattens an array of slots for one event name", () => {
+		const first = {
+			action: {type: "undo" as const, props: {}},
+			eventProps: {
+				type: "selection" as const,
+				props: {nameFilter: ["A"]},
+			},
+		};
+		const second = {
+			action: {type: "redo" as const, props: {}},
+			eventProps: {
+				type: "selection" as const,
+				props: {nameFilter: ["B"]},
+			},
+		};
+		expect(
+			pickAllowedActionSlots(
+				{selecton: [first, second]},
+				APP_BUILDER_SLOT_EVENTS.application,
+			),
+		).toEqual([
+			{eventName: "selecton", slot: first, index: 0},
+			{eventName: "selecton", slot: second, index: 1},
 		]);
 	});
 });

@@ -944,6 +944,19 @@ const IAppBuilderActionSlotEventPropsExportSchema =
 const IAppBuilderActionSlotEventPropsSelectionSchema = z.strictObject({
 	nameFilter: z.array(z.string()).optional(),
 	viewportId: z.string().optional(),
+	minimumSelection: z.number().optional(),
+	maximumSelection: z.number().optional(),
+	hover: z.boolean().optional(),
+	hoverColor: z
+		.union([z.string(), z.record(z.string(), JsonValueSchema)])
+		.optional(),
+	selectionColor: z
+		.union([z.string(), z.record(z.string(), JsonValueSchema)])
+		.optional(),
+	availableColor: z
+		.union([z.string(), z.record(z.string(), JsonValueSchema)])
+		.optional(),
+	occludeBySceneGeometry: z.boolean().optional(),
 });
 
 const IAppBuilderActionSlotEventPropsSchema = z.discriminatedUnion("type", [
@@ -968,7 +981,10 @@ const IAppBuilderActionSlotSchema = z.strictObject({
 
 const IAppBuilderActionSlotsSchema = z.record(
 	z.string(),
-	IAppBuilderActionSlotSchema,
+	z.union([
+		IAppBuilderActionSlotSchema,
+		z.array(IAppBuilderActionSlotSchema),
+	]),
 ) as z.ZodType<IAppBuilderActionSlots>;
 
 function appBuilderNodeObject<T extends z.ZodRawShape>(shape: T) {

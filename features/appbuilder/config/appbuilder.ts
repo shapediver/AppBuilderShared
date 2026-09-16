@@ -26,6 +26,7 @@ export type {
 	AppBuilderActionSlotEventPropsType,
 	AppBuilderApplicationEvent,
 	AppBuilderCustomEventName,
+	AppBuilderInteractionEvent,
 	AppBuilderKnownEvent,
 	AppBuilderUiEvent,
 	IAppBuilderActionSlot,
@@ -33,6 +34,7 @@ export type {
 	IAppBuilderActionSlotEventPropsExport,
 	IAppBuilderActionSlotEventPropsSelection,
 	IAppBuilderActionSlotEventPropsSession,
+	IAppBuilderActionSlotList,
 	IAppBuilderActionSlots,
 } from "./appbuilderActionSlots";
 export {AppBuilderActionType};
@@ -1769,8 +1771,10 @@ export interface IAppBuilderInstanceDefinition {
  * Web app definition.
  * This is the root of the custom UI definition.
  *
- * Application events (`appready`, computation, export, `selectionchange`)
- * are assigned here. Pointer events are not valid on the root.
+ * Application events (`appready`, computation, export, interaction
+ * select/hover) are assigned here. Several slots for one event use an
+ * array (different `eventProps`). Pointer/`click` on the root attach to
+ * the viewport host.
  */
 export interface IAppBuilder extends IAppBuilderNode {
 	/** Version of the schema. */

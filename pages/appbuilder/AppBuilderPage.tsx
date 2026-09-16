@@ -288,7 +288,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		<LoaderPage /> // TODO smooth transition between loading and showing
 	) : show ? (
 		<AppBuilderDataContext.Provider value={{data: appBuilderData}}>
-			{/* Root application slots: appready, computation*, export*, selectionchange. */}
+			{/* Root application slots: appready, computation*, export*, interaction. */}
 			<AppBuilderActionSlots
 				application
 				actionSlots={appBuilderData?.actionSlots}

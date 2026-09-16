@@ -1,6 +1,7 @@
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import type {
 	AppBuilderApplicationEvent,
+	AppBuilderInteractionEvent,
 	AppBuilderUiEvent,
 	IAppBuilderActionSlot,
 	IAppBuilderActionSlotEventProps,
@@ -33,7 +34,50 @@ export const APP_BUILDER_UI_EVENTS = Object.keys(
 	APP_BUILDER_UI_EVENT_REACT_PROPS,
 ) as AppBuilderUiEvent[];
 
-/** Application events valid on the root `IAppBuilder` only. */
+/**
+ * Viewer interaction slots. Valid on the root `IAppBuilder` only.
+ * Viewer `interaction.multiSelect.*` is mapped onto `selecton` / `selectoff`.
+ */
+export const APP_BUILDER_INTERACTION_EVENTS = [
+	"selecton",
+	"selectoff",
+	"hoveron",
+	"hoveroff",
+] as const satisfies readonly AppBuilderInteractionEvent[];
+
+/**
+ * Map a viewer `EVENTTYPE_INTERACTION` to the JSON slot name.
+ * Multi-select on/off runs the same slots as select on/off.
+ * `SELECT_OFF` during a reselection is skipped (the following `SELECT_ON`
+ * still runs `selecton`). Other interaction types are ignored.
+ */
+export function mapViewerInteractionEventToSlot(
+	viewerEventType: string,
+	payload?: {reselection?: boolean},
+): AppBuilderInteractionEvent | undefined {
+	switch (viewerEventType) {
+		case "interaction.select.on":
+		case "interaction.multiSelect.on":
+			return "selecton";
+		case "interaction.select.off":
+			if (payload?.reselection) return undefined;
+			return "selectoff";
+		case "interaction.multiSelect.off":
+			return "selectoff";
+		case "interaction.hover.on":
+			return "hoveron";
+		case "interaction.hover.off":
+			return "hoveroff";
+		default:
+			return undefined;
+	}
+}
+
+/**
+ * Application events. `appready`, computation, export, and viewer
+ * interaction (`selecton` / `selectoff` / `hoveron` / `hoveroff`) are
+ * valid on the root `IAppBuilder` only.
+ */
 export const APP_BUILDER_APPLICATION_EVENTS: readonly AppBuilderApplicationEvent[] =
 	[
 		"appready",
@@ -43,8 +87,24 @@ export const APP_BUILDER_APPLICATION_EVENTS: readonly AppBuilderApplicationEvent
 		"exportstart",
 		"exportend",
 		"exporterror",
-		"selectionchange",
+		...APP_BUILDER_INTERACTION_EVENTS,
 	];
+
+export function isAppBuilderInteractionEvent(
+	eventName: string,
+): eventName is AppBuilderInteractionEvent {
+	return (APP_BUILDER_INTERACTION_EVENTS as readonly string[]).includes(
+		eventName,
+	);
+}
+
+export function isAppBuilderApplicationEvent(
+	eventName: string,
+): eventName is AppBuilderApplicationEvent {
+	return (APP_BUILDER_APPLICATION_EVENTS as readonly string[]).includes(
+		eventName,
+	);
+}
 
 /**
  * Events valid on the App Builder root: application events plus viewport
@@ -156,10 +216,25 @@ export function matchesExportName(
 export type ResolvedActionSlot = {
 	eventName: string;
 	slot: IAppBuilderActionSlot;
+	index: number;
 };
+
+/** Flatten one slot or an array of slots. Empty arrays are no slots. */
+export function listActionSlots(
+	value: IAppBuilderActionSlot | IAppBuilderActionSlot[] | undefined,
+): IAppBuilderActionSlot[] {
+	if (!value) return [];
+	return Array.isArray(value) ? value.filter(Boolean) : [value];
+}
+
+/** Handler map key when several slots share an event name. */
+export function actionSlotHandlerKey(eventName: string, index: number): string {
+	return `${eventName}#${index}`;
+}
 
 /**
  * Slots whose event names are in `allowedEvents`.
+ * Arrays on one event name become several {@link ResolvedActionSlot}s.
  * Custom events and names outside the allowlist are omitted (see {@link logIgnoredActionSlotEvents}).
  */
 export function pickAllowedActionSlots(
@@ -171,11 +246,17 @@ export function pickAllowedActionSlots(
 	const resolved: ResolvedActionSlot[] = [];
 	for (const eventName of Object.keys(actionSlots)) {
 		if (!allowed.has(eventName)) continue;
-		const slot = (
-			actionSlots as Record<string, IAppBuilderActionSlot | undefined>
-		)[eventName];
-		if (!slot) continue;
-		resolved.push({eventName, slot});
+		const listed = listActionSlots(
+			(
+				actionSlots as Record<
+					string,
+					IAppBuilderActionSlot | IAppBuilderActionSlot[] | undefined
+				>
+			)[eventName],
+		);
+		for (const slot of listed) {
+			resolved.push({eventName, slot, index: resolved.length});
+		}
 	}
 	return resolved;
 }
@@ -192,10 +273,15 @@ export function logIgnoredActionSlotEvents(
 	if (!actionSlots) return;
 	const allowed = new Set(allowedEvents);
 	for (const eventName of Object.keys(actionSlots)) {
-		const slot = (
-			actionSlots as Record<string, IAppBuilderActionSlot | undefined>
-		)[eventName];
-		if (!slot || allowed.has(eventName)) continue;
+		const listed = listActionSlots(
+			(
+				actionSlots as Record<
+					string,
+					IAppBuilderActionSlot | IAppBuilderActionSlot[] | undefined
+				>
+			)[eventName],
+		);
+		if (listed.length === 0 || allowed.has(eventName)) continue;
 		if (eventName.startsWith("custom:")) {
 			Logger.debug(
 				`Custom action slot "${eventName}" is not emitted ${unsupportedOn}.`,

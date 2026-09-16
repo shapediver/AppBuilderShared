@@ -1,23 +1,13 @@
 import {addExportRequestListener} from "@AppBuilderLib/entities/export/lib/exportRequestEvents";
-import {getPatterns} from "@AppBuilderLib/entities/parameter/model/interaction/useCreateNameFilterPattern";
-import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {waitForAppBuilderViewport} from "@AppBuilderLib/entities/viewport/lib/waitForAppBuilderViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import type {AppBuilderActionRunContext} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
 import {runAppBuilderAction} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderAction";
-import {useShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreInstances";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {Box} from "@mantine/core";
 import {
-	matchNodesWithPatterns,
-	type IMultiSelectEvent,
-	type ISelectEvent,
-	type OutputNodeNameFilterPatterns,
-} from "@shapediver/viewer.features.interaction";
-import {
 	addListener,
-	EVENTTYPE_INTERACTION,
 	EVENTTYPE_SESSION,
 	EVENTTYPE_TASK,
 	isViewerCustomizationError,
@@ -25,7 +15,6 @@ import {
 	TASK_TYPE,
 	type EventResponseMapping,
 	type ITaskEvent,
-	type ITreeNode,
 } from "@shapediver/viewer.session";
 import {
 	CSSProperties,
@@ -44,6 +33,7 @@ import type {
 	IAppBuilderActionSlots,
 } from "../config/appbuilderActionSlots";
 import {
+	actionSlotHandlerKey,
 	APP_BUILDER_SLOT_EVENTS,
 	APP_BUILDER_UI_EVENTS,
 	getActionSlotEventProps,
@@ -54,7 +44,9 @@ import {
 	readStringField,
 	uiSlotDomProps,
 	type AppBuilderUiSlotHandlers,
+	type ResolvedActionSlot,
 } from "../lib/appBuilderActionSlots";
+import {AppBuilderInteractionSlotListeners} from "./AppBuilderInteractionSlotListeners";
 
 /**
  * Bind JSON `actionSlots` to `runAppBuilderAction`.
@@ -62,13 +54,17 @@ import {
  * Event *registration* lives in this file:
  * - UI: React pointer/`click` props from `uiSlotDomProps` on a wrap `Box`, or
  *   written into `handlersRef` for tab buttons (Mantine forbids wrapping `Tabs.Tab`).
- * - Application: `ApplicationSlotListeners` (viewer session/task/selection +
- *   the export request bus). `appready` waits via `waitForAppBuilderViewport`.
+ * - Application: `ApplicationSlotListeners` (viewer session/task + the
+ *   export request bus) and `AppBuilderInteractionSlotListeners` (viewer
+ *   `selecton` / `selectoff` / `hoveron` / `hoveroff`, same as anchor
+ *   `selectionProperties`). `appready` waits via
+ *   `waitForAppBuilderViewport`.
  *
  * Which slots run is decided here via `pickAllowedActionSlots`.
  * Call sites pass a list from {@link APP_BUILDER_SLOT_EVENTS} (UI kinds share
  * {@link APP_BUILDER_UI_EVENTS} today). The `application` instance logs ignored
- * names against {@link APP_BUILDER_SLOT_EVENTS}.root.
+ * names against {@link APP_BUILDER_SLOT_EVENTS}.root. Several slots for one
+ * event (an array in JSON) each get their own runner and `eventProps` filter.
  *
  * Tabs also call `pickAllowedActionSlots` themselves so `controlProps` only
  * include listeners for slots that will actually run.
@@ -127,81 +123,38 @@ function shouldRunExportSlot(
 	return matchesExportName(exportIdentity, eventProps?.name);
 }
 
-function getNodesFromSelectEvent(
-	event: ISelectEvent | IMultiSelectEvent,
-): ITreeNode[] {
-	const multi = event as IMultiSelectEvent;
-	if (Array.isArray(multi.nodes) && multi.nodes.length > 0)
-		return multi.nodes;
-	if (event.node) return [event.node];
-	if (Array.isArray(event.groupedNodes) && event.groupedNodes.length > 0)
-		return event.groupedNodes;
-	return [];
-}
-
-/**
- * Same `nameFilter` conversion as selection parameters: `getPatterns` +
- * viewer `matchNodesWithPatterns` (output display names and hierarchy).
- */
-function selectionMatchesNameFilter(
-	nodes: ITreeNode[],
-	nameFilter?: string[],
-): boolean {
-	if (!nameFilter || nameFilter.length === 0) return true;
-	const sessions = useShapeDiverStoreSession.getState().sessions;
-	const instances = useShapeDiverStoreInstances.getState().instances;
-	const {outputPatterns, instancePatterns} = getPatterns(
-		sessions,
-		instances,
-		nameFilter,
-	);
-	const patterns: OutputNodeNameFilterPatterns = {
-		...(instancePatterns ?? {}),
-	};
-	if (outputPatterns) {
-		for (const byOutput of Object.values(outputPatterns)) {
-			Object.assign(patterns, byOutput);
-		}
-	}
-	return matchNodesWithPatterns(patterns, nodes).length > 0;
-}
-
-/** `selectionchange`: optional viewport id and `nameFilter`. */
-function shouldRunSelectionSlot(
-	slot: IAppBuilderActionSlot,
-	viewportId: string | undefined,
-	nodes: ITreeNode[],
-	defaultViewportId: string,
-): boolean {
-	const eventProps = getActionSlotEventProps(slot, "selection") as
-		| {nameFilter?: string[]; viewportId?: string}
-		| undefined;
-	const expectedViewport = eventProps?.viewportId ?? defaultViewportId;
-	if (viewportId && viewportId !== expectedViewport) return false;
-	return selectionMatchesNameFilter(nodes, eventProps?.nameFilter);
-}
-
 /** TASK_START / TASK_END for `SESSION_CUSTOMIZATION` only. */
 function listenSessionCustomization(
 	eventType: string,
-	slot: IAppBuilderActionSlot | undefined,
-	run: () => void,
+	items: ResolvedActionSlot[],
+	run: (item: ResolvedActionSlot) => void,
 	namespace: string,
 ): string | undefined {
-	if (!slot) return undefined;
+	if (items.length === 0) return undefined;
 	return addListener(eventType, (event) => {
 		const taskEvent = event as ITaskEvent;
 		if (taskEvent.type !== TASK_TYPE.SESSION_CUSTOMIZATION) return;
-		if (
-			shouldRunComputationSlot(
-				slot,
-				getTaskSessionId(taskEvent),
-				namespace,
-			)
-		) {
-			run();
+		const sessionId = getTaskSessionId(taskEvent);
+		for (const item of items) {
+			if (shouldRunComputationSlot(item.slot, sessionId, namespace)) {
+				run(item);
+			}
 		}
 	});
+}
+
+function itemsNamed(
+	resolved: ResolvedActionSlot[],
+	eventName: string,
+): ResolvedActionSlot[] {
+	return resolved.filter((item) => item.eventName === eventName);
+}
+
+function runSlot(
+	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>,
+	item: ResolvedActionSlot,
+): void {
+	handlersRef.current[actionSlotHandlerKey(item.eventName, item.index)]?.();
 }
 
 /**
@@ -255,23 +208,22 @@ function ActionSlotRunner({
 
 /**
  * Registers application-event listeners. Callers must already have filtered
- * `slotsByName` with {@link pickAllowedActionSlots}.
+ * `resolved` with {@link pickAllowedActionSlots}.
  *
  * - `appready`: `waitForAppBuilderViewport` (no timeout)
  * - `computationstart`/`end`: TASK_START/END + SESSION_CUSTOMIZATION
  * - `computationerror`: SESSION_ERROR + `isViewerCustomizationError`
  *   (not TASK_CANCEL — superseded customizes cancel without failing)
  * - `export*`: store-backed export request bus (viewer EXPORT_REQUEST has no identity)
- * - `selectionchange`: SELECT_ON/OFF and MULTI_SELECT_ON/OFF
  */
 function ApplicationSlotListeners({
-	slotsByName,
+	resolved,
 	namespace,
 	viewportId,
 	hasViewport,
 	handlersRef,
 }: {
-	slotsByName: Record<string, IAppBuilderActionSlot>;
+	resolved: ResolvedActionSlot[];
 	namespace: string;
 	viewportId: string;
 	hasViewport: boolean;
@@ -282,7 +234,8 @@ function ApplicationSlotListeners({
 	useEffect(() => {
 		// `appready` is not a viewer event: wait until the viewport is visible
 		// (host `waitUntilReady`, or ShapeDiver scene bbox), then fire once.
-		if (!slotsByName.appready) return;
+		const appreadyItems = itemsNamed(resolved, "appready");
+		if (appreadyItems.length === 0) return;
 		if (appreadyFiredForNamespace.current === namespace) return;
 		const abort = new AbortController();
 		void (async () => {
@@ -293,21 +246,20 @@ function ApplicationSlotListeners({
 			if (abort.signal.aborted) return;
 			if (appreadyFiredForNamespace.current === namespace) return;
 			appreadyFiredForNamespace.current = namespace;
-			handlersRef.current.appready?.();
+			for (const item of appreadyItems) runSlot(handlersRef, item);
 		})();
 		return () => {
 			abort.abort();
 		};
-	}, [handlersRef, hasViewport, namespace, slotsByName.appready, viewportId]);
+	}, [handlersRef, hasViewport, namespace, resolved, viewportId]);
 
 	useEffect(() => {
-		const computationStart = slotsByName.computationstart;
-		const computationEnd = slotsByName.computationend;
-		const computationError = slotsByName.computationerror;
-		const exportStart = slotsByName.exportstart;
-		const exportEnd = slotsByName.exportend;
-		const exportError = slotsByName.exporterror;
-		const selectionChange = slotsByName.selectionchange;
+		const computationStart = itemsNamed(resolved, "computationstart");
+		const computationEnd = itemsNamed(resolved, "computationend");
+		const computationError = itemsNamed(resolved, "computationerror");
+		const exportStart = itemsNamed(resolved, "exportstart");
+		const exportEnd = itemsNamed(resolved, "exportend");
+		const exportError = itemsNamed(resolved, "exporterror");
 
 		const tokens: string[] = [];
 		const cleanups: Array<() => void> = [];
@@ -316,39 +268,45 @@ function ApplicationSlotListeners({
 		const startToken = listenSessionCustomization(
 			EVENTTYPE_TASK.TASK_START,
 			computationStart,
-			() => handlersRef.current.computationstart?.(),
+			(item) => runSlot(handlersRef, item),
 			namespace,
 		);
 		const endToken = listenSessionCustomization(
 			EVENTTYPE_TASK.TASK_END,
 			computationEnd,
-			() => handlersRef.current.computationend?.(),
+			(item) => runSlot(handlersRef, item),
 			namespace,
 		);
 		if (startToken) tokens.push(startToken);
 		if (endToken) tokens.push(endToken);
 
-		if (computationError) {
+		if (computationError.length > 0) {
 			// computationerror: SESSION_ERROR while customizing, not TASK_CANCEL
 			tokens.push(
 				addListener(EVENTTYPE_SESSION.SESSION_ERROR, (event) => {
 					const sessionEvent =
 						event as EventResponseMapping[typeof EVENTTYPE_SESSION.SESSION_ERROR];
 					if (!isViewerCustomizationError(sessionEvent.error)) return;
-					if (
-						shouldRunComputationSlot(
-							computationError,
-							sessionEvent.sessionId,
-							namespace,
-						)
-					) {
-						handlersRef.current.computationerror?.();
+					for (const item of computationError) {
+						if (
+							shouldRunComputationSlot(
+								item.slot,
+								sessionEvent.sessionId,
+								namespace,
+							)
+						) {
+							runSlot(handlersRef, item);
+						}
 					}
 				}),
 			);
 		}
 
-		if (exportStart || exportEnd || exportError) {
+		if (
+			exportStart.length > 0 ||
+			exportEnd.length > 0 ||
+			exportError.length > 0
+		) {
 			// exportstart / exportend / exporterror
 			cleanups.push(
 				addExportRequestListener((event) => {
@@ -357,70 +315,25 @@ function ApplicationSlotListeners({
 						name: event.name,
 						displayname: event.displayname,
 					};
-					const slot =
+					const items =
 						event.phase === "start"
 							? exportStart
 							: event.phase === "end"
 								? exportEnd
 								: exportError;
-					const handler =
-						event.phase === "start"
-							? handlersRef.current.exportstart
-							: event.phase === "end"
-								? handlersRef.current.exportend
-								: handlersRef.current.exporterror;
-					if (
-						slot &&
-						handler &&
-						shouldRunExportSlot(
-							slot,
-							event.sessionId,
-							identity,
-							namespace,
-						)
-					) {
-						handler();
+					for (const item of items) {
+						if (
+							shouldRunExportSlot(
+								item.slot,
+								event.sessionId,
+								identity,
+								namespace,
+							)
+						) {
+							runSlot(handlersRef, item);
+						}
 					}
 				}),
-			);
-		}
-
-		if (selectionChange) {
-			// selectionchange
-			const onSelection = (event: ISelectEvent | IMultiSelectEvent) => {
-				const nodes = getNodesFromSelectEvent(event);
-				if (
-					shouldRunSelectionSlot(
-						selectionChange,
-						event.viewportId,
-						nodes,
-						viewportId,
-					)
-				) {
-					handlersRef.current.selectionchange?.();
-				}
-			};
-			tokens.push(
-				addListener(EVENTTYPE_INTERACTION.SELECT_ON, (event) =>
-					onSelection(event as ISelectEvent),
-				),
-			);
-			tokens.push(
-				addListener(EVENTTYPE_INTERACTION.SELECT_OFF, (event) => {
-					const selectEvent = event as ISelectEvent;
-					if (selectEvent.reselection) return;
-					onSelection(selectEvent);
-				}),
-			);
-			tokens.push(
-				addListener(EVENTTYPE_INTERACTION.MULTI_SELECT_ON, (event) =>
-					onSelection(event as IMultiSelectEvent),
-				),
-			);
-			tokens.push(
-				addListener(EVENTTYPE_INTERACTION.MULTI_SELECT_OFF, (event) =>
-					onSelection(event as IMultiSelectEvent),
-				),
 			);
 		}
 
@@ -428,7 +341,7 @@ function ApplicationSlotListeners({
 			tokens.forEach((token) => removeListener(token));
 			cleanups.forEach((cleanup) => cleanup());
 		};
-	}, [handlersRef, namespace, slotsByName, viewportId]);
+	}, [handlersRef, namespace, resolved, viewportId]);
 
 	return null;
 }
@@ -452,7 +365,7 @@ type Props = {
 	layout?: "contents" | "block" | "fill";
 	/**
 	 * Listen for application events (`appready`, computation, export,
-	 * `selectionchange`) instead of attaching DOM handlers.
+	 * viewer interaction) instead of attaching DOM handlers.
 	 */
 	application?: boolean;
 	/** Skip unsupported-slot warnings (viewport wrap; the application instance already warns). */
@@ -467,7 +380,8 @@ type Props = {
  *
  * - Default: wrap `children` with pointer/`click` handlers. `display: contents`
  *   does not change layout; hover slots promote to `block` so enter/leave fire.
- * - `application`: no wrapper; listen to session/export/selection events.
+ * - `application`: no wrapper; listen to session/export events and activate
+ *   viewer interaction slots like anchor `selectionProperties`.
  * - `handlersRef`: bind UI triggers without wrapping (Mantine tab buttons).
  */
 export default function AppBuilderActionSlots({
@@ -503,11 +417,6 @@ export default function AppBuilderActionSlots({
 		() => pickAllowedActionSlots(actionSlots, resolvedAllowedEvents),
 		[actionSlots, resolvedAllowedEvents],
 	);
-	const slotsByName = useMemo(() => {
-		const map: Record<string, IAppBuilderActionSlot> = {};
-		for (const item of resolved) map[item.eventName] = item.slot;
-		return map;
-	}, [resolved]);
 	const eventNames = useMemo(
 		() => new Set(resolved.map((item) => item.eventName)),
 		[resolved],
@@ -520,9 +429,16 @@ export default function AppBuilderActionSlots({
 
 	const run = useCallback(
 		(eventName: AppBuilderUiEvent) => {
-			handlersRef.current[eventName]?.();
+			const map = handlersRef.current as Record<
+				string,
+				(() => void) | undefined
+			>;
+			for (const item of resolved) {
+				if (item.eventName !== eventName) continue;
+				map[actionSlotHandlerKey(item.eventName, item.index)]?.();
+			}
 		},
-		[handlersRef],
+		[handlersRef, resolved],
 	);
 
 	useEffect(() => {
@@ -536,9 +452,9 @@ export default function AppBuilderActionSlots({
 
 	const runners = (
 		<>
-			{resolved.map(({eventName, slot}) => (
+			{resolved.map(({eventName, slot, index}) => (
 				<ActionSlotRunner
-					key={eventName}
+					key={actionSlotHandlerKey(eventName, index)}
 					definition={slot.action}
 					namespace={namespace}
 					viewportId={viewportId}
@@ -547,14 +463,38 @@ export default function AppBuilderActionSlots({
 						const map = application
 							? applicationHandlersRef
 							: handlersRef;
+						const key = actionSlotHandlerKey(eventName, index);
 						(
 							map.current as Record<
 								string,
 								(() => void) | undefined
 							>
-						)[eventName] = () => {
+						)[key] = () => {
 							void trigger();
 						};
+						if (!application) {
+							(
+								map.current as Record<
+									string,
+									(() => void) | undefined
+								>
+							)[eventName] = () => {
+								for (const item of resolved) {
+									if (item.eventName !== eventName) continue;
+									(
+										map.current as Record<
+											string,
+											(() => void) | undefined
+										>
+									)[
+										actionSlotHandlerKey(
+											item.eventName,
+											item.index,
+										)
+									]?.();
+								}
+							};
+						}
 					}}
 				/>
 			))}
@@ -567,10 +507,15 @@ export default function AppBuilderActionSlots({
 			<>
 				{runners}
 				<ApplicationSlotListeners
-					slotsByName={slotsByName}
+					resolved={resolved}
 					namespace={namespace}
 					viewportId={viewportId}
 					hasViewport={!!viewportComponent}
+					handlersRef={applicationHandlersRef}
+				/>
+				<AppBuilderInteractionSlotListeners
+					resolved={resolved}
+					viewportId={viewportId}
 					handlersRef={applicationHandlersRef}
 				/>
 			</>
