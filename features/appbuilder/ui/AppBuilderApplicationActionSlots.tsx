@@ -1,4 +1,3 @@
-import {addExportRequestListener} from "@AppBuilderLib/entities/export/lib/exportRequestEvents";
 import {waitForAppBuilderViewport} from "@AppBuilderLib/entities/viewport/lib/waitForAppBuilderViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
@@ -35,6 +34,19 @@ const SESSION_ID_KEYS = ["sessionId", "session"] as const;
 /** Session id on a viewer task payload (`data.sessionId` / nested `{ id }`). */
 function getTaskSessionId(event: ITaskEvent): string | undefined {
 	return readStringField(event.data, SESSION_ID_KEYS);
+}
+
+/** Export identity on `EXPORT_REQUEST` (`data.exportId` / `name` / `displayname`). */
+function getTaskExportIdentity(event: ITaskEvent): {
+	id?: string;
+	name?: string;
+	displayname?: string;
+} {
+	return {
+		id: readStringField(event.data, ["exportId", "id"]),
+		name: readStringField(event.data, ["name"]),
+		displayname: readStringField(event.data, ["displayname"]),
+	};
 }
 
 /** `computation*` slots: optional `eventProps.type: "session"`. */
@@ -95,6 +107,29 @@ function listenSessionCustomization(
 	});
 }
 
+/** TASK_START / TASK_END / TASK_CANCEL for `EXPORT_REQUEST`. */
+function listenExportRequest(
+	eventType: string,
+	items: ResolvedActionSlot[],
+	run: (item: ResolvedActionSlot) => void,
+	namespace: string,
+): string | undefined {
+	if (items.length === 0) return undefined;
+	return addListener(eventType, (event) => {
+		const taskEvent = event as ITaskEvent;
+		if (taskEvent.type !== TASK_TYPE.EXPORT_REQUEST) return;
+		const sessionId = getTaskSessionId(taskEvent);
+		const identity = getTaskExportIdentity(taskEvent);
+		for (const item of items) {
+			if (
+				shouldRunExportSlot(item.slot, sessionId, identity, namespace)
+			) {
+				run(item);
+			}
+		}
+	});
+}
+
 function itemsNamed(
 	resolved: ResolvedActionSlot[],
 	eventName: string,
@@ -118,7 +153,8 @@ function runSlot(
  * - `computationerror`: TASK_CANCEL + status "Session customization failed"
  *   (local session id is on the task payload; superseded customizes cancel
  *   with a different status)
- * - `export*`: store-backed export request bus (viewer EXPORT_REQUEST has no identity)
+ * - `export*`: TASK_START/END/CANCEL + EXPORT_REQUEST (`data.sessionId`,
+ *   `exportId`, `name`, `displayname`)
  */
 function ApplicationSlotListeners({
 	resolved,
@@ -164,7 +200,6 @@ function ApplicationSlotListeners({
 		const exportError = itemsNamed(resolved, "exporterror");
 
 		const tokens: string[] = [];
-		const cleanups: Array<() => void> = [];
 
 		const startToken = listenSessionCustomization(
 			EVENTTYPE_TASK.TASK_START,
@@ -202,43 +237,30 @@ function ApplicationSlotListeners({
 			);
 		}
 
-		if (
-			exportStart.length > 0 ||
-			exportEnd.length > 0 ||
-			exportError.length > 0
-		) {
-			cleanups.push(
-				addExportRequestListener((event) => {
-					const identity = {
-						id: event.id,
-						name: event.name,
-						displayname: event.displayname,
-					};
-					const items =
-						event.phase === "start"
-							? exportStart
-							: event.phase === "end"
-								? exportEnd
-								: exportError;
-					for (const item of items) {
-						if (
-							shouldRunExportSlot(
-								item.slot,
-								event.sessionId,
-								identity,
-								namespace,
-							)
-						) {
-							runSlot(handlersRef, item);
-						}
-					}
-				}),
-			);
-		}
+		const exportStartToken = listenExportRequest(
+			EVENTTYPE_TASK.TASK_START,
+			exportStart,
+			(item) => runSlot(handlersRef, item),
+			namespace,
+		);
+		const exportEndToken = listenExportRequest(
+			EVENTTYPE_TASK.TASK_END,
+			exportEnd,
+			(item) => runSlot(handlersRef, item),
+			namespace,
+		);
+		const exportErrorToken = listenExportRequest(
+			EVENTTYPE_TASK.TASK_CANCEL,
+			exportError,
+			(item) => runSlot(handlersRef, item),
+			namespace,
+		);
+		if (exportStartToken) tokens.push(exportStartToken);
+		if (exportEndToken) tokens.push(exportEndToken);
+		if (exportErrorToken) tokens.push(exportErrorToken);
 
 		return () => {
 			tokens.forEach((token) => removeListener(token));
-			cleanups.forEach((cleanup) => cleanup());
 		};
 	}, [handlersRef, namespace, resolved, viewportId]);
 

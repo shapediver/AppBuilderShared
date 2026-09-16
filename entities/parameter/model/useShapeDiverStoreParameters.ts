@@ -2,7 +2,6 @@ import {
 	IShapeDiverExport,
 	IShapeDiverExportDefinition,
 } from "@AppBuilderLib/entities/export/config/export";
-import {withExportRequestEvents} from "@AppBuilderLib/entities/export/lib/exportRequestEvents";
 import {
 	IShapeDiverOutput,
 	IShapeDiverOutputDefinition,
@@ -913,15 +912,7 @@ function createExportStore(session: ISessionApi, exportId: string) {
 						}
 					}
 				}
-				return withExportRequestEvents(
-					{
-						sessionId: session.id,
-						id: definition.id,
-						name: definition.name,
-						displayname: definition.displayname,
-					},
-					() => sessionExport.request(parametersComplete),
-				);
+				return sessionExport.request(parametersComplete);
 			},
 			fetch: async (url: string) => {
 				return fetch(url, {
