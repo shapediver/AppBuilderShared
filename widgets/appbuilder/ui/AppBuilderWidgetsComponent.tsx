@@ -20,6 +20,7 @@ import {
 	isTableWidget,
 	isTextWidget,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
@@ -80,11 +81,11 @@ export default function AppBuilderWidgetsComponent({
 				);
 				if (!inner) return null;
 
-				// Default UI allowlist (pointer/`click`).
 				return (
 					<AppBuilderActionSlots
 						key={i}
 						actionSlots={widget.actionSlots}
+						allowedEvents={APP_BUILDER_SLOT_EVENTS.widget}
 						namespace={namespace}
 					>
 						{inner}

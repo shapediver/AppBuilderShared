@@ -7,6 +7,7 @@ import {
 } from "@AppBuilderLib/entities/viewport/config/legacyViewportIconsTheme";
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import type {ResolvedToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
+import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import {collectActionTargetedAnchorIdsFromGroups} from "@AppBuilderLib/features/appbuilder/lib/collectActionTargetedAnchorIds";
 import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
@@ -68,10 +69,10 @@ const wrapToolbarItem = (
 	node: React.ReactNode,
 	key?: string,
 ) => (
-	// Toolbar items use the default UI allowlist (pointer/`click`).
 	<AppBuilderActionSlots
 		key={key}
 		actionSlots={item.actionSlots}
+		allowedEvents={APP_BUILDER_SLOT_EVENTS.toolbar}
 		namespace={namespace}
 		viewportId={viewportId}
 		fullscreenId={fullscreenId}
@@ -427,6 +428,7 @@ export default function AppBuilderToolbar(props: Props) {
 			{(transitionStyle) => (
 				<AppBuilderActionSlots
 					actionSlots={toolbar.actionSlots}
+					allowedEvents={APP_BUILDER_SLOT_EVENTS.toolbar}
 					namespace={resolvedButtonRenderContext.namespace}
 					viewportId={resolvedButtonRenderContext.viewportId}
 					fullscreenId={resolvedButtonRenderContext.fullscreenId}

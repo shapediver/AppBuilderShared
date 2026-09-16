@@ -1,6 +1,6 @@
 import {IAppBuilderTab} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
-	APP_BUILDER_UI_EVENTS,
+	APP_BUILDER_SLOT_EVENTS,
 	pickAllowedActionSlots,
 	uiSlotDomProps,
 	type AppBuilderUiSlotHandlers,
@@ -53,7 +53,7 @@ export default function AppBuilderTabsComponent({
 				const enabledEvents = new Set(
 					pickAllowedActionSlots(
 						tab.actionSlots,
-						APP_BUILDER_UI_EVENTS,
+						APP_BUILDER_SLOT_EVENTS.tab,
 					).map((item) => item.eventName),
 				);
 				return {
@@ -93,6 +93,7 @@ export default function AppBuilderTabsComponent({
 					<AppBuilderActionSlots
 						key={`action-slots-${tab.name}-${index}`}
 						actionSlots={tab.actionSlots}
+						allowedEvents={APP_BUILDER_SLOT_EVENTS.tab}
 						namespace={namespace}
 						handlersRef={{current: tabHandlerRefs.current[index]}}
 					/>

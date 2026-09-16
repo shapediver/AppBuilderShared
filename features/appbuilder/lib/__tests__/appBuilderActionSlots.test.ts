@@ -4,6 +4,8 @@
 
 import type {IAppBuilderActionSlots} from "../../config/appbuilderActionSlots";
 import {
+	APP_BUILDER_APPLICATION_EVENTS,
+	APP_BUILDER_SLOT_EVENTS,
 	APP_BUILDER_UI_EVENTS,
 	APP_BUILDER_UI_EVENT_REACT_PROPS,
 	logIgnoredActionSlotEvents,
@@ -104,5 +106,26 @@ describe("appBuilderActionSlots helpers", () => {
 		expect(() =>
 			logIgnoredActionSlotEvents(slots, ["click"], "on this node"),
 		).not.toThrow();
+	});
+
+	it("uses the same UI list for every UI node kind", () => {
+		const uiKinds = [
+			"widget",
+			"tab",
+			"container",
+			"control",
+			"toolbar",
+			"viewport",
+		] as const;
+		for (const kind of uiKinds) {
+			expect(APP_BUILDER_SLOT_EVENTS[kind]).toBe(APP_BUILDER_UI_EVENTS);
+		}
+		expect(APP_BUILDER_SLOT_EVENTS.application).toBe(
+			APP_BUILDER_APPLICATION_EVENTS,
+		);
+		expect(APP_BUILDER_SLOT_EVENTS.root).toEqual([
+			...APP_BUILDER_APPLICATION_EVENTS,
+			...APP_BUILDER_UI_EVENTS,
+		]);
 	});
 });

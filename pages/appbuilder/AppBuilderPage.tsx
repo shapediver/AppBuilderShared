@@ -9,7 +9,7 @@ import AppBuilderAgentOverlay from "@AppBuilderLib/features/agent-tools/ui/AppBu
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
-import {APP_BUILDER_UI_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
+import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import useAppBuilderSettings from "@AppBuilderLib/features/appbuilder/model/useAppBuilderSettings";
 import {useAppBuilderStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderStandardContainers";
 import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBindings";
@@ -292,6 +292,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 			<AppBuilderActionSlots
 				application
 				actionSlots={appBuilderData?.actionSlots}
+				allowedEvents={APP_BUILDER_SLOT_EVENTS.application}
 				namespace={namespace}
 			/>
 			<AppBuilderTemplateSelector
@@ -304,7 +305,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				{ViewportComponent && (
 					<AppBuilderActionSlots
 						actionSlots={appBuilderData?.actionSlots}
-						allowedEvents={APP_BUILDER_UI_EVENTS}
+						allowedEvents={APP_BUILDER_SLOT_EVENTS.viewport}
 						namespace={namespace}
 						layout="fill"
 						warnUnsupported={false}

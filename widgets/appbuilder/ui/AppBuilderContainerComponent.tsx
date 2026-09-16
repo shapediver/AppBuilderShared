@@ -3,6 +3,7 @@ import {
 	IAppBuilderAnchor3dContainer,
 	IAppBuilderStandardContainer,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
 import AppBuilderWidgetsWithStackShell from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsWithStackShell";
 import AppBuilderTabsComponent from "./AppBuilderTabsComponent";
@@ -31,9 +32,12 @@ export default function AppBuilderContainerComponent({
 	// (tab widgets get their own shell in AppBuilderTabsComponent — SS-9879).
 	const showContainerWidgets = !hasTabs || Boolean(widgets?.length);
 
-	// Default UI allowlist (pointer/`click`) on the container node.
 	return (
-		<AppBuilderActionSlots actionSlots={actionSlots} namespace={namespace}>
+		<AppBuilderActionSlots
+			actionSlots={actionSlots}
+			allowedEvents={APP_BUILDER_SLOT_EVENTS.container}
+			namespace={namespace}
+		>
 			<AppBuilderTabsComponent
 				namespace={namespace}
 				tabs={tabs}

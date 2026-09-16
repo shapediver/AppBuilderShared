@@ -17,6 +17,7 @@ import {
 	getExportComponent,
 	getParameterComponent,
 } from "@AppBuilderLib/features/appbuilder/config/componentTypes";
+import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import {AppBuilderActionFromType} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionFromType";
 import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
 import type {MantinePaperProps} from "@AppBuilderLib/shared/mantine-props/paper";
@@ -223,11 +224,11 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 				component = outputMap.get(control.props.name);
 			}
 			if (!component) return;
-			// Default UI allowlist (pointer/`click`) on the control.
 			components.push(
 				<AppBuilderActionSlots
 					key={`control-action-slots-${index}`}
 					actionSlots={control.actionSlots}
+					allowedEvents={APP_BUILDER_SLOT_EVENTS.control}
 					namespace={namespace}
 				>
 					{component}

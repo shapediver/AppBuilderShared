@@ -6,6 +6,7 @@ import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParamete
 import {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {getParameterComponent} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import type {ToolbarPopoverItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
+import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import AppBuilderTabsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderTabsComponent";
 import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
 import {Divider, Paper, Stack, Text} from "@mantine/core";
@@ -91,6 +92,9 @@ export default function AppBuilderToolbarPopoverContent({
 														actionSlots={
 															menuItem.actionSlots
 														}
+														allowedEvents={
+															APP_BUILDER_SLOT_EVENTS.toolbar
+														}
 														namespace={namespace}
 														viewportId={viewportId}
 														fullscreenId={
@@ -147,6 +151,9 @@ export default function AppBuilderToolbarPopoverContent({
 														actionSlots={
 															menuItem.actionSlots
 														}
+														allowedEvents={
+															APP_BUILDER_SLOT_EVENTS.toolbar
+														}
 														namespace={namespace}
 														viewportId={viewportId}
 														fullscreenId={
@@ -186,6 +193,9 @@ export default function AppBuilderToolbarPopoverContent({
 													key={menuItem.id}
 													actionSlots={
 														menuItem.actionSlots
+													}
+													allowedEvents={
+														APP_BUILDER_SLOT_EVENTS.toolbar
 													}
 													namespace={namespace}
 													viewportId={viewportId}

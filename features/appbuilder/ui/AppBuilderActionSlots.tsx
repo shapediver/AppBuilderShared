@@ -44,8 +44,7 @@ import type {
 	IAppBuilderActionSlots,
 } from "../config/appbuilderActionSlots";
 import {
-	APP_BUILDER_APPLICATION_EVENTS,
-	APP_BUILDER_ROOT_EVENTS,
+	APP_BUILDER_SLOT_EVENTS,
 	APP_BUILDER_UI_EVENTS,
 	getActionSlotEventProps,
 	logIgnoredActionSlotEvents,
@@ -66,13 +65,11 @@ import {
  * - Application: `ApplicationSlotListeners` (viewer session/task/selection +
  *   the export request bus). `appready` waits via `waitForAppBuilderViewport`.
  *
- * Which slots run is decided here via `pickAllowedActionSlots`:
- * - UI wrap (default): {@link APP_BUILDER_UI_EVENTS}
- * - `application`: {@link APP_BUILDER_APPLICATION_EVENTS}
- * - Viewport host: same UI list, passed as `allowedEvents`
- * - Root ignored-slot log uses {@link APP_BUILDER_ROOT_EVENTS} (application + UI)
+ * Which slots run is decided here via `pickAllowedActionSlots`.
+ * Call sites pass a list from {@link APP_BUILDER_SLOT_EVENTS} (UI kinds share
+ * {@link APP_BUILDER_UI_EVENTS} today). The `application` instance logs ignored
+ * names against {@link APP_BUILDER_SLOT_EVENTS}.root.
  *
- * Call sites do not pass a per-widget allowlist; they rely on these defaults.
  * Tabs also call `pickAllowedActionSlots` themselves so `controlProps` only
  * include listeners for slots that will actually run.
  */
@@ -440,9 +437,9 @@ type Props = {
 	actionSlots?: IAppBuilderActionSlots;
 	namespace: string;
 	/**
-	 * Override the default allowlist. Defaults: UI events, or application
-	 * events when `application` is set. The viewport host passes UI events
-	 * so root `click`/`pointer*` attach there instead of being ignored.
+	 * Override the default allowlist. Callers pass {@link APP_BUILDER_SLOT_EVENTS}
+	 * for the node kind. Defaults: UI events, or application events when
+	 * `application` is set.
 	 */
 	allowedEvents?: readonly string[];
 	viewportId?: string;
@@ -488,10 +485,12 @@ export default function AppBuilderActionSlots({
 	const {viewportId: defaultViewportId} = useViewportId();
 	const viewportId = inputViewportId ?? defaultViewportId;
 	const {viewportComponent} = useContext(ComponentContext);
-	// Per-instance allowlist: application vs UI, unless the caller overrides.
+	// Per-instance allowlist from APP_BUILDER_SLOT_EVENTS, unless omitted.
 	const resolvedAllowedEvents =
 		allowedEvents ??
-		(application ? APP_BUILDER_APPLICATION_EVENTS : APP_BUILDER_UI_EVENTS);
+		(application
+			? APP_BUILDER_SLOT_EVENTS.application
+			: APP_BUILDER_UI_EVENTS);
 	const internalHandlersRef = useRef<AppBuilderUiSlotHandlers>({});
 	const handlersRef = externalHandlersRef ?? internalHandlersRef;
 	const applicationHandlersRef = useRef<
@@ -530,7 +529,7 @@ export default function AppBuilderActionSlots({
 		if (!warnUnsupported) return;
 		logIgnoredActionSlotEvents(
 			actionSlots,
-			application ? APP_BUILDER_ROOT_EVENTS : resolvedAllowedEvents,
+			application ? APP_BUILDER_SLOT_EVENTS.root : resolvedAllowedEvents,
 			application ? "on the App Builder root" : "on this node",
 		);
 	}, [actionSlots, application, resolvedAllowedEvents, warnUnsupported]);

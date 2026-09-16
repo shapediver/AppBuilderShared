@@ -10,8 +10,8 @@ import type {
 /**
  * Runtime allowlists and matching helpers for action slots.
  *
- * Which events a JSON node may use is not in Zod. Callers pass an allowlist
- * into {@link pickAllowedActionSlots}; anything else is ignored (and logged).
+ * Which events a JSON node may use is not in Zod. Callers pass a list from
+ * {@link APP_BUILDER_SLOT_EVENTS} into {@link pickAllowedActionSlots}.
  * UI event names are the keys of {@link APP_BUILDER_UI_EVENT_REACT_PROPS}.
  */
 
@@ -53,6 +53,22 @@ export const APP_BUILDER_ROOT_EVENTS: readonly string[] = [
 	...APP_BUILDER_APPLICATION_EVENTS,
 	...APP_BUILDER_UI_EVENTS,
 ];
+
+/**
+ * Per-node event allowlists. UI kinds currently share {@link APP_BUILDER_UI_EVENTS};
+ * change one key here when that node should accept extra (or fewer) names.
+ * `root` is the ignored-slot log for the App Builder definition (application + viewport UI).
+ */
+export const APP_BUILDER_SLOT_EVENTS = {
+	widget: APP_BUILDER_UI_EVENTS,
+	tab: APP_BUILDER_UI_EVENTS,
+	container: APP_BUILDER_UI_EVENTS,
+	control: APP_BUILDER_UI_EVENTS,
+	toolbar: APP_BUILDER_UI_EVENTS,
+	viewport: APP_BUILDER_UI_EVENTS,
+	application: APP_BUILDER_APPLICATION_EVENTS,
+	root: APP_BUILDER_ROOT_EVENTS,
+} as const;
 
 /** Trigger map keyed by UI event name. Written by slot runners, read by DOM handlers. */
 export type AppBuilderUiSlotHandlers = {
