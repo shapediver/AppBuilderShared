@@ -4,7 +4,7 @@ import type {FilterSelection} from "./types";
 export interface ActiveFilterTag {
 	filterIndex: number;
 	value: string;
-	/** Shown on the pill (usually the filter value). */
+	/** Shown on the pill (option display label, or the value if none). */
 	label: string;
 	/** Accordion group title for context when removing a tag. */
 	groupLabel: string;
@@ -31,7 +31,8 @@ export function buildActiveFilterTags(
 			tags.push({
 				filterIndex,
 				value,
-				label: value,
+				label:
+					group.nodes.find((n) => n.value === value)?.label ?? value,
 				groupLabel: group.label,
 			});
 		}

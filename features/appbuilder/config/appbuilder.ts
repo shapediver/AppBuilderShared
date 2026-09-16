@@ -204,11 +204,19 @@ export interface IFilterableDatabaseSettings {
 	 * and "itemData" properties.
 	 */
 	filters: {
-		/** Index of the column to filter. */
+		/** Index of the column to filter (option values and matching / selection keys). */
 		column: number;
 		/**
-		 * Optional display name for the filter group in the UI (accordion title, active tags).
-		 * Defaults to `Filter ${index + 1}` when omitted.
+		 * Optional 0-based column index for per-option *text*. Matching and
+		 * selection keys stay on `column`. Omit to show the value as the label.
+		 * Out-of-range indices behave like an empty cell.
+		 * Distinct from `label`, which is the filter group / accordion title.
+		 */
+		columnLabel?: number;
+		/**
+		 * Optional display name for the filter group in the UI (accordion title,
+		 * active tag group context). Not used as option text — use `columnLabel`
+		 * for per-option display names. Defaults to `Filter ${index + 1}` when omitted.
 		 */
 		label?: string;
 		/**

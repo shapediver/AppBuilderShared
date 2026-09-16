@@ -41,6 +41,7 @@ const filterableDatabaseDataSourceSchema = z
 /** One accordion filter group: column index, UI mode, and optional fixed value list. */
 const filterableDatabaseFilterSchema = z.object({
 	column: z.number().int().nonnegative(),
+	columnLabel: z.number().int().nonnegative().optional(),
 	label: z.string().min(1).optional(),
 	multivalued: z.boolean().optional(),
 	multiple: z.boolean().optional(),

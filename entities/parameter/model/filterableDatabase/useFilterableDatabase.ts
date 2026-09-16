@@ -7,7 +7,7 @@ import {
 import {createFilterableDatabaseScrollingApi} from "../../lib/filterableDatabase/createScrollingApi";
 import {
 	applySelectAll,
-	extractFilterValues,
+	extractFilterOptions,
 	getSelectAllState,
 	toggleFilterSelection,
 } from "../../lib/filterableDatabase/filterLogic";
@@ -164,11 +164,15 @@ export function useFilterableDatabase(
 			nodes:
 				filter.type === "text"
 					? []
-					: extractFilterValues(table, filter).map((value) => ({
-							value,
-							label: value,
-							...(filter.type === "color" ? {color: value} : {}),
-						})),
+					: extractFilterOptions(table, filter, filterIndex).map(
+							({value, label}) => ({
+								value,
+								label,
+								...(filter.type === "color"
+									? {color: value}
+									: {}),
+							}),
+						),
 		}));
 	}, [table, settings.filters]);
 
