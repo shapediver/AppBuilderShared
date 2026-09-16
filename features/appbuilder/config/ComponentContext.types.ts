@@ -200,6 +200,7 @@ export type AppBuilderInteractionSlotListenersProps = {
 		slot: IAppBuilderActionSlot;
 		index: number;
 	}>;
+	namespace: string;
 	viewportId: string;
 	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>;
 };

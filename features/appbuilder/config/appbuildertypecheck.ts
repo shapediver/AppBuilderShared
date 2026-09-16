@@ -948,13 +948,13 @@ const IAppBuilderActionSlotEventPropsSelectionSchema = z.strictObject({
 	maximumSelection: z.number().optional(),
 	hover: z.boolean().optional(),
 	hoverColor: z
-		.union([z.string(), z.record(z.string(), JsonValueSchema)])
+		.union([z.string(), z.record(z.string(), JsonValueSchema), z.null()])
 		.optional(),
 	selectionColor: z
-		.union([z.string(), z.record(z.string(), JsonValueSchema)])
+		.union([z.string(), z.record(z.string(), JsonValueSchema), z.null()])
 		.optional(),
 	availableColor: z
-		.union([z.string(), z.record(z.string(), JsonValueSchema)])
+		.union([z.string(), z.record(z.string(), JsonValueSchema), z.null()])
 		.optional(),
 	occludeBySceneGeometry: z.boolean().optional(),
 });
@@ -1431,10 +1431,11 @@ const IAppBuilderTabSchema = appBuilderNodeObject({
 
 // Local strict schema mirroring ISelectionParameterProps from @shapediver/viewer.session.
 // The external JsonSchema uses "strip" mode, so we define our own strict version to reject unknown keys.
-// Fields match ISelectionParameterProps (no null variants — the TS type does not use null).
+// Colors match viewer `InteractionEffect` (string, material record, or null).
 const SelectionColorSchema = z.union([
 	z.string(),
 	z.record(z.string(), JsonValueSchema),
+	z.null(),
 ]);
 const ISelectionParameterPropsSchema = z.strictObject({
 	maximumSelection: z.number().optional(),

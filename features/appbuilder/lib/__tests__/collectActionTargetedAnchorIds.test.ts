@@ -1,238 +1,244 @@
-import { AppBuilderContainerNameType } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
-  collectActionTargetedAnchorIdsFromContainers,
-  collectActionTargetedAnchorIdsFromGroups,
+	collectActionTargetedAnchorIdsFromContainers,
+	collectActionTargetedAnchorIdsFromGroups,
 } from "../collectActionTargetedAnchorIds";
 
 const visibilityAction = (name: string, id: string) => ({
-  type: "action",
-  props: {
-    definition: {
-      type: "setContainerVisibility",
-      props: {
-        container: { name, props: { id } },
-        mode: "toggle",
-      },
-    },
-  },
+	type: "action",
+	props: {
+		definition: {
+			type: "setContainerVisibility",
+			props: {
+				container: {name, props: {id}},
+				mode: "toggle",
+			},
+		},
+	},
 });
 
 describe("collectActionTargetedAnchorIds", () => {
-  it("collects 2d and 3d targets and ignores other containers", () => {
-    const result = collectActionTargetedAnchorIdsFromGroups([
-      [
-        visibilityAction(AppBuilderContainerNameType.Anchor2d, "panel-2d"),
-        visibilityAction(AppBuilderContainerNameType.Anchor3d, "panel-3d"),
-        visibilityAction(AppBuilderContainerNameType.Left, "left"),
-        { type: "action", props: { definition: { type: "ar", props: {} } } },
-      ],
-    ]);
+	it("collects 2d and 3d targets and ignores other containers", () => {
+		const result = collectActionTargetedAnchorIdsFromGroups([
+			[
+				visibilityAction(
+					AppBuilderContainerNameType.Anchor2d,
+					"panel-2d",
+				),
+				visibilityAction(
+					AppBuilderContainerNameType.Anchor3d,
+					"panel-3d",
+				),
+				visibilityAction(AppBuilderContainerNameType.Left, "left"),
+				{type: "action", props: {definition: {type: "ar", props: {}}}},
+			],
+		]);
 
-    expect(result).toEqual({
-      all: ["panel-2d", "panel-3d"],
-      anchor2d: ["panel-2d"],
-      anchor3d: ["panel-3d"],
-    });
-  });
+		expect(result).toEqual({
+			all: ["panel-2d", "panel-3d"],
+			anchor2d: ["panel-2d"],
+			anchor3d: ["panel-3d"],
+		});
+	});
 
-  it("walks actionMenu sections and resolved menu items", () => {
-    const result = collectActionTargetedAnchorIdsFromGroups([
-      [
-        {
-          type: "actionMenu",
-          props: {
-            sections: [
-              [
-                visibilityAction(
-                  AppBuilderContainerNameType.Anchor2d,
-                  "from-menu",
-                ),
-              ],
-            ],
-          },
-        },
-        {
-          type: "menu",
-          props: {
-            sections: [
-              {
-                id: "runtime",
-                items: [
-                  visibilityAction(
-                    AppBuilderContainerNameType.Anchor3d,
-                    "from-runtime-menu",
-                  ),
-                ],
-              },
-            ],
-          },
-        },
-      ],
-    ]);
+	it("walks actionMenu sections and resolved menu items", () => {
+		const result = collectActionTargetedAnchorIdsFromGroups([
+			[
+				{
+					type: "actionMenu",
+					props: {
+						sections: [
+							[
+								visibilityAction(
+									AppBuilderContainerNameType.Anchor2d,
+									"from-menu",
+								),
+							],
+						],
+					},
+				},
+				{
+					type: "menu",
+					props: {
+						sections: [
+							{
+								id: "runtime",
+								items: [
+									visibilityAction(
+										AppBuilderContainerNameType.Anchor3d,
+										"from-runtime-menu",
+									),
+								],
+							},
+						],
+					},
+				},
+			],
+		]);
 
-    expect(result.anchor2d).toEqual(["from-menu"]);
-    expect(result.anchor3d).toEqual(["from-runtime-menu"]);
-  });
+		expect(result.anchor2d).toEqual(["from-menu"]);
+		expect(result.anchor3d).toEqual(["from-runtime-menu"]);
+	});
 
-  it("collects from toolbar containers only", () => {
-    const result = collectActionTargetedAnchorIdsFromContainers([
-      {
-        name: AppBuilderContainerNameType.Anchor2d,
-        props: { id: "not-from-toolbar" },
-      },
-      {
-        name: AppBuilderContainerNameType.Toolbar,
-        props: { id: "tb", side: "bottom" },
-        groups: [
-          [
-            visibilityAction(
-              AppBuilderContainerNameType.Anchor2d,
-              "from-toolbar",
-            ),
-          ],
-        ],
-      },
-    ]);
+	it("collects from toolbar containers only", () => {
+		const result = collectActionTargetedAnchorIdsFromContainers([
+			{
+				name: AppBuilderContainerNameType.Anchor2d,
+				props: {id: "not-from-toolbar"},
+			},
+			{
+				name: AppBuilderContainerNameType.Toolbar,
+				props: {id: "tb", side: "bottom"},
+				groups: [
+					[
+						visibilityAction(
+							AppBuilderContainerNameType.Anchor2d,
+							"from-toolbar",
+						),
+					],
+				],
+			},
+		]);
 
-    expect(result.anchor2d).toEqual(["from-toolbar"]);
-  });
+		expect(result.anchor2d).toEqual(["from-toolbar"]);
+	});
 
-  it("collects anchors nested inside executeActions", () => {
-    const result = collectActionTargetedAnchorIdsFromGroups([
-      [
-        {
-          type: "action",
-          props: {
-            definition: {
-              type: "executeActions",
-              props: {
-                mode: "sequential",
-                actions: [
-                  {
-                    type: "setContainerVisibility",
-                    props: {
-                      container: {
-                        name: AppBuilderContainerNameType.Anchor2d,
-                        props: { id: "nested-2d" },
-                      },
-                      mode: "open",
-                    },
-                  },
-                  {
-                    type: "executeActions",
-                    props: {
-                      actions: [
-                        {
-                          type: "setContainerVisibility",
-                          props: {
-                            container: {
-                              name: AppBuilderContainerNameType.Anchor3d,
-                              props: {
-                                id: "nested-3d",
-                              },
-                            },
-                            mode: "toggle",
-                          },
-                        },
-                      ],
-                    },
-                  },
-                ],
-              },
-            },
-          },
-        },
-      ],
-    ]);
+	it("collects anchors nested inside executeActions", () => {
+		const result = collectActionTargetedAnchorIdsFromGroups([
+			[
+				{
+					type: "action",
+					props: {
+						definition: {
+							type: "executeActions",
+							props: {
+								mode: "sequential",
+								actions: [
+									{
+										type: "setContainerVisibility",
+										props: {
+											container: {
+												name: AppBuilderContainerNameType.Anchor2d,
+												props: {id: "nested-2d"},
+											},
+											mode: "open",
+										},
+									},
+									{
+										type: "executeActions",
+										props: {
+											actions: [
+												{
+													type: "setContainerVisibility",
+													props: {
+														container: {
+															name: AppBuilderContainerNameType.Anchor3d,
+															props: {
+																id: "nested-3d",
+															},
+														},
+														mode: "toggle",
+													},
+												},
+											],
+										},
+									},
+								],
+							},
+						},
+					},
+				},
+			],
+		]);
 
-    expect(result).toEqual({
-      all: ["nested-2d", "nested-3d"],
-      anchor2d: ["nested-2d"],
-      anchor3d: ["nested-3d"],
-    });
-  });
+		expect(result).toEqual({
+			all: ["nested-2d", "nested-3d"],
+			anchor2d: ["nested-2d"],
+			anchor3d: ["nested-3d"],
+		});
+	});
 
-  it("collects anchors from toolbar item and root actionSlots", () => {
-    const result = collectActionTargetedAnchorIdsFromGroups([
-      [
-        {
-          type: "parameter",
-          props: { name: "Length" },
-          actionSlots: {
-            click: {
-              action: {
-                type: "setContainerVisibility",
-                props: {
-                  container: {
-                    name: AppBuilderContainerNameType.Anchor2d,
-                    props: { id: "from-slot" },
-                  },
-                  mode: "toggle",
-                },
-              },
-            },
-          },
-        },
-      ],
-    ]);
+	it("collects anchors from toolbar item and root actionSlots", () => {
+		const result = collectActionTargetedAnchorIdsFromGroups([
+			[
+				{
+					type: "parameter",
+					props: {name: "Length"},
+					actionSlots: {
+						click: {
+							action: {
+								type: "setContainerVisibility",
+								props: {
+									container: {
+										name: AppBuilderContainerNameType.Anchor2d,
+										props: {id: "from-slot"},
+									},
+									mode: "toggle",
+								},
+							},
+						},
+					},
+				},
+			],
+		]);
 
-    expect(result.anchor2d).toEqual(["from-slot"]);
+		expect(result.anchor2d).toEqual(["from-slot"]);
 
-    const fromRoot = collectActionTargetedAnchorIdsFromContainers([], {
-      appready: {
-        action: {
-          type: "executeActions",
-          props: {
-            actions: [
-              {
-                type: "setContainerVisibility",
-                props: {
-                  container: {
-                    name: AppBuilderContainerNameType.Anchor3d,
-                    props: { id: "from-appready" },
-                  },
-                  mode: "open",
-                },
-              },
-            ],
-          },
-        },
-      },
-    });
+		const fromRoot = collectActionTargetedAnchorIdsFromContainers([], {
+			appready: {
+				action: {
+					type: "executeActions",
+					props: {
+						actions: [
+							{
+								type: "setContainerVisibility",
+								props: {
+									container: {
+										name: AppBuilderContainerNameType.Anchor3d,
+										props: {id: "from-appready"},
+									},
+									mode: "open",
+								},
+							},
+						],
+					},
+				},
+			},
+		});
 
-    expect(fromRoot.anchor3d).toEqual(["from-appready"]);
-  });
+		expect(fromRoot.anchor3d).toEqual(["from-appready"]);
+	});
 
-  it("collects anchors from array-valued actionSlots", () => {
-    const fromRoot = collectActionTargetedAnchorIdsFromContainers([], {
-      selecton: [
-        {
-          action: {
-            type: "setContainerVisibility",
-            props: {
-              container: {
-                name: AppBuilderContainerNameType.Anchor2d,
-                props: { id: "from-array-a" },
-              },
-              mode: "open",
-            },
-          },
-        },
-        {
-          action: {
-            type: "setContainerVisibility",
-            props: {
-              container: {
-                name: AppBuilderContainerNameType.Anchor2d,
-                props: { id: "from-array-b" },
-              },
-              mode: "close",
-            },
-          },
-        },
-      ],
-    });
+	it("collects anchors from array-valued actionSlots", () => {
+		const fromRoot = collectActionTargetedAnchorIdsFromContainers([], {
+			selecton: [
+				{
+					action: {
+						type: "setContainerVisibility",
+						props: {
+							container: {
+								name: AppBuilderContainerNameType.Anchor2d,
+								props: {id: "from-array-a"},
+							},
+							mode: "open",
+						},
+					},
+				},
+				{
+					action: {
+						type: "setContainerVisibility",
+						props: {
+							container: {
+								name: AppBuilderContainerNameType.Anchor2d,
+								props: {id: "from-array-b"},
+							},
+							mode: "close",
+						},
+					},
+				},
+			],
+		});
 
-    expect(fromRoot.anchor2d).toEqual(["from-array-a", "from-array-b"]);
-  });
+		expect(fromRoot.anchor2d).toEqual(["from-array-a", "from-array-b"]);
+	});
 });

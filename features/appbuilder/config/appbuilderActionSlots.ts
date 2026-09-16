@@ -140,7 +140,9 @@ export type AppBuilderKnownEvent =
  * (same event, different `eventProps` — e.g. several `selecton`
  * nameFilters on the App Builder root).
  * Which events a node may use is enforced by `AppBuilderActionSlots` (allowlist
- * + ignored-slot log), not by this type. Custom events use the `custom:` prefix.
+ * + ignored-slot log), not by this type. Custom events use `custom:` +
+ * lowercase kebab-case and are dispatched via
+ * `dispatchAppBuilderCustomEvent`.
  */
 export type IAppBuilderActionSlots = Partial<
 	Record<AppBuilderKnownEvent, IAppBuilderActionSlotList>

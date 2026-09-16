@@ -1,6 +1,7 @@
 import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
 import type {AppBuilderInteractionSlotListenersProps} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {
 	addListener,
@@ -26,6 +27,8 @@ import {
 	getActionSlotEventProps,
 	isAppBuilderInteractionEvent,
 	mapViewerInteractionEventToSlot,
+	selectionSlotGroupKey,
+	selectionSlotNameFilterKey,
 	type ResolvedActionSlot,
 } from "../lib/appBuilderActionSlots";
 
@@ -59,6 +62,12 @@ function getValidCachedNames(
 	return cachedNames.filter((name) => availableNames.includes(name));
 }
 
+function sameNameSet(a: string[], b: string[]): boolean {
+	if (a.length !== b.length) return false;
+	const names = new Set(a);
+	return b.every((name) => names.has(name));
+}
+
 function selectionEventProps(
 	slot: IAppBuilderActionSlot,
 ): IAppBuilderActionSlotEventPropsSelection | undefined {
@@ -75,7 +84,8 @@ function runSlot(
 }
 
 /**
- * First defined visual / filter field across every slot in a nameFilter group.
+ * First defined visual / filter field across every slot in a group. Groups
+ * share a full effective config, so this is usually a no-op merge.
  */
 function mergeSelectionEventProps(
 	items: ResolvedActionSlot[],
@@ -104,17 +114,19 @@ type InteractionViewerEvent = IEvent & {
 };
 
 /**
- * One `useSelection` per distinct `nameFilter` + viewport, like an anchor's
- * `selectionProperties`. Passive so a selection parameter can take over.
- * Slot names are `selecton` / `selectoff` / `hoveron` / `hoveroff`.
+ * One `useSelection` per distinct effective selection config, like an
+ * anchor's `selectionProperties`. Passive so a selection parameter can take
+ * over. Slot names are `selecton` / `selectoff` / `hoveron` / `hoveroff`.
  * Viewer multi-select on/off is mapped onto `selecton` / `selectoff`.
  */
 function InteractionSlotGroup({
 	items,
+	namespace,
 	viewportId,
 	handlersRef,
 }: {
 	items: ResolvedActionSlot[];
+	namespace: string;
 	viewportId: string;
 	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>;
 }) {
@@ -126,13 +138,17 @@ function InteractionSlotGroup({
 	const nameFilter = mergedEventProps.nameFilter?.length
 		? mergedEventProps.nameFilter
 		: ["*"];
-	const cacheKey = `${resolvedViewportId}:${JSON.stringify(nameFilter)}`;
+	const cacheKey = selectionSlotGroupKey(mergedEventProps, viewportId);
 	const [selectionAllowed, setSelectionAllowed] = useState(true);
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
+	const restoringRef = useRef(false);
+	const lastEmittedNamesRef = useRef<string[]>([]);
 	const {addInteractionRequest, removeInteractionRequest} =
 		useShapeDiverStoreInteractionRequestManagement();
-	const processActive = useShapeDiverStoreProcessManager(
-		(state) => Object.values(state.processManagers).length > 0,
+	const processActive = useShapeDiverStoreProcessManager((state) =>
+		Object.values(state.processManagers).some(
+			(manager) => manager.controllerSessionId === namespace,
+		),
 	);
 	const processActiveRef = useRef(processActive);
 	processActiveRef.current = processActive;
@@ -209,6 +225,7 @@ function InteractionSlotGroup({
 				if (interactionEvent.manager?.id !== componentId) return;
 				if (!selectionAllowedRef.current) return;
 				if (processActiveRef.current) return;
+				if (restoringRef.current) return;
 				if (
 					interactionEvent.viewportId &&
 					interactionEvent.viewportId !== resolvedViewportId
@@ -241,6 +258,11 @@ function InteractionSlotGroup({
 		}
 	}, [availableNodeNames, cacheKey, processActive, selectedNodeNames]);
 
+	useEffect(() => {
+		if (processActive || restoringRef.current) return;
+		lastEmittedNamesRef.current = selectedNodeNames;
+	}, [processActive, selectedNodeNames]);
+
 	const prevProcessActiveRef = useRef(processActive);
 	useEffect(() => {
 		const wasActive = prevProcessActiveRef.current;
@@ -251,12 +273,22 @@ function InteractionSlotGroup({
 			availableNodeNames,
 		);
 		selectedNodeNamesCache[cacheKey] = validCachedNames;
+		const selectionChanged = !sameNameSet(
+			lastEmittedNamesRef.current,
+			validCachedNames,
+		);
+		restoringRef.current = true;
 		if (validCachedNames.length > 0) {
 			setSelectedNodeNamesAndRestoreSelection(validCachedNames);
-			fireNamed("selecton");
-		} else {
-			fireNamed("selectoff");
 		}
+		lastEmittedNamesRef.current = validCachedNames;
+		if (selectionChanged) {
+			if (validCachedNames.length > 0) fireNamed("selecton");
+			else fireNamed("selectoff");
+		}
+		queueMicrotask(() => {
+			restoringRef.current = false;
+		});
 	}, [
 		availableNodeNames,
 		cacheKey,
@@ -285,6 +317,7 @@ function InteractionSlotGroup({
  */
 export function AppBuilderInteractionSlotListeners({
 	resolved,
+	namespace,
 	viewportId,
 	handlersRef,
 }: AppBuilderInteractionSlotListenersProps) {
@@ -297,14 +330,31 @@ export function AppBuilderInteractionSlotListeners({
 	);
 	const groups = useMemo(() => {
 		const map = new Map<string, ResolvedActionSlot[]>();
+		const filterToGroupKeys = new Map<string, Set<string>>();
+		const warnedFilterKeys = new Set<string>();
 		for (const item of items) {
 			const eventProps = selectionEventProps(item.slot);
-			const key = JSON.stringify({
-				viewportId: eventProps?.viewportId ?? viewportId,
-				nameFilter: eventProps?.nameFilter?.length
-					? eventProps.nameFilter
-					: ["*"],
-			});
+			const key = selectionSlotGroupKey(eventProps, viewportId);
+			const filterKey = selectionSlotNameFilterKey(
+				eventProps,
+				viewportId,
+			);
+			let groupKeys = filterToGroupKeys.get(filterKey);
+			if (!groupKeys) {
+				groupKeys = new Set();
+				filterToGroupKeys.set(filterKey, groupKeys);
+			}
+			if (
+				groupKeys.size > 0 &&
+				!groupKeys.has(key) &&
+				!warnedFilterKeys.has(filterKey)
+			) {
+				Logger.warn(
+					"Action slots share a nameFilter and viewport but differ in selection config (colors, max, hover, occlusion) and will run as separate interaction groups.",
+				);
+				warnedFilterKeys.add(filterKey);
+			}
+			groupKeys.add(key);
 			const group = map.get(key);
 			if (group) group.push(item);
 			else map.set(key, [item]);
@@ -319,6 +369,7 @@ export function AppBuilderInteractionSlotListeners({
 				<InteractionSlotGroup
 					key={key}
 					items={groupItems}
+					namespace={namespace}
 					viewportId={viewportId}
 					handlersRef={handlersRef}
 				/>

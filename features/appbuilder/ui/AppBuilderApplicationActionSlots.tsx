@@ -330,6 +330,7 @@ export default function AppBuilderApplicationActionSlots({
 					namespace={namespace}
 					viewportId={viewportId}
 					fullscreenId={fullscreenId}
+					eventName={eventName}
 					registerTrigger={(trigger) => {
 						handlersRef.current[
 							actionSlotHandlerKey(eventName, index)
@@ -349,6 +350,7 @@ export default function AppBuilderApplicationActionSlots({
 			{InteractionSlotListeners ? (
 				<InteractionSlotListeners
 					resolved={resolved}
+					namespace={namespace}
 					viewportId={viewportId}
 					handlersRef={handlersRef}
 				/>

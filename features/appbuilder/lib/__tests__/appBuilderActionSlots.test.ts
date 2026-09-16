@@ -10,7 +10,9 @@ import {
 	APP_BUILDER_SLOT_EVENTS,
 	APP_BUILDER_UI_EVENT_REACT_PROPS,
 	APP_BUILDER_UI_EVENTS,
+	dispatchAppBuilderCustomEvent,
 	isAppBuilderApplicationEvent,
+	isAppBuilderCustomEvent,
 	isAppBuilderInteractionEvent,
 	isSessionCustomizationFailedTask,
 	logIgnoredActionSlotEvents,
@@ -19,6 +21,9 @@ import {
 	matchesSessionFilter,
 	pickAllowedActionSlots,
 	readStringField,
+	registerAppBuilderCustomActionSlot,
+	selectionSlotGroupKey,
+	selectionSlotNameFilterKey,
 	SESSION_CUSTOMIZATION_FAILED_STATUS,
 	SESSION_CUSTOMIZATION_TASK_TYPE,
 	uiSlotDomProps,
@@ -43,7 +48,7 @@ describe("appBuilderActionSlots helpers", () => {
 		);
 	});
 
-	it("picks only allowed event names", () => {
+	it("picks allowed event names and valid custom events", () => {
 		expect(pickAllowedActionSlots(slots, ["click", "pointerdown"])).toEqual(
 			[
 				{
@@ -51,8 +56,24 @@ describe("appBuilderActionSlots helpers", () => {
 					slot: slots.click,
 					index: 0,
 				},
+				{
+					eventName: "custom:item-selected",
+					slot: slots["custom:item-selected"],
+					index: 1,
+				},
 			],
 		);
+		expect(
+			pickAllowedActionSlots(slots, ["click"], {
+				includeCustomEvents: false,
+			}),
+		).toEqual([
+			{
+				eventName: "click",
+				slot: slots.click,
+				index: 0,
+			},
+		]);
 	});
 
 	it("matches session filters using the controller session as default", () => {
@@ -127,11 +148,26 @@ describe("appBuilderActionSlots helpers", () => {
 		).not.toThrow();
 	});
 
-	it("warns for custom slots that cannot be emitted", () => {
+	it("does not warn for valid custom slots", () => {
 		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
 		logIgnoredActionSlotEvents(slots, ["click"], "on this node");
-		expect(warn).toHaveBeenCalledWith(
+		expect(warn).not.toHaveBeenCalledWith(
 			expect.stringContaining("custom:item-selected"),
+		);
+		warn.mockRestore();
+	});
+
+	it("warns for invalid custom slot names", () => {
+		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
+		logIgnoredActionSlotEvents(
+			{
+				"custom:Item": {action: {type: "undo", props: {}}},
+			},
+			["click"],
+			"on this node",
+		);
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining("custom:Item"),
 		);
 		warn.mockRestore();
 	});
@@ -282,5 +318,49 @@ describe("appBuilderActionSlots helpers", () => {
 			{eventName: "selecton", slot: first, index: 0},
 			{eventName: "selecton", slot: second, index: 1},
 		]);
+	});
+
+	it("recognizes custom kebab-case event names", () => {
+		expect(isAppBuilderCustomEvent("custom:item-selected")).toBe(true);
+		expect(isAppBuilderCustomEvent("custom:Item")).toBe(false);
+		expect(isAppBuilderCustomEvent("custom:item_selected")).toBe(false);
+		expect(isAppBuilderCustomEvent("click")).toBe(false);
+	});
+
+	it("dispatches registered custom action slots", () => {
+		const trigger = jest.fn();
+		const unregister = registerAppBuilderCustomActionSlot(
+			"custom:item-selected",
+			trigger,
+		);
+		dispatchAppBuilderCustomEvent("custom:item-selected");
+		expect(trigger).toHaveBeenCalledTimes(1);
+		unregister();
+		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
+		dispatchAppBuilderCustomEvent("custom:item-selected");
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining("no registered listener"),
+		);
+		dispatchAppBuilderCustomEvent("custom:Item");
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining("custom:kebab-case"),
+		);
+		warn.mockRestore();
+	});
+
+	it("groups selection slots by full effective config", () => {
+		const nameFilter = ["Cabinet"];
+		expect(
+			selectionSlotGroupKey({nameFilter, maximumSelection: 1}, "vp"),
+		).toBe(selectionSlotGroupKey({nameFilter}, "vp"));
+		expect(
+			selectionSlotGroupKey({nameFilter, maximumSelection: 2}, "vp"),
+		).not.toBe(selectionSlotGroupKey({nameFilter}, "vp"));
+		expect(selectionSlotNameFilterKey({nameFilter}, "vp")).toBe(
+			selectionSlotNameFilterKey(
+				{nameFilter, selectionColor: "#ff0000"},
+				"vp",
+			),
+		);
 	});
 });

@@ -1,10 +1,12 @@
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import type {
 	AppBuilderApplicationEvent,
+	AppBuilderCustomEventName,
 	AppBuilderInteractionEvent,
 	AppBuilderUiEvent,
 	IAppBuilderActionSlot,
 	IAppBuilderActionSlotEventProps,
+	IAppBuilderActionSlotEventPropsSelection,
 	IAppBuilderActionSlots,
 } from "../config/appbuilderActionSlots";
 
@@ -104,6 +106,63 @@ export function isAppBuilderApplicationEvent(
 	return (APP_BUILDER_APPLICATION_EVENTS as readonly string[]).includes(
 		eventName,
 	);
+}
+
+/** JSON `custom:` names: `custom:` + lowercase kebab-case (`custom:item-selected`). */
+const CUSTOM_ACTION_SLOT_EVENT = /^custom:[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export function isAppBuilderCustomEvent(
+	eventName: string,
+): eventName is AppBuilderCustomEventName {
+	return CUSTOM_ACTION_SLOT_EVENT.test(eventName);
+}
+
+const customActionSlotTriggers = new Map<
+	string,
+	Set<() => void | Promise<void>>
+>();
+
+/**
+ * Register a `custom:*` slot trigger. Host or custom components call
+ * {@link dispatchAppBuilderCustomEvent} with the same name.
+ */
+export function registerAppBuilderCustomActionSlot(
+	eventName: string,
+	trigger: () => void | Promise<void>,
+): () => void {
+	if (!isAppBuilderCustomEvent(eventName)) return () => {};
+	let triggers = customActionSlotTriggers.get(eventName);
+	if (!triggers) {
+		triggers = new Set();
+		customActionSlotTriggers.set(eventName, triggers);
+	}
+	triggers.add(trigger);
+	return () => {
+		triggers!.delete(trigger);
+		if (triggers!.size === 0) customActionSlotTriggers.delete(eventName);
+	};
+}
+
+/** Run every registered slot for `eventName` (`custom:kebab-case`). */
+export function dispatchAppBuilderCustomEvent(eventName: string): void {
+	if (!isAppBuilderCustomEvent(eventName)) {
+		Logger.warn(
+			`"${eventName}" is not a custom action slot event (expected custom:kebab-case).`,
+		);
+		return;
+	}
+	const triggers = customActionSlotTriggers.get(eventName);
+	if (!triggers || triggers.size === 0) {
+		Logger.warn(
+			`Custom action slot "${eventName}" has no registered listener.`,
+		);
+		return;
+	}
+	for (const trigger of triggers) {
+		void Promise.resolve(trigger()).catch((error) => {
+			Logger.warn("Action slot failed:", error);
+		});
+	}
 }
 
 /**
@@ -310,19 +369,29 @@ export function actionSlotHandlerKey(eventName: string, index: number): string {
 }
 
 /**
- * Slots whose event names are in `allowedEvents`.
+ * Slots whose event names are in `allowedEvents`, plus valid `custom:*`
+ * names when `includeCustomEvents` is true (default). The viewport wrap of
+ * root slots passes `includeCustomEvents: false` so root `custom:*` is
+ * registered once by application listeners.
  * Arrays on one event name become several {@link ResolvedActionSlot}s.
- * Custom events and names outside the allowlist are omitted (see {@link logIgnoredActionSlotEvents}).
+ * Other names are omitted (see {@link logIgnoredActionSlotEvents}).
  */
 export function pickAllowedActionSlots(
 	actionSlots: IAppBuilderActionSlots | undefined,
 	allowedEvents: readonly string[],
+	options?: {includeCustomEvents?: boolean},
 ): ResolvedActionSlot[] {
 	if (!actionSlots) return [];
+	const includeCustomEvents = options?.includeCustomEvents !== false;
 	const allowed = new Set(allowedEvents);
 	const resolved: ResolvedActionSlot[] = [];
 	for (const eventName of Object.keys(actionSlots)) {
-		if (!allowed.has(eventName)) continue;
+		if (
+			!allowed.has(eventName) &&
+			!(includeCustomEvents && isAppBuilderCustomEvent(eventName))
+		) {
+			continue;
+		}
 		const listed = listActionSlots(
 			(
 				actionSlots as Record<
@@ -343,8 +412,9 @@ export function pickAllowedActionSlots(
 }
 
 /**
- * Warn for slots that this node will not run, including `custom:*`
- * (parsed, not emitted yet).
+ * Warn for slots that this node will not run. Valid `custom:*` names are
+ * picked by {@link pickAllowedActionSlots} and dispatched via
+ * {@link dispatchAppBuilderCustomEvent}.
  */
 export function logIgnoredActionSlotEvents(
 	actionSlots: IAppBuilderActionSlots | undefined,
@@ -362,10 +432,16 @@ export function logIgnoredActionSlotEvents(
 				>
 			)[eventName],
 		);
-		if (listed.length === 0 || allowed.has(eventName)) continue;
+		if (
+			listed.length === 0 ||
+			allowed.has(eventName) ||
+			isAppBuilderCustomEvent(eventName)
+		) {
+			continue;
+		}
 		if (eventName.startsWith("custom:")) {
 			Logger.warn(
-				`Custom action slot "${eventName}" is not emitted ${unsupportedOn} and will be ignored.`,
+				`Custom action slot "${eventName}" is not a valid custom event name (expected custom:kebab-case) ${unsupportedOn} and will be ignored.`,
 			);
 		} else {
 			Logger.warn(
@@ -395,4 +471,42 @@ export function readStringField(
 		}
 	}
 	return undefined;
+}
+
+function normalizedNameFilter(
+	eventProps: IAppBuilderActionSlotEventPropsSelection | undefined,
+): string[] {
+	return eventProps?.nameFilter?.length ? eventProps.nameFilter : ["*"];
+}
+
+/** Viewport + nameFilter only — used to detect conflicting selection configs. */
+export function selectionSlotNameFilterKey(
+	eventProps: IAppBuilderActionSlotEventPropsSelection | undefined,
+	viewportId: string,
+): string {
+	return JSON.stringify({
+		viewportId: eventProps?.viewportId ?? viewportId,
+		nameFilter: normalizedNameFilter(eventProps),
+	});
+}
+
+/**
+ * Full effective `useSelection` config. Slots that share this key share one
+ * interaction manager; different colors/max/hover become separate groups.
+ */
+export function selectionSlotGroupKey(
+	eventProps: IAppBuilderActionSlotEventPropsSelection | undefined,
+	viewportId: string,
+): string {
+	return JSON.stringify({
+		viewportId: eventProps?.viewportId ?? viewportId,
+		nameFilter: normalizedNameFilter(eventProps),
+		minimumSelection: eventProps?.minimumSelection ?? 0,
+		maximumSelection: eventProps?.maximumSelection ?? 1,
+		hover: eventProps?.hover !== false,
+		hoverColor: eventProps?.hoverColor ?? null,
+		selectionColor: eventProps?.selectionColor ?? null,
+		availableColor: eventProps?.availableColor ?? null,
+		occludeBySceneGeometry: eventProps?.occludeBySceneGeometry ?? null,
+	});
 }

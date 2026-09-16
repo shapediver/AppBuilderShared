@@ -308,6 +308,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 						namespace={namespace}
 						layout="fill"
 						warnUnsupported={false}
+						includeCustomEvents={false}
 					>
 						<ViewportComponent
 							visibilitySessionIds={secondarySessions.map(

@@ -59,6 +59,11 @@ type Props = {
 	 * for the node kind. Defaults to UI events.
 	 */
 	allowedEvents?: readonly string[];
+	/**
+	 * Register valid `custom:*` slots (default true). The viewport wrap of
+	 * root `actionSlots` sets this false so application listeners own them.
+	 */
+	includeCustomEvents?: boolean;
 	viewportId?: string;
 	fullscreenId?: string;
 	/**
@@ -87,6 +92,7 @@ export default function AppBuilderActionSlots({
 	allowedEvents,
 	viewportId: inputViewportId,
 	fullscreenId,
+	includeCustomEvents = true,
 	layout = "contents",
 	warnUnsupported = true,
 	handlersRef: externalHandlersRef,
@@ -99,8 +105,11 @@ export default function AppBuilderActionSlots({
 	const handlersRef = externalHandlersRef ?? internalHandlersRef;
 
 	const resolved = useMemo(
-		() => pickAllowedActionSlots(actionSlots, resolvedAllowedEvents),
-		[actionSlots, resolvedAllowedEvents],
+		() =>
+			pickAllowedActionSlots(actionSlots, resolvedAllowedEvents, {
+				includeCustomEvents,
+			}),
+		[actionSlots, includeCustomEvents, resolvedAllowedEvents],
 	);
 	const eventNames = useMemo(
 		() => new Set(resolved.map((item) => item.eventName)),
@@ -144,6 +153,7 @@ export default function AppBuilderActionSlots({
 					namespace={namespace}
 					viewportId={viewportId}
 					fullscreenId={fullscreenId}
+					eventName={eventName}
 					registerTrigger={(trigger) => {
 						const map = handlersRef.current as Record<
 							string,
