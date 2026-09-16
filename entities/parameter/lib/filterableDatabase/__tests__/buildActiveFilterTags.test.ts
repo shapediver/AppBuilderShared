@@ -75,4 +75,43 @@ describe("buildActiveFilterTags", () => {
 			},
 		]);
 	});
+
+	it("shows the node display label on the pill and keeps value as the selection key", () => {
+		const groups: FilterTreeGroup[] = [
+			{
+				filterIndex: 0,
+				label: "Color",
+				type: "color",
+				nodes: [{value: "#277DA1", label: "Blue", color: "#277DA1"}],
+			},
+		];
+
+		expect(buildActiveFilterTags({0: ["#277DA1"]}, groups)).toEqual([
+			{
+				filterIndex: 0,
+				value: "#277DA1",
+				label: "Blue",
+				groupLabel: "Color",
+			},
+		]);
+	});
+
+	it("falls back to the value when no matching node label exists", () => {
+		const groups: FilterTreeGroup[] = [
+			{
+				filterIndex: 0,
+				label: "Color",
+				nodes: [],
+			},
+		];
+
+		expect(buildActiveFilterTags({0: ["#277DA1"]}, groups)).toEqual([
+			{
+				filterIndex: 0,
+				value: "#277DA1",
+				label: "#277DA1",
+				groupLabel: "Color",
+			},
+		]);
+	});
 });
