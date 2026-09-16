@@ -17,6 +17,7 @@ import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import AppBuilderActionArQrModal from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionArQrModal";
 import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
+import AppBuilderApplicationActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderApplicationActionSlots";
 import {SyncAddToCartActionThemeDefaults} from "@AppBuilderLib/features/appbuilder/ui/SyncAddToCartActionThemeDefaults";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
 import ImportModelStateDialogHost from "@AppBuilderLib/features/model-state/ui/ImportModelStateDialogHost";
@@ -289,10 +290,8 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	) : show ? (
 		<AppBuilderDataContext.Provider value={{data: appBuilderData}}>
 			{/* Root application slots: appready, computation*, export*, interaction. */}
-			<AppBuilderActionSlots
-				application
+			<AppBuilderApplicationActionSlots
 				actionSlots={appBuilderData?.actionSlots}
-				allowedEvents={APP_BUILDER_SLOT_EVENTS.application}
 				namespace={namespace}
 			/>
 			<AppBuilderTemplateSelector

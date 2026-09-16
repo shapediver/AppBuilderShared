@@ -1,5 +1,6 @@
 import {useSelection} from "@AppBuilderLib/entities/parameter/model/interaction/useSelection";
 import {useShapeDiverStoreInteractionRequestManagement} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreInteractionRequestManagement";
+import type {AppBuilderInteractionSlotListenersProps} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useShapeDiverStoreProcessManager";
 import {
 	addListener,
@@ -274,6 +275,10 @@ function InteractionSlotGroup({
 }
 
 /**
+ * ShapeDiver host implementation of `interactionSlotListeners`. Registered
+ * from `AppBuilderRoot` — do not import this from shared application-slot
+ * wiring (that would pull `useSelection` / `viewer.viewport` into iJewel).
+ *
  * Enables scene-node hover/select for root interaction slots and runs the
  * matching `selecton` / `selectoff` / `hoveron` / `hoveroff` slot. Viewer
  * multi-select events are mapped onto the select slots.
@@ -282,11 +287,7 @@ export function AppBuilderInteractionSlotListeners({
 	resolved,
 	viewportId,
 	handlersRef,
-}: {
-	resolved: ResolvedActionSlot[];
-	viewportId: string;
-	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>;
-}) {
+}: AppBuilderInteractionSlotListenersProps) {
 	const items = useMemo(
 		() =>
 			resolved.filter((item) =>

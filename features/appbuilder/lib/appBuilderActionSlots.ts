@@ -107,6 +107,83 @@ export function isAppBuilderApplicationEvent(
 }
 
 /**
+ * Per-event `eventProps.type`. Events not listed here do not take
+ * `eventProps`; a value on those names is incompatible and the slot is skipped.
+ */
+export const ACTION_SLOT_EVENT_PROPS_TYPE = {
+	computationstart: "session",
+	computationend: "session",
+	computationerror: "session",
+	exportstart: "export",
+	exportend: "export",
+	exporterror: "export",
+	selecton: "selection",
+	selectoff: "selection",
+	hoveron: "selection",
+	hoveroff: "selection",
+} as const satisfies Partial<
+	Record<AppBuilderApplicationEvent, IAppBuilderActionSlotEventProps["type"]>
+>;
+
+export function expectedActionSlotEventPropsType(
+	eventName: string,
+): IAppBuilderActionSlotEventProps["type"] | undefined {
+	return ACTION_SLOT_EVENT_PROPS_TYPE[
+		eventName as keyof typeof ACTION_SLOT_EVENT_PROPS_TYPE
+	];
+}
+
+/**
+ * `eventProps` omitted is always valid (unfiltered). Wrong `type` for this
+ * event, or `eventProps` on an event that has none, is incompatible.
+ */
+export function isActionSlotEventPropsCompatible(
+	eventName: string,
+	slot: IAppBuilderActionSlot,
+): boolean {
+	if (!slot.eventProps) return true;
+	const expected = expectedActionSlotEventPropsType(eventName);
+	return expected !== undefined && slot.eventProps.type === expected;
+}
+
+function warnIncompatibleActionSlotEventProps(
+	eventName: string,
+	slot: IAppBuilderActionSlot,
+): void {
+	const expected = expectedActionSlotEventPropsType(eventName);
+	const actual = slot.eventProps?.type;
+	if (expected === undefined) {
+		Logger.warn(
+			`Action slot "${eventName}" does not support eventProps and will be ignored.`,
+		);
+		return;
+	}
+	Logger.warn(
+		`Action slot "${eventName}" expects eventProps.type "${expected}" but got "${actual}" and will be ignored.`,
+	);
+}
+
+/** Viewer `TASK_TYPE.SESSION_CUSTOMIZATION` (string to avoid importing the viewer here). */
+export const SESSION_CUSTOMIZATION_TASK_TYPE = "session_customization";
+
+/**
+ * `ITaskEvent.status` on `TASK_CANCEL` when a session customize actually
+ * failed. Other cancels (superseded customizes) use a different status.
+ */
+export const SESSION_CUSTOMIZATION_FAILED_STATUS =
+	"Session customization failed";
+
+export function isSessionCustomizationFailedTask(event: {
+	type?: string;
+	status?: string;
+}): boolean {
+	return (
+		event.type === SESSION_CUSTOMIZATION_TASK_TYPE &&
+		event.status === SESSION_CUSTOMIZATION_FAILED_STATUS
+	);
+}
+
+/**
  * Events valid on the App Builder root: application events plus viewport
  * pointer/`click` (those attach to the viewport host, not to a UI node).
  */
@@ -167,8 +244,8 @@ export function uiSlotDomProps(
 
 /**
  * Read `eventProps.props` when the slot filter is of `expectedType`.
- * Returns `undefined` when omitted or when the JSON type does not match
- * (wrong filter on this event is treated as “no filter”).
+ * Returns `undefined` when omitted. Incompatible types are skipped before
+ * this is called ({@link pickAllowedActionSlots}).
  */
 export function getActionSlotEventProps(
 	slot: IAppBuilderActionSlot,
@@ -255,6 +332,10 @@ export function pickAllowedActionSlots(
 			)[eventName],
 		);
 		for (const slot of listed) {
+			if (!isActionSlotEventPropsCompatible(eventName, slot)) {
+				warnIncompatibleActionSlotEventProps(eventName, slot);
+				continue;
+			}
 			resolved.push({eventName, slot, index: resolved.length});
 		}
 	}
@@ -262,8 +343,8 @@ export function pickAllowedActionSlots(
 }
 
 /**
- * Warn for slots that this node will not run.
- * `custom:*` is debug-only (parsed, not emitted yet). Other unknown names are warnings.
+ * Warn for slots that this node will not run, including `custom:*`
+ * (parsed, not emitted yet).
  */
 export function logIgnoredActionSlotEvents(
 	actionSlots: IAppBuilderActionSlots | undefined,
@@ -283,8 +364,8 @@ export function logIgnoredActionSlotEvents(
 		);
 		if (listed.length === 0 || allowed.has(eventName)) continue;
 		if (eventName.startsWith("custom:")) {
-			Logger.debug(
-				`Custom action slot "${eventName}" is not emitted ${unsupportedOn}.`,
+			Logger.warn(
+				`Custom action slot "${eventName}" is not emitted ${unsupportedOn} and will be ignored.`,
 			);
 		} else {
 			Logger.warn(

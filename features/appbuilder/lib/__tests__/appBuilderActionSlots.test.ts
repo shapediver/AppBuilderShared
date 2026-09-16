@@ -2,21 +2,25 @@
  * @jest-environment jsdom
  */
 
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import type {IAppBuilderActionSlots} from "../../config/appbuilderActionSlots";
 import {
 	APP_BUILDER_APPLICATION_EVENTS,
 	APP_BUILDER_INTERACTION_EVENTS,
 	APP_BUILDER_SLOT_EVENTS,
-	APP_BUILDER_UI_EVENTS,
 	APP_BUILDER_UI_EVENT_REACT_PROPS,
+	APP_BUILDER_UI_EVENTS,
 	isAppBuilderApplicationEvent,
 	isAppBuilderInteractionEvent,
+	isSessionCustomizationFailedTask,
 	logIgnoredActionSlotEvents,
 	mapViewerInteractionEventToSlot,
 	matchesExportName,
 	matchesSessionFilter,
 	pickAllowedActionSlots,
 	readStringField,
+	SESSION_CUSTOMIZATION_FAILED_STATUS,
+	SESSION_CUSTOMIZATION_TASK_TYPE,
 	uiSlotDomProps,
 } from "../appBuilderActionSlots";
 
@@ -121,6 +125,72 @@ describe("appBuilderActionSlots helpers", () => {
 		expect(() =>
 			logIgnoredActionSlotEvents(slots, ["click"], "on this node"),
 		).not.toThrow();
+	});
+
+	it("warns for custom slots that cannot be emitted", () => {
+		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
+		logIgnoredActionSlotEvents(slots, ["click"], "on this node");
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining("custom:item-selected"),
+		);
+		warn.mockRestore();
+	});
+
+	it("skips slots whose eventProps type does not match the event", () => {
+		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
+		const action = {type: "undo" as const, props: {}};
+		expect(
+			pickAllowedActionSlots(
+				{
+					exportstart: {
+						action,
+						eventProps: {type: "session", props: {}},
+					},
+				},
+				APP_BUILDER_SLOT_EVENTS.application,
+			),
+		).toEqual([]);
+		expect(
+			pickAllowedActionSlots(
+				{
+					exportstart: {
+						action,
+						eventProps: {type: "export", props: {name: "GLB"}},
+					},
+					click: {
+						action,
+						eventProps: {type: "session", props: {}},
+					},
+				},
+				[...APP_BUILDER_SLOT_EVENTS.application, "click"],
+			),
+		).toEqual([
+			{
+				eventName: "exportstart",
+				slot: {
+					action,
+					eventProps: {type: "export", props: {name: "GLB"}},
+				},
+				index: 0,
+			},
+		]);
+		expect(warn).toHaveBeenCalled();
+		warn.mockRestore();
+	});
+
+	it("recognizes failed session customization tasks", () => {
+		expect(
+			isSessionCustomizationFailedTask({
+				type: SESSION_CUSTOMIZATION_TASK_TYPE,
+				status: SESSION_CUSTOMIZATION_FAILED_STATUS,
+			}),
+		).toBe(true);
+		expect(
+			isSessionCustomizationFailedTask({
+				type: SESSION_CUSTOMIZATION_TASK_TYPE,
+				status: "cancelled",
+			}),
+		).toBe(false);
 	});
 
 	it("recognizes application and viewer interaction event names", () => {
