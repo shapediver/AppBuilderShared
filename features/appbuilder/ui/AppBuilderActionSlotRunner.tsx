@@ -13,8 +13,8 @@ import {
 /**
  * One runner per allowed slot. Hooks cannot run in a dynamic loop, so this
  * is a component. It writes a trigger into `registerTrigger`; it does not
- * attach listeners itself. Valid `custom:*` names also register with
- * {@link registerAppBuilderCustomActionSlot}.
+ * attach listeners itself. `custom:*` names register on the application bus
+ * only when `registerCustomGlobally` is set (root slots).
  */
 export function AppBuilderActionSlotRunner({
 	definition,
@@ -30,7 +30,7 @@ export function AppBuilderActionSlotRunner({
 	viewportId?: string;
 	fullscreenId?: string;
 	eventName?: string;
-	/** When true, register `custom:*` on the application bus (root / tab slots). */
+	/** When true, register `custom:*` on the application bus (root slots). */
 	registerCustomGlobally?: boolean;
 	registerTrigger: (trigger: () => void | Promise<void>) => void;
 }) {

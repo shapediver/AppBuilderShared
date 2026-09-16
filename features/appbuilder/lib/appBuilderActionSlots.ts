@@ -128,8 +128,8 @@ function customActionSlotKey(eventName: string, namespace: string): string {
 
 /**
  * Register a root / application `custom:*` trigger for `namespace`.
- * UI nodes that wrap children use `useDispatchAppBuilderCustomEvent`
- * instead so sibling widgets do not share one bus.
+ * UI nodes (widgets, tabs, containers) use `useDispatchAppBuilderCustomEvent`
+ * instead so sibling nodes do not share one bus.
  */
 export function registerAppBuilderCustomActionSlot(
 	eventName: string,
@@ -153,7 +153,7 @@ export function registerAppBuilderCustomActionSlot(
 /**
  * Run application / root `custom:*` slots. Pass `namespace` to target one
  * session. Omit it to run every session that registered this name.
- * Widget-level slots are not on this bus — call
+ * Widget-level and tab-level slots are not on this bus — call
  * `useDispatchAppBuilderCustomEvent` from the node that owns them.
  */
 export function dispatchAppBuilderCustomEvent(
@@ -394,6 +394,25 @@ export function listActionSlots(
 /** Handler map key when several slots share an event name. */
 export function actionSlotHandlerKey(eventName: string, index: number): string {
 	return `${eventName}#${index}`;
+}
+
+/**
+ * Run matching `custom:*` triggers on this node's handler map.
+ * Returns whether any slot ran. Does not warn (callers bubble or warn).
+ */
+export function runResolvedCustomSlots(
+	handlers: Record<string, (() => void) | undefined>,
+	resolved: readonly ResolvedActionSlot[],
+	eventName: string,
+): boolean {
+	if (!isAppBuilderCustomEvent(eventName)) return false;
+	let ran = false;
+	for (const item of resolved) {
+		if (item.eventName !== eventName) continue;
+		handlers[actionSlotHandlerKey(item.eventName, item.index)]?.();
+		ran = true;
+	}
+	return ran;
 }
 
 /**

@@ -22,6 +22,7 @@ import {
 	pickAllowedActionSlots,
 	readStringField,
 	registerAppBuilderCustomActionSlot,
+	runResolvedCustomSlots,
 	selectionSlotGroupKey,
 	selectionSlotNameFilterKey,
 	SESSION_CUSTOMIZATION_FAILED_STATUS,
@@ -358,6 +359,37 @@ describe("appBuilderActionSlots helpers", () => {
 			expect.stringContaining("custom:kebab-case"),
 		);
 		warn.mockRestore();
+	});
+
+	it("runs only matching custom slots on a node handler map", () => {
+		const ran = jest.fn();
+		const skipped = jest.fn();
+		expect(
+			runResolvedCustomSlots(
+				{
+					"custom:item-selected#0": ran,
+					"custom:other#1": skipped,
+				},
+				[
+					{
+						eventName: "custom:item-selected",
+						slot: {action: {type: "undo", props: {}}},
+						index: 0,
+					},
+					{
+						eventName: "custom:other",
+						slot: {action: {type: "undo", props: {}}},
+						index: 1,
+					},
+				],
+				"custom:item-selected",
+			),
+		).toBe(true);
+		expect(ran).toHaveBeenCalledTimes(1);
+		expect(skipped).not.toHaveBeenCalled();
+		expect(runResolvedCustomSlots({}, [], "custom:item-selected")).toBe(
+			false,
+		);
 	});
 
 	it("groups selection slots by full effective config", () => {
