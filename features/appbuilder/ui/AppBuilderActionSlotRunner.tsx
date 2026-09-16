@@ -22,6 +22,7 @@ export function AppBuilderActionSlotRunner({
 	viewportId,
 	fullscreenId,
 	eventName,
+	registerCustomGlobally = false,
 	registerTrigger,
 }: {
 	definition: IAppBuilderActionDefinition;
@@ -29,6 +30,8 @@ export function AppBuilderActionSlotRunner({
 	viewportId?: string;
 	fullscreenId?: string;
 	eventName?: string;
+	/** When true, register `custom:*` on the application bus (root / tab slots). */
+	registerCustomGlobally?: boolean;
 	registerTrigger: (trigger: () => void | Promise<void>) => void;
 }) {
 	const {actions: hostActions} = useContext(ComponentContext);
@@ -61,16 +64,20 @@ export function AppBuilderActionSlotRunner({
 	registerTrigger(runCurrent);
 
 	useEffect(() => {
+		if (!registerCustomGlobally) return;
 		if (!eventName || !isAppBuilderCustomEvent(eventName)) return;
-		return registerAppBuilderCustomActionSlot(eventName, () =>
-			runAppBuilderAction(
-				definitionRef.current,
-				contextRef.current,
-			).catch((error) => {
-				Logger.warn("Action slot failed:", error);
-			}),
+		return registerAppBuilderCustomActionSlot(
+			eventName,
+			() =>
+				runAppBuilderAction(
+					definitionRef.current,
+					contextRef.current,
+				).catch((error) => {
+					Logger.warn("Action slot failed:", error);
+				}),
+			namespace,
 		);
-	}, [eventName]);
+	}, [eventName, namespace, registerCustomGlobally]);
 
 	return null;
 }

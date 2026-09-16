@@ -1,4 +1,5 @@
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {Box} from "@mantine/core";
 import {
 	CSSProperties,
@@ -16,12 +17,14 @@ import type {
 import {
 	actionSlotHandlerKey,
 	APP_BUILDER_UI_EVENTS,
+	isAppBuilderCustomEvent,
 	logIgnoredActionSlotEvents,
 	pickAllowedActionSlots,
 	uiSlotDomProps,
 	type AppBuilderUiSlotHandlers,
 } from "../lib/appBuilderActionSlots";
 import {AppBuilderActionSlotRunner} from "./AppBuilderActionSlotRunner";
+import {AppBuilderCustomEventContext} from "./AppBuilderCustomEventContext";
 
 /**
  * Bind JSON `actionSlots` to `runAppBuilderAction` for UI events.
@@ -135,6 +138,35 @@ export default function AppBuilderActionSlots({
 		[handlersRef, resolved],
 	);
 
+	const dispatchCustomEvent = useCallback(
+		(eventName: string) => {
+			if (!isAppBuilderCustomEvent(eventName)) {
+				Logger.warn(
+					`"${eventName}" is not a custom action slot event (expected custom:kebab-case).`,
+				);
+				return;
+			}
+			const map = handlersRef.current as Record<
+				string,
+				(() => void) | undefined
+			>;
+			let ran = false;
+			for (const item of resolved) {
+				if (item.eventName !== eventName) continue;
+				map[actionSlotHandlerKey(item.eventName, item.index)]?.();
+				ran = true;
+			}
+			if (!ran) {
+				Logger.warn(
+					`Custom action slot "${eventName}" has no registered listener.`,
+				);
+			}
+		},
+		[handlersRef, resolved],
+	);
+
+	const registerCustomGlobally = children == null;
+
 	useEffect(() => {
 		if (!warnUnsupported) return;
 		logIgnoredActionSlotEvents(
@@ -154,6 +186,7 @@ export default function AppBuilderActionSlots({
 					viewportId={viewportId}
 					fullscreenId={fullscreenId}
 					eventName={eventName}
+					registerCustomGlobally={registerCustomGlobally}
 					registerTrigger={(trigger) => {
 						const map = handlersRef.current as Record<
 							string,
@@ -184,7 +217,11 @@ export default function AppBuilderActionSlots({
 		return (
 			<>
 				{runners}
-				{children}
+				<AppBuilderCustomEventContext.Provider
+					value={dispatchCustomEvent}
+				>
+					{children}
+				</AppBuilderCustomEventContext.Provider>
 			</>
 		);
 	}
@@ -192,12 +229,14 @@ export default function AppBuilderActionSlots({
 	return (
 		<>
 			{runners}
-			<Box
-				style={LAYOUT_STYLE[resolvedLayout]}
-				{...uiSlotDomProps(run, eventNames)}
-			>
-				{children}
-			</Box>
+			<AppBuilderCustomEventContext.Provider value={dispatchCustomEvent}>
+				<Box
+					style={LAYOUT_STYLE[resolvedLayout]}
+					{...uiSlotDomProps(run, eventNames)}
+				>
+					{children}
+				</Box>
+			</AppBuilderCustomEventContext.Provider>
 		</>
 	);
 }

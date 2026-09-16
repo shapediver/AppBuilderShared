@@ -331,6 +331,7 @@ export default function AppBuilderApplicationActionSlots({
 					viewportId={viewportId}
 					fullscreenId={fullscreenId}
 					eventName={eventName}
+					registerCustomGlobally
 					registerTrigger={(trigger) => {
 						handlersRef.current[
 							actionSlotHandlerKey(eventName, index)

@@ -122,37 +122,65 @@ const customActionSlotTriggers = new Map<
 	Set<() => void | Promise<void>>
 >();
 
+function customActionSlotKey(eventName: string, namespace: string): string {
+	return `${namespace}\0${eventName}`;
+}
+
 /**
- * Register a `custom:*` slot trigger. Host or custom components call
- * {@link dispatchAppBuilderCustomEvent} with the same name.
+ * Register a root / application `custom:*` trigger for `namespace`.
+ * UI nodes that wrap children use `useDispatchAppBuilderCustomEvent`
+ * instead so sibling widgets do not share one bus.
  */
 export function registerAppBuilderCustomActionSlot(
 	eventName: string,
 	trigger: () => void | Promise<void>,
+	namespace: string,
 ): () => void {
 	if (!isAppBuilderCustomEvent(eventName)) return () => {};
-	let triggers = customActionSlotTriggers.get(eventName);
+	const key = customActionSlotKey(eventName, namespace);
+	let triggers = customActionSlotTriggers.get(key);
 	if (!triggers) {
 		triggers = new Set();
-		customActionSlotTriggers.set(eventName, triggers);
+		customActionSlotTriggers.set(key, triggers);
 	}
 	triggers.add(trigger);
 	return () => {
 		triggers!.delete(trigger);
-		if (triggers!.size === 0) customActionSlotTriggers.delete(eventName);
+		if (triggers!.size === 0) customActionSlotTriggers.delete(key);
 	};
 }
 
-/** Run every registered slot for `eventName` (`custom:kebab-case`). */
-export function dispatchAppBuilderCustomEvent(eventName: string): void {
+/**
+ * Run application / root `custom:*` slots. Pass `namespace` to target one
+ * session. Omit it to run every session that registered this name.
+ * Widget-level slots are not on this bus — call
+ * `useDispatchAppBuilderCustomEvent` from the node that owns them.
+ */
+export function dispatchAppBuilderCustomEvent(
+	eventName: string,
+	namespace?: string,
+): void {
 	if (!isAppBuilderCustomEvent(eventName)) {
 		Logger.warn(
 			`"${eventName}" is not a custom action slot event (expected custom:kebab-case).`,
 		);
 		return;
 	}
-	const triggers = customActionSlotTriggers.get(eventName);
-	if (!triggers || triggers.size === 0) {
+	const triggers = new Set<() => void | Promise<void>>();
+	if (namespace !== undefined) {
+		const set = customActionSlotTriggers.get(
+			customActionSlotKey(eventName, namespace),
+		);
+		set?.forEach((trigger) => triggers.add(trigger));
+	} else {
+		const suffix = `\0${eventName}`;
+		for (const [key, set] of customActionSlotTriggers) {
+			if (key.endsWith(suffix)) {
+				set.forEach((trigger) => triggers.add(trigger));
+			}
+		}
+	}
+	if (triggers.size === 0) {
 		Logger.warn(
 			`Custom action slot "${eventName}" has no registered listener.`,
 		);
@@ -493,6 +521,8 @@ export function selectionSlotNameFilterKey(
 /**
  * Full effective `useSelection` config. Slots that share this key share one
  * interaction manager; different colors/max/hover become separate groups.
+ * Color keys preserve omitted vs explicit `null` (`JSON.stringify` drops
+ * `undefined`; `null` disables the default effect).
  */
 export function selectionSlotGroupKey(
 	eventProps: IAppBuilderActionSlotEventPropsSelection | undefined,
@@ -504,9 +534,9 @@ export function selectionSlotGroupKey(
 		minimumSelection: eventProps?.minimumSelection ?? 0,
 		maximumSelection: eventProps?.maximumSelection ?? 1,
 		hover: eventProps?.hover !== false,
-		hoverColor: eventProps?.hoverColor ?? null,
-		selectionColor: eventProps?.selectionColor ?? null,
-		availableColor: eventProps?.availableColor ?? null,
-		occludeBySceneGeometry: eventProps?.occludeBySceneGeometry ?? null,
+		hoverColor: eventProps?.hoverColor,
+		selectionColor: eventProps?.selectionColor,
+		availableColor: eventProps?.availableColor,
+		occludeBySceneGeometry: eventProps?.occludeBySceneGeometry,
 	});
 }

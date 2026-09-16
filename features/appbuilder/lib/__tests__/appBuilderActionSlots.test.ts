@@ -327,17 +327,29 @@ describe("appBuilderActionSlots helpers", () => {
 		expect(isAppBuilderCustomEvent("click")).toBe(false);
 	});
 
-	it("dispatches registered custom action slots", () => {
-		const trigger = jest.fn();
-		const unregister = registerAppBuilderCustomActionSlot(
+	it("dispatches registered custom action slots per namespace", () => {
+		const triggerA = jest.fn();
+		const triggerB = jest.fn();
+		const unregisterA = registerAppBuilderCustomActionSlot(
 			"custom:item-selected",
-			trigger,
+			triggerA,
+			"session-a",
 		);
+		const unregisterB = registerAppBuilderCustomActionSlot(
+			"custom:item-selected",
+			triggerB,
+			"session-b",
+		);
+		dispatchAppBuilderCustomEvent("custom:item-selected", "session-a");
+		expect(triggerA).toHaveBeenCalledTimes(1);
+		expect(triggerB).not.toHaveBeenCalled();
 		dispatchAppBuilderCustomEvent("custom:item-selected");
-		expect(trigger).toHaveBeenCalledTimes(1);
-		unregister();
+		expect(triggerA).toHaveBeenCalledTimes(2);
+		expect(triggerB).toHaveBeenCalledTimes(1);
+		unregisterA();
+		unregisterB();
 		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
-		dispatchAppBuilderCustomEvent("custom:item-selected");
+		dispatchAppBuilderCustomEvent("custom:item-selected", "session-a");
 		expect(warn).toHaveBeenCalledWith(
 			expect.stringContaining("no registered listener"),
 		);
@@ -361,6 +373,14 @@ describe("appBuilderActionSlots helpers", () => {
 				{nameFilter, selectionColor: "#ff0000"},
 				"vp",
 			),
+		);
+		expect(selectionSlotGroupKey({nameFilter}, "vp")).not.toBe(
+			selectionSlotGroupKey({nameFilter, hoverColor: null}, "vp"),
+		);
+		expect(
+			selectionSlotGroupKey({nameFilter, hoverColor: null}, "vp"),
+		).not.toBe(
+			selectionSlotGroupKey({nameFilter, hoverColor: "#0000ff"}, "vp"),
 		);
 	});
 });
