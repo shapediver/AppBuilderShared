@@ -5,7 +5,6 @@ import {
 	IAppBuilderActionPropsSetParameterValue,
 	IAppBuilderActionPropsSetParameterValues,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
 
 export type RunAppBuilderActionSetParameterValuesProps =
 	| IAppBuilderActionPropsSetParameterValues
@@ -46,11 +45,7 @@ export async function runAppBuilderActionSetParameterValues(
 			item.parameter.name,
 		);
 		if (!parameterStore) {
-			Logger.warn(
-				"Parameter not found for setParameterValues:",
-				item.parameter.name,
-			);
-			continue;
+			throw new Error(`Parameter "${item.parameter.name}" not found.`);
 		}
 		sourceDefinitions.push({
 			id: parameterStore.getState().definition.id,
@@ -77,13 +72,7 @@ export async function runAppBuilderActionSetParameterValues(
 			item.parameter.name,
 		);
 		if (!parameterStore) {
-			if (item.value !== undefined) {
-				Logger.warn(
-					"Parameter not found for setParameterValues:",
-					item.parameter.name,
-				);
-			}
-			continue;
+			throw new Error(`Parameter "${item.parameter.name}" not found.`);
 		}
 		const parameter = parameterStore.getState();
 
@@ -92,11 +81,9 @@ export async function runAppBuilderActionSetParameterValues(
 			nextValue === undefined && item.source !== undefined;
 		if (nextValue === undefined) {
 			if (item.source === undefined) {
-				Logger.warn(
-					"No value or source defined for parameter:",
-					parameter.definition.id,
+				throw new Error(
+					`No value or source defined for parameter "${parameter.definition.id}".`,
 				);
-				continue;
 			}
 			if (!sourceItemIndexes.includes(index)) continue;
 			nextValue = resolvedSources?.[resolvedSourceIndex++] ?? "";
@@ -105,11 +92,9 @@ export async function runAppBuilderActionSetParameterValues(
 		if (!isSourceValue && !parameter.actions.isUiValueDifferent(nextValue))
 			continue;
 		if (!parameter.actions.setUiValue(nextValue)) {
-			Logger.warn(
-				`setUiValue failed for parameter ${parameter.definition.id}, the value is not valid.`,
-				nextValue,
+			throw new Error(
+				`Invalid value for parameter "${parameter.definition.id}".`,
 			);
-			continue;
 		}
 		hasChanges = true;
 		if (!validParameters[paramNamespace])

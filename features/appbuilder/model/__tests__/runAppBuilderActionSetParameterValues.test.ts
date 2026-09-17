@@ -116,4 +116,58 @@ describe("runAppBuilderActionSetParameterValues", () => {
 			),
 		).rejects.toThrow("agentTool");
 	});
+
+	it("throws when the parameter is missing", async () => {
+		useShapeDiverStoreParameters.getState = () =>
+			({
+				getParameter: () => undefined,
+				batchParameterValueUpdate: jest.fn(async () => {}),
+			}) as unknown as ReturnType<typeof originalGetState>;
+
+		await expect(
+			runAppBuilderActionSetParameterValues(
+				{
+					parameterValues: [
+						{parameter: {name: "missing"}, value: "1"},
+					],
+				},
+				{namespace: "session"},
+			),
+		).rejects.toThrow('Parameter "missing" not found.');
+	});
+
+	it("throws when neither value nor source is defined", async () => {
+		const target = parameterStore("p1");
+		useShapeDiverStoreParameters.getState = () =>
+			({
+				getParameter: () => target,
+				batchParameterValueUpdate: jest.fn(async () => {}),
+			}) as unknown as ReturnType<typeof originalGetState>;
+
+		await expect(
+			runAppBuilderActionSetParameterValues(
+				{parameterValues: [{parameter: {name: "p1"}}]},
+				{namespace: "session"},
+			),
+		).rejects.toThrow('No value or source defined for parameter "p1".');
+	});
+
+	it("throws when setUiValue rejects the value", async () => {
+		const target = parameterStore("p1");
+		target.setUiValue.mockReturnValue(false);
+		useShapeDiverStoreParameters.getState = () =>
+			({
+				getParameter: () => target,
+				batchParameterValueUpdate: jest.fn(async () => {}),
+			}) as unknown as ReturnType<typeof originalGetState>;
+
+		await expect(
+			runAppBuilderActionSetParameterValues(
+				{
+					parameterValues: [{parameter: {name: "p1"}, value: "bad"}],
+				},
+				{namespace: "session"},
+			),
+		).rejects.toThrow('Invalid value for parameter "p1".');
+	});
 });
