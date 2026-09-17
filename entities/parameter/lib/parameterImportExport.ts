@@ -148,7 +148,10 @@ export function importParameterValues(namespace: string): Promise<void> {
 }
 
 /** Reset parameters in the namespace to their default values. */
-export async function resetParameterValues(namespace: string): Promise<void> {
+export async function resetParameterValues(
+	namespace: string,
+	options?: {notify?: boolean},
+): Promise<void> {
 	const {batchParameterValueUpdate} = useShapeDiverStoreParameters.getState();
 	const defaultValues = getParameterStates(namespace).reduce(
 		(acc, param) => {
@@ -158,7 +161,9 @@ export async function resetParameterValues(namespace: string): Promise<void> {
 		{} as Record<string, unknown>,
 	);
 	await batchParameterValueUpdate({[namespace]: defaultValues});
-	getNotificationActions().success({
-		message: "Parameters reset to default values",
-	});
+	if (options?.notify !== false) {
+		getNotificationActions().success({
+			message: "Parameters reset to default values",
+		});
+	}
 }

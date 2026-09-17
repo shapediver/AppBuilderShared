@@ -4,6 +4,7 @@ import {
 	IAppBuilderActionDefinition,
 	IAppBuilderActionPropsCamera,
 	isAnimateCameraAction,
+	isAssignCameraAction,
 	isCameraAction,
 	isResetCameraAction,
 	isSetCameraAction,
@@ -13,7 +14,6 @@ import {
 	AppBuilderActionRunContext,
 	resolvedViewportId,
 } from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	Box,
 	CAMERA_TYPE,
@@ -25,8 +25,10 @@ import {
 } from "@shapediver/viewer.viewport";
 import {vec3} from "gl-matrix";
 
-const toVec3 = (value?: [number, number, number]) =>
-	value ? vec3.fromValues(value[0], value[1], value[2]) : undefined;
+const toVec3 = (value?: ArrayLike<number>) =>
+	value && value.length >= 3
+		? vec3.fromValues(value[0], value[1], value[2])
+		: undefined;
 
 const cleanCameraPositionAndTarget = (
 	camera: ICameraApi,
@@ -142,6 +144,8 @@ async function applyCameraAction(
 				viewportApi.assignCamera(existingCamera[1].id);
 				skipKeys.push("name");
 				newCamera = existingCamera[1];
+			} else if (isAssignCameraAction(props) && !camera.type) {
+				throw new Error(`Camera "${String(camera.name)}" not found.`);
 			}
 		}
 
@@ -157,8 +161,8 @@ async function applyCameraAction(
 			if (camera.position || camera.target) {
 				const {position, target} = cleanCameraPositionAndTarget(
 					newCamera,
-					camera.position as vec3 | undefined,
-					camera.target as vec3 | undefined,
+					toVec3(camera.position as ArrayLike<number> | undefined),
+					toVec3(camera.target as ArrayLike<number> | undefined),
 				);
 				newCamera.position = position;
 				newCamera.target = target;
@@ -222,8 +226,7 @@ async function applyCameraAction(
 			options,
 		} = props.props;
 		if (!inputPosition || !inputTarget) {
-			Logger.warn("Camera set action requires position and target.");
-			return;
+			throw new Error("Camera set action requires position and target.");
 		}
 		const {position, target} = cleanCameraPositionAndTarget(
 			viewportApi.camera,
@@ -282,8 +285,7 @@ export async function runAppBuilderActionCamera(
 	const viewportApi =
 		useShapeDiverStoreViewport.getState().viewports[viewportId];
 	if (!viewportApi?.camera) {
-		Logger.warn("Camera action skipped: viewport not found.");
-		return;
+		throw new Error("Viewport not found.");
 	}
 	await applyCameraAction(viewportApi, definition.props);
 }
