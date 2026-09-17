@@ -2,11 +2,13 @@ import type {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/confi
 import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import type {
 	IAppBuilder,
+	IAppBuilderActionDefinition,
 	IAppBuilderActionPropsAddToCart,
 	IAppBuilderActionPropsCreateModelState,
 	IAppBuilderActionPropsImportModelState,
 	IAppBuilderActionPropsSound,
 	IAppBuilderControlActionRef,
+	IAppBuilderParameterValueSourcePropsScreenshot,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {Vec3} from "../config/setCameraPosition";
 import type {RunActionControlResult} from "../config/triggerActionControl";
@@ -33,8 +35,10 @@ export type AgentToolsDeps = {
 		position: Vec3;
 		target: Vec3;
 	}) => Promise<RunActionControlResult>;
-	zoomTo?: (viewportId: string) => Promise<RunActionControlResult>;
-	getScreenshot: (viewportId: string) => Promise<string | undefined>;
+	getScreenshot: (
+		viewportId: string,
+		props?: IAppBuilderParameterValueSourcePropsScreenshot,
+	) => Promise<string | undefined>;
 	getOutputByName: (
 		namespace: string,
 		name: string,
@@ -44,6 +48,9 @@ export type AgentToolsDeps = {
 	) => Promise<RunActionControlResult>;
 	playSound?: (
 		props: IAppBuilderActionPropsSound,
+	) => Promise<RunActionControlResult>;
+	runCameraAction?: (
+		definition: IAppBuilderActionDefinition,
 	) => Promise<RunActionControlResult>;
 	isCustomComponentContextAction?: (
 		action: IAppBuilderControlActionRef,
