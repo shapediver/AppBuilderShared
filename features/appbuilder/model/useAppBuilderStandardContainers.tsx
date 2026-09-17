@@ -99,6 +99,7 @@ export function useAppBuilderStandardContainers(props: Props) {
 	const anchors = useViewportAnchors({
 		namespace,
 		containers: appBuilderData?.containers,
+		actionSlots: appBuilderData?.actionSlots,
 	});
 
 	// should fallback containers be shown?

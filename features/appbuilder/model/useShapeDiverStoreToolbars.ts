@@ -44,6 +44,7 @@ const normalizeToolbar = (toolbar: ToolbarInput): ToolbarRegistration => ({
 	ariaLabel: toolbar.ariaLabel,
 	defaultIcon: toolbar.defaultIcon,
 	groups: cloneGroups(toolbar.groups),
+	actionSlots: toolbar.actionSlots,
 });
 
 const normalizeDefinitionToolbars = (

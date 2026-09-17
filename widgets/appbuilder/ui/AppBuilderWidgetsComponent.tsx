@@ -20,6 +20,8 @@ import {
 	isTableWidget,
 	isTextWidget,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
+import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
 import {Loader, Paper} from "@mantine/core";
 import React, {Suspense, useContext} from "react";
 import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";
@@ -66,171 +68,137 @@ export default function AppBuilderWidgetsComponent({
 	return (
 		<>
 			{widgets.map((w, i) => {
-				// first we loop through all registered components to see if we can find a match
-				// here some of the default widget could be overwritten by custom components
-				for (const key in componentContext.widgets) {
-					const componentDefinition = componentContext.widgets[key];
-					if (componentDefinition.isComponent(w)) {
-						const Component = componentDefinition.component;
-
-						return (
-							<Component
-								key={i}
-								namespace={namespace}
-								{...w.props}
-							/>
-						);
-					}
+				if (React.isValidElement(w)) {
+					// JSX widgets (e.g. injected fallback UI) have no JSON actionSlots.
+					return <React.Fragment key={i}>{w}</React.Fragment>;
 				}
 
-				if (isTextWidget(w))
-					return (
-						<AppBuilderTextWidgetComponent key={i} {...w.props} />
-					);
-				else if (isImageWidget(w))
-					return (
-						<AppBuilderImageWidgetComponent
-							key={i}
-							namespace={namespace}
-							{...w.props}
-						/>
-					);
-				else if (isAccordionWidget(w))
-					return (
-						<AppBuilderAccordionWidgetComponent
-							key={i}
-							namespace={namespace}
-							{...w.props}
-						/>
-					);
-				else if (isAccordionUiWidget(w))
-					return (
-						<AppBuilderAccordionUiWidgetComponent
-							key={i}
-							namespace={namespace}
-							{...w.props}
-						/>
-					);
-				else if (isStackUiWidget(w))
-					return (
-						<AppBuilderStackUiWidgetButtonComponent
-							key={i}
-							namespace={namespace}
-							{...w.props}
-						/>
-					);
-				else if (isRoundChartWidget(w))
-					return (
-						<AppBuilderRoundChartWidgetComponent
-							key={i}
-							{...w.props}
-						/>
-					);
-				else if (isLineChartWidget(w))
-					return (
-						<AppBuilderLineChartWidgetComponent
-							key={i}
-							{...w.props}
-						/>
-					);
-				else if (isAreaChartWidget(w))
-					return (
-						<AppBuilderAreaChartWidgetComponent
-							key={i}
-							{...w.props}
-						/>
-					);
-				else if (isBarChartWidget(w))
-					return (
-						<AppBuilderBarChartWidgetComponent
-							key={i}
-							{...w.props}
-						/>
-					);
-				else if (isActionsWidget(w))
-					return (
-						<AppBuilderActionsWidgetComponent
-							key={i}
-							namespace={namespace}
-							{...w.props}
-						/>
-					);
-				else if (isControlsWidget(w))
-					return (
-						<AppBuilderControlsWidgetComponent
-							key={i}
-							namespace={namespace}
-							{...w.props}
-						/>
-					);
-				else if (isFormWidget(w))
-					return (
-						<AppBuilderFormWidgetComponent
-							key={i}
-							namespace={namespace}
-							{...w.props}
-						/>
-					);
-				else if (isAgentWidget(w))
-					return (
-						<Suspense
-							key={i}
-							name="LazyAppBuilderAgentWidgetComponent"
-							fallback={
-								<Paper>
-									<Loader />
-								</Paper>
-							}
-						>
-							<LazyAppBuilderAgentWidgetComponent
-								namespace={namespace}
-								{...w.props}
-							/>
-						</Suspense>
-					);
-				else if (isProgressWidget(w))
-					return (
-						<AppBuilderProgressWidgetComponent
-							key={i}
-							{...w.props}
-						/>
-					);
-				else if (isDesktopClientSelectionWidget(w))
-					return (
-						<AppBuilderDesktopClientSelectionWidgetComponent
-							key={i}
-							{...w.props}
-						/>
-					);
-				else if (isDesktopClientOutputsWidget(w))
-					return (
-						<AppBuilderDesktopClientOutputsWidgetComponent
-							key={i}
-							namespace={namespace}
-							{...w.props}
-						/>
-					);
-				else if (isSavedStatesWidget(w))
-					return (
-						<AppBuilderSavedStatesWidgetComponent
-							key={i}
-							namespace={namespace}
-							{...w.props}
-						/>
-					);
-				else if (isTableWidget(w))
-					return (
-						<AppBuilderTableWidgetComponent key={i} {...w.props} />
-					);
-				else if (React.isValidElement(w)) {
-					// In this case, we can just return the element as is
-					// As it is a valid React element
-					// This is for example used in the useAppBuilderStoreStandardContainers
-					return w;
-				} else {
-					return null;
-				}
+				const widget = w as IAppBuilderWidget;
+				const inner = renderAppBuilderWidget(
+					widget,
+					namespace,
+					componentContext,
+				);
+				if (!inner) return null;
+
+				return (
+					<AppBuilderActionSlots
+						key={i}
+						actionSlots={widget.actionSlots}
+						allowedEvents={APP_BUILDER_SLOT_EVENTS.widget}
+						namespace={namespace}
+					>
+						{inner}
+					</AppBuilderActionSlots>
+				);
 			})}
 		</>
 	);
+}
+
+function renderAppBuilderWidget(
+	w: IAppBuilderWidget,
+	namespace: string,
+	componentContext: React.ContextType<typeof ComponentContext>,
+) {
+	for (const key in componentContext.widgets) {
+		const componentDefinition = componentContext.widgets[key];
+		if (componentDefinition.isComponent(w)) {
+			const Component = componentDefinition.component;
+			return <Component namespace={namespace} {...w.props} />;
+		}
+	}
+
+	if (isTextWidget(w)) return <AppBuilderTextWidgetComponent {...w.props} />;
+	if (isImageWidget(w))
+		return (
+			<AppBuilderImageWidgetComponent
+				namespace={namespace}
+				{...w.props}
+			/>
+		);
+	if (isAccordionWidget(w))
+		return (
+			<AppBuilderAccordionWidgetComponent
+				namespace={namespace}
+				{...w.props}
+			/>
+		);
+	if (isAccordionUiWidget(w))
+		return (
+			<AppBuilderAccordionUiWidgetComponent
+				namespace={namespace}
+				{...w.props}
+			/>
+		);
+	if (isStackUiWidget(w))
+		return (
+			<AppBuilderStackUiWidgetButtonComponent
+				namespace={namespace}
+				{...w.props}
+			/>
+		);
+	if (isRoundChartWidget(w))
+		return <AppBuilderRoundChartWidgetComponent {...w.props} />;
+	if (isLineChartWidget(w))
+		return <AppBuilderLineChartWidgetComponent {...w.props} />;
+	if (isAreaChartWidget(w))
+		return <AppBuilderAreaChartWidgetComponent {...w.props} />;
+	if (isBarChartWidget(w))
+		return <AppBuilderBarChartWidgetComponent {...w.props} />;
+	if (isActionsWidget(w))
+		return (
+			<AppBuilderActionsWidgetComponent
+				namespace={namespace}
+				{...w.props}
+			/>
+		);
+	if (isControlsWidget(w))
+		return (
+			<AppBuilderControlsWidgetComponent
+				namespace={namespace}
+				{...w.props}
+			/>
+		);
+	if (isFormWidget(w))
+		return (
+			<AppBuilderFormWidgetComponent namespace={namespace} {...w.props} />
+		);
+	if (isAgentWidget(w))
+		return (
+			<Suspense
+				name="LazyAppBuilderAgentWidgetComponent"
+				fallback={
+					<Paper>
+						<Loader />
+					</Paper>
+				}
+			>
+				<LazyAppBuilderAgentWidgetComponent
+					namespace={namespace}
+					{...w.props}
+				/>
+			</Suspense>
+		);
+	if (isProgressWidget(w))
+		return <AppBuilderProgressWidgetComponent {...w.props} />;
+	if (isDesktopClientSelectionWidget(w))
+		return <AppBuilderDesktopClientSelectionWidgetComponent {...w.props} />;
+	if (isDesktopClientOutputsWidget(w))
+		return (
+			<AppBuilderDesktopClientOutputsWidgetComponent
+				namespace={namespace}
+				{...w.props}
+			/>
+		);
+	if (isSavedStatesWidget(w))
+		return (
+			<AppBuilderSavedStatesWidgetComponent
+				namespace={namespace}
+				{...w.props}
+			/>
+		);
+	if (isTableWidget(w))
+		return <AppBuilderTableWidgetComponent {...w.props} />;
+	return null;
 }

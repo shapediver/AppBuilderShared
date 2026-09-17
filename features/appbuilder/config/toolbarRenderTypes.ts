@@ -2,6 +2,7 @@ import type {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import type {
 	AppBuilderToolbarAlign,
 	AppBuilderToolbarSide,
+	IAppBuilderActionSlots,
 	IAppBuilderControlActionRef,
 	IAppBuilderToolbarExportItem,
 	IAppBuilderToolbarOutputItem,
@@ -21,6 +22,7 @@ export type ToolbarItemBase<TType extends string, TProps> = {
 	labelAlign?: AppBuilderToolbarAlign;
 	disabled?: boolean;
 	props: TProps;
+	actionSlots?: IAppBuilderActionSlots;
 };
 
 /** A declarative App Builder action rendered in a toolbar or toolbar menu. */

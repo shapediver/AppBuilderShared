@@ -98,6 +98,37 @@ describe("resolveToolbarRegistration", () => {
 		});
 	});
 
+	it("copies actionSlots onto resolved toolbar items", () => {
+		const actionSlots = {
+			click: {
+				action: {type: "undo" as const, props: {}},
+			},
+		};
+		const toolbar = resolveToolbarRegistration(
+			baseToolbar([
+				[
+					{
+						id: "zoom",
+						type: "action",
+						label: "Zoom extents",
+						actionSlots,
+						props: {
+							definition: {
+								type: "camera",
+								props: {type: "zoomTo", props: {}},
+							},
+						},
+					},
+				],
+			]),
+		);
+
+		expect(toolbar.groups[0][0]).toMatchObject({
+			id: "zoom",
+			actionSlots,
+		});
+	});
+
 	it("copies labelSide and labelAlign onto a resolved menu trigger", () => {
 		const toolbar = resolveToolbarRegistration(
 			baseToolbar([
