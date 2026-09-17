@@ -6,6 +6,8 @@ import type {
 	IECommerceApiConnector,
 	IECommerceApiConnectorActions,
 	IECommerceApiFactory,
+	IGetOutputData,
+	IGetOutputReply,
 	IGetParentPageInfoReply,
 	IGetUserProfileReply,
 	IMessageToParentData,
@@ -14,11 +16,21 @@ import type {
 	IScrollingApiLoadMoreReply,
 	IScrollingApiSetParametersData,
 	IScrollingApiSetParametersReply,
+	ITriggerActionData,
+	ITriggerActionReply,
 	IUpdateParameterValuesData,
 	IUpdateParameterValuesReply,
 	IUpdateSharingLinkData,
 	IUpdateSharingLinkReply,
 } from "@AppBuilderLib/features/ecommerce/config/ecommerceapi";
+import type {
+	ICreateModelStateData,
+	ICreateModelStateResult,
+} from "@AppBuilderLib/features/model-state/config/createModelState";
+import type {
+	IImportModelStateData,
+	IImportModelStateResult,
+} from "@AppBuilderLib/features/model-state/config/importModelState";
 import type {
 	ICrossWindowApi,
 	ICrossWindowApiOptions,
@@ -27,14 +39,6 @@ import type {
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import {CrossWindowApiFactory} from "@AppBuilderLib/shared/lib/crosswindowapi/crosswindowapi";
 import {applyModelStateToUrl} from "@AppBuilderLib/shared/lib/modifyUrl";
-import type {
-	ICreateModelStateData,
-	ICreateModelStateResult,
-} from "@AppBuilderShared/features/model-state/config/createModelState";
-import type {
-	IImportModelStateData,
-	IImportModelStateResult,
-} from "@AppBuilderShared/features/model-state/config/importModelState";
 
 // Message types for the API calls from application to connector.
 // CAUTION: When implementing new API calls and messages type, make sure to add
@@ -57,6 +61,8 @@ const MESSAGE_TYPE_CONNECTOR_CREATE_MODEL_STATE =
 	"CONNECTOR_CREATE_MODEL_STATE";
 const MESSAGE_TYPE_CONNECTOR_IMPORT_MODEL_STATE =
 	"CONNECTOR_IMPORT_MODEL_STATE";
+const MESSAGE_TYPE_CONNECTOR_TRIGGER_ACTION = "CONNECTOR_TRIGGER_ACTION";
+const MESSAGE_TYPE_CONNECTOR_GET_OUTPUT = "CONNECTOR_GET_OUTPUT";
 
 /**
  * App Builder e-commerce client. Registers connector→app handlers
@@ -104,6 +110,15 @@ export class ECommerceApi implements IECommerceApi {
 			MESSAGE_TYPE_CONNECTOR_IMPORT_MODEL_STATE,
 			(data: IImportModelStateData) =>
 				this.connectorActions.importModelState(data),
+		);
+		this.crossWindowApi.on(
+			MESSAGE_TYPE_CONNECTOR_TRIGGER_ACTION,
+			(data: ITriggerActionData) =>
+				this.connectorActions.triggerAction(data),
+		);
+		this.crossWindowApi.on(
+			MESSAGE_TYPE_CONNECTOR_GET_OUTPUT,
+			(data: IGetOutputData) => this.connectorActions.getOutput(data),
 		);
 		this.peerIsReady = this.crossWindowApi.handshake(
 			MESSAGE_TYPE_HANDSHAKE,
@@ -316,6 +331,28 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 			this.#timeout,
 		);
 	}
+
+	async triggerAction(
+		data: ITriggerActionData,
+	): Promise<ITriggerActionReply> {
+		await this.peerIsReady;
+
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_CONNECTOR_TRIGGER_ACTION,
+			data,
+			this.#timeout,
+		);
+	}
+
+	async getOutput(data: IGetOutputData): Promise<IGetOutputReply> {
+		await this.peerIsReady;
+
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_CONNECTOR_GET_OUTPUT,
+			data,
+			this.#timeout,
+		);
+	}
 }
 
 export class DummyECommerceApiActions implements IECommerceApiActions {
@@ -387,6 +424,17 @@ export class DummyECommerceApiConnectorActions implements IECommerceApiConnector
 	updateParameterValues() /*data: IUpdateParameterValuesData,*/
 	: Promise<IUpdateParameterValuesReply> {
 		return Promise.resolve({});
+	}
+
+	triggerAction(): Promise<ITriggerActionReply> {
+		return Promise.resolve({
+			success: false,
+			message: "Not implemented",
+		});
+	}
+
+	getOutput(): Promise<IGetOutputReply> {
+		return Promise.resolve({found: false});
 	}
 }
 

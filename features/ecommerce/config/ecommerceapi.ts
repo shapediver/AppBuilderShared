@@ -1,15 +1,15 @@
 import type {
-	ICrossWindowApiOptions,
-	ICrossWindowPeerInfo,
-} from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
-import type {
 	ICreateModelStateData,
 	ICreateModelStateResult,
-} from "@AppBuilderShared/features/model-state/config/createModelState";
+} from "@AppBuilderLib/features/model-state/config/createModelState";
 import type {
 	IImportModelStateData,
 	IImportModelStateResult,
-} from "@AppBuilderShared/features/model-state/config/importModelState";
+} from "@AppBuilderLib/features/model-state/config/importModelState";
+import type {
+	ICrossWindowApiOptions,
+	ICrossWindowPeerInfo,
+} from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 
 /**
  * An item to be added to the cart.
@@ -289,6 +289,96 @@ export interface IUpdateParameterValuesReply {
 	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
 }
 
+export interface ITriggerSetParameterValueProps {
+	parameter: {name: string; sessionId?: string};
+	value?: string | number | boolean;
+}
+
+/**
+ * Camera action payload for {@link ITriggerActionData}.
+ * `assign` + `props.camera.name` selects a named camera (Front, Back, Left, …).
+ */
+export type ITriggerCameraActionProps = {
+	type: "animate" | "assign" | "set" | "reset" | "zoomTo";
+	viewportId?: string;
+	props: {
+		camera?: {
+			name?: string;
+			type?: string;
+			position?: [number, number, number];
+			target?: [number, number, number];
+		};
+		position?: [number, number, number];
+		target?: [number, number, number];
+		path?: {
+			position: [number, number, number];
+			target: [number, number, number];
+		}[];
+		startFromCurrent?: boolean;
+		nameFilter?: string[];
+		initialPosition?: [number, number, number];
+		initialTarget?: [number, number, number];
+		options?: Record<string, unknown>;
+	};
+};
+
+/**
+ * App Builder action definition restricted to the same types as the tools API
+ * `runActionControl` allowlist.
+ */
+export type ITriggerActionData =
+	| {type: "createModelState"; props: ICreateModelStateData}
+	| {type: "importModelState"; props: IImportModelStateData | object}
+	| {type: "setParameterValue"; props: ITriggerSetParameterValueProps}
+	| {
+			type: "setParameterValues";
+			props: {parameterValues: ITriggerSetParameterValueProps[]};
+	  }
+	| {type: "undo"; props?: object}
+	| {type: "redo"; props?: object}
+	| {type: "resetParameterValues"; props?: object}
+	| {
+			type: "addToCart";
+			props: ICreateModelStateData & {
+				productId?: string;
+				quantity?: number;
+				price?: number;
+				description?: string;
+				title?: string;
+			};
+	  }
+	| {type: "camera"; props: ITriggerCameraActionProps}
+	| {
+			type: "sound";
+			props: {href: string; autoplay?: boolean; loop?: boolean};
+	  }
+	| {
+			type: "executeActions";
+			props: {
+				mode?: "parallel" | "sequential";
+				actions: ITriggerActionData[];
+			};
+	  };
+
+export interface ITriggerActionReply {
+	success: boolean;
+	message?: string;
+}
+
+export interface IGetOutputData {
+	/** Session namespace. Optional, defaults to the configurator session. */
+	namespace?: string;
+	/** Output id, name, or displayname. */
+	output: string;
+}
+
+export interface IGetOutputReply {
+	found: boolean;
+	/** Latest output content when found. */
+	content?: unknown;
+	message?: string;
+}
+
 /**
  * Generic e-commerce API connector actions.
  * These actions are provided by the application (e.g. a configurator)
@@ -318,6 +408,16 @@ export interface IECommerceApiConnectorActions {
 	importModelState(
 		data: IImportModelStateData,
 	): Promise<IImportModelStateResult>;
+
+	/**
+	 * Run an App Builder action (same allowlist as the tools API).
+	 */
+	triggerAction(data: ITriggerActionData): Promise<ITriggerActionReply>;
+
+	/**
+	 * Return the latest output content for an output id, name, or displayname.
+	 */
+	getOutput(data: IGetOutputData): Promise<IGetOutputReply>;
 }
 
 /**
