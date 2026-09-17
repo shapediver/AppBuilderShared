@@ -58,6 +58,10 @@ const MESSAGE_TYPE_CONNECTOR_CREATE_MODEL_STATE =
 const MESSAGE_TYPE_CONNECTOR_IMPORT_MODEL_STATE =
 	"CONNECTOR_IMPORT_MODEL_STATE";
 
+/**
+ * App Builder e-commerce client. Registers connector→app handlers
+ * **before** handshake so an eager plugin cannot race.
+ */
 export class ECommerceApi implements IECommerceApi {
 	/**
 	 * Implementation of the connector API actions.
@@ -86,26 +90,25 @@ export class ECommerceApi implements IECommerceApi {
 		this.crossWindowApi = crossWindowApi;
 		this.debug = options?.debug ?? false;
 		this.timeout = options?.timeout;
-		this.peerIsReady = this.crossWindowApi
-			.handshake(MESSAGE_TYPE_HANDSHAKE, this.timeout)
-			.then((peerInfo) => {
-				this.crossWindowApi.on(
-					MESSAGE_TYPE_CONNECTOR_UPDATE_PARAMETER_VALUES,
-					(data: IUpdateParameterValuesData) =>
-						this.connectorActions.updateParameterValues(data),
-				);
-				this.crossWindowApi.on(
-					MESSAGE_TYPE_CONNECTOR_CREATE_MODEL_STATE,
-					(data: ICreateModelStateData) =>
-						this.connectorActions.createModelState(data),
-				);
-				this.crossWindowApi.on(
-					MESSAGE_TYPE_CONNECTOR_IMPORT_MODEL_STATE,
-					(data: IImportModelStateData) =>
-						this.connectorActions.importModelState(data),
-				);
-				return peerInfo;
-			});
+		this.crossWindowApi.on(
+			MESSAGE_TYPE_CONNECTOR_UPDATE_PARAMETER_VALUES,
+			(data: IUpdateParameterValuesData) =>
+				this.connectorActions.updateParameterValues(data),
+		);
+		this.crossWindowApi.on(
+			MESSAGE_TYPE_CONNECTOR_CREATE_MODEL_STATE,
+			(data: ICreateModelStateData) =>
+				this.connectorActions.createModelState(data),
+		);
+		this.crossWindowApi.on(
+			MESSAGE_TYPE_CONNECTOR_IMPORT_MODEL_STATE,
+			(data: IImportModelStateData) =>
+				this.connectorActions.importModelState(data),
+		);
+		this.peerIsReady = this.crossWindowApi.handshake(
+			MESSAGE_TYPE_HANDSHAKE,
+			this.timeout,
+		);
 	}
 
 	setApiConnectorActions(actions: IECommerceApiConnectorActions): void {
@@ -205,6 +208,10 @@ export class ECommerceApi implements IECommerceApi {
 	peerIsReady: Promise<ICrossWindowPeerInfo>;
 }
 
+/**
+ * Plugin-side e-commerce connector. Registers ADD_ITEM_TO_CART and the other
+ * app→plugin handlers **before** handshake so an eager client cannot race.
+ */
 export class ECommerceApiConnector implements IECommerceApiConnector {
 	#_peerIsReady: Promise<ICrossWindowPeerInfo>;
 
@@ -228,9 +235,6 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 	 */
 	#timeout?: number;
 
-	/** Debug flag. */
-	#debug: boolean;
-
 	constructor(
 		actions: IECommerceApiActions,
 		crossWindowApi: ICrossWindowApi,
@@ -238,48 +242,43 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 	) {
 		this.#actions = actions;
 		this.#crossWindowApi = crossWindowApi;
-		this.#debug = options?.debug ?? false;
 		this.#timeout = options?.timeout;
-		this.#_peerIsReady = this.#crossWindowApi
-			.handshake(MESSAGE_TYPE_HANDSHAKE, this.#timeout)
-			.then((peerInfo) => {
-				this.#crossWindowApi.on(
-					MESSAGE_TYPE_ADD_ITEM_TO_CART,
-					(data: IAddItemToCartData) =>
-						this.#actions.addItemToCart(data),
-				);
-				this.#crossWindowApi.on(MESSAGE_TYPE_GET_USER_PROFILE, () =>
-					this.#actions.getUserProfile(),
-				);
-				this.#crossWindowApi.on(MESSAGE_TYPE_CLOSE_CONFIGURATOR, () =>
-					this.#actions.closeConfigurator(),
-				);
-				this.#crossWindowApi.on(MESSAGE_TYPE_GET_PARENT_PAGE_INFO, () =>
-					this.#actions.getParentPageInfo(),
-				);
-				this.#crossWindowApi.on(
-					MESSAGE_TYPE_UPDATE_SHARING_LINK,
-					(data: IUpdateSharingLinkData) =>
-						this.#actions.updateSharingLink(data),
-				);
-				this.#crossWindowApi.on(
-					MESSAGE_TYPE_SCROLLINGAPI_SET_PARAMETERS,
-					(data: IScrollingApiSetParametersData) =>
-						this.#actions.scrollingApiSetParameters(data),
-				);
-				this.#crossWindowApi.on(
-					MESSAGE_TYPE_SCROLLINGAPI_LOAD_MORE,
-					(data: IScrollingApiLoadMoreData) =>
-						this.#actions.scrollingApiLoadMore(data),
-				);
-				this.#crossWindowApi.on(
-					MESSAGE_TYPE_MESSAGE_TO_PARENT,
-					(data: IMessageToParentData) =>
-						this.#actions.messageToParent(data),
-				);
-
-				return peerInfo;
-			});
+		this.#crossWindowApi.on(
+			MESSAGE_TYPE_ADD_ITEM_TO_CART,
+			(data: IAddItemToCartData) => this.#actions.addItemToCart(data),
+		);
+		this.#crossWindowApi.on(MESSAGE_TYPE_GET_USER_PROFILE, () =>
+			this.#actions.getUserProfile(),
+		);
+		this.#crossWindowApi.on(MESSAGE_TYPE_CLOSE_CONFIGURATOR, () =>
+			this.#actions.closeConfigurator(),
+		);
+		this.#crossWindowApi.on(MESSAGE_TYPE_GET_PARENT_PAGE_INFO, () =>
+			this.#actions.getParentPageInfo(),
+		);
+		this.#crossWindowApi.on(
+			MESSAGE_TYPE_UPDATE_SHARING_LINK,
+			(data: IUpdateSharingLinkData) =>
+				this.#actions.updateSharingLink(data),
+		);
+		this.#crossWindowApi.on(
+			MESSAGE_TYPE_SCROLLINGAPI_SET_PARAMETERS,
+			(data: IScrollingApiSetParametersData) =>
+				this.#actions.scrollingApiSetParameters(data),
+		);
+		this.#crossWindowApi.on(
+			MESSAGE_TYPE_SCROLLINGAPI_LOAD_MORE,
+			(data: IScrollingApiLoadMoreData) =>
+				this.#actions.scrollingApiLoadMore(data),
+		);
+		this.#crossWindowApi.on(
+			MESSAGE_TYPE_MESSAGE_TO_PARENT,
+			(data: IMessageToParentData) => this.#actions.messageToParent(data),
+		);
+		this.#_peerIsReady = this.#crossWindowApi.handshake(
+			MESSAGE_TYPE_HANDSHAKE,
+			this.#timeout,
+		);
 	}
 
 	async updateParameterValues(
