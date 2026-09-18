@@ -168,6 +168,57 @@ describe("validateTriggerActionData", () => {
 		expect(result.success).toBe(false);
 	});
 
+	it("rejects an invalid camera type", () => {
+		const result = validateTriggerActionData({
+			type: "camera",
+			props: {
+				type: "assign",
+				props: {camera: {type: "bogus"}},
+			},
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects importModelState props with extra keys", () => {
+		const result = validateTriggerActionData({
+			type: "importModelState",
+			props: {foo: 1},
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("accepts importModelState with common action props", () => {
+		const result = validateTriggerActionData({
+			type: "importModelState",
+			props: {id: "import-1", label: "Import"},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects importModelState modelStateId on triggerAction", () => {
+		const result = validateTriggerActionData({
+			type: "importModelState",
+			props: {modelStateId: "ms-1"},
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects undo props with extra keys", () => {
+		const result = validateTriggerActionData({
+			type: "undo",
+			props: {extra: true},
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("accepts undo with common action props", () => {
+		const result = validateTriggerActionData({
+			type: "undo",
+			props: {id: "undo-1", label: "Undo"},
+		});
+		expect(result.success).toBe(true);
+	});
+
 	it("accepts sound labelPlaying and iconPlaying", () => {
 		const result = validateTriggerActionData({
 			type: "sound",
@@ -175,6 +226,17 @@ describe("validateTriggerActionData", () => {
 				href: "https://example.com/a.mp3",
 				labelPlaying: "Stop",
 				iconPlaying: "mdi:stop",
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts an inline Iconify object for sound iconPlaying", () => {
+		const result = validateTriggerActionData({
+			type: "sound",
+			props: {
+				href: "https://example.com/a.mp3",
+				iconPlaying: {body: "<path d='M0 0h1v1H0z'/>"},
 			},
 		});
 		expect(result.success).toBe(true);

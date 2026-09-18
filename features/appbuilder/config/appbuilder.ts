@@ -16,7 +16,7 @@ import type {
 	IAppBuilderActionPropsCreateModelState,
 	IAppBuilderActionPropsSetParameterValue,
 	IAppBuilderLegacyActionDefinition,
-} from "./appbuilderactions";
+} from "./appbuilderActions";
 import type {IAppBuilderActionSlots} from "./appbuilderActionSlots";
 import type {IAppBuilderAgent} from "./appbuilderagent";
 import {
@@ -52,7 +52,7 @@ export {
 	isSoundAction,
 	isUndoAction,
 	isZoomToCameraAction,
-} from "./appbuilderactions";
+} from "./appbuilderActions";
 export type {
 	IAppBuilderActionDefinition,
 	IAppBuilderActionPropsAddToCart,
@@ -100,7 +100,7 @@ export type {
 	IAppBuilderPropsResetCamera,
 	IAppBuilderPropsSetCamera,
 	IAppBuilderPropsZoomToCamera,
-} from "./appbuilderactions";
+} from "./appbuilderActions";
 export type {
 	AppBuilderActionSlotEventPropsType,
 	AppBuilderApplicationEvent,

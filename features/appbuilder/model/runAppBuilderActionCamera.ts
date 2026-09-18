@@ -30,6 +30,13 @@ const toVec3 = (value?: ArrayLike<number>) =>
 		? vec3.fromValues(value[0], value[1], value[2])
 		: undefined;
 
+function isCameraType(value: unknown): value is CAMERA_TYPE {
+	return (
+		typeof value === "string" &&
+		(Object.values(CAMERA_TYPE) as string[]).includes(value)
+	);
+}
+
 const cleanCameraPositionAndTarget = (
 	camera: ICameraApi,
 	position: vec3 | undefined,
@@ -150,6 +157,11 @@ async function applyCameraAction(
 		}
 
 		if (!newCamera && camera.type) {
+			if (!isCameraType(camera.type)) {
+				throw new Error(
+					`Invalid camera type "${String(camera.type)}".`,
+				);
+			}
 			newCamera =
 				camera.type === CAMERA_TYPE.PERSPECTIVE
 					? viewportApi.createPerspectiveCamera()

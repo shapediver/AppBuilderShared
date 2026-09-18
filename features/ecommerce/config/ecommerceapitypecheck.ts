@@ -1,11 +1,12 @@
 import {
 	IAppBuilderActionPropsAddToCartSchema,
 	IAppBuilderActionPropsCameraSchema,
+	IAppBuilderActionPropsCommonSchema,
 	IAppBuilderActionPropsCreateModelStateSchema,
 	IAppBuilderActionPropsSetParameterValueSchema,
 	IAppBuilderActionPropsSetParameterValuesSchema,
 	IAppBuilderActionPropsSoundSchema,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilderactionstypecheck";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilderActionsTypecheck";
 import {createModelStateDataSchema} from "@AppBuilderLib/features/model-state/config/createModelState.zod";
 import {importModelStateDataSchema} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
 import {z} from "@AppBuilderLib/shared/lib/zod";
@@ -14,13 +15,11 @@ import type {ITriggerActionData} from "./ecommerceapi";
 /**
  * E-commerce CrossWindow request validation.
  *
- * Action prop schemas live in `appbuilderactionstypecheck.ts` so they stay
+ * Action prop schemas live in `appbuilderActionsTypecheck.ts` so they stay
  * identical to App Builder settings JSON. This file only adds connector-only
  * payloads and the triggerAction allowlist (a subset of action types).
- * Public types live in `ecommerceapi.ts` / `appbuilderactions.ts`, not `z.infer`.
+ * Public types live in `ecommerceapi.ts` / `appbuilderActions.ts`, not `z.infer`.
  */
-
-const emptyActionPropsSchema = z.strictObject({});
 
 export const ICreateModelStateDataSchema = createModelStateDataSchema;
 
@@ -54,7 +53,7 @@ const triggerActionUnionSchema = z.discriminatedUnion("type", [
 	}),
 	z.object({
 		type: z.literal("importModelState"),
-		props: z.union([IImportModelStateDataSchema, z.object({}).strict()]),
+		props: IAppBuilderActionPropsCommonSchema,
 	}),
 	z.object({
 		type: z.literal("setParameterValue"),
@@ -66,15 +65,15 @@ const triggerActionUnionSchema = z.discriminatedUnion("type", [
 	}),
 	z.object({
 		type: z.literal("undo"),
-		props: emptyActionPropsSchema.optional(),
+		props: IAppBuilderActionPropsCommonSchema.optional(),
 	}),
 	z.object({
 		type: z.literal("redo"),
-		props: emptyActionPropsSchema.optional(),
+		props: IAppBuilderActionPropsCommonSchema.optional(),
 	}),
 	z.object({
 		type: z.literal("resetParameterValues"),
-		props: emptyActionPropsSchema.optional(),
+		props: IAppBuilderActionPropsCommonSchema.optional(),
 	}),
 	z.object({
 		type: z.literal("addToCart"),

@@ -15,15 +15,17 @@ export const viewportScreenshotPropsSchema = z.strictObject({
 			height: z.number().int().positive(),
 		})
 		.optional(),
-	// name lookup or camera type; other camera fields allowed via looseObject
+	// name lookup or camera type; other camera fields allowed via looseObject.
+	// `type` is always CAMERA_TYPE when present so a name lookup cannot
+	// absorb `{type: "bogus"}`.
 	camera: z
-		.union([
-			z.looseObject({
-				name: z.string(),
-			}),
-			z.looseObject({
-				type: z.enum(CAMERA_TYPE),
-			}),
-		])
+		.looseObject({
+			name: z.string().optional(),
+			type: z.enum(CAMERA_TYPE).optional(),
+		})
+		.refine(
+			(camera) => camera.name !== undefined || camera.type !== undefined,
+			{message: "camera requires name or type"},
+		)
 		.optional(),
 });

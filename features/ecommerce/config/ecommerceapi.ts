@@ -3,13 +3,14 @@ import type {
 	IAppBuilderActionPropsCamera,
 	IAppBuilderActionPropsCreateModelState,
 	IAppBuilderActionPropsExecuteActions,
+	IAppBuilderActionPropsImportModelState,
 	IAppBuilderActionPropsRedo,
 	IAppBuilderActionPropsResetParameterValues,
 	IAppBuilderActionPropsSetParameterValue,
 	IAppBuilderActionPropsSetParameterValues,
 	IAppBuilderActionPropsSound,
 	IAppBuilderActionPropsUndo,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilderactions";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilderActions";
 import type {
 	ICreateModelStateData,
 	ICreateModelStateResult,
@@ -313,7 +314,7 @@ export type ITriggerCameraActionProps = IAppBuilderActionPropsCamera;
  *
  * `createModelState` here is the action JSON (no custom `data`). The
  * dedicated `createModelState()` method accepts {@link ICreateModelStateData}.
- * Import-model-state may be `{}` (open the dialog) or `{modelStateId}`.
+ * Import with a `modelStateId` uses the dedicated `importModelState()` method.
  */
 export type ITriggerActionData =
 	| {
@@ -322,7 +323,7 @@ export type ITriggerActionData =
 	  }
 	| {
 			type: "importModelState";
-			props: IImportModelStateData | object;
+			props: IAppBuilderActionPropsImportModelState;
 	  }
 	| {
 			type: "setParameterValue";

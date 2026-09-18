@@ -6,7 +6,11 @@ import {
 } from "@AppBuilderLib/features/model-state/config/createModelState.zod";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {CAMERA_TYPE} from "@shapediver/viewer.shared.types";
-import type {IAppBuilderParameterValueSourceDefinition} from "./appbuilder";
+import type {
+	IAppBuilderActionPropsCamera,
+	IAppBuilderIcon,
+	IAppBuilderParameterValueSourceDefinition,
+} from "./appbuilder";
 
 /**
  * UI-free Zod for App Builder action props and parameter value sources.
@@ -22,10 +26,24 @@ import type {IAppBuilderParameterValueSourceDefinition} from "./appbuilder";
  * Mantine theme / widget validation.
  */
 
+export const IAppBuilderIconSchema: z.ZodType<IAppBuilderIcon> = z.union([
+	z.string(),
+	z.strictObject({
+		body: z.string(),
+		left: z.number().optional(),
+		top: z.number().optional(),
+		width: z.number().optional(),
+		height: z.number().optional(),
+		rotate: z.number().optional(),
+		hFlip: z.boolean().optional(),
+		vFlip: z.boolean().optional(),
+	}),
+]);
+
 export const IAppBuilderActionPropsCommonSchema = z.strictObject({
 	id: z.string().optional(),
 	label: z.string().optional(),
-	icon: z.string().optional(),
+	icon: IAppBuilderIconSchema.optional(),
 	tooltip: z.string().optional(),
 });
 
@@ -123,86 +141,92 @@ export const IAppBuilderActionPropsSetParameterValuesSchema = z.strictObject({
 
 export const IAppBuilderActionPropsCameraCommonSchema = z.strictObject({
 	camera: z
-		.union([
-			z.looseObject({
-				id: z.string().optional(),
-				name: z.string().optional(),
-			}),
-			z.looseObject({
-				type: z.enum(CAMERA_TYPE),
-			}),
-		])
+		.looseObject({
+			id: z.string().optional(),
+			name: z.string().optional(),
+			type: z.enum(CAMERA_TYPE).optional(),
+		})
+		.refine(
+			(camera) =>
+				camera.id !== undefined ||
+				camera.name !== undefined ||
+				camera.type !== undefined,
+			{message: "camera requires id, name, or type"},
+		)
 		.optional(),
 	options: z.record(z.string(), JsonValueSchema).optional(),
 });
 
-export const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
-	z
-		.strictObject({
-			type: z.literal("animate"),
-			viewportId: z.string().optional(),
-			props: z
-				.strictObject({
-					path: z.array(
-						z.strictObject({
-							position: z.array(z.number()).length(3),
-							target: z.array(z.number()).length(3),
-						}),
-					),
-					startFromCurrent: z.boolean().optional(),
-				})
-				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
-		})
-		.extend(IAppBuilderActionPropsCommonSchema.shape),
-	z
-		.strictObject({
-			type: z.literal("assign"),
-			viewportId: z.string().optional(),
-			props: z
-				.strictObject({})
-				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
-		})
-		.extend(IAppBuilderActionPropsCommonSchema.shape),
-	z
-		.strictObject({
-			type: z.literal("set"),
-			viewportId: z.string().optional(),
-			props: z
-				.strictObject({
-					position: z.array(z.number()).length(3),
-					target: z.array(z.number()).length(3),
-				})
-				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
-		})
-		.extend(IAppBuilderActionPropsCommonSchema.shape),
-	z
-		.strictObject({
-			type: z.literal("reset"),
-			viewportId: z.string().optional(),
-			props: z
-				.strictObject({})
-				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
-		})
-		.extend(IAppBuilderActionPropsCommonSchema.shape),
-	z
-		.strictObject({
-			type: z.literal("zoomTo"),
-			viewportId: z.string().optional(),
-			props: z
-				.strictObject({
-					initialPosition: z.array(z.number()).length(3).optional(),
-					initialTarget: z.array(z.number()).length(3).optional(),
-					nameFilter: z.array(z.string()).optional(),
-				})
-				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
-		})
-		.extend(IAppBuilderActionPropsCommonSchema.shape),
-]);
+const vec3Schema = z.tuple([z.number(), z.number(), z.number()]);
+
+export const IAppBuilderActionPropsCameraSchema: z.ZodType<IAppBuilderActionPropsCamera> =
+	z.discriminatedUnion("type", [
+		z
+			.strictObject({
+				type: z.literal("animate"),
+				viewportId: z.string().optional(),
+				props: z
+					.strictObject({
+						path: z.array(
+							z.strictObject({
+								position: vec3Schema,
+								target: vec3Schema,
+							}),
+						),
+						startFromCurrent: z.boolean().optional(),
+					})
+					.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+			})
+			.extend(IAppBuilderActionPropsCommonSchema.shape),
+		z
+			.strictObject({
+				type: z.literal("assign"),
+				viewportId: z.string().optional(),
+				props: z
+					.strictObject({})
+					.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+			})
+			.extend(IAppBuilderActionPropsCommonSchema.shape),
+		z
+			.strictObject({
+				type: z.literal("set"),
+				viewportId: z.string().optional(),
+				props: z
+					.strictObject({
+						position: vec3Schema,
+						target: vec3Schema,
+					})
+					.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+			})
+			.extend(IAppBuilderActionPropsCommonSchema.shape),
+		z
+			.strictObject({
+				type: z.literal("reset"),
+				viewportId: z.string().optional(),
+				props: z
+					.strictObject({})
+					.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+			})
+			.extend(IAppBuilderActionPropsCommonSchema.shape),
+		z
+			.strictObject({
+				type: z.literal("zoomTo"),
+				viewportId: z.string().optional(),
+				props: z
+					.strictObject({
+						initialPosition: vec3Schema.optional(),
+						initialTarget: vec3Schema.optional(),
+						nameFilter: z.array(z.string()).optional(),
+					})
+					.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+			})
+			.extend(IAppBuilderActionPropsCommonSchema.shape),
+	]) as z.ZodType<IAppBuilderActionPropsCamera>;
 
 export const IAppBuilderActionPropsSoundSchema = z.strictObject({
 	href: z.string(),
 	autoplay: z.boolean().optional(),
 	loop: z.boolean().optional(),
 	labelPlaying: z.string().optional(),
-	iconPlaying: z.string().optional(),
+	iconPlaying: IAppBuilderIconSchema.optional(),
 });

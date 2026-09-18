@@ -5,7 +5,7 @@ const CONTRACT_DIR = path.resolve(__dirname, "..");
 
 const CONTRACT_FILES = [
 	"appbuilder.ts",
-	"appbuilderactions.ts",
+	"appbuilderActions.ts",
 	"appbuilderActionSlots.ts",
 	"appbuildercharts.ts",
 	"appbuilderColor.ts",

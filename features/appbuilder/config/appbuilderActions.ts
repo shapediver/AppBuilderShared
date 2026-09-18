@@ -311,10 +311,10 @@ export type IAppBuilderLegacyActionPropsFullscreen =
 	IAppBuilderActionPropsFullscreen & IAppBuilderActionPropsCommon;
 
 /** Properties of an "undo" action. */
-export type IAppBuilderActionPropsUndo = object;
+export type IAppBuilderActionPropsUndo = IAppBuilderActionPropsCommon;
 
 /** Properties of a "redo" action. */
-export type IAppBuilderActionPropsRedo = object;
+export type IAppBuilderActionPropsRedo = IAppBuilderActionPropsCommon;
 
 /** Properties of legacy an "undo" action. */
 export type IAppBuilderLegacyActionPropsUndo = IAppBuilderActionPropsUndo &
@@ -325,7 +325,8 @@ export type IAppBuilderLegacyActionPropsRedo = IAppBuilderActionPropsRedo &
 	IAppBuilderActionPropsCommon;
 
 /** Properties of a "resetParameterValues" action. */
-export type IAppBuilderActionPropsResetParameterValues = object;
+export type IAppBuilderActionPropsResetParameterValues =
+	IAppBuilderActionPropsCommon;
 
 /** Properties of legacy a "resetParameterValues" action. */
 export type IAppBuilderLegacyActionPropsResetParameterValues =
@@ -346,7 +347,8 @@ export type IAppBuilderLegacyActionPropsExportParameterValues =
 	IAppBuilderActionPropsExportParameterValues & IAppBuilderActionPropsCommon;
 
 /** Properties of an "importModelState" action. */
-export type IAppBuilderActionPropsImportModelState = object;
+export type IAppBuilderActionPropsImportModelState =
+	IAppBuilderActionPropsCommon;
 
 /** Properties of legacy an "importModelState" action. */
 export type IAppBuilderLegacyActionPropsImportModelState =
@@ -379,9 +381,9 @@ export type IAppBuilderPropsAssignCamera = IAppBuilderPropsCameraCommon;
 /** Properties of a "set" action, where the camera is defined by position and target. */
 export type IAppBuilderPropsSetCamera = {
 	/** The position of the camera. */
-	position?: [number, number, number];
+	position: [number, number, number];
 	/** The target the camera is looking at. */
-	target?: [number, number, number];
+	target: [number, number, number];
 } & IAppBuilderPropsCameraCommon;
 
 /** Properties of a "reset" action. */
@@ -399,18 +401,31 @@ export type IAppBuilderPropsZoomToCamera = {
 
 /** Properties of a camera action. */
 export type IAppBuilderActionPropsCamera = {
-	/** Type of camera action. */
-	type: "animate" | "assign" | "set" | "reset" | "zoomTo";
 	/** Optional viewport id. Defaults to the containing viewport. */
 	viewportId?: string;
-	/** Properties of the camera action. */
-	props:
-		| IAppBuilderPropsAnimateCamera
-		| IAppBuilderPropsAssignCamera
-		| IAppBuilderPropsSetCamera
-		| IAppBuilderPropsResetCamera
-		| IAppBuilderPropsZoomToCamera;
-} & IAppBuilderActionPropsCommon;
+} & IAppBuilderActionPropsCommon &
+	(
+		| {
+				type: "animate";
+				props: IAppBuilderPropsAnimateCamera;
+		  }
+		| {
+				type: "assign";
+				props: IAppBuilderPropsAssignCamera;
+		  }
+		| {
+				type: "set";
+				props: IAppBuilderPropsSetCamera;
+		  }
+		| {
+				type: "reset";
+				props: IAppBuilderPropsResetCamera;
+		  }
+		| {
+				type: "zoomTo";
+				props: IAppBuilderPropsZoomToCamera;
+		  }
+	);
 
 export type IAppBuilderLegacyActionPropsCamera = IAppBuilderActionPropsCamera &
 	IAppBuilderActionPropsCommon;

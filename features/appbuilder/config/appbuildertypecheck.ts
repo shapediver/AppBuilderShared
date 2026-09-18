@@ -8,7 +8,7 @@ import {
 	IAppBuilderActionPropsSetParameterValuesSchema,
 	IAppBuilderActionPropsSoundSchema,
 	IAppBuilderParameterValueSourceDefinitionSchema,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilderactionstypecheck";
+} from "@AppBuilderLib/features/appbuilder/config/appbuilderActionsTypecheck";
 import {preprocessActionDefinitionInput} from "@AppBuilderLib/features/appbuilder/lib/legacyActionToDefinition";
 import {prettifyError, z} from "@AppBuilderLib/shared/lib/zod";
 import {appBuilderThemeOtherPropsSchema} from "@AppBuilderLib/shared/mantine-props/appBuilderThemeOther.zod";

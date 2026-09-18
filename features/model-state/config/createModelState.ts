@@ -1,4 +1,4 @@
-import type {IAppBuilderActionPropsCreateModelState} from "@AppBuilderLib/features/appbuilder/config/appbuilderactions";
+import type {IAppBuilderActionPropsCreateModelState} from "@AppBuilderLib/features/appbuilder/config/appbuilderActions";
 
 /**
  * Data accepted when creating a model state (hook, e-commerce connector, stores).
