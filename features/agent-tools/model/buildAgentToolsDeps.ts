@@ -75,6 +75,7 @@ async function runHostCamera(
 			viewportId: isCameraAction(definition)
 				? (definition.props.viewportId ?? fallbackViewportId)
 				: fallbackViewportId,
+			strict: true,
 		});
 		return {success: true};
 	} catch (e) {

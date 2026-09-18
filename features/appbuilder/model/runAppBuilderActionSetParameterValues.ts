@@ -5,6 +5,7 @@ import {
 	IAppBuilderActionPropsSetParameterValue,
 	IAppBuilderActionPropsSetParameterValues,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 
 export type RunAppBuilderActionSetParameterValuesProps =
 	| IAppBuilderActionPropsSetParameterValues
@@ -13,6 +14,8 @@ export type RunAppBuilderActionSetParameterValuesProps =
 export type AppBuilderActionRunNamespaceContext = {
 	namespace: string;
 	viewportId?: string;
+	/** When true, missing/invalid items throw (API). UI omits this and skips. */
+	strict?: boolean;
 };
 
 type PlannedParameterUpdate = {
@@ -22,13 +25,22 @@ type PlannedParameterUpdate = {
 	setUiValue: (value: unknown) => boolean;
 };
 
+function rejectOrSkip(strict: boolean | undefined, message: string): void {
+	if (strict) {
+		throw new Error(message);
+	}
+	Logger.warn(message);
+}
+
 /**
  * Headless "setParameterValues" / "setParameterValue" trigger.
  * Awaits source resolution (when needed) and session execution via
  * `batchParameterValueUpdate`.
  *
- * Resolves and validates the complete batch before any `setUiValue` so a
- * later invalid/unknown entry cannot leave earlier parameters dirty.
+ * Resolves and validates items before any `setUiValue` so a later
+ * invalid/unknown entry cannot leave earlier parameters dirty. API callers
+ * pass `strict: true` to throw; toolbar / slots / in-app executeActions skip
+ * the bad item and continue.
  */
 export async function runAppBuilderActionSetParameterValues(
 	props: RunAppBuilderActionSetParameterValuesProps,
@@ -55,7 +67,11 @@ export async function runAppBuilderActionSetParameterValues(
 			item.parameter.name,
 		);
 		if (!parameterStore) {
-			throw new Error(`Parameter "${item.parameter.name}" not found.`);
+			rejectOrSkip(
+				context.strict,
+				`Parameter "${item.parameter.name}" not found.`,
+			);
+			continue;
 		}
 		sourceDefinitions.push({
 			id: parameterStore.getState().definition.id,
@@ -81,7 +97,11 @@ export async function runAppBuilderActionSetParameterValues(
 			item.parameter.name,
 		);
 		if (!parameterStore) {
-			throw new Error(`Parameter "${item.parameter.name}" not found.`);
+			rejectOrSkip(
+				context.strict,
+				`Parameter "${item.parameter.name}" not found.`,
+			);
+			continue;
 		}
 		const parameter = parameterStore.getState();
 
@@ -90,9 +110,11 @@ export async function runAppBuilderActionSetParameterValues(
 			nextValue === undefined && item.source !== undefined;
 		if (nextValue === undefined) {
 			if (item.source === undefined) {
-				throw new Error(
+				rejectOrSkip(
+					context.strict,
 					`No value or source defined for parameter "${parameter.definition.id}".`,
 				);
+				continue;
 			}
 			if (!sourceItemIndexes.includes(index)) continue;
 			nextValue = resolvedSources?.[resolvedSourceIndex++] ?? "";
@@ -101,9 +123,11 @@ export async function runAppBuilderActionSetParameterValues(
 		if (!isSourceValue && !parameter.actions.isUiValueDifferent(nextValue))
 			continue;
 		if (!parameter.actions.isValid(nextValue, false)) {
-			throw new Error(
+			rejectOrSkip(
+				context.strict,
 				`Invalid value for parameter "${parameter.definition.id}".`,
 			);
+			continue;
 		}
 		planned.push({
 			paramNamespace,
@@ -118,9 +142,11 @@ export async function runAppBuilderActionSetParameterValues(
 	const validParameters: {[namespace: string]: {[key: string]: unknown}} = {};
 	for (const update of planned) {
 		if (!update.setUiValue(update.nextValue)) {
-			throw new Error(
+			rejectOrSkip(
+				context.strict,
 				`Invalid value for parameter "${update.parameterId}".`,
 			);
+			continue;
 		}
 		if (!validParameters[update.paramNamespace]) {
 			validParameters[update.paramNamespace] = {};
@@ -128,6 +154,8 @@ export async function runAppBuilderActionSetParameterValues(
 		validParameters[update.paramNamespace][update.parameterId] =
 			update.nextValue;
 	}
+
+	if (Object.keys(validParameters).length === 0) return;
 
 	await batchParameterValueUpdate(validParameters);
 }

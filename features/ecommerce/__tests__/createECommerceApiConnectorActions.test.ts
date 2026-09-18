@@ -4,6 +4,7 @@
 import {isCameraAction} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {runAppBuilderActionCamera} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionCamera";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {validateTriggerActionData} from "../config/ecommerceapitypecheck";
 import {createECommerceApiConnectorActions} from "../model/createECommerceApiConnectorActions";
 
@@ -350,6 +351,27 @@ describe("createECommerceApiConnectorActions", () => {
 			success: false,
 			message: 'Camera "cam-missing" not found.',
 		});
+	});
+
+	it("skips a missing named camera when the runner is not strict", async () => {
+		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
+		try {
+			await expect(
+				runAppBuilderActionCamera(
+					{
+						type: "camera",
+						props: {
+							type: "assign",
+							props: {camera: {name: "Missing"}},
+						},
+					},
+					{namespace: "session", viewportId: "vp"},
+				),
+			).resolves.toBeUndefined();
+			expect(warn).toHaveBeenCalledWith('Camera "Missing" not found.');
+		} finally {
+			warn.mockRestore();
+		}
 	});
 
 	it("runs nested executeActions camera assign", async () => {

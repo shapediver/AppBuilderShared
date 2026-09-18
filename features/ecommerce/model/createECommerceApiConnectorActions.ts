@@ -193,7 +193,12 @@ export function createECommerceApiConnectorActions(
 				message: `No runner for action type "${definition.type}".`,
 			};
 		}
-		await entry.run(definition, {namespace, viewportId, hostActions});
+		await entry.run(definition, {
+			namespace,
+			viewportId,
+			hostActions,
+			strict: true,
+		});
 		return {success: true};
 	};
 

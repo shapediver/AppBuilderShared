@@ -14,6 +14,7 @@ import {
 	AppBuilderActionRunContext,
 	resolvedViewportId,
 } from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	Box,
 	CAMERA_TYPE,
@@ -29,6 +30,13 @@ const toVec3 = (value?: ArrayLike<number>) =>
 	value && value.length >= 3
 		? vec3.fromValues(value[0], value[1], value[2])
 		: undefined;
+
+function failCamera(strict: boolean | undefined, message: string): void {
+	if (strict) {
+		throw new Error(message);
+	}
+	Logger.warn(message);
+}
 
 function isCameraType(value: unknown): value is CAMERA_TYPE {
 	return (
@@ -155,6 +163,7 @@ const cleanCameraPositionAndTarget = (
 async function applyCameraAction(
 	viewportApi: IViewportApi,
 	props: IAppBuilderActionPropsCamera,
+	strict?: boolean,
 ): Promise<void> {
 	if (!viewportApi.camera) return;
 
@@ -174,16 +183,20 @@ async function applyCameraAction(
 			!camera.type &&
 			(camera.id || camera.name)
 		) {
-			throw new Error(
+			failCamera(
+				strict,
 				`Camera "${String(camera.id ?? camera.name)}" not found.`,
 			);
+			return;
 		}
 
 		if (!newCamera && camera.type) {
 			if (!isCameraType(camera.type)) {
-				throw new Error(
+				failCamera(
+					strict,
 					`Invalid camera type "${String(camera.type)}".`,
 				);
+				return;
 			}
 			newCamera =
 				camera.type === CAMERA_TYPE.PERSPECTIVE
@@ -218,7 +231,8 @@ async function applyCameraAction(
 	}
 
 	if (isAssignCameraAction(props) && !newCamera) {
-		throw new Error("Camera assign requires id, name, or type.");
+		failCamera(strict, "Camera assign requires id, name, or type.");
+		return;
 	}
 
 	if (isAnimateCameraAction(props)) {
@@ -265,7 +279,11 @@ async function applyCameraAction(
 			options,
 		} = props.props;
 		if (!inputPosition || !inputTarget) {
-			throw new Error("Camera set action requires position and target.");
+			failCamera(
+				strict,
+				"Camera set action requires position and target.",
+			);
+			return;
 		}
 		const {position, target} = cleanCameraPositionAndTarget(
 			viewportApi.camera,
@@ -324,7 +342,8 @@ export async function runAppBuilderActionCamera(
 	const viewportApi =
 		useShapeDiverStoreViewport.getState().viewports[viewportId];
 	if (!viewportApi?.camera) {
-		throw new Error("Viewport not found.");
+		failCamera(context.strict, "Viewport not found.");
+		return;
 	}
-	await applyCameraAction(viewportApi, definition.props);
+	await applyCameraAction(viewportApi, definition.props, context.strict);
 }
