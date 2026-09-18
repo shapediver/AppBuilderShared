@@ -66,7 +66,7 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 	[GenericToolName.GetScreenshot]: {
 		description:
 			"Capture a screenshot of the 3D viewport as a data URL. " +
-			"Input: { contentType?: \"image/png\" | \"image/jpeg\", quality?: 0-1, resolution?: {width, height} }. " +
+			'Input: { contentType?: "image/png" | "image/jpeg", quality?: 0-1, resolution?: {width, height} }. ' +
 			"All fields optional; omit them for the current viewport. Uses the main viewport. " +
 			"Success: { success: true, image_url } with a data URL. Failure: { success: false, message }.",
 		annotations: {readOnlyHint: true},
