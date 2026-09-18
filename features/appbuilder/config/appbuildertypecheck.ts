@@ -4,9 +4,13 @@ import {
 	IAppBuilderActionPropsCameraSchema,
 	IAppBuilderActionPropsCommonSchema,
 	IAppBuilderActionPropsCreateModelStateSchema,
+	IAppBuilderActionPropsImportModelStateSchema,
+	IAppBuilderActionPropsRedoSchema,
+	IAppBuilderActionPropsResetParameterValuesSchema,
 	IAppBuilderActionPropsSetParameterValueSchema,
 	IAppBuilderActionPropsSetParameterValuesSchema,
 	IAppBuilderActionPropsSoundSchema,
+	IAppBuilderActionPropsUndoSchema,
 	IAppBuilderParameterValueSourceDefinitionSchema,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilderActionsTypecheck";
 import {preprocessActionDefinitionInput} from "@AppBuilderLib/features/appbuilder/lib/legacyActionToDefinition";
@@ -381,26 +385,17 @@ const IAppBuilderLegacyActionPropsFullscreenSchema =
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
-// Zod type definition for IAppBuilderActionPropsUndo
-const IAppBuilderActionPropsUndoSchema = z.strictObject({});
-
 // Zod type definition for IAppBuilderLegacyActionPropsUndo
 const IAppBuilderLegacyActionPropsUndoSchema =
 	IAppBuilderActionPropsUndoSchema.extend(
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
 
-// Zod type definition for IAppBuilderActionPropsRedo
-const IAppBuilderActionPropsRedoSchema = z.strictObject({});
-
 // Zod type definition for IAppBuilderLegacyActionPropsRedo
 const IAppBuilderLegacyActionPropsRedoSchema =
 	IAppBuilderActionPropsRedoSchema.extend(
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
-
-// Zod type definition for IAppBuilderActionPropsResetParameterValues
-const IAppBuilderActionPropsResetParameterValuesSchema = z.strictObject({});
 
 // Zod type definition for IAppBuilderLegacyActionPropsResetParameterValues
 const IAppBuilderLegacyActionPropsResetParameterValuesSchema =
@@ -425,9 +420,6 @@ const IAppBuilderLegacyActionPropsExportParameterValuesSchema =
 	IAppBuilderActionPropsExportParameterValuesSchema.extend(
 		IAppBuilderActionPropsCommonSchema.shape,
 	);
-
-// Zod type definition for IAppBuilderActionPropsImportModelState
-const IAppBuilderActionPropsImportModelStateSchema = z.strictObject({});
 
 // Zod type definition for IAppBuilderLegacyActionPropsImportModelState
 const IAppBuilderLegacyActionPropsImportModelStateSchema =

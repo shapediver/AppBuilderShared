@@ -139,21 +139,33 @@ export const IAppBuilderActionPropsSetParameterValuesSchema = z.strictObject({
 	message: z.string().optional(),
 });
 
+export const IAppBuilderActionPropsEmptySchema = z.strictObject({});
+
+export const IAppBuilderActionPropsUndoSchema =
+	IAppBuilderActionPropsEmptySchema;
+export const IAppBuilderActionPropsRedoSchema =
+	IAppBuilderActionPropsEmptySchema;
+export const IAppBuilderActionPropsResetParameterValuesSchema =
+	IAppBuilderActionPropsEmptySchema;
+export const IAppBuilderActionPropsImportModelStateSchema =
+	IAppBuilderActionPropsEmptySchema;
+
+const cameraSelectorSchema = z
+	.looseObject({
+		id: z.string().optional(),
+		name: z.string().optional(),
+		type: z.enum(CAMERA_TYPE).optional(),
+	})
+	.refine(
+		(camera) =>
+			camera.id !== undefined ||
+			camera.name !== undefined ||
+			camera.type !== undefined,
+		{message: "camera requires id, name, or type"},
+	);
+
 export const IAppBuilderActionPropsCameraCommonSchema = z.strictObject({
-	camera: z
-		.looseObject({
-			id: z.string().optional(),
-			name: z.string().optional(),
-			type: z.enum(CAMERA_TYPE).optional(),
-		})
-		.refine(
-			(camera) =>
-				camera.id !== undefined ||
-				camera.name !== undefined ||
-				camera.type !== undefined,
-			{message: "camera requires id, name, or type"},
-		)
-		.optional(),
+	camera: cameraSelectorSchema.optional(),
 	options: z.record(z.string(), JsonValueSchema).optional(),
 });
 
@@ -182,9 +194,10 @@ export const IAppBuilderActionPropsCameraSchema: z.ZodType<IAppBuilderActionProp
 			.strictObject({
 				type: z.literal("assign"),
 				viewportId: z.string().optional(),
-				props: z
-					.strictObject({})
-					.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+				props: z.strictObject({
+					camera: cameraSelectorSchema,
+					options: z.record(z.string(), JsonValueSchema).optional(),
+				}),
 			})
 			.extend(IAppBuilderActionPropsCommonSchema.shape),
 		z

@@ -1,11 +1,14 @@
 import {
 	IAppBuilderActionPropsAddToCartSchema,
 	IAppBuilderActionPropsCameraSchema,
-	IAppBuilderActionPropsCommonSchema,
 	IAppBuilderActionPropsCreateModelStateSchema,
+	IAppBuilderActionPropsImportModelStateSchema,
+	IAppBuilderActionPropsRedoSchema,
+	IAppBuilderActionPropsResetParameterValuesSchema,
 	IAppBuilderActionPropsSetParameterValueSchema,
 	IAppBuilderActionPropsSetParameterValuesSchema,
 	IAppBuilderActionPropsSoundSchema,
+	IAppBuilderActionPropsUndoSchema,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilderActionsTypecheck";
 import {createModelStateDataSchema} from "@AppBuilderLib/features/model-state/config/createModelState.zod";
 import {importModelStateDataSchema} from "@AppBuilderLib/features/model-state/config/importModelState.zod";
@@ -53,7 +56,10 @@ const triggerActionUnionSchema = z.discriminatedUnion("type", [
 	}),
 	z.object({
 		type: z.literal("importModelState"),
-		props: IAppBuilderActionPropsCommonSchema,
+		props: z.union([
+			IImportModelStateDataSchema,
+			IAppBuilderActionPropsImportModelStateSchema,
+		]),
 	}),
 	z.object({
 		type: z.literal("setParameterValue"),
@@ -65,15 +71,15 @@ const triggerActionUnionSchema = z.discriminatedUnion("type", [
 	}),
 	z.object({
 		type: z.literal("undo"),
-		props: IAppBuilderActionPropsCommonSchema.optional(),
+		props: IAppBuilderActionPropsUndoSchema.optional(),
 	}),
 	z.object({
 		type: z.literal("redo"),
-		props: IAppBuilderActionPropsCommonSchema.optional(),
+		props: IAppBuilderActionPropsRedoSchema.optional(),
 	}),
 	z.object({
 		type: z.literal("resetParameterValues"),
-		props: IAppBuilderActionPropsCommonSchema.optional(),
+		props: IAppBuilderActionPropsResetParameterValuesSchema.optional(),
 	}),
 	z.object({
 		type: z.literal("addToCart"),

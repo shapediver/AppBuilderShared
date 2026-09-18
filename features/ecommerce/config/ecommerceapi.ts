@@ -314,7 +314,9 @@ export type ITriggerCameraActionProps = IAppBuilderActionPropsCamera;
  *
  * `createModelState` here is the action JSON (no custom `data`). The
  * dedicated `createModelState()` method accepts {@link ICreateModelStateData}.
- * Import with a `modelStateId` uses the dedicated `importModelState()` method.
+ * `importModelState` accepts `{modelStateId}` (import without the dialog) or
+ * empty action props. The dedicated `importModelState()` method still
+ * requires `{modelStateId}`.
  */
 export type ITriggerActionData =
 	| {
@@ -323,7 +325,9 @@ export type ITriggerActionData =
 	  }
 	| {
 			type: "importModelState";
-			props: IAppBuilderActionPropsImportModelState;
+			props:
+				| IImportModelStateData
+				| IAppBuilderActionPropsImportModelState;
 	  }
 	| {
 			type: "setParameterValue";

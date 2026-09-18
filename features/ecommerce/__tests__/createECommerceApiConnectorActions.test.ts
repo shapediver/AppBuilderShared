@@ -86,10 +86,29 @@ describe("validateTriggerActionData", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts an assign camera action by id", () => {
+		const result = validateTriggerActionData({
+			type: "camera",
+			props: {
+				type: "assign",
+				props: {camera: {id: "cam-front"}},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
 	it("rejects fullscreen", () => {
 		const result = validateTriggerActionData({
 			type: "fullscreen",
 			props: {},
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects camera assign without a camera selector", () => {
+		const result = validateTriggerActionData({
+			type: "camera",
+			props: {type: "assign", props: {}},
 		});
 		expect(result.success).toBe(false);
 	});
@@ -187,18 +206,26 @@ describe("validateTriggerActionData", () => {
 		expect(result.success).toBe(false);
 	});
 
-	it("accepts importModelState with common action props", () => {
+	it("accepts importModelState with a modelStateId", () => {
 		const result = validateTriggerActionData({
 			type: "importModelState",
-			props: {id: "import-1", label: "Import"},
+			props: {modelStateId: "ms-1"},
 		});
 		expect(result.success).toBe(true);
 	});
 
-	it("rejects importModelState modelStateId on triggerAction", () => {
+	it("accepts importModelState with empty props", () => {
 		const result = validateTriggerActionData({
 			type: "importModelState",
-			props: {modelStateId: "ms-1"},
+			props: {},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects importModelState common display props", () => {
+		const result = validateTriggerActionData({
+			type: "importModelState",
+			props: {id: "import-1", label: "Import"},
 		});
 		expect(result.success).toBe(false);
 	});
@@ -211,12 +238,12 @@ describe("validateTriggerActionData", () => {
 		expect(result.success).toBe(false);
 	});
 
-	it("accepts undo with common action props", () => {
+	it("rejects undo common display props", () => {
 		const result = validateTriggerActionData({
 			type: "undo",
 			props: {id: "undo-1", label: "Undo"},
 		});
-		expect(result.success).toBe(true);
+		expect(result.success).toBe(false);
 	});
 
 	it("accepts sound labelPlaying and iconPlaying", () => {
@@ -259,6 +286,21 @@ describe("createECommerceApiConnectorActions", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("switches to a camera by id via the host runner", async () => {
+		const actions = createECommerceApiConnectorActions(
+			"session",
+			hostActions,
+		);
+		const result = await actions.triggerAction({
+			type: "camera",
+			props: {
+				type: "assign",
+				props: {camera: {id: "cam-front"}},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
 	it("returns failure when the host has no camera runner", async () => {
 		const actions = createECommerceApiConnectorActions("session");
 		const result = await actions.triggerAction({
@@ -289,6 +331,24 @@ describe("createECommerceApiConnectorActions", () => {
 		expect(result).toEqual({
 			success: false,
 			message: 'Camera "Missing" not found.',
+		});
+	});
+
+	it("returns failure when the camera id is missing", async () => {
+		const actions = createECommerceApiConnectorActions(
+			"session",
+			hostActions,
+		);
+		const result = await actions.triggerAction({
+			type: "camera",
+			props: {
+				type: "assign",
+				props: {camera: {id: "cam-missing"}},
+			},
+		});
+		expect(result).toEqual({
+			success: false,
+			message: 'Camera "cam-missing" not found.',
 		});
 	});
 

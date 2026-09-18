@@ -37,6 +37,41 @@ function isCameraType(value: unknown): value is CAMERA_TYPE {
 	);
 }
 
+function findViewportCamera(
+	viewportApi: IViewportApi,
+	camera: Record<string, unknown>,
+): ICameraApi | undefined {
+	if (typeof camera.id === "string") {
+		const id = camera.id;
+		const byId = Object.entries(viewportApi.cameras).find(
+			([key, value]) => value.id === id || key === id,
+		);
+		if (byId) {
+			return byId[1];
+		}
+	}
+
+	if (typeof camera.name === "string") {
+		const name = camera.name.toLowerCase();
+		const byName = Object.entries(viewportApi.cameras).find(
+			([key, value]) => {
+				if (value.name?.toLowerCase() === name) {
+					return true;
+				}
+				if (!value.name && key.toLowerCase() === name) {
+					return true;
+				}
+				return false;
+			},
+		);
+		if (byName) {
+			return byName[1];
+		}
+	}
+
+	return undefined;
+}
+
 const cleanCameraPositionAndTarget = (
 	camera: ICameraApi,
 	position: vec3 | undefined,
@@ -127,33 +162,21 @@ async function applyCameraAction(
 	if (props.props.camera) {
 		const camera = props.props.camera as Record<string, unknown>;
 		const skipKeys: string[] = [];
+		const existingCamera = findViewportCamera(viewportApi, camera);
 
-		if (camera.name) {
-			const existingCamera = Object.entries(viewportApi.cameras).find(
-				([key, value]) => {
-					if (
-						value.name?.toLowerCase() ===
-						(camera.name as string).toLowerCase()
-					) {
-						return true;
-					}
-					if (
-						!value.name &&
-						key.toLowerCase() ===
-							(camera.name as string).toLowerCase()
-					) {
-						return true;
-					}
-					return false;
-				},
+		if (existingCamera) {
+			viewportApi.assignCamera(existingCamera.id);
+			if (camera.id) skipKeys.push("id");
+			if (camera.name) skipKeys.push("name");
+			newCamera = existingCamera;
+		} else if (
+			isAssignCameraAction(props) &&
+			!camera.type &&
+			(camera.id || camera.name)
+		) {
+			throw new Error(
+				`Camera "${String(camera.id ?? camera.name)}" not found.`,
 			);
-			if (existingCamera) {
-				viewportApi.assignCamera(existingCamera[1].id);
-				skipKeys.push("name");
-				newCamera = existingCamera[1];
-			} else if (isAssignCameraAction(props) && !camera.type) {
-				throw new Error(`Camera "${String(camera.name)}" not found.`);
-			}
 		}
 
 		if (!newCamera && camera.type) {
@@ -192,6 +215,10 @@ async function applyCameraAction(
 				}
 			});
 		}
+	}
+
+	if (isAssignCameraAction(props) && !newCamera) {
+		throw new Error("Camera assign requires id, name, or type.");
 	}
 
 	if (isAnimateCameraAction(props)) {

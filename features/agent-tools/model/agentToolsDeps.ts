@@ -10,6 +10,7 @@ import type {
 	IAppBuilderControlActionRef,
 	IAppBuilderParameterValueSourcePropsScreenshot,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {IImportModelStateData} from "@AppBuilderLib/features/model-state/config/importModelState";
 import type {Vec3} from "../config/setCameraPosition";
 import type {RunActionControlResult} from "../config/triggerActionControl";
 
@@ -24,7 +25,7 @@ export type AgentToolsDeps = {
 		props: IAppBuilderActionPropsCreateModelState,
 	) => Promise<RunActionControlResult>;
 	importModelState: (
-		props: IAppBuilderActionPropsImportModelState,
+		props: IImportModelStateData | IAppBuilderActionPropsImportModelState,
 	) => Promise<RunActionControlResult>;
 	undo: () => Promise<RunActionControlResult>;
 	redo: () => Promise<RunActionControlResult>;

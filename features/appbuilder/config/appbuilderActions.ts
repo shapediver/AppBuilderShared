@@ -311,10 +311,10 @@ export type IAppBuilderLegacyActionPropsFullscreen =
 	IAppBuilderActionPropsFullscreen & IAppBuilderActionPropsCommon;
 
 /** Properties of an "undo" action. */
-export type IAppBuilderActionPropsUndo = IAppBuilderActionPropsCommon;
+export type IAppBuilderActionPropsUndo = object;
 
 /** Properties of a "redo" action. */
-export type IAppBuilderActionPropsRedo = IAppBuilderActionPropsCommon;
+export type IAppBuilderActionPropsRedo = object;
 
 /** Properties of legacy an "undo" action. */
 export type IAppBuilderLegacyActionPropsUndo = IAppBuilderActionPropsUndo &
@@ -325,8 +325,7 @@ export type IAppBuilderLegacyActionPropsRedo = IAppBuilderActionPropsRedo &
 	IAppBuilderActionPropsCommon;
 
 /** Properties of a "resetParameterValues" action. */
-export type IAppBuilderActionPropsResetParameterValues =
-	IAppBuilderActionPropsCommon;
+export type IAppBuilderActionPropsResetParameterValues = object;
 
 /** Properties of legacy a "resetParameterValues" action. */
 export type IAppBuilderLegacyActionPropsResetParameterValues =
@@ -347,8 +346,7 @@ export type IAppBuilderLegacyActionPropsExportParameterValues =
 	IAppBuilderActionPropsExportParameterValues & IAppBuilderActionPropsCommon;
 
 /** Properties of an "importModelState" action. */
-export type IAppBuilderActionPropsImportModelState =
-	IAppBuilderActionPropsCommon;
+export type IAppBuilderActionPropsImportModelState = object;
 
 /** Properties of legacy an "importModelState" action. */
 export type IAppBuilderLegacyActionPropsImportModelState =
@@ -376,7 +374,9 @@ export type IAppBuilderPropsAnimateCamera = {
 } & IAppBuilderPropsCameraCommon;
 
 /** Properties of an "assign" action, where the camera is defined by its properties. */
-export type IAppBuilderPropsAssignCamera = IAppBuilderPropsCameraCommon;
+export type IAppBuilderPropsAssignCamera = IAppBuilderPropsCameraCommon & {
+	camera: NonNullable<IAppBuilderPropsCameraCommon["camera"]>;
+};
 
 /** Properties of a "set" action, where the camera is defined by position and target. */
 export type IAppBuilderPropsSetCamera = {
