@@ -16,6 +16,7 @@ export const DEFAULT_LIST_ACTION_CONTROL_TYPES = [
 	AppBuilderActionType.ImportModelState,
 	AppBuilderActionType.Camera,
 	AppBuilderActionType.Sound,
+	AppBuilderActionType.ExecuteActions,
 ] as const satisfies readonly AppBuilderActionType[];
 
 export type DefaultListActionControlType =

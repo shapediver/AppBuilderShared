@@ -5,6 +5,8 @@ const CONTRACT_DIR = path.resolve(__dirname, "..");
 
 const CONTRACT_FILES = [
 	"appbuilder.ts",
+	"appbuilderActions.ts",
+	"appbuilderActionSlots.ts",
 	"appbuildercharts.ts",
 	"appbuilderColor.ts",
 	"appbuilderagent.ts",
@@ -13,7 +15,7 @@ const CONTRACT_FILES = [
 
 function isAllowedExternal(
 	specifier: string,
-	importedNames: string[],
+	_importedNames: string[],
 ): boolean {
 	if (specifier.startsWith("@shapediver/sdk.")) {
 		return true;

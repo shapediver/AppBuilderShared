@@ -41,6 +41,22 @@ describe("importModelStateCore", () => {
 		});
 	});
 
+	it("returns failure when modelStateId is missing", async () => {
+		const result = await importModelStateCore({
+			sessionApi: undefined,
+			namespace: "ns",
+			getParameterStates: () => [],
+			batchParameterValueUpdate: jest.fn(),
+			clearUnsavedChanges: jest.fn(),
+			props: {} as {modelStateId: string},
+		});
+
+		expect(result).toEqual({
+			success: false,
+			message: `Please provide a valid model state ID or a URL including a '${QUERYPARAM_MODELSTATEID}' parameter`,
+		});
+	});
+
 	it("returns success and notifies on valid import", async () => {
 		const onNotification = jest.fn();
 		const data = {modelState: {parameters: {p1: 1}}};

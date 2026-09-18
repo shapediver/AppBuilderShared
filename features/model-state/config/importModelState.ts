@@ -1,16 +1,16 @@
-import type {z} from "@AppBuilderLib/shared/lib/zod";
 import type {ResGetModelState} from "@shapediver/sdk.geometry-api-sdk-v2";
-import type {
-	importModelStateDataSchema,
-	nameMessageSchema,
-} from "./importModelState.zod";
 
 /**
  * Data accepted by the useImportModelState hook to import a model state.
  */
-export type IImportModelStateData = z.infer<typeof importModelStateDataSchema>;
+export interface IImportModelStateData {
+	modelStateId: string;
+}
 
-type NameMessage = z.infer<typeof nameMessageSchema>;
+type NameMessage = {
+	name: string;
+	message: string;
+};
 
 /**
  * Data returned from the useImportModelState hook.

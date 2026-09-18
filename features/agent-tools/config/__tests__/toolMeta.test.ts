@@ -3,7 +3,6 @@ import {AGENT_TOOL_META} from "../toolMeta";
 const noArgumentTools = [
 	"list_parameter_definitions",
 	"list_action_controls",
-	"get_screenshot",
 	"get_metric",
 ] as const;
 
@@ -26,4 +25,13 @@ describe("AGENT_TOOL_META", () => {
 			);
 		},
 	);
+
+	it("get_screenshot describes image_url and optional capture options", () => {
+		const description = AGENT_TOOL_META.get_screenshot.description;
+		expect(description).toMatch(/image_url/);
+		expect(description).toMatch(/contentType/);
+		expect(description).toMatch(/quality/);
+		expect(description).toMatch(/resolution/);
+		expect(description).not.toMatch(/success:\s*true,\s*image\s*[},]/i);
+	});
 });

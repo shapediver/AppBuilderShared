@@ -64,10 +64,13 @@ describe("applyCreateModelStateThemeDefaults", () => {
 
 		const merged = applyCreateModelStateFilterDefaults({
 			includeImage: true,
+			data: {orderId: "123"},
 		});
 
 		expect(merged.parameterNamesToAlwaysExclude).toEqual(["context"]);
 		expect(merged.props.screenshotProps).toBeUndefined();
+		expect(merged.props.data).toEqual({orderId: "123"});
+		expect(merged.props.includeImage).toBe(true);
 	});
 
 	it("falls back to CreateModelStateHook screenshot when the caller leaves it unset", () => {

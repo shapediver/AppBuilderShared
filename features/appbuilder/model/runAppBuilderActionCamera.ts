@@ -4,6 +4,7 @@ import {
 	IAppBuilderActionDefinition,
 	IAppBuilderActionPropsCamera,
 	isAnimateCameraAction,
+	isAssignCameraAction,
 	isCameraAction,
 	isResetCameraAction,
 	isSetCameraAction,
@@ -25,8 +26,59 @@ import {
 } from "@shapediver/viewer.viewport";
 import {vec3} from "gl-matrix";
 
-const toVec3 = (value?: [number, number, number]) =>
-	value ? vec3.fromValues(value[0], value[1], value[2]) : undefined;
+const toVec3 = (value?: ArrayLike<number>) =>
+	value && value.length >= 3
+		? vec3.fromValues(value[0], value[1], value[2])
+		: undefined;
+
+function failCamera(strict: boolean | undefined, message: string): void {
+	if (strict) {
+		throw new Error(message);
+	}
+	Logger.warn(message);
+}
+
+function isCameraType(value: unknown): value is CAMERA_TYPE {
+	return (
+		typeof value === "string" &&
+		(Object.values(CAMERA_TYPE) as string[]).includes(value)
+	);
+}
+
+function findViewportCamera(
+	viewportApi: IViewportApi,
+	camera: Record<string, unknown>,
+): ICameraApi | undefined {
+	if (typeof camera.id === "string") {
+		const id = camera.id;
+		const byId = Object.entries(viewportApi.cameras).find(
+			([key, value]) => value.id === id || key === id,
+		);
+		if (byId) {
+			return byId[1];
+		}
+	}
+
+	if (typeof camera.name === "string") {
+		const name = camera.name.toLowerCase();
+		const byName = Object.entries(viewportApi.cameras).find(
+			([key, value]) => {
+				if (value.name?.toLowerCase() === name) {
+					return true;
+				}
+				if (!value.name && key.toLowerCase() === name) {
+					return true;
+				}
+				return false;
+			},
+		);
+		if (byName) {
+			return byName[1];
+		}
+	}
+
+	return undefined;
+}
 
 const cleanCameraPositionAndTarget = (
 	camera: ICameraApi,
@@ -111,6 +163,7 @@ const cleanCameraPositionAndTarget = (
 async function applyCameraAction(
 	viewportApi: IViewportApi,
 	props: IAppBuilderActionPropsCamera,
+	strict?: boolean,
 ): Promise<void> {
 	if (!viewportApi.camera) return;
 
@@ -118,34 +171,33 @@ async function applyCameraAction(
 	if (props.props.camera) {
 		const camera = props.props.camera as Record<string, unknown>;
 		const skipKeys: string[] = [];
+		const existingCamera = findViewportCamera(viewportApi, camera);
 
-		if (camera.name) {
-			const existingCamera = Object.entries(viewportApi.cameras).find(
-				([key, value]) => {
-					if (
-						value.name?.toLowerCase() ===
-						(camera.name as string).toLowerCase()
-					) {
-						return true;
-					}
-					if (
-						!value.name &&
-						key.toLowerCase() ===
-							(camera.name as string).toLowerCase()
-					) {
-						return true;
-					}
-					return false;
-				},
+		if (existingCamera) {
+			viewportApi.assignCamera(existingCamera.id);
+			if (camera.id) skipKeys.push("id");
+			if (camera.name) skipKeys.push("name");
+			newCamera = existingCamera;
+		} else if (
+			isAssignCameraAction(props) &&
+			!camera.type &&
+			(camera.id || camera.name)
+		) {
+			failCamera(
+				strict,
+				`Camera "${String(camera.id ?? camera.name)}" not found.`,
 			);
-			if (existingCamera) {
-				viewportApi.assignCamera(existingCamera[1].id);
-				skipKeys.push("name");
-				newCamera = existingCamera[1];
-			}
+			return;
 		}
 
 		if (!newCamera && camera.type) {
+			if (!isCameraType(camera.type)) {
+				failCamera(
+					strict,
+					`Invalid camera type "${String(camera.type)}".`,
+				);
+				return;
+			}
 			newCamera =
 				camera.type === CAMERA_TYPE.PERSPECTIVE
 					? viewportApi.createPerspectiveCamera()
@@ -157,8 +209,8 @@ async function applyCameraAction(
 			if (camera.position || camera.target) {
 				const {position, target} = cleanCameraPositionAndTarget(
 					newCamera,
-					camera.position as vec3 | undefined,
-					camera.target as vec3 | undefined,
+					toVec3(camera.position as ArrayLike<number> | undefined),
+					toVec3(camera.target as ArrayLike<number> | undefined),
 				);
 				newCamera.position = position;
 				newCamera.target = target;
@@ -176,6 +228,11 @@ async function applyCameraAction(
 				}
 			});
 		}
+	}
+
+	if (isAssignCameraAction(props) && !newCamera) {
+		failCamera(strict, "Camera assign requires id, name, or type.");
+		return;
 	}
 
 	if (isAnimateCameraAction(props)) {
@@ -222,7 +279,10 @@ async function applyCameraAction(
 			options,
 		} = props.props;
 		if (!inputPosition || !inputTarget) {
-			Logger.warn("Camera set action requires position and target.");
+			failCamera(
+				strict,
+				"Camera set action requires position and target.",
+			);
 			return;
 		}
 		const {position, target} = cleanCameraPositionAndTarget(
@@ -282,8 +342,8 @@ export async function runAppBuilderActionCamera(
 	const viewportApi =
 		useShapeDiverStoreViewport.getState().viewports[viewportId];
 	if (!viewportApi?.camera) {
-		Logger.warn("Camera action skipped: viewport not found.");
+		failCamera(context.strict, "Viewport not found.");
 		return;
 	}
-	await applyCameraAction(viewportApi, definition.props);
+	await applyCameraAction(viewportApi, definition.props, context.strict);
 }

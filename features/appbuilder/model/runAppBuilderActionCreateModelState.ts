@@ -7,6 +7,7 @@ import {
 	resolvedViewportId,
 } from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
+import type {ICreateModelStateData} from "@AppBuilderLib/features/model-state/config/createModelState";
 import {createModelStateCore} from "@AppBuilderLib/features/model-state/lib/createModelStateCore";
 import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
 import {
@@ -21,7 +22,7 @@ import {createElement} from "react";
 export async function createModelStateFromStores(
 	namespace: string,
 	viewportId: string,
-	props: IAppBuilderActionPropsCreateModelState,
+	props: ICreateModelStateData,
 ) {
 	const themed = applyCreateModelStateFilterDefaults(props);
 	const sessions = useShapeDiverStoreSession.getState().sessions;

@@ -1,41 +1,30 @@
+import {restoreParameterHistory} from "@AppBuilderLib/entities/parameter/lib/undoRedoParameters";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useCallback} from "react";
 import {useShallow} from "zustand/react/shallow";
 
 /**
  * Hook for managing viewport history (undo/redo functionality).
- * Uses session's built-in navigation methods for history management.
+ * Restores parameter-store history (same as executeActions), not `window.history`.
  */
 export function useViewportHistory() {
 	const {historyEntries, historyIndex} = useShapeDiverStoreParameters(
 		useShallow((state) => ({
-			parameterStores: state.parameterStores,
 			historyEntries: state.history,
 			historyIndex: state.historyIndex,
 		})),
 	);
 
-	// Use history navigation capabilities
 	const canGoBack = historyIndex > 0;
 	const canGoForward = historyIndex < historyEntries.length - 1;
 
-	/**
-	 * Go back in session history
-	 */
-	const goBack = useCallback(() => {
-		if (!canGoBack) return;
+	const goBack = useCallback(async () => {
+		await restoreParameterHistory(-1);
+	}, []);
 
-		history.back();
-	}, [canGoBack, historyIndex]);
-
-	/**
-	 * Go forward in session history
-	 */
-	const goForward = useCallback(() => {
-		if (!canGoForward) return;
-
-		history.forward();
-	}, [canGoForward, historyIndex]);
+	const goForward = useCallback(async () => {
+		await restoreParameterHistory(1);
+	}, []);
 
 	return {
 		canGoBack,

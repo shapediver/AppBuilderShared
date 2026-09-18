@@ -9,6 +9,12 @@ export type AppBuilderActionRunContext = {
 	viewportId?: string;
 	fullscreenId?: string;
 	/**
+	 * When true, missing/invalid camera or parameter targets throw so API
+	 * callers can return `{success: false}`. Toolbar, action slots, and
+	 * in-app `executeActions` omit this and warn/skip instead.
+	 */
+	strict?: boolean;
+	/**
 	 * Host overlay of `componentContext.actions` (by key). Looked up before
 	 * shared defaults. A matching entry with no `run` suppresses the action
 	 * (no ShapeDiver fallback) — iJewel can omit `camera` / `ar` /

@@ -117,8 +117,8 @@ describe("handleGetScreenshot", () => {
 
 		const result = await handleGetScreenshot({}, deps);
 
-		expect(getScreenshot).toHaveBeenCalledWith("from-deps");
-		expect(result).toEqual({success: true, image});
+		expect(getScreenshot).toHaveBeenCalledWith("from-deps", {});
+		expect(result).toEqual({success: true, image_url: image});
 	});
 
 	it("rejects extra viewportId on input", async () => {
@@ -130,10 +130,46 @@ describe("handleGetScreenshot", () => {
 			getScreenshot,
 		});
 
-		const result = await handleGetScreenshot({viewportId: "from-input"}, deps);
+		const result = await handleGetScreenshot(
+			{viewportId: "from-input"},
+			deps,
+		);
 
 		expect(result.success).toBe(false);
 		expect(typeof result.message).toBe("string");
+		expect(getScreenshot).not.toHaveBeenCalled();
+	});
+
+	it("passes contentType, quality, and resolution to getScreenshot", async () => {
+		const image_url = "data:image/jpeg;base64,abc";
+		const getScreenshot = jest.fn().mockResolvedValue(image_url);
+		const deps = createDeps({getScreenshot});
+
+		const result = await handleGetScreenshot(
+			{
+				contentType: "image/jpeg",
+				quality: 0.5,
+				resolution: {width: 800, height: 600},
+			},
+			deps,
+		);
+
+		expect(getScreenshot).toHaveBeenCalledWith("vp", {
+			contentType: "image/jpeg",
+			quality: 0.5,
+			resolution: {width: 800, height: 600},
+		});
+		expect(result).toEqual({success: true, image_url});
+	});
+
+	it("rejects an unknown contentType", async () => {
+		const getScreenshot = jest.fn();
+		const result = await handleGetScreenshot(
+			{contentType: "image/webp"},
+			createDeps({getScreenshot}),
+		);
+
+		expect(result.success).toBe(false);
 		expect(getScreenshot).not.toHaveBeenCalled();
 	});
 });
