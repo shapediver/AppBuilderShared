@@ -1,4 +1,16 @@
 import type {
+	IAppBuilderActionPropsAddToCart,
+	IAppBuilderActionPropsCamera,
+	IAppBuilderActionPropsCreateModelState,
+	IAppBuilderActionPropsExecuteActions,
+	IAppBuilderActionPropsRedo,
+	IAppBuilderActionPropsResetParameterValues,
+	IAppBuilderActionPropsSetParameterValue,
+	IAppBuilderActionPropsSetParameterValues,
+	IAppBuilderActionPropsSound,
+	IAppBuilderActionPropsUndo,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilderactions";
+import type {
 	ICreateModelStateData,
 	ICreateModelStateResult,
 } from "@AppBuilderLib/features/model-state/config/createModelState";
@@ -289,73 +301,49 @@ export interface IUpdateParameterValuesReply {
 	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
 }
 
-export interface ITriggerSetParameterValueProps {
-	parameter: {name: string; sessionId?: string};
-	value?: string | number | boolean;
-}
+export type ITriggerSetParameterValueProps =
+	IAppBuilderActionPropsSetParameterValue;
+
+export type ITriggerCameraActionProps = IAppBuilderActionPropsCamera;
 
 /**
- * Camera action payload for {@link ITriggerActionData}.
- * `assign` + `props.camera.name` selects a named camera (Front, Back, Left, …).
- */
-export type ITriggerCameraActionProps = {
-	type: "animate" | "assign" | "set" | "reset" | "zoomTo";
-	viewportId?: string;
-	props: {
-		camera?: {
-			name?: string;
-			type?: string;
-			position?: [number, number, number];
-			target?: [number, number, number];
-		};
-		position?: [number, number, number];
-		target?: [number, number, number];
-		path?: {
-			position: [number, number, number];
-			target: [number, number, number];
-		}[];
-		startFromCurrent?: boolean;
-		nameFilter?: string[];
-		initialPosition?: [number, number, number];
-		initialTarget?: [number, number, number];
-		options?: Record<string, unknown>;
-	};
-};
-
-/**
- * App Builder action definition restricted to the same types as the tools API
- * `runActionControl` allowlist.
+ * Allowlisted payload for CrossWindow `triggerAction`.
+ * Prop shapes are the App Builder action types; nested `executeActions`
+ * stays on this allowlist (not ar / fullscreen / browser location / …).
+ *
+ * `createModelState` here is the action JSON (no custom `data`). The
+ * dedicated `createModelState()` method accepts {@link ICreateModelStateData}.
+ * Import-model-state may be `{}` (open the dialog) or `{modelStateId}`.
  */
 export type ITriggerActionData =
-	| {type: "createModelState"; props: ICreateModelStateData}
-	| {type: "importModelState"; props: IImportModelStateData | object}
-	| {type: "setParameterValue"; props: ITriggerSetParameterValueProps}
+	| {
+			type: "createModelState";
+			props: IAppBuilderActionPropsCreateModelState;
+	  }
+	| {
+			type: "importModelState";
+			props: IImportModelStateData | object;
+	  }
+	| {
+			type: "setParameterValue";
+			props: IAppBuilderActionPropsSetParameterValue;
+	  }
 	| {
 			type: "setParameterValues";
-			props: {parameterValues: ITriggerSetParameterValueProps[]};
+			props: IAppBuilderActionPropsSetParameterValues;
 	  }
-	| {type: "undo"; props?: object}
-	| {type: "redo"; props?: object}
-	| {type: "resetParameterValues"; props?: object}
+	| {type: "undo"; props?: IAppBuilderActionPropsUndo}
+	| {type: "redo"; props?: IAppBuilderActionPropsRedo}
 	| {
-			type: "addToCart";
-			props: ICreateModelStateData & {
-				productId?: string;
-				quantity?: number;
-				price?: number;
-				description?: string;
-				title?: string;
-			};
+			type: "resetParameterValues";
+			props?: IAppBuilderActionPropsResetParameterValues;
 	  }
-	| {type: "camera"; props: ITriggerCameraActionProps}
-	| {
-			type: "sound";
-			props: {href: string; autoplay?: boolean; loop?: boolean};
-	  }
+	| {type: "addToCart"; props: IAppBuilderActionPropsAddToCart}
+	| {type: "camera"; props: IAppBuilderActionPropsCamera}
+	| {type: "sound"; props: IAppBuilderActionPropsSound}
 	| {
 			type: "executeActions";
-			props: {
-				mode?: "parallel" | "sequential";
+			props: Omit<IAppBuilderActionPropsExecuteActions, "actions"> & {
 				actions: ITriggerActionData[];
 			};
 	  };

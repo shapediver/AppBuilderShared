@@ -14,16 +14,22 @@ jest.mock(
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {runAppBuilderActionSetParameterValues} from "../runAppBuilderActionSetParameterValues";
 
-function parameterStore(id: string, options?: {different?: boolean}) {
-	const setUiValue = jest.fn(() => true);
+function parameterStore(
+	id: string,
+	options?: {different?: boolean; valid?: boolean},
+) {
+	const valid = options?.valid ?? true;
+	const setUiValue = jest.fn(() => valid);
 	const isUiValueDifferent = jest.fn(() => options?.different ?? true);
+	const isValid = jest.fn(() => valid);
 	return {
 		getState: () => ({
 			definition: {id, name: id},
-			actions: {setUiValue, isUiValueDifferent},
+			actions: {setUiValue, isUiValueDifferent, isValid},
 		}),
 		setUiValue,
 		isUiValueDifferent,
+		isValid,
 	};
 }
 
@@ -153,8 +159,7 @@ describe("runAppBuilderActionSetParameterValues", () => {
 	});
 
 	it("throws when setUiValue rejects the value", async () => {
-		const target = parameterStore("p1");
-		target.setUiValue.mockReturnValue(false);
+		const target = parameterStore("p1", {valid: false});
 		useShapeDiverStoreParameters.getState = () =>
 			({
 				getParameter: () => target,
@@ -169,5 +174,58 @@ describe("runAppBuilderActionSetParameterValues", () => {
 				{namespace: "session"},
 			),
 		).rejects.toThrow('Invalid value for parameter "p1".');
+		expect(target.setUiValue).not.toHaveBeenCalled();
+	});
+
+	it("does not mutate earlier parameters when a later batch entry is invalid", async () => {
+		const first = parameterStore("p1");
+		const second = parameterStore("p2", {valid: false});
+		const batchParameterValueUpdate = jest.fn(async () => {});
+		useShapeDiverStoreParameters.getState = () =>
+			({
+				getParameter: (_namespace: string, name: string) =>
+					name === "p1" ? first : second,
+				batchParameterValueUpdate,
+			}) as unknown as ReturnType<typeof originalGetState>;
+
+		await expect(
+			runAppBuilderActionSetParameterValues(
+				{
+					parameterValues: [
+						{parameter: {name: "p1"}, value: "ok"},
+						{parameter: {name: "p2"}, value: "bad"},
+					],
+				},
+				{namespace: "session"},
+			),
+		).rejects.toThrow('Invalid value for parameter "p2".');
+		expect(first.setUiValue).not.toHaveBeenCalled();
+		expect(second.setUiValue).not.toHaveBeenCalled();
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
+	});
+
+	it("does not mutate earlier parameters when a later batch entry is missing", async () => {
+		const first = parameterStore("p1");
+		const batchParameterValueUpdate = jest.fn(async () => {});
+		useShapeDiverStoreParameters.getState = () =>
+			({
+				getParameter: (_namespace: string, name: string) =>
+					name === "p1" ? first : undefined,
+				batchParameterValueUpdate,
+			}) as unknown as ReturnType<typeof originalGetState>;
+
+		await expect(
+			runAppBuilderActionSetParameterValues(
+				{
+					parameterValues: [
+						{parameter: {name: "p1"}, value: "ok"},
+						{parameter: {name: "missing"}, value: "1"},
+					],
+				},
+				{namespace: "session"},
+			),
+		).rejects.toThrow('Parameter "missing" not found.');
+		expect(first.setUiValue).not.toHaveBeenCalled();
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
 	});
 });

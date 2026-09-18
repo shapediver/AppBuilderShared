@@ -84,4 +84,30 @@ describe("createModelStateCore", () => {
 
 		expect(getScreenshot).toHaveBeenCalledWith(screenshotProps);
 	});
+
+	it("forwards custom metadata to sessionApi.createModelState", async () => {
+		const createModelState = jest.fn(async () => "ms-1");
+		const sessionApi = {
+			parameters: {},
+			modelViewUrl: "https://example.com",
+			createModelState,
+		} as unknown as ISessionApi;
+
+		await createModelStateCore({
+			sessionApi,
+			sessions: {s1: sessionApi},
+			sessionId: "s1",
+			clearUnsavedChanges: jest.fn(),
+			parameterNamesToAlwaysExclude: [],
+			props: {data: {orderId: "123"}},
+		});
+
+		expect(createModelState).toHaveBeenCalledWith(
+			{},
+			true,
+			undefined,
+			{orderId: "123"},
+			undefined,
+		);
+	});
 });

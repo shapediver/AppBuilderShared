@@ -1,30 +1,14 @@
-import type {viewportScreenshotPropsSchema} from "@AppBuilderLib/entities/viewport/config/viewportScreenshotProps.zod";
-import type {z} from "@AppBuilderLib/shared/lib/zod";
-import type {
-	OrthographicCameraProperties,
-	PerspectiveCameraProperties,
-} from "@shapediver/viewer.shared.types";
-import type {createModelStateDataSchema} from "./createModelState.zod";
-
-type ScreenshotPropsFromZod = z.infer<typeof viewportScreenshotPropsSchema>;
+import type {IAppBuilderActionPropsCreateModelState} from "@AppBuilderLib/features/appbuilder/config/appbuilderactions";
 
 /**
- * Data accepted by the useCreateModelState hook to create a model state.
- *
- * Zod validates `screenshotProps.camera` as a name/type lookup union for settings
- * JSON. Runtime callers use the broader camera shape from
- * {@link OrthographicCameraProperties} / {@link PerspectiveCameraProperties};
- * only `camera` is widened here so the rest of the bag stays Zod-inferred.
+ * Data accepted when creating a model state (hook, e-commerce connector, stores).
+ * App Builder `createModelState` action props plus optional custom `data`.
  */
 export type ICreateModelStateData = Omit<
-	z.infer<typeof createModelStateDataSchema>,
-	"screenshotProps"
+	IAppBuilderActionPropsCreateModelState,
+	"successMessage" | "errorMessage"
 > & {
-	screenshotProps?: Omit<ScreenshotPropsFromZod, "camera"> & {
-		camera?:
-			| Partial<OrthographicCameraProperties>
-			| Partial<PerspectiveCameraProperties>;
-	};
+	data?: Record<string, unknown>;
 };
 
 /**

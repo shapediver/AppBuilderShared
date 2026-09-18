@@ -123,6 +123,62 @@ describe("validateTriggerActionData", () => {
 		});
 		expect(result.success).toBe(true);
 	});
+
+	it("rejects setParameterValues when value is not a string", () => {
+		const result = validateTriggerActionData({
+			type: "setParameterValues",
+			props: {
+				parameterValues: [{parameter: {name: "Length"}, value: 4}],
+			},
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("accepts setParameterValues with a parameter source", () => {
+		const result = validateTriggerActionData({
+			type: "setParameterValues",
+			props: {
+				parameterValues: [
+					{
+						parameter: {name: "Length"},
+						source: {
+							type: "dataOutput",
+							props: {name: "json"},
+						},
+					},
+				],
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects createModelState actions that include custom metadata", () => {
+		const result = validateTriggerActionData({
+			type: "createModelState",
+			props: {data: {orderId: "123"}},
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects camera animate without a path", () => {
+		const result = validateTriggerActionData({
+			type: "camera",
+			props: {type: "animate", props: {}},
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("accepts sound labelPlaying and iconPlaying", () => {
+		const result = validateTriggerActionData({
+			type: "sound",
+			props: {
+				href: "https://example.com/a.mp3",
+				labelPlaying: "Stop",
+				iconPlaying: "mdi:stop",
+			},
+		});
+		expect(result.success).toBe(true);
+	});
 });
 
 describe("createECommerceApiConnectorActions", () => {

@@ -1,0 +1,208 @@
+import {viewportScreenshotPropsSchema} from "@AppBuilderLib/entities/viewport/config/viewportScreenshotProps.zod";
+import {JsonValueSchema} from "@AppBuilderLib/features/appbuilder/config/jsonValue";
+import {
+	createModelStateCoreSchema,
+	createModelStateImageRefSchema,
+} from "@AppBuilderLib/features/model-state/config/createModelState.zod";
+import {z} from "@AppBuilderLib/shared/lib/zod";
+import {CAMERA_TYPE} from "@shapediver/viewer.shared.types";
+import type {IAppBuilderParameterValueSourceDefinition} from "./appbuilder";
+
+/**
+ * UI-free Zod for App Builder action props and parameter value sources.
+ *
+ * Source schemas live here with the action schemas: `setParameterValue.source`
+ * embeds a source, and `modelState` sources reuse createModelState action
+ * props. A separate source typecheck file would import this file and vice
+ * versa.
+ *
+ * Settings JSON (`appbuildertypecheck.ts`) and the e-commerce CrossWindow
+ * client (`ecommerceapitypecheck.ts`) must share these schemas. Do not import
+ * `appbuildertypecheck.ts` from the e-commerce client — that module pulls
+ * Mantine theme / widget validation.
+ */
+
+export const IAppBuilderActionPropsCommonSchema = z.strictObject({
+	id: z.string().optional(),
+	label: z.string().optional(),
+	icon: z.string().optional(),
+	tooltip: z.string().optional(),
+});
+
+export const IAppBuilderActionPropsCreateModelStateSchema =
+	createModelStateCoreSchema.extend({
+		image: createModelStateImageRefSchema.optional(),
+		successMessage: z.string().optional(),
+		errorMessage: z.string().optional(),
+	});
+
+export const IAppBuilderActionPropsAddToCartSchema = z
+	.strictObject({
+		productId: z.string().optional(),
+		quantity: z.number().optional(),
+		price: z.number().optional(),
+		description: z.string().optional(),
+		title: z.string().optional(),
+	})
+	.extend(IAppBuilderActionPropsCreateModelStateSchema.shape);
+
+export const IAppBuilderParameterValueSourceDefinitionSchema =
+	z.discriminatedUnion("type", [
+		z.strictObject({
+			type: z.literal("dataOutput"),
+			props: z.strictObject({
+				sessionId: z.string().optional(),
+				name: z.string(),
+			}),
+		}),
+		z.strictObject({
+			type: z.literal("export"),
+			props: z.strictObject({
+				sessionId: z.string().optional(),
+				name: z.string(),
+				parameterValues: z
+					.record(
+						z.string(),
+						z.union([
+							z.string(),
+							z.number(),
+							z.boolean(),
+							z.lazy(
+								(): z.ZodType<IAppBuilderParameterValueSourceDefinition> =>
+									IAppBuilderParameterValueSourceDefinitionSchema,
+							),
+						]),
+					)
+					.optional(),
+			}),
+		}),
+		z.strictObject({
+			type: z.literal("modelState"),
+			props: IAppBuilderActionPropsCreateModelStateSchema.extend({
+				updateUrl: z.boolean().optional(),
+			}),
+		}),
+		z.strictObject({
+			type: z.literal("screenshot"),
+			props: viewportScreenshotPropsSchema,
+		}),
+		z.strictObject({
+			type: z.literal("sdtf"),
+			props: z.strictObject({
+				sessionId: z.string().optional(),
+				name: z.string(),
+				chunk: z
+					.strictObject({
+						id: z.string().optional(),
+						name: z.string().optional(),
+					})
+					.optional(),
+			}),
+		}),
+		z.strictObject({
+			type: z.literal("agentTool"),
+			props: z.strictObject({
+				jsonPath: z.string(),
+			}),
+		}),
+	]);
+
+export const IAppBuilderActionPropsSetParameterValueSchema = z.strictObject({
+	parameter: z.strictObject({
+		name: z.string(),
+		sessionId: z.string().optional(),
+	}),
+	value: z.string().optional(),
+	source: IAppBuilderParameterValueSourceDefinitionSchema.optional(),
+});
+
+export const IAppBuilderActionPropsSetParameterValuesSchema = z.strictObject({
+	parameterValues: z.array(IAppBuilderActionPropsSetParameterValueSchema),
+	message: z.string().optional(),
+});
+
+export const IAppBuilderActionPropsCameraCommonSchema = z.strictObject({
+	camera: z
+		.union([
+			z.looseObject({
+				id: z.string().optional(),
+				name: z.string().optional(),
+			}),
+			z.looseObject({
+				type: z.enum(CAMERA_TYPE),
+			}),
+		])
+		.optional(),
+	options: z.record(z.string(), JsonValueSchema).optional(),
+});
+
+export const IAppBuilderActionPropsCameraSchema = z.discriminatedUnion("type", [
+	z
+		.strictObject({
+			type: z.literal("animate"),
+			viewportId: z.string().optional(),
+			props: z
+				.strictObject({
+					path: z.array(
+						z.strictObject({
+							position: z.array(z.number()).length(3),
+							target: z.array(z.number()).length(3),
+						}),
+					),
+					startFromCurrent: z.boolean().optional(),
+				})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.strictObject({
+			type: z.literal("assign"),
+			viewportId: z.string().optional(),
+			props: z
+				.strictObject({})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.strictObject({
+			type: z.literal("set"),
+			viewportId: z.string().optional(),
+			props: z
+				.strictObject({
+					position: z.array(z.number()).length(3),
+					target: z.array(z.number()).length(3),
+				})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.strictObject({
+			type: z.literal("reset"),
+			viewportId: z.string().optional(),
+			props: z
+				.strictObject({})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+	z
+		.strictObject({
+			type: z.literal("zoomTo"),
+			viewportId: z.string().optional(),
+			props: z
+				.strictObject({
+					initialPosition: z.array(z.number()).length(3).optional(),
+					initialTarget: z.array(z.number()).length(3).optional(),
+					nameFilter: z.array(z.string()).optional(),
+				})
+				.extend(IAppBuilderActionPropsCameraCommonSchema.shape),
+		})
+		.extend(IAppBuilderActionPropsCommonSchema.shape),
+]);
+
+export const IAppBuilderActionPropsSoundSchema = z.strictObject({
+	href: z.string(),
+	autoplay: z.boolean().optional(),
+	loop: z.boolean().optional(),
+	labelPlaying: z.string().optional(),
+	iconPlaying: z.string().optional(),
+});

@@ -15,10 +15,20 @@ export type AppBuilderActionRunNamespaceContext = {
 	viewportId?: string;
 };
 
+type PlannedParameterUpdate = {
+	paramNamespace: string;
+	parameterId: string;
+	nextValue: unknown;
+	setUiValue: (value: unknown) => boolean;
+};
+
 /**
  * Headless "setParameterValues" / "setParameterValue" trigger.
  * Awaits source resolution (when needed) and session execution via
  * `batchParameterValueUpdate`.
+ *
+ * Resolves and validates the complete batch before any `setUiValue` so a
+ * later invalid/unknown entry cannot leave earlier parameters dirty.
  */
 export async function runAppBuilderActionSetParameterValues(
 	props: RunAppBuilderActionSetParameterValuesProps,
@@ -60,8 +70,7 @@ export async function runAppBuilderActionSetParameterValues(
 			? await resolveParameterValueSources(sourceDefinitions, context)
 			: undefined;
 
-	const validParameters: {[namespace: string]: {[key: string]: unknown}} = {};
-	let hasChanges = false;
+	const planned: PlannedParameterUpdate[] = [];
 	let resolvedSourceIndex = 0;
 
 	for (let index = 0; index < items.length; index++) {
@@ -91,17 +100,34 @@ export async function runAppBuilderActionSetParameterValues(
 
 		if (!isSourceValue && !parameter.actions.isUiValueDifferent(nextValue))
 			continue;
-		if (!parameter.actions.setUiValue(nextValue)) {
+		if (!parameter.actions.isValid(nextValue, false)) {
 			throw new Error(
 				`Invalid value for parameter "${parameter.definition.id}".`,
 			);
 		}
-		hasChanges = true;
-		if (!validParameters[paramNamespace])
-			validParameters[paramNamespace] = {};
-		validParameters[paramNamespace][parameter.definition.id] = nextValue;
+		planned.push({
+			paramNamespace,
+			parameterId: parameter.definition.id,
+			nextValue,
+			setUiValue: (value) => parameter.actions.setUiValue(value),
+		});
 	}
 
-	if (!hasChanges || Object.keys(validParameters).length === 0) return;
+	if (planned.length === 0) return;
+
+	const validParameters: {[namespace: string]: {[key: string]: unknown}} = {};
+	for (const update of planned) {
+		if (!update.setUiValue(update.nextValue)) {
+			throw new Error(
+				`Invalid value for parameter "${update.parameterId}".`,
+			);
+		}
+		if (!validParameters[update.paramNamespace]) {
+			validParameters[update.paramNamespace] = {};
+		}
+		validParameters[update.paramNamespace][update.parameterId] =
+			update.nextValue;
+	}
+
 	await batchParameterValueUpdate(validParameters);
 }
