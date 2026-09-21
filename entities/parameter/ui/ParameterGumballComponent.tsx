@@ -31,6 +31,7 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import type {ParameterGumballComponentStyleProps as StyleProps} from "../config/theme/parameterGumballComponentTheme";
+import {resolveParameterInteractionButtonTheme} from "../config/theme/parameterInteractionButtonTheme";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
 import {useGumball} from "../model/interaction/useGumball";
 import {useInteractionRequestLifecycle} from "../model/interaction/useInteractionRequestLifecycle";
@@ -99,7 +100,8 @@ const defaultStyleProps: StyleProps = {
 export default function ParameterGumballComponent(
 	props: PropsParameter &
 		Partial<PropsParameterWrapper> &
-		Partial<IGumballTransformParameterProps>,
+		Partial<IGumballTransformParameterProps> &
+		Partial<StyleProps>,
 ) {
 	const {
 		actions,
@@ -117,11 +119,13 @@ export default function ParameterGumballComponent(
 
 	const {namespace} = props;
 
-	const {selectionColor, availableColor, hoverColor} = useProps(
-		"ParameterGumballComponent",
-		defaultStyleProps,
-		props,
-	);
+	const {
+		selectionColor,
+		availableColor,
+		hoverColor,
+		confirmButton: confirmButtonTheme,
+		cancelButton: cancelButtonTheme,
+	} = useProps("ParameterGumballComponent", defaultStyleProps, props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterGumballComponent",
@@ -194,6 +198,14 @@ export default function ParameterGumballComponent(
 	);
 
 	const gumballLabel = gumballProps.prompt?.inactiveTitle ?? "Start gumball";
+	const confirmButton = resolveParameterInteractionButtonTheme(
+		confirmButtonTheme,
+		{label: "Confirm", icon: "tabler:check"},
+	);
+	const cancelButton = resolveParameterInteractionButtonTheme(
+		cancelButtonTheme,
+		{label: "Cancel", icon: "tabler:x"},
+	);
 
 	const automaticallyActivated =
 		alwaysActive || gumballProps.activeMode === "activeOnStart";
@@ -404,14 +416,14 @@ export default function ParameterGumballComponent(
 					variant="filled"
 					onClick={() => changeValue(transformedNodeNames)}
 				>
-					<Text>Confirm</Text>
+					<Text>{confirmButton.label}</Text>
 				</Button>
 				<Button
 					fullWidth={true}
 					variant={"light"}
 					onClick={resetTransformation}
 				>
-					<Text>Cancel</Text>
+					<Text>{cancelButton.label}</Text>
 				</Button>
 			</Group>
 		</Stack>
@@ -478,8 +490,9 @@ export default function ParameterGumballComponent(
 					createToolbarCommand({
 						id: `${namespace}-${definition.id}-${viewportId}-confirm`,
 						aggregationId: "gumball-confirm",
-						label: "Confirm",
-						icon: "tabler:check",
+						label: confirmButton.label,
+						tooltip: confirmButton.tooltip,
+						icon: confirmButton.icon,
 						order: 10,
 						disabled: !hasPendingTransformation,
 						execute: () => changeValue(transformedNodeNames),
@@ -487,8 +500,9 @@ export default function ParameterGumballComponent(
 					createToolbarCommand({
 						id: `${namespace}-${definition.id}-${viewportId}-cancel`,
 						aggregationId: "gumball-cancel",
-						label: "Cancel",
-						icon: "tabler:x",
+						label: cancelButton.label,
+						tooltip: cancelButton.tooltip,
+						icon: cancelButton.icon,
 						order: 20,
 						disabled: !hasPendingTransformation,
 						execute: resetTransformation,

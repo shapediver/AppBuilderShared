@@ -123,6 +123,7 @@ describe("resolveRuntimeToolbarGroups", () => {
 						setChecked,
 						trailingAction: {
 							label: "Clear Only",
+							tooltip: "Clear selection",
 							icon: "tabler:circle-off",
 							execute: clear,
 						},
@@ -142,6 +143,7 @@ describe("resolveRuntimeToolbarGroups", () => {
 		if (clearCommand.type !== "command")
 			throw new Error("Expected clear command");
 		expect(clearCommand.label).toBe("Clear Only");
+		expect(clearCommand.tooltip).toBe("Clear selection");
 		clearCommand.props.execute();
 		expect(clear).toHaveBeenCalledTimes(1);
 	});

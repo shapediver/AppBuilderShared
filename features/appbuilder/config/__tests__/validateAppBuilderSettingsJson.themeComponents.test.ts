@@ -33,18 +33,18 @@ jest.mock("@shapediver/viewer.shared.types", () => {
 			CENTER: "center",
 			RIGHT: "right",
 		},
-		IRectangleTransformParameterPropsJsonSchema: z.strictObject({
+		IRectangleTransformParameterPropsJsonSchema: z.object({
 			enableRotation: z.boolean().optional(),
 			enableScaling: z.boolean().optional(),
 			enableTranslation: z.boolean().optional(),
 		}),
-		IDraggingParameterPropsJsonSchema: z.strictObject({
+		IDraggingParameterPropsJsonSchema: z.object({
 			draggingColor: z.string().optional(),
 		}),
-		IGumballTransformParameterPropsJsonSchema: z.strictObject({
+		IGumballTransformParameterPropsJsonSchema: z.object({
 			selectionColor: z.string().optional(),
 		}),
-		ISelectionParameterPropsJsonSchema: z.strictObject({
+		ISelectionParameterPropsJsonSchema: z.object({
 			selectionColor: z.string().optional(),
 		}),
 	};
@@ -346,6 +346,8 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 			enableRotation: true,
 			enableScaling: true,
 			enableTranslation: true,
+			confirmButton: {tooltip: "Confirm"},
+			cancelButton: {icon: "tabler:x"},
 		},
 		invalidDefaultProps: {enableRotation: "yes"},
 	},
@@ -502,17 +504,39 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 	},
 	{
 		component: "ParameterDraggingComponent",
-		validDefaultProps: {},
+		validDefaultProps: {
+			confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+			cancelButton: {label: "Cancel"},
+		},
 		invalidDefaultProps: {draggingColor: 42},
 	},
 	{
+		component: "ParameterDrawingComponent",
+		validDefaultProps: {
+			clearButton: {tooltip: "Clear", icon: "tabler:circle-off"},
+			confirmButton: {label: "Confirm"},
+			cancelButton: {tooltip: "Cancel"},
+		},
+		invalidDefaultProps: {clearButton: {tooltip: true}},
+	},
+	{
 		component: "ParameterGumballComponent",
-		validDefaultProps: {},
+		validDefaultProps: {
+			confirmButton: {tooltip: "Confirm"},
+			cancelButton: {icon: "tabler:x"},
+		},
 		invalidDefaultProps: {selectionColor: 42},
 	},
 	{
 		component: "ParameterSelectionComponent",
-		validDefaultProps: {},
+		validDefaultProps: {
+			clearButton: {
+				tooltip: "Clear selection",
+				icon: "tabler:circle-off",
+			},
+			confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+			cancelButton: {tooltip: "Cancel", icon: "tabler:x"},
+		},
 		invalidDefaultProps: {selectionColor: 42},
 	},
 ] as const satisfies readonly ThemeComponentCase[];

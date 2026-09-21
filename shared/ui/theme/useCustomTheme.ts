@@ -53,6 +53,7 @@ import {AppBuilderTextWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons";
 import {ParameterDraggingComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterDraggingComponentTheme";
+import {ParameterDrawingComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterDrawingComponentTheme";
 import {ParameterGumballComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterGumballComponentTheme";
 import {ParameterRectangleTransformComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterRectangleTransformComponentTheme";
 import {ParameterSelectionComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterSelectionComponentTheme";
@@ -1167,6 +1168,8 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Defaults and settings for dragging components.
 			 */
 			ParameterDraggingComponent: ParameterDraggingComponentThemeProps({
+				// confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+				// cancelButton: {tooltip: "Cancel", icon: "tabler:x"},
 				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",
@@ -1187,11 +1190,23 @@ export const useCustomTheme = (props: Props = {}) => {
 				// } as IInteractionEffect,
 			}),
 			/**
+			 * ParameterDrawingComponent
+			 *
+			 * Defaults for drawing Confirm / Cancel / Clear chrome.
+			 */
+			ParameterDrawingComponent: ParameterDrawingComponentThemeProps({
+				// clearButton: {tooltip: "Clear", icon: "tabler:circle-off"},
+				// confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+				// cancelButton: {tooltip: "Cancel", icon: "tabler:x"},
+			}),
+			/**
 			 * ParameterGumballComponent
 			 *
 			 * Defaults and settings for gumball transform components.
 			 */
 			ParameterGumballComponent: ParameterGumballComponentThemeProps({
+				// confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+				// cancelButton: {tooltip: "Cancel", icon: "tabler:x"},
 				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",
@@ -1218,6 +1233,8 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			ParameterRectangleTransformComponent:
 				ParameterRectangleTransformComponentThemeProps({
+					// confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+					// cancelButton: {tooltip: "Cancel", icon: "tabler:x"},
 					// selectionColor: {
 					// 	type: "pulse",
 					// 	color: "#0d44f0",
@@ -1243,6 +1260,12 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Defaults and settings for selection components (e.g. dropdowns, chip groups).
 			 */
 			ParameterSelectionComponent: ParameterSelectionComponentThemeProps({
+				// clearButton: {
+				// 	tooltip: "Clear selection",
+				// 	icon: "tabler:circle-off",
+				// },
+				// confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+				// cancelButton: {tooltip: "Cancel", icon: "tabler:x"},
 				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",

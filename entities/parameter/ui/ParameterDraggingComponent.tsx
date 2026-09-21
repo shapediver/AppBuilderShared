@@ -25,6 +25,7 @@ import {
 	PropsParameterWrapper,
 } from "../config/propsParameter";
 import type {ParameterDraggingComponentStyleProps as StyleProps} from "../config/theme/parameterDraggingComponentTheme";
+import {resolveParameterInteractionButtonTheme} from "../config/theme/parameterInteractionButtonTheme";
 import {useDragging} from "../model/interaction/useDragging";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
@@ -82,7 +83,8 @@ const defaultStyleProps: StyleProps = {
 export default function ParameterDraggingComponent(
 	props: PropsParameter &
 		Partial<PropsParameterWrapper> &
-		Partial<IDraggingParameterProps>,
+		Partial<IDraggingParameterProps> &
+		Partial<StyleProps>,
 ) {
 	const {
 		actions,
@@ -100,11 +102,13 @@ export default function ParameterDraggingComponent(
 
 	const {namespace} = props;
 
-	const {draggingColor, availableColor, hoverColor} = useProps(
-		"ParameterDraggingComponent",
-		defaultStyleProps,
-		props,
-	);
+	const {
+		draggingColor,
+		availableColor,
+		hoverColor,
+		confirmButton: confirmButtonTheme,
+		cancelButton: cancelButtonTheme,
+	} = useProps("ParameterDraggingComponent", defaultStyleProps, props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterDraggingComponent",
@@ -174,6 +178,14 @@ export default function ParameterDraggingComponent(
 	const draggingLabel =
 		draggingProps.prompt?.inactiveTitle ??
 		`Start dragging (${parsedUiValue.length})`;
+	const confirmButton = resolveParameterInteractionButtonTheme(
+		confirmButtonTheme,
+		{label: "Confirm", icon: "tabler:check"},
+	);
+	const cancelButton = resolveParameterInteractionButtonTheme(
+		cancelButtonTheme,
+		{label: "Cancel", icon: "tabler:x"},
+	);
 
 	const automaticallyActivated = draggingProps.activeMode === "activeOnStart";
 	const {ownershipBlocked, tryAcquireClaim} = useInteractionOwnership({
@@ -358,10 +370,10 @@ export default function ParameterDraggingComponent(
 					variant="filled"
 					onClick={changeValue}
 				>
-					<Text>Confirm</Text>
+					<Text>{confirmButton.label}</Text>
 				</Button>
 				<Button fullWidth={true} variant={"light"} onClick={cancel}>
-					<Text>Cancel</Text>
+					<Text>{cancelButton.label}</Text>
 				</Button>
 			</Group>
 		</Stack>
@@ -430,15 +442,17 @@ export default function ParameterDraggingComponent(
 		commands: [
 			createToolbarCommand({
 				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
-				label: "Confirm",
-				icon: "tabler:check",
+				label: confirmButton.label,
+				tooltip: confirmButton.tooltip,
+				icon: confirmButton.icon,
 				disabled: !dirty,
 				execute: changeValue,
 			}),
 			createToolbarCommand({
 				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
-				label: "Cancel",
-				icon: "tabler:x",
+				label: cancelButton.label,
+				tooltip: cancelButton.tooltip,
+				icon: cancelButton.icon,
 				disabled: !dirty,
 				execute: cancel,
 			}),

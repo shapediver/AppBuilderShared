@@ -1,8 +1,9 @@
 import type {MantineThemeComponent} from "@mantine/core";
 import type {InteractionEffect} from "@shapediver/viewer.shared.types";
+import type {ParameterInteractionConfirmCancelThemeProps} from "./parameterInteractionButtonTheme";
 import type {ParameterDraggingComponentThemeDefaultProps} from "./parameterInteractionThemeDefaultProps";
 
-export interface ParameterDraggingComponentStyleProps {
+export interface ParameterDraggingComponentStyleProps extends ParameterInteractionConfirmCancelThemeProps {
 	draggingColor?: InteractionEffect;
 	availableColor?: InteractionEffect;
 	hoverColor?: InteractionEffect;
