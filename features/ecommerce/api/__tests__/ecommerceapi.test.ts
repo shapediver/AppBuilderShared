@@ -79,6 +79,11 @@ function stubAppActions(
 			success: false,
 			message: "Not implemented",
 		}),
+		triggerAction: async () => ({
+			success: false,
+			message: "Not implemented",
+		}),
+		getOutput: async () => ({found: false}),
 		...overrides,
 	};
 }

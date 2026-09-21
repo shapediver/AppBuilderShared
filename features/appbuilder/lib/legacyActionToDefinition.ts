@@ -5,20 +5,24 @@ import {
 	type IAppBuilderLegacyActionDefinition,
 } from "../config/appbuilder";
 
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
+	? Omit<T, K>
+	: never;
+
 function stripLegacyCommonProps<T extends IAppBuilderActionPropsCommon>(
 	props: T,
-): Omit<T, keyof IAppBuilderActionPropsCommon> {
+): DistributiveOmit<T, keyof IAppBuilderActionPropsCommon> {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const {id, icon, label, tooltip, ...rest} = props;
-	return rest;
+	return rest as DistributiveOmit<T, keyof IAppBuilderActionPropsCommon>;
 }
 
 function stripLegacyDisplayProps<
 	T extends Pick<IAppBuilderActionPropsCommon, "icon" | "label" | "tooltip">,
->(props: T): Omit<T, "icon" | "label" | "tooltip"> {
+>(props: T): DistributiveOmit<T, "icon" | "label" | "tooltip"> {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const {icon, label, tooltip, ...rest} = props;
-	return rest;
+	return rest as DistributiveOmit<T, "icon" | "label" | "tooltip">;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

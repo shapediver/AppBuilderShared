@@ -14,12 +14,33 @@ export type RunAppBuilderActionSetParameterValuesProps =
 export type AppBuilderActionRunNamespaceContext = {
 	namespace: string;
 	viewportId?: string;
+	/** When true, missing/invalid items throw (API). UI omits this and skips. */
+	strict?: boolean;
 };
+
+type PlannedParameterUpdate = {
+	paramNamespace: string;
+	parameterId: string;
+	nextValue: unknown;
+	setUiValue: (value: unknown) => boolean;
+};
+
+function rejectOrSkip(strict: boolean | undefined, message: string): void {
+	if (strict) {
+		throw new Error(message);
+	}
+	Logger.warn(message);
+}
 
 /**
  * Headless "setParameterValues" / "setParameterValue" trigger.
  * Awaits source resolution (when needed) and session execution via
  * `batchParameterValueUpdate`.
+ *
+ * Resolves and validates items before any `setUiValue` so a later
+ * invalid/unknown entry cannot leave earlier parameters dirty. API callers
+ * pass `strict: true` to throw; toolbar / slots / in-app executeActions skip
+ * the bad item and continue.
  */
 export async function runAppBuilderActionSetParameterValues(
 	props: RunAppBuilderActionSetParameterValuesProps,
@@ -46,9 +67,9 @@ export async function runAppBuilderActionSetParameterValues(
 			item.parameter.name,
 		);
 		if (!parameterStore) {
-			Logger.warn(
-				"Parameter not found for setParameterValues:",
-				item.parameter.name,
+			rejectOrSkip(
+				context.strict,
+				`Parameter "${item.parameter.name}" not found.`,
 			);
 			continue;
 		}
@@ -65,8 +86,7 @@ export async function runAppBuilderActionSetParameterValues(
 			? await resolveParameterValueSources(sourceDefinitions, context)
 			: undefined;
 
-	const validParameters: {[namespace: string]: {[key: string]: unknown}} = {};
-	let hasChanges = false;
+	const planned: PlannedParameterUpdate[] = [];
 	let resolvedSourceIndex = 0;
 
 	for (let index = 0; index < items.length; index++) {
@@ -77,12 +97,10 @@ export async function runAppBuilderActionSetParameterValues(
 			item.parameter.name,
 		);
 		if (!parameterStore) {
-			if (item.value !== undefined) {
-				Logger.warn(
-					"Parameter not found for setParameterValues:",
-					item.parameter.name,
-				);
-			}
+			rejectOrSkip(
+				context.strict,
+				`Parameter "${item.parameter.name}" not found.`,
+			);
 			continue;
 		}
 		const parameter = parameterStore.getState();
@@ -92,9 +110,9 @@ export async function runAppBuilderActionSetParameterValues(
 			nextValue === undefined && item.source !== undefined;
 		if (nextValue === undefined) {
 			if (item.source === undefined) {
-				Logger.warn(
-					"No value or source defined for parameter:",
-					parameter.definition.id,
+				rejectOrSkip(
+					context.strict,
+					`No value or source defined for parameter "${parameter.definition.id}".`,
 				);
 				continue;
 			}
@@ -104,19 +122,40 @@ export async function runAppBuilderActionSetParameterValues(
 
 		if (!isSourceValue && !parameter.actions.isUiValueDifferent(nextValue))
 			continue;
-		if (!parameter.actions.setUiValue(nextValue)) {
-			Logger.warn(
-				`setUiValue failed for parameter ${parameter.definition.id}, the value is not valid.`,
-				nextValue,
+		if (!parameter.actions.isValid(nextValue, false)) {
+			rejectOrSkip(
+				context.strict,
+				`Invalid value for parameter "${parameter.definition.id}".`,
 			);
 			continue;
 		}
-		hasChanges = true;
-		if (!validParameters[paramNamespace])
-			validParameters[paramNamespace] = {};
-		validParameters[paramNamespace][parameter.definition.id] = nextValue;
+		planned.push({
+			paramNamespace,
+			parameterId: parameter.definition.id,
+			nextValue,
+			setUiValue: (value) => parameter.actions.setUiValue(value),
+		});
 	}
 
-	if (!hasChanges || Object.keys(validParameters).length === 0) return;
+	if (planned.length === 0) return;
+
+	const validParameters: {[namespace: string]: {[key: string]: unknown}} = {};
+	for (const update of planned) {
+		if (!update.setUiValue(update.nextValue)) {
+			rejectOrSkip(
+				context.strict,
+				`Invalid value for parameter "${update.parameterId}".`,
+			);
+			continue;
+		}
+		if (!validParameters[update.paramNamespace]) {
+			validParameters[update.paramNamespace] = {};
+		}
+		validParameters[update.paramNamespace][update.parameterId] =
+			update.nextValue;
+	}
+
+	if (Object.keys(validParameters).length === 0) return;
+
 	await batchParameterValueUpdate(validParameters);
 }

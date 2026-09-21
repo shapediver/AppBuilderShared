@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import type {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import type {
 	IAppBuilder,
@@ -59,7 +62,6 @@ function createDeps(overrides: Partial<AgentToolsDeps> = {}): AgentToolsDeps {
 		resetParameters: jest.fn().mockResolvedValue({success: true}),
 		getViewportId: () => "vp",
 		setCamera: jest.fn().mockResolvedValue({success: true}),
-		zoomTo: jest.fn().mockResolvedValue({success: true}),
 		getScreenshot: jest.fn().mockResolvedValue(undefined),
 		getOutputByName: () => undefined,
 		...overrides,
@@ -207,12 +209,15 @@ describe("runActionControl", () => {
 		expect(result).toEqual({success: true});
 	});
 
-	it("returns Camera action subtype not supported when camera is not set", async () => {
+	it("returns camera is not available when the host runner is missing", async () => {
 		const result = await runActionControl(
 			actionRef({
 				definition: {
 					type: "camera",
-					props: {type: "reset", props: {}},
+					props: {
+						type: "assign",
+						props: {camera: {name: "Front"}},
+					},
 				},
 			}),
 			createDeps(),
@@ -220,12 +225,81 @@ describe("runActionControl", () => {
 
 		expect(result).toEqual({
 			success: false,
-			message: "Camera action subtype not supported",
+			message: "camera is not available",
 		});
 	});
 
-	it("zooms to extents for the zoomTo subtype", async () => {
-		const deps = createDeps();
+	it("calls deps.runCameraAction with the definition", async () => {
+		const definition = {
+			type: "camera" as const,
+			props: {
+				type: "assign" as const,
+				props: {camera: {name: "Front"}},
+			},
+		};
+		const runCameraAction = jest.fn().mockResolvedValue({success: true});
+		const result = await runActionControl(
+			actionRef({definition}),
+			createDeps({runCameraAction}),
+		);
+
+		expect(runCameraAction).toHaveBeenCalledWith(definition);
+		expect(result).toEqual({success: true});
+	});
+
+	it("runs nested executeActions through deps.runCameraAction", async () => {
+		const nested = {
+			type: "camera" as const,
+			props: {
+				type: "assign" as const,
+				props: {camera: {name: "Front"}},
+			},
+		};
+		const runCameraAction = jest.fn().mockResolvedValue({success: true});
+		const result = await runActionControl(
+			actionRef({
+				definition: {
+					type: "executeActions",
+					props: {
+						mode: "sequential",
+						actions: [nested],
+					},
+				},
+			}),
+			createDeps({runCameraAction}),
+		);
+
+		expect(runCameraAction).toHaveBeenCalledWith(nested);
+		expect(result).toEqual({success: true});
+	});
+
+	it("returns the host camera runner failure", async () => {
+		const result = await runActionControl(
+			actionRef({
+				definition: {
+					type: "camera",
+					props: {
+						type: "assign",
+						props: {camera: {name: "Missing"}},
+					},
+				},
+			}),
+			createDeps({
+				runCameraAction: jest.fn().mockResolvedValue({
+					success: false,
+					message: 'Camera "Missing" not found.',
+				}),
+			}),
+		);
+
+		expect(result).toEqual({
+			success: false,
+			message: 'Camera "Missing" not found.',
+		});
+	});
+
+	it("runs camera even when ComponentContext also claims the action", async () => {
+		const runCameraAction = jest.fn().mockResolvedValue({success: true});
 		const result = await runActionControl(
 			actionRef({
 				label: "Zoom extents",
@@ -234,76 +308,14 @@ describe("runActionControl", () => {
 					props: {type: "zoomTo", props: {}},
 				},
 			}),
-			deps,
-		);
-
-		expect(deps.zoomTo).toHaveBeenCalledWith("vp");
-		expect(result).toEqual({success: true});
-	});
-
-	it("runs zoomTo even when ComponentContext also claims camera", async () => {
-		const deps = createDeps({
-			isCustomComponentContextAction: () => true,
-		});
-		const result = await runActionControl(
-			actionRef({
-				label: "Zoom extents",
-				definition: {
-					type: "camera",
-					props: {type: "zoomTo", props: {}},
-				},
+			createDeps({
+				runCameraAction,
+				isCustomComponentContextAction: () => true,
 			}),
-			deps,
 		);
 
-		expect(deps.zoomTo).toHaveBeenCalledWith("vp");
+		expect(runCameraAction).toHaveBeenCalled();
 		expect(result).toEqual({success: true});
-	});
-
-	it("sets camera position and target for the set subtype", async () => {
-		const deps = createDeps();
-		const result = await runActionControl(
-			actionRef({
-				definition: {
-					type: "camera",
-					props: {
-						type: "set",
-						props: {
-							position: [1, 2, 3],
-							target: [0, 1, 0],
-						},
-					},
-				},
-			}),
-			deps,
-		);
-
-		expect(deps.setCamera).toHaveBeenCalledWith({
-			viewportId: "vp",
-			position: {x: 1, y: 2, z: 3},
-			target: {x: 0, y: 1, z: 0},
-		});
-		expect(result).toEqual({success: true});
-	});
-
-	it("returns success false when set-camera position or target is missing", async () => {
-		const deps = createDeps();
-		const result = await runActionControl(
-			actionRef({
-				definition: {
-					type: "camera",
-					props: {
-						type: "set",
-						props: {position: [1, 2, 3]},
-					},
-				},
-			}),
-			deps,
-		);
-
-		expect(result.success).toBe(false);
-		expect(typeof result.message).toBe("string");
-		expect(deps.setCamera).not.toHaveBeenCalled();
 	});
 
 	it("maps setParameterValues definition props through resolve helpers", async () => {

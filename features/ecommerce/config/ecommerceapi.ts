@@ -1,15 +1,28 @@
 import type {
-	ICrossWindowApiOptions,
-	ICrossWindowPeerInfo,
-} from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
+	IAppBuilderActionPropsAddToCart,
+	IAppBuilderActionPropsCamera,
+	IAppBuilderActionPropsCreateModelState,
+	IAppBuilderActionPropsExecuteActions,
+	IAppBuilderActionPropsImportModelState,
+	IAppBuilderActionPropsRedo,
+	IAppBuilderActionPropsResetParameterValues,
+	IAppBuilderActionPropsSetParameterValue,
+	IAppBuilderActionPropsSetParameterValues,
+	IAppBuilderActionPropsSound,
+	IAppBuilderActionPropsUndo,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilderActions";
 import type {
 	ICreateModelStateData,
 	ICreateModelStateResult,
-} from "@AppBuilderShared/features/model-state/config/createModelState";
+} from "@AppBuilderLib/features/model-state/config/createModelState";
 import type {
 	IImportModelStateData,
 	IImportModelStateResult,
-} from "@AppBuilderShared/features/model-state/config/importModelState";
+} from "@AppBuilderLib/features/model-state/config/importModelState";
+import type {
+	ICrossWindowApiOptions,
+	ICrossWindowPeerInfo,
+} from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 
 /**
  * An item to be added to the cart.
@@ -289,6 +302,76 @@ export interface IUpdateParameterValuesReply {
 	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
 }
 
+export type ITriggerSetParameterValueProps =
+	IAppBuilderActionPropsSetParameterValue;
+
+export type ITriggerCameraActionProps = IAppBuilderActionPropsCamera;
+
+/**
+ * Allowlisted payload for CrossWindow `triggerAction`.
+ * Prop shapes are the App Builder action types; nested `executeActions`
+ * stays on this allowlist (not ar / fullscreen / browser location / …).
+ *
+ * `createModelState` here is the action JSON (no custom `data`). The
+ * dedicated `createModelState()` method accepts {@link ICreateModelStateData}.
+ * `importModelState` accepts `{modelStateId}` (import without the dialog) or
+ * empty action props. The dedicated `importModelState()` method still
+ * requires `{modelStateId}`.
+ */
+export type ITriggerActionData =
+	| {
+			type: "createModelState";
+			props: IAppBuilderActionPropsCreateModelState;
+	  }
+	| {
+			type: "importModelState";
+			props:
+				| IImportModelStateData
+				| IAppBuilderActionPropsImportModelState;
+	  }
+	| {
+			type: "setParameterValue";
+			props: IAppBuilderActionPropsSetParameterValue;
+	  }
+	| {
+			type: "setParameterValues";
+			props: IAppBuilderActionPropsSetParameterValues;
+	  }
+	| {type: "undo"; props?: IAppBuilderActionPropsUndo}
+	| {type: "redo"; props?: IAppBuilderActionPropsRedo}
+	| {
+			type: "resetParameterValues";
+			props?: IAppBuilderActionPropsResetParameterValues;
+	  }
+	| {type: "addToCart"; props: IAppBuilderActionPropsAddToCart}
+	| {type: "camera"; props: IAppBuilderActionPropsCamera}
+	| {type: "sound"; props: IAppBuilderActionPropsSound}
+	| {
+			type: "executeActions";
+			props: Omit<IAppBuilderActionPropsExecuteActions, "actions"> & {
+				actions: ITriggerActionData[];
+			};
+	  };
+
+export interface ITriggerActionReply {
+	success: boolean;
+	message?: string;
+}
+
+export interface IGetOutputData {
+	/** Session namespace. Optional, defaults to the configurator session. */
+	namespace?: string;
+	/** Output id, name, or displayname. */
+	output: string;
+}
+
+export interface IGetOutputReply {
+	found: boolean;
+	/** Latest output content when found. */
+	content?: unknown;
+	message?: string;
+}
+
 /**
  * Generic e-commerce API connector actions.
  * These actions are provided by the application (e.g. a configurator)
@@ -318,6 +401,16 @@ export interface IECommerceApiConnectorActions {
 	importModelState(
 		data: IImportModelStateData,
 	): Promise<IImportModelStateResult>;
+
+	/**
+	 * Run an App Builder action (same allowlist as the tools API).
+	 */
+	triggerAction(data: ITriggerActionData): Promise<ITriggerActionReply>;
+
+	/**
+	 * Return the latest output content for an output id, name, or displayname.
+	 */
+	getOutput(data: IGetOutputData): Promise<IGetOutputReply>;
 }
 
 /**

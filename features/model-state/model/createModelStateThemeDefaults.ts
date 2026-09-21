@@ -42,14 +42,9 @@ export function applyCreateModelStateScreenshotFallback(
 	);
 }
 
-export function applyCreateModelStateFilterDefaults(props: {
-	includeImage?: boolean;
-	image?: ICreateModelStateData["image"];
-	includeGltf?: boolean;
-	screenshotProps?: ICreateModelStateData["screenshotProps"];
-	parameterNamesToInclude?: string[];
-	parameterNamesToExclude?: string[];
-}): {
+export function applyCreateModelStateFilterDefaults(
+	props: ICreateModelStateData,
+): {
 	parameterNamesToAlwaysExclude: string[];
 	props: ICreateModelStateData;
 } {
@@ -58,10 +53,7 @@ export function applyCreateModelStateFilterDefaults(props: {
 		parameterNamesToAlwaysExclude:
 			theme.parameterNamesToAlwaysExclude ?? [],
 		props: {
-			includeImage: props.includeImage,
-			image: props.image,
-			includeGltf: props.includeGltf,
-			screenshotProps: props.screenshotProps,
+			...props,
 			parameterNamesToInclude:
 				props.parameterNamesToInclude ?? theme.parameterNamesToInclude,
 			parameterNamesToExclude:
@@ -70,23 +62,20 @@ export function applyCreateModelStateFilterDefaults(props: {
 	};
 }
 
-export function applyCreateModelStateThemeDefaults(props: {
-	includeImage?: boolean;
-	image?: ICreateModelStateData["image"];
-	includeGltf?: boolean;
-	screenshotProps?: ICreateModelStateData["screenshotProps"];
-	parameterNamesToInclude?: string[];
-	parameterNamesToExclude?: string[];
-	successMessage?: string;
-	errorMessage?: string;
-}): {
+export function applyCreateModelStateThemeDefaults(
+	props: ICreateModelStateData & {
+		successMessage?: string;
+		errorMessage?: string;
+	},
+): {
 	parameterNamesToAlwaysExclude: string[];
 	props: ICreateModelStateData;
 	successMessage?: string;
 	errorMessage?: string;
 } {
 	const theme = getCreateModelStateThemeDefaults();
-	const filtered = applyCreateModelStateFilterDefaults(props);
+	const {successMessage, errorMessage, ...stateProps} = props;
+	const filtered = applyCreateModelStateFilterDefaults(stateProps);
 	return {
 		...filtered,
 		props: {
@@ -95,7 +84,7 @@ export function applyCreateModelStateThemeDefaults(props: {
 				props.screenshotProps,
 			),
 		},
-		successMessage: props.successMessage ?? theme.successMessage,
-		errorMessage: props.errorMessage ?? theme.errorMessage,
+		successMessage: successMessage ?? theme.successMessage,
+		errorMessage: errorMessage ?? theme.errorMessage,
 	};
 }
