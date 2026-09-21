@@ -1,7 +1,6 @@
 import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import type {IShapeDiverStoreSessions} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 import type {
 	IAppBuilder,
@@ -16,7 +15,6 @@ import type {
 	IImportModelStateData,
 	IImportModelStateResult,
 } from "@AppBuilderLib/features/model-state/config/importModelState";
-import {vec3} from "gl-matrix";
 import type {Vec3} from "../config/setCameraPosition";
 import type {RunActionControlResult} from "../config/triggerActionControl";
 import {collectFromToolbarItems} from "../lib/collectActionControls";
@@ -67,23 +65,21 @@ async function setViewportCamera(args: {
 	position: Vec3;
 	target: Vec3;
 }): Promise<RunActionControlResult> {
-	const camera =
-		useShapeDiverStoreViewport.getState().viewports[args.viewportId]
-			?.camera;
-	if (!camera) {
-		return {success: false, message: "Viewport not found."};
+	const setCamera =
+		useShapeDiverStoreViewportAccessFunctions.getState()
+			.viewportAccessFunctions[args.viewportId]?.setCamera;
+	if (!setCamera) {
+		return {success: false, message: "camera is not available"};
 	}
-	camera.position = vec3.fromValues(
-		args.position.x,
-		args.position.y,
-		args.position.z,
-	);
-	camera.target = vec3.fromValues(
-		args.target.x,
-		args.target.y,
-		args.target.z,
-	);
-	return {success: true};
+	try {
+		await setCamera({
+			position: args.position,
+			target: args.target,
+		});
+		return {success: true};
+	} catch (e) {
+		return failureResult(e);
+	}
 }
 
 /** Wire ShapeDiver stores/hooks into `AgentToolsDeps` for tool handlers. */

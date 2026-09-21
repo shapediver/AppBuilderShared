@@ -6,6 +6,7 @@ import {
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 } from "@shapediver/viewer.viewport";
+import {vec3} from "gl-matrix";
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {ViewportCreateDto} from "../config/viewport";
@@ -134,6 +135,19 @@ export function useViewport(props: ViewportCreateDto) {
 						} else if (!useAutoAdjustSetting) {
 							viewportApi.camera.zoomTo(undefined, options);
 						}
+					},
+					setCamera: ({position, target}) => {
+						if (!viewportApi.camera) return;
+						viewportApi.camera.position = vec3.fromValues(
+							position.x,
+							position.y,
+							position.z,
+						);
+						viewportApi.camera.target = vec3.fromValues(
+							target.x,
+							target.y,
+							target.z,
+						);
 					},
 				});
 		});

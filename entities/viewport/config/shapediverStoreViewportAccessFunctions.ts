@@ -57,4 +57,16 @@ export interface IViewportAccessFunctions {
 		useAutoAdjustSetting: boolean,
 		options?: {duration?: number},
 	) => void;
+
+	/**
+	 * Set camera position and target. Hosts that use
+	 * `@shapediver/viewer.viewport` implement this from `IViewportApi.camera`.
+	 * Hosts that use another renderer (e.g. WebGI) may omit it or supply a
+	 * native implementation. Always-loaded shared code (agent tools) must use
+	 * this hook instead of importing `useShapeDiverStoreViewport`.
+	 */
+	setCamera?: (args: {
+		position: {x: number; y: number; z: number};
+		target: {x: number; y: number; z: number};
+	}) => void | Promise<void>;
 }
