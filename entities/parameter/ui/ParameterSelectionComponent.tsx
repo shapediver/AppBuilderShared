@@ -7,6 +7,7 @@ import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
 	ActionIcon,
 	Box,
@@ -32,6 +33,7 @@ import {
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
+import {resolveParameterInteractionButtonTheme} from "../config/theme/parameterInteractionButtonTheme";
 import type {ParameterSelectionComponentStyleProps as StyleProps} from "../config/theme/parameterSelectionComponentTheme";
 import {getResetValue} from "../lib/parameterResetValue";
 import {parseSelectionNames as parseNames} from "../model/interaction/parseSelectionNames";
@@ -103,7 +105,8 @@ export function ParameterSelectionComponentThemeProps(
 export default function ParameterSelectionComponent(
 	props: PropsParameter &
 		Partial<PropsParameterWrapper> &
-		Partial<ISelectionParameterProps>,
+		Partial<ISelectionParameterProps> &
+		Partial<StyleProps>,
 ) {
 	const {
 		actions,
@@ -120,11 +123,14 @@ export default function ParameterSelectionComponent(
 
 	const {namespace} = props;
 
-	const {selectionColor, availableColor, hoverColor} = useProps(
-		"ParameterSelectionComponent",
-		defaultStyleProps,
-		props,
-	);
+	const {
+		selectionColor,
+		availableColor,
+		hoverColor,
+		clearButton: clearButtonTheme,
+		confirmButton: confirmButtonTheme,
+		cancelButton: cancelButtonTheme,
+	} = useProps("ParameterSelectionComponent", defaultStyleProps, props);
 
 	const {wrapperComponent, wrapperProps} = useProps(
 		"ParameterSelectionComponent",
@@ -540,6 +546,18 @@ export default function ParameterSelectionComponent(
 		minimumSelection,
 		maximumSelection,
 	});
+	const clearButton = resolveParameterInteractionButtonTheme(
+		clearButtonTheme,
+		{label: `Clear ${toolbarLabel}`, icon: "tabler:circle-off"},
+	);
+	const confirmButton = resolveParameterInteractionButtonTheme(
+		confirmButtonTheme,
+		{label: "Confirm", icon: "tabler:check"},
+	);
+	const cancelButton = resolveParameterInteractionButtonTheme(
+		cancelButtonTheme,
+		{label: "Cancel", icon: "tabler:x"},
+	);
 
 	const items = [
 		createToolbarCheckboxItem({
@@ -560,8 +578,9 @@ export default function ParameterSelectionComponent(
 			trailingAction:
 				shouldShowClearButton && selectedNodeNames.length > 0
 					? {
-							label: `Clear ${toolbarLabel}`,
-							icon: "tabler:circle-off",
+							label: clearButton.label,
+							tooltip: clearButton.tooltip,
+							icon: clearButton.icon,
 							execute: clearSelection,
 						}
 					: undefined,
@@ -583,8 +602,9 @@ export default function ParameterSelectionComponent(
 		commands.push(
 			createToolbarCommand({
 				id: `${namespace}-${definition.id}-${viewportId}-confirm`,
-				label: "Confirm",
-				icon: "tabler:check",
+				label: confirmButton.label,
+				tooltip: confirmButton.tooltip,
+				icon: confirmButton.icon,
 				aggregationId: "selection-confirm",
 				order: 10,
 				disabled: !dirty,
@@ -617,8 +637,9 @@ export default function ParameterSelectionComponent(
 		commands.push(
 			createToolbarCommand({
 				id: `${namespace}-${definition.id}-${viewportId}-cancel`,
-				label: "Cancel",
-				icon: "tabler:x",
+				label: cancelButton.label,
+				tooltip: cancelButton.tooltip,
+				icon: cancelButton.icon,
 				aggregationId: "selection-cancel",
 				order: 20,
 				disabled: !dirty,
@@ -685,16 +706,19 @@ export default function ParameterSelectionComponent(
 					</Box>
 					{shouldShowClearButton && (
 						<Box style={{width: "auto"}}>
-							<ActionIcon
-								onClick={clearSelection}
-								variant={
-									selectedNodeNames.length === 0
-										? "light"
-										: "filled"
-								}
-							>
-								<Icon iconType={"tabler:circle-off"} />
-							</ActionIcon>
+							<TooltipWrapper label={clearButton.tooltip}>
+								<ActionIcon
+									aria-label={clearButton.tooltip}
+									onClick={clearSelection}
+									variant={
+										selectedNodeNames.length === 0
+											? "light"
+											: "filled"
+									}
+								>
+									<Icon iconType={clearButton.icon} />
+								</ActionIcon>
+							</TooltipWrapper>
 						</Box>
 					)}
 				</Flex>
@@ -729,10 +753,10 @@ export default function ParameterSelectionComponent(
 						variant="filled"
 						onClick={() => changeValue(selectedNodeNames)}
 					>
-						<Text>Confirm</Text>
+						<Text>{confirmButton.label}</Text>
 					</Button>
 					<Button fullWidth={true} variant={"light"} onClick={cancel}>
-						<Text>Cancel</Text>
+						<Text>{cancelButton.label}</Text>
 					</Button>
 				</Group>
 			)}

@@ -94,6 +94,8 @@ export type ToolbarCheckboxItem = ToolbarItemBase<
 		/** Optional parameter-scoped action displayed beside the checkbox. */
 		trailingAction?: {
 			label: string;
+			/** Toolbar tooltip when this action is promoted to a command. Falls back to `label`. */
+			tooltip?: string;
 			icon: IconType;
 			execute: () => void;
 			disabled?: boolean;

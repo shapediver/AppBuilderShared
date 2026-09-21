@@ -1,5 +1,6 @@
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import type {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
+import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {ActionIcon, Checkbox, Flex} from "@mantine/core";
 import classes from "./AppBuilderToolbarMenuCheckbox.module.css";
 
@@ -11,6 +12,7 @@ type Props = {
 	onChange: () => void;
 	trailingAction?: {
 		label: string;
+		tooltip?: string;
 		icon: IconType;
 		execute: () => void;
 		disabled?: boolean;
@@ -47,21 +49,29 @@ export default function AppBuilderToolbarMenuCheckbox({
 					label: classes.label,
 				}}
 				onChange={onChange}
-				onClick={readOnly ? (event) => event.preventDefault() : undefined}
+				onClick={
+					readOnly ? (event) => event.preventDefault() : undefined
+				}
 			/>
 			{trailingAction && (
-				<ActionIcon
-					aria-label={trailingAction.label}
-					size="xs"
-					variant="subtle"
-					disabled={trailingAction.disabled}
-					onClick={(event) => {
-						event.stopPropagation();
-						trailingAction.execute();
-					}}
+				<TooltipWrapper
+					label={trailingAction.tooltip ?? trailingAction.label}
 				>
-					<Icon iconType={trailingAction.icon} />
-				</ActionIcon>
+					<ActionIcon
+						aria-label={
+							trailingAction.tooltip ?? trailingAction.label
+						}
+						size="xs"
+						variant="subtle"
+						disabled={trailingAction.disabled}
+						onClick={(event) => {
+							event.stopPropagation();
+							trailingAction.execute();
+						}}
+					>
+						<Icon iconType={trailingAction.icon} />
+					</ActionIcon>
+				</TooltipWrapper>
 			)}
 		</Flex>
 	);

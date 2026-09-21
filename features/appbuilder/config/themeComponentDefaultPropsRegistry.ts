@@ -10,6 +10,11 @@ import {SelectButtonFlexComponentThemeDefaultPropsSchema} from "@AppBuilderLib/e
 import {SelectCarouselComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/SelectCarouselComponent.theme.types";
 import {SelectFullWidthCardsComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/SelectFullWidthCardsComponent.theme.types";
 import {SelectGridComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/config/SelectGridComponent.theme.types";
+import {
+	ParameterDrawingComponentThemeDefaultPropsSchema,
+	parameterInteractionConfirmCancelClearThemeSchema,
+	parameterInteractionConfirmCancelThemeSchema,
+} from "@AppBuilderLib/entities/parameter/config/theme/parameterInteractionButtonTheme";
 import {ParameterSliderComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/parameter/ui/ParameterSliderComponent.types";
 import {DefaultSessionThemeDefaultPropsSchema} from "@AppBuilderLib/entities/session/config/DefaultSession.theme.types";
 import {DesktopClientPanelThemeDefaultPropsSchema} from "@AppBuilderLib/entities/stargate/config/DesktopClientPanel.theme.types";
@@ -149,14 +154,21 @@ export const themeComponentDefaultPropsRegistry = {
 	OutputChunkLabelComponent: OutputChunkLabelComponentThemeDefaultPropsSchema,
 	OutputStargateComponent: OutputStargateComponentThemeDefaultPropsSchema,
 	ParameterColorComponent: ParameterColorComponentThemeDefaultPropsSchema,
-	ParameterDraggingComponent: IDraggingParameterPropsJsonSchema,
-	ParameterGumballComponent: IGumballTransformParameterPropsJsonSchema,
+	ParameterDraggingComponent: IDraggingParameterPropsJsonSchema.and(
+		parameterInteractionConfirmCancelThemeSchema,
+	),
+	ParameterDrawingComponent: ParameterDrawingComponentThemeDefaultPropsSchema,
+	ParameterGumballComponent: IGumballTransformParameterPropsJsonSchema.and(
+		parameterInteractionConfirmCancelThemeSchema,
+	),
 	ParameterLabelComponent: ParameterLabelComponentThemeDefaultPropsSchema,
 	ParameterRectangleTransformComponent:
 		ParameterRectangleTransformComponentThemeDefaultPropsSchema,
 	ParameterSelectComponent: ParameterSelectComponentThemeDefaultPropsSchema,
 	ParameterStringComponent: ParameterStringComponentThemeDefaultPropsSchema,
-	ParameterSelectionComponent: ISelectionParameterPropsJsonSchema,
+	ParameterSelectionComponent: ISelectionParameterPropsJsonSchema.and(
+		parameterInteractionConfirmCancelClearThemeSchema,
+	),
 	ParameterSliderComponent: ParameterSliderComponentThemeDefaultPropsSchema,
 	ParameterStargateComponent:
 		ParameterStargateComponentThemeDefaultPropsSchema,

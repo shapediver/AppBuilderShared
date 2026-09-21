@@ -1,8 +1,9 @@
 import type {MantineThemeComponent} from "@mantine/core";
 import type {InteractionEffect} from "@shapediver/viewer.shared.types";
+import type {ParameterInteractionConfirmCancelThemeProps} from "./parameterInteractionButtonTheme";
 import type {ParameterGumballComponentThemeDefaultProps} from "./parameterInteractionThemeDefaultProps";
 
-export interface ParameterGumballComponentStyleProps {
+export interface ParameterGumballComponentStyleProps extends ParameterInteractionConfirmCancelThemeProps {
 	selectionColor?: InteractionEffect;
 	availableColor?: InteractionEffect;
 	hoverColor?: InteractionEffect;
