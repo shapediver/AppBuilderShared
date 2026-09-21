@@ -9,33 +9,40 @@ import {
 	findNodesByNameFilter,
 } from "../findNodesByNameFilter";
 
-jest.mock("@shapediver/viewer.features.interaction", () => ({
-	convertUserDefinedNameFilters: (
-		nameFilter: string[],
-		mapping: {[outputId: string]: string},
-	) => {
-		const pattern: {[outputId: string]: string[][]} = {};
-		for (const [outputId, name] of Object.entries(mapping)) {
-			if (nameFilter.includes(name) || nameFilter.includes(outputId)) {
-				pattern[outputId] = [[]];
+jest.mock(
+	"@shapediver/viewer.features.interaction",
+	() => ({
+		convertUserDefinedNameFilters: (
+			nameFilter: string[],
+			mapping: {[outputId: string]: string},
+		) => {
+			const pattern: {[outputId: string]: string[][]} = {};
+			for (const [outputId, name] of Object.entries(mapping)) {
+				if (
+					nameFilter.includes(name) ||
+					nameFilter.includes(outputId)
+				) {
+					pattern[outputId] = [[]];
+				}
 			}
-		}
-		return pattern;
-	},
-	convertUserDefinedNameFiltersForInstances: (
-		nameFilter: string[],
-		instanceIds: string[],
-	) => {
-		const pattern: {[instanceId: string]: string[][]} = {};
-		for (const instanceId of instanceIds) {
-			if (nameFilter.includes(instanceId)) {
-				pattern[instanceId] = [[]];
+			return pattern;
+		},
+		convertUserDefinedNameFiltersForInstances: (
+			nameFilter: string[],
+			instanceIds: string[],
+		) => {
+			const pattern: {[instanceId: string]: string[][]} = {};
+			for (const instanceId of instanceIds) {
+				if (nameFilter.includes(instanceId)) {
+					pattern[instanceId] = [[]];
+				}
 			}
-		}
-		return pattern;
-	},
-	gatherNodesForPattern: jest.fn(),
-}));
+			return pattern;
+		},
+		gatherNodesForPattern: jest.fn(),
+	}),
+	{virtual: true},
+);
 
 const treeNode = (id: string, name: string): ITreeNode =>
 	({
