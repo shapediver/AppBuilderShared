@@ -9,7 +9,7 @@ import {
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {ViewportCreateDto} from "../config/viewport";
-import {waitForViewportScene} from "../lib/waitForAppBuilderViewport";
+import {waitUntilReady} from "../lib/waitUntilReady";
 import {useShapeDiverDefaultViewportToolbarStore} from "./useShapeDiverDefaultViewportToolbarStore";
 import {useShapeDiverStoreViewport} from "./useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAccessFunctions} from "./useShapeDiverStoreViewportAccessFunctions";
@@ -137,7 +137,7 @@ export function useViewport(props: ViewportCreateDto) {
 						}
 					},
 					waitUntilReady: (signal) =>
-						waitForViewportScene(_props.id, {signal}),
+						waitUntilReady(_props.id, {signal}),
 				});
 		});
 

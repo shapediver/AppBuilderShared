@@ -60,10 +60,10 @@ export interface IViewportAccessFunctions {
 
 	/**
 	 * Resolves when this viewport is ready for visibility-dependent actions
-	 * (`appready` camera/AR). ShapeDiver waits until the scene bounding box
-	 * has settled (`scene.boundingBoxChange` or `scene.boundingBoxEmpty`).
-	 * Hosts that replace viewport visibility (iJewel/WebGi) should supply
-	 * their own wait instead of relying on ShapeDiver scene events.
+	 * (`appready` camera/AR). ShapeDiver `useViewport` registers
+	 * `waitUntilReady` from `entities/viewport/lib/waitUntilReady` (scene
+	 * bounding box settled). Hosts that replace viewport visibility
+	 * (iJewel/WebGi) should supply their own wait.
 	 */
 	waitUntilReady?: (signal?: AbortSignal) => Promise<void>;
 }

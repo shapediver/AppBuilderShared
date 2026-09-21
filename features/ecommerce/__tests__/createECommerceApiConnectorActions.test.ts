@@ -8,31 +8,49 @@ import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {validateTriggerActionData} from "../config/ecommerceapitypecheck";
 import {createECommerceApiConnectorActions} from "../model/createECommerceApiConnectorActions";
 
-jest.mock("@shapediver/viewer.viewport", () => ({
-	CAMERA_TYPE: {
-		PERSPECTIVE: "perspective",
-		ORTHOGRAPHIC: "orthographic",
-	},
-	ORTHOGRAPHIC_CAMERA_DIRECTION: {
-		CUSTOM: "custom",
-		TOP: "top",
-		BOTTOM: "bottom",
-		LEFT: "left",
-		RIGHT: "right",
-		FRONT: "front",
-		BACK: "back",
-	},
-	Box: class Box {
-		union() {
-			return this;
-		}
-	},
-}));
+jest.mock(
+	"@shapediver/viewer.viewport",
+	() => ({
+		CAMERA_TYPE: {
+			PERSPECTIVE: "perspective",
+			ORTHOGRAPHIC: "orthographic",
+		},
+		ORTHOGRAPHIC_CAMERA_DIRECTION: {
+			CUSTOM: "custom",
+			TOP: "top",
+			BOTTOM: "bottom",
+			LEFT: "left",
+			RIGHT: "right",
+			FRONT: "front",
+			BACK: "back",
+		},
+		Box: class Box {
+			union() {
+				return this;
+			}
+		},
+	}),
+	{virtual: true},
+);
 
 jest.mock(
 	"@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter",
 	() => ({
 		findNodesByNameFilter: jest.fn(() => []),
+	}),
+);
+
+jest.mock(
+	"@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions",
+	() => ({
+		useShapeDiverStoreViewportAccessFunctions: {
+			getState: () => ({
+				viewportAccessFunctions: {
+					vp: {},
+				},
+			}),
+			subscribe: () => () => {},
+		},
 	}),
 );
 

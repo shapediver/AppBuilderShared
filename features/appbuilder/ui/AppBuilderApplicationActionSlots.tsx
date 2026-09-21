@@ -277,7 +277,8 @@ type Props = {
 /**
  * Root application slots: `appready`, computation, export. Scene
  * select/hover is host-registered via `interactionSlotListeners` so this
- * file does not import ShapeDiver `useSelection`. Kept out of
+ * file does not import ShapeDiver `useSelection`. `appready` waits via
+ * `waitForAppBuilderViewport` (access functions only). Kept out of
  * {@link AppBuilderActionSlots} so toolbar/widget UI wrappers do not import
  * viewer viewport code.
  */

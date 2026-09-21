@@ -68,10 +68,8 @@ jest.mock(
 	}),
 );
 
-import {
-	waitForAppBuilderViewport,
-	waitForViewportScene,
-} from "../waitForAppBuilderViewport";
+import {waitForAppBuilderViewport} from "../waitForAppBuilderViewport";
+import {waitUntilReady} from "../waitUntilReady";
 
 function emit(type: string, event: unknown) {
 	listeners.get(type)?.forEach((fn) => fn(event));
@@ -82,7 +80,7 @@ function addViewport() {
 	storeSubscribers.forEach((fn) => fn());
 }
 
-describe("waitForViewportScene", () => {
+describe("waitUntilReady", () => {
 	beforeEach(() => {
 		listeners.clear();
 		storeSubscribers.clear();
@@ -94,14 +92,12 @@ describe("waitForViewportScene", () => {
 	it("resolves immediately when the viewport exists and the scene has geometry", async () => {
 		addViewport();
 		sceneBoundingBox.empty = false;
-		await expect(
-			waitForViewportScene("viewport_1"),
-		).resolves.toBeUndefined();
+		await expect(waitUntilReady("viewport_1")).resolves.toBeUndefined();
 	});
 
 	it("resolves on scene.boundingBoxChange with a non-empty box", async () => {
 		let resolved = false;
-		const pending = waitForViewportScene("viewport_1").then(() => {
+		const pending = waitUntilReady("viewport_1").then(() => {
 			resolved = true;
 		});
 		await Promise.resolve();
@@ -120,7 +116,7 @@ describe("waitForViewportScene", () => {
 
 	it("does not resolve on an empty boundingBoxChange", async () => {
 		let resolved = false;
-		void waitForViewportScene("viewport_1").then(() => {
+		void waitUntilReady("viewport_1").then(() => {
 			resolved = true;
 		});
 		addViewport();
@@ -134,7 +130,7 @@ describe("waitForViewportScene", () => {
 
 	it("resolves on scene.boundingBoxEmpty when there is no geometry", async () => {
 		let resolved = false;
-		const pending = waitForViewportScene("viewport_1").then(() => {
+		const pending = waitUntilReady("viewport_1").then(() => {
 			resolved = true;
 		});
 		addViewport();
@@ -147,7 +143,7 @@ describe("waitForViewportScene", () => {
 
 	it("ignores scene events for another viewport", async () => {
 		let resolved = false;
-		void waitForViewportScene("viewport_1").then(() => {
+		void waitUntilReady("viewport_1").then(() => {
 			resolved = true;
 		});
 		addViewport();
@@ -163,14 +159,12 @@ describe("waitForViewportScene", () => {
 	it("resolves a late empty scene when session nodes already exist", async () => {
 		addViewport();
 		sessionMap.controller = {node: {}};
-		await expect(
-			waitForViewportScene("viewport_1"),
-		).resolves.toBeUndefined();
+		await expect(waitUntilReady("viewport_1")).resolves.toBeUndefined();
 	});
 
 	it("aborts without hanging", async () => {
 		const abort = new AbortController();
-		const pending = waitForViewportScene("viewport_1", {
+		const pending = waitUntilReady("viewport_1", {
 			signal: abort.signal,
 		});
 		abort.abort();
@@ -196,21 +190,12 @@ describe("waitForAppBuilderViewport", () => {
 	});
 
 	it("uses waitUntilReady from viewport access functions", async () => {
-		const waitUntilReady = jest.fn(async () => {});
-		accessMap.viewport_1 = {waitUntilReady};
+		const waitUntilReadyFn = jest.fn(async () => {});
+		accessMap.viewport_1 = {waitUntilReady: waitUntilReadyFn};
 
 		await waitForAppBuilderViewport("viewport_1");
 
-		expect(waitUntilReady).toHaveBeenCalledTimes(1);
-	});
-
-	it("falls back to the scene wait when a ShapeDiver viewport exists", async () => {
-		viewportMap.viewport_1 = {id: "viewport_1"};
-		sceneBoundingBox.empty = false;
-
-		await expect(
-			waitForAppBuilderViewport("viewport_1"),
-		).resolves.toBeUndefined();
+		expect(waitUntilReadyFn).toHaveBeenCalledTimes(1);
 	});
 
 	it("does not hang when a host viewport has access functions but no waitUntilReady", async () => {
@@ -222,7 +207,7 @@ describe("waitForAppBuilderViewport", () => {
 	});
 
 	it("waits for access functions to be registered", async () => {
-		const waitUntilReady = jest.fn(async () => {});
+		const waitUntilReadyFn = jest.fn(async () => {});
 		let resolved = false;
 		const pending = waitForAppBuilderViewport("viewport_1").then(() => {
 			resolved = true;
@@ -230,12 +215,12 @@ describe("waitForAppBuilderViewport", () => {
 		await Promise.resolve();
 		expect(resolved).toBe(false);
 
-		accessMap.viewport_1 = {waitUntilReady};
+		accessMap.viewport_1 = {waitUntilReady: waitUntilReadyFn};
 		accessSubscribers.forEach((fn) => fn());
 		await pending;
 
 		expect(resolved).toBe(true);
-		expect(waitUntilReady).toHaveBeenCalled();
+		expect(waitUntilReadyFn).toHaveBeenCalled();
 	});
 
 	it("aborts without hanging", async () => {
