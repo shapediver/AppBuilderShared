@@ -36,21 +36,40 @@ const hasPendingMountedInstance = (ownerKey: string) => {
 		: undefined;
 };
 
+const isOtherPendingSelection = (
+	ownerKey: string,
+	scopeKey: string,
+	registeredOwnerKey: string,
+	registeredScopeKey: string,
+) => {
+	if (registeredOwnerKey === ownerKey || registeredScopeKey !== scopeKey) {
+		return false;
+	}
+	// Unmounted leftover keys must not count as pending. Treating them as
+	// pending made always-active single selections show Confirm/Cancel on
+	// mobile (toolbar always visible) while desktop hid the same commands.
+	return hasPendingMountedInstance(registeredOwnerKey) === true;
+};
+
+/** Test-only: drop all pending selection markers. */
+export const resetPendingSelectionRegistry = () => {
+	pendingSelections = {};
+	pendingStateRefs.clear();
+};
+
 /** Checks the current registry synchronously before an automatic commit. */
 export const hasOtherPendingSelectionInScope = (
 	ownerKey: string,
 	scopeKey: string,
 ) =>
 	Object.entries(pendingSelections).some(
-		([registeredOwnerKey, registeredScopeKey]) => {
-			const registeredState =
-				hasPendingMountedInstance(registeredOwnerKey);
-			return (
-				registeredOwnerKey !== ownerKey &&
-				registeredScopeKey === scopeKey &&
-				(registeredState ?? true)
-			);
-		},
+		([registeredOwnerKey, registeredScopeKey]) =>
+			isOtherPendingSelection(
+				ownerKey,
+				scopeKey,
+				registeredOwnerKey,
+				registeredScopeKey,
+			),
 	);
 
 /**
@@ -93,14 +112,12 @@ export const usePendingSelectionRegistry = (
 	}, [ownerKey, pending, scopeKey]);
 
 	return Object.entries(snapshot).some(
-		([registeredOwnerKey, registeredScopeKey]) => {
-			const registeredState =
-				hasPendingMountedInstance(registeredOwnerKey);
-			return (
-				registeredOwnerKey !== ownerKey &&
-				registeredScopeKey === scopeKey &&
-				(registeredState ?? true)
-			);
-		},
+		([registeredOwnerKey, registeredScopeKey]) =>
+			isOtherPendingSelection(
+				ownerKey,
+				scopeKey,
+				registeredOwnerKey,
+				registeredScopeKey,
+			),
 	);
 };

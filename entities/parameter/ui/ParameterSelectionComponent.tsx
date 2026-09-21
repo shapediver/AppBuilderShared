@@ -36,6 +36,7 @@ import type {ParameterSelectionComponentStyleProps as StyleProps} from "../confi
 import {getResetValue} from "../lib/parameterResetValue";
 import {parseSelectionNames as parseNames} from "../model/interaction/parseSelectionNames";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
+import {shouldShowSelectionConfirmationControls} from "../model/interaction/shouldShowSelectionConfirmationControls";
 import {useCommittedSelectionAdoption} from "../model/interaction/useCommittedSelectionAdoption";
 import {useInteractionToolbarContribution} from "../model/interaction/useInteractionToolbarContribution";
 import {
@@ -527,21 +528,18 @@ export default function ParameterSelectionComponent(
 	// ── Toolbar registration ────────────────────────────────────────────────
 	// Register with interaction toolbar if presentation is "toolbar"
 	const toolbarLabel = definition.name;
-	// Fixed/optional single selections normally commit automatically. A cleared
-	// auto-clear draft only exposes Confirm/Cancel when its empty value is valid.
-	const hasAutomaticSelectionControls = !(
-		(minimumSelection === 1 && maximumSelection === 1) ||
-		(minimumSelection === 0 && maximumSelection === 1)
-	);
-	// Confirm/Cancel belong to the selection which is being edited: an inactive
-	// selection without a draft has nothing to confirm, its controls would only
-	// appear as disabled buttons next to the other selection parameters.
-	const showConfirmationControls =
-		hasOtherPendingSelection ||
-		((effectiveSelectionActive || hasPendingSelection) &&
-			!acceptImmediately &&
-			(hasAutomaticSelectionControls ||
-				(hasPendingSelection && minimumSelection === 0)));
+	// Confirm/Cancel belong to the selection which is being edited. A 1/1
+	// always-active selection must not contribute disabled commands just because
+	// another selection is pending: desktop hides the viewport toolbar, mobile
+	// always shows it (SS-10081).
+	const showConfirmationControls = shouldShowSelectionConfirmationControls({
+		hasOtherPendingSelection,
+		hasPendingSelection,
+		effectiveSelectionActive,
+		acceptImmediately,
+		minimumSelection,
+		maximumSelection,
+	});
 
 	const items = [
 		createToolbarCheckboxItem({
