@@ -229,8 +229,13 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 			headerHeight: {base: "4em", md: "4em"},
 			columns: 3,
 			navbarBorder: true,
+			mobileFallbacks: {
+				right: {container: "bottom", position: "after"},
+			},
 		},
-		invalidDefaultProps: {columns: "three"},
+		invalidDefaultProps: {
+			mobileFallbacks: {toolbar: {container: "bottom"}},
+		},
 	},
 	{
 		component: "AppBuilderGridTemplatePage",

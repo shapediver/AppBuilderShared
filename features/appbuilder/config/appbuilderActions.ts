@@ -102,8 +102,10 @@ export interface IAppBuilderActionPropsCommon {
 /** Properties of a "setContainerVisibility" action. */
 export interface IAppBuilderActionPropsSetContainerVisibility {
 	/** Container to open or close. */
-	container: Pick<IAppBuilderContainer, "name"> & {
-		props?: Pick<NonNullable<IAppBuilderContainer["props"]>, "id">;
+	container: {
+		name: IAppBuilderContainer["name"];
+		/** Required for anchors and toolbars; ignored for standard containers. */
+		props?: {id?: string};
 	};
 	/** Mode of the action. */
 	mode: "open" | "close" | "toggle";

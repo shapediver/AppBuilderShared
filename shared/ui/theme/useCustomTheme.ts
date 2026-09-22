@@ -701,6 +701,9 @@ export const useCustomTheme = (props: Props = {}) => {
 					// headerBorder: true,
 					// rightBorder: true,
 					// keepBottomInGrid: false,
+					// mobileFallbacks: {
+					// 	right: { container: "bottom", position: "after" },
+					// },
 				}),
 			/**
 			 * AppBuilderGridTemplatePage
@@ -1464,7 +1467,14 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 		borderRadius: "var(--mantine-radius-md)",
 				// 	},
 				// },
-				// mobileBreakpoint: "sm",
+				// mobileBreakpoint: undefined, // defaults to AppBuilderAppShellTemplatePage.navbarBreakpoint ("md")
+				// mobileFallback: {
+				// 	container: "right",
+				// 	// disabled: false,
+				// 	// previewIcon: "tabler:info-circle",
+				// 	// position: "after",
+				// 	// order: 0,
+				// },
 				// previewIconProps: {
 				// 	paperStyleProps: legacyViewportIconsDefaultStyleProps.style,
 				// 	paperProps: legacyViewportIconsDefaultStyleProps.paperProps,
@@ -1496,7 +1506,14 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 		borderRadius: "var(--mantine-radius-md)",
 				// 	},
 				// },
-				// mobileBreakpoint: "sm",
+				// mobileBreakpoint: undefined, // defaults to AppBuilderAppShellTemplatePage.navbarBreakpoint ("md")
+				// mobileFallback: {
+				// 	container: "right",
+				// 	// disabled: false,
+				// 	// previewIcon: "tabler:info-circle",
+				// 	// position: "after",
+				// 	// order: 0,
+				// },
 				// previewIconProps: {
 				// 	paperStyleProps: legacyViewportIconsDefaultStyleProps.style,
 				// 	paperProps: legacyViewportIconsDefaultStyleProps.paperProps,

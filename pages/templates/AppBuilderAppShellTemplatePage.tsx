@@ -1,3 +1,5 @@
+import {IAppBuilderMobileFallbacks} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {APP_BUILDER_APP_SHELL_NAVBAR_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {AppBuilderContainerOrientation} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContainerOrientation";
 import {createGridLayout} from "@AppBuilderLib/shared/lib/layout";
 import {useIsLandscape} from "@AppBuilderLib/shared/lib/useIsLandscape";
@@ -36,7 +38,10 @@ export interface StyleProps {
 	 */
 	headerHeight: AppShellResponsiveSize | AppShellSize;
 	/**
-	 * Breakpoint below which to hide the navigation bar
+	 * Breakpoint below which to hide the navigation bar.
+	 * Standard-container `mobileFallbacks` and viewport-anchor
+	 * `mobileFallback` use the same breakpoint, unless an anchor
+	 * theme sets `mobileBreakpoint`.
 	 * @default "md"
 	 */
 	navbarBreakpoint: MantineBreakpoint;
@@ -97,11 +102,18 @@ export interface StyleProps {
 	 * @default false
 	 */
 	keepBottomInGrid: boolean;
+	/**
+	 * Per-container mobile fallbacks applied below `navbarBreakpoint`.
+	 * General default; JSON `props.mobileFallback` overlays defined fields
+	 * on a single container. Omitted JSON keeps this theme entry.
+	 * @example { right: { container: "bottom", position: "after" } }
+	 */
+	mobileFallbacks?: IAppBuilderMobileFallbacks;
 }
 
-const defaultStyleProps: StyleProps = {
+export const appBuilderAppShellTemplatePageDefaultStyleProps: StyleProps = {
 	headerHeight: {base: "4em", md: "4em"},
-	navbarBreakpoint: "md",
+	navbarBreakpoint: APP_BUILDER_APP_SHELL_NAVBAR_BREAKPOINT_DEFAULT,
 	navbarWidth: {md: 250, lg: 300},
 	columns: 3,
 	rows: 3,
@@ -113,6 +125,8 @@ const defaultStyleProps: StyleProps = {
 	rightBorder: true,
 	keepBottomInGrid: false,
 };
+
+const defaultStyleProps = appBuilderAppShellTemplatePageDefaultStyleProps;
 
 type AppBuilderAppShellTemplatePageThemePropsType = Partial<StyleProps>;
 

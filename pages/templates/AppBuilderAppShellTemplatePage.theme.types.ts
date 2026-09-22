@@ -1,3 +1,4 @@
+import {appBuilderMobileFallbacksThemeSchema} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {
 	mantineBreakpointSchema,
@@ -21,6 +22,7 @@ export const AppBuilderAppShellTemplatePageThemeDefaultPropsSchema =
 		headerBorder: z.boolean().optional(),
 		rightBorder: z.boolean().optional(),
 		keepBottomInGrid: z.boolean().optional(),
+		mobileFallbacks: appBuilderMobileFallbacksThemeSchema.optional(),
 	});
 
 export type AppBuilderAppShellTemplatePageThemeDefaultProps = z.infer<

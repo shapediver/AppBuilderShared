@@ -2,12 +2,23 @@ import {useSessionPropsExport} from "@AppBuilderLib/entities/export/model/useSes
 import {useSessionPropsOutput} from "@AppBuilderLib/entities/output/model/useSessionPropsOutput";
 import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
 import {useViewportAnchors} from "@AppBuilderLib/entities/viewport/model/useViewportAnchors";
+import {IAppBuilderMobileFallbacks} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {APP_BUILDER_APP_SHELL_NAVBAR_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
+import {
+	additionalWithMobileFallbackInjections,
+	defaultsWithoutHiddenOriginals,
+	planMobileFallbacks,
+} from "@AppBuilderLib/features/appbuilder/lib/applyMobileFallbacks";
+import {mergeAllStandardContainers} from "@AppBuilderLib/features/appbuilder/lib/mergeStandardContainerContent";
 import {
 	IAppBuilderTemplatePageContainerHints,
 	IAppBuilderTemplatePageProps,
 } from "@AppBuilderLib/pages/config/appbuildertemplates";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
+import {useMantineTheme, useProps} from "@mantine/core";
+import {useMediaQuery} from "@mantine/hooks";
 import {useContext, useEffect, useMemo} from "react";
 import {
 	AppBuilderContainerNameType,
@@ -85,15 +96,87 @@ export function useAppBuilderStandardContainers(props: Props) {
 
 	const {
 		mergedContainers,
+		defaultContainers,
+		additionalContainerContent,
+		activeTabIndices,
 		containerOpen,
 		resetDefaultContainers,
 		setDefaultContainers,
 	} = useShapeDiverStoreStandardContainers((state) => ({
 		mergedContainers: state.mergedContainers,
+		defaultContainers: state.defaultContainers,
+		additionalContainerContent: state.additionalContainerContent,
+		activeTabIndices: state.activeTabIndices,
 		containerOpen: state.containerOpen,
 		resetDefaultContainers: state.resetDefaultContainers,
 		setDefaultContainers: state.setDefaultContainers,
 	}));
+
+	const {navbarBreakpoint, mobileFallbacks} = useProps(
+		"AppBuilderAppShellTemplatePage",
+		{
+			navbarBreakpoint: APP_BUILDER_APP_SHELL_NAVBAR_BREAKPOINT_DEFAULT,
+			mobileFallbacks: undefined as
+				| IAppBuilderMobileFallbacks
+				| undefined,
+		},
+		{} as {
+			navbarBreakpoint?: string;
+			mobileFallbacks?: IAppBuilderMobileFallbacks;
+		},
+	);
+	const theme = useMantineTheme();
+	const aboveNavbarBreakpoint = useMediaQuery(
+		`(min-width: ${theme.breakpoints[navbarBreakpoint]})`,
+		true,
+	);
+
+	const layoutContainers = useMemo(() => {
+		if (aboveNavbarBreakpoint !== false) {
+			return mergedContainers;
+		}
+		const plan = planMobileFallbacks(defaultContainers, mobileFallbacks, {
+			onWarn: (message) => Logger.warn(message),
+		});
+		if (plan.hideOriginal.length === 0 && plan.injections.length === 0) {
+			return mergedContainers;
+		}
+		const stripped = defaultsWithoutHiddenOriginals(
+			defaultContainers,
+			plan.hideOriginal,
+		);
+		const additional = additionalWithMobileFallbackInjections(
+			additionalContainerContent,
+			plan,
+			(from, to) => {
+				const source = defaultContainers[from];
+				if (!source || !ContainerComponent) {
+					return undefined;
+				}
+				return (
+					<ContainerComponent
+						namespace={namespace}
+						{...source}
+						name={to}
+					/>
+				);
+			},
+		);
+		return mergeAllStandardContainers(
+			stripped,
+			additional,
+			activeTabIndices,
+		);
+	}, [
+		aboveNavbarBreakpoint,
+		mergedContainers,
+		defaultContainers,
+		additionalContainerContent,
+		activeTabIndices,
+		mobileFallbacks,
+		namespace,
+		ContainerComponent,
+	]);
 
 	// viewport anchors
 	const anchors = useViewportAnchors({
@@ -180,7 +263,7 @@ export function useAppBuilderStandardContainers(props: Props) {
 			right: undefined,
 		};
 
-		const mergedContainerArray = Object.values(mergedContainers).filter(
+		const mergedContainerArray = Object.values(layoutContainers).filter(
 			(container): container is IAppBuilderStandardContainer =>
 				!!container && containerOpen[container.name],
 		);
@@ -208,7 +291,7 @@ export function useAppBuilderStandardContainers(props: Props) {
 
 		return result;
 	}, [
-		mergedContainers,
+		layoutContainers,
 		containerOpen,
 		namespace,
 		fallbackContainer,

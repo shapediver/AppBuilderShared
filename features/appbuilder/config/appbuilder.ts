@@ -1122,6 +1122,71 @@ export enum AppBuilderContainerNameType {
 	Toolbar = "toolbar",
 }
 
+/**
+ * Standard layout containers (not viewport anchors or toolbars).
+ * Used by mobile fallbacks and the standard-container store.
+ */
+export type AppBuilderStandardContainerNameType =
+	| AppBuilderContainerNameType.Left
+	| AppBuilderContainerNameType.Right
+	| AppBuilderContainerNameType.Top
+	| AppBuilderContainerNameType.Bottom;
+
+/**
+ * Mobile fallback for a standard container.
+ * Applied below the AppShell `navbarBreakpoint` (theme default `"md"`).
+ *
+ * `disabled` hides the container without moving its content.
+ * `container` moves tabs/widgets into that standard container and hides this one.
+ * If both are set, `disabled` wins.
+ */
+export interface IAppBuilderStandardContainerMobileFallback {
+	/** Hide this container on mobile. */
+	disabled?: boolean;
+	/** Standard container that receives this container’s content. */
+	container?: AppBuilderStandardContainerNameType;
+	/** Position relative to the target container’s native content. */
+	position?: "before" | "after";
+	/** Ordering when multiple containers fall back to the same target. */
+	order?: number;
+}
+
+/** Optional props of a standard (left/right/top/bottom) container. */
+export interface IAppBuilderStandardContainerProps {
+	mobileFallback?: IAppBuilderStandardContainerMobileFallback;
+}
+
+/**
+ * Theme-level mobile fallbacks keyed by source container (general default).
+ * JSON `props.mobileFallback` overlays defined fields onto the theme entry
+ * for that container (per-instance fine-tune). Omitted JSON keeps the theme.
+ * Omitted JSON and theme keeps previous behavior (container stays put).
+ */
+export type IAppBuilderMobileFallbacks = {
+	[K in AppBuilderStandardContainerNameType]?: IAppBuilderStandardContainerMobileFallback;
+};
+
+/**
+ * Mobile fallback for a viewport anchor.
+ * Applied below the AppShell `navbarBreakpoint` unless the anchor theme sets
+ * `mobileBreakpoint`. `disabled` hides without moving; omitted `container`
+ * still targets `right` (previous behavior).
+ */
+export interface IAppBuilderViewportAnchorMobileFallback {
+	/** Hide this anchor on mobile without injecting it into a container. */
+	disabled?: boolean;
+	/**
+	 * Preview icon on mobile. If omitted, the original previewIcon is used.
+	 */
+	previewIcon?: IAppBuilderIcon;
+	/** Standard container that receives this anchor’s content. */
+	container?: AppBuilderStandardContainerNameType;
+	/** Position relative to the target container’s native content. */
+	position?: "before" | "after";
+	/** Ordering when multiple extras fall back to the same target. */
+	order?: number;
+}
+
 export type AppBuilderToolbarSide = "top" | "bottom" | "left" | "right";
 
 export type AppBuilderToolbarAlign = "start" | "center" | "end";
@@ -1156,18 +1221,12 @@ export type AppBuilderAnchorContainerProperties = {
 	maxHeight?: string | number;
 	/** Option to use Paper component (default: true) */
 	useContainer?: boolean;
-	/** Options for the mobile fallback */
-	mobileFallback?: {
-		/** if the anchor should be completely disabled */
-		disabled?: boolean;
-		/**
-		 * either a different or a new preview icon to show
-		 * if undefined, the original previewIcon logic will be used
-		 */
-		previewIcon?: IAppBuilderIcon;
-		/** fallback container to be used ("left", "right", "top", "bottom") */
-		container?: AppBuilderContainerNameType;
-	};
+	/**
+	 * Options for the mobile fallback.
+	 * Theme `ViewportAnchor2d` / `ViewportAnchor3d` `defaultProps.mobileFallback`
+	 * is the general default; JSON overlays defined fields for this anchor.
+	 */
+	mobileFallback?: IAppBuilderViewportAnchorMobileFallback;
 	/** Optional selection options. These options replace the behavior of the previewIcon and show the corresponding Anchor when the selection is active. (default: undefined) */
 	selectionProperties?: Omit<
 		ISelectionParameterProps,
@@ -1299,13 +1358,9 @@ export interface IAppBuilderToolbarContainerProperties {
 
 export interface IAppBuilderStandardContainer extends IAppBuilderNode {
 	/** Name of the container. */
-	name:
-		| AppBuilderContainerNameType.Left
-		| AppBuilderContainerNameType.Right
-		| AppBuilderContainerNameType.Top
-		| AppBuilderContainerNameType.Bottom;
-	/** Standard containers do not use custom props. */
-	props?: undefined;
+	name: AppBuilderStandardContainerNameType;
+	/** Optional container props, including mobile fallback. */
+	props?: IAppBuilderStandardContainerProps;
 	/** Tabs displayed in the container. */
 	tabs?: IAppBuilderTab[];
 	/** When true, tabs stick to the top when scrolling the container content. */
