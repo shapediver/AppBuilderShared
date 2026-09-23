@@ -1134,7 +1134,7 @@ export type AppBuilderStandardContainerNameType =
 
 /**
  * Mobile fallback for a standard container.
- * Applied below the AppShell `navbarBreakpoint` (theme default `"md"`).
+ * Applied below `AppBuilderTemplateSelector.mobileBreakpoint` (theme default `"md"`).
  *
  * `disabled` hides the container without moving its content.
  * `container` moves tabs/widgets into that standard container and hides this one.
@@ -1168,8 +1168,8 @@ export type IAppBuilderMobileFallbacks = {
 
 /**
  * Mobile fallback for a viewport anchor.
- * Applied below the AppShell `navbarBreakpoint` unless the anchor theme sets
- * `mobileBreakpoint`. `disabled` hides without moving; omitted `container`
+ * Applied below `AppBuilderTemplateSelector.mobileBreakpoint` unless the
+ * anchor theme sets `mobileBreakpoint`. `disabled` hides without moving; omitted `container`
  * still targets `right` (previous behavior).
  */
 export interface IAppBuilderViewportAnchorMobileFallback {

@@ -35,7 +35,7 @@ export const appBuilderViewportAnchorMobileFallbackSchema = z.strictObject({
 	order: z.number().optional(),
 });
 
-/** Theme `mobileFallbacks` map on AppBuilderAppShellTemplatePage. */
+/** Theme `mobileFallbacks` map on AppBuilderTemplateSelector. */
 export const appBuilderMobileFallbacksThemeSchema = z.strictObject({
 	left: appBuilderStandardContainerMobileFallbackSchema.optional(),
 	right: appBuilderStandardContainerMobileFallbackSchema.optional(),
@@ -43,5 +43,10 @@ export const appBuilderMobileFallbacksThemeSchema = z.strictObject({
 	bottom: appBuilderStandardContainerMobileFallbackSchema.optional(),
 });
 
-/** Default AppShell navbar breakpoint; also the mobile-fallback threshold. */
-export const APP_BUILDER_APP_SHELL_NAVBAR_BREAKPOINT_DEFAULT = "md" as const;
+/**
+ * Default threshold for standard-container and viewport-anchor mobile
+ * fallbacks (`AppBuilderTemplateSelector.mobileBreakpoint`). AppShell
+ * `navbarBreakpoint` uses the same default so the burger matches unless
+ * overridden.
+ */
+export const APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT = "md" as const;

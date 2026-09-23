@@ -94,4 +94,34 @@ describe("mergeStandardContainerContent", () => {
 		expect(result?.tabs?.[0].widgets).toHaveLength(2);
 		expect(result?.widgets).toEqual([]);
 	});
+
+	it("merges additional items into the selected tab only", () => {
+		const result = mergeStandardContainerContent(
+			AppBuilderContainerNameType.Bottom,
+			{
+				name: AppBuilderContainerNameType.Bottom,
+				tabs: [
+					{
+						name: "One",
+						widgets: [{type: "text", props: {text: "tab-a"}}],
+					},
+					{
+						name: "Two",
+						widgets: [{type: "text", props: {text: "tab-b"}}],
+					},
+				],
+			},
+			{
+				a: {content: item("extra")},
+			},
+			1,
+		);
+
+		expect(result?.tabs?.[0].widgets).toHaveLength(1);
+		expect(result?.tabs?.[1].widgets).toHaveLength(2);
+		expect(result?.tabs?.[0].widgets?.[0]).toEqual({
+			type: "text",
+			props: {text: "tab-a"},
+		});
+	});
 });

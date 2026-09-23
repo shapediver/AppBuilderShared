@@ -701,9 +701,6 @@ export const useCustomTheme = (props: Props = {}) => {
 					// headerBorder: true,
 					// rightBorder: true,
 					// keepBottomInGrid: false,
-					// mobileFallbacks: {
-					// 	right: { container: "bottom", position: "after" },
-					// },
 				}),
 			/**
 			 * AppBuilderGridTemplatePage
@@ -827,6 +824,10 @@ export const useCustomTheme = (props: Props = {}) => {
 				// template: "appshell" // default
 				// template: "grid"
 				// showContainerButtons: true,
+				// mobileBreakpoint: "md",
+				// mobileFallbacks: {
+				// 	right: { container: "bottom", position: "after" },
+				// },
 			}),
 			/***
 			 * AppBuilderTextWidgetComponent
@@ -1467,7 +1468,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 		borderRadius: "var(--mantine-radius-md)",
 				// 	},
 				// },
-				// mobileBreakpoint: undefined, // defaults to AppBuilderAppShellTemplatePage.navbarBreakpoint ("md")
+				// mobileBreakpoint: undefined, // defaults to AppBuilderTemplateSelector.mobileBreakpoint ("md")
 				// mobileFallback: {
 				// 	container: "right",
 				// 	// disabled: false,
@@ -1506,7 +1507,7 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 		borderRadius: "var(--mantine-radius-md)",
 				// 	},
 				// },
-				// mobileBreakpoint: undefined, // defaults to AppBuilderAppShellTemplatePage.navbarBreakpoint ("md")
+				// mobileBreakpoint: undefined, // defaults to AppBuilderTemplateSelector.mobileBreakpoint ("md")
 				// mobileFallback: {
 				// 	container: "right",
 				// 	// disabled: false,

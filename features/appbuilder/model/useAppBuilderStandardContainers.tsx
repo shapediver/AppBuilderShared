@@ -2,14 +2,13 @@ import {useSessionPropsExport} from "@AppBuilderLib/entities/export/model/useSes
 import {useSessionPropsOutput} from "@AppBuilderLib/entities/output/model/useSessionPropsOutput";
 import {useSessionPropsParameter} from "@AppBuilderLib/entities/parameter/model/useSessionPropsParameter";
 import {useViewportAnchors} from "@AppBuilderLib/entities/viewport/model/useViewportAnchors";
-import {IAppBuilderMobileFallbacks} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {APP_BUILDER_APP_SHELL_NAVBAR_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {
 	additionalWithMobileFallbackInjections,
 	defaultsWithoutHiddenOriginals,
 	planMobileFallbacks,
 } from "@AppBuilderLib/features/appbuilder/lib/applyMobileFallbacks";
 import {mergeAllStandardContainers} from "@AppBuilderLib/features/appbuilder/lib/mergeStandardContainerContent";
+import {useAppBuilderMobileLayoutTheme} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderMobileLayoutTheme";
 import {
 	IAppBuilderTemplatePageContainerHints,
 	IAppBuilderTemplatePageProps,
@@ -17,7 +16,7 @@ import {
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import AppBuilderContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderContainerComponent";
 import AppBuilderFallbackContainerComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderFallbackContainerComponent";
-import {useMantineTheme, useProps} from "@mantine/core";
+import {useMantineTheme} from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
 import {useContext, useEffect, useMemo} from "react";
 import {
@@ -112,27 +111,16 @@ export function useAppBuilderStandardContainers(props: Props) {
 		setDefaultContainers: state.setDefaultContainers,
 	}));
 
-	const {navbarBreakpoint, mobileFallbacks} = useProps(
-		"AppBuilderAppShellTemplatePage",
-		{
-			navbarBreakpoint: APP_BUILDER_APP_SHELL_NAVBAR_BREAKPOINT_DEFAULT,
-			mobileFallbacks: undefined as
-				| IAppBuilderMobileFallbacks
-				| undefined,
-		},
-		{} as {
-			navbarBreakpoint?: string;
-			mobileFallbacks?: IAppBuilderMobileFallbacks;
-		},
-	);
+	const {mobileBreakpoint, mobileFallbacks} =
+		useAppBuilderMobileLayoutTheme();
 	const theme = useMantineTheme();
-	const aboveNavbarBreakpoint = useMediaQuery(
-		`(min-width: ${theme.breakpoints[navbarBreakpoint]})`,
+	const aboveMobileBreakpoint = useMediaQuery(
+		`(min-width: ${theme.breakpoints[mobileBreakpoint]})`,
 		true,
 	);
 
 	const layoutContainers = useMemo(() => {
-		if (aboveNavbarBreakpoint !== false) {
+		if (aboveMobileBreakpoint !== false) {
 			return mergedContainers;
 		}
 		const plan = planMobileFallbacks(defaultContainers, mobileFallbacks, {
@@ -168,7 +156,7 @@ export function useAppBuilderStandardContainers(props: Props) {
 			activeTabIndices,
 		);
 	}, [
-		aboveNavbarBreakpoint,
+		aboveMobileBreakpoint,
 		mergedContainers,
 		defaultContainers,
 		additionalContainerContent,

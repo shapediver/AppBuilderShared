@@ -5,9 +5,10 @@ import {
 	AppBuilderContainerNameType,
 	type IAppBuilderViewportAnchorMobileFallback,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {APP_BUILDER_APP_SHELL_NAVBAR_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
+import {APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {AppBuilderStandardContainerNameType} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
 import {overlayDefinedFields} from "@AppBuilderLib/features/appbuilder/lib/overlayDefinedFields";
+import {useAppBuilderMobileLayoutTheme} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderMobileLayoutTheme";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
 import AppBuilderToolbarIconButton, {
 	AppBuilderToolbarIconButtonDefaultStyleProps,
@@ -105,7 +106,7 @@ export type ViewportAnchorStyleProps = {
 		actionIconProps?: AppBuilderToolbarIconButtonProps["actionIconProps"];
 	};
 	/** Breakpoint below which to switch to the mobile behavior.
-	 * Defaults to AppBuilderAppShellTemplatePage `navbarBreakpoint`. */
+	 * Defaults to AppBuilderTemplateSelector `mobileBreakpoint`. */
 	mobileBreakpoint: MantineBreakpoint;
 	/**
 	 * General mobile fallback for all anchors of this type.
@@ -144,7 +145,7 @@ export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
 			borderRadius: "var(--mantine-radius-md)",
 		},
 	},
-	mobileBreakpoint: APP_BUILDER_APP_SHELL_NAVBAR_BREAKPOINT_DEFAULT,
+	mobileBreakpoint: APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT,
 	previewIconProps: {
 		paperStyleProps: viewportAnchorPreviewPaperStyle,
 		paperProps: viewportAnchorPreviewPaperProps,
@@ -221,20 +222,15 @@ export function useAnchorContainer({
 	 * It uses the useProps hook to get the properties from the theme.
 	 *
 	 * Depending on the type of the anchor, it will return different properties.
-	 * `mobileBreakpoint` defaults to AppShell `navbarBreakpoint`; theme
-	 * ViewportAnchor2d/3d `mobileBreakpoint` still overrides.
+	 * `mobileBreakpoint` defaults to TemplateSelector `mobileBreakpoint`;
+	 * theme ViewportAnchor2d/3d `mobileBreakpoint` still overrides.
 	 * Theme `mobileFallback` is the general default; JSON overlays fields.
 	 */
-	const {navbarBreakpoint} = useProps(
-		"AppBuilderAppShellTemplatePage",
-		{
-			navbarBreakpoint: APP_BUILDER_APP_SHELL_NAVBAR_BREAKPOINT_DEFAULT,
-		},
-		{} as {navbarBreakpoint?: MantineBreakpoint},
-	);
+	const {mobileBreakpoint: templateMobileBreakpoint} =
+		useAppBuilderMobileLayoutTheme();
 	const anchorThemeDefaults: ViewportAnchorStyleProps = {
 		...viewportAnchorDefaultStyleProps,
-		mobileBreakpoint: navbarBreakpoint,
+		mobileBreakpoint: templateMobileBreakpoint,
 		mobileFallback: undefined,
 	};
 	const {

@@ -103,8 +103,17 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 	},
 	{
 		component: "AppBuilderTemplateSelector",
-		validDefaultProps: {template: "grid", showContainerButtons: false},
-		invalidDefaultProps: {__unrecognizedThemeKey: true},
+		validDefaultProps: {
+			template: "grid",
+			showContainerButtons: false,
+			mobileBreakpoint: "md",
+			mobileFallbacks: {
+				right: {container: "bottom", position: "after"},
+			},
+		},
+		invalidDefaultProps: {
+			mobileFallbacks: {toolbar: {container: "bottom"}},
+		},
 	},
 	{
 		component: "AppBuilderImage",
@@ -229,13 +238,8 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 			headerHeight: {base: "4em", md: "4em"},
 			columns: 3,
 			navbarBorder: true,
-			mobileFallbacks: {
-				right: {container: "bottom", position: "after"},
-			},
 		},
-		invalidDefaultProps: {
-			mobileFallbacks: {toolbar: {container: "bottom"}},
-		},
+		invalidDefaultProps: {columns: "three"},
 	},
 	{
 		component: "AppBuilderGridTemplatePage",
