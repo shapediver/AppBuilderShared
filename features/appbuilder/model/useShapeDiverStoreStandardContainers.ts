@@ -1,80 +1,16 @@
+import {IAppBuilderStandardContainer} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
-	AppBuilderContainerNameType,
-	IAppBuilderStandardContainer,
-} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {
+	AdditionalContainerItem,
 	AppBuilderStandardContainerNames,
 	AppBuilderStandardContainerNameType,
 	IShapeDiverStoreStandardContainers,
 } from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
+import {mergeAllStandardContainers} from "@AppBuilderLib/features/appbuilder/lib/mergeStandardContainerContent";
 import {create} from "zustand";
 import {devtools} from "zustand/middleware";
 
 /**
- * Helper function to merge default and additional containers.
- *
- * @param name - The name for which to merge containers.
- * @param defaultContainer - The default container definition.
- * @param additionalContainers - The additional container elements to merge.
- * @returns The merged container definition.
- */
-const merge = (
-	name: AppBuilderStandardContainerNameType,
-	defaultContainer: IAppBuilderStandardContainer | undefined,
-	additionalContainers: Record<string, JSX.Element>,
-	activeTabIndex: number,
-): IAppBuilderStandardContainer | undefined => {
-	// Return undefined if no default container and no additional containers
-	if (!defaultContainer && Object.keys(additionalContainers).length === 0) {
-		return undefined;
-	}
-
-	// Start with base container or create new one
-	const baseContainer = defaultContainer || {
-		name: name,
-		tabs: [],
-		widgets: [],
-	};
-
-	// Collect all additional container elements
-	const allAdditionalItems = Object.values(additionalContainers);
-
-	// Return the default container if no additional items are present
-	if (allAdditionalItems.length === 0) {
-		return baseContainer;
-	}
-
-	// Create new tabs array with proper immutability
-	const newTabs = [...(baseContainer.tabs || [])];
-	let newWidgets = [...(baseContainer.widgets || [])];
-
-	// If there is a tab present, we need to add the additional items to the current tab
-	// Otherwise we add them to the main widget array
-	if (baseContainer.tabs && baseContainer.tabs.length > 0) {
-		newTabs[activeTabIndex] = {
-			...newTabs[activeTabIndex],
-			widgets: [
-				...(newTabs[activeTabIndex].widgets || []),
-				...allAdditionalItems,
-			],
-		};
-	} else {
-		newWidgets = [...newWidgets, ...allAdditionalItems];
-	}
-
-	return {
-		...baseContainer,
-		tabs: newTabs,
-		widgets: newWidgets,
-	};
-};
-
-/**
  * Update the merged containers based on the current default and additional container content.
- *
- * @param defaultContainers The current default container definitions.
- * @param additionalContainerContent The current additional container content.
- * @returns The updated merged container definitions.
  */
 const generateToken = () => Math.random().toString(36).slice(2);
 
@@ -85,32 +21,18 @@ const updateMergedContainers = (
 	>,
 	additionalContainerContent: Record<
 		AppBuilderStandardContainerNameType,
-		Record<string, JSX.Element>
+		Record<string, AdditionalContainerItem>
 	>,
 	activeTabIndices: Record<AppBuilderStandardContainerNameType, number>,
 ): Record<
 	AppBuilderStandardContainerNameType,
 	IAppBuilderStandardContainer | undefined
-> => {
-	const result: Record<
-		AppBuilderStandardContainerNameType,
-		IAppBuilderStandardContainer | undefined
-	> = {
-		[AppBuilderContainerNameType.Left]: undefined,
-		[AppBuilderContainerNameType.Right]: undefined,
-		[AppBuilderContainerNameType.Top]: undefined,
-		[AppBuilderContainerNameType.Bottom]: undefined,
-	};
-	for (const name of AppBuilderStandardContainerNames) {
-		result[name] = merge(
-			name,
-			defaultContainers[name],
-			additionalContainerContent[name],
-			activeTabIndices[name],
-		);
-	}
-	return result;
-};
+> =>
+	mergeAllStandardContainers(
+		defaultContainers,
+		additionalContainerContent,
+		activeTabIndices,
+	);
 
 export const useShapeDiverStoreStandardContainers =
 	create<IShapeDiverStoreStandardContainers>()(
@@ -242,8 +164,13 @@ export const useShapeDiverStoreStandardContainers =
 					),
 
 				// Additional container actions
-				addAdditionalContainerContent: (name, content) => {
+				addAdditionalContainerContent: (name, content, options) => {
 					const token = generateToken();
+					const item: AdditionalContainerItem = {
+						content,
+						position: options?.position,
+						order: options?.order,
+					};
 
 					set(
 						(state) => {
@@ -251,7 +178,7 @@ export const useShapeDiverStoreStandardContainers =
 								...state.additionalContainerContent,
 								[name]: {
 									...state.additionalContainerContent[name],
-									[token]: content,
+									[token]: item,
 								},
 							};
 							return {

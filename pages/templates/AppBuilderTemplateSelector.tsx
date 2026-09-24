@@ -1,3 +1,4 @@
+import {APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {AppBuilderTemplateContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
 import {AppBuilderTemplateThemeId} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderTemplate";
 import AppBuilderAppShellTemplatePage from "@AppBuilderShared/pages/templates/AppBuilderAppShellTemplatePage";
@@ -21,6 +22,7 @@ const templateMap: TemplateMapType = {
 const defaultStyleProps = {
 	template: "appshell" as const,
 	showContainerButtons: false,
+	mobileBreakpoint: APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT,
 } as const satisfies AppBuilderTemplateSelectorThemeDefaultProps;
 
 type AppBuilderTemplateSelectorThemePropsType =
@@ -45,11 +47,13 @@ export default function AppBuilderTemplateSelector(
 		Partial<AppBuilderTemplateSelectorThemeDefaultProps>,
 ) {
 	// style properties
-	const {template, showContainerButtons, ...nodes} = useProps(
-		"AppBuilderTemplateSelector",
-		defaultStyleProps,
-		props,
-	);
+	const {
+		template,
+		showContainerButtons,
+		mobileBreakpoint: _mobileBreakpoint,
+		mobileFallbacks: _mobileFallbacks,
+		...nodes
+	} = useProps("AppBuilderTemplateSelector", defaultStyleProps, props);
 
 	const {top, left, right, bottom, ...otherNodes} = nodes;
 

@@ -38,6 +38,10 @@ import {
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
+import {
+	appBuilderStandardContainerPropsSchema,
+	appBuilderViewportAnchorMobileFallbackSchema,
+} from "./appbuilderMobileFallback";
 import {GenericToolName} from "./appbuilderagent";
 import {validateThemeComponentsRecord} from "./validateThemeComponentsRecord";
 
@@ -1263,20 +1267,7 @@ const IAppBuilderAnchor3dContainerPropertiesSchema = z.strictObject({
 	exclusive: z.boolean().optional(),
 	defaultOpen: z.boolean().optional(),
 	selectionProperties: ISelectionParameterPropsSchema.optional(),
-	mobileFallback: z
-		.strictObject({
-			disabled: z.boolean().optional(),
-			previewIcon: z.string().optional(),
-			container: z
-				.enum([
-					AppBuilderContainerNameType.Left,
-					AppBuilderContainerNameType.Right,
-					AppBuilderContainerNameType.Bottom,
-					AppBuilderContainerNameType.Top,
-				])
-				.optional(),
-		})
-		.optional(),
+	mobileFallback: appBuilderViewportAnchorMobileFallbackSchema.optional(),
 });
 
 // Zod type definition for IAppBuilderAnchor2dContainerProperties
@@ -1302,20 +1293,7 @@ const IAppBuilderAnchor2dContainerPropertiesSchema = z.strictObject({
 	maxHeight: z.union([z.string(), z.number()]).optional(),
 	useContainer: z.boolean().optional(),
 	selectionProperties: ISelectionParameterPropsSchema.optional(),
-	mobileFallback: z
-		.strictObject({
-			disabled: z.boolean().optional(),
-			previewIcon: z.string().optional(),
-			container: z
-				.enum([
-					AppBuilderContainerNameType.Left,
-					AppBuilderContainerNameType.Right,
-					AppBuilderContainerNameType.Bottom,
-					AppBuilderContainerNameType.Top,
-				])
-				.optional(),
-		})
-		.optional(),
+	mobileFallback: appBuilderViewportAnchorMobileFallbackSchema.optional(),
 });
 
 const IAppBuilderToolbarItemBaseShape = {
@@ -1414,7 +1392,6 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 		props: IAppBuilderToolbarContainerPropertiesSchema,
 		groups: z.array(z.array(IAppBuilderToolbarItemSchema)).optional(),
 	}).extend(IAppBuilderWidgetPropsCommonSchema.shape),
-	// all other container props should be empty or undefined
 	appBuilderNodeObject({
 		name: z.enum([
 			AppBuilderContainerNameType.Left,
@@ -1422,7 +1399,7 @@ const IAppBuilderContainerSchema = z.discriminatedUnion("name", [
 			AppBuilderContainerNameType.Bottom,
 			AppBuilderContainerNameType.Top,
 		]),
-		props: z.undefined().optional(),
+		props: appBuilderStandardContainerPropsSchema.optional(),
 		stickyTabs: z.boolean().optional(),
 		tabs: z.array(IAppBuilderTabSchema).optional(),
 		widgets: z.array(IAppBuilderWidgetSchema).optional(),

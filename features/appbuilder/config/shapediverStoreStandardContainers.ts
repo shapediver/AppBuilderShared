@@ -1,17 +1,19 @@
 import {
 	AppBuilderContainerNameType,
 	IAppBuilderStandardContainer,
+	type AppBuilderStandardContainerNameType,
 } from "./appbuilder";
 
-/**
- * Type representing the standard container names in the app builder.
- * This is used to filter out the viewport anchor 2d and 3d (and potentially other future anchors).
- */
-export type AppBuilderStandardContainerNameType =
-	| AppBuilderContainerNameType.Left
-	| AppBuilderContainerNameType.Right
-	| AppBuilderContainerNameType.Top
-	| AppBuilderContainerNameType.Bottom;
+export type {AppBuilderStandardContainerNameType};
+
+/** Extra content injected into a standard container (anchors, mobile fallback). */
+export type AdditionalContainerItem = {
+	content: JSX.Element;
+	/** Relative to the target’s native widgets. Omitted = after (append). */
+	position?: "before" | "after";
+	/** Lower values first among items with the same position. Omitted = 0. */
+	order?: number;
+};
 
 /**
  * List of all standard container names in the app builder.
@@ -55,7 +57,7 @@ export interface IShapeDiverStoreStandardContainers {
 	 */
 	additionalContainerContent: Record<
 		AppBuilderStandardContainerNameType,
-		Record<string, JSX.Element>
+		Record<string, AdditionalContainerItem>
 	>;
 
 	/**
@@ -123,6 +125,7 @@ export interface IShapeDiverStoreStandardContainers {
 	addAdditionalContainerContent: (
 		name: AppBuilderStandardContainerNameType,
 		content: JSX.Element,
+		options?: Pick<AdditionalContainerItem, "position" | "order">,
 	) => string;
 
 	/**

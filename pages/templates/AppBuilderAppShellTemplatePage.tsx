@@ -1,4 +1,6 @@
+import {APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {AppBuilderContainerOrientation} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContainerOrientation";
+import {useAppBuilderMobileLayoutTheme} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderMobileLayoutTheme";
 import {createGridLayout} from "@AppBuilderLib/shared/lib/layout";
 import {useIsLandscape} from "@AppBuilderLib/shared/lib/useIsLandscape";
 import {
@@ -36,7 +38,8 @@ export interface StyleProps {
 	 */
 	headerHeight: AppShellResponsiveSize | AppShellSize;
 	/**
-	 * Breakpoint below which to hide the navigation bar
+	 * Breakpoint below which to hide the navigation bar.
+	 * Defaults to `AppBuilderTemplateSelector.mobileBreakpoint` (`"md"`).
 	 * @default "md"
 	 */
 	navbarBreakpoint: MantineBreakpoint;
@@ -99,9 +102,9 @@ export interface StyleProps {
 	keepBottomInGrid: boolean;
 }
 
-const defaultStyleProps: StyleProps = {
+export const appBuilderAppShellTemplatePageDefaultStyleProps: StyleProps = {
 	headerHeight: {base: "4em", md: "4em"},
-	navbarBreakpoint: "md",
+	navbarBreakpoint: APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT,
 	navbarWidth: {md: 250, lg: 300},
 	columns: 3,
 	rows: 3,
@@ -113,6 +116,8 @@ const defaultStyleProps: StyleProps = {
 	rightBorder: true,
 	keepBottomInGrid: false,
 };
+
+const defaultStyleProps = appBuilderAppShellTemplatePageDefaultStyleProps;
 
 type AppBuilderAppShellTemplatePageThemePropsType = Partial<StyleProps>;
 
@@ -151,6 +156,8 @@ export default function AppBuilderAppShellTemplatePage(
 		right = undefined,
 	} = props;
 
+	const {mobileBreakpoint} = useAppBuilderMobileLayoutTheme();
+
 	// style properties
 	const {
 		headerHeight,
@@ -165,7 +172,14 @@ export default function AppBuilderAppShellTemplatePage(
 		headerBorder,
 		rightBorder,
 		keepBottomInGrid,
-	} = useProps("AppBuilderAppShellTemplatePage", defaultStyleProps, props);
+	} = useProps(
+		"AppBuilderAppShellTemplatePage",
+		{
+			...defaultStyleProps,
+			navbarBreakpoint: mobileBreakpoint,
+		},
+		props,
+	);
 
 	const [opened, {toggle}] = useDisclosure();
 	const isLandscape = useIsLandscape();
