@@ -179,7 +179,7 @@ describe("IAppBuilder.agents schema", () => {
 										parameter: {name: "Length"},
 										source: {
 											type: "agentTool",
-											props: {jsonPath: "$.length"},
+											props: {path: "$.length"},
 										},
 									},
 								},

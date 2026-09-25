@@ -3,6 +3,7 @@ import type {
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import type {InScopeGenericToolName} from "./inScopeGenericTools";
+import type {ExecutableSpecificTool} from "./resolveSpecificTools";
 import type {ResolvedGenericTool} from "./resolveToolset";
 import type {IAgentConfigReply, IAgentSessionInfo} from "./toolsApi";
 
@@ -36,8 +37,9 @@ export interface IToolsApiConnector {
  * Default names: this side `"app"`, peer `"agent"`. Timeout 20s unless
  * `options.timeout` overrides.
  *
- * `resolvedTools` is the snapshot from `resolveToolset` (which tools exist).
- * `toolHandlers` is the live map from `useAgentToolHandlers` (how they run).
+ * `resolvedGenericTools` is the snapshot from `resolveToolset` (which tools exist).
+ * `resolvedSpecificTools` is the snapshot from `resolveSpecificTools`; each tool's
+ * `execute` runs it. `toolHandlers` is the live map from `useAgentToolHandlers`.
  * `agentConfig` is parameterized Agent config (`IAppBuilder.agents[0]`); omit /
  * `null` / `undefined` → `getAgentConfig` replies `null`.
  * `sessionInfo` is controller session fields (`jwtToken`, `slug`,
@@ -47,12 +49,13 @@ export interface IToolsApiConnector {
 export interface IToolsApiConnectorFactory {
 	getConnectorApi(
 		window: Window,
-		resolvedTools: ResolvedGenericTool[],
+		resolvedGenericTools: ResolvedGenericTool[],
 		toolHandlers: IToolsApiHandlerMap,
 		name?: string,
 		peerName?: string,
 		options?: ICrossWindowApiOptions,
 		agentConfig?: IAgentConfigReply | null,
 		sessionInfo?: IAgentSessionInfo | null,
+		resolvedSpecificTools?: ExecutableSpecificTool[],
 	): Promise<IToolsApiConnector>;
 }

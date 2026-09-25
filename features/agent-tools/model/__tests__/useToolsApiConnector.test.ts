@@ -12,6 +12,7 @@ jest.mock("../../api/toolsApiConnector", () => ({
 
 import {renderHook, waitFor} from "@testing-library/react";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../../config/inScopeGenericTools";
+import type {ExecutableSpecificTool} from "../../config/resolveSpecificTools";
 import {resolveToolset} from "../../config/resolveToolset";
 import type {IToolsApiHandlerMap} from "../../config/toolsApiConnector";
 import {useToolsApiConnector} from "../useToolsApiConnector";
@@ -43,7 +44,7 @@ describe("useToolsApiConnector", () => {
 		expect(() => {
 			renderHook(() =>
 				useToolsApiConnector({
-					resolvedTools: resolveToolset(undefined),
+					resolvedGenericTools: resolveToolset(undefined),
 					toolHandlers: stubHandlers(),
 					snapshotComplete: true,
 				}),
@@ -56,7 +57,7 @@ describe("useToolsApiConnector", () => {
 		renderHook(() =>
 			useToolsApiConnector({
 				window: {} as Window,
-				resolvedTools: resolveToolset(undefined),
+				resolvedGenericTools: resolveToolset(undefined),
 				toolHandlers: stubHandlers(),
 				snapshotComplete: false,
 			}),
@@ -65,13 +66,13 @@ describe("useToolsApiConnector", () => {
 	});
 
 	it("calls getConnectorApi when window and snapshot are ready", async () => {
-		const resolvedTools = resolveToolset(undefined);
+		const resolvedGenericTools = resolveToolset(undefined);
 		const toolHandlers = stubHandlers();
 		const peer = {} as Window;
 		renderHook(() =>
 			useToolsApiConnector({
 				window: peer,
-				resolvedTools,
+				resolvedGenericTools,
 				toolHandlers,
 				snapshotComplete: true,
 			}),
@@ -94,7 +95,7 @@ describe("useToolsApiConnector", () => {
 		renderHook(() =>
 			useToolsApiConnector({
 				window: peer,
-				resolvedTools: resolveToolset(undefined),
+				resolvedGenericTools: resolveToolset(undefined),
 				toolHandlers: stubHandlers(),
 				snapshotComplete: true,
 				agentConfig: agent,
@@ -102,6 +103,30 @@ describe("useToolsApiConnector", () => {
 		);
 		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
 		expect(getConnectorApi.mock.calls[0][6]).toBe(agent);
+	});
+
+	it("passes resolvedSpecificTools as getConnectorApi 9th argument", async () => {
+		const resolvedSpecificTools: ExecutableSpecificTool[] = [
+			{
+				name: "set_length",
+				description: "Set length",
+				inputSchema: {type: "object"},
+				actionSequence: [],
+				execute: async () => ({success: true}),
+			},
+		];
+		const peer = {} as Window;
+		renderHook(() =>
+			useToolsApiConnector({
+				window: peer,
+				resolvedGenericTools: resolveToolset(undefined),
+				resolvedSpecificTools,
+				toolHandlers: stubHandlers(),
+				snapshotComplete: true,
+			}),
+		);
+		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
+		expect(getConnectorApi.mock.calls[0][8]).toBe(resolvedSpecificTools);
 	});
 
 	it("passes sessionInfo as getConnectorApi 8th argument", async () => {
@@ -114,7 +139,7 @@ describe("useToolsApiConnector", () => {
 		renderHook(() =>
 			useToolsApiConnector({
 				window: peer,
-				resolvedTools: resolveToolset(undefined),
+				resolvedGenericTools: resolveToolset(undefined),
 				toolHandlers: stubHandlers(),
 				snapshotComplete: true,
 				sessionInfo,
@@ -133,7 +158,7 @@ describe("useToolsApiConnector", () => {
 		const {unmount} = renderHook(() =>
 			useToolsApiConnector({
 				window: {} as Window,
-				resolvedTools: resolveToolset(undefined),
+				resolvedGenericTools: resolveToolset(undefined),
 				toolHandlers: stubHandlers(),
 				snapshotComplete: true,
 			}),
@@ -150,7 +175,7 @@ describe("useToolsApiConnector", () => {
 		renderHook(() =>
 			useToolsApiConnector({
 				window: {} as Window,
-				resolvedTools: resolveToolset(undefined),
+				resolvedGenericTools: resolveToolset(undefined),
 				toolHandlers: stubHandlers(),
 				snapshotComplete: true,
 			}),

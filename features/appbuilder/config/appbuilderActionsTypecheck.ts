@@ -120,7 +120,11 @@ export const IAppBuilderParameterValueSourceDefinitionSchema =
 		z.strictObject({
 			type: z.literal("agentTool"),
 			props: z.strictObject({
-				jsonPath: z.string(),
+				path: z
+					.string()
+					.describe(
+						"Path to one value in the agent tool input. `length`, `shelf.x`, or `items[0]`. A leading `$.` is accepted.",
+					),
 			}),
 		}),
 	]);

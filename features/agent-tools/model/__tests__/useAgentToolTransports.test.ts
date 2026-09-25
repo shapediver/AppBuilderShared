@@ -26,7 +26,8 @@ import {renderHook} from "@testing-library/react";
 import {useAgentToolTransports} from "../useAgentToolTransports";
 
 const runtime = {
-	resolvedTools: [],
+	resolvedGenericTools: [],
+	resolvedSpecificTools: [],
 	toolHandlers: {},
 	snapshotComplete: true,
 	agentConfig: {id: "a", name: "A", message: "hi"},
@@ -54,13 +55,15 @@ describe("useAgentToolTransports", () => {
 		expect(useWebMcpTools).toHaveBeenCalledWith({
 			namespace: "ns",
 			enabled: true,
-			resolvedTools: runtime.resolvedTools,
+			resolvedGenericTools: runtime.resolvedGenericTools,
+			resolvedSpecificTools: runtime.resolvedSpecificTools,
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
 		});
 		expect(useToolsApiConnector).toHaveBeenCalledWith({
 			window: null,
-			resolvedTools: runtime.resolvedTools,
+			resolvedGenericTools: runtime.resolvedGenericTools,
+			resolvedSpecificTools: runtime.resolvedSpecificTools,
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
@@ -73,7 +76,8 @@ describe("useAgentToolTransports", () => {
 		renderHook(() => useAgentToolTransports({agentWindow}));
 		expect(useToolsApiConnector).toHaveBeenCalledWith({
 			window: agentWindow,
-			resolvedTools: runtime.resolvedTools,
+			resolvedGenericTools: runtime.resolvedGenericTools,
+			resolvedSpecificTools: runtime.resolvedSpecificTools,
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
@@ -90,7 +94,8 @@ describe("useAgentToolTransports", () => {
 		renderHook(() => useAgentToolTransports({sessionInfo}));
 		expect(useToolsApiConnector).toHaveBeenCalledWith({
 			window: null,
-			resolvedTools: runtime.resolvedTools,
+			resolvedGenericTools: runtime.resolvedGenericTools,
+			resolvedSpecificTools: runtime.resolvedSpecificTools,
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,

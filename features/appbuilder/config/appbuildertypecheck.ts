@@ -1591,15 +1591,17 @@ const SpecificToolSettingsSchema = z.strictObject({
 		),
 	inputSchema: z
 		.record(z.string(), JsonValueSchema)
-		.describe("Input schema for the tool."),
+		.describe(
+			"JSON Schema for the tool call. Passed through to the agent as inputSchema. The call is validated against this schema before the action sequence runs.",
+		),
 	actionSequence: z
 		.array(IAppBuilderActionDefinitionSchema)
 		.optional()
 		.describe(
-			"Optional sequence of actions that should be run when the tool is triggered. Information about these actions will not be exposed to the agent. Values from inputSchema can be mapped to the action properties using the agentTool parameter value source.",
+			'Optional sequence of actions that should be run when the tool is triggered. Information about these actions will not be exposed to the agent. A value from the tool call can be mapped onto setParameterValue and setParameterValues, including inside executeActions, using the agentTool parameter value source. An empty sequence fails with "no actionSequence".',
 		),
 	remoteExecution: RemoteToolExecutionSettingsSchema.optional().describe(
-		"Optional remote execution settings for the tool. Will be ignored if actionSequence is provided.",
+		"Optional remote execution settings for the tool. Not implemented. Ignored.",
 	),
 });
 

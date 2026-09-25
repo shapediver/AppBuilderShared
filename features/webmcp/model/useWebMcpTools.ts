@@ -19,7 +19,8 @@ export function useWebMcpTools(
 	const {
 		namespace,
 		enabled = isWebMcpAvailable(),
-		resolvedTools,
+		resolvedGenericTools,
+		resolvedSpecificTools = [],
 		toolHandlers,
 		snapshotComplete,
 	} = props;
@@ -43,8 +44,10 @@ export function useWebMcpTools(
 	const paramsPopulated =
 		!!namespace && Object.keys(getParameters(namespace)).length > 0;
 
-	const resolvedToolsRef = useRef(resolvedTools);
-	resolvedToolsRef.current = resolvedTools;
+	const resolvedGenericToolsRef = useRef(resolvedGenericTools);
+	resolvedGenericToolsRef.current = resolvedGenericTools;
+	const resolvedSpecificToolsRef = useRef(resolvedSpecificTools);
+	resolvedSpecificToolsRef.current = resolvedSpecificTools;
 	const toolHandlersRef = useRef(toolHandlers);
 	toolHandlersRef.current = toolHandlers;
 
@@ -68,9 +71,10 @@ export function useWebMcpTools(
 			try {
 				await registerResolvedTools(
 					modelContext,
-					resolvedToolsRef.current,
+					resolvedGenericToolsRef.current,
 					toolHandlersRef.current,
 					controller.signal,
+					resolvedSpecificToolsRef.current,
 				);
 
 				if (!cancelled) {

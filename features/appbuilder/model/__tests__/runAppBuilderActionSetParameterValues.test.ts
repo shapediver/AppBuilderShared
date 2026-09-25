@@ -114,7 +114,7 @@ describe("runAppBuilderActionSetParameterValues", () => {
 							parameter: {name: "p1"},
 							source: {
 								type: "agentTool",
-								props: {jsonPath: "$.length"},
+								props: {path: "$.length"},
 							},
 						},
 					],
