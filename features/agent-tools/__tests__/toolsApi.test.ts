@@ -13,6 +13,7 @@ import {
 	ToolsApiConnectorFactoryClass,
 } from "../api/toolsApiConnector";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../config/inScopeGenericTools";
+import type {ExecutableSpecificTool} from "../config/resolveSpecificTools";
 import {resolveToolset} from "../config/resolveToolset";
 import {
 	MESSAGE_TYPE_EXECUTE_TOOL,
@@ -79,6 +80,25 @@ describe("listToolsFromResolved", () => {
 	it("returns an empty tools array for an empty resolved set", () => {
 		expect(listToolsFromResolved([]).tools).toEqual([]);
 	});
+
+	it("lists generic tools before specific tools", () => {
+		const {tools} = listToolsFromResolved(
+			resolveToolset(screenshotOnlyAgent()),
+			[
+				{
+					name: "set_length",
+					description: "Set length",
+					inputSchema: {type: "object"},
+					actionSequence: [],
+				},
+			],
+		);
+		expect(tools.map((tool) => tool.name)).toEqual([
+			"get_screenshot",
+			"set_length",
+		]);
+		expect(tools[1]?.inputSchema).toEqual({type: "object"});
+	});
 });
 
 describe("executeResolvedTool", () => {
@@ -128,6 +148,46 @@ describe("executeResolvedTool", () => {
 			message: 'Tool "list_parameter_definitions" does not exist.',
 		});
 		expect(list_parameter_definitions).not.toHaveBeenCalled();
+	});
+
+	it("calls a specific tool execute and returns its JSON", async () => {
+		const execute = jest.fn(async () => ({success: true, applied: 4}));
+		const specific: ExecutableSpecificTool = {
+			name: "set_length",
+			description: "Set length",
+			inputSchema: {type: "object"},
+			actionSequence: [],
+			execute,
+		};
+		const result = await executeResolvedTool(
+			"set_length",
+			{length: 4},
+			[],
+			stubHandlers(),
+			[specific],
+		);
+		expect(execute).toHaveBeenCalledWith({length: 4});
+		expect(result).toEqual({success: true, applied: 4});
+	});
+
+	it("wraps a specific tool execute throw as JSON", async () => {
+		const specific: ExecutableSpecificTool = {
+			name: "set_length",
+			description: "Set length",
+			inputSchema: {type: "object"},
+			actionSequence: [],
+			execute: async () => {
+				throw new Error("specific boom");
+			},
+		};
+		const result = await executeResolvedTool(
+			"set_length",
+			{},
+			[],
+			stubHandlers(),
+			[specific],
+		);
+		expect(result).toEqual({success: false, message: "specific boom"});
 	});
 
 	it("wraps handler throw as JSON", async () => {

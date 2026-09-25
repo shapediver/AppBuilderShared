@@ -662,10 +662,10 @@ export interface IAppBuilderParameterValueSourcePropsModelState extends IAppBuil
  */
 export interface IAppBuilderParameterValueSourcePropsAgentTool {
 	/**
-	 * JSON path to the value in the agent tool's input data that should be used as the parameter value.
-	 * @see https://www.rfc-editor.org/info/rfc9535/
+	 * Path to one value in the agent tool input.
+	 * `length`, `shelf.x`, or `items[0]`. A leading `$.` is accepted.
 	 */
-	jsonPath: string;
+	path: string;
 }
 
 /** Definition of a parameter value source. */

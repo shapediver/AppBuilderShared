@@ -15,6 +15,10 @@ import {
 	isGenericToolSettingsFor,
 	type InScopeGenericToolName,
 } from "../config/inScopeGenericTools";
+import type {
+	ExecutableSpecificTool,
+	ResolvedSpecificTool,
+} from "../config/resolveSpecificTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import type {IToolsApiHandlerMap} from "../config/toolsApiConnector";
 import type {AgentToolsDeps} from "./agentToolsDeps";
@@ -27,15 +31,16 @@ import {handleListParameterDefinitions} from "./handlers/listParameterDefinition
 import {handleSetCameraPosition} from "./handlers/setCameraPosition";
 import {handleSetParameterValues} from "./handlers/setParameterValues";
 import {handleTriggerActionControl} from "./handlers/triggerActionControl";
+import {runSpecificTool} from "./runSpecificTool";
 
 export type AgentToolHandlerMap = IToolsApiHandlerMap;
 
 /** Settings for this generic tool from the resolved toolset, or `{name}` default. */
 function settingsForTool<N extends InScopeGenericToolName>(
-	resolvedTools: ResolvedGenericTool[],
+	resolvedGenericTools: ResolvedGenericTool[],
 	name: N,
 ): Extract<GenericToolSettings, {name: N}> {
-	const found = resolvedTools.find((tool) => tool.name === name);
+	const found = resolvedGenericTools.find((tool) => tool.name === name);
 	if (found && isGenericToolSettingsFor(found.settings, name)) {
 		return found.settings;
 	}
@@ -53,9 +58,18 @@ function settingsForTool<N extends InScopeGenericToolName>(
 export function useAgentToolHandlers(args: {
 	namespace: string;
 	appBuilderData: IAppBuilder | undefined;
-	resolvedTools: ResolvedGenericTool[];
-}): AgentToolHandlerMap {
-	const {namespace, appBuilderData, resolvedTools} = args;
+	resolvedGenericTools: ResolvedGenericTool[];
+	resolvedSpecificTools: ResolvedSpecificTool[];
+}): {
+	toolHandlers: AgentToolHandlerMap;
+	resolvedSpecificTools: ExecutableSpecificTool[];
+} {
+	const {
+		namespace,
+		appBuilderData,
+		resolvedGenericTools,
+		resolvedSpecificTools,
+	} = args;
 	const componentContext = useContext(ComponentContext);
 	const {viewportId} = useViewportId();
 
@@ -77,8 +91,8 @@ export function useAgentToolHandlers(args: {
 		(state) => state.defaultToolbars,
 	);
 
-	const resolvedToolsRef = useRef(resolvedTools);
-	resolvedToolsRef.current = resolvedTools;
+	const resolvedGenericToolsRef = useRef(resolvedGenericTools);
+	resolvedGenericToolsRef.current = resolvedGenericTools;
 
 	const depsRef = useRef<AgentToolsDeps>(null!);
 	depsRef.current = buildAgentToolsDeps({
@@ -92,13 +106,13 @@ export function useAgentToolHandlers(args: {
 		componentContext,
 	});
 
-	return useMemo(
+	const toolHandlers = useMemo<AgentToolHandlerMap>(
 		() => ({
 			[GenericToolName.ListParameterDefinitions]: (input) =>
 				handleListParameterDefinitions(
 					input,
 					settingsForTool(
-						resolvedToolsRef.current,
+						resolvedGenericToolsRef.current,
 						GenericToolName.ListParameterDefinitions,
 					),
 					depsRef.current,
@@ -108,7 +122,7 @@ export function useAgentToolHandlers(args: {
 					input,
 					// Sharing ListParameterDefinitions settings is intentional.
 					settingsForTool(
-						resolvedToolsRef.current,
+						resolvedGenericToolsRef.current,
 						GenericToolName.ListParameterDefinitions,
 					),
 					depsRef.current,
@@ -119,7 +133,7 @@ export function useAgentToolHandlers(args: {
 				handleListActionControls(
 					input,
 					settingsForTool(
-						resolvedToolsRef.current,
+						resolvedGenericToolsRef.current,
 						GenericToolName.ListActionControls,
 					),
 					depsRef.current,
@@ -129,7 +143,7 @@ export function useAgentToolHandlers(args: {
 					input,
 					// Sharing ListActionControls settings is intentional.
 					settingsForTool(
-						resolvedToolsRef.current,
+						resolvedGenericToolsRef.current,
 						GenericToolName.ListActionControls,
 					),
 					depsRef.current,
@@ -143,4 +157,12 @@ export function useAgentToolHandlers(args: {
 		}),
 		[],
 	);
+
+	const executableSpecificTools = resolvedSpecificTools.map((tool) => ({
+		...tool,
+		execute: (input: unknown) =>
+			runSpecificTool(tool, input, depsRef.current),
+	}));
+
+	return {toolHandlers, resolvedSpecificTools: executableSpecificTools};
 }
