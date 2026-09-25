@@ -17,7 +17,9 @@ import {resolveParameterExportValue} from "./resolveParameterExportValue";
 /** Download current parameter values as JSON. */
 export async function exportParameterValues(namespace: string): Promise<void> {
 	const {clearUnsavedChanges} = useShapeDiverStoreParameters.getState();
-	const currentModel = useShapeDiverStorePlatform.getState().currentModel;
+	const model = useShapeDiverStorePlatform
+		.getState()
+		.getModelForSession(namespace);
 	const notifications = getNotificationActions();
 	const parameterArray = getParameterStates(namespace).map((param) => ({
 		id: param.definition.id,
@@ -30,14 +32,14 @@ export async function exportParameterValues(namespace: string): Promise<void> {
 	}));
 
 	const jsonContent = JSON.stringify({
-		...(currentModel && {model_id: currentModel.id}),
+		...(model && {model_id: model.id}),
 		parameters: parameterArray,
 	});
 	const blob = new Blob([jsonContent], {type: "application/json"});
 	const url = URL.createObjectURL(blob);
 	const link = document.createElement("a");
 	link.href = url;
-	link.download = `parameters_${currentModel ? currentModel.slug : namespace}_${new Date().toISOString().split("T")[0]}.json`;
+	link.download = `parameters_${model ? model.slug : namespace}_${new Date().toISOString().split("T")[0]}.json`;
 	document.body.appendChild(link);
 	link.click();
 	document.body.removeChild(link);

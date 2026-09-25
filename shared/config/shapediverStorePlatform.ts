@@ -94,8 +94,10 @@ export interface IShapeDiverStorePlatform {
 
 	/**
 	 * Get the platform model for the given session id.
-	 * Falls back to currentModel if no model is found for the session.
-	 * @param sessionId The session id to look up. If undefined, falls back to currentModel.
+	 * A session with no stored model returns undefined. currentModel is used
+	 * only when no session id is given, so another session's model is not
+	 * applied to this session's parameters.
+	 * @param sessionId The session id to look up. If undefined, returns currentModel.
 	 */
 	getModelForSession: (
 		sessionId?: string,

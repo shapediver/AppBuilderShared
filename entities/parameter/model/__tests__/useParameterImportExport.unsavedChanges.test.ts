@@ -32,10 +32,17 @@ jest.mock("@AppBuilderLib/shared/lib/ErrorReportingContext", () => ({
 }));
 
 jest.mock("@AppBuilderLib/shared/model/useShapeDiverStorePlatform", () => {
-	const state = {currentModel: undefined};
+	const state = {
+		currentModel: undefined as {id: string; slug: string} | undefined,
+		models: {} as Record<string, {id: string; slug: string}>,
+		getModelForSession(sessionId?: string) {
+			if (!sessionId) return state.currentModel;
+			return state.models[sessionId];
+		},
+	};
 	const useShapeDiverStorePlatform = (selector: any) => selector(state);
 	useShapeDiverStorePlatform.getState = () => state;
-	return {useShapeDiverStorePlatform};
+	return {useShapeDiverStorePlatform, platformState: state};
 });
 
 const filterAndValidateParameters = jest.fn();
@@ -60,6 +67,7 @@ jest.mock(
 );
 
 // Real parameter store.
+import {platformState} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
 import {useShapeDiverStoreParameters} from "../useShapeDiverStoreParameters";
 
 const store = useShapeDiverStoreParameters;
@@ -78,6 +86,8 @@ function currentUnsaved() {
 describe("useParameterImportExport unsavedChanges wiring", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
+		platformState.currentModel = undefined;
+		platformState.models = {};
 		// jsdom lacks URL.createObjectURL
 		(URL as any).createObjectURL = jest.fn(() => "blob:fake");
 		(URL as any).revokeObjectURL = jest.fn();
@@ -100,6 +110,90 @@ describe("useParameterImportExport unsavedChanges wiring", () => {
 
 			expect(notificationMock.success).toHaveBeenCalled();
 			expect(currentUnsaved()).toBe(false);
+		});
+
+		it("writes the session model id, not a later currentModel", async () => {
+			platformState.models.controller = {
+				id: "controller-id",
+				slug: "salem-stones-controller-2026",
+			};
+			platformState.currentModel = {
+				id: "instance-id",
+				slug: "salem-stones-monuments-2026",
+			};
+
+			let json = "";
+			let download = "";
+			const RealBlob = Blob;
+			jest.spyOn(global, "Blob").mockImplementation(
+				(parts?: BlobPart[]) => {
+					json = String(parts?.[0] ?? "");
+					return new RealBlob(parts);
+				},
+			);
+			const realCreate = document.createElement.bind(document);
+			jest.spyOn(document, "createElement").mockImplementation(
+				(tag: string) => {
+					const el = realCreate(tag);
+					if (tag === "a") {
+						el.click = () => {
+							download = (el as HTMLAnchorElement).download;
+						};
+					}
+					return el;
+				},
+			);
+
+			const {result} = renderHook(() =>
+				useParameterImportExport("controller"),
+			);
+
+			await act(async () => {
+				await result.current.exportParameters();
+			});
+
+			expect(JSON.parse(json).model_id).toBe("controller-id");
+			expect(download).toContain("salem-stones-controller-2026");
+		});
+
+		it("omits model_id when the session has no stored model", async () => {
+			platformState.currentModel = {
+				id: "controller-id",
+				slug: "salem-stones-controller-2026",
+			};
+
+			let json = "";
+			let download = "";
+			const RealBlob = Blob;
+			jest.spyOn(global, "Blob").mockImplementation(
+				(parts?: BlobPart[]) => {
+					json = String(parts?.[0] ?? "");
+					return new RealBlob(parts);
+				},
+			);
+			const realCreate = document.createElement.bind(document);
+			jest.spyOn(document, "createElement").mockImplementation(
+				(tag: string) => {
+					const el = realCreate(tag);
+					if (tag === "a") {
+						el.click = () => {
+							download = (el as HTMLAnchorElement).download;
+						};
+					}
+					return el;
+				},
+			);
+
+			const {result} = renderHook(() =>
+				useParameterImportExport("ticket-session"),
+			);
+
+			await act(async () => {
+				await result.current.exportParameters();
+			});
+
+			expect(JSON.parse(json).model_id).toBeUndefined();
+			expect(download).toContain("ticket-session");
 		});
 	});
 

@@ -294,7 +294,8 @@ export const useShapeDiverStorePlatform =
 
 				getModelForSession: (sessionId?: string) => {
 					const {models, currentModel} = get();
-					return (sessionId && models[sessionId]) || currentModel;
+					if (!sessionId) return currentModel;
+					return models[sessionId];
 				},
 			}),
 			{...devtoolsSettings, name: "ShapeDiver | Platform"},

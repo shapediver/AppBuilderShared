@@ -32,6 +32,12 @@ const ModelStorage = MODELS as unknown as Record<
  */
 export default function useResolveAppBuilderSessions(
 	sessions: IAppBuilderSettingsJsonSession[] | undefined,
+	/**
+	 * When false, resolving these sessions does not replace the platform
+	 * current model. Embedded instance sessions must not overwrite the
+	 * controller, which parameter export and the page title read.
+	 */
+	updateCurrentModel = true,
 ) {
 	const {authenticate, setCurrentModel, setModelForSession} =
 		useShapeDiverStorePlatform(
@@ -96,7 +102,8 @@ export default function useResolveAppBuilderSessions(
 					// in case the slug is found in model storage, use the stored data
 					const model = ModelStorage[session.slug];
 
-					if (sessionIdx === 0) setCurrentModel(model);
+					if (updateCurrentModel && sessionIdx === 0)
+						setCurrentModel(model);
 					setModelForSession(session.id, model);
 
 					// we store exactly the same data as in the platform response,
@@ -136,7 +143,8 @@ export default function useResolveAppBuilderSessions(
 						return result?.data;
 					};
 					const model = await getModel();
-					if (sessionIdx === 0) setCurrentModel(model);
+					if (updateCurrentModel && sessionIdx === 0)
+						setCurrentModel(model);
 					setModelForSession(session.id, model);
 
 					return {
@@ -182,7 +190,9 @@ export default function useResolveAppBuilderSessions(
 					}
 					// Set current model after seeding saved states so the widget
 					// does not query an empty store on first render.
-					if (sessionIdx === 0) setCurrentModel(iframeData.model);
+					if (updateCurrentModel && sessionIdx === 0)
+						setCurrentModel(iframeData.model);
+					setModelForSession(session.id, iframeData.model);
 
 					return {
 						acceptRejectMode:
@@ -210,7 +220,7 @@ export default function useResolveAppBuilderSessions(
 			}),
 		);
 		return resolvedSessions;
-	}, [sessions, sdkRef]);
+	}, [sessions, sdkRef, updateCurrentModel]);
 
 	return {
 		sessions: resolvedSessions,

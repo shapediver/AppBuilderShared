@@ -284,7 +284,7 @@ export function useAppBuilderInstances(props: Props) {
 
 	// from the incoming slugs, retrieve the session data from the platform
 	const {sessions: sessionData, error: platformError} =
-		useResolveAppBuilderSessions(embeddedSessions);
+		useResolveAppBuilderSessions(embeddedSessions, false);
 
 	// add some necessary flags to the resolved sessions
 	const resolvedSessions = useMemo(() => {
