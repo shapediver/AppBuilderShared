@@ -88,10 +88,10 @@ describe("readInputPath", () => {
 
 describe("bindAgentToolSources", () => {
 	it("replaces agentTool with the call value and does not mutate the original", () => {
-		const bound = bindAgentToolSources([setLength], {length: 5});
+		const bound = bindAgentToolSources(setLength, {length: 5});
 		expect(bound.ok).toBe(true);
 		if (!bound.ok) return;
-		expect(bound.actions[0]).toEqual({
+		expect(bound.action).toEqual({
 			type: "setParameterValue",
 			props: {parameter: {name: "Length"}, value: 5},
 		});
@@ -101,7 +101,7 @@ describe("bindAgentToolSources", () => {
 	});
 
 	it("runs nothing when the path is not one parameter value", () => {
-		const bound = bindAgentToolSources([setLength], {length: {mm: 5}});
+		const bound = bindAgentToolSources(setLength, {length: {mm: 5}});
 		expect(bound).toEqual({
 			ok: false,
 			message:
@@ -112,42 +112,38 @@ describe("bindAgentToolSources", () => {
 	it("replaces agentTool with a color object", () => {
 		const color = {red: 1, green: 2, blue: 3, alpha: 255};
 		const bound = bindAgentToolSources(
-			[
-				{
-					type: "setParameterValue",
-					props: {
-						parameter: {name: "Colour"},
-						source: {
-							type: "agentTool",
-							props: {path: "$.color"},
-						},
+			{
+				type: "setParameterValue",
+				props: {
+					parameter: {name: "Colour"},
+					source: {
+						type: "agentTool",
+						props: {path: "$.color"},
 					},
 				},
-			],
+			},
 			{color},
 		);
 		expect(bound.ok).toBe(true);
 		if (!bound.ok) return;
-		expect(bound.actions[0]).toMatchObject({
+		expect(bound.action).toMatchObject({
 			props: {value: color},
 		});
 	});
 
 	it("rejects an item that sets both value and source", () => {
 		const bound = bindAgentToolSources(
-			[
-				{
-					type: "setParameterValue",
-					props: {
-						parameter: {name: "Length"},
-						value: "1",
-						source: {
-							type: "agentTool",
-							props: {path: "$.length"},
-						},
+			{
+				type: "setParameterValue",
+				props: {
+					parameter: {name: "Length"},
+					value: "1",
+					source: {
+						type: "agentTool",
+						props: {path: "$.length"},
 					},
 				},
-			],
+			},
 			{length: 5},
 		);
 		expect(bound.ok).toBe(false);
@@ -155,52 +151,67 @@ describe("bindAgentToolSources", () => {
 
 	it("fills agentTool inside setParameterValues and nested executeActions", () => {
 		const bound = bindAgentToolSources(
-			[
-				{
-					type: "setParameterValues",
-					props: {
-						parameterValues: [
-							{
-								parameter: {name: "Length"},
-								source: {
-									type: "agentTool",
-									props: {path: "length"},
-								},
+			{
+				type: "executeActions",
+				props: {
+					mode: "sequential",
+					actions: [
+						{
+							type: "setParameterValues",
+							props: {
+								parameterValues: [
+									{
+										parameter: {name: "Length"},
+										source: {
+											type: "agentTool",
+											props: {path: "length"},
+										},
+									},
+									{
+										parameter: {name: "Width"},
+										source: {
+											type: "agentTool",
+											props: {path: "width"},
+										},
+									},
+								],
 							},
-							{
-								parameter: {name: "Width"},
-								source: {
-									type: "agentTool",
-									props: {path: "width"},
-								},
+						},
+						{
+							type: "executeActions",
+							props: {
+								actions: [setLength],
 							},
-						],
-					},
+						},
+					],
 				},
-				{
-					type: "executeActions",
-					props: {
-						actions: [setLength],
-					},
-				},
-			],
+			},
 			{length: 5, width: 2},
 		);
 		expect(bound.ok).toBe(true);
 		if (!bound.ok) return;
-		expect(bound.actions[0]).toMatchObject({
-			props: {
-				parameterValues: [
-					{parameter: {name: "Length"}, value: 5},
-					{parameter: {name: "Width"}, value: 2},
-				],
-			},
-		});
-		expect(bound.actions[1]).toMatchObject({
+		expect(bound.action).toMatchObject({
 			props: {
 				actions: [
 					{
-						props: {parameter: {name: "Length"}, value: 5},
+						props: {
+							parameterValues: [
+								{parameter: {name: "Length"}, value: 5},
+								{parameter: {name: "Width"}, value: 2},
+							],
+						},
+					},
+					{
+						props: {
+							actions: [
+								{
+									props: {
+										parameter: {name: "Length"},
+										value: 5,
+									},
+								},
+							],
+						},
 					},
 				],
 			},
@@ -217,7 +228,7 @@ describe("resolveSpecificTools", () => {
 			{
 				name: "set_length",
 				inputSchema: {type: "object"},
-				actionSequence: [setLength],
+				action: setLength,
 			},
 			{
 				name: "set_length",
@@ -247,7 +258,6 @@ describe("resolveSpecificTools", () => {
 				name: "set_length",
 				description: "set_length",
 				inputSchema: {type: "object"},
-				actionSequence: [],
 			},
 		]);
 	});
@@ -259,7 +269,6 @@ describe("resolveSpecificTools", () => {
 				name: "set_length",
 				description: "later",
 				inputSchema: {type: "object"},
-				actionSequence: [],
 			},
 		]);
 	});
@@ -285,7 +294,7 @@ describe("runSpecificTool", () => {
 					required: ["length"],
 					additionalProperties: false,
 				},
-				actionSequence: [setLength],
+				action: setLength,
 			},
 			{},
 			deps,
@@ -302,7 +311,7 @@ describe("runSpecificTool", () => {
 				name: "set_length",
 				description: "set_length",
 				inputSchema: {type: "object"},
-				actionSequence: [setLength],
+				action: setLength,
 			},
 			{},
 			deps,
@@ -317,7 +326,7 @@ describe("runSpecificTool", () => {
 				name: "set_length",
 				description: "Set Length",
 				inputSchema: {type: "object"},
-				actionSequence: [setLength],
+				action: setLength,
 			},
 			{length: 5},
 			deps,
@@ -334,34 +343,41 @@ describe("runSpecificTool", () => {
 		);
 	});
 
-	it("returns no actionSequence and does not run when the sequence is empty", async () => {
+	it("returns no action and does not run when the action is missing", async () => {
 		const result = await runSpecificTool(
 			{
 				name: "set_length",
 				description: "set_length",
 				inputSchema: {type: "object"},
-				actionSequence: [],
 			},
 			{},
 			deps,
 		);
 		expect(result).toEqual({
 			success: false,
-			message: "no actionSequence",
+			message: "no action",
 		});
 		expect(runActionControlMock).not.toHaveBeenCalled();
 	});
 
-	it("runs actions in order and stops after the first failure", async () => {
-		runActionControlMock
-			.mockResolvedValueOnce({success: false, message: "bad"})
-			.mockResolvedValue({success: true});
+	it("runs one executeActions action and returns its result", async () => {
+		const setSize: IAppBuilderActionDefinition = {
+			type: "executeActions",
+			props: {
+				mode: "sequential",
+				actions: [setLength, setWidth],
+			},
+		};
+		runActionControlMock.mockResolvedValueOnce({
+			success: false,
+			message: "bad",
+		});
 		const result = await runSpecificTool(
 			{
 				name: "set_size",
 				description: "set_size",
 				inputSchema: {type: "object"},
-				actionSequence: [setLength, setWidth],
+				action: setSize,
 			},
 			{length: 5, width: 2},
 			deps,
@@ -378,26 +394,33 @@ describe("runSpecificTool", () => {
 				name: "set_size",
 				description: "set_size",
 				inputSchema: {type: "object"},
-				actionSequence: [setLength, setWidth],
+				action: setSize,
 			},
 			{length: 5, width: 2},
 			deps,
 		);
 		expect(ok).toEqual({success: true});
-		expect(runActionControlMock.mock.calls.map((call) => call[0])).toEqual([
+		expect(runActionControlMock).toHaveBeenCalledWith(
 			{
 				definition: {
-					type: "setParameterValue",
-					props: {parameter: {name: "Length"}, value: 5},
+					type: "executeActions",
+					props: {
+						mode: "sequential",
+						actions: [
+							{
+								type: "setParameterValue",
+								props: {parameter: {name: "Length"}, value: 5},
+							},
+							{
+								type: "setParameterValue",
+								props: {parameter: {name: "Width"}, value: 2},
+							},
+						],
+					},
 				},
 			},
-			{
-				definition: {
-					type: "setParameterValue",
-					props: {parameter: {name: "Width"}, value: 2},
-				},
-			},
-		]);
-		expect(idleMock).toHaveBeenCalledTimes(2);
+			deps,
+		);
+		expect(idleMock).toHaveBeenCalledTimes(1);
 	});
 });

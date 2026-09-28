@@ -12,7 +12,7 @@ const NOT_A_PARAMETER_VALUE =
 	"agentTool path did not resolve to a single string, number, boolean, or color";
 
 type BindResult =
-	| {ok: true; actions: IAppBuilderActionDefinition[]}
+	| {ok: true; action: IAppBuilderActionDefinition}
 	| {ok: false; message: string};
 
 type ParameterItem = IAppBuilderActionPropsSetParameterValue;
@@ -63,17 +63,15 @@ function bindAction(
 	return undefined;
 }
 
-/** Clone the sequence and replace agentTool sources with literal parameter values. */
+/** Clone the action and replace agentTool sources with literal parameter values. */
 export function bindAgentToolSources(
-	actions: IAppBuilderActionDefinition[],
+	action: IAppBuilderActionDefinition,
 	input: unknown,
 ): BindResult {
 	const cloned = JSON.parse(
-		JSON.stringify(actions),
-	) as IAppBuilderActionDefinition[];
-	for (const action of cloned) {
-		const message = bindAction(action, input);
-		if (message) return {ok: false, message};
-	}
-	return {ok: true, actions: cloned};
+		JSON.stringify(action),
+	) as IAppBuilderActionDefinition;
+	const message = bindAction(cloned, input);
+	if (message) return {ok: false, message};
+	return {ok: true, action: cloned};
 }

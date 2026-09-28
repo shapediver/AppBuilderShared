@@ -42,7 +42,7 @@ const setLength: ExecutableSpecificTool = {
 	name: "set_length",
 	description: "Set the Length parameter",
 	inputSchema: {type: "object"},
-	actionSequence: [],
+	action: undefined,
 	execute,
 };
 
@@ -67,7 +67,7 @@ describe("registerResolvedTools specific tools", () => {
 			inputSchema: {type: "object"},
 			annotations: {readOnlyHint: false, untrustedContentHint: true},
 		});
-		expect(JSON.stringify(registered)).not.toContain("actionSequence");
+		expect(registered).not.toHaveProperty("action");
 
 		await registered.execute(
 			{length: 4},

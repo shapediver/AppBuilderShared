@@ -10,7 +10,7 @@ export type ResolvedSpecificTool = {
 	name: string;
 	description: string;
 	inputSchema: Record<string, JsonValue>;
-	actionSequence: IAppBuilderActionDefinition[];
+	action?: IAppBuilderActionDefinition;
 };
 
 /** Resolved specific tool plus the runner closed over live session deps. */
@@ -56,7 +56,7 @@ export function resolveSpecificTools(
 			name: tool.name,
 			description: tool.description ?? tool.name,
 			inputSchema: tool.inputSchema,
-			actionSequence: tool.actionSequence ?? [],
+			...(tool.action ? {action: tool.action} : {}),
 		});
 	}
 	return [...byName.values()];

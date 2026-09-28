@@ -134,12 +134,10 @@ describe("IAppBuilder.agents schema", () => {
 									preset: {type: "string"},
 								},
 							},
-							actionSequence: [
-								{
-									type: "closeConfigurator",
-									props: {},
-								},
-							],
+							action: {
+								type: "closeConfigurator",
+								props: {},
+							},
 						},
 					],
 				},
@@ -160,7 +158,7 @@ describe("IAppBuilder.agents schema", () => {
 		expect(result.success).toBe(false);
 	});
 
-	it("accepts a specific-tool actionSequence that maps input via agentTool", () => {
+	it("accepts a specific-tool action that maps input via agentTool", () => {
 		const result = validateAppBuilder(
 			layout([
 				{
@@ -172,18 +170,16 @@ describe("IAppBuilder.agents schema", () => {
 								type: "object",
 								properties: {length: {type: "number"}},
 							},
-							actionSequence: [
-								{
-									type: "setParameterValue",
-									props: {
-										parameter: {name: "Length"},
-										source: {
-											type: "agentTool",
-											props: {path: "$.length"},
-										},
+							action: {
+								type: "setParameterValue",
+								props: {
+									parameter: {name: "Length"},
+									source: {
+										type: "agentTool",
+										props: {path: "$.length"},
 									},
 								},
-							],
+							},
 						},
 					],
 				},

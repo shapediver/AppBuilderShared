@@ -111,7 +111,7 @@ describe("useToolsApiConnector", () => {
 				name: "set_length",
 				description: "Set length",
 				inputSchema: {type: "object"},
-				actionSequence: [],
+				action: undefined,
 				execute: async () => ({success: true}),
 			},
 		];

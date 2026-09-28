@@ -89,7 +89,7 @@ describe("listToolsFromResolved", () => {
 					name: "set_length",
 					description: "Set length",
 					inputSchema: {type: "object"},
-					actionSequence: [],
+					action: undefined,
 				},
 			],
 		);
@@ -156,7 +156,7 @@ describe("executeResolvedTool", () => {
 			name: "set_length",
 			description: "Set length",
 			inputSchema: {type: "object"},
-			actionSequence: [],
+			action: undefined,
 			execute,
 		};
 		const result = await executeResolvedTool(
@@ -175,7 +175,7 @@ describe("executeResolvedTool", () => {
 			name: "set_length",
 			description: "Set length",
 			inputSchema: {type: "object"},
-			actionSequence: [],
+			action: undefined,
 			execute: async () => {
 				throw new Error("specific boom");
 			},

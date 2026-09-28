@@ -233,7 +233,14 @@ export interface IAppBuilderActionPropsSetParameterValue {
 export type IAppBuilderLegacyActionPropsSetParameterValue =
 	IAppBuilderActionPropsSetParameterValue & IAppBuilderActionPropsCommon;
 
-/** Properties of a "setParameterValues" action. */
+/**
+ * Properties of a "setParameterValues" action.
+ *
+ * If one value is invalid, the other valid values in this action are still
+ * written and the action fails with the first error message.
+ * Follow-up: add a property here that selects this behavior, so a caller can
+ * instead leave every value unchanged when one of them is invalid.
+ */
 export interface IAppBuilderActionPropsSetParameterValues {
 	/** Parameter values to set. */
 	parameterValues: IAppBuilderActionPropsSetParameterValue[];
