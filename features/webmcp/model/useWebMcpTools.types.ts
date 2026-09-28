@@ -1,10 +1,12 @@
+import type {ExecutableSpecificTool} from "@AppBuilderLib/features/agent-tools/config/resolveSpecificTools";
 import type {ResolvedGenericTool} from "@AppBuilderLib/features/agent-tools/config/resolveToolset";
 import type {IToolsApiHandlerMap} from "@AppBuilderLib/features/agent-tools/config/toolsApiConnector";
 
 export interface UseWebMcpToolsProps {
 	namespace?: string;
 	enabled?: boolean;
-	resolvedTools: ResolvedGenericTool[];
+	resolvedGenericTools: ResolvedGenericTool[];
+	resolvedSpecificTools?: ExecutableSpecificTool[];
 	toolHandlers: IToolsApiHandlerMap;
 	snapshotComplete: boolean;
 }

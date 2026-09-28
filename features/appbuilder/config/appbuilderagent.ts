@@ -195,22 +195,40 @@ export interface SpecificToolSettings {
 	description?: string;
 
 	/**
-	 * Input schema for the tool.
+	 * JSON Schema for the tool call.
+	 * Passed through to the agent as inputSchema.
+	 * The call is validated against this schema before the action runs.
 	 */
 	inputSchema: Record<string, JsonValue>;
 
 	/**
-	 * Optional sequence of actions that should be run when the tool is triggered.
-	 * Information about these actions will not be exposed to the agent.
-	 * Values from the @see SpecificToolSettings.inputSchema can be mapped to the action
-	 * properties using the "agentTool" parameter value source.
+	 * Optional action that runs when the tool is triggered.
+	 * Information about this action is not exposed to the agent.
+	 * Several steps are an executeActions action.
+	 * A value from the tool call can be mapped onto setParameterValue and
+	 * setParameterValues, including inside executeActions, using the "agentTool"
+	 * parameter value source.
 	 * @see IAppBuilderParameterValueSourcePropsAgentTool
+	 * @see IAppBuilderActionPropsExecuteActions
+	 *
+	 * A missing action fails with `{ success: false, message: "no action" }`.
+	 * The action's own failure is returned as `{ success: false, message }`.
+	 * When the action is executeActions, mode "parallel" (the default) still
+	 * runs its sibling actions, and mode "sequential" stops at the first nested
+	 * failure. Actions that already ran stay applied.
+	 *
+	 * setParameterValues keeps the existing App Builder behavior: an invalid
+	 * value does not block the other values in that same action. Valid values
+	 * are written, then the action fails with the first error message.
+	 * A follow-up will add a property on IAppBuilderActionPropsSetParameterValues
+	 * to choose that behavior.
+	 * @see IAppBuilderActionPropsSetParameterValues
 	 */
-	actionSequence?: IAppBuilderActionDefinition[];
+	action?: IAppBuilderActionDefinition;
 
 	/**
 	 * Optional remote execution settings for the tool.
-	 * Will be ignored if actionSequence is provided.
+	 * Not implemented. Ignored.
 	 */
 	remoteExecution?: RemoteToolExecutionSettings;
 }

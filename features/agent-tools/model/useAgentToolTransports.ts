@@ -42,14 +42,16 @@ export function useAgentToolTransports(
 	useWebMcpTools({
 		namespace,
 		enabled: isWebMcpAvailable(),
-		resolvedTools: runtime.resolvedTools,
+		resolvedGenericTools: runtime.resolvedGenericTools,
+		resolvedSpecificTools: runtime.resolvedSpecificTools,
 		toolHandlers: runtime.toolHandlers,
 		snapshotComplete: runtime.snapshotComplete,
 	});
 
 	useToolsApiConnector({
 		window: agentWindow,
-		resolvedTools: runtime.resolvedTools,
+		resolvedGenericTools: runtime.resolvedGenericTools,
+		resolvedSpecificTools: runtime.resolvedSpecificTools,
 		toolHandlers: runtime.toolHandlers,
 		snapshotComplete: runtime.snapshotComplete,
 		agentConfig: runtime.agentConfig,

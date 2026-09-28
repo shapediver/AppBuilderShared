@@ -2,6 +2,10 @@ import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbui
 import type {IAppBuilderAgent} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {useRef} from "react";
 import {
+	resolveSpecificTools,
+	type ExecutableSpecificTool,
+} from "../config/resolveSpecificTools";
+import {
 	resolveToolset,
 	type ResolvedGenericTool,
 } from "../config/resolveToolset";
@@ -25,7 +29,9 @@ export type UseAgentToolRuntimeProps = {
 
 export type UseAgentToolRuntimeResult = {
 	/** Generic tools from `resolveToolset(agents[0])`. Shared by WebMCP and ToolsApi. */
-	resolvedTools: ResolvedGenericTool[];
+	resolvedGenericTools: ResolvedGenericTool[];
+	/** Specific tools from the same `agents[0]` snapshot, each with `execute`. */
+	resolvedSpecificTools: ExecutableSpecificTool[];
 	/** Stable handler map (`useMemo` []). Same object for both transports. */
 	toolHandlers: AgentToolHandlerMap;
 	/** `false` while snapshot is still `"unset"` — do not handshake / register yet. */
@@ -45,8 +51,8 @@ export type UseAgentToolRuntimeResult = {
  * Until then the snapshot is `"unset"` and `snapshotComplete` is false.
  *
  * Callers:
- * - `useWebMcpTools({ resolvedTools, toolHandlers, snapshotComplete })`
- * - `useToolsApiConnector({ resolvedTools, toolHandlers, snapshotComplete, agentConfig, window? })`
+ * - `useWebMcpTools({ resolvedGenericTools, resolvedSpecificTools, toolHandlers, snapshotComplete })`
+ * - `useToolsApiConnector({ resolvedGenericTools, resolvedSpecificTools, toolHandlers, snapshotComplete, agentConfig, window? })`
  *
  * Do not resolve the toolset again inside those hooks.
  */
@@ -66,12 +72,22 @@ export function useAgentToolRuntime(
 		agentRef.current === AGENT_SNAPSHOT_UNSET
 			? undefined
 			: agentRef.current;
-	const resolvedTools = resolveToolset(agentConfig);
-	const toolHandlers = useAgentToolHandlers({
+	const resolvedGenericTools = resolveToolset(agentConfig);
+	const {toolHandlers, resolvedSpecificTools} = useAgentToolHandlers({
 		namespace: namespace ?? "",
 		appBuilderData,
-		resolvedTools,
+		resolvedGenericTools,
+		resolvedSpecificTools: resolveSpecificTools(
+			agentConfig,
+			resolvedGenericTools.map((tool) => tool.name),
+		),
 	});
 
-	return {resolvedTools, toolHandlers, snapshotComplete, agentConfig};
+	return {
+		resolvedGenericTools,
+		resolvedSpecificTools,
+		toolHandlers,
+		snapshotComplete,
+		agentConfig,
+	};
 }

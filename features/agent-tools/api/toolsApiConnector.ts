@@ -6,6 +6,7 @@ import {
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import {CrossWindowApiFactory} from "@AppBuilderLib/shared/lib/crosswindowapi/crosswindowapi";
+import type {ExecutableSpecificTool} from "../config/resolveSpecificTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import {
 	MESSAGE_TYPE_EXECUTE_TOOL,
@@ -62,17 +63,21 @@ export class ToolsApiConnector implements IToolsApiConnector {
 	peerIsReady: Promise<ICrossWindowPeerInfo>;
 
 	constructor(
-		resolvedTools: ResolvedGenericTool[],
+		resolvedGenericTools: ResolvedGenericTool[],
 		toolHandlers: IToolsApiHandlerMap,
 		crossWindowApi: ICrossWindowApi,
 		options?: ICrossWindowApiOptions,
 		agentConfig?: IAgentConfigReply | null,
 		sessionInfo?: IAgentSessionInfo | null,
+		resolvedSpecificTools: ExecutableSpecificTool[] = [],
 	) {
 		this.#crossWindowApi = crossWindowApi;
 		this.#listenerCancels.push(
 			crossWindowApi.on(MESSAGE_TYPE_LIST_TOOLS, async () =>
-				listToolsFromResolved(resolvedTools),
+				listToolsFromResolved(
+					resolvedGenericTools,
+					resolvedSpecificTools,
+				),
 			),
 		);
 		this.#listenerCancels.push(
@@ -86,8 +91,9 @@ export class ToolsApiConnector implements IToolsApiConnector {
 					return executeResolvedTool(
 						request.name,
 						request.input,
-						resolvedTools,
+						resolvedGenericTools,
 						toolHandlers,
+						resolvedSpecificTools,
 					);
 				},
 			),
@@ -133,20 +139,22 @@ export class ToolsApiConnectorFactoryClass implements IToolsApiConnectorFactory 
 	 * Server bound to the agent `window`. Registers listeners, then handshakes.
 	 * Default names: `"app"` → `"agent"`.
 	 *
-	 * `resolvedTools` filters which names exist; `toolHandlers` runs them.
+	 * `resolvedGenericTools` filters generic names; `toolHandlers` runs those.
+	 * `resolvedSpecificTools` are listed and run via each tool's `execute`.
 	 * `agentConfig` is `IAppBuilder.agents[0]` (parameterized).
 	 * `sessionInfo` is controller session fields for `getSessionInfo`.
 	 * Called from {@link useToolsApiConnector} once snapshot + peer window exist.
 	 */
 	async getConnectorApi(
 		window: Window,
-		resolvedTools: ResolvedGenericTool[],
+		resolvedGenericTools: ResolvedGenericTool[],
 		toolHandlers: IToolsApiHandlerMap,
 		name = TOOLS_API_NAME_APP,
 		peerName = TOOLS_API_NAME_AGENT,
 		options?: ICrossWindowApiOptions,
 		agentConfig?: IAgentConfigReply | null,
 		sessionInfo?: IAgentSessionInfo | null,
+		resolvedSpecificTools?: ExecutableSpecificTool[],
 	): Promise<IToolsApiConnector> {
 		const optionsWithTimeout = withDefaultTimeout(options);
 		const api = await this.crossWindowFactory.getWindowApi(
@@ -156,12 +164,13 @@ export class ToolsApiConnectorFactoryClass implements IToolsApiConnectorFactory 
 			optionsWithTimeout,
 		);
 		return new ToolsApiConnector(
-			resolvedTools,
+			resolvedGenericTools,
 			toolHandlers,
 			api,
 			optionsWithTimeout,
 			agentConfig,
 			sessionInfo,
+			resolvedSpecificTools,
 		);
 	}
 }

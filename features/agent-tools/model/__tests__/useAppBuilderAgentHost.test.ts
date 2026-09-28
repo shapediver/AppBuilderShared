@@ -38,7 +38,8 @@ const sampleAgent: IAppBuilderAgent = {
 };
 
 const transports = {
-	resolvedTools: [],
+	resolvedGenericTools: [],
+	resolvedSpecificTools: [],
 	toolHandlers: {},
 	snapshotComplete: true,
 	agentConfig: sampleAgent,

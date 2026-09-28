@@ -58,7 +58,7 @@ export interface IListToolsReply {
 	tools: IListToolsTool[];
 }
 
-/** Body of EXECUTE_TOOL. `name` is a resolved generic tool name (snake_case). */
+/** Body of EXECUTE_TOOL. `name` is a resolved generic or specific tool name (snake_case). */
 export interface IExecuteToolData {
 	name: string;
 	input: unknown;
