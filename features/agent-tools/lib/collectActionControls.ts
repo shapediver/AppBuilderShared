@@ -35,12 +35,16 @@ function listedActionId(ref: IAppBuilderControlActionRef): string {
 	return ref.id ?? ref.label ?? ref.definition.type;
 }
 
-function toListed(ref: IAppBuilderControlActionRef): ListedActionControl {
+function toListed(
+	ref: IAppBuilderControlActionRef,
+	description?: string,
+): ListedActionControl {
 	const identity = listedActionId(ref);
 	return {
 		id: identity,
 		name: ref.label ?? identity,
 		type: ref.definition.type,
+		...(description ? {description} : {}),
 	};
 }
 
@@ -55,15 +59,19 @@ function matchesActionIdOrLabel(
 function listExplicitActionRefs(
 	collected: IAppBuilderControlActionRef[],
 	explicit: IAgentActionControlRef[],
-): IAppBuilderControlActionRef[] {
-	const refs: IAppBuilderControlActionRef[] = [];
+): {ref: IAppBuilderControlActionRef; description?: string}[] {
+	const refs: {ref: IAppBuilderControlActionRef; description?: string}[] =
+		[];
 	for (const wanted of explicit) {
+		const described = wanted.description
+			? {description: wanted.description}
+			: {};
 		if (wanted.action) {
-			refs.push(wanted.action);
+			refs.push({ref: wanted.action, ...described});
 		} else if (wanted.name !== undefined) {
 			for (const ref of collected) {
 				if (matchesActionIdOrLabel(ref, wanted.name)) {
-					refs.push(ref);
+					refs.push({ref, ...described});
 				}
 			}
 		}
@@ -189,7 +197,9 @@ export function collectActionControlRefs(
 
 	const explicit = args.settings.actions;
 	if (explicit) {
-		return listExplicitActionRefs(collected, explicit);
+		return listExplicitActionRefs(collected, explicit).map(
+			(item) => item.ref,
+		);
 	}
 
 	const types = new Set<AppBuilderActionType>(
@@ -213,5 +223,15 @@ export function findActionControlByName(
 export function collectActionControls(
 	args: CollectActionControlsArgs,
 ): ListedActionControl[] {
-	return collectActionControlRefs(args).map(toListed);
+	const explicit = args.settings.actions;
+	if (explicit) {
+		const collected = [
+			...collectFromAppBuilder(args.appBuilder),
+			...args.defaultToolbarActions,
+		];
+		return listExplicitActionRefs(collected, explicit).map((item) =>
+			toListed(item.ref, item.description),
+		);
+	}
+	return collectActionControlRefs(args).map((ref) => toListed(ref));
 }

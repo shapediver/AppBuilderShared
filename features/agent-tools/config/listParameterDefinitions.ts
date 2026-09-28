@@ -31,6 +31,7 @@ const ListParameterDefinitionItemSchema = z.object({
 	defaultValue: parameterValueSchema.optional(),
 	hidden: z.boolean().optional(),
 	settable: z.boolean(),
+	description: z.string().optional(),
 });
 
 export const listParameterDefinitionsInputSchema = z.strictObject({});

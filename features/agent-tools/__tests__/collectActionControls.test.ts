@@ -64,6 +64,31 @@ describe("collectActionControls", () => {
 		expect(actions).toEqual([]);
 	});
 
+	it("includes the agent reference description on an explicit action", () => {
+		const actions = collectActionControls({
+			appBuilder: emptyApp,
+			defaultToolbarActions: [undoAction({id: "save"})],
+			settings: {
+				name: "list_action_controls",
+				actions: [
+					{
+						name: "save",
+						description: "Save the current configuration",
+					},
+				],
+			},
+		});
+
+		expect(actions).toEqual([
+			{
+				id: "save",
+				name: "save",
+				type: "undo",
+				description: "Save the current configuration",
+			},
+		]);
+	});
+
 	it("keeps only the explicit actions name when provided", () => {
 		const actions = collectActionControls({
 			appBuilder: emptyApp,

@@ -123,6 +123,34 @@ describe("handleListParameterDefinitions", () => {
 		);
 		expect(withoutSessionId.parameters).toEqual([]);
 	});
+
+	it("includes the agent reference description on the listed parameter", async () => {
+		const result = await handleListParameterDefinitions(
+			{},
+			{
+				name: "list_parameter_definitions",
+				parameters: [
+					{
+						name: "SizeZ",
+						description:
+							"Size in the Z axis. Thickness is one tenth of this value.",
+					},
+				],
+			},
+			createDeps({
+				c: [param("SizeZ", {name: "SizeZ"})],
+			}),
+		);
+
+		expect(result.parameters).toEqual([
+			expect.objectContaining({
+				id: "SizeZ",
+				name: "SizeZ",
+				description:
+					"Size in the Z axis. Thickness is one tenth of this value.",
+			}),
+		]);
+	});
 });
 
 describe("handleGetParameterValues", () => {
