@@ -1,7 +1,11 @@
 import {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {findAppBuilderActionRegistration} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
+import {stripLegacyDisplayProps} from "@AppBuilderLib/features/appbuilder/lib/legacyActionToDefinition";
 import React from "react";
-import {IAppBuilderControlActionRef} from "../config/appbuilder";
+import {
+	IAppBuilderActionPropsCommon,
+	IAppBuilderControlActionRef,
+} from "../config/appbuilder";
 import {AppBuilderActionRenderProps} from "./AppBuilderActionBase";
 import {sharedAppBuilderActions} from "./sharedAppBuilderActions";
 
@@ -57,7 +61,9 @@ export function AppBuilderActionFromType(
 			fullscreenId={fullscreenId}
 			disabled={disabled}
 			{...actionPropsCommon}
-			{...actionRef.definition.props}
+			{...stripLegacyDisplayProps(
+				actionRef.definition.props as IAppBuilderActionPropsCommon,
+			)}
 		/>
 	);
 }

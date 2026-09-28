@@ -17,7 +17,7 @@ function stripLegacyCommonProps<T extends IAppBuilderActionPropsCommon>(
 	return rest as DistributiveOmit<T, keyof IAppBuilderActionPropsCommon>;
 }
 
-function stripLegacyDisplayProps<
+export function stripLegacyDisplayProps<
 	T extends Pick<IAppBuilderActionPropsCommon, "icon" | "label" | "tooltip">,
 >(props: T): DistributiveOmit<T, "icon" | "label" | "tooltip"> {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars

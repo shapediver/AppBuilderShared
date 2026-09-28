@@ -9,7 +9,7 @@ import type {ToolbarPopoverItem} from "@AppBuilderLib/features/appbuilder/config
 import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import AppBuilderTabsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderTabsComponent";
 import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
-import {Divider, Paper, Stack, Text} from "@mantine/core";
+import {Divider, Paper, Stack} from "@mantine/core";
 import React, {useMemo} from "react";
 import {AppBuilderActionFromType} from "./AppBuilderActionFromType";
 import AppBuilderActionSlots from "./AppBuilderActionSlots";
@@ -217,23 +217,13 @@ export default function AppBuilderToolbarPopoverContent({
 						})}
 					</Stack>
 				);
-			case "widgets": {
-				const widgets = (
+			case "widgets":
+				return (
 					<AppBuilderWidgetsComponent
 						namespace={namespace}
 						widgets={item.props.widgets}
 					/>
 				);
-				if (!item.label) return widgets;
-				return (
-					<Stack gap="xs">
-						<Text size="sm" fw={600}>
-							{item.label}
-						</Text>
-						{widgets}
-					</Stack>
-				);
-			}
 			case "tabs":
 				return (
 					<AppBuilderTabsComponent

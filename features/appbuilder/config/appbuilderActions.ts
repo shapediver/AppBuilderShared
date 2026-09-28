@@ -91,11 +91,11 @@ export type IAppBuilderActionDefinition =
 export interface IAppBuilderActionPropsCommon {
 	/** Optional identifier of the action. Used to uniquely reference actions in agent definitions, etc. */
 	id?: string;
-	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. Set to empty string to show only an icon. */
+	/** Label of the control. Prefer the toolbar item or control `label`; ignored on `definition.props`. Empty string shows only an icon. */
 	label?: string;
-	/** Optional icon name, image URL, or inline Iconify object (of the button etc). */
+	/** Optional icon name, image URL, or inline Iconify object of the control. Ignored on `definition.props`. */
 	icon?: IAppBuilderIcon;
-	/** Optional tooltip. */
+	/** Optional tooltip of the control. Ignored on `definition.props`. */
 	tooltip?: string;
 }
 
