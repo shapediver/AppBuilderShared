@@ -1,4 +1,3 @@
-import type {IAppBuilderActionDefinition} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {
 	IAppBuilderAgent,
 	SpecificToolSettings,
@@ -10,7 +9,7 @@ export type ResolvedSpecificTool = {
 	name: string;
 	description: string;
 	inputSchema: Record<string, JsonValue>;
-	action?: IAppBuilderActionDefinition;
+	action?: NonNullable<SpecificToolSettings["action"]>;
 };
 
 /** Resolved specific tool plus the runner closed over live session deps. */
