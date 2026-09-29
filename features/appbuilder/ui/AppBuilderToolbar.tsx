@@ -85,10 +85,17 @@ interface Props {
 	toolbar: ResolvedToolbarRegistration;
 	buttonRenderContext: ButtonRenderContext;
 	themePropsOverride?: Partial<typeof defaultStyleProps>;
+	/**
+	 * Keep the toolbar on screen even when its visibility mode would hide it.
+	 * Used so accept/reject controls injected into a bottom-center toolbar stay
+	 * available until the pending parameter changes are confirmed.
+	 */
+	forceVisible?: boolean;
 }
 
 export default function AppBuilderToolbar(props: Props) {
-	const {toolbar, buttonRenderContext, themePropsOverride} = props;
+	const {toolbar, buttonRenderContext, themePropsOverride, forceVisible} =
+		props;
 	const legacyThemedProps = useProps(
 		"ViewportIcons",
 		defaultStyleProps,
@@ -421,7 +428,7 @@ export default function AppBuilderToolbar(props: Props) {
 
 	return (
 		<Transition
-			mounted={visible}
+			mounted={visible || forceVisible === true}
 			{...transitionProps}
 			duration={reducedMotion ? 0 : transitionProps.duration}
 		>

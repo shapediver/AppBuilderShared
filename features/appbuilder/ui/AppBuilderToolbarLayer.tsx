@@ -1,3 +1,4 @@
+import {hasExecutingParameterChanges} from "@AppBuilderLib/entities/parameter/lib/hasPendingParameterChanges";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {
 	legacyViewportIconsDefaultStyleProps,
@@ -117,30 +118,21 @@ export default function AppBuilderToolbarLayer({
 		...legacyDefaultToolbarOptions,
 	});
 
-	const parameterChanges = useShapeDiverStoreParameters(
-		useCallback(
-			(state) => {
-				if (!namespace) return [];
-				const ids = state.sessionDependency[namespace];
-				if (ids === undefined || ids.length === 0) return [];
-				return ids
-					.map((id) => state.parameterChanges[id])
-					.filter(Boolean);
-			},
-			[namespace],
+	// Same queue the viewport overlay buttons use. Custom parameters are stored
+	// under a dependent namespace, so this cannot be limited to sessionDependency
+	// of the controller session or those changes never surface in the toolbar.
+	const hasPendingChanges = useShapeDiverStoreParameters((state) =>
+		Object.keys(state.parameterChanges).some(
+			(id) =>
+				Object.keys(state.parameterChanges[id]?.values ?? {}).length >
+				0,
 		),
 	);
-	const executing = useMemo(
-		() => parameterChanges.some((change) => change.executing),
-		[parameterChanges],
-	);
-	const hasPendingChanges = useMemo(
-		() =>
-			parameterChanges.length > 0 &&
-			parameterChanges.some(
-				(change) => Object.keys(change.values).length > 0,
-			),
-		[parameterChanges],
+	const executing = useShapeDiverStoreParameters(
+		useCallback(
+			(state) => hasExecutingParameterChanges(namespace, state),
+			[namespace],
+		),
 	);
 
 	// Thin compatibility layer: legacy `ViewportIconButton` theme overrides still
@@ -249,6 +241,10 @@ export default function AppBuilderToolbarLayer({
 								key={toolbar.id}
 								toolbar={toolbar}
 								buttonRenderContext={buttonRenderContext}
+								forceVisible={
+									showToolbarAcceptRejectButtons &&
+									toolbar.id === bottomCenterToolbar?.id
+								}
 							/>
 						))}
 					</section>
