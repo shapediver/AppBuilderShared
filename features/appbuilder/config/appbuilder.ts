@@ -480,8 +480,23 @@ export type AppBuilderControlType =
 	| "action"
 	| "output";
 
+/**
+ * Presentation of a control or toolbar panel (widget/button or toolbar icon).
+ * `labelSide` / `labelAlign` apply only on a toolbar; ignored elsewhere.
+ */
+export interface IAppBuilderControlPresentation {
+	label?: string;
+	/** Icon name, image URL, or inline Iconify object. */
+	icon?: IAppBuilderIcon;
+	tooltip?: string;
+	/** When set with a non-empty label, show the caption on this side of the icon. */
+	labelSide?: AppBuilderToolbarSide;
+	/** Cross-axis alignment of the icon caption. Default "center". */
+	labelAlign?: AppBuilderToolbarAlign;
+}
+
 /** Control referencing a parameter (custom or defined by the session) */
-export interface IAppBuilderControlParameterRef {
+export interface IAppBuilderControlParameterRef extends IAppBuilderControlPresentation {
 	/** Id or name or displayname of the referenced parameter (in that order). */
 	name: string;
 	/** Optional id of the session the referenced parameter belongs to. */
@@ -500,7 +515,7 @@ export interface IAppBuilderControlParameterRef {
 }
 
 /** Control referencing an export (defined by the session) */
-export interface IAppBuilderControlExportRef {
+export interface IAppBuilderControlExportRef extends IAppBuilderControlPresentation {
 	/** Id or name or displayname of the referenced export (in that order). */
 	name: string;
 	/** Optional id of the session the referenced export belongs to. */
@@ -518,7 +533,7 @@ export interface IAppBuilderControlExportRef {
 }
 
 /** Control referencing an output (defined by the session) */
-export interface IAppBuilderControlOutputRef {
+export interface IAppBuilderControlOutputRef extends IAppBuilderControlPresentation {
 	/** Id or name or displayname of the referenced output (in that order). */
 	name: string;
 	/** Optional id of the session the referenced output belongs to. */
@@ -531,7 +546,10 @@ export interface IAppBuilderControlOutputRef {
 }
 
 /** Control referencing an action */
-export interface IAppBuilderControlActionRef extends IAppBuilderActionPropsCommon {
+export interface IAppBuilderControlActionRef
+	extends
+		IAppBuilderActionPropsCommon,
+		Pick<IAppBuilderControlPresentation, "labelSide" | "labelAlign"> {
 	/** Embedded action definition. */
 	definition: IAppBuilderActionDefinition;
 	/** In the future we might include a reference to a globally defined action here.  */
@@ -1269,14 +1287,6 @@ export interface IAppBuilderToolbarItemBase<
 	props: TProps;
 	/** Optional stable id for runtime APIs, accessibility and diagnostics. */
 	id?: string;
-	/** Toolbar-specific icon name, image URL, or inline Iconify object. */
-	icon?: IAppBuilderIcon;
-	label?: string;
-	tooltip?: string;
-	/** When set with a non-empty label, show the label beside the icon on this side. */
-	labelSide?: AppBuilderToolbarSide;
-	/** Cross-axis alignment of the icon caption. Default "center" when rendering. */
-	labelAlign?: AppBuilderToolbarAlign;
 	/** Optional item order for runtime-merged groups. */
 	order?: number;
 	/** Optional presentation mode when this item is rendered inside a popover. */
@@ -1311,7 +1321,7 @@ export type IAppBuilderToolbarControlItem =
 
 export type IAppBuilderToolbarActionMenuItem = IAppBuilderToolbarItemBase<
 	"actionMenu",
-	{
+	IAppBuilderControlPresentation & {
 		/** Action sections rendered when this item is opened. */
 		sections: IAppBuilderToolbarActionItem[][];
 	}
@@ -1319,7 +1329,7 @@ export type IAppBuilderToolbarActionMenuItem = IAppBuilderToolbarItemBase<
 
 export type IAppBuilderToolbarWidgetPanelItem = IAppBuilderToolbarItemBase<
 	"widgets",
-	{
+	IAppBuilderControlPresentation & {
 		/** Widgets rendered when this item is opened. */
 		widgets: IAppBuilderWidget[];
 	}
@@ -1327,7 +1337,7 @@ export type IAppBuilderToolbarWidgetPanelItem = IAppBuilderToolbarItemBase<
 
 export type IAppBuilderToolbarTabbedPanelItem = IAppBuilderToolbarItemBase<
 	"tabs",
-	{
+	IAppBuilderControlPresentation & {
 		/** Tabs rendered when this item is opened. */
 		tabs: IAppBuilderTab[];
 		/** When true, tabs stick to the top when scrolling the opened item content. */

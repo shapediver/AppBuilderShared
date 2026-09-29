@@ -60,8 +60,7 @@ function listExplicitActionRefs(
 	collected: IAppBuilderControlActionRef[],
 	explicit: IAgentActionControlRef[],
 ): {ref: IAppBuilderControlActionRef; description?: string}[] {
-	const refs: {ref: IAppBuilderControlActionRef; description?: string}[] =
-		[];
+	const refs: {ref: IAppBuilderControlActionRef; description?: string}[] = [];
 	for (const wanted of explicit) {
 		const described = wanted.description
 			? {description: wanted.description}
@@ -121,12 +120,7 @@ function collectFromTabs(
 function mergeToolbarActionItem(
 	item: IAppBuilderToolbarActionItem,
 ): IAppBuilderControlActionRef {
-	return {
-		...item.props,
-		label: item.label ?? item.props.label,
-		icon: item.icon ?? item.props.icon,
-		tooltip: item.tooltip ?? item.props.tooltip,
-	};
+	return item.props;
 }
 
 function appendFromToolbarItems(

@@ -312,7 +312,7 @@ describe("collectActionControls", () => {
 		expect(ids(actions)).toEqual(["Undo"]);
 	});
 
-	it("merges toolbar item-level label onto the action ref", () => {
+	it("uses toolbar control props label as the action ref label", () => {
 		const appBuilder: IAppBuilder = {
 			version: "1.0",
 			containers: [
@@ -323,8 +323,10 @@ describe("collectActionControls", () => {
 						[
 							{
 								type: "action",
-								label: "Undo",
-								props: {definition: {type: "undo", props: {}}},
+								props: {
+									label: "Undo",
+									definition: {type: "undo", props: {}},
+								},
 							},
 						],
 					],
@@ -389,8 +391,8 @@ describe("collectActionControls", () => {
 						[
 							{
 								type: "action",
-								label: "Save",
 								props: {
+									label: "Save",
 									definition: {
 										type: "createModelState",
 										props: {},
@@ -432,6 +434,7 @@ describe("collectActionControls", () => {
 									type: "action",
 									label: "Save",
 									props: {
+										label: "Save",
 										definition: {
 											type: "createModelState",
 											props: {},

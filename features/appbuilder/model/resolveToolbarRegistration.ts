@@ -1,4 +1,7 @@
-import {IAppBuilderToolbarActionItem} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	IAppBuilderControlPresentation,
+	IAppBuilderToolbarActionItem,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
 	isToolbarActionMenuItem,
 	type ToolbarItem,
@@ -11,6 +14,16 @@ import type {
 	ToolbarRenderItem,
 } from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 
+const controlPresentation = (
+	props: IAppBuilderControlPresentation,
+): IAppBuilderControlPresentation => ({
+	label: props.label,
+	icon: props.icon,
+	tooltip: props.tooltip,
+	labelSide: props.labelSide,
+	labelAlign: props.labelAlign,
+});
+
 const resolveActionItem = (
 	item: IAppBuilderToolbarActionItem,
 	fallbackId: string,
@@ -18,15 +31,12 @@ const resolveActionItem = (
 	...item,
 	id: item.id ?? fallbackId,
 	type: "action",
-	label: item.label ?? item.props.label ?? item.props.definition.type,
-	icon: item.icon ?? item.props.icon,
-	tooltip: item.tooltip ?? item.props.tooltip,
-	props: {
-		...item.props,
-		label: item.label ?? item.props.label,
-		icon: item.icon ?? item.props.icon,
-		tooltip: item.tooltip ?? item.props.tooltip,
-	},
+	label: item.props.label ?? item.props.definition.type,
+	icon: item.props.icon,
+	tooltip: item.props.tooltip,
+	labelSide: item.props.labelSide,
+	labelAlign: item.props.labelAlign,
+	props: item.props,
 });
 
 const resolveItem = (
@@ -45,7 +55,8 @@ const resolveItem = (
 			...item,
 			id: item.id ?? fallbackId,
 			type: "menu",
-			label: item.label ?? "Toolbar item",
+			...controlPresentation(item.props),
+			label: item.props.label ?? "Toolbar item",
 			props: {
 				sections: item.props.sections.map((section, sectionIndex) => ({
 					id: `${item.id ?? fallbackId}-section-${sectionIndex}`,
@@ -67,14 +78,21 @@ const resolveItem = (
 		case "parameter":
 		case "export":
 		case "output":
+			return {
+				...item,
+				id: item.id ?? fallbackId,
+				...controlPresentation(item.props),
+				label:
+					item.props.label ??
+					("name" in item.props ? item.props.name : "Toolbar item"),
+			};
 		case "widgets":
 		case "tabs":
 			return {
 				...item,
 				id: item.id ?? fallbackId,
-				label:
-					item.label ??
-					("name" in item.props ? item.props.name : "Toolbar item"),
+				...controlPresentation(item.props),
+				label: item.props.label ?? "Toolbar item",
 			};
 	}
 };

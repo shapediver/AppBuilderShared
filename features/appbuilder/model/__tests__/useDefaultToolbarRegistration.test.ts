@@ -66,8 +66,7 @@ describe("useDefaultToolbarRegistration", () => {
 		});
 		expect(defaultToolbar?.groups[0][1]).toMatchObject({
 			type: "actionMenu",
-			label: "More options",
-			props: {sections: expect.any(Array)},
+			props: {label: "More options", sections: expect.any(Array)},
 		});
 	});
 
@@ -127,13 +126,13 @@ describe("useDefaultToolbarRegistration", () => {
 				?.groups[0][0],
 		).toMatchObject({
 			type: "actionMenu",
-			label: "Cameras",
 			props: {
+				label: "Cameras",
 				sections: [
 					[
 						{
-							label: "UnnamedCamera",
 							props: {
+								label: "UnnamedCamera",
 								definition: {
 									type: "camera",
 									props: {

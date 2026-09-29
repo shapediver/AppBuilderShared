@@ -30,10 +30,16 @@ export function AppBuilderActionFromType(
 		labelSide,
 		labelAlign,
 	} = options;
+	const resolvedLabelSide = labelSide ?? actionRef.labelSide;
+	const resolvedLabelAlign = labelAlign ?? actionRef.labelAlign;
 	const resolvedToolbarButtonProps = {
 		...toolbarButtonProps,
-		...(labelSide !== undefined ? {labelSide} : {}),
-		...(labelAlign !== undefined ? {labelAlign} : {}),
+		...(resolvedLabelSide !== undefined
+			? {labelSide: resolvedLabelSide}
+			: {}),
+		...(resolvedLabelAlign !== undefined
+			? {labelAlign: resolvedLabelAlign}
+			: {}),
 	};
 	if (!actionRef.definition) return null;
 

@@ -37,8 +37,8 @@ export default function AppBuilderToolbarActionButton({
 		{
 			presentation: "toolbarIcon",
 			toolbarButtonProps: buttonThemeProps,
-			labelSide: item.labelSide,
-			labelAlign: item.labelAlign,
+			labelSide: item.props.labelSide,
+			labelAlign: item.props.labelAlign,
 			viewportId: buttonRenderContext.viewportId,
 			fullscreenId: buttonRenderContext.fullscreenId,
 			disabled,

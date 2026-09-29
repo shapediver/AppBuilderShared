@@ -132,6 +132,40 @@ describe("AppBuilderActionFromType", () => {
 		});
 	});
 
+	it("puts control labelSide on toolbarButtonProps", () => {
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Zoom extents",
+			labelSide: "bottom",
+			labelAlign: "end",
+			definition: {
+				type: "camera",
+				props: {
+					type: "zoomTo",
+					props: {},
+				},
+			},
+		};
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{
+				actions: {
+					camera: {
+						isAction: (definition) => definition.type === "camera",
+						component: CustomAction,
+					},
+				},
+			},
+			{presentation: "toolbarIcon"},
+		);
+
+		expect(element?.props.toolbarButtonProps).toMatchObject({
+			labelSide: "bottom",
+			labelAlign: "end",
+		});
+	});
+
 	it("returns null for malformed action refs without a definition", () => {
 		const element = AppBuilderActionFromType(
 			{label: "Broken"} as unknown as IAppBuilderControlActionRef,
