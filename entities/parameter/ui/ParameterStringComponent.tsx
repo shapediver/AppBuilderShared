@@ -9,12 +9,12 @@ import {
 	useProps,
 } from "@mantine/core";
 import React, {useCallback, useEffect, useMemo} from "react";
+import {ParameterStringInputMode} from "../config/ParameterStringComponent.theme.types";
 import {
 	defaultPropsParameterWrapper,
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
-import {ParameterStringInputMode} from "../config/ParameterStringComponent.theme.types";
 import {resolveStringSelectEmitValue} from "../lib/select/resolveStringSelectEmitValue";
 import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
@@ -87,29 +87,38 @@ export default function ParameterStringComponent(
 
 	const {
 		definition,
+		actions,
 		state,
 		value,
 		setValue,
 		handleChange,
+		cancelPendingChange,
 		onCancel,
 		disabled,
 		showReset,
 		resetToDefault,
 		formInputProps,
 		formKey,
-	} = useParameterComponentCommons<string>(props, debounce);
+	} = useParameterComponentCommons<string>(
+		props,
+		debounce,
+		(state) => state.uiValue,
+		false,
+	);
 
 	const notifications = useNotificationStore();
 	const {onFocusHandler, onBlurHandler, restoreFocus} = useFocus();
 
 	const commitImmediate = useCallback(
 		(next: string, restore?: () => void) => {
-			if (next === state.uiValue) {
+			// uiValue already tracks the field. Still execute when that draft
+			// has not been committed yet.
+			if (next === state.commitValue) {
 				return;
 			}
 			handleChange(next, 0, restore);
 		},
-		[handleChange, state.uiValue],
+		[handleChange, state.commitValue],
 	);
 
 	const themeSelectSettings = useMemo(() => {
@@ -174,15 +183,26 @@ export default function ParameterStringComponent(
 
 	const resolvedMode = definitionMode ?? mode;
 
+	// A timeout scheduled in debounce mode must not survive a switch to
+	// validate mode (or a change to the configured debounce duration).
+	useEffect(() => {
+		cancelPendingChange();
+	}, [resolvedMode, definitionDebounce, cancelPendingChange]);
+
 	const onTextChange = useCallback(
 		(next: string) => {
+			// Local state first so the controlled input keeps this keystroke.
+			// uiValue is published immediately so other controls stay in sync.
+			// Computation still waits for debounce, Enter, or blur.
+			setValue(next);
+			actions.setUiValue(next);
 			if (resolvedMode === ParameterStringInputMode.Validate) {
-				setValue(next);
-			} else {
-				handleChange(next, definitionDebounce, restoreFocus);
+				return;
 			}
+			handleChange(next, definitionDebounce, restoreFocus);
 		},
 		[
+			actions,
 			resolvedMode,
 			setValue,
 			handleChange,
@@ -275,7 +295,7 @@ export default function ParameterStringComponent(
 					>
 						{selectComponent}
 					</ParameterResetRow>
-				) : lines !== undefined ? (
+				) : lines !== undefined && lines > 1 ? (
 					<Textarea
 						key={formKey}
 						value={value}

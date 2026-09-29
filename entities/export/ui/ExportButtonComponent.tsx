@@ -4,6 +4,7 @@ import {
 } from "@AppBuilderLib/entities/export/config/propsExport";
 import {useExecuteExport} from "@AppBuilderLib/entities/export/model/useExecuteExport";
 import {useExport} from "@AppBuilderLib/entities/export/model/useExport";
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
 import {
 	ParameterValueDefinition,
 	useResolveParameterValues,
@@ -137,6 +138,7 @@ export default function ExportButtonComponent(
 
 	const exportData = useExport(props);
 	const {definition, actions} = exportData ?? {};
+	const hasPendingChanges = useHasPendingParameterChanges(props.namespace);
 	const notifications = useNotificationStore();
 
 	const {addProcess, createProcessManager} =
@@ -349,13 +351,14 @@ export default function ExportButtonComponent(
 
 	const onClickIntercepted = useCallback(
 		(skipStargate?: boolean) => () => {
+			if (hasPendingChanges) return;
 			const cb = (values?: IParameterValues) =>
 				interceptClick
 					? interceptClick(() => onClick(skipStargate, values))
 					: onClick(skipStargate, values);
 			return form ? form.onSubmit(cb)() : cb();
 		},
-		[onClick, interceptClick, form],
+		[onClick, interceptClick, form, hasPendingChanges],
 	);
 
 	const standardExportButton = definition ? (
@@ -370,6 +373,7 @@ export default function ExportButtonComponent(
 			}
 			onClick={onClickIntercepted()}
 			loading={requestingExport}
+			disabled={hasPendingChanges}
 		>
 			{buttonLabel ||
 				(definition.type === EXPORT_TYPE.DOWNLOAD
@@ -405,7 +409,7 @@ export default function ExportButtonComponent(
 							color={statusData.color}
 							isWaiting={requestingExport || isWaiting}
 							waitingText="Waiting for export..."
-							disabled={statusData.disabled}
+							disabled={statusData.disabled || hasPendingChanges}
 							onClick={onClickIntercepted()}
 						/>
 						<TooltipWrapper
@@ -418,6 +422,7 @@ export default function ExportButtonComponent(
 								{...downloadButtonProps}
 								onClick={onClickIntercepted(true)}
 								loading={requestingExport}
+								disabled={hasPendingChanges}
 							>
 								<Icon iconType={"tabler:download"} />
 							</Button>

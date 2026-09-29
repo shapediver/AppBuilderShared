@@ -1,3 +1,4 @@
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
 import {runAppBuilderActionAddToCart} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionAddToCart";
@@ -45,6 +46,8 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 	const [loading, setLoading] = useState(false);
 	const {viewportId: defaultViewportId} = useViewportId();
 	const viewportId = inputViewportId ?? defaultViewportId;
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = disabled || hasPendingChanges;
 	const onClick = createActionClickHandler(
 		() =>
 			runAppBuilderActionAddToCart(
@@ -65,7 +68,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 				},
 				{namespace, viewportId},
 			),
-		{disabled, setLoading},
+		{disabled: resolvedDisabled, setLoading},
 	);
 
 	return (
@@ -76,7 +79,7 @@ export default function AppBuilderActionAddToCartComponent(props: Props) {
 			tooltip={tooltip}
 			onClick={onClick}
 			loading={loading}
-			disabled={disabled}
+			disabled={resolvedDisabled}
 			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);

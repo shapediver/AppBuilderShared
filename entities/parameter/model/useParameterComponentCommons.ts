@@ -20,6 +20,7 @@ import {applyOverrides} from "@AppBuilderLib/lib/mergeOverrides";
  * @param props - Parameter props, optionally including form instance
  * @param debounceTimeoutForImmediateExecution
  * @param initializer
+ * @param disableWhileDirty Whether a dirty draft disables its own control.
  * @returns Common parameter functionality including optional form instance
  */
 export function useParameterComponentCommons<T>(
@@ -28,6 +29,7 @@ export function useParameterComponentCommons<T>(
 	initializer: (
 		state: IShapeDiverParameterState<T | string>,
 	) => T | string = (state) => state.uiValue,
+	disableWhileDirty = true,
 ) {
 	const formFromProps = (props as PropsParameterWithForm).form;
 	const debounceTimeoutForExecution = formFromProps
@@ -134,6 +136,12 @@ export function useParameterComponentCommons<T>(
 	const debounceTimeout = acceptRejectMode ? 0 : debounceTimeoutForExecution;
 	const debounceRef = useRef<ReturnType<typeof setTimeout>>();
 	const delegatesInitializedRef = useRef(false);
+	const cancelPendingChange = useCallback(() => {
+		clearTimeout(debounceRef.current);
+		debounceRef.current = undefined;
+	}, []);
+
+	useEffect(() => cancelPendingChange, [cancelPendingChange]);
 
 	const executeDelegates = useCallback(
 		(value: T | string, forceImmediate: boolean, forceSameValue = false) =>
@@ -191,7 +199,7 @@ export function useParameterComponentCommons<T>(
 			cb: () => void = () => {},
 			forceSameValue = false,
 		) => {
-			clearTimeout(debounceRef.current);
+			cancelPendingChange();
 			setValue(curval);
 			debounceRef.current = setTimeout(
 				() => {
@@ -224,6 +232,7 @@ export function useParameterComponentCommons<T>(
 			acceptRejectMode,
 			debounceTimeout,
 			actions,
+			cancelPendingChange,
 			definition,
 			executeDelegates,
 		],
@@ -300,7 +309,7 @@ export function useParameterComponentCommons<T>(
 	 *   - the parameter is disabled by another parameter (e.g. interaction parameters disable other parameters when active)
 	 */
 	const disabled =
-		(disableIfDirty && state.dirty) ||
+		(disableWhileDirty && disableIfDirty && state.dirty) ||
 		executing ||
 		delegatesExecuting ||
 		processesInSession ||
@@ -340,6 +349,7 @@ export function useParameterComponentCommons<T>(
 		value,
 		setValue,
 		handleChange,
+		cancelPendingChange,
 		setOnCancelCallback,
 		onCancel,
 		disabled,

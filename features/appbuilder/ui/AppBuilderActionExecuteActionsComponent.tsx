@@ -1,3 +1,4 @@
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {runAppBuilderActions} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderAction";
@@ -37,10 +38,12 @@ export default function AppBuilderActionExecuteActionsComponent(props: Props) {
 	const {viewportId: defaultViewportId} = useViewportId();
 	const viewportId = inputViewportId ?? defaultViewportId;
 	const {actions: hostActions} = useContext(ComponentContext);
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = !!disabled || hasPendingChanges;
 	const runningRef = useRef(false);
 	const [loading, setLoading] = useState(false);
 	const onClick = () => {
-		if (disabled || runningRef.current) return;
+		if (resolvedDisabled || runningRef.current) return;
 		runningRef.current = true;
 		setLoading(true);
 		void runAppBuilderActions(actions, mode, {
@@ -66,7 +69,7 @@ export default function AppBuilderActionExecuteActionsComponent(props: Props) {
 			tooltip={tooltip}
 			onClick={onClick}
 			loading={loading}
-			disabled={!!disabled || loading}
+			disabled={resolvedDisabled || loading}
 			toolbarButtonProps={toolbarButtonProps}
 		/>
 	);
