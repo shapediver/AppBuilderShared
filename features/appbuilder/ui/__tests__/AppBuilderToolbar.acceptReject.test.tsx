@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+import {registerInlineAcceptRejectParameter} from "@AppBuilderLib/entities/parameter/lib/globalAcceptReject";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {resolveToolbarRegistration} from "@AppBuilderLib/features/appbuilder/model/resolveToolbarRegistration";
@@ -141,8 +142,62 @@ describe("AppBuilderToolbar accept/reject", () => {
 
 			expect(screen.getByRole("button", {name: "Accept"})).toBeTruthy();
 			expect(screen.getByRole("button", {name: "Reject"})).toBeTruthy();
+			expect(screen.getByText("Accept")).toBeTruthy();
+			expect(screen.getByText("Reject")).toBeTruthy();
+			expect(screen.getByText("Accept")).toBeTruthy();
+			expect(screen.getByText("Reject")).toBeTruthy();
 		} finally {
 			cleanup();
+			useShapeDiverStoreParameters.setState({
+				parameterChanges: original.parameterChanges,
+			});
+		}
+	});
+
+	it("does not render shared buttons for a parameter presented inline", () => {
+		const original = useShapeDiverStoreParameters.getState();
+		const unregister = registerInlineAcceptRejectParameter(
+			"session_appbuilder",
+			"Length",
+		);
+		useShapeDiverStoreParameters.setState({
+			parameterChanges: {
+				session_appbuilder: queuedChange,
+			},
+		});
+		const toolbar = resolveToolbarRegistration({
+			id: "bottom-toolbar",
+			source: "definition",
+			side: "bottom",
+			align: "center",
+			order: 0,
+			visibility: "always",
+			groups: [
+				[
+					{
+						id: "accept-reject",
+						type: "acceptReject",
+						label: "Accept or reject changes",
+						props: {},
+					},
+				],
+			],
+		});
+
+		try {
+			render(
+				<MantineProvider>
+					<AppBuilderToolbar
+						toolbar={toolbar}
+						buttonRenderContext={buttonRenderContext}
+					/>
+				</MantineProvider>,
+			);
+
+			expect(screen.queryByRole("button", {name: "Accept"})).toBeNull();
+		} finally {
+			cleanup();
+			unregister();
 			useShapeDiverStoreParameters.setState({
 				parameterChanges: original.parameterChanges,
 			});

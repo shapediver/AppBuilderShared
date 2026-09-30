@@ -62,6 +62,8 @@ export default function AppBuilderAccordionWidgetComponent({
 					parameterId: p.name,
 					disableIfDirty: p.disableIfDirty,
 					acceptRejectMode: p.acceptRejectMode,
+					acceptRejectModePresentation:
+						p.acceptRejectModePresentation,
 					overrides: p.overrides,
 				};
 			}),

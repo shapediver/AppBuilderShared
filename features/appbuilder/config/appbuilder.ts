@@ -432,6 +432,14 @@ export interface IAppBuilderParameterRef {
 	disableIfDirty?: boolean;
 	/** Ask the user to accept or reject changes of this parameter before executing them. */
 	acceptRejectMode?: boolean;
+	/**
+	 * Where accept/reject controls are shown when `acceptRejectMode` is enabled.
+	 * "global" uses the shared viewport, toolbar, or widget buttons.
+	 * "inline" shows Accept and Reject inside this parameter's control, and only
+	 * while that parameter has a queued change.
+	 * Defaults to "global".
+	 */
+	acceptRejectModePresentation?: "global" | "inline";
 }
 
 /** Reference to an export (defined by the session) */
@@ -510,6 +518,14 @@ export interface IAppBuilderControlParameterRef extends IAppBuilderControlPresen
 	disableIfDirty?: boolean;
 	/** Ask the user to accept or reject changes of this parameter before executing them. */
 	acceptRejectMode?: boolean;
+	/**
+	 * Where accept/reject controls are shown when `acceptRejectMode` is enabled.
+	 * "global" uses the shared viewport, toolbar, or widget buttons.
+	 * "inline" shows Accept and Reject inside this parameter's control, and only
+	 * while that parameter has a queued change.
+	 * Defaults to "global".
+	 */
+	acceptRejectModePresentation?: "global" | "inline";
 	/** Identifiers of the parameters that shall be updated in addition. */
 	delegates: Array<Pick<IAppBuilderParameterRef, "name" | "sessionId">>;
 }

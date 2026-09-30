@@ -299,6 +299,7 @@ const IAppBuilderParameterRefSchema = z.strictObject({
 	overrides: IAppBuilderParameterOverridesSchema.optional(),
 	disableIfDirty: z.boolean().optional(),
 	acceptRejectMode: z.boolean().optional(),
+	acceptRejectModePresentation: z.enum(["global", "inline"]).optional(),
 });
 
 // Zod type definition for property "overrides" of IAppBuilderExportRef
@@ -618,6 +619,7 @@ const IAppBuilderControlParameterRefSchema = z
 		overrides: IAppBuilderControlParameterRefOverridesSchema.optional(),
 		disableIfDirty: z.boolean().optional(),
 		acceptRejectMode: z.boolean().optional(),
+		acceptRejectModePresentation: z.enum(["global", "inline"]).optional(),
 		// Default preserves compatibility with controls created before delegates were introduced.
 		delegates: z
 			.array(

@@ -1,3 +1,8 @@
+import {
+	getInlineAcceptRejectEpoch,
+	hasGlobalPendingParameterChanges,
+	subscribeInlineAcceptReject,
+} from "@AppBuilderLib/entities/parameter/lib/globalAcceptReject";
 import {hasExecutingParameterChanges} from "@AppBuilderLib/entities/parameter/lib/hasPendingParameterChanges";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {
@@ -18,7 +23,7 @@ import {useAppBuilderToolbars} from "@AppBuilderLib/features/appbuilder/model/us
 import {useDefaultToolbarRegistration} from "@AppBuilderLib/features/appbuilder/model/useDefaultToolbarRegistration";
 import {useResolvedAppBuilderToolbarIconButtonTheme} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {useProps} from "@mantine/core";
-import {useCallback, useMemo} from "react";
+import {useCallback, useMemo, useSyncExternalStore} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderToolbar from "./AppBuilderToolbar";
 import {
@@ -121,12 +126,18 @@ export default function AppBuilderToolbarLayer({
 	// Same queue the viewport overlay buttons use. Custom parameters are stored
 	// under a dependent namespace, so this cannot be limited to sessionDependency
 	// of the controller session or those changes never surface in the toolbar.
-	const hasPendingChanges = useShapeDiverStoreParameters((state) =>
-		Object.keys(state.parameterChanges).some(
-			(id) =>
-				Object.keys(state.parameterChanges[id]?.values ?? {}).length >
-				0,
-		),
+	// Parameters presented inline keep their own buttons and do not open this one.
+	const inlineEpoch = useSyncExternalStore(
+		subscribeInlineAcceptReject,
+		getInlineAcceptRejectEpoch,
+		getInlineAcceptRejectEpoch,
+	);
+	const parameterChanges = useShapeDiverStoreParameters(
+		(state) => state.parameterChanges,
+	);
+	const hasPendingChanges = useMemo(
+		() => hasGlobalPendingParameterChanges(parameterChanges),
+		[inlineEpoch, parameterChanges],
 	);
 	const executing = useShapeDiverStoreParameters(
 		useCallback(

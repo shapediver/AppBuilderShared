@@ -85,6 +85,8 @@ export default function AppBuilderControlsWidgetComponent(props: Props) {
 					parameterId: p.name,
 					disableIfDirty: p.disableIfDirty,
 					acceptRejectMode: p.acceptRejectMode,
+					acceptRejectModePresentation:
+						p.acceptRejectModePresentation,
 					overrides: p.overrides,
 					delegates: (p.delegates ?? []).map((delegate) => ({
 						namespace: delegate.sessionId ?? namespace,

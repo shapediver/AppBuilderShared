@@ -1,5 +1,12 @@
-import React from "react";
+import React, {createContext, useState} from "react";
 import classes from "./ParameterWrapperComponent.module.css";
+
+/**
+ * Slot at the end of a parameter control. Inline Accept/Reject buttons portal
+ * here so they belong to the control that queued the change.
+ */
+export const ParameterAcceptRejectSlotContext =
+	createContext<HTMLElement | null>(null);
 
 interface Props {
 	children: React.ReactNode;
@@ -16,6 +23,7 @@ interface Props {
  */
 export default function ParameterWrapperComponent(props: Props) {
 	const {children, onCancel, component = "section", ...rest} = props;
+	const [slot, setSlot] = useState<HTMLElement | null>(null);
 
 	return React.createElement(
 		component,
@@ -23,6 +31,9 @@ export default function ParameterWrapperComponent(props: Props) {
 			...(onCancel ? {className: classes.wrapperModified} : {}),
 			...rest,
 		},
-		children,
+		<ParameterAcceptRejectSlotContext.Provider value={slot}>
+			{children}
+			<div ref={setSlot} style={{display: "contents"}} />
+		</ParameterAcceptRejectSlotContext.Provider>,
 	);
 }

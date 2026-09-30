@@ -58,6 +58,15 @@ export interface PropsParameter extends PropsParameterOrExport {
 	readonly acceptRejectMode?: boolean;
 
 	/**
+	 * Where accept/reject controls are shown when this parameter asks for confirmation.
+	 * "global" uses the shared viewport, toolbar, or widget buttons.
+	 * "inline" shows Accept and Reject inside this parameter's control, and only
+	 * while that parameter has a queued change.
+	 * Defaults to "global".
+	 */
+	readonly acceptRejectModePresentation?: "global" | "inline";
+
+	/**
 	 * Properties of the parameter to be overridden.
 	 */
 	readonly overrides?: Pick<

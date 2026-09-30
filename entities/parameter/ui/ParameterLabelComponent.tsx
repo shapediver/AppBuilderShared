@@ -2,11 +2,15 @@ import type {MantineTooltipProps} from "@AppBuilderLib/shared/mantine-props/tool
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
-import {Group, MantineThemeComponent, useProps} from "@mantine/core";
+import {Box, Group, MantineThemeComponent, useProps} from "@mantine/core";
+import React, {useContext, useEffect} from "react";
+import {createPortal} from "react-dom";
 import {PropsParameter} from "../config/propsParameter";
+import {registerInlineAcceptRejectParameter} from "../lib/globalAcceptReject";
 import {useParameter} from "../model/useParameter";
+import AcceptRejectButtons from "./AcceptRejectButtons";
+import {ParameterAcceptRejectSlotContext} from "./ParameterWrapperComponent";
 
-import React from "react";
 interface Props extends PropsParameter {
 	cancel?: () => void;
 	rightSection?: React.ReactNode;
@@ -51,45 +55,82 @@ export function ParameterLabelComponentThemeProps(
 export default function ParameterLabelComponent(
 	props: Props & Partial<ParameterLabelComponentStyleProps>,
 ) {
-	const {cancel, rightSection, label, ...rest} = props;
+	const {
+		cancel,
+		rightSection,
+		label,
+		acceptRejectMode,
+		acceptRejectModePresentation,
+		namespace,
+		...rest
+	} = props;
 	const {fontWeight, tooltipProps} = useProps(
 		"ParameterLabelComponent",
 		defaultStyleProps,
 		rest,
 	);
-	const {definition} = useParameter<any>(props);
+	const {
+		definition,
+		acceptRejectMode: storeAcceptRejectMode,
+		state,
+	} = useParameter<any>(props);
+	const acceptRejectSlot = useContext(ParameterAcceptRejectSlotContext);
 	const {displayname, name, tooltip} = definition;
 	const label_ = label || displayname || name;
+	const effectiveAcceptRejectMode = acceptRejectMode ?? storeAcceptRejectMode;
+	const inlinePresentation =
+		(acceptRejectModePresentation ?? "global") === "inline" &&
+		Boolean(effectiveAcceptRejectMode);
+	const showInlineButtons = inlinePresentation && Boolean(state.dirty);
+
+	useEffect(() => {
+		if (!inlinePresentation || !definition?.id) return;
+
+		return registerInlineAcceptRejectParameter(namespace, definition.id);
+	}, [definition?.id, inlinePresentation, namespace]);
 
 	const labelcomp = (
 		<TextWeighted pb={4} size="sm" fontWeight="medium" fw={fontWeight}>
 			{label_}
-			{cancel ? " *" : ""}
+			{cancel && !inlinePresentation ? " *" : ""}
 		</TextWeighted>
 	);
 
 	return (
-		<Group justify="space-between" w="100%" wrap="nowrap">
-			{tooltip ? (
-				<TooltipWrapper label={tooltip} position="top">
-					{labelcomp}
-				</TooltipWrapper>
-			) : (
-				labelcomp
-			)}
-			{cancel && (
-				<TooltipWrapper
-					{...tooltipProps}
-					label={tooltipProps?.label || "Cancel change"}
-				>
-					<Icon
-						iconType={"tabler:x"}
-						color="var(--mantine-primary-color-filled)"
-						onClick={cancel}
-					/>
-				</TooltipWrapper>
-			)}
-			{rightSection}
-		</Group>
+		<>
+			<Group justify="space-between" w="100%" wrap="nowrap">
+				{tooltip ? (
+					<TooltipWrapper label={tooltip} position="top">
+						{labelcomp}
+					</TooltipWrapper>
+				) : (
+					labelcomp
+				)}
+				{cancel && (
+					<TooltipWrapper
+						{...tooltipProps}
+						label={tooltipProps?.label || "Cancel change"}
+					>
+						<Icon
+							iconType={"tabler:x"}
+							color="var(--mantine-primary-color-filled)"
+							onClick={cancel}
+						/>
+					</TooltipWrapper>
+				)}
+				{rightSection}
+			</Group>
+			{showInlineButtons && acceptRejectSlot
+				? createPortal(
+						<Box mt="xs">
+							<AcceptRejectButtons
+								parameters={[props]}
+								scope="inline"
+							/>
+						</Box>,
+						acceptRejectSlot,
+					)
+				: null}
+		</>
 	);
 }

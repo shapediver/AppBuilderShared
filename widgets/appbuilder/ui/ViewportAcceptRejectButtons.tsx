@@ -1,4 +1,10 @@
-import type {IParameterChanges} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
+import {
+	acceptGlobalParameterChanges,
+	getInlineAcceptRejectEpoch,
+	globalPendingParameterIds,
+	rejectGlobalParameterChanges,
+	subscribeInlineAcceptReject,
+} from "@AppBuilderLib/entities/parameter/lib/globalAcceptReject";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderLib/entities/viewport/config/viewport";
 import AppBuilderToolbarIconButton from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
@@ -14,7 +20,7 @@ import {
 	Text,
 	useProps,
 } from "@mantine/core";
-import React, {useCallback, useMemo} from "react";
+import React, {useCallback, useMemo, useSyncExternalStore} from "react";
 
 interface ViewportAcceptRejectButtonsIconStyleProps {
 	size?: string | number;
@@ -108,6 +114,12 @@ function ViewportAcceptRejectButtons(
 		showButtons,
 	} = useProps("ViewportAcceptRejectButtons", defaultStyleProps, styleProps);
 
+	const inlineEpoch = useSyncExternalStore(
+		subscribeInlineAcceptReject,
+		getInlineAcceptRejectEpoch,
+		getInlineAcceptRejectEpoch,
+	);
+
 	// Use a more selective selector that only re-renders when relevant changes occur
 	const parameterChanges = useShapeDiverStoreParameters(
 		useCallback(
@@ -116,37 +128,40 @@ function ViewportAcceptRejectButtons(
 					.filter((id) =>
 						sessionIds ? sessionIds.includes(id) : true,
 					)
-					.reduce((acc, id) => {
-						acc.push(state.parameterChanges[id]);
-						return acc;
-					}, [] as IParameterChanges[])
-					.sort((a, b) => a.priority - b.priority),
+					.map((id) => ({
+						namespace: id,
+						changes: state.parameterChanges[id],
+					}))
+					.sort((a, b) => a.changes.priority - b.changes.priority),
 			[sessionIds],
 		),
 	);
 
 	const hasChanges = useMemo(
 		() =>
-			parameterChanges.length > 0 &&
-			parameterChanges.some((c) => Object.keys(c.values).length > 0),
-		[parameterChanges],
+			parameterChanges.some(
+				(entry) =>
+					globalPendingParameterIds(
+						entry.namespace,
+						entry.changes.values,
+					).length > 0,
+			),
+		[inlineEpoch, parameterChanges],
 	);
 
 	const disableChangeControls = useMemo(
 		() =>
-			parameterChanges.length === 0 ||
-			parameterChanges.some((c) => c.executing),
-		[parameterChanges],
+			!hasChanges ||
+			parameterChanges.some((entry) => entry.changes.executing),
+		[hasChanges, parameterChanges],
 	);
 
 	const acceptChanges = useCallback(async () => {
-		for (let index = 0; index < parameterChanges.length; index++) {
-			await parameterChanges[index].accept();
-		}
+		await acceptGlobalParameterChanges(parameterChanges);
 	}, [parameterChanges]);
 
 	const rejectChanges = useCallback(() => {
-		parameterChanges.forEach((c) => c.reject());
+		rejectGlobalParameterChanges(parameterChanges);
 	}, [parameterChanges]);
 
 	// If there are no parameter changes to be confirmed, don't render anything
@@ -165,6 +180,8 @@ function ViewportAcceptRejectButtons(
 					<AppBuilderToolbarIconButton
 						label="Accept"
 						iconType="tabler:check"
+						labelSide="bottom"
+						labelAlign="center"
 						onClick={acceptChanges}
 						disabled={disableChangeControls}
 						iconProps={{
@@ -174,6 +191,8 @@ function ViewportAcceptRejectButtons(
 					<AppBuilderToolbarIconButton
 						label="Reject"
 						iconType="tabler:x"
+						labelSide="bottom"
+						labelAlign="center"
 						onClick={rejectChanges}
 						disabled={disableChangeControls}
 						iconProps={{color: "var(--mantine-color-red-filled)"}}
