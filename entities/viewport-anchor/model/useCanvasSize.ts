@@ -1,9 +1,15 @@
 import {useEffect, useState} from "react";
 
 /**
- * Hook to get the size of a canvas element.
- * @param canvas The canvas element to observe.
- * @returns The width and height of the canvas.
+ * Size of the box App Builder overlays are positioned in.
+ *
+ * That box is the canvas parent, the same element toolbars fill with
+ * `inset: 0`. A screenshot can set the canvas element's own CSS size to
+ * the requested resolution while the parent stays put. Following the canvas
+ * would move anchors for the duration of the shot.
+ *
+ * @param canvas The viewport canvas. Its parent is observed.
+ * @returns The width and height of the overlay box.
  */
 export function useCanvasSize(canvas?: HTMLCanvasElement | null): {
 	width: number;
@@ -17,28 +23,18 @@ export function useCanvasSize(canvas?: HTMLCanvasElement | null): {
 		height: 0,
 	});
 
-	/**
-	 * This effect observes the canvas for size changes and updates the canvasWidth and canvasHeight state.
-	 * It also sets the initial size of the canvas.
-	 */
 	useEffect(() => {
 		if (!canvas) return;
-		const observer = new ResizeObserver((entries) => {
-			for (const entry of entries) {
-				const {width, height} = entry.contentRect;
-				setCanvasSize({
-					width,
-					height,
-				});
-			}
+		const target = canvas.parentElement ?? canvas;
+		const readSize = () => ({
+			width: target.clientWidth,
+			height: target.clientHeight,
 		});
-		observer.observe(canvas);
-
-		// Set initial size
-		setCanvasSize({
-			width: canvas.offsetWidth,
-			height: canvas.offsetHeight,
+		const observer = new ResizeObserver(() => {
+			setCanvasSize(readSize());
 		});
+		observer.observe(target);
+		setCanvasSize(readSize());
 
 		return () => observer.disconnect();
 	}, [canvas]);
