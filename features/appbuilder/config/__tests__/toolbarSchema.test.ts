@@ -125,6 +125,22 @@ describe("toolbar container schema", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts exclusiveContainers true and false", () => {
+		for (const exclusiveContainers of [true, false]) {
+			const result = validateAppBuilder({
+				version: "1.0",
+				containers: [
+					{
+						name: "toolbar",
+						props: {id: "toolbar", exclusiveContainers},
+					},
+				],
+			});
+
+			expect(result.success).toBe(true);
+		}
+	});
+
 	it("accepts nested executeActions in parallel and sequential mode", () => {
 		const result = validateAppBuilder({
 			version: "1.0",

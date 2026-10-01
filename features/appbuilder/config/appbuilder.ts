@@ -1380,6 +1380,13 @@ export interface IAppBuilderToolbarContainerProperties {
 	order?: number;
 	/** Visibility behavior. */
 	visibility?: AppBuilderToolbarVisibility;
+	/**
+	 * When true, opening a 2d or 3d container targeted by this toolbar
+	 * closes the other containers this toolbar targets (both 2d and 3d).
+	 * Closing or toggling a container off does not close the others.
+	 * Defaults to true. Set to false to keep several containers open at once.
+	 */
+	exclusiveContainers?: boolean;
 }
 
 export interface IAppBuilderStandardContainer extends IAppBuilderNode {

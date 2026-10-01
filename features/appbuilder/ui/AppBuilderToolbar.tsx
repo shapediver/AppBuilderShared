@@ -9,6 +9,7 @@ import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/com
 import type {ResolvedToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import {collectActionTargetedAnchorIdsFromGroups} from "@AppBuilderLib/features/appbuilder/lib/collectActionTargetedAnchorIds";
+import {ToolbarContainerExclusivityContext} from "@AppBuilderLib/features/appbuilder/lib/ToolbarContainerExclusivityContext";
 import ViewportAcceptRejectButtons from "@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons";
 import {Divider, Paper, Transition, useProps} from "@mantine/core";
 import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
@@ -140,6 +141,13 @@ export default function AppBuilderToolbar(props: Props) {
 	const actionTargetedAnchorIds = useMemo(
 		() => collectActionTargetedAnchorIdsFromGroups(toolbar.groups),
 		[toolbar.groups],
+	);
+	const toolbarExclusivity = useMemo(
+		() => ({
+			exclusiveContainers: toolbar.exclusiveContainers !== false,
+			siblingAnchorIds: actionTargetedAnchorIds.all,
+		}),
+		[actionTargetedAnchorIds.all, toolbar.exclusiveContainers],
 	);
 
 	const isAnyActionTargetedAnchorOpen = useShapeDiverStoreViewportAnchors(
@@ -433,36 +441,42 @@ export default function AppBuilderToolbar(props: Props) {
 			duration={reducedMotion ? 0 : transitionProps.duration}
 		>
 			{(transitionStyle) => (
-				<AppBuilderActionSlots
-					actionSlots={toolbar.actionSlots}
-					allowedEvents={APP_BUILDER_SLOT_EVENTS.toolbar}
-					namespace={resolvedButtonRenderContext.namespace}
-					viewportId={resolvedButtonRenderContext.viewportId}
-					fullscreenId={resolvedButtonRenderContext.fullscreenId}
+				<ToolbarContainerExclusivityContext.Provider
+					value={toolbarExclusivity}
 				>
-					<Paper
-						ref={toolbarRef}
-						role="toolbar"
-						aria-label={toolbar.ariaLabel || toolbar.id}
-						aria-orientation={orientation}
-						data-toolbar-side={toolbar.side}
-						style={{
-							...layoutBaseStyle,
-							...themeStyle,
-							...transitionStyle,
-							flexDirection:
-								orientation === "vertical" ? "column" : "row",
-							alignItems: "center",
-						}}
-						{...paperProps}
-						{...containerProps}
-						onTouchStart={preventEventPropagation}
-						onTouchMove={preventEventPropagation}
-						onTouchEnd={preventEventPropagation}
+					<AppBuilderActionSlots
+						actionSlots={toolbar.actionSlots}
+						allowedEvents={APP_BUILDER_SLOT_EVENTS.toolbar}
+						namespace={resolvedButtonRenderContext.namespace}
+						viewportId={resolvedButtonRenderContext.viewportId}
+						fullscreenId={resolvedButtonRenderContext.fullscreenId}
 					>
-						{content}
-					</Paper>
-				</AppBuilderActionSlots>
+						<Paper
+							ref={toolbarRef}
+							role="toolbar"
+							aria-label={toolbar.ariaLabel || toolbar.id}
+							aria-orientation={orientation}
+							data-toolbar-side={toolbar.side}
+							style={{
+								...layoutBaseStyle,
+								...themeStyle,
+								...transitionStyle,
+								flexDirection:
+									orientation === "vertical"
+										? "column"
+										: "row",
+								alignItems: "center",
+							}}
+							{...paperProps}
+							{...containerProps}
+							onTouchStart={preventEventPropagation}
+							onTouchMove={preventEventPropagation}
+							onTouchEnd={preventEventPropagation}
+						>
+							{content}
+						</Paper>
+					</AppBuilderActionSlots>
+				</ToolbarContainerExclusivityContext.Provider>
 			)}
 		</Transition>
 	);

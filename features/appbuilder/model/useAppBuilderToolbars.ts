@@ -47,6 +47,8 @@ export function useAppBuilderToolbars(props: UseAppBuilderToolbarsProps) {
 					order: container.props.order ?? 0,
 					definitionIndex,
 					visibility: container.props.visibility ?? "always",
+					exclusiveContainers:
+						container.props.exclusiveContainers ?? true,
 					groups: container.groups ?? [],
 					actionSlots: container.actionSlots,
 				})) ?? [];

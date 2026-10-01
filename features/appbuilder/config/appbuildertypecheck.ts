@@ -1390,6 +1390,7 @@ const IAppBuilderToolbarContainerPropertiesSchema = z.strictObject({
 	align: z.enum(["start", "center", "end"]).optional(),
 	order: z.number().optional(),
 	visibility: z.enum(["always", "onMouseActivity"]).optional(),
+	exclusiveContainers: z.boolean().optional(),
 });
 
 // Zod type definition for IAppBuilderContainer

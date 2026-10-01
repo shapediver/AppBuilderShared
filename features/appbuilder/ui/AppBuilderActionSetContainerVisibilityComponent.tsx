@@ -1,11 +1,13 @@
 import {useShapeDiverStoreViewportAnchors} from "@AppBuilderLib/entities/viewport-anchor/model/useShapeDiverStoreViewportAnchors";
 import {useViewportAnchorTriggerRegistry} from "@AppBuilderLib/entities/viewport-anchor/model/useViewportAnchorTriggerRegistry";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {closeSiblingToolbarContainers} from "@AppBuilderLib/features/appbuilder/lib/closeSiblingToolbarContainers";
 import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {ToolbarContainerExclusivityContext} from "@AppBuilderLib/features/appbuilder/lib/ToolbarContainerExclusivityContext";
 import {runAppBuilderActionSetContainerVisibility} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSetContainerVisibility";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
-import {useCallback, useEffect} from "react";
+import {useCallback, useContext, useEffect} from "react";
 import {
 	AppBuilderContainerNameType,
 	IAppBuilderActionPropsCommon,
@@ -51,6 +53,9 @@ export default function AppBuilderActionSetContainerVisibilityComponent(
 	const {viewportId: defaultViewportId} = useViewportId();
 	const viewportId = inputViewportId ?? defaultViewportId;
 	const containerId = container.props?.id;
+	const {exclusiveContainers, siblingAnchorIds} = useContext(
+		ToolbarContainerExclusivityContext,
+	);
 
 	const standardContainerOpen = useShapeDiverStoreStandardContainers(
 		(state) => {
@@ -86,12 +91,24 @@ export default function AppBuilderActionSetContainerVisibilityComponent(
 
 	const isOpen = standardContainerOpen ?? anchorOpen ?? toolbarOpen ?? false;
 	const onClick = createActionClickHandler(
-		() =>
+		() => {
+			const isAnchor =
+				container.name === AppBuilderContainerNameType.Anchor2d ||
+				container.name === AppBuilderContainerNameType.Anchor3d;
+			const willOpen = mode === "open" || (mode === "toggle" && !isOpen);
+			if (exclusiveContainers && isAnchor && willOpen && containerId) {
+				closeSiblingToolbarContainers(
+					viewportId,
+					containerId,
+					siblingAnchorIds,
+				);
+			}
 			runAppBuilderActionSetContainerVisibility({
 				container,
 				mode,
 				viewportId,
-			}),
+			});
+		},
 		{disabled},
 	);
 

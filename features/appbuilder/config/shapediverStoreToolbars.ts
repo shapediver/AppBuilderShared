@@ -64,6 +64,8 @@ export interface ToolbarRegistration {
 	order: number;
 	definitionIndex?: number;
 	visibility: AppBuilderToolbarVisibility;
+	/** Defaults to true. Set false to allow several toolbar-targeted containers open at once. */
+	exclusiveContainers?: boolean;
 	ariaLabel?: string;
 	defaultIcon?: IconType;
 	groups: ToolbarGroups;

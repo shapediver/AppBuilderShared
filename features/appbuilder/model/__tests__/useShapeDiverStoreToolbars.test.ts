@@ -49,9 +49,9 @@ describe("useShapeDiverStoreToolbars", () => {
 		expect(
 			useShapeDiverStoreToolbars.getState().definitionToolbars,
 		).toHaveLength(0);
-		expect(useShapeDiverStoreToolbars.getState().runtimeTokens).toHaveProperty(
-			token!,
-		);
+		expect(
+			useShapeDiverStoreToolbars.getState().runtimeTokens,
+		).toHaveProperty(token!);
 		expect(
 			useShapeDiverStoreToolbars.getState().runtimeToolbars,
 		).toHaveLength(1);
@@ -336,17 +336,19 @@ describe("useShapeDiverStoreToolbars", () => {
 
 	it("clones toolbar groups when normalizing store input", () => {
 		const store = useShapeDiverStoreToolbars.getState();
-		const inputGroups = [[
-			{
-				type: "action" as const,
-				props: {
-					definition: {
-						type: "resetParameterValues" as const,
-						props: {},
+		const inputGroups = [
+			[
+				{
+					type: "action" as const,
+					props: {
+						definition: {
+							type: "resetParameterValues" as const,
+							props: {},
+						},
 					},
 				},
-			},
-		]];
+			],
+		];
 
 		store.setDefinitionToolbars([
 			{
@@ -371,7 +373,49 @@ describe("useShapeDiverStoreToolbars", () => {
 		});
 
 		expect(
-			useShapeDiverStoreToolbars.getState().definitionToolbars[0].groups[0],
+			useShapeDiverStoreToolbars.getState().definitionToolbars[0]
+				.groups[0],
 		).toHaveLength(1);
+	});
+
+	it("preserves exclusiveContainers and updates when it changes", () => {
+		const store = useShapeDiverStoreToolbars.getState();
+		const toolbar = {
+			id: "main",
+			source: "definition" as const,
+			side: "top" as const,
+			align: "center" as const,
+			order: 0,
+			visibility: "always" as const,
+			groups: [],
+		};
+
+		store.setDefinitionToolbars([toolbar]);
+		expect(
+			useShapeDiverStoreToolbars.getState().definitionToolbars[0]
+				.exclusiveContainers,
+		).toBe(true);
+
+		store.setDefaultToolbar(toolbar);
+		const firstDefault =
+			useShapeDiverStoreToolbars.getState().defaultToolbars;
+		store.setDefaultToolbar(toolbar);
+		expect(useShapeDiverStoreToolbars.getState().defaultToolbars).toBe(
+			firstDefault,
+		);
+
+		store.setDefaultToolbar({...toolbar, exclusiveContainers: true});
+		expect(useShapeDiverStoreToolbars.getState().defaultToolbars).toBe(
+			firstDefault,
+		);
+
+		store.setDefaultToolbar({...toolbar, exclusiveContainers: false});
+		expect(useShapeDiverStoreToolbars.getState().defaultToolbars).not.toBe(
+			firstDefault,
+		);
+		expect(
+			useShapeDiverStoreToolbars.getState().defaultToolbars[0]
+				.exclusiveContainers,
+		).toBe(false);
 	});
 });

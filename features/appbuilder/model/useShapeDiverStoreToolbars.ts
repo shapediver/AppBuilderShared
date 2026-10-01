@@ -41,6 +41,7 @@ const normalizeToolbar = (toolbar: ToolbarInput): ToolbarRegistration => ({
 	order: toolbar.order ?? 0,
 	definitionIndex: toolbar.definitionIndex,
 	visibility: toolbar.visibility ?? DEFAULT_VISIBILITY,
+	exclusiveContainers: toolbar.exclusiveContainers ?? true,
 	ariaLabel: toolbar.ariaLabel,
 	defaultIcon: toolbar.defaultIcon,
 	groups: cloneGroups(toolbar.groups),
@@ -96,6 +97,7 @@ const toolbarsEqual = (a: ToolbarRegistration, b: ToolbarRegistration) =>
 	a.order === b.order &&
 	a.definitionIndex === b.definitionIndex &&
 	a.visibility === b.visibility &&
+	a.exclusiveContainers === b.exclusiveContainers &&
 	a.ariaLabel === b.ariaLabel &&
 	a.defaultIcon === b.defaultIcon &&
 	toolbarGroupsEqual(a.groups, b.groups);
