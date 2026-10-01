@@ -20,7 +20,7 @@ import {
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
 import {useDisclosure, useMediaQuery} from "@mantine/hooks";
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, type ReactNode} from "react";
 import {IAppBuilderTemplatePageProps} from "../config/appbuildertemplates";
 import classes from "./AppBuilderAppShellTemplatePage.module.css";
 
@@ -119,6 +119,28 @@ export const appBuilderAppShellTemplatePageDefaultStyleProps: StyleProps = {
 
 const defaultStyleProps = appBuilderAppShellTemplatePageDefaultStyleProps;
 
+// React 19 exports `Activity`, which suspends effects while preserving state.
+// `@types/react` 18 does not declare it yet.
+const Activity = (
+	React as typeof React & {
+		Activity: (props: {
+			mode: "visible" | "hidden";
+			children?: ReactNode;
+		}) => React.ReactElement;
+	}
+).Activity;
+
+/** Off-screen shell content stays mounted, but its effects do not run. */
+function IdleWhenHidden({
+	idle,
+	children,
+}: {
+	idle: boolean;
+	children: ReactNode;
+}) {
+	return <Activity mode={idle ? "hidden" : "visible"}>{children}</Activity>;
+}
+
 type AppBuilderAppShellTemplatePageThemePropsType = Partial<StyleProps>;
 
 export function AppBuilderAppShellTemplatePageThemeProps(
@@ -207,6 +229,12 @@ export default function AppBuilderAppShellTemplatePage(
 	const hasNavbarContent =
 		!!left || (!!bottom && !showBottomInGrid) || showRightInNavbar;
 	const showHeader = !!top || (hasNavbarContent && !aboveNavbarBreakpoint);
+	// AppShell only translates a collapsed navbar off-screen. Its widgets would
+	// stay subscribed. Idle them until the drawer is actually open. On desktop
+	// the navbar is open whenever it has content. A container with
+	// `containerOpen: false` is omitted earlier and is already unmounted.
+	const navbarContentLive =
+		hasNavbarContent && (aboveNavbarBreakpoint || opened);
 	const hasRight = !!right && !showRightAtBottom && !showRightInNavbar;
 	const hasBottom =
 		(!!right && showRightAtBottom) || (!!bottom && showBottomInGrid);
@@ -304,24 +332,26 @@ export default function AppBuilderAppShellTemplatePage(
 					className={classes.appShellMainNavbar}
 					withBorder={navbarBorder}
 				>
-					<AppBuilderContainerWrapper name="left">
-						{left?.node}
-					</AppBuilderContainerWrapper>
-					{!bottom ? undefined : showBottomInGrid ? undefined : (
-						<AppBuilderContainerWrapper
-							name="bottom"
-							orientation={
-								AppBuilderContainerOrientation.Vertical
-							}
-						>
-							{bottom.node}
+					<IdleWhenHidden idle={!navbarContentLive}>
+						<AppBuilderContainerWrapper name="left">
+							{left?.node}
 						</AppBuilderContainerWrapper>
-					)}
-					{!right ? undefined : !showRightInNavbar ? undefined : (
-						<AppBuilderContainerWrapper name="right">
-							{right.node}
-						</AppBuilderContainerWrapper>
-					)}
+						{!bottom ? undefined : showBottomInGrid ? undefined : (
+							<AppBuilderContainerWrapper
+								name="bottom"
+								orientation={
+									AppBuilderContainerOrientation.Vertical
+								}
+							>
+								{bottom.node}
+							</AppBuilderContainerWrapper>
+						)}
+						{!right ? undefined : !showRightInNavbar ? undefined : (
+							<AppBuilderContainerWrapper name="right">
+								{right.node}
+							</AppBuilderContainerWrapper>
+						)}
+					</IdleWhenHidden>
 				</AppShell.Navbar>
 				<AppShell.Main
 					className={`${classes.appShellMain} ${showHeader ? classes.appShellMaxHeightBelowHeader : classes.appShellMaxHeight}`}

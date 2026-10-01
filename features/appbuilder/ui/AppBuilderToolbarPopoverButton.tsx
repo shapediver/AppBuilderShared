@@ -133,13 +133,15 @@ export default function AppBuilderToolbarPopoverButton({
 				: item.type === "tabs"
 					? item.props.tabs.length > 0
 					: true;
-	const actionMenuKeepMounted =
+	// Action menus stay mounted after close so an action can keep dialog state.
+	// Hidden content must still be idle: `activity` suspends effects and defers
+	// updates. `display-none` would keep parameter subscriptions and interaction
+	// effects running inside a closed menu.
+	const keepClosedMenuMounted =
 		item.type === "menu" &&
 		item.props.sections.some((section) =>
 			section.items.some((menuItem) => menuItem.type === "action"),
-		)
-			? {keepMounted: true, keepMountedMode: "display-none" as const}
-			: {};
+		);
 
 	const setOpened = useCallback(
 		(next: boolean | ((current: boolean) => boolean)) => {
@@ -177,7 +179,8 @@ export default function AppBuilderToolbarPopoverButton({
 	return (
 		<Popover
 			{...popoverProps}
-			{...actionMenuKeepMounted}
+			{...(keepClosedMenuMounted ? {keepMounted: true} : {})}
+			keepMountedMode="activity"
 			width={
 				fixedWidthPopover
 					? (popoverProps.width ?? 320)

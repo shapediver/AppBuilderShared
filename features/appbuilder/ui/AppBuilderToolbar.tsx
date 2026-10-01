@@ -438,6 +438,10 @@ export default function AppBuilderToolbar(props: Props) {
 		<Transition
 			mounted={visible || forceVisible === true}
 			{...transitionProps}
+			// A hidden toolbar stays mounted. Force Activity so its buttons and
+			// closed popovers suspend effects instead of remaining live under
+			// `display: none`.
+			keepMountedMode="activity"
 			duration={reducedMotion ? 0 : transitionProps.duration}
 		>
 			{(transitionStyle) => (
