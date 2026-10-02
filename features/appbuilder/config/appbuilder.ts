@@ -1482,9 +1482,15 @@ export interface IAppBuilderOutputActionsPropsSetParameterValue {
  * Fields shared by additional sessions and instances on the App Builder data output.
  */
 export interface IAppBuilderSessionDefinitionBase {
-	/** Id of the session. */
+	/**
+	 * Id of the session.
+	 * When `slug` is omitted, this id is used as the platform model slug.
+	 */
 	sessionId: string;
-	/** Optional slug of the session. If a slug is provided, the session will be loaded immediately with that slug. */
+	/**
+	 * Platform model slug used to resolve the session.
+	 * When omitted, `sessionId` is used as the slug.
+	 */
 	slug?: string;
 	/**
 	 * Parameter set for the session.

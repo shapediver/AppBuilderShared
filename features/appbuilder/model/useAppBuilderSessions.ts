@@ -83,6 +83,7 @@ export function useAppBuilderSessions(props: Props) {
 			)
 				return;
 
+			// use slug if available, otherwise use sessionId
 			const slug = definition.slug || definition.sessionId;
 			const duplicateSlug = owned.find(
 				(session) => session.slug === slug,

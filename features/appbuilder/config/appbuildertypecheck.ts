@@ -1435,8 +1435,17 @@ const IAppBuilderOutputActionsPropsSetParameterValueSchema = z.strictObject({
 
 // Zod type definition for IAppBuilderSessionDefinitionBase
 const IAppBuilderSessionDefinitionBaseSchema = z.strictObject({
-	sessionId: z.string(),
-	slug: z.string().optional(),
+	sessionId: z
+		.string()
+		.describe(
+			"Id of the session. When slug is omitted, this id is used as the platform model slug.",
+		),
+	slug: z
+		.string()
+		.optional()
+		.describe(
+			"Platform model slug used to resolve the session. When omitted, sessionId is used as the slug.",
+		),
 	parameterValues: z
 		.record(
 			z.string(),
