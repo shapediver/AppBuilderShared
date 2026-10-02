@@ -12,7 +12,8 @@ export enum GenericToolName {
 	SetParameterValues = "set_parameter_values",
 	ListActionControls = "list_action_controls",
 	TriggerActionControl = "trigger_action_control",
-	SetCameraPosition = "set_camera_position",
+	SetCamera = "set_camera",
+	GetCamera = "get_camera",
 	GetScreenshot = "get_screenshot",
 	AskUserQuestion = "ask_user_question",
 	GetMetric = "get_metric",
@@ -153,8 +154,12 @@ export type TriggerActionControlToolSettings = {
 	name: GenericToolName.TriggerActionControl;
 };
 
-export type SetCameraPositionToolSettings = {
-	name: GenericToolName.SetCameraPosition;
+export type SetCameraToolSettings = {
+	name: GenericToolName.SetCamera;
+};
+
+export type GetCameraToolSettings = {
+	name: GenericToolName.GetCamera;
 };
 
 export type GetScreenshotToolSettings = {
@@ -175,7 +180,8 @@ export type GenericToolSettings =
 	| SetParameterValuesToolSettings
 	| ListActionControlsToolSettings
 	| TriggerActionControlToolSettings
-	| SetCameraPositionToolSettings
+	| SetCameraToolSettings
+	| GetCameraToolSettings
 	| GetScreenshotToolSettings
 	| AskUserQuestionToolSettings
 	| GetMetricToolSettings;

@@ -1,10 +1,16 @@
 import type {AgentToolsDeps} from "../../model/agentToolsDeps";
+import {handleGetCamera} from "../../model/handlers/getCamera";
 import {handleGetMetric} from "../../model/handlers/getMetric";
 import {handleGetScreenshot} from "../../model/handlers/getScreenshot";
-import {handleSetCameraPosition} from "../../model/handlers/setCameraPosition";
+import {handleSetCamera} from "../../model/handlers/setCamera";
 
-const position = {x: 1, y: 2, z: 3};
-const target = {x: 0, y: 1, z: 0};
+const camera = {
+	id: "default",
+	type: "perspective" as const,
+	position: [8, 6, 8] as [number, number, number],
+	target: [0, 0, 0] as [number, number, number],
+	fov: 50,
+};
 
 function createDeps(overrides: Partial<AgentToolsDeps> = {}): AgentToolsDeps {
 	return {
@@ -21,17 +27,18 @@ function createDeps(overrides: Partial<AgentToolsDeps> = {}): AgentToolsDeps {
 		resetParameters: async () => ({success: true}),
 		getViewportId: () => "vp",
 		setCamera: jest.fn().mockResolvedValue({success: true}),
+		getCamera: jest.fn(() => undefined),
 		getScreenshot: jest.fn().mockResolvedValue(undefined),
 		getOutputByName: () => undefined,
 		...overrides,
 	};
 }
 
-describe("handleSetCameraPosition", () => {
+describe("handleSetCamera", () => {
 	it("returns Viewport not found when viewportId is missing", async () => {
 		const deps = createDeps({getViewportId: () => ""});
 
-		const result = await handleSetCameraPosition({position, target}, deps);
+		const result = await handleSetCamera(camera, deps);
 
 		expect(result).toEqual({
 			success: false,
@@ -40,24 +47,39 @@ describe("handleSetCameraPosition", () => {
 		expect(deps.setCamera).not.toHaveBeenCalled();
 	});
 
-	it("calls setCamera with parsed vec3 and fallback viewportId", async () => {
+	it("accepts a document without type", async () => {
 		const deps = createDeps();
+		const withoutType = {
+			position: [1, 2, 3] as [number, number, number],
+			target: [0, 0, 0] as [number, number, number],
+		};
 
-		const result = await handleSetCameraPosition({position, target}, deps);
+		const result = await handleSetCamera(withoutType, deps);
 
 		expect(deps.setCamera).toHaveBeenCalledWith({
 			viewportId: "vp",
-			position,
-			target,
+			camera: withoutType,
 		});
 		expect(result).toEqual({success: true});
 	});
 
-	it("rejects extra viewportId on input", async () => {
-		const deps = createDeps({getViewportId: () => "from-deps"});
+	it("calls setCamera with the camera document", async () => {
+		const deps = createDeps();
 
-		const result = await handleSetCameraPosition(
-			{position, target, viewportId: "from-input"},
+		const result = await handleSetCamera(camera, deps);
+
+		expect(deps.setCamera).toHaveBeenCalledWith({
+			viewportId: "vp",
+			camera,
+		});
+		expect(result).toEqual({success: true});
+	});
+
+	it("rejects extra keys", async () => {
+		const deps = createDeps();
+
+		const result = await handleSetCamera(
+			{...camera, viewportId: "other"},
 			deps,
 		);
 
@@ -66,14 +88,88 @@ describe("handleSetCameraPosition", () => {
 		expect(deps.setCamera).not.toHaveBeenCalled();
 	});
 
-	it("rejects input without position or target", async () => {
+	it("accepts a partial document", async () => {
+		const deps = createDeps();
+		const partial = {fov: 40};
+
+		const result = await handleSetCamera(partial, deps);
+
+		expect(deps.setCamera).toHaveBeenCalledWith({
+			viewportId: "vp",
+			camera: partial,
+		});
+		expect(result).toEqual({success: true});
+	});
+
+	it("accepts an orthographic camera without fov", async () => {
+		const deps = createDeps();
+		const orthographic = {
+			type: "orthographic" as const,
+			position: [0, 10, 0] as [number, number, number],
+			target: [0, 0, 0] as [number, number, number],
+			direction: "top" as const,
+		};
+
+		const result = await handleSetCamera(orthographic, deps);
+
+		expect(deps.setCamera).toHaveBeenCalledWith({
+			viewportId: "vp",
+			camera: orthographic,
+		});
+		expect(result).toEqual({success: true});
+	});
+
+	it("rejects a position that is not a vec3", async () => {
 		const deps = createDeps();
 
-		const result = await handleSetCameraPosition({}, deps);
+		const result = await handleSetCamera({position: [1, 1]}, deps);
 
 		expect(result.success).toBe(false);
 		expect(typeof result.message).toBe("string");
 		expect(deps.setCamera).not.toHaveBeenCalled();
+	});
+});
+
+describe("handleGetCamera", () => {
+	it("returns Viewport not found when viewportId is missing", async () => {
+		const deps = createDeps({getViewportId: () => ""});
+
+		const result = await handleGetCamera({}, deps);
+
+		expect(result).toEqual({
+			success: false,
+			message: "Viewport not found.",
+		});
+		expect(deps.getCamera).not.toHaveBeenCalled();
+	});
+
+	it("returns Camera not found when the viewport has no camera", async () => {
+		const result = await handleGetCamera({}, createDeps());
+
+		expect(result).toEqual({
+			success: false,
+			message: "Camera not found.",
+		});
+	});
+
+	it("returns the active camera document", async () => {
+		const getCamera = jest.fn(() => camera);
+		const deps = createDeps({getCamera});
+
+		const result = await handleGetCamera({}, deps);
+
+		expect(getCamera).toHaveBeenCalledWith("vp");
+		expect(result).toEqual({success: true, camera});
+	});
+
+	it("rejects extra keys", async () => {
+		const deps = createDeps();
+
+		const result = await handleGetCamera({viewportId: "other"}, deps);
+
+		expect(result.success).toBe(false);
+		expect(typeof result.message).toBe("string");
+		expect(deps.getCamera).not.toHaveBeenCalled();
 	});
 });
 

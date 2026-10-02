@@ -7,6 +7,12 @@ import {
 } from "@AppBuilderLib/entities/parameter/lib/undoRedoParameters";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import type {IShapeDiverStoreSessions} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
+import {
+	planCameraUpdate,
+	readActiveCamera,
+	type CameraToAssign,
+} from "@AppBuilderLib/entities/viewport/lib/readActiveCamera";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 import {
 	isCameraAction,
@@ -24,7 +30,6 @@ import {createModelStateFromStores} from "@AppBuilderLib/features/appbuilder/mod
 import {runAppBuilderActionSound} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSound";
 import type {IImportModelStateData} from "@AppBuilderLib/features/model-state/config/importModelState";
 import {importModelStateFromStore} from "@AppBuilderLib/features/model-state/lib/importModelStateFromStore";
-import type {Vec3} from "../config/setCameraPosition";
 import type {RunActionControlResult} from "../config/triggerActionControl";
 import {collectFromToolbarItems} from "../lib/collectActionControls";
 import type {AgentToolsDeps} from "./agentToolsDeps";
@@ -59,6 +64,10 @@ function flattenDefaultToolbarActions(
 	return refs;
 }
 
+function vec3Tuple(value: ArrayLike<number>): [number, number, number] {
+	return [value[0], value[1], value[2]];
+}
+
 async function runHostCamera(
 	componentContext: IComponentContext,
 	definition: IAppBuilderActionDefinition,
@@ -88,10 +97,43 @@ async function setViewportCamera(
 	namespace: string,
 	args: {
 		viewportId: string;
-		position: Vec3;
-		target: Vec3;
+		camera: CameraToAssign;
 	},
 ): Promise<RunActionControlResult> {
+	const live =
+		useShapeDiverStoreViewport.getState().viewports[args.viewportId]
+			?.camera;
+	const active = live
+		? {
+				id: live.id,
+				type: live.type,
+				position: vec3Tuple(live.position),
+				target: vec3Tuple(live.target),
+			}
+		: undefined;
+	const {assign, move} = planCameraUpdate(args.camera, active);
+	if (Object.keys(assign).length > 0) {
+		const assigned = await runHostCamera(
+			componentContext,
+			{
+				type: AppBuilderActionType.Camera,
+				props: {
+					type: "assign",
+					viewportId: args.viewportId,
+					props: {camera: assign},
+				},
+			},
+			namespace,
+			args.viewportId,
+		);
+		if (!assigned.success || !move) return assigned;
+	}
+	if (!move) {
+		return {
+			success: false,
+			message: "At least one camera field is required.",
+		};
+	}
 	return runHostCamera(
 		componentContext,
 		{
@@ -99,14 +141,7 @@ async function setViewportCamera(
 			props: {
 				type: "set",
 				viewportId: args.viewportId,
-				props: {
-					position: [
-						args.position.x,
-						args.position.y,
-						args.position.z,
-					],
-					target: [args.target.x, args.target.y, args.target.z],
-				},
+				props: {position: move.position, target: move.target},
 			},
 		},
 		namespace,
@@ -198,6 +233,11 @@ export function buildAgentToolsDeps(
 		getViewportId: () => viewportId,
 		setCamera: (args) =>
 			setViewportCamera(componentContext, namespace, args),
+		getCamera: (viewportId) =>
+			readActiveCamera(
+				useShapeDiverStoreViewport.getState().viewports[viewportId]
+					?.camera,
+			),
 		runCameraAction: (definition) =>
 			runHostCamera(componentContext, definition, namespace, viewportId),
 		addToCart: async (props) => {

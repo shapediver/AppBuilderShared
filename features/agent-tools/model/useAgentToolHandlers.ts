@@ -23,12 +23,13 @@ import type {ResolvedGenericTool} from "../config/resolveToolset";
 import type {IToolsApiHandlerMap} from "../config/toolsApiConnector";
 import type {AgentToolsDeps} from "./agentToolsDeps";
 import {buildAgentToolsDeps} from "./buildAgentToolsDeps";
+import {handleGetCamera} from "./handlers/getCamera";
 import {handleGetMetric} from "./handlers/getMetric";
 import {handleGetParameterValues} from "./handlers/getParameterValues";
 import {handleGetScreenshot} from "./handlers/getScreenshot";
 import {handleListActionControls} from "./handlers/listActionControls";
 import {handleListParameterDefinitions} from "./handlers/listParameterDefinitions";
-import {handleSetCameraPosition} from "./handlers/setCameraPosition";
+import {handleSetCamera} from "./handlers/setCamera";
 import {handleSetParameterValues} from "./handlers/setParameterValues";
 import {handleTriggerActionControl} from "./handlers/triggerActionControl";
 import {runSpecificTool} from "./runSpecificTool";
@@ -148,8 +149,10 @@ export function useAgentToolHandlers(args: {
 					),
 					depsRef.current,
 				),
-			[GenericToolName.SetCameraPosition]: (input) =>
-				handleSetCameraPosition(input, depsRef.current),
+			[GenericToolName.SetCamera]: (input) =>
+				handleSetCamera(input, depsRef.current),
+			[GenericToolName.GetCamera]: (input) =>
+				handleGetCamera(input, depsRef.current),
 			[GenericToolName.GetScreenshot]: (input) =>
 				handleGetScreenshot(input, depsRef.current),
 			[GenericToolName.GetMetric]: (input) =>

@@ -25,7 +25,8 @@ function stubHandlers(): IToolsApiHandlerMap {
 		set_parameter_values: unused,
 		list_action_controls: unused,
 		trigger_action_control: unused,
-		set_camera_position: unused,
+		set_camera: unused,
+		get_camera: unused,
 		get_screenshot: unused,
 		get_metric: unused,
 	};

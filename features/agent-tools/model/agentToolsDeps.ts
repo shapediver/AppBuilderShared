@@ -1,6 +1,10 @@
 import type {IShapeDiverParameter} from "@AppBuilderLib/entities/parameter/config/parameter";
 import type {IShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/config/shapediverStoreParameters";
 import type {
+	ActiveCamera,
+	CameraToAssign,
+} from "@AppBuilderLib/entities/viewport/lib/readActiveCamera";
+import type {
 	IAppBuilder,
 	IAppBuilderActionDefinition,
 	IAppBuilderActionPropsAddToCart,
@@ -11,7 +15,6 @@ import type {
 	IAppBuilderParameterValueSourcePropsScreenshot,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {IImportModelStateData} from "@AppBuilderLib/features/model-state/config/importModelState";
-import type {Vec3} from "../config/setCameraPosition";
 import type {RunActionControlResult} from "../config/triggerActionControl";
 
 export type AgentToolsDeps = {
@@ -33,9 +36,9 @@ export type AgentToolsDeps = {
 	getViewportId: () => string;
 	setCamera: (args: {
 		viewportId: string;
-		position: Vec3;
-		target: Vec3;
+		camera: CameraToAssign;
 	}) => Promise<RunActionControlResult>;
+	getCamera: (viewportId: string) => ActiveCamera | undefined;
 	getScreenshot: (
 		viewportId: string,
 		props?: IAppBuilderParameterValueSourcePropsScreenshot,

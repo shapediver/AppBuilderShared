@@ -4,6 +4,7 @@ const noArgumentTools = [
 	"list_parameter_definitions",
 	"list_action_controls",
 	"get_metric",
+	"get_camera",
 ] as const;
 
 describe("AGENT_TOOL_META", () => {
@@ -17,7 +18,7 @@ describe("AGENT_TOOL_META", () => {
 		},
 	);
 
-	it.each(["set_camera_position", "get_screenshot"] as const)(
+	it.each(["set_camera", "get_screenshot", "get_camera"] as const)(
 		"%s description does not mention viewportId",
 		(name) => {
 			expect(AGENT_TOOL_META[name].description).not.toMatch(

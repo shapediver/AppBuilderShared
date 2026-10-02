@@ -84,6 +84,7 @@ describe("IAppBuilder.agents schema", () => {
 					...validAgent,
 					useGenericToolDefaults: false,
 					genericTools: [
+						{name: "get_camera"},
 						{name: "get_screenshot"},
 						{
 							name: "list_parameter_definitions",

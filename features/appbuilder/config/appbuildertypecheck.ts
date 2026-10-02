@@ -1590,7 +1590,10 @@ const GenericToolSettingsSchema = z.discriminatedUnion("name", [
 		name: z.literal(GenericToolName.TriggerActionControl),
 	}),
 	z.strictObject({
-		name: z.literal(GenericToolName.SetCameraPosition),
+		name: z.literal(GenericToolName.SetCamera),
+	}),
+	z.strictObject({
+		name: z.literal(GenericToolName.GetCamera),
 	}),
 	z.strictObject({
 		name: z.literal(GenericToolName.GetScreenshot),

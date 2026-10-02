@@ -55,13 +55,23 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 			"Unsupported action types return message 'not supported'.",
 		annotations: {readOnlyHint: false},
 	},
-	[GenericToolName.SetCameraPosition]: {
+	[GenericToolName.SetCamera]: {
 		description:
-			"Set the viewport camera position and look-at target. " +
-			"Input: { position: {x,y,z}, target: {x,y,z} }. Uses the main viewport. " +
-			"Does not change camera type. " +
+			"Set the active viewport camera. " +
+			"Input fields are optional: { position?: [x,y,z], target?: [x,y,z], type?, fov?, direction?, id?, name? }. " +
+			"Omit id and name to update the active camera. With neither, a different type creates a camera of that type. An id or name selects that camera. " +
+			"Uses the main viewport. " +
 			"Success: { success: true }. Failure: { success: false, message } (e.g. Viewport not found).",
 		annotations: {readOnlyHint: false},
+	},
+	[GenericToolName.GetCamera]: {
+		description:
+			"Read the active viewport camera. " +
+			"Call with no arguments. Uses the main viewport. " +
+			"Success: { success: true, camera } with id, type, position [x,y,z], target [x,y,z], and fov or direction. " +
+			"camera is the App Builder camera document. " +
+			"Failure: { success: false, message } (e.g. Viewport not found).",
+		annotations: {readOnlyHint: true},
 	},
 	[GenericToolName.GetScreenshot]: {
 		description:
