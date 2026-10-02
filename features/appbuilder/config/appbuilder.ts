@@ -1478,15 +1478,16 @@ export interface IAppBuilderOutputActionsPropsSetParameterValue {
 	parameter: string;
 }
 
-export interface IAppBuilderInstanceDefinition {
-	/** Id of the instance. */
+/**
+ * Fields shared by additional sessions and instances on the App Builder data output.
+ */
+export interface IAppBuilderSessionDefinitionBase {
+	/** Id of the session. */
 	sessionId: string;
-	/** Optional slug of the instance. If a slug is provided, the instance will be loaded immediately with that slug. */
+	/** Optional slug of the session. If a slug is provided, the session will be loaded immediately with that slug. */
 	slug?: string;
-	/** Optional name of the instance. This name will be used for the node in the scene graph, e.g. NAME_transformations_0 for the first transformation. */
-	name?: string;
 	/**
-	 * Parameter set for the instance.
+	 * Parameter set for the session.
 	 * Defined in a parameter dictionary where the key is either the displayname, the name or the id of the parameter.
 	 * The value is the parameter value.
 	 * If none is provided, the default parameter set is used.
@@ -1494,6 +1495,15 @@ export interface IAppBuilderInstanceDefinition {
 	parameterValues?: {
 		[key: string]: IAppBuilderParameterValueDefinition;
 	};
+}
+
+/**
+ * Instance created from the App Builder data output.
+ * Used to customize a session by setting parameters and transformations.
+ */
+export interface IAppBuilderInstanceDefinition extends IAppBuilderSessionDefinitionBase {
+	/** Optional name of the instance. This name will be used for the node in the scene graph, e.g. NAME_transformations_0 for the first transformation. */
+	name?: string;
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
 	/** The actions that should be executed after an output of the instance has been updated. */
@@ -1504,6 +1514,12 @@ export interface IAppBuilderInstanceDefinition {
 		props: IAppBuilderOutputActionsPropsSetParameterValue;
 	}[];
 }
+
+/**
+ * Additional session created from the App Builder data output.
+ * A full session whose parameters and exports are registered.
+ */
+export interface IAppBuilderSessionDefinition extends IAppBuilderSessionDefinitionBase {}
 
 /**
  * Web app definition.
@@ -1537,6 +1553,13 @@ export interface IAppBuilder extends IAppBuilderNode {
 	 * Instances are used to customize a session by setting parameters and transformations.
 	 */
 	instances?: IAppBuilderInstanceDefinition[];
+
+	/**
+	 * Optional list of additional sessions to be created.
+	 * These are full sessions in addition to the sessions from the theme or
+	 * settings JSON. The controller session still comes from the theme or URL.
+	 */
+	sessions?: IAppBuilderSessionDefinition[];
 
 	/**
 	 * Optional list of agents.

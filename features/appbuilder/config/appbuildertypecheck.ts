@@ -1433,11 +1433,10 @@ const IAppBuilderOutputActionsPropsSetParameterValueSchema = z.strictObject({
 	output: z.string(),
 });
 
-// Zod type definition for IAppBuilderInstances
-const IAppBuilderInstancesSchema = z.strictObject({
+// Zod type definition for IAppBuilderSessionDefinitionBase
+const IAppBuilderSessionDefinitionBaseSchema = z.strictObject({
 	sessionId: z.string(),
 	slug: z.string().optional(),
-	name: z.string().optional(),
 	parameterValues: z
 		.record(
 			z.string(),
@@ -1448,18 +1447,28 @@ const IAppBuilderInstancesSchema = z.strictObject({
 				.or(IAppBuilderParameterValueSourceDefinitionSchema),
 		)
 		.optional(),
-	transformations: z.array(z.array(z.number())).optional(),
-	outputActions: z
-		.array(
-			z.discriminatedUnion("type", [
-				z.strictObject({
-					type: z.literal("setParameterValue"),
-					props: IAppBuilderOutputActionsPropsSetParameterValueSchema,
-				}),
-			]),
-		)
-		.optional(),
 });
+
+// Zod type definition for IAppBuilderSessionDefinition
+const IAppBuilderSessionDefinitionSchema =
+	IAppBuilderSessionDefinitionBaseSchema;
+
+// Zod type definition for IAppBuilderInstances
+const IAppBuilderInstancesSchema =
+	IAppBuilderSessionDefinitionBaseSchema.extend({
+		name: z.string().optional(),
+		transformations: z.array(z.array(z.number())).optional(),
+		outputActions: z
+			.array(
+				z.discriminatedUnion("type", [
+					z.strictObject({
+						type: z.literal("setParameterValue"),
+						props: IAppBuilderOutputActionsPropsSetParameterValueSchema,
+					}),
+				]),
+			)
+			.optional(),
+	});
 
 // Zod type definition for FilterValue ("include" | "exclude")
 const FilterValueSchema = z.enum(["include", "exclude"]);
@@ -1666,6 +1675,7 @@ const IAppBuilderSchema = z.strictObject({
 	sessionId: z.string().optional(),
 	containers: z.array(IAppBuilderContainerSchema),
 	instances: z.array(IAppBuilderInstancesSchema).optional(),
+	sessions: z.array(IAppBuilderSessionDefinitionSchema).optional(),
 	agents: z.array(IAppBuilderAgentSchema).optional(),
 	actionSlots: IAppBuilderActionSlotsSchema.optional(),
 });
