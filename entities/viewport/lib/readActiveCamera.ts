@@ -86,8 +86,11 @@ export type CameraMove = {
 
 /**
  * Assign payload plus an animated move.
- * Position and target are taken off the assign document when both can be
- * resolved, so `camera.set` can animate them instead of assign snapping.
+ * When both pose values can be resolved, they are taken off the assign
+ * document so `camera.set` can animate them instead of assign snapping.
+ * A missing pose is filled from the active camera only when that camera
+ * is the one being updated. Selecting or creating another camera keeps a
+ * partial pose on assign so that camera can fill the other value.
  */
 export function planCameraUpdate(
 	camera: CameraToAssign,
@@ -97,11 +100,19 @@ export function planCameraUpdate(
 	},
 ): {assign: CameraToAssign; move?: CameraMove} {
 	const assign = activeCameraForAssign(camera, activeCamera);
-	const wantsMove =
-		camera.position !== undefined || camera.target !== undefined;
-	const position = camera.position ?? activeCamera?.position;
-	const target = camera.target ?? activeCamera?.target;
-	if (!wantsMove || position === undefined || target === undefined) {
+	const hasPosition = camera.position !== undefined;
+	const hasTarget = camera.target !== undefined;
+	if (!hasPosition && !hasTarget) {
+		return {assign};
+	}
+	const updatingActive =
+		assign.id !== undefined && assign.id === activeCamera?.id;
+	const position =
+		camera.position ??
+		(updatingActive ? activeCamera?.position : undefined);
+	const target =
+		camera.target ?? (updatingActive ? activeCamera?.target : undefined);
+	if (position === undefined || target === undefined) {
 		return {assign};
 	}
 	const rest: CameraToAssign = {...assign};

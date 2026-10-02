@@ -210,6 +210,54 @@ describe("planCameraUpdate", () => {
 		});
 	});
 
+	it("does not borrow the other pose when another camera is selected by id", () => {
+		expect(
+			planCameraUpdate({id: "other", position: [1, 2, 3]}, active),
+		).toEqual({
+			assign: {id: "other", position: [1, 2, 3]},
+		});
+	});
+
+	it("does not borrow the other pose when another camera is selected by name", () => {
+		expect(
+			planCameraUpdate({name: "Top", target: [0, 0, 0]}, active),
+		).toEqual({
+			assign: {name: "Top", target: [0, 0, 0]},
+		});
+	});
+
+	it("moves an explicit pose when selecting another camera", () => {
+		expect(
+			planCameraUpdate(
+				{id: "other", position: [1, 2, 3], target: [0, 0, 0]},
+				active,
+			),
+		).toEqual({
+			assign: {id: "other"},
+			move: {position: [1, 2, 3], target: [0, 0, 0]},
+		});
+	});
+
+	it("fills a missing target when the assign id is the active camera", () => {
+		expect(
+			planCameraUpdate({id: "current", position: [1, 2, 3]}, active),
+		).toEqual({
+			assign: {id: "current"},
+			move: {position: [1, 2, 3], target: [0, 1, 0]},
+		});
+	});
+
+	it("does not borrow the other pose when creating a camera", () => {
+		expect(
+			planCameraUpdate(
+				{type: "orthographic", position: [0, 10, 0]},
+				active,
+			),
+		).toEqual({
+			assign: {type: "orthographic", position: [0, 10, 0]},
+		});
+	});
+
 	it("leaves a lens-only update on assign", () => {
 		expect(planCameraUpdate({fov: 40}, active)).toEqual({
 			assign: {id: "current", fov: 40},
