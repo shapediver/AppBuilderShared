@@ -16,7 +16,6 @@ export interface ITrackerEventOptions {
 export enum TrackerMetricType {
 	WebVitals = "Web vitals",
 	TimeSavings = "Time savings",
-	NetPromoterScore = "Net Promoter Score",
 }
 
 export interface IDelayedTrackerPropsAwaiter {
@@ -81,7 +80,7 @@ export interface ITrackerContext {
 	trackMetric(
 		type: TrackerMetricType,
 		metricName: string,
-		value: number | string,
+		value: number,
 		options?: ITrackerEventOptions,
 	): void;
 

@@ -2,10 +2,7 @@
  * @jest-environment jsdom
  */
 import {TrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext";
-import {
-	ITrackerContext,
-	TrackerMetricType,
-} from "@AppBuilderLib/shared/lib/TrackerContext.types";
+import {ITrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext.types";
 import {MantineProvider} from "@mantine/core";
 import "@testing-library/jest-dom";
 import {act, fireEvent, render, screen, waitFor} from "@testing-library/react";
@@ -18,6 +15,7 @@ const NPS_DEFAULT_QUESTION =
 	"How likely are you to recommend this App to other members of your organization?";
 
 function createTracker(): ITrackerContext & {
+	trackEvent: jest.Mock;
 	trackMetric: jest.Mock;
 } {
 	return {
@@ -84,11 +82,10 @@ describe("NetPromoterScore", () => {
 	it("reports a score, stores answered, and closes on digit click", async () => {
 		const {tracker} = renderPrompt();
 		fireEvent.click(await screen.findByRole("button", {name: "7"}));
-		expect(tracker.trackMetric).toHaveBeenCalledWith(
-			TrackerMetricType.NetPromoterScore,
-			TrackerMetricType.NetPromoterScore,
-			"7",
-		);
+		expect(tracker.trackEvent).toHaveBeenCalledWith("Net Promoter Score", {
+			props: {"Net Promoter Score": "7"},
+		});
+		expect(tracker.trackMetric).not.toHaveBeenCalled();
 		expect(readNpsStorage(NPS_STORAGE_KEY)).toEqual(
 			expect.objectContaining({type: "answered", value: "7"}),
 		);
@@ -107,6 +104,7 @@ describe("NetPromoterScore", () => {
 		);
 		expect(closeButton).toBeTruthy();
 		fireEvent.click(closeButton as Element);
+		expect(tracker.trackEvent).not.toHaveBeenCalled();
 		expect(tracker.trackMetric).not.toHaveBeenCalled();
 		expect(readNpsStorage(NPS_STORAGE_KEY)?.type).toBe("dismissed");
 		expect(window.localStorage.getItem(NPS_STORAGE_KEY)).toContain(
@@ -124,11 +122,10 @@ describe("NetPromoterScore", () => {
 			options: [{title: "Promoter", value: "ten"}],
 		});
 		fireEvent.click(await screen.findByRole("button", {name: "Promoter"}));
-		expect(tracker.trackMetric).toHaveBeenCalledWith(
-			TrackerMetricType.NetPromoterScore,
-			TrackerMetricType.NetPromoterScore,
-			'"ten"',
-		);
+		expect(tracker.trackEvent).toHaveBeenCalledWith("Net Promoter Score", {
+			props: {"Net Promoter Score": '"ten"'},
+		});
+		expect(tracker.trackMetric).not.toHaveBeenCalled();
 		expect(readNpsStorage(NPS_STORAGE_KEY)?.value).toBe('"ten"');
 		await waitFor(() => {
 			expect(
