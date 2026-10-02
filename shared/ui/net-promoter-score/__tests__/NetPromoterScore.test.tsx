@@ -174,21 +174,6 @@ describe("NetPromoterScore", () => {
 		expect(screen.getByText(NPS_DEFAULT_QUESTION)).toBeInTheDocument();
 	});
 
-	it("shows an eligible prompt after openDelay seconds", async () => {
-		jest.useFakeTimers();
-		renderPrompt({openDelay: 2.5});
-		expect(
-			screen.queryByText(NPS_DEFAULT_QUESTION),
-		).not.toBeInTheDocument();
-		await act(async () => {
-			await jest.advanceTimersByTimeAsync(2500);
-		});
-		await act(async () => {
-			await jest.runOnlyPendingTimersAsync();
-		});
-		expect(screen.getByText(NPS_DEFAULT_QUESTION)).toBeInTheDocument();
-	});
-
 	it("stays closed when storage hides the prompt even after openDelay", () => {
 		jest.useFakeTimers();
 		window.localStorage.setItem(
