@@ -1,4 +1,8 @@
-export function sizeAfterBottomLeftDrag(args: {
+/**
+ * Size after dragging the top-left handle of a bottom-right anchored panel.
+ * Moving left grows width. Moving up grows height.
+ */
+export function sizeAfterTopLeftDrag(args: {
 	startWidth: number;
 	startHeight: number;
 	startClientX: number;
@@ -16,7 +20,7 @@ export function sizeAfterBottomLeftDrag(args: {
 		args.maxWidth,
 	);
 	const height = clamp(
-		args.startHeight + (args.clientY - args.startClientY),
+		args.startHeight + (args.startClientY - args.clientY),
 		args.minHeight,
 		args.maxHeight,
 	);

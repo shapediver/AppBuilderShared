@@ -28,7 +28,7 @@ describe("AppBuilderAgentFrame", () => {
 		expect(onPeerWindow).toHaveBeenCalledWith(null);
 	});
 
-	it("updates wrap size when the bottom-left handle is dragged", () => {
+	it("updates wrap size when the top-left handle is dragged up and left", () => {
 		Object.defineProperty(window, "innerWidth", {
 			configurable: true,
 			value: 1200,
@@ -62,7 +62,7 @@ describe("AppBuilderAgentFrame", () => {
 		Object.assign(down, {clientX: 100, clientY: 400});
 		fireEvent(handle, down);
 		const move = createEvent.pointerMove(handle, {pointerId: 1});
-		Object.assign(move, {clientX: 60, clientY: 430});
+		Object.assign(move, {clientX: 60, clientY: 370});
 		fireEvent(handle, move);
 
 		expect(wrap.style.width).toBe("424px");

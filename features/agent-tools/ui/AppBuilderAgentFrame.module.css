@@ -6,6 +6,10 @@
 	min-height: 12rem;
 	max-width: 90vw;
 	max-height: 70vh;
+	overflow: hidden;
+	border-radius: var(--mantine-radius-md, 8px);
+	border: 1px solid var(--mantine-color-default-border, rgba(0, 0, 0, 0.15));
+	background: var(--mantine-color-body, #fff);
 }
 
 .iframe {
@@ -23,18 +27,18 @@
 .handle {
 	position: absolute;
 	left: 0;
-	bottom: 0;
+	top: 0;
 	width: 1rem;
 	height: 1rem;
 	padding: 0;
 	border: 0;
 	appearance: none;
-	cursor: nesw-resize;
+	cursor: nwse-resize;
 	touch-action: none;
 	z-index: 1;
 	background: linear-gradient(
-		225deg,
-		transparent 50%,
-		rgba(0, 0, 0, 0.28) 50%
+		135deg,
+		rgba(0, 0, 0, 0.28) 50%,
+		transparent 50%
 	);
 }

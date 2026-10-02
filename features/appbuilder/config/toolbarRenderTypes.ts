@@ -69,6 +69,11 @@ export type ToolbarCommandItem = ToolbarItemBase<
 	"command",
 	{
 		execute: () => void | Promise<void>;
+		/**
+		 * Keep the button enabled while parameters are executing.
+		 * Other commands stay disabled for that time.
+		 */
+		allowDuringExecution?: boolean;
 		batchUpdate?: {
 			namespace: string;
 			parameterId: string;
@@ -82,6 +87,8 @@ export type ToolbarCommandItem = ToolbarItemBase<
 	aggregationId?: string;
 	/** Stable presentation order after commands are aggregated. */
 	order?: number;
+	/** Pressed styling for a toggle that is currently on. */
+	active?: boolean;
 };
 
 /** A runtime checkbox rendered in a toolbar menu. */

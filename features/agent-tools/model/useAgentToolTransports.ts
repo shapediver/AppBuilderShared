@@ -16,6 +16,11 @@ export type UseAgentToolTransportsProps = {
 	agentWindow?: Window | null;
 	/** Controller session fields for ToolsApi `getSessionInfo`. */
 	sessionInfo?: IAgentSessionInfo;
+	/**
+	 * Resolved `AgentUi.showThreadHistory`, sent on `getAgentConfig` when the
+	 * peer connects. Omitted by callers that predate the agent chrome.
+	 */
+	showThreadHistory?: boolean;
 };
 
 /**
@@ -31,6 +36,7 @@ export function useAgentToolTransports(
 		appBuilderParseSettled,
 		agentWindow = null,
 		sessionInfo,
+		showThreadHistory,
 	} = props;
 
 	const runtime = useAgentToolRuntime({
@@ -56,6 +62,7 @@ export function useAgentToolTransports(
 		snapshotComplete: runtime.snapshotComplete,
 		agentConfig: runtime.agentConfig,
 		sessionInfo,
+		showThreadHistory,
 	});
 
 	return runtime;

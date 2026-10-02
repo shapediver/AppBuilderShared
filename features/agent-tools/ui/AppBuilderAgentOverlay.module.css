@@ -1,0 +1,8 @@
+.slot {
+	position: absolute;
+	z-index: 4;
+	right: 0.5rem;
+	/* Clears the bottom-end toolbar button so the toggle stays clickable. */
+	bottom: 4.75rem;
+	pointer-events: auto;
+}

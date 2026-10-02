@@ -27,6 +27,7 @@ interface Props {
 	iconType: IconType;
 	disabled?: boolean;
 	loading?: boolean;
+	pressed?: boolean;
 	styles?: MantineStyleProp;
 	onClick?: React.MouseEventHandler<HTMLButtonElement>;
 	onMouseDown?: React.MouseEventHandler<HTMLButtonElement>;
@@ -143,6 +144,7 @@ const AppBuilderToolbarIconButton = forwardRef<
 		iconType,
 		disabled = false,
 		loading = false,
+		pressed = false,
 		styles,
 		onClick,
 		onMouseDown,
@@ -242,7 +244,10 @@ const AppBuilderToolbarIconButton = forwardRef<
 				onMouseDown={onMouseDown}
 				disabled={disabled}
 				loading={loading}
-				variant={disabled ? variantDisabled : variant}
+				variant={
+					disabled ? variantDisabled : pressed ? "filled" : variant
+				}
+				aria-pressed={pressed ? true : undefined}
 				aria-label={showCaption ? undefined : (label ?? undefined)}
 				className={
 					showCaption

@@ -5,7 +5,7 @@ import {
 	useState,
 	type PointerEvent,
 } from "react";
-import {sizeAfterBottomLeftDrag} from "../lib/sizeAfterBottomLeftDrag";
+import {sizeAfterTopLeftDrag} from "../lib/sizeAfterTopLeftDrag";
 import classes from "./AppBuilderAgentFrame.module.css";
 
 const MIN_WIDTH_PX = 256;
@@ -42,7 +42,7 @@ export default function AppBuilderAgentFrame({src, onPeerWindow}: Props) {
 				return;
 			}
 			setSize(
-				sizeAfterBottomLeftDrag({
+				sizeAfterTopLeftDrag({
 					...origin,
 					clientX: event.clientX,
 					clientY: event.clientY,

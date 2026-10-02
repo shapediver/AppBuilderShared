@@ -56,6 +56,7 @@ export default function AppBuilderToolbarCommandButton({
 			iconType={item.icon ?? defaultIcon ?? "tabler:apps"}
 			disabled={item.disabled || globalDisabled}
 			loading={loading}
+			pressed={item.active}
 			onClick={execute}
 			{...(item.labelSide !== undefined
 				? {labelSide: item.labelSide}

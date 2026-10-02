@@ -1,30 +1,30 @@
-import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
-import {OverlayPosition} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
-import {Button} from "@mantine/core";
-import {useContext} from "react";
 import type {AppBuilderAgentOverlayProps} from "../config/appBuilderAgentHost";
+import AppBuilderAgentFrame from "./AppBuilderAgentFrame";
+import classes from "./AppBuilderAgentOverlay.module.css";
 
 export type {AppBuilderAgentOverlayProps};
+
+/**
+ * Floating agent iframe. The toolbar button lives in the viewport toolbar.
+ * Hiding the slot keeps the iframe mounted so the next open does not reload.
+ */
 export default function AppBuilderAgentOverlay({
 	agentUrl,
-	isAgentReady,
-	onOpenAgent,
+	mode,
+	panelMounted,
+	panelVisible,
+	onPeerWindow,
 }: AppBuilderAgentOverlayProps) {
-	const {viewportOverlayWrapper: {component: ViewportOverlayWrapper} = {}} =
-		useContext(ComponentContext);
-
-	if (!agentUrl || !ViewportOverlayWrapper) {
+	if (mode !== "iframe" || !panelMounted || !agentUrl) {
 		return null;
 	}
 
 	return (
-		<ViewportOverlayWrapper
-			position={OverlayPosition.TOP_RIGHT}
-			offset="1em"
+		<div
+			className={classes.slot}
+			style={{display: panelVisible ? "block" : "none"}}
 		>
-			<Button disabled={!isAgentReady} onClick={onOpenAgent}>
-				Open agent
-			</Button>
-		</ViewportOverlayWrapper>
+			<AppBuilderAgentFrame src={agentUrl} onPeerWindow={onPeerWindow} />
+		</div>
 	);
 }

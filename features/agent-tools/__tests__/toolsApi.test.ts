@@ -275,6 +275,30 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		connector.cancel();
 	});
 
+	it("getAgentConfig includes showThreadHistory when the host passes it", async () => {
+		const mock = createMockCrossWindowApi();
+		const agent = screenshotOnlyAgent();
+		const connector = new ToolsApiConnector(
+			resolveToolset(agent),
+			stubHandlers(),
+			mock,
+			undefined,
+			agent,
+			undefined,
+			[],
+			false,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getAgentConfig()).resolves.toEqual({
+			id: "a",
+			name: "A",
+			message: "hi",
+			showThreadHistory: false,
+		});
+		connector.cancel();
+	});
+
 	it("getAgentConfig omits genericTools and specificTools", async () => {
 		const mock = createMockCrossWindowApi();
 		const agent: IAppBuilderAgent = {
