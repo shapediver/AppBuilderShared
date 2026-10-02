@@ -13,7 +13,7 @@ Goal: exercise **every in-scope generic tool** and **every parameter type this m
     - First arg is the **RegisteredTool** from `getTools()`, not a string name.
     - Second arg is a **JSON string**.
     - Chrome 154+: `tool.inputSchema` is an **object**. Older Chrome: string. Normalize with `typeof tool.inputSchema === "string" ? JSON.parse(tool.inputSchema) : tool.inputSchema`.
-5. Default toolset (8 names, snake_case): `list_parameter_definitions`, `get_parameter_values`, `set_parameter_values`, `list_action_controls`, `trigger_action_control`, `set_camera_position`, `get_screenshot`, `get_metric`. No `create_model_state` / `import_model_state` / `ask_user_question` tools.
+5. Default toolset (9 names, snake_case): `list_parameter_definitions`, `get_parameter_values`, `set_parameter_values`, `list_action_controls`, `trigger_action_control`, `set_camera`, `get_camera`, `get_screenshot`, `get_metric`. No `create_model_state` / `import_model_state` / `ask_user_question` tools.
 
 **Schema reject:** invalid input returns JSON (`errors: [{ name: "*", message }]` or `{ success: false, message }` or `{ found: false, message }`) — does **not** throw.
 
@@ -286,42 +286,47 @@ Expect: tool **undefined**. Do not invent a call.
 
 #### 42. set_camera_ok
 
-`set_camera_position` `{"position":{"x":2,"y":2,"z":2},"target":{"x":0,"y":0,"z":0}}`
+`set_camera` `{"position":[2,2,2],"target":[0,0,0]}`
 Expect: `{success: true}`.
 
-#### 43. set_camera_missing_target
+#### 43. set_camera_bad_position
 
-`{"position":{"x":1,"y":1,"z":1}}`
+`{"position":[1,1]}`
 Expect: schema reject / `{success: false}`.
 
-#### 44. set_camera_bad_viewport
+#### 44. set_camera_rejects_viewport_id
 
-`{"position":{"x":1,"y":1,"z":1},"target":{"x":0,"y":0,"z":0},"viewportId":"no-such-viewport"}`
-Expect: `{success: false}`, viewport not found.
+`{"type":"perspective","position":[1,1,1],"target":[0,0,0],"viewportId":"no-such-viewport"}`
+Expect: `{success: false}` schema reject. `viewportId` is not an input; the tool uses the main viewport.
 
-#### 45. get_screenshot
+#### 45. get_camera
+
+`get_camera` `{}`
+Expect: `{success: true, camera}` with `type`, `position`, and `target` arrays.
+
+#### 46. get_screenshot
 
 `get_screenshot` `{}`
-Expect: `{success: true, image}` data URL (`data:image/`).
+Expect: `{success: true, image_url}` data URL (`data:image/`).
 
-#### 46. get_screenshot_reject
+#### 47. get_screenshot_reject
 
 `{"foo":1}`
 Expect: schema reject / `{success: false}`.
 
-#### 47. get_metric_missing
+#### 48. get_metric_missing
 
 `get_metric` `{}`
 Expect: `{found: false}` (no `message` required).
 
-#### 48. get_metric_reject
+#### 49. get_metric_reject
 
 `{"name":"AgentMetric"}`
 Expect: `{found: false, message}` schema reject, not a fake metric.
 
 ### G. Workflow
 
-#### 49. full_workflow
+#### 50. full_workflow
 
 1. `list_parameter_definitions` `{}`
 2. `get_parameter_values` `{"names":["Message"]}`
@@ -330,10 +335,10 @@ Expect: `{found: false, message}` schema reject, not a fake metric.
 5. `get_screenshot` `{}`
    Expect: each step succeeds.
 
-#### 50. tool_inventory
+#### 51. tool_inventory
 
 `getTools()` names sorted equal:
-`get_metric`, `get_parameter_values`, `get_screenshot`, `list_action_controls`, `list_parameter_definitions`, `set_camera_position`, `set_parameter_values`, `trigger_action_control`.
+`get_camera`, `get_metric`, `get_parameter_values`, `get_screenshot`, `list_action_controls`, `list_parameter_definitions`, `set_camera`, `set_parameter_values`, `trigger_action_control`.
 
 ## Report format
 

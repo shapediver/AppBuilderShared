@@ -50,7 +50,8 @@ function stubHandlers(
 		set_parameter_values: unused,
 		list_action_controls: unused,
 		trigger_action_control: unused,
-		set_camera_position: unused,
+		set_camera: unused,
+		get_camera: unused,
 		get_screenshot: unused,
 		get_metric: unused,
 		...overrides,
@@ -58,7 +59,7 @@ function stubHandlers(
 }
 
 describe("listToolsFromResolved", () => {
-	it("lists eight default in-scope tools with description and inputSchema", () => {
+	it("lists every default in-scope tool with description and inputSchema", () => {
 		const {tools} = listToolsFromResolved(resolveToolset(undefined));
 		expect(tools.map((t) => t.name)).toEqual([
 			...IN_SCOPE_GENERIC_TOOL_NAMES,
