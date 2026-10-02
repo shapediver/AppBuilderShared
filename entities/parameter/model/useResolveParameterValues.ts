@@ -173,6 +173,20 @@ export function useResolveParameterValues(props?: {
 	const sourceData = useMemo(() => {
 		if (!parameterValues || !namespace) return undefined;
 
+		// warn about values which look like a source definition but have an
+		// unknown type, they would otherwise be stringified silently
+		for (const {id, value} of parameterValues) {
+			if (
+				typeof value === "object" &&
+				value !== null &&
+				!isParameterSource(value)
+			) {
+				Logger.warn(
+					`Parameter value source of unknown type "${(value as {type?: unknown}).type}" for parameter "${id}", the value will be stringified. Supported types: dataOutput, export, sdtf, modelState, screenshot.`,
+				);
+			}
+		}
+
 		// flatten sources
 		const flat = flattenSources(parameterValues);
 		if (flat.size === 0) return undefined;
