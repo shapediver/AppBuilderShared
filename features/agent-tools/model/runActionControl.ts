@@ -55,6 +55,9 @@ async function runSetParameterAction(
 		deps.getLiveParameters,
 		updates,
 		deps.batchParameterValueUpdate,
+		isSetParameterValuesAction(definition)
+			? definition.props.updateMode
+			: undefined,
 	);
 	if (result.errors.length > 0) {
 		return {success: false, message: result.errors[0].message};

@@ -12,7 +12,6 @@ jest.mock(
 );
 
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {runAppBuilderActionSetParameterValues} from "../runAppBuilderActionSetParameterValues";
 
 function parameterStore(
@@ -106,10 +105,20 @@ describe("runAppBuilderActionSetParameterValues", () => {
 	});
 
 	it("fails when a value source is agentTool", async () => {
+		const target = parameterStore("p1");
+		const batchParameterValueUpdate = jest.fn(async () => {});
+		useShapeDiverStoreParameters.getState = () =>
+			({
+				getParameter: () => target,
+				batchParameterValueUpdate,
+			}) as unknown as ReturnType<typeof originalGetState>;
+
 		await expect(
 			runAppBuilderActionSetParameterValues(
 				{
+					updateMode: "partial",
 					parameterValues: [
+						{parameter: {name: "p1"}, value: "ok"},
 						{
 							parameter: {name: "p1"},
 							source: {
@@ -122,6 +131,8 @@ describe("runAppBuilderActionSetParameterValues", () => {
 				{namespace: "session"},
 			),
 		).rejects.toThrow("agentTool");
+		expect(target.setUiValue).not.toHaveBeenCalled();
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
 	});
 
 	it("throws when the parameter is missing", async () => {
@@ -138,7 +149,7 @@ describe("runAppBuilderActionSetParameterValues", () => {
 						{parameter: {name: "missing"}, value: "1"},
 					],
 				},
-				{namespace: "session", strict: true},
+				{namespace: "session"},
 			),
 		).rejects.toThrow('Parameter "missing" not found.');
 	});
@@ -154,7 +165,7 @@ describe("runAppBuilderActionSetParameterValues", () => {
 		await expect(
 			runAppBuilderActionSetParameterValues(
 				{parameterValues: [{parameter: {name: "p1"}}]},
-				{namespace: "session", strict: true},
+				{namespace: "session"},
 			),
 		).rejects.toThrow('No value or source defined for parameter "p1".');
 	});
@@ -172,13 +183,75 @@ describe("runAppBuilderActionSetParameterValues", () => {
 				{
 					parameterValues: [{parameter: {name: "p1"}, value: "bad"}],
 				},
-				{namespace: "session", strict: true},
+				{namespace: "session"},
 			),
 		).rejects.toThrow('Invalid value for parameter "p1".');
 		expect(target.setUiValue).not.toHaveBeenCalled();
 	});
 
-	it("does not mutate earlier parameters when a later batch entry is invalid", async () => {
+	it("writes valid values, then fails with the first invalid value", async () => {
+		const first = parameterStore("p1");
+		const second = parameterStore("p2", {valid: false});
+		const third = parameterStore("p3");
+		const batchParameterValueUpdate = jest.fn(async () => {});
+		useShapeDiverStoreParameters.getState = () =>
+			({
+				getParameter: (_namespace: string, name: string) => {
+					if (name === "p1") return first;
+					if (name === "p2") return second;
+					return third;
+				},
+				batchParameterValueUpdate,
+			}) as unknown as ReturnType<typeof originalGetState>;
+
+		await expect(
+			runAppBuilderActionSetParameterValues(
+				{
+					parameterValues: [
+						{parameter: {name: "p1"}, value: "ok"},
+						{parameter: {name: "p2"}, value: "bad"},
+						{parameter: {name: "p3"}, value: "also-ok"},
+					],
+				},
+				{namespace: "session"},
+			),
+		).rejects.toThrow('Invalid value for parameter "p2".');
+		expect(first.setUiValue).toHaveBeenCalledWith("ok");
+		expect(second.setUiValue).not.toHaveBeenCalled();
+		expect(third.setUiValue).toHaveBeenCalledWith("also-ok");
+		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
+			session: {p1: "ok", p3: "also-ok"},
+		});
+	});
+
+	it("writes valid values, then fails when a later parameter is missing", async () => {
+		const first = parameterStore("p1");
+		const batchParameterValueUpdate = jest.fn(async () => {});
+		useShapeDiverStoreParameters.getState = () =>
+			({
+				getParameter: (_namespace: string, name: string) =>
+					name === "p1" ? first : undefined,
+				batchParameterValueUpdate,
+			}) as unknown as ReturnType<typeof originalGetState>;
+
+		await expect(
+			runAppBuilderActionSetParameterValues(
+				{
+					parameterValues: [
+						{parameter: {name: "p1"}, value: "ok"},
+						{parameter: {name: "missing"}, value: "1"},
+					],
+				},
+				{namespace: "session"},
+			),
+		).rejects.toThrow('Parameter "missing" not found.');
+		expect(first.setUiValue).toHaveBeenCalledWith("ok");
+		expect(batchParameterValueUpdate).toHaveBeenCalledWith({
+			session: {p1: "ok"},
+		});
+	});
+
+	it("updateMode complete leaves every value unchanged, then fails", async () => {
 		const first = parameterStore("p1");
 		const second = parameterStore("p2", {valid: false});
 		const batchParameterValueUpdate = jest.fn(async () => {});
@@ -192,12 +265,13 @@ describe("runAppBuilderActionSetParameterValues", () => {
 		await expect(
 			runAppBuilderActionSetParameterValues(
 				{
+					updateMode: "complete",
 					parameterValues: [
 						{parameter: {name: "p1"}, value: "ok"},
 						{parameter: {name: "p2"}, value: "bad"},
 					],
 				},
-				{namespace: "session", strict: true},
+				{namespace: "session"},
 			),
 		).rejects.toThrow('Invalid value for parameter "p2".');
 		expect(first.setUiValue).not.toHaveBeenCalled();
@@ -205,13 +279,14 @@ describe("runAppBuilderActionSetParameterValues", () => {
 		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
 	});
 
-	it("does not mutate earlier parameters when a later batch entry is missing", async () => {
-		const first = parameterStore("p1");
+	it("fails with the first error when several values are invalid", async () => {
+		const first = parameterStore("p1", {valid: false});
+		const second = parameterStore("p2", {valid: false});
 		const batchParameterValueUpdate = jest.fn(async () => {});
 		useShapeDiverStoreParameters.getState = () =>
 			({
 				getParameter: (_namespace: string, name: string) =>
-					name === "p1" ? first : undefined,
+					name === "p1" ? first : second,
 				batchParameterValueUpdate,
 			}) as unknown as ReturnType<typeof originalGetState>;
 
@@ -219,45 +294,13 @@ describe("runAppBuilderActionSetParameterValues", () => {
 			runAppBuilderActionSetParameterValues(
 				{
 					parameterValues: [
-						{parameter: {name: "p1"}, value: "ok"},
-						{parameter: {name: "missing"}, value: "1"},
-					],
-				},
-				{namespace: "session", strict: true},
-			),
-		).rejects.toThrow('Parameter "missing" not found.');
-		expect(first.setUiValue).not.toHaveBeenCalled();
-		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
-	});
-
-	it("skips a missing parameter and applies the rest when not strict", async () => {
-		const first = parameterStore("p1");
-		const batchParameterValueUpdate = jest.fn(async () => {});
-		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
-		useShapeDiverStoreParameters.getState = () =>
-			({
-				getParameter: (_namespace: string, name: string) =>
-					name === "p1" ? first : undefined,
-				batchParameterValueUpdate,
-			}) as unknown as ReturnType<typeof originalGetState>;
-
-		try {
-			await runAppBuilderActionSetParameterValues(
-				{
-					parameterValues: [
-						{parameter: {name: "p1"}, value: "ok"},
-						{parameter: {name: "missing"}, value: "1"},
+						{parameter: {name: "p1"}, value: "bad"},
+						{parameter: {name: "p2"}, value: "also-bad"},
 					],
 				},
 				{namespace: "session"},
-			);
-			expect(first.setUiValue).toHaveBeenCalledWith("ok");
-			expect(batchParameterValueUpdate).toHaveBeenCalledWith({
-				session: {p1: "ok"},
-			});
-			expect(warn).toHaveBeenCalled();
-		} finally {
-			warn.mockRestore();
-		}
+			),
+		).rejects.toThrow('Invalid value for parameter "p1".');
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
 	});
 });

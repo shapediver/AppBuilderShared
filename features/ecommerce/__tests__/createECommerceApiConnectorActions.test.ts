@@ -172,6 +172,28 @@ describe("validateTriggerActionData", () => {
 		expect(result.success).toBe(false);
 	});
 
+	it("accepts setParameterValues updateMode complete", () => {
+		const result = validateTriggerActionData({
+			type: "setParameterValues",
+			props: {
+				updateMode: "complete",
+				parameterValues: [{parameter: {name: "Length"}, value: "4"}],
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects an unknown setParameterValues updateMode", () => {
+		const result = validateTriggerActionData({
+			type: "setParameterValues",
+			props: {
+				updateMode: "rollback",
+				parameterValues: [{parameter: {name: "Length"}, value: "4"}],
+			},
+		});
+		expect(result.success).toBe(false);
+	});
+
 	it("accepts setParameterValues with a parameter source", () => {
 		const result = validateTriggerActionData({
 			type: "setParameterValues",

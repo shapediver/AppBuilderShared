@@ -6,6 +6,7 @@ import type {
 	SetParameterValuesError,
 	SetParameterValuesOutput,
 } from "@AppBuilderLib/features/agent-tools/config/setParameterValues";
+import type {AppBuilderSetParameterValuesUpdateMode} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {findParameterByName} from "./findParameterByName";
 import {prepareParameterStoreValue} from "./setParameterValueValidators/prepareParameterStoreValue";
 
@@ -81,12 +82,16 @@ function prepareOneUpdate(
 /**
  * Validate each update, then batch-write applied values.
  * Does not apply the agent parameter filter — any live param in the namespace can be set.
+ *
+ * `updateMode` `"partial"` (default) writes the valid updates and still
+ * returns every error. `"complete"` writes nothing when any update fails.
  */
 export async function applyParameterUpdates(
 	defaultNamespace: string,
 	getParameters: (namespace: string) => IShapeDiverParameter<any>[],
 	updates: ParameterUpdateInput[],
 	batchUpdate: IShapeDiverStoreParameters["batchParameterValueUpdate"],
+	updateMode: AppBuilderSetParameterValuesUpdateMode = "partial",
 ): Promise<SetParameterValuesOutput> {
 	const errors: SetParameterValuesError[] = [];
 	const valuesByNamespace: Record<string, Record<string, unknown>> = {};
@@ -108,8 +113,11 @@ export async function applyParameterUpdates(
 			prepared.storeValue;
 	}
 
-	const applied = Object.values(valuesByNamespace).flatMap(Object.keys);
-	if (applied.length > 0) {
+	const blockAll = updateMode === "complete" && errors.length > 0;
+	const applied = blockAll
+		? []
+		: Object.values(valuesByNamespace).flatMap(Object.keys);
+	if (!blockAll && applied.length > 0) {
 		await batchUpdate(valuesByNamespace);
 	}
 

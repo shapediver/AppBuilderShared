@@ -49,7 +49,10 @@ export default function AppBuilderActionSetParameterValuesComponent(
 		() =>
 			runAppBuilderActionSetParameterValues(
 				"parameterValues" in props
-					? {parameterValues: props.parameterValues}
+					? {
+							parameterValues: props.parameterValues,
+							updateMode: props.updateMode,
+						}
 					: {
 							parameter: props.parameter,
 							value: props.value,

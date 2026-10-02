@@ -2,10 +2,10 @@ import {resolveParameterValueSources} from "@AppBuilderLib/entities/parameter/li
 import type {ParameterValueDefinition} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {
+	type AppBuilderSetParameterValuesUpdateMode,
 	IAppBuilderActionPropsSetParameterValue,
 	IAppBuilderActionPropsSetParameterValues,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {Logger} from "@AppBuilderLib/shared/lib/logger";
 
 export type RunAppBuilderActionSetParameterValuesProps =
 	| IAppBuilderActionPropsSetParameterValues
@@ -14,7 +14,11 @@ export type RunAppBuilderActionSetParameterValuesProps =
 export type AppBuilderActionRunNamespaceContext = {
 	namespace: string;
 	viewportId?: string;
-	/** When true, missing/invalid items throw (API). UI omits this and skips. */
+	/**
+	 * Accepted from `AppBuilderActionRunContext`. Camera uses it.
+	 * This action fails on an invalid item either way; `updateMode` chooses
+	 * whether valid siblings are written first.
+	 */
 	strict?: boolean;
 };
 
@@ -25,11 +29,12 @@ type PlannedParameterUpdate = {
 	setUiValue: (value: unknown) => boolean;
 };
 
-function rejectOrSkip(strict: boolean | undefined, message: string): void {
-	if (strict) {
-		throw new Error(message);
-	}
-	Logger.warn(message);
+function updateModeOf(
+	props: RunAppBuilderActionSetParameterValuesProps,
+): AppBuilderSetParameterValuesUpdateMode {
+	return "parameterValues" in props
+		? (props.updateMode ?? "partial")
+		: "partial";
 }
 
 /**
@@ -37,21 +42,35 @@ function rejectOrSkip(strict: boolean | undefined, message: string): void {
  * Awaits source resolution (when needed) and session execution via
  * `batchParameterValueUpdate`.
  *
- * Resolves and validates items before any `setUiValue` so a later
- * invalid/unknown entry cannot leave earlier parameters dirty. API callers
- * pass `strict: true` to throw; toolbar / slots / in-app executeActions skip
- * the bad item and continue.
+ * When one value is unknown, missing, or invalid, `updateMode` chooses
+ * what happens to the other values in this action:
+ * - `"partial"` (default): write the valid values, then fail with the
+ *   first error message. Earlier actions in a sequence stay applied.
+ * - `"complete"`: leave every value in this action unchanged, then fail
+ *   with the first error message. A write happens only when every value
+ *   is valid.
+ *
+ * An `agentTool` value source fails the action before any write.
  */
 export async function runAppBuilderActionSetParameterValues(
 	props: RunAppBuilderActionSetParameterValuesProps,
 	context: AppBuilderActionRunNamespaceContext,
 ): Promise<void> {
 	const items = "parameterValues" in props ? props.parameterValues : [props];
+	const updateMode = updateModeOf(props);
 	const {getParameter, batchParameterValueUpdate} =
 		useShapeDiverStoreParameters.getState();
 
 	const sourceDefinitions: ParameterValueDefinition[] = [];
 	const sourceItemIndexes: number[] = [];
+	const errors: string[] = [];
+	const failedIndexes = new Set<number>();
+
+	const noteError = (index: number, message: string) => {
+		if (failedIndexes.has(index)) return;
+		failedIndexes.add(index);
+		errors.push(message);
+	};
 
 	for (let index = 0; index < items.length; index++) {
 		const item = items[index];
@@ -67,10 +86,7 @@ export async function runAppBuilderActionSetParameterValues(
 			item.parameter.name,
 		);
 		if (!parameterStore) {
-			rejectOrSkip(
-				context.strict,
-				`Parameter "${item.parameter.name}" not found.`,
-			);
+			noteError(index, `Parameter "${item.parameter.name}" not found.`);
 			continue;
 		}
 		sourceDefinitions.push({
@@ -90,6 +106,7 @@ export async function runAppBuilderActionSetParameterValues(
 	let resolvedSourceIndex = 0;
 
 	for (let index = 0; index < items.length; index++) {
+		if (failedIndexes.has(index)) continue;
 		const item = items[index];
 		const paramNamespace = item.parameter.sessionId ?? context.namespace;
 		const parameterStore = getParameter(
@@ -97,10 +114,7 @@ export async function runAppBuilderActionSetParameterValues(
 			item.parameter.name,
 		);
 		if (!parameterStore) {
-			rejectOrSkip(
-				context.strict,
-				`Parameter "${item.parameter.name}" not found.`,
-			);
+			noteError(index, `Parameter "${item.parameter.name}" not found.`);
 			continue;
 		}
 		const parameter = parameterStore.getState();
@@ -110,8 +124,8 @@ export async function runAppBuilderActionSetParameterValues(
 			nextValue === undefined && item.source !== undefined;
 		if (nextValue === undefined) {
 			if (item.source === undefined) {
-				rejectOrSkip(
-					context.strict,
+				noteError(
+					index,
 					`No value or source defined for parameter "${parameter.definition.id}".`,
 				);
 				continue;
@@ -123,8 +137,8 @@ export async function runAppBuilderActionSetParameterValues(
 		if (!isSourceValue && !parameter.actions.isUiValueDifferent(nextValue))
 			continue;
 		if (!parameter.actions.isValid(nextValue, false)) {
-			rejectOrSkip(
-				context.strict,
+			noteError(
+				index,
 				`Invalid value for parameter "${parameter.definition.id}".`,
 			);
 			continue;
@@ -137,15 +151,14 @@ export async function runAppBuilderActionSetParameterValues(
 		});
 	}
 
-	if (planned.length === 0) return;
+	if (updateMode === "complete" && errors.length > 0) {
+		throw new Error(errors[0]);
+	}
 
 	const validParameters: {[namespace: string]: {[key: string]: unknown}} = {};
 	for (const update of planned) {
 		if (!update.setUiValue(update.nextValue)) {
-			rejectOrSkip(
-				context.strict,
-				`Invalid value for parameter "${update.parameterId}".`,
-			);
+			errors.push(`Invalid value for parameter "${update.parameterId}".`);
 			continue;
 		}
 		if (!validParameters[update.paramNamespace]) {
@@ -155,7 +168,11 @@ export async function runAppBuilderActionSetParameterValues(
 			update.nextValue;
 	}
 
-	if (Object.keys(validParameters).length === 0) return;
+	if (Object.keys(validParameters).length > 0) {
+		await batchParameterValueUpdate(validParameters);
+	}
 
-	await batchParameterValueUpdate(validParameters);
+	if (errors.length > 0) {
+		throw new Error(errors[0]);
+	}
 }

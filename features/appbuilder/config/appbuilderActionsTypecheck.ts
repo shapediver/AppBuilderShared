@@ -141,6 +141,7 @@ export const IAppBuilderActionPropsSetParameterValueSchema = z.strictObject({
 export const IAppBuilderActionPropsSetParameterValuesSchema = z.strictObject({
 	parameterValues: z.array(IAppBuilderActionPropsSetParameterValueSchema),
 	message: z.string().optional(),
+	updateMode: z.enum(["partial", "complete"]).optional(),
 });
 
 export const IAppBuilderActionPropsEmptySchema = z.strictObject({});

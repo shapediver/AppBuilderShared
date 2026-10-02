@@ -236,18 +236,35 @@ export type IAppBuilderLegacyActionPropsSetParameterValue =
 	IAppBuilderActionPropsSetParameterValue & IAppBuilderActionPropsCommon;
 
 /**
+ * What `setParameterValues` does when one value cannot be applied
+ * (unknown parameter, missing value, or invalid value).
+ *
+ * `"partial"` (default): write the valid values, then fail with the
+ * first error message. Earlier actions in a sequence stay applied.
+ *
+ * `"complete"`: leave every value in this action unchanged, then fail
+ * with the first error message. A write happens only when every value
+ * is valid.
+ */
+export type AppBuilderSetParameterValuesUpdateMode = "partial" | "complete";
+
+/**
  * Properties of a "setParameterValues" action.
  *
  * If one value is invalid, the other valid values in this action are still
- * written and the action fails with the first error message.
- * Follow-up: add a property here that selects this behavior, so a caller can
- * instead leave every value unchanged when one of them is invalid.
+ * written and the action fails with the first error message, unless
+ * {@link updateMode} is `"complete"`.
  */
 export interface IAppBuilderActionPropsSetParameterValues {
 	/** Parameter values to set. */
 	parameterValues: IAppBuilderActionPropsSetParameterValue[];
 	/** Optional user-facing message when the action runs. */
 	message?: string;
+	/**
+	 * How to treat the other values in this action when one value is
+	 * unknown, missing, or invalid. Defaults to `"partial"`.
+	 */
+	updateMode?: AppBuilderSetParameterValuesUpdateMode;
 }
 
 /** Properties of legacy a "setParameterValues" action. */

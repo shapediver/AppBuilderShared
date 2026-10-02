@@ -144,6 +144,30 @@ describe("applyParameterUpdates", () => {
 		});
 	});
 
+	it("updateMode complete writes nothing when any update fails", async () => {
+		const width = param("width", {name: "Width"});
+		const result = await applyParameterUpdates(
+			defaultNamespace,
+			getParametersFor({[defaultNamespace]: [width]}),
+			[
+				{name: "Width", value: 42},
+				{name: "missing", value: 1},
+			],
+			batchUpdate,
+			"complete",
+		);
+
+		expect(result.applied).toEqual([]);
+		expect(result.errors).toEqual([
+			{
+				name: "missing",
+				message:
+					'Parameter with id/name/displayname "missing" does not exist.',
+			},
+		]);
+		expect(batchUpdate).not.toHaveBeenCalled();
+	});
+
 	it("sessionId uses that namespace getParameters, not default", async () => {
 		const defaultParam = param("width", {name: "Width"});
 		const otherParam = param("height", {name: "Height"});

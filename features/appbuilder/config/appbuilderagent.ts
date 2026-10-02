@@ -217,11 +217,11 @@ export interface SpecificToolSettings {
 	 * runs its sibling actions, and mode "sequential" stops at the first nested
 	 * failure. Actions that already ran stay applied.
 	 *
-	 * setParameterValues keeps the existing App Builder behavior: an invalid
+	 * setParameterValues `updateMode` defaults to "partial": an invalid
 	 * value does not block the other values in that same action. Valid values
 	 * are written, then the action fails with the first error message.
-	 * A follow-up will add a property on IAppBuilderActionPropsSetParameterValues
-	 * to choose that behavior.
+	 * "complete" leaves every value in that action unchanged, then fails
+	 * the same way. A write happens only when every value is valid.
 	 * @see IAppBuilderActionPropsSetParameterValues
 	 */
 	action?: IAppBuilderActionDefinition;

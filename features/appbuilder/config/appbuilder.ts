@@ -16,6 +16,7 @@ import type {
 	IAppBuilderActionPropsCreateModelState,
 	IAppBuilderActionPropsSetParameterValue,
 	IAppBuilderLegacyActionDefinition,
+	AppBuilderSetParameterValuesUpdateMode as SetParameterValuesUpdateMode,
 } from "./appbuilderActions";
 import type {IAppBuilderActionSlots} from "./appbuilderActionSlots";
 import type {IAppBuilderAgent} from "./appbuilderagent";
@@ -118,6 +119,8 @@ export type {
 } from "./appbuilderActionSlots";
 export {AppBuilderActionType} from "./appBuilderActionType";
 export type {IAppBuilderColor};
+export type AppBuilderSetParameterValuesUpdateMode =
+	SetParameterValuesUpdateMode;
 
 /** How a string text input commits values to the session. */
 export enum ParameterStringInputMode {

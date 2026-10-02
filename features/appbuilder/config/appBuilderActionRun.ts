@@ -9,9 +9,11 @@ export type AppBuilderActionRunContext = {
 	viewportId?: string;
 	fullscreenId?: string;
 	/**
-	 * When true, missing/invalid camera or parameter targets throw so API
-	 * callers can return `{success: false}`. Toolbar, action slots, and
-	 * in-app `executeActions` omit this and warn/skip instead.
+	 * When true, a missing or invalid camera target throws so API callers
+	 * can return `{success: false}`. Toolbar, action slots, and in-app
+	 * `executeActions` omit this and warn/skip camera failures.
+	 * `setParameterValues` always fails on an invalid item; `updateMode`
+	 * chooses whether the valid values in that action are written first.
 	 */
 	strict?: boolean;
 	/**

@@ -350,6 +350,38 @@ describe("runActionControl", () => {
 		expect(result).toEqual({success: true});
 	});
 
+	it("updateMode complete leaves the batch unchanged and returns the first error", async () => {
+		const batchParameterValueUpdate = jest
+			.fn()
+			.mockResolvedValue(undefined);
+		const height = param("height");
+		height.actions.isValid = () => false;
+		const deps = createDeps({
+			getLiveParameters: () => [param("width"), height],
+			batchParameterValueUpdate,
+		});
+
+		const result = await runActionControl(
+			actionRef({
+				definition: {
+					type: "setParameterValues",
+					props: {
+						updateMode: "complete",
+						parameterValues: [
+							{parameter: {name: "width"}, value: "10"},
+							{parameter: {name: "height"}, value: "nope"},
+						],
+					},
+				},
+			}),
+			deps,
+		);
+
+		expect(batchParameterValueUpdate).not.toHaveBeenCalled();
+		expect(result.success).toBe(false);
+		expect(result.message).toContain('parameter "height"');
+	});
+
 	it("returns not supported for setParameterValue with source only", async () => {
 		const batchParameterValueUpdate = jest
 			.fn()
