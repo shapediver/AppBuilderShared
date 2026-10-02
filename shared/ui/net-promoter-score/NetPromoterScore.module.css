@@ -1,0 +1,20 @@
+.root {
+	margin-inline: auto;
+}
+
+.closeButton {
+	--cb-size: var(--cb-size-md) !important;
+	top: var(--mantine-spacing-xs);
+}
+
+.question {
+	max-width: 90%;
+}
+
+.captions {
+	min-width: 0;
+}
+
+.digits {
+	min-width: 0;
+}

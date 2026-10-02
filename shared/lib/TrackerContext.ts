@@ -144,7 +144,7 @@ export const DummyTracker: ITrackerContext = {
 	trackMetric: function (
 		type: TrackerMetricType,
 		metricName: string,
-		value: number,
+		value: number | string,
 		options?: ITrackerEventOptions,
 	): void {
 		Logger.debug("Tracking metric", type, metricName, value, options);
@@ -191,7 +191,7 @@ export function setDefaultTrackerProps(
 		trackMetric: function (
 			type: TrackerMetricType,
 			metricName: string,
-			value: number,
+			value: number | string,
 			options?: ITrackerEventOptions,
 		): void {
 			const {props = {}, callback = undefined} = options ?? {};
@@ -230,7 +230,7 @@ export function combineTrackers(trackers: ITrackerContext[]): ITrackerContext {
 		trackMetric: function (
 			type: TrackerMetricType,
 			metricName: string,
-			value: number,
+			value: number | string,
 			options?: ITrackerEventOptions,
 		): void {
 			trackers.forEach((t) =>
