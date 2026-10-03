@@ -13,7 +13,10 @@ export interface ITrackerEventOptions {
 	props?: undefined | {[key: string]: any};
 }
 
-export type TrackerMetricType = "Web vitals" | "Time savings";
+export enum TrackerMetricType {
+	WebVitals = "Web vitals",
+	TimeSavings = "Time savings",
+}
 
 export interface IDelayedTrackerPropsAwaiter {
 	/**
