@@ -1,7 +1,7 @@
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import type {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
-import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
-import {ActionIcon, Checkbox, Flex} from "@mantine/core";
+import {Checkbox, Flex} from "@mantine/core";
+import {AppBuilderLabeledActionIcon} from "./AppBuilderToolbarIconButton";
 import classes from "./AppBuilderToolbarMenuCheckbox.module.css";
 
 type Props = {
@@ -54,24 +54,18 @@ export default function AppBuilderToolbarMenuCheckbox({
 				}
 			/>
 			{trailingAction && (
-				<TooltipWrapper
-					label={trailingAction.tooltip ?? trailingAction.label}
-				>
-					<ActionIcon
-						aria-label={
-							trailingAction.tooltip ?? trailingAction.label
-						}
-						size="xs"
-						variant="subtle"
-						disabled={trailingAction.disabled}
-						onClick={(event) => {
-							event.stopPropagation();
-							trailingAction.execute();
-						}}
-					>
-						<Icon iconType={trailingAction.icon} />
-					</ActionIcon>
-				</TooltipWrapper>
+				<AppBuilderLabeledActionIcon
+					label={trailingAction.label}
+					tooltipLabel={trailingAction.tooltip}
+					icon={<Icon iconType={trailingAction.icon} />}
+					size="xs"
+					variant="subtle"
+					disabled={trailingAction.disabled}
+					onClick={(event) => {
+						event.stopPropagation();
+						trailingAction.execute();
+					}}
+				/>
 			)}
 		</Flex>
 	);

@@ -11,7 +11,11 @@ export const parameterInteractionButtonThemeSchema =
 	IAppBuilderActionPropsCommonSchema.omit({id: true});
 
 export type ParameterInteractionButtonThemeProps = {
-	/** Widget button text / menu row label. Toolbar falls back to this for the tooltip. */
+	/**
+	 * Widget button text, menu row label, or icon caption.
+	 * Icon buttons show this caption when `AppBuilderToolbarIconButton`
+	 * `labelSide` is set. Otherwise it is the tooltip fallback.
+	 */
 	label?: string;
 	/** Toolbar and widget icon-button tooltip. Falls back to `label`. */
 	tooltip?: string;
@@ -28,7 +32,11 @@ export type ParameterInteractionConfirmCancelThemeProps = {
 
 export type ParameterInteractionConfirmCancelClearThemeProps =
 	ParameterInteractionConfirmCancelThemeProps & {
-		/** Clear control: toolbar/widget tooltip and icon. Default tooltip is `Clear ${parameterName}`. */
+		/**
+		 * Clear control. `label` is the icon caption when
+		 * `AppBuilderToolbarIconButton` `labelSide` is set, and the tooltip
+		 * fallback otherwise. Default label is `Clear ${parameterName}`.
+		 */
 		clearButton?: ParameterInteractionButtonThemeProps;
 	};
 

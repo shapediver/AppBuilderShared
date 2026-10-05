@@ -4,13 +4,12 @@ import {
 	createToolbarCheckboxItem,
 	createToolbarCommand,
 } from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
+import {AppBuilderLabeledActionIcon} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
-import TooltipWrapper from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {
-	ActionIcon,
 	Box,
 	Button,
 	Flex,
@@ -406,19 +405,17 @@ export default function ParameterDrawingComponent(
 					</Box>
 					{showClearButton && (
 						<Box style={{width: "auto"}}>
-							<TooltipWrapper label={clearButton.tooltip}>
-								<ActionIcon
-									aria-label={clearButton.tooltip}
-									onClick={clearDrawing}
-									variant={
-										pointsData?.length === 0
-											? "light"
-											: "filled"
-									}
-								>
-									<Icon iconType={clearButton.icon} />
-								</ActionIcon>
-							</TooltipWrapper>
+							<AppBuilderLabeledActionIcon
+								label={clearButton.label}
+								tooltipLabel={clearButton.tooltip}
+								icon={<Icon iconType={clearButton.icon} />}
+								onClick={clearDrawing}
+								variant={
+									pointsData?.length === 0
+										? "light"
+										: "filled"
+								}
+							/>
 						</Box>
 					)}
 				</Flex>
