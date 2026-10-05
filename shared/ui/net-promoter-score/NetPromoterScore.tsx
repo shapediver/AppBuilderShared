@@ -13,8 +13,6 @@ import {useContext, useEffect, useState} from "react";
 import classes from "./NetPromoterScore.module.css";
 import type {NetPromoterScoreThemeDefaultProps} from "./NetPromoterScore.theme.types";
 import {
-	NPS_DEFAULT_ANSWERED_SCHEDULE,
-	NPS_DEFAULT_DISMISSED_SCHEDULE,
 	NPS_STORAGE_KEY,
 	shouldHideNpsPrompt,
 	writeNpsStorage,
@@ -44,8 +42,8 @@ const defaultStyleProps: NetPromoterScoreStyleProps = {
 		end: "10 \u2013 Extremely likely",
 	},
 	openDelay: 5,
-	answeredSchedule: NPS_DEFAULT_ANSWERED_SCHEDULE,
-	dismissedSchedule: NPS_DEFAULT_DISMISSED_SCHEDULE,
+	answeredScheduleDays: 30,
+	dismissedScheduleDays: 1,
 	dialogProps: {
 		size: 640,
 		position: {bottom: 20, left: 0, right: 0},
@@ -70,7 +68,7 @@ export function NetPromoterScoreThemeProps(
 }
 
 /**
- * Monthly Net Promoter Score dialog. Hosts mount this component.
+ * Net Promoter Score dialog. Hosts mount this component.
  * This repository does not mount it.
  */
 export default function NetPromoterScore(
@@ -81,8 +79,8 @@ export default function NetPromoterScore(
 		options = NPS_DEFAULT_OPTIONS,
 		captions,
 		openDelay,
-		answeredSchedule = NPS_DEFAULT_ANSWERED_SCHEDULE,
-		dismissedSchedule = NPS_DEFAULT_DISMISSED_SCHEDULE,
+		answeredScheduleDays,
+		dismissedScheduleDays,
 		dialogProps,
 		stackProps,
 		questionTextProps,
@@ -104,13 +102,13 @@ export default function NetPromoterScore(
 			: captions.end;
 
 	useEffect(() => {
-		const schedules = {answeredSchedule, dismissedSchedule};
+		const dayCounts = {answeredScheduleDays, dismissedScheduleDays};
 		if (
 			shouldHideNpsPrompt(
 				NPS_STORAGE_KEY,
 				new Date(),
 				localStorage,
-				schedules,
+				dayCounts,
 			)
 		) {
 			setOpened(false);
@@ -126,14 +124,14 @@ export default function NetPromoterScore(
 					NPS_STORAGE_KEY,
 					new Date(),
 					localStorage,
-					schedules,
+					dayCounts,
 				)
 			) {
 				setOpened(true);
 			}
 		}, openDelay * 1000);
 		return () => clearTimeout(timer);
-	}, [openDelay, answeredSchedule, dismissedSchedule]);
+	}, [openDelay, answeredScheduleDays, dismissedScheduleDays]);
 
 	const handleDismiss = () => {
 		writeNpsStorage(NPS_STORAGE_KEY, "dismissed");

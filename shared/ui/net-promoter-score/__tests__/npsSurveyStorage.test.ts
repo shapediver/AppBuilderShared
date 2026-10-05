@@ -3,7 +3,6 @@
  */
 import {
 	NPS_STORAGE_KEY,
-	nextNpsScheduleBoundary,
 	readNpsStorage,
 	shouldHideNpsPrompt,
 	writeNpsStorage,
@@ -71,106 +70,51 @@ describe("npsSurveyStorage", () => {
 		).toBe(false);
 	});
 
-	it("hides when answered in the current local month", () => {
+	it("hides an answer still inside 30 local days", () => {
 		const key = NPS_STORAGE_KEY;
 		const storage = memoryStorage();
-		writeNpsStorage(
-			key,
-			"answered",
-			new Date("2026-09-02T08:00:00"),
-			storage,
-		);
+		writeNpsStorage(key, "answered", new Date(2026, 9, 15, 12, 0), storage);
 		expect(
-			shouldHideNpsPrompt(key, new Date("2026-09-30T18:00:00"), storage),
+			shouldHideNpsPrompt(key, new Date(2026, 10, 14, 11, 59), storage),
 		).toBe(true);
 	});
 
-	it("does not hide when answered in an earlier local month", () => {
+	it("does not hide an answer at the 30-day mark", () => {
 		const key = NPS_STORAGE_KEY;
 		const storage = memoryStorage();
-		writeNpsStorage(
-			key,
-			"answered",
-			new Date("2026-08-31T23:00:00"),
-			storage,
-		);
+		writeNpsStorage(key, "answered", new Date(2026, 9, 15, 12, 0), storage);
 		expect(
-			shouldHideNpsPrompt(key, new Date("2026-09-01T01:00:00"), storage),
+			shouldHideNpsPrompt(key, new Date(2026, 10, 14, 12, 0), storage),
 		).toBe(false);
 	});
 
-	it("hides when dismissed inside 24 hours", () => {
+	it("hides a dismiss still inside 1 local day", () => {
 		const key = NPS_STORAGE_KEY;
 		const storage = memoryStorage();
-		writeNpsStorage(
-			key,
-			"dismissed",
-			new Date("2026-09-15T12:00:00.000Z"),
-			storage,
-		);
+		writeNpsStorage(key, "dismissed", new Date(2026, 9, 1, 12, 0), storage);
 		expect(
-			shouldHideNpsPrompt(
-				key,
-				new Date("2026-09-16T11:59:00.000Z"),
-				storage,
-			),
+			shouldHideNpsPrompt(key, new Date(2026, 9, 2, 11, 59), storage),
 		).toBe(true);
 	});
 
-	it("does not hide when dismissed after 24 hours", () => {
+	it("does not hide a dismiss at the 1-day mark", () => {
 		const key = NPS_STORAGE_KEY;
 		const storage = memoryStorage();
-		writeNpsStorage(
-			key,
-			"dismissed",
-			new Date("2026-09-15T12:00:00.000Z"),
-			storage,
-		);
+		writeNpsStorage(key, "dismissed", new Date(2026, 9, 1, 12, 0), storage);
 		expect(
-			shouldHideNpsPrompt(
-				key,
-				new Date("2026-09-16T12:00:00.000Z"),
-				storage,
-			),
+			shouldHideNpsPrompt(key, new Date(2026, 9, 2, 12, 0), storage),
 		).toBe(false);
 	});
 
-	it("adds 24 hours when the schedule has no anchor", () => {
-		const stored = new Date(2026, 9, 1, 12, 0);
+	it("does not hide a custom 7-day answer at the 7-day mark", () => {
+		const key = NPS_STORAGE_KEY;
+		const storage = memoryStorage();
+		writeNpsStorage(key, "answered", new Date(2026, 9, 15, 12, 0), storage);
 		expect(
-			nextNpsScheduleBoundary(stored, {unit: "hour", step: 24}),
-		).toEqual(new Date(2026, 9, 2, 12, 0));
-	});
-
-	it("uses the next 1st at 00:00 local", () => {
-		const stored = new Date(2026, 9, 15, 12, 0);
-		expect(
-			nextNpsScheduleBoundary(stored, {
-				unit: "month",
-				day: 1,
-				hour: 0,
-				minute: 0,
+			shouldHideNpsPrompt(key, new Date(2026, 9, 22, 12, 0), storage, {
+				answeredScheduleDays: 7,
 			}),
-		).toEqual(new Date(2026, 10, 1, 0, 0));
-	});
-
-	it("skips a boundary equal to the stored time", () => {
-		const stored = new Date(2026, 10, 1, 0, 0);
-		expect(
-			nextNpsScheduleBoundary(stored, {
-				unit: "month",
-				day: 1,
-				hour: 0,
-				minute: 0,
-			}),
-		).toEqual(new Date(2026, 11, 1, 0, 0));
-	});
-
-	it("uses the last day of February when day 31 does not exist", () => {
-		const stored = new Date(2026, 0, 31, 0, 0);
-		expect(
-			nextNpsScheduleBoundary(stored, {unit: "month", day: 31}),
-		).toEqual(new Date(2026, 1, 28, 0, 0));
+		).toBe(false);
 	});
 
 	it("writes the submitted string on answer and omits value on dismiss", () => {

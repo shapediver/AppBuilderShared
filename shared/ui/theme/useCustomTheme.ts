@@ -1096,8 +1096,8 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 	end: "10 – Extremely likely",
 				// },
 				// openDelay: 5,
-				// answeredSchedule: {unit: "month", day: 1, hour: 0, minute: 0},
-				// dismissedSchedule: {unit: "hour", step: 24},
+				// answeredScheduleDays: 30,
+				// dismissedScheduleDays: 1,
 				// dialogProps: {
 				// 	size: 640,
 				// 	position: {bottom: 20, left: 0, right: 0},

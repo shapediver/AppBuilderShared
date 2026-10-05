@@ -646,13 +646,23 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 		expect(result.success).toBe(false);
 	});
 
-	it("rejects a NetPromoterScore schedule with a forbidden anchor", () => {
-		const result = validateAppBuilderSettingsJson(
-			themeOverridesFor("NetPromoterScore", {
-				answeredSchedule: {unit: "hour", day: 1},
-			}),
-		);
-		expect(result.success).toBe(false);
+	it("rejects a NetPromoterScore day count that is not an integer greater than 0", () => {
+		const rejects = [
+			{answeredScheduleDays: 0},
+			{answeredScheduleDays: -1},
+			{answeredScheduleDays: 1.5},
+			{answeredScheduleDays: "30"},
+			{dismissedScheduleDays: 0},
+			{dismissedScheduleDays: -1},
+			{dismissedScheduleDays: 1.5},
+			{dismissedScheduleDays: "1"},
+		];
+		for (const defaultProps of rejects) {
+			const result = validateAppBuilderSettingsJson(
+				themeOverridesFor("NetPromoterScore", defaultProps),
+			);
+			expect(result.success).toBe(false);
+		}
 	});
 
 	it("accepts NetPromoterScore nested style bags and dialog radius", () => {
