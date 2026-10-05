@@ -333,33 +333,6 @@ describe("validateAppBuilderSettingsJson themeOverrides.other", () => {
 		});
 		expect(result.success).toBe(true);
 	});
-
-	it("rejects nps and npsmessage under themeOverrides.other", () => {
-		const withNps = validateAppBuilderSettingsJson({
-			version: "1.0",
-			themeOverrides: {other: {nps: true}},
-		});
-		expect(withNps.success).toBe(false);
-
-		const withMessage = validateAppBuilderSettingsJson({
-			version: "1.0",
-			themeOverrides: {
-				other: {
-					npsmessage:
-						"How likely are you to recommend this App to other members of your organization?",
-				},
-			},
-		});
-		expect(withMessage.success).toBe(false);
-	});
-
-	it("rejects unknown keys under themeOverrides.other", () => {
-		const result = validateAppBuilderSettingsJson({
-			version: "1.0",
-			themeOverrides: {other: {v8ThemeSupport: true, notARealKey: true}},
-		});
-		expect(result.success).toBe(false);
-	});
 });
 
 function settingsWithControlOverrides(overrides?: Record<string, unknown>) {

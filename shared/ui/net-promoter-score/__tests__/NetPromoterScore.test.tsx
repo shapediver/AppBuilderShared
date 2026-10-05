@@ -2,7 +2,10 @@
  * @jest-environment jsdom
  */
 import {TrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext";
-import {ITrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext.types";
+import {
+	ITrackerContext,
+	TrackerMetricType,
+} from "@AppBuilderLib/shared/lib/TrackerContext.types";
 import {MantineProvider} from "@mantine/core";
 import "@testing-library/jest-dom";
 import {act, fireEvent, render, screen, waitFor} from "@testing-library/react";
@@ -82,10 +85,12 @@ describe("NetPromoterScore", () => {
 	it("reports a score, stores answered, and closes on digit click", async () => {
 		const {tracker} = renderPrompt();
 		fireEvent.click(await screen.findByRole("button", {name: "7"}));
-		expect(tracker.trackEvent).toHaveBeenCalledWith("Net Promoter Score", {
-			props: {"Net Promoter Score": "7"},
-		});
-		expect(tracker.trackMetric).not.toHaveBeenCalled();
+		expect(tracker.trackMetric).toHaveBeenCalledWith(
+			TrackerMetricType.NetPromoterScore,
+			TrackerMetricType.NetPromoterScore,
+			7,
+		);
+		expect(tracker.trackEvent).not.toHaveBeenCalled();
 		expect(readNpsStorage(NPS_STORAGE_KEY)).toEqual(
 			expect.objectContaining({type: "answered", value: "7"}),
 		);
@@ -117,15 +122,13 @@ describe("NetPromoterScore", () => {
 		});
 	});
 
-	it("submits a custom option value with JSON quotes", async () => {
+	it("stores a non-numeric option value and sends no metric", async () => {
 		const {tracker} = renderPrompt({
 			options: [{title: "Promoter", value: "ten"}],
 		});
 		fireEvent.click(await screen.findByRole("button", {name: "Promoter"}));
-		expect(tracker.trackEvent).toHaveBeenCalledWith("Net Promoter Score", {
-			props: {"Net Promoter Score": '"ten"'},
-		});
 		expect(tracker.trackMetric).not.toHaveBeenCalled();
+		expect(tracker.trackEvent).not.toHaveBeenCalled();
 		expect(readNpsStorage(NPS_STORAGE_KEY)?.value).toBe('"ten"');
 		await waitFor(() => {
 			expect(

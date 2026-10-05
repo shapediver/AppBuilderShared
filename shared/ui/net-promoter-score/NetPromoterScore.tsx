@@ -1,4 +1,5 @@
 import {TrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext";
+import {TrackerMetricType} from "@AppBuilderLib/shared/lib/TrackerContext.types";
 import {
 	Button,
 	Dialog,
@@ -141,9 +142,13 @@ export default function NetPromoterScore(
 
 	const handleSelect = (value: (typeof options)[number]["value"]) => {
 		const submitted = JSON.stringify(value);
-		tracker.trackEvent("Net Promoter Score", {
-			props: {"Net Promoter Score": submitted},
-		});
+		if (typeof value === "number") {
+			tracker.trackMetric(
+				TrackerMetricType.NetPromoterScore,
+				TrackerMetricType.NetPromoterScore,
+				value,
+			);
+		}
 		writeNpsStorage(
 			NPS_STORAGE_KEY,
 			"answered",
