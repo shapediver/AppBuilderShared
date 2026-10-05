@@ -1564,6 +1564,8 @@ export interface IAppBuilder extends IAppBuilderNode {
 	 * Optional list of additional sessions to be created.
 	 * These are full sessions in addition to the sessions from the theme or
 	 * settings JSON. The controller session still comes from the theme or URL.
+	 * A session id that also appears in `instances` is ignored. The instance
+	 * owns that session.
 	 */
 	sessions?: IAppBuilderSessionDefinition[];
 

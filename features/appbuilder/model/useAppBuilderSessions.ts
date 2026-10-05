@@ -15,7 +15,7 @@ interface Props {
 	namespace: string;
 	/**
 	 * Parsed App Builder output. Sessions listed here are created unless that
-	 * id is already loaded from the theme or settings.
+	 * id is already loaded from the theme or settings, or used by an instance.
 	 */
 	appBuilderData: IAppBuilder | undefined;
 }
@@ -36,8 +36,9 @@ function useStableByJson<T>(value: T): T {
 /**
  * Create full sessions declared on the App Builder data output.
  * Same skip-if-loaded rule as the embedded sessions in {@link useAppBuilderInstances},
- * without the instance flags. Sessions stay on the `useSessions` list while the
- * output still lists them, so removing one closes it.
+ * without the instance flags. A session id that also appears in `instances` is
+ * skipped so the instance keeps that session. Sessions stay on the `useSessions`
+ * list while the output still lists them, so removing one closes it.
  */
 export function useAppBuilderSessions(props: Props) {
 	const {namespace, appBuilderData} = props;
@@ -76,7 +77,19 @@ export function useAppBuilderSessions(props: Props) {
 			return {embeddedSessions: owned, parameterValues};
 
 		const createdSessionIds = new Set(createdSessionIdsRef.current.ids);
+		const instanceSessionIds = new Set(
+			appBuilderData?.instances?.map((instance) => instance.sessionId),
+		);
 		definitions.forEach((definition) => {
+			// Instances own this id. Their session must stay hidden, so this
+			// entry must not create a full session for the same id.
+			if (instanceSessionIds.has(definition.sessionId)) {
+				Logger.warn(
+					`Session id "${definition.sessionId}" is already used by an instance. Skipping additional session.`,
+				);
+				return;
+			}
+
 			if (
 				sessionIsLoaded(definition.sessionId) &&
 				!createdSessionIds.has(definition.sessionId)
