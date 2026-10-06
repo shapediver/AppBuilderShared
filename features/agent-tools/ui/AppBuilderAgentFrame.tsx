@@ -1,11 +1,6 @@
-import {
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-	type PointerEvent,
-} from "react";
-import {sizeAfterBottomLeftDrag} from "../lib/sizeAfterBottomLeftDrag";
+import AppBuilderIframeWidgetComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderIframeWidgetComponent";
+import {useCallback, useRef, useState, type PointerEvent} from "react";
+import {sizeAfterHandleDrag} from "../lib/sizeAfterHandleDrag";
 import classes from "./AppBuilderAgentFrame.module.css";
 
 const MIN_WIDTH_PX = 256;
@@ -31,10 +26,6 @@ export default function AppBuilderAgentFrame({src, onPeerWindow}: Props) {
 	);
 	const [dragging, setDragging] = useState(false);
 
-	useEffect(() => {
-		return () => onPeerWindow(null);
-	}, [onPeerWindow]);
-
 	const onHandlePointerMove = useCallback(
 		(event: PointerEvent<HTMLButtonElement>) => {
 			const origin = dragRef.current;
@@ -42,7 +33,7 @@ export default function AppBuilderAgentFrame({src, onPeerWindow}: Props) {
 				return;
 			}
 			setSize(
-				sizeAfterBottomLeftDrag({
+				sizeAfterHandleDrag({
 					...origin,
 					clientX: event.clientX,
 					clientY: event.clientY,
@@ -50,6 +41,8 @@ export default function AppBuilderAgentFrame({src, onPeerWindow}: Props) {
 					minHeight: MIN_HEIGHT_PX,
 					maxWidth: window.innerWidth * 0.9,
 					maxHeight: window.innerHeight * 0.7,
+					edgeX: "left",
+					edgeY: "top",
 				}),
 			);
 		},
@@ -84,13 +77,11 @@ export default function AppBuilderAgentFrame({src, onPeerWindow}: Props) {
 			className={`${classes.wrap}${dragging ? ` ${classes.dragging}` : ""}`}
 			style={size ? {width: size.width, height: size.height} : undefined}
 		>
-			<iframe
-				className={classes.iframe}
-				src={src}
+			<AppBuilderIframeWidgetComponent
+				url={src}
 				title="ShapeDiver agent"
-				onLoad={(event) => {
-					onPeerWindow(event.currentTarget.contentWindow);
-				}}
+				height="100%"
+				onLoad={onPeerWindow}
 			/>
 			<button
 				type="button"
