@@ -30,6 +30,7 @@ import type {ToolbarCommandItem} from "@AppBuilderLib/features/appbuilder/config
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
 import {getEnvironmentIdentifier} from "@AppBuilderLib/shared/lib/platform/environment";
+import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
 import {MantineProvider} from "@mantine/core";
 import {act, renderHook} from "@testing-library/react";
 import type {ReactNode} from "react";
@@ -241,7 +242,7 @@ describe("useAppBuilderAgentHost", () => {
 
 	it("opens shapediver-agent in window mode", () => {
 		jest.useFakeTimers();
-		const opened = {} as Window;
+		const opened = {postMessage: jest.fn()} as unknown as Window;
 		jest.mocked(window.open).mockReturnValue(opened);
 		renderHost({namespace: "ns"}, "window");
 		expect(useAgentToolTransports).toHaveBeenCalledWith(
@@ -319,6 +320,30 @@ describe("useAppBuilderAgentHost", () => {
 		expect(useAgentToolTransports).toHaveBeenCalledWith(
 			expect.objectContaining({sessionInfo, showThreadHistory: false}),
 		);
+	});
+
+	it("sends the applied theme file to the agent peer", () => {
+		useThemeOverrideStore.getState().setThemeOverride({
+			primaryColor: "teal",
+			other: {forceColorScheme: "dark"},
+		});
+		const peer = {postMessage: jest.fn()} as unknown as Window;
+		const {result, unmount} = renderHost();
+		act(() => {
+			result.current.onPeerWindow(peer);
+		});
+		expect(peer.postMessage).toHaveBeenCalledWith(
+			{
+				type: "shapediver:agent-theme",
+				themeOverrides: {
+					primaryColor: "teal",
+					other: {forceColorScheme: "dark"},
+				},
+			},
+			"http://localhost:3001",
+		);
+		unmount();
+		useThemeOverrideStore.getState().setThemeOverride({});
 	});
 
 	it("does not register a button when there is no agent", () => {

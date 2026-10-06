@@ -4,12 +4,14 @@ import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/mod
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
 import {getEnvironmentIdentifier} from "@AppBuilderLib/shared/lib/platform/environment";
+import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
 import {useProps} from "@mantine/core";
 import {useCallback, useEffect, useRef, useState} from "react";
 import type {
 	AppBuilderAgentOverlayProps,
 	UseAppBuilderAgentHostProps,
 } from "../config/appBuilderAgentHost";
+import {AGENT_THEME_REQUEST, postAgentTheme} from "../lib/agentThemeChannel";
 import {openAgentWindow} from "../lib/openAgentWindow";
 import {resolveAgentUi} from "../lib/resolveAgentUi";
 import {resolveAgentUrl} from "../lib/resolveAgentUrl";
@@ -33,6 +35,9 @@ export function useAppBuilderAgentHost(
 		getEnvironmentIdentifier(),
 	);
 	const [agentWindow, setAgentWindow] = useState<Window | null>(null);
+	const themeOverrides = useThemeOverrideStore(
+		(state) => state.themeOverride,
+	);
 	const [panelMounted, setPanelMounted] = useState(false);
 	const [panelVisible, setPanelVisible] = useState(false);
 
@@ -156,6 +161,26 @@ export function useAppBuilderAgentHost(
 	const onPeerWindow = useCallback((peer: Window | null) => {
 		setAgentWindow(peer);
 	}, []);
+
+	useEffect(() => {
+		if (!agentWindow || !agentUrl) {
+			return;
+		}
+		const send = () =>
+			postAgentTheme(agentWindow, agentUrl, themeOverrides);
+		send();
+		const onRequest = (event: MessageEvent) => {
+			if (event.source !== agentWindow) {
+				return;
+			}
+			if (event.data?.type !== AGENT_THEME_REQUEST) {
+				return;
+			}
+			send();
+		};
+		window.addEventListener("message", onRequest);
+		return () => window.removeEventListener("message", onRequest);
+	}, [agentUrl, agentWindow, themeOverrides]);
 
 	return {
 		agentUrl,
