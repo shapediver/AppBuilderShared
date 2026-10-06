@@ -333,6 +333,14 @@ describe("validateAppBuilderSettingsJson themeOverrides.other", () => {
 		});
 		expect(result.success).toBe(true);
 	});
+
+	it("rejects unknown keys under themeOverrides.other", () => {
+		const result = validateAppBuilderSettingsJson({
+			version: "1.0",
+			themeOverrides: {other: {v8ThemeSupport: true, notARealKey: true}},
+		});
+		expect(result.success).toBe(false);
+	});
 });
 
 function settingsWithControlOverrides(overrides?: Record<string, unknown>) {
