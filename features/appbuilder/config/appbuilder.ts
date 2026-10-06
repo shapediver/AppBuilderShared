@@ -801,6 +801,7 @@ export type AppBuilderWidgetType =
 	| "actions"
 	| "attributeVisualization"
 	| "agent"
+	| "iframe"
 	| "progress"
 	| "desktopClientSelection"
 	| "desktopClientOutputs"
@@ -958,6 +959,22 @@ export interface IAppBuilderWidgetPropsAgent {
 	parameterNames?: string[];
 	/** Names of parameters to exclude in agent workflow. */
 	parameterNamesExclude?: string[];
+}
+
+/**
+ * Properties of an iframe widget.
+ * `url` is an absolute http(s) page.
+ */
+export interface IAppBuilderWidgetPropsIframe {
+	/** Absolute http(s) URL. */
+	url: string;
+	/** Accessible name for the frame. */
+	title?: string;
+	/**
+	 * Height of the frame. A number is pixels.
+	 * Examples: 400, "24rem", "100%". Default: 24rem.
+	 */
+	height?: string | number;
 }
 
 /** Properties of a progress widget. */
@@ -1122,6 +1139,7 @@ export interface IAppBuilderWidget extends IAppBuilderNode {
 		| IAppBuilderWidgetPropsActions
 		| IAppBuilderWidgetPropsAttributeVisualization
 		| IAppBuilderWidgetPropsAgent
+		| IAppBuilderWidgetPropsIframe
 		| IAppBuilderWidgetPropsProgress
 		| IAppBuilderWidgetPropsDesktopClientSelection
 		| IAppBuilderWidgetPropsDesktopClientOutputs
@@ -1684,6 +1702,13 @@ export function isAgentWidget(
 	widget: IAppBuilderWidget,
 ): widget is {type: "agent"; props: IAppBuilderWidgetPropsAgent} {
 	return widget.type === "agent";
+}
+
+/** assert widget type "iframe" */
+export function isIframeWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "iframe"; props: IAppBuilderWidgetPropsIframe} {
+	return widget.type === "iframe";
 }
 
 /** assert widget type "progress" */

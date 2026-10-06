@@ -1,0 +1,22 @@
+.root {
+	position: relative;
+	width: 100%;
+	min-height: 12rem;
+	background: var(--mantine-color-body);
+}
+
+.pending {
+	position: absolute;
+	inset: 0;
+}
+
+.frame {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+
+.framePending {
+	visibility: hidden;
+}

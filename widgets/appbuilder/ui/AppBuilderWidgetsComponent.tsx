@@ -11,6 +11,7 @@ import {
 	isDesktopClientOutputsWidget,
 	isDesktopClientSelectionWidget,
 	isFormWidget,
+	isIframeWidget,
 	isImageWidget,
 	isLineChartWidget,
 	isProgressWidget,
@@ -33,6 +34,7 @@ import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetCompone
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
 import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
 import AppBuilderFormWidgetComponent from "./AppBuilderFormWidgetComponent";
+import AppBuilderIframeWidgetComponent from "./AppBuilderIframeWidgetComponent";
 import AppBuilderImageWidgetComponent from "./AppBuilderImageWidgetComponent";
 import AppBuilderLineChartWidgetComponent from "./AppBuilderLineChartWidgetComponent";
 import AppBuilderProgressWidgetComponent from "./AppBuilderProgressWidgetComponent";
@@ -180,6 +182,8 @@ function renderAppBuilderWidget(
 				/>
 			</Suspense>
 		);
+	if (isIframeWidget(w))
+		return <AppBuilderIframeWidgetComponent {...w.props} />;
 	if (isProgressWidget(w))
 		return <AppBuilderProgressWidgetComponent {...w.props} />;
 	if (isDesktopClientSelectionWidget(w))
