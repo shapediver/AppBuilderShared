@@ -153,20 +153,13 @@ export default function NetPromoterScore({
 			setOpened(false);
 			return;
 		}
-		const submitted = JSON.stringify(value);
-		if (typeof value === "number") {
-			tracker.trackMetric(
-				"Net Promoter Score",
-				"Net Promoter Score",
-				value,
-			);
-		}
+		tracker.trackMetric("Net Promoter Score", "Net Promoter Score", value);
 		writeNpsStorage(
 			storageKey,
 			"answered",
 			new Date(),
 			localStorage,
-			submitted,
+			JSON.stringify(value),
 		);
 		setOpened(false);
 	};

@@ -633,10 +633,19 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 	it("accepts a custom NetPromoterScore options array", () => {
 		const result = validateAppBuilderSettingsJson(
 			themeOverridesFor("NetPromoterScore", {
-				options: [{title: "Promoter", value: "ten"}],
+				options: [{title: "Promoter", value: 10}],
 			}),
 		);
 		expect(result.success).toBe(true);
+	});
+
+	it("rejects a NetPromoterScore option value that is not a number", () => {
+		const result = validateAppBuilderSettingsJson(
+			themeOverridesFor("NetPromoterScore", {
+				options: [{title: "Promoter", value: "ten"}],
+			}),
+		);
+		expect(result.success).toBe(false);
 	});
 
 	it("rejects a negative NetPromoterScore openDelay", () => {

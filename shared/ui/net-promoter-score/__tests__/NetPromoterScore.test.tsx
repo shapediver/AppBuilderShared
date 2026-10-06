@@ -135,14 +135,18 @@ describe("NetPromoterScore", () => {
 		});
 	});
 
-	it("stores a non-numeric option value and sends no metric", async () => {
+	it("reports a custom numeric option and stores its string", async () => {
 		const {tracker} = renderPrompt({
-			options: [{title: "Promoter", value: "ten"}],
+			options: [{title: "Promoter", value: 10}],
 		});
 		fireEvent.click(await screen.findByRole("button", {name: "Promoter"}));
-		expect(tracker.trackMetric).not.toHaveBeenCalled();
+		expect(tracker.trackMetric).toHaveBeenCalledWith(
+			"Net Promoter Score",
+			"Net Promoter Score",
+			10,
+		);
 		expect(tracker.trackEvent).not.toHaveBeenCalled();
-		expect(readNpsStorage("library-nps")?.value).toBe('"ten"');
+		expect(readNpsStorage("library-nps")?.value).toBe("10");
 		await waitFor(() => {
 			expect(
 				screen.queryByRole("button", {name: "Promoter"}),

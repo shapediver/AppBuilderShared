@@ -1,4 +1,3 @@
-import {JsonValueSchema} from "@AppBuilderLib/features/appbuilder/config/jsonValue";
 import {z} from "@AppBuilderLib/shared/lib/zod";
 import {mantineButtonPropsSchema} from "@AppBuilderLib/shared/mantine-props/button.zod";
 import {mantineGroupPropsSchema} from "@AppBuilderLib/shared/mantine-props/group.zod";
@@ -8,7 +7,7 @@ import {mantineTextPropsSchema} from "@AppBuilderLib/shared/mantine-props/text.z
 
 const npsOptionSchema = z.strictObject({
 	title: z.string(),
-	value: JsonValueSchema,
+	value: z.number(),
 });
 
 const npsCaptionsSchema = z.strictObject({
