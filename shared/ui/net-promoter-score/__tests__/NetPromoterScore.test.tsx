@@ -2,10 +2,7 @@
  * @jest-environment jsdom
  */
 import {TrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext";
-import {
-	ITrackerContext,
-	TrackerMetricType,
-} from "@AppBuilderLib/shared/lib/TrackerContext.types";
+import {type ITrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext.types";
 import {MantineProvider} from "@mantine/core";
 import "@testing-library/jest-dom";
 import {act, fireEvent, render, screen, waitFor} from "@testing-library/react";
@@ -86,8 +83,8 @@ describe("NetPromoterScore", () => {
 		const {tracker} = renderPrompt();
 		fireEvent.click(await screen.findByRole("button", {name: "7"}));
 		expect(tracker.trackMetric).toHaveBeenCalledWith(
-			TrackerMetricType.NetPromoterScore,
-			TrackerMetricType.NetPromoterScore,
+			"Net Promoter Score",
+			"Net Promoter Score",
 			7,
 		);
 		expect(tracker.trackEvent).not.toHaveBeenCalled();

@@ -1,5 +1,4 @@
 import {TrackerContext} from "@AppBuilderLib/shared/lib/TrackerContext";
-import {TrackerMetricType} from "@AppBuilderLib/shared/lib/TrackerContext.types";
 import {
 	Button,
 	Dialog,
@@ -142,8 +141,8 @@ export default function NetPromoterScore(
 		const submitted = JSON.stringify(value);
 		if (typeof value === "number") {
 			tracker.trackMetric(
-				TrackerMetricType.NetPromoterScore,
-				TrackerMetricType.NetPromoterScore,
+				"Net Promoter Score",
+				"Net Promoter Score",
 				value,
 			);
 		}

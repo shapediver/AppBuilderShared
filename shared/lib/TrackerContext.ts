@@ -5,7 +5,7 @@ import {
 	ITrackerContext,
 	ITrackerEventData,
 	ITrackerEventOptions,
-	TrackerMetricType,
+	type TrackerMetricType,
 } from "./TrackerContext.types";
 
 export class DelayedTrackerPropsAwaiter implements IDelayedTrackerPropsAwaiter {
