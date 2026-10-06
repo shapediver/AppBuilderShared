@@ -28,11 +28,8 @@ const NPS_DEFAULT_OPTIONS: NonNullable<
  */
 export interface NetPromoterScoreStyleProps extends NetPromoterScoreThemeDefaultProps {}
 
-export type NetPromoterScoreProps = Partial<NetPromoterScoreStyleProps> & {
-	storageKeyPart: string;
-};
-
 const defaultStyleProps: NetPromoterScoreStyleProps = {
+	storageKeyPart: "appbuilder",
 	message:
 		"How likely are you to recommend this App to other members of your organization?",
 	options: NPS_DEFAULT_OPTIONS,
@@ -70,12 +67,11 @@ export function NetPromoterScoreThemeProps(
  * Net Promoter Score dialog. Hosts mount this component.
  * This repository does not mount it.
  */
-export default function NetPromoterScore({
-	storageKeyPart,
-	...styleProps
-}: NetPromoterScoreProps) {
-	const storageKey = `${storageKeyPart}-nps`;
+export default function NetPromoterScore(
+	props: Partial<NetPromoterScoreStyleProps>,
+) {
 	const {
+		storageKeyPart,
 		message,
 		options = NPS_DEFAULT_OPTIONS,
 		captions,
@@ -89,7 +85,8 @@ export default function NetPromoterScore({
 		optionButtonProps,
 		captionsGroupProps,
 		captionTextProps,
-	} = useProps("NetPromoterScore", defaultStyleProps, styleProps);
+	} = useProps("NetPromoterScore", defaultStyleProps, props);
+	const storageKey = `${storageKeyPart}-nps`;
 	const tracker = useContext(TrackerContext);
 	const [opened, setOpened] = useState(false);
 

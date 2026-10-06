@@ -1085,6 +1085,7 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Absent message and captions use the component defaults.
 			 */
 			NetPromoterScore: NetPromoterScoreThemeProps({
+				// storageKeyPart: "appbuilder",
 				// message:
 				// 	"How likely are you to recommend this App to other members of your organization?",
 				// options: [

@@ -35,6 +35,7 @@ const npsDialogPropsSchema = mantinePaperPropsSchema.extend({
 /** Theme `defaultProps` for `useProps("NetPromoterScore", …)`. */
 export const NetPromoterScoreThemeDefaultPropsSchema = z.strictObject({
 	message: z.string().optional(),
+	storageKeyPart: z.string().min(1).optional(),
 	options: z.array(npsOptionSchema).optional(),
 	captions: npsCaptionsSchema.optional(),
 	openDelay: z.number().min(0).optional(),
