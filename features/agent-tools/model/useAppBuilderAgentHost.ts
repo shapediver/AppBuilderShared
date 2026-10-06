@@ -41,14 +41,19 @@ export function useAppBuilderAgentHost(
 	const [panelMounted, setPanelMounted] = useState(false);
 	const [panelVisible, setPanelVisible] = useState(false);
 
-	const {snapshotComplete, agentConfig} = useAgentToolTransports({
-		namespace,
-		appBuilderData,
-		appBuilderParseSettled,
-		agentWindow,
-		sessionInfo,
-		showThreadHistory,
-	});
+	const {snapshotComplete, agentConfig, peerConnected} =
+		useAgentToolTransports({
+			namespace,
+			appBuilderData,
+			appBuilderParseSettled,
+			agentWindow,
+			sessionInfo,
+			showThreadHistory,
+		});
+	const agentWindowRef = useRef(agentWindow);
+	agentWindowRef.current = agentWindow;
+	const peerConnectedRef = useRef(peerConnected);
+	peerConnectedRef.current = peerConnected;
 
 	const agentUrl =
 		snapshotComplete && agentConfig ? resolvedAgentUrl : undefined;
@@ -60,6 +65,15 @@ export function useAppBuilderAgentHost(
 	const openWindow = useCallback(() => {
 		if (!agentUrl) {
 			return;
+		}
+		const existing = agentWindowRef.current;
+		if (existing && !existing.closed && peerConnectedRef.current) {
+			try {
+				existing.focus();
+				return;
+			} catch {
+				// The window is still open but cannot be focused. Open it again.
+			}
 		}
 		const opened = openAgentWindow(agentUrl);
 		if (!opened) {

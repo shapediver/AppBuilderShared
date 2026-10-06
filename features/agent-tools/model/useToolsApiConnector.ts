@@ -1,4 +1,4 @@
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 import {ToolsApiConnectorFactory} from "../api/toolsApiConnector";
 import type {ExecutableSpecificTool} from "../config/resolveSpecificTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
@@ -100,16 +100,19 @@ export type UseToolsApiConnectorProps = {
  *    If `getConnectorApi` finishes after unmount, the connector is cancelled
  *    immediately.
  *
- * **This hook returns void.** Callers do not get `IToolsApi`; that object lives
- * in the agent window. Success is "peer can list/execute/getAgentConfig/getSessionInfo". Failure
- * is silent at this layer (no UI).
+ * **This hook returns whether the handshake is up.** Callers do not get
+ * `IToolsApi`; that object lives in the agent window. Success is "peer can
+ * list/execute/getAgentConfig/getSessionInfo". Failure is silent at this layer
+ * (no UI) and the result stays `false`.
  *
  * @see ToolsApiConnectorFactory.getConnectorApi
  * @see IToolsApi — client in the agent window
  * @see useAgentToolRuntime — shared snapshot + handlers
  * @see useWebMcpTools — parallel transport, not a dependency
  */
-export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
+export function useToolsApiConnector(
+	props: UseToolsApiConnectorProps,
+): boolean {
 	const {
 		window: peerWindow,
 		resolvedGenericTools,
@@ -133,6 +136,7 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 	sessionInfoRef.current = sessionInfo;
 	const showThreadHistoryRef = useRef(showThreadHistory);
 	showThreadHistoryRef.current = showThreadHistory;
+	const [peerConnected, setPeerConnected] = useState(false);
 
 	useEffect(() => {
 		if (!peerWindow || !snapshotComplete) {
@@ -156,19 +160,25 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 					resolvedSpecificToolsRef.current,
 					showThreadHistoryRef.current,
 				);
-				void connector.peerIsReady.catch(() => {});
 				if (effectAbandoned) {
 					connector.cancel();
 					return;
 				}
+				await connector.peerIsReady;
+				if (!effectAbandoned) {
+					setPeerConnected(true);
+				}
 			} catch {
-				// getConnectorApi / transport failure — not a fake toolset
+				// getConnectorApi / handshake failure — not a fake toolset
 			}
 		})();
 
 		return () => {
 			effectAbandoned = true;
+			setPeerConnected(false);
 			connector?.cancel();
 		};
 	}, [peerWindow, snapshotComplete]);
+
+	return peerConnected;
 }

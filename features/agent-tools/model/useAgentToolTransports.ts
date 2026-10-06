@@ -27,9 +27,14 @@ export type UseAgentToolTransportsProps = {
  * WebMCP + ToolsApi on one {@link useAgentToolRuntime} snapshot.
  * Page code should call {@link useAppBuilderAgentHost}, not this hook.
  */
+export type UseAgentToolTransportsResult = UseAgentToolRuntimeResult & {
+	/** ToolsApi handshake with the peer window is up. */
+	peerConnected: boolean;
+};
+
 export function useAgentToolTransports(
 	props: UseAgentToolTransportsProps,
-): UseAgentToolRuntimeResult {
+): UseAgentToolTransportsResult {
 	const {
 		namespace,
 		appBuilderData,
@@ -54,7 +59,7 @@ export function useAgentToolTransports(
 		snapshotComplete: runtime.snapshotComplete,
 	});
 
-	useToolsApiConnector({
+	const peerConnected = useToolsApiConnector({
 		window: agentWindow,
 		resolvedGenericTools: runtime.resolvedGenericTools,
 		resolvedSpecificTools: runtime.resolvedSpecificTools,
@@ -65,5 +70,5 @@ export function useAgentToolTransports(
 		showThreadHistory,
 	});
 
-	return runtime;
+	return {...runtime, peerConnected};
 }

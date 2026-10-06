@@ -278,6 +278,61 @@ describe("useAppBuilderAgentHost", () => {
 		expect(showNotification).not.toHaveBeenCalled();
 	});
 
+	it("focuses a connected agent window instead of reloading it", () => {
+		jest.useFakeTimers();
+		const opened = {
+			closed: false,
+			focus: jest.fn(),
+			postMessage: jest.fn(),
+		} as unknown as Window;
+		jest.mocked(window.open).mockReturnValue(opened);
+		const {rerender} = renderHost({}, "window");
+		act(() => {
+			agentCommand().props.execute();
+		});
+		act(() => {
+			jest.runAllTimers();
+		});
+		useAgentToolTransports.mockReturnValue({
+			...transports,
+			peerConnected: true,
+		});
+		rerender();
+		jest.mocked(window.open).mockClear();
+		act(() => {
+			agentCommand().props.execute();
+		});
+		expect(opened.focus).toHaveBeenCalledTimes(1);
+		expect(window.open).not.toHaveBeenCalled();
+	});
+
+	it("reloads the agent window when the connection is down", () => {
+		jest.useFakeTimers();
+		const opened = {
+			closed: false,
+			focus: jest.fn(),
+			postMessage: jest.fn(),
+		} as unknown as Window;
+		jest.mocked(window.open).mockReturnValue(opened);
+		renderHost({}, "window");
+		act(() => {
+			agentCommand().props.execute();
+		});
+		act(() => {
+			jest.runAllTimers();
+		});
+		jest.mocked(window.open).mockClear();
+		act(() => {
+			agentCommand().props.execute();
+		});
+		expect(opened.focus).not.toHaveBeenCalled();
+		expect(window.open).toHaveBeenCalledWith(
+			"http://localhost:3001",
+			"shapediver-agent",
+			"width=520,height=780",
+		);
+	});
+
 	it("shows the existing notification when openAgentWindow returns null", () => {
 		renderHost({}, "window");
 		act(() => {
@@ -346,7 +401,7 @@ describe("useAppBuilderAgentHost", () => {
 		useThemeOverrideStore.getState().setThemeOverride({});
 	});
 
-	it("does not register a button when there is no agent", () => {
+	it("does not register a button when there is no agent url", () => {
 		useAgentToolTransports.mockReturnValue({
 			...transports,
 			agentConfig: undefined,

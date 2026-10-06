@@ -86,6 +86,19 @@ describe("useToolsApiConnector", () => {
 		expect(getConnectorApi.mock.calls[0][2]).toBe(toolHandlers);
 	});
 
+	it("reports the handshake once the peer is ready", async () => {
+		const {result} = renderHook(() =>
+			useToolsApiConnector({
+				window: {} as Window,
+				resolvedGenericTools: resolveToolset(undefined),
+				toolHandlers: stubHandlers(),
+				snapshotComplete: true,
+			}),
+		);
+		expect(result.current).toBe(false);
+		await waitFor(() => expect(result.current).toBe(true));
+	});
+
 	it("passes parameterized Agent config as getConnectorApi 7th argument", async () => {
 		const agent = {
 			id: "a",
