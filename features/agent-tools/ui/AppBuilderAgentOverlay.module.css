@@ -1,0 +1,8 @@
+.slot {
+	position: absolute;
+	z-index: 4;
+	/* Fallback until the button is measured. Matches the default toolbar offset. */
+	right: 0.5em;
+	bottom: calc(0.5em + 2.75rem);
+	pointer-events: auto;
+}

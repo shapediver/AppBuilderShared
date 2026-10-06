@@ -26,9 +26,13 @@ jest.mock("@AppBuilderLib/shared/lib/platform/environment", () => ({
 }));
 
 import type {IAppBuilderAgent} from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
+import type {ToolbarCommandItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
+import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
 import {getEnvironmentIdentifier} from "@AppBuilderLib/shared/lib/platform/environment";
+import {MantineProvider} from "@mantine/core";
 import {act, renderHook} from "@testing-library/react";
+import type {ReactNode} from "react";
 import {useAppBuilderAgentHost} from "../useAppBuilderAgentHost";
 
 const sampleAgent: IAppBuilderAgent = {
@@ -45,6 +49,50 @@ const transports = {
 	agentConfig: sampleAgent,
 };
 
+function themeWrapper(mode?: "window" | "iframe", showThreadHistory?: boolean) {
+	const defaultProps: {mode?: string; showThreadHistory?: boolean} = {};
+	if (mode) defaultProps.mode = mode;
+	if (showThreadHistory !== undefined) {
+		defaultProps.showThreadHistory = showThreadHistory;
+	}
+	return function Wrapper({children}: {children: ReactNode}) {
+		return (
+			<MantineProvider
+				theme={{
+					components: {
+						AgentUi: {defaultProps},
+					},
+				}}
+			>
+				{children}
+			</MantineProvider>
+		);
+	};
+}
+
+function renderHost(
+	props: Parameters<typeof useAppBuilderAgentHost>[0] = {},
+	mode?: "window" | "iframe",
+	showThreadHistory?: boolean,
+) {
+	return renderHook(() => useAppBuilderAgentHost(props), {
+		wrapper: themeWrapper(mode, showThreadHistory),
+	});
+}
+
+function agentCommand(): ToolbarCommandItem {
+	const toolbar = useShapeDiverStoreToolbars
+		.getState()
+		.defaultToolbars.find((item) => item.id.startsWith("agentUi"));
+	const command = toolbar?.groups
+		.flat()
+		.find((item) => item.type === "command");
+	if (!command || command.type !== "command") {
+		throw new Error("agent toolbar command missing");
+	}
+	return command;
+}
+
 describe("useAppBuilderAgentHost", () => {
 	const originalOpen = window.open;
 
@@ -56,17 +104,20 @@ describe("useAppBuilderAgentHost", () => {
 			.mockReturnValue("localhost");
 		showNotification.mockClear();
 		window.open = jest.fn().mockReturnValue(null);
+		useShapeDiverStoreToolbars.setState({defaultToolbars: []});
 	});
 
 	afterEach(() => {
 		window.open = originalOpen;
 		jest.useRealTimers();
+		useShapeDiverStoreToolbars.setState({defaultToolbars: []});
 	});
 
 	it("uses the environment default when query is missing", () => {
-		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		const {result} = renderHost();
 		expect(result.current.agentUrl).toBe("http://localhost:3001");
-		expect(result.current.isAgentReady).toBe(true);
+		expect(result.current.mode).toBe("iframe");
+		expect(result.current.panelMounted).toBe(false);
 	});
 
 	it("query agentUrl wins on localhost", () => {
@@ -75,7 +126,7 @@ describe("useAppBuilderAgentHost", () => {
 			"",
 			`/?${QUERYPARAM_AGENTURL}=http://localhost:3001/app`,
 		);
-		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		const {result} = renderHost();
 		expect(result.current.agentUrl).toBe("http://localhost:3001/app");
 	});
 
@@ -86,7 +137,7 @@ describe("useAppBuilderAgentHost", () => {
 			"",
 			`/?${QUERYPARAM_AGENTURL}=http://evil.example/agent`,
 		);
-		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		const {result} = renderHost();
 		expect(result.current.agentUrl).toBe("https://agent.shapediver.com");
 	});
 
@@ -97,7 +148,7 @@ describe("useAppBuilderAgentHost", () => {
 			"",
 			`/?${QUERYPARAM_AGENTURL}=http://evil.example/agent`,
 		);
-		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		const {result} = renderHost();
 		expect(result.current.agentUrl).toBe("https://agent.shapediver.com");
 	});
 
@@ -111,8 +162,13 @@ describe("useAppBuilderAgentHost", () => {
 			"",
 			`/?${QUERYPARAM_AGENTURL}=http://localhost:3001/app`,
 		);
-		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		const {result} = renderHost();
 		expect(result.current.agentUrl).toBeUndefined();
+		expect(
+			useShapeDiverStoreToolbars
+				.getState()
+				.defaultToolbars.some((item) => item.id.startsWith("agentUi")),
+		).toBe(false);
 	});
 
 	it("hides agentUrl until snapshotComplete", () => {
@@ -120,47 +176,79 @@ describe("useAppBuilderAgentHost", () => {
 			...transports,
 			snapshotComplete: false,
 		});
-		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		const {result} = renderHost();
 		expect(result.current.agentUrl).toBeUndefined();
-		expect(result.current.isAgentReady).toBe(false);
+		expect(result.current.panelMounted).toBe(false);
+		expect(agentCommand().disabled).toBe(true);
+		expect(agentCommand().tooltip).toBe("Configurator");
 	});
 
-	it("maps snapshotComplete to isAgentReady", () => {
+	it("shows a disabled Agent button while the snapshot is still loading", () => {
 		useAgentToolTransports.mockReturnValue({
 			...transports,
 			snapshotComplete: false,
+			agentConfig: undefined,
 		});
-		const {result} = renderHook(() => useAppBuilderAgentHost({}));
-		expect(result.current.isAgentReady).toBe(false);
+		renderHost();
+		expect(agentCommand().disabled).toBe(true);
+		expect(agentCommand().tooltip).toBe("Agent");
 	});
 
 	it("starts with no peer Window on the connector", () => {
-		renderHook(() =>
-			useAppBuilderAgentHost({
-				namespace: "ns",
-				appBuilderParseSettled: true,
-			}),
-		);
+		renderHost({
+			namespace: "ns",
+			appBuilderParseSettled: true,
+		});
 		expect(useAgentToolTransports).toHaveBeenCalledWith({
 			namespace: "ns",
 			appBuilderData: undefined,
 			appBuilderParseSettled: true,
 			agentWindow: null,
 			sessionInfo: undefined,
+			showThreadHistory: false,
 		});
 	});
 
-	it("onOpenAgent opens shapediver-agent and passes the Window to transports", () => {
+	it("registers a bottom-end toolbar button and toggles the iframe without reloading it", () => {
+		const {result} = renderHost();
+		const command = agentCommand();
+		expect(command.icon).toBe("tabler:message-chatbot");
+		expect(command.tooltip).toBe("Configurator");
+		expect(command.props.allowDuringExecution).toBe(true);
+		expect(command.disabled).toBe(false);
+		const toolbar = useShapeDiverStoreToolbars
+			.getState()
+			.defaultToolbars.find((item) => item.id.startsWith("agentUi"));
+		expect(toolbar).toMatchObject({
+			side: "bottom",
+			align: "end",
+			visibility: "always",
+		});
+
+		act(() => {
+			command.props.execute();
+		});
+		expect(window.open).not.toHaveBeenCalled();
+		expect(result.current.panelMounted).toBe(true);
+		expect(result.current.panelVisible).toBe(true);
+
+		act(() => {
+			agentCommand().props.execute();
+		});
+		expect(result.current.panelMounted).toBe(true);
+		expect(result.current.panelVisible).toBe(false);
+	});
+
+	it("opens shapediver-agent in window mode", () => {
 		jest.useFakeTimers();
 		const opened = {} as Window;
 		jest.mocked(window.open).mockReturnValue(opened);
-		const {result} = renderHook(() =>
-			useAppBuilderAgentHost({
-				namespace: "ns",
-			}),
+		renderHost({namespace: "ns"}, "window");
+		expect(useAgentToolTransports).toHaveBeenCalledWith(
+			expect.objectContaining({showThreadHistory: true}),
 		);
 		act(() => {
-			result.current.onOpenAgent();
+			agentCommand().props.execute();
 		});
 		expect(window.open).toHaveBeenCalledWith(
 			"http://localhost:3001",
@@ -173,6 +261,7 @@ describe("useAppBuilderAgentHost", () => {
 			appBuilderParseSettled: undefined,
 			agentWindow: null,
 			sessionInfo: undefined,
+			showThreadHistory: true,
 		});
 		act(() => {
 			jest.runAllTimers();
@@ -183,14 +272,15 @@ describe("useAppBuilderAgentHost", () => {
 			appBuilderParseSettled: undefined,
 			agentWindow: opened,
 			sessionInfo: undefined,
+			showThreadHistory: true,
 		});
 		expect(showNotification).not.toHaveBeenCalled();
 	});
 
 	it("shows the existing notification when openAgentWindow returns null", () => {
-		const {result} = renderHook(() => useAppBuilderAgentHost({}));
+		renderHost({}, "window");
 		act(() => {
-			result.current.onOpenAgent();
+			agentCommand().props.execute();
 		});
 		expect(showNotification).toHaveBeenCalledWith({
 			title: "Could not open agent window.",
@@ -209,33 +299,39 @@ describe("useAppBuilderAgentHost", () => {
 		);
 	});
 
+	it("forwards an explicit history flag", () => {
+		renderHost({}, "window", false);
+		expect(useAgentToolTransports).toHaveBeenCalledWith(
+			expect.objectContaining({showThreadHistory: false}),
+		);
+	});
+
 	it("forwards sessionInfo to transports", () => {
 		const sessionInfo = {
 			jwtToken: "tok",
 			slug: "my-model",
 			modelStateId: "ms-1",
 		};
-		renderHook(() =>
-			useAppBuilderAgentHost({
-				namespace: "ns",
-				sessionInfo,
-			}),
-		);
+		renderHost({
+			namespace: "ns",
+			sessionInfo,
+		});
 		expect(useAgentToolTransports).toHaveBeenCalledWith(
-			expect.objectContaining({sessionInfo}),
+			expect.objectContaining({sessionInfo, showThreadHistory: false}),
 		);
 	});
 
-	it("onOpenAgent without url does not open a window", () => {
+	it("does not register a button when there is no agent", () => {
 		useAgentToolTransports.mockReturnValue({
 			...transports,
 			agentConfig: undefined,
 		});
-		const {result} = renderHook(() => useAppBuilderAgentHost({}));
-		act(() => {
-			result.current.onOpenAgent();
-		});
+		renderHost();
 		expect(window.open).not.toHaveBeenCalled();
-		expect(showNotification).not.toHaveBeenCalled();
+		expect(
+			useShapeDiverStoreToolbars
+				.getState()
+				.defaultToolbars.some((item) => item.id.startsWith("agentUi")),
+		).toBe(false);
 	});
 });

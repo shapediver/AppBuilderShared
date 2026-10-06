@@ -463,6 +463,7 @@ export default function AppBuilderToolbar(props: Props) {
 							role="toolbar"
 							aria-label={toolbar.ariaLabel || toolbar.id}
 							aria-orientation={orientation}
+							data-toolbar-id={toolbar.id}
 							data-toolbar-side={toolbar.side}
 							style={{
 								...layoutBaseStyle,
