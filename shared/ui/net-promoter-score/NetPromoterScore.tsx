@@ -11,11 +11,7 @@ import {
 import {useContext, useEffect, useState} from "react";
 import classes from "./NetPromoterScore.module.css";
 import type {NetPromoterScoreThemeDefaultProps} from "./NetPromoterScore.theme.types";
-import {
-	NPS_STORAGE_KEY,
-	shouldHideNpsPrompt,
-	writeNpsStorage,
-} from "./npsSurveyStorage";
+import {shouldHideNpsPrompt, writeNpsStorage} from "./npsSurveyStorage";
 
 const NPS_DEFAULT_OPTIONS: NonNullable<
 	NetPromoterScoreThemeDefaultProps["options"]
@@ -31,6 +27,10 @@ const NPS_DEFAULT_OPTIONS: NonNullable<
  * @displayName NetPromoterScore
  */
 export interface NetPromoterScoreStyleProps extends NetPromoterScoreThemeDefaultProps {}
+
+export type NetPromoterScoreProps = Partial<NetPromoterScoreStyleProps> & {
+	storageKeyPart: string;
+};
 
 const defaultStyleProps: NetPromoterScoreStyleProps = {
 	message:
@@ -70,9 +70,11 @@ export function NetPromoterScoreThemeProps(
  * Net Promoter Score dialog. Hosts mount this component.
  * This repository does not mount it.
  */
-export default function NetPromoterScore(
-	props: Partial<NetPromoterScoreStyleProps>,
-) {
+export default function NetPromoterScore({
+	storageKeyPart,
+	...styleProps
+}: NetPromoterScoreProps) {
+	const storageKey = `${storageKeyPart}-nps`;
 	const {
 		message,
 		options = NPS_DEFAULT_OPTIONS,
@@ -87,7 +89,7 @@ export default function NetPromoterScore(
 		optionButtonProps,
 		captionsGroupProps,
 		captionTextProps,
-	} = useProps("NetPromoterScore", defaultStyleProps, props);
+	} = useProps("NetPromoterScore", defaultStyleProps, styleProps);
 	const tracker = useContext(TrackerContext);
 	const [opened, setOpened] = useState(false);
 
@@ -101,14 +103,13 @@ export default function NetPromoterScore(
 			: captions.end;
 
 	useEffect(() => {
+		if (!storageKeyPart) {
+			setOpened(false);
+			return;
+		}
 		const dayCounts = {answeredScheduleDays, dismissedScheduleDays};
 		if (
-			shouldHideNpsPrompt(
-				NPS_STORAGE_KEY,
-				new Date(),
-				localStorage,
-				dayCounts,
-			)
+			shouldHideNpsPrompt(storageKey, new Date(), localStorage, dayCounts)
 		) {
 			setOpened(false);
 			return;
@@ -120,7 +121,7 @@ export default function NetPromoterScore(
 		const timer = setTimeout(() => {
 			if (
 				!shouldHideNpsPrompt(
-					NPS_STORAGE_KEY,
+					storageKey,
 					new Date(),
 					localStorage,
 					dayCounts,
@@ -130,14 +131,28 @@ export default function NetPromoterScore(
 			}
 		}, openDelay * 1000);
 		return () => clearTimeout(timer);
-	}, [openDelay, answeredScheduleDays, dismissedScheduleDays]);
+	}, [
+		storageKey,
+		storageKeyPart,
+		openDelay,
+		answeredScheduleDays,
+		dismissedScheduleDays,
+	]);
 
 	const handleDismiss = () => {
-		writeNpsStorage(NPS_STORAGE_KEY, "dismissed");
+		if (!storageKeyPart) {
+			setOpened(false);
+			return;
+		}
+		writeNpsStorage(storageKey, "dismissed");
 		setOpened(false);
 	};
 
 	const handleSelect = (value: (typeof options)[number]["value"]) => {
+		if (!storageKeyPart) {
+			setOpened(false);
+			return;
+		}
 		const submitted = JSON.stringify(value);
 		if (typeof value === "number") {
 			tracker.trackMetric(
@@ -147,7 +162,7 @@ export default function NetPromoterScore(
 			);
 		}
 		writeNpsStorage(
-			NPS_STORAGE_KEY,
+			storageKey,
 			"answered",
 			new Date(),
 			localStorage,

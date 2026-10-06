@@ -7,9 +7,10 @@ import {MantineProvider} from "@mantine/core";
 import "@testing-library/jest-dom";
 import {act, fireEvent, render, screen, waitFor} from "@testing-library/react";
 import NetPromoterScore, {
+	type NetPromoterScoreProps,
 	type NetPromoterScoreStyleProps,
 } from "../NetPromoterScore";
-import {NPS_STORAGE_KEY, readNpsStorage} from "../npsSurveyStorage";
+import {readNpsStorage} from "../npsSurveyStorage";
 
 const NPS_DEFAULT_QUESTION =
 	"How likely are you to recommend this App to other members of your organization?";
@@ -32,15 +33,21 @@ function createTracker(): ITrackerContext & {
 }
 
 function renderPrompt(
-	props: Partial<NetPromoterScoreStyleProps> = {},
+	props: Partial<NetPromoterScoreStyleProps> &
+		Partial<Pick<NetPromoterScoreProps, "storageKeyPart">> = {},
 	tracker = createTracker(),
 ) {
+	const {storageKeyPart = "library", ...styleProps} = props;
 	return {
 		tracker,
 		...render(
 			<TrackerContext.Provider value={tracker}>
 				<MantineProvider>
-					<NetPromoterScore openDelay={0} {...props} />
+					<NetPromoterScore
+						storageKeyPart={storageKeyPart}
+						openDelay={0}
+						{...styleProps}
+					/>
 				</MantineProvider>
 			</TrackerContext.Provider>,
 		),
@@ -79,6 +86,15 @@ describe("NetPromoterScore", () => {
 		).toBeInTheDocument();
 	});
 
+	it("writes app-nps when storageKeyPart is app", async () => {
+		renderPrompt({storageKeyPart: "app"});
+		fireEvent.click(await screen.findByRole("button", {name: "7"}));
+		expect(readNpsStorage("app-nps")).toEqual(
+			expect.objectContaining({type: "answered", value: "7"}),
+		);
+		expect(window.localStorage.getItem("library-nps")).toBeNull();
+	});
+
 	it("reports a score, stores answered, and closes on digit click", async () => {
 		const {tracker} = renderPrompt();
 		fireEvent.click(await screen.findByRole("button", {name: "7"}));
@@ -88,7 +104,7 @@ describe("NetPromoterScore", () => {
 			7,
 		);
 		expect(tracker.trackEvent).not.toHaveBeenCalled();
-		expect(readNpsStorage(NPS_STORAGE_KEY)).toEqual(
+		expect(readNpsStorage("library-nps")).toEqual(
 			expect.objectContaining({type: "answered", value: "7"}),
 		);
 		await waitFor(() => {
@@ -108,8 +124,8 @@ describe("NetPromoterScore", () => {
 		fireEvent.click(closeButton as Element);
 		expect(tracker.trackEvent).not.toHaveBeenCalled();
 		expect(tracker.trackMetric).not.toHaveBeenCalled();
-		expect(readNpsStorage(NPS_STORAGE_KEY)?.type).toBe("dismissed");
-		expect(window.localStorage.getItem(NPS_STORAGE_KEY)).toContain(
+		expect(readNpsStorage("library-nps")?.type).toBe("dismissed");
+		expect(window.localStorage.getItem("library-nps")).toContain(
 			"dismissed",
 		);
 		await waitFor(() => {
@@ -126,7 +142,7 @@ describe("NetPromoterScore", () => {
 		fireEvent.click(await screen.findByRole("button", {name: "Promoter"}));
 		expect(tracker.trackMetric).not.toHaveBeenCalled();
 		expect(tracker.trackEvent).not.toHaveBeenCalled();
-		expect(readNpsStorage(NPS_STORAGE_KEY)?.value).toBe('"ten"');
+		expect(readNpsStorage("library-nps")?.value).toBe('"ten"');
 		await waitFor(() => {
 			expect(
 				screen.queryByRole("button", {name: "Promoter"}),
@@ -174,7 +190,7 @@ describe("NetPromoterScore", () => {
 	it("stays closed when storage hides the prompt even after openDelay", () => {
 		jest.useFakeTimers();
 		window.localStorage.setItem(
-			NPS_STORAGE_KEY,
+			"library-nps",
 			JSON.stringify({
 				date: new Date().toISOString(),
 				type: "dismissed",
