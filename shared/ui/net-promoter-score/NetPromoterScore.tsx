@@ -100,10 +100,6 @@ export default function NetPromoterScore(
 			: captions.end;
 
 	useEffect(() => {
-		if (!storageKeyPart) {
-			setOpened(false);
-			return;
-		}
 		const dayCounts = {answeredScheduleDays, dismissedScheduleDays};
 		if (
 			shouldHideNpsPrompt(storageKey, new Date(), localStorage, dayCounts)
@@ -137,19 +133,11 @@ export default function NetPromoterScore(
 	]);
 
 	const handleDismiss = () => {
-		if (!storageKeyPart) {
-			setOpened(false);
-			return;
-		}
 		writeNpsStorage(storageKey, "dismissed");
 		setOpened(false);
 	};
 
 	const handleSelect = (value: (typeof options)[number]["value"]) => {
-		if (!storageKeyPart) {
-			setOpened(false);
-			return;
-		}
 		tracker.trackMetric("Net Promoter Score", "NetPromoterScore", value);
 		writeNpsStorage(
 			storageKey,
