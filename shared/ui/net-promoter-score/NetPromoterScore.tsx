@@ -150,7 +150,7 @@ export default function NetPromoterScore(
 			setOpened(false);
 			return;
 		}
-		tracker.trackMetric("Net Promoter Score", "Net Promoter Score", value);
+		tracker.trackMetric("Net Promoter Score", "NetPromoterScore", value);
 		writeNpsStorage(
 			storageKey,
 			"answered",

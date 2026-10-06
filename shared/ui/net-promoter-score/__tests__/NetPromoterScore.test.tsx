@@ -93,7 +93,7 @@ describe("NetPromoterScore", () => {
 		fireEvent.click(await screen.findByRole("button", {name: "7"}));
 		expect(tracker.trackMetric).toHaveBeenCalledWith(
 			"Net Promoter Score",
-			"Net Promoter Score",
+			"NetPromoterScore",
 			7,
 		);
 		expect(tracker.trackEvent).not.toHaveBeenCalled();
@@ -135,7 +135,7 @@ describe("NetPromoterScore", () => {
 		fireEvent.click(await screen.findByRole("button", {name: "Promoter"}));
 		expect(tracker.trackMetric).toHaveBeenCalledWith(
 			"Net Promoter Score",
-			"Net Promoter Score",
+			"NetPromoterScore",
 			10,
 		);
 		expect(tracker.trackEvent).not.toHaveBeenCalled();
