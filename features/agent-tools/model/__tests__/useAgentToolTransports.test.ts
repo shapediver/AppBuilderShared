@@ -68,6 +68,7 @@ describe("useAgentToolTransports", () => {
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
 			sessionInfo: undefined,
+			showThreadHistory: undefined,
 		});
 	});
 
@@ -82,6 +83,7 @@ describe("useAgentToolTransports", () => {
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
 			sessionInfo: undefined,
+			showThreadHistory: undefined,
 		});
 	});
 
@@ -100,6 +102,7 @@ describe("useAgentToolTransports", () => {
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
 			sessionInfo,
+			showThreadHistory: undefined,
 		});
 	});
 });

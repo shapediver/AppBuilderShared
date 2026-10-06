@@ -130,6 +130,21 @@ describe("useToolsApiConnector", () => {
 		expect(getConnectorApi.mock.calls[0][8]).toBe(resolvedSpecificTools);
 	});
 
+	it("passes showThreadHistory as getConnectorApi 10th argument", async () => {
+		const peer = {} as Window;
+		renderHook(() =>
+			useToolsApiConnector({
+				window: peer,
+				resolvedGenericTools: resolveToolset(undefined),
+				toolHandlers: stubHandlers(),
+				snapshotComplete: true,
+				showThreadHistory: false,
+			}),
+		);
+		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
+		expect(getConnectorApi.mock.calls[0][9]).toBe(false);
+	});
+
 	it("passes sessionInfo as getConnectorApi 8th argument", async () => {
 		const sessionInfo = {
 			jwtToken: "tok",

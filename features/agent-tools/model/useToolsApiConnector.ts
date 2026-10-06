@@ -51,6 +51,11 @@ export type UseToolsApiConnectorProps = {
 	 * `undefined` / omit → `getSessionInfo` replies `{}`.
 	 */
 	sessionInfo?: IAgentSessionInfo;
+	/**
+	 * Resolved AgentUi history flag. Included on `getAgentConfig` at connect
+	 * time. `undefined` leaves the reply without the field (older hosts).
+	 */
+	showThreadHistory?: boolean;
 };
 
 /**
@@ -113,6 +118,7 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 		snapshotComplete,
 		agentConfig,
 		sessionInfo,
+		showThreadHistory,
 	} = props;
 
 	const resolvedGenericToolsRef = useRef(resolvedGenericTools);
@@ -125,6 +131,8 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 	agentConfigRef.current = agentConfig;
 	const sessionInfoRef = useRef(sessionInfo);
 	sessionInfoRef.current = sessionInfo;
+	const showThreadHistoryRef = useRef(showThreadHistory);
+	showThreadHistoryRef.current = showThreadHistory;
 
 	useEffect(() => {
 		if (!peerWindow || !snapshotComplete) {
@@ -146,6 +154,7 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 					agentConfigRef.current,
 					sessionInfoRef.current,
 					resolvedSpecificToolsRef.current,
+					showThreadHistoryRef.current,
 				);
 				void connector.peerIsReady.catch(() => {});
 				if (effectAbandoned) {

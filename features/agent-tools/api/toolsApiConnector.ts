@@ -70,6 +70,7 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		agentConfig?: IAgentConfigReply | null,
 		sessionInfo?: IAgentSessionInfo | null,
 		resolvedSpecificTools: ExecutableSpecificTool[] = [],
+		showThreadHistory?: boolean,
 	) {
 		this.#crossWindowApi = crossWindowApi;
 		this.#listenerCancels.push(
@@ -100,7 +101,7 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		);
 		this.#listenerCancels.push(
 			crossWindowApi.on(MESSAGE_TYPE_GET_AGENT_CONFIG, async () =>
-				agentConfigReplyFrom(agentConfig),
+				agentConfigReplyFrom(agentConfig, showThreadHistory),
 			),
 		);
 		this.#listenerCancels.push(
@@ -155,6 +156,7 @@ export class ToolsApiConnectorFactoryClass implements IToolsApiConnectorFactory 
 		agentConfig?: IAgentConfigReply | null,
 		sessionInfo?: IAgentSessionInfo | null,
 		resolvedSpecificTools?: ExecutableSpecificTool[],
+		showThreadHistory?: boolean,
 	): Promise<IToolsApiConnector> {
 		const optionsWithTimeout = withDefaultTimeout(options);
 		const api = await this.crossWindowFactory.getWindowApi(
@@ -171,6 +173,7 @@ export class ToolsApiConnectorFactoryClass implements IToolsApiConnectorFactory 
 			agentConfig,
 			sessionInfo,
 			resolvedSpecificTools,
+			showThreadHistory,
 		);
 	}
 }
