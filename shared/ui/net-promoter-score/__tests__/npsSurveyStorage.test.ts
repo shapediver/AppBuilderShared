@@ -2,11 +2,12 @@
  * @jest-environment jsdom
  */
 import {
-	NPS_STORAGE_KEY,
 	readNpsStorage,
 	shouldHideNpsPrompt,
 	writeNpsStorage,
 } from "../npsSurveyStorage";
+
+const storageKey = "library-nps";
 
 function memoryStorage(initial: Record<string, string> = {}): Storage {
 	const data = {...initial};
@@ -37,12 +38,8 @@ function memoryStorage(initial: Record<string, string> = {}): Storage {
 }
 
 describe("npsSurveyStorage", () => {
-	it("uses the key nps", () => {
-		expect(NPS_STORAGE_KEY).toBe("nps");
-	});
-
 	it("treats a missing value as no hide", () => {
-		const key = NPS_STORAGE_KEY;
+		const key = storageKey;
 		const storage = memoryStorage();
 		expect(readNpsStorage(key, storage)).toBeNull();
 		expect(
@@ -51,7 +48,7 @@ describe("npsSurveyStorage", () => {
 	});
 
 	it("treats invalid JSON as no hide", () => {
-		const key = NPS_STORAGE_KEY;
+		const key = storageKey;
 		const storage = memoryStorage({[key]: "{not-json"});
 		expect(readNpsStorage(key, storage)).toBeNull();
 		expect(
@@ -60,7 +57,7 @@ describe("npsSurveyStorage", () => {
 	});
 
 	it("treats an object without a valid type or date as no hide", () => {
-		const key = NPS_STORAGE_KEY;
+		const key = storageKey;
 		const storage = memoryStorage({
 			[key]: JSON.stringify({type: "answered"}),
 		});
@@ -71,7 +68,7 @@ describe("npsSurveyStorage", () => {
 	});
 
 	it("hides an answer still inside 30 local days", () => {
-		const key = NPS_STORAGE_KEY;
+		const key = storageKey;
 		const storage = memoryStorage();
 		writeNpsStorage(key, "answered", new Date(2026, 9, 15, 12, 0), storage);
 		expect(
@@ -80,7 +77,7 @@ describe("npsSurveyStorage", () => {
 	});
 
 	it("does not hide an answer at the 30-day mark", () => {
-		const key = NPS_STORAGE_KEY;
+		const key = storageKey;
 		const storage = memoryStorage();
 		writeNpsStorage(key, "answered", new Date(2026, 9, 15, 12, 0), storage);
 		expect(
@@ -89,7 +86,7 @@ describe("npsSurveyStorage", () => {
 	});
 
 	it("hides a dismiss still inside 1 local day", () => {
-		const key = NPS_STORAGE_KEY;
+		const key = storageKey;
 		const storage = memoryStorage();
 		writeNpsStorage(key, "dismissed", new Date(2026, 9, 1, 12, 0), storage);
 		expect(
@@ -98,7 +95,7 @@ describe("npsSurveyStorage", () => {
 	});
 
 	it("does not hide a dismiss at the 1-day mark", () => {
-		const key = NPS_STORAGE_KEY;
+		const key = storageKey;
 		const storage = memoryStorage();
 		writeNpsStorage(key, "dismissed", new Date(2026, 9, 1, 12, 0), storage);
 		expect(
@@ -107,7 +104,7 @@ describe("npsSurveyStorage", () => {
 	});
 
 	it("does not hide a custom 7-day answer at the 7-day mark", () => {
-		const key = NPS_STORAGE_KEY;
+		const key = storageKey;
 		const storage = memoryStorage();
 		writeNpsStorage(key, "answered", new Date(2026, 9, 15, 12, 0), storage);
 		expect(
@@ -118,7 +115,7 @@ describe("npsSurveyStorage", () => {
 	});
 
 	it("writes the submitted string on answer and omits value on dismiss", () => {
-		const key = NPS_STORAGE_KEY;
+		const key = storageKey;
 		const storage = memoryStorage();
 		const date = new Date(2026, 9, 15, 12, 0);
 		writeNpsStorage(key, "answered", date, storage, "7");
@@ -142,7 +139,7 @@ describe("npsSurveyStorage", () => {
 	});
 
 	it("hides an older answered record that has no value", () => {
-		const key = NPS_STORAGE_KEY;
+		const key = storageKey;
 		const storage = memoryStorage({
 			[key]: JSON.stringify({
 				date: new Date(2026, 9, 15, 12, 0).toISOString(),
@@ -156,7 +153,7 @@ describe("npsSurveyStorage", () => {
 	});
 
 	it("does not hide when an answered value is a JSON number", () => {
-		const key = NPS_STORAGE_KEY;
+		const key = storageKey;
 		const storage = memoryStorage({
 			[key]: JSON.stringify({
 				date: new Date(2026, 9, 15, 12, 0).toISOString(),

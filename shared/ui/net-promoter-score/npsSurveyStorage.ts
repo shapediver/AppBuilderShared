@@ -1,5 +1,3 @@
-export const NPS_STORAGE_KEY = "nps";
-
 type NpsStorageType = "answered" | "dismissed";
 
 type NpsStorageRecord = {
