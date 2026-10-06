@@ -345,7 +345,10 @@ export default function AppBuilderToolbar(props: Props) {
 											presentation="toolbar"
 											defaultIcon={toolbar.defaultIcon}
 											globalDisabled={
-												resolvedButtonRenderContext.executing
+												resolvedButtonRenderContext.executing &&
+												toolbarItem.props
+													.allowDuringExecution !==
+													true
 											}
 										/>,
 									);
