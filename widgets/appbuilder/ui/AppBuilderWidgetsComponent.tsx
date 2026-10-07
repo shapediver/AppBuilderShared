@@ -23,11 +23,11 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
-import {Loader, Paper} from "@mantine/core";
-import React, {Suspense, useContext} from "react";
+import React, {useContext} from "react";
 import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";
 import AppBuilderAccordionWidgetComponent from "./AppBuilderAccordionWidgetComponent";
 import AppBuilderActionsWidgetComponent from "./AppBuilderActionsWidgetComponent";
+import AppBuilderAgentWidgetComponent from "./AppBuilderAgentWidgetComponent";
 import AppBuilderAreaChartWidgetComponent from "./AppBuilderAreaChartWidgetComponent";
 import AppBuilderBarChartWidgetComponent from "./AppBuilderBarChartWidgetComponent";
 import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetComponent";
@@ -43,9 +43,6 @@ import AppBuilderSavedStatesWidgetComponent from "./AppBuilderSavedStatesWidgetC
 import AppBuilderStackUiWidgetButtonComponent from "./AppBuilderStackUiWidget/AppBuilderStackUiWidgetButtonComponent";
 import AppBuilderTableWidgetComponent from "./AppBuilderTableWidgetComponent";
 import AppBuilderTextWidgetComponent from "./AppBuilderTextWidgetComponent";
-const LazyAppBuilderAgentWidgetComponent = React.lazy(
-	() => import("./AppBuilderAgentWidgetComponent"),
-);
 
 interface Props {
 	/**
@@ -168,19 +165,10 @@ function renderAppBuilderWidget(
 		);
 	if (isAgentWidget(w))
 		return (
-			<Suspense
-				name="LazyAppBuilderAgentWidgetComponent"
-				fallback={
-					<Paper>
-						<Loader />
-					</Paper>
-				}
-			>
-				<LazyAppBuilderAgentWidgetComponent
-					namespace={namespace}
-					{...w.props}
-				/>
-			</Suspense>
+			<AppBuilderAgentWidgetComponent
+				namespace={namespace}
+				{...w.props}
+			/>
 		);
 	if (isIframeWidget(w))
 		return <AppBuilderIframeWidgetComponent {...w.props} />;
