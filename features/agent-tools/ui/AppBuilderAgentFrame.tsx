@@ -1,15 +1,10 @@
-import AppBuilderIframeWidgetComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderIframeWidgetComponent";
 import {useCallback, useRef, useState, type PointerEvent} from "react";
 import {sizeAfterHandleDrag} from "../lib/sizeAfterHandleDrag";
+import AppBuilderHostedAgentWidgetComponent from "./AppBuilderHostedAgentWidgetComponent";
 import classes from "./AppBuilderAgentFrame.module.css";
 
 const MIN_WIDTH_PX = 256;
 const MIN_HEIGHT_PX = 192;
-
-type Props = {
-	src: string;
-	onPeerWindow: (peer: Window | null) => void;
-};
 
 type DragOrigin = {
 	startWidth: number;
@@ -18,7 +13,7 @@ type DragOrigin = {
 	startClientY: number;
 };
 
-export default function AppBuilderAgentFrame({src, onPeerWindow}: Props) {
+export default function AppBuilderAgentFrame() {
 	const wrapRef = useRef<HTMLDivElement>(null);
 	const dragRef = useRef<DragOrigin | null>(null);
 	const [size, setSize] = useState<{width: number; height: number} | null>(
@@ -77,12 +72,7 @@ export default function AppBuilderAgentFrame({src, onPeerWindow}: Props) {
 			className={`${classes.wrap}${dragging ? ` ${classes.dragging}` : ""}`}
 			style={size ? {width: size.width, height: size.height} : undefined}
 		>
-			<AppBuilderIframeWidgetComponent
-				url={src}
-				title="ShapeDiver agent"
-				height="100%"
-				onLoad={onPeerWindow}
-			/>
+			<AppBuilderHostedAgentWidgetComponent height="100%" />
 			<button
 				type="button"
 				className={classes.handle}

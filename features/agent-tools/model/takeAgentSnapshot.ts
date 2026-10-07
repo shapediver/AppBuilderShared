@@ -8,20 +8,34 @@ export type AgentSnapshot =
 	| undefined
 	| typeof AGENT_SNAPSHOT_UNSET;
 
+/** `agentId` when set; otherwise `agents[0]`. */
+export function resolveAgentConfig(
+	agents: IAppBuilderAgent[] | undefined,
+	agentId?: string,
+): IAppBuilderAgent | undefined {
+	const id = agentId?.trim();
+	if (id) {
+		return agents?.find((agent) => agent.id === id);
+	}
+	return agents?.[0];
+}
+
 /**
- * First loaded `IAppBuilder.agents[0]` (including missing agents → undefined).
+ * First loaded agent config (including missing agents → undefined).
  * `"unset"` means data has not loaded yet. Parametric later updates are ignored.
+ * `agentId` selects `IAppBuilder.agents` by id; omitted → `agents[0]`.
  */
 export function takeAgentSnapshot(
 	current: AgentSnapshot,
 	appBuilderData: IAppBuilder | undefined,
 	parseSettled = false,
+	agentId?: string,
 ): AgentSnapshot {
 	if (current !== AGENT_SNAPSHOT_UNSET) {
 		return current;
 	}
 	if (appBuilderData !== undefined) {
-		return appBuilderData.agents?.[0];
+		return resolveAgentConfig(appBuilderData.agents, agentId);
 	}
 	if (parseSettled) {
 		return undefined;

@@ -51,6 +51,7 @@ describe("useAgentToolTransports", () => {
 			namespace: "ns",
 			appBuilderData: undefined,
 			appBuilderParseSettled: true,
+			agentId: undefined,
 		});
 		expect(useWebMcpTools).toHaveBeenCalledWith({
 			namespace: "ns",
@@ -85,6 +86,13 @@ describe("useAgentToolTransports", () => {
 			sessionInfo: undefined,
 			showThreadHistory: undefined,
 		});
+	});
+
+	it("passes agentId into the runtime snapshot", () => {
+		renderHook(() => useAgentToolTransports({agentId: "other"}));
+		expect(useAgentToolRuntime).toHaveBeenCalledWith(
+			expect.objectContaining({agentId: "other"}),
+		);
 	});
 
 	it("passes sessionInfo into ToolsApi alongside agentConfig", () => {

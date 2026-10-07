@@ -44,4 +44,36 @@ describe("takeAgentSnapshot", () => {
 			takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, undefined, true),
 		).toBeUndefined();
 	});
+
+	it("selects an agent by id", () => {
+		const first = agent("first");
+		const second = agent("second");
+		expect(
+			takeAgentSnapshot(
+				AGENT_SNAPSHOT_UNSET,
+				data([first, second]),
+				false,
+				"second",
+			),
+		).toBe(second);
+	});
+
+	it("uses agents[0] when agentId is omitted", () => {
+		const first = agent("first");
+		const second = agent("second");
+		expect(
+			takeAgentSnapshot(AGENT_SNAPSHOT_UNSET, data([first, second])),
+		).toBe(first);
+	});
+
+	it("freezes undefined when agentId does not match", () => {
+		expect(
+			takeAgentSnapshot(
+				AGENT_SNAPSHOT_UNSET,
+				data([agent("first")]),
+				false,
+				"missing",
+			),
+		).toBeUndefined();
+	});
 });

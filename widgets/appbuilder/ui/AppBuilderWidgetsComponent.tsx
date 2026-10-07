@@ -4,6 +4,7 @@ import {
 	isAccordionUiWidget,
 	isAccordionWidget,
 	isActionsWidget,
+	isHostedAgentWidget,
 	isAgentWidget,
 	isAreaChartWidget,
 	isBarChartWidget,
@@ -23,6 +24,7 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
+import AppBuilderHostedAgentWidgetComponent from "@AppBuilderLib/features/agent-tools/ui/AppBuilderHostedAgentWidgetComponent";
 import React, {useContext} from "react";
 import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";
 import AppBuilderAccordionWidgetComponent from "./AppBuilderAccordionWidgetComponent";
@@ -170,6 +172,8 @@ function renderAppBuilderWidget(
 				{...w.props}
 			/>
 		);
+	if (isHostedAgentWidget(w))
+		return <AppBuilderHostedAgentWidgetComponent {...w.props} />;
 	if (isIframeWidget(w))
 		return <AppBuilderIframeWidgetComponent {...w.props} />;
 	if (isProgressWidget(w))

@@ -321,3 +321,69 @@ describe("IAppBuilderSettingsSettings.agentUrl", () => {
 		expect(result.success).toBe(false);
 	});
 });
+
+describe("hostedAgent widget schema", () => {
+	it("accepts title and height without a url", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "right",
+					widgets: [
+						{
+							type: "hostedAgent",
+							props: {title: "Bookshelf agent", height: "100%"},
+						},
+					],
+				},
+			],
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts agentId", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "right",
+					widgets: [
+						{type: "hostedAgent", props: {agentId: "bookshelf"}},
+					],
+				},
+			],
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("accepts empty props", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "right",
+					widgets: [{type: "hostedAgent", props: {}}],
+				},
+			],
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects a url on hostedAgent", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "right",
+					widgets: [
+						{
+							type: "hostedAgent",
+							props: {url: "http://localhost:3001"},
+						},
+					],
+				},
+			],
+		});
+		expect(result.success).toBe(false);
+	});
+});

@@ -29,8 +29,10 @@ import type {IAppBuilderAgent} from "@AppBuilderLib/features/appbuilder/config/a
 import type {ToolbarCommandItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
+import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {getEnvironmentIdentifier} from "@AppBuilderLib/shared/lib/platform/environment";
 import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
+import {useHostedAgentFrameStore} from "../useHostedAgentFrameStore";
 import {MantineProvider} from "@mantine/core";
 import {act, renderHook} from "@testing-library/react";
 import type {ReactNode} from "react";
@@ -106,6 +108,7 @@ describe("useAppBuilderAgentHost", () => {
 		showNotification.mockClear();
 		window.open = jest.fn().mockReturnValue(null);
 		useShapeDiverStoreToolbars.setState({defaultToolbars: []});
+		useHostedAgentFrameStore.setState({frame: null});
 	});
 
 	afterEach(() => {
@@ -207,6 +210,7 @@ describe("useAppBuilderAgentHost", () => {
 			agentWindow: null,
 			sessionInfo: undefined,
 			showThreadHistory: false,
+			agentId: undefined,
 		});
 	});
 
@@ -263,6 +267,7 @@ describe("useAppBuilderAgentHost", () => {
 			agentWindow: null,
 			sessionInfo: undefined,
 			showThreadHistory: true,
+			agentId: undefined,
 		});
 		act(() => {
 			jest.runAllTimers();
@@ -274,6 +279,7 @@ describe("useAppBuilderAgentHost", () => {
 			agentWindow: opened,
 			sessionInfo: undefined,
 			showThreadHistory: true,
+			agentId: undefined,
 		});
 		expect(showNotification).not.toHaveBeenCalled();
 	});
@@ -383,9 +389,9 @@ describe("useAppBuilderAgentHost", () => {
 			other: {forceColorScheme: "dark"},
 		});
 		const peer = {postMessage: jest.fn()} as unknown as Window;
-		const {result, unmount} = renderHost();
+		const {unmount} = renderHost();
 		act(() => {
-			result.current.onPeerWindow(peer);
+			useHostedAgentFrameStore.getState().setFrame(peer);
 		});
 		expect(peer.postMessage).toHaveBeenCalledWith(
 			{
@@ -399,6 +405,92 @@ describe("useAppBuilderAgentHost", () => {
 		);
 		unmount();
 		useThemeOverrideStore.getState().setThemeOverride({});
+	});
+
+	it("does not register a button when a hostedAgent widget is already placed", () => {
+		const {result} = renderHost({
+			appBuilderData: {
+				version: "1.0",
+				containers: [
+					{
+						name: "right",
+						widgets: [
+							{
+								type: "hostedAgent",
+								props: {},
+							},
+						],
+					},
+				],
+			},
+		});
+		expect(result.current.panelMounted).toBe(false);
+		expect(
+			useShapeDiverStoreToolbars
+				.getState()
+				.defaultToolbars.some((item) => item.id.startsWith("agentUi")),
+		).toBe(false);
+	});
+
+	it("connects ToolsApi to the hostedAgent frame window", () => {
+		const peer = {postMessage: jest.fn()} as unknown as Window;
+		renderHost({namespace: "ns"});
+		act(() => {
+			useHostedAgentFrameStore.getState().setFrame(peer);
+		});
+		expect(useAgentToolTransports).toHaveBeenLastCalledWith({
+			namespace: "ns",
+			appBuilderData: undefined,
+			appBuilderParseSettled: undefined,
+			agentWindow: peer,
+			sessionInfo: undefined,
+			showThreadHistory: false,
+			agentId: undefined,
+		});
+	});
+
+	it("warns when two placed hostedAgent widgets share an agentId", () => {
+		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
+		renderHost({
+			appBuilderData: {
+				version: "1.0",
+				containers: [
+					{
+						name: "right",
+						widgets: [
+							{type: "hostedAgent", props: {agentId: "bookshelf"}},
+							{type: "hostedAgent", props: {agentId: "bookshelf"}},
+						],
+					},
+				],
+			},
+		});
+		expect(warn).toHaveBeenCalledWith(
+			'Multiple hostedAgent widgets target agent "bookshelf".',
+		);
+		warn.mockRestore();
+	});
+
+	it("forwards agentId from a placed hostedAgent widget", () => {
+		renderHost({
+			appBuilderData: {
+				version: "1.0",
+				containers: [
+					{
+						name: "right",
+						widgets: [
+							{
+								type: "hostedAgent",
+								props: {agentId: "other"},
+							},
+						],
+					},
+				],
+			},
+		});
+		expect(useAgentToolTransports).toHaveBeenCalledWith(
+			expect.objectContaining({agentId: "other"}),
+		);
 	});
 
 	it("does not register a button when there is no agent url", () => {

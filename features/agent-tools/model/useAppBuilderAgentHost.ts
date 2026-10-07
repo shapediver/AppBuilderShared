@@ -12,10 +12,16 @@ import type {
 	UseAppBuilderAgentHostProps,
 } from "../config/appBuilderAgentHost";
 import {AGENT_THEME_REQUEST, postAgentTheme} from "../lib/agentThemeChannel";
+import {
+	hasPlacedHostedAgentWidget,
+	placedHostedAgentId,
+	warnDuplicateHostedAgentWidgets,
+} from "../lib/hasPlacedHostedAgentWidget";
 import {openAgentWindow} from "../lib/openAgentWindow";
 import {resolveAgentUi} from "../lib/resolveAgentUi";
 import {resolveAgentUrl} from "../lib/resolveAgentUrl";
 import {useAgentToolTransports} from "./useAgentToolTransports";
+import {useHostedAgentFrameStore} from "./useHostedAgentFrameStore";
 
 /**
  * Hosts AppBuilderAgent on an App Builder page: toolbar button, iframe or
@@ -34,7 +40,11 @@ export function useAppBuilderAgentHost(
 		new URLSearchParams(window.location.search).get(QUERYPARAM_AGENTURL),
 		getEnvironmentIdentifier(),
 	);
-	const [agentWindow, setAgentWindow] = useState<Window | null>(null);
+	const iframeWindow = useHostedAgentFrameStore((state) => state.frame);
+	const [popupWindow, setPopupWindow] = useState<Window | null>(null);
+	const agentWindow = mode === "window" ? popupWindow : iframeWindow;
+	const placedHostedAgent = hasPlacedHostedAgentWidget(appBuilderData);
+	const agentId = placedHostedAgentId(appBuilderData);
 	const themeOverrides = useThemeOverrideStore(
 		(state) => state.themeOverride,
 	);
@@ -49,6 +59,7 @@ export function useAppBuilderAgentHost(
 			agentWindow,
 			sessionInfo,
 			showThreadHistory,
+			agentId,
 		});
 	const agentWindowRef = useRef(agentWindow);
 	agentWindowRef.current = agentWindow;
@@ -85,8 +96,8 @@ export function useAppBuilderAgentHost(
 			});
 			return;
 		}
-		setAgentWindow(null);
-		window.setTimeout(() => setAgentWindow(opened), 0);
+		setPopupWindow(null);
+		window.setTimeout(() => setPopupWindow(opened), 0);
 	}, [agentUrl]);
 
 	const panelMountedRef = useRef(false);
@@ -118,6 +129,10 @@ export function useAppBuilderAgentHost(
 
 	const appliedModeRef = useRef(mode);
 	useEffect(() => {
+		warnDuplicateHostedAgentWidgets(appBuilderData);
+	}, [appBuilderData]);
+
+	useEffect(() => {
 		if (appliedModeRef.current === mode) {
 			return;
 		}
@@ -126,14 +141,14 @@ export function useAppBuilderAgentHost(
 		panelVisibleRef.current = false;
 		setPanelMounted(false);
 		setPanelVisible(false);
-		setAgentWindow(null);
+		setPopupWindow(null);
 	}, [mode]);
 
 	useEffect(() => {
 		const id = viewportId ? `agentUi-${viewportId}` : "agentUi";
 		const {setDefaultToolbar, removeDefaultToolbar} =
 			useShapeDiverStoreToolbars.getState();
-		if (snapshotComplete && !agentConfig) {
+		if (placedHostedAgent || (snapshotComplete && !agentConfig)) {
 			removeDefaultToolbar(id);
 			return;
 		}
@@ -168,13 +183,10 @@ export function useAppBuilderAgentHost(
 		agentUrl,
 		label,
 		onToggleAgent,
+		placedHostedAgent,
 		snapshotComplete,
 		viewportId,
 	]);
-
-	const onPeerWindow = useCallback((peer: Window | null) => {
-		setAgentWindow(peer);
-	}, []);
 
 	useEffect(() => {
 		if (!agentWindow || !agentUrl) {
@@ -199,8 +211,7 @@ export function useAppBuilderAgentHost(
 	return {
 		agentUrl,
 		mode,
-		panelMounted,
-		panelVisible,
-		onPeerWindow,
+		panelMounted: placedHostedAgent ? false : panelMounted,
+		panelVisible: placedHostedAgent ? false : panelVisible,
 	};
 }

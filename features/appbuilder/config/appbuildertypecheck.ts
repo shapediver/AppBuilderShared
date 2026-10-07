@@ -1040,6 +1040,13 @@ const IAppBuilderWidgetPropsAgentSchema = z.strictObject({
 	parameterNamesExclude: z.array(z.string()).optional(),
 });
 
+// Zod type definition for IAppBuilderWidgetPropsHostedAgent
+const IAppBuilderWidgetPropsHostedAgentSchema = z.strictObject({
+	title: z.string().optional(),
+	height: z.union([z.string(), z.number()]).optional(),
+	agentId: z.string().optional(),
+});
+
 // Zod type definition for IAppBuilderWidgetPropsIframe
 const IAppBuilderWidgetPropsIframeSchema = z.strictObject({
 	url: z.string(),
@@ -1194,6 +1201,10 @@ const IAppBuilderWidgetSchema = z.discriminatedUnion("type", [
 	appBuilderNodeObject({
 		type: z.literal("agent"),
 		props: IAppBuilderWidgetPropsAgentSchema,
+	}),
+	appBuilderNodeObject({
+		type: z.literal("hostedAgent"),
+		props: IAppBuilderWidgetPropsHostedAgentSchema,
 	}),
 	appBuilderNodeObject({
 		type: z.literal("iframe"),

@@ -15,7 +15,6 @@ export default function AppBuilderAgentOverlay({
 	mode,
 	panelMounted,
 	panelVisible,
-	onPeerWindow,
 }: AppBuilderAgentOverlayProps) {
 	const slotRef = useRef<HTMLDivElement>(null);
 	const [insets, setInsets] = useState<{
@@ -92,7 +91,7 @@ export default function AppBuilderAgentOverlay({
 					: null),
 			}}
 		>
-			<AppBuilderAgentFrame src={agentUrl} onPeerWindow={onPeerWindow} />
+			<AppBuilderAgentFrame />
 		</div>
 	);
 }

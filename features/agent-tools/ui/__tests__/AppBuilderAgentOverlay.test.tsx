@@ -20,7 +20,6 @@ const hiddenPanel = {
 	mode: "iframe" as const,
 	panelMounted: false,
 	panelVisible: false,
-	onPeerWindow: jest.fn(),
 };
 
 function renderOverlay(ui: ReactElement) {
@@ -51,8 +50,8 @@ describe("AppBuilderAgentOverlay", () => {
 		expect(queryByTitle("ShapeDiver agent")).toBeNull();
 	});
 
-	it("keeps the iframe mounted while the panel is hidden", () => {
-		const {queryByTitle} = renderOverlay(
+	it("keeps the iframe mounted while the panel is hidden", async () => {
+		const {findByTitle} = renderOverlay(
 			<ComponentContext.Provider value={overlayContext}>
 				<AppBuilderAgentOverlay
 					{...hiddenPanel}
@@ -62,17 +61,17 @@ describe("AppBuilderAgentOverlay", () => {
 				/>
 			</ComponentContext.Provider>,
 		);
-		const iframe = queryByTitle("ShapeDiver agent");
+		const iframe = await findByTitle("ShapeDiver agent");
 		expect(iframe).toBeInTheDocument();
-		let slot = iframe?.parentElement ?? null;
+		let slot = iframe.parentElement ?? null;
 		while (slot && slot.style.display !== "none") {
 			slot = slot.parentElement;
 		}
 		expect(slot).toHaveStyle({display: "none"});
 	});
 
-	it("shows the iframe while the panel is visible", () => {
-		const {getByTitle} = renderOverlay(
+	it("shows the iframe while the panel is visible", async () => {
+		const {findByTitle} = renderOverlay(
 			<AppBuilderAgentOverlay
 				{...hiddenPanel}
 				agentUrl="http://localhost:3001/app"
@@ -80,6 +79,6 @@ describe("AppBuilderAgentOverlay", () => {
 				panelVisible
 			/>,
 		);
-		expect(getByTitle("ShapeDiver agent")).toBeInTheDocument();
+		expect(await findByTitle("ShapeDiver agent")).toBeInTheDocument();
 	});
 });

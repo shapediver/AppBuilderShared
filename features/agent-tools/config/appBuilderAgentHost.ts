@@ -21,5 +21,4 @@ export type AppBuilderAgentOverlayProps = {
 	/** Iframe has been created at least once. Later hides keep it mounted. */
 	panelMounted: boolean;
 	panelVisible: boolean;
-	onPeerWindow: (peer: Window | null) => void;
 };

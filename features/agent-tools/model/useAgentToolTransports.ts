@@ -21,6 +21,8 @@ export type UseAgentToolTransportsProps = {
 	 * peer connects. Omitted by callers that predate the agent chrome.
 	 */
 	showThreadHistory?: boolean;
+	/** Selects `IAppBuilder.agents` by id. Omitted → `agents[0]`. */
+	agentId?: string;
 };
 
 /**
@@ -42,12 +44,14 @@ export function useAgentToolTransports(
 		agentWindow = null,
 		sessionInfo,
 		showThreadHistory,
+		agentId,
 	} = props;
 
 	const runtime = useAgentToolRuntime({
 		namespace,
 		appBuilderData,
 		appBuilderParseSettled,
+		agentId,
 	});
 
 	useWebMcpTools({
