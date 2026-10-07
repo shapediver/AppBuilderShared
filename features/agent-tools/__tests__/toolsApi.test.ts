@@ -16,9 +16,11 @@ import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../config/inScopeGenericTools";
 import type {ExecutableSpecificTool} from "../config/resolveSpecificTools";
 import {resolveToolset} from "../config/resolveToolset";
 import {
+	MESSAGE_TYPE_CREATE_MODEL_STATE,
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_GET_SESSION_INFO,
+	MESSAGE_TYPE_IMPORT_MODEL_STATE,
 	MESSAGE_TYPE_LIST_TOOLS,
 	TOOLS_API_NAME_AGENT,
 	TOOLS_API_NAME_APP,
@@ -544,7 +546,60 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		expect(mock.cancelHandshake).toHaveBeenCalledTimes(1);
 	});
 
-	it("cancel unregisters LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG, and GET_SESSION_INFO", async () => {
+	it("createModelState and importModelState are not agent tools", async () => {
+		const mock = createMockCrossWindowApi();
+		const createModelState = jest.fn(async () => ({modelStateId: "ms-1"}));
+		const importModelState = jest.fn(async () => ({
+			success: true as const,
+			data: {id: "ms-1"},
+		}));
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+			undefined,
+			undefined,
+			undefined,
+			[],
+			undefined,
+			undefined,
+			{createModelState, importModelState},
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		const {tools} = await client.listTools();
+		expect(tools.map((tool) => tool.name)).not.toContain("createModelState");
+		expect(tools.map((tool) => tool.name)).not.toContain("importModelState");
+		await expect(
+			client.createModelState({includeImage: false}),
+		).resolves.toEqual({modelStateId: "ms-1"});
+		expect(createModelState).toHaveBeenCalledWith({includeImage: false});
+		await expect(
+			client.importModelState({modelStateId: "ms-1"}),
+		).resolves.toEqual({success: true, data: {id: "ms-1"}});
+		expect(importModelState).toHaveBeenCalledWith({modelStateId: "ms-1"});
+		connector.cancel();
+	});
+
+	it("createModelState and importModelState reject when no handlers are registered", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.createModelState()).rejects.toThrow(
+			"Model state is not available.",
+		);
+		await expect(
+			client.importModelState({modelStateId: "ms-1"}),
+		).rejects.toThrow("Model state is not available.");
+		connector.cancel();
+	});
+
+	it("cancel unregisters LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG, GET_SESSION_INFO, and model state", async () => {
 		const mock = createMockCrossWindowApi();
 		const connector = new ToolsApiConnector(
 			resolveToolset(undefined),
@@ -566,6 +621,12 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		await expect(client.getSessionInfo()).rejects.toThrow(
 			`No handler for ${MESSAGE_TYPE_GET_SESSION_INFO}`,
 		);
+		await expect(client.createModelState()).rejects.toThrow(
+			`No handler for ${MESSAGE_TYPE_CREATE_MODEL_STATE}`,
+		);
+		await expect(
+			client.importModelState({modelStateId: "ms-1"}),
+		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_IMPORT_MODEL_STATE}`);
 	});
 
 	it("cancel before handshake resolves unregisters both listeners", async () => {
@@ -601,6 +662,12 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		await expect(
 			mock.send(MESSAGE_TYPE_GET_SESSION_INFO, undefined),
 		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_GET_SESSION_INFO}`);
+		await expect(
+			mock.send(MESSAGE_TYPE_CREATE_MODEL_STATE, {}),
+		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_CREATE_MODEL_STATE}`);
+		await expect(
+			mock.send(MESSAGE_TYPE_IMPORT_MODEL_STATE, {modelStateId: "ms-1"}),
+		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_IMPORT_MODEL_STATE}`);
 	});
 });
 

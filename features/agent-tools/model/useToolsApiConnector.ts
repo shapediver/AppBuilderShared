@@ -12,6 +12,7 @@ import {
 import type {
 	IToolsApiConnector,
 	IToolsApiHandlerMap,
+	IToolsApiModelStateHandlers,
 } from "../config/toolsApiConnector";
 
 /**
@@ -61,6 +62,11 @@ export type UseToolsApiConnectorProps = {
 	 * time. Independent of history chrome.
 	 */
 	createThreadOnLoad?: boolean;
+	/**
+	 * Create and import model state. Omit → those ToolsApi calls reject.
+	 * Not part of the agent tool list.
+	 */
+	modelState?: IToolsApiModelStateHandlers;
 };
 
 /**
@@ -83,6 +89,7 @@ export type UseToolsApiConnectorProps = {
  *              EXECUTE_TOOL → executeResolvedTool → handlers or tool.execute
  *              GET_AGENT_CONFIG → { id, name, message } | null
  *              GET_SESSION_INFO → { jwtToken, slug, modelStateId }
+ *              CREATE_MODEL_STATE / IMPORT_MODEL_STATE → modelState handlers
  * ```
  *
  * **When it connects.** Effect runs only if `window` is set **and**
@@ -130,6 +137,7 @@ export function useToolsApiConnector(
 		sessionInfo,
 		showThreadHistory,
 		createThreadOnLoad,
+		modelState,
 	} = props;
 
 	const resolvedGenericToolsRef = useRef(resolvedGenericTools);
@@ -146,6 +154,8 @@ export function useToolsApiConnector(
 	showThreadHistoryRef.current = showThreadHistory;
 	const createThreadOnLoadRef = useRef(createThreadOnLoad);
 	createThreadOnLoadRef.current = createThreadOnLoad;
+	const modelStateRef = useRef(modelState);
+	modelStateRef.current = modelState;
 	const [peerConnected, setPeerConnected] = useState(false);
 
 	useEffect(() => {
@@ -170,6 +180,7 @@ export function useToolsApiConnector(
 					resolvedSpecificToolsRef.current,
 					showThreadHistoryRef.current,
 					createThreadOnLoadRef.current,
+					modelStateRef.current,
 				);
 				if (effectAbandoned) {
 					// cancel() rejects an in-flight handshake. Attach a handler

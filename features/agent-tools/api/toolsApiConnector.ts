@@ -9,9 +9,11 @@ import {CrossWindowApiFactory} from "@AppBuilderLib/shared/lib/crosswindowapi/cr
 import type {ExecutableSpecificTool} from "../config/resolveSpecificTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import {
+	MESSAGE_TYPE_CREATE_MODEL_STATE,
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_GET_SESSION_INFO,
+	MESSAGE_TYPE_IMPORT_MODEL_STATE,
 	MESSAGE_TYPE_LIST_TOOLS,
 	MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 	TOOLS_API_NAME_AGENT,
@@ -22,11 +24,14 @@ import {
 	type IAgentConfigReply,
 	type IAgentSessionInfo,
 	type IExecuteToolData,
+	type IToolsApiCreateModelStateData,
+	type IToolsApiImportModelStateData,
 } from "../config/toolsApi";
 import type {
 	IToolsApiConnector,
 	IToolsApiConnectorFactory,
 	IToolsApiHandlerMap,
+	IToolsApiModelStateHandlers,
 } from "../config/toolsApiConnector";
 import {
 	executeResolvedTool,
@@ -45,14 +50,16 @@ function withDefaultTimeout(
 }
 
 /**
- * App Builder server. Registers LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG, and
- * GET_SESSION_INFO **before** handshake so an eager client cannot race.
+ * App Builder server. Registers LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG,
+ * GET_SESSION_INFO, CREATE_MODEL_STATE, and IMPORT_MODEL_STATE **before**
+ * handshake so an eager client cannot race.
  * `cancel()` removes listeners and aborts handshake.
  *
  * LIST_TOOLS → {@link listToolsFromResolved}.
  * EXECUTE_TOOL → {@link parseExecuteToolData} then {@link executeResolvedTool}.
  * GET_AGENT_CONFIG → {@link agentConfigReplyFrom} (`null` if no Agent config).
  * GET_SESSION_INFO → {@link agentSessionInfoFrom} (`{}` if no session fields).
+ * CREATE_MODEL_STATE / IMPORT_MODEL_STATE → `modelState` handlers (not agent tools).
  * Malformed EXECUTE_TOOL (missing string `name`) → unknown-tool JSON, not a throw.
  *
  * Construct via {@link ToolsApiConnectorFactoryClass.getConnectorApi}.
@@ -72,6 +79,7 @@ export class ToolsApiConnector implements IToolsApiConnector {
 		resolvedSpecificTools: ExecutableSpecificTool[] = [],
 		showThreadHistory?: boolean,
 		createThreadOnLoad?: boolean,
+		modelState?: IToolsApiModelStateHandlers,
 	) {
 		this.#crossWindowApi = crossWindowApi;
 		this.#listenerCancels.push(
@@ -114,13 +122,35 @@ export class ToolsApiConnector implements IToolsApiConnector {
 				agentSessionInfoFrom(sessionInfo),
 			),
 		);
+		this.#listenerCancels.push(
+			crossWindowApi.on(
+				MESSAGE_TYPE_CREATE_MODEL_STATE,
+				async (data: IToolsApiCreateModelStateData | undefined) => {
+					if (!modelState) {
+						throw new Error("Model state is not available.");
+					}
+					return modelState.createModelState(data ?? {});
+				},
+			),
+		);
+		this.#listenerCancels.push(
+			crossWindowApi.on(
+				MESSAGE_TYPE_IMPORT_MODEL_STATE,
+				async (data: IToolsApiImportModelStateData) => {
+					if (!modelState) {
+						throw new Error("Model state is not available.");
+					}
+					return modelState.importModelState(data);
+				},
+			),
+		);
 		this.peerIsReady = crossWindowApi.handshake(
 			MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 			options?.timeout,
 		);
 	}
 
-	/** Drop LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG / GET_SESSION_INFO listeners and cancel an in-flight handshake. */
+	/** Drop tool and model-state listeners and cancel an in-flight handshake. */
 	cancel(): void {
 		for (const token of this.#listenerCancels) {
 			token.cancel();
@@ -163,6 +193,7 @@ export class ToolsApiConnectorFactoryClass implements IToolsApiConnectorFactory 
 		resolvedSpecificTools?: ExecutableSpecificTool[],
 		showThreadHistory?: boolean,
 		createThreadOnLoad?: boolean,
+		modelState?: IToolsApiModelStateHandlers,
 	): Promise<IToolsApiConnector> {
 		const optionsWithTimeout = withDefaultTimeout(options);
 		const api = await this.crossWindowFactory.getWindowApi(
@@ -181,6 +212,7 @@ export class ToolsApiConnectorFactoryClass implements IToolsApiConnectorFactory 
 			resolvedSpecificTools,
 			showThreadHistory,
 			createThreadOnLoad,
+			modelState,
 		);
 	}
 }

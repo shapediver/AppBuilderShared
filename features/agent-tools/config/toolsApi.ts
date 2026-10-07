@@ -2,6 +2,12 @@ import type {
 	ICrossWindowApiOptions,
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
+import type {
+	IModelStateWireCreateData,
+	IModelStateWireCreateResult,
+	IModelStateWireImportData,
+	IModelStateWireImportResult,
+} from "../../model-state/config/modelStateWire";
 import type {JsonSchema} from "../lib/zodToJsonSchema";
 
 /**
@@ -31,10 +37,24 @@ export const MESSAGE_TYPE_GET_AGENT_CONFIG = "GET_AGENT_CONFIG";
 export const MESSAGE_TYPE_GET_SESSION_INFO = "GET_SESSION_INFO";
 
 /**
+ * CrossWindow message type: agent asks App Builder to snapshot the current model.
+ * Not an agent tool — omitted from `listTools`. Payload is
+ * {@link IToolsApiCreateModelStateData}. Reply is {@link IToolsApiCreateModelStateResult}.
+ */
+export const MESSAGE_TYPE_CREATE_MODEL_STATE = "CREATE_MODEL_STATE";
+
+/**
+ * CrossWindow message type: agent asks App Builder to load a saved model state.
+ * Not an agent tool — omitted from `listTools`. Payload is
+ * {@link IToolsApiImportModelStateData}. Reply is {@link IToolsApiImportModelStateResult}.
+ */
+export const MESSAGE_TYPE_IMPORT_MODEL_STATE = "IMPORT_MODEL_STATE";
+
+/**
  * CrossWindow handshake name for ToolsApi (same role as ECommerce's ready handshake).
- * Listeners for LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG / GET_SESSION_INFO
- * must be registered **before** this runs, or the agent can send into a window
- * that is not listening yet.
+ * Listeners for LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG / GET_SESSION_INFO /
+ * CREATE_MODEL_STATE / IMPORT_MODEL_STATE must be registered **before** this runs,
+ * or the agent can send into a window that is not listening yet.
  */
 export const MESSAGE_TYPE_TOOLS_API_HANDSHAKE = "TOOLS_API_HANDSHAKE";
 
@@ -146,6 +166,18 @@ export function agentSessionInfoFrom(
 	return result;
 }
 
+/** Create-model-state payload sent across ToolsApi. */
+export type IToolsApiCreateModelStateData = IModelStateWireCreateData;
+
+/** Reply from {@link IToolsApi.createModelState}. `modelStateId` is absent when no session is open. */
+export type IToolsApiCreateModelStateResult = IModelStateWireCreateResult;
+
+/** Payload for {@link IToolsApi.importModelState}. */
+export type IToolsApiImportModelStateData = IModelStateWireImportData;
+
+/** Reply from {@link IToolsApi.importModelState}. */
+export type IToolsApiImportModelStateResult = IModelStateWireImportResult;
+
 /**
  * Agent-window **client**. Lives in the peer that does **not** run tool handlers.
  *
@@ -153,7 +185,11 @@ export function agentSessionInfoFrom(
  * {@link IToolsApiFactory.getParentClientApi} (`window.parent`).
  *
  * Await `peerIsReady` (or let `listTools` / `execute` / `getAgentConfig` /
- * `getSessionInfo` await it) before assuming App Builder is listening.
+ * `getSessionInfo` / `createModelState` / `importModelState` await it) before
+ * assuming App Builder is listening.
+ *
+ * `createModelState` and `importModelState` snapshot and restore the App Builder
+ * model. They are not agent tools and do not appear in `listTools`.
  */
 export interface IToolsApi {
 	readonly peerIsReady: Promise<ICrossWindowPeerInfo>;
@@ -161,6 +197,12 @@ export interface IToolsApi {
 	execute(data: IExecuteToolData): Promise<unknown>;
 	getAgentConfig(): Promise<IAgentConfigReply | null>;
 	getSessionInfo(): Promise<IAgentSessionInfo>;
+	createModelState(
+		data?: IToolsApiCreateModelStateData,
+	): Promise<IToolsApiCreateModelStateResult>;
+	importModelState(
+		data: IToolsApiImportModelStateData,
+	): Promise<IToolsApiImportModelStateResult>;
 }
 
 /**

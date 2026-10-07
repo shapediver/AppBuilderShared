@@ -5,7 +5,14 @@ import type {
 import type {InScopeGenericToolName} from "./inScopeGenericTools";
 import type {ExecutableSpecificTool} from "./resolveSpecificTools";
 import type {ResolvedGenericTool} from "./resolveToolset";
-import type {IAgentConfigReply, IAgentSessionInfo} from "./toolsApi";
+import type {
+	IAgentConfigReply,
+	IAgentSessionInfo,
+	IToolsApiCreateModelStateData,
+	IToolsApiCreateModelStateResult,
+	IToolsApiImportModelStateData,
+	IToolsApiImportModelStateResult,
+} from "./toolsApi";
 
 /**
  * Live implementations for every in-scope generic tool name.
@@ -17,10 +24,22 @@ export type IToolsApiHandlerMap = Record<
 >;
 
 /**
+ * Create and import model state for the agent window. Not agent tools.
+ * Implementations should reuse the e-commerce store helpers.
+ */
+export interface IToolsApiModelStateHandlers {
+	createModelState(
+		data: IToolsApiCreateModelStateData,
+	): Promise<IToolsApiCreateModelStateResult>;
+	importModelState(
+		data: IToolsApiImportModelStateData,
+	): Promise<IToolsApiImportModelStateResult>;
+}
+
+/**
  * App Builder **server**. Owns LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
- * GET_SESSION_INFO listeners and handshake.
- * Does not expose list/execute/getAgentConfig/getSessionInfo methods — the agent
- * calls those on {@link IToolsApi}.
+ * GET_SESSION_INFO / CREATE_MODEL_STATE / IMPORT_MODEL_STATE listeners and handshake.
+ * Does not expose those methods — the agent calls them on {@link IToolsApi}.
  *
  * `cancel()` tears down listeners and the handshake. Required on React unmount
  * and when `getConnectorApi` resolves after the effect was already cleaned up.
@@ -32,7 +51,8 @@ export interface IToolsApiConnector {
 
 /**
  * App Builder **server** factory. Registers LIST_TOOLS / EXECUTE_TOOL /
- * GET_AGENT_CONFIG / GET_SESSION_INFO on an explicit agent `Window`.
+ * GET_AGENT_CONFIG / GET_SESSION_INFO / CREATE_MODEL_STATE / IMPORT_MODEL_STATE
+ * on an explicit agent `Window`.
  *
  * Default names: this side `"app"`, peer `"agent"`. Timeout 20s unless
  * `options.timeout` overrides.
@@ -44,6 +64,7 @@ export interface IToolsApiConnector {
  * `null` / `undefined` → `getAgentConfig` replies `null`.
  * `sessionInfo` is controller session fields (`jwtToken`, `slug`,
  * `modelStateId`); omit / `null` / `undefined` → `getSessionInfo` replies `{}`.
+ * `modelState` runs create/import. Omit → those calls reject.
  * Listeners are attached before handshake starts.
  */
 export interface IToolsApiConnectorFactory {
@@ -59,5 +80,6 @@ export interface IToolsApiConnectorFactory {
 		resolvedSpecificTools?: ExecutableSpecificTool[],
 		showThreadHistory?: boolean,
 		createThreadOnLoad?: boolean,
+		modelState?: IToolsApiModelStateHandlers,
 	): Promise<IToolsApiConnector>;
 }
