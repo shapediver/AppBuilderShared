@@ -4,8 +4,10 @@ import {MantineThemeComponent} from "@mantine/core";
 /**
  * Theme defaults for the agent chrome.
  *
- * `showThreadHistory` is omitted from the built-in defaults. When an app does
- * not set it, window mode shows history and iframe mode hides it.
+ * `showThreadHistory` and `createThreadOnLoad` are omitted from the built-in
+ * defaults. History is on unless set. When `createThreadOnLoad` is omitted,
+ * iframe mode starts a new thread and window mode resumes the latest.
+ * Either flag can be set without the other.
  *
  * @docAttached
  * @category appbuilder

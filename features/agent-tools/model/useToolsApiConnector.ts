@@ -56,6 +56,11 @@ export type UseToolsApiConnectorProps = {
 	 * time. `undefined` leaves the reply without the field (older hosts).
 	 */
 	showThreadHistory?: boolean;
+	/**
+	 * Resolved AgentUi load flag. Included on `getAgentConfig` at connect
+	 * time. Independent of history chrome.
+	 */
+	createThreadOnLoad?: boolean;
 };
 
 /**
@@ -122,6 +127,7 @@ export function useToolsApiConnector(
 		agentConfig,
 		sessionInfo,
 		showThreadHistory,
+		createThreadOnLoad,
 	} = props;
 
 	const resolvedGenericToolsRef = useRef(resolvedGenericTools);
@@ -136,6 +142,8 @@ export function useToolsApiConnector(
 	sessionInfoRef.current = sessionInfo;
 	const showThreadHistoryRef = useRef(showThreadHistory);
 	showThreadHistoryRef.current = showThreadHistory;
+	const createThreadOnLoadRef = useRef(createThreadOnLoad);
+	createThreadOnLoadRef.current = createThreadOnLoad;
 	const [peerConnected, setPeerConnected] = useState(false);
 
 	useEffect(() => {
@@ -159,6 +167,7 @@ export function useToolsApiConnector(
 					sessionInfoRef.current,
 					resolvedSpecificToolsRef.current,
 					showThreadHistoryRef.current,
+					createThreadOnLoadRef.current,
 				);
 				if (effectAbandoned) {
 					connector.cancel();

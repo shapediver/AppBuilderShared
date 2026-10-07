@@ -70,6 +70,7 @@ describe("useAgentToolTransports", () => {
 			agentConfig: runtime.agentConfig,
 			sessionInfo: undefined,
 			showThreadHistory: undefined,
+			createThreadOnLoad: undefined,
 		});
 	});
 
@@ -85,6 +86,7 @@ describe("useAgentToolTransports", () => {
 			agentConfig: runtime.agentConfig,
 			sessionInfo: undefined,
 			showThreadHistory: undefined,
+			createThreadOnLoad: undefined,
 		});
 	});
 
@@ -92,6 +94,21 @@ describe("useAgentToolTransports", () => {
 		renderHook(() => useAgentToolTransports({agentId: "other"}));
 		expect(useAgentToolRuntime).toHaveBeenCalledWith(
 			expect.objectContaining({agentId: "other"}),
+		);
+	});
+
+	it("passes AgentUi flags into ToolsApi", () => {
+		renderHook(() =>
+			useAgentToolTransports({
+				showThreadHistory: false,
+				createThreadOnLoad: true,
+			}),
+		);
+		expect(useToolsApiConnector).toHaveBeenCalledWith(
+			expect.objectContaining({
+				showThreadHistory: false,
+				createThreadOnLoad: true,
+			}),
 		);
 	});
 
@@ -111,6 +128,7 @@ describe("useAgentToolTransports", () => {
 			agentConfig: runtime.agentConfig,
 			sessionInfo,
 			showThreadHistory: undefined,
+			createThreadOnLoad: undefined,
 		});
 	});
 });

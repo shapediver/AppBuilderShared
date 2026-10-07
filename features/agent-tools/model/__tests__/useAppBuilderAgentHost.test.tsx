@@ -52,11 +52,22 @@ const transports = {
 	agentConfig: sampleAgent,
 };
 
-function themeWrapper(mode?: "window" | "iframe", showThreadHistory?: boolean) {
-	const defaultProps: {mode?: string; showThreadHistory?: boolean} = {};
+function themeWrapper(
+	mode?: "window" | "iframe",
+	showThreadHistory?: boolean,
+	createThreadOnLoad?: boolean,
+) {
+	const defaultProps: {
+		mode?: string;
+		showThreadHistory?: boolean;
+		createThreadOnLoad?: boolean;
+	} = {};
 	if (mode) defaultProps.mode = mode;
 	if (showThreadHistory !== undefined) {
 		defaultProps.showThreadHistory = showThreadHistory;
+	}
+	if (createThreadOnLoad !== undefined) {
+		defaultProps.createThreadOnLoad = createThreadOnLoad;
 	}
 	return function Wrapper({children}: {children: ReactNode}) {
 		return (
@@ -77,9 +88,10 @@ function renderHost(
 	props: Parameters<typeof useAppBuilderAgentHost>[0] = {},
 	mode?: "window" | "iframe",
 	showThreadHistory?: boolean,
+	createThreadOnLoad?: boolean,
 ) {
 	return renderHook(() => useAppBuilderAgentHost(props), {
-		wrapper: themeWrapper(mode, showThreadHistory),
+		wrapper: themeWrapper(mode, showThreadHistory, createThreadOnLoad),
 	});
 }
 
@@ -209,7 +221,8 @@ describe("useAppBuilderAgentHost", () => {
 			appBuilderParseSettled: true,
 			agentWindow: null,
 			sessionInfo: undefined,
-			showThreadHistory: false,
+			showThreadHistory: true,
+			createThreadOnLoad: true,
 			agentId: undefined,
 		});
 	});
@@ -250,7 +263,10 @@ describe("useAppBuilderAgentHost", () => {
 		jest.mocked(window.open).mockReturnValue(opened);
 		renderHost({namespace: "ns"}, "window");
 		expect(useAgentToolTransports).toHaveBeenCalledWith(
-			expect.objectContaining({showThreadHistory: true}),
+			expect.objectContaining({
+				showThreadHistory: true,
+				createThreadOnLoad: false,
+			}),
 		);
 		act(() => {
 			agentCommand().props.execute();
@@ -267,6 +283,7 @@ describe("useAppBuilderAgentHost", () => {
 			agentWindow: null,
 			sessionInfo: undefined,
 			showThreadHistory: true,
+			createThreadOnLoad: false,
 			agentId: undefined,
 		});
 		act(() => {
@@ -279,6 +296,7 @@ describe("useAppBuilderAgentHost", () => {
 			agentWindow: opened,
 			sessionInfo: undefined,
 			showThreadHistory: true,
+			createThreadOnLoad: false,
 			agentId: undefined,
 		});
 		expect(showNotification).not.toHaveBeenCalled();
@@ -364,7 +382,20 @@ describe("useAppBuilderAgentHost", () => {
 	it("forwards an explicit history flag", () => {
 		renderHost({}, "window", false);
 		expect(useAgentToolTransports).toHaveBeenCalledWith(
-			expect.objectContaining({showThreadHistory: false}),
+			expect.objectContaining({
+				showThreadHistory: false,
+				createThreadOnLoad: false,
+			}),
+		);
+	});
+
+	it("forwards an explicit createThreadOnLoad flag", () => {
+		renderHost({}, "iframe", undefined, false);
+		expect(useAgentToolTransports).toHaveBeenCalledWith(
+			expect.objectContaining({
+				showThreadHistory: true,
+				createThreadOnLoad: false,
+			}),
 		);
 	});
 
@@ -379,7 +410,11 @@ describe("useAppBuilderAgentHost", () => {
 			sessionInfo,
 		});
 		expect(useAgentToolTransports).toHaveBeenCalledWith(
-			expect.objectContaining({sessionInfo, showThreadHistory: false}),
+			expect.objectContaining({
+				sessionInfo,
+				showThreadHistory: true,
+				createThreadOnLoad: true,
+			}),
 		);
 	});
 
@@ -444,7 +479,8 @@ describe("useAppBuilderAgentHost", () => {
 			appBuilderParseSettled: undefined,
 			agentWindow: peer,
 			sessionInfo: undefined,
-			showThreadHistory: false,
+			showThreadHistory: true,
+			createThreadOnLoad: true,
 			agentId: undefined,
 		});
 	});

@@ -275,7 +275,7 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		connector.cancel();
 	});
 
-	it("getAgentConfig includes showThreadHistory when the host passes it", async () => {
+	it("getAgentConfig includes AgentUi flags when the host passes them", async () => {
 		const mock = createMockCrossWindowApi();
 		const agent = screenshotOnlyAgent();
 		const connector = new ToolsApiConnector(
@@ -287,6 +287,7 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 			undefined,
 			[],
 			false,
+			true,
 		);
 		const client = new ToolsApi(mock);
 		await Promise.all([connector.peerIsReady, client.peerIsReady]);
@@ -295,6 +296,7 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 			name: "A",
 			message: "hi",
 			showThreadHistory: false,
+			createThreadOnLoad: true,
 		});
 		connector.cancel();
 	});

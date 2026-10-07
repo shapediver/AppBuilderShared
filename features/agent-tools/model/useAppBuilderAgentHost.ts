@@ -34,7 +34,8 @@ export function useAppBuilderAgentHost(
 		props;
 	const {viewportId} = useViewportId();
 	const themeProps = useProps("AgentUi", {mode: "iframe" as const}, {});
-	const {mode, showThreadHistory} = resolveAgentUi(themeProps);
+	const {mode, showThreadHistory, createThreadOnLoad} =
+		resolveAgentUi(themeProps);
 
 	const resolvedAgentUrl = resolveAgentUrl(
 		new URLSearchParams(window.location.search).get(QUERYPARAM_AGENTURL),
@@ -59,6 +60,7 @@ export function useAppBuilderAgentHost(
 			agentWindow,
 			sessionInfo,
 			showThreadHistory,
+			createThreadOnLoad,
 			agentId,
 		});
 	const agentWindowRef = useRef(agentWindow);

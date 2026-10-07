@@ -21,6 +21,11 @@ export type UseAgentToolTransportsProps = {
 	 * peer connects. Omitted by callers that predate the agent chrome.
 	 */
 	showThreadHistory?: boolean;
+	/**
+	 * Resolved `AgentUi.createThreadOnLoad`, sent on `getAgentConfig` when the
+	 * peer connects. Independent of history chrome.
+	 */
+	createThreadOnLoad?: boolean;
 	/** Selects `IAppBuilder.agents` by id. Omitted → `agents[0]`. */
 	agentId?: string;
 };
@@ -44,6 +49,7 @@ export function useAgentToolTransports(
 		agentWindow = null,
 		sessionInfo,
 		showThreadHistory,
+		createThreadOnLoad,
 		agentId,
 	} = props;
 
@@ -72,6 +78,7 @@ export function useAgentToolTransports(
 		agentConfig: runtime.agentConfig,
 		sessionInfo,
 		showThreadHistory,
+		createThreadOnLoad,
 	});
 
 	return {...runtime, peerConnected};

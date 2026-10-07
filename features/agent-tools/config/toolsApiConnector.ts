@@ -58,5 +58,6 @@ export interface IToolsApiConnectorFactory {
 		sessionInfo?: IAgentSessionInfo | null,
 		resolvedSpecificTools?: ExecutableSpecificTool[],
 		showThreadHistory?: boolean,
+		createThreadOnLoad?: boolean,
 	): Promise<IToolsApiConnector>;
 }
