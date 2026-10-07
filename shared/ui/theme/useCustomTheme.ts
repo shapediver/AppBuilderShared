@@ -1637,8 +1637,8 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * AgentUi
 			 *
 			 * Chrome for the configured agent. `mode` is `iframe` (docked in
-			 * the viewport) or `window` (popup). `showThreadHistory` defaults
-			 * on. `createThreadOnLoad` defaults from `mode` when omitted.
+			 * the viewport) or `window` (popup). `showThreadHistory` and
+			 * `createThreadOnLoad` both default on.
 			 */
 			AgentUi: AgentUiComponentThemeProps({
 				mode: "iframe",

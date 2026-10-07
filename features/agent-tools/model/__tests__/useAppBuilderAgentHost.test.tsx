@@ -264,7 +264,7 @@ describe("useAppBuilderAgentHost", () => {
 		expect(useAgentToolTransports).toHaveBeenCalledWith(
 			expect.objectContaining({
 				showThreadHistory: true,
-				createThreadOnLoad: false,
+				createThreadOnLoad: true,
 			}),
 		);
 		act(() => {
@@ -282,7 +282,7 @@ describe("useAppBuilderAgentHost", () => {
 			agentWindow: null,
 			sessionInfo: undefined,
 			showThreadHistory: true,
-			createThreadOnLoad: false,
+			createThreadOnLoad: true,
 		});
 		act(() => {
 			jest.runAllTimers();
@@ -294,7 +294,7 @@ describe("useAppBuilderAgentHost", () => {
 			agentWindow: opened,
 			sessionInfo: undefined,
 			showThreadHistory: true,
-			createThreadOnLoad: false,
+			createThreadOnLoad: true,
 		});
 		expect(showNotification).not.toHaveBeenCalled();
 	});
@@ -381,7 +381,7 @@ describe("useAppBuilderAgentHost", () => {
 		expect(useAgentToolTransports).toHaveBeenCalledWith(
 			expect.objectContaining({
 				showThreadHistory: false,
-				createThreadOnLoad: false,
+				createThreadOnLoad: true,
 			}),
 		);
 	});

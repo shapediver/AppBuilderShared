@@ -12,8 +12,7 @@ function optionalBoolean(value: unknown): boolean | undefined {
 
 /**
  * Resolve AgentUi theme props.
- * History defaults on. Load behavior follows `mode` only when omitted.
- * The flags are independent: hiding history does not force a new thread.
+ * History and create-on-load default on. The flags are independent.
  */
 export function resolveAgentUi(input: {
 	mode?: unknown;
@@ -24,7 +23,6 @@ export function resolveAgentUi(input: {
 	return {
 		mode,
 		showThreadHistory: optionalBoolean(input.showThreadHistory) ?? true,
-		createThreadOnLoad:
-			optionalBoolean(input.createThreadOnLoad) ?? mode === "iframe",
+		createThreadOnLoad: optionalBoolean(input.createThreadOnLoad) ?? true,
 	};
 }

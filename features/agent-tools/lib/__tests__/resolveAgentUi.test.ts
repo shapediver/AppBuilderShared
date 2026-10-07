@@ -9,11 +9,11 @@ describe("resolveAgentUi", () => {
 		});
 	});
 
-	it("shows history and resumes for window mode when flags are omitted", () => {
+	it("defaults window mode to history shown and a new thread on load", () => {
 		expect(resolveAgentUi({mode: "window"})).toEqual({
 			mode: "window",
 			showThreadHistory: true,
-			createThreadOnLoad: false,
+			createThreadOnLoad: true,
 		});
 	});
 
@@ -23,7 +23,7 @@ describe("resolveAgentUi", () => {
 		).toEqual({
 			mode: "window",
 			showThreadHistory: false,
-			createThreadOnLoad: false,
+			createThreadOnLoad: true,
 		});
 		expect(
 			resolveAgentUi({mode: "iframe", showThreadHistory: false}),
@@ -43,11 +43,11 @@ describe("resolveAgentUi", () => {
 			createThreadOnLoad: false,
 		});
 		expect(
-			resolveAgentUi({mode: "window", createThreadOnLoad: true}),
+			resolveAgentUi({mode: "window", createThreadOnLoad: false}),
 		).toEqual({
 			mode: "window",
 			showThreadHistory: true,
-			createThreadOnLoad: true,
+			createThreadOnLoad: false,
 		});
 	});
 

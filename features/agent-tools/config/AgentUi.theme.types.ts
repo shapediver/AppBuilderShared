@@ -2,8 +2,7 @@ import {z} from "@AppBuilderLib/shared/lib/zod";
 
 /**
  * Theme `defaultProps` for `useProps("AgentUi")`.
- * History chrome and load behavior are independent. History defaults on.
- * `createThreadOnLoad` stays optional so the host can derive it from `mode`.
+ * History chrome and load behavior are independent. Both default on.
  */
 export const AgentUiThemeDefaultPropsSchema = z.strictObject({
 	mode: z.enum(["iframe", "window"]).optional(),
