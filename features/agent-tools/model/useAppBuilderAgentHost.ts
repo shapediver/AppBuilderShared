@@ -43,7 +43,10 @@ export function useAppBuilderAgentHost(
 	);
 	const iframeWindow = useHostedAgentFrameStore((state) => state.frame);
 	const [popupWindow, setPopupWindow] = useState<Window | null>(null);
-	const agentWindow = mode === "window" ? popupWindow : iframeWindow;
+	// A registered hostedAgent iframe is the peer even in window mode.
+	// Placed widgets hide the toolbar, so no popup is opened for that embed.
+	const agentWindow =
+		mode === "window" ? (iframeWindow ?? popupWindow) : iframeWindow;
 	const placedHostedAgent = hasPlacedHostedAgentWidget(appBuilderData);
 	const themeOverrides = useThemeOverrideStore(
 		(state) => state.themeOverride,

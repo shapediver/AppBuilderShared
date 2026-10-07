@@ -481,6 +481,97 @@ describe("useAppBuilderAgentHost", () => {
 		});
 	});
 
+	it("connects ToolsApi and theme to a placed hostedAgent iframe in window mode", () => {
+		const peer = {postMessage: jest.fn()} as unknown as Window;
+		const sessionInfo = {
+			jwtToken: "tok",
+			slug: "my-model",
+			modelStateId: "ms-1",
+		};
+		const appBuilderData = {
+			version: "1.0" as const,
+			containers: [
+				{
+					name: "right" as const,
+					widgets: [{type: "hostedAgent" as const, props: {}}],
+				},
+			],
+		};
+		useThemeOverrideStore.getState().setThemeOverride({
+			primaryColor: "teal",
+		});
+		renderHost(
+			{namespace: "ns", sessionInfo, appBuilderData},
+			"window",
+		);
+		expect(window.open).not.toHaveBeenCalled();
+		expect(
+			useShapeDiverStoreToolbars
+				.getState()
+				.defaultToolbars.some((item) => item.id.startsWith("agentUi")),
+		).toBe(false);
+		expect(useAgentToolTransports).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				agentWindow: null,
+				sessionInfo,
+			}),
+		);
+
+		act(() => {
+			useHostedAgentFrameStore.getState().setFrame(peer);
+		});
+
+		expect(useAgentToolTransports).toHaveBeenLastCalledWith({
+			namespace: "ns",
+			appBuilderData,
+			appBuilderParseSettled: undefined,
+			agentWindow: peer,
+			sessionInfo,
+			showThreadHistory: true,
+			createThreadOnLoad: true,
+		});
+		expect(peer.postMessage).toHaveBeenCalledWith(
+			{
+				type: "shapediver:agent-theme",
+				themeOverrides: {primaryColor: "teal"},
+			},
+			"http://localhost:3001",
+		);
+		useThemeOverrideStore.getState().setThemeOverride({});
+	});
+
+	it("prefers a registered hostedAgent iframe over an open popup", () => {
+		jest.useFakeTimers();
+		const opened = {
+			closed: false,
+			focus: jest.fn(),
+			postMessage: jest.fn(),
+		} as unknown as Window;
+		jest.mocked(window.open).mockReturnValue(opened);
+		const peer = {postMessage: jest.fn()} as unknown as Window;
+		renderHost({namespace: "ns"}, "window");
+		act(() => {
+			agentCommand().props.execute();
+		});
+		act(() => {
+			jest.runAllTimers();
+		});
+		expect(useAgentToolTransports).toHaveBeenLastCalledWith(
+			expect.objectContaining({agentWindow: opened}),
+		);
+
+		act(() => {
+			useHostedAgentFrameStore.getState().setFrame(peer);
+		});
+		expect(useAgentToolTransports).toHaveBeenLastCalledWith(
+			expect.objectContaining({agentWindow: peer}),
+		);
+		expect(peer.postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({type: "shapediver:agent-theme"}),
+			"http://localhost:3001",
+		);
+	});
+
 	it("warns when two placed hostedAgent widgets are active", () => {
 		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
 		renderHost({
