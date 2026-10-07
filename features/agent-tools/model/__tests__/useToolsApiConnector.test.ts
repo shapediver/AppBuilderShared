@@ -10,17 +10,12 @@ jest.mock("../../api/toolsApiConnector", () => ({
 	},
 }));
 
-import {createElement, StrictMode, type ReactNode} from "react";
 import {act, renderHook, waitFor} from "@testing-library/react";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../../config/inScopeGenericTools";
 import type {ExecutableSpecificTool} from "../../config/resolveSpecificTools";
 import {resolveToolset} from "../../config/resolveToolset";
 import type {IToolsApiHandlerMap} from "../../config/toolsApiConnector";
 import {useToolsApiConnector} from "../useToolsApiConnector";
-
-function strictModeWrapper({children}: {children: ReactNode}) {
-	return createElement(StrictMode, null, children);
-}
 
 function trackUnhandledRejections() {
 	const reasons: unknown[] = [];
@@ -375,9 +370,9 @@ describe("useToolsApiConnector", () => {
 					toolHandlers: stubHandlers(),
 					snapshotComplete: true,
 				}),
-			{wrapper: strictModeWrapper},
+			{reactStrictMode: true},
 		);
-		await waitFor(() => expect(resolvers.length).toBeGreaterThanOrEqual(1));
+		await waitFor(() => expect(resolvers).toHaveLength(2));
 
 		const {peerIsReady, cancel} = connectorRejectedOnCancel();
 		resolvers[0]!({peerIsReady, cancel});
