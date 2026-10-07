@@ -4,6 +4,7 @@ import {
 	isAccordionUiWidget,
 	isAccordionWidget,
 	isActionsWidget,
+	isHostedAgentWidget,
 	isAgentWidget,
 	isAreaChartWidget,
 	isBarChartWidget,
@@ -11,6 +12,7 @@ import {
 	isDesktopClientOutputsWidget,
 	isDesktopClientSelectionWidget,
 	isFormWidget,
+	isIframeWidget,
 	isImageWidget,
 	isLineChartWidget,
 	isProgressWidget,
@@ -22,17 +24,19 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
-import {Loader, Paper} from "@mantine/core";
-import React, {Suspense, useContext} from "react";
+import AppBuilderHostedAgentWidgetComponent from "@AppBuilderLib/features/agent-tools/ui/AppBuilderHostedAgentWidgetComponent";
+import React, {useContext} from "react";
 import AppBuilderAccordionUiWidgetComponent from "./AppBuilderAccordionUiWidgetComponent";
 import AppBuilderAccordionWidgetComponent from "./AppBuilderAccordionWidgetComponent";
 import AppBuilderActionsWidgetComponent from "./AppBuilderActionsWidgetComponent";
+import AppBuilderAgentWidgetComponent from "./AppBuilderAgentWidgetComponent";
 import AppBuilderAreaChartWidgetComponent from "./AppBuilderAreaChartWidgetComponent";
 import AppBuilderBarChartWidgetComponent from "./AppBuilderBarChartWidgetComponent";
 import AppBuilderControlsWidgetComponent from "./AppBuilderControlsWidgetComponent";
 import AppBuilderDesktopClientOutputsWidgetComponent from "./AppBuilderDesktopClientOutputsWidgetComponent";
 import AppBuilderDesktopClientSelectionWidgetComponent from "./AppBuilderDesktopClientSelectionWidgetComponent";
 import AppBuilderFormWidgetComponent from "./AppBuilderFormWidgetComponent";
+import AppBuilderIframeWidgetComponent from "./AppBuilderIframeWidgetComponent";
 import AppBuilderImageWidgetComponent from "./AppBuilderImageWidgetComponent";
 import AppBuilderLineChartWidgetComponent from "./AppBuilderLineChartWidgetComponent";
 import AppBuilderProgressWidgetComponent from "./AppBuilderProgressWidgetComponent";
@@ -41,9 +45,6 @@ import AppBuilderSavedStatesWidgetComponent from "./AppBuilderSavedStatesWidgetC
 import AppBuilderStackUiWidgetButtonComponent from "./AppBuilderStackUiWidget/AppBuilderStackUiWidgetButtonComponent";
 import AppBuilderTableWidgetComponent from "./AppBuilderTableWidgetComponent";
 import AppBuilderTextWidgetComponent from "./AppBuilderTextWidgetComponent";
-const LazyAppBuilderAgentWidgetComponent = React.lazy(
-	() => import("./AppBuilderAgentWidgetComponent"),
-);
 
 interface Props {
 	/**
@@ -166,20 +167,15 @@ function renderAppBuilderWidget(
 		);
 	if (isAgentWidget(w))
 		return (
-			<Suspense
-				name="LazyAppBuilderAgentWidgetComponent"
-				fallback={
-					<Paper>
-						<Loader />
-					</Paper>
-				}
-			>
-				<LazyAppBuilderAgentWidgetComponent
-					namespace={namespace}
-					{...w.props}
-				/>
-			</Suspense>
+			<AppBuilderAgentWidgetComponent
+				namespace={namespace}
+				{...w.props}
+			/>
 		);
+	if (isHostedAgentWidget(w))
+		return <AppBuilderHostedAgentWidgetComponent {...w.props} />;
+	if (isIframeWidget(w))
+		return <AppBuilderIframeWidgetComponent {...w.props} />;
 	if (isProgressWidget(w))
 		return <AppBuilderProgressWidgetComponent {...w.props} />;
 	if (isDesktopClientSelectionWidget(w))

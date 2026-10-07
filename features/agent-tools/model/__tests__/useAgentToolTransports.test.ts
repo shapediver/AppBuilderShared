@@ -51,6 +51,7 @@ describe("useAgentToolTransports", () => {
 			namespace: "ns",
 			appBuilderData: undefined,
 			appBuilderParseSettled: true,
+			agentId: undefined,
 		});
 		expect(useWebMcpTools).toHaveBeenCalledWith({
 			namespace: "ns",
@@ -68,6 +69,8 @@ describe("useAgentToolTransports", () => {
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
 			sessionInfo: undefined,
+			showThreadHistory: undefined,
+			createThreadOnLoad: undefined,
 		});
 	});
 
@@ -82,7 +85,31 @@ describe("useAgentToolTransports", () => {
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
 			sessionInfo: undefined,
+			showThreadHistory: undefined,
+			createThreadOnLoad: undefined,
 		});
+	});
+
+	it("passes agentId into the runtime snapshot", () => {
+		renderHook(() => useAgentToolTransports({agentId: "other"}));
+		expect(useAgentToolRuntime).toHaveBeenCalledWith(
+			expect.objectContaining({agentId: "other"}),
+		);
+	});
+
+	it("passes AgentUi flags into ToolsApi", () => {
+		renderHook(() =>
+			useAgentToolTransports({
+				showThreadHistory: false,
+				createThreadOnLoad: true,
+			}),
+		);
+		expect(useToolsApiConnector).toHaveBeenCalledWith(
+			expect.objectContaining({
+				showThreadHistory: false,
+				createThreadOnLoad: true,
+			}),
+		);
 	});
 
 	it("passes sessionInfo into ToolsApi alongside agentConfig", () => {
@@ -100,6 +127,8 @@ describe("useAgentToolTransports", () => {
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
 			sessionInfo,
+			showThreadHistory: undefined,
+			createThreadOnLoad: undefined,
 		});
 	});
 });

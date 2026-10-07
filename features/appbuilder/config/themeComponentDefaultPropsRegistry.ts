@@ -24,6 +24,7 @@ import {LegacyViewportIconsThemeDefaultPropsSchema} from "@AppBuilderLib/entitie
 import {ViewportBrandingThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportBranding.theme.types";
 import {ViewportComponentThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportComponent.theme.types";
 import {ViewportOverlayWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/entities/viewport/config/ViewportOverlayWrapper.theme.types";
+import {AgentUiThemeDefaultPropsSchema} from "@AppBuilderLib/features/agent-tools/config/AgentUi.theme.types";
 import {AddToCartActionThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AddToCartAction.theme.types";
 import {AppBuilderActionComponentThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderActionComponent.theme.types";
 import {AppBuilderToolbarThemeDefaultPropsSchema} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbar.theme.types";
@@ -88,6 +89,7 @@ import {AppBuilderVerticalContainerThemeDefaultPropsSchema} from "~/shared/pages
 export const themeComponentDefaultPropsRegistry = {
 	Accordion: mantineAccordionPropsSchema,
 	AddToCartAction: AddToCartActionThemeDefaultPropsSchema,
+	AgentUi: AgentUiThemeDefaultPropsSchema,
 	AppBuilderAccordionUiWidgetComponent:
 		AppBuilderAccordionUiWidgetComponentThemeDefaultPropsSchema,
 	AppBuilderAccordionWidgetComponent:

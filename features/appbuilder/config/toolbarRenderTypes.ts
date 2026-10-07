@@ -69,6 +69,11 @@ export type ToolbarCommandItem = ToolbarItemBase<
 	"command",
 	{
 		execute: () => void | Promise<void>;
+		/**
+		 * Keep the button enabled while parameters are executing.
+		 * Other commands stay disabled for that time.
+		 */
+		allowDuringExecution?: boolean;
 		batchUpdate?: {
 			namespace: string;
 			parameterId: string;

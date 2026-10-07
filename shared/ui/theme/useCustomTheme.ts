@@ -23,6 +23,7 @@ import {
 	ViewportComponentThemeProps,
 } from "@AppBuilderLib/entities/viewport/config/viewport";
 import {ViewportOverlayWrapperThemeProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
+import {AgentUiComponentThemeProps} from "@AppBuilderLib/features/agent-tools/ui/agentUiTheme";
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {AppBuilderActionComponentThemeProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionComponent";
@@ -1669,6 +1670,16 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			ViewportOverlayWrapper: ViewportOverlayWrapperThemeProps({
 				// position: "bottom-right" // "top-left" | "top-right" | "bottom-left" | "bottom-right"
+			}),
+			/**
+			 * AgentUi
+			 *
+			 * Chrome for the configured agent. `mode` is `iframe` (docked in
+			 * the viewport) or `window` (popup). `showThreadHistory` and
+			 * `createThreadOnLoad` both default on.
+			 */
+			AgentUi: AgentUiComponentThemeProps({
+				mode: "iframe",
 			}),
 		},
 	});

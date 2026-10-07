@@ -1,4 +1,4 @@
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 import {ToolsApiConnectorFactory} from "../api/toolsApiConnector";
 import type {ExecutableSpecificTool} from "../config/resolveSpecificTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
@@ -51,6 +51,16 @@ export type UseToolsApiConnectorProps = {
 	 * `undefined` / omit → `getSessionInfo` replies `{}`.
 	 */
 	sessionInfo?: IAgentSessionInfo;
+	/**
+	 * Resolved AgentUi history flag. Included on `getAgentConfig` at connect
+	 * time. `undefined` leaves the reply without the field (older hosts).
+	 */
+	showThreadHistory?: boolean;
+	/**
+	 * Resolved AgentUi load flag. Included on `getAgentConfig` at connect
+	 * time. Independent of history chrome.
+	 */
+	createThreadOnLoad?: boolean;
 };
 
 /**
@@ -92,19 +102,24 @@ export type UseToolsApiConnectorProps = {
  * 3. `peerIsReady` rejection is swallowed so a missed handshake is not an
  *    unhandled rejection. Transport throw → empty catch (no fake toolset).
  * 4. Cleanup sets `effectAbandoned` and `cancel()`s listeners + handshake.
- *    If `getConnectorApi` finishes after unmount, the connector is cancelled
- *    immediately.
+ *    If `getConnectorApi` finishes after the effect was abandoned (unmount,
+ *    Strict Mode remount, or a peer window swap), the connector is cancelled
+ *    immediately. `peerIsReady` is caught before `cancel()` so the handshake
+ *    rejection stays handled.
  *
- * **This hook returns void.** Callers do not get `IToolsApi`; that object lives
- * in the agent window. Success is "peer can list/execute/getAgentConfig/getSessionInfo". Failure
- * is silent at this layer (no UI).
+ * **This hook returns whether the handshake is up.** Callers do not get
+ * `IToolsApi`; that object lives in the agent window. Success is "peer can
+ * list/execute/getAgentConfig/getSessionInfo". Failure is silent at this layer
+ * (no UI) and the result stays `false`.
  *
  * @see ToolsApiConnectorFactory.getConnectorApi
  * @see IToolsApi — client in the agent window
  * @see useAgentToolRuntime — shared snapshot + handlers
  * @see useWebMcpTools — parallel transport, not a dependency
  */
-export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
+export function useToolsApiConnector(
+	props: UseToolsApiConnectorProps,
+): boolean {
 	const {
 		window: peerWindow,
 		resolvedGenericTools,
@@ -113,6 +128,8 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 		snapshotComplete,
 		agentConfig,
 		sessionInfo,
+		showThreadHistory,
+		createThreadOnLoad,
 	} = props;
 
 	const resolvedGenericToolsRef = useRef(resolvedGenericTools);
@@ -125,6 +142,11 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 	agentConfigRef.current = agentConfig;
 	const sessionInfoRef = useRef(sessionInfo);
 	sessionInfoRef.current = sessionInfo;
+	const showThreadHistoryRef = useRef(showThreadHistory);
+	showThreadHistoryRef.current = showThreadHistory;
+	const createThreadOnLoadRef = useRef(createThreadOnLoad);
+	createThreadOnLoadRef.current = createThreadOnLoad;
+	const [peerConnected, setPeerConnected] = useState(false);
 
 	useEffect(() => {
 		if (!peerWindow || !snapshotComplete) {
@@ -146,20 +168,34 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 					agentConfigRef.current,
 					sessionInfoRef.current,
 					resolvedSpecificToolsRef.current,
+					showThreadHistoryRef.current,
+					createThreadOnLoadRef.current,
 				);
-				void connector.peerIsReady.catch(() => {});
 				if (effectAbandoned) {
+					// cancel() rejects an in-flight handshake. Attach a handler
+					// first so unmount, Strict Mode, and peer swaps stay quiet.
+					const abandoned = connector.peerIsReady.catch(
+						() => undefined,
+					);
 					connector.cancel();
+					await abandoned;
 					return;
 				}
+				await connector.peerIsReady;
+				if (!effectAbandoned) {
+					setPeerConnected(true);
+				}
 			} catch {
-				// getConnectorApi / transport failure — not a fake toolset
+				// getConnectorApi / handshake failure — not a fake toolset
 			}
 		})();
 
 		return () => {
 			effectAbandoned = true;
+			setPeerConnected(false);
 			connector?.cancel();
 		};
 	}, [peerWindow, snapshotComplete]);
+
+	return peerConnected;
 }

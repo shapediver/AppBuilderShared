@@ -1,34 +1,40 @@
 /**
  * @jest-environment jsdom
  */
+import {MantineProvider} from "@mantine/core";
 import {createEvent, fireEvent, render} from "@testing-library/react";
+import type {ReactNode} from "react";
+import {useHostedAgentFrameStore} from "../../model/useHostedAgentFrameStore";
 import AppBuilderAgentFrame from "../AppBuilderAgentFrame";
+
+function renderFrame(ui: ReactNode) {
+	return render(<MantineProvider>{ui}</MantineProvider>);
+}
 
 describe("AppBuilderAgentFrame", () => {
 	beforeEach(() => {
 		Element.prototype.setPointerCapture = jest.fn();
 		Element.prototype.releasePointerCapture = jest.fn();
+		useHostedAgentFrameStore.setState({frame: null});
 	});
 
-	it("reports contentWindow on load", () => {
-		const onPeerWindow = jest.fn();
-		const {getByTitle, unmount} = render(
-			<AppBuilderAgentFrame
-				src="http://localhost:3001/app"
-				onPeerWindow={onPeerWindow}
-			/>,
-		);
+	it("publishes contentWindow on the hostedAgent frame store", async () => {
+		const {findByTitle, unmount} = renderFrame(<AppBuilderAgentFrame />);
 
-		const frame = getByTitle("ShapeDiver agent") as HTMLIFrameElement;
+		const frame = (await findByTitle(
+			"ShapeDiver agent",
+		)) as HTMLIFrameElement;
 		fireEvent.load(frame);
 
-		expect(onPeerWindow).toHaveBeenCalledWith(frame.contentWindow);
+		expect(useHostedAgentFrameStore.getState().frame).toBe(
+			frame.contentWindow,
+		);
 
 		unmount();
-		expect(onPeerWindow).toHaveBeenCalledWith(null);
+		expect(useHostedAgentFrameStore.getState().frame).toBeNull();
 	});
 
-	it("updates wrap size when the bottom-left handle is dragged", () => {
+	it("updates wrap size when the top-left handle is dragged up and left", () => {
 		Object.defineProperty(window, "innerWidth", {
 			configurable: true,
 			value: 1200,
@@ -37,13 +43,9 @@ describe("AppBuilderAgentFrame", () => {
 			configurable: true,
 			value: 900,
 		});
-		const {getByLabelText, getByTitle} = render(
-			<AppBuilderAgentFrame
-				src="http://localhost:3001/app"
-				onPeerWindow={jest.fn()}
-			/>,
-		);
-		const wrap = getByTitle("ShapeDiver agent").parentElement as HTMLElement;
+		const {getByLabelText} = renderFrame(<AppBuilderAgentFrame />);
+		const wrap = getByLabelText("Resize agent")
+			.parentElement as HTMLElement;
 		wrap.getBoundingClientRect = () =>
 			({
 				width: 384,
@@ -62,7 +64,7 @@ describe("AppBuilderAgentFrame", () => {
 		Object.assign(down, {clientX: 100, clientY: 400});
 		fireEvent(handle, down);
 		const move = createEvent.pointerMove(handle, {pointerId: 1});
-		Object.assign(move, {clientX: 60, clientY: 430});
+		Object.assign(move, {clientX: 60, clientY: 370});
 		fireEvent(handle, move);
 
 		expect(wrap.style.width).toBe("424px");

@@ -4,7 +4,7 @@
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {MantineProvider} from "@mantine/core";
 import "@testing-library/jest-dom";
-import {fireEvent, render} from "@testing-library/react";
+import {render} from "@testing-library/react";
 import type {ReactElement, ReactNode} from "react";
 import AppBuilderAgentOverlay from "../AppBuilderAgentOverlay";
 
@@ -16,80 +16,69 @@ const overlayContext = {
 	viewportOverlayWrapper: {component: DummyOverlay},
 };
 
-const idleProps = {
-	isAgentReady: true,
-	onOpenAgent: jest.fn(),
+const hiddenPanel = {
+	mode: "iframe" as const,
+	panelMounted: false,
+	panelVisible: false,
 };
 
-function renderOverlay(ui: ReactElement, withWrapper = true) {
-	return render(
-		<MantineProvider>
-			{withWrapper ? (
-				<ComponentContext.Provider value={overlayContext}>
-					{ui}
-				</ComponentContext.Provider>
-			) : (
-				ui
-			)}
-		</MantineProvider>,
-	);
+function renderOverlay(ui: ReactElement) {
+	return render(<MantineProvider>{ui}</MantineProvider>);
 }
 
 describe("AppBuilderAgentOverlay", () => {
-	beforeEach(() => {
-		idleProps.onOpenAgent.mockReset();
-	});
-
-	it("renders nothing without agentUrl", () => {
-		const {queryByTestId, queryByRole} = renderOverlay(
-			<AppBuilderAgentOverlay {...idleProps} />,
-		);
-		expect(queryByTestId("overlay")).toBeNull();
-		expect(queryByRole("button")).toBeNull();
-	});
-
-	it("renders nothing without overlay wrapper", () => {
-		const {queryByRole} = renderOverlay(
+	it("renders nothing until the iframe has been opened", () => {
+		const {queryByTitle} = renderOverlay(
 			<AppBuilderAgentOverlay
-				{...idleProps}
-				agentUrl="http://localhost:3001/app"
-			/>,
-			false,
-		);
-		expect(queryByRole("button")).toBeNull();
-	});
-
-	it("disables Open agent until isAgentReady", () => {
-		const {getByRole} = renderOverlay(
-			<AppBuilderAgentOverlay
-				{...idleProps}
-				agentUrl="http://localhost:3001/app"
-				isAgentReady={false}
-			/>,
-		);
-		expect(getByRole("button", {name: "Open agent"})).toBeDisabled();
-	});
-
-	it("calls onOpenAgent when Open agent is clicked", () => {
-		const {getByRole} = renderOverlay(
-			<AppBuilderAgentOverlay
-				{...idleProps}
+				{...hiddenPanel}
 				agentUrl="http://localhost:3001/app"
 			/>,
 		);
-		fireEvent.click(getByRole("button", {name: "Open agent"}));
-		expect(idleProps.onOpenAgent).toHaveBeenCalledTimes(1);
-	});
-
-	it("keeps the Open agent button and does not render an iframe", () => {
-		const {getByRole, queryByTitle, queryByLabelText} = renderOverlay(
-			<AppBuilderAgentOverlay
-				{...idleProps}
-				agentUrl="http://localhost:3001/app"
-			/>,
-		);
-		expect(getByRole("button", {name: "Open agent"})).toBeInTheDocument();
 		expect(queryByTitle("ShapeDiver agent")).toBeNull();
-		expect(queryByLabelText("Resize agent")).toBeNull();
+	});
+
+	it("renders nothing in window mode", () => {
+		const {queryByTitle} = renderOverlay(
+			<AppBuilderAgentOverlay
+				{...hiddenPanel}
+				mode="window"
+				panelMounted
+				panelVisible
+				agentUrl="http://localhost:3001/app"
+			/>,
+		);
+		expect(queryByTitle("ShapeDiver agent")).toBeNull();
+	});
+
+	it("keeps the iframe mounted while the panel is hidden", async () => {
+		const {findByTitle} = renderOverlay(
+			<ComponentContext.Provider value={overlayContext}>
+				<AppBuilderAgentOverlay
+					{...hiddenPanel}
+					agentUrl="http://localhost:3001/app"
+					panelMounted
+					panelVisible={false}
+				/>
+			</ComponentContext.Provider>,
+		);
+		const iframe = await findByTitle("ShapeDiver agent");
+		expect(iframe).toBeInTheDocument();
+		let slot = iframe.parentElement ?? null;
+		while (slot && slot.style.display !== "none") {
+			slot = slot.parentElement;
+		}
+		expect(slot).toHaveStyle({display: "none"});
+	});
+
+	it("shows the iframe while the panel is visible", async () => {
+		const {findByTitle} = renderOverlay(
+			<AppBuilderAgentOverlay
+				{...hiddenPanel}
+				agentUrl="http://localhost:3001/app"
+				panelMounted
+				panelVisible
+			/>,
+		);
+		expect(await findByTitle("ShapeDiver agent")).toBeInTheDocument();
 	});
 });

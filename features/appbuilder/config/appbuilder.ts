@@ -801,6 +801,8 @@ export type AppBuilderWidgetType =
 	| "actions"
 	| "attributeVisualization"
 	| "agent"
+	| "hostedAgent"
+	| "iframe"
 	| "progress"
 	| "desktopClientSelection"
 	| "desktopClientOutputs"
@@ -950,7 +952,10 @@ export interface IAppBuilderWidgetPropsAttributeVisualization {
 	disableAttributeAnchors?: boolean;
 }
 
-/** Properties of an AI agent widget. */
+/**
+ * Properties of the in-page OpenAI chat widget (`type: "agent"`).
+ * Distinct from hosted AppBuilderAgent (`type: "hostedAgent"`).
+ */
 export interface IAppBuilderWidgetPropsAgent {
 	/** Additional context. */
 	context?: string;
@@ -958,6 +963,41 @@ export interface IAppBuilderWidgetPropsAgent {
 	parameterNames?: string[];
 	/** Names of parameters to exclude in agent workflow. */
 	parameterNamesExclude?: string[];
+}
+
+/**
+ * Properties of a hosted AppBuilderAgent widget (`type: "hostedAgent"`).
+ * The agent URL is resolved from the environment; this widget has no `url`.
+ */
+export interface IAppBuilderWidgetPropsHostedAgent {
+	/** Accessible name for the frame. Default: ShapeDiver agent. */
+	title?: string;
+	/**
+	 * Height of the frame. A number is pixels.
+	 * Examples: 400, "24rem", "100%". Default: 24rem.
+	 */
+	height?: string | number;
+	// /**
+	//  * Id of an `IAppBuilder.agents` entry to host.
+	//  * When omitted, `agents[0]` is used.
+	//  */
+	// agentId?: string;
+}
+
+/**
+ * Properties of an iframe widget.
+ * `url` is an absolute http(s) page.
+ */
+export interface IAppBuilderWidgetPropsIframe {
+	/** Absolute http(s) URL. */
+	url: string;
+	/** Accessible name for the frame. */
+	title?: string;
+	/**
+	 * Height of the frame. A number is pixels.
+	 * Examples: 400, "24rem", "100%". Default: 24rem.
+	 */
+	height?: string | number;
 }
 
 /** Properties of a progress widget. */
@@ -1122,6 +1162,8 @@ export interface IAppBuilderWidget extends IAppBuilderNode {
 		| IAppBuilderWidgetPropsActions
 		| IAppBuilderWidgetPropsAttributeVisualization
 		| IAppBuilderWidgetPropsAgent
+		| IAppBuilderWidgetPropsHostedAgent
+		| IAppBuilderWidgetPropsIframe
 		| IAppBuilderWidgetPropsProgress
 		| IAppBuilderWidgetPropsDesktopClientSelection
 		| IAppBuilderWidgetPropsDesktopClientOutputs
@@ -1684,6 +1726,20 @@ export function isAgentWidget(
 	widget: IAppBuilderWidget,
 ): widget is {type: "agent"; props: IAppBuilderWidgetPropsAgent} {
 	return widget.type === "agent";
+}
+
+/** assert widget type "hostedAgent" */
+export function isHostedAgentWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "hostedAgent"; props: IAppBuilderWidgetPropsHostedAgent} {
+	return widget.type === "hostedAgent";
+}
+
+/** assert widget type "iframe" */
+export function isIframeWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "iframe"; props: IAppBuilderWidgetPropsIframe} {
+	return widget.type === "iframe";
 }
 
 /** assert widget type "progress" */

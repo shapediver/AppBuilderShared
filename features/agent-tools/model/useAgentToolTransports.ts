@@ -16,27 +16,48 @@ export type UseAgentToolTransportsProps = {
 	agentWindow?: Window | null;
 	/** Controller session fields for ToolsApi `getSessionInfo`. */
 	sessionInfo?: IAgentSessionInfo;
+	/**
+	 * Resolved `AgentUi.showThreadHistory`, sent on `getAgentConfig` when the
+	 * peer connects. Omitted by callers that predate the agent chrome.
+	 */
+	showThreadHistory?: boolean;
+	/**
+	 * Resolved `AgentUi.createThreadOnLoad`, sent on `getAgentConfig` when the
+	 * peer connects. Independent of history chrome.
+	 */
+	createThreadOnLoad?: boolean;
+	/** Selects `IAppBuilder.agents` by id. Omitted → `agents[0]`. */
+	agentId?: string;
 };
 
 /**
  * WebMCP + ToolsApi on one {@link useAgentToolRuntime} snapshot.
  * Page code should call {@link useAppBuilderAgentHost}, not this hook.
  */
+export type UseAgentToolTransportsResult = UseAgentToolRuntimeResult & {
+	/** ToolsApi handshake with the peer window is up. */
+	peerConnected: boolean;
+};
+
 export function useAgentToolTransports(
 	props: UseAgentToolTransportsProps,
-): UseAgentToolRuntimeResult {
+): UseAgentToolTransportsResult {
 	const {
 		namespace,
 		appBuilderData,
 		appBuilderParseSettled,
 		agentWindow = null,
 		sessionInfo,
+		showThreadHistory,
+		createThreadOnLoad,
+		agentId,
 	} = props;
 
 	const runtime = useAgentToolRuntime({
 		namespace,
 		appBuilderData,
 		appBuilderParseSettled,
+		agentId,
 	});
 
 	useWebMcpTools({
@@ -48,7 +69,7 @@ export function useAgentToolTransports(
 		snapshotComplete: runtime.snapshotComplete,
 	});
 
-	useToolsApiConnector({
+	const peerConnected = useToolsApiConnector({
 		window: agentWindow,
 		resolvedGenericTools: runtime.resolvedGenericTools,
 		resolvedSpecificTools: runtime.resolvedSpecificTools,
@@ -56,7 +77,9 @@ export function useAgentToolTransports(
 		snapshotComplete: runtime.snapshotComplete,
 		agentConfig: runtime.agentConfig,
 		sessionInfo,
+		showThreadHistory,
+		createThreadOnLoad,
 	});
 
-	return runtime;
+	return {...runtime, peerConnected};
 }

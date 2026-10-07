@@ -73,19 +73,43 @@ export interface IAgentConfigReply {
 	id: string;
 	name: string;
 	message: string;
+	/**
+	 * Resolved AgentUi history flag. Older hosts omit it; the agent then keeps
+	 * the history sidebar.
+	 */
+	showThreadHistory?: boolean;
+	/**
+	 * Resolved AgentUi load flag. Older hosts omit it; the agent then resumes
+	 * the latest thread when one exists.
+	 */
+	createThreadOnLoad?: boolean;
 }
 
 /**
  * `{ id, name, message }` from parameterized Agent config, or `null` when
  * `agents[]` is missing/empty. Strips other `IAppBuilderAgent` fields.
+ * History and load flags are resolved AgentUi values, not fields of the agent.
  */
 export function agentConfigReplyFrom(
 	agent: IAgentConfigReply | null | undefined,
+	showThreadHistory?: boolean,
+	createThreadOnLoad?: boolean,
 ): IAgentConfigReply | null {
 	if (agent == null) {
 		return null;
 	}
-	return {id: agent.id, name: agent.name, message: agent.message};
+	const reply: IAgentConfigReply = {
+		id: agent.id,
+		name: agent.name,
+		message: agent.message,
+	};
+	if (typeof showThreadHistory === "boolean") {
+		reply.showThreadHistory = showThreadHistory;
+	}
+	if (typeof createThreadOnLoad === "boolean") {
+		reply.createThreadOnLoad = createThreadOnLoad;
+	}
+	return reply;
 }
 
 /**

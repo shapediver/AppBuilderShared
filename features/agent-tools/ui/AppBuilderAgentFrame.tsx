@@ -1,20 +1,10 @@
-import {
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-	type PointerEvent,
-} from "react";
-import {sizeAfterBottomLeftDrag} from "../lib/sizeAfterBottomLeftDrag";
+import {useCallback, useRef, useState, type PointerEvent} from "react";
+import {sizeAfterHandleDrag} from "../lib/sizeAfterHandleDrag";
+import AppBuilderHostedAgentWidgetComponent from "./AppBuilderHostedAgentWidgetComponent";
 import classes from "./AppBuilderAgentFrame.module.css";
 
 const MIN_WIDTH_PX = 256;
 const MIN_HEIGHT_PX = 192;
-
-type Props = {
-	src: string;
-	onPeerWindow: (peer: Window | null) => void;
-};
 
 type DragOrigin = {
 	startWidth: number;
@@ -23,17 +13,13 @@ type DragOrigin = {
 	startClientY: number;
 };
 
-export default function AppBuilderAgentFrame({src, onPeerWindow}: Props) {
+export default function AppBuilderAgentFrame() {
 	const wrapRef = useRef<HTMLDivElement>(null);
 	const dragRef = useRef<DragOrigin | null>(null);
 	const [size, setSize] = useState<{width: number; height: number} | null>(
 		null,
 	);
 	const [dragging, setDragging] = useState(false);
-
-	useEffect(() => {
-		return () => onPeerWindow(null);
-	}, [onPeerWindow]);
 
 	const onHandlePointerMove = useCallback(
 		(event: PointerEvent<HTMLButtonElement>) => {
@@ -42,7 +28,7 @@ export default function AppBuilderAgentFrame({src, onPeerWindow}: Props) {
 				return;
 			}
 			setSize(
-				sizeAfterBottomLeftDrag({
+				sizeAfterHandleDrag({
 					...origin,
 					clientX: event.clientX,
 					clientY: event.clientY,
@@ -50,6 +36,8 @@ export default function AppBuilderAgentFrame({src, onPeerWindow}: Props) {
 					minHeight: MIN_HEIGHT_PX,
 					maxWidth: window.innerWidth * 0.9,
 					maxHeight: window.innerHeight * 0.7,
+					edgeX: "left",
+					edgeY: "top",
 				}),
 			);
 		},
@@ -84,14 +72,7 @@ export default function AppBuilderAgentFrame({src, onPeerWindow}: Props) {
 			className={`${classes.wrap}${dragging ? ` ${classes.dragging}` : ""}`}
 			style={size ? {width: size.width, height: size.height} : undefined}
 		>
-			<iframe
-				className={classes.iframe}
-				src={src}
-				title="ShapeDiver agent"
-				onLoad={(event) => {
-					onPeerWindow(event.currentTarget.contentWindow);
-				}}
-			/>
+			<AppBuilderHostedAgentWidgetComponent height="100%" />
 			<button
 				type="button"
 				className={classes.handle}
