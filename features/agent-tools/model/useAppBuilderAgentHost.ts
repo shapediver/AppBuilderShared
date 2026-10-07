@@ -1,5 +1,6 @@
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import type {ToolbarCommandItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
+import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
@@ -14,7 +15,6 @@ import type {
 import {AGENT_THEME_REQUEST, postAgentTheme} from "../lib/agentThemeChannel";
 import {
 	hasPlacedHostedAgentWidget,
-	placedHostedAgentId,
 	warnDuplicateHostedAgentWidgets,
 } from "../lib/hasPlacedHostedAgentWidget";
 import {openAgentWindow} from "../lib/openAgentWindow";
@@ -45,7 +45,6 @@ export function useAppBuilderAgentHost(
 	const [popupWindow, setPopupWindow] = useState<Window | null>(null);
 	const agentWindow = mode === "window" ? popupWindow : iframeWindow;
 	const placedHostedAgent = hasPlacedHostedAgentWidget(appBuilderData);
-	const agentId = placedHostedAgentId(appBuilderData);
 	const themeOverrides = useThemeOverrideStore(
 		(state) => state.themeOverride,
 	);
@@ -61,7 +60,6 @@ export function useAppBuilderAgentHost(
 			sessionInfo,
 			showThreadHistory,
 			createThreadOnLoad,
-			agentId,
 		});
 	const agentWindowRef = useRef(agentWindow);
 	agentWindowRef.current = agentWindow;
@@ -129,10 +127,20 @@ export function useAppBuilderAgentHost(
 		setPanelVisible(nextVisible);
 	}, []);
 
+	const activeTabIndices = useShapeDiverStoreStandardContainers(
+		(state) => state.activeTabIndices,
+	);
+	const containerOpen = useShapeDiverStoreStandardContainers(
+		(state) => state.containerOpen,
+	);
+
 	const appliedModeRef = useRef(mode);
 	useEffect(() => {
-		warnDuplicateHostedAgentWidgets(appBuilderData);
-	}, [appBuilderData]);
+		warnDuplicateHostedAgentWidgets(appBuilderData, {
+			activeTabIndices,
+			containerOpen,
+		});
+	}, [activeTabIndices, appBuilderData, containerOpen]);
 
 	useEffect(() => {
 		if (appliedModeRef.current === mode) {

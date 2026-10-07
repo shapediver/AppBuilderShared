@@ -1044,7 +1044,6 @@ const IAppBuilderWidgetPropsAgentSchema = z.strictObject({
 const IAppBuilderWidgetPropsHostedAgentSchema = z.strictObject({
 	title: z.string().optional(),
 	height: z.union([z.string(), z.number()]).optional(),
-	agentId: z.string().optional(),
 });
 
 // Zod type definition for IAppBuilderWidgetPropsIframe

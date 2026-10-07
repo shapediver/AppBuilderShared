@@ -3,10 +3,13 @@ import {
 	isHostedAgentWidget,
 	isStackUiWidget,
 	isToolbarContainer,
+	type AppBuilderStandardContainerNameType,
 	type IAppBuilder,
+	type IAppBuilderTab,
 	type IAppBuilderWidget,
 	type IAppBuilderWidgetPropsHostedAgent,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {AppBuilderStandardContainerNames} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
 import {
 	isToolbarTabbedPanelItem,
 	isToolbarWidgetPanelItem,
@@ -33,14 +36,44 @@ function collectFromWidgets(
 	return collected;
 }
 
-/** Placed `hostedAgent` widgets in tree order. */
-export function collectPlacedHostedAgentWidgets(
-	appBuilder: IAppBuilder | undefined,
+function collectFromTabs(
+	tabs: IAppBuilderTab[] | undefined,
+	activeTabIndex?: number,
 ): IAppBuilderWidgetPropsHostedAgent[] {
-	if (!appBuilder) {
+	if (!tabs?.length) {
 		return [];
 	}
+	if (activeTabIndex === undefined) {
+		return tabs.flatMap((tab) => collectFromWidgets(tab.widgets));
+	}
+	const index = Math.min(Math.max(activeTabIndex, 0), tabs.length - 1);
+	return collectFromWidgets(tabs[index].widgets);
+}
+
+function isStandardContainerName(
+	name: string,
+): name is AppBuilderStandardContainerNameType {
+	return (AppBuilderStandardContainerNames as readonly string[]).includes(
+		name,
+	);
+}
+
+/** Which standard-container tabs are on screen. Idle tabs are omitted. */
+export type HostedAgentActiveContext = {
+	activeTabIndices?: Partial<
+		Record<AppBuilderStandardContainerNameType, number>
+	>;
+	containerOpen?: Partial<
+		Record<AppBuilderStandardContainerNameType, boolean>
+	>;
+};
+
+function collectFromLayout(
+	appBuilder: IAppBuilder,
+	context?: HostedAgentActiveContext,
+): IAppBuilderWidgetPropsHostedAgent[] {
 	const collected: IAppBuilderWidgetPropsHostedAgent[] = [];
+	const activeOnly = context !== undefined;
 	for (const container of appBuilder.containers) {
 		if (isToolbarContainer(container)) {
 			for (const group of container.groups ?? []) {
@@ -51,22 +84,62 @@ export function collectPlacedHostedAgentWidgets(
 						);
 					}
 					if (isToolbarTabbedPanelItem(item)) {
-						for (const tab of item.props.tabs) {
-							collected.push(
-								...collectFromWidgets(tab.widgets),
-							);
-						}
+						collected.push(
+							...collectFromTabs(
+								item.props.tabs,
+								activeOnly ? 0 : undefined,
+							),
+						);
 					}
 				}
 			}
 			continue;
 		}
-		collected.push(...collectFromWidgets(container.widgets));
-		for (const tab of container.tabs ?? []) {
-			collected.push(...collectFromWidgets(tab.widgets));
+		if (isStandardContainerName(container.name)) {
+			if (
+				activeOnly &&
+				context.containerOpen?.[container.name] === false
+			) {
+				continue;
+			}
+			collected.push(...collectFromWidgets(container.widgets));
+			collected.push(
+				...collectFromTabs(
+					container.tabs,
+					activeOnly
+						? (context.activeTabIndices?.[container.name] ?? 0)
+						: undefined,
+				),
+			);
+			continue;
 		}
+		collected.push(...collectFromWidgets(container.widgets));
+		collected.push(
+			...collectFromTabs(container.tabs, activeOnly ? 0 : undefined),
+		);
 	}
 	return collected;
+}
+
+/** Placed `hostedAgent` widgets in tree order, including idle tabs. */
+export function collectPlacedHostedAgentWidgets(
+	appBuilder: IAppBuilder | undefined,
+): IAppBuilderWidgetPropsHostedAgent[] {
+	if (!appBuilder) {
+		return [];
+	}
+	return collectFromLayout(appBuilder);
+}
+
+/** Placed `hostedAgent` widgets that are on the active tab / open container. */
+export function collectActiveHostedAgentWidgets(
+	appBuilder: IAppBuilder | undefined,
+	context: HostedAgentActiveContext = {},
+): IAppBuilderWidgetPropsHostedAgent[] {
+	if (!appBuilder) {
+		return [];
+	}
+	return collectFromLayout(appBuilder, context);
 }
 
 /**
@@ -79,48 +152,16 @@ export function hasPlacedHostedAgentWidget(
 	return collectPlacedHostedAgentWidgets(appBuilder).length > 0;
 }
 
-/** First placed widget's `agentId`, if set. */
-export function placedHostedAgentId(
-	appBuilder: IAppBuilder | undefined,
-): string | undefined {
-	const agentId =
-		collectPlacedHostedAgentWidgets(appBuilder)[0]?.agentId?.trim();
-	return agentId ? agentId : undefined;
-}
-
-function resolvedHostedAgentKey(
-	agentId: string | undefined,
-	defaultAgentId: string | undefined,
-): string {
-	const id = agentId?.trim();
-	if (id) {
-		return id;
-	}
-	return defaultAgentId ?? "";
-}
-
-/** Warns when more than one placed `hostedAgent` widget targets the same agent. */
+/** Warns when more than one *active* `hostedAgent` widget is placed. */
 export function warnDuplicateHostedAgentWidgets(
 	appBuilder: IAppBuilder | undefined,
+	context: HostedAgentActiveContext = {},
 ): void {
-	const widgets = collectPlacedHostedAgentWidgets(appBuilder);
+	const widgets = collectActiveHostedAgentWidgets(appBuilder, context);
 	if (widgets.length < 2) {
 		return;
 	}
-	const defaultAgentId = appBuilder?.agents?.[0]?.id;
-	const counts = new Map<string, number>();
-	for (const widget of widgets) {
-		const key = resolvedHostedAgentKey(widget.agentId, defaultAgentId);
-		counts.set(key, (counts.get(key) ?? 0) + 1);
-	}
-	for (const [id, count] of counts) {
-		if (count < 2) {
-			continue;
-		}
-		Logger.warn(
-			id
-				? `Multiple hostedAgent widgets target agent "${id}".`
-				: "Multiple hostedAgent widgets target the default agent.",
-		);
-	}
+	Logger.warn(
+		"Multiple hostedAgent widgets are active; only one ToolsApi peer is connected.",
+	);
 }

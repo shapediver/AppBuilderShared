@@ -977,11 +977,11 @@ export interface IAppBuilderWidgetPropsHostedAgent {
 	 * Examples: 400, "24rem", "100%". Default: 24rem.
 	 */
 	height?: string | number;
-	/**
-	 * Id of an `IAppBuilder.agents` entry to host.
-	 * When omitted, `agents[0]` is used.
-	 */
-	agentId?: string;
+	// /**
+	//  * Id of an `IAppBuilder.agents` entry to host.
+	//  * When omitted, `agents[0]` is used.
+	//  */
+	// agentId?: string;
 }
 
 /**

@@ -223,7 +223,6 @@ describe("useAppBuilderAgentHost", () => {
 			sessionInfo: undefined,
 			showThreadHistory: true,
 			createThreadOnLoad: true,
-			agentId: undefined,
 		});
 	});
 
@@ -284,7 +283,6 @@ describe("useAppBuilderAgentHost", () => {
 			sessionInfo: undefined,
 			showThreadHistory: true,
 			createThreadOnLoad: false,
-			agentId: undefined,
 		});
 		act(() => {
 			jest.runAllTimers();
@@ -297,7 +295,6 @@ describe("useAppBuilderAgentHost", () => {
 			sessionInfo: undefined,
 			showThreadHistory: true,
 			createThreadOnLoad: false,
-			agentId: undefined,
 		});
 		expect(showNotification).not.toHaveBeenCalled();
 	});
@@ -481,11 +478,10 @@ describe("useAppBuilderAgentHost", () => {
 			sessionInfo: undefined,
 			showThreadHistory: true,
 			createThreadOnLoad: true,
-			agentId: undefined,
 		});
 	});
 
-	it("warns when two placed hostedAgent widgets share an agentId", () => {
+	it("warns when two placed hostedAgent widgets are active", () => {
 		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
 		renderHost({
 			appBuilderData: {
@@ -494,39 +490,17 @@ describe("useAppBuilderAgentHost", () => {
 					{
 						name: "right",
 						widgets: [
-							{type: "hostedAgent", props: {agentId: "bookshelf"}},
-							{type: "hostedAgent", props: {agentId: "bookshelf"}},
+							{type: "hostedAgent", props: {}},
+							{type: "hostedAgent", props: {}},
 						],
 					},
 				],
 			},
 		});
 		expect(warn).toHaveBeenCalledWith(
-			'Multiple hostedAgent widgets target agent "bookshelf".',
+			"Multiple hostedAgent widgets are active; only one ToolsApi peer is connected.",
 		);
 		warn.mockRestore();
-	});
-
-	it("forwards agentId from a placed hostedAgent widget", () => {
-		renderHost({
-			appBuilderData: {
-				version: "1.0",
-				containers: [
-					{
-						name: "right",
-						widgets: [
-							{
-								type: "hostedAgent",
-								props: {agentId: "other"},
-							},
-						],
-					},
-				],
-			},
-		});
-		expect(useAgentToolTransports).toHaveBeenCalledWith(
-			expect.objectContaining({agentId: "other"}),
-		);
 	});
 
 	it("does not register a button when there is no agent url", () => {

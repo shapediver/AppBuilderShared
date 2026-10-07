@@ -341,7 +341,7 @@ describe("hostedAgent widget schema", () => {
 		expect(result.success).toBe(true);
 	});
 
-	it("accepts agentId", () => {
+	it("rejects agentId until multi-agent widgets are supported", () => {
 		const result = validateAppBuilder({
 			version: "1.0",
 			containers: [
@@ -353,7 +353,7 @@ describe("hostedAgent widget schema", () => {
 				},
 			],
 		});
-		expect(result.success).toBe(true);
+		expect(result.success).toBe(false);
 	});
 
 	it("accepts empty props", () => {

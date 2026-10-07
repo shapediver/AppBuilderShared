@@ -5,7 +5,6 @@ import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbui
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {
 	hasPlacedHostedAgentWidget,
-	placedHostedAgentId,
 	warnDuplicateHostedAgentWidgets,
 } from "../hasPlacedHostedAgentWidget";
 
@@ -73,22 +72,6 @@ describe("hasPlacedHostedAgentWidget", () => {
 	});
 });
 
-describe("placedHostedAgentId", () => {
-	it("returns the first placed agentId", () => {
-		expect(
-			placedHostedAgentId(
-				app([{type: "hostedAgent", props: {agentId: "other"}}]),
-			),
-		).toBe("other");
-	});
-
-	it("is undefined when the widget omits agentId", () => {
-		expect(
-			placedHostedAgentId(app([{type: "hostedAgent", props: {}}])),
-		).toBeUndefined();
-	});
-});
-
 describe("warnDuplicateHostedAgentWidgets", () => {
 	let warn: jest.SpyInstance;
 
@@ -102,44 +85,81 @@ describe("warnDuplicateHostedAgentWidgets", () => {
 
 	it("does not warn for a single widget", () => {
 		warnDuplicateHostedAgentWidgets(
-			app([{type: "hostedAgent", props: {agentId: "a"}}]),
+			app([{type: "hostedAgent", props: {}}]),
 		);
 		expect(warn).not.toHaveBeenCalled();
 	});
 
-	it("warns when two widgets share an agentId", () => {
+	it("warns when two active widgets are placed", () => {
 		warnDuplicateHostedAgentWidgets(
 			app([
-				{type: "hostedAgent", props: {agentId: "bookshelf"}},
-				{type: "hostedAgent", props: {agentId: "bookshelf"}},
+				{type: "hostedAgent", props: {}},
+				{type: "hostedAgent", props: {}},
 			]),
 		);
 		expect(warn).toHaveBeenCalledWith(
-			'Multiple hostedAgent widgets target agent "bookshelf".',
+			"Multiple hostedAgent widgets are active; only one ToolsApi peer is connected.",
 		);
 	});
 
-	it("warns when two widgets omit agentId and share agents[0]", () => {
+	it("does not warn when a second widget sits on an idle tab", () => {
 		warnDuplicateHostedAgentWidgets(
-			app(
-				[
-					{type: "hostedAgent", props: {}},
-					{type: "hostedAgent", props: {}},
+			{
+				version: "1.0",
+				containers: [
+					{
+						name: "right",
+						tabs: [
+							{
+								name: "One",
+								widgets: [{type: "hostedAgent", props: {}}],
+							},
+							{
+								name: "Two",
+								widgets: [{type: "hostedAgent", props: {}}],
+							},
+						],
+					},
 				],
-				[{id: "configurator", name: "Bookshelf", message: "hi"}],
-			),
+			},
+			{activeTabIndices: {right: 0}},
+		);
+		expect(warn).not.toHaveBeenCalled();
+	});
+
+	it("warns when two widgets sit on the active tab", () => {
+		warnDuplicateHostedAgentWidgets(
+			{
+				version: "1.0",
+				containers: [
+					{
+						name: "right",
+						tabs: [
+							{
+								name: "One",
+								widgets: [
+									{type: "hostedAgent", props: {}},
+									{type: "hostedAgent", props: {}},
+								],
+							},
+						],
+					},
+				],
+			},
+			{activeTabIndices: {right: 0}},
 		);
 		expect(warn).toHaveBeenCalledWith(
-			'Multiple hostedAgent widgets target agent "configurator".',
+			"Multiple hostedAgent widgets are active; only one ToolsApi peer is connected.",
 		);
 	});
 
-	it("does not warn for different agentIds", () => {
+	it("does not warn for widgets in a closed container", () => {
 		warnDuplicateHostedAgentWidgets(
 			app([
-				{type: "hostedAgent", props: {agentId: "a"}},
-				{type: "hostedAgent", props: {agentId: "b"}},
+				{type: "hostedAgent", props: {}},
+				{type: "hostedAgent", props: {}},
 			]),
+			{containerOpen: {right: false}},
 		);
 		expect(warn).not.toHaveBeenCalled();
 	});
