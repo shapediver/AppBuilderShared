@@ -10,12 +10,51 @@ jest.mock("../../api/toolsApiConnector", () => ({
 	},
 }));
 
-import {renderHook, waitFor} from "@testing-library/react";
+import {createElement, StrictMode, type ReactNode} from "react";
+import {act, renderHook, waitFor} from "@testing-library/react";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../../config/inScopeGenericTools";
 import type {ExecutableSpecificTool} from "../../config/resolveSpecificTools";
 import {resolveToolset} from "../../config/resolveToolset";
 import type {IToolsApiHandlerMap} from "../../config/toolsApiConnector";
 import {useToolsApiConnector} from "../useToolsApiConnector";
+
+function strictModeWrapper({children}: {children: ReactNode}) {
+	return createElement(StrictMode, null, children);
+}
+
+function trackUnhandledRejections() {
+	const reasons: unknown[] = [];
+	const onUnhandled = (reason: unknown) => {
+		reasons.push(reason);
+	};
+	process.on("unhandledRejection", onUnhandled);
+	return {
+		reasons,
+		stop() {
+			process.off("unhandledRejection", onUnhandled);
+		},
+	};
+}
+
+/** Connector whose `cancel()` rejects `peerIsReady`, matching `cancelHandshake`. */
+function connectorRejectedOnCancel() {
+	let rejectReady: (reason?: unknown) => void = () => {};
+	const peerIsReady = new Promise<{origin: string; name: string}>(
+		(_resolve, reject) => {
+			rejectReady = reject;
+		},
+	);
+	const cancel = jest.fn(() => {
+		rejectReady(new Error("Handshake cancelled"));
+	});
+	return {peerIsReady, cancel};
+}
+
+async function flushRejections() {
+	await act(async () => {
+		await new Promise((resolve) => setTimeout(resolve, 20));
+	});
+}
 
 function stubHandlers(): IToolsApiHandlerMap {
 	const unused = async () => ({unused: true});
@@ -213,5 +252,120 @@ describe("useToolsApiConnector", () => {
 		);
 		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
 		await expect(peerIsReady).rejects.toThrow("handshake timeout");
+	});
+
+	it("swallows handshake rejection when getConnectorApi settles after unmount", async () => {
+		const unhandled = trackUnhandledRejections();
+		let resolveConnector: (value: {
+			peerIsReady: Promise<{origin: string; name: string}>;
+			cancel: () => void;
+		}) => void = () => {};
+		getConnectorApi.mockReturnValue(
+			new Promise((resolve) => {
+				resolveConnector = resolve;
+			}),
+		);
+		const {unmount} = renderHook(() =>
+			useToolsApiConnector({
+				window: {} as Window,
+				resolvedGenericTools: resolveToolset(undefined),
+				toolHandlers: stubHandlers(),
+				snapshotComplete: true,
+			}),
+		);
+		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
+		unmount();
+
+		const {peerIsReady, cancel} = connectorRejectedOnCancel();
+		resolveConnector({peerIsReady, cancel});
+
+		try {
+			await waitFor(() => expect(cancel).toHaveBeenCalledTimes(1));
+			await flushRejections();
+			expect(unhandled.reasons).toEqual([]);
+		} finally {
+			unhandled.stop();
+		}
+	});
+
+	it("swallows handshake rejection when the peer window changes before getConnectorApi settles", async () => {
+		const unhandled = trackUnhandledRejections();
+		const resolvers: Array<
+			(value: {
+				peerIsReady: Promise<{origin: string; name: string}>;
+				cancel: () => void;
+			}) => void
+		> = [];
+		getConnectorApi.mockImplementation(
+			() =>
+				new Promise((resolve) => {
+					resolvers.push(resolve);
+				}),
+		);
+		const peerA = {name: "a"} as unknown as Window;
+		const peerB = {name: "b"} as unknown as Window;
+		const {rerender, result} = renderHook(
+			({window}: {window: Window}) =>
+				useToolsApiConnector({
+					window,
+					resolvedGenericTools: resolveToolset(undefined),
+					toolHandlers: stubHandlers(),
+					snapshotComplete: true,
+				}),
+			{initialProps: {window: peerA}},
+		);
+		await waitFor(() => expect(resolvers).toHaveLength(1));
+		rerender({window: peerB});
+		await waitFor(() => expect(resolvers).toHaveLength(2));
+
+		const {peerIsReady, cancel} = connectorRejectedOnCancel();
+		resolvers[0]!({peerIsReady, cancel});
+
+		try {
+			await waitFor(() => expect(cancel).toHaveBeenCalledTimes(1));
+			await flushRejections();
+			expect(unhandled.reasons).toEqual([]);
+			expect(result.current).toBe(false);
+		} finally {
+			unhandled.stop();
+		}
+	});
+
+	it("swallows handshake rejection from a Strict Mode effect that was discarded", async () => {
+		const unhandled = trackUnhandledRejections();
+		const resolvers: Array<
+			(value: {
+				peerIsReady: Promise<{origin: string; name: string}>;
+				cancel: () => void;
+			}) => void
+		> = [];
+		getConnectorApi.mockImplementation(
+			() =>
+				new Promise((resolve) => {
+					resolvers.push(resolve);
+				}),
+		);
+		renderHook(
+			() =>
+				useToolsApiConnector({
+					window: {} as Window,
+					resolvedGenericTools: resolveToolset(undefined),
+					toolHandlers: stubHandlers(),
+					snapshotComplete: true,
+				}),
+			{wrapper: strictModeWrapper},
+		);
+		await waitFor(() => expect(resolvers.length).toBeGreaterThanOrEqual(1));
+
+		const {peerIsReady, cancel} = connectorRejectedOnCancel();
+		resolvers[0]!({peerIsReady, cancel});
+
+		try {
+			await waitFor(() => expect(cancel).toHaveBeenCalledTimes(1));
+			await flushRejections();
+			expect(unhandled.reasons).toEqual([]);
+		} finally {
+			unhandled.stop();
+		}
 	});
 });

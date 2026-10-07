@@ -102,8 +102,10 @@ export type UseToolsApiConnectorProps = {
  * 3. `peerIsReady` rejection is swallowed so a missed handshake is not an
  *    unhandled rejection. Transport throw → empty catch (no fake toolset).
  * 4. Cleanup sets `effectAbandoned` and `cancel()`s listeners + handshake.
- *    If `getConnectorApi` finishes after unmount, the connector is cancelled
- *    immediately.
+ *    If `getConnectorApi` finishes after the effect was abandoned (unmount,
+ *    Strict Mode remount, or a peer window swap), the connector is cancelled
+ *    immediately. `peerIsReady` is caught before `cancel()` so the handshake
+ *    rejection stays handled.
  *
  * **This hook returns whether the handshake is up.** Callers do not get
  * `IToolsApi`; that object lives in the agent window. Success is "peer can
@@ -170,7 +172,13 @@ export function useToolsApiConnector(
 					createThreadOnLoadRef.current,
 				);
 				if (effectAbandoned) {
+					// cancel() rejects an in-flight handshake. Attach a handler
+					// first so unmount, Strict Mode, and peer swaps stay quiet.
+					const abandoned = connector.peerIsReady.catch(
+						() => undefined,
+					);
 					connector.cancel();
+					await abandoned;
 					return;
 				}
 				await connector.peerIsReady;
