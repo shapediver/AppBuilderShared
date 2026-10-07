@@ -1,3 +1,4 @@
+import {useMemo, useRef} from "react";
 import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {isWebMcpAvailable} from "@AppBuilderLib/features/webmcp/lib/webmcpAvailability";
 import {useWebMcpTools} from "@AppBuilderLib/features/webmcp/model/useWebMcpTools";
@@ -6,6 +7,7 @@ import {
 	useAgentToolRuntime,
 	type UseAgentToolRuntimeResult,
 } from "./useAgentToolRuntime";
+import {toolsApiModelStateHandlers} from "./toolsApiModelState";
 import {useToolsApiConnector} from "./useToolsApiConnector";
 
 export type UseAgentToolTransportsProps = {
@@ -60,6 +62,13 @@ export function useAgentToolTransports(
 		agentId,
 	});
 
+	const namespaceRef = useRef(namespace);
+	namespaceRef.current = namespace;
+	const modelState = useMemo(
+		() => toolsApiModelStateHandlers(() => namespaceRef.current),
+		[],
+	);
+
 	useWebMcpTools({
 		namespace,
 		enabled: isWebMcpAvailable(),
@@ -79,6 +88,7 @@ export function useAgentToolTransports(
 		sessionInfo,
 		showThreadHistory,
 		createThreadOnLoad,
+		modelState,
 	});
 
 	return {...runtime, peerConnected};

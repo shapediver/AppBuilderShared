@@ -10,9 +10,11 @@ import {
 	IListToolsReply,
 	IToolsApi,
 	IToolsApiFactory,
+	MESSAGE_TYPE_CREATE_MODEL_STATE,
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_GET_SESSION_INFO,
+	MESSAGE_TYPE_IMPORT_MODEL_STATE,
 	MESSAGE_TYPE_LIST_TOOLS,
 	MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 	TOOLS_API_NAME_AGENT,
@@ -20,6 +22,10 @@ import {
 	TOOLS_API_TIMEOUT_MS,
 	type IAgentConfigReply,
 	type IAgentSessionInfo,
+	type IToolsApiCreateModelStateData,
+	type IToolsApiCreateModelStateResult,
+	type IToolsApiImportModelStateData,
+	type IToolsApiImportModelStateResult,
 } from "../config/toolsApi";
 
 function withDefaultTimeout(
@@ -33,8 +39,9 @@ function withDefaultTimeout(
 
 /**
  * Agent-window client. Sends LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
- * GET_SESSION_INFO over CrossWindow after handshake `TOOLS_API_HANDSHAKE`.
- * Does not run tool handlers — App Builder does.
+ * GET_SESSION_INFO / CREATE_MODEL_STATE / IMPORT_MODEL_STATE over CrossWindow
+ * after handshake `TOOLS_API_HANDSHAKE`. Does not run tool handlers — App Builder
+ * does. Model-state calls are not agent tools.
  *
  * Construct via {@link ToolsApiFactoryClass.getClientApi} or
  * {@link ToolsApiFactoryClass.getParentClientApi}, not `new ToolsApi` from app code.
@@ -102,6 +109,36 @@ export class ToolsApi implements IToolsApi {
 		return this.#crossWindowApi.send(
 			MESSAGE_TYPE_GET_SESSION_INFO,
 			undefined,
+			this.#timeout,
+		);
+	}
+
+	/**
+	 * Snapshot the current App Builder model. Same store path as e-commerce
+	 * `createModelState`, without listing it as an agent tool.
+	 */
+	async createModelState(
+		data?: IToolsApiCreateModelStateData,
+	): Promise<IToolsApiCreateModelStateResult> {
+		await this.peerIsReady;
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_CREATE_MODEL_STATE,
+			data ?? {},
+			this.#timeout,
+		);
+	}
+
+	/**
+	 * Load a previously created model state into the open session. Same store
+	 * path as e-commerce `importModelState`.
+	 */
+	async importModelState(
+		data: IToolsApiImportModelStateData,
+	): Promise<IToolsApiImportModelStateResult> {
+		await this.peerIsReady;
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_IMPORT_MODEL_STATE,
+			data,
 			this.#timeout,
 		);
 	}

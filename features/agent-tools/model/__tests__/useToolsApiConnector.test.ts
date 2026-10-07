@@ -219,6 +219,28 @@ describe("useToolsApiConnector", () => {
 		expect(getConnectorApi.mock.calls[0][7]).toBe(sessionInfo);
 	});
 
+	it("passes modelState as getConnectorApi 12th argument", async () => {
+		const modelState = {
+			createModelState: async () => ({modelStateId: "ms-1"}),
+			importModelState: async () => ({
+				success: true as const,
+				data: null,
+			}),
+		};
+		const peer = {} as Window;
+		renderHook(() =>
+			useToolsApiConnector({
+				window: peer,
+				resolvedGenericTools: resolveToolset(undefined),
+				toolHandlers: stubHandlers(),
+				snapshotComplete: true,
+				modelState,
+			}),
+		);
+		await waitFor(() => expect(getConnectorApi).toHaveBeenCalledTimes(1));
+		expect(getConnectorApi.mock.calls[0][11]).toBe(modelState);
+	});
+
 	it("cancels on unmount while peerIsReady is still pending", async () => {
 		const cancel = jest.fn();
 		const peerIsReady = new Promise<{origin: string; name: string}>(() => {

@@ -5,6 +5,7 @@
 const useAgentToolRuntime = jest.fn();
 const useWebMcpTools = jest.fn();
 const useToolsApiConnector = jest.fn();
+const toolsApiModelStateHandlers = jest.fn();
 
 jest.mock("../useAgentToolRuntime", () => ({
 	useAgentToolRuntime: (...args: unknown[]) => useAgentToolRuntime(...args),
@@ -22,6 +23,11 @@ jest.mock("../useToolsApiConnector", () => ({
 	useToolsApiConnector: (...args: unknown[]) => useToolsApiConnector(...args),
 }));
 
+jest.mock("../toolsApiModelState", () => ({
+	toolsApiModelStateHandlers: (...args: unknown[]) =>
+		toolsApiModelStateHandlers(...args),
+}));
+
 import {renderHook} from "@testing-library/react";
 import {useAgentToolTransports} from "../useAgentToolTransports";
 
@@ -33,11 +39,17 @@ const runtime = {
 	agentConfig: {id: "a", name: "A", message: "hi"},
 };
 
+const modelState = {
+	createModelState: jest.fn(),
+	importModelState: jest.fn(),
+};
+
 describe("useAgentToolTransports", () => {
 	beforeEach(() => {
 		useAgentToolRuntime.mockReset().mockReturnValue(runtime);
 		useWebMcpTools.mockReset();
 		useToolsApiConnector.mockReset();
+		toolsApiModelStateHandlers.mockReset().mockReturnValue(modelState);
 	});
 
 	it("wires WebMCP and ToolsApi from one runtime", () => {
@@ -71,7 +83,11 @@ describe("useAgentToolTransports", () => {
 			sessionInfo: undefined,
 			showThreadHistory: undefined,
 			createThreadOnLoad: undefined,
+			modelState,
 		});
+		const getNamespace = toolsApiModelStateHandlers.mock
+			.calls[0][0] as () => string | undefined;
+		expect(getNamespace()).toBe("ns");
 	});
 
 	it("passes agentWindow into ToolsApi", () => {
@@ -87,6 +103,7 @@ describe("useAgentToolTransports", () => {
 			sessionInfo: undefined,
 			showThreadHistory: undefined,
 			createThreadOnLoad: undefined,
+			modelState,
 		});
 	});
 
@@ -129,6 +146,7 @@ describe("useAgentToolTransports", () => {
 			sessionInfo,
 			showThreadHistory: undefined,
 			createThreadOnLoad: undefined,
+			modelState,
 		});
 	});
 });

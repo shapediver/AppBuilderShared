@@ -1,28 +1,18 @@
 import type {ResGetModelState} from "@shapediver/sdk.geometry-api-sdk-v2";
 
+import type {
+	IModelStateWireImportData,
+	IModelStateWireImportResult,
+} from "./modelStateWire";
+
 /**
  * Data accepted by the useImportModelState hook to import a model state.
  */
-export interface IImportModelStateData {
-	modelStateId: string;
-}
-
-type NameMessage = {
-	name: string;
-	message: string;
-};
+export type IImportModelStateData = IModelStateWireImportData;
 
 /**
  * Data returned from the useImportModelState hook.
+ * `data` is the Geometry Backend model state.
  */
 export type IImportModelStateResult =
-	| {
-			success: false;
-			message: string;
-			invalidParameters?: NameMessage[];
-	  }
-	| {
-			success: true;
-			data: ResGetModelState;
-			invalidParameters?: NameMessage[];
-	  };
+	IModelStateWireImportResult<ResGetModelState>;
