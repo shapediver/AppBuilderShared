@@ -35,6 +35,7 @@ import {HintProps} from "@AppBuilderLib/shared/ui/hint/Hint";
 import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon/Icon";
 import {MarkdownWidgetComponentProps} from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import {ModalBaseThemeProps} from "@AppBuilderLib/shared/ui/modal/ModalBase";
+import {NetPromoterScoreThemeProps} from "@AppBuilderLib/shared/ui/net-promoter-score/NetPromoterScore";
 import {mergeCssVariablesResolvers} from "@AppBuilderLib/shared/ui/theme/mergeCssVariablesResolvers";
 import {TooltipWrapperThemeProps} from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/config/appBuilderAgentWidget";
@@ -1077,6 +1078,43 @@ export const useCustomTheme = (props: Props = {}) => {
 				// checkboxPropsSelectAll: {
 				// 	label: "Select all",
 				// },
+			}),
+			/**
+			 * NetPromoterScore
+			 *
+			 * Score prompt. An empty string hides that text.
+			 * Absent message and captions use the component defaults.
+			 */
+			NetPromoterScore: NetPromoterScoreThemeProps({
+				// storageKeyPart: "appbuilder",
+				// message:
+				// 	"How likely are you to recommend this App to other members of your organization?",
+				// options: [
+				// 	{title: "0", value: 0},
+				// 	{title: "10", value: 10},
+				// ],
+				// captions: {
+				// 	start: "0 – Not at all likely",
+				// 	end: "10 – Extremely likely",
+				// },
+				// openDelay: 5,
+				// answeredScheduleDays: 30,
+				// dismissedScheduleDays: 1,
+				// dialogProps: {
+				// 	size: 640,
+				// 	position: {bottom: 20, left: 0, right: 0},
+				// 	withCloseButton: true,
+				// },
+				// stackProps: {gap: "sm"},
+				// questionTextProps: {},
+				// digitsGroupProps: {
+				// 	gap: "xs",
+				// 	justify: "space-between",
+				// 	wrap: "wrap",
+				// },
+				// optionButtonProps: {variant: "default"},
+				// captionsGroupProps: {justify: "space-between"},
+				// captionTextProps: {size: "sm"},
 			}),
 			/**
 			 * NotificationWrapper

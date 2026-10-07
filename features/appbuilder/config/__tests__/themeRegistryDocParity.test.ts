@@ -29,6 +29,7 @@ const REGISTRY_KEYS_WITHOUT_DOC_FLAT_ALLOWLIST = new Set([
 	"AppBuilderToolbarLayer",
 	"Button",
 	"Group",
+	"NetPromoterScore",
 	"Paper",
 	"Text",
 	"ViewportIconButton",

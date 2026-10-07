@@ -293,6 +293,14 @@ const APP_OWNED_THEME_COMPONENT_CASES = [
 		invalidDefaultProps: {iconProps: {size: true}},
 	},
 	{
+		component: "NetPromoterScore",
+		validDefaultProps: {
+			message:
+				"How likely are you to recommend this App to other members of your organization?",
+		},
+		invalidDefaultProps: {__unrecognizedThemeKey: true},
+	},
+	{
 		component: "Icon",
 		validDefaultProps: {size: "md", stroke: "1px"},
 		invalidDefaultProps: {__unrecognizedThemeKey: true},
@@ -621,6 +629,84 @@ describe("validateAppBuilderSettingsJson theme component defaultProps", () => {
 			});
 		},
 	);
+
+	it("accepts a custom NetPromoterScore options array", () => {
+		const result = validateAppBuilderSettingsJson(
+			themeOverridesFor("NetPromoterScore", {
+				options: [{title: "Promoter", value: 10}],
+			}),
+		);
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects a NetPromoterScore option value that is not a number", () => {
+		const result = validateAppBuilderSettingsJson(
+			themeOverridesFor("NetPromoterScore", {
+				options: [{title: "Promoter", value: "ten"}],
+			}),
+		);
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects a negative NetPromoterScore openDelay", () => {
+		const result = validateAppBuilderSettingsJson(
+			themeOverridesFor("NetPromoterScore", {openDelay: -1}),
+		);
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects a NetPromoterScore day count that is not an integer greater than 0", () => {
+		const rejects = [
+			{answeredScheduleDays: 0},
+			{answeredScheduleDays: -1},
+			{answeredScheduleDays: 1.5},
+			{answeredScheduleDays: "30"},
+			{dismissedScheduleDays: 0},
+			{dismissedScheduleDays: -1},
+			{dismissedScheduleDays: 1.5},
+			{dismissedScheduleDays: "1"},
+		];
+		for (const defaultProps of rejects) {
+			const result = validateAppBuilderSettingsJson(
+				themeOverridesFor("NetPromoterScore", defaultProps),
+			);
+			expect(result.success).toBe(false);
+		}
+	});
+
+	it("accepts NetPromoterScore nested style bags and dialog radius", () => {
+		const result = validateAppBuilderSettingsJson(
+			themeOverridesFor("NetPromoterScore", {
+				stackProps: {gap: "sm"},
+				digitsGroupProps: {
+					gap: "xs",
+					justify: "space-between",
+					wrap: "wrap",
+				},
+				captionsGroupProps: {justify: "space-between"},
+				dialogProps: {radius: "md"},
+			}),
+		);
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects an unknown key in NetPromoterScore stackProps", () => {
+		const result = validateAppBuilderSettingsJson(
+			themeOverridesFor("NetPromoterScore", {
+				stackProps: {notAStackProp: true},
+			}),
+		);
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects an unknown key in NetPromoterScore questionTextProps", () => {
+		const result = validateAppBuilderSettingsJson(
+			themeOverridesFor("NetPromoterScore", {
+				questionTextProps: {notATextProp: true},
+			}),
+		);
+		expect(result.success).toBe(false);
+	});
 
 	it("rejects non-integer debounce for ParameterStringComponent", () => {
 		const result = validateAppBuilderSettingsJson(

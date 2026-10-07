@@ -48,6 +48,7 @@ import {HintThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/hint/Hint.th
 import {IconThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import {MarkdownWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent.theme.types";
 import {ModalBaseThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/modal/ModalBase.theme.types";
+import {NetPromoterScoreThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/net-promoter-score/NetPromoterScore.theme.types";
 import {TooltipWrapperThemeDefaultPropsSchema} from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper.theme.types";
 import {AppBuilderAccordionUiWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderAccordionUiWidgetComponent.theme.types";
 import {AppBuilderAccordionWidgetComponentThemeDefaultPropsSchema} from "@AppBuilderLib/widgets/appbuilder/config/AppBuilderAccordionWidgetComponent.theme.types";
@@ -149,6 +150,7 @@ export const themeComponentDefaultPropsRegistry = {
 	Hint: HintThemeDefaultPropsSchema,
 	Icon: IconThemeDefaultPropsSchema,
 	LoaderPage: LoaderPageThemeDefaultPropsSchema,
+	NetPromoterScore: NetPromoterScoreThemeDefaultPropsSchema,
 	MarkdownWidgetComponent: MarkdownWidgetComponentThemeDefaultPropsSchema,
 	ModalBase: ModalBaseThemeDefaultPropsSchema,
 	MultiSelectCheckboxes: MultiSelectCheckboxesThemeDefaultPropsSchema,
