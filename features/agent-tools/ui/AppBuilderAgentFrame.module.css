@@ -1,11 +1,13 @@
 .wrap {
 	position: relative;
-	width: min(24rem, 90vw);
-	height: min(32rem, 70vh);
-	min-width: 16rem;
-	min-height: 12rem;
-	max-width: 90vw;
-	max-height: 70vh;
+	box-sizing: border-box;
+	/* Filled from the clipping viewport. 24rem / 32rem until that is measured. */
+	width: min(24rem, var(--agent-frame-max-width, 24rem));
+	height: min(32rem, var(--agent-frame-max-height, 32rem));
+	min-width: min(16rem, var(--agent-frame-max-width, 16rem));
+	min-height: min(12rem, var(--agent-frame-max-height, 12rem));
+	max-width: var(--agent-frame-max-width, 24rem);
+	max-height: var(--agent-frame-max-height, 32rem);
 	overflow: hidden;
 	border-radius: var(--mantine-radius-md, 8px);
 	border: 1px solid var(--mantine-color-default-border, rgba(0, 0, 0, 0.15));
