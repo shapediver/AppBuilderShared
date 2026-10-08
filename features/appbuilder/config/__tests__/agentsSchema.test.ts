@@ -60,6 +60,19 @@ describe("IAppBuilder.agents schema", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts a profileId and an empty profileId", () => {
+		const withId = validateAppBuilder(
+			layout([{...validAgent, profileId: "org-default"}]),
+		);
+		expect(withId.success && withId.data.agents?.[0].profileId).toBe(
+			"org-default",
+		);
+		const empty = validateAppBuilder(
+			layout([{...validAgent, profileId: ""}]),
+		);
+		expect(empty.success && empty.data.agents?.[0].profileId).toBe("");
+	});
+
 	it("rejects an agent missing required message", () => {
 		const result = validateAppBuilder(layout([{id: "a", name: "A"}]));
 		expect(result.success).toBe(false);
@@ -265,6 +278,23 @@ describe("IAppBuilderSettingsJson.agentOverride", () => {
 			agentOverride: [validAgent],
 		});
 		expect(result.success).toBe(true);
+	});
+
+	it("accepts a profileId and an empty profileId on an overridden agent", () => {
+		const withId = validateAppBuilderSettingsJson({
+			version: "1.0",
+			agentOverride: [{...validAgent, profileId: "org-default"}],
+		});
+		expect(withId.success && withId.data.agentOverride?.[0].profileId).toBe(
+			"org-default",
+		);
+		const empty = validateAppBuilderSettingsJson({
+			version: "1.0",
+			agentOverride: [{...validAgent, profileId: ""}],
+		});
+		expect(empty.success && empty.data.agentOverride?.[0].profileId).toBe(
+			"",
+		);
 	});
 
 	it("accepts agentOverride together with appBuilderOverride", () => {

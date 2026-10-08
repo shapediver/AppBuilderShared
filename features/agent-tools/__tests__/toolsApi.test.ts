@@ -277,6 +277,49 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		connector.cancel();
 	});
 
+	it("getAgentConfig includes a non-empty profileId and omits an empty one", async () => {
+		const withId = createMockCrossWindowApi();
+		const connectorWithId = new ToolsApiConnector(
+			resolveToolset(screenshotOnlyAgent()),
+			stubHandlers(),
+			withId,
+			undefined,
+			{...screenshotOnlyAgent(), profileId: "org-default"},
+		);
+		const clientWithId = new ToolsApi(withId);
+		await Promise.all([
+			connectorWithId.peerIsReady,
+			clientWithId.peerIsReady,
+		]);
+		await expect(clientWithId.getAgentConfig()).resolves.toEqual({
+			id: "a",
+			name: "A",
+			message: "hi",
+			profileId: "org-default",
+		});
+		connectorWithId.cancel();
+
+		const empty = createMockCrossWindowApi();
+		const connectorEmpty = new ToolsApiConnector(
+			resolveToolset(screenshotOnlyAgent()),
+			stubHandlers(),
+			empty,
+			undefined,
+			{...screenshotOnlyAgent(), profileId: ""},
+		);
+		const clientEmpty = new ToolsApi(empty);
+		await Promise.all([
+			connectorEmpty.peerIsReady,
+			clientEmpty.peerIsReady,
+		]);
+		await expect(clientEmpty.getAgentConfig()).resolves.toEqual({
+			id: "a",
+			name: "A",
+			message: "hi",
+		});
+		connectorEmpty.cancel();
+	});
+
 	it("getAgentConfig includes AgentUi flags when the host passes them", async () => {
 		const mock = createMockCrossWindowApi();
 		const agent = screenshotOnlyAgent();
@@ -568,8 +611,12 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		const client = new ToolsApi(mock);
 		await Promise.all([connector.peerIsReady, client.peerIsReady]);
 		const {tools} = await client.listTools();
-		expect(tools.map((tool) => tool.name)).not.toContain("createModelState");
-		expect(tools.map((tool) => tool.name)).not.toContain("importModelState");
+		expect(tools.map((tool) => tool.name)).not.toContain(
+			"createModelState",
+		);
+		expect(tools.map((tool) => tool.name)).not.toContain(
+			"importModelState",
+		);
 		await expect(
 			client.createModelState({includeImage: false}),
 		).resolves.toEqual({modelStateId: "ms-1"});

@@ -25,7 +25,8 @@ export const MESSAGE_TYPE_EXECUTE_TOOL = "EXECUTE_TOOL";
 /**
  * CrossWindow message type: agent asks App Builder for Agent config prompt fields.
  * Payload is unused. Reply is {@link IAgentConfigReply} or `null` when agents[] is
- * missing/empty. Never throws across the wire.
+ * missing/empty. Includes `profileId` when the agent sets a non-empty one.
+ * Never throws across the wire.
  */
 export const MESSAGE_TYPE_GET_AGENT_CONFIG = "GET_AGENT_CONFIG";
 
@@ -94,6 +95,11 @@ export interface IAgentConfigReply {
 	name: string;
 	message: string;
 	/**
+	 * Optional ID of the agent configuration profile to use for this agent.
+	 * Leave empty to use the default profile.
+	 */
+	profileId?: string;
+	/**
 	 * Resolved AgentUi history flag. Older hosts omit it; the agent then keeps
 	 * the history sidebar.
 	 */
@@ -106,9 +112,11 @@ export interface IAgentConfigReply {
 }
 
 /**
- * `{ id, name, message }` from parameterized Agent config, or `null` when
- * `agents[]` is missing/empty. Strips other `IAppBuilderAgent` fields.
- * History and load flags are resolved AgentUi values, not fields of the agent.
+ * `{ id, name, message, profileId? }` from parameterized Agent config, or
+ * `null` when `agents[]` is missing/empty. Strips other `IAppBuilderAgent`
+ * fields. A missing or empty `profileId` is omitted so the agent uses its
+ * default profile. History and load flags are resolved AgentUi values, not
+ * fields of the agent.
  */
 export function agentConfigReplyFrom(
 	agent: IAgentConfigReply | null | undefined,
@@ -123,6 +131,9 @@ export function agentConfigReplyFrom(
 		name: agent.name,
 		message: agent.message,
 	};
+	if (typeof agent.profileId === "string" && agent.profileId !== "") {
+		reply.profileId = agent.profileId;
+	}
 	if (typeof showThreadHistory === "boolean") {
 		reply.showThreadHistory = showThreadHistory;
 	}

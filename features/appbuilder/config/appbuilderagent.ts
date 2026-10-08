@@ -253,6 +253,12 @@ export interface IAppBuilderAgent {
 	message: string;
 
 	/**
+	 * Optional ID of the agent configuration profile to use for this agent.
+	 * Leave empty to use the default profile.
+	 */
+	profileId?: string;
+
+	/**
 	 * Boolean indicating whether all available generic tools shall be exposed
 	 * using their default settings.
 	 * Default is true.

@@ -88,8 +88,9 @@ export class ToolsApi implements IToolsApi {
 	}
 
 	/**
-	 * Agent config `{ id, name, message }` from App Builder (`agents[0]`).
-	 * `null` when agents[] is missing or empty — never a throw.
+	 * Agent config `{ id, name, message, profileId? }` from App Builder
+	 * (`agents[0]`). `null` when agents[] is missing or empty — never a throw.
+	 * `profileId` is present only when the agent sets a non-empty one.
 	 */
 	async getAgentConfig(): Promise<IAgentConfigReply | null> {
 		await this.peerIsReady;

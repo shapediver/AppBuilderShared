@@ -1673,6 +1673,12 @@ const IAppBuilderAgentSchema = z.strictObject({
 		.string()
 		.describe("Display name of the agent (exposed to the user)."),
 	message: z.string().describe("The agent's system prompt."),
+	profileId: z
+		.string()
+		.optional()
+		.describe(
+			"Optional ID of the agent configuration profile to use for this agent. Leave empty to use the default profile.",
+		),
 	useGenericToolDefaults: z
 		.boolean()
 		.optional()
