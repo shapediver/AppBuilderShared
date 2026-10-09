@@ -87,7 +87,7 @@ export type UseToolsApiConnectorProps = {
  *              ToolsApiConnector
  *              LIST_TOOLS  → listToolsFromResolved
  *              EXECUTE_TOOL → executeResolvedTool → handlers or tool.execute
- *              GET_AGENT_CONFIG → { id, name, message, profileId? } | null
+ *              GET_AGENT_CONFIG → { id, name, message, profileName? } | null
  *              GET_SESSION_INFO → { jwtToken, slug, modelStateId }
  *              CREATE_MODEL_STATE / IMPORT_MODEL_STATE → modelState handlers
  * ```

@@ -60,17 +60,17 @@ describe("IAppBuilder.agents schema", () => {
 		expect(result.success).toBe(true);
 	});
 
-	it("accepts a profileId and an empty profileId", () => {
-		const withId = validateAppBuilder(
-			layout([{...validAgent, profileId: "org-default"}]),
+	it("accepts a profileName and an empty profileName", () => {
+		const withName = validateAppBuilder(
+			layout([{...validAgent, profileName: "org-default"}]),
 		);
-		expect(withId.success && withId.data.agents?.[0].profileId).toBe(
+		expect(withName.success && withName.data.agents?.[0].profileName).toBe(
 			"org-default",
 		);
 		const empty = validateAppBuilder(
-			layout([{...validAgent, profileId: ""}]),
+			layout([{...validAgent, profileName: ""}]),
 		);
-		expect(empty.success && empty.data.agents?.[0].profileId).toBe("");
+		expect(empty.success && empty.data.agents?.[0].profileName).toBe("");
 	});
 
 	it("rejects an agent missing required message", () => {
@@ -280,19 +280,19 @@ describe("IAppBuilderSettingsJson.agentOverride", () => {
 		expect(result.success).toBe(true);
 	});
 
-	it("accepts a profileId and an empty profileId on an overridden agent", () => {
-		const withId = validateAppBuilderSettingsJson({
+	it("accepts a profileName and an empty profileName on an overridden agent", () => {
+		const withName = validateAppBuilderSettingsJson({
 			version: "1.0",
-			agentOverride: [{...validAgent, profileId: "org-default"}],
+			agentOverride: [{...validAgent, profileName: "org-default"}],
 		});
-		expect(withId.success && withId.data.agentOverride?.[0].profileId).toBe(
-			"org-default",
-		);
+		expect(
+			withName.success && withName.data.agentOverride?.[0].profileName,
+		).toBe("org-default");
 		const empty = validateAppBuilderSettingsJson({
 			version: "1.0",
-			agentOverride: [{...validAgent, profileId: ""}],
+			agentOverride: [{...validAgent, profileName: ""}],
 		});
-		expect(empty.success && empty.data.agentOverride?.[0].profileId).toBe(
+		expect(empty.success && empty.data.agentOverride?.[0].profileName).toBe(
 			"",
 		);
 	});

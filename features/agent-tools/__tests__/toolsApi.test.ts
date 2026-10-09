@@ -277,27 +277,27 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		connector.cancel();
 	});
 
-	it("getAgentConfig includes a non-empty profileId and omits an empty one", async () => {
-		const withId = createMockCrossWindowApi();
-		const connectorWithId = new ToolsApiConnector(
+	it("getAgentConfig includes a non-empty profileName and omits an empty one", async () => {
+		const withName = createMockCrossWindowApi();
+		const connectorWithName = new ToolsApiConnector(
 			resolveToolset(screenshotOnlyAgent()),
 			stubHandlers(),
-			withId,
+			withName,
 			undefined,
-			{...screenshotOnlyAgent(), profileId: "org-default"},
+			{...screenshotOnlyAgent(), profileName: "org-default"},
 		);
-		const clientWithId = new ToolsApi(withId);
+		const clientWithName = new ToolsApi(withName);
 		await Promise.all([
-			connectorWithId.peerIsReady,
-			clientWithId.peerIsReady,
+			connectorWithName.peerIsReady,
+			clientWithName.peerIsReady,
 		]);
-		await expect(clientWithId.getAgentConfig()).resolves.toEqual({
+		await expect(clientWithName.getAgentConfig()).resolves.toEqual({
 			id: "a",
 			name: "A",
 			message: "hi",
-			profileId: "org-default",
+			profileName: "org-default",
 		});
-		connectorWithId.cancel();
+		connectorWithName.cancel();
 
 		const empty = createMockCrossWindowApi();
 		const connectorEmpty = new ToolsApiConnector(
@@ -305,7 +305,7 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 			stubHandlers(),
 			empty,
 			undefined,
-			{...screenshotOnlyAgent(), profileId: ""},
+			{...screenshotOnlyAgent(), profileName: ""},
 		);
 		const clientEmpty = new ToolsApi(empty);
 		await Promise.all([
