@@ -36,6 +36,9 @@ export async function addToCartFromStores(
 		modelStateImageUrl: resultModelState.modelStateImageUrl,
 		modelStateGltfUrl: resultModelState.modelStateGltfUrl,
 		modelStateUsdzUrl: resultModelState.modelStateUsdzUrl,
+		...(props.properties !== undefined
+			? {properties: props.properties}
+			: {}),
 	});
 	return {
 		modelStateId: resultModelState.modelStateId,

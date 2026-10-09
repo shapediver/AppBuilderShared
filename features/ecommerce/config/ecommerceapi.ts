@@ -80,6 +80,12 @@ export interface IAddItemToCartData {
 	 * for the added line item.
 	 */
 	title?: string;
+
+	/**
+	 * Optional custom line item properties for the e-commerce plugin.
+	 * Values are forwarded unchanged.
+	 */
+	properties?: Record<string, string>;
 }
 
 export interface IAddItemToCartReply {
@@ -128,16 +134,38 @@ export interface IUpdateSharingLinkData {
 	 * Image URL of the screenshot associated with the model state.
 	 */
 	imageUrl?: string;
+
+	/**
+	 * Optional custom properties for the e-commerce plugin.
+	 * Values are forwarded unchanged.
+	 */
+	properties?: Record<string, string>;
 }
 
 /**
  * Reply from the parent page after updating the sharing link.
+ *
+ * A handler returns `href`, `successMessage`, or `errorMessage`.
+ * When more than one is set, `errorMessage` wins, then `successMessage`,
+ * then `href`. Message fields support the `{modelStateId}` placeholder.
  */
 export interface IUpdateSharingLinkReply {
 	/**
 	 * The updated URL of the parent page.
 	 */
-	href: string;
+	href?: string;
+
+	/**
+	 * Success message shown instead of the sharing link.
+	 * Supports the optional placeholder `{modelStateId}`.
+	 */
+	successMessage?: string;
+
+	/**
+	 * Error message from the sharing-link handler.
+	 * Supports the optional placeholder `{modelStateId}`.
+	 */
+	errorMessage?: string;
 }
 
 /**

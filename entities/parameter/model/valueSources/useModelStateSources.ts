@@ -1,5 +1,6 @@
 import {IAppBuilderParameterValueSourcePropsModelState} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
+import {hrefFromUpdateSharingLinkReply} from "@AppBuilderLib/features/ecommerce/lib/interpretUpdateSharingLinkReply";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {useEffect, useState} from "react";
@@ -37,6 +38,7 @@ export function useModelStateSources(props: {
 					screenshotProps,
 					parameterNamesToInclude,
 					parameterNamesToExclude,
+					properties,
 				} = source;
 
 				const promise = createModelState(
@@ -58,11 +60,20 @@ export function useModelStateSources(props: {
 						// in case we are not running inside an iframe, the instance of
 						// IEcommerceApi is a dummy implementation
 						const api = await ECommerceApiSingleton;
-						const {href} = await api.updateSharingLink({
+						const reply = await api.updateSharingLink({
 							modelStateId,
 							updateUrl,
+							...(properties !== undefined ? {properties} : {}),
 						});
-						return href.toString();
+						const href = hrefFromUpdateSharingLinkReply(reply);
+						if (!href) {
+							Logger.warn(
+								"Sharing link reply did not include a URL for the model state parameter value.",
+								reply,
+							);
+							return undefined;
+						}
+						return href;
 					})
 					.catch((error) => {
 						Logger.warn(

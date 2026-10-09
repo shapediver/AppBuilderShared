@@ -177,6 +177,12 @@ export interface IAppBuilderActionPropsCreateModelState {
 	 * Supports the optional placeholder `{modelStateId}` when available.
 	 */
 	errorMessage?: string;
+	/**
+	 * Optional custom properties forwarded to the e-commerce plugin
+	 * when adding to the cart or updating the sharing link.
+	 * Values are sent unchanged.
+	 */
+	properties?: Record<string, string>;
 }
 
 /** Properties of a legacy "createModelState" action. */

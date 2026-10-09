@@ -52,6 +52,7 @@ export const IAppBuilderActionPropsCreateModelStateSchema =
 		image: createModelStateImageRefSchema.optional(),
 		successMessage: z.string().optional(),
 		errorMessage: z.string().optional(),
+		properties: z.record(z.string(), z.string()).optional(),
 	});
 
 export const IAppBuilderActionPropsAddToCartSchema = z

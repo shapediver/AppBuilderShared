@@ -11,7 +11,7 @@ import type {
  */
 export type ICreateModelStateData = Omit<
 	IAppBuilderActionPropsCreateModelState,
-	"successMessage" | "errorMessage"
+	"successMessage" | "errorMessage" | "properties"
 > &
 	IModelStateWireCreateData;
 

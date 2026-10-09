@@ -1,5 +1,10 @@
 import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
+import {
+	isUpdateSharingLinkReplyError,
+	resolveUpdateSharingLinkReply,
+	UpdateSharingLinkReplyError,
+} from "@AppBuilderLib/features/ecommerce/lib/interpretUpdateSharingLinkReply";
 import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
 import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
@@ -69,30 +74,41 @@ export function useKeyBindings(props: Props) {
 				// in case we are not running inside an iframe, the instance of
 				// IEcommerceApi is a dummy implementation
 				const api = await ECommerceApiSingleton;
-				const {href} = await api.updateSharingLink({
+				const reply = await api.updateSharingLink({
 					modelStateId,
 					updateUrl: true,
 					imageUrl: screenshot,
 				});
-				const resolvedSuccessMessage = resolveModelStateMessage(
-					successMessage,
+				const resolved = resolveUpdateSharingLinkReply({
+					reply,
 					modelStateId,
-				);
+					actionSuccessMessage: successMessage,
+					actionErrorMessage: errorMessage,
+					genericErrorMessage:
+						"An error happened while saving the model state.",
+				});
+				if (resolved.status === "error") {
+					notifications.error({message: resolved.message});
+					throw new UpdateSharingLinkReplyError(resolved.message);
+				}
 				notifications.success({
 					message:
-						resolvedSuccessMessage ??
-						getNotification({
-							modelStateId,
-							link: href.toString(),
-						}),
+						resolved.kind === "message"
+							? resolved.message
+							: getNotification({
+									modelStateId,
+									link: resolved.href,
+								}),
 				});
 			}
 		} catch (e) {
-			notifications.error({
-				message:
-					resolveModelStateMessage(errorMessage) ??
-					"An error happened while saving the model state.",
-			});
+			if (!isUpdateSharingLinkReplyError(e)) {
+				notifications.error({
+					message:
+						resolveModelStateMessage(errorMessage) ??
+						"An error happened while saving the model state.",
+				});
+			}
 			throw e;
 		}
 	}, [

@@ -38,6 +38,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 		parameterNamesToExclude,
 		successMessage,
 		errorMessage,
+		properties,
 		viewportId: inputViewportId,
 	} = props;
 	const [loading, setLoading] = useState(false);
@@ -57,6 +58,7 @@ export default function AppBuilderActionCreateModelStateComponent(
 					parameterNamesToExclude,
 					successMessage,
 					errorMessage,
+					properties,
 				},
 				{namespace, viewportId},
 			),

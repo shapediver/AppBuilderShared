@@ -42,4 +42,12 @@ describe("createModelStateDataSchema screenshotProps", () => {
 			}).success,
 		).toBe(true);
 	});
+
+	it("rejects properties", () => {
+		expect(
+			createModelStateDataSchema.safeParse({
+				properties: {color: "red"},
+			}).success,
+		).toBe(false);
+	});
 });

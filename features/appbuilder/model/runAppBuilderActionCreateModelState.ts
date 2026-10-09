@@ -7,6 +7,11 @@ import {
 	resolvedViewportId,
 } from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
 import {ECommerceApiSingleton} from "@AppBuilderLib/features/ecommerce/api/singleton";
+import {
+	isUpdateSharingLinkReplyError,
+	resolveUpdateSharingLinkReply,
+	UpdateSharingLinkReplyError,
+} from "@AppBuilderLib/features/ecommerce/lib/interpretUpdateSharingLinkReply";
 import type {ICreateModelStateData} from "@AppBuilderLib/features/model-state/config/createModelState";
 import {createModelStateCore} from "@AppBuilderLib/features/model-state/lib/createModelStateCore";
 import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
@@ -18,6 +23,9 @@ import {
 import {getNotificationActions} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {createElement} from "react";
+
+const SAVE_MODEL_STATE_ERROR =
+	"An error happened while saving the model state.";
 
 export async function createModelStateFromStores(
 	namespace: string,
@@ -70,30 +78,45 @@ export async function runAppBuilderActionCreateModelState(
 		modelStateId = result.modelStateId;
 		if (modelStateId) {
 			const api = await ECommerceApiSingleton;
-			const {href} = await api.updateSharingLink({
+			const reply = await api.updateSharingLink({
 				modelStateId,
 				updateUrl: true,
 				imageUrl: result.screenshot,
+				...(props.properties !== undefined
+					? {properties: props.properties}
+					: {}),
 			});
-			const message = resolveModelStateMessage(
-				themed.successMessage,
+			const resolved = resolveUpdateSharingLinkReply({
+				reply,
 				modelStateId,
-			);
+				actionSuccessMessage: themed.successMessage,
+				actionErrorMessage: themed.errorMessage,
+				genericErrorMessage: SAVE_MODEL_STATE_ERROR,
+			});
+			if (resolved.status === "error") {
+				getNotificationActions().error({message: resolved.message});
+				throw new UpdateSharingLinkReplyError(resolved.message);
+			}
 			getNotificationActions().success({
 				message:
-					message ??
-					createElement(NotificationModelStateCreated, {
-						modelStateId,
-						link: href.toString(),
-					}),
+					resolved.kind === "message"
+						? resolved.message
+						: createElement(NotificationModelStateCreated, {
+								modelStateId,
+								link: resolved.href,
+							}),
 			});
 		}
 	} catch (e) {
-		getNotificationActions().error({
-			message:
-				resolveModelStateMessage(themed.errorMessage, modelStateId) ??
-				"An error happened while saving the model state.",
-		});
+		if (!isUpdateSharingLinkReplyError(e)) {
+			getNotificationActions().error({
+				message:
+					resolveModelStateMessage(
+						themed.errorMessage,
+						modelStateId,
+					) ?? SAVE_MODEL_STATE_ERROR,
+			});
+		}
 		throw e;
 	}
 }
