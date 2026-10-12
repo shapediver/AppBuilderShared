@@ -21,7 +21,7 @@ import {
 import {findAppBuilderActionRegistration} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
 import type {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {defaultAppBuilderActionRuns} from "@AppBuilderLib/features/appbuilder/model/appBuilderActionCatalog";
-import {addToCartFromStores} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionAddToCart";
+import {addToCartApiResult} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionAddToCart";
 import {createModelStateFromStores} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionCreateModelState";
 import {runAppBuilderActionSound} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSound";
 import {waitForAppBuilderSessionIdle} from "@AppBuilderLib/features/appbuilder/model/waitForAppBuilderSessionIdle";
@@ -172,11 +172,10 @@ export function createECommerceApiConnectorActions(
 			return redoParameterHistory(namespace);
 		}
 		if (isAddToCartAction(definition)) {
-			await addToCartFromStores(definition.props, {
+			return addToCartApiResult(definition.props, {
 				namespace,
 				viewportId,
 			});
-			return {success: true};
 		}
 		if (isSoundAction(definition)) {
 			await runAppBuilderActionSound(definition.props);

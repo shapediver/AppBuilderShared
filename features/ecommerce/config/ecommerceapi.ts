@@ -88,11 +88,21 @@ export interface IAddItemToCartData {
 	properties?: Record<string, string>;
 }
 
+/**
+ * Reply from the parent page after adding an item to the cart.
+ * A handler reports failure by throwing an Error.
+ */
 export interface IAddItemToCartReply {
 	/**
 	 * The id of the cart item that has been added.
 	 */
 	id: string;
+
+	/**
+	 * Success message shown instead of the default cart notification.
+	 * Supports the optional placeholder `{modelStateId}`.
+	 */
+	successMessage?: string;
 }
 
 /**
@@ -384,6 +394,10 @@ export type ITriggerActionData =
 export interface ITriggerActionReply {
 	success: boolean;
 	message?: string;
+	/** Present when an addToCart action succeeds. */
+	modelStateId?: string;
+	/** Present when an addToCart action succeeds. */
+	cartItemId?: string;
 }
 
 export interface IGetOutputData {

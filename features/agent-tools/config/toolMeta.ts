@@ -51,7 +51,8 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 		description:
 			"Run an action control without mounting App Builder UI. " +
 			"Input: { name } — id or name from list_action_controls. " +
-			"Success: { success: true }. Failure: { success: false, message }. " +
+			"Success: { success: true, ...props }. Depending on the action type, props may add further properties. " +
+			"Failure: { success: false, message }. " +
 			"Unsupported action types return message 'not supported'.",
 		annotations: {readOnlyHint: false},
 	},
