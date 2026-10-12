@@ -66,9 +66,9 @@ describe("AppBuilderToolbarPopoverContent", () => {
 		);
 
 		expect(screen.queryByText("Details")).toBeNull();
-		expect(screen.getByTestId("toolbar-widgets").textContent).toBe(
-			"widgets: 1",
-		);
+		const widgets = screen.getByTestId("toolbar-widgets");
+		expect(widgets.textContent).toBe("widgets: 1");
+		expect(widgets.parentElement?.className).toMatch(/Stack/);
 	});
 
 	it("calls onActionActivate when a toolbar menu action is clicked", () => {

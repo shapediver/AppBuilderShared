@@ -218,11 +218,16 @@ export default function AppBuilderToolbarPopoverContent({
 					</Stack>
 				);
 			case "widgets":
+				// Sibling widgets must be stack items: the gap matches a vertical
+				// container, and action buttons stretch to the popover width.
+				// A fragment from AppBuilderWidgetsComponent flattens into this stack.
 				return (
-					<AppBuilderWidgetsComponent
-						namespace={namespace}
-						widgets={item.props.widgets}
-					/>
+					<Stack gap="xs">
+						<AppBuilderWidgetsComponent
+							namespace={namespace}
+							widgets={item.props.widgets}
+						/>
+					</Stack>
 				);
 			case "tabs":
 				return (
