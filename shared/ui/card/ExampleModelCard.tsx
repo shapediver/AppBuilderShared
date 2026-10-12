@@ -1,5 +1,4 @@
 import {Button, Card, Group, Image, Text} from "@mantine/core";
-import {Link} from "react-router-dom";
 import classes from "./ExampleModelCard.module.css";
 
 interface Props {
@@ -48,8 +47,8 @@ export default function ModelCard({
 						fullWidth
 						mt="md"
 						radius="md"
-						component={Link}
-						to={btnLink}
+						component="a"
+						href={`#${btnLink}`}
 					>
 						{btnText}
 					</Button>

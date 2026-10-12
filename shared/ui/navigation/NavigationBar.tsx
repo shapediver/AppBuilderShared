@@ -1,5 +1,4 @@
 import {NavLink} from "@mantine/core";
-import {Link, Outlet} from "react-router-dom";
 
 /**
  * Function that creates the contents of the navigation bar.
@@ -10,23 +9,21 @@ import {Link, Outlet} from "react-router-dom";
 export default function NavigationBar() {
 	return (
 		<>
-			<NavLink label="Home" component={Link} to="/" />
-			<NavLink label="View Page" component={Link} to="/view" />
-			<NavLink label="Select Page" component={Link} to="/modelSelect" />
+			<NavLink label="Home" component="a" href="#/" />
+			<NavLink label="View Page" component="a" href="#/view" />
+			<NavLink label="Select Page" component="a" href="#/modelSelect" />
 			<NavLink
 				label="Multiple Viewports"
-				component={Link}
-				to="/multipleViewport"
+				component="a"
+				href="#/multipleViewport"
 			/>
-			<NavLink label="Custom UI" component={Link} to="/customui" />
+			<NavLink label="Custom UI" component="a" href="#/customui" />
 			<NavLink
 				label="Web App Test"
-				component={Link}
-				to="/appBuilderTest"
+				component="a"
+				href="#/appBuilderTest"
 			/>
-			<NavLink label="Web App" component={Link} to="/appBuilder" />
-
-			<Outlet />
+			<NavLink label="Web App" component="a" href="#/appBuilder" />
 		</>
 	);
 }
