@@ -474,12 +474,16 @@ export interface IAppBuilderExportRef {
  *
  * The root {@link IAppBuilder} does not extend this. Its slots also include
  * application events.
+ *
+ * @see [Action slots](../action-slots.md)
  */
 export interface IAppBuilderNode {
 	/**
 	 * Actions assigned to events emitted by this node.
 	 * Pointer, click, contextmenu, and `custom:*` only.
 	 * Zod rejects any other event name, and `eventProps`.
+	 *
+	 * @see [Action slots](../action-slots.md)
 	 */
 	actionSlots?: IAppBuilderNodeActionSlots;
 }
@@ -1158,6 +1162,7 @@ export interface IAppBuilderWidgetPropsTable {
  *     add it to the union type of "props".
  *
  * Node-level fields such as `actionSlots` are on this interface, not inside `props`.
+ * @see [Action slots](../action-slots.md)
  */
 export interface IAppBuilderWidget extends IAppBuilderNode {
 	/** Type of the widget. */
@@ -1589,12 +1594,16 @@ export interface IAppBuilderSessionDefinition extends IAppBuilderSessionDefiniti
  * select/hover) are assigned here. Several slots for one event use an
  * array (different `eventProps`). Pointer/`click` on the root attach to
  * the viewport host.
+ *
+ * @see [Action slots](../action-slots.md)
  */
 export interface IAppBuilder {
 	/**
 	 * Application events, plus pointer/click/contextmenu for the viewport
 	 * host, and `custom:*`. Zod rejects event names and `eventProps` the
 	 * root cannot use.
+	 *
+	 * @see [Action slots](../action-slots.md)
 	 */
 	actionSlots?: IAppBuilderRootActionSlots;
 
