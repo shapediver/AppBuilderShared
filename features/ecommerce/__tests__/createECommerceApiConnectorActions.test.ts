@@ -4,6 +4,7 @@
 import {isCameraAction} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import type {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {runAppBuilderActionCamera} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionCamera";
+import AppBuilderActionCameraComponent from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionCameraComponent";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {validateTriggerActionData} from "../config/ecommerceapitypecheck";
 import {createECommerceApiConnectorActions} from "../model/createECommerceApiConnectorActions";
@@ -31,6 +32,16 @@ jest.mock(
 		},
 	}),
 	{virtual: true},
+);
+
+jest.mock(
+	"@AppBuilderLib/features/appbuilder/ui/AppBuilderActionCameraComponent",
+	() => ({
+		__esModule: true,
+		default: function AppBuilderActionCameraComponent() {
+			return null;
+		},
+	}),
 );
 
 jest.mock(
@@ -337,6 +348,23 @@ describe("createECommerceApiConnectorActions", () => {
 			props: {
 				type: "assign",
 				props: {camera: {id: "cam-front"}},
+			},
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("runs camera when the host renders the control without run", async () => {
+		const actions = createECommerceApiConnectorActions("session", {
+			camera: {
+				isAction: isCameraAction,
+				component: AppBuilderActionCameraComponent,
+			},
+		});
+		const result = await actions.triggerAction({
+			type: "camera",
+			props: {
+				type: "assign",
+				props: {camera: {name: "Front"}},
 			},
 		});
 		expect(result.success).toBe(true);

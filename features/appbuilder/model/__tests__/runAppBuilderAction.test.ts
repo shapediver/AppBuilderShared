@@ -4,6 +4,9 @@
 const mockWaitForAppBuilderSessionIdle = jest.fn(async () => {});
 const mockRunSetParameterValues = jest.fn(async () => {});
 const mockRunSetContainerVisibility = jest.fn(() => {});
+const mockRunCamera = jest.fn(async () => {});
+const mockRunAr = jest.fn(async () => {});
+const mockRunFullscreen = jest.fn(async () => {});
 
 jest.mock("../waitForAppBuilderSessionIdle", () => ({
 	waitForAppBuilderSessionIdle: (...args: unknown[]) =>
@@ -20,6 +23,40 @@ jest.mock("../runAppBuilderActionSetContainerVisibility", () => ({
 		mockRunSetContainerVisibility(...args),
 }));
 
+jest.mock("../runAppBuilderActionCamera", () => ({
+	runAppBuilderActionCamera: (...args: unknown[]) => mockRunCamera(...args),
+}));
+
+jest.mock("../runAppBuilderActionAr", () => ({
+	runAppBuilderActionAr: (...args: unknown[]) => mockRunAr(...args),
+}));
+
+jest.mock("../runAppBuilderActionFullscreen", () => ({
+	runAppBuilderActionFullscreen: (...args: unknown[]) =>
+		mockRunFullscreen(...args),
+}));
+
+jest.mock("../../ui/AppBuilderActionCameraComponent", () => ({
+	__esModule: true,
+	default: function AppBuilderActionCameraComponent() {
+		return null;
+	},
+}));
+
+jest.mock("../../ui/AppBuilderActionArComponent", () => ({
+	__esModule: true,
+	default: function AppBuilderActionArComponent() {
+		return null;
+	},
+}));
+
+jest.mock("../../ui/AppBuilderActionFullscreenComponent", () => ({
+	__esModule: true,
+	default: function AppBuilderActionFullscreenComponent() {
+		return null;
+	},
+}));
+
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useImportModelStateDialogStore} from "@AppBuilderLib/features/model-state/model/useImportModelStateDialogStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
@@ -27,6 +64,9 @@ import {
 	AppBuilderActionType,
 	AppBuilderContainerNameType,
 } from "../../config/appbuilder";
+import AppBuilderActionArComponent from "../../ui/AppBuilderActionArComponent";
+import AppBuilderActionCameraComponent from "../../ui/AppBuilderActionCameraComponent";
+import AppBuilderActionFullscreenComponent from "../../ui/AppBuilderActionFullscreenComponent";
 import {runAppBuilderActions} from "../runAppBuilderAction";
 
 const setParameterValuesAction = {
@@ -49,6 +89,9 @@ describe("runAppBuilderActions", () => {
 		mockWaitForAppBuilderSessionIdle.mockClear();
 		mockRunSetParameterValues.mockClear();
 		mockRunSetContainerVisibility.mockClear();
+		mockRunCamera.mockClear();
+		mockRunAr.mockClear();
+		mockRunFullscreen.mockClear();
 		mockWaitForAppBuilderSessionIdle.mockResolvedValue(undefined);
 		mockRunSetParameterValues.mockResolvedValue(undefined);
 		mockRunSetContainerVisibility.mockImplementation(() => {});
@@ -234,6 +277,42 @@ describe("runAppBuilderActions", () => {
 			},
 		);
 		expect(run).toHaveBeenCalledTimes(1);
+		expect(mockRunCamera).not.toHaveBeenCalled();
+	});
+
+	it("uses the ShapeDiver executor when the host renders camera, AR, or fullscreen without run", async () => {
+		await runAppBuilderActions(
+			[
+				{
+					type: AppBuilderActionType.Camera,
+					props: {type: "zoomTo", props: {}},
+				},
+				{type: AppBuilderActionType.Ar, props: {}},
+				{type: AppBuilderActionType.Fullscreen, props: {}},
+			],
+			"sequential",
+			{
+				namespace: "session",
+				hostActions: {
+					camera: {
+						isAction: (definition) => definition.type === "camera",
+						component: AppBuilderActionCameraComponent,
+					},
+					ar: {
+						isAction: (definition) => definition.type === "ar",
+						component: AppBuilderActionArComponent,
+					},
+					fullscreen: {
+						isAction: (definition) =>
+							definition.type === "fullscreen",
+						component: AppBuilderActionFullscreenComponent,
+					},
+				},
+			},
+		);
+		expect(mockRunCamera).toHaveBeenCalledTimes(1);
+		expect(mockRunAr).toHaveBeenCalledTimes(1);
+		expect(mockRunFullscreen).toHaveBeenCalledTimes(1);
 	});
 
 	it("skips a host-registered action that has no run", async () => {

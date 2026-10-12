@@ -6,6 +6,7 @@ import type {AppBuilderActionRunContext} from "@AppBuilderLib/features/appbuilde
 import {findAppBuilderActionRegistration} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {defaultAppBuilderActionRuns} from "./appBuilderActionCatalog";
+import {resolveHostViewerActionRun} from "./resolveHostViewerActionRun";
 import {waitForAppBuilderSessionIdle} from "./waitForAppBuilderSessionIdle";
 
 export {
@@ -17,8 +18,10 @@ export type {AppBuilderActionRunContext} from "@AppBuilderLib/features/appbuilde
 /**
  * Run a single App Builder action without mounting its UI component.
  * Nested `executeActions` definitions recurse (not in the run catalog, to
- * avoid a circular import). Viewer-specific actions (camera, AR, fullscreen)
- * only run when the host registered them on `componentContext.actions`.
+ * avoid a circular import). Camera, AR, and fullscreen run from the host
+ * `run`, or from the ShapeDiver executor when the host renders that
+ * control without one. A host that omits the key, or registers
+ * `{ isAction }` only, skips them.
  */
 export async function runAppBuilderAction(
 	definition: IAppBuilderActionDefinition,
@@ -30,7 +33,10 @@ export async function runAppBuilderAction(
 		context.hostActions,
 	);
 	if (entry) {
-		await entry.run?.(definition, context);
+		const run =
+			entry.run ??
+			(await resolveHostViewerActionRun(definition, context.hostActions));
+		await run?.(definition, context);
 		return;
 	}
 

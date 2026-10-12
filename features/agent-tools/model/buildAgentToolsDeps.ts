@@ -27,6 +27,7 @@ import type {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/
 import type {ToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreToolbars";
 import {addToCartFromStores} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionAddToCart";
 import {createModelStateFromStores} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionCreateModelState";
+import {resolveHostViewerActionRun} from "@AppBuilderLib/features/appbuilder/model/resolveHostViewerActionRun";
 import {runAppBuilderActionSound} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSound";
 import type {IImportModelStateData} from "@AppBuilderLib/features/model-state/config/importModelState";
 import {importModelStateFromStore} from "@AppBuilderLib/features/model-state/lib/importModelStateFromStore";
@@ -74,7 +75,10 @@ async function runHostCamera(
 	namespace: string,
 	fallbackViewportId: string,
 ): Promise<RunActionControlResult> {
-	const run = componentContext.actions?.camera?.run;
+	const run = await resolveHostViewerActionRun(
+		definition,
+		componentContext.actions,
+	);
 	if (!run) {
 		return {success: false, message: "camera is not available"};
 	}

@@ -62,9 +62,10 @@ const runSetContainerVisibility: AppBuilderActionRunner = (
 
 /**
  * Shared headless executors. Do not add `ar` / `camera` / `fullscreen` here —
- * those import viewer UI into every host. ShapeDiver registers them from
- * `AppBuilderRoot`; iJewel omits the key, sets `run` undefined, or supplies a
- * native `run`.
+ * those import viewer code into every host. ShapeDiver registers them from
+ * `AppBuilderRoot`. A registration that already has a `component` and no
+ * `run` is filled in by `resolveHostViewerActionRun`. iJewel omits the key,
+ * registers `{ isAction }` to skip, or supplies a native `run`.
  */
 export const defaultAppBuilderActionRuns: Record<
 	string,

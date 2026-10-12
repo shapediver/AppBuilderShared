@@ -21,6 +21,7 @@ import {
 import {findAppBuilderActionRegistration} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
 import type {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {defaultAppBuilderActionRuns} from "@AppBuilderLib/features/appbuilder/model/appBuilderActionCatalog";
+import {resolveHostViewerActionRun} from "@AppBuilderLib/features/appbuilder/model/resolveHostViewerActionRun";
 import {addToCartFromStores} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionAddToCart";
 import {createModelStateFromStores} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionCreateModelState";
 import {runAppBuilderActionSound} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSound";
@@ -57,8 +58,8 @@ function failureReply(e: unknown): ITriggerActionReply {
 
 /**
  * Connector actions backed by Zustand stores. No React hooks.
- * Does not import agent-tools. Host-specific actions (camera) come from
- * `componentContext.actions` via {@link useECommerceApiConnectorActions}.
+ * Does not import agent-tools. Host `run` wins. Camera uses the ShapeDiver
+ * executor when the host renders the control without `run`.
  */
 export function createECommerceApiConnectorActions(
 	namespace: string,
@@ -187,13 +188,16 @@ export function createECommerceApiConnectorActions(
 			defaultAppBuilderActionRuns,
 			hostActions,
 		);
-		if (!entry?.run) {
+		const run =
+			entry?.run ??
+			(await resolveHostViewerActionRun(definition, hostActions));
+		if (!run) {
 			return {
 				success: false,
 				message: `No runner for action type "${definition.type}".`,
 			};
 		}
-		await entry.run(definition, {
+		await run(definition, {
 			namespace,
 			viewportId,
 			hostActions,
