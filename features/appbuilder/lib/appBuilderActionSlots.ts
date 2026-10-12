@@ -1,20 +1,23 @@
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import type {
-	AppBuilderApplicationEvent,
-	AppBuilderCustomEventName,
-	AppBuilderInteractionEvent,
-	AppBuilderUiEvent,
-	IAppBuilderActionSlot,
-	IAppBuilderActionSlotEventProps,
-	IAppBuilderActionSlotEventPropsSelection,
-	IAppBuilderActionSlots,
+import {
+	APP_BUILDER_CUSTOM_EVENT_PATTERN,
+	type AppBuilderApplicationEvent,
+	type AppBuilderCustomEventName,
+	type AppBuilderInteractionEvent,
+	type AppBuilderUiEvent,
+	type IAppBuilderActionSlot,
+	type IAppBuilderActionSlotEventProps,
+	type IAppBuilderActionSlotEventPropsSelection,
+	type IAppBuilderActionSlots,
 } from "../config/appbuilderActionSlots";
 
 /**
  * Runtime allowlists and matching helpers for action slots.
  *
- * Which events a JSON node may use is not in Zod. Callers pass a list from
- * {@link APP_BUILDER_SLOT_EVENTS} into {@link pickAllowedActionSlots}.
+ * JSON validation (Zod) already rejects event names a node cannot emit,
+ * invalid `custom:` names, and `eventProps` whose `type` does not match
+ * the event. These helpers still select the subset a wrapper runs
+ * (viewport vs application) and skip incompatible slots that bypass Zod.
  * UI event names are the keys of {@link APP_BUILDER_UI_EVENT_REACT_PROPS}.
  */
 
@@ -108,13 +111,10 @@ export function isAppBuilderApplicationEvent(
 	);
 }
 
-/** JSON `custom:` names: `custom:` + lowercase kebab-case (`custom:item-selected`). */
-const CUSTOM_ACTION_SLOT_EVENT = /^custom:[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
 export function isAppBuilderCustomEvent(
 	eventName: string,
 ): eventName is AppBuilderCustomEventName {
-	return CUSTOM_ACTION_SLOT_EVENT.test(eventName);
+	return APP_BUILDER_CUSTOM_EVENT_PATTERN.test(eventName);
 }
 
 const customActionSlotTriggers = new Map<
@@ -220,6 +220,13 @@ export function expectedActionSlotEventPropsType(
 	];
 }
 
+function readSlotEventProps(
+	slot: IAppBuilderActionSlot,
+): IAppBuilderActionSlotEventProps | undefined {
+	if (!("eventProps" in slot) || !slot.eventProps) return undefined;
+	return slot.eventProps;
+}
+
 /**
  * `eventProps` omitted is always valid (unfiltered). Wrong `type` for this
  * event, or `eventProps` on an event that has none, is incompatible.
@@ -228,9 +235,10 @@ export function isActionSlotEventPropsCompatible(
 	eventName: string,
 	slot: IAppBuilderActionSlot,
 ): boolean {
-	if (!slot.eventProps) return true;
+	const eventProps = readSlotEventProps(slot);
+	if (!eventProps) return true;
 	const expected = expectedActionSlotEventPropsType(eventName);
-	return expected !== undefined && slot.eventProps.type === expected;
+	return expected !== undefined && eventProps.type === expected;
 }
 
 function warnIncompatibleActionSlotEventProps(
@@ -238,7 +246,7 @@ function warnIncompatibleActionSlotEventProps(
 	slot: IAppBuilderActionSlot,
 ): void {
 	const expected = expectedActionSlotEventPropsType(eventName);
-	const actual = slot.eventProps?.type;
+	const actual = readSlotEventProps(slot)?.type;
 	if (expected === undefined) {
 		Logger.warn(
 			`Action slot "${eventName}" does not support eventProps and will be ignored.`,
@@ -338,9 +346,10 @@ export function getActionSlotEventProps(
 	slot: IAppBuilderActionSlot,
 	expectedType: IAppBuilderActionSlotEventProps["type"],
 ): IAppBuilderActionSlotEventProps["props"] | undefined {
-	if (!slot.eventProps) return undefined;
-	if (slot.eventProps.type !== expectedType) return undefined;
-	return slot.eventProps.props;
+	const eventProps = readSlotEventProps(slot);
+	if (!eventProps) return undefined;
+	if (eventProps.type !== expectedType) return undefined;
+	return eventProps.props;
 }
 
 /**

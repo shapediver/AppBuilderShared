@@ -18,7 +18,10 @@ import type {
 	IAppBuilderLegacyActionDefinition,
 	AppBuilderSetParameterValuesUpdateMode as SetParameterValuesUpdateMode,
 } from "./appbuilderActions";
-import type {IAppBuilderActionSlots} from "./appbuilderActionSlots";
+import type {
+	IAppBuilderNodeActionSlots,
+	IAppBuilderRootActionSlots,
+} from "./appbuilderActionSlots";
 import type {IAppBuilderAgent} from "./appbuilderagent";
 import {
 	IAppBuilderWidgetPropsAreaChart,
@@ -116,6 +119,12 @@ export type {
 	IAppBuilderActionSlotEventPropsSession,
 	IAppBuilderActionSlotList,
 	IAppBuilderActionSlots,
+	IAppBuilderExportActionSlot,
+	IAppBuilderNodeActionSlots,
+	IAppBuilderPlainActionSlot,
+	IAppBuilderRootActionSlots,
+	IAppBuilderSelectionActionSlot,
+	IAppBuilderSessionActionSlot,
 } from "./appbuilderActionSlots";
 export {AppBuilderActionType} from "./appBuilderActionType";
 export type {IAppBuilderColor};
@@ -460,16 +469,19 @@ export interface IAppBuilderExportRef {
 
 /**
  * Neutral node-level fields shared by widgets, tabs, containers, controls,
- * toolbar items, and the root definition. Future node-level properties
- * (for example style, SS-9919) belong here, not inside widget `props`.
+ * and toolbar items. Future node-level properties (for example style,
+ * SS-9919) belong here, not inside widget `props`.
+ *
+ * The root {@link IAppBuilder} does not extend this. Its slots also include
+ * application events.
  */
 export interface IAppBuilderNode {
 	/**
 	 * Actions assigned to events emitted by this node.
-	 * Which events a node may use is enforced by `AppBuilderActionSlots`
-	 * (`pickAllowedActionSlots`), not by Zod.
+	 * Pointer, click, contextmenu, and `custom:*` only.
+	 * Zod rejects any other event name, and `eventProps`.
 	 */
-	actionSlots?: IAppBuilderActionSlots;
+	actionSlots?: IAppBuilderNodeActionSlots;
 }
 
 /** An App Builder control. */
@@ -1578,7 +1590,14 @@ export interface IAppBuilderSessionDefinition extends IAppBuilderSessionDefiniti
  * array (different `eventProps`). Pointer/`click` on the root attach to
  * the viewport host.
  */
-export interface IAppBuilder extends IAppBuilderNode {
+export interface IAppBuilder {
+	/**
+	 * Application events, plus pointer/click/contextmenu for the viewport
+	 * host, and `custom:*`. Zod rejects event names and `eventProps` the
+	 * root cannot use.
+	 */
+	actionSlots?: IAppBuilderRootActionSlots;
+
 	/** Version of the schema. */
 	version: "1.0";
 

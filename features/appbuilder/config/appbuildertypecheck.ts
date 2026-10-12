@@ -33,12 +33,12 @@ import {
 	AttributeVisualizationVisibility,
 	FormWidgetSubmitBehavior,
 	IAppBuilderActionDefinition,
-	IAppBuilderActionSlots,
 	IAppBuilderWidget,
 	ParameterStringInputMode,
 	SavedStatesVisualization,
 	SelectComponentType,
 } from "./appbuilder";
+import {APP_BUILDER_CUSTOM_EVENT_PATTERN} from "./appbuilderActionSlots";
 import {
 	appBuilderStandardContainerPropsSchema,
 	appBuilderViewportAnchorMobileFallbackSchema,
@@ -760,38 +760,111 @@ const IAppBuilderActionSlotEventPropsSelectionSchema = z.strictObject({
 	occludeBySceneGeometry: z.boolean().optional(),
 });
 
-const IAppBuilderActionSlotEventPropsSchema = z.discriminatedUnion("type", [
-	z.strictObject({
-		type: z.literal("session"),
-		props: IAppBuilderActionSlotEventPropsSessionSchema,
-	}),
-	z.strictObject({
-		type: z.literal("export"),
-		props: IAppBuilderActionSlotEventPropsExportSchema,
-	}),
-	z.strictObject({
-		type: z.literal("selection"),
-		props: IAppBuilderActionSlotEventPropsSelectionSchema,
-	}),
-]);
-
-const IAppBuilderActionSlotSchema = z.strictObject({
+/** Pointer, click, contextmenu, appready, and custom events. No eventProps. */
+const IAppBuilderPlainActionSlotSchema = z.strictObject({
 	action: IAppBuilderActionDefinitionSchema,
-	eventProps: IAppBuilderActionSlotEventPropsSchema.optional(),
 });
 
-const IAppBuilderActionSlotsSchema = z.record(
-	z.string(),
-	z.union([
-		IAppBuilderActionSlotSchema,
-		z.array(IAppBuilderActionSlotSchema),
-	]),
-) as z.ZodType<IAppBuilderActionSlots>;
+const IAppBuilderSessionActionSlotSchema = z.strictObject({
+	action: IAppBuilderActionDefinitionSchema,
+	eventProps: z
+		.strictObject({
+			type: z.literal("session"),
+			props: IAppBuilderActionSlotEventPropsSessionSchema,
+		})
+		.optional(),
+});
+
+const IAppBuilderExportActionSlotSchema = z.strictObject({
+	action: IAppBuilderActionDefinitionSchema,
+	eventProps: z
+		.strictObject({
+			type: z.literal("export"),
+			props: IAppBuilderActionSlotEventPropsExportSchema,
+		})
+		.optional(),
+});
+
+const IAppBuilderSelectionActionSlotSchema = z.strictObject({
+	action: IAppBuilderActionDefinitionSchema,
+	eventProps: z
+		.strictObject({
+			type: z.literal("selection"),
+			props: IAppBuilderActionSlotEventPropsSelectionSchema,
+		})
+		.optional(),
+});
+
+function actionSlotList<T extends z.ZodType>(slot: T) {
+	return z.union([slot, z.array(slot)]);
+}
+
+const plainActionSlotListSchema = actionSlotList(
+	IAppBuilderPlainActionSlotSchema,
+);
+
+/**
+ * Known events use `shape`. Any other key must be `custom:` kebab-case and
+ * a plain slot (no `eventProps`).
+ */
+function actionSlotsSchema<T extends z.ZodRawShape>(shape: T) {
+	return z
+		.object(shape)
+		.catchall(plainActionSlotListSchema)
+		.superRefine((value, ctx) => {
+			for (const key of Object.keys(value)) {
+				if (Object.prototype.hasOwnProperty.call(shape, key)) continue;
+				if (APP_BUILDER_CUSTOM_EVENT_PATTERN.test(key)) continue;
+				ctx.addIssue({
+					code: "custom",
+					path: [key],
+					message: `Unsupported action slot event "${key}". Use a known event for this node or custom:kebab-case.`,
+				});
+			}
+		});
+}
+
+const nodeActionSlotShape = {
+	click: plainActionSlotListSchema.optional(),
+	contextmenu: plainActionSlotListSchema.optional(),
+	pointerdown: plainActionSlotListSchema.optional(),
+	pointerup: plainActionSlotListSchema.optional(),
+	pointerenter: plainActionSlotListSchema.optional(),
+	pointerleave: plainActionSlotListSchema.optional(),
+};
+
+/** Widgets, tabs, containers, controls, toolbar items. */
+const IAppBuilderNodeActionSlotsSchema = actionSlotsSchema(nodeActionSlotShape);
+
+/**
+ * Root `IAppBuilder`. Pointer/click/contextmenu are repeated here because
+ * the viewport host reads them from this same object.
+ */
+const IAppBuilderRootActionSlotsSchema = actionSlotsSchema({
+	...nodeActionSlotShape,
+	appready: plainActionSlotListSchema.optional(),
+	computationstart: actionSlotList(
+		IAppBuilderSessionActionSlotSchema,
+	).optional(),
+	computationend: actionSlotList(
+		IAppBuilderSessionActionSlotSchema,
+	).optional(),
+	computationerror: actionSlotList(
+		IAppBuilderSessionActionSlotSchema,
+	).optional(),
+	exportstart: actionSlotList(IAppBuilderExportActionSlotSchema).optional(),
+	exportend: actionSlotList(IAppBuilderExportActionSlotSchema).optional(),
+	exporterror: actionSlotList(IAppBuilderExportActionSlotSchema).optional(),
+	selecton: actionSlotList(IAppBuilderSelectionActionSlotSchema).optional(),
+	selectoff: actionSlotList(IAppBuilderSelectionActionSlotSchema).optional(),
+	hoveron: actionSlotList(IAppBuilderSelectionActionSlotSchema).optional(),
+	hoveroff: actionSlotList(IAppBuilderSelectionActionSlotSchema).optional(),
+});
 
 function appBuilderNodeObject<T extends z.ZodRawShape>(shape: T) {
 	return z.strictObject({
 		...shape,
-		actionSlots: IAppBuilderActionSlotsSchema.optional(),
+		actionSlots: IAppBuilderNodeActionSlotsSchema.optional(),
 	});
 }
 
@@ -1344,7 +1417,7 @@ const IAppBuilderToolbarItemMetaShape = {
 	id: z.string().optional(),
 	order: z.number().optional(),
 	presentation: z.enum(["button", "item"]).optional(),
-	actionSlots: IAppBuilderActionSlotsSchema.optional(),
+	actionSlots: IAppBuilderNodeActionSlotsSchema.optional(),
 };
 
 const IAppBuilderToolbarControlItemSchema = z.discriminatedUnion("type", [
@@ -1716,7 +1789,7 @@ const IAppBuilderSchema = z.strictObject({
 	instances: z.array(IAppBuilderInstancesSchema).optional(),
 	sessions: z.array(IAppBuilderSessionDefinitionSchema).optional(),
 	agents: z.array(IAppBuilderAgentSchema).optional(),
-	actionSlots: IAppBuilderActionSlotsSchema.optional(),
+	actionSlots: IAppBuilderRootActionSlotsSchema.optional(),
 });
 
 export type AppBuilderSchemaOutput = z.infer<typeof IAppBuilderSchema>;
