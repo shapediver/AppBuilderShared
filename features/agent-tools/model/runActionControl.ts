@@ -14,6 +14,7 @@ import {
 	type IAppBuilderControlActionRef,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {waitForAppBuilderSessionIdle} from "@AppBuilderLib/features/appbuilder/model/waitForAppBuilderSessionIdle";
+import {executeActionsSuccessResult} from "@AppBuilderLib/features/ecommerce/lib/executeActionsSuccessResult";
 import type {RunActionControlResult} from "../config/triggerActionControl";
 import {formatToolInputError} from "../lib/formatToolInputError";
 import {applyParameterUpdates} from "../lib/resolveSetParameterUpdates";
@@ -75,23 +76,26 @@ export async function runActionControl(
 		if (isExecuteActionsAction(definition)) {
 			const mode = definition.props.mode ?? "parallel";
 			if (mode === "sequential") {
+				const results: RunActionControlResult[] = [];
 				for (const nested of definition.props.actions) {
 					const result = await runActionControl(
 						{definition: nested},
 						deps,
 					);
 					if (!result.success) return result;
+					results.push(result);
 					await waitForAppBuilderSessionIdle();
 				}
-				return {success: true};
+				return executeActionsSuccessResult(results);
 			}
-			const results = await Promise.allSettled(
+			const settled = await Promise.allSettled(
 				definition.props.actions.map((nested) =>
 					runActionControl({definition: nested}, deps),
 				),
 			);
 			await waitForAppBuilderSessionIdle();
-			for (const result of results) {
+			const results: RunActionControlResult[] = [];
+			for (const result of settled) {
 				if (result.status === "rejected") {
 					return {
 						success: false,
@@ -99,8 +103,9 @@ export async function runActionControl(
 					};
 				}
 				if (!result.value.success) return result.value;
+				results.push(result.value);
 			}
-			return {success: true};
+			return executeActionsSuccessResult(results);
 		}
 		if (isCreateModelStateAction(definition)) {
 			return await deps.createModelState(definition.props);

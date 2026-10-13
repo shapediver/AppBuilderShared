@@ -31,6 +31,9 @@ export async function addToCartFromStores(
 		},
 	);
 	const modelStateId = resultModelState.modelStateId;
+	if (!modelStateId) {
+		throw new Error("Failed to create model state.");
+	}
 	const api = await ECommerceApiSingleton;
 	try {
 		const result = await api.addItemToCart({

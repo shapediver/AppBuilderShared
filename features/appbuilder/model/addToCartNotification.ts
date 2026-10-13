@@ -1,8 +1,7 @@
+import type {ITriggerActionReply} from "@AppBuilderLib/features/ecommerce/config/ecommerceapi";
 import {resolveModelStateMessage} from "@AppBuilderLib/features/model-state/lib/resolveModelStateMessage";
 
-export type AddToCartApiResult =
-	| {success: true; modelStateId: string; cartItemId: string}
-	| {success: false; message: string};
+export type AddToCartApiResult = ITriggerActionReply<"addToCart">;
 
 /** Success toast: reply message, then the action message, then the generic sentence. */
 export function addToCartSuccessMessage(args: {
@@ -57,8 +56,10 @@ export function toAddToCartApiSuccess(result: {
 	}
 	return {
 		success: true,
-		modelStateId: result.modelStateId,
-		cartItemId: result.cartItemId,
+		props: {
+			modelStateId: result.modelStateId,
+			cartItemId: result.cartItemId,
+		},
 	};
 }
 

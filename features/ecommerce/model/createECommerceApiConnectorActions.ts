@@ -43,6 +43,7 @@ import {
 	validateTriggerActionData,
 	validateUpdateParameterValuesData,
 } from "../config/ecommerceapitypecheck";
+import {executeActionsSuccessResult} from "../lib/executeActionsSuccessResult";
 
 function invalidDataError(action: string, error: unknown): Error {
 	return new Error(`Invalid data for ${action}`, {cause: error});
@@ -115,28 +116,32 @@ export function createECommerceApiConnectorActions(
 		if (isExecuteActionsAction(definition)) {
 			const mode = definition.props.mode ?? "parallel";
 			if (mode === "sequential") {
+				const results: ITriggerActionReply[] = [];
 				for (const nested of definition.props.actions) {
 					const result = await dispatchAction(nested);
 					if (!result.success) return result;
+					results.push(result);
 					await waitForAppBuilderSessionIdle();
 				}
-				return {success: true};
+				return executeActionsSuccessResult(results);
 			}
-			const results = await Promise.allSettled(
+			const settled = await Promise.allSettled(
 				definition.props.actions.map((nested) =>
 					dispatchAction(nested),
 				),
 			);
 			await waitForAppBuilderSessionIdle();
-			for (const result of results) {
+			const results: ITriggerActionReply[] = [];
+			for (const result of settled) {
 				if (result.status === "rejected") {
 					return failureReply(result.reason);
 				}
 				if (!result.value.success) {
 					return result.value;
 				}
+				results.push(result.value);
 			}
-			return {success: true};
+			return executeActionsSuccessResult(results);
 		}
 		if (isCreateModelStateAction(definition)) {
 			const result = await createModelStateFromStores(
@@ -201,17 +206,17 @@ export function createECommerceApiConnectorActions(
 		return {success: true};
 	};
 
-	const triggerAction = async (
-		data: ITriggerActionData,
-	): Promise<ITriggerActionReply> => {
+	const triggerAction = async <T extends ITriggerActionData>(
+		data: T,
+	): Promise<ITriggerActionReply<T["type"]>> => {
 		const parsed = validateTriggerActionData(data);
 		if (!parsed.success) {
 			throw invalidDataError("triggerAction", parsed.error);
 		}
 		try {
-			return await dispatchAction(
+			return (await dispatchAction(
 				parsed.data as IAppBuilderActionDefinition,
-			);
+			)) as ITriggerActionReply<T["type"]>;
 		} catch (e) {
 			return failureReply(e);
 		}

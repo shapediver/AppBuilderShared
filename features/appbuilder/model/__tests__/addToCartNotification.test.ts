@@ -101,8 +101,10 @@ describe("add-to-cart API result", () => {
 			}),
 		).toEqual({
 			success: true,
-			modelStateId: "ms-1",
-			cartItemId: "cart-1",
+			props: {
+				modelStateId: "ms-1",
+				cartItemId: "cart-1",
+			},
 		});
 	});
 

@@ -51,7 +51,7 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 		description:
 			"Run an action control without mounting App Builder UI. " +
 			"Input: { name } — id or name from list_action_controls. " +
-			"Success: { success: true, ...props }. Depending on the action type, props may add further properties. " +
+			"Success: { success: true, props? }. addToCart props are {modelStateId, cartItemId}. executeActions props are {results} of nested replies. Other actions omit props. " +
 			"Failure: { success: false, message }. " +
 			"Unsupported action types return message 'not supported'.",
 		annotations: {readOnlyHint: false},
