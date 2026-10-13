@@ -332,9 +332,9 @@ export class ECommerceApiConnector implements IECommerceApiConnector {
 		);
 	}
 
-	async triggerAction(
-		data: ITriggerActionData,
-	): Promise<ITriggerActionReply> {
+	async triggerAction<T extends ITriggerActionData>(
+		data: T,
+	): Promise<ITriggerActionReply<T["type"]>> {
 		await this.peerIsReady;
 
 		return this.#crossWindowApi.send(
@@ -426,7 +426,9 @@ export class DummyECommerceApiConnectorActions implements IECommerceApiConnector
 		return Promise.resolve({});
 	}
 
-	triggerAction(): Promise<ITriggerActionReply> {
+	triggerAction<T extends ITriggerActionData>(
+		_data: T,
+	): Promise<ITriggerActionReply<T["type"]>> {
 		return Promise.resolve({
 			success: false,
 			message: "Not implemented",

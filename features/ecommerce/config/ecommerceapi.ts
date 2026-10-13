@@ -88,11 +88,21 @@ export interface IAddItemToCartData {
 	properties?: Record<string, string>;
 }
 
+/**
+ * Reply from the parent page after adding an item to the cart.
+ * A handler reports failure by throwing an Error.
+ */
 export interface IAddItemToCartReply {
 	/**
 	 * The id of the cart item that has been added.
 	 */
 	id: string;
+
+	/**
+	 * Success message shown instead of the default cart notification.
+	 * Supports the optional placeholder `{modelStateId}`.
+	 */
+	successMessage?: string;
 }
 
 /**
@@ -381,9 +391,34 @@ export type ITriggerActionData =
 			};
 	  };
 
-export interface ITriggerActionReply {
+/** Identifiers returned when an addToCart action succeeds. */
+export interface IAddToCartActionResultProps {
+	modelStateId: string;
+	cartItemId: string;
+}
+
+/** Nested replies returned when an executeActions action succeeds. */
+export interface IExecuteActionsResultProps {
+	results: ITriggerActionReply[];
+}
+
+type ITriggerActionResultProps<TType extends ITriggerActionData["type"]> =
+	TType extends "addToCart"
+		? IAddToCartActionResultProps
+		: TType extends "executeActions"
+			? IExecuteActionsResultProps
+			: never;
+
+/**
+ * Reply from `triggerAction` and tools `runActionControl`.
+ * `props` is present only for actions that return a payload.
+ */
+export interface ITriggerActionReply<
+	TType extends ITriggerActionData["type"] = ITriggerActionData["type"],
+> {
 	success: boolean;
 	message?: string;
+	props?: ITriggerActionResultProps<TType>;
 }
 
 export interface IGetOutputData {
@@ -433,7 +468,9 @@ export interface IECommerceApiConnectorActions {
 	/**
 	 * Run an App Builder action (same allowlist as the tools API).
 	 */
-	triggerAction(data: ITriggerActionData): Promise<ITriggerActionReply>;
+	triggerAction<T extends ITriggerActionData>(
+		data: T,
+	): Promise<ITriggerActionReply<T["type"]>>;
 
 	/**
 	 * Return the latest output content for an output id, name, or displayname.

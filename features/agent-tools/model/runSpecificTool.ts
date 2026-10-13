@@ -26,5 +26,5 @@ export async function runSpecificTool(
 	const result = await runActionControl({definition: bound.action}, deps);
 	if (!result.success) return result;
 	await waitForAppBuilderSessionIdle();
-	return {success: true};
+	return result;
 }
