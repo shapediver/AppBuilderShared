@@ -96,7 +96,7 @@ These are the three objects, from `IAppBuilderActionSlotEventProps` in `config/a
 
 One event name is either a single slot object, or an array of them. Use the array when each entry should listen to a different source. Each entry has its own `eventProps`. 
 
-Example: Let's say on the root, we want to define multiple slots for selection. When I select object A, X should happen and when I click object B, why should happen. In this case we have a selection slot with two objects. That means both objects are selectable with different actions to be defined for each of them
+Example: Let's say on the root, we want to define multiple slots for selection. When I select object A, X should happen and when I click object B, Y should happen. In this case we have a selection slot with two objects. That means both objects are selectable with different actions to be defined for each of them
 
 ```json
 "selecton": [
