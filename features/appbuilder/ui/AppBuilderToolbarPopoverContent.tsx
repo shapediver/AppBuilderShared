@@ -7,6 +7,7 @@ import {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/Compo
 import {getParameterComponent} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import type {ToolbarPopoverItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
+import {appBuilderPanelSpacing} from "@AppBuilderLib/features/appbuilder/lib/appBuilderPanelSpacing";
 import ThemeProvider from "@AppBuilderLib/shared/ui/theme/ThemeProvider";
 import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderControlsWidgetComponent";
 import AppBuilderTabsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderTabsComponent";
@@ -19,13 +20,6 @@ import AppBuilderToolbarCommandButton from "./AppBuilderToolbarCommandButton";
 import AppBuilderToolbarMenuCheckbox from "./AppBuilderToolbarMenuCheckbox";
 
 /**
- * Mantine spacing for a toolbar widget or tab panel.
- * Dropdown padding and the gap between cards share this value, so the
- * space between cards matches the space at the panel edge.
- */
-export const toolbarPanelSpacing = 4;
-
-/**
  * Parameter lists use their own stack. Scope that gap to toolbar panels
  * through the controls widget theme props, the same way other containers
  * set spacing.
@@ -34,7 +28,7 @@ const toolbarPanelTheme = {
 	components: {
 		AppBuilderControlsWidgetComponent:
 			AppBuilderControlsWidgetComponentThemeProps({
-				stackProps: {gap: toolbarPanelSpacing},
+				stackProps: {gap: appBuilderPanelSpacing},
 			}),
 	},
 };
@@ -248,7 +242,7 @@ export default function AppBuilderToolbarPopoverContent({
 				// Sibling widgets must be stack items so action buttons stretch.
 				return (
 					<ToolbarPanelTheme>
-						<Stack gap={toolbarPanelSpacing}>
+						<Stack gap={appBuilderPanelSpacing}>
 							<AppBuilderWidgetsComponent
 								namespace={namespace}
 								widgets={item.props.widgets}

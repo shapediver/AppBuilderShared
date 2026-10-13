@@ -6,15 +6,14 @@ import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/Compon
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import {ToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreToolbars";
 import type {ToolbarPopoverItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
+import {appBuilderPanelSpacing} from "@AppBuilderLib/features/appbuilder/lib/appBuilderPanelSpacing";
 import AppBuilderToolbarIconButton, {
 	AppBuilderToolbarIconButtonDefaultStyleProps,
 	useResolvedAppBuilderToolbarIconButtonTheme,
 } from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {Popover, useProps} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
-import AppBuilderToolbarPopoverContent, {
-	toolbarPanelSpacing,
-} from "./AppBuilderToolbarPopoverContent";
+import AppBuilderToolbarPopoverContent from "./AppBuilderToolbarPopoverContent";
 
 type ToolbarPopoverProps = Partial<React.ComponentProps<typeof Popover>>;
 type ToolbarButtonThemeProps = AppBuilderToolbarButtonThemeDefaultProps & {
@@ -26,7 +25,7 @@ const defaultStyleProps = {
 	tooltipWrapperProps: {},
 	popoverProps: {shadow: "md", withinPortal: true} as ToolbarPopoverProps,
 	popoverDropdownProps: {
-		p: toolbarPanelSpacing,
+		p: appBuilderPanelSpacing,
 		style: {
 			maxWidth: 320,
 			...ViewportTransparentBackgroundStyle,

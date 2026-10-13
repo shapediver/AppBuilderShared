@@ -7,6 +7,7 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {AppBuilderStandardContainerNameType} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
+import {appBuilderPanelSpacing} from "@AppBuilderLib/features/appbuilder/lib/appBuilderPanelSpacing";
 import {overlayDefinedFields} from "@AppBuilderLib/features/appbuilder/lib/overlayDefinedFields";
 import {useAppBuilderMobileLayoutTheme} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderMobileLayoutTheme";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
@@ -136,6 +137,8 @@ export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
 			...viewportAnchorPreviewPaperStyle,
 		},
 		pt: 0,
+		px: appBuilderPanelSpacing,
+		py: appBuilderPanelSpacing,
 		shadow: "md",
 	},
 	anchorStackProps: {
@@ -600,7 +603,12 @@ export function useAnchorContainer({
 	 * Here we have a group with the icons and a group with the main element.
 	 */
 	const inner = (
-		<Stack gap={0} key={id} {...anchorStackProps}>
+		<Stack
+			gap={0}
+			key={id}
+			{...anchorStackProps}
+			p={useContainer ? undefined : appBuilderPanelSpacing}
+		>
 			{(hasDragIcon || hasCloseIcon) && (
 				<Flex
 					ref={updateControlElementGroupRef}
