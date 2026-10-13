@@ -271,7 +271,53 @@ describe("runActionControl", () => {
 		);
 
 		expect(runCameraAction).toHaveBeenCalledWith(nested);
-		expect(result).toEqual({success: true});
+		expect(result).toEqual({
+			success: true,
+			props: {results: [{success: true}]},
+		});
+	});
+
+	it("returns nested results in action order for parallel executeActions", async () => {
+		const first = {
+			type: "camera" as const,
+			props: {
+				type: "assign" as const,
+				props: {camera: {name: "Front"}},
+			},
+		};
+		const second = {
+			type: "camera" as const,
+			props: {
+				type: "assign" as const,
+				props: {camera: {name: "Back"}},
+			},
+		};
+		const runCameraAction = jest
+			.fn()
+			.mockResolvedValueOnce({success: true, message: "first"})
+			.mockResolvedValueOnce({success: true, message: "second"});
+		const result = await runActionControl(
+			actionRef({
+				definition: {
+					type: "executeActions",
+					props: {
+						mode: "parallel",
+						actions: [first, second],
+					},
+				},
+			}),
+			createDeps({runCameraAction}),
+		);
+
+		expect(result).toEqual({
+			success: true,
+			props: {
+				results: [
+					{success: true, message: "first"},
+					{success: true, message: "second"},
+				],
+			},
+		});
 	});
 
 	it("returns the host camera runner failure", async () => {

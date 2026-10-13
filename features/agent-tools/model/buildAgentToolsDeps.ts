@@ -25,7 +25,7 @@ import {
 import {AppBuilderActionType} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionType";
 import type {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import type {ToolbarRegistration} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreToolbars";
-import {addToCartFromStores} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionAddToCart";
+import {addToCartApiResult} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionAddToCart";
 import {createModelStateFromStores} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionCreateModelState";
 import {runAppBuilderActionSound} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSound";
 import type {IImportModelStateData} from "@AppBuilderLib/features/model-state/config/importModelState";
@@ -240,17 +240,11 @@ export function buildAgentToolsDeps(
 			),
 		runCameraAction: (definition) =>
 			runHostCamera(componentContext, definition, namespace, viewportId),
-		addToCart: async (props) => {
-			try {
-				await addToCartFromStores(props, {
-					namespace,
-					viewportId,
-				});
-				return {success: true};
-			} catch (e) {
-				return failureResult(e);
-			}
-		},
+		addToCart: (props) =>
+			addToCartApiResult(props, {
+				namespace,
+				viewportId,
+			}),
 		playSound: async (props) => {
 			try {
 				await runAppBuilderActionSound(props);
