@@ -12,7 +12,9 @@ import AppBuilderToolbarIconButton, {
 } from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {Popover, useProps} from "@mantine/core";
 import React, {useCallback, useContext, useMemo, useState} from "react";
-import AppBuilderToolbarPopoverContent from "./AppBuilderToolbarPopoverContent";
+import AppBuilderToolbarPopoverContent, {
+	toolbarPanelSpacing,
+} from "./AppBuilderToolbarPopoverContent";
 
 type ToolbarPopoverProps = Partial<React.ComponentProps<typeof Popover>>;
 type ToolbarButtonThemeProps = AppBuilderToolbarButtonThemeDefaultProps & {
@@ -24,8 +26,8 @@ const defaultStyleProps = {
 	tooltipWrapperProps: {},
 	popoverProps: {shadow: "md", withinPortal: true} as ToolbarPopoverProps,
 	popoverDropdownProps: {
+		p: toolbarPanelSpacing,
 		style: {
-			padding: 4,
 			maxWidth: 320,
 			...ViewportTransparentBackgroundStyle,
 		},
