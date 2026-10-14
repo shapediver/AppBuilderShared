@@ -1,13 +1,9 @@
-import {
-	ParameterValueDefinition,
-	useResolveParameterValues,
-} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
-import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
-import {useEffect, useMemo, useRef} from "react";
+import {useEventTracking} from "@AppBuilderLib/shared/lib/useEventTracking";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {IAppBuilder, IAppBuilderSettingsSession} from "../config/appbuilder";
 import useResolveAppBuilderSessions from "./useResolveAppBuilderSessions";
 
@@ -33,18 +29,38 @@ function useStableByJson<T>(value: T): T {
 	return state.current.value;
 }
 
+const sessionSlug = (session: {slug?: string}) => session.slug ?? "";
+
+/**
+ * `closeSession` reports failure by leaving the session in the store.
+ * Returns whether that id is gone afterwards.
+ */
+async function closeTrackedSession(sessionId: string): Promise<boolean> {
+	const {closeSession, sessions} = useShapeDiverStoreSession.getState();
+	if (!sessions[sessionId]) return true;
+	try {
+		await closeSession(sessionId);
+	} catch (error) {
+		Logger.warn("Error closing sessions:", error);
+		return false;
+	}
+	if (useShapeDiverStoreSession.getState().sessions[sessionId]) {
+		Logger.warn(`Error closing session "${sessionId}".`);
+		return false;
+	}
+	return true;
+}
+
 /**
  * Create full sessions declared on the App Builder data output.
  * Same skip-if-loaded rule as the embedded sessions in {@link useAppBuilderInstances},
  * without the instance flags. A session id that also appears in `instances` is
- * skipped so the instance keeps that session. Sessions stay on the `useSessions`
- * list while the output still lists them, so removing one closes it.
+ * skipped so the instance keeps that session. A session stays open while the
+ * output lists it. Adding or removing one session does not recreate the others.
  */
 export function useAppBuilderSessions(props: Props) {
 	const {namespace, appBuilderData} = props;
-	const {sessions, pendingSessions} = useShapeDiverStoreSession();
-	const sessionsRef = useRef(sessions);
-	const pendingSessionsRef = useRef(pendingSessions);
+	const eventTracking = useEventTracking();
 	/** Ids this hook has accepted, so a later parse does not treat them as theme sessions. */
 	const createdSessionIdsRef = useRef<{namespace: string; ids: string[]}>({
 		namespace,
@@ -52,29 +68,50 @@ export function useAppBuilderSessions(props: Props) {
 	});
 	/** Create DTOs from the first time each id was accepted. Parameter updates do not recreate the session. */
 	const sessionDtoRef = useRef<Record<string, EmbeddedSession>>({});
+	/** Slug currently open for each id this hook created. */
+	const liveSlugsRef = useRef<Map<string, string>>(new Map());
+	const desiredSessionsRef = useRef<EmbeddedSession[]>([]);
+	const promiseChainRef = useRef(Promise.resolve());
+	const unmountedRef = useRef(false);
+	/** Skip warnings already logged for this controller namespace. */
+	const warnedRef = useRef<Set<string>>(new Set());
 
-	useEffect(() => {
-		sessionsRef.current = sessions;
-		pendingSessionsRef.current = pendingSessions;
-	}, [sessions, pendingSessions]);
-
-	const {embeddedSessions, parameterValues} = useMemo(() => {
+	const embeddedSessions = useMemo(() => {
+		const {sessions, pendingSessions} =
+			useShapeDiverStoreSession.getState();
 		const sessionIsLoaded = (sessionId: string) =>
-			!!sessionsRef.current[sessionId] ||
-			!!Object.values(pendingSessionsRef.current).find(
+			!!sessions[sessionId] ||
+			!!Object.values(pendingSessions).find(
 				(session) => session.dto.id === sessionId,
 			);
 
 		if (createdSessionIdsRef.current.namespace !== namespace) {
-			createdSessionIdsRef.current = {namespace, ids: []};
-			sessionDtoRef.current = {};
+			// Keep ids this hook still has open. Forgetting them makes the
+			// next parse treat those sessions as foreign and close them.
+			const liveIds = [...liveSlugsRef.current.keys()];
+			createdSessionIdsRef.current = {namespace, ids: liveIds};
+			for (const id of Object.keys(sessionDtoRef.current)) {
+				if (!liveSlugsRef.current.has(id))
+					delete sessionDtoRef.current[id];
+			}
+			warnedRef.current.clear();
 		}
 
+		const warnOnce = (key: string, message: string) => {
+			if (warnedRef.current.has(key)) return;
+			warnedRef.current.add(key);
+			Logger.warn(message);
+		};
+
 		const owned: EmbeddedSession[] = [];
-		const parameterValues: ParameterValueDefinition[] = [];
 		const definitions = appBuilderData?.sessions;
-		if (!definitions?.length)
-			return {embeddedSessions: owned, parameterValues};
+		if (!definitions?.length) {
+			// The sessions are gone, so the next time they are listed they
+			// must be created from the current initial parameter values.
+			sessionDtoRef.current = {};
+			createdSessionIdsRef.current = {namespace, ids: []};
+			return owned;
+		}
 
 		const createdSessionIds = new Set(createdSessionIdsRef.current.ids);
 		const instanceSessionIds = new Set(
@@ -84,7 +121,8 @@ export function useAppBuilderSessions(props: Props) {
 			// Instances own this id. Their session must stay hidden, so this
 			// entry must not create a full session for the same id.
 			if (instanceSessionIds.has(definition.sessionId)) {
-				Logger.warn(
+				warnOnce(
+					`instance:${definition.sessionId}`,
 					`Session id "${definition.sessionId}" is already used by an instance. Skipping additional session.`,
 				);
 				return;
@@ -92,54 +130,34 @@ export function useAppBuilderSessions(props: Props) {
 
 			if (
 				sessionIsLoaded(definition.sessionId) &&
-				!createdSessionIds.has(definition.sessionId)
-			)
+				!createdSessionIds.has(definition.sessionId) &&
+				!liveSlugsRef.current.has(definition.sessionId)
+			) {
+				warnOnce(
+					`exists:${definition.sessionId}`,
+					`Session id "${definition.sessionId}" already exists. Skipping additional session.`,
+				);
 				return;
+			}
 
 			// use slug if available, otherwise use sessionId
 			const slug = definition.slug || definition.sessionId;
-			const duplicateSlug = owned.find(
-				(session) => session.slug === slug,
-			);
-			if (duplicateSlug) {
-				if (duplicateSlug.id !== definition.sessionId) {
-					Logger.warn(
-						`Multiple sessions are using the same slug "${slug}" but different session ids ("${duplicateSlug.id}" and "${definition.sessionId}"). This can lead to unexpected behavior.`,
-					);
-				}
-				return;
-			}
 			if (owned.some((session) => session.id === definition.sessionId)) {
-				Logger.warn(
+				warnOnce(
+					`duplicate:${definition.sessionId}`,
 					`Duplicate session id "${definition.sessionId}". Session ids must be unique, skipping session.`,
 				);
 				return;
 			}
 
-			const initialParameterValues: {[key: string]: string} = {};
-			Object.entries(definition.parameterValues ?? {}).forEach(
-				([key, value]) => {
-					if (
-						typeof value === "string" ||
-						typeof value === "number" ||
-						typeof value === "boolean"
-					)
-						initialParameterValues[key] = value + "";
-
-					parameterValues.push({
-						id: key,
-						value,
-						namespace: definition.sessionId,
-					});
-				},
-			);
-
+			const initialParameterValues = definition.initialParameterValues;
 			const existing = sessionDtoRef.current[definition.sessionId];
 			if (!existing || existing.slug !== slug) {
 				sessionDtoRef.current[definition.sessionId] = {
 					id: definition.sessionId,
 					slug,
-					...(Object.keys(initialParameterValues).length
+					...(initialParameterValues &&
+					Object.keys(initialParameterValues).length
 						? {initialParameterValues}
 						: {}),
 				} as EmbeddedSession;
@@ -155,96 +173,192 @@ export function useAppBuilderSessions(props: Props) {
 			namespace,
 			ids: owned.map((session) => session.id),
 		};
-		return {embeddedSessions: owned, parameterValues};
+		return owned;
 	}, [appBuilderData, namespace]);
 
 	const stableEmbeddedSessions = useStableByJson(embeddedSessions);
-	const stableParameterValues = useStableByJson(parameterValues);
-	const {sessions: sessionData, error: platformError} =
-		useResolveAppBuilderSessions(stableEmbeddedSessions, false);
-	const {errors: sessionErrors} = useSessions(sessionData ?? []);
+	desiredSessionsRef.current = stableEmbeddedSessions;
+	const [retryResolve, setRetryResolve] = useState(false);
+	// While a resolve is failing, the next output must try again even when
+	// the session list itself did not change.
+	const sessionsForResolve = useMemo(() => {
+		if (!retryResolve) return stableEmbeddedSessions;
+		return stableEmbeddedSessions.slice();
+	}, [appBuilderData, retryResolve, stableEmbeddedSessions]);
+	const {
+		sessions: sessionData,
+		error: platformError,
+		resolveErrors,
+	} = useResolveAppBuilderSessions(sessionsForResolve, false, true);
+
+	// Close sessions that left the output, or whose slug changed. Sessions
+	// that are still listed stay open while the next list is resolving.
+	useEffect(() => {
+		// appBuilderData is a dependency so a failed close is tried again
+		// on the next output, even when the session list did not change.
+		void appBuilderData;
+		const removed: string[] = [];
+		for (const [id, slug] of liveSlugsRef.current) {
+			const desired = stableEmbeddedSessions.find(
+				(session) => session.id === id,
+			);
+			if (!desired || sessionSlug(desired) !== slug) removed.push(id);
+		}
+		if (!removed.length) return;
+
+		promiseChainRef.current = promiseChainRef.current
+			.then(async () => {
+				const {removeSession} = useShapeDiverStoreParameters.getState();
+				for (const id of removed) {
+					const liveSlug = liveSlugsRef.current.get(id);
+					if (liveSlug === undefined) continue;
+					const desired = desiredSessionsRef.current.find(
+						(session) => session.id === id,
+					);
+					if (desired && sessionSlug(desired) === liveSlug) continue;
+
+					if (!(await closeTrackedSession(id))) continue;
+					removeSession(id);
+					if (liveSlugsRef.current.get(id) === liveSlug)
+						liveSlugsRef.current.delete(id);
+				}
+			})
+			.catch((error) => {
+				Logger.warn("Error closing sessions:", error);
+			});
+	}, [appBuilderData, stableEmbeddedSessions]);
+
+	// Create sessions that are not open yet. A resolve that clears its
+	// result while loading must not close the sessions that remain listed.
+	useEffect(() => {
+		if (!sessionData?.length) return;
+		const pending = sessionData.filter(
+			(session) =>
+				liveSlugsRef.current.get(session.id) !== sessionSlug(session),
+		);
+		if (!pending.length) return;
+
+		promiseChainRef.current = promiseChainRef.current
+			.then(async () => {
+				const {createSession} = useShapeDiverStoreSession.getState();
+				const {addSession, removeSession} =
+					useShapeDiverStoreParameters.getState();
+				for (const dto of pending) {
+					const slug = sessionSlug(dto);
+					const desired = desiredSessionsRef.current.find(
+						(session) => session.id === dto.id,
+					);
+					if (!desired || sessionSlug(desired) !== slug) continue;
+					if (liveSlugsRef.current.get(dto.id) === slug) continue;
+
+					let api:
+						| Awaited<ReturnType<typeof createSession>>
+						| undefined;
+					try {
+						api = await createSession(
+							{throwOnCustomizationError: true, ...dto},
+							{
+								onError: (error) =>
+									Logger.warn(
+										"Error creating sessions:",
+										error,
+									),
+							},
+							!dto.loadOnFirstUse,
+						);
+					} catch (error) {
+						Logger.warn("Error creating sessions:", error);
+						continue;
+					}
+					if (!api) continue;
+
+					api.refreshJwtToken = dto.refreshJwtToken;
+					const stillDesired = desiredSessionsRef.current.find(
+						(session) => session.id === dto.id,
+					);
+					if (
+						unmountedRef.current ||
+						!stillDesired ||
+						sessionSlug(stillDesired) !== slug
+					) {
+						if (!(await closeTrackedSession(api.id))) {
+							// The viewer session is still open. Register its
+							// parameters before treating it as live, so a later
+							// listing does not skip it as already created.
+							if (!unmountedRef.current) {
+								liveSlugsRef.current.set(dto.id, slug);
+								addSession(
+									api,
+									(dto.acceptRejectMode ??
+										api.parametersCommit) ||
+										false,
+									eventTracking,
+								);
+							}
+							continue;
+						}
+						removeSession(api.id);
+						continue;
+					}
+
+					liveSlugsRef.current.set(dto.id, slug);
+					addSession(
+						api,
+						(dto.acceptRejectMode ?? api.parametersCommit) || false,
+						eventTracking,
+					);
+				}
+			})
+			.catch((error) => {
+				Logger.warn("Error creating sessions:", error);
+			});
+	}, [eventTracking, sessionData]);
+
+	const loggedResolveErrorsRef = useRef<Set<string>>(new Set());
+
+	useEffect(() => {
+		setRetryResolve(resolveErrors.length > 0);
+	}, [resolveErrors]);
 
 	useEffect(() => {
 		if (platformError)
 			Logger.warn("Error resolving sessions:", platformError);
-
-		for (const sessionError of sessionErrors)
-			Logger.warn("Error creating sessions:", sessionError);
-	}, [platformError, sessionErrors]);
-
-	const parameterValuesReady = useMemo(() => {
-		if (!stableParameterValues.length) return undefined;
-		if (
-			stableParameterValues.some(
-				(parameter) =>
-					!parameter.namespace || !sessions[parameter.namespace],
-			)
-		)
-			return undefined;
-		return stableParameterValues;
-	}, [stableParameterValues, sessions]);
-	const {values: resolvedParameterValues} = useResolveParameterValues({
-		namespace,
-		parameterValues: parameterValuesReady,
-	});
-	const parameterStoreIds = useShapeDiverStoreParameters((state) =>
-		Object.keys(state.parameterStores).join("\0"),
-	);
-	const appliedParameterKeyRef = useRef("");
+	}, [platformError]);
 
 	useEffect(() => {
-		if (!parameterValuesReady || !resolvedParameterValues) return;
-		if (resolvedParameterValues.length !== parameterValuesReady.length)
-			return;
-
-		const stores = useShapeDiverStoreParameters.getState().parameterStores;
-		for (const parameter of parameterValuesReady) {
-			if (!parameter.namespace || !stores[parameter.namespace]) return;
+		const active = new Set<string>();
+		for (const failure of resolveErrors) {
+			const key = `${failure.id}:${String(failure.error)}`;
+			active.add(key);
+			if (loggedResolveErrorsRef.current.has(key)) continue;
+			loggedResolveErrorsRef.current.add(key);
+			Logger.warn(
+				`Error resolving session "${failure.id}":`,
+				failure.error,
+			);
 		}
-
-		const state: {
-			[sessionId: string]: {[parameterId: string]: string};
-		} = {};
-		parameterValuesReady.forEach((parameter, index) => {
-			const sessionId = parameter.namespace!;
-			if (!state[sessionId]) state[sessionId] = {};
-			state[sessionId][parameter.id] =
-				resolvedParameterValues[index] ?? "";
-		});
-
-		const initialState: {
-			[sessionId: string]: {[parameterId: string]: string};
-		} = {};
-		for (const session of stableEmbeddedSessions) {
-			if (!session.initialParameterValues) continue;
-			initialState[session.id] = session.initialParameterValues;
+		for (const key of loggedResolveErrorsRef.current) {
+			if (!active.has(key)) loggedResolveErrorsRef.current.delete(key);
 		}
+	}, [resolveErrors]);
 
-		const key = JSON.stringify(state);
-		if (
-			key === appliedParameterKeyRef.current ||
-			key === JSON.stringify(initialState)
-		) {
-			appliedParameterKeyRef.current = key;
-			return;
-		}
-
-		void useShapeDiverStoreParameters
-			.getState()
-			.batchParameterValueUpdate(state, true, true)
-			.then(() => {
-				appliedParameterKeyRef.current = key;
-			})
-			.catch((updateError) => {
-				Logger.warn(
-					"Error applying additional session parameter values:",
-					updateError,
-				);
-			});
-	}, [
-		parameterStoreIds,
-		parameterValuesReady,
-		resolvedParameterValues,
-		stableEmbeddedSessions,
-	]);
+	useEffect(() => {
+		return () => {
+			unmountedRef.current = true;
+			const ids = [...liveSlugsRef.current.keys()];
+			promiseChainRef.current = promiseChainRef.current
+				.then(async () => {
+					const {removeSession} =
+						useShapeDiverStoreParameters.getState();
+					for (const id of ids) {
+						if (!(await closeTrackedSession(id))) continue;
+						removeSession(id);
+					}
+					liveSlugsRef.current.clear();
+				})
+				.catch((error) => {
+					Logger.warn("Error closing sessions:", error);
+				});
+		};
+	}, []);
 }

@@ -1553,15 +1553,6 @@ export interface IAppBuilderSessionDefinitionBase {
 	 * When omitted, `sessionId` is used as the slug.
 	 */
 	slug?: string;
-	/**
-	 * Parameter set for the session.
-	 * Defined in a parameter dictionary where the key is either the displayname, the name or the id of the parameter.
-	 * The value is the parameter value.
-	 * If none is provided, the default parameter set is used.
-	 **/
-	parameterValues?: {
-		[key: string]: IAppBuilderParameterValueDefinition;
-	};
 }
 
 /**
@@ -1569,6 +1560,15 @@ export interface IAppBuilderSessionDefinitionBase {
  * Used to customize a session by setting parameters and transformations.
  */
 export interface IAppBuilderInstanceDefinition extends IAppBuilderSessionDefinitionBase {
+	/**
+	 * Parameter set for the instance.
+	 * Defined in a parameter dictionary where the key is either the displayname, the name or the id of the parameter.
+	 * The value is the parameter value.
+	 * If none is provided, the default parameter set is used.
+	 **/
+	parameterValues?: {
+		[key: string]: IAppBuilderParameterValueDefinition;
+	};
 	/** Optional name of the instance. This name will be used for the node in the scene graph, e.g. NAME_transformations_0 for the first transformation. */
 	name?: string;
 	/** Transformations for the instances, e.g. to position them in the scene. */
@@ -1586,7 +1586,14 @@ export interface IAppBuilderInstanceDefinition extends IAppBuilderSessionDefinit
  * Additional session created from the App Builder data output.
  * A full session whose parameters and exports are registered.
  */
-export interface IAppBuilderSessionDefinition extends IAppBuilderSessionDefinitionBase {}
+export interface IAppBuilderSessionDefinition extends IAppBuilderSessionDefinitionBase {
+	/**
+	 * Optional initial parameter values, matching theme sessions.
+	 * The key is the displayname, name, or id of the parameter.
+	 * If none is provided, the default parameter set is used.
+	 */
+	initialParameterValues?: {[key: string]: string};
+}
 
 /**
  * Web app definition.
