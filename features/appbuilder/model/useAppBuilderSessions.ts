@@ -294,8 +294,19 @@ export function useAppBuilderSessions(props: Props) {
 						sessionSlug(stillDesired) !== slug
 					) {
 						if (!(await closeTrackedSession(api.id))) {
-							if (!unmountedRef.current)
+							// The viewer session is still open. Register its
+							// parameters before treating it as live, so a later
+							// listing does not skip it as already created.
+							if (!unmountedRef.current) {
 								liveSlugsRef.current.set(dto.id, slug);
+								addSession(
+									api,
+									(dto.acceptRejectMode ??
+										api.parametersCommit) ||
+										false,
+									eventTracking,
+								);
+							}
 							continue;
 						}
 						removeSession(api.id);
