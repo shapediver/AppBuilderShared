@@ -10,6 +10,7 @@ import {
 	SdPlatformResponseModelPublic,
 	create,
 } from "@shapediver/sdk.platform-api-sdk-v1";
+import {useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
 	IAppBuilderSettingsJsonSession,
@@ -38,7 +39,15 @@ export default function useResolveAppBuilderSessions(
 	 * controller, which parameter export and the page title read.
 	 */
 	updateCurrentModel = true,
+	/**
+	 * When true, one session that fails to resolve is omitted and reported
+	 * in `resolveErrors`. The sessions that resolved are still returned.
+	 */
+	isolateFailures = false,
 ) {
+	const [resolveErrors, setResolveErrors] = useState<
+		{id: string; error: unknown}[]
+	>([]);
 	const {authenticate, setCurrentModel, setModelForSession} =
 		useShapeDiverStorePlatform(
 			useShallow((state) => ({
@@ -71,160 +80,187 @@ export default function useResolveAppBuilderSessions(
 		if (shouldUsePlatform() && !sdkRef) return;
 		if (!sessions) return;
 
-		const resolvedSessions = await Promise.all(
-			sessions.map(async (session, sessionIdx) => {
-				const platformUrl =
-					session.platformUrl ?? getDefaultPlatformUrl();
-
-				if (!session.slug) {
-					if (!session.ticket || !session.modelViewUrl)
-						throw new Error(
-							"Session definition must either contain slug, or ticket and modelViewUrl.",
+		const failures: {id: string; error: unknown}[] = [];
+		const resolvedSessions = (
+			await Promise.all(
+				sessions.map(async (session, sessionIdx) => {
+					try {
+						return await resolveAppBuilderSession(
+							session,
+							sessionIdx,
 						);
-
-					// We don't have a slug, but we have a ticket and modelViewUrl.
-					// This means that we try to get the corresponding settings from the viewer.
-					// As the viewer needs to be loaded to do this, we set a flag, so that these
-					// settings are appended once the viewer is loaded.
-					session.loadPlatformSettingsFromViewer =
-						shouldUsePlatform() &&
-						sdkRef!.platformUrl === platformUrl
-							? "platform"
-							: "iframe";
-
-					return session as IAppBuilderSettingsSession;
-				}
-
-				// special case for local development:
-				// check if there is stored data for the slug
-				// this will always fail in production!
-				if (session.slug && ModelStorage[session.slug]) {
-					// in case the slug is found in model storage, use the stored data
-					const model = ModelStorage[session.slug];
-
-					if (updateCurrentModel && sessionIdx === 0)
-						setCurrentModel(model);
-					setModelForSession(session.id, model);
-
-					// we store exactly the same data as in the platform response,
-					// only leaving out the refresh token function
-					return {
-						acceptRejectMode: model.settings.parameters_commit,
-						hideAttributeVisualization:
-							model.settings.hide_attribute_visualization,
-						hideJsonMenu: model.settings.hide_json_menu,
-						hideSavedStates: model.settings.hide_saved_states,
-						hideDesktopClients: model.settings.hide_desktop_clients,
-						hideExports: model.settings.hide_exports,
-						...session,
-						ticket: model!.ticket!.ticket,
-						modelViewUrl: model!.backend_system!.model_view_url,
-						jwtToken: model.access_token,
-					} as IAppBuilderSettingsSession;
-				}
-				// in case we are running on the platform and the session is on the same platform,
-				// use a model get call to get ticket, modelViewUrl and token
-				else if (
-					shouldUsePlatform() &&
-					sdkRef!.platformUrl === platformUrl
-				) {
-					const getModel = async () => {
-						const result = await sdkRef!.client.models.get(
-							session.slug!,
-							[
-								SdPlatformModelGetEmbeddableFields.BackendSystem,
-								SdPlatformModelGetEmbeddableFields.Tags,
-								SdPlatformModelGetEmbeddableFields.Ticket,
-								SdPlatformModelGetEmbeddableFields.TokenExportFallback,
-								SdPlatformModelGetEmbeddableFields.User,
-							],
-						);
-
-						return result?.data;
-					};
-					const model = await getModel();
-					if (updateCurrentModel && sessionIdx === 0)
-						setCurrentModel(model);
-					setModelForSession(session.id, model);
-
-					return {
-						// use the acceptRejectMode setting store on the platform
-						// this can be overridden by the optional acceptRejectMode
-						// setting in session
-						acceptRejectMode: model.settings.parameters_commit,
-						hideAttributeVisualization:
-							model.settings.hide_attribute_visualization,
-						hideJsonMenu: model.settings.hide_json_menu,
-						hideSavedStates: model.settings.hide_saved_states,
-						hideDesktopClients: model.settings.hide_desktop_clients,
-						hideExports: model.settings.hide_exports,
-						...session,
-						ticket: model!.ticket!.ticket,
-						modelViewUrl: model!.backend_system!.model_view_url,
-						jwtToken: model.access_token,
-						refreshJwtToken: async () => {
-							const model = await getModel();
-
-							return model.access_token!;
-						},
-					} as IAppBuilderSettingsSession;
-				}
-				// otherwise try to use iframe embedding
-				else {
-					const getIframeData = async () => {
-						const client = create({
-							clientId: getPlatformClientId(),
-							baseUrl: platformUrl,
-						});
-						const result = await client.models.iframeEmbedding(
-							session.slug!,
-							{saved_states: true},
-						);
-
-						return result.data;
-					};
-					const iframeData = await getIframeData();
-					for (const savedState of iframeData.model.saved_states ??
-						[]) {
-						addSavedState(savedState);
+					} catch (error) {
+						if (!isolateFailures) throw error;
+						failures.push({id: session.id, error});
+						return undefined;
 					}
-					// Set current model after seeding saved states so the widget
-					// does not query an empty store on first render.
-					if (updateCurrentModel && sessionIdx === 0)
-						setCurrentModel(iframeData.model);
-					setModelForSession(session.id, iframeData.model);
-
-					return {
-						acceptRejectMode:
-							iframeData.model.settings?.parameters_commit,
-						hideAttributeVisualization:
-							iframeData.model.settings
-								?.hide_attribute_visualization_iframe,
-						hideJsonMenu:
-							iframeData.model.settings?.hide_json_menu_iframe,
-						hideSavedStates:
-							iframeData.model.settings?.hide_saved_states_iframe,
-						hideExports:
-							iframeData.model.settings?.hide_exports_iframe,
-						...session,
-						ticket: iframeData.ticket,
-						modelViewUrl: iframeData.model_view_url,
-						jwtToken: iframeData.token,
-						refreshJwtToken: async () => {
-							const iframeData = await getIframeData();
-
-							return iframeData.token;
-						},
-					} as IAppBuilderSettingsSession;
-				}
-			}),
-		);
+				}),
+			)
+		).filter((session): session is IAppBuilderSettingsSession => !!session);
+		if (isolateFailures)
+			setResolveErrors((current) =>
+				current.length === failures.length &&
+				current.every(
+					(entry, index) =>
+						entry.id === failures[index].id &&
+						String(entry.error) === String(failures[index].error),
+				)
+					? current
+					: failures,
+			);
 		return resolvedSessions;
-	}, [sessions, sdkRef, updateCurrentModel]);
+
+		async function resolveAppBuilderSession(
+			session: IAppBuilderSettingsJsonSession,
+			sessionIdx: number,
+		) {
+			const platformUrl = session.platformUrl ?? getDefaultPlatformUrl();
+
+			if (!session.slug) {
+				if (!session.ticket || !session.modelViewUrl)
+					throw new Error(
+						"Session definition must either contain slug, or ticket and modelViewUrl.",
+					);
+
+				// We don't have a slug, but we have a ticket and modelViewUrl.
+				// This means that we try to get the corresponding settings from the viewer.
+				// As the viewer needs to be loaded to do this, we set a flag, so that these
+				// settings are appended once the viewer is loaded.
+				session.loadPlatformSettingsFromViewer =
+					shouldUsePlatform() && sdkRef!.platformUrl === platformUrl
+						? "platform"
+						: "iframe";
+
+				return session as IAppBuilderSettingsSession;
+			}
+
+			// special case for local development:
+			// check if there is stored data for the slug
+			// this will always fail in production!
+			if (session.slug && ModelStorage[session.slug]) {
+				// in case the slug is found in model storage, use the stored data
+				const model = ModelStorage[session.slug];
+
+				if (updateCurrentModel && sessionIdx === 0)
+					setCurrentModel(model);
+				setModelForSession(session.id, model);
+
+				// we store exactly the same data as in the platform response,
+				// only leaving out the refresh token function
+				return {
+					acceptRejectMode: model.settings.parameters_commit,
+					hideAttributeVisualization:
+						model.settings.hide_attribute_visualization,
+					hideJsonMenu: model.settings.hide_json_menu,
+					hideSavedStates: model.settings.hide_saved_states,
+					hideDesktopClients: model.settings.hide_desktop_clients,
+					hideExports: model.settings.hide_exports,
+					...session,
+					ticket: model!.ticket!.ticket,
+					modelViewUrl: model!.backend_system!.model_view_url,
+					jwtToken: model.access_token,
+				} as IAppBuilderSettingsSession;
+			}
+			// in case we are running on the platform and the session is on the same platform,
+			// use a model get call to get ticket, modelViewUrl and token
+			else if (
+				shouldUsePlatform() &&
+				sdkRef!.platformUrl === platformUrl
+			) {
+				const getModel = async () => {
+					const result = await sdkRef!.client.models.get(
+						session.slug!,
+						[
+							SdPlatformModelGetEmbeddableFields.BackendSystem,
+							SdPlatformModelGetEmbeddableFields.Tags,
+							SdPlatformModelGetEmbeddableFields.Ticket,
+							SdPlatformModelGetEmbeddableFields.TokenExportFallback,
+							SdPlatformModelGetEmbeddableFields.User,
+						],
+					);
+
+					return result?.data;
+				};
+				const model = await getModel();
+				if (updateCurrentModel && sessionIdx === 0)
+					setCurrentModel(model);
+				setModelForSession(session.id, model);
+
+				return {
+					// use the acceptRejectMode setting store on the platform
+					// this can be overridden by the optional acceptRejectMode
+					// setting in session
+					acceptRejectMode: model.settings.parameters_commit,
+					hideAttributeVisualization:
+						model.settings.hide_attribute_visualization,
+					hideJsonMenu: model.settings.hide_json_menu,
+					hideSavedStates: model.settings.hide_saved_states,
+					hideDesktopClients: model.settings.hide_desktop_clients,
+					hideExports: model.settings.hide_exports,
+					...session,
+					ticket: model!.ticket!.ticket,
+					modelViewUrl: model!.backend_system!.model_view_url,
+					jwtToken: model.access_token,
+					refreshJwtToken: async () => {
+						const model = await getModel();
+
+						return model.access_token!;
+					},
+				} as IAppBuilderSettingsSession;
+			}
+			// otherwise try to use iframe embedding
+			else {
+				const getIframeData = async () => {
+					const client = create({
+						clientId: getPlatformClientId(),
+						baseUrl: platformUrl,
+					});
+					const result = await client.models.iframeEmbedding(
+						session.slug!,
+						{saved_states: true},
+					);
+
+					return result.data;
+				};
+				const iframeData = await getIframeData();
+				for (const savedState of iframeData.model.saved_states ?? []) {
+					addSavedState(savedState);
+				}
+				// Set current model after seeding saved states so the widget
+				// does not query an empty store on first render.
+				if (updateCurrentModel && sessionIdx === 0)
+					setCurrentModel(iframeData.model);
+				setModelForSession(session.id, iframeData.model);
+
+				return {
+					acceptRejectMode:
+						iframeData.model.settings?.parameters_commit,
+					hideAttributeVisualization:
+						iframeData.model.settings
+							?.hide_attribute_visualization_iframe,
+					hideJsonMenu:
+						iframeData.model.settings?.hide_json_menu_iframe,
+					hideSavedStates:
+						iframeData.model.settings?.hide_saved_states_iframe,
+					hideExports: iframeData.model.settings?.hide_exports_iframe,
+					...session,
+					ticket: iframeData.ticket,
+					modelViewUrl: iframeData.model_view_url,
+					jwtToken: iframeData.token,
+					refreshJwtToken: async () => {
+						const iframeData = await getIframeData();
+
+						return iframeData.token;
+					},
+				} as IAppBuilderSettingsSession;
+			}
+		}
+	}, [sessions, sdkRef, updateCurrentModel, isolateFailures]);
 
 	return {
 		sessions: resolvedSessions,
 		error: platformError ?? error,
 		loading,
+		resolveErrors,
 	};
 }
