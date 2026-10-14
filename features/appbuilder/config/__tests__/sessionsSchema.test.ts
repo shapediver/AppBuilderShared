@@ -46,17 +46,16 @@ describe("IAppBuilder.sessions schema", () => {
 		expect(validateAppBuilder(layout()).success).toBe(true);
 	});
 
-	it("accepts a session id, slug, and parameter values", () => {
+	it("accepts a session id, slug, and initial parameter values", () => {
 		const result = validateAppBuilder(
 			layout([
 				{
 					sessionId: "secondary",
 					slug: "other-model",
-					parameterValues: {
-						Width: 5,
+					initialParameterValues: {
+						Width: "5",
 						Label: "oak",
-						Visible: true,
-						Image: {type: "dataOutput", props: {name: "Image"}},
+						Visible: "true",
 					},
 				},
 			]),
@@ -77,6 +76,32 @@ describe("IAppBuilder.sessions schema", () => {
 	it("rejects instance-only keys on a session", () => {
 		const result = validateAppBuilder(
 			layout([{sessionId: "secondary", transformations: [[1]]}]),
+		);
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects instance parameterValues on a session", () => {
+		const result = validateAppBuilder(
+			layout([
+				{
+					sessionId: "secondary",
+					parameterValues: {Width: 5},
+				},
+			]),
+		);
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects parameter value sources on a session", () => {
+		const result = validateAppBuilder(
+			layout([
+				{
+					sessionId: "secondary",
+					initialParameterValues: {
+						Image: {type: "dataOutput", props: {name: "Image"}},
+					},
+				},
+			]),
 		);
 		expect(result.success).toBe(false);
 	});

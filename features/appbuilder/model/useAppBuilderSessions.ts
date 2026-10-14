@@ -1,8 +1,3 @@
-import {
-	ParameterValueDefinition,
-	useResolveParameterValues,
-} from "@AppBuilderLib/entities/parameter/model/useResolveParameterValues";
-import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
@@ -58,7 +53,7 @@ export function useAppBuilderSessions(props: Props) {
 		pendingSessionsRef.current = pendingSessions;
 	}, [sessions, pendingSessions]);
 
-	const {embeddedSessions, parameterValues} = useMemo(() => {
+	const embeddedSessions = useMemo(() => {
 		const sessionIsLoaded = (sessionId: string) =>
 			!!sessionsRef.current[sessionId] ||
 			!!Object.values(pendingSessionsRef.current).find(
@@ -71,10 +66,8 @@ export function useAppBuilderSessions(props: Props) {
 		}
 
 		const owned: EmbeddedSession[] = [];
-		const parameterValues: ParameterValueDefinition[] = [];
 		const definitions = appBuilderData?.sessions;
-		if (!definitions?.length)
-			return {embeddedSessions: owned, parameterValues};
+		if (!definitions?.length) return owned;
 
 		const createdSessionIds = new Set(createdSessionIdsRef.current.ids);
 		const instanceSessionIds = new Set(
@@ -116,30 +109,14 @@ export function useAppBuilderSessions(props: Props) {
 				return;
 			}
 
-			const initialParameterValues: {[key: string]: string} = {};
-			Object.entries(definition.parameterValues ?? {}).forEach(
-				([key, value]) => {
-					if (
-						typeof value === "string" ||
-						typeof value === "number" ||
-						typeof value === "boolean"
-					)
-						initialParameterValues[key] = value + "";
-
-					parameterValues.push({
-						id: key,
-						value,
-						namespace: definition.sessionId,
-					});
-				},
-			);
-
+			const initialParameterValues = definition.initialParameterValues;
 			const existing = sessionDtoRef.current[definition.sessionId];
 			if (!existing || existing.slug !== slug) {
 				sessionDtoRef.current[definition.sessionId] = {
 					id: definition.sessionId,
 					slug,
-					...(Object.keys(initialParameterValues).length
+					...(initialParameterValues &&
+					Object.keys(initialParameterValues).length
 						? {initialParameterValues}
 						: {}),
 				} as EmbeddedSession;
@@ -155,11 +132,10 @@ export function useAppBuilderSessions(props: Props) {
 			namespace,
 			ids: owned.map((session) => session.id),
 		};
-		return {embeddedSessions: owned, parameterValues};
+		return owned;
 	}, [appBuilderData, namespace]);
 
 	const stableEmbeddedSessions = useStableByJson(embeddedSessions);
-	const stableParameterValues = useStableByJson(parameterValues);
 	const {sessions: sessionData, error: platformError} =
 		useResolveAppBuilderSessions(stableEmbeddedSessions, false);
 	const {errors: sessionErrors} = useSessions(sessionData ?? []);
@@ -171,80 +147,4 @@ export function useAppBuilderSessions(props: Props) {
 		for (const sessionError of sessionErrors)
 			Logger.warn("Error creating sessions:", sessionError);
 	}, [platformError, sessionErrors]);
-
-	const parameterValuesReady = useMemo(() => {
-		if (!stableParameterValues.length) return undefined;
-		if (
-			stableParameterValues.some(
-				(parameter) =>
-					!parameter.namespace || !sessions[parameter.namespace],
-			)
-		)
-			return undefined;
-		return stableParameterValues;
-	}, [stableParameterValues, sessions]);
-	const {values: resolvedParameterValues} = useResolveParameterValues({
-		namespace,
-		parameterValues: parameterValuesReady,
-	});
-	const parameterStoreIds = useShapeDiverStoreParameters((state) =>
-		Object.keys(state.parameterStores).join("\0"),
-	);
-	const appliedParameterKeyRef = useRef("");
-
-	useEffect(() => {
-		if (!parameterValuesReady || !resolvedParameterValues) return;
-		if (resolvedParameterValues.length !== parameterValuesReady.length)
-			return;
-
-		const stores = useShapeDiverStoreParameters.getState().parameterStores;
-		for (const parameter of parameterValuesReady) {
-			if (!parameter.namespace || !stores[parameter.namespace]) return;
-		}
-
-		const state: {
-			[sessionId: string]: {[parameterId: string]: string};
-		} = {};
-		parameterValuesReady.forEach((parameter, index) => {
-			const sessionId = parameter.namespace!;
-			if (!state[sessionId]) state[sessionId] = {};
-			state[sessionId][parameter.id] =
-				resolvedParameterValues[index] ?? "";
-		});
-
-		const initialState: {
-			[sessionId: string]: {[parameterId: string]: string};
-		} = {};
-		for (const session of stableEmbeddedSessions) {
-			if (!session.initialParameterValues) continue;
-			initialState[session.id] = session.initialParameterValues;
-		}
-
-		const key = JSON.stringify(state);
-		if (
-			key === appliedParameterKeyRef.current ||
-			key === JSON.stringify(initialState)
-		) {
-			appliedParameterKeyRef.current = key;
-			return;
-		}
-
-		void useShapeDiverStoreParameters
-			.getState()
-			.batchParameterValueUpdate(state, true, true)
-			.then(() => {
-				appliedParameterKeyRef.current = key;
-			})
-			.catch((updateError) => {
-				Logger.warn(
-					"Error applying additional session parameter values:",
-					updateError,
-				);
-			});
-	}, [
-		parameterStoreIds,
-		parameterValuesReady,
-		resolvedParameterValues,
-		stableEmbeddedSessions,
-	]);
 }

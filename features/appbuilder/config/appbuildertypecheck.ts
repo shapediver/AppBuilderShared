@@ -1468,25 +1468,32 @@ const IAppBuilderSessionDefinitionBaseSchema = z.strictObject({
 		.describe(
 			"Platform model slug used to resolve the session. When omitted, sessionId is used as the slug.",
 		),
-	parameterValues: z
-		.record(
-			z.string(),
-			z
-				.string()
-				.or(z.number())
-				.or(z.boolean())
-				.or(IAppBuilderParameterValueSourceDefinitionSchema),
-		)
-		.optional(),
 });
 
 // Zod type definition for IAppBuilderSessionDefinition
 const IAppBuilderSessionDefinitionSchema =
-	IAppBuilderSessionDefinitionBaseSchema;
+	IAppBuilderSessionDefinitionBaseSchema.extend({
+		initialParameterValues: z
+			.record(z.string(), z.string())
+			.optional()
+			.describe(
+				"Optional initial parameter values, matching theme sessions. The key is the displayname, name, or id of the parameter.",
+			),
+	});
 
 // Zod type definition for IAppBuilderInstances
 const IAppBuilderInstancesSchema =
 	IAppBuilderSessionDefinitionBaseSchema.extend({
+		parameterValues: z
+			.record(
+				z.string(),
+				z
+					.string()
+					.or(z.number())
+					.or(z.boolean())
+					.or(IAppBuilderParameterValueSourceDefinitionSchema),
+			)
+			.optional(),
 		name: z.string().optional(),
 		transformations: z.array(z.array(z.number())).optional(),
 		outputActions: z
