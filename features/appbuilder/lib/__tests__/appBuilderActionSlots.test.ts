@@ -183,7 +183,7 @@ describe("appBuilderActionSlots helpers", () => {
 						action,
 						eventProps: {type: "session", props: {}},
 					},
-				},
+				} as IAppBuilderActionSlots,
 				APP_BUILDER_SLOT_EVENTS.application,
 			),
 		).toEqual([]);
@@ -198,7 +198,7 @@ describe("appBuilderActionSlots helpers", () => {
 						action,
 						eventProps: {type: "session", props: {}},
 					},
-				},
+				} as IAppBuilderActionSlots,
 				[...APP_BUILDER_SLOT_EVENTS.application, "click"],
 			),
 		).toEqual([

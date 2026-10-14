@@ -2,9 +2,12 @@ import type {ISelectionParameterProps} from "@shapediver/viewer.shared.types";
 import type {IAppBuilderActionDefinition} from "./appbuilder";
 
 /**
- * JSON types for `actionSlots` on {@link IAppBuilderNode} (widgets, tabs,
- * containers, controls, toolbar items, root). Runtime wrappers decide which
- * event names a given node may use; this file only describes the shape.
+ * JSON types for `actionSlots` on App Builder nodes.
+ *
+ * Which events a node may use, and which `eventProps.type` that event
+ * allows, is part of this schema and of the Zod schemas in
+ * `appbuildertypecheck.ts`. UI nodes allow pointer, click, contextmenu,
+ * and `custom:*`. The root also allows application events.
  */
 
 /** Types of action-slot event filters. */
@@ -69,21 +72,69 @@ export type IAppBuilderActionSlotEventProps =
  * Action executed when a node event occurs.
  *
  * The action is static JSON: the triggering event's payload is not passed into
- * `action.props`. Multiple actions in one slot are SS-9952 sequences. Multiple
- * slots for the same event (different `eventProps`) are an array on that event
- * name — see {@link IAppBuilderActionSlots}.
+ * `action.props`. Multiple actions in one slot are an `executeActions` sequence.
+ * Several slots for the same event (different `eventProps`) are an array on
+ * that event name.
  */
-export interface IAppBuilderActionSlot {
+export interface IAppBuilderPlainActionSlot {
 	/** Action executed when the event occurs. */
 	action: IAppBuilderActionDefinition;
-	/** Optional source filters. Application events only; omit for UI events. */
-	eventProps?: IAppBuilderActionSlotEventProps;
 }
+
+/** `computation*` slot. `eventProps`, when set, must be `type: "session"`. */
+export interface IAppBuilderSessionActionSlot extends IAppBuilderPlainActionSlot {
+	eventProps?: {
+		type: "session";
+		props: IAppBuilderActionSlotEventPropsSession;
+	};
+}
+
+/** `export*` slot. `eventProps`, when set, must be `type: "export"`. */
+export interface IAppBuilderExportActionSlot extends IAppBuilderPlainActionSlot {
+	eventProps?: {
+		type: "export";
+		props: IAppBuilderActionSlotEventPropsExport;
+	};
+}
+
+/**
+ * `selecton` / `selectoff` / `hoveron` / `hoveroff` slot.
+ * `eventProps`, when set, must be `type: "selection"`.
+ */
+export interface IAppBuilderSelectionActionSlot extends IAppBuilderPlainActionSlot {
+	eventProps?: {
+		type: "selection";
+		props: IAppBuilderActionSlotEventPropsSelection;
+	};
+}
+
+/** Any slot object. The event name decides which variant is valid. */
+export type IAppBuilderActionSlot =
+	| IAppBuilderPlainActionSlot
+	| IAppBuilderSessionActionSlot
+	| IAppBuilderExportActionSlot
+	| IAppBuilderSelectionActionSlot;
 
 /** One slot or several for the same event (typically different `eventProps`). */
 export type IAppBuilderActionSlotList =
 	| IAppBuilderActionSlot
 	| IAppBuilderActionSlot[];
+
+type PlainActionSlotList =
+	| IAppBuilderPlainActionSlot
+	| IAppBuilderPlainActionSlot[];
+
+type SessionActionSlotList =
+	| IAppBuilderSessionActionSlot
+	| IAppBuilderSessionActionSlot[];
+
+type ExportActionSlotList =
+	| IAppBuilderExportActionSlot
+	| IAppBuilderExportActionSlot[];
+
+type SelectionActionSlotList =
+	| IAppBuilderSelectionActionSlot
+	| IAppBuilderSelectionActionSlot[];
 
 /**
  * DOM interaction events (extensible). Names match the DOM event, no `on` prefix.
@@ -131,23 +182,66 @@ export type AppBuilderApplicationEvent =
  */
 export type AppBuilderCustomEventName = `custom:${string}`;
 
+/**
+ * JSON `custom:` names: `custom:` + lowercase kebab-case
+ * (`custom:item-selected`).
+ */
+export const APP_BUILDER_CUSTOM_EVENT_PATTERN =
+	/^custom:[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export type AppBuilderKnownEvent =
 	| AppBuilderUiEvent
 	| AppBuilderApplicationEvent;
 
 /**
- * Slots keyed by event name. A value may be one slot or an array of slots
- * (same event, different `eventProps` — e.g. several `selecton`
- * nameFilters on the App Builder root).
- * Which events a node may use is enforced by `AppBuilderActionSlots` (allowlist
- * + ignored-slot log), not by this type. Custom events use `custom:` +
- * lowercase kebab-case and are dispatched via
- * `dispatchAppBuilderCustomEvent`.
+ * Slots on widgets, tabs, containers, controls, and toolbar items.
+ * These events do not take `eventProps`. `custom:` kebab-case names are
+ * also allowed.
  */
-export type IAppBuilderActionSlots = Partial<
-	Record<AppBuilderKnownEvent, IAppBuilderActionSlotList>
-> & {
-	[eventName: AppBuilderCustomEventName]:
-		| IAppBuilderActionSlotList
-		| undefined;
-};
+export interface IAppBuilderNodeActionSlots {
+	click?: PlainActionSlotList;
+	contextmenu?: PlainActionSlotList;
+	pointerdown?: PlainActionSlotList;
+	pointerup?: PlainActionSlotList;
+	pointerenter?: PlainActionSlotList;
+	pointerleave?: PlainActionSlotList;
+	[eventName: AppBuilderCustomEventName]: PlainActionSlotList | undefined;
+}
+
+/**
+ * Slots on the root `IAppBuilder`.
+ *
+ * Pointer, click, and contextmenu are included because the viewport is not
+ * its own JSON node. Those slots attach to the viewport host. The rest are
+ * application events. `eventProps` is only valid on `computation*`
+ * (`session`), `export*` (`export`), and select/hover (`selection`).
+ * A value may be one slot or an array (same event, different `eventProps`).
+ * `custom:` kebab-case names are also allowed.
+ */
+export interface IAppBuilderRootActionSlots {
+	click?: PlainActionSlotList;
+	contextmenu?: PlainActionSlotList;
+	pointerdown?: PlainActionSlotList;
+	pointerup?: PlainActionSlotList;
+	pointerenter?: PlainActionSlotList;
+	pointerleave?: PlainActionSlotList;
+	appready?: PlainActionSlotList;
+	computationstart?: SessionActionSlotList;
+	computationend?: SessionActionSlotList;
+	computationerror?: SessionActionSlotList;
+	exportstart?: ExportActionSlotList;
+	exportend?: ExportActionSlotList;
+	exporterror?: ExportActionSlotList;
+	selecton?: SelectionActionSlotList;
+	selectoff?: SelectionActionSlotList;
+	hoveron?: SelectionActionSlotList;
+	hoveroff?: SelectionActionSlotList;
+	[eventName: AppBuilderCustomEventName]: PlainActionSlotList | undefined;
+}
+
+/**
+ * Widest slot map (the root). UI slot maps are assignable to this.
+ * Runtime helpers accept it; JSON validation uses the narrower map for
+ * each node kind.
+ */
+export type IAppBuilderActionSlots = IAppBuilderRootActionSlots;
