@@ -93,7 +93,7 @@ export interface ViewportAnchorProps {
 	exclusive?: boolean;
 	/** Option to show a close button on the container */
 	useCloseButton?: boolean;
-	/** Whether the anchor is initially open. Defaults to !canBeHidden. Action-targeted anchors pass false. */
+	/** Whether the anchor is initially open. Defaults to !canBeHidden. */
 	defaultOpen?: boolean;
 }
 

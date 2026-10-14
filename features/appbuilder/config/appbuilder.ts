@@ -1288,7 +1288,7 @@ export type AppBuilderAnchorContainerProperties = {
 	closingStrategy?: "button" | "emptyClick";
 	/** Whether the anchor is exclusive with other anchors of the same type. Defaults to true; false when targeted by a setContainerVisibility action. */
 	exclusive?: boolean;
-	/** Whether the anchor is initially open. Defaults to !canBeHidden. Action-targeted anchors default to false. */
+	/** Whether the anchor is initially open. Defaults to !canBeHidden. */
 	defaultOpen?: boolean;
 	/** Optional width of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
 	width?: string | number;
