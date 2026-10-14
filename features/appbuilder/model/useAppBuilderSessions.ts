@@ -32,6 +32,26 @@ function useStableByJson<T>(value: T): T {
 const sessionSlug = (session: {slug?: string}) => session.slug ?? "";
 
 /**
+ * `closeSession` reports failure by leaving the session in the store.
+ * Returns whether that id is gone afterwards.
+ */
+async function closeTrackedSession(sessionId: string): Promise<boolean> {
+	const {closeSession, sessions} = useShapeDiverStoreSession.getState();
+	if (!sessions[sessionId]) return true;
+	try {
+		await closeSession(sessionId);
+	} catch (error) {
+		Logger.warn("Error closing sessions:", error);
+		return false;
+	}
+	if (useShapeDiverStoreSession.getState().sessions[sessionId]) {
+		Logger.warn(`Error closing session "${sessionId}".`);
+		return false;
+	}
+	return true;
+}
+
+/**
  * Create full sessions declared on the App Builder data output.
  * Same skip-if-loaded rule as the embedded sessions in {@link useAppBuilderInstances},
  * without the instance flags. A session id that also appears in `instances` is
@@ -85,7 +105,13 @@ export function useAppBuilderSessions(props: Props) {
 
 		const owned: EmbeddedSession[] = [];
 		const definitions = appBuilderData?.sessions;
-		if (!definitions?.length) return owned;
+		if (!definitions?.length) {
+			// The sessions are gone, so the next time they are listed they
+			// must be created from the current initial parameter values.
+			sessionDtoRef.current = {};
+			createdSessionIdsRef.current = {namespace, ids: []};
+			return owned;
+		}
 
 		const createdSessionIds = new Set(createdSessionIdsRef.current.ids);
 		const instanceSessionIds = new Set(
@@ -104,7 +130,8 @@ export function useAppBuilderSessions(props: Props) {
 
 			if (
 				sessionIsLoaded(definition.sessionId) &&
-				!createdSessionIds.has(definition.sessionId)
+				!createdSessionIds.has(definition.sessionId) &&
+				!liveSlugsRef.current.has(definition.sessionId)
 			) {
 				warnOnce(
 					`exists:${definition.sessionId}`,
@@ -193,7 +220,6 @@ export function useAppBuilderSessions(props: Props) {
 
 		promiseChainRef.current = promiseChainRef.current
 			.then(async () => {
-				const {closeSession} = useShapeDiverStoreSession.getState();
 				const {removeSession} = useShapeDiverStoreParameters.getState();
 				for (const id of removed) {
 					const liveSlug = liveSlugsRef.current.get(id);
@@ -203,12 +229,7 @@ export function useAppBuilderSessions(props: Props) {
 					);
 					if (desired && sessionSlug(desired) === liveSlug) continue;
 
-					try {
-						await closeSession(id);
-					} catch (error) {
-						Logger.warn("Error closing sessions:", error);
-						continue;
-					}
+					if (!(await closeTrackedSession(id))) continue;
 					removeSession(id);
 					if (liveSlugsRef.current.get(id) === liveSlug)
 						liveSlugsRef.current.delete(id);
@@ -231,8 +252,7 @@ export function useAppBuilderSessions(props: Props) {
 
 		promiseChainRef.current = promiseChainRef.current
 			.then(async () => {
-				const {createSession, closeSession} =
-					useShapeDiverStoreSession.getState();
+				const {createSession} = useShapeDiverStoreSession.getState();
 				const {addSession, removeSession} =
 					useShapeDiverStoreParameters.getState();
 				for (const dto of pending) {
@@ -273,10 +293,7 @@ export function useAppBuilderSessions(props: Props) {
 						!stillDesired ||
 						sessionSlug(stillDesired) !== slug
 					) {
-						try {
-							await closeSession(api.id);
-						} catch (error) {
-							Logger.warn("Error closing sessions:", error);
+						if (!(await closeTrackedSession(api.id))) {
 							if (!unmountedRef.current)
 								liveSlugsRef.current.set(dto.id, slug);
 							continue;
@@ -332,15 +349,10 @@ export function useAppBuilderSessions(props: Props) {
 			const ids = [...liveSlugsRef.current.keys()];
 			promiseChainRef.current = promiseChainRef.current
 				.then(async () => {
-					const {closeSession} = useShapeDiverStoreSession.getState();
 					const {removeSession} =
 						useShapeDiverStoreParameters.getState();
 					for (const id of ids) {
-						try {
-							await closeSession(id);
-						} catch (error) {
-							Logger.warn("Error closing sessions:", error);
-						}
+						if (!(await closeTrackedSession(id))) continue;
 						removeSession(id);
 					}
 					liveSlugsRef.current.clear();
