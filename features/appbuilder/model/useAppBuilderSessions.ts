@@ -142,18 +142,6 @@ export function useAppBuilderSessions(props: Props) {
 
 			// use slug if available, otherwise use sessionId
 			const slug = definition.slug || definition.sessionId;
-			const duplicateSlug = owned.find(
-				(session) => session.slug === slug,
-			);
-			if (duplicateSlug) {
-				if (duplicateSlug.id !== definition.sessionId) {
-					warnOnce(
-						`slug:${slug}:${duplicateSlug.id}:${definition.sessionId}`,
-						`Multiple sessions are using the same slug "${slug}" but different session ids ("${duplicateSlug.id}" and "${definition.sessionId}"). This can lead to unexpected behavior.`,
-					);
-				}
-				return;
-			}
 			if (owned.some((session) => session.id === definition.sessionId)) {
 				warnOnce(
 					`duplicate:${definition.sessionId}`,
