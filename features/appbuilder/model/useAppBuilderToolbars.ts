@@ -47,6 +47,7 @@ export function useAppBuilderToolbars(props: UseAppBuilderToolbarsProps) {
 					order: container.props.order ?? 0,
 					definitionIndex,
 					visibility: container.props.visibility ?? "always",
+					defaultOpen: container.props.defaultOpen,
 					exclusiveContainers:
 						container.props.exclusiveContainers ?? true,
 					groups: container.groups ?? [],

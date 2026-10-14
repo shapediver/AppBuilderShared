@@ -1425,6 +1425,8 @@ export interface IAppBuilderToolbarContainerProperties {
 	order?: number;
 	/** Visibility behavior. */
 	visibility?: AppBuilderToolbarVisibility;
+	/** Whether the toolbar is initially open. Defaults to true. */
+	defaultOpen?: boolean;
 	/**
 	 * When true, opening a 2d or 3d container targeted by this toolbar
 	 * closes the other containers this toolbar targets (both 2d and 3d).
