@@ -64,6 +64,8 @@ export interface ToolbarRegistration {
 	order: number;
 	definitionIndex?: number;
 	visibility: AppBuilderToolbarVisibility;
+	/** When false, the toolbar starts closed until something opens it. Omitted starts open. */
+	defaultOpen?: boolean;
 	/** Defaults to true. Set false to allow several toolbar-targeted containers open at once. */
 	exclusiveContainers?: boolean;
 	ariaLabel?: string;

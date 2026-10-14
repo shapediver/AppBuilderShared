@@ -653,6 +653,38 @@ describe("toolbar container schema", () => {
 		expect(result.success).toBe(false);
 	});
 
+	it("accepts defaultOpen on toolbars", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {
+						id: "tools",
+						defaultOpen: false,
+					},
+				},
+			],
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects defaultOpen on a standard container", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "left",
+					props: {defaultOpen: false},
+					widgets: [],
+				},
+			],
+		});
+
+		expect(result.success).toBe(false);
+	});
+
 	it("keeps backward compatibility for existing non-toolbar containers", () => {
 		const result = validateAppBuilder({
 			version: "1.0",

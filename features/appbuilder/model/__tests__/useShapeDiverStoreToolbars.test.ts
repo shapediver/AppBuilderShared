@@ -1,3 +1,4 @@
+import {ToolbarRegistration} from "../../config/shapediverStoreToolbars";
 import {useShapeDiverStoreToolbars} from "../useShapeDiverStoreToolbars";
 
 describe("useShapeDiverStoreToolbars", () => {
@@ -7,6 +8,7 @@ describe("useShapeDiverStoreToolbars", () => {
 			defaultToolbars: [],
 			runtimeToolbars: [],
 			runtimeTokens: {},
+			toolbarOpen: {},
 		});
 	});
 
@@ -417,5 +419,62 @@ describe("useShapeDiverStoreToolbars", () => {
 			useShapeDiverStoreToolbars.getState().defaultToolbars[0]
 				.exclusiveContainers,
 		).toBe(false);
+	});
+
+	const definitionToolbar = (
+		id: string,
+		defaultOpen?: boolean,
+	): ToolbarRegistration => ({
+		id,
+		source: "definition",
+		side: "top",
+		align: "center",
+		order: 0,
+		visibility: "always",
+		groups: [],
+		...(defaultOpen === undefined ? {} : {defaultOpen}),
+	});
+
+	it("shows a toolbar when defaultOpen is omitted", () => {
+		useShapeDiverStoreToolbars
+			.getState()
+			.setDefinitionToolbars([definitionToolbar("main")]);
+
+		expect(
+			useShapeDiverStoreToolbars.getState().selectMergedToolbars(),
+		).toEqual([expect.objectContaining({id: "main"})]);
+	});
+
+	it("hides a toolbar with defaultOpen false until it is opened", () => {
+		const store = useShapeDiverStoreToolbars.getState();
+		store.setDefinitionToolbars([definitionToolbar("main", false)]);
+
+		expect(store.selectMergedToolbars()).toHaveLength(0);
+		expect(useShapeDiverStoreToolbars.getState().toolbarOpen.main).toBe(
+			false,
+		);
+
+		store.setToolbarOpen("main", true);
+		expect(
+			useShapeDiverStoreToolbars.getState().selectMergedToolbars(),
+		).toEqual([expect.objectContaining({id: "main"})]);
+	});
+
+	it("does not reset an opened toolbar or open a new closed toolbar when the definition updates", () => {
+		const store = useShapeDiverStoreToolbars.getState();
+		store.setDefinitionToolbars([definitionToolbar("first", false)]);
+		store.setToolbarOpen("first", true);
+		store.setDefinitionToolbars([
+			definitionToolbar("first", false),
+			definitionToolbar("second", false),
+		]);
+
+		const merged = useShapeDiverStoreToolbars
+			.getState()
+			.selectMergedToolbars();
+		expect(merged.map((toolbar) => toolbar.id)).toEqual(["first"]);
+		expect(useShapeDiverStoreToolbars.getState().toolbarOpen.second).toBe(
+			false,
+		);
 	});
 });

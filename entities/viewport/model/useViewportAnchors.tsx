@@ -37,8 +37,7 @@ function actionTargetedAnchorProps(
 		// Author-only: for 3D this is geometry occlusion, never inferred.
 		hideable: props.hideable,
 		exclusive: props.exclusive ?? (isActionTargeted ? false : undefined),
-		defaultOpen:
-			props.defaultOpen ?? (isActionTargeted ? false : undefined),
+		defaultOpen: props.defaultOpen,
 	};
 }
 

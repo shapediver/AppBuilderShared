@@ -41,6 +41,7 @@ const normalizeToolbar = (toolbar: ToolbarInput): ToolbarRegistration => ({
 	order: toolbar.order ?? 0,
 	definitionIndex: toolbar.definitionIndex,
 	visibility: toolbar.visibility ?? DEFAULT_VISIBILITY,
+	defaultOpen: toolbar.defaultOpen,
 	exclusiveContainers: toolbar.exclusiveContainers ?? true,
 	ariaLabel: toolbar.ariaLabel,
 	defaultIcon: toolbar.defaultIcon,
@@ -97,6 +98,7 @@ const toolbarsEqual = (a: ToolbarRegistration, b: ToolbarRegistration) =>
 	a.order === b.order &&
 	a.definitionIndex === b.definitionIndex &&
 	a.visibility === b.visibility &&
+	a.defaultOpen === b.defaultOpen &&
 	a.exclusiveContainers === b.exclusiveContainers &&
 	a.ariaLabel === b.ariaLabel &&
 	a.defaultIcon === b.defaultIcon &&
@@ -339,7 +341,23 @@ export const useShapeDiverStoreToolbars = create<IShapeDiverStoreToolbars>()(
 
 			setDefinitionToolbars: (toolbars) =>
 				set(
-					{definitionToolbars: normalizeDefinitionToolbars(toolbars)},
+					(state) => {
+						const definitionToolbars =
+							normalizeDefinitionToolbars(toolbars);
+						let toolbarOpen = state.toolbarOpen;
+						for (const toolbar of definitionToolbars) {
+							if (
+								toolbar.defaultOpen === false &&
+								!(toolbar.id in toolbarOpen)
+							) {
+								toolbarOpen = {
+									...toolbarOpen,
+									[toolbar.id]: false,
+								};
+							}
+						}
+						return {definitionToolbars, toolbarOpen};
+					},
 					false,
 					"setDefinitionToolbars",
 				),
