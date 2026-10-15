@@ -89,8 +89,8 @@ function runSlot(
  */
 function mergeSelectionEventProps(
 	items: ResolvedActionSlot[],
-): IAppBuilderActionSlotEventPropsSelection {
-	const merged: IAppBuilderActionSlotEventPropsSelection = {};
+): Partial<IAppBuilderActionSlotEventPropsSelection> {
+	const merged: Partial<IAppBuilderActionSlotEventPropsSelection> = {};
 	for (const item of items) {
 		const eventProps = selectionEventProps(item.slot);
 		if (!eventProps) continue;
@@ -135,9 +135,6 @@ function InteractionSlotGroup({
 		[items],
 	);
 	const resolvedViewportId = mergedEventProps.viewportId ?? viewportId;
-	const nameFilter = mergedEventProps.nameFilter?.length
-		? mergedEventProps.nameFilter
-		: ["*"];
 	const cacheKey = selectionSlotGroupKey(mergedEventProps, viewportId);
 	const [selectionAllowed, setSelectionAllowed] = useState(true);
 	const interactionRequestTokenRef = useRef<string | undefined>(undefined);
@@ -182,6 +179,7 @@ function InteractionSlotGroup({
 			minimumSelection,
 			maximumSelection,
 			hover,
+			nameFilter,
 			...rest
 		} = mergedEventProps;
 		return {
@@ -192,7 +190,7 @@ function InteractionSlotGroup({
 			deselectOnEmpty: true,
 			hover: hover !== false,
 		};
-	}, [mergedEventProps, nameFilter]);
+	}, [mergedEventProps]);
 
 	const {
 		selectedNodeNames,
@@ -334,6 +332,7 @@ export function AppBuilderInteractionSlotListeners({
 		const warnedFilterKeys = new Set<string>();
 		for (const item of items) {
 			const eventProps = selectionEventProps(item.slot);
+			if (!eventProps?.nameFilter?.length) continue;
 			const key = selectionSlotGroupKey(eventProps, viewportId);
 			const filterKey = selectionSlotNameFilterKey(
 				eventProps,

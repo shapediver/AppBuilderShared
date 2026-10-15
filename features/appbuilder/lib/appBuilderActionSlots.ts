@@ -228,17 +228,23 @@ function readSlotEventProps(
 }
 
 /**
- * `eventProps` omitted is always valid (unfiltered). Wrong `type` for this
- * event, or `eventProps` on an event that has none, is incompatible.
+ * `eventProps` omitted is valid except on selection events, which require a
+ * non-empty `nameFilter`. Wrong `type` for this event, or `eventProps` on an
+ * event that has none, is incompatible.
  */
 export function isActionSlotEventPropsCompatible(
 	eventName: string,
 	slot: IAppBuilderActionSlot,
 ): boolean {
 	const eventProps = readSlotEventProps(slot);
-	if (!eventProps) return true;
 	const expected = expectedActionSlotEventPropsType(eventName);
-	return expected !== undefined && eventProps.type === expected;
+	if (!eventProps) return expected !== "selection";
+	if (expected === undefined || eventProps.type !== expected) return false;
+	if (eventProps.type === "selection") {
+		const {nameFilter} = eventProps.props;
+		return Array.isArray(nameFilter) && nameFilter.length > 0;
+	}
+	return true;
 }
 
 function warnIncompatibleActionSlotEventProps(
@@ -246,15 +252,21 @@ function warnIncompatibleActionSlotEventProps(
 	slot: IAppBuilderActionSlot,
 ): void {
 	const expected = expectedActionSlotEventPropsType(eventName);
-	const actual = readSlotEventProps(slot)?.type;
+	const eventProps = readSlotEventProps(slot);
 	if (expected === undefined) {
 		Logger.warn(
 			`Action slot "${eventName}" does not support eventProps and will be ignored.`,
 		);
 		return;
 	}
+	if (!eventProps || eventProps.type !== expected) {
+		Logger.warn(
+			`Action slot "${eventName}" expects eventProps.type "${expected}" but got "${eventProps?.type}" and will be ignored.`,
+		);
+		return;
+	}
 	Logger.warn(
-		`Action slot "${eventName}" expects eventProps.type "${expected}" but got "${actual}" and will be ignored.`,
+		`Action slot "${eventName}" requires a non-empty eventProps.props.nameFilter and will be ignored.`,
 	);
 }
 
@@ -530,19 +542,20 @@ export function readStringField(
 }
 
 function normalizedNameFilter(
-	eventProps: IAppBuilderActionSlotEventPropsSelection | undefined,
-): string[] {
-	return eventProps?.nameFilter?.length ? eventProps.nameFilter : ["*"];
+	eventProps: Partial<IAppBuilderActionSlotEventPropsSelection> | undefined,
+): string[] | undefined {
+	const nameFilter = eventProps?.nameFilter;
+	return nameFilter?.length ? nameFilter : undefined;
 }
 
 /** Viewport + nameFilter only — used to detect conflicting selection configs. */
 export function selectionSlotNameFilterKey(
-	eventProps: IAppBuilderActionSlotEventPropsSelection | undefined,
+	eventProps: Partial<IAppBuilderActionSlotEventPropsSelection> | undefined,
 	viewportId: string,
 ): string {
 	return JSON.stringify({
 		viewportId: eventProps?.viewportId ?? viewportId,
-		nameFilter: normalizedNameFilter(eventProps),
+		nameFilter: normalizedNameFilter(eventProps) ?? null,
 	});
 }
 
@@ -553,12 +566,12 @@ export function selectionSlotNameFilterKey(
  * `undefined`; `null` disables the default effect).
  */
 export function selectionSlotGroupKey(
-	eventProps: IAppBuilderActionSlotEventPropsSelection | undefined,
+	eventProps: Partial<IAppBuilderActionSlotEventPropsSelection> | undefined,
 	viewportId: string,
 ): string {
 	return JSON.stringify({
 		viewportId: eventProps?.viewportId ?? viewportId,
-		nameFilter: normalizedNameFilter(eventProps),
+		nameFilter: normalizedNameFilter(eventProps) ?? null,
 		minimumSelection: eventProps?.minimumSelection ?? 0,
 		maximumSelection: eventProps?.maximumSelection ?? 1,
 		hover: eventProps?.hover !== false,

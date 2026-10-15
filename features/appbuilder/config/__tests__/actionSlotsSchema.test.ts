@@ -125,6 +125,35 @@ describe("action slot schema", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("rejects selection slots without a nameFilter", () => {
+		const missing = validateAppBuilder(
+			layout({
+				selecton: {
+					action: undo,
+					eventProps: {type: "selection", props: {hover: true}},
+				},
+			}),
+		);
+		expect(missing.success).toBe(false);
+
+		const empty = validateAppBuilder(
+			layout({
+				selecton: {
+					action: undo,
+					eventProps: {type: "selection", props: {nameFilter: []}},
+				},
+			}),
+		);
+		expect(empty.success).toBe(false);
+
+		const noProps = validateAppBuilder(
+			layout({
+				selecton: {action: undo},
+			}),
+		);
+		expect(noProps.success).toBe(false);
+	});
+
 	it("rejects eventProps whose type does not match the root event", () => {
 		const wrongType = validateAppBuilder(
 			layout({
