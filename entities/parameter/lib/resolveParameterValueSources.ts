@@ -315,6 +315,7 @@ async function resolveModelState(
 async function resolveSdtf(
 	source: IAppBuilderParameterValueSourcePropsSdtf,
 	namespace: string,
+	uploadNamespace: string,
 	index: number,
 ): Promise<string | undefined> {
 	const output = getOutput(source.sessionId || namespace, source.name);
@@ -328,8 +329,16 @@ async function resolveSdtf(
 	}
 	if (!output.content[0]?.href) return undefined;
 
-	const session = useShapeDiverStoreSession.getState().sessions[namespace];
-	if (!session) return undefined;
+	// Uploaded assets are scoped per session, so the asset must be uploaded
+	// to the session that owns the target parameter.
+	const session =
+		useShapeDiverStoreSession.getState().sessions[uploadNamespace];
+	if (!session) {
+		Logger.warn(
+			`Session with namespace "${uploadNamespace}" not found for sdTF parameter value source "${source.name}".`,
+		);
+		return undefined;
+	}
 
 	const assetDefinition = fetch(output.content[0].href)
 		.then((response) => response.arrayBuffer())
@@ -449,7 +458,9 @@ async function resolveOne(
 			type === PARAMETER_TYPE.FILE
 				? (parameter as IFileParameterApi).upload.bind(parameter)
 				: undefined;
-		return resolveDataOutput(source.props, namespace, upload);
+		// An omitted sessionId means the controller. `upload` belongs to the
+		// parameter, so a File value is stored on that session.
+		return resolveDataOutput(source.props, context.namespace, upload);
 	}
 	if (isScreenshotSource(source)) {
 		if (type !== PARAMETER_TYPE.FILE) {
@@ -484,7 +495,7 @@ async function resolveOne(
 			);
 			return undefined;
 		}
-		return resolveSdtf(source.props, context.namespace, index);
+		return resolveSdtf(source.props, context.namespace, namespace, index);
 	}
 	if (isExportSource(source)) {
 		if (type !== PARAMETER_TYPE.FILE) {
@@ -493,9 +504,11 @@ async function resolveOne(
 			);
 			return undefined;
 		}
+		// An omitted sessionId means the controller. The file is uploaded
+		// through the parameter, onto the session that owns it.
 		return resolveExport(
 			source.props,
-			namespace,
+			context.namespace,
 			(parameter as IFileParameterApi).upload.bind(parameter),
 		);
 	}
