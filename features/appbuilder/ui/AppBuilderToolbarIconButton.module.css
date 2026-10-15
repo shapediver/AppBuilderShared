@@ -5,12 +5,12 @@
 	}
 }
 
-.toolbarIcon.toolbarIconLabeled {
+.toolbarIconLabeled:global(.mantine-ActionIcon-root) {
 	width: auto;
 	height: auto;
 	min-width: var(--ai-size, 2rem);
 	min-height: var(--ai-size, 2rem);
-	/* Two classes so this beats Mantine UnstyledButton's single-class `padding: 0`. */
+	/* Beats Mantine UnstyledButton's single-class `padding: 0`. */
 	padding: 0.25rem 0.375rem;
 	overflow: visible;
 }
@@ -25,7 +25,7 @@
 	gap: 0.25rem;
 }
 
-.toolbarIcon.toolbarIconLabeled .caption {
+.toolbarIconLabeled .caption:global(.mantine-Text-root) {
 	white-space: nowrap;
 	/* Beats Mantine Text's single-class line-height. */
 	line-height: 1.2;
