@@ -21,19 +21,18 @@ import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/com
 import type {ToolbarAcceptRejectItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import {useAppBuilderToolbars} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderToolbars";
 import {useDefaultToolbarRegistration} from "@AppBuilderLib/features/appbuilder/model/useDefaultToolbarRegistration";
-import {useResolvedAppBuilderToolbarIconButtonTheme} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {useProps} from "@mantine/core";
-import {useCallback, useMemo, useSyncExternalStore} from "react";
+import {useCallback, useMemo, useRef, useSyncExternalStore} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderToolbar from "./AppBuilderToolbar";
 import {
 	computeToolbarPushOffsets,
-	computeToolbarThickness,
 	getToolbarSlotStyle,
 	groupToolbarsBySlot,
 	ToolbarAlign,
 	ToolbarSide,
 } from "./appBuilderToolbarLayerLayout";
+import {useMeasuredToolbarSlotThickness} from "./useMeasuredToolbarSlotThickness";
 
 const defaultStyleProps = {
 	style: {
@@ -146,11 +145,6 @@ export default function AppBuilderToolbarLayer({
 		),
 	);
 
-	// Thin compatibility layer: legacy `ViewportIconButton` theme overrides still
-	// affect both the rendered icon button and the layout thickness calculations.
-	const viewportIconButtonTheme =
-		useResolvedAppBuilderToolbarIconButtonTheme();
-
 	const buttonRenderContext = useMemo(
 		() =>
 			buildButtonRenderContext({
@@ -162,19 +156,6 @@ export default function AppBuilderToolbarLayer({
 		[executing, namespace, viewportId, legacyViewportIconsTheme],
 	);
 
-	const buttonSize = viewportIconButtonTheme.actionIconProps?.size ?? 32;
-	const buttonMargin = viewportIconButtonTheme.actionIconProps?.style?.margin;
-	const paperPaddingX = legacyViewportIconsTheme.paperProps?.px ?? 2;
-	const paperPaddingY = legacyViewportIconsTheme.paperProps?.py ?? 1;
-
-	const verticalThickness = useMemo(
-		() => computeToolbarThickness(buttonSize, buttonMargin, paperPaddingX),
-		[buttonMargin, buttonSize, paperPaddingX],
-	);
-	const horizontalThickness = useMemo(
-		() => computeToolbarThickness(buttonSize, buttonMargin, paperPaddingY),
-		[buttonMargin, buttonSize, paperPaddingY],
-	);
 	const bottomCenterToolbar = toolbars.find(
 		(toolbar) => toolbar.side === "bottom" && toolbar.align === "center",
 	);
@@ -207,28 +188,25 @@ export default function AppBuilderToolbarLayer({
 		() => groupToolbarsBySlot(toolbarsWithAcceptRejectButtons),
 		[toolbarsWithAcceptRejectButtons],
 	);
+	const slotKeys = useMemo(
+		() => slotEntries.map(([key]) => key),
+		[slotEntries],
+	);
+	const rootRef = useRef<HTMLDivElement>(null);
+	const thicknessBySlot = useMeasuredToolbarSlotThickness(rootRef, slotKeys);
 	const pushOffsets = useMemo(
 		() =>
 			computeToolbarPushOffsets({
 				slotEntries,
-				verticalThickness,
-				horizontalThickness,
-				offsetX: resolvedOffsetX,
-				offsetY: resolvedOffsetY,
+				thicknessBySlot,
 			}),
-		[
-			horizontalThickness,
-			resolvedOffsetX,
-			resolvedOffsetY,
-			slotEntries,
-			verticalThickness,
-		],
+		[slotEntries, thicknessBySlot],
 	);
 
 	if (toolbars.length === 0) return null;
 
 	return (
-		<div style={style}>
+		<div ref={rootRef} style={style}>
 			{slotEntries.map(([key, slotToolbars]) => {
 				const [side, align] = key.split(":") as [
 					ToolbarSide,
@@ -238,6 +216,7 @@ export default function AppBuilderToolbarLayer({
 				return (
 					<section
 						key={key}
+						data-toolbar-slot={key}
 						style={getToolbarSlotStyle(
 							side,
 							align,
