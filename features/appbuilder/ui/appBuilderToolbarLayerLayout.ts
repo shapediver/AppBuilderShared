@@ -7,40 +7,6 @@ export type ToolbarSlotEntries<
 	T extends ToolbarLayoutItem = ToolbarRegistration,
 > = Array<[string, T[]]>;
 
-/** Mantine spacing token → px (theme spacing step = 0.25rem = 4px). */
-const mantineSpacingPx = (token: number | string | undefined): number => {
-	if (token == null) return 0;
-	const n = typeof token === "number" ? token : parseInt(token, 10);
-	return isNaN(n) ? 0 : n;
-};
-
-/** Rem/em string → px, assuming a 16px base. */
-export const remToPx = (value: string | number | undefined): number => {
-	if (value == null) return 0;
-	if (typeof value === "number") return value;
-	const remMatch = value.match(/([\d.]+)r?em/);
-	if (remMatch) return parseFloat(remMatch[1]) * 16;
-	const px = parseFloat(value);
-	return isNaN(px) ? 0 : px;
-};
-
-/**
- * Computes the space a rendered toolbar occupies orthogonally to its flow.
- * This mirrors the default viewport icon composition: button + margin + paper padding + borders.
- */
-export const computeToolbarThickness = (
-	buttonSize: number | string,
-	buttonMargin: string | number | undefined,
-	paperPadding: number | string | undefined,
-): number => {
-	const size =
-		typeof buttonSize === "number" ? buttonSize : remToPx(buttonSize);
-	const margin = remToPx(buttonMargin);
-	const padding = mantineSpacingPx(paperPadding);
-	const border = 2;
-	return size + 2 * margin + 2 * padding + border;
-};
-
 interface CornerConflict {
 	blockerSide: ToolbarSide;
 	loserSide: ToolbarSide;
@@ -90,6 +56,20 @@ const CORNER_CONFLICTS: Record<string, CornerConflict> = {
 	},
 };
 
+/** Cross-axis size of a rendered slot. Top/bottom use height; left/right use width. */
+export const slotCrossAxisPx = (
+	side: ToolbarSide,
+	element: {offsetWidth: number; offsetHeight: number},
+): number =>
+	side === "left" || side === "right"
+		? element.offsetWidth
+		: element.offsetHeight;
+
+const pushedInset = (offset: string, pushPx: number | undefined): string =>
+	pushPx != null && pushPx > 0
+		? `calc(${offset} + ${pushPx}px + ${offset})`
+		: offset;
+
 export const getToolbarSlotStyle = (
 	side: ToolbarSide,
 	align: ToolbarAlign,
@@ -105,7 +85,6 @@ export const getToolbarSlotStyle = (
 		pointerEvents: "none",
 		alignItems: "flex-start",
 	};
-	const push = pushPx != null ? `${pushPx}px` : "0px";
 
 	switch (side) {
 		case "top":
@@ -129,7 +108,7 @@ export const getToolbarSlotStyle = (
 	if (side === "top" || side === "bottom") {
 		if (align === "start") {
 			style.left =
-				pushAxis === "left" ? `calc(${offsetX} + ${push})` : offsetX;
+				pushAxis === "left" ? pushedInset(offsetX, pushPx) : offsetX;
 		}
 		if (align === "center") {
 			style.left = "50%";
@@ -137,12 +116,12 @@ export const getToolbarSlotStyle = (
 		}
 		if (align === "end") {
 			style.right =
-				pushAxis === "right" ? `calc(${offsetX} + ${push})` : offsetX;
+				pushAxis === "right" ? pushedInset(offsetX, pushPx) : offsetX;
 		}
 	} else {
 		if (align === "start") {
 			style.top =
-				pushAxis === "top" ? `calc(${offsetY} + ${push})` : offsetY;
+				pushAxis === "top" ? pushedInset(offsetY, pushPx) : offsetY;
 		}
 		if (align === "center") {
 			style.top = "50%";
@@ -150,7 +129,7 @@ export const getToolbarSlotStyle = (
 		}
 		if (align === "end") {
 			style.bottom =
-				pushAxis === "bottom" ? `calc(${offsetY} + ${push})` : offsetY;
+				pushAxis === "bottom" ? pushedInset(offsetY, pushPx) : offsetY;
 		}
 	}
 
@@ -172,16 +151,11 @@ export const groupToolbarsBySlot = <T extends ToolbarLayoutItem>(
 
 export const computeToolbarPushOffsets = <T extends ToolbarLayoutItem>({
 	slotEntries,
-	verticalThickness,
-	horizontalThickness,
-	offsetX,
-	offsetY,
+	thicknessBySlot,
 }: {
 	slotEntries: ToolbarSlotEntries<T>;
-	verticalThickness: number;
-	horizontalThickness: number;
-	offsetX: string;
-	offsetY: string;
+	/** Measured cross-axis size of each `side:align` slot, in px. */
+	thicknessBySlot: Record<string, number>;
 }) => {
 	const offsets: Record<
 		string,
@@ -207,23 +181,31 @@ export const computeToolbarPushOffsets = <T extends ToolbarLayoutItem>({
 				CORNER_CONFLICTS[`${blockerKey}|${loserKey}`];
 			if (!actualConflict || offsets[loserKey]) continue;
 
-			const thickness =
-				actualConflict.blockerSide === "left" ||
-				actualConflict.blockerSide === "right"
-					? verticalThickness
-					: horizontalThickness;
-			const gap =
-				actualConflict.pushAxis === "left" ||
-				actualConflict.pushAxis === "right"
-					? remToPx(offsetX)
-					: remToPx(offsetY);
-
 			offsets[loserKey] = {
-				px: thickness + gap,
+				px: thicknessBySlot[blockerKey] ?? 0,
 				axis: actualConflict.pushAxis,
 			};
 		}
 	}
 
 	return offsets;
+};
+
+/**
+ * Keeps a slot's last positive cross-axis size while it is in the DOM but
+ * hidden (`onMouseActivity` Activity/`display: none` measures as 0). Dropping
+ * that size would let the neighboring toolbar move into the corner and overlap
+ * the hidden toolbar when it appears.
+ */
+export const mergeMeasuredSlotThickness = (
+	current: Record<string, number>,
+	measured: Record<string, number>,
+	presentKeys: readonly string[],
+): Record<string, number> => {
+	const next: Record<string, number> = {};
+	for (const key of presentKeys) {
+		const size = measured[key] ?? current[key];
+		if (size != null && size > 0) next[key] = size;
+	}
+	return next;
 };
