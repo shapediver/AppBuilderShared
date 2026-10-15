@@ -41,18 +41,26 @@ export interface IAppBuilderActionSlotEventPropsExport extends IAppBuilderAction
  */
 export type IAppBuilderActionSlotEventPropsSelection = Omit<
 	ISelectionParameterProps,
-	"deselectOnEmpty" | "prompt" | "buttons" | "activeMode" | "presentation"
+	| "deselectOnEmpty"
+	| "prompt"
+	| "buttons"
+	| "activeMode"
+	| "presentation"
+	| "nameFilter"
 > & {
+	/**
+	 * Nodes that activate this slot. Required. There is no match-all default.
+	 */
+	nameFilter: string[];
 	/** Viewport to listen to. Defaults to the default viewport. */
 	viewportId?: string;
 };
 
 /**
  * Optional filters for which source an application event applies to.
- * Omit on pointer/`click` slots. For interaction events, `nameFilter`
- * chooses which nodes activate the slot (like anchor `selectionProperties`).
- * Session/export/viewport ids are needed only when the app has more than
- * one of those.
+ * Omit on pointer/`click` slots. Interaction events require `nameFilter`
+ * (which nodes activate the slot). Session/export/viewport ids are needed
+ * only when the app has more than one of those.
  */
 export type IAppBuilderActionSlotEventProps =
 	| {
@@ -99,10 +107,11 @@ export interface IAppBuilderExportActionSlot extends IAppBuilderPlainActionSlot 
 
 /**
  * `selecton` / `selectoff` / `hoveron` / `hoveroff` slot.
- * `eventProps`, when set, must be `type: "selection"`.
+ * `eventProps` is required and must be `type: "selection"` with a
+ * non-empty `nameFilter`.
  */
 export interface IAppBuilderSelectionActionSlot extends IAppBuilderPlainActionSlot {
-	eventProps?: {
+	eventProps: {
 		type: "selection";
 		props: IAppBuilderActionSlotEventPropsSelection;
 	};
@@ -215,6 +224,7 @@ export interface IAppBuilderNodeActionSlots {
  * its own JSON node. Those slots attach to the viewport host. The rest are
  * application events. `eventProps` is only valid on `computation*`
  * (`session`), `export*` (`export`), and select/hover (`selection`).
+ * Select/hover slots require `eventProps.props.nameFilter`.
  * A value may be one slot or an array (same event, different `eventProps`).
  * `custom:` kebab-case names are also allowed.
  */

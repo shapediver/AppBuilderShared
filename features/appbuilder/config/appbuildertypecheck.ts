@@ -743,7 +743,7 @@ const IAppBuilderActionSlotEventPropsExportSchema =
 	});
 
 const IAppBuilderActionSlotEventPropsSelectionSchema = z.strictObject({
-	nameFilter: z.array(z.string()).optional(),
+	nameFilter: z.array(z.string()).min(1),
 	viewportId: z.string().optional(),
 	minimumSelection: z.number().optional(),
 	maximumSelection: z.number().optional(),
@@ -787,12 +787,10 @@ const IAppBuilderExportActionSlotSchema = z.strictObject({
 
 const IAppBuilderSelectionActionSlotSchema = z.strictObject({
 	action: IAppBuilderActionDefinitionSchema,
-	eventProps: z
-		.strictObject({
-			type: z.literal("selection"),
-			props: IAppBuilderActionSlotEventPropsSelectionSchema,
-		})
-		.optional(),
+	eventProps: z.strictObject({
+		type: z.literal("selection"),
+		props: IAppBuilderActionSlotEventPropsSelectionSchema,
+	}),
 });
 
 function actionSlotList<T extends z.ZodType>(slot: T) {

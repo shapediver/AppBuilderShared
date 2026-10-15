@@ -392,6 +392,27 @@ describe("appBuilderActionSlots helpers", () => {
 		);
 	});
 
+	it("ignores selection slots that have no nameFilter", () => {
+		const warn = jest.spyOn(Logger, "warn").mockImplementation(() => {});
+		const slot = {
+			action: {type: "undo" as const, props: {}},
+			eventProps: {
+				type: "selection" as const,
+				props: {hover: true},
+			},
+		};
+		expect(
+			pickAllowedActionSlots(
+				{selecton: slot} as IAppBuilderActionSlots,
+				APP_BUILDER_SLOT_EVENTS.application,
+			),
+		).toEqual([]);
+		expect(warn).toHaveBeenCalledWith(
+			expect.stringContaining("nameFilter"),
+		);
+		warn.mockRestore();
+	});
+
 	it("groups selection slots by full effective config", () => {
 		const nameFilter = ["Cabinet"];
 		expect(
@@ -405,6 +426,9 @@ describe("appBuilderActionSlots helpers", () => {
 				{nameFilter, selectionColor: "#ff0000"},
 				"vp",
 			),
+		);
+		expect(selectionSlotGroupKey(undefined, "vp")).not.toBe(
+			selectionSlotGroupKey({nameFilter: ["*"]}, "vp"),
 		);
 		expect(selectionSlotGroupKey({nameFilter}, "vp")).not.toBe(
 			selectionSlotGroupKey({nameFilter, hoverColor: null}, "vp"),
