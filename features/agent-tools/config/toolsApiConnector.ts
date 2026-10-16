@@ -38,7 +38,7 @@ export interface IToolsApiModelStateHandlers {
 
 /**
  * App Builder **server**. Owns LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
- * GET_SESSION_INFO / CREATE_MODEL_STATE / IMPORT_MODEL_STATE listeners and handshake.
+ * GET_SESSION_INFO / GET_THEME / CREATE_MODEL_STATE / IMPORT_MODEL_STATE listeners and handshake.
  * Does not expose those methods — the agent calls them on {@link IToolsApi}.
  *
  * `cancel()` tears down listeners and the handshake. Required on React unmount
@@ -51,8 +51,8 @@ export interface IToolsApiConnector {
 
 /**
  * App Builder **server** factory. Registers LIST_TOOLS / EXECUTE_TOOL /
- * GET_AGENT_CONFIG / GET_SESSION_INFO / CREATE_MODEL_STATE / IMPORT_MODEL_STATE
- * on an explicit agent `Window`.
+ * GET_AGENT_CONFIG / GET_SESSION_INFO / GET_THEME / CREATE_MODEL_STATE /
+ * IMPORT_MODEL_STATE on an explicit agent `Window`.
  *
  * Default names: this side `"app"`, peer `"agent"`. Timeout 20s unless
  * `options.timeout` overrides.

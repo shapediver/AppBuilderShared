@@ -9,13 +9,24 @@ const CLIENT_FILES = [
 	"features/agent-tools/config/toolsApi.ts",
 ] as const;
 
-function isAllowedExternal(specifier: string): boolean {
+function isAllowedExternal(
+	specifier: string,
+	importedNames: string[],
+): boolean {
 	if (specifier === "post-robot") {
 		return true;
 	}
 	if (
 		specifier === "@AppBuilderLib/shared/lib/zod" ||
 		specifier === "@AppBuilderShared/shared/lib/zod"
+	) {
+		return true;
+	}
+	// Type-only. `IAgentTheme` is the JSON form of `useCustomTheme`.
+	if (
+		specifier === "@mantine/core" &&
+		importedNames.length > 0 &&
+		importedNames.every((name) => name === "MantineThemeOverride")
 	) {
 		return true;
 	}

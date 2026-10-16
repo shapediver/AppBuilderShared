@@ -2,6 +2,7 @@ import type {
 	ICrossWindowApiOptions,
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
+import type {MantineThemeOverride} from "@mantine/core";
 import type {
 	IModelStateWireCreateData,
 	IModelStateWireCreateResult,
@@ -37,6 +38,19 @@ export const MESSAGE_TYPE_GET_AGENT_CONFIG = "GET_AGENT_CONFIG";
 export const MESSAGE_TYPE_GET_SESSION_INFO = "GET_SESSION_INFO";
 
 /**
+ * CrossWindow message type: agent asks App Builder for the complete theme
+ * created by `useCustomTheme`. Payload is unused. Reply is {@link IAgentTheme}
+ * (`{}` until that hook has published a theme). Never throws across the wire.
+ */
+export const MESSAGE_TYPE_GET_THEME = "GET_THEME";
+
+/**
+ * CrossWindow message type: App Builder tells the agent that `useCustomTheme`
+ * published a new theme. Payload is unused. The agent calls `getTheme` to read it.
+ */
+export const MESSAGE_TYPE_THEME_UPDATED = "THEME_UPDATED";
+
+/**
  * CrossWindow message type: agent asks App Builder to snapshot the current model.
  * Not an agent tool — omitted from `listTools`. Payload is
  * {@link IToolsApiCreateModelStateData}. Reply is {@link IToolsApiCreateModelStateResult}.
@@ -53,7 +67,7 @@ export const MESSAGE_TYPE_IMPORT_MODEL_STATE = "IMPORT_MODEL_STATE";
 /**
  * CrossWindow handshake name for ToolsApi (same role as ECommerce's ready handshake).
  * Listeners for LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG / GET_SESSION_INFO /
- * CREATE_MODEL_STATE / IMPORT_MODEL_STATE must be registered **before** this runs,
+ * GET_THEME / CREATE_MODEL_STATE / IMPORT_MODEL_STATE must be registered **before** this runs,
  * or the agent can send into a window that is not listening yet.
  */
 export const MESSAGE_TYPE_TOOLS_API_HANDSHAKE = "TOOLS_API_HANDSHAKE";
@@ -166,6 +180,13 @@ export function agentSessionInfoFrom(
 	return result;
 }
 
+/**
+ * JSON form of the theme `useCustomTheme` built (defaults, global overrides,
+ * and the theme file). `{}` when that hook has not published yet.
+ * Functions are omitted; they cannot cross the window.
+ */
+export type IAgentTheme = MantineThemeOverride;
+
 /** Create-model-state payload sent across ToolsApi. */
 export type IToolsApiCreateModelStateData = IModelStateWireCreateData;
 
@@ -185,8 +206,8 @@ export type IToolsApiImportModelStateResult = IModelStateWireImportResult;
  * {@link IToolsApiFactory.getParentClientApi} (`window.parent`).
  *
  * Await `peerIsReady` (or let `listTools` / `execute` / `getAgentConfig` /
- * `getSessionInfo` / `createModelState` / `importModelState` await it) before
- * assuming App Builder is listening.
+ * `getSessionInfo` / `getTheme` / `createModelState` / `importModelState` await
+ * it) before assuming App Builder is listening.
  *
  * `createModelState` and `importModelState` snapshot and restore the App Builder
  * model. They are not agent tools and do not appear in `listTools`.
@@ -197,6 +218,13 @@ export interface IToolsApi {
 	execute(data: IExecuteToolData): Promise<unknown>;
 	getAgentConfig(): Promise<IAgentConfigReply | null>;
 	getSessionInfo(): Promise<IAgentSessionInfo>;
+	/** Complete theme from `useCustomTheme`. `{}` until that hook has published. */
+	getTheme(): Promise<IAgentTheme>;
+	/**
+	 * Fires when App Builder publishes a new `useCustomTheme` result.
+	 * Call `getTheme` to read it. Returns an unsubscribe function.
+	 */
+	onThemeUpdated(listener: () => void): () => void;
 	createModelState(
 		data?: IToolsApiCreateModelStateData,
 	): Promise<IToolsApiCreateModelStateResult>;

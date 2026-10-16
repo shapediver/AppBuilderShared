@@ -31,7 +31,6 @@ import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/mod
 import {QUERYPARAM_AGENTURL} from "@AppBuilderLib/shared/config/queryparams";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import {getEnvironmentIdentifier} from "@AppBuilderLib/shared/lib/platform/environment";
-import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
 import {useHostedAgentFrameStore} from "../useHostedAgentFrameStore";
 import {MantineProvider} from "@mantine/core";
 import {act, renderHook} from "@testing-library/react";
@@ -415,30 +414,6 @@ describe("useAppBuilderAgentHost", () => {
 		);
 	});
 
-	it("sends the applied theme file to the agent peer", () => {
-		useThemeOverrideStore.getState().setThemeOverride({
-			primaryColor: "teal",
-			other: {forceColorScheme: "dark"},
-		});
-		const peer = {postMessage: jest.fn()} as unknown as Window;
-		const {unmount} = renderHost();
-		act(() => {
-			useHostedAgentFrameStore.getState().setFrame(peer);
-		});
-		expect(peer.postMessage).toHaveBeenCalledWith(
-			{
-				type: "shapediver:agent-theme",
-				themeOverrides: {
-					primaryColor: "teal",
-					other: {forceColorScheme: "dark"},
-				},
-			},
-			"http://localhost:3001",
-		);
-		unmount();
-		useThemeOverrideStore.getState().setThemeOverride({});
-	});
-
 	it("does not register a button when a hostedAgent widget is already placed", () => {
 		const {result} = renderHost({
 			appBuilderData: {
@@ -481,7 +456,7 @@ describe("useAppBuilderAgentHost", () => {
 		});
 	});
 
-	it("connects ToolsApi and theme to a placed hostedAgent iframe in window mode", () => {
+	it("connects ToolsApi to a placed hostedAgent iframe in window mode", () => {
 		const peer = {postMessage: jest.fn()} as unknown as Window;
 		const sessionInfo = {
 			jwtToken: "tok",
@@ -497,9 +472,6 @@ describe("useAppBuilderAgentHost", () => {
 				},
 			],
 		};
-		useThemeOverrideStore.getState().setThemeOverride({
-			primaryColor: "teal",
-		});
 		renderHost(
 			{namespace: "ns", sessionInfo, appBuilderData},
 			"window",
@@ -530,14 +502,6 @@ describe("useAppBuilderAgentHost", () => {
 			showThreadHistory: true,
 			createThreadOnLoad: true,
 		});
-		expect(peer.postMessage).toHaveBeenCalledWith(
-			{
-				type: "shapediver:agent-theme",
-				themeOverrides: {primaryColor: "teal"},
-			},
-			"http://localhost:3001",
-		);
-		useThemeOverrideStore.getState().setThemeOverride({});
 	});
 
 	it("prefers a registered hostedAgent iframe over an open popup", () => {
@@ -565,10 +529,6 @@ describe("useAppBuilderAgentHost", () => {
 		});
 		expect(useAgentToolTransports).toHaveBeenLastCalledWith(
 			expect.objectContaining({agentWindow: peer}),
-		);
-		expect(peer.postMessage).toHaveBeenCalledWith(
-			expect.objectContaining({type: "shapediver:agent-theme"}),
-			"http://localhost:3001",
 		);
 	});
 

@@ -6,6 +6,7 @@ import type {
 	ICrossWindowFactory,
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
+import {useResolvedThemeStore} from "@AppBuilderLib/shared/model/useResolvedThemeStore";
 import type {IAppBuilderAgent} from "../../appbuilder/config/appbuilderagent";
 import {ToolsApi, ToolsApiFactoryClass} from "../api/toolsApi";
 import {
@@ -20,6 +21,7 @@ import {
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_GET_SESSION_INFO,
+	MESSAGE_TYPE_GET_THEME,
 	MESSAGE_TYPE_IMPORT_MODEL_STATE,
 	MESSAGE_TYPE_LIST_TOOLS,
 	TOOLS_API_NAME_AGENT,
@@ -459,7 +461,64 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 			message: "hi",
 		});
 		await expect(client.getSessionInfo()).resolves.toEqual(sessionInfo);
+		await expect(client.getTheme()).resolves.toEqual({});
 		connector.cancel();
+	});
+
+	it("getTheme returns the theme published by useCustomTheme", async () => {
+		const mock = createMockCrossWindowApi();
+		const theme = {
+			primaryColor: "teal",
+			defaultRadius: "md",
+			components: {
+				Button: {defaultProps: {variant: "filled"}},
+			},
+		};
+		useResolvedThemeStore.getState().setTheme(theme);
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getTheme()).resolves.toEqual(theme);
+		useResolvedThemeStore.getState().setTheme({
+			primaryColor: "gray",
+		});
+		await expect(client.getTheme()).resolves.toEqual({
+			primaryColor: "gray",
+		});
+		useResolvedThemeStore.getState().setTheme({});
+		connector.cancel();
+	});
+
+	it("tells the agent to call getTheme again when the published theme changes", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		const updates: string[] = [];
+		client.onThemeUpdated(() => {
+			updates.push("theme");
+		});
+		useResolvedThemeStore.getState().setTheme({primaryColor: "teal"});
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(updates).toEqual(["theme"]);
+		await expect(client.getTheme()).resolves.toEqual({
+			primaryColor: "teal",
+		});
+		connector.cancel();
+		useResolvedThemeStore.getState().setTheme({primaryColor: "gray"});
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(updates).toEqual(["theme"]);
+		useResolvedThemeStore.getState().setTheme({});
 	});
 
 	it("execute routes to the handler through EXECUTE_TOOL", async () => {
@@ -599,7 +658,7 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		connector.cancel();
 	});
 
-	it("cancel unregisters LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG, GET_SESSION_INFO, and model state", async () => {
+	it("cancel unregisters LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG, GET_SESSION_INFO, GET_THEME, and model state", async () => {
 		const mock = createMockCrossWindowApi();
 		const connector = new ToolsApiConnector(
 			resolveToolset(undefined),
@@ -620,6 +679,9 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		);
 		await expect(client.getSessionInfo()).rejects.toThrow(
 			`No handler for ${MESSAGE_TYPE_GET_SESSION_INFO}`,
+		);
+		await expect(client.getTheme()).rejects.toThrow(
+			`No handler for ${MESSAGE_TYPE_GET_THEME}`,
 		);
 		await expect(client.createModelState()).rejects.toThrow(
 			`No handler for ${MESSAGE_TYPE_CREATE_MODEL_STATE}`,

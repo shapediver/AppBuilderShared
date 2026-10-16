@@ -14,7 +14,9 @@ import {
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_GET_SESSION_INFO,
+	MESSAGE_TYPE_GET_THEME,
 	MESSAGE_TYPE_IMPORT_MODEL_STATE,
+	MESSAGE_TYPE_THEME_UPDATED,
 	MESSAGE_TYPE_LIST_TOOLS,
 	MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 	TOOLS_API_NAME_AGENT,
@@ -22,6 +24,7 @@ import {
 	TOOLS_API_TIMEOUT_MS,
 	type IAgentConfigReply,
 	type IAgentSessionInfo,
+	type IAgentTheme,
 	type IToolsApiCreateModelStateData,
 	type IToolsApiCreateModelStateResult,
 	type IToolsApiImportModelStateData,
@@ -39,7 +42,7 @@ function withDefaultTimeout(
 
 /**
  * Agent-window client. Sends LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
- * GET_SESSION_INFO / CREATE_MODEL_STATE / IMPORT_MODEL_STATE over CrossWindow
+ * GET_SESSION_INFO / GET_THEME / CREATE_MODEL_STATE / IMPORT_MODEL_STATE over CrossWindow
  * after handshake `TOOLS_API_HANDSHAKE`. Does not run tool handlers — App Builder
  * does. Model-state calls are not agent tools.
  *
@@ -49,6 +52,8 @@ function withDefaultTimeout(
 export class ToolsApi implements IToolsApi {
 	#crossWindowApi: ICrossWindowApi;
 	#timeout?: number;
+	#themeListeners = new Set<() => void>();
+	#themeUpdatedPending = false;
 	peerIsReady: Promise<ICrossWindowPeerInfo>;
 
 	constructor(
@@ -57,10 +62,39 @@ export class ToolsApi implements IToolsApi {
 	) {
 		this.#crossWindowApi = crossWindowApi;
 		this.#timeout = options?.timeout;
+		this.#crossWindowApi.on(MESSAGE_TYPE_THEME_UPDATED, async () => {
+			this.#notifyThemeUpdated();
+		});
 		this.peerIsReady = this.#crossWindowApi.handshake(
 			MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 			this.#timeout,
 		);
+	}
+
+	/**
+	 * Host published a new theme. Call {@link getTheme} to read it.
+	 * A notification that arrives before the first listener is replayed once.
+	 */
+	onThemeUpdated(listener: () => void): () => void {
+		this.#themeListeners.add(listener);
+		if (this.#themeUpdatedPending) {
+			this.#themeUpdatedPending = false;
+			listener();
+		}
+		return () => {
+			this.#themeListeners.delete(listener);
+		};
+	}
+
+	#notifyThemeUpdated(): void {
+		if (this.#themeListeners.size === 0) {
+			this.#themeUpdatedPending = true;
+			return;
+		}
+		this.#themeUpdatedPending = false;
+		for (const listener of this.#themeListeners) {
+			listener();
+		}
 	}
 
 	/** Ask App Builder for the resolved generic tools (name, description, JSON Schema). */
@@ -108,6 +142,19 @@ export class ToolsApi implements IToolsApi {
 		await this.peerIsReady;
 		return this.#crossWindowApi.send(
 			MESSAGE_TYPE_GET_SESSION_INFO,
+			undefined,
+			this.#timeout,
+		);
+	}
+
+	/**
+	 * Complete theme created by `useCustomTheme` on the App Builder page.
+	 * `{}` until that hook has published. Never throws for a missing theme.
+	 */
+	async getTheme(): Promise<IAgentTheme> {
+		await this.peerIsReady;
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_GET_THEME,
 			undefined,
 			this.#timeout,
 		);

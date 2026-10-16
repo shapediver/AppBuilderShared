@@ -89,6 +89,7 @@ export type UseToolsApiConnectorProps = {
  *              EXECUTE_TOOL → executeResolvedTool → handlers or tool.execute
  *              GET_AGENT_CONFIG → { id, name, message } | null
  *              GET_SESSION_INFO → { jwtToken, slug, modelStateId }
+ *              GET_THEME → complete theme from useCustomTheme
  *              CREATE_MODEL_STATE / IMPORT_MODEL_STATE → modelState handlers
  * ```
  *
@@ -105,7 +106,7 @@ export type UseToolsApiConnectorProps = {
  * **Lifecycle.**
  * 1. `ToolsApiConnectorFactory.getConnectorApi(peer, tools, handlers, "app", "agent", {timeout: 20000})`
  * 2. Connector registers LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
- *    GET_SESSION_INFO **then** starts handshake.
+ *    GET_SESSION_INFO / GET_THEME **then** starts handshake.
  * 3. `peerIsReady` rejection is swallowed so a missed handshake is not an
  *    unhandled rejection. Transport throw → empty catch (no fake toolset).
  * 4. Cleanup sets `effectAbandoned` and `cancel()`s listeners + handshake.
@@ -116,7 +117,7 @@ export type UseToolsApiConnectorProps = {
  *
  * **This hook returns whether the handshake is up.** Callers do not get
  * `IToolsApi`; that object lives in the agent window. Success is "peer can
- * list/execute/getAgentConfig/getSessionInfo". Failure is silent at this layer
+ * list/execute/getAgentConfig/getSessionInfo/getTheme". Failure is silent at this layer
  * (no UI) and the result stays `false`.
  *
  * @see ToolsApiConnectorFactory.getConnectorApi
