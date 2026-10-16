@@ -32,12 +32,11 @@ jest.mock("../AppBuilderActionBase", () => {
 });
 
 import {useViewportAnchorTriggerRegistry} from "@AppBuilderLib/entities/viewport-anchor/model/useViewportAnchorTriggerRegistry";
+import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {
-	bindActionClickTrigger,
-	clearActionClickExclusivity,
-	noteActionClickExclusivity,
-	useActionClickSourceStore,
-} from "@AppBuilderLib/features/appbuilder/model/useActionClickSourceStore";
+	clearActionHost,
+	noteActionHost,
+} from "@AppBuilderLib/features/appbuilder/model/appBuilderActionHost";
 import {ViewportContext} from "@AppBuilderLib/shared/lib/ViewportContext";
 import {act, fireEvent, render, screen} from "@testing-library/react";
 import {createElement} from "react";
@@ -49,13 +48,8 @@ describe("AppBuilderActionExecuteActionsComponent", () => {
 	beforeEach(() => {
 		mockRunAppBuilderActions.mockClear();
 		mockRunAppBuilderActions.mockResolvedValue(undefined);
-		useActionClickSourceStore.setState({
-			source: null,
-			clicks: {},
-			token: 0,
-		});
+		clearActionHost();
 		useViewportAnchorTriggerRegistry.setState({triggers: {}});
-		clearActionClickExclusivity();
 	});
 
 	it("runs nested definitions through the headless dispatcher", async () => {
@@ -113,66 +107,89 @@ describe("AppBuilderActionExecuteActionsComponent", () => {
 		);
 	});
 
-	it("publishes the clicked button until the sequence finishes", async () => {
-		let release: () => void = () => {};
-		mockRunAppBuilderActions.mockImplementation(
-			() =>
-				new Promise<void>((resolve) => {
-					release = resolve;
-				}),
-		);
+	it("passes the toolbar click through to the sequence", async () => {
 		render(
-			createElement(AppBuilderActionExecuteActionsComponent, {
-				actions,
-				namespace: "session",
-				viewportId: "viewport-1",
-			}),
-		);
-		noteActionClickExclusivity({
-			exclusiveContainers: true,
-			siblingAnchorIds: ["panel-a", "panel-b"],
-		});
-
-		await act(async () => {
-			fireEvent.click(screen.getByRole("button"));
-		});
-
-		const source = useActionClickSourceStore.getState().source;
-		expect(source?.element).toBe(screen.getByRole("button"));
-		expect(source?.exclusiveContainers).toBe(true);
-		expect(source?.siblingAnchorIds).toEqual(["panel-a", "panel-b"]);
-		expect(source?.actions).toBe(actions);
-		expect(mockRunAppBuilderActions).toHaveBeenCalledWith(
-			actions,
-			"parallel",
-			expect.objectContaining({
-				viewportId: "viewport-1",
-				clickToken: expect.any(Number),
-			}),
-		);
-
-		await act(async () => {
-			release();
-		});
-
-		expect(useActionClickSourceStore.getState().source).toBeNull();
-	});
-
-	it("clears anchor triggers bound to its button on unmount", () => {
-		const view = render(
 			createElement(AppBuilderActionExecuteActionsComponent, {
 				actions,
 				namespace: "session",
 			}),
 		);
 		const button = screen.getByRole("button");
-		bindActionClickTrigger(button, "panel-a");
+		noteActionHost({
+			element: button,
+			exclusiveContainers: true,
+			siblingAnchorIds: ["panel-a", "panel-b"],
+		});
+
+		await act(async () => {
+			fireEvent.click(button);
+		});
+
+		const context = mockRunAppBuilderActions.mock.calls[0]?.[2] as {
+			actionHost?: {
+				element: HTMLElement;
+				exclusiveContainers: boolean;
+				siblingAnchorIds: readonly string[];
+				actions: typeof actions;
+			};
+		};
+		expect(context.actionHost?.element).toBe(button);
+		expect(context.actionHost?.exclusiveContainers).toBe(true);
+		expect(context.actionHost?.siblingAnchorIds).toEqual([
+			"panel-a",
+			"panel-b",
+		]);
+		expect(context.actionHost?.actions).toBe(actions);
+	});
+
+	it("registers a nested anchor on its button and keeps it across a new action list", () => {
+		const nested = [
+			{
+				type: "executeActions" as const,
+				props: {
+					actions: [
+						{
+							type: "setContainerVisibility" as const,
+							props: {
+								mode: "open" as const,
+								container: {
+									name: AppBuilderContainerNameType.Anchor2d,
+									props: {id: "panel-a"},
+								},
+							},
+						},
+					],
+				},
+			},
+		];
+		const view = render(
+			createElement(AppBuilderActionExecuteActionsComponent, {
+				actions: nested,
+				namespace: "session",
+			}),
+		);
+		const button = screen.getByRole("button");
+
+		expect(
+			useViewportAnchorTriggerRegistry.getState().triggers["panel-a"],
+		).toBe(button);
+
+		view.rerender(
+			createElement(AppBuilderActionExecuteActionsComponent, {
+				actions: nested.map((action) => ({...action})),
+				namespace: "session",
+			}),
+		);
+
+		expect(
+			useViewportAnchorTriggerRegistry.getState().triggers["panel-a"],
+		).toBe(button);
 
 		view.unmount();
 
 		expect(
 			useViewportAnchorTriggerRegistry.getState().triggers["panel-a"],
-		).toBeNull();
+		).toBe(null);
 	});
 
 	it("does not run when disabled", async () => {

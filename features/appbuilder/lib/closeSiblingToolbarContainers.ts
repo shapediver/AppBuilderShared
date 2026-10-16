@@ -1,8 +1,8 @@
 import {useShapeDiverStoreViewportAnchors} from "@AppBuilderLib/entities/viewport-anchor/model/useShapeDiverStoreViewportAnchors";
 
 /**
- * Closes every toolbar-targeted anchor except the ids about to open.
- * Used when a toolbar has `exclusiveContainers` and is about to open one or more panels.
+ * Closes every toolbar-targeted anchor except the ids about to stay open.
+ * Used when a toolbar has `exclusiveContainers` and is about to open a panel.
  */
 export function closeSiblingToolbarContainers(
 	viewportId: string,

@@ -5,9 +5,9 @@ import {
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {ToolbarContainerExclusivityContext} from "@AppBuilderLib/features/appbuilder/lib/ToolbarContainerExclusivityContext";
 import {
-	clearActionClickExclusivity,
-	noteActionClickExclusivity,
-} from "@AppBuilderLib/features/appbuilder/model/useActionClickSourceStore";
+	clearActionHost,
+	noteActionHost,
+} from "@AppBuilderLib/features/appbuilder/model/appBuilderActionHost";
 import type {AppBuilderToolbarIconButtonThemeStyleProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import AppBuilderToolbarIconButton from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {useContext} from "react";
@@ -56,11 +56,15 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 		ToolbarContainerExclusivityContext,
 	);
 	const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
-		noteActionClickExclusivity({exclusiveContainers, siblingAnchorIds});
+		noteActionHost({
+			element: event.currentTarget,
+			exclusiveContainers,
+			siblingAnchorIds,
+		});
 		try {
 			onClick?.(event);
 		} finally {
-			clearActionClickExclusivity();
+			clearActionHost();
 		}
 	};
 

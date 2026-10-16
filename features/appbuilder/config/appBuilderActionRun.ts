@@ -9,11 +9,6 @@ export type AppBuilderActionRunContext = {
 	viewportId?: string;
 	fullscreenId?: string;
 	/**
-	 * Button click that started this run. Nested actions keep the same token
-	 * so a later click does not take their place.
-	 */
-	clickToken?: number;
-	/**
 	 * When true, a missing or invalid camera target throws so API callers
 	 * can return `{success: false}`. Toolbar, action slots, and in-app
 	 * `executeActions` omit this and warn/skip camera failures.
@@ -29,6 +24,21 @@ export type AppBuilderActionRunContext = {
 	 * native `run`.
 	 */
 	hostActions?: Record<string, AppBuilderActionRunRegistration | undefined>;
+	/**
+	 * Button click that started this run. Nested actions keep the same
+	 * object, so a sequence still knows which toolbar panels belong together
+	 * after the first await.
+	 */
+	actionHost?: AppBuilderActionHost;
+};
+
+/** Toolbar button that rendered or clicked an action. */
+export type AppBuilderActionHost = {
+	element: HTMLElement;
+	exclusiveContainers: boolean;
+	siblingAnchorIds: readonly string[];
+	/** Present when the button runs a list of actions. */
+	actions?: readonly IAppBuilderActionDefinition[];
 };
 
 export type AppBuilderActionRunner = (
@@ -36,9 +46,20 @@ export type AppBuilderActionRunner = (
 	context: AppBuilderActionRunContext,
 ) => void | Promise<void>;
 
+export type AppBuilderActionSetupContext = {
+	element: HTMLElement;
+};
+
+/** Called when a rendered button owns this action. Returns a cleanup. */
+export type AppBuilderActionSetup = (
+	definition: IAppBuilderActionDefinition,
+	context: AppBuilderActionSetupContext,
+) => void | (() => void);
+
 export type AppBuilderActionRunRegistration = {
 	isAction: (action: IAppBuilderActionDefinition) => boolean;
 	run?: AppBuilderActionRunner;
+	setup?: AppBuilderActionSetup;
 };
 
 export function resolvedViewportId(

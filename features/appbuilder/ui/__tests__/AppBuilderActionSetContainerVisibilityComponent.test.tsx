@@ -6,46 +6,52 @@ jest.mock("../AppBuilderActionBase", () => {
 	return {
 		__esModule: true,
 		default: ({
-			buttonRef,
+			onClick,
+			disabled,
 			label,
+			buttonRef,
 		}: {
-			buttonRef?: React.Ref<HTMLButtonElement>;
+			onClick?: () => void;
+			disabled?: boolean;
 			label?: string;
+			buttonRef?: React.Ref<HTMLButtonElement>;
 		}) =>
 			React.createElement(
 				"button",
-				{ref: buttonRef, type: "button"},
-				label ?? "Open container",
+				{onClick, disabled, type: "button", ref: buttonRef},
+				label ?? "Toggle container",
 			),
 	};
 });
 
 import {useViewportAnchorTriggerRegistry} from "@AppBuilderLib/entities/viewport-anchor/model/useViewportAnchorTriggerRegistry";
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {render} from "@testing-library/react";
+import {render, screen} from "@testing-library/react";
 import {createElement} from "react";
 import AppBuilderActionSetContainerVisibilityComponent from "../AppBuilderActionSetContainerVisibilityComponent";
 
-describe("AppBuilderActionSetContainerVisibilityComponent trigger", () => {
+const props = {
+	container: {
+		name: AppBuilderContainerNameType.Anchor2d,
+		props: {id: "panel-a"},
+	},
+	mode: "toggle" as const,
+	namespace: "session",
+};
+
+describe("AppBuilderActionSetContainerVisibilityComponent", () => {
 	beforeEach(() => {
 		useViewportAnchorTriggerRegistry.setState({triggers: {}});
 	});
 
-	function renderButton() {
-		return render(
-			createElement(AppBuilderActionSetContainerVisibilityComponent, {
-				container: {
-					name: AppBuilderContainerNameType.Anchor2d,
-					props: {id: "panel-a"},
-				},
-				mode: "open",
-			}),
+	it("clears the trigger on unmount when this button still owns it", () => {
+		const view = render(
+			createElement(
+				AppBuilderActionSetContainerVisibilityComponent,
+				props,
+			),
 		);
-	}
-
-	it("clears the anchor trigger on unmount when this button still owns it", () => {
-		const view = renderButton();
-		const button = view.getByRole("button");
+		const button = screen.getByRole("button");
 
 		expect(
 			useViewportAnchorTriggerRegistry.getState().triggers["panel-a"],
@@ -55,11 +61,16 @@ describe("AppBuilderActionSetContainerVisibilityComponent trigger", () => {
 
 		expect(
 			useViewportAnchorTriggerRegistry.getState().triggers["panel-a"],
-		).toBeNull();
+		).toBe(null);
 	});
 
-	it("leaves the trigger in place when another button has taken the anchor", () => {
-		const view = renderButton();
+	it("leaves the trigger when another button has taken the anchor", () => {
+		const view = render(
+			createElement(
+				AppBuilderActionSetContainerVisibilityComponent,
+				props,
+			),
+		);
 		const other = document.createElement("button");
 		useViewportAnchorTriggerRegistry
 			.getState()

@@ -1,80 +1,78 @@
 import {useShapeDiverStoreViewportAnchors} from "@AppBuilderLib/entities/viewport-anchor/model/useShapeDiverStoreViewportAnchors";
+import {useViewportAnchorTriggerRegistry} from "@AppBuilderLib/entities/viewport-anchor/model/useViewportAnchorTriggerRegistry";
 import {
 	AppBuilderContainerNameType,
+	IAppBuilderActionDefinition,
 	IAppBuilderActionPropsSetContainerVisibility,
+	isSetContainerVisibilityAction,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {
+	AppBuilderActionHost,
+	AppBuilderActionSetupContext,
+} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionRun";
 import {closeSiblingToolbarContainers} from "@AppBuilderLib/features/appbuilder/lib/closeSiblingToolbarContainers";
-import {collectSetContainerVisibilityTargets} from "@AppBuilderLib/features/appbuilder/lib/collectSetContainerVisibilityTargets";
-import {
-	bindActionClickTrigger,
-	getActionClickSource,
-} from "@AppBuilderLib/features/appbuilder/model/useActionClickSourceStore";
+import {collectActionTargetedAnchorIdsFromDefinitions} from "@AppBuilderLib/features/appbuilder/lib/collectActionTargetedAnchorIds";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
 
 export type RunAppBuilderActionSetContainerVisibilityProps =
 	IAppBuilderActionPropsSetContainerVisibility & {
 		viewportId: string;
-		/** Click that started this run. Omit to use the latest click. */
-		clickToken?: number;
+		/** Toolbar click that started the sequence, when there was one. */
+		actionHost?: AppBuilderActionHost;
 	};
 
-/** Anchor ids a click's sequence opens, closes, or toggles. */
-function targetedAnchorIds(actions: readonly unknown[]): string[] {
-	const ids: string[] = [];
-	for (const target of collectSetContainerVisibilityTargets(actions)) {
-		if (
-			target.name !== AppBuilderContainerNameType.Anchor2d &&
-			target.name !== AppBuilderContainerNameType.Anchor3d
-		) {
-			continue;
-		}
-		if (target.id && !ids.includes(target.id)) ids.push(target.id);
-	}
-	return ids;
-}
+const triggerRegistrations = new Map<string, number>();
+let nextTriggerRegistration = 1;
 
 /**
- * Dock a 2D anchor to the button that started this click, and close the
- * toolbar's other action-targeted anchors when this click will open one.
- * Anchors the same sequence targets stay untouched here; their own actions
- * set their final state. No-op when this run is not part of that click.
+ * Register the rendered button as the 2D anchor position. A later call for
+ * the same anchor replaces this registration, so the previous cleanup does
+ * not clear the trigger the new call just wrote.
  */
-function applyActionClickSource(
-	viewportId: string,
-	containerName: string,
+export function setupAppBuilderActionSetContainerVisibility(
+	definition: IAppBuilderActionDefinition,
+	context: AppBuilderActionSetupContext,
+): (() => void) | void {
+	if (!isSetContainerVisibilityAction(definition)) return;
+	const container = definition.props.container;
+	if (container.name !== AppBuilderContainerNameType.Anchor2d) return;
+	const anchorId = container.props?.id;
+	if (!anchorId) return;
+
+	const registration = nextTriggerRegistration++;
+	triggerRegistrations.set(anchorId, registration);
+	useViewportAnchorTriggerRegistry
+		.getState()
+		.setTrigger(anchorId, context.element);
+
+	return () => {
+		if (triggerRegistrations.get(anchorId) !== registration) return;
+		triggerRegistrations.delete(anchorId);
+		const registry = useViewportAnchorTriggerRegistry.getState();
+		if (registry.triggers[anchorId] === context.element) {
+			registry.setTrigger(anchorId, null);
+		}
+	};
+}
+
+function anchorsKeptOpen(
 	containerId: string,
-	willOpen: boolean,
-	clickToken?: number,
-): void {
-	const source = getActionClickSource(clickToken);
-	if (!source) return;
-
-	const sequenceIds = source.actions
-		? targetedAnchorIds(source.actions)
-		: undefined;
-	if (sequenceIds && !sequenceIds.includes(containerId)) return;
-
-	if (containerName === AppBuilderContainerNameType.Anchor2d) {
-		bindActionClickTrigger(source.element, containerId);
-	}
-
-	if (!willOpen || !source.exclusiveContainers) return;
-
-	const keepOpen = sequenceIds ? [...sequenceIds] : [containerId];
-	if (!keepOpen.includes(containerId)) keepOpen.push(containerId);
-	closeSiblingToolbarContainers(
-		viewportId,
-		keepOpen,
-		source.siblingAnchorIds,
-	);
+	actionHost: AppBuilderActionHost,
+): readonly string[] | null {
+	if (!actionHost.actions) return [containerId];
+	const ids = collectActionTargetedAnchorIdsFromDefinitions(
+		actionHost.actions,
+	).all;
+	if (!ids.includes(containerId)) return null;
+	return ids;
 }
 
 /** Headless "setContainerVisibility" trigger. */
 export function runAppBuilderActionSetContainerVisibility(
 	props: RunAppBuilderActionSetContainerVisibilityProps,
 ): void {
-	const {container, mode, viewportId, clickToken} = props;
+	const {container, mode, viewportId, actionHost} = props;
 	const containerId = container.props?.id;
 
 	switch (container.name) {
@@ -106,13 +104,16 @@ export function runAppBuilderActionSetContainerVisibility(
 				mode === "toggle"
 					? !(anchor?.showContent ?? false)
 					: mode === "open";
-			applyActionClickSource(
-				viewportId,
-				container.name,
-				containerId,
-				willOpen,
-				clickToken,
-			);
+			if (actionHost?.exclusiveContainers && willOpen) {
+				const keepOpen = anchorsKeptOpen(containerId, actionHost);
+				if (keepOpen) {
+					closeSiblingToolbarContainers(
+						viewportId,
+						keepOpen,
+						actionHost.siblingAnchorIds,
+					);
+				}
+			}
 			viewportAnchors.updateShowContent(
 				viewportId,
 				containerId,
