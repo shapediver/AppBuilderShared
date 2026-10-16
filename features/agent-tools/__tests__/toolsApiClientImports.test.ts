@@ -11,7 +11,7 @@ const CLIENT_FILES = [
 
 function isAllowedExternal(
 	specifier: string,
-	importedNames: string[],
+	_importedNames: string[],
 ): boolean {
 	if (specifier === "post-robot") {
 		return true;
@@ -19,14 +19,6 @@ function isAllowedExternal(
 	if (
 		specifier === "@AppBuilderLib/shared/lib/zod" ||
 		specifier === "@AppBuilderShared/shared/lib/zod"
-	) {
-		return true;
-	}
-	// Type-only. `IAgentTheme` is the JSON form of `useCustomTheme`.
-	if (
-		specifier === "@mantine/core" &&
-		importedNames.length > 0 &&
-		importedNames.every((name) => name === "MantineThemeOverride")
 	) {
 		return true;
 	}

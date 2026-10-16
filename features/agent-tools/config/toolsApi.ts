@@ -2,7 +2,7 @@ import type {
 	ICrossWindowApiOptions,
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
-import type {MantineThemeOverride} from "@mantine/core";
+import type {MantineThemeOverrideProps} from "@AppBuilderLib/shared/mantine-props/themeOverride";
 import type {
 	IModelStateWireCreateData,
 	IModelStateWireCreateResult,
@@ -196,7 +196,7 @@ export function agentSessionInfoFrom(
  * and the theme file). `{}` when that hook has not published yet.
  * Functions are omitted; they cannot cross the window.
  */
-export type IAgentTheme = MantineThemeOverride;
+export type IAgentTheme = MantineThemeOverrideProps;
 
 /** Create-model-state payload sent across ToolsApi. */
 export type IToolsApiCreateModelStateData = IModelStateWireCreateData;
