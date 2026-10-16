@@ -1,13 +1,13 @@
 import {useShapeDiverStoreViewportAnchors} from "@AppBuilderLib/entities/viewport-anchor/model/useShapeDiverStoreViewportAnchors";
 import {useViewportAnchorTriggerRegistry} from "@AppBuilderLib/entities/viewport-anchor/model/useViewportAnchorTriggerRegistry";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {closeSiblingToolbarContainers} from "@AppBuilderLib/features/appbuilder/lib/closeSiblingToolbarContainers";
 import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
 import {ToolbarContainerExclusivityContext} from "@AppBuilderLib/features/appbuilder/lib/ToolbarContainerExclusivityContext";
 import {runAppBuilderActionSetContainerVisibility} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSetContainerVisibility";
+import {useActionClickSourceStore} from "@AppBuilderLib/features/appbuilder/model/useActionClickSourceStore";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
-import {useCallback, useContext, useEffect} from "react";
+import {useCallback, useContext, useEffect, useRef} from "react";
 import {
 	AppBuilderContainerNameType,
 	IAppBuilderActionPropsCommon,
@@ -90,24 +90,28 @@ export default function AppBuilderActionSetContainerVisibilityComponent(
 	);
 
 	const isOpen = standardContainerOpen ?? anchorOpen ?? toolbarOpen ?? false;
+	const buttonNodeRef = useRef<HTMLButtonElement | null>(null);
 	const onClick = createActionClickHandler(
 		() => {
-			const isAnchor =
-				container.name === AppBuilderContainerNameType.Anchor2d ||
-				container.name === AppBuilderContainerNameType.Anchor3d;
-			const willOpen = mode === "open" || (mode === "toggle" && !isOpen);
-			if (exclusiveContainers && isAnchor && willOpen && containerId) {
-				closeSiblingToolbarContainers(
+			const element = buttonNodeRef.current;
+			const token = element
+				? useActionClickSourceStore.getState().beginActionClick({
+						element,
+						exclusiveContainers,
+						siblingAnchorIds,
+					})
+				: null;
+			try {
+				runAppBuilderActionSetContainerVisibility({
+					container,
+					mode,
 					viewportId,
-					containerId,
-					siblingAnchorIds,
-				);
+				});
+			} finally {
+				if (token != null) {
+					useActionClickSourceStore.getState().endActionClick(token);
+				}
 			}
-			runAppBuilderActionSetContainerVisibility({
-				container,
-				mode,
-				viewportId,
-			});
 		},
 		{disabled},
 	);
@@ -123,6 +127,7 @@ export default function AppBuilderActionSetContainerVisibilityComponent(
 
 	const handleButtonRef = useCallback(
 		(node: HTMLButtonElement | null) => {
+			buttonNodeRef.current = node;
 			if (anchorId) {
 				setTrigger(anchorId, node);
 			}
@@ -157,7 +162,7 @@ export default function AppBuilderActionSetContainerVisibilityComponent(
 			toolbarButtonProps={toolbarButtonProps}
 			labelSide={labelSide}
 			labelAlign={labelAlign}
-			buttonRef={anchorId ? handleButtonRef : undefined}
+			buttonRef={handleButtonRef}
 		/>
 	);
 }
