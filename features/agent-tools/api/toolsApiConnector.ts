@@ -6,6 +6,7 @@ import {
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 import {CrossWindowApiFactory} from "@AppBuilderLib/shared/lib/crosswindowapi/crosswindowapi";
+import {useResolvedThemeStore} from "@AppBuilderLib/shared/model/useResolvedThemeStore";
 import type {ExecutableSpecificTool} from "../config/resolveSpecificTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import {
@@ -13,7 +14,9 @@ import {
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_GET_SESSION_INFO,
+	MESSAGE_TYPE_GET_THEME,
 	MESSAGE_TYPE_IMPORT_MODEL_STATE,
+	MESSAGE_TYPE_THEME_UPDATED,
 	MESSAGE_TYPE_LIST_TOOLS,
 	MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 	TOOLS_API_NAME_AGENT,
@@ -51,7 +54,7 @@ function withDefaultTimeout(
 
 /**
  * App Builder server. Registers LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG,
- * GET_SESSION_INFO, CREATE_MODEL_STATE, and IMPORT_MODEL_STATE **before**
+ * GET_SESSION_INFO, GET_THEME, CREATE_MODEL_STATE, and IMPORT_MODEL_STATE **before**
  * handshake so an eager client cannot race.
  * `cancel()` removes listeners and aborts handshake.
  *
@@ -59,6 +62,7 @@ function withDefaultTimeout(
  * EXECUTE_TOOL → {@link parseExecuteToolData} then {@link executeResolvedTool}.
  * GET_AGENT_CONFIG → {@link agentConfigReplyFrom} (`null` if no Agent config).
  * GET_SESSION_INFO → {@link agentSessionInfoFrom} (`{}` if no session fields).
+ * GET_THEME → the theme `useCustomTheme` published (`{}` until then).
  * CREATE_MODEL_STATE / IMPORT_MODEL_STATE → `modelState` handlers (not agent tools).
  * Malformed EXECUTE_TOOL (missing string `name`) → unknown-tool JSON, not a throw.
  *
@@ -66,6 +70,7 @@ function withDefaultTimeout(
  */
 export class ToolsApiConnector implements IToolsApiConnector {
 	#listenerCancels: ICrossWindowCancelable[] = [];
+	#unsubscribeTheme: () => void = () => undefined;
 	#crossWindowApi: ICrossWindowApi;
 	peerIsReady: Promise<ICrossWindowPeerInfo>;
 
@@ -123,6 +128,11 @@ export class ToolsApiConnector implements IToolsApiConnector {
 			),
 		);
 		this.#listenerCancels.push(
+			crossWindowApi.on(MESSAGE_TYPE_GET_THEME, async () =>
+				useResolvedThemeStore.getState().theme,
+			),
+		);
+		this.#listenerCancels.push(
 			crossWindowApi.on(
 				MESSAGE_TYPE_CREATE_MODEL_STATE,
 				async (data: IToolsApiCreateModelStateData | undefined) => {
@@ -148,10 +158,22 @@ export class ToolsApiConnector implements IToolsApiConnector {
 			MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 			options?.timeout,
 		);
+		this.#unsubscribeTheme = useResolvedThemeStore.subscribe(
+			(state, previous) => {
+				if (state.theme === previous.theme) {
+					return;
+				}
+				void this.#crossWindowApi
+					.send(MESSAGE_TYPE_THEME_UPDATED, undefined)
+					.catch(() => undefined);
+			},
+		);
 	}
 
 	/** Drop tool and model-state listeners and cancel an in-flight handshake. */
 	cancel(): void {
+		this.#unsubscribeTheme();
+		this.#unsubscribeTheme = () => undefined;
 		for (const token of this.#listenerCancels) {
 			token.cancel();
 		}

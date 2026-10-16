@@ -30,6 +30,7 @@ import {AppBuilderActionComponentThemeProps} from "@AppBuilderLib/features/appbu
 import {CreateModelStateHookThemeProps} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {NotificationWrapperThemeProps} from "@AppBuilderLib/features/notifications/ui/NotificationWrapper";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {publishResolvedTheme} from "@AppBuilderLib/shared/model/useResolvedThemeStore";
 import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
 import {HintProps} from "@AppBuilderLib/shared/ui/hint/Hint";
 import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon/Icon";
@@ -103,7 +104,7 @@ import {
 	v8CssVariablesResolver,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
-import {useContext} from "react";
+import {useContext, useEffect} from "react";
 
 /**
  * Helper function for defining CSS variables for the AppBuilderAppShellTemplate
@@ -1760,6 +1761,10 @@ export const useCustomTheme = (props: Props = {}) => {
 					appBuilderResolver,
 				)
 			: appBuilderResolver;
+
+	useEffect(() => {
+		publishResolvedTheme(theme);
+	}, [theme]);
 
 	return {
 		theme,
