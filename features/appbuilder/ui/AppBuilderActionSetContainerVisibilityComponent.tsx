@@ -7,7 +7,7 @@ import {ToolbarContainerExclusivityContext} from "@AppBuilderLib/features/appbui
 import {runAppBuilderActionSetContainerVisibility} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSetContainerVisibility";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
-import {useCallback, useContext, useEffect} from "react";
+import {useCallback, useContext, useEffect, useRef} from "react";
 import {
 	AppBuilderContainerNameType,
 	IAppBuilderActionPropsCommon,
@@ -121,18 +121,38 @@ export default function AppBuilderActionSetContainerVisibilityComponent(
 			? container.props.id
 			: undefined;
 
+	const buttonNodeRef = useRef<HTMLButtonElement | null>(null);
 	const handleButtonRef = useCallback(
 		(node: HTMLButtonElement | null) => {
-			if (anchorId) {
+			const previous = buttonNodeRef.current;
+			buttonNodeRef.current = node;
+			if (!anchorId) return;
+			if (node) {
 				setTrigger(anchorId, node);
+				return;
+			}
+			if (
+				previous &&
+				useViewportAnchorTriggerRegistry.getState().triggers[
+					anchorId
+				] === previous
+			) {
+				setTrigger(anchorId, null);
 			}
 		},
 		[anchorId, setTrigger],
 	);
 
 	useEffect(() => {
+		const element = buttonNodeRef.current;
 		return () => {
-			if (anchorId) {
+			if (
+				anchorId &&
+				element &&
+				useViewportAnchorTriggerRegistry.getState().triggers[
+					anchorId
+				] === element
+			) {
 				setTrigger(anchorId, null);
 			}
 		};
