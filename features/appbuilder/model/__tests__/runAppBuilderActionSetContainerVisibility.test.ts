@@ -42,7 +42,11 @@ describe("runAppBuilderActionSetContainerVisibility click source", () => {
 
 	beforeEach(() => {
 		useViewportAnchorTriggerRegistry.setState({triggers: {}});
-		useActionClickSourceStore.setState({source: null, token: 0});
+		useActionClickSourceStore.setState({
+			source: null,
+			clicks: {},
+			token: 0,
+		});
 		seed([
 			{id: "panel-a", showContent: false},
 			{id: "panel-b", showContent: true},
@@ -359,5 +363,38 @@ describe("runAppBuilderActionSetContainerVisibility click source", () => {
 		expect(
 			useViewportAnchorTriggerRegistry.getState().triggers["panel-c"],
 		).toBeUndefined();
+	});
+
+	it("uses the click that started the sequence after a later click", () => {
+		const first = document.createElement("button");
+		const second = document.createElement("button");
+		const firstToken = useActionClickSourceStore
+			.getState()
+			.beginActionClick({
+				element: first,
+				exclusiveContainers: true,
+				siblingAnchorIds: ["panel-a", "panel-b", "panel-c"],
+			});
+		useActionClickSourceStore.getState().beginActionClick({
+			element: second,
+			exclusiveContainers: true,
+			siblingAnchorIds: ["panel-a"],
+		});
+
+		runAppBuilderActionSetContainerVisibility({
+			container: {
+				name: AppBuilderContainerNameType.Anchor2d,
+				props: {id: "panel-a"},
+			},
+			mode: "open",
+			viewportId,
+			clickToken: firstToken,
+		});
+
+		expect(
+			useViewportAnchorTriggerRegistry.getState().triggers["panel-a"],
+		).toBe(first);
+		expect(showContent("panel-b")).toBe(false);
+		expect(showContent("panel-c")).toBe(false);
 	});
 });

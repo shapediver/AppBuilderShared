@@ -7,7 +7,7 @@ import {closeSiblingToolbarContainers} from "@AppBuilderLib/features/appbuilder/
 import {collectSetContainerVisibilityTargets} from "@AppBuilderLib/features/appbuilder/lib/collectSetContainerVisibilityTargets";
 import {
 	bindActionClickTrigger,
-	useActionClickSourceStore,
+	getActionClickSource,
 } from "@AppBuilderLib/features/appbuilder/model/useActionClickSourceStore";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
@@ -15,6 +15,8 @@ import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/mod
 export type RunAppBuilderActionSetContainerVisibilityProps =
 	IAppBuilderActionPropsSetContainerVisibility & {
 		viewportId: string;
+		/** Click that started this run. Omit to use the latest click. */
+		clickToken?: number;
 	};
 
 /** Anchor ids a click's sequence opens, closes, or toggles. */
@@ -43,8 +45,9 @@ function applyActionClickSource(
 	containerName: string,
 	containerId: string,
 	willOpen: boolean,
+	clickToken?: number,
 ): void {
-	const source = useActionClickSourceStore.getState().source;
+	const source = getActionClickSource(clickToken);
 	if (!source) return;
 
 	const sequenceIds = source.actions
@@ -71,7 +74,7 @@ function applyActionClickSource(
 export function runAppBuilderActionSetContainerVisibility(
 	props: RunAppBuilderActionSetContainerVisibilityProps,
 ): void {
-	const {container, mode, viewportId} = props;
+	const {container, mode, viewportId, clickToken} = props;
 	const containerId = container.props?.id;
 
 	switch (container.name) {
@@ -108,6 +111,7 @@ export function runAppBuilderActionSetContainerVisibility(
 				container.name,
 				containerId,
 				willOpen,
+				clickToken,
 			);
 			viewportAnchors.updateShowContent(
 				viewportId,

@@ -13,7 +13,11 @@ import {
 
 describe("useActionClickSourceStore", () => {
 	beforeEach(() => {
-		useActionClickSourceStore.setState({source: null, token: 0});
+		useActionClickSourceStore.setState({
+			source: null,
+			clicks: {},
+			token: 0,
+		});
 		useViewportAnchorTriggerRegistry.setState({triggers: {}});
 		clearActionClickExclusivity();
 	});
@@ -56,6 +60,34 @@ describe("useActionClickSourceStore", () => {
 		);
 		useActionClickSourceStore.getState().endActionClick(secondToken);
 		expect(useActionClickSourceStore.getState().source).toBeNull();
+	});
+
+	it("restores the earlier click when a later one ends", () => {
+		const first = document.createElement("button");
+		const second = document.createElement("button");
+		const firstToken = useActionClickSourceStore
+			.getState()
+			.beginActionClick({
+				element: first,
+				exclusiveContainers: true,
+				siblingAnchorIds: ["panel-a"],
+			});
+		const secondToken = useActionClickSourceStore
+			.getState()
+			.beginActionClick({
+				element: second,
+				exclusiveContainers: false,
+				siblingAnchorIds: ["panel-b"],
+			});
+
+		useActionClickSourceStore.getState().endActionClick(secondToken);
+
+		expect(useActionClickSourceStore.getState().source?.element).toBe(
+			first,
+		);
+		expect(
+			useActionClickSourceStore.getState().clicks[firstToken]?.element,
+		).toBe(first);
 	});
 
 	it("clears only the triggers bound to that button", () => {

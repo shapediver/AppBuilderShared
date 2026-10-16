@@ -49,7 +49,11 @@ describe("AppBuilderActionExecuteActionsComponent", () => {
 	beforeEach(() => {
 		mockRunAppBuilderActions.mockClear();
 		mockRunAppBuilderActions.mockResolvedValue(undefined);
-		useActionClickSourceStore.setState({source: null, token: 0});
+		useActionClickSourceStore.setState({
+			source: null,
+			clicks: {},
+			token: 0,
+		});
 		useViewportAnchorTriggerRegistry.setState({triggers: {}});
 		clearActionClickExclusivity();
 	});

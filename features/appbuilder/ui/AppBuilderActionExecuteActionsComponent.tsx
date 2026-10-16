@@ -82,6 +82,9 @@ export default function AppBuilderActionExecuteActionsComponent(props: Props) {
 			viewportId,
 			fullscreenId,
 			hostActions,
+			...(clickTokenRef.current != null
+				? {clickToken: clickTokenRef.current}
+				: {}),
 		})
 			.catch((e) => {
 				Logger.warn("executeActions failed:", e);

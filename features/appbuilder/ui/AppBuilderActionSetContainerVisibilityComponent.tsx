@@ -106,6 +106,7 @@ export default function AppBuilderActionSetContainerVisibilityComponent(
 					container,
 					mode,
 					viewportId,
+					clickToken: token ?? undefined,
 				});
 			} finally {
 				if (token != null) {
