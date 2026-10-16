@@ -31,7 +31,10 @@ import {runAppBuilderActionMessageToParent} from "./runAppBuilderActionMessageTo
 import {runAppBuilderActionRedo} from "./runAppBuilderActionRedo";
 import {runAppBuilderActionResetParameterValues} from "./runAppBuilderActionResetParameterValues";
 import {runAppBuilderActionSetBrowserLocation} from "./runAppBuilderActionSetBrowserLocation";
-import {runAppBuilderActionSetContainerVisibility} from "./runAppBuilderActionSetContainerVisibility";
+import {
+	runAppBuilderActionSetContainerVisibility,
+	setupAppBuilderActionSetContainerVisibility,
+} from "./runAppBuilderActionSetContainerVisibility";
 import {runAppBuilderActionSetParameterValues} from "./runAppBuilderActionSetParameterValues";
 import {runAppBuilderActionSound} from "./runAppBuilderActionSound";
 import {runAppBuilderActionUndo} from "./runAppBuilderActionUndo";
@@ -57,7 +60,7 @@ const runSetContainerVisibility: AppBuilderActionRunner = (
 	runAppBuilderActionSetContainerVisibility({
 		...definition.props,
 		viewportId: resolvedViewportId(context),
-		clickToken: context.clickToken,
+		actionHost: context.actionHost,
 	});
 };
 
@@ -165,5 +168,6 @@ export const defaultAppBuilderActionRuns: Record<
 	[AppBuilderActionType.SetContainerVisibility]: {
 		isAction: isSetContainerVisibilityAction,
 		run: runSetContainerVisibility,
+		setup: setupAppBuilderActionSetContainerVisibility,
 	},
 };

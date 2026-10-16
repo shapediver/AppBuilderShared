@@ -58,7 +58,7 @@ describe("closeSiblingToolbarContainers", () => {
 		);
 	});
 
-	it("keeps every id that the click is about to open", () => {
+	it("keeps every id in the sequence open", () => {
 		closeSiblingToolbarContainers(
 			viewportId,
 			["panel-2d", "panel-3d"],

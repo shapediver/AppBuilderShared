@@ -15,7 +15,10 @@ import {
 	IAppBuilderSettingsSession,
 	IAppBuilderWidget,
 } from "./appbuilder";
-import type {AppBuilderActionRunner} from "./appBuilderActionRun";
+import type {
+	AppBuilderActionRunner,
+	AppBuilderActionSetup,
+} from "./appBuilderActionRun";
 import type {IAppBuilderActionSlot} from "./appbuilderActionSlots";
 
 // #region Interfaces (7)
@@ -131,6 +134,11 @@ export interface ActionComponentMapValueType {
 	 * ShapeDiver fallback). Replace with a host-native `run` (e.g. WebGi).
 	 */
 	run?: AppBuilderActionRunner;
+	/**
+	 * Mount registration for a rendered button that owns this action.
+	 * `executeActions` calls this with its button for each nested action.
+	 */
+	setup?: AppBuilderActionSetup;
 }
 
 /**

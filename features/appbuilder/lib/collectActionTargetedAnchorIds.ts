@@ -150,6 +150,18 @@ function walkNode(node: unknown, out: ActionTargetedAnchorIds) {
 	}
 }
 
+/** Anchor ids named by these action definitions, including nested sequences. */
+export function collectActionTargetedAnchorIdsFromDefinitions(
+	definitions: readonly unknown[] | undefined,
+): ActionTargetedAnchorIds {
+	const out = emptyIds();
+	if (!definitions) return out;
+	for (const definition of definitions) {
+		collectFromActionDefinition(definition, out);
+	}
+	return out;
+}
+
 /** Collects anchor ids targeted by setContainerVisibility actions in toolbar groups. */
 export function collectActionTargetedAnchorIdsFromGroups(
 	groups: unknown[][] | undefined,
