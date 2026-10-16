@@ -142,6 +142,14 @@ describe("AppBuilderActionExecuteActionsComponent", () => {
 		expect(source?.exclusiveContainers).toBe(true);
 		expect(source?.siblingAnchorIds).toEqual(["panel-a", "panel-b"]);
 		expect(source?.actions).toBe(actions);
+		expect(mockRunAppBuilderActions).toHaveBeenCalledWith(
+			actions,
+			"parallel",
+			expect.objectContaining({
+				viewportId: "viewport-1",
+				clickToken: expect.any(Number),
+			}),
+		);
 
 		await act(async () => {
 			release();

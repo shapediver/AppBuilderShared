@@ -1,5 +1,4 @@
 import {AppBuilderActionType} from "@AppBuilderLib/features/appbuilder/config/appBuilderActionType";
-import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 
 export interface SetContainerVisibilityTarget {
 	name: string;
@@ -63,53 +62,4 @@ export function collectSetContainerVisibilityTargets(
 
 	for (const action of actions) visit(action);
 	return out;
-}
-
-/** Anchor ids a visibility sequence will show, using the current open state for toggles. */
-export function collectOpeningAnchorIds(
-	actions: readonly unknown[],
-	isOpen: (id: string, name: string) => boolean,
-): string[] {
-	const ids: string[] = [];
-	for (const target of collectSetContainerVisibilityTargets(actions)) {
-		if (
-			target.name !== AppBuilderContainerNameType.Anchor2d &&
-			target.name !== AppBuilderContainerNameType.Anchor3d
-		) {
-			continue;
-		}
-		if (!target.id) continue;
-		const willOpen =
-			target.mode === "open" ||
-			(target.mode === "toggle" && !isOpen(target.id, target.name));
-		if (willOpen && !ids.includes(target.id)) ids.push(target.id);
-	}
-	return ids;
-}
-
-/** 2D anchor ids whose panel should dock to the button that runs these actions. */
-export function collectAnchor2dTriggerIds(
-	actions: readonly unknown[],
-): string[] {
-	const ids: string[] = [];
-	for (const target of collectSetContainerVisibilityTargets(actions)) {
-		if (
-			target.name === AppBuilderContainerNameType.Anchor2d &&
-			target.id &&
-			!ids.includes(target.id)
-		) {
-			ids.push(target.id);
-		}
-	}
-	return ids;
-}
-
-/** Whether the sequence opens, closes, or toggles any 2D or 3D anchor by id. */
-export function targetsAnchorContainer(actions: readonly unknown[]): boolean {
-	return collectSetContainerVisibilityTargets(actions).some(
-		(target) =>
-			(target.name === AppBuilderContainerNameType.Anchor2d ||
-				target.name === AppBuilderContainerNameType.Anchor3d) &&
-			!!target.id,
-	);
 }

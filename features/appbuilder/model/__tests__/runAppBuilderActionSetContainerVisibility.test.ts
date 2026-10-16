@@ -375,11 +375,13 @@ describe("runAppBuilderActionSetContainerVisibility click source", () => {
 				exclusiveContainers: true,
 				siblingAnchorIds: ["panel-a", "panel-b", "panel-c"],
 			});
-		useActionClickSourceStore.getState().beginActionClick({
-			element: second,
-			exclusiveContainers: true,
-			siblingAnchorIds: ["panel-a"],
-		});
+		const secondToken = useActionClickSourceStore
+			.getState()
+			.beginActionClick({
+				element: second,
+				exclusiveContainers: true,
+				siblingAnchorIds: ["panel-a"],
+			});
 
 		runAppBuilderActionSetContainerVisibility({
 			container: {
@@ -396,5 +398,14 @@ describe("runAppBuilderActionSetContainerVisibility click source", () => {
 		).toBe(first);
 		expect(showContent("panel-b")).toBe(false);
 		expect(showContent("panel-c")).toBe(false);
+
+		useActionClickSourceStore.getState().endActionClick(secondToken);
+
+		expect(
+			useActionClickSourceStore.getState().clicks[firstToken]?.element,
+		).toBe(first);
+		expect(useActionClickSourceStore.getState().source?.element).toBe(
+			first,
+		);
 	});
 });

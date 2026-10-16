@@ -1,10 +1,5 @@
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
-import {
-	collectAnchor2dTriggerIds,
-	collectOpeningAnchorIds,
-	collectSetContainerVisibilityTargets,
-	targetsAnchorContainer,
-} from "../collectSetContainerVisibilityTargets";
+import {collectSetContainerVisibilityTargets} from "../collectSetContainerVisibilityTargets";
 
 const visibility = (
 	name: string,
@@ -69,39 +64,5 @@ describe("collectSetContainerVisibilityTargets", () => {
 				mode: "open",
 			},
 		]);
-	});
-
-	it("treats open and a closed toggle as opening, and skips close", () => {
-		const actions = [
-			visibility(AppBuilderContainerNameType.Anchor2d, "open-me", "open"),
-			visibility(
-				AppBuilderContainerNameType.Anchor2d,
-				"toggle-closed",
-				"toggle",
-			),
-			visibility(
-				AppBuilderContainerNameType.Anchor3d,
-				"toggle-open",
-				"toggle",
-			),
-			visibility(AppBuilderContainerNameType.Anchor2d, "stay", "close"),
-			visibility(AppBuilderContainerNameType.Left, "left", "open"),
-		];
-
-		expect(
-			collectOpeningAnchorIds(actions, (id) => id === "toggle-open"),
-		).toEqual(["open-me", "toggle-closed"]);
-		expect(collectAnchor2dTriggerIds(actions)).toEqual([
-			"open-me",
-			"toggle-closed",
-			"stay",
-		]);
-		expect(targetsAnchorContainer(actions)).toBe(true);
-		expect(
-			targetsAnchorContainer([
-				visibility(AppBuilderContainerNameType.Left, "left", "open"),
-				{type: "undo", props: {}},
-			]),
-		).toBe(false);
 	});
 });

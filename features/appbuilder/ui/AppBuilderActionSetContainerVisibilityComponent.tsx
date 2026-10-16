@@ -128,17 +128,35 @@ export default function AppBuilderActionSetContainerVisibilityComponent(
 
 	const handleButtonRef = useCallback(
 		(node: HTMLButtonElement | null) => {
+			const previous = buttonNodeRef.current;
 			buttonNodeRef.current = node;
-			if (anchorId) {
+			if (!anchorId) return;
+			if (node) {
 				setTrigger(anchorId, node);
+				return;
+			}
+			if (
+				previous &&
+				useViewportAnchorTriggerRegistry.getState().triggers[
+					anchorId
+				] === previous
+			) {
+				setTrigger(anchorId, null);
 			}
 		},
 		[anchorId, setTrigger],
 	);
 
 	useEffect(() => {
+		const element = buttonNodeRef.current;
 		return () => {
-			if (anchorId) {
+			if (
+				anchorId &&
+				element &&
+				useViewportAnchorTriggerRegistry.getState().triggers[
+					anchorId
+				] === element
+			) {
 				setTrigger(anchorId, null);
 			}
 		};
