@@ -58,6 +58,26 @@ describe("closeSiblingToolbarContainers", () => {
 		);
 	});
 
+	it("keeps every id that the click is about to open", () => {
+		closeSiblingToolbarContainers(
+			viewportId,
+			["panel-2d", "panel-3d"],
+			["panel-2d", "panel-3d", "unrelated"],
+		);
+
+		const anchors =
+			useShapeDiverStoreViewportAnchors.getState().anchors[viewportId];
+		expect(anchors.find((a) => a.id === "panel-2d")?.showContent).toBe(
+			true,
+		);
+		expect(anchors.find((a) => a.id === "panel-3d")?.showContent).toBe(
+			true,
+		);
+		expect(anchors.find((a) => a.id === "unrelated")?.showContent).toBe(
+			false,
+		);
+	});
+
 	it("does nothing when there are no siblings", () => {
 		closeSiblingToolbarContainers(viewportId, "panel-2d", []);
 

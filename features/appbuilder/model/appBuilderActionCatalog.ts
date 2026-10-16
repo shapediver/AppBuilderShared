@@ -57,6 +57,7 @@ const runSetContainerVisibility: AppBuilderActionRunner = (
 	runAppBuilderActionSetContainerVisibility({
 		...definition.props,
 		viewportId: resolvedViewportId(context),
+		clickToken: context.clickToken,
 	});
 };
 

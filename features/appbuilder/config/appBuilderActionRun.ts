@@ -9,6 +9,11 @@ export type AppBuilderActionRunContext = {
 	viewportId?: string;
 	fullscreenId?: string;
 	/**
+	 * Button click that started this run. Nested actions keep the same token
+	 * so a later click does not take their place.
+	 */
+	clickToken?: number;
+	/**
 	 * When true, a missing or invalid camera target throws so API callers
 	 * can return `{success: false}`. Toolbar, action slots, and in-app
 	 * `executeActions` omit this and warn/skip camera failures.

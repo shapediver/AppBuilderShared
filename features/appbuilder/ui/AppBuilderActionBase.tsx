@@ -3,8 +3,14 @@ import {
 	AppBuilderToolbarSide,
 	IAppBuilderActionPropsCommon,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {ToolbarContainerExclusivityContext} from "@AppBuilderLib/features/appbuilder/lib/ToolbarContainerExclusivityContext";
+import {
+	clearActionClickExclusivity,
+	noteActionClickExclusivity,
+} from "@AppBuilderLib/features/appbuilder/model/useActionClickSourceStore";
 import type {AppBuilderToolbarIconButtonThemeStyleProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import AppBuilderToolbarIconButton from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
+import {useContext} from "react";
 import AppBuilderActionComponent from "./AppBuilderActionComponent";
 import AppBuilderToolbarMenuItemButton from "./AppBuilderToolbarMenuItemButton";
 
@@ -46,6 +52,17 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 		labelAlign,
 		buttonRef,
 	} = props;
+	const {exclusiveContainers, siblingAnchorIds} = useContext(
+		ToolbarContainerExclusivityContext,
+	);
+	const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+		noteActionClickExclusivity({exclusiveContainers, siblingAnchorIds});
+		try {
+			onClick?.(event);
+		} finally {
+			clearActionClickExclusivity();
+		}
+	};
 
 	if (presentation === "item") {
 		return (
@@ -54,7 +71,7 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 				label={label}
 				icon={icon}
 				tooltip={tooltip}
-				onClick={onClick}
+				onClick={handleClick}
 				loading={loading}
 				disabled={disabled}
 			/>
@@ -70,7 +87,7 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 				iconType={getToolbarIconType(icon, label)}
 				loading={loading}
 				disabled={disabled}
-				onClick={onClick}
+				onClick={handleClick}
 				{...toolbarButtonProps}
 				{...(labelSide !== undefined ? {labelSide} : {})}
 				{...(labelAlign !== undefined ? {labelAlign} : {})}
@@ -84,7 +101,7 @@ export default function AppBuilderActionBase(props: AppBuilderActionBaseProps) {
 			label={label}
 			icon={icon}
 			tooltip={tooltip}
-			onClick={onClick}
+			onClick={handleClick}
 			loading={loading}
 			disabled={disabled}
 			canBeDisabledByParameter={canBeDisabledByParameter}
