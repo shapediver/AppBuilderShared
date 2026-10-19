@@ -256,15 +256,17 @@ export default function ParameterStringComponent(
 		[onFocusHandler, onBlurHandler],
 	);
 
+	// value follows formInputProps. Controlled getInputProps includes value
+	// and would show a hidden item again.
 	const selectComponent = selectSettings ? (
 		<SelectComponent
 			key={formKey}
+			{...(formInputProps || {})}
 			value={
 				value && selectSettings.itemData?.[value]?.hidden
 					? undefined
 					: value || undefined
 			}
-			{...(formInputProps || {})}
 			onChange={(v) => {
 				const val = v ?? "";
 				handleChange(val, 0, restoreFocus);
