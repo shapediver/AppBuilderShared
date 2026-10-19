@@ -6,13 +6,36 @@ import {useParameters} from "@AppBuilderLib/entities/parameter/model/useParamete
 import {IComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext.types";
 import {getParameterComponent} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import type {ToolbarPopoverItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
+import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
+import {appBuilderPanelSpacing} from "@AppBuilderLib/features/appbuilder/lib/appBuilderPanelSpacing";
+import ThemeProvider from "@AppBuilderLib/shared/ui/theme/ThemeProvider";
+import {AppBuilderControlsWidgetComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderControlsWidgetComponent";
 import AppBuilderTabsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderTabsComponent";
 import AppBuilderWidgetsComponent from "@AppBuilderLib/widgets/appbuilder/ui/AppBuilderWidgetsComponent";
-import {Divider, Paper, Stack, Text} from "@mantine/core";
+import {Divider, Paper, Stack} from "@mantine/core";
 import React, {useMemo} from "react";
 import {AppBuilderActionFromType} from "./AppBuilderActionFromType";
+import AppBuilderActionSlots from "./AppBuilderActionSlots";
 import AppBuilderToolbarCommandButton from "./AppBuilderToolbarCommandButton";
 import AppBuilderToolbarMenuCheckbox from "./AppBuilderToolbarMenuCheckbox";
+
+/**
+ * Parameter lists use their own stack. Scope that gap to toolbar panels
+ * through the controls widget theme props, the same way other containers
+ * set spacing.
+ */
+const toolbarPanelTheme = {
+	components: {
+		AppBuilderControlsWidgetComponent:
+			AppBuilderControlsWidgetComponentThemeProps({
+				stackProps: {gap: appBuilderPanelSpacing},
+			}),
+	},
+};
+
+function ToolbarPanelTheme({children}: {children: React.ReactNode}) {
+	return <ThemeProvider theme={toolbarPanelTheme}>{children}</ThemeProvider>;
+}
 
 type Props = {
 	item: ToolbarPopoverItem;
@@ -85,56 +108,87 @@ export default function AppBuilderToolbarPopoverContent({
 										{section.items.map((menuItem) => {
 											if (menuItem.type === "checkbox") {
 												return (
-													<AppBuilderToolbarMenuCheckbox
+													<AppBuilderActionSlots
 														key={menuItem.id}
-														label={menuItem.label}
-														checked={
-															menuItem.props
-																.checked
+														actionSlots={
+															menuItem.actionSlots
 														}
-														readOnly={
-															menuItem.props
-																.readOnly
+														allowedEvents={
+															APP_BUILDER_SLOT_EVENTS.toolbar
 														}
-														disabled={
-															menuItem.disabled ||
-															actionDisabled
+														namespace={namespace}
+														viewportId={viewportId}
+														fullscreenId={
+															fullscreenId
 														}
-														trailingAction={
-															menuItem.props
-																.trailingAction
-																? {
-																		...menuItem
-																			.props
-																			.trailingAction,
-																		disabled:
-																			actionDisabled ||
-																			menuItem
+													>
+														<AppBuilderToolbarMenuCheckbox
+															label={
+																menuItem.label
+															}
+															checked={
+																menuItem.props
+																	.checked
+															}
+															readOnly={
+																menuItem.props
+																	.readOnly
+															}
+															disabled={
+																menuItem.disabled ||
+																actionDisabled
+															}
+															trailingAction={
+																menuItem.props
+																	.trailingAction
+																	? {
+																			...menuItem
 																				.props
-																				.trailingAction
-																				.disabled,
-																	}
-																: undefined
-														}
-														onChange={() =>
-															menuItem.props.setChecked(
-																!menuItem.props
-																	.checked,
-															)
-														}
-													/>
+																				.trailingAction,
+																			disabled:
+																				actionDisabled ||
+																				menuItem
+																					.props
+																					.trailingAction
+																					.disabled,
+																		}
+																	: undefined
+															}
+															onChange={() =>
+																menuItem.props.setChecked(
+																	!menuItem
+																		.props
+																		.checked,
+																)
+															}
+														/>
+													</AppBuilderActionSlots>
 												);
 											}
 											if (menuItem.type === "command") {
 												return (
-													<AppBuilderToolbarCommandButton
+													<AppBuilderActionSlots
 														key={menuItem.id}
-														item={menuItem}
-														presentation="menu"
-														globalDisabled={
-															actionDisabled
+														actionSlots={
+															menuItem.actionSlots
 														}
-													/>
+														allowedEvents={
+															APP_BUILDER_SLOT_EVENTS.toolbar
+														}
+														namespace={namespace}
+														viewportId={viewportId}
+														fullscreenId={
+															fullscreenId
+														}
+													>
+														<AppBuilderToolbarCommandButton
+															item={menuItem}
+															presentation="menu"
+															globalDisabled={
+																actionDisabled
+															}
+														/>
+													</AppBuilderActionSlots>
 												);
 											}
 
@@ -156,8 +210,17 @@ export default function AppBuilderToolbarPopoverContent({
 													},
 												);
 											return action ? (
-												<React.Fragment
+												<AppBuilderActionSlots
 													key={menuItem.id}
+													actionSlots={
+														menuItem.actionSlots
+													}
+													allowedEvents={
+														APP_BUILDER_SLOT_EVENTS.toolbar
+													}
+													namespace={namespace}
+													viewportId={viewportId}
+													fullscreenId={fullscreenId}
 												>
 													<span
 														onClick={
@@ -166,7 +229,7 @@ export default function AppBuilderToolbarPopoverContent({
 													>
 														{action}
 													</span>
-												</React.Fragment>
+												</AppBuilderActionSlots>
 											) : null;
 										})}
 									</Stack>
@@ -175,30 +238,27 @@ export default function AppBuilderToolbarPopoverContent({
 						})}
 					</Stack>
 				);
-			case "widgets": {
-				const widgets = (
-					<AppBuilderWidgetsComponent
-						namespace={namespace}
-						widgets={item.props.widgets}
-					/>
-				);
-				if (!item.label) return widgets;
+			case "widgets":
+				// Sibling widgets must be stack items so action buttons stretch.
 				return (
-					<Stack gap="xs">
-						<Text size="sm" fw={600}>
-							{item.label}
-						</Text>
-						{widgets}
-					</Stack>
+					<ToolbarPanelTheme>
+						<Stack gap={appBuilderPanelSpacing}>
+							<AppBuilderWidgetsComponent
+								namespace={namespace}
+								widgets={item.props.widgets}
+							/>
+						</Stack>
+					</ToolbarPanelTheme>
 				);
-			}
 			case "tabs":
 				return (
-					<AppBuilderTabsComponent
-						namespace={namespace}
-						tabs={item.props.tabs}
-						stickyTabs={item.props.stickyTabs}
-					/>
+					<ToolbarPanelTheme>
+						<AppBuilderTabsComponent
+							namespace={namespace}
+							tabs={item.props.tabs}
+							stickyTabs={item.props.stickyTabs}
+						/>
+					</ToolbarPanelTheme>
 				);
 			case "parameter": {
 				const parameter = parameters[0];

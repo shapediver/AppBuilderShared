@@ -133,6 +133,162 @@ const pickDefined = <T extends Record<string, unknown>, K extends keyof T>(
 // numbers, dashes and colons, or is a single number (to allow numeric text icons).
 const iconRegex = new RegExp("^(?:[a-z0-9-:]|[a-z0-9-:]*[a-z-:][a-z0-9-:]*)$");
 
+/**
+ * Caption rules shared by every icon button.
+ * A caption is shown only when `labelSide` is set. The tooltip is dropped when
+ * it would repeat that caption, and otherwise falls back to `label`.
+ */
+export function resolveToolbarIconLabel(args: {
+	label: string;
+	tooltipLabel?: string;
+	labelSide?: AppBuilderToolbarSide;
+	labelAlign?: AppBuilderToolbarAlign;
+}) {
+	const showCaption = Boolean(args.labelSide && args.label);
+	const resolvedTooltipLabel =
+		showCaption && (!args.tooltipLabel || args.tooltipLabel === args.label)
+			? ""
+			: (args.tooltipLabel ?? args.label ?? "");
+
+	return {
+		showCaption,
+		resolvedTooltipLabel,
+		ariaLabel: showCaption ? undefined : args.label || undefined,
+		layout: args.labelSide
+			? getToolbarIconLabelLayout(args.labelSide, args.labelAlign)
+			: undefined,
+	};
+}
+
+function ToolbarIconLabelContent({
+	showCaption,
+	label,
+	icon,
+	layout,
+	labelProps,
+}: {
+	showCaption: boolean;
+	label: string;
+	icon: React.ReactNode;
+	layout?: ReturnType<typeof getToolbarIconLabelLayout>;
+	labelProps?: MantineTextProps;
+}) {
+	if (!showCaption || !layout) return icon;
+
+	const {labelFirst, verticalCaption, captionRotate, ...labelLayoutStyle} =
+		layout;
+	const captionNode = (
+		<Text
+			component="span"
+			{...defaultStyleProps.labelProps}
+			{...labelProps}
+			className={[
+				classes.caption,
+				verticalCaption ? classes.captionVertical : undefined,
+				captionRotate === 180 ? classes.captionRotate180 : undefined,
+			]
+				.filter(Boolean)
+				.join(" ")}
+		>
+			{label}
+		</Text>
+	);
+
+	return (
+		<span className={classes.labelLayout} style={labelLayoutStyle}>
+			{labelFirst ? (
+				<>
+					{captionNode}
+					{icon}
+				</>
+			) : (
+				<>
+					{icon}
+					{captionNode}
+				</>
+			)}
+		</span>
+	);
+}
+
+/**
+ * Icon button that keeps the caller's ActionIcon chrome and applies the
+ * toolbar caption rules (`AppBuilderToolbarIconButton` `labelSide`).
+ */
+export function AppBuilderLabeledActionIcon({
+	label,
+	tooltipLabel,
+	icon,
+	labelSide: labelSideProp,
+	labelAlign: labelAlignProp,
+	className,
+	style,
+	variant,
+	size,
+	disabled,
+	loading,
+	onClick,
+}: {
+	label: string;
+	tooltipLabel?: string;
+	icon: React.ReactNode;
+	labelSide?: AppBuilderToolbarSide;
+	labelAlign?: AppBuilderToolbarAlign;
+	className?: string;
+	style?: MantineStyleProp;
+	variant?: string;
+	size?: MantineActionIconProps["size"];
+	disabled?: boolean;
+	loading?: boolean;
+	onClick?: React.MouseEventHandler<HTMLButtonElement>;
+}) {
+	const {
+		tooltipWrapperProps,
+		labelSide: labelSideTheme,
+		labelAlign: labelAlignTheme,
+		labelProps,
+	} = useResolvedAppBuilderToolbarIconButtonTheme();
+	const {showCaption, resolvedTooltipLabel, ariaLabel, layout} =
+		resolveToolbarIconLabel({
+			label,
+			tooltipLabel,
+			labelSide: labelSideProp ?? labelSideTheme,
+			labelAlign: labelAlignProp ?? labelAlignTheme,
+		});
+
+	return (
+		<TooltipWrapper {...tooltipWrapperProps} label={resolvedTooltipLabel}>
+			<ActionIcon
+				onClick={onClick}
+				disabled={disabled}
+				loading={loading}
+				variant={variant}
+				size={size}
+				aria-label={ariaLabel}
+				className={
+					[
+						className,
+						showCaption ? classes.toolbarIconLabeled : undefined,
+					]
+						.filter(Boolean)
+						.join(" ") || undefined
+				}
+				style={style}
+				w={showCaption ? "auto" : undefined}
+				h={showCaption ? "auto" : undefined}
+			>
+				<ToolbarIconLabelContent
+					showCaption={showCaption}
+					label={label}
+					icon={icon}
+					layout={layout}
+					labelProps={labelProps}
+				/>
+			</ActionIcon>
+		</TooltipWrapper>
+	);
+}
+
 const AppBuilderToolbarIconButton = forwardRef<
 	HTMLButtonElement,
 	Props & AppBuilderToolbarIconButtonThemePropsType
@@ -161,11 +317,13 @@ const AppBuilderToolbarIconButton = forwardRef<
 	} = useResolvedAppBuilderToolbarIconButtonTheme(rest);
 	const labelSide = labelSideProp ?? labelSideTheme;
 	const labelAlign = labelAlignProp ?? labelAlignTheme;
-	const showCaption = Boolean(labelSide && label);
-	const resolvedTooltipLabel =
-		showCaption && (!tooltipLabel || tooltipLabel === label)
-			? ""
-			: (tooltipLabel ?? label ?? "");
+	const {showCaption, resolvedTooltipLabel, ariaLabel, layout} =
+		resolveToolbarIconLabel({
+			label,
+			tooltipLabel,
+			labelSide,
+			labelAlign,
+		});
 
 	const actionIconStyleProps = pickDefined(actionIconProps, [
 		"color",
@@ -189,16 +347,6 @@ const AppBuilderToolbarIconButton = forwardRef<
 		typeof iconType !== "string" ||
 		iconRegex.test(iconType) ||
 		isIconImageUrl(iconType);
-	const labelLayout = labelSide
-		? getToolbarIconLabelLayout(labelSide, labelAlign)
-		: undefined;
-	const {labelFirst, verticalCaption, captionRotate, ...labelLayoutStyle} =
-		labelLayout ?? {
-			labelFirst: false,
-			verticalCaption: false,
-			captionRotate: 0,
-		};
-
 	const iconNode = isIcon ? (
 		<Icon
 			iconType={iconType}
@@ -217,22 +365,6 @@ const AppBuilderToolbarIconButton = forwardRef<
 				: iconType}
 		</Box>
 	);
-	const captionNode = showCaption ? (
-		<Text
-			component="span"
-			{...defaultStyleProps.labelProps}
-			{...labelProps}
-			className={[
-				classes.caption,
-				verticalCaption ? classes.captionVertical : undefined,
-				captionRotate === 180 ? classes.captionRotate180 : undefined,
-			]
-				.filter(Boolean)
-				.join(" ")}
-		>
-			{label}
-		</Text>
-	) : null;
 
 	return (
 		<TooltipWrapper {...tooltipWrapperProps} label={resolvedTooltipLabel}>
@@ -243,7 +375,7 @@ const AppBuilderToolbarIconButton = forwardRef<
 				disabled={disabled}
 				loading={loading}
 				variant={disabled ? variantDisabled : variant}
-				aria-label={showCaption ? undefined : (label ?? undefined)}
+				aria-label={ariaLabel}
 				className={
 					showCaption
 						? `${classes.toolbarIcon} ${classes.toolbarIconLabeled}`
@@ -257,26 +389,13 @@ const AppBuilderToolbarIconButton = forwardRef<
 				w={showCaption ? "auto" : isIcon ? undefined : "100%"}
 				h={showCaption ? "auto" : undefined}
 			>
-				{showCaption ? (
-					<span
-						className={classes.labelLayout}
-						style={labelLayoutStyle}
-					>
-						{labelFirst ? (
-							<>
-								{captionNode}
-								{iconNode}
-							</>
-						) : (
-							<>
-								{iconNode}
-								{captionNode}
-							</>
-						)}
-					</span>
-				) : (
-					iconNode
-				)}
+				<ToolbarIconLabelContent
+					showCaption={showCaption}
+					label={label}
+					icon={iconNode}
+					layout={layout}
+					labelProps={labelProps}
+				/>
 			</ActionIcon>
 		</TooltipWrapper>
 	);

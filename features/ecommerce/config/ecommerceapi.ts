@@ -1,15 +1,28 @@
 import type {
-	ICrossWindowApiOptions,
-	ICrossWindowPeerInfo,
-} from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
+	IAppBuilderActionPropsAddToCart,
+	IAppBuilderActionPropsCamera,
+	IAppBuilderActionPropsCreateModelState,
+	IAppBuilderActionPropsExecuteActions,
+	IAppBuilderActionPropsImportModelState,
+	IAppBuilderActionPropsRedo,
+	IAppBuilderActionPropsResetParameterValues,
+	IAppBuilderActionPropsSetParameterValue,
+	IAppBuilderActionPropsSetParameterValues,
+	IAppBuilderActionPropsSound,
+	IAppBuilderActionPropsUndo,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilderActions";
 import type {
 	ICreateModelStateData,
 	ICreateModelStateResult,
-} from "@AppBuilderShared/features/model-state/config/createModelState";
+} from "@AppBuilderLib/features/model-state/config/createModelState";
 import type {
 	IImportModelStateData,
 	IImportModelStateResult,
-} from "@AppBuilderShared/features/model-state/config/importModelState";
+} from "@AppBuilderLib/features/model-state/config/importModelState";
+import type {
+	ICrossWindowApiOptions,
+	ICrossWindowPeerInfo,
+} from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
 
 /**
  * An item to be added to the cart.
@@ -67,13 +80,29 @@ export interface IAddItemToCartData {
 	 * for the added line item.
 	 */
 	title?: string;
+
+	/**
+	 * Optional custom line item properties for the e-commerce plugin.
+	 * Values are forwarded unchanged.
+	 */
+	properties?: Record<string, string>;
 }
 
+/**
+ * Reply from the parent page after adding an item to the cart.
+ * A handler reports failure by throwing an Error.
+ */
 export interface IAddItemToCartReply {
 	/**
 	 * The id of the cart item that has been added.
 	 */
 	id: string;
+
+	/**
+	 * Success message shown instead of the default cart notification.
+	 * Supports the optional placeholder `{modelStateId}`.
+	 */
+	successMessage?: string;
 }
 
 /**
@@ -115,16 +144,38 @@ export interface IUpdateSharingLinkData {
 	 * Image URL of the screenshot associated with the model state.
 	 */
 	imageUrl?: string;
+
+	/**
+	 * Optional custom properties for the e-commerce plugin.
+	 * Values are forwarded unchanged.
+	 */
+	properties?: Record<string, string>;
 }
 
 /**
  * Reply from the parent page after updating the sharing link.
+ *
+ * A handler returns `href`, `successMessage`, or `errorMessage`.
+ * When more than one is set, `errorMessage` wins, then `successMessage`,
+ * then `href`. Message fields support the `{modelStateId}` placeholder.
  */
 export interface IUpdateSharingLinkReply {
 	/**
 	 * The updated URL of the parent page.
 	 */
-	href: string;
+	href?: string;
+
+	/**
+	 * Success message shown instead of the sharing link.
+	 * Supports the optional placeholder `{modelStateId}`.
+	 */
+	successMessage?: string;
+
+	/**
+	 * Error message from the sharing-link handler.
+	 * Supports the optional placeholder `{modelStateId}`.
+	 */
+	errorMessage?: string;
 }
 
 /**
@@ -289,6 +340,101 @@ export interface IUpdateParameterValuesReply {
 	__placeholder?: never; // This is a placeholder to ensure that this interface is not empty.
 }
 
+export type ITriggerSetParameterValueProps =
+	IAppBuilderActionPropsSetParameterValue;
+
+export type ITriggerCameraActionProps = IAppBuilderActionPropsCamera;
+
+/**
+ * Allowlisted payload for CrossWindow `triggerAction`.
+ * Prop shapes are the App Builder action types; nested `executeActions`
+ * stays on this allowlist (not ar / fullscreen / browser location / …).
+ *
+ * `createModelState` here is the action JSON (no custom `data`). The
+ * dedicated `createModelState()` method accepts {@link ICreateModelStateData}.
+ * `importModelState` accepts `{modelStateId}` (import without the dialog) or
+ * empty action props. The dedicated `importModelState()` method still
+ * requires `{modelStateId}`.
+ */
+export type ITriggerActionData =
+	| {
+			type: "createModelState";
+			props: IAppBuilderActionPropsCreateModelState;
+	  }
+	| {
+			type: "importModelState";
+			props:
+				| IImportModelStateData
+				| IAppBuilderActionPropsImportModelState;
+	  }
+	| {
+			type: "setParameterValue";
+			props: IAppBuilderActionPropsSetParameterValue;
+	  }
+	| {
+			type: "setParameterValues";
+			props: IAppBuilderActionPropsSetParameterValues;
+	  }
+	| {type: "undo"; props?: IAppBuilderActionPropsUndo}
+	| {type: "redo"; props?: IAppBuilderActionPropsRedo}
+	| {
+			type: "resetParameterValues";
+			props?: IAppBuilderActionPropsResetParameterValues;
+	  }
+	| {type: "addToCart"; props: IAppBuilderActionPropsAddToCart}
+	| {type: "camera"; props: IAppBuilderActionPropsCamera}
+	| {type: "sound"; props: IAppBuilderActionPropsSound}
+	| {
+			type: "executeActions";
+			props: Omit<IAppBuilderActionPropsExecuteActions, "actions"> & {
+				actions: ITriggerActionData[];
+			};
+	  };
+
+/** Identifiers returned when an addToCart action succeeds. */
+export interface IAddToCartActionResultProps {
+	modelStateId: string;
+	cartItemId: string;
+}
+
+/** Nested replies returned when an executeActions action succeeds. */
+export interface IExecuteActionsResultProps {
+	results: ITriggerActionReply[];
+}
+
+type ITriggerActionResultProps<TType extends ITriggerActionData["type"]> =
+	TType extends "addToCart"
+		? IAddToCartActionResultProps
+		: TType extends "executeActions"
+			? IExecuteActionsResultProps
+			: never;
+
+/**
+ * Reply from `triggerAction` and tools `runActionControl`.
+ * `props` is present only for actions that return a payload.
+ */
+export interface ITriggerActionReply<
+	TType extends ITriggerActionData["type"] = ITriggerActionData["type"],
+> {
+	success: boolean;
+	message?: string;
+	props?: ITriggerActionResultProps<TType>;
+}
+
+export interface IGetOutputData {
+	/** Session namespace. Optional, defaults to the configurator session. */
+	namespace?: string;
+	/** Output id, name, or displayname. */
+	output: string;
+}
+
+export interface IGetOutputReply {
+	found: boolean;
+	/** Latest output content when found. */
+	content?: unknown;
+	message?: string;
+}
+
 /**
  * Generic e-commerce API connector actions.
  * These actions are provided by the application (e.g. a configurator)
@@ -318,6 +464,18 @@ export interface IECommerceApiConnectorActions {
 	importModelState(
 		data: IImportModelStateData,
 	): Promise<IImportModelStateResult>;
+
+	/**
+	 * Run an App Builder action (same allowlist as the tools API).
+	 */
+	triggerAction<T extends ITriggerActionData>(
+		data: T,
+	): Promise<ITriggerActionReply<T["type"]>>;
+
+	/**
+	 * Return the latest output content for an output id, name, or displayname.
+	 */
+	getOutput(data: IGetOutputData): Promise<IGetOutputReply>;
 }
 
 /**

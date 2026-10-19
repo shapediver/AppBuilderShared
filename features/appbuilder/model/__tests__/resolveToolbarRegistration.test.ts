@@ -22,15 +22,15 @@ describe("resolveToolbarRegistration", () => {
 					{
 						id: "actions",
 						type: "actionMenu",
-						label: "Actions",
 						props: {
+							label: "Actions",
 							sections: [
 								[
 									{
 										id: "undo",
 										type: "action",
-										label: "Undo",
 										props: {
+											label: "Undo",
 											definition: {
 												type: "undo",
 												props: {},
@@ -67,18 +67,18 @@ describe("resolveToolbarRegistration", () => {
 		}
 	});
 
-	it("copies labelSide and labelAlign onto a resolved action", () => {
+	it("copies control props labelSide and labelAlign onto a resolved action", () => {
 		const toolbar = resolveToolbarRegistration(
 			baseToolbar([
 				[
 					{
 						id: "zoom",
 						type: "action",
-						label: "Zoom extents",
-						icon: "tabler:zoom-in",
-						labelSide: "bottom",
-						labelAlign: "end",
 						props: {
+							label: "Zoom extents",
+							icon: "tabler:zoom-in",
+							labelSide: "bottom",
+							labelAlign: "end",
 							definition: {
 								type: "camera",
 								props: {type: "zoomTo", props: {}},
@@ -98,6 +98,64 @@ describe("resolveToolbarRegistration", () => {
 		});
 	});
 
+	it("copies actionSlots onto resolved toolbar items", () => {
+		const actionSlots = {
+			click: {
+				action: {type: "undo" as const, props: {}},
+			},
+		};
+		const toolbar = resolveToolbarRegistration(
+			baseToolbar([
+				[
+					{
+						id: "zoom",
+						type: "action",
+						actionSlots,
+						props: {
+							label: "Zoom extents",
+							definition: {
+								type: "camera",
+								props: {type: "zoomTo", props: {}},
+							},
+						},
+					},
+				],
+			]),
+		);
+
+		expect(toolbar.groups[0][0]).toMatchObject({
+			id: "zoom",
+			actionSlots,
+		});
+	});
+
+	it("copies labelSide and labelAlign onto a resolved widgets panel", () => {
+		const toolbar = resolveToolbarRegistration(
+			baseToolbar([
+				[
+					{
+						id: "params",
+						type: "widgets",
+						props: {
+							label: "Parameters",
+							labelSide: "bottom",
+							labelAlign: "end",
+							widgets: [],
+						},
+					},
+				],
+			]),
+		);
+
+		expect(toolbar.groups[0][0]).toMatchObject({
+			id: "params",
+			type: "widgets",
+			label: "Parameters",
+			labelSide: "bottom",
+			labelAlign: "end",
+		});
+	});
+
 	it("copies labelSide and labelAlign onto a resolved menu trigger", () => {
 		const toolbar = resolveToolbarRegistration(
 			baseToolbar([
@@ -105,17 +163,17 @@ describe("resolveToolbarRegistration", () => {
 					{
 						id: "actions",
 						type: "actionMenu",
-						label: "Actions",
-						labelSide: "left",
-						labelAlign: "start",
 						props: {
+							label: "Actions",
+							labelSide: "left",
+							labelAlign: "start",
 							sections: [
 								[
 									{
 										id: "undo",
 										type: "action",
-										label: "Undo",
 										props: {
+											label: "Undo",
 											definition: {
 												type: "undo",
 												props: {},

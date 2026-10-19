@@ -1,3 +1,9 @@
+import {
+	getInlineAcceptRejectEpoch,
+	hasGlobalPendingParameterChanges,
+	subscribeInlineAcceptReject,
+} from "@AppBuilderLib/entities/parameter/lib/globalAcceptReject";
+import {hasExecutingParameterChanges} from "@AppBuilderLib/entities/parameter/lib/hasPendingParameterChanges";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {
 	legacyViewportIconsDefaultStyleProps,
@@ -15,19 +21,18 @@ import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/com
 import type {ToolbarAcceptRejectItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
 import {useAppBuilderToolbars} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderToolbars";
 import {useDefaultToolbarRegistration} from "@AppBuilderLib/features/appbuilder/model/useDefaultToolbarRegistration";
-import {useResolvedAppBuilderToolbarIconButtonTheme} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {useProps} from "@mantine/core";
-import {useCallback, useMemo} from "react";
+import {useCallback, useMemo, useRef, useSyncExternalStore} from "react";
 import {useShallow} from "zustand/react/shallow";
 import AppBuilderToolbar from "./AppBuilderToolbar";
 import {
 	computeToolbarPushOffsets,
-	computeToolbarThickness,
 	getToolbarSlotStyle,
 	groupToolbarsBySlot,
 	ToolbarAlign,
 	ToolbarSide,
 } from "./appBuilderToolbarLayerLayout";
+import {useMeasuredToolbarSlotThickness} from "./useMeasuredToolbarSlotThickness";
 
 const defaultStyleProps = {
 	style: {
@@ -117,36 +122,28 @@ export default function AppBuilderToolbarLayer({
 		...legacyDefaultToolbarOptions,
 	});
 
+	// Same queue the viewport overlay buttons use. Custom parameters are stored
+	// under a dependent namespace, so this cannot be limited to sessionDependency
+	// of the controller session or those changes never surface in the toolbar.
+	// Parameters presented inline keep their own buttons and do not open this one.
+	const inlineEpoch = useSyncExternalStore(
+		subscribeInlineAcceptReject,
+		getInlineAcceptRejectEpoch,
+		getInlineAcceptRejectEpoch,
+	);
 	const parameterChanges = useShapeDiverStoreParameters(
+		(state) => state.parameterChanges,
+	);
+	const hasPendingChanges = useMemo(
+		() => hasGlobalPendingParameterChanges(parameterChanges),
+		[inlineEpoch, parameterChanges],
+	);
+	const executing = useShapeDiverStoreParameters(
 		useCallback(
-			(state) => {
-				if (!namespace) return [];
-				const ids = state.sessionDependency[namespace];
-				if (ids === undefined || ids.length === 0) return [];
-				return ids
-					.map((id) => state.parameterChanges[id])
-					.filter(Boolean);
-			},
+			(state) => hasExecutingParameterChanges(namespace, state),
 			[namespace],
 		),
 	);
-	const executing = useMemo(
-		() => parameterChanges.some((change) => change.executing),
-		[parameterChanges],
-	);
-	const hasPendingChanges = useMemo(
-		() =>
-			parameterChanges.length > 0 &&
-			parameterChanges.some(
-				(change) => Object.keys(change.values).length > 0,
-			),
-		[parameterChanges],
-	);
-
-	// Thin compatibility layer: legacy `ViewportIconButton` theme overrides still
-	// affect both the rendered icon button and the layout thickness calculations.
-	const viewportIconButtonTheme =
-		useResolvedAppBuilderToolbarIconButtonTheme();
 
 	const buttonRenderContext = useMemo(
 		() =>
@@ -159,19 +156,6 @@ export default function AppBuilderToolbarLayer({
 		[executing, namespace, viewportId, legacyViewportIconsTheme],
 	);
 
-	const buttonSize = viewportIconButtonTheme.actionIconProps?.size ?? 32;
-	const buttonMargin = viewportIconButtonTheme.actionIconProps?.style?.margin;
-	const paperPaddingX = legacyViewportIconsTheme.paperProps?.px ?? 2;
-	const paperPaddingY = legacyViewportIconsTheme.paperProps?.py ?? 1;
-
-	const verticalThickness = useMemo(
-		() => computeToolbarThickness(buttonSize, buttonMargin, paperPaddingX),
-		[buttonMargin, buttonSize, paperPaddingX],
-	);
-	const horizontalThickness = useMemo(
-		() => computeToolbarThickness(buttonSize, buttonMargin, paperPaddingY),
-		[buttonMargin, buttonSize, paperPaddingY],
-	);
 	const bottomCenterToolbar = toolbars.find(
 		(toolbar) => toolbar.side === "bottom" && toolbar.align === "center",
 	);
@@ -204,28 +188,25 @@ export default function AppBuilderToolbarLayer({
 		() => groupToolbarsBySlot(toolbarsWithAcceptRejectButtons),
 		[toolbarsWithAcceptRejectButtons],
 	);
+	const slotKeys = useMemo(
+		() => slotEntries.map(([key]) => key),
+		[slotEntries],
+	);
+	const rootRef = useRef<HTMLDivElement>(null);
+	const thicknessBySlot = useMeasuredToolbarSlotThickness(rootRef, slotKeys);
 	const pushOffsets = useMemo(
 		() =>
 			computeToolbarPushOffsets({
 				slotEntries,
-				verticalThickness,
-				horizontalThickness,
-				offsetX: resolvedOffsetX,
-				offsetY: resolvedOffsetY,
+				thicknessBySlot,
 			}),
-		[
-			horizontalThickness,
-			resolvedOffsetX,
-			resolvedOffsetY,
-			slotEntries,
-			verticalThickness,
-		],
+		[slotEntries, thicknessBySlot],
 	);
 
 	if (toolbars.length === 0) return null;
 
 	return (
-		<div style={style}>
+		<div ref={rootRef} style={style}>
 			{slotEntries.map(([key, slotToolbars]) => {
 				const [side, align] = key.split(":") as [
 					ToolbarSide,
@@ -235,6 +216,7 @@ export default function AppBuilderToolbarLayer({
 				return (
 					<section
 						key={key}
+						data-toolbar-slot={key}
 						style={getToolbarSlotStyle(
 							side,
 							align,
@@ -249,6 +231,10 @@ export default function AppBuilderToolbarLayer({
 								key={toolbar.id}
 								toolbar={toolbar}
 								buttonRenderContext={buttonRenderContext}
+								forceVisible={
+									showToolbarAcceptRejectButtons &&
+									toolbar.id === bottomCenterToolbar?.id
+								}
 							/>
 						))}
 					</section>

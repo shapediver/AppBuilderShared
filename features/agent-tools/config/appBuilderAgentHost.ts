@@ -1,4 +1,5 @@
 import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import type {AgentUiMode} from "../lib/resolveAgentUi";
 import type {IAgentSessionInfo} from "./toolsApi";
 
 /** Inputs for {@link useAppBuilderAgentHost} on an App Builder page. */
@@ -12,11 +13,12 @@ export type UseAppBuilderAgentHostProps = {
 
 /**
  * Controlled view for {@link AppBuilderAgentOverlay}.
- * Host hook returns this; overlay does not own URL or transports.
+ * The toolbar button is registered by the host hook.
  */
 export type AppBuilderAgentOverlayProps = {
 	agentUrl?: string;
-	/** Tools snapshot is ready — Open agent button may be clicked. */
-	isAgentReady: boolean;
-	onOpenAgent: () => void;
+	mode: AgentUiMode;
+	/** Iframe has been created at least once. Later hides keep it mounted. */
+	panelMounted: boolean;
+	panelVisible: boolean;
 };

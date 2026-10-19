@@ -48,7 +48,7 @@ const baseProps = {
 };
 
 describe("AppBuilderToolbarPopoverContent", () => {
-	it("renders widget toolbar item labels as popover titles", () => {
+	it("renders widget toolbar items without a duplicate heading", () => {
 		render(
 			<MantineProvider>
 				<AppBuilderToolbarPopoverContent
@@ -65,10 +65,10 @@ describe("AppBuilderToolbarPopoverContent", () => {
 			</MantineProvider>,
 		);
 
-		expect(screen.getByText("Details")).toBeTruthy();
-		expect(screen.getByTestId("toolbar-widgets").textContent).toBe(
-			"widgets: 1",
-		);
+		expect(screen.queryByText("Details")).toBeNull();
+		const widgets = screen.getByTestId("toolbar-widgets");
+		expect(widgets.textContent).toBe("widgets: 1");
+		expect(widgets.parentElement?.className).toMatch(/Stack/);
 	});
 
 	it("calls onActionActivate when a toolbar menu action is clicked", () => {

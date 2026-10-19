@@ -1,7 +1,5 @@
-import {useParameterImportExport} from "@AppBuilderLib/entities/parameter/model/useParameterImportExport";
 import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/model/useShapeDiverStoreParameters";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
-import {useViewportHistory} from "@AppBuilderLib/entities/viewport/model/useViewportHistory";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import type {IAppBuilder} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
@@ -10,8 +8,6 @@ import {
 	type GenericToolSettings,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilderagent";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
-import {useCreateModelState} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
-import {useImportModelState} from "@AppBuilderLib/features/model-state/model/useImportModelState";
 import {useContext, useMemo, useRef} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {
@@ -19,27 +15,33 @@ import {
 	isGenericToolSettingsFor,
 	type InScopeGenericToolName,
 } from "../config/inScopeGenericTools";
+import type {
+	ExecutableSpecificTool,
+	ResolvedSpecificTool,
+} from "../config/resolveSpecificTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import type {IToolsApiHandlerMap} from "../config/toolsApiConnector";
 import type {AgentToolsDeps} from "./agentToolsDeps";
 import {buildAgentToolsDeps} from "./buildAgentToolsDeps";
+import {handleGetCamera} from "./handlers/getCamera";
 import {handleGetMetric} from "./handlers/getMetric";
 import {handleGetParameterValues} from "./handlers/getParameterValues";
 import {handleGetScreenshot} from "./handlers/getScreenshot";
 import {handleListActionControls} from "./handlers/listActionControls";
 import {handleListParameterDefinitions} from "./handlers/listParameterDefinitions";
-import {handleSetCameraPosition} from "./handlers/setCameraPosition";
+import {handleSetCamera} from "./handlers/setCamera";
 import {handleSetParameterValues} from "./handlers/setParameterValues";
 import {handleTriggerActionControl} from "./handlers/triggerActionControl";
+import {runSpecificTool} from "./runSpecificTool";
 
 export type AgentToolHandlerMap = IToolsApiHandlerMap;
 
 /** Settings for this generic tool from the resolved toolset, or `{name}` default. */
 function settingsForTool<N extends InScopeGenericToolName>(
-	resolvedTools: ResolvedGenericTool[],
+	resolvedGenericTools: ResolvedGenericTool[],
 	name: N,
 ): Extract<GenericToolSettings, {name: N}> {
-	const found = resolvedTools.find((tool) => tool.name === name);
+	const found = resolvedGenericTools.find((tool) => tool.name === name);
 	if (found && isGenericToolSettingsFor(found.settings, name)) {
 		return found.settings;
 	}
@@ -57,15 +59,20 @@ function settingsForTool<N extends InScopeGenericToolName>(
 export function useAgentToolHandlers(args: {
 	namespace: string;
 	appBuilderData: IAppBuilder | undefined;
-	resolvedTools: ResolvedGenericTool[];
-}): AgentToolHandlerMap {
-	const {namespace, appBuilderData, resolvedTools} = args;
+	resolvedGenericTools: ResolvedGenericTool[];
+	resolvedSpecificTools: ResolvedSpecificTool[];
+}): {
+	toolHandlers: AgentToolHandlerMap;
+	resolvedSpecificTools: ExecutableSpecificTool[];
+} {
+	const {
+		namespace,
+		appBuilderData,
+		resolvedGenericTools,
+		resolvedSpecificTools,
+	} = args;
 	const componentContext = useContext(ComponentContext);
 	const {viewportId} = useViewportId();
-	const {goBack, goForward} = useViewportHistory();
-	const {createModelState} = useCreateModelState({namespace});
-	const {importModelState} = useImportModelState({namespace});
-	const {resetParameters} = useParameterImportExport(namespace);
 
 	const {sessions} = useShapeDiverStoreSession(
 		useShallow((state) => ({
@@ -73,12 +80,11 @@ export function useAgentToolHandlers(args: {
 		})),
 	);
 
-	const {getParameters, batchParameterValueUpdate, getOutput} =
+	const {getParameters, batchParameterValueUpdate} =
 		useShapeDiverStoreParameters(
 			useShallow((state) => ({
 				getParameters: state.getParameters,
 				batchParameterValueUpdate: state.batchParameterValueUpdate,
-				getOutput: state.getOutput,
 			})),
 		);
 
@@ -86,34 +92,28 @@ export function useAgentToolHandlers(args: {
 		(state) => state.defaultToolbars,
 	);
 
-	const resolvedToolsRef = useRef(resolvedTools);
-	resolvedToolsRef.current = resolvedTools;
+	const resolvedGenericToolsRef = useRef(resolvedGenericTools);
+	resolvedGenericToolsRef.current = resolvedGenericTools;
 
 	const depsRef = useRef<AgentToolsDeps>(null!);
 	depsRef.current = buildAgentToolsDeps({
 		namespace,
 		appBuilderData,
 		viewportId,
-		goBack,
-		goForward,
-		createModelState,
-		importModelState,
-		resetParameters,
 		sessions,
 		getParameters,
 		batchParameterValueUpdate,
-		getOutput,
 		defaultToolbars,
 		componentContext,
 	});
 
-	return useMemo(
+	const toolHandlers = useMemo<AgentToolHandlerMap>(
 		() => ({
 			[GenericToolName.ListParameterDefinitions]: (input) =>
 				handleListParameterDefinitions(
 					input,
 					settingsForTool(
-						resolvedToolsRef.current,
+						resolvedGenericToolsRef.current,
 						GenericToolName.ListParameterDefinitions,
 					),
 					depsRef.current,
@@ -123,7 +123,7 @@ export function useAgentToolHandlers(args: {
 					input,
 					// Sharing ListParameterDefinitions settings is intentional.
 					settingsForTool(
-						resolvedToolsRef.current,
+						resolvedGenericToolsRef.current,
 						GenericToolName.ListParameterDefinitions,
 					),
 					depsRef.current,
@@ -134,7 +134,7 @@ export function useAgentToolHandlers(args: {
 				handleListActionControls(
 					input,
 					settingsForTool(
-						resolvedToolsRef.current,
+						resolvedGenericToolsRef.current,
 						GenericToolName.ListActionControls,
 					),
 					depsRef.current,
@@ -144,13 +144,15 @@ export function useAgentToolHandlers(args: {
 					input,
 					// Sharing ListActionControls settings is intentional.
 					settingsForTool(
-						resolvedToolsRef.current,
+						resolvedGenericToolsRef.current,
 						GenericToolName.ListActionControls,
 					),
 					depsRef.current,
 				),
-			[GenericToolName.SetCameraPosition]: (input) =>
-				handleSetCameraPosition(input, depsRef.current),
+			[GenericToolName.SetCamera]: (input) =>
+				handleSetCamera(input, depsRef.current),
+			[GenericToolName.GetCamera]: (input) =>
+				handleGetCamera(input, depsRef.current),
 			[GenericToolName.GetScreenshot]: (input) =>
 				handleGetScreenshot(input, depsRef.current),
 			[GenericToolName.GetMetric]: (input) =>
@@ -158,4 +160,12 @@ export function useAgentToolHandlers(args: {
 		}),
 		[],
 	);
+
+	const executableSpecificTools = resolvedSpecificTools.map((tool) => ({
+		...tool,
+		execute: (input: unknown) =>
+			runSpecificTool(tool, input, depsRef.current),
+	}));
+
+	return {toolHandlers, resolvedSpecificTools: executableSpecificTools};
 }

@@ -1,21 +1,20 @@
 import {
-	AppBuilderActionType,
 	isAddToCartAction,
 	isCameraAction,
 	isCreateModelStateAction,
+	isExecuteActionsAction,
 	isImportModelStateAction,
 	isRedoAction,
 	isResetParameterValuesAction,
-	isSetCameraAction,
 	isSetParameterValueAction,
 	isSetParameterValuesAction,
 	isSoundAction,
 	isUndoAction,
-	isZoomToCameraAction,
 	type IAppBuilderActionDefinition,
-	type IAppBuilderActionPropsCamera,
 	type IAppBuilderControlActionRef,
 } from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {waitForAppBuilderSessionIdle} from "@AppBuilderLib/features/appbuilder/model/waitForAppBuilderSessionIdle";
+import {executeActionsSuccessResult} from "@AppBuilderLib/features/ecommerce/lib/executeActionsSuccessResult";
 import type {RunActionControlResult} from "../config/triggerActionControl";
 import {formatToolInputError} from "../lib/formatToolInputError";
 import {applyParameterUpdates} from "../lib/resolveSetParameterUpdates";
@@ -23,16 +22,6 @@ import type {AgentToolsDeps} from "./agentToolsDeps";
 
 function failureMessage(e: unknown): string {
 	return formatToolInputError(e).errors[0].message;
-}
-
-function tupleToVec3(
-	tuple: [number, number, number] | undefined,
-): {x: number; y: number; z: number} | undefined {
-	if (!tuple) {
-		return undefined;
-	}
-	const [x, y, z] = tuple;
-	return {x, y, z};
 }
 
 async function runSetParameterAction(
@@ -67,46 +56,14 @@ async function runSetParameterAction(
 		deps.getLiveParameters,
 		updates,
 		deps.batchParameterValueUpdate,
+		isSetParameterValuesAction(definition)
+			? definition.props.updateMode
+			: undefined,
 	);
 	if (result.errors.length > 0) {
 		return {success: false, message: result.errors[0].message};
 	}
 	return {success: true};
-}
-
-async function runCameraAction(
-	definition: {
-		type: AppBuilderActionType.Camera;
-		props: IAppBuilderActionPropsCamera;
-	},
-	deps: AgentToolsDeps,
-): Promise<RunActionControlResult> {
-	const viewportId = definition.props.viewportId ?? deps.getViewportId();
-	if (isZoomToCameraAction(definition.props)) {
-		if (!deps.zoomTo) {
-			return {success: false, message: "Viewport not found."};
-		}
-		return await deps.zoomTo(viewportId);
-	}
-	if (!isSetCameraAction(definition.props)) {
-		return {
-			success: false,
-			message: "Camera action subtype not supported",
-		};
-	}
-	const position = tupleToVec3(definition.props.props.position);
-	const target = tupleToVec3(definition.props.props.target);
-	if (!position || !target) {
-		return {
-			success: false,
-			message: "Camera position and target are required.",
-		};
-	}
-	return await deps.setCamera({
-		viewportId,
-		position,
-		target,
-	});
 }
 
 /** Run an action control without mounting App Builder UI. Custom/source-only → "not supported". */
@@ -116,6 +73,40 @@ export async function runActionControl(
 ): Promise<RunActionControlResult> {
 	try {
 		const definition = action.definition;
+		if (isExecuteActionsAction(definition)) {
+			const mode = definition.props.mode ?? "parallel";
+			if (mode === "sequential") {
+				const results: RunActionControlResult[] = [];
+				for (const nested of definition.props.actions) {
+					const result = await runActionControl(
+						{definition: nested},
+						deps,
+					);
+					if (!result.success) return result;
+					results.push(result);
+					await waitForAppBuilderSessionIdle();
+				}
+				return executeActionsSuccessResult(results);
+			}
+			const settled = await Promise.allSettled(
+				definition.props.actions.map((nested) =>
+					runActionControl({definition: nested}, deps),
+				),
+			);
+			await waitForAppBuilderSessionIdle();
+			const results: RunActionControlResult[] = [];
+			for (const result of settled) {
+				if (result.status === "rejected") {
+					return {
+						success: false,
+						message: failureMessage(result.reason),
+					};
+				}
+				if (!result.value.success) return result.value;
+				results.push(result.value);
+			}
+			return executeActionsSuccessResult(results);
+		}
 		if (isCreateModelStateAction(definition)) {
 			return await deps.createModelState(definition.props);
 		}
@@ -147,7 +138,10 @@ export async function runActionControl(
 			return await deps.addToCart(definition.props);
 		}
 		if (isCameraAction(definition)) {
-			return await runCameraAction(definition, deps);
+			if (!deps.runCameraAction) {
+				return {success: false, message: "camera is not available"};
+			}
+			return await deps.runCameraAction(definition);
 		}
 		if (isSoundAction(definition)) {
 			if (!deps.playSound) {

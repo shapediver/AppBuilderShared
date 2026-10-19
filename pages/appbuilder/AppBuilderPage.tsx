@@ -3,18 +3,26 @@ import {useUnsavedChangesProtection} from "@AppBuilderLib/entities/parameter/mod
 import useDefaultSessionDto from "@AppBuilderLib/entities/session/model/useDefaultSessionDto";
 import {IUseSessionDto} from "@AppBuilderLib/entities/session/model/useSession";
 import {useSessions} from "@AppBuilderLib/entities/session/model/useSessions";
+import {useInitialAutoAdjust} from "@AppBuilderLib/entities/viewport/model/useInitialAutoAdjust";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
 import {useAppBuilderAgentHost} from "@AppBuilderLib/features/agent-tools/model/useAppBuilderAgentHost";
 import AppBuilderAgentOverlay from "@AppBuilderLib/features/agent-tools/ui/AppBuilderAgentOverlay";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {IAppBuilderSettingsSession} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {AppBuilderDataContext} from "@AppBuilderLib/features/appbuilder/lib/AppBuilderContext";
+import {APP_BUILDER_SLOT_EVENTS} from "@AppBuilderLib/features/appbuilder/lib/appBuilderActionSlots";
 import useAppBuilderSettings from "@AppBuilderLib/features/appbuilder/model/useAppBuilderSettings";
 import {useAppBuilderStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderStandardContainers";
 import {useKeyBindings} from "@AppBuilderLib/features/appbuilder/model/useKeyBindings";
 import {useSessionWithAppBuilder} from "@AppBuilderLib/features/appbuilder/model/useSessionWithAppBuilder";
 import {useShapeDiverStoreToolbars} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreToolbars";
+import AppBuilderActionArQrModal from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionArQrModal";
+import AppBuilderActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionSlots";
+import AppBuilderApplicationActionSlots from "@AppBuilderLib/features/appbuilder/ui/AppBuilderApplicationActionSlots";
+import {SyncAddToCartActionThemeDefaults} from "@AppBuilderLib/features/appbuilder/ui/SyncAddToCartActionThemeDefaults";
 import {useECommerceApiConnectorActions} from "@AppBuilderLib/features/ecommerce/model/useECommerceApiConnectorActions";
+import ImportModelStateDialogHost from "@AppBuilderLib/features/model-state/ui/ImportModelStateDialogHost";
+import {SyncCreateModelStateThemeDefaults} from "@AppBuilderLib/features/model-state/ui/SyncCreateModelStateThemeDefaults";
 import NotificationModelStateCreated from "@AppBuilderLib/features/notifications/ui/NotificationModelStateCreated";
 import {shouldUsePlatform} from "@AppBuilderLib/shared/lib/platform/environment";
 import {useShapeDiverStorePlatform} from "@AppBuilderLib/shared/model/useShapeDiverStorePlatform";
@@ -200,7 +208,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	const error = settingsError ?? appBuilderError;
 
 	// handle additional sessions without instances
-	useSessions(secondarySessions);
+	const {sessionApis: secondarySessionApis} = useSessions(secondarySessions);
 
 	// handle instances
 	useSessions(instancedSessions);
@@ -215,6 +223,14 @@ export default function AppBuilderPage(props: Partial<Props>) {
 	});
 
 	const show = !!sessionApi;
+
+	// once the controller session and all secondary sessions are loaded,
+	// adjust the cameras of the viewports (the controller session might not
+	// contain any geometry, in which case the initial camera fit is empty)
+	useInitialAutoAdjust({
+		loaded:
+			show && secondarySessionApis.length === secondarySessions.length,
+	});
 
 	// use parameter history
 	useParameterHistory({loaded: show && customParametersLoaded});
@@ -270,7 +286,7 @@ export default function AppBuilderPage(props: Partial<Props>) {
 				? WelcomePlatformMarkdown
 				: WelcomeIframeMarkdown;
 
-	return showMarkdown ? (
+	const page = showMarkdown ? (
 		<AlertPage>
 			<MarkdownWidgetComponent anchorTarget="_self">
 				{NoSettingsMarkdown}
@@ -282,44 +298,71 @@ export default function AppBuilderPage(props: Partial<Props>) {
 		<LoaderPage /> // TODO smooth transition between loading and showing
 	) : show ? (
 		<AppBuilderDataContext.Provider value={{data: appBuilderData}}>
+			{/* Root application slots: appready, computation*, export*, interaction. */}
+			<AppBuilderApplicationActionSlots
+				actionSlots={appBuilderData?.actionSlots}
+				namespace={namespace}
+			/>
 			<AppBuilderTemplateSelector
 				top={containers.top}
 				left={containers.left}
 				right={containers.right}
 				bottom={containers.bottom}
 			>
+				{/* Root UI slots attach to the viewport host, not a panel node. */}
 				{ViewportComponent && (
-					<ViewportComponent
-						visibilitySessionIds={secondarySessions.map(
-							(s) => s.id,
-						)}
+					<AppBuilderActionSlots
+						actionSlots={appBuilderData?.actionSlots}
+						allowedEvents={APP_BUILDER_SLOT_EVENTS.viewport}
+						namespace={namespace}
+						layout="fill"
+						warnUnsupported={false}
+						includeCustomEvents={false}
 					>
-						{ViewportOverlayWrapper && (
-							<>
-								{AppBuilderToolbarLayer && (
-									<AppBuilderToolbarLayer
-										namespace={namespace}
-										appBuilderData={appBuilderData}
-										sessionSettings={sessionSettings}
-									/>
-								)}
-								{!hasBottomCenterToolbar && (
-									<ViewportOverlayWrapper
-										position={OverlayPosition.BOTTOM_MIDDLE}
-										offset="1em"
-									>
-										<ViewportAcceptRejectButtons />
-									</ViewportOverlayWrapper>
-								)}
-							</>
-						)}
-						<AppBuilderAgentOverlay {...agentHost} />
-					</ViewportComponent>
+						<ViewportComponent
+							visibilitySessionIds={secondarySessions.map(
+								(s) => s.id,
+							)}
+						>
+							{ViewportOverlayWrapper && (
+								<>
+									{AppBuilderToolbarLayer && (
+										<AppBuilderToolbarLayer
+											namespace={namespace}
+											appBuilderData={appBuilderData}
+											sessionSettings={sessionSettings}
+										/>
+									)}
+									{!hasBottomCenterToolbar && (
+										<ViewportOverlayWrapper
+											position={
+												OverlayPosition.BOTTOM_MIDDLE
+											}
+											offset="1em"
+										>
+											<ViewportAcceptRejectButtons />
+										</ViewportOverlayWrapper>
+									)}
+								</>
+							)}
+							<AppBuilderAgentOverlay {...agentHost} />
+						</ViewportComponent>
+					</AppBuilderActionSlots>
 				)}
 				{anchors}
 			</AppBuilderTemplateSelector>
 		</AppBuilderDataContext.Provider>
 	) : (
 		<></>
+	);
+
+	return (
+		<>
+			<SyncCreateModelStateThemeDefaults />
+			<SyncAddToCartActionThemeDefaults />
+			<ImportModelStateDialogHost />
+			<AppBuilderActionArQrModal />
+			{page}
+		</>
 	);
 }

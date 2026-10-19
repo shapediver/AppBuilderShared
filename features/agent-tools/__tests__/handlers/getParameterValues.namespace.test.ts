@@ -63,6 +63,7 @@ function createDeps(
 		resetParameters: async () => ({success: true}),
 		getViewportId: () => "vp",
 		setCamera: async () => ({success: true}),
+		getCamera: () => undefined,
 		getScreenshot: async () => undefined,
 		getOutputByName: () => undefined,
 		...overrides,

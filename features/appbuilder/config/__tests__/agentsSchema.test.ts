@@ -18,6 +18,7 @@ jest.mock("@shapediver/viewer.session", () => ({
 }));
 
 jest.mock("@shapediver/viewer.shared.types", () => ({
+	...jest.requireActual("@shapediver/viewer.shared.types"),
 	ATTRIBUTE_VISUALIZATION: {
 		LINEAR: "linear",
 	},
@@ -59,6 +60,19 @@ describe("IAppBuilder.agents schema", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts a profileName and an empty profileName", () => {
+		const withName = validateAppBuilder(
+			layout([{...validAgent, profileName: "org-default"}]),
+		);
+		expect(withName.success && withName.data.agents?.[0].profileName).toBe(
+			"org-default",
+		);
+		const empty = validateAppBuilder(
+			layout([{...validAgent, profileName: ""}]),
+		);
+		expect(empty.success && empty.data.agents?.[0].profileName).toBe("");
+	});
+
 	it("rejects an agent missing required message", () => {
 		const result = validateAppBuilder(layout([{id: "a", name: "A"}]));
 		expect(result.success).toBe(false);
@@ -83,6 +97,7 @@ describe("IAppBuilder.agents schema", () => {
 					...validAgent,
 					useGenericToolDefaults: false,
 					genericTools: [
+						{name: "get_camera"},
 						{name: "get_screenshot"},
 						{
 							name: "list_parameter_definitions",
@@ -133,12 +148,10 @@ describe("IAppBuilder.agents schema", () => {
 									preset: {type: "string"},
 								},
 							},
-							actionSequence: [
-								{
-									type: "closeConfigurator",
-									props: {},
-								},
-							],
+							action: {
+								type: "closeConfigurator",
+								props: {},
+							},
 						},
 					],
 				},
@@ -159,7 +172,7 @@ describe("IAppBuilder.agents schema", () => {
 		expect(result.success).toBe(false);
 	});
 
-	it("accepts a specific-tool actionSequence that maps input via agentTool", () => {
+	it("accepts a specific-tool action that maps input via agentTool", () => {
 		const result = validateAppBuilder(
 			layout([
 				{
@@ -171,18 +184,16 @@ describe("IAppBuilder.agents schema", () => {
 								type: "object",
 								properties: {length: {type: "number"}},
 							},
-							actionSequence: [
-								{
-									type: "setParameterValue",
-									props: {
-										parameter: {name: "Length"},
-										source: {
-											type: "agentTool",
-											props: {jsonPath: "$.length"},
-										},
+							action: {
+								type: "setParameterValue",
+								props: {
+									parameter: {name: "Length"},
+									source: {
+										type: "agentTool",
+										props: {path: "$.length"},
 									},
 								},
-							],
+							},
 						},
 					],
 				},
@@ -269,6 +280,23 @@ describe("IAppBuilderSettingsJson.agentOverride", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts a profileName and an empty profileName on an overridden agent", () => {
+		const withName = validateAppBuilderSettingsJson({
+			version: "1.0",
+			agentOverride: [{...validAgent, profileName: "org-default"}],
+		});
+		expect(
+			withName.success && withName.data.agentOverride?.[0].profileName,
+		).toBe("org-default");
+		const empty = validateAppBuilderSettingsJson({
+			version: "1.0",
+			agentOverride: [{...validAgent, profileName: ""}],
+		});
+		expect(empty.success && empty.data.agentOverride?.[0].profileName).toBe(
+			"",
+		);
+	});
+
 	it("accepts agentOverride together with appBuilderOverride", () => {
 		const result = validateAppBuilderSettingsJson({
 			version: "1.0",
@@ -319,6 +347,72 @@ describe("IAppBuilderSettingsSettings.agentUrl", () => {
 		const result = validateAppBuilderSettingsJson({
 			version: "1.0",
 			settings: {agentUrl: "http://localhost:3001"},
+		});
+		expect(result.success).toBe(false);
+	});
+});
+
+describe("hostedAgent widget schema", () => {
+	it("accepts title and height without a url", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "right",
+					widgets: [
+						{
+							type: "hostedAgent",
+							props: {title: "Bookshelf agent", height: "100%"},
+						},
+					],
+				},
+			],
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects agentId until multi-agent widgets are supported", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "right",
+					widgets: [
+						{type: "hostedAgent", props: {agentId: "bookshelf"}},
+					],
+				},
+			],
+		});
+		expect(result.success).toBe(false);
+	});
+
+	it("accepts empty props", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "right",
+					widgets: [{type: "hostedAgent", props: {}}],
+				},
+			],
+		});
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects a url on hostedAgent", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "right",
+					widgets: [
+						{
+							type: "hostedAgent",
+							props: {url: "http://localhost:3001"},
+						},
+					],
+				},
+			],
 		});
 		expect(result.success).toBe(false);
 	});

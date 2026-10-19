@@ -4,7 +4,7 @@ import type {MantineSpacing} from "@AppBuilderLib/shared/mantine-props/spacing";
 
 /** Theme `defaultProps` for `useProps("AppBuilderVerticalContainer", …)` — Stack spacing only. */
 export const AppBuilderVerticalContainerThemeDefaultPropsSchema =
-	mantineGroupPropsSchema.pick({p: true});
+	mantineGroupPropsSchema.pick({gap: true, p: true});
 
 /**
  * @docAttached
@@ -15,6 +15,10 @@ export const AppBuilderVerticalContainerThemeDefaultPropsSchema =
 export interface AppBuilderVerticalContainerThemeDefaultProps extends z.infer<
 	typeof AppBuilderVerticalContainerThemeDefaultPropsSchema
 > {
+	/**
+	 * Gap between children. Omitted keeps the Stack theme gap.
+	 */
+	gap?: MantineSpacing;
 	/**
 	 * Stack padding
 	 * @default "xs"

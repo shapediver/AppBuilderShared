@@ -6,6 +6,8 @@ import {findParameterByName} from "./findParameterByName";
 export type NamespacedParameter = {
 	namespace: string;
 	parameter: IShapeDiverParameter<unknown>;
+	/** From `IAgentParameterRef.description`, when this item came from an explicit ref. */
+	description?: string;
 };
 
 /** Find a live parameter for an agent `{name, sessionId?}` (id, name, or displayname). */
@@ -72,7 +74,11 @@ export function filterParametersForAgent(args: {
 				controllerNamespace,
 			);
 			if (match) {
-				resolved.push(match);
+				resolved.push(
+					ref.description
+						? {...match, description: ref.description}
+						: match,
+				);
 			}
 		}
 		return resolved;

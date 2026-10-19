@@ -2,16 +2,30 @@
  * @jest-environment jsdom
  */
 import {MantineProvider} from "@mantine/core";
-import {fireEvent, render, screen} from "@testing-library/react";
+import {fireEvent, render, screen, waitFor} from "@testing-library/react";
 import type React from "react";
 import AppBuilderToolbarPopoverButton from "../AppBuilderToolbarPopoverButton";
 
-jest.mock("../AppBuilderToolbarPopoverContent", () => ({
-	__esModule: true,
-	default: ({onActionActivate}: {onActionActivate?: () => void}) => (
-		<button onClick={onActionActivate}>Activate menu action</button>
-	),
-}));
+jest.mock("../AppBuilderToolbarPopoverContent", () => {
+	const ReactActual = jest.requireActual("react") as typeof import("react");
+
+	return {
+		__esModule: true,
+		default: ({onActionActivate}: {onActionActivate?: () => void}) => {
+			const ref = ReactActual.useRef<HTMLButtonElement>(null);
+			ReactActual.useEffect(() => {
+				const node = ref.current;
+				node?.setAttribute("data-live", "true");
+				return () => node?.setAttribute("data-live", "false");
+			}, []);
+			return (
+				<button ref={ref} onClick={onActionActivate}>
+					Activate menu action
+				</button>
+			);
+		},
+	};
+});
 
 jest.mock(
 	"@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton",
@@ -43,7 +57,7 @@ jest.mock(
 );
 
 describe("AppBuilderToolbarPopoverButton", () => {
-	it("closes action menus while keeping their content mounted", () => {
+	it("closes action menus and idles their content", async () => {
 		const onPopoverOpenChange = jest.fn();
 		const {rerender} = render(
 			<MantineProvider>
@@ -129,9 +143,13 @@ describe("AppBuilderToolbarPopoverButton", () => {
 			</MantineProvider>,
 		);
 
-		expect(
-			screen.getByRole("button", {name: "Activate menu action"}),
-		).toBeTruthy();
+		await waitFor(() => {
+			const menuAction = screen.getByRole("button", {
+				name: "Activate menu action",
+				hidden: true,
+			});
+			expect(menuAction.getAttribute("data-live")).toBe("false");
+		});
 	});
 
 	it("does not close a popover while an interaction request is active", () => {

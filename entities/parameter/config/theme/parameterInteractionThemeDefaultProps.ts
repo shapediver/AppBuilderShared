@@ -3,6 +3,10 @@ import type {
 	IGumballTransformParameterProps,
 	ISelectionParameterProps,
 } from "@shapediver/viewer.shared.types";
+import type {
+	ParameterInteractionConfirmCancelClearThemeProps,
+	ParameterInteractionConfirmCancelThemeProps,
+} from "./parameterInteractionButtonTheme";
 
 /**
  * @docAttached
@@ -10,7 +14,10 @@ import type {
  * @configPath themeOverrides.components.ParameterDraggingComponent.defaultProps
  * @displayName ParameterDraggingComponent
  */
-export interface ParameterDraggingComponentThemeDefaultProps extends IDraggingParameterProps {}
+export interface ParameterDraggingComponentThemeDefaultProps
+	extends
+		IDraggingParameterProps,
+		ParameterInteractionConfirmCancelThemeProps {}
 
 /**
  * @docAttached
@@ -18,7 +25,10 @@ export interface ParameterDraggingComponentThemeDefaultProps extends IDraggingPa
  * @configPath themeOverrides.components.ParameterGumballComponent.defaultProps
  * @displayName ParameterGumballComponent
  */
-export interface ParameterGumballComponentThemeDefaultProps extends IGumballTransformParameterProps {}
+export interface ParameterGumballComponentThemeDefaultProps
+	extends
+		IGumballTransformParameterProps,
+		ParameterInteractionConfirmCancelThemeProps {}
 
 /**
  * @docAttached
@@ -26,4 +36,15 @@ export interface ParameterGumballComponentThemeDefaultProps extends IGumballTran
  * @configPath themeOverrides.components.ParameterSelectionComponent.defaultProps
  * @displayName ParameterSelectionComponent
  */
-export interface ParameterSelectionComponentThemeDefaultProps extends ISelectionParameterProps {}
+export interface ParameterSelectionComponentThemeDefaultProps
+	extends
+		ISelectionParameterProps,
+		ParameterInteractionConfirmCancelClearThemeProps {}
+
+/**
+ * @docAttached
+ * @category entity
+ * @configPath themeOverrides.components.ParameterDrawingComponent.defaultProps
+ * @displayName ParameterDrawingComponent
+ */
+export interface ParameterDrawingComponentThemeDefaultProps extends ParameterInteractionConfirmCancelClearThemeProps {}

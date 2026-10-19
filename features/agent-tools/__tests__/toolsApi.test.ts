@@ -6,6 +6,7 @@ import type {
 	ICrossWindowFactory,
 	ICrossWindowPeerInfo,
 } from "@AppBuilderLib/shared/config/crosswindowapi/crosswindowapi";
+import {useResolvedThemeStore} from "@AppBuilderLib/shared/model/useResolvedThemeStore";
 import type {IAppBuilderAgent} from "../../appbuilder/config/appbuilderagent";
 import {ToolsApi, ToolsApiFactoryClass} from "../api/toolsApi";
 import {
@@ -13,11 +14,15 @@ import {
 	ToolsApiConnectorFactoryClass,
 } from "../api/toolsApiConnector";
 import {IN_SCOPE_GENERIC_TOOL_NAMES} from "../config/inScopeGenericTools";
+import type {ExecutableSpecificTool} from "../config/resolveSpecificTools";
 import {resolveToolset} from "../config/resolveToolset";
 import {
+	MESSAGE_TYPE_CREATE_MODEL_STATE,
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_GET_SESSION_INFO,
+	MESSAGE_TYPE_GET_THEME,
+	MESSAGE_TYPE_IMPORT_MODEL_STATE,
 	MESSAGE_TYPE_LIST_TOOLS,
 	TOOLS_API_NAME_AGENT,
 	TOOLS_API_NAME_APP,
@@ -49,7 +54,8 @@ function stubHandlers(
 		set_parameter_values: unused,
 		list_action_controls: unused,
 		trigger_action_control: unused,
-		set_camera_position: unused,
+		set_camera: unused,
+		get_camera: unused,
 		get_screenshot: unused,
 		get_metric: unused,
 		...overrides,
@@ -57,7 +63,7 @@ function stubHandlers(
 }
 
 describe("listToolsFromResolved", () => {
-	it("lists eight default in-scope tools with description and inputSchema", () => {
+	it("lists every default in-scope tool with description and inputSchema", () => {
 		const {tools} = listToolsFromResolved(resolveToolset(undefined));
 		expect(tools.map((t) => t.name)).toEqual([
 			...IN_SCOPE_GENERIC_TOOL_NAMES,
@@ -78,6 +84,25 @@ describe("listToolsFromResolved", () => {
 
 	it("returns an empty tools array for an empty resolved set", () => {
 		expect(listToolsFromResolved([]).tools).toEqual([]);
+	});
+
+	it("lists generic tools before specific tools", () => {
+		const {tools} = listToolsFromResolved(
+			resolveToolset(screenshotOnlyAgent()),
+			[
+				{
+					name: "set_length",
+					description: "Set length",
+					inputSchema: {type: "object"},
+					action: undefined,
+				},
+			],
+		);
+		expect(tools.map((tool) => tool.name)).toEqual([
+			"get_screenshot",
+			"set_length",
+		]);
+		expect(tools[1]?.inputSchema).toEqual({type: "object"});
 	});
 });
 
@@ -128,6 +153,46 @@ describe("executeResolvedTool", () => {
 			message: 'Tool "list_parameter_definitions" does not exist.',
 		});
 		expect(list_parameter_definitions).not.toHaveBeenCalled();
+	});
+
+	it("calls a specific tool execute and returns its JSON", async () => {
+		const execute = jest.fn(async () => ({success: true, applied: 4}));
+		const specific: ExecutableSpecificTool = {
+			name: "set_length",
+			description: "Set length",
+			inputSchema: {type: "object"},
+			action: undefined,
+			execute,
+		};
+		const result = await executeResolvedTool(
+			"set_length",
+			{length: 4},
+			[],
+			stubHandlers(),
+			[specific],
+		);
+		expect(execute).toHaveBeenCalledWith({length: 4});
+		expect(result).toEqual({success: true, applied: 4});
+	});
+
+	it("wraps a specific tool execute throw as JSON", async () => {
+		const specific: ExecutableSpecificTool = {
+			name: "set_length",
+			description: "Set length",
+			inputSchema: {type: "object"},
+			action: undefined,
+			execute: async () => {
+				throw new Error("specific boom");
+			},
+		};
+		const result = await executeResolvedTool(
+			"set_length",
+			{},
+			[],
+			stubHandlers(),
+			[specific],
+		);
+		expect(result).toEqual({success: false, message: "specific boom"});
 	});
 
 	it("wraps handler throw as JSON", async () => {
@@ -210,6 +275,75 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 			id: "a",
 			name: "A",
 			message: "hi",
+		});
+		connector.cancel();
+	});
+
+	it("getAgentConfig includes a non-empty profileName and omits an empty one", async () => {
+		const withName = createMockCrossWindowApi();
+		const connectorWithName = new ToolsApiConnector(
+			resolveToolset(screenshotOnlyAgent()),
+			stubHandlers(),
+			withName,
+			undefined,
+			{...screenshotOnlyAgent(), profileName: "org-default"},
+		);
+		const clientWithName = new ToolsApi(withName);
+		await Promise.all([
+			connectorWithName.peerIsReady,
+			clientWithName.peerIsReady,
+		]);
+		await expect(clientWithName.getAgentConfig()).resolves.toEqual({
+			id: "a",
+			name: "A",
+			message: "hi",
+			profileName: "org-default",
+		});
+		connectorWithName.cancel();
+
+		const empty = createMockCrossWindowApi();
+		const connectorEmpty = new ToolsApiConnector(
+			resolveToolset(screenshotOnlyAgent()),
+			stubHandlers(),
+			empty,
+			undefined,
+			{...screenshotOnlyAgent(), profileName: ""},
+		);
+		const clientEmpty = new ToolsApi(empty);
+		await Promise.all([
+			connectorEmpty.peerIsReady,
+			clientEmpty.peerIsReady,
+		]);
+		await expect(clientEmpty.getAgentConfig()).resolves.toEqual({
+			id: "a",
+			name: "A",
+			message: "hi",
+		});
+		connectorEmpty.cancel();
+	});
+
+	it("getAgentConfig includes AgentUi flags when the host passes them", async () => {
+		const mock = createMockCrossWindowApi();
+		const agent = screenshotOnlyAgent();
+		const connector = new ToolsApiConnector(
+			resolveToolset(agent),
+			stubHandlers(),
+			mock,
+			undefined,
+			agent,
+			undefined,
+			[],
+			false,
+			true,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getAgentConfig()).resolves.toEqual({
+			id: "a",
+			name: "A",
+			message: "hi",
+			showThreadHistory: false,
+			createThreadOnLoad: true,
 		});
 		connector.cancel();
 	});
@@ -370,7 +504,64 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 			message: "hi",
 		});
 		await expect(client.getSessionInfo()).resolves.toEqual(sessionInfo);
+		await expect(client.getTheme()).resolves.toEqual({});
 		connector.cancel();
+	});
+
+	it("getTheme returns the theme published by useCustomTheme", async () => {
+		const mock = createMockCrossWindowApi();
+		const theme = {
+			primaryColor: "teal",
+			defaultRadius: "md",
+			components: {
+				Button: {defaultProps: {variant: "filled"}},
+			},
+		};
+		useResolvedThemeStore.getState().setTheme(theme);
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.getTheme()).resolves.toEqual(theme);
+		useResolvedThemeStore.getState().setTheme({
+			primaryColor: "gray",
+		});
+		await expect(client.getTheme()).resolves.toEqual({
+			primaryColor: "gray",
+		});
+		useResolvedThemeStore.getState().setTheme({});
+		connector.cancel();
+	});
+
+	it("tells the agent to call getTheme again when the published theme changes", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		const updates: string[] = [];
+		client.onThemeUpdated(() => {
+			updates.push("theme");
+		});
+		useResolvedThemeStore.getState().setTheme({primaryColor: "teal"});
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(updates).toEqual(["theme"]);
+		await expect(client.getTheme()).resolves.toEqual({
+			primaryColor: "teal",
+		});
+		connector.cancel();
+		useResolvedThemeStore.getState().setTheme({primaryColor: "gray"});
+		await Promise.resolve();
+		await Promise.resolve();
+		expect(updates).toEqual(["theme"]);
+		useResolvedThemeStore.getState().setTheme({});
 	});
 
 	it("execute routes to the handler through EXECUTE_TOOL", async () => {
@@ -457,7 +648,64 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		expect(mock.cancelHandshake).toHaveBeenCalledTimes(1);
 	});
 
-	it("cancel unregisters LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG, and GET_SESSION_INFO", async () => {
+	it("createModelState and importModelState are not agent tools", async () => {
+		const mock = createMockCrossWindowApi();
+		const createModelState = jest.fn(async () => ({modelStateId: "ms-1"}));
+		const importModelState = jest.fn(async () => ({
+			success: true as const,
+			data: {id: "ms-1"},
+		}));
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+			undefined,
+			undefined,
+			undefined,
+			[],
+			undefined,
+			undefined,
+			{createModelState, importModelState},
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		const {tools} = await client.listTools();
+		expect(tools.map((tool) => tool.name)).not.toContain(
+			"createModelState",
+		);
+		expect(tools.map((tool) => tool.name)).not.toContain(
+			"importModelState",
+		);
+		await expect(
+			client.createModelState({includeImage: false}),
+		).resolves.toEqual({modelStateId: "ms-1"});
+		expect(createModelState).toHaveBeenCalledWith({includeImage: false});
+		await expect(
+			client.importModelState({modelStateId: "ms-1"}),
+		).resolves.toEqual({success: true, data: {id: "ms-1"}});
+		expect(importModelState).toHaveBeenCalledWith({modelStateId: "ms-1"});
+		connector.cancel();
+	});
+
+	it("createModelState and importModelState reject when no handlers are registered", async () => {
+		const mock = createMockCrossWindowApi();
+		const connector = new ToolsApiConnector(
+			resolveToolset(undefined),
+			stubHandlers(),
+			mock,
+		);
+		const client = new ToolsApi(mock);
+		await Promise.all([connector.peerIsReady, client.peerIsReady]);
+		await expect(client.createModelState()).rejects.toThrow(
+			"Model state is not available.",
+		);
+		await expect(
+			client.importModelState({modelStateId: "ms-1"}),
+		).rejects.toThrow("Model state is not available.");
+		connector.cancel();
+	});
+
+	it("cancel unregisters LIST_TOOLS, EXECUTE_TOOL, GET_AGENT_CONFIG, GET_SESSION_INFO, GET_THEME, and model state", async () => {
 		const mock = createMockCrossWindowApi();
 		const connector = new ToolsApiConnector(
 			resolveToolset(undefined),
@@ -479,6 +727,15 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		await expect(client.getSessionInfo()).rejects.toThrow(
 			`No handler for ${MESSAGE_TYPE_GET_SESSION_INFO}`,
 		);
+		await expect(client.getTheme()).rejects.toThrow(
+			`No handler for ${MESSAGE_TYPE_GET_THEME}`,
+		);
+		await expect(client.createModelState()).rejects.toThrow(
+			`No handler for ${MESSAGE_TYPE_CREATE_MODEL_STATE}`,
+		);
+		await expect(
+			client.importModelState({modelStateId: "ms-1"}),
+		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_IMPORT_MODEL_STATE}`);
 	});
 
 	it("cancel before handshake resolves unregisters both listeners", async () => {
@@ -514,6 +771,12 @@ describe("ToolsApi over mock ICrossWindowApi", () => {
 		await expect(
 			mock.send(MESSAGE_TYPE_GET_SESSION_INFO, undefined),
 		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_GET_SESSION_INFO}`);
+		await expect(
+			mock.send(MESSAGE_TYPE_CREATE_MODEL_STATE, {}),
+		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_CREATE_MODEL_STATE}`);
+		await expect(
+			mock.send(MESSAGE_TYPE_IMPORT_MODEL_STATE, {modelStateId: "ms-1"}),
+		).rejects.toThrow(`No handler for ${MESSAGE_TYPE_IMPORT_MODEL_STATE}`);
 	});
 });
 

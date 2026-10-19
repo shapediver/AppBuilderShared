@@ -68,6 +68,11 @@ export function useSelection(
 	 * change at resume time.
 	 */
 	requestSelectionRestore: () => void;
+	/**
+	 * Id shared by this hook's select and hover managers. Filter viewer
+	 * interaction events to this instance with `event.manager.id === componentId`.
+	 */
+	componentId: string;
 } {
 	// create a unique component ID
 	const componentId = useId();
@@ -414,6 +419,7 @@ export function useSelection(
 		availableNodeNames: availableNodeNamesReturn,
 		setSelectedNodeNamesAndRestoreSelection,
 		requestSelectionRestore,
+		componentId,
 	};
 }
 

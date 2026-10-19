@@ -10,9 +10,13 @@ import {
 	IListToolsReply,
 	IToolsApi,
 	IToolsApiFactory,
+	MESSAGE_TYPE_CREATE_MODEL_STATE,
 	MESSAGE_TYPE_EXECUTE_TOOL,
 	MESSAGE_TYPE_GET_AGENT_CONFIG,
 	MESSAGE_TYPE_GET_SESSION_INFO,
+	MESSAGE_TYPE_GET_THEME,
+	MESSAGE_TYPE_IMPORT_MODEL_STATE,
+	MESSAGE_TYPE_THEME_UPDATED,
 	MESSAGE_TYPE_LIST_TOOLS,
 	MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 	TOOLS_API_NAME_AGENT,
@@ -20,6 +24,11 @@ import {
 	TOOLS_API_TIMEOUT_MS,
 	type IAgentConfigReply,
 	type IAgentSessionInfo,
+	type IAgentTheme,
+	type IToolsApiCreateModelStateData,
+	type IToolsApiCreateModelStateResult,
+	type IToolsApiImportModelStateData,
+	type IToolsApiImportModelStateResult,
 } from "../config/toolsApi";
 
 function withDefaultTimeout(
@@ -33,8 +42,9 @@ function withDefaultTimeout(
 
 /**
  * Agent-window client. Sends LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
- * GET_SESSION_INFO over CrossWindow after handshake `TOOLS_API_HANDSHAKE`.
- * Does not run tool handlers — App Builder does.
+ * GET_SESSION_INFO / GET_THEME / CREATE_MODEL_STATE / IMPORT_MODEL_STATE over CrossWindow
+ * after handshake `TOOLS_API_HANDSHAKE`. Does not run tool handlers — App Builder
+ * does. Model-state calls are not agent tools.
  *
  * Construct via {@link ToolsApiFactoryClass.getClientApi} or
  * {@link ToolsApiFactoryClass.getParentClientApi}, not `new ToolsApi` from app code.
@@ -42,6 +52,8 @@ function withDefaultTimeout(
 export class ToolsApi implements IToolsApi {
 	#crossWindowApi: ICrossWindowApi;
 	#timeout?: number;
+	#themeListeners = new Set<() => void>();
+	#themeUpdatedPending = false;
 	peerIsReady: Promise<ICrossWindowPeerInfo>;
 
 	constructor(
@@ -50,10 +62,39 @@ export class ToolsApi implements IToolsApi {
 	) {
 		this.#crossWindowApi = crossWindowApi;
 		this.#timeout = options?.timeout;
+		this.#crossWindowApi.on(MESSAGE_TYPE_THEME_UPDATED, async () => {
+			this.#notifyThemeUpdated();
+		});
 		this.peerIsReady = this.#crossWindowApi.handshake(
 			MESSAGE_TYPE_TOOLS_API_HANDSHAKE,
 			this.#timeout,
 		);
+	}
+
+	/**
+	 * Host published a new theme. Call {@link getTheme} to read it.
+	 * A notification that arrives before the first listener is replayed once.
+	 */
+	onThemeUpdated(listener: () => void): () => void {
+		this.#themeListeners.add(listener);
+		if (this.#themeUpdatedPending) {
+			this.#themeUpdatedPending = false;
+			listener();
+		}
+		return () => {
+			this.#themeListeners.delete(listener);
+		};
+	}
+
+	#notifyThemeUpdated(): void {
+		if (this.#themeListeners.size === 0) {
+			this.#themeUpdatedPending = true;
+			return;
+		}
+		this.#themeUpdatedPending = false;
+		for (const listener of this.#themeListeners) {
+			listener();
+		}
 	}
 
 	/** Ask App Builder for the resolved generic tools (name, description, JSON Schema). */
@@ -81,8 +122,9 @@ export class ToolsApi implements IToolsApi {
 	}
 
 	/**
-	 * Agent config `{ id, name, message }` from App Builder (`agents[0]`).
-	 * `null` when agents[] is missing or empty — never a throw.
+	 * Agent config `{ id, name, message, profileName? }` from App Builder
+	 * (`agents[0]`). `null` when agents[] is missing or empty — never a throw.
+	 * `profileName` is present only when the agent sets a non-empty one.
 	 */
 	async getAgentConfig(): Promise<IAgentConfigReply | null> {
 		await this.peerIsReady;
@@ -102,6 +144,49 @@ export class ToolsApi implements IToolsApi {
 		return this.#crossWindowApi.send(
 			MESSAGE_TYPE_GET_SESSION_INFO,
 			undefined,
+			this.#timeout,
+		);
+	}
+
+	/**
+	 * Complete theme created by `useCustomTheme` on the App Builder page.
+	 * `{}` until that hook has published. Never throws for a missing theme.
+	 */
+	async getTheme(): Promise<IAgentTheme> {
+		await this.peerIsReady;
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_GET_THEME,
+			undefined,
+			this.#timeout,
+		);
+	}
+
+	/**
+	 * Snapshot the current App Builder model. Same store path as e-commerce
+	 * `createModelState`, without listing it as an agent tool.
+	 */
+	async createModelState(
+		data?: IToolsApiCreateModelStateData,
+	): Promise<IToolsApiCreateModelStateResult> {
+		await this.peerIsReady;
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_CREATE_MODEL_STATE,
+			data ?? {},
+			this.#timeout,
+		);
+	}
+
+	/**
+	 * Load a previously created model state into the open session. Same store
+	 * path as e-commerce `importModelState`.
+	 */
+	async importModelState(
+		data: IToolsApiImportModelStateData,
+	): Promise<IToolsApiImportModelStateResult> {
+		await this.peerIsReady;
+		return this.#crossWindowApi.send(
+			MESSAGE_TYPE_IMPORT_MODEL_STATE,
+			data,
 			this.#timeout,
 		);
 	}

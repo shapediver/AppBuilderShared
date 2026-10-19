@@ -75,6 +75,11 @@ const ComboboxOption = React.memo(function ComboboxOption({
 	descriptionProps,
 	settings,
 }: ComboboxOptionProps) {
+	const hasLabel = option.label.trim() !== "";
+	const hasDescription = (option.description ?? "").trim() !== "";
+	const isImageOnly =
+		Boolean(option.imageUrl) && !hasLabel && !hasDescription;
+
 	return (
 		<Group {...groupProps} {...settings?.groupProps}>
 			{option.imageUrl && (
@@ -84,19 +89,27 @@ const ComboboxOption = React.memo(function ComboboxOption({
 						alt={option.label}
 						{...imageProps}
 						{...settings?.imageProps}
+						{...(isImageOnly ? {w: "100%", flex: 1} : {})}
 					/>
 				</TooltipWrapper>
 			)}
-			<div style={{flex: 1}}>
-				<TextWeighted {...labelProps} {...settings?.labelProps}>
-					{option.label}
-				</TextWeighted>
-				{option.description && (
-					<Text {...descriptionProps} {...settings?.descriptionProps}>
-						{option.description}
-					</Text>
-				)}
-			</div>
+			{(hasLabel || hasDescription) && (
+				<div style={{flex: 1}}>
+					{hasLabel && (
+						<TextWeighted {...labelProps} {...settings?.labelProps}>
+							{option.label}
+						</TextWeighted>
+					)}
+					{hasDescription && (
+						<Text
+							{...descriptionProps}
+							{...settings?.descriptionProps}
+						>
+							{option.description}
+						</Text>
+					)}
+				</div>
+			)}
 		</Group>
 	);
 });
@@ -134,7 +147,10 @@ export default function SelectImageDropDownComponent(
 				const data = itemData?.[item];
 				return {
 					value: item,
-					label: data?.displayname || item,
+					label:
+						data?.displayname === undefined
+							? item
+							: data.displayname,
 					description: data?.description,
 					imageUrl: data?.imageUrl,
 					tooltip: data?.tooltip,

@@ -8,13 +8,18 @@ import {ViewportComponentProps} from "@AppBuilderLib/entities/viewport/config/vi
 import {ViewportOverlayWrapperProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
 import {OverlayStyleProps} from "@AppBuilderLib/shared/ui/overlay/OverlayWrapper";
 import {MantineThemeComponent} from "@mantine/core";
-import {ReactElement} from "react";
+import {MutableRefObject, ReactElement} from "react";
 import {
 	IAppBuilder,
 	IAppBuilderActionDefinition,
 	IAppBuilderSettingsSession,
 	IAppBuilderWidget,
 } from "./appbuilder";
+import type {
+	AppBuilderActionRunner,
+	AppBuilderActionSetup,
+} from "./appBuilderActionRun";
+import type {IAppBuilderActionSlot} from "./appbuilderActionSlots";
 
 // #region Interfaces (7)
 
@@ -76,6 +81,14 @@ export interface IComponentContext {
 	containerComponent?: (props: any) => ReactElement | null;
 	/** Component for rendering the fallback container when no app builder output is available. Injected from widgets layer to avoid circular dependencies. */
 	fallbackContainerComponent?: (props: any) => ReactElement | null;
+	/**
+	 * Scene hover/select for `selecton` / `selectoff` / `hoveron` / `hoveroff`.
+	 * ShapeDiver registers `AppBuilderInteractionSlotListeners`
+	 * (`useSelection`). iJewel/WebGi should supply a native `component`, or
+	 * `{ }` to skip (no ShapeDiver fallback). Omit the key to warn when JSON
+	 * defines those slots.
+	 */
+	interactionSlotListeners?: InteractionSlotListenersMapValueType;
 
 	// #endregion Properties (6)
 }
@@ -104,15 +117,28 @@ export interface WidgetComponentMapValueType extends ComponentType {
 	// #endregion Properties (1)
 }
 
-export interface ActionComponentMapValueType extends ComponentType {
-	// #region Properties (1)
-
-	/** Action component */
-	component: (props: any) => ReactElement;
+export interface ActionComponentMapValueType {
+	/**
+	 * Control to render. Overlay `componentContext.actions` onto
+	 * `sharedAppBuilderActions` by key. Omit `component` so the action is
+	 * not shown (do not fall through to a shared control). Hosts such as
+	 * iJewel omit `camera` / `ar` / `fullscreen` entirely so ShapeDiver
+	 * viewer UI is never imported.
+	 */
+	component?: (props: any) => ReactElement | null;
 	/** Defines whether the action is of this type */
 	isAction: (action: IAppBuilderActionDefinition) => boolean;
-
-	// #endregion Properties (1)
+	/**
+	 * Headless executor for `executeActions`. Overlay by the same key as
+	 * `component`. Omit `run` to skip the action inside sequences (no
+	 * ShapeDiver fallback). Replace with a host-native `run` (e.g. WebGi).
+	 */
+	run?: AppBuilderActionRunner;
+	/**
+	 * Mount registration for a rendered button that owns this action.
+	 * `executeActions` calls this with its button for each nested action.
+	 */
+	setup?: AppBuilderActionSetup;
 }
 
 /**
@@ -169,6 +195,33 @@ export interface ViewportOverlayWrapperComponentMapValueType extends ComponentTy
 	) => ReactElement;
 
 	// #endregion Properties (1)
+}
+
+/**
+ * Props for a host `interactionSlotListeners.component`.
+ * ShapeDiver: `AppBuilderInteractionSlotListeners`. iJewel/WebGi: native
+ * hover/select that calls `handlersRef` via `actionSlotHandlerKey`.
+ */
+export type AppBuilderInteractionSlotListenersProps = {
+	resolved: Array<{
+		eventName: string;
+		slot: IAppBuilderActionSlot;
+		index: number;
+	}>;
+	namespace: string;
+	viewportId: string;
+	handlersRef: MutableRefObject<Record<string, (() => void) | undefined>>;
+};
+
+export interface InteractionSlotListenersMapValueType {
+	/**
+	 * Enables matching scene nodes and runs the slot when hover/select
+	 * changes. Omit `component` (or pass `{ }`) to skip with no ShapeDiver
+	 * fallback.
+	 */
+	component?: (
+		props: AppBuilderInteractionSlotListenersProps,
+	) => ReactElement | null;
 }
 
 // #endregion Interfaces (7)

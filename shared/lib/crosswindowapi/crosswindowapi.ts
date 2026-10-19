@@ -152,7 +152,6 @@ class CrossWindowApi implements ICrossWindowApi {
 					return;
 				}
 				settled = true;
-				this.clearHandshakeResources();
 				resolve(this.peerIsReady);
 			};
 
@@ -182,6 +181,11 @@ class CrossWindowApi implements ICrossWindowApi {
 					await this.send(type, undefined);
 					this.log(`Handshake "${type}" successfully sent`);
 					complete();
+					// Stop pinging only once the peer received our handshake.
+					// Completing on receive must not stop the interval: old
+					// connectors finish handshake only on receive, and they
+					// stop sending as soon as their own send succeeds.
+					this.clearHandshakeResources();
 				} catch {
 					// ignore
 				}

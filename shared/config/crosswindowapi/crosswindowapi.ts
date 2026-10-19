@@ -70,8 +70,9 @@ export interface ICrossWindowApi {
 
 	/**
 	 * Sends a handshake message to the peer window and waits for a response.
-	 * In order to succeed, the handshake must be initiated by the peer
-	 * using the same type.
+	 * Resolves when a handshake is sent or received. Pings continue until a
+	 * send succeeds so mixed-version peers that only complete on receive
+	 * still observe the message.
 	 *
 	 * @param type
 	 */

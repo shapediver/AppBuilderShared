@@ -63,7 +63,8 @@ export interface IShapeDiverParameterState<T> {
 
 	/**
 	 * True if the uiValue is dirty (does not match the commitValue).
-	 * This might be the case during background executions.
+	 * This is the case while a draft has not been executed yet (for example
+	 * while typing in a string input) and during background executions.
 	 */
 	readonly dirty: boolean;
 

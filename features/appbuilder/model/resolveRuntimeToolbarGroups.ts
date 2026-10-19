@@ -158,6 +158,9 @@ export const resolveRuntimeToolbarGroups = (
 												id: `${item.id}-trailing-action`,
 												label: item.props.trailingAction
 													.label,
+												tooltip:
+													item.props.trailingAction
+														.tooltip,
 												icon: item.props.trailingAction
 													.icon,
 												disabled:

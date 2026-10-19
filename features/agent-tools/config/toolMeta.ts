@@ -13,7 +13,7 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 		description:
 			"Read configurator parameters before changing anything. " +
 			"Call with no arguments. Which parameters appear is agent settings, not a tool argument. " +
-			"Returns { parameters: [...], errors?: [{ name, message }] } with id, name, namespace (session id), type, settable, choices/min/max, currentValue. " +
+			"Returns { parameters: [...], errors?: [{ name, message }] } with id, name, namespace (session id), type, settable, choices/min/max, currentValue, and description when the agent settings provide one. " +
 			"settable=false means read-only via set_parameter_values (unsupported type). " +
 			"Trust type over display name (e.g. name Color may still be StringList).",
 		annotations: {readOnlyHint: true},
@@ -51,23 +51,35 @@ export const AGENT_TOOL_META: Record<InScopeGenericToolName, AgentToolMeta> = {
 		description:
 			"Run an action control without mounting App Builder UI. " +
 			"Input: { name } — id or name from list_action_controls. " +
-			"Success: { success: true }. Failure: { success: false, message }. " +
+			"Success: { success: true, props? }. addToCart props are {modelStateId, cartItemId}. executeActions props are {results} of nested replies. Other actions omit props. " +
+			"Failure: { success: false, message }. " +
 			"Unsupported action types return message 'not supported'.",
 		annotations: {readOnlyHint: false},
 	},
-	[GenericToolName.SetCameraPosition]: {
+	[GenericToolName.SetCamera]: {
 		description:
-			"Set the viewport camera position and look-at target. " +
-			"Input: { position: {x,y,z}, target: {x,y,z} }. Uses the main viewport. " +
-			"Does not change camera type. " +
+			"Set the active viewport camera. " +
+			"Input fields are optional: { position?: [x,y,z], target?: [x,y,z], type?, fov?, direction?, id?, name? }. " +
+			"Omit id and name to update the active camera. With neither, a different type creates a camera of that type. An id or name selects that camera. " +
+			"Uses the main viewport. " +
 			"Success: { success: true }. Failure: { success: false, message } (e.g. Viewport not found).",
 		annotations: {readOnlyHint: false},
+	},
+	[GenericToolName.GetCamera]: {
+		description:
+			"Read the active viewport camera. " +
+			"Call with no arguments. Uses the main viewport. " +
+			"Success: { success: true, camera } with id, type, position [x,y,z], target [x,y,z], and fov or direction. " +
+			"camera is the App Builder camera document. " +
+			"Failure: { success: false, message } (e.g. Viewport not found).",
+		annotations: {readOnlyHint: true},
 	},
 	[GenericToolName.GetScreenshot]: {
 		description:
 			"Capture a screenshot of the 3D viewport as a data URL. " +
-			"Call with no arguments. Uses the main viewport. " +
-			"Success: { success: true, image } with a data URL. Failure: { success: false, message }.",
+			'Input: { contentType?: "image/png" | "image/jpeg", quality?: 0-1, resolution?: {width, height} }. ' +
+			"All fields optional; omit them for the current viewport. Uses the main viewport. " +
+			"Success: { success: true, image_url } with a data URL. Failure: { success: false, message }.",
 		annotations: {readOnlyHint: true},
 	},
 	[GenericToolName.GetMetric]: {

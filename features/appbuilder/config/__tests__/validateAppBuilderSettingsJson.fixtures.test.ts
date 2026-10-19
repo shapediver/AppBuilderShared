@@ -18,6 +18,7 @@ jest.mock("@shapediver/viewer.session", () => ({
 }));
 
 jest.mock("@shapediver/viewer.shared.types", () => ({
+	...jest.requireActual("@shapediver/viewer.shared.types"),
 	ATTRIBUTE_VISUALIZATION: {
 		LINEAR: "linear",
 	},

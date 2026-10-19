@@ -45,11 +45,28 @@ const makeSemanticAction = (definition: Record<string, unknown>) =>
 const makeToolbarActionMenu = (
 	sections: ReturnType<typeof makeSemanticAction>[][],
 	overrides: Record<string, unknown> = {},
-) => ({
-	...overrides,
-	type: "actionMenu",
-	props: {sections},
-});
+) => {
+	const {
+		id,
+		order,
+		presentation,
+		actionSlots,
+		props: extraProps,
+		...display
+	} = overrides;
+	return {
+		...(id !== undefined ? {id} : {}),
+		...(order !== undefined ? {order} : {}),
+		...(presentation !== undefined ? {presentation} : {}),
+		...(actionSlots !== undefined ? {actionSlots} : {}),
+		type: "actionMenu",
+		props: {
+			sections,
+			...display,
+			...(extraProps && typeof extraProps === "object" ? extraProps : {}),
+		},
+	};
+};
 
 const makeLegacyViewportAction = (type: string) =>
 	makeToolbarControl("action", {
@@ -108,6 +125,90 @@ describe("toolbar container schema", () => {
 		expect(result.success).toBe(true);
 	});
 
+	it("accepts exclusiveContainers true and false", () => {
+		for (const exclusiveContainers of [true, false]) {
+			const result = validateAppBuilder({
+				version: "1.0",
+				containers: [
+					{
+						name: "toolbar",
+						props: {id: "toolbar", exclusiveContainers},
+					},
+				],
+			});
+
+			expect(result.success).toBe(true);
+		}
+	});
+
+	it("accepts nested executeActions in parallel and sequential mode", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {id: "toolbar"},
+					groups: [
+						[
+							makeSemanticAction({
+								type: "executeActions",
+								props: {
+									mode: "sequential",
+									actions: [
+										{
+											type: "setContainerVisibility",
+											props: {
+												container: {name: "right"},
+												mode: "open",
+											},
+										},
+										{
+											type: "executeActions",
+											props: {
+												mode: "parallel",
+												actions: [
+													{type: "undo", props: {}},
+													{type: "redo", props: {}},
+												],
+											},
+										},
+									],
+								},
+							}),
+						],
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects executeActions with an unknown mode", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {id: "toolbar"},
+					groups: [
+						[
+							makeSemanticAction({
+								type: "executeActions",
+								props: {
+									mode: "waterfall",
+									actions: [{type: "undo", props: {}}],
+								},
+							}),
+						],
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(false);
+	});
+
 	it("accepts a valid toolbar container with mixed item types", () => {
 		const result = validateAppBuilder({
 			version: "1.0",
@@ -155,8 +256,8 @@ describe("toolbar container schema", () => {
 							{
 								id: "widget-panel",
 								type: "widgets",
-								label: "Info",
 								props: {
+									label: "Info",
 									widgets: [
 										{
 											type: "text",
@@ -191,7 +292,7 @@ describe("toolbar container schema", () => {
 		expect(result.success).toBe(false);
 	});
 
-	it("accepts toolbar item labelSide and labelAlign", () => {
+	it("accepts control labelSide and labelAlign in props", () => {
 		const result = validateAppBuilder({
 			version: "1.0",
 			containers: [
@@ -202,11 +303,11 @@ describe("toolbar container schema", () => {
 						[
 							{
 								type: "action",
-								label: "Zoom extents",
-								icon: "tabler:zoom-in",
-								labelSide: "bottom",
-								labelAlign: "center",
 								props: {
+									label: "Zoom extents",
+									icon: "tabler:zoom-in",
+									labelSide: "bottom",
+									labelAlign: "center",
 									definition: {
 										type: "camera",
 										props: {type: "zoomTo", props: {}},
@@ -222,7 +323,7 @@ describe("toolbar container schema", () => {
 		expect(result.success).toBe(true);
 	});
 
-	it("rejects an invalid toolbar item labelSide", () => {
+	it("rejects control labelSide next to type", () => {
 		const result = validateAppBuilder({
 			version: "1.0",
 			containers: [
@@ -234,8 +335,87 @@ describe("toolbar container schema", () => {
 							{
 								type: "action",
 								label: "Zoom extents",
-								labelSide: "middle",
+								labelSide: "bottom",
 								props: {
+									definition: {
+										type: "camera",
+										props: {type: "zoomTo", props: {}},
+									},
+								},
+							},
+						],
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(false);
+	});
+
+	it("accepts panel labelSide in props", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {id: "labeledToolbar"},
+					groups: [
+						[
+							{
+								type: "widgets",
+								props: {
+									label: "Parameters",
+									labelSide: "bottom",
+									widgets: [],
+								},
+							},
+						],
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects panel labelSide next to type", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {id: "labeledToolbar"},
+					groups: [
+						[
+							{
+								type: "widgets",
+								label: "Parameters",
+								labelSide: "bottom",
+								props: {widgets: []},
+							},
+						],
+					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(false);
+	});
+
+	it("rejects an invalid toolbar item labelSide", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {id: "labeledToolbar"},
+					groups: [
+						[
+							{
+								type: "action",
+								props: {
+									label: "Zoom extents",
+									labelSide: "middle",
 									definition: {
 										type: "camera",
 										props: {type: "zoomTo", props: {}},
@@ -262,9 +442,9 @@ describe("toolbar container schema", () => {
 						[
 							{
 								type: "action",
-								label: "Zoom extents",
-								labelAlign: "left",
 								props: {
+									label: "Zoom extents",
+									labelAlign: "left",
 									definition: {
 										type: "camera",
 										props: {type: "zoomTo", props: {}},
@@ -466,6 +646,38 @@ describe("toolbar container schema", () => {
 							}),
 						],
 					],
+				},
+			],
+		});
+
+		expect(result.success).toBe(false);
+	});
+
+	it("accepts defaultOpen on toolbars", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "toolbar",
+					props: {
+						id: "tools",
+						defaultOpen: false,
+					},
+				},
+			],
+		});
+
+		expect(result.success).toBe(true);
+	});
+
+	it("rejects defaultOpen on a standard container", () => {
+		const result = validateAppBuilder({
+			version: "1.0",
+			containers: [
+				{
+					name: "left",
+					props: {defaultOpen: false},
+					widgets: [],
 				},
 			],
 		});

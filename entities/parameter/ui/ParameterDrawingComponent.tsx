@@ -4,12 +4,12 @@ import {
 	createToolbarCheckboxItem,
 	createToolbarCommand,
 } from "@AppBuilderLib/features/appbuilder/model/createToolbarItems";
+import {AppBuilderLabeledActionIcon} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderToolbarIconButton";
 import {useNotificationStore} from "@AppBuilderLib/features/notifications/model/useNotificationStore";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
 import Icon from "@AppBuilderLib/shared/ui/icon/Icon";
 import TextWeighted from "@AppBuilderLib/shared/ui/text/TextWeighted";
 import {
-	ActionIcon,
 	Box,
 	Button,
 	Flex,
@@ -31,6 +31,10 @@ import {
 	PropsParameter,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
+import {
+	resolveParameterInteractionButtonTheme,
+	type ParameterInteractionConfirmCancelClearThemeProps,
+} from "../config/theme/parameterInteractionButtonTheme";
 import {getResetValue} from "../lib/parameterResetValue";
 import {useDrawingTools} from "../model/drawing/useDrawingTools";
 import {resolveInteractionPresentation} from "../model/interaction/resolveInteractionPresentation";
@@ -70,7 +74,9 @@ const emptyPointsData: PointsData = [];
  * @returns
  */
 export default function ParameterDrawingComponent(
-	props: PropsParameter & Partial<PropsParameterWrapper>,
+	props: PropsParameter &
+		Partial<PropsParameterWrapper> &
+		Partial<ParameterInteractionConfirmCancelClearThemeProps>,
 ) {
 	const {
 		actions,
@@ -90,6 +96,25 @@ export default function ParameterDrawingComponent(
 		"ParameterDrawingComponent",
 		defaultPropsParameterWrapper,
 		props,
+	);
+
+	const {
+		clearButton: clearButtonTheme,
+		confirmButton: confirmButtonTheme,
+		cancelButton: cancelButtonTheme,
+	} = useProps("ParameterDrawingComponent", {}, props);
+
+	const clearButton = resolveParameterInteractionButtonTheme(
+		clearButtonTheme,
+		{label: "Clear", icon: "tabler:circle-off"},
+	);
+	const confirmButton = resolveParameterInteractionButtonTheme(
+		confirmButtonTheme,
+		{label: "Confirm", icon: "tabler:check"},
+	);
+	const cancelButton = resolveParameterInteractionButtonTheme(
+		cancelButtonTheme,
+		{label: "Cancel", icon: "tabler:x"},
 	);
 
 	// get the interaction request management
@@ -380,16 +405,17 @@ export default function ParameterDrawingComponent(
 					</Box>
 					{showClearButton && (
 						<Box style={{width: "auto"}}>
-							<ActionIcon
+							<AppBuilderLabeledActionIcon
+								label={clearButton.label}
+								tooltipLabel={clearButton.tooltip}
+								icon={<Icon iconType={clearButton.icon} />}
 								onClick={clearDrawing}
 								variant={
 									pointsData?.length === 0
 										? "light"
 										: "filled"
 								}
-							>
-								<Icon iconType={"tabler:circle-off"} />
-							</ActionIcon>
+							/>
 						</Box>
 					)}
 				</Flex>
@@ -424,14 +450,14 @@ export default function ParameterDrawingComponent(
 					variant="filled"
 					onClick={() => confirmDrawing(pointsData)}
 				>
-					<Text>Confirm</Text>
+					<Text>{confirmButton.label}</Text>
 				</Button>
 				<Button
 					fullWidth={true}
 					variant={"light"}
 					onClick={cancelDrawing}
 				>
-					<Text>Cancel</Text>
+					<Text>{cancelButton.label}</Text>
 				</Button>
 			</Group>
 		</Stack>
@@ -507,8 +533,9 @@ export default function ParameterDrawingComponent(
 					createToolbarCommand({
 						id: `${namespace}-${definition.id}-${viewportId}-confirm`,
 						aggregationId: "drawing-confirm",
-						label: "Confirm",
-						icon: "tabler:check",
+						label: confirmButton.label,
+						tooltip: confirmButton.tooltip,
+						icon: confirmButton.icon,
 						order: 10,
 						disabled: !isWithinConstraints || !dirty,
 						execute: () => confirmDrawing(pointsData),
@@ -516,8 +543,9 @@ export default function ParameterDrawingComponent(
 					createToolbarCommand({
 						id: `${namespace}-${definition.id}-${viewportId}-cancel`,
 						aggregationId: "drawing-cancel",
-						label: "Cancel",
-						icon: "tabler:x",
+						label: cancelButton.label,
+						tooltip: cancelButton.tooltip,
+						icon: cancelButton.icon,
 						order: 20,
 						disabled: !dirty,
 						execute: cancelDrawing,
@@ -527,8 +555,9 @@ export default function ParameterDrawingComponent(
 								createToolbarCommand({
 									id: `${namespace}-${definition.id}-${viewportId}-clear`,
 									aggregationId: "drawing-clear",
-									label: "Clear",
-									icon: "tabler:circle-off",
+									label: clearButton.label,
+									tooltip: clearButton.tooltip,
+									icon: clearButton.icon,
 									order: 30,
 									execute: clearDrawing,
 								}),

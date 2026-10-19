@@ -15,6 +15,7 @@ import {useShapeDiverStoreProcessManager} from "@AppBuilderLib/shared/model/useS
 import {IOutputApi, ITreeNode, OutputApiData} from "@shapediver/viewer.session";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {useAppBuilderInstances} from "./useAppBuilderInstances";
+import {useAppBuilderSessions} from "./useAppBuilderSessions";
 
 /**
  * Hook for creating a session with a ShapeDiver model using the ShapeDiver 3D Viewer.
@@ -318,6 +319,9 @@ export function useSessionWithAppBuilder(
 				removeProcessManager(initialProcessManagerIdRef.current);
 		};
 	}, [removeProcessManager]);
+
+	// create sessions declared on the App Builder data output
+	useAppBuilderSessions({namespace, appBuilderData});
 
 	// create the instances defined in the AppBuilder data
 	useAppBuilderInstances({

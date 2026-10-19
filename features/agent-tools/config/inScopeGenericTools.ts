@@ -15,7 +15,8 @@ export const IN_SCOPE_GENERIC_TOOL_NAMES: InScopeGenericToolName[] = [
 	GenericToolName.SetParameterValues,
 	GenericToolName.ListActionControls,
 	GenericToolName.TriggerActionControl,
-	GenericToolName.SetCameraPosition,
+	GenericToolName.SetCamera,
+	GenericToolName.GetCamera,
 	GenericToolName.GetScreenshot,
 	GenericToolName.GetMetric,
 ];
@@ -59,9 +60,10 @@ const DEFAULT_GENERIC_TOOL_SETTINGS: DefaultGenericToolSettings = {
 	[GenericToolName.TriggerActionControl]: {
 		name: GenericToolName.TriggerActionControl,
 	},
-	[GenericToolName.SetCameraPosition]: {
-		name: GenericToolName.SetCameraPosition,
+	[GenericToolName.SetCamera]: {
+		name: GenericToolName.SetCamera,
 	},
+	[GenericToolName.GetCamera]: {name: GenericToolName.GetCamera},
 	[GenericToolName.GetScreenshot]: {name: GenericToolName.GetScreenshot},
 	[GenericToolName.GetMetric]: {name: GenericToolName.GetMetric},
 };

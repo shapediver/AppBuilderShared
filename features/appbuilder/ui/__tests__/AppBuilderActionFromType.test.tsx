@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 const MockActionComponent = () => null;
+const MockExecuteActionsComponent = () => null;
 
 jest.mock("../AppBuilderActionAddToCartComponent", () => ({
 	__esModule: true,
@@ -22,6 +23,10 @@ jest.mock("../AppBuilderActionCloseConfiguratorComponent", () => ({
 jest.mock("../AppBuilderActionCreateModelStateComponent", () => ({
 	__esModule: true,
 	default: MockActionComponent,
+}));
+jest.mock("../AppBuilderActionExecuteActionsComponent", () => ({
+	__esModule: true,
+	default: MockExecuteActionsComponent,
 }));
 jest.mock("../AppBuilderActionExportParameterValuesComponent", () => ({
 	__esModule: true,
@@ -52,6 +57,10 @@ jest.mock("../AppBuilderActionResetParameterValuesComponent", () => ({
 	default: MockActionComponent,
 }));
 jest.mock("../AppBuilderActionSetBrowserLocationComponent", () => ({
+	__esModule: true,
+	default: MockActionComponent,
+}));
+jest.mock("../AppBuilderActionSetContainerVisibilityComponent", () => ({
 	__esModule: true,
 	default: MockActionComponent,
 }));
@@ -123,6 +132,40 @@ describe("AppBuilderActionFromType", () => {
 		});
 	});
 
+	it("puts control labelSide on toolbarButtonProps", () => {
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Zoom extents",
+			labelSide: "bottom",
+			labelAlign: "end",
+			definition: {
+				type: "camera",
+				props: {
+					type: "zoomTo",
+					props: {},
+				},
+			},
+		};
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{
+				actions: {
+					camera: {
+						isAction: (definition) => definition.type === "camera",
+						component: CustomAction,
+					},
+				},
+			},
+			{presentation: "toolbarIcon"},
+		);
+
+		expect(element?.props.toolbarButtonProps).toMatchObject({
+			labelSide: "bottom",
+			labelAlign: "end",
+		});
+	});
+
 	it("returns null for malformed action refs without a definition", () => {
 		const element = AppBuilderActionFromType(
 			{label: "Broken"} as unknown as IAppBuilderControlActionRef,
@@ -133,6 +176,34 @@ describe("AppBuilderActionFromType", () => {
 					camera: {
 						isAction: (definition) => definition.type === "camera",
 						component: CustomAction,
+					},
+				},
+			},
+		);
+
+		expect(element).toBeNull();
+	});
+
+	it("returns null when a registered action has no component", () => {
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Zoom extents",
+			definition: {
+				type: "camera",
+				props: {
+					type: "zoomTo",
+					props: {},
+				},
+			},
+		};
+
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{
+				actions: {
+					camera: {
+						isAction: (definition) => definition.type === "camera",
 					},
 				},
 			},
@@ -161,5 +232,77 @@ describe("AppBuilderActionFromType", () => {
 		);
 
 		expect(element).toBeNull();
+	});
+
+	it("renders a default shared action when the host omits it", () => {
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Undo",
+			definition: {type: "undo", props: {}},
+		};
+
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{},
+		);
+
+		expect(element?.type).toBe(MockActionComponent);
+	});
+
+	it("does not fall through to the default control when the host registers the key without a component", () => {
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Undo",
+			definition: {type: "undo", props: {}},
+		};
+
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{
+				actions: {
+					undo: {
+						isAction: (definition) => definition.type === "undo",
+					},
+				},
+			},
+		);
+
+		expect(element).toBeNull();
+	});
+
+	it("renders executeActions with nested definitions and session context", () => {
+		const actionRef: IAppBuilderControlActionRef = {
+			label: "Run both",
+			definition: {
+				type: "executeActions",
+				props: {
+					mode: "sequential",
+					actions: [
+						{type: "undo", props: {}},
+						{type: "redo", props: {}},
+					],
+				},
+			},
+		};
+
+		const element = AppBuilderActionFromType(
+			actionRef,
+			"namespace",
+			"key",
+			{},
+			{viewportId: "viewport-1", fullscreenId: "fullscreen-area"},
+		);
+
+		expect(element?.type).toBe(MockExecuteActionsComponent);
+		expect(element?.props).toMatchObject({
+			mode: "sequential",
+			namespace: "namespace",
+			viewportId: "viewport-1",
+			fullscreenId: "fullscreen-area",
+		});
+		expect(element?.props.actions).toHaveLength(2);
+		expect(element?.props.renderChild).toBeUndefined();
 	});
 });

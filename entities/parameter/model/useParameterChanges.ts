@@ -1,9 +1,8 @@
 import {PropsParameter} from "../config/propsParameter";
-import {IParameterChanges} from "../config/shapediverStoreParameters";
 import {useShapeDiverStoreParameters} from "./useShapeDiverStoreParameters";
 
 /**
- * Get parameter change objects for all sessions used by the given parameters.
+ * Get parameter change objects, with their session namespace, for all sessions used by the given parameters.
  * @see {@link IParameterChanges}
  *
  * @param parameters
@@ -15,12 +14,11 @@ export function useParameterChanges(parameters: PropsParameter[]) {
 	const parameterChanges = useShapeDiverStoreParameters((state) =>
 		Object.keys(state.parameterChanges)
 			.filter((id) => namespaces.includes(id))
-			.reduce((acc, id) => {
-				acc.push(state.parameterChanges[id]);
-
-				return acc;
-			}, [] as IParameterChanges[])
-			.sort((a, b) => a.priority - b.priority),
+			.map((id) => ({
+				namespace: id,
+				changes: state.parameterChanges[id],
+			}))
+			.sort((a, b) => a.changes.priority - b.changes.priority),
 	);
 
 	return parameterChanges;

@@ -68,6 +68,17 @@ describe("zodToJsonSchema", () => {
 		});
 	});
 
+	it("converts a tuple to a fixed-length array", () => {
+		expect(
+			zodToJsonSchema(z.tuple([z.number(), z.number(), z.number()])),
+		).toEqual({
+			type: "array",
+			items: {type: "number"},
+			minItems: 3,
+			maxItems: 3,
+		});
+	});
+
 	it("converts literal schemas", () => {
 		expect(zodToJsonSchema(z.literal(true))).toEqual({
 			type: "boolean",

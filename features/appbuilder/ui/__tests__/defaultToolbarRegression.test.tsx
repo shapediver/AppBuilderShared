@@ -71,8 +71,7 @@ describe("default toolbar regression", () => {
 		});
 		expect(items[1]).toMatchObject({
 			type: "actionMenu",
-			label: "More options",
-			props: {sections: expect.any(Array)},
+			props: {label: "More options", sections: expect.any(Array)},
 		});
 	});
 });

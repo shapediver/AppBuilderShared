@@ -23,17 +23,20 @@ import {
 	ViewportComponentThemeProps,
 } from "@AppBuilderLib/entities/viewport/config/viewport";
 import {ViewportOverlayWrapperThemeProps} from "@AppBuilderLib/entities/viewport/config/viewportOverlayWrapper";
+import {AgentUiComponentThemeProps} from "@AppBuilderLib/features/agent-tools/ui/agentUiTheme";
 import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {ComponentContext} from "@AppBuilderLib/features/appbuilder/config/ComponentContext";
 import {AppBuilderActionComponentThemeProps} from "@AppBuilderLib/features/appbuilder/ui/AppBuilderActionComponent";
 import {CreateModelStateHookThemeProps} from "@AppBuilderLib/features/model-state/model/useCreateModelState";
 import {NotificationWrapperThemeProps} from "@AppBuilderLib/features/notifications/ui/NotificationWrapper";
 import {Logger} from "@AppBuilderLib/shared/lib/logger";
+import {publishResolvedTheme} from "@AppBuilderLib/shared/model/useResolvedThemeStore";
 import {useThemeOverrideStore} from "@AppBuilderLib/shared/model/useThemeOverrideStore";
 import {HintProps} from "@AppBuilderLib/shared/ui/hint/Hint";
 import {IconThemeProps} from "@AppBuilderLib/shared/ui/icon/Icon";
 import {MarkdownWidgetComponentProps} from "@AppBuilderLib/shared/ui/markdown/MarkdownWidgetComponent";
 import {ModalBaseThemeProps} from "@AppBuilderLib/shared/ui/modal/ModalBase";
+import {NetPromoterScoreThemeProps} from "@AppBuilderLib/shared/ui/net-promoter-score/NetPromoterScore";
 import {mergeCssVariablesResolvers} from "@AppBuilderLib/shared/ui/theme/mergeCssVariablesResolvers";
 import {TooltipWrapperThemeProps} from "@AppBuilderLib/shared/ui/tooltip/TooltipWrapper";
 import {AppBuilderAgentWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/config/appBuilderAgentWidget";
@@ -53,6 +56,7 @@ import {AppBuilderTextWidgetThemeProps} from "@AppBuilderLib/widgets/appbuilder/
 import {ParametersAndExportsAccordionComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/ParametersAndExportsAccordionComponent";
 import {ViewportAcceptRejectButtonsComponentThemeProps} from "@AppBuilderLib/widgets/appbuilder/ui/ViewportAcceptRejectButtons";
 import {ParameterDraggingComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterDraggingComponentTheme";
+import {ParameterDrawingComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterDrawingComponentTheme";
 import {ParameterGumballComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterGumballComponentTheme";
 import {ParameterRectangleTransformComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterRectangleTransformComponentTheme";
 import {ParameterSelectionComponentThemeProps} from "@AppBuilderShared/entities/parameter/config/theme/parameterSelectionComponentTheme";
@@ -100,7 +104,7 @@ import {
 	v8CssVariablesResolver,
 } from "@mantine/core";
 import {AppShellSize} from "@mantine/core/lib/components/AppShell/AppShell.types";
-import {useContext} from "react";
+import {useContext, useEffect} from "react";
 
 /**
  * Helper function for defining CSS variables for the AppBuilderAppShellTemplate
@@ -823,6 +827,10 @@ export const useCustomTheme = (props: Props = {}) => {
 				// template: "appshell" // default
 				// template: "grid"
 				// showContainerButtons: true,
+				// mobileBreakpoint: "md",
+				// mobileFallbacks: {
+				// 	right: { container: "bottom", position: "after" },
+				// },
 			}),
 			/***
 			 * AppBuilderTextWidgetComponent
@@ -1073,6 +1081,43 @@ export const useCustomTheme = (props: Props = {}) => {
 				// },
 			}),
 			/**
+			 * NetPromoterScore
+			 *
+			 * Score prompt. An empty string hides that text.
+			 * Absent message and captions use the component defaults.
+			 */
+			NetPromoterScore: NetPromoterScoreThemeProps({
+				// storageKeyPart: "appbuilder",
+				// message:
+				// 	"How likely are you to recommend this App to other members of your organization?",
+				// options: [
+				// 	{title: "0", value: 0},
+				// 	{title: "10", value: 10},
+				// ],
+				// captions: {
+				// 	start: "0 – Not at all likely",
+				// 	end: "10 – Extremely likely",
+				// },
+				// openDelay: 5,
+				// answeredScheduleDays: 30,
+				// dismissedScheduleDays: 1,
+				// dialogProps: {
+				// 	size: 640,
+				// 	position: {bottom: 20, left: 0, right: 0},
+				// 	withCloseButton: true,
+				// },
+				// stackProps: {gap: "sm"},
+				// questionTextProps: {},
+				// digitsGroupProps: {
+				// 	gap: "xs",
+				// 	justify: "space-between",
+				// 	wrap: "wrap",
+				// },
+				// optionButtonProps: {variant: "default"},
+				// captionsGroupProps: {justify: "space-between"},
+				// captionTextProps: {size: "sm"},
+			}),
+			/**
 			 * NotificationWrapper
 			 *
 			 * Global settings for notifications.
@@ -1167,6 +1212,8 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Defaults and settings for dragging components.
 			 */
 			ParameterDraggingComponent: ParameterDraggingComponentThemeProps({
+				// confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+				// cancelButton: {tooltip: "Cancel", icon: "tabler:x"},
 				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",
@@ -1187,11 +1234,23 @@ export const useCustomTheme = (props: Props = {}) => {
 				// } as IInteractionEffect,
 			}),
 			/**
+			 * ParameterDrawingComponent
+			 *
+			 * Defaults for drawing Confirm / Cancel / Clear chrome.
+			 */
+			ParameterDrawingComponent: ParameterDrawingComponentThemeProps({
+				// clearButton: {tooltip: "Clear", icon: "tabler:circle-off"},
+				// confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+				// cancelButton: {tooltip: "Cancel", icon: "tabler:x"},
+			}),
+			/**
 			 * ParameterGumballComponent
 			 *
 			 * Defaults and settings for gumball transform components.
 			 */
 			ParameterGumballComponent: ParameterGumballComponentThemeProps({
+				// confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+				// cancelButton: {tooltip: "Cancel", icon: "tabler:x"},
 				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",
@@ -1218,6 +1277,8 @@ export const useCustomTheme = (props: Props = {}) => {
 			 */
 			ParameterRectangleTransformComponent:
 				ParameterRectangleTransformComponentThemeProps({
+					// confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+					// cancelButton: {tooltip: "Cancel", icon: "tabler:x"},
 					// selectionColor: {
 					// 	type: "pulse",
 					// 	color: "#0d44f0",
@@ -1243,6 +1304,12 @@ export const useCustomTheme = (props: Props = {}) => {
 			 * Defaults and settings for selection components (e.g. dropdowns, chip groups).
 			 */
 			ParameterSelectionComponent: ParameterSelectionComponentThemeProps({
+				// clearButton: {
+				// 	tooltip: "Clear selection",
+				// 	icon: "tabler:circle-off",
+				// },
+				// confirmButton: {tooltip: "Confirm", icon: "tabler:check"},
+				// cancelButton: {tooltip: "Cancel", icon: "tabler:x"},
 				// selectionColor: {
 				// 	type: "pulse",
 				// 	color: "#0d44f0",
@@ -1441,7 +1508,14 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 		borderRadius: "var(--mantine-radius-md)",
 				// 	},
 				// },
-				// mobileBreakpoint: "sm",
+				// mobileBreakpoint: undefined, // defaults to AppBuilderTemplateSelector.mobileBreakpoint ("md")
+				// mobileFallback: {
+				// 	container: "right",
+				// 	// disabled: false,
+				// 	// previewIcon: "tabler:info-circle",
+				// 	// position: "after",
+				// 	// order: 0,
+				// },
 				// previewIconProps: {
 				// 	paperStyleProps: legacyViewportIconsDefaultStyleProps.style,
 				// 	paperProps: legacyViewportIconsDefaultStyleProps.paperProps,
@@ -1473,7 +1547,14 @@ export const useCustomTheme = (props: Props = {}) => {
 				// 		borderRadius: "var(--mantine-radius-md)",
 				// 	},
 				// },
-				// mobileBreakpoint: "sm",
+				// mobileBreakpoint: undefined, // defaults to AppBuilderTemplateSelector.mobileBreakpoint ("md")
+				// mobileFallback: {
+				// 	container: "right",
+				// 	// disabled: false,
+				// 	// previewIcon: "tabler:info-circle",
+				// 	// position: "after",
+				// 	// order: 0,
+				// },
 				// previewIconProps: {
 				// 	paperStyleProps: legacyViewportIconsDefaultStyleProps.style,
 				// 	paperProps: legacyViewportIconsDefaultStyleProps.paperProps,
@@ -1591,6 +1672,16 @@ export const useCustomTheme = (props: Props = {}) => {
 			ViewportOverlayWrapper: ViewportOverlayWrapperThemeProps({
 				// position: "bottom-right" // "top-left" | "top-right" | "bottom-left" | "bottom-right"
 			}),
+			/**
+			 * AgentUi
+			 *
+			 * Chrome for the configured agent. `mode` is `iframe` (docked in
+			 * the viewport) or `window` (popup). `showThreadHistory` and
+			 * `createThreadOnLoad` both default on.
+			 */
+			AgentUi: AgentUiComponentThemeProps({
+				mode: "iframe",
+			}),
 		},
 	});
 
@@ -1670,6 +1761,10 @@ export const useCustomTheme = (props: Props = {}) => {
 					appBuilderResolver,
 				)
 			: appBuilderResolver;
+
+	useEffect(() => {
+		publishResolvedTheme(theme);
+	}, [theme]);
 
 	return {
 		theme,

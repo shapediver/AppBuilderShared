@@ -5,6 +5,7 @@ import {
 import {
 	AppBuilderActionType,
 	IAppBuilderActionDefinition,
+	IAppBuilderControlActionRef,
 	IAppBuilderToolbarActionItem,
 	IAppBuilderToolbarActionMenuItem,
 	IAppBuilderToolbarControlItem,
@@ -58,13 +59,12 @@ export const isButtonEnabled = (value: boolean | undefined) => value !== false;
 const toActionControl = (
 	definition: IAppBuilderActionDefinition,
 	presentation: Pick<
-		IAppBuilderToolbarControlItem,
+		IAppBuilderControlActionRef,
 		"icon" | "label" | "tooltip"
 	> = {},
 ): IAppBuilderToolbarControlItem => ({
-	...presentation,
 	type: "action",
-	props: {definition},
+	props: {...presentation, definition},
 });
 
 // Action menu entries are still semantic actions, but they render with Mantine
@@ -73,17 +73,14 @@ const toActionControl = (
 const toActionItem = (
 	definition: IAppBuilderActionDefinition,
 	presentation: Pick<
-		IAppBuilderToolbarActionItem,
+		IAppBuilderControlActionRef,
 		"icon" | "label" | "tooltip"
 	> = {},
 ): IAppBuilderToolbarActionItem => ({
-	...presentation,
 	type: "action",
 	presentation: "item",
 	props: {
-		label: presentation.label,
-		icon: presentation.icon,
-		tooltip: presentation.tooltip,
+		...presentation,
 		definition,
 	},
 });
@@ -140,9 +137,11 @@ const createHistoryMenuItem = (
 
 	return {
 		type: "actionMenu",
-		icon: "tabler:dots-vertical",
-		label: "More options",
-		props: {sections},
+		props: {
+			icon: "tabler:dots-vertical",
+			label: "More options",
+			sections,
+		},
 	};
 };
 
@@ -158,9 +157,9 @@ const createCamerasMenuItem = (
 
 	return {
 		type: "actionMenu",
-		icon: "tabler:video",
-		label: "Cameras",
 		props: {
+			icon: "tabler:video",
+			label: "Cameras",
 			sections: [
 				cameras.map((camera) =>
 					toActionItem(

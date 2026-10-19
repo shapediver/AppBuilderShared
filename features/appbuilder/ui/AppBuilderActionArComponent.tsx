@@ -1,6 +1,11 @@
-import {useAppBuilderActionAr} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionAr";
-import {Loader, Modal, Text} from "@mantine/core";
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
+import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionAr} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionAr";
+import {useState} from "react";
 import {
+	AppBuilderActionType,
 	IAppBuilderActionPropsAr,
 	IAppBuilderActionPropsCommon,
 } from "../config/appbuilder";
@@ -26,55 +31,36 @@ export default function AppBuilderActionArComponent(props: Props) {
 		toolbarButtonProps,
 		disabled,
 	} = props;
-	const {
-		trigger,
-		disabled: resolvedDisabled,
-		loading,
-		opened,
-		close,
-		arLink,
-		arError,
-	} = useAppBuilderActionAr({namespace, viewportId, disabled});
+	const [loading, setLoading] = useState(false);
+	const {viewportId: defaultViewportId} = useViewportId();
+	const actionViewportId = viewportId ?? defaultViewportId;
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const viewportApi = useShapeDiverStoreViewport(
+		(state) => state.viewports[actionViewportId],
+	);
+	const resolvedDisabled = disabled || hasPendingChanges || !viewportApi;
+	const onClick = createActionClickHandler(
+		() =>
+			runAppBuilderActionAr(
+				{
+					type: AppBuilderActionType.Ar,
+					props: {viewportId: actionViewportId},
+				},
+				{namespace, viewportId: actionViewportId},
+			),
+		{disabled: resolvedDisabled, setLoading},
+	);
 
 	return (
-		<>
-			<AppBuilderActionBase
-				presentation={presentation}
-				label={label}
-				icon={icon}
-				tooltip={tooltip}
-				onClick={() => void trigger()}
-				loading={loading}
-				disabled={resolvedDisabled}
-				toolbarButtonProps={toolbarButtonProps}
-			/>
-			<Modal
-				opened={opened}
-				onClose={close}
-				title="Scan the code"
-				centered
-			>
-				{arError ? (
-					<Text c="red">{arError}</Text>
-				) : (
-					<>
-						<Text>
-							Scan the QR code below using your mobile device to
-							see the model in AR. The code is compatible with
-							Android and iOS devices.
-						</Text>
-						{loading ? (
-							<Loader />
-						) : (
-							<img
-								alt="Augment reality"
-								height="180px"
-								src={arLink}
-							/>
-						)}
-					</>
-				)}
-			</Modal>
-		</>
+		<AppBuilderActionBase
+			presentation={presentation}
+			label={label}
+			icon={icon}
+			tooltip={tooltip}
+			onClick={onClick}
+			loading={loading}
+			disabled={resolvedDisabled}
+			toolbarButtonProps={toolbarButtonProps}
+		/>
 	);
 }

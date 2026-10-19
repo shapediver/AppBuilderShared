@@ -1,4 +1,7 @@
-import {useAppBuilderActionSetBrowserLocation} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionSetBrowserLocation";
+import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionSetBrowserLocation} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionSetBrowserLocation";
+import {useState} from "react";
 import {IAppBuilderLegacyActionPropsSetBrowserLocation} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -7,6 +10,7 @@ import AppBuilderActionBase, {
 type Props = IAppBuilderLegacyActionPropsSetBrowserLocation &
 	AppBuilderActionRenderProps & {
 		namespace: string;
+		viewportId?: string;
 	};
 
 /**
@@ -30,16 +34,19 @@ export default function AppBuilderActionSetBrowserLocationComponent(
 		presentation,
 		toolbarButtonProps,
 		disabled,
+		viewportId: inputViewportId,
 	} = props;
-	const {trigger, loading} = useAppBuilderActionSetBrowserLocation({
-		href,
-		pathname,
-		search,
-		hash,
-		namespace,
-		target,
-		disabled,
-	});
+	const [loading, setLoading] = useState(false);
+	const {viewportId: defaultViewportId} = useViewportId();
+	const viewportId = inputViewportId ?? defaultViewportId;
+	const onClick = createActionClickHandler(
+		() =>
+			runAppBuilderActionSetBrowserLocation(
+				{href, pathname, search, hash, target},
+				{namespace, viewportId},
+			),
+		{disabled, setLoading},
+	);
 
 	return (
 		<AppBuilderActionBase
@@ -48,7 +55,7 @@ export default function AppBuilderActionSetBrowserLocationComponent(
 			icon={icon}
 			tooltip={tooltip}
 			loading={loading}
-			onClick={trigger}
+			onClick={onClick}
 			disabled={disabled}
 			toolbarButtonProps={toolbarButtonProps}
 		/>

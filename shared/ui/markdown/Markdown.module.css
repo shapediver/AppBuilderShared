@@ -1,0 +1,11 @@
+.listItem {
+	max-width: calc(100% - 1.5em);
+}
+
+.markdownNormalize {
+	font-weight: normal;
+
+	p:last-child {
+		margin-bottom: 0 !important;
+	}
+}

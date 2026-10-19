@@ -1,5 +1,6 @@
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 import {ToolsApiConnectorFactory} from "../api/toolsApiConnector";
+import type {ExecutableSpecificTool} from "../config/resolveSpecificTools";
 import type {ResolvedGenericTool} from "../config/resolveToolset";
 import {
 	TOOLS_API_NAME_AGENT,
@@ -11,12 +12,13 @@ import {
 import type {
 	IToolsApiConnector,
 	IToolsApiHandlerMap,
+	IToolsApiModelStateHandlers,
 } from "../config/toolsApiConnector";
 
 /**
  * Props for the App Builder ToolsApi **server** hook.
  *
- * `resolvedTools` / `toolHandlers` / `snapshotComplete` come from
+ * `resolvedGenericTools` / `toolHandlers` / `snapshotComplete` come from
  * {@link useAgentToolRuntime} — the same snapshot WebMCP uses. Do not build a
  * second toolset here.
  */
@@ -30,7 +32,9 @@ export type UseToolsApiConnectorProps = {
 	 */
 	window?: Window | null;
 	/** Tools this connector may list and execute (`resolveToolset` output). */
-	resolvedTools: ResolvedGenericTool[];
+	resolvedGenericTools: ResolvedGenericTool[];
+	/** Specific tools from the same snapshot. Each carries `execute`. */
+	resolvedSpecificTools?: ExecutableSpecificTool[];
 	/** Live handlers keyed by generic tool name. Same object WebMCP registers. */
 	toolHandlers: IToolsApiHandlerMap;
 	/**
@@ -48,34 +52,51 @@ export type UseToolsApiConnectorProps = {
 	 * `undefined` / omit → `getSessionInfo` replies `{}`.
 	 */
 	sessionInfo?: IAgentSessionInfo;
+	/**
+	 * Resolved AgentUi history flag. Included on `getAgentConfig` at connect
+	 * time. `undefined` leaves the reply without the field (older hosts).
+	 */
+	showThreadHistory?: boolean;
+	/**
+	 * Resolved AgentUi load flag. Included on `getAgentConfig` at connect
+	 * time. Independent of history chrome.
+	 */
+	createThreadOnLoad?: boolean;
+	/**
+	 * Create and import model state. Omit → those ToolsApi calls reject.
+	 * Not part of the agent tool list.
+	 */
+	modelState?: IToolsApiModelStateHandlers;
 };
 
 /**
  * App Builder entry for window-to-window **ToolsApi** (CrossWindow).
  *
  * This is the **server**. It does not implement tools. It binds the already-built
- * runtime (`resolvedTools` + `toolHandlers`) to a peer window so an external
+ * runtime (`resolvedGenericTools` + `resolvedSpecificTools` + `toolHandlers`) to a peer window so an external
  * agent can `listTools()` / `execute()` without WebMCP.
  *
  * ```
  * App Builder page                         Agent window (Step 3)
  * -----------------                        ---------------------
  * useAgentToolRuntime                      ToolsApiFactory.getClientApi
- *   resolvedTools + toolHandlers + agentConfig + sessionInfo
+ *   resolvedGenericTools + resolvedSpecificTools + toolHandlers + agentConfig + sessionInfo
  *         │                                         │
  *         ├─ useWebMcpTools (same map)              │
  *         └─ useToolsApiConnector  ←── postMessage ─┘
  *              ToolsApiConnector
  *              LIST_TOOLS  → listToolsFromResolved
- *              EXECUTE_TOOL → executeResolvedTool → handlers
- *              GET_AGENT_CONFIG → { id, name, message } | null
+ *              EXECUTE_TOOL → executeResolvedTool → handlers or tool.execute
+ *              GET_AGENT_CONFIG → { id, name, message, profileName? } | null
  *              GET_SESSION_INFO → { jwtToken, slug, modelStateId }
+ *              GET_THEME → complete theme from useCustomTheme
+ *              CREATE_MODEL_STATE / IMPORT_MODEL_STATE → modelState handlers
  * ```
  *
  * **When it connects.** Effect runs only if `window` is set **and**
  * `snapshotComplete` is true. Otherwise it returns without creating a connector.
  *
- * **Why refs.** `resolvedTools`, `toolHandlers`, `agentConfig`, and `sessionInfo`
+ * **Why refs.** `resolvedGenericTools`, `resolvedSpecificTools`, `toolHandlers`, `agentConfig`, and `sessionInfo`
  * are stored in refs and read when `getConnectorApi` resolves. The effect depends
  * only on `[peerWindow, snapshotComplete]` so a new handler identity does not tear
  * down the handshake. The constructor of `ToolsApiConnector` still captures the
@@ -85,40 +106,58 @@ export type UseToolsApiConnectorProps = {
  * **Lifecycle.**
  * 1. `ToolsApiConnectorFactory.getConnectorApi(peer, tools, handlers, "app", "agent", {timeout: 20000})`
  * 2. Connector registers LIST_TOOLS / EXECUTE_TOOL / GET_AGENT_CONFIG /
- *    GET_SESSION_INFO **then** starts handshake.
+ *    GET_SESSION_INFO / GET_THEME **then** starts handshake.
  * 3. `peerIsReady` rejection is swallowed so a missed handshake is not an
  *    unhandled rejection. Transport throw → empty catch (no fake toolset).
  * 4. Cleanup sets `effectAbandoned` and `cancel()`s listeners + handshake.
- *    If `getConnectorApi` finishes after unmount, the connector is cancelled
- *    immediately.
+ *    If `getConnectorApi` finishes after the effect was abandoned (unmount,
+ *    Strict Mode remount, or a peer window swap), the connector is cancelled
+ *    immediately. `peerIsReady` is caught before `cancel()` so the handshake
+ *    rejection stays handled.
  *
- * **This hook returns void.** Callers do not get `IToolsApi`; that object lives
- * in the agent window. Success is "peer can list/execute/getAgentConfig/getSessionInfo". Failure
- * is silent at this layer (no UI).
+ * **This hook returns whether the handshake is up.** Callers do not get
+ * `IToolsApi`; that object lives in the agent window. Success is "peer can
+ * list/execute/getAgentConfig/getSessionInfo/getTheme". Failure is silent at this layer
+ * (no UI) and the result stays `false`.
  *
  * @see ToolsApiConnectorFactory.getConnectorApi
  * @see IToolsApi — client in the agent window
  * @see useAgentToolRuntime — shared snapshot + handlers
  * @see useWebMcpTools — parallel transport, not a dependency
  */
-export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
+export function useToolsApiConnector(
+	props: UseToolsApiConnectorProps,
+): boolean {
 	const {
 		window: peerWindow,
-		resolvedTools,
+		resolvedGenericTools,
+		resolvedSpecificTools = [],
 		toolHandlers,
 		snapshotComplete,
 		agentConfig,
 		sessionInfo,
+		showThreadHistory,
+		createThreadOnLoad,
+		modelState,
 	} = props;
 
-	const resolvedToolsRef = useRef(resolvedTools);
-	resolvedToolsRef.current = resolvedTools;
+	const resolvedGenericToolsRef = useRef(resolvedGenericTools);
+	resolvedGenericToolsRef.current = resolvedGenericTools;
+	const resolvedSpecificToolsRef = useRef(resolvedSpecificTools);
+	resolvedSpecificToolsRef.current = resolvedSpecificTools;
 	const toolHandlersRef = useRef(toolHandlers);
 	toolHandlersRef.current = toolHandlers;
 	const agentConfigRef = useRef(agentConfig);
 	agentConfigRef.current = agentConfig;
 	const sessionInfoRef = useRef(sessionInfo);
 	sessionInfoRef.current = sessionInfo;
+	const showThreadHistoryRef = useRef(showThreadHistory);
+	showThreadHistoryRef.current = showThreadHistory;
+	const createThreadOnLoadRef = useRef(createThreadOnLoad);
+	createThreadOnLoadRef.current = createThreadOnLoad;
+	const modelStateRef = useRef(modelState);
+	modelStateRef.current = modelState;
+	const [peerConnected, setPeerConnected] = useState(false);
 
 	useEffect(() => {
 		if (!peerWindow || !snapshotComplete) {
@@ -132,27 +171,43 @@ export function useToolsApiConnector(props: UseToolsApiConnectorProps): void {
 			try {
 				connector = await ToolsApiConnectorFactory.getConnectorApi(
 					peerWindow,
-					resolvedToolsRef.current,
+					resolvedGenericToolsRef.current,
 					toolHandlersRef.current,
 					TOOLS_API_NAME_APP,
 					TOOLS_API_NAME_AGENT,
 					{timeout: TOOLS_API_TIMEOUT_MS},
 					agentConfigRef.current,
 					sessionInfoRef.current,
+					resolvedSpecificToolsRef.current,
+					showThreadHistoryRef.current,
+					createThreadOnLoadRef.current,
+					modelStateRef.current,
 				);
-				void connector.peerIsReady.catch(() => {});
 				if (effectAbandoned) {
+					// cancel() rejects an in-flight handshake. Attach a handler
+					// first so unmount, Strict Mode, and peer swaps stay quiet.
+					const abandoned = connector.peerIsReady.catch(
+						() => undefined,
+					);
 					connector.cancel();
+					await abandoned;
 					return;
 				}
+				await connector.peerIsReady;
+				if (!effectAbandoned) {
+					setPeerConnected(true);
+				}
 			} catch {
-				// getConnectorApi / transport failure — not a fake toolset
+				// getConnectorApi / handshake failure — not a fake toolset
 			}
 		})();
 
 		return () => {
 			effectAbandoned = true;
+			setPeerConnected(false);
 			connector?.cancel();
 		};
 	}, [peerWindow, snapshotComplete]);
+
+	return peerConnected;
 }

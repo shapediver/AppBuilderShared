@@ -2,6 +2,7 @@ import type {IconType} from "@AppBuilderLib/shared/ui/icon/Icon.types";
 import type {
 	AppBuilderToolbarAlign,
 	AppBuilderToolbarSide,
+	IAppBuilderActionSlots,
 	IAppBuilderControlActionRef,
 	IAppBuilderToolbarExportItem,
 	IAppBuilderToolbarOutputItem,
@@ -21,6 +22,7 @@ export type ToolbarItemBase<TType extends string, TProps> = {
 	labelAlign?: AppBuilderToolbarAlign;
 	disabled?: boolean;
 	props: TProps;
+	actionSlots?: IAppBuilderActionSlots;
 };
 
 /** A declarative App Builder action rendered in a toolbar or toolbar menu. */
@@ -67,6 +69,11 @@ export type ToolbarCommandItem = ToolbarItemBase<
 	"command",
 	{
 		execute: () => void | Promise<void>;
+		/**
+		 * Keep the button enabled while parameters are executing.
+		 * Other commands stay disabled for that time.
+		 */
+		allowDuringExecution?: boolean;
 		batchUpdate?: {
 			namespace: string;
 			parameterId: string;
@@ -92,6 +99,8 @@ export type ToolbarCheckboxItem = ToolbarItemBase<
 		/** Optional parameter-scoped action displayed beside the checkbox. */
 		trailingAction?: {
 			label: string;
+			/** Toolbar tooltip when this action is promoted to a command. Falls back to `label`. */
+			tooltip?: string;
 			icon: IconType;
 			execute: () => void;
 			disabled?: boolean;

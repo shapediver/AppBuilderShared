@@ -1,5 +1,7 @@
-import {useAppBuilderActionImportModelState} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderActionImportModelState";
-import ImportModelStateDialog from "@AppBuilderLib/features/model-state/ui/ImportModelStateDialog";
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
+import {createActionClickHandler} from "@AppBuilderLib/features/appbuilder/lib/createActionClickHandler";
+import {runAppBuilderActionImportModelState} from "@AppBuilderLib/features/appbuilder/model/runAppBuilderActionImportModelState";
+import {useState} from "react";
 import {IAppBuilderLegacyActionPropsImportModelState} from "../config/appbuilder";
 import AppBuilderActionBase, {
 	AppBuilderActionRenderProps,
@@ -23,29 +25,24 @@ export default function AppBuilderActionImportModelStateComponent(
 		toolbarButtonProps,
 		disabled,
 	} = props;
-	const {
-		trigger,
-		disabled: resolvedDisabled,
-		opened,
-		close,
-	} = useAppBuilderActionImportModelState({namespace, disabled});
+	const [loading, setLoading] = useState(false);
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
+	const resolvedDisabled = disabled || hasPendingChanges;
+	const onClick = createActionClickHandler(
+		() => runAppBuilderActionImportModelState(namespace),
+		{disabled: resolvedDisabled, setLoading},
+	);
 
 	return (
-		<>
-			<AppBuilderActionBase
-				presentation={presentation}
-				label={label}
-				icon={icon}
-				tooltip={tooltip}
-				onClick={trigger}
-				disabled={resolvedDisabled}
-				toolbarButtonProps={toolbarButtonProps}
-			/>
-			<ImportModelStateDialog
-				opened={opened}
-				onClose={close}
-				namespace={namespace}
-			/>
-		</>
+		<AppBuilderActionBase
+			presentation={presentation}
+			label={label}
+			icon={icon}
+			tooltip={tooltip}
+			onClick={onClick}
+			loading={loading}
+			disabled={resolvedDisabled}
+			toolbarButtonProps={toolbarButtonProps}
+		/>
 	);
 }

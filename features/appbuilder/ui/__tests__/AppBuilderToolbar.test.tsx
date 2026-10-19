@@ -91,16 +91,14 @@ const createToolbar = (side: ToolbarRegistration["side"]) =>
 				{
 					id: "first",
 					type: "widgets",
-					label: "First",
-					props: {widgets: []},
+					props: {label: "First", widgets: []},
 				},
 			],
 			[
 				{
 					id: "second",
 					type: "widgets",
-					label: "Second",
-					props: {widgets: []},
+					props: {label: "Second", widgets: []},
 				},
 			],
 		],

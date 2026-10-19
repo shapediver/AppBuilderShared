@@ -9,7 +9,10 @@ const CLIENT_FILES = [
 	"features/agent-tools/config/toolsApi.ts",
 ] as const;
 
-function isAllowedExternal(specifier: string): boolean {
+function isAllowedExternal(
+	specifier: string,
+	_importedNames: string[],
+): boolean {
 	if (specifier === "post-robot") {
 		return true;
 	}

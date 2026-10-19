@@ -4,14 +4,24 @@ import {
 } from "@shapediver/sdk.geometry-api-sdk-v2";
 import {
 	Gradient,
-	ICameraOptions,
 	ISelectionParameterProps,
 	OrthographicCameraProperties,
 	PerspectiveCameraProperties,
 	SessionCreationDefinition,
 	TAG3D_JUSTIFICATION,
 } from "@shapediver/viewer.shared.types";
-import {AppBuilderActionType} from "./appBuilderActionType";
+import type {
+	IAppBuilderActionDefinition,
+	IAppBuilderActionPropsCommon,
+	IAppBuilderActionPropsCreateModelState,
+	IAppBuilderActionPropsSetParameterValue,
+	IAppBuilderLegacyActionDefinition,
+	AppBuilderSetParameterValuesUpdateMode as SetParameterValuesUpdateMode,
+} from "./appbuilderActions";
+import type {
+	IAppBuilderNodeActionSlots,
+	IAppBuilderRootActionSlots,
+} from "./appbuilderActionSlots";
 import type {IAppBuilderAgent} from "./appbuilderagent";
 import {
 	IAppBuilderWidgetPropsAreaChart,
@@ -21,8 +31,105 @@ import {
 } from "./appbuildercharts";
 import type {IAppBuilderColor} from "./appbuilderColor";
 
-export {AppBuilderActionType};
+export {
+	isAddToCartAction,
+	isAnimateCameraAction,
+	isArAction,
+	isAssignCameraAction,
+	isCameraAction,
+	isCloseConfiguratorAction,
+	isCreateModelStateAction,
+	isExecuteActionsAction,
+	isExportParameterValuesAction,
+	isFullscreenAction,
+	isImportModelStateAction,
+	isImportParameterValuesAction,
+	isMessageToParentAction,
+	isRedoAction,
+	isResetCameraAction,
+	isResetParameterValuesAction,
+	isSetBrowserLocationAction,
+	isSetCameraAction,
+	isSetContainerVisibilityAction,
+	isSetParameterValueAction,
+	isSetParameterValuesAction,
+	isSoundAction,
+	isUndoAction,
+	isZoomToCameraAction,
+} from "./appbuilderActions";
+export type {
+	IAppBuilderActionDefinition,
+	IAppBuilderActionPropsAddToCart,
+	IAppBuilderActionPropsAr,
+	IAppBuilderActionPropsCamera,
+	IAppBuilderActionPropsCloseConfigurator,
+	IAppBuilderActionPropsCommon,
+	IAppBuilderActionPropsCreateModelState,
+	IAppBuilderActionPropsExecuteActions,
+	IAppBuilderActionPropsExportParameterValues,
+	IAppBuilderActionPropsFullscreen,
+	IAppBuilderActionPropsImportModelState,
+	IAppBuilderActionPropsImportParameterValues,
+	IAppBuilderActionPropsMessageToParent,
+	IAppBuilderActionPropsRedo,
+	IAppBuilderActionPropsResetParameterValues,
+	IAppBuilderActionPropsSetBrowserLocation,
+	IAppBuilderActionPropsSetContainerVisibility,
+	IAppBuilderActionPropsSetParameterValue,
+	IAppBuilderActionPropsSetParameterValues,
+	IAppBuilderActionPropsSound,
+	IAppBuilderActionPropsUndo,
+	IAppBuilderLegacyActionDefinition,
+	IAppBuilderLegacyActionPropsAddToCart,
+	IAppBuilderLegacyActionPropsAr,
+	IAppBuilderLegacyActionPropsCamera,
+	IAppBuilderLegacyActionPropsCloseConfigurator,
+	IAppBuilderLegacyActionPropsCreateModelState,
+	IAppBuilderLegacyActionPropsExecuteActions,
+	IAppBuilderLegacyActionPropsExportParameterValues,
+	IAppBuilderLegacyActionPropsFullscreen,
+	IAppBuilderLegacyActionPropsImportModelState,
+	IAppBuilderLegacyActionPropsImportParameterValues,
+	IAppBuilderLegacyActionPropsMessageToParent,
+	IAppBuilderLegacyActionPropsRedo,
+	IAppBuilderLegacyActionPropsResetParameterValues,
+	IAppBuilderLegacyActionPropsSetBrowserLocation,
+	IAppBuilderLegacyActionPropsSetContainerVisibility,
+	IAppBuilderLegacyActionPropsSetParameterValue,
+	IAppBuilderLegacyActionPropsSetParameterValues,
+	IAppBuilderLegacyActionPropsSound,
+	IAppBuilderLegacyActionPropsUndo,
+	IAppBuilderPropsAnimateCamera,
+	IAppBuilderPropsAssignCamera,
+	IAppBuilderPropsResetCamera,
+	IAppBuilderPropsSetCamera,
+	IAppBuilderPropsZoomToCamera,
+} from "./appbuilderActions";
+export type {
+	AppBuilderActionSlotEventPropsType,
+	AppBuilderApplicationEvent,
+	AppBuilderCustomEventName,
+	AppBuilderInteractionEvent,
+	AppBuilderKnownEvent,
+	AppBuilderUiEvent,
+	IAppBuilderActionSlot,
+	IAppBuilderActionSlotEventProps,
+	IAppBuilderActionSlotEventPropsExport,
+	IAppBuilderActionSlotEventPropsSelection,
+	IAppBuilderActionSlotEventPropsSession,
+	IAppBuilderActionSlotList,
+	IAppBuilderActionSlots,
+	IAppBuilderExportActionSlot,
+	IAppBuilderNodeActionSlots,
+	IAppBuilderPlainActionSlot,
+	IAppBuilderRootActionSlots,
+	IAppBuilderSelectionActionSlot,
+	IAppBuilderSessionActionSlot,
+} from "./appbuilderActionSlots";
+export {AppBuilderActionType} from "./appBuilderActionType";
 export type {IAppBuilderColor};
+export type AppBuilderSetParameterValuesUpdateMode =
+	SetParameterValuesUpdateMode;
 
 /** How a string text input commits values to the session. */
 export enum ParameterStringInputMode {
@@ -204,11 +311,19 @@ export interface IFilterableDatabaseSettings {
 	 * and "itemData" properties.
 	 */
 	filters: {
-		/** Index of the column to filter. */
+		/** Index of the column to filter (option values and matching / selection keys). */
 		column: number;
 		/**
-		 * Optional display name for the filter group in the UI (accordion title, active tags).
-		 * Defaults to `Filter ${index + 1}` when omitted.
+		 * Optional 0-based column index for per-option *text*. Matching and
+		 * selection keys stay on `column`. Omit to show the value as the label.
+		 * Out-of-range indices behave like an empty cell.
+		 * Distinct from `label`, which is the filter group / accordion title.
+		 */
+		columnLabel?: number;
+		/**
+		 * Optional display name for the filter group in the UI (accordion title,
+		 * active tag group context). Not used as option text — use `columnLabel`
+		 * for per-option display names. Defaults to `Filter ${index + 1}` when omitted.
 		 */
 		label?: string;
 		/**
@@ -329,6 +444,14 @@ export interface IAppBuilderParameterRef {
 	disableIfDirty?: boolean;
 	/** Ask the user to accept or reject changes of this parameter before executing them. */
 	acceptRejectMode?: boolean;
+	/**
+	 * Where accept/reject controls are shown when `acceptRejectMode` is enabled.
+	 * "global" uses the shared viewport, toolbar, or widget buttons.
+	 * "inline" shows Accept and Reject inside this parameter's control, and only
+	 * while that parameter has a queued change.
+	 * Defaults to "global".
+	 */
+	acceptRejectModePresentation?: "global" | "inline";
 }
 
 /** Reference to an export (defined by the session) */
@@ -344,8 +467,29 @@ export interface IAppBuilderExportRef {
 	>;
 }
 
+/**
+ * Neutral node-level fields shared by widgets, tabs, containers, controls,
+ * and toolbar items. Future node-level properties (for example style,
+ * SS-9919) belong here, not inside widget `props`.
+ *
+ * The root {@link IAppBuilder} does not extend this. Its slots also include
+ * application events.
+ *
+ * @see [Action slots](../action-slots.md)
+ */
+export interface IAppBuilderNode {
+	/**
+	 * Actions assigned to events emitted by this node.
+	 * Pointer, click, contextmenu, and `custom:*` only.
+	 * Zod rejects any other event name, and `eventProps`.
+	 *
+	 * @see [Action slots](../action-slots.md)
+	 */
+	actionSlots?: IAppBuilderNodeActionSlots;
+}
+
 /** An App Builder control. */
-export interface IAppBuilderControl {
+export interface IAppBuilderControl extends IAppBuilderNode {
 	/** Type of the control. */
 	type: AppBuilderControlType;
 	/** Properties of the control. */
@@ -363,8 +507,23 @@ export type AppBuilderControlType =
 	| "action"
 	| "output";
 
+/**
+ * Presentation of a control or toolbar panel (widget/button or toolbar icon).
+ * `labelSide` / `labelAlign` apply only on a toolbar; ignored elsewhere.
+ */
+export interface IAppBuilderControlPresentation {
+	label?: string;
+	/** Icon name, image URL, or inline Iconify object. */
+	icon?: IAppBuilderIcon;
+	tooltip?: string;
+	/** When set with a non-empty label, show the caption on this side of the icon. */
+	labelSide?: AppBuilderToolbarSide;
+	/** Cross-axis alignment of the icon caption. Default "center". */
+	labelAlign?: AppBuilderToolbarAlign;
+}
+
 /** Control referencing a parameter (custom or defined by the session) */
-export interface IAppBuilderControlParameterRef {
+export interface IAppBuilderControlParameterRef extends IAppBuilderControlPresentation {
 	/** Id or name or displayname of the referenced parameter (in that order). */
 	name: string;
 	/** Optional id of the session the referenced parameter belongs to. */
@@ -378,12 +537,20 @@ export interface IAppBuilderControlParameterRef {
 	disableIfDirty?: boolean;
 	/** Ask the user to accept or reject changes of this parameter before executing them. */
 	acceptRejectMode?: boolean;
+	/**
+	 * Where accept/reject controls are shown when `acceptRejectMode` is enabled.
+	 * "global" uses the shared viewport, toolbar, or widget buttons.
+	 * "inline" shows Accept and Reject inside this parameter's control, and only
+	 * while that parameter has a queued change.
+	 * Defaults to "global".
+	 */
+	acceptRejectModePresentation?: "global" | "inline";
 	/** Identifiers of the parameters that shall be updated in addition. */
 	delegates: Array<Pick<IAppBuilderParameterRef, "name" | "sessionId">>;
 }
 
 /** Control referencing an export (defined by the session) */
-export interface IAppBuilderControlExportRef {
+export interface IAppBuilderControlExportRef extends IAppBuilderControlPresentation {
 	/** Id or name or displayname of the referenced export (in that order). */
 	name: string;
 	/** Optional id of the session the referenced export belongs to. */
@@ -401,7 +568,7 @@ export interface IAppBuilderControlExportRef {
 }
 
 /** Control referencing an output (defined by the session) */
-export interface IAppBuilderControlOutputRef {
+export interface IAppBuilderControlOutputRef extends IAppBuilderControlPresentation {
 	/** Id or name or displayname of the referenced output (in that order). */
 	name: string;
 	/** Optional id of the session the referenced output belongs to. */
@@ -413,80 +580,11 @@ export interface IAppBuilderControlOutputRef {
 	>;
 }
 
-/** An App Builder action definition. */
-export type IAppBuilderActionDefinition =
-	| {
-			type: AppBuilderActionType.CreateModelState;
-			props: IAppBuilderActionPropsCreateModelState;
-	  }
-	| {
-			type: AppBuilderActionType.AddToCart;
-			props: IAppBuilderActionPropsAddToCart;
-	  }
-	| {
-			type: AppBuilderActionType.SetParameterValue;
-			props: IAppBuilderActionPropsSetParameterValue;
-	  }
-	| {
-			type: AppBuilderActionType.SetParameterValues;
-			props: IAppBuilderActionPropsSetParameterValues;
-	  }
-	| {
-			type: AppBuilderActionType.SetBrowserLocation;
-			props: IAppBuilderActionPropsSetBrowserLocation;
-	  }
-	| {
-			type: AppBuilderActionType.CloseConfigurator;
-			props: IAppBuilderActionPropsCloseConfigurator;
-	  }
-	| {type: AppBuilderActionType.Ar; props: IAppBuilderActionPropsAr}
-	| {
-			type: AppBuilderActionType.Fullscreen;
-			props: IAppBuilderActionPropsFullscreen;
-	  }
-	| {type: AppBuilderActionType.Undo; props: IAppBuilderActionPropsUndo}
-	| {type: AppBuilderActionType.Redo; props: IAppBuilderActionPropsRedo}
-	| {
-			type: AppBuilderActionType.ResetParameterValues;
-			props: IAppBuilderActionPropsResetParameterValues;
-	  }
-	| {
-			type: AppBuilderActionType.ImportParameterValues;
-			props: IAppBuilderActionPropsImportParameterValues;
-	  }
-	| {
-			type: AppBuilderActionType.ExportParameterValues;
-			props: IAppBuilderActionPropsExportParameterValues;
-	  }
-	| {
-			type: AppBuilderActionType.ImportModelState;
-			props: IAppBuilderActionPropsImportModelState;
-	  }
-	| {type: AppBuilderActionType.Camera; props: IAppBuilderActionPropsCamera}
-	| {type: AppBuilderActionType.Sound; props: IAppBuilderActionPropsSound}
-	| {
-			type: AppBuilderActionType.MessageToParent;
-			props: IAppBuilderActionPropsMessageToParent;
-	  }
-	| {
-			type: AppBuilderActionType.SetContainerVisibility;
-			props: IAppBuilderActionPropsSetContainerVisibility;
-	  };
-
-/** Common properties of App Builder action controls and legacy actions. */
-export interface IAppBuilderActionPropsCommon {
-	/** Optional identifier of the action. Used to uniquely reference actions in agent definitions, etc. */
-	id?: string;
-	/** Label (of the button etc). Optional, defaults to a value depending on the type of action. Set to empty string to show only an icon. */
-	label?: string;
-	/** Optional icon name, image URL, or inline Iconify object (of the button etc). */
-	icon?: IAppBuilderIcon;
-	/** Optional tooltip. */
-	tooltip?: string;
-}
-
 /** Control referencing an action */
-export interface IAppBuilderControlActionRef extends IAppBuilderActionPropsCommon {
+export interface IAppBuilderControlActionRef
+	extends
+		IAppBuilderActionPropsCommon,
+		Pick<IAppBuilderControlPresentation, "labelSide" | "labelAlign"> {
 	/** Embedded action definition. */
 	definition: IAppBuilderActionDefinition;
 	/** In the future we might include a reference to a globally defined action here.  */
@@ -617,10 +715,10 @@ export interface IAppBuilderParameterValueSourcePropsModelState extends IAppBuil
  */
 export interface IAppBuilderParameterValueSourcePropsAgentTool {
 	/**
-	 * JSON path to the value in the agent tool's input data that should be used as the parameter value.
-	 * @see https://www.rfc-editor.org/info/rfc9535/
+	 * Path to one value in the agent tool input.
+	 * `length`, `shelf.x`, or `items[0]`. A leading `$.` is accepted.
 	 */
-	jsonPath: string;
+	path: string;
 }
 
 /** Definition of a parameter value source. */
@@ -644,403 +742,68 @@ export type IAppBuilderParameterValueDefinition =
 	| boolean
 	| IAppBuilderParameterValueSourceDefinition;
 
-/** Properties of a "setContainerVisibility" action. */
-export interface IAppBuilderActionPropsSetContainerVisibility {
-	/** Container to open or close. */
-	container: Pick<IAppBuilderContainer, "name"> & {
-		props?: Pick<NonNullable<IAppBuilderContainer["props"]>, "id">;
-	};
-	/** Mode of the action. */
-	mode: "open" | "close" | "toggle";
+/** assert parameter source */
+export function isParameterSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is IAppBuilderParameterValueSourceDefinition {
+	return (
+		isDataOutputSource(source) ||
+		isExportSource(source) ||
+		isSdtfSource(source) ||
+		isModelStateSource(source) ||
+		isScreenshotSource(source)
+	);
 }
 
-/**
- * Properties of a "createModelState" action (also inherited by "addToCart").
- *
- * @docAttached
- * @category feature
- * @configPath actions.createModelState.props
- * @displayName IAppBuilderActionPropsCreateModelState
- */
-export interface IAppBuilderActionPropsCreateModelState {
-	/**
-	 * Optional flag to control whether an image of the scene shall be
-	 * included with the model state.
-	 */
-	includeImage?: boolean;
-	/**
-	 * Optional image to be included when creating the model state for the line item.
-	 * In case no image is provided here, a screenshot of the model will be used
-	 * if @see {@link includeImage} is set to true.
-	 */
-	image?: IAppBuilderImageRef;
-	/**
-	 * Optional flag to control whether a glTF export of the scene shall be
-	 * included with the model state.
-	 */
-	includeGltf?: boolean;
-	/** Names of parameters to include in the model state. */
-	parameterNamesToInclude?: string[];
-	/** Names of parameters to exclude from the model state. */
-	parameterNamesToExclude?: string[];
-	/**
-	 * Optional screenshot settings applied when capturing the preview image
-	 * automatically (i.e. when {@link includeImage} is true and no explicit
-	 * {@link image} is provided).
-	 */
-	screenshotProps?: IAppBuilderParameterValueSourcePropsScreenshot;
-	/**
-	 * Optional success message shown after a model state has been created.
-	 * Supports the optional placeholder `{modelStateId}`.
-	 */
-	successMessage?: string;
-	/**
-	 * Optional error message shown when creating a model state fails.
-	 * Supports the optional placeholder `{modelStateId}` when available.
-	 */
-	errorMessage?: string;
+/** assert source type "dataOutput" */
+export function isDataOutputSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "dataOutput";
+	props: IAppBuilderParameterValueSourcePropsDataOutput;
+} {
+	return source.type === "dataOutput";
 }
 
-/** Properties of a legacy "createModelState" action. */
-export type IAppBuilderLegacyActionPropsCreateModelState =
-	IAppBuilderActionPropsCreateModelState & IAppBuilderActionPropsCommon;
-
-/**
- * Properties of an "addToCart" action.
- * This action triggers a corresponding message to the e-commerce system via the iframe API.
- * A response is awaited and the result is displayed to the user.
- */
-export interface IAppBuilderActionPropsAddToCart extends IAppBuilderActionPropsCreateModelState {
-	/**
-	 * Identifier of the product to add to the cart.
-	 * Optional, defaults to the product defined by the context.
-	 * Note that this productId is not necessarily the same as the id of the product
-	 * in the e-commerce system. Translations of product identifiers can be done by
-	 * the plug-in embedding App Builder in the respective e-commerce system.
-	 */
-	productId?: string;
-	/** Quantity of the line item to add to the cart (number of units). Optional, defaults to 1. */
-	quantity?: number;
-	/** Price of the product per unit. */
-	price?: number;
-	/** Description to be used for the line item. */
-	description?: string;
-	/**
-	 * Optional title to be used for overriding the product's default title
-	 * for the added line item.
-	 */
-	title?: string;
+/** assert source type "export" */
+export function isExportSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "export";
+	props: IAppBuilderParameterValueSourcePropsExport;
+} {
+	return source.type === "export";
 }
 
-/**
- * Properties of a legacy "addToCart" action.
- */
-export type IAppBuilderLegacyActionPropsAddToCart =
-	IAppBuilderActionPropsAddToCart & IAppBuilderActionPropsCommon;
-
-/**
- * Properties of a "setParameterValue" action.
- * This is a generalized parameter "key, value" pair, given by a
- *   * reference to a parameter, and
- *   * the value to set.
- */
-export interface IAppBuilderActionPropsSetParameterValue {
-	/** The parameter that should be set. */
-	parameter: Pick<IAppBuilderParameterRef, "name" | "sessionId">;
-	/** Value to set. Either "value" or "source" must be set. */
-	value?: string;
-	/** Source of the parameter value. Either "source" or "value" must be set. */
-	source?: IAppBuilderParameterValueSourceDefinition;
+/** assert source type "sdtf" */
+export function isSdtfSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "sdtf";
+	props: IAppBuilderParameterValueSourcePropsSdtf;
+} {
+	return source.type === "sdtf";
 }
 
-/** Properties of legacy a "setParameterValue" action. */
-export type IAppBuilderLegacyActionPropsSetParameterValue =
-	IAppBuilderActionPropsSetParameterValue & IAppBuilderActionPropsCommon;
-
-/** Properties of a "setParameterValues" action. */
-export interface IAppBuilderActionPropsSetParameterValues {
-	/** Parameter values to set. */
-	parameterValues: IAppBuilderActionPropsSetParameterValue[];
-	/** Optional user-facing message when the action runs. */
-	message?: string;
+/** assert source type "modelState" */
+export function isModelStateSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "modelState";
+	props: IAppBuilderParameterValueSourcePropsModelState;
+} {
+	return source.type === "modelState";
 }
 
-/** Properties of legacy a "setParameterValues" action. */
-export type IAppBuilderLegacyActionPropsSetParameterValues =
-	IAppBuilderActionPropsSetParameterValues & IAppBuilderActionPropsCommon;
-
-/**
- * Properties of a "setBrowserLocation" action.
- * @see https://developer.mozilla.org/en-US/docs/Web/API/Location
- * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/open
- */
-export interface IAppBuilderActionPropsSetBrowserLocation {
-	/**
-	 * href to set.
-	 * If this is defined, pathname, search and hash are ignored.
-	 */
-	href?: string;
-	/**
-	 * pathname to set (using the current origin).
-	 * If this is defined, search and hash are ignored.
-	 */
-	pathname?: string;
-	/**
-	 * search to set (using the current origin and pathname).
-	 * If this is defined, hash is ignored.
-	 */
-	search?: string;
-	/**
-	 * hash to set (using the current origin, pathname and search).
-	 */
-	hash?: string;
-	/**
-	 * Optional target. If specified, window.open is used to open the location.
-	 * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/open
-	 */
-	target?: "_self" | "_blank" | "_parent" | "_top";
+/** assert source type "screenshot" */
+export function isScreenshotSource(
+	source: IAppBuilderParameterValueSourceDefinition,
+): source is {
+	type: "screenshot";
+	props: IAppBuilderParameterValueSourcePropsScreenshot;
+} {
+	return source.type === "screenshot";
 }
-
-/** Properties of legacy a "setBrowserLocation" action. */
-export type IAppBuilderLegacyActionPropsSetBrowserLocation =
-	IAppBuilderActionPropsSetBrowserLocation & IAppBuilderActionPropsCommon;
-
-/** Properties of a "closeConfigurator" action. */
-export type IAppBuilderActionPropsCloseConfigurator = object;
-
-/** Properties of legacy a "closeConfigurator" action. */
-export type IAppBuilderLegacyActionPropsCloseConfigurator =
-	IAppBuilderActionPropsCloseConfigurator & IAppBuilderActionPropsCommon;
-
-/** Properties of an "ar" action. */
-export interface IAppBuilderActionPropsAr {
-	/** Optional viewport id. Defaults to the containing viewport. */
-	viewportId?: string;
-}
-
-/** Properties of legacy an "ar" action. */
-export type IAppBuilderLegacyActionPropsAr = IAppBuilderActionPropsAr &
-	IAppBuilderActionPropsCommon;
-
-/** Properties of a "fullscreen" action. */
-export interface IAppBuilderActionPropsFullscreen {
-	/** Fullscreen mode. */
-	type?: "fullscreen" | "fullscreen3States";
-	/** Optional fullscreen element id. */
-	fullscreenId?: string;
-}
-
-/** Properties of legacy a "fullscreen" action. */
-export type IAppBuilderLegacyActionPropsFullscreen =
-	IAppBuilderActionPropsFullscreen & IAppBuilderActionPropsCommon;
-
-/** Properties of an "undo" action. */
-export type IAppBuilderActionPropsUndo = object;
-
-/** Properties of a "redo" action. */
-export type IAppBuilderActionPropsRedo = object;
-
-/** Properties of legacy an "undo" action. */
-export type IAppBuilderLegacyActionPropsUndo = IAppBuilderActionPropsUndo &
-	IAppBuilderActionPropsCommon;
-
-/** Properties of legacy a "redo" action. */
-export type IAppBuilderLegacyActionPropsRedo = IAppBuilderActionPropsRedo &
-	IAppBuilderActionPropsCommon;
-
-/** Properties of a "resetParameterValues" action. */
-export type IAppBuilderActionPropsResetParameterValues = object;
-
-/** Properties of legacy a "resetParameterValues" action. */
-export type IAppBuilderLegacyActionPropsResetParameterValues =
-	IAppBuilderActionPropsResetParameterValues & IAppBuilderActionPropsCommon;
-
-/** Properties of an "importParameterValues" action. */
-export type IAppBuilderActionPropsImportParameterValues = object;
-
-/** Properties of legacy an "importParameterValues" action. */
-export type IAppBuilderLegacyActionPropsImportParameterValues =
-	IAppBuilderActionPropsImportParameterValues & IAppBuilderActionPropsCommon;
-
-/** Properties of an "exportParameterValues" action. */
-export type IAppBuilderActionPropsExportParameterValues = object;
-
-/** Properties of legacy an "exportParameterValues" action. */
-export type IAppBuilderLegacyActionPropsExportParameterValues =
-	IAppBuilderActionPropsExportParameterValues & IAppBuilderActionPropsCommon;
-
-/** Properties of an "importModelState" action. */
-export type IAppBuilderActionPropsImportModelState = object;
-
-/** Properties of legacy an "importModelState" action. */
-export type IAppBuilderLegacyActionPropsImportModelState =
-	IAppBuilderActionPropsImportModelState & IAppBuilderActionPropsCommon;
-
-type IAppBuilderPropsCameraCommon = {
-	/** Optional camera settings to be used. Defaults to the initial camera of the viewport. */
-	camera?:
-		| Partial<OrthographicCameraProperties>
-		| Partial<PerspectiveCameraProperties>;
-	/** Camera properties, including duration and easing. */
-	options?: ICameraOptions;
-};
-
-/** Properties of a "animate" action, where the camera is defined by an array of position and targets. */
-export type IAppBuilderPropsAnimateCamera = {
-	path: {
-		/** The position of the camera. */
-		position: [number, number, number];
-		/** The target the camera is looking at. */
-		target: [number, number, number];
-	}[];
-	/** Whether to start the animation from the current camera position and target. (default: true) */
-	startFromCurrent?: boolean;
-} & IAppBuilderPropsCameraCommon;
-
-/** Properties of an "assign" action, where the camera is defined by its properties. */
-export type IAppBuilderPropsAssignCamera = IAppBuilderPropsCameraCommon;
-
-/** Properties of a "set" action, where the camera is defined by position and target. */
-export type IAppBuilderPropsSetCamera = {
-	/** The position of the camera. */
-	position?: [number, number, number];
-	/** The target the camera is looking at. */
-	target?: [number, number, number];
-} & IAppBuilderPropsCameraCommon;
-
-/** Properties of a "reset" action. */
-export type IAppBuilderPropsResetCamera = IAppBuilderPropsCameraCommon;
-
-/** Properties of a "zoomTo" action. */
-export type IAppBuilderPropsZoomToCamera = {
-	/** The initial position from which to start the zoom. */
-	initialPosition?: [number, number, number];
-	/** The initial target from which to start the zoom. */
-	initialTarget?: [number, number, number];
-	/** Optional name filter to restrict the zoom to specific nodes. */
-	nameFilter?: string[];
-} & IAppBuilderPropsCameraCommon;
-
-/** Properties of a camera action. */
-export type IAppBuilderActionPropsCamera = {
-	/** Type of camera action. */
-	type: "animate" | "assign" | "set" | "reset" | "zoomTo";
-	/** Optional viewport id. Defaults to the containing viewport. */
-	viewportId?: string;
-	/** Properties of the camera action. */
-	props:
-		| IAppBuilderPropsAnimateCamera
-		| IAppBuilderPropsAssignCamera
-		| IAppBuilderPropsSetCamera
-		| IAppBuilderPropsResetCamera
-		| IAppBuilderPropsZoomToCamera;
-} & IAppBuilderActionPropsCommon;
-
-export type IAppBuilderLegacyActionPropsCamera = IAppBuilderActionPropsCamera &
-	IAppBuilderActionPropsCommon;
-
-/** Properties of a "sound" action. */
-export type IAppBuilderActionPropsSound = {
-	/** URL of the sound file to play */
-	href: string;
-	/**
-	 * Start playing the sound as soon as a control embedding the action gets rendered.
-	 * Note: The browser may block this.
-	 */
-	autoplay?: boolean;
-	/** Loop the audio file. */
-	loop?: boolean;
-	/** Label to show when the sound is playing. */
-	labelPlaying?: string;
-	/** Icon name, image URL, or inline Iconify object to show when the sound is playing. */
-	iconPlaying?: IAppBuilderIcon;
-};
-
-/** Properties of a legacy "sound" action. */
-export type IAppBuilderLegacyActionPropsSound = IAppBuilderActionPropsSound &
-	IAppBuilderActionPropsCommon;
-
-/** Properties of a legacy "setContainerVisibility" action. */
-export type IAppBuilderLegacyActionPropsSetContainerVisibility =
-	IAppBuilderActionPropsSetContainerVisibility & IAppBuilderActionPropsCommon;
-
-/** Properties of a "messageToParent" action. */
-export interface IAppBuilderActionPropsMessageToParent {
-	/** Type identifier for the message. */
-	type: string;
-	/** Optional message data. */
-	data?: Record<string, unknown>;
-}
-
-/** Properties of legacy a "messageToParent" action. */
-export type IAppBuilderLegacyActionPropsMessageToParent =
-	IAppBuilderActionPropsMessageToParent & IAppBuilderActionPropsCommon;
-
-/** A legacy App Builder action definition. */
-export type IAppBuilderLegacyActionDefinition =
-	| {
-			type: AppBuilderActionType.CreateModelState;
-			props: IAppBuilderLegacyActionPropsCreateModelState;
-	  }
-	| {
-			type: AppBuilderActionType.AddToCart;
-			props: IAppBuilderLegacyActionPropsAddToCart;
-	  }
-	| {
-			type: AppBuilderActionType.SetParameterValue;
-			props: IAppBuilderLegacyActionPropsSetParameterValue;
-	  }
-	| {
-			type: AppBuilderActionType.SetParameterValues;
-			props: IAppBuilderLegacyActionPropsSetParameterValues;
-	  }
-	| {
-			type: AppBuilderActionType.SetBrowserLocation;
-			props: IAppBuilderLegacyActionPropsSetBrowserLocation;
-	  }
-	| {
-			type: AppBuilderActionType.CloseConfigurator;
-			props: IAppBuilderLegacyActionPropsCloseConfigurator;
-	  }
-	| {type: AppBuilderActionType.Ar; props: IAppBuilderLegacyActionPropsAr}
-	| {
-			type: AppBuilderActionType.Fullscreen;
-			props: IAppBuilderLegacyActionPropsFullscreen;
-	  }
-	| {type: AppBuilderActionType.Undo; props: IAppBuilderLegacyActionPropsUndo}
-	| {type: AppBuilderActionType.Redo; props: IAppBuilderLegacyActionPropsRedo}
-	| {
-			type: AppBuilderActionType.ResetParameterValues;
-			props: IAppBuilderLegacyActionPropsResetParameterValues;
-	  }
-	| {
-			type: AppBuilderActionType.ImportParameterValues;
-			props: IAppBuilderLegacyActionPropsImportParameterValues;
-	  }
-	| {
-			type: AppBuilderActionType.ExportParameterValues;
-			props: IAppBuilderLegacyActionPropsExportParameterValues;
-	  }
-	| {
-			type: AppBuilderActionType.ImportModelState;
-			props: IAppBuilderLegacyActionPropsImportModelState;
-	  }
-	| {
-			type: AppBuilderActionType.Camera;
-			props: IAppBuilderLegacyActionPropsCamera;
-	  }
-	| {
-			type: AppBuilderActionType.Sound;
-			props: IAppBuilderLegacyActionPropsSound;
-	  }
-	| {
-			type: AppBuilderActionType.SetContainerVisibility;
-			props: IAppBuilderLegacyActionPropsSetContainerVisibility;
-	  }
-	| {
-			type: AppBuilderActionType.MessageToParent;
-			props: IAppBuilderLegacyActionPropsMessageToParent;
-	  };
 
 /** Types of widgets */
 export type AppBuilderWidgetType =
@@ -1054,6 +817,8 @@ export type AppBuilderWidgetType =
 	| "actions"
 	| "attributeVisualization"
 	| "agent"
+	| "hostedAgent"
+	| "iframe"
 	| "progress"
 	| "desktopClientSelection"
 	| "desktopClientOutputs"
@@ -1203,7 +968,10 @@ export interface IAppBuilderWidgetPropsAttributeVisualization {
 	disableAttributeAnchors?: boolean;
 }
 
-/** Properties of an AI agent widget. */
+/**
+ * Properties of the in-page OpenAI chat widget (`type: "agent"`).
+ * Distinct from hosted AppBuilderAgent (`type: "hostedAgent"`).
+ */
 export interface IAppBuilderWidgetPropsAgent {
 	/** Additional context. */
 	context?: string;
@@ -1211,6 +979,41 @@ export interface IAppBuilderWidgetPropsAgent {
 	parameterNames?: string[];
 	/** Names of parameters to exclude in agent workflow. */
 	parameterNamesExclude?: string[];
+}
+
+/**
+ * Properties of a hosted AppBuilderAgent widget (`type: "hostedAgent"`).
+ * The agent URL is resolved from the environment; this widget has no `url`.
+ */
+export interface IAppBuilderWidgetPropsHostedAgent {
+	/** Accessible name for the frame. Default: ShapeDiver agent. */
+	title?: string;
+	/**
+	 * Height of the frame. A number is pixels.
+	 * Examples: 400, "24rem", "100%". Default: 24rem.
+	 */
+	height?: string | number;
+	// /**
+	//  * Id of an `IAppBuilder.agents` entry to host.
+	//  * When omitted, `agents[0]` is used.
+	//  */
+	// agentId?: string;
+}
+
+/**
+ * Properties of an iframe widget.
+ * `url` is an absolute http(s) page.
+ */
+export interface IAppBuilderWidgetPropsIframe {
+	/** Absolute http(s) URL. */
+	url: string;
+	/** Accessible name for the frame. */
+	title?: string;
+	/**
+	 * Height of the frame. A number is pixels.
+	 * Examples: 400, "24rem", "100%". Default: 24rem.
+	 */
+	height?: string | number;
 }
 
 /** Properties of a progress widget. */
@@ -1357,8 +1160,11 @@ export interface IAppBuilderWidgetPropsTable {
  *   * add the identifier for the new type to AppBuilderWidgetType, and
  *   * define a new interface for the properties of the widget type and
  *     add it to the union type of "props".
+ *
+ * Node-level fields such as `actionSlots` are on this interface, not inside `props`.
+ * @see [Action slots](../action-slots.md)
  */
-export interface IAppBuilderWidget {
+export interface IAppBuilderWidget extends IAppBuilderNode {
 	/** Type of the widget. */
 	type: AppBuilderWidgetType;
 	/** Properties of the widget. */
@@ -1373,6 +1179,8 @@ export interface IAppBuilderWidget {
 		| IAppBuilderWidgetPropsActions
 		| IAppBuilderWidgetPropsAttributeVisualization
 		| IAppBuilderWidgetPropsAgent
+		| IAppBuilderWidgetPropsHostedAgent
+		| IAppBuilderWidgetPropsIframe
 		| IAppBuilderWidgetPropsProgress
 		| IAppBuilderWidgetPropsDesktopClientSelection
 		| IAppBuilderWidgetPropsDesktopClientOutputs
@@ -1388,7 +1196,7 @@ export interface IAppBuilderWidget {
 /**
  * A tab displayed in a container.
  */
-export interface IAppBuilderTab {
+export interface IAppBuilderTab extends IAppBuilderNode {
 	/** Name of the tab. */
 	name: string;
 	/** Optional icon name, image URL, or inline Iconify object of the tab. */
@@ -1408,6 +1216,71 @@ export enum AppBuilderContainerNameType {
 	Anchor3d = "anchor3d",
 	Anchor2d = "anchor2d",
 	Toolbar = "toolbar",
+}
+
+/**
+ * Standard layout containers (not viewport anchors or toolbars).
+ * Used by mobile fallbacks and the standard-container store.
+ */
+export type AppBuilderStandardContainerNameType =
+	| AppBuilderContainerNameType.Left
+	| AppBuilderContainerNameType.Right
+	| AppBuilderContainerNameType.Top
+	| AppBuilderContainerNameType.Bottom;
+
+/**
+ * Mobile fallback for a standard container.
+ * Applied below `AppBuilderTemplateSelector.mobileBreakpoint` (theme default `"md"`).
+ *
+ * `disabled` hides the container without moving its content.
+ * `container` moves tabs/widgets into that standard container and hides this one.
+ * If both are set, `disabled` wins.
+ */
+export interface IAppBuilderStandardContainerMobileFallback {
+	/** Hide this container on mobile. */
+	disabled?: boolean;
+	/** Standard container that receives this container’s content. */
+	container?: AppBuilderStandardContainerNameType;
+	/** Position relative to the target container’s native content. */
+	position?: "before" | "after";
+	/** Ordering when multiple containers fall back to the same target. */
+	order?: number;
+}
+
+/** Optional props of a standard (left/right/top/bottom) container. */
+export interface IAppBuilderStandardContainerProps {
+	mobileFallback?: IAppBuilderStandardContainerMobileFallback;
+}
+
+/**
+ * Theme-level mobile fallbacks keyed by source container (general default).
+ * JSON `props.mobileFallback` overlays defined fields onto the theme entry
+ * for that container (per-instance fine-tune). Omitted JSON keeps the theme.
+ * Omitted JSON and theme keeps previous behavior (container stays put).
+ */
+export type IAppBuilderMobileFallbacks = {
+	[K in AppBuilderStandardContainerNameType]?: IAppBuilderStandardContainerMobileFallback;
+};
+
+/**
+ * Mobile fallback for a viewport anchor.
+ * Applied below `AppBuilderTemplateSelector.mobileBreakpoint` unless the
+ * anchor theme sets `mobileBreakpoint`. `disabled` hides without moving; omitted `container`
+ * still targets `right` (previous behavior).
+ */
+export interface IAppBuilderViewportAnchorMobileFallback {
+	/** Hide this anchor on mobile without injecting it into a container. */
+	disabled?: boolean;
+	/**
+	 * Preview icon on mobile. If omitted, the original previewIcon is used.
+	 */
+	previewIcon?: IAppBuilderIcon;
+	/** Standard container that receives this anchor’s content. */
+	container?: AppBuilderStandardContainerNameType;
+	/** Position relative to the target container’s native content. */
+	position?: "before" | "after";
+	/** Ordering when multiple extras fall back to the same target. */
+	order?: number;
 }
 
 export type AppBuilderToolbarSide = "top" | "bottom" | "left" | "right";
@@ -1432,7 +1305,7 @@ export type AppBuilderAnchorContainerProperties = {
 	closingStrategy?: "button" | "emptyClick";
 	/** Whether the anchor is exclusive with other anchors of the same type. Defaults to true; false when targeted by a setContainerVisibility action. */
 	exclusive?: boolean;
-	/** Whether the anchor is initially open. Defaults to !canBeHidden. Action-targeted anchors default to false. */
+	/** Whether the anchor is initially open. Defaults to !canBeHidden. */
 	defaultOpen?: boolean;
 	/** Optional width of the container. Can be either in px (e.g. 100 or "100px"), rem (e.g. 1.5rem), em (e.g. 1em), % (e.g. 100%) or calc() (e.g. calc(100% - 20px)) */
 	width?: string | number;
@@ -1444,18 +1317,12 @@ export type AppBuilderAnchorContainerProperties = {
 	maxHeight?: string | number;
 	/** Option to use Paper component (default: true) */
 	useContainer?: boolean;
-	/** Options for the mobile fallback */
-	mobileFallback?: {
-		/** if the anchor should be completely disabled */
-		disabled?: boolean;
-		/**
-		 * either a different or a new preview icon to show
-		 * if undefined, the original previewIcon logic will be used
-		 */
-		previewIcon?: IAppBuilderIcon;
-		/** fallback container to be used ("left", "right", "top", "bottom") */
-		container?: AppBuilderContainerNameType;
-	};
+	/**
+	 * Options for the mobile fallback.
+	 * Theme `ViewportAnchor2d` / `ViewportAnchor3d` `defaultProps.mobileFallback`
+	 * is the general default; JSON overlays defined fields for this anchor.
+	 */
+	mobileFallback?: IAppBuilderViewportAnchorMobileFallback;
 	/** Optional selection options. These options replace the behavior of the previewIcon and show the corresponding Anchor when the selection is active. (default: undefined) */
 	selectionProperties?: Omit<
 		ISelectionParameterProps,
@@ -1491,21 +1358,13 @@ export type AppBuilderToolbarItemType =
 export interface IAppBuilderToolbarItemBase<
 	TType extends AppBuilderToolbarItemType,
 	TProps extends object,
-> {
+> extends IAppBuilderNode {
 	/** Discriminator for toolbar item rendering and validation. */
 	type: TType;
 	/** Item-specific payload. */
 	props: TProps;
 	/** Optional stable id for runtime APIs, accessibility and diagnostics. */
 	id?: string;
-	/** Toolbar-specific icon name, image URL, or inline Iconify object. */
-	icon?: IAppBuilderIcon;
-	label?: string;
-	tooltip?: string;
-	/** When set with a non-empty label, show the label beside the icon on this side. */
-	labelSide?: AppBuilderToolbarSide;
-	/** Cross-axis alignment of the icon caption. Default "center" when rendering. */
-	labelAlign?: AppBuilderToolbarAlign;
 	/** Optional item order for runtime-merged groups. */
 	order?: number;
 	/** Optional presentation mode when this item is rendered inside a popover. */
@@ -1540,7 +1399,7 @@ export type IAppBuilderToolbarControlItem =
 
 export type IAppBuilderToolbarActionMenuItem = IAppBuilderToolbarItemBase<
 	"actionMenu",
-	{
+	IAppBuilderControlPresentation & {
 		/** Action sections rendered when this item is opened. */
 		sections: IAppBuilderToolbarActionItem[][];
 	}
@@ -1548,7 +1407,7 @@ export type IAppBuilderToolbarActionMenuItem = IAppBuilderToolbarItemBase<
 
 export type IAppBuilderToolbarWidgetPanelItem = IAppBuilderToolbarItemBase<
 	"widgets",
-	{
+	IAppBuilderControlPresentation & {
 		/** Widgets rendered when this item is opened. */
 		widgets: IAppBuilderWidget[];
 	}
@@ -1556,7 +1415,7 @@ export type IAppBuilderToolbarWidgetPanelItem = IAppBuilderToolbarItemBase<
 
 export type IAppBuilderToolbarTabbedPanelItem = IAppBuilderToolbarItemBase<
 	"tabs",
-	{
+	IAppBuilderControlPresentation & {
 		/** Tabs rendered when this item is opened. */
 		tabs: IAppBuilderTab[];
 		/** When true, tabs stick to the top when scrolling the opened item content. */
@@ -1583,17 +1442,22 @@ export interface IAppBuilderToolbarContainerProperties {
 	order?: number;
 	/** Visibility behavior. */
 	visibility?: AppBuilderToolbarVisibility;
+	/** Whether the toolbar is initially open. Defaults to true. */
+	defaultOpen?: boolean;
+	/**
+	 * When true, opening a 2d or 3d container targeted by this toolbar
+	 * closes the other containers this toolbar targets (both 2d and 3d).
+	 * Closing or toggling a container off does not close the others.
+	 * Defaults to true. Set to false to keep several containers open at once.
+	 */
+	exclusiveContainers?: boolean;
 }
 
-export interface IAppBuilderStandardContainer {
+export interface IAppBuilderStandardContainer extends IAppBuilderNode {
 	/** Name of the container. */
-	name:
-		| AppBuilderContainerNameType.Left
-		| AppBuilderContainerNameType.Right
-		| AppBuilderContainerNameType.Top
-		| AppBuilderContainerNameType.Bottom;
-	/** Standard containers do not use custom props. */
-	props?: undefined;
+	name: AppBuilderStandardContainerNameType;
+	/** Optional container props, including mobile fallback. */
+	props?: IAppBuilderStandardContainerProps;
 	/** Tabs displayed in the container. */
 	tabs?: IAppBuilderTab[];
 	/** When true, tabs stick to the top when scrolling the container content. */
@@ -1602,7 +1466,7 @@ export interface IAppBuilderStandardContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
-export interface IAppBuilderAnchor2dContainer {
+export interface IAppBuilderAnchor2dContainer extends IAppBuilderNode {
 	/** Name of the container. */
 	name: AppBuilderContainerNameType.Anchor2d;
 	/** Anchor-specific props. */
@@ -1615,7 +1479,7 @@ export interface IAppBuilderAnchor2dContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
-export interface IAppBuilderAnchor3dContainer {
+export interface IAppBuilderAnchor3dContainer extends IAppBuilderNode {
 	/** Name of the container. */
 	name: AppBuilderContainerNameType.Anchor3d;
 	/** Anchor-specific props. */
@@ -1628,7 +1492,7 @@ export interface IAppBuilderAnchor3dContainer {
 	widgets?: IAppBuilderWidget[];
 }
 
-export interface IAppBuilderToolbarContainer {
+export interface IAppBuilderToolbarContainer extends IAppBuilderNode {
 	/** Name of the container. */
 	name: AppBuilderContainerNameType.Toolbar;
 	/** Toolbar-specific props. */
@@ -1675,13 +1539,27 @@ export interface IAppBuilderOutputActionsPropsSetParameterValue {
 	parameter: string;
 }
 
-export interface IAppBuilderInstanceDefinition {
-	/** Id of the instance. */
+/**
+ * Fields shared by additional sessions and instances on the App Builder data output.
+ */
+export interface IAppBuilderSessionDefinitionBase {
+	/**
+	 * Id of the session.
+	 * When `slug` is omitted, this id is used as the platform model slug.
+	 */
 	sessionId: string;
-	/** Optional slug of the instance. If a slug is provided, the instance will be loaded immediately with that slug. */
+	/**
+	 * Platform model slug used to resolve the session.
+	 * When omitted, `sessionId` is used as the slug.
+	 */
 	slug?: string;
-	/** Optional name of the instance. This name will be used for the node in the scene graph, e.g. NAME_transformations_0 for the first transformation. */
-	name?: string;
+}
+
+/**
+ * Instance created from the App Builder data output.
+ * Used to customize a session by setting parameters and transformations.
+ */
+export interface IAppBuilderInstanceDefinition extends IAppBuilderSessionDefinitionBase {
 	/**
 	 * Parameter set for the instance.
 	 * Defined in a parameter dictionary where the key is either the displayname, the name or the id of the parameter.
@@ -1691,6 +1569,8 @@ export interface IAppBuilderInstanceDefinition {
 	parameterValues?: {
 		[key: string]: IAppBuilderParameterValueDefinition;
 	};
+	/** Optional name of the instance. This name will be used for the node in the scene graph, e.g. NAME_transformations_0 for the first transformation. */
+	name?: string;
 	/** Transformations for the instances, e.g. to position them in the scene. */
 	transformations?: number[][];
 	/** The actions that should be executed after an output of the instance has been updated. */
@@ -1703,10 +1583,39 @@ export interface IAppBuilderInstanceDefinition {
 }
 
 /**
+ * Additional session created from the App Builder data output.
+ * A full session whose parameters and exports are registered.
+ */
+export interface IAppBuilderSessionDefinition extends IAppBuilderSessionDefinitionBase {
+	/**
+	 * Optional initial parameter values, matching theme sessions.
+	 * The key is the displayname, name, or id of the parameter.
+	 * If none is provided, the default parameter set is used.
+	 */
+	initialParameterValues?: {[key: string]: string};
+}
+
+/**
  * Web app definition.
  * This is the root of the custom UI definition.
+ *
+ * Application events (`appready`, computation, export, interaction
+ * select/hover) are assigned here. Several slots for one event use an
+ * array (different `eventProps`). Pointer/`click` on the root attach to
+ * the viewport host.
+ *
+ * @see [Action slots](../action-slots.md)
  */
 export interface IAppBuilder {
+	/**
+	 * Application events, plus pointer/click/contextmenu for the viewport
+	 * host, and `custom:*`. Zod rejects event names and `eventProps` the
+	 * root cannot use.
+	 *
+	 * @see [Action slots](../action-slots.md)
+	 */
+	actionSlots?: IAppBuilderRootActionSlots;
+
 	/** Version of the schema. */
 	version: "1.0";
 
@@ -1729,6 +1638,15 @@ export interface IAppBuilder {
 	 * Instances are used to customize a session by setting parameters and transformations.
 	 */
 	instances?: IAppBuilderInstanceDefinition[];
+
+	/**
+	 * Optional list of additional sessions to be created.
+	 * These are full sessions in addition to the sessions from the theme or
+	 * settings JSON. The controller session still comes from the theme or URL.
+	 * A session id that also appears in `instances` is ignored. The instance
+	 * owns that session.
+	 */
+	sessions?: IAppBuilderSessionDefinition[];
 
 	/**
 	 * Optional list of agents.
@@ -1847,6 +1765,20 @@ export function isAgentWidget(
 	return widget.type === "agent";
 }
 
+/** assert widget type "hostedAgent" */
+export function isHostedAgentWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "hostedAgent"; props: IAppBuilderWidgetPropsHostedAgent} {
+	return widget.type === "hostedAgent";
+}
+
+/** assert widget type "iframe" */
+export function isIframeWidget(
+	widget: IAppBuilderWidget,
+): widget is {type: "iframe"; props: IAppBuilderWidgetPropsIframe} {
+	return widget.type === "iframe";
+}
+
 /** assert widget type "progress" */
 export function isProgressWidget(
 	widget: IAppBuilderWidget,
@@ -1932,243 +1864,6 @@ export function isTableWidget(widget: IAppBuilderWidget): widget is {
 	return widget.type === "table";
 }
 
-function isActionType<T extends AppBuilderActionType>(
-	action: IAppBuilderActionDefinition,
-	type: T,
-): action is Extract<IAppBuilderActionDefinition, {type: T}> {
-	return action.type === type;
-}
-
-/** assert action type "createModelState" */
-export function isCreateModelStateAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.CreateModelState}
-> {
-	return isActionType(action, AppBuilderActionType.CreateModelState);
-}
-
-/** assert action type "addToCart" */
-export function isAddToCartAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.AddToCart}
-> {
-	return isActionType(action, AppBuilderActionType.AddToCart);
-}
-
-/** assert action type "setParameterValue" */
-export function isSetParameterValueAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.SetParameterValue}
-> {
-	return isActionType(action, AppBuilderActionType.SetParameterValue);
-}
-
-/** assert action type "setParameterValues" */
-export function isSetParameterValuesAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.SetParameterValues}
-> {
-	return isActionType(action, AppBuilderActionType.SetParameterValues);
-}
-
-/** assert action type "setBrowserLocation" */
-export function isSetBrowserLocationAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.SetBrowserLocation}
-> {
-	return isActionType(action, AppBuilderActionType.SetBrowserLocation);
-}
-
-/** assert action type "closeConfigurator" */
-export function isCloseConfiguratorAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.CloseConfigurator}
-> {
-	return isActionType(action, AppBuilderActionType.CloseConfigurator);
-}
-
-/** assert action type "ar" */
-export function isArAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.Ar}
-> {
-	return isActionType(action, AppBuilderActionType.Ar);
-}
-
-/** assert action type "fullscreen" */
-export function isFullscreenAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.Fullscreen}
-> {
-	return isActionType(action, AppBuilderActionType.Fullscreen);
-}
-
-/** assert action type "undo" */
-export function isUndoAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.Undo}
-> {
-	return isActionType(action, AppBuilderActionType.Undo);
-}
-
-/** assert action type "redo" */
-export function isRedoAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.Redo}
-> {
-	return isActionType(action, AppBuilderActionType.Redo);
-}
-
-/** assert action type "resetParameterValues" */
-export function isResetParameterValuesAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.ResetParameterValues}
-> {
-	return isActionType(action, AppBuilderActionType.ResetParameterValues);
-}
-
-/** assert action type "importParameterValues" */
-export function isImportParameterValuesAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.ImportParameterValues}
-> {
-	return isActionType(action, AppBuilderActionType.ImportParameterValues);
-}
-
-/** assert action type "exportParameterValues" */
-export function isExportParameterValuesAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.ExportParameterValues}
-> {
-	return isActionType(action, AppBuilderActionType.ExportParameterValues);
-}
-
-/** assert action type "importModelState" */
-export function isImportModelStateAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.ImportModelState}
-> {
-	return isActionType(action, AppBuilderActionType.ImportModelState);
-}
-
-/** assert action type "camera" */
-export function isCameraAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.Camera}
-> {
-	return isActionType(action, AppBuilderActionType.Camera);
-}
-
-/** assert camera action "animate" */
-export function isAnimateCameraAction(
-	action: IAppBuilderActionPropsCamera,
-): action is {
-	type: "animate";
-	props: IAppBuilderPropsAnimateCamera;
-} {
-	return action.type === "animate";
-}
-
-/** assert camera action "assign" */
-export function isAssignCameraAction(
-	action: IAppBuilderActionPropsCamera,
-): action is {
-	type: "assign";
-	props: IAppBuilderPropsAssignCamera;
-} {
-	return action.type === "assign";
-}
-
-/** assert camera action "set" */
-export function isSetCameraAction(
-	action: IAppBuilderActionPropsCamera,
-): action is {
-	type: "set";
-	props: IAppBuilderPropsSetCamera;
-} {
-	return action.type === "set";
-}
-
-/** assert camera action "reset" */
-export function isResetCameraAction(
-	action: IAppBuilderActionPropsCamera,
-): action is {
-	type: "reset";
-	props: IAppBuilderPropsResetCamera;
-} {
-	return action.type === "reset";
-}
-
-/** assert camera action "zoomTo" */
-export function isZoomToCameraAction(
-	action: IAppBuilderActionPropsCamera,
-): action is {
-	type: "zoomTo";
-	props: IAppBuilderPropsZoomToCamera;
-} {
-	return action.type === "zoomTo";
-}
-
-/** assert action type "sound" */
-export function isSoundAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.Sound}
-> {
-	return isActionType(action, AppBuilderActionType.Sound);
-}
-
-/** assert action type "setContainerVisibility" */
-export function isSetContainerVisibilityAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.SetContainerVisibility}
-> {
-	return isActionType(action, AppBuilderActionType.SetContainerVisibility);
-}
-
-/** assert action type "messageToParent" */
-export function isMessageToParentAction(
-	action: IAppBuilderActionDefinition,
-): action is Extract<
-	IAppBuilderActionDefinition,
-	{type: AppBuilderActionType.MessageToParent}
-> {
-	return isActionType(action, AppBuilderActionType.MessageToParent);
-}
-
 type AppBuilderControlLike = IAppBuilderControl | IAppBuilderToolbarItem;
 
 /** assert control / toolbar item type "parameter" */
@@ -2209,69 +1904,6 @@ export function isOutputRefControl<T extends AppBuilderControlLike>(
 	props: IAppBuilderControlOutputRef;
 } {
 	return control.type === "output";
-}
-
-/** assert parameter source */
-export function isParameterSource(
-	source: IAppBuilderParameterValueSourceDefinition,
-): source is IAppBuilderParameterValueSourceDefinition {
-	return (
-		isDataOutputSource(source) ||
-		isExportSource(source) ||
-		isSdtfSource(source) ||
-		isModelStateSource(source) ||
-		isScreenshotSource(source)
-	);
-}
-
-/** assert source type "dataOutput" */
-export function isDataOutputSource(
-	source: IAppBuilderParameterValueSourceDefinition,
-): source is {
-	type: "dataOutput";
-	props: IAppBuilderParameterValueSourcePropsDataOutput;
-} {
-	return source.type === "dataOutput";
-}
-
-/** assert source type "export" */
-export function isExportSource(
-	source: IAppBuilderParameterValueSourceDefinition,
-): source is {
-	type: "export";
-	props: IAppBuilderParameterValueSourcePropsExport;
-} {
-	return source.type === "export";
-}
-
-/** assert source type "sdtf" */
-export function isSdtfSource(
-	source: IAppBuilderParameterValueSourceDefinition,
-): source is {
-	type: "sdtf";
-	props: IAppBuilderParameterValueSourcePropsSdtf;
-} {
-	return source.type === "sdtf";
-}
-
-/** assert source type "modelState" */
-export function isModelStateSource(
-	source: IAppBuilderParameterValueSourceDefinition,
-): source is {
-	type: "modelState";
-	props: IAppBuilderParameterValueSourcePropsModelState;
-} {
-	return source.type === "modelState";
-}
-
-/** assert source type "screenshot" */
-export function isScreenshotSource(
-	source: IAppBuilderParameterValueSourceDefinition,
-): source is {
-	type: "screenshot";
-	props: IAppBuilderParameterValueSourcePropsScreenshot;
-} {
-	return source.type === "screenshot";
 }
 
 /**

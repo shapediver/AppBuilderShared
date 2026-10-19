@@ -1,5 +1,6 @@
 import {PropsExport} from "@AppBuilderLib/entities/export/config/propsExport";
 import {useExports} from "@AppBuilderLib/entities/export/model/useExports";
+import {useHasPendingParameterChanges} from "@AppBuilderLib/entities/parameter/model/useHasPendingParameterChanges";
 import {AppBuilderToolbarButtonThemeDefaultProps} from "@AppBuilderLib/features/appbuilder/config/AppBuilderToolbarButton.theme.types";
 import {ButtonRenderContext} from "@AppBuilderLib/features/appbuilder/config/componentTypes";
 import type {ToolbarExportItem} from "@AppBuilderLib/features/appbuilder/config/toolbarRenderTypes";
@@ -33,6 +34,8 @@ export default function AppBuilderToolbarExportButton({
 		[buttonRenderContext.namespace, item],
 	);
 	const exports = useExports(exportProps);
+	const namespace = item.props.sessionId ?? buttonRenderContext.namespace;
+	const hasPendingChanges = useHasPendingParameterChanges(namespace);
 	const iconButtonTheme = useResolvedAppBuilderToolbarIconButtonTheme();
 	const buttonThemeProps = useProps(
 		"AppBuilderToolbarButton",
@@ -42,7 +45,8 @@ export default function AppBuilderToolbarExportButton({
 		},
 		{},
 	) as AppBuilderToolbarButtonThemeDefaultProps;
-	const disabled = buttonRenderContext.executing || item.disabled;
+	const disabled =
+		buttonRenderContext.executing || item.disabled || hasPendingChanges;
 
 	return (
 		<AppBuilderExportToolbarButton

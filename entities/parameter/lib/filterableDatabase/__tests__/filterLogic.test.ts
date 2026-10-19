@@ -1,6 +1,7 @@
 import {
 	applyFilters,
 	applySelectAll,
+	extractFilterOptions,
 	filterNodesBySearch,
 	getSelectAllState,
 	rowMatchesFilter,
@@ -148,5 +149,166 @@ describe("applySelectAll", () => {
 
 	it("clears selection when select is false", () => {
 		expect(applySelectAll(allValues, false)).toEqual([]);
+	});
+});
+
+describe("extractFilterOptions", () => {
+	let warnSpy: jest.SpyInstance;
+
+	beforeEach(() => {
+		warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+	});
+
+	afterEach(() => {
+		warnSpy.mockRestore();
+	});
+
+	it("uses the value as the label when columnLabel is omitted", () => {
+		const options = extractFilterOptions(table, {column: 4});
+
+		expect(options).toEqual([
+			{value: "Blue", label: "Blue"},
+			{value: "Red", label: "Red"},
+		]);
+		expect(warnSpy).not.toHaveBeenCalled();
+	});
+
+	it("pairs multivalued value and label segments by index", () => {
+		const colorTable: DatabaseTable = {
+			rows: [["#111111;#222222", "Black;White"]],
+		};
+
+		expect(
+			extractFilterOptions(colorTable, {
+				column: 0,
+				columnLabel: 1,
+				multivalued: true,
+			}),
+		).toEqual([
+			{value: "#111111", label: "Black"},
+			{value: "#222222", label: "White"},
+		]);
+		expect(warnSpy).not.toHaveBeenCalled();
+	});
+
+	it("falls back missing labels to the value and warns once per row", () => {
+		const colorTable: DatabaseTable = {
+			rows: [["#111111;#222222", "Black"]],
+		};
+
+		expect(
+			extractFilterOptions(
+				colorTable,
+				{column: 0, columnLabel: 1, multivalued: true},
+				0,
+			),
+		).toEqual([
+			{value: "#111111", label: "Black"},
+			{value: "#222222", label: "#222222"},
+		]);
+		expect(warnSpy).toHaveBeenCalledTimes(1);
+		expect(warnSpy.mock.calls[0][0]).toEqual(
+			expect.stringContaining("filter 0"),
+		);
+		expect(warnSpy.mock.calls[0][0]).toEqual(
+			expect.stringContaining("2 value item(s)"),
+		);
+		expect(warnSpy.mock.calls[0][0]).toEqual(
+			expect.stringContaining("1 label item(s)"),
+		);
+	});
+
+	it("ignores extra labels and warns once per row", () => {
+		const colorTable: DatabaseTable = {
+			rows: [["#111111", "Black;White"]],
+		};
+
+		expect(
+			extractFilterOptions(
+				colorTable,
+				{column: 0, columnLabel: 1, multivalued: true},
+				1,
+			),
+		).toEqual([{value: "#111111", label: "Black"}]);
+		expect(warnSpy).toHaveBeenCalledTimes(1);
+		expect(warnSpy.mock.calls[0][0]).toEqual(
+			expect.stringContaining("filter 1"),
+		);
+		expect(warnSpy.mock.calls[0][0]).toEqual(
+			expect.stringContaining("1 value item(s)"),
+		);
+		expect(warnSpy.mock.calls[0][0]).toEqual(
+			expect.stringContaining("2 label item(s)"),
+		);
+	});
+
+	it("keeps one option per value and uses the first non-empty label", () => {
+		const colorTable: DatabaseTable = {
+			rows: [
+				["#277DA1", ""],
+				["#277DA1", "Blue"],
+				["#277DA1", "Navy"],
+			],
+		};
+
+		expect(
+			extractFilterOptions(colorTable, {
+				column: 0,
+				columnLabel: 1,
+			}),
+		).toEqual([{value: "#277DA1", label: "Blue"}]);
+	});
+
+	it("keeps distinct values that share a display label as two options", () => {
+		const colorTable: DatabaseTable = {
+			rows: [
+				["#277DA1", "Blue"],
+				["#F9844A", "Blue"],
+			],
+		};
+
+		expect(
+			extractFilterOptions(colorTable, {
+				column: 0,
+				columnLabel: 1,
+			}),
+		).toEqual([
+			{value: "#277DA1", label: "Blue"},
+			{value: "#F9844A", label: "Blue"},
+		]);
+	});
+
+	it("uses filterValues as option values and attaches labels from the table", () => {
+		const colorTable: DatabaseTable = {
+			rows: [["#111111", "Black"]],
+		};
+
+		expect(
+			extractFilterOptions(colorTable, {
+				column: 0,
+				columnLabel: 1,
+				filterValues: ["#222222", "#111111"],
+			}),
+		).toEqual([
+			{value: "#111111", label: "Black"},
+			{value: "#222222", label: "#222222"},
+		]);
+	});
+});
+
+describe("rowMatchesFilter with columnLabel", () => {
+	it("matches on column values, not display labels", () => {
+		const row = ["#277DA1", "Blue"];
+
+		expect(
+			rowMatchesFilter(row, {column: 0, columnLabel: 1, type: "color"}, [
+				"#277DA1",
+			]),
+		).toBe(true);
+		expect(
+			rowMatchesFilter(row, {column: 0, columnLabel: 1, type: "color"}, [
+				"Blue",
+			]),
+		).toBe(false);
 	});
 });

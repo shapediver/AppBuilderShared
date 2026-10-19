@@ -54,6 +54,14 @@ import {CrossWindowApiFactory} from "../crosswindowapi";
 
 const HANDSHAKE_TYPE = "TOOLS_API_HANDSHAKE";
 
+function delay(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function countAppHandshakeSends(): number {
+	return mockSends.filter((s) => s.name === `app:${HANDSHAKE_TYPE}`).length;
+}
+
 async function createPeerApis(): Promise<{
 	appApi: ICrossWindowApi;
 	agentApi: ICrossWindowApi;
@@ -99,7 +107,9 @@ describe("CrossWindowApi handshake", () => {
 
 	it("plants API_READY with options.timeout so post-robot onChildWindowReady is not poisoned at 100ms", async () => {
 		({appApi, agentApi} = await createPeerApis());
-		const readyPings = mockSends.filter((s) => s.name.endsWith("API_READY"));
+		const readyPings = mockSends.filter((s) =>
+			s.name.endsWith("API_READY"),
+		);
 		expect(readyPings.length).toBeGreaterThan(0);
 		expect(readyPings.some((s) => s.timeout === 2000)).toBe(true);
 	});
@@ -120,6 +130,24 @@ describe("CrossWindowApi handshake", () => {
 		await agentApi.send(HANDSHAKE_TYPE, undefined);
 
 		await expect(handshake).resolves.toMatchObject({name: "agent"});
+	});
+
+	it("keeps pinging after resolving on receive until the peer receives", async () => {
+		({appApi, agentApi} = await createPeerApis());
+
+		const handshake = appApi.handshake(HANDSHAKE_TYPE, 1500);
+		await agentApi.send(HANDSHAKE_TYPE, undefined);
+		await expect(handshake).resolves.toMatchObject({name: "agent"});
+
+		const sendsAtResolve = countAppHandshakeSends();
+		await delay(250);
+		expect(countAppHandshakeSends()).toBeGreaterThan(sendsAtResolve);
+
+		agentApi.on(HANDSHAKE_TYPE, async () => undefined);
+		await delay(250);
+		const sendsAfterPeerReceived = countAppHandshakeSends();
+		await delay(250);
+		expect(countAppHandshakeSends()).toBe(sendsAfterPeerReceived);
 	});
 
 	it("completes on both sides when the second peer starts after the first send", async () => {

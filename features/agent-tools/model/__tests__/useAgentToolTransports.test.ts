@@ -5,6 +5,7 @@
 const useAgentToolRuntime = jest.fn();
 const useWebMcpTools = jest.fn();
 const useToolsApiConnector = jest.fn();
+const toolsApiModelStateHandlers = jest.fn();
 
 jest.mock("../useAgentToolRuntime", () => ({
 	useAgentToolRuntime: (...args: unknown[]) => useAgentToolRuntime(...args),
@@ -22,14 +23,25 @@ jest.mock("../useToolsApiConnector", () => ({
 	useToolsApiConnector: (...args: unknown[]) => useToolsApiConnector(...args),
 }));
 
+jest.mock("../toolsApiModelState", () => ({
+	toolsApiModelStateHandlers: (...args: unknown[]) =>
+		toolsApiModelStateHandlers(...args),
+}));
+
 import {renderHook} from "@testing-library/react";
 import {useAgentToolTransports} from "../useAgentToolTransports";
 
 const runtime = {
-	resolvedTools: [],
+	resolvedGenericTools: [],
+	resolvedSpecificTools: [],
 	toolHandlers: {},
 	snapshotComplete: true,
 	agentConfig: {id: "a", name: "A", message: "hi"},
+};
+
+const modelState = {
+	createModelState: jest.fn(),
+	importModelState: jest.fn(),
 };
 
 describe("useAgentToolTransports", () => {
@@ -37,6 +49,7 @@ describe("useAgentToolTransports", () => {
 		useAgentToolRuntime.mockReset().mockReturnValue(runtime);
 		useWebMcpTools.mockReset();
 		useToolsApiConnector.mockReset();
+		toolsApiModelStateHandlers.mockReset().mockReturnValue(modelState);
 	});
 
 	it("wires WebMCP and ToolsApi from one runtime", () => {
@@ -50,22 +63,31 @@ describe("useAgentToolTransports", () => {
 			namespace: "ns",
 			appBuilderData: undefined,
 			appBuilderParseSettled: true,
+			agentId: undefined,
 		});
 		expect(useWebMcpTools).toHaveBeenCalledWith({
 			namespace: "ns",
 			enabled: true,
-			resolvedTools: runtime.resolvedTools,
+			resolvedGenericTools: runtime.resolvedGenericTools,
+			resolvedSpecificTools: runtime.resolvedSpecificTools,
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
 		});
 		expect(useToolsApiConnector).toHaveBeenCalledWith({
 			window: null,
-			resolvedTools: runtime.resolvedTools,
+			resolvedGenericTools: runtime.resolvedGenericTools,
+			resolvedSpecificTools: runtime.resolvedSpecificTools,
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
 			sessionInfo: undefined,
+			showThreadHistory: undefined,
+			createThreadOnLoad: undefined,
+			modelState,
 		});
+		const getNamespace = toolsApiModelStateHandlers.mock
+			.calls[0][0] as () => string | undefined;
+		expect(getNamespace()).toBe("ns");
 	});
 
 	it("passes agentWindow into ToolsApi", () => {
@@ -73,12 +95,38 @@ describe("useAgentToolTransports", () => {
 		renderHook(() => useAgentToolTransports({agentWindow}));
 		expect(useToolsApiConnector).toHaveBeenCalledWith({
 			window: agentWindow,
-			resolvedTools: runtime.resolvedTools,
+			resolvedGenericTools: runtime.resolvedGenericTools,
+			resolvedSpecificTools: runtime.resolvedSpecificTools,
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
 			sessionInfo: undefined,
+			showThreadHistory: undefined,
+			createThreadOnLoad: undefined,
+			modelState,
 		});
+	});
+
+	it("passes agentId into the runtime snapshot", () => {
+		renderHook(() => useAgentToolTransports({agentId: "other"}));
+		expect(useAgentToolRuntime).toHaveBeenCalledWith(
+			expect.objectContaining({agentId: "other"}),
+		);
+	});
+
+	it("passes AgentUi flags into ToolsApi", () => {
+		renderHook(() =>
+			useAgentToolTransports({
+				showThreadHistory: false,
+				createThreadOnLoad: true,
+			}),
+		);
+		expect(useToolsApiConnector).toHaveBeenCalledWith(
+			expect.objectContaining({
+				showThreadHistory: false,
+				createThreadOnLoad: true,
+			}),
+		);
 	});
 
 	it("passes sessionInfo into ToolsApi alongside agentConfig", () => {
@@ -90,11 +138,15 @@ describe("useAgentToolTransports", () => {
 		renderHook(() => useAgentToolTransports({sessionInfo}));
 		expect(useToolsApiConnector).toHaveBeenCalledWith({
 			window: null,
-			resolvedTools: runtime.resolvedTools,
+			resolvedGenericTools: runtime.resolvedGenericTools,
+			resolvedSpecificTools: runtime.resolvedSpecificTools,
 			toolHandlers: runtime.toolHandlers,
 			snapshotComplete: true,
 			agentConfig: runtime.agentConfig,
 			sessionInfo,
+			showThreadHistory: undefined,
+			createThreadOnLoad: undefined,
+			modelState,
 		});
 	});
 });

@@ -57,9 +57,7 @@ export async function importModelStateCore(
 		onError,
 	} = args;
 
-	let {modelStateId} = props;
-	// sanitize input
-	modelStateId = modelStateId.trim();
+	let modelStateId = (props.modelStateId ?? "").trim();
 	if (modelStateId.startsWith("http")) {
 		const url = new URL(modelStateId);
 		modelStateId = url.searchParams.get(QUERYPARAM_MODELSTATEID) || "";

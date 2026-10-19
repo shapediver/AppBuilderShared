@@ -13,16 +13,16 @@ export async function handleGetScreenshot(
 	return runParsedTool(
 		getScreenshotInputSchema,
 		input ?? {},
-		async () => {
+		async (parsed) => {
 			const viewportId = resolveViewportId(deps);
 			if (!viewportId) {
 				return {success: false, message: "Viewport not found."};
 			}
-			const image = await deps.getScreenshot(viewportId);
-			if (!image) {
+			const image_url = await deps.getScreenshot(viewportId, parsed);
+			if (!image_url) {
 				return {success: false, message: "Screenshot failed."};
 			}
-			return {success: true, image};
+			return {success: true, image_url};
 		},
 		(message) => ({success: false, message}),
 	);

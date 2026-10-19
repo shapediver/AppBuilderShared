@@ -57,4 +57,13 @@ export interface IViewportAccessFunctions {
 		useAutoAdjustSetting: boolean,
 		options?: {duration?: number},
 	) => void;
+
+	/**
+	 * Resolves when this viewport is ready for visibility-dependent actions
+	 * (`appready` camera/AR). ShapeDiver `useViewport` registers
+	 * `waitUntilReady` from `entities/viewport/lib/waitUntilReady` (scene
+	 * bounding box settled). Hosts that replace viewport visibility
+	 * (iJewel/WebGi) should supply their own wait.
+	 */
+	waitUntilReady?: (signal?: AbortSignal) => Promise<void>;
 }

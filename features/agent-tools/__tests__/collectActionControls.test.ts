@@ -64,6 +64,31 @@ describe("collectActionControls", () => {
 		expect(actions).toEqual([]);
 	});
 
+	it("includes the agent reference description on an explicit action", () => {
+		const actions = collectActionControls({
+			appBuilder: emptyApp,
+			defaultToolbarActions: [undoAction({id: "save"})],
+			settings: {
+				name: "list_action_controls",
+				actions: [
+					{
+						name: "save",
+						description: "Save the current configuration",
+					},
+				],
+			},
+		});
+
+		expect(actions).toEqual([
+			{
+				id: "save",
+				name: "save",
+				type: "undo",
+				description: "Save the current configuration",
+			},
+		]);
+	});
+
 	it("keeps only the explicit actions name when provided", () => {
 		const actions = collectActionControls({
 			appBuilder: emptyApp,
@@ -287,7 +312,7 @@ describe("collectActionControls", () => {
 		expect(ids(actions)).toEqual(["Undo"]);
 	});
 
-	it("merges toolbar item-level label onto the action ref", () => {
+	it("uses toolbar control props label as the action ref label", () => {
 		const appBuilder: IAppBuilder = {
 			version: "1.0",
 			containers: [
@@ -298,8 +323,10 @@ describe("collectActionControls", () => {
 						[
 							{
 								type: "action",
-								label: "Undo",
-								props: {definition: {type: "undo", props: {}}},
+								props: {
+									label: "Undo",
+									definition: {type: "undo", props: {}},
+								},
 							},
 						],
 					],
@@ -364,8 +391,8 @@ describe("collectActionControls", () => {
 						[
 							{
 								type: "action",
-								label: "Save",
 								props: {
+									label: "Save",
 									definition: {
 										type: "createModelState",
 										props: {},
@@ -407,6 +434,7 @@ describe("collectActionControls", () => {
 									type: "action",
 									label: "Save",
 									props: {
+										label: "Save",
 										definition: {
 											type: "createModelState",
 											props: {},
@@ -483,6 +511,7 @@ describe("handleListActionControls", () => {
 			resetParameters: async () => ({success: true}),
 			getViewportId: () => "vp",
 			setCamera: async () => ({success: true}),
+			getCamera: () => undefined,
 			getScreenshot: async () => undefined,
 			getOutputByName: () => undefined,
 			...overrides,

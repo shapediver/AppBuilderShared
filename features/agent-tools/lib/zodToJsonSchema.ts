@@ -7,6 +7,8 @@ export type JsonSchema = {
 	properties?: Record<string, JsonSchema>;
 	required?: string[];
 	items?: JsonSchema;
+	minItems?: number;
+	maxItems?: number;
 	enum?: (string | number | boolean)[];
 	anyOf?: JsonSchema[];
 	additionalProperties?: JsonSchema | boolean;
@@ -20,6 +22,7 @@ type ZodDef = {
 	innerType?: z.ZodType;
 	options?: z.ZodType[];
 	element?: z.ZodType;
+	items?: z.ZodType[];
 	entries?: Record<string, string>;
 	values?: (string | number | boolean)[];
 	valueType?: z.ZodType;
@@ -101,7 +104,7 @@ function objectSchema(
  * Converts a Zod schema to JSON Schema for WebMCP and ToolsApi tool listing.
  *
  * Intentionally small: only handles Zod types used by `features/agent-tools/config`
- * (`strictObject`, primitives, enum, union, array, record, literal).
+ * (`strictObject`, primitives, enum, union, array, tuple, record, literal).
  * Every object node sets `additionalProperties: false` so weak models cannot
  * invent extra keys (`parameters`, `visibleOnly`, etc.).
  */
@@ -127,6 +130,15 @@ export function zodToJsonSchema(schema: z.ZodType): JsonSchema {
 				type: "array",
 				items: def.element ? zodToJsonSchema(def.element) : {},
 			};
+		case "tuple": {
+			const items = def.items ?? [];
+			return {
+				type: "array",
+				minItems: items.length,
+				maxItems: items.length,
+				items: items[0] ? zodToJsonSchema(items[0]) : {},
+			};
+		}
 		case "object":
 			return objectSchema(def.shape ?? {}, schema);
 		case "union":

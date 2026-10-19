@@ -173,6 +173,20 @@ export function useResolveParameterValues(props?: {
 	const sourceData = useMemo(() => {
 		if (!parameterValues || !namespace) return undefined;
 
+		// warn about values which look like a source definition but have an
+		// unknown type, they would otherwise be stringified silently
+		for (const {id, value} of parameterValues) {
+			if (
+				typeof value === "object" &&
+				value !== null &&
+				!isParameterSource(value)
+			) {
+				Logger.warn(
+					`Parameter value source of unknown type "${(value as {type?: unknown}).type}" for parameter "${id}", the value will be stringified. Supported types: dataOutput, export, sdtf, modelState, screenshot.`,
+				);
+			}
+		}
+
 		// flatten sources
 		const flat = flattenSources(parameterValues);
 		if (flat.size === 0) return undefined;
@@ -184,28 +198,29 @@ export function useResolveParameterValues(props?: {
 			namespace: e.namespace,
 		}));
 
-		// create a mapping from top-level parameter id to index in the resolved sources array
-		// this allows us to easily find the resolved value for each top-level parameter later
-		const topLevelParameterToIndex: Record<string, number> = {};
-		for (const param of parameterValues) {
-			const {id, value} = param;
-			if (
-				typeof value === "object" &&
-				value !== null &&
-				isParameterSource(value)
-			) {
+		// One slot per parameter entry. Keying only by parameter id collides when
+		// two sessions use the same name for different sources.
+		const sourceIndexByParameter: (number | undefined)[] =
+			parameterValues.map((param) => {
+				const {id, value} = param;
+				if (
+					typeof value !== "object" ||
+					value === null ||
+					!isParameterSource(value)
+				)
+					return undefined;
+
 				const entry = flat.get(createSourceKey(value));
-				if (entry) {
-					topLevelParameterToIndex[id] = entry.index;
-				} else {
+				if (!entry) {
 					Logger.warn(
 						`Top-level parameter value source not found in flattened map for parameter ${id}.`,
 					);
+					return undefined;
 				}
-			}
-		}
+				return entry.index;
+			});
 
-		return {sources, topLevelParameterToIndex, flat};
+		return {sources, sourceIndexByParameter, flat};
 	}, [parameterValues, namespace]);
 
 	// Multi-pass resolution: iteratively resolve sources until all are resolved or no progress is made
@@ -504,14 +519,15 @@ export function useResolveParameterValues(props?: {
 		const result: string[] = [];
 
 		// create the result array
-		for (const param of parameterValues) {
-			const {id, value} = param;
+		parameterValues.forEach((param, parameterIndex) => {
+			const {value} = param;
 			if (
 				typeof value === "object" &&
 				value !== null &&
 				isParameterSource(value)
 			) {
-				const index = sourceData?.topLevelParameterToIndex[id];
+				const index =
+					sourceData?.sourceIndexByParameter[parameterIndex];
 				const resolvedValue =
 					index !== undefined ? resolvedSources?.[index] : undefined;
 
@@ -522,7 +538,7 @@ export function useResolveParameterValues(props?: {
 			} else {
 				result.push(value + "");
 			}
-		}
+		});
 
 		return result;
 	}, [parameterValues, resolvedSources, sourceData]);

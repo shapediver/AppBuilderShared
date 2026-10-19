@@ -1,8 +1,15 @@
 import {ViewportTransparentBackgroundStyle} from "@AppBuilderLib/entities/viewport/config/viewport";
 import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useViewportId} from "@AppBuilderLib/entities/viewport/model/useViewportId";
-import {AppBuilderContainerNameType} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {
+	AppBuilderContainerNameType,
+	type IAppBuilderViewportAnchorMobileFallback,
+} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
+import {APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT} from "@AppBuilderLib/features/appbuilder/config/appbuilderMobileFallback";
 import {AppBuilderStandardContainerNameType} from "@AppBuilderLib/features/appbuilder/config/shapediverStoreStandardContainers";
+import {appBuilderPanelSpacing} from "@AppBuilderLib/features/appbuilder/lib/appBuilderPanelSpacing";
+import {overlayDefinedFields} from "@AppBuilderLib/features/appbuilder/lib/overlayDefinedFields";
+import {useAppBuilderMobileLayoutTheme} from "@AppBuilderLib/features/appbuilder/model/useAppBuilderMobileLayoutTheme";
 import {useShapeDiverStoreStandardContainers} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreStandardContainers";
 import AppBuilderToolbarIconButton, {
 	AppBuilderToolbarIconButtonDefaultStyleProps,
@@ -42,6 +49,7 @@ import {
 	useState,
 } from "react";
 import {IAnchor2d, IAnchor3d} from "../config/shapediverStoreViewportAnchors";
+import {anchorPointerEvents} from "../lib/anchorPointerEvents";
 import {cleanUnit, toCanvasPixels} from "../lib/utils";
 import {useAnchorSelection} from "../model/useAnchorSelection";
 import {useCanvasPortalUtilities} from "../model/useCanvasPortalUtilities";
@@ -73,18 +81,8 @@ export interface ViewportAnchorProps {
 	useContainer?: boolean;
 	/** Closing strategy if the anchor can be closed.  */
 	closingStrategy?: "button" | "emptyClick";
-	/** Mobile fallback options */
-	mobileFallback?: {
-		/** if the anchor should be completely disabled */
-		disabled?: boolean;
-		/**
-		 * either a different or a new preview icon to show
-		 * if undefined, the original previewIcon logic will be used
-		 */
-		previewIcon?: IconType;
-		/** fallback container to be used ("left", "right", "top", "bottom") */
-		container?: AppBuilderContainerNameType;
-	};
+	/** Mobile fallback options. JSON overlays theme `defaultProps.mobileFallback`. */
+	mobileFallback?: IAppBuilderViewportAnchorMobileFallback;
 	/** Optional selection options. These options replace the behavior of the previewIcon and show the corresponding Anchor when the selection is active. (default: undefined) */
 	selectionProperties?: Omit<
 		ISelectionParameterProps,
@@ -96,7 +94,7 @@ export interface ViewportAnchorProps {
 	exclusive?: boolean;
 	/** Option to show a close button on the container */
 	useCloseButton?: boolean;
-	/** Whether the anchor is initially open. Defaults to !canBeHidden. Action-targeted anchors pass false. */
+	/** Whether the anchor is initially open. Defaults to !canBeHidden. */
 	defaultOpen?: boolean;
 }
 
@@ -109,8 +107,14 @@ export type ViewportAnchorStyleProps = {
 		iconProps?: AppBuilderToolbarIconButtonProps["iconProps"];
 		actionIconProps?: AppBuilderToolbarIconButtonProps["actionIconProps"];
 	};
-	/** Breakpoint below which to to switch to the mobile behavior */
+	/** Breakpoint below which to switch to the mobile behavior.
+	 * Defaults to AppBuilderTemplateSelector `mobileBreakpoint`. */
 	mobileBreakpoint: MantineBreakpoint;
+	/**
+	 * General mobile fallback for all anchors of this type.
+	 * JSON `mobileFallback` overlays defined fields on a single anchor.
+	 */
+	mobileFallback?: IAppBuilderViewportAnchorMobileFallback;
 };
 
 const viewportAnchorPreviewPaperStyle: React.CSSProperties = {
@@ -134,6 +138,8 @@ export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
 			...viewportAnchorPreviewPaperStyle,
 		},
 		pt: 0,
+		px: appBuilderPanelSpacing,
+		py: appBuilderPanelSpacing,
 		shadow: "md",
 	},
 	anchorStackProps: {
@@ -143,7 +149,7 @@ export const viewportAnchorDefaultStyleProps: ViewportAnchorStyleProps = {
 			borderRadius: "var(--mantine-radius-md)",
 		},
 	},
-	mobileBreakpoint: "sm",
+	mobileBreakpoint: APP_BUILDER_MOBILE_BREAKPOINT_DEFAULT,
 	previewIconProps: {
 		paperStyleProps: viewportAnchorPreviewPaperStyle,
 		paperProps: viewportAnchorPreviewPaperProps,
@@ -220,18 +226,34 @@ export function useAnchorContainer({
 	 * It uses the useProps hook to get the properties from the theme.
 	 *
 	 * Depending on the type of the anchor, it will return different properties.
+	 * `mobileBreakpoint` defaults to TemplateSelector `mobileBreakpoint`;
+	 * theme ViewportAnchor2d/3d `mobileBreakpoint` still overrides.
+	 * Theme `mobileFallback` is the general default; JSON overlays fields.
 	 */
+	const {mobileBreakpoint: templateMobileBreakpoint} =
+		useAppBuilderMobileLayoutTheme();
+	const anchorThemeDefaults: ViewportAnchorStyleProps = {
+		...viewportAnchorDefaultStyleProps,
+		mobileBreakpoint: templateMobileBreakpoint,
+		mobileFallback: undefined,
+	};
 	const {
 		anchorPaperProps,
 		anchorStackProps,
 		previewIconProps,
 		mobileBreakpoint,
+		mobileFallback: themeMobileFallback,
 	} = useProps(
 		type === AppBuilderContainerNameType.Anchor2d
 			? "ViewportAnchor2d"
 			: "ViewportAnchor3d",
-		viewportAnchorDefaultStyleProps,
+		anchorThemeDefaults,
 		rest,
+	) as ViewportAnchorStyleProps;
+
+	const mobileFallback = overlayDefinedFields(
+		themeMobileFallback,
+		inputMobileFallback,
 	);
 
 	// Extract the draggable property if it exists
@@ -256,15 +278,22 @@ export function useAnchorContainer({
 		true,
 	);
 
-	const {mobileDisabled, mobilePreviewIcon, mobileContainer} = useMemo(() => {
+	const {
+		mobileDisabled,
+		mobilePreviewIcon,
+		mobileContainer,
+		mobilePosition,
+		mobileOrder,
+	} = useMemo(() => {
 		return {
-			mobileDisabled: inputMobileFallback?.disabled,
-			mobilePreviewIcon: inputMobileFallback?.previewIcon,
+			mobileDisabled: mobileFallback?.disabled,
+			mobilePreviewIcon: mobileFallback?.previewIcon,
 			mobileContainer:
-				inputMobileFallback?.container ||
-				AppBuilderContainerNameType.Right,
+				mobileFallback?.container || AppBuilderContainerNameType.Right,
+			mobilePosition: mobileFallback?.position,
+			mobileOrder: mobileFallback?.order,
 		};
-	}, [inputMobileFallback]);
+	}, [mobileFallback]);
 
 	/**
 	 * Get the preview icon for the anchor.
@@ -431,13 +460,18 @@ export function useAnchorContainer({
 		canvasHeight,
 	]);
 
-	// Determine the pointer events style based on the global state and anchor properties
-	const pointerEvents = useMemo(() => {
-		return allowPointerEventsGlobal === false ||
-			(allowPointerEvents === false && showContent === true)
-			? "none"
-			: "auto";
-	}, [allowPointerEventsGlobal, allowPointerEvents, showContent]);
+	// Camera movement blocks only a closed preview trigger. An open container
+	// stays clickable, otherwise the click falls through to the canvas and the
+	// empty-click handler closes it.
+	const pointerEvents = useMemo(
+		() =>
+			anchorPointerEvents({
+				allowPointerEventsGlobal,
+				allowPointerEvents,
+				showContent,
+			}),
+		[allowPointerEventsGlobal, allowPointerEvents, showContent],
+	);
 
 	/**
 	 * This function handles the click event on the anchor.
@@ -575,7 +609,12 @@ export function useAnchorContainer({
 	 * Here we have a group with the icons and a group with the main element.
 	 */
 	const inner = (
-		<Stack gap={0} key={id} {...anchorStackProps}>
+		<Stack
+			gap={0}
+			key={id}
+			{...anchorStackProps}
+			p={useContainer ? undefined : appBuilderPanelSpacing}
+		>
 			{(hasDragIcon || hasCloseIcon) && (
 				<Flex
 					ref={updateControlElementGroupRef}
@@ -707,6 +746,10 @@ export function useAnchorContainer({
 			// we know this is a standard container, as otherwise it wouldn't have passed the zod checks
 			mobileContainer as AppBuilderStandardContainerNameType,
 			inner,
+			{
+				position: mobilePosition,
+				order: mobileOrder,
+			},
 		);
 
 		return () => {
@@ -717,6 +760,8 @@ export function useAnchorContainer({
 		showContent,
 		mobileContainer,
 		mobileDisabled,
+		mobilePosition,
+		mobileOrder,
 		element,
 	]);
 

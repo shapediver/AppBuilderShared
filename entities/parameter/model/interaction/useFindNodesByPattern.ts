@@ -1,10 +1,8 @@
+import {collectNodesForPatternRoot} from "@AppBuilderLib/entities/parameter/lib/findNodesByNameFilter";
 import {UpdateCallbackType} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
 import {useShapeDiverStoreSession} from "@AppBuilderLib/entities/session/model/useShapeDiverStoreSession";
 import {useShapeDiverStoreInstances} from "@AppBuilderLib/features/appbuilder/model/useShapeDiverStoreInstances";
-import {
-	gatherNodesForPattern,
-	NodeNameFilterPattern,
-} from "@shapediver/viewer.features.interaction";
+import {NodeNameFilterPattern} from "@shapediver/viewer.features.interaction";
 import {
 	ITreeNode,
 	OutputApiData,
@@ -73,30 +71,14 @@ const createCallback = (
 				if (!outputApi) return;
 			}
 
-			const availableNodes: {
-				[nodeId: string]: {node: ITreeNode; name: string};
-			} = {};
-			for (const pattern of patterns) {
-				if (pattern.length === 0) {
-					availableNodes[newNode.id] = {
-						node: newNode,
-						name: outputApi.name,
-					};
-				} else {
-					for (const child of newNode.children) {
-						gatherNodesForPattern(
-							child,
-							pattern,
-							outputApi.name,
-							availableNodes,
-							0,
-							strictNaming,
-						);
-					}
-				}
-			}
-
-			setNodes(Object.values(availableNodes).map((n) => n.node));
+			setNodes(
+				collectNodesForPatternRoot(
+					newNode,
+					outputApi.name,
+					patterns,
+					strictNaming,
+				),
+			);
 		}
 	};
 };
@@ -117,33 +99,12 @@ const instanceCallback = (
 	patterns: NodeNameFilterPattern[],
 	strictNaming?: boolean,
 ) => {
-	const availableNodes: {
-		[nodeId: string]: {node: ITreeNode; name: string};
-	} = {};
-
-	for (const pattern of patterns) {
-		if (pattern.length === 0) {
-			availableNodes[instance.id] = {
-				node: instance,
-				name: instance.name,
-			};
-		} else {
-			for (const child of instance.children) {
-				gatherNodesForPattern(
-					child,
-					pattern,
-					instance.name,
-					availableNodes,
-					0,
-					strictNaming,
-				);
-			}
-		}
-	}
-
 	setNodes(
-		Object.values(availableNodes).map(
-			(availableNode) => availableNode.node,
+		collectNodesForPatternRoot(
+			instance,
+			instance.name,
+			patterns,
+			strictNaming,
 		),
 	);
 };

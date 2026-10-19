@@ -9,9 +9,10 @@ import {
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {ViewportCreateDto} from "../config/viewport";
+import {waitUntilReady} from "../lib/waitUntilReady";
+import {useShapeDiverDefaultViewportToolbarStore} from "./useShapeDiverDefaultViewportToolbarStore";
 import {useShapeDiverStoreViewport} from "./useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAccessFunctions} from "./useShapeDiverStoreViewportAccessFunctions";
-import {useShapeDiverDefaultViewportToolbarStore} from "./useShapeDiverDefaultViewportToolbarStore";
 import {useViewportId} from "./useViewportId";
 
 /**
@@ -135,6 +136,8 @@ export function useViewport(props: ViewportCreateDto) {
 							viewportApi.camera.zoomTo(undefined, options);
 						}
 					},
+					waitUntilReady: (signal) =>
+						waitUntilReady(_props.id, {signal}),
 				});
 		});
 

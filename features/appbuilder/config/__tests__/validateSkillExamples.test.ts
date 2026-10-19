@@ -8,6 +8,7 @@ jest.mock("@shapediver/viewer.session", () => ({
 }));
 
 jest.mock("@shapediver/viewer.shared.types", () => ({
+	...jest.requireActual("@shapediver/viewer.shared.types"),
 	ATTRIBUTE_VISUALIZATION: {},
 	CAMERA_TYPE: {},
 	TAG3D_JUSTIFICATION: {},

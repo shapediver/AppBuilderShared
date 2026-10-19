@@ -5,7 +5,6 @@ import {
 	useComputedColorScheme,
 	useMantineColorScheme,
 } from "@mantine/core";
-import {useLinkClickHandler} from "react-router-dom";
 import classes from "./HeaderBar.module.css";
 
 /**
@@ -28,7 +27,9 @@ export default function HeaderBar() {
 		setColorScheme(computedColorScheme === "dark" ? "light" : "dark");
 	};
 
-	const goToHome = useLinkClickHandler<HTMLImageElement>("/");
+	const goToHome = () => {
+		window.location.hash = "/";
+	};
 
 	return (
 		<>
@@ -43,7 +44,7 @@ export default function HeaderBar() {
 				radius="md"
 				src="https://shapediver.com/app/imgs/sd-logo-white-600x84.webp"
 				alt="ShapeDiver Logo"
-				onClick={(e) => goToHome(e)}
+				onClick={goToHome}
 			/>
 			<Image
 				visibleFrom="sm"
@@ -56,7 +57,7 @@ export default function HeaderBar() {
 				radius="md"
 				src="https://shapediver.com/app/imgs/sd-logo-white-600x84.webp"
 				alt="ShapeDiver Logo"
-				onClick={(e) => goToHome(e)}
+				onClick={goToHome}
 			/>
 			<ActionIcon
 				variant="outline"

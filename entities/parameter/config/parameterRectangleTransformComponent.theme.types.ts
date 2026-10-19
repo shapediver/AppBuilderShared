@@ -2,9 +2,13 @@ import {
 	IRectangleTransformParameterPropsJsonSchema,
 	type IRectangleTransformParameterProps,
 } from "@shapediver/viewer.shared.types";
+import type {ParameterInteractionConfirmCancelThemeProps} from "./theme/parameterInteractionButtonTheme";
+import {parameterInteractionConfirmCancelThemeSchema} from "./theme/parameterInteractionButtonTheme";
 
 export const ParameterRectangleTransformComponentThemeDefaultPropsSchema =
-	IRectangleTransformParameterPropsJsonSchema;
+	IRectangleTransformParameterPropsJsonSchema.and(
+		parameterInteractionConfirmCancelThemeSchema,
+	);
 
 /**
  * @docAttached
@@ -12,4 +16,7 @@ export const ParameterRectangleTransformComponentThemeDefaultPropsSchema =
  * @configPath themeOverrides.components.ParameterRectangleTransformComponent.defaultProps
  * @displayName ParameterRectangleTransformComponent
  */
-export interface ParameterRectangleTransformComponentThemeDefaultProps extends IRectangleTransformParameterProps {}
+export interface ParameterRectangleTransformComponentThemeDefaultProps
+	extends
+		IRectangleTransformParameterProps,
+		ParameterInteractionConfirmCancelThemeProps {}

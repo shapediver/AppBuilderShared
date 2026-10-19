@@ -7,6 +7,7 @@ import {IAppBuilderContainerContext} from "@AppBuilderLib/features/appbuilder/li
 import ThemeProvider from "@AppBuilderLib/shared/ui/theme/ThemeProvider";
 import AppBuilderContainer from "@AppBuilderShared/pages/templates/AppBuilderContainer";
 import {
+	Box,
 	MantineThemeComponent,
 	MantineThemeOverride,
 	useProps,
@@ -82,9 +83,17 @@ export default function AppBuilderContainerWrapper(
 
 	const c = (
 		<AppBuilderContainerContext.Provider value={context}>
-			<AppBuilderContainer orientation={orientation}>
-				{children}
-			</AppBuilderContainer>
+			<Box
+				data-app-builder-container={name}
+				h="100%"
+				w="100%"
+				mih={0}
+				miw={0}
+			>
+				<AppBuilderContainer orientation={orientation}>
+					{children}
+				</AppBuilderContainer>
+			</Box>
 		</AppBuilderContainerContext.Provider>
 	);
 
