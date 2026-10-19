@@ -15,6 +15,7 @@ import {
 	PropsParameterComponent,
 	PropsParameterWrapper,
 } from "../config/propsParameter";
+import {filterHiddenSelectItems} from "../lib/select/filterHiddenSelectItems";
 import {resolveStringSelectEmitValue} from "../lib/select/resolveStringSelectEmitValue";
 import {useFocus} from "../model/useFocus";
 import {useParameterComponentCommons} from "../model/useParameterComponentCommons";
@@ -183,6 +184,17 @@ export default function ParameterStringComponent(
 
 	const resolvedMode = definitionMode ?? mode;
 
+	// Widgets apply displayname, tooltip, imageUrl, and color. They never read
+	// itemData.hidden — string-list parameters filter that in ParameterSelectComponent.
+	const visibleSelectItems = useMemo(
+		() =>
+			filterHiddenSelectItems(
+				selectSettings?.items,
+				selectSettings?.itemData,
+			),
+		[selectSettings?.items, selectSettings?.itemData],
+	);
+
 	// A timeout scheduled in debounce mode must not survive a switch to
 	// validate mode (or a change to the configured debounce duration).
 	useEffect(() => {
@@ -247,7 +259,11 @@ export default function ParameterStringComponent(
 	const selectComponent = selectSettings ? (
 		<SelectComponent
 			key={formKey}
-			value={value || undefined}
+			value={
+				value && selectSettings.itemData?.[value]?.hidden
+					? undefined
+					: value || undefined
+			}
 			{...(formInputProps || {})}
 			onChange={(v) => {
 				const val = v ?? "";
@@ -271,8 +287,8 @@ export default function ParameterStringComponent(
 					formInputProps.onBlur();
 				}
 			}}
-			items={selectSettings.items ?? []}
 			{...selectSettings}
+			items={visibleSelectItems}
 		/>
 	) : null;
 
