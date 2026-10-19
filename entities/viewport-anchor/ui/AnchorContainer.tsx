@@ -49,6 +49,7 @@ import {
 	useState,
 } from "react";
 import {IAnchor2d, IAnchor3d} from "../config/shapediverStoreViewportAnchors";
+import {anchorPointerEvents} from "../lib/anchorPointerEvents";
 import {cleanUnit, toCanvasPixels} from "../lib/utils";
 import {useAnchorSelection} from "../model/useAnchorSelection";
 import {useCanvasPortalUtilities} from "../model/useCanvasPortalUtilities";
@@ -459,13 +460,18 @@ export function useAnchorContainer({
 		canvasHeight,
 	]);
 
-	// Determine the pointer events style based on the global state and anchor properties
-	const pointerEvents = useMemo(() => {
-		return allowPointerEventsGlobal === false ||
-			(allowPointerEvents === false && showContent === true)
-			? "none"
-			: "auto";
-	}, [allowPointerEventsGlobal, allowPointerEvents, showContent]);
+	// Camera movement blocks only a closed preview trigger. An open container
+	// stays clickable, otherwise the click falls through to the canvas and the
+	// empty-click handler closes it.
+	const pointerEvents = useMemo(
+		() =>
+			anchorPointerEvents({
+				allowPointerEventsGlobal,
+				allowPointerEvents,
+				showContent,
+			}),
+		[allowPointerEventsGlobal, allowPointerEvents, showContent],
+	);
 
 	/**
 	 * This function handles the click event on the anchor.

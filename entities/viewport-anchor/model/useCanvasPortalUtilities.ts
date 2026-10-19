@@ -18,9 +18,9 @@ import {useEffect, useState} from "react";
  * when the size changes, which is necessary for the update function to be called.
  *
  * It also adds event listeners for camera start and end events
- * to manage the allowPointerEventsGlobal state,
- * which determines whether global pointer events are allowed
- * or not during camera interactions.
+ * to manage the allowPointerEventsGlobal state.
+ * While that state is false, only a closed preview trigger should ignore
+ * pointer events. An open container stays clickable during the camera action.
  *
  * @param viewportId The ID of the viewport.
  * @param portalRef The reference to the portal element.
