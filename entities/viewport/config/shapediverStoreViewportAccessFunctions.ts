@@ -1,6 +1,7 @@
 import {IAppBuilderParameterValueSourcePropsScreenshot} from "@AppBuilderLib/features/appbuilder/config/appbuilder";
 import {FLAG_TYPE} from "@shapediver/viewer.session";
 
+import type {ActiveCamera} from "../lib/readActiveCamera";
 import {ViewportCreateDto} from "./viewport";
 
 export interface IShapeDiverStoreViewportAccessFunctions {
@@ -39,6 +40,13 @@ export interface IViewportAccessFunctions {
 
 	/** Function to convert the viewport to glTF */
 	convertToGlTF?: () => Promise<Blob>;
+
+	/**
+	 * Function to read the active camera of the viewport as a plain document.
+	 * Hosts register this so camera state can be read without depending on
+	 * a specific viewer implementation (e.g. agent tools, e-commerce API).
+	 */
+	getCamera?: () => ActiveCamera | undefined;
 
 	/** Function to create a screenshot and return it as a data URL. */
 	getScreenshot?: (

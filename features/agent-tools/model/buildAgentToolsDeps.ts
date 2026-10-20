@@ -9,10 +9,9 @@ import {useShapeDiverStoreParameters} from "@AppBuilderLib/entities/parameter/mo
 import type {IShapeDiverStoreSessions} from "@AppBuilderLib/entities/session/config/shapediverStoreSession";
 import {
 	planCameraUpdate,
-	readActiveCamera,
+	type ActiveCamera,
 	type CameraToAssign,
 } from "@AppBuilderLib/entities/viewport/lib/readActiveCamera";
-import {useShapeDiverStoreViewport} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewport";
 import {useShapeDiverStoreViewportAccessFunctions} from "@AppBuilderLib/entities/viewport/model/useShapeDiverStoreViewportAccessFunctions";
 import {
 	isCameraAction,
@@ -64,8 +63,16 @@ function flattenDefaultToolbarActions(
 	return refs;
 }
 
-function vec3Tuple(value: ArrayLike<number>): [number, number, number] {
-	return [value[0], value[1], value[2]];
+/**
+ * Read the active camera through the host-registered viewport access
+ * functions. This keeps agent tools independent of the viewer
+ * implementation (hosts without `@shapediver/viewer.viewport` register
+ * their own `getCamera`).
+ */
+function readViewportCamera(viewportId: string): ActiveCamera | undefined {
+	return useShapeDiverStoreViewportAccessFunctions
+		.getState()
+		.viewportAccessFunctions[viewportId]?.getCamera?.();
 }
 
 async function runHostCamera(
@@ -100,15 +107,13 @@ async function setViewportCamera(
 		camera: CameraToAssign;
 	},
 ): Promise<RunActionControlResult> {
-	const live =
-		useShapeDiverStoreViewport.getState().viewports[args.viewportId]
-			?.camera;
-	const active = live
+	const live = readViewportCamera(args.viewportId);
+	const active = live?.id
 		? {
 				id: live.id,
 				type: live.type,
-				position: vec3Tuple(live.position),
-				target: vec3Tuple(live.target),
+				position: live.position,
+				target: live.target,
 			}
 		: undefined;
 	const {assign, move} = planCameraUpdate(args.camera, active);
@@ -233,11 +238,7 @@ export function buildAgentToolsDeps(
 		getViewportId: () => viewportId,
 		setCamera: (args) =>
 			setViewportCamera(componentContext, namespace, args),
-		getCamera: (viewportId) =>
-			readActiveCamera(
-				useShapeDiverStoreViewport.getState().viewports[viewportId]
-					?.camera,
-			),
+		getCamera: (viewportId) => readViewportCamera(viewportId),
 		runCameraAction: (definition) =>
 			runHostCamera(componentContext, definition, namespace, viewportId),
 		addToCart: (props) =>

@@ -9,6 +9,7 @@ import {
 import {useEffect, useRef, useState} from "react";
 import {useShallow} from "zustand/react/shallow";
 import {ViewportCreateDto} from "../config/viewport";
+import {readActiveCamera} from "../lib/readActiveCamera";
 import {waitUntilReady} from "../lib/waitUntilReady";
 import {useShapeDiverDefaultViewportToolbarStore} from "./useShapeDiverDefaultViewportToolbarStore";
 import {useShapeDiverStoreViewport} from "./useShapeDiverStoreViewport";
@@ -96,6 +97,7 @@ export function useViewport(props: ViewportCreateDto) {
 					convertToGlTF: async () => {
 						return viewportApi.convertToGlTF(undefined, true);
 					},
+					getCamera: () => readActiveCamera(viewportApi.camera),
 					getScreenshot: async (
 						props?: IAppBuilderParameterValueSourcePropsScreenshot,
 					) => {
