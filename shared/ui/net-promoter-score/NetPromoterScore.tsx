@@ -49,7 +49,7 @@ const defaultStyleProps: NetPromoterScoreStyleProps = {
 	optionButtonProps: {variant: "default"},
 	captionTextProps: {size: "sm"},
 	digitsGroupProps: {
-		gap: "xs",
+		gap: "3px",
 		justify: "space-between",
 		wrap: "wrap",
 	},
