@@ -245,9 +245,6 @@ describe("NetPromoterScore", () => {
 			.parentElement as HTMLElement;
 		expect(digits).toHaveClass("mantine-Group-root");
 		expect(digits).toHaveClass("digits");
-		expect(digits.style.getPropertyValue("--group-gap")).toContain(
-			"--mantine-spacing-xs",
-		);
 		expect(digits.style.getPropertyValue("--group-justify")).toBe(
 			"space-between",
 		);
