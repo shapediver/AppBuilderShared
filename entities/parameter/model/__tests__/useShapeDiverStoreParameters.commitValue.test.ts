@@ -405,6 +405,60 @@ describe("useShapeDiverStoreParameters commit value", () => {
 		expect(replacement.getState().state.commitValue).toBe("v");
 	});
 
+	it("commits the reset value of a store replacing another one, even if it equals the default value", async () => {
+		const commit = jest.fn();
+		let resolveExecution: () => void = () => undefined;
+		const executor = jest.fn(
+			() =>
+				new Promise<undefined>((resolve) => {
+					resolveExecution = () => resolve(undefined);
+				}),
+		);
+		// the reset value equals the default value (e.g. a drawing parameter
+		// with an empty drawing as default and reset value)
+		store
+			.getState()
+			.addGeneric(
+				genericNamespace,
+				false,
+				genericDefinition({resetValue: "a"}),
+				executor,
+				undefined,
+				commit,
+			);
+		const parameter = getParameter(genericNamespace, "g1");
+		expect(parameter.getState().state.commitValue).toBe("a");
+
+		// execution of "b" in flight
+		parameter.getState().actions.setUiValue("b");
+		const execution = parameter.getState().actions.execute(true);
+		await Promise.resolve();
+
+		// the response of the execution changes the definition (other settings
+		// change, the reset value is kept, no value is defined): a new store
+		// replaces the existing one and must commit the reset value, as the
+		// executed value "b" would be used by the next execution otherwise
+		store
+			.getState()
+			.syncGeneric(
+				genericNamespace,
+				false,
+				genericDefinition({resetValue: "a", other: 1}),
+				executor,
+				undefined,
+				commit,
+			);
+		const replacement = getParameter(genericNamespace, "g1");
+		expect(replacement).not.toBe(parameter);
+		expect(replacement.getState().state.commitValue).toBe("a");
+		expect(commit).toHaveBeenLastCalledWith("g1", "a");
+
+		resolveExecution();
+		await execution;
+		expect(commit).toHaveBeenLastCalledWith("g1", "a");
+		expect(replacement.getState().state.commitValue).toBe("a");
+	});
+
 	it("marks the committed values of all parameters as executed after an execution", async () => {
 		const commit = jest.fn();
 		store.getState().addGeneric(
