@@ -428,13 +428,19 @@ function createParameterStore<T>(
 		defaultValue !== undefined ? defaultValue : definition.defval!;
 	// The initial computation of the model counts as an execution: in case a
 	// reset value is defined, the parameter is committed to it right away.
+	// The reset value is committed even if it equals the default value: a
+	// store replacing another one (see syncGeneric) starts from the default
+	// value, while the value last executed by the replaced store may differ
+	// from it (e.g. a drawing parameter whose default and reset value are an
+	// empty drawing, which was executed with some points).
 	const initialResetValue = getResetValue(definition);
-	const initialCommitValue =
+	const hasInitialResetValue =
 		initialResetValue !== undefined &&
-		executor.isValid(initialResetValue, false)
-			? (initialResetValue as T | string)
-			: defval;
-	if (initialCommitValue !== defval) executor.commit?.(initialCommitValue);
+		executor.isValid(initialResetValue, false);
+	const initialCommitValue = hasInitialResetValue
+		? (initialResetValue as T | string)
+		: defval;
+	if (hasInitialResetValue) executor.commit?.(initialCommitValue);
 	const state: IShapeDiverParameterState<T> = {
 		uiValue: initialCommitValue,
 		execValue: defval,
